@@ -605,6 +605,167 @@ describe("normalizeAnswerData + denormalizeAnswerData (round-trip)", () => {
 });
 
 // ============================================================================
+// Multi-eval (radioNew + activeMultieval=true) — storage `_multiEval.{userId}`
+// ============================================================================
+
+describe("normalizeAnswerData (multi-eval)", () => {
+  const multiEvalFields: SubFormFields[] = [
+    makeSubFormFields(
+      [
+        makeField({
+          name: "multiEvalQ1",
+          componentType: "radio",
+          activeMultieval: true,
+          options: ["Pas du tout", "Un peu", "Beaucoup"],
+        }),
+      ],
+      "step1",
+    ),
+  ];
+
+  it("pré-remplit la contribution de l'user courant via `value` canonical", () => {
+    const raw = {
+      step1: {
+        multiEvalQ1_multiEval: {
+          user123: { value: "Beaucoup", date: "2026-06-15T00:00:00.000Z", answer: "2_beaucoup" },
+          user456: { value: "Un peu", date: "2026-06-15T00:00:00.000Z", answer: "1_un-peu" },
+        },
+      },
+    };
+    const result = normalizeAnswerData(raw, multiEvalFields, "user123") as Record<string, unknown>;
+    expect((result.step1 as Record<string, unknown>).multiEvalQ1).toBe("Beaucoup");
+  });
+
+  it("fallback sur le parsing legacy `{idx}_{slug}` quand `value` absent", () => {
+    const raw = {
+      step1: {
+        multiEvalQ1_multiEval: {
+          user123: { answer: "1_un-peu" }, // pas de `value`
+        },
+      },
+    };
+    const result = normalizeAnswerData(raw, multiEvalFields, "user123") as Record<string, unknown>;
+    expect((result.step1 as Record<string, unknown>).multiEvalQ1).toBe("Un peu");
+  });
+
+  it("ignore la contribution d'un AUTRE user (reste vide si pas de contribution propre)", () => {
+    const raw = {
+      step1: {
+        multiEvalQ1_multiEval: {
+          user456: { value: "Un peu", date: "x", answer: "1_un-peu" },
+        },
+      },
+    };
+    const result = normalizeAnswerData(raw, multiEvalFields, "user123") as Record<string, unknown>;
+    expect((result.step1 as Record<string, unknown>).multiEvalQ1).toBeUndefined();
+  });
+
+  it("efface toujours la valeur classique (résidu legacy) même sans userId", () => {
+    const raw = {
+      step1: {
+        multiEvalQ1: "Beaucoup", // valeur classique parasite
+        multiEvalQ1_multiEval: { user123: { value: "Beaucoup", date: "x", answer: "2_beaucoup" } },
+      },
+    };
+    const result = normalizeAnswerData(raw, multiEvalFields, null) as Record<string, unknown>;
+    expect((result.step1 as Record<string, unknown>).multiEvalQ1).toBeUndefined();
+  });
+
+  it("ignore une `value` qui n'est plus dans les options (option supprimée)", () => {
+    const raw = {
+      step1: {
+        multiEvalQ1_multiEval: { user123: { value: "OptionDisparue", answer: "9_optiondisparue" } },
+      },
+    };
+    const result = normalizeAnswerData(raw, multiEvalFields, "user123") as Record<string, unknown>;
+    // value hors options + idx 9 hors range → pas de résolution
+    expect((result.step1 as Record<string, unknown>).multiEvalQ1).toBeUndefined();
+  });
+
+  it("tolère un `_multiEval` sérialisé `[]` par Mongo (objet vide) sans crash", () => {
+    // MongoDB sérialise indifféremment `{}` et `[]` : la garde `!Array.isArray`
+    // doit rejeter l'array et laisser le champ vide (pas de throw).
+    const raw = { step1: { multiEvalQ1_multiEval: [] } };
+    const result = normalizeAnswerData(raw, multiEvalFields, "user123") as Record<string, unknown>;
+    expect((result.step1 as Record<string, unknown>).multiEvalQ1).toBeUndefined();
+  });
+});
+
+describe("denormalizeAnswerData (multi-eval)", () => {
+  const multiEvalFields: SubFormFields[] = [
+    makeSubFormFields(
+      [
+        makeField({
+          name: "multiEvalQ1",
+          componentType: "radio",
+          activeMultieval: true,
+          options: ["Pas du tout", "Un peu", "Beaucoup"],
+        }),
+      ],
+      "step1",
+    ),
+  ];
+
+  it("packe la valeur de l'user courant dans `{name}_multiEval.{userId}` + retire la classique", () => {
+    const formData = { step1: { multiEvalQ1: "Beaucoup" } };
+    const result = denormalizeAnswerData(formData, multiEvalFields, "user123");
+    const step1 = result.step1 as Record<string, unknown>;
+    expect(step1.multiEvalQ1).toBeUndefined();
+    const record = step1.multiEvalQ1_multiEval as Record<string, { value: unknown; answer: unknown; date: unknown }>;
+    expect(Object.keys(record)).toEqual(["user123"]); // QUE l'entrée du user courant
+    expect(record.user123.value).toBe("Beaucoup");
+    expect(record.user123.answer).toBe("2_beaucoup");
+    // Sentinel legacy "now" : le backend (Coform::coerceAnswerDates) le
+    // convertit en MongoDate. On ne stamp PAS côté client (déterminisme + autorité serveur).
+    expect(record.user123.date).toBe("now");
+  });
+
+  it("sans userId : laisse la valeur classique intacte (pas de pack multi-eval)", () => {
+    const formData = { step1: { multiEvalQ1: "Beaucoup" } };
+    const result = denormalizeAnswerData(formData, multiEvalFields, null);
+    const step1 = result.step1 as Record<string, unknown>;
+    expect(step1.multiEvalQ1).toBe("Beaucoup");
+    expect(step1.multiEvalQ1_multiEval).toBeUndefined();
+  });
+
+  it("valeur vide : retire la classique sans créer d'entrée multi-eval", () => {
+    const formData = { step1: { multiEvalQ1: "" } };
+    const result = denormalizeAnswerData(formData, multiEvalFields, "user123");
+    const step1 = result.step1 as Record<string, unknown>;
+    expect(step1.multiEvalQ1).toBeUndefined();
+    expect(step1.multiEvalQ1_multiEval).toBeUndefined();
+  });
+});
+
+describe("multi-eval round-trip (write puis read, même user)", () => {
+  const multiEvalFields: SubFormFields[] = [
+    makeSubFormFields(
+      [
+        makeField({
+          name: "multiEvalQ1",
+          componentType: "radio",
+          activeMultieval: true,
+          options: ["Pas du tout", "Un peu", "Beaucoup"],
+        }),
+      ],
+      "step1",
+    ),
+  ];
+
+  it("write(user123) → read(user123) restitue la valeur", () => {
+    const written = denormalizeAnswerData({ step1: { multiEvalQ1: "Un peu" } }, multiEvalFields, "user123");
+    const read = normalizeAnswerData(written, multiEvalFields, "user123") as Record<string, unknown>;
+    expect((read.step1 as Record<string, unknown>).multiEvalQ1).toBe("Un peu");
+  });
+
+  it("write(user123) → read(user456) NE restitue PAS la valeur (isolement par user)", () => {
+    const written = denormalizeAnswerData({ step1: { multiEvalQ1: "Un peu" } }, multiEvalFields, "user123");
+    const read = normalizeAnswerData(written, multiEvalFields, "user456") as Record<string, unknown>;
+    expect((read.step1 as Record<string, unknown>).multiEvalQ1).toBeUndefined();
+  });
+});
+
+// ============================================================================
 // extractFinderLinks
 // ============================================================================
 

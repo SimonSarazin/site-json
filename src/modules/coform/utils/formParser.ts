@@ -72,6 +72,24 @@ export function hasFieldPrefix(componentType: FormFieldMapping["componentType"])
 }
 
 /**
+ * Slugifie une string pour le suffix legacy d'un multi-eval :
+ * `_multiEval.{userId} = { answer: "{idx}_{slug}" }`.
+ *
+ * Le slug n'est PAS la source de vérité (au read, on lit `value` canonical en
+ * priorité, et le fallback legacy s'appuie sur l'index préfixe, pas le slug).
+ * Il sert juste à produire un suffix lisible aligné avec le format legacy
+ * `radioNew` du PHP.
+ */
+function slugify(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "") // accents combinants
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/**
  * Convertit les classes Bootstrap en classes Tailwind col-span pour grille CSS.
  * Les classes doivent être écrites en entier (pas de template literals) pour que Tailwind les détecte.
  */
@@ -531,6 +549,23 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
       // Parser conditionalDisplay si présent
       const conditionalDisplay = fieldData.conditionalDisplay as ConditionalDisplay | undefined;
 
+      // Flags multi-eval (uniquement pour les inputs `radioNew`).
+      // Lus directement sur l'input (pas via params, contrairement aux options).
+      // Sans ce parse, les flags du type restent toujours `undefined` →
+      // `subFormHasMultieval()` renvoie false et le storage user-spécifique
+      // (`_multiEval.{userId}`) n'est jamais déclenché.
+      const fieldDataWithMultiEval = fieldData as unknown as {
+        activeMultieval?: boolean | string;
+        evaluationKey?: string;
+      };
+      const activeMultieval =
+        componentType === "radio"
+          ? fieldDataWithMultiEval.activeMultieval === true ||
+            fieldDataWithMultiEval.activeMultieval === "true"
+          : false;
+      const evaluationKey =
+        componentType === "radio" ? fieldDataWithMultiEval.evaluationKey : undefined;
+
       fields.push({
         // Appliquer le préfixe selon le type (finder, multiCheckboxPlus, evaluation)
         name: getFieldNameWithPrefix(componentType, fieldKey),
@@ -556,6 +591,8 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         uploaderConfig,
         sectionTitleConfig,
         conditionalDisplay,
+        activeMultieval,
+        evaluationKey,
       });
     });
 
@@ -1120,7 +1157,8 @@ export function getStepHasMultiEval(subFormFields: SubFormFields): boolean {
  */
 export function normalizeAnswerData(
   rawAnswers: Record<string, unknown> | null | undefined,
-  subFormsFields: SubFormFields[]
+  subFormsFields: SubFormFields[],
+  currentUserId: string | null = null
 ): Record<string, unknown> | undefined {
   if (!rawAnswers) return undefined;
 
@@ -1195,6 +1233,57 @@ export function normalizeAnswerData(
           // delete normalized[field.name];
         }
       }
+
+      // ── Multi-eval (radioNew + activeMultieval=true) ─────────────
+      // La valeur d'un input multi-eval est PUREMENT user-spécifique : seule
+      // l'entrée de l'user courant dans `{name}_multiEval.{userId}` doit
+      // pré-remplir le RadioField. Toute valeur "classique" éventuellement
+      // présente à `subFormData[field.name]` (héritage legacy ou résidu d'un
+      // autre user) est IGNORÉE — sinon on pré-remplit avec une donnée qui
+      // n'est pas celle de l'user courant.
+      //
+      // Conséquence voulue : si l'user n'a pas encore contribué à ce
+      // multi-eval, le RadioField reste vide (au lieu de rejouer la valeur
+      // d'un autre).
+      if (field.componentType === "radio" && field.activeMultieval === true) {
+        // 1) Toujours effacer la valeur classique (peu importe `currentUserId`).
+        delete subFormData[field.name];
+
+        // 2) Si on a un userId courant, extraire SA contribution.
+        if (currentUserId) {
+          const multiEvalRecord = subFormData[`${field.name}_multiEval`];
+          if (
+            multiEvalRecord &&
+            typeof multiEvalRecord === "object" &&
+            !Array.isArray(multiEvalRecord)
+          ) {
+            const entry = (multiEvalRecord as Record<string, unknown>)[currentUserId];
+            if (entry && typeof entry === "object" && !Array.isArray(entry)) {
+              const e = entry as { value?: unknown; answer?: unknown };
+              let resolvedValue: string | undefined;
+              // Priorité : `value` canonical (entrée nouvelle / migrée).
+              if (typeof e.value === "string" && field.options?.includes(e.value)) {
+                resolvedValue = e.value;
+              }
+              // Fallback : parsing legacy `"{idx}_{slug}"` via l'index préfixe.
+              if (resolvedValue === undefined && typeof e.answer === "string") {
+                const idx = parseInt(e.answer.split("_", 2)[0] ?? "", 10);
+                if (
+                  Number.isInteger(idx) &&
+                  idx >= 0 &&
+                  Array.isArray(field.options) &&
+                  idx < field.options.length
+                ) {
+                  resolvedValue = field.options[idx];
+                }
+              }
+              if (resolvedValue !== undefined) {
+                subFormData[field.name] = resolvedValue;
+              }
+            }
+          }
+        }
+      }
     }
   }
 
@@ -1214,7 +1303,8 @@ export function normalizeAnswerData(
  */
 export function denormalizeAnswerData(
   formData: Record<string, unknown>,
-  subFormsFields: SubFormFields[]
+  subFormsFields: SubFormFields[],
+  currentUserId: string | null = null
 ): Record<string, unknown> {
   // Copie profonde pour ne pas muter l'original
   const denormalized = JSON.parse(JSON.stringify(formData)) as Record<string, unknown>;
@@ -1225,6 +1315,46 @@ export function denormalizeAnswerData(
     if (!subFormData) continue;
 
     for (const field of fields) {
+      // ── Multi-eval (radioNew + activeMultieval=true) ─────────────
+      // Pack la valeur de l'user courant dans `{name}_multiEval.{userId}` au
+      // format étendu `{ value, date, answer }`. Le backend a un deep-merge
+      // pattern-based qui préserve les contributions des autres users — on
+      // n'envoie donc QUE `{[currentUserId]: {...}}`, jamais les entrées des
+      // autres (sûr face aux race conditions concurrentes).
+      //
+      // `date: "now"` est un sentinel (cf. legacy `radioNew.php`) : le backend
+      // (`Coform::coerceAnswerDates` → `toMongoDate`) le convertit en vraie
+      // MongoDate côté serveur. On NE met PAS `new Date().toISOString()` ici : (1) JSON ne
+      // transporte pas de type Date → ce serait stocké en String, pas en
+      // ISODate ; (2) l'horodatage doit faire autorité serveur (pas l'horloge
+      // client) ; (3) garde la fonction déterministe (testable).
+      if (
+        field.componentType === "radio" &&
+        field.activeMultieval === true &&
+        currentUserId &&
+        field.name in subFormData
+      ) {
+        const value = subFormData[field.name];
+        if (typeof value === "string" && value !== "") {
+          const idx = Array.isArray(field.options) ? field.options.indexOf(value) : -1;
+          // idx === -1 si l'option a disparu de la liste entre-temps — le
+          // radar ignore les valeurs hors range.
+          const answer = `${idx}_${slugify(value)}`;
+          subFormData[`${field.name}_multiEval`] = {
+            [currentUserId]: {
+              value,
+              date: "now",
+              answer,
+            },
+          };
+        }
+        // Toujours retirer la valeur "classique" : sinon le backend la
+        // stockerait comme un radio normal (doublon + écrasement potentiel).
+        delete subFormData[field.name];
+        // Pas root-level → on saute le traitement root-level ci-dessous.
+        continue;
+      }
+
       if (!isRootLevelField(field.componentType)) continue;
       if (!(field.name in subFormData)) continue;
 
