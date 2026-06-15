@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { FinderSearchModal } from "./FinderSearchModal";
 import { getSharedFinderInfo, type SharedFinderInfo } from "../utils/formParser";
+import { pickProfileImageUrl } from "../utils/helpers";
 import type { CoFormData, FinderConfig, FinderElement } from "../types";
 import type { Organization } from "@communecter/cocolight-api-client";
 
@@ -67,11 +68,7 @@ interface PlaceRowProps {
 function PlaceRow({ org, role, onOpen, i18n }: PlaceRowProps) {
   const data = (org as unknown as { serverData?: Record<string, unknown> }).serverData ?? {};
   const name = (data.name as string) || (org as unknown as { name?: string }).name || "—";
-  const logoUrl =
-    (data.profilMediumImageUrl as string) ||
-    (data.profilImageUrl as string) ||
-    (data.profilThumbImageUrl as string) ||
-    null;
+  const logoUrl = pickProfileImageUrl(data);
 
   return (
     <button
@@ -128,11 +125,7 @@ function PendingRow({ org, pendingType, i18n }: PendingRowProps) {
 
   const data = (org as unknown as { serverData?: Record<string, unknown> }).serverData ?? {};
   const name = (data.name as string) || (org as unknown as { name?: string }).name || "—";
-  const logoUrl =
-    (data.profilMediumImageUrl as string) ||
-    (data.profilImageUrl as string) ||
-    (data.profilThumbImageUrl as string) ||
-    null;
+  const logoUrl = pickProfileImageUrl(data);
 
   const showActions = pendingType === "isInviting" || pendingType === "isInvitingAdmin";
 
@@ -392,8 +385,7 @@ export function PlacesListView({ formData, formId }: PlacesListViewProps) {
 
       // Sinon, fetch l'entité fraîche et ouvrir la confirmation.
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const fetched: Organization = await (api as any).organization({ id: picked.id });
+        const fetched = await api.organization({ id: picked.id });
         setConfirmOrg(fetched);
       } catch (err) {
         console.warn("[PlacesListView] organization fetch failed", err);

@@ -32,6 +32,22 @@ export function formatTimestamp(timestamp: number): string {
 }
 
 /**
+ * Sélectionne l'URL d'image de profil d'un élément depuis son `serverData`.
+ * Priorité : medium → pleine → thumb (le thumb est un crop carré souvent peu
+ * net, comme la fiche élément qui ne l'utilise qu'en secours).
+ *
+ * Source UNIQUE de cette règle : consommée par `fetchElementSummary`
+ * (résolution finder/lieux) et les lignes de `PlacesListView`.
+ */
+export function pickProfileImageUrl(
+  serverData: Record<string, unknown> | null | undefined,
+): string | undefined {
+  const sd = serverData ?? {};
+  const raw = sd.profilMediumImageUrl ?? sd.profilImageUrl ?? sd.profilThumbImageUrl;
+  return typeof raw === "string" && raw.trim() !== "" ? raw : undefined;
+}
+
+/**
  * Vérifie si une étape est complète (tous les champs requis remplis)
  */
 export function isStepComplete(

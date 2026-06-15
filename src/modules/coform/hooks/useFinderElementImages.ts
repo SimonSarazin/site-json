@@ -1,24 +1,13 @@
 import { useMemo } from "react";
 import { useQueries } from "@tanstack/react-query";
-import type { Api } from "@communecter/cocolight-api-client";
 import { useCocolightOptional } from "@/hooks/useCocolight";
-import type { FinderValue, FinderElement, FinderElementType } from "../types";
-
-/**
- * Types d'éléments pour lesquels on sait résoudre une image de profil via une
- * méthode entity du SDK (`api.<type>({id})` → `.get()` interne → `serverData`).
- * Les autres types (things, classified, news, ...) conservent l'icône de
- * fallback — pas de méthode entity dédiée et cas non rencontrés en pratique.
- */
-const RESOLVABLE_TYPES = new Set<FinderElementType>([
-  "organizations",
-  "citoyens",
-  "projects",
-  "events",
-  "poi",
-]);
-
-const IMAGE_STALE_TIME_MS = 5 * 60 * 1000;
+import { COFORM_QUERY_KEYS } from "../constants/queryKeys";
+import type { FinderValue, FinderElement } from "../types";
+import {
+  RESOLVABLE_TYPES,
+  ELEMENT_SUMMARY_STALE_TIME_MS,
+  fetchElementSummary,
+} from "./useElementSummary";
 
 /**
  * Éléments d'un finder dont l'image n'est PAS stockée dans la réponse et dont
@@ -53,45 +42,6 @@ export function mergeResolvedFinderImages(
 }
 
 /**
- * Résout l'image de profil d'un élément via une méthode entity du SDK.
- * `api.<type>({id})` appelle `.get()` en interne (cf. `Api.ts`) et peuple
- * `serverData` avec des URLs déjà normalisées en absolu par l'ApiClient.
- * Renvoie `undefined` si pas d'image ou si l'élément est inaccessible/supprimé
- * (l'erreur reste isolée à sa query → simple fallback icône).
- */
-async function fetchFinderElementImage(
-  api: Api,
-  id: string,
-  type: FinderElementType,
-): Promise<string | undefined> {
-  let entity: { serverData?: Record<string, unknown> };
-  switch (type) {
-    case "organizations":
-      entity = await api.organization({ id });
-      break;
-    case "citoyens":
-      entity = await api.user({ id });
-      break;
-    case "projects":
-      entity = await api.project({ id });
-      break;
-    case "events":
-      entity = await api.event({ id });
-      break;
-    case "poi":
-      entity = await api.poi({ id });
-      break;
-    default:
-      return undefined;
-  }
-  const sd = entity.serverData ?? {};
-  // Priorité à l'image PLEINE (comme la fiche élément, qui n'utilise le thumb
-  // qu'en secours) : le thumb est un crop carré souvent peu net/rogné.
-  const url = sd.profilMediumImageUrl ?? sd.profilImageUrl ?? sd.profilThumbImageUrl;
-  return typeof url === "string" && url.trim() !== "" ? url : undefined;
-}
-
-/**
  * Hook React Query : pour les éléments d'un finder dont l'image n'est pas
  * stockée dans la réponse, résout l'image de profil live via le SDK.
  *
@@ -104,7 +54,9 @@ async function fetchFinderElementImage(
  *  - Fetch les éléments d'une réponse chargée (leur `img` a été stripée au
  *    parse) ; **pas** ceux fraîchement sélectionnés (le modal leur pose une
  *    `img` transitoire d'aperçu, jamais persistée) → aucun re-fetch inutile.
- *  - Cache 5 min, dédupliqué par `[type, id]` (partagé entre champs/onglets).
+ *  - Cache 5 min, clé `COFORM_QUERY_KEYS.ELEMENT_SUMMARY` **partagée** avec
+ *    `useElementSummary` → un même élément résolu une seule fois (ex.
+ *    `PlaceFormView` qui en lit le nom et la chip finder qui en lit l'image).
  *  - `auth: none` côté endpoint → marche en lecture seule et en mode anonyme.
  *  - Dégrade proprement hors `CocolightProvider` (tests) : aucune query.
  *  - **Ne mute jamais** la valeur RHF (cf. {@link mergeResolvedFinderImages}).
@@ -118,17 +70,17 @@ export function useFinderElementImages(value: FinderValue): Record<string, strin
 
   const results = useQueries({
     queries: missing.map((el) => ({
-      queryKey: ["finder-element-image", el.type, el.id],
+      queryKey: COFORM_QUERY_KEYS.ELEMENT_SUMMARY(el.type, el.id),
       enabled: !!api,
-      staleTime: IMAGE_STALE_TIME_MS,
-      queryFn: () => fetchFinderElementImage(api!, el.id, el.type),
+      staleTime: ELEMENT_SUMMARY_STALE_TIME_MS,
+      queryFn: () => fetchElementSummary(api!, el.id, el.type),
     })),
   });
 
   return useMemo(() => {
     const out: Record<string, string> = {};
     missing.forEach((el, i) => {
-      const url = results[i]?.data;
+      const url = results[i]?.data?.img;
       if (typeof url === "string" && url) out[el.id] = url;
     });
     return out;
