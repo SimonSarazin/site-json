@@ -183,6 +183,10 @@ export function mapCoFormTypeToComponentType(
     "tpls.forms.sectionTitle": "sectionTitle",
     "tpls.forms.sectionDescription": "sectionDescription",
     select: "select",
+    // Liste déroulante : les forms stockent le type tantôt en raccourci
+    // `select` (builder dynamicFields), tantôt en chemin de template complet
+    // `tpls.forms.select` (legacy `select.php`). Les deux → composant select.
+    "tpls.forms.select": "select",
   };
 
   const direct = typeMapping[coFormType];
@@ -219,6 +223,8 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
       
       // Récupérer les options depuis params si c'est un radio/checkbox
       let options: string[] | undefined;
+      let optionLabels: Record<string, string> | undefined;
+      let searchable: boolean | undefined;
       let positionType: "column" | "row" | undefined;
       let rowMode: "fixed" | "auto" | undefined;
       let nbPerRow: string | undefined;
@@ -247,7 +253,43 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
           }
         }
       }
-      
+
+      // Options du `select` (legacy `select.php`) : lues dans
+      // `params[fieldKey].options` SANS préfixe (contrairement à
+      // radioNew/checkboxNew). Deux formes legacy possibles :
+      //  - liste plate `["A", "B"]` (produite par l'UI admin du template) →
+      //    value === label, pas d'`optionLabels`.
+      //  - objet associatif `{cle: "Label"}` (format documenté côté
+      //    dynamicFields) → la valeur stockée est la CLÉ, le label affiché
+      //    est la valeur ; on garde donc les clés dans `options` et la
+      //    correspondance dans `optionLabels` pour un round-trip fidèle.
+      if (componentType === "select" && formData.params) {
+        const selectParams = formData.params[fieldKey];
+        const rawOptions = selectParams?.options;
+        if (Array.isArray(rawOptions)) {
+          options = rawOptions.map((o) => String(o));
+        } else if (rawOptions && typeof rawOptions === "object") {
+          const entries = Object.entries(rawOptions as Record<string, unknown>);
+          options = entries.map(([k]) => k);
+          optionLabels = Object.fromEntries(
+            entries.map(([k, v]) => [k, String(v)])
+          );
+        }
+        // Flag legacy `enableSelect2` → liste déroulante recherchable. Côté PHP
+        // il est lu via `filter_var(..., FILTER_VALIDATE_BOOLEAN)` ; on réplique
+        // les valeurs vraies courantes (booléen, "true", "1"/1, "on", "yes").
+        const rawSelect2 = selectParams?.enableSelect2;
+        searchable =
+          rawSelect2 === true ||
+          rawSelect2 === "true" ||
+          rawSelect2 === "1" ||
+          rawSelect2 === 1 ||
+          rawSelect2 === "on" ||
+          rawSelect2 === "yes"
+            ? true
+            : undefined;
+      }
+
       // Config spécifique pour multiRadio
       let multiRadioConfig: FormFieldMapping["multiRadioConfig"] | undefined;
 
@@ -579,6 +621,8 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         width: parseBootstrapWidth(fieldData.width),
         markdown: fieldData.enableMarkdown,
         options,
+        optionLabels,
+        searchable,
         positionType: positionType || formData.params?.[fieldKey]?.positionType,
         rowMode: rowMode || formData.params?.[fieldKey]?.rowMode,
         nbPerRow: nbPerRow || formData.params?.[fieldKey]?.nbPerRow,

@@ -194,8 +194,9 @@ describe("mapCoFormTypeToComponentType", () => {
     expect(mapCoFormTypeToComponentType("tpls.forms.sectionDescription")).toBe("sectionDescription");
   });
 
-  it("mappe select", () => {
+  it("mappe select (raccourci + chemin de template complet)", () => {
     expect(mapCoFormTypeToComponentType("select")).toBe("select");
+    expect(mapCoFormTypeToComponentType("tpls.forms.select")).toBe("select");
   });
 
   it("retourne 'unknown' pour un type non mappé", () => {
@@ -308,6 +309,75 @@ describe("parseCoFormFields", () => {
     expect(result).toHaveLength(2);
     expect(result[0].subFormId).toBe("step1");
     expect(result[1].subFormId).toBe("step2");
+  });
+
+  it("extrait les options d'un select à liste plate (params[key].options)", () => {
+    const formData = makeCoFormData({
+      inputs: {
+        step1: {
+          name: "Step 1",
+          id: "step1",
+          formParent: "form123",
+          inputs: { sel: { label: "Choix", type: "select", isRequired: true } },
+        },
+      },
+      params: {
+        sel: { options: ["Option A", "Option B", "Option C"] },
+      },
+    });
+
+    const field = parseCoFormFields(formData)[0].fields[0];
+    expect(field.componentType).toBe("select");
+    expect(field.options).toEqual(["Option A", "Option B", "Option C"]);
+    // Liste plate : value === label, pas de table de correspondance.
+    expect(field.optionLabels).toBeUndefined();
+  });
+
+  it("extrait les options d'un select associatif (clé stockée + label affiché)", () => {
+    const formData = makeCoFormData({
+      inputs: {
+        step1: {
+          name: "Step 1",
+          id: "step1",
+          formParent: "form123",
+          inputs: { cat: { label: "Catégorie", type: "select" } },
+        },
+      },
+      params: {
+        cat: { options: { val1: "Label 1", val2: "Label 2" } },
+      },
+    });
+
+    const field = parseCoFormFields(formData)[0].fields[0];
+    expect(field.componentType).toBe("select");
+    // `options` porte les CLÉS (la valeur réellement stockée en réponse).
+    expect(field.options).toEqual(["val1", "val2"]);
+    // `optionLabels` donne la correspondance clé → label affiché.
+    expect(field.optionLabels).toEqual({ val1: "Label 1", val2: "Label 2" });
+  });
+
+  it("active searchable quand enableSelect2 est vrai (bool ou string)", () => {
+    const makeSelect = (enableSelect2: unknown) =>
+      parseCoFormFields(
+        makeCoFormData({
+          inputs: {
+            step1: {
+              name: "Step 1",
+              id: "step1",
+              formParent: "form123",
+              inputs: { sel: { label: "Choix", type: "tpls.forms.select" } },
+            },
+          },
+          params: { sel: { options: ["A", "B"], enableSelect2 } },
+        })
+      )[0].fields[0];
+
+    expect(makeSelect(true).searchable).toBe(true);
+    expect(makeSelect("true").searchable).toBe(true);
+    expect(makeSelect("1").searchable).toBe(true);
+    // Désactivé / absent → undefined (liste déroulante simple).
+    expect(makeSelect(false).searchable).toBeUndefined();
+    expect(makeSelect(undefined).searchable).toBeUndefined();
   });
 });
 

@@ -385,6 +385,13 @@ function ReadOnlyField({
           >
             {String(value)}
           </a>
+        ) : field.componentType === "select" ? (
+          // Pour un select à options associatives legacy, la valeur stockée
+          // est la clé ; on affiche le label via `optionLabels` (fallback sur
+          // la valeur brute pour les options à liste plate où clé === label).
+          <span className="wrap-break-word">
+            {field.optionLabels?.[String(value)] ?? String(value)}
+          </span>
         ) : (
           <span className="wrap-break-word">{String(value)}</span>
         )}
