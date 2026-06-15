@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Helmet } from "@dr.pogodin/react-helmet";
 import { Link, useLoaderData, useNavigate, useParams, useSearchParams } from "react-router";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -164,11 +165,20 @@ export default function CoFormAnswerPage() {
     setPageState({ view: "answer", mode: "readonly" });
   };
 
+  // ── Titre d'onglet (formData garanti non-null à partir d'ici) ──
+
+  const documentTitle = formData.name;
+
   // ── Page de remerciement après update ──────────────────────────
 
   if (pageState.view === "thankYou") {
     return (
       <PageShell>
+        {documentTitle && (
+          <Helmet>
+            <title>{documentTitle}</title>
+          </Helmet>
+        )}
         <CoFormThankYou
           config={formData.thankYou}
           formName={formData.name}
@@ -197,6 +207,12 @@ export default function CoFormAnswerPage() {
 
   return (
     <PageShell>
+      {documentTitle && (
+        <Helmet>
+          <title>{documentTitle}</title>
+        </Helmet>
+      )}
+
       {/* Bandeau refus d'édition si mode=edit demandé mais non autorisé */}
       {currentMode === "edit" && !canEdit && (
         <div className="mb-6 flex items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">

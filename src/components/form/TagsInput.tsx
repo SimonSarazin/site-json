@@ -9,6 +9,9 @@ interface TagsInputProps {
   tags: string[];
   onTagsChange: (tags: string[]) => void;
   maxTags?: number;
+  /** Active l'autocomplétion sur les tags existants (`TagSuggestions`/`useSearchTags`).
+   *  `false` → saisie libre uniquement (pour des valeurs qui ne sont PAS des tags). */
+  searchable?: boolean;
   /** Textes pour l'internationalisation */
   texts?: {
     placeholder?: string;
@@ -32,6 +35,7 @@ export function TagsInput({
   tags,
   onTagsChange,
   maxTags = 10,
+  searchable = true,
   texts,
 }: TagsInputProps) {
   const t = { ...defaultTexts, ...texts };
@@ -42,8 +46,9 @@ export function TagsInput({
 
   const handleInputChange = (value: string) => {
     setInputValue(value);
-    // Montrer les suggestions dès qu'on tape au moins 2 caractères
-    if (value.trim().length >= 2) {
+    // Suggestions (recherche de tags via `useSearchTags`) : uniquement si `searchable`.
+    // Sinon saisie libre seule (Entrée / virgule pour valider).
+    if (searchable && value.trim().length >= 2) {
       setShowSuggestions(true);
     } else {
       setShowSuggestions(false);

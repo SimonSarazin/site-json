@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { CoFormContext, type CoFormContextType, type CoFormStepState } from "./CoFormContext";
 import type { CoFormData, SubFormData, AllStepsData, AddedOptionsMap } from "../types";
 import { parseCoFormFields, denormalizeAnswerData, extractFinderLinks, type FinderLinksMap } from "../utils/formParser";
+import { useCoFormDraft } from "../hooks/useCoFormDraft";
 
 interface CoFormProviderProps {
   children: ReactNode;
@@ -16,6 +17,14 @@ interface CoFormProviderProps {
   answerId?: string;
   /** Clé (subFormId) de l'étape initiale (pour démarrer le wizard sur une étape spécifique) */
   initialStepKey?: string;
+  /** ID utilisateur connecté — clé de draft localStorage. */
+  userId?: string | null;
+  /** updatedAt serveur (édition) — pour détecter les drafts obsolètes. */
+  baseUpdatedAt?: number | null;
+  /** ID du formulaire — clé de draft localStorage. */
+  formId?: string;
+  /** Active la persistance du draft. Défaut : true. */
+  enableDraft?: boolean;
 }
 
 /**
@@ -35,6 +44,10 @@ export function CoFormProvider({
   defaultValues,
   answerId,
   initialStepKey,
+  userId,
+  baseUpdatedAt,
+  formId,
+  enableDraft = true,
 }: CoFormProviderProps) {
   const subFormsFields = useMemo(() => parseCoFormFields(formData), [formData]);
 
@@ -73,6 +86,53 @@ export function CoFormProvider({
   // Ref pour toujours avoir les dernières stepsData (évite le stale closure)
   const stepsDataRef = useRef<AllStepsData>(stepState.stepsData);
   stepsDataRef.current = stepState.stepsData;
+
+  // Persistance du brouillon en localStorage (multi-step). Le draft inclut
+  // currentStepIndex + completedSteps + stepsData + addedOptions pour pouvoir
+  // restaurer la position exacte du wizard.
+  const {
+    restorableDraft,
+    staleDraftInfo,
+    saveDraft,
+    discardDraft: discardDraftRaw,
+    acknowledgeStale,
+  } = useCoFormDraft({
+    formId,
+    userId,
+    answerId,
+    baseUpdatedAt,
+    disabled: !enableDraft,
+  });
+
+  // Auto-save du draft à chaque changement de stepState (debounce interne).
+  useEffect(() => {
+    saveDraft({
+      data: stepState.stepsData,
+      currentStepIndex: stepState.currentStepIndex,
+      completedSteps: stepState.completedSteps,
+      addedOptions: stepState.addedOptions,
+    });
+  }, [stepState, saveDraft]);
+
+  const restoreDraft = useCallback(() => {
+    if (!restorableDraft) return;
+    setStepState((prev) => ({
+      ...prev,
+      stepsData: restorableDraft.data,
+      currentStepIndex: restorableDraft.currentStepIndex,
+      completedSteps: restorableDraft.completedSteps,
+      addedOptions: restorableDraft.addedOptions,
+    }));
+    discardDraftRaw();
+  }, [restorableDraft, discardDraftRaw]);
+
+  const discardDraft = useCallback(() => {
+    discardDraftRaw();
+  }, [discardDraftRaw]);
+
+  const acknowledgeStaleDraft = useCallback(() => {
+    acknowledgeStale();
+  }, [acknowledgeStale]);
 
   // Calculs dérivés
   const totalSteps = subFormsFields.length;
@@ -233,6 +293,10 @@ export function CoFormProvider({
   }, []);
 
   // Valeur du contexte
+  const restorableDraftMeta = useMemo(
+    () => (restorableDraft ? { timestamp: restorableDraft.timestamp } : null),
+    [restorableDraft]
+  );
   const contextValue: CoFormContextType = useMemo(
     () => ({
       formData,
@@ -245,6 +309,8 @@ export function CoFormProvider({
       isLastStep,
       isLoading,
       error,
+      restorableDraft: restorableDraftMeta,
+      staleDraftInfo,
       goToNextStep,
       goToPreviousStep,
       goToStep,
@@ -253,6 +319,9 @@ export function CoFormProvider({
       submitStepData,
       submitAllData,
       resetForm,
+      restoreDraft,
+      discardDraft,
+      acknowledgeStaleDraft,
     }),
     [
       formData,
@@ -265,6 +334,8 @@ export function CoFormProvider({
       isLastStep,
       isLoading,
       error,
+      restorableDraftMeta,
+      staleDraftInfo,
       goToNextStep,
       goToPreviousStep,
       goToStep,
@@ -273,6 +344,9 @@ export function CoFormProvider({
       submitStepData,
       submitAllData,
       resetForm,
+      restoreDraft,
+      discardDraft,
+      acknowledgeStaleDraft,
     ]
   );
 

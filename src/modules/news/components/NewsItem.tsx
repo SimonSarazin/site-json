@@ -3,6 +3,7 @@ import { Calendar, Share2, Tag, ThumbsUp, MessageCircle, Trash2, Edit, Flag, Ext
 import { useT } from "@/hooks/useT";
 import { formatDate } from "@/helpers/formatDate";
 import { useCocolight } from "@/hooks/useCocolight";
+import { useAuthModal } from "@/modules/auth";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { useFormatNews } from "../hooks/useFormatNews";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
@@ -41,6 +42,7 @@ interface NewsItemProps {
 export function NewsItem({ item, entity, isLastItem, lastItemRef, onEdit, onDelete, onShare, onReport, detailMode = false }: NewsItemProps) {
   const t = useT("modules/news");
   const { me } = useCocolight();
+  const { openLogin } = useAuthModal();
   const newsContext = useNewsContext();
   const { entity: contextEntity } = newsContext;
 
@@ -105,6 +107,7 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef, onEdit, onDele
 
   const handleReaction = (_newsId: string, reactionType: string) => {
     if (!me?.isConnected) {
+      openLogin();
       return;
     }
 
@@ -305,12 +308,8 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef, onEdit, onDele
           <HoverCard openDelay={200} closeDelay={100}>
             <HoverCardTrigger asChild>
               <button
-                disabled={!me?.isConnected}
-                className={`flex items-center gap-2 transition-colors ${
-                  me?.isConnected
-                    ? 'text-muted-foreground hover:text-primary'
-                    : 'text-muted-foreground/50 cursor-not-allowed'
-                }`}
+                onClick={() => { if (!me?.isConnected) openLogin(); }}
+                className="flex items-center gap-2 transition-colors text-muted-foreground hover:text-primary"
               >
                 <ThumbsUp className="w-5 h-5" />
                 <span className="hidden md:inline">{t("NewsTab.like")}</span>
@@ -328,13 +327,8 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef, onEdit, onDele
           </HoverCard>
 
           <button
-            onClick={() => onShare?.(item)}
-            disabled={!me?.isConnected}
-            className={`flex items-center gap-2 transition-colors ${
-              me?.isConnected
-                ? 'text-muted-foreground hover:text-foreground'
-                : 'text-muted-foreground/50 cursor-not-allowed'
-            }`}
+            onClick={() => (me?.isConnected ? onShare?.(item) : openLogin())}
+            className="flex items-center gap-2 transition-colors text-muted-foreground hover:text-foreground"
           >
             <Share2 className="w-5 h-5" />
             <span className="hidden md:inline">{t("NewsTab.share")}</span>

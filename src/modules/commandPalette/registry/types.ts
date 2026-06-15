@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import type { LocalizedString } from "@/types/locale-schema";
-import type { Api, Organization, Project, User } from "@communecter/cocolight-api-client";
+import type { Api, Organization, Project, SearchEntity, User } from "@communecter/cocolight-api-client";
 import type { SiteConfig } from "@/types/site";
+import type { ListConf } from "@/modules/search/schema";
 
 export type CommandId = string;
 export type CommandGroupId = string;
@@ -41,6 +42,15 @@ export interface CommandRunContext {
   setTheme: (theme: string) => void;
   setLocale: (locale: string) => void;
   api: Api | null;
+  /**
+   * Ouvre le détail d'une entité (SwitchDetailsMode du module search) —
+   * fourni par l'hôte `CommandPalette` (l'état du détail survit à la
+   * fermeture de la palette). Cf. `entitySearch.itemAction`.
+   */
+  openEntityPreview?: (
+    item: SearchEntity,
+    opts: { detailsMode?: "drawer" | "dialog"; preview?: ListConf["preview"] },
+  ) => void;
 }
 
 export interface Command {

@@ -35,6 +35,7 @@
 - [Préchargement SSR](#préchargement-ssr)
 - [i18n](#i18n)
 - [Exemple de configuration JSON](#exemple-de-configuration-json)
+- [Modal de login pour les actions protégées](#modal-de-login-pour-les-actions-protégées)
 - [Voir aussi](#voir-aussi)
 
 ---
@@ -395,6 +396,20 @@ Le composant enveloppe son output dans `<NewsProvider value={...}>` avec un `New
 - Menu contextuel (DropdownMenu) : voir détail, éditer, signaler, supprimer
 - `<NewsComments>` affiché si commentaires dépliés
 
+**Boutons du footer et modal de login** : `NewsItem` importe `useAuthModal` et appelle `openLogin()` quand un utilisateur non connecté interagit avec une action réservée aux membres. Aucun bouton n'est `disabled` — tous restent cliquables et visuellement actifs. Les classes de survol varient selon l'action (le bouton J'aime utilise `hover:text-primary`, tandis que Commentaires et Partager utilisent `hover:text-foreground`). Le comportement par action :
+
+| Action | Connecté | Non connecté |
+|--------|----------|--------------|
+| Réagir ("J'aime" / `ThumbsUp`) | Ouvre `HoverCard` avec `NewsReactionPicker` | `openLogin()` (via `onClick` sur le bouton, avant l'ouverture du HoverCard) |
+| Voter (`handleReaction`) | `addVoteNewsMutation.mutate(...)` | `openLogin()` + `return` immédiat |
+| Partager (`Share2`) | `onShare?.(item)` | `openLogin()` |
+
+Extrait caractéristique (`NewsItem.tsx:329-332`) :
+```tsx
+onClick={() => (me?.isConnected ? onShare?.(item) : openLogin())}
+className="flex items-center gap-2 transition-colors text-muted-foreground hover:text-foreground"
+```
+
 Props : `item`, `entity?`, `isLastItem?`, `lastItemRef?`, `onEdit?`, `onDelete?`, `onShare?`, `onReport?`, `detailMode?` (booléen — masque le lien "voir détail" en mode page de détail).
 
 ### NewsContent
@@ -436,11 +451,24 @@ Modales React Hook Form + Zod. Champs :
 
 ### Commentaires
 
-`comment/NewsComments.tsx` — Conteneur qui charge et affiche les commentaires via `useNewsCommentsQuery`.
+`comment/NewsComments.tsx` — Conteneur qui charge et affiche les commentaires via `useNewsCommentsQuery`. Quand l'utilisateur n'est **pas connecté**, affiche un `<LoginPrompt>` (importé depuis `@/modules/auth`) à la place du `<CommentInput>`. Le `LoginPrompt` est en variante `"inline"` (défaut) avec `message={t("comments.loginToComment")}` et `className="m-4"`. Il ouvre le modal global au clic sur "Se connecter", sans `openOptions` — donc sans callback `onSuccess` spécifique à cette zone (le refetch des commentaires n'est pas nécessaire après connexion, la liste étant vide avant).
 
 `comment/CommentInput.tsx` — Champ de saisie avec `MentionInput` pour auto-complétion @user. Soumet via `useAddComment`.
 
 `comment/CommentItem.tsx` — Rendu d'un commentaire : texte (avec @mentions linkifiées), date, réactions sur commentaires, boutons supprimer/éditer (conditionné aux permissions), fil de réponses imbriquées.
+
+Les boutons d'action d'un commentaire suivent le **pattern modal de login** via `useAuthModal()` : aucun n'est `disabled`. Au clic d'un utilisateur non connecté, `openLogin()` est appelé sans options (pas de `onSuccess`). Le tableau ci-dessous détaille le comportement pour chaque action :
+
+| Bouton | Connecté | Non connecté |
+|--------|----------|--------------|
+| "J'aime" (`like`) | `handleCommentLike(commentItem)` | `openLogin()` |
+| "Répondre" (`reply`) | `setReplyingTo(!replyingTo)` | `openLogin()` |
+| Signaler (`Flag`) | `handleReportComment(commentItem)` | `openLogin()` |
+
+Implémentation (extrait `CommentItem.tsx:174`) :
+```tsx
+onClick={() => (isConnected ? handleCommentLike(commentItem) : openLogin())}
+```
 
 `comment/DeleteCommentDialog.tsx` — Dialog de confirmation avant suppression.
 
@@ -638,6 +666,37 @@ Groupes de clés dans `fr.json` / `en.json` :
 
 ---
 
+## Modal de login pour les actions protégées
+
+Depuis le refactor `537a9f3`, toutes les actions du module News qui nécessitent une session ouvrent le **modal d'authentification global** au lieu d'afficher un bouton désactivé ou un texte statique. Le mécanisme repose sur `useAuthModal` (module auth) :
+
+```ts
+// Pattern commun dans NewsItem, CommentItem, NewsComments
+const { openLogin } = useAuthModal();
+
+// Action directe (sans callback après connexion)
+onClick={() => (isConnected ? doAction() : openLogin())}
+
+// Zone de saisie (remplacée par un composant passif)
+// NewsComments utilise <LoginPrompt> plutôt qu'un onClick
+```
+
+**`<LoginPrompt>`** (`src/modules/auth/components/LoginPrompt.tsx`) — Composant `inline` (bandeau discret) ou `card` (encadré centré). Contient un `<LoginButton>` qui ouvre le modal. Props principales :
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `message` | `ReactNode?` | Texte d'incitation |
+| `loginLabel` | `ReactNode?` | Libellé du bouton (défaut: "Se connecter") |
+| `openOptions` | `AuthModalOptions?` | Options passées au modal (`onSuccess`, `initialMode`) |
+| `variant` | `"inline"\|"card"` | Style visuel (défaut: `"inline"`) |
+| `className` | `string?` | Classe CSS additionnelle |
+
+Dans `NewsComments`, `<LoginPrompt>` ne passe pas `openOptions` — le callback `onSuccess` n'est pas nécessaire car l'état de connexion est réactif (le composant se re-rend automatiquement après connexion via `me?.isConnected`).
+
+Voir [Module Auth](23-module-auth.md) pour le mécanisme global (`AuthModalProvider`, `AuthModalContext`, `useAuthModal`).
+
+---
+
 ## Voir aussi
 
 - [Module Search](07-module-search.md)
@@ -645,3 +704,4 @@ Groupes de clés dans `fr.json` / `en.json` :
 - [Permissions](10-permissions.md) — registre central, `usePermissions`
 - [API & Authentification](11-api-authentification.md) — `cocolight-api-client`, `entity.getNews()`
 - [Backend & SSR](14-backend-ssr.md) — `prefetchNewsQuery`, hydratation
+- [Module Auth](23-module-auth.md) — `useAuthModal`, `AuthModalProvider`, `LoginPrompt`, `LoginButton`

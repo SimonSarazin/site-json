@@ -24,8 +24,9 @@
     ]
   },
   "header": {
-    "type": "commune-transparente",
+    "type": "transparent-dark",
     "path": "/",
+    "entityLogoOverride": true,
     "logo": "/images/communeTransparente/logo.png",
     "logoTitle": {
       "fr": "Commune Transparente",
@@ -60,7 +61,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-commune-transparente",
+          "type": "hero-entity-banner",
           "id": "hero-commune-transparente",
           "props": {
             "headline": { 
@@ -117,7 +118,7 @@
           }
         },
         {
-          "type": "commune-transparente-actions",
+          "type": "expandable-actions",
           "id": "commune-transparente-actions",
           "props": {
             "imageSrc": "/images/communeTransparente/logo.png",
@@ -241,7 +242,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "actualite-header",
           "props": {
             "headline": { "fr": "Actualité", "en": "News" },
@@ -280,7 +281,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "projets-header",
           "props": {
             "headline": { "fr": "Projets", "en": "Projects" },
@@ -335,7 +336,7 @@
               "defaultFilters": { }
             },
             "list": { "columns": { "sm": 1, "md": 3, "lg": 5, "xl": 5 }, 
-            "card": { "type": "card-elts", "variant": "card-elts", "detailsMode": "drawer" } }
+            "card": { "type": "image-panel", "variant": "image-panel", "detailsMode": "drawer" } }
           }
         }
       ]
@@ -346,7 +347,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "citoyens-header",
           "props": {
             "headline": { "fr": "Citoyens", "en": "Citizens" },
@@ -401,7 +402,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "ressources-header",
           "props": {
             "headline": { "fr": "Ressources", "en": "Resources" },
@@ -441,8 +442,8 @@
                 "xl": 5 
               }, 
               "card": { 
-                "type": "card-elts",
-                "variant": "card-elts", 
+                "type": "image-panel",
+                "variant": "image-panel", 
                 "detailsMode": "drawer" 
               }
             }
@@ -456,7 +457,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "agenda-header",
           "props": {
             "headline": { "fr": "Agenda", "en": "Agenda" },
@@ -505,7 +506,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "propositions-header",
           "props": {
             "headline": { "fr": "Propositions", "en": "Proposals" },
@@ -534,7 +535,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "navigation-header",
           "props": {
             "headline": { "fr": "Votre territoire", "en": "Your territory" },
@@ -560,7 +561,7 @@
     }
   ],
   "footer": {
-    "type": "nos-communes",
+    "type": "default",
     "logoImage": "/images/communeTransparente/logo.png",
     "logoTitle": { "fr": "Commune Transparente", "en": "Transparent Commune" },
     "description": { "fr": "Rendre l'action communale lisible pour encourager la participation citoyenne.", "en": "Making communal action legible to encourage civic participation." },

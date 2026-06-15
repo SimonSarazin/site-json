@@ -90,4 +90,94 @@ describe("source de commandes profil (entités)", () => {
     expect(cmds).toEqual([]);
     expect(entity.searchCostum).not.toHaveBeenCalled();
   });
+
+  it("sans itemAction : le clic navigue vers /profil/:slug (défaut)", async () => {
+    const entity = mockEntity([
+      { id: "1", slug: "mon-asso", serverData: { name: "Mon Asso" }, getEntityType: () => "organizations" },
+    ]);
+    const cmds = await run(source.getCommands(ctx({ entity: entity as never })));
+    const runCtx = { navigate: vi.fn(), close: vi.fn(), openEntityPreview: vi.fn() };
+    cmds[0].perform(runCtx as never);
+    expect(runCtx.navigate).toHaveBeenCalledWith("/profil/mon-asso");
+    expect(runCtx.openEntityPreview).not.toHaveBeenCalled();
+    expect(runCtx.close).toHaveBeenCalled();
+  });
+
+  it("itemAction preview : le clic ouvre le détail (SwitchDetailsMode) au lieu de naviguer", async () => {
+    const item = { id: "1", slug: "stade", serverData: { name: "Stade" }, getEntityType: () => "poi" };
+    const entity = mockEntity([item]);
+    const cmds = await run(
+      source.getCommands(
+        ctx({
+          entity: entity as never,
+          config: {
+            commandPalette: {
+              entitySearch: {
+                itemAction: { kind: "preview", detailsMode: "dialog", preview: { type: "poi-amenities" } },
+              },
+            },
+          } as never,
+        })
+      )
+    );
+    const runCtx = { navigate: vi.fn(), close: vi.fn(), openEntityPreview: vi.fn() };
+    cmds[0].perform(runCtx as never);
+    expect(runCtx.openEntityPreview).toHaveBeenCalledWith(item, {
+      detailsMode: "dialog",
+      preview: { type: "poi-amenities" },
+    });
+    expect(runCtx.navigate).not.toHaveBeenCalled();
+    expect(runCtx.close).toHaveBeenCalled();
+  });
+
+  it("itemActionByType prime sur itemAction (par type d'entité)", async () => {
+    const entity = mockEntity([
+      { id: "1", slug: "stade", serverData: { name: "Stade" }, getEntityType: () => "poi" },
+      { id: "2", slug: "asso", serverData: { name: "Asso" }, getEntityType: () => "organizations" },
+    ]);
+    const cmds = await run(
+      source.getCommands(
+        ctx({
+          entity: entity as never,
+          config: {
+            commandPalette: {
+              entitySearch: {
+                itemAction: { kind: "profil" },
+                itemActionByType: { poi: { kind: "preview", preview: { type: "poi-amenities" } } },
+              },
+            },
+          } as never,
+        })
+      )
+    );
+    const poiRun = { navigate: vi.fn(), close: vi.fn(), openEntityPreview: vi.fn() };
+    cmds[0].perform(poiRun as never);
+    expect(poiRun.openEntityPreview).toHaveBeenCalled();
+    expect(poiRun.navigate).not.toHaveBeenCalled();
+
+    const orgRun = { navigate: vi.fn(), close: vi.fn(), openEntityPreview: vi.fn() };
+    cmds[1].perform(orgRun as never);
+    expect(orgRun.navigate).toHaveBeenCalledWith("/profil/asso");
+    expect(orgRun.openEntityPreview).not.toHaveBeenCalled();
+  });
+
+  it("itemAction preview sans hôte (openEntityPreview absent) : retombe sur la navigation", async () => {
+    const entity = mockEntity([
+      { id: "1", slug: "stade", serverData: { name: "Stade" }, getEntityType: () => "poi" },
+    ]);
+    const cmds = await run(
+      source.getCommands(
+        ctx({
+          entity: entity as never,
+          config: {
+            commandPalette: { entitySearch: { itemAction: { kind: "preview" } } },
+          } as never,
+        })
+      )
+    );
+    const runCtx = { navigate: vi.fn(), close: vi.fn() };
+    cmds[0].perform(runCtx as never);
+    expect(runCtx.navigate).toHaveBeenCalledWith("/profil/stade");
+    expect(runCtx.close).toHaveBeenCalled();
+  });
 });

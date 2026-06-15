@@ -22,7 +22,6 @@ export {
   CardCountCTSectionSchema,
   ThematicsSectionSchema,
   SearchHeaderSectionSchema,
-  TitleWithFiltersRezoLaMerSchema,
   // Variants SDK (searchCostum)
   SearchVariantSchema,
   SearchBySchema,

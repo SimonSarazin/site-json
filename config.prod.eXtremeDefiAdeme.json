@@ -16,7 +16,7 @@
       "en"
     ],
     "favicon": "images/rezoLaMer/logo.png",
-    "themeColor": "#00e7e3",
+    "themeColor": "#151844",
     "keywords": [
       "océan",
       "mer",
@@ -56,7 +56,7 @@
         "path": "/communaute"
       }
     ],
-    "type": "rezo-la-mer",
+    "type": "transparent-scroll",
     "path": "/",
     "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path></svg>",
     "logoTitle": {
@@ -86,7 +86,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-rezo-la-mer",
+          "type": "hero-parallax",
           "id": "hero-rezo-la-mer",
           "props": {
             "headline": {
@@ -132,7 +132,7 @@
                   "fr": "Rejoindre le réseau",
                   "en": "Join the network"
                 },
-                "path": "/rejoindre",
+                "path": "#rejoindre",
                 "variant": "default"
               },
               {
@@ -151,11 +151,11 @@
           "type": "html",
           "id": "mission",
           "props": {
-            "html": "<section class=\"relative py-32 px-4 overflow-hidden\"><div class=\"absolute inset-0 z-0\"><img src=\"/images/rezoLaMer/whale-ocean.jpg\" alt=\"Baleine nageant paisiblement dans l'océan\" class=\"w-full h-full object-cover\" /><div class=\"absolute inset-0 bg-linear-to-r from-background via-background/80 to-background/60\"></div></div><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"space-y-8\"><h2 class=\"text-4xl md:text-5xl font-bold mb-6 text-foreground\">Notre mission</h2><div class=\"space-y-6 text-lg md:text-xl leading-relaxed\"><p class=\"text-muted-foreground\"><span class=\"text-primary font-semibold\">Extreme defi</span> est bien plus qu'une plateforme : c'est un <span class=\"text-primary font-medium\">mouvement collectif</span> pour reconnecter l'humanité avec l'océan.</p><p class=\"text-muted-foreground\">Nous créons un <span class=\"text-chart-2 font-medium\">espace numérique ouvert</span> où citoyens, associations, scientifiques et passionné·es peuvent se rencontrer, collaborer et agir ensemble pour la protection et la valorisation de nos océans.</p><div class=\"grid md:grid-cols-2 gap-6 pt-8\"><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-ocean border border-primary/20\"><h3 class=\"text-2xl font-semibold mb-3 text-primary\">Approche collaborative</h3><p class=\"text-muted-foreground\">Construire ensemble les solutions de demain à travers le partage, la mutualisation et l'intelligence collective</p></div><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-ocean border border-primary/20\"><h3 class=\"text-2xl font-semibold mb-3 text-chart-2\">Démocratie participative</h3><p class=\"text-muted-foreground\">Une gouvernance transparente et ouverte où chaque voix compte dans les décisions importantes</p></div></div></div></div></div></section>"
+            "html": "<section class=\"relative py-32 px-4 overflow-hidden\"><div class=\"absolute inset-0 z-0\"><img src=\"/images/rezoLaMer/whale-ocean.jpg\" alt=\"Baleine nageant paisiblement dans l'océan\" class=\"w-full h-full object-cover\" /><div class=\"absolute inset-0 bg-linear-to-r from-background via-background/80 to-background/60\"></div></div><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"space-y-8\"><h2 class=\"text-4xl md:text-5xl font-bold mb-6 text-foreground\">Notre mission</h2><div class=\"space-y-6 text-lg md:text-xl leading-relaxed\"><p class=\"text-muted-foreground\"><span class=\"text-primary font-semibold\">Extreme defi</span> est bien plus qu'une plateforme : c'est un <span class=\"text-primary font-medium\">mouvement collectif</span> pour reconnecter l'humanité avec l'océan.</p><p class=\"text-muted-foreground\">Nous créons un <span class=\"text-chart-2 font-medium\">espace numérique ouvert</span> où citoyens, associations, scientifiques et passionné·es peuvent se rencontrer, collaborer et agir ensemble pour la protection et la valorisation de nos océans.</p><div class=\"grid md:grid-cols-2 gap-6 pt-8\"><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-md border border-primary/20\"><h3 class=\"text-2xl font-semibold mb-3 text-primary\">Approche collaborative</h3><p class=\"text-muted-foreground\">Construire ensemble les solutions de demain à travers le partage, la mutualisation et l'intelligence collective</p></div><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-md border border-primary/20\"><h3 class=\"text-2xl font-semibold mb-3 text-chart-2\">Démocratie participative</h3><p class=\"text-muted-foreground\">Une gouvernance transparente et ouverte où chaque voix compte dans les décisions importantes</p></div></div></div></div></div></section>"
           }
         },
         {
-          "type": "features-rezo-la-mer",
+          "type": "features-glass",
           "id": "features",
           "props": {
             "headline": {
@@ -243,7 +243,7 @@
           }
         },
         {
-          "type": "action-buttons-rezo-la-mer",
+          "type": "action-tiles",
           "id": "actions",
           "props": {
             "headline": {
@@ -265,7 +265,7 @@
                   "fr": "Proposez votre initiative",
                   "en": "Propose your initiative"
                 },
-                "href": "/proposer-projet",
+                "href": "#proposer-projet",
                 "color": "primary"
               },
               {
@@ -278,7 +278,7 @@
                   "fr": "Études participatives",
                   "en": "Participatory studies"
                 },
-                "href": "/participer",
+                "href": "#participer",
                 "color": "primary"
               },
               {
@@ -291,7 +291,7 @@
                   "fr": "Actions prioritaires",
                   "en": "Priority actions"
                 },
-                "href": "/actions",
+                "href": "#actions",
                 "color": "amber"
               },
               {
@@ -311,7 +311,7 @@
           }
         },
         {
-          "type": "community-rezo-la-mer",
+          "type": "cta-card-grid",
           "id": "community",
           "props": {
             "headline": {
@@ -342,7 +342,7 @@
                   "fr": "Soumettre un projet",
                   "en": "Submit a project"
                 },
-                "href": "/proposer-projet"
+                "href": "#proposer-projet"
               },
               {
                 "icon": "lightbulb",
@@ -358,7 +358,7 @@
                   "fr": "Participer",
                   "en": "Participate"
                 },
-                "href": "/participer"
+                "href": "#participer"
               },
               {
                 "icon": "heart-handshake",
@@ -374,7 +374,7 @@
                   "fr": "Voir les actions",
                   "en": "See actions"
                 },
-                "href": "/actions"
+                "href": "#actions"
               },
               {
                 "icon": "git-branch",
@@ -430,7 +430,7 @@
           }
         },
         {
-          "type": "cta-rezo-la-mer",
+          "type": "cta-newsletter",
           "id": "cta",
           "props": {
             "headline": {
@@ -459,7 +459,7 @@
                   "fr": "Explorer la plateforme",
                   "en": "Explore the platform"
                 },
-                "href": "/explorer",
+                "href": "#explorer",
                 "variant": "outline"
               },
               {
@@ -467,7 +467,7 @@
                   "fr": "Contacter l'équipe",
                   "en": "Contact the team"
                 },
-                "href": "/contact",
+                "href": "#contact",
                 "variant": "outline"
               }
             ]
@@ -484,7 +484,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "projets-marins",
           "props": {
             "headline": {
@@ -537,8 +537,8 @@
                 "xl": 4
               },
               "card": {
-                "type": "rezo-la-mer",
-                "variant": "rezo-la-mer",
+                "type": "funding",
+                "variant": "funding",
                 "detailsMode": "drawer"
               }
             }
@@ -555,7 +555,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "evenements-header",
           "props": {
             "headline": {
@@ -619,15 +619,15 @@
                 "xl": 4
               },
               "card": {
-                "type": "event-rezo-la-mer",
-                "variant": "event-rezo-la-mer",
+                "type": "event-featured",
+                "variant": "event-featured",
                 "detailsMode": "drawer"
               }
             }
           }
         },
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "events-filter",
           "props": {
             "subhead": {
@@ -669,8 +669,8 @@
               },
               "card": {
                 "showStar": true,
-                "type": "event-rezo-la-mer",
-                "variant": "event-rezo-la-mer",
+                "type": "event-featured",
+                "variant": "event-featured",
                 "detailsMode": "drawer",
                 "viewDetail": true
               }
@@ -688,7 +688,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "communaute-header",
           "props": {
             "headline": {
@@ -706,7 +706,7 @@
                   "en": "Join the community"
                 },
                 "icon": "user",
-                "href": "/rejoindre",
+                "href": "#rejoindre",
                 "variant": "primary"
               },
               {
@@ -715,7 +715,7 @@
                   "en": "Register my organization"
                 },
                 "icon": "building-2",
-                "href": "/inscrire-organisation",
+                "href": "#inscrire-organisation",
                 "variant": "outline"
               }
             ]
@@ -826,7 +826,7 @@
     }
   ],
   "footer": {
-    "type": "rezo-la-mer",
+    "type": "sidebar-columns",
     "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path></svg>",
     "logoTitle": {
       "fr": "Extreme defi",
@@ -887,35 +887,35 @@
         },
         "links": [
           {
-            "href": "/mission",
+            "href": "#mission",
             "label": {
               "fr": "Notre mission",
               "en": "Our mission"
             }
           },
           {
-            "href": "/equipe",
+            "href": "#equipe",
             "label": {
               "fr": "L'équipe",
               "en": "The team"
             }
           },
           {
-            "href": "/gouvernance",
+            "href": "#gouvernance",
             "label": {
               "fr": "Gouvernance",
               "en": "Governance"
             }
           },
           {
-            "href": "/partenaires",
+            "href": "#partenaires",
             "label": {
               "fr": "Partenaires",
               "en": "Partners"
             }
           },
           {
-            "href": "/blog",
+            "href": "#blog",
             "label": {
               "fr": "Blog",
               "en": "Blog"
@@ -930,35 +930,35 @@
         },
         "links": [
           {
-            "href": "/rejoindre",
+            "href": "#rejoindre",
             "label": {
               "fr": "Créer un compte",
               "en": "Create account"
             }
           },
           {
-            "href": "/proposer-projet",
+            "href": "#proposer-projet",
             "label": {
               "fr": "Proposer un projet",
               "en": "Propose a project"
             }
           },
           {
-            "href": "/cagnotte",
+            "href": "#cagnotte",
             "label": {
               "fr": "Faire un don",
               "en": "Make a donation"
             }
           },
           {
-            "href": "/benevole",
+            "href": "#benevole",
             "label": {
               "fr": "Devenir bénévole",
               "en": "Become a volunteer"
             }
           },
           {
-            "href": "/contact",
+            "href": "#contact",
             "label": {
               "fr": "Contact",
               "en": "Contact"
@@ -973,35 +973,35 @@
         },
         "links": [
           {
-            "href": "/mentions-legales",
+            "href": "#mentions-legales",
             "label": {
               "fr": "Mentions légales",
               "en": "Legal notice"
             }
           },
           {
-            "href": "/cgu",
+            "href": "#cgu",
             "label": {
               "fr": "CGU",
               "en": "Terms of use"
             }
           },
           {
-            "href": "/confidentialite",
+            "href": "#confidentialite",
             "label": {
               "fr": "Confidentialité",
               "en": "Privacy policy"
             }
           },
           {
-            "href": "/cookies",
+            "href": "#cookies",
             "label": {
               "fr": "Cookies",
               "en": "Cookies"
             }
           },
           {
-            "href": "/licences",
+            "href": "#licences",
             "label": {
               "fr": "Licences",
               "en": "Licenses"
@@ -1034,21 +1034,21 @@
     ],
     "legalLinks": [
       {
-        "href": "/accessibilite",
+        "href": "#accessibilite",
         "label": {
           "fr": "Accessibilité",
           "en": "Accessibility"
         }
       },
       {
-        "href": "/plan-du-site",
+        "href": "#plan-du-site",
         "label": {
           "fr": "Plan du site",
           "en": "Sitemap"
         }
       },
       {
-        "href": "/contribuer",
+        "href": "#contribuer",
         "label": {
           "fr": "Contribuer",
           "en": "Contribute"
@@ -1078,16 +1078,86 @@
     }
   ],
   "theme": {
+    "colors": {
+      "light": {
+        "background": "oklch(1.0000 0 0)",
+        "foreground": "oklch(0.2686 0 0)",
+        "card": "oklch(1.0000 0 0)",
+        "cardForeground": "oklch(0.2686 0 0)",
+        "popover": "oklch(1.0000 0 0)",
+        "popoverForeground": "oklch(0.2686 0 0)",
+        "primary": "oklch(0.2367 0.0816 275.30)",
+        "primaryForeground": "oklch(1 0 0)",
+        "secondary": "oklch(0.9670 0.0029 264.5419)",
+        "secondaryForeground": "oklch(0.4461 0.0263 256.8018)",
+        "muted": "oklch(0.9846 0.0017 247.8389)",
+        "mutedForeground": "oklch(0.5510 0.0234 264.3637)",
+        "accent": "oklch(0.962 0.032 55)",
+        "accentForeground": "oklch(0.55 0.18 40)",
+        "destructive": "oklch(0.6368 0.2078 25.3313)",
+        "destructiveForeground": "oklch(1.0000 0 0)",
+        "border": "oklch(0.9276 0.0058 264.5313)",
+        "input": "oklch(0.9276 0.0058 264.5313)",
+        "ring": "oklch(0.488 0.243 264.376)",
+        "chart1": "oklch(0.488 0.243 264.376)",
+        "chart2": "oklch(0.685 0.17 42)",
+        "chart3": "oklch(0.707 0.165 254.624)",
+        "chart4": "oklch(0.80 0.15 75)",
+        "chart5": "oklch(0.585 0.233 277.117)",
+        "sidebar": "oklch(0.9846 0.0017 247.8389)",
+        "sidebarForeground": "oklch(0.2686 0 0)",
+        "sidebarPrimary": "oklch(0.488 0.243 264.376)",
+        "sidebarPrimaryForeground": "oklch(1.0000 0 0)",
+        "sidebarAccent": "oklch(0.962 0.032 55)",
+        "sidebarAccentForeground": "oklch(0.55 0.18 40)",
+        "sidebarBorder": "oklch(0.9276 0.0058 264.5313)",
+        "sidebarRing": "oklch(0.488 0.243 264.376)"
+      },
+      "dark": {
+        "background": "oklch(0.25 0.08 230)",
+        "foreground": "oklch(0.95 0.02 200)",
+        "card": "oklch(0.28 0.07 230)",
+        "cardForeground": "oklch(0.95 0.02 200)",
+        "popover": "oklch(0.22 0.07 230)",
+        "popoverForeground": "oklch(0.95 0.02 200)",
+        "primary": "oklch(0.2367 0.0816 275.30)",
+        "primaryForeground": "oklch(1 0 0)",
+        "secondary": "oklch(0.40 0.12 220)",
+        "secondaryForeground": "oklch(0.95 0.02 200)",
+        "muted": "oklch(0.35 0.10 225)",
+        "mutedForeground": "oklch(0.82 0.03 210)",
+        "accent": "oklch(0.62 0.16 42)",
+        "accentForeground": "oklch(0.95 0.02 200)",
+        "destructive": "oklch(0.6368 0.2078 25.3313)",
+        "destructiveForeground": "oklch(1.0000 0 0)",
+        "border": "oklch(0.45 0.10 220)",
+        "input": "oklch(0.35 0.08 225)",
+        "ring": "oklch(0.488 0.243 264.376)",
+        "chart1": "oklch(0.488 0.243 264.376)",
+        "chart2": "oklch(0.72 0.16 45)",
+        "chart3": "oklch(0.70 0.14 256)",
+        "chart4": "oklch(0.55 0.14 210)",
+        "chart5": "oklch(0.40 0.12 220)",
+        "sidebar": "oklch(0.20 0.06 230)",
+        "sidebarForeground": "oklch(0.95 0.02 200)",
+        "sidebarPrimary": "oklch(0.488 0.243 264.376)",
+        "sidebarPrimaryForeground": "oklch(1 0 0)",
+        "sidebarAccent": "oklch(0.62 0.16 42)",
+        "sidebarAccentForeground": "oklch(0.95 0.02 200)",
+        "sidebarBorder": "oklch(0.40 0.10 220)",
+        "sidebarRing": "oklch(0.488 0.243 264.376)"
+      }
+    },
     "typography": {
       "fontFamily": {
         "sans": [
           "Inter"
         ],
         "serif": [
-          "Roboto Slab"
+          "Source Serif 4"
         ],
         "mono": [
-          "Roboto Mono"
+          "JetBrains Mono"
         ]
       },
       "letterSpacing": "0em"
@@ -1096,28 +1166,28 @@
       "base": "0.25rem"
     },
     "borderRadius": {
-      "base": "0.5rem"
+      "base": "0.375rem"
     },
     "shadows": {
       "light": {
-        "shadow2xs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
-        "shadowXs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
-        "shadowSm": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadow": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadowMd": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 2px 4px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadowLg": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 4px 6px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadowXl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
+        "shadow2xs": "0px 4px 8px -1px hsl(0 0% 0% / 0.05)",
+        "shadowXs": "0px 4px 8px -1px hsl(0 0% 0% / 0.05)",
+        "shadowSm": "0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 1px 2px -2px hsl(0 0% 0% / 0.10)",
+        "shadow": "0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 1px 2px -2px hsl(0 0% 0% / 0.10)",
+        "shadowMd": "0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 2px 4px -2px hsl(0 0% 0% / 0.10)",
+        "shadowLg": "0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 4px 6px -2px hsl(0 0% 0% / 0.10)",
+        "shadowXl": "0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 8px 10px -2px hsl(0 0% 0% / 0.10)",
+        "shadow2xl": "0px 4px 8px -1px hsl(0 0% 0% / 0.25)"
       },
       "dark": {
-        "shadow2xs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
-        "shadowXs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
-        "shadowSm": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadow": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadowMd": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 2px 4px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadowLg": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 4px 6px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadowXl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
+        "shadow2xs": "0px 4px 8px -1px oklch(0.15 0.06 230 / 0.2)",
+        "shadowXs": "0px 4px 8px -1px oklch(0.15 0.06 230 / 0.2)",
+        "shadowSm": "0px 4px 8px -1px oklch(0.15 0.06 230 / 0.3), 0px 1px 2px -2px oklch(0.15 0.06 230 / 0.2)",
+        "shadow": "0px 4px 8px -1px oklch(0.15 0.06 230 / 0.3), 0px 1px 2px -2px oklch(0.15 0.06 230 / 0.2)",
+        "shadowMd": "0px 4px 8px -1px oklch(0.15 0.06 230 / 0.4), 0px 2px 4px -2px oklch(0.15 0.06 230 / 0.3)",
+        "shadowLg": "0px 4px 8px -1px oklch(0.15 0.06 230 / 0.4), 0px 4px 6px -2px oklch(0.15 0.06 230 / 0.3)",
+        "shadowXl": "0px 4px 8px -1px oklch(0.15 0.06 230 / 0.5), 0px 8px 10px -2px oklch(0.15 0.06 230 / 0.4)",
+        "shadow2xl": "0px 4px 8px -1px oklch(0.15 0.06 230 / 0.6)"
       }
     },
     "customCSS": ""

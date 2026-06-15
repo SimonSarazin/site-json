@@ -146,7 +146,19 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     stepKey?: string;
     inputKey?: string;
     lockedFields?: string[];
+    elementId?: string;
+    elementType?: "organizations" | "projects" | "events" | "poi" | "citoyens";
   } | null>(null);
+
+  // L'entity du profil EST le lieu lié aux réponses partagées. On propage
+  // son id+type au backend via elementId/elementType sur chaque ouverture de
+  // modal pour que `Coform::getFormAccessInfo` entre en mode "par élément"
+  // et calcule `access.restrictedFields` (placeAdminOnly / placeMemberOnly).
+  const elementType = entity?.serverData?.collection as
+    | "organizations" | "projects" | "events" | "poi" | "citoyens" | undefined;
+  const placeContext = entity?.id && elementType
+    ? { elementId: entity.id as string, elementType }
+    : null;
 
   /** Invalidate the answers cache after a form modal submit */
   const entityId = entity?.id ?? null;
@@ -178,13 +190,16 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
       stepKey,
       inputKey,
       lockedFields,
+      ...placeContext,
     });
   };
-
   /**
-   * Crée une nouvelle réponse (avec finder pre-pop) puis ouvre le CoFormModal.
+   * Ouvre le CoFormModal pour une nouvelle réponse.
+   * Aucun answer n'est créé en base : le backend insère la réponse au save
+   * et gère lui-même le lien finder via `links` (extractFinderLinks côté
+   * frontend, denormalize → backend SaveAnswerAction).
    */
-  const openNewFormModal = async ({ formId, title, finder, stepKey, inputKey, lockedFields }: {
+  const openNewFormModal = ({ formId, title, finder, stepKey, inputKey, lockedFields }: {
     formId: string;
     title?: string;
     finder?: string;
@@ -192,26 +207,8 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     inputKey?: string;
     lockedFields?: string[];
   }) => {
-    // Façade `BaseEntity.generateNewAnswerId(formId)` — peuple l'id côté answer,
-    // prêt à recevoir un updateField.
-    const answer = await entity.generateNewAnswerId(formId);
-    if (!answer.id) {
-      console.error("Failed to generate new answer ID for form:", formId);
-      return;
-    }
     const finderPath = finder ?? section.forms?.[formId]?.finder;
-    if (finderPath) {
-      await answer.updateField(`${finderPath}.${entity.id}`, {
-        id: entity.id,
-        type: entity.serverData.collection,
-        name: entity.serverData.name,
-      });
-      await answer.updateField(`links.${entity.serverData.collection}.${entity.id}`, {
-        type: entity.serverData.collection,
-        name: entity.serverData.name,
-      });
-    }
-    // Build defaultValues from finderPath so the finder field is pre-populated in the modal
+    // Build defaultValues from finderPath so the finder field is pre-populated in the modal.
     let defaultValues: AllStepsData | undefined;
     if (finderPath) {
       const entityId = entity.id as string;
@@ -231,7 +228,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     }
     setFormModal({
       formId,
-      answerId: answer._serverData?.id ?? answer.id,
+      answerId: undefined,
       defaultValues,
       title,
       stepKey,
@@ -239,6 +236,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
       lockedFields: finderPath
         ? [...(lockedFields ?? []), finderPath.split(".").pop()!]
         : lockedFields,
+      ...placeContext,
     });
   };
 
@@ -674,8 +672,8 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                   size="sm"
                   className="p-2"
                   onClick={() => rooms.length > 0
-                    ? openEditFormModal({ formId: section.roomPath!.id, answerId: rooms[0]._serverData.id, title: t("ProfilTiersLieuxAbout.rooms") as string, stepKey: section.roomPath!.step, inputKey: section.roomPath!.input })
-                    : openNewFormModal({ formId: section.roomPath!.id, title: t("ProfilTiersLieuxAbout.rooms") as string, stepKey: section.roomPath!.step, inputKey: section.roomPath!.input })
+                    ? openEditFormModal({ formId: section.roomPath!.id, answerId: rooms[0]._serverData.id, title: t("ProfilTiersLieuxAbout.rooms") as string, lockedFields: getFinderLockedField(section.roomPath!.id) })
+                    : openNewFormModal({ formId: section.roomPath!.id, title: t("ProfilTiersLieuxAbout.rooms") as string, lockedFields: getFinderLockedField(section.roomPath!.id) })
                   }
                 >
                   <Pencil className="h-4 w-4" />
@@ -791,7 +789,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                                   hourly: Number(hourly) || 0,
                                   halfday: Number(halfday) || 0,
                                   fullday: Number(fullday) || 0,
-                                  images: (images as string[]).map(src => `${getServerUrl()}${src}`),
+                                  images: (typeof images === "string" ? [] : (images as string[]).map(src => `${getServerUrl()}${src}`)),
                                   reserveUrl: linkValue ?? externalLink ?? null,
                                 });
                               }}
@@ -1350,7 +1348,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
             {modalItem?.images && modalItem.images.length > 0 ? (
               <Carousel opts={{ align: "start", loop: modalItem.images.length > 1 }} className="w-full h-full">
                 <CarouselContent className="h-56 ml-0">
-                  {modalItem.images.map((src, idx) => (
+                  {modalItem.images?.map((src, idx) => (
                     <CarouselItem key={idx} className="pl-0 h-56">
                       <img src={src} alt={`${modalItem.name} – ${idx + 1}`} className="w-full h-full object-cover" />
                     </CarouselItem>
@@ -1374,7 +1372,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                   ? modalItem.capacity
                   : modalItem?.minPers && modalItem?.maxPers
                     ? `${modalItem.minPers} – ${modalItem.maxPers}`
-                    : (modalItem?.minPers ?? modalItem?.maxPers ?? 0)
+                    : ((modalItem?.minPers || 0) > 0 ? modalItem?.minPers : modalItem?.maxPers ?? 0)
                 }{" "}{t("ProfilTiersLieuxAbout.capacity")}
               </span>
             )}
@@ -1439,6 +1437,8 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
           stepKey={formModal.stepKey}
           inputKey={formModal.inputKey}
           lockedFields={formModal.lockedFields}
+          elementId={formModal.elementId}
+          elementType={formModal.elementType}
           onAfterSubmit={invalidateAnswers}
         />
       )}

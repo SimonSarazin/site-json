@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { ImageViewer } from "@/components/ui/image-viewer";
-import { FieldError } from "./FormFields";
+import { FieldError, HintText } from "./FormFields";
 import {
   Table,
   TableHeader,
@@ -20,17 +20,6 @@ import type { FormFieldMapping, SimpleTableValue, SimpleTableConfig, SimpleTable
 import { validateImageFile, compressImage, canCompressImage, DEFAULT_IMAGE_VALIDATION_CONFIG } from "@/utils/imageUtils";
 import { getBaseUrl } from "@/lib/constant/common";
 import { toast } from "sonner";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-
-function HintText({ text }: { text: string }) {
-  return (
-    <div className="text-xs text-muted-foreground -mt-1 mb-1 prose prose-xs dark:prose-invert max-w-none [&>p]:m-0 [&>ul]:m-0 [&>ol]:m-0">
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
-    </div>
-  );
-}
-
 // ─── Image Cell Component ──────────────────────────────────────
 
 interface ImageCellProps {

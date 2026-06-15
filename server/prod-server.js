@@ -125,13 +125,14 @@ app.use(['/{*all}'], async (req, res) => {
 
     let injectEnvScript = "";
 
-    if (process.env.VITE_BASE_URL_BACKEND || process.env.VITE_SERVER_URL || process.env.VITE_SLUG) {
-      injectEnvScript = 
+    if (process.env.VITE_BASE_URL_BACKEND || process.env.VITE_SERVER_URL || process.env.VITE_SLUG || process.env.VITE_MAPTILER_API_KEY) {
+      injectEnvScript =
         `<script>
           window.__ENV__ = {
             VITE_BASE_URL_BACKEND: ${JSON.stringify(process.env.VITE_BASE_URL_BACKEND || "")},
             VITE_SERVER_URL: ${JSON.stringify(process.env.VITE_SERVER_URL || "")},
-            VITE_SLUG: ${JSON.stringify(process.env.VITE_SLUG || "")}
+            VITE_SLUG: ${JSON.stringify(process.env.VITE_SLUG || "")},
+            VITE_MAPTILER_API_KEY: ${JSON.stringify(process.env.VITE_MAPTILER_API_KEY || "")}
           };
         </script>
       `;

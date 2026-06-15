@@ -1,5 +1,5 @@
 /**
- * @unused 2026-05-18 — remplacé dans `HeaderRezoLaMer.tsx` par un appel à
+ * @unused 2026-05-18 — remplacé dans `HeaderTransparentScroll.tsx` par un appel à
  * `useFundingEnvelope(projectModalId)?.selectedProject?.totalFinancement` qui
  * partage le cache React Query avec `CagnotteDialog`.
  *

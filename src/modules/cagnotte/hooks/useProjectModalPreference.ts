@@ -16,7 +16,7 @@ interface UseProjectModalPreferenceResult {
 
 /**
  * Hook pour persister la préférence "projet principal" (`projectModalId`) d'une orga,
- * utilisé par le widget cagnotte du header `HeaderRezoLaMer` pour cibler la cagnotte
+ * utilisé par le widget cagnotte du header `HeaderTransparentScroll` pour cibler la cagnotte
  * affichée. Le nom reflète l'intention : on persiste une **préférence** côté
  * `organizations.preferences`, pas une entité métier.
  *

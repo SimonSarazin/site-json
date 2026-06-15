@@ -28,7 +28,7 @@
     ]
   },
   "header": {
-    "type": "rezo-la-mer",
+    "type": "transparent-scroll",
     "path": "/",
     "logo": "images/sportSanteBienetre/logo.png",
     "logoTitle": {
@@ -133,7 +133,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-ssbe",
+          "type": "hero-quick-access",
           "id": "hero-sport-sante",
           "props": {
             "headline": {
@@ -216,7 +216,7 @@
             "rightColumns": 2,
             "gap": 4,
             "leftSection": {
-              "type": "title-with-filters-rezo-la-mer",
+              "type": "searchHeader",
               "id": "left-showcase-header",
               "props": {
                 "headline": {
@@ -226,7 +226,7 @@
               }
             }, 
             "rightSection": {
-              "type": "title-with-filters-rezo-la-mer",
+              "type": "searchHeader",
               "id": "right-showcase-header",
               "props": {
                 "subhead": {
@@ -256,7 +256,7 @@
           }
         },
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "title-header-webtv",
           "props": {
             "headline": {
@@ -302,10 +302,10 @@
         },
 
         {
-          "type": "community-rezo-la-mer",
+          "type": "cta-card-grid",
           "id": "community-ssbe",
           "props": {
-            "variant": "cyber",
+            "variant": "accent",
             "headline": {
               "fr": "Le Sport Santé à La Réunion en chiffres",
               "en": "Sport Health in Réunion in numbers"
@@ -361,7 +361,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-ssbe",
+          "type": "hero-quick-access",
           "id": "hero-sport-sante",
           "props": {
             "headline": {
@@ -396,7 +396,7 @@
           }
         },
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "title-header-strategy",
           "props": {
             "headline": {
@@ -435,7 +435,7 @@
               "fr": "Cette synergie est formalisée par une convention partenariale actant un engagement entre l'ARS et ses 13 partenaires dont la DRAJES.",
               "en": "This synergy is formalized by a partnership agreement establishing a commitment between the ARS and its 13 partners including the DRAJES."
             },
-            "variant": "ssbe",
+            "variant": "primary",
             "columns": 4,
             "cards": [
               {
@@ -486,7 +486,7 @@
           }
         },
         {
-          "type": "features-rezo-la-mer",
+          "type": "features-glass",
           "id": "features",
           "props": {
             "headline": {
@@ -590,7 +590,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-ssbe",
+          "type": "hero-quick-access",
           "id": "hero-sport-sante",
           "props": {
             "headline": {
@@ -639,7 +639,7 @@
             "rightColumns": 2,
             "gap": 4,
             "leftSection": {
-              "type": "title-with-filters-rezo-la-mer",
+              "type": "searchHeader",
               "id": "left-activity-title",
               "props": {
                 "headline": {
@@ -672,7 +672,7 @@
               }
             }, 
             "rightSection": {
-              "type": "features-rezo-la-mer",
+              "type": "features-glass",
               "id": "features",
               "props": {
                 "features": [
@@ -706,7 +706,7 @@
           }
         },
                 {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "title-header-webtv",
           "props": {
             "headline": {
@@ -758,7 +758,7 @@
               "fr": "Choisissez votre activité sportive",
               "en": "Choose your sports activity"
             },
-            "variant": "ssbe",
+            "variant": "primary",
             "columns": 6,
             "cards": [
               {
@@ -817,7 +817,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "projets-sport-sante",
           "props": {
             "headline": {
@@ -886,8 +886,8 @@
                 "xl": 4
               },
               "card": {
-                "type": "rezo-la-mer",
-                "variant": "rezo-la-mer",
+                "type": "funding",
+                "variant": "funding",
                 "detailsMode": "drawer"
               }
             }
@@ -904,7 +904,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "communaute-header",
           "props": {
             "headline": {
@@ -1040,7 +1040,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "structure-sport-sante",
           "props": {
             "headline": {
@@ -1109,8 +1109,8 @@
                     "xl": 1
                   },
                   "card": {
-                    "type": "ssbe",
-                    "variant": "ssbe",
+                    "type": "contact-card",
+                    "variant": "contact-card",
                     "detailsMode": "drawer"
                   }
                 }
@@ -1149,8 +1149,8 @@
                     "xl": 1
                   },
                   "card": {
-                    "type": "rezo-la-mer",
-                    "variant": "rezo-la-mer",
+                    "type": "funding",
+                    "variant": "funding",
                     "detailsMode": "drawer"
                   }
                 }
@@ -1169,7 +1169,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-ssbe",
+          "type": "hero-quick-access",
           "id": "hero-mss",
           "props": {
             "headline": {
@@ -1220,7 +1220,7 @@
               "type": "categories-grid",
               "id": "sport-categories-section",
               "props": {
-                "variant": "ssbe",
+                "variant": "primary",
                 "columns": 2,
                 "cards": [
                   {
@@ -1273,7 +1273,7 @@
           }
         },
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "mss-title",
           "props": {
             "subhead": {
@@ -1328,8 +1328,8 @@
                     "xl": 1
                   },
                   "card": {
-                    "type": "ssbe",
-                    "variant": "ssbe",
+                    "type": "contact-card",
+                    "variant": "contact-card",
                     "detailsMode": "drawer"
                   }
                 }
@@ -1369,8 +1369,8 @@
                     "xl": 1
                   },
                   "card": {
-                    "type": "rezo-la-mer",
-                    "variant": "rezo-la-mer",
+                    "type": "funding",
+                    "variant": "funding",
                     "detailsMode": "drawer"
                   }
                 }
@@ -1389,7 +1389,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "mapping-header",
           "props": {
             "headline": {
@@ -1464,7 +1464,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-ssbe",
+          "type": "hero-quick-access",
           "id": "presentation-header",
           "props": {
             "headline": {
@@ -1513,7 +1513,7 @@
               "fr": "égulière et adaptée apporte de nomUne activité physique rbreux bénéfices pour votre santé physique et mentale.",
               "en": "Regular and adapted physical activity brings many benefits for your physical and mental health."
             },
-            "variant": "ssbe",
+            "variant": "primary",
             "columns": 4,
             "cards": [
               {
@@ -1564,7 +1564,7 @@
           }
         },
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "presentation-Participant",
           "props": {
             "headline": {
@@ -1615,7 +1615,7 @@
           }
         },
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "presentation-Professional",
           "props": {
             "headline": {
@@ -1667,7 +1667,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-ssbe",
+          "type": "hero-quick-access",
           "id": "labellisation-hero",
           "props": {
             "headline": {
@@ -1695,7 +1695,7 @@
             "rightColumns": 2,
             "gap": 4,
             "leftSection": {
-              "type": "title-with-filters-rezo-la-mer",
+              "type": "searchHeader",
               "id": "left-label-header",
               "props": {
                 "headline": {
@@ -1709,7 +1709,7 @@
               }
             }, 
             "rightSection": {
-              "type": "title-with-filters-rezo-la-mer",
+              "type": "searchHeader",
               "id": "right-label-header",
               "props": {
                 "subhead": {
@@ -1732,7 +1732,7 @@
               "fr": "De nombreuses opportunités pour développer votre activité et contribuer à la santé publique.",
               "en": "Many opportunities to develop your activity and contribute to public health."
             },
-            "variant": "ssbe",
+            "variant": "primary",
             "columns": 2,
             "cards": [
               {
@@ -1767,7 +1767,7 @@
           }
         },
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "labellisation-timeline-header",
           "props": {
             "headline": {
@@ -1826,7 +1826,7 @@
           }
         },
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "labellisation-documents-header",
           "props": {
             "headline": {
@@ -1850,7 +1850,7 @@
               "type": "categories-grid",
               "id": "documents-categories-section",
               "props": {
-                "variant": "ssbe",
+                "variant": "primary",
                 "columns": 2,
                 "cards": [
                   {
@@ -1924,7 +1924,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "search-creneaux-header",
           "props": {
             "headline": {
@@ -2401,6 +2401,9 @@
               "card": {
                 "type": "card-answer",
                 "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "coform-answer"
               }
             }
           }
@@ -2416,7 +2419,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-ssbe",
+          "type": "hero-quick-access",
           "id": "formation-hero",
           "props": {
             "headline": {
@@ -2481,8 +2484,8 @@
                 "xl": 2
               },
               "card": {
-                "type": "rezo-la-mer",
-                "variant": "ssbe",
+                "type": "funding",
+                "variant": "contact-card",
                 "detailsMode": "drawer"
               }
             }
@@ -2501,7 +2504,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "listing-formations-header",
           "props": {
             "headline": {
@@ -2549,8 +2552,8 @@
                 "xl": 4
               },
               "card": {
-                "type": "rezo-la-mer",
-                "variant": "rezo-la-mer",
+                "type": "funding",
+                "variant": "funding",
                 "detailsMode": "drawer"
               }
             }
@@ -2567,7 +2570,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "listing-poi-header",
           "props": {
             "headline": {
@@ -3819,8 +3822,11 @@
                 "xl": 4
               },
               "card": {
-                "type": "poi-ssbe",
+                "type": "poi-amenities",
                 "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "poi-amenities"
               }
             }
           }
@@ -3935,7 +3941,7 @@
 
   ],
   "footer": {
-    "type": "ssbe",
+    "type": "contact-partners",
     "contactSection": {
       "title": {
         "fr": "Nos coordonnées",

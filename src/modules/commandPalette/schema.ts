@@ -1,5 +1,20 @@
 import { z } from "zod";
 import { LocalizedString } from "@/types/locale-schema";
+import { PreviewConfSchema } from "@/modules/search/schema";
+
+/**
+ * Action au clic sur un résultat d'entité — même pattern déclaratif que le
+ * `table.rowAction` de l'observatoire : navigation profil (défaut) ou
+ * ouverture du détail du module search (`SwitchDetailsMode`).
+ */
+export const EntityItemActionSchema = z.object({
+  kind: z.enum(["profil", "preview"]),
+  /** kind "preview" : conteneur du détail (défaut : dialog). */
+  detailsMode: z.enum(["drawer", "dialog"]).optional(),
+  /** kind "preview" : contenu du détail (ex. { "type": "poi-amenities" }). */
+  preview: PreviewConfSchema.optional(),
+});
+export type EntityItemAction = z.infer<typeof EntityItemActionSchema>;
 
 /**
  * Config JSON de la palette, champ top-level optionnel `site.commandPalette`.
@@ -31,6 +46,10 @@ export const CommandPaletteConfigSchema = z.object({
       limit: z.number().int().positive().default(8),
       /** Champs additionnels fusionnés dans le payload `searchCostum` (avancé : filters, scope…). */
       params: z.record(z.string(), z.unknown()).optional(),
+      /** Action au clic sur un résultat (défaut : navigation `/profil/:slug`). */
+      itemAction: EntityItemActionSchema.optional(),
+      /** Surcharge par type d'entité (clé = type de l'entité, ex. `"poi"`). */
+      itemActionByType: z.record(z.string(), EntityItemActionSchema).optional(),
     })
     .optional(),
 });

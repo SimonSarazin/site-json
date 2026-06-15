@@ -27,7 +27,7 @@
     ]
   },
   "header": {
-    "type": "cyber-reunion",
+    "type": "transparent-scroll",
     "path": "/",
     "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10\"></path></svg>",
     "logoTitle": {
@@ -100,10 +100,10 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-rezo-la-mer",
+          "type": "hero-parallax",
           "id": "hero-cyber-reunion",
           "props": {
-            "variant": "cyber",
+            "variant": "accent",
             "headline": {
               "fr": "Cyber Réunion gyugu",
               "en": "Cyber Réunion"
@@ -170,10 +170,10 @@
           }
         },
         {
-          "type": "features-rezo-la-mer",
+          "type": "features-glass",
           "id": "features",
           "props": {
-            "variant": "cyber",
+            "variant": "accent",
             "headline": {
               "fr": "Nos domaines d'expertise",
               "en": "Our areas of expertise"
@@ -259,10 +259,10 @@
           }
         },
         {
-          "type": "action-buttons-rezo-la-mer",
+          "type": "action-tiles",
           "id": "actions",
           "props": {
-            "variant": "cyber",
+            "variant": "accent",
             "headline": {
               "fr": "Passez à l'action",
               "en": "Take action"
@@ -328,10 +328,10 @@
           }
         },
         {
-          "type": "community-rezo-la-mer",
+          "type": "cta-card-grid",
           "id": "community",
           "props": {
-            "variant": "cyber",
+            "variant": "accent",
             "headline": {
               "fr": "L'écosystème cyber réunionnais",
               "en": "The Réunion cyber ecosystem"
@@ -448,10 +448,10 @@
           }
         },
         {
-          "type": "cta-rezo-la-mer",
+          "type": "cta-newsletter",
           "id": "cta",
           "props": {
-            "variant": "cyber",
+            "variant": "accent",
             "headline": {
               "fr": "Protégez votre entreprise dès aujourd'hui",
               "en": "Protect your business today"
@@ -503,7 +503,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "projets-cyber",
           "props": {
             "headline": {
@@ -590,7 +590,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "membres-header",
           "props": {
             "headline": {
@@ -646,7 +646,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "annuaire-header",
           "props": {
             "headline": {
@@ -1284,7 +1284,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "mapping-header",
           "props": {
             "headline": {
@@ -1360,7 +1360,8 @@
     }
   ],
   "footer": {
-    "type": "cyber-reunion",
+    "type": "sidebar-columns",
+    "style": "card",
     "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10\"></path></svg>",
     "logoTitle": {
       "fr": "Cyber Réunion",

@@ -1,0 +1,77 @@
+/* ────────────────────────────────────────────────────────────────────────────
+   Base partagée des effets de section/header — importée par TOUS les thèmes
+   (`src/index-*.css`), AVANT leurs propres définitions (qui gagnent la cascade).
+
+   Principe : des TOKENS par défaut, pas des classes — Tailwind v4 GÉNÈRE les
+   utilitaires (`animate-float`, `shadow-glow`, `text-shadow-glow`,
+   `bg-header-bar`…) depuis ces tokens, et les utilitaires référencent les
+   variables → chaque thème surcharge la variable (`:root` / `.dark`) sans
+   redéclarer de classe. Remplace ~15 classes copiées-collées à la main dans
+   les thèmes (souvent partiellement → sections/headers silencieusement sans
+   styles sur les sites qui avaient raté la copie).
+
+   Seule vraie classe custom : `scrollbar-hide` (aucun équivalent Tailwind).
+   ──────────────────────────────────────────────────────────────────────────── */
+
+@theme {
+  /* Animations décoratives (boucles) — valeurs canoniques (ex-rezo-la-mer). */
+  --animate-float: float 3s ease-in-out infinite;
+  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+  --animate-marquee: marquee 25s linear infinite;
+  /* Animations d'entrée historiques (préférer tw-animate-css pour le neuf). */
+  --animate-fade-in: fade-in 0.8s ease-out forwards;
+  --animate-fade-in-up: fade-in-up 0.8s ease-out forwards;
+
+  /* Ombre portée profonde (cartes/headers) — ex-`shadow-ocean`. */
+  --shadow-deep: 0 10px 40px -10px oklch(0.2 0.04 250 / 0.5);
+  /* Halo lumineux (boutons/CTA) — dérive du thème par défaut. */
+  --shadow-glow: 0 0 30px color-mix(in oklab, var(--primary) 40%, transparent);
+  /* Halo de texte (headlines hero) — ex-`text-glow` (qui codait un teal en dur). */
+  --text-shadow-glow: 0 0 20px color-mix(in oklab, var(--primary) 50%, transparent),
+    0 0 40px color-mix(in oklab, var(--primary) 30%, transparent);
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.05); }
+  }
+  @keyframes marquee {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(-100%); }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+@theme inline {
+  /* Barre de header (headers `transparent-dark`/`underline-nav`) — chaque
+     thème pose `--header-bar` ; repli : primary. Génère `bg-header-bar`. */
+  --color-header-bar: var(--header-bar, var(--primary));
+  /* Voile teinté posé sur un hero plein écran (`hero-tinted-overlay`,
+     `hero-entity-banner`) — repli transparent. Génère `bg-hero-tint`. */
+  --color-hero-tint: var(--hero-tint, transparent);
+}
+
+:root {
+  /* Fond de bande décoré (`cta-newsletter`, `searchHeader`) — ex-
+     `bg-ocean-gradient`. Consommé via `bg-[image:var(--gradient-section)]`. */
+  --gradient-section: linear-gradient(135deg, var(--primary), var(--accent));
+}
+
+/* Masque la scrollbar en conservant le scroll (aucun équivalent standard). */
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

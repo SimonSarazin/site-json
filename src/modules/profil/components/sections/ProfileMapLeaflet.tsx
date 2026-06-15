@@ -1,7 +1,10 @@
 import { useTheme } from "next-themes";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { loadLeaflet } from "@/modules/search/hooks/loadLeaflet";
 import { useIsMounted } from "@/hooks/useIsMounted";
+import { useSite } from "@/hooks/useSite";
+import { getMaptilerApiKey } from "@/lib/constant/common";
+import { resolveTileLayers } from "@/modules/search/lib/mapTiles";
 
 interface ProfileMapLeafletProps {
   lat: number;
@@ -25,6 +28,12 @@ export default function ProfileMapLeaflet({
   const darkLayerRef = useRef<import("leaflet").TileLayer | null>(null);
   const { resolvedTheme } = useTheme();
   const mounted = useIsMounted();
+  const { config } = useSite();
+
+  // Fond de carte : MapTiler (clé env) + styles par site (integrations.map),
+  // repli OSM/Carto sans clé — même résolveur que la carte search.
+  const mapStyles = config.integrations?.map;
+  const tiles = useMemo(() => resolveTileLayers(getMaptilerApiKey(), mapStyles), [mapStyles]);
 
   // Initialisation de la carte
   useEffect(() => {
@@ -45,25 +54,9 @@ export default function ProfileMapLeaflet({
         });
         mapInstanceRef.current = map;
 
-        // Calque clair (OpenStreetMap)
-        lightLayerRef.current = L.tileLayer(
-          "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-          {
-            attribution: "© OpenStreetMap contributors",
-            maxZoom: 19,
-          }
-        );
-
-        // Calque sombre (Carto Dark Matter)
-        darkLayerRef.current = L.tileLayer(
-          "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-          {
-            attribution:
-              '&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; OpenStreetMap contributors',
-            subdomains: "abcd",
-            maxZoom: 19,
-          }
-        );
+        // Calques clair / sombre (résolus en amont : MapTiler ou repli libre)
+        lightLayerRef.current = L.tileLayer(tiles.light.url, tiles.light.options);
+        darkLayerRef.current = L.tileLayer(tiles.dark.url, tiles.dark.options);
 
         // Ajout initial selon le thème
         if (resolvedTheme === "dark") {
@@ -92,7 +85,7 @@ export default function ProfileMapLeaflet({
         mapInstanceRef.current = null;
       }
     };
-  }, [mounted, lat, lng, zoom, showMarker, resolvedTheme]);
+  }, [mounted, lat, lng, zoom, showMarker, resolvedTheme, tiles]);
 
   // Gestion du changement de thème
   useEffect(() => {

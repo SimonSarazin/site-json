@@ -37,12 +37,17 @@ function ChartContainer({
   className,
   children,
   config,
+  initialDimension,
   ...props
 }: React.ComponentProps<"div"> & {
   config: ChartConfig
   children: React.ComponentProps<
     typeof RechartsPrimitive.ResponsiveContainer
   >["children"]
+  /** Dimensions AVANT la première mesure : évite le warn recharts
+   *  « width(0) and height(0) » à l'hydratation et permet au SSR de rendre
+   *  un vrai SVG (sinon conteneur vide côté serveur). */
+  initialDimension?: { width: number; height: number }
 }) {
   const uniqueId = React.useId()
   const chartId = `chart-${id || uniqueId.replace(/:/g, "")}`
@@ -59,7 +64,9 @@ function ChartContainer({
         {...props}
       >
         <ChartStyle id={chartId} config={config} />
-        <RechartsPrimitive.ResponsiveContainer>
+        <RechartsPrimitive.ResponsiveContainer
+          {...(initialDimension && { initialDimension })}
+        >
           {children}
         </RechartsPrimitive.ResponsiveContainer>
       </div>

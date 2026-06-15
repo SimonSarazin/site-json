@@ -1,7 +1,9 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import { useForm, Controller, useWatch } from "react-hook-form";
+import { useForm, Controller, useWatch, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 import type { z } from "zod";
+import { Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
@@ -9,13 +11,22 @@ import { TextField, TextAreaField, RadioField, CheckboxField, ProseContent, Sect
 import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
 import { MultiRadioField } from "./MultiRadioField";
 import { EvaluationField } from "./EvaluationField";
+import { CommonTableField } from "./CommonTableField";
+import { MultiEvalChartDialog } from "./MultiEvalChartDialog";
 import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { UploaderField } from "./UploaderField";
 import { CoFormBanner } from "./CoFormBanner";
-import type { CoFormData, SubFormData, AddedOptionsMap, EvaluationValue, FinderValue, SimpleTableValue, MultiRadioValue } from "../types";
-import { parseCoFormFields, generateZodSchema, generateDefaultValues } from "../utils/formParser";
+import { DraftRecoveryBanner } from "./DraftRecoveryBanner";
+import { ErrorSummary } from "./ErrorSummary";
+import { AnswerActivityDialog } from "./AnswerActivityDialog";
+import type { CoFormData, SubFormData, AddedOptionsMap, EvaluationValue, CommonTableValue, FinderValue, SimpleTableValue, MultiRadioValue, ExistingAnswerMeta } from "../types";
+import { parseCoFormFields, generateZodSchema, generateDefaultValues, getStepHasMultiEval, getOriginalFieldKey } from "../utils/formParser";
+import { scrollToFieldByName } from "../utils/helpers";
+import { cn } from "@/lib/utils";
 import { useConditionalFields } from "../hooks/useConditionalFields";
+import { useCoFormDraft } from "../hooks/useCoFormDraft";
+import { useUnsavedChangesWarning } from "../hooks/useUnsavedChangesWarning";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 
@@ -44,6 +55,27 @@ interface DynamicCoFormProps {
   submitRef?: React.RefObject<(() => void) | null>;
   /** Liste de clés d'inputs verrouillés (lecture seule, non modifiables) */
   lockedFields?: string[];
+  /**
+   * Liste de clés d'inputs **complètement masqués** (skip total du rendu).
+   * Calculée serveur-side dans `access.restrictedFields` à partir de
+   * `placeAdminOnlyFields` / `placeMemberOnlyFields` croisés avec le rôle
+   * de l'user sur le lieu. Aligné sur le legacy `isAdminOnly` qui hide
+   * entirely (pas de readonly cosmétique).
+   */
+  restrictedFields?: string[];
+  /** ID du formulaire — clé de draft localStorage */
+  formId?: string;
+  /** ID utilisateur connecté — clé de draft */
+  userId?: string | null;
+  /** updatedAt serveur (édition) — pour détecter les drafts obsolètes */
+  baseUpdatedAt?: number | null;
+  /** Active la persistance du draft. Défaut : true. */
+  enableDraft?: boolean;
+  /**
+   * Métadonnées de la réponse existante (créateur + dernier modifieur).
+   * Quand fournies, propagées par SmartCoForm depuis la query.
+   */
+  existingAnswerMeta?: ExistingAnswerMeta | null;
 }
 
 /**
@@ -64,6 +96,12 @@ export function DynamicCoForm({
   onDirtyChange,
   submitRef,
   lockedFields,
+  restrictedFields,
+  formId,
+  userId,
+  baseUpdatedAt,
+  enableDraft = true,
+  existingAnswerMeta,
 }: DynamicCoFormProps) {
   const t = useT("modules/coform");
   useLoadNamespace("modules/coform");
@@ -91,6 +129,7 @@ export function DynamicCoForm({
     handleSubmit,
     getValues,
     control,
+    reset,
     formState: { errors, isSubmitting, isDirty },
   } = useForm<FormValues>({
     resolver: zodResolver(zodSchema),
@@ -100,7 +139,54 @@ export function DynamicCoForm({
   // State pour collecter les options ajoutées par champ
   const [addedOptionsMap, setAddedOptionsMap] = useState<AddedOptionsMap>({});
 
+  // Affiche le récap d'erreurs (ErrorSummary) uniquement après une tentative
+  // de soumission échouée — évite de polluer la lecture initiale.
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+
+  // Identifiant du sous-formulaire courant (pour encapsuler les données dans
+  // le payload du draft, qui partage le format AllStepsData de MultiStepCoForm).
+  const subFormId = subFormsFields[0]?.subFormId ?? "default";
+
+  // Persistance du brouillon en localStorage. Désactivée si conditions non réunies.
+  // `answerId` scope la clé par réponse (sinon "new") : sans lui, l'édition de
+  // deux réponses du même formulaire partagerait le même slot de brouillon
+  // (restauration croisée) et écraserait le brouillon de création.
+  const { restorableDraft, staleDraftInfo, saveDraft, discardDraft, purgeDraft, acknowledgeStale } =
+    useCoFormDraft({
+      formId,
+      userId,
+      answerId,
+      baseUpdatedAt,
+      disabled: !enableDraft || autoSubmitOnBlur,
+    });
+
+  // Multi-eval radar : un seul Dialog réutilisé pour toutes les steps. Le state
+  // mémorise la step ciblée (titre + filtre côté serveur via stepKey). `null`
+  // → dialog non monté (cf. norme jdev de mount conditionnel).
+  const [multiEvalContext, setMultiEvalContext] = useState<
+    { stepKey: string; stepName: string } | null
+  >(null);
+
+  // Activity dialog (historique de modifications de la réponse).
+  const [activityDialogOpen, setActivityDialogOpen] = useState(false);
+
+  // Map subFormId → display name pour rendre l'historique d'activité lisible
+  // (sinon on affiche les clés brutes type `navigatorDesTierslieux1572025_2311_0`).
+  const stepNames = useMemo(() => {
+    const map: Record<string, string> = {};
+    if (formData.inputs) {
+      for (const [stepId, stepData] of Object.entries(formData.inputs)) {
+        const name = (stepData as { name?: unknown })?.name;
+        if (typeof name === "string" && name.trim() !== "") {
+          map[stepId] = name;
+        }
+      }
+    }
+    return map;
+  }, [formData.inputs]);
+
   const lockedSet = useMemo(() => new Set(lockedFields), [lockedFields]);
+  const restrictedSet = useMemo(() => new Set(restrictedFields ?? []), [restrictedFields]);
 
   // Logique conditionnelle : collecter tous les champs et évaluer la visibilité
   const allFields = subFormsFields.flatMap((sf) => sf.fields);
@@ -137,9 +223,39 @@ export function DynamicCoForm({
   }, [defaultValues]);
 
   const handleFormSubmit = useCallback(async (data: FormValues) => {
+    setHasAttemptedSubmit(false);
     const hasAddedOptions = Object.keys(addedOptionsMap).some(k => addedOptionsMap[k].length > 0);
     await onSubmit(data as SubFormData, hasAddedOptions ? addedOptionsMap : undefined);
-  }, [addedOptionsMap, onSubmit]);
+    // Succès : purge le draft (le serveur est désormais la source de vérité).
+    purgeDraft();
+  }, [addedOptionsMap, onSubmit, purgeDraft]);
+
+  const handleRestoreDraft = useCallback(() => {
+    if (!restorableDraft) return;
+    const restored = restorableDraft.data[subFormId] as Record<string, unknown> | undefined;
+    if (restored) {
+      // `keepDirty: true` : sans ça, un restore effacerait le draft sans le
+      // ré-écrire (l'auto-save est gated par isDirty), et un refresh juste
+      // après perdrait les données restaurées.
+      reset({ ...defaultValues, ...restored } as FormValues, { keepDirty: true });
+    }
+    const restoredOptions = restorableDraft.addedOptions?.[subFormId];
+    if (restoredOptions && Object.keys(restoredOptions).length > 0) {
+      setAddedOptionsMap(restoredOptions);
+    }
+    discardDraft();
+  }, [restorableDraft, subFormId, defaultValues, discardDraft, reset]);
+
+  const handleInvalid = useCallback((invalidErrors: FieldErrors) => {
+    setHasAttemptedSubmit(true);
+    const firstErrorName = Object.keys(invalidErrors)[0];
+    if (firstErrorName) scrollToFieldByName(firstErrorName);
+    toast.error(t("coform.errors.summary.toast"));
+  }, [t]);
+
+  const handleErrorFieldClick = useCallback((name: string) => {
+    scrollToFieldByName(name);
+  }, []);
 
   // Auto-submit unifié : useWatch détecte les changements de valeur (tous types d'input)
   // puis debounce 600ms avant de soumettre si la valeur a effectivement changé.
@@ -150,15 +266,33 @@ export function DynamicCoForm({
     onDirtyChange?.(isDirty);
   }, [isDirty, onDirtyChange]);
 
+  // Warning navigateur avant fermeture/refresh si modifications non sauvegardées.
+  useUnsavedChangesWarning(isDirty);
+
+  // Auto-save du draft à chaque changement de valeur (debounce interne au hook).
+  // `formId` et `userId` dans les deps : ils peuvent arriver async (URL / loader),
+  // sinon un save précoce partirait avec key=null.
+  useEffect(() => {
+    if (!isDirty) return;
+    saveDraft({
+      data: { [subFormId]: watchedValues as SubFormData },
+      currentStepIndex: 0,
+      completedSteps: [],
+      addedOptions: Object.keys(addedOptionsMap).length > 0
+        ? { [subFormId]: addedOptionsMap }
+        : {},
+    });
+  }, [watchedValues, addedOptionsMap, isDirty, saveDraft, subFormId, formId, userId]);
+
   // Exposer la soumission programmatique via submitRef
   useEffect(() => {
     if (submitRef) {
-      submitRef.current = () => handleSubmit(handleFormSubmit)();
+      submitRef.current = () => handleSubmit(handleFormSubmit, handleInvalid)();
     }
     return () => {
       if (submitRef) submitRef.current = null;
     };
-  }, [submitRef, handleSubmit, handleFormSubmit]);
+  }, [submitRef, handleSubmit, handleFormSubmit, handleInvalid]);
 
   // Auto-submit debounced : déclenché 600 ms après le dernier changement de
   // valeur, uniquement si la valeur courante diffère de la dernière soumise.
@@ -190,14 +324,37 @@ export function DynamicCoForm({
   }, [watchedValues, autoSubmitOnBlur, getValues, handleFormSubmit]);
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(handleFormSubmit, handleInvalid)} className="space-y-6">
       <CoFormBanner formData={formData} hidden={hideBanner} />
+
+      {/* Banner de récupération de draft (s'il y en a un en localStorage).
+          Mount conditionnel — pas de surface si rien à restaurer. */}
+      {restorableDraft && (
+        <DraftRecoveryBanner
+          mode="restorable"
+          timestamp={restorableDraft.timestamp}
+          onRestore={handleRestoreDraft}
+          onDiscard={discardDraft}
+        />
+      )}
+      {staleDraftInfo && (
+        <DraftRecoveryBanner
+          mode="stale"
+          timestamp={staleDraftInfo.timestamp}
+          onAcknowledge={acknowledgeStale}
+        />
+      )}
 
       {subFormsFields.map((subForm) => {
           const fieldsGrid = (
             <div className="grid grid-cols-12 gap-6">
               {subForm.fields.map((field) => {
                 if (!isFieldVisible(field.name)) return null;
+                // Skip total : l'user n'a pas le droit selon les listes
+                // place(Admin|Member)OnlyFields. Calculé serveur-side dans
+                // `access.restrictedFields`. Aligné sur le legacy isAdminOnly
+                // qui hide entirely (pas de readonly cosmétique).
+                if (restrictedSet.has(getOriginalFieldKey(field))) return null;
                 const isLocked = lockedSet.has(field.name);
                 // Rendu conditionnel selon le type de champ
                 const fieldElement = (() => { switch (field.componentType) {
@@ -326,6 +483,25 @@ export function DynamicCoForm({
                     />
                   );
 
+                case "commonTable":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={control}
+                      render={({ field: controllerField }) => (
+                        <CommonTableField
+                          field={field}
+                          errors={errors}
+                          value={controllerField.value as CommonTableValue}
+                          onChange={controllerField.onChange}
+                          readOnly={isLocked}
+                          formId={formData.id}
+                        />
+                      )}
+                    />
+                  );
+
                 case "finder":
                   return (
                     <Controller
@@ -392,20 +568,36 @@ export function DynamicCoForm({
                   return (
                     <div key={field.name} role="alert" className="col-span-12 flex flex-col gap-1 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
                       <p className="font-semibold">{field.label}</p>
-                      <p>Template d'input introuvable — Le type <code className="font-mono bg-destructive/20 px-1 rounded">{field.type}</code> n'a pas de template associé.</p>
+                      <p>{t("coform.errors.unknownFieldType", undefined, { type: field.type })}</p>
                     </div>
                   );
               } })();
 
-                // Wrapper verrouillé pour les champs non modifiables
-                if (isLocked && fieldElement) {
-                  return (
-                    <div key={field.name} className="contents pointer-events-none opacity-60 *:cursor-not-allowed">
-                      {fieldElement}
-                    </div>
-                  );
+                // Wrapper avec `data-field-name` pour permettre au récap
+                // d'erreurs (`ErrorSummary`) de scroller + highlight via
+                // `scrollToFieldByName`. `display: contents` → ne casse pas
+                // le grid (les enfants restent items du grid parent). Les
+                // composants de field qui ont déjà leur propre attribut (ex.
+                // `CommonTableField`) restent prioritaires côté querySelector.
+                if (!fieldElement) return null;
+                if (
+                  field.componentType === "sectionTitle" ||
+                  field.componentType === "sectionDescription"
+                ) {
+                  return fieldElement;
                 }
-                return fieldElement;
+                return (
+                  <div
+                    key={field.name}
+                    data-field-name={field.name}
+                    className={cn(
+                      "contents",
+                      isLocked && "pointer-events-none opacity-60 *:cursor-not-allowed",
+                    )}
+                  >
+                    {fieldElement}
+                  </div>
+                );
             })}
             </div>
           );
@@ -414,10 +606,35 @@ export function DynamicCoForm({
             return <div key={subForm.subFormId}>{fieldsGrid}</div>;
           }
 
+          // Bouton "Voir les évaluations" — visible uniquement si la step
+          // contient au moins un input multi-eval ET qu'on est en mode édition
+          // (answerId présent : sinon il n'y a pas encore de data à agréger).
+          const stepHasMultiEval = getStepHasMultiEval(subForm);
+          const showMultiEvalButton = stepHasMultiEval && !!answerId;
+
           return (
             <Card key={subForm.subFormId} className="shadow-sm">
               <CardHeader className="space-y-3">
-                <CardTitle className="text-2xl">{subForm.subFormName}</CardTitle>
+                <div className="flex items-start justify-between gap-3">
+                  <CardTitle className="text-2xl">{subForm.subFormName}</CardTitle>
+                  {showMultiEvalButton && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setMultiEvalContext({
+                          stepKey: subForm.subFormId,
+                          stepName: subForm.subFormName,
+                        })
+                      }
+                      className="shrink-0 gap-2"
+                    >
+                      <Activity className="h-4 w-4" />
+                      <span className="hidden sm:inline">{t("coform.multiEval.viewChart")}</span>
+                    </Button>
+                  )}
+                </div>
                 {formData.inputs?.[subForm.subFormId]?.info && (
                   <CardDescription className="text-base">
                     <ProseContent
@@ -434,10 +651,55 @@ export function DynamicCoForm({
           );
       })}
 
+      {/* Dialog multi-eval : mount conditionnel, contexte = step ciblée
+          (titre + stepKey). Cf. feedback_conditional_dialog_mount. */}
+      {multiEvalContext && (
+        <MultiEvalChartDialog
+          open
+          onOpenChange={(o) => { if (!o) setMultiEvalContext(null); }}
+          answerId={answerId ?? null}
+          stepKey={multiEvalContext.stepKey}
+          stepName={multiEvalContext.stepName}
+        />
+      )}
+
+      {/* Récap d'erreurs : affiché seulement après une tentative de submit
+          échouée, listant tous les champs invalides avec leur message,
+          cliquables pour scroller au champ. */}
+      <ErrorSummary
+        errors={hasAttemptedSubmit ? errors : {}}
+        fields={subFormsFields.flatMap((sf) => sf.fields)}
+        onFieldClick={handleErrorFieldClick}
+      />
+
+      {/* Lien discret "Voir l'activité" — visible uniquement en mode édition
+          d'une réponse existante. Ouvre une modale avec l'historique des
+          modifications. */}
+      {existingAnswerMeta && answerId && (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => setActivityDialogOpen(true)}
+            className="text-xs text-muted-foreground hover:text-foreground underline-offset-2 hover:underline transition-colors"
+          >
+            {t("coform.activity.link")}
+          </button>
+        </div>
+      )}
+      {activityDialogOpen && (
+        <AnswerActivityDialog
+          open
+          onOpenChange={setActivityDialogOpen}
+          answerId={answerId}
+          meta={existingAnswerMeta}
+          stepNames={stepNames}
+        />
+      )}
+
       {!hideSubmitButton && (
       <div className="flex justify-end pt-4">
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           disabled={isSubmitting || isLoading}
           size="lg"
           className="gap-2 min-w-40"

@@ -20,7 +20,7 @@
     ]
   },
   "header": {
-    "type": "julie-pot-vin",
+    "type": "minimal",
     "logo": "images/juliePotVin/monogramme.svg",
     "nav": [
       {

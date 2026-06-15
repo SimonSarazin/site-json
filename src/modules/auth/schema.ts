@@ -34,9 +34,22 @@ const AuthPageTextSchema = z.object({
   subtitle: LocalizedString.optional(),
 });
 
+// Présentation du widget de compte dans les headers (`AuthMenu`). Pilote la
+// densité « selon les besoins » côté config ; le `tone`/variant restent couplés
+// au design du header (props), pas ici.
+const AuthMenuConfigSchema = z.object({
+  density: z.enum(["compact", "normal"]).optional(),
+  showName: z.boolean().optional(),
+  showDropdownHeader: z.boolean().optional(),
+  loginLabel: LocalizedString.optional(),
+});
+export type AuthMenuConfig = z.infer<typeof AuthMenuConfigSchema>;
+
 export const AuthConfigSchema = z.object({
   // Variant de design résolu par `resolveAuthVariant` (registry). Absent → "default".
   variant: z.string().optional(),
+  // Présentation du widget de compte (densité compact/normal, libellé, etc.).
+  menu: AuthMenuConfigSchema.optional(),
   // Layout des pages auth (mode page /login /register /recover-password) :
   // affichage conditionnel du header / footer, comme `hideHeader` des pages.
   hideHeader: z.boolean().optional(),

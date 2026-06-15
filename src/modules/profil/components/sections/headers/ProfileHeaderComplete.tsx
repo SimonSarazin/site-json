@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Edit, Mail, ChevronRight, ImageIcon } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
@@ -16,6 +16,14 @@ import { AddEntityDropdown } from "../../action-buttons/AddEntityDropdown";
 import { isUser } from "@/lib/getTypedEntity";
 import type { ProfileHeaderSection } from "../../../schema";
 import { ButtonGroup } from "@/components/ui/button-group";
+import { useInteropConfig } from "@/modules/interop";
+import { lazy } from "vite-preload";
+
+// CTA « Envoyer un message » (Discourse) promu en haut du profil, façon LinkedIn.
+// Chargé en lazy et conditionné à `hasDiscourse` comme dans ProfileAbout.
+const DiscourseMessageButton = lazy(
+  () => import("@/modules/interop/components/DiscourseMessageButton"),
+);
 
 interface ProfileHeaderCompleteProps {
   section: ProfileHeaderSection;
@@ -34,6 +42,7 @@ export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
   } = useFormatProfileEntity(entity);
   const { canEditProfile } = useProfilPermissions(entity);
   const { config: siteConfig } = useSite();
+  const { hasDiscourse } = useInteropConfig();
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
 
@@ -144,6 +153,15 @@ export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
             {/* Action Buttons */}
             {section.showActions !== false && (
               <div className="flex gap-3 flex-wrap">
+                {/* CTA principal « Envoyer un message » (Discourse), en tête de la
+                    barre d'actions pour une visibilité façon LinkedIn/Messenger.
+                    Suspense local : le chunk lazy ne refait pas suspendre tout le header. */}
+                {hasDiscourse && (
+                  <Suspense fallback={null}>
+                    <DiscourseMessageButton />
+                  </Suspense>
+                )}
+
                 <ButtonGroup>
                 
                 {/* Boutons d'action (Follow, Friend, Membership, etc.) */}
