@@ -27,6 +27,12 @@ vi.mock("../hooks/useCoFormQuery", () => ({
   useCoFormFinalMutation: (args: unknown) => mockUseCoFormFinalMutation(args),
 }));
 
+// Hook de données réseau (catalogues commonTable) — mocké comme useCoFormQuery :
+// il exige le CocolightProvider (api), hors périmètre de ces tests de rendu.
+vi.mock("../hooks/useCoFormCatalogs", () => ({
+  useCoFormCatalogs: () => ({ catalogs: {}, isLoading: false, error: null, refetch: vi.fn() }),
+}));
+
 vi.mock("./DynamicCoForm", () => ({
   DynamicCoForm: (props: { formData: CoFormData; hideBanner?: boolean; hideStepHeaders?: boolean; hideSubmitButton?: boolean; autoSubmitOnBlur?: boolean }) => (
     <div

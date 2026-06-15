@@ -2,7 +2,7 @@ import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Card, CardContent } from "@/components/ui/card";
 import { useT } from "@/hooks/useT";
 import type { DimensionsConfig, ObservatoryItem, KpiDef } from "../schema";
-import { TOKEN_TINT_CLASSES, dimensionLabel } from "../dimensions";
+import { TOKEN_TINT_CLASSES, dimensionLabel, type LabelMaps } from "../dimensions";
 import { computeKpiValue } from "../dashboard";
 
 /** Taille de police adaptée à la longueur de la valeur. */
@@ -46,9 +46,11 @@ interface KpiCardsProps {
   dimensions: DimensionsConfig;
   /** KPI déclarés par la config de section. */
   kpis: readonly KpiDef[];
+  /** Libellés canoniques (dimensions à `keyPaths`). */
+  labels?: LabelMaps;
 }
 
-export function KpiCards({ data, dimensions, kpis }: KpiCardsProps) {
+export function KpiCards({ data, dimensions, kpis, labels }: KpiCardsProps) {
   const t = useT("modules/observatoire");
 
   return (
@@ -66,7 +68,7 @@ export function KpiCards({ data, dimensions, kpis }: KpiCardsProps) {
             key={`${def.kind}-${def.dimension ?? i}`}
             icon={def.icon ?? "activity"}
             label={label}
-            value={computeKpiValue(def, data, dimensions)}
+            value={computeKpiValue(def, data, dimensions, labels)}
             accentClasses={TOKEN_TINT_CLASSES[def.accent ?? "primary"]}
           />
         );

@@ -47,7 +47,9 @@ export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchT
 
   // Récupérer les textes personnalisés depuis config.prod.json
   const loginTitle = config.auth?.login?.title || { fr: "Se connecter", en: "Sign in" };
-  const loginSubtitle = config.auth?.login?.subtitle || { fr: "Accédez à votre compte SiteForge", en: "Access your SiteForge account" };
+  // Défaut NEUTRE : « SiteForge » est le nom du générateur, il ne doit jamais
+  // fuiter sur un site — chaque site personnalise via config.auth.login.
+  const loginSubtitle = config.auth?.login?.subtitle || { fr: "Accédez à votre compte", en: "Access your account" };
 
   const ssoProviders: string[] = useMemo(
     () => (entity?.serverData.costum as { sso?: string[] })?.sso || [],

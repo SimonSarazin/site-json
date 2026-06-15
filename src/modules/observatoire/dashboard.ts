@@ -18,10 +18,12 @@ import {
   BOOL_FILTER_VALUES,
   TOKEN_CSS_VARS,
   dimensionBool,
+  isBoolKind,
   dimensionLabel,
   dimensionList,
   dimensionNumber,
   dimensionValue,
+  type LabelMaps,
 } from "./dimensions";
 import { countBy } from "./utils";
 
@@ -44,13 +46,14 @@ export function applyFilters(
   data: ObservatoryItem[],
   f: FilterValues,
   dims: DimensionsConfig,
+  labels?: LabelMaps,
 ): ObservatoryItem[] {
   const active = Object.entries(f).filter(([id, v]) => v && dims[id]);
   if (active.length === 0) return data;
   return data.filter((d) =>
     active.every(([id, v]) => {
       const def = dims[id];
-      if (def.kind === "anyTrue") {
+      if (isBoolKind(def.kind)) {
         return dimensionBool(d, def) === (v === BOOL_FILTER_VALUES.TRUE);
       }
       // Multi-sélection : valeurs jointes par virgule (format URL maison —
@@ -61,7 +64,7 @@ export function applyFilters(
         const own = dimensionList(d, def);
         return selected.some((s) => own.includes(s));
       }
-      const value = dimensionValue(d, def);
+      const value = dimensionValue(d, def, labels?.[id]);
       return value !== undefined && selected.includes(value);
     }),
   );
@@ -89,13 +92,14 @@ export function applyTextSearch(
   q: string,
   dims: DimensionsConfig,
   searchDimIds?: readonly string[],
+  labels?: LabelMaps,
 ): ObservatoryItem[] {
   const needle = normalizeText(q.trim());
   if (!needle) return data;
   const ids = (searchDimIds?.length ? searchDimIds : Object.keys(dims)).filter(
     (id) => {
       const kind = dims[id]?.kind;
-      return dims[id] && kind !== "anyTrue" && kind !== "number";
+      return dims[id] && !isBoolKind(kind) && kind !== "number";
     },
   );
   return data.filter((d) =>
@@ -104,7 +108,7 @@ export function applyTextSearch(
       if (def.kind === "list") {
         return dimensionList(d, def).some((v) => normalizeText(v).includes(needle));
       }
-      const v = dimensionValue(d, def);
+      const v = dimensionValue(d, def, labels?.[id]);
       return v !== undefined && normalizeText(v).includes(needle);
     }),
   );
@@ -119,16 +123,18 @@ export function computeKpiValue(
   def: KpiDef,
   data: ObservatoryItem[],
   dims: DimensionsConfig,
+  labels?: LabelMaps,
 ): string {
   const total = data.length;
   const dim = def.dimension ? dims[def.dimension] : undefined;
+  const dimLabels = def.dimension ? labels?.[def.dimension] : undefined;
   switch (def.kind) {
     case "count":
       return String(total);
     case "distinct": {
       if (!dim) return PLACEHOLDER;
       const set = new Set(
-        data.map((d) => dimensionValue(d, dim)).filter(Boolean),
+        data.map((d) => dimensionValue(d, dim, dimLabels)).filter(Boolean),
       );
       return String(set.size);
     }
@@ -139,12 +145,12 @@ export function computeKpiValue(
     }
     case "valueSplit": {
       if (!dim || !def.value) return PLACEHOLDER;
-      const n = data.filter((d) => dimensionValue(d, dim) === def.value).length;
+      const n = data.filter((d) => dimensionValue(d, dim, dimLabels) === def.value).length;
       return `${n} / ${total - n}`;
     }
     case "top": {
       if (!dim) return PLACEHOLDER;
-      const counts = countBy(data, (d) => dimensionValue(d, dim));
+      const counts = countBy(data, (d) => dimensionValue(d, dim, dimLabels));
       return counts.sort((a, b) => b.value - a.value)[0]?.name ?? PLACEHOLDER;
     }
     case "sum":
@@ -191,13 +197,15 @@ export function itemsFor(
   def: ChartDef,
   data: ObservatoryItem[],
   dims: DimensionsConfig,
+  labels?: LabelMaps,
 ): Array<{ name: string; value: number }> {
   const dim = def.dimension ? dims[def.dimension] : undefined;
   if (!dim) return [];
+  const dimLabels = def.dimension ? labels?.[def.dimension] : undefined;
   const counts =
     dim.kind === "list"
       ? countBy(data.flatMap((d) => dimensionList(d, dim)), (v) => v)
-      : countBy(data, (d) => dimensionValue(d, dim));
+      : countBy(data, (d) => dimensionValue(d, dim, dimLabels));
   return counts.sort((a, b) => b.value - a.value);
 }
 
@@ -251,6 +259,7 @@ export function buildRow(
   idx: number,
   columns: readonly TableColumnDef[],
   dims: DimensionsConfig,
+  labels?: LabelMaps,
 ): Row {
   const cells: Record<string, CellValue> = {};
   const subtitles: Record<string, string | undefined> = {};
@@ -259,9 +268,13 @@ export function buildRow(
     if (!def) continue;
     if (col.kind === "number") cells[col.dimension] = dimensionNumber(e, def);
     else if (col.kind === "boolBadge") cells[col.dimension] = dimensionBool(e, def);
-    else cells[col.dimension] = dimensionValue(e, def);
+    // Dimension `list` (allowlist) : la cellule montre la/les valeur(s) de
+    // l'axe (typologie, surface…) — PAS `dimensionValue` qui renverrait le 1ᵉʳ
+    // élément BRUT du tableau (ex. "TiersLieux").
+    else if (def.kind === "list") cells[col.dimension] = dimensionList(e, def).join(", ");
+    else cells[col.dimension] = dimensionValue(e, def, labels?.[col.dimension]);
     if (col.kind === "title" && col.subtitleDimension && dims[col.subtitleDimension]) {
-      subtitles[col.dimension] = dimensionValue(e, dims[col.subtitleDimension]);
+      subtitles[col.dimension] = dimensionValue(e, dims[col.subtitleDimension], labels?.[col.subtitleDimension]);
     }
   }
   // Id de ligne : index d'origine (stable — rows reconstruits depuis data).

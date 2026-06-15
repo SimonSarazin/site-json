@@ -292,6 +292,41 @@ Affiche les filières de l'entité courante sous forme de liens de navigation. L
 
 Section sidebar qui pilote le `PageFiltersContext` partagé. Doit être montée dans le même `PageFiltersProvider` que les `SearchProStatic` consommateurs (via `gridLayout` ou `profile-tab-layout`).
 
+**Rendu PAR GROUPE configurable** — du plus déployé au plus compact. `select`
+s'applique aux **trois familles** de groupes (`filterGroups[]` statiques /
+scopeList / entityList, `filtersByAnswers`, `filtersByPath`) ; `optionStyle`
+ne joue qu'en mode accordéon (`filterGroups[]`) :
+
+| Config du groupe | Widget rendu |
+|---|---|
+| *(rien)* | accordéon + cases à cocher (défaut) |
+| `"optionStyle": "check"` | accordéon + lignes à coche à DROITE (look SelectItem) |
+| `"select": {}` | Select simple (Radix) |
+| `"select": {"multiple": true}` | combobox multi coche-à-droite (`ui/multi-combobox`) |
+| `"select": {"searchable": true}` | recherche + sélection unique (MultipleSelector, remplace) |
+| `"select": {"multiple": true, "searchable": true}` | recherche + badges multi (MultipleSelector) |
+
+Mobile (< `lg`, le breakpoint d'empilement du gridLayout) : champ de
+recherche AU-DESSUS d'un bouton « Filtres » + compteur ouvrant un Sheet bas —
+bascule pur CSS (pas de flash). Desktop : sidebar. Les champs compacts
+(`SelectField`/`MultiCheckboxField`/`MultiField`) vivent dans
+`components/filterFields.tsx`, partagés avec l'observatoire ; le multi
+coche-à-droite est le composant générique `src/components/ui/multi-combobox.tsx`
+(consommé aussi par le searchHeader et FilterDropdown).
+
+**Chargement par groupe** : les groupes `scopeList` (zones), `entityList`
+(réseaux) et « par réponses » (CoForm) alimentent leurs options par une query.
+Tant qu'elle est en vol et sans options, le groupe **garde sa place et son
+libellé** — squelette de champ (mode compact) ou en-tête + spinner (mode
+accordéon) — au lieu de disparaître puis surgir. La boucle « par réponses »
+itère sur les **clés de config** (et non sur le résultat) pour ça. En
+chargement direct, les filtres sont **préchargés en SSR** (`prefetchFilters`)
+→ cache React Query rempli, pas de flash ; le squelette ne s'observe que sur
+navigation client-side / cache expiré. Chaque `Collapsible` est **par groupe**
+(et non un `Accordion` partagé) pour interleaver librement champs compacts,
+accordéons et boutons valeur-unique sans casser Radix. Les groupes statiques
+(`type: "filters"` avec options en config) rendent immédiatement.
+
 Les schémas de filtres (`FilterGroupSchema`, `FilterGroupsSchema`, `FiltersByAnswersSchema`, `FiltersByPathSchema`) sont extraits dans `schema.ts` comme exports partagés — réutilisés par `FiltersSectionSchema` ET par les sections hero qui déclarent des filtres (ex. section hero de la home avec `filterGroups`/`filtersByAnswers`).
 
 ```json
@@ -898,6 +933,44 @@ Colonne latérale :
 `SearchMapWrapper` : charge Leaflet en client-only via `useClientModule()`. `SearchMap` : carte Leaflet avec markers et clustering (`leaflet.markercluster`). Chaque marker ouvre un popup via `renderMapPopup()` → `MapPopupDefault`.
 
 `loadLeaflet.ts` : import dynamique du bundle Leaflet (déclenché uniquement si `showMap: true`, optimisation bundle).
+
+**Fond de carte** (`lib/mapTiles.ts`) : avec la variable d'environnement
+`VITE_MAPTILER_API_KEY` (jamais dans le config versionné — `.env` en dev,
+injectée dans `window.__ENV__` par le prod-server, passthrough
+docker-compose), la carte utilise les **tuiles raster MapTiler** (512 px →
+`tileSize: 512` + `zoomOffset: -1`), avec un style par thème **configurable
+par site** via `integrations.map` : `styleLight` (déf. `streets-v2`) /
+`styleDark` (déf. `streets-v2-dark`) — ids de styles MapTiler (`outdoor-v2`,
+`dataviz`, `satellite`…). **Sans clé : repli automatique** sur les tuiles
+libres historiques (OSM light / Carto Dark Matter) — aucun site ne casse.
+⚠️ Les `style.json` MapTiler sont des styles vectoriels MapLibre GL,
+inutilisables avec Leaflet : on consomme l'endpoint raster (une migration
+MapLibre est un chantier séparé, au backlog).
+
+**Chargement de la vue carte** (progressif — même mécanique que
+l'observatoire) : la carte ne fait plus un `indexStep: 0` tout-en-1-appel ;
+elle passe par **`useSearchAllResults`** (hook dédié, queryKey
+`searchCostum[Static]MapAll`) — pages de **500** enchaînées séquentiellement
+par le **paginator SDK** (`page.next()` ; sondé : un `indexMin` manuel est
+IGNORÉ par le backend, avec ou sans `mapUsed`), plafond **5000**
+(`maxResults`), **cache 30 min/1 h** (re-toggle liste↔carte instantané),
+`mapUsed: true` conservé dans le payload (sémantique backend préservée).
+`indexStepMap` en config : taille de page (déf. 500) ; `0` restaure le
+tout-en-1-appel legacy. Côté rendu, `SearchMap` est créé UNE fois et les
+markers sont ajoutés **incrémentalement** (`addLayers` par page,
+`chunkedLoading`) ; `fitBounds` ne joue qu'à la 1ʳᵉ page d'un périmètre — le
+viewport de l'utilisateur est préservé pendant le chargement. `MapProgress`
+affiche la progression « X / Y » et l'alerte de plafond.
+
+**Options `map` de la section** (`MapConfSchema`) :
+`map.itemAction: {kind: "profil"|"preview"}` — action du bouton de la popup
+(défaut `preview` : détail `SwitchDetailsMode` avec `list.card`/`list.preview` ;
+`profil` : navigation `/profil/:slug`) · `map.marker.useItemImage: true` —
+marqueur = vignette RONDE de l'item quand elle existe (sinon pin Leaflet).
+La **popup** est du HTML **statique** (`renderToString`) : aucun état React
+n'y fonctionne — seul le bouton `data-id` est interactif (listener natif posé
+au `popupopen`). En dev, `window.__searchMapDebug = {map, markers}` permet de
+piloter la carte depuis la console/les tests navigateur.
 
 ### SearchBubbleChart
 

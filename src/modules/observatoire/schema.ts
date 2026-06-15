@@ -8,7 +8,7 @@
 // ------------------------------------------------------------
 import { z } from "zod";
 import { LocalizedString } from "@/types/locale-schema";
-import { PreviewConfSchema } from "@/modules/search/schema";
+import { PreviewConfSchema, SearchVariantSchema } from "@/modules/search/schema";
 
 /*───────────────────────────────────────────────────────────────*/
 /* 1. Item — document brut                                       */
@@ -30,12 +30,39 @@ export type ObservatoryItem = Record<string, unknown>;
 // pilotable par la config (mécanisme dans le composant, données dans la
 // config) : le code ne connaît AUCUN dataset particulier.
 export const DimensionDefSchema = z.object({
-  /** Chaînes de priorité : le premier chemin non vide gagne (chemins pointés
-   *  acceptés, ex. "address.addressLocality"). */
+  /** Chaînes de priorité : le premier chemin non vide gagne. Chemins pointés
+   *  acceptés (ex. "address.addressLocality") et ARRAY-AWARE : un segment
+   *  tombant sur un tableau (sans index numérique) mappe le reste du chemin sur
+   *  chaque élément puis aplatit — une réponse CoForm embarquée se lit ainsi
+   *  par un simple chemin `answers.<form>.serverData.answers.<section>.<field>`
+   *  (cf. resolveSegments, dimensions.ts), sans accesseur métier dédié. */
   paths: z.array(z.string()).min(1),
+  /** REGROUPEMENT sur clé canonique (kind `value`) : quand un libellé affiché
+   *  (`paths`, ex. `address.level4Name`) est du texte libre SALE (variantes de
+   *  casse/accents : "NORD"/"Nord", "ISERE"/"Isère"…), `keyPaths` désigne une
+   *  clé propre et stable (ex. `address.level4`, l'id de zone). Le moteur
+   *  regroupe les items par cette clé et, comme TOUTES les données sont chargées,
+   *  DÉRIVE un libellé canonique par groupe (la variante la plus « riche » :
+   *  casse mixte + accents). Filtre/KPI/graphe/table voient alors une valeur
+   *  unique par groupe — fini les doublons. Sans `keyPaths` : comportement
+   *  normal (la valeur affichée EST la clé). */
+  keyPaths: z.array(z.string()).min(1).optional(),
   /** value (défaut) : 1ʳᵉ chaîne non vide · list : CSV/tableau aplati ·
-   *  anyTrue : au moins un des chemins est vrai · number : 1ʳᵉ valeur numérique. */
-  kind: z.enum(["value", "list", "anyTrue", "number"]).optional(),
+   *  anyTrue : au moins un des chemins est vrai · number : 1ʳᵉ valeur numérique ·
+   *  contains : un chemin (liste) contient `value` (booléen d'appartenance). */
+  kind: z.enum(["value", "list", "anyTrue", "number", "contains"]).optional(),
+  /** `list` : restreint ET ordonne la sortie à cet ALLOWLIST — décompose un
+   *  champ fourre-tout (ex. `tags` qui mêle typologie/portage/surface) en axes
+   *  orthogonaux distincts. */
+  values: z.array(z.string()).optional(),
+  /** `contains` : valeur dont l'appartenance à la liste fait le booléen
+   *  (ex. label "Compagnon France Tiers-Lieux"). */
+  value: z.string().optional(),
+  /** Normalisation des valeurs brutes → valeur canonique (avant allowlist) :
+   *  fusionne les variantes saisies à la main du backend (ex.
+   *  "Plus de 200m2" → "Plus de 200m²", "Switzerland" → "Suisse"). S'applique
+   *  aux kinds `value` et `list`. */
+  valueMap: z.record(z.string(), z.string()).optional(),
   /** Libellé localisé (prioritaire sur labelKey). */
   label: LocalizedString.optional(),
   /** Clé i18n du namespace modules/observatoire (réservé au chrome interne
@@ -155,6 +182,11 @@ const ObservatoryBaseParamsSchema = z
       .record(z.string(), z.union([z.literal(1), z.literal(-1)]))
       .optional(),
     notSourceKey: z.boolean().optional(),
+    // Variant SDK de `searchCostum` (ex. "navigator-tl") — DOIT correspondre à
+    // celui des sections search du même costum, sinon l'observatoire interroge
+    // un endpoint/projection différents. Inclus dans la queryKey (isole le
+    // cache) et propagé au prefetch SSR. Même enum que les sections search.
+    variant: SearchVariantSchema.optional(),
     // Plafond de résultats chargés (sécurité « charger tout ») — défaut :
     // SEARCH_ALL_DEFAULT_MAX_RESULTS (5000) du hook générique.
     maxResults: z.number().int().positive().optional(),

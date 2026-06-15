@@ -2,17 +2,10 @@ import { Calendar } from 'lucide-react';
 import { T } from "@/components/ui/T";
 import { cn } from '@/lib/utils';
 import { TimelineSectionProps } from '@/types/site-schema';
+import { formatDateLong } from '@/helpers/formatDate';
 
 export function TimelineSection({ id, props }: { id?: string; props: TimelineSectionProps }) {
   const { events, alternating = true } = props;
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
 
   return (
     <section id={id} className="py-16 bg-background text-foreground">
@@ -38,7 +31,7 @@ export function TimelineSection({ id, props }: { id?: string; props: TimelineSec
                   {(event.date) && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                       <Calendar className="w-4 h-4" />
-                      <span>{formatDate(event.date)}</span>
+                      <span>{formatDateLong(event.date)}</span>
                     </div>
                   )}
 

@@ -26,7 +26,8 @@
     "test:watch": "vitest --watch",
     "config:validate": "tsx scripts/validate-config.ts",
     "config:schema": "tsx scripts/config-schema.ts",
-    "entity:slug": "tsx scripts/entity-slug.ts"
+    "entity:slug": "tsx scripts/entity-slug.ts",
+    "map:functions": "tsx scripts/map-functions.ts"
   },
   "resolutions": {
     "react": "19.2.1",
@@ -149,10 +150,12 @@
     "eslint-plugin-react-refresh": "^0.4.12",
     "globals": "^16.5.0",
     "jsdom": "^29.1.1",
+    "knip": "^6.16.1",
     "postcss": "^8.4.47",
     "rimraf": "^6.0.1",
     "rollup-plugin-visualizer": "^6.0.5",
     "tailwindcss": "^4.1.11",
+    "ts-morph": "^28.0.0",
     "tsx": "^4.20.3",
     "tw-animate-css": "^1.3.4",
     "typescript": "^5.8.3",

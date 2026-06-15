@@ -15,14 +15,7 @@ import { type SearchHeaderSectionProps } from "@/types/site-schema";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
-    DropdownMenu,
-    DropdownMenuCheckboxItem,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { MultiCombobox } from "@/components/ui/multi-combobox";
 import {
     Sheet,
     SheetClose,
@@ -197,37 +190,35 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
     const renderDropdownFilter = (filter: DropdownFilterConfig) => {
         const selectedValues = getDropdownSelectedValues(filter);
         return (
-            <DropdownMenu key={filter.id}>
-                <DropdownMenuTrigger asChild>
-                    <Button
-                        variant="outline"
-                        className="h-11 w-full justify-between rounded-xl border-border bg-muted/60! px-3 text-foreground shadow-sm hover:border-primary/50 hover:bg-muted! hover:text-foreground lg:w-auto lg:min-w-[150px] lg:max-w-full dark:bg-muted/50! dark:hover:bg-muted/70!"
-                    >
-                        <span className="truncate">{getDropdownTriggerLabel(filter)}</span>
-                        <ChevronDown className="ml-2 h-4 w-4 shrink-0" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-72 max-h-72 overflow-y-auto">
-                    <DropdownMenuItem onClick={() => setDropdownSelection(filter, [])}>
-                        {filter.allLabel ? t(filter.allLabel) : t("Tous")}
-                    </DropdownMenuItem>
-
-                    {filter.options.length > 0 && <DropdownMenuSeparator />}
-
-                    {filter.options.map((option) => (
-                        <DropdownMenuCheckboxItem
-                            key={option.id}
-                            checked={selectedValues.includes(option.id)}
-                            onCheckedChange={() => toggleDropdownOption(filter, option.id)}
-                        >
+            // Combobox multi partagé (ui/multi-combobox) : items au look
+            // SelectItem, coche à DROITE, reste ouvert pendant la sélection.
+            <MultiCombobox
+                key={filter.id}
+                options={filter.options.map((option) => ({
+                    id: option.id,
+                    label: (
+                        <>
                             {option.icon && (
-                                <DynamicIcon name={option.icon as IconName} className="w-4 h-4 mr-2" />
+                                <DynamicIcon name={option.icon as IconName} className="w-4 h-4" />
                             )}
                             {t(option.label)}
-                        </DropdownMenuCheckboxItem>
-                    ))}
-                </DropdownMenuContent>
-            </DropdownMenu>
+                        </>
+                    ),
+                }))}
+                selected={selectedValues}
+                onToggle={(id) => toggleDropdownOption(filter, id)}
+                allLabel={filter.allLabel ? t(filter.allLabel) : t("Tous")}
+                onClear={() => setDropdownSelection(filter, [])}
+                contentClassName="w-72"
+            >
+                <Button
+                    variant="outline"
+                    className="h-11 w-full justify-between rounded-xl border-border bg-muted/60! px-3 text-foreground shadow-sm hover:border-primary/50 hover:bg-muted! hover:text-foreground lg:w-auto lg:min-w-[150px] lg:max-w-full dark:bg-muted/50! dark:hover:bg-muted/70!"
+                >
+                    <span className="truncate">{getDropdownTriggerLabel(filter)}</span>
+                    <ChevronDown className="ml-2 h-4 w-4 shrink-0" />
+                </Button>
+            </MultiCombobox>
         );
     };
 

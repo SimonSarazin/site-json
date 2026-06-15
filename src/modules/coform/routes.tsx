@@ -3,6 +3,7 @@ import { LoaderFunctionArgs, RouteObject } from "react-router";
 import type { ModuleRouteFactory } from "@/lib/modules";
 import CoFormPage from "./pages/CoFormPage.tsx";
 import CoFormAnswerPage from "./pages/CoFormAnswerPage.tsx";
+import CoFormPlacePage from "./pages/CoFormPlacePage.tsx";
 
 const coformLoader = async ({ params }: LoaderFunctionArgs, queryClient?: QueryClient) => {
     if (!queryClient) return null;
@@ -45,6 +46,8 @@ const coformAnswerLoader = async ({ params, request }: LoaderFunctionArgs) => {
  * Convention :
  * - /coform/:formId                           → formulaire dynamique
  * - /coform/:formId/answer/:answerId?mode=... → consultation / édition d'une réponse
+ * - /coform/:formId/place                     → vue collaborative liste des lieux
+ * - /coform/:formId/place/:placeId            → vue collaborative édition par lieu
  *
  * @param queryClient - Client React Query pour le pré-chargement SSR
  * @returns Liste des routes du module coform
@@ -59,5 +62,15 @@ export const routes: ModuleRouteFactory = (queryClient?: QueryClient): RouteObje
         path: "coform/:formId/answer/:answerId",
         element: <CoFormAnswerPage />,
         loader: (args) => coformAnswerLoader(args),
+    },
+    {
+        path: "coform/:formId/place",
+        element: <CoFormPlacePage />,
+        loader: (args) => coformLoader(args, queryClient),
+    },
+    {
+        path: "coform/:formId/place/:placeId",
+        element: <CoFormPlacePage />,
+        loader: (args) => coformLoader(args, queryClient),
     },
 ];

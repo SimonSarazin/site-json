@@ -10,11 +10,66 @@ sportifs 974), généralisé sur `peter-dev-adapt`
 
 Une **dimension** décrit COMMENT lire une grandeur sur un item brut
 (`serverData`) : `{paths: [chaîne de priorité], kind, label}`. Les kinds :
-`value` (1ʳᵉ chaîne/nombre/Date affichable), `list` (CSV/tableau aplati),
-`anyTrue` (au moins un champ affirmatif — "Oui"/1/true…), `number`.
+`value` (1ʳᵉ chaîne/nombre/Date affichable), `list` (CSV/tableau aplati puis
+**dédupliqué** — un item pèse 1 par valeur distincte, pas de sur-comptage dans
+les graphes/cellules même s'il a plusieurs sources/réponses),
+`anyTrue` (au moins un champ affirmatif — "Oui"/1/true…), `number`,
+`contains` (booléen : un chemin-liste contient `value`).
 Filtres, KPI, graphes et colonnes **référencent des dimensions** ; le moteur
 (`dimensions.ts`) les résout avec des coercions tolérantes (y compris les
 dates EJSON désérialisées en `Date` par le SDK).
+
+**Décomposer un champ fourre-tout** : `list` + `values` (allowlist) restreint
+ET ordonne la sortie à des valeurs déclarées — un même champ multivalué qui
+mêle plusieurs axes (ex. `tags` = typologie + statut juridique + surface +
+label) devient autant de dimensions ORTHOGONALES. Ex. :
+`typologie {paths:["tags"], kind:"list", values:["Coworking","Fablab",…]}`,
+`surface {paths:["tags"], kind:"list", values:["Plus de 200m²",…]}`,
+`compagnon {paths:["tags"], kind:"contains", value:"Compagnon France Tiers-Lieux"}`
+(→ KPI `percentTrue`). L'ordre de `values` = ordre stable des parts/barres.
+
+**Normaliser des valeurs sales** : `valueMap` (raw → canonique, AVANT
+l'allowlist) fusionne les variantes saisies à la main du backend. Deux usages
+typiques : nettoyer un champ libre (`pays {paths:["address.addressCountry"],
+valueMap:{"FR":"France","RE":"Réunion",…}}` — on lit le CODE ISO propre et on
+mappe vers le nom, comme le filtre `scopeList` de la liste s'appuie sur le
+référentiel de zones plutôt que sur le `level1Name` libre) ; ou fusionner des
+orthographes (`surface valueMap:{"Plus de 200m2":"Plus de 200m²","Entre 60m² et
+200m²":"Entre 60 et 200m²"}`). Sur un `list`, les variantes d'un même item
+dédoublonnent vers la canonique.
+
+**Regrouper sur une clé propre, libellé dérivé** (`keyPaths`, kind `value`) :
+quand le libellé affiché (`paths`, ex. `address.level4Name`) est du texte libre
+SALE — variantes de casse/accents pour un même item (`NORD`/`Nord`,
+`ISERE`/`Isère`/`ISèRE`), voire une valeur d'un autre niveau qui s'y glisse —
+`keyPaths` désigne une clé propre et stable (ex. `address.level4`, l'id de zone).
+Le moteur regroupe les items par cette clé et, **comme TOUT le dataset est
+chargé**, DÉRIVE un libellé canonique par groupe : il préfère une variante déjà
+proprement casée (la plus accentuée), sinon Title-Case fr la plus riche
+(particules en minuscule : `Corse-du-Sud`, `Côtes-d'Armor`). Filtre/KPI/graphe/
+table voient alors UNE valeur par groupe — fini les doublons (sur les tiers-lieux
+FR : `address.level4Name` brut = 225 valeurs → regroupé par `address.level4` =
+104 départements propres). La map clé→libellé est construite une fois sur le
+dataset complet (`buildLabelMaps`, libellés stables indépendants du filtrage) ;
+sans `keyPaths` : comportement normal (la valeur affichée EST la clé).
+Ex. : `departement {paths:["address.level4Name"], keyPaths:["address.level4"]}`.
+
+**Réponses CoForm comme dimensions** (chemin array-aware) : avec un variant qui
+embarque les réponses (`serverData.answers`, ex. `navigator-tl`), une dimension
+les lit par un **simple `paths`** — aucun accesseur métier dédié. `paths`
+résout segment par segment et, quand un segment tombe sur un TABLEAU sans index
+numérique, mappe le reste du chemin sur chaque élément puis aplatit ; comme
+`answers.<form>` est un tableau d'entités Answer, le chemin
+`answers.<form>.serverData.answers.<section>.<field>` ramène la (les) valeur(s)
+de ce champ — `{paths:["answers.<form>.serverData.answers.<section>.<field>"],
+kind:"list"}`. La valeur (chaîne ou liste) est ensuite traitée par `kind` comme
+une source normale — `values`, `valueMap`, `contains` compris ; un index
+explicite (`…answers.<form>.0.serverData…`) cible une entité précise.
+`fieldsFromDimensions` ramène la racine `answers` à la projection. Débloque les
+axes « équipements / services / activités » que les filtres `filtersByAnswers`
+exposent. ⚠️ Couverture = part des items ayant RÉPONDU au CoForm (souvent faible
+au départ, croît avec les saisies) ; les champs `table` (array-of-arrays, ex.
+salles/tarifs) ne sont pas encore lus.
 
 ## Format de la section (tout vient de la config)
 
@@ -26,6 +81,8 @@ dates EJSON désérialisées en `Date` par le SDK).
     "baseParams": {                              // PÉRIMÈTRE — requis
       "defaultTypes": ["poi"],
       "defaultFilters": { "$or": { "source.key": "monDataset" } },
+      "notSourceKey": true,                      // cherche tout le réseau (cf. /lieux)
+      "variant": "navigator-tl",                 // variant SDK — ALIGNER sur les sections search du costum
       "maxResults": 5000                         // plafond (défaut 5000)
     },
     "dimensions": {                              // REQUIS — le modèle du dataset

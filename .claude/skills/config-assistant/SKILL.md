@@ -16,7 +16,7 @@ Les faits volatils se LISENT à l'usage, ils ne sont pas écrits ici :
 |---|---|
 | Liste des sections + description | `npm run config:schema sections` |
 | Forme exacte d'une section | `npm run config:schema section:<type>` (ex. `section:pricing`) |
-| Forme de `header`/`footer`/`theme`/`meta`/`auth`/`page`/`profiles` | `npm run config:schema <bloc>` |
+| Forme de `header`/`footer`/`theme`/`meta`/`auth`/`page`/`profiles`/`integrations` | `npm run config:schema <bloc>` |
 | Valider UN config (boucle de correction) | `npm run config:validate -- <fichier.json>` |
 | Chercher / vérifier un slug d'entité | `npm run entity:slug -- search <nom>` / `check <slug>` |
 | Qualité (liens morts, i18n, thème) | `npm run audit:config` |
@@ -113,7 +113,7 @@ Pour corriger/améliorer un config existant :
 
 | module | surface | clés JSON | prérequis backend |
 |---|---|---|---|
-| `search` | sections `searchPro`/`searchProStatic`/`filters`/`searchHeader`/`cardCountCT`/`thematics` | `baseParams` (`sourceKey`…), `list` (card/detailsMode/preview) | données indexées (sourceKey) |
+| `search` | sections `searchPro`/`searchProStatic`/`filters`/`searchHeader`/`cardCountCT`/`thematics` | `baseParams` (`sourceKey`…), `list` (card/detailsMode/preview), `map` (`itemAction`/`marker`), `filters[].select`/`optionStyle`/`order` (widgets par groupe) | données indexées (sourceKey) ; carte : fond MapTiler via env `VITE_MAPTILER_API_KEY` (sinon repli OSM/Carto) + `integrations.map.styleLight/Dark` |
 | `news` | section `news` | `props.entitySlug`, `maxItems` | fil d'actus de l'entité |
 | `coform` | routes `/coform` | réf. de formulaire | CoForm défini côté backend |
 | `cagnotte` | sections `actions`/`finance`/`*-summary` | `idProjet` | projet + Stripe/HelloAsso |

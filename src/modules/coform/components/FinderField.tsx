@@ -8,19 +8,7 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import type { FormFieldMapping, FinderValue, FinderElement, FinderConfig } from "../types";
 import { FinderElementCard } from "./FinderElementCard";
 import { FinderSearchModal } from "./FinderSearchModal";
-import { FieldError } from "./FormFields";
-
-// Import HintText pour afficher l'info en markdown
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-
-function HintText({ text }: { text: string }) {
-  return (
-    <div className="text-xs text-muted-foreground -mt-1 mb-1 prose prose-xs dark:prose-invert max-w-none [&>p]:m-0 [&>ul]:m-0 [&>ol]:m-0">
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
-    </div>
-  );
-}
+import { FieldError, HintText } from "./FormFields";
 
 interface FinderFieldProps {
   field: FormFieldMapping;
@@ -144,7 +132,7 @@ export function FinderField({
    * l'ouverture d'un modal d'édition + en restaurant `canEdit={config.editElement && !readOnly}`.
    */
   const handleEditElement = (element: FinderElement) => {
-    console.log("Edit element:", element);
+    if (import.meta.env.DEV) console.log("Edit element:", element);
     toast.info(`Fonctionnalité à implémenter : éditer l'élément « ${element.name} »`);
   };
 

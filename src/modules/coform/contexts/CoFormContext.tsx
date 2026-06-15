@@ -35,6 +35,11 @@ export interface CoFormContextType {
   isLoading: boolean;
   error: Error | null;
 
+  /** Métadonnées du brouillon restaurable. null si aucun draft valide. */
+  restorableDraft: { timestamp: number } | null;
+  /** Métadonnées du brouillon écarté (server plus récent). null si absent. */
+  staleDraftInfo: { timestamp: number } | null;
+
   // Actions
   goToNextStep: () => void;
   goToPreviousStep: () => void;
@@ -44,6 +49,12 @@ export interface CoFormContextType {
   submitStepData: (subFormId: string, data: SubFormData) => Promise<void>;
   submitAllData: () => Promise<void>;
   resetForm: () => void;
+  /** Applique le brouillon restaurable au state. No-op si aucun draft. */
+  restoreDraft: () => void;
+  /** Refuse le brouillon restaurable (le supprime du localStorage). */
+  discardDraft: () => void;
+  /** Ferme la bannière d'information sur un brouillon obsolète. */
+  acknowledgeStaleDraft: () => void;
 }
 
 /**
@@ -68,6 +79,9 @@ export const defaultCoFormContext: CoFormContextType = {
   isLoading: false,
   error: null,
 
+  restorableDraft: null,
+  staleDraftInfo: null,
+
   goToNextStep: () => {},
   goToPreviousStep: () => {},
   goToStep: () => {},
@@ -76,6 +90,9 @@ export const defaultCoFormContext: CoFormContextType = {
   submitStepData: async () => {},
   submitAllData: async () => {},
   resetForm: () => {},
+  restoreDraft: () => {},
+  discardDraft: () => {},
+  acknowledgeStaleDraft: () => {},
 };
 
 export const CoFormContext = createContext<CoFormContextType>(defaultCoFormContext);

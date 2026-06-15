@@ -1,25 +1,20 @@
 
 import { useClientModule } from "@/hooks/useClientModule";
 import { useT } from "@/hooks/useT";
-import { Skeleton } from "@/components/ui/skeleton";
 import { SearchMapWrapperProps } from "../schema";
+import MapSkeleton from "./MapSkeleton";
 
 
-export default function SearchMapWrapper({ results, card, preview }: SearchMapWrapperProps) {
+export default function SearchMapWrapper({ results, card, preview, map }: SearchMapWrapperProps) {
   const [mounted, MapModule] = useClientModule(() => import("./SearchMap"));
   const t = useT("modules/search");
 
   if (!mounted || !MapModule) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-2 w-full h-full">
-        <Skeleton className="w-full h-full" />
-        <p className="text-sm text-muted-foreground">
-          {t("Chargement de la carte…")}
-        </p>
-      </div>
-    );
+    // MapSkeleton (min-h-screen) : sans hauteur propre, le temps de
+    // chargement du chunk Leaflet serait un blanc total.
+    return <MapSkeleton label={t("Chargement de la carte…")} />;
   }
 
   const SearchMap = MapModule.default;
-  return <SearchMap results={results} card={card} preview={preview} />;
+  return <SearchMap results={results} card={card} preview={preview} map={map} />;
 }

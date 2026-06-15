@@ -1,29 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useForm, Controller } from "react-hook-form";
-import { ChevronDown, Filter, RotateCcw, Search, SlidersHorizontal } from "lucide-react";
+import { Filter, RotateCcw, Search, SlidersHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import MultipleSelector from "@/components/ui/multiple-selector";
 import {
   Sheet,
   SheetClose,
@@ -39,130 +22,15 @@ import {
   BOOL_FILTER_VALUES,
   dimensionList,
   dimensionValue,
+  isBoolKind,
+  type LabelMaps,
 } from "../dimensions";
 import { uniqSorted } from "../utils";
-
-interface SelectFieldProps {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  options: Array<{ id: string; label: string }>;
-  /** Libellé « toutes valeurs » — toujours fourni par l'appelant (i18n). */
-  allLabel: string;
-}
-
-/** Radix Select interdit `value=""` sur un item — sentinelle pour « Tous »
- *  (la valeur de filtre reste `""` côté formulaire/logique). */
-const ALL_SENTINEL = "__all__";
-
-function SelectField({ label, value, onChange, options, allLabel }: SelectFieldProps) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
-      <Select
-        value={value === "" ? ALL_SENTINEL : value}
-        onValueChange={(v) => onChange(v === ALL_SENTINEL ? "" : v)}
-      >
-        <SelectTrigger className="w-full" size="sm">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value={ALL_SENTINEL}>{allLabel}</SelectItem>
-          {options.map((o) => (
-            <SelectItem key={o.id} value={o.id}>
-              {o.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-  );
-}
-
-/** Multi SANS recherche : DropdownMenu + cases à cocher — le pattern du
- *  searchHeader de la page equipements (listes courtes). */
-function MultiCheckboxField({ label, value, onChange, options, allLabel, selectedCountLabel }: SelectFieldProps & { selectedCountLabel: (n: number) => string }) {
-  const selected = value.split(",").map((v) => v.trim()).filter(Boolean);
-  const triggerLabel =
-    selected.length === 0
-      ? allLabel
-      : selected.length === 1
-        ? (options.find((o) => o.id === selected[0])?.label ?? selected[0])
-        : selectedCountLabel(selected.length);
-  const toggle = (id: string) => {
-    const next = selected.includes(id)
-      ? selected.filter((v) => v !== id)
-      : [...selected, id];
-    onChange(next.join(","));
-  };
-  return (
-    <div className="flex flex-col gap-1.5">
-      <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          {/* Survol aligné sur le SelectTrigger (neutre en light, input/50 en
-              dark) — le hover:bg-accent du Button outline détonnait à côté
-              des Select normaux. */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 w-full justify-between border-input bg-transparent font-normal hover:bg-transparent hover:text-foreground dark:hover:bg-input/50"
-          >
-            <span className="truncate">{triggerLabel}</span>
-            <ChevronDown className="ml-1 h-3.5 w-3.5 shrink-0 opacity-50" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="max-h-72 w-(--radix-dropdown-menu-trigger-width) min-w-48 overflow-y-auto">
-          <DropdownMenuItem onClick={() => onChange("")}>{allLabel}</DropdownMenuItem>
-          {options.length > 0 && <DropdownMenuSeparator />}
-          {options.map((o) => (
-            <DropdownMenuCheckboxItem
-              key={o.id}
-              checked={selected.includes(o.id)}
-              onCheckedChange={() => toggle(o.id)}
-              onSelect={(e) => e.preventDefault()}
-            >
-              {o.label}
-            </DropdownMenuCheckboxItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
-  );
-}
-
-/** Sélection avec RECHERCHE (cmdk intégré + badges) — valeur RHF jointe par
- *  virgule (format URL maison). `single` : le nouveau choix REMPLACE le
- *  précédent (sélection unique avec recherche). */
-function MultiField({ label, value, onChange, options, allLabel, noResult, single }: SelectFieldProps & { noResult: string; single?: boolean }) {
-  const selected = value
-    .split(",")
-    .map((v) => v.trim())
-    .filter(Boolean)
-    .map((v) => ({ value: v, label: v }));
-  return (
-    <div className="flex flex-col gap-1.5">
-      <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
-      <MultipleSelector
-        value={selected}
-        onChange={(opts) => {
-          const kept = single ? opts.slice(-1) : opts;
-          onChange(kept.map((o) => o.value).join(","));
-        }}
-        options={options.map((o) => ({ value: o.id, label: o.label }))}
-        placeholder={allLabel}
-        hidePlaceholderWhenSelected
-        emptyIndicator={<p className="text-center text-sm text-muted-foreground">{noResult}</p>}
-        // Hauteur EXACTE de 32px (h-8, comme Select/dropdown) quel que soit
-        // l'état : padding racine/input neutralisés (ils s'empilaient → 38px),
-        // le wrap interne est centré à 30px (+2px de bordure). Avec plusieurs
-        // lignes de badges, min-h laisse grandir.
-        className="min-h-8 px-3 py-0 [&>div]:min-h-[30px] [&>div]:items-center"
-        inputProps={{ className: "px-0 py-0" }}
-      />
-    </div>
-  );
-}
+import {
+  SelectField,
+  MultiCheckboxField,
+  MultiField,
+} from "@/modules/search/components/filterFields";
 
 /**
  * Input de recherche ISOLÉ : la valeur immédiate (chaque frappe) vit ici —
@@ -222,6 +90,8 @@ interface FiltersProps {
   search?: FiltersSearchProps | null;
   /** Chargement en cours : {loaded, total} → badge « données partielles ». */
   partial?: { loaded: number; total: number | null } | null;
+  /** Libellés canoniques (dimensions à `keyPaths`) — options de filtre regroupées. */
+  labels?: LabelMaps;
 }
 
 /**
@@ -234,7 +104,7 @@ interface FiltersProps {
  * même pattern que le `searchHeader` du module search. La recherche texte
  * (optionnelle) reste visible sur tous les écrans.
  */
-export function Filters({ data, dimensions, filterDefs, values, onChange, search, partial }: FiltersProps) {
+export function Filters({ data, dimensions, filterDefs, values, onChange, search, partial, labels }: FiltersProps) {
   const t = useT("modules/observatoire");
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -292,7 +162,7 @@ export function Filters({ data, dimensions, filterDefs, values, onChange, search
   const optionsById = useMemo(() => {
     const out: Record<string, Array<{ id: string; label: string }>> = {};
     for (const { id, def } of fields) {
-      if (def.kind === "anyTrue") {
+      if (isBoolKind(def.kind)) {
         out[id] = [
           { id: BOOL_FILTER_VALUES.TRUE, label: t("filters.yes") },
           { id: BOOL_FILTER_VALUES.FALSE, label: t("filters.no") },
@@ -302,13 +172,13 @@ export function Filters({ data, dimensions, filterDefs, values, onChange, search
           (v) => ({ id: v, label: v }),
         );
       } else {
-        out[id] = uniqSorted(data.map((d) => dimensionValue(d, def))).map(
+        out[id] = uniqSorted(data.map((d) => dimensionValue(d, def, labels?.[id]))).map(
           (v) => ({ id: v, label: v }),
         );
       }
     }
     return out;
-  }, [fields, data, t]);
+  }, [fields, data, t, labels]);
 
   const labelFor = ({ id, def }: { id: string; def: DimensionDef }): string =>
     def.label ? t(def.label) : def.labelKey ? t(def.labelKey) : id;
@@ -326,7 +196,7 @@ export function Filters({ data, dimensions, filterDefs, values, onChange, search
   //   limité à 1 (le choix remplace) · sinon Select simple.
   // Les dimensions anyTrue (oui/non) restent toujours en Select simple.
   const renderField = (field: { id: string; def: DimensionDef; filter: FilterDef }) => {
-    const isBool = field.def.kind === "anyTrue";
+    const isBool = isBoolKind(field.def.kind);
     const common = {
       label: labelFor(field),
       options: optionsById[field.id] ?? [],

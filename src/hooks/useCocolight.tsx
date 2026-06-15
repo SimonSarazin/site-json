@@ -8,3 +8,14 @@ export function useCocolight() {
   }
   return context;
 }
+
+/**
+ * Variante tolérante : retourne `null` hors provider (précédent
+ * `usePageFiltersOptional`). À réserver aux composants dont la feature se
+ * dégrade proprement sans utilisateur/API — ex. SmartCoForm, où l'absence
+ * de `me` désactive simplement la persistance du brouillon (et permet de
+ * tester le composant sans monter tout le provider).
+ */
+export function useCocolightOptional() {
+  return useContext(CocolightContext);
+}

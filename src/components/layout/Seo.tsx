@@ -4,6 +4,7 @@ import { useLocalization } from "@/hooks/useLocalization";
 import { LocalizedString } from "@/types/locale-schema";
 import { useSite } from "@/hooks/useSite";
 import { useCocolight } from "@/hooks/useCocolight";
+import { getServerUrl } from "@/lib/constant/common";
 
 interface SeoProps {
   page: {
@@ -66,6 +67,14 @@ export function Seo({ page }: SeoProps) {
                     : meta.keywords?.length ? meta.keywords
                     : [];
 
+  /** Open Graph : image page > site ; les chemins relatifs sont absolutisés
+   *  (les crawlers OG ignorent les URLs relatives). */
+  const ogImageRaw = seo.ogImage ?? meta.ogImage;
+  const ogImage = ogImageRaw?.startsWith("/")
+    ? getServerUrl().replace(/\/$/, "") + ogImageRaw
+    : ogImageRaw;
+  const twitterCard = seo.twitterCard ?? (ogImage ? "summary_large_image" : undefined);
+
   /** 3. Robots : on combine si besoin */
   let robots: string | undefined;
   if (seo.noIndex || seo.noFollow) {
@@ -90,10 +99,17 @@ export function Seo({ page }: SeoProps) {
         ),
 
         /* --- Open Graph / Twitter ---------------------------------------- */
-        seo.ogImage && <meta key="og-img" property="og:image" content={seo.ogImage} />,
-        seo.ogType  && <meta key="og-type" property="og:type" content={seo.ogType} />,
-        seo.twitterCard && (
-          <meta key="tw-card" name="twitter:card" content={seo.twitterCard} />
+        title && <meta key="og-title" property="og:title" content={title} />,
+        description && (
+          <meta key="og-desc" property="og:description" content={description} />
+        ),
+        ogImage && <meta key="og-img" property="og:image" content={ogImage} />,
+        <meta key="og-type" property="og:type" content={seo.ogType ?? "website"} />,
+        meta.title && (
+          <meta key="og-site" property="og:site_name" content={t(meta.title)} />
+        ),
+        twitterCard && (
+          <meta key="tw-card" name="twitter:card" content={twitterCard} />
         ),
         /* --- Canonical ---------------------------------------------------- */
         seo.canonical && <link key="canonical" rel="canonical" href={seo.canonical} />,
