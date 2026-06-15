@@ -2,7 +2,7 @@ import { useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { toast } from "sonner";
-import { ChevronRight, Loader2, Search, UserPlus } from "lucide-react";
+import { Building2, ChevronRight, Loader2, Search, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/useT";
 import { useCocolight } from "@/hooks/useCocolight";
@@ -15,6 +15,7 @@ import {
   useRejectInvitation,
 } from "@/modules/profil/actions/mutations/relationship";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
@@ -66,7 +67,11 @@ interface PlaceRowProps {
 function PlaceRow({ org, role, onOpen, i18n }: PlaceRowProps) {
   const data = (org as unknown as { serverData?: Record<string, unknown> }).serverData ?? {};
   const name = (data.name as string) || (org as unknown as { name?: string }).name || "—";
-  const thumb = (data.profilThumbImageUrl as string) || (data.profilImageUrl as string) || null;
+  const logoUrl =
+    (data.profilMediumImageUrl as string) ||
+    (data.profilImageUrl as string) ||
+    (data.profilThumbImageUrl as string) ||
+    null;
 
   return (
     <button
@@ -78,11 +83,15 @@ function PlaceRow({ org, role, onOpen, i18n }: PlaceRowProps) {
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       )}
     >
-      {thumb ? (
-        <img src={thumb} alt="" className="h-10 w-10 rounded-md object-cover shrink-0" />
-      ) : (
-        <div className="h-10 w-10 rounded-md bg-muted shrink-0" />
-      )}
+      {/* Avatar — rendu aligné sur la fiche élément : `object-cover` sur fond
+          `bg-card` (le fond clair évite qu'un logo transparent paraisse sale).
+          Radix bascule seul sur le fallback (icône) si l'image échoue ou manque. */}
+      <Avatar className="h-10 w-10 rounded-md shrink-0 bg-card">
+        {logoUrl && <AvatarImage src={logoUrl} alt="" className="object-cover" />}
+        <AvatarFallback className="rounded-md bg-muted">
+          <Building2 aria-hidden="true" className="h-5 w-5 text-muted-foreground" />
+        </AvatarFallback>
+      </Avatar>
       <div className="flex-1 min-w-0">
         <div className="font-medium text-sm truncate">{name}</div>
         <span
@@ -119,17 +128,25 @@ function PendingRow({ org, pendingType, i18n }: PendingRowProps) {
 
   const data = (org as unknown as { serverData?: Record<string, unknown> }).serverData ?? {};
   const name = (data.name as string) || (org as unknown as { name?: string }).name || "—";
-  const thumb = (data.profilThumbImageUrl as string) || (data.profilImageUrl as string) || null;
+  const logoUrl =
+    (data.profilMediumImageUrl as string) ||
+    (data.profilImageUrl as string) ||
+    (data.profilThumbImageUrl as string) ||
+    null;
 
   const showActions = pendingType === "isInviting" || pendingType === "isInvitingAdmin";
 
   return (
     <div className="w-full flex items-center gap-3 p-3 rounded-lg border bg-card">
-      {thumb ? (
-        <img src={thumb} alt="" className="h-10 w-10 rounded-md object-cover shrink-0" />
-      ) : (
-        <div className="h-10 w-10 rounded-md bg-muted shrink-0" />
-      )}
+      {/* Avatar — rendu aligné sur la fiche élément : `object-cover` sur fond
+          `bg-card` (le fond clair évite qu'un logo transparent paraisse sale).
+          Radix bascule seul sur le fallback (icône) si l'image échoue ou manque. */}
+      <Avatar className="h-10 w-10 rounded-md shrink-0 bg-card">
+        {logoUrl && <AvatarImage src={logoUrl} alt="" className="object-cover" />}
+        <AvatarFallback className="rounded-md bg-muted">
+          <Building2 aria-hidden="true" className="h-5 w-5 text-muted-foreground" />
+        </AvatarFallback>
+      </Avatar>
       <div className="flex-1 min-w-0">
         <div className="font-medium text-sm truncate">{name}</div>
         <span className="inline-flex items-center text-xs px-1.5 py-0.5 rounded bg-warning/15 text-warning-foreground">

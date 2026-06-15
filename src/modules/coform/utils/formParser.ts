@@ -1011,6 +1011,34 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
 }
 
 /**
+ * Retire `img` de chaque élément d'une valeur finder.
+ *
+ * L'image de profil n'est NI persistée NI lue depuis la réponse : une URL
+ * figée au moment de la sélection se périme (l'élément peut changer d'avatar)
+ * et désynchronise l'affichage du vrai élément. La source de vérité est
+ * l'entité elle-même, résolue live à l'affichage (cf. `useFinderElementImages`,
+ * même modèle que la page "lieux" qui lit `serverData.profilThumbImageUrl`).
+ *
+ * Appliqué des DEUX côtés du round-trip : à l'écriture (`denormalizeAnswerData`)
+ * pour ne rien stocker, et à la lecture (`normalizeAnswerData`) pour ignorer
+ * une `img` éventuellement présente dans une réponse ancienne. Pur (testable).
+ */
+function stripFinderElementImages(value: unknown): unknown {
+  if (!isPlainObject(value)) return value;
+  const out: Record<string, unknown> = {};
+  for (const [id, el] of Object.entries(value)) {
+    if (isPlainObject(el)) {
+      const copy = { ...el };
+      delete copy.img;
+      out[id] = copy;
+    } else {
+      out[id] = el;
+    }
+  }
+  return out;
+}
+
+/**
  * Enrichit une entry de `scores` legacy (commonTable) avec les champs
  * manquants. Le legacy pré-commonTableV2 stockait souvent uniquement
  * `{note: N}` par criteriaId — Zod attend les 8 champs. On comble avec
@@ -1347,6 +1375,15 @@ export function normalizeAnswerData(
           }
         }
       }
+
+      // Finder : l'`img` n'est jamais lue depuis la réponse — elle se périme
+      // (l'élément peut changer d'avatar) et est résolue live à l'affichage
+      // (cf. useFinderElementImages). On la retire ici pour forcer la
+      // résolution live, y compris pour les réponses anciennes qui en
+      // stockaient une.
+      if (field.componentType === "finder" && field.name in subFormData) {
+        subFormData[field.name] = stripFinderElementImages(subFormData[field.name]);
+      }
     }
   }
 
@@ -1415,6 +1452,14 @@ export function denormalizeAnswerData(
         // stockerait comme un radio normal (doublon + écrasement potentiel).
         delete subFormData[field.name];
         // Pas root-level → on saute le traitement root-level ci-dessous.
+        continue;
+      }
+
+      // Finder : ne jamais persister `img` (l'image se périme, l'élément peut
+      // changer d'avatar) — elle est résolue live à l'affichage. On la retire
+      // avant l'envoi serveur. Le champ reste nested (pas root-level).
+      if (field.componentType === "finder" && field.name in subFormData) {
+        subFormData[field.name] = stripFinderElementImages(subFormData[field.name]);
         continue;
       }
 

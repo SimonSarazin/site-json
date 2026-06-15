@@ -937,3 +937,64 @@ describe("extractFinderLinks", () => {
     expect(extractFinderLinks(formData, fields)).toEqual({});
   });
 });
+
+// ============================================================================
+// Finder : l'image n'est jamais persistée ni lue depuis la réponse
+// (résolue live à l'affichage, cf. useFinderElementImages). Strip des 2 côtés.
+// ============================================================================
+
+describe("finder image stripping (normalize + denormalize)", () => {
+  const finderFields: SubFormFields[] = [
+    makeSubFormFields([makeField({ name: "finderXYZ", componentType: "finder" })], "step1"),
+  ];
+
+  it("denormalizeAnswerData retire `img` des éléments finder (pas de persistance)", () => {
+    const formData = {
+      step1: {
+        finderXYZ: {
+          o1: { id: "o1", name: "Org A", type: "organizations", img: "/upload/a.jpg" },
+        },
+      },
+    };
+    const result = denormalizeAnswerData(formData, finderFields) as {
+      step1: { finderXYZ: Record<string, Record<string, unknown>> };
+    };
+    expect(result.step1.finderXYZ.o1).toEqual({ id: "o1", name: "Org A", type: "organizations" });
+    expect("img" in result.step1.finderXYZ.o1).toBe(false);
+  });
+
+  it("normalizeAnswerData retire une `img` héritée d'une réponse ancienne", () => {
+    const raw = {
+      step1: {
+        finderXYZ: {
+          o1: {
+            id: "o1",
+            name: "Org A",
+            type: "organizations",
+            img: "/upload/stale.jpg",
+            address: { postalCode: "97436" },
+          },
+        },
+      },
+    };
+    const result = normalizeAnswerData(raw, finderFields) as {
+      step1: { finderXYZ: Record<string, Record<string, unknown>> };
+    };
+    const el = result.step1.finderXYZ.o1;
+    expect("img" in el).toBe(false);
+    // les autres champs (dont address, donnée réelle) sont préservés.
+    expect(el).toEqual({
+      id: "o1",
+      name: "Org A",
+      type: "organizations",
+      address: { postalCode: "97436" },
+    });
+  });
+
+  it("ne casse pas un finder null / vide", () => {
+    expect(
+      (denormalizeAnswerData({ step1: { finderXYZ: null } }, finderFields) as { step1: Record<string, unknown> })
+        .step1.finderXYZ,
+    ).toBeNull();
+  });
+});
