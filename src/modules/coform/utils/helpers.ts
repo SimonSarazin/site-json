@@ -1,5 +1,5 @@
 import { BOOTSTRAP_TO_TAILWIND_WIDTH } from "../constants";
-import type { SubFormData, AllStepsData } from "../types";
+import type { SubFormData, AllStepsData, FormFieldMapping } from "../types";
 
 /**
  * Convertit une classe de largeur Bootstrap en classe Tailwind
@@ -123,4 +123,79 @@ export function scrollToFieldByName(name: string): void {
       el.style.borderRadius = prevRadius;
     };
   }, 450);
+}
+
+/** Schéma Zod minimal requis par {@link debugLogValidationFailure} (structurel). */
+interface SafeParsable {
+  safeParse: (value: unknown) => {
+    success: boolean;
+    error?: { issues: ReadonlyArray<{ path: PropertyKey[]; code: string; message: string }> };
+  };
+}
+
+/**
+ * Diagnostic **DEV uniquement** (no-op en prod), à brancher **à la demande** :
+ * ce helper n'est PAS câblé en permanence. Quand un submit échoue
+ * mystérieusement ("format invalide"), importe-le et dépose un appel dans le
+ * chemin de validation qui bug (ex. dans `useCoFormStep.submitStep` après un
+ * `form.trigger()` à false, ou dans `DynamicCoForm.handleInvalid`) :
+ *
+ * ```ts
+ * if (!isValid) {
+ *   debugLogValidationFailure(schema, data, stepFields.fields, `étape ${subFormId}`);
+ *   return false;
+ * }
+ * ```
+ *
+ * Il log le détail de chaque issue Zod (chemin + valeur réelle + type) et un
+ * dump de chaque champ commonTable. Le format composite legacy
+ * `{ scores, myCatalog }` est la cause la plus fréquente d'un échec silencieux :
+ * une `note` héritée hors de [0,5], un `coeff` stocké en string, etc. déclenche
+ * une erreur Zod *imbriquée* dont le message ne remonte pas dans l'ErrorSummary.
+ * Retire l'appel une fois le diagnostic posé.
+ *
+ * @param schema  Le schéma Zod de l'étape (ou du formulaire complet).
+ * @param values  Les valeurs RHF plates (clé = `field.name`).
+ * @param fields  Les champs concernés (pour repérer/dumper les commonTable).
+ * @param context Libellé d'étape/formulaire pour préfixer le groupe console.
+ */
+export function debugLogValidationFailure(
+  schema: SafeParsable,
+  values: Record<string, unknown>,
+  fields: FormFieldMapping[],
+  context: string
+): void {
+  if (!import.meta.env.DEV) return;
+  const result = schema.safeParse(values);
+  if (result.success || !result.error) return;
+
+  const getAtPath = (obj: unknown, path: PropertyKey[]): unknown =>
+    path.reduce<unknown>((acc, key) => {
+      if (acc && typeof acc === "object") {
+        return (acc as Record<PropertyKey, unknown>)[key];
+      }
+      return undefined;
+    }, obj);
+
+  const issues = result.error.issues;
+  console.groupCollapsed(
+    `[CoForm] Validation échouée — ${context} (${issues.length} issue·s)`
+  );
+  for (const issue of issues) {
+    const offending = getAtPath(values, issue.path);
+    console.warn(
+      `· ${issue.path.map(String).join(".") || "(racine)"} — [${issue.code}] ${issue.message}`,
+      "\n    valeur:",
+      offending,
+      "\n    type:",
+      Array.isArray(offending) ? "array" : offending === null ? "null" : typeof offending
+    );
+  }
+  // Dump complet des commonTable (souvent la source : data legacy enrichie).
+  for (const f of fields) {
+    if (f.componentType === "commonTable") {
+      console.info(`· valeur complète commonTable "${f.name}":`, values[f.name]);
+    }
+  }
+  console.groupEnd();
 }
