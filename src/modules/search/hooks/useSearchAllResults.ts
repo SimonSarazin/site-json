@@ -85,7 +85,13 @@ export function useSearchAllResults({
     if (hasNextPage && !capped && !isFetchingNextPage && !isLoading) {
       void fetchNextPage();
     }
-  }, [hasNextPage, capped, isFetchingNextPage, isLoading, fetchNextPage]);
+    // `loaded` est INDISPENSABLE dans les deps : après chaque page chargée, les
+    // booléens (hasNextPage/isFetchingNextPage/isLoading) reviennent à des
+    // valeurs IDENTIQUES à un run précédent → sans `loaded`, React compare les
+    // deps, ne voit aucun changement, SAUTE l'effet, et le `fetchNextPage`
+    // suivant n'est jamais relancé → la chaîne se fige (à 500/1000 selon le
+    // timing d'activation : carte par défaut vs basculée au clic).
+  }, [hasNextPage, capped, isFetchingNextPage, isLoading, fetchNextPage, loaded]);
 
   useEffect(() => {
     if (import.meta.env.DEV && capped && hasNextPage) {
