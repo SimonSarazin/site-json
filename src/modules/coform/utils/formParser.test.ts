@@ -589,6 +589,36 @@ describe("normalizeAnswerData", () => {
     expect(result.step1).toBeDefined();
     expect((result.step1 as Record<string, unknown>).evaluationXYZ).toEqual({ vote: 5 });
   });
+
+  it("coerce un coeff legacy stocké en string vers un number (myCatalog commonTable)", () => {
+    // Reproduction du bug "format invalide" : le legacy commonTableV2 stocke le
+    // coefficient via un input texte → `coeff:"1"` (string) casse `z.number()`
+    // au submit. commonTable est nommé `yesOrNo{key}` et split sur deux clés
+    // root-level : `yesOrNo{key}` (scores) + `criterias{key}` (myCatalog).
+    const raw = {
+      yesOrNotest1: {},
+      criteriastest1: {
+        criteria123: { usage: "Bureautique", usageKey: "criteria123", coeff: "1", label: "" },
+      },
+    };
+    const fields: SubFormFields[] = [
+      makeSubFormFields(
+        [makeField({ name: "yesOrNotest1", label: "Besoins", componentType: "commonTable" })],
+        "step1",
+      ),
+    ];
+    const result = normalizeAnswerData(raw, fields) as Record<string, unknown>;
+    const composite = (result.step1 as Record<string, unknown>).yesOrNotest1 as {
+      scores: Record<string, unknown>;
+      myCatalog: Record<string, { coeff: unknown }>;
+    };
+    expect(composite.myCatalog.criteria123.coeff).toBe(1);
+
+    // La valeur enrichie passe désormais la validation Zod du submit
+    // (avant le fix : `coeff:"1"` → invalid_type → submit bloqué).
+    const schema = generateZodSchema(fields);
+    expect(schema.safeParse({ yesOrNotest1: composite }).success).toBe(true);
+  });
 });
 
 // ============================================================================

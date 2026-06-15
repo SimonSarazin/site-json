@@ -1061,9 +1061,26 @@ function enrichCommonTableScores(
 }
 
 /**
+ * Coerce un `coeff` legacy vers un `number` (ou `undefined` si non
+ * interprétable). Le legacy `commonTableV2` stocke souvent le coefficient
+ * via un input texte → la valeur arrive en string (`"1"`) et casse
+ * `z.number().optional()` au submit. On convertit les strings numériques ;
+ * tout le reste (string vide, NaN, objet…) retombe sur `undefined`
+ * (champ optionnel → la valeur par défaut `1` est appliquée par l'UI).
+ */
+function coerceCoeff(raw: unknown): number | undefined {
+  if (typeof raw === "number") return Number.isFinite(raw) ? raw : undefined;
+  if (typeof raw === "string" && raw.trim() !== "") {
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : undefined;
+  }
+  return undefined;
+}
+
+/**
  * Enrichit `myCatalog` legacy avec les champs requis par Zod (`usage`,
- * `usageKey`). Les autres champs sont optionnels côté schema, on les
- * laisse tels quels.
+ * `usageKey`) et coerce `coeff` (souvent stocké en string par le legacy)
+ * vers un `number`. Les autres champs optionnels sont laissés tels quels.
  */
 function enrichCommonTableMyCatalog(raw: unknown): Record<string, unknown> {
   if (!isPlainObject(raw)) return {};
@@ -1074,6 +1091,8 @@ function enrichCommonTableMyCatalog(raw: unknown): Record<string, unknown> {
       ...entry,
       usage: typeof entry.usage === "string" ? entry.usage : "",
       usageKey: typeof entry.usageKey === "string" ? entry.usageKey : "",
+      // `coeff` legacy parfois en string ("1") → number pour matcher Zod.
+      coeff: coerceCoeff(entry.coeff),
     };
   }
   return out;
