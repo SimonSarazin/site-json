@@ -7,7 +7,7 @@
  * Usage :
  *   npx tsx scripts/config-schema.ts sections          # liste type + description des sections
  *   npx tsx scripts/config-schema.ts section:<type>    # JSON Schema d'une section (ex. section:pricing)
- *   npx tsx scripts/config-schema.ts header|footer|theme|meta|auth|page|profiles|root
+ *   npx tsx scripts/config-schema.ts header|footer|theme|meta|auth|page|profiles|integrations|root
  *
  * Les refinements Zod (.refine/.check) ne sont PAS représentables en JSON
  * Schema (`unrepresentable: "any"`) → toujours revalider avec
@@ -51,7 +51,7 @@ function sectionOptions(): Map<string, z.ZodType> {
 
 if (!arg) {
   console.error(
-    "Usage : config-schema.ts <sections | section:<type> | header | footer | theme | meta | auth | page | profiles | root>",
+    "Usage : config-schema.ts <sections | section:<type> | header | footer | theme | meta | auth | page | profiles | integrations | root>",
   );
   process.exit(2);
 }
@@ -85,6 +85,7 @@ const ROOT_PARTS: Record<string, () => void> = {
   meta: () => print(SiteConfig.shape.meta),
   auth: () => print(SiteConfig.shape.auth, "// config.auth (module auth — cf. doc/23)"),
   profiles: () => print(SiteConfig.shape.profiles, "// config.profiles (module profil — cf. doc/08)"),
+  integrations: () => print(SiteConfig.shape.integrations, "// config.integrations (analytics, seo, map MapTiler — clé en env VITE_MAPTILER_API_KEY)"),
   root: () => {
     // Vue d'ensemble : clés racine + type sommaire (pas le schéma complet, volumineux).
     for (const [key, value] of Object.entries(SiteConfig.shape)) {

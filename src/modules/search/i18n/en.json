@@ -169,5 +169,12 @@
   "card.servicePricing.price.halfDay": "{{price}}€ / half-day",
   "card.servicePricing.price.fullDay": "{{price}}€ / day",
   "card.servicePricing.price.bed": "{{price}}€ per bed in shared room",
-  "card.servicePricing.price.room": "{{price}}€ per private room"
+  "card.servicePricing.price.room": "{{price}}€ per private room",
+  "Chargement des points… {{loaded}} / {{total}}": "Loading points… {{loaded}} / {{total}}",
+  "Carte limitée aux {{loaded}} premiers résultats": "Map limited to the first {{loaded}} results",
+  "Aucun résultat": "No results",
+  "Voir le profil": "View profile",
+  "Adresse inconnue": "Address unknown",
+  "Tous": "All",
+  "{{count}} sélectionnés": "{{count}} selected"
 }

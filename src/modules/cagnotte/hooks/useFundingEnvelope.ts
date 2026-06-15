@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import type { Action, ActionItemNormalized } from '@communecter/cocolight-api-client';
 import { useCocolight } from '@/hooks/useCocolight';
 import { CAGNOTTE_QUERY_KEYS } from '@/modules/cagnotte/constants/queryKeys';
+import { getProfileSlugFromLocation } from '@/lib/fundingProjectUtils';
 import {
   asRecord,
   getEntityId,
@@ -515,16 +516,6 @@ export function mergeEnvelopePayloads(envelopeData: unknown, formData: unknown):
     contextData: formRecord.contextData ?? envelopeRecord.contextData,
     nopropProject: formRecord.nopropProject ?? envelopeRecord.nopropProject,
   };
-}
-
-function getProfileSlugFromLocation(): string {
-  if (typeof window === 'undefined') return '';
-
-  const parts = window.location.pathname.split('/').filter(Boolean);
-  const profileIndex = parts.indexOf('profil');
-  if (profileIndex < 0 || profileIndex + 1 >= parts.length) return '';
-
-  return parts[profileIndex + 1].trim();
 }
 
 export function useFundingEnvelope(idProjet?: string, opts?: { enabled?: boolean }) {

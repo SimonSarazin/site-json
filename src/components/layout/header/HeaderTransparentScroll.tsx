@@ -7,6 +7,9 @@ import { ClientOnly } from "../ClientOnly";
 import NavLink from "../NavLink";
 import LangSwitch from "./LangSwitch";
 import MobileMenuSheet from "./MobileMenuSheet";
+import MobileMenuBrand from "./MobileMenuBrand";
+import NavIcon from "./NavIcon";
+import { Badge } from "@/components/ui/badge";
 import { AuthMenu } from "@/modules/auth";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { PiggyBankHeaderButton } from "@/modules/cagnotte/components/PiggyBankHeaderButton";
@@ -55,35 +58,39 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
         : (!shouldHideSecondaryNav ? secondaryNavItems : []);
 
     return (
+        <>
         <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${(isScrolled || header.transparent === false) ? 'bg-background/90 backdrop-blur-md shadow-deep' : 'bg-transparent'}`}>
             <div className="container mx-auto px-4">
                 <div className="flex items-center justify-between h-20">
-                    <NavLink to={header.path || "/"} className="flex items-center gap-3 cursor-pointer group">
+                    {/* min-w-0 + truncate : le titre ne wrappe JAMAIS (un titre
+                        long déborderait de la barre h-20 sur mobile et
+                        recouvrirait le contenu) — il s'ellipse. */}
+                    <NavLink to={header.path || "/"} className="flex min-w-0 items-center gap-3 cursor-pointer group">
                         {header.logo ? (
                             <img
                                 src={`/${header.logo}`}
                                 alt={header.logoAlt ? t(header.logoAlt) : ""}
-                                className="h-8 w-8 object-contain group-hover:scale-110 transition-transform"
+                                className="h-8 w-8 shrink-0 object-contain group-hover:scale-110 transition-transform"
                             />
                         ) : header.logoIcon ? (
                             <IconOrSvg
                                 value={header.logoIcon}
-                                className="w-8 h-8 text-primary group-hover:scale-110 transition-transform"
+                                className="w-8 h-8 shrink-0 text-primary group-hover:scale-110 transition-transform"
                             />
                         ) : null}
                         {(header.logoTitle || header.logoSubtitle) && (
-                            <span className="flex flex-col leading-tight">
+                            <span className="flex min-w-0 flex-col leading-tight">
                                 {header.logoTitle && (
-                                    <span className="text-lg font-bold text-foreground">{t(header.logoTitle)}</span>
+                                    <span className="truncate text-base font-bold text-foreground sm:text-lg">{t(header.logoTitle)}</span>
                                 )}
                                 {header.logoSubtitle && (
-                                    <span className="text-xs font-medium text-muted-foreground">{t(header.logoSubtitle)}</span>
+                                    <span className="truncate text-xs font-medium text-muted-foreground">{t(header.logoSubtitle)}</span>
                                 )}
                             </span>
                         )}
                     </NavLink>
 
-                    <div className="hidden md:flex items-center gap-8">
+                    <div className="hidden xl:flex items-center gap-8">
                         {navItemsToDisplay.map((item, idx) => {
                             const isActive = isNavItemActive(item.path);
                             const hasChildren = !!item.children?.length;
@@ -92,9 +99,11 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                                     <NavLink
                                         to={item.path}
                                         ariaCurrent={isActive ? "page" : undefined}
-                                        className={`transition-colors font-medium relative group ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'} ${hasChildren ? 'transition flex items-center gap-1' : ''}`}
+                                        className={`transition-colors font-medium relative group inline-flex items-center gap-1.5 ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
                                     >
+                                        <NavIcon icon={item.icon} />
                                         {t(item.label)}
+                                        {item.badge && <Badge className="text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
                                         {hasChildren && <ChevronDown className="w-3 h-3" />}
                                         <span className={`absolute -bottom-1 left-0 h-0.5 bg-primary transition-all ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
                                     </NavLink>
@@ -104,7 +113,7 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                                                 <div className="grid grid-cols-2 gap-6">
                                                     {item.children.map((sub, i) => (
                                                         <NavLink key={i} to={sub.path} className="block">
-                                                            <h4 className="font-bold text-popover-foreground mb-2">{t(sub.label)}</h4>
+                                                            <h4 className="flex items-center gap-1.5 font-bold text-popover-foreground mb-2"><NavIcon icon={sub.icon} />{t(sub.label)}</h4>
                                                             <p className="text-muted-foreground text-xs leading-relaxed">
                                                                 {sub.description ? t(sub.description) : ""}
                                                             </p>
@@ -115,7 +124,7 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                                                 <div className="space-y-4">
                                                     {item.children.map((sub, i) => (
                                                         <NavLink key={i} to={sub.path} className="block">
-                                                            <h4 className="font-bold text-popover-foreground mb-2">{t(sub.label)}</h4>
+                                                            <h4 className="flex items-center gap-1.5 font-bold text-popover-foreground mb-2"><NavIcon icon={sub.icon} />{t(sub.label)}</h4>
                                                             <p className="text-muted-foreground text-xs leading-relaxed">
                                                                 {sub.description ? t(sub.description) : ""}
                                                             </p>
@@ -168,7 +177,7 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                         )}
                     </div>
 
-                    <div className="hidden md:block">
+                    <div className="hidden xl:block">
                         {header.utilities?.auth && (
                             <AuthMenu layout="menu" density="compact" showDropdownHeader loginVariant="solid" loginClassName="shadow-glow" loginLabel={header.ctaButton?.label} />
                         )}
@@ -182,7 +191,7 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                         )}
                     </div>
 
-                    <div className="md:hidden flex items-center gap-2">
+                    <div className="xl:hidden flex items-center gap-2">
                         {header.utilities?.notifications && <NotificationBell />}
                         {header.utilities?.search && <CommandTriggerButton />}
                         {header.utilities?.themeSwitch !== false && (
@@ -191,7 +200,11 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                             </ClientOnly>
                         )}
                         {navItemsToDisplay.length > 0 && (
-                            <MobileMenuSheet triggerClassName="text-muted-foreground hover:text-foreground">
+                            <MobileMenuSheet
+                                breakpoint="xl"
+                                triggerClassName="text-muted-foreground hover:text-foreground"
+                                brand={(close) => <MobileMenuBrand header={header} onNavigate={close} />}
+                            >
                                 {(close) => (
                                     <>
                                         {navItemsToDisplay.map((item, idx) => {
@@ -201,10 +214,12 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                                                     key={idx}
                                                     to={item.path}
                                                     ariaCurrent={isActive ? "page" : undefined}
-                                                    className={`block py-2 transition-colors ${isActive ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'}`}
+                                                    className={`flex items-center gap-2 py-2 transition-colors ${isActive ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'}`}
                                                     onClick={close}
                                                 >
+                                                    <NavIcon icon={item.icon} />
                                                     {t(item.label)}
+                                                    {item.badge && <Badge className="ml-auto text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
                                                 </NavLink>
                                             );
                                         })}
@@ -252,5 +267,11 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
             </div>
 
         </nav>
+        {/* transparent: false = barre TOUJOURS opaque → l'overlay n'a aucun
+            sens : on pousse le contenu sous la barre (sinon le haut de chaque
+            page sans héro — légales, auth, searchHeader — passe dessous).
+            transparent: true/absent garde l'overlay (design héro plein écran). */}
+        {header.transparent === false && <div aria-hidden className="h-20" />}
+        </>
     );
 }

@@ -8,6 +8,7 @@ export interface RuntimeEnv {
   VITE_SERVER_URL?:       string;
   VITE_MON_API_KEY?:      string;
   VITE_MON_DOMAIN?:       string;
+  VITE_MAPTILER_API_KEY?: string;
 }
 
 /** Déclare window.__ENV__ pour le compilateur */
@@ -48,3 +49,5 @@ export const getSlug      = () => readEnv("VITE_SLUG",              "default");
 export const getServerUrl = () => readEnv("VITE_SERVER_URL",        "http://localhost:3000");
 export const getMonApiKey = () => readEnv("VITE_MON_API_KEY",       "default-api-key");
 export const getMonDomain = () => readEnv("VITE_MON_DOMAIN",        "default-domain.com");
+/** Clé MapTiler (fonds de carte) — "" si absente → repli tuiles libres. */
+export const getMaptilerApiKey = () => readEnv("VITE_MAPTILER_API_KEY", "");

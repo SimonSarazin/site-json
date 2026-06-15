@@ -6,6 +6,9 @@ import { ClientOnly } from "../ClientOnly";
 import NavLink from "../NavLink";
 import LangSwitch from "./LangSwitch";
 import MobileMenuSheet from "./MobileMenuSheet";
+import MobileMenuBrand from "./MobileMenuBrand";
+import NavIcon from "./NavIcon";
+import { Badge } from "@/components/ui/badge";
 import { AuthMenu } from "@/modules/auth";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
@@ -51,9 +54,11 @@ export default function HeaderMinimal({ header }: HeaderMinimalProps) {
                             <NavLink
                                 key={idx}
                                 to={item.path}
-                                className="hover:text-primary transition-colors text-foreground"
+                                className="inline-flex items-center gap-1.5 hover:text-primary transition-colors text-foreground"
                             >
+                                <NavIcon icon={item.icon} />
                                 {t(item.label)}
+                                {item.badge && <Badge className="text-xs px-2 py-0.5 normal-case tracking-normal">{t(item.badge.text)}</Badge>}
                             </NavLink>
                         ))}
 
@@ -89,17 +94,22 @@ export default function HeaderMinimal({ header }: HeaderMinimalProps) {
                                 {() => <ToggleButtonTheme />}
                             </ClientOnly>
                         )}
-                        <MobileMenuSheet triggerClassName="text-foreground">
+                        <MobileMenuSheet
+                            triggerClassName="text-foreground"
+                            brand={(close) => <MobileMenuBrand header={header} onNavigate={close} />}
+                        >
                             {(close) => (
                                 <>
                                     {header.nav?.map((item, idx) => (
                                         <NavLink
                                             key={idx}
                                             to={item.path}
-                                            className="block text-sm font-bold uppercase tracking-[0.15em] hover:text-primary transition-colors text-foreground"
+                                            className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.15em] hover:text-primary transition-colors text-foreground"
                                             onClick={close}
                                         >
+                                            <NavIcon icon={item.icon} />
                                             {t(item.label)}
+                                            {item.badge && <Badge className="ml-auto text-xs px-2 py-0.5 normal-case tracking-normal">{t(item.badge.text)}</Badge>}
                                         </NavLink>
                                     ))}
 

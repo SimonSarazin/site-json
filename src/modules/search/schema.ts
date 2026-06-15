@@ -20,6 +20,22 @@ export const IconNameSchema = z.custom<IconName>();
 // ─── Schémas de filtres (partagés) ───────────────────────────────────────────
 // Source unique réutilisée par `FiltersSectionSchema` (UI /lieux) ET par le hero
 // (applicateur headless de la home) — évite la duplication inline.
+
+/** Widget COMPACT au lieu de l'accordéon à cases (matrice observatoire) :
+ *  {} → Select simple · {multiple} → combobox multi coche-à-droite ·
+ *  {searchable} → MultipleSelector (sélection unique) · {multiple, searchable}
+ *  → MultipleSelector multi. Absent → accordéon (défaut). Disponible sur les
+ *  groupes statiques, scopeList ET les groupes « par réponses ». */
+export const FilterSelectConfigSchema = z.object({
+  multiple: z.boolean().optional(),
+  searchable: z.boolean().optional(),
+});
+
+/** Style des lignes d'option en mode ACCORDÉON : cases à cocher (défaut) ou
+ *  lignes à coche à DROITE (look SelectItem). Disponible sur les trois familles
+ *  de groupes. Sans effet si un widget `select` est déclaré. */
+export const FilterOptionStyleSchema = z.enum(["checkbox", "check"]);
+
 export const FilterGroupSchema = z.object({
   id: z.string(),
   label: LocalizedString,
@@ -49,6 +65,14 @@ export const FilterGroupSchema = z.object({
   filterType: z.enum(["sourceKey"]).optional(),
   // Champ de l'entité utilisé comme valeur de filtre (défaut: "slug").
   filterBy: z.string().optional(),
+  /** Widget compact (cf. {@link FilterSelectConfigSchema}). Absent → accordéon. */
+  select: FilterSelectConfigSchema.optional(),
+  /** Style des lignes en accordéon (cf. {@link FilterOptionStyleSchema}). */
+  optionStyle: FilterOptionStyleSchema.optional(),
+  /** Position d'affichage (tri croissant) — permet d'intercaler un groupe
+   *  d'une famille (statique/scope/entity) parmi les groupes « par réponses »
+   *  et inversement. Défaut : ordre naturel (filterGroups puis par-réponses). */
+  order: z.number().optional(),
 });
 export const FilterGroupsSchema = z.array(FilterGroupSchema);
 
@@ -59,6 +83,12 @@ export const FiltersByAnswersSchema = z.record(z.string(), z.object({
   path: z.string().optional(),
   forms: z.string().optional(),
   finderPath: z.string().optional(),
+  /** Widget compact (cf. {@link FilterSelectConfigSchema}). Absent → accordéon. */
+  select: FilterSelectConfigSchema.optional(),
+  /** Style des lignes en accordéon (cf. {@link FilterOptionStyleSchema}). */
+  optionStyle: FilterOptionStyleSchema.optional(),
+  /** Position d'affichage (tri croissant) — cf. FilterGroupSchema.order. */
+  order: z.number().optional(),
   value: z.record(z.string(), z.object({
     id: z.string(),
     finder: z.string(),
@@ -75,6 +105,12 @@ export const FiltersByPathSchema = z.record(z.string(), z.object({
   finderPath: z.string().optional(),
   // notSourceKey: true → cherche dans tout le réseau (cf. coformFilterByPath).
   notSourceKey: z.boolean().optional(),
+  /** Widget compact (cf. {@link FilterSelectConfigSchema}). Absent → accordéon. */
+  select: FilterSelectConfigSchema.optional(),
+  /** Style des lignes en accordéon (cf. {@link FilterOptionStyleSchema}). */
+  optionStyle: FilterOptionStyleSchema.optional(),
+  /** Position d'affichage (tri croissant) — cf. FilterGroupSchema.order. */
+  order: z.number().optional(),
 }));
 
 export const FiltersSectionSchema = z.object({
@@ -105,6 +141,16 @@ const TagsFilterSchema = z.object({
 });
 
 export type TagsFilter = z.infer<typeof TagsFilterSchema>;
+
+/** Contenu du détail (rendu DANS le conteneur `detailsMode`). Axe indépendant
+ *  de la carte : `Preview.tsx` dispatche dessus. Noms design/fonctionnalité.
+ *  Exporté : réutilisé par le module observatoire (rowAction preview). */
+export const PreviewConfSchema = z.object({
+  type: z.enum(["default", "poi-amenities", "coform-answer"]).default("default"),
+  // Mapping rôle→suffixe de champ CoForm (pour `coform-answer`). Surcharge la
+  // table par défaut du composant — découple les IDs de champs du code.
+  fields: z.record(z.string(), z.string()).optional(),
+}).partial();
 
 const ListConfSchema = z.object({
   columns: z.object({
@@ -152,14 +198,7 @@ const ListConfSchema = z.object({
     type: z.enum(["overlay", "default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer"]).default("default"),
     variant: z.enum(["default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer"]).optional(),
   }).partial().optional(),
-  preview: z.object({
-    // Contenu du détail (rendu DANS le conteneur `detailsMode`). Axe indépendant
-    // de la carte : `Preview.tsx` dispatche dessus. Noms design/fonctionnalité.
-    type: z.enum(["default", "poi-amenities", "coform-answer"]).default("default"),
-    // Mapping rôle→suffixe de champ CoForm (pour `coform-answer`). Surcharge la
-    // table par défaut du composant — découple les IDs de champs du code.
-    fields: z.record(z.string(), z.string()).optional(),
-  }).partial().optional(),
+  preview: PreviewConfSchema.optional(),
 }).partial();
 
 export type ListConf = z.infer<typeof ListConfSchema>;
@@ -171,6 +210,18 @@ const MapConfSchema = z.object({
   popup: z.object({
     type: z.enum(["default"]).default("default"),
   }).partial().optional(),
+  /** Action du bouton de la popup : détail du module search (défaut
+   *  `preview` — `SwitchDetailsMode` avec `list.card`/`list.preview`) ou
+   *  navigation `/profil/:slug` (pattern rowAction observatoire / palette). */
+  itemAction: z.object({ kind: z.enum(["profil", "preview"]) }).optional(),
+  /** Apparence des marqueurs — chaîne de repli : vignette RONDE de l'item
+   *  (`useItemImage`, si l'item a une image) → pin SVG aux couleurs du thème
+   *  (`style: "pin"` + `color` en jeton, jamais d'hex) → pin Leaflet. */
+  marker: z.object({
+    useItemImage: z.boolean().optional(),
+    style: z.enum(["default", "pin"]).optional(),
+    color: z.enum(["primary", "accent", "chart-1", "chart-2", "chart-3", "chart-4", "chart-5"]).optional(),
+  }).optional(),
 }).partial();
 
 export type MapConf = z.infer<typeof MapConfSchema>;
@@ -667,12 +718,14 @@ export interface SearchMapWrapperProps<T extends SearchEntity = SearchEntity> {
   results: T[];
   card?: ListConf["card"];
   preview?: ListConf["preview"];
+  map?: MapConf;
 }
 
 export interface SearchMapProps<T extends SearchEntity = SearchEntity> {
   results: T[];
   card?: ListConf["card"];
   preview?: ListConf["preview"];
+  map?: MapConf;
 }
 
 export interface MapPopupProps<T extends SearchEntity = SearchEntity> {
@@ -680,4 +733,6 @@ export interface MapPopupProps<T extends SearchEntity = SearchEntity> {
   popup?: MapConf["popup"];
   id: string;
   t: (key: string) => string;
+  /** Libellé/intention du bouton d'action (cf. MapConf.itemAction). */
+  actionKind?: "profil" | "preview";
 }

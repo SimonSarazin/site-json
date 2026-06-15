@@ -128,12 +128,15 @@ export function parseCoformAnswer(
   const stateRaw = (get("state") as string | undefined) ?? "";
 
   // Adresse depuis le formulaire (landmark + premier lieu).
-  const landmark = (get("landmark") as string | undefined) ?? "";
+  // str() garantit une string (sinon undefined) : le backend peut renvoyer un
+  // non-string pour ces champs (nombre/objet), le cast `as string` mentait et
+  // faisait planter le .trim() plus bas ("part.trim is not a function").
+  const landmark = str(get("landmark")) ?? "";
   const addressObj = get("address") as Record<string, unknown> | undefined;
-  const addressLine = (addressObj?.address as string | undefined) ?? "";
+  const addressLine = str(addressObj?.address) ?? "";
   const placesRaw = (get("places") as unknown[]) ?? [];
   const firstPlace = placesRaw[0] as Record<string, unknown> | undefined;
-  const placeName = ((firstPlace?.placeName as string | undefined) ?? "")
+  const placeName = (str(firstPlace?.placeName) ?? "")
     .replace(/la r[ée]union/gi, "")
     .trim();
   const postalCode = (firstPlace?.postalCode as string | undefined) ?? "";

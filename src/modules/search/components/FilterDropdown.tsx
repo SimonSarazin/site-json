@@ -1,9 +1,5 @@
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+import { ChevronDown } from "lucide-react";
+import { MultiCombobox } from "@/components/ui/multi-combobox";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/hooks/useT";
 import { type LocalizedString } from "@/types/locale-schema";
@@ -55,32 +51,27 @@ export default function FilterDropdown({
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline">
-          {tr(name)} ▾
-        </Button>
-      </DropdownMenuTrigger>
-
-      <DropdownMenuContent
-        align="start"
-        className="w-auto max-h-72 overflow-y-auto"
-      >
-        {items.map(({ value, label }) => (
-          <DropdownMenuItem
-            key={value}
-            onClick={() => {
-              const next = selected.includes(value)
-                ? selected.filter((v) => v !== value)
-                : [...selected, value];
-              onChange(next);
-            }}
-            className={selected.includes(value) ? "bg-primary/10" : ""}
-          >
-            {tr(label)} {count?.[value] ? `(${count[value]})` : null}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    // Combobox multi partagé (ui/multi-combobox) — coche à droite, reste
+    // ouvert pendant la sélection.
+    <MultiCombobox
+      options={items.map(({ value, label }) => ({
+        id: value,
+        label: `${tr(label)}${count?.[value] ? ` (${count[value]})` : ""}`,
+      }))}
+      selected={selected}
+      onToggle={(value) => {
+        const next = selected.includes(value)
+          ? selected.filter((v) => v !== value)
+          : [...selected, value];
+        onChange(next);
+      }}
+      contentClassName="w-auto"
+    >
+      <Button variant="outline">
+        {tr(name)}
+        <ChevronDown className="ml-1 h-4 w-4 opacity-50" />
+      </Button>
+    </MultiCombobox>
   );
 }
+

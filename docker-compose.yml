@@ -13,6 +13,9 @@ services:
       VITE_SERVER_URL: "https://www.communecter.org"
       VITE_SLUG: "franceTierslieux"
       SITE_CONFIG_PATH: "./config.prod.json"
+      # Fond de carte MapTiler (optionnel) — valeur fournie par l'environnement
+      # hôte / CI, jamais versionnée. Sans clé : repli tuiles libres OSM/Carto.
+      VITE_MAPTILER_API_KEY: "${VITE_MAPTILER_API_KEY:-}"
     volumes:
       - ./config.prod.json:/app/config.prod.json
       - image-cache:/app/.cache/images

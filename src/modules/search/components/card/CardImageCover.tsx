@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Monitor, Users, UtensilsCrossed, type LucideIcon } from "lucide-react";
 import { SearchCardProps } from "../../schema";
 import type { Answer, FormId, SearchEntity } from "@communecter/cocolight-api-client";
+import { getLocation } from "../../helpers/getLocation";
 import { cn } from "@/lib/utils";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { useT } from "@/hooks/useT";
@@ -129,18 +130,6 @@ export default function CardImageCover({
       </div>
     </div>
   );
-}
-
-// Fonctions utilitaires pour extraire les données
-function getLocation(item: SearchEntity): string | null {
-  const serverData = item?.serverData;
-
-  // Essayer différentes sources pour la localisation
-  if (serverData?.address?.addressLocality) {
-    return serverData.address.addressLocality;
-  }
-
-  return null;
 }
 
 // Mapping des mots-clés vers des icônes (recherche partielle case-insensitive)

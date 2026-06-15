@@ -20,6 +20,7 @@ import { Header } from "@/types/site-schema";
 import NavLink from "../NavLink";
 import LangSwitch from "./LangSwitch";
 import MobileMenuSheet from "./MobileMenuSheet";
+import MobileMenuBrand from "./MobileMenuBrand";
 import { useCocolight } from "@/hooks/useCocolight";
 import { AuthMenu } from "@/modules/auth";
 import { EnhancedNavItemType } from "@/types/site";
@@ -214,7 +215,7 @@ export function HeaderStandard({ header }: HeaderStandardProps) {
                 <AuthMenu layout="menu" density="normal" showName loginVariant="ghost" />
               </div>
             )}
-            <MobileMenuSheet>
+            <MobileMenuSheet brand={(close) => <MobileMenuBrand header={header} onNavigate={close} />}>
               {(close) => (
                 <>
                   {header.nav.map((item, idx) => (<NavItem key={idx} item={item} mobile onNavigate={close} />))}

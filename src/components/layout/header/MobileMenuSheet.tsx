@@ -20,6 +20,13 @@ const HIDDEN_AT: Record<Breakpoint, string> = {
 interface MobileMenuSheetProps {
   /** Contenu du tiroir — reçoit `close()` à câbler sur chaque navigation/action (ferme le tiroir). */
   children: (close: () => void) => ReactNode;
+  /**
+   * En-tête de MARQUE du tiroir (bande haute avec bordure basse) — typiquement
+   * `<MobileMenuBrand header={header} onNavigate={close} />`. Reçoit `close()`
+   * pour refermer après navigation. Sans `brand`, l'ancien espacement (pt-12)
+   * est conservé.
+   */
+  brand?: (close: () => void) => ReactNode;
   /** Breakpoint à partir duquel le burger disparaît (défaut `md` ; `xl` pour le méga-menu). */
   breakpoint?: Breakpoint;
   /** Côté d'ouverture du tiroir (défaut `right`). */
@@ -54,6 +61,7 @@ interface MobileMenuSheetProps {
  */
 export default function MobileMenuSheet({
   children,
+  brand,
   breakpoint = "md",
   side = "right",
   tone = "default",
@@ -84,7 +92,13 @@ export default function MobileMenuSheet({
       </SheetTrigger>
       <SheetContent side={side} className={cn("w-72 gap-0 p-0", contentClassName)}>
         <SheetTitle className="sr-only">{title ?? t("Mobile Menu")}</SheetTitle>
-        <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-4 pb-6 pt-12">
+        {/* pr-12 : laisse la place au X de fermeture (top-4 right-4 du Sheet). */}
+        {brand && (
+          <div className="flex min-h-14 items-center border-b border-border/60 py-3 pl-4 pr-12">
+            {brand(close)}
+          </div>
+        )}
+        <div className={cn("flex flex-1 flex-col gap-3 overflow-y-auto px-4 pb-6", brand ? "pt-4" : "pt-12")}>
           {children(close)}
         </div>
       </SheetContent>
