@@ -15,8 +15,8 @@
       "fr",
       "en"
     ],
-    "favicon": "/images/sportSanteBienetre/logo.png",
-    "themeColor": "#4CAF50",
+    "favicon": "/images/sportSanteBienetre/logo-mark.png",
+    "themeColor": "#48b5bd",
     "keywords": [
       "sport santé",
       "bien-être",
@@ -30,10 +30,18 @@
   "header": {
     "type": "transparent-scroll",
     "path": "/",
-    "logo": "images/sportSanteBienetre/logo.png",
+    "logo": "images/sportSanteBienetre/logo-mark.png",
+    "logoAlt": {
+      "fr": "Sport Santé Bien-être – La Réunion",
+      "en": "Sport Health Wellness – Réunion"
+    },
     "logoTitle": {
       "fr": "Sport Santé Bien-être",
       "en": "Sport Health Wellness"
+    },
+    "logoSubtitle": {
+      "fr": "La Réunion",
+      "en": "Réunion"
     },
     "ctaButton": {
       "label": {
@@ -112,12 +120,12 @@
     ],
     "secondaryNavVisibleOnlyForListedPages": true,
     "sticky": true,
-    "transparent": false,
+    "transparent": true,
     "height": "lg",
     "utilities": {
-      "themeSwitch": false,
-      "langSwitch": false,
-      "search": false,
+      "themeSwitch": true,
+      "langSwitch": true,
+      "search": true,
       "auth": true,
       "cart": false,
       "notifications": false
@@ -1113,6 +1121,13 @@
                     "variant": "contact-card",
                     "detailsMode": "drawer"
                   }
+                },
+                "map": {
+                  "marker": {
+                    "useItemImage": true,
+                    "style": "pin",
+                    "color": "primary"
+                  }
                 }
               }
             },
@@ -1152,6 +1167,13 @@
                     "type": "funding",
                     "variant": "funding",
                     "detailsMode": "drawer"
+                  }
+                },
+                "map": {
+                  "marker": {
+                    "useItemImage": true,
+                    "style": "pin",
+                    "color": "primary"
                   }
                 }
               }
@@ -2404,6 +2426,12 @@
               },
               "preview": {
                 "type": "coform-answer"
+              }
+            },
+            "map": {
+              "marker": {
+                "style": "pin",
+                "color": "primary"
               }
             }
           }
@@ -3828,6 +3856,12 @@
               "preview": {
                 "type": "poi-amenities"
               }
+            },
+            "map": {
+              "marker": {
+                "style": "pin",
+                "color": "primary"
+              }
             }
           }
         } 
@@ -4046,16 +4080,105 @@
   ],
   "theme": {
     "defaultMode": "dark",
+    "colors": {
+      "light": {
+        "background": "oklch(0.99 0.011 100)",
+        "foreground": "oklch(0.26 0.035 240)",
+        "card": "oklch(1 0 0)",
+        "cardForeground": "oklch(0.26 0.035 240)",
+        "popover": "oklch(1 0 0)",
+        "popoverForeground": "oklch(0.26 0.035 240)",
+        "primary": "oklch(0.54 0.105 202)",
+        "primaryForeground": "oklch(0.99 0.01 202)",
+        "secondary": "oklch(0.95 0.025 200)",
+        "secondaryForeground": "oklch(0.40 0.07 205)",
+        "muted": "oklch(0.965 0.008 200)",
+        "mutedForeground": "oklch(0.50 0.025 220)",
+        "accent": "oklch(0.57 0.17 38)",
+        "accentForeground": "oklch(0.99 0.012 38)",
+        "destructive": "oklch(0.55 0.20 27)",
+        "destructiveForeground": "oklch(0.99 0.02 27)",
+        "border": "oklch(0.91 0.012 200)",
+        "input": "oklch(0.91 0.012 200)",
+        "ring": "oklch(0.54 0.105 202)",
+        "warning": "oklch(0.80 0.145 79)",
+        "warningForeground": "oklch(0.30 0.06 70)",
+        "success": "oklch(0.545 0.12 160)",
+        "successForeground": "oklch(0.99 0.012 160)",
+        "info": "oklch(0.55 0.12 235)",
+        "infoForeground": "oklch(0.99 0.012 235)",
+        "error": "oklch(0.55 0.20 27)",
+        "errorForeground": "oklch(0.99 0.02 27)",
+        "chart1": "oklch(0.56 0.105 202)",
+        "chart2": "oklch(0.62 0.17 38)",
+        "chart3": "oklch(0.80 0.145 79)",
+        "chart4": "oklch(0.45 0.09 243)",
+        "chart5": "oklch(0.58 0.12 150)",
+        "sidebar": "oklch(0.975 0.012 200)",
+        "sidebarForeground": "oklch(0.30 0.03 235)",
+        "sidebarPrimary": "oklch(0.54 0.105 202)",
+        "sidebarPrimaryForeground": "oklch(0.99 0.01 202)",
+        "sidebarAccent": "oklch(0.95 0.025 200)",
+        "sidebarAccentForeground": "oklch(0.40 0.07 205)",
+        "sidebarBorder": "oklch(0.91 0.012 200)",
+        "sidebarRing": "oklch(0.54 0.105 202)"
+      },
+      "dark": {
+        "background": "oklch(0.17 0.02 235)",
+        "foreground": "oklch(0.95 0.008 200)",
+        "card": "oklch(0.21 0.022 235)",
+        "cardForeground": "oklch(0.95 0.008 200)",
+        "popover": "oklch(0.21 0.022 235)",
+        "popoverForeground": "oklch(0.95 0.008 200)",
+        "primary": "oklch(0.72 0.099 202)",
+        "primaryForeground": "oklch(0.18 0.025 230)",
+        "secondary": "oklch(0.28 0.03 225)",
+        "secondaryForeground": "oklch(0.86 0.05 200)",
+        "muted": "oklch(0.27 0.02 230)",
+        "mutedForeground": "oklch(0.72 0.02 205)",
+        "accent": "oklch(0.70 0.16 40)",
+        "accentForeground": "oklch(0.18 0.04 35)",
+        "destructive": "oklch(0.575 0.19 28)",
+        "destructiveForeground": "oklch(0.99 0.012 28)",
+        "border": "oklch(0.30 0.022 230)",
+        "input": "oklch(0.30 0.022 230)",
+        "ring": "oklch(0.72 0.099 202)",
+        "warning": "oklch(0.81 0.14 79)",
+        "warningForeground": "oklch(0.25 0.05 70)",
+        "success": "oklch(0.70 0.12 160)",
+        "successForeground": "oklch(0.16 0.02 160)",
+        "info": "oklch(0.70 0.11 235)",
+        "infoForeground": "oklch(0.16 0.02 235)",
+        "error": "oklch(0.575 0.19 28)",
+        "errorForeground": "oklch(0.99 0.012 28)",
+        "chart1": "oklch(0.72 0.099 202)",
+        "chart2": "oklch(0.70 0.16 40)",
+        "chart3": "oklch(0.81 0.14 79)",
+        "chart4": "oklch(0.62 0.11 243)",
+        "chart5": "oklch(0.68 0.12 150)",
+        "sidebar": "oklch(0.19 0.022 235)",
+        "sidebarForeground": "oklch(0.93 0.008 200)",
+        "sidebarPrimary": "oklch(0.72 0.099 202)",
+        "sidebarPrimaryForeground": "oklch(0.18 0.025 230)",
+        "sidebarAccent": "oklch(0.28 0.03 225)",
+        "sidebarAccentForeground": "oklch(0.86 0.05 200)",
+        "sidebarBorder": "oklch(0.30 0.022 230)",
+        "sidebarRing": "oklch(0.72 0.099 202)"
+      }
+    },
     "typography": {
       "fontFamily": {
         "sans": [
-          "Inter"
+          "Lexend",
+          "sans-serif"
         ],
         "serif": [
-          "Roboto Slab"
+          "Fraunces",
+          "serif"
         ],
         "mono": [
-          "Roboto Mono"
+          "Roboto Mono",
+          "monospace"
         ]
       },
       "letterSpacing": "0em"
