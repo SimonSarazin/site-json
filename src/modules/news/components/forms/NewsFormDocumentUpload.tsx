@@ -4,6 +4,7 @@ import { useT } from "@/hooks/useT";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
+import { formatFileSize } from "@/utils/imageUtils";
 
 // Temporary validation config - should be shared with profil module
 const DOCUMENT_VALIDATION_CONFIG = {
@@ -21,14 +22,6 @@ const validateFile = (file: File, config: typeof DOCUMENT_VALIDATION_CONFIG) => 
     return { valid: false, error: 'Invalid file type' };
   }
   return { valid: true };
-};
-
-const formatFileSize = (bytes: number): string => {
-  if (bytes === 0) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
 interface NewsFormDocumentUploadProps {

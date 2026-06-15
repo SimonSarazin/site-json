@@ -4,18 +4,11 @@ import { Calendar, Clock, User } from 'lucide-react';
 import { useLocalization } from "@/hooks/useLocalization";
 import { BlogPostSectionProps } from '@/types/site-schema';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
+import { formatDateLong } from '@/helpers/formatDate';
 
 export function BlogPostSection({ id, props }: { id?: string; props: BlogPostSectionProps }) {
   const { t } = useLocalization();
   const { title, excerpt, content, author, publishedAt, tags, featuredImage, readTime } = props;
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
 
   return (
     <article id={id} className="py-16 bg-background text-foreground">
@@ -51,7 +44,7 @@ export function BlogPostSection({ id, props }: { id?: string; props: BlogPostSec
               {publishedAt && (
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  <span>{formatDate(publishedAt)}</span>
+                  <span>{formatDateLong(publishedAt)}</span>
                 </div>
               )}
               

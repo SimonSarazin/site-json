@@ -1,5 +1,5 @@
 import { SearchCardProps } from "../../schema";
-import type { SearchEntity } from "@communecter/cocolight-api-client";
+import { getLocation } from "../../helpers/getLocation";
 import { cn } from '@/lib/utils';
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { getEntityIconName } from "@/lib/entityIcons";
@@ -130,14 +130,4 @@ export default function CardEventFeatured({
       </div>
     </article>
   );
-}
-
-function getLocation(item: SearchEntity): string | null {
-  const serverData = item?.serverData;
-
-  if (serverData?.address?.addressLocality) {
-    return serverData.address.addressLocality;
-  }
-
-  return null;
 }

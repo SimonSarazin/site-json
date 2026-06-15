@@ -1,0 +1,19 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "src/entry-client.tsx",
+    "src/entry-server.tsx",
+    "src/modules/*/module.config.ts",
+    "src/modules/*/routes.tsx",
+    "server/**/*.js",
+    "scripts/**/*.{ts,mjs}",
+    "tests/**/*.ts",
+    "e2e/**/*.ts",
+    "vite.config.ts",
+    "vitest.config*.ts",
+    "playwright.config.ts"
+  ],
+  "project": ["src/**/*.{ts,tsx}", "!src/**/*.test.{ts,tsx}"],
+  "ignore": ["src/**/*.css", "**/*.d.ts"],
+  "ignoreExportsUsedInFile": true
+}

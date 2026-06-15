@@ -1,5 +1,5 @@
 import { SearchCardProps } from "../../schema";
-import type { SearchEntity } from "@communecter/cocolight-api-client";
+import { getLocation } from "../../helpers/getLocation";
 import { cn } from '@/lib/utils';
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -115,14 +115,4 @@ export default function CardResourceBooking({
       </div>
     </article>
    );
-}
-
-function getLocation(item: SearchEntity): string | null {
-  const serverData = item?.serverData;
-
-  if (serverData?.address?.addressLocality) {
-    return serverData.address.addressLocality;
-  }
-
-  return null;
 }
