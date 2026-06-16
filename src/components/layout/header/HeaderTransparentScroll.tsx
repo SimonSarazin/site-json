@@ -1,6 +1,7 @@
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { Header } from "@/types/site-schema";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { ChevronDown } from "lucide-react";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
 import { ClientOnly } from "../ClientOnly";
@@ -8,6 +9,7 @@ import NavLink from "../NavLink";
 import LangSwitch from "./LangSwitch";
 import MobileMenuSheet from "./MobileMenuSheet";
 import MobileMenuBrand from "./MobileMenuBrand";
+import MobileNavItems from "./MobileNavItems";
 import NavIcon from "./NavIcon";
 import { Badge } from "@/components/ui/badge";
 import { AuthMenu } from "@/modules/auth";
@@ -15,15 +17,17 @@ import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { PiggyBankHeaderButton } from "@/modules/cagnotte/components/PiggyBankHeaderButton";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
-import { useScrollAware, useScrollToTopOnRouteChange, useNavItemActive } from "./useHeaderBehavior";
+import { useScrollAware, useScrollToTopOnRouteChange, useNavItemActive, useHeaderOpaqueAtRest } from "./useHeaderBehavior";
 
 interface HeaderTransparentScrollProps {
     header: Header;
+    /** La page courante débute-t-elle par un héro ? (fourni par SiteHeader). Pilote `transparentMode: "auto"`. */
+    pageHasHero?: boolean;
 }
 
 type HeaderNavItem = Header['nav'][number];
 
-export default function HeaderTransparentScroll({ header }: HeaderTransparentScrollProps) {
+export default function HeaderTransparentScroll({ header, pageHasHero = false }: HeaderTransparentScrollProps) {
     useLoadNamespace("components/layout");
     const t = useT("components/layout");
     const isNavItemActive = useNavItemActive();
@@ -41,6 +45,10 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
     useScrollToTopOnRouteChange();
 
     const isScrolled = useScrollAware();
+    // Opaque au repos (selon transparentMode / opaqueOnPaths / overlayOnPaths / page-héro),
+    // OU dès qu'on scrolle. L'overlay transparent n'est gardé que si rien ne force l'opaque.
+    const opaqueAtRest = useHeaderOpaqueAtRest(header, pageHasHero);
+    const opaque = isScrolled || opaqueAtRest;
 
     const shouldHideNav = Boolean(
         header.navVisibleOnlyForListedPages && !isPathInsideNav(header.nav)
@@ -59,7 +67,7 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
 
     return (
         <>
-        <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${(isScrolled || header.transparent === false) ? 'bg-background/90 backdrop-blur-md shadow-deep' : 'bg-transparent'}`}>
+        <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${opaque ? 'bg-background/90 backdrop-blur-md shadow-deep' : 'bg-transparent'}`}>
             <div className="container mx-auto px-4">
                 <div className="flex items-center justify-between h-20">
                     {/* min-w-0 + truncate : le titre ne wrappe JAMAIS (un titre
@@ -67,9 +75,10 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                         recouvrirait le contenu) — il s'ellipse. */}
                     <NavLink to={header.path || "/"} className="flex min-w-0 items-center gap-3 cursor-pointer group">
                         {header.logo ? (
-                            <img
-                                src={`/${header.logo}`}
+                            <OptimizedImage
+                                src={header.logo}
                                 alt={header.logoAlt ? t(header.logoAlt) : ""}
+                                height={32}
                                 className="h-8 w-8 shrink-0 object-contain group-hover:scale-110 transition-transform"
                             />
                         ) : header.logoIcon ? (
@@ -207,22 +216,12 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                             >
                                 {(close) => (
                                     <>
-                                        {navItemsToDisplay.map((item, idx) => {
-                                            const isActive = isNavItemActive(item.path);
-                                            return (
-                                                <NavLink
-                                                    key={idx}
-                                                    to={item.path}
-                                                    ariaCurrent={isActive ? "page" : undefined}
-                                                    className={`flex items-center gap-2 py-2 transition-colors ${isActive ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'}`}
-                                                    onClick={close}
-                                                >
-                                                    <NavIcon icon={item.icon} />
-                                                    {t(item.label)}
-                                                    {item.badge && <Badge className="ml-auto text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
-                                                </NavLink>
-                                            );
-                                        })}
+                                        <MobileNavItems
+                                            items={navItemsToDisplay}
+                                            display={header.mobileNavDisplay}
+                                            onNavigate={close}
+                                            isActive={isNavItemActive}
+                                        />
 
                                         {header.urgenceButton && (
                                             <NavLink
@@ -267,11 +266,10 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
             </div>
 
         </nav>
-        {/* transparent: false = barre TOUJOURS opaque → l'overlay n'a aucun
-            sens : on pousse le contenu sous la barre (sinon le haut de chaque
-            page sans héro — légales, auth, searchHeader — passe dessous).
-            transparent: true/absent garde l'overlay (design héro plein écran). */}
-        {header.transparent === false && <div aria-hidden className="h-20" />}
+        {/* Barre opaque au repos (transparent:false, ou auto sur page sans héro, ou
+            opaqueOnPaths) → l'overlay n'a aucun sens : on pousse le contenu sous la barre
+            (sinon le haut de la page passe dessous). Overlay (héro plein écran) → pas de spacer. */}
+        {opaqueAtRest && <div aria-hidden className="h-20" />}
         </>
     );
 }

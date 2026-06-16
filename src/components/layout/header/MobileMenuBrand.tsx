@@ -1,5 +1,6 @@
 import { Header } from "@/types/site-schema";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import NavLink from "../NavLink";
 import { useT } from "@/hooks/useT";
 import { cn } from "@/lib/utils";
@@ -32,9 +33,10 @@ export default function MobileMenuBrand({ header, tone = "default", onNavigate }
       {header.logo ? (
         // Hauteur fixe, largeur LIBRE (max-w-40) : les logos horizontaux
         // (ex. tiers-lieux) seraient écrasés par un carré h-8 w-8.
-        <img
-          src={`/${header.logo}`}
+        <OptimizedImage
+          src={header.logo}
           alt={header.logoAlt ? t(header.logoAlt) : ""}
+          height={36}
           className="h-9 w-auto max-w-40 shrink-0 object-contain"
         />
       ) : header.logoIcon ? (
