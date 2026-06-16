@@ -45,3 +45,7 @@ coverage/
 .env.test
 agent-os/
 .audit/
+.audit-baseline.json
+
+# Référence locale (symlink vers la lib cocolight-api-endpoint = source de @communecter/cocolight-api-client) — non versionné
+reference/
