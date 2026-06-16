@@ -39,7 +39,7 @@ function isValidGeoPoint(coords: unknown): coords is [number, number] {
  * qu'UNE fois par périmètre (1ʳᵉ page) — le viewport de l'utilisateur est
  * préservé pendant le chargement des pages suivantes.
  */
-export default function SearchMap({ results, card, preview, map: mapConf }: SearchMapProps) {
+export default function SearchMap({ results, card, preview, map: mapConf, focusedItemId, onMarkerFocus, containerClass }: SearchMapProps) {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<import('leaflet').Map | null>(null);
   const markersRef = useRef<import('leaflet').MarkerClusterGroup | null>(null);
@@ -49,6 +49,18 @@ export default function SearchMap({ results, card, preview, map: mapConf }: Sear
   /** Nombre d'items déjà posés sur la carte + 1ᵉʳ id (détection de reset). */
   const renderedCountRef = useRef(0);
   const firstIdRef = useRef<string | undefined>(undefined);
+  /** Marqueurs indexés par serverData.id — pour le focus (flyTo/openPopup) du mode split. */
+  const markerByIdRef = useRef<Map<string, import('leaflet').Marker>>(new Map());
+  /** ResizeObserver : recale la carte quand le conteneur change de taille (ex.
+   *  mode split en colonne, où le fitBounds initial peut jouer avant que la
+   *  colonne ait sa hauteur → carte centrée sur le défaut au lieu des points). */
+  const roRef = useRef<ResizeObserver | null>(null);
+  const containerFittedRef = useRef(false);
+  /** Ref du callback de focus sortant — évite de l'ajouter aux deps de l'effet markers. */
+  const onMarkerFocusRef = useRef(onMarkerFocus);
+  useEffect(() => {
+    onMarkerFocusRef.current = onMarkerFocus;
+  }, [onMarkerFocus]);
   const { resolvedTheme } = useTheme();
   const mounted = useIsMounted();
   const [mapReady, setMapReady] = useState(false);
@@ -70,6 +82,8 @@ export default function SearchMap({ results, card, preview, map: mapConf }: Sear
   useEffect(() => {
     if (!mounted) return;
     let cancelled = false;
+    // Map stable (réf jamais réassignée) — capturée pour le cleanup (lint refs).
+    const markerById = markerByIdRef.current;
 
     const handleOpenDetails = (e: CustomEvent) => {
       const data = e.detail as SearchEntity;
@@ -113,6 +127,26 @@ export default function SearchMap({ results, card, preview, map: mapConf }: Sear
       map.addLayer(markers);
 
       map.whenReady(() => map.invalidateSize());
+
+      // Recale la carte si le conteneur se dimensionne APRÈS l'init (le cas du
+      // mode split : la colonne reçoit sa hauteur une fois le flex posé). Au 1ᵉʳ
+      // dimensionnement réel avec des marqueurs, on refait un fitBounds.
+      const ro = new ResizeObserver(() => {
+        const m = mapInstanceRef.current;
+        const mk = markersRef.current;
+        if (!m) return;
+        m.invalidateSize();
+        if (!containerFittedRef.current && mk && mk.getLayers().length > 0) {
+          const bounds = mk.getBounds();
+          if (bounds.isValid()) {
+            m.fitBounds(bounds, { padding: [30, 30] });
+            containerFittedRef.current = true;
+          }
+        }
+      });
+      if (mapRef.current) ro.observe(mapRef.current);
+      roRef.current = ro;
+
       if (import.meta.env.DEV) {
         // Poignée de debug (dev uniquement) : piloter la carte depuis la
         // console / les tests navigateur sans dépendre du clustering.
@@ -125,6 +159,9 @@ export default function SearchMap({ results, card, preview, map: mapConf }: Sear
     return () => {
       cancelled = true;
       window.removeEventListener("openDetails", handleOpenDetails as EventListener);
+      roRef.current?.disconnect();
+      roRef.current = null;
+      containerFittedRef.current = false;
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
@@ -132,6 +169,7 @@ export default function SearchMap({ results, card, preview, map: mapConf }: Sear
       markersRef.current = null;
       lightLayerRef.current = null;
       darkLayerRef.current = null;
+      markerById.clear();
       renderedCountRef.current = 0;
       firstIdRef.current = undefined;
       setMapReady(false);
@@ -166,6 +204,8 @@ export default function SearchMap({ results, card, preview, map: mapConf }: Sear
     // repasse par [] pendant le chargement de la nouvelle queryKey).
     if (results.length < from || (from > 0 && firstId !== firstIdRef.current)) {
       markers.clearLayers();
+      markerByIdRef.current.clear();
+      containerFittedRef.current = false;
       from = 0;
     }
     if (results.length === from) return;
@@ -212,6 +252,9 @@ export default function SearchMap({ results, card, preview, map: mapConf }: Sear
         className: "custom-leaflet-popup",
       });
       marker._customData = entry;
+      markerByIdRef.current.set(String(serverDataSafe.id), marker);
+      // Synchro carte→liste : clic marqueur → remonte l'id (en plus du popup natif).
+      marker.on("click", () => onMarkerFocusRef.current?.(String(serverDataSafe.id)));
 
       marker.on("popupopen", () => {
         const popupEl = document.getElementById(markerId);
@@ -245,9 +288,29 @@ export default function SearchMap({ results, card, preview, map: mapConf }: Sear
     firstIdRef.current = firstId;
   }, [mapReady, results, t, mapConf, actionKind]);
 
+  /* ── Focus (mode split) : liste→carte — flyTo + openPopup du marqueur ───── */
+  // Effet SÉPARÉ de l'init (surtout ne PAS recréer la carte). `results` en deps :
+  // si le marqueur focalisé arrive sur une page suivante, le focus se rejoue.
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    const markers = markersRef.current;
+    if (!mapReady || !map || !markers || !focusedItemId) return;
+    const marker = markerByIdRef.current.get(String(focusedItemId));
+    if (!marker) return; // item pas (encore) sur la carte, ou sans géolocalisation → no-op
+    // markercluster : `marker.openPopup()` SEUL échoue si le marqueur est agrégé
+    // dans un cluster → `zoomToShowLayer` dé-cluster/zoome PUIS exécute le callback.
+    markers.zoomToShowLayer(marker, () => {
+      map.setView(marker.getLatLng(), Math.max(map.getZoom(), 14), { animate: true });
+      marker.openPopup();
+    });
+  }, [mapReady, focusedItemId, results]);
+
   // Dimensions du conteneur — logique PARTAGÉE avec MapSkeleton
   // (cf. useMapContainerClass : plein écran sans footer vs min-h-screen).
-  const mapContainerClass = useMapContainerClass("z-10 rounded shadow");
+  // En mode split, le parent fournit `containerClass` (ex. "absolute inset-0")
+  // pour que la carte remplisse sa colonne au lieu de `min-h-screen`.
+  const defaultContainerClass = useMapContainerClass("z-10 rounded shadow");
+  const mapContainerClass = containerClass ?? defaultContainerClass;
 
 
   if (!mounted) return <div>{t("Chargement de la carte…")}</div>;

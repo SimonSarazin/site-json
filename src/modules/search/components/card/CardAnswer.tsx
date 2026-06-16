@@ -88,15 +88,24 @@ export default function CardAnswer({ item, onClick }: SearchCardProps) {
 
 				{a.schedules.length > 0 && (
 					<div className="space-y-2">
-						<div className="flex flex-wrap gap-2">
+						{/* Jour en libellé + une puce par plage (qui wrappe) : un jour à
+						    plusieurs plages ne forme plus une pilule géante multi-lignes. */}
+						<div className="space-y-1.5">
 							{visibleSchedules.map((schedule) => (
-								<span
-									key={schedule.dayKey}
-									className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground border border-border"
-								>
-									<Calendar className="w-3.5 h-3.5" />
-									{t("days." + schedule.dayKey)} {schedule.times.join(" / ")}
-								</span>
+								<div key={schedule.dayKey} className="flex flex-wrap items-center gap-1.5">
+									<span className="inline-flex items-center gap-1 text-xs font-semibold text-foreground">
+										<Calendar className="w-3.5 h-3.5 text-primary" />
+										{t("days." + schedule.dayKey)}
+									</span>
+									{schedule.times.map((time, i) => (
+										<span
+											key={i}
+											className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground border border-border"
+										>
+											{time}
+										</span>
+									))}
+								</div>
 							))}
 						</div>
 

@@ -62,6 +62,13 @@
      SSBE : CardPoiAmenities/CardAnswer via border-card-border-left). */
   --color-card-header-gradient: var(--card-header-gradient);
   --color-card-border-left: var(--card-border-left);
+  --color-btn-activity: var(--btn-activity);
+  --color-btn-structure: var(--btn-structure);
+  --color-badge-type: var(--badge-type);
+  --color-badge-valid: var(--badge-valid);
+  --color-badge-waiting: var(--badge-waiting);
+  --color-badge-refused: var(--badge-refused);
+  --color-badge-in-progress: var(--badge-in-progress);
 
   --font-sans: var(--font-sans);
   --font-serif: var(--font-serif);
@@ -94,6 +101,19 @@
      liseré par CardPoiAmenities / CardAnswer. */
   --card-header-gradient: linear-gradient(135deg, var(--primary), var(--accent));
   --card-border-left: var(--primary);
+
+  /* Boutons + badges de la carte answer (CardAnswer / getStatusStyle), remappés
+     sur la palette officielle SSBE. Régression d07dcdb : ces 7 tokens avaient été
+     droppés lors de la migration vers config.theme → boutons « Fiche … » et badges
+     de statut sans fond. Choisis pour rester lisibles avec text-primary-foreground
+     dans les 2 modes (couleurs saturées qui inversent leur clarté light/dark). */
+  --btn-activity: var(--primary);
+  --btn-structure: var(--accent);
+  --badge-type: var(--muted-foreground);
+  --badge-valid: var(--success);
+  --badge-waiting: var(--warning);
+  --badge-refused: var(--destructive);
+  --badge-in-progress: var(--primary);
 
   /* Dégradé héros : .access-card-pro (HeroQuickAccess), .text-gradient,
      .bg-gradient-hero (sections HTML du config). Tonal "lagon" (teal profond →

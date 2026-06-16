@@ -480,7 +480,7 @@ export const SearchProStaticSectionSchema = z.object({
     graphDefaultGroupMode: z.enum(["country", "category"]).optional(),
     graphEnableCountryGrouping: z.boolean().optional(),
     graphDetailsMode: z.enum(["drawer", "dialog", "link"]).default("drawer"),
-    defaultViewMode: z.enum(["list", "map", "graph", "regions", "thematics"]).optional(),
+    defaultViewMode: z.enum(["list", "map", "graph", "regions", "thematics", "split"]).optional(),
     showActiveFiltersTypes: z.boolean().default(false),
     showActiveFiltersTags: z.boolean().default(false),
     disableInfiniteScroll: z.boolean().optional(),
@@ -684,6 +684,10 @@ export interface SearchListViewProps<T extends SearchEntity = SearchEntity> {
   card?: ListConf["card"];
   preview?: ListConf["preview"];
   isDetailedView?: boolean;
+  /** Synchro liste↔carte (mode split) : id de l'item focalisé → highlight + scrollIntoView. */
+  focusedItemId?: string | null;
+  /** Synchro split : clic sur une carte de liste → focus carte (au lieu d'ouvrir le détail). */
+  onFocusItem?: (id: string) => void;
 }
 
 export interface SwitchDetailsModeProps<T extends SearchEntity = SearchEntity> {
@@ -719,6 +723,12 @@ export interface SearchMapWrapperProps<T extends SearchEntity = SearchEntity> {
   card?: ListConf["card"];
   preview?: ListConf["preview"];
   map?: MapConf;
+  /** Synchro split : id focalisé → flyTo + openPopup du marqueur. */
+  focusedItemId?: string | null;
+  /** Synchro split : clic marqueur → remonte l'id (highlight liste). */
+  onMarkerFocus?: (id: string) => void;
+  /** Override du conteneur (mode split : la carte remplit sa colonne au lieu de min-h-screen). */
+  containerClass?: string;
 }
 
 export interface SearchMapProps<T extends SearchEntity = SearchEntity> {
@@ -726,6 +736,12 @@ export interface SearchMapProps<T extends SearchEntity = SearchEntity> {
   card?: ListConf["card"];
   preview?: ListConf["preview"];
   map?: MapConf;
+  /** Synchro split : id focalisé → flyTo + openPopup du marqueur. */
+  focusedItemId?: string | null;
+  /** Synchro split : clic marqueur → remonte l'id (highlight liste). */
+  onMarkerFocus?: (id: string) => void;
+  /** Override du conteneur (mode split : la carte remplit sa colonne au lieu de min-h-screen). */
+  containerClass?: string;
 }
 
 export interface MapPopupProps<T extends SearchEntity = SearchEntity> {
