@@ -50,12 +50,18 @@ export function OptimizedImage({
 
   const optimizedSrc = buildOptimizedUrl(src, { w: width, h: height, q: quality, f: format });
 
-  // Build srcSet with 1x and 2x if width is provided
+  // srcSet 1x/2x (retina) dès qu'une dimension est fournie — `width` OU `height`, en
+  // doublant celle(s) présente(s). Permet les logos contraints par la hauteur (h-N w-auto,
+  // ratio libre) sans imposer une largeur fixe qui écraserait les logos horizontaux.
   let srcSet: string | undefined;
-  if (width) {
-    const src1x = optimizedSrc;
-    const src2x = buildOptimizedUrl(src, { w: width * 2, h: height ? height * 2 : undefined, q: quality, f: format });
-    srcSet = `${src1x} 1x, ${src2x} 2x`;
+  if (width || height) {
+    const src2x = buildOptimizedUrl(src, {
+      w: width ? width * 2 : undefined,
+      h: height ? height * 2 : undefined,
+      q: quality,
+      f: format,
+    });
+    srcSet = `${optimizedSrc} 1x, ${src2x} 2x`;
   }
 
   return (

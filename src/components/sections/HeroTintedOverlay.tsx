@@ -1,5 +1,6 @@
 import { useLocalization } from "@/hooks/useLocalization";
 import { HeroTintedOverlayProps } from "@/types/site-schema";
+import { HeroBackgroundImage } from "./HeroBackgroundImage";
 
 interface HeroTintedOverlayComponentProps {
     id?: string;
@@ -14,11 +15,12 @@ export function HeroTintedOverlay({ props }: HeroTintedOverlayComponentProps) {
             {/* Image de fond */}
             {props.backgroundImage && (
                 <>
-                    <img
+                    <HeroBackgroundImage
                         src={props.backgroundImage}
                         alt={props.backgroundImageAlt ? t(props.backgroundImageAlt) : ""}
                         className="absolute inset-0 w-full h-full object-cover z-0"
                         style={{ minHeight: '100vh', maxHeight: 'none' }}
+                        priority
                     />
                     {/* Overlay vert translucide */}
                     <div className="absolute inset-0 bg-hero-tint z-10" />

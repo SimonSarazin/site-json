@@ -7,6 +7,7 @@
  */
 
 import type { CriticalImage, CriticalFont } from './extractCriticalResources';
+import { buildResponsiveSrcSet } from './imageUtils';
 
 /**
  * Génère une balise <link rel="preload"> pour une image
@@ -14,18 +15,20 @@ import type { CriticalImage, CriticalFont } from './extractCriticalResources';
  * Le preload fonctionne quand même en mode "no-cors" pour les images
  */
 function generateImagePreloadTag(image: CriticalImage): string {
-  const attrs: string[] = [
-    'rel="preload"',
-    'as="image"',
-    `href="${image.src}"`,
-  ];
+  const attrs: string[] = ['rel="preload"', 'as="image"'];
+
+  if (image.responsive) {
+    // Image rendue via /img en srcSet responsive (ex. héro hero-quick-access) :
+    // on précharge le MÊME srcSet (imagesrcset/imagesizes) que l'<img> → le navigateur
+    // dédoublonne et précharge la bonne taille, au lieu de télécharger la brute en plus.
+    attrs.push(`imagesrcset="${buildResponsiveSrcSet(image.src)}"`, 'imagesizes="100vw"');
+  } else {
+    attrs.push(`href="${image.src}"`);
+    if (image.type) attrs.push(`type="${image.type}"`);
+  }
 
   if (image.fetchpriority) {
     attrs.push(`fetchpriority="${image.fetchpriority}"`);
-  }
-
-  if (image.type) {
-    attrs.push(`type="${image.type}"`);
   }
 
   return `<link ${attrs.join(' ')}>`;
