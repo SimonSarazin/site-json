@@ -57,6 +57,20 @@
     "yearsAgo": "({{count}} years ago)",
     "yes": "Yes",
     "no": "No",
+    "delete": {
+      "button": "Delete",
+      "title": "Confirm deletion",
+      "description": "Are you sure you want to delete the equipment \"{{name}}\"?",
+      "warning": "This action is irreversible and will permanently delete this equipment.",
+      "cancel": "Cancel",
+      "confirm": "Delete",
+      "deleting": "Deleting...",
+      "defaultReason": "Deletion from user interface",
+      "success": "Equipment deleted",
+      "successDescription": "The equipment was successfully deleted.",
+      "error": "Deletion error",
+      "errorDescription": "An error occurred while deleting the equipment."
+    },
     "sections": {
       "general": "General information",
       "management": "Management & uses",

@@ -1,11 +1,25 @@
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import type { Poi } from "@communecter/cocolight-api-client";
 import getDateFnsLocale from "@/dateFns";
 import ProfileMapLeaflet from "@/modules/profil/components/sections/ProfileMapLeaflet";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
+import { useCocolight } from "@/hooks/useCocolight";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
+import { SEARCH_QUERY_KEYS } from "@/modules/search/constants/queryKeys";
 import "@/modules/search/i18n";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -23,6 +37,7 @@ import {
   MapPin,
   Settings,
   Tag,
+  Trash2,
   Users,
   Lightbulb,
   Unlock,
@@ -273,7 +288,12 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
   useLoadNamespace("modules/search");
   const t = useT("modules/search");
   const { canEditProfile } = useProfilPermissions(item ?? null);
+  const queryClient = useQueryClient();
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const { toast } = useToast();
+  const { api } = useCocolight();
 
   const yesNo = (value?: string) =>
     value == null || value.trim() === ""
@@ -309,7 +329,38 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
 
   const handleEdit = () => {
     setEditModalOpen(true);
-    onClose?.();
+    //onClose?.();
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!item?.id || !api) return;
+
+    setIsDeleting(true);
+    try {
+      await api.endpointApi.deletePoi({
+        pathParams: { id: item.id },
+        reason: t("PreviewPoiAmenities.delete.defaultReason"),
+      });
+      toast({
+        title: t("PreviewPoiAmenities.delete.success"),
+        description: t("PreviewPoiAmenities.delete.successDescription"),
+      });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: SEARCH_QUERY_KEYS.RESULTS_PREFIX("searchCostumStatic") }),
+        queryClient.invalidateQueries({ queryKey: SEARCH_QUERY_KEYS.RESULTS_PREFIX("poi-equipement-matches") }),
+      ]);
+      setDeleteDialogOpen(false);
+      onClose?.();
+    } catch (error) {
+      console.error("Error deleting POI:", error);
+      toast({
+        title: t("PreviewPoiAmenities.delete.error"),
+        description: t("PreviewPoiAmenities.delete.errorDescription"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -317,16 +368,28 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
       <div className="flex max-h-[90vh] flex-col">
         <div className="relative shrink-0 px-6 py-5" style={{ background: "var(--card-header-gradient)" }}>
           {canEditProfile && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={handleEdit}
-              className="absolute right-14 top-3 text-primary-foreground hover:bg-white/15"
-            >
-              <Edit className="h-4 w-4" />
-              {t("PreviewPoiAmenities.edit")}
-            </Button>
+            <div className="absolute right-10 top-2 flex gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleEdit}
+                className="text-primary-foreground hover:bg-white/15"
+              >
+                <Edit className="h-4 w-4" />
+                {t("PreviewPoiAmenities.edit")}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setDeleteDialogOpen(true)}
+                className="text-primary-foreground hover:bg-destructive/20"
+              >
+                <Trash2 className="h-4 w-4" />
+                {t("PreviewPoiAmenities.delete.button")}
+              </Button>
+            </div>
           )}
           <div className="space-y-3 text-left">
             <div className="flex flex-wrap items-center gap-2">
@@ -594,7 +657,43 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
       </div>
 
       {canEditProfile && item && (
-        <DynamicEditModal open={editModalOpen} onOpenChange={setEditModalOpen} entity={item} />
+        <>
+          <DynamicEditModal 
+            open={editModalOpen} 
+            onOpenChange={(open) => {setEditModalOpen(open); if (!open) onClose?.(); }} 
+            entity={item} 
+          />
+          
+          <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  {t("PreviewPoiAmenities.delete.title")}
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  {t("PreviewPoiAmenities.delete.description", undefined, { name: poi.name })}
+                  <br />
+                  <br />
+                  <strong className="text-destructive">
+                    {t("PreviewPoiAmenities.delete.warning")}
+                  </strong>
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={isDeleting}>
+                  {t("PreviewPoiAmenities.delete.cancel")}
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDeleteConfirm}
+                  disabled={isDeleting}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  {isDeleting ? t("PreviewPoiAmenities.delete.deleting") : t("PreviewPoiAmenities.delete.confirm")}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </>
       )}
     </>
   );

@@ -57,6 +57,20 @@
         "yearsAgo": "(il y a {{count}} ans)",
         "yes": "Oui",
         "no": "Non",
+        "delete": {
+            "button": "Supprimer",
+            "title": "Confirmer la suppression",
+            "description": "Êtes-vous sûr de vouloir supprimer l'équipement \"{{name}}\" ?",
+            "warning": "Cette action est irréversible et supprimera définitivement cet équipement.",
+            "cancel": "Annuler",
+            "confirm": "Supprimer",
+            "deleting": "Suppression...",
+            "defaultReason": "Suppression depuis l'interface utilisateur",
+            "success": "Équipement supprimé",
+            "successDescription": "L'équipement a été supprimé avec succès.",
+            "error": "Erreur de suppression",
+            "errorDescription": "Une erreur est survenue lors de la suppression de l'équipement."
+        },
         "sections": {
             "general": "Informations générales",
             "management": "Gestion & usages",
