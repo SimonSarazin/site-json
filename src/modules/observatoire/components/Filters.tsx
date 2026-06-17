@@ -121,7 +121,7 @@ export function Filters({ data, dimensions, filterDefs, values, onChange, search
     return out;
   }, [filterDefs, dimensions]);
 
-  const { control, watch, reset } = useForm<FilterValues>({
+  const { control, watch, reset, setValue } = useForm<FilterValues>({
     defaultValues: Object.fromEntries(
       fields.map(({ id }) => [id, values[id] ?? ""]),
     ),
@@ -203,6 +203,27 @@ export function Filters({ data, dimensions, filterDefs, values, onChange, search
     // cascade quand la sélection parente change — sans exposer watched directement.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fields, data, valuesKey, t, labels, dimensions]);
+
+  // Réconciliation cascade : quand un parent (`dependsOn`) change, les options de
+  // l'enfant se restreignent — on ÉLAGUE alors les valeurs sélectionnées devenues
+  // invalides (sinon elles restent appliquées en « fantôme », non retirables dans
+  // le MultiCombobox qui ne rend que les options). Converge en 1 cycle (après
+  // élagage tout est valide), `setValue` propage la remontée onChange.
+  useEffect(() => {
+    for (const { id, filter } of fields) {
+      if (!filter.dependsOn) continue;
+      const current = (watched[id] ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+      if (current.length === 0) continue;
+      const valid = new Set((optionsById[id] ?? []).map((o) => o.id));
+      const pruned = current.filter((v) => valid.has(v));
+      if (pruned.length !== current.length) {
+        setValue(id, pruned.join(","));
+      }
+    }
+    // Déclenché par le changement des options (= changement parent). `watched`/
+    // `setValue` volontairement hors deps (lus au moment de l'exécution).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [optionsById]);
 
   const labelFor = ({ id, def }: { id: string; def: DimensionDef }): string =>
     def.label ? t(def.label) : def.labelKey ? t(def.labelKey) : id;
