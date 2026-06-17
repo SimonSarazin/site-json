@@ -8,6 +8,7 @@
  */
 import "@/modules/search/i18n";
 import { useState, useEffect, useMemo } from "react";
+import { useSearchParams } from "react-router";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -59,6 +60,7 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
     const selectedFilters = pageFilters?.selectedFilters ?? {};
     const searchByFields = pageFilters?.searchByFields ?? {};
     const hasDropdownFilters = (props.dropdownFilters?.length ?? 0) > 0;
+    const [searchParams] = useSearchParams();
 
     const activeType = selectedFilters['type']?.[0] ?? "all";
 
@@ -184,6 +186,23 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
     const resetAllDropdownFilters = () => {
         (props.dropdownFilters ?? []).forEach((filter) => setDropdownSelection(filter, []));
     };
+
+    // Deep-link : applique les dropdownFilters depuis l'URL (`?<filterId>=<optionId,…>`),
+    // au montage et à chaque changement de query. Permet à un lien externe (ex. carte de
+    // la home « Terrain de football ») d'ouvrir l'annuaire pré-filtré. Param absent → ce
+    // filtre est laissé tel quel ; param présent (même vide) → (ré)initialisé depuis l'URL.
+    useEffect(() => {
+        (props.dropdownFilters ?? []).forEach((filter) => {
+            const raw = searchParams.get(filter.id);
+            if (raw === null) return;
+            const optionIds = raw
+                .split(",")
+                .map((s) => s.trim())
+                .filter((id) => filter.options.some((o) => o.id === id));
+            setDropdownSelection(filter, optionIds);
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams]);
 
     // Rendu d'un dropdown de filtre, réutilisé en barre desktop (inline) ET dans
     // la Sheet mobile. `w-full` par défaut (Sheet) → `lg:w-auto` en barre desktop.
