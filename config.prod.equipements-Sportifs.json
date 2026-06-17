@@ -114,15 +114,15 @@
             "badges": [
               {
                 "label": {
-                  "fr": "Communauté citoyenne",
-                  "en": "Citizen community"
+                  "fr": "Projet participatif",
+                  "en": "Participatory project"
                 },
-                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"></path><circle cx=\"9\" cy=\"7\" r=\"4\"></circle><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"></path><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"></path></svg>"
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"9\" cy=\"7\" r=\"4\"></circle><path d=\"M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2\"></path><circle cx=\"19\" cy=\"7\" r=\"2\"></circle><path d=\"M19 13c1.1 0 2 .9 2 2v2\"></path><line x1=\"12\" y1=\"12\" x2=\"16\" y2=\"9\"></line></svg>"
               },
               {
                 "label": {
-                  "fr": "Science participative",
-                  "en": "Citizen science"
+                  "fr": "Open Data",
+                  "en": "Open Data"
                 },
                 "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><ellipse cx=\"12\" cy=\"5\" rx=\"9\" ry=\"3\"></ellipse><path d=\"M3 5V19A9 3 0 0 0 21 19V5\"></path><path d=\"M3 12A9 3 0 0 0 21 12\"></path></svg>"
               }
@@ -171,7 +171,8 @@
                 "subtitle": {
                   "fr": "Imports et flux push standardisés. Vos données équipements connectées aux référentiels nationaux.",
                   "en": "Standardized imports and push flows. Your equipment data connected to national reference systems."
-                }
+                },
+                "link": "/data"
               },
               {
                 "icon": "map-pin",
@@ -182,18 +183,20 @@
                 "subtitle": {
                   "fr": "Tous les équipements sportifs de l'île, filtrables par commune, attribut et usage, avec géolocalisation.",
                   "en": "All sports facilities on the island, filterable by municipality, attribute, and usage, with geolocation."
-                }
+                },
+                "link": "/equipements-sportifs"
               },
               {
                 "icon": "bar-chart-2",
                 "title": {
-                  "fr": "Observatoire ARDISS",
-                  "en": "ARDISS Observatory"
+                  "fr": "Observatoire ARDIS",
+                  "en": "ARDIS Observatory"
                 },
                 "subtitle": {
-                  "fr": "Formulaires pour outiller le Diag ARDISS, par équipement et par gestionnaire. Remontée des indicateurs.",
-                  "en": "Forms to support the ARDISS Diagnosis, by equipment and by manager. Indicator reporting."
-                }
+                  "fr": "Formulaires pour outiller le Diag ARDIS, par équipement et par gestionnaire. Remontée des indicateurs.",
+                  "en": "Forms to support the ARDIS Diagnosis, by equipment and by manager. Indicator reporting."
+                },
+                "link": "/observatoire"
               },
               {
                 "icon": "users",
@@ -229,31 +232,93 @@
             "badges": [
               {
                 "label": {
-                  "fr": "Filtres par attributs",
-                  "en": "Attribute filters"
+                  "fr": "Annuaire & carto",
+                  "en": "Directory & map"
                 },
                 "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><polygon points=\"22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3\"></polygon></svg>"
-              },
+              }
+            ],
+            "ctaButtons": [
               {
                 "label": {
-                  "fr": "Par commune",
-                  "en": "By municipality"
+                  "fr": "Voir l'annuaire complet",
+                  "en": "View full directory"
                 },
-                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"></path><polyline points=\"9 22 9 12 15 12 15 22\"></polyline></svg>"
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2\"/></svg>",
+                "path": "/equipements-sportifs",
+                "variant": "default"
+              }
+            ],
+            "quickAccessCards": [
+              {
+                "label": { "fr": "Multisports/City-stades", "en": "Multisports/City-stades" },
+                "path": "/equipements-sportifs",
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect x=\"2\" y=\"3\" width=\"20\" height=\"14\" rx=\"2\"></rect><path d=\"M12 3v14\"></path><path d=\"M2 10h20\"></path><path d=\"M7 21l5-4 5 4\"></path></svg>"
               },
               {
-                "label": {
-                  "fr": "Carto géolocalisée",
-                  "en": "Geolocated map"
-                },
-                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z\"></path><circle cx=\"12\" cy=\"10\" r=\"3\"></circle></svg>"
+                "label": { "fr": "Terrain de football", "en": "Football field" },
+                "path": "/equipements-sportifs",
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M12 2a14.5 14.5 0 0 0 0 20\"></path><path d=\"M2 12h20\"></path><path d=\"M12 2C6.5 5.5 5 9 5 12s1.5 6.5 7 10\"></path><path d=\"M12 2c5.5 3.5 7 7 7 10s-1.5 6.5-7 10\"></path></svg>"
               },
               {
-                "label": {
-                  "fr": "Ajout simplifié",
-                  "en": "Easy addition"
-                },
-                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7\"></path><path d=\"M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z\"></path></svg>"
+                "label": { "fr": "Court de tennis", "en": "Tennis court" },
+                "path": "/equipements-sportifs",
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect x=\"2\" y=\"4\" width=\"20\" height=\"16\" rx=\"1\"></rect><line x1=\"12\" y1=\"4\" x2=\"12\" y2=\"20\"></line><line x1=\"2\" y1=\"12\" x2=\"22\" y2=\"12\"></line><path d=\"M5 4v16\"></path><path d=\"M19 4v16\"></path></svg>"
+              },
+              {
+                "label": { "fr": "Boucle de randonnée", "en": "Hiking loop" },
+                "path": "/equipements-sportifs",
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M3 17l4-8 4 4 3-6 4 10\"></path><path d=\"M3 17h18\"></path><circle cx=\"17\" cy=\"7\" r=\"2\"></circle></svg>"
+              },
+              {
+                "label": { "fr": "Salles polyvalentes / des fêtes / non spécialisées", "en": "Multipurpose / party / non-specialized rooms" },
+                "path": "/equipements-sportifs",
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"></path><polyline points=\"9 22 9 12 15 12 15 22\"></polyline><path d=\"M8 2l4 3 4-3\"></path></svg>"
+              },
+              {
+                "label": { "fr": "Salle de musculation/cardiotraining", "en": "Weight training/cardiotraining room" },
+                "path": "/equipements-sportifs",
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M6 4v16\"></path><path d=\"M18 4v16\"></path><path d=\"M4 8h2\"></path><path d=\"M4 16h2\"></path><path d=\"M18 8h2\"></path><path d=\"M18 16h2\"></path><path d=\"M6 12h12\"></path></svg>"
+              },
+              {
+                "label": { "fr": "Salle multisports (gymnase)", "en": "Multipurpose sports hall (gymnasium)" },
+                "path": "/equipements-sportifs",
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18\"></path><path d=\"M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2\"></path><path d=\"M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2\"></path><line x1=\"10\" y1=\"6\" x2=\"14\" y2=\"6\"></line><line x1=\"10\" y1=\"10\" x2=\"14\" y2=\"10\"></line></svg>"
+              },
+              {
+                "label": { "fr": "Canyon", "en": "Canyon" },
+                "path": "/equipements-sportifs",
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M2 20l4-12 4 6 3-4 4 10\"></path><path d=\"M2 4v16\"></path><path d=\"M22 4v16\"></path><path d=\"M2 20h20\"></path></svg>"
+              },
+              {
+                "label": { "fr": "Structure Artificielle d'Escalade", "en": "Artificial Climbing Structure" },
+                "path": "/equipements-sportifs",
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M4 20L10 4l4 8 3-4 3 12\"></path><circle cx=\"10\" cy=\"9\" r=\"1\" fill=\"currentColor\"></circle><circle cx=\"14\" cy=\"13\" r=\"1\" fill=\"currentColor\"></circle><circle cx=\"7\" cy=\"15\" r=\"1\" fill=\"currentColor\"></circle></svg>"
+              },
+              {
+                "label": { "fr": "Terrain de volley-ball", "en": "Volleyball Court" },
+                "path": "/equipements-sportifs",
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M12 2a10 10 0 0 1 6 17\"></path><path d=\"M2 12h20\"></path><path d=\"M12 2c-3 4-3 14 0 20\"></path></svg>"
+              },
+              {
+                "label": { "fr": "Terrain de basket-ball", "en": "Basketball Court" },
+                "path": "/equipements-sportifs",
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M12 2v20\"></path><path d=\"M2 12h20\"></path><path d=\"M5 5a14 14 0 0 1 7 7\"></path><path d=\"M19 5a14 14 0 0 0-7 7\"></path></svg>"
+              },
+              {
+                "label": { "fr": "Piste d'athlétisme isolée", "en": "Isolated Athletics Track" },
+                "path": "/equipements-sportifs",
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><ellipse cx=\"12\" cy=\"12\" rx=\"10\" ry=\"6\"></ellipse><ellipse cx=\"12\" cy=\"12\" rx=\"6\" ry=\"3\"></ellipse><line x1=\"2\" y1=\"12\" x2=\"6\" y2=\"12\"></line><line x1=\"18\" y1=\"12\" x2=\"22\" y2=\"12\"></line></svg>"
+              },
+              {
+                "label": { "fr": "Dojo / Salle d'arts martiaux", "en": "Dojo / Martial Arts Room" },
+                "path": "/equipements-sportifs",
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"5\" r=\"2\"></circle><path d=\"M12 7v4\"></path><path d=\"M8 21l4-10 4 10\"></path><path d=\"M6 13h12\"></path><path d=\"M9 21h6\"></path></svg>"
+              },
+              {
+                "label": { "fr": "Terrain de boules", "en": "Boules Court" },
+                "path": "/equipements-sportifs",
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M12 2a10 10 0 0 1 6 17\"></path><path d=\"M2 12h20\"></path><path d=\"M12 2c-3 4-3 14 0 20\"></path></svg>"
               }
             ]
           }
@@ -2350,6 +2415,14 @@
             "en": "+262 262 48 13 21"
           },
           "href": "tel:+262262481321"
+        },
+        {
+          "icon": "email",
+          "value": {
+            "fr": "contact@equipements-sportifs.re",
+            "en": "contact@sports-facilities.re"
+          },
+          "href": "mailto:contact@equipements-sportifs.re"
         }
       ]
     },
@@ -2362,22 +2435,6 @@
             "en": "Youth, Engagement and Sports"
           },
           "href": "https://www.ac-reunion.fr/jeunesse-engagement-sports"
-        },
-        {
-          "image": "images/sportSanteBienetre/partners/ars.jpeg",
-          "alt": {
-            "fr": "ARS La Réunion",
-            "en": "Regional Health Agency of Réunion"
-          },
-          "href": "https://www.ars.sante.fr/la-reunion"
-        },
-        {
-          "image": "images/sportSanteBienetre/partners/promotionsante.png",
-          "alt": {
-            "fr": "Promotion santé la Réunion",
-            "en": "Health promotion in Réunion"
-          },
-          "href": "https://promotionsante.re/"
         }
       ]
     },
@@ -2586,7 +2643,7 @@
         "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
       }
     },
-    "customCSS": ""
+    "customCSS": "\n .access-card {\n border: 1px solid var(--primary);\n border-radius: var(--radius-2xl);}"
   },
   "auth": {
     "login": {
