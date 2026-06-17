@@ -8,6 +8,7 @@
 // ------------------------------------------------------------
 import type {
   ChartDef,
+  DimensionDef,
   DimensionsConfig,
   FilterValues,
   KpiDef,
@@ -322,6 +323,34 @@ export function buildCsv(
       if (col.kind === "boolBadge") return csvEscape(v ? boolLabels.yes : boolLabels.no);
       if (typeof v === "number") return String(v);
       return csvEscape(String(v ?? ""));
+    });
+    lines.push(cells.join(";"));
+  }
+  return lines.join("\n");
+}
+
+/**
+ * Export CSV COMPLET (`export.fields`) : une colonne par champ déclaré, résolu
+ * directement depuis l'item via le moteur de dimensions — indépendant des
+ * colonnes du tableau. Permet d'exporter toutes les données de la fiche détail.
+ * Les `items` sont passés DÉJÀ filtrés/triés (ordre du tableau).
+ */
+export function buildEntitiesCsv(
+  items: readonly ObservatoryItem[],
+  fields: readonly DimensionDef[],
+  headers: readonly string[],
+  boolLabels: { yes: string; no: string },
+): string {
+  const lines: string[] = [headers.map(csvEscape).join(";")];
+  for (const item of items) {
+    const cells = fields.map((def) => {
+      if (isBoolKind(def.kind)) return csvEscape(dimensionBool(item, def) ? boolLabels.yes : boolLabels.no);
+      if (def.kind === "number") {
+        const n = dimensionNumber(item, def);
+        return n === undefined ? "" : String(n);
+      }
+      if (def.kind === "list") return csvEscape(dimensionList(item, def).join(", "));
+      return csvEscape(dimensionValue(item, def) ?? "");
     });
     lines.push(cells.join(";"));
   }
