@@ -199,6 +199,11 @@ const ListConfSchema = z.object({
     variant: z.enum(["default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer"]).optional(),
   }).partial().optional(),
   preview: PreviewConfSchema.optional(),
+  /**
+   * Nom du paramètre URL pour synchroniser l'item en preview. Défaut : "preview".
+   * Utile pour plusieurs sections sur une même page (ex. "preview-equipements").
+   */
+  previewParam: z.string().optional(),
 }).partial();
 
 export type ListConf = z.infer<typeof ListConfSchema>;
@@ -688,6 +693,12 @@ export interface SearchListViewProps<T extends SearchEntity = SearchEntity> {
   focusedItemId?: string | null;
   /** Synchro split : clic sur une carte de liste → focus carte (au lieu d'ouvrir le détail). */
   onFocusItem?: (id: string) => void;
+  /**
+   * Nom du paramètre URL utilisé pour synchroniser l'item affiché en preview.
+   * Défaut : "preview". Permet d'avoir plusieurs sections sur une même page
+   * sans collision (ex. "preview-equipements", "preview-answer")
+   */
+  previewParam?: string;
 }
 
 export interface SwitchDetailsModeProps<T extends SearchEntity = SearchEntity> {

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useSearchParams } from "react-router";
 import SearchCard from "./SearchCard";
 import { SearchListViewProps } from "../schema";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
@@ -14,14 +15,58 @@ export default function SearchListView({
   isDetailedView = false,
   focusedItemId,
   onFocusItem,
+  previewParam = "preview",
 }: SearchListViewProps) {
   const [openDetails, setOpenDetails] = useState(false);
   const [item, setItem] = useState<SearchEntity | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  // Mémorise le dernier id traité pour éviter de rouvrir si l'URL ne change pas.
+  const lastHandledPreviewId = useRef<string | null>(null);
 
-  const handleOpenDetails = (item: SearchEntity) => {
-    setItem(item);
+  // Ouvre automatiquement le preview si l'URL contient ?<previewParam>=<id>
+  useEffect(() => {
+    const previewId = searchParams.get(previewParam);
+    if (!previewId || previewId === lastHandledPreviewId.current) return;
+    const found = results.find(
+      (r) => String(r.serverData?.id ?? r.id) === previewId,
+    );
+    if (found) {
+      lastHandledPreviewId.current = previewId;
+      setItem(found);
+      setOpenDetails(true);
+    }
+  }, [results, searchParams, previewParam]);
+
+  const handleOpenDetails = (it: SearchEntity) => {
+    const id = String(it.serverData?.id ?? it.id);
+    lastHandledPreviewId.current = id;
+    setItem(it);
     setOpenDetails(true);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.set(previewParam, id);
+        return next;
+      },
+      { replace: true },
+    );
+  };
+
+  // Wrapper pour setOpenDetails : retire le param URL à la fermeture
+  const handleSetOpenDetails = (open: boolean) => {
+    setOpenDetails(open);
+    if (!open) {
+      lastHandledPreviewId.current = null;
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.delete(previewParam);
+          return next;
+        },
+        { replace: true },
+      );
+    }
   };
 
   // Mode split (onFocusItem fourni) : un clic sur une carte FOCALISE la carte
@@ -84,7 +129,7 @@ export default function SearchListView({
           )}
         </div>
 
-        {item && <SwitchDetailsMode openDetails={openDetails} setOpenDetails={setOpenDetails} item={item} card={card} preview={preview} />}
+        {item && <SwitchDetailsMode openDetails={openDetails} setOpenDetails={handleSetOpenDetails} item={item} card={card} preview={preview} />}
       </>
     );
   }
@@ -99,7 +144,7 @@ export default function SearchListView({
       </div>
 
       {/* faire switch sur card?.detailsMode */}
-      {item && <SwitchDetailsMode openDetails={openDetails} setOpenDetails={setOpenDetails} item={item} card={card} preview={preview} />}
+      {item && <SwitchDetailsMode openDetails={openDetails} setOpenDetails={handleSetOpenDetails} item={item} card={card} preview={preview} />}
     </>
   );
 }
