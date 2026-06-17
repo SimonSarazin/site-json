@@ -39,13 +39,23 @@ export default function FooterContactPartners({ footer }: FooterContactPartnersP
   return (
     <footer className="bg-background border-t border-border">
       <div className="container mx-auto px-4 py-12">
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-10">
+        <div className="flex flex-col md:flex-row items-start gap-10">
+
+          {/* Contact items */}
           {contactItems.length > 0 && (
-            <div className="w-full md:w-auto">
+            <div className={partnerLogos.length > 1 ? "w-full md:w-auto" : "w-full"}>
               <h4 className="font-display font-bold text-foreground text-lg mb-4">
                 {footer.contactSection?.title ? t(footer.contactSection.title) : "Nos coordonnées"}
               </h4>
-              <ul className="space-y-3 text-sm text-muted-foreground">
+              <ul
+                className={`grid gap-4 text-sm text-muted-foreground ${
+                  contactItems.length === 1
+                    ? "grid-cols-1"
+                    : contactItems.length === 2
+                      ? "grid-cols-1 sm:grid-cols-2"
+                      : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                }`}
+              >
                 {contactItems.map((item, idx) => {
                   const Icon = getIconComponent(item.icon);
                   const content = (
@@ -60,7 +70,11 @@ export default function FooterContactPartners({ footer }: FooterContactPartnersP
                           {t(line)}
                         </span>
                       ))}
-                      {item.value && <span className={item.lines?.length ? "block" : undefined}>{t(item.value)}</span>}
+                      {item.value && (
+                        <span className={item.lines?.length ? "block" : undefined}>
+                          {t(item.value)}
+                        </span>
+                      )}
                     </span>
                   );
 
@@ -81,8 +95,15 @@ export default function FooterContactPartners({ footer }: FooterContactPartnersP
             </div>
           )}
 
+          {/* Logos */}
           {partnerLogos.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-8 items-center justify-items-center flex-1 w-full">
+            <div
+              className={
+                partnerLogos.length > 1
+                  ? "grid grid-cols-2 md:grid-cols-3 gap-8 items-center justify-items-center flex-1 w-full"
+                  : "flex items-center justify-center md:justify-end shrink-0"
+              }
+            >
               {partnerLogos.map((logo, idx) => {
                 // Logos partenaires LOCAUX → /img (redimensionne + avif/webp). Les logos
                 // EXTERNES restent en <img> brut (domaine non-allowlisté → /img renverrait 403).
@@ -118,6 +139,7 @@ export default function FooterContactPartners({ footer }: FooterContactPartnersP
               })}
             </div>
           )}
+
         </div>
       </div>
 
