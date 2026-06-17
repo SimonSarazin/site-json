@@ -666,6 +666,10 @@ const SearchHeaderProps = z.object({
   buttons: z.array(ActionButtonSchema).optional(),
   showSearch: z.boolean().optional(),
   searchPlaceholder: LocalizedString.optional(),
+  /** Rangée de chips de filtres actifs (supprimables) sous la barre.
+   *  `true`/absent = partout · `"desktop"` = uniquement ≥ lg · `"mobile"` =
+   *  uniquement < lg · `false` = masquée. */
+  showActiveFiltersTags: z.union([z.boolean(), z.enum(["mobile", "desktop"])]).optional(),
 });
 
 export const SearchHeaderSectionSchema = z.object({

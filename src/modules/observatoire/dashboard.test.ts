@@ -12,6 +12,7 @@ import {
   applyFilters,
   applyTextSearch,
   buildCsv,
+  buildEntitiesCsv,
   buildRow,
   chartRows,
   chartTitle,
@@ -198,19 +199,49 @@ describe("buildCsv", () => {
   });
 });
 
+/* ── buildEntitiesCsv (export COMPLET — MR#8) ────────────────────────────── */
+
+describe("buildEntitiesCsv", () => {
+  it("résout chaque champ DIRECTEMENT depuis l'item via le moteur de dimensions (value/number/bool)", () => {
+    // Indépendant des colonnes du tableau : on passe des DimensionDef arbitraires.
+    const fields = [DIMS.ville, DIMS.surface, DIMS.access];
+    const csv = buildEntitiesCsv(items, fields, ["Ville", "Surface", "Accès"], { yes: "Oui", no: "Non" });
+    expect(csv).toBe(
+      [
+        '"Ville";"Surface";"Accès"',
+        '"Cilaos";120;"Oui"', // value quoté · number brut · bool→libellé i18n
+        '"Cilaos";300;"Non"', // acc_a "false" → Non
+        '"Saint-Denis";;"Oui"', // surf absent → cellule vide · acc_b 1 → Oui
+      ].join("\n"),
+    );
+  });
+
+  it("kind list → valeurs jointes par virgule", () => {
+    const csv = buildEntitiesCsv([items[0]], [DIMS.sports], ["Sports"], { yes: "Oui", no: "Non" });
+    expect(csv).toBe('"Sports"\n"Judo, Karaté"');
+  });
+});
+
 /* ── baseParams partagés (hook ⇄ prefetch) ───────────────────────────────── */
 
 describe("buildObservatoryBaseParams / observatoryPrefetchParams", () => {
   const baseParamsProp = { defaultFilters: { "source.key": "monDataset" } };
 
-  it("défauts : poi, notSourceKey, indexStepList 500, projection dérivée des dimensions", () => {
+  it("défauts : poi, indexStepList 500, projection dérivée des dimensions, scopé au costum (pas de notSourceKey)", () => {
     const bp = buildObservatoryBaseParams(baseParamsProp, DIMS);
     expect(bp.defaultTypes).toEqual(["poi"]);
-    expect(bp.notSourceKey).toBe(true);
+    // Le backend applique notSourceKey dès que le CHAMP est présent → on l'OMET
+    // par défaut pour rester scopé au source.key du costum (comme searchProStatic).
+    expect("notSourceKey" in bp).toBe(false);
     expect(bp.indexStepList).toBe(500);
     expect(bp.defaultFields).toContain("address"); // racine du chemin pointé
     expect(bp.defaultFields).toContain("collection"); // champ SDK
     expect(bp.defaultFields).toContain("acc_a");
+  });
+
+  it("notSourceKey explicite (réseau-wide) → champ inclus ; false/absent → omis", () => {
+    expect("notSourceKey" in buildObservatoryBaseParams({ ...baseParamsProp, notSourceKey: true }, DIMS)).toBe(true);
+    expect("notSourceKey" in buildObservatoryBaseParams({ ...baseParamsProp, notSourceKey: false }, DIMS)).toBe(false);
   });
 
   it("RÉGRESSION alignement SSR⇄client : le prefetch produit EXACTEMENT les baseParams du hook", () => {
