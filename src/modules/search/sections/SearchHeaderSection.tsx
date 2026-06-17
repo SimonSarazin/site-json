@@ -7,7 +7,8 @@
  * (ancien alias `title-with-filters-rezo-la-mer` supprimé — migré vers `searchHeader`).
  */
 import "@/modules/search/i18n";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useSearchParams } from "react-router";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -26,7 +27,7 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
-import { ChevronDown, SlidersHorizontal } from "lucide-react";
+import { ChevronDown, RotateCcw, SlidersHorizontal, X } from "lucide-react";
 import { usePageFiltersOptional } from "@/modules/search/contexts/pageFilters";
 import { useCocolight } from "@/hooks/useCocolight";
 import { ActionButtonGroup } from "@/modules/profil/components/ActionButtonGroup";
@@ -57,7 +58,10 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
     const setSelectedFilters = pageFilters?.setSelectedFilters ?? (() => {});
     const setSearchByFields = pageFilters?.setSearchByFields ?? (() => {});
     const selectedFilters = pageFilters?.selectedFilters ?? {};
-    const searchByFields = pageFilters?.searchByFields ?? {};
+    const searchByFields = useMemo(
+        () => pageFilters?.searchByFields ?? {},
+        [pageFilters?.searchByFields],
+    );
     const hasDropdownFilters = (props.dropdownFilters?.length ?? 0) > 0;
 
     const activeType = selectedFilters['type']?.[0] ?? "all";
@@ -65,16 +69,43 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
     const { entity } = useCocolight();
     const slugEntity = entity?.slug;
 
+    // SYNCHRONISATION URL (`?<filter.id>=<slug,slug>` et `?q=…`, format maison
+    // sans virgule dans une valeur) — permaliens partageables + liens depuis
+    // l'accueil qui pré-activent les filtres. Même pattern que l'Observatoire
+    // (`useObservatoryFilters`) : l'URL est un miroir écrit en `replace`,
+    // l'état du contexte reste la source.
+    const [searchParams, setSearchParams] = useSearchParams();
+    const writeParams = useCallback(
+        (mutate: (params: URLSearchParams) => void) => {
+            setSearchParams(
+                (prev) => {
+                    const params = new URLSearchParams(prev);
+                    mutate(params);
+                    return params;
+                },
+                { replace: true, preventScrollReset: true },
+            );
+        },
+        [setSearchParams],
+    );
+
     // Input texte : état local réactif + debounce avant publication dans le
     // context (sinon chaque frappe relance la recherche backend). Même hook et
-    // même délai (400 ms) que la sidebar `<FiltersSection>`.
-    const [localSearchQuery, setLocalSearchQuery] = useState(pageFilters?.searchQuery ?? "");
+    // même délai (400 ms) que la sidebar `<FiltersSection>`. Valeur initiale
+    // restaurée depuis l'URL (`?q=`) au montage.
+    const [localSearchQuery, setLocalSearchQuery] = useState(
+        searchParams.get("q") ?? pageFilters?.searchQuery ?? "",
+    );
     const debouncedSearchQuery = useDebounce(localSearchQuery, 400);
     // Sheet "Filtres" mobile (les dropdowns sont regroupés derrière un bouton)
     const [filtersOpen, setFiltersOpen] = useState(false);
 
     useEffect(() => {
         setSearchQuery(debouncedSearchQuery);
+        writeParams((params) => {
+            if (debouncedSearchQuery.trim()) params.set("q", debouncedSearchQuery.trim());
+            else params.delete("q");
+        });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [debouncedSearchQuery]);
 
@@ -103,7 +134,17 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
         return selectedFilters[filter.id] ?? [];
     };
 
+    // Reflète la sélection (ids/slugs d'option) dans l'URL — appelé pour toute
+    // mutation (toggle, reset, suppression de tag) → l'URL reste cohérente.
+    const writeFilterParam = (filter: DropdownFilterConfig, nextSelectedIds: string[]) => {
+        writeParams((params) => {
+            if (nextSelectedIds.length) params.set(filter.id, nextSelectedIds.join(","));
+            else params.delete(filter.id);
+        });
+    };
+
     const setDropdownSelection = (filter: DropdownFilterConfig, nextSelectedIds: string[]) => {
+        writeFilterParam(filter, nextSelectedIds);
         if (filter.field) {
             const fieldName = filter.field;
             setSearchByFields((prev) => {
@@ -182,8 +223,65 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
     ).length;
 
     const resetAllDropdownFilters = () => {
-        (props.dropdownFilters ?? []).forEach((filter) => setDropdownSelection(filter, []));
+        const filters = props.dropdownFilters ?? [];
+        // Une seule mutation : plusieurs setSearchParams dans le même cycle voient le même `prev` (React Router).
+        writeParams((params) => {
+            filters.forEach((filter) => params.delete(filter.id));
+        });
+        filters.forEach((filter) => {
+            if (filter.field) {
+                setSearchByFields((prev) => {
+                    const prefix = `${filter.id}:`;
+                    return Object.fromEntries(
+                        Object.entries(prev).filter(([key]) => !key.startsWith(prefix))
+                    );
+                });
+            } else {
+                setSelectedFilters((prev) => {
+                    const next = { ...prev };
+                    delete next[filter.id];
+                    return next;
+                });
+            }
+        });
     };
+
+    // Hydratation au MONTAGE : restaure les filtres depuis l'URL (slugs d'option
+    // par filtre, joints par virgule) → contexte. One-time (ref garde) — ensuite
+    // le contexte est la source et l'URL son miroir. Permet aux liens d'accueil
+    // d'ouvrir la page avec des filtres pré-activés.
+    const hydratedRef = useRef(false);
+    useEffect(() => {
+        if (hydratedRef.current) return;
+        hydratedRef.current = true;
+        (props.dropdownFilters ?? []).forEach((filter) => {
+            const raw = searchParams.get(filter.id);
+            if (!raw) return;
+            const ids = raw
+                .split(",")
+                .map((s) => s.trim())
+                .filter((id) => filter.options.some((o) => o.id === id));
+            if (ids.length) setDropdownSelection(filter, ids);
+        });
+        // Montage uniquement — restauration initiale depuis l'URL.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Tags des filtres actifs : construits à partir de searchByFields (filtres
+    // à `field`) pour permettre la suppression individuelle depuis la barre.
+    const activeFilterTags = useMemo(() => {
+        const result: Array<{ filterId: string; optionId: string; label: string }> = [];
+        for (const key of Object.keys(searchByFields)) {
+            const colonIdx = key.indexOf(":");
+            if (colonIdx < 0) continue;
+            const filterId = key.slice(0, colonIdx);
+            const optionId = key.slice(colonIdx + 1);
+            const filter = props.dropdownFilters?.find((f) => f.id === filterId);
+            const option = filter?.options.find((o) => o.id === optionId);
+            if (option) result.push({ filterId, optionId, label: t(option.label) });
+        }
+        return result;
+    }, [searchByFields, props.dropdownFilters, t]);
 
     // Rendu d'un dropdown de filtre, réutilisé en barre desktop (inline) ET dans
     // la Sheet mobile. `w-full` par défaut (Sheet) → `lg:w-auto` en barre desktop.
@@ -274,6 +372,20 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
                                 {/* Desktop : filtres inline, regroupés dans la barre */}
                                 <div className="hidden w-full flex-wrap items-center justify-center gap-3 lg:flex">
                                     {props.dropdownFilters?.map(renderDropdownFilter)}
+                                    {activeFilterCount > 0 && (
+                                        <>
+                                            <Badge className="rounded-full px-2">{activeFilterCount}</Badge>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={resetAllDropdownFilters}
+                                                className="h-9 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground"
+                                            >
+                                                <RotateCcw className="h-3 w-3" /> {t("Réinitialiser")}
+                                            </Button>
+                                        </>
+                                    )}
                                 </div>
 
                                 {/* Mobile : un seul bouton "Filtres" (compteur actif) → Sheet bas */}
@@ -326,6 +438,31 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
                             </>
                         )}
                     </div>
+
+                    {/* Tags de filtres actifs — supprimables individuellement,
+                        visibles sur tous les écrans sous la barre de filtres. */}
+                    {activeFilterTags.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-3">
+                            {activeFilterTags.map(({ filterId, optionId, label }) => (
+                                <Badge key={`${filterId}:${optionId}`} className="gap-1 rounded-full">
+                                    {label}
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const filter = props.dropdownFilters?.find((f) => f.id === filterId);
+                                            if (!filter) return;
+                                            const current = getDropdownSelectedValues(filter);
+                                            setDropdownSelection(filter, current.filter((v) => v !== optionId));
+                                        }}
+                                        className="-me-1 ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full hover:text-primary-foreground/70"
+                                        aria-label={`Supprimer ${label}`}
+                                    >
+                                        <X className="h-3 w-3" />
+                                    </button>
+                                </Badge>
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
 

@@ -159,26 +159,50 @@ export function Filters({ data, dimensions, filterDefs, values, onChange, search
 
   // Options par filtre : dérivées des données pour value/list, oui/non pour
   // anyTrue. Recalculées quand le dataset grossit (chargement progressif).
+  // Cascade (opt-in via `dependsOn`) : si un filtre déclare une dimension
+  // parente ET que celle-ci a une valeur sélectionnée, les options sont
+  // restreintes aux items dont la dimension parente correspond.
   const optionsById = useMemo(() => {
     const out: Record<string, Array<{ id: string; label: string }>> = {};
-    for (const { id, def } of fields) {
+    for (const { id, def, filter } of fields) {
+      let sourceData = data;
+      if (filter.dependsOn) {
+        const parentVal = (watched[filter.dependsOn] ?? "") as string;
+        if (parentVal !== "") {
+          const parentDef = dimensions[filter.dependsOn];
+          if (parentDef) {
+            const selected = parentVal.split(",").map((s) => s.trim()).filter(Boolean);
+            sourceData = data.filter((item) => {
+              const v = dimensionValue(item, parentDef, labels?.[filter.dependsOn!]);
+              return v !== undefined && selected.includes(v);
+            });
+          }
+        }
+      }
       if (isBoolKind(def.kind)) {
         out[id] = [
           { id: BOOL_FILTER_VALUES.TRUE, label: t("filters.yes") },
           { id: BOOL_FILTER_VALUES.FALSE, label: t("filters.no") },
         ];
       } else if (def.kind === "list") {
-        out[id] = uniqSorted(data.flatMap((d) => dimensionList(d, def))).map(
+        out[id] = uniqSorted(sourceData.flatMap((d) => dimensionList(d, def))).map(
           (v) => ({ id: v, label: v }),
         );
       } else {
-        out[id] = uniqSorted(data.map((d) => dimensionValue(d, def, labels?.[id]))).map(
-          (v) => ({ id: v, label: v }),
-        );
+        const raw = uniqSorted(
+          sourceData.map((d) => dimensionValue(d, def, labels?.[id])).filter((v): v is string => v !== undefined),
+        ).map((v) => ({ id: v, label: v }));
+        // `values` comme allowlist : restreint les options aux valeurs déclarées
+        // (ex. dimension `epci` qui normalise des codes postaux → noms EPCI via
+        // valueMap — sans allowlist, les codes sans mapping s'afficheraient bruts).
+        out[id] = def.values?.length ? raw.filter((opt) => def.values!.includes(opt.id)) : raw;
       }
     }
     return out;
-  }, [fields, data, t, labels]);
+    // valuesKey (JSON.stringify de watched) déclenche la mise à jour des options
+    // cascade quand la sélection parente change — sans exposer watched directement.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fields, data, valuesKey, t, labels, dimensions]);
 
   const labelFor = ({ id, def }: { id: string; def: DimensionDef }): string =>
     def.label ? t(def.label) : def.labelKey ? t(def.labelKey) : id;
