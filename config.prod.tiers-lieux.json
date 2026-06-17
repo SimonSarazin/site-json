@@ -123,6 +123,141 @@
       },
       {
         "label": {
+          "fr": "Outils et ressources",
+          "en": "Tools & Resources"
+        },
+        "icon": "wrench",
+        "children": [
+          {
+            "label": {
+              "fr": "Forum",
+              "en": "Forum"
+            },
+            "description": {
+              "fr": "Échangez et explorez les fils de discussion autour des tiers-lieux",
+              "en": "Exchange and explore discussion threads about third places"
+            },
+            "path": "https://forum.tiers-lieux.org/"
+          },
+          {
+            "label": {
+              "fr": "Chat",
+              "en": "Chat"
+            },
+            "description": {
+              "fr": "Discutez dans les divers canaux de chat sur de nombreux thèmes",
+              "en": "Chat across various channels on many topics"
+            },
+            "path": "https://chat.tiers-lieux.org/"
+          },
+          {
+            "label": {
+              "fr": "Wiki Movilab",
+              "en": "Wiki Movilab"
+            },
+            "description": {
+              "fr": "Plus de 10 000 pages de documentation sur les tiers-lieux",
+              "en": "Over 10,000 pages of documentation on third places"
+            },
+            "path": "https://movilab.org/"
+          },
+          {
+            "label": {
+              "fr": "Notes",
+              "en": "Notes"
+            },
+            "description": {
+              "fr": "Un outil de prise de notes collaborative multi-pages, alternative à Docs !",
+              "en": "Use the notes tool — an alternative to Docs!"
+            },
+            "path": "https://notes.tiers-lieux.org/"
+          },
+          {
+            "label": {
+              "fr": "Visio",
+              "en": "Video calls"
+            },
+            "description": {
+              "fr": "L'outil de visio au service des tiers-lieux basé sur Meet",
+              "en": "The video-conferencing tool for third places, based on Meet"
+            },
+            "path": "https://visio.tiers-lieux.org/"
+          },
+           {
+            "label": {
+              "fr": "Fichier",
+              "en": "Fichier"
+            },
+            "description": {
+              "fr": "Un drive avec outils collaboratifs en ligne (word, excel, ppt, etc)",
+              "en": "A cloud storage solution with online collaborative tools (word, excel, ppt, etc)"
+            },
+            "path": "https://fichier.tiers-lieux.org/"
+          },
+          {
+            "label": {
+              "fr": "API et données ouvertes",
+              "en": "API and open data"
+            },
+            "description": {
+              "fr": "Les données ouvertes dans les Tiers Lieux. API, CSV...",
+              "en": "Open data on third places. API, CSV..."
+            },
+            "path": "/api-donnees"
+          },
+        ]
+      },
+      {
+        "label": {
+          "fr": "S'entraider",
+          "en": "Help Each Other"
+        },
+        "icon": "handshake",
+        "children": [
+          {
+            "label": {
+              "fr": "Appel à communs",
+              "en": "Call for commons"
+            },
+            "description": {
+             "fr": "La plateforme pour référencer, mutualiser et cofinancer les communs des tiers-lieux",
+             "en": "The platform to reference, pool and co‑finance the commons of third places"
+                },
+            "path": "https://lescommuns.tiers-lieux.org/#les-communs"
+          },
+          {
+            "label": {
+              "fr": "Usages",
+              "en": "Uses"
+            },
+            "description": {
+              "fr": "Le recensement des usages et outils utilisés dans les tiers-lieux, pour faciliter les pratiques de mutualisation",
+              "en": "A catalogue of the uses and tools found in third places, to ease resource-sharing practices"
+            },
+            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=list-tools#list-tools"
+          },
+          {
+            "label": {
+            "fr": "La journée mensuelle autour des communs",
+            "en": "The monthly day around the commons"
+                },
+                "href": "https://communlundi.tiers-lieux.org"
+          },
+          {
+            "label": {
+              "fr": "La plateforme d'aiguillage",
+              "en": "The guidance platform"
+            },
+            "description": {
+              "fr": "Une plateforme qui facilite les demandes d'aides et les réponses par un réseau d'acteurs",
+              "en": "A platform that streamlines support requests and responses through a network of stakeholders"
+            },
+            "path": "https://aiguillage.tiers-lieux.org/"
+          }
+        ]
+      },
+      {
+        "label": {
           "fr": "Observatoire",
           "en": "Observatory"
         },
@@ -157,48 +292,6 @@
               "en": "Explore the thematic networks observatory"
             },
             "path": "/reseaux-thematiques"
-          }
-        ]
-      },
-      {
-        "label": {
-          "fr": "S'entraider",
-          "en": "Help Each Other"
-        },
-        "icon": "handshake",
-        "children": [
-          {
-            "label": {
-              "fr": "Appel à communs",
-              "en": "Call for commons"
-            },
-            "description": {
-              "fr": "La plateforme de cofinancement des ressources communes",
-              "en": "The co-funding platform for shared resources"
-            },
-            "path": "https://lescommuns.tiers-lieux.org/#les-communs"
-          },
-          {
-            "label": {
-              "fr": "Usages",
-              "en": "Uses"
-            },
-            "description": {
-              "fr": "Le recensement des usages et outils utilisés dans les tiers-lieux, pour faciliter les pratiques de mutualisation",
-              "en": "A catalogue of the uses and tools found in third places, to ease resource-sharing practices"
-            },
-            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=list-tools#list-tools"
-          },
-          {
-            "label": {
-              "fr": "La plateforme d'aiguillage",
-              "en": "The guidance platform"
-            },
-            "description": {
-              "fr": "Une plateforme qui facilite les demandes d'aides et les réponses par un réseau d'acteurs",
-              "en": "A platform that streamlines support requests and responses through a network of stakeholders"
-            },
-            "path": "https://aiguillage.tiers-lieux.org/"
           }
         ]
       },
@@ -288,81 +381,6 @@
           }
         ],
         "icon": "scale"
-      },
-      {
-        "label": {
-          "fr": "Outils et ressources",
-          "en": "Tools & Resources"
-        },
-        "icon": "wrench",
-        "children": [
-          {
-            "label": {
-              "fr": "Forum",
-              "en": "Forum"
-            },
-            "description": {
-              "fr": "Échangez et explorez les fils de discussion autour des tiers-lieux",
-              "en": "Exchange and explore discussion threads about third places"
-            },
-            "path": "https://forum.tiers-lieux.org/"
-          },
-          {
-            "label": {
-              "fr": "Chat",
-              "en": "Chat"
-            },
-            "description": {
-              "fr": "Discutez dans les divers canaux de chat sur de nombreux thèmes",
-              "en": "Chat across various channels on many topics"
-            },
-            "path": "https://chat.tiers-lieux.org/"
-          },
-          {
-            "label": {
-              "fr": "Wiki",
-              "en": "Wiki"
-            },
-            "description": {
-              "fr": "Plus de 10 000 pages de documentation sur les tiers-lieux",
-              "en": "Over 10,000 pages of documentation on third places"
-            },
-            "path": "https://movilab.org/"
-          },
-          {
-            "label": {
-              "fr": "API et données ouvertes",
-              "en": "API and open data"
-            },
-            "description": {
-              "fr": "Les données ouvertes dans les Tiers Lieux. API, CSV...",
-              "en": "Open data on third places. API, CSV..."
-            },
-            "path": "/api-donnees"
-          },
-          {
-            "label": {
-              "fr": "Notes",
-              "en": "Notes"
-            },
-            "description": {
-              "fr": "Utiliser l'outil de notes proposé, alternative à Docs !",
-              "en": "Use the notes tool — an alternative to Docs!"
-            },
-            "path": "https://notes.tiers-lieux.org/"
-          },
-          {
-            "label": {
-              "fr": "Visio",
-              "en": "Video calls"
-            },
-            "description": {
-              "fr": "L'outil de visio au service des tiers-lieux basé sur Meet",
-              "en": "The video-conferencing tool for third places, based on Meet"
-            },
-            "path": "https://visio.tiers-lieux.org/"
-          }
-        ]
       }
     ],
     "sticky": true,
