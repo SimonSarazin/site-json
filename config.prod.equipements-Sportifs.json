@@ -1961,10 +1961,6 @@
                 "address", "geo", "geoPosition", "parent"
               ],
               "defaultFilters": {
-                "$or": {
-                  "source.key": "equipementsSportifs974",
-                  "source.keys": "equipementsSportifs974"
-                },
                 "type": "recoveryCenter"
               }
             },
@@ -2456,10 +2452,6 @@
                 "address", "geo", "geoPosition", "parent"
               ],
               "defaultFilters": {
-                "$or": {
-                  "source.key": "equipementsSportifs974",
-                  "source.keys": "equipementsSportifs974"
-                },
                 "type": "recoveryCenter"
               }
             },
@@ -2894,7 +2886,7 @@
     "partners": {
       "logos": [
         {
-          "image": "images/sportSanteBienetre/partners/ac-reunion.png",
+          "image": "images/equipementsSportifs974/partners/ac-reunion.png",
           "alt": {
             "fr": "Jeunesse, Engagement et Sports",
             "en": "Youth, Engagement and Sports"
