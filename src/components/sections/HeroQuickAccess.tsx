@@ -77,7 +77,7 @@ export function HeroQuickAccess({ id, props }: HeroQuickAccessProps) {
         )}
         <div
           className="absolute inset-0 "
-          style={{          
+          style={{
               background: `linear-gradient(to bottom, color-mix(in oklch, var(--color-background) 60%, transparent), color-mix(in oklch, var(--color-background) ${overlayOpacity ?? "30%"}, transparent), var(--color-background))`
           }}
         />
@@ -107,7 +107,7 @@ export function HeroQuickAccess({ id, props }: HeroQuickAccessProps) {
                 </div>
             )}
 
-            
+
 
             <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
               {t(props.headline)}
@@ -142,7 +142,7 @@ export function HeroQuickAccess({ id, props }: HeroQuickAccessProps) {
                   {t(props.quickAccessTitle)}
                 </h2>
               )}
-              
+
               <div className={quickAccessCards.length > 3 ? "grid grid-cols-1 sm:grid-cols-2 gap-4" : "space-y-4"}>
               {quickAccessCards.map((card, index) => {
                   const cardVariant = index % 2 === 0 ? "public" : "pro";
@@ -159,7 +159,7 @@ export function HeroQuickAccess({ id, props }: HeroQuickAccessProps) {
                                   dangerouslySetInnerHTML={{ __html: card.icon }}
                               />
                             )}
-                            {card.label && (  
+                            {card.label && (
                               <span className="text-sm font-medium opacity-90">
                                 {t(card.label)}
                               </span>
