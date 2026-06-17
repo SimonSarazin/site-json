@@ -351,6 +351,7 @@
           "type": "searchHeader",
           "id": "listing-equipements-header",
           "props": {
+            "showActiveFiltersTags": "desktop",
             "headline": {
               "fr": "Découvrez les équipements sportifs",
               "en": "Discover sports facilities"

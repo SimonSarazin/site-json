@@ -221,9 +221,12 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
         return `${t(filter.label)} (${selectedIds.length})`;
     };
 
-    const activeFilterCount = (props.dropdownFilters ?? []).filter(
-        (filter) => getDropdownSelectedValues(filter).length > 0
-    ).length;
+    // Compteur = nombre total de VALEURS sélectionnées (= nombre de chips), pas le
+    // nombre de catégories de filtre → cohérent avec les pastilles affichées.
+    const activeFilterCount = (props.dropdownFilters ?? []).reduce(
+        (sum, filter) => sum + getDropdownSelectedValues(filter).length,
+        0
+    );
 
     const resetAllDropdownFilters = () => {
         const filters = props.dropdownFilters ?? [];
@@ -453,12 +456,21 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
                         )}
                     </div>
 
-                    {/* Tags de filtres actifs — supprimables individuellement,
-                        visibles sur tous les écrans sous la barre de filtres. */}
-                    {activeFilterTags.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-3">
+                    {/* Tags de filtres actifs — supprimables individuellement.
+                        `showActiveFiltersTags` : true/absent = partout · "desktop" =
+                        ≥ lg seulement · "mobile" = < lg seulement · false = masqués. */}
+                    {props.showActiveFiltersTags !== false && activeFilterTags.length > 0 && (
+                        <div
+                            className={`${
+                                props.showActiveFiltersTags === "mobile"
+                                    ? "flex lg:hidden"
+                                    : props.showActiveFiltersTags === "desktop"
+                                        ? "hidden lg:flex"
+                                        : "flex"
+                            } mx-auto mt-2 w-full max-w-4xl flex-wrap gap-2 rounded-2xl border border-border/60 bg-card/80 px-3 py-2 shadow-lg backdrop-blur-md`}
+                        >
                             {activeFilterTags.map(({ filterId, optionId, label }) => (
-                                <Badge key={`${filterId}:${optionId}`} className="gap-1 rounded-full">
+                                <Badge key={`${filterId}:${optionId}`} className="gap-1 rounded-full py-1 pe-1">
                                     {label}
                                     <button
                                         type="button"
@@ -468,10 +480,10 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
                                             const current = getDropdownSelectedValues(filter);
                                             setDropdownSelection(filter, current.filter((v) => v !== optionId));
                                         }}
-                                        className="-me-1 ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full hover:text-primary-foreground/70"
-                                        aria-label={`Supprimer ${label}`}
+                                        className="-me-0.5 ml-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full hover:bg-primary-foreground/15 hover:text-primary-foreground/80"
+                                        aria-label={`${t("Supprimer")} ${label}`}
                                     >
-                                        <X className="h-3 w-3" />
+                                        <X className="h-3.5 w-3.5" />
                                     </button>
                                 </Badge>
                             ))}
