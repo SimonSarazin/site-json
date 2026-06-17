@@ -2,6 +2,7 @@ import NavLink from "../NavLink";
 import { MapPin, Phone, Mail, Globe, Building2 } from "lucide-react";
 import { useLocalization } from "@/hooks/useLocalization";
 import { Footer } from "@/types/site-schema";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 interface FooterContactPartnersProps {
   footer: Footer;
@@ -42,17 +43,21 @@ export default function FooterContactPartners({ footer }: FooterContactPartnersP
 
           {/* Contact items */}
           {contactItems.length > 0 && (
-            <div className={partnerLogos.length > 1 ? "w-full md:w-auto" : "w-full"}>
+            <div className={partnerLogos.length === 1 ? "w-full" : "w-full md:w-auto"}>
               <h4 className="font-display font-bold text-foreground text-lg mb-4">
                 {footer.contactSection?.title ? t(footer.contactSection.title) : "Nos coordonnées"}
               </h4>
               <ul
-                className={`grid gap-4 text-sm text-muted-foreground ${
-                  contactItems.length === 1
-                    ? "grid-cols-1"
-                    : contactItems.length === 2
-                      ? "grid-cols-1 sm:grid-cols-2"
-                      : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                className={`text-sm text-muted-foreground ${
+                  partnerLogos.length === 1
+                    ? `grid gap-4 ${
+                        contactItems.length === 1
+                          ? "grid-cols-1"
+                          : contactItems.length === 2
+                            ? "grid-cols-1 sm:grid-cols-2"
+                            : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                      }`
+                    : "space-y-3"
                 }`}
               >
                 {contactItems.map((item, idx) => {
@@ -104,7 +109,27 @@ export default function FooterContactPartners({ footer }: FooterContactPartnersP
               }
             >
               {partnerLogos.map((logo, idx) => {
-                const image = logo.image.startsWith("/") ? logo.image : `/${logo.image}`;
+                // Logos partenaires LOCAUX → /img (redimensionne + avif/webp). Les logos
+                // EXTERNES restent en <img> brut (domaine non-allowlisté → /img renverrait 403).
+                const isExternal = /^https?:\/\//.test(logo.image);
+                const logoContent = isExternal ? (
+                  <img
+                    src={logo.image}
+                    alt={t(logo.alt)}
+                    loading="lazy"
+                    width={160}
+                    height={96}
+                    className="h-24 md:h-32 w-auto object-contain hover:opacity-85 transition-opacity"
+                  />
+                ) : (
+                  <OptimizedImage
+                    src={logo.image}
+                    alt={t(logo.alt)}
+                    height={128}
+                    className="h-24 md:h-32 w-auto object-contain hover:opacity-85 transition-opacity"
+                  />
+                );
+
                 return (
                   <NavLink
                     key={idx}
@@ -112,14 +137,7 @@ export default function FooterContactPartners({ footer }: FooterContactPartnersP
                     external
                     className="inline-flex items-center justify-center dark:rounded-lg dark:bg-white dark:p-3 dark:shadow-sm"
                   >
-                    <img
-                      src={image}
-                      alt={t(logo.alt)}
-                      loading="lazy"
-                      width={160}
-                      height={96}
-                      className="h-24 md:h-32 w-auto object-contain hover:opacity-85 transition-opacity"
-                    />
+                    {logoContent}
                   </NavLink>
                 );
               })}

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocalization } from "@/hooks/useLocalization";
 import { HeroParallaxProps as SchemaHeroParallaxProps } from "@/types/site-schema";
 import { Link } from "react-router";
+import { HeroBackgroundImage } from "./HeroBackgroundImage";
 
 interface HeroParallaxProps {
     id?: string;
@@ -40,10 +41,11 @@ export function HeroParallax({ props }: HeroParallaxProps) {
                         transition: 'transform 0.1s ease-out'
                     }}
                 >
-                    <img
+                    <HeroBackgroundImage
                         src={props.backgroundImage}
                         alt={props.backgroundImageAlt ? t(props.backgroundImageAlt) : ""}
                         className="w-full h-[120vh] object-cover"
+                        priority
                     />
                     <div
                         className="absolute inset-0"

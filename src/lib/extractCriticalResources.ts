@@ -6,13 +6,33 @@
  * - Fonts : Google Fonts définies dans la config theme
  */
 
-import type { SiteConfig, Page } from '@/types/site-schema';
+import type { SiteConfig } from '@/types/site-schema';
 
 export interface CriticalImage {
   src: string;
   fetchpriority?: 'high' | 'low' | 'auto';
   type?: string; // ex: 'image/png', 'image/webp'
+  /**
+   * `true` si l'image est rendue via /img en srcSet responsive (descripteurs `w`),
+   * ex. le `backgroundImage` du héro `hero-quick-access`. Le preload émettra alors
+   * `imagesrcset`/`imagesizes` (mêmes URLs /img que l'<img>) au lieu d'un `href` vers
+   * la source brute — sinon le navigateur télécharge LES DEUX (brute + optimisée).
+   */
+  responsive?: boolean;
 }
+
+/**
+ * Types de section dont le `backgroundImage` plein cadre above-the-fold est rendu via
+ * `<HeroBackgroundImage>` en srcSet responsive (/img `w`) → preload `imagesrcset`.
+ * (`hero-search` exclu : image décorative en bas de section, non-LCP ;
+ *  `hero-entity-banner` exclu : URL d'entité externe, rendue en `<img>` brut.)
+ */
+const RESPONSIVE_BG_SECTION_TYPES = new Set<string>([
+  'hero-quick-access',
+  'hero',
+  'hero-parallax',
+  'hero-tinted-overlay',
+]);
 
 /**
  * Détecte le type MIME d'une image à partir de son extension
@@ -45,100 +65,6 @@ function normalizePath(src: string): string {
 }
 
 /**
- * Extrait les images des sections "above the fold" (2 premières sections)
- */
-function extractSectionImages(sections: Page['sections'], maxSections = 2): string[] {
-  const images: string[] = [];
-  const sectionsToAnalyze = sections.slice(0, maxSections);
-
-  for (const section of sectionsToAnalyze) {
-    const props = section.props as Record<string, unknown>;
-
-    // Background images (hero, cta, banner, etc.)
-    if (props.backgroundImage && typeof props.backgroundImage === 'string') {
-      images.push(props.backgroundImage);
-    }
-
-    // Images dans les cards
-    if (props.items && Array.isArray(props.items)) {
-      // Limiter aux 4 premiers items pour ne pas surcharger
-      const items = props.items.slice(0, 4);
-      for (const item of items) {
-        if (item && typeof item === 'object') {
-          const itemObj = item as Record<string, unknown>;
-          if (itemObj.image && typeof itemObj.image === 'string') {
-            images.push(itemObj.image);
-          }
-          if (itemObj.iconImage && typeof itemObj.iconImage === 'string') {
-            images.push(itemObj.iconImage);
-          }
-          if (itemObj.avatar && typeof itemObj.avatar === 'string') {
-            images.push(itemObj.avatar);
-          }
-          if (itemObj.featuredImage && typeof itemObj.featuredImage === 'string') {
-            images.push(itemObj.featuredImage);
-          }
-        }
-      }
-    }
-
-    // Images dans une galerie
-    if (props.images && Array.isArray(props.images)) {
-      const galleryImages = props.images.slice(0, 4);
-      for (const img of galleryImages) {
-        if (img && typeof img === 'object') {
-          const imgObj = img as Record<string, unknown>;
-          if (imgObj.src && typeof imgObj.src === 'string') {
-            images.push(imgObj.src);
-          }
-        }
-      }
-    }
-
-    // Logos dans logoCloud
-    if (props.logos && Array.isArray(props.logos)) {
-      const logos = props.logos.slice(0, 6);
-      for (const logo of logos) {
-        if (logo && typeof logo === 'object') {
-          const logoObj = logo as Record<string, unknown>;
-          if (logoObj.src && typeof logoObj.src === 'string') {
-            images.push(logoObj.src);
-          }
-        }
-      }
-    }
-
-    // Membres d'équipe
-    if (props.members && Array.isArray(props.members)) {
-      const members = props.members.slice(0, 4);
-      for (const member of members) {
-        if (member && typeof member === 'object') {
-          const memberObj = member as Record<string, unknown>;
-          if (memberObj.avatar && typeof memberObj.avatar === 'string') {
-            images.push(memberObj.avatar);
-          }
-        }
-      }
-    }
-
-    // Témoignages avec avatar
-    if (section.type === 'testimonials' && props.items && Array.isArray(props.items)) {
-      const testimonials = props.items.slice(0, 3);
-      for (const testimonial of testimonials) {
-        if (testimonial && typeof testimonial === 'object') {
-          const testObj = testimonial as Record<string, unknown>;
-          if (testObj.avatar && typeof testObj.avatar === 'string') {
-            images.push(testObj.avatar);
-          }
-        }
-      }
-    }
-  }
-
-  return images;
-}
-
-/**
  * Données du loader qui peuvent contenir des images à précharger
  */
 export interface LoaderDataWithImages {
@@ -159,51 +85,52 @@ export function extractCriticalImages(
   const images: CriticalImage[] = [];
   const seen = new Set<string>();
 
-  // Helper pour ajouter une image sans doublon
-  const addImage = (src: string, fetchpriority?: CriticalImage['fetchpriority']) => {
+  // Helper pour ajouter une image sans doublon (1ère occurrence gagne → on ajoute
+  // le héro responsive AVANT le scan des sections pour qu'il reste `responsive`).
+  const addImage = (src: string, fetchpriority?: CriticalImage['fetchpriority'], responsive?: boolean) => {
     const normalized = normalizePath(src);
     if (normalized && !seen.has(normalized)) {
       seen.add(normalized);
       images.push({
         src: normalized,
         fetchpriority,
-        type: getImageType(normalized),
+        // Une image responsive passe par /img → pas de `type` (format négocié par /img).
+        type: responsive ? undefined : getImageType(normalized),
+        responsive,
       });
     }
   };
 
-  // 1. Logo du header (priorité haute - élément LCP principal)
-  if (config.header?.logo) {
-    addImage(config.header.logo, 'high');
-  }
+  // 1. Logo du header : PAS de preload. Il est rendu via <OptimizedImage> (/img), or un
+  //    preload brut `href` (source non optimisée) ne matche pas l'URL /img → double
+  //    téléchargement, et en `fetchpriority=high` il concurrence le vrai LCP (le héro).
+  //    L'<img> du logo est en haut du DOM → le preload-scanner le trouve sans aide.
 
-  // 2. Favicon (généralement petit, mais utile)
-  if (config.meta?.favicon) {
-    addImage(config.meta.favicon);
-  }
+  // 2. Favicon : PAS de preload `as=image` non plus — le navigateur le charge déjà via
+  //    <link rel="icon">. Le précharger en image fait juste un fetch brut redondant
+  //    (et, quand favicon === logo du header, donne l'impression d'un logo chargé 2×).
 
   // 3. Trouver la page courante
   const currentPage = config.pages.find((p) => p.path === pathname) || config.pages[0];
 
   if (currentPage) {
-    // 4. Image OG de la page (si présente)
-    if (currentPage.seo?.ogImage) {
-      addImage(currentPage.seo.ogImage);
-    }
-
-    // 5. Images des sections "above the fold"
-    const sectionImages = extractSectionImages(currentPage.sections);
-    for (const img of sectionImages) {
-      addImage(img);
+    // SEUL l'arrière-plan du 1er héro PLEIN CADRE above-the-fold est préchargé, et via
+    // imagesrcset (mêmes URLs /img que <HeroBackgroundImage>) → match exact, zéro double
+    // téléchargement. On NE précharge PAS :
+    //  - l'image OG (jamais affichée, c'est pour les crawlers) ;
+    //  - les autres images de section (cards, galerie, logos, bg décoratif d'un hero-search…) ;
+    //  - le logo du footer (sous la ligne de flottaison).
+    // Toutes sont rendues via /img DANS le markup → le preload-scanner les trouve déjà, et un
+    // preload `href` BRUT ne matcherait pas leur URL /img (→ double téléchargement, le bug
+    // qu'on corrige). cf. <OptimizedImage> / <HeroBackgroundImage>.
+    const firstSection = currentPage.sections?.[0];
+    if (firstSection && RESPONSIVE_BG_SECTION_TYPES.has(firstSection.type)) {
+      const bg = (firstSection.props as { backgroundImage?: string } | undefined)?.backgroundImage;
+      if (typeof bg === 'string') addImage(bg, 'high', true);
     }
   }
 
-  // 6. Logo du footer (moins prioritaire, mais visible sur toutes les pages)
-  if (config.footer?.logo) {
-    addImage(config.footer.logo);
-  }
-
-  // 7. Images provenant des loaders (données dynamiques API)
+  // Images provenant des loaders (données dynamiques API, ex. avatar/bannière de profil)
   if (loaderData) {
     for (const routeId of Object.keys(loaderData)) {
       const data = loaderData[routeId] as LoaderDataWithImages | null;

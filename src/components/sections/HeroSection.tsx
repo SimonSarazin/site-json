@@ -3,6 +3,7 @@ import { T } from "@/components/ui/T";
 import { useNavigate } from "react-router";
 import { cn } from '@/lib/utils';
 import { type HeroSectionProps } from '@/types/site-schema';
+import { HeroBackgroundImage } from "./HeroBackgroundImage";
 
 export function HeroSection({ id, props }: { id?: string; props: HeroSectionProps }) {
   const navigate = useNavigate();
@@ -34,9 +35,10 @@ export function HeroSection({ id, props }: { id?: string; props: HeroSectionProp
     >
       {/* Background */}
       {backgroundImage && (
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${backgroundImage})` }}
+        <HeroBackgroundImage
+          src={backgroundImage}
+          className="absolute inset-0 w-full h-full object-cover"
+          priority
         />
       )}
 

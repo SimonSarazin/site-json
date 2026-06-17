@@ -2,7 +2,7 @@ import { T } from "@/components/ui/T";
 import { useLocalization } from "@/hooks/useLocalization";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { Loader2 } from "lucide-react";
-import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { HeroBackgroundImage } from "./HeroBackgroundImage";
 
 import { HeroSearchProps as SchemaHeroSearchProps } from "@/types/site-schema";
 import { useAutocomplete } from "@/modules/search/hooks/useAutocomplete";
@@ -392,11 +392,10 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
 
         {props.backgroundImage && (
           <div className="absolute bottom-0 left-0 right-0 h-64 overflow-hidden">
-            <OptimizedImage
+            <HeroBackgroundImage
               src={props.backgroundImage}
-              alt=""
-              width={1200}
-              className="w-full h-full object-cover object-top"
+              position="top"
+              className="w-full h-full object-cover"
             />
           </div>
         )}
@@ -522,11 +521,10 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
 
       {props.backgroundImage && (
         <div className="absolute -bottom-10 left-0 right-0 h-64 overflow-hidden">
-          <OptimizedImage
+          <HeroBackgroundImage
             src={props.backgroundImage}
-            alt=""
-            width={1200}
-            className="w-full h-full object-cover object-top"
+            position="top"
+            className="w-full h-full object-cover"
           />
         </div>
       )}

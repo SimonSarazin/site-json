@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import { useDebounce } from "@/hooks/useDebounce";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { lazy } from "vite-preload";
 import SearchListView from "./components/SearchListView";
 import SearchListSkeleton from "./components/SearchListSkeleton";
@@ -87,13 +88,22 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
 
   // État local (pas de sync URL)
   const defaultViewMode = props.defaultViewMode || (showMap ? "map" : "list");
-  const [viewMode, setViewMode] = useState<"list" | "map" | "graph" | "regions" | "thematics">(defaultViewMode);
+  const [viewMode, setViewMode] = useState<"list" | "map" | "graph" | "regions" | "thematics" | "split">(defaultViewMode);
+  const isMobile = useIsMobile();
+  // Vue "carte" canonique de la section pour les toggles : "split" sur desktop
+  // si la section est en split, sinon "map". Sur MOBILE, pas de côte-à-côte (la
+  // liste et la carte s'enfouiraient) → repli en TOGGLE liste ↔ carte plein
+  // écran. Sans ce mapView, le bouton « Carte » sortirait du split sans retour.
+  const mapView: "split" | "map" = props.defaultViewMode === "split" && !isMobile ? "split" : "map";
   const [isDetailedView, setIsDetailedView] = useState(defaultDetailedView);
   const [localSearchInput, setLocalSearchInput] = useState("");
   const debouncedLocalSearch = useDebounce(localSearchInput, 500);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedZoneId, setSelectedZoneId] = useState<string>("");
   const [selectedTagValue, setSelectedTagValue] = useState<string>("");
+  // Synchro liste↔carte (mode split) : id de l'item focalisé — source UNIQUE,
+  // partagée par la liste (highlight + scroll) et la carte (flyTo + openPopup).
+  const [focusedItemId, setFocusedItemId] = useState<string | null>(null);
 
   const navigate = useNavigate();
   const regionsTarget = props.regionsTarget;
@@ -300,7 +310,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   // (searchType: null → aucun appel) hors vue carte.
   const mapAll = useSearchAllResults({
     queryKeyPrefix: "searchCostumStaticMapAll",
-    searchType: viewMode === "map" && enableMap ? searchType : null,
+    searchType: (viewMode === "map" || (viewMode === "split" && !isMobile)) && enableMap ? searchType : null,
     searchText,
     searchTags,
     mapUsed: true,
@@ -356,12 +366,13 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
               <div className="flex items-center space-x-2">
                 {enableMap && !customHeader && (
                   <Button
-                    variant={viewMode === "map" ? "default" : "outline"}
+                    variant={viewMode === mapView ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setViewMode(viewMode === "map" ? "list" : "map")}
+                    aria-label={mapView === "split" ? t("Liste + carte") : t("Carte")}
+                    onClick={() => setViewMode(viewMode === mapView ? "list" : mapView)}
                   >
                     <Map className="h-4 w-4 sm:mr-1" />
-                    <span className="hidden sm:inline">{t("Carte")}</span>
+                    <span className="hidden sm:inline">{mapView === "split" ? t("Liste + carte") : t("Carte")}</span>
                   </Button>
                 )}
                 {enableRegions && !customHeader && (
@@ -491,7 +502,58 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
           </div>
         )}
 
-        {viewMode === "map" && enableMap ? (
+        {viewMode === "split" && enableMap && !isMobile ? (
+          /* Mode SPLIT (desktop) : liste (gauche) + carte (droite) SYNCHRONISÉES. Les deux
+             sont alimentées par mapAll.results (source UNIQUE → les ids matchent
+             toujours). Clic carte-liste → flyTo+popup ; clic marqueur → highlight
+             liste. Empilé en mobile (flex-col), côte-à-côte ≥ md. */
+          <div className="flex flex-col gap-4 p-4 md:flex-row">
+            <div className="md:h-[78vh] md:w-2/5 md:overflow-y-auto">
+              {!isPending && mapAll.isComplete && mapAll.results.length === 0 && (
+                <div className="py-8 text-center text-secondary-foreground">
+                  {t("Aucun résultat trouvé.")}
+                </div>
+              )}
+              <SearchListView
+                results={mapAll.results}
+                columns={list?.columns}
+                card={list?.card}
+                preview={list?.preview}
+                focusedItemId={focusedItemId}
+                onFocusItem={setFocusedItemId}
+              />
+            </div>
+            <div className="relative h-[55vh] overflow-hidden rounded shadow md:sticky md:top-20 md:h-[78vh] md:w-3/5">
+              <MapProgress
+                loaded={mapAll.loaded}
+                total={mapAll.total}
+                isComplete={mapAll.isComplete}
+                capped={mapAll.capped}
+              />
+              {mapAll.results.length > 0 ? (
+                <ClientOnly fallback={<MapSkeleton label={t("Chargement de la carte…")} />}>
+                  {() => (
+                    <SearchMapWrapper
+                      results={mapAll.results}
+                      card={list?.card}
+                      preview={list?.preview}
+                      map={props.map}
+                      focusedItemId={focusedItemId}
+                      onMarkerFocus={setFocusedItemId}
+                      containerClass="absolute inset-0 z-10 rounded shadow"
+                    />
+                  )}
+                </ClientOnly>
+              ) : mapAll.isComplete ? (
+                <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                  {t("Aucun résultat")}
+                </div>
+              ) : (
+                <MapSkeleton label={t("Chargement de la carte…")} />
+              )}
+            </div>
+          </div>
+        ) : viewMode === "map" && enableMap ? (
           <div className="relative flex-1 h-full w-full overflow-hidden">
             <Button
               variant="secondary"
@@ -612,12 +674,13 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                 <div className="flex items-center space-x-2">
                   {enableMap && (
                     <Button
-                      variant={viewMode === "map" ? "default" : "outline"}
+                      variant={viewMode === mapView ? "default" : "outline"}
                       size="sm"
-                      onClick={() => setViewMode(viewMode === "map" ? "list" : "map")}
+                      aria-label={mapView === "split" ? t("Liste + carte") : t("Carte")}
+                      onClick={() => setViewMode(viewMode === mapView ? "list" : mapView)}
                     >
                       <Map className="h-4 w-4 sm:mr-1" />
-                      <span className="hidden sm:inline">{t("Carte")}</span>
+                      <span className="hidden sm:inline">{mapView === "split" ? t("Liste + carte") : t("Carte")}</span>
                     </Button>
                   )}
                   {customHeader.linkText && viewAllHref && (

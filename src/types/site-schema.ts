@@ -248,6 +248,13 @@ export const HeroQuickAccessSchema = z.object({
     subhead: LocalizedString.optional(),
     backgroundImage: z.string().optional(),
     backgroundImageAlt: LocalizedString.optional(),
+    // Art-direction : image dédiée au mobile (≤ 640px) — typiquement un cadrage
+    // portrait. Si absente, le mobile utilise `backgroundImage` (srcSet responsive).
+    backgroundImageMobile: z.string().optional(),
+    // CSS object-position de l'image de fond (maîtrise le recadrage, surtout en
+    // mobile portrait où une image paysage est rognée). Ex. "center" (défaut),
+    // "top", "50% 30%". Cf. valeurs CSS object-position.
+    backgroundPosition: z.string().optional(),
     overlayOpacity: z.string().optional(),
     badges: z
       .array(
@@ -1537,8 +1544,24 @@ export const Header = z.object({
   navVisibleOnlyForListedPages: z.boolean().optional(),
   secondaryNav: z.array(EnhancedNavItem).optional(),
   secondaryNavVisibleOnlyForListedPages: z.boolean().optional(),
+  // Rendu de la sous-nav (children des groupes) dans le menu MOBILE :
+  // "sections" = groupes déployés, enfants toujours visibles (défaut) ;
+  // "accordion" = groupes pliables (chevron). Un parent avec `path` réel reste
+  // un lien ; un parent sans path (ou "#") est un en-tête/toggle de groupe.
+  mobileNavDisplay: z.enum(["sections", "accordion"]).optional(),
   sticky: z.boolean().default(true),
   transparent: z.boolean().default(false),
+  // Quand `transparent: true` (overlay possible), `transparentMode` décide où l'overlay
+  // s'applique : "always" (défaut, comportement historique = overlay sur TOUTES les pages)
+  // ou "auto" (overlay UNIQUEMENT sur une page qui débute par un héro ; opaque + spacer
+  // ailleurs — profil, légales, recherche…). Évite que le texte du header transparent
+  // (adaptatif au thème) devienne illisible sur une cover/contenu imprévisible.
+  transparentMode: z.enum(["always", "auto"]).optional(),
+  // Surcharges par préfixe de chemin (gagnent sur `transparentMode`) :
+  // `opaqueOnPaths` force la barre opaque sur ces chemins ; `overlayOnPaths` force l'overlay.
+  // Précédence : opaqueOnPaths > overlayOnPaths > transparentMode.
+  opaqueOnPaths: z.array(z.string()).optional(),
+  overlayOnPaths: z.array(z.string()).optional(),
   height: z.enum(["sm", "md", "lg"]).default("md"),
   utilities: z.object({
     themeSwitch: z.boolean().default(true),

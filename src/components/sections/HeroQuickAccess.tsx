@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import { useLocalization } from "@/hooks/useLocalization";
 import { LocalizedString } from "@/types/site-schema";
 import { ArrowRight } from "lucide-react";
+import { HeroBackgroundImage } from "./HeroBackgroundImage";
 
 type HeroButtonVariant = "default" | "secondary" | "accent" | "primary" | "outline";
 
@@ -29,6 +30,8 @@ interface HeroQuickAccessSectionProps {
   subhead?: LocalizedString;
   backgroundImage?: string;
   backgroundImageAlt?: LocalizedString;
+  backgroundImageMobile?: string;
+  backgroundPosition?: string;
   overlayOpacity?: string;
   badges?: HeroBadge[];
   ctaButtons?: HeroCtaButton[];
@@ -64,10 +67,12 @@ export function HeroQuickAccess({ id, props }: HeroQuickAccessProps) {
       {/* Background Image with overlay */}
       <div className="absolute inset-0">
         {backgroundImage && (
-          <img
+          <HeroBackgroundImage
             src={backgroundImage}
+            mobileSrc={props.backgroundImageMobile}
+            position={props.backgroundPosition}
+            priority
             alt={backgroundAlt}
-            className="w-full h-full object-cover"
           />
         )}
         <div

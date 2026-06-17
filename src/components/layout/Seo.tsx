@@ -5,6 +5,7 @@ import { LocalizedString } from "@/types/locale-schema";
 import { useSite } from "@/hooks/useSite";
 import { useCocolight } from "@/hooks/useCocolight";
 import { getServerUrl } from "@/lib/constant/common";
+import { buildFaviconUrl } from "@/lib/imageUtils";
 
 interface SeoProps {
   page: {
@@ -41,7 +42,11 @@ export function Seo({ page }: SeoProps) {
   const favicon = dataCostum?.transparentCommune
     ? "https://www.communecter.org" + (dataCostum?.logo as string || dataCostum?.bannerLogoUrl as string) || meta.favicon || ""
     : meta.favicon;
-    
+
+  // Favicon servi via /img en PNG ~64px (≈70 Ko → ≈3 Ko) pour les sources locales raster ;
+  // .ico/.svg/externes laissés bruts (cf. buildFaviconUrl).
+  const faviconHref = buildFaviconUrl(favicon, 64);
+
   if(dataCostum?.transparentCommune) {
     isCity = true;
     nameElt = entity?.serverData?.name || "Votre ville";
@@ -122,7 +127,7 @@ export function Seo({ page }: SeoProps) {
           <meta key="theme" name="theme-color" content={meta.themeColor} />
         ),
         favicon && (
-          <link key="favicon" rel="icon" href={favicon} />
+          <link key="favicon" rel="icon" href={faviconHref} />
         ),
         meta.author && (
           <meta key="author" name="author" content={t(meta.author)} />

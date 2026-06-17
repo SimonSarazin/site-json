@@ -1,12 +1,14 @@
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { Header } from "@/types/site-schema";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { useLocation } from "react-router";
 import { useScrollAware, useScrollToTopOnRouteChange, useNavItemActive } from "./useHeaderBehavior";
 import NavLink from "../NavLink";
 import LangSwitch from "./LangSwitch";
 import MobileMenuSheet from "./MobileMenuSheet";
 import MobileMenuBrand from "./MobileMenuBrand";
+import MobileNavItems from "./MobileNavItems";
 import NavIcon from "./NavIcon";
 import { Badge } from "@/components/ui/badge";
 import { ClientOnly } from "../ClientOnly";
@@ -37,9 +39,10 @@ export default function HeaderUnderlineNav({ header }: HeaderUnderlineNavProps) 
                 <div className="flex items-center justify-between h-20">
                     <NavLink to={header.path || "/"} className="flex items-center gap-3 cursor-pointer group">
                         {header.logo ? (
-                            <img
-                                src={`/${header.logo}`}
+                            <OptimizedImage
+                                src={header.logo}
                                 alt={header.logoAlt ? t(header.logoAlt) : ""}
+                                height={32}
                                 className="h-8 w-8 object-contain group-hover:scale-110 transition-transform"
                             />
                         ) : header.logoIcon ? (
@@ -145,22 +148,12 @@ export default function HeaderUnderlineNav({ header }: HeaderUnderlineNavProps) 
                         >
                             {(close) => (
                                 <>
-                                    {header.nav.map((item, idx) => {
-                                        const isActive = isNavItemActive(item.path);
-                                        return (
-                                            <NavLink
-                                                key={idx}
-                                                to={item.path}
-                                                ariaCurrent={isActive ? "page" : undefined}
-                                                className={`flex items-center gap-2 py-2 transition-colors ${isActive ? 'text-primary font-medium' : 'text-muted-foreground hover:text-primary'}`}
-                                                onClick={close}
-                                            >
-                                                <NavIcon icon={item.icon} />
-                                                {t(item.label)}
-                                                {item.badge && <Badge className="ml-auto text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
-                                            </NavLink>
-                                        );
-                                    })}
+                                    <MobileNavItems
+                                        items={header.nav}
+                                        display={header.mobileNavDisplay}
+                                        onNavigate={close}
+                                        isActive={isNavItemActive}
+                                    />
 
                                     {header.urgenceButton && (
                                         <NavLink

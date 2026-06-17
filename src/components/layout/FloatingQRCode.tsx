@@ -2,6 +2,7 @@ import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { cn } from "@/lib/utils";
 import { useSite } from "@/hooks/useSite";
+import { buildFaviconUrl } from "@/lib/imageUtils";
 
 type Position = "bottom-right" | "bottom-left" | "top-right" | "top-left";
 
@@ -34,7 +35,9 @@ export function FloatingQRCode({
   const [isExpanded, setIsExpanded] = useState(false);
   const { config } = useSite();
 
-  const favicon = config?.meta?.favicon;
+  // Logo au centre du QR (affiché ≈ expandedSize*0.2 ≈ 40px) → /img PNG ~96px au lieu de
+  // l'original brut (~70 Ko). .ico/.svg/externes laissés bruts (cf. buildFaviconUrl).
+  const favicon = buildFaviconUrl(config?.meta?.favicon, 96);
 
   const currentSize = isExpanded ? expandedSize : size;
 
@@ -45,7 +48,10 @@ export function FloatingQRCode({
   return (
     <div
       className={cn(
-        "fixed z-50 transition-all duration-300 ease-in-out cursor-pointer group",
+        // hidden sur mobile : un QR sert à scanner depuis un AUTRE écran (desktop
+        // → ouvrir/partager sur son tél) ; sur le tél qu'on tient il n'a pas d'usage
+        // et recouvre le contenu. Visible ≥ sm (tablette/desktop).
+        "fixed z-50 transition-all duration-300 ease-in-out cursor-pointer group hidden sm:block",
         positionClasses[position]
       )}
       onMouseEnter={() => setIsExpanded(true)}
