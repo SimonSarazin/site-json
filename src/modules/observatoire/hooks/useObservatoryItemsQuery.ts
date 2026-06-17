@@ -30,8 +30,7 @@ export function buildObservatoryBaseParams(
   baseParamsProp: BaseParamsProp | undefined,
   dimensions: DimensionsConfig,
 ) {
-  return {
-    notSourceKey: baseParamsProp?.notSourceKey ?? true,
+  const params = {
     defaultTypes: (baseParamsProp?.defaultTypes as SearchType[] | undefined) ?? [
       "poi" as SearchType,
     ],
@@ -40,6 +39,13 @@ export function buildObservatoryBaseParams(
     defaultSortBy: baseParamsProp?.defaultSortBy,
     indexStepList: baseParamsProp?.indexStepList ?? 500,
   };
+  // `notSourceKey` : le backend l'applique dès que le CHAMP est PRÉSENT (true OU
+  // false). On ne l'inclut donc QUE pour une recherche réseau-wide explicite
+  // (`notSourceKey: true | <number>`). Absent ou `false` → champ OMIS → le SDK
+  // scope au `source.key` du costum (comme searchProStatic), pas tout le réseau.
+  return baseParamsProp?.notSourceKey
+    ? { ...params, notSourceKey: baseParamsProp.notSourceKey }
+    : params;
 }
 
 /**
