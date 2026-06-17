@@ -6,6 +6,7 @@ import {
   generateFieldId,
   isStepComplete,
   mergeStepsData,
+  pickProfileImageUrl,
 } from "./helpers";
 
 /**
@@ -164,5 +165,30 @@ describe("mergeStepsData", () => {
         step3: {},
       }),
     ).toEqual({ name: "Alice" });
+  });
+});
+
+describe("pickProfileImageUrl", () => {
+  it("priorise medium > pleine > thumb", () => {
+    expect(
+      pickProfileImageUrl({
+        profilThumbImageUrl: "/t.jpg",
+        profilImageUrl: "/i.jpg",
+        profilMediumImageUrl: "/m.jpg",
+      }),
+    ).toBe("/m.jpg");
+  });
+
+  it("retombe sur pleine puis thumb", () => {
+    expect(pickProfileImageUrl({ profilImageUrl: "/i.jpg", profilThumbImageUrl: "/t.jpg" })).toBe("/i.jpg");
+    expect(pickProfileImageUrl({ profilThumbImageUrl: "/t.jpg" })).toBe("/t.jpg");
+  });
+
+  it("retourne undefined si absent, vide, non-string, ou serverData nul", () => {
+    expect(pickProfileImageUrl({})).toBeUndefined();
+    expect(pickProfileImageUrl({ profilImageUrl: "   " })).toBeUndefined();
+    expect(pickProfileImageUrl({ profilImageUrl: 42 })).toBeUndefined();
+    expect(pickProfileImageUrl(null)).toBeUndefined();
+    expect(pickProfileImageUrl(undefined)).toBeUndefined();
   });
 });
