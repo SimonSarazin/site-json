@@ -278,9 +278,12 @@ export const HeroQuickAccessSchema = z.object({
       .array(
         z.object({
           path: z.string(),
-          label: LocalizedString,
-          title: LocalizedString,
-          description: LocalizedString,
+          // label/title/description optionnels : <HeroQuickAccess> les rend de façon
+          // conditionnelle (`card.title && …`), et des configs (ex. equipements-Sportifs)
+          // déclarent des cartes-raccourci avec seulement label + path + icon.
+          label: LocalizedString.optional(),
+          title: LocalizedString.optional(),
+          description: LocalizedString.optional(),
           icon: z.string().optional(),
         })
       )

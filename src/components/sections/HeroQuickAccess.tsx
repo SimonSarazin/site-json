@@ -19,9 +19,11 @@ interface HeroCtaButton {
 
 interface HeroQuickAccessCard {
   path: string;
-  label: LocalizedString;
-  title: LocalizedString;
-  description: LocalizedString;
+  // Optionnels : rendus conditionnellement (`card.title && …`) ; certaines configs
+  // (ex. equipements-Sportifs) déclarent des cartes-raccourci label + path + icon seuls.
+  label?: LocalizedString;
+  title?: LocalizedString;
+  description?: LocalizedString;
   icon?: string;
 }
 
