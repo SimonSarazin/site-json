@@ -238,8 +238,8 @@
           },
           {
             "label": {
-              "fr": "Usages",
-              "en": "Uses"
+              "fr": "Comm'un Lundi",
+              "en": "Comm'un Lundi"
             },
             "description": {
               "fr": "La journée mensuelle autour des communs",
@@ -301,7 +301,7 @@
       },
       {
         "label": {
-          "fr": "Se rencontre, se gouverner",
+          "fr": "Se gouverner",
           "en": "Govern"
         },
         "path": "#",
