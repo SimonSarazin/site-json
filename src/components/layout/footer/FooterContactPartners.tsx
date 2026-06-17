@@ -43,17 +43,21 @@ export default function FooterContactPartners({ footer }: FooterContactPartnersP
 
           {/* Contact items */}
           {contactItems.length > 0 && (
-            <div className={partnerLogos.length > 1 ? "w-full md:w-auto" : "w-full"}>
+            <div className={partnerLogos.length === 1 ? "w-full" : "w-full md:w-auto"}>
               <h4 className="font-display font-bold text-foreground text-lg mb-4">
                 {footer.contactSection?.title ? t(footer.contactSection.title) : "Nos coordonnées"}
               </h4>
               <ul
-                className={`grid gap-4 text-sm text-muted-foreground ${
-                  contactItems.length === 1
-                    ? "grid-cols-1"
-                    : contactItems.length === 2
-                      ? "grid-cols-1 sm:grid-cols-2"
-                      : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                className={`text-sm text-muted-foreground ${
+                  partnerLogos.length === 1
+                    ? `grid gap-4 ${
+                        contactItems.length === 1
+                          ? "grid-cols-1"
+                          : contactItems.length === 2
+                            ? "grid-cols-1 sm:grid-cols-2"
+                            : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                      }`
+                    : "space-y-3"
                 }`}
               >
                 {contactItems.map((item, idx) => {
