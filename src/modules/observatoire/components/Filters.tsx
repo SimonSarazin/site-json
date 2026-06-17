@@ -129,6 +129,17 @@ export function Filters({ data, dimensions, filterDefs, values, onChange, search
   const watched = watch();
   const valuesKey = JSON.stringify(watched);
 
+  // Clé restreinte aux SEULES valeurs des dimensions parentes (`dependsOn`). Les
+  // options ne dépendent des sélections QUE via la cascade → recalculer `optionsById`
+  // sur tout changement de filtre serait du gaspillage (O(nb_filtres × n) à chaque
+  // clic). On ne déclenche le recalcul que sur changement d'un PARENT (ou de `data`).
+  const cascadeParentKey = JSON.stringify(
+    Object.fromEntries(
+      [...new Set(fields.map((f) => f.filter.dependsOn).filter((p): p is string => !!p))]
+        .map((pid) => [pid, watched[pid] ?? ""]),
+    ),
+  );
+
   // Resynchronisation DESCENDANTE : si le parent change les filtres HORS du
   // formulaire (drill-down sur un graphe, bouton reset de l'état vide), on
   // aligne RHF — sinon les selects continuent d'afficher l'ancien état.
@@ -199,10 +210,11 @@ export function Filters({ data, dimensions, filterDefs, values, onChange, search
       }
     }
     return out;
-    // valuesKey (JSON.stringify de watched) déclenche la mise à jour des options
-    // cascade quand la sélection parente change — sans exposer watched directement.
+    // cascadeParentKey (valeurs des parents `dependsOn` seulement) : recalcul
+    // uniquement sur changement de parent — pas sur chaque clic de filtre. `watched`
+    // est lu dans le corps mais hors deps (capturé via cascadeParentKey).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fields, data, valuesKey, t, labels, dimensions]);
+  }, [fields, data, cascadeParentKey, t, labels, dimensions]);
 
   // Réconciliation cascade : quand un parent (`dependsOn`) change, les options de
   // l'enfant se restreignent — on ÉLAGUE alors les valeurs sélectionnées devenues
