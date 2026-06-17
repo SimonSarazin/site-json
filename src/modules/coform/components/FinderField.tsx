@@ -9,6 +9,7 @@ import type { FormFieldMapping, FinderValue, FinderElement, FinderConfig } from 
 import { FinderElementCard } from "./FinderElementCard";
 import { FinderSearchModal } from "./FinderSearchModal";
 import { FieldError, HintText } from "./FormFields";
+import { useFinderElementImages, mergeResolvedFinderImages } from "../hooks/useFinderElementImages";
 
 interface FinderFieldProps {
   field: FormFieldMapping;
@@ -76,6 +77,15 @@ export function FinderField({
 
   // Nombre d'éléments sélectionnés
   const selectedCount = Object.keys(selectedElements).length;
+
+  // L'`img` n'est plus stockée dans la réponse (résolue live, source de vérité
+  // = l'entité). On la résout ici pour l'affichage, sans jamais muter la valeur
+  // RHF. Cf. useFinderElementImages + le strip dans formParser.
+  const resolvedImages = useFinderElementImages(value ?? null);
+  const displayElements = useMemo(
+    () => mergeResolvedFinderImages(value ?? null, resolvedImages),
+    [value, resolvedImages],
+  );
 
   /**
    * Ouvre le modal de recherche
@@ -177,7 +187,7 @@ export function FinderField({
       {/* Liste des éléments sélectionnés */}
       {selectedCount > 0 && (
         <div className="space-y-2 mt-3">
-          {Object.values(selectedElements).map((element) => (
+          {displayElements.map((element) => (
             <FinderElementCard
               key={element.id}
               element={element}

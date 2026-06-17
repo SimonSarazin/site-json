@@ -547,6 +547,20 @@ export interface FormFieldMapping {
   markdown?: boolean;
   // Pour les champs avec options (radio, checkbox, select)
   options?: string[];
+  /**
+   * Libellés d'affichage par valeur, pour le `select` à options associatives
+   * legacy (`{cle: "Label"}` dans `params[fieldKey].options`). `options`
+   * porte alors les CLÉS (la valeur réellement stockée), `optionLabels` la
+   * correspondance clé→label affiché. Absent pour les `select` à liste plate
+   * (value === label) et pour radio/checkbox.
+   */
+  optionLabels?: Record<string, string>;
+  /**
+   * `select` recherchable (combobox) — port du flag legacy `enableSelect2`
+   * (`params[fieldKey].enableSelect2`). `true` → champ de recherche dans la
+   * liste ; absent/false → liste déroulante simple.
+   */
+  searchable?: boolean;
   positionType?: "column" | "row";
   rowMode?: "fixed" | "auto";
   nbPerRow?: string;

@@ -194,8 +194,9 @@ describe("mapCoFormTypeToComponentType", () => {
     expect(mapCoFormTypeToComponentType("tpls.forms.sectionDescription")).toBe("sectionDescription");
   });
 
-  it("mappe select", () => {
+  it("mappe select (raccourci + chemin de template complet)", () => {
     expect(mapCoFormTypeToComponentType("select")).toBe("select");
+    expect(mapCoFormTypeToComponentType("tpls.forms.select")).toBe("select");
   });
 
   it("retourne 'unknown' pour un type non mappé", () => {
@@ -308,6 +309,75 @@ describe("parseCoFormFields", () => {
     expect(result).toHaveLength(2);
     expect(result[0].subFormId).toBe("step1");
     expect(result[1].subFormId).toBe("step2");
+  });
+
+  it("extrait les options d'un select à liste plate (params[key].options)", () => {
+    const formData = makeCoFormData({
+      inputs: {
+        step1: {
+          name: "Step 1",
+          id: "step1",
+          formParent: "form123",
+          inputs: { sel: { label: "Choix", type: "select", isRequired: true } },
+        },
+      },
+      params: {
+        sel: { options: ["Option A", "Option B", "Option C"] },
+      },
+    });
+
+    const field = parseCoFormFields(formData)[0].fields[0];
+    expect(field.componentType).toBe("select");
+    expect(field.options).toEqual(["Option A", "Option B", "Option C"]);
+    // Liste plate : value === label, pas de table de correspondance.
+    expect(field.optionLabels).toBeUndefined();
+  });
+
+  it("extrait les options d'un select associatif (clé stockée + label affiché)", () => {
+    const formData = makeCoFormData({
+      inputs: {
+        step1: {
+          name: "Step 1",
+          id: "step1",
+          formParent: "form123",
+          inputs: { cat: { label: "Catégorie", type: "select" } },
+        },
+      },
+      params: {
+        cat: { options: { val1: "Label 1", val2: "Label 2" } },
+      },
+    });
+
+    const field = parseCoFormFields(formData)[0].fields[0];
+    expect(field.componentType).toBe("select");
+    // `options` porte les CLÉS (la valeur réellement stockée en réponse).
+    expect(field.options).toEqual(["val1", "val2"]);
+    // `optionLabels` donne la correspondance clé → label affiché.
+    expect(field.optionLabels).toEqual({ val1: "Label 1", val2: "Label 2" });
+  });
+
+  it("active searchable quand enableSelect2 est vrai (bool ou string)", () => {
+    const makeSelect = (enableSelect2: unknown) =>
+      parseCoFormFields(
+        makeCoFormData({
+          inputs: {
+            step1: {
+              name: "Step 1",
+              id: "step1",
+              formParent: "form123",
+              inputs: { sel: { label: "Choix", type: "tpls.forms.select" } },
+            },
+          },
+          params: { sel: { options: ["A", "B"], enableSelect2 } },
+        })
+      )[0].fields[0];
+
+    expect(makeSelect(true).searchable).toBe(true);
+    expect(makeSelect("true").searchable).toBe(true);
+    expect(makeSelect("1").searchable).toBe(true);
+    // Désactivé / absent → undefined (liste déroulante simple).
+    expect(makeSelect(false).searchable).toBeUndefined();
+    expect(makeSelect(undefined).searchable).toBeUndefined();
   });
 });
 
@@ -519,6 +589,36 @@ describe("normalizeAnswerData", () => {
     expect(result.step1).toBeDefined();
     expect((result.step1 as Record<string, unknown>).evaluationXYZ).toEqual({ vote: 5 });
   });
+
+  it("coerce un coeff legacy stocké en string vers un number (myCatalog commonTable)", () => {
+    // Reproduction du bug "format invalide" : le legacy commonTableV2 stocke le
+    // coefficient via un input texte → `coeff:"1"` (string) casse `z.number()`
+    // au submit. commonTable est nommé `yesOrNo{key}` et split sur deux clés
+    // root-level : `yesOrNo{key}` (scores) + `criterias{key}` (myCatalog).
+    const raw = {
+      yesOrNotest1: {},
+      criteriastest1: {
+        criteria123: { usage: "Bureautique", usageKey: "criteria123", coeff: "1", label: "" },
+      },
+    };
+    const fields: SubFormFields[] = [
+      makeSubFormFields(
+        [makeField({ name: "yesOrNotest1", label: "Besoins", componentType: "commonTable" })],
+        "step1",
+      ),
+    ];
+    const result = normalizeAnswerData(raw, fields) as Record<string, unknown>;
+    const composite = (result.step1 as Record<string, unknown>).yesOrNotest1 as {
+      scores: Record<string, unknown>;
+      myCatalog: Record<string, { coeff: unknown }>;
+    };
+    expect(composite.myCatalog.criteria123.coeff).toBe(1);
+
+    // La valeur enrichie passe désormais la validation Zod du submit
+    // (avant le fix : `coeff:"1"` → invalid_type → submit bloqué).
+    const schema = generateZodSchema(fields);
+    expect(schema.safeParse({ yesOrNotest1: composite }).success).toBe(true);
+  });
 });
 
 // ============================================================================
@@ -605,6 +705,167 @@ describe("normalizeAnswerData + denormalizeAnswerData (round-trip)", () => {
 });
 
 // ============================================================================
+// Multi-eval (radioNew + activeMultieval=true) — storage `_multiEval.{userId}`
+// ============================================================================
+
+describe("normalizeAnswerData (multi-eval)", () => {
+  const multiEvalFields: SubFormFields[] = [
+    makeSubFormFields(
+      [
+        makeField({
+          name: "multiEvalQ1",
+          componentType: "radio",
+          activeMultieval: true,
+          options: ["Pas du tout", "Un peu", "Beaucoup"],
+        }),
+      ],
+      "step1",
+    ),
+  ];
+
+  it("pré-remplit la contribution de l'user courant via `value` canonical", () => {
+    const raw = {
+      step1: {
+        multiEvalQ1_multiEval: {
+          user123: { value: "Beaucoup", date: "2026-06-15T00:00:00.000Z", answer: "2_beaucoup" },
+          user456: { value: "Un peu", date: "2026-06-15T00:00:00.000Z", answer: "1_un-peu" },
+        },
+      },
+    };
+    const result = normalizeAnswerData(raw, multiEvalFields, "user123") as Record<string, unknown>;
+    expect((result.step1 as Record<string, unknown>).multiEvalQ1).toBe("Beaucoup");
+  });
+
+  it("fallback sur le parsing legacy `{idx}_{slug}` quand `value` absent", () => {
+    const raw = {
+      step1: {
+        multiEvalQ1_multiEval: {
+          user123: { answer: "1_un-peu" }, // pas de `value`
+        },
+      },
+    };
+    const result = normalizeAnswerData(raw, multiEvalFields, "user123") as Record<string, unknown>;
+    expect((result.step1 as Record<string, unknown>).multiEvalQ1).toBe("Un peu");
+  });
+
+  it("ignore la contribution d'un AUTRE user (reste vide si pas de contribution propre)", () => {
+    const raw = {
+      step1: {
+        multiEvalQ1_multiEval: {
+          user456: { value: "Un peu", date: "x", answer: "1_un-peu" },
+        },
+      },
+    };
+    const result = normalizeAnswerData(raw, multiEvalFields, "user123") as Record<string, unknown>;
+    expect((result.step1 as Record<string, unknown>).multiEvalQ1).toBeUndefined();
+  });
+
+  it("efface toujours la valeur classique (résidu legacy) même sans userId", () => {
+    const raw = {
+      step1: {
+        multiEvalQ1: "Beaucoup", // valeur classique parasite
+        multiEvalQ1_multiEval: { user123: { value: "Beaucoup", date: "x", answer: "2_beaucoup" } },
+      },
+    };
+    const result = normalizeAnswerData(raw, multiEvalFields, null) as Record<string, unknown>;
+    expect((result.step1 as Record<string, unknown>).multiEvalQ1).toBeUndefined();
+  });
+
+  it("ignore une `value` qui n'est plus dans les options (option supprimée)", () => {
+    const raw = {
+      step1: {
+        multiEvalQ1_multiEval: { user123: { value: "OptionDisparue", answer: "9_optiondisparue" } },
+      },
+    };
+    const result = normalizeAnswerData(raw, multiEvalFields, "user123") as Record<string, unknown>;
+    // value hors options + idx 9 hors range → pas de résolution
+    expect((result.step1 as Record<string, unknown>).multiEvalQ1).toBeUndefined();
+  });
+
+  it("tolère un `_multiEval` sérialisé `[]` par Mongo (objet vide) sans crash", () => {
+    // MongoDB sérialise indifféremment `{}` et `[]` : la garde `!Array.isArray`
+    // doit rejeter l'array et laisser le champ vide (pas de throw).
+    const raw = { step1: { multiEvalQ1_multiEval: [] } };
+    const result = normalizeAnswerData(raw, multiEvalFields, "user123") as Record<string, unknown>;
+    expect((result.step1 as Record<string, unknown>).multiEvalQ1).toBeUndefined();
+  });
+});
+
+describe("denormalizeAnswerData (multi-eval)", () => {
+  const multiEvalFields: SubFormFields[] = [
+    makeSubFormFields(
+      [
+        makeField({
+          name: "multiEvalQ1",
+          componentType: "radio",
+          activeMultieval: true,
+          options: ["Pas du tout", "Un peu", "Beaucoup"],
+        }),
+      ],
+      "step1",
+    ),
+  ];
+
+  it("packe la valeur de l'user courant dans `{name}_multiEval.{userId}` + retire la classique", () => {
+    const formData = { step1: { multiEvalQ1: "Beaucoup" } };
+    const result = denormalizeAnswerData(formData, multiEvalFields, "user123");
+    const step1 = result.step1 as Record<string, unknown>;
+    expect(step1.multiEvalQ1).toBeUndefined();
+    const record = step1.multiEvalQ1_multiEval as Record<string, { value: unknown; answer: unknown; date: unknown }>;
+    expect(Object.keys(record)).toEqual(["user123"]); // QUE l'entrée du user courant
+    expect(record.user123.value).toBe("Beaucoup");
+    expect(record.user123.answer).toBe("2_beaucoup");
+    // Sentinel legacy "now" : le backend (Coform::coerceAnswerDates) le
+    // convertit en MongoDate. On ne stamp PAS côté client (déterminisme + autorité serveur).
+    expect(record.user123.date).toBe("now");
+  });
+
+  it("sans userId : laisse la valeur classique intacte (pas de pack multi-eval)", () => {
+    const formData = { step1: { multiEvalQ1: "Beaucoup" } };
+    const result = denormalizeAnswerData(formData, multiEvalFields, null);
+    const step1 = result.step1 as Record<string, unknown>;
+    expect(step1.multiEvalQ1).toBe("Beaucoup");
+    expect(step1.multiEvalQ1_multiEval).toBeUndefined();
+  });
+
+  it("valeur vide : retire la classique sans créer d'entrée multi-eval", () => {
+    const formData = { step1: { multiEvalQ1: "" } };
+    const result = denormalizeAnswerData(formData, multiEvalFields, "user123");
+    const step1 = result.step1 as Record<string, unknown>;
+    expect(step1.multiEvalQ1).toBeUndefined();
+    expect(step1.multiEvalQ1_multiEval).toBeUndefined();
+  });
+});
+
+describe("multi-eval round-trip (write puis read, même user)", () => {
+  const multiEvalFields: SubFormFields[] = [
+    makeSubFormFields(
+      [
+        makeField({
+          name: "multiEvalQ1",
+          componentType: "radio",
+          activeMultieval: true,
+          options: ["Pas du tout", "Un peu", "Beaucoup"],
+        }),
+      ],
+      "step1",
+    ),
+  ];
+
+  it("write(user123) → read(user123) restitue la valeur", () => {
+    const written = denormalizeAnswerData({ step1: { multiEvalQ1: "Un peu" } }, multiEvalFields, "user123");
+    const read = normalizeAnswerData(written, multiEvalFields, "user123") as Record<string, unknown>;
+    expect((read.step1 as Record<string, unknown>).multiEvalQ1).toBe("Un peu");
+  });
+
+  it("write(user123) → read(user456) NE restitue PAS la valeur (isolement par user)", () => {
+    const written = denormalizeAnswerData({ step1: { multiEvalQ1: "Un peu" } }, multiEvalFields, "user123");
+    const read = normalizeAnswerData(written, multiEvalFields, "user456") as Record<string, unknown>;
+    expect((read.step1 as Record<string, unknown>).multiEvalQ1).toBeUndefined();
+  });
+});
+
+// ============================================================================
 // extractFinderLinks
 // ============================================================================
 
@@ -674,5 +935,66 @@ describe("extractFinderLinks", () => {
       makeSubFormFields([makeField({ name: "finderA", componentType: "finder" })], "step1"),
     ];
     expect(extractFinderLinks(formData, fields)).toEqual({});
+  });
+});
+
+// ============================================================================
+// Finder : l'image n'est jamais persistée ni lue depuis la réponse
+// (résolue live à l'affichage, cf. useFinderElementImages). Strip des 2 côtés.
+// ============================================================================
+
+describe("finder image stripping (normalize + denormalize)", () => {
+  const finderFields: SubFormFields[] = [
+    makeSubFormFields([makeField({ name: "finderXYZ", componentType: "finder" })], "step1"),
+  ];
+
+  it("denormalizeAnswerData retire `img` des éléments finder (pas de persistance)", () => {
+    const formData = {
+      step1: {
+        finderXYZ: {
+          o1: { id: "o1", name: "Org A", type: "organizations", img: "/upload/a.jpg" },
+        },
+      },
+    };
+    const result = denormalizeAnswerData(formData, finderFields) as {
+      step1: { finderXYZ: Record<string, Record<string, unknown>> };
+    };
+    expect(result.step1.finderXYZ.o1).toEqual({ id: "o1", name: "Org A", type: "organizations" });
+    expect("img" in result.step1.finderXYZ.o1).toBe(false);
+  });
+
+  it("normalizeAnswerData retire une `img` héritée d'une réponse ancienne", () => {
+    const raw = {
+      step1: {
+        finderXYZ: {
+          o1: {
+            id: "o1",
+            name: "Org A",
+            type: "organizations",
+            img: "/upload/stale.jpg",
+            address: { postalCode: "97436" },
+          },
+        },
+      },
+    };
+    const result = normalizeAnswerData(raw, finderFields) as {
+      step1: { finderXYZ: Record<string, Record<string, unknown>> };
+    };
+    const el = result.step1.finderXYZ.o1;
+    expect("img" in el).toBe(false);
+    // les autres champs (dont address, donnée réelle) sont préservés.
+    expect(el).toEqual({
+      id: "o1",
+      name: "Org A",
+      type: "organizations",
+      address: { postalCode: "97436" },
+    });
+  });
+
+  it("ne casse pas un finder null / vide", () => {
+    expect(
+      (denormalizeAnswerData({ step1: { finderXYZ: null } }, finderFields) as { step1: Record<string, unknown> })
+        .step1.finderXYZ,
+    ).toBeNull();
   });
 });

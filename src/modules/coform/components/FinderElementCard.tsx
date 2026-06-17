@@ -2,6 +2,7 @@ import { X, Pencil, User, Building2, Calendar, Briefcase, MapPin, type LucideIco
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import type { FinderElement, FinderElementType } from "../types";
@@ -129,20 +130,17 @@ export function FinderElementCard({
         </div>
       )}
 
-      {/* Image ou icône */}
-      <div className="shrink-0">
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt={element.name}
-            className="w-10 h-10 rounded-full object-cover"
-          />
-        ) : (
-          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-            <ElementIcon className="w-5 h-5 text-muted-foreground" />
-          </div>
+      {/* Avatar — rendu uniforme aligné sur la fiche élément : image pleine
+          (résolue live) en `object-cover` sur fond `bg-card`. Radix bascule
+          seul sur le fallback (icône du type) si l'image échoue ou est absente. */}
+      <Avatar className="w-10 h-10 shrink-0 bg-card">
+        {imageUrl && (
+          <AvatarImage src={imageUrl} alt={element.name} className="object-cover" />
         )}
-      </div>
+        <AvatarFallback className="bg-muted">
+          <ElementIcon aria-hidden="true" className="w-5 h-5 text-muted-foreground" />
+        </AvatarFallback>
+      </Avatar>
 
       {/* Info */}
       <div className="flex-1 min-w-0">

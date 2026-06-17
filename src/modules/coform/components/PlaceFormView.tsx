@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { useT } from "@/hooks/useT";
-import { useCocolight } from "@/hooks/useCocolight";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -17,8 +16,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { SmartCoForm } from "./SmartCoForm";
 import { getSharedFinderInfo } from "../utils/formParser";
+import { useElementSummary } from "../hooks/useElementSummary";
 import type { CoFormData, CoFormAccessInfo, AllStepsData } from "../types";
-import type { Organization } from "@communecter/cocolight-api-client";
 
 interface PlaceFormViewProps {
   formData: CoFormData;
@@ -35,49 +34,27 @@ interface PlaceFormViewProps {
 export function PlaceFormView({ formData, access, formId, placeId }: PlaceFormViewProps) {
   const t = useT("modules/coform");
   const navigate = useNavigate();
-  const { api } = useCocolight();
-
-  // Charge l'organization pour avoir son nom (affiché dans la chip du finder).
-  const [place, setPlace] = useState<Organization | null>(null);
-  const [placeLoading, setPlaceLoading] = useState(true);
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      if (!api || !placeId) {
-        setPlaceLoading(false);
-        return;
-      }
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const fetched = await (api as any).organization({ id: placeId });
-        if (!cancelled) {
-          setPlace(fetched);
-          setPlaceLoading(false);
-        }
-      } catch (err) {
-        console.warn("[PlaceFormView] organization fetch failed", err);
-        if (!cancelled) setPlaceLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [api, placeId]);
 
   const sharedFinderInfo = useMemo(() => getSharedFinderInfo(formData), [formData]);
 
+  // Résout le résumé du lieu (nom pour la chip + le titre) via le hook entity
+  // partagé. La clé RQ est mutualisée avec la résolution d'image de la chip
+  // finder (cf. useElementSummary / useFinderElementImages) → un seul fetch
+  // pour ce lieu, pas le double appel d'avant (un ici + un dans le finder).
+  const { summary: placeSummary, isLoading: placeLoading } = useElementSummary(
+    placeId,
+    sharedFinderInfo?.type ?? null,
+  );
+  const placeName = placeSummary?.name ?? null;
+
   // Pré-remplit le finder en fusionnant proprement avec l'`existingAnswer` du
-  // serveur s'il existe (mode édition).
+  // serveur s'il existe (mode édition). On ne pose QUE `{id, name, type}` — la
+  // chip résout son image live (l'`img` serait de toute façon stripée au parse).
   const defaultValues = useMemo<AllStepsData | undefined>(() => {
     if (!sharedFinderInfo) return access?.existingAnswer ?? undefined;
-    if (!place) return access?.existingAnswer ?? undefined;
-
-    const data = (place as unknown as { serverData?: Record<string, unknown> }).serverData ?? {};
-    const placeName =
-      (data.name as string) || (place as unknown as { name?: string }).name || placeId;
 
     const finderValue = {
-      [placeId]: { id: placeId, name: placeName, type: sharedFinderInfo.type },
+      [placeId]: { id: placeId, name: placeName ?? placeId, type: sharedFinderInfo.type },
     };
 
     const existing = (access?.existingAnswer ?? {}) as Record<string, Record<string, unknown>>;
@@ -91,15 +68,7 @@ export function PlaceFormView({ formData, access, formId, placeId }: PlaceFormVi
       },
     };
     return merged as unknown as AllStepsData;
-  }, [sharedFinderInfo, place, access?.existingAnswer, placeId]);
-
-  // Nom du lieu pour le titre d'onglet — déclaré tôt (avant les early returns)
-  // pour respecter les rules of hooks de React.
-  const placeName = useMemo(() => {
-    if (!place) return null;
-    const data = (place as unknown as { serverData?: Record<string, unknown> }).serverData ?? {};
-    return (data.name as string) || (place as unknown as { name?: string }).name || null;
-  }, [place]);
+  }, [sharedFinderInfo, placeName, access?.existingAnswer, placeId]);
 
   // Tracking de l'état "modifié" du form pour l'intercepter avant navigation.
   const [isFormDirty, setIsFormDirty] = useState(false);

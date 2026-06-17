@@ -29,6 +29,10 @@
       "selectOption": "Please select an option",
       "selectAtLeastOne": "Please select at least one option"
     },
+    "fields": {
+      "selectPlaceholder": "Select",
+      "selectNoResult": "No results"
+    },
     "status": {
       "loading": "Loading form...",
       "submitting": "Submitting...",
