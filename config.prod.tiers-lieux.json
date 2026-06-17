@@ -204,7 +204,7 @@
               "en": "Open data on third places. API, CSV..."
             },
             "path": "/api-donnees"
-          },
+          }
         ]
       },
       {
@@ -238,10 +238,14 @@
           },
           {
             "label": {
-            "fr": "La journée mensuelle autour des communs",
-            "en": "The monthly day around the commons"
-                },
-                "href": "https://communlundi.tiers-lieux.org"
+              "fr": "Usages",
+              "en": "Uses"
+            },
+            "description": {
+              "fr": "La journée mensuelle autour des communs",
+              "en": "The monthly day around the commons"
+            },
+            "path": "https://communlundi.tiers-lieux.org"
           },
           {
             "label": {
@@ -297,7 +301,7 @@
       },
       {
         "label": {
-          "fr": "Se gouverner",
+          "fr": "Se rencontre, se gouverner",
           "en": "Govern"
         },
         "path": "#",
@@ -315,58 +319,25 @@
           },
           {
             "label": {
-              "fr": "Décider ensemble",
-              "en": "Decide together"
-            },
-            "description": {
-              "fr": "Apprendre à gouverner collectivement notre infrastructure commune et le sujet tiers-lieu",
-              "en": "Learning to collectively govern our shared infrastructure and the third-place topic"
-            },
-            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=decider#decider"
-          },
-          {
-            "label": {
-              "fr": "Votre diagnostic ?",
-              "en": "Your diagnostic?"
-            },
-            "description": {
-              "fr": "Construisez votre propre diagnostic ici",
-              "en": "Build your own diagnostic here"
-            },
-            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=diagnostic#diagnostic"
-          },
-          {
-            "label": {
-              "fr": "La version 2 en test",
-              "en": "Version 2 in testing"
-            },
-            "description": {
-              "fr": "Découvrir la version 2 en cours de développement, plus rapide, et plus interopérable",
-              "en": "Discover version 2 under development — faster and more interoperable"
-            },
-            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=version#version"
-          },
-          {
-            "label": {
-              "fr": "Mes lieux",
-              "en": "My places"
-            },
-            "description": {
-              "fr": "Gérez vos tiers-lieux",
-              "en": "Manage your third places"
-            },
-            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=favoris#favoris"
-          },
-          {
-            "label": {
               "fr": "Événements",
               "en": "Events"
             },
             "description": {
-              "fr": "Les événements autour de tiers-lieux.org à venir",
+              "fr": "Les événements autour des tiers-lieux.org à venir",
               "en": "Upcoming events around tiers-lieux.org"
             },
             "path": "/evenements"
+          },
+          {
+            "label": {
+              "fr": "Décider ensemble",
+              "en": "Decide together"
+            },
+            "description": {
+              "fr": "Bientôt : Apprendre à gouverner collectivement notre infrastructure commune et le sujet tiers-lieu",
+              "en": "Learning to collectively govern our shared infrastructure and the third-place topic"
+            },
+            "path": ""
           },
           {
             "label": {
