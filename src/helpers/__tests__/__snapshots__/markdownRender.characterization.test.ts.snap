@@ -1,0 +1,95 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`markdown-it characterization (fige la sortie avant bump) > MarkdownSection {html,linkify,typographer} - ambiguousEntity 1`] = `
+"<p>Param &amp;mot; et &amp;amp ; et © final</p>
+"
+`;
+
+exports[`markdown-it characterization (fige la sortie avant bump) > MarkdownSection {html,linkify,typographer} - astralBold 1`] = `
+"<p><strong>emoji 🎉 gras</strong></p>
+"
+`;
+
+exports[`markdown-it characterization (fige la sortie avant bump) > MarkdownSection {html,linkify,typographer} - astralItalic 1`] = `
+"<p><em>texte 😀 italique</em></p>
+"
+`;
+
+exports[`markdown-it characterization (fige la sortie avant bump) > MarkdownSection {html,linkify,typographer} - basicEmphasis 1`] = `
+"<p><strong>gras</strong> et <em>italique</em> normaux</p>
+"
+`;
+
+exports[`markdown-it characterization (fige la sortie avant bump) > MarkdownSection {html,linkify,typographer} - frenchQuotes 1`] = `
+"<p>Il dit “bonjour” a tous</p>
+"
+`;
+
+exports[`markdown-it characterization (fige la sortie avant bump) > MarkdownSection {html,linkify,typographer} - htmlComment 1`] = `
+"<p>Texte apres</p>
+"
+`;
+
+exports[`markdown-it characterization (fige la sortie avant bump) > MarkdownSection {html,linkify,typographer} - linkify 1`] = `
+"<p>Voir <a href="https://example.org">https://example.org</a> pour info</p>
+"
+`;
+
+exports[`markdown-it characterization (fige la sortie avant bump) > MarkdownSection {html,linkify,typographer} - nbspHeading 1`] = `
+"<h1>Titre&nbsp;avec espaces</h1>
+"
+`;
+
+exports[`markdown-it characterization (fige la sortie avant bump) > MarkdownSection {html,linkify,typographer} - nbspParagraph 1`] = `
+"<p>Paragraphe&nbsp;typographie francaise.</p>
+"
+`;
+
+exports[`markdown-it characterization (fige la sortie avant bump) > renderMarkdown (defaut) - ambiguousEntity 1`] = `
+"<p>Param &amp;mot; et &amp;amp ; et © final</p>
+"
+`;
+
+exports[`markdown-it characterization (fige la sortie avant bump) > renderMarkdown (defaut) - astralBold 1`] = `
+"<p><strong>emoji 🎉 gras</strong></p>
+"
+`;
+
+exports[`markdown-it characterization (fige la sortie avant bump) > renderMarkdown (defaut) - astralItalic 1`] = `
+"<p><em>texte 😀 italique</em></p>
+"
+`;
+
+exports[`markdown-it characterization (fige la sortie avant bump) > renderMarkdown (defaut) - basicEmphasis 1`] = `
+"<p><strong>gras</strong> et <em>italique</em> normaux</p>
+"
+`;
+
+exports[`markdown-it characterization (fige la sortie avant bump) > renderMarkdown (defaut) - frenchQuotes 1`] = `
+"<p>Il dit "bonjour" a tous</p>
+"
+`;
+
+exports[`markdown-it characterization (fige la sortie avant bump) > renderMarkdown (defaut) - htmlComment 1`] = `
+"<p>&lt;!--
+ligne1</p>
+<p>ligne2
+--&gt;
+Texte apres</p>
+"
+`;
+
+exports[`markdown-it characterization (fige la sortie avant bump) > renderMarkdown (defaut) - linkify 1`] = `
+"<p>Voir https://example.org pour info</p>
+"
+`;
+
+exports[`markdown-it characterization (fige la sortie avant bump) > renderMarkdown (defaut) - nbspHeading 1`] = `
+"<h1>Titre&nbsp;avec espaces</h1>
+"
+`;
+
+exports[`markdown-it characterization (fige la sortie avant bump) > renderMarkdown (defaut) - nbspParagraph 1`] = `
+"<p>Paragraphe&nbsp;typographie francaise.</p>
+"
+`;

@@ -1,0 +1,84 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`buildRoutes matching — caractérisation (fige le matcher react-router avant bump) > branche matchée pour / 1`] = `
+[
+  {
+    "params": {},
+    "path": "/",
+  },
+  {
+    "params": {},
+    "path": "",
+  },
+]
+`;
+
+exports[`buildRoutes matching — caractérisation (fige le matcher react-router avant bump) > branche matchée pour /features 1`] = `
+[
+  {
+    "params": {},
+    "path": "/",
+  },
+  {
+    "params": {},
+    "path": "features",
+  },
+]
+`;
+
+exports[`buildRoutes matching — caractérisation (fige le matcher react-router avant bump) > branche matchée pour /page-inexistante 1`] = `
+[
+  {
+    "params": {
+      "*": "page-inexistante",
+    },
+    "path": "/",
+  },
+  {
+    "params": {
+      "*": "page-inexistante",
+    },
+    "path": "*",
+  },
+]
+`;
+
+exports[`buildRoutes matching — caractérisation (fige le matcher react-router avant bump) > branche matchée pour /profil/abc-123 1`] = `
+[
+  {
+    "params": {
+      "slug": "abc-123",
+    },
+    "path": "/",
+  },
+  {
+    "params": {
+      "slug": "abc-123",
+    },
+    "path": "profil/:slug",
+  },
+  {
+    "params": {
+      "slug": "abc-123",
+    },
+    "path": "(layout/index)",
+  },
+]
+`;
+
+exports[`buildRoutes matching — caractérisation (fige le matcher react-router avant bump) > branche matchée pour /profil/abc-123/membres 1`] = `
+[
+  {
+    "params": {
+      "*": "profil/abc-123/membres",
+    },
+    "path": "/",
+  },
+  {
+    "params": {
+      "*": "profil/abc-123/membres",
+    },
+    "path": "*",
+  },
+]
+`;
