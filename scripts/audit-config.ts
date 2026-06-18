@@ -5,6 +5,8 @@
  *
  *   - traductions manquantes (LocalizedString incomplète vs meta.languages),
  *   - liens internes morts (pas de page du config ni de route module connue),
+ *   - liens INERTES (`#` seul = placeholder sans destination ; exclut les
+ *     parents de nav qui utilisent `#` comme toggle de dropdown),
  *   - locales présentes mais non déclarées dans meta.languages,
  *   - bloc `theme` absent ou sans couleurs,
  *   - ASSETS manquants (image/logo/favicon → fichier absent de public/),
@@ -129,9 +131,18 @@ for (const cf of configs) {
     }
     if (n && typeof n === "object" && !Array.isArray(n)) {
       const rec = n as Record<string, unknown>;
+      const hasNavChildren = Array.isArray(rec.children) && rec.children.length > 0;
       for (const key of ["path", "href", "link", "url"]) {
         const v = rec[key];
-        if (typeof v !== "string" || !v.startsWith("/")) continue;
+        if (typeof v !== "string") continue;
+        // Lien inerte : `#` seul = placeholder sans destination (clic sans effet).
+        // LÉGITIME sur un parent de nav (toggle du dropdown : a `children`/`megaMenu`)
+        // → on ne flag que les FEUILLES (sans enfants ni megaMenu).
+        if (v.trim() === "#" && !hasNavChildren && !rec.megaMenu) {
+          findings.push({ category: "lien-inerte", path: `${p.join(".")}.${key}`, message: "lien « # » inerte (placeholder sans destination)", severity: "warn", fixability: "proposer" });
+          continue;
+        }
+        if (!v.startsWith("/")) continue;
         const clean = v.split("?")[0].split("#")[0];
         const base = `/${clean.split("/")[1]}`;
         if (clean !== "/" && !pagePaths.has(clean) && !KNOWN_ROUTE_PREFIXES.includes(base) && !clean.startsWith("/images/"))
@@ -223,7 +234,7 @@ if (JSON_OUT) {
         : "sans-couleurs"
       : "complet";
     console.log(
-      `  ${cf.padEnd(38)} trad:${String(c("trad")).padStart(3)} liens:${String(c("lien-mort")).padStart(3)} ` +
+      `  ${cf.padEnd(38)} trad:${String(c("trad")).padStart(3)} liens:${String(c("lien-mort")).padStart(3)} inerte:${c("lien-inerte")} ` +
         `assets:${String(c("asset-manquant")).padStart(2)} strip:${String(c("cle-strippee")).padStart(2)} ` +
         `prereq:${c("module-prereq")} theme:${theme}`,
     );
