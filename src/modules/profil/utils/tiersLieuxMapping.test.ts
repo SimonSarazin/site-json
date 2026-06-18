@@ -185,7 +185,10 @@ describe("buildTiersLieuxPayload", () => {
     expect(payload.type).toBe("NGO");
     expect(payload.role).toBe("admin");
     expect(payload.mainTag).toBe("TiersLieu");
-    expect(payload.compagnon).toBe("comp");
+    // `compagnon` est une valeur de tag, pas un champ propre du payload :
+    // il est mergé dans `tags`, pas posé en `payload.compagnon`.
+    expect(payload).not.toHaveProperty("compagnon");
+    expect(payload.tags).toEqual(expect.arrayContaining(["TiersLieu", "comp"]));
     expect(payload.costumSlug).toBe("franceTierslieux");
     expect(payload.costumId).toBe("abc123");
     expect(payload.costumType).toBe("organizations");
