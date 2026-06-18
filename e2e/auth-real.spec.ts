@@ -8,6 +8,11 @@ const BACKEND_URL = process.env.VITE_BASE_URL_BACKEND || "http://localhost:5080"
 const config = loadSiteConfig();
 const loginPath = findLoginPath(config);
 
+// Sécurité : ce spec saisit de vrais identifiants (TEST_USER_*). On désactive la trace
+// Playwright ici pour qu'aucun artefact CI (rapport/trace sur retry) ne capture le DOM,
+// le réseau ou les payloads d'authentification. Cf. .gitlab-ci.yml (artifacts on_failure).
+test.use({ trace: "off" });
+
 /**
  * Check if the real backend is reachable.
  */

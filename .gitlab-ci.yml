@@ -1,0 +1,167 @@
+# CI SiteForge — GitLab (origin = gitlab.adullact.net/pixelhumain/site-json).
+#
+# Tous les gates bloquants ci-dessous sont prouvés VERTS en local (Lot 1).
+# Les jobs `allow_failure: true` sont volontairement non-bloquants tant que la dette
+# correspondante n'est pas résorbée (voir commentaires) ; on les promeut au fil de l'eau.
+#
+# Pipeline MR-only + branche par défaut + tag (workflow:rules) — pas de pipeline sur
+# simple push de branche sans MR (volontaire).
+#
+# Reproduction locale des gates bloquants : `npm run ci`.
+
+default:
+  # Image CI complète (Debian/glibc) pinnée = Node 22.18.0 (cf .nvmrc) → évite les
+  # aléas de binaires natifs musl (sharp/rollup) qu'aurait `node:22-alpine`. L'IMAGE
+  # PROD, elle, reste alpine (Dockerfile) — la CI ne valide que le code, pas l'OS d'image.
+  image: node:22.18.0
+  # Cache du cache npm (pas node_modules) : `npm ci` repart d'un node_modules propre
+  # à chaque job mais télécharge depuis .npm/ → quasi instantané sur cache chaud.
+  cache:
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - .npm/
+  before_script:
+    - npm ci --cache .npm --prefer-offline --no-audit --no-fund
+  interruptible: true # annule un job rendu obsolète par un nouveau push
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+
+stages:
+  - precheck
+  - quality
+  - test
+  - build
+  - security
+  - package
+
+# ─── Precheck : secret scanning en fail-fast (R35) ──────────────────────────
+secret-scan:
+  stage: precheck
+  image:
+    name: zricethezav/gitleaks:v8.21.2 # pinné (pas :latest)
+    entrypoint: [""]
+  variables:
+    GIT_DEPTH: 0 # clone COMPLET : gitleaks scanne TOUT l'historique (sinon shallow → un
+    # secret retiré dans un vieux commit passe inaperçu, alors que le repo est mirroré GitHub public)
+  before_script: [] # pas de npm ci dans l'image gitleaks
+  cache: []
+  script:
+    - gitleaks detect --source . --redact --verbose --no-banner
+  # À PROMOUVOIR BLOQUANT (retirer allow_failure) après un 1er run propre : c'est le seul
+  # gate dont un faux négatif = fuite publique irréversible.
+  allow_failure: true
+
+# ─── Quality (bloquant) ─────────────────────────────────────────────────────
+lint:
+  stage: quality
+  script:
+    - npm run lint
+  # NB : ne casse pas sur les 20 warnings advisory (pas de --max-warnings). Ratchet → R6 (Lot 3).
+
+typecheck:
+  stage: quality
+  script:
+    - npm run typecheck
+
+audit:config:
+  stage: quality
+  script:
+    - npm run audit:config -- --strict
+  # Vert depuis que `.audit-baseline.json` est versionné (R3b) : n'échoue que sur un
+  # NOUVEAU constat config non assumé.
+
+# ─── Tests ──────────────────────────────────────────────────────────────────
+unit:
+  stage: test
+  script:
+    - npm run test:unit
+
+integration:
+  stage: test
+  script:
+    - npm run test:integration # spawn un serveur SSR sur :5188 (global-setup épingle SITE_CONFIG_PATH), fileParallelism:false
+  allow_failure: true # heavy + cold-start SSR : non-bloquant le temps de fiabiliser en CI, puis à promouvoir
+
+e2e:
+  stage: test
+  image: mcr.microsoft.com/playwright:v1.58.2-jammy # = @playwright/test ^1.58.2 (browsers inclus)
+  cache: []
+  variables:
+    SITE_CONFIG_PATH: "./config.prod.json" # le webServer (npm run dev :5173) sert la même config que les specs lisent
+  before_script:
+    - npm ci --no-audit --no-fund
+  script:
+    - npx playwright test
+  artifacts:
+    when: on_failure # ne publie le rapport (traces) QUE sur échec — les traces peuvent contenir des payloads d'auth (auth-real)
+    paths:
+      - playwright-report/
+    expire_in: 3 days
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule" # nightly via pipeline planifié
+    - when: manual # sinon déclenchable à la main
+  allow_failure: true
+
+# ─── Build (bloquant) ───────────────────────────────────────────────────────
+build:
+  stage: build
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 hour # consommé par le job `bundle`
+
+bundle:
+  stage: build
+  needs:
+    - job: build
+      artifacts: true # réutilise dist/ du job build (pas de rebuild)
+  script:
+    # Garde-fou : sans l'artefact dist/, bundle-size.test.ts se SKIP en silence (faux vert).
+    - test -d dist/client/assets || { echo "✗ artefact dist/client/assets absent (build amont échoué ?)"; exit 1; }
+    - npx vitest run -c vitest.config.unit.ts tests/preflight/bundle-size.test.ts
+
+# ─── Security / hygiène (non-bloquant) ──────────────────────────────────────
+npm-audit:
+  stage: security
+  script:
+    - npm audit --omit=dev --audit-level=high
+  allow_failure: true # ROUGE : vulns prod non corrigées (→ R8b). Promouvoir bloquant une fois résorbées.
+
+knip:
+  stage: security
+  script:
+    - npx knip --no-exit-code # rapport dead-code (R18/R19), informatif tant que non trié
+  allow_failure: true
+
+# ─── Image Docker (manuel : nécessite un runner docker + creds registry) ─────
+docker-build:
+  stage: package
+  image: docker:27
+  services:
+    - docker:27-dind
+  cache: []
+  before_script: []
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_HOST: "tcp://docker:2376"
+    DOCKER_TLS_VERIFY: "1"
+    DOCKER_CERT_PATH: "/certs/client"
+    # Slug du site à builder (mono-site en prod) — surcharger via variable de pipeline.
+    VITE_SLUG: navigatorDesTierslieux # doit exister dans sites.json
+  script:
+    - test -n "$CI_REGISTRY_IMAGE" || { echo "✗ CI_REGISTRY_IMAGE absent (registry projet non activé ?)"; exit 1; }
+    - docker build --build-arg VITE_SLUG="$VITE_SLUG" -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA" .
+    # Push désactivé par défaut — décommenter après config du registry :
+    # - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    # - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+  rules:
+    - when: manual
+  allow_failure: true

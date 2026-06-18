@@ -31,7 +31,8 @@
     "config:validate": "tsx scripts/validate-config.ts",
     "config:schema": "tsx scripts/config-schema.ts",
     "entity:slug": "tsx scripts/entity-slug.ts",
-    "map:functions": "tsx scripts/map-functions.ts"
+    "map:functions": "tsx scripts/map-functions.ts",
+    "ci": "npm run typecheck && npm run lint && npm run audit:config -- --strict && npm run test:unit && npm run build"
   },
   "overrides": {
     "react": "$react",
