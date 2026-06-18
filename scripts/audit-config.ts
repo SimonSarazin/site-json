@@ -20,7 +20,8 @@
  *
  * Constats ASSUMÉS : `.audit-baseline.json` (versionné, à la racine) — clés =
  * fichier de config, valeurs = [{category, path}]. Un constat assumé est
- * reporté à part et n'échoue pas `--strict`.
+ * reporté à part et n'échoue pas `--strict`. Clé spéciale `__orphans__`
+ * (string[]) : configs orphelines assumées (idem, hors comptage `--strict`).
  *
  * Usage :
  *   npm run audit:config                      → tous les configs, rapport humain
@@ -59,9 +60,15 @@ interface Finding {
 }
 
 const baselinePath = path.join(ROOT, ".audit-baseline.json");
-const baseline: Record<string, { category: string; path: string }[]> = fs.existsSync(baselinePath)
+const baselineRaw: Record<string, unknown> = fs.existsSync(baselinePath)
   ? JSON.parse(fs.readFileSync(baselinePath, "utf-8"))
   : {};
+// Clé spéciale `__orphans__` : configs orphelines (hors sites.json) ASSUMÉES —
+// reportées à part, ne comptent pas dans `--strict` (cf. constats assumés).
+const assumedOrphans: string[] = Array.isArray(baselineRaw.__orphans__)
+  ? (baselineRaw.__orphans__ as string[])
+  : [];
+const baseline = baselineRaw as Record<string, { category: string; path: string }[]>;
 
 const sites = JSON.parse(fs.readFileSync(path.join(ROOT, "sites.json"), "utf-8")) as {
   config: string;
@@ -76,11 +83,14 @@ if (ONLY_FILE && configs.length === 0) {
   process.exit(2);
 }
 // Configs prod ORPHELINES (hors --file) : sur disque mais ni défaut ni sites.json.
-const orphans = ONLY_FILE
+const allOrphans = ONLY_FILE
   ? []
   : fs
       .readdirSync(ROOT)
       .filter((f) => /^config\.prod.*\.json$/.test(f) && f !== "config.prod.json" && !sitesConfigs.has(f));
+// Les orphelins listés dans `__orphans__` sont assumés (non comptés en --strict).
+const orphans = allOrphans.filter((f) => !assumedOrphans.includes(f));
+const assumedOrphanList = allOrphans.filter((f) => assumedOrphans.includes(f));
 
 const isLocalizedString = (v: unknown): v is Record<string, string> =>
   !!v &&
@@ -202,7 +212,7 @@ for (const cf of configs) {
 const totalActive = Object.values(report).reduce((n, r) => n + r.findings.length, 0) + orphans.length;
 
 if (JSON_OUT) {
-  console.log(JSON.stringify({ orphans, configs: report, totalActive }, null, 2));
+  console.log(JSON.stringify({ orphans, assumedOrphans: assumedOrphanList, configs: report, totalActive }, null, 2));
 } else {
   const preview = (items: string[], n = 10) =>
     items.slice(0, n).map((i) => `      - ${i}`).join("\n") + (items.length > n ? `\n      … (+${items.length - n})` : "");
@@ -212,6 +222,8 @@ if (JSON_OUT) {
     console.log(`\n🗂️   ${orphans.length} config(s) prod ORPHELINE(S) (hors sites.json) :`);
     for (const o of orphans) console.log(`      - ${o}  → à enregistrer dans sites.json ou supprimer`);
   }
+  if (assumedOrphanList.length)
+    console.log(`\n🗂️   ${assumedOrphanList.length} orphelin(s) ASSUMÉ(S) (via __orphans__) : ${assumedOrphanList.join(", ")}`);
 
   for (const [cf, { findings, assumed }] of Object.entries(report)) {
     if (findings.length === 0) {

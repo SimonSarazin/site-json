@@ -1,0 +1,1307 @@
+{
+  "config.prod.commune-transparente.json": [
+    {
+      "category": "cle-strippee",
+      "path": "footer.ctaButton"
+    },
+    {
+      "category": "cle-strippee",
+      "path": "footer.logoImage"
+    },
+    {
+      "category": "cle-strippee",
+      "path": "pages.7.sections.1.props.defaultView"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.legalLinks.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.legalLinks.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "header.ctaButton.path"
+    },
+    {
+      "category": "locale-extra",
+      "path": "footer.columns.0.links.0.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "footer.columns.0.links.1.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "footer.columns.0.links.2.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "footer.columns.0.links.3.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "footer.columns.0.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "footer.columns.1.links.0.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "footer.columns.1.links.1.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "footer.columns.1.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "footer.copyright[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "footer.ctaButton.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "footer.description[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "footer.legalLinks.0.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "footer.legalLinks.1.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "footer.logoTitle[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "header.ctaButton.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "header.logoTitle[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "header.nav.0.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "header.nav.1.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "header.nav.2.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "header.nav.3.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "meta.description[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "meta.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.0.props.backgroundImageAlt[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.0.props.badges.0.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.0.props.badges.1.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.0.props.badges.2.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.0.props.ctaButtons.0.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.0.props.ctaButtons.1.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.0.props.headline[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.0.props.subhead[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.1.props.emptyMessage[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.1.props.subtitle[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.1.props.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.2.props.cards.0.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.2.props.cards.1.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.2.props.cards.2.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.2.props.cards.3.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.2.props.cards.4.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.2.props.subtitle[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.2.props.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.1.sections.0.props.headline[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.1.sections.0.props.subhead[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.1.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.2.sections.0.props.buttons.0.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.2.sections.0.props.headline[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.2.sections.0.props.searchPlaceholder[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.2.sections.0.props.subhead[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.2.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.3.sections.0.props.headline[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.3.sections.0.props.searchPlaceholder[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.3.sections.0.props.subhead[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.3.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.4.sections.0.props.headline[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.4.sections.0.props.searchPlaceholder[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.4.sections.0.props.subhead[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.4.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.5.sections.0.props.buttons.0.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.5.sections.0.props.headline[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.5.sections.0.props.searchPlaceholder[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.5.sections.0.props.subhead[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.5.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.6.sections.0.props.headline[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.6.sections.0.props.subhead[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.6.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.7.sections.0.props.headline[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.7.sections.0.props.subhead[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.7.title[en]"
+    },
+    {
+      "category": "theme",
+      "path": "theme"
+    }
+  ],
+  "config.prod.cyber-reunion.json": [
+    {
+      "category": "cle-strippee",
+      "path": "pages.2.sections.1.props.enableMap"
+    },
+    {
+      "category": "cle-strippee",
+      "path": "pages.2.sections.1.props.organizationId"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.0.links.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.0.links.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.0.links.3.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.0.links.4.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.1.links.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.1.links.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.1.links.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.1.links.3.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.1.links.4.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.2.links.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.2.links.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.2.links.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.2.links.3.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.2.links.4.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.3.links.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.3.links.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.3.links.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.3.links.3.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.3.links.4.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.legalLinks.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.legalLinks.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.legalLinks.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "header.ctaButton.path"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.0.props.ctaButtons.0.path"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.0.props.ctaButtons.1.path"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.3.props.actions.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.3.props.actions.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.3.props.actions.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.4.props.actions.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.4.props.actions.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.4.props.actions.3.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.5.props.buttons.1.href"
+    },
+    {
+      "category": "theme",
+      "path": "theme"
+    },
+    {
+      "category": "trad",
+      "path": "pages.3.sections.0.props.buttons.0.formConfig.steps.0.fields.0.placeholder[en]"
+    },
+    {
+      "category": "trad",
+      "path": "pages.3.sections.0.props.buttons.0.formConfig.steps.1.fields.0.placeholder[en]"
+    },
+    {
+      "category": "trad",
+      "path": "pages.3.sections.0.props.buttons.0.formConfig.steps.1.fields.5.placeholder[en]"
+    },
+    {
+      "category": "trad",
+      "path": "pages.3.sections.0.props.buttons.0.formConfig.steps.1.fields.7.placeholder[en]"
+    }
+  ],
+  "config.prod.eXtremeDefiAdeme.json": [
+    {
+      "category": "cle-strippee",
+      "path": "pages.2.sections.4.props.list.card.viewDetail"
+    },
+    {
+      "category": "cle-strippee",
+      "path": "pages.3.sections.1.props.tabs.0.content.0.props.baseParams.filters[links.memberOf.5a8d040040bb4eba04d62bdf][$exists]"
+    },
+    {
+      "category": "cle-strippee",
+      "path": "pages.3.sections.1.props.tabs.0.content.0.props.baseParams.filters[preferences.toBeValidated.rezoLaMer][$exists]"
+    },
+    {
+      "category": "cle-strippee",
+      "path": "pages.3.sections.1.props.tabs.1.content.0.props.baseParams.filters[links.members.5a8d040040bb4eba04d62bdf][$exists]"
+    },
+    {
+      "category": "cle-strippee",
+      "path": "pages.3.sections.1.props.tabs.1.content.0.props.baseParams.filters[preferences.toBeValidated.rezoLaMer][$exists]"
+    }
+  ],
+  "config.prod.institut-bleu.json": [
+    {
+      "category": "asset-manquant",
+      "path": "pages.0.sections.0.props.backgroundImage"
+    },
+    {
+      "category": "asset-manquant",
+      "path": "pages.0.sections.4.props.image"
+    },
+    {
+      "category": "cle-strippee",
+      "path": "pages.2.sections.1.props.tabs.0.content.0.props.organizationId"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.0.links.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.0.links.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.0.links.3.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.0.links.4.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.1.links.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.1.links.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.1.links.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.1.links.3.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.1.links.4.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.2.links.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.2.links.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.2.links.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.2.links.3.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.2.links.4.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.3.links.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.3.links.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.3.links.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.3.links.3.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.3.links.4.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.legalLinks.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.legalLinks.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.legalLinks.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "header.ctaButton.path"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.0.props.ctaButtons.0.path"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.3.props.actions.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.3.props.actions.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.3.props.actions.3.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.4.props.actions.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.4.props.actions.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.4.props.actions.3.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.5.props.buttons.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.2.sections.0.props.buttons.1.href"
+    },
+    {
+      "category": "theme",
+      "path": "theme"
+    }
+  ],
+  "config.prod.json": [
+    {
+      "category": "asset-manquant",
+      "path": "meta.favicon"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.0.links.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.0.links.3.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.1.links.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.1.links.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.1.links.3.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.2.links.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.2.links.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.2.links.3.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.3.links.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.3.links.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.3.links.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.3.links.3.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "header.nav.4.children.0.path"
+    },
+    {
+      "category": "lien-mort",
+      "path": "header.nav.4.children.1.path"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.5.props.plans.0.cta.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.5.props.plans.1.cta.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.2.sections.1.props.plans.0.cta.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.2.sections.1.props.plans.1.cta.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.6.sections.14.props.products.0.cta.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.6.sections.14.props.products.1.cta.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.8.sections.1.props.items.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.8.sections.1.props.items.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.8.sections.1.props.items.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.8.sections.1.props.items.3.href"
+    },
+    {
+      "category": "theme",
+      "path": "theme"
+    }
+  ],
+  "config.prod.julie-pot-vin.json": [
+    {
+      "category": "lien-inerte",
+      "path": "header.nav.1.path"
+    },
+    {
+      "category": "locale-extra",
+      "path": "header.nav.0.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "header.nav.1.label[en]"
+    },
+    {
+      "category": "theme",
+      "path": "theme"
+    }
+  ],
+  "config.prod.nos-commune.json": [
+    {
+      "category": "cle-strippee",
+      "path": "footer.tagline"
+    },
+    {
+      "category": "cle-strippee",
+      "path": "pages.3.sections.1.props.defaultView"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.legalLinks.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.legalLinks.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "header.ctaButton.path"
+    },
+    {
+      "category": "locale-extra",
+      "path": "auth.login.subtitle[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "auth.login.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "footer.columns.0.links.0.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "footer.columns.0.links.1.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "footer.columns.0.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "footer.columns.1.links.0.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "footer.columns.1.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "footer.copyright[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "footer.description[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "footer.legalLinks.0.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "footer.legalLinks.1.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "footer.logoTitle[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "footer.tagline[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "header.ctaButton.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "header.logoTitle[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "header.nav.0.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "header.nav.1.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "meta.description[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "meta.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.0.props.backgroundImageAlt[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.0.props.badge[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.0.props.ctaButtons.0.label[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.0.props.headline[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.0.props.subhead[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.0.props.tagline[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.0.props.taglineSubtext[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.2.props.features.0.description[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.2.props.features.0.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.2.props.features.1.description[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.2.props.features.1.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.2.props.features.2.description[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.2.props.features.2.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.2.props.features.3.description[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.2.props.features.3.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.2.props.features.4.description[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.2.props.features.4.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.2.props.features.5.description[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.2.props.features.5.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.2.props.headline[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.6.props.actions.0.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.6.props.actions.1.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.6.props.actions.2.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.6.props.actions.3.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.sections.6.props.headline[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.0.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.1.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.2.sections.0.props.headline[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.2.sections.0.props.subhead[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.2.title[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.3.sections.0.props.headline[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.3.sections.0.props.searchPlaceholder[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.3.sections.0.props.subhead[en]"
+    },
+    {
+      "category": "locale-extra",
+      "path": "pages.3.title[en]"
+    },
+    {
+      "category": "theme",
+      "path": "theme"
+    }
+  ],
+  "config.prod.open-atlas-test.json": [
+    {
+      "category": "cle-strippee",
+      "path": "pages.2.sections.1.props.tabs.0.content.0.props.enableMap"
+    },
+    {
+      "category": "cle-strippee",
+      "path": "pages.2.sections.1.props.tabs.0.content.0.props.organizationId"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.0.links.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.0.links.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.0.links.3.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.0.links.4.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.1.links.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.1.links.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.1.links.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.1.links.3.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.1.links.4.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.2.links.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.2.links.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.2.links.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.2.links.3.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.2.links.4.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.3.links.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.3.links.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.3.links.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.3.links.3.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.3.links.4.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.legalLinks.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.legalLinks.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.legalLinks.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "header.ctaButton.path"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.0.props.ctaButtons.0.path"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.0.props.ctaButtons.1.path"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.3.props.actions.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.3.props.actions.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.3.props.actions.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.4.props.actions.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.4.props.actions.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.4.props.actions.3.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.5.props.buttons.1.href"
+    }
+  ],
+  "config.prod.rezo-la-mer.json": [
+    {
+      "category": "cle-strippee",
+      "path": "pages.2.sections.4.props.list.card.viewDetail"
+    },
+    {
+      "category": "cle-strippee",
+      "path": "pages.3.sections.1.props.tabs.0.content.0.props.baseParams.filters[links.memberOf.5a8d040040bb4eba04d62bdf][$exists]"
+    },
+    {
+      "category": "cle-strippee",
+      "path": "pages.3.sections.1.props.tabs.0.content.0.props.baseParams.filters[preferences.toBeValidated.rezoLaMer][$exists]"
+    },
+    {
+      "category": "cle-strippee",
+      "path": "pages.3.sections.1.props.tabs.1.content.0.props.baseParams.filters[links.members.5a8d040040bb4eba04d62bdf][$exists]"
+    },
+    {
+      "category": "cle-strippee",
+      "path": "pages.3.sections.1.props.tabs.1.content.0.props.baseParams.filters[preferences.toBeValidated.rezoLaMer][$exists]"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.1.links.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.1.links.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.1.links.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.1.links.3.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.1.links.4.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.2.links.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.2.links.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.2.links.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.2.links.3.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.2.links.4.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.3.links.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.3.links.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.3.links.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.3.links.3.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.columns.3.links.4.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.legalLinks.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.legalLinks.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "footer.legalLinks.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "header.ctaButton.path"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.0.props.ctaButtons.0.path"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.3.props.actions.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.3.props.actions.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.3.props.actions.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.4.props.actions.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.4.props.actions.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.4.props.actions.2.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.5.props.buttons.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.0.sections.5.props.buttons.1.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.3.sections.0.props.buttons.0.href"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.3.sections.0.props.buttons.1.href"
+    }
+  ],
+  "config.prod.sport-sante-bien-etre.json": [
+    {
+      "category": "lien-mort",
+      "path": "header.ctaButton.path"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.1.sections.6.props.features.1.link"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.1.sections.6.props.features.2.link"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.1.sections.6.props.features.5.link"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.2.sections.0.props.ctaButtons.0.path"
+    },
+    {
+      "category": "lien-mort",
+      "path": "pages.4.sections.0.props.buttons.1.href"
+    }
+  ],
+  "config.prod.tiers-lieux.json": [
+    {
+      "category": "lien-inerte",
+      "path": "header.nav.4.children.2.path"
+    }
+  ],
+  "__orphans__": [
+    "config.prod.jardin-ocean.json"
+  ]
+}

@@ -44,8 +44,9 @@ coverage/
 # Test credentials
 .env.test
 agent-os/
+# Intermédiaires bruts d'analyse (jscpd/knip via map:functions) — régénérables
 .audit/
-.audit-baseline.json
+# NB : `.audit-baseline.json` (constats config assumés) est VERSIONNÉ — cf. audit-config.ts
 
 # Référence locale (symlink vers la lib cocolight-api-endpoint = source de @communecter/cocolight-api-client) — non versionné
 reference/
