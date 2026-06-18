@@ -3,6 +3,10 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "npm@10.9.3",
   "scripts": {
     "dev": "node server/dev-server.js",
     "typecheck": "tsc -b --noEmit",
@@ -19,6 +23,7 @@
     "test:integration": "vitest run -c vitest.config.integration.ts",
     "test:e2e": "playwright test",
     "test:preflight": "vitest run -c vitest.config.unit.ts tests/preflight/",
+    "test:bundle": "npm run build && vitest run -c vitest.config.unit.ts tests/preflight/bundle-size.test.ts",
     "audit:config": "tsx scripts/audit-config.ts",
     "test:coverage": "vitest run -c vitest.config.unit.ts --coverage",
     "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e",

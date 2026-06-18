@@ -7,7 +7,8 @@ import path from "node:path";
  * `9742622 perf(bundle): lazy-load des variants conditionnels + tree-shaking lucide-react`.
  *
  * Skip automatiquement si `dist/client/assets/` n'existe pas (build pas encore lancé).
- * Pour lancer avec build : `npm run build && npm run test:preflight`.
+ * Pour lancer AVEC build : `npm run test:bundle` (build + ce préflight). En CI,
+ * lancer ce fichier après le stage build (dist/ déjà présent, pas de rebuild).
  */
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
