@@ -211,7 +211,6 @@ Toutes les variables disponibles sont documentées dans [Configuration](02-confi
 | `npm run start` | Lancement du serveur de production Express SSR |
 | `npm run typecheck` | Vérification de types TypeScript (`tsc -b --noEmit`) |
 | `npm run clean` | Suppression de `dist/` et des fichiers `tsconfig.tsbuildinfo` |
-| `npm run build:config` | Génération de config via `tsx scripts/generate-config.ts` |
 | `npm run lint` | Exécution d'ESLint pour vérifier la qualité du code |
 
 > **Remarque TypeScript** : le projet utilise les **références de projets TypeScript** (`tsconfig.json` avec `files: []`). Toujours utiliser `tsc -b` (pas `tsc` seul) pour la vérification de types — c'est ce que fait `npm run typecheck`.

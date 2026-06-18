@@ -21,7 +21,7 @@ import { SiteConfig } from "@/types/site-schema";
  * Les contrôles « soft » avec un backlog pré-existant dans les configs démo
  * (traductions incomplètes, liens internes morts, locales non déclarées, theme
  * absent) sont dans le script d'audit `npm run audit:config` (rapport visible,
- * non bloquant) — voir `scripts/audit-config.mjs`.
+ * non bloquant) — voir `scripts/audit-config.ts`.
  *
  * Itère sur la config par défaut (`config.prod.json`) + les configs déployées via
  * `sites.json`. Les configs prod ORPHELINES (sur disque mais hors `sites.json`,
