@@ -1,0 +1,35 @@
+# Contexte de build Docker — exclut ce qui est lourd, régénéré, ou sensible.
+# Le builder fait `COPY . .` puis `npm ci` + `npm run build` : node_modules est
+# réinstallé proprement, dist/ est régénéré, et les secrets locaux ne doivent
+# JAMAIS entrer dans l'image.
+
+# Dépendances & sorties de build (réinstallées / régénérées)
+node_modules
+dist
+*.tsbuildinfo
+
+# Métadonnées Git
+.git
+.gitignore
+
+# Caches & artefacts de test
+.cache
+coverage
+playwright-report
+test-results
+
+# Secrets / env locaux — NE JAMAIS embarquer
+.env
+.env.*
+
+# Outillage / artefacts locaux non nécessaires au build
+.claude
+agent-os
+.audit
+.audit-baseline.json
+reference
+
+# Méta projet (inutile dans l'image runtime)
+Dockerfile
+docker-compose.yml
+.dockerignore

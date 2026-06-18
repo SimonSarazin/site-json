@@ -50,5 +50,6 @@ RUN echo '{"type":"module"}' > package.json && \
 # Volume pour le cache d'images optimisées (persiste entre les redémarrages)
 VOLUME /app/.cache/images
 
-EXPOSE 80
+# prod-server.js écoute sur PORT (défaut 3000) ; docker-compose mappe 3000:3000.
+EXPOSE 3000
 CMD ["node", "server/prod-server.js"]
