@@ -33,12 +33,11 @@
     "entity:slug": "tsx scripts/entity-slug.ts",
     "map:functions": "tsx scripts/map-functions.ts"
   },
-  "resolutions": {
-    "react": "19.2.1",
-    "react-dom": "19.2.1",
-    "@types/react": "19.1.6",
-    "@types/react-dom": "19.1.6",
-    "esbuild": "0.25.11"
+  "overrides": {
+    "react": "$react",
+    "react-dom": "$react-dom",
+    "@types/react": "$@types/react",
+    "@types/react-dom": "$@types/react-dom"
   },
   "dependencies": {
     "@codemirror/commands": "^6.10.3",
