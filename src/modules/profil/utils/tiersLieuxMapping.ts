@@ -182,8 +182,9 @@ export interface BuildPayloadOptions {
    * À utiliser pour la **création** d'une entité costum (les valeurs viennent du site config).
    * Pour l'**édition**, on omet ce champ : l'entité existante porte déjà ses costum fields.
    *
-   * Note : si `costum.mainTag` est défini, il est aussi auto-ajouté à `payload.tags`
-   * (mergé sans dupliquer avec `existingTags` + `addTags`).
+   * Note : si `costum.mainTag` et/ou `costum.compagnon` sont définis, ils sont
+   * auto-ajoutés à `payload.tags` (mergés sans dupliquer avec `existingTags` +
+   * `addTags`). `compagnon` est une valeur de tag, jamais un champ propre du payload.
    */
   costum?: CostumConfig;
   /**
@@ -250,7 +251,6 @@ export function buildTiersLieuxPayload(
     payload.type = "NGO";
     payload.role = "admin";
     if (c.mainTag) payload.mainTag = c.mainTag;
-    if (c.compagnon) payload.compagnon = c.compagnon;
     payload.preferences = { isOpenData: true, isOpenEdition: true };
     payload.source = {
       insertOrign: "costum",
@@ -263,10 +263,13 @@ export function buildTiersLieuxPayload(
     payload.costumType = c.type;
   }
 
-  // Merge tags : `costum.mainTag` (auto) + `addTags` (manuel) mergés à `existingTags`.
+  // Merge tags : `costum.mainTag` + `costum.compagnon` (auto) + `addTags` (manuel)
+  // mergés à `existingTags`. `compagnon` est une *valeur de tag* (cf. dimension
+  // observatoire `kind: "contains"` sur `tags`), pas un champ propre du payload.
   // Dédoublonne via Set (préserve l'ordre d'insertion). N'écrase pas, n'enlève rien.
   const tagsToAdd: string[] = [];
   if (options.costum?.mainTag) tagsToAdd.push(options.costum.mainTag);
+  if (options.costum?.compagnon) tagsToAdd.push(options.costum.compagnon);
   if (options.addTags) tagsToAdd.push(...options.addTags);
 
   const existing = options.existingTags ?? [];
