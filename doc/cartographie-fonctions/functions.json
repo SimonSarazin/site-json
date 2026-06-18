@@ -1,14 +1,14 @@
 {
-  "generatedFrom": "bd8b729",
+  "generatedFrom": "c8e9f04",
   "scope": "src",
   "summary": {
-    "functions": 2119,
-    "files": 865,
+    "functions": 2147,
+    "files": 869,
     "duplicateBodyClusters": 30,
-    "nameClusters": 123,
-    "sharingCandidates": 93,
-    "deadExports": 190,
-    "deadFiles": 60,
+    "nameClusters": 124,
+    "sharingCandidates": 95,
+    "deadExports": 193,
+    "deadFiles": 59,
     "layerOverlaps": 1
   },
   "findings": {
@@ -80,12 +80,12 @@
         "defs": [
           {
             "name": "getButtonClasses",
-            "at": "src/components/sections/HeroParallax.tsx:23",
+            "at": "src/components/sections/HeroParallax.tsx:24",
             "layer": "feature:components"
           },
           {
             "name": "getButtonClasses",
-            "at": "src/components/sections/HeroQuickAccess.tsx:51",
+            "at": "src/components/sections/HeroQuickAccess.tsx:56",
             "layer": "feature:components"
           }
         ]
@@ -161,7 +161,7 @@
           },
           {
             "name": "toDate",
-            "at": "src/modules/search/components/preview/PreviewPoiAmenities.tsx:107",
+            "at": "src/modules/search/components/preview/PreviewPoiAmenities.tsx:121",
             "layer": "module:search"
           }
         ]
@@ -214,7 +214,7 @@
         "defs": [
           {
             "name": "handleCTAClick",
-            "at": "src/components/sections/HeroSection.tsx:18",
+            "at": "src/components/sections/HeroSection.tsx:19",
             "layer": "feature:components"
           },
           {
@@ -348,7 +348,7 @@
         "defs": [
           {
             "name": "handleScrollTo",
-            "at": "src/components/sections/HeroSection.tsx:11",
+            "at": "src/components/sections/HeroSection.tsx:12",
             "layer": "feature:components"
           },
           {
@@ -410,7 +410,7 @@
           },
           {
             "name": "isPlainObject",
-            "at": "src/modules/coform/utils/formParser.ts:928",
+            "at": "src/modules/coform/utils/formParser.ts:1009",
             "layer": "module:coform"
           }
         ]
@@ -614,7 +614,7 @@
         "classe": "identical",
         "defs": [
           {
-            "at": "src/components/sections/HeroSection.tsx:11",
+            "at": "src/components/sections/HeroSection.tsx:12",
             "layer": "feature:components",
             "exported": false
           },
@@ -631,7 +631,7 @@
         "classe": "identical",
         "defs": [
           {
-            "at": "src/components/sections/HeroSection.tsx:18",
+            "at": "src/components/sections/HeroSection.tsx:19",
             "layer": "feature:components",
             "exported": false
           },
@@ -687,7 +687,7 @@
             "exported": false
           },
           {
-            "at": "src/modules/coform/utils/formParser.ts:928",
+            "at": "src/modules/coform/utils/formParser.ts:1009",
             "layer": "module:coform",
             "exported": false
           }
@@ -1074,7 +1074,7 @@
             "exported": false
           },
           {
-            "at": "src/modules/coform/components/CoFormReadOnly.tsx:68",
+            "at": "src/modules/coform/components/CoFormReadOnly.tsx:73",
             "layer": "module:coform",
             "exported": false
           }
@@ -1175,12 +1175,12 @@
             "exported": false
           },
           {
-            "at": "src/components/sections/HeroParallax.tsx:23",
+            "at": "src/components/sections/HeroParallax.tsx:24",
             "layer": "feature:components",
             "exported": false
           },
           {
-            "at": "src/components/sections/HeroQuickAccess.tsx:51",
+            "at": "src/components/sections/HeroQuickAccess.tsx:56",
             "layer": "feature:components",
             "exported": false
           },
@@ -1244,7 +1244,7 @@
             "exported": false
           },
           {
-            "at": "src/modules/search/components/preview/PreviewPoiAmenities.tsx:107",
+            "at": "src/modules/search/components/preview/PreviewPoiAmenities.tsx:121",
             "layer": "module:search",
             "exported": false
           }
@@ -1301,6 +1301,33 @@
             "at": "src/modules/profil/routes.tsx:179",
             "layer": "module:profil",
             "exported": true
+          }
+        ]
+      },
+      {
+        "name": "toggle",
+        "count": 4,
+        "classe": "quasi",
+        "defs": [
+          {
+            "at": "src/components/layout/header/MobileNavItems.tsx:140",
+            "layer": "feature:components",
+            "exported": false
+          },
+          {
+            "at": "src/modules/observatoire/components/ObservatoryTable.tsx:134",
+            "layer": "module:observatoire",
+            "exported": false
+          },
+          {
+            "at": "src/modules/search/components/filterFields.tsx:74",
+            "layer": "module:search",
+            "exported": false
+          },
+          {
+            "at": "src/modules/profil/components/profile-edit/fields/genericFields.tsx:237",
+            "layer": "module:profil",
+            "exported": false
           }
         ]
       },
@@ -1462,7 +1489,7 @@
             "exported": false
           },
           {
-            "at": "src/modules/coform/components/MultiStepCoForm.tsx:749",
+            "at": "src/modules/coform/components/MultiStepCoForm.tsx:766",
             "layer": "module:coform",
             "exported": false
           },
@@ -1489,7 +1516,7 @@
             "exported": false
           },
           {
-            "at": "src/modules/search/components/preview/PreviewPoiAmenities.tsx:96",
+            "at": "src/modules/search/components/preview/PreviewPoiAmenities.tsx:110",
             "layer": "module:search",
             "exported": false
           }
@@ -1577,30 +1604,8 @@
             "exported": false
           },
           {
-            "at": "src/modules/search/components/preview/PreviewPoiAmenities.tsx:310",
+            "at": "src/modules/search/components/preview/PreviewPoiAmenities.tsx:328",
             "layer": "module:search",
-            "exported": false
-          }
-        ]
-      },
-      {
-        "name": "toggle",
-        "count": 3,
-        "classe": "quasi",
-        "defs": [
-          {
-            "at": "src/modules/observatoire/components/ObservatoryTable.tsx:131",
-            "layer": "module:observatoire",
-            "exported": false
-          },
-          {
-            "at": "src/modules/search/components/filterFields.tsx:74",
-            "layer": "module:search",
-            "exported": false
-          },
-          {
-            "at": "src/modules/profil/components/profile-edit/fields/genericFields.tsx:237",
-            "layer": "module:profil",
             "exported": false
           }
         ]
@@ -1760,7 +1765,7 @@
         "classe": "quasi",
         "defs": [
           {
-            "at": "src/lib/extractCriticalResources.ts:234",
+            "at": "src/lib/extractCriticalResources.ts:161",
             "layer": "shared:lib",
             "exported": false
           },
@@ -1777,7 +1782,7 @@
         "classe": "quasi",
         "defs": [
           {
-            "at": "src/lib/extractCriticalResources.ts:245",
+            "at": "src/lib/extractCriticalResources.ts:172",
             "layer": "shared:lib",
             "exported": false
           },
@@ -1794,12 +1799,12 @@
         "classe": "quasi",
         "defs": [
           {
-            "at": "src/components/sections/HeroParallax.tsx:18",
+            "at": "src/components/sections/HeroParallax.tsx:19",
             "layer": "feature:components",
             "exported": false
           },
           {
-            "at": "src/components/layout/header/useHeaderBehavior.ts:17",
+            "at": "src/components/layout/header/useHeaderBehavior.ts:27",
             "layer": "feature:components",
             "exported": false
           }
@@ -2049,12 +2054,12 @@
         "classe": "quasi",
         "defs": [
           {
-            "at": "src/modules/observatoire/components/Filters.tsx:183",
+            "at": "src/modules/observatoire/components/Filters.tsx:240",
             "layer": "module:observatoire",
             "exported": false
           },
           {
-            "at": "src/modules/observatoire/components/ObservatoryTable.tsx:155",
+            "at": "src/modules/observatoire/components/ObservatoryTable.tsx:166",
             "layer": "module:observatoire",
             "exported": false
           }
@@ -2105,7 +2110,7 @@
             "exported": false
           },
           {
-            "at": "src/modules/search/components/preview/PreviewPoiAmenities.tsx:145",
+            "at": "src/modules/search/components/preview/PreviewPoiAmenities.tsx:159",
             "layer": "module:search",
             "exported": false
           }
@@ -2275,7 +2280,7 @@
             "exported": false
           },
           {
-            "at": "src/modules/search/components/preview/PreviewPoiAmenities.tsx:243",
+            "at": "src/modules/search/components/preview/PreviewPoiAmenities.tsx:257",
             "layer": "module:search",
             "exported": false
           }
@@ -2292,7 +2297,7 @@
             "exported": false
           },
           {
-            "at": "src/modules/search/components/preview/PreviewPoiAmenities.tsx:128",
+            "at": "src/modules/search/components/preview/PreviewPoiAmenities.tsx:142",
             "layer": "module:search",
             "exported": false
           }
@@ -2341,7 +2346,7 @@
         "classe": "different",
         "defs": [
           {
-            "at": "src/components/layout/FloatingQRCode.tsx:41",
+            "at": "src/components/layout/FloatingQRCode.tsx:44",
             "layer": "feature:components",
             "exported": false
           },
@@ -2351,7 +2356,7 @@
             "exported": false
           },
           {
-            "at": "src/modules/coform/components/FinderElementCard.tsx:106",
+            "at": "src/modules/coform/components/FinderElementCard.tsx:107",
             "layer": "module:coform",
             "exported": false
           },
@@ -2405,12 +2410,12 @@
         "classe": "different",
         "defs": [
           {
-            "at": "src/modules/search/components/SearchListView.tsx:18",
+            "at": "src/modules/search/components/SearchListView.tsx:22",
             "layer": "module:search",
             "exported": false
           },
           {
-            "at": "src/modules/search/components/SearchMap.tsx:74",
+            "at": "src/modules/search/components/SearchMap.tsx:88",
             "layer": "module:search",
             "exported": false
           },
@@ -2734,7 +2739,7 @@
             "exported": false
           },
           {
-            "at": "src/modules/observatoire/components/Filters.tsx:198",
+            "at": "src/modules/observatoire/components/Filters.tsx:255",
             "layer": "module:observatoire",
             "exported": false
           }
@@ -2814,7 +2819,7 @@
         "classe": "different",
         "defs": [
           {
-            "at": "src/modules/observatoire/dashboard.ts:78",
+            "at": "src/modules/observatoire/dashboard.ts:79",
             "layer": "module:observatoire",
             "exported": false
           },
@@ -2873,6 +2878,23 @@
             "at": "src/modules/commandPalette/hooks/useGlobalShortcut.ts:42",
             "layer": "module:commandPalette",
             "exported": false
+          }
+        ]
+      },
+      {
+        "name": "SelectField",
+        "count": 2,
+        "classe": "different",
+        "defs": [
+          {
+            "at": "src/modules/coform/components/FormFields.tsx:336",
+            "layer": "module:coform",
+            "exported": true
+          },
+          {
+            "at": "src/modules/search/components/filterFields.tsx:39",
+            "layer": "module:search",
+            "exported": true
           }
         ]
       },
@@ -3118,7 +3140,7 @@
     "sharingCandidates": [
       {
         "name": "getButtonClasses",
-        "at": "src/components/sections/HeroParallax.tsx:23",
+        "at": "src/components/sections/HeroParallax.tsx:24",
         "layer": "feature:components",
         "loc": 9,
         "exported": false,
@@ -3128,7 +3150,7 @@
       },
       {
         "name": "getButtonClasses",
-        "at": "src/components/sections/HeroQuickAccess.tsx:51",
+        "at": "src/components/sections/HeroQuickAccess.tsx:56",
         "layer": "feature:components",
         "loc": 9,
         "exported": false,
@@ -3148,7 +3170,7 @@
       },
       {
         "name": "toDate",
-        "at": "src/modules/search/components/preview/PreviewPoiAmenities.tsx:107",
+        "at": "src/modules/search/components/preview/PreviewPoiAmenities.tsx:121",
         "layer": "module:search",
         "loc": 8,
         "exported": false,
@@ -3298,7 +3320,7 @@
       },
       {
         "name": "isPlainObject",
-        "at": "src/modules/coform/utils/formParser.ts:928",
+        "at": "src/modules/coform/utils/formParser.ts:1009",
         "layer": "module:coform",
         "loc": 3,
         "exported": false,
@@ -3368,9 +3390,9 @@
       },
       {
         "name": "parseCoFormFields",
-        "at": "src/modules/coform/utils/formParser.ts:188",
+        "at": "src/modules/coform/utils/formParser.ts:210",
         "layer": "module:coform",
-        "loc": 391,
+        "loc": 450,
         "exported": true,
         "duplicated": false,
         "inUtilDir": true,
@@ -3378,7 +3400,7 @@
       },
       {
         "name": "generateZodSchema",
-        "at": "src/modules/coform/utils/formParser.ts:583",
+        "at": "src/modules/coform/utils/formParser.ts:664",
         "layer": "module:coform",
         "loc": 238,
         "exported": true,
@@ -3388,9 +3410,19 @@
       },
       {
         "name": "normalizeAnswerData",
-        "at": "src/modules/coform/utils/formParser.ts:1121",
+        "at": "src/modules/coform/utils/formParser.ts:1249",
         "layer": "module:coform",
-        "loc": 82,
+        "loc": 143,
+        "exported": true,
+        "duplicated": false,
+        "inUtilDir": true,
+        "suggestedHome": "src/lib/"
+      },
+      {
+        "name": "denormalizeAnswerData",
+        "at": "src/modules/coform/utils/formParser.ts:1404",
+        "layer": "module:coform",
+        "loc": 97,
         "exported": true,
         "duplicated": false,
         "inUtilDir": true,
@@ -3418,7 +3450,7 @@
       },
       {
         "name": "generateDefaultValues",
-        "at": "src/modules/coform/utils/formParser.ts:825",
+        "at": "src/modules/coform/utils/formParser.ts:906",
         "layer": "module:coform",
         "loc": 68,
         "exported": true,
@@ -3438,7 +3470,7 @@
       },
       {
         "name": "scrollToFieldByName",
-        "at": "src/modules/coform/utils/helpers.ts:76",
+        "at": "src/modules/coform/utils/helpers.ts:92",
         "layer": "module:coform",
         "loc": 51,
         "exported": true,
@@ -3447,20 +3479,10 @@
         "suggestedHome": "src/lib/"
       },
       {
-        "name": "denormalizeAnswerData",
-        "at": "src/modules/coform/utils/formParser.ts:1215",
-        "layer": "module:coform",
-        "loc": 48,
-        "exported": true,
-        "duplicated": false,
-        "inUtilDir": true,
-        "suggestedHome": "src/lib/"
-      },
-      {
         "name": "mapCoFormTypeToComponentType",
-        "at": "src/modules/coform/utils/formParser.ts:138",
+        "at": "src/modules/coform/utils/formParser.ts:156",
         "layer": "module:coform",
-        "loc": 46,
+        "loc": 50,
         "exported": true,
         "duplicated": false,
         "inUtilDir": true,
@@ -3497,6 +3519,16 @@
         "suggestedHome": "src/lib/"
       },
       {
+        "name": "debugLogValidationFailure",
+        "at": "src/modules/coform/utils/helpers.ts:178",
+        "layer": "module:coform",
+        "loc": 40,
+        "exported": true,
+        "duplicated": false,
+        "inUtilDir": true,
+        "suggestedHome": "src/lib/"
+      },
+      {
         "name": "parseNotification",
         "at": "src/modules/notification/utils/parseNotification.ts:40",
         "layer": "module:notification",
@@ -3508,7 +3540,7 @@
       },
       {
         "name": "extractFinderLinks",
-        "at": "src/modules/coform/utils/formParser.ts:1280",
+        "at": "src/modules/coform/utils/formParser.ts:1518",
         "layer": "module:coform",
         "loc": 36,
         "exported": true,
@@ -3528,7 +3560,7 @@
       },
       {
         "name": "getSharedFinderInfo",
-        "at": "src/modules/coform/utils/formParser.ts:1348",
+        "at": "src/modules/coform/utils/formParser.ts:1586",
         "layer": "module:coform",
         "loc": 27,
         "exported": true,
@@ -3748,7 +3780,7 @@
       },
       {
         "name": "isStepComplete",
-        "at": "src/modules/coform/utils/helpers.ts:37",
+        "at": "src/modules/coform/utils/helpers.ts:53",
         "layer": "module:coform",
         "loc": 10,
         "exported": true,
@@ -3798,7 +3830,7 @@
       },
       {
         "name": "mergeStepsData",
-        "at": "src/modules/coform/utils/helpers.ts:51",
+        "at": "src/modules/coform/utils/helpers.ts:67",
         "layer": "module:coform",
         "loc": 8,
         "exported": true,
@@ -3849,6 +3881,16 @@
       {
         "name": "getOriginalFieldKey",
         "at": "src/modules/coform/utils/formParser.ts:59",
+        "layer": "module:coform",
+        "loc": 7,
+        "exported": true,
+        "duplicated": false,
+        "inUtilDir": true,
+        "suggestedHome": "src/helpers/"
+      },
+      {
+        "name": "pickProfileImageUrl",
+        "at": "src/modules/coform/utils/helpers.ts:42",
         "layer": "module:coform",
         "loc": 7,
         "exported": true,
@@ -4008,7 +4050,7 @@
       },
       {
         "name": "getStepHasMultiEval",
-        "at": "src/modules/coform/utils/formParser.ts:1101",
+        "at": "src/modules/coform/utils/formParser.ts:1229",
         "layer": "module:coform",
         "loc": 3,
         "exported": true,
@@ -4077,6 +4119,11 @@
         "file": "src/components/form/TextInput.tsx",
         "name": "default",
         "line": 74
+      },
+      {
+        "file": "src/components/sections/HeroBackgroundImage.tsx",
+        "name": "default",
+        "line": 71
       },
       {
         "file": "src/components/ui/breadcrumb.tsx",
@@ -4232,6 +4279,11 @@
         "file": "src/constants/DAYS.ts",
         "name": "DayOfWeek",
         "line": 7
+      },
+      {
+        "file": "src/hooks/use-toast.ts",
+        "name": "toast",
+        "line": 54
       },
       {
         "file": "src/hooks/useMutationWithToast.ts",
@@ -4426,7 +4478,7 @@
       {
         "file": "src/modules/coform/components/CoFormReadOnly.tsx",
         "name": "default",
-        "line": 390
+        "line": 402
       },
       {
         "file": "src/modules/coform/components/CoFormThankYou.tsx",
@@ -4436,12 +4488,12 @@
       {
         "file": "src/modules/coform/components/MultiStepCoForm.tsx",
         "name": "default",
-        "line": 829
+        "line": 846
       },
       {
         "file": "src/modules/coform/components/SmartCoForm.tsx",
         "name": "default",
-        "line": 484
+        "line": 487
       },
       {
         "file": "src/modules/coform/constants/index.ts",
@@ -4466,7 +4518,7 @@
       {
         "file": "src/modules/coform/constants/queryKeys.ts",
         "name": "CoformQueryKeyType",
-        "line": 174
+        "line": 203
       },
       {
         "file": "src/modules/coform/hooks/useCoForm.tsx",
@@ -4496,17 +4548,22 @@
       {
         "file": "src/modules/coform/types.ts",
         "name": "MultiEvalEntry",
-        "line": 631
+        "line": 645
       },
       {
         "file": "src/modules/coform/types.ts",
         "name": "CoFormVariant",
-        "line": 681
+        "line": 695
       },
       {
         "file": "src/modules/coform/types.ts",
         "name": "SubFormDataWithMeta",
-        "line": 713
+        "line": 727
+      },
+      {
+        "file": "src/modules/coform/utils/helpers.ts",
+        "name": "debugLogValidationFailure",
+        "line": 178
       },
       {
         "file": "src/modules/commandPalette/components/CommandTriggerButton.tsx",
@@ -4581,12 +4638,12 @@
       {
         "file": "src/modules/observatoire/schema.ts",
         "name": "EMPTY_FILTERS",
-        "line": 170
+        "line": 174
       },
       {
         "file": "src/modules/observatoire/schema.ts",
         "name": "DataObservatorySection",
-        "line": 234
+        "line": 247
       },
       {
         "file": "src/modules/profil/components/ActionButtonGroup.tsx",
@@ -4721,17 +4778,17 @@
       {
         "file": "src/modules/search/schema.ts",
         "name": "SearchHeaderSection",
-        "line": 677
+        "line": 681
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "getDefaultSiteConfig",
-        "line": 1937
+        "line": 1963
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "example",
-        "line": 1974
+        "line": 2000
       },
       {
         "file": "src/types/site-schema.ts",
@@ -4756,242 +4813,242 @@
       {
         "file": "src/types/site-schema.ts",
         "name": "HeroQuickAccess",
-        "line": 284
+        "line": 294
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "HeroQuickAccessProps",
-        "line": 285
+        "line": 295
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "HeroTintedOverlay",
-        "line": 320
+        "line": 330
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "HeroEntityBanner",
-        "line": 363
+        "line": 373
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "FeaturesGlass",
-        "line": 392
+        "line": 402
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "CategoriesGridSection",
-        "line": 420
+        "line": 430
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "CategoriesGridSectionProps",
-        "line": 421
+        "line": 431
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "ActionTiles",
-        "line": 445
+        "line": 455
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "CtaCardGrid",
-        "line": 481
+        "line": 491
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "CtaNewsletter",
-        "line": 509
+        "line": 519
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "MeeteemSection",
-        "line": 545
+        "line": 555
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "ExpandableActions",
-        "line": 580
+        "line": 590
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "MarkdownSection",
-        "line": 594
+        "line": 604
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "CardsSection",
-        "line": 639
+        "line": 649
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "GallerySection",
-        "line": 654
+        "line": 664
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "VideoSection",
-        "line": 672
+        "line": 682
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "FAQSection",
-        "line": 686
+        "line": 696
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "TestimonialsSection",
-        "line": 701
+        "line": 711
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "PricingSection",
-        "line": 724
+        "line": 734
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "ContactFormSection",
-        "line": 750
+        "line": 760
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "BlogPostSection",
-        "line": 774
+        "line": 784
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "BlogListSection",
-        "line": 804
+        "line": 814
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "TeamSection",
-        "line": 828
+        "line": 838
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "StatsSection",
-        "line": 848
+        "line": 858
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "CTASection",
-        "line": 870
+        "line": 880
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "LogoCloudSection",
-        "line": 890
+        "line": 900
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "AccordionSection",
-        "line": 908
+        "line": 918
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "TabsSection",
-        "line": 931
+        "line": 941
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "StepsSection",
-        "line": 951
+        "line": 961
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "ComparisonSection",
-        "line": 968
+        "line": 978
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "FeatureComparisonSection",
-        "line": 989
+        "line": 999
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "SocialFeedSection",
-        "line": 1005
+        "line": 1015
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "EventListSection",
-        "line": 1032
+        "line": 1042
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "ProductShowcaseSection",
-        "line": 1058
+        "line": 1068
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "BreadcrumbSection",
-        "line": 1075
+        "line": 1085
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "CookieConsentSection",
-        "line": 1099
+        "line": 1109
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "TableSection",
-        "line": 1116
+        "line": 1126
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "ChartSection",
-        "line": 1136
+        "line": 1146
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "TimelineSection",
-        "line": 1152
+        "line": 1162
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "MapSection",
-        "line": 1168
+        "line": 1178
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "BannerSection",
-        "line": 1183
+        "line": 1193
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "NewsletterSection",
-        "line": 1201
+        "line": 1211
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "HTMLSection",
-        "line": 1216
+        "line": 1226
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "TitleSection",
-        "line": 1233
+        "line": 1243
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "TitleSectionProps",
-        "line": 1235
+        "line": 1245
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "GridLayoutSection",
-        "line": 1255
+        "line": 1265
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "ContentSection",
-        "line": 1287
+        "line": 1297
       },
       {
         "file": "src/types/site-schema.ts",
         "name": "ContentSectionProps",
-        "line": 1289
+        "line": 1299
       },
       {
         "file": "src/types/site.ts",
@@ -5013,7 +5070,6 @@
       "src/config/payment.ts",
       "src/helpers/isEntityInstance.ts",
       "src/hooks/index.ts",
-      "src/hooks/use-toast.ts",
       "src/hooks/useFeatureFlag.ts",
       "src/hooks/useRouter.ts",
       "src/lib/constant/CountryList.ts",
@@ -6175,7 +6231,7 @@
     {
       "name": "getImageType",
       "file": "src/lib/extractCriticalResources.ts",
-      "line": 20,
+      "line": 40,
       "layer": "shared:lib",
       "kind": "function",
       "exported": false,
@@ -6186,7 +6242,7 @@
     {
       "name": "normalizePath",
       "file": "src/lib/extractCriticalResources.ts",
-      "line": 37,
+      "line": 57,
       "layer": "shared:lib",
       "kind": "function",
       "exported": false,
@@ -6195,31 +6251,20 @@
       "hash": "19ee36252e93"
     },
     {
-      "name": "extractSectionImages",
-      "file": "src/lib/extractCriticalResources.ts",
-      "line": 50,
-      "layer": "shared:lib",
-      "kind": "function",
-      "exported": false,
-      "loc": 90,
-      "generic": true,
-      "hash": "017cd98189cb"
-    },
-    {
       "name": "extractCriticalImages",
       "file": "src/lib/extractCriticalResources.ts",
-      "line": 154,
+      "line": 80,
       "layer": "shared:lib",
       "kind": "function",
       "exported": true,
-      "loc": 67,
+      "loc": 68,
       "generic": true,
-      "hash": "99dbe8425cc6"
+      "hash": "2e78b8e39069"
     },
     {
       "name": "extractFontFamilies",
       "file": "src/lib/extractCriticalResources.ts",
-      "line": 234,
+      "line": 161,
       "layer": "shared:lib",
       "kind": "function",
       "exported": false,
@@ -6230,7 +6275,7 @@
     {
       "name": "buildGoogleFontURL",
       "file": "src/lib/extractCriticalResources.ts",
-      "line": 245,
+      "line": 172,
       "layer": "shared:lib",
       "kind": "function",
       "exported": false,
@@ -6241,7 +6286,7 @@
     {
       "name": "extractCriticalFonts",
       "file": "src/lib/extractCriticalResources.ts",
-      "line": 253,
+      "line": 180,
       "layer": "shared:lib",
       "kind": "function",
       "exported": true,
@@ -6252,13 +6297,13 @@
     {
       "name": "addImage",
       "file": "src/lib/extractCriticalResources.ts",
-      "line": 163,
+      "line": 90,
       "layer": "shared:lib",
       "kind": "arrow",
       "exported": false,
-      "loc": 11,
+      "loc": 13,
       "generic": true,
-      "hash": "8657d1c99a78"
+      "hash": "d1b523065f0f"
     },
     {
       "name": "getProfileSlugFromLocation",
@@ -6285,18 +6330,18 @@
     {
       "name": "generateImagePreloadTag",
       "file": "src/lib/generatePreloadTags.ts",
-      "line": 16,
+      "line": 17,
       "layer": "shared:lib",
       "kind": "function",
       "exported": false,
-      "loc": 17,
+      "loc": 19,
       "generic": true,
-      "hash": "569ee990a35f"
+      "hash": "9f6f5a5ac347"
     },
     {
       "name": "generateImagePreloadTags",
       "file": "src/lib/generatePreloadTags.ts",
-      "line": 37,
+      "line": 40,
       "layer": "shared:lib",
       "kind": "function",
       "exported": true,
@@ -6307,7 +6352,7 @@
     {
       "name": "generateFontPreloadTags",
       "file": "src/lib/generatePreloadTags.ts",
-      "line": 52,
+      "line": 55,
       "layer": "shared:lib",
       "kind": "function",
       "exported": true,
@@ -6424,6 +6469,28 @@
       "loc": 25,
       "generic": true,
       "hash": "d96c961c31b6"
+    },
+    {
+      "name": "buildResponsiveSrcSet",
+      "file": "src/lib/imageUtils.ts",
+      "line": 40,
+      "layer": "shared:lib",
+      "kind": "function",
+      "exported": true,
+      "loc": 8,
+      "generic": true,
+      "hash": "166fd1fea4f7"
+    },
+    {
+      "name": "buildFaviconUrl",
+      "file": "src/lib/imageUtils.ts",
+      "line": 57,
+      "layer": "shared:lib",
+      "kind": "function",
+      "exported": true,
+      "loc": 5,
+      "generic": true,
+      "hash": "23e437d19777"
     },
     {
       "name": "discoverModules",
@@ -6571,7 +6638,7 @@
     {
       "name": "validateSiteConfig",
       "file": "src/types/site-schema.ts",
-      "line": 1932,
+      "line": 1958,
       "layer": "shared:types",
       "kind": "function",
       "exported": true,
@@ -6582,7 +6649,7 @@
     {
       "name": "getDefaultSiteConfig",
       "file": "src/types/site-schema.ts",
-      "line": 1937,
+      "line": 1963,
       "layer": "shared:types",
       "kind": "function",
       "exported": true,
@@ -7407,18 +7474,18 @@
     {
       "name": "FloatingQRCode",
       "file": "src/components/layout/FloatingQRCode.tsx",
-      "line": 25,
+      "line": 26,
       "layer": "feature:components",
       "kind": "function",
       "exported": true,
-      "loc": 87,
+      "loc": 92,
       "generic": false,
-      "hash": "6c6d99076890"
+      "hash": "f60406670c7a"
     },
     {
       "name": "handleClick",
       "file": "src/components/layout/FloatingQRCode.tsx",
-      "line": 41,
+      "line": 44,
       "layer": "feature:components",
       "kind": "arrow",
       "exported": false,
@@ -7495,13 +7562,13 @@
     {
       "name": "Seo",
       "file": "src/components/layout/Seo.tsx",
-      "line": 27,
+      "line": 28,
       "layer": "feature:components",
       "kind": "function",
       "exported": true,
-      "loc": 119,
+      "loc": 123,
       "generic": false,
-      "hash": "e73652bd53b4"
+      "hash": "7bb6eb358bee"
     },
     {
       "name": "SiteFooter",
@@ -7517,13 +7584,13 @@
     {
       "name": "SiteHeader",
       "file": "src/components/layout/SiteHeader.tsx",
-      "line": 18,
+      "line": 20,
       "layer": "feature:components",
       "kind": "function",
       "exported": true,
-      "loc": 22,
+      "loc": 28,
       "generic": false,
-      "hash": "468edac84964"
+      "hash": "6bf171f1bf84"
     },
     {
       "name": "toKebab",
@@ -8340,6 +8407,17 @@
       "hash": "965bbfcbf543"
     },
     {
+      "name": "HeroBackgroundImage",
+      "file": "src/components/sections/HeroBackgroundImage.tsx",
+      "line": 37,
+      "layer": "feature:components",
+      "kind": "function",
+      "exported": true,
+      "loc": 33,
+      "generic": false,
+      "hash": "044d247c504b"
+    },
+    {
       "name": "HeroEntityBanner",
       "file": "src/components/sections/HeroEntityBanner.tsx",
       "line": 21,
@@ -8364,18 +8442,18 @@
     {
       "name": "HeroParallax",
       "file": "src/components/sections/HeroParallax.tsx",
-      "line": 11,
+      "line": 12,
       "layer": "feature:components",
       "kind": "function",
       "exported": true,
-      "loc": 121,
+      "loc": 122,
       "generic": false,
-      "hash": "66dd4e617ee4"
+      "hash": "74ec2cdb7b65"
     },
     {
       "name": "handleScroll",
       "file": "src/components/sections/HeroParallax.tsx",
-      "line": 18,
+      "line": 19,
       "layer": "feature:components",
       "kind": "arrow",
       "exported": false,
@@ -8386,7 +8464,7 @@
     {
       "name": "getButtonClasses",
       "file": "src/components/sections/HeroParallax.tsx",
-      "line": 23,
+      "line": 24,
       "layer": "feature:components",
       "kind": "arrow",
       "exported": false,
@@ -8397,18 +8475,18 @@
     {
       "name": "HeroQuickAccess",
       "file": "src/components/sections/HeroQuickAccess.tsx",
-      "line": 44,
+      "line": 49,
       "layer": "feature:components",
       "kind": "function",
       "exported": true,
-      "loc": 136,
+      "loc": 146,
       "generic": false,
-      "hash": "b035a52609b2"
+      "hash": "7a6dfb22fa44"
     },
     {
       "name": "getButtonClasses",
       "file": "src/components/sections/HeroQuickAccess.tsx",
-      "line": 51,
+      "line": 56,
       "layer": "feature:components",
       "kind": "arrow",
       "exported": false,
@@ -8423,9 +8501,9 @@
       "layer": "feature:components",
       "kind": "function",
       "exported": true,
-      "loc": 461,
+      "loc": 459,
       "generic": false,
-      "hash": "d3c5b4a59a66"
+      "hash": "b0c6809d24aa"
     },
     {
       "name": "getEntityTitle",
@@ -8551,18 +8629,18 @@
     {
       "name": "HeroSection",
       "file": "src/components/sections/HeroSection.tsx",
-      "line": 7,
+      "line": 8,
       "layer": "feature:components",
       "kind": "function",
       "exported": true,
-      "loc": 104,
+      "loc": 105,
       "generic": false,
-      "hash": "3acabdf68162"
+      "hash": "53ecf75da32b"
     },
     {
       "name": "handleScrollTo",
       "file": "src/components/sections/HeroSection.tsx",
-      "line": 11,
+      "line": 12,
       "layer": "feature:components",
       "kind": "arrow",
       "exported": false,
@@ -8573,7 +8651,7 @@
     {
       "name": "handleCTAClick",
       "file": "src/components/sections/HeroSection.tsx",
-      "line": 18,
+      "line": 19,
       "layer": "feature:components",
       "kind": "arrow",
       "exported": false,
@@ -8584,13 +8662,13 @@
     {
       "name": "HeroTintedOverlay",
       "file": "src/components/sections/HeroTintedOverlay.tsx",
-      "line": 9,
+      "line": 10,
       "layer": "feature:components",
       "kind": "function",
       "exported": true,
-      "loc": 70,
+      "loc": 71,
       "generic": false,
-      "hash": "553291e1ad3c"
+      "hash": "ebfad3dac375"
     },
     {
       "name": "HeroWithIconSection",
@@ -11536,9 +11614,9 @@
       "layer": "feature:components",
       "kind": "function",
       "exported": true,
-      "loc": 60,
+      "loc": 66,
       "generic": false,
-      "hash": "0f527e046266"
+      "hash": "d3181dea1721"
     },
     {
       "name": "Pagination",
@@ -12962,7 +13040,7 @@
     {
       "name": "applyFilters",
       "file": "src/modules/observatoire/dashboard.ts",
-      "line": 45,
+      "line": 46,
       "layer": "module:observatoire",
       "kind": "function",
       "exported": true,
@@ -12973,7 +13051,7 @@
     {
       "name": "normalizeText",
       "file": "src/modules/observatoire/dashboard.ts",
-      "line": 78,
+      "line": 79,
       "layer": "module:observatoire",
       "kind": "function",
       "exported": false,
@@ -12984,7 +13062,7 @@
     {
       "name": "applyTextSearch",
       "file": "src/modules/observatoire/dashboard.ts",
-      "line": 90,
+      "line": 91,
       "layer": "module:observatoire",
       "kind": "function",
       "exported": true,
@@ -12995,7 +13073,7 @@
     {
       "name": "computeKpiValue",
       "file": "src/modules/observatoire/dashboard.ts",
-      "line": 122,
+      "line": 123,
       "layer": "module:observatoire",
       "kind": "function",
       "exported": true,
@@ -13006,7 +13084,7 @@
     {
       "name": "colorFor",
       "file": "src/modules/observatoire/dashboard.ts",
-      "line": 189,
+      "line": 190,
       "layer": "module:observatoire",
       "kind": "function",
       "exported": true,
@@ -13017,7 +13095,7 @@
     {
       "name": "itemsFor",
       "file": "src/modules/observatoire/dashboard.ts",
-      "line": 196,
+      "line": 197,
       "layer": "module:observatoire",
       "kind": "function",
       "exported": true,
@@ -13028,7 +13106,7 @@
     {
       "name": "chartTitle",
       "file": "src/modules/observatoire/dashboard.ts",
-      "line": 213,
+      "line": 214,
       "layer": "module:observatoire",
       "kind": "function",
       "exported": true,
@@ -13039,7 +13117,7 @@
     {
       "name": "chartRows",
       "file": "src/modules/observatoire/dashboard.ts",
-      "line": 222,
+      "line": 223,
       "layer": "module:observatoire",
       "kind": "function",
       "exported": true,
@@ -13050,7 +13128,7 @@
     {
       "name": "buildRow",
       "file": "src/modules/observatoire/dashboard.ts",
-      "line": 257,
+      "line": 258,
       "layer": "module:observatoire",
       "kind": "function",
       "exported": true,
@@ -13061,7 +13139,7 @@
     {
       "name": "compare",
       "file": "src/modules/observatoire/dashboard.ts",
-      "line": 285,
+      "line": 286,
       "layer": "module:observatoire",
       "kind": "function",
       "exported": true,
@@ -13072,7 +13150,7 @@
     {
       "name": "csvEscape",
       "file": "src/modules/observatoire/dashboard.ts",
-      "line": 303,
+      "line": 304,
       "layer": "module:observatoire",
       "kind": "function",
       "exported": false,
@@ -13083,7 +13161,7 @@
     {
       "name": "buildCsv",
       "file": "src/modules/observatoire/dashboard.ts",
-      "line": 312,
+      "line": 313,
       "layer": "module:observatoire",
       "kind": "function",
       "exported": true,
@@ -13092,15 +13170,26 @@
       "hash": "3c9505962cde"
     },
     {
+      "name": "buildEntitiesCsv",
+      "file": "src/modules/observatoire/dashboard.ts",
+      "line": 338,
+      "layer": "module:observatoire",
+      "kind": "function",
+      "exported": true,
+      "loc": 21,
+      "generic": true,
+      "hash": "5eaea80ab381"
+    },
+    {
       "name": "DataObservatorySection",
       "file": "src/modules/observatoire/DataObservatorySection.tsx",
       "line": 29,
       "layer": "module:observatoire",
       "kind": "function",
       "exported": true,
-      "loc": 188,
+      "loc": 199,
       "generic": false,
-      "hash": "c8e2851c1e9a"
+      "hash": "a0c6b72768c3"
     },
     {
       "name": "isTrue",
@@ -13490,18 +13579,18 @@
     {
       "name": "SearchProStatic",
       "file": "src/modules/search/SearchProStatic.tsx",
-      "line": 49,
+      "line": 50,
       "layer": "module:search",
       "kind": "arrow",
       "exported": false,
-      "loc": 686,
+      "loc": 748,
       "generic": false,
-      "hash": "f6cc5c28367a"
+      "hash": "2e2b2109b5b3"
     },
     {
       "name": "handleGraphItemClick",
       "file": "src/modules/search/SearchProStatic.tsx",
-      "line": 136,
+      "line": 146,
       "layer": "module:search",
       "kind": "arrow",
       "exported": false,
@@ -13512,7 +13601,7 @@
     {
       "name": "getModalName",
       "file": "src/modules/search/SearchProStatic.tsx",
-      "line": 180,
+      "line": 190,
       "layer": "module:search",
       "kind": "arrow",
       "exported": false,
@@ -13523,7 +13612,7 @@
     {
       "name": "handleAddClick",
       "file": "src/modules/search/SearchProStatic.tsx",
-      "line": 190,
+      "line": 200,
       "layer": "module:search",
       "kind": "arrow",
       "exported": false,
@@ -13699,7 +13788,7 @@
     {
       "name": "getIconComponent",
       "file": "src/components/layout/footer/FooterContactPartners.tsx",
-      "line": 25,
+      "line": 26,
       "layer": "feature:components",
       "kind": "function",
       "exported": false,
@@ -13710,13 +13799,13 @@
     {
       "name": "FooterContactPartners",
       "file": "src/components/layout/footer/FooterContactPartners.tsx",
-      "line": 33,
+      "line": 34,
       "layer": "feature:components",
       "kind": "function",
       "exported": true,
-      "loc": 98,
+      "loc": 133,
       "generic": false,
-      "hash": "e2dfd8aebbab"
+      "hash": "fb46035a9f8b"
     },
     {
       "name": "FooterMinimalCentered",
@@ -13787,13 +13876,13 @@
     {
       "name": "HeaderMinimal",
       "file": "src/components/layout/header/HeaderMinimal.tsx",
-      "line": 22,
+      "line": 25,
       "layer": "feature:components",
       "kind": "function",
       "exported": true,
-      "loc": 111,
+      "loc": 106,
       "generic": false,
-      "hash": "22e6af65b78c"
+      "hash": "383bca445619"
     },
     {
       "name": "MegaMenuContent",
@@ -13842,29 +13931,29 @@
     {
       "name": "HeaderTransparentDark",
       "file": "src/components/layout/header/HeaderTransparentDark.tsx",
-      "line": 22,
+      "line": 23,
       "layer": "feature:components",
       "kind": "function",
       "exported": true,
-      "loc": 147,
+      "loc": 130,
       "generic": false,
-      "hash": "4280a2f999d6"
+      "hash": "575a4e3538cd"
     },
     {
       "name": "HeaderTransparentScroll",
       "file": "src/components/layout/header/HeaderTransparentScroll.tsx",
-      "line": 26,
+      "line": 30,
       "layer": "feature:components",
       "kind": "function",
       "exported": true,
-      "loc": 252,
+      "loc": 246,
       "generic": false,
-      "hash": "a9ac04a53707"
+      "hash": "e39e5f7ade13"
     },
     {
       "name": "isPathInsideNav",
       "file": "src/components/layout/header/HeaderTransparentScroll.tsx",
-      "line": 31,
+      "line": 35,
       "layer": "feature:components",
       "kind": "arrow",
       "exported": false,
@@ -13875,13 +13964,13 @@
     {
       "name": "HeaderUnderlineNav",
       "file": "src/components/layout/header/HeaderUnderlineNav.tsx",
-      "line": 23,
+      "line": 25,
       "layer": "feature:components",
       "kind": "function",
       "exported": true,
-      "loc": 186,
+      "loc": 177,
       "generic": false,
-      "hash": "1d49c12d2539"
+      "hash": "8f3dc82c87ec"
     },
     {
       "name": "LangSwitch",
@@ -13897,13 +13986,13 @@
     {
       "name": "MobileMenuBrand",
       "file": "src/components/layout/header/MobileMenuBrand.tsx",
-      "line": 21,
+      "line": 22,
       "layer": "feature:components",
       "kind": "function",
       "exported": true,
-      "loc": 42,
+      "loc": 43,
       "generic": false,
-      "hash": "755b5e64c864"
+      "hash": "1e7d696eac22"
     },
     {
       "name": "MobileMenuSheet",
@@ -13928,6 +14017,61 @@
       "hash": "b5fbbb3c9351"
     },
     {
+      "name": "MobileNavItems",
+      "file": "src/components/layout/header/MobileNavItems.tsx",
+      "line": 77,
+      "layer": "feature:components",
+      "kind": "function",
+      "exported": true,
+      "loc": 134,
+      "generic": false,
+      "hash": "541d854edb0e"
+    },
+    {
+      "name": "navTarget",
+      "file": "src/components/layout/header/MobileNavItems.tsx",
+      "line": 64,
+      "layer": "feature:components",
+      "kind": "arrow",
+      "exported": false,
+      "loc": 1,
+      "generic": true,
+      "hash": "056cf88430a3"
+    },
+    {
+      "name": "isLink",
+      "file": "src/components/layout/header/MobileNavItems.tsx",
+      "line": 67,
+      "layer": "feature:components",
+      "kind": "arrow",
+      "exported": false,
+      "loc": 1,
+      "generic": true,
+      "hash": "72abf249eb02"
+    },
+    {
+      "name": "renderChild",
+      "file": "src/components/layout/header/MobileNavItems.tsx",
+      "line": 82,
+      "layer": "feature:components",
+      "kind": "arrow",
+      "exported": false,
+      "loc": 26,
+      "generic": false,
+      "hash": "e56e0209b279"
+    },
+    {
+      "name": "toggle",
+      "file": "src/components/layout/header/MobileNavItems.tsx",
+      "line": 140,
+      "layer": "feature:components",
+      "kind": "arrow",
+      "exported": false,
+      "loc": 1,
+      "generic": true,
+      "hash": "8c5ead0e5d0e"
+    },
+    {
       "name": "NavIcon",
       "file": "src/components/layout/header/NavIcon.tsx",
       "line": 8,
@@ -13941,7 +14085,7 @@
     {
       "name": "useScrollAware",
       "file": "src/components/layout/header/useHeaderBehavior.ts",
-      "line": 14,
+      "line": 24,
       "layer": "feature:components",
       "kind": "function",
       "exported": true,
@@ -13952,7 +14096,7 @@
     {
       "name": "useScrollToTopOnRouteChange",
       "file": "src/components/layout/header/useHeaderBehavior.ts",
-      "line": 26,
+      "line": 36,
       "layer": "feature:components",
       "kind": "function",
       "exported": true,
@@ -13961,9 +14105,20 @@
       "hash": "2cf1ef1ef5ac"
     },
     {
+      "name": "useHeaderOpaqueAtRest",
+      "file": "src/components/layout/header/useHeaderBehavior.ts",
+      "line": 53,
+      "layer": "feature:components",
+      "kind": "function",
+      "exported": true,
+      "loc": 8,
+      "generic": false,
+      "hash": "0d211fe5b4d9"
+    },
+    {
       "name": "useNavItemActive",
       "file": "src/components/layout/header/useHeaderBehavior.ts",
-      "line": 34,
+      "line": 63,
       "layer": "feature:components",
       "kind": "function",
       "exported": true,
@@ -13972,9 +14127,31 @@
       "hash": "b9fa5cbc3db3"
     },
     {
+      "name": "pathMatches",
+      "file": "src/components/layout/header/useHeaderBehavior.ts",
+      "line": 7,
+      "layer": "feature:components",
+      "kind": "arrow",
+      "exported": false,
+      "loc": 2,
+      "generic": true,
+      "hash": "aa57c3de82d2"
+    },
+    {
+      "name": "isHeroSectionType",
+      "file": "src/components/layout/header/useHeaderBehavior.ts",
+      "line": 12,
+      "layer": "feature:components",
+      "kind": "arrow",
+      "exported": true,
+      "loc": 1,
+      "generic": true,
+      "hash": "15c473f85cd8"
+    },
+    {
       "name": "handleScroll",
       "file": "src/components/layout/header/useHeaderBehavior.ts",
-      "line": 17,
+      "line": 27,
       "layer": "feature:components",
       "kind": "arrow",
       "exported": false,
@@ -16020,18 +16197,18 @@
     {
       "name": "CoFormReadOnly",
       "file": "src/modules/coform/components/CoFormReadOnly.tsx",
-      "line": 37,
+      "line": 38,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
-      "loc": 123,
+      "loc": 127,
       "generic": false,
-      "hash": "8a0c62090eb6"
+      "hash": "d8dac1028ce9"
     },
     {
       "name": "ReadOnlySection",
       "file": "src/modules/coform/components/CoFormReadOnly.tsx",
-      "line": 163,
+      "line": 168,
       "layer": "module:coform",
       "kind": "function",
       "exported": false,
@@ -16042,18 +16219,18 @@
     {
       "name": "ReadOnlyField",
       "file": "src/modules/coform/components/CoFormReadOnly.tsx",
-      "line": 200,
+      "line": 205,
       "layer": "module:coform",
       "kind": "function",
       "exported": false,
-      "loc": 190,
+      "loc": 197,
       "generic": false,
-      "hash": "777eda637932"
+      "hash": "20cd2cbd9e0a"
     },
     {
       "name": "formatDate",
       "file": "src/modules/coform/components/CoFormReadOnly.tsx",
-      "line": 68,
+      "line": 73,
       "layer": "module:coform",
       "kind": "arrow",
       "exported": false,
@@ -16211,9 +16388,9 @@
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
-      "loc": 641,
+      "loc": 658,
       "generic": false,
-      "hash": "42056c0c856a"
+      "hash": "7e71236e5d9f"
     },
     {
       "name": "ErrorSummary",
@@ -16262,7 +16439,7 @@
     {
       "name": "useTypeLabel",
       "file": "src/modules/coform/components/FinderElementCard.tsx",
-      "line": 60,
+      "line": 61,
       "layer": "module:coform",
       "kind": "function",
       "exported": false,
@@ -16273,7 +16450,7 @@
     {
       "name": "formatAddress",
       "file": "src/modules/coform/components/FinderElementCard.tsx",
-      "line": 70,
+      "line": 71,
       "layer": "module:coform",
       "kind": "function",
       "exported": false,
@@ -16284,18 +16461,18 @@
     {
       "name": "FinderElementCard",
       "file": "src/modules/coform/components/FinderElementCard.tsx",
-      "line": 82,
+      "line": 83,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
-      "loc": 111,
+      "loc": 108,
       "generic": false,
-      "hash": "b1aad89c8e12"
+      "hash": "17b9fcd85ff4"
     },
     {
       "name": "handleClick",
       "file": "src/modules/coform/components/FinderElementCard.tsx",
-      "line": 106,
+      "line": 107,
       "layer": "module:coform",
       "kind": "arrow",
       "exported": false,
@@ -16306,18 +16483,18 @@
     {
       "name": "FinderField",
       "file": "src/modules/coform/components/FinderField.tsx",
-      "line": 54,
+      "line": 55,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
-      "loc": 168,
+      "loc": 177,
       "generic": false,
-      "hash": "8318b664f1b7"
+      "hash": "9d48e1aeba48"
     },
     {
       "name": "handleOpenSearch",
       "file": "src/modules/coform/components/FinderField.tsx",
-      "line": 83,
+      "line": 93,
       "layer": "module:coform",
       "kind": "arrow",
       "exported": false,
@@ -16328,7 +16505,7 @@
     {
       "name": "handleAddElements",
       "file": "src/modules/coform/components/FinderField.tsx",
-      "line": 92,
+      "line": 102,
       "layer": "module:coform",
       "kind": "arrow",
       "exported": false,
@@ -16339,7 +16516,7 @@
     {
       "name": "handleRemoveElement",
       "file": "src/modules/coform/components/FinderField.tsx",
-      "line": 114,
+      "line": 124,
       "layer": "module:coform",
       "kind": "arrow",
       "exported": false,
@@ -16350,7 +16527,7 @@
     {
       "name": "handleEditElement",
       "file": "src/modules/coform/components/FinderField.tsx",
-      "line": 134,
+      "line": 144,
       "layer": "module:coform",
       "kind": "arrow",
       "exported": false,
@@ -16416,7 +16593,7 @@
     {
       "name": "ProseContent",
       "file": "src/modules/coform/components/FormFields.tsx",
-      "line": 18,
+      "line": 42,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
@@ -16427,7 +16604,7 @@
     {
       "name": "HintText",
       "file": "src/modules/coform/components/FormFields.tsx",
-      "line": 35,
+      "line": 59,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
@@ -16438,7 +16615,7 @@
     {
       "name": "FieldError",
       "file": "src/modules/coform/components/FormFields.tsx",
-      "line": 49,
+      "line": 73,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
@@ -16449,7 +16626,7 @@
     {
       "name": "TextField",
       "file": "src/modules/coform/components/FormFields.tsx",
-      "line": 76,
+      "line": 100,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
@@ -16460,7 +16637,7 @@
     {
       "name": "TextAreaField",
       "file": "src/modules/coform/components/FormFields.tsx",
-      "line": 121,
+      "line": 145,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
@@ -16471,7 +16648,7 @@
     {
       "name": "SectionTitleField",
       "file": "src/modules/coform/components/FormFields.tsx",
-      "line": 180,
+      "line": 204,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
@@ -16482,7 +16659,7 @@
     {
       "name": "SectionDescriptionField",
       "file": "src/modules/coform/components/FormFields.tsx",
-      "line": 226,
+      "line": 250,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
@@ -16493,7 +16670,7 @@
     {
       "name": "RadioField",
       "file": "src/modules/coform/components/FormFields.tsx",
-      "line": 250,
+      "line": 274,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
@@ -16502,9 +16679,20 @@
       "hash": "d1bd936ab54d"
     },
     {
+      "name": "SelectField",
+      "file": "src/modules/coform/components/FormFields.tsx",
+      "line": 336,
+      "layer": "module:coform",
+      "kind": "function",
+      "exported": true,
+      "loc": 102,
+      "generic": false,
+      "hash": "0e2beb36d9bf"
+    },
+    {
       "name": "CheckboxField",
       "file": "src/modules/coform/components/FormFields.tsx",
-      "line": 300,
+      "line": 442,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
@@ -16513,9 +16701,20 @@
       "hash": "aac34a41f656"
     },
     {
+      "name": "labelOf",
+      "file": "src/modules/coform/components/FormFields.tsx",
+      "line": 343,
+      "layer": "module:coform",
+      "kind": "arrow",
+      "exported": false,
+      "loc": 1,
+      "generic": true,
+      "hash": "6887a23c984f"
+    },
+    {
       "name": "handleCheckboxChange",
       "file": "src/modules/coform/components/FormFields.tsx",
-      "line": 306,
+      "line": 448,
       "layer": "module:coform",
       "kind": "arrow",
       "exported": false,
@@ -16706,14 +16905,14 @@
       "layer": "module:coform",
       "kind": "function",
       "exported": false,
-      "loc": 602,
+      "loc": 619,
       "generic": false,
-      "hash": "20e057a75bed"
+      "hash": "2ff7980bd464"
     },
     {
       "name": "StepIndicator",
       "file": "src/modules/coform/components/MultiStepCoForm.tsx",
-      "line": 749,
+      "line": 766,
       "layer": "module:coform",
       "kind": "function",
       "exported": false,
@@ -16735,18 +16934,18 @@
     {
       "name": "PlaceFormView",
       "file": "src/modules/coform/components/PlaceFormView.tsx",
-      "line": 35,
+      "line": 34,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
-      "loc": 192,
+      "loc": 162,
       "generic": false,
-      "hash": "fe4bec01b1ab"
+      "hash": "260aef59940b"
     },
     {
       "name": "buildMongoFilters",
       "file": "src/modules/coform/components/PlacesListView.tsx",
-      "line": 43,
+      "line": 45,
       "layer": "module:coform",
       "kind": "function",
       "exported": false,
@@ -16757,29 +16956,29 @@
     {
       "name": "PlaceRow",
       "file": "src/modules/coform/components/PlacesListView.tsx",
-      "line": 66,
+      "line": 68,
       "layer": "module:coform",
       "kind": "function",
       "exported": false,
-      "loc": 37,
+      "loc": 41,
       "generic": false,
-      "hash": "9f599c095fa8"
+      "hash": "d0abc19f7b70"
     },
     {
       "name": "PendingRow",
       "file": "src/modules/coform/components/PlacesListView.tsx",
-      "line": 116,
+      "line": 122,
       "layer": "module:coform",
       "kind": "function",
       "exported": false,
-      "loc": 46,
+      "loc": 50,
       "generic": false,
-      "hash": "1844994cbf9f"
+      "hash": "8511384c587c"
     },
     {
       "name": "JoinConfirmDialog",
       "file": "src/modules/coform/components/PlacesListView.tsx",
-      "line": 171,
+      "line": 181,
       "layer": "module:coform",
       "kind": "function",
       "exported": false,
@@ -16790,18 +16989,18 @@
     {
       "name": "PlacesListView",
       "file": "src/modules/coform/components/PlacesListView.tsx",
-      "line": 254,
+      "line": 264,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
-      "loc": 300,
+      "loc": 299,
       "generic": false,
-      "hash": "cadbbbb7a06a"
+      "hash": "957a7f850762"
     },
     {
       "name": "handleRequestMember",
       "file": "src/modules/coform/components/PlacesListView.tsx",
-      "line": 180,
+      "line": 190,
       "layer": "module:coform",
       "kind": "arrow",
       "exported": false,
@@ -16812,7 +17011,7 @@
     {
       "name": "handleRequestAdmin",
       "file": "src/modules/coform/components/PlacesListView.tsx",
-      "line": 189,
+      "line": 199,
       "layer": "module:coform",
       "kind": "arrow",
       "exported": false,
@@ -16948,9 +17147,9 @@
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
-      "loc": 319,
+      "loc": 322,
       "generic": false,
-      "hash": "602ffc76b046"
+      "hash": "33121ccb6ef0"
     },
     {
       "name": "LoadingState",
@@ -16988,7 +17187,7 @@
     {
       "name": "withCatalogs",
       "file": "src/modules/coform/components/SmartCoForm.tsx",
-      "line": 292,
+      "line": 295,
       "layer": "module:coform",
       "kind": "arrow",
       "exported": false,
@@ -17047,9 +17246,9 @@
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
-      "loc": 321,
+      "loc": 323,
       "generic": false,
-      "hash": "0166b9f6dea8"
+      "hash": "5128ede2fd41"
     },
     {
       "name": "CommonTableCatalogsProvider",
@@ -17382,15 +17581,70 @@
       "hash": "456ec2712beb"
     },
     {
-      "name": "useFinderSearchResults",
-      "file": "src/modules/coform/hooks/useFinderSearchResults.ts",
-      "line": 61,
+      "name": "fetchElementSummary",
+      "file": "src/modules/coform/hooks/useElementSummary.ts",
+      "line": 42,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
-      "loc": 79,
+      "loc": 29,
+      "generic": true,
+      "hash": "1445c5440466"
+    },
+    {
+      "name": "useElementSummary",
+      "file": "src/modules/coform/hooks/useElementSummary.ts",
+      "line": 78,
+      "layer": "module:coform",
+      "kind": "function",
+      "exported": true,
+      "loc": 19,
       "generic": false,
-      "hash": "935f804e7148"
+      "hash": "3930d2870b4d"
+    },
+    {
+      "name": "finderElementsNeedingImage",
+      "file": "src/modules/coform/hooks/useFinderElementImages.ts",
+      "line": 20,
+      "layer": "module:coform",
+      "kind": "function",
+      "exported": true,
+      "loc": 6,
+      "generic": true,
+      "hash": "a4034251b4a4"
+    },
+    {
+      "name": "mergeResolvedFinderImages",
+      "file": "src/modules/coform/hooks/useFinderElementImages.ts",
+      "line": 34,
+      "layer": "module:coform",
+      "kind": "function",
+      "exported": true,
+      "loc": 9,
+      "generic": true,
+      "hash": "6b7d67428867"
+    },
+    {
+      "name": "useFinderElementImages",
+      "file": "src/modules/coform/hooks/useFinderElementImages.ts",
+      "line": 66,
+      "layer": "module:coform",
+      "kind": "function",
+      "exported": true,
+      "loc": 25,
+      "generic": false,
+      "hash": "88dbdbad108c"
+    },
+    {
+      "name": "useFinderSearchResults",
+      "file": "src/modules/coform/hooks/useFinderSearchResults.ts",
+      "line": 62,
+      "layer": "module:coform",
+      "kind": "function",
+      "exported": true,
+      "loc": 78,
+      "generic": false,
+      "hash": "99a761196284"
     },
     {
       "name": "useMultiEvalData",
@@ -17723,9 +17977,20 @@
       "hash": "f66f4bc0d5a9"
     },
     {
+      "name": "slugify",
+      "file": "src/modules/coform/utils/formParser.ts",
+      "line": 83,
+      "layer": "module:coform",
+      "kind": "function",
+      "exported": false,
+      "loc": 8,
+      "generic": true,
+      "hash": "a80bece30a98"
+    },
+    {
       "name": "parseBootstrapWidth",
       "file": "src/modules/coform/utils/formParser.ts",
-      "line": 78,
+      "line": 96,
       "layer": "module:coform",
       "kind": "function",
       "exported": false,
@@ -17736,29 +18001,29 @@
     {
       "name": "mapCoFormTypeToComponentType",
       "file": "src/modules/coform/utils/formParser.ts",
-      "line": 138,
+      "line": 156,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
-      "loc": 46,
+      "loc": 50,
       "generic": true,
-      "hash": "11dffd432008"
+      "hash": "e81dac680e72"
     },
     {
       "name": "parseCoFormFields",
       "file": "src/modules/coform/utils/formParser.ts",
-      "line": 188,
+      "line": 210,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
-      "loc": 391,
+      "loc": 450,
       "generic": true,
-      "hash": "7125c3c83018"
+      "hash": "2baced1de974"
     },
     {
       "name": "generateZodSchema",
       "file": "src/modules/coform/utils/formParser.ts",
-      "line": 583,
+      "line": 664,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
@@ -17769,7 +18034,7 @@
     {
       "name": "generateDefaultValues",
       "file": "src/modules/coform/utils/formParser.ts",
-      "line": 825,
+      "line": 906,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
@@ -17780,7 +18045,7 @@
     {
       "name": "getFieldShape",
       "file": "src/modules/coform/utils/formParser.ts",
-      "line": 905,
+      "line": 986,
       "layer": "module:coform",
       "kind": "function",
       "exported": false,
@@ -17791,7 +18056,7 @@
     {
       "name": "isPlainObject",
       "file": "src/modules/coform/utils/formParser.ts",
-      "line": 928,
+      "line": 1009,
       "layer": "module:coform",
       "kind": "function",
       "exported": false,
@@ -17800,9 +18065,20 @@
       "hash": "5e7d39b8cd5c"
     },
     {
+      "name": "stripFinderElementImages",
+      "file": "src/modules/coform/utils/formParser.ts",
+      "line": 1026,
+      "layer": "module:coform",
+      "kind": "function",
+      "exported": false,
+      "loc": 14,
+      "generic": true,
+      "hash": "50a70f749cb8"
+    },
+    {
       "name": "enrichCommonTableScores",
       "file": "src/modules/coform/utils/formParser.ts",
-      "line": 948,
+      "line": 1057,
       "layer": "module:coform",
       "kind": "function",
       "exported": false,
@@ -17811,20 +18087,31 @@
       "hash": "44f0cc23dc49"
     },
     {
-      "name": "enrichCommonTableMyCatalog",
+      "name": "coerceCoeff",
       "file": "src/modules/coform/utils/formParser.ts",
-      "line": 987,
+      "line": 1099,
       "layer": "module:coform",
       "kind": "function",
       "exported": false,
-      "loc": 13,
+      "loc": 8,
       "generic": true,
-      "hash": "b91e37105f21"
+      "hash": "28649b4e9868"
+    },
+    {
+      "name": "enrichCommonTableMyCatalog",
+      "file": "src/modules/coform/utils/formParser.ts",
+      "line": 1113,
+      "layer": "module:coform",
+      "kind": "function",
+      "exported": false,
+      "loc": 15,
+      "generic": true,
+      "hash": "a1bc0036a825"
     },
     {
       "name": "coerceValueToShape",
       "file": "src/modules/coform/utils/formParser.ts",
-      "line": 1007,
+      "line": 1135,
       "layer": "module:coform",
       "kind": "function",
       "exported": false,
@@ -17835,7 +18122,7 @@
     {
       "name": "coerceServerAnswerShape",
       "file": "src/modules/coform/utils/formParser.ts",
-      "line": 1045,
+      "line": 1173,
       "layer": "module:coform",
       "kind": "function",
       "exported": false,
@@ -17846,7 +18133,7 @@
     {
       "name": "getStepHasMultiEval",
       "file": "src/modules/coform/utils/formParser.ts",
-      "line": 1101,
+      "line": 1229,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
@@ -17857,29 +18144,29 @@
     {
       "name": "normalizeAnswerData",
       "file": "src/modules/coform/utils/formParser.ts",
-      "line": 1121,
+      "line": 1249,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
-      "loc": 82,
+      "loc": 143,
       "generic": true,
-      "hash": "e19f6e52a6ec"
+      "hash": "192f260116da"
     },
     {
       "name": "denormalizeAnswerData",
       "file": "src/modules/coform/utils/formParser.ts",
-      "line": 1215,
+      "line": 1404,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
-      "loc": 48,
+      "loc": 97,
       "generic": true,
-      "hash": "114ef4e1f5c5"
+      "hash": "4ac0e7c53e3e"
     },
     {
       "name": "extractFinderLinks",
       "file": "src/modules/coform/utils/formParser.ts",
-      "line": 1280,
+      "line": 1518,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
@@ -17890,7 +18177,7 @@
     {
       "name": "getSharedFinderInfo",
       "file": "src/modules/coform/utils/formParser.ts",
-      "line": 1348,
+      "line": 1586,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
@@ -17901,7 +18188,7 @@
     {
       "name": "toBool",
       "file": "src/modules/coform/utils/formParser.ts",
-      "line": 274,
+      "line": 334,
       "layer": "module:coform",
       "kind": "arrow",
       "exported": false,
@@ -17912,7 +18199,7 @@
     {
       "name": "flag",
       "file": "src/modules/coform/utils/formParser.ts",
-      "line": 311,
+      "line": 371,
       "layer": "module:coform",
       "kind": "arrow",
       "exported": false,
@@ -17923,7 +18210,7 @@
     {
       "name": "strictFlag",
       "file": "src/modules/coform/utils/formParser.ts",
-      "line": 319,
+      "line": 379,
       "layer": "module:coform",
       "kind": "arrow",
       "exported": false,
@@ -17934,7 +18221,7 @@
     {
       "name": "toBool",
       "file": "src/modules/coform/utils/formParser.ts",
-      "line": 404,
+      "line": 464,
       "layer": "module:coform",
       "kind": "arrow",
       "exported": false,
@@ -17945,7 +18232,7 @@
     {
       "name": "toBool",
       "file": "src/modules/coform/utils/formParser.ts",
-      "line": 440,
+      "line": 500,
       "layer": "module:coform",
       "kind": "arrow",
       "exported": false,
@@ -17998,9 +18285,20 @@
       "hash": "3e232673b760"
     },
     {
+      "name": "pickProfileImageUrl",
+      "file": "src/modules/coform/utils/helpers.ts",
+      "line": 42,
+      "layer": "module:coform",
+      "kind": "function",
+      "exported": true,
+      "loc": 7,
+      "generic": true,
+      "hash": "82f0b2fcd4b0"
+    },
+    {
       "name": "isStepComplete",
       "file": "src/modules/coform/utils/helpers.ts",
-      "line": 37,
+      "line": 53,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
@@ -18011,7 +18309,7 @@
     {
       "name": "mergeStepsData",
       "file": "src/modules/coform/utils/helpers.ts",
-      "line": 51,
+      "line": 67,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
@@ -18022,7 +18320,7 @@
     {
       "name": "scrollToFieldByName",
       "file": "src/modules/coform/utils/helpers.ts",
-      "line": 76,
+      "line": 92,
       "layer": "module:coform",
       "kind": "function",
       "exported": true,
@@ -18031,15 +18329,37 @@
       "hash": "91facbfcb9c3"
     },
     {
+      "name": "debugLogValidationFailure",
+      "file": "src/modules/coform/utils/helpers.ts",
+      "line": 178,
+      "layer": "module:coform",
+      "kind": "function",
+      "exported": true,
+      "loc": 40,
+      "generic": true,
+      "hash": "a1fa43b74aad"
+    },
+    {
       "name": "ring",
       "file": "src/modules/coform/utils/helpers.ts",
-      "line": 111,
+      "line": 127,
       "layer": "module:coform",
       "kind": "arrow",
       "exported": false,
       "loc": 3,
       "generic": true,
       "hash": "da3bab84b63d"
+    },
+    {
+      "name": "getAtPath",
+      "file": "src/modules/coform/utils/helpers.ts",
+      "line": 188,
+      "layer": "module:coform",
+      "kind": "arrow",
+      "exported": false,
+      "loc": 7,
+      "generic": true,
+      "hash": "6a02d56f21a1"
     },
     {
       "name": "toFinderSearchResult",
@@ -19478,14 +19798,14 @@
       "layer": "module:observatoire",
       "kind": "function",
       "exported": true,
-      "loc": 228,
+      "loc": 285,
       "generic": false,
-      "hash": "ccda39311db7"
+      "hash": "6f53f791f0ed"
     },
     {
       "name": "labelFor",
       "file": "src/modules/observatoire/components/Filters.tsx",
-      "line": 183,
+      "line": 240,
       "layer": "module:observatoire",
       "kind": "arrow",
       "exported": false,
@@ -19496,7 +19816,7 @@
     {
       "name": "resetAll",
       "file": "src/modules/observatoire/components/Filters.tsx",
-      "line": 188,
+      "line": 245,
       "layer": "module:observatoire",
       "kind": "arrow",
       "exported": false,
@@ -19507,7 +19827,7 @@
     {
       "name": "renderField",
       "file": "src/modules/observatoire/components/Filters.tsx",
-      "line": 198,
+      "line": 255,
       "layer": "module:observatoire",
       "kind": "arrow",
       "exported": false,
@@ -19551,7 +19871,7 @@
     {
       "name": "Th",
       "file": "src/modules/observatoire/components/ObservatoryTable.tsx",
-      "line": 36,
+      "line": 38,
       "layer": "module:observatoire",
       "kind": "function",
       "exported": false,
@@ -19562,18 +19882,18 @@
     {
       "name": "ObservatoryTable",
       "file": "src/modules/observatoire/components/ObservatoryTable.tsx",
-      "line": 79,
+      "line": 82,
       "layer": "module:observatoire",
       "kind": "function",
       "exported": true,
-      "loc": 245,
+      "loc": 253,
       "generic": false,
-      "hash": "620fb70fd39a"
+      "hash": "ec0d22317591"
     },
     {
       "name": "handleRowClick",
       "file": "src/modules/observatoire/components/ObservatoryTable.tsx",
-      "line": 86,
+      "line": 89,
       "layer": "module:observatoire",
       "kind": "arrow",
       "exported": false,
@@ -19584,7 +19904,7 @@
     {
       "name": "rowClickable",
       "file": "src/modules/observatoire/components/ObservatoryTable.tsx",
-      "line": 95,
+      "line": 98,
       "layer": "module:observatoire",
       "kind": "arrow",
       "exported": false,
@@ -19595,7 +19915,7 @@
     {
       "name": "toggle",
       "file": "src/modules/observatoire/components/ObservatoryTable.tsx",
-      "line": 131,
+      "line": 134,
       "layer": "module:observatoire",
       "kind": "arrow",
       "exported": false,
@@ -19606,18 +19926,18 @@
     {
       "name": "downloadCsv",
       "file": "src/modules/observatoire/components/ObservatoryTable.tsx",
-      "line": 140,
+      "line": 145,
       "layer": "module:observatoire",
       "kind": "arrow",
       "exported": false,
-      "loc": 14,
+      "loc": 20,
       "generic": true,
-      "hash": "35c5c933b37b"
+      "hash": "d7ff161f5ae5"
     },
     {
       "name": "labelFor",
       "file": "src/modules/observatoire/components/ObservatoryTable.tsx",
-      "line": 155,
+      "line": 166,
       "layer": "module:observatoire",
       "kind": "arrow",
       "exported": false,
@@ -19628,7 +19948,7 @@
     {
       "name": "renderCell",
       "file": "src/modules/observatoire/components/ObservatoryTable.tsx",
-      "line": 158,
+      "line": 169,
       "layer": "module:observatoire",
       "kind": "arrow",
       "exported": false,
@@ -19654,14 +19974,14 @@
       "layer": "module:observatoire",
       "kind": "function",
       "exported": true,
-      "loc": 15,
+      "loc": 21,
       "generic": true,
-      "hash": "aa56f2f0c2c4"
+      "hash": "a33846c7728d"
     },
     {
       "name": "toItems",
       "file": "src/modules/observatoire/hooks/useObservatoryItemsQuery.ts",
-      "line": 51,
+      "line": 57,
       "layer": "module:observatoire",
       "kind": "function",
       "exported": false,
@@ -19672,7 +19992,7 @@
     {
       "name": "useObservatoryItemsQuery",
       "file": "src/modules/observatoire/hooks/useObservatoryItemsQuery.ts",
-      "line": 67,
+      "line": 73,
       "layer": "module:observatoire",
       "kind": "function",
       "exported": true,
@@ -21113,24 +21433,46 @@
     {
       "name": "SearchListView",
       "file": "src/modules/search/components/SearchListView.tsx",
-      "line": 8,
+      "line": 9,
       "layer": "module:search",
       "kind": "function",
       "exported": true,
-      "loc": 72,
+      "loc": 97,
       "generic": false,
-      "hash": "34637259f8f4"
+      "hash": "5009ed560a6b"
     },
     {
       "name": "handleOpenDetails",
       "file": "src/modules/search/components/SearchListView.tsx",
-      "line": 18,
+      "line": 22,
       "layer": "module:search",
       "kind": "arrow",
       "exported": false,
       "loc": 4,
       "generic": true,
       "hash": "7f24ef6949b7"
+    },
+    {
+      "name": "handleCardClick",
+      "file": "src/modules/search/components/SearchListView.tsx",
+      "line": 29,
+      "layer": "module:search",
+      "kind": "arrow",
+      "exported": false,
+      "loc": 2,
+      "generic": true,
+      "hash": "a93f12497390"
+    },
+    {
+      "name": "wrap",
+      "file": "src/modules/search/components/SearchListView.tsx",
+      "line": 57,
+      "layer": "module:search",
+      "kind": "arrow",
+      "exported": false,
+      "loc": 17,
+      "generic": false,
+      "hash": "0bf6017b9311"
     },
     {
       "name": "isValidGeoPoint",
@@ -21150,14 +21492,14 @@
       "layer": "module:search",
       "kind": "function",
       "exported": true,
-      "loc": 223,
+      "loc": 286,
       "generic": false,
-      "hash": "96c172eceb89"
+      "hash": "4437291bd8ce"
     },
     {
       "name": "handleOpenDetails",
       "file": "src/modules/search/components/SearchMap.tsx",
-      "line": 74,
+      "line": 88,
       "layer": "module:search",
       "kind": "arrow",
       "exported": false,
@@ -21172,9 +21514,9 @@
       "layer": "module:search",
       "kind": "function",
       "exported": true,
-      "loc": 13,
+      "loc": 23,
       "generic": false,
-      "hash": "ca4300e80126"
+      "hash": "44b1a336c1f7"
     },
     {
       "name": "SearchTextInput",
@@ -21678,9 +22020,9 @@
       "layer": "module:search",
       "kind": "function",
       "exported": true,
-      "loc": 70,
+      "loc": 76,
       "generic": false,
-      "hash": "7e172c0fe311"
+      "hash": "8ee586578ba3"
     },
     {
       "name": "useSearchProps",
@@ -21865,9 +22207,9 @@
       "layer": "module:search",
       "kind": "function",
       "exported": true,
-      "loc": 87,
+      "loc": 90,
       "generic": true,
-      "hash": "795ea32f7191"
+      "hash": "46f225d700a5"
     },
     {
       "name": "get",
@@ -22290,18 +22632,18 @@
     {
       "name": "SearchHeaderSection",
       "file": "src/modules/search/sections/SearchHeaderSection.tsx",
-      "line": 49,
+      "line": 50,
       "layer": "module:search",
       "kind": "function",
       "exported": true,
-      "loc": 307,
+      "loc": 469,
       "generic": false,
-      "hash": "cbd1ac980075"
+      "hash": "c92753a90ab9"
     },
     {
       "name": "handleTypeChange",
       "file": "src/modules/search/sections/SearchHeaderSection.tsx",
-      "line": 81,
+      "line": 115,
       "layer": "module:search",
       "kind": "arrow",
       "exported": false,
@@ -22312,7 +22654,7 @@
     {
       "name": "getDropdownSelectedValues",
       "file": "src/modules/search/sections/SearchHeaderSection.tsx",
-      "line": 96,
+      "line": 130,
       "layer": "module:search",
       "kind": "arrow",
       "exported": false,
@@ -22321,20 +22663,31 @@
       "hash": "6e3fef532d64"
     },
     {
-      "name": "setDropdownSelection",
+      "name": "writeFilterParam",
       "file": "src/modules/search/sections/SearchHeaderSection.tsx",
-      "line": 106,
+      "line": 142,
       "layer": "module:search",
       "kind": "arrow",
       "exported": false,
-      "loc": 42,
+      "loc": 6,
       "generic": true,
-      "hash": "62f1925e85dd"
+      "hash": "1a1effd29fd4"
+    },
+    {
+      "name": "setDropdownSelection",
+      "file": "src/modules/search/sections/SearchHeaderSection.tsx",
+      "line": 149,
+      "layer": "module:search",
+      "kind": "arrow",
+      "exported": false,
+      "loc": 43,
+      "generic": true,
+      "hash": "2c1fdcd9a09a"
     },
     {
       "name": "toggleDropdownOption",
       "file": "src/modules/search/sections/SearchHeaderSection.tsx",
-      "line": 149,
+      "line": 193,
       "layer": "module:search",
       "kind": "arrow",
       "exported": false,
@@ -22345,7 +22698,7 @@
     {
       "name": "getDropdownTriggerLabel",
       "file": "src/modules/search/sections/SearchHeaderSection.tsx",
-      "line": 163,
+      "line": 207,
       "layer": "module:search",
       "kind": "arrow",
       "exported": false,
@@ -22356,18 +22709,18 @@
     {
       "name": "resetAllDropdownFilters",
       "file": "src/modules/search/sections/SearchHeaderSection.tsx",
-      "line": 184,
+      "line": 231,
       "layer": "module:search",
       "kind": "arrow",
       "exported": false,
-      "loc": 3,
+      "loc": 23,
       "generic": true,
-      "hash": "c2a0d4961a76"
+      "hash": "feffda72f476"
     },
     {
       "name": "renderDropdownFilter",
       "file": "src/modules/search/sections/SearchHeaderSection.tsx",
-      "line": 190,
+      "line": 305,
       "layer": "module:search",
       "kind": "arrow",
       "exported": false,
@@ -26980,9 +27333,9 @@
       "layer": "module:search",
       "kind": "function",
       "exported": true,
-      "loc": 169,
+      "loc": 178,
       "generic": false,
-      "hash": "2b5737a4a761"
+      "hash": "efae08dd8221"
     },
     {
       "name": "handleOpenActivityDetails",
@@ -27453,9 +27806,9 @@
       "layer": "module:search",
       "kind": "function",
       "exported": true,
-      "loc": 137,
+      "loc": 139,
       "generic": false,
-      "hash": "bd86647fcf7f"
+      "hash": "c199059ad3d6"
     },
     {
       "name": "PreviewDefault",
@@ -27471,7 +27824,7 @@
     {
       "name": "toDate",
       "file": "src/modules/search/components/preview/PreviewPoiAmenities.tsx",
-      "line": 107,
+      "line": 121,
       "layer": "module:search",
       "kind": "function",
       "exported": false,
@@ -27482,7 +27835,7 @@
     {
       "name": "getPoiImage",
       "file": "src/modules/search/components/preview/PreviewPoiAmenities.tsx",
-      "line": 128,
+      "line": 142,
       "layer": "module:search",
       "kind": "function",
       "exported": false,
@@ -27493,7 +27846,7 @@
     {
       "name": "toPoi",
       "file": "src/modules/search/components/preview/PreviewPoiAmenities.tsx",
-      "line": 143,
+      "line": 157,
       "layer": "module:search",
       "kind": "function",
       "exported": false,
@@ -27504,7 +27857,7 @@
     {
       "name": "InfoRow",
       "file": "src/modules/search/components/preview/PreviewPoiAmenities.tsx",
-      "line": 222,
+      "line": 236,
       "layer": "module:search",
       "kind": "function",
       "exported": false,
@@ -27515,7 +27868,7 @@
     {
       "name": "Feature",
       "file": "src/modules/search/components/preview/PreviewPoiAmenities.tsx",
-      "line": 243,
+      "line": 257,
       "layer": "module:search",
       "kind": "function",
       "exported": false,
@@ -27526,18 +27879,18 @@
     {
       "name": "PreviewPoiAmenities",
       "file": "src/modules/search/components/preview/PreviewPoiAmenities.tsx",
-      "line": 272,
+      "line": 286,
       "layer": "module:search",
       "kind": "function",
       "exported": true,
-      "loc": 330,
+      "loc": 411,
       "generic": false,
-      "hash": "7ad67aa6ec3a"
+      "hash": "15b25a05a70d"
     },
     {
       "name": "isTrue",
       "file": "src/modules/search/components/preview/PreviewPoiAmenities.tsx",
-      "line": 96,
+      "line": 110,
       "layer": "module:search",
       "kind": "arrow",
       "exported": false,
@@ -27548,7 +27901,7 @@
     {
       "name": "formatDateFr",
       "file": "src/modules/search/components/preview/PreviewPoiAmenities.tsx",
-      "line": 116,
+      "line": 130,
       "layer": "module:search",
       "kind": "arrow",
       "exported": false,
@@ -27559,7 +27912,7 @@
     {
       "name": "yearsAgo",
       "file": "src/modules/search/components/preview/PreviewPoiAmenities.tsx",
-      "line": 119,
+      "line": 133,
       "layer": "module:search",
       "kind": "arrow",
       "exported": false,
@@ -27570,7 +27923,7 @@
     {
       "name": "toNum",
       "file": "src/modules/search/components/preview/PreviewPoiAmenities.tsx",
-      "line": 122,
+      "line": 136,
       "layer": "module:search",
       "kind": "arrow",
       "exported": false,
@@ -27581,7 +27934,7 @@
     {
       "name": "str",
       "file": "src/modules/search/components/preview/PreviewPoiAmenities.tsx",
-      "line": 145,
+      "line": 159,
       "layer": "module:search",
       "kind": "arrow",
       "exported": false,
@@ -27592,7 +27945,7 @@
     {
       "name": "yesNo",
       "file": "src/modules/search/components/preview/PreviewPoiAmenities.tsx",
-      "line": 278,
+      "line": 296,
       "layer": "module:search",
       "kind": "arrow",
       "exported": false,
@@ -27603,13 +27956,24 @@
     {
       "name": "handleEdit",
       "file": "src/modules/search/components/preview/PreviewPoiAmenities.tsx",
-      "line": 310,
+      "line": 328,
       "layer": "module:search",
       "kind": "arrow",
       "exported": false,
       "loc": 4,
       "generic": true,
-      "hash": "d1abc6778823"
+      "hash": "298c8295cac2"
+    },
+    {
+      "name": "handleDeleteConfirm",
+      "file": "src/modules/search/components/preview/PreviewPoiAmenities.tsx",
+      "line": 333,
+      "layer": "module:search",
+      "kind": "arrow",
+      "exported": false,
+      "loc": 28,
+      "generic": true,
+      "hash": "080671f2ce35"
     },
     {
       "name": "MeeteemCard",
@@ -28333,9 +28697,9 @@
       "layer": "module:profil",
       "kind": "function",
       "exported": true,
-      "loc": 198,
+      "loc": 200,
       "generic": false,
-      "hash": "06145b9d98d1"
+      "hash": "a4dc6c2e4aae"
     },
     {
       "name": "ProfileHeaderCover",
