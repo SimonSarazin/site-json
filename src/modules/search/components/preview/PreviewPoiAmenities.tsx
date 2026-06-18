@@ -17,7 +17,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { useCocolight } from "@/hooks/useCocolight";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
 import { SEARCH_QUERY_KEYS } from "@/modules/search/constants/queryKeys";
 import "@/modules/search/i18n";
@@ -293,7 +292,6 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
-  const { api } = useCocolight();
 
   const yesNo = (value?: string) =>
     value == null || value.trim() === ""
@@ -333,14 +331,12 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
   };
 
   const handleDeleteConfirm = async () => {
-    if (!item?.id || !api) return;
+    if (!item?.id) return;
 
     setIsDeleting(true);
     try {
-      await api.endpointApi.deletePoi({
-        pathParams: { id: item.id },
-        reason: t("PreviewPoiAmenities.delete.defaultReason"),
-      });
+      // Méthode typée de l'entité (lib ≥ 1.0.148) — remplace endpointApi.deletePoi.
+      await poiEntity.delete(t("PreviewPoiAmenities.delete.defaultReason"));
       toast({
         title: t("PreviewPoiAmenities.delete.success"),
         description: t("PreviewPoiAmenities.delete.successDescription"),
