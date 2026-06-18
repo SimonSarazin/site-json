@@ -8,6 +8,7 @@
   },
   "packageManager": "npm@10.9.3",
   "scripts": {
+    "prepare": "husky",
     "dev": "node server/dev-server.js",
     "typecheck": "tsc -b --noEmit",
     "build:client": "tsc -b && vite build --outDir dist/client",
@@ -39,6 +40,9 @@
     "react-dom": "$react-dom",
     "@types/react": "$@types/react",
     "@types/react-dom": "$@types/react-dom"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": "eslint --fix"
   },
   "dependencies": {
     "@codemirror/commands": "^6.10.3",
@@ -131,6 +135,8 @@
     "zod": "^4.0.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.0.2",
+    "@commitlint/config-conventional": "^21.0.2",
     "@eslint/js": "^9.11.1",
     "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4.1.11",
@@ -159,8 +165,10 @@
     "eslint-plugin-react-hooks": "^7.0.0",
     "eslint-plugin-react-refresh": "^0.4.12",
     "globals": "^16.5.0",
+    "husky": "^9.1.7",
     "jsdom": "^29.1.1",
     "knip": "^6.16.1",
+    "lint-staged": "^16.4.0",
     "postcss": "^8.4.47",
     "react-lazy-with-preload": "^2.2.1",
     "rimraf": "^6.0.1",

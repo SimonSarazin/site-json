@@ -14,6 +14,9 @@ ENV VITE_SLUG=${VITE_SLUG}
 ENV SITE_CSS_PATH=${SITE_CSS_PATH}
 ENV SITE_CSS_CONTENT=${SITE_CSS_CONTENT}
 
+# HUSKY=0 : neutralise le hook `prepare` (husky) pendant `npm ci` — pas de .git dans
+# le contexte de build, et l'image n'a pas besoin des hooks git.
+ENV HUSKY=0
 COPY package.json package-lock.json ./
 RUN npm ci
 
