@@ -10,6 +10,14 @@ const BASE_URL = `http://localhost:${PORT}`;
 const POLL_INTERVAL = 500;
 const STARTUP_TIMEOUT = 60_000;
 
+// Le serveur d'intégration DOIT servir la même config que celle que les tests
+// lisent (`process.env.SITE_CONFIG_PATH || ./config.prod.json`). Sinon divergence :
+// le serveur charge `.env` via dotenv (→ ex. equipements-Sportifs) tandis que le
+// process Vitest, lui, ne charge pas `.env` (→ fallback config.prod.json) → les
+// assertions portent sur la mauvaise config. On épingle donc explicitement la valeur
+// dans l'env du spawn (dotenv sans `override` ne l'écrase pas).
+const SITE_CONFIG_PATH = process.env.SITE_CONFIG_PATH || path.join(PROJECT_ROOT, "config.prod.json");
+
 let serverProcess: ChildProcess | null = null;
 
 /**
@@ -49,6 +57,8 @@ export async function setup() {
       ...process.env,
       PORT: String(PORT),
       NODE_ENV: "development",
+      // Aligne le serveur sur la config lue par les tests (cf. SITE_CONFIG_PATH ci-dessus).
+      SITE_CONFIG_PATH,
     },
     stdio: "pipe",
   });
