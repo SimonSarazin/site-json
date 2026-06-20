@@ -56,7 +56,12 @@ export function buildAddressFromForm(data: AddressFormFields) {
     return undefined;
   }
 
-  if (!data.addressCountry && !data.localityId) {
+  // Un `localityId` (id de ville réel, sélectionné via l'autocomplete SIG) est OBLIGATOIRE : sans lui,
+  // le backend rejette l'address (`addressValid` → "CityId missing in the address !" / "Invalid object ID"),
+  // et comme la validation du save est ATOMIQUE, TOUTE la sauvegarde échoue (perte des autres champs édités).
+  // On n'envoie donc pas d'adresse partielle tant qu'une ville n'a pas été réellement sélectionnée.
+  // (Aligne le comportement sur EditProfileModal qui garde déjà `&& data.localityId`.)
+  if (!data.localityId) {
     return undefined;
   }
 

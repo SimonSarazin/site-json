@@ -2615,10 +2615,6 @@
     }
   },
   "costum": {
-    "slug": "navigatorDesTierslieux",
-    "id": "649ed498f93ee7202e6c8b12",
-    "type": "projects",
-    "editMode": false,
     "mainTag": "TiersLieux",
     "compagnon": "Compagnon France Tiers-Lieux"
   },

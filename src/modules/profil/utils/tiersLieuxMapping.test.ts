@@ -171,13 +171,10 @@ describe("buildTiersLieuxPayload", () => {
     expect(payload.video).toEqual(["https://youtube.com/watch?v=abc"]);
   });
 
-  it("injecte les costum fields si options.costum fourni", () => {
+  it("pose données + tags costum, MAIS pas le contexte costum (géré par la lib me.costum)", () => {
     const data = { ...getDefaultTiersLieuxValues(), name: "TL", email: "x@y.fr" };
     const payload = buildTiersLieuxPayload(data, {
       costum: {
-        slug: "franceTierslieux",
-        id: "abc123",
-        type: "organizations",
         mainTag: "TiersLieu",
         compagnon: "comp",
       },
@@ -189,11 +186,13 @@ describe("buildTiersLieuxPayload", () => {
     // il est mergé dans `tags`, pas posé en `payload.compagnon`.
     expect(payload).not.toHaveProperty("compagnon");
     expect(payload.tags).toEqual(expect.arrayContaining(["TiersLieu", "comp"]));
-    expect(payload.costumSlug).toBe("franceTierslieux");
-    expect(payload.costumId).toBe("abc123");
-    expect(payload.costumType).toBe("organizations");
-    expect(payload.costumEditMode).toBe(false);
     expect(payload.preferences).toEqual({ isOpenData: true, isOpenEdition: true });
+    // Contexte costum désormais injecté par la lib (`me.costum(slug)` → costumSlug/costumId/costumType
+    // + source posé par le backend) — il ne doit PLUS être dans le payload construit côté site-json.
+    expect(payload).not.toHaveProperty("costumSlug");
+    expect(payload).not.toHaveProperty("costumId");
+    expect(payload).not.toHaveProperty("costumType");
+    expect(payload).not.toHaveProperty("source");
   });
 
   it("n'injecte PAS les costum fields si options.costum absent (mode édition)", () => {

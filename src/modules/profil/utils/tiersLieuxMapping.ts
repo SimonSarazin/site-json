@@ -3,12 +3,13 @@ import { getDefaultTiersLieuxValues } from "../components/add/TiersLieuxForm";
 import { transformFormDataWithAddress } from "../hooks/mutationUtils";
 
 export interface CostumConfig {
-  slug: string;
-  id: string;
-  type: string;
-  editMode?: boolean;
+  /** Tag principal du costum (filtre observatoire). Ajouté à `tags`. NB : la lib pose aussi le *champ* mainTag via presets. */
   mainTag?: string;
+  /** Tag « compagnon » spécifique au déploiement (filtre observatoire). Ajouté à `tags`. */
   compagnon?: string;
+  // `slug` / `id` / `type` / `editMode` retirés : le slug du costum = slug de l'entité porteuse
+  // (useCocolight().entity = VITE_SLUG, constant) ; costumId/costumType viennent du registry lib via
+  // `me.costum(slug)`. config.costum ne sert plus qu'aux TAGS (mainTag/compagnon) de l'observatoire.
 }
 
 const DAY_TO_DOW: Record<keyof TiersLieuxFormData["hours"], string> = {
@@ -252,15 +253,9 @@ export function buildTiersLieuxPayload(
     payload.role = "admin";
     if (c.mainTag) payload.mainTag = c.mainTag;
     payload.preferences = { isOpenData: true, isOpenEdition: true };
-    payload.source = {
-      insertOrign: "costum",
-      keys: [c.slug],
-      key: c.slug,
-    };
-    payload.costumSlug = c.slug;
-    payload.costumEditMode = c.editMode ?? false;
-    payload.costumId = c.id;
-    payload.costumType = c.type;
+    // NB : le contexte costum (source / costumSlug / costumId / costumType) n'est PLUS posé ici.
+    // Il est injecté par la lib via `me.costum(slug)` (CostumScope : costumSlug/costumId/costumType
+    // depuis le registry + presets) ; le backend pose `source` au save. cf. useAddTiersLieu.
   }
 
   // Merge tags : `costum.mainTag` + `costum.compagnon` (auto) + `addTags` (manuel)

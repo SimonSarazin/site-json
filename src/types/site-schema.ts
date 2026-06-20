@@ -1910,11 +1910,10 @@ export const SiteConfig = z.object({
     allowedIPs: z.array(z.string()).optional(),
   }).optional(),
   auth: AuthConfigSchema.optional(),
+  // Contexte costum du déploiement. Le SLUG du costum vient de l'entité porteuse
+  // (useCocolight().entity = VITE_SLUG, constant) ; costumId/costumType viennent du registry de la lib
+  // via `me.costum(slug)`. Ce bloc ne sert donc plus qu'aux TAGS observatoire (mainTag/compagnon).
   costum: z.object({
-    slug: z.string(),
-    id: z.string(),
-    type: z.string(),
-    editMode: z.boolean().optional().default(false),
     mainTag: z.string().optional(),
     compagnon: z.string().optional(),
   }).optional(),

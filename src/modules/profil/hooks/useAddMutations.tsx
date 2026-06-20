@@ -17,6 +17,7 @@ import { buildTiersLieuxPayload } from "../utils/tiersLieuxMapping";
 import type { TiersLieuxSubmitPayload } from "../components/add/TiersLieuxForm";
 import type { PoiEquipementSubmitPayload, PoiEquipementEditPayload } from "../components/add/PoiEquipementForm";
 import { useSite } from "@/hooks/useSite";
+import { getSlug } from "@/lib/constant/common";
 
 /**
  * Log détaillé d'une erreur de la lib Cocolight. Les échecs de validation backend
@@ -223,13 +224,14 @@ export function useAddEvent(entity?: EntityTypes | null) {
  */
 export function useAddPoi(
   entity?: EntityTypes | null,
-  // Champs supplémentaires injectés dans le payload de création (ex. `source`
-  // pour scoper un POI au costum — cf. AddPoiEquipementModal, à l'image de
-  // `buildTiersLieuxPayload` qui pose `source.key/keys` pour les tiers-lieux).
+  // Champs supplémentaires injectés dans le payload de création.
   extraFields?: Record<string, unknown>,
   // `navigateOnSuccess: false` → rester sur la page courante au lieu de rediriger
   // vers `/profil/{slug}` (ex. ajout depuis la liste des équipements).
-  options?: { navigateOnSuccess?: boolean }
+  // `costumSlug` (OPT-IN) → crée le POI sous un scope costum via `me.costum(slug).poi()` :
+  // la lib injecte costumSlug/costumId/costumType (+ presets) et le backend pose `source`.
+  // ABSENT → création POI STANDARD inchangée (`targetEntity.poi`).
+  options?: { navigateOnSuccess?: boolean; costumSlug?: string }
 ) {
   const { me } = useCocolight();
   const navigate = useNavigate();
@@ -263,8 +265,15 @@ export function useAddPoi(
         ...(_imageFile ? { profil_avatar: _imageFile } : {}),
       };
 
-      // Créer le POI via le SDK
-      const poi = await targetEntity.poi(poiData);
+      // Créer le POI via le SDK. Si un costum est ciblé (opt-in), on passe par le CostumScope de la
+      // lib (`me.costum(slug).poi`) : contexte costum (costumSlug/costumId/costumType + presets) injecté
+      // par la lib, `source` posé par le backend. Sinon, création POI STANDARD inchangée.
+      const poi =
+        options?.costumSlug && me
+          ? ((await (
+              await me.costum(options.costumSlug as Parameters<typeof me.costum>[0])
+            ).poi(poiData)) as Poi)
+          : await targetEntity.poi(poiData);
       try {
         await poi.save();
       } catch (err) {
@@ -338,7 +347,9 @@ export function useUpdatePoi(poi: EntityTypes | null) {
 export type AddTiersLieuFormData = TiersLieuxSubmitPayload;
 
 export function useAddTiersLieu(entity?: EntityTypes | null) {
-  const { me } = useCocolight();
+  // `entity` (param) = parent éventuel ; `costumEntity` (useCocolight) = entité PORTEUSE du costum
+  // (résolue depuis VITE_SLUG, constante pour le déploiement) → c'est son slug qui cible le costum.
+  const { me, entity: costumEntity } = useCocolight();
   const navigate = useNavigate();
   const { config } = useSite();
   const targetEntity = entity || me;
@@ -346,24 +357,27 @@ export function useAddTiersLieu(entity?: EntityTypes | null) {
 
   return useMutationWithToast<{ organization: Organization }, AddTiersLieuFormData>({
     mutationFn: async (data) => {
-      if (!targetEntity) {
-        throw new Error("No entity provided");
+      if (!me) {
+        throw new Error("User not connected");
       }
-      if (!costum) {
-        throw new Error("useAddTiersLieu requires a 'costum' block in the site config");
-      }
+      // Slug du costum = slug de l'entité porteuse (= VITE_SLUG) ; fallback getSlug(). Plus besoin de
+      // config.costum.slug (redondant). config.costum ne sert plus qu'aux tags (mainTag/compagnon).
+      const carrierSlug = costumEntity?.serverData?.slug;
+      const slug = typeof carrierSlug === "string" && carrierSlug.trim() ? carrierSlug.trim() : getSlug();
 
-      const payload = buildTiersLieuxPayload(data, { costum });
+      const payload = buildTiersLieuxPayload(data, costum ? { costum } : undefined);
       // Logo posé dans le payload : `save()` le route vers le bloc PROFIL_IMAGE
       // (`updateImageProfil`) après création — même idiome que l'avatar du header.
       if (data._logoFile) {
         payload.profil_avatar = data._logoFile;
       }
 
-      // Pattern uniforme avec `useAddOrganization` : `organization(payload)` crée
-      // l'instance, `.save()` persiste les champs custom (mainTag, tags,
-      // costumSlug, etc.) ET l'image, en un seul aller-retour.
-      const organization = await targetEntity.organization(payload);
+      // Scope costum géré par la lib : `me.costum(slug)` ouvre le CostumScope (injecte
+      // costumSlug/costumId/costumType depuis le registry + presets) ; `.organization(payload)`
+      // crée l'instance scopée et `.save()` persiste (le backend pose `source`). Plus de
+      // bricolage manuel du contexte costum (source/costumSlug/costumId/costumType) côté site-json.
+      const scope = await me.costum(slug as Parameters<typeof me.costum>[0]);
+      const organization = await scope.organization(payload);
       await organization.save();
 
       return { organization };

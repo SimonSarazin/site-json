@@ -37,15 +37,15 @@ export function AddPoiEquipementModal({
 	const isEditMode = mode === "edit" && Boolean(poi);
 
 	// Scope (parent/source/type) dérivé de l'entité du costum — pas d'une config.
+	// `scope.sourceKey` = slug de l'entité porteuse = slug du costum (= clé registry lib).
 	const scope = useMemo(() => resolvePoiEquipementScope(entity), [entity]);
-	// Injecte `source` au CREATE pour scoper le POI au costum (le SDK ne le pose
-	// pas seul ; cf. `buildTiersLieuxPayload` pour les orgs).
-	const sourceFields = useMemo(
-		() => ({ source: { insertOrigin:  "costum", key: scope.sourceKey, keys: [scope.sourceKey] } }),
-		[scope.sourceKey]
-	);
 	// On reste sur la liste après ajout (pas de redirection vers /profil/{slug}).
-	const addMutation = useAddPoi(parent, sourceFields, { navigateOnSuccess: false });
+	// `costumSlug` → la lib (me.costum(slug).poi) injecte le contexte costum et le backend pose `source` :
+	// plus besoin de bricoler `source` manuellement côté site-json.
+	const addMutation = useAddPoi(parent, undefined, {
+		navigateOnSuccess: false,
+		costumSlug: scope.sourceKey,
+	});
 	const updateMutation = useUpdatePoi(poi ?? null);
 
 	const defaultValues = useMemo(
