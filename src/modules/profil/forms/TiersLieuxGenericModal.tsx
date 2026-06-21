@@ -1,0 +1,99 @@
+/**
+ * Modal tiers-lieu v2 — moteur générique `GenericForm` + `tiersLieuDescriptor`, à la place du
+ * `TiersLieuxForm` codé en dur. Réutilise tel quel le READ (`mapEntityToTiersLieuxValues`),
+ * le WRITE (`buildTiersLieuxPayload` via `useAddTiersLieu`/`useEditTiersLieu`) et le scope costum
+ * (lib `me.costum(slug).organization()`). cf. doc/moteur-formulaire-generique.md §10.
+ */
+import { useMemo } from "react";
+import type { FieldValues } from "react-hook-form";
+import { toast } from "sonner";
+import type { EntityTypes, Organization } from "@communecter/cocolight-api-client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useT } from "@/hooks/useT";
+
+import { GenericForm } from "@/modules/formEngine";
+import { tiersLieuDescriptor } from "./tiersLieu.descriptor";
+import { useAddTiersLieu } from "../hooks/useAddMutations";
+import { useEditTiersLieu } from "../hooks/useEditTiersLieu";
+import { mapEntityToTiersLieuxValues } from "../utils/tiersLieuxMapping";
+import {
+  getDefaultTiersLieuxValues,
+  type TiersLieuxFormData,
+  type TiersLieuxSubmitPayload,
+} from "../components/add/TiersLieuxForm";
+
+interface Props {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  mode?: "add" | "edit";
+  organization?: Organization | null;
+  parent?: EntityTypes | null;
+}
+
+export function TiersLieuxGenericModal({ open, onOpenChange, mode = "add", organization, parent }: Props) {
+  const t = useT("modules/profil");
+  const tr = (key: string) => t(key);
+  const isEdit = mode === "edit" && Boolean(organization);
+
+  const defaults = useMemo<TiersLieuxFormData>(
+    () => (isEdit && organization ? mapEntityToTiersLieuxValues(organization) : getDefaultTiersLieuxValues()),
+    [isEdit, organization],
+  );
+
+  // Aperçu du logo existant en édition (parité ancien modal) → widgetProps du champ image `_logoFile`.
+  const fieldProps = useMemo(() => {
+    if (!isEdit || !organization) return undefined;
+    const sd = organization.serverData;
+    const existingUrl = sd?.profilMediumImageUrl || sd?.profilImageUrl || sd?.profilThumbImageUrl || undefined;
+    return existingUrl ? { _logoFile: { existingUrl } } : undefined;
+  }, [isEdit, organization]);
+
+  const addMutation = useAddTiersLieu(parent);
+  const editMutation = useEditTiersLieu(organization ?? null);
+  const submitting = addMutation.isPending || editMutation.isPending;
+
+  const onSubmit = async (values: FieldValues) => {
+    // Le moteur produit des valeurs plates (mêmes noms que TiersLieuxFormData). `_logoFile` est posé
+    // par le widget image ; `_imageDeleted` (suppression du logo existant) est lu par useEditTiersLieu.
+    const payload = {
+      ...(values as unknown as TiersLieuxFormData),
+      _logoFile: (values._logoFile as File | null) ?? null,
+      _photoFiles: [],
+    } as TiersLieuxSubmitPayload;
+    if (isEdit) await editMutation.mutateAsync(payload);
+    else await addMutation.mutateAsync(payload);
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden">
+        <DialogHeader className="px-6 pt-6">
+          <DialogTitle>{isEdit ? tr("EditTiersLieux.title") : tr("AddTiersLieux.title")}</DialogTitle>
+          <DialogDescription className="sr-only">
+            {isEdit ? tr("EditTiersLieux.title") : tr("AddTiersLieux.title")}
+          </DialogDescription>
+        </DialogHeader>
+        <GenericForm
+          descriptor={tiersLieuDescriptor}
+          defaultValues={defaults as unknown as FieldValues}
+          onSubmit={onSubmit}
+          onInvalid={() => toast.error(tr("AddTiersLieux.errors.validationFailed"))}
+          t={tr}
+          submitLabel={isEdit ? tr("EditTiersLieux.buttons.submit") : tr("AddTiersLieux.buttons.submit")}
+          texts={{
+            next: tr("AddTiersLieux.buttons.next"),
+            previous: tr("AddTiersLieux.buttons.previous"),
+            cancel: tr("AddTiersLieux.buttons.cancel"),
+            stepLabel: (index, total) => `${tr("AddTiersLieux.step")} ${index} ${tr("AddTiersLieux.stepOf")} ${total}`,
+          }}
+          submitting={submitting}
+          onCancel={() => onOpenChange(false)}
+          fieldProps={fieldProps}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export default TiersLieuxGenericModal;

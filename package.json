@@ -27,7 +27,8 @@
     "config:validate": "tsx scripts/validate-config.ts",
     "config:schema": "tsx scripts/config-schema.ts",
     "entity:slug": "tsx scripts/entity-slug.ts",
-    "map:functions": "tsx scripts/map-functions.ts"
+    "map:functions": "tsx scripts/map-functions.ts",
+    "config:costum": "tsx scripts/gen-costum-config.ts"
   },
   "resolutions": {
     "react": "19.2.1",

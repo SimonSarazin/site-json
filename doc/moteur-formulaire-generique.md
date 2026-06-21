@@ -1,8 +1,12 @@
-# Moteur de formulaire générique (descriptor-driven) — Design
+# Moteur de formulaire générique (descriptor-driven)
 
-> Statut : **design en cours**, à affiner ensemble. Objectif : remplacer les formulaires
-> costum codés en dur (`TiersLieuxForm`, `PoiEquipementForm`, `EditProfileModal`, Add modals)
-> par UN moteur piloté par un **descripteur**, hybride lib (données) + site-json (UI).
+> Statut : **LIVRÉ** (2026-06). `GenericForm` (RHF + zodResolver via `zodGen`), layouts `flat`/`tabs`/
+> `wizard` (Radix) + `accordion`, registre de widgets (lazy), `engine/` (conditional/transforms/
+> sectionErrors). Migrés : POI équipement, tiers-lieu, **add** (org/projet/poi/événement via
+> `AddEntityDropdown`→ModalRegistry) et **edit** (5 entités via `EditProfileGenericModal`). Anciens
+> `TiersLieuxForm`/`Add*Modal`/`EditProfileModal` gardés en fallback (à retirer après validation live).
+> Couche **config-driven** (JSON, bidirectionnelle) : cf. [`formulaire-config-driven.md`](./formulaire-config-driven.md).
+> Les sections ci-dessous = conception/référence ; certaines formulations « il manque X » sont historiques.
 
 ## 1. Principes (décidés)
 
@@ -32,6 +36,9 @@ interface SectionDescriptor {
   label?: I18n;                        // titre de section/onglet/step
   fields: string[];                    // ordre des champs dans la section
   visibleIf?: Predicate;              // section conditionnelle
+  // Mise en page (fidèle au base form) : grilles + sous-blocs à titre conditionnels.
+  // `fields` plat = 1 groupe 1 colonne (rétro-compatible) ; sinon `groups` :
+  //   groups?: { columns?: 1|2|3; label?: I18n; visibleIf?: Predicate; fields: string[] }[]
 }
 
 interface FieldDescriptor {
@@ -50,11 +57,11 @@ interface FieldDescriptor {
   // — Validation —
   required?: boolean;
   rules?: { url?: boolean; min?: number; max?: number; minLength?: number; maxLength?: number; regex?: string };
-  // — Conditionnel (voir §3) —
+  // — Conditionnel (voir §3) — câblés : visibleIf, requiredIf, computedFrom.
+  // (disabledIf / optionsIf : envisagés mais NON câblés → retirés du type tant
+  //  qu'aucun widget ne les honore, pour ne pas mentir au descripteur.)
   visibleIf?: Predicate;
   requiredIf?: Predicate;
-  disabledIf?: Predicate;
-  optionsIf?: { when: Predicate; options: EnumOption[] }[];
   computedFrom?: { deps: string[]; fn: TransformName };
   // — Read/Write (voir §6) —
   read?: TransformName;                // serverData[path] -> valeur de form
@@ -67,11 +74,11 @@ type EnumOption = { value: string; label: I18n };
 type I18n = string;                    // clé i18n OU LocalizedString (cf. JsonFormModal)
 ```
 
-**Règle d'or** (héritée du legacy, conservée) : un champ **non visible** (`visibleIf` faux) n'est **ni validé ni envoyé**.
+**Règle d'or** (validation) : un champ **non visible** (`visibleIf` faux) n'est **ni rendu ni validé** (zodGen le saute). **Attention** : il **reste dans le payload** à sa valeur par défaut — c'est la **parité** avec l'ancien form / le legacy (ex. `equip_pmr_*=false` envoyés même PMR replié à l'ADD). À l'**édition**, `buildEditPatch` ne renvoie que les champs **modifiés** (diff vs `defaultValues`) : un champ caché inchangé sort donc du patch — non pas parce qu'il est caché, mais parce qu'il est inchangé. (Ne pas stripper les champs cachés au submit : cela divergerait du legacy.)
 
 ## 3. Conditionnel (complet)
 
-Un `Predicate` déclaratif, évalué réactivement (RHF `watch`), réutilisé pour visible/required/disabled/options/computed.
+Un `Predicate` déclaratif, évalué réactivement (RHF `watch`), réutilisé pour visible/required (et `computedFrom` pour les valeurs dérivées).
 
 ```ts
 type Predicate =
@@ -116,11 +123,11 @@ Cas réels couverts (recensés) :
 | `urlList` | `FormFieldUrlList` | string[] |
 | `image` | `ImageUploadField` (crop) | File\|null → `profil_avatar` |
 | `location` | `EditLocationTab` (composite, 14 champs + geo/geoPosition) | objet `address` + geo |
-| `openingHours` | `OpeningHoursPicker` | `[{dayOfWeek,hours:[{opens,closes}]}]` |
+| `openingHours` | `OpeningHoursField` ✅ (composite : `${name}.${jour}.{enabled,start,end}`, `widgetProps.days`/`dayLabelPrefix`) | `{ [jour]: {enabled,start,end} }` |
 | `finder` | `SelectParent` / `SelectObject` (async, entités) | `{ [id]: {type,name} }` |
-| `fieldArray` | `useFieldArray` (ex. socialLinks) | objet[] |
+| `fieldArray` | `FieldArrayField` ✅ (composite : `widgetProps.itemFields` = sous-champs `text`/`select`, ex. socialLinks) | objet[] |
 
-À widgétiser (blocs inline aujourd'hui) : `family` (checkbox-grid → `checkboxGroup`), `hours` 7 jours (→ `openingHours`), `openingMonth/Year` (composite `monthYear`).
+**Implémenté pour la migration tiers-lieu** : `openingHours`, `fieldArray`, et la **propagation `value`≠`label`** (le widget reçoit des `{value,label}` traduits, plus `enum.map(e=>e.value)`). `select`/`multiselect`/`checkboxGroup` rendent le label, stockent la value. `image` accepte `widgetProps.shape`. Prédicat `contains` ajouté (tableau multi-select OU string → conditionner ex. `familyOther` si `family` contient `autre`). `openingMonth/Year` se modélise en **2 `select`** + transform d'écriture (pas de widget dédié).
 
 ## 5. Layouts (pluggables, extensibles)
 
