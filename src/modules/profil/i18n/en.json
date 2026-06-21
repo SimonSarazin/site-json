@@ -1195,7 +1195,8 @@
       "selectNature": "Select a nature",
       "selectSol": "Select a floor type",
       "selectSport": "Select a sport",
-      "searchSport": "Search a sport"
+      "searchSport": "Search a sport",
+      "search": "Search…"
     },
     "buttons": {
       "previous": "Previous",
@@ -1320,6 +1321,13 @@
     "noRelatedEntities": "No related entities yet"
   },
   "validation": {
+    "required": "This field is required",
+    "addressLocality": "Select a city from the list to validate the address",
+    "minLength": "Too short",
+    "maxLength": "Too long",
+    "min": "Value too small",
+    "max": "Value too large",
+    "format": "Invalid format",
     "name": {
       "required": "Name is required",
       "minLength": "Name must be at least 2 characters"

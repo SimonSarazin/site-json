@@ -1878,7 +1878,8 @@
                 "address",
                 "geo",
                 "geoPosition",
-                "parent"
+                "parent",
+                "source"
               ],
               "defaultFilters": {
                 "type": "recoveryCenter"

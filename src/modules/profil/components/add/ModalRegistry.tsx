@@ -11,13 +11,16 @@ export interface ModalProps {
 }
 
 const modalRegistry: Record<string, () => Promise<{ default: ComponentType<ModalProps> }>> = {
-  "add-organization": () => import("./AddOrganizationModal").then(m => ({ default: m.AddOrganizationModal })),
-  "add-project": () => import("./AddProjectModal").then(m => ({ default: m.AddProjectModal })),
-  "add-event": () => import("./AddEventModal").then(m => ({ default: m.AddEventModal })),
-  "add-poi": () => import("./AddPoiModal").then(m => ({ default: m.AddPoiModal })),
-  "add-poi-equipement": () => import("./AddPoiEquipementModal").then(m => ({ default: m.AddPoiEquipementModal })),
-  "add-tiers-lieux": () => import("./AddTiersLieuxModal").then(m => ({ default: m.AddTiersLieuxModal })),
+  "add-organization": () => import("../../forms/AddEntityGenericModals").then(m => ({ default: m.AddOrganizationGenericModal })),
+  "add-project": () => import("../../forms/AddEntityGenericModals").then(m => ({ default: m.AddProjectGenericModal })),
+  "add-event": () => import("../../forms/AddEntityGenericModals").then(m => ({ default: m.AddEventGenericModal })),
+  "add-poi": () => import("../../forms/AddEntityGenericModals").then(m => ({ default: m.AddPoiGenericModal })),
+  "add-poi-equipement": () => import("../../forms/PoiEquipementGenericModal").then(m => ({ default: m.PoiEquipementGenericModal })),
+  "add-tiers-lieux": () => import("../../forms/TiersLieuxGenericModal").then(m => ({ default: m.TiersLieuxGenericModal })),
   "register-cyber-reunion": () => import("./RegisterCyberReunionModal").then(m => ({ default: m.RegisterCyberReunionModal })),
+  // json-form reste sur l'ancien modal jusqu'à P3 : JsonFormHost (moteur) est prêt mais le payload
+  // générique perd les champs costum non déclarés de cyber-reunion (siren/phone/website…). P3 ajoutera
+  // un payloadFn dédié (+ complétion du schéma costum) puis re-pointera ici vers JsonFormHost.
   "json-form": () => import("./JsonFormModal").then(m => ({ default: m.JsonFormModal })),
 };
 

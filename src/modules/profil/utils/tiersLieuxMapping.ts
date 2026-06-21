@@ -117,13 +117,44 @@ function parseManagementType(value: unknown): { managementType: string; manageme
   return { managementType: "autre", managementTypeOther: value };
 }
 
+/** Lecture : `serverData.socialNetwork` est un OBJET `{ facebook: url, ... }` (dataBinding legacy
+ *  `socialNetwork` + `TranslateFtl::socialNetwork`), pas un array. (Fallback array rétro-compat.)
+ *  → liste {platform,url} pour le form. */
 function parseSocialLinks(value: unknown): Array<{ platform: string; url: string }> {
-  if (!Array.isArray(value)) return [];
-  return value
-    .filter((s): s is { platform: string; url: string } =>
-      s !== null && typeof s === "object" && "platform" in s && "url" in s
-    )
-    .map((s) => ({ platform: String(s.platform ?? ""), url: String(s.url ?? "") }));
+  if (Array.isArray(value)) {
+    return value
+      .filter((s): s is { platform: string; url: string } =>
+        s !== null && typeof s === "object" && "platform" in s && "url" in s
+      )
+      .map((s) => ({ platform: String(s.platform ?? ""), url: String(s.url ?? "") }));
+  }
+  if (value && typeof value === "object") {
+    return Object.entries(value as Record<string, unknown>)
+      .filter(([, url]) => typeof url === "string" && (url as string).trim().length > 0)
+      .map(([platform, url]) => ({ platform, url: String(url) }));
+  }
+  return [];
+}
+
+/** Écriture : socialLinks (form) → OBJET `socialNetwork` `{ facebook: url, ... }` — le format réel
+ *  attendu par le legacy (dataBinding org `socialNetwork`, toutes plateformes dont linkedin). */
+function buildSocialNetwork(links?: Array<{ platform: string; url: string }>): Record<string, unknown> {
+  const obj: Record<string, string> = {};
+  for (const l of links ?? []) {
+    const p = (l.platform ?? "").trim();
+    const url = (l.url ?? "").trim();
+    if (p && url) obj[p] = url;
+  }
+  return Object.keys(obj).length > 0 ? { socialNetwork: obj } : {};
+}
+
+/** Écriture : family (multi) + familyOther → `{ typePlace }` (la valeur 'autre' est remplacée par le
+ *  texte libre). Plus de clé `typePlaceOther` (non writable → rejet DraftProxy). */
+function buildTypePlace(family?: string[], familyOther?: string): Record<string, string> {
+  const parts = (family ?? [])
+    .map((f) => (f === "autre" ? (familyOther ?? "").trim() : f))
+    .filter(Boolean);
+  return parts.length > 0 ? { typePlace: parts.join(", ") } : {};
 }
 
 function pickString(value: unknown): string {
@@ -205,13 +236,11 @@ export function buildTiersLieuxPayload(
   data: TiersLieuxFormData,
   options: BuildPayloadOptions = {}
 ): Record<string, unknown> {
-  const transformedAddress = transformFormDataWithAddress({
-    addressCountry: data.addressCountry,
-    addressLocality: data.addressLocality,
-    postalCode: data.postalCode,
-    streetAddress: data.streetAddress,
-    localityId: data.localityId,
-  });
+  // Passer TOUTE la data (EditLocationTab y pose level1..4/codeInsee/geo au choix d'une ville) → l'objet
+  // `address` reconstruit est COMPLET, pas amputé de level2..4 (sinon écrasement lossy de l'adresse serveur).
+  // On n'extrait que `.address` (le reste de la data est cherry-pické champ par champ ci-dessous).
+  const { address: builtAddress } = transformFormDataWithAddress(data as unknown as Record<string, unknown>);
+  const transformedAddress = builtAddress ? { address: builtAddress } : {};
 
   const openingHours = buildOpeningHoursPayload(data.hours);
   const hasAnyOpen = openingHours.some((entry) => entry !== "");
@@ -233,29 +262,27 @@ export function buildTiersLieuxPayload(
               : data.managementType,
         }
       : {}),
-    ...(data.family && data.family.length > 0 ? { typePlace: data.family.join(", ") } : {}),
-    ...(data.familyOther ? { typePlaceOther: data.familyOther } : {}),
+    ...buildTypePlace(data.family, data.familyOther),
     ...(data.surfaceBuilt ? { buildingSurfaceArea: Number(data.surfaceBuilt) } : {}),
     ...(data.surfaceOutdoor ? { siteSurfaceArea: Number(data.surfaceOutdoor) } : {}),
     ...(data.videoUrl ? { video: [data.videoUrl] } : {}),
     ...(data.websiteUrl ? { url: data.websiteUrl } : {}),
-    ...(data.socialLinks && data.socialLinks.length > 0
-      ? { socialNetwork: data.socialLinks.filter((s) => s.platform && s.url) }
-      : {}),
+    ...buildSocialNetwork(data.socialLinks),
     email: data.email,
     ...(data.phone ? { telephone: data.phone } : {}),
     ...(hasAnyOpen ? { openingHours } : {}),
   };
 
   if (options.costum) {
-    const c = options.costum;
     payload.type = "NGO";
-    payload.role = "admin";
-    if (c.mainTag) payload.mainTag = c.mainTag;
     payload.preferences = { isOpenData: true, isOpenEdition: true };
-    // NB : le contexte costum (source / costumSlug / costumId / costumType) n'est PLUS posé ici.
-    // Il est injecté par la lib via `me.costum(slug)` (CostumScope : costumSlug/costumId/costumType
-    // depuis le registry + presets) ; le backend pose `source` au save. cf. useAddTiersLieu.
+    // `role:"admin"` et `mainTag` NE sont PLUS posés ici : redondants avec les PRESETS costum
+    // `{role:"admin", mainTag:"TiersLieux"}` que la lib injecte d'office via `me.costum(slug)`
+    // (CostumScope.create = `{...presets, ...data}`). `role` est de plus inerte côté serveur
+    // (l'admin réel = links.members.isAdmin). Le CHAMP `mainTag` n'a AUCUN effet observatoire
+    // (les filtres lisent `tags`, jamais le champ) → seul le merge `tags` ci-dessous compte.
+    // NB : le contexte costum (source / costumSlug / costumId / costumType) est aussi injecté par
+    // la lib ; le backend pose `source` au save. cf. useAddTiersLieu.
   }
 
   // Merge tags : `costum.mainTag` + `costum.compagnon` (auto) + `addTags` (manuel)

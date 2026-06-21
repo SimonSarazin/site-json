@@ -74,6 +74,18 @@ export const tiersLieuxSchema = z.object({
   phone: z.string().optional(),
   videoUrl: z.string().optional(),
   description: z.string().optional(),
+}).superRefine((data, ctx) => {
+  // Adresse : si un champ d'adresse est saisi mais qu'aucune ville n'a été sélectionnée dans la liste
+  // SIG (`localityId`), `buildAddressFromForm` DROPPE silencieusement l'adresse (le backend rejette
+  // sinon, save atomique → tout perdu). On le signale au lieu de perdre l'adresse en silence.
+  const hasAddr = Boolean(data.addressCountry || data.addressLocality || data.postalCode || data.streetAddress);
+  if (hasAddr && !data.localityId) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["addressLocality"],
+      message: "Sélectionnez une ville dans la liste pour valider l'adresse",
+    });
+  }
 });
 
 export type TiersLieuxFormData = z.infer<typeof tiersLieuxSchema>;
@@ -106,6 +118,7 @@ const FAMILY_OPTIONS = [
   { value: "autre", label: "Autre famille de tiers-lieux" },
 ];
 
+// Toutes persistables : envoyées dans l'OBJET `socialNetwork` (dataBinding org legacy), keyé par plateforme.
 const SOCIAL_PLATFORMS = [
   { value: "facebook", label: "Facebook" },
   { value: "twitter", label: "Twitter / X" },
@@ -241,7 +254,7 @@ export function TiersLieuxForm({
 
   const STEP_REQUIRED_FIELDS: Record<string, Array<keyof TiersLieuxFormData>> = {
     info: ["name", "shortDescription", "managementType"],
-    contact: ["email"],
+    contact: ["email", "addressLocality"],
     media: [],
     online: [],
     details: [],

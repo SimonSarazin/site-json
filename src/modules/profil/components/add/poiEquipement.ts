@@ -8,6 +8,19 @@ import { format } from "date-fns";
 import type { Poi } from "@communecter/cocolight-api-client";
 import type { AddPoiFormData } from "../../schemaForm";
 
+/**
+ * Payload de CRÉATION équipement (POI costum) : data + image optionnelle. Le `save()` route
+ * `_imageFile` vers le bloc PROFIL_IMAGE. (Relocalisé depuis l'ancien PoiEquipementForm, supprimé.)
+ */
+export interface PoiEquipementSubmitPayload extends AddPoiFormData {
+  _imageFile?: File | null;
+  /** Drapeau UI : supprimer l'image existante (édition). Ignoré à la création. */
+  _imageDeleted?: boolean;
+}
+
+/** Payload d'ÉDITION : patch PARTIEL (seuls les champs modifiés, cf. buildEditPatch) + image. */
+export type PoiEquipementEditPayload = Partial<AddPoiFormData> & { _imageFile?: File | null; _imageDeleted?: boolean };
+
 // ── Étapes du wizard ────────────────────────────────────────────────────────
 export const STEP_ORDER = ["general", "legal", "structure", "usage"] as const;
 export type StepKey = (typeof STEP_ORDER)[number];
@@ -329,3 +342,42 @@ export const buildEditDefaults = (poi: Poi | null | undefined): AddPoiFormData =
     inst_nom: toStringValue(getField("inst_nom")),
   };
 };
+
+// ── Patch d'édition ───────────────────────────────────────────────────────────
+// Extrait de `PoiEquipementForm.buildEditPatch` pour être réutilisé par le moteur
+// générique (`PoiEquipementGenericModal`). En édition on NE renvoie que les champs
+// réellement modifiés (diff vs `defaultValues`), sinon `transformFormDataWithAddress`
+// reconstruirait une adresse partielle et `Object.assign(poi.data, …)` écraserait
+// l'adresse serveur (perte des sous-champs géo non relus par `buildEditDefaults`).
+export const ADDRESS_PATCH_KEYS = [
+  "addressCountry", "addressLocality", "localityId", "postalCode", "streetAddress",
+  "codeInsee", "level1", "level1Name", "level2", "level2Name",
+  "level3", "level3Name", "level4", "level4Name",
+] as const;
+
+/** Égalité de valeurs de form (string/number/bool/array/objet) pour le diff d'édition. */
+const isSameValue = (a: unknown, b: unknown) =>
+  JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+
+/**
+ * Diff `current` vs `initial` → patch partiel. Adresse atomique : si UN champ
+ * d'adresse change, on renvoie TOUT le bloc + geo/geoPosition (sinon adresse
+ * reconstruite partielle côté lib).
+ */
+export function buildEditPatch(
+  current: AddPoiFormData,
+  initial: AddPoiFormData,
+): Partial<AddPoiFormData> {
+  const values = current as Record<string, unknown>;
+  const init = initial as Record<string, unknown>;
+  const patch: Record<string, unknown> = {};
+  for (const key of Object.keys(values)) {
+    if (!isSameValue(values[key], init[key])) patch[key] = values[key];
+  }
+  if (ADDRESS_PATCH_KEYS.some((k) => !isSameValue(values[k], init[k]))) {
+    for (const k of ADDRESS_PATCH_KEYS) patch[k] = values[k];
+    patch.geo = values.geo;
+    patch.geoPosition = values.geoPosition;
+  }
+  return patch as Partial<AddPoiFormData>;
+}

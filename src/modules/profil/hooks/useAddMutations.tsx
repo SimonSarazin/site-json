@@ -15,7 +15,7 @@ import {
 } from "./mutationUtils";
 import { buildTiersLieuxPayload } from "../utils/tiersLieuxMapping";
 import type { TiersLieuxSubmitPayload } from "../components/add/TiersLieuxForm";
-import type { PoiEquipementSubmitPayload, PoiEquipementEditPayload } from "../components/add/PoiEquipementForm";
+import type { PoiEquipementSubmitPayload, PoiEquipementEditPayload } from "../components/add/poiEquipement";
 import { useSite } from "@/hooks/useSite";
 import { getSlug } from "@/lib/constant/common";
 
@@ -248,7 +248,9 @@ export function useAddPoi(
 
       // `_imageFile` n'est pas un champ du document : on l'extrait avant de
       // transformer/envoyer les données au SDK (cf. `_logoFile` côté tiers-lieux).
-      const { _imageFile, ...formData } = data;
+      // `_imageDeleted` est un drapeau UI d'édition (suppression d'image) → sans objet à la création :
+      // on l'exclut du payload (sinon le DraftProxy costum le rejetterait comme champ inconnu).
+      const { _imageFile, _imageDeleted: _ignoredImageDeleted, ...formData } = data;
 
       // Transformer les données avec l'objet address
       const transformedData = transformFormDataWithAddress(formData);
@@ -318,7 +320,7 @@ export function useUpdatePoi(poi: EntityTypes | null) {
         throw new Error("No entity provided");
       }
 
-      const { _imageFile, ...formData } = data;
+      const { _imageFile, _imageDeleted, ...formData } = data;
 
       // `profil_avatar` est posé dans le draft : le `save()` (→ `_update`) route le
       // champ vers le bloc PROFIL_IMAGE (`updateImageProfil`) en un seul aller-retour,
@@ -330,6 +332,11 @@ export function useUpdatePoi(poi: EntityTypes | null) {
       Object.assign(poi.data, transformedData, _imageFile ? { profil_avatar: _imageFile } : {});
       try {
         await poi.save();
+        // Suppression de l'image existante (✕ sans nouveau fichier) : l'image n'est pas un champ DATA,
+        // donc hors `save()`. `removeProfilImage` récupère le docId (DOCUMENT_LIST) puis `deleteFile`.
+        if (_imageDeleted && !_imageFile) {
+          await poi.removeProfilImage();
+        }
       } catch (err) {
         logCocolightError("useUpdatePoi · UPDATE_POI", err, poi.data);
         throw err;

@@ -155,9 +155,8 @@ describe("buildTiersLieuxPayload", () => {
       ],
     };
     const payload = buildTiersLieuxPayload(data);
-    expect(payload.socialNetwork).toEqual([
-      { platform: "twitter", url: "https://twitter.com/x" },
-    ]);
+    // Format réel legacy : OBJET `{ platform: url }` (dataBinding org `socialNetwork`), pas un array.
+    expect(payload.socialNetwork).toEqual({ twitter: "https://twitter.com/x" });
   });
 
   it("convertit videoUrl en array video[]", () => {
@@ -180,8 +179,10 @@ describe("buildTiersLieuxPayload", () => {
       },
     });
     expect(payload.type).toBe("NGO");
-    expect(payload.role).toBe("admin");
-    expect(payload.mainTag).toBe("TiersLieu");
+    // `role` et le CHAMP `mainTag` ne sont PLUS dans le payload : posés par les presets costum de la
+    // lib (`me.costum(slug)` → {role:"admin", mainTag:"TiersLieux"}). Seul le merge `tags` reste ici.
+    expect(payload).not.toHaveProperty("role");
+    expect(payload).not.toHaveProperty("mainTag");
     // `compagnon` est une valeur de tag, pas un champ propre du payload :
     // il est mergé dans `tags`, pas posé en `payload.compagnon`.
     expect(payload).not.toHaveProperty("compagnon");

@@ -1,5 +1,5 @@
 import type { Control, FieldPath, FieldValues } from "react-hook-form";
-import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import { FormField, FormItem, FormLabel, FormControl, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -30,17 +30,20 @@ export function FormFieldText<T extends FieldValues>({
   disabled,
   type = "text",
   placeholder,
-}: BaseFieldProps<T> & { type?: string; placeholder?: string }) {
+  hint,
+}: BaseFieldProps<T> & { type?: string; placeholder?: string; hint?: string }) {
   return (
     <FormField
       control={control}
       name={name}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>
-            {label}
-            {required && " *"}
-          </FormLabel>
+          {label && (
+            <FormLabel>
+              {label}
+              {required && " *"}
+            </FormLabel>
+          )}
           <FormControl>
             <Input
               type={type}
@@ -53,6 +56,7 @@ export function FormFieldText<T extends FieldValues>({
               disabled={disabled}
             />
           </FormControl>
+          {hint && <FormDescription>{hint}</FormDescription>}
           <TranslatedFormMessage />
         </FormItem>
       )}
@@ -79,10 +83,12 @@ export function FormFieldNumber<T extends FieldValues>({
       name={name}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>
-            {label}
-            {required && " *"}
-          </FormLabel>
+          {label && (
+            <FormLabel>
+              {label}
+              {required && " *"}
+            </FormLabel>
+          )}
           <FormControl>
             <Input
               type="number"
@@ -111,6 +117,29 @@ export function FormFieldNumber<T extends FieldValues>({
   );
 }
 
+/** Case à cocher unique (booléen) — label cliquable à droite (parité FormFieldPublic). */
+export function FormFieldCheckbox<T extends FieldValues>({
+  control,
+  name,
+  label,
+  disabled,
+}: BaseFieldProps<T>) {
+  return (
+    <FormField
+      control={control}
+      name={name}
+      render={({ field }) => (
+        <FormItem className="flex flex-row items-start gap-3 space-y-0">
+          <FormControl>
+            <Checkbox checked={Boolean(field.value)} onCheckedChange={field.onChange} disabled={disabled} />
+          </FormControl>
+          {label && <FormLabel className="font-normal leading-none">{label}</FormLabel>}
+        </FormItem>
+      )}
+    />
+  );
+}
+
 export function FormFieldSwitch<T extends FieldValues>({
   control,
   name,
@@ -133,6 +162,11 @@ export function FormFieldSwitch<T extends FieldValues>({
   );
 }
 
+/** Option de select/checkbox : soit une string (value=label), soit un couple {value,label} DISTINCTS. */
+export type SelectOptionInput = string | { value: string; label: string };
+const normOpt = (o: SelectOptionInput): { value: string; label: string } =>
+  typeof o === "string" ? { value: o, label: o } : o;
+
 export function FormFieldSelectObject<T extends FieldValues>({
   control,
   name,
@@ -143,7 +177,7 @@ export function FormFieldSelectObject<T extends FieldValues>({
   placeholderSearch,
   multiple = false,
 }: BaseFieldProps<T> & {
-  options: readonly string[];
+  options: readonly SelectOptionInput[];
   placeholder?: string;
   placeholderSearch?: string;
   /** Multi-sélection : la valeur du champ est un `string[]` (sinon une `string`). */
@@ -155,10 +189,12 @@ export function FormFieldSelectObject<T extends FieldValues>({
       name={name}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>
-            {label}
-            {required && " *"}
-          </FormLabel>
+          {label && (
+            <FormLabel>
+              {label}
+              {required && " *"}
+            </FormLabel>
+          )}
           <FormControl>
             <SelectObject
               multiple={multiple}
@@ -172,7 +208,7 @@ export function FormFieldSelectObject<T extends FieldValues>({
                   ? field.onChange(Array.isArray(value) ? value : [])
                   : field.onChange(typeof value === "string" ? value : "")
               }
-              options={options.map((option) => ({ id: option, label: option, value: option }))}
+              options={options.map((opt) => { const o = normOpt(opt); return { id: o.value, label: o.label, value: o.value }; })}
               placeholder={placeholder}
               placeholderSearch={placeholderSearch}
             />
@@ -190,24 +226,34 @@ export function FormFieldDate<T extends FieldValues>({
   label,
   required,
   disabled,
-}: BaseFieldProps<T>) {
+  placeholder,
+  hint,
+  startYear,
+  endYear,
+}: BaseFieldProps<T> & { placeholder?: string; hint?: string; startYear?: number; endYear?: number }) {
   return (
     <FormField
       control={control}
       name={name}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>
-            {label}
-            {required && " *"}
-          </FormLabel>
+          {label && (
+            <FormLabel>
+              {label}
+              {required && " *"}
+            </FormLabel>
+          )}
           <FormControl>
             <DatePickerInput
               value={typeof field.value === "string" ? field.value : ""}
               onChange={field.onChange}
               disabled={disabled}
+              placeholder={placeholder}
+              startYear={startYear}
+              endYear={endYear}
             />
           </FormControl>
+          {hint && <FormDescription>{hint}</FormDescription>}
           <TranslatedFormMessage />
         </FormItem>
       )}
@@ -220,7 +266,12 @@ export function FormFieldCheckboxGroup<T extends FieldValues>({
   name,
   label,
   options,
-}: BaseFieldProps<T> & { options: readonly string[] }) {
+  variant = "plain",
+}: BaseFieldProps<T> & {
+  options: readonly SelectOptionInput[];
+  /** `card` : chaque option = label bordé, cliquable pleine ligne (parité formulaires legacy). */
+  variant?: "plain" | "card";
+}) {
   return (
     <FormField
       control={control}
@@ -232,18 +283,28 @@ export function FormFieldCheckboxGroup<T extends FieldValues>({
             <FormLabel>{label}</FormLabel>
             <FormControl>
               <div role="group" className="grid gap-2 sm:grid-cols-2">
-                {options.map((option) => {
-                  const checkboxId = `${name}-${option}`;
+                {options.map((opt) => {
+                  const { value, label: optLabel } = normOpt(opt);
+                  const checkboxId = `${name}-${value}`;
                   const toggle = () =>
                     field.onChange(
-                      selected.includes(option)
-                        ? selected.filter((item) => item !== option)
-                        : [...selected, option]
+                      selected.includes(value)
+                        ? selected.filter((item) => item !== value)
+                        : [...selected, value]
                     );
+                  if (variant === "card") {
+                    return (
+                      <label key={value} htmlFor={checkboxId}
+                        className="flex items-center gap-2 rounded-md border border-border p-2 text-sm hover:bg-muted cursor-pointer">
+                        <Checkbox id={checkboxId} checked={selected.includes(value)} onCheckedChange={toggle} />
+                        {optLabel}
+                      </label>
+                    );
+                  }
                   return (
-                    <div key={option} className="flex items-center gap-2 text-sm">
-                      <Checkbox id={checkboxId} checked={selected.includes(option)} onCheckedChange={toggle} />
-                      <label htmlFor={checkboxId}>{option}</label>
+                    <div key={value} className="flex items-center gap-2 text-sm">
+                      <Checkbox id={checkboxId} checked={selected.includes(value)} onCheckedChange={toggle} />
+                      <label htmlFor={checkboxId}>{optLabel}</label>
                     </div>
                   );
                 })}

@@ -5,9 +5,9 @@ import {
   FormLabel,
   FormControl,
   FormDescription,
-  FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
+import { TranslatedFormMessage } from "./TranslatedFormMessage";
 
 interface TextareaFormFieldProps<T extends FieldValues> {
   /**
@@ -22,6 +22,10 @@ interface TextareaFormFieldProps<T extends FieldValues> {
    * Label du champ
    */
   label: string;
+  /**
+   * Champ requis (affiche « * » à côté du label)
+   */
+  required?: boolean;
   /**
    * Placeholder
    */
@@ -62,6 +66,7 @@ export function TextareaFormField<T extends FieldValues>({
   control,
   name,
   label,
+  required,
   placeholder,
   description,
   rows = 4,
@@ -74,7 +79,12 @@ export function TextareaFormField<T extends FieldValues>({
       name={name}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>{label}</FormLabel>
+          {label && (
+            <FormLabel>
+              {label}
+              {required && " *"}
+            </FormLabel>
+          )}
           <FormControl>
             <Textarea
               {...field}
@@ -85,7 +95,7 @@ export function TextareaFormField<T extends FieldValues>({
             />
           </FormControl>
           {description && <FormDescription>{description}</FormDescription>}
-          <FormMessage />
+          <TranslatedFormMessage />
         </FormItem>
       )}
     />

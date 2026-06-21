@@ -11,9 +11,9 @@ export interface EditModalProps {
 
 const editModalRegistry: Record<string, () => Promise<{ default: ComponentType<EditModalProps> }>> = {
   "edit-profile": () =>
-    import("./EditProfileModal").then((m) => ({
+    import("../../forms/EditProfileGenericModal").then((m) => ({
       default: (props: EditModalProps) => (
-        <m.EditProfileModal
+        <m.EditProfileGenericModal
           open={props.open}
           onOpenChange={props.onOpenChange}
           entity={props.entity}
@@ -21,19 +21,20 @@ const editModalRegistry: Record<string, () => Promise<{ default: ComponentType<E
       ),
     })),
   "edit-tiers-lieux": () =>
-    import("../edit/EditTiersLieuxModal").then((m) => ({
+    import("../../forms/TiersLieuxGenericModal").then((m) => ({
       default: (props: EditModalProps) => (
-        <m.EditTiersLieuxModal
+        <m.TiersLieuxGenericModal
           open={props.open}
           onOpenChange={props.onOpenChange}
+          mode="edit"
           organization={props.entity as Organization}
         />
       ),
     })),
   "edit-poi-equipement": () =>
-    import("../add/AddPoiEquipementModal").then((m) => ({
+    import("../../forms/PoiEquipementGenericModal").then((m) => ({
       default: (props: EditModalProps) => (
-        <m.AddPoiEquipementModal
+        <m.PoiEquipementGenericModal
           open={props.open}
           onOpenChange={props.onOpenChange}
           mode="edit"

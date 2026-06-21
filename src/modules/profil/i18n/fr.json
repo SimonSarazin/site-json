@@ -1195,7 +1195,8 @@
       "selectNature": "Sélectionner une nature",
       "selectSol": "Sélectionner un type de sol",
       "selectSport": "Sélectionner un sport",
-      "searchSport": "Rechercher un sport"
+      "searchSport": "Rechercher un sport",
+      "search": "Rechercher…"
     },
     "buttons": {
       "previous": "Précédent",
@@ -1320,6 +1321,13 @@
     "noRelatedEntities": "Aucune entité liée pour le moment"
   },
   "validation": {
+    "required": "Ce champ est requis",
+    "addressLocality": "Sélectionnez une ville dans la liste pour valider l'adresse",
+    "minLength": "Valeur trop courte",
+    "maxLength": "Valeur trop longue",
+    "min": "Valeur trop petite",
+    "max": "Valeur trop grande",
+    "format": "Format invalide",
     "name": {
       "required": "Le nom est requis",
       "minLength": "Le nom doit contenir au moins 2 caractères"
