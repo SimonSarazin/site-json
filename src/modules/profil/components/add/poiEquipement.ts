@@ -7,9 +7,12 @@
 import { format } from "date-fns";
 import type { Poi } from "@communecter/cocolight-api-client";
 import type { AddPoiFormData } from "../../schemaForm";
-// Helper de diff partagé (déduplique l'égalité de valeurs). Import direct (pas le barrel formEngine)
-// pour rester un util pur testable sans tirer les widgets/composants. cf. doc/refactor-field-treatment.md.
+// Helpers de pipeline partagés (imports DIRECTS, pas le barrel formEngine → util pur testable sans
+// tirer les widgets/composants). cf. doc/refactor-field-treatment.md.
 import { isSameValue } from "@/modules/formEngine/engine/reconcile";
+import { registerTransform } from "@/modules/formEngine/engine/transforms";
+import { seedFromEntity } from "@/modules/formEngine/engine/fieldPipeline";
+import type { FieldDescriptor, FormDescriptor, FormValues } from "@/modules/formEngine";
 
 /**
  * Payload de CRÉATION équipement (POI costum) : data + image optionnelle. Le `save()` route
@@ -279,71 +282,68 @@ export const createEmptyDefaults = (
   inst_nom: "",
 });
 
-export const buildEditDefaults = (poi: Poi | null | undefined): AddPoiFormData => {
-  const defaults = createEmptyDefaults();
-  if (!poi) return defaults;
-
-  // Source de vérité : `serverData` typé (PoiItemNormalized). Les champs costum
-  // sont lus via l'index signature (`getField`) ; `address` est typé `PostalAddress`
-  // (un cast local couvre ses sous-champs costum comme `localityId`).
-  const serverData = poi.serverData;
-  const address = serverData.address as (Record<string, unknown> | undefined);
-  const getField = (field: string) => serverData[field];
-
-  const resolvedType = toStringValue(getField("type"));
-
+// ── READ via pipeline (P2) : remplace le mapping coercer-par-coercer ───────────
+// Coercers enregistrés comme transformers nommés + un descripteur de LECTURE déclaratif (coercer `read`
+// + `default` par champ ; adresse = groupe de sérialisation objet `address` → 5 champs plats).
+// `seedFromEntity(POI_READ_DESCRIPTOR, serverData)` reproduit l'ancien buildEditDefaults byte-pour-byte
+// (prouvé en test) — création (serverData={}) ET édition. cf. doc/refactor-field-treatment.md (P2).
+registerTransform("poi:toString", (v) => toStringValue(v));
+registerTransform("poi:toNumber", (v) => toNumberValue(v));
+registerTransform("poi:toBoolean", (v) => toBooleanValue(v));
+registerTransform("poi:toStringArray", (v) => toStringArray(v));
+registerTransform("poi:toDate", (v) => toDateInput(v));
+// Adresse : objet serveur `address` → 5 champs plats. Parité buildEditDefaults : addressCountry retombe
+// sur le défaut de scope ("RE") si vide ; les 4 autres sur "". (Écriture = P2-suite, ici read seulement.)
+registerTransform("poi:addressRead", (a) => {
+  const o = (a ?? {}) as Record<string, unknown>;
   return {
-    ...defaults,
-    name: toStringValue(getField("name")) || defaults.name,
-    type: (resolvedType || defaults.type) as AddPoiFormData["type"],
-    description: toStringValue(getField("description")) || defaults.description,
-    tags: toStringArray(getField("tags")),
-    urls: toStringArray(getField("urls")),
-    addressCountry: toStringValue(address?.addressCountry) || defaults.addressCountry,
-    addressLocality: toStringValue(address?.addressLocality),
-    localityId: toStringValue(address?.localityId),
-    postalCode: toStringValue(address?.postalCode),
-    streetAddress: toStringValue(address?.streetAddress),
-    inst_acc_handi_bool: toBooleanValue(getField("inst_acc_handi_bool")),
-    inst_trans_bool: toBooleanValue(getField("inst_trans_bool")),
-    equip_type_name: toStringValue(getField("equip_type_name")),
-    equip_type_famille: toStringValue(getField("equip_type_famille")),
-    inst_date_creation: toDateInput(getField("inst_date_creation")),
-    inst_enqu_date: toDateInput(getField("inst_enqu_date")),
-    equip_maj_date: toDateInput(getField("equip_maj_date")),
-    equip_nature: toStringValue(getField("equip_nature")),
-    equip_sol: toStringValue(getField("equip_sol")),
-    equip_surf: toNumberValue(getField("equip_surf")),
-    equip_eclair: toBooleanValue(getField("equip_eclair")),
-    categorie: toStringValue(getField("categorie")),
-    aps_name: toStringArray(getField("aps_name")),
-    equip_acc_libre: toBooleanValue(getField("equip_acc_libre")),
-    inst_acc_handi_type: toStringValue(getField("inst_acc_handi_type")),
-    inst_trans_type: toStringValue(getField("inst_trans_type")),
-    inst_part_bool: toBooleanValue(getField("inst_part_bool")),
-    inst_part_type: toStringArray(getField("inst_part_type")),
-    equip_prop_nom: toStringValue(getField("equip_prop_nom")),
-    equip_prop_type: toStringValue(getField("equip_prop_type")),
-    equip_gest_type: toStringValue(getField("equip_gest_type")),
-    equip_pmr_acc: toBooleanValue(getField("equip_pmr_acc")),
-    equip_pmr_chem: toBooleanValue(getField("equip_pmr_chem")),
-    equip_pmr_douche: toBooleanValue(getField("equip_pmr_douche")),
-    equip_pmr_sanit: toBooleanValue(getField("equip_pmr_sanit")),
-    equip_pmr_trib: toBooleanValue(getField("equip_pmr_trib")),
-    equip_pmr_vest: toBooleanValue(getField("equip_pmr_vest")),
-    equip_pshs_aire: toBooleanValue(getField("equip_pshs_aire")),
-    equip_pshs_chem: toBooleanValue(getField("equip_pshs_chem")),
-    equip_pshs_sanit: toBooleanValue(getField("equip_pshs_sanit")),
-    equip_pshs_trib: toBooleanValue(getField("equip_pshs_trib")),
-    equip_pshs_vest: toBooleanValue(getField("equip_pshs_vest")),
-    equip_pshs_sign: toBooleanValue(getField("equip_pshs_sign")),
-    equip_larg: toNumberValue(getField("equip_larg")),
-    equip_long: toNumberValue(getField("equip_long")),
-    equip_douche: toBooleanValue(getField("equip_douche")),
-    equip_loc_type: toStringArray(getField("equip_loc_type")),
-    equip_utilisateur: toStringArray(getField("equip_utilisateur")),
-    inst_nom: toStringValue(getField("inst_nom")),
+    addressCountry: toStringValue(o.addressCountry) || DEFAULT_POI_EQUIPEMENT_SCOPE.addressCountry,
+    addressLocality: toStringValue(o.addressLocality),
+    localityId: toStringValue(o.localityId),
+    postalCode: toStringValue(o.postalCode),
+    streetAddress: toStringValue(o.streetAddress),
   };
+});
+
+const READ_STR = ["name", "description", "equip_type_name", "equip_type_famille", "equip_nature", "equip_sol", "categorie", "inst_acc_handi_type", "inst_trans_type", "equip_prop_nom", "equip_prop_type", "equip_gest_type", "inst_nom"];
+const READ_NUM = ["equip_surf", "equip_larg", "equip_long"];
+const READ_BOOL = ["inst_acc_handi_bool", "inst_trans_bool", "equip_eclair", "equip_acc_libre", "inst_part_bool", "equip_pmr_acc", "equip_pmr_chem", "equip_pmr_douche", "equip_pmr_sanit", "equip_pmr_trib", "equip_pmr_vest", "equip_pshs_aire", "equip_pshs_chem", "equip_pshs_sanit", "equip_pshs_trib", "equip_pshs_vest", "equip_pshs_sign", "equip_douche"];
+const READ_ARR = ["tags", "urls", "aps_name", "inst_part_type", "equip_loc_type", "equip_utilisateur"];
+const READ_DATE = ["inst_date_creation", "inst_enqu_date", "equip_maj_date"];
+
+/** Descripteur de LECTURE POI (interne) : champs déclaratifs (read+default) consommés par seedFromEntity. */
+function buildPoiReadFields(): Record<string, FieldDescriptor> {
+  const f: Record<string, FieldDescriptor> = {};
+  const add = (name: string, type: FieldDescriptor["type"], read: string, def?: unknown) => {
+    f[name] = { name, type, widget: "hidden", label: name, read, ...(def !== undefined ? { default: def } : {}) };
+  };
+  for (const n of READ_STR) add(n, "string", "poi:toString", "");
+  for (const n of READ_NUM) add(n, "number", "poi:toNumber");           // pas de défaut → undefined
+  for (const n of READ_BOOL) add(n, "boolean", "poi:toBoolean", false);
+  for (const n of READ_ARR) add(n, "array", "poi:toStringArray", []);
+  for (const n of READ_DATE) add(n, "date", "poi:toDate", "");
+  add("type", "string", "poi:toString", DEFAULT_POI_EQUIPEMENT_SCOPE.poiType);
+  // membres du groupe `address` (skippés au profit de poi:addressRead).
+  for (const n of ["addressCountry", "addressLocality", "localityId", "postalCode", "streetAddress"]) {
+    f[n] = { name: n, type: "string", widget: "hidden", label: n, group: "address" };
+  }
+  return f;
+}
+
+const POI_READ_DESCRIPTOR: FormDescriptor = {
+  id: "poi-equipement:read", collection: "poi", layout: { kind: "flat" }, sections: [],
+  serializeGroups: { address: { serverKey: "address", read: "poi:addressRead", write: "poi:addressRead" } },
+  fields: buildPoiReadFields(),
+};
+
+/**
+ * Valeurs de form depuis l'entité (édition) OU les défauts (création) — délègue à `seedFromEntity` via
+ * POI_READ_DESCRIPTOR. `createEmptyDefaults()` sert de socle typé/complet ; `seedFromEntity` l'écrase
+ * avec les valeurs serveur coercées + défauts. Équivalent byte-pour-byte à l'ancien mapping (prouvé en test).
+ */
+export const buildEditDefaults = (poi: Poi | null | undefined): AddPoiFormData => {
+  const seeded = seedFromEntity(POI_READ_DESCRIPTOR, (poi?.serverData ?? {}) as FormValues);
+  return { ...createEmptyDefaults(), ...seeded } as AddPoiFormData;
 };
 
 // ── Patch d'édition ───────────────────────────────────────────────────────────

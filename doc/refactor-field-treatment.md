@@ -92,7 +92,12 @@ parité 5080 (legacy) vs 5099 (backend)** pour l'entité concernée. La forme le
   `valuesToPayload` (champs plats → objet serveur, `undefined` = clé omise). Subsume `extractAddressFields`/
   `buildAddressFromForm`, `extractSocial`/`buildSocialNetwork`. Tests `fieldPipeline.test.ts` (READ/WRITE/omission/clear).
   Reste : branchement dans `GenericForm` + un pipeline submit — fait à la 1re migration (P2).
-- NB : **profil** (`\|\| ""`) et **POI** (`buildEditPatch` itère les clés du form) effacent **correctement
-  aujourd'hui** par leur propre modèle — `reconcileClearedFields` ne s'applique qu'aux builders **complets qui
-  omettent les vides** (tiers-lieu). Les rendre structurels via `fieldPipeline` = P2/P4.
-- Reste : P2→P5 (ci-dessus), à attaquer entité par entité sous garde de parité.
+- **P2 — POI READ migré** : `buildEditDefaults` délègue désormais à `seedFromEntity(POI_READ_DESCRIPTOR)`
+  (coercers enregistrés en transformers nommés + descripteur de lecture déclaratif read/default + adresse en
+  `serializeGroup`). Le mapping coercer-par-coercer (~60 lignes) est supprimé. Équivalence prouvée
+  (`poiEquipement.readMigration.test.ts` : création → createEmptyDefaults ; édition → coercition + adresse imbriquée).
+  Effacement prouvé contre legacy (lib `costum-update-singlefield` : string/objet/number, **5080 ↔ 5099**).
+  **Reste de P2** : WRITE/diff (`buildEditPatch` → `valuesToPayload`+`diffForEdit` avec adresse `serializeGroup`
+  + `geo`/`geoPosition` atomiques), branchement `PoiEquipementGenericModal`, suppression de `buildEditPatch`.
+- NB : **profil** (`\|\| ""`) efface correctement par convention — à rendre structurel via `fieldPipeline` = P4.
+- Reste : P2-suite (WRITE POI) → P3 (tiers-lieu) → P4 (profil) → P5, sous garde de parité (tests d'intégration lib vs 5080).
