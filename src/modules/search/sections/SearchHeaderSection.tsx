@@ -7,7 +7,7 @@
  * (ancien alias `title-with-filters-rezo-la-mer` supprimé — migré vers `searchHeader`).
  */
 import "@/modules/search/i18n";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -27,7 +27,7 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
-import { ChevronDown, SlidersHorizontal } from "lucide-react";
+import { ChevronDown, RotateCcw, SlidersHorizontal, X } from "lucide-react";
 import { usePageFiltersOptional } from "@/modules/search/contexts/pageFilters";
 import { useCocolight } from "@/hooks/useCocolight";
 import { ActionButtonGroup } from "@/modules/profil/components/ActionButtonGroup";
@@ -57,26 +57,58 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
     const setSearchQuery = useMemo(() => pageFilters?.setSearchQuery ?? (() => {}), [pageFilters?.setSearchQuery]);
     const setSelectedFilters = pageFilters?.setSelectedFilters ?? (() => {});
     const setSearchByFields = pageFilters?.setSearchByFields ?? (() => {});
-    const selectedFilters = pageFilters?.selectedFilters ?? {};
-    const searchByFields = pageFilters?.searchByFields ?? {};
+    const selectedFilters = useMemo(
+        () => pageFilters?.selectedFilters ?? {},
+        [pageFilters?.selectedFilters],
+    );
+    const searchByFields = useMemo(
+        () => pageFilters?.searchByFields ?? {},
+        [pageFilters?.searchByFields],
+    );
     const hasDropdownFilters = (props.dropdownFilters?.length ?? 0) > 0;
-    const [searchParams] = useSearchParams();
 
     const activeType = selectedFilters['type']?.[0] ?? "all";
 
     const { entity } = useCocolight();
     const slugEntity = entity?.slug;
 
+    // SYNCHRONISATION URL (`?<filter.id>=<slug,slug>` et `?q=…`, format maison
+    // sans virgule dans une valeur) — permaliens partageables + liens depuis
+    // l'accueil qui pré-activent les filtres. Même pattern que l'Observatoire
+    // (`useObservatoryFilters`) : l'URL est un miroir écrit en `replace`,
+    // l'état du contexte reste la source.
+    const [searchParams, setSearchParams] = useSearchParams();
+    const writeParams = useCallback(
+        (mutate: (params: URLSearchParams) => void) => {
+            setSearchParams(
+                (prev) => {
+                    const params = new URLSearchParams(prev);
+                    mutate(params);
+                    return params;
+                },
+                { replace: true, preventScrollReset: true },
+            );
+        },
+        [setSearchParams],
+    );
+
     // Input texte : état local réactif + debounce avant publication dans le
     // context (sinon chaque frappe relance la recherche backend). Même hook et
-    // même délai (400 ms) que la sidebar `<FiltersSection>`.
-    const [localSearchQuery, setLocalSearchQuery] = useState(pageFilters?.searchQuery ?? "");
+    // même délai (400 ms) que la sidebar `<FiltersSection>`. Valeur initiale
+    // restaurée depuis l'URL (`?q=`) au montage.
+    const [localSearchQuery, setLocalSearchQuery] = useState(
+        searchParams.get("q") ?? pageFilters?.searchQuery ?? "",
+    );
     const debouncedSearchQuery = useDebounce(localSearchQuery, 400);
     // Sheet "Filtres" mobile (les dropdowns sont regroupés derrière un bouton)
     const [filtersOpen, setFiltersOpen] = useState(false);
 
     useEffect(() => {
         setSearchQuery(debouncedSearchQuery);
+        writeParams((params) => {
+            if (debouncedSearchQuery.trim()) params.set("q", debouncedSearchQuery.trim());
+            else params.delete("q");
+        });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [debouncedSearchQuery]);
 
@@ -105,7 +137,17 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
         return selectedFilters[filter.id] ?? [];
     };
 
+    // Reflète la sélection (ids/slugs d'option) dans l'URL — appelé pour toute
+    // mutation (toggle, reset, suppression de tag) → l'URL reste cohérente.
+    const writeFilterParam = (filter: DropdownFilterConfig, nextSelectedIds: string[]) => {
+        writeParams((params) => {
+            if (nextSelectedIds.length) params.set(filter.id, nextSelectedIds.join(","));
+            else params.delete(filter.id);
+        });
+    };
+
     const setDropdownSelection = (filter: DropdownFilterConfig, nextSelectedIds: string[]) => {
+        writeFilterParam(filter, nextSelectedIds);
         if (filter.field) {
             const fieldName = filter.field;
             setSearchByFields((prev) => {
@@ -179,30 +221,84 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
         return `${t(filter.label)} (${selectedIds.length})`;
     };
 
-    const activeFilterCount = (props.dropdownFilters ?? []).filter(
-        (filter) => getDropdownSelectedValues(filter).length > 0
-    ).length;
+    // Compteur = nombre total de VALEURS sélectionnées (= nombre de chips), pas le
+    // nombre de catégories de filtre → cohérent avec les pastilles affichées.
+    const activeFilterCount = (props.dropdownFilters ?? []).reduce(
+        (sum, filter) => sum + getDropdownSelectedValues(filter).length,
+        0
+    );
 
     const resetAllDropdownFilters = () => {
-        (props.dropdownFilters ?? []).forEach((filter) => setDropdownSelection(filter, []));
+        const filters = props.dropdownFilters ?? [];
+        // Une seule mutation : plusieurs setSearchParams dans le même cycle voient le même `prev` (React Router).
+        writeParams((params) => {
+            filters.forEach((filter) => params.delete(filter.id));
+        });
+        filters.forEach((filter) => {
+            if (filter.field) {
+                setSearchByFields((prev) => {
+                    const prefix = `${filter.id}:`;
+                    return Object.fromEntries(
+                        Object.entries(prev).filter(([key]) => !key.startsWith(prefix))
+                    );
+                });
+            } else {
+                setSelectedFilters((prev) => {
+                    const next = { ...prev };
+                    delete next[filter.id];
+                    return next;
+                });
+            }
+        });
     };
 
-    // Deep-link : applique les dropdownFilters depuis l'URL (`?<filterId>=<optionId,…>`),
-    // au montage et à chaque changement de query. Permet à un lien externe (ex. carte de
-    // la home « Terrain de football ») d'ouvrir l'annuaire pré-filtré. Param absent → ce
-    // filtre est laissé tel quel ; param présent (même vide) → (ré)initialisé depuis l'URL.
+    // Hydratation au MONTAGE : restaure les filtres depuis l'URL (slugs d'option
+    // par filtre, joints par virgule) → contexte. One-time (ref garde) — ensuite
+    // le contexte est la source et l'URL son miroir. Permet aux liens d'accueil
+    // d'ouvrir la page avec des filtres pré-activés.
+    const hydratedRef = useRef(false);
     useEffect(() => {
+        if (hydratedRef.current) return;
+        hydratedRef.current = true;
         (props.dropdownFilters ?? []).forEach((filter) => {
             const raw = searchParams.get(filter.id);
-            if (raw === null) return;
-            const optionIds = raw
+            if (!raw) return;
+            const ids = raw
                 .split(",")
                 .map((s) => s.trim())
                 .filter((id) => filter.options.some((o) => o.id === id));
-            setDropdownSelection(filter, optionIds);
+            if (ids.length) setDropdownSelection(filter, ids);
         });
+        // Montage uniquement — restauration initiale depuis l'URL.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [searchParams]);
+    }, []);
+
+    // Tags des filtres actifs (supprimables individuellement). Couvre les DEUX
+    // formes de dropdown : à `field` (sélection dans `searchByFields`, clés
+    // `filterId:optionId`) ET sans `field` (sélection dans `selectedFilters[filterId]`)
+    // → robuste pour toute config, ce composant étant partagé.
+    const activeFilterTags = useMemo(() => {
+        const result: Array<{ filterId: string; optionId: string; label: string }> = [];
+        // Filtres à `field` → searchByFields.
+        for (const key of Object.keys(searchByFields)) {
+            const colonIdx = key.indexOf(":");
+            if (colonIdx < 0) continue;
+            const filterId = key.slice(0, colonIdx);
+            const optionId = key.slice(colonIdx + 1);
+            const filter = props.dropdownFilters?.find((f) => f.id === filterId);
+            const option = filter?.options.find((o) => o.id === optionId);
+            if (option) result.push({ filterId, optionId, label: t(option.label) });
+        }
+        // Filtres sans `field` → selectedFilters[filterId] (ids d'option).
+        for (const filter of props.dropdownFilters ?? []) {
+            if (filter.field) continue;
+            for (const optionId of selectedFilters[filter.id] ?? []) {
+                const option = filter.options.find((o) => o.id === optionId);
+                if (option) result.push({ filterId: filter.id, optionId, label: t(option.label) });
+            }
+        }
+        return result;
+    }, [searchByFields, selectedFilters, props.dropdownFilters, t]);
 
     // Rendu d'un dropdown de filtre, réutilisé en barre desktop (inline) ET dans
     // la Sheet mobile. `w-full` par défaut (Sheet) → `lg:w-auto` en barre desktop.
@@ -293,6 +389,20 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
                                 {/* Desktop : filtres inline, regroupés dans la barre */}
                                 <div className="hidden w-full flex-wrap items-center justify-center gap-3 lg:flex">
                                     {props.dropdownFilters?.map(renderDropdownFilter)}
+                                    {activeFilterCount > 0 && (
+                                        <>
+                                            <Badge className="rounded-full px-2">{activeFilterCount}</Badge>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={resetAllDropdownFilters}
+                                                className="h-9 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground"
+                                            >
+                                                <RotateCcw className="h-3 w-3" /> {t("Réinitialiser")}
+                                            </Button>
+                                        </>
+                                    )}
                                 </div>
 
                                 {/* Mobile : un seul bouton "Filtres" (compteur actif) → Sheet bas */}
@@ -345,6 +455,40 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
                             </>
                         )}
                     </div>
+
+                    {/* Tags de filtres actifs — supprimables individuellement.
+                        `showActiveFiltersTags` : true/absent = partout · "desktop" =
+                        ≥ lg seulement · "mobile" = < lg seulement · false = masqués. */}
+                    {props.showActiveFiltersTags !== false && activeFilterTags.length > 0 && (
+                        <div
+                            className={`${
+                                props.showActiveFiltersTags === "mobile"
+                                    ? "flex lg:hidden"
+                                    : props.showActiveFiltersTags === "desktop"
+                                        ? "hidden lg:flex"
+                                        : "flex"
+                            } mx-auto mt-2 w-full max-w-4xl flex-wrap gap-2 rounded-2xl border border-border/60 bg-card/80 px-3 py-2 shadow-lg backdrop-blur-md`}
+                        >
+                            {activeFilterTags.map(({ filterId, optionId, label }) => (
+                                <Badge key={`${filterId}:${optionId}`} className="gap-1 rounded-full py-1 pe-1">
+                                    {label}
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const filter = props.dropdownFilters?.find((f) => f.id === filterId);
+                                            if (!filter) return;
+                                            const current = getDropdownSelectedValues(filter);
+                                            setDropdownSelection(filter, current.filter((v) => v !== optionId));
+                                        }}
+                                        className="-me-0.5 ml-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full hover:bg-primary-foreground/15 hover:text-primary-foreground/80"
+                                        aria-label={`${t("Supprimer")} ${label}`}
+                                    >
+                                        <X className="h-3.5 w-3.5" />
+                                    </button>
+                                </Badge>
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
 

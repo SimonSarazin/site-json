@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { useCocolightOptional } from "@/hooks/useCocolight";
 import "../i18n/i18n";
 import { parseCoFormFields, normalizeAnswerData } from "../utils/formParser";
 import type { CoFormData, AllStepsData, SubFormFields, FormFieldMapping, FormFieldValue, MultiCheckboxPlusValue, MultiRadioValue, UploaderLegacyValue, SimpleTableValue, EvaluationValue, FinderValue } from "../types";
@@ -48,13 +49,17 @@ export function CoFormReadOnly({
 }: CoFormReadOnlyProps) {
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
+  // Variante optionnelle : le read-only peut être rendu hors CocolightProvider.
+  // En lecture seule, on pré-remplit la contribution multi-eval de l'user
+  // courant (`_multiEval.{id}`) ; sans user, le champ multi-eval reste vide.
+  const currentUserId = useCocolightOptional()?.me?.id ?? null;
 
   const subFormsFields = useMemo(() => parseCoFormFields(formData), [formData]);
 
   // Normaliser les données de réponse (déplacer les champs root-level dans leurs subforms)
   const normalizedAnswers = useMemo(
-    () => normalizeAnswerData(answerData, subFormsFields) as AllStepsData,
-    [answerData, subFormsFields]
+    () => normalizeAnswerData(answerData, subFormsFields, currentUserId) as AllStepsData,
+    [answerData, subFormsFields, currentUserId]
   );
 
   if (!subFormsFields.length) {
@@ -380,6 +385,13 @@ function ReadOnlyField({
           >
             {String(value)}
           </a>
+        ) : field.componentType === "select" ? (
+          // Pour un select à options associatives legacy, la valeur stockée
+          // est la clé ; on affiche le label via `optionLabels` (fallback sur
+          // la valeur brute pour les options à liste plate où clé === label).
+          <span className="wrap-break-word">
+            {field.optionLabels?.[String(value)] ?? String(value)}
+          </span>
         ) : (
           <span className="wrap-break-word">{String(value)}</span>
         )}

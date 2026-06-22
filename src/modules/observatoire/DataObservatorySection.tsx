@@ -69,6 +69,17 @@ export default function DataObservatorySection({
     labels,
   );
 
+  // `entities` est aligné avec `items` (index à index) mais `filtered` est un
+  // sous-ensemble — on recalcule les entités correspondantes par référence objet
+  // (applyFilters/applyTextSearch gardent les mêmes références, pas de copie).
+  const filteredEntities = useMemo(() => {
+    if (entities.length === 0) return entities;
+    const itemToEntity = new Map(items.map((item, i) => [item, entities[i]]));
+    return filtered
+      .map((item) => itemToEntity.get(item))
+      .filter((e): e is (typeof entities)[number] => e != null);
+  }, [filtered, items, entities]);
+
   // Drill-down (opt-in) : clic sur une part/barre → applique le filtre —
   // seulement pour les dimensions réellement filtrables (retirables par
   // l'utilisateur). Valeur unique : un clic = un focus.
@@ -202,7 +213,7 @@ export default function DataObservatorySection({
                     dimensions={dimensions}
                     table={props.table}
                     exportCsv={props.export ?? null}
-                    entities={entities}
+                    entities={filteredEntities}
                     labels={labels}
                   />
                 )}

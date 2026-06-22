@@ -139,6 +139,10 @@ export const FilterDefSchema = z.object({
   /** Select avec recherche dans les options (combobox) — toujours actif en
    *  multiple (le composant multi-sélection cherche nativement). */
   searchable: z.boolean().optional(),
+  /** Id d'une dimension parente : quand une valeur est sélectionnée pour ce
+   *  filtre parent, les options du filtre courant sont restreintes aux items
+   *  correspondant à cette sélection (facette cascade opt-in). */
+  dependsOn: z.string().optional(),
 });
 export type FilterDef = z.infer<typeof FilterDefSchema>;
 
@@ -220,7 +224,16 @@ export const DataObservatorySectionSchema = z.object({
       })
       .optional(),
     // Export CSV du résultat FILTRÉ (présence du bloc = bouton affiché).
-    export: z.object({ filename: z.string().optional() }).optional(),
+    // `fields` (optionnel) : colonnes d'export COMPLÈTES, indépendantes du
+    // tableau affiché — chaque champ est une dimension (paths/kind/label)
+    // résolue par le moteur. Permet d'exporter toutes les données de la fiche
+    // détail, pas seulement les colonnes visibles. Absent → export des colonnes.
+    export: z
+      .object({
+        filename: z.string().optional(),
+        fields: z.array(DimensionDefSchema).optional(),
+      })
+      .optional(),
     // Clic sur une part/barre de graphe → applique le filtre correspondant
     // (seulement pour les dimensions présentes dans `filters`).
     drilldown: z.boolean().optional(),
