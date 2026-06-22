@@ -4,6 +4,20 @@
 > **READ / WRITE / diff / clear** des mappers bespoke par entité et le rendre **déclaratif** sur le
 > `FieldDescriptor`, exécuté par un pipeline unique du moteur (`modules/formEngine`).
 
+## 0. Architecture cible unifiée (C-light) — décision
+
+Après les migrations P0-P4 (hétérogènes), consolidation vers UN pattern :
+- **`FormSpec` par entité** : UN descripteur read+write unifié (asymétries déclarées via `path`/`group`/
+  `writeOnly`/`readOnly`/`groupReadOnly`) + overlays (`baseDefaults`, `diffSkip`, costum/media/refs).
+- **3 primitives PURES** (`formEngine/engine/entityForm.ts`) : `seedEntity(spec, entity?)` (READ create+edit),
+  `buildPayload(spec, values)` (WRITE complet, omit-empty), `buildDelta(spec, values, baseline)` (EDIT diff+clear).
+- **1 hook UI** `useEntityForm(entityType, entity?)` (à venir) → fusionne les 3 hooks d'édition + `runSubmit` create+edit.
+
+État : **S1 fait** (flags `writeOnly`/`readOnly`/`groupReadOnly` au pipeline) ; **primitives génériques faites**
+(`seedEntity`/`buildPayload`/`buildDelta`) ; **POI migré sur le pattern** (1 descripteur, geo/geoPosition `writeOnly`,
+`buildEditDefaults`/`buildEditDelta` = wrappers minces sur les primitives — prouvé équivalent, 80/80).
+Reste : tiers-lieu + profil sur `FormSpec` (S3-S5), fusion des hooks en `useEntityForm` (S6), JsonFormHost create+edit (S7).
+
 ## 1. Constat — coût de la duplication
 
 Le moteur (`GenericForm`) ne couvre aujourd'hui que **rendu + validation**. Deux crochets déclaratifs

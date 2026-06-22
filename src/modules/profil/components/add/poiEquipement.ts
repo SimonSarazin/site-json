@@ -10,7 +10,7 @@ import type { AddPoiFormData } from "../../schemaForm";
 // Helpers de pipeline partagés (imports DIRECTS, pas le barrel formEngine → util pur testable sans
 // tirer les widgets/composants). cf. doc/refactor-field-treatment.md.
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
-import { seedFromEntity, valuesToPayload, diffForEdit } from "@/modules/formEngine/engine/fieldPipeline";
+import { seedEntity, buildDelta, type FormSpec } from "@/modules/formEngine/engine/entityForm";
 import type { FieldDescriptor, FormDescriptor, FormValues } from "@/modules/formEngine";
 import { buildAddressFromForm } from "../../hooks/mutationUtils";
 
@@ -314,8 +314,9 @@ const READ_BOOL = ["inst_acc_handi_bool", "inst_trans_bool", "equip_eclair", "eq
 const READ_ARR = ["tags", "urls", "aps_name", "inst_part_type", "equip_loc_type", "equip_utilisateur"];
 const READ_DATE = ["inst_date_creation", "inst_enqu_date", "equip_maj_date"];
 
-/** Descripteur de LECTURE POI (interne) : champs déclaratifs (read+default) consommés par seedFromEntity. */
-function buildPoiReadFields(): Record<string, FieldDescriptor> {
+/** Champs du descripteur POI (read + write UNIFIÉS). `geo`/`geoPosition` = `writeOnly` (posés par
+ *  EditLocationTab, jamais relus du form → émis au WRITE, ignorés au READ). Membres du groupe `address`. */
+function buildPoiFields(): Record<string, FieldDescriptor> {
   const f: Record<string, FieldDescriptor> = {};
   const add = (name: string, type: FieldDescriptor["type"], read: string, def?: unknown) => {
     f[name] = { name, type, widget: "hidden", label: name, read, ...(def !== undefined ? { default: def } : {}) };
@@ -326,53 +327,27 @@ function buildPoiReadFields(): Record<string, FieldDescriptor> {
   for (const n of READ_ARR) add(n, "array", "poi:toStringArray", []);
   for (const n of READ_DATE) add(n, "date", "poi:toDate", "");
   add("type", "string", "poi:toString", DEFAULT_POI_EQUIPEMENT_SCOPE.poiType);
-  // membres du groupe `address` (skippés au profit de poi:addressRead).
   for (const n of ["addressCountry", "addressLocality", "localityId", "postalCode", "streetAddress"]) {
     f[n] = { name: n, type: "string", widget: "hidden", label: n, group: "address" };
   }
+  f.geo = { name: "geo", type: "object", widget: "hidden", label: "geo", writeOnly: true };
+  f.geoPosition = { name: "geoPosition", type: "object", widget: "hidden", label: "geoPosition", writeOnly: true };
   return f;
 }
 
-const POI_READ_DESCRIPTOR: FormDescriptor = {
-  id: "poi-equipement:read", collection: "poi", layout: { kind: "flat" }, sections: [],
+/** Descripteur POI UNIQUE (read+write) + spec. Adresse en serializeGroup ; geo/geoPosition writeOnly. */
+const POI_DESCRIPTOR: FormDescriptor = {
+  id: "poi-equipement", collection: "poi", layout: { kind: "flat" }, sections: [],
   serializeGroups: { address: { serverKey: "address", read: "poi:addressRead", write: "poi:addressWrite" } },
-  fields: buildPoiReadFields(),
+  fields: buildPoiFields(),
 };
+const POI_SPEC: FormSpec = { descriptor: POI_DESCRIPTOR, baseDefaults: () => createEmptyDefaults() as unknown as FormValues };
 
-// Descripteur d'ÉCRITURE = lecture + `geo`/`geoPosition` (posés par EditLocationTab, hors AddPoiFormData lue ;
-// donc PAS dans POI_READ_DESCRIPTOR sinon seedFromEntity les remonterait). L'adresse (groupe) recompose l'objet
-// imbriqué via poi:addressWrite ; geo/geoPosition partent quand ils changent (≈ l'ancien "force si adresse change",
-// EditLocationTab les met à jour AVEC l'adresse).
-const POI_WRITE_DESCRIPTOR: FormDescriptor = {
-  ...POI_READ_DESCRIPTOR,
-  fields: {
-    ...POI_READ_DESCRIPTOR.fields,
-    geo: { name: "geo", type: "object", widget: "hidden", label: "geo" },
-    geoPosition: { name: "geoPosition", type: "object", widget: "hidden", label: "geoPosition" },
-  },
-};
+/** Valeurs de form depuis l'entité (édition) OU défauts (création) — pipeline générique `seedEntity`. */
+export const buildEditDefaults = (poi: Poi | null | undefined): AddPoiFormData =>
+  seedEntity(POI_SPEC, poi) as unknown as AddPoiFormData;
 
-/**
- * Valeurs de form depuis l'entité (édition) OU les défauts (création) — délègue à `seedFromEntity` via
- * POI_READ_DESCRIPTOR. `createEmptyDefaults()` sert de socle typé/complet ; `seedFromEntity` l'écrase
- * avec les valeurs serveur coercées + défauts. Équivalent byte-pour-byte à l'ancien mapping (prouvé en test).
- */
-export const buildEditDefaults = (poi: Poi | null | undefined): AddPoiFormData => {
-  const seeded = seedFromEntity(POI_READ_DESCRIPTOR, (poi?.serverData ?? {}) as FormValues);
-  return { ...createEmptyDefaults(), ...seeded } as AddPoiFormData;
-};
-
-// ── Delta d'édition (pipeline, P2) ──────────────────────────────────────────────
-/**
- * `current` vs `defaults` → delta serveur à appliquer au draft : via `valuesToPayload` (adresse recomposée
- * en objet imbriqué + champs costum) puis `diffForEdit` (modifié → valeur, VIDÉ → clear typé). Remplace
- * `buildEditPatch` + `transformFormDataWithAddress` : le delta est DÉJÀ nidifié (clé `address`), donc
- * `transformFormDataWithAddress` côté mutation devient un no-op. Différence ASSUMÉE vs l'ancien : un champ
- * vidé est réellement effacé (l'ancien lâchait les `undefined`). `geo`/`geoPosition` partent quand ils
- * changent (EditLocationTab les met à jour avec l'adresse). cf. doc/refactor-field-treatment.md (P2).
- */
+/** Delta serveur d'édition (modifié + effacé typé) vs `defaults` (baseline) — pipeline générique `buildDelta`. */
 export function buildEditDelta(current: AddPoiFormData, defaults: AddPoiFormData): Record<string, unknown> {
-  const payload = valuesToPayload(POI_WRITE_DESCRIPTOR, current as unknown as FormValues);
-  const baseline = valuesToPayload(POI_WRITE_DESCRIPTOR, defaults as unknown as FormValues);
-  return diffForEdit(POI_WRITE_DESCRIPTOR, payload, baseline);
+  return buildDelta(POI_SPEC, current as unknown as FormValues, defaults as unknown as FormValues);
 }
