@@ -9,10 +9,10 @@ import type { Poi } from "@communecter/cocolight-api-client";
 import type { AddPoiFormData } from "../../schemaForm";
 // Helpers de pipeline partagés (imports DIRECTS, pas le barrel formEngine → util pur testable sans
 // tirer les widgets/composants). cf. doc/refactor-field-treatment.md.
-import { isSameValue } from "@/modules/formEngine/engine/reconcile";
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
-import { seedFromEntity } from "@/modules/formEngine/engine/fieldPipeline";
+import { seedFromEntity, valuesToPayload, diffForEdit } from "@/modules/formEngine/engine/fieldPipeline";
 import type { FieldDescriptor, FormDescriptor, FormValues } from "@/modules/formEngine";
+import { buildAddressFromForm } from "../../hooks/mutationUtils";
 
 /**
  * Payload de CRÉATION équipement (POI costum) : data + image optionnelle. Le `save()` route
@@ -24,7 +24,7 @@ export interface PoiEquipementSubmitPayload extends AddPoiFormData {
   _imageDeleted?: boolean;
 }
 
-/** Payload d'ÉDITION : patch PARTIEL (seuls les champs modifiés, cf. buildEditPatch) + image. */
+/** Payload d'ÉDITION : delta serveur (champs modifiés/vidés, cf. buildEditDelta) + image. */
 export type PoiEquipementEditPayload = Partial<AddPoiFormData> & { _imageFile?: File | null; _imageDeleted?: boolean };
 
 // ── Étapes du wizard ────────────────────────────────────────────────────────
@@ -304,6 +304,9 @@ registerTransform("poi:addressRead", (a) => {
     streetAddress: toStringValue(o.streetAddress),
   };
 });
+// WRITE adresse : champs plats du form → objet `address` imbriqué (ou `undefined` si pas de localityId →
+// clé omise, parité buildAddressFromForm). `all` = toutes les valeurs de form.
+registerTransform("poi:addressWrite", (all) => buildAddressFromForm((all ?? {}) as Record<string, string>));
 
 const READ_STR = ["name", "description", "equip_type_name", "equip_type_famille", "equip_nature", "equip_sol", "categorie", "inst_acc_handi_type", "inst_trans_type", "equip_prop_nom", "equip_prop_type", "equip_gest_type", "inst_nom"];
 const READ_NUM = ["equip_surf", "equip_larg", "equip_long"];
@@ -332,8 +335,21 @@ function buildPoiReadFields(): Record<string, FieldDescriptor> {
 
 const POI_READ_DESCRIPTOR: FormDescriptor = {
   id: "poi-equipement:read", collection: "poi", layout: { kind: "flat" }, sections: [],
-  serializeGroups: { address: { serverKey: "address", read: "poi:addressRead", write: "poi:addressRead" } },
+  serializeGroups: { address: { serverKey: "address", read: "poi:addressRead", write: "poi:addressWrite" } },
   fields: buildPoiReadFields(),
+};
+
+// Descripteur d'ÉCRITURE = lecture + `geo`/`geoPosition` (posés par EditLocationTab, hors AddPoiFormData lue ;
+// donc PAS dans POI_READ_DESCRIPTOR sinon seedFromEntity les remonterait). L'adresse (groupe) recompose l'objet
+// imbriqué via poi:addressWrite ; geo/geoPosition partent quand ils changent (≈ l'ancien "force si adresse change",
+// EditLocationTab les met à jour AVEC l'adresse).
+const POI_WRITE_DESCRIPTOR: FormDescriptor = {
+  ...POI_READ_DESCRIPTOR,
+  fields: {
+    ...POI_READ_DESCRIPTOR.fields,
+    geo: { name: "geo", type: "object", widget: "hidden", label: "geo" },
+    geoPosition: { name: "geoPosition", type: "object", widget: "hidden", label: "geoPosition" },
+  },
 };
 
 /**
@@ -346,37 +362,17 @@ export const buildEditDefaults = (poi: Poi | null | undefined): AddPoiFormData =
   return { ...createEmptyDefaults(), ...seeded } as AddPoiFormData;
 };
 
-// ── Patch d'édition ───────────────────────────────────────────────────────────
-// Extrait de `PoiEquipementForm.buildEditPatch` pour être réutilisé par le moteur
-// générique (`PoiEquipementGenericModal`). En édition on NE renvoie que les champs
-// réellement modifiés (diff vs `defaultValues`), sinon `transformFormDataWithAddress`
-// reconstruirait une adresse partielle et `Object.assign(poi.data, …)` écraserait
-// l'adresse serveur (perte des sous-champs géo non relus par `buildEditDefaults`).
-export const ADDRESS_PATCH_KEYS = [
-  "addressCountry", "addressLocality", "localityId", "postalCode", "streetAddress",
-  "codeInsee", "level1", "level1Name", "level2", "level2Name",
-  "level3", "level3Name", "level4", "level4Name",
-] as const;
-
+// ── Delta d'édition (pipeline, P2) ──────────────────────────────────────────────
 /**
- * Diff `current` vs `initial` → patch partiel. Adresse atomique : si UN champ
- * d'adresse change, on renvoie TOUT le bloc + geo/geoPosition (sinon adresse
- * reconstruite partielle côté lib).
+ * `current` vs `defaults` → delta serveur à appliquer au draft : via `valuesToPayload` (adresse recomposée
+ * en objet imbriqué + champs costum) puis `diffForEdit` (modifié → valeur, VIDÉ → clear typé). Remplace
+ * `buildEditPatch` + `transformFormDataWithAddress` : le delta est DÉJÀ nidifié (clé `address`), donc
+ * `transformFormDataWithAddress` côté mutation devient un no-op. Différence ASSUMÉE vs l'ancien : un champ
+ * vidé est réellement effacé (l'ancien lâchait les `undefined`). `geo`/`geoPosition` partent quand ils
+ * changent (EditLocationTab les met à jour avec l'adresse). cf. doc/refactor-field-treatment.md (P2).
  */
-export function buildEditPatch(
-  current: AddPoiFormData,
-  initial: AddPoiFormData,
-): Partial<AddPoiFormData> {
-  const values = current as Record<string, unknown>;
-  const init = initial as Record<string, unknown>;
-  const patch: Record<string, unknown> = {};
-  for (const key of Object.keys(values)) {
-    if (!isSameValue(values[key], init[key])) patch[key] = values[key];
-  }
-  if (ADDRESS_PATCH_KEYS.some((k) => !isSameValue(values[k], init[k]))) {
-    for (const k of ADDRESS_PATCH_KEYS) patch[k] = values[k];
-    patch.geo = values.geo;
-    patch.geoPosition = values.geoPosition;
-  }
-  return patch as Partial<AddPoiFormData>;
+export function buildEditDelta(current: AddPoiFormData, defaults: AddPoiFormData): Record<string, unknown> {
+  const payload = valuesToPayload(POI_WRITE_DESCRIPTOR, current as unknown as FormValues);
+  const baseline = valuesToPayload(POI_WRITE_DESCRIPTOR, defaults as unknown as FormValues);
+  return diffForEdit(POI_WRITE_DESCRIPTOR, payload, baseline);
 }

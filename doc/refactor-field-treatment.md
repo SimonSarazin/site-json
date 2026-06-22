@@ -97,7 +97,11 @@ parité 5080 (legacy) vs 5099 (backend)** pour l'entité concernée. La forme le
   `serializeGroup`). Le mapping coercer-par-coercer (~60 lignes) est supprimé. Équivalence prouvée
   (`poiEquipement.readMigration.test.ts` : création → createEmptyDefaults ; édition → coercition + adresse imbriquée).
   Effacement prouvé contre legacy (lib `costum-update-singlefield` : string/objet/number, **5080 ↔ 5099**).
-  **Reste de P2** : WRITE/diff (`buildEditPatch` → `valuesToPayload`+`diffForEdit` avec adresse `serializeGroup`
-  + `geo`/`geoPosition` atomiques), branchement `PoiEquipementGenericModal`, suppression de `buildEditPatch`.
+- **P2 — POI WRITE migré (P2 COMPLET)** : `buildEditDelta` (= `valuesToPayload` + `diffForEdit` sur
+  `POI_WRITE_DESCRIPTOR` : adresse recomposée en objet imbriqué via `serializeGroup`, `geo`/`geoPosition`
+  émis au changement) remplace `buildEditPatch`. `PoiEquipementGenericModal` câblé ; `buildEditPatch` +
+  `ADDRESS_PATCH_KEYS` **supprimés**. Le delta étant déjà nidifié, `transformFormDataWithAddress` (mutation)
+  est un no-op → `useUpdatePoi` inchangé. Écart ASSUMÉ vs l'ancien : un champ vidé est réellement effacé
+  (l'ancien lâchait l'`undefined`). Test `buildEditDelta.test.ts` (modify / adresse imbriquée / clear typé).
 - NB : **profil** (`\|\| ""`) efface correctement par convention — à rendre structurel via `fieldPipeline` = P4.
-- Reste : P2-suite (WRITE POI) → P3 (tiers-lieu) → P4 (profil) → P5, sous garde de parité (tests d'intégration lib vs 5080).
+- Reste : P3 (tiers-lieu : transformers de groupe openingHours/typePlace/social) → P4 (profil) → P5, sous garde de parité (tests d'intégration lib vs 5080).

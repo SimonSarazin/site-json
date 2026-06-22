@@ -22,8 +22,8 @@ const emptyFor = (prev: unknown): unknown => (Array.isArray(prev) ? [] : "");
  * mais ABSENTE de `payload` = champ que l'utilisateur a vidé → on émet une valeur vide TYPÉE pour l'effacer
  * explicitement (sinon le draft garde l'ancienne valeur → `save()` ne voit aucun changement → pas d'appel).
  *
- * ⚠ À n'utiliser QUE sur un payload COMPLET. Sur un payload PARTIEL (diff, ex. `buildEditPatch`), une clé
- * absente = champ INCHANGÉ (et non effacé) → ce helper effacerait à tort les champs non modifiés.
+ * ⚠ À n'utiliser QUE sur un payload COMPLET. Sur un payload PARTIEL (diff partiel), une clé absente = champ
+ * INCHANGÉ (et non effacé) → ce helper effacerait à tort les champs non modifiés.
  *
  * @param skip clés à NE PAS réconcilier ici (traitées à part) : ex. `"address"` (atomique), `"tags"` (mergés).
  * @returns un objet `{ clé: vide }` à appliquer au draft (vide seulement, ne contient pas les champs modifiés).

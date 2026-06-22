@@ -308,8 +308,8 @@ export function useAddPoi(
  * on mute le draft réactif `poi.data` puis on appelle **un seul** `save()`
  * (atomique, un aller-retour). Contrairement à une boucle `updateField`,
  * assigner `""`/`[]` efface réellement le champ — l'édition peut donc vider
- * une valeur. `transformFormDataWithAddress` reconstruit l'objet `address`
- * à partir des champs aplatis du formulaire.
+ * une valeur. Le `data` reçu est le DELTA serveur produit par `buildEditDelta` (pipeline) :
+ * adresse DÉJÀ imbriquée → `transformFormDataWithAddress` est un no-op (conservé par robustesse).
  *
  * @param poi - L'entité POI à mettre à jour
  */
@@ -323,11 +323,9 @@ export function useUpdatePoi(poi: EntityTypes | null) {
       const { _imageFile, _imageDeleted, ...formData } = data;
 
       // `profil_avatar` est posé dans le draft : le `save()` (→ `_update`) route le
-      // champ vers le bloc PROFIL_IMAGE (`updateImageProfil`) en un seul aller-retour,
-      // comme l'avatar du header.
-      // `buildEditPatch` (côté form) ne renvoie que les champs réellement modifiés :
-      // on n'assigne donc que ceux-là (le baseline de diff de l'entité est réconcilié
-      // à la revification depuis ≥ 1.0.145 — `fromServerData` → `forceInitialDraftReset`).
+      // champ vers le bloc PROFIL_IMAGE (`updateImageProfil`) en un seul aller-retour.
+      // `data` = delta serveur de `buildEditDelta` (champs modifiés/vidés + adresse imbriquée) → on assigne
+      // tel quel. `transformFormDataWithAddress` est un no-op ici (aucune clé d'adresse à plat dans le delta).
       const transformedData = transformFormDataWithAddress(formData);
       Object.assign(poi.data, transformedData, _imageFile ? { profil_avatar: _imageFile } : {});
       try {

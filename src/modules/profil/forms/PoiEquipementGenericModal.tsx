@@ -18,7 +18,7 @@ import { useUnsavedGuard } from "./useUnsavedGuard";
 import { ParentInfoReadonly } from "../components/profile-edit/fields";
 import { poiEquipementDescriptor } from "./poiEquipement.descriptor";
 import { PoiEquipementDoublonsSlot } from "./PoiEquipementDoublonsSlot";
-import { resolvePoiEquipementScope, createEmptyDefaults, buildEditDefaults, buildEditPatch,
+import { resolvePoiEquipementScope, createEmptyDefaults, buildEditDefaults, buildEditDelta,
   type PoiEquipementSubmitPayload, type PoiEquipementEditPayload } from "../components/add/poiEquipement";
 import { useAddPoi, useUpdatePoi } from "../hooks/useAddMutations";
 import type { AddPoiFormData } from "../schemaForm";
@@ -67,11 +67,15 @@ export function PoiEquipementGenericModal({ open, onOpenChange, mode = "add", po
         : values.urls,
     } as AddPoiFormData;
     if (isEdit) {
-      // Patch partiel : seuls les champs modifiés (diff vs defaults). Évite la
-      // reconstruction lossy de l'adresse + les dates re-sérialisées parasites
-      // (cf. buildEditPatch — sinon Object.assign écraserait l'adresse serveur).
-      const patch = buildEditPatch(cleaned, defaults);
-      await updateMutation.mutateAsync(patch as PoiEquipementEditPayload);
+      // Delta serveur (pipeline) : champs modifiés/vidés + adresse recomposée (objet imbriqué) — déjà au
+      // format serveur, donc transformFormDataWithAddress (mutation) est un no-op. L'image (_imageFile/
+      // _imageDeleted, hors descripteur) est repassée à part. cf. buildEditDelta + doc/refactor-field-treatment.md.
+      const payload = {
+        ...buildEditDelta(cleaned, defaults),
+        _imageFile: (values._imageFile as File | null | undefined) ?? undefined,
+        _imageDeleted: Boolean(values._imageDeleted),
+      } as PoiEquipementEditPayload;
+      await updateMutation.mutateAsync(payload);
     } else {
       await addMutation.mutateAsync(cleaned as unknown as PoiEquipementSubmitPayload);
     }

@@ -29,7 +29,7 @@ export function useEditTiersLieu(organization: Organization | null) {
       const payload = buildTiersLieuxPayload(data, opts);
       // Baseline reconstruite depuis l'ENTITÉ (mêmes options) pour ne réassigner QUE le réellement
       // modifié — sinon l'objet `address` reconstruit (partiel si l'adresse n'a pas été ré-éditée)
-      // écrase l'adresse serveur complète (perte de level2..4/codeInsee/geo). cf. POI buildEditPatch.
+      // écrase l'adresse serveur complète (perte de level2..4/codeInsee/geo). cf. POI buildEditDelta.
       const baseline = buildTiersLieuxPayload(mapEntityToTiersLieuxValues(organization), opts) as Record<string, unknown>;
 
       const target = organization.data as Record<string, unknown>;
