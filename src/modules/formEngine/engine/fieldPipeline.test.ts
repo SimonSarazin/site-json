@@ -142,6 +142,31 @@ describe("fieldPipeline — groupes de sérialisation (N plats ↔ 1 objet serve
   });
 });
 
+// Flags writeOnly / readOnly / groupReadOnly (S1) — UN descripteur read+write par entité.
+const DF: FormDescriptor = {
+  id: "f", collection: "organizations", layout: { kind: "flat" }, sections: [],
+  serializeGroups: { social: { serverKey: "socialNetwork", read: "test:socialRead", write: "test:socialWrite", groupReadOnly: true } },
+  fields: {
+    nm: { name: "nm", type: "string", widget: "text", label: "" },
+    geo: { name: "geo", type: "object", widget: "hidden", label: "", writeOnly: true },
+    computed: { name: "computed", type: "string", widget: "hidden", label: "", readOnly: true },
+    github: { name: "github", type: "string", widget: "text", label: "", group: "social" },
+    facebook: { name: "facebook", type: "string", widget: "text", label: "", group: "social" },
+  },
+};
+
+describe("fieldPipeline — flags writeOnly / readOnly / groupReadOnly", () => {
+  it("READ : writeOnly ignoré ; readOnly lu ; groupReadOnly décompose l'objet serveur en champs plats", () => {
+    const v = seedFromEntity(DF, { nm: "N", geo: { x: 1 }, computed: "c", socialNetwork: { github: "g", facebook: "f" } });
+    expect(v).toEqual({ nm: "N", computed: "c", github: "g", facebook: "f" }); // geo absent (writeOnly)
+  });
+
+  it("WRITE : writeOnly émis ; readOnly omis ; groupReadOnly → membres à plat (pas d'objet groupe)", () => {
+    const p = valuesToPayload(DF, { nm: "N", geo: { x: 1 }, computed: "c", github: "g", facebook: "" });
+    expect(p).toEqual({ nm: "N", geo: { x: 1 }, github: "g", facebook: "" }); // computed omis (readOnly), pas de socialNetwork (groupReadOnly)
+  });
+});
+
 describe("fieldPipeline — clearValue", () => {
   it("dérive du type, field.clear prioritaire", () => {
     expect(clearValue({ name: "a", type: "string", widget: "text", label: "" })).toBe("");

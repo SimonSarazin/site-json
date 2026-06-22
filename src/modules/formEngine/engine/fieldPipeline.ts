@@ -52,7 +52,7 @@ export function seedFromEntity(descriptor: FormDescriptor, serverData: FormValue
   }
   // 2. Champs simples (hors groupe) : serverData[path ?? name] + read, puis DÉFAUT si vide.
   for (const field of Object.values(descriptor.fields)) {
-    if (field.group) continue; // valeur fournie par son groupe (étape 1)
+    if (field.group || field.writeOnly) continue; // groupe → étape 1 ; writeOnly → jamais relu
     const raw = serverData[storeKey(field)];
     let v = field.read ? applyTransform(field.read, raw, serverData) : raw;
     // Champ vide côté serveur → `field.default` (parité `buildEditDefaults` : `toX(server) || defaults.X`).
@@ -71,14 +71,19 @@ export function seedFromEntity(descriptor: FormDescriptor, serverData: FormValue
  * efface en ÉDITION (clé absente + présente au baseline → clear).
  */
 export function valuesToPayload(descriptor: FormDescriptor, values: FormValues): FormValues {
+  const groups = descriptor.serializeGroups ?? {};
   const payload: FormValues = {};
   for (const field of Object.values(descriptor.fields)) {
-    if (field.group) continue; // recomposé par son groupe (ci-dessous)
+    if (field.readOnly) continue; // jamais émis au payload
+    // Membre de groupe : recomposé par le groupe — SAUF si le groupe est groupReadOnly (alors émis ici).
+    if (field.group && !groups[field.group]?.groupReadOnly) continue;
     const v = field.write ? applyTransform(field.write, values[field.name], values) : values[field.name];
     if (v !== undefined) payload[storeKey(field)] = v;
   }
   // Groupes : valeurs plates → 1 objet serveur (`undefined` = clé omise, ex. adresse sans localityId).
-  for (const g of Object.values(descriptor.serializeGroups ?? {})) {
+  // `groupReadOnly` : pas d'écriture au niveau groupe (les membres ont été émis individuellement ci-dessus).
+  for (const g of Object.values(groups)) {
+    if (g.groupReadOnly) continue;
     const obj = applyTransform(g.write, values, values);
     if (obj !== undefined) payload[g.serverKey] = obj;
   }

@@ -89,8 +89,14 @@ export interface FieldDescriptor {
    *  évite l'écrasement lossy (ex. adresse : level1..4/codeInsee/geo non relus). cf. fieldPipeline.diffForEdit. */
   atomicGroup?: string;
   /** Membre d'un GROUPE DE SÉRIALISATION (cf. `FormDescriptor.serializeGroups`) : N champs plats ↔ 1 objet
-   *  serveur (ex. `address` 14 clés, `socialNetwork` 9 clés). Lu/écrit PAR le groupe, pas individuellement. */
+   *  serveur (ex. `address` 14 clés, `socialNetwork` 9 clés). Lu/écrit PAR le groupe, pas individuellement.
+   *  EXCEPTION : si le groupe est `groupReadOnly`, le membre est LU par le groupe mais ÉCRIT individuellement. */
   group?: string;
+  /** Champ WRITE-only : ignoré par `seedFromEntity` (READ), émis par `valuesToPayload` (ex. geo/geoPosition
+   *  posés par EditLocationTab, jamais relus dans le form) → permet UN descripteur read+write par entité. */
+  writeOnly?: boolean;
+  /** Champ READ-only : seedé (READ) mais jamais émis au payload (ex. valeur d'affichage calculée). */
+  readOnly?: boolean;
 }
 
 // ── Sections & layout (§5) ────────────────────────────────────────────────────
@@ -160,9 +166,11 @@ export interface FormDescriptor {
   validate?: string | ((values: FormValues) => Array<{ path: string; message: string }>);
   /** GROUPES DE SÉRIALISATION : N champs plats (membres via `field.group`) ↔ 1 clé/objet serveur.
    *  `read` (objet serveur → valeurs plates des membres) / `write` (valeurs de form → objet serveur,
-   *  `undefined` = clé omise) sont des transformers nommés. Subsume extractAddressFields/buildAddressFromForm,
-   *  extractSocial/buildSocialNetwork, etc. cf. `fieldPipeline` + doc/refactor-field-treatment.md (P3). */
-  serializeGroups?: Record<string, { serverKey: string; read: TransformName; write: TransformName }>;
+   *  `undefined` = clé omise) sont des transformers nommés. `groupReadOnly` : le groupe DÉCOMPOSE au READ
+   *  mais N'ÉCRIT PAS au niveau groupe (les membres sont alors émis INDIVIDUELLEMENT par leur propre `write`)
+   *  — pour l'asymétrie profil `socialNetwork` (lu objet, écrit 9 clés plates). Subsume extractAddressFields/
+   *  buildAddressFromForm, extractSocial/buildSocialNetwork, etc. cf. `fieldPipeline` + doc/refactor-field-treatment.md. */
+  serializeGroups?: Record<string, { serverKey: string; read: TransformName; write: TransformName; groupReadOnly?: boolean }>;
 }
 
 /** Valeurs de formulaire (plates, clé = name). */
