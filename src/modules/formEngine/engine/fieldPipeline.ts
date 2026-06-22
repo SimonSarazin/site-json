@@ -50,11 +50,15 @@ export function seedFromEntity(descriptor: FormDescriptor, serverData: FormValue
     const decomposed = applyTransform(g.read, serverData[g.serverKey], serverData);
     if (decomposed && typeof decomposed === "object") Object.assign(values, decomposed as FormValues);
   }
-  // 2. Champs simples (hors groupe) : serverData[path ?? name] + read.
+  // 2. Champs simples (hors groupe) : serverData[path ?? name] + read, puis DÉFAUT si vide.
   for (const field of Object.values(descriptor.fields)) {
     if (field.group) continue; // valeur fournie par son groupe (étape 1)
     const raw = serverData[storeKey(field)];
-    values[field.name] = field.read ? applyTransform(field.read, raw, serverData) : raw;
+    let v = field.read ? applyTransform(field.read, raw, serverData) : raw;
+    // Champ vide côté serveur → `field.default` (parité `buildEditDefaults` : `toX(server) || defaults.X`).
+    // Couvre AUSSI la création (serverData = {}) : tous les champs retombent sur leur défaut.
+    if (isEmptyValue(v) && field.default !== undefined) v = field.default;
+    values[field.name] = v;
   }
   return values;
 }

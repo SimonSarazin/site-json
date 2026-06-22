@@ -42,6 +42,16 @@ describe("fieldPipeline — seedFromEntity (READ)", () => {
     expect(v.code).toBe("ABC");                // read test:upper
     expect(v.tags).toEqual(["x"]);
   });
+
+  it("applique field.default si serveur vide (parité buildEditDefaults `toX(server) || defaults.X`)", () => {
+    const Dd: FormDescriptor = { ...D, fields: {
+      type: { name: "type", type: "string", widget: "text", label: "", default: "recoveryCenter" },
+      name: { name: "name", type: "string", widget: "text", label: "" }, // pas de défaut
+    } };
+    expect(seedFromEntity(Dd, {})).toEqual({ type: "recoveryCenter", name: undefined }); // création → défaut
+    expect(seedFromEntity(Dd, { type: "place", name: "N" })).toEqual({ type: "place", name: "N" }); // serveur prime
+    expect(seedFromEntity(Dd, { type: "" })).toMatchObject({ type: "recoveryCenter" }); // "" serveur → défaut
+  });
 });
 
 describe("fieldPipeline — valuesToPayload (WRITE)", () => {
