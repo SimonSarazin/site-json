@@ -1329,6 +1329,7 @@
   "validation": {
     "required": "This field is required",
     "addressLocality": "Select a city from the list to validate the address",
+    "address": { "required": "Complete address required: city, postal code and street" },
     "minLength": "Too short",
     "maxLength": "Too long",
     "min": "Value too small",

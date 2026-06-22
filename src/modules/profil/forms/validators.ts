@@ -11,6 +11,18 @@ import { addressValidate } from "./addCommon";
 export const addressValid: ValidateFn = addressValidate;
 
 /**
+ * Adresse COMPLÈTE obligatoire : exige ville sélectionnée (`localityId`) + code postal + rue
+ * (le formulaire est en cascade pays→ville→CP→rue, cf. EditLocationTab). Erreur portée sur le champ
+ * CONTENEUR `address` (toujours rendu par le widget `location` → message visible même pays non saisi ;
+ * les sous-champs internes n'apparaissent qu'après). Plus strict qu'`addressValid` (qui n'exige rien
+ * tant que l'adresse n'est pas entamée).
+ */
+export const addressComplete: ValidateFn = (v: FormValues) =>
+  (v.localityId && v.postalCode && v.streetAddress)
+    ? []
+    : [{ path: "address", message: "validation.address.required" }];
+
+/**
  * Dates d'événement : ponctuel (recurrency=false) → startDate/endDate requis + endDate ≥ startDate ;
  * récurrent → openingHours non vide. N'inclut PAS `organizer` (sa condition varie selon le contexte
  * add/edit — gérée par chaque descripteur).
@@ -50,6 +62,7 @@ export const addEventValid: ValidateFn = (v: FormValues) => {
 };
 
 registerValidate("addressValid", addressValid);
+registerValidate("addressComplete", addressComplete);
 registerValidate("eventDatesValid", eventDatesValid);
 registerValidate("editEventValid", editEventValid);
 registerValidate("addEventValid", addEventValid);

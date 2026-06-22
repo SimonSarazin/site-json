@@ -137,8 +137,26 @@ const registry: Partial<Record<string, WidgetComponent>> = {
     </Suspense>
   ),
 
-  // Composite : rend tout le bloc adresse (lit/écrit ~14 champs via le form).
-  location: (p) => <Suspense fallback={<WidgetFallback />}><EditLocationTab form={p.form} /></Suspense>,
+  // Composite : rend tout le bloc adresse (lit/écrit ~14 champs via le form). Enveloppé dans un
+  // FormField/FormItem sur le nom du champ (`address`) pour : (a) afficher le label + `*` si requis
+  // (`field.required` OU `widgetProps.required` — ce dernier pour marquer l'obligation SANS contrainte
+  // zodGen, l'objet `address` n'étant jamais peuplé en l'état, cf. validateur cross-champ), et (b)
+  // afficher TOUJOURS le message d'erreur cross-champ porté sur `address` (visible même pays non saisi,
+  // contrairement aux sous-champs internes d'EditLocationTab qui n'apparaissent qu'après).
+  location: (p) => {
+    const req = Boolean(p.field.required || p.field.widgetProps?.required);
+    return (
+      <Suspense fallback={<WidgetFallback />}>
+        <FormField control={control(p.form)} name={fname(p.field.name)} render={() => (
+          <FormItem>
+            {p.field.label && <FormLabel>{lbl(p)}{req ? " *" : ""}</FormLabel>}
+            <EditLocationTab form={p.form} />
+            <TranslatedFormMessage />
+          </FormItem>
+        )} />
+      </Suspense>
+    );
+  },
 
   // Composite : recherche/sélection d'une entité parente (référence `{id:{type,name}}`) via l'autocomplete.
   // widgetProps : searchTypes / multiple / includeMe ; `filters` runtime (ex. via fieldProps).

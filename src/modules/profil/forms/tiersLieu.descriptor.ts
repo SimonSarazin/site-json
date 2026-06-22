@@ -61,7 +61,9 @@ const fields: FieldDescriptor[] = [
   { name: "surfaceBuilt", type: "number", widget: "number", label: F("surfaceBuilt"), placeholder: F("surfacePlaceholder") },
   { name: "surfaceOutdoor", type: "number", widget: "number", label: F("surfaceOutdoor"), placeholder: F("surfacePlaceholder") },
 
-  { name: "address", type: "object", widget: "location", label: F("address") },
+  // `widgetProps.required` = marqueur visuel `*` (obligation) SANS contrainte zodGen (l'objet `address`
+  // n'est jamais peuplé : la cascade écrit des champs à plat) — l'obligation réelle est portée par addressComplete.
+  { name: "address", type: "object", widget: "location", label: F("address"), widgetProps: { required: true } },
   // Inputs PLAIN (sans icône) typés email/tel — parité visuelle avec l'original.
   { name: "email", type: "string", widget: "text", label: F("email"), required: true, placeholder: F("emailPlaceholder"),
     widgetProps: { inputType: "email" }, rules: { regex: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$" } },
@@ -106,11 +108,11 @@ export const tiersLieuDescriptor: FormDescriptor = {
       { columns: 1, fields: ["family"] },
       { columns: 2, fields: ["surfaceBuilt", "surfaceOutdoor"] },
     ] },
-    // CONTACT — adresse (sans titre) puis sous-bloc « Contact » bordé : email + téléphone EMPILÉS (1 col.).
-    // `addressLocality` (rendu nul, hors descriptor.fields) est listé pour que le badge d'onglet capte
-    // l'erreur addressValid (cf. validate ci-dessous) ; l'erreur s'affiche inline via EditLocationTab.
+    // CONTACT — adresse (label « Adresse * » + message d'erreur portés par le widget location) puis
+    // sous-bloc « Contact » bordé : email + téléphone EMPILÉS (1 col.). L'erreur addressComplete est portée
+    // sur `address` (dans la section → allume le badge d'onglet + bloque « Suivant »).
     { id: "contact", label: "AddTiersLieux.steps.contact", icon: "map-pin", groups: [
-      { columns: 1, fields: ["address", "addressLocality"] },
+      { columns: 1, fields: ["address"] },
       { columns: 1, divider: true, label: "Contact", titleClassName: "text-sm font-semibold", fields: ["email", "phone"] },
     ] },
     // MEDIA — logo, puis vidéo en sous-bloc bordé titré (text-base font-semibold, parité original).
@@ -130,8 +132,8 @@ export const tiersLieuDescriptor: FormDescriptor = {
     ] },
   ],
   fields: Object.fromEntries(fields.map((f) => [f.name, f])),
-  // addressValid (cross-champ, parité superRefine de l'original) : adresse saisie sans ville
-  // sélectionnée (localityId) → erreur sur addressLocality. = `addressValidate`, désormais par CLÉ
-  // (sérialisable → round-trip config exact).
-  validate: "addressValid",
+  // addressComplete (cross-champ) : adresse COMPLÈTE obligatoire pour un tiers-lieu — ville (localityId)
+  // + code postal + rue. Erreur sur addressLocality (allume le badge de l'étape contact + bloque « Suivant »).
+  // Par CLÉ de registre → sérialisable (round-trip config exact).
+  validate: "addressComplete",
 };

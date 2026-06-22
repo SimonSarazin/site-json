@@ -1329,6 +1329,7 @@
   "validation": {
     "required": "Ce champ est requis",
     "addressLocality": "Sélectionnez une ville dans la liste pour valider l'adresse",
+    "address": { "required": "Adresse complète obligatoire : ville, code postal et rue" },
     "minLength": "Valeur trop courte",
     "maxLength": "Valeur trop longue",
     "min": "Valeur trop petite",
