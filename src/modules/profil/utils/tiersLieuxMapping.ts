@@ -3,7 +3,7 @@ import { getDefaultTiersLieuxValues } from "../components/add/TiersLieuxForm";
 import { transformFormDataWithAddress } from "../hooks/mutationUtils";
 // Pipeline (P3) — imports DIRECTS (pas le barrel formEngine) pour rester un util pur. cf. doc/refactor-field-treatment.md.
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
-import { seedFromEntity, valuesToPayload } from "@/modules/formEngine/engine/fieldPipeline";
+import { seedEntity, buildPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
 import type { FieldDescriptor, FormDescriptor, FormValues } from "@/modules/formEngine";
 
 export interface CostumConfig {
@@ -259,14 +259,19 @@ const TIERSLIEU_DESCRIPTOR: FormDescriptor = {
   },
 };
 
+/** Spec tiers-lieu (pattern unifié) : descripteur read+write + socle typé + skip diff (tags mergés / adresse atomique). */
+const TIERSLIEU_SPEC: FormSpec = {
+  descriptor: TIERSLIEU_DESCRIPTOR,
+  baseDefaults: () => getDefaultTiersLieuxValues() as unknown as FormValues,
+  diffSkip: ["tags", "address"],
+};
+
 /**
- * Entité serveur → valeurs de form tiers-lieu. Délègue à `seedFromEntity(TIERSLIEU_DESCRIPTOR)` ;
- * `getDefaultTiersLieuxValues()` = socle (logo/photos/… non mappés). Équivalent à l'ancien mapping
- * helper-par-helper (prouvé en test). cf. doc/refactor-field-treatment.md (P3).
+ * Entité serveur → valeurs de form tiers-lieu, via la primitive générique `seedEntity` (socle
+ * `getDefaultTiersLieuxValues` + seed serveur). Équivalent à l'ancien mapping (prouvé en test).
  */
 export function mapEntityToTiersLieuxValues(entity: EntityLike): TiersLieuxFormData {
-  const data = (entity.serverData ?? {}) as FormValues;
-  return { ...getDefaultTiersLieuxValues(), ...seedFromEntity(TIERSLIEU_DESCRIPTOR, data) } as TiersLieuxFormData;
+  return seedEntity(TIERSLIEU_SPEC, entity) as unknown as TiersLieuxFormData;
 }
 
 export interface BuildPayloadOptions {
@@ -302,7 +307,7 @@ export function buildTiersLieuxPayload(
   // l'ancien omit-empty ; prouvé par tiersLieuxMapping.test.ts). EditLocationTab a posé level1..4/codeInsee/geo
   // dans `data` → l'objet `address` reconstruit reste COMPLET. Le contexte costum (presets + merge tags)
   // dépend de la config (hors descripteur) → géré ci-dessous.
-  const payload = valuesToPayload(TIERSLIEU_DESCRIPTOR, data as unknown as FormValues) as Record<string, unknown>;
+  const payload = buildPayload(TIERSLIEU_SPEC, data as unknown as FormValues) as Record<string, unknown>;
 
   if (options.costum) {
     payload.type = "NGO";
