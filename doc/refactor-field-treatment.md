@@ -103,10 +103,14 @@ parité 5080 (legacy) vs 5099 (backend)** pour l'entité concernée. La forme le
   `ADDRESS_PATCH_KEYS` **supprimés**. Le delta étant déjà nidifié, `transformFormDataWithAddress` (mutation)
   est un no-op → `useUpdatePoi` inchangé. Écart ASSUMÉ vs l'ancien : un champ vidé est réellement effacé
   (l'ancien lâchait l'`undefined`). Test `buildEditDelta.test.ts` (modify / adresse imbriquée / clear typé).
-- **P3 — tiers-lieu READ migré** : `mapEntityToTiersLieuxValues` délègue à `seedFromEntity(TIERSLIEU_READ_DESCRIPTOR)`
-  (12 champs 1→1 path+read + 4 groupes décompose : `openingDate`→mois/année, `manageModel`→type/autre,
-  `typePlace`(+`typePlaceOther`)→family/autre, `address`→plat). Équivalence prouvée par la suite existante
-  `tiersLieuxMapping.test.ts` (**29/29**, gate). **Reste de P3** : WRITE (`buildTiersLieuxPayload` → pipeline :
-  builds openingDate/manageModel/typePlace/social/openingHours/video + merge `tags`) + branchement add/edit.
+- **P3 — tiers-lieu READ + WRITE migrés (P3 COMPLET)** : `mapEntityToTiersLieuxValues` (READ) ET
+  `buildTiersLieuxPayload` (WRITE) délèguent au pipeline via UN `TIERSLIEU_DESCRIPTOR` (read+write+path par
+  champ + 4 groupes : openingDate/manageModel/typePlace/address). Les write-transformers réutilisent les
+  helpers (buildOpeningHours/TypePlace/SocialNetwork/OpeningDate, transformFormDataWithAddress) ; un write
+  renvoyant `undefined` sur vide → clé omise (`valuesToPayload` n'émet plus les `undefined`) = parité omit-empty
+  CREATE, et `diffForEdit` efface en ÉDITION. `buildTiersLieuxPayload` garde presets + merge tags (hors descripteur).
+  useEditTiersLieu/useAddTiersLieu **inchangés**. Équivalence prouvée par `tiersLieuxMapping.test.ts` (**29/29**)
+  + test d'intégration lib `costum-tierslieu-fields` (typePlace/openingHours/socialNetwork/surface — create+edit+clear,
+  **3/3 sur 5080 ↔ 5099**).
 - NB : **profil** (`\|\| ""`) efface correctement par convention — à rendre structurel via `fieldPipeline` = P4.
-- Reste : P3-suite (WRITE tiers-lieu) → P4 (profil) → P5, sous garde de parité (tests d'intégration lib vs 5080).
+- Reste : P4 (profil multi-entité : supprimer le miroir buildProfileUpdateData↔useProfileFormData) → P5 (unifier CREATE/EDIT dans runSubmit), sous garde de parité.

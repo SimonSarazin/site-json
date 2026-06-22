@@ -3,7 +3,7 @@ import { getDefaultTiersLieuxValues } from "../components/add/TiersLieuxForm";
 import { transformFormDataWithAddress } from "../hooks/mutationUtils";
 // Pipeline (P3) — imports DIRECTS (pas le barrel formEngine) pour rester un util pur. cf. doc/refactor-field-treatment.md.
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
-import { seedFromEntity } from "@/modules/formEngine/engine/fieldPipeline";
+import { seedFromEntity, valuesToPayload } from "@/modules/formEngine/engine/fieldPipeline";
 import type { FieldDescriptor, FormDescriptor, FormValues } from "@/modules/formEngine";
 
 export interface CostumConfig {
@@ -197,33 +197,54 @@ registerTransform("tl:addressRead", (v) => {
     postalCode: pickString(a.postalCode), streetAddress: pickString(a.streetAddress), localityId: pickString(a.localityId),
   };
 });
+// WRITE (P3) — réutilisent les helpers de build. `undefined` sur vide = clé OMISE par valuesToPayload
+// (parité de l'omit-empty de l'ancien buildTiersLieuxPayload ; le diff d'édition efface, lui, via diffForEdit).
+registerTransform("tl:emptyToUndef", (v) => (v ? v : undefined));
+registerTransform("tl:numOrUndef", (v) => (v ? Number(v) : undefined));
+registerTransform("tl:videoWrite", (v) => (v ? [v] : undefined));
+registerTransform("tl:socialWrite", (links) => buildSocialNetwork(links as Array<{ platform: string; url: string }>).socialNetwork);
+registerTransform("tl:hoursWrite", (hours) => {
+  const oh = buildOpeningHoursPayload(hours as TiersLieuxFormData["hours"]);
+  return oh.some((e) => e !== "") ? oh : undefined; // omet openingHours si aucun jour ouvert
+});
+registerTransform("tl:openingDateWrite", (_v, all) =>
+  buildOpeningDatePayload((all as Record<string, string>).openingMonth, (all as Record<string, string>).openingYear));
+registerTransform("tl:manageModelWrite", (_v, all) => {
+  const a = all as Record<string, string>;
+  return a.managementType ? (a.managementType === "autre" && a.managementTypeOther ? a.managementTypeOther : a.managementType) : undefined;
+});
+registerTransform("tl:typePlaceWrite", (_v, all) =>
+  buildTypePlace((all as Record<string, unknown>).family as string[], (all as Record<string, unknown>).familyOther as string).typePlace);
+registerTransform("tl:addressWrite", (_v, all) => transformFormDataWithAddress((all ?? {}) as Record<string, unknown>).address);
 
-const ro = (name: string, read: string, path?: string, type: FieldDescriptor["type"] = "string"): FieldDescriptor =>
-  ({ name, type, widget: "hidden", label: name, read, ...(path ? { path } : {}) });
+// ro = champ 1→1 (read + write + path) ; grp = membre d'un groupe de sérialisation (lu/écrit par le groupe).
+const ro = (name: string, read: string, write?: string, path?: string, type: FieldDescriptor["type"] = "string"): FieldDescriptor =>
+  ({ name, type, widget: "hidden", label: name, read, ...(write ? { write } : {}), ...(path ? { path } : {}) });
 const grp = (name: string, group: string, type: FieldDescriptor["type"] = "string"): FieldDescriptor =>
   ({ name, type, widget: "hidden", label: name, group });
 
-const TIERSLIEU_READ_DESCRIPTOR: FormDescriptor = {
-  id: "tiers-lieu:read", collection: "organizations", layout: { kind: "flat" }, sections: [],
+// Descripteur de pipeline tiers-lieu (READ + WRITE). Consommé par seedFromEntity (read) ET valuesToPayload (write).
+const TIERSLIEU_DESCRIPTOR: FormDescriptor = {
+  id: "tiers-lieu:pipeline", collection: "organizations", layout: { kind: "flat" }, sections: [],
   serializeGroups: {
-    openingDate: { serverKey: "openingDate", read: "tl:openingDateRead", write: "tl:openingDateRead" },
-    manageModel: { serverKey: "manageModel", read: "tl:manageModelRead", write: "tl:manageModelRead" },
-    typePlace: { serverKey: "typePlace", read: "tl:typePlaceRead", write: "tl:typePlaceRead" },
-    address: { serverKey: "address", read: "tl:addressRead", write: "tl:addressRead" },
+    openingDate: { serverKey: "openingDate", read: "tl:openingDateRead", write: "tl:openingDateWrite" },
+    manageModel: { serverKey: "manageModel", read: "tl:manageModelRead", write: "tl:manageModelWrite" },
+    typePlace: { serverKey: "typePlace", read: "tl:typePlaceRead", write: "tl:typePlaceWrite" },
+    address: { serverKey: "address", read: "tl:addressRead", write: "tl:addressWrite" },
   },
   fields: {
-    name: ro("name", "tl:pickString"),
-    shortDescription: ro("shortDescription", "tl:pickString"),
-    description: ro("description", "tl:pickString"),
-    structureName: ro("structureName", "tl:pickString", "holderOrganization"),
-    surfaceBuilt: ro("surfaceBuilt", "tl:pickNumberString", "buildingSurfaceArea"),
-    surfaceOutdoor: ro("surfaceOutdoor", "tl:pickNumberString", "siteSurfaceArea"),
-    email: ro("email", "tl:pickString"),
-    phone: ro("phone", "tl:pickString", "telephone"),
-    websiteUrl: ro("websiteUrl", "tl:pickString", "url"),
-    videoUrl: ro("videoUrl", "tl:video0", "video"),
-    socialLinks: ro("socialLinks", "tl:socialRead", "socialNetwork", "array"),
-    hours: ro("hours", "tl:hoursRead", "openingHours", "object"),
+    name: ro("name", "tl:pickString"),                                                  // requis → write identity (toujours émis)
+    email: ro("email", "tl:pickString"),                                                // requis → write identity
+    shortDescription: ro("shortDescription", "tl:pickString", "tl:emptyToUndef"),
+    description: ro("description", "tl:pickString", "tl:emptyToUndef"),
+    structureName: ro("structureName", "tl:pickString", "tl:emptyToUndef", "holderOrganization"),
+    surfaceBuilt: ro("surfaceBuilt", "tl:pickNumberString", "tl:numOrUndef", "buildingSurfaceArea"),
+    surfaceOutdoor: ro("surfaceOutdoor", "tl:pickNumberString", "tl:numOrUndef", "siteSurfaceArea"),
+    phone: ro("phone", "tl:pickString", "tl:emptyToUndef", "telephone"),
+    websiteUrl: ro("websiteUrl", "tl:pickString", "tl:emptyToUndef", "url"),
+    videoUrl: ro("videoUrl", "tl:video0", "tl:videoWrite", "video"),
+    socialLinks: ro("socialLinks", "tl:socialRead", "tl:socialWrite", "socialNetwork", "array"),
+    hours: ro("hours", "tl:hoursRead", "tl:hoursWrite", "openingHours", "object"),
     openingMonth: grp("openingMonth", "openingDate"),
     openingYear: grp("openingYear", "openingDate"),
     managementType: grp("managementType", "manageModel"),
@@ -239,13 +260,13 @@ const TIERSLIEU_READ_DESCRIPTOR: FormDescriptor = {
 };
 
 /**
- * Entité serveur → valeurs de form tiers-lieu. Délègue à `seedFromEntity(TIERSLIEU_READ_DESCRIPTOR)` ;
+ * Entité serveur → valeurs de form tiers-lieu. Délègue à `seedFromEntity(TIERSLIEU_DESCRIPTOR)` ;
  * `getDefaultTiersLieuxValues()` = socle (logo/photos/… non mappés). Équivalent à l'ancien mapping
  * helper-par-helper (prouvé en test). cf. doc/refactor-field-treatment.md (P3).
  */
 export function mapEntityToTiersLieuxValues(entity: EntityLike): TiersLieuxFormData {
   const data = (entity.serverData ?? {}) as FormValues;
-  return { ...getDefaultTiersLieuxValues(), ...seedFromEntity(TIERSLIEU_READ_DESCRIPTOR, data) } as TiersLieuxFormData;
+  return { ...getDefaultTiersLieuxValues(), ...seedFromEntity(TIERSLIEU_DESCRIPTOR, data) } as TiersLieuxFormData;
 }
 
 export interface BuildPayloadOptions {
@@ -276,42 +297,12 @@ export function buildTiersLieuxPayload(
   data: TiersLieuxFormData,
   options: BuildPayloadOptions = {}
 ): Record<string, unknown> {
-  // Passer TOUTE la data (EditLocationTab y pose level1..4/codeInsee/geo au choix d'une ville) → l'objet
-  // `address` reconstruit est COMPLET, pas amputé de level2..4 (sinon écrasement lossy de l'adresse serveur).
-  // On n'extrait que `.address` (le reste de la data est cherry-pické champ par champ ci-dessous).
-  const { address: builtAddress } = transformFormDataWithAddress(data as unknown as Record<string, unknown>);
-  const transformedAddress = builtAddress ? { address: builtAddress } : {};
-
-  const openingHours = buildOpeningHoursPayload(data.hours);
-  const hasAnyOpen = openingHours.some((entry) => entry !== "");
-
-  const payload: Record<string, unknown> = {
-    name: data.name,
-    ...transformedAddress,
-    ...(data.shortDescription ? { shortDescription: data.shortDescription } : {}),
-    ...(data.description ? { description: data.description } : {}),
-    ...(buildOpeningDatePayload(data.openingMonth, data.openingYear)
-      ? { openingDate: buildOpeningDatePayload(data.openingMonth, data.openingYear) }
-      : {}),
-    ...(data.structureName ? { holderOrganization: data.structureName } : {}),
-    ...(data.managementType
-      ? {
-          manageModel:
-            data.managementType === "autre" && data.managementTypeOther
-              ? data.managementTypeOther
-              : data.managementType,
-        }
-      : {}),
-    ...buildTypePlace(data.family, data.familyOther),
-    ...(data.surfaceBuilt ? { buildingSurfaceArea: Number(data.surfaceBuilt) } : {}),
-    ...(data.surfaceOutdoor ? { siteSurfaceArea: Number(data.surfaceOutdoor) } : {}),
-    ...(data.videoUrl ? { video: [data.videoUrl] } : {}),
-    ...(data.websiteUrl ? { url: data.websiteUrl } : {}),
-    ...buildSocialNetwork(data.socialLinks),
-    email: data.email,
-    ...(data.phone ? { telephone: data.phone } : {}),
-    ...(hasAnyOpen ? { openingHours } : {}),
-  };
+  // Assemblage via le pipeline (TIERSLIEU_DESCRIPTOR : write transforms + path + groupes openingDate/
+  // manageModel/typePlace/address). Un write renvoyant `undefined` sur vide → clé OMISE (parité exacte de
+  // l'ancien omit-empty ; prouvé par tiersLieuxMapping.test.ts). EditLocationTab a posé level1..4/codeInsee/geo
+  // dans `data` → l'objet `address` reconstruit reste COMPLET. Le contexte costum (presets + merge tags)
+  // dépend de la config (hors descripteur) → géré ci-dessous.
+  const payload = valuesToPayload(TIERSLIEU_DESCRIPTOR, data as unknown as FormValues) as Record<string, unknown>;
 
   if (options.costum) {
     payload.type = "NGO";

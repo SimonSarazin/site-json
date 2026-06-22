@@ -64,15 +64,18 @@ export function seedFromEntity(descriptor: FormDescriptor, serverData: FormValue
 }
 
 /**
- * WRITE — valeurs de form → payload serveur COMPLET. Pour chaque champ : applique `field.write` puis écrit
- * à `path ?? name`. Émet TOUS les champs (vides compris) — le diff décide quoi envoyer.
+ * WRITE — valeurs de form → payload serveur. Pour chaque champ : applique `field.write` puis écrit à
+ * `path ?? name`. Une valeur `undefined` (champ non posé OU `write` renvoyant `undefined` = « omettre »)
+ * est OMISE ; les vides TYPÉS (`""`/`[]`/`false`/`0`) sont émis (le diff/clear les gère). Un `write`
+ * renvoyant `undefined` sur vide reproduit donc l'omission des builders « complets » (CREATE), et le diff
+ * efface en ÉDITION (clé absente + présente au baseline → clear).
  */
 export function valuesToPayload(descriptor: FormDescriptor, values: FormValues): FormValues {
   const payload: FormValues = {};
   for (const field of Object.values(descriptor.fields)) {
     if (field.group) continue; // recomposé par son groupe (ci-dessous)
     const v = field.write ? applyTransform(field.write, values[field.name], values) : values[field.name];
-    payload[storeKey(field)] = v;
+    if (v !== undefined) payload[storeKey(field)] = v;
   }
   // Groupes : valeurs plates → 1 objet serveur (`undefined` = clé omise, ex. adresse sans localityId).
   for (const g of Object.values(descriptor.serializeGroups ?? {})) {

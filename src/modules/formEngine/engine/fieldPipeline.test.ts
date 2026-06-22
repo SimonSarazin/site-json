@@ -55,12 +55,17 @@ describe("fieldPipeline — seedFromEntity (READ)", () => {
 });
 
 describe("fieldPipeline — valuesToPayload (WRITE)", () => {
-  it("applique write + écrit à path ?? name, payload COMPLET (vides compris)", () => {
+  it("applique write + écrit à path ?? name ; vides typés émis, undefined OMIS", () => {
     const p = valuesToPayload(D, { name: "N", structureName: "kkk", code: "ABC", tags: [], addressLocality: "", codeInsee: "" });
     expect(p.holderOrganization).toBe("kkk");  // name form → path serveur
     expect(p.code).toBe("abc");                // write test:lower
-    expect(p.tags).toEqual([]);                // émis même vide
+    expect(p.tags).toEqual([]);                // vide typé [] émis
     expect("structureName" in p).toBe(false);  // jamais la clé form, seulement le path
+    // champs NON fournis (undefined) → clés OMISES (pas posées undefined)
+    const p2 = valuesToPayload(D, { name: "N" });
+    expect(p2).toEqual({ name: "N" });
+    expect("code" in p2).toBe(false);
+    expect("holderOrganization" in p2).toBe(false);
   });
 });
 
