@@ -9,7 +9,7 @@ import { DAYS } from "@/constants/DAYS";
 import { formatISO } from "date-fns";
 import type { FieldDescriptor, FormDescriptor, FormValues } from "@/modules/formEngine";
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
-import { valuesToPayload } from "@/modules/formEngine/engine/fieldPipeline";
+import { buildPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
 
 type Data = Record<string, unknown>;
 
@@ -129,8 +129,13 @@ const PROFIL_WRITE_DESCRIPTORS: Record<string, FormDescriptor> = {
   } },
 };
 
+/** Spec WRITE par entité (pattern unifié). READ (seedEntity) sera branché en migrant useProfileFormData. */
+const PROFIL_SPECS: Record<string, FormSpec> = Object.fromEntries(
+  Object.entries(PROFIL_WRITE_DESCRIPTORS).map(([k, descriptor]) => [k, { descriptor }]),
+);
+
 export function buildProfileUpdateData(entityType: string, data: Data): Record<string, unknown> {
-  const descriptor = PROFIL_WRITE_DESCRIPTORS[entityType];
-  if (!descriptor) return { name: data.name, slug: data.slug };
-  return valuesToPayload(descriptor, data as FormValues) as Record<string, unknown>;
+  const spec = PROFIL_SPECS[entityType];
+  if (!spec) return { name: data.name, slug: data.slug };
+  return buildPayload(spec, data as FormValues) as Record<string, unknown>;
 }
