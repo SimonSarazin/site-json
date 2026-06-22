@@ -3,7 +3,8 @@
  * AddProjectFormData → useAddProject consommé tel quel. Layout tabs (info / localisation).
  */
 import type { FieldDescriptor, FormDescriptor } from "@/modules/formEngine";
-import { addressField, addressValidate, locationSection, nameField, shortDescriptionField, tagsField, urlField } from "./addCommon";
+import { addressField, locationSection, nameField, shortDescriptionField, tagsField, urlField } from "./addCommon";
+import "./validators"; // side-effect : enregistre la clé "addressValid" dans le validateRegistry
 
 const fields: FieldDescriptor[] = [
   nameField(),
@@ -25,5 +26,5 @@ export const addProjectDescriptor: FormDescriptor = {
     locationSection,
   ],
   fields: Object.fromEntries(fields.map((f) => [f.name, f])),
-  validate: addressValidate,
+  validate: "addressValid", // clé de registre (= addressValidate) → sérialisable, round-trip config exact
 };

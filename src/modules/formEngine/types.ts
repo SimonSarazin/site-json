@@ -103,6 +103,8 @@ export interface FieldGroup {
 export interface SectionDescriptor {
   id: string;
   label?: I18n;
+  /** Icône de l'étape/onglet (nom lucide, ex. "building-2") — rendue par le stepper (variant visuel). */
+  icon?: string;
   visibleIf?: Predicate;
   /** Format PLAT (rétro-compatible) : équivaut à un unique groupe 1 colonne. */
   fields?: string[];             // "$slot:<id>" = section custom (ex. doublons)
@@ -110,11 +112,25 @@ export interface SectionDescriptor {
   groups?: FieldGroup[];
 }
 
+/**
+ * Présentation du stepper / header (variants VISUELS, sérialisables). Défaut = look « équipement » :
+ * `stepper:"pills"`, `progress:"count"`, `header:"plain"`. Un form plus riche (ancien tiers-lieu) opte
+ * pour `stepper:"tabs"` (onglets icône+label) + `progress:"bar"` + `header:"gradient"` (+ `section.icon`).
+ */
+export interface LayoutPresentation {
+  /** Déclencheurs d'étapes : pastilles numérotées (défaut) | onglets larges (icône + libellé). */
+  stepper?: "pills" | "tabs";
+  /** Indicateur de progression (wizard) : « X/N » (défaut) | barre animée | aucun. */
+  progress?: "count" | "bar" | "none";
+  /** Bandeau d'en-tête : neutre (défaut) | dégradé. */
+  header?: "plain" | "gradient";
+}
+
 export type LayoutSpec =
-  | { kind: "flat" }
-  | { kind: "tabs" }
-  | { kind: "wizard"; validatePerStep?: boolean }
-  | { kind: "accordion" }
+  | ({ kind: "flat" } & LayoutPresentation)
+  | ({ kind: "tabs" } & LayoutPresentation)
+  | ({ kind: "wizard"; validatePerStep?: boolean } & LayoutPresentation)
+  | ({ kind: "accordion" } & LayoutPresentation)
   | { kind: string; [param: string]: unknown };
 
 // ── Descripteur de formulaire ─────────────────────────────────────────────────
@@ -122,6 +138,8 @@ export type FormCollection = "poi" | "organizations" | "projects" | "events" | "
 
 export interface FormDescriptor {
   id: string;                    // ex. "poi-equipement"
+  /** Icône du FORMULAIRE (badge de titre, nom lucide) — rendue par l'hôte modale à côté du titre. */
+  icon?: string;
   collection: FormCollection;
   costumSlug?: string;           // si scopé costum (sinon entité de base)
   layout: LayoutSpec;

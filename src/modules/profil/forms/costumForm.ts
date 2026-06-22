@@ -1,10 +1,11 @@
 /**
  * Génération RUNTIME (prod) d'une `JsonFormConfig` costum depuis la lib distribuée — voie B, P-D de
  * doc/formulaire-config-driven.md. Ouvre le scope (`me.costum(slug)`, charge le module lazy enrichi),
- * décrit le form (`describeForm`), puis applique le cœur `descriptorToConfig`. AUCUNE dépendance à
- * l'artefact build-time `costum-extensions.json` → fonctionne en production.
+ * décrit l'OVERLAY costum (`describeForm`) ET la BASE de l'entité (`describeEntityForm`, curée lib),
+ * puis COMPOSE via `descriptorToConfig`. AUCUNE dépendance à l'artefact build-time → fonctionne en prod.
  */
 import type { Collection, CostumFormDescriptor, KnownCostumSlug } from "@communecter/cocolight-api-client";
+import { describeEntityForm } from "@communecter/cocolight-api-client";
 import { descriptorToConfig, type JsonFormConfig } from "@/modules/formEngine";
 
 /** Surface minimale de `me` requise : ouvrir un scope costum exposant `describeForm`. */
@@ -27,5 +28,8 @@ export async function costumFormConfig(
 ): Promise<JsonFormConfig | null> {
   const scope = await me.costum(slug);
   const desc = scope.describeForm(collection);
-  return desc ? descriptorToConfig(desc) : null;
+  if (!desc) return null;
+  // Compose base (curée lib) + overlay costum — base définie UNE fois, jamais dupliquée par costum.
+  const base = describeEntityForm(collection);
+  return descriptorToConfig(desc, base ?? undefined);
 }

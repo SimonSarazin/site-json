@@ -8,10 +8,12 @@ import { useMemo } from "react";
 import type { FieldValues } from "react-hook-form";
 import { toast } from "sonner";
 import type { EntityTypes, Organization } from "@communecter/cocolight-api-client";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useT } from "@/hooks/useT";
 
 import { GenericForm } from "@/modules/formEngine";
+import { useUnsavedGuard } from "./useUnsavedGuard";
 import { tiersLieuDescriptor } from "./tiersLieu.descriptor";
 import { useAddTiersLieu } from "../hooks/useAddMutations";
 import { useEditTiersLieu } from "../hooks/useEditTiersLieu";
@@ -65,14 +67,27 @@ export function TiersLieuxGenericModal({ open, onOpenChange, mode = "add", organ
     onOpenChange(false);
   };
 
+  const guard = useUnsavedGuard(onOpenChange);
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+    <Dialog open={open} onOpenChange={guard.guardedOpenChange}>
       <DialogContent className="sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden">
-        <DialogHeader className="px-6 pt-6">
-          <DialogTitle>{isEdit ? tr("EditTiersLieux.title") : tr("AddTiersLieux.title")}</DialogTitle>
-          <DialogDescription className="sr-only">
-            {isEdit ? tr("EditTiersLieux.title") : tr("AddTiersLieux.title")}
-          </DialogDescription>
+        {/* Tint solide (le dégradé→transparent est porté par le header du layout) → bandeau continu, sans bande. */}
+        <DialogHeader className="px-6 pt-6 pb-3 bg-primary/5">
+          <div className="flex items-center gap-3">
+            {tiersLieuDescriptor.icon && (
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <DynamicIcon name={tiersLieuDescriptor.icon as IconName} className="h-6 w-6" />
+              </span>
+            )}
+            <div className="min-w-0">
+              <DialogTitle>{isEdit ? tr("EditTiersLieux.title") : tr("AddTiersLieux.title")}</DialogTitle>
+              <DialogDescription className="sr-only">
+                {isEdit ? tr("EditTiersLieux.title") : tr("AddTiersLieux.title")}
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
         <GenericForm
           descriptor={tiersLieuDescriptor}
@@ -88,11 +103,14 @@ export function TiersLieuxGenericModal({ open, onOpenChange, mode = "add", organ
             stepLabel: (index, total) => `${tr("AddTiersLieux.step")} ${index} ${tr("AddTiersLieux.stepOf")} ${total}`,
           }}
           submitting={submitting}
-          onCancel={() => onOpenChange(false)}
+          onDirtyChange={guard.setDirty}
+          onCancel={() => guard.guardedOpenChange(false)}
           fieldProps={fieldProps}
         />
       </DialogContent>
     </Dialog>
+    {guard.confirmDialog}
+    </>
   );
 }
 

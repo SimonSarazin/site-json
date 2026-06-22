@@ -6,8 +6,9 @@
  * dans l'ancien modal, passent ici dans `validate` (zodGen les exécute en superRefine — fiable).
  */
 import { EVENT_TYPES } from "@communecter/cocolight-api-client";
-import type { FieldDescriptor, FormDescriptor, FormValues } from "@/modules/formEngine";
-import { addressField, addressValidate, locationSection, nameField, shortDescriptionField, tagsField, urlField, PE } from "./addCommon";
+import type { FieldDescriptor, FormDescriptor } from "@/modules/formEngine";
+import { addressField, locationSection, nameField, shortDescriptionField, tagsField, urlField, PE } from "./addCommon";
+import "./validators"; // side-effect : enregistre la clé "addEventValid" dans le validateRegistry
 
 const TYPE_OPTIONS = EVENT_TYPES.map((t) => ({ value: t, label: `ProfileEdit.fields.eventType.options.${t}` }));
 
@@ -43,25 +44,15 @@ export function buildAddEventDescriptor(hasParent: boolean): FormDescriptor {
       ] },
       locationSection,
     ],
-    fields: Object.fromEntries(fields.map((f) => [f.name, f])),
-    validate: (v: FormValues) => {
-      const issues: Array<{ path: string; message: string }> = [];
-      // organizer requis SAUF si parent fourni (le parent devient l'organisateur).
-      if (!hasParent && (!v.organizer || Object.keys(v.organizer as Record<string, unknown>).length === 0))
-        issues.push({ path: "organizer", message: "validation.organizer.required" });
-      if (!v.recurrency) {
-        // Ponctuel : dates requises + cohérentes.
-        if (!v.startDate) issues.push({ path: "startDate", message: "validation.startDate.required" });
-        if (!v.endDate) issues.push({ path: "endDate", message: "validation.endDate.required" });
-        if (v.startDate && v.endDate && new Date(v.endDate as string) < new Date(v.startDate as string))
-          issues.push({ path: "endDate", message: "validation.endDate.afterStart" });
-      } else {
-        // Récurrent : au moins une plage d'horaires.
-        const oh = Array.isArray(v.openingHours) ? (v.openingHours as unknown[]).filter((h) => h !== "") : [];
-        if (oh.length === 0) issues.push({ path: "openingHours", message: "validation.openingHours.required" });
-      }
-      issues.push(...addressValidate(v));
-      return issues;
-    },
+    // `_hasParent` (caché, default = présence d'un parent) modélise EN VALEUR ce qui était une closure :
+    // la clé `addEventValid` lit `v._hasParent` (organizer requis SAUF si parent) + dates + adresse.
+    // → descripteur 100% sérialisable, round-trip config exact (cf. validators.ts).
+    fields: Object.fromEntries(
+      [
+        ...fields,
+        { name: "_hasParent", type: "boolean", widget: "hidden", label: "", default: hasParent } as FieldDescriptor,
+      ].map((f) => [f.name, f]),
+    ),
+    validate: "addEventValid",
   };
 }

@@ -1,4 +1,10 @@
 {
+  "UnsavedChanges": {
+    "title": "Modifications non enregistrées",
+    "description": "Vous avez commencé à remplir le formulaire sans l'enregistrer. Voulez-vous vraiment fermer ? Vos modifications seront perdues.",
+    "confirm": "Fermer sans enregistrer",
+    "cancel": "Continuer l'édition"
+  },
   "ImageUploadField": {
     "dropHint": "Glisser-déposer ou cliquer pour choisir",
     "remove": "Retirer l'image",

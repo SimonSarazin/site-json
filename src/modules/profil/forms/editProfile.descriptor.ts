@@ -6,7 +6,8 @@
  * `schema` de GenericForm) → byte-compat, pas de re-dérivation. Migration incrémentale : citoyens d'abord.
  */
 import { EVENT_TYPES, ORGANIZATION_TYPES } from "@communecter/cocolight-api-client";
-import type { FieldDescriptor, FormDescriptor, FormValues } from "@/modules/formEngine";
+import type { FieldDescriptor, FormDescriptor } from "@/modules/formEngine";
+import "./validators"; // side-effect : enregistre la clé "editEventValid" dans le validateRegistry
 
 const PE = (k: string) => `ProfileEdit.fields.${k}`;
 const TAB = (k: string) => `ProfileEdit.tabs.${k}`;
@@ -126,23 +127,7 @@ const eventFields: FieldDescriptor[] = [
   { name: "_eventDates", type: "object", widget: "eventDates", label: "" },
 ];
 
-// Validation conditionnelle events (déplacée du handleFormSubmit manuel de l'ancien modal vers le moteur).
-const eventsValidate = (v: FormValues): Array<{ path: string; message: string }> => {
-  const issues: Array<{ path: string; message: string }> = [];
-  if (!v.organizer || Object.keys(v.organizer as Record<string, unknown>).length === 0)
-    issues.push({ path: "organizer", message: "validation.organizer.required" });
-  if (!v.recurrency) {
-    if (!v.startDate) issues.push({ path: "startDate", message: "validation.startDate.required" });
-    if (!v.endDate) issues.push({ path: "endDate", message: "validation.endDate.required" });
-    if (v.startDate && v.endDate && new Date(v.endDate as string) < new Date(v.startDate as string))
-      issues.push({ path: "endDate", message: "validation.endDate.afterStart" });
-  } else {
-    const oh = Array.isArray(v.openingHours) ? (v.openingHours as unknown[]).filter((h) => h !== "") : [];
-    if (oh.length === 0) issues.push({ path: "openingHours", message: "validation.openingHours.required" });
-  }
-  return issues;
-};
-
+// Validation conditionnelle events : organizer requis + dates (clé "editEventValid" du registre, cf. validators.ts).
 export const editEventDescriptor: FormDescriptor = {
   id: "edit-events",
   collection: "events",
@@ -155,7 +140,7 @@ export const editEventDescriptor: FormDescriptor = {
     { id: "eventDates", label: TAB("eventDates.label"), groups: [{ columns: 1, fields: ["_eventDates", "startDate", "endDate", "openingHours"] }] },
   ],
   fields: Object.fromEntries(eventFields.map((f) => [f.name, f])),
-  validate: eventsValidate,
+  validate: "editEventValid",
 };
 
 // ── POI ───────────────────────────────────────────────────────────────────────

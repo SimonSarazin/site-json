@@ -70,6 +70,7 @@ export function configToDescriptor(config: JsonFormConfig, opts: ConfigToDescrip
   const sections: SectionDescriptor[] = config.sections.map((s) => ({
     id: s.id,
     label: resolveLabel(s.label, tLoc),
+    icon: s.icon,
     visibleIf: s.visibleIf as Predicate | undefined,
     fields: s.fields,
     groups: s.groups?.map((g): FieldGroup => ({
@@ -85,6 +86,7 @@ export function configToDescriptor(config: JsonFormConfig, opts: ConfigToDescrip
 
   return {
     id: config.id,
+    icon: config.icon,
     collection: config.collection ?? ENTITY_TO_COLLECTION[config.entityType] ?? "citoyens",
     costumSlug: config.costum?.slug,
     layout: config.layout,

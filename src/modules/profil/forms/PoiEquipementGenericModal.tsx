@@ -14,6 +14,7 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { SEARCH_QUERY_KEYS } from "@/modules/search/constants";
 
 import { GenericForm } from "@/modules/formEngine";
+import { useUnsavedGuard } from "./useUnsavedGuard";
 import { ParentInfoReadonly } from "../components/profile-edit/fields";
 import { poiEquipementDescriptor } from "./poiEquipement.descriptor";
 import { PoiEquipementDoublonsSlot } from "./PoiEquipementDoublonsSlot";
@@ -82,8 +83,11 @@ export function PoiEquipementGenericModal({ open, onOpenChange, mode = "add", po
     onOpenChange(false);
   };
 
+  const guard = useUnsavedGuard(onOpenChange);
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+    <Dialog open={open} onOpenChange={guard.guardedOpenChange}>
       <DialogContent className="sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden">
         <DialogHeader className="px-6 pt-6">
           <DialogTitle>{isEdit ? tr("AddPoiEquipement.title.edit") : tr("AddPoiEquipement.title.add")}</DialogTitle>
@@ -103,7 +107,8 @@ export function PoiEquipementGenericModal({ open, onOpenChange, mode = "add", po
               stepLabel: (index, total) => t("AddPoiEquipement.stepIndicator", undefined, { index, total }),
             }}
             submitting={submitting}
-            onCancel={() => onOpenChange(false)}
+            onDirtyChange={guard.setDirty}
+            onCancel={() => guard.guardedOpenChange(false)}
             listsOptions={listsOptions}
             fieldProps={fieldProps}
             slots={{
@@ -113,6 +118,8 @@ export function PoiEquipementGenericModal({ open, onOpenChange, mode = "add", po
           />
       </DialogContent>
     </Dialog>
+    {guard.confirmDialog}
+    </>
   );
 }
 

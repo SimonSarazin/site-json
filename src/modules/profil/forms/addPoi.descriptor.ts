@@ -4,7 +4,8 @@
  * Layout tabs (info / localisation), parité visuelle avec l'ancien modal.
  */
 import type { FieldDescriptor, FormDescriptor } from "@/modules/formEngine";
-import { addressField, addressValidate, locationSection, nameField, tagsField } from "./addCommon";
+import { addressField, locationSection, nameField, tagsField } from "./addCommon";
+import "./validators"; // side-effect : enregistre la clé "addressValid" dans le validateRegistry
 
 // Types de POI + libellés (FR codés en dur dans l'ancien modal — pas de clés i18n).
 const POI_TYPES: Array<{ value: string; label: string }> = [
@@ -35,5 +36,5 @@ export const addPoiDescriptor: FormDescriptor = {
     locationSection,
   ],
   fields: Object.fromEntries(fields.map((f) => [f.name, f])),
-  validate: addressValidate,
+  validate: "addressValid", // clé de registre (= addressValidate) → sérialisable, round-trip config exact
 };

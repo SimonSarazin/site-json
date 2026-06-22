@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { useT } from "@/hooks/useT";
 
 import { GenericForm, type FormDescriptor } from "@/modules/formEngine";
+import { useUnsavedGuard } from "./useUnsavedGuard";
 import { ParentInfoReadonly } from "../components/profile-edit/fields";
 import { useAddPoi, useAddProject, useAddOrganization, useAddEvent } from "../hooks/useAddMutations";
 import type { AddPoiFormData, AddProjectFormData, AddOrganizationFormData, AddEventFormData } from "../schemaForm";
@@ -56,27 +57,32 @@ function AddEntityGenericModal(props: {
 }): ReactNode {
   const t = useT("modules/profil");
   const tr = (k: string) => t(k);
+  const guard = useUnsavedGuard(props.onOpenChange);
   return (
-    <Dialog open={props.open} onOpenChange={props.onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
-        <DialogHeader className="px-6 pt-6">
-          <DialogTitle>{tr(props.titleKey)}</DialogTitle>
-          <DialogDescription>{tr(props.descKey)}</DialogDescription>
-        </DialogHeader>
-        <GenericForm
-          descriptor={props.descriptor}
-          defaultValues={props.defaultValues}
-          onSubmit={props.onSubmit}
-          t={tr}
-          submitLabel={tr("AddEntity.create")}
-          texts={{ next: "", previous: "", cancel: tr("common.cancel") }}
-          submitting={props.submitting}
-          onCancel={() => props.onOpenChange(false)}
-          slots={props.slots}
-          fieldProps={props.fieldProps}
-        />
-      </DialogContent>
-    </Dialog>
+    <>
+      <Dialog open={props.open} onOpenChange={guard.guardedOpenChange}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+          <DialogHeader className="px-6 pt-6">
+            <DialogTitle>{tr(props.titleKey)}</DialogTitle>
+            <DialogDescription>{tr(props.descKey)}</DialogDescription>
+          </DialogHeader>
+          <GenericForm
+            descriptor={props.descriptor}
+            defaultValues={props.defaultValues}
+            onSubmit={props.onSubmit}
+            t={tr}
+            submitLabel={tr("AddEntity.create")}
+            texts={{ next: "", previous: "", cancel: tr("common.cancel") }}
+            submitting={props.submitting}
+            onDirtyChange={guard.setDirty}
+            onCancel={() => guard.guardedOpenChange(false)}
+            slots={props.slots}
+            fieldProps={props.fieldProps}
+          />
+        </DialogContent>
+      </Dialog>
+      {guard.confirmDialog}
+    </>
   );
 }
 
@@ -128,6 +134,7 @@ export function AddEventGenericModal({ open, onOpenChange, parent }: ModalProps)
       ? { [parent.id]: { type: parent.getEntityType?.() || "organizations", name: parent.serverData?.name } }
       : undefined,
     addressCountry: "", addressLocality: "", localityId: "", postalCode: "", streetAddress: "", parent: undefined,
+    _hasParent: Boolean(parent), // lu par la clé de validate "addEventValid" (organizer requis sauf si parent)
   }), [parent]);
   // Filtre runtime du finder sous-événement : events organisés par le parent.
   const fieldProps = useMemo(() => (

@@ -50,6 +50,7 @@ export function formDescriptorToConfig(d: FormDescriptor): JsonFormConfig {
 
   return {
     id: d.id,
+    ...(d.icon ? { icon: d.icon } : {}),
     entityType: COLLECTION_TO_ENTITY[d.collection],
     collection: d.collection,
     ...(d.costumSlug ? { costum: { slug: d.costumSlug } } : {}),
@@ -58,6 +59,7 @@ export function formDescriptorToConfig(d: FormDescriptor): JsonFormConfig {
     sections: d.sections.map((s) => ({
       id: s.id,
       ...(s.label ? { label: s.label } : {}),
+      ...(s.icon ? { icon: s.icon } : {}),
       ...(s.visibleIf ? { visibleIf: s.visibleIf } : {}),
       ...(s.groups ? { groups: s.groups } : {}),
       ...(s.fields ? { fields: s.fields } : {}),

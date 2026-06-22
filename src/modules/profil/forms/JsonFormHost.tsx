@@ -9,6 +9,7 @@ import type { FieldValues } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useT } from "@/hooks/useT";
 import { useCocolight } from "@/hooks/useCocolight";
@@ -16,6 +17,7 @@ import type { JsonFormModalConfig } from "@/types/site-schema";
 
 import { GenericForm, configToDescriptor, type JsonFormConfig } from "@/modules/formEngine";
 import { toJsonFormConfig } from "./legacyConfig";
+import { useUnsavedGuard } from "./useUnsavedGuard";
 import { runSubmit, buildConfigDefaults, type MeLike, type SubmitTarget } from "./jsonFormSubmit";
 import "./validators"; // side-effect : enregistre addressValid/eventDatesValid pour les configs (validateFn)
 
@@ -34,6 +36,7 @@ export function JsonFormHost({ open, onOpenChange, parent, formConfig }: Props):
   const config = useMemo(() => (formConfig ? toJsonFormConfig(formConfig) : null), [formConfig]);
   const descriptor = useMemo(() => (config ? configToDescriptor(config, { tLoc: (l) => t(l) }) : null), [config, t]);
   const defaultValues = useMemo(() => (config ? buildConfigDefaults(config) : {}), [config]);
+  const guard = useUnsavedGuard(onOpenChange);
 
   const mutation = useMutation({
     mutationFn: async (values: FieldValues) => {
@@ -58,13 +61,24 @@ export function JsonFormHost({ open, onOpenChange, parent, formConfig }: Props):
 
   const title = config.title ? t(config.title) : t("AddEntity.create");
   const submitLabel = config.submitLabel ? t(config.submitLabel) : t("AddEntity.create");
+  const gradientHeader = (config.layout as { header?: string }).header === "gradient";
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+    <Dialog open={open} onOpenChange={guard.guardedOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
-        <DialogHeader className="px-6 pt-6">
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription className="sr-only">{title}</DialogDescription>
+        <DialogHeader className={`px-6 pt-6${gradientHeader ? " pb-3 bg-primary/5" : ""}`}>
+          <div className="flex items-center gap-3">
+            {config.icon && (
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <DynamicIcon name={config.icon as IconName} className="h-6 w-6" />
+              </span>
+            )}
+            <div className="min-w-0">
+              <DialogTitle>{title}</DialogTitle>
+              <DialogDescription className="sr-only">{title}</DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
         <GenericForm
           descriptor={descriptor}
@@ -74,10 +88,13 @@ export function JsonFormHost({ open, onOpenChange, parent, formConfig }: Props):
           submitLabel={submitLabel}
           texts={{ next: "Suivant", previous: "Précédent", cancel: t("common.cancel") }}
           submitting={mutation.isPending}
-          onCancel={() => onOpenChange(false)}
+          onDirtyChange={guard.setDirty}
+          onCancel={() => guard.guardedOpenChange(false)}
         />
       </DialogContent>
     </Dialog>
+    {guard.confirmDialog}
+    </>
   );
 }
 

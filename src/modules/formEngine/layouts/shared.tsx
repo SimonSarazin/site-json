@@ -9,11 +9,18 @@ import { useEffect, useState, type ReactNode } from "react";
 import type { FieldValues, UseFormReturn } from "react-hook-form";
 import * as Tabs from "@radix-ui/react-tabs";
 import { AlertCircle } from "lucide-react";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Button } from "@/components/ui/button";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { check } from "../engine/conditional";
 import { hasErrorAt } from "../engine/sectionErrors";
-import type { FieldGroup, FormDescriptor, SectionDescriptor } from "../types";
+import type { FieldGroup, FormDescriptor, LayoutPresentation, SectionDescriptor } from "../types";
+
+/** Options de présentation d'un layout, avec les défauts « équipement » (pills/count/plain). */
+export function layoutPresentation(layout: FormDescriptor["layout"]): Required<LayoutPresentation> {
+  const l = layout as LayoutPresentation;
+  return { stepper: l.stepper ?? "pills", progress: l.progress ?? "count", header: l.header ?? "plain" };
+}
 
 export interface LayoutProps {
   descriptor: FormDescriptor;
@@ -91,7 +98,9 @@ export function StepTriggers(props: {
               data-testid={`step-${s.id}`}
               data-error={hasErr ? "true" : "false"}
               aria-label={s.label ? t(s.label) : `${i + 1}`}>
-              <span className="text-xs font-semibold">{i + 1}</span>
+              {s.icon
+                ? <DynamicIcon name={s.icon as IconName} fallback={() => <span className="text-xs font-semibold">{i + 1}</span>} className="h-4 w-4 shrink-0" />
+                : <span className="text-xs font-semibold">{i + 1}</span>}
               {isActive && s.label && <span className="ml-2 text-xs font-medium">{t(s.label)}</span>}
               {hasErr && <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-destructive" aria-hidden="true" />}
             </Button>
@@ -115,14 +124,30 @@ export function TabBar(props: {
       {steps.map((s, i) => {
         const hasErr = sectionHasError(s, errors);
         return (
-          <TabsTrigger key={s.id} value={s.id} className="flex-1 gap-1"
+          <TabsTrigger key={s.id} value={s.id} className="flex-1 flex-col gap-1 sm:flex-row"
             data-testid={`step-${s.id}`} data-error={hasErr ? "true" : "false"}>
-            {s.label ? t(s.label) : `${i + 1}`}
-            {hasErr && <AlertCircle className="h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />}
+            {hasErr
+              ? <AlertCircle className="h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
+              : s.icon && <DynamicIcon name={s.icon as IconName} className="h-4 w-4 shrink-0" />}
+            <span className="min-w-0 truncate">{s.label ? t(s.label) : `${i + 1}`}</span>
           </TabsTrigger>
         );
       })}
     </TabsList>
+  );
+}
+
+/** Barre de progression linéaire animée (variant `progress:"bar"`) — largeur = (active+1)/total. */
+export function ProgressBar(props: { active: number; total: number }): ReactNode {
+  const pct = props.total > 0 ? ((props.active + 1) / props.total) * 100 : 0;
+  return (
+    <div className="w-full overflow-hidden rounded-full bg-muted h-1.5">
+      <div
+        className="h-full rounded-full bg-linear-to-r from-primary to-primary/70 transition-all duration-500 ease-out"
+        style={{ width: `${pct}%` }}
+        aria-hidden="true"
+      />
+    </div>
   );
 }
 
@@ -168,11 +193,12 @@ export function useStepNav(p: LayoutProps, steps: SectionDescriptor[]) {
   return { active, setActive, errors, current, isLast, goNext, goPrev, selectById };
 }
 
-/** Footer séquentiel (wizard) : Précédent (gauche) · Annuler + Suivant/Submit (droite). */
-export function SequentialFooter(props: { p: LayoutProps; active: number; isLast: boolean; goNext: () => void; goPrev: () => void }): ReactNode {
-  const { p, active, isLast, goNext, goPrev } = props;
+/** Footer séquentiel (wizard) : Précédent (gauche) · Annuler + Suivant/Submit (droite).
+ *  `muted` (variant riche) ajoute un fond `bg-muted/30` (parité ancien tiers-lieu). */
+export function SequentialFooter(props: { p: LayoutProps; active: number; isLast: boolean; goNext: () => void; goPrev: () => void; muted?: boolean }): ReactNode {
+  const { p, active, isLast, goNext, goPrev, muted } = props;
   return (
-    <div className="shrink-0 flex items-center justify-between border-t px-6 py-4">
+    <div className={`shrink-0 flex items-center justify-between border-t px-6 py-4${muted ? " bg-muted/30" : ""}`}>
       <div>
         {active > 0 && <Button type="button" variant="outline" onClick={goPrev}>{p.texts.previous}</Button>}
       </div>

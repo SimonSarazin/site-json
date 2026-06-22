@@ -17,6 +17,7 @@ import { useUpdateProfile } from "../hooks/useProfileMutations";
 import { EditProfileModal } from "../components/profile-edit/EditProfileModal";
 import { buildProfileUpdateData } from "./editProfilePayload";
 import { EDIT_DESCRIPTORS } from "./editProfile.descriptor";
+import { useUnsavedGuard } from "./useUnsavedGuard";
 
 interface Props {
   entity: EntityTypes;
@@ -53,8 +54,11 @@ function EditEntityModal({ entity, open, onOpenChange, descriptor, entityType }:
     } catch { /* toast émis par useUpdateProfile */ }
   };
 
+  const guard = useUnsavedGuard(onOpenChange);
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+    <Dialog open={open} onOpenChange={guard.guardedOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
         <DialogHeader className="px-6 pt-6">
           <DialogTitle>{tr("ProfileEdit.title")}</DialogTitle>
@@ -71,12 +75,15 @@ function EditEntityModal({ entity, open, onOpenChange, descriptor, entityType }:
             submitLabel={tr("ProfileEdit.save")}
             texts={{ next: "", previous: "", cancel: tr("ProfileEdit.cancel") }}
             submitting={update.isPending}
-            onCancel={() => onOpenChange(false)}
+            onDirtyChange={guard.setDirty}
+            onCancel={() => guard.guardedOpenChange(false)}
             fieldProps={fieldProps}
           />
         )}
       </DialogContent>
     </Dialog>
+    {guard.confirmDialog}
+    </>
   );
 }
 

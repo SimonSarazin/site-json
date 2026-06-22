@@ -31,6 +31,8 @@ export interface GenericFormProps {
   submitLabel: string;
   submitting?: boolean;
   onCancel?: () => void;
+  /** Rapporte l'état "dirty" (RHF `formState.isDirty`) au parent — garde de fermeture (modifs non enregistrées). */
+  onDirtyChange?: (dirty: boolean) => void;
   /** options runtime par champ (ex. serverData.lists) — fallback sur `field.enum`. */
   listsOptions?: Record<string, string[]>;
   /** widgetProps runtime par champ (ex. `{ _imageFile: { existingUrl } }` en édition),
@@ -87,6 +89,13 @@ export function GenericForm(props: GenericFormProps) {
   };
 
   const values = form.watch();
+
+  // Rapporte l'état "dirty" au parent (garde « modifs non enregistrées » à la fermeture).
+  const isDirty = form.formState.isDirty;
+  useEffect(() => { props.onDirtyChange?.(isDirty); }, [isDirty]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Au démontage (fermeture/submit réussi → modale fermée), on rapporte "propre" : évite qu'un dirty
+  // résiduel survive dans la garde de l'hôte (fausse alerte à la réouverture si le form reste monté).
+  useEffect(() => () => props.onDirtyChange?.(false), []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Valeurs calculées (computedFrom) — recalcul quand les deps changent.
   const computedDepsKey = JSON.stringify(

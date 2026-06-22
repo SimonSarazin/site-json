@@ -93,6 +93,7 @@ const Group = z.object({
 const Section = z.object({
   id: z.string(),
   label: Label.optional(),
+  icon: z.string().optional(), // nom lucide → icône d'étape/onglet (stepper)
   visibleIf: PredicateJson.optional(),
   groups: z.array(Group).optional(),
   fields: z.array(z.string()).optional(),
@@ -113,12 +114,17 @@ const Submit = z.object({
 export const JsonFormConfigSchema = z.object({
   id: z.string(),
   title: Label.optional(),
+  icon: z.string().optional(), // icône de titre du formulaire (badge, nom lucide)
   entityType: z.enum(["organization", "project", "event", "poi", "citoyen"]),
   collection: z.enum(["poi", "organizations", "projects", "events", "citoyens"]).optional(),
   costum: z.object({ slug: z.string() }).optional(),
   layout: z.object({
     kind: z.enum(["flat", "tabs", "wizard", "accordion"]),
     validatePerStep: z.boolean().optional(),
+    // Variants de présentation (défaut « équipement » : pills/count/plain).
+    stepper: z.enum(["pills", "tabs"]).optional(),
+    progress: z.enum(["count", "bar", "none"]).optional(),
+    header: z.enum(["plain", "gradient"]).optional(),
   }),
   i18n: z.enum(["localized", "keys"]).optional(),
   sections: z.array(Section),

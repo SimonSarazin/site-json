@@ -1,4 +1,10 @@
 {
+  "UnsavedChanges": {
+    "title": "Unsaved changes",
+    "description": "You started filling out the form without saving. Do you really want to close? Your changes will be lost.",
+    "confirm": "Close without saving",
+    "cancel": "Keep editing"
+  },
   "ImageUploadField": {
     "dropHint": "Drag & drop or click to choose",
     "remove": "Remove image",

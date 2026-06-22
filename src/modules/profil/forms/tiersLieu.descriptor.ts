@@ -5,7 +5,8 @@
  * `TiersLieuxFormData` → READ (`mapEntityToTiersLieuxValues`) et WRITE (`buildTiersLieuxPayload`) inchangés.
  * Layout `tabs`, 5 steps : info / contact / media / online / details.
  */
-import type { FieldDescriptor, FormDescriptor, FormValues } from "@/modules/formEngine";
+import type { FieldDescriptor, FormDescriptor } from "@/modules/formEngine";
+import "./validators"; // side-effect : enregistre la clé "addressValid" dans le validateRegistry
 
 const F = (k: string) => `AddTiersLieux.fields.${k}`;
 
@@ -86,16 +87,17 @@ const fields: FieldDescriptor[] = [
 
 export const tiersLieuDescriptor: FormDescriptor = {
   id: "tiers-lieu",
+  icon: "building-2", // badge de titre (parité ancien form)
   collection: "organizations",
   costumSlug: "navigatorDesTierslieux",
-  // wizard (et non tabs) : reproduit l'original — « Suivant » VALIDE l'étape courante avant d'avancer
-  // (cf. goNext/form.trigger de TiersLieuxForm), pastilles cliquables pour le saut libre, Précédent/
-  // Suivant en bas + indicateur « Étape X / N ». Le layout `tabs` du moteur est, lui, nav libre + submit global.
-  layout: { kind: "wizard", validatePerStep: true },
+  // wizard : « Suivant » VALIDE l'étape (cf. goNext/form.trigger de TiersLieuxForm), Précédent/Suivant.
+  // Variant de présentation = look de l'ANCIEN form : stepper onglets icône+label, barre de progression,
+  // header dégradé (le défaut « équipement » serait pills/count/plain). Tout est sérialisable (config).
+  layout: { kind: "wizard", validatePerStep: true, stepper: "tabs", progress: "bar", header: "gradient" },
   sections: [
     // INFO — ordre original : nom, (date d'ouverture = mois+année), desc. courte, structure,
     // mode de gestion (+autre), famille (cases 2 col.), surfaces (2 col.).
-    { id: "info", label: "AddTiersLieux.steps.info", groups: [
+    { id: "info", label: "AddTiersLieux.steps.info", icon: "building-2", groups: [
       { columns: 1, fields: ["name"] },
       { columns: 2, label: F("openingDate"), fields: ["openingMonth", "openingYear"] },
       { columns: 1, fields: ["shortDescription"] },
@@ -107,31 +109,29 @@ export const tiersLieuDescriptor: FormDescriptor = {
     // CONTACT — adresse (sans titre) puis sous-bloc « Contact » bordé : email + téléphone EMPILÉS (1 col.).
     // `addressLocality` (rendu nul, hors descriptor.fields) est listé pour que le badge d'onglet capte
     // l'erreur addressValid (cf. validate ci-dessous) ; l'erreur s'affiche inline via EditLocationTab.
-    { id: "contact", label: "AddTiersLieux.steps.contact", groups: [
+    { id: "contact", label: "AddTiersLieux.steps.contact", icon: "map-pin", groups: [
       { columns: 1, fields: ["address", "addressLocality"] },
       { columns: 1, divider: true, label: "Contact", titleClassName: "text-sm font-semibold", fields: ["email", "phone"] },
     ] },
     // MEDIA — logo, puis vidéo en sous-bloc bordé titré (text-base font-semibold, parité original).
-    { id: "media", label: "AddTiersLieux.steps.media", groups: [
+    { id: "media", label: "AddTiersLieux.steps.media", icon: "image", groups: [
       { columns: 1, fields: ["_logoFile"] },
       { columns: 1, divider: true, label: F("videoUrl"), titleClassName: "text-base font-semibold", fields: ["videoUrl"] },
     ] },
     // ONLINE — site web, puis réseaux sociaux en sous-bloc bordé (titre porté par le champ fieldArray).
-    { id: "online", label: "AddTiersLieux.steps.online", groups: [
+    { id: "online", label: "AddTiersLieux.steps.online", icon: "globe", groups: [
       { columns: 1, fields: ["websiteUrl"] },
       { columns: 1, divider: true, fields: ["socialLinks"] },
     ] },
     // DETAILS — horaires (titre porté par le widget), puis description longue en sous-bloc bordé.
-    { id: "details", label: "AddTiersLieux.steps.details", groups: [
+    { id: "details", label: "AddTiersLieux.steps.details", icon: "file-text", groups: [
       { columns: 1, fields: ["hours"] },
       { columns: 1, divider: true, fields: ["description"] },
     ] },
   ],
   fields: Object.fromEntries(fields.map((f) => [f.name, f])),
   // addressValid (cross-champ, parité superRefine de l'original) : adresse saisie sans ville
-  // sélectionnée (localityId) → erreur posée sur `address` (allume le badge de l'onglet Contact).
-  validate: (v: FormValues) => {
-    const hasAddr = Boolean(v.addressCountry || v.addressLocality || v.postalCode || v.streetAddress);
-    return hasAddr && !v.localityId ? [{ path: "addressLocality", message: "validation.addressLocality" }] : [];
-  },
+  // sélectionnée (localityId) → erreur sur addressLocality. = `addressValidate`, désormais par CLÉ
+  // (sérialisable → round-trip config exact).
+  validate: "addressValid",
 };

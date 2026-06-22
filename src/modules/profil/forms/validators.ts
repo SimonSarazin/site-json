@@ -29,5 +29,27 @@ export const eventDatesValid: ValidateFn = (v: FormValues) => {
   return issues;
 };
 
+/** Édition événement : `organizer` requis (inconditionnel) + dates (cf. `eventDatesValid`). */
+export const editEventValid: ValidateFn = (v: FormValues) => {
+  const issues: Array<{ path: string; message: string }> = [];
+  if (!v.organizer || Object.keys(v.organizer as Record<string, unknown>).length === 0)
+    issues.push({ path: "organizer", message: "validation.organizer.required" });
+  return [...issues, ...eventDatesValid(v)];
+};
+
+/**
+ * Ajout événement : `organizer` requis SAUF si `_hasParent` (le parent devient l'organisateur) +
+ * dates + adresse. `_hasParent` = champ caché (default = présence d'un parent) → modélise au RUNTIME le
+ * contexte qui était une closure dans le descripteur (parité exacte, désormais sérialisable).
+ */
+export const addEventValid: ValidateFn = (v: FormValues) => {
+  const issues: Array<{ path: string; message: string }> = [];
+  if (!v._hasParent && (!v.organizer || Object.keys(v.organizer as Record<string, unknown>).length === 0))
+    issues.push({ path: "organizer", message: "validation.organizer.required" });
+  return [...issues, ...eventDatesValid(v), ...addressValid(v)];
+};
+
 registerValidate("addressValid", addressValid);
 registerValidate("eventDatesValid", eventDatesValid);
+registerValidate("editEventValid", editEventValid);
+registerValidate("addEventValid", addEventValid);
