@@ -7,6 +7,9 @@
 import { format } from "date-fns";
 import type { Poi } from "@communecter/cocolight-api-client";
 import type { AddPoiFormData } from "../../schemaForm";
+// Helper de diff partagé (déduplique l'égalité de valeurs). Import direct (pas le barrel formEngine)
+// pour rester un util pur testable sans tirer les widgets/composants. cf. doc/refactor-field-treatment.md.
+import { isSameValue } from "@/modules/formEngine/engine/reconcile";
 
 /**
  * Payload de CRÉATION équipement (POI costum) : data + image optionnelle. Le `save()` route
@@ -354,10 +357,6 @@ export const ADDRESS_PATCH_KEYS = [
   "codeInsee", "level1", "level1Name", "level2", "level2Name",
   "level3", "level3Name", "level4", "level4Name",
 ] as const;
-
-/** Égalité de valeurs de form (string/number/bool/array/objet) pour le diff d'édition. */
-const isSameValue = (a: unknown, b: unknown) =>
-  JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 
 /**
  * Diff `current` vs `initial` → patch partiel. Adresse atomique : si UN champ

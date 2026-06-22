@@ -82,6 +82,15 @@ export interface FieldDescriptor {
   // Read / Write (transformers nommés)
   read?: TransformName;
   write?: TransformName;
+  /** Valeur émise pour EFFACER ce champ (diff d'édition `fieldPipeline.diffForEdit`). Défaut dérivé du
+   *  type : `[]` (array) sinon `""`. ⚠ Jamais `{}` (non reconnu comme clear par le SDK costum → no-op). */
+  clear?: unknown;
+  /** Id de GROUPE ATOMIQUE : si UN champ du groupe change, TOUT le groupe est (ré)émis ENSEMBLE au save —
+   *  évite l'écrasement lossy (ex. adresse : level1..4/codeInsee/geo non relus). cf. fieldPipeline.diffForEdit. */
+  atomicGroup?: string;
+  /** Membre d'un GROUPE DE SÉRIALISATION (cf. `FormDescriptor.serializeGroups`) : N champs plats ↔ 1 objet
+   *  serveur (ex. `address` 14 clés, `socialNetwork` 9 clés). Lu/écrit PAR le groupe, pas individuellement. */
+  group?: string;
 }
 
 // ── Sections & layout (§5) ────────────────────────────────────────────────────
@@ -149,6 +158,11 @@ export interface FormDescriptor {
    *  fonction inline OU **clé de `validateRegistry`** (config-driven) renvoyant `{ path, message }[]`
    *  (message = clé i18n). Ex. adresse saisie sans localityId. Résolu via `resolveValidate`. */
   validate?: string | ((values: FormValues) => Array<{ path: string; message: string }>);
+  /** GROUPES DE SÉRIALISATION : N champs plats (membres via `field.group`) ↔ 1 clé/objet serveur.
+   *  `read` (objet serveur → valeurs plates des membres) / `write` (valeurs de form → objet serveur,
+   *  `undefined` = clé omise) sont des transformers nommés. Subsume extractAddressFields/buildAddressFromForm,
+   *  extractSocial/buildSocialNetwork, etc. cf. `fieldPipeline` + doc/refactor-field-treatment.md (P3). */
+  serializeGroups?: Record<string, { serverKey: string; read: TransformName; write: TransformName }>;
 }
 
 /** Valeurs de formulaire (plates, clé = name). */

@@ -10,6 +10,8 @@ export { GenericForm, type GenericFormProps } from "./components/GenericForm";
 export { registerWidget, getWidget, type WidgetProps } from "./widgets/registry";
 export { registerLayout, getLayout, type LayoutProps } from "./layouts";
 export { evaluatePredicate, check } from "./engine/conditional";
+export { isSameValue, reconcileClearedFields } from "./engine/reconcile";
+export { seedFromEntity, valuesToPayload, diffForEdit, clearValue } from "./engine/fieldPipeline";
 export { buildZodSchema } from "./engine/zodGen";
 export { registerTransform, getTransform, applyTransform, registerCompute, getCompute,
   registerValidate, getValidate, resolveValidate, type ValidateFn } from "./engine/transforms";

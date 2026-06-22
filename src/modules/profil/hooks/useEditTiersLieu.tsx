@@ -4,9 +4,7 @@ import { useSite } from "@/hooks/useSite";
 import { PROFIL_QUERY_KEYS } from "../constants";
 import { buildTiersLieuxPayload, mapEntityToTiersLieuxValues } from "../utils/tiersLieuxMapping";
 import type { TiersLieuxSubmitPayload } from "../components/add/TiersLieuxForm";
-
-/** Égalité de valeurs (objet/array/scalaire) pour le diff d'édition. */
-const isSameValue = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+import { isSameValue, reconcileClearedFields } from "@/modules/formEngine";
 
 /**
  * Édite une organisation tiers-lieu existante.
@@ -35,14 +33,17 @@ export function useEditTiersLieu(organization: Organization | null) {
       const baseline = buildTiersLieuxPayload(mapEntityToTiersLieuxValues(organization), opts) as Record<string, unknown>;
 
       const target = organization.data as Record<string, unknown>;
+      // Réassigne au draft les champs MODIFIÉS (`tags` toujours, pour garantir mainTag/compagnon).
       for (const [key, value] of Object.entries(payload)) {
-        // `tags` toujours réassigné (garantit mainTag/compagnon) ; le reste seulement si modifié.
-        if (key === "tags" || !isSameValue(value, baseline[key])) {
-          target[key] = value;
-        }
+        if (key === "tags" || !isSameValue(value, baseline[key])) target[key] = value;
       }
-      // Logo posé dans le draft : `save()` (→ `_update`) le route vers le bloc
-      // PROFIL_IMAGE (`updateImageProfil`) en un seul aller-retour, comme l'avatar.
+      // EFFACEMENT : `buildTiersLieuxPayload` OMET les champs vides → une clé du baseline (valeur serveur)
+      // absente du payload = champ VIDÉ par l'utilisateur → on l'efface explicitement (vide typé) sinon `save()`
+      // ne voit aucun changement. `address` (atomique/obligatoire) et `tags` (mergés) exclus.
+      // cf. reconcileClearedFields (formEngine) + doc/refactor-field-treatment.md (P0).
+      const cleared = reconcileClearedFields(payload, baseline, { skip: ["tags", "address"] });
+      for (const [key, value] of Object.entries(cleared)) target[key] = value;
+      // Logo posé dans le draft : `save()` (→ `_update`) le route vers le bloc PROFIL_IMAGE (`updateImageProfil`).
       if (data._logoFile) {
         target.profil_avatar = data._logoFile;
       }
