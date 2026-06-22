@@ -1,6 +1,10 @@
 import type { TiersLieuxFormData } from "../components/add/TiersLieuxForm";
 import { getDefaultTiersLieuxValues } from "../components/add/TiersLieuxForm";
 import { transformFormDataWithAddress } from "../hooks/mutationUtils";
+// Pipeline (P3) — imports DIRECTS (pas le barrel formEngine) pour rester un util pur. cf. doc/refactor-field-treatment.md.
+import { registerTransform } from "@/modules/formEngine/engine/transforms";
+import { seedFromEntity } from "@/modules/formEngine/engine/fieldPipeline";
+import type { FieldDescriptor, FormDescriptor, FormValues } from "@/modules/formEngine";
 
 export interface CostumConfig {
   /** Tag principal du costum (filtre observatoire). Ajouté à `tags`. NB : la lib pose aussi le *champ* mainTag via presets. */
@@ -171,41 +175,77 @@ export interface EntityLike {
   serverData?: Record<string, unknown> | null;
 }
 
-export function mapEntityToTiersLieuxValues(entity: EntityLike): TiersLieuxFormData {
-  const data = entity.serverData ?? {};
-  const defaults = getDefaultTiersLieuxValues();
-  const opening = parseOpeningDate(data.openingDate);
-  const family = parseFamily(data.typePlace);
-  const management = parseManagementType(data.manageModel);
-  const address = (data.address ?? {}) as Record<string, unknown>;
-  const video = Array.isArray(data.video) ? data.video : [];
-
+// ── READ via pipeline (P3) ──────────────────────────────────────────────────
+// Transformers nommés réutilisant les helpers ci-dessus (side-effect à l'import). Champs 1→1 (path +
+// read) + 4 GROUPES décompose (1 champ serveur → N champs form) : openingDate, manageModel,
+// typePlace (+typePlaceOther via le 2e arg `all`), address. cf. doc/refactor-field-treatment.md (P3).
+registerTransform("tl:pickString", (v) => pickString(v));
+registerTransform("tl:pickNumberString", (v) => pickNumberString(v));
+registerTransform("tl:video0", (v) => pickString(Array.isArray(v) ? v[0] : undefined));
+registerTransform("tl:socialRead", (v) => parseSocialLinks(v));
+registerTransform("tl:hoursRead", (v) => parseOpeningHours(v));
+registerTransform("tl:openingDateRead", (v) => { const o = parseOpeningDate(v); return { openingMonth: o.month, openingYear: o.year }; });
+registerTransform("tl:manageModelRead", (v) => { const m = parseManagementType(v); return { managementType: m.managementType, managementTypeOther: m.managementTypeOther }; });
+registerTransform("tl:typePlaceRead", (v, all) => {
+  const fam = parseFamily(v);
+  return { family: fam.family, familyOther: pickString((all as Record<string, unknown>).typePlaceOther) || fam.familyOther };
+});
+registerTransform("tl:addressRead", (v) => {
+  const a = (v ?? {}) as Record<string, unknown>;
   return {
-    ...defaults,
-    name: pickString(data.name),
-    shortDescription: pickString(data.shortDescription),
-    description: pickString(data.description),
-    openingMonth: opening.month,
-    openingYear: opening.year,
-    structureName: pickString(data.holderOrganization),
-    managementType: management.managementType,
-    managementTypeOther: management.managementTypeOther,
-    family: family.family,
-    familyOther: pickString(data.typePlaceOther) || family.familyOther,
-    surfaceBuilt: pickNumberString(data.buildingSurfaceArea),
-    surfaceOutdoor: pickNumberString(data.siteSurfaceArea),
-    addressCountry: pickString(address.addressCountry),
-    addressLocality: pickString(address.addressLocality),
-    postalCode: pickString(address.postalCode),
-    streetAddress: pickString(address.streetAddress),
-    localityId: pickString(address.localityId),
-    websiteUrl: pickString(data.url),
-    socialLinks: parseSocialLinks(data.socialNetwork),
-    hours: parseOpeningHours(data.openingHours),
-    email: pickString(data.email),
-    phone: pickString(data.telephone),
-    videoUrl: pickString(video[0]),
+    addressCountry: pickString(a.addressCountry), addressLocality: pickString(a.addressLocality),
+    postalCode: pickString(a.postalCode), streetAddress: pickString(a.streetAddress), localityId: pickString(a.localityId),
   };
+});
+
+const ro = (name: string, read: string, path?: string, type: FieldDescriptor["type"] = "string"): FieldDescriptor =>
+  ({ name, type, widget: "hidden", label: name, read, ...(path ? { path } : {}) });
+const grp = (name: string, group: string, type: FieldDescriptor["type"] = "string"): FieldDescriptor =>
+  ({ name, type, widget: "hidden", label: name, group });
+
+const TIERSLIEU_READ_DESCRIPTOR: FormDescriptor = {
+  id: "tiers-lieu:read", collection: "organizations", layout: { kind: "flat" }, sections: [],
+  serializeGroups: {
+    openingDate: { serverKey: "openingDate", read: "tl:openingDateRead", write: "tl:openingDateRead" },
+    manageModel: { serverKey: "manageModel", read: "tl:manageModelRead", write: "tl:manageModelRead" },
+    typePlace: { serverKey: "typePlace", read: "tl:typePlaceRead", write: "tl:typePlaceRead" },
+    address: { serverKey: "address", read: "tl:addressRead", write: "tl:addressRead" },
+  },
+  fields: {
+    name: ro("name", "tl:pickString"),
+    shortDescription: ro("shortDescription", "tl:pickString"),
+    description: ro("description", "tl:pickString"),
+    structureName: ro("structureName", "tl:pickString", "holderOrganization"),
+    surfaceBuilt: ro("surfaceBuilt", "tl:pickNumberString", "buildingSurfaceArea"),
+    surfaceOutdoor: ro("surfaceOutdoor", "tl:pickNumberString", "siteSurfaceArea"),
+    email: ro("email", "tl:pickString"),
+    phone: ro("phone", "tl:pickString", "telephone"),
+    websiteUrl: ro("websiteUrl", "tl:pickString", "url"),
+    videoUrl: ro("videoUrl", "tl:video0", "video"),
+    socialLinks: ro("socialLinks", "tl:socialRead", "socialNetwork", "array"),
+    hours: ro("hours", "tl:hoursRead", "openingHours", "object"),
+    openingMonth: grp("openingMonth", "openingDate"),
+    openingYear: grp("openingYear", "openingDate"),
+    managementType: grp("managementType", "manageModel"),
+    managementTypeOther: grp("managementTypeOther", "manageModel"),
+    family: grp("family", "typePlace", "array"),
+    familyOther: grp("familyOther", "typePlace"),
+    addressCountry: grp("addressCountry", "address"),
+    addressLocality: grp("addressLocality", "address"),
+    postalCode: grp("postalCode", "address"),
+    streetAddress: grp("streetAddress", "address"),
+    localityId: grp("localityId", "address"),
+  },
+};
+
+/**
+ * Entité serveur → valeurs de form tiers-lieu. Délègue à `seedFromEntity(TIERSLIEU_READ_DESCRIPTOR)` ;
+ * `getDefaultTiersLieuxValues()` = socle (logo/photos/… non mappés). Équivalent à l'ancien mapping
+ * helper-par-helper (prouvé en test). cf. doc/refactor-field-treatment.md (P3).
+ */
+export function mapEntityToTiersLieuxValues(entity: EntityLike): TiersLieuxFormData {
+  const data = (entity.serverData ?? {}) as FormValues;
+  return { ...getDefaultTiersLieuxValues(), ...seedFromEntity(TIERSLIEU_READ_DESCRIPTOR, data) } as TiersLieuxFormData;
 }
 
 export interface BuildPayloadOptions {
