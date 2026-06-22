@@ -1,161 +1,136 @@
 /**
- * Mapping form → payload d'édition de profil, par type d'entité. EXTRAIT VERBATIM du switch de
- * l'ancien EditProfileModal (byte-compat) pour être réutilisé par EditProfileGenericModal et testé
- * isolément. Le résultat est `Object.assign`é sur `entity.data` puis `entity.save()` (useUpdateProfile).
+ * Mapping form → payload d'édition de profil, par type d'entité. Migré (P4) vers le pipeline générique :
+ * `buildProfileUpdateData` délègue à `valuesToPayload(PROFIL_WRITE_DESCRIPTORS[entityType])`. Les helpers
+ * (adresse/social/tags/horaires/refs) sont enregistrés en transformers nommés et PARTAGÉS avec le READ
+ * (`useProfileFormData`, voie B) → fin du miroir READ/WRITE. Comportement byte-identique à l'ancien switch
+ * (prouvé par editProfilePayload.test.ts). cf. doc/refactor-field-treatment.md (P4).
  */
 import { DAYS } from "@/constants/DAYS";
 import { formatISO } from "date-fns";
+import type { FieldDescriptor, FormDescriptor, FormValues } from "@/modules/formEngine";
+import { registerTransform } from "@/modules/formEngine/engine/transforms";
+import { valuesToPayload } from "@/modules/formEngine/engine/fieldPipeline";
 
 type Data = Record<string, unknown>;
 
-export function buildProfileUpdateData(entityType: string, data: Data): Record<string, unknown> {
-  const updateData: Record<string, unknown> = {
-    name: data.name,
-    slug: data.slug,
-  };
+const ADDRESS_KEYS = [
+  "addressCountry", "streetAddress", "postalCode", "addressLocality", "localityId",
+  "level1", "level1Name", "level2", "level2Name", "level3", "level3Name", "level4", "level4Name", "codeInsee",
+] as const;
+const SOCIAL_KEYS = ["github", "gitlab", "facebook", "twitter", "instagram", "diaspora", "mastodon", "telegram", "signal"] as const;
 
-  // Adresse : émise UNIQUEMENT si pays + ville + localityId présents (sinon "" — abandon silencieux, legacy).
-  const buildAddress = (): Record<string, unknown> | "" => {
-    if (data.addressCountry && data.addressLocality && data.localityId) {
-      const address: Record<string, unknown> = {
-        "@type": "PostalAddress",
-        addressCountry: data.addressCountry,
-        addressLocality: data.addressLocality,
-        localityId: data.localityId,
-        level1: data.level1 || "",
-        level1Name: data.level1Name || "",
-        codeInsee: data.codeInsee || "",
-      };
-      if (data.level2) address.level2 = data.level2;
-      if (data.level2Name) address.level2Name = data.level2Name;
-      if (data.level3) address.level3 = data.level3;
-      if (data.level3Name) address.level3Name = data.level3Name;
-      if (data.level4) address.level4 = data.level4;
-      if (data.level4Name) address.level4Name = data.level4Name;
-      if (data.postalCode) address.postalCode = data.postalCode;
-      if (data.streetAddress) address.streetAddress = data.streetAddress;
-      return address;
-    }
-    return "";
-  };
-
-  const buildTags = () =>
-    Array.isArray(data.tags) && data.tags.length > 0 ? data.tags : "";
-
-  const buildSocial = () => ({
-    github: data.github || "",
-    gitlab: data.gitlab || "",
-    facebook: data.facebook || "",
-    twitter: data.twitter || "",
-    instagram: data.instagram || "",
-    diaspora: data.diaspora || "",
-    mastodon: data.mastodon || "",
-    telegram: data.telegram || "",
-    signal: data.signal || "",
-  });
-
-  // 7 entrées par jour (Mo..Su) ; "" pour les jours non renseignés.
-  const buildOpeningHours = () => {
-    const arr = Array.isArray(data.openingHours) ? data.openingHours : [];
-    return DAYS.map((day) => {
-      const match = arr.find(
-        (o): o is { dayOfWeek: string; hours: { opens: string; closes: string }[] } =>
-          typeof o === "object" && o !== null && o.dayOfWeek === day
-      );
-      return match || "";
-    });
-  };
-
-  // Référence d'entité (parent/organizer) : ne garde que name + type par entrée.
-  const buildEntityReference = (ref: unknown) => {
-    if (!ref || typeof ref !== "object") return "";
-    const entries = Object.entries(ref as Record<string, unknown>);
-    if (entries.length === 0) return "";
-    return Object.fromEntries(
-      entries.map(([id, ent]) => [
-        id,
-        { name: (ent as { name?: string }).name, type: (ent as { type?: string }).type },
-      ])
-    );
-  };
-
-  switch (entityType) {
-    case "citoyens":
-      Object.assign(updateData, {
-        shortDescription: data.shortDescription || "",
-        description: data.description || "",
-        url: data.url || "",
-        email: data.email || "",
-        mobile: data.mobile || "",
-        fixe: data.fixe || "",
-        birthDate: data.birthDate || "",
-        tags: buildTags(),
-        address: buildAddress(),
-        ...buildSocial(),
-      });
-      break;
-
-    case "organizations":
-      Object.assign(updateData, {
-        shortDescription: data.shortDescription || "",
-        description: data.description || "",
-        url: data.url || "",
-        email: data.email || "",
-        tags: buildTags(),
-        address: buildAddress(),
-        openingHours: buildOpeningHours(),
-      });
-      Object.assign(updateData, buildSocial());
-      if (data.type) updateData.type = data.type;
-      break;
-
-    case "projects":
-      Object.assign(updateData, {
-        shortDescription: data.shortDescription || "",
-        description: data.description || "",
-        url: data.url || "",
-        email: data.email || "",
-        tags: buildTags(),
-        address: buildAddress(),
-      });
-      Object.assign(updateData, buildSocial());
-      if (data.avancement) updateData.avancement = data.avancement;
-      updateData.parent = buildEntityReference(data.parent);
-      break;
-
-    case "events":
-      Object.assign(updateData, {
-        shortDescription: data.shortDescription || "",
-        url: data.url || "",
-        email: data.email || "",
-        recurrency: data.recurrency || false,
-        tags: buildTags(),
-        address: buildAddress(),
-        openingHours: buildOpeningHours(),
-      });
-      if (data.type) updateData.type = data.type;
-      if (typeof data.startDate === "string") {
-        updateData.startDate = formatISO(new Date(data.startDate));
-      }
-      if (typeof data.endDate === "string") {
-        updateData.endDate = formatISO(new Date(data.endDate));
-      }
-      updateData.timeZone = data.timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone;
-      updateData.parent = buildEntityReference(data.parent);
-      updateData.organizer = buildEntityReference(data.organizer);
-      break;
-
-    case "poi":
-      Object.assign(updateData, {
-        // PAS de shortDescription pour POI
-        description: data.description || "",
-        tags: buildTags(),
-        address: buildAddress(),
-        // PAS de social pour POI
-      });
-      if (data.type) updateData.type = data.type;
-      break;
+// Adresse : champs plats → objet PostalAddress, OU "" si pas de pays+ville+localityId (abandon silencieux, legacy).
+function buildAddress(data: Data): Record<string, unknown> | "" {
+  if (data.addressCountry && data.addressLocality && data.localityId) {
+    const address: Record<string, unknown> = {
+      "@type": "PostalAddress",
+      addressCountry: data.addressCountry,
+      addressLocality: data.addressLocality,
+      localityId: data.localityId,
+      level1: data.level1 || "",
+      level1Name: data.level1Name || "",
+      codeInsee: data.codeInsee || "",
+    };
+    if (data.level2) address.level2 = data.level2;
+    if (data.level2Name) address.level2Name = data.level2Name;
+    if (data.level3) address.level3 = data.level3;
+    if (data.level3Name) address.level3Name = data.level3Name;
+    if (data.level4) address.level4 = data.level4;
+    if (data.level4Name) address.level4Name = data.level4Name;
+    if (data.postalCode) address.postalCode = data.postalCode;
+    if (data.streetAddress) address.streetAddress = data.streetAddress;
+    return address;
   }
+  return "";
+}
 
-  return updateData;
+const buildTags = (v: unknown) => (Array.isArray(v) && v.length > 0 ? v : "");
+
+// 7 entrées par jour (Mo..Su) ; "" pour les jours non renseignés.
+function buildOpeningHours(v: unknown) {
+  const arr = Array.isArray(v) ? v : [];
+  return DAYS.map((day) => {
+    const match = arr.find(
+      (o): o is { dayOfWeek: string; hours: { opens: string; closes: string }[] } =>
+        typeof o === "object" && o !== null && (o as { dayOfWeek?: unknown }).dayOfWeek === day,
+    );
+    return match || "";
+  });
+}
+
+// Référence d'entité (parent/organizer) : ne garde que name + type par entrée ; "" si vide.
+function buildEntityReference(ref: unknown) {
+  if (!ref || typeof ref !== "object") return "";
+  const entries = Object.entries(ref as Record<string, unknown>);
+  if (entries.length === 0) return "";
+  return Object.fromEntries(
+    entries.map(([id, ent]) => [id, { name: (ent as { name?: string }).name, type: (ent as { type?: string }).type }]),
+  );
+}
+
+// ── Transformers WRITE (side-effect) ─────────────────────────────────────────
+registerTransform("pf:orEmpty", (v) => v || "");                 // `data.x || ""` (toujours émis)
+registerTransform("pf:orUndef", (v) => v || undefined);           // conditionnel (`if (data.x)`) → omis si vide
+registerTransform("pf:tags", buildTags);
+registerTransform("pf:recurrency", (v) => v || false);
+registerTransform("pf:timeZone", (v) => v || Intl.DateTimeFormat().resolvedOptions().timeZone);
+registerTransform("pf:isoDate", (v) => (typeof v === "string" ? formatISO(new Date(v)) : undefined)); // `if (typeof === string)`
+registerTransform("pf:entityRef", buildEntityReference);
+registerTransform("pf:openingHours", buildOpeningHours);
+registerTransform("pf:addressWrite", (_v, all) => buildAddress((all ?? {}) as Data));
+// READ adresse (objet serveur → 14 champs plats) — utilisé par le READ (P4) ; déclaré ici pour le groupe.
+registerTransform("pf:addressRead", (v) => {
+  const a = (v ?? {}) as Data;
+  return Object.fromEntries(ADDRESS_KEYS.map((k) => [k, a[k] || ""]));
+});
+
+// ── Descripteurs WRITE par entité ────────────────────────────────────────────
+const w = (name: string, write?: string, type: FieldDescriptor["type"] = "string"): FieldDescriptor =>
+  ({ name, type, widget: "hidden", label: name, ...(write ? { write } : {}) });
+const ADDR_GROUP = { address: { serverKey: "address", read: "pf:addressRead", write: "pf:addressWrite" } };
+const ADDR_MEMBERS = Object.fromEntries(ADDRESS_KEYS.map((k) => [k, { name: k, type: "string", widget: "hidden", label: k, group: "address" } as FieldDescriptor]));
+const SOCIAL_FIELDS = Object.fromEntries(SOCIAL_KEYS.map((k) => [k, w(k, "pf:orEmpty")]));
+const base = (id: string): Omit<FormDescriptor, "fields"> => ({ id: `edit-${id}`, collection: "organizations", layout: { kind: "flat" }, sections: [], serializeGroups: ADDR_GROUP });
+
+const PROFIL_WRITE_DESCRIPTORS: Record<string, FormDescriptor> = {
+  citoyens: { ...base("citoyens"), fields: {
+    name: w("name"), slug: w("slug"),
+    shortDescription: w("shortDescription", "pf:orEmpty"), description: w("description", "pf:orEmpty"),
+    url: w("url", "pf:orEmpty"), email: w("email", "pf:orEmpty"),
+    mobile: w("mobile", "pf:orEmpty"), fixe: w("fixe", "pf:orEmpty"), birthDate: w("birthDate", "pf:orEmpty"),
+    tags: w("tags", "pf:tags", "array"), ...ADDR_MEMBERS, ...SOCIAL_FIELDS,
+  } },
+  organizations: { ...base("organizations"), fields: {
+    name: w("name"), slug: w("slug"),
+    shortDescription: w("shortDescription", "pf:orEmpty"), description: w("description", "pf:orEmpty"),
+    url: w("url", "pf:orEmpty"), email: w("email", "pf:orEmpty"),
+    type: w("type", "pf:orUndef"), tags: w("tags", "pf:tags", "array"),
+    openingHours: w("openingHours", "pf:openingHours", "array"), ...ADDR_MEMBERS, ...SOCIAL_FIELDS,
+  } },
+  projects: { ...base("projects"), fields: {
+    name: w("name"), slug: w("slug"),
+    shortDescription: w("shortDescription", "pf:orEmpty"), description: w("description", "pf:orEmpty"),
+    url: w("url", "pf:orEmpty"), email: w("email", "pf:orEmpty"),
+    avancement: w("avancement", "pf:orUndef"), parent: w("parent", "pf:entityRef", "object"),
+    tags: w("tags", "pf:tags", "array"), ...ADDR_MEMBERS, ...SOCIAL_FIELDS,
+  } },
+  events: { ...base("events"), fields: {
+    name: w("name"), slug: w("slug"),
+    shortDescription: w("shortDescription", "pf:orEmpty"), url: w("url", "pf:orEmpty"), email: w("email", "pf:orEmpty"),
+    type: w("type", "pf:orUndef"), recurrency: w("recurrency", "pf:recurrency", "boolean"),
+    startDate: w("startDate", "pf:isoDate"), endDate: w("endDate", "pf:isoDate"), timeZone: w("timeZone", "pf:timeZone"),
+    parent: w("parent", "pf:entityRef", "object"), organizer: w("organizer", "pf:entityRef", "object"),
+    tags: w("tags", "pf:tags", "array"), openingHours: w("openingHours", "pf:openingHours", "array"), ...ADDR_MEMBERS,
+  } },
+  poi: { ...base("poi"), fields: {
+    name: w("name"), slug: w("slug"),
+    description: w("description", "pf:orEmpty"), type: w("type", "pf:orUndef"),
+    tags: w("tags", "pf:tags", "array"), ...ADDR_MEMBERS,
+  } },
+};
+
+export function buildProfileUpdateData(entityType: string, data: Data): Record<string, unknown> {
+  const descriptor = PROFIL_WRITE_DESCRIPTORS[entityType];
+  if (!descriptor) return { name: data.name, slug: data.slug };
+  return valuesToPayload(descriptor, data as FormValues) as Record<string, unknown>;
 }

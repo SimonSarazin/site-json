@@ -112,5 +112,12 @@ parité 5080 (legacy) vs 5099 (backend)** pour l'entité concernée. La forme le
   useEditTiersLieu/useAddTiersLieu **inchangés**. Équivalence prouvée par `tiersLieuxMapping.test.ts` (**29/29**)
   + test d'intégration lib `costum-tierslieu-fields` (typePlace/openingHours/socialNetwork/surface — create+edit+clear,
   **3/3 sur 5080 ↔ 5099**).
-- NB : **profil** (`\|\| ""`) efface correctement par convention — à rendre structurel via `fieldPipeline` = P4.
-- Reste : P4 (profil multi-entité : supprimer le miroir buildProfileUpdateData↔useProfileFormData) → P5 (unifier CREATE/EDIT dans runSubmit), sous garde de parité.
+- **P4 — profil WRITE migré** : `buildProfileUpdateData` délègue à `valuesToPayload(PROFIL_WRITE_DESCRIPTORS[type])`
+  (5 descripteurs par entité : citoyens/organizations/projects/events/poi) — transformers `pf:*` réutilisant les
+  helpers (adresse groupe, tags, openingHours 7-DOW, refs parent/organizer, dates ISO). Byte-équivalent prouvé par
+  `editProfilePayload.test.ts` (**6/6**, tous les types + address-vide). `useEditProfile`/modales inchangés.
+  **Reste de P4 (READ)** : `useProfileFormData` → pipeline. ⚠ `socialNetwork` est ASYMÉTRIQUE (READ = objet
+  serveur → 9 champs plats [groupe] ; WRITE = 9 clés plates top-level [champs]) → un descripteur read+write
+  partagé ne convient pas pour le social ; gain marginal (le READ est un hook propre, la grosse duplication
+  — la logique de build — est déjà migrée). À faire seulement si on veut la symétrie complète.
+- Reste : P4-READ (optionnel, asymétrie social) → P5 (unifier CREATE/EDIT dans runSubmit), sous garde de parité.
