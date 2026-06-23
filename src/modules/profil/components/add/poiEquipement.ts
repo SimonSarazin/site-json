@@ -10,7 +10,7 @@ import type { AddPoiFormData } from "../../schemaForm";
 // Helpers de pipeline partagés (imports DIRECTS, pas le barrel formEngine → util pur testable sans
 // tirer les widgets/composants). cf. doc/refactor-field-treatment.md.
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
-import { seedEntity, buildDelta, type FormSpec } from "@/modules/formEngine/engine/entityForm";
+import { seedEntity, buildEditPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
 import type { FieldDescriptor, FormDescriptor, FormValues } from "@/modules/formEngine";
 import { buildAddressFromForm } from "../../hooks/mutationUtils";
 
@@ -24,7 +24,7 @@ export interface PoiEquipementSubmitPayload extends AddPoiFormData {
   _imageDeleted?: boolean;
 }
 
-/** Payload d'ÉDITION : delta serveur (champs modifiés/vidés, cf. buildEditDelta) + image. */
+/** Payload d'ÉDITION : payload COMPLET (vides typés, cf. buildEditPoiPayload) + image. */
 export type PoiEquipementEditPayload = Partial<AddPoiFormData> & { _imageFile?: File | null; _imageDeleted?: boolean };
 
 // ── Étapes du wizard ────────────────────────────────────────────────────────
@@ -241,6 +241,8 @@ export const createEmptyDefaults = (
   localityId: "",
   postalCode: "",
   streetAddress: "",
+  level1: "", level1Name: "", level2: "", level2Name: "",
+  level3: "", level3Name: "", level4: "", level4Name: "", codeInsee: "",
   inst_acc_handi_bool: false,
   inst_trans_bool: false,
   equip_type_name: "",
@@ -302,6 +304,13 @@ registerTransform("poi:addressRead", (a) => {
     localityId: toStringValue(o.localityId),
     postalCode: toStringValue(o.postalCode),
     streetAddress: toStringValue(o.streetAddress),
+    // 9 champs SIG (level1..4/codeInsee) : round-trip COMPLET requis par l'édition unifiée (S6) — sinon
+    // l'adresse reconstruite (payload complet) écraserait les niveaux serveur. Parité tl:addressRead.
+    level1: toStringValue(o.level1), level1Name: toStringValue(o.level1Name),
+    level2: toStringValue(o.level2), level2Name: toStringValue(o.level2Name),
+    level3: toStringValue(o.level3), level3Name: toStringValue(o.level3Name),
+    level4: toStringValue(o.level4), level4Name: toStringValue(o.level4Name),
+    codeInsee: toStringValue(o.codeInsee),
   };
 });
 // WRITE adresse : champs plats du form → objet `address` imbriqué (ou `undefined` si pas de localityId →
@@ -347,7 +356,11 @@ const POI_SPEC: FormSpec = { descriptor: POI_DESCRIPTOR, baseDefaults: () => cre
 export const buildEditDefaults = (poi: Poi | null | undefined): AddPoiFormData =>
   seedEntity(POI_SPEC, poi) as unknown as AddPoiFormData;
 
-/** Delta serveur d'édition (modifié + effacé typé) vs `defaults` (baseline) — pipeline générique `buildDelta`. */
-export function buildEditDelta(current: AddPoiFormData, defaults: AddPoiFormData): Record<string, unknown> {
-  return buildDelta(POI_SPEC, current as unknown as FormValues, defaults as unknown as FormValues);
+/**
+ * Payload d'ÉDITION POI (pattern unifié S6) : payload COMPLET (vides typés), à `Object.assign(poi.data)` +
+ * `save()`. Le SDK diffe en interne (envoie le réellement modifié) et le backend efface ($unset). Plus de
+ * diff client (ex-buildEditDelta) ni de baseline. L'adresse round-trip 14 champs → no-op si non touchée.
+ */
+export function buildEditPoiPayload(current: AddPoiFormData): Record<string, unknown> {
+  return buildEditPayload(POI_SPEC, current as unknown as FormValues);
 }
