@@ -29,6 +29,10 @@
       "selectOption": "Veuillez sélectionner une option",
       "selectAtLeastOne": "Veuillez sélectionner au moins une option"
     },
+    "fields": {
+      "selectPlaceholder": "Sélectionner",
+      "selectNoResult": "Aucun résultat"
+    },
     "status": {
       "loading": "Chargement du formulaire...",
       "submitting": "Envoi en cours...",

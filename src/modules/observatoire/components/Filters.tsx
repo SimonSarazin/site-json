@@ -23,6 +23,7 @@ import {
   dimensionList,
   dimensionValue,
   isBoolKind,
+  type LabelMaps,
 } from "../dimensions";
 import { uniqSorted } from "../utils";
 import {
@@ -89,6 +90,8 @@ interface FiltersProps {
   search?: FiltersSearchProps | null;
   /** Chargement en cours : {loaded, total} → badge « données partielles ». */
   partial?: { loaded: number; total: number | null } | null;
+  /** Libellés canoniques (dimensions à `keyPaths`) — options de filtre regroupées. */
+  labels?: LabelMaps;
 }
 
 /**
@@ -101,7 +104,7 @@ interface FiltersProps {
  * même pattern que le `searchHeader` du module search. La recherche texte
  * (optionnelle) reste visible sur tous les écrans.
  */
-export function Filters({ data, dimensions, filterDefs, values, onChange, search, partial }: FiltersProps) {
+export function Filters({ data, dimensions, filterDefs, values, onChange, search, partial, labels }: FiltersProps) {
   const t = useT("modules/observatoire");
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -118,13 +121,24 @@ export function Filters({ data, dimensions, filterDefs, values, onChange, search
     return out;
   }, [filterDefs, dimensions]);
 
-  const { control, watch, reset } = useForm<FilterValues>({
+  const { control, watch, reset, setValue } = useForm<FilterValues>({
     defaultValues: Object.fromEntries(
       fields.map(({ id }) => [id, values[id] ?? ""]),
     ),
   });
   const watched = watch();
   const valuesKey = JSON.stringify(watched);
+
+  // Clé restreinte aux SEULES valeurs des dimensions parentes (`dependsOn`). Les
+  // options ne dépendent des sélections QUE via la cascade → recalculer `optionsById`
+  // sur tout changement de filtre serait du gaspillage (O(nb_filtres × n) à chaque
+  // clic). On ne déclenche le recalcul que sur changement d'un PARENT (ou de `data`).
+  const cascadeParentKey = JSON.stringify(
+    Object.fromEntries(
+      [...new Set(fields.map((f) => f.filter.dependsOn).filter((p): p is string => !!p))]
+        .map((pid) => [pid, watched[pid] ?? ""]),
+    ),
+  );
 
   // Resynchronisation DESCENDANTE : si le parent change les filtres HORS du
   // formulaire (drill-down sur un graphe, bouton reset de l'état vide), on
@@ -156,26 +170,72 @@ export function Filters({ data, dimensions, filterDefs, values, onChange, search
 
   // Options par filtre : dérivées des données pour value/list, oui/non pour
   // anyTrue. Recalculées quand le dataset grossit (chargement progressif).
+  // Cascade (opt-in via `dependsOn`) : si un filtre déclare une dimension
+  // parente ET que celle-ci a une valeur sélectionnée, les options sont
+  // restreintes aux items dont la dimension parente correspond.
   const optionsById = useMemo(() => {
     const out: Record<string, Array<{ id: string; label: string }>> = {};
-    for (const { id, def } of fields) {
+    for (const { id, def, filter } of fields) {
+      let sourceData = data;
+      if (filter.dependsOn) {
+        const parentVal = (watched[filter.dependsOn] ?? "") as string;
+        if (parentVal !== "") {
+          const parentDef = dimensions[filter.dependsOn];
+          if (parentDef) {
+            const selected = parentVal.split(",").map((s) => s.trim()).filter(Boolean);
+            sourceData = data.filter((item) => {
+              const v = dimensionValue(item, parentDef, labels?.[filter.dependsOn!]);
+              return v !== undefined && selected.includes(v);
+            });
+          }
+        }
+      }
       if (isBoolKind(def.kind)) {
         out[id] = [
           { id: BOOL_FILTER_VALUES.TRUE, label: t("filters.yes") },
           { id: BOOL_FILTER_VALUES.FALSE, label: t("filters.no") },
         ];
       } else if (def.kind === "list") {
-        out[id] = uniqSorted(data.flatMap((d) => dimensionList(d, def))).map(
+        out[id] = uniqSorted(sourceData.flatMap((d) => dimensionList(d, def))).map(
           (v) => ({ id: v, label: v }),
         );
       } else {
-        out[id] = uniqSorted(data.map((d) => dimensionValue(d, def))).map(
-          (v) => ({ id: v, label: v }),
-        );
+        const raw = uniqSorted(
+          sourceData.map((d) => dimensionValue(d, def, labels?.[id])).filter((v): v is string => v !== undefined),
+        ).map((v) => ({ id: v, label: v }));
+        // `values` comme allowlist : restreint les options aux valeurs déclarées
+        // (ex. dimension `epci` qui normalise des codes postaux → noms EPCI via
+        // valueMap — sans allowlist, les codes sans mapping s'afficheraient bruts).
+        out[id] = def.values?.length ? raw.filter((opt) => def.values!.includes(opt.id)) : raw;
       }
     }
     return out;
-  }, [fields, data, t]);
+    // cascadeParentKey (valeurs des parents `dependsOn` seulement) : recalcul
+    // uniquement sur changement de parent — pas sur chaque clic de filtre. `watched`
+    // est lu dans le corps mais hors deps (capturé via cascadeParentKey).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fields, data, cascadeParentKey, t, labels, dimensions]);
+
+  // Réconciliation cascade : quand un parent (`dependsOn`) change, les options de
+  // l'enfant se restreignent — on ÉLAGUE alors les valeurs sélectionnées devenues
+  // invalides (sinon elles restent appliquées en « fantôme », non retirables dans
+  // le MultiCombobox qui ne rend que les options). Converge en 1 cycle (après
+  // élagage tout est valide), `setValue` propage la remontée onChange.
+  useEffect(() => {
+    for (const { id, filter } of fields) {
+      if (!filter.dependsOn) continue;
+      const current = (watched[id] ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+      if (current.length === 0) continue;
+      const valid = new Set((optionsById[id] ?? []).map((o) => o.id));
+      const pruned = current.filter((v) => valid.has(v));
+      if (pruned.length !== current.length) {
+        setValue(id, pruned.join(","));
+      }
+    }
+    // Déclenché par le changement des options (= changement parent). `watched`/
+    // `setValue` volontairement hors deps (lus au moment de l'exécution).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [optionsById]);
 
   const labelFor = ({ id, def }: { id: string; def: DimensionDef }): string =>
     def.label ? t(def.label) : def.labelKey ? t(def.labelKey) : id;

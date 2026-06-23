@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import { useLocalization } from "@/hooks/useLocalization";
 import { LocalizedString } from "@/types/site-schema";
 import { ArrowRight } from "lucide-react";
+import { HeroBackgroundImage } from "./HeroBackgroundImage";
 
 type HeroButtonVariant = "default" | "secondary" | "accent" | "primary" | "outline";
 
@@ -18,9 +19,11 @@ interface HeroCtaButton {
 
 interface HeroQuickAccessCard {
   path: string;
-  label: LocalizedString;
-  title: LocalizedString;
-  description: LocalizedString;
+  // Optionnels : rendus conditionnellement (`card.title && …`) ; certaines configs
+  // (ex. equipements-Sportifs) déclarent des cartes-raccourci label + path + icon seuls.
+  label?: LocalizedString;
+  title?: LocalizedString;
+  description?: LocalizedString;
   icon?: string;
 }
 
@@ -29,6 +32,8 @@ interface HeroQuickAccessSectionProps {
   subhead?: LocalizedString;
   backgroundImage?: string;
   backgroundImageAlt?: LocalizedString;
+  backgroundImageMobile?: string;
+  backgroundPosition?: string;
   overlayOpacity?: string;
   badges?: HeroBadge[];
   ctaButtons?: HeroCtaButton[];
@@ -64,15 +69,17 @@ export function HeroQuickAccess({ id, props }: HeroQuickAccessProps) {
       {/* Background Image with overlay */}
       <div className="absolute inset-0">
         {backgroundImage && (
-          <img
+          <HeroBackgroundImage
             src={backgroundImage}
+            mobileSrc={props.backgroundImageMobile}
+            position={props.backgroundPosition}
+            priority
             alt={backgroundAlt}
-            className="w-full h-full object-cover"
           />
         )}
         <div
           className="absolute inset-0 "
-          style={{          
+          style={{
               background: `linear-gradient(to bottom, color-mix(in oklch, var(--color-background) 60%, transparent), color-mix(in oklch, var(--color-background) ${overlayOpacity ?? "30%"}, transparent), var(--color-background))`
           }}
         />
@@ -102,7 +109,7 @@ export function HeroQuickAccess({ id, props }: HeroQuickAccessProps) {
                 </div>
             )}
 
-            
+
 
             <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
               {t(props.headline)}
@@ -138,12 +145,13 @@ export function HeroQuickAccess({ id, props }: HeroQuickAccessProps) {
                 </h2>
               )}
 
+              <div className={quickAccessCards.length > 3 ? "grid grid-cols-1 sm:grid-cols-2 gap-4" : "space-y-4"}>
               {quickAccessCards.map((card, index) => {
                   const cardVariant = index % 2 === 0 ? "public" : "pro";
 
                 return (
                   <Link key={index} to={card.path} className="block">
-                    <div className={`access-card access-card-${cardVariant} group backdrop-blur-sm`}>
+                    <div className={`access-card access-card-${cardVariant} group backdrop-blur-sm p-5`}>
                       <div className="flex items-start justify-between">
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
@@ -153,16 +161,22 @@ export function HeroQuickAccess({ id, props }: HeroQuickAccessProps) {
                                   dangerouslySetInnerHTML={{ __html: card.icon }}
                               />
                             )}
-                            <span className="text-sm font-medium opacity-90">
-                              {t(card.label)}
-                            </span>
+                            {card.label && (
+                              <span className="text-sm font-medium opacity-90">
+                                {t(card.label)}
+                              </span>
+                            )}
                           </div>
-                          <h3 className="font-display text-2xl font-bold">
-                            {t(card.title)}
-                          </h3>
-                          <p className="text-sm opacity-90 max-w-xs">
-                            {t(card.description)}
-                          </p>
+                          {card.title && (
+                            <h3 className="font-display text-2xl font-bold">
+                              {t(card.title)}
+                            </h3>
+                          )}
+                          {card.description && (
+                            <p className="text-sm opacity-90 max-w-xs">
+                              {t(card.description)}
+                            </p>
+                          )}
                         </div>
                         <ArrowRight className="h-6 w-6 transition-transform group-hover:translate-x-1" />
                       </div>
@@ -170,6 +184,7 @@ export function HeroQuickAccess({ id, props }: HeroQuickAccessProps) {
                   </Link>
                 );
               })}
+              </div>
             </div>
           )}
         </div>

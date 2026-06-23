@@ -15,8 +15,8 @@
       "fr",
       "en"
     ],
-    "favicon": "/images/sportSanteBienetre/logo.png",
-    "themeColor": "#4CAF50",
+    "favicon": "/images/sportSanteBienetre/logo-mark.png",
+    "themeColor": "#48b5bd",
     "keywords": [
       "sport santé",
       "bien-être",
@@ -30,10 +30,18 @@
   "header": {
     "type": "transparent-scroll",
     "path": "/",
-    "logo": "images/sportSanteBienetre/logo.png",
+    "logo": "images/sportSanteBienetre/logo-mark.png",
+    "logoAlt": {
+      "fr": "Sport Santé Bien-être – La Réunion",
+      "en": "Sport Health Wellness – Réunion"
+    },
     "logoTitle": {
       "fr": "Sport Santé Bien-être",
       "en": "Sport Health Wellness"
+    },
+    "logoSubtitle": {
+      "fr": "La Réunion",
+      "en": "Réunion"
     },
     "ctaButton": {
       "label": {
@@ -45,79 +53,207 @@
     "nav": [
       {
         "label": {
-          "fr": "Le réseau Sport Santé",
-          "en": "The Sport Health Network"
+          "fr": "Grand Public",
+          "en": "General public"
         },
-        "path": "/espace-professionnels"
+        "path": "/public",
+        "icon": "compass",
+        "children": [
+          {
+            "label": {
+              "fr": "Espace Public",
+              "en": "Public Space"
+            },
+            "path": "/public",
+            "icon": "users",
+            "description": {
+              "fr": "Le sport santé pour tous les Réunionnais.",
+              "en": "Sport health for everyone in Réunion."
+            }
+          },
+          {
+            "label": {
+              "fr": "Qu'est-ce que le Sport Santé",
+              "en": "What is Sport Health"
+            },
+            "path": "/presentation",
+            "icon": "heart-pulse",
+            "description": {
+              "fr": "Comprendre la démarche et ses bénéfices.",
+              "en": "Understand the approach and its benefits."
+            }
+          },
+          {
+            "label": {
+              "fr": "Maisons Sport Santé",
+              "en": "Sport Health Houses"
+            },
+            "path": "/mss",
+            "icon": "house",
+            "description": {
+              "fr": "Les structures labellisées qui vous orientent.",
+              "en": "Labeled facilities that guide you."
+            }
+          },
+          {
+            "label": {
+              "fr": "Équipements sportifs",
+              "en": "Sports Facilities"
+            },
+            "path": "/equipements-sportifs",
+            "icon": "dumbbell",
+            "description": {
+              "fr": "Tous les équipements de l'île, géolocalisés.",
+              "en": "All the island's facilities, geolocated."
+            }
+          },
+          {
+            "label": {
+              "fr": "Créneaux",
+              "en": "Activity Slots"
+            },
+            "path": "/creneaux",
+            "icon": "calendar",
+            "description": {
+              "fr": "Les activités labellisées près de chez vous.",
+              "en": "Labeled activities near you."
+            }
+          },
+          {
+            "label": {
+              "fr": "Cartographie",
+              "en": "Map"
+            },
+            "path": "/mapping",
+            "icon": "map",
+            "description": {
+              "fr": "Explorer l'offre sport santé sur la carte.",
+              "en": "Explore the sport-health offer on the map."
+            }
+          }
+        ]
       },
       {
         "label": {
-          "fr": "Labelliser",
-          "en": "Label"
+          "fr": "Professionnels",
+          "en": "Professionals"
         },
-        "path": "/labellisation"
+        "path": "/espace-professionnels",
+        "icon": "network",
+        "children": [
+          {
+            "label": {
+              "fr": "Espace professionnels",
+              "en": "Professionals"
+            },
+            "path": "/espace-professionnels",
+            "icon": "briefcase",
+            "description": {
+              "fr": "Ressources et outils pour les pros.",
+              "en": "Resources and tools for professionals."
+            }
+          },
+          {
+            "label": {
+              "fr": "Labelliser",
+              "en": "Get Labeled"
+            },
+            "path": "/labellisation",
+            "icon": "award",
+            "description": {
+              "fr": "Obtenir le label sport santé.",
+              "en": "Get the sport-health label."
+            }
+          },
+          {
+            "label": {
+              "fr": "Formation",
+              "en": "Training"
+            },
+            "path": "/formation",
+            "icon": "graduation-cap",
+            "description": {
+              "fr": "Se former au sport santé.",
+              "en": "Train in sport health."
+            }
+          },
+          {
+            "label": {
+              "fr": "Organismes de formation",
+              "en": "Training Organizations"
+            },
+            "path": "/listing-formations",
+            "icon": "school",
+            "description": {
+              "fr": "Les organismes de formation labellisés.",
+              "en": "The labeled training organizations."
+            }
+          }
+        ]
       },
       {
         "label": {
-          "fr": "Prescrire & Orienter",
-          "en": "Prescribe & Guide"
+          "fr": "Communauté",
+          "en": "Community"
         },
-        "path": "/prescription"
-      },
-      {
-        "label": {
-          "fr": "Formation",
-          "en": "Training"
-        },
-        "path": "/formation"
+        "path": "/communaute",
+        "icon": "users",
+        "children": [
+          {
+            "label": {
+              "fr": "Projets",
+              "en": "Projects"
+            },
+            "path": "/projets",
+            "icon": "rocket",
+            "description": {
+              "fr": "Les projets sport santé du territoire.",
+              "en": "Sport-health projects across the territory."
+            }
+          },
+          {
+            "label": {
+              "fr": "Structures",
+              "en": "Structures"
+            },
+            "path": "/structure",
+            "icon": "building",
+            "description": {
+              "fr": "Les acteurs et structures du réseau.",
+              "en": "The network's actors and facilities."
+            }
+          },
+          {
+            "label": {
+              "fr": "Communauté",
+              "en": "Community"
+            },
+            "path": "/communaute",
+            "icon": "users",
+            "description": {
+              "fr": "Rejoindre et échanger avec le réseau.",
+              "en": "Join and connect with the network."
+            }
+          }
+        ]
       },
       {
         "label": {
           "fr": "Contact",
           "en": "Contact"
         },
-        "path": "/contact"
+        "path": "/contact",
+        "icon": "mail"
       }
     ],
-    "navVisibleOnlyForListedPages": true,
-    "secondaryNav": [
-      {
-        "label": {
-          "fr": "Espace Public",
-          "en": "Public Space"
-        },
-        "path": "/public"
-      },
-      {
-        "label": {
-          "fr": "Qu'est-ce que le Sport Santé",
-          "en": "What is Sport Health"
-        },
-        "path": "/presentation"
-      },
-      {
-        "label": {
-          "fr": "Maisons Sport Santé",
-          "en": "Sport Health Houses"
-        },
-        "path": "/mss"
-      },
-      {
-        "label": {
-          "fr": "Actualité",
-          "en": "News"
-        },
-        "path": "/actions"
-      }
-    ],
-    "secondaryNavVisibleOnlyForListedPages": true,
     "sticky": true,
-    "transparent": false,
+    "transparent": true,
+    "transparentMode": "auto",
     "height": "lg",
     "utilities": {
-      "themeSwitch": false,
-      "langSwitch": false,
-      "search": false,
+      "themeSwitch": true,
+      "langSwitch": true,
+      "search": true,
       "auth": true,
       "cart": false,
       "notifications": false
@@ -239,7 +375,7 @@
                       "fr": "Ajouter une activité",
                       "en": "Add an activity"
                     },
-                    "path": "/",
+                    "href": "/",
                     "variant": "primary"
                   },
                   {
@@ -247,7 +383,7 @@
                       "fr": "Ajouter une structure",
                       "en": "Add a structure"
                     },
-                    "path": "/",
+                    "href": "/",
                     "variant": "outline"
                   }
                 ]
@@ -955,7 +1091,6 @@
                     "type": "member",
                     "id": "section-membres",
                     "props": {
-                      "organizationId": "682b2ac5e05a1d45844340e7",
                       "title": {
                         "fr": "Membres Sport Santé Bien-être",
                         "en": "Sport Health Wellness Members"
@@ -1034,7 +1169,7 @@
     {
       "path": "/structure",
       "title": {
-        "fr": "Les structure",
+        "fr": "Les structures",
         "en": "Structures"
       },
       "layout": "fullwidth",
@@ -1070,91 +1205,34 @@
           }
         },
         {
-          "type": "gridLayout",
-          "id": "section-structure-list",
+          "type": "searchProStatic",
+          "id": "section-structure-cards",
           "props": {
-            "leftColumns": 1,
-            "rightColumns": 3,
-            "gap": 4,
-            "leftWrapperClass": "max-h-[75vh] overflow-y-auto",
-            "rightWrapperClass": "sticky top-20 max-h-[75vh] overflow-hidden",
-            "leftSection": {
-              "type": "searchProStatic",
-              "id": "section-structure-cards",
-              "props": {
-                "useFilter": true,
-                "showMap": false,
-                "enableMap": false,
-                "showActiveFiltersTypes": true,
-                "showActiveFiltersTags": true,
-                "disableInfiniteScroll": false,
-                "showRole": true,
-                "baseParams": {
-                  "defaultTypes": [
-                    "organizations"
-                  ],
-                  "defaultFilters": {
-                    "$or": {
-                      "source.key": "sportSanteBienetre",
-                      "source.keys": "sportSanteBienetre",
-                      "reference.costum": "sportSanteBienetre"
-                    }
-                  }
-                },
-                "list": {
-                  "columns": {
-                    "sm": 1,
-                    "md": 1,
-                    "lg": 1,
-                    "xl": 1
-                  },
-                  "card": {
-                    "type": "contact-card",
-                    "variant": "contact-card",
-                    "detailsMode": "drawer"
-                  }
+            "useFilter": true,
+            "showMap": true,
+            "enableMap": true,
+            "defaultViewMode": "split",
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "baseParams": {
+              "defaultTypes": [
+                "organizations"
+              ],
+              "defaultFilters": {
+                "$or": {
+                  "source.key": "sportSanteBienetre",
+                  "source.keys": "sportSanteBienetre",
+                  "reference.costum": "sportSanteBienetre"
                 }
               }
             },
-            "rightSection": {
-              "type": "searchProStatic",
-              "id": "section-structure-map",
-              "props": {
-                "useFilter": false,
-                "showMap": true,
-                "enableMap": true,
-                "defaultViewMode": "map",
-                "showViewModeToggle": false,
-                "showActiveFiltersTypes": false,
-                "showActiveFiltersTags": false,
-                "disableInfiniteScroll": true,
-                "sticky": true,
-                "baseParams": {
-                  "defaultTypes": [
-                    "organizations"
-                  ],
-                  "defaultFilters": {
-                    "$or": {
-                      "source.key": "sportSanteBienetre",
-                      "source.keys": "sportSanteBienetre",
-                      "reference.costum": "sportSanteBienetre"
-                    }
-                  }
-                },
-                "list": {
-                  "columns": {
-                    "sm": 1,
-                    "md": 1,
-                    "lg": 1,
-                    "xl": 1
-                  },
-                  "card": {
-                    "type": "funding",
-                    "variant": "funding",
-                    "detailsMode": "drawer"
-                  }
-                }
-              }
+            "list": {
+              "columns": { "sm": 1, "md": 1, "lg": 1, "xl": 1 },
+              "card": { "type": "contact-card", "detailsMode": "drawer" }
+            },
+            "map": {
+              "marker": { "useItemImage": true, "style": "pin", "color": "primary" },
+              "itemAction": { "kind": "preview" }
             }
           }
         }
@@ -1163,8 +1241,8 @@
      {
       "path": "/mss",
       "title": {
-        "fr": "Les structure",
-        "en": "Structures"
+        "fr": "Maisons Sport Santé",
+        "en": "Sport Health Houses"
       },
       "layout": "fullwidth",
       "sections": [
@@ -1288,93 +1366,35 @@
           }
         },
         {
-          "type": "gridLayout",
-          "id": "section-structure-list",
+          "type": "searchProStatic",
+          "id": "section-structure-cards",
           "props": {
-            "leftColumns": 1,
-            "rightColumns": 3,
-            "gap": 4,
-            "leftWrapperClass": "max-h-[75vh] overflow-y-auto",
-            "rightWrapperClass": "sticky top-20 max-h-[75vh] overflow-hidden",
-            "leftSection": {
-              "type": "searchProStatic",
-              "id": "section-structure-cards",
-              "props": {
-                "useFilter": true,
-                "showMap": false,
-                "enableMap": false,
-                "showActiveFiltersTypes": true,
-                "showActiveFiltersTags": true,
-                "disableInfiniteScroll": false,
-                "showRole": true,
-                "baseParams": {
-                  "defaultTypes": [
-                    "organizations"
-                  ],
-                  "defaultFilters": {
-                    "$or": {
-                      "source.key": "sportSanteBienetre",
-                      "source.keys": "sportSanteBienetre",
-                      "reference.costum": "sportSanteBienetre"
-                    },
-                    "tags" : ["mss"]
-                  }
+            "useFilter": true,
+            "showMap": true,
+            "enableMap": true,
+            "defaultViewMode": "split",
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "baseParams": {
+              "defaultTypes": [
+                "organizations"
+              ],
+              "defaultFilters": {
+                "$or": {
+                  "source.key": "sportSanteBienetre",
+                  "source.keys": "sportSanteBienetre",
+                  "reference.costum": "sportSanteBienetre"
                 },
-                "list": {
-                  "columns": {
-                    "sm": 1,
-                    "md": 1,
-                    "lg": 1,
-                    "xl": 1
-                  },
-                  "card": {
-                    "type": "contact-card",
-                    "variant": "contact-card",
-                    "detailsMode": "drawer"
-                  }
-                }
+                "tags": ["mss"]
               }
             },
-            "rightSection": {
-              "type": "searchProStatic",
-              "id": "section-structure-map",
-              "props": {
-                "useFilter": false,
-                "showMap": true,
-                "enableMap": true,
-                "defaultViewMode": "map",
-                "showViewModeToggle": false,
-                "showActiveFiltersTypes": false,
-                "showActiveFiltersTags": false,
-                "disableInfiniteScroll": true,
-                "sticky": true,
-                "baseParams": {
-                  "defaultTypes": [
-                    "organizations"
-                  ],
-                  "defaultFilters": {
-                    "$or": {
-                      "source.key": "sportSanteBienetre",
-                      "source.keys": "sportSanteBienetre",
-                      "reference.costum": "sportSanteBienetre"
-                    },
-                    "tags" : ["mss"]
-                  }
-                },
-                "list": {
-                  "columns": {
-                    "sm": 1,
-                    "md": 1,
-                    "lg": 1,
-                    "xl": 1
-                  },
-                  "card": {
-                    "type": "funding",
-                    "variant": "funding",
-                    "detailsMode": "drawer"
-                  }
-                }
-              }
+            "list": {
+              "columns": { "sm": 1, "md": 1, "lg": 1, "xl": 1 },
+              "card": { "type": "contact-card", "detailsMode": "drawer" }
+            },
+            "map": {
+              "marker": { "useItemImage": true, "style": "pin", "color": "primary" },
+              "itemAction": { "kind": "preview" }
             }
           }
         }
@@ -1383,8 +1403,8 @@
     {
       "path": "/mapping",
       "title": {
-        "fr": "Mapping - Cyber Réunion",
-        "en": "Mapping - Cyber Réunion"
+        "fr": "Cartographie - Sport Santé Bien-être",
+        "en": "Map - Sport Health Wellness"
       },
       "layout": "fullwidth",
       "sections": [
@@ -1681,7 +1701,7 @@
                   "fr": "Labellisez votre créneau",
                   "en": "Label your slot"
                 },
-                "href": "/creneaux",
+                "path": "/creneaux",
                 "variant": "primary"
               }
             ]
@@ -1938,22 +1958,21 @@
             "buttons": [
               {   
                 "label": {
-                  "fr": "Ajouter une créneau",
+                  "fr": "Ajouter un créneau",
                   "en": "Add a slot"
                 },
-                "path": "/",
+                "href": "/",
                 "variant": "primary"
               },
               {
                 "label": {
-                  "fr": "Voir les équipement sportifs",
+                  "fr": "Voir les équipements sportifs",
                   "en": "View sports facilities"
                 },
                 "href": "/equipements-sportifs",
                 "variant": "outline"
               }
             ],
-            "showFilters": true,
             "showSearch": true,
             "dropdownFilters": [
               {
@@ -2365,7 +2384,7 @@
               }
             ],
             "searchPlaceholder": {
-              "fr": "Rechercher une créneaux...",
+              "fr": "Rechercher un créneau...",
               "en": "Search for a slot..."
             } 
           }
@@ -2405,6 +2424,12 @@
               "preview": {
                 "type": "coform-answer"
               }
+            },
+            "map": {
+              "marker": {
+                "style": "pin",
+                "color": "primary"
+              }
             }
           }
         }
@@ -2437,7 +2462,7 @@
                   "fr": "Les offres de formation",
                   "en": "Training offers"
                 },
-                "href": "/listing-formations",
+                "path": "/listing-formations",
                 "variant": "primary"
               }
             ]
@@ -2447,8 +2472,7 @@
           "type" :"html",
           "id": "formation-html-section",
           "props": {
-            "html": "<h2 class=\"font-display text-3xl md:text-4xl font-bold text-center text-foreground mb-4\">Organismes de <span class=\"text-gradient\">formation labellisé</span></h2>",
-            "className": "mb-12"
+            "html": "<h2 class=\"font-display text-3xl md:text-4xl font-bold text-center text-foreground mb-4\">Organismes de <span class=\"text-gradient\">formation labellisé</span></h2>"
           }
         },
         {
@@ -2461,7 +2485,6 @@
             "showActiveFiltersTypes": true,
             "showActiveFiltersTags": true,
             "disableInfiniteScroll": false,
-            "showRole": true,
             "width": "container",
             "baseParams": {
               "defaultTypes": [
@@ -2484,7 +2507,7 @@
                 "xl": 2
               },
               "card": {
-                "type": "funding",
+                "type": "contact-card",
                 "variant": "contact-card",
                 "detailsMode": "drawer"
               }
@@ -2515,8 +2538,7 @@
               "fr": "Rechercher une formation...",
               "en": "Search for a training..."
             },
-            "showSearch": true,
-            "showFilters": true
+            "showSearch": true
           }
         },
         {
@@ -2529,7 +2551,6 @@
             "showActiveFiltersTypes": true,
             "showActiveFiltersTags": true,
             "disableInfiniteScroll": false,
-            "showRole": true,
             "width": "container",
             "baseParams": {
               "defaultTypes": [
@@ -2584,6 +2605,7 @@
                   "en": "Add sports facility"
                 },
                 "action": "add-poi",
+                "modal": "add-poi-equipement",
                 "variant": "outline"
               }
             ],
@@ -2591,7 +2613,6 @@
               "fr": "Rechercher un équipement...",
               "en": "Search for a facility..."
             },
-            "showFilters": true,
             "showSearch": true,
             "dropdownFilters": [
               {
@@ -2811,7 +2832,7 @@
                   "fr": "Catégorie",
                   "en": "Category"
                 },
-                "field": "category",
+                "field": "equip_type_name",
                 "multiple": true,
                 "options": [
                   {
@@ -3759,7 +3780,8 @@
           "props": {
             "customHeader": {
                 "title": {
-                  "fr": "Tous les équipements sportifs"
+                  "fr": "Tous les équipements sportifs",
+                  "en": "All sports facilities"
                 }
               },
             "useFilter": true,
@@ -3773,45 +3795,57 @@
               "defaultTypes": [
                 "poi"
               ],
+              "sourceKey": [
+                "equipementsSportifs974"
+              ],
               "defaultFields": [
                 "name",
-                "category",
-                "subCategory",
-                "installation",
-                "familleEquipement",
-                "type",
-                "sportPratiquer",
-                "nature",
-                "surface",
-                "sole",
-                "eclairage",
-                "libreAccess",
-                "partenariat",
-                "typePartenariat",
-                "enqueteStatut",
-                "dateCreation",
-                "dateEnquete",
-                "lastUpdate",
-                "created",
-                "updated",
+                "equip_type_name",
+                "equip_type_famille",
+                "categorie",
+                "equip_nature",
+                "equip_sol",
+                "equip_surf",
+                "equip_larg",
+                "equip_long",
+                "aps_name",
+                "inst_nom",
+                "equip_prop_nom",
+                "equip_prop_type",
+                "equip_gest_type",
+                "inst_acc_handi_bool",
+                "inst_acc_handi_type",
+                "equip_pmr_acc",
+                "equip_pmr_chem",
+                "equip_pmr_douche",
+                "equip_pmr_sanit",
+                "equip_pmr_trib",
+                "equip_pmr_vest",
+                "equip_pshs_aire",
+                "equip_pshs_chem",
+                "equip_pshs_sanit",
+                "equip_pshs_trib",
+                "equip_pshs_vest",
+                "equip_pshs_sign",
+                "equip_acc_libre",
+                "inst_trans_bool",
+                "inst_trans_type",
+                "equip_eclair",
+                "equip_douche",
+                "inst_part_bool",
+                "inst_part_type",
+                "equip_loc_type",
+                "equip_utilisateur",
+                "inst_date_creation",
+                "inst_enqu_date",
+                "equip_maj_date",
                 "address",
-                "handicap",
-                "transportCommun",
-                "typeTransportCommun",
-                "typeAccessiblHandicap",
-                "hebergement",
-                "restaurant",
-                "gardiennage",
                 "geo",
                 "geoPosition",
                 "parent"
               ],
               "defaultFilters": {
-                "$or": {
-                  "source.key": "sportSanteBienetre",
-                  "source.keys": "sportSanteBienetre"
-                },
-                "type":"recoveryCenter"
+                "type": "recoveryCenter"
               }
             },
             "list": {
@@ -3827,6 +3861,12 @@
               },
               "preview": {
                 "type": "poi-amenities"
+              }
+            },
+            "map": {
+              "marker": {
+                "style": "pin",
+                "color": "primary"
               }
             }
           }
@@ -3937,8 +3977,58 @@
           }
         }
       ]
+    },
+    {
+      "path": "/mentions-legales",
+      "title": { "fr": "Mentions légales", "en": "Legal notice" },
+      "layout": "default",
+      "sections": [
+        {
+          "type": "html",
+          "id": "mentions-legales-content",
+          "props": {
+            "html": {
+              "fr": "<div class=\"prose mx-auto max-w-3xl px-4 py-16\"><h1>Mentions légales</h1><p><em>Contenu à compléter :</em> éditeur du site, hébergeur, directeur de la publication, propriété intellectuelle.</p></div>",
+              "en": "<div class=\"prose mx-auto max-w-3xl px-4 py-16\"><h1>Legal notice</h1><p><em>Content to complete:</em> site publisher, host, publication director, intellectual property.</p></div>"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/confidentialite",
+      "title": { "fr": "Politique de confidentialité", "en": "Privacy policy" },
+      "layout": "default",
+      "sections": [
+        {
+          "type": "html",
+          "id": "confidentialite-content",
+          "props": {
+            "html": {
+              "fr": "<div class=\"prose mx-auto max-w-3xl px-4 py-16\"><h1>Politique de confidentialité</h1><p><em>Contenu à compléter :</em> données collectées, finalités, base légale, durée de conservation, droits RGPD, contact DPO.</p></div>",
+              "en": "<div class=\"prose mx-auto max-w-3xl px-4 py-16\"><h1>Privacy policy</h1><p><em>Content to complete:</em> data collected, purposes, legal basis, retention period, GDPR rights, DPO contact.</p></div>"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/accessibilite",
+      "title": { "fr": "Accessibilité", "en": "Accessibility" },
+      "layout": "default",
+      "sections": [
+        {
+          "type": "html",
+          "id": "accessibilite-content",
+          "props": {
+            "html": {
+              "fr": "<div class=\"prose mx-auto max-w-3xl px-4 py-16\"><h1>Accessibilité</h1><p><em>Contenu à compléter :</em> niveau de conformité RGAA, état de l'audit, contenus non accessibles, voie de recours.</p></div>",
+              "en": "<div class=\"prose mx-auto max-w-3xl px-4 py-16\"><h1>Accessibility</h1><p><em>Content to complete:</em> RGAA compliance level, audit status, non-accessible content, recourse channel.</p></div>"
+            }
+          }
+        }
+      ]
     }
-
   ],
   "footer": {
     "type": "contact-partners",
@@ -4046,16 +4136,105 @@
   ],
   "theme": {
     "defaultMode": "dark",
+    "colors": {
+      "light": {
+        "background": "oklch(0.99 0.011 100)",
+        "foreground": "oklch(0.26 0.035 240)",
+        "card": "oklch(1 0 0)",
+        "cardForeground": "oklch(0.26 0.035 240)",
+        "popover": "oklch(1 0 0)",
+        "popoverForeground": "oklch(0.26 0.035 240)",
+        "primary": "oklch(0.54 0.105 202)",
+        "primaryForeground": "oklch(0.99 0.01 202)",
+        "secondary": "oklch(0.95 0.025 200)",
+        "secondaryForeground": "oklch(0.40 0.07 205)",
+        "muted": "oklch(0.965 0.008 200)",
+        "mutedForeground": "oklch(0.50 0.025 220)",
+        "accent": "oklch(0.57 0.17 38)",
+        "accentForeground": "oklch(0.99 0.012 38)",
+        "destructive": "oklch(0.55 0.20 27)",
+        "destructiveForeground": "oklch(0.99 0.02 27)",
+        "border": "oklch(0.91 0.012 200)",
+        "input": "oklch(0.91 0.012 200)",
+        "ring": "oklch(0.54 0.105 202)",
+        "warning": "oklch(0.80 0.145 79)",
+        "warningForeground": "oklch(0.30 0.06 70)",
+        "success": "oklch(0.545 0.12 160)",
+        "successForeground": "oklch(0.99 0.012 160)",
+        "info": "oklch(0.55 0.12 235)",
+        "infoForeground": "oklch(0.99 0.012 235)",
+        "error": "oklch(0.55 0.20 27)",
+        "errorForeground": "oklch(0.99 0.02 27)",
+        "chart1": "oklch(0.56 0.105 202)",
+        "chart2": "oklch(0.62 0.17 38)",
+        "chart3": "oklch(0.80 0.145 79)",
+        "chart4": "oklch(0.45 0.09 243)",
+        "chart5": "oklch(0.58 0.12 150)",
+        "sidebar": "oklch(0.975 0.012 200)",
+        "sidebarForeground": "oklch(0.30 0.03 235)",
+        "sidebarPrimary": "oklch(0.54 0.105 202)",
+        "sidebarPrimaryForeground": "oklch(0.99 0.01 202)",
+        "sidebarAccent": "oklch(0.95 0.025 200)",
+        "sidebarAccentForeground": "oklch(0.40 0.07 205)",
+        "sidebarBorder": "oklch(0.91 0.012 200)",
+        "sidebarRing": "oklch(0.54 0.105 202)"
+      },
+      "dark": {
+        "background": "oklch(0.17 0.02 235)",
+        "foreground": "oklch(0.95 0.008 200)",
+        "card": "oklch(0.21 0.022 235)",
+        "cardForeground": "oklch(0.95 0.008 200)",
+        "popover": "oklch(0.21 0.022 235)",
+        "popoverForeground": "oklch(0.95 0.008 200)",
+        "primary": "oklch(0.72 0.099 202)",
+        "primaryForeground": "oklch(0.18 0.025 230)",
+        "secondary": "oklch(0.28 0.03 225)",
+        "secondaryForeground": "oklch(0.86 0.05 200)",
+        "muted": "oklch(0.27 0.02 230)",
+        "mutedForeground": "oklch(0.72 0.02 205)",
+        "accent": "oklch(0.70 0.16 40)",
+        "accentForeground": "oklch(0.18 0.04 35)",
+        "destructive": "oklch(0.575 0.19 28)",
+        "destructiveForeground": "oklch(0.99 0.012 28)",
+        "border": "oklch(0.30 0.022 230)",
+        "input": "oklch(0.30 0.022 230)",
+        "ring": "oklch(0.72 0.099 202)",
+        "warning": "oklch(0.81 0.14 79)",
+        "warningForeground": "oklch(0.25 0.05 70)",
+        "success": "oklch(0.70 0.12 160)",
+        "successForeground": "oklch(0.16 0.02 160)",
+        "info": "oklch(0.70 0.11 235)",
+        "infoForeground": "oklch(0.16 0.02 235)",
+        "error": "oklch(0.575 0.19 28)",
+        "errorForeground": "oklch(0.99 0.012 28)",
+        "chart1": "oklch(0.72 0.099 202)",
+        "chart2": "oklch(0.70 0.16 40)",
+        "chart3": "oklch(0.81 0.14 79)",
+        "chart4": "oklch(0.62 0.11 243)",
+        "chart5": "oklch(0.68 0.12 150)",
+        "sidebar": "oklch(0.19 0.022 235)",
+        "sidebarForeground": "oklch(0.93 0.008 200)",
+        "sidebarPrimary": "oklch(0.72 0.099 202)",
+        "sidebarPrimaryForeground": "oklch(0.18 0.025 230)",
+        "sidebarAccent": "oklch(0.28 0.03 225)",
+        "sidebarAccentForeground": "oklch(0.86 0.05 200)",
+        "sidebarBorder": "oklch(0.30 0.022 230)",
+        "sidebarRing": "oklch(0.72 0.099 202)"
+      }
+    },
     "typography": {
       "fontFamily": {
         "sans": [
-          "Inter"
+          "Lexend",
+          "sans-serif"
         ],
         "serif": [
-          "Roboto Slab"
+          "Fraunces",
+          "serif"
         ],
         "mono": [
-          "Roboto Mono"
+          "Roboto Mono",
+          "monospace"
         ]
       },
       "letterSpacing": "0em"
@@ -4099,6 +4278,29 @@
       "subtitle": {
         "fr": "Accédez à la communauté Sport Santé Bien-être",
         "en": "Access the Sport Health Wellness community"
+      }
+    }
+  },
+  "commandPalette": {
+    "enabled": true,
+    "triggerVariant": "compact",
+    "placeholder": {
+      "fr": "Rechercher une structure, un équipement, une formation...",
+      "en": "Search a facility, a structure, a training..."
+    },
+    "entitySearch": {
+      "enabled": true,
+      "searchType": ["organizations", "projects", "poi"],
+      "limit": 8,
+      "params": {
+        "sourceKey": ["sportSanteBienetre", "equipementsSportifs974"]
+      },
+      "itemActionByType": {
+        "poi": {
+          "kind": "preview",
+          "detailsMode": "dialog",
+          "preview": { "type": "poi-amenities" }
+        }
       }
     }
   },
@@ -4892,6 +5094,8 @@
       "layout": "default",
       "hideHeader": false,
       "hideFooter": false,
+      "editModal": "edit-poi-equipement",
+      "editModalMatch": { "type": "recoveryCenter" },
       "sections": [
         {
           "type": "profile-header",

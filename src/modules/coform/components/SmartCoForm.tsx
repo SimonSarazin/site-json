@@ -217,6 +217,9 @@ export function SmartCoForm({
   // Optionnel : `me` ne sert qu'à activer/scoper la persistance du brouillon —
   // sans provider (tests) ou sans user, les drafts sont simplement désactivés.
   const me = useCocolightOptional()?.me;
+  // Id de l'user courant : scope la persistance du brouillon ET la contribution
+  // multi-eval (read = SA contribution `_multiEval.{id}` ; write = SON entrée).
+  const currentUserId = me?.id ?? null;
 
   const allSubFormsFields = useMemo(
     () => (formData ? parseCoFormFields(formData) : []),
@@ -295,8 +298,8 @@ export function SmartCoForm({
 
   // Normaliser les defaultValues pour les champs stockés à la racine (comme evaluation)
   const normalizedDefaults = useMemo(
-    () => normalizeAnswerData(defaultValues as Record<string, unknown> | undefined, subFormsFields),
-    [defaultValues, subFormsFields]
+    () => normalizeAnswerData(defaultValues as Record<string, unknown> | undefined, subFormsFields, currentUserId),
+    [defaultValues, subFormsFields, currentUserId]
   ) as AllStepsData | undefined;
 
   // Mutation interne : utilisée quand aucun onFinalSubmit externe n'est fourni
@@ -377,7 +380,7 @@ export function SmartCoForm({
     !isInputStandalone &&
     !!formId &&
     !!me?.id;
-  const draftUserId = me?.id ?? null;
+  const draftUserId = currentUserId;
 
   // Mode lecture seule : utiliser CoFormReadOnly
   if (readOnly) {
@@ -456,7 +459,7 @@ export function SmartCoForm({
         try {
           // Dénormaliser pour le format PHP (champs root-level à la racine)
           const rawData = { [subFormId]: data } as Record<string, unknown>;
-          const dataForServer = denormalizeAnswerData(rawData, subFormsFields) as AllStepsData;
+          const dataForServer = denormalizeAnswerData(rawData, subFormsFields, currentUserId) as AllStepsData;
           const links = extractFinderLinks(rawData, subFormsFields);
           const formattedAddedOptions = addedOptions ? { [subFormId]: addedOptions } : undefined;
           const linksOrUndef = Object.keys(links).length > 0 ? links : undefined;

@@ -37,6 +37,16 @@ export const DimensionDefSchema = z.object({
    *  par un simple chemin `answers.<form>.serverData.answers.<section>.<field>`
    *  (cf. resolveSegments, dimensions.ts), sans accesseur métier dédié. */
   paths: z.array(z.string()).min(1),
+  /** REGROUPEMENT sur clé canonique (kind `value`) : quand un libellé affiché
+   *  (`paths`, ex. `address.level4Name`) est du texte libre SALE (variantes de
+   *  casse/accents : "NORD"/"Nord", "ISERE"/"Isère"…), `keyPaths` désigne une
+   *  clé propre et stable (ex. `address.level4`, l'id de zone). Le moteur
+   *  regroupe les items par cette clé et, comme TOUTES les données sont chargées,
+   *  DÉRIVE un libellé canonique par groupe (la variante la plus « riche » :
+   *  casse mixte + accents). Filtre/KPI/graphe/table voient alors une valeur
+   *  unique par groupe — fini les doublons. Sans `keyPaths` : comportement
+   *  normal (la valeur affichée EST la clé). */
+  keyPaths: z.array(z.string()).min(1).optional(),
   /** value (défaut) : 1ʳᵉ chaîne non vide · list : CSV/tableau aplati ·
    *  anyTrue : au moins un des chemins est vrai · number : 1ʳᵉ valeur numérique ·
    *  contains : un chemin (liste) contient `value` (booléen d'appartenance). */
@@ -129,6 +139,10 @@ export const FilterDefSchema = z.object({
   /** Select avec recherche dans les options (combobox) — toujours actif en
    *  multiple (le composant multi-sélection cherche nativement). */
   searchable: z.boolean().optional(),
+  /** Id d'une dimension parente : quand une valeur est sélectionnée pour ce
+   *  filtre parent, les options du filtre courant sont restreintes aux items
+   *  correspondant à cette sélection (facette cascade opt-in). */
+  dependsOn: z.string().optional(),
 });
 export type FilterDef = z.infer<typeof FilterDefSchema>;
 
@@ -210,7 +224,16 @@ export const DataObservatorySectionSchema = z.object({
       })
       .optional(),
     // Export CSV du résultat FILTRÉ (présence du bloc = bouton affiché).
-    export: z.object({ filename: z.string().optional() }).optional(),
+    // `fields` (optionnel) : colonnes d'export COMPLÈTES, indépendantes du
+    // tableau affiché — chaque champ est une dimension (paths/kind/label)
+    // résolue par le moteur. Permet d'exporter toutes les données de la fiche
+    // détail, pas seulement les colonnes visibles. Absent → export des colonnes.
+    export: z
+      .object({
+        filename: z.string().optional(),
+        fields: z.array(DimensionDefSchema).optional(),
+      })
+      .optional(),
     // Clic sur une part/barre de graphe → applique le filtre correspondant
     // (seulement pour les dimensions présentes dans `filters`).
     drilldown: z.boolean().optional(),

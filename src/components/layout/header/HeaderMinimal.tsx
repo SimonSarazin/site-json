@@ -7,13 +7,16 @@ import NavLink from "../NavLink";
 import LangSwitch from "./LangSwitch";
 import MobileMenuSheet from "./MobileMenuSheet";
 import MobileMenuBrand from "./MobileMenuBrand";
+import MobileNavItems from "./MobileNavItems";
 import NavIcon from "./NavIcon";
 import { Badge } from "@/components/ui/badge";
 import { AuthMenu } from "@/modules/auth";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
+import { useNavItemActive } from "./useHeaderBehavior";
 
 interface HeaderMinimalProps {
     header: Header;
@@ -22,6 +25,7 @@ interface HeaderMinimalProps {
 export default function HeaderMinimal({ header }: HeaderMinimalProps) {
     useLoadNamespace("components/layout");
     const t = useT("components/layout");
+    const isNavItemActive = useNavItemActive();
 
     useEffect(() => {
         const body = document.body;
@@ -36,7 +40,7 @@ export default function HeaderMinimal({ header }: HeaderMinimalProps) {
                     <div className="flex items-center gap-3">
                         <NavLink to={header.path || "/"} className="flex items-center gap-3 group">
                              {header.logo ? (
-                                <img src={header.logo} alt={header.logoAlt ? t(header.logoAlt) : "Logo"} className="w-8 h-8 object-contain" />
+                                <OptimizedImage src={header.logo} alt={header.logoAlt ? t(header.logoAlt) : "Logo"} height={32} className="w-8 h-8 object-contain" />
                             ) : header.logoIcon ? (
                                 <IconOrSvg value={header.logoIcon} className="w-8 h-8 text-primary" />
                             ) : null}
@@ -100,18 +104,12 @@ export default function HeaderMinimal({ header }: HeaderMinimalProps) {
                         >
                             {(close) => (
                                 <>
-                                    {header.nav?.map((item, idx) => (
-                                        <NavLink
-                                            key={idx}
-                                            to={item.path}
-                                            className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.15em] hover:text-primary transition-colors text-foreground"
-                                            onClick={close}
-                                        >
-                                            <NavIcon icon={item.icon} />
-                                            {t(item.label)}
-                                            {item.badge && <Badge className="ml-auto text-xs px-2 py-0.5 normal-case tracking-normal">{t(item.badge.text)}</Badge>}
-                                        </NavLink>
-                                    ))}
+                                    <MobileNavItems
+                                        items={header.nav ?? []}
+                                        display={header.mobileNavDisplay}
+                                        onNavigate={close}
+                                        isActive={isNavItemActive}
+                                    />
 
                                     {header.utilities?.auth && (
                                         <AuthMenu

@@ -132,6 +132,16 @@ Le module génère dynamiquement un schéma Zod basé sur les règles CoForm :
 - **Options** : radio/checkbox → `z.enum([...])` basé sur `params.list`
 - **Largeurs** : conversion automatique Bootstrap (`col-md-6`) → Tailwind (`col-span-6`)
 
+> **Donnée legacy & "format invalide" au submit.** Les fields composites
+> (commonTable, evaluation) sont enrichis au read-path (`normalizeAnswerData`)
+> pour coller au schéma Zod strict. Un champ legacy mal typé qui échappe à
+> l'enrichissement (ex. `myCatalog.coeff` stocké en string `"1"`) fait échouer
+> la validation au submit sans message lisible (erreur Zod imbriquée). Pour
+> diagnostiquer : brancher ponctuellement `debugLogValidationFailure(schema,
+> values, fields, ctx)` (`utils/helpers.ts`, DEV-only) dans le chemin de submit
+> qui bug. Tout fix de coercion doit s'accompagner d'un test de non-régression
+> qui rejoue la donnée fautive **et** asserte `generateZodSchema(...).safeParse(...)`.
+
 ### 6. Contrôle d'accès
 
 Le contrôle d'accès est calculé **côté serveur** (`Coform::getFormAccessInfo()`) et retourné dans `CoFormAccessInfo` :

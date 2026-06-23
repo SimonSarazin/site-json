@@ -6,6 +6,7 @@ import type {
 } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useDebounce } from "@/hooks/useDebounce";
+import { COFORM_QUERY_KEYS } from "../constants/queryKeys";
 import type { FinderConfig, FinderSearchResult, FinderElementType } from "../types";
 import { toFinderSearchResult } from "../utils";
 
@@ -91,13 +92,12 @@ export function useFinderSearchResults({
 
   const queryResult = useQuery<FinderSearchResult[], Error>({
     // queryKey stable : ne dépend pas de selectedElements (filtrage local).
-    queryKey: [
-      "finder-search-results",
+    queryKey: COFORM_QUERY_KEYS.FINDER_SEARCH(
       searchTypeArray,
       debouncedQuery,
       filtersPayload,
       config.notSourceKey,
-    ],
+    ),
     enabled:
       enabled && !!entity && debouncedQuery.length >= FINDER_MIN_CHARS,
     staleTime: FINDER_STALE_TIME_MS,

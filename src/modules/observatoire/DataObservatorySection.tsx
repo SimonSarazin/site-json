@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { useObservatoryItemsQuery } from "./hooks/useObservatoryItemsQuery";
 import { useObservatoryFilters } from "./hooks/useObservatoryFilters";
+import { buildLabelMaps } from "./dimensions";
 
 interface DataObservatorySectionComponentProps {
   id?: string;
@@ -55,12 +56,29 @@ export default function DataObservatorySection({
     props.baseParams,
     dimensions,
   );
+  // Libellés canoniques des dimensions à `keyPaths` (ex. departement regroupé
+  // par `address.level4`) : construits UNE fois sur le dataset COMPLET (`items`)
+  // pour rester stables quel que soit le filtrage, puis partagés à tous les
+  // widgets (filtres/KPI/graphes/table).
+  const labels = useMemo(() => buildLabelMaps(items, dimensions), [items, dimensions]);
   const { filters, filtered, setFilters, q, setQ } = useObservatoryFilters(
     items,
     dimensions,
     filterIds,
     props.search?.dimensions,
+    labels,
   );
+
+  // `entities` est aligné avec `items` (index à index) mais `filtered` est un
+  // sous-ensemble — on recalcule les entités correspondantes par référence objet
+  // (applyFilters/applyTextSearch gardent les mêmes références, pas de copie).
+  const filteredEntities = useMemo(() => {
+    if (entities.length === 0) return entities;
+    const itemToEntity = new Map(items.map((item, i) => [item, entities[i]]));
+    return filtered
+      .map((item) => itemToEntity.get(item))
+      .filter((e): e is (typeof entities)[number] => e != null);
+  }, [filtered, items, entities]);
 
   // Drill-down (opt-in) : clic sur une part/barre → applique le filtre —
   // seulement pour les dimensions réellement filtrables (retirables par
@@ -155,6 +173,7 @@ export default function DataObservatorySection({
                 filterDefs={filterDefs}
                 values={filters}
                 onChange={setFilters}
+                labels={labels}
                 search={
                   props.search
                     ? { q, setQ, placeholder: props.search.placeholder }
@@ -174,7 +193,7 @@ export default function DataObservatorySection({
             ) : (
               <>
                 {kpis.length > 0 && (
-                  <KpiCards data={filtered} dimensions={dimensions} kpis={kpis} />
+                  <KpiCards data={filtered} dimensions={dimensions} kpis={kpis} labels={labels} />
                 )}
 
                 {charts.length > 0 && (
@@ -182,6 +201,7 @@ export default function DataObservatorySection({
                     charts={charts}
                     data={filtered}
                     dimensions={dimensions}
+                    labels={labels}
                     animate={!stillLoading}
                     onDrill={onDrill}
                   />
@@ -193,7 +213,8 @@ export default function DataObservatorySection({
                     dimensions={dimensions}
                     table={props.table}
                     exportCsv={props.export ?? null}
-                    entities={entities}
+                    entities={filteredEntities}
+                    labels={labels}
                   />
                 )}
               </>

@@ -16,15 +16,17 @@ import {
 } from "@/components/ui/table";
 import { useT } from "@/hooks/useT";
 import type {
+  DimensionDef,
   DimensionsConfig,
   ObservatoryItem,
   TableColumnDef,
   TableDef,
 } from "../schema";
-import { TOKEN_TINT_CLASSES, dimensionLabel } from "../dimensions";
+import { TOKEN_TINT_CLASSES, dimensionLabel, type LabelMaps } from "../dimensions";
 import {
   PLACEHOLDER,
   buildCsv,
+  buildEntitiesCsv,
   buildRow,
   compare,
   type Row,
@@ -68,13 +70,16 @@ interface ObservatoryTableProps {
   dimensions: DimensionsConfig;
   /** Colonnes + tri initial + rowLink (déclarés en config). */
   table: TableDef;
-  /** Export CSV du résultat filtré (opt-in config : `props.export`). */
-  exportCsv?: { filename?: string } | null;
+  /** Export CSV du résultat filtré (opt-in config : `props.export`). `fields`
+   *  (optionnel) : colonnes d'export complètes (toutes les données détail). */
+  exportCsv?: { filename?: string; fields?: DimensionDef[] } | null;
   /** Entités SDK alignées avec `data` (rowAction "preview"). */
   entities?: readonly SearchEntity[];
+  /** Libellés canoniques (dimensions à `keyPaths`). */
+  labels?: LabelMaps;
 }
 
-export function ObservatoryTable({ data, dimensions, table, exportCsv, entities }: ObservatoryTableProps) {
+export function ObservatoryTable({ data, dimensions, table, exportCsv, entities, labels }: ObservatoryTableProps) {
   const t = useT("modules/observatoire");
   const navigate = useNavigate();
   // rowAction "preview" : entité ouverte dans le détail du module search
@@ -112,8 +117,8 @@ export function ObservatoryTable({ data, dimensions, table, exportCsv, entities 
   const perPage = 10;
 
   const rows = useMemo(
-    () => data.map((e, i) => buildRow(e, i, columns, dimensions)),
-    [data, columns, dimensions],
+    () => data.map((e, i) => buildRow(e, i, columns, dimensions, labels)),
+    [data, columns, dimensions, labels],
   );
   const sorted = useMemo(() => {
     const col = columns.find((c) => c.dimension === sort.key);
@@ -134,13 +139,21 @@ export function ObservatoryTable({ data, dimensions, table, exportCsv, entities 
     );
 
   // Export CSV : le résultat FILTRÉ/TRIÉ complet (pas la page affichée),
-  // BOM UTF-8 pour Excel, booléens via les libellés i18n.
+  // BOM UTF-8 pour Excel, booléens via les libellés i18n. Si `export.fields`
+  // est déclaré → export COMPLET (toutes les données détail) via les items
+  // triés ; sinon → export des colonnes du tableau.
   const downloadCsv = () => {
-    const headers = columns.map((c) => labelFor(c));
-    const csv = buildCsv(sorted, columns, headers, {
-      yes: t("filters.yes"),
-      no: t("filters.no"),
-    });
+    const boolLabels = { yes: t("filters.yes"), no: t("filters.no") };
+    let csv: string;
+    if (exportCsv?.fields?.length) {
+      const fields = exportCsv.fields;
+      const items = sorted.map((r) => data[r.index]);
+      const headers = fields.map((f) => (f.label ? t(f.label) : f.labelKey ? t(f.labelKey) : ""));
+      csv = buildEntitiesCsv(items, fields, headers, boolLabels);
+    } else {
+      const headers = columns.map((c) => labelFor(c));
+      csv = buildCsv(sorted, columns, headers, boolLabels);
+    }
     const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");

@@ -55,9 +55,11 @@ export default function PreviewCoformAnswer({ item, preview }: PreviewProps) {
     <div className="flex max-h-[90vh] flex-col">
       <div className="shrink-0 px-6 py-5" style={{ background: "var(--card-header-gradient)" }}>
         <div className="space-y-2 text-left">
-          <div className="flex items-center gap-2">
+          {/* flex-wrap + pr-8 : un type long (ex. "Sport santé sur ordonnance - SSsO")
+              ne doit pas déborder en largeur ni passer sous le bouton X (haut-droite). */}
+          <div className="flex flex-wrap items-center gap-2 pr-8">
             {a.typeRaw && (
-              <Badge className="rounded-full border-0 bg-white/20 text-primary-foreground hover:bg-white/20">
+              <Badge className="max-w-full whitespace-normal break-words text-left rounded-full border-0 bg-white/20 text-primary-foreground hover:bg-white/20">
                 {a.typeRaw}
               </Badge>
             )}

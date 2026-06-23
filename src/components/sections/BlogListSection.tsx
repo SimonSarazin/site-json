@@ -9,6 +9,7 @@ import { useNavigate } from "react-router";
 import { cn } from '@/lib/utils';
 import { BlogListSectionProps } from '@/types/site-schema';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
+import { formatDateLong } from '@/helpers/formatDate';
 
 export function BlogListSection({ id, props }: { id?: string; props: BlogListSectionProps }) {
   const { t } = useLocalization();
@@ -21,14 +22,6 @@ const navigate = useNavigate();
   const startIndex = (currentPage - 1) * postsPerPage;
   const endIndex = startIndex + postsPerPage;
   const currentPosts = pagination ? posts.slice(startIndex, endIndex) : posts;
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
 
   const getGridCols = (cols: number) => {
     const colsMap: Record<number, string> = {
@@ -64,7 +57,7 @@ const navigate = useNavigate();
       <CardHeader>
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
           <Calendar className="w-4 h-4" />
-          <span>{formatDate(post.publishedAt)}</span>
+          <span>{formatDateLong(post.publishedAt)}</span>
           {post.readTime && (
             <>
               <Clock className="w-4 h-4 ml-2" />

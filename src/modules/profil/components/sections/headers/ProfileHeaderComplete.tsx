@@ -100,12 +100,14 @@ export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
       )}
 
       {/* Avatar + Name + Actions */}
-      <div className="relative sm:px-6 pb-6">
-        <div className="flex items-end gap-6 -mt-20">
+      <div className="relative px-4 sm:px-6 pb-6">
+        {/* Mobile : empilé + centré (avatar au-dessus, nom/actions dessous).
+            ≥ sm : rangée avatar-gauche / nom-droite (layout desktop d'origine). */}
+        <div className="flex flex-col items-center text-center -mt-16 gap-4 sm:flex-row sm:items-end sm:text-left sm:-mt-20 sm:gap-6">
           {/* Avatar */}
           {section.showAvatar !== false && (
             <div className="relative group z-20">
-              <div className="w-40 h-40 rounded-full border-4 border-background bg-card shadow-xl overflow-hidden">
+              <div className="w-28 h-28 sm:w-40 sm:h-40 rounded-full border-4 border-background bg-card shadow-xl overflow-hidden">
                 {effectiveLogoUrl ? (
                   <OptimizedImage
                     src={effectiveLogoUrl}
@@ -138,10 +140,10 @@ export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
             </div>
           )}
 
-          <div className="flex-1 flex justify-between items-end pb-2 flex-wrap gap-4">
+          <div className="w-full flex-1 min-w-0 flex flex-col items-center gap-4 pb-2 sm:flex-row sm:justify-between sm:items-end">
             {/* Nom + Localisation */}
-            <div>
-              <h1 className="text-3xl font-bold text-foreground mb-1">{entityName}</h1>
+            <div className="min-w-0 max-w-full">
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1 break-words">{entityName}</h1>
               {section.showLocation !== false && address && (
                 <p className="text-muted-foreground">
                   {address.addressLocality}
