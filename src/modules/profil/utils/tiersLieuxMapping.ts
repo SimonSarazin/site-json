@@ -235,7 +235,8 @@ const grp = (name: string, group: string, type: FieldDescriptor["type"] = "strin
   ({ name, type, widget: "hidden", label: name, group });
 
 // Descripteur de pipeline tiers-lieu (READ + WRITE). Consommé par seedFromEntity (read) ET valuesToPayload (write).
-const TIERSLIEU_DESCRIPTOR: FormDescriptor = {
+// EXPORTÉ pour le pilote config-driven (Phase 2) : prouver qu'il round-trip sans perte via la config.
+export const TIERSLIEU_DESCRIPTOR: FormDescriptor = {
   id: "tiers-lieu:pipeline", collection: "organizations", layout: { kind: "flat" }, sections: [],
   serializeGroups: {
     openingDate: { serverKey: "openingDate", read: "tl:openingDateRead", write: "tl:openingDateWrite" },
