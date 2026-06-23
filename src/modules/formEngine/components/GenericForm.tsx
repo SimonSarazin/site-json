@@ -16,7 +16,7 @@ import { Form } from "@/components/ui/form";
 import type { FormDescriptor, FormValues } from "../types";
 import { buildZodSchema } from "../engine/zodGen";
 import { check } from "../engine/conditional";
-import { getCompute, applyTransform, resolveValidate } from "../engine/transforms";
+import { getCompute, resolveValidate } from "../engine/transforms";
 import { getWidget } from "../widgets/registry";
 import { getLayout, type LayoutProps } from "../layouts";
 
@@ -66,27 +66,14 @@ export function GenericForm(props: GenericFormProps) {
         })
       : ext;
   }, [props.schema, descriptor]);
-  // read : valeur serveur → valeur de form (pré-remplissage), par champ déclarant `read`.
-  const seededDefaults = useMemo(() => {
-    const hasRead = Object.values(descriptor.fields).some((f) => f.read);
-    if (!hasRead) return defaultValues;
-    const out: FieldValues = { ...defaultValues };
-    for (const [name, field] of Object.entries(descriptor.fields)) {
-      if (field.read) out[name] = applyTransform(field.read, out[name], out);
-    }
-    return out;
-  }, [descriptor, defaultValues]);
+  // GenericForm = RENDU + VALIDATION uniquement (cf. en-tête). Le READ (pré-remplissage) et le WRITE
+  // (payload) sont faits par le MOTEUR (seedEntity / valuesToPayload, pilotés par le DESCRIPTEUR) côté
+  // appelant (domaine OU host config-driven) — JAMAIS ici. `defaultValues` arrive déjà au format form
+  // (seedEntity), et `onSubmit(values)` rend les valeurs de form brutes (l'appelant fait valuesToPayload).
+  // ⚠ Ne PAS réintroduire de read/write par champ ici : ça doublerait le pipeline du moteur (qui, lui,
+  //   gère les serializeGroups + emitEmpty) → double-passe en conflit (régression descripteur unifié).
   // cast : le schéma peut être externe (input `unknown`) ; le form est typé FieldValues (plat).
-  const form = useForm<FieldValues>({ resolver: zodResolver(schema as never) as Resolver<FieldValues>, defaultValues: seededDefaults, mode: "onBlur" });
-
-  // write : valeur de form → valeur de payload, par champ déclarant `write`, avant onSubmit.
-  const submitWithWrites = (vals: FieldValues) => {
-    const out: FieldValues = { ...vals };
-    for (const [name, field] of Object.entries(descriptor.fields)) {
-      if (field.write) out[name] = applyTransform(field.write, out[name], out);
-    }
-    return onSubmit(out);
-  };
+  const form = useForm<FieldValues>({ resolver: zodResolver(schema as never) as Resolver<FieldValues>, defaultValues, mode: "onBlur" });
 
   const values = form.watch();
 
@@ -144,7 +131,7 @@ export function GenericForm(props: GenericFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(submitWithWrites, onInvalid)} className="flex flex-1 flex-col min-h-0">
+      <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="flex flex-1 flex-col min-h-0">
         <Suspense fallback={<div className="flex flex-1 items-center justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>}>
           <Layout {...layoutProps} />
         </Suspense>
