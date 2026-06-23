@@ -1,16 +1,19 @@
 /**
- * Descripteur POI équipement (costum equipementsSportifs974) — couche UI (métier).
- * Consommé par le moteur générique `modules/formEngine`. cf. doc/moteur-formulaire-generique.md.
+ * Descripteur POI équipement (costum equipementsSportifs974) — UNIFIÉ render + pipeline (read/write),
+ * config-convertible (cf. tiers-lieu). Consommé par le moteur générique `modules/formEngine` :
+ *  - RENDU : widgets + sections (wizard) + conditionnel + computed (GenericForm).
+ *  - READ/WRITE : `read`/`write`/`default`/`group` par champ + `serializeGroups.address`, exécutés par le
+ *    pipeline (seedEntity/buildPayload/buildEditPayload via POI_SPEC dans components/add/poiEquipement.ts).
+ * cf. doc/refactor-field-treatment.md (P2) + doc/moteur-formulaire-generique.md.
  *
- * Mise en page fidèle au base form (`PoiEquipementForm`) via les GROUPES du descripteur :
- * grilles 2/3 colonnes + sous-blocs à titre conditionnels (« Accessibilité PMR/PSHS »).
- * - DONNÉES (type/enum) : type déclaré ici ; enums dynamiques (select/checkbox) via
- *   `serverData.lists[<name>]` (passé en `listsOptions` au moteur).
- * - Conditionnel : inst_part_type ⟸ inst_part_bool ; bloc PMR ⟸ equip_pmr_acc (groupe).
- * - Computed : equip_surf = equip_long × equip_larg.
- * - required (zod) : name/type/equip_type_name + adresse (cachée) + aps_name.
+ * LEAF (aucun import de poiEquipement.ts → pas de cycle ESM) : les transforms `poi:*` / `geo:*` sont
+ * enregistrés au runtime par poiEquipement.ts (qui importe CE descripteur pour POI_SPEC) ; ici on ne
+ * référence que leurs CLÉS string. Les libellés d'étape sont inlinés (= STEP_TITLE_KEYS).
+ *
+ * Mise en page fidèle au base form (`PoiEquipementForm`) via les GROUPES : grilles 2/3 colonnes +
+ * sous-blocs à titre conditionnels (« Accessibilité PMR/PSHS »). Enums dynamiques via
+ * `serverData.lists[<name>]` (passé en `listsOptions`). Computed : equip_surf = equip_long × equip_larg.
  */
-import { STEP_TITLE_KEYS } from "../components/add/poiEquipement";
 import type { FieldDescriptor, FormDescriptor } from "@/modules/formEngine";
 
 /** champ (nom de stockage) → clé i18n réelle (sémantique, pas le nom brut). cf. PoiEquipementForm. */
@@ -61,31 +64,49 @@ const LABELS: Record<string, string> = {
 };
 const L = (name: string) => LABELS[name] ?? name;
 
-// petits constructeurs pour limiter le bruit
-const text = (name: string, extra: Partial<FieldDescriptor> = {}): FieldDescriptor => ({ name, type: "string", widget: "text", label: L(name), ...extra });
-const sel = (name: string, extra: Partial<FieldDescriptor> = {}): FieldDescriptor => ({ name, type: "string", widget: "selectFromLists", label: L(name), placeholder: L(name), placeholderSearch: "AddPoiEquipement.placeholders.search", ...extra });
-const sw = (name: string, extra: Partial<FieldDescriptor> = {}): FieldDescriptor => ({ name, type: "boolean", widget: "switch", label: L(name), ...extra });
-const date = (name: string): FieldDescriptor => ({ name, type: "date", widget: "date", label: L(name) });
-const num = (name: string, extra: Partial<FieldDescriptor> = {}): FieldDescriptor => ({ name, type: "number", widget: "number", label: L(name), ...extra });
-const cbg = (name: string): FieldDescriptor => ({ name, type: "array", widget: "checkboxGroup", label: L(name) });
+// Petits constructeurs : widget + READ par TYPE (coercion serveur → form) + défaut typé.
+// Les buckets de read correspondent EXACTEMENT à l'ancien buildPoiFields (parité byte) :
+// string → poi:toString (""), boolean → poi:toBoolean (false), number → poi:toNumber (pas de défaut),
+// array → poi:toStringArray ([]), date → poi:toDate ("").
+const text = (name: string, extra: Partial<FieldDescriptor> = {}): FieldDescriptor => ({ name, type: "string", widget: "text", label: L(name), read: "poi:toString", default: "", ...extra });
+const sel = (name: string, extra: Partial<FieldDescriptor> = {}): FieldDescriptor => ({ name, type: "string", widget: "selectFromLists", label: L(name), placeholder: L(name), placeholderSearch: "AddPoiEquipement.placeholders.search", read: "poi:toString", default: "", ...extra });
+const sw = (name: string, extra: Partial<FieldDescriptor> = {}): FieldDescriptor => ({ name, type: "boolean", widget: "switch", label: L(name), read: "poi:toBoolean", default: false, ...extra });
+const date = (name: string): FieldDescriptor => ({ name, type: "date", widget: "date", label: L(name), read: "poi:toDate", default: "" });
+const num = (name: string, extra: Partial<FieldDescriptor> = {}): FieldDescriptor => ({ name, type: "number", widget: "number", label: L(name), read: "poi:toNumber", ...extra });
+const cbg = (name: string): FieldDescriptor => ({ name, type: "array", widget: "checkboxGroup", label: L(name), read: "poi:toStringArray", default: [] });
 const hidden = (name: string, extra: Partial<FieldDescriptor> = {}): FieldDescriptor => ({ name, type: "string", widget: "hidden", label: name, ...extra });
 
 const VIS_PMR = { field: "equip_pmr_acc", op: "truthy" } as const;
 
 const fields: FieldDescriptor[] = [
-  // ── caché : type (vient du scope) + bloc adresse (écrit par EditLocationTab) ──
-  hidden("type", { required: true }),
-  hidden("addressCountry", { required: true }),
-  hidden("addressLocality", { required: true }),
-  hidden("postalCode", { required: true }),
-  hidden("streetAddress", { required: true }),
+  // ── caché : type (vient du scope) + bloc adresse (groupe de sérialisation "address") ──
+  // type : read + défaut = DEFAULT_POI_EQUIPEMENT_SCOPE.poiType (inliné pour rester leaf).
+  hidden("type", { required: true, read: "poi:toString", default: "recoveryCenter" }),
+  // Membres plats du groupe `address` : recomposés en objet par serializeGroups (pas de read/default
+  // individuel — addressCountry retombe sur "RE" via le transform poi:addressRead). localityId pilote
+  // l'écriture (clé omise sans lui) ; non rendu (absent des sections) = pipeline-only.
+  hidden("addressCountry", { required: true, group: "address" }),
+  hidden("addressLocality", { required: true, group: "address" }),
+  hidden("postalCode", { required: true, group: "address" }),
+  hidden("streetAddress", { required: true, group: "address" }),
+  hidden("localityId", { group: "address" }),
+
+  // ── pipeline-only (lus/écrits, non rendus dans aucune section) ──
+  hidden("description", { read: "poi:toString", default: "" }),
+  { name: "tags", type: "array", widget: "hidden", label: "tags", read: "poi:toStringArray", default: [] },
+  // geo/geoPosition : writeOnly (posés par EditLocationTab AVEC l'adresse, jamais relus du form) →
+  // émis au WRITE via transforms partagés (geo:write/geoPosition:write, liés à localityId), ignorés au READ.
+  { name: "geo", type: "object", widget: "hidden", label: "geo", writeOnly: true, write: "geo:write" },
+  { name: "geoPosition", type: "object", widget: "hidden", label: "geoPosition", writeOnly: true, write: "geoPosition:write" },
 
   // ── général ──
   text("name", { required: true, info: "ProfileEdit.fields.name.description" }),
   sel("equip_type_name", { required: true }),
   sel("equip_type_famille"),
-  { name: "_imageFile", type: "object", widget: "image", label: L("image") },
-  { name: "address", type: "object", widget: "location", label: L("address") },
+  // Composites de RENDU (renderOnly) : pilotés par le widget image / EditLocationTab — jamais lus ni écrits
+  // par le pipeline (l'image est repassée à part par la modale ; l'adresse passe par serializeGroups).
+  { name: "_imageFile", type: "object", widget: "image", label: L("image"), renderOnly: true },
+  { name: "address", type: "object", widget: "location", label: L("address"), renderOnly: true },
 
   // ── juridique ──
   text("equip_prop_nom"),
@@ -98,7 +119,8 @@ const fields: FieldDescriptor[] = [
   text("equip_gest_type"),
   sw("inst_part_bool"),
   { name: "inst_part_type", type: "array", widget: "tags", label: L("inst_part_type"),
-    widgetProps: { searchable: false }, visibleIf: { field: "inst_part_bool", op: "truthy" } },
+    widgetProps: { searchable: false }, visibleIf: { field: "inst_part_bool", op: "truthy" },
+    read: "poi:toStringArray", default: [] },
 
   // ── structurant ──
   sel("equip_nature"),
@@ -129,11 +151,13 @@ const fields: FieldDescriptor[] = [
 
   // ── usages ──
   { name: "urls", type: "array", widget: "urlList", label: L("urls"),
-    widgetProps: { addLabel: "AddPoiEquipement.buttons.addUrl", removeLabel: "AddPoiEquipement.buttons.removeUrl" } },
+    widgetProps: { addLabel: "AddPoiEquipement.buttons.addUrl", removeLabel: "AddPoiEquipement.buttons.removeUrl" },
+    read: "poi:toStringArray", default: [] },
   cbg("equip_utilisateur"),
   sw("equip_acc_libre"),
   { name: "aps_name", type: "array", widget: "multiselect", label: L("aps_name"), required: true,
-    placeholder: "AddPoiEquipement.placeholders.selectSport", placeholderSearch: "AddPoiEquipement.placeholders.searchSport" },
+    placeholder: "AddPoiEquipement.placeholders.selectSport", placeholderSearch: "AddPoiEquipement.placeholders.searchSport",
+    read: "poi:toStringArray", default: [] },
 ];
 
 export const poiEquipementDescriptor: FormDescriptor = {
@@ -141,9 +165,12 @@ export const poiEquipementDescriptor: FormDescriptor = {
   collection: "poi",
   costumSlug: "equipementsSportifs974",
   layout: { kind: "wizard", validatePerStep: true },
+  // Groupe de sérialisation : objet serveur `address` ↔ champs plats du form (read = décompose 14 clés,
+  // write = recompose, undefined si pas de localityId → clé omise). Parité buildEditDefaults / buildAddressFromForm.
+  serializeGroups: { address: { serverKey: "address", read: "poi:addressRead", write: "poi:addressWrite" } },
   sections: [
     {
-      id: "general", label: STEP_TITLE_KEYS.general,
+      id: "general", label: "AddPoiEquipement.steps.general",
       groups: [
         { columns: 1, fields: ["$slot:parentInfo", "name"] },
         { columns: 2, fields: ["equip_type_name", "equip_type_famille"] },
@@ -154,7 +181,7 @@ export const poiEquipementDescriptor: FormDescriptor = {
       ],
     },
     {
-      id: "legal", label: STEP_TITLE_KEYS.legal,
+      id: "legal", label: "AddPoiEquipement.steps.legal",
       groups: [
         { columns: 2, fields: ["equip_prop_nom", "equip_prop_type"] },
         { columns: 3, fields: ["inst_date_creation", "inst_enqu_date", "equip_maj_date"] },
@@ -163,7 +190,7 @@ export const poiEquipementDescriptor: FormDescriptor = {
       ],
     },
     {
-      id: "structure", label: STEP_TITLE_KEYS.structure,
+      id: "structure", label: "AddPoiEquipement.steps.structure",
       groups: [
         { columns: 2, fields: ["equip_nature", "equip_sol"] },
         { columns: 3, fields: ["equip_long", "equip_larg", "equip_surf"] },
@@ -178,7 +205,7 @@ export const poiEquipementDescriptor: FormDescriptor = {
       ],
     },
     {
-      id: "usage", label: STEP_TITLE_KEYS.usage,
+      id: "usage", label: "AddPoiEquipement.steps.usage",
       groups: [
         { columns: 1, fields: ["urls"] },
         { columns: 1, fields: ["equip_utilisateur"] },

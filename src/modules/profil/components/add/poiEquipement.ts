@@ -12,7 +12,8 @@ import type { AddPoiFormData } from "../../schemaForm";
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
 import { seedEntity, buildPayload, buildEditPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
 import "../../forms/geoTransforms"; // enregistre geo:write / geoPosition:write (partagés)
-import type { FieldDescriptor, FormDescriptor, FormValues } from "@/modules/formEngine";
+import type { FormValues } from "@/modules/formEngine";
+import { poiEquipementDescriptor } from "../../forms/poiEquipement.descriptor";
 import { buildAddressFromForm } from "../../hooks/mutationUtils";
 
 /**
@@ -28,27 +29,6 @@ export interface PoiEquipementSubmitPayload extends AddPoiFormData {
 /** Payload d'ÉDITION : payload COMPLET (vides typés, cf. buildEditPoiPayload) + image. */
 export type PoiEquipementEditPayload = Partial<AddPoiFormData> & { _imageFile?: File | null; _imageDeleted?: boolean };
 
-// ── Étapes du wizard ────────────────────────────────────────────────────────
-export const STEP_ORDER = ["general", "legal", "structure", "usage"] as const;
-export type StepKey = (typeof STEP_ORDER)[number];
-
-/** Clés i18n des titres d'étape (namespace `modules/profil`). */
-export const STEP_TITLE_KEYS: Record<StepKey, string> = {
-  general: "AddPoiEquipement.steps.general",
-  legal: "AddPoiEquipement.steps.legal",
-  structure: "AddPoiEquipement.steps.structure",
-  usage: "AddPoiEquipement.steps.usage",
-};
-
-/** Champs PSHS rendus en bloc : `name` = champ form, `labelKey` = clé i18n. */
-export const PSHS_FIELDS = [
-  { name: "equip_pshs_aire", labelKey: "AddPoiEquipement.pshs.aire" },
-  { name: "equip_pshs_sanit", labelKey: "AddPoiEquipement.pshs.sanit" },
-  { name: "equip_pshs_trib", labelKey: "AddPoiEquipement.pshs.trib" },
-  { name: "equip_pshs_sign", labelKey: "AddPoiEquipement.pshs.sign" },
-  { name: "equip_pshs_vest", labelKey: "AddPoiEquipement.pshs.vest" },
-  { name: "equip_pshs_chem", labelKey: "AddPoiEquipement.pshs.chem" },
-] as const;
 
 /** Champs projetés par le backend lors de la recherche/détail d'un équipement. */
 export const POI_DETAIL_FIELDS = [
@@ -318,42 +298,13 @@ registerTransform("poi:addressRead", (a) => {
 // clé omise, parité buildAddressFromForm). `all` = toutes les valeurs de form.
 registerTransform("poi:addressWrite", (all) => buildAddressFromForm((all ?? {}) as Record<string, string>));
 
-const READ_STR = ["name", "description", "equip_type_name", "equip_type_famille", "equip_nature", "equip_sol", "categorie", "inst_acc_handi_type", "inst_trans_type", "equip_prop_nom", "equip_prop_type", "equip_gest_type", "inst_nom"];
-const READ_NUM = ["equip_surf", "equip_larg", "equip_long"];
-const READ_BOOL = ["inst_acc_handi_bool", "inst_trans_bool", "equip_eclair", "equip_acc_libre", "inst_part_bool", "equip_pmr_acc", "equip_pmr_chem", "equip_pmr_douche", "equip_pmr_sanit", "equip_pmr_trib", "equip_pmr_vest", "equip_pshs_aire", "equip_pshs_chem", "equip_pshs_sanit", "equip_pshs_trib", "equip_pshs_vest", "equip_pshs_sign", "equip_douche"];
-const READ_ARR = ["tags", "urls", "aps_name", "inst_part_type", "equip_loc_type", "equip_utilisateur"];
-const READ_DATE = ["inst_date_creation", "inst_enqu_date", "equip_maj_date"];
-
-/** Champs du descripteur POI (read + write UNIFIÉS). `geo`/`geoPosition` = `writeOnly` (posés par
- *  EditLocationTab, jamais relus du form → émis au WRITE, ignorés au READ). Membres du groupe `address`. */
-function buildPoiFields(): Record<string, FieldDescriptor> {
-  const f: Record<string, FieldDescriptor> = {};
-  const add = (name: string, type: FieldDescriptor["type"], read: string, def?: unknown) => {
-    f[name] = { name, type, widget: "hidden", label: name, read, ...(def !== undefined ? { default: def } : {}) };
-  };
-  for (const n of READ_STR) add(n, "string", "poi:toString", "");
-  for (const n of READ_NUM) add(n, "number", "poi:toNumber");           // pas de défaut → undefined
-  for (const n of READ_BOOL) add(n, "boolean", "poi:toBoolean", false);
-  for (const n of READ_ARR) add(n, "array", "poi:toStringArray", []);
-  for (const n of READ_DATE) add(n, "date", "poi:toDate", "");
-  add("type", "string", "poi:toString", DEFAULT_POI_EQUIPEMENT_SCOPE.poiType);
-  for (const n of ["addressCountry", "addressLocality", "localityId", "postalCode", "streetAddress"]) {
-    f[n] = { name: n, type: "string", widget: "hidden", label: n, group: "address" };
-  }
-  // geo/geoPosition : writeOnly + transforms PARTAGÉS (liés à localityId) → lat/lng coercés en string
-  // (geoValid), coords en number (geoPositionValid), et effacés quand l'adresse part. cf. geoTransforms.
-  f.geo = { name: "geo", type: "object", widget: "hidden", label: "geo", writeOnly: true, write: "geo:write" };
-  f.geoPosition = { name: "geoPosition", type: "object", widget: "hidden", label: "geoPosition", writeOnly: true, write: "geoPosition:write" };
-  return f;
-}
-
-/** Descripteur POI UNIQUE (read+write) + spec. Adresse en serializeGroup ; geo/geoPosition writeOnly. */
-const POI_DESCRIPTOR: FormDescriptor = {
-  id: "poi-equipement", collection: "poi", layout: { kind: "flat" }, sections: [],
-  serializeGroups: { address: { serverKey: "address", read: "poi:addressRead", write: "poi:addressWrite" } },
-  fields: buildPoiFields(),
-};
-const POI_SPEC: FormSpec = { descriptor: POI_DESCRIPTOR, baseDefaults: () => createEmptyDefaults() as unknown as FormValues };
+/**
+ * Spec POI = descripteur UNIFIÉ (render + read/write) `poiEquipementDescriptor` + socle createEmptyDefaults.
+ * Le MÊME descripteur pilote le rendu (GenericForm), le READ (seedEntity), le WRITE create/edit (buildPayload)
+ * ET la config (formDescriptorToConfig). Les transforms `poi:*` référencés par ses champs sont enregistrés
+ * ci-dessus (poi:toString/…, poi:addressRead/Write) + `geo:*` via l'import geoTransforms. cf. tiers-lieu.
+ */
+const POI_SPEC: FormSpec = { descriptor: poiEquipementDescriptor, baseDefaults: () => createEmptyDefaults() as unknown as FormValues };
 
 /** Valeurs de form depuis l'entité (édition) OU défauts (création) — pipeline générique `seedEntity`. */
 export const buildEditDefaults = (poi: Poi | null | undefined): AddPoiFormData =>
