@@ -1,8 +1,7 @@
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { PROFIL_QUERY_KEYS } from "../constants";
-import { submitEntityEdit } from "./submitEntityEdit";
-import { logCocolightError } from "./mutationUtils";
+import { useEntityMutation, type EntityKind } from "./useEntityMutation";
 
 interface BannerUploadData {
   file: File;
@@ -13,32 +12,16 @@ interface BannerUploadData {
 }
 
 /**
- * Hook pour mettre à jour les informations d'un profil
+ * Met à jour les informations d'un profil — MINCE SPEC au-dessus de `useEntityMutation`.
+ * `newData` = payload COMPLET déjà construit par la modale (buildProfileUpdateData : pf:orEmpty émet "",
+ * adresse "" si vide) → buildPayload = identité → submitEntityEdit (Object.assign + save, SDK diffe, backend $unset).
  */
 export function useUpdateProfile(entity: EntityTypes | null) {
-  return useMutationWithToast<{ entity: EntityTypes; result: unknown }, Record<string, unknown>>({
-    mutationFn: async (newData) => {
-      if (!entity) {
-        throw new Error("No entity provided");
-      }
-
-      // Orchestrateur unifié (S6) : Object.assign(draft) + save() (le SDK diffe, le backend efface les vides).
-      // `newData` = buildProfileUpdateData (payload complet : pf:orEmpty émet "", adresse "" si vide).
-      let result: unknown;
-      try {
-        result = await submitEntityEdit(entity as unknown as Parameters<typeof submitEntityEdit>[0], newData);
-      } catch (err) {
-        // ex. `UPDATE_BLOCK_INFO - The value at /parent must be an object` (parent:"" sur-émis) →
-        // messages AJV champ par champ visibles dans la console du navigateur.
-        logCocolightError(`useUpdateProfile · ${entity.getEntityType?.() ?? "?"}`, err, newData);
-        throw err;
-      }
-
-      return { entity, result };
-    },
-    namespace: "modules/profil",
-    successKey: "toast.profile.updateSuccess",
-    errorKey: "toast.profile.updateError",
+  return useEntityMutation({
+    mode: "edit", entityType: (entity?.getEntityType?.() ?? "citoyens") as EntityKind, target: entity,
+    buildPayload: (d) => d,
+    successKey: "toast.profile.updateSuccess", errorKey: "toast.profile.updateError",
+    errorContext: `useUpdateProfile · ${entity?.getEntityType?.() ?? "?"}`,
     invalidateQueries: entity ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : [],
   });
 }
