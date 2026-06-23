@@ -16,7 +16,7 @@ import {
   mapEntityToTiersLieuxValues,
   type EntityLike,
 } from "./tiersLieuxMapping";
-import { getDefaultTiersLieuxValues } from "../components/add/TiersLieuxForm";
+import { getDefaultTiersLieuxValues } from "./tiersLieux.schema";
 
 /**
  * Tests de tiersLieuxMapping : conversions entity ↔ form pour l'entité
@@ -35,7 +35,7 @@ describe("buildOpeningHoursPayload", () => {
 
   it("défaut = tous les jours FERMÉS (pas de présélection Lun–Ven)", () => {
     // Régression : la factory ne pré-coche plus aucun jour (création opt-in ; édition d'un vide
-    // affiche vide via parseOpeningHours qui réutilise ces défauts). cf. TiersLieuxForm.getDefaultTiersLieuxValues.
+    // affiche vide via parseOpeningHours qui réutilise ces défauts). cf. tiersLieux.schema.getDefaultTiersLieuxValues.
     const hours = getDefaultTiersLieuxValues().hours;
     expect(Object.values(hours).every((d) => d.enabled === false)).toBe(true);
   });

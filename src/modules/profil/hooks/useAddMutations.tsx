@@ -16,7 +16,7 @@ import {
 } from "./mutationUtils";
 import { buildTiersLieuxPayload } from "../utils/tiersLieuxMapping";
 import { buildProfileUpdateData } from "../forms/editProfilePayload";
-import type { TiersLieuxSubmitPayload } from "../components/add/TiersLieuxForm";
+import type { TiersLieuxSubmitPayload } from "../utils/tiersLieux.schema";
 import type { PoiEquipementSubmitPayload, PoiEquipementEditPayload } from "../components/add/poiEquipement";
 import { buildAddPoiPayload } from "../components/add/poiEquipement";
 import { submitEntityEdit } from "./submitEntityEdit";

@@ -22,7 +22,7 @@ import {
   getDefaultTiersLieuxValues,
   type TiersLieuxFormData,
   type TiersLieuxSubmitPayload,
-} from "../components/add/TiersLieuxForm";
+} from "../utils/tiersLieux.schema";
 
 interface Props {
   open: boolean;

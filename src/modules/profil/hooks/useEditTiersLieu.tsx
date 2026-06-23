@@ -3,7 +3,7 @@ import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { useSite } from "@/hooks/useSite";
 import { PROFIL_QUERY_KEYS } from "../constants";
 import { buildTiersLieuxPayload } from "../utils/tiersLieuxMapping";
-import type { TiersLieuxSubmitPayload } from "../components/add/TiersLieuxForm";
+import type { TiersLieuxSubmitPayload } from "../utils/tiersLieux.schema";
 import { submitEntityEdit } from "./submitEntityEdit";
 
 /**

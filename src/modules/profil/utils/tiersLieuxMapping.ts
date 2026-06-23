@@ -1,5 +1,5 @@
-import type { TiersLieuxFormData } from "../components/add/TiersLieuxForm";
-import { getDefaultTiersLieuxValues } from "../components/add/TiersLieuxForm";
+import type { TiersLieuxFormData } from "./tiersLieux.schema";
+import { getDefaultTiersLieuxValues } from "./tiersLieux.schema";
 import { transformFormDataWithAddress } from "../hooks/mutationUtils";
 // Pipeline (P3) — imports DIRECTS (pas le barrel formEngine) pour rester un util pur. cf. doc/refactor-field-treatment.md.
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
