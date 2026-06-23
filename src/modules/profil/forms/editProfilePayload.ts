@@ -83,7 +83,10 @@ registerTransform("pf:recurrency", (v) => v || false);
 registerTransform("pf:timeZone", (v) => v || Intl.DateTimeFormat().resolvedOptions().timeZone);
 registerTransform("pf:isoDate", (v) => (typeof v === "string" ? formatISO(new Date(v)) : undefined)); // `if (typeof === string)`
 registerTransform("pf:entityRef", buildEntityReference);
-registerTransform("pf:openingHours", buildOpeningHours);
+// Provided (array) → 7-DOW ; NON fourni (undefined, ex. form de création sans openingHours) → omis
+// (évite de sur-émettre un tableau 7-vides au CREATE, non strippé par le backend). L'édition fournit
+// toujours le tableau (form complet) → 7-DOW, ou [] tout-fermé → 7-vides = clear.
+registerTransform("pf:openingHours", (v) => (Array.isArray(v) ? buildOpeningHours(v) : undefined));
 registerTransform("pf:addressWrite", (_v, all) => buildAddress((all ?? {}) as Data));
 
 // ── Transformers READ ────────────────────────────────────────────────────────

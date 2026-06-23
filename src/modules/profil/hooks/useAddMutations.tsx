@@ -14,6 +14,7 @@ import {
   buildOrganizerReference,
 } from "./mutationUtils";
 import { buildTiersLieuxPayload } from "../utils/tiersLieuxMapping";
+import { buildProfileUpdateData } from "../forms/editProfilePayload";
 import type { TiersLieuxSubmitPayload } from "../components/add/TiersLieuxForm";
 import type { PoiEquipementSubmitPayload, PoiEquipementEditPayload } from "../components/add/poiEquipement";
 import { submitEntityEdit } from "./submitEntityEdit";
@@ -69,11 +70,15 @@ export function useAddOrganization(entity?: EntityTypes | null) {
         throw new Error("No entity provided");
       }
 
-      // Transformer les données avec l'objet address
-      const transformedData = transformFormDataWithAddress(data);
+      // Payload via le PIPELINE unifié (buildProfileUpdateData = descripteur read+write : adresse imbriquée,
+      // geo coercé, social plat, transforms édition). `role` (create-only, hors descripteur) ré-injecté.
+      // Prouvé byte-égal au chemin transformFormDataWithAddress (create-pipeline-parity.test, 5080↔5099).
+      const payload = buildProfileUpdateData("organizations", data as Record<string, unknown>);
+      const role = (data as Record<string, unknown>).role;
+      if (role) payload.role = role;
 
       // Créer l'organisation via le SDK
-      const organization = await targetEntity.organization(transformedData);
+      const organization = await targetEntity.organization(payload);
       await organization.save();
 
       return { organization };
@@ -113,18 +118,16 @@ export function useAddProject(entity?: EntityTypes | null) {
         throw new Error("No entity provided");
       }
 
-      // Transformer les données avec l'objet address
-      const transformedData = transformFormDataWithAddress(data);
-
-      // Ajouter le parent si on crée depuis une entité parente
+      // Payload via le PIPELINE unifié (buildProfileUpdateData). `role` ré-injecté ; `parent` de sous-création
+      // (depuis l'entité créatrice) override celui du form. Byte-égal au brut (create-pipeline-parity).
+      const payload = buildProfileUpdateData("projects", data as Record<string, unknown>);
+      const role = (data as Record<string, unknown>).role;
+      if (role) payload.role = role;
       const parent = buildParentReference(entity);
-      const projectData = {
-        ...transformedData,
-        ...(parent ? { parent } : {}),
-      };
+      if (parent) payload.parent = parent;
 
       // Créer le projet via le SDK
-      const project = await targetEntity.project(projectData);
+      const project = await targetEntity.project(payload);
       await project.save();
 
       return { project };
@@ -167,33 +170,24 @@ export function useAddEvent(entity?: EntityTypes | null) {
         throw new Error("No entity provided");
       }
 
-      // Transformer les données avec l'objet address
-      const transformedData = transformFormDataWithAddress(data);
+      // Payload via le PIPELINE unifié (buildProfileUpdateData : dates ISO via pf:isoDate, organizer/parent
+      // via pf:entityRef, recurrency/timeZone, adresse imbriquée, geo coercé). `role` ré-injecté.
+      const payload = buildProfileUpdateData("events", data as Record<string, unknown>);
+      const role = (data as Record<string, unknown>).role;
+      if (role) payload.role = role;
+      const parent = buildParentReference(entity);
+      if (parent) payload.parent = parent;
 
-      // Type avec les dates converties en objets Date
-      type EventDataWithDates = Omit<typeof transformedData, 'startDate' | 'endDate'> & {
-        startDate?: Date;
-        endDate?: Date;
-        organizer?: ReturnType<typeof buildOrganizerReference>;
-      };
-
-      // Construire les données de l'événement avec les dates converties
-      const eventData: EventDataWithDates = {
-        ...transformedData,
-        startDate: transformedData.startDate ? new Date(transformedData.startDate) : undefined,
-        endDate: transformedData.endDate ? new Date(transformedData.endDate) : undefined,
-      };
-
-      // L'organizer est obligatoire - utiliser l'entité fournie ou l'utilisateur
-      if (!eventData.organizer || Object.keys(eventData.organizer).length === 0) {
+      // L'organizer est obligatoire — fallback sur l'entité créatrice / l'utilisateur si le form n'en fournit pas.
+      const org = payload.organizer;
+      const organizerEmpty = !org || org === "" || (typeof org === "object" && Object.keys(org).length === 0);
+      if (organizerEmpty) {
         const organizer = buildOrganizerReference(entity, me);
-        if (organizer) {
-          eventData.organizer = organizer;
-        }
+        if (organizer) payload.organizer = organizer;
       }
 
       // Créer l'événement via le SDK
-      const event = await targetEntity.event(eventData);
+      const event = await targetEntity.event(payload as Parameters<typeof targetEntity.event>[0]);
       await event.save();
 
       return { event };
