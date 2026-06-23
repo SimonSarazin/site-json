@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import type { FormDescriptor } from "../types";
 import { registerTransform } from "./transforms";
-import { seedFromEntity, valuesToPayload, diffForEdit, clearValue } from "./fieldPipeline";
+import { seedFromEntity, valuesToPayload, clearValue } from "./fieldPipeline";
 
 beforeAll(() => {
   registerTransform("test:upper", (v) => (typeof v === "string" ? v.toUpperCase() : v));
@@ -69,43 +69,6 @@ describe("fieldPipeline — valuesToPayload (WRITE)", () => {
   });
 });
 
-describe("fieldPipeline — diffForEdit (diff baseline-aware + clear)", () => {
-  it("inchangé → omis ; modifié → valeur", () => {
-    const delta = diffForEdit(D, { name: "B", holderOrganization: "kkk" }, { name: "A", holderOrganization: "kkk" });
-    expect(delta).toEqual({ name: "B" });
-  });
-
-  it("champ vidé → clear typé ('' pour string, [] pour array), JAMAIS {}", () => {
-    const payload = { holderOrganization: "", tags: [] };
-    const baseline = { holderOrganization: "kkk", tags: ["x"] };
-    expect(diffForEdit(D, payload, baseline)).toEqual({ holderOrganization: "", tags: [] });
-  });
-
-  it("objet vidé → '' (pas {})", () => {
-    const Dobj: FormDescriptor = { ...D, fields: { social: { name: "social", type: "object", widget: "editSocial", label: "" } } };
-    const delta = diffForEdit(Dobj, { social: {} }, { social: { facebook: "u" } });
-    expect(delta).toEqual({ social: "" });
-  });
-
-  it("clear explicite respecté (field.clear)", () => {
-    const Dc: FormDescriptor = { ...D, fields: { x: { name: "x", type: "string", widget: "text", label: "", clear: null } } };
-    expect(diffForEdit(Dc, { x: "" }, { x: "v" })).toEqual({ x: null });
-  });
-
-  it("groupe atomique : si UN membre change, TOUT le groupe est émis (même les membres inchangés)", () => {
-    // addressLocality change (Paris→Lyon), codeInsee INCHANGÉ — mais tous deux dans atomicGroup "address".
-    const delta = diffForEdit(D,
-      { addressLocality: "Lyon", codeInsee: "75001" },
-      { addressLocality: "Paris", codeInsee: "75001" });
-    expect(delta).toEqual({ addressLocality: "Lyon", codeInsee: "75001" }); // codeInsee inchangé MAIS émis (atomique)
-  });
-
-  it("skip exclut des clés (ex. tags mergés à part)", () => {
-    const delta = diffForEdit(D, { holderOrganization: "", tags: [] }, { holderOrganization: "k", tags: ["x"] }, { skip: ["tags"] });
-    expect(delta).toEqual({ holderOrganization: "" });
-  });
-});
-
 // Groupe de sérialisation : champs plats github/facebook ↔ objet serveur socialNetwork.
 const DG: FormDescriptor = {
   id: "g", collection: "organizations", layout: { kind: "flat" }, sections: [],
@@ -133,12 +96,6 @@ describe("fieldPipeline — groupes de sérialisation (N plats ↔ 1 objet serve
   it("WRITE : groupe entièrement vide → clé serveur OMISE (undefined)", () => {
     const p = valuesToPayload(DG, { name: "N", github: "", facebook: "" });
     expect("socialNetwork" in p).toBe(false);
-  });
-
-  it("DIFF : groupe vidé (présent baseline, absent payload) → effacé ('')", () => {
-    const payload = valuesToPayload(DG, { name: "N", github: "", facebook: "" });   // pas de socialNetwork
-    const baseline = valuesToPayload(DG, { name: "N", github: "g", facebook: "f" }); // socialNetwork présent
-    expect(diffForEdit(DG, payload, baseline)).toEqual({ socialNetwork: "" });
   });
 });
 

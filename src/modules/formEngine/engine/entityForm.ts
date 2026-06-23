@@ -9,15 +9,13 @@
  * buildEditDelta / buildProfileUpdateData) par UN seul jeu de fonctions. Ajouter une entité = écrire UN spec.
  */
 import type { FormDescriptor, FormValues } from "../types";
-import { seedFromEntity, valuesToPayload, diffForEdit } from "./fieldPipeline";
+import { seedFromEntity, valuesToPayload } from "./fieldPipeline";
 
 export interface FormSpec {
   /** Descripteur UNIQUE read+write (asymétries déclarées via path/group/writeOnly/readOnly/groupReadOnly). */
   descriptor: FormDescriptor;
   /** Socle typé : champs hors descripteur (logo/photos/…) + complétude du type form. À terme dérivable du descripteur. */
   baseDefaults?: () => FormValues;
-  /** Clés exclues du diff d'édition (traitées à part : tags mergés, adresse atomique gérée par le groupe…). */
-  diffSkip?: readonly string[];
 }
 
 export type EntityLike = { serverData?: Record<string, unknown> | null } | null | undefined;
@@ -40,13 +38,4 @@ export function buildPayload(spec: FormSpec, values: FormValues): FormValues {
  */
 export function buildEditPayload(spec: FormSpec, values: FormValues): FormValues {
   return valuesToPayload(spec.descriptor, values, { emitEmpty: true });
-}
-
-/**
- * ÉDITION : delta serveur (champs modifiés + EFFACÉS en clear typé) entre `values` et `baseline` (= seedEntity
- * de l'entité). Absorbe l'effacement nativement (champ vidé → clear `""`/`[]`, jamais `{}`). `diffSkip` exclut
- * les clés gérées à part. `baseline` = les valeurs seedées de l'entité (cf. seedEntity).
- */
-export function buildDelta(spec: FormSpec, values: FormValues, baseline: FormValues): FormValues {
-  return diffForEdit(spec.descriptor, buildPayload(spec, values), buildPayload(spec, baseline), { skip: spec.diffSkip });
 }

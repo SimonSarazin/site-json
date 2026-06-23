@@ -4,6 +4,7 @@ import { useSite } from "@/hooks/useSite";
 import { PROFIL_QUERY_KEYS } from "../constants";
 import { buildTiersLieuxPayload } from "../utils/tiersLieuxMapping";
 import type { TiersLieuxSubmitPayload } from "../components/add/TiersLieuxForm";
+import { submitEntityEdit } from "./submitEntityEdit";
 
 /**
  * Édite une organisation tiers-lieu existante.
@@ -30,22 +31,9 @@ export function useEditTiersLieu(organization: Organization | null) {
       // l'effacement d'un champ vidé est absorbé nativement. L'adresse (objet 14 champs, round-trip complet)
       // == serveur si non touchée → no-op au diff SDK. Prouvé 5080↔5099 par unified-save-clear.test.ts.
       const payload = buildTiersLieuxPayload(data, { existingTags, addTags, complete: true });
-      const target = organization.data as Record<string, unknown>;
-      Object.assign(target, payload);
-      // Logo posé dans le draft : `save()` (→ `_update`) le route vers le bloc PROFIL_IMAGE (`updateImageProfil`).
-      if (data._logoFile) {
-        target.profil_avatar = data._logoFile;
-      }
-
-      await organization.save();
-
-      // Suppression du logo existant (✕ sans nouveau fichier) : le logo n'est pas un champ DATA,
-      // donc hors `save()`. `removeProfilImage` récupère le docId (DOCUMENT_LIST) puis `deleteFile`.
-      // `_imageDeleted` est posé par le widget image du moteur générique (absent de l'ancien form).
+      // Orchestrateur unifié : Object.assign(draft) + logo + save() + suppression image éventuelle.
       const { _imageDeleted } = data as TiersLieuxSubmitPayload & { _imageDeleted?: boolean };
-      if (_imageDeleted && !data._logoFile) {
-        await organization.removeProfilImage();
-      }
+      await submitEntityEdit(organization, payload, { imageFile: data._logoFile, imageDeleted: _imageDeleted });
 
       return { organization };
     },

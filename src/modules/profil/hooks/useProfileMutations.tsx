@@ -1,6 +1,7 @@
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { PROFIL_QUERY_KEYS } from "../constants";
+import { submitEntityEdit } from "./submitEntityEdit";
 
 interface BannerUploadData {
   file: File;
@@ -20,11 +21,9 @@ export function useUpdateProfile(entity: EntityTypes | null) {
         throw new Error("No entity provided");
       }
 
-      // Modifier les données du Proxy
-      Object.assign(entity.data, newData);
-
-      // Sauvegarder via l'API
-      const result = await entity.save();
+      // Orchestrateur unifié (S6) : Object.assign(draft) + save() (le SDK diffe, le backend efface les vides).
+      // `newData` = buildProfileUpdateData (payload complet : pf:orEmpty émet "", adresse "" si vide).
+      const result = await submitEntityEdit(entity as unknown as Parameters<typeof submitEntityEdit>[0], newData);
 
       return { entity, result };
     },

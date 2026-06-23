@@ -16,7 +16,6 @@
  */
 import type { FormDescriptor, FieldDescriptor, FormValues } from "../types";
 import { applyTransform } from "./transforms";
-import { isSameValue } from "./reconcile";
 
 /** Clé de stockage serveur d'un champ : `path` si défini, sinon `name`. */
 const storeKey = (f: FieldDescriptor): string => f.path ?? f.name;
@@ -107,53 +106,4 @@ export function valuesToPayload(
     }
   }
   return payload;
-}
-
-/**
- * DIFF d'édition baseline-aware — `payload` (complet, via valuesToPayload) vs `baseline` (= payload reconstruit
- * depuis l'entité serveur) → delta à appliquer/envoyer. Inchangé → omis ; modifié → valeur ; vidé → `clearValue`
- * (effacement explicite, jamais `{}`). `atomicGroup` : si UN champ du groupe change, TOUT le groupe est émis
- * (évite l'écrasement lossy, ex. adresse). `skip` exclut des clés (traitées à part : tags mergés, etc.).
- */
-export function diffForEdit(
-  descriptor: FormDescriptor,
-  payload: FormValues,
-  baseline: FormValues,
-  opts: { skip?: readonly string[] } = {},
-): FormValues {
-  const skip = new Set(opts.skip ?? []);
-  const fieldByKey = new Map<string, FieldDescriptor>();
-  const atomicMembers = new Map<string, string[]>();
-  for (const f of Object.values(descriptor.fields)) {
-    const k = storeKey(f);
-    fieldByKey.set(k, f);
-    if (f.atomicGroup) {
-      const arr = atomicMembers.get(f.atomicGroup) ?? [];
-      arr.push(k);
-      atomicMembers.set(f.atomicGroup, arr);
-    }
-  }
-
-  const emit = (key: string, delta: FormValues): void => {
-    const field = fieldByKey.get(key);
-    const v = payload[key];
-    delta[key] = isEmptyValue(v) ? (field ? clearValue(field) : "") : v;
-  };
-
-  const delta: FormValues = {};
-  const changedAtomic = new Set<string>();
-  for (const key of new Set([...Object.keys(payload), ...Object.keys(baseline)])) {
-    if (skip.has(key)) continue;
-    if (isSameValue(payload[key], baseline[key])) continue; // inchangé → omis
-    const group = fieldByKey.get(key)?.atomicGroup;
-    if (group) { changedAtomic.add(group); continue; } // traité en bloc ci-dessous
-    emit(key, delta);
-  }
-  // Groupes atomiques modifiés : émettre TOUS leurs membres (valeur courante, ou clear si vide).
-  for (const group of changedAtomic) {
-    for (const key of atomicMembers.get(group) ?? []) {
-      if (!skip.has(key)) emit(key, delta);
-    }
-  }
-  return delta;
 }

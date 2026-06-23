@@ -16,6 +16,7 @@ import {
 import { buildTiersLieuxPayload } from "../utils/tiersLieuxMapping";
 import type { TiersLieuxSubmitPayload } from "../components/add/TiersLieuxForm";
 import type { PoiEquipementSubmitPayload, PoiEquipementEditPayload } from "../components/add/poiEquipement";
+import { submitEntityEdit } from "./submitEntityEdit";
 import { useSite } from "@/hooks/useSite";
 import { getSlug } from "@/lib/constant/common";
 
@@ -323,19 +324,14 @@ export function useUpdatePoi(poi: EntityTypes | null) {
 
       const { _imageFile, _imageDeleted, ...formData } = data;
 
-      // `profil_avatar` est posé dans le draft : le `save()` (→ `_update`) route le
-      // champ vers le bloc PROFIL_IMAGE (`updateImageProfil`) en un seul aller-retour.
-      // `data` = payload COMPLET de `buildEditPoiPayload` (tous les champs, vides typés, adresse imbriquée) →
-      // on assigne tel quel ; `transformFormDataWithAddress` est un no-op (aucune clé d'adresse à plat).
-      const transformedData = transformFormDataWithAddress(formData);
-      Object.assign(poi.data, transformedData, _imageFile ? { profil_avatar: _imageFile } : {});
+      // `data` = payload COMPLET de `buildEditPoiPayload` (adresse déjà imbriquée) → `transformFormDataWithAddress`
+      // est un no-op (conservé par robustesse). Orchestrateur unifié : Object.assign(draft) + image + save()
+      // + suppression image éventuelle. Le SDK diffe, le backend efface ($unset).
+      const transformedData = transformFormDataWithAddress(formData) as Record<string, unknown>;
       try {
-        await poi.save();
-        // Suppression de l'image existante (✕ sans nouveau fichier) : l'image n'est pas un champ DATA,
-        // donc hors `save()`. `removeProfilImage` récupère le docId (DOCUMENT_LIST) puis `deleteFile`.
-        if (_imageDeleted && !_imageFile) {
-          await poi.removeProfilImage();
-        }
+        await submitEntityEdit(poi as unknown as Parameters<typeof submitEntityEdit>[0], transformedData, {
+          imageFile: _imageFile, imageDeleted: _imageDeleted,
+        });
       } catch (err) {
         logCocolightError("useUpdatePoi · UPDATE_POI", err, poi.data);
         throw err;

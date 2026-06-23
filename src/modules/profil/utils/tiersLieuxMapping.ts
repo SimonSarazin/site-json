@@ -269,11 +269,10 @@ const TIERSLIEU_DESCRIPTOR: FormDescriptor = {
   },
 };
 
-/** Spec tiers-lieu (pattern unifié) : descripteur read+write + socle typé + skip diff (tags mergés / adresse atomique). */
+/** Spec tiers-lieu (pattern unifié) : descripteur read+write + socle typé. */
 const TIERSLIEU_SPEC: FormSpec = {
   descriptor: TIERSLIEU_DESCRIPTOR,
   baseDefaults: () => getDefaultTiersLieuxValues() as unknown as FormValues,
-  diffSkip: ["tags", "address"],
 };
 
 /**
