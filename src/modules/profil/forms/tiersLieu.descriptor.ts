@@ -48,33 +48,40 @@ const YEARS = Array.from({ length: NOW_Y + 5 - 1900 + 1 }, (_, i) => String(NOW_
 
 const VIS_MGMT_AUTRE = { field: "managementType", op: "eq", value: "autre" } as const;
 
+// DESCRIPTEUR UNIFIÉ render + pipeline : chaque champ porte son widget/layout (RENDER) ET ses transforms
+// read/write/path/group (PIPELINE, ex-TIERSLIEU_DESCRIPTOR) → UN seul descripteur consommé par GenericForm
+// (render) ET seedFromEntity/valuesToPayload (read/write). Les ancres composites `address` (location, pilote
+// les champs plats) et `_logoFile` (image, hors element/save) sont `renderOnly` (ni seedées ni émises).
 const fields: FieldDescriptor[] = [
-  { name: "name", type: "string", widget: "text", label: F("name"), required: true, placeholder: F("namePlaceholder") },
+  { name: "name", type: "string", widget: "text", label: F("name"), required: true, placeholder: F("namePlaceholder"), read: "tl:pickString" },
   // Mois / année SANS label propre : ils vivent sous le titre de GROUPE « Date d'ouverture » (cf. original).
-  { name: "openingMonth", type: "string", widget: "select", label: "", enum: MONTHS, placeholder: F("month") },
-  { name: "openingYear", type: "string", widget: "select", label: "", enum: YEARS, placeholder: F("year") },
-  { name: "shortDescription", type: "string", widget: "textarea", label: F("shortDescription"), required: true, widgetProps: { rows: 2 } },
-  { name: "structureName", type: "string", widget: "text", label: F("structureName") },
-  { name: "managementType", type: "string", widget: "select", label: F("managementType"), enum: MANAGEMENT_TYPES, required: true, placeholder: F("selectPlaceholder") },
-  { name: "managementTypeOther", type: "string", widget: "text", label: F("managementTypeOther"), visibleIf: VIS_MGMT_AUTRE },
-  { name: "family", type: "array", widget: "checkboxGroup", label: F("family"), enum: FAMILY_OPTIONS, widgetProps: { variant: "card" } },
-  { name: "surfaceBuilt", type: "number", widget: "number", label: F("surfaceBuilt"), placeholder: F("surfacePlaceholder") },
-  { name: "surfaceOutdoor", type: "number", widget: "number", label: F("surfaceOutdoor"), placeholder: F("surfacePlaceholder") },
+  { name: "openingMonth", type: "string", widget: "select", label: "", enum: MONTHS, placeholder: F("month"), group: "openingDate" },
+  { name: "openingYear", type: "string", widget: "select", label: "", enum: YEARS, placeholder: F("year"), group: "openingDate" },
+  { name: "shortDescription", type: "string", widget: "textarea", label: F("shortDescription"), required: true, widgetProps: { rows: 2 }, read: "tl:pickString", write: "tl:emptyToUndef" },
+  { name: "structureName", type: "string", widget: "text", label: F("structureName"), read: "tl:pickString", write: "tl:emptyToUndef", path: "holderOrganization" },
+  { name: "managementType", type: "string", widget: "select", label: F("managementType"), enum: MANAGEMENT_TYPES, required: true, placeholder: F("selectPlaceholder"), group: "manageModel" },
+  { name: "managementTypeOther", type: "string", widget: "text", label: F("managementTypeOther"), visibleIf: VIS_MGMT_AUTRE, group: "manageModel" },
+  { name: "family", type: "array", widget: "checkboxGroup", label: F("family"), enum: FAMILY_OPTIONS, widgetProps: { variant: "card" }, group: "typePlace" },
+  { name: "surfaceBuilt", type: "number", widget: "number", label: F("surfaceBuilt"), placeholder: F("surfacePlaceholder"), read: "tl:pickNumberString", write: "tl:numOrUndef", path: "buildingSurfaceArea" },
+  { name: "surfaceOutdoor", type: "number", widget: "number", label: F("surfaceOutdoor"), placeholder: F("surfacePlaceholder"), read: "tl:pickNumberString", write: "tl:numOrUndef", path: "siteSurfaceArea" },
 
   // `widgetProps.required` = marqueur visuel `*` (obligation) SANS contrainte zodGen (l'objet `address`
   // n'est jamais peuplé : la cascade écrit des champs à plat) — l'obligation réelle est portée par addressComplete.
-  { name: "address", type: "object", widget: "location", label: F("address"), widgetProps: { required: true } },
+  // renderOnly : ancre du widget location qui pilote les champs PLATS d'adresse (group "address") — ni seedée ni émise.
+  { name: "address", type: "object", widget: "location", label: F("address"), widgetProps: { required: true }, renderOnly: true },
   // Inputs PLAIN (sans icône) typés email/tel — parité visuelle avec l'original.
   { name: "email", type: "string", widget: "text", label: F("email"), required: true, placeholder: F("emailPlaceholder"),
-    widgetProps: { inputType: "email" }, rules: { regex: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$" } },
-  { name: "phone", type: "string", widget: "text", label: F("phone"), placeholder: F("phonePlaceholder"), widgetProps: { inputType: "tel" } },
+    widgetProps: { inputType: "email" }, rules: { regex: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$" }, read: "tl:pickString" },
+  { name: "phone", type: "string", widget: "text", label: F("phone"), placeholder: F("phonePlaceholder"), widgetProps: { inputType: "tel" }, read: "tl:pickString", write: "tl:emptyToUndef", path: "telephone" },
 
-  { name: "_logoFile", type: "object", widget: "image", label: F("logo"), info: F("logoHint"), widgetProps: { shape: "square", aspect: 1 } },
+  // renderOnly : image traitée hors element/save (bloc PROFIL_IMAGE via le hook) — ni seedée ni émise au payload data.
+  { name: "_logoFile", type: "object", widget: "image", label: F("logo"), info: F("logoHint"), widgetProps: { shape: "square", aspect: 1 }, renderOnly: true },
   // label "" : le titre du sous-bloc « Vidéo » est porté par le GROUPE (cf. section media).
-  { name: "videoUrl", type: "string", widget: "text", label: "", placeholder: F("videoUrlPlaceholder") },
+  { name: "videoUrl", type: "string", widget: "text", label: "", placeholder: F("videoUrlPlaceholder"), read: "tl:video0", write: "tl:videoWrite", path: "video" },
 
-  { name: "websiteUrl", type: "string", widget: "text", label: F("websiteUrl"), placeholder: F("websiteUrlPlaceholder") },
-  { name: "socialLinks", type: "array", widget: "fieldArray", label: F("socialNetworks"),
+  { name: "websiteUrl", type: "string", widget: "text", label: F("websiteUrl"), placeholder: F("websiteUrlPlaceholder"), read: "tl:pickString", write: "tl:emptyToUndef", path: "url" },
+  // socialLinks = array (form) ↔ objet `socialNetwork` (serveur) ; clear "" (jamais [] — sémantique objet, byte-fidèle).
+  { name: "socialLinks", type: "array", widget: "fieldArray", label: F("socialNetworks"), read: "tl:socialRead", write: "tl:socialWrite", path: "socialNetwork", clear: "",
     widgetProps: {
       addLabel: F("addSocial"),
       itemFields: [
@@ -83,8 +90,20 @@ const fields: FieldDescriptor[] = [
       ],
     } },
 
-  { name: "hours", type: "object", widget: "openingHours", label: F("openingHours"), widgetProps: { dayLabelPrefix: "AddTiersLieux.days" } },
-  { name: "description", type: "string", widget: "textarea", label: F("longDescription"), placeholder: F("longDescriptionPlaceholder"), widgetProps: { rows: 10 } },
+  { name: "hours", type: "object", widget: "openingHours", label: F("openingHours"), widgetProps: { dayLabelPrefix: "AddTiersLieux.days" }, read: "tl:hoursRead", write: "tl:hoursWrite", path: "openingHours" },
+  { name: "description", type: "string", widget: "textarea", label: F("longDescription"), placeholder: F("longDescriptionPlaceholder"), widgetProps: { rows: 10 }, read: "tl:pickString", write: "tl:emptyToUndef" },
+
+  // ── Champs PIPELINE-only (hidden, hors sections → non rendus) ──────────────────────────────────────
+  { name: "familyOther", type: "string", widget: "hidden", label: "familyOther", group: "typePlace" },
+  // Adresse à plat (membres du groupe "address") — peuplés par le widget location, recomposés en objet au write.
+  { name: "addressCountry", type: "string", widget: "hidden", label: "addressCountry", group: "address" },
+  { name: "addressLocality", type: "string", widget: "hidden", label: "addressLocality", group: "address" },
+  { name: "postalCode", type: "string", widget: "hidden", label: "postalCode", group: "address" },
+  { name: "streetAddress", type: "string", widget: "hidden", label: "streetAddress", group: "address" },
+  { name: "localityId", type: "string", widget: "hidden", label: "localityId", group: "address" },
+  // Coordonnées : writeOnly (posées par EditLocationTab AVEC l'adresse, jamais relues), émises liées à localityId.
+  { name: "geo", type: "object", widget: "hidden", label: "geo", writeOnly: true, write: "geo:write" },
+  { name: "geoPosition", type: "object", widget: "hidden", label: "geoPosition", writeOnly: true, write: "geoPosition:write" },
 ];
 
 export const tiersLieuDescriptor: FormDescriptor = {
@@ -132,6 +151,14 @@ export const tiersLieuDescriptor: FormDescriptor = {
     ] },
   ],
   fields: Object.fromEntries(fields.map((f) => [f.name, f])),
+  // Groupes de sérialisation (N champs plats ↔ 1 clé/objet serveur) — transforms tl:* enregistrés par
+  // utils/tiersLieuxMapping (importé en side-effect). Ex-TIERSLIEU_DESCRIPTOR, désormais porté ici (unifié).
+  serializeGroups: {
+    openingDate: { serverKey: "openingDate", read: "tl:openingDateRead", write: "tl:openingDateWrite" },
+    manageModel: { serverKey: "manageModel", read: "tl:manageModelRead", write: "tl:manageModelWrite" },
+    typePlace: { serverKey: "typePlace", read: "tl:typePlaceRead", write: "tl:typePlaceWrite" },
+    address: { serverKey: "address", read: "tl:addressRead", write: "tl:addressWrite" },
+  },
   // addressComplete (cross-champ) : adresse COMPLÈTE obligatoire pour un tiers-lieu — ville (localityId)
   // + code postal + rue. Erreur sur addressLocality (allume le badge de l'étape contact + bloque « Suivant »).
   // Par CLÉ de registre → sérialisable (round-trip config exact).

@@ -87,6 +87,8 @@ const FieldConfig = z.object({
   writeOnly: z.boolean().optional(),
   // READ-only : seedé mais jamais émis au payload (ex. `public`/`urls`).
   readOnly: z.boolean().optional(),
+  // RENDER-only : ancrage UI sans mapping serveur (widget composite : location/image) → ni seedé ni émis.
+  renderOnly: z.boolean().optional(),
   // Valeur d'EFFACEMENT (diff d'édition) ; défaut dérivé du type. JAMAIS `{}`.
   clear: z.unknown().optional(),
 });

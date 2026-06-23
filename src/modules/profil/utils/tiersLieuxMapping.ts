@@ -5,7 +5,8 @@ import { transformFormDataWithAddress } from "../hooks/mutationUtils";
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
 import "../forms/geoTransforms"; // enregistre geo:write / geoPosition:write (partagés)
 import { seedEntity, buildPayload, buildEditPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
-import type { FieldDescriptor, FormDescriptor, FormValues } from "@/modules/formEngine";
+import type { FormValues } from "@/modules/formEngine";
+import { tiersLieuDescriptor } from "../forms/tiersLieu.descriptor";
 
 export interface CostumConfig {
   /** Tag principal du costum (filtre observatoire). Ajouté à `tags`. NB : la lib pose aussi le *champ* mainTag via presets. */
@@ -228,58 +229,10 @@ registerTransform("tl:addressWrite", (_v, all) => transformFormDataWithAddress((
 // geo/geoPosition : transforms PARTAGÉS `geo:write`/`geoPosition:write` (liés à localityId), uniformes
 // pour toutes les entités à composant adresse. cf. ../forms/geoTransforms (importé pour le side-effect).
 
-// ro = champ 1→1 (read + write + path) ; grp = membre d'un groupe de sérialisation (lu/écrit par le groupe).
-const ro = (name: string, read: string, write?: string, path?: string, type: FieldDescriptor["type"] = "string"): FieldDescriptor =>
-  ({ name, type, widget: "hidden", label: name, read, ...(write ? { write } : {}), ...(path ? { path } : {}) });
-const grp = (name: string, group: string, type: FieldDescriptor["type"] = "string"): FieldDescriptor =>
-  ({ name, type, widget: "hidden", label: name, group });
-
-// Descripteur de pipeline tiers-lieu (READ + WRITE). Consommé par seedFromEntity (read) ET valuesToPayload (write).
-// EXPORTÉ pour le pilote config-driven (Phase 2) : prouver qu'il round-trip sans perte via la config.
-export const TIERSLIEU_DESCRIPTOR: FormDescriptor = {
-  id: "tiers-lieu:pipeline", collection: "organizations", layout: { kind: "flat" }, sections: [],
-  serializeGroups: {
-    openingDate: { serverKey: "openingDate", read: "tl:openingDateRead", write: "tl:openingDateWrite" },
-    manageModel: { serverKey: "manageModel", read: "tl:manageModelRead", write: "tl:manageModelWrite" },
-    typePlace: { serverKey: "typePlace", read: "tl:typePlaceRead", write: "tl:typePlaceWrite" },
-    address: { serverKey: "address", read: "tl:addressRead", write: "tl:addressWrite" },
-  },
-  fields: {
-    name: ro("name", "tl:pickString"),                                                  // requis → write identity (toujours émis)
-    email: ro("email", "tl:pickString"),                                                // requis → write identity
-    shortDescription: ro("shortDescription", "tl:pickString", "tl:emptyToUndef"),
-    description: ro("description", "tl:pickString", "tl:emptyToUndef"),
-    structureName: ro("structureName", "tl:pickString", "tl:emptyToUndef", "holderOrganization"),
-    surfaceBuilt: ro("surfaceBuilt", "tl:pickNumberString", "tl:numOrUndef", "buildingSurfaceArea"),
-    surfaceOutdoor: ro("surfaceOutdoor", "tl:pickNumberString", "tl:numOrUndef", "siteSurfaceArea"),
-    phone: ro("phone", "tl:pickString", "tl:emptyToUndef", "telephone"),
-    websiteUrl: ro("websiteUrl", "tl:pickString", "tl:emptyToUndef", "url"),
-    videoUrl: ro("videoUrl", "tl:video0", "tl:videoWrite", "video"),
-    // socialLinks = array côté form, mais OBJET `socialNetwork` côté serveur → clear "" (jamais [] : on
-    // garde la sémantique objet et le sentinel "" prouvé byte-fidèle ; cf. costum-update-singlefield.test).
-    socialLinks: { ...ro("socialLinks", "tl:socialRead", "tl:socialWrite", "socialNetwork", "array"), clear: "" },
-    hours: ro("hours", "tl:hoursRead", "tl:hoursWrite", "openingHours", "object"),
-    openingMonth: grp("openingMonth", "openingDate"),
-    openingYear: grp("openingYear", "openingDate"),
-    managementType: grp("managementType", "manageModel"),
-    managementTypeOther: grp("managementTypeOther", "manageModel"),
-    family: grp("family", "typePlace", "array"),
-    familyOther: grp("familyOther", "typePlace"),
-    addressCountry: grp("addressCountry", "address"),
-    addressLocality: grp("addressLocality", "address"),
-    postalCode: grp("postalCode", "address"),
-    streetAddress: grp("streetAddress", "address"),
-    localityId: grp("localityId", "address"),
-    // Coordonnées : writeOnly (posées par EditLocationTab, jamais relues du form), émises au WRITE liées à
-    // l'adresse (cf. tl:geoWrite/tl:geoPositionWrite). Parité POI ; débloque le geo tiers-lieu (était stripé).
-    geo: { name: "geo", type: "object", widget: "hidden", label: "geo", writeOnly: true, write: "geo:write" },
-    geoPosition: { name: "geoPosition", type: "object", widget: "hidden", label: "geoPosition", writeOnly: true, write: "geoPosition:write" },
-  },
-};
 
 /** Spec tiers-lieu (pattern unifié) : descripteur read+write + socle typé. */
 const TIERSLIEU_SPEC: FormSpec = {
-  descriptor: TIERSLIEU_DESCRIPTOR,
+  descriptor: tiersLieuDescriptor,
   baseDefaults: () => getDefaultTiersLieuxValues() as unknown as FormValues,
 };
 

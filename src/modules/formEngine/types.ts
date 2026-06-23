@@ -97,6 +97,11 @@ export interface FieldDescriptor {
   writeOnly?: boolean;
   /** Champ READ-only : seedé (READ) mais jamais émis au payload (ex. valeur d'affichage calculée). */
   readOnly?: boolean;
+  /** Champ RENDER-only : pur ancrage UI, AUCUN mapping serveur → ignoré par `seedFromEntity` (READ) ET
+   *  `valuesToPayload` (WRITE). Pour les widgets COMPOSITES qui pilotent d'AUTRES champs (ex. `location`
+   *  écrit les champs plats d'adresse ; `image` traité hors element/save) → permet UN descripteur unifié
+   *  render+pipeline sans que l'ancre composite ne pollue le payload. */
+  renderOnly?: boolean;
 }
 
 // ── Sections & layout (§5) ────────────────────────────────────────────────────
