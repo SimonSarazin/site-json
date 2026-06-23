@@ -14,10 +14,11 @@ import { useT } from "@/hooks/useT";
 
 import { GenericForm } from "@/modules/formEngine";
 import { useUnsavedGuard } from "./useUnsavedGuard";
-import { tiersLieuDescriptor } from "./tiersLieu.descriptor";
 import { useAddTiersLieu } from "../hooks/useAddMutations";
 import { useEditTiersLieu } from "../hooks/useEditTiersLieu";
-import { mapEntityToTiersLieuxValues } from "../utils/tiersLieuxMapping";
+// CONFIG-DRIVEN : rendu via le descripteur issu de la config (tiersLieuConfigDescriptor) ; READ (mapEntity…)
+// et WRITE (buildTiersLieuxPayload, via les mutations) passent déjà par ce même descripteur config-driven.
+import { mapEntityToTiersLieuxValues, tiersLieuConfigDescriptor } from "../utils/tiersLieuxMapping";
 import {
   getDefaultTiersLieuxValues,
   type TiersLieuxFormData,
@@ -76,9 +77,9 @@ export function TiersLieuxGenericModal({ open, onOpenChange, mode = "add", organ
         {/* Tint solide (le dégradé→transparent est porté par le header du layout) → bandeau continu, sans bande. */}
         <DialogHeader className="px-6 pt-6 pb-3 bg-primary/5">
           <div className="flex items-center gap-3">
-            {tiersLieuDescriptor.icon && (
+            {tiersLieuConfigDescriptor.icon && (
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <DynamicIcon name={tiersLieuDescriptor.icon as IconName} className="h-6 w-6" />
+                <DynamicIcon name={tiersLieuConfigDescriptor.icon as IconName} className="h-6 w-6" />
               </span>
             )}
             <div className="min-w-0">
@@ -90,7 +91,7 @@ export function TiersLieuxGenericModal({ open, onOpenChange, mode = "add", organ
           </div>
         </DialogHeader>
         <GenericForm
-          descriptor={tiersLieuDescriptor}
+          descriptor={tiersLieuConfigDescriptor}
           defaultValues={defaults as unknown as FieldValues}
           onSubmit={onSubmit}
           onInvalid={() => toast.error(tr("AddTiersLieux.errors.validationFailed"))}

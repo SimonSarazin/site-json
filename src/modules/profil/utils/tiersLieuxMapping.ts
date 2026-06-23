@@ -5,8 +5,19 @@ import { transformFormDataWithAddress } from "../hooks/mutationUtils";
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
 import "../forms/geoTransforms"; // enregistre geo:write / geoPosition:write (partagés)
 import { seedEntity, buildPayload, buildEditPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
+// Imports DIRECTS de la couche config (PAS le barrel → pas de widgets/React tirés ici, l'util reste pur).
+import { formDescriptorToConfig } from "@/modules/formEngine/config/formDescriptorToConfig";
+import { configToDescriptor } from "@/modules/formEngine/config/configToDescriptor";
 import type { FormValues } from "@/modules/formEngine";
 import { tiersLieuDescriptor } from "../forms/tiersLieu.descriptor";
+
+// CONFIG-DRIVEN : le SPEC tiers-lieu tourne sur le descripteur ISSU DE LA CONFIG (round-trip identique au
+// descripteur unifié → parité byte garantie). READ (seedEntity) ET WRITE (buildPayload/buildEditPayload)
+// passent donc par la config. Labels gardés = clés i18n (résolues par GenericForm au rendu).
+const TIERSLIEU_CONFIG = formDescriptorToConfig(tiersLieuDescriptor);
+const KEEP_KEYS = (l: unknown) => (typeof l === "string" ? l : ((l as { fr?: string })?.fr ?? ""));
+/** Descripteur tiers-lieu dérivé de la config (= tiersLieuDescriptor round-trip). Rendu par la modale. */
+export const tiersLieuConfigDescriptor = configToDescriptor(TIERSLIEU_CONFIG, { tLoc: KEEP_KEYS });
 
 export interface CostumConfig {
   /** Tag principal du costum (filtre observatoire). Ajouté à `tags`. NB : la lib pose aussi le *champ* mainTag via presets. */
@@ -230,9 +241,9 @@ registerTransform("tl:addressWrite", (_v, all) => transformFormDataWithAddress((
 // pour toutes les entités à composant adresse. cf. ../forms/geoTransforms (importé pour le side-effect).
 
 
-/** Spec tiers-lieu (pattern unifié) : descripteur read+write + socle typé. */
+/** Spec tiers-lieu (pattern unifié, CONFIG-DRIVEN) : descripteur issu de la config + socle typé. */
 const TIERSLIEU_SPEC: FormSpec = {
-  descriptor: tiersLieuDescriptor,
+  descriptor: tiersLieuConfigDescriptor,
   baseDefaults: () => getDefaultTiersLieuxValues() as unknown as FormValues,
 };
 
