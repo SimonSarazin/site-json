@@ -3,10 +3,44 @@
  * values → payload (payloadFn nommé OU mapping générique) → presets AVANT data → SDK selon entityType
  * (+ scope costum via me.costum(slug)) → save(). Réutilise `transformFormDataWithAddress` (parité address).
  */
-import type { JsonFormConfig } from "@/modules/formEngine";
+import type { JsonFormConfig, FormSpec, EntityLike } from "@/modules/formEngine";
+import { configToDescriptor, seedEntity, buildPayload, buildEditPayload } from "@/modules/formEngine";
 import { transformFormDataWithAddress } from "../hooks/mutationUtils";
 
 type Values = Record<string, unknown>;
+
+// ── Voie PIPELINE (config UNIFIÉE) ───────────────────────────────────────────
+// Quand la config porte son pipeline (read/write par champ + serializeGroups, ex. poi-équipement / tiers-lieu
+// dérivés), le READ et le WRITE passent par le descripteur ISSU DE LA CONFIG (seedEntity/buildPayload).
+// → tous les champs costum DÉCLARÉS sont préservés (plus de perte cyber-reunion de buildGenericPayload).
+// Labels = clés i18n → tLoc identité (le pipeline ignore les labels).
+const PIPELINE_TLOC = (l: unknown) => (typeof l === "string" ? l : ((l as { fr?: string })?.fr ?? ""));
+
+/** La config porte-t-elle son pipeline (descripteur unifié) ? → serializeGroups OU un champ read/write. */
+export function isPipelineConfig(config: JsonFormConfig): boolean {
+  if (config.serializeGroups && Object.keys(config.serializeGroups).length > 0) return true;
+  return Object.values(config.fields).some((f) => f.read || f.write);
+}
+
+interface PipelineOpts {
+  /** socle typé hors descripteur (ex. createEmptyDefaults) ; défaut = défauts par champ de la config. */
+  baseDefaults?: () => Values;
+  tLoc?: (l: unknown) => string;
+}
+
+/** READ entity-aware : entité serveur → valeurs de form via le descripteur issu de la config (seedEntity). */
+export function buildPipelineDefaults(config: JsonFormConfig, entity: EntityLike, opts: PipelineOpts = {}): Values {
+  const descriptor = configToDescriptor(config, { tLoc: opts.tLoc ?? PIPELINE_TLOC });
+  const spec: FormSpec = { descriptor, baseDefaults: opts.baseDefaults ?? (() => buildConfigDefaults(config)) };
+  return seedEntity(spec, entity) as Values;
+}
+
+/** WRITE : valeurs de form → payload via le descripteur issu de la config. `emitEmpty` → ÉDITION (vides typés). */
+export function buildPipelinePayload(config: JsonFormConfig, values: Values, opts: { emitEmpty?: boolean; tLoc?: (l: unknown) => string } = {}): Values {
+  const descriptor = configToDescriptor(config, { tLoc: opts.tLoc ?? PIPELINE_TLOC });
+  const spec: FormSpec = { descriptor };
+  return (opts.emitEmpty ? buildEditPayload(spec, values as never) : buildPayload(spec, values as never)) as Values;
+}
 
 /** Une entité créable via le SDK : `target.organization(payload)` → instance avec `.save()`. */
 type EntityMaker = (payload: Values) => Promise<{ save: () => Promise<unknown>; slug?: string }>;
