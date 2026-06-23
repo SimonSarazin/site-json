@@ -205,6 +205,35 @@ describe("buildTiersLieuxPayload", () => {
   });
 });
 
+describe("buildTiersLieuxPayload — mode complete (édition unifiée S6)", () => {
+  it("émet les vides en CLEAR typé (édition) là où la création OMET", () => {
+    const data = { ...getDefaultTiersLieuxValues(), name: "TL", email: "x@y.fr" };
+    const create = buildTiersLieuxPayload(data);
+    expect(create).not.toHaveProperty("shortDescription"); // création : omis
+    expect(create).not.toHaveProperty("socialNetwork");
+    expect(create).not.toHaveProperty("typePlace");
+
+    const edit = buildTiersLieuxPayload(data, { complete: true });
+    expect(edit.shortDescription).toBe("");  // édition : clear "" (string)
+    expect(edit.socialNetwork).toBe("");      // objet serveur vidé → "" (jamais {})
+    expect(edit.typePlace).toBe("");          // groupe vidé → ""
+    expect(edit.name).toBe("TL");             // requis émis normalement
+  });
+
+  it("complete : émet l'adresse COMPLÈTE quand renseignée (round-trip non destructif)", () => {
+    const data = {
+      ...getDefaultTiersLieuxValues(), name: "TL", email: "x@y.fr",
+      addressCountry: "FR", addressLocality: "Paris", localityId: "c1", postalCode: "75001",
+      level1: "11", level1Name: "IDF", codeInsee: "75056",
+    };
+    const edit = buildTiersLieuxPayload(data, { complete: true }) as { address: Record<string, unknown> };
+    expect(edit.address).toMatchObject({
+      "@type": "PostalAddress", addressCountry: "FR", localityId: "c1",
+      level1: "11", level1Name: "IDF", codeInsee: "75056",
+    });
+  });
+});
+
 describe("mapEntityToTiersLieuxValues", () => {
   it("retourne defaults pour entity sans serverData", () => {
     const result = mapEntityToTiersLieuxValues({} as EntityLike);

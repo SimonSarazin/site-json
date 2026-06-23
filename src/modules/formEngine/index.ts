@@ -12,7 +12,7 @@ export { registerLayout, getLayout, type LayoutProps } from "./layouts";
 export { evaluatePredicate, check } from "./engine/conditional";
 export { isSameValue, reconcileClearedFields } from "./engine/reconcile";
 export { seedFromEntity, valuesToPayload, diffForEdit, clearValue } from "./engine/fieldPipeline";
-export { seedEntity, buildPayload, buildDelta, type FormSpec } from "./engine/entityForm";
+export { seedEntity, buildPayload, buildEditPayload, buildDelta, type FormSpec, type EntityLike } from "./engine/entityForm";
 export { buildZodSchema } from "./engine/zodGen";
 export { registerTransform, getTransform, applyTransform, registerCompute, getCompute,
   registerValidate, getValidate, resolveValidate, type ValidateFn } from "./engine/transforms";

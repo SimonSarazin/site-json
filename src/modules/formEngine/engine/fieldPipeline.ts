@@ -70,22 +70,41 @@ export function seedFromEntity(descriptor: FormDescriptor, serverData: FormValue
  * renvoyant `undefined` sur vide reproduit donc l'omission des builders « complets » (CREATE), et le diff
  * efface en ÉDITION (clé absente + présente au baseline → clear).
  */
-export function valuesToPayload(descriptor: FormDescriptor, values: FormValues): FormValues {
+export function valuesToPayload(
+  descriptor: FormDescriptor,
+  values: FormValues,
+  opts: { emitEmpty?: boolean } = {},
+): FormValues {
+  // emitEmpty=false (CRÉATION) : un `write` -> `undefined` = clé OMISE (omit-empty ; évite d'envoyer "" à un
+  //   champ typé au create, ex. number, que l'AJV ADD rejetterait). Le backend strippe les vides de toute façon.
+  // emitEmpty=true (ÉDITION) : on émet TOUS les champs éditables ; un vide -> CLEAR TYPÉ (""/[]) pour que le
+  //   `Object.assign` au draft + `save()` (qui diffe en interne) efface ($unset) le champ vidé. cf. doc S6.
+  const emitEmpty = opts.emitEmpty ?? false;
   const groups = descriptor.serializeGroups ?? {};
   const payload: FormValues = {};
   for (const field of Object.values(descriptor.fields)) {
     if (field.readOnly) continue; // jamais émis au payload
     // Membre de groupe : recomposé par le groupe — SAUF si le groupe est groupReadOnly (alors émis ici).
     if (field.group && !groups[field.group]?.groupReadOnly) continue;
-    const v = field.write ? applyTransform(field.write, values[field.name], values) : values[field.name];
-    if (v !== undefined) payload[storeKey(field)] = v;
+    let v = field.write ? applyTransform(field.write, values[field.name], values) : values[field.name];
+    if (emitEmpty) {
+      if (v === undefined || isEmptyValue(v)) v = clearValue(field); // vidé -> clear typé (false/0 NON vides : préservés)
+      payload[storeKey(field)] = v;
+    } else if (v !== undefined) {
+      payload[storeKey(field)] = v;
+    }
   }
-  // Groupes : valeurs plates → 1 objet serveur (`undefined` = clé omise, ex. adresse sans localityId).
+  // Groupes : valeurs plates → 1 objet serveur (`undefined` = clé omise au create, ex. adresse sans localityId).
   // `groupReadOnly` : pas d'écriture au niveau groupe (les membres ont été émis individuellement ci-dessus).
   for (const g of Object.values(groups)) {
     if (g.groupReadOnly) continue;
-    const obj = applyTransform(g.write, values, values);
-    if (obj !== undefined) payload[g.serverKey] = obj;
+    let obj = applyTransform(g.write, values, values);
+    if (emitEmpty) {
+      if (obj === undefined || isEmptyValue(obj)) obj = ''; // objet serveur vidé -> "" (JAMAIS {}/[] ; cf. clear)
+      payload[g.serverKey] = obj;
+    } else if (obj !== undefined) {
+      payload[g.serverKey] = obj;
+    }
   }
   return payload;
 }

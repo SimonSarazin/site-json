@@ -175,3 +175,36 @@ describe("fieldPipeline — clearValue", () => {
     expect(clearValue({ name: "a", type: "string", widget: "text", label: "", clear: null })).toBe(null);
   });
 });
+
+describe("fieldPipeline — valuesToPayload emitEmpty (ÉDITION : payload COMPLET, vides typés)", () => {
+  it("émet TOUS les champs éditables ; vides → clear typé ('' string, [] array)", () => {
+    const p = valuesToPayload(D, { name: "N", structureName: "", code: "", tags: [] }, { emitEmpty: true });
+    expect(p).toMatchObject({ name: "N", holderOrganization: "", code: "", tags: [] });
+  });
+
+  it("groupe : entièrement vide → clé serveur '' (vs OMISE en création)", () => {
+    const create = valuesToPayload(DG, { name: "N", github: "", facebook: "" });
+    expect("socialNetwork" in create).toBe(false);                                    // création : omis
+    const edit = valuesToPayload(DG, { name: "N", github: "", facebook: "" }, { emitEmpty: true });
+    expect(edit.socialNetwork).toBe("");                                              // édition : clear ""
+  });
+
+  it("flags : writeOnly vidé → clear ; readOnly TOUJOURS omis ; groupReadOnly → membres à plat", () => {
+    const p = valuesToPayload(DF, { nm: "", geo: {}, computed: "c", github: "", facebook: "" }, { emitEmpty: true });
+    expect(p.nm).toBe("");                     // string vide → ""
+    expect(p.geo).toBe("");                    // writeOnly objet vidé → "" (clear typé)
+    expect("computed" in p).toBe(false);       // readOnly jamais émis (même en édition)
+    expect(p.github).toBe("");                 // groupReadOnly membre émis à plat
+    expect("socialNetwork" in p).toBe(false);  // groupReadOnly : pas d'objet groupe
+  });
+
+  it("préserve false / 0 (NON vides — pas de clear)", () => {
+    const Db: FormDescriptor = { ...D, fields: {
+      flag: { name: "flag", type: "boolean", widget: "switch", label: "" },
+      n: { name: "n", type: "number", widget: "text", label: "" },
+    } };
+    const p = valuesToPayload(Db, { flag: false, n: 0 }, { emitEmpty: true });
+    expect(p.flag).toBe(false);
+    expect(p.n).toBe(0);
+  });
+});

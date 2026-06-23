@@ -33,6 +33,16 @@ export function buildPayload(spec: FormSpec, values: FormValues): FormValues {
 }
 
 /**
+ * ÉDITION (pattern unifié S6) : payload COMPLET, vides typés (`""`/`[]`). À `Object.assign` sur `entity.data`
+ * puis `entity.save()` — le SDK diffe en interne (n'envoie que les champs réellement changés) et le backend
+ * efface les vides (`$unset`). Remplace les diff/clear ad hoc côté site (reconcileClearedFields, buildEditDelta) :
+ * prouvé par tests/integration/advanced/unified-save-clear.test.ts (5080↔5099, chemins costum & standard).
+ */
+export function buildEditPayload(spec: FormSpec, values: FormValues): FormValues {
+  return valuesToPayload(spec.descriptor, values, { emitEmpty: true });
+}
+
+/**
  * ÉDITION : delta serveur (champs modifiés + EFFACÉS en clear typé) entre `values` et `baseline` (= seedEntity
  * de l'entité). Absorbe l'effacement nativement (champ vidé → clear `""`/`[]`, jamais `{}`). `diffSkip` exclut
  * les clés gérées à part. `baseline` = les valeurs seedées de l'entité (cf. seedEntity).

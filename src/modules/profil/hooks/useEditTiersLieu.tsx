@@ -2,9 +2,8 @@ import type { Organization } from "@communecter/cocolight-api-client";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { useSite } from "@/hooks/useSite";
 import { PROFIL_QUERY_KEYS } from "../constants";
-import { buildTiersLieuxPayload, mapEntityToTiersLieuxValues } from "../utils/tiersLieuxMapping";
+import { buildTiersLieuxPayload } from "../utils/tiersLieuxMapping";
 import type { TiersLieuxSubmitPayload } from "../components/add/TiersLieuxForm";
-import { isSameValue, reconcileClearedFields } from "@/modules/formEngine";
 
 /**
  * Édite une organisation tiers-lieu existante.
@@ -25,24 +24,14 @@ export function useEditTiersLieu(organization: Organization | null) {
       if (!organization) throw new Error("No organization provided");
       const existingTags = (organization.serverData?.tags as string[] | undefined) ?? [];
       const addTags = config.costum?.mainTag ? [config.costum.mainTag] : [];
-      const opts = { existingTags, addTags };
-      const payload = buildTiersLieuxPayload(data, opts);
-      // Baseline reconstruite depuis l'ENTITÉ (mêmes options) pour ne réassigner QUE le réellement
-      // modifié — sinon l'objet `address` reconstruit (partiel si l'adresse n'a pas été ré-éditée)
-      // écrase l'adresse serveur complète (perte de level2..4/codeInsee/geo). cf. POI buildEditDelta.
-      const baseline = buildTiersLieuxPayload(mapEntityToTiersLieuxValues(organization), opts) as Record<string, unknown>;
-
+      // Pattern unifié (S6) : payload COMPLET (vides typés "") → Object.assign sur le draft → save().
+      // Le SDK diffe en interne (n'envoie que les champs réellement changés) et le backend efface les vides
+      // ($unset). Plus de diff/reconcile côté site (ni isSameValue, ni reconcileClearedFields, ni baseline) :
+      // l'effacement d'un champ vidé est absorbé nativement. L'adresse (objet 14 champs, round-trip complet)
+      // == serveur si non touchée → no-op au diff SDK. Prouvé 5080↔5099 par unified-save-clear.test.ts.
+      const payload = buildTiersLieuxPayload(data, { existingTags, addTags, complete: true });
       const target = organization.data as Record<string, unknown>;
-      // Réassigne au draft les champs MODIFIÉS (`tags` toujours, pour garantir mainTag/compagnon).
-      for (const [key, value] of Object.entries(payload)) {
-        if (key === "tags" || !isSameValue(value, baseline[key])) target[key] = value;
-      }
-      // EFFACEMENT : `buildTiersLieuxPayload` OMET les champs vides → une clé du baseline (valeur serveur)
-      // absente du payload = champ VIDÉ par l'utilisateur → on l'efface explicitement (vide typé) sinon `save()`
-      // ne voit aucun changement. `address` (atomique/obligatoire) et `tags` (mergés) exclus.
-      // cf. reconcileClearedFields (formEngine) + doc/refactor-field-treatment.md (P0).
-      const cleared = reconcileClearedFields(payload, baseline, { skip: ["tags", "address"] });
-      for (const [key, value] of Object.entries(cleared)) target[key] = value;
+      Object.assign(target, payload);
       // Logo posé dans le draft : `save()` (→ `_update`) le route vers le bloc PROFIL_IMAGE (`updateImageProfil`).
       if (data._logoFile) {
         target.profil_avatar = data._logoFile;

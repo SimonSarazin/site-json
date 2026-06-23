@@ -3,7 +3,7 @@ import { getDefaultTiersLieuxValues } from "../components/add/TiersLieuxForm";
 import { transformFormDataWithAddress } from "../hooks/mutationUtils";
 // Pipeline (P3) — imports DIRECTS (pas le barrel formEngine) pour rester un util pur. cf. doc/refactor-field-treatment.md.
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
-import { seedEntity, buildPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
+import { seedEntity, buildPayload, buildEditPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
 import type { FieldDescriptor, FormDescriptor, FormValues } from "@/modules/formEngine";
 
 export interface CostumConfig {
@@ -251,7 +251,9 @@ const TIERSLIEU_DESCRIPTOR: FormDescriptor = {
     phone: ro("phone", "tl:pickString", "tl:emptyToUndef", "telephone"),
     websiteUrl: ro("websiteUrl", "tl:pickString", "tl:emptyToUndef", "url"),
     videoUrl: ro("videoUrl", "tl:video0", "tl:videoWrite", "video"),
-    socialLinks: ro("socialLinks", "tl:socialRead", "tl:socialWrite", "socialNetwork", "array"),
+    // socialLinks = array côté form, mais OBJET `socialNetwork` côté serveur → clear "" (jamais [] : on
+    // garde la sémantique objet et le sentinel "" prouvé byte-fidèle ; cf. costum-update-singlefield.test).
+    socialLinks: { ...ro("socialLinks", "tl:socialRead", "tl:socialWrite", "socialNetwork", "array"), clear: "" },
     hours: ro("hours", "tl:hoursRead", "tl:hoursWrite", "openingHours", "object"),
     openingMonth: grp("openingMonth", "openingDate"),
     openingYear: grp("openingYear", "openingDate"),
@@ -304,6 +306,12 @@ export interface BuildPayloadOptions {
    * pour préserver les tags existants quand `payload.tags` écrase via `.save()`.
    */
   existingTags?: string[];
+  /**
+   * ÉDITION (pattern unifié S6) : produit un payload COMPLET (vides typés `""`/`[]`) destiné à
+   * `Object.assign(entity.data)` + `save()` — le SDK diffe et le backend efface ($unset). Au CREATE :
+   * omettre (omit-empty natif, pour ne pas envoyer "" aux champs typés que l'AJV ADD rejetterait).
+   */
+  complete?: boolean;
 }
 
 export function buildTiersLieuxPayload(
@@ -315,7 +323,9 @@ export function buildTiersLieuxPayload(
   // l'ancien omit-empty ; prouvé par tiersLieuxMapping.test.ts). EditLocationTab a posé level1..4/codeInsee/geo
   // dans `data` → l'objet `address` reconstruit reste COMPLET. Le contexte costum (presets + merge tags)
   // dépend de la config (hors descripteur) → géré ci-dessous.
-  const payload = buildPayload(TIERSLIEU_SPEC, data as unknown as FormValues) as Record<string, unknown>;
+  const payload = (options.complete
+    ? buildEditPayload(TIERSLIEU_SPEC, data as unknown as FormValues)
+    : buildPayload(TIERSLIEU_SPEC, data as unknown as FormValues)) as Record<string, unknown>;
 
   if (options.costum) {
     payload.type = "NGO";
