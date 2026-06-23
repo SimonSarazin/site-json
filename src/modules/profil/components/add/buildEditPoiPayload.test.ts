@@ -52,10 +52,17 @@ describe("buildEditPoiPayload (pattern unifié)", () => {
     expect(buildEditPoiPayload({ ...base, urls: [] }).urls).toEqual([]);                        // array → []
   });
 
-  it("geo/geoPosition (writeOnly) POSÉS (adresse éditée) → émis au WRITE", () => {
+  it("geo/geoPosition (writeOnly) POSÉS (adresse éditée) → émis (lat/lng STRING, coords number)", () => {
     const p = buildEditPoiPayload({ ...base }) as Record<string, unknown>;
-    expect(p.geo).toMatchObject({ latitude: 1, longitude: 2 });
-    expect(p.geoPosition).toMatchObject({ type: "Point" });
+    expect(p.geo).toEqual({ "@type": "GeoCoordinates", latitude: "1", longitude: "2" }); // coercés en string (geoValid)
+    expect(p.geoPosition).toEqual({ type: "Point", coordinates: [2, 1] });                 // coords number (geoPositionValid)
+  });
+
+  it("adresse effacée (pas de localityId) → geo/geoPosition CLEAR '' (effacés avec l'adresse)", () => {
+    const { localityId: _drop, ...noLoc } = base as Record<string, unknown>;
+    const p = buildEditPoiPayload(noLoc as AddPoiFormData) as Record<string, unknown>;
+    expect(p.geo).toBe("");
+    expect(p.geoPosition).toBe("");
   });
 
   it("geo/geoPosition ABSENTS (édition SANS toucher l'adresse) → OMIS (geo serveur préservé, pas effacé)", () => {

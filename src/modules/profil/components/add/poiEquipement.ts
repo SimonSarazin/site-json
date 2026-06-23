@@ -11,6 +11,7 @@ import type { AddPoiFormData } from "../../schemaForm";
 // tirer les widgets/composants). cf. doc/refactor-field-treatment.md.
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
 import { seedEntity, buildEditPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
+import "../../forms/geoTransforms"; // enregistre geo:write / geoPosition:write (partagés)
 import type { FieldDescriptor, FormDescriptor, FormValues } from "@/modules/formEngine";
 import { buildAddressFromForm } from "../../hooks/mutationUtils";
 
@@ -339,8 +340,10 @@ function buildPoiFields(): Record<string, FieldDescriptor> {
   for (const n of ["addressCountry", "addressLocality", "localityId", "postalCode", "streetAddress"]) {
     f[n] = { name: n, type: "string", widget: "hidden", label: n, group: "address" };
   }
-  f.geo = { name: "geo", type: "object", widget: "hidden", label: "geo", writeOnly: true };
-  f.geoPosition = { name: "geoPosition", type: "object", widget: "hidden", label: "geoPosition", writeOnly: true };
+  // geo/geoPosition : writeOnly + transforms PARTAGÉS (liés à localityId) → lat/lng coercés en string
+  // (geoValid), coords en number (geoPositionValid), et effacés quand l'adresse part. cf. geoTransforms.
+  f.geo = { name: "geo", type: "object", widget: "hidden", label: "geo", writeOnly: true, write: "geo:write" };
+  f.geoPosition = { name: "geoPosition", type: "object", widget: "hidden", label: "geoPosition", writeOnly: true, write: "geoPosition:write" };
   return f;
 }
 
