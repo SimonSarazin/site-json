@@ -46,7 +46,6 @@ function fieldToConfig(f: FieldDescriptor): JsonFormFieldConfig {
     ...(f.atomicGroup ? { atomicGroup: f.atomicGroup } : {}),
     ...(f.writeOnly ? { writeOnly: f.writeOnly } : {}),
     ...(f.readOnly ? { readOnly: f.readOnly } : {}),
-    ...(f.renderOnly ? { renderOnly: f.renderOnly } : {}),
     ...(f.clear !== undefined ? { clear: f.clear } : {}),
   } as JsonFormFieldConfig;
 }
