@@ -240,6 +240,21 @@ describe("buildTiersLieuxPayload — mode complete (édition unifiée S6)", () =
       level1: "11", level1Name: "IDF", codeInsee: "75056",
     });
   });
+
+  it("complete : socialLinks (array) + hours (objet) RENSEIGNÉS → socialNetwork objet + openingHours array", () => {
+    // Ex-régression double-passe (GenericForm écrivait AVANT buildTiersLieuxPayload) : tl:socialWrite recevait
+    // un objet déjà transformé → crash. En passe simple, buildTiersLieuxPayload reçoit la forme FORM (array/objet).
+    const base = getDefaultTiersLieuxValues();
+    const data = {
+      ...base, name: "TL", email: "x@y.fr",
+      socialLinks: [{ platform: "twitter", url: "https://t.co/x" }],
+      hours: { ...base.hours, monday: { enabled: true, start: "08:00", end: "18:00" } },
+    };
+    const edit = buildTiersLieuxPayload(data, { complete: true }) as Record<string, unknown>;
+    expect(edit.socialNetwork).toEqual({ twitter: "https://t.co/x" });
+    expect(Array.isArray(edit.openingHours)).toBe(true);
+    expect((edit.openingHours as unknown[])[0]).toEqual({ dayOfWeek: "Mo", hours: [{ opens: "08:00", closes: "18:00" }] });
+  });
 });
 
 describe("buildTiersLieuxPayload — geo/geoPosition (lié à l'adresse, S6 geo)", () => {
