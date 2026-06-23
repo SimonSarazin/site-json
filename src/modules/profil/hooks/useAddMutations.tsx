@@ -6,11 +6,13 @@ import type {
   AddOrganizationFormData,
   AddProjectFormData,
   AddEventFormData,
+  AddPoiFormData,
 } from "../schemaForm";
 import { useNavigate } from "react-router";
 import {
   buildParentReference,
   buildOrganizerReference,
+  logCocolightError,
 } from "./mutationUtils";
 import { buildTiersLieuxPayload } from "../utils/tiersLieuxMapping";
 import { buildProfileUpdateData } from "../forms/editProfilePayload";
@@ -20,33 +22,6 @@ import { buildAddPoiPayload } from "../components/add/poiEquipement";
 import { submitEntityEdit } from "./submitEntityEdit";
 import { useSite } from "@/hooks/useSite";
 import { getSlug } from "@/lib/constant/common";
-
-/**
- * Log détaillé d'une erreur de la lib Cocolight. Les échecs de validation backend
- * remontent en `ApiValidationError` (→ `messages: string[]` AJV champ par champ +
- * `details`) ou `ApiResponseError` (→ `responseData`). `console.error(err)` masque
- * ces props custom : on les extrait explicitement, avec le payload envoyé pour
- * comparer aux champs rejetés (ex. `ADD_POI - Request validation failed`).
- */
-function logCocolightError(context: string, err: unknown, payload?: unknown) {
-  const e = err as {
-    name?: string;
-    message?: string;
-    status?: number;
-    messages?: unknown;
-    details?: unknown;
-    responseData?: unknown;
-  };
-  console.error(`[${context}] échec lib`, {
-    name: e?.name,
-    message: e?.message,
-    status: e?.status,
-    messages: e?.messages, // ApiValidationError → erreurs AJV champ par champ
-    details: e?.details,
-    responseData: e?.responseData, // ApiResponseError
-    payloadSent: payload,
-  });
-}
 
 /**
  * Hook pour créer une nouvelle organisation
@@ -76,10 +51,18 @@ export function useAddOrganization(entity?: EntityTypes | null) {
       const payload = buildProfileUpdateData("organizations", data as Record<string, unknown>);
       const role = (data as Record<string, unknown>).role;
       if (role) payload.role = role;
+      // ADD_ORGANIZATION.email = `format:email` SANS branche "" (≠ events/projects/blocs d'édition qui la
+      // tolèrent) → un email vide doit être OMIS à la création (sémantique create : champ optionnel vide = absent).
+      if (payload.email === "") delete payload.email;
 
       // Créer l'organisation via le SDK
       const organization = await targetEntity.organization(payload);
-      await organization.save();
+      try {
+        await organization.save();
+      } catch (err) {
+        logCocolightError("useAddOrganization · ADD_ORGANIZATION", err, payload);
+        throw err;
+      }
 
       return { organization };
     },
@@ -128,7 +111,12 @@ export function useAddProject(entity?: EntityTypes | null) {
 
       // Créer le projet via le SDK
       const project = await targetEntity.project(payload);
-      await project.save();
+      try {
+        await project.save();
+      } catch (err) {
+        logCocolightError("useAddProject · ADD_PROJECT", err, payload);
+        throw err;
+      }
 
       return { project };
     },
@@ -188,7 +176,12 @@ export function useAddEvent(entity?: EntityTypes | null) {
 
       // Créer l'événement via le SDK
       const event = await targetEntity.event(payload as Parameters<typeof targetEntity.event>[0]);
-      await event.save();
+      try {
+        await event.save();
+      } catch (err) {
+        logCocolightError("useAddEvent · ADD_EVENT", err, payload);
+        throw err;
+      }
 
       return { event };
     },

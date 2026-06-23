@@ -52,6 +52,13 @@ describe("buildProfileUpdateData", () => {
     expect(out.parent).toEqual({ org1: { name: "Org", type: "organizations" } });
   });
 
+  it("projects SANS parent : `parent` OMIS (jamais \"\") — garde du bug d'édition UPDATE_BLOCK_INFO", () => {
+    // pf:entityRef sur réf vide → undefined → clé omise. UPDATE_BLOCK_INFO[projects].parent n'accepte QUE
+    // l'objet ; un `parent:""` faisait échouer l'édition d'un projet sans parent (rejet AJV au save).
+    const out = buildProfileUpdateData("projects", { name: "P", slug: "p", avancement: "idea" });
+    expect(out).not.toHaveProperty("parent");
+  });
+
   it("events : startDate/endDate ISO + timeZone + organizer + parent", () => {
     const out = buildProfileUpdateData("events", {
       name: "E", slug: "e", type: "meeting", recurrency: false,
@@ -64,7 +71,7 @@ describe("buildProfileUpdateData", () => {
     expect(typeof out.startDate).toBe("string");
     expect(out.timeZone).toBe("Europe/Paris");
     expect(out.organizer).toEqual({ o1: { name: "Org", type: "organizations" } });
-    expect(out.parent).toBe(""); // pas de parent → ""
+    expect(out).not.toHaveProperty("parent"); // pas de parent → clé OMISE (jamais "" : UPDATE_BLOCK_INFO[projects].parent n'accepte que l'objet)
   });
 
   it("poi : description + address, PAS de shortDescription ni social", () => {

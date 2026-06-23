@@ -182,3 +182,26 @@ export function buildOrganizerReference(
 
   return undefined;
 }
+
+/**
+ * Log détaillé d'une erreur de la lib Cocolight. Les échecs de validation backend remontent en
+ * `ApiValidationError` (→ `messages: string[]` AJV champ par champ + `details`) ou `ApiResponseError`
+ * (→ `responseData`). `console.error(err)` masque ces props custom : on les extrait explicitement, avec
+ * le payload envoyé pour comparer aux champs rejetés (ex. `ADD_ORGANIZATION - Request validation failed`,
+ * `UPDATE_BLOCK_INFO - parent must be an object`). Partagé par tous les hooks de mutation (add/edit).
+ */
+export function logCocolightError(context: string, err: unknown, payload?: unknown) {
+  const e = err as {
+    name?: string; message?: string; status?: number;
+    messages?: unknown; details?: unknown; responseData?: unknown;
+  };
+  console.error(`[${context}] échec lib`, {
+    name: e?.name,
+    message: e?.message,
+    status: e?.status,
+    messages: e?.messages, // ApiValidationError → erreurs AJV champ par champ
+    details: e?.details,
+    responseData: e?.responseData, // ApiResponseError
+    payloadSent: payload,
+  });
+}

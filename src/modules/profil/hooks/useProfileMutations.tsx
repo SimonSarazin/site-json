@@ -2,6 +2,7 @@ import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { PROFIL_QUERY_KEYS } from "../constants";
 import { submitEntityEdit } from "./submitEntityEdit";
+import { logCocolightError } from "./mutationUtils";
 
 interface BannerUploadData {
   file: File;
@@ -23,7 +24,15 @@ export function useUpdateProfile(entity: EntityTypes | null) {
 
       // Orchestrateur unifié (S6) : Object.assign(draft) + save() (le SDK diffe, le backend efface les vides).
       // `newData` = buildProfileUpdateData (payload complet : pf:orEmpty émet "", adresse "" si vide).
-      const result = await submitEntityEdit(entity as unknown as Parameters<typeof submitEntityEdit>[0], newData);
+      let result: unknown;
+      try {
+        result = await submitEntityEdit(entity as unknown as Parameters<typeof submitEntityEdit>[0], newData);
+      } catch (err) {
+        // ex. `UPDATE_BLOCK_INFO - The value at /parent must be an object` (parent:"" sur-émis) →
+        // messages AJV champ par champ visibles dans la console du navigateur.
+        logCocolightError(`useUpdateProfile · ${entity.getEntityType?.() ?? "?"}`, err, newData);
+        throw err;
+      }
 
       return { entity, result };
     },

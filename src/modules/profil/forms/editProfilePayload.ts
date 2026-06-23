@@ -65,11 +65,14 @@ function buildOpeningHours(v: unknown) {
   });
 }
 
-// Référence d'entité (parent/organizer) : ne garde que name + type par entrée ; "" si vide.
+// Référence d'entité (parent/organizer) : ne garde que name + type par entrée. Vide → `undefined` (clé
+// OMISE par buildPayload, cf. valuesToPayload emitEmpty=false), JAMAIS "" : le bloc d'édition standard
+// UPDATE_BLOCK_INFO[projects].parent n'accepte QUE l'objet (pas de branche ""), contrairement à
+// ADD_EVENT.parent (oneOf objet|""). Omettre la réf absente est byte-sûr partout (rien à modifier).
 function buildEntityReference(ref: unknown) {
-  if (!ref || typeof ref !== "object") return "";
+  if (!ref || typeof ref !== "object") return undefined;
   const entries = Object.entries(ref as Record<string, unknown>);
-  if (entries.length === 0) return "";
+  if (entries.length === 0) return undefined;
   return Object.fromEntries(
     entries.map(([id, ent]) => [id, { name: (ent as { name?: string }).name, type: (ent as { type?: string }).type }]),
   );
