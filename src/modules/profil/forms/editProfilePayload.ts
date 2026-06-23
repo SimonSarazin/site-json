@@ -1,15 +1,21 @@
 /**
- * Mapping form → payload d'édition de profil, par type d'entité. Migré (P4) vers le pipeline générique :
- * `buildProfileUpdateData` délègue à `valuesToPayload(PROFIL_WRITE_DESCRIPTORS[entityType])`. Les helpers
- * (adresse/social/tags/horaires/refs) sont enregistrés en transformers nommés et PARTAGÉS avec le READ
- * (`useProfileFormData`, voie B) → fin du miroir READ/WRITE. Comportement byte-identique à l'ancien switch
- * (prouvé par editProfilePayload.test.ts). cf. doc/refactor-field-treatment.md (P4).
+ * Mapping form ↔ profil, par type d'entité, via le pipeline générique (P4/S5). Descripteurs UNIFIÉS
+ * read+write : `buildProfileUpdateData` délègue à `valuesToPayload` (WRITE, ignore `read`) et
+ * `seedProfileFormValues` à `seedFromEntity` (READ, ignore `write`/`readOnly`). Fin du miroir READ/WRITE :
+ * `useProfileFormData` consomme désormais ce même descripteur (avant : mapping manuel). Comportement
+ * byte-identique à l'ancien (prouvé par editProfilePayload.test.ts + useProfileFormData.equiv.test.ts).
+ *
+ * Asymétries câblées par les flags du moteur :
+ *  - social : groupe `groupReadOnly` (READ = décompose l'objet `socialNetwork` → 9 champs plats ; WRITE =
+ *    9 clés plates top-level, re-nichées par le legacy updateblock UPDATE_BLOCK_SOCIAL).
+ *  - `public` (event) / `urls` (poi) : `readOnly` (lus, jamais réécrits par cette voie).
+ * cf. doc/refactor-field-treatment.md (P4/S5).
  */
-import { DAYS } from "@/constants/DAYS";
+import { DAYS, widgetFormatters } from "@/constants/DAYS";
 import { formatISO } from "date-fns";
 import type { FieldDescriptor, FormDescriptor, FormValues } from "@/modules/formEngine";
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
-import { buildPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
+import { seedEntity, buildPayload, type FormSpec, type EntityLike } from "@/modules/formEngine/engine/entityForm";
 
 type Data = Record<string, unknown>;
 
@@ -69,7 +75,7 @@ function buildEntityReference(ref: unknown) {
 }
 
 // ── Transformers WRITE (side-effect) ─────────────────────────────────────────
-registerTransform("pf:orEmpty", (v) => v || "");                 // `data.x || ""` (toujours émis)
+registerTransform("pf:orEmpty", (v) => v || "");                 // `data.x || ""` (toujours émis) — aussi READ string
 registerTransform("pf:orUndef", (v) => v || undefined);           // conditionnel (`if (data.x)`) → omis si vide
 registerTransform("pf:tags", buildTags);
 registerTransform("pf:recurrency", (v) => v || false);
@@ -78,64 +84,117 @@ registerTransform("pf:isoDate", (v) => (typeof v === "string" ? formatISO(new Da
 registerTransform("pf:entityRef", buildEntityReference);
 registerTransform("pf:openingHours", buildOpeningHours);
 registerTransform("pf:addressWrite", (_v, all) => buildAddress((all ?? {}) as Data));
-// READ adresse (objet serveur → 14 champs plats) — utilisé par le READ (P4) ; déclaré ici pour le groupe.
+
+// ── Transformers READ ────────────────────────────────────────────────────────
+// Adresse (objet serveur → 14 champs plats) + social (objet socialNetwork → 9 champs plats), via les groupes.
 registerTransform("pf:addressRead", (v) => {
   const a = (v ?? {}) as Data;
   return Object.fromEntries(ADDRESS_KEYS.map((k) => [k, a[k] || ""]));
 });
+registerTransform("pf:socialRead", (v) => {
+  const sn = (v ?? {}) as Data;
+  return Object.fromEntries(SOCIAL_KEYS.map((k) => [k, sn[k] || ""]));
+});
+registerTransform("pf:rdArr", (v) => (Array.isArray(v) ? v : [])); // `serverData.x || []`
+registerTransform("pf:rdRefOrUndef", (v) => v ?? undefined);        // `serverData.parent ?? undefined`
+registerTransform("pf:rdOrganizer", (v) => v ?? {});               // `serverData.organizer ?? {}`
+registerTransform("pf:rdPublic", (v) => v !== false);              // `serverData.public !== false`
+registerTransform("pf:rdBool", (v) => Boolean(v));                  // `Boolean(serverData.recurrency)`
+registerTransform("pf:rdDateYMD", (v) => (v ? new Date(v as string).toISOString().split("T")[0] : "")); // birthDate
+registerTransform("pf:rdDateISO", (v) => (v ? new Date(v as string).toISOString() : ""));               // start/endDate
+registerTransform("pf:rdOpeningHours", (v) =>
+  Array.isArray(v) ? widgetFormatters.openingHours(v).filter((d: { hours: unknown[] }) => d.hours.length > 0) : []);
 
-// ── Descripteurs WRITE par entité ────────────────────────────────────────────
-const w = (name: string, write?: string, type: FieldDescriptor["type"] = "string"): FieldDescriptor =>
-  ({ name, type, widget: "hidden", label: name, ...(write ? { write } : {}) });
+// ── Helpers descripteur ──────────────────────────────────────────────────────
+// f(name, read, write?, type?, extra?) — champ unifié read+write. `read`/`write` = transformers nommés
+// (undefined = identité). Membre de groupe via `extra.group` ; lecture seule via `extra.readOnly`.
+const f = (
+  name: string,
+  read?: string,
+  write?: string,
+  type: FieldDescriptor["type"] = "string",
+  extra: Partial<FieldDescriptor> = {},
+): FieldDescriptor => ({
+  name, type, widget: "hidden", label: name,
+  ...(read ? { read } : {}), ...(write ? { write } : {}), ...extra,
+});
+
 const ADDR_GROUP = { address: { serverKey: "address", read: "pf:addressRead", write: "pf:addressWrite" } };
-const ADDR_MEMBERS = Object.fromEntries(ADDRESS_KEYS.map((k) => [k, { name: k, type: "string", widget: "hidden", label: k, group: "address" } as FieldDescriptor]));
-const SOCIAL_FIELDS = Object.fromEntries(SOCIAL_KEYS.map((k) => [k, w(k, "pf:orEmpty")]));
-const base = (id: string): Omit<FormDescriptor, "fields"> => ({ id: `edit-${id}`, collection: "organizations", layout: { kind: "flat" }, sections: [], serializeGroups: ADDR_GROUP });
+const SOCIAL_GROUP = { social: { serverKey: "socialNetwork", read: "pf:socialRead", write: "pf:orEmpty", groupReadOnly: true } };
+const ADDR_MEMBERS = Object.fromEntries(ADDRESS_KEYS.map((k) => [k, f(k, undefined, undefined, "string", { group: "address" })]));
+// Social : membres du groupe `groupReadOnly` → READ décompose l'objet, WRITE émet chaque clé à plat (pf:orEmpty).
+const SOCIAL_FIELDS = Object.fromEntries(SOCIAL_KEYS.map((k) => [k, f(k, undefined, "pf:orEmpty", "string", { group: "social" })]));
 
-const PROFIL_WRITE_DESCRIPTORS: Record<string, FormDescriptor> = {
-  citoyens: { ...base("citoyens"), fields: {
-    name: w("name"), slug: w("slug"),
-    shortDescription: w("shortDescription", "pf:orEmpty"), description: w("description", "pf:orEmpty"),
-    url: w("url", "pf:orEmpty"), email: w("email", "pf:orEmpty"),
-    mobile: w("mobile", "pf:orEmpty"), fixe: w("fixe", "pf:orEmpty"), birthDate: w("birthDate", "pf:orEmpty"),
-    tags: w("tags", "pf:tags", "array"), ...ADDR_MEMBERS, ...SOCIAL_FIELDS,
+const base = (id: string, groups: Record<string, unknown>): Omit<FormDescriptor, "fields"> =>
+  ({ id: `edit-${id}`, collection: "organizations", layout: { kind: "flat" }, sections: [], serializeGroups: groups as FormDescriptor["serializeGroups"] });
+
+// Champs communs (name/slug identité au WRITE, orEmpty au READ ; desc/contact orEmpty des deux côtés).
+const COMMON = {
+  name: f("name", "pf:orEmpty"), slug: f("slug", "pf:orEmpty"),
+  shortDescription: f("shortDescription", "pf:orEmpty", "pf:orEmpty"),
+  description: f("description", "pf:orEmpty", "pf:orEmpty"),
+  url: f("url", "pf:orEmpty", "pf:orEmpty"), email: f("email", "pf:orEmpty", "pf:orEmpty"),
+  tags: f("tags", "pf:rdArr", "pf:tags", "array"),
+};
+
+const PROFIL_DESCRIPTORS: Record<string, FormDescriptor> = {
+  citoyens: { ...base("citoyens", { ...ADDR_GROUP, ...SOCIAL_GROUP }), fields: {
+    name: COMMON.name, slug: COMMON.slug, shortDescription: COMMON.shortDescription, description: COMMON.description,
+    url: COMMON.url, email: COMMON.email,
+    mobile: f("mobile", "pf:orEmpty", "pf:orEmpty"), fixe: f("fixe", "pf:orEmpty", "pf:orEmpty"),
+    birthDate: f("birthDate", "pf:rdDateYMD", "pf:orEmpty"),
+    tags: COMMON.tags, ...ADDR_MEMBERS, ...SOCIAL_FIELDS,
   } },
-  organizations: { ...base("organizations"), fields: {
-    name: w("name"), slug: w("slug"),
-    shortDescription: w("shortDescription", "pf:orEmpty"), description: w("description", "pf:orEmpty"),
-    url: w("url", "pf:orEmpty"), email: w("email", "pf:orEmpty"),
-    type: w("type", "pf:orUndef"), tags: w("tags", "pf:tags", "array"),
-    openingHours: w("openingHours", "pf:openingHours", "array"), ...ADDR_MEMBERS, ...SOCIAL_FIELDS,
+  organizations: { ...base("organizations", { ...ADDR_GROUP, ...SOCIAL_GROUP }), fields: {
+    name: COMMON.name, slug: COMMON.slug, shortDescription: COMMON.shortDescription, description: COMMON.description,
+    url: COMMON.url, email: COMMON.email,
+    type: f("type", undefined, "pf:orUndef"),
+    openingHours: f("openingHours", "pf:rdOpeningHours", "pf:openingHours", "array"),
+    tags: COMMON.tags, ...ADDR_MEMBERS, ...SOCIAL_FIELDS,
   } },
-  projects: { ...base("projects"), fields: {
-    name: w("name"), slug: w("slug"),
-    shortDescription: w("shortDescription", "pf:orEmpty"), description: w("description", "pf:orEmpty"),
-    url: w("url", "pf:orEmpty"), email: w("email", "pf:orEmpty"),
-    avancement: w("avancement", "pf:orUndef"), parent: w("parent", "pf:entityRef", "object"),
-    tags: w("tags", "pf:tags", "array"), ...ADDR_MEMBERS, ...SOCIAL_FIELDS,
+  projects: { ...base("projects", { ...ADDR_GROUP, ...SOCIAL_GROUP }), fields: {
+    name: COMMON.name, slug: COMMON.slug, shortDescription: COMMON.shortDescription, description: COMMON.description,
+    url: COMMON.url, email: COMMON.email,
+    avancement: f("avancement", undefined, "pf:orUndef"),
+    parent: f("parent", "pf:rdRefOrUndef", "pf:entityRef", "object"),
+    tags: COMMON.tags, ...ADDR_MEMBERS, ...SOCIAL_FIELDS,
   } },
-  events: { ...base("events"), fields: {
-    name: w("name"), slug: w("slug"),
-    shortDescription: w("shortDescription", "pf:orEmpty"), url: w("url", "pf:orEmpty"), email: w("email", "pf:orEmpty"),
-    type: w("type", "pf:orUndef"), recurrency: w("recurrency", "pf:recurrency", "boolean"),
-    startDate: w("startDate", "pf:isoDate"), endDate: w("endDate", "pf:isoDate"), timeZone: w("timeZone", "pf:timeZone"),
-    parent: w("parent", "pf:entityRef", "object"), organizer: w("organizer", "pf:entityRef", "object"),
-    tags: w("tags", "pf:tags", "array"), openingHours: w("openingHours", "pf:openingHours", "array"), ...ADDR_MEMBERS,
+  events: { ...base("events", ADDR_GROUP), fields: {
+    name: COMMON.name, slug: COMMON.slug, shortDescription: COMMON.shortDescription,
+    url: COMMON.url, email: COMMON.email,
+    type: f("type", undefined, "pf:orUndef"),
+    recurrency: f("recurrency", "pf:rdBool", "pf:recurrency", "boolean"),
+    startDate: f("startDate", "pf:rdDateISO", "pf:isoDate"), endDate: f("endDate", "pf:rdDateISO", "pf:isoDate"),
+    timeZone: f("timeZone", "pf:orEmpty", "pf:timeZone"),
+    parent: f("parent", "pf:rdRefOrUndef", "pf:entityRef", "object"),
+    organizer: f("organizer", "pf:rdOrganizer", "pf:entityRef", "object"),
+    public: f("public", "pf:rdPublic", undefined, "boolean", { readOnly: true }),
+    tags: COMMON.tags,
+    openingHours: f("openingHours", "pf:rdOpeningHours", "pf:openingHours", "array"),
+    ...ADDR_MEMBERS,
   } },
-  poi: { ...base("poi"), fields: {
-    name: w("name"), slug: w("slug"),
-    description: w("description", "pf:orEmpty"), type: w("type", "pf:orUndef"),
-    tags: w("tags", "pf:tags", "array"), ...ADDR_MEMBERS,
+  poi: { ...base("poi", ADDR_GROUP), fields: {
+    name: COMMON.name, slug: COMMON.slug,
+    description: COMMON.description, type: f("type", undefined, "pf:orUndef"),
+    urls: f("urls", "pf:rdArr", undefined, "array", { readOnly: true }),
+    tags: COMMON.tags, ...ADDR_MEMBERS,
   } },
 };
 
-/** Spec WRITE par entité (pattern unifié). READ (seedEntity) sera branché en migrant useProfileFormData. */
+/** Spec read+write par entité (pattern unifié). */
 const PROFIL_SPECS: Record<string, FormSpec> = Object.fromEntries(
-  Object.entries(PROFIL_WRITE_DESCRIPTORS).map(([k, descriptor]) => [k, { descriptor }]),
+  Object.entries(PROFIL_DESCRIPTORS).map(([k, descriptor]) => [k, { descriptor }]),
 );
 
 export function buildProfileUpdateData(entityType: string, data: Data): Record<string, unknown> {
   const spec = PROFIL_SPECS[entityType];
   if (!spec) return { name: data.name, slug: data.slug };
   return buildPayload(spec, data as FormValues) as Record<string, unknown>;
+}
+
+/** READ : entité serveur → valeurs de form (pipeline). `null` si type non géré. cf. useProfileFormData. */
+export function seedProfileFormValues(entityType: string, entity: EntityLike): Record<string, unknown> | null {
+  const spec = PROFIL_SPECS[entityType];
+  if (!spec) return null;
+  return seedEntity(spec, entity) as Record<string, unknown>;
 }
