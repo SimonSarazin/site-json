@@ -10,7 +10,7 @@ import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useT } from "@/hooks/useT";
 
-import { GenericForm, type FormDescriptor } from "@/modules/formEngine";
+import { GenericForm, configToDescriptor, formDescriptorToConfig, type FormDescriptor } from "@/modules/formEngine";
 import { useUnsavedGuard } from "./useUnsavedGuard";
 import { ParentInfoReadonly } from "../components/profile-edit/fields";
 import { useAddPoi, useAddProject, useAddOrganization, useAddEvent } from "../hooks/useAddMutations";
@@ -58,6 +58,12 @@ function AddEntityGenericModal(props: {
   const t = useT("modules/profil");
   const tr = (k: string) => t(k);
   const guard = useUnsavedGuard(props.onOpenChange);
+  // CONFIG-DRIVEN : rendu via le descripteur issu de la config (round-trip identique → rendu inchangé).
+  // Labels gardés = clés i18n (résolues par GenericForm). Couvre poi/projet/org/event en un seul point.
+  const descriptor = useMemo(
+    () => configToDescriptor(formDescriptorToConfig(props.descriptor), { tLoc: (l) => (typeof l === "string" ? l : ((l as { fr?: string })?.fr ?? "")) }),
+    [props.descriptor],
+  );
   return (
     <>
       <Dialog open={props.open} onOpenChange={guard.guardedOpenChange}>
@@ -67,7 +73,7 @@ function AddEntityGenericModal(props: {
             <DialogDescription>{tr(props.descKey)}</DialogDescription>
           </DialogHeader>
           <GenericForm
-            descriptor={props.descriptor}
+            descriptor={descriptor}
             defaultValues={props.defaultValues}
             onSubmit={props.onSubmit}
             t={tr}

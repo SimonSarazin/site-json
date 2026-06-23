@@ -16,6 +16,9 @@ import { formatISO } from "date-fns";
 import type { FieldDescriptor, FormDescriptor, FormValues } from "@/modules/formEngine";
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
 import { seedEntity, buildPayload, type FormSpec, type EntityLike } from "@/modules/formEngine/engine/entityForm";
+// Imports DIRECTS de la couche config (PAS le barrel → pas de widgets/React tirés, le module reste pur).
+import { formDescriptorToConfig } from "@/modules/formEngine/config/formDescriptorToConfig";
+import { configToDescriptor } from "@/modules/formEngine/config/configToDescriptor";
 import "./geoTransforms"; // enregistre geo:write / geoPosition:write (partagés, liés à localityId)
 
 type Data = Record<string, unknown>;
@@ -199,9 +202,18 @@ export const PROFIL_DESCRIPTORS: Record<string, FormDescriptor> = {
   } },
 };
 
-/** Spec read+write par entité (pattern unifié). */
+/**
+ * Spec read+write par entité — CONFIG-DRIVEN : chaque pipeline tourne sur le descripteur ISSU DE LA CONFIG
+ * (`configToDescriptor(formDescriptorToConfig(...))`, round-trip identique → parité byte garantie). READ
+ * (`seedProfileFormValues`) et WRITE (`buildProfileUpdateData`) passent donc par la config pour les 5 entités.
+ * Labels gardés = clés i18n (résolus au rendu par GenericForm). cf. tiers-lieu (même geste).
+ */
+const KEEP_KEYS = (l: unknown) => (typeof l === "string" ? l : ((l as { fr?: string })?.fr ?? ""));
 const PROFIL_SPECS: Record<string, FormSpec> = Object.fromEntries(
-  Object.entries(PROFIL_DESCRIPTORS).map(([k, descriptor]) => [k, { descriptor }]),
+  Object.entries(PROFIL_DESCRIPTORS).map(([k, descriptor]) => [
+    k,
+    { descriptor: configToDescriptor(formDescriptorToConfig(descriptor), { tLoc: KEEP_KEYS }) },
+  ]),
 );
 
 export function buildProfileUpdateData(entityType: string, data: Data): Record<string, unknown> {

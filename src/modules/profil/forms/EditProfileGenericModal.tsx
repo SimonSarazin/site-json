@@ -10,7 +10,7 @@ import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useT } from "@/hooks/useT";
 
-import { GenericForm, type FormDescriptor } from "@/modules/formEngine";
+import { GenericForm, configToDescriptor, formDescriptorToConfig, type FormDescriptor } from "@/modules/formEngine";
 import { getProfileSchema } from "../schemaForm";
 import { useProfileFormData } from "../hooks/useProfileFormData";
 import { useUpdateProfile } from "../hooks/useProfileMutations";
@@ -32,6 +32,12 @@ function EditEntityModal({ entity, open, onOpenChange, descriptor, entityType }:
   const { defaultValues } = useProfileFormData(entity);
   const update = useUpdateProfile(entity);
   const schema = useMemo(() => getProfileSchema(entityType), [entityType]);
+  // CONFIG-DRIVEN : rendu via le descripteur issu de la config (round-trip identique → rendu + `validate`
+  // clé préservés). Labels gardés = clés i18n. READ/WRITE passent déjà par la config (PROFIL_SPECS).
+  const renderDescriptor = useMemo(
+    () => configToDescriptor(formDescriptorToConfig(descriptor), { tLoc: (l) => (typeof l === "string" ? l : ((l as { fr?: string })?.fr ?? "")) }),
+    [descriptor],
+  );
   // events : filtre runtime du finder `parent` (sous-événement) = events organisés par le parent de l'entité.
   const fieldProps = useMemo(() => {
     if (entityType !== "events") return undefined;
@@ -67,7 +73,7 @@ function EditEntityModal({ entity, open, onOpenChange, descriptor, entityType }:
         {defaultValues && (
           <GenericForm
             key={entity.slug}
-            descriptor={descriptor}
+            descriptor={renderDescriptor}
             schema={schema}
             defaultValues={defaultValues as FieldValues}
             onSubmit={onSubmit}
