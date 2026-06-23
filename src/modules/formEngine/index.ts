@@ -16,5 +16,5 @@ export { buildZodSchema } from "./engine/zodGen";
 export { registerTransform, getTransform, applyTransform, registerCompute, getCompute,
   registerValidate, getValidate, resolveValidate, type ValidateFn } from "./engine/transforms";
 export { JsonFormConfigSchema, configToDescriptor, formDescriptorToConfig, descriptorToTsSource, defaultWidgetForType, INPUT_TYPE_TO_WIDGET,
-  costumToConfig, descriptorToConfig, type CostumExtensionsArtifact,
+  mergeRenderPipeline, costumToConfig, descriptorToConfig, type CostumExtensionsArtifact,
   type JsonFormConfig, type JsonFormFieldConfig, type JsonFormLabel, type ConfigToDescriptorOpts } from "./config";

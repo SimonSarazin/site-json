@@ -150,7 +150,12 @@ const COMMON = {
   tags: f("tags", "pf:rdArr", "pf:tags", "array"),
 };
 
-const PROFIL_DESCRIPTORS: Record<string, FormDescriptor> = {
+/**
+ * Descripteurs PIPELINE unifiés (read/write/group/serializeGroups, widgets `hidden`), PARTAGÉS par add+edit.
+ * Exportés pour la DÉRIVATION config (mergeRenderPipeline) : un descripteur render (add/edit) + ce pipeline
+ * → un descripteur unifié config-convertible, sans dupliquer le pipeline. cf. mergeRenderPipeline.ts.
+ */
+export const PROFIL_DESCRIPTORS: Record<string, FormDescriptor> = {
   citoyens: { ...base("citoyens", { ...ADDR_GROUP, ...SOCIAL_GROUP }), fields: {
     name: COMMON.name, slug: COMMON.slug, shortDescription: COMMON.shortDescription, description: COMMON.description,
     url: COMMON.url, email: COMMON.email,
