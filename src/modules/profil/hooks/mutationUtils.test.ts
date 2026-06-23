@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildAddressFromForm } from "./mutationUtils";
+import { buildAddressFromForm, transformFormDataWithAddress } from "./mutationUtils";
 
 /**
  * `buildAddressFromForm` n'émet une address QUE si un `localityId` (id de ville réel, hex24,
@@ -46,5 +46,29 @@ describe("buildAddressFromForm", () => {
       level1: "58bd5d6494ef471f218b4588",
       level1Name: "France",
     });
+  });
+});
+
+describe("transformFormDataWithAddress — adresse imbriquée + geo normalisé (CRÉATION)", () => {
+  const LOC = "54c09653f6b95c141800849e";
+  it("adresse plate + geo (lat/lng number) → address imbriquée + geo coercé (lat/lng STRING, coords number)", () => {
+    const out = transformFormDataWithAddress({
+      name: "Org", addressCountry: "FR", addressLocality: "Lyon", localityId: LOC, postalCode: "69001",
+      geo: { "@type": "GeoCoordinates", latitude: 45.76, longitude: 4.83 },
+      geoPosition: { type: "Point", coordinates: [4.83, 45.76] },
+    }) as Record<string, unknown>;
+    expect((out.address as Record<string, unknown>)?.localityId).toBe(LOC);
+    expect(out.geo).toEqual({ "@type": "GeoCoordinates", latitude: "45.76", longitude: "4.83" });
+    expect(out.geoPosition).toEqual({ type: "Point", coordinates: [4.83, 45.76] });
+    expect("addressCountry" in out).toBe(false); // champs plats consommés
+  });
+
+  it("pas de localityId (pas d'adresse valide) → geo/geoPosition OMIS", () => {
+    const out = transformFormDataWithAddress({
+      name: "Org", addressCountry: "FR", addressLocality: "Lyon",
+      geo: { "@type": "GeoCoordinates", latitude: 45.76, longitude: 4.83 },
+    }) as Record<string, unknown>;
+    expect("geo" in out).toBe(false);
+    expect("address" in out).toBe(false);
   });
 });

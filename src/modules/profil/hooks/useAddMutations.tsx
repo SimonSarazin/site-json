@@ -324,12 +324,11 @@ export function useUpdatePoi(poi: EntityTypes | null) {
 
       const { _imageFile, _imageDeleted, ...formData } = data;
 
-      // `data` = payload COMPLET de `buildEditPoiPayload` (adresse déjà imbriquée) → `transformFormDataWithAddress`
-      // est un no-op (conservé par robustesse). Orchestrateur unifié : Object.assign(draft) + image + save()
-      // + suppression image éventuelle. Le SDK diffe, le backend efface ($unset).
-      const transformedData = transformFormDataWithAddress(formData) as Record<string, unknown>;
+      // `data` = payload COMPLET de `buildEditPoiPayload` : adresse DÉJÀ imbriquée + geo coercé (geo:write).
+      // On l'assigne tel quel (PAS de transformFormDataWithAddress : réservé au CREATE, à champs PLATS).
+      // Orchestrateur unifié : Object.assign(draft) + image + save() + suppression image. Le SDK diffe, backend $unset.
       try {
-        await submitEntityEdit(poi as unknown as Parameters<typeof submitEntityEdit>[0], transformedData, {
+        await submitEntityEdit(poi as unknown as Parameters<typeof submitEntityEdit>[0], formData as Record<string, unknown>, {
           imageFile: _imageFile, imageDeleted: _imageDeleted,
         });
       } catch (err) {

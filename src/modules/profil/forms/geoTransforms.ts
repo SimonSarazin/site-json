@@ -14,18 +14,22 @@
  */
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
 
-registerTransform("geo:write", (_v, all) => {
-  const a = (all ?? {}) as Record<string, unknown>;
-  if (!a.localityId) return ""; // adresse effacée → efface geo
-  const g = a.geo as { latitude?: unknown; longitude?: unknown } | undefined;
-  if (!g || (g.latitude == null && g.longitude == null)) return undefined; // non touché → omis (préservé)
+/** geo (GeoCoordinates) → objet (lat/lng STRING pour geoValid) ; `""` si pas de localityId (clear) ;
+ *  `undefined` si geo non posé (omis/préservé). Pur — réutilisable hors pipeline (ex. transformFormDataWithAddress). */
+export function normalizeGeoWrite(all: Record<string, unknown>): { "@type": "GeoCoordinates"; latitude: string; longitude: string } | "" | undefined {
+  if (!all.localityId) return ""; // adresse effacée/absente → efface geo
+  const g = all.geo as { latitude?: unknown; longitude?: unknown } | undefined;
+  if (!g || (g.latitude == null && g.longitude == null)) return undefined; // non posé → omis (préservé)
   return { "@type": "GeoCoordinates", latitude: String(g.latitude ?? ""), longitude: String(g.longitude ?? "") };
-});
+}
 
-registerTransform("geoPosition:write", (_v, all) => {
-  const a = (all ?? {}) as Record<string, unknown>;
-  if (!a.localityId) return ""; // adresse effacée → efface geoPosition
-  const gp = a.geoPosition as { coordinates?: unknown[] } | undefined;
-  if (!gp || !Array.isArray(gp.coordinates) || gp.coordinates.length < 2) return undefined; // non touché → omis
+/** geoPosition (GeoJSON Point) → objet (coords NUMBER pour geoPositionValid) ; `""`/`undefined` idem geo. */
+export function normalizeGeoPositionWrite(all: Record<string, unknown>): { type: "Point"; coordinates: number[] } | "" | undefined {
+  if (!all.localityId) return "";
+  const gp = all.geoPosition as { coordinates?: unknown[] } | undefined;
+  if (!gp || !Array.isArray(gp.coordinates) || gp.coordinates.length < 2) return undefined;
   return { type: "Point", coordinates: [Number(gp.coordinates[0]), Number(gp.coordinates[1])] };
-});
+}
+
+registerTransform("geo:write", (_v, all) => normalizeGeoWrite((all ?? {}) as Record<string, unknown>));
+registerTransform("geoPosition:write", (_v, all) => normalizeGeoPositionWrite((all ?? {}) as Record<string, unknown>));

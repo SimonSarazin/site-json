@@ -1,4 +1,5 @@
 import type { EntityTypes } from "@communecter/cocolight-api-client";
+import { normalizeGeoWrite, normalizeGeoPositionWrite } from "../forms/geoTransforms";
 
 /**
  * Champs d'adresse aplatis utilisés dans les formulaires
@@ -84,7 +85,11 @@ export function buildAddressFromForm(data: AddressFormFields) {
 }
 
 /**
- * Extrait les champs d'adresse des données du formulaire et les remplace par l'objet address
+ * Extrait les champs d'adresse PLATS du formulaire (CRÉATION) et les remplace par l'objet `address`
+ * imbriqué. Normalise AUSSI geo/geoPosition (posés par EditLocationTab AVEC l'adresse) : lat/lng coercés
+ * en STRING (geoValid), coords en number (geoPositionValid), liés à `localityId` — uniforme avec l'édition
+ * (cf. forms/geoTransforms). geo non lié à une adresse (pas de localityId) → omis au create.
+ * ⚠ À n'utiliser que sur des données à champs PLATS (création) ; l'édition passe par les descripteurs.
  */
 export function transformFormDataWithAddress<T extends Record<string, unknown>>(
   data: T
@@ -104,6 +109,13 @@ export function transformFormDataWithAddress<T extends Record<string, unknown>>(
   }
 
   const address = buildAddressFromForm(addressData);
+
+  // geo/geoPosition : coercition uniforme (string lat/lng, coords number) liée à localityId. Au CREATE on
+  // n'émet le geo que s'il accompagne une adresse valide (objet) ; sinon on l'omet (pas de "" inutile).
+  const geo = normalizeGeoWrite(data);
+  const geoPosition = normalizeGeoPositionWrite(data);
+  if (geo && typeof geo === "object") rest.geo = geo; else delete rest.geo;
+  if (geoPosition && typeof geoPosition === "object") rest.geoPosition = geoPosition; else delete rest.geoPosition;
 
   return {
     ...rest,
