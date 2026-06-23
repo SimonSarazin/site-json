@@ -146,13 +146,18 @@ describe("fieldPipeline — valuesToPayload emitEmpty (ÉDITION : payload COMPLE
     expect(edit.socialNetwork).toBe("");                                              // édition : clear ""
   });
 
-  it("flags : writeOnly vidé → clear ; readOnly TOUJOURS omis ; groupReadOnly → membres à plat", () => {
-    const p = valuesToPayload(DF, { nm: "", geo: {}, computed: "c", github: "", facebook: "" }, { emitEmpty: true });
+  it("flags : writeOnly ABSENT → OMIS (≠ clear) ; POSÉ → émis ; readOnly omis ; groupReadOnly à plat", () => {
+    // geo (writeOnly) absent du form → OMIS, PAS clear (sinon une édition sans toucher l'adresse effacerait
+    // le geo serveur — jamais seedé au READ donc absence ≠ effacement).
+    const p = valuesToPayload(DF, { nm: "", computed: "c", github: "", facebook: "" }, { emitEmpty: true });
     expect(p.nm).toBe("");                     // string vide → ""
-    expect(p.geo).toBe("");                    // writeOnly objet vidé → "" (clear typé)
+    expect("geo" in p).toBe(false);            // writeOnly absent → OMIS (préservé)
     expect("computed" in p).toBe(false);       // readOnly jamais émis (même en édition)
     expect(p.github).toBe("");                 // groupReadOnly membre émis à plat
     expect("socialNetwork" in p).toBe(false);  // groupReadOnly : pas d'objet groupe
+    // geo POSÉ (EditLocationTab) → émis tel quel
+    const p2 = valuesToPayload(DF, { nm: "N", geo: { latitude: 1, longitude: 2 }, github: "", facebook: "" }, { emitEmpty: true });
+    expect(p2.geo).toEqual({ latitude: 1, longitude: 2 });
   });
 
   it("préserve false / 0 (NON vides — pas de clear)", () => {

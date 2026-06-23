@@ -86,7 +86,10 @@ export function valuesToPayload(
     // Membre de groupe : recomposé par le groupe — SAUF si le groupe est groupReadOnly (alors émis ici).
     if (field.group && !groups[field.group]?.groupReadOnly) continue;
     let v = field.write ? applyTransform(field.write, values[field.name], values) : values[field.name];
-    if (emitEmpty) {
+    // writeOnly (ex. geo/geoPosition, posés par EditLocationTab AVEC l'adresse) : JAMAIS seedés au READ →
+    // leur absence du form = "non fourni cette fois", PAS "effacé". On garde donc l'omit-empty même en édition
+    // (sinon une édition sans toucher l'adresse effacerait le geo serveur). Émis seulement si réellement posé.
+    if (emitEmpty && !field.writeOnly) {
       if (v === undefined || isEmptyValue(v)) v = clearValue(field); // vidé -> clear typé (false/0 NON vides : préservés)
       payload[storeKey(field)] = v;
     } else if (v !== undefined) {

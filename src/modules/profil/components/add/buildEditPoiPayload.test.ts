@@ -52,9 +52,23 @@ describe("buildEditPoiPayload (pattern unifié)", () => {
     expect(buildEditPoiPayload({ ...base, urls: [] }).urls).toEqual([]);                        // array → []
   });
 
-  it("geo/geoPosition (writeOnly) émis au WRITE", () => {
+  it("geo/geoPosition (writeOnly) POSÉS (adresse éditée) → émis au WRITE", () => {
     const p = buildEditPoiPayload({ ...base }) as Record<string, unknown>;
     expect(p.geo).toMatchObject({ latitude: 1, longitude: 2 });
     expect(p.geoPosition).toMatchObject({ type: "Point" });
+  });
+
+  it("geo/geoPosition ABSENTS (édition SANS toucher l'adresse) → OMIS (geo serveur préservé, pas effacé)", () => {
+    // Régression S6 évitée : EditLocationTab pose geo/geoPosition AVEC l'adresse ; ils ne sont JAMAIS seedés
+    // au READ (writeOnly). Une édition qui ne touche pas l'adresse a donc geo absent → il NE doit PAS être
+    // effacé (sinon perte des coordonnées serveur). cf. fieldPipeline emitEmpty + writeOnly.
+    const noGeo = { ...base } as Record<string, unknown>;
+    delete noGeo.geo;
+    delete noGeo.geoPosition;
+    const p = buildEditPoiPayload(noGeo as AddPoiFormData) as Record<string, unknown>;
+    expect("geo" in p).toBe(false);            // OMIS (≠ clear "")
+    expect("geoPosition" in p).toBe(false);
+    expect(p.name).toBe("Stade");              // les autres champs restent émis (payload complet)
+    expect(p.address).toBeTruthy();            // adresse toujours reconstruite
   });
 });
