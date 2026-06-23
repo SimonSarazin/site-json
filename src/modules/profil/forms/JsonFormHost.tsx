@@ -15,10 +15,10 @@ import { useT } from "@/hooks/useT";
 import { useCocolight } from "@/hooks/useCocolight";
 import type { JsonFormModalConfig } from "@/types/site-schema";
 
-import { GenericForm, configToDescriptor, type JsonFormConfig } from "@/modules/formEngine";
+import { GenericForm, configToDescriptor, type JsonFormConfig, type EntityLike } from "@/modules/formEngine";
 import { toJsonFormConfig } from "./legacyConfig";
 import { useUnsavedGuard } from "./useUnsavedGuard";
-import { runSubmit, buildConfigDefaults, type MeLike, type SubmitTarget } from "./jsonFormSubmit";
+import { runSubmit, buildConfigDefaults, buildPipelineDefaults, isPipelineConfig, type MeLike, type SubmitTarget } from "./jsonFormSubmit";
 import "./validators"; // side-effect : enregistre addressValid/eventDatesValid pour les configs (validateFn)
 
 interface Props {
@@ -26,16 +26,22 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   parent?: EntityTypes | null;
   formConfig?: JsonFormConfig | JsonFormModalConfig;
+  /** Entité éditée (config-driven EDIT) : pré-remplit le form via le pipeline du descripteur (seedEntity). */
+  entity?: EntityLike;
 }
 
-export function JsonFormHost({ open, onOpenChange, parent, formConfig }: Props): ReactNode {
+export function JsonFormHost({ open, onOpenChange, parent, formConfig, entity }: Props): ReactNode {
   const t = useT("modules/profil"); // résout clés i18n ET LocalizedString {fr,en,…}
   const { me } = useCocolight();
   const queryClient = useQueryClient();
 
   const config = useMemo(() => (formConfig ? toJsonFormConfig(formConfig) : null), [formConfig]);
   const descriptor = useMemo(() => (config ? configToDescriptor(config, { tLoc: (l) => t(l) }) : null), [config, t]);
-  const defaultValues = useMemo(() => (config ? buildConfigDefaults(config) : {}), [config]);
+  // READ : config UNIFIÉE → seedEntity (entity-aware, lit l'entité éditée) ; legacy → défauts par champ.
+  const defaultValues = useMemo(
+    () => (config ? (isPipelineConfig(config) ? buildPipelineDefaults(config, entity ?? null) : buildConfigDefaults(config)) : {}),
+    [config, entity],
+  );
   const guard = useUnsavedGuard(onOpenChange);
 
   const mutation = useMutation({

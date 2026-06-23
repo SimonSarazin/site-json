@@ -128,7 +128,13 @@ export interface RunSubmitDeps {
 /** Exécute la soumission : payload → presets → SDK (scope costum) → save. Retourne l'entité créée. */
 export async function runSubmit(config: JsonFormConfig, values: Values, deps: RunSubmitDeps): Promise<{ slug?: string }> {
   const payloadFn = config.submit?.payloadFn ? getPayloadFn(config.submit.payloadFn) : undefined;
-  const base = payloadFn ? payloadFn(values, config) : buildGenericPayload(config, values);
+  // Priorité : payloadFn nommé > pipeline du descripteur (config UNIFIÉE, préserve les champs costum déclarés)
+  // > mapping générique (configs legacy non-pipeline, ex. cyber-reunion). Gardé par isPipelineConfig.
+  const base = payloadFn
+    ? payloadFn(values, config)
+    : isPipelineConfig(config)
+      ? buildPipelinePayload(config, values)
+      : buildGenericPayload(config, values);
   // presets AVANT data (parité dynFormCostum.presetValue + presets lib) — data l'emporte à clé égale.
   const payload: Values = { ...(config.submit?.presets ?? {}), ...base };
 

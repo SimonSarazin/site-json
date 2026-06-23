@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import type { JsonFormConfig } from "@/modules/formEngine";
-import { buildGenericPayload, buildConfigDefaults, runSubmit, type MeLike, type SubmitTarget } from "./jsonFormSubmit";
+import { buildGenericPayload, buildConfigDefaults, runSubmit, isPipelineConfig, type MeLike, type SubmitTarget } from "./jsonFormSubmit";
 
 const baseConfig: JsonFormConfig = {
   id: "t", entityType: "organization", costum: { slug: "cyberReunion" },
@@ -17,6 +17,18 @@ const baseConfig: JsonFormConfig = {
     presets: { role: "admin" },
   },
 };
+
+describe("isPipelineConfig (gate)", () => {
+  it("config legacy (cyber-reunion : pas de serializeGroups ni read/write) → NON-pipeline → buildGenericPayload", () => {
+    expect(isPipelineConfig(baseConfig)).toBe(false);
+  });
+  it("config avec un champ read OU write → pipeline", () => {
+    expect(isPipelineConfig({ ...baseConfig, fields: { ...baseConfig.fields, name: { ...baseConfig.fields.name, read: "pf:orEmpty" } } })).toBe(true);
+  });
+  it("config avec serializeGroups → pipeline", () => {
+    expect(isPipelineConfig({ ...baseConfig, serializeGroups: { address: { serverKey: "address", read: "r", write: "w" } } })).toBe(true);
+  });
+});
 
 describe("buildGenericPayload", () => {
   it("agrège tagsFrom dans tags + fusionne extraData (sans les clés costum*)", () => {

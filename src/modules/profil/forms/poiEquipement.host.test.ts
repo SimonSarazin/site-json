@@ -13,7 +13,7 @@ import { describe, it, expect } from "vitest";
 import type { Poi } from "@communecter/cocolight-api-client";
 import { formDescriptorToConfig } from "@/modules/formEngine/config/formDescriptorToConfig";
 import { poiEquipementDescriptor } from "./poiEquipement.descriptor";
-import { isPipelineConfig, buildPipelineDefaults, buildPipelinePayload } from "./jsonFormSubmit";
+import { isPipelineConfig, buildPipelineDefaults, buildPipelinePayload, runSubmit, type MeLike, type SubmitTarget } from "./jsonFormSubmit";
 // side-effect : enregistre poi:* / geo:* + fournit le pipeline LIVE de référence.
 import { buildEditDefaults, buildAddPoiPayload, buildEditPoiPayload, createEmptyDefaults } from "../components/add/poiEquipement";
 import type { AddPoiFormData } from "../schemaForm";
@@ -61,5 +61,23 @@ describe("JsonFormHost config-driven poi-équipement (Q2) — parité avec le pi
 
   it("WRITE edit : buildPipelinePayload(config, v, {emitEmpty}) === buildEditPoiPayload(v)", () => {
     expect(buildPipelinePayload(config, formValues, { emitEmpty: true })).toEqual(buildEditPoiPayload(formValues as AddPoiFormData));
+  });
+
+  it("CÂBLAGE runSubmit : le payload qui atteint le SDK (scope costum) = pipeline du descripteur", async () => {
+    let captured: Record<string, unknown> | undefined;
+    let usedSlug: string | undefined;
+    const target: SubmitTarget = {
+      organization: async () => ({ save: async () => {} }),
+      project: async () => ({ save: async () => {} }),
+      event: async () => ({ save: async () => {} }),
+      poi: async (p) => { captured = p; return { save: async () => {}, slug: "stade-host" }; },
+    };
+    const me: MeLike = { ...target, costum: async (slug) => { usedSlug = slug; return target; } };
+
+    await runSubmit(config, formValues, { me });
+    // entityType=poi + costum.slug=equipementsSportifs974 (dérivés de poiEquipementDescriptor)
+    expect(usedSlug).toBe("equipementsSportifs974");
+    // payload identique au pipeline du descripteur (pas de mapping générique → champs costum préservés)
+    expect(captured).toEqual(buildPipelinePayload(config, formValues));
   });
 });
