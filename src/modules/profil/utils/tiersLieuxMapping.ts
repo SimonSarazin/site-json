@@ -224,6 +224,24 @@ registerTransform("tl:manageModelWrite", (_v, all) => {
 registerTransform("tl:typePlaceWrite", (_v, all) =>
   buildTypePlace((all as Record<string, unknown>).family as string[], (all as Record<string, unknown>).familyOther as string).typePlace);
 registerTransform("tl:addressWrite", (_v, all) => transformFormDataWithAddress((all ?? {}) as Record<string, unknown>).address);
+// geo/geoPosition (writeOnly, posés par EditLocationTab AVEC l'adresse) LIÉS à `localityId` :
+//  - localityId présent + geo posé      → émis (lat/lng en STRING pour geoValid ; coords en number pour geoPositionValid)
+//  - localityId présent + geo NON posé   → undefined → OMIS (writeOnly, no-touch → préservé serveur)
+//  - localityId ABSENT (adresse effacée) → "" → EFFACE geo (parité du bloc localities legacy)
+registerTransform("tl:geoWrite", (_v, all) => {
+  const a = (all ?? {}) as Record<string, unknown>;
+  if (!a.localityId) return "";
+  const g = a.geo as { latitude?: unknown; longitude?: unknown } | undefined;
+  if (!g || (g.latitude == null && g.longitude == null)) return undefined;
+  return { "@type": "GeoCoordinates", latitude: String(g.latitude ?? ""), longitude: String(g.longitude ?? "") };
+});
+registerTransform("tl:geoPositionWrite", (_v, all) => {
+  const a = (all ?? {}) as Record<string, unknown>;
+  if (!a.localityId) return "";
+  const gp = a.geoPosition as { coordinates?: unknown[] } | undefined;
+  if (!gp || !Array.isArray(gp.coordinates) || gp.coordinates.length < 2) return undefined;
+  return { type: "Point", coordinates: [Number(gp.coordinates[0]), Number(gp.coordinates[1])] };
+});
 
 // ro = champ 1→1 (read + write + path) ; grp = membre d'un groupe de sérialisation (lu/écrit par le groupe).
 const ro = (name: string, read: string, write?: string, path?: string, type: FieldDescriptor["type"] = "string"): FieldDescriptor =>
@@ -266,6 +284,10 @@ const TIERSLIEU_DESCRIPTOR: FormDescriptor = {
     postalCode: grp("postalCode", "address"),
     streetAddress: grp("streetAddress", "address"),
     localityId: grp("localityId", "address"),
+    // Coordonnées : writeOnly (posées par EditLocationTab, jamais relues du form), émises au WRITE liées à
+    // l'adresse (cf. tl:geoWrite/tl:geoPositionWrite). Parité POI ; débloque le geo tiers-lieu (était stripé).
+    geo: { name: "geo", type: "object", widget: "hidden", label: "geo", writeOnly: true, write: "tl:geoWrite" },
+    geoPosition: { name: "geoPosition", type: "object", widget: "hidden", label: "geoPosition", writeOnly: true, write: "tl:geoPositionWrite" },
   },
 };
 

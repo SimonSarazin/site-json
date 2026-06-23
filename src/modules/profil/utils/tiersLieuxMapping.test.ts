@@ -234,6 +234,37 @@ describe("buildTiersLieuxPayload — mode complete (édition unifiée S6)", () =
   });
 });
 
+describe("buildTiersLieuxPayload — geo/geoPosition (lié à l'adresse, S6 geo)", () => {
+  const withAddr = {
+    ...getDefaultTiersLieuxValues(), name: "TL", email: "x@y.fr",
+    addressCountry: "FR", addressLocality: "Paris", localityId: "c1", postalCode: "75001",
+  };
+
+  it("adresse + geo posé → geo émis (lat/lng STRING pour geoValid, coords number pour geoPositionValid)", () => {
+    const data = {
+      ...withAddr,
+      geo: { "@type": "GeoCoordinates", latitude: 48.85, longitude: 2.35 },
+      geoPosition: { type: "Point", coordinates: [2.35, 48.85] },
+    };
+    const p = buildTiersLieuxPayload(data as never) as Record<string, unknown>;
+    expect(p.geo).toEqual({ "@type": "GeoCoordinates", latitude: "48.85", longitude: "2.35" });
+    expect(p.geoPosition).toEqual({ type: "Point", coordinates: [2.35, 48.85] });
+  });
+
+  it("édition adresse présente mais geo NON posé (no-touch) → geo OMIS (préservé)", () => {
+    const p = buildTiersLieuxPayload(withAddr as never, { complete: true }) as Record<string, unknown>;
+    expect("geo" in p).toBe(false);
+    expect("geoPosition" in p).toBe(false);
+  });
+
+  it("adresse effacée (pas de localityId) → geo/geoPosition CLEAR '' (effacés avec l'adresse)", () => {
+    const noLoc = { ...getDefaultTiersLieuxValues(), name: "TL", email: "x@y.fr" }; // localityId vide
+    const p = buildTiersLieuxPayload(noLoc as never, { complete: true }) as Record<string, unknown>;
+    expect(p.geo).toBe("");
+    expect(p.geoPosition).toBe("");
+  });
+});
+
 describe("mapEntityToTiersLieuxValues", () => {
   it("retourne defaults pour entity sans serverData", () => {
     const result = mapEntityToTiersLieuxValues({} as EntityLike);

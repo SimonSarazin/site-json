@@ -65,14 +65,15 @@ export const localityFieldsSchema = z.object({
 // SCHÉMAS PARTAGÉS POUR ADD_BLOCKS
 // ============================================================================
 
-// Schéma pour les coordonnées géographiques
-const geoSchema = z.object({
+// Schéma pour les coordonnées géographiques. EXPORTÉ : réutilisé par tiersLieuxSchema (sinon geo/geoPosition
+// posés par EditLocationTab seraient STRIPÉS par le zodResolver → coordonnées jamais envoyées).
+export const geoSchema = z.object({
   latitude: z.union([z.string(), z.number()]),
   longitude: z.union([z.string(), z.number()]),
 });
 
 // Schéma pour la position GeoJSON
-const geoPositionSchema = z.object({
+export const geoPositionSchema = z.object({
   type: z.literal("Point"),
   coordinates: z.array(z.number()).length(2),
 });

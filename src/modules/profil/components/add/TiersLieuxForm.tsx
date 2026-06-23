@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/select";
 import { EditLocationTab } from "../profile-edit/EditLocationTab";
 import { ImageUploadField } from "../profile-edit/fields";
-import { localityFieldsSchema } from "../../schemaForm";
+import { localityFieldsSchema, geoSchema, geoPositionSchema } from "../../schemaForm";
 
 const dayHoursSchema = z.object({
   enabled: z.boolean().default(false),
@@ -56,6 +56,10 @@ export const tiersLieuxSchema = z.object({
   // Adresse : 14 champs SIG (dont level1..4/codeInsee posés par EditLocationTab). Réutilise le schéma
   // partagé des autres entités — sinon le zodResolver STRIPE les niveaux non déclarés (perte SIG au save).
   ...localityFieldsSchema.shape,
+  // Coordonnées posées par EditLocationTab AVEC l'adresse (writeOnly côté descripteur) — déclarées ici pour
+  // survivre au zodResolver. cf. tl:geoWrite/tl:geoPositionWrite (liées à localityId).
+  geo: geoSchema.optional(),
+  geoPosition: geoPositionSchema.optional(),
   logo: z.string().optional(),
   photos: z.array(z.string()).default([]),
   socialLinks: z.array(socialLinkSchema).optional(),
