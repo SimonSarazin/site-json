@@ -64,6 +64,12 @@ export function configToDescriptor(config: JsonFormConfig, opts: ConfigToDescrip
       read: f.read,
       write: f.write,
       widgetProps: f.widgetProps,
+      // Pipeline READ/WRITE (parité descripteur) : sérialisation par groupe, write/read-only, clear.
+      group: f.group,
+      atomicGroup: f.atomicGroup,
+      writeOnly: f.writeOnly,
+      readOnly: f.readOnly,
+      clear: f.clear,
     };
   }
 
@@ -92,6 +98,8 @@ export function configToDescriptor(config: JsonFormConfig, opts: ConfigToDescrip
     layout: config.layout,
     sections,
     fields,
+    // Groupes de sérialisation (N champs plats ↔ 1 objet serveur) — read/write = clés de registre.
+    ...(config.serializeGroups ? { serializeGroups: config.serializeGroups } : {}),
     // `validate` = clé de registre (résolue par zodGen/GenericForm via resolveValidate → getValidate).
     ...(config.validateFn ? { validate: config.validateFn } : {}),
   };

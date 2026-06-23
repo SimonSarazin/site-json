@@ -78,6 +78,26 @@ const FieldConfig = z.object({
   read: z.string().optional(),   // clé registre transform
   write: z.string().optional(),  // clé registre transform
   widgetProps: z.record(z.string(), z.unknown()).optional(),
+  // ── Pipeline READ/WRITE (parité descripteur ; aligné sur FieldDescriptor) ──────
+  // Membre d'un groupe de SÉRIALISATION (cf. `serializeGroups`) : N champs plats ↔ 1 objet serveur.
+  group: z.string().optional(),
+  // Groupe ATOMIQUE : si un membre change, tout le groupe est ré-émis ENSEMBLE au diff d'édition.
+  atomicGroup: z.string().optional(),
+  // WRITE-only : ignoré au READ (seed), émis au payload (ex. geo/geoPosition posés par EditLocationTab).
+  writeOnly: z.boolean().optional(),
+  // READ-only : seedé mais jamais émis au payload (ex. `public`/`urls`).
+  readOnly: z.boolean().optional(),
+  // Valeur d'EFFACEMENT (diff d'édition) ; défaut dérivé du type. JAMAIS `{}`.
+  clear: z.unknown().optional(),
+});
+
+// Groupe de sérialisation : N champs plats (membres via `field.group`) ↔ 1 clé/objet serveur.
+// `read`/`write` = clés de registre transform (objet serveur ↔ valeurs plates). cf. FormDescriptor.serializeGroups.
+const SerializeGroup = z.object({
+  serverKey: z.string(),
+  read: z.string(),
+  write: z.string(),
+  groupReadOnly: z.boolean().optional(),
 });
 
 const Group = z.object({
@@ -129,6 +149,8 @@ export const JsonFormConfigSchema = z.object({
   i18n: z.enum(["localized", "keys"]).optional(),
   sections: z.array(Section),
   fields: z.record(z.string(), FieldConfig),
+  // Groupes de sérialisation (adresse→PostalAddress, social→socialNetwork…), keyés par id de groupe.
+  serializeGroups: z.record(z.string(), SerializeGroup).optional(),
   validateFn: z.string().optional(),  // clé registre de validate cross-champ
   submit: Submit.optional(),
   submitLabel: Label.optional(),

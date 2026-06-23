@@ -41,6 +41,12 @@ function fieldToConfig(f: FieldDescriptor): JsonFormFieldConfig {
     ...(f.read ? { read: f.read } : {}),
     ...(f.write ? { write: f.write } : {}),
     ...(f.widgetProps ? { widgetProps: f.widgetProps } : {}),
+    // Pipeline READ/WRITE (parité descripteur) — tous sérialisables (string/bool/clear primitif).
+    ...(f.group ? { group: f.group } : {}),
+    ...(f.atomicGroup ? { atomicGroup: f.atomicGroup } : {}),
+    ...(f.writeOnly ? { writeOnly: f.writeOnly } : {}),
+    ...(f.readOnly ? { readOnly: f.readOnly } : {}),
+    ...(f.clear !== undefined ? { clear: f.clear } : {}),
   } as JsonFormFieldConfig;
 }
 
@@ -65,6 +71,8 @@ export function formDescriptorToConfig(d: FormDescriptor): JsonFormConfig {
       ...(s.fields ? { fields: s.fields } : {}),
     })),
     fields,
+    // Groupes de sérialisation (read/write = clés de registre, déjà sérialisables) — copiés tels quels.
+    ...(d.serializeGroups ? { serializeGroups: d.serializeGroups } : {}),
     // validate sérialisable UNIQUEMENT si c'est une clé de registre (string) ; fonction inline ignorée.
     ...(typeof d.validate === "string" ? { validateFn: d.validate } : {}),
     submit: { mode: "sdk" },
