@@ -13,13 +13,21 @@ import { useT } from "@/hooks/useT";
 import { useCocolight } from "@/hooks/useCocolight";
 import { SEARCH_QUERY_KEYS } from "@/modules/search/constants";
 
-import { GenericForm } from "@/modules/formEngine";
+import { GenericForm, configToDescriptor, formDescriptorToConfig } from "@/modules/formEngine";
 import { useUnsavedGuard } from "./useUnsavedGuard";
 import { ParentInfoReadonly } from "../components/profile-edit/fields";
 import { poiEquipementDescriptor } from "./poiEquipement.descriptor";
+import { buildPipelineDefaults, buildPipelinePayload } from "./jsonFormSubmit";
 import { PoiEquipementDoublonsSlot } from "./PoiEquipementDoublonsSlot";
-import { resolvePoiEquipementScope, createEmptyDefaults, buildEditDefaults, buildEditPoiPayload,
+import { resolvePoiEquipementScope, createEmptyDefaults,
   type PoiEquipementSubmitPayload, type PoiEquipementEditPayload } from "../components/add/poiEquipement";
+
+// La modale est CONFIG-DRIVEN : rendu + READ (édition) + WRITE (édition) sont sourcés d'une JsonFormConfig
+// dérivée de poiEquipementDescriptor (le descripteur round-trip à l'identique ; les helpers pipeline du host
+// sont prouvés byte-égaux à buildEditDefaults/buildEditPoiPayload — cf. poiEquipement.host.test). Les
+// mutations costum (scope/image/invalidation via useAddPoi/useUpdatePoi) et les slots restent inchangés.
+const POI_EQUIPEMENT_CONFIG = formDescriptorToConfig(poiEquipementDescriptor);
+const KEEP_KEYS = (l: unknown) => (typeof l === "string" ? l : ((l as { fr?: string })?.fr ?? "")); // labels = clés i18n → GenericForm les résout
 import { useAddPoi, useUpdatePoi } from "../hooks/useAddMutations";
 import type { AddPoiFormData } from "../schemaForm";
 
@@ -40,8 +48,13 @@ export function PoiEquipementGenericModal({ open, onOpenChange, mode = "add", po
 
   const scope = useMemo(() => resolvePoiEquipementScope(entity), [entity]);
   const listsOptions = (entity?.serverData?.lists as Record<string, string[]> | undefined) ?? {};
+  // Descripteur de RENDU issu de la config (round-trip identique → rendu inchangé). Labels gardés = clés.
+  const descriptor = useMemo(() => configToDescriptor(POI_EQUIPEMENT_CONFIG, { tLoc: KEEP_KEYS }), []);
+  // READ : édition → seedEntity via la config (== buildEditDefaults) ; création → socle scope-aware.
   const defaults = useMemo<AddPoiFormData>(
-    () => (isEdit ? buildEditDefaults(poi as Poi) : createEmptyDefaults(scope)),
+    () => (isEdit
+      ? buildPipelineDefaults(POI_EQUIPEMENT_CONFIG, poi as Poi, { baseDefaults: () => createEmptyDefaults(scope) as unknown as Record<string, unknown> }) as unknown as AddPoiFormData
+      : createEmptyDefaults(scope)),
     [isEdit, poi, scope],
   );
   const defaultValues = defaults as unknown as FieldValues;
@@ -71,7 +84,7 @@ export function PoiEquipementGenericModal({ open, onOpenChange, mode = "add", po
       // Le SDK diffe (n'envoie que le modifié), le backend efface ($unset). Plus de baseline/delta client.
       // L'image (_imageFile/_imageDeleted, hors descripteur) est repassée à part.
       const payload = {
-        ...buildEditPoiPayload(cleaned),
+        ...buildPipelinePayload(POI_EQUIPEMENT_CONFIG, cleaned as Record<string, unknown>, { emitEmpty: true }),
         _imageFile: (values._imageFile as File | null | undefined) ?? undefined,
         _imageDeleted: Boolean(values._imageDeleted),
       } as PoiEquipementEditPayload;
@@ -98,7 +111,7 @@ export function PoiEquipementGenericModal({ open, onOpenChange, mode = "add", po
           <DialogDescription>{isEdit ? tr("AddPoiEquipement.description.edit") : tr("AddPoiEquipement.description.add")}</DialogDescription>
         </DialogHeader>
         <GenericForm
-            descriptor={poiEquipementDescriptor}
+            descriptor={descriptor}
             defaultValues={defaultValues}
             onSubmit={onSubmit}
             onInvalid={() => toast.error(tr("AddPoiEquipement.validationFailed"))}
