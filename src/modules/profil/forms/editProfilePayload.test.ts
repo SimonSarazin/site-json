@@ -81,4 +81,23 @@ describe("buildProfileUpdateData", () => {
     const out = buildProfileUpdateData("citoyens", { name: "x", slug: "x", addressCountry: "FR", addressLocality: "Paris" });
     expect(out.address).toBe("");
   });
+
+  it("geo/geoPosition : posé + localityId → émis (lat/lng STRING, coords number) ; pas de localityId → clear ''", () => {
+    const withGeo = buildProfileUpdateData("organizations", {
+      name: "O", slug: "o", ...FULL_ADDRESS,
+      geo: { "@type": "GeoCoordinates", latitude: 48.85, longitude: 2.35 },
+      geoPosition: { type: "Point", coordinates: [2.35, 48.85] },
+    });
+    expect(withGeo.geo).toEqual({ "@type": "GeoCoordinates", latitude: "48.85", longitude: "2.35" });
+    expect(withGeo.geoPosition).toEqual({ type: "Point", coordinates: [2.35, 48.85] });
+
+    // pas de localityId (adresse absente/effacée) → geo/geoPosition effacés (parité du couplage adresse)
+    const noLoc = buildProfileUpdateData("organizations", { name: "O", slug: "o" });
+    expect(noLoc.geo).toBe("");
+    expect(noLoc.geoPosition).toBe("");
+
+    // geo NON posé mais adresse présente (no-touch) → OMIS (préservé)
+    const noTouch = buildProfileUpdateData("organizations", { name: "O", slug: "o", ...FULL_ADDRESS });
+    expect("geo" in noTouch).toBe(false);
+  });
 });

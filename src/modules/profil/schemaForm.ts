@@ -42,8 +42,20 @@ const socialFieldsSchema = z.object({
   signal: urlOrEmptySchema.optional(),
 });
 
-// Localisation (14 champs, tous optionnels). EXPORTÉ : réutilisé par tiersLieuxSchema (sinon
-// `level1..4`/`codeInsee` posés par EditLocationTab seraient STRIPÉS par le zodResolver → perte SIG).
+// Coordonnées géographiques (geo = GeoCoordinates ; geoPosition = GeoJSON Point). Définies AVANT
+// localityFieldsSchema qui les réutilise. EXPORTÉ : réutilisé aussi par tiersLieuxSchema.
+export const geoSchema = z.object({
+  latitude: z.union([z.string(), z.number()]),
+  longitude: z.union([z.string(), z.number()]),
+});
+export const geoPositionSchema = z.object({
+  type: z.literal("Point"),
+  coordinates: z.array(z.number()).length(2),
+});
+
+// Localisation : 14 champs SIG + geo/geoPosition (posés par EditLocationTab AVEC l'adresse). EXPORTÉ +
+// PARTAGÉ : tout schéma montant le composant adresse le spread → geo/level1..4/codeInsee survivent au
+// zodResolver (sinon STRIPÉS → perte). Écriture liée à localityId : cf. forms/geoTransforms.
 export const localityFieldsSchema = z.object({
   addressCountry: z.string().optional(),
   streetAddress: z.string().optional(),
@@ -59,24 +71,13 @@ export const localityFieldsSchema = z.object({
   level4: z.string().optional(),
   level4Name: z.string().optional(),
   codeInsee: z.string().optional(),
+  geo: geoSchema.optional(),
+  geoPosition: geoPositionSchema.optional(),
 });
 
 // ============================================================================
 // SCHÉMAS PARTAGÉS POUR ADD_BLOCKS
 // ============================================================================
-
-// Schéma pour les coordonnées géographiques. EXPORTÉ : réutilisé par tiersLieuxSchema (sinon geo/geoPosition
-// posés par EditLocationTab seraient STRIPÉS par le zodResolver → coordonnées jamais envoyées).
-export const geoSchema = z.object({
-  latitude: z.union([z.string(), z.number()]),
-  longitude: z.union([z.string(), z.number()]),
-});
-
-// Schéma pour la position GeoJSON
-export const geoPositionSchema = z.object({
-  type: z.literal("Point"),
-  coordinates: z.array(z.number()).length(2),
-});
 
 // Schéma parent (référence entité parente)
 const parentSchema = z.record(

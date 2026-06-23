@@ -16,6 +16,7 @@ import { formatISO } from "date-fns";
 import type { FieldDescriptor, FormDescriptor, FormValues } from "@/modules/formEngine";
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
 import { seedEntity, buildPayload, type FormSpec, type EntityLike } from "@/modules/formEngine/engine/entityForm";
+import "./geoTransforms"; // enregistre geo:write / geoPosition:write (partagés, liés à localityId)
 
 type Data = Record<string, unknown>;
 
@@ -124,6 +125,12 @@ const SOCIAL_GROUP = { social: { serverKey: "socialNetwork", read: "pf:socialRea
 const ADDR_MEMBERS = Object.fromEntries(ADDRESS_KEYS.map((k) => [k, f(k, undefined, undefined, "string", { group: "address" })]));
 // Social : membres du groupe `groupReadOnly` → READ décompose l'objet, WRITE émet chaque clé à plat (pf:orEmpty).
 const SOCIAL_FIELDS = Object.fromEntries(SOCIAL_KEYS.map((k) => [k, f(k, undefined, "pf:orEmpty", "string", { group: "social" })]));
+// geo/geoPosition : writeOnly (posés par EditLocationTab AVEC l'adresse), émis via les transforms PARTAGÉS
+// liés à localityId (cf. forms/geoTransforms) → posé→émis, non touché→omis/préservé, adresse effacée→clear.
+const GEO_FIELDS: Record<string, FieldDescriptor> = {
+  geo: { name: "geo", type: "object", widget: "hidden", label: "geo", writeOnly: true, write: "geo:write" },
+  geoPosition: { name: "geoPosition", type: "object", widget: "hidden", label: "geoPosition", writeOnly: true, write: "geoPosition:write" },
+};
 
 const base = (id: string, groups: Record<string, unknown>): Omit<FormDescriptor, "fields"> =>
   ({ id: `edit-${id}`, collection: "organizations", layout: { kind: "flat" }, sections: [], serializeGroups: groups as FormDescriptor["serializeGroups"] });
@@ -143,21 +150,21 @@ const PROFIL_DESCRIPTORS: Record<string, FormDescriptor> = {
     url: COMMON.url, email: COMMON.email,
     mobile: f("mobile", "pf:orEmpty", "pf:orEmpty"), fixe: f("fixe", "pf:orEmpty", "pf:orEmpty"),
     birthDate: f("birthDate", "pf:rdDateYMD", "pf:orEmpty"),
-    tags: COMMON.tags, ...ADDR_MEMBERS, ...SOCIAL_FIELDS,
+    tags: COMMON.tags, ...ADDR_MEMBERS, ...GEO_FIELDS, ...SOCIAL_FIELDS,
   } },
   organizations: { ...base("organizations", { ...ADDR_GROUP, ...SOCIAL_GROUP }), fields: {
     name: COMMON.name, slug: COMMON.slug, shortDescription: COMMON.shortDescription, description: COMMON.description,
     url: COMMON.url, email: COMMON.email,
     type: f("type", undefined, "pf:orUndef"),
     openingHours: f("openingHours", "pf:rdOpeningHours", "pf:openingHours", "array"),
-    tags: COMMON.tags, ...ADDR_MEMBERS, ...SOCIAL_FIELDS,
+    tags: COMMON.tags, ...ADDR_MEMBERS, ...GEO_FIELDS, ...SOCIAL_FIELDS,
   } },
   projects: { ...base("projects", { ...ADDR_GROUP, ...SOCIAL_GROUP }), fields: {
     name: COMMON.name, slug: COMMON.slug, shortDescription: COMMON.shortDescription, description: COMMON.description,
     url: COMMON.url, email: COMMON.email,
     avancement: f("avancement", undefined, "pf:orUndef"),
     parent: f("parent", "pf:rdRefOrUndef", "pf:entityRef", "object"),
-    tags: COMMON.tags, ...ADDR_MEMBERS, ...SOCIAL_FIELDS,
+    tags: COMMON.tags, ...ADDR_MEMBERS, ...GEO_FIELDS, ...SOCIAL_FIELDS,
   } },
   events: { ...base("events", ADDR_GROUP), fields: {
     name: COMMON.name, slug: COMMON.slug, shortDescription: COMMON.shortDescription,
@@ -171,13 +178,13 @@ const PROFIL_DESCRIPTORS: Record<string, FormDescriptor> = {
     public: f("public", "pf:rdPublic", undefined, "boolean", { readOnly: true }),
     tags: COMMON.tags,
     openingHours: f("openingHours", "pf:rdOpeningHours", "pf:openingHours", "array"),
-    ...ADDR_MEMBERS,
+    ...ADDR_MEMBERS, ...GEO_FIELDS,
   } },
   poi: { ...base("poi", ADDR_GROUP), fields: {
     name: COMMON.name, slug: COMMON.slug,
     description: COMMON.description, type: f("type", undefined, "pf:orUndef"),
     urls: f("urls", "pf:rdArr", undefined, "array", { readOnly: true }),
-    tags: COMMON.tags, ...ADDR_MEMBERS,
+    tags: COMMON.tags, ...ADDR_MEMBERS, ...GEO_FIELDS,
   } },
 };
 
