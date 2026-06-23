@@ -8,13 +8,18 @@ import { seedEntity, buildPayload, buildEditPayload, type FormSpec } from "@/mod
 // Imports DIRECTS de la couche config (PAS le barrel → pas de widgets/React tirés ici, l'util reste pur).
 import { formDescriptorToConfig } from "@/modules/formEngine/config/formDescriptorToConfig";
 import { configToDescriptor } from "@/modules/formEngine/config/configToDescriptor";
-import type { FormValues } from "@/modules/formEngine";
+import type { FormValues, JsonFormConfig } from "@/modules/formEngine";
 import { tiersLieuDescriptor } from "../forms/tiersLieu.descriptor";
 
 // CONFIG-DRIVEN : le SPEC tiers-lieu tourne sur le descripteur ISSU DE LA CONFIG (round-trip identique au
 // descripteur unifié → parité byte garantie). READ (seedEntity) ET WRITE (buildPayload/buildEditPayload)
 // passent donc par la config. Labels gardés = clés i18n (résolues par GenericForm au rendu).
-const TIERSLIEU_CONFIG = formDescriptorToConfig(tiersLieuDescriptor);
+// Le contexte costum CREATE (type/preferences) est porté par `submit.extraData` — DONNÉE de config appliquée
+// génériquement au create (cf. buildTiersLieuxPayload), PLUS aucune constante en dur dans le code.
+const TIERSLIEU_CONFIG: JsonFormConfig = {
+  ...formDescriptorToConfig(tiersLieuDescriptor),
+  submit: { mode: "sdk", extraData: { type: "NGO", preferences: { isOpenData: true, isOpenEdition: true } } },
+};
 const KEEP_KEYS = (l: unknown) => (typeof l === "string" ? l : ((l as { fr?: string })?.fr ?? ""));
 /** Descripteur tiers-lieu dérivé de la config (= tiersLieuDescriptor round-trip). Rendu par la modale. */
 export const tiersLieuConfigDescriptor = configToDescriptor(TIERSLIEU_CONFIG, { tLoc: KEEP_KEYS });
@@ -299,15 +304,18 @@ export function buildTiersLieuxPayload(
     : buildPayload(TIERSLIEU_SPEC, data as unknown as FormValues)) as Record<string, unknown>;
 
   if (options.costum) {
-    payload.type = "NGO";
-    payload.preferences = { isOpenData: true, isOpenEdition: true };
-    // `role:"admin"` et `mainTag` NE sont PLUS posés ici : redondants avec les PRESETS costum
-    // `{role:"admin", mainTag:"TiersLieux"}` que la lib injecte d'office via `me.costum(slug)`
-    // (CostumScope.create = `{...presets, ...data}`). `role` est de plus inerte côté serveur
-    // (l'admin réel = links.members.isAdmin). Le CHAMP `mainTag` n'a AUCUN effet observatoire
-    // (les filtres lisent `tags`, jamais le champ) → seul le merge `tags` ci-dessous compte.
-    // NB : le contexte costum (source / costumSlug / costumId / costumType) est aussi injecté par
-    // la lib ; le backend pose `source` au save. cf. useAddTiersLieu.
+    // Contexte costum CREATE = DONNÉES de config (`TIERSLIEU_CONFIG.submit.extraData`), appliquées
+    // génériquement (même mécanisme que buildGenericPayload) → AUCUNE constante en dur ici. Les clés de
+    // contexte costum (costum*) sont injectées par la lib (`me.costum(slug)`), jamais par le payload.
+    for (const [k, v] of Object.entries(TIERSLIEU_CONFIG.submit?.extraData ?? {})) {
+      if (k.startsWith("costum")) continue;
+      payload[k] = v;
+    }
+    // `role:"admin"` et le CHAMP `mainTag` NE sont PAS posés : presets costum de la lib (`me.costum(slug)`
+    // → `{role:"admin", mainTag:"TiersLieux"}`, CostumScope.create = `{...presets, ...data}`). `role` est
+    // inerte côté serveur (admin réel = links.members.isAdmin) ; le CHAMP `mainTag` n'a aucun effet
+    // observatoire (les filtres lisent `tags`) → seul le merge `tags` ci-dessous compte. source/costumSlug/
+    // costumId/costumType aussi injectés par la lib ; le backend pose `source` au save. cf. useAddTiersLieu.
   }
 
   // Merge tags : `costum.mainTag` + `costum.compagnon` (auto) + `addTags` (manuel)
