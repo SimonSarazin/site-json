@@ -9,7 +9,6 @@ import type {
 } from "../schemaForm";
 import { useNavigate } from "react-router";
 import {
-  transformFormDataWithAddress,
   buildParentReference,
   buildOrganizerReference,
 } from "./mutationUtils";
@@ -17,6 +16,7 @@ import { buildTiersLieuxPayload } from "../utils/tiersLieuxMapping";
 import { buildProfileUpdateData } from "../forms/editProfilePayload";
 import type { TiersLieuxSubmitPayload } from "../components/add/TiersLieuxForm";
 import type { PoiEquipementSubmitPayload, PoiEquipementEditPayload } from "../components/add/poiEquipement";
+import { buildAddPoiPayload } from "../components/add/poiEquipement";
 import { submitEntityEdit } from "./submitEntityEdit";
 import { useSite } from "@/hooks/useSite";
 import { getSlug } from "@/lib/constant/common";
@@ -247,16 +247,12 @@ export function useAddPoi(
       // on l'exclut du payload (sinon le DraftProxy costum le rejetterait comme champ inconnu).
       const { _imageFile, _imageDeleted: _ignoredImageDeleted, ...formData } = data;
 
-      // Transformer les données avec l'objet address
-      const transformedData = transformFormDataWithAddress(formData);
-
-      // Ajouter le parent si on crée depuis une entité parente. L'image est posée
-      // dans le draft (`profil_avatar`) : `save()` la route vers le bloc PROFIL_IMAGE
-      // (→ `updateImageProfil`) après création (`Poi.ADD_BLOCKS` : ADD_POI fixe l'id
-      // avant le bloc image) — même idiome que l'avatar du header, un seul aller-retour.
+      // Payload via le PIPELINE (buildAddPoiPayload = même descripteur que l'édition : adresse imbriquée,
+      // geo coercé, champs équipement typés). L'image est posée dans le draft (`profil_avatar`) : `save()`
+      // la route vers le bloc PROFIL_IMAGE après création. parent (sous-création) + extraFields costum ajoutés.
       const parent = buildParentReference(entity);
       const poiData = {
-        ...transformedData,
+        ...buildAddPoiPayload(formData as unknown as AddPoiFormData),
         ...(parent ? { parent } : {}),
         ...(extraFields ?? {}),
         ...(_imageFile ? { profil_avatar: _imageFile } : {}),

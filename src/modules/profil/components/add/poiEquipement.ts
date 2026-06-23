@@ -10,7 +10,7 @@ import type { AddPoiFormData } from "../../schemaForm";
 // Helpers de pipeline partagés (imports DIRECTS, pas le barrel formEngine → util pur testable sans
 // tirer les widgets/composants). cf. doc/refactor-field-treatment.md.
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
-import { seedEntity, buildEditPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
+import { seedEntity, buildPayload, buildEditPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
 import "../../forms/geoTransforms"; // enregistre geo:write / geoPosition:write (partagés)
 import type { FieldDescriptor, FormDescriptor, FormValues } from "@/modules/formEngine";
 import { buildAddressFromForm } from "../../hooks/mutationUtils";
@@ -358,6 +358,15 @@ const POI_SPEC: FormSpec = { descriptor: POI_DESCRIPTOR, baseDefaults: () => cre
 /** Valeurs de form depuis l'entité (édition) OU défauts (création) — pipeline générique `seedEntity`. */
 export const buildEditDefaults = (poi: Poi | null | undefined): AddPoiFormData =>
   seedEntity(POI_SPEC, poi) as unknown as AddPoiFormData;
+
+/**
+ * Payload de CRÉATION POI (pipeline, omit-empty) : adresse imbriquée, geo coercé, champs équipement typés
+ * (poi:toString/toNumber/toBoolean), via le MÊME descripteur que l'édition. Remplace transformFormDataWithAddress
+ * au create → cohérent avec buildEditPoiPayload. parent/extraFields/image gérés par l'appelant (useAddPoi).
+ */
+export function buildAddPoiPayload(data: AddPoiFormData): Record<string, unknown> {
+  return buildPayload(POI_SPEC, data as unknown as FormValues) as Record<string, unknown>;
+}
 
 /**
  * Payload d'ÉDITION POI (pattern unifié S6) : payload COMPLET (vides typés), à `Object.assign(poi.data)` +
