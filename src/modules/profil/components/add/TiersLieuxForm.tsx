@@ -169,12 +169,16 @@ export function getDefaultTiersLieuxValues(): TiersLieuxFormData {
     logo: "",
     photos: [],
     socialLinks: [],
+    // Aucun jour pré-coché : la création démarre vide (opt-in), et `parseOpeningHours` réutilise ces
+    // défauts comme base/fallback → un tiers-lieu SANS horaires (jamais saisis ou effacés) s'affiche
+    // tout décoché (et non Lun–Ven, qui donnait l'illusion d'un effacement non pris). 08:00–18:00 =
+    // heures pré-remplies dès qu'on coche un jour.
     hours: {
-      monday: { enabled: true, start: "08:00", end: "18:00" },
-      tuesday: { enabled: true, start: "08:00", end: "18:00" },
-      wednesday: { enabled: true, start: "08:00", end: "18:00" },
-      thursday: { enabled: true, start: "08:00", end: "18:00" },
-      friday: { enabled: true, start: "08:00", end: "18:00" },
+      monday: { enabled: false, start: "08:00", end: "18:00" },
+      tuesday: { enabled: false, start: "08:00", end: "18:00" },
+      wednesday: { enabled: false, start: "08:00", end: "18:00" },
+      thursday: { enabled: false, start: "08:00", end: "18:00" },
+      friday: { enabled: false, start: "08:00", end: "18:00" },
       saturday: { enabled: false, start: "08:00", end: "18:00" },
       sunday: { enabled: false, start: "08:00", end: "18:00" },
     },

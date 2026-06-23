@@ -33,8 +33,15 @@ describe("buildOpeningHoursPayload", () => {
     expect(payload).toHaveLength(7);
   });
 
-  it("encode lundi ouvert en {dayOfWeek: 'Mo', hours: [...]}", () => {
+  it("défaut = tous les jours FERMÉS (pas de présélection Lun–Ven)", () => {
+    // Régression : la factory ne pré-coche plus aucun jour (création opt-in ; édition d'un vide
+    // affiche vide via parseOpeningHours qui réutilise ces défauts). cf. TiersLieuxForm.getDefaultTiersLieuxValues.
     const hours = getDefaultTiersLieuxValues().hours;
+    expect(Object.values(hours).every((d) => d.enabled === false)).toBe(true);
+  });
+
+  it("encode lundi ouvert en {dayOfWeek: 'Mo', hours: [...]}", () => {
+    const hours = { ...getDefaultTiersLieuxValues().hours, monday: { enabled: true, start: "08:00", end: "18:00" } };
     const payload = buildOpeningHoursPayload(hours);
     expect(payload[0]).toEqual({
       dayOfWeek: "Mo",
@@ -122,7 +129,8 @@ describe("buildTiersLieuxPayload", () => {
   });
 
   it("inclut openingHours si au moins un jour ouvert", () => {
-    const data = { ...getDefaultTiersLieuxValues(), name: "TL", email: "x@y.fr" };
+    const base = getDefaultTiersLieuxValues();
+    const data = { ...base, name: "TL", email: "x@y.fr", hours: { ...base.hours, monday: { enabled: true, start: "08:00", end: "18:00" } } };
     const payload = buildTiersLieuxPayload(data);
     expect(payload.openingHours).toBeDefined();
     expect(Array.isArray(payload.openingHours)).toBe(true);
