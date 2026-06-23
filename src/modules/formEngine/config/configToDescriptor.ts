@@ -69,6 +69,7 @@ export function configToDescriptor(config: JsonFormConfig, opts: ConfigToDescrip
       atomicGroup: f.atomicGroup,
       writeOnly: f.writeOnly,
       readOnly: f.readOnly,
+      renderOnly: f.renderOnly,
       clear: f.clear,
     };
   }

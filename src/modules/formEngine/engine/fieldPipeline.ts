@@ -51,7 +51,7 @@ export function seedFromEntity(descriptor: FormDescriptor, serverData: FormValue
   }
   // 2. Champs simples (hors groupe) : serverData[path ?? name] + read, puis DÉFAUT si vide.
   for (const field of Object.values(descriptor.fields)) {
-    if (field.group || field.writeOnly) continue; // groupe → étape 1 ; writeOnly → jamais relu
+    if (field.group || field.writeOnly || field.renderOnly) continue; // groupe → étape 1 ; writeOnly/renderOnly → jamais relu
     const raw = serverData[storeKey(field)];
     let v = field.read ? applyTransform(field.read, raw, serverData) : raw;
     // Champ vide côté serveur → `field.default` (parité `buildEditDefaults` : `toX(server) || defaults.X`).
@@ -82,7 +82,7 @@ export function valuesToPayload(
   const groups = descriptor.serializeGroups ?? {};
   const payload: FormValues = {};
   for (const field of Object.values(descriptor.fields)) {
-    if (field.readOnly) continue; // jamais émis au payload
+    if (field.readOnly || field.renderOnly) continue; // readOnly/renderOnly → jamais émis au payload
     // Membre de groupe : recomposé par le groupe — SAUF si le groupe est groupReadOnly (alors émis ici).
     if (field.group && !groups[field.group]?.groupReadOnly) continue;
     let v = field.write ? applyTransform(field.write, values[field.name], values) : values[field.name];
