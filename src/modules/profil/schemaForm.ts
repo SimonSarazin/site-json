@@ -42,8 +42,9 @@ const socialFieldsSchema = z.object({
   signal: urlOrEmptySchema.optional(),
 });
 
-// Localisation (14 champs, tous optionnels)
-const localityFieldsSchema = z.object({
+// Localisation (14 champs, tous optionnels). EXPORTÉ : réutilisé par tiersLieuxSchema (sinon
+// `level1..4`/`codeInsee` posés par EditLocationTab seraient STRIPÉS par le zodResolver → perte SIG).
+export const localityFieldsSchema = z.object({
   addressCountry: z.string().optional(),
   streetAddress: z.string().optional(),
   postalCode: z.string().optional(),

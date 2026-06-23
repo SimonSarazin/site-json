@@ -343,6 +343,43 @@ describe("mapEntityToTiersLieuxValues", () => {
   });
 });
 
+describe("adresse SIG complète (level1..4/codeInsee)", () => {
+  // Régression : tiersLieuxSchema ne déclarait que 5 champs d'adresse → le zodResolver STRIPAIT
+  // level1..4/codeInsee posés par EditLocationTab → perte SIG au save. Fix : 14 champs + tl:addressRead.
+  const fullAddress = {
+    addressCountry: "FR", addressLocality: "Saint-Pierre", localityId: "loc_974",
+    postalCode: "97410", streetAddress: "12 Allée des Aubépines",
+    codeInsee: "97416",
+    level1: "REU", level1Name: "La Réunion",
+    level2: "974", level2Name: "La Réunion",
+    level3: "9742", level3Name: "Arrondissement",
+    level4: "97416", level4Name: "Saint-Pierre",
+  };
+
+  it("READ : seed les 14 champs depuis serverData.address (plus de strip)", () => {
+    const result = mapEntityToTiersLieuxValues({ serverData: { address: fullAddress } });
+    expect(result.codeInsee).toBe("97416");
+    expect(result.level1).toBe("REU");
+    expect(result.level1Name).toBe("La Réunion");
+    expect(result.level2).toBe("974");
+    expect(result.level3Name).toBe("Arrondissement");
+    expect(result.level4).toBe("97416");
+  });
+
+  it("round-trip : entity → form → payload reconstruit l'address SIG COMPLÈTE", () => {
+    const form = mapEntityToTiersLieuxValues({ serverData: { address: fullAddress } });
+    const payload = buildTiersLieuxPayload(form) as { address: Record<string, unknown> };
+    expect(payload.address).toMatchObject({
+      "@type": "PostalAddress",
+      addressCountry: "FR", addressLocality: "Saint-Pierre", localityId: "loc_974",
+      postalCode: "97410", streetAddress: "12 Allée des Aubépines",
+      codeInsee: "97416",
+      level1: "REU", level1Name: "La Réunion",
+      level2: "974", level3: "9742", level4: "97416", level4Name: "Saint-Pierre",
+    });
+  });
+});
+
 describe("aller-retour entity ↔ form", () => {
   it("entity → form → payload : champs name/email/family préservés", () => {
     const entity: EntityLike = {

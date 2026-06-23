@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/select";
 import { EditLocationTab } from "../profile-edit/EditLocationTab";
 import { ImageUploadField } from "../profile-edit/fields";
+import { localityFieldsSchema } from "../../schemaForm";
 
 const dayHoursSchema = z.object({
   enabled: z.boolean().default(false),
@@ -52,11 +53,9 @@ export const tiersLieuxSchema = z.object({
   familyOther: z.string().optional(),
   surfaceBuilt: z.string().optional(),
   surfaceOutdoor: z.string().optional(),
-  addressCountry: z.string().optional(),
-  addressLocality: z.string().optional(),
-  postalCode: z.string().optional(),
-  streetAddress: z.string().optional(),
-  localityId: z.string().optional(),
+  // Adresse : 14 champs SIG (dont level1..4/codeInsee posés par EditLocationTab). Réutilise le schéma
+  // partagé des autres entités — sinon le zodResolver STRIPE les niveaux non déclarés (perte SIG au save).
+  ...localityFieldsSchema.shape,
   logo: z.string().optional(),
   photos: z.array(z.string()).default([]),
   socialLinks: z.array(socialLinkSchema).optional(),
@@ -161,6 +160,8 @@ export function getDefaultTiersLieuxValues(): TiersLieuxFormData {
     postalCode: "",
     streetAddress: "",
     localityId: "",
+    level1: "", level1Name: "", level2: "", level2Name: "",
+    level3: "", level3Name: "", level4: "", level4Name: "", codeInsee: "",
     logo: "",
     photos: [],
     socialLinks: [],
