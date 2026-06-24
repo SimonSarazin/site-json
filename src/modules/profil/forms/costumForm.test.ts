@@ -4,7 +4,7 @@ import { costumFormConfig, type CostumCapableMe } from "./costumForm";
 
 const desc: CostumFormDescriptor = {
   slug: "lakou", collection: "organizations", costumId: "c", costumType: "organizations",
-  add: true, createLabel: "Créer", presets: { mainTag: "X" },
+  add: true, createLabel: "Créer", presets: { mainTag: "X" }, hidden: [],
   fields: [
     { name: "name", path: "name", type: "string", multiple: false, hidden: false },
     { name: "theme", path: "theme", type: "array", multiple: true, enum: ["A", "B"], hidden: false },

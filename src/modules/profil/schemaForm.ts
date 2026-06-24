@@ -234,11 +234,7 @@ export const eventProfileSchema = z.object({
   // SLUG
   slug: slugSchema,
 
-  // GEO (optionnel, format objet) - spécifique à Event
-  geo: geoSchema.optional(),
-  geoPosition: geoPositionSchema.optional(),
-
-  // LOCALITY
+  // LOCALITY (inclut geo/geoPosition, cf. localityFieldsSchema)
   ...localityFieldsSchema.shape,
 });
 // Note: Les validations conditionnelles (organizer requis, startDate/endDate requis si !recurrency,
@@ -288,11 +284,7 @@ export const addOrganizationSchema = z.object({
   url: urlOrEmptySchema.optional(),
   preferences: preferencesSchema.optional(),
 
-  // GEO (spécifique aux add schemas)
-  geo: geoSchema.optional(),
-  geoPosition: geoPositionSchema.optional(),
-
-  // LOCALITY
+  // LOCALITY (inclut geo/geoPosition, cf. localityFieldsSchema)
   ...localityFieldsSchema.shape,
 });
 
@@ -319,11 +311,7 @@ export const addProjectSchema = z.object({
     crowdfunding: z.boolean().default(true),
   }).optional(),
 
-  // GEO (spécifique aux add schemas)
-  geo: geoSchema.optional(),
-  geoPosition: geoPositionSchema.optional(),
-
-  // LOCALITY
+  // LOCALITY (inclut geo/geoPosition, cf. localityFieldsSchema)
   ...localityFieldsSchema.shape,
 });
 
@@ -384,11 +372,7 @@ export const addPoiSchema = z.object({
   equip_utilisateur: z.array(z.string()).optional(),
   inst_nom: z.string().optional(),
 
-  // GEO (spécifique aux add schemas)
-  geo: geoSchema.optional(),
-  geoPosition: geoPositionSchema.optional(),
-
-  // LOCALITY
+  // LOCALITY (inclut geo/geoPosition, cf. localityFieldsSchema)
   ...localityFieldsSchema.shape,
 });
 
