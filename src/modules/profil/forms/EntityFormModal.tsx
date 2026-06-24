@@ -44,8 +44,13 @@ export interface EntityModalCtx {
 
 /** Config déclarative d'une entité/costum — élimine sa modale spécifique. */
 export interface EntityModalConfig {
-  /** Descripteur UNIFIÉ (render + read/write). Passé par la config au round-trip → rendu config-driven. */
-  descriptor: FormDescriptor;
+  /** Descripteur UNIFIÉ (render + read/write), ou résolveur runtime (ex. event : factory selon le parent ;
+   *  edit profil : EDIT_DESCRIPTORS[entityType]). Passé au round-trip → rendu config-driven. */
+  descriptor: FormDescriptor | ((ctx: EntityModalCtx) => FormDescriptor);
+  /** widgetProps runtime par champ (ex. filtre du finder `parent` event). Fusionnés au fieldProps image. */
+  buildFieldProps?: (ctx: EntityModalCtx) => Record<string, Record<string, unknown>> | undefined;
+  /** effet de bord après submit réussi (ex. reload au changement de slug en édition profil). */
+  afterSubmit?: (ctx: EntityModalCtx, values: FieldValues) => void;
   // ── chrome ──
   title: { add: string; edit: string };
   description?: { add?: string; edit?: string };
@@ -56,8 +61,8 @@ export interface EntityModalConfig {
   validationFailedKey?: string;
   /** libellés de navigation (wizard) — reçoit `t`. */
   texts?: (t: (k: string, ...a: unknown[]) => string) => { next: string; previous: string; cancel: string; stepLabel?: (i: number, n: number) => string };
-  // ── validation externe optionnelle (ex. getProfileSchema) ──
-  getSchema?: () => z.ZodTypeAny;
+  // ── validation externe optionnelle (ex. getProfileSchema(entityType)) ──
+  getSchema?: (ctx: EntityModalCtx) => z.ZodTypeAny;
   // ── read ──
   buildDefaults: (ctx: EntityModalCtx) => FieldValues;
   // ── image ──
@@ -95,15 +100,21 @@ export function EntityFormModal({ config, open, onOpenChange, mode = "add", enti
   const scope = useMemo(() => config.resolveScope?.(carrier), [config, carrier]);
   const ctx: EntityModalCtx = { mode: effMode, entity: entity ?? null, parent: parent ?? null, scope, me, carrier, costum: siteConfig.costum };
 
-  const descriptor = useMemo(() => configToDescriptor(formDescriptorToConfig(config.descriptor), { tLoc: KEEP_KEYS }), [config]);
+  const rawDescriptor = typeof config.descriptor === "function" ? config.descriptor(ctx) : config.descriptor;
+  const descriptor = useMemo(() => configToDescriptor(formDescriptorToConfig(rawDescriptor), { tLoc: KEEP_KEYS }), [rawDescriptor]);
   const defaultValues = useMemo(() => config.buildDefaults(ctx), [config, effMode, entity, scope]); // eslint-disable-line react-hooks/exhaustive-deps
-  const schema = useMemo(() => config.getSchema?.(), [config]);
+  const schema = useMemo(() => config.getSchema?.(ctx), [config, effMode, entity]); // eslint-disable-line react-hooks/exhaustive-deps
   const listsOptions = config.listsFromCarrier ? ((carrier?.serverData?.lists as Record<string, string[]> | undefined) ?? {}) : undefined;
   const fieldProps = useMemo(() => {
-    if (!isEdit || !config.imageField || !config.imageExistingUrl || !entity) return undefined;
-    const url = config.imageExistingUrl(entity);
-    return url ? { [config.imageField]: { existingUrl: url } } : undefined;
-  }, [isEdit, entity, config]);
+    const fromConfig = config.buildFieldProps?.(ctx);
+    let image: Record<string, Record<string, unknown>> | undefined;
+    if (isEdit && config.imageField && config.imageExistingUrl && entity) {
+      const url = config.imageExistingUrl(entity);
+      if (url) image = { [config.imageField]: { existingUrl: url } };
+    }
+    if (!fromConfig && !image) return undefined;
+    return { ...fromConfig, ...image };
+  }, [isEdit, entity, config, parent, scope]); // eslint-disable-line react-hooks/exhaustive-deps
   const slots = useMemo(() => config.slots?.(ctx), [config, effMode, entity, parent, scope]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const mutation = useEntityMutation(config.buildSpec(ctx));
@@ -112,6 +123,7 @@ export function EntityFormModal({ config, open, onOpenChange, mode = "add", enti
   const onSubmit = async (values: FieldValues) => {
     const cleaned = config.cleanValues ? config.cleanValues(values) : values;
     await mutation.mutateAsync(cleaned as Record<string, unknown>);
+    config.afterSubmit?.(ctx, cleaned);
     onOpenChange(false);
   };
 

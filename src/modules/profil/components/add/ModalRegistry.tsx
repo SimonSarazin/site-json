@@ -11,10 +11,18 @@ export interface ModalProps {
 }
 
 const modalRegistry: Record<string, () => Promise<{ default: ComponentType<ModalProps> }>> = {
-  "add-organization": () => import("../../forms/AddEntityGenericModals").then(m => ({ default: m.AddOrganizationGenericModal })),
-  "add-project": () => import("../../forms/AddEntityGenericModals").then(m => ({ default: m.AddProjectGenericModal })),
-  "add-event": () => import("../../forms/AddEntityGenericModals").then(m => ({ default: m.AddEventGenericModal })),
-  "add-poi": () => import("../../forms/AddEntityGenericModals").then(m => ({ default: m.AddPoiGenericModal })),
+  "add-organization": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/configs/addStandard")]).then(([m, c]) => ({
+    default: (props: ModalProps) => <m.EntityFormModal config={c.addOrganizationConfig} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
+  })),
+  "add-project": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/configs/addStandard")]).then(([m, c]) => ({
+    default: (props: ModalProps) => <m.EntityFormModal config={c.addProjectConfig} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
+  })),
+  "add-event": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/configs/addStandard")]).then(([m, c]) => ({
+    default: (props: ModalProps) => <m.EntityFormModal config={c.addEventConfig} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
+  })),
+  "add-poi": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/configs/addStandard")]).then(([m, c]) => ({
+    default: (props: ModalProps) => <m.EntityFormModal config={c.addPoiConfig} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
+  })),
   "add-poi-equipement": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/configs/poiEquipement")]).then(([m, c]) => ({
     default: (props: ModalProps) => <m.EntityFormModal config={c.poiEquipementModalConfig} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
   })),
