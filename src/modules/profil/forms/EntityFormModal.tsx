@@ -20,6 +20,7 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { useSite } from "@/hooks/useSite";
 
 import { GenericForm, configToDescriptor, formDescriptorToConfig, type FormDescriptor } from "@/modules/formEngine";
+import "./registerWidgets"; // side-effect : enregistre les widgets DOMAINE (location/finder/tags/image/…) AVANT le 1er rendu
 import { useUnsavedGuard } from "./useUnsavedGuard";
 import { useEntityMutation, type EntityMutationSpec } from "../hooks/useEntityMutation";
 

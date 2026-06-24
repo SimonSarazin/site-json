@@ -3,7 +3,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { TranslatedFormMessage } from "./TranslatedFormMessage";
+import { FormMessage } from "../../components/FormMessage";
 
 interface FormFieldUrlListProps<T extends FieldValues> {
   control: Control<T>;
@@ -14,12 +14,13 @@ interface FormFieldUrlListProps<T extends FieldValues> {
   /** aria-label du bouton de suppression. */
   removeLabel: string;
   placeholder?: string;
+  /** Traduit les clés d'erreur `validation.*` (injecté par le registre = `p.t`). */
+  errorTranslate?: (key: string) => string;
 }
 
 /**
- * Liste d'URLs répétable pour un champ `string[]` : un `<input type="url">` par
- * entrée + ajout/suppression. Remplace un `FormFieldTags` inadapté pour des URLs
- * (pas de recherche de tags, validation/format URL natif).
+ * Liste d'URLs répétable pour un champ `string[]` GÉNÉRIQUE (formEngine, LEAF) : un `<input type="url">`
+ * par entrée + ajout/suppression. Message d'erreur via FormMessage injecté.
  */
 export function FormFieldUrlList<T extends FieldValues>({
   control,
@@ -28,6 +29,7 @@ export function FormFieldUrlList<T extends FieldValues>({
   addLabel,
   removeLabel,
   placeholder,
+  errorTranslate,
 }: FormFieldUrlListProps<T>) {
   return (
     <FormField
@@ -68,12 +70,10 @@ export function FormFieldUrlList<T extends FieldValues>({
                 {addLabel}
               </Button>
             </div>
-            <TranslatedFormMessage />
+            <FormMessage errorTranslate={errorTranslate} />
           </FormItem>
         );
       }}
     />
   );
 }
-
-export default FormFieldUrlList;

@@ -5,12 +5,12 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SelectObject } from "@/components/ui/select-objet";
 import { DatePickerInput } from "@/components/form/DatePickerInput";
-import { TranslatedFormMessage } from "./TranslatedFormMessage";
+import { FormMessage } from "../../components/FormMessage";
 
 /**
- * Champs de formulaire génériques (label déjà résolu passé en prop → réutilisables
- * et i18n-agnostiques : l'appelant fait `t(...)`). Factorisent les patterns
- * répétés des gros formulaires (input texte, switch, select, groupe de cases).
+ * Champs de formulaire GÉNÉRIQUES (formEngine, LEAF). Label déjà résolu passé en prop → i18n-agnostiques :
+ * l'appelant fait `t(...)`. Le message d'erreur est rendu par `FormMessage` avec la fonction `errorTranslate`
+ * injectée (le registre passe `p.t`). Aucun import de profil/SDK. cf. doc/moteur-formulaire-generique.md.
  */
 
 interface BaseFieldProps<T extends FieldValues> {
@@ -20,6 +20,8 @@ interface BaseFieldProps<T extends FieldValues> {
   label: string;
   required?: boolean;
   disabled?: boolean;
+  /** Traduit les clés d'erreur `validation.*` (injecté par le registre = `p.t`). */
+  errorTranslate?: (key: string) => string;
 }
 
 export function FormFieldText<T extends FieldValues>({
@@ -31,6 +33,7 @@ export function FormFieldText<T extends FieldValues>({
   type = "text",
   placeholder,
   hint,
+  errorTranslate,
 }: BaseFieldProps<T> & { type?: string; placeholder?: string; hint?: string }) {
   return (
     <FormField
@@ -57,7 +60,7 @@ export function FormFieldText<T extends FieldValues>({
             />
           </FormControl>
           {hint && <FormDescription>{hint}</FormDescription>}
-          <TranslatedFormMessage />
+          <FormMessage errorTranslate={errorTranslate} />
         </FormItem>
       )}
     />
@@ -76,6 +79,7 @@ export function FormFieldNumber<T extends FieldValues>({
   required,
   disabled,
   placeholder,
+  errorTranslate,
 }: BaseFieldProps<T> & { placeholder?: string }) {
   return (
     <FormField
@@ -110,14 +114,14 @@ export function FormFieldNumber<T extends FieldValues>({
               disabled={disabled}
             />
           </FormControl>
-          <TranslatedFormMessage />
+          <FormMessage errorTranslate={errorTranslate} />
         </FormItem>
       )}
     />
   );
 }
 
-/** Case à cocher unique (booléen) — label cliquable à droite (parité FormFieldPublic). */
+/** Case à cocher unique (booléen) — label cliquable à droite. */
 export function FormFieldCheckbox<T extends FieldValues>({
   control,
   name,
@@ -176,6 +180,7 @@ export function FormFieldSelectObject<T extends FieldValues>({
   placeholder,
   placeholderSearch,
   multiple = false,
+  errorTranslate,
 }: BaseFieldProps<T> & {
   options: readonly SelectOptionInput[];
   placeholder?: string;
@@ -213,7 +218,7 @@ export function FormFieldSelectObject<T extends FieldValues>({
               placeholderSearch={placeholderSearch}
             />
           </FormControl>
-          <TranslatedFormMessage />
+          <FormMessage errorTranslate={errorTranslate} />
         </FormItem>
       )}
     />
@@ -230,6 +235,7 @@ export function FormFieldDate<T extends FieldValues>({
   hint,
   startYear,
   endYear,
+  errorTranslate,
 }: BaseFieldProps<T> & { placeholder?: string; hint?: string; startYear?: number; endYear?: number }) {
   return (
     <FormField
@@ -254,7 +260,7 @@ export function FormFieldDate<T extends FieldValues>({
             />
           </FormControl>
           {hint && <FormDescription>{hint}</FormDescription>}
-          <TranslatedFormMessage />
+          <FormMessage errorTranslate={errorTranslate} />
         </FormItem>
       )}
     />
@@ -267,6 +273,7 @@ export function FormFieldCheckboxGroup<T extends FieldValues>({
   label,
   options,
   variant = "plain",
+  errorTranslate,
 }: BaseFieldProps<T> & {
   options: readonly SelectOptionInput[];
   /** `card` : chaque option = label bordé, cliquable pleine ligne (parité formulaires legacy). */
@@ -310,7 +317,7 @@ export function FormFieldCheckboxGroup<T extends FieldValues>({
                 })}
               </div>
             </FormControl>
-            <TranslatedFormMessage />
+            <FormMessage errorTranslate={errorTranslate} />
           </FormItem>
         );
       }}

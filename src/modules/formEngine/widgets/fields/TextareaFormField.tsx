@@ -1,67 +1,25 @@
 import type { Control, FieldPath, FieldValues } from "react-hook-form";
-import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormDescription,
-} from "@/components/ui/form";
+import { FormField, FormItem, FormLabel, FormControl, FormDescription } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import { TranslatedFormMessage } from "./TranslatedFormMessage";
+import { FormMessage } from "../../components/FormMessage";
 
 interface TextareaFormFieldProps<T extends FieldValues> {
-  /**
-   * Contrôle du formulaire react-hook-form
-   */
   control: Control<T>;
-  /**
-   * Nom du champ
-   */
   name: FieldPath<T>;
-  /**
-   * Label du champ
-   */
+  /** Label déjà traduit. */
   label: string;
-  /**
-   * Champ requis (affiche « * » à côté du label)
-   */
+  /** Champ requis (affiche « * »). */
   required?: boolean;
-  /**
-   * Placeholder
-   */
   placeholder?: string;
-  /**
-   * Description d'aide
-   */
   description?: string;
-  /**
-   * Nombre de lignes
-   */
   rows?: number;
-  /**
-   * Longueur maximale
-   */
   maxLength?: number;
-  /**
-   * Désactivé
-   */
   disabled?: boolean;
+  /** Traduit les clés d'erreur `validation.*` (injecté par le registre = `p.t`). */
+  errorTranslate?: (key: string) => string;
 }
 
-/**
- * Champ textarea de formulaire
- * Utilise les composants shadcn Form
- *
- * @example
- * <TextareaFormField
- *   control={form.control}
- *   name="description"
- *   label={t("ProfileEdit.fields.description.label")}
- *   placeholder={t("ProfileEdit.fields.description.placeholder")}
- *   rows={5}
- *   maxLength={500}
- * />
- */
+/** Champ textarea GÉNÉRIQUE (formEngine, LEAF). Composants shadcn Form ; message via FormMessage injecté. */
 export function TextareaFormField<T extends FieldValues>({
   control,
   name,
@@ -72,6 +30,7 @@ export function TextareaFormField<T extends FieldValues>({
   rows = 4,
   maxLength,
   disabled,
+  errorTranslate,
 }: TextareaFormFieldProps<T>) {
   return (
     <FormField
@@ -95,7 +54,7 @@ export function TextareaFormField<T extends FieldValues>({
             />
           </FormControl>
           {description && <FormDescription>{description}</FormDescription>}
-          <TranslatedFormMessage />
+          <FormMessage errorTranslate={errorTranslate} />
         </FormItem>
       )}
     />

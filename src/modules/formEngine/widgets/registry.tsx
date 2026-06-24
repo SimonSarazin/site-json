@@ -1,10 +1,11 @@
 /**
- * WidgetRegistry (§4 du design) : `WidgetKind` → composant de champ.
- * Extensible : `registerWidget(kind, comp)` pour ajouter un widget.
+ * WidgetRegistry (§4 du design) : `WidgetKind` → composant de champ. LEAF : ce module n'importe QUE des
+ * widgets GÉNÉRIQUES (locaux à formEngine) — AUCUN import de profil/SDK/app-métier.
  *
- * Les `FormField*` du repo prennent `control` (Controller interne) et doivent vivre sous
- * `<Form {...form}>` (FormProvider, assuré par GenericForm). Les composites contrôlés
- * (ImageUploadField, EditLocationTab, SelectParent) sont bridgés via le form/Controller.
+ * Les widgets DOMAINE (location/finder/eventDates/editSocial/editSchedule/tags/image/email/tel — couplés
+ * SDK/useCocolight/i18n profil) sont ENREGISTRÉS depuis profil via `registerWidget(kind, comp)` au démarrage
+ * (cf. `profil/forms/registerWidgets.tsx`, importé en side-effect par EntityFormModal). Le registre est donc
+ * rempli en 2 temps : génériques ici (au chargement), domaine injectés par profil (inversion de dépendance).
  */
 import { lazy, Suspense, type ReactElement } from "react";
 import type { Control, FieldPath, FieldValues, UseFormReturn } from "react-hook-form";
@@ -12,31 +13,12 @@ import type { Control, FieldPath, FieldValues, UseFormReturn } from "react-hook-
 import {
   FormFieldText, FormFieldNumber, FormFieldSwitch, FormFieldCheckbox, FormFieldDate,
   FormFieldSelectObject, FormFieldCheckboxGroup,
-} from "@/modules/profil/components/profile-edit/fields/genericFields";
-import { TextareaFormField } from "@/modules/profil/components/profile-edit/fields/TextareaFormField";
-import { IconFormField } from "@/modules/profil/components/profile-edit/fields/IconFormField";
-import { FormFieldTags } from "@/modules/profil/components/profile-edit/fields/FormFieldTags";
-import { FormFieldUrlList } from "@/modules/profil/components/profile-edit/fields/FormFieldUrlList";
-import { TranslatedFormMessage } from "@/modules/profil/components/profile-edit/fields/TranslatedFormMessage";
-import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
-import { Mail, Phone } from "lucide-react";
-import type { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
+} from "./fields/genericFields";
+import { TextareaFormField } from "./fields/TextareaFormField";
+import { FormFieldUrlList } from "./fields/FormFieldUrlList";
 import type { FieldArrayItem } from "./FieldArrayField";
 import type { FieldDescriptor } from "../types";
 
-/** Type de recherche du finder (aligné sur SelectParent / l'autocomplete lib). */
-type FinderSearchType = NonNullable<GlobalAutocompleteCostumData["searchType"]>[number];
-/** Valeur d'un finder = référence parent MongoDB `{ id: { type, name } }`. */
-type FinderValue = Record<string, { type: string; name?: string }>;
-
-// Widgets LOURDS chargés à la demande (code-split Vite) — EditLocationTab embarque l'API villes/rues,
-// SelectParent l'autocomplete, EditEventDatesTab les pickers date/horaires, etc. Rendus sous <Suspense>.
-const ImageUploadField = lazy(() => import("@/modules/profil/components/profile-edit/fields/ImageUploadField"));
-const EditLocationTab = lazy(() => import("@/modules/profil/components/profile-edit/EditLocationTab").then((m) => ({ default: m.EditLocationTab })));
-const SelectParent = lazy(() => import("@/modules/profil/components/profile-edit/fields/SelectParent").then((m) => ({ default: m.SelectParent })));
-const EditEventDatesTab = lazy(() => import("@/modules/profil/components/profile-edit/EditEventDatesTab").then((m) => ({ default: m.EditEventDatesTab })));
-const EditSocialTab = lazy(() => import("@/modules/profil/components/profile-edit/EditSocialTab").then((m) => ({ default: m.EditSocialTab })));
-const EditScheduleTab = lazy(() => import("@/modules/profil/components/profile-edit/EditScheduleTab").then((m) => ({ default: m.EditScheduleTab })));
 const OpeningHoursField = lazy(() => import("./OpeningHoursField"));
 const FieldArrayField = lazy(() => import("./FieldArrayField"));
 
@@ -46,148 +28,67 @@ const WidgetFallback = () => <div className="h-10 animate-pulse rounded-md bg-mu
 export interface WidgetProps {
   field: FieldDescriptor;
   form: UseFormReturn<FieldValues>;
-  /** Traduction (clé i18n → texte). */
+  /** Traduction (clé i18n → texte) — fournie par l'appelant (GenericForm `t`). */
   t: (key: string) => string;
-  /** Options résolues `{value,label}` (label déjà traduit) : depuis `field.enum` (value≠label) ou une
-   *  source runtime string[] (ex. serverData.lists → value=label). */
+  /** Options résolues `{value,label}` (label déjà traduit). */
   options: Array<{ value: string; label: string }>;
 }
 
-type WidgetComponent = (p: WidgetProps) => ReactElement | null;
+export type WidgetComponent = (p: WidgetProps) => ReactElement | null;
 
 const control = (form: UseFormReturn<FieldValues>) => form.control as Control<FieldValues>;
 const fname = (n: string) => n as FieldPath<FieldValues>;
-// Label vide (`field.label` falsy) → on ne passe rien (le composant masque alors le FormLabel) :
-// permet un sous-champ sans label propre sous un titre de GROUPE (ex. mois/année sous « Date d'ouverture »).
+// Label vide (`field.label` falsy) → on ne passe rien (le composant masque alors le FormLabel).
 const lbl = (p: WidgetProps) => (p.field.label ? p.t(p.field.label) : "");
 
 const registry: Partial<Record<string, WidgetComponent>> = {
   hidden: () => null,
 
-  // `widgetProps.inputType` (text|email|tel|url) → input HTML natif typé SANS icône (parité inputs plain).
+  // `widgetProps.inputType` (text|email|tel|url) → input HTML natif typé.
   text: (p) => <FormFieldText control={control(p.form)} name={fname(p.field.name)} label={lbl(p)}
     type={(p.field.widgetProps?.inputType as string) ?? "text"}
     required={p.field.required} placeholder={p.field.placeholder ? p.t(p.field.placeholder) : undefined}
-    hint={p.field.info ? p.t(p.field.info) : undefined} />,
-
-  email: (p) => <IconFormField control={control(p.form)} name={fname(p.field.name)} icon={Mail} type="email" label={lbl(p)}
-    placeholder={p.field.placeholder ? p.t(p.field.placeholder) : undefined} />,
-
-  tel: (p) => <IconFormField control={control(p.form)} name={fname(p.field.name)} icon={Phone} type="tel" label={lbl(p)} />,
+    hint={p.field.info ? p.t(p.field.info) : undefined} errorTranslate={p.t} />,
 
   textarea: (p) => <TextareaFormField control={control(p.form)} name={fname(p.field.name)} label={lbl(p)}
     required={p.field.required} placeholder={p.field.placeholder ? p.t(p.field.placeholder) : undefined}
     description={p.field.info ? p.t(p.field.info) : undefined}
-    rows={(p.field.widgetProps?.rows as number) ?? 4} />,
+    rows={(p.field.widgetProps?.rows as number) ?? 4} errorTranslate={p.t} />,
 
   number: (p) => <FormFieldNumber control={control(p.form)} name={fname(p.field.name)} label={lbl(p)} required={p.field.required}
-    placeholder={p.field.placeholder ? p.t(p.field.placeholder) : undefined} />,
+    placeholder={p.field.placeholder ? p.t(p.field.placeholder) : undefined} errorTranslate={p.t} />,
 
   switch: (p) => <FormFieldSwitch control={control(p.form)} name={fname(p.field.name)} label={lbl(p)} />,
 
   checkbox: (p) => <FormFieldCheckbox control={control(p.form)} name={fname(p.field.name)} label={lbl(p)} />,
 
   checkboxGroup: (p) => <FormFieldCheckboxGroup control={control(p.form)} name={fname(p.field.name)} label={lbl(p)} options={p.options}
-    variant={p.field.widgetProps?.variant as "plain" | "card" | undefined} />,
+    variant={p.field.widgetProps?.variant as "plain" | "card" | undefined} errorTranslate={p.t} />,
 
   select: (p) => <FormFieldSelectObject control={control(p.form)} name={fname(p.field.name)} label={lbl(p)}
     required={p.field.required} options={p.options}
     placeholder={p.field.placeholder ? p.t(p.field.placeholder) : undefined}
-    placeholderSearch={p.field.placeholderSearch ? p.t(p.field.placeholderSearch) : undefined} />,
+    placeholderSearch={p.field.placeholderSearch ? p.t(p.field.placeholderSearch) : undefined} errorTranslate={p.t} />,
 
   selectFromLists: (p) => <FormFieldSelectObject control={control(p.form)} name={fname(p.field.name)} label={lbl(p)}
     required={p.field.required} options={p.options}
     placeholder={p.field.placeholder ? p.t(p.field.placeholder) : undefined}
-    placeholderSearch={p.field.placeholderSearch ? p.t(p.field.placeholderSearch) : undefined} />,
+    placeholderSearch={p.field.placeholderSearch ? p.t(p.field.placeholderSearch) : undefined} errorTranslate={p.t} />,
 
   multiselect: (p) => <FormFieldSelectObject control={control(p.form)} name={fname(p.field.name)} label={lbl(p)}
     required={p.field.required} multiple options={p.options}
     placeholder={p.field.placeholder ? p.t(p.field.placeholder) : undefined}
-    placeholderSearch={p.field.placeholderSearch ? p.t(p.field.placeholderSearch) : undefined} />,
-
-  tags: (p) => <FormFieldTags control={control(p.form)} name={fname(p.field.name)} label={lbl(p)}
-    searchable={(p.field.widgetProps?.searchable as boolean) ?? true}
-    extendedTexts={(p.field.widgetProps?.extendedTexts as boolean) ?? false} />,
+    placeholderSearch={p.field.placeholderSearch ? p.t(p.field.placeholderSearch) : undefined} errorTranslate={p.t} />,
 
   date: (p) => <FormFieldDate control={control(p.form)} name={fname(p.field.name)} label={lbl(p)} required={p.field.required}
     placeholder={p.field.placeholder ? p.t(p.field.placeholder) : undefined}
     hint={p.field.info ? p.t(p.field.info) : undefined}
     startYear={p.field.widgetProps?.startYear as number | undefined}
-    endYear={p.field.widgetProps?.endYear as number | undefined} />,
+    endYear={p.field.widgetProps?.endYear as number | undefined} errorTranslate={p.t} />,
 
   urlList: (p) => <FormFieldUrlList control={control(p.form)} name={fname(p.field.name)} label={lbl(p)}
     addLabel={p.t((p.field.widgetProps?.addLabel as string) ?? "common.add")}
-    removeLabel={p.t((p.field.widgetProps?.removeLabel as string) ?? "common.remove")} />,
-
-  image: (p) => (
-    <Suspense fallback={<WidgetFallback />}>
-      <FormField control={control(p.form)} name={fname(p.field.name)} render={({ field }) => (
-        <ImageUploadField
-          value={(field.value as File | null) ?? null}
-          onChange={(f) => { field.onChange(f); p.form.setValue(fname("_imageDeleted"), false); }}
-          existingUrl={p.field.widgetProps?.existingUrl as string | undefined}
-          existingDeleted={Boolean(p.form.watch(fname("_imageDeleted")))}
-          onRemoveExisting={() => p.form.setValue(fname("_imageDeleted"), true)}
-          aspect={(p.field.widgetProps?.aspect as number) ?? 1}
-          shape={p.field.widgetProps?.shape as "square" | "circle" | undefined}
-          label={lbl(p)}
-          hint={p.field.info ? p.t(p.field.info) : undefined}
-        />
-      )} />
-    </Suspense>
-  ),
-
-  // Composite : rend tout le bloc adresse (lit/écrit ~14 champs via le form). Enveloppé dans un
-  // FormField/FormItem sur le nom du champ (`address`) pour : (a) afficher le label + `*` si requis
-  // (`field.required` OU `widgetProps.required` — ce dernier pour marquer l'obligation SANS contrainte
-  // zodGen, l'objet `address` n'étant jamais peuplé en l'état, cf. validateur cross-champ), et (b)
-  // afficher TOUJOURS le message d'erreur cross-champ porté sur `address` (visible même pays non saisi,
-  // contrairement aux sous-champs internes d'EditLocationTab qui n'apparaissent qu'après).
-  location: (p) => {
-    const req = Boolean(p.field.required || p.field.widgetProps?.required);
-    return (
-      <Suspense fallback={<WidgetFallback />}>
-        <FormField control={control(p.form)} name={fname(p.field.name)} render={() => (
-          <FormItem>
-            {p.field.label && <FormLabel>{lbl(p)}{req ? " *" : ""}</FormLabel>}
-            <EditLocationTab form={p.form} />
-            <TranslatedFormMessage />
-          </FormItem>
-        )} />
-      </Suspense>
-    );
-  },
-
-  // Composite : recherche/sélection d'une entité parente (référence `{id:{type,name}}`) via l'autocomplete.
-  // widgetProps : searchTypes / multiple / includeMe ; `filters` runtime (ex. via fieldProps).
-  finder: (p) => (
-    <Suspense fallback={<WidgetFallback />}>
-      <FormField control={control(p.form)} name={fname(p.field.name)} render={({ field }) => (
-        <FormItem>
-          {p.field.label && <FormLabel>{lbl(p)}</FormLabel>}
-          <FormControl>
-            <SelectParent
-              value={field.value as FinderValue | undefined}
-              onChange={field.onChange}
-              placeholder={p.field.placeholder ? p.t(p.field.placeholder) : undefined}
-              searchTypes={p.field.widgetProps?.searchTypes as FinderSearchType[] | undefined}
-              multiple={p.field.widgetProps?.multiple as boolean | undefined}
-              includeMe={p.field.widgetProps?.includeMe as boolean | undefined}
-              filters={p.field.widgetProps?.filters as Partial<GlobalAutocompleteCostumData> | undefined}
-            />
-          </FormControl>
-          <TranslatedFormMessage />
-        </FormItem>
-      )} />
-    </Suspense>
-  ),
-
-  // Composite : onglet dates/horaires d'événement (recurrency → startDate/endDate, sinon openingHours).
-  eventDates: (p) => <Suspense fallback={<WidgetFallback />}><EditEventDatesTab form={p.form} /></Suspense>,
-
-  // Composites edit-profil réutilisés (gèrent leurs champs via le form).
-  editSocial: (p) => <Suspense fallback={<WidgetFallback />}><EditSocialTab form={p.form} /></Suspense>,
-  editSchedule: (p) => <Suspense fallback={<WidgetFallback />}><EditScheduleTab form={p.form} /></Suspense>,
+    removeLabel={p.t((p.field.widgetProps?.removeLabel as string) ?? "common.remove")} errorTranslate={p.t} />,
 
   // Composite : horaires d'ouverture par jour (`${name}.${jour}.{enabled,start,end}`).
   openingHours: (p) => (
@@ -222,6 +123,7 @@ function resolveItemFields(p: WidgetProps): FieldArrayItem[] {
   }));
 }
 
+/** Enregistre/écrase un widget par kind. Utilisé par profil pour injecter les widgets DOMAINE (inversion). */
 export function registerWidget(kind: string, comp: WidgetComponent): void {
   registry[kind] = comp;
 }
