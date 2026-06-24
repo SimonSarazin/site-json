@@ -28,6 +28,9 @@ export const tiersLieuxSpec: EntityModalSpec = {
     entityType: "organizations",
     payloadFn: "tl:payload",
     payloadEmitEmptyOnEdit: true, // (informatif : tl:payload gère lui-même complete:true en édition)
+    // STAMP costum (valeurs fixes posées au CREATE) : un tiers-lieu est une organisation NGO open-data.
+    // Au create uniquement → édition n'y touche pas (préservé). cf. costum stamp (même pattern que poi).
+    inject: { extraFields: { type: "NGO", preferences: { isOpenData: true, isOpenEdition: true } } },
     successKey: { add: "AddTiersLieux.toast.success", edit: "EditTiersLieux.toast.success" },
     errorKey: { add: "AddTiersLieux.toast.error", edit: "EditTiersLieux.toast.error" },
     errorContext: { add: "EntityFormModal · ADD_TIERSLIEU", edit: "EntityFormModal · EDIT_TIERSLIEU" },

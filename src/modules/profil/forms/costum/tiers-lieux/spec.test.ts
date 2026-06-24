@@ -36,6 +36,9 @@ describe("résolveur — spec tiers-lieu (parité avec l'ex-config)", () => {
       successKey: "AddTiersLieux.toast.success", errorKey: "AddTiersLieux.toast.error", errorContext: "EntityFormModal · ADD_TIERSLIEU",
     });
     expect(config.buildDefaults(ctx)).toEqual(getDefaultTiersLieuxValues());
+    // STAMP costum : type "NGO" + preferences posés au CREATE via inject.extraFields (plus dans submit.extraData).
+    expect(mut.inject?.extraFields).toEqual({ type: "NGO", preferences: { isOpenData: true, isOpenEdition: true } });
+    // payload pipeline+tags (le stamp est appliqué APRÈS par runEntityMutation, pas dans buildPayload).
     const form = { ...getDefaultTiersLieuxValues(), name: "Mon TL", shortDescription: "desc", managementType: "public", email: "a@b.fr" } as Record<string, unknown>;
     expect(mut.buildPayload(form)).toEqual(buildTiersLieuxPayload(form as never, { costum }));
   });

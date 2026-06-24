@@ -133,10 +133,12 @@ describe("runEntityMutation — parité avec les hooks bespoke", () => {
     const spec: EntityMutationSpec = {
       ...base, mode: "add", entityType: "organizations", costumSlug: "franceTiersLieux", imageField: "_logoFile",
       buildPayload: (d) => buildTiersLieuxPayload(d as never, { costum: {} }),
+      // STAMP costum : type/preferences posés au CREATE par runEntityMutation via inject.extraFields.
+      inject: { extraFields: { type: "NGO", preferences: { isOpenData: true, isOpenEdition: true } } },
     };
     await runEntityMutation(spec, values, { me: sdk.me });
     expect(sdk.calls[0]).toMatchObject({ scope: "costum:franceTiersLieux", method: "organization" });
-    expect(sdk.calls[0].payload.type).toBe("NGO"); // contexte costum CREATE (submit.extraData)
+    expect(sdk.calls[0].payload.type).toBe("NGO"); // STAMP costum (inject.extraFields)
     expect(sdk.calls[0].payload.preferences).toEqual({ isOpenData: true, isOpenEdition: true });
     expect(sdk.calls[0].payload.profil_avatar).toBe(fakeFile);
   });

@@ -87,11 +87,11 @@ export function getDefaultTiersLieuxValues(): TiersLieuxFormData {
 // CONFIG-DRIVEN : le SPEC tiers-lieu tourne sur le descripteur ISSU DE LA CONFIG (round-trip identique au
 // descripteur unifié → parité byte garantie). READ (seedEntity) ET WRITE (buildPayload/buildEditPayload)
 // passent donc par la config. Labels gardés = clés i18n (résolues par GenericForm au rendu).
-// Le contexte costum CREATE (type/preferences) est porté par `submit.extraData` — DONNÉE de config appliquée
-// génériquement au create (cf. buildTiersLieuxPayload), PLUS aucune constante en dur dans le code.
+// Le contexte costum CREATE (type/preferences) est désormais un STAMP déclaratif dans la spec
+// (`mutation.inject.extraFields`), plus dans `submit.extraData` ici. cf. costum stamp.
 const TIERSLIEU_CONFIG: JsonFormConfig = {
   ...formDescriptorToConfig(tiersLieuxDescriptor),
-  submit: { mode: "sdk", extraData: { type: "NGO", preferences: { isOpenData: true, isOpenEdition: true } } },
+  submit: { mode: "sdk" },
 };
 const KEEP_KEYS = (l: unknown) => (typeof l === "string" ? l : ((l as { fr?: string })?.fr ?? ""));
 /** Descripteur tiers-lieu dérivé de la config (= tiersLieuxDescriptor round-trip). Rendu par la modale. */
@@ -371,20 +371,10 @@ export function buildTiersLieuxPayload(
     ? buildEditPayload(TIERSLIEU_SPEC, data as unknown as FormValues)
     : buildPayload(TIERSLIEU_SPEC, data as unknown as FormValues)) as Record<string, unknown>;
 
-  if (options.costum) {
-    // Contexte costum CREATE = DONNÉES de config (`TIERSLIEU_CONFIG.submit.extraData`), fusionnées dans le
-    // payload (merge extraData, hors clés costum*) → AUCUNE constante en dur ici. Les clés de contexte
-    // costum (costum*) sont injectées par la lib (`me.costum(slug)`), jamais par le payload.
-    for (const [k, v] of Object.entries(TIERSLIEU_CONFIG.submit?.extraData ?? {})) {
-      if (k.startsWith("costum")) continue;
-      payload[k] = v;
-    }
-    // `role:"admin"` et le CHAMP `mainTag` NE sont PAS posés : presets costum de la lib (`me.costum(slug)`
-    // → `{role:"admin", mainTag:"TiersLieux"}`, CostumScope.create = `{...presets, ...data}`). `role` est
-    // inerte côté serveur (admin réel = links.members.isAdmin) ; le CHAMP `mainTag` n'a aucun effet
-    // observatoire (les filtres lisent `tags`) → seul le merge `tags` ci-dessous compte. source/costumSlug/
-    // costumId/costumType aussi injectés par la lib ; le backend pose `source` au save. cf. useAddTiersLieu.
-  }
+  // Contexte costum CREATE (type/preferences) = STAMP déclaratif `spec.mutation.inject.extraFields` (appliqué
+  // au create par runEntityMutation) — PLUS fusionné dans le payload ici. role/mainTag/source restent des
+  // presets de la lib (`me.costum(slug)` → CostumScope.create = `{...presets, ...data}`) ; seul le merge `tags`
+  // ci-dessous (valeurs observatoire) reste à la charge du payload.
 
   // Merge tags : `costum.mainTag` + `costum.compagnon` (auto) + `addTags` (manuel)
   // mergés à `existingTags`. `compagnon` est une *valeur de tag* (cf. dimension

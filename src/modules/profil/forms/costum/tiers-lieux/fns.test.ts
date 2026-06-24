@@ -178,7 +178,7 @@ describe("buildTiersLieuxPayload", () => {
     expect(payload.video).toEqual(["https://youtube.com/watch?v=abc"]);
   });
 
-  it("pose données + tags costum, MAIS pas le contexte costum (géré par la lib me.costum)", () => {
+  it("merge les tags costum, MAIS pas type/preferences (stamp) ni le contexte costum (lib me.costum)", () => {
     const data = { ...getDefaultTiersLieuxValues(), name: "TL", email: "x@y.fr" };
     const payload = buildTiersLieuxPayload(data, {
       costum: {
@@ -186,7 +186,10 @@ describe("buildTiersLieuxPayload", () => {
         compagnon: "comp",
       },
     });
-    expect(payload.type).toBe("NGO");
+    // `type` ("NGO") et `preferences` ne sont PLUS dans ce payload : ce sont des STAMP costum
+    // (spec.mutation.inject.extraFields), posés au CREATE par runEntityMutation (testé dans spec.test).
+    expect(payload).not.toHaveProperty("type");
+    expect(payload).not.toHaveProperty("preferences");
     // `role` et le CHAMP `mainTag` ne sont PLUS dans le payload : posés par les presets costum de la
     // lib (`me.costum(slug)` → {role:"admin", mainTag:"TiersLieux"}). Seul le merge `tags` reste ici.
     expect(payload).not.toHaveProperty("role");
@@ -195,7 +198,6 @@ describe("buildTiersLieuxPayload", () => {
     // il est mergé dans `tags`, pas posé en `payload.compagnon`.
     expect(payload).not.toHaveProperty("compagnon");
     expect(payload.tags).toEqual(expect.arrayContaining(["TiersLieu", "comp"]));
-    expect(payload.preferences).toEqual({ isOpenData: true, isOpenEdition: true });
     // Contexte costum désormais injecté par la lib (`me.costum(slug)` → costumSlug/costumId/costumType
     // + source posé par le backend) — il ne doit PLUS être dans le payload construit côté site-json.
     expect(payload).not.toHaveProperty("costumSlug");
