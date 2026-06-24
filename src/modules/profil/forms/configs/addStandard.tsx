@@ -11,7 +11,7 @@ import { addProjectDescriptor } from "../addProject.descriptor";
 import { addOrganizationDescriptor } from "../addOrganization.descriptor";
 import { buildAddEventDescriptor } from "../addEvent.descriptor";
 import { buildProfileUpdateData } from "../editProfilePayload";
-import { buildAddPoiPayload } from "../../components/add/poiEquipement";
+import { buildAddPoiPayload } from "../costum/poiEquipement/fns";
 import type { AddPoiFormData } from "../../schemaForm";
 import type { EntityModalConfig } from "../EntityFormModal";
 

@@ -5,7 +5,7 @@ import { addPoiDescriptor } from "./addPoi.descriptor";
 import { addProjectDescriptor } from "./addProject.descriptor";
 import { addOrganizationDescriptor } from "./addOrganization.descriptor";
 import { buildAddEventDescriptor } from "./addEvent.descriptor";
-import { poiEquipementDescriptor } from "./poiEquipement.descriptor";
+import { poiEquipementDescriptor } from "./costum/poiEquipement/descriptor";
 import { tiersLieuDescriptor } from "./tiersLieu.descriptor";
 import { EDIT_DESCRIPTORS } from "./editProfile.descriptor";
 

@@ -1,19 +1,30 @@
 /**
- * Constantes et helpers purs du formulaire "équipement sportif" (POI SSBE).
- * Extrait de `AddPoiEquipementModal` pour : (1) dédupliquer les valeurs métier
- * codées en dur (notamment l'ObjectId de l'org parente, présent à plusieurs
- * endroits), (2) rendre le mapping form↔entité testable isolément.
+ * Module du costum « équipement sportif » (POI SSBE, equipementsSportifs974) : scope, defaults, transforms
+ * `poi:*`, recherche de doublons, payload de création — ET enregistrement des CLÉS (descripteur + fns) que
+ * la `spec.ts` référence. C'est le `fns.ts` du dossier `forms/costum/poiEquipement/` (cf. plan).
+ * `buildAddPoiPayload` reste exporté (réutilisé transitoirement par le poi STANDARD via addStandard.tsx,
+ * jusqu'à sa propre bascule pipeline).
  */
-import type { AddPoiFormData } from "../../schemaForm";
+import type { AddPoiFormData } from "../../../schemaForm";
 // Helpers de pipeline partagés (imports DIRECTS, pas le barrel formEngine → util pur testable sans
 // tirer les widgets/composants). cf. doc/refactor-field-treatment.md.
+import { createElement } from "react";
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
 import { coerceString } from "@/modules/formEngine/engine/coercions"; // side-effect : enregistre coerce:* + fournit coerceString (poi:addressRead)
 import { buildPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
-import "../../forms/geoTransforms"; // enregistre geo:write / geoPosition:write (partagés)
+import "../../geoTransforms"; // enregistre geo:write / geoPosition:write (partagés)
 import type { FormValues } from "@/modules/formEngine";
-import { poiEquipementDescriptor } from "../../forms/poiEquipement.descriptor";
-import { buildAddressFromForm } from "../../hooks/mutationUtils";
+import { poiEquipementDescriptor } from "./descriptor";
+import { buildAddressFromForm } from "../../../hooks/mutationUtils";
+import { PROFIL_QUERY_KEYS } from "../../../constants";
+import { SEARCH_QUERY_KEYS } from "@/modules/search/constants";
+import { ParentInfoReadonly } from "../../../components/profile-edit/fields";
+import { PoiEquipementDoublonsSlot } from "../../PoiEquipementDoublonsSlot";
+import type { EntityModalCtx } from "../../entityModalSpec";
+import {
+  registerDescriptor, registerScopeFn, registerDefaultsFn, registerSlot,
+  registerCleanValuesFn, registerExistingUrlFn, registerInvalidateFn,
+} from "../../specRegistries";
 
 
 /** Champs projetés par le backend lors de la recherche/détail d'un équipement. */
@@ -247,3 +258,35 @@ const POI_SPEC: FormSpec = { descriptor: poiEquipementDescriptor, baseDefaults: 
 export function buildAddPoiPayload(data: AddPoiFormData): Record<string, unknown> {
   return buildPayload(POI_SPEC, data as unknown as FormValues) as Record<string, unknown>;
 }
+
+// ── Enregistrement des CLÉS référencées par `spec.ts` (descripteur + fns costum) ───────────────────────────
+// Le payload (add ET edit) passe par le PIPELINE générique (défaut du résolveur) : buildAddPoiPayload(d) ≡
+// buildPipelinePayload(config, d, {emitEmpty:false}) par round-trip lossless → AUCUN payloadFn custom requis.
+registerDescriptor(poiEquipementDescriptor);
+registerScopeFn("poi:scope", (carrier) => resolvePoiEquipementScope(carrier as Parameters<typeof resolvePoiEquipementScope>[0]));
+registerDefaultsFn("poi:emptyDefaults", (ctx) => createEmptyDefaults(ctx.scope as PoiEquipementScope) as unknown as Record<string, unknown>);
+registerSlot("parentInfo", (ctx: EntityModalCtx) => createElement(ParentInfoReadonly, { parent: ctx.parent ?? null }));
+registerSlot("poiDoublons", (ctx: EntityModalCtx) => createElement(PoiEquipementDoublonsSlot, { scope: ctx.scope as PoiEquipementScope }));
+registerCleanValuesFn("poi:dropEmptyUrls", (v) => ({
+  ...v,
+  urls: Array.isArray(v.urls) ? (v.urls as unknown[]).filter((u) => String(u ?? "").trim().length > 0) : v.urls,
+}));
+registerExistingUrlFn("image:profilUrl", (entity) => {
+  const sd = (entity as { serverData?: Record<string, unknown> }).serverData;
+  return (sd?.profilMediumImageUrl || sd?.profilImageUrl || sd?.profilThumbImageUrl || undefined) as string | undefined;
+});
+const POI_SEARCH_KEYS = [
+  SEARCH_QUERY_KEYS.RESULTS_PREFIX("searchCostumStatic"),
+  SEARCH_QUERY_KEYS.RESULTS_PREFIX("poi-equipement-matches"),
+];
+registerInvalidateFn("poi:invalidate", (ctx) => {
+  if (ctx.mode === "edit") {
+    return [...(ctx.entity?.slug ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(ctx.entity.slug)] : []), ...POI_SEARCH_KEYS];
+  }
+  const target = ctx.parent ?? ctx.me;
+  return [
+    ...(target ? [PROFIL_QUERY_KEYS.USER_POIS_PREFIX(target.slug)] : []),
+    ...(ctx.parent ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(ctx.parent.slug)] : []),
+    ...POI_SEARCH_KEYS,
+  ];
+});

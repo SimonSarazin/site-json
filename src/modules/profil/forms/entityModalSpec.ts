@@ -33,6 +33,9 @@ export interface EntityModalCtx {
 /** Référence à un descripteur : enregistré par `id` (TS, via `registerDescriptor`) OU `JsonFormConfig` embarquée (JSON). */
 export type DescriptorRef = { ref: string } | { config: JsonFormConfig };
 
+/** Valeur identique pour add+edit, OU distincte par mode (ex. successKey/errorContext add≠edit). */
+export type ByMode<T> = T | { add: T; edit: T };
+
 /** Injection de CRÉATION (drapeaux DONNÉES ; les valeurs runtime parent/organizer sont prises du ctx par le résolveur). */
 export interface SpecInject {
   /** payload.role = values.role si présent (org/projet/event). */
@@ -56,9 +59,9 @@ export interface SpecMutation {
   payloadEmitEmptyOnEdit?: boolean;
   inject?: SpecInject;
   navigateOnSuccess?: boolean;
-  successKey: string;
-  errorKey: string;
-  errorContext: string;
+  successKey: ByMode<string>;
+  errorKey: ByMode<string>;
+  errorContext: ByMode<string>;
   /** clé → `invalidateRegistry` : (ctx) => QueryKey[]. */
   invalidateFn?: string;
 }
@@ -92,7 +95,9 @@ export interface EntityModalSpec {
   listsFromCarrier?: boolean;
 
   // ── scope costum ──
-  scope?: { slugFrom?: "carrier" | "constant"; constant?: string; derive?: string };
+  /** slugFrom : où prendre le slug costum de création — `carrier` (slug du porteur), `derived` (champ
+   *  `slugKey` de l'objet scope produit par `derive`), `constant`. `derive` = clé → `scopeRegistry`. */
+  scope?: { slugFrom?: "carrier" | "derived" | "constant"; slugKey?: string; constant?: string; derive?: string };
 
   // ── slots (id de slot → clé registre) ──
   slots?: Record<string, string>;

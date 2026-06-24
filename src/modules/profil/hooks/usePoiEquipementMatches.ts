@@ -6,7 +6,7 @@ import {
   buildPoiMatchFilters,
   isFilled,
   type PoiEquipementScope,
-} from "../components/add/poiEquipement";
+} from "../forms/costum/poiEquipement/fns";
 
 interface PoiMatchesParams {
   postalCode: string;

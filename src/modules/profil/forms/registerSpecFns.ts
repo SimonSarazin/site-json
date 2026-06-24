@@ -5,4 +5,4 @@
  *
  * (Se remplit au fil des migrations : poi-équipement puis tiers-lieu.)
  */
-export {};
+import "./costum/poiEquipement/fns";

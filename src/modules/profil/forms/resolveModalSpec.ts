@@ -14,7 +14,7 @@ import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { configToDescriptor, formDescriptorToConfig, type FormDescriptor, type EntityLike } from "@/modules/formEngine";
 import { buildConfigDefaults, buildPipelineDefaults, buildPipelinePayload } from "./jsonFormSubmit";
 import type { EntityModalConfig } from "./EntityFormModal";
-import type { EntityModalCtx, EntityModalSpec } from "./entityModalSpec";
+import type { ByMode, EntityModalCtx, EntityModalSpec } from "./entityModalSpec";
 import type { EntityMutationSpec } from "../hooks/useEntityMutation";
 import {
   getDescriptor, getDescriptorVariant, getDefaultsFn, getPayloadFn, getScopeFn, getSlot,
@@ -23,6 +23,11 @@ import {
 
 type Values = Record<string, unknown>;
 const KEEP_KEYS = (l: unknown) => (typeof l === "string" ? l : ((l as { fr?: string })?.fr ?? ""));
+
+/** Résout une valeur `ByMode` selon le mode (string identique, ou {add,edit}). */
+function pickMode<T>(v: ByMode<T>, mode: "add" | "edit"): T {
+  return v && typeof v === "object" && "add" in (v as object) ? (v as { add: T; edit: T })[mode] : (v as T);
+}
 
 /** Slug costum de CRÉATION : depuis le carrier, le scope dérivé (slugKey), ou une constante. */
 function resolveCostumSlug(scope: EntityModalSpec["scope"], ctx: EntityModalCtx): string | undefined {
@@ -86,9 +91,9 @@ export function specToConfig(spec: EntityModalSpec): EntityModalConfig {
             organizerFallback: m.inject?.organizerFallback ? (ctx.parent ?? null) : undefined,
           },
       navigateOnSuccess: m.navigateOnSuccess,
-      successKey: m.successKey,
-      errorKey: m.errorKey,
-      errorContext: m.errorContext,
+      successKey: pickMode(m.successKey, ctx.mode),
+      errorKey: pickMode(m.errorKey, ctx.mode),
+      errorContext: pickMode(m.errorContext, ctx.mode),
       invalidateQueries: m.invalidateFn ? (getInvalidateFn(m.invalidateFn)?.(ctx) ?? []) : [],
     };
   };

@@ -10,7 +10,7 @@ import { runEntityMutation, type EntityMutationSpec } from "./useEntityMutation"
 import { buildParentReference, buildOrganizerReference } from "./mutationUtils";
 // side-effect : enregistre pf:* / poi:* / tl:* + fournit les builders de référence.
 import { buildProfileUpdateData } from "../forms/editProfilePayload";
-import { buildAddPoiPayload } from "../components/add/poiEquipement";
+import { buildAddPoiPayload } from "../forms/costum/poiEquipement/fns";
 import { buildTiersLieuxPayload } from "../utils/tiersLieuxMapping";
 import { getDefaultTiersLieuxValues } from "../utils/tiersLieux.schema";
 

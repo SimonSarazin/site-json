@@ -33,10 +33,10 @@ const editModalRegistry: Record<string, () => Promise<{ default: ComponentType<E
       ),
     })),
   "edit-poi-equipement": () =>
-    Promise.all([import("../../forms/EntityFormModal"), import("../../forms/configs/poiEquipement")]).then(([m, c]) => ({
+    Promise.all([import("../../forms/EntityFormModal"), import("../../forms/costum/poiEquipement/spec")]).then(([m, c]) => ({
       default: (props: EditModalProps) => (
         <m.EntityFormModal
-          config={c.poiEquipementModalConfig}
+          spec={c.poiEquipementSpec}
           open={props.open}
           onOpenChange={props.onOpenChange}
           mode="edit"

@@ -19,10 +19,10 @@ import { seedEntity, buildPayload, buildEditPayload, type FormSpec } from "@/mod
 import { JsonFormConfigSchema } from "@/modules/formEngine/config/schema";
 import { formDescriptorToConfig } from "@/modules/formEngine/config/formDescriptorToConfig";
 import { configToDescriptor } from "@/modules/formEngine/config/configToDescriptor";
-import { poiEquipementDescriptor } from "./poiEquipement.descriptor";
+import { poiEquipementDescriptor } from "./costum/poiEquipement/descriptor";
 // side-effect : enregistre les transforms poi:* (toString/…/addressRead/Write) + geo:write/geoPosition:write,
 // référencés PAR CLÉ dans le descripteur. Fournit aussi createEmptyDefaults (socle baseDefaults).
-import { createEmptyDefaults } from "../components/add/poiEquipement";
+import { createEmptyDefaults } from "./costum/poiEquipement/fns";
 import type { AddPoiFormData } from "../schemaForm";
 
 const tLoc = (l: unknown) => (typeof l === "string" ? l : ((l as { fr?: string })?.fr ?? ""));
