@@ -293,9 +293,9 @@
                 "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18\"></path><path d=\"M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2\"></path><path d=\"M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2\"></path><line x1=\"10\" y1=\"6\" x2=\"14\" y2=\"6\"></line><line x1=\"10\" y1=\"10\" x2=\"14\" y2=\"10\"></line></svg>"
               },
               {
-                "label": { "fr": "Canyon", "en": "Canyon" },
-                "path": "/equipements-sportifs?poi-category=canyon",
-                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M2 20l4-12 4 6 3-4 4 10\"></path><path d=\"M2 4v16\"></path><path d=\"M22 4v16\"></path><path d=\"M2 20h20\"></path></svg>"
+                "label": { "fr": "Bassin ludique de natation", "en": "Recreational Swimming Pool" },
+                "path": "/equipements-sportifs?poi-category=bassin-ludique-de-natation",
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect x=\"2\" y=\"3\" width=\"20\" height=\"15\" rx=\"2\"></rect><path d=\"M2 10c1.5 1 3 1 4.5 0s3-1 4.5 0 3 1 4.5 0 3-1 4.5 0\"></path><path d=\"M2 14c1.5 1 3 1 4.5 0s3-1 4.5 0 3 1 4.5 0 3-1 4.5 0\"></path></svg>"
               },
               {
                 "label": { "fr": "Structure Artificielle d'Escalade", "en": "Artificial Climbing Structure" },
@@ -3099,7 +3099,7 @@
         "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
       }
     },
-    "customCSS": "\n .access-card {\n border: 1px solid var(--primary);\n border-radius: var(--radius-2xl);}"
+    "customCSS": "\n .access-card {\n border: 1px solid var(--primary);\n border-radius: var(--radius-2xl); \n background-color: color-mix(in oklab, var(--card) 30%, transparent);}"
   },
   "auth": {
     "login": {
