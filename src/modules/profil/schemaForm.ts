@@ -318,67 +318,6 @@ export const addProjectSchema = z.object({
 export type AddProjectFormData = z.infer<typeof addProjectSchema>;
 
 // ============================================================================
-// ADD_POI SCHEMA
-// ============================================================================
-
-export const addPoiSchema = z.object({
-  // Champs requis - type REQUIS pour add (pas .optional())
-  name: z.string().min(1, "validation.name.required"),
-  type: z.enum(POI_TYPES),
-
-  // Champs optionnels - tags SANS vide (add forms)
-  parent: parentSchema.optional(),
-  description: z.string().optional(),
-  tags: z.array(z.string()).optional(),
-  urls: z.array(z.string()).optional(),
-
-  inst_acc_handi_bool: z.boolean().optional(),
-  inst_trans_bool: z.boolean().optional(),
-  equip_type_famille: z.string().optional(),
-  equip_type_name: z.string().optional(),
-  inst_date_creation: z.string().optional(),
-  inst_enqu_date: z.string().optional(),
-  equip_maj_date: z.string().optional(),
-  equip_nature: z.string().optional(),
-  equip_sol: z.string().optional(),
-  equip_surf: z.number().optional(),
-  equip_eclair: z.boolean().optional(),
-  categorie: z.string().optional(),
-  aps_name: z.array(z.string()).optional(),
-  equip_acc_libre: z.boolean().optional(),
-  inst_acc_handi_type: z.string().optional(),
-  inst_trans_type: z.string().optional(),
-  inst_part_bool: z.boolean().optional(),
-  inst_part_type: z.array(z.string()).optional(),
-  equip_prop_nom: z.string().optional(),
-  equip_prop_type: z.string().optional(),
-  equip_gest_type: z.string().optional(),
-  equip_pmr_acc: z.boolean().optional(),
-  equip_pmr_chem: z.boolean().optional(),
-  equip_pmr_douche: z.boolean().optional(),
-  equip_pmr_sanit: z.boolean().optional(),
-  equip_pmr_trib: z.boolean().optional(),
-  equip_pmr_vest: z.boolean().optional(),
-  equip_pshs_aire: z.boolean().optional(),
-  equip_pshs_chem: z.boolean().optional(),
-  equip_pshs_sanit: z.boolean().optional(),
-  equip_pshs_trib: z.boolean().optional(),
-  equip_pshs_vest: z.boolean().optional(),
-  equip_pshs_sign: z.boolean().optional(),
-  equip_larg: z.number().optional(),
-  equip_long: z.number().optional(),
-  equip_douche: z.boolean().optional(),
-  equip_loc_type: z.array(z.string()).optional(),
-  equip_utilisateur: z.array(z.string()).optional(),
-  inst_nom: z.string().optional(),
-
-  // LOCALITY (inclut geo/geoPosition, cf. localityFieldsSchema)
-  ...localityFieldsSchema.shape,
-});
-
-export type AddPoiFormData = z.infer<typeof addPoiSchema>;
-
-// ============================================================================
 // ADD_EVENT SCHEMA (simplifié pour le formulaire de création)
 // Note: slug est omis car il est généré automatiquement côté serveur
 // ============================================================================

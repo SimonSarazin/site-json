@@ -1,6 +1,6 @@
 /**
  * Descripteur « Ajouter un POI » (POI de base, hors équipement costum) — pendant générique de
- * AddPoiModal. Mêmes noms de champs que AddPoiFormData → useAddPoi consommé tel quel.
+ * AddPoiModal. Noms de champs alignés sur le payload POI standard (valeurs de form = `FormValues`).
  * Layout tabs (info / localisation), parité visuelle avec l'ancien modal.
  */
 import type { FieldDescriptor, FormDescriptor } from "@/modules/formEngine";

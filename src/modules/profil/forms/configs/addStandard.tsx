@@ -12,7 +12,6 @@ import { addOrganizationDescriptor } from "../addOrganization.descriptor";
 import { buildAddEventDescriptor } from "../addEvent.descriptor";
 import { buildProfileUpdateData } from "../editProfilePayload";
 import { buildAddPoiPayload } from "../costum/equipements-sportifs/fns";
-import type { AddPoiFormData } from "../../schemaForm";
 import type { EntityModalConfig } from "../EntityFormModal";
 
 const tabsTexts = (t: (k: string) => string) => ({ next: "", previous: "", cancel: t("common.cancel") });
@@ -33,7 +32,7 @@ export const addPoiConfig: EntityModalConfig = {
     const target = parent ?? me;
     return {
       mode: "add", entityType: "poi", target: parent ?? null,
-      buildPayload: (d) => buildAddPoiPayload(d as unknown as AddPoiFormData) as Record<string, unknown>,
+      buildPayload: (d) => buildAddPoiPayload(d),
       inject: { parent: parent ?? null },
       successKey: "toast.add.poiSuccess", errorKey: "toast.add.poiError", errorContext: "EntityFormModal · ADD_POI",
       invalidateQueries: [

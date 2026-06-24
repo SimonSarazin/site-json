@@ -5,7 +5,6 @@
  * `buildAddPoiPayload` reste exporté (réutilisé transitoirement par le poi STANDARD via addStandard.tsx,
  * jusqu'à sa propre bascule pipeline).
  */
-import type { AddPoiFormData } from "../../../schemaForm";
 // Helpers de pipeline partagés (imports DIRECTS, pas le barrel formEngine → util pur testable sans
 // tirer les widgets/composants). cf. doc/refactor-field-treatment.md.
 import { createElement } from "react";
@@ -73,12 +72,11 @@ const POI_ADDRESS_BASE = (scope: PoiEquipementScope): Record<string, unknown> =>
 // Defaults DÉRIVÉS du descripteur — plus de re-listage des ~36 champs. `seedEntity(descriptor, null)` applique
 // les `field.default` (text→"", number→undefined via coerce:number, switch→false, array→[]) et EXCLUT déjà
 // renderOnly/writeOnly (_imageFile/address/geo/geoPosition). On ajoute seulement le socle adresse (membres de
-// groupe) + `type` (stamp, conservé pour AddPoiFormData ; émis au create par inject.extraFieldsFromScope).
-// Byte-parité figée par defaults.byteparity.test (snapshot).
-export const createEmptyDefaults = (scope: PoiEquipementScope): AddPoiFormData => ({
+// groupe) + `type` (stamp ; émis au create par inject.extraFieldsFromScope). Byte-parité figée par defaults.byteparity.test.
+export const createEmptyDefaults = (scope: PoiEquipementScope): FormValues => ({
   ...(seedEntity({ descriptor: equipementsSportifsDescriptor, baseDefaults: () => POI_ADDRESS_BASE(scope) }, null) as Record<string, unknown>),
   type: scope.poiType,
-}) as unknown as AddPoiFormData;
+}) as FormValues;
 
 // ── READ adresse (serializeGroup) : objet serveur `address` → champs plats ──────
 // 14 clés SIG (round-trip COMPLET requis par l'édition unifiée S6 : sinon l'adresse reconstruite écraserait
@@ -119,8 +117,8 @@ const POI_SPEC: FormSpec = { descriptor: equipementsSportifsDescriptor };
  * passent désormais par les helpers config-driven du host (buildPipelineDefaults/buildPipelinePayload, cf.
  * costum/equipements-sportifs/spec.ts). parent/extraFields/image gérés par l'appelant (useEntityMutation).
  */
-export function buildAddPoiPayload(data: AddPoiFormData): Record<string, unknown> {
-  const payload = buildPayload(POI_SPEC, data as unknown as FormValues) as Record<string, unknown>;
+export function buildAddPoiPayload(data: FormValues): Record<string, unknown> {
+  const payload = buildPayload(POI_SPEC, data) as Record<string, unknown>;
   // `type` n'est plus un champ du descripteur (devenu STAMP costum, posé au create par inject.extraFields).
   // Le costum n'appelle plus ce builder (il passe par le pipeline). Mais le poi STANDARD (addStandard) le
   // réutilise et porte SON type (ex. "place") via le form → on le réémet ici depuis `data`. (Pont transitoire

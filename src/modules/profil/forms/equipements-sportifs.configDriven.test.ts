@@ -23,7 +23,6 @@ import { equipementsSportifsDescriptor } from "./costum/equipements-sportifs/des
 // side-effect : enregistre les transforms poi:* (toString/…/addressRead/Write) + geo:write/geoPosition:write,
 // référencés PAR CLÉ dans le descripteur. Fournit aussi createEmptyDefaults (socle baseDefaults).
 import { createEmptyDefaults, type PoiEquipementScope } from "./costum/equipements-sportifs/fns";
-import type { AddPoiFormData } from "../schemaForm";
 
 const tLoc = (l: unknown) => (typeof l === "string" ? l : ((l as { fr?: string })?.fr ?? ""));
 const norm = <T,>(v: T): T => JSON.parse(JSON.stringify(v));
@@ -83,7 +82,7 @@ describe("PILOTE config-driven POI équipement — descripteur unifié", () => {
       streetAddress: "1 rue X", localityId: "54c09653f6b95c141800849e",
       geo: { "@type": "GeoCoordinates", latitude: "45.76", longitude: "4.83" },
       geoPosition: { type: "Point", coordinates: [4.83, 45.76] },
-    } as unknown as AddPoiFormData as unknown as Record<string, unknown>;
+    } as Record<string, unknown>;
 
     expect(buildPayload(specCfg, form)).toEqual(buildPayload(specOrig, form));
     expect(buildEditPayload(specCfg, form)).toEqual(buildEditPayload(specOrig, form));
