@@ -1,8 +1,6 @@
 import { useState } from "react";
 import type { UseFormRegister, FieldErrors } from "react-hook-form";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeRaw from "rehype-raw";
+import MarkdownIt from "markdown-it";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,30 +29,46 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
+import { sanitize } from "@/lib/sanitize";
 import { useT } from "@/hooks/useT";
 import type { FormFieldMapping } from "../types";
 import { MarkdownEditor } from "./MarkdownEditor";
 
 /**
- * Détecte si une chaîne est du HTML déjà rendu (ex: Parsedown PHP) ou du markdown brut.
- * Utilise dangerouslySetInnerHTML pour le HTML, ReactMarkdown pour le markdown brut.
+ * Parser markdown partagé (singleton module-level → pas recréé à chaque render).
+ * `html: true` préserve l'HTML inline (ex: `<br/>`) ; `linkify` auto-lie les URLs.
+ * Sa sortie est TOUJOURS passée dans `sanitize()` avant injection (cf. ProseContent).
+ */
+const markdownParser = new MarkdownIt({ html: true, linkify: true });
+
+/**
+ * Rend un contenu admin (`field.info`/`field.label`, parfois saisi par un admin
+ * costum peu fiable) : soit du HTML déjà rendu (Parsedown PHP), soit du markdown.
+ * Dans les deux cas on produit du HTML puis on le **sanitise** (DOMPurify via
+ * `@/lib/sanitize`) avant de l'injecter — même pattern que `HTMLSection`, cf.
+ * `doc/bonnes-pratiques-code.md` §8.
+ *
+ * ⚠️ Sécurité (XSS) : ne jamais réintroduire `dangerouslySetInnerHTML` sans
+ * `sanitize()`, ni `react-markdown` + `rehype-raw` (qui rendaient le HTML brut
+ * NON sanitisé → faille).
  */
 export function ProseContent({ text, className, forceMarkdown = false }: { text: string; className?: string; forceMarkdown?: boolean }) {
   const isHtml = !forceMarkdown && /<[a-zA-Z][^>]*>/.test(text);
-  return isHtml ? (
-    <div className={className} dangerouslySetInnerHTML={{ __html: text }} />
-  ) : (
-    <div className={className}>
-      <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{text}</ReactMarkdown>
-    </div>
+  const rawHtml = isHtml ? text : markdownParser.render(text);
+  return (
+    <div
+      className={className}
+      dangerouslySetInnerHTML={{ __html: sanitize(rawHtml) }}
+      suppressHydrationWarning
+    />
   );
 }
 
 /**
  * Composant pour afficher un indice/info avec support markdown ET HTML brut.
- * Délègue à `ProseContent` qui auto-détecte HTML (rendu via
- * `dangerouslySetInnerHTML`) vs markdown (rendu via ReactMarkdown +
- * `rehypeRaw` pour accepter les inline HTML comme `<br/>`).
+ * Délègue à `ProseContent` qui auto-détecte HTML vs markdown, rend le markdown
+ * via markdown-it (`<br/>` inline supportés) puis **sanitise** le HTML avant
+ * injection.
  */
 export function HintText({ text }: { text: string }) {
   return (
