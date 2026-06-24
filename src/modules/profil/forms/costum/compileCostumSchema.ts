@@ -93,8 +93,8 @@ const WIDGET_DEFAULTS: Partial<Record<WidgetKind, Partial<FieldDescriptor>>> = {
   urlList: { type: "array", read: "coerce:stringArray", default: [] },
   image: { type: "object", renderOnly: true },     // ancre UI composite (image hors element/save)
   location: { type: "object", renderOnly: true },  // ancre UI composite (adresse via serializeGroups)
-  fieldArray: { type: "array" },                    // liste répétée (ex. socialLinks) ; read via transform dédié
-  openingHours: { type: "object" },                 // horaires 7-DOW ; read/write via transform dédié
+  fieldArray: { type: "array" },                    // liste répétée GÉNÉRIQUE → pas de codec par widget (le sens dépend du champ)
+  openingHours: { type: "object", read: "openingHours:read", write: "openingHours:write" }, // codec livré par le widget (cf. sharedCodecs)
   hidden: { type: "string" },                       // type par défaut ; sur-écrit si array/object
 };
 

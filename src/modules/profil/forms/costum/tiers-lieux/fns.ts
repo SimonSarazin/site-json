@@ -3,7 +3,11 @@ import { transformFormDataWithAddress } from "../../../hooks/mutationUtils";
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
 import "@/modules/formEngine/engine/coercions"; // side-effect : enregistre coerce:string/pickString/orUndef référencés par le descripteur tiers-lieu
 import "../../geoTransforms"; // enregistre geo:write / geoPosition:write (partagés)
-import "../sharedCodecs"; // enregistre le codec commun `address:read` (référencé par serializeGroups.address)
+// Codecs COMMUNS (l'import déclenche l'enregistrement de address:read + openingHours:read/write).
+// `openingHours:*` est désormais livré PAR le widget (WIDGET_DEFAULTS) — plus de tl:hoursRead/Write ici.
+import { emptyOpeningHours, buildOpeningHoursPayload, type DayHours } from "../sharedCodecs";
+export { buildOpeningHoursPayload }; // re-export (consommé par fns.test)
+export type { DayHours };
 import { seedEntity, buildPayload, buildEditPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
 // Imports DIRECTS de la couche config (PAS le barrel → pas de widgets/React tirés ici, l'util reste pur).
 import { formDescriptorToConfig } from "@/modules/formEngine/config/formDescriptorToConfig";
@@ -15,8 +19,6 @@ import { getSlug } from "@/lib/constant/common";
 import type { EntityModalCtx } from "../../entityModalSpec";
 import { registerDescriptor, registerDefaultsFn, registerPayloadFn, registerScopeFn, registerInvalidateFn, registerExistingUrlFn } from "../../specRegistries";
 
-/** Horaires d'un jour (widget openingHours). */
-export interface DayHours { enabled: boolean; start: string; end: string }
 /** Lien social (fieldArray). */
 export interface TiersLieuxSocialLink { platform: string; url: string }
 /**
@@ -72,15 +74,7 @@ export function getDefaultTiersLieuxValues(): TiersLieuxFormData {
     level1: "", level1Name: "", level2: "", level2Name: "",
     level3: "", level3Name: "", level4: "", level4Name: "", codeInsee: "",
     logo: "", photos: [], socialLinks: [],
-    hours: {
-      monday: { enabled: false, start: "08:00", end: "18:00" },
-      tuesday: { enabled: false, start: "08:00", end: "18:00" },
-      wednesday: { enabled: false, start: "08:00", end: "18:00" },
-      thursday: { enabled: false, start: "08:00", end: "18:00" },
-      friday: { enabled: false, start: "08:00", end: "18:00" },
-      saturday: { enabled: false, start: "08:00", end: "18:00" },
-      sunday: { enabled: false, start: "08:00", end: "18:00" },
-    },
+    hours: emptyOpeningHours(), // socle 7 jours décochés 08:00–18:00 (codec commun openingHours)
     email: "",
   };
 }
@@ -108,49 +102,10 @@ export interface CostumConfig {
   // `me.costum(slug)`. config.costum ne sert plus qu'aux TAGS (mainTag/compagnon) de l'observatoire.
 }
 
-const DAY_TO_DOW: Record<keyof TiersLieuxFormData["hours"], string> = {
-  monday: "Mo",
-  tuesday: "Tu",
-  wednesday: "We",
-  thursday: "Th",
-  friday: "Fr",
-  saturday: "Sa",
-  sunday: "Su",
-};
-
-const DOW_TO_DAY: Record<string, keyof TiersLieuxFormData["hours"]> = {
-  Mo: "monday",
-  Tu: "tuesday",
-  We: "wednesday",
-  Th: "thursday",
-  Fr: "friday",
-  Sa: "saturday",
-  Su: "sunday",
-};
-
-const ORDERED_DAYS: Array<keyof TiersLieuxFormData["hours"]> = [
-  "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
-];
-
 const KNOWN_MANAGEMENT_TYPES = [
   "association", "collectif-citoyen", "universites", "etablissements-scolaires",
   "collectivites", "sarl-sa-sas", "scic", "scop", "autre",
 ];
-
-type OpeningHoursEntry = { dayOfWeek: string; hours: Array<{ opens: string; closes: string }> } | "";
-
-export function buildOpeningHoursPayload(hours: TiersLieuxFormData["hours"]): OpeningHoursEntry[] {
-  return ORDERED_DAYS.map<OpeningHoursEntry>((day) => {
-    const slot = hours[day];
-    if (slot?.enabled && slot.start && slot.end) {
-      return {
-        dayOfWeek: DAY_TO_DOW[day],
-        hours: [{ opens: slot.start, closes: slot.end }],
-      };
-    }
-    return "" as const;
-  });
-}
 
 function buildOpeningDatePayload(month?: string, year?: string): string | undefined {
   if (!month && !year) return undefined;
@@ -164,35 +119,6 @@ function parseOpeningDate(value: unknown): { month: string; year: string } {
   if (parts.length === 3) return { month: parts[1] ?? "", year: parts[2] ?? "" };
   if (parts.length === 2) return { month: parts[0] ?? "", year: parts[1] ?? "" };
   return { month: "", year: value };
-}
-
-function parseOpeningHours(raw: unknown): TiersLieuxFormData["hours"] {
-  const defaults = getDefaultTiersLieuxValues().hours;
-  if (!Array.isArray(raw)) return defaults;
-  const result = { ...defaults };
-  for (const day of ORDERED_DAYS) {
-    result[day] = { ...defaults[day], enabled: false };
-  }
-  for (const entry of raw) {
-    if (
-      entry &&
-      typeof entry === "object" &&
-      "dayOfWeek" in entry &&
-      typeof (entry as { dayOfWeek: unknown }).dayOfWeek === "string"
-    ) {
-      const dow = (entry as { dayOfWeek: string }).dayOfWeek;
-      const day = DOW_TO_DAY[dow];
-      const slots = (entry as { hours?: Array<{ opens?: string; closes?: string }> }).hours;
-      if (day && slots && slots[0]) {
-        result[day] = {
-          enabled: true,
-          start: slots[0].opens ?? "08:00",
-          end: slots[0].closes ?? "18:00",
-        };
-      }
-    }
-  }
-  return result;
 }
 
 function parseFamily(value: unknown): { family: string[]; familyOther: string } {
@@ -270,7 +196,7 @@ export interface EntityLike {
 // tl:pickString → coerce:pickString ; tl:pickNumberString → coerce:string (byte-identique, prouvé) : GÉNÉRIQUES (formEngine/coercions).
 registerTransform("tl:video0", (v) => pickString(Array.isArray(v) ? v[0] : undefined));
 registerTransform("tl:socialRead", (v) => parseSocialLinks(v));
-registerTransform("tl:hoursRead", (v) => parseOpeningHours(v));
+// tl:hoursRead SUPPRIMÉ → codec du widget `openingHours:read` (sharedCodecs), hérité via WIDGET_DEFAULTS.
 registerTransform("tl:openingDateRead", (v) => { const o = parseOpeningDate(v); return { openingMonth: o.month, openingYear: o.year }; });
 registerTransform("tl:manageModelRead", (v) => { const m = parseManagementType(v); return { managementType: m.managementType, managementTypeOther: m.managementTypeOther }; });
 registerTransform("tl:typePlaceRead", (v, all) => {
@@ -288,10 +214,7 @@ registerTransform("tl:typePlaceRead", (v, all) => {
 registerTransform("tl:numOrUndef", (v) => (v ? Number(v) : undefined));
 registerTransform("tl:videoWrite", (v) => (v ? [v] : undefined));
 registerTransform("tl:socialWrite", (links) => buildSocialNetwork(links as Array<{ platform: string; url: string }>).socialNetwork);
-registerTransform("tl:hoursWrite", (hours) => {
-  const oh = buildOpeningHoursPayload(hours as TiersLieuxFormData["hours"]);
-  return oh.some((e) => e !== "") ? oh : undefined; // omet openingHours si aucun jour ouvert
-});
+// tl:hoursWrite SUPPRIMÉ → codec du widget `openingHours:write` (sharedCodecs), hérité via WIDGET_DEFAULTS.
 registerTransform("tl:openingDateWrite", (_v, all) =>
   buildOpeningDatePayload((all as Record<string, string>).openingMonth, (all as Record<string, string>).openingYear));
 registerTransform("tl:manageModelWrite", (_v, all) => {

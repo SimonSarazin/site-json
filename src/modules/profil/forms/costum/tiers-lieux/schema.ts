@@ -108,7 +108,8 @@ export const TIERS_LIEUX_SCHEMA: CostumFormSchema = {
         ],
       },
     },
-    hours: { widget: "openingHours", label: L("Horaires d'ouverture", "Opening hours"), widgetProps: { dayLabelPrefix: "AddTiersLieux.days" }, read: "tl:hoursRead", write: "tl:hoursWrite", path: "openingHours" },
+    // read/write hérités du WIDGET `openingHours` (codec commun openingHours:read/write, cf. WIDGET_DEFAULTS).
+    hours: { widget: "openingHours", label: L("Horaires d'ouverture", "Opening hours"), widgetProps: { dayLabelPrefix: "AddTiersLieux.days" }, path: "openingHours" },
     description: { widget: "textarea", label: L("Description longue", "Long description"), placeholder: L("Décrivez votre tiers-lieu...", "Describe your third-place..."), widgetProps: { rows: 10 }, read: "coerce:pickString", write: "coerce:orUndef" },
 
     // ── pipeline-only (hidden, hors sections) ; membres de groupe (label ⇐ nom) ──

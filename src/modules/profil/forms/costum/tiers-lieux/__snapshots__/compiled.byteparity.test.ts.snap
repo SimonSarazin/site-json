@@ -190,13 +190,13 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       },
       "name": "hours",
       "path": "openingHours",
-      "read": "tl:hoursRead",
+      "read": "openingHours:read",
       "type": "object",
       "widget": "openingHours",
       "widgetProps": {
         "dayLabelPrefix": "AddTiersLieux.days",
       },
-      "write": "tl:hoursWrite",
+      "write": "openingHours:write",
     },
     "localityId": {
       "group": "address",
