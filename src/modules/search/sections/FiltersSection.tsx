@@ -535,11 +535,20 @@ export function FiltersSection({
                 label={t(option.label)}
                 variant={group.optionStyle}
                 selected={isFilterSelected(group.id, filterName)}
-                onToggle={() =>
-                  group.type === "scopeList"
-                    ? toggleFilter(group.id, filterName, group.field ?? `${option.id}${option.level}`, filterName, option.level as ScopeLevel)
-                    : toggleFilter(group.id, filterName)
-                }
+                onToggle={() => {
+                  if (group.type === "scopeList") {
+                    toggleFilter(group.id, filterName, group.field ?? `${option.id}${option.level}`, filterName, option.level as ScopeLevel);
+                  } else if (group.type === "entityList") {
+                    // entityList → searchByFields (type sourceKey), à l'identique
+                    // de computeFiltersFromUrl (chemin URL ?reseauxRegionaux=…).
+                    // Sans ça le clic rangeait le réseau dans selectedFilters et
+                    // le sourceKey n'était jamais envoyé à l'API.
+                    const fType = group.filterType ?? "sourceKey";
+                    toggleFilter(group.id, filterName, fType, filterName, null, fType);
+                  } else {
+                    toggleFilter(group.id, filterName);
+                  }
+                }}
               />
             );
           };
@@ -572,6 +581,9 @@ export function FiltersSection({
                 const option = (group.options ?? []).find((o) => (o.name || o.id) === name);
                 if (group.type === "scopeList" && option) {
                   toggleFilter(group.id, name, group.field ?? `${option.id}${option.level}`, name, option.level as ScopeLevel);
+                } else if (group.type === "entityList") {
+                  const fType = group.filterType ?? "sourceKey";
+                  toggleFilter(group.id, name, fType, name, null, fType);
                 } else {
                   toggleFilter(group.id, name);
                 }
