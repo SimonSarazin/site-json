@@ -1,16 +1,88 @@
-import type { TiersLieuxFormData } from "./tiersLieux.schema";
-import { getDefaultTiersLieuxValues } from "./tiersLieux.schema";
-import { transformFormDataWithAddress } from "../hooks/mutationUtils";
+import { transformFormDataWithAddress } from "../../../hooks/mutationUtils";
 // Pipeline (P3) — imports DIRECTS (pas le barrel formEngine) pour rester un util pur. cf. doc/refactor-field-treatment.md.
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
 import "@/modules/formEngine/engine/coercions"; // side-effect : enregistre coerce:string/pickString/orUndef référencés par le descripteur tiers-lieu
-import "../forms/geoTransforms"; // enregistre geo:write / geoPosition:write (partagés)
+import "../../geoTransforms"; // enregistre geo:write / geoPosition:write (partagés)
 import { seedEntity, buildPayload, buildEditPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
 // Imports DIRECTS de la couche config (PAS le barrel → pas de widgets/React tirés ici, l'util reste pur).
 import { formDescriptorToConfig } from "@/modules/formEngine/config/formDescriptorToConfig";
 import { configToDescriptor } from "@/modules/formEngine/config/configToDescriptor";
 import type { FormValues, JsonFormConfig } from "@/modules/formEngine";
-import { tiersLieuDescriptor } from "../forms/tiersLieu.descriptor";
+import { tiersLieuDescriptor } from "./descriptor";
+import { PROFIL_QUERY_KEYS } from "../../../constants";
+import { getSlug } from "@/lib/constant/common";
+import type { EntityModalCtx } from "../../entityModalSpec";
+import { registerDescriptor, registerDefaultsFn, registerPayloadFn, registerScopeFn, registerInvalidateFn, registerExistingUrlFn } from "../../specRegistries";
+
+/** Horaires d'un jour (widget openingHours). */
+export interface DayHours { enabled: boolean; start: string; end: string }
+/** Lien social (fieldArray). */
+export interface TiersLieuxSocialLink { platform: string; url: string }
+/**
+ * FORME des valeurs de form tiers-lieu (type TS uniquement, AUCUNE validation : la validation vient du
+ * descripteur via zodGen). Remplace l'ex-zod hand-written `tiersLieux.schema.ts` (supprimé) — on ne garde
+ * que la forme typée (consommée par le pipeline + les tests), plus le zod redondant.
+ */
+export interface TiersLieuxFormData {
+  name: string;
+  openingMonth?: string;
+  openingYear?: string;
+  shortDescription: string;
+  structureName?: string;
+  managementType: string;
+  managementTypeOther?: string;
+  family?: string[];
+  familyOther?: string;
+  surfaceBuilt?: string;
+  surfaceOutdoor?: string;
+  // Adresse : 14 champs SIG (level1..4/codeInsee posés par EditLocationTab).
+  addressCountry?: string;
+  streetAddress?: string;
+  postalCode?: string;
+  addressLocality?: string;
+  localityId?: string;
+  level1?: string; level1Name?: string;
+  level2?: string; level2Name?: string;
+  level3?: string; level3Name?: string;
+  level4?: string; level4Name?: string;
+  codeInsee?: string;
+  geo?: { latitude: string | number; longitude: string | number };
+  geoPosition?: { type: "Point"; coordinates: number[] };
+  logo?: string;
+  photos: string[];
+  socialLinks?: TiersLieuxSocialLink[];
+  websiteUrl?: string;
+  hours: {
+    monday: DayHours; tuesday: DayHours; wednesday: DayHours; thursday: DayHours;
+    friday: DayHours; saturday: DayHours; sunday: DayHours;
+  };
+  email: string;
+  phone?: string;
+  videoUrl?: string;
+  description?: string;
+}
+
+/** Socle de defaults tiers-lieu (clé `tl:emptyDefaults`). Hours 7-DOW décochés 08:00–18:00 (opt-in) ; cf.
+ *  `parseOpeningHours` réutilise ces défauts comme base/fallback. Déplacé de l'ex-`tiersLieux.schema.ts`. */
+export function getDefaultTiersLieuxValues(): TiersLieuxFormData {
+  return {
+    name: "", openingMonth: "", openingYear: "", shortDescription: "", managementType: "",
+    family: [], addressCountry: "", addressLocality: "", postalCode: "", streetAddress: "", localityId: "",
+    level1: "", level1Name: "", level2: "", level2Name: "",
+    level3: "", level3Name: "", level4: "", level4Name: "", codeInsee: "",
+    logo: "", photos: [], socialLinks: [],
+    hours: {
+      monday: { enabled: false, start: "08:00", end: "18:00" },
+      tuesday: { enabled: false, start: "08:00", end: "18:00" },
+      wednesday: { enabled: false, start: "08:00", end: "18:00" },
+      thursday: { enabled: false, start: "08:00", end: "18:00" },
+      friday: { enabled: false, start: "08:00", end: "18:00" },
+      saturday: { enabled: false, start: "08:00", end: "18:00" },
+      sunday: { enabled: false, start: "08:00", end: "18:00" },
+    },
+    email: "",
+  };
+}
 
 // CONFIG-DRIVEN : le SPEC tiers-lieu tourne sur le descripteur ISSU DE LA CONFIG (round-trip identique au
 // descripteur unifié → parité byte garantie). READ (seedEntity) ET WRITE (buildPayload/buildEditPayload)
@@ -331,3 +403,32 @@ export function buildTiersLieuxPayload(
 
   return payload;
 }
+
+// ── Enregistrement des CLÉS référencées par `spec.ts` (descripteur + fns costum) ───────────────────────────
+registerDescriptor(tiersLieuDescriptor);
+registerDefaultsFn("tl:emptyDefaults", () => getDefaultTiersLieuxValues() as unknown as Record<string, unknown>);
+// Scope = slug du costum porteur (VITE_SLUG), fallback getSlug() — exposé via {slug} (slugKey "slug").
+registerScopeFn("tl:scope", (carrier) => {
+  const s = (carrier?.serverData as { slug?: unknown } | undefined)?.slug;
+  return { slug: typeof s === "string" && s.trim() ? s.trim() : getSlug() };
+});
+// Payload mode-aware : create scopé costum (merge presets extraData + tags) ; edit complet (vides typés) + merge tags existants.
+registerPayloadFn("tl:payload", (form, ctx: EntityModalCtx) => {
+  const co = ctx.costum as CostumConfig | undefined;
+  if (ctx.mode === "edit") {
+    const existingTags = (ctx.entity?.serverData?.tags as string[] | undefined) ?? [];
+    const addTags = co?.mainTag ? [co.mainTag] : [];
+    return buildTiersLieuxPayload(form as unknown as TiersLieuxFormData, { existingTags, addTags, complete: true });
+  }
+  return buildTiersLieuxPayload(form as unknown as TiersLieuxFormData, co ? { costum: co } : undefined);
+});
+registerInvalidateFn("tl:invalidate", (ctx) => {
+  if (ctx.mode === "edit") return ctx.entity?.slug ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(ctx.entity.slug)] : [];
+  const target = ctx.parent ?? ctx.me;
+  return target ? [PROFIL_QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(target.slug)] : [];
+});
+// Générique (profilMedium/Image/ThumbImageUrl) — enregistré aussi ici pour que le dossier tiers-lieu soit auto-suffisant.
+registerExistingUrlFn("image:profilUrl", (entity) => {
+  const sd = (entity as { serverData?: Record<string, unknown> }).serverData;
+  return (sd?.profilMediumImageUrl || sd?.profilImageUrl || sd?.profilThumbImageUrl || undefined) as string | undefined;
+});

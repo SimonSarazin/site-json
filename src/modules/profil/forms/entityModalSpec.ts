@@ -81,8 +81,13 @@ export interface EntityModalSpec {
   gradientHeader?: boolean;
   dialogClassName?: string;
   validationFailedKey?: string;
-  /** libellés de navigation wizard (clés i18n). `stepLabelKey` interpolé {index}/{total}. */
-  navText?: { next?: string; previous?: string; cancel?: string; stepLabelKey?: string };
+  /** libellés de navigation wizard (clés i18n). `stepLabelKey` = 1 clé interpolée {index}/{total} ;
+   *  `stepTemplate` = 2 clés positionnelles « {step} {index} {of} {total} ». */
+  navText?: {
+    next?: string; previous?: string; cancel?: string;
+    stepLabelKey?: string;
+    stepTemplate?: { stepKey: string; ofKey: string };
+  };
 
   // ── read ──
   /** `base` = clé → `defaultsRegistry` (socle structuré/scope-aware) ; absent → `buildConfigDefaults(config)`. */

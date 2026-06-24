@@ -6,7 +6,7 @@ import { addProjectDescriptor } from "./addProject.descriptor";
 import { addOrganizationDescriptor } from "./addOrganization.descriptor";
 import { buildAddEventDescriptor } from "./addEvent.descriptor";
 import { poiEquipementDescriptor } from "./costum/poiEquipement/descriptor";
-import { tiersLieuDescriptor } from "./tiersLieu.descriptor";
+import { tiersLieuDescriptor } from "./costum/tiersLieu/descriptor";
 import { EDIT_DESCRIPTORS } from "./editProfile.descriptor";
 
 const ALL: Array<[string, FormDescriptor]> = [

@@ -15,8 +15,8 @@ import {
   buildTiersLieuxPayload,
   mapEntityToTiersLieuxValues,
   type EntityLike,
-} from "./tiersLieuxMapping";
-import { getDefaultTiersLieuxValues } from "./tiersLieux.schema";
+} from "./fns";
+import { getDefaultTiersLieuxValues } from "./fns";
 
 /**
  * Tests de tiersLieuxMapping : conversions entity ↔ form pour l'entité

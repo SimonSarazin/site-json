@@ -122,7 +122,9 @@ export function specToConfig(spec: EntityModalSpec): EntityModalConfig {
           cancel: t(spec.navText!.cancel ?? "common.cancel"),
           stepLabel: spec.navText!.stepLabelKey
             ? (index, total) => t(spec.navText!.stepLabelKey!, undefined, { index, total }) as string
-            : undefined,
+            : spec.navText!.stepTemplate
+              ? (index, total) => `${t(spec.navText!.stepTemplate!.stepKey)} ${index} ${t(spec.navText!.stepTemplate!.ofKey)} ${total}`
+              : undefined,
         })
       : undefined,
     getSchema: spec.schemaFn ? (ctx) => getSchemaFn(spec.schemaFn!)!(ctx) : undefined,

@@ -26,8 +26,8 @@ const modalRegistry: Record<string, () => Promise<{ default: ComponentType<Modal
   "add-poi-equipement": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/costum/poiEquipement/spec")]).then(([m, c]) => ({
     default: (props: ModalProps) => <m.EntityFormModal spec={c.poiEquipementSpec} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
   })),
-  "add-tiers-lieux": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/configs/tiersLieu")]).then(([m, c]) => ({
-    default: (props: ModalProps) => <m.EntityFormModal config={c.tiersLieuModalConfig} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
+  "add-tiers-lieux": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/costum/tiersLieu/spec")]).then(([m, c]) => ({
+    default: (props: ModalProps) => <m.EntityFormModal spec={c.tiersLieuSpec} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
   })),
 };
 

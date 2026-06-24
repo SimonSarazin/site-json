@@ -21,10 +21,10 @@ const editModalRegistry: Record<string, () => Promise<{ default: ComponentType<E
       ),
     })),
   "edit-tiers-lieux": () =>
-    Promise.all([import("../../forms/EntityFormModal"), import("../../forms/configs/tiersLieu")]).then(([m, c]) => ({
+    Promise.all([import("../../forms/EntityFormModal"), import("../../forms/costum/tiersLieu/spec")]).then(([m, c]) => ({
       default: (props: EditModalProps) => (
         <m.EntityFormModal
-          config={c.tiersLieuModalConfig}
+          spec={c.tiersLieuSpec}
           open={props.open}
           onOpenChange={props.onOpenChange}
           mode="edit"

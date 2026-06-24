@@ -6,3 +6,4 @@
  * (Se remplit au fil des migrations : poi-équipement puis tiers-lieu.)
  */
 import "./costum/poiEquipement/fns";
+import "./costum/tiersLieu/fns";

@@ -6,7 +6,7 @@
  * Layout `tabs`, 5 steps : info / contact / media / online / details.
  */
 import type { FieldDescriptor, FormDescriptor } from "@/modules/formEngine";
-import "./validators"; // side-effect : enregistre la clé "addressValid" dans le validateRegistry
+import "../../validators"; // side-effect : enregistre la clé "addressValid" dans le validateRegistry
 
 const F = (k: string) => `AddTiersLieux.fields.${k}`;
 

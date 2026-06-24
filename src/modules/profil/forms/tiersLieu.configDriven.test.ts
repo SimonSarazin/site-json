@@ -16,10 +16,10 @@ import { buildPayload, type FormSpec } from "@/modules/formEngine/engine/entityF
 import { JsonFormConfigSchema } from "@/modules/formEngine/config/schema";
 import { formDescriptorToConfig } from "@/modules/formEngine/config/formDescriptorToConfig";
 import { configToDescriptor } from "@/modules/formEngine/config/configToDescriptor";
-import { tiersLieuDescriptor } from "./tiersLieu.descriptor";
-import { getDefaultTiersLieuxValues } from "../utils/tiersLieux.schema";
+import { tiersLieuDescriptor } from "./costum/tiersLieu/descriptor";
+import { getDefaultTiersLieuxValues } from "./costum/tiersLieu/fns";
 // side-effect : enregistre les transforms tl:* + geo:write/geoPosition:write (référencés par clé dans le descripteur).
-import "../utils/tiersLieuxMapping";
+import "./costum/tiersLieu/fns";
 
 const tLoc = (l: unknown) => (typeof l === "string" ? l : ((l as { fr?: string })?.fr ?? ""));
 const norm = <T,>(v: T): T => JSON.parse(JSON.stringify(v));

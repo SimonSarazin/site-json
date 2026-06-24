@@ -11,8 +11,8 @@ import { buildParentReference, buildOrganizerReference } from "./mutationUtils";
 // side-effect : enregistre pf:* / poi:* / tl:* + fournit les builders de référence.
 import { buildProfileUpdateData } from "../forms/editProfilePayload";
 import { buildAddPoiPayload } from "../forms/costum/poiEquipement/fns";
-import { buildTiersLieuxPayload } from "../utils/tiersLieuxMapping";
-import { getDefaultTiersLieuxValues } from "../utils/tiersLieux.schema";
+import { buildTiersLieuxPayload } from "../forms/costum/tiersLieu/fns";
+import { getDefaultTiersLieuxValues } from "../forms/costum/tiersLieu/fns";
 
 type Data = Record<string, unknown>;
 
