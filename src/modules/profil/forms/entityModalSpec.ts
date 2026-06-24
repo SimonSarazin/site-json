@@ -46,8 +46,11 @@ export interface SpecInject {
   organizerFallback?: boolean;
   /** supprime payload.email === "" (ADD_ORGANIZATION). */
   dropEmptyEmail?: boolean;
-  /** valeurs fixes ajoutées au payload (preset costum). */
+  /** valeurs fixes ajoutées au payload au CREATE (STAMP costum statique). */
   extraFields?: Record<string, unknown>;
+  /** STAMP depuis le scope résolu : { champPayload: cléScope } → payload[champ] = ctx.scope[cléScope].
+   *  Évite de dupliquer une valeur déjà dans `scope.defaults` (ex. poi : { type: "poiType" }). */
+  extraFieldsFromScope?: Record<string, string>;
 }
 
 /** Bloc WRITE : DONNÉES + clé `payloadFn` (défaut = pipeline) + clé `invalidateFn`. */

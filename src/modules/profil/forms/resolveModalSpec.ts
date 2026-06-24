@@ -29,6 +29,15 @@ function pickMode<T>(v: ByMode<T>, mode: "add" | "edit"): T {
   return v && typeof v === "object" && "add" in (v as object) ? (v as { add: T; edit: T })[mode] : (v as T);
 }
 
+/** STAMP create : valeurs fixes (`extraFields`) + valeurs tirées du scope résolu (`extraFieldsFromScope`). */
+function resolveExtraFields(inject: EntityModalSpec["mutation"]["inject"], scope: unknown): Record<string, unknown> | undefined {
+  if (!inject?.extraFields && !inject?.extraFieldsFromScope) return undefined;
+  const out: Record<string, unknown> = { ...(inject.extraFields ?? {}) };
+  const sc = scope as Record<string, unknown> | undefined;
+  for (const [field, key] of Object.entries(inject.extraFieldsFromScope ?? {})) out[field] = sc?.[key];
+  return out;
+}
+
 /** Slug costum de CRÉATION : depuis le carrier, le scope dérivé (slugKey), ou une constante. */
 function resolveCostumSlug(scope: EntityModalSpec["scope"], ctx: EntityModalCtx): string | undefined {
   if (!scope) return undefined;
@@ -86,7 +95,7 @@ export function specToConfig(spec: EntityModalSpec): EntityModalConfig {
         : {
             role: m.inject?.role,
             dropEmptyEmail: m.inject?.dropEmptyEmail,
-            extraFields: m.inject?.extraFields,
+            extraFields: resolveExtraFields(m.inject, ctx.scope),
             parent: m.inject?.parent ? (ctx.parent ?? null) : null,
             organizerFallback: m.inject?.organizerFallback ? (ctx.parent ?? null) : undefined,
           },

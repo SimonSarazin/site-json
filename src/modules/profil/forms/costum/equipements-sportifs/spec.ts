@@ -34,9 +34,9 @@ export const equipementsSportifsSpec: EntityModalSpec = {
   mutation: {
     entityType: "poi",
     payloadEmitEmptyOnEdit: true, // édition = pipeline emitEmpty:true ; création = emitEmpty:false (défaut)
-    // STAMP costum : valeurs fixes tamponnées au CREATE (pattern réutilisable). `type` = identité de stockage
-    // SSBE (POI type "recoveryCenter"). Au create uniquement (inject) → édition n'y touche pas (préservé).
-    inject: { parent: true, extraFields: { type: "recoveryCenter" } },
+    // STAMP costum : `type` = identité de stockage SSBE, tiré du SCOPE (single-source : `scope.defaults.poiType`,
+    // aussi utilisé par la recherche de doublons). Au create uniquement → édition n'y touche pas (préservé).
+    inject: { parent: true, extraFieldsFromScope: { type: "poiType" } },
     navigateOnSuccess: false,
     successKey: { add: "toast.add.poiSuccess", edit: "toast.profile.updateSuccess" },
     errorKey: { add: "toast.add.poiError", edit: "toast.profile.updateError" },
