@@ -304,9 +304,9 @@ export function buildTiersLieuxPayload(
     : buildPayload(TIERSLIEU_SPEC, data as unknown as FormValues)) as Record<string, unknown>;
 
   if (options.costum) {
-    // Contexte costum CREATE = DONNÉES de config (`TIERSLIEU_CONFIG.submit.extraData`), appliquées
-    // génériquement (même mécanisme que buildGenericPayload) → AUCUNE constante en dur ici. Les clés de
-    // contexte costum (costum*) sont injectées par la lib (`me.costum(slug)`), jamais par le payload.
+    // Contexte costum CREATE = DONNÉES de config (`TIERSLIEU_CONFIG.submit.extraData`), fusionnées dans le
+    // payload (merge extraData, hors clés costum*) → AUCUNE constante en dur ici. Les clés de contexte
+    // costum (costum*) sont injectées par la lib (`me.costum(slug)`), jamais par le payload.
     for (const [k, v] of Object.entries(TIERSLIEU_CONFIG.submit?.extraData ?? {})) {
       if (k.startsWith("costum")) continue;
       payload[k] = v;

@@ -29,11 +29,6 @@ const modalRegistry: Record<string, () => Promise<{ default: ComponentType<Modal
   "add-tiers-lieux": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/configs/tiersLieu")]).then(([m, c]) => ({
     default: (props: ModalProps) => <m.EntityFormModal config={c.tiersLieuModalConfig} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
   })),
-  "register-cyber-reunion": () => import("./RegisterCyberReunionModal").then(m => ({ default: m.RegisterCyberReunionModal })),
-  // json-form reste sur l'ancien modal jusqu'à P3 : JsonFormHost (moteur) est prêt mais le payload
-  // générique perd les champs costum non déclarés de cyber-reunion (siren/phone/website…). P3 ajoutera
-  // un payloadFn dédié (+ complétion du schéma costum) puis re-pointera ici vers JsonFormHost.
-  "json-form": () => import("./JsonFormModal").then(m => ({ default: m.JsonFormModal })),
 };
 
 const lazyComponents: Record<string, ComponentType<ModalProps>> = {};

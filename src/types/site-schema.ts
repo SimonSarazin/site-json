@@ -1936,8 +1936,6 @@ export const SiteConfig = z.object({
       "add-event",
       "add-poi",
       "add-tiers-lieux",
-      "register-cyber-reunion",
-      "json-form",
     ]),
     label: LocalizedString,
     icon: z.string().optional().default("plus"),
