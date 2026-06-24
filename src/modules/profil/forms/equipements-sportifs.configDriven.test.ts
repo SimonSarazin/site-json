@@ -22,18 +22,20 @@ import { configToDescriptor } from "@/modules/formEngine/config/configToDescript
 import { equipementsSportifsDescriptor } from "./costum/equipements-sportifs/descriptor";
 // side-effect : enregistre les transforms poi:* (toString/…/addressRead/Write) + geo:write/geoPosition:write,
 // référencés PAR CLÉ dans le descripteur. Fournit aussi createEmptyDefaults (socle baseDefaults).
-import { createEmptyDefaults } from "./costum/equipements-sportifs/fns";
+import { createEmptyDefaults, type PoiEquipementScope } from "./costum/equipements-sportifs/fns";
 import type { AddPoiFormData } from "../schemaForm";
 
 const tLoc = (l: unknown) => (typeof l === "string" ? l : ((l as { fr?: string })?.fr ?? ""));
 const norm = <T,>(v: T): T => JSON.parse(JSON.stringify(v));
 const poiLike = (serverData: Record<string, unknown>) => ({ serverData }) as unknown as Poi;
+// Scope de test (ex-DEFAULT_POI_EQUIPEMENT_SCOPE, désormais en config) — socle des baseDefaults.
+const SCOPE: PoiEquipementScope = { parentId: "p", sourceKey: "equipementsSportifs974", poiType: "recoveryCenter", addressCountry: "RE" };
 
 describe("PILOTE config-driven POI équipement — descripteur unifié", () => {
   const config = formDescriptorToConfig(equipementsSportifsDescriptor);
   const d2 = configToDescriptor(config, { tLoc });
 
-  const baseDefaults = () => createEmptyDefaults() as unknown as Record<string, unknown>;
+  const baseDefaults = () => createEmptyDefaults(SCOPE) as unknown as Record<string, unknown>;
   const specOrig: FormSpec = { descriptor: equipementsSportifsDescriptor, baseDefaults };
   const specCfg: FormSpec = { descriptor: d2, baseDefaults };
 
@@ -73,7 +75,7 @@ describe("PILOTE config-driven POI équipement — descripteur unifié", () => {
 
   it("4. buildPayload (CREATE) + buildEditPayload (EDIT) via config === via l'original (byte-parité)", () => {
     const form = {
-      ...createEmptyDefaults(),
+      ...createEmptyDefaults(SCOPE),
       name: "Stade Pilote", equip_type_name: "Terrain", description: "d",
       equip_long: 25, equip_larg: 10, equip_eclair: false, inst_part_bool: true,
       tags: ["a"], aps_name: ["foot"], inst_part_type: ["x"], urls: ["https://x.fr"],

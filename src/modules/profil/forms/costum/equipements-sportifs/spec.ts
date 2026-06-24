@@ -16,7 +16,12 @@ export const equipementsSportifsSpec: EntityModalSpec = {
   validationFailedKey: "AddPoiEquipement.validationFailed",
   listsFromCarrier: true,
   image: { field: "_imageFile", existingUrlFrom: "image:profilUrl" },
-  scope: { derive: "poi:scope", slugFrom: "derived", slugKey: "sourceKey" },
+  // Scope du costum = DONNÉE de config (ex-DEFAULT_POI_EQUIPEMENT_SCOPE, retiré de fns.ts). parentId/sourceKey
+  // sont surchargés par le carrier live ; poiType/addressCountry sont les constantes de déploiement (SSBE/974).
+  scope: {
+    derive: "poi:scope", slugFrom: "derived", slugKey: "sourceKey",
+    defaults: { parentId: "6a04155ed047177b92399685", sourceKey: "equipementsSportifs974", poiType: "recoveryCenter", addressCountry: "RE" },
+  },
   defaults: { base: "poi:emptyDefaults" },
   navText: {
     next: "AddPoiEquipement.buttons.next",

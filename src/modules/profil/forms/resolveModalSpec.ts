@@ -113,7 +113,7 @@ export function specToConfig(spec: EntityModalSpec): EntityModalConfig {
       ? (entity: EntityTypes) => getExistingUrlFn(spec.image!.existingUrlFrom!)?.(entity)
       : undefined,
     resolveScope: spec.scope?.derive
-      ? (carrier) => getScopeFn(spec.scope!.derive!)?.(carrier)
+      ? (carrier) => getScopeFn(spec.scope!.derive!)?.(carrier, spec.scope!.defaults)
       : undefined,
     texts: spec.navText
       ? (t) => ({

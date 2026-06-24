@@ -69,8 +69,8 @@ export function getPayloadFn(key: string): PayloadFn | undefined {
   return fn;
 }
 
-// ── Scope costum (carrier → scope) ────────────────────────────────────────────
-export type ScopeFn = (carrier: EntityTypes | null | undefined) => unknown;
+// ── Scope costum (carrier + defaults de config → scope) ───────────────────────
+export type ScopeFn = (carrier: EntityTypes | null | undefined, defaults?: Record<string, unknown>) => unknown;
 const scopeFns = new Map<string, ScopeFn>();
 export function registerScopeFn(key: string, fn: ScopeFn): void {
   scopeFns.set(key, fn);

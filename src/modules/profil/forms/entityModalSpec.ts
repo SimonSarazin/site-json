@@ -101,8 +101,10 @@ export interface EntityModalSpec {
 
   // ── scope costum ──
   /** slugFrom : où prendre le slug costum de création — `carrier` (slug du porteur), `derived` (champ
-   *  `slugKey` de l'objet scope produit par `derive`), `constant`. `derive` = clé → `scopeRegistry`. */
-  scope?: { slugFrom?: "carrier" | "derived" | "constant"; slugKey?: string; constant?: string; derive?: string };
+   *  `slugKey` de l'objet scope produit par `derive`), `constant`. `derive` = clé → `scopeRegistry`.
+   *  `defaults` = valeurs de scope du costum (DONNÉE de config : parentId/sourceKey/poiType/addressCountry…),
+   *  passées au `derive` (fallback quand le carrier ne fournit pas la valeur). */
+  scope?: { slugFrom?: "carrier" | "derived" | "constant"; slugKey?: string; constant?: string; derive?: string; defaults?: Record<string, unknown> };
 
   // ── slots (id de slot → clé registre) ──
   slots?: Record<string, string>;

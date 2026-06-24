@@ -43,37 +43,29 @@ export interface PoiEquipementScope {
   addressCountry: string;
 }
 
-export const DEFAULT_POI_EQUIPEMENT_SCOPE: PoiEquipementScope = {
-  parentId: "6a04155ed047177b92399685",
-  sourceKey: "equipementsSportifs974",
-  poiType: "recoveryCenter",
-  addressCountry: "RE",
-};
-
 /** Entité costum minimale utile à la résolution du scope (cf. `useCocolight().entity`). */
 type ScopeEntity = { id?: string | null; serverData?: { slug?: string | null } | null } | null | undefined;
 
 /**
- * Résout le scope depuis l'entité du costum : `parentId` = id de l'org costum,
- * `sourceKey` = son slug. Fallback sur les constantes SSBE si l'entité est absente.
+ * Résout le scope depuis l'entité du costum + les `defaults` de config (`spec.scope.defaults`) :
+ * `parentId` = id de l'org costum (sinon defaults), `sourceKey` = son slug (sinon defaults). `poiType` /
+ * `addressCountry` = constantes de déploiement, fournies par les defaults (DONNÉE de config). Plus aucune
+ * constante de scope codée en dur ici (ex-DEFAULT_POI_EQUIPEMENT_SCOPE retiré → vit dans `spec.scope.defaults`).
  */
-export function resolvePoiEquipementScope(entity?: ScopeEntity): PoiEquipementScope {
-  const d = DEFAULT_POI_EQUIPEMENT_SCOPE;
+export function resolvePoiEquipementScope(entity: ScopeEntity, defaults: PoiEquipementScope): PoiEquipementScope {
   const slug = entity?.serverData?.slug;
   return {
-    parentId: entity?.id || d.parentId,
-    sourceKey: typeof slug === "string" && slug.trim().length > 0 ? slug.trim() : d.sourceKey,
-    poiType: d.poiType,
-    addressCountry: d.addressCountry,
+    parentId: entity?.id || defaults.parentId,
+    sourceKey: typeof slug === "string" && slug.trim().length > 0 ? slug.trim() : defaults.sourceKey,
+    poiType: defaults.poiType,
+    addressCountry: defaults.addressCountry,
   };
 }
 
 // Coerceurs de TYPE (string/number/bool/array/date) : désormais GÉNÉRIQUES dans formEngine
 // (`coerceString`/`coerceNumber`/… enregistrés `coerce:*`). poi:addressRead réutilise `coerceString`.
 
-export const createEmptyDefaults = (
-  scope: PoiEquipementScope = DEFAULT_POI_EQUIPEMENT_SCOPE
-): AddPoiFormData => ({
+export const createEmptyDefaults = (scope: PoiEquipementScope): AddPoiFormData => ({
   name: "",
   type: scope.poiType as AddPoiFormData["type"],
   description: "",
@@ -127,29 +119,24 @@ export const createEmptyDefaults = (
   inst_nom: "",
 });
 
-// ── READ via pipeline (P2) : remplace le mapping coercer-par-coercer ───────────
-// Coercers enregistrés comme transformers nommés + un descripteur de LECTURE déclaratif (coercer `read`
-// + `default` par champ ; adresse = groupe de sérialisation objet `address` → 5 champs plats).
-// `seedFromEntity(POI_READ_DESCRIPTOR, serverData)` reproduit l'ancien buildEditDefaults byte-pour-byte
-// (prouvé en test) — création (serverData={}) ET édition. cf. doc/refactor-field-treatment.md (P2).
-// Adresse : objet serveur `address` → 5 champs plats. Parité buildEditDefaults : addressCountry retombe
-// sur le défaut de scope ("RE") si vide ; les 4 autres sur "". (Écriture = P2-suite, ici read seulement.)
+// ── READ adresse (serializeGroup) : objet serveur `address` → champs plats ──────
+// 14 clés SIG (round-trip COMPLET requis par l'édition unifiée S6 : sinon l'adresse reconstruite écraserait
+// les niveaux serveur). OMIT-EMPTY : un champ vide est OMIS du retour → le SOCLE (createEmptyDefaults, dont
+// `addressCountry` vient de `spec.scope.defaults`) le fournit. seedEntity = {...socle, ...read} : un "" du read
+// écraserait le socle, donc on omet les vides → parité buildEditDefaults (`addressCountry` retombe sur le
+// pays de scope si vide, les autres sur "") SANS aucune constante de pays codée ici.
+const ADDRESS_READ_KEYS = [
+  "addressCountry", "addressLocality", "localityId", "postalCode", "streetAddress",
+  "level1", "level1Name", "level2", "level2Name", "level3", "level3Name", "level4", "level4Name", "codeInsee",
+] as const;
 registerTransform("poi:addressRead", (a) => {
   const o = (a ?? {}) as Record<string, unknown>;
-  return {
-    addressCountry: coerceString(o.addressCountry) || DEFAULT_POI_EQUIPEMENT_SCOPE.addressCountry,
-    addressLocality: coerceString(o.addressLocality),
-    localityId: coerceString(o.localityId),
-    postalCode: coerceString(o.postalCode),
-    streetAddress: coerceString(o.streetAddress),
-    // 9 champs SIG (level1..4/codeInsee) : round-trip COMPLET requis par l'édition unifiée (S6) — sinon
-    // l'adresse reconstruite (payload complet) écraserait les niveaux serveur. Parité tl:addressRead.
-    level1: coerceString(o.level1), level1Name: coerceString(o.level1Name),
-    level2: coerceString(o.level2), level2Name: coerceString(o.level2Name),
-    level3: coerceString(o.level3), level3Name: coerceString(o.level3Name),
-    level4: coerceString(o.level4), level4Name: coerceString(o.level4Name),
-    codeInsee: coerceString(o.codeInsee),
-  };
+  const out: Record<string, unknown> = {};
+  for (const k of ADDRESS_READ_KEYS) {
+    const v = coerceString(o[k]);
+    if (v) out[k] = v; // vide → omis (le socle fournit le défaut)
+  }
+  return out;
 });
 // WRITE adresse : champs plats du form → objet `address` imbriqué (ou `undefined` si pas de localityId →
 // clé omise, parité buildAddressFromForm). `all` = toutes les valeurs de form.
@@ -161,7 +148,9 @@ registerTransform("poi:addressWrite", (all) => buildAddressFromForm((all ?? {}) 
  * ET la config (formDescriptorToConfig). Les transforms `poi:*` référencés par ses champs sont enregistrés
  * ci-dessus (poi:toString/…, poi:addressRead/Write) + `geo:*` via l'import geoTransforms. cf. tiers-lieu.
  */
-const POI_SPEC: FormSpec = { descriptor: equipementsSportifsDescriptor, baseDefaults: () => createEmptyDefaults() as unknown as FormValues };
+// baseDefaults omis : buildAddPoiPayload utilise buildPayload (WRITE), qui n'utilise PAS baseDefaults
+// (réservé au READ/seedEntity). createEmptyDefaults exige désormais un scope → fourni au READ via le résolveur.
+const POI_SPEC: FormSpec = { descriptor: equipementsSportifsDescriptor };
 
 /**
  * Payload de CRÉATION POI (pipeline, omit-empty) : adresse imbriquée, geo coercé, champs équipement typés
@@ -183,7 +172,7 @@ export function buildAddPoiPayload(data: AddPoiFormData): Record<string, unknown
 // Le payload (add ET edit) passe par le PIPELINE générique (défaut du résolveur) : buildAddPoiPayload(d) ≡
 // buildPipelinePayload(config, d, {emitEmpty:false}) par round-trip lossless → AUCUN payloadFn custom requis.
 registerDescriptor(equipementsSportifsDescriptor);
-registerScopeFn("poi:scope", (carrier) => resolvePoiEquipementScope(carrier as Parameters<typeof resolvePoiEquipementScope>[0]));
+registerScopeFn("poi:scope", (carrier, defaults) => resolvePoiEquipementScope(carrier as ScopeEntity, defaults as unknown as PoiEquipementScope));
 registerDefaultsFn("poi:emptyDefaults", (ctx) => createEmptyDefaults(ctx.scope as PoiEquipementScope) as unknown as Record<string, unknown>);
 registerSlot("parentInfo", (ctx: EntityModalCtx) => createElement(ParentInfoReadonly, { parent: ctx.parent ?? null }));
 registerSlot("poiDoublons", (ctx: EntityModalCtx) => createElement(PoiEquipementDoublonsSlot, { scope: ctx.scope as PoiEquipementScope }));
