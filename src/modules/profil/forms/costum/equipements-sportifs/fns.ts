@@ -9,7 +9,8 @@
 // tirer les widgets/composants). cf. doc/refactor-field-treatment.md.
 import { createElement } from "react";
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
-import { coerceString } from "@/modules/formEngine/engine/coercions"; // side-effect : enregistre coerce:* + fournit coerceString (poi:addressRead)
+import "@/modules/formEngine/engine/coercions"; // side-effect : enregistre les coerce:* (read par type des champs)
+import { ADDRESS_KEYS } from "../sharedCodecs"; // + side-effect : enregistre le codec commun `address:read`
 import { seedEntity, buildPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
 import "../../geoTransforms"; // enregistre geo:write / geoPosition:write (partagés)
 import type { FormValues } from "@/modules/formEngine";
@@ -61,13 +62,10 @@ export function resolvePoiEquipementScope(entity: ScopeEntity, defaults: PoiEqui
   };
 }
 
-// Socle ADRESSE : membres du groupe `address`. seedFromEntity n'applique PAS de `field.default` aux membres
-// de groupe (read via le groupe), donc on les fournit ici. `addressCountry` = pays du scope ; les 9 SIG
-// (level1..4/codeInsee, valeurs de form en round-trip, non rendues) + les 4 autres → "".
-const POI_ADDRESS_BASE = (scope: PoiEquipementScope): Record<string, unknown> => ({
-  addressCountry: scope.addressCountry, addressLocality: "", localityId: "", postalCode: "", streetAddress: "",
-  level1: "", level1Name: "", level2: "", level2Name: "", level3: "", level3Name: "", level4: "", level4Name: "", codeInsee: "",
-});
+// Socle ADRESSE : membres du groupe `address` (seedFromEntity ne leur applique pas de `field.default` car lus
+// via le groupe). Dérivé des `ADDRESS_KEYS` communs → "" partout, sauf `addressCountry` = pays du scope.
+const POI_ADDRESS_BASE = (scope: PoiEquipementScope): Record<string, unknown> =>
+  ({ ...Object.fromEntries(ADDRESS_KEYS.map((k) => [k, ""])), addressCountry: scope.addressCountry });
 
 // Defaults DÉRIVÉS du descripteur — plus de re-listage des ~36 champs. `seedEntity(descriptor, null)` applique
 // les `field.default` (text→"", number→undefined via coerce:number, switch→false, array→[]) et EXCLUT déjà
@@ -78,25 +76,7 @@ export const createEmptyDefaults = (scope: PoiEquipementScope): FormValues => ({
   type: scope.poiType,
 }) as FormValues;
 
-// ── READ adresse (serializeGroup) : objet serveur `address` → champs plats ──────
-// 14 clés SIG (round-trip COMPLET requis par l'édition unifiée S6 : sinon l'adresse reconstruite écraserait
-// les niveaux serveur). OMIT-EMPTY : un champ vide est OMIS du retour → le SOCLE (createEmptyDefaults, dont
-// `addressCountry` vient de `spec.scope.defaults`) le fournit. seedEntity = {...socle, ...read} : un "" du read
-// écraserait le socle, donc on omet les vides → parité buildEditDefaults (`addressCountry` retombe sur le
-// pays de scope si vide, les autres sur "") SANS aucune constante de pays codée ici.
-const ADDRESS_READ_KEYS = [
-  "addressCountry", "addressLocality", "localityId", "postalCode", "streetAddress",
-  "level1", "level1Name", "level2", "level2Name", "level3", "level3Name", "level4", "level4Name", "codeInsee",
-] as const;
-registerTransform("poi:addressRead", (a) => {
-  const o = (a ?? {}) as Record<string, unknown>;
-  const out: Record<string, unknown> = {};
-  for (const k of ADDRESS_READ_KEYS) {
-    const v = coerceString(o[k]);
-    if (v) out[k] = v; // vide → omis (le socle fournit le défaut)
-  }
-  return out;
-});
+// READ adresse : codec COMMUN `address:read` (cf. ../sharedCodecs, omit-empty) référencé par serializeGroups.
 // WRITE adresse : champs plats du form → objet `address` imbriqué (ou `undefined` si pas de localityId →
 // clé omise, parité buildAddressFromForm). `all` = toutes les valeurs de form.
 registerTransform("poi:addressWrite", (all) => buildAddressFromForm((all ?? {}) as Record<string, string>));
@@ -105,7 +85,7 @@ registerTransform("poi:addressWrite", (all) => buildAddressFromForm((all ?? {}) 
  * Spec POI = descripteur UNIFIÉ (render + read/write) `equipementsSportifsDescriptor` + socle createEmptyDefaults.
  * Le MÊME descripteur pilote le rendu (GenericForm), le READ (seedEntity), le WRITE create/edit (buildPayload)
  * ET la config (formDescriptorToConfig). Les transforms `poi:*` référencés par ses champs sont enregistrés
- * ci-dessus (poi:toString/…, poi:addressRead/Write) + `geo:*` via l'import geoTransforms. cf. tiers-lieu.
+ * ci-dessus (poi:addressWrite) + le codec commun `address:read` + `geo:*` via l'import geoTransforms. cf. tiers-lieu.
  */
 // baseDefaults omis : buildAddPoiPayload utilise buildPayload (WRITE), qui n'utilise PAS baseDefaults
 // (réservé au READ/seedEntity). createEmptyDefaults exige désormais un scope → fourni au READ via le résolveur.

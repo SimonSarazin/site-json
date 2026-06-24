@@ -84,7 +84,8 @@ const fields: FieldDescriptor[] = [
   // `spec.mutation.inject.extraFields` ({ type: "recoveryCenter" }). En édition il n'est ni relu ni
   // réémis → l'entité conserve son type (Object.assign ne touche pas une clé absente). cf. costum stamp.
   // Membres plats du groupe `address` : recomposés en objet par serializeGroups (pas de read/default
-  // individuel — addressCountry retombe sur "RE" via le transform poi:addressRead). localityId pilote
+  // individuel — addressCountry retombe sur "RE" via le socle POI_ADDRESS_BASE, READ par le codec commun
+  // `address:read` omit-empty qui préserve ce socle). localityId pilote
   // l'écriture (clé omise sans lui) ; non rendu (absent des sections) = pipeline-only.
   hidden("addressCountry", { required: true, group: "address" }),
   hidden("addressLocality", { required: true, group: "address" }),
@@ -168,7 +169,7 @@ export const equipementsSportifsDescriptor: FormDescriptor = {
   layout: { kind: "wizard", validatePerStep: true },
   // Groupe de sérialisation : objet serveur `address` ↔ champs plats du form (read = décompose 14 clés,
   // write = recompose, undefined si pas de localityId → clé omise). Parité buildEditDefaults / buildAddressFromForm.
-  serializeGroups: { address: { serverKey: "address", read: "poi:addressRead", write: "poi:addressWrite" } },
+  serializeGroups: { address: { serverKey: "address", read: "address:read", write: "poi:addressWrite" } },
   sections: [
     {
       id: "general", label: "AddPoiEquipement.steps.general",

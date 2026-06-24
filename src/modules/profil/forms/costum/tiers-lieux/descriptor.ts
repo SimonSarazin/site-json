@@ -157,7 +157,7 @@ export const tiersLieuxDescriptor: FormDescriptor = {
     openingDate: { serverKey: "openingDate", read: "tl:openingDateRead", write: "tl:openingDateWrite" },
     manageModel: { serverKey: "manageModel", read: "tl:manageModelRead", write: "tl:manageModelWrite" },
     typePlace: { serverKey: "typePlace", read: "tl:typePlaceRead", write: "tl:typePlaceWrite" },
-    address: { serverKey: "address", read: "tl:addressRead", write: "tl:addressWrite" },
+    address: { serverKey: "address", read: "address:read", write: "tl:addressWrite" },
   },
   // addressComplete (cross-champ) : adresse COMPLÈTE obligatoire pour un tiers-lieu — ville (localityId)
   // + code postal + rue. Erreur sur addressLocality (allume le badge de l'étape contact + bloque « Suivant »).

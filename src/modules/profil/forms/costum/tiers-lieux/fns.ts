@@ -3,6 +3,7 @@ import { transformFormDataWithAddress } from "../../../hooks/mutationUtils";
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
 import "@/modules/formEngine/engine/coercions"; // side-effect : enregistre coerce:string/pickString/orUndef référencés par le descripteur tiers-lieu
 import "../../geoTransforms"; // enregistre geo:write / geoPosition:write (partagés)
+import "../sharedCodecs"; // enregistre le codec commun `address:read` (référencé par serializeGroups.address)
 import { seedEntity, buildPayload, buildEditPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
 // Imports DIRECTS de la couche config (PAS le barrel → pas de widgets/React tirés ici, l'util reste pur).
 import { formDescriptorToConfig } from "@/modules/formEngine/config/formDescriptorToConfig";
@@ -279,18 +280,8 @@ registerTransform("tl:typePlaceRead", (v, all) => {
 // Lit les 14 champs SIG (parité profil `pf:addressRead`) → round-trip COMPLET des niveaux (level1..4/
 // codeInsee). Sans eux, une édition sans toucher l'adresse reconstruisait un objet partiel ; et le schéma
 // stripait les niveaux posés par EditLocationTab. cf. doc/refactor-field-treatment.md (asymétrie adresse).
-registerTransform("tl:addressRead", (v) => {
-  const a = (v ?? {}) as Record<string, unknown>;
-  return {
-    addressCountry: pickString(a.addressCountry), addressLocality: pickString(a.addressLocality),
-    postalCode: pickString(a.postalCode), streetAddress: pickString(a.streetAddress), localityId: pickString(a.localityId),
-    level1: pickString(a.level1), level1Name: pickString(a.level1Name),
-    level2: pickString(a.level2), level2Name: pickString(a.level2Name),
-    level3: pickString(a.level3), level3Name: pickString(a.level3Name),
-    level4: pickString(a.level4), level4Name: pickString(a.level4Name),
-    codeInsee: pickString(a.codeInsee),
-  };
-});
+// READ adresse : codec COMMUN `address:read` (cf. ../sharedCodecs, omit-empty — le socle getDefaultTiersLieuxValues
+// fournit les vides ""). Remplace l'ex-`tl:addressRead` (pickString) ≡ pour des strings.
 // WRITE (P3) — réutilisent les helpers de build. `undefined` sur vide = clé OMISE par valuesToPayload
 // (parité de l'omit-empty de l'ancien buildTiersLieuxPayload ; le diff d'édition efface, lui, via diffForEdit).
 // tl:emptyToUndef → coerce:orUndef (`v || undefined` ≡ `v ? v : undefined`, prouvé byte-identique) : GÉNÉRIQUE.
