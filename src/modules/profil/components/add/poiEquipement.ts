@@ -5,29 +5,15 @@
  * endroits), (2) rendre le mapping form↔entité testable isolément.
  */
 import { format } from "date-fns";
-import type { Poi } from "@communecter/cocolight-api-client";
 import type { AddPoiFormData } from "../../schemaForm";
 // Helpers de pipeline partagés (imports DIRECTS, pas le barrel formEngine → util pur testable sans
 // tirer les widgets/composants). cf. doc/refactor-field-treatment.md.
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
-import { seedEntity, buildPayload, buildEditPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
+import { buildPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
 import "../../forms/geoTransforms"; // enregistre geo:write / geoPosition:write (partagés)
 import type { FormValues } from "@/modules/formEngine";
 import { poiEquipementDescriptor } from "../../forms/poiEquipement.descriptor";
 import { buildAddressFromForm } from "../../hooks/mutationUtils";
-
-/**
- * Payload de CRÉATION équipement (POI costum) : data + image optionnelle. Le `save()` route
- * `_imageFile` vers le bloc PROFIL_IMAGE. (Relocalisé depuis l'ancien PoiEquipementForm, supprimé.)
- */
-export interface PoiEquipementSubmitPayload extends AddPoiFormData {
-  _imageFile?: File | null;
-  /** Drapeau UI : supprimer l'image existante (édition). Ignoré à la création. */
-  _imageDeleted?: boolean;
-}
-
-/** Payload d'ÉDITION : payload COMPLET (vides typés, cf. buildEditPoiPayload) + image. */
-export type PoiEquipementEditPayload = Partial<AddPoiFormData> & { _imageFile?: File | null; _imageDeleted?: boolean };
 
 
 /** Champs projetés par le backend lors de la recherche/détail d'un équipement. */
@@ -202,13 +188,6 @@ export const toDateInput = (value: unknown): string => {
   return date && !Number.isNaN(date.getTime()) ? format(date, "yyyy-MM-dd") : "";
 };
 
-export const toggleArrayValue = (values: string[] | undefined, value: string) => {
-  const current = Array.isArray(values) ? values : [];
-  return current.includes(value)
-    ? current.filter((item) => item !== value)
-    : [...current, value];
-};
-
 export const createEmptyDefaults = (
   scope: PoiEquipementScope = DEFAULT_POI_EQUIPEMENT_SCOPE
 ): AddPoiFormData => ({
@@ -306,24 +285,12 @@ registerTransform("poi:addressWrite", (all) => buildAddressFromForm((all ?? {}) 
  */
 const POI_SPEC: FormSpec = { descriptor: poiEquipementDescriptor, baseDefaults: () => createEmptyDefaults() as unknown as FormValues };
 
-/** Valeurs de form depuis l'entité (édition) OU défauts (création) — pipeline générique `seedEntity`. */
-export const buildEditDefaults = (poi: Poi | null | undefined): AddPoiFormData =>
-  seedEntity(POI_SPEC, poi) as unknown as AddPoiFormData;
-
 /**
  * Payload de CRÉATION POI (pipeline, omit-empty) : adresse imbriquée, geo coercé, champs équipement typés
- * (poi:toString/toNumber/toBoolean), via le MÊME descripteur que l'édition. Remplace transformFormDataWithAddress
- * au create → cohérent avec buildEditPoiPayload. parent/extraFields/image gérés par l'appelant (useAddPoi).
+ * (poi:toString/toNumber/toBoolean), via le descripteur unifié. Le READ (defaults) et le WRITE d'édition
+ * passent désormais par les helpers config-driven du host (buildPipelineDefaults/buildPipelinePayload, cf.
+ * configs/poiEquipement.tsx). parent/extraFields/image gérés par l'appelant (useEntityMutation).
  */
 export function buildAddPoiPayload(data: AddPoiFormData): Record<string, unknown> {
   return buildPayload(POI_SPEC, data as unknown as FormValues) as Record<string, unknown>;
-}
-
-/**
- * Payload d'ÉDITION POI (pattern unifié S6) : payload COMPLET (vides typés), à `Object.assign(poi.data)` +
- * `save()`. Le SDK diffe en interne (envoie le réellement modifié) et le backend efface ($unset). Plus de
- * diff client (ex-buildEditDelta) ni de baseline. L'adresse round-trip 14 champs → no-op si non touchée.
- */
-export function buildEditPoiPayload(current: AddPoiFormData): Record<string, unknown> {
-  return buildEditPayload(POI_SPEC, current as unknown as FormValues);
 }

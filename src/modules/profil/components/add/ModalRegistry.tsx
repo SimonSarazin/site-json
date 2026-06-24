@@ -81,9 +81,3 @@ export function DynamicModal({
     </Suspense>
   );
 }
-
-export const availableModals = Object.keys(modalRegistry);
-
-export function isValidModal(modalName: string): boolean {
-  return modalName in modalRegistry;
-}
