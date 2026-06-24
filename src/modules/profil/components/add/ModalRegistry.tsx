@@ -15,7 +15,9 @@ const modalRegistry: Record<string, () => Promise<{ default: ComponentType<Modal
   "add-project": () => import("../../forms/AddEntityGenericModals").then(m => ({ default: m.AddProjectGenericModal })),
   "add-event": () => import("../../forms/AddEntityGenericModals").then(m => ({ default: m.AddEventGenericModal })),
   "add-poi": () => import("../../forms/AddEntityGenericModals").then(m => ({ default: m.AddPoiGenericModal })),
-  "add-poi-equipement": () => import("../../forms/PoiEquipementGenericModal").then(m => ({ default: m.PoiEquipementGenericModal })),
+  "add-poi-equipement": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/configs/poiEquipement")]).then(([m, c]) => ({
+    default: (props: ModalProps) => <m.EntityFormModal config={c.poiEquipementModalConfig} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
+  })),
   "add-tiers-lieux": () => import("../../forms/TiersLieuxGenericModal").then(m => ({ default: m.TiersLieuxGenericModal })),
   "register-cyber-reunion": () => import("./RegisterCyberReunionModal").then(m => ({ default: m.RegisterCyberReunionModal })),
   // json-form reste sur l'ancien modal jusqu'à P3 : JsonFormHost (moteur) est prêt mais le payload
