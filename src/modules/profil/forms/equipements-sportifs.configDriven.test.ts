@@ -1,7 +1,7 @@
 /**
  * PILOTE config-driven (généralisation Phase 2) — entité POI équipement, descripteur UNIFIÉ render+pipeline.
  *
- * Depuis la fusion, `poiEquipementDescriptor` porte TOUT : widgets/layout wizard (render) + read/write/
+ * Depuis la fusion, `equipementsSportifsDescriptor` porte TOUT : widgets/layout wizard (render) + read/write/
  * group/serializeGroups (pipeline : groupe `address` 14 clés + geo/geoPosition writeOnly + champs équipement
  * typés poi:to* + ancres renderOnly address/_imageFile + pipeline-only description/tags/localityId).
  * On prouve que ce descripteur UNIQUE :
@@ -19,10 +19,10 @@ import { seedEntity, buildPayload, buildEditPayload, type FormSpec } from "@/mod
 import { JsonFormConfigSchema } from "@/modules/formEngine/config/schema";
 import { formDescriptorToConfig } from "@/modules/formEngine/config/formDescriptorToConfig";
 import { configToDescriptor } from "@/modules/formEngine/config/configToDescriptor";
-import { poiEquipementDescriptor } from "./costum/poiEquipement/descriptor";
+import { equipementsSportifsDescriptor } from "./costum/equipements-sportifs/descriptor";
 // side-effect : enregistre les transforms poi:* (toString/…/addressRead/Write) + geo:write/geoPosition:write,
 // référencés PAR CLÉ dans le descripteur. Fournit aussi createEmptyDefaults (socle baseDefaults).
-import { createEmptyDefaults } from "./costum/poiEquipement/fns";
+import { createEmptyDefaults } from "./costum/equipements-sportifs/fns";
 import type { AddPoiFormData } from "../schemaForm";
 
 const tLoc = (l: unknown) => (typeof l === "string" ? l : ((l as { fr?: string })?.fr ?? ""));
@@ -30,22 +30,22 @@ const norm = <T,>(v: T): T => JSON.parse(JSON.stringify(v));
 const poiLike = (serverData: Record<string, unknown>) => ({ serverData }) as unknown as Poi;
 
 describe("PILOTE config-driven POI équipement — descripteur unifié", () => {
-  const config = formDescriptorToConfig(poiEquipementDescriptor);
+  const config = formDescriptorToConfig(equipementsSportifsDescriptor);
   const d2 = configToDescriptor(config, { tLoc });
 
   const baseDefaults = () => createEmptyDefaults() as unknown as Record<string, unknown>;
-  const specOrig: FormSpec = { descriptor: poiEquipementDescriptor, baseDefaults };
+  const specOrig: FormSpec = { descriptor: equipementsSportifsDescriptor, baseDefaults };
   const specCfg: FormSpec = { descriptor: d2, baseDefaults };
 
   it("1. le descripteur unifié se sérialise en JsonFormConfig VALIDE (serializeGroups address)", () => {
     expect(() => JsonFormConfigSchema.parse(config)).not.toThrow();
-    expect(config.serializeGroups).toEqual(poiEquipementDescriptor.serializeGroups);
+    expect(config.serializeGroups).toEqual(equipementsSportifsDescriptor.serializeGroups);
     expect(Object.keys(config.serializeGroups ?? {})).toEqual(["address"]);
   });
 
   it("2. round-trip config → descripteur SANS PERTE (render + pipeline)", () => {
-    expect(norm(d2).serializeGroups).toEqual(poiEquipementDescriptor.serializeGroups);
-    expect(norm(d2).fields).toEqual(norm(poiEquipementDescriptor).fields);
+    expect(norm(d2).serializeGroups).toEqual(equipementsSportifsDescriptor.serializeGroups);
+    expect(norm(d2).fields).toEqual(norm(equipementsSportifsDescriptor).fields);
     // points sensibles
     expect(d2.fields.address).toMatchObject({ widget: "location", renderOnly: true });
     expect(d2.fields._imageFile).toMatchObject({ widget: "image", renderOnly: true });

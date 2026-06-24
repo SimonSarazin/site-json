@@ -23,11 +23,11 @@ const modalRegistry: Record<string, () => Promise<{ default: ComponentType<Modal
   "add-poi": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/configs/addStandard")]).then(([m, c]) => ({
     default: (props: ModalProps) => <m.EntityFormModal config={c.addPoiConfig} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
   })),
-  "add-poi-equipement": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/costum/poiEquipement/spec")]).then(([m, c]) => ({
-    default: (props: ModalProps) => <m.EntityFormModal spec={c.poiEquipementSpec} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
+  "add-equipements-sportifs": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/costum/equipements-sportifs/spec")]).then(([m, c]) => ({
+    default: (props: ModalProps) => <m.EntityFormModal spec={c.equipementsSportifsSpec} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
   })),
-  "add-tiers-lieux": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/costum/tiersLieu/spec")]).then(([m, c]) => ({
-    default: (props: ModalProps) => <m.EntityFormModal spec={c.tiersLieuSpec} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
+  "add-tiers-lieux": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/costum/tiers-lieux/spec")]).then(([m, c]) => ({
+    default: (props: ModalProps) => <m.EntityFormModal spec={c.tiersLieuxSpec} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
   })),
 };
 

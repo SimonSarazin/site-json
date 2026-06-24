@@ -1,12 +1,12 @@
 /**
- * Garde du RÉSOLVEUR sur la spec poi-équipement : `specToConfig(poiEquipementSpec)` doit reproduire EXACTEMENT
- * le comportement de l'ancien `poiEquipementModalConfig` (defaults/payload/EntityMutationSpec, add ET edit).
+ * Garde du RÉSOLVEUR sur la spec poi-équipement : `specToConfig(equipementsSportifsSpec)` doit reproduire EXACTEMENT
+ * le comportement de l'ancien `equipementsSportifsSpec` (defaults/payload/EntityMutationSpec, add ET edit).
  * C'est la seule couverture auto de `specToConfig` (le reste de la byte-parité = poiEquipement.configDriven).
  */
 import { describe, it, expect } from "vitest";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { specToConfig } from "../../resolveModalSpec";
-import { poiEquipementSpec } from "./spec";
+import { equipementsSportifsSpec } from "./spec";
 import { createEmptyDefaults, buildAddPoiPayload, type PoiEquipementScope } from "./fns";
 import type { EntityModalCtx } from "../../entityModalSpec";
 
@@ -14,7 +14,7 @@ const carrier = { id: "65a04155ed047177b9239968", serverData: { slug: "equipemen
 const me = { id: "meId" } as unknown as EntityTypes;
 
 describe("résolveur — spec poi-équipement (parité avec l'ex-config)", () => {
-  const config = specToConfig(poiEquipementSpec);
+  const config = specToConfig(equipementsSportifsSpec);
   const scope = config.resolveScope!(carrier) as PoiEquipementScope;
 
   it("scope dérivé du carrier (poi:scope)", () => {
@@ -24,7 +24,7 @@ describe("résolveur — spec poi-équipement (parité avec l'ex-config)", () =>
   it("descripteur résolu = poi-equipement", () => {
     const ctx: EntityModalCtx = { mode: "add", parent: null, scope, me, carrier, entity: null };
     const d = typeof config.descriptor === "function" ? config.descriptor(ctx) : config.descriptor;
-    expect(d.id).toBe("poi-equipement");
+    expect(d.id).toBe("equipements-sportifs");
   });
 
   it("ADD : EntityMutationSpec (costumSlug/keys/inject) + defaults + payload pipeline === buildAddPoiPayload", () => {

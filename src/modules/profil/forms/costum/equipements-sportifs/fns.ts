@@ -1,7 +1,7 @@
 /**
  * Module du costum « équipement sportif » (POI SSBE, equipementsSportifs974) : scope, defaults, transforms
  * `poi:*`, recherche de doublons, payload de création — ET enregistrement des CLÉS (descripteur + fns) que
- * la `spec.ts` référence. C'est le `fns.ts` du dossier `forms/costum/poiEquipement/` (cf. plan).
+ * la `spec.ts` référence. C'est le `fns.ts` du dossier `forms/costum/equipements-sportifs/` (cf. plan).
  * `buildAddPoiPayload` reste exporté (réutilisé transitoirement par le poi STANDARD via addStandard.tsx,
  * jusqu'à sa propre bascule pipeline).
  */
@@ -14,7 +14,7 @@ import { coerceString } from "@/modules/formEngine/engine/coercions"; // side-ef
 import { buildPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
 import "../../geoTransforms"; // enregistre geo:write / geoPosition:write (partagés)
 import type { FormValues } from "@/modules/formEngine";
-import { poiEquipementDescriptor } from "./descriptor";
+import { equipementsSportifsDescriptor } from "./descriptor";
 import { buildAddressFromForm } from "../../../hooks/mutationUtils";
 import { PROFIL_QUERY_KEYS } from "../../../constants";
 import { SEARCH_QUERY_KEYS } from "@/modules/search/constants";
@@ -242,18 +242,18 @@ registerTransform("poi:addressRead", (a) => {
 registerTransform("poi:addressWrite", (all) => buildAddressFromForm((all ?? {}) as Record<string, string>));
 
 /**
- * Spec POI = descripteur UNIFIÉ (render + read/write) `poiEquipementDescriptor` + socle createEmptyDefaults.
+ * Spec POI = descripteur UNIFIÉ (render + read/write) `equipementsSportifsDescriptor` + socle createEmptyDefaults.
  * Le MÊME descripteur pilote le rendu (GenericForm), le READ (seedEntity), le WRITE create/edit (buildPayload)
  * ET la config (formDescriptorToConfig). Les transforms `poi:*` référencés par ses champs sont enregistrés
  * ci-dessus (poi:toString/…, poi:addressRead/Write) + `geo:*` via l'import geoTransforms. cf. tiers-lieu.
  */
-const POI_SPEC: FormSpec = { descriptor: poiEquipementDescriptor, baseDefaults: () => createEmptyDefaults() as unknown as FormValues };
+const POI_SPEC: FormSpec = { descriptor: equipementsSportifsDescriptor, baseDefaults: () => createEmptyDefaults() as unknown as FormValues };
 
 /**
  * Payload de CRÉATION POI (pipeline, omit-empty) : adresse imbriquée, geo coercé, champs équipement typés
  * (poi:toString/toNumber/toBoolean), via le descripteur unifié. Le READ (defaults) et le WRITE d'édition
  * passent désormais par les helpers config-driven du host (buildPipelineDefaults/buildPipelinePayload, cf.
- * configs/poiEquipement.tsx). parent/extraFields/image gérés par l'appelant (useEntityMutation).
+ * costum/equipements-sportifs/spec.ts). parent/extraFields/image gérés par l'appelant (useEntityMutation).
  */
 export function buildAddPoiPayload(data: AddPoiFormData): Record<string, unknown> {
   return buildPayload(POI_SPEC, data as unknown as FormValues) as Record<string, unknown>;
@@ -262,7 +262,7 @@ export function buildAddPoiPayload(data: AddPoiFormData): Record<string, unknown
 // ── Enregistrement des CLÉS référencées par `spec.ts` (descripteur + fns costum) ───────────────────────────
 // Le payload (add ET edit) passe par le PIPELINE générique (défaut du résolveur) : buildAddPoiPayload(d) ≡
 // buildPipelinePayload(config, d, {emitEmpty:false}) par round-trip lossless → AUCUN payloadFn custom requis.
-registerDescriptor(poiEquipementDescriptor);
+registerDescriptor(equipementsSportifsDescriptor);
 registerScopeFn("poi:scope", (carrier) => resolvePoiEquipementScope(carrier as Parameters<typeof resolvePoiEquipementScope>[0]));
 registerDefaultsFn("poi:emptyDefaults", (ctx) => createEmptyDefaults(ctx.scope as PoiEquipementScope) as unknown as Record<string, unknown>);
 registerSlot("parentInfo", (ctx: EntityModalCtx) => createElement(ParentInfoReadonly, { parent: ctx.parent ?? null }));

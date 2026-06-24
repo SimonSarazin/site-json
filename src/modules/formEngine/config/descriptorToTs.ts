@@ -12,7 +12,7 @@
  */
 import type { FormDescriptor } from "../types";
 
-/** Identifiant TS valide depuis un slug/id quelconque (ex. "poi-equipement" → "poiEquipementDescriptor"). */
+/** Identifiant TS valide depuis un slug/id quelconque (ex. "equipements-sportifs" → "equipementsSportifsDescriptor"). */
 function toExportName(raw: string): string {
   const camel = raw
     .replace(/[^a-zA-Z0-9]+(.)/g, (_, c: string) => c.toUpperCase())

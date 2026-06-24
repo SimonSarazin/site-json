@@ -157,7 +157,7 @@ export type LayoutSpec =
 export type FormCollection = "poi" | "organizations" | "projects" | "events" | "citoyens";
 
 export interface FormDescriptor {
-  id: string;                    // ex. "poi-equipement"
+  id: string;                    // ex. "equipements-sportifs"
   /** Icône du FORMULAIRE (badge de titre, nom lucide) — rendue par l'hôte modale à côté du titre. */
   icon?: string;
   collection: FormCollection;

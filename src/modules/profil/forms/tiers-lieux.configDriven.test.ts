@@ -1,7 +1,7 @@
 /**
  * PILOTE config-driven (Phase 2) — entité tiers-lieu, descripteur UNIFIÉ render+pipeline.
  *
- * Depuis la fusion, `tiersLieuDescriptor` porte TOUT : widgets/layout (render) + read/write/path/group/
+ * Depuis la fusion, `tiersLieuxDescriptor` porte TOUT : widgets/layout (render) + read/write/path/group/
  * serializeGroups (pipeline, 4 groupes openingDate/manageModel/typePlace/address + geo writeOnly +
  * socialLinks clear + ancres renderOnly address/_logoFile). On prouve que ce descripteur UNIQUE :
  *  1. se sérialise en `JsonFormConfig` VALIDE ;
@@ -16,27 +16,27 @@ import { buildPayload, type FormSpec } from "@/modules/formEngine/engine/entityF
 import { JsonFormConfigSchema } from "@/modules/formEngine/config/schema";
 import { formDescriptorToConfig } from "@/modules/formEngine/config/formDescriptorToConfig";
 import { configToDescriptor } from "@/modules/formEngine/config/configToDescriptor";
-import { tiersLieuDescriptor } from "./costum/tiersLieu/descriptor";
-import { getDefaultTiersLieuxValues } from "./costum/tiersLieu/fns";
+import { tiersLieuxDescriptor } from "./costum/tiers-lieux/descriptor";
+import { getDefaultTiersLieuxValues } from "./costum/tiers-lieux/fns";
 // side-effect : enregistre les transforms tl:* + geo:write/geoPosition:write (référencés par clé dans le descripteur).
-import "./costum/tiersLieu/fns";
+import "./costum/tiers-lieux/fns";
 
 const tLoc = (l: unknown) => (typeof l === "string" ? l : ((l as { fr?: string })?.fr ?? ""));
 const norm = <T,>(v: T): T => JSON.parse(JSON.stringify(v));
 
 describe("PILOTE config-driven tiers-lieu (Phase 2) — descripteur unifié", () => {
-  const config = formDescriptorToConfig(tiersLieuDescriptor);
+  const config = formDescriptorToConfig(tiersLieuxDescriptor);
   const d2 = configToDescriptor(config, { tLoc });
 
   it("1. le descripteur unifié se sérialise en JsonFormConfig VALIDE", () => {
     expect(() => JsonFormConfigSchema.parse(config)).not.toThrow();
-    expect(config.serializeGroups).toEqual(tiersLieuDescriptor.serializeGroups);
+    expect(config.serializeGroups).toEqual(tiersLieuxDescriptor.serializeGroups);
     expect(Object.keys(config.serializeGroups ?? {})).toEqual(["openingDate", "manageModel", "typePlace", "address"]);
   });
 
   it("2. round-trip config → descripteur SANS PERTE (render + pipeline)", () => {
-    expect(norm(d2).serializeGroups).toEqual(tiersLieuDescriptor.serializeGroups);
-    expect(norm(d2).fields).toEqual(norm(tiersLieuDescriptor).fields);
+    expect(norm(d2).serializeGroups).toEqual(tiersLieuxDescriptor.serializeGroups);
+    expect(norm(d2).fields).toEqual(norm(tiersLieuxDescriptor).fields);
     // points sensibles
     expect(d2.fields.socialLinks).toMatchObject({ widget: "fieldArray", read: "tl:socialRead", write: "tl:socialWrite", path: "socialNetwork", clear: "" });
     expect(d2.fields.address).toMatchObject({ widget: "location", renderOnly: true });
@@ -61,7 +61,7 @@ describe("PILOTE config-driven tiers-lieu (Phase 2) — descripteur unifié", ()
       hours: { ...getDefaultTiersLieuxValues().hours, monday: { enabled: true, start: "08:00", end: "18:00" } },
     } as Record<string, unknown>;
 
-    const specOrig: FormSpec = { descriptor: tiersLieuDescriptor };
+    const specOrig: FormSpec = { descriptor: tiersLieuxDescriptor };
     const specCfg: FormSpec = { descriptor: d2 };
     expect(buildPayload(specCfg, form)).toEqual(buildPayload(specOrig, form));
   });

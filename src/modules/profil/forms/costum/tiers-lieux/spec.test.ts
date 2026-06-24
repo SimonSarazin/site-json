@@ -1,12 +1,12 @@
 /**
- * Garde du RÉSOLVEUR sur la spec tiers-lieu : `specToConfig(tiersLieuSpec)` doit reproduire EXACTEMENT
- * l'ex-`tiersLieuModalConfig` (defaults/payload/EntityMutationSpec, add ET edit). Le payload tiers-lieu a un
+ * Garde du RÉSOLVEUR sur la spec tiers-lieu : `specToConfig(tiersLieuxSpec)` doit reproduire EXACTEMENT
+ * l'ex-`tiersLieuxSpec` (defaults/payload/EntityMutationSpec, add ET edit). Le payload tiers-lieu a un
  * merge de tags costum (payloadFn `tl:payload`) → on vérifie l'égalité avec buildTiersLieuxPayload.
  */
 import { describe, it, expect } from "vitest";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { specToConfig } from "../../resolveModalSpec";
-import { tiersLieuSpec } from "./spec";
+import { tiersLieuxSpec } from "./spec";
 import { getDefaultTiersLieuxValues, buildTiersLieuxPayload, mapEntityToTiersLieuxValues, type CostumConfig } from "./fns";
 import type { EntityModalCtx } from "../../entityModalSpec";
 
@@ -15,7 +15,7 @@ const me = { id: "meId" } as unknown as EntityTypes;
 const costum: CostumConfig = { mainTag: "TiersLieux" };
 
 describe("résolveur — spec tiers-lieu (parité avec l'ex-config)", () => {
-  const config = specToConfig(tiersLieuSpec);
+  const config = specToConfig(tiersLieuxSpec);
   const scope = config.resolveScope!(carrier) as { slug: string };
 
   it("scope = slug du porteur", () => {
@@ -25,7 +25,7 @@ describe("résolveur — spec tiers-lieu (parité avec l'ex-config)", () => {
   it("descripteur résolu = tiers-lieu", () => {
     const ctx: EntityModalCtx = { mode: "add", parent: null, scope, me, carrier, costum };
     const d = typeof config.descriptor === "function" ? config.descriptor(ctx) : config.descriptor;
-    expect(d.id).toBe("tiers-lieu");
+    expect(d.id).toBe("tiers-lieux");
   });
 
   it("ADD : mutationSpec (costumSlug/keys) + defaults + payload === buildTiersLieuxPayload(costum)", () => {

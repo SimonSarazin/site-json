@@ -1,14 +1,14 @@
 /**
  * `EntityModalSpec` du costum tiers-lieu (FranceTiersLieux) — 100 % DONNÉES + CLÉS. Remplace
- * `configs/tiersLieu.tsx`. Code référencé par clé enregistré dans `./fns` : descripteur `tiers-lieu`,
+ * `costum/tiers-lieux/spec.ts`. Code référencé par clé enregistré dans `./fns` : descripteur `tiers-lieu`,
  * scope `tl:scope` (slug porteur), defaults `tl:emptyDefaults`, payload `tl:payload` (merge tags costum +
- * extraData), `tl:invalidate`. `image:profilUrl` partagé (enregistré par poiEquipement/fns).
+ * extraData), `tl:invalidate`. `image:profilUrl` partagé (enregistré par equipements-sportifs/fns).
  */
 import type { EntityModalSpec } from "../../entityModalSpec";
 
-export const tiersLieuSpec: EntityModalSpec = {
-  id: "tiers-lieu",
-  descriptor: { ref: "tiers-lieu" },
+export const tiersLieuxSpec: EntityModalSpec = {
+  id: "tiers-lieux",
+  descriptor: { ref: "tiers-lieux" },
   title: { add: "AddTiersLieux.title", edit: "EditTiersLieux.title" },
   submitLabel: { add: "AddTiersLieux.buttons.submit", edit: "EditTiersLieux.buttons.submit" },
   icon: "building-2",

@@ -106,8 +106,8 @@ const fields: FieldDescriptor[] = [
   { name: "geoPosition", type: "object", widget: "hidden", label: "geoPosition", writeOnly: true, write: "geoPosition:write" },
 ];
 
-export const tiersLieuDescriptor: FormDescriptor = {
-  id: "tiers-lieu",
+export const tiersLieuxDescriptor: FormDescriptor = {
+  id: "tiers-lieux",
   icon: "building-2", // badge de titre (parité ancien form)
   collection: "organizations",
   costumSlug: "navigatorDesTierslieux",

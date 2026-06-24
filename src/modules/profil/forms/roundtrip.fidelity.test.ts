@@ -5,8 +5,8 @@ import { addPoiDescriptor } from "./addPoi.descriptor";
 import { addProjectDescriptor } from "./addProject.descriptor";
 import { addOrganizationDescriptor } from "./addOrganization.descriptor";
 import { buildAddEventDescriptor } from "./addEvent.descriptor";
-import { poiEquipementDescriptor } from "./costum/poiEquipement/descriptor";
-import { tiersLieuDescriptor } from "./costum/tiersLieu/descriptor";
+import { equipementsSportifsDescriptor } from "./costum/equipements-sportifs/descriptor";
+import { tiersLieuxDescriptor } from "./costum/tiers-lieux/descriptor";
 import { EDIT_DESCRIPTORS } from "./editProfile.descriptor";
 
 const ALL: Array<[string, FormDescriptor]> = [
@@ -14,8 +14,8 @@ const ALL: Array<[string, FormDescriptor]> = [
   ["addProject", addProjectDescriptor],
   ["addOrganization", addOrganizationDescriptor],
   ["addEvent", buildAddEventDescriptor(false)],
-  ["poiEquipement", poiEquipementDescriptor],
-  ["tiersLieu", tiersLieuDescriptor],
+  ["equipements-sportifs", equipementsSportifsDescriptor],
+  ["tiers-lieux", tiersLieuxDescriptor],
   ...Object.entries(EDIT_DESCRIPTORS).map(([k, d]): [string, FormDescriptor] => [`edit-${k}`, d]),
 ];
 

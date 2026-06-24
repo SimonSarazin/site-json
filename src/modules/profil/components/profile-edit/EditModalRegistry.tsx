@@ -21,10 +21,10 @@ const editModalRegistry: Record<string, () => Promise<{ default: ComponentType<E
       ),
     })),
   "edit-tiers-lieux": () =>
-    Promise.all([import("../../forms/EntityFormModal"), import("../../forms/costum/tiersLieu/spec")]).then(([m, c]) => ({
+    Promise.all([import("../../forms/EntityFormModal"), import("../../forms/costum/tiers-lieux/spec")]).then(([m, c]) => ({
       default: (props: EditModalProps) => (
         <m.EntityFormModal
-          spec={c.tiersLieuSpec}
+          spec={c.tiersLieuxSpec}
           open={props.open}
           onOpenChange={props.onOpenChange}
           mode="edit"
@@ -32,11 +32,11 @@ const editModalRegistry: Record<string, () => Promise<{ default: ComponentType<E
         />
       ),
     })),
-  "edit-poi-equipement": () =>
-    Promise.all([import("../../forms/EntityFormModal"), import("../../forms/costum/poiEquipement/spec")]).then(([m, c]) => ({
+  "edit-equipements-sportifs": () =>
+    Promise.all([import("../../forms/EntityFormModal"), import("../../forms/costum/equipements-sportifs/spec")]).then(([m, c]) => ({
       default: (props: EditModalProps) => (
         <m.EntityFormModal
-          spec={c.poiEquipementSpec}
+          spec={c.equipementsSportifsSpec}
           open={props.open}
           onOpenChange={props.onOpenChange}
           mode="edit"

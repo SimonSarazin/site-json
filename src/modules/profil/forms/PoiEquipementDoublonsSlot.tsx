@@ -8,7 +8,7 @@ import { useFormContext, type FieldValues } from "react-hook-form";
 import { Loader2 } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import { usePoiEquipementMatches } from "../hooks/usePoiEquipementMatches";
-import type { PoiEquipementScope } from "./costum/poiEquipement/fns";
+import type { PoiEquipementScope } from "./costum/equipements-sportifs/fns";
 import DetailsModeDialog from "@/modules/search/components/detailsMode/DetailsModeDialog";
 import type { Poi } from "@communecter/cocolight-api-client";
 

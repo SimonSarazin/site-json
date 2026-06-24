@@ -3,11 +3,11 @@
  * config-convertible (cf. tiers-lieu). Consommé par le moteur générique `modules/formEngine` :
  *  - RENDU : widgets + sections (wizard) + conditionnel + computed (GenericForm).
  *  - READ/WRITE : `read`/`write`/`default`/`group` par champ + `serializeGroups.address`, exécutés par le
- *    pipeline (seedEntity/buildPayload/buildEditPayload via POI_SPEC dans components/add/poiEquipement.ts).
+ *    pipeline (seedEntity/buildPayload/buildEditPayload via POI_SPEC dans costum/equipements-sportifs/fns.ts).
  * cf. doc/refactor-field-treatment.md (P2) + doc/moteur-formulaire-generique.md.
  *
  * LEAF (aucun import de poiEquipement.ts → pas de cycle ESM) : les transforms `poi:*` / `geo:*` sont
- * enregistrés au runtime par poiEquipement.ts (qui importe CE descripteur pour POI_SPEC) ; ici on ne
+ * enregistrés au runtime par fns.ts (qui importe CE descripteur pour POI_SPEC) ; ici on ne
  * référence que leurs CLÉS string. Les libellés d'étape sont inlinés (= STEP_TITLE_KEYS).
  *
  * Mise en page fidèle au base form (`PoiEquipementForm`) via les GROUPES : grilles 2/3 colonnes +
@@ -160,8 +160,8 @@ const fields: FieldDescriptor[] = [
     read: "coerce:stringArray", default: [] },
 ];
 
-export const poiEquipementDescriptor: FormDescriptor = {
-  id: "poi-equipement",
+export const equipementsSportifsDescriptor: FormDescriptor = {
+  id: "equipements-sportifs",
   collection: "poi",
   costumSlug: "equipementsSportifs974",
   layout: { kind: "wizard", validatePerStep: true },

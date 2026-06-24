@@ -8,7 +8,7 @@ import { seedEntity, buildPayload, buildEditPayload, type FormSpec } from "@/mod
 import { formDescriptorToConfig } from "@/modules/formEngine/config/formDescriptorToConfig";
 import { configToDescriptor } from "@/modules/formEngine/config/configToDescriptor";
 import type { FormValues, JsonFormConfig } from "@/modules/formEngine";
-import { tiersLieuDescriptor } from "./descriptor";
+import { tiersLieuxDescriptor } from "./descriptor";
 import { PROFIL_QUERY_KEYS } from "../../../constants";
 import { getSlug } from "@/lib/constant/common";
 import type { EntityModalCtx } from "../../entityModalSpec";
@@ -90,11 +90,11 @@ export function getDefaultTiersLieuxValues(): TiersLieuxFormData {
 // Le contexte costum CREATE (type/preferences) est porté par `submit.extraData` — DONNÉE de config appliquée
 // génériquement au create (cf. buildTiersLieuxPayload), PLUS aucune constante en dur dans le code.
 const TIERSLIEU_CONFIG: JsonFormConfig = {
-  ...formDescriptorToConfig(tiersLieuDescriptor),
+  ...formDescriptorToConfig(tiersLieuxDescriptor),
   submit: { mode: "sdk", extraData: { type: "NGO", preferences: { isOpenData: true, isOpenEdition: true } } },
 };
 const KEEP_KEYS = (l: unknown) => (typeof l === "string" ? l : ((l as { fr?: string })?.fr ?? ""));
-/** Descripteur tiers-lieu dérivé de la config (= tiersLieuDescriptor round-trip). Rendu par la modale. */
+/** Descripteur tiers-lieu dérivé de la config (= tiersLieuxDescriptor round-trip). Rendu par la modale. */
 export const tiersLieuConfigDescriptor = configToDescriptor(TIERSLIEU_CONFIG, { tLoc: KEEP_KEYS });
 
 export interface CostumConfig {
@@ -405,7 +405,7 @@ export function buildTiersLieuxPayload(
 }
 
 // ── Enregistrement des CLÉS référencées par `spec.ts` (descripteur + fns costum) ───────────────────────────
-registerDescriptor(tiersLieuDescriptor);
+registerDescriptor(tiersLieuxDescriptor);
 registerDefaultsFn("tl:emptyDefaults", () => getDefaultTiersLieuxValues() as unknown as Record<string, unknown>);
 // Scope = slug du costum porteur (VITE_SLUG), fallback getSlug() — exposé via {slug} (slugKey "slug").
 registerScopeFn("tl:scope", (carrier) => {

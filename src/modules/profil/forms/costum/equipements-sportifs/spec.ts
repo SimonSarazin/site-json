@@ -1,14 +1,14 @@
 /**
  * `EntityModalSpec` du costum poi-équipement (equipementsSportifs974) — 100 % DONNÉES + CLÉS (aucune closure).
- * Remplace `configs/poiEquipement.tsx`. Le code référencé par clé est enregistré dans `./fns` :
+ * Remplace `costum/equipements-sportifs/spec.ts`. Le code référencé par clé est enregistré dans `./fns` :
  * descripteur `poi-equipement`, scope `poi:scope`, defaults `poi:emptyDefaults`, slots `parentInfo`/`poiDoublons`,
  * `poi:dropEmptyUrls`, `image:profilUrl`, `poi:invalidate`. Le payload (add+edit) passe par le pipeline (défaut).
  */
 import type { EntityModalSpec } from "../../entityModalSpec";
 
-export const poiEquipementSpec: EntityModalSpec = {
-  id: "poi-equipement",
-  descriptor: { ref: "poi-equipement" },
+export const equipementsSportifsSpec: EntityModalSpec = {
+  id: "equipements-sportifs",
+  descriptor: { ref: "equipements-sportifs" },
   title: { add: "AddPoiEquipement.title.add", edit: "AddPoiEquipement.title.edit" },
   description: { add: "AddPoiEquipement.description.add", edit: "AddPoiEquipement.description.edit" },
   submitLabel: { add: "AddEntity.create", edit: "ProfileEdit.save" },

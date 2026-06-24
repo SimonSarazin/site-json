@@ -1,6 +1,6 @@
 /**
  * Helpers PIPELINE config-driven : READ/WRITE d'un formulaire à partir d'une `JsonFormConfig` UNIFIÉE
- * (qui porte read/write par champ + serializeGroups, ex. configs dérivées de poiEquipement/tiersLieu).
+ * (qui porte read/write par champ + serializeGroups, ex. configs dérivées de equipements-sportifs/tiers-lieux).
  * Consommés par le résolveur de spec (resolveModalSpec : défauts génériques READ/WRITE) + les fns costum
  * (forms/costum/<entity>/fns). Le READ et le WRITE passent par le descripteur ISSU DE LA CONFIG
  * (configToDescriptor → seedEntity/buildPayload) → tous

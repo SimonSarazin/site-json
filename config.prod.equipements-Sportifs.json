@@ -364,7 +364,7 @@
                   "en": "Add sports facility"
                 },
                 "action": "add-poi",
-                "modal": "add-poi-equipement",
+                "modal": "add-equipements-sportifs",
                 "variant": "outline"
               }
             ],
@@ -4000,7 +4000,7 @@
       "layout": "default",
       "hideHeader": false,
       "hideFooter": false,
-      "editModal": "edit-poi-equipement",
+      "editModal": "edit-equipements-sportifs",
       "editModalMatch": {
         "type": "recoveryCenter"
       },
