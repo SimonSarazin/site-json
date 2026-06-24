@@ -17,6 +17,7 @@ import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useT } from "@/hooks/useT";
 import { useCocolight } from "@/hooks/useCocolight";
+import { useSite } from "@/hooks/useSite";
 
 import { GenericForm, configToDescriptor, formDescriptorToConfig, type FormDescriptor } from "@/modules/formEngine";
 import { useUnsavedGuard } from "./useUnsavedGuard";
@@ -37,6 +38,8 @@ export interface EntityModalCtx {
   me?: EntityTypes | null;
   /** entité PORTEUSE du costum (useCocolight().entity = VITE_SLUG). */
   carrier?: EntityTypes | null;
+  /** contexte costum du site (useSite().config.costum) — tags mainTag/compagnon (tiers-lieu). */
+  costum?: unknown;
 }
 
 /** Config déclarative d'une entité/costum — élimine sa modale spécifique. */
@@ -85,11 +88,12 @@ export function EntityFormModal({ config, open, onOpenChange, mode = "add", enti
   const t = useT("modules/profil");
   const tr = (k: string) => t(k);
   const { me, entity: carrier } = useCocolight();
+  const { config: siteConfig } = useSite();
   const isEdit = mode === "edit" && Boolean(entity);
   const effMode: "add" | "edit" = isEdit ? "edit" : "add";
 
   const scope = useMemo(() => config.resolveScope?.(carrier), [config, carrier]);
-  const ctx: EntityModalCtx = { mode: effMode, entity: entity ?? null, parent: parent ?? null, scope, me, carrier };
+  const ctx: EntityModalCtx = { mode: effMode, entity: entity ?? null, parent: parent ?? null, scope, me, carrier, costum: siteConfig.costum };
 
   const descriptor = useMemo(() => configToDescriptor(formDescriptorToConfig(config.descriptor), { tLoc: KEEP_KEYS }), [config]);
   const defaultValues = useMemo(() => config.buildDefaults(ctx), [config, effMode, entity, scope]); // eslint-disable-line react-hooks/exhaustive-deps

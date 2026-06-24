@@ -18,7 +18,9 @@ const modalRegistry: Record<string, () => Promise<{ default: ComponentType<Modal
   "add-poi-equipement": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/configs/poiEquipement")]).then(([m, c]) => ({
     default: (props: ModalProps) => <m.EntityFormModal config={c.poiEquipementModalConfig} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
   })),
-  "add-tiers-lieux": () => import("../../forms/TiersLieuxGenericModal").then(m => ({ default: m.TiersLieuxGenericModal })),
+  "add-tiers-lieux": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/configs/tiersLieu")]).then(([m, c]) => ({
+    default: (props: ModalProps) => <m.EntityFormModal config={c.tiersLieuModalConfig} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
+  })),
   "register-cyber-reunion": () => import("./RegisterCyberReunionModal").then(m => ({ default: m.RegisterCyberReunionModal })),
   // json-form reste sur l'ancien modal jusqu'à P3 : JsonFormHost (moteur) est prêt mais le payload
   // générique perd les champs costum non déclarés de cyber-reunion (siren/phone/website…). P3 ajoutera

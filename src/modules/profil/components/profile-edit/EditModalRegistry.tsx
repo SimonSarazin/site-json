@@ -1,6 +1,6 @@
 import { lazy, Suspense, type ComponentType } from "react";
 import { Loader2 } from "lucide-react";
-import type { EntityTypes, Organization } from "@communecter/cocolight-api-client";
+import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useSite } from "@/hooks/useSite";
 
 export interface EditModalProps {
@@ -21,13 +21,14 @@ const editModalRegistry: Record<string, () => Promise<{ default: ComponentType<E
       ),
     })),
   "edit-tiers-lieux": () =>
-    import("../../forms/TiersLieuxGenericModal").then((m) => ({
+    Promise.all([import("../../forms/EntityFormModal"), import("../../forms/configs/tiersLieu")]).then(([m, c]) => ({
       default: (props: EditModalProps) => (
-        <m.TiersLieuxGenericModal
+        <m.EntityFormModal
+          config={c.tiersLieuModalConfig}
           open={props.open}
           onOpenChange={props.onOpenChange}
           mode="edit"
-          organization={props.entity as Organization}
+          entity={props.entity}
         />
       ),
     })),
