@@ -1,8 +1,9 @@
 /**
  * Helpers PIPELINE config-driven : READ/WRITE d'un formulaire à partir d'une `JsonFormConfig` UNIFIÉE
  * (qui porte read/write par champ + serializeGroups, ex. configs dérivées de poiEquipement/tiersLieu).
- * Consommés par EntityFormModal + les configs (configs/poiEquipement.tsx, tiersLieuxMapping). Le READ et le
- * WRITE passent par le descripteur ISSU DE LA CONFIG (configToDescriptor → seedEntity/buildPayload) → tous
+ * Consommés par le résolveur de spec (resolveModalSpec : défauts génériques READ/WRITE) + les fns costum
+ * (forms/costum/<entity>/fns). Le READ et le WRITE passent par le descripteur ISSU DE LA CONFIG
+ * (configToDescriptor → seedEntity/buildPayload) → tous
  * les champs costum DÉCLARÉS sont préservés. cf. doc/formulaire-config-driven.md.
  */
 import type { JsonFormConfig, FormSpec, EntityLike } from "@/modules/formEngine";
