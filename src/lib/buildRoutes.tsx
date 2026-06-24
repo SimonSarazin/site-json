@@ -2,7 +2,6 @@ import type { RouteObject } from "react-router";
 import { SiteRenderer } from '@/components/SiteRenderer';
 import type { SiteConfig } from "@/types/site";
 import RootLayout from "@/RootLayout";
-import FormEngineDevPage from "@/dev/FormEngineDevPage";
 import type { QueryClient } from "@tanstack/react-query";
 import type { LoaderFunctionArgs } from "react-router";
 import { discoverModules, getModuleRoutes, getModuleRoutesSync } from "./modules";
@@ -87,17 +86,6 @@ function findSearchSections(
  * @param queryClient - Client React Query pour le pré-chargement SSR
  * @returns Routes React Router v7 (sync ou async selon le contexte)
  */
-/**
- * Route de test du moteur de formulaire générique (`GenericForm`) — DEV uniquement.
- * Permet à Playwright de monter le moteur en isolation (sans auth/backend/costum).
- * Tree-shakée en prod (`import.meta.env.DEV` statiquement faux).
- */
-function devRoutes(): RouteObject[] {
-  return import.meta.env.DEV
-    ? [{ path: "dev/form-engine", element: <FormEngineDevPage /> }]
-    : [];
-}
-
 export function buildRoutes(cfg: SiteConfig, queryClient?: QueryClient): RouteObject[] | Promise<RouteObject[]> {
   // Découvrir les modules
   const modules = discoverModules();
@@ -119,7 +107,6 @@ export function buildRoutes(cfg: SiteConfig, queryClient?: QueryClient): RouteOb
     const children: RouteObject[] = [
       ...configRoutes,
       ...moduleRoutes,
-      ...devRoutes(),
       { path: "*", element: <SiteRenderer /> },
     ];
 
@@ -254,7 +241,6 @@ async function buildRoutesAsync(
   const children: RouteObject[] = [
     ...configRoutes,
     ...moduleRoutes,
-    ...devRoutes(),
     // route 404 interne (dernier recours)
     { path: "*", element: <SiteRenderer /> },
   ];
