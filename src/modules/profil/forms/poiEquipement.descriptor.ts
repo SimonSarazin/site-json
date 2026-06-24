@@ -66,14 +66,14 @@ const L = (name: string) => LABELS[name] ?? name;
 
 // Petits constructeurs : widget + READ par TYPE (coercion serveur → form) + défaut typé.
 // Les buckets de read correspondent EXACTEMENT à l'ancien buildPoiFields (parité byte) :
-// string → poi:toString (""), boolean → poi:toBoolean (false), number → poi:toNumber (pas de défaut),
-// array → poi:toStringArray ([]), date → poi:toDate ("").
-const text = (name: string, extra: Partial<FieldDescriptor> = {}): FieldDescriptor => ({ name, type: "string", widget: "text", label: L(name), read: "poi:toString", default: "", ...extra });
-const sel = (name: string, extra: Partial<FieldDescriptor> = {}): FieldDescriptor => ({ name, type: "string", widget: "selectFromLists", label: L(name), placeholder: L(name), placeholderSearch: "AddPoiEquipement.placeholders.search", read: "poi:toString", default: "", ...extra });
-const sw = (name: string, extra: Partial<FieldDescriptor> = {}): FieldDescriptor => ({ name, type: "boolean", widget: "switch", label: L(name), read: "poi:toBoolean", default: false, ...extra });
-const date = (name: string): FieldDescriptor => ({ name, type: "date", widget: "date", label: L(name), read: "poi:toDate", default: "" });
-const num = (name: string, extra: Partial<FieldDescriptor> = {}): FieldDescriptor => ({ name, type: "number", widget: "number", label: L(name), read: "poi:toNumber", ...extra });
-const cbg = (name: string): FieldDescriptor => ({ name, type: "array", widget: "checkboxGroup", label: L(name), read: "poi:toStringArray", default: [] });
+// string → coerce:string (""), boolean → coerce:bool (false), number → coerce:number (pas de défaut),
+// array → coerce:stringArray ([]), date → coerce:dateYMD ("").
+const text = (name: string, extra: Partial<FieldDescriptor> = {}): FieldDescriptor => ({ name, type: "string", widget: "text", label: L(name), read: "coerce:string", default: "", ...extra });
+const sel = (name: string, extra: Partial<FieldDescriptor> = {}): FieldDescriptor => ({ name, type: "string", widget: "selectFromLists", label: L(name), placeholder: L(name), placeholderSearch: "AddPoiEquipement.placeholders.search", read: "coerce:string", default: "", ...extra });
+const sw = (name: string, extra: Partial<FieldDescriptor> = {}): FieldDescriptor => ({ name, type: "boolean", widget: "switch", label: L(name), read: "coerce:bool", default: false, ...extra });
+const date = (name: string): FieldDescriptor => ({ name, type: "date", widget: "date", label: L(name), read: "coerce:dateYMD", default: "" });
+const num = (name: string, extra: Partial<FieldDescriptor> = {}): FieldDescriptor => ({ name, type: "number", widget: "number", label: L(name), read: "coerce:number", ...extra });
+const cbg = (name: string): FieldDescriptor => ({ name, type: "array", widget: "checkboxGroup", label: L(name), read: "coerce:stringArray", default: [] });
 const hidden = (name: string, extra: Partial<FieldDescriptor> = {}): FieldDescriptor => ({ name, type: "string", widget: "hidden", label: name, ...extra });
 
 const VIS_PMR = { field: "equip_pmr_acc", op: "truthy" } as const;
@@ -81,7 +81,7 @@ const VIS_PMR = { field: "equip_pmr_acc", op: "truthy" } as const;
 const fields: FieldDescriptor[] = [
   // ── caché : type (vient du scope) + bloc adresse (groupe de sérialisation "address") ──
   // type : read + défaut = DEFAULT_POI_EQUIPEMENT_SCOPE.poiType (inliné pour rester leaf).
-  hidden("type", { required: true, read: "poi:toString", default: "recoveryCenter" }),
+  hidden("type", { required: true, read: "coerce:string", default: "recoveryCenter" }),
   // Membres plats du groupe `address` : recomposés en objet par serializeGroups (pas de read/default
   // individuel — addressCountry retombe sur "RE" via le transform poi:addressRead). localityId pilote
   // l'écriture (clé omise sans lui) ; non rendu (absent des sections) = pipeline-only.
@@ -92,8 +92,8 @@ const fields: FieldDescriptor[] = [
   hidden("localityId", { group: "address" }),
 
   // ── pipeline-only (lus/écrits, non rendus dans aucune section) ──
-  hidden("description", { read: "poi:toString", default: "" }),
-  { name: "tags", type: "array", widget: "hidden", label: "tags", read: "poi:toStringArray", default: [] },
+  hidden("description", { read: "coerce:string", default: "" }),
+  { name: "tags", type: "array", widget: "hidden", label: "tags", read: "coerce:stringArray", default: [] },
   // geo/geoPosition : writeOnly (posés par EditLocationTab AVEC l'adresse, jamais relus du form) →
   // émis au WRITE via transforms partagés (geo:write/geoPosition:write, liés à localityId), ignorés au READ.
   { name: "geo", type: "object", widget: "hidden", label: "geo", writeOnly: true, write: "geo:write" },
@@ -120,7 +120,7 @@ const fields: FieldDescriptor[] = [
   sw("inst_part_bool"),
   { name: "inst_part_type", type: "array", widget: "tags", label: L("inst_part_type"),
     widgetProps: { searchable: false }, visibleIf: { field: "inst_part_bool", op: "truthy" },
-    read: "poi:toStringArray", default: [] },
+    read: "coerce:stringArray", default: [] },
 
   // ── structurant ──
   sel("equip_nature"),
@@ -152,12 +152,12 @@ const fields: FieldDescriptor[] = [
   // ── usages ──
   { name: "urls", type: "array", widget: "urlList", label: L("urls"),
     widgetProps: { addLabel: "AddPoiEquipement.buttons.addUrl", removeLabel: "AddPoiEquipement.buttons.removeUrl" },
-    read: "poi:toStringArray", default: [] },
+    read: "coerce:stringArray", default: [] },
   cbg("equip_utilisateur"),
   sw("equip_acc_libre"),
   { name: "aps_name", type: "array", widget: "multiselect", label: L("aps_name"), required: true,
     placeholder: "AddPoiEquipement.placeholders.selectSport", placeholderSearch: "AddPoiEquipement.placeholders.searchSport",
-    read: "poi:toStringArray", default: [] },
+    read: "coerce:stringArray", default: [] },
 ];
 
 export const poiEquipementDescriptor: FormDescriptor = {

@@ -16,6 +16,8 @@ export { seedEntity, buildPayload, buildEditPayload, type FormSpec, type EntityL
 export { buildZodSchema } from "./engine/zodGen";
 export { registerTransform, getTransform, applyTransform, registerCompute, getCompute,
   registerValidate, getValidate, resolveValidate, type ValidateFn } from "./engine/transforms";
+// Coercions génériques (`coerce:*`) : ce ré-export exécute le module → ENREGISTRE les transforms au chargement.
+export { coerceString, coerceNumber, coerceBool, coerceStringArray, coerceDateYMD } from "./engine/coercions";
 export { JsonFormConfigSchema, configToDescriptor, formDescriptorToConfig, descriptorToTsSource, defaultWidgetForType, INPUT_TYPE_TO_WIDGET,
   mergeRenderPipeline, costumToConfig, descriptorToConfig, type CostumExtensionsArtifact,
   type JsonFormConfig, type JsonFormFieldConfig, type JsonFormLabel, type ConfigToDescriptorOpts } from "./config";

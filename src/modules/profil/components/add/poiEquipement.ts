@@ -4,11 +4,11 @@
  * codées en dur (notamment l'ObjectId de l'org parente, présent à plusieurs
  * endroits), (2) rendre le mapping form↔entité testable isolément.
  */
-import { format } from "date-fns";
 import type { AddPoiFormData } from "../../schemaForm";
 // Helpers de pipeline partagés (imports DIRECTS, pas le barrel formEngine → util pur testable sans
 // tirer les widgets/composants). cf. doc/refactor-field-treatment.md.
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
+import { coerceString } from "@/modules/formEngine/engine/coercions"; // side-effect : enregistre coerce:* + fournit coerceString (poi:addressRead)
 import { buildPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
 import "../../forms/geoTransforms"; // enregistre geo:write / geoPosition:write (partagés)
 import type { FormValues } from "@/modules/formEngine";
@@ -143,50 +143,8 @@ export function isFilled(value: unknown): boolean {
   return typeof value === "string" ? value.trim().length > 0 : !!value;
 }
 
-export const toStringValue = (value: unknown): string => {
-  if (typeof value === "string") return value;
-  if (typeof value === "number") return String(value);
-  return "";
-};
-
-/**
- * serverData (`number`, ou `string` après hydratation SSR) → `number | undefined`
- * pour les champs dimension (`equip_long`/`equip_larg`/`equip_surf`) que le backend
- * attend en `number`. Vide → `undefined` (champ omis).
- */
-export const toNumberValue = (value: unknown): number | undefined => {
-  if (typeof value === "number") return Number.isFinite(value) ? value : undefined;
-  if (typeof value === "string") {
-    const trimmed = value.trim();
-    if (trimmed === "") return undefined;
-    const parsed = Number(trimmed);
-    return Number.isFinite(parsed) ? parsed : undefined;
-  }
-  return undefined;
-};
-
-export const toBooleanValue = (value: unknown): boolean => {
-  if (typeof value === "boolean") return value;
-  if (typeof value === "number") return value === 1;
-  if (typeof value === "string") return ["true", "1", "oui", "yes"].includes(value.trim().toLowerCase());
-  return false;
-};
-
-export const toStringArray = (value: unknown): string[] => {
-  if (Array.isArray(value)) return value.filter((e): e is string => typeof e === "string" && e.trim().length > 0);
-  if (typeof value === "string") return value.split(",").map((e) => e.trim()).filter((e) => e.length > 0);
-  return [];
-};
-
-/**
- * Date serverData (`Date` normalisée, ou string ISO après hydratation SSR) →
- * `"YYYY-MM-DD"` attendu par `DatePickerInput`/`<input type=date>`. Sans ça, une
- * date `Date` retombait sur `""` (champ vide en édition).
- */
-export const toDateInput = (value: unknown): string => {
-  const date = value instanceof Date ? value : typeof value === "string" && value.trim() ? new Date(value) : null;
-  return date && !Number.isNaN(date.getTime()) ? format(date, "yyyy-MM-dd") : "";
-};
+// Coerceurs de TYPE (string/number/bool/array/date) : désormais GÉNÉRIQUES dans formEngine
+// (`coerceString`/`coerceNumber`/… enregistrés `coerce:*`). poi:addressRead réutilise `coerceString`.
 
 export const createEmptyDefaults = (
   scope: PoiEquipementScope = DEFAULT_POI_EQUIPEMENT_SCOPE
@@ -249,28 +207,23 @@ export const createEmptyDefaults = (
 // + `default` par champ ; adresse = groupe de sérialisation objet `address` → 5 champs plats).
 // `seedFromEntity(POI_READ_DESCRIPTOR, serverData)` reproduit l'ancien buildEditDefaults byte-pour-byte
 // (prouvé en test) — création (serverData={}) ET édition. cf. doc/refactor-field-treatment.md (P2).
-registerTransform("poi:toString", (v) => toStringValue(v));
-registerTransform("poi:toNumber", (v) => toNumberValue(v));
-registerTransform("poi:toBoolean", (v) => toBooleanValue(v));
-registerTransform("poi:toStringArray", (v) => toStringArray(v));
-registerTransform("poi:toDate", (v) => toDateInput(v));
 // Adresse : objet serveur `address` → 5 champs plats. Parité buildEditDefaults : addressCountry retombe
 // sur le défaut de scope ("RE") si vide ; les 4 autres sur "". (Écriture = P2-suite, ici read seulement.)
 registerTransform("poi:addressRead", (a) => {
   const o = (a ?? {}) as Record<string, unknown>;
   return {
-    addressCountry: toStringValue(o.addressCountry) || DEFAULT_POI_EQUIPEMENT_SCOPE.addressCountry,
-    addressLocality: toStringValue(o.addressLocality),
-    localityId: toStringValue(o.localityId),
-    postalCode: toStringValue(o.postalCode),
-    streetAddress: toStringValue(o.streetAddress),
+    addressCountry: coerceString(o.addressCountry) || DEFAULT_POI_EQUIPEMENT_SCOPE.addressCountry,
+    addressLocality: coerceString(o.addressLocality),
+    localityId: coerceString(o.localityId),
+    postalCode: coerceString(o.postalCode),
+    streetAddress: coerceString(o.streetAddress),
     // 9 champs SIG (level1..4/codeInsee) : round-trip COMPLET requis par l'édition unifiée (S6) — sinon
     // l'adresse reconstruite (payload complet) écraserait les niveaux serveur. Parité tl:addressRead.
-    level1: toStringValue(o.level1), level1Name: toStringValue(o.level1Name),
-    level2: toStringValue(o.level2), level2Name: toStringValue(o.level2Name),
-    level3: toStringValue(o.level3), level3Name: toStringValue(o.level3Name),
-    level4: toStringValue(o.level4), level4Name: toStringValue(o.level4Name),
-    codeInsee: toStringValue(o.codeInsee),
+    level1: coerceString(o.level1), level1Name: coerceString(o.level1Name),
+    level2: coerceString(o.level2), level2Name: coerceString(o.level2Name),
+    level3: coerceString(o.level3), level3Name: coerceString(o.level3Name),
+    level4: coerceString(o.level4), level4Name: coerceString(o.level4Name),
+    codeInsee: coerceString(o.codeInsee),
   };
 });
 // WRITE adresse : champs plats du form → objet `address` imbriqué (ou `undefined` si pas de localityId →

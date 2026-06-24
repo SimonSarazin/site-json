@@ -52,9 +52,9 @@ describe("PILOTE config-driven POI équipement — descripteur unifié", () => {
     expect(d2.fields.addressCountry).toMatchObject({ group: "address" });
     expect(d2.fields.localityId).toMatchObject({ group: "address" });
     expect(d2.fields.geo).toMatchObject({ writeOnly: true, write: "geo:write" });
-    expect(d2.fields.name).toMatchObject({ read: "poi:toString", default: "" });
-    expect(d2.fields.equip_pmr_acc).toMatchObject({ read: "poi:toBoolean", default: false });
-    expect(d2.fields.aps_name).toMatchObject({ read: "poi:toStringArray", default: [] });
+    expect(d2.fields.name).toMatchObject({ read: "coerce:string", default: "" });
+    expect(d2.fields.equip_pmr_acc).toMatchObject({ read: "coerce:bool", default: false });
+    expect(d2.fields.aps_name).toMatchObject({ read: "coerce:stringArray", default: [] });
   });
 
   it("3. seedEntity (READ) via le descripteur ISSU DE LA CONFIG === via l'original", () => {
