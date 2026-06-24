@@ -6,8 +6,14 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
   "costumSlug": "navigatorDesTierslieux",
   "fields": {
     "_logoFile": {
-      "info": "AddTiersLieux.fields.logoHint",
-      "label": "AddTiersLieux.fields.logo",
+      "info": {
+        "en": "Square format recommended · PNG or JPG",
+        "fr": "Format carré recommandé · PNG ou JPG",
+      },
+      "label": {
+        "en": "Third-place logo",
+        "fr": "Logo du tiers-lieu",
+      },
       "name": "_logoFile",
       "renderOnly": true,
       "type": "object",
@@ -18,7 +24,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       },
     },
     "address": {
-      "label": "AddTiersLieux.fields.address",
+      "label": {
+        "en": "Address",
+        "fr": "Adresse",
+      },
       "name": "address",
       "renderOnly": true,
       "type": "object",
@@ -42,7 +51,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       "widget": "hidden",
     },
     "description": {
-      "label": "AddTiersLieux.fields.longDescription",
+      "label": {
+        "en": "Long description",
+        "fr": "Description longue",
+      },
       "name": "description",
       "placeholder": "AddTiersLieux.fields.longDescriptionPlaceholder",
       "read": "coerce:pickString",
@@ -54,7 +66,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       "write": "coerce:orUndef",
     },
     "email": {
-      "label": "AddTiersLieux.fields.email",
+      "label": {
+        "en": "Email",
+        "fr": "Email",
+      },
       "name": "email",
       "placeholder": "AddTiersLieux.fields.emailPlaceholder",
       "read": "coerce:pickString",
@@ -104,7 +119,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
         },
       ],
       "group": "typePlace",
-      "label": "AddTiersLieux.fields.family",
+      "label": {
+        "en": "Third-place family/families",
+        "fr": "Famille(s) de tiers-lieux",
+      },
       "name": "family",
       "type": "array",
       "widget": "checkboxGroup",
@@ -136,7 +154,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       "writeOnly": true,
     },
     "hours": {
-      "label": "AddTiersLieux.fields.openingHours",
+      "label": {
+        "en": "Opening hours",
+        "fr": "Horaires d'ouverture",
+      },
       "name": "hours",
       "path": "openingHours",
       "read": "tl:hoursRead",
@@ -194,7 +215,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
         },
       ],
       "group": "manageModel",
-      "label": "AddTiersLieux.fields.managementType",
+      "label": {
+        "en": "Management type",
+        "fr": "Mode de gestion",
+      },
       "name": "managementType",
       "placeholder": "AddTiersLieux.fields.selectPlaceholder",
       "required": true,
@@ -203,7 +227,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
     },
     "managementTypeOther": {
       "group": "manageModel",
-      "label": "AddTiersLieux.fields.managementTypeOther",
+      "label": {
+        "en": "If other management type, please specify",
+        "fr": "Si autre mode de gestion, précisez",
+      },
       "name": "managementTypeOther",
       "type": "string",
       "visibleIf": {
@@ -214,7 +241,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       "widget": "text",
     },
     "name": {
-      "label": "AddTiersLieux.fields.name",
+      "label": {
+        "en": "Name of the third-place",
+        "fr": "Nom du tiers-lieu",
+      },
       "name": "name",
       "placeholder": "AddTiersLieux.fields.namePlaceholder",
       "read": "coerce:pickString",
@@ -819,7 +849,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       "widget": "select",
     },
     "phone": {
-      "label": "AddTiersLieux.fields.phone",
+      "label": {
+        "en": "Phone",
+        "fr": "Téléphone",
+      },
       "name": "phone",
       "path": "telephone",
       "placeholder": "AddTiersLieux.fields.phonePlaceholder",
@@ -839,7 +872,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       "widget": "hidden",
     },
     "shortDescription": {
-      "label": "AddTiersLieux.fields.shortDescription",
+      "label": {
+        "en": "Short description",
+        "fr": "Description courte",
+      },
       "name": "shortDescription",
       "read": "coerce:pickString",
       "required": true,
@@ -852,7 +888,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
     },
     "socialLinks": {
       "clear": "",
-      "label": "AddTiersLieux.fields.socialNetworks",
+      "label": {
+        "en": "Social networks",
+        "fr": "Réseaux sociaux",
+      },
       "name": "socialLinks",
       "path": "socialNetwork",
       "read": "tl:socialRead",
@@ -917,7 +956,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       "widget": "hidden",
     },
     "structureName": {
-      "label": "AddTiersLieux.fields.structureName",
+      "label": {
+        "en": "Operating organization (if different)",
+        "fr": "Nom de la structure porteuse (si différent)",
+      },
       "name": "structureName",
       "path": "holderOrganization",
       "read": "coerce:pickString",
@@ -926,7 +968,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       "write": "coerce:orUndef",
     },
     "surfaceBuilt": {
-      "label": "AddTiersLieux.fields.surfaceBuilt",
+      "label": {
+        "en": "Built surface (m²)",
+        "fr": "Surface bâtie (m²)",
+      },
       "name": "surfaceBuilt",
       "path": "buildingSurfaceArea",
       "placeholder": "AddTiersLieux.fields.surfacePlaceholder",
@@ -936,7 +981,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       "write": "tl:numOrUndef",
     },
     "surfaceOutdoor": {
-      "label": "AddTiersLieux.fields.surfaceOutdoor",
+      "label": {
+        "en": "Outdoor surface (m²)",
+        "fr": "Surface extérieure (m²)",
+      },
       "name": "surfaceOutdoor",
       "path": "siteSurfaceArea",
       "placeholder": "AddTiersLieux.fields.surfacePlaceholder",
@@ -956,7 +1004,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       "write": "tl:videoWrite",
     },
     "websiteUrl": {
-      "label": "AddTiersLieux.fields.websiteUrl",
+      "label": {
+        "en": "Website",
+        "fr": "Site internet",
+      },
       "name": "websiteUrl",
       "path": "url",
       "placeholder": "AddTiersLieux.fields.websiteUrlPlaceholder",

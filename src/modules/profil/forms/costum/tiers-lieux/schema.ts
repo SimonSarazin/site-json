@@ -13,6 +13,8 @@
 import type { CostumFormSchema } from "../compileCostumSchema";
 
 const F = (k: string) => `AddTiersLieux.fields.${k}`;
+/** Libellé bilingue inline (LocalizedString) — résolu locale-aware au rendu par useT (cf. EntityFormModal). */
+const L = (fr: string, en: string) => ({ fr, en });
 
 const MANAGEMENT_TYPES = [
   { value: "association", label: "Association" },
@@ -72,29 +74,29 @@ export const TIERS_LIEUX_SCHEMA: CostumFormSchema = {
 
   // ── CHAMPS : widget + overrides (read/write/path/enum hétérogènes). Membres de groupe = pas de read/write dérivé. ──
   fields: {
-    name: { widget: "text", label: F("name"), required: true, placeholder: F("namePlaceholder"), read: "coerce:pickString" },
+    name: { widget: "text", label: L("Nom du tiers-lieu", "Name of the third-place"), required: true, placeholder: F("namePlaceholder"), read: "coerce:pickString" },
     // Mois/année : pas de label propre (sous le titre de GROUPE « Date d'ouverture »).
     openingMonth: { widget: "select", label: "", enum: MONTHS, placeholder: F("month"), group: "openingDate" },
     openingYear: { widget: "select", label: "", enum: YEARS, placeholder: F("year"), group: "openingDate" },
-    shortDescription: { widget: "textarea", label: F("shortDescription"), required: true, widgetProps: { rows: 2 }, read: "coerce:pickString", write: "coerce:orUndef" },
-    structureName: { widget: "text", label: F("structureName"), read: "coerce:pickString", write: "coerce:orUndef", path: "holderOrganization" },
-    managementType: { widget: "select", label: F("managementType"), enum: MANAGEMENT_TYPES, required: true, placeholder: F("selectPlaceholder"), group: "manageModel" },
-    managementTypeOther: { widget: "text", label: F("managementTypeOther"), visibleIf: VIS_MGMT_AUTRE, group: "manageModel" },
-    family: { widget: "checkboxGroup", label: F("family"), enum: FAMILY_OPTIONS, widgetProps: { variant: "card" }, group: "typePlace" },
-    surfaceBuilt: { widget: "number", label: F("surfaceBuilt"), placeholder: F("surfacePlaceholder"), read: "coerce:string", write: "tl:numOrUndef", path: "buildingSurfaceArea" },
-    surfaceOutdoor: { widget: "number", label: F("surfaceOutdoor"), placeholder: F("surfacePlaceholder"), read: "coerce:string", write: "tl:numOrUndef", path: "siteSurfaceArea" },
+    shortDescription: { widget: "textarea", label: L("Description courte", "Short description"), required: true, widgetProps: { rows: 2 }, read: "coerce:pickString", write: "coerce:orUndef" },
+    structureName: { widget: "text", label: L("Nom de la structure porteuse (si différent)", "Operating organization (if different)"), read: "coerce:pickString", write: "coerce:orUndef", path: "holderOrganization" },
+    managementType: { widget: "select", label: L("Mode de gestion", "Management type"), enum: MANAGEMENT_TYPES, required: true, placeholder: F("selectPlaceholder"), group: "manageModel" },
+    managementTypeOther: { widget: "text", label: L("Si autre mode de gestion, précisez", "If other management type, please specify"), visibleIf: VIS_MGMT_AUTRE, group: "manageModel" },
+    family: { widget: "checkboxGroup", label: L("Famille(s) de tiers-lieux", "Third-place family/families"), enum: FAMILY_OPTIONS, widgetProps: { variant: "card" }, group: "typePlace" },
+    surfaceBuilt: { widget: "number", label: L("Surface bâtie (m²)", "Built surface (m²)"), placeholder: F("surfacePlaceholder"), read: "coerce:string", write: "tl:numOrUndef", path: "buildingSurfaceArea" },
+    surfaceOutdoor: { widget: "number", label: L("Surface extérieure (m²)", "Outdoor surface (m²)"), placeholder: F("surfacePlaceholder"), read: "coerce:string", write: "tl:numOrUndef", path: "siteSurfaceArea" },
 
     // ancre composite location (pilote les champs plats d'adresse) — renderOnly via le widget.
-    address: { widget: "location", label: F("address"), widgetProps: { required: true } },
-    email: { widget: "text", label: F("email"), required: true, placeholder: F("emailPlaceholder"), widgetProps: { inputType: "email" }, rules: { regex: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$" }, read: "coerce:pickString" },
-    phone: { widget: "text", label: F("phone"), placeholder: F("phonePlaceholder"), widgetProps: { inputType: "tel" }, read: "coerce:pickString", write: "coerce:orUndef", path: "telephone" },
+    address: { widget: "location", label: L("Adresse", "Address"), widgetProps: { required: true } },
+    email: { widget: "text", label: L("Email", "Email"), required: true, placeholder: F("emailPlaceholder"), widgetProps: { inputType: "email" }, rules: { regex: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$" }, read: "coerce:pickString" },
+    phone: { widget: "text", label: L("Téléphone", "Phone"), placeholder: F("phonePlaceholder"), widgetProps: { inputType: "tel" }, read: "coerce:pickString", write: "coerce:orUndef", path: "telephone" },
 
     // image traitée hors element/save — renderOnly via le widget.
-    _logoFile: { widget: "image", label: F("logo"), info: F("logoHint"), widgetProps: { shape: "square", aspect: 1 } },
+    _logoFile: { widget: "image", label: L("Logo du tiers-lieu", "Third-place logo"), info: L("Format carré recommandé · PNG ou JPG", "Square format recommended · PNG or JPG"), widgetProps: { shape: "square", aspect: 1 } },
     videoUrl: { widget: "text", label: "", placeholder: F("videoUrlPlaceholder"), read: "tl:video0", write: "tl:videoWrite", path: "video" },
-    websiteUrl: { widget: "text", label: F("websiteUrl"), placeholder: F("websiteUrlPlaceholder"), read: "coerce:pickString", write: "coerce:orUndef", path: "url" },
+    websiteUrl: { widget: "text", label: L("Site internet", "Website"), placeholder: F("websiteUrlPlaceholder"), read: "coerce:pickString", write: "coerce:orUndef", path: "url" },
     socialLinks: {
-      widget: "fieldArray", label: F("socialNetworks"), read: "tl:socialRead", write: "tl:socialWrite", path: "socialNetwork", clear: "",
+      widget: "fieldArray", label: L("Réseaux sociaux", "Social networks"), read: "tl:socialRead", write: "tl:socialWrite", path: "socialNetwork", clear: "",
       widgetProps: {
         addLabel: F("addSocial"),
         itemFields: [
@@ -103,8 +105,8 @@ export const TIERS_LIEUX_SCHEMA: CostumFormSchema = {
         ],
       },
     },
-    hours: { widget: "openingHours", label: F("openingHours"), widgetProps: { dayLabelPrefix: "AddTiersLieux.days" }, read: "tl:hoursRead", write: "tl:hoursWrite", path: "openingHours" },
-    description: { widget: "textarea", label: F("longDescription"), placeholder: F("longDescriptionPlaceholder"), widgetProps: { rows: 10 }, read: "coerce:pickString", write: "coerce:orUndef" },
+    hours: { widget: "openingHours", label: L("Horaires d'ouverture", "Opening hours"), widgetProps: { dayLabelPrefix: "AddTiersLieux.days" }, read: "tl:hoursRead", write: "tl:hoursWrite", path: "openingHours" },
+    description: { widget: "textarea", label: L("Description longue", "Long description"), placeholder: F("longDescriptionPlaceholder"), widgetProps: { rows: 10 }, read: "coerce:pickString", write: "coerce:orUndef" },
 
     // ── pipeline-only (hidden, hors sections) ; membres de groupe (label ⇐ nom) ──
     familyOther: { widget: "hidden", group: "typePlace" },

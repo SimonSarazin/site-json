@@ -13,7 +13,7 @@ import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { Form } from "@/components/ui/form";
 
-import type { FormDescriptor, FormValues } from "../types";
+import type { FormDescriptor, FormValues, I18n } from "../types";
 import { buildZodSchema } from "../engine/zodGen";
 import { check } from "../engine/conditional";
 import { getCompute, resolveValidate } from "../engine/transforms";
@@ -27,7 +27,7 @@ export interface GenericFormProps {
   /** Appelé au submit INVALIDE (validation échoue). Le moteur ne hardcode rien :
    *  l'appelant décide (ex. toast "corrigez les champs", cf. ancien form). */
   onInvalid?: () => void;
-  t: (key: string) => string;
+  t: (key: I18n) => string; // résout une clé i18n (i18next) OU un LocalizedString inline (useLocalization)
   submitLabel: string;
   submitting?: boolean;
   onCancel?: () => void;

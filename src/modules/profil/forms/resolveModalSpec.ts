@@ -11,7 +11,7 @@
 import type { ReactNode } from "react";
 import type { FieldValues } from "react-hook-form";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
-import { configToDescriptor, formDescriptorToConfig, type FormDescriptor, type EntityLike } from "@/modules/formEngine";
+import { configToDescriptor, formDescriptorToConfig, type FormDescriptor, type EntityLike, type I18n } from "@/modules/formEngine";
 import { buildConfigDefaults, buildPipelineDefaults, buildPipelinePayload } from "./jsonFormSubmit";
 import type { EntityModalConfig } from "./EntityFormModal";
 import type { ByMode, EntityModalCtx, EntityModalSpec } from "./entityModalSpec";
@@ -22,7 +22,8 @@ import {
 } from "./specRegistries";
 
 type Values = Record<string, unknown>;
-const KEEP_KEYS = (l: unknown) => (typeof l === "string" ? l : ((l as { fr?: string })?.fr ?? ""));
+// Préserve le LocalizedString inline (résolu locale-aware au rendu par useT) ; clé string passée telle quelle. Cf. EntityFormModal.
+const PRESERVE_LABELS = (l: I18n): I18n => l;
 
 /** Résout une valeur `ByMode` selon le mode (string identique, ou {add,edit}). */
 function pickMode<T>(v: ByMode<T>, mode: "add" | "edit"): T {
@@ -60,7 +61,7 @@ export function specToConfig(spec: EntityModalSpec): EntityModalConfig {
       const fn = getDescriptorVariant(spec.descriptorVariant);
       if (fn) return fn(ctx);
     }
-    if ("config" in spec.descriptor) return configToDescriptor(spec.descriptor.config, { tLoc: KEEP_KEYS });
+    if ("config" in spec.descriptor) return configToDescriptor(spec.descriptor.config, { tLoc: PRESERVE_LABELS });
     return getDescriptor(spec.descriptor.ref) as FormDescriptor;
   };
 

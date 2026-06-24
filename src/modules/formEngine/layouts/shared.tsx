@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { check } from "../engine/conditional";
 import { hasErrorAt } from "../engine/sectionErrors";
-import type { FieldGroup, FormDescriptor, LayoutPresentation, SectionDescriptor } from "../types";
+import type { FieldGroup, FormDescriptor, I18n, LayoutPresentation, SectionDescriptor } from "../types";
 
 /** Options de présentation d'un layout, avec les défauts « équipement » (pills/count/plain). */
 export function layoutPresentation(layout: FormDescriptor["layout"]): Required<LayoutPresentation> {
@@ -25,7 +25,7 @@ export function layoutPresentation(layout: FormDescriptor["layout"]): Required<L
 export interface LayoutProps {
   descriptor: FormDescriptor;
   form: UseFormReturn<FieldValues>;
-  t: (key: string) => string;
+  t: (key: I18n) => string;
   renderField: (name: string) => ReactNode;
   renderSlot: (slotId: string) => ReactNode;
   submitLabel: string;
@@ -82,7 +82,7 @@ export function StepTriggers(props: {
   steps: SectionDescriptor[];
   active: number;
   errors: Record<string, unknown>;
-  t: (key: string) => string;
+  t: (key: I18n) => string;
 }): ReactNode {
   const { steps, active, errors, t } = props;
   return (
@@ -116,7 +116,7 @@ export function StepTriggers(props: {
 export function TabBar(props: {
   steps: SectionDescriptor[];
   errors: Record<string, unknown>;
-  t: (key: string) => string;
+  t: (key: I18n) => string;
 }): ReactNode {
   const { steps, errors, t } = props;
   return (

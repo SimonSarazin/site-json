@@ -24,7 +24,8 @@ import { equipementsSportifsDescriptor } from "./costum/equipements-sportifs/des
 // référencés PAR CLÉ dans le descripteur. Fournit aussi createEmptyDefaults (socle baseDefaults).
 import { createEmptyDefaults, type PoiEquipementScope } from "./costum/equipements-sportifs/fns";
 
-const tLoc = (l: unknown) => (typeof l === "string" ? l : ((l as { fr?: string })?.fr ?? ""));
+// identité : préserve le LocalizedString inline (résolu locale-aware au rendu par useT) → round-trip exact des labels objets.
+const tLoc = (l: import("@/types/locale-schema").LocalizedString) => l;
 const norm = <T,>(v: T): T => JSON.parse(JSON.stringify(v));
 const poiLike = (serverData: Record<string, unknown>) => ({ serverData }) as unknown as Poi;
 // Scope de test (ex-DEFAULT_POI_EQUIPEMENT_SCOPE, désormais en config) — socle des baseDefaults.

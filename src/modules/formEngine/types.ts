@@ -5,9 +5,11 @@
  * Séparation : la couche DONNÉES (type/enum-values/path/required) vient de la lib (fiable) ;
  * la couche UI (widget/label/layout/conditionnel) est écrite ici (proprement, pas du legacy).
  */
+import type { LocalizedString } from "@/types/locale-schema";
 
-/** Clé i18n (résolue par `useT`) OU texte brut (LocalizedString simplifié). */
-export type I18n = string;
+/** Libellé internationalisable : clé i18n string (résolue par i18next) OU LocalizedString inline `{fr,en,…}`
+ *  (résolue locale-aware par `useLocalization`). Les deux passent par `useT` au rendu (cf. `WidgetProps.t`). */
+export type I18n = string | LocalizedString;
 
 /** Type logique d'un champ (vient de la lib : `schema.type` + `x-format`). */
 export type FieldType = "string" | "number" | "boolean" | "date" | "array" | "object";

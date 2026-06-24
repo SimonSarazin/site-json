@@ -19,7 +19,7 @@ import { useT } from "@/hooks/useT";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useSite } from "@/hooks/useSite";
 
-import { GenericForm, configToDescriptor, formDescriptorToConfig, type FormDescriptor } from "@/modules/formEngine";
+import { GenericForm, configToDescriptor, formDescriptorToConfig, type FormDescriptor, type I18n } from "@/modules/formEngine";
 import "./registerWidgets"; // side-effect : enregistre les widgets DOMAINE (location/finder/tags/image/…) AVANT le 1er rendu
 import "./registerSpecFns"; // side-effect : enregistre descripteurs + fns costum (par clé) AVANT le 1er rendu d'une spec
 import { useUnsavedGuard } from "./useUnsavedGuard";
@@ -29,7 +29,10 @@ import type { EntityModalCtx, EntityModalSpec } from "./entityModalSpec";
 
 export type { EntityModalCtx };
 
-const KEEP_KEYS = (l: unknown) => (typeof l === "string" ? l : ((l as { fr?: string })?.fr ?? "")); // labels = clés i18n → GenericForm les résout
+// tLoc PRÉSERVANT : on garde le LocalizedString inline TEL QUEL (au lieu de l'aplatir en `.fr`) → il atteint le
+// widget où `useT`/`tr` le résout locale-aware (EN/FR). Les clés string sont déjà passées telles quelles par
+// resolveLabel. Ainsi un label `{fr,en}` du schéma costum bascule de langue ; une clé reste résolue par i18next.
+const PRESERVE_LABELS = (l: I18n): I18n => l;
 
 /** Config déclarative d'une entité/costum — élimine sa modale spécifique. */
 export interface EntityModalConfig {
@@ -84,7 +87,7 @@ export interface EntityFormModalProps {
 export function EntityFormModal({ config: configProp, spec, open, onOpenChange, mode = "add", entity, parent }: EntityFormModalProps): ReactNode {
   const config = useMemo(() => configProp ?? specToConfig(spec as EntityModalSpec), [configProp, spec]);
   const t = useT("modules/profil");
-  const tr = (k: string) => t(k);
+  const tr = (k: I18n) => t(k); // résout clé i18n OU LocalizedString inline (useT route selon le type)
   const { me, entity: carrier } = useCocolight();
   const { config: siteConfig } = useSite();
   const isEdit = mode === "edit" && Boolean(entity);
@@ -94,7 +97,7 @@ export function EntityFormModal({ config: configProp, spec, open, onOpenChange, 
   const ctx: EntityModalCtx = { mode: effMode, entity: entity ?? null, parent: parent ?? null, scope, me, carrier, costum: siteConfig.costum };
 
   const rawDescriptor = typeof config.descriptor === "function" ? config.descriptor(ctx) : config.descriptor;
-  const descriptor = useMemo(() => configToDescriptor(formDescriptorToConfig(rawDescriptor), { tLoc: KEEP_KEYS }), [rawDescriptor]);
+  const descriptor = useMemo(() => configToDescriptor(formDescriptorToConfig(rawDescriptor), { tLoc: PRESERVE_LABELS }), [rawDescriptor]);
   const defaultValues = useMemo(() => config.buildDefaults(ctx), [config, effMode, entity, scope]); // eslint-disable-line react-hooks/exhaustive-deps
   const schema = useMemo(() => config.getSchema?.(ctx), [config, effMode, entity]); // eslint-disable-line react-hooks/exhaustive-deps
   const listsOptions = config.listsFromCarrier ? ((carrier?.serverData?.lists as Record<string, string[]> | undefined) ?? {}) : undefined;

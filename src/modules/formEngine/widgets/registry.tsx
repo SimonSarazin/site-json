@@ -17,7 +17,7 @@ import {
 import { TextareaFormField } from "./fields/TextareaFormField";
 import { FormFieldUrlList } from "./fields/FormFieldUrlList";
 import type { FieldArrayItem } from "./FieldArrayField";
-import type { FieldDescriptor } from "../types";
+import type { FieldDescriptor, I18n } from "../types";
 
 const OpeningHoursField = lazy(() => import("./OpeningHoursField"));
 const FieldArrayField = lazy(() => import("./FieldArrayField"));
@@ -28,8 +28,8 @@ const WidgetFallback = () => <div className="h-10 animate-pulse rounded-md bg-mu
 export interface WidgetProps {
   field: FieldDescriptor;
   form: UseFormReturn<FieldValues>;
-  /** Traduction (clé i18n → texte) — fournie par l'appelant (GenericForm `t`). */
-  t: (key: string) => string;
+  /** Traduction : clé i18n (i18next) OU LocalizedString inline (useLocalization) → texte. Fournie par GenericForm `t`. */
+  t: (key: I18n) => string;
   /** Options résolues `{value,label}` (label déjà traduit). */
   options: Array<{ value: string; label: string }>;
 }

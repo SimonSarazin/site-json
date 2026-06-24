@@ -4,7 +4,7 @@
  */
 export type {
   FormDescriptor, FieldDescriptor, SectionDescriptor, LayoutSpec,
-  Predicate, PredicateOp, EnumOption, WidgetKind, FieldType, FormValues, FormCollection,
+  Predicate, PredicateOp, EnumOption, WidgetKind, FieldType, FormValues, FormCollection, I18n,
 } from "./types";
 export { GenericForm, type GenericFormProps } from "./components/GenericForm";
 export { registerWidget, getWidget, type WidgetProps } from "./widgets/registry";

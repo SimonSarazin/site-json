@@ -7,7 +7,7 @@
 import type { LocalizedString } from "@/types/locale-schema";
 import type {
   EnumOption, FieldDescriptor, FieldGroup, FieldType, FormCollection, FormDescriptor,
-  Predicate, SectionDescriptor, WidgetKind,
+  I18n, Predicate, SectionDescriptor, WidgetKind,
 } from "../types";
 import type { JsonFormConfig, JsonFormLabel } from "./schema";
 
@@ -21,12 +21,14 @@ const ENTITY_TO_COLLECTION: Record<string, FormCollection> = {
 };
 
 export interface ConfigToDescriptorOpts {
-  /** Résout un LocalizedString vers la langue courante (fourni par le host via useLocalization). */
-  tLoc: (loc: LocalizedString) => string;
+  /** Traite un LocalizedString : soit le PRÉSERVE tel quel (le widget le résout locale-aware via useT, voie
+   *  costum inline), soit le pré-résout en string (host legacy). Une clé string est toujours passée telle quelle. */
+  tLoc: (loc: LocalizedString) => I18n;
 }
 
-/** Libellé config → string : clé i18n (string) passée telle quelle ; LocalizedString pré-résolu. */
-function resolveLabel(value: JsonFormLabel | undefined, tLoc: ConfigToDescriptorOpts["tLoc"]): string | undefined {
+/** Libellé config → I18n : clé i18n (string) passée telle quelle ; LocalizedString traité par `tLoc`
+ *  (préservé pour résolution locale-aware au rendu, ou pré-résolu). */
+function resolveLabel(value: JsonFormLabel | undefined, tLoc: ConfigToDescriptorOpts["tLoc"]): I18n | undefined {
   if (value == null) return undefined;
   return typeof value === "string" ? value : tLoc(value);
 }

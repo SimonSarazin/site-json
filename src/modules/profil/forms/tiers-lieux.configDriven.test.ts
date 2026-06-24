@@ -21,7 +21,8 @@ import { getDefaultTiersLieuxValues } from "./costum/tiers-lieux/fns";
 // side-effect : enregistre les transforms tl:* + geo:write/geoPosition:write (référencés par clé dans le descripteur).
 import "./costum/tiers-lieux/fns";
 
-const tLoc = (l: unknown) => (typeof l === "string" ? l : ((l as { fr?: string })?.fr ?? ""));
+// identité : préserve le LocalizedString inline (résolu locale-aware au rendu par useT) → round-trip exact des labels objets.
+const tLoc = (l: import("@/types/locale-schema").LocalizedString) => l;
 const norm = <T,>(v: T): T => JSON.parse(JSON.stringify(v));
 
 describe("PILOTE config-driven tiers-lieu (Phase 2) — descripteur unifié", () => {

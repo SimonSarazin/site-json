@@ -19,9 +19,9 @@ const ALL: Array<[string, FormDescriptor]> = [
   ...Object.entries(EDIT_DESCRIPTORS).map(([k, d]): [string, FormDescriptor] => [`edit-${k}`, d]),
 ];
 
-// Libellés du descripteur = strings (clés i18n / texte) → resolveLabel les passe tels quels ;
-// ce tLoc n'est appelé que pour un éventuel LocalizedString (jamais ici) → round-trip EXACT des labels.
-const tLoc = (l: { fr?: string }) => l?.fr ?? "";
+// identité : clés string passées telles quelles par resolveLabel ; LocalizedString inline (labels costum) PRÉSERVÉ
+// (résolu locale-aware au rendu par useT) → round-trip EXACT des labels (string OU objet).
+const tLoc = (l: import("@/types/locale-schema").LocalizedString) => l;
 
 /** descripteur → config → parse (schéma) → descripteur. Le `parse` garantit qu'AUCUN champ n'est strippé. */
 function roundTrip(d: FormDescriptor): FormDescriptor {
