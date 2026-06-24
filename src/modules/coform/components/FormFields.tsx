@@ -1,13 +1,37 @@
+import { useState } from "react";
 import type { UseFormRegister, FieldErrors } from "react-hook-form";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
+import { Check, ChevronsUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { cn } from "@/lib/utils";
+import { useT } from "@/hooks/useT";
 import type { FormFieldMapping } from "../types";
 import { MarkdownEditor } from "./MarkdownEditor";
 
@@ -288,6 +312,124 @@ export function RadioField({ field, errors, value, onChange }: FormFieldProps) {
           </div>
         ))}
       </RadioGroup>
+
+      <FieldError name={field.name} message={errors[field.name]?.message as string | undefined} />
+    </div>
+  );
+}
+
+/**
+ * Liste déroulante (legacy `tpls/forms/select.php`).
+ *
+ * Single-select bâti sur le `<Select>` shadcn (Radix → ARIA correct par
+ * défaut). La valeur stockée est l'option sélectionnée telle quelle ; pour
+ * les options associatives legacy (`{cle: "Label"}`), `field.options` porte
+ * les clés et `field.optionLabels` la correspondance clé→label affiché.
+ *
+ * Quand `field.searchable` est vrai (port du flag legacy `enableSelect2`), on
+ * passe à un combobox recherchable (Popover + cmdk) ; sinon liste simple.
+ *
+ * NB : Radix interdit un `<SelectItem value="">` ; on filtre donc les options
+ * vides. La valeur vide ("" = rien de sélectionné) reste gérée au niveau de
+ * la racine `<Select>` (affiche le placeholder via `<SelectValue>`).
+ */
+export function SelectField({ field, errors, value, onChange }: FormFieldProps) {
+  const t = useT("modules/coform");
+  const [open, setOpen] = useState(false);
+  const options = (field.options || []).filter((option) => option !== "");
+  const selectedValue = typeof value === "string" ? value : "";
+  const hasError = !!errors[field.name];
+  const placeholder = field.placeholder || t("coform.fields.selectPlaceholder");
+  const labelOf = (option: string) => field.optionLabels?.[option] ?? option;
+
+  return (
+    <div className={cn("space-y-2", field.width)}>
+      {field.label && (
+        <Label
+          htmlFor={field.name}
+          className="text-sm font-medium text-foreground"
+        >
+          {field.label}
+          {field.isRequired && <span className="text-destructive ml-1">*</span>}
+        </Label>
+      )}
+      {field.info && <HintText text={field.info} />}
+
+      {field.searchable ? (
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              id={field.name}
+              type="button"
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              aria-invalid={hasError || undefined}
+              aria-describedby={hasError ? `${field.name}-error` : undefined}
+              aria-required={field.isRequired || undefined}
+              className={cn(
+                "w-full justify-between font-normal",
+                !selectedValue && "text-muted-foreground",
+                hasError && "border-destructive"
+              )}
+            >
+              <span className="truncate">
+                {selectedValue ? labelOf(selectedValue) : placeholder}
+              </span>
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
+            <Command>
+              <CommandInput placeholder={placeholder} />
+              <CommandList>
+                <CommandEmpty>{t("coform.fields.selectNoResult")}</CommandEmpty>
+                <CommandGroup>
+                  {options.map((option) => (
+                    <CommandItem
+                      key={option}
+                      // valeur de recherche = label affiché (pour les options
+                      // associatives, l'user tape le texte visible, pas la clé)
+                      value={labelOf(option)}
+                      onSelect={() => {
+                        onChange?.(option);
+                        setOpen(false);
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          selectedValue === option ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {labelOf(option)}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+      ) : (
+        <Select value={selectedValue} onValueChange={onChange}>
+          <SelectTrigger
+            id={field.name}
+            aria-invalid={hasError || undefined}
+            aria-describedby={hasError ? `${field.name}-error` : undefined}
+            aria-required={field.isRequired || undefined}
+            className={cn("w-full border border-input", hasError && "border-destructive")}
+          >
+            <SelectValue placeholder={placeholder} />
+          </SelectTrigger>
+          <SelectContent>
+            {options.map((option) => (
+              <SelectItem key={option} value={option}>
+                {labelOf(option)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
 
       <FieldError name={field.name} message={errors[field.name]?.message as string | undefined} />
     </div>

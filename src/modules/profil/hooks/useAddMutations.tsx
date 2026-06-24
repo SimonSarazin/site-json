@@ -361,7 +361,7 @@ export function useAddTiersLieu(entity?: EntityTypes | null) {
       }
 
       // Pattern uniforme avec `useAddOrganization` : `organization(payload)` crée
-      // l'instance, `.save()` persiste les champs custom (mainTag, compagnon,
+      // l'instance, `.save()` persiste les champs custom (mainTag, tags,
       // costumSlug, etc.) ET l'image, en un seul aller-retour.
       const organization = await targetEntity.organization(payload);
       await organization.save();

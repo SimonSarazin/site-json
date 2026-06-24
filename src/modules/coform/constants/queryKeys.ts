@@ -169,6 +169,35 @@ export const COFORM_QUERY_KEYS = {
     answerId === null
       ? (["coform", "answerHistory"] as const)
       : (["coform", "answerHistory", answerId] as const),
+
+  /**
+   * Résumé PUBLIC d'un élément (nom + image de profil), résolu live via le SDK
+   * (`api.<type>({id})`). Sert à afficher les chips finder et le nom d'un lieu
+   * (`PlaceFormView`) sans persister l'image dans la réponse (elle se périme).
+   *
+   * Producteurs : `useElementSummary` (1 élément), `useFinderElementImages` (bulk).
+   * **Non scopée `userId`** (contrairement à `FORM_ANSWER`/`MULTIEVAL_DATA`) :
+   *   donnée publique, `auth: none` → cache mutualisé cross-user/cross-onglet
+   *   VOULU (c'est ce qui déduplique les fetchs des deux producteurs).
+   */
+  ELEMENT_SUMMARY: (type: string | null, id: string | null) =>
+    ["coform", "elementSummary", type, id] as const,
+  ELEMENT_SUMMARY_PREFIX: () => ["coform", "elementSummary"] as const,
+
+  /**
+   * Recherche autocomplete du Finder (`searchCostum`). Clé éphémère paramétrée
+   * par les critères de recherche (type, texte debouncé, filtres, sourceKey).
+   * Donnée publique → non scopée `userId`.
+   *
+   * Producteur : `useFinderSearchResults`.
+   */
+  FINDER_SEARCH: (
+    searchType: readonly string[],
+    query: string,
+    filters: Record<string, string> | undefined,
+    notSourceKey: boolean,
+  ) => ["coform", "finderSearch", searchType, query, filters, notSourceKey] as const,
+  FINDER_SEARCH_PREFIX: () => ["coform", "finderSearch"] as const,
 } as const;
 
 export type CoformQueryKeyType = ReturnType<

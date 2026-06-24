@@ -259,10 +259,12 @@ export function CoFormProvider({
         );
         const hasLinks = Object.keys(links).length > 0;
         
-        // Dénormaliser les données pour le format PHP (champs root-level à la racine)
+        // Dénormaliser les données pour le format PHP (champs root-level à la
+        // racine + pack des inputs multi-eval dans `{name}_multiEval.{userId}`).
         const dataForServer = denormalizeAnswerData(
           stepsDataRef.current as Record<string, unknown>,
-          subFormsFields
+          subFormsFields,
+          userId ?? null
         ) as AllStepsData;
         
         await onFinalSubmit(
@@ -277,7 +279,7 @@ export function CoFormProvider({
     } finally {
       setIsLoading(false);
     }
-  }, [submitMode, onFinalSubmit, stepState.addedOptions, subFormsFields]);
+  }, [submitMode, onFinalSubmit, stepState.addedOptions, subFormsFields, userId]);
 
   // Réinitialisation
   const resetForm = useCallback(() => {
