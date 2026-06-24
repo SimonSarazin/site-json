@@ -21,27 +21,15 @@ import { useSite } from "@/hooks/useSite";
 
 import { GenericForm, configToDescriptor, formDescriptorToConfig, type FormDescriptor } from "@/modules/formEngine";
 import "./registerWidgets"; // side-effect : enregistre les widgets DOMAINE (location/finder/tags/image/…) AVANT le 1er rendu
+import "./registerSpecFns"; // side-effect : enregistre descripteurs + fns costum (par clé) AVANT le 1er rendu d'une spec
 import { useUnsavedGuard } from "./useUnsavedGuard";
 import { useEntityMutation, type EntityMutationSpec } from "../hooks/useEntityMutation";
+import { specToConfig } from "./resolveModalSpec";
+import type { EntityModalCtx, EntityModalSpec } from "./entityModalSpec";
+
+export type { EntityModalCtx };
 
 const KEEP_KEYS = (l: unknown) => (typeof l === "string" ? l : ((l as { fr?: string })?.fr ?? "")); // labels = clés i18n → GenericForm les résout
-
-/** Contexte runtime passé aux closures de la config (scope/parent/entité/mode/me). */
-export interface EntityModalCtx {
-  mode: "add" | "edit";
-  /** edit : l'entité éditée ; add : null. */
-  entity?: EntityTypes | null;
-  /** add : entité parente éventuelle. */
-  parent?: EntityTypes | null;
-  /** scope costum résolu (config.resolveScope). */
-  scope?: unknown;
-  /** utilisateur connecté. */
-  me?: EntityTypes | null;
-  /** entité PORTEUSE du costum (useCocolight().entity = VITE_SLUG). */
-  carrier?: EntityTypes | null;
-  /** contexte costum du site (useSite().config.costum) — tags mainTag/compagnon (tiers-lieu). */
-  costum?: unknown;
-}
 
 /** Config déclarative d'une entité/costum — élimine sa modale spécifique. */
 export interface EntityModalConfig {
@@ -82,7 +70,10 @@ export interface EntityModalConfig {
 }
 
 export interface EntityFormModalProps {
-  config: EntityModalConfig;
+  /** Config TS (entités standard — transitoire) OU `spec` sérialisable (costum — cible). L'une des deux requise. */
+  config?: EntityModalConfig;
+  /** Spec déclarative sérialisable ; compilée en EntityModalConfig via `specToConfig`. */
+  spec?: EntityModalSpec;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   mode?: "add" | "edit";
@@ -90,7 +81,8 @@ export interface EntityFormModalProps {
   parent?: EntityTypes | null;
 }
 
-export function EntityFormModal({ config, open, onOpenChange, mode = "add", entity, parent }: EntityFormModalProps): ReactNode {
+export function EntityFormModal({ config: configProp, spec, open, onOpenChange, mode = "add", entity, parent }: EntityFormModalProps): ReactNode {
+  const config = useMemo(() => configProp ?? specToConfig(spec as EntityModalSpec), [configProp, spec]);
   const t = useT("modules/profil");
   const tr = (k: string) => t(k);
   const { me, entity: carrier } = useCocolight();
