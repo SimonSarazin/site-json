@@ -13,7 +13,7 @@ const desc: FormDescriptor = {
   // Groupes de sérialisation (N champs plats ↔ 1 objet serveur) — read/write = clés de registre.
   serializeGroups: {
     address: { serverKey: "address", read: "pf:addressRead", write: "pf:addressWrite" },
-    social: { serverKey: "socialNetwork", read: "pf:socialRead", write: "pf:orEmpty", groupReadOnly: true },
+    social: { serverKey: "socialNetwork", read: "pf:socialRead", write: "coerce:orEmpty", groupReadOnly: true },
   },
   sections: [
     { id: "info", label: "Infos", groups: [{ columns: 2, label: "Identité", divider: true, fields: ["name", "type"] }] },
@@ -26,7 +26,7 @@ const desc: FormDescriptor = {
     // membre d'un groupe de sérialisation (adresse) + clear typé
     addressCountry: { name: "addressCountry", type: "string", widget: "hidden", label: "addressCountry", group: "address", clear: "" },
     // membre d'un groupe groupReadOnly (social, écrit à plat)
-    github: { name: "github", type: "string", widget: "hidden", label: "github", group: "social", write: "pf:orEmpty" },
+    github: { name: "github", type: "string", widget: "hidden", label: "github", group: "social", write: "coerce:orEmpty" },
     // WRITE-only (posé par EditLocationTab, jamais relu)
     geo: { name: "geo", type: "object", widget: "hidden", label: "geo", writeOnly: true, write: "geo:write" },
     // READ-only (seedé, jamais émis)
@@ -65,7 +65,7 @@ describe("formDescriptorToConfig (sens inverse + bidirectionnalité)", () => {
     // config (sérialisée) doit porter les groupes + les flags par champ
     expect(config.serializeGroups).toEqual(desc.serializeGroups);
     expect(config.fields.addressCountry).toMatchObject({ group: "address", clear: "" });
-    expect(config.fields.github).toMatchObject({ group: "social", write: "pf:orEmpty" });
+    expect(config.fields.github).toMatchObject({ group: "social", write: "coerce:orEmpty" });
     expect(config.fields.geo).toMatchObject({ writeOnly: true, write: "geo:write" });
     expect(config.fields.public).toMatchObject({ readOnly: true, read: "pf:rdPublic" });
 

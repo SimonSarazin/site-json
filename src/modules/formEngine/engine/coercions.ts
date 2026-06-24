@@ -51,8 +51,42 @@ export const coerceDateYMD = (value: unknown): string => {
   return date && !Number.isNaN(date.getTime()) ? format(date, "yyyy-MM-dd") : "";
 };
 
+// ── Coerceurs « truthy/default » : passe-plat de la valeur si truthy, sinon un défaut typé.
+// Ils NE coercent PAS le type de la valeur truthy (à la différence de coerce:string/number) — ce sont les
+// équivalents littéraux des idiomes legacy `v || ""` / `v || undefined` / `Array.isArray(v) ? v : []`.
+
+/** truthy → v tel quel ; falsy → "" (idiome legacy `v || ""`). Ne stringifie PAS un nombre truthy. */
+export const coerceOrEmpty = (value: unknown): unknown => value || "";
+
+/** truthy → v tel quel ; falsy → undefined (clé omise). `v || undefined` ≡ `v ? v : undefined` (prouvé byte-identique). */
+export const coerceOrUndef = (value: unknown): unknown => value || undefined;
+
+/** string → v ; sinon "" (string-ONLY : NE coerce PAS les nombres → distinct de coerce:string). */
+export const coercePickString = (value: unknown): string => (typeof value === "string" ? value : "");
+
+/** array → tel quel ; sinon [] (idiome `Array.isArray(v) ? v : []`). */
+export const coerceArrayOrEmpty = (value: unknown): unknown[] => (Array.isArray(value) ? value : []);
+
+/** Boolean(v) — truthiness simple (distinct de coerce:bool qui interprète "true"/"oui"/1 sur les strings). */
+export const coerceTruthy = (value: unknown): boolean => Boolean(value);
+
+/** truthy → ISO complet `new Date(v).toISOString()` ; falsy → "". */
+export const coerceDateISO = (value: unknown): string => (value ? new Date(value as string).toISOString() : "");
+
+/** truthy → "YYYY-MM-DD" extrait de l'ISO UTC `…toISOString().split("T")[0]` ; falsy → "".
+ *  Distinct de coerce:dateYMD (date-fns `format`, locale-aware) — ici UTC pur. */
+export const coerceDateYMDfromISO = (value: unknown): string =>
+  value ? new Date(value as string).toISOString().split("T")[0] : "";
+
 registerTransform("coerce:string", coerceString);
 registerTransform("coerce:number", coerceNumber);
 registerTransform("coerce:bool", coerceBool);
 registerTransform("coerce:stringArray", coerceStringArray);
 registerTransform("coerce:dateYMD", coerceDateYMD);
+registerTransform("coerce:orEmpty", coerceOrEmpty);
+registerTransform("coerce:orUndef", coerceOrUndef);
+registerTransform("coerce:pickString", coercePickString);
+registerTransform("coerce:arrayOrEmpty", coerceArrayOrEmpty);
+registerTransform("coerce:truthy", coerceTruthy);
+registerTransform("coerce:dateISO", coerceDateISO);
+registerTransform("coerce:dateYMDfromISO", coerceDateYMDfromISO);

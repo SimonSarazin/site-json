@@ -17,7 +17,7 @@ describe("isPipelineConfig (gate)", () => {
     expect(isPipelineConfig(baseConfig)).toBe(false);
   });
   it("config avec un champ read OU write → pipeline", () => {
-    expect(isPipelineConfig({ ...baseConfig, fields: { ...baseConfig.fields, name: { ...baseConfig.fields.name, read: "pf:orEmpty" } } })).toBe(true);
+    expect(isPipelineConfig({ ...baseConfig, fields: { ...baseConfig.fields, name: { ...baseConfig.fields.name, read: "coerce:orEmpty" } } })).toBe(true);
   });
   it("config avec serializeGroups → pipeline", () => {
     expect(isPipelineConfig({ ...baseConfig, serializeGroups: { address: { serverKey: "address", read: "r", write: "w" } } })).toBe(true);

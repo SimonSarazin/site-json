@@ -3,6 +3,7 @@ import { getDefaultTiersLieuxValues } from "./tiersLieux.schema";
 import { transformFormDataWithAddress } from "../hooks/mutationUtils";
 // Pipeline (P3) — imports DIRECTS (pas le barrel formEngine) pour rester un util pur. cf. doc/refactor-field-treatment.md.
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
+import "@/modules/formEngine/engine/coercions"; // side-effect : enregistre coerce:string/pickString/orUndef référencés par le descripteur tiers-lieu
 import "../forms/geoTransforms"; // enregistre geo:write / geoPosition:write (partagés)
 import { seedEntity, buildPayload, buildEditPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
 // Imports DIRECTS de la couche config (PAS le barrel → pas de widgets/React tirés ici, l'util reste pur).
@@ -182,12 +183,8 @@ function buildTypePlace(family?: string[], familyOther?: string): Record<string,
 function pickString(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
-
-function pickNumberString(value: unknown): string {
-  if (typeof value === "number") return String(value);
-  if (typeof value === "string") return value;
-  return "";
-}
+// pickNumberString retiré : ses appels (tl:pickNumberString) sont repointés sur coerce:string (byte-identique,
+// prouvé) ; ce helper reste utilisé par les transforms DOMAINE (video0/typePlaceRead/addressRead).
 
 export interface EntityLike {
   serverData?: Record<string, unknown> | null;
@@ -197,8 +194,7 @@ export interface EntityLike {
 // Transformers nommés réutilisant les helpers ci-dessus (side-effect à l'import). Champs 1→1 (path +
 // read) + 4 GROUPES décompose (1 champ serveur → N champs form) : openingDate, manageModel,
 // typePlace (+typePlaceOther via le 2e arg `all`), address. cf. doc/refactor-field-treatment.md (P3).
-registerTransform("tl:pickString", (v) => pickString(v));
-registerTransform("tl:pickNumberString", (v) => pickNumberString(v));
+// tl:pickString → coerce:pickString ; tl:pickNumberString → coerce:string (byte-identique, prouvé) : GÉNÉRIQUES (formEngine/coercions).
 registerTransform("tl:video0", (v) => pickString(Array.isArray(v) ? v[0] : undefined));
 registerTransform("tl:socialRead", (v) => parseSocialLinks(v));
 registerTransform("tl:hoursRead", (v) => parseOpeningHours(v));
@@ -225,7 +221,7 @@ registerTransform("tl:addressRead", (v) => {
 });
 // WRITE (P3) — réutilisent les helpers de build. `undefined` sur vide = clé OMISE par valuesToPayload
 // (parité de l'omit-empty de l'ancien buildTiersLieuxPayload ; le diff d'édition efface, lui, via diffForEdit).
-registerTransform("tl:emptyToUndef", (v) => (v ? v : undefined));
+// tl:emptyToUndef → coerce:orUndef (`v || undefined` ≡ `v ? v : undefined`, prouvé byte-identique) : GÉNÉRIQUE.
 registerTransform("tl:numOrUndef", (v) => (v ? Number(v) : undefined));
 registerTransform("tl:videoWrite", (v) => (v ? [v] : undefined));
 registerTransform("tl:socialWrite", (links) => buildSocialNetwork(links as Array<{ platform: string; url: string }>).socialNetwork);

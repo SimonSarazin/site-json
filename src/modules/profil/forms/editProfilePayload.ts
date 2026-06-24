@@ -15,6 +15,7 @@ import { DAYS, widgetFormatters } from "@/constants/DAYS";
 import { formatISO } from "date-fns";
 import type { FieldDescriptor, FormDescriptor, FormValues } from "@/modules/formEngine";
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
+import "@/modules/formEngine/engine/coercions"; // side-effect : enregistre les coerce:* (orEmpty/orUndef/arrayOrEmpty/truthy/dateISO/dateYMDfromISO) référencés par clé ci-dessous
 import { seedEntity, buildPayload, type FormSpec, type EntityLike } from "@/modules/formEngine/engine/entityForm";
 // Imports DIRECTS de la couche config (PAS le barrel → pas de widgets/React tirés, le module reste pur).
 import { formDescriptorToConfig } from "@/modules/formEngine/config/formDescriptorToConfig";
@@ -82,8 +83,7 @@ function buildEntityReference(ref: unknown) {
 }
 
 // ── Transformers WRITE (side-effect) ─────────────────────────────────────────
-registerTransform("pf:orEmpty", (v) => v || "");                 // `data.x || ""` (toujours émis) — aussi READ string
-registerTransform("pf:orUndef", (v) => v || undefined);           // conditionnel (`if (data.x)`) → omis si vide
+// coerce:orEmpty (`v || ""`) / coerce:orUndef (`v || undefined`) sont désormais GÉNÉRIQUES (formEngine/coercions).
 registerTransform("pf:tags", buildTags);
 registerTransform("pf:recurrency", (v) => v || false);
 registerTransform("pf:timeZone", (v) => v || Intl.DateTimeFormat().resolvedOptions().timeZone);
@@ -105,13 +105,11 @@ registerTransform("pf:socialRead", (v) => {
   const sn = (v ?? {}) as Data;
   return Object.fromEntries(SOCIAL_KEYS.map((k) => [k, sn[k] || ""]));
 });
-registerTransform("pf:rdArr", (v) => (Array.isArray(v) ? v : [])); // `serverData.x || []`
+// coerce:arrayOrEmpty (rdArr) / coerce:truthy (rdBool) / coerce:dateYMDfromISO (rdDateYMD birthDate) /
+// coerce:dateISO (rdDateISO start/endDate) : désormais GÉNÉRIQUES (formEngine/coercions).
 registerTransform("pf:rdRefOrUndef", (v) => v ?? undefined);        // `serverData.parent ?? undefined`
 registerTransform("pf:rdOrganizer", (v) => v ?? {});               // `serverData.organizer ?? {}`
 registerTransform("pf:rdPublic", (v) => v !== false);              // `serverData.public !== false`
-registerTransform("pf:rdBool", (v) => Boolean(v));                  // `Boolean(serverData.recurrency)`
-registerTransform("pf:rdDateYMD", (v) => (v ? new Date(v as string).toISOString().split("T")[0] : "")); // birthDate
-registerTransform("pf:rdDateISO", (v) => (v ? new Date(v as string).toISOString() : ""));               // start/endDate
 registerTransform("pf:rdOpeningHours", (v) =>
   Array.isArray(v) ? widgetFormatters.openingHours(v).filter((d: { hours: unknown[] }) => d.hours.length > 0) : []);
 
@@ -130,10 +128,10 @@ const f = (
 });
 
 const ADDR_GROUP = { address: { serverKey: "address", read: "pf:addressRead", write: "pf:addressWrite" } };
-const SOCIAL_GROUP = { social: { serverKey: "socialNetwork", read: "pf:socialRead", write: "pf:orEmpty", groupReadOnly: true } };
+const SOCIAL_GROUP = { social: { serverKey: "socialNetwork", read: "pf:socialRead", write: "coerce:orEmpty", groupReadOnly: true } };
 const ADDR_MEMBERS = Object.fromEntries(ADDRESS_KEYS.map((k) => [k, f(k, undefined, undefined, "string", { group: "address" })]));
 // Social : membres du groupe `groupReadOnly` → READ décompose l'objet, WRITE émet chaque clé à plat (pf:orEmpty).
-const SOCIAL_FIELDS = Object.fromEntries(SOCIAL_KEYS.map((k) => [k, f(k, undefined, "pf:orEmpty", "string", { group: "social" })]));
+const SOCIAL_FIELDS = Object.fromEntries(SOCIAL_KEYS.map((k) => [k, f(k, undefined, "coerce:orEmpty", "string", { group: "social" })]));
 // geo/geoPosition : writeOnly (posés par EditLocationTab AVEC l'adresse), émis via les transforms PARTAGÉS
 // liés à localityId (cf. forms/geoTransforms) → posé→émis, non touché→omis/préservé, adresse effacée→clear.
 const GEO_FIELDS: Record<string, FieldDescriptor> = {
@@ -146,11 +144,11 @@ const base = (id: string, groups: Record<string, unknown>): Omit<FormDescriptor,
 
 // Champs communs (name/slug identité au WRITE, orEmpty au READ ; desc/contact orEmpty des deux côtés).
 const COMMON = {
-  name: f("name", "pf:orEmpty"), slug: f("slug", "pf:orEmpty"),
-  shortDescription: f("shortDescription", "pf:orEmpty", "pf:orEmpty"),
-  description: f("description", "pf:orEmpty", "pf:orEmpty"),
-  url: f("url", "pf:orEmpty", "pf:orEmpty"), email: f("email", "pf:orEmpty", "pf:orEmpty"),
-  tags: f("tags", "pf:rdArr", "pf:tags", "array"),
+  name: f("name", "coerce:orEmpty"), slug: f("slug", "coerce:orEmpty"),
+  shortDescription: f("shortDescription", "coerce:orEmpty", "coerce:orEmpty"),
+  description: f("description", "coerce:orEmpty", "coerce:orEmpty"),
+  url: f("url", "coerce:orEmpty", "coerce:orEmpty"), email: f("email", "coerce:orEmpty", "coerce:orEmpty"),
+  tags: f("tags", "coerce:arrayOrEmpty", "pf:tags", "array"),
 };
 
 /**
@@ -162,31 +160,31 @@ export const PROFIL_DESCRIPTORS: Record<string, FormDescriptor> = {
   citoyens: { ...base("citoyens", { ...ADDR_GROUP, ...SOCIAL_GROUP }), fields: {
     name: COMMON.name, slug: COMMON.slug, shortDescription: COMMON.shortDescription, description: COMMON.description,
     url: COMMON.url, email: COMMON.email,
-    mobile: f("mobile", "pf:orEmpty", "pf:orEmpty"), fixe: f("fixe", "pf:orEmpty", "pf:orEmpty"),
-    birthDate: f("birthDate", "pf:rdDateYMD", "pf:orEmpty"),
+    mobile: f("mobile", "coerce:orEmpty", "coerce:orEmpty"), fixe: f("fixe", "coerce:orEmpty", "coerce:orEmpty"),
+    birthDate: f("birthDate", "coerce:dateYMDfromISO", "coerce:orEmpty"),
     tags: COMMON.tags, ...ADDR_MEMBERS, ...GEO_FIELDS, ...SOCIAL_FIELDS,
   } },
   organizations: { ...base("organizations", { ...ADDR_GROUP, ...SOCIAL_GROUP }), fields: {
     name: COMMON.name, slug: COMMON.slug, shortDescription: COMMON.shortDescription, description: COMMON.description,
     url: COMMON.url, email: COMMON.email,
-    type: f("type", undefined, "pf:orUndef"),
+    type: f("type", undefined, "coerce:orUndef"),
     openingHours: f("openingHours", "pf:rdOpeningHours", "pf:openingHours", "array"),
     tags: COMMON.tags, ...ADDR_MEMBERS, ...GEO_FIELDS, ...SOCIAL_FIELDS,
   } },
   projects: { ...base("projects", { ...ADDR_GROUP, ...SOCIAL_GROUP }), fields: {
     name: COMMON.name, slug: COMMON.slug, shortDescription: COMMON.shortDescription, description: COMMON.description,
     url: COMMON.url, email: COMMON.email,
-    avancement: f("avancement", undefined, "pf:orUndef"),
+    avancement: f("avancement", undefined, "coerce:orUndef"),
     parent: f("parent", "pf:rdRefOrUndef", "pf:entityRef", "object"),
     tags: COMMON.tags, ...ADDR_MEMBERS, ...GEO_FIELDS, ...SOCIAL_FIELDS,
   } },
   events: { ...base("events", ADDR_GROUP), fields: {
     name: COMMON.name, slug: COMMON.slug, shortDescription: COMMON.shortDescription,
     url: COMMON.url, email: COMMON.email,
-    type: f("type", undefined, "pf:orUndef"),
-    recurrency: f("recurrency", "pf:rdBool", "pf:recurrency", "boolean"),
-    startDate: f("startDate", "pf:rdDateISO", "pf:isoDate"), endDate: f("endDate", "pf:rdDateISO", "pf:isoDate"),
-    timeZone: f("timeZone", "pf:orEmpty", "pf:timeZone"),
+    type: f("type", undefined, "coerce:orUndef"),
+    recurrency: f("recurrency", "coerce:truthy", "pf:recurrency", "boolean"),
+    startDate: f("startDate", "coerce:dateISO", "pf:isoDate"), endDate: f("endDate", "coerce:dateISO", "pf:isoDate"),
+    timeZone: f("timeZone", "coerce:orEmpty", "pf:timeZone"),
     parent: f("parent", "pf:rdRefOrUndef", "pf:entityRef", "object"),
     organizer: f("organizer", "pf:rdOrganizer", "pf:entityRef", "object"),
     public: f("public", "pf:rdPublic", undefined, "boolean", { readOnly: true }),
@@ -196,8 +194,8 @@ export const PROFIL_DESCRIPTORS: Record<string, FormDescriptor> = {
   } },
   poi: { ...base("poi", ADDR_GROUP), fields: {
     name: COMMON.name, slug: COMMON.slug,
-    description: COMMON.description, type: f("type", undefined, "pf:orUndef"),
-    urls: f("urls", "pf:rdArr", undefined, "array", { readOnly: true }),
+    description: COMMON.description, type: f("type", undefined, "coerce:orUndef"),
+    urls: f("urls", "coerce:arrayOrEmpty", undefined, "array", { readOnly: true }),
     tags: COMMON.tags, ...ADDR_MEMBERS, ...GEO_FIELDS,
   } },
 };

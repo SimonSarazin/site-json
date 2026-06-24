@@ -53,17 +53,17 @@ const VIS_MGMT_AUTRE = { field: "managementType", op: "eq", value: "autre" } as 
 // (render) ET seedFromEntity/valuesToPayload (read/write). Les ancres composites `address` (location, pilote
 // les champs plats) et `_logoFile` (image, hors element/save) sont `renderOnly` (ni seedées ni émises).
 const fields: FieldDescriptor[] = [
-  { name: "name", type: "string", widget: "text", label: F("name"), required: true, placeholder: F("namePlaceholder"), read: "tl:pickString" },
+  { name: "name", type: "string", widget: "text", label: F("name"), required: true, placeholder: F("namePlaceholder"), read: "coerce:pickString" },
   // Mois / année SANS label propre : ils vivent sous le titre de GROUPE « Date d'ouverture » (cf. original).
   { name: "openingMonth", type: "string", widget: "select", label: "", enum: MONTHS, placeholder: F("month"), group: "openingDate" },
   { name: "openingYear", type: "string", widget: "select", label: "", enum: YEARS, placeholder: F("year"), group: "openingDate" },
-  { name: "shortDescription", type: "string", widget: "textarea", label: F("shortDescription"), required: true, widgetProps: { rows: 2 }, read: "tl:pickString", write: "tl:emptyToUndef" },
-  { name: "structureName", type: "string", widget: "text", label: F("structureName"), read: "tl:pickString", write: "tl:emptyToUndef", path: "holderOrganization" },
+  { name: "shortDescription", type: "string", widget: "textarea", label: F("shortDescription"), required: true, widgetProps: { rows: 2 }, read: "coerce:pickString", write: "coerce:orUndef" },
+  { name: "structureName", type: "string", widget: "text", label: F("structureName"), read: "coerce:pickString", write: "coerce:orUndef", path: "holderOrganization" },
   { name: "managementType", type: "string", widget: "select", label: F("managementType"), enum: MANAGEMENT_TYPES, required: true, placeholder: F("selectPlaceholder"), group: "manageModel" },
   { name: "managementTypeOther", type: "string", widget: "text", label: F("managementTypeOther"), visibleIf: VIS_MGMT_AUTRE, group: "manageModel" },
   { name: "family", type: "array", widget: "checkboxGroup", label: F("family"), enum: FAMILY_OPTIONS, widgetProps: { variant: "card" }, group: "typePlace" },
-  { name: "surfaceBuilt", type: "number", widget: "number", label: F("surfaceBuilt"), placeholder: F("surfacePlaceholder"), read: "tl:pickNumberString", write: "tl:numOrUndef", path: "buildingSurfaceArea" },
-  { name: "surfaceOutdoor", type: "number", widget: "number", label: F("surfaceOutdoor"), placeholder: F("surfacePlaceholder"), read: "tl:pickNumberString", write: "tl:numOrUndef", path: "siteSurfaceArea" },
+  { name: "surfaceBuilt", type: "number", widget: "number", label: F("surfaceBuilt"), placeholder: F("surfacePlaceholder"), read: "coerce:string", write: "tl:numOrUndef", path: "buildingSurfaceArea" },
+  { name: "surfaceOutdoor", type: "number", widget: "number", label: F("surfaceOutdoor"), placeholder: F("surfacePlaceholder"), read: "coerce:string", write: "tl:numOrUndef", path: "siteSurfaceArea" },
 
   // `widgetProps.required` = marqueur visuel `*` (obligation) SANS contrainte zodGen (l'objet `address`
   // n'est jamais peuplé : la cascade écrit des champs à plat) — l'obligation réelle est portée par addressComplete.
@@ -71,15 +71,15 @@ const fields: FieldDescriptor[] = [
   { name: "address", type: "object", widget: "location", label: F("address"), widgetProps: { required: true }, renderOnly: true },
   // Inputs PLAIN (sans icône) typés email/tel — parité visuelle avec l'original.
   { name: "email", type: "string", widget: "text", label: F("email"), required: true, placeholder: F("emailPlaceholder"),
-    widgetProps: { inputType: "email" }, rules: { regex: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$" }, read: "tl:pickString" },
-  { name: "phone", type: "string", widget: "text", label: F("phone"), placeholder: F("phonePlaceholder"), widgetProps: { inputType: "tel" }, read: "tl:pickString", write: "tl:emptyToUndef", path: "telephone" },
+    widgetProps: { inputType: "email" }, rules: { regex: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$" }, read: "coerce:pickString" },
+  { name: "phone", type: "string", widget: "text", label: F("phone"), placeholder: F("phonePlaceholder"), widgetProps: { inputType: "tel" }, read: "coerce:pickString", write: "coerce:orUndef", path: "telephone" },
 
   // renderOnly : image traitée hors element/save (bloc PROFIL_IMAGE via le hook) — ni seedée ni émise au payload data.
   { name: "_logoFile", type: "object", widget: "image", label: F("logo"), info: F("logoHint"), widgetProps: { shape: "square", aspect: 1 }, renderOnly: true },
   // label "" : le titre du sous-bloc « Vidéo » est porté par le GROUPE (cf. section media).
   { name: "videoUrl", type: "string", widget: "text", label: "", placeholder: F("videoUrlPlaceholder"), read: "tl:video0", write: "tl:videoWrite", path: "video" },
 
-  { name: "websiteUrl", type: "string", widget: "text", label: F("websiteUrl"), placeholder: F("websiteUrlPlaceholder"), read: "tl:pickString", write: "tl:emptyToUndef", path: "url" },
+  { name: "websiteUrl", type: "string", widget: "text", label: F("websiteUrl"), placeholder: F("websiteUrlPlaceholder"), read: "coerce:pickString", write: "coerce:orUndef", path: "url" },
   // socialLinks = array (form) ↔ objet `socialNetwork` (serveur) ; clear "" (jamais [] — sémantique objet, byte-fidèle).
   { name: "socialLinks", type: "array", widget: "fieldArray", label: F("socialNetworks"), read: "tl:socialRead", write: "tl:socialWrite", path: "socialNetwork", clear: "",
     widgetProps: {
@@ -91,7 +91,7 @@ const fields: FieldDescriptor[] = [
     } },
 
   { name: "hours", type: "object", widget: "openingHours", label: F("openingHours"), widgetProps: { dayLabelPrefix: "AddTiersLieux.days" }, read: "tl:hoursRead", write: "tl:hoursWrite", path: "openingHours" },
-  { name: "description", type: "string", widget: "textarea", label: F("longDescription"), placeholder: F("longDescriptionPlaceholder"), widgetProps: { rows: 10 }, read: "tl:pickString", write: "tl:emptyToUndef" },
+  { name: "description", type: "string", widget: "textarea", label: F("longDescription"), placeholder: F("longDescriptionPlaceholder"), widgetProps: { rows: 10 }, read: "coerce:pickString", write: "coerce:orUndef" },
 
   // ── Champs PIPELINE-only (hidden, hors sections → non rendus) ──────────────────────────────────────
   { name: "familyOther", type: "string", widget: "hidden", label: "familyOther", group: "typePlace" },
