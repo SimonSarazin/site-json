@@ -17,7 +17,7 @@
  * Byte-parité gardée par `<entity>/compiled.byteparity.test` (snapshot descriptor + spec).
  */
 import type {
-  FieldDescriptor, FormCollection, FormDescriptor, LayoutSpec, SectionDescriptor, WidgetKind,
+  FieldDescriptor, FormCollection, FormDescriptor, I18n, LayoutSpec, SectionDescriptor, WidgetKind,
 } from "@/modules/formEngine";
 import type { EntityModalSpec, SpecMutation } from "../entityModalSpec";
 
@@ -49,13 +49,13 @@ export interface CostumFormSchema {
 
   // ── modal (chrome + comportement) ──
   chrome: {
-    title: { add: string; edit: string };
-    description?: { add?: string; edit?: string };
-    submitLabel?: { add: string; edit: string };
+    title: { add: I18n; edit: I18n };
+    description?: { add?: I18n; edit?: I18n };
+    submitLabel?: { add: I18n; edit: I18n };
     icon?: string;
     gradientHeader?: boolean;
     dialogClassName?: string;
-    validationFailedKey?: string;
+    validationFailedKey?: I18n;
     navText?: EntityModalSpec["navText"];
   };
   descriptorVariant?: string;

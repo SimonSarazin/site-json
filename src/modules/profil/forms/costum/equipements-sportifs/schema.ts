@@ -22,7 +22,7 @@ export const EQUIPEMENTS_SPORTIFS_SCHEMA: CostumFormSchema = {
   // Groupe de sérialisation `address` (objet serveur ↔ 14 clés plates) — codec COMMUN `address:read` + poi:addressWrite.
   serializeGroups: { address: { serverKey: "address", read: "address:read", write: "poi:addressWrite" } },
   // Défaut par widget : la zone de recherche des selects (placeholder = label, posé par le compilateur).
-  fieldPresets: { selectFromLists: { placeholderSearch: "AddPoiEquipement.placeholders.search" } },
+  fieldPresets: { selectFromLists: { placeholderSearch: L("Rechercher…", "Search…") } },
 
   // ── CHAMPS : déclarés une seule fois (widget + overrides). type/read/default DÉRIVÉS du widget. ──
   fields: {
@@ -39,11 +39,11 @@ export const EQUIPEMENTS_SPORTIFS_SCHEMA: CostumFormSchema = {
     geoPosition: { widget: "hidden", type: "object", writeOnly: true, write: "geoPosition:write" },
 
     // général
-    name: { widget: "text", required: true, label: "ProfileEdit.fields.name.label", info: "ProfileEdit.fields.name.description" },
+    name: { widget: "text", required: true, label: L("Nom", "Name"), info: L("Le nom qui sera affiché publiquement", "The name that will be publicly displayed") },
     equip_type_name: { widget: "selectFromLists", required: true, label: L("Type de l'équipement", "Facility type") },
     equip_type_famille: { widget: "selectFromLists", label: L("Famille d'équipement", "Facility family") },
-    _imageFile: { widget: "image", label: "image" },
-    address: { widget: "location", label: "AddPoiEquipement.fields.address" },
+    _imageFile: { widget: "image", label: "image" }, // littéral hérité (rendu tel quel) — pas une vraie clé i18n ; laissé inchangé (byte-parité)
+    address: { widget: "location", label: L("Adresse", "Address") },
 
     // juridique
     equip_prop_nom: { widget: "text", label: L("Nom du propriétaire", "Owner name") },
@@ -84,40 +84,40 @@ export const EQUIPEMENTS_SPORTIFS_SCHEMA: CostumFormSchema = {
     equip_pshs_chem: { widget: "switch", label: L("Cheminements", "Pathways") },
 
     // usages
-    urls: { widget: "urlList", label: L("Site internet", "Website"), widgetProps: { addLabel: "AddPoiEquipement.buttons.addUrl", removeLabel: "AddPoiEquipement.buttons.removeUrl" } },
+    urls: { widget: "urlList", label: L("Site internet", "Website"), widgetProps: { addLabel: L("Ajouter une URL", "Add a URL"), removeLabel: L("Retirer l'URL", "Remove URL") } },
     equip_utilisateur: { widget: "checkboxGroup", label: L("Types d'utilisateurs", "User types") },
     equip_acc_libre: { widget: "switch", label: L("Accès libre", "Free access") },
-    aps_name: { widget: "multiselect", required: true, label: L("Sports pratiqués", "Sports practised"), placeholder: "AddPoiEquipement.placeholders.selectSport", placeholderSearch: "AddPoiEquipement.placeholders.searchSport" },
+    aps_name: { widget: "multiselect", required: true, label: L("Sports pratiqués", "Sports practised"), placeholder: L("Sélectionner un sport", "Select a sport"), placeholderSearch: L("Rechercher un sport", "Search a sport") },
   },
 
   // ── PLACEMENT (wizard) : ordre / colonnes / sous-blocs conditionnels ──
   sections: [
-    { id: "general", label: "AddPoiEquipement.steps.general", groups: [
+    { id: "general", label: L("Informations générales", "General information"), groups: [
       { columns: 1, fields: ["$slot:parentInfo", "name"] },
       { columns: 2, fields: ["equip_type_name", "equip_type_famille"] },
       { columns: 1, fields: ["_imageFile"] },
-      { columns: 1, label: "AddPoiEquipement.fields.address", required: true, fields: ["address", "addressCountry", "addressLocality", "postalCode", "streetAddress"] },
+      { columns: 1, label: L("Adresse", "Address"), required: true, fields: ["address", "addressCountry", "addressLocality", "postalCode", "streetAddress"] },
       { columns: 1, fields: ["$slot:doublons"] },
     ] },
-    { id: "legal", label: "AddPoiEquipement.steps.legal", groups: [
+    { id: "legal", label: L("Caractéristiques juridiques", "Legal characteristics"), groups: [
       { columns: 2, fields: ["equip_prop_nom", "equip_prop_type"] },
       { columns: 3, fields: ["inst_date_creation", "inst_enqu_date", "equip_maj_date"] },
       { columns: 1, fields: ["inst_nom", "categorie", "equip_gest_type"] },
       { columns: 1, fields: ["inst_part_bool", "inst_part_type"] },
     ] },
-    { id: "structure", label: "AddPoiEquipement.steps.structure", groups: [
+    { id: "structure", label: L("Caractéristiques structurantes", "Structural characteristics"), groups: [
       { columns: 2, fields: ["equip_nature", "equip_sol"] },
       { columns: 3, fields: ["equip_long", "equip_larg", "equip_surf"] },
       { columns: 2, fields: ["inst_acc_handi_type", "inst_trans_type"] },
       { columns: 2, fields: ["inst_acc_handi_bool", "inst_trans_bool", "equip_eclair", "equip_douche"] },
       { columns: 1, fields: ["equip_pmr_acc"] },
-      { columns: 2, label: "AddPoiEquipement.sections.pmr", visibleIf: { field: "equip_pmr_acc", op: "truthy" },
+      { columns: 2, label: L("Accessibilité PMR", "PRM accessibility"), visibleIf: { field: "equip_pmr_acc", op: "truthy" },
         fields: ["equip_pmr_chem", "equip_pmr_douche", "equip_pmr_trib", "equip_pmr_vest", "equip_pmr_sanit"] },
       { columns: 1, fields: ["equip_loc_type"] },
-      { columns: 2, label: "AddPoiEquipement.sections.pshs",
+      { columns: 2, label: L("Accessibilité PSHS", "PSHS accessibility"),
         fields: ["equip_pshs_aire", "equip_pshs_sanit", "equip_pshs_trib", "equip_pshs_sign", "equip_pshs_vest", "equip_pshs_chem"] },
     ] },
-    { id: "usage", label: "AddPoiEquipement.steps.usage", groups: [
+    { id: "usage", label: L("Caractéristiques d'usages", "Usage characteristics"), groups: [
       { columns: 1, fields: ["urls"] },
       { columns: 1, fields: ["equip_utilisateur"] },
       { columns: 1, fields: ["equip_acc_libre"] },
@@ -127,16 +127,16 @@ export const EQUIPEMENTS_SPORTIFS_SCHEMA: CostumFormSchema = {
 
   // ── MODAL ──
   chrome: {
-    title: { add: "AddPoiEquipement.title.add", edit: "AddPoiEquipement.title.edit" },
-    description: { add: "AddPoiEquipement.description.add", edit: "AddPoiEquipement.description.edit" },
-    submitLabel: { add: "AddEntity.create", edit: "ProfileEdit.save" },
+    title: { add: L("Ajouter un équipement", "Add a facility"), edit: L("Éditer un équipement", "Edit a facility") },
+    description: { add: L("Compléter les informations de l'équipement.", "Fill in the facility information."), edit: L("Mettre à jour les informations de l'équipement.", "Update the facility information.") },
+    submitLabel: { add: L("Créer", "Create"), edit: L("Sauvegarder", "Save") },
     dialogClassName: "sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden",
-    validationFailedKey: "AddPoiEquipement.validationFailed",
+    validationFailedKey: L("Veuillez corriger les champs en erreur.", "Please fix the highlighted fields."),
     navText: {
-      next: "AddPoiEquipement.buttons.next",
-      previous: "AddPoiEquipement.buttons.previous",
-      cancel: "common.cancel",
-      stepLabelKey: "AddPoiEquipement.stepIndicator",
+      next: L("Suivant", "Next"),
+      previous: L("Précédent", "Previous"),
+      cancel: L("Annuler", "Cancel"),
+      stepLabelKey: "AddPoiEquipement.stepIndicator", // INTERPOLÉ {index}/{total} → reste une clé i18next (useLocalization n'interpole pas)
     },
   },
   image: { field: "_imageFile", existingUrlFrom: "image:profilUrl" },

@@ -13,7 +13,10 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "widget": "image",
     },
     "address": {
-      "label": "AddPoiEquipement.fields.address",
+      "label": {
+        "en": "Address",
+        "fr": "Adresse",
+      },
       "name": "address",
       "renderOnly": true,
       "type": "object",
@@ -42,8 +45,14 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
         "fr": "Sports pratiqués",
       },
       "name": "aps_name",
-      "placeholder": "AddPoiEquipement.placeholders.selectSport",
-      "placeholderSearch": "AddPoiEquipement.placeholders.searchSport",
+      "placeholder": {
+        "en": "Select a sport",
+        "fr": "Sélectionner un sport",
+      },
+      "placeholderSearch": {
+        "en": "Search a sport",
+        "fr": "Rechercher un sport",
+      },
       "read": "coerce:stringArray",
       "required": true,
       "type": "array",
@@ -165,7 +174,10 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
         "en": "Facility nature",
         "fr": "Nature de l'équipement",
       },
-      "placeholderSearch": "AddPoiEquipement.placeholders.search",
+      "placeholderSearch": {
+        "en": "Search…",
+        "fr": "Rechercher…",
+      },
       "read": "coerce:string",
       "type": "string",
       "widget": "selectFromLists",
@@ -258,7 +270,10 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
         "en": "Owner type",
         "fr": "Type de propriétaire",
       },
-      "placeholderSearch": "AddPoiEquipement.placeholders.search",
+      "placeholderSearch": {
+        "en": "Search…",
+        "fr": "Rechercher…",
+      },
       "read": "coerce:string",
       "type": "string",
       "widget": "selectFromLists",
@@ -340,7 +355,10 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
         "en": "Floor type",
         "fr": "Type de sol",
       },
-      "placeholderSearch": "AddPoiEquipement.placeholders.search",
+      "placeholderSearch": {
+        "en": "Search…",
+        "fr": "Rechercher…",
+      },
       "read": "coerce:string",
       "type": "string",
       "widget": "selectFromLists",
@@ -373,7 +391,10 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
         "en": "Facility family",
         "fr": "Famille d'équipement",
       },
-      "placeholderSearch": "AddPoiEquipement.placeholders.search",
+      "placeholderSearch": {
+        "en": "Search…",
+        "fr": "Rechercher…",
+      },
       "read": "coerce:string",
       "type": "string",
       "widget": "selectFromLists",
@@ -389,7 +410,10 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
         "en": "Facility type",
         "fr": "Type de l'équipement",
       },
-      "placeholderSearch": "AddPoiEquipement.placeholders.search",
+      "placeholderSearch": {
+        "en": "Search…",
+        "fr": "Rechercher…",
+      },
       "read": "coerce:string",
       "required": true,
       "type": "string",
@@ -537,8 +561,14 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
     },
     "name": {
       "default": "",
-      "info": "ProfileEdit.fields.name.description",
-      "label": "ProfileEdit.fields.name.label",
+      "info": {
+        "en": "The name that will be publicly displayed",
+        "fr": "Le nom qui sera affiché publiquement",
+      },
+      "label": {
+        "en": "Name",
+        "fr": "Nom",
+      },
       "name": "name",
       "read": "coerce:string",
       "required": true,
@@ -580,8 +610,14 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "type": "array",
       "widget": "urlList",
       "widgetProps": {
-        "addLabel": "AddPoiEquipement.buttons.addUrl",
-        "removeLabel": "AddPoiEquipement.buttons.removeUrl",
+        "addLabel": {
+          "en": "Add a URL",
+          "fr": "Ajouter une URL",
+        },
+        "removeLabel": {
+          "en": "Remove URL",
+          "fr": "Retirer l'URL",
+        },
       },
     },
   },
@@ -622,7 +658,10 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
             "postalCode",
             "streetAddress",
           ],
-          "label": "AddPoiEquipement.fields.address",
+          "label": {
+            "en": "Address",
+            "fr": "Adresse",
+          },
           "required": true,
         },
         {
@@ -633,7 +672,10 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
         },
       ],
       "id": "general",
-      "label": "AddPoiEquipement.steps.general",
+      "label": {
+        "en": "General information",
+        "fr": "Informations générales",
+      },
     },
     {
       "groups": [
@@ -669,7 +711,10 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
         },
       ],
       "id": "legal",
-      "label": "AddPoiEquipement.steps.legal",
+      "label": {
+        "en": "Legal characteristics",
+        "fr": "Caractéristiques juridiques",
+      },
     },
     {
       "groups": [
@@ -719,7 +764,10 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
             "equip_pmr_vest",
             "equip_pmr_sanit",
           ],
-          "label": "AddPoiEquipement.sections.pmr",
+          "label": {
+            "en": "PRM accessibility",
+            "fr": "Accessibilité PMR",
+          },
           "visibleIf": {
             "field": "equip_pmr_acc",
             "op": "truthy",
@@ -741,11 +789,17 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
             "equip_pshs_vest",
             "equip_pshs_chem",
           ],
-          "label": "AddPoiEquipement.sections.pshs",
+          "label": {
+            "en": "PSHS accessibility",
+            "fr": "Accessibilité PSHS",
+          },
         },
       ],
       "id": "structure",
-      "label": "AddPoiEquipement.steps.structure",
+      "label": {
+        "en": "Structural characteristics",
+        "fr": "Caractéristiques structurantes",
+      },
     },
     {
       "groups": [
@@ -775,7 +829,10 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
         },
       ],
       "id": "usage",
-      "label": "AddPoiEquipement.steps.usage",
+      "label": {
+        "en": "Usage characteristics",
+        "fr": "Caractéristiques d'usages",
+      },
     },
   ],
   "serializeGroups": {
@@ -795,8 +852,14 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > spe
     "base": "poi:emptyDefaults",
   },
   "description": {
-    "add": "AddPoiEquipement.description.add",
-    "edit": "AddPoiEquipement.description.edit",
+    "add": {
+      "en": "Fill in the facility information.",
+      "fr": "Compléter les informations de l'équipement.",
+    },
+    "edit": {
+      "en": "Update the facility information.",
+      "fr": "Mettre à jour les informations de l'équipement.",
+    },
   },
   "descriptor": {
     "ref": "equipements-sportifs",
@@ -833,9 +896,18 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > spe
     },
   },
   "navText": {
-    "cancel": "common.cancel",
-    "next": "AddPoiEquipement.buttons.next",
-    "previous": "AddPoiEquipement.buttons.previous",
+    "cancel": {
+      "en": "Cancel",
+      "fr": "Annuler",
+    },
+    "next": {
+      "en": "Next",
+      "fr": "Suivant",
+    },
+    "previous": {
+      "en": "Previous",
+      "fr": "Précédent",
+    },
     "stepLabelKey": "AddPoiEquipement.stepIndicator",
   },
   "scope": {
@@ -854,13 +926,28 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > spe
     "parentInfo": "parentInfo",
   },
   "submitLabel": {
-    "add": "AddEntity.create",
-    "edit": "ProfileEdit.save",
+    "add": {
+      "en": "Create",
+      "fr": "Créer",
+    },
+    "edit": {
+      "en": "Save",
+      "fr": "Sauvegarder",
+    },
   },
   "title": {
-    "add": "AddPoiEquipement.title.add",
-    "edit": "AddPoiEquipement.title.edit",
+    "add": {
+      "en": "Add a facility",
+      "fr": "Ajouter un équipement",
+    },
+    "edit": {
+      "en": "Edit a facility",
+      "fr": "Éditer un équipement",
+    },
   },
-  "validationFailedKey": "AddPoiEquipement.validationFailed",
+  "validationFailedKey": {
+    "en": "Please fix the highlighted fields.",
+    "fr": "Veuillez corriger les champs en erreur.",
+  },
 }
 `;

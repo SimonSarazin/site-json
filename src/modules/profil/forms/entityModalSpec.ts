@@ -10,7 +10,7 @@
  * `~/.claude/plans/streamed-snuggling-glacier.md`.
  */
 import type { EntityTypes } from "@communecter/cocolight-api-client";
-import type { JsonFormConfig } from "@/modules/formEngine";
+import type { JsonFormConfig, I18n } from "@/modules/formEngine";
 import type { EntityKind } from "../hooks/useEntityMutation";
 
 /** Contexte runtime passé aux fns enregistrées (mode/entité/parent/scope/me/carrier/costum). */
@@ -76,20 +76,20 @@ export interface EntityModalSpec {
   /** clé → `descriptorVariantRegistry` (event hasParent / edit-profil byType) ; sinon descripteur brut. */
   descriptorVariant?: string;
 
-  // ── chrome (DONNÉES) ──
-  title: { add: string; edit: string };
-  description?: { add?: string; edit?: string };
-  submitLabel?: { add: string; edit: string };
+  // ── chrome (DONNÉES) ── libellés = clé i18n string OU LocalizedString inline {fr,en} (résolus par useT au rendu).
+  title: { add: I18n; edit: I18n };
+  description?: { add?: I18n; edit?: I18n };
+  submitLabel?: { add: I18n; edit: I18n };
   icon?: string;
   gradientHeader?: boolean;
   dialogClassName?: string;
-  validationFailedKey?: string;
-  /** libellés de navigation wizard (clés i18n). `stepLabelKey` = 1 clé interpolée {index}/{total} ;
-   *  `stepTemplate` = 2 clés positionnelles « {step} {index} {of} {total} ». */
+  validationFailedKey?: I18n;
+  /** libellés de navigation wizard. `stepLabelKey` = clé i18n INTERPOLÉE {index}/{total} → reste une clé string
+   *  (useLocalization n'interpole pas) ; `next`/`previous`/`cancel` et `stepTemplate` (mots concaténés) = I18n. */
   navText?: {
-    next?: string; previous?: string; cancel?: string;
+    next?: I18n; previous?: I18n; cancel?: I18n;
     stepLabelKey?: string;
-    stepTemplate?: { stepKey: string; ofKey: string };
+    stepTemplate?: { stepKey: I18n; ofKey: I18n };
   };
 
   // ── read ──

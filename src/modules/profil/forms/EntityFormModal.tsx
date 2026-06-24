@@ -43,16 +43,16 @@ export interface EntityModalConfig {
   buildFieldProps?: (ctx: EntityModalCtx) => Record<string, Record<string, unknown>> | undefined;
   /** effet de bord après submit réussi (ex. reload au changement de slug en édition profil). */
   afterSubmit?: (ctx: EntityModalCtx, values: FieldValues) => void;
-  // ── chrome ──
-  title: { add: string; edit: string };
-  description?: { add?: string; edit?: string };
-  submitLabel?: { add: string; edit: string };
+  // ── chrome ── libellés = clé i18n string OU LocalizedString inline {fr,en} (résolus par `tr`/useT au rendu).
+  title: { add: I18n; edit: I18n };
+  description?: { add?: I18n; edit?: I18n };
+  submitLabel?: { add: I18n; edit: I18n };
   icon?: string;
   gradientHeader?: boolean;
   dialogClassName?: string;
-  validationFailedKey?: string;
-  /** libellés de navigation (wizard) — reçoit `t`. */
-  texts?: (t: (k: string, ...a: unknown[]) => string) => { next: string; previous: string; cancel: string; stepLabel?: (i: number, n: number) => string };
+  validationFailedKey?: I18n;
+  /** libellés de navigation (wizard) — reçoit `t` (résout clé i18n OU LocalizedString). */
+  texts?: (t: (k: I18n, ...a: unknown[]) => string) => { next: string; previous: string; cancel: string; stepLabel?: (i: number, n: number) => string };
   // ── validation externe optionnelle (ex. getProfileSchema(entityType)) ──
   getSchema?: (ctx: EntityModalCtx) => z.ZodTypeAny;
   // ── read ──
@@ -155,7 +155,7 @@ export function EntityFormModal({ config: configProp, spec, open, onOpenChange, 
             schema={schema}
             defaultValues={defaultValues}
             onSubmit={onSubmit}
-            onInvalid={config.validationFailedKey ? () => toast.error(tr(config.validationFailedKey as string)) : undefined}
+            onInvalid={config.validationFailedKey ? () => toast.error(tr(config.validationFailedKey!)) : undefined}
             t={tr}
             submitLabel={tr(submitLabel)}
             texts={texts}

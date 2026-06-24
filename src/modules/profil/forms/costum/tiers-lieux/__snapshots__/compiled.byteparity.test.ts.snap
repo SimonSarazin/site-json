@@ -56,7 +56,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
         "fr": "Description longue",
       },
       "name": "description",
-      "placeholder": "AddTiersLieux.fields.longDescriptionPlaceholder",
+      "placeholder": {
+        "en": "Describe your third-place...",
+        "fr": "Décrivez votre tiers-lieu...",
+      },
       "read": "coerce:pickString",
       "type": "string",
       "widget": "textarea",
@@ -71,7 +74,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
         "fr": "Email",
       },
       "name": "email",
-      "placeholder": "AddTiersLieux.fields.emailPlaceholder",
+      "placeholder": {
+        "en": "contact@example.org",
+        "fr": "contact@exemple.org",
+      },
       "read": "coerce:pickString",
       "required": true,
       "rules": {
@@ -86,35 +92,59 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
     "family": {
       "enum": [
         {
-          "label": "Ateliers artisanaux partagés",
+          "label": {
+            "en": "Shared craft workshops",
+            "fr": "Ateliers artisanaux partagés",
+          },
           "value": "ateliers-artisanaux",
         },
         {
-          "label": "Bureaux partagés / Coworking",
+          "label": {
+            "en": "Shared offices / Coworking",
+            "fr": "Bureaux partagés / Coworking",
+          },
           "value": "coworking",
         },
         {
-          "label": "Cuisine partagée / Foodlab",
+          "label": {
+            "en": "Shared kitchen / Foodlab",
+            "fr": "Cuisine partagée / Foodlab",
+          },
           "value": "foodlab",
         },
         {
-          "label": "Fablab / Makerspace / Hackerspace",
+          "label": {
+            "en": "Fablab / Makerspace / Hackerspace",
+            "fr": "Fablab / Makerspace / Hackerspace",
+          },
           "value": "fablab",
         },
         {
-          "label": "LivingLab / Innovation sociale",
+          "label": {
+            "en": "LivingLab / Social innovation",
+            "fr": "LivingLab / Innovation sociale",
+          },
           "value": "livinglab",
         },
         {
-          "label": "Tiers-lieu nourricier",
+          "label": {
+            "en": "Food third-place",
+            "fr": "Tiers-lieu nourricier",
+          },
           "value": "nourricier",
         },
         {
-          "label": "Tiers-lieu culturel",
+          "label": {
+            "en": "Cultural third-place",
+            "fr": "Tiers-lieu culturel",
+          },
           "value": "culturel",
         },
         {
-          "label": "Autre famille de tiers-lieux",
+          "label": {
+            "en": "Other third-place family",
+            "fr": "Autre famille de tiers-lieux",
+          },
           "value": "autre",
         },
       ],
@@ -178,39 +208,66 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
     "managementType": {
       "enum": [
         {
-          "label": "Association",
+          "label": {
+            "en": "Association",
+            "fr": "Association",
+          },
           "value": "association",
         },
         {
-          "label": "Collectif citoyen",
+          "label": {
+            "en": "Citizen collective",
+            "fr": "Collectif citoyen",
+          },
           "value": "collectif-citoyen",
         },
         {
-          "label": "Universités / Écoles",
+          "label": {
+            "en": "Universities / Schools",
+            "fr": "Universités / Écoles",
+          },
           "value": "universites",
         },
         {
-          "label": "Établissements scolaires",
+          "label": {
+            "en": "Schools",
+            "fr": "Établissements scolaires",
+          },
           "value": "etablissements-scolaires",
         },
         {
-          "label": "Collectivités",
+          "label": {
+            "en": "Local authorities",
+            "fr": "Collectivités",
+          },
           "value": "collectivites",
         },
         {
-          "label": "SARL / SA / SAS",
+          "label": {
+            "en": "SARL / SA / SAS",
+            "fr": "SARL / SA / SAS",
+          },
           "value": "sarl-sa-sas",
         },
         {
-          "label": "SCIC",
+          "label": {
+            "en": "SCIC",
+            "fr": "SCIC",
+          },
           "value": "scic",
         },
         {
-          "label": "SCOP",
+          "label": {
+            "en": "SCOP",
+            "fr": "SCOP",
+          },
           "value": "scop",
         },
         {
-          "label": "Autre mode de gestion",
+          "label": {
+            "en": "Other management type",
+            "fr": "Autre mode de gestion",
+          },
           "value": "autre",
         },
       ],
@@ -220,7 +277,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
         "fr": "Mode de gestion",
       },
       "name": "managementType",
-      "placeholder": "AddTiersLieux.fields.selectPlaceholder",
+      "placeholder": {
+        "en": "Select...",
+        "fr": "Sélectionner...",
+      },
       "required": true,
       "type": "string",
       "widget": "select",
@@ -246,7 +306,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
         "fr": "Nom du tiers-lieu",
       },
       "name": "name",
-      "placeholder": "AddTiersLieux.fields.namePlaceholder",
+      "placeholder": {
+        "en": "Name of the third-place",
+        "fr": "Nom du tiers-lieu",
+      },
       "read": "coerce:pickString",
       "required": true,
       "type": "string",
@@ -255,58 +318,97 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
     "openingMonth": {
       "enum": [
         {
-          "label": "Janvier",
+          "label": {
+            "en": "January",
+            "fr": "Janvier",
+          },
           "value": "01",
         },
         {
-          "label": "Février",
+          "label": {
+            "en": "February",
+            "fr": "Février",
+          },
           "value": "02",
         },
         {
-          "label": "Mars",
+          "label": {
+            "en": "March",
+            "fr": "Mars",
+          },
           "value": "03",
         },
         {
-          "label": "Avril",
+          "label": {
+            "en": "April",
+            "fr": "Avril",
+          },
           "value": "04",
         },
         {
-          "label": "Mai",
+          "label": {
+            "en": "May",
+            "fr": "Mai",
+          },
           "value": "05",
         },
         {
-          "label": "Juin",
+          "label": {
+            "en": "June",
+            "fr": "Juin",
+          },
           "value": "06",
         },
         {
-          "label": "Juillet",
+          "label": {
+            "en": "July",
+            "fr": "Juillet",
+          },
           "value": "07",
         },
         {
-          "label": "Août",
+          "label": {
+            "en": "August",
+            "fr": "Août",
+          },
           "value": "08",
         },
         {
-          "label": "Septembre",
+          "label": {
+            "en": "September",
+            "fr": "Septembre",
+          },
           "value": "09",
         },
         {
-          "label": "Octobre",
+          "label": {
+            "en": "October",
+            "fr": "Octobre",
+          },
           "value": "10",
         },
         {
-          "label": "Novembre",
+          "label": {
+            "en": "November",
+            "fr": "Novembre",
+          },
           "value": "11",
         },
         {
-          "label": "Décembre",
+          "label": {
+            "en": "December",
+            "fr": "Décembre",
+          },
           "value": "12",
         },
       ],
       "group": "openingDate",
       "label": "",
       "name": "openingMonth",
-      "placeholder": "AddTiersLieux.fields.month",
+      "placeholder": {
+        "en": "Month",
+        "fr": "Mois",
+      },
       "type": "string",
       "widget": "select",
     },
@@ -844,7 +946,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       "group": "openingDate",
       "label": "",
       "name": "openingYear",
-      "placeholder": "AddTiersLieux.fields.year",
+      "placeholder": {
+        "en": "Year",
+        "fr": "Année",
+      },
       "type": "string",
       "widget": "select",
     },
@@ -855,7 +960,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       },
       "name": "phone",
       "path": "telephone",
-      "placeholder": "AddTiersLieux.fields.phonePlaceholder",
+      "placeholder": {
+        "en": "+1 ...",
+        "fr": "+33 ...",
+      },
       "read": "coerce:pickString",
       "type": "string",
       "widget": "text",
@@ -898,11 +1006,17 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       "type": "array",
       "widget": "fieldArray",
       "widgetProps": {
-        "addLabel": "AddTiersLieux.fields.addSocial",
+        "addLabel": {
+          "en": "Add a social network",
+          "fr": "Ajouter un réseau social",
+        },
         "itemFields": [
           {
             "kind": "select",
-            "label": "AddTiersLieux.fields.socialPlatform",
+            "label": {
+              "en": "Platform",
+              "fr": "Plateforme",
+            },
             "name": "platform",
             "options": [
               {
@@ -942,7 +1056,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
           {
             "kind": "text",
             "name": "url",
-            "placeholder": "AddTiersLieux.fields.socialUrlPlaceholder",
+            "placeholder": {
+              "en": "https://...",
+              "fr": "https://...",
+            },
           },
         ],
       },
@@ -974,7 +1091,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       },
       "name": "surfaceBuilt",
       "path": "buildingSurfaceArea",
-      "placeholder": "AddTiersLieux.fields.surfacePlaceholder",
+      "placeholder": {
+        "en": "In m²",
+        "fr": "En m²",
+      },
       "read": "coerce:string",
       "type": "number",
       "widget": "number",
@@ -987,7 +1107,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       },
       "name": "surfaceOutdoor",
       "path": "siteSurfaceArea",
-      "placeholder": "AddTiersLieux.fields.surfacePlaceholder",
+      "placeholder": {
+        "en": "In m²",
+        "fr": "En m²",
+      },
       "read": "coerce:string",
       "type": "number",
       "widget": "number",
@@ -997,7 +1120,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       "label": "",
       "name": "videoUrl",
       "path": "video",
-      "placeholder": "AddTiersLieux.fields.videoUrlPlaceholder",
+      "placeholder": {
+        "en": "https://youtube.com/...",
+        "fr": "https://youtube.com/...",
+      },
       "read": "tl:video0",
       "type": "string",
       "widget": "text",
@@ -1010,7 +1136,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       },
       "name": "websiteUrl",
       "path": "url",
-      "placeholder": "AddTiersLieux.fields.websiteUrlPlaceholder",
+      "placeholder": {
+        "en": "http://www.example.org",
+        "fr": "http://www.exemple.org",
+      },
       "read": "coerce:pickString",
       "type": "string",
       "widget": "text",
@@ -1041,7 +1170,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
             "openingMonth",
             "openingYear",
           ],
-          "label": "AddTiersLieux.fields.openingDate",
+          "label": {
+            "en": "Opening date",
+            "fr": "Date d'ouverture du tiers-lieu",
+          },
         },
         {
           "columns": 1,
@@ -1078,7 +1210,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       ],
       "icon": "building-2",
       "id": "info",
-      "label": "AddTiersLieux.steps.info",
+      "label": {
+        "en": "Info",
+        "fr": "Infos",
+      },
     },
     {
       "groups": [
@@ -1095,13 +1230,19 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
             "email",
             "phone",
           ],
-          "label": "Contact",
+          "label": {
+            "en": "Contact",
+            "fr": "Contact",
+          },
           "titleClassName": "text-sm font-semibold",
         },
       ],
       "icon": "map-pin",
       "id": "contact",
-      "label": "AddTiersLieux.steps.contact",
+      "label": {
+        "en": "Contact",
+        "fr": "Contact",
+      },
     },
     {
       "groups": [
@@ -1117,13 +1258,19 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
           "fields": [
             "videoUrl",
           ],
-          "label": "AddTiersLieux.fields.videoUrl",
+          "label": {
+            "en": "Presentation video URL",
+            "fr": "Lien vers vidéo de présentation",
+          },
           "titleClassName": "text-base font-semibold",
         },
       ],
       "icon": "image",
       "id": "media",
-      "label": "AddTiersLieux.steps.media",
+      "label": {
+        "en": "Media",
+        "fr": "Médias",
+      },
     },
     {
       "groups": [
@@ -1143,7 +1290,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       ],
       "icon": "globe",
       "id": "online",
-      "label": "AddTiersLieux.steps.online",
+      "label": {
+        "en": "Online",
+        "fr": "En ligne",
+      },
     },
     {
       "groups": [
@@ -1163,7 +1313,10 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       ],
       "icon": "file-text",
       "id": "details",
-      "label": "AddTiersLieux.steps.details",
+      "label": {
+        "en": "Details",
+        "fr": "Détails",
+      },
     },
   ],
   "serializeGroups": {
@@ -1236,12 +1389,27 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > spec fig
     },
   },
   "navText": {
-    "cancel": "AddTiersLieux.buttons.cancel",
-    "next": "AddTiersLieux.buttons.next",
-    "previous": "AddTiersLieux.buttons.previous",
+    "cancel": {
+      "en": "Cancel",
+      "fr": "Annuler",
+    },
+    "next": {
+      "en": "Next →",
+      "fr": "Suivant →",
+    },
+    "previous": {
+      "en": "← Previous",
+      "fr": "← Précédent",
+    },
     "stepTemplate": {
-      "ofKey": "AddTiersLieux.stepOf",
-      "stepKey": "AddTiersLieux.step",
+      "ofKey": {
+        "en": "of",
+        "fr": "sur",
+      },
+      "stepKey": {
+        "en": "Step",
+        "fr": "Étape",
+      },
     },
   },
   "scope": {
@@ -1250,13 +1418,28 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > spec fig
     "slugKey": "slug",
   },
   "submitLabel": {
-    "add": "AddTiersLieux.buttons.submit",
-    "edit": "EditTiersLieux.buttons.submit",
+    "add": {
+      "en": "Create the third-place",
+      "fr": "Créer le tiers-lieu",
+    },
+    "edit": {
+      "en": "Save changes",
+      "fr": "Enregistrer les modifications",
+    },
   },
   "title": {
-    "add": "AddTiersLieux.title",
-    "edit": "EditTiersLieux.title",
+    "add": {
+      "en": "Create your third-place",
+      "fr": "Créer votre tiers-lieu",
+    },
+    "edit": {
+      "en": "Edit your third-place",
+      "fr": "Modifier votre tiers-lieu",
+    },
   },
-  "validationFailedKey": "AddTiersLieux.errors.validationFailed",
+  "validationFailedKey": {
+    "en": "Please fix the highlighted fields (see the flagged tabs).",
+    "fr": "Veuillez corriger les champs en erreur (voir les onglets signalés).",
+  },
 }
 `;
