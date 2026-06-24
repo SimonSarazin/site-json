@@ -1,7 +1,6 @@
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { PROFIL_QUERY_KEYS } from "../constants";
-import { useEntityMutation, type EntityKind } from "./useEntityMutation";
 
 interface BannerUploadData {
   file: File;
@@ -9,21 +8,6 @@ interface BannerUploadData {
   cropY: number;
   cropW: number;
   cropH: number;
-}
-
-/**
- * Met à jour les informations d'un profil — MINCE SPEC au-dessus de `useEntityMutation`.
- * `newData` = payload COMPLET déjà construit par la modale (buildProfileUpdateData : pf:orEmpty émet "",
- * adresse "" si vide) → buildPayload = identité → submitEntityEdit (Object.assign + save, SDK diffe, backend $unset).
- */
-export function useUpdateProfile(entity: EntityTypes | null) {
-  return useEntityMutation({
-    mode: "edit", entityType: (entity?.getEntityType?.() ?? "citoyens") as EntityKind, target: entity,
-    buildPayload: (d) => d,
-    successKey: "toast.profile.updateSuccess", errorKey: "toast.profile.updateError",
-    errorContext: `useUpdateProfile · ${entity?.getEntityType?.() ?? "?"}`,
-    invalidateQueries: entity ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : [],
-  });
 }
 
 /**
