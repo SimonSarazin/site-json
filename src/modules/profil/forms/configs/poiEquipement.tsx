@@ -37,7 +37,7 @@ export const poiEquipementModalConfig: EntityModalConfig = {
     const sd = (poi as Poi).serverData;
     return sd?.profilMediumImageUrl || sd?.profilImageUrl || sd?.profilThumbImageUrl || undefined;
   },
-  resolveScope: (carrier) => resolvePoiEquipementScope(carrier),
+  resolveScope: (carrier) => resolvePoiEquipementScope(carrier as Parameters<typeof resolvePoiEquipementScope>[0]),
   texts: (t) => ({
     next: t("AddPoiEquipement.buttons.next"),
     previous: t("AddPoiEquipement.buttons.previous"),

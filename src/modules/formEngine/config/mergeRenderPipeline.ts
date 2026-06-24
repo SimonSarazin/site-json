@@ -34,7 +34,7 @@ export function mergeRenderPipeline(render: FormDescriptor, pipeline: FormDescri
     }
     const overlay: Record<string, unknown> = {};
     for (const k of PIPELINE_KEYS) {
-      const v = (pf as Record<string, unknown>)[k];
+      const v = (pf as unknown as Record<string, unknown>)[k];
       if (k === "default") {
         if (v !== undefined && rf.default === undefined) overlay.default = v; // le RENDU prime s'il a déjà un défaut
       } else if (v !== undefined && v !== false) {

@@ -7,12 +7,7 @@
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { PROFIL_QUERY_KEYS } from "../constants";
 import { useCocolight } from "@/hooks/useCocolight";
-import type {
-  AddOrganizationFormData,
-  AddProjectFormData,
-  AddEventFormData,
-  AddPoiFormData,
-} from "../schemaForm";
+import type { AddPoiFormData } from "../schemaForm";
 import { buildTiersLieuxPayload } from "../utils/tiersLieuxMapping";
 import { buildProfileUpdateData } from "../forms/editProfilePayload";
 import type { TiersLieuxSubmitPayload } from "../utils/tiersLieux.schema";

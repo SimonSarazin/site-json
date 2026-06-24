@@ -34,7 +34,8 @@ type Data = Record<string, unknown>;
 type CreatedEntity = { save: () => Promise<unknown>; slug?: string };
 /** Cible SDK de création : `me`, parent, ou scope costum (`me.costum(slug)`). */
 type SdkTarget = Record<SdkMethod, (payload: Data) => Promise<CreatedEntity>>;
-type MeLike = (EntityTypes & { costum?: (slug: string) => Promise<SdkTarget> }) | null;
+/** `me` (utilisateur connecté). Le slug costum réel est typé `KnownCostumSlug` côté lib → cast au call. */
+type MeLike = EntityTypes | null;
 
 export interface EntityMutationSpec {
   mode: "add" | "edit";
@@ -126,8 +127,12 @@ export async function runEntityMutation(
   if (imageFile) payload.profil_avatar = imageFile;
 
   const method = SDK_METHOD[spec.entityType];
+  // Scope costum : `me.costum(slug)` (slug réel typé KnownCostumSlug côté lib → cast). Sinon cible directe.
+  const costumOf = me as unknown as { costum?: (slug: string) => Promise<SdkTarget> } | null;
   const scope: SdkTarget =
-    spec.costumSlug && me?.costum ? await me.costum(spec.costumSlug) : (target as unknown as SdkTarget);
+    spec.costumSlug && costumOf?.costum
+      ? await costumOf.costum(spec.costumSlug)
+      : (target as unknown as SdkTarget);
   const entity = await scope[method](payload);
   try {
     await entity.save();
