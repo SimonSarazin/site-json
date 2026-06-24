@@ -36,11 +36,14 @@ describe("résolveur — spec poi-équipement (parité avec l'ex-config)", () =>
       successKey: "toast.add.poiSuccess", errorKey: "toast.add.poiError", errorContext: "EntityFormModal · ADD_POI",
     });
     expect(mut.inject).toMatchObject({ parent: null });
+    // STAMP costum : type "recoveryCenter" posé au CREATE via inject.extraFields (plus dans le descripteur).
+    expect(mut.inject?.extraFields).toEqual({ type: "recoveryCenter" });
     // defaults add = createEmptyDefaults(scope)
     expect(config.buildDefaults(ctx)).toEqual(createEmptyDefaults(scope));
-    // payload create via pipeline === buildAddPoiPayload (byte-identité round-trip)
+    // payload create costum = pipeline (sans `type`) + STAMP (inject.extraFields) → doit égaler l'ex-payload
+    // buildAddPoiPayload (qui portait `type` via le champ descripteur). Byte-parité de la création préservée.
     const form = { ...createEmptyDefaults(scope), name: "Stade", equip_type_name: "Terrain", equip_long: 25 } as unknown as Record<string, unknown>;
-    expect(mut.buildPayload(form)).toEqual(buildAddPoiPayload(form as never));
+    expect({ ...mut.buildPayload(form), ...(mut.inject?.extraFields ?? {}) }).toEqual(buildAddPoiPayload(form as never));
   });
 
   it("EDIT : target=entité, pas de costumSlug, keys d'update", () => {
@@ -53,5 +56,10 @@ describe("résolveur — spec poi-équipement (parité avec l'ex-config)", () =>
     });
     expect(mut.target).toBe(entity);
     expect(mut.costumSlug).toBeUndefined();
+    // STAMP non-effaçant : le payload d'édition n'émet PAS `type` (ni l'inject, create-only) → clé ABSENTE
+    // → Object.assign(entity.data, payload) ne touche pas le `type` existant (préservé, jamais $unset).
+    const editForm = { ...createEmptyDefaults(scope), name: "Equip X" } as unknown as Record<string, unknown>;
+    expect(mut.buildPayload(editForm)).not.toHaveProperty("type");
+    expect(mut.inject).toBeUndefined(); // édition : aucun inject (donc pas d'extraFields type)
   });
 });

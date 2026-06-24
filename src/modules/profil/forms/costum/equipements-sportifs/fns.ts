@@ -170,7 +170,13 @@ const POI_SPEC: FormSpec = { descriptor: equipementsSportifsDescriptor, baseDefa
  * costum/equipements-sportifs/spec.ts). parent/extraFields/image gérés par l'appelant (useEntityMutation).
  */
 export function buildAddPoiPayload(data: AddPoiFormData): Record<string, unknown> {
-  return buildPayload(POI_SPEC, data as unknown as FormValues) as Record<string, unknown>;
+  const payload = buildPayload(POI_SPEC, data as unknown as FormValues) as Record<string, unknown>;
+  // `type` n'est plus un champ du descripteur (devenu STAMP costum, posé au create par inject.extraFields).
+  // Le costum n'appelle plus ce builder (il passe par le pipeline). Mais le poi STANDARD (addStandard) le
+  // réutilise et porte SON type (ex. "place") via le form → on le réémet ici depuis `data`. (Pont transitoire
+  // jusqu'à ce que le poi standard ait son propre payload.)
+  if (data.type) payload.type = data.type;
+  return payload;
 }
 
 // ── Enregistrement des CLÉS référencées par `spec.ts` (descripteur + fns costum) ───────────────────────────

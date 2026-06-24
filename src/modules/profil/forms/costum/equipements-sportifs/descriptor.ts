@@ -79,9 +79,10 @@ const hidden = (name: string, extra: Partial<FieldDescriptor> = {}): FieldDescri
 const VIS_PMR = { field: "equip_pmr_acc", op: "truthy" } as const;
 
 const fields: FieldDescriptor[] = [
-  // ── caché : type (vient du scope) + bloc adresse (groupe de sérialisation "address") ──
-  // type : read + défaut = DEFAULT_POI_EQUIPEMENT_SCOPE.poiType (inliné pour rester leaf).
-  hidden("type", { required: true, read: "coerce:string", default: "recoveryCenter" }),
+  // ── caché : bloc adresse (groupe de sérialisation "address") ──
+  // NB : `type` n'est PLUS un champ — c'est un STAMP costum posé au CREATE via
+  // `spec.mutation.inject.extraFields` ({ type: "recoveryCenter" }). En édition il n'est ni relu ni
+  // réémis → l'entité conserve son type (Object.assign ne touche pas une clé absente). cf. costum stamp.
   // Membres plats du groupe `address` : recomposés en objet par serializeGroups (pas de read/default
   // individuel — addressCountry retombe sur "RE" via le transform poi:addressRead). localityId pilote
   // l'écriture (clé omise sans lui) ; non rendu (absent des sections) = pipeline-only.
