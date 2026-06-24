@@ -1,0 +1,1211 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descripteur figé (snapshot) 1`] = `
+{
+  "collection": "organizations",
+  "costumSlug": "navigatorDesTierslieux",
+  "fields": {
+    "_logoFile": {
+      "info": "AddTiersLieux.fields.logoHint",
+      "label": "AddTiersLieux.fields.logo",
+      "name": "_logoFile",
+      "renderOnly": true,
+      "type": "object",
+      "widget": "image",
+      "widgetProps": {
+        "aspect": 1,
+        "shape": "square",
+      },
+    },
+    "address": {
+      "label": "AddTiersLieux.fields.address",
+      "name": "address",
+      "renderOnly": true,
+      "type": "object",
+      "widget": "location",
+      "widgetProps": {
+        "required": true,
+      },
+    },
+    "addressCountry": {
+      "group": "address",
+      "label": "addressCountry",
+      "name": "addressCountry",
+      "type": "string",
+      "widget": "hidden",
+    },
+    "addressLocality": {
+      "group": "address",
+      "label": "addressLocality",
+      "name": "addressLocality",
+      "type": "string",
+      "widget": "hidden",
+    },
+    "description": {
+      "label": "AddTiersLieux.fields.longDescription",
+      "name": "description",
+      "placeholder": "AddTiersLieux.fields.longDescriptionPlaceholder",
+      "read": "coerce:pickString",
+      "type": "string",
+      "widget": "textarea",
+      "widgetProps": {
+        "rows": 10,
+      },
+      "write": "coerce:orUndef",
+    },
+    "email": {
+      "label": "AddTiersLieux.fields.email",
+      "name": "email",
+      "placeholder": "AddTiersLieux.fields.emailPlaceholder",
+      "read": "coerce:pickString",
+      "required": true,
+      "rules": {
+        "regex": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+      },
+      "type": "string",
+      "widget": "text",
+      "widgetProps": {
+        "inputType": "email",
+      },
+    },
+    "family": {
+      "enum": [
+        {
+          "label": "Ateliers artisanaux partagés",
+          "value": "ateliers-artisanaux",
+        },
+        {
+          "label": "Bureaux partagés / Coworking",
+          "value": "coworking",
+        },
+        {
+          "label": "Cuisine partagée / Foodlab",
+          "value": "foodlab",
+        },
+        {
+          "label": "Fablab / Makerspace / Hackerspace",
+          "value": "fablab",
+        },
+        {
+          "label": "LivingLab / Innovation sociale",
+          "value": "livinglab",
+        },
+        {
+          "label": "Tiers-lieu nourricier",
+          "value": "nourricier",
+        },
+        {
+          "label": "Tiers-lieu culturel",
+          "value": "culturel",
+        },
+        {
+          "label": "Autre famille de tiers-lieux",
+          "value": "autre",
+        },
+      ],
+      "group": "typePlace",
+      "label": "AddTiersLieux.fields.family",
+      "name": "family",
+      "type": "array",
+      "widget": "checkboxGroup",
+      "widgetProps": {
+        "variant": "card",
+      },
+    },
+    "familyOther": {
+      "group": "typePlace",
+      "label": "familyOther",
+      "name": "familyOther",
+      "type": "string",
+      "widget": "hidden",
+    },
+    "geo": {
+      "label": "geo",
+      "name": "geo",
+      "type": "object",
+      "widget": "hidden",
+      "write": "geo:write",
+      "writeOnly": true,
+    },
+    "geoPosition": {
+      "label": "geoPosition",
+      "name": "geoPosition",
+      "type": "object",
+      "widget": "hidden",
+      "write": "geoPosition:write",
+      "writeOnly": true,
+    },
+    "hours": {
+      "label": "AddTiersLieux.fields.openingHours",
+      "name": "hours",
+      "path": "openingHours",
+      "read": "tl:hoursRead",
+      "type": "object",
+      "widget": "openingHours",
+      "widgetProps": {
+        "dayLabelPrefix": "AddTiersLieux.days",
+      },
+      "write": "tl:hoursWrite",
+    },
+    "localityId": {
+      "group": "address",
+      "label": "localityId",
+      "name": "localityId",
+      "type": "string",
+      "widget": "hidden",
+    },
+    "managementType": {
+      "enum": [
+        {
+          "label": "Association",
+          "value": "association",
+        },
+        {
+          "label": "Collectif citoyen",
+          "value": "collectif-citoyen",
+        },
+        {
+          "label": "Universités / Écoles",
+          "value": "universites",
+        },
+        {
+          "label": "Établissements scolaires",
+          "value": "etablissements-scolaires",
+        },
+        {
+          "label": "Collectivités",
+          "value": "collectivites",
+        },
+        {
+          "label": "SARL / SA / SAS",
+          "value": "sarl-sa-sas",
+        },
+        {
+          "label": "SCIC",
+          "value": "scic",
+        },
+        {
+          "label": "SCOP",
+          "value": "scop",
+        },
+        {
+          "label": "Autre mode de gestion",
+          "value": "autre",
+        },
+      ],
+      "group": "manageModel",
+      "label": "AddTiersLieux.fields.managementType",
+      "name": "managementType",
+      "placeholder": "AddTiersLieux.fields.selectPlaceholder",
+      "required": true,
+      "type": "string",
+      "widget": "select",
+    },
+    "managementTypeOther": {
+      "group": "manageModel",
+      "label": "AddTiersLieux.fields.managementTypeOther",
+      "name": "managementTypeOther",
+      "type": "string",
+      "visibleIf": {
+        "field": "managementType",
+        "op": "eq",
+        "value": "autre",
+      },
+      "widget": "text",
+    },
+    "name": {
+      "label": "AddTiersLieux.fields.name",
+      "name": "name",
+      "placeholder": "AddTiersLieux.fields.namePlaceholder",
+      "read": "coerce:pickString",
+      "required": true,
+      "type": "string",
+      "widget": "text",
+    },
+    "openingMonth": {
+      "enum": [
+        {
+          "label": "Janvier",
+          "value": "01",
+        },
+        {
+          "label": "Février",
+          "value": "02",
+        },
+        {
+          "label": "Mars",
+          "value": "03",
+        },
+        {
+          "label": "Avril",
+          "value": "04",
+        },
+        {
+          "label": "Mai",
+          "value": "05",
+        },
+        {
+          "label": "Juin",
+          "value": "06",
+        },
+        {
+          "label": "Juillet",
+          "value": "07",
+        },
+        {
+          "label": "Août",
+          "value": "08",
+        },
+        {
+          "label": "Septembre",
+          "value": "09",
+        },
+        {
+          "label": "Octobre",
+          "value": "10",
+        },
+        {
+          "label": "Novembre",
+          "value": "11",
+        },
+        {
+          "label": "Décembre",
+          "value": "12",
+        },
+      ],
+      "group": "openingDate",
+      "label": "",
+      "name": "openingMonth",
+      "placeholder": "AddTiersLieux.fields.month",
+      "type": "string",
+      "widget": "select",
+    },
+    "openingYear": {
+      "enum": [
+        {
+          "label": "2031",
+          "value": "2031",
+        },
+        {
+          "label": "2030",
+          "value": "2030",
+        },
+        {
+          "label": "2029",
+          "value": "2029",
+        },
+        {
+          "label": "2028",
+          "value": "2028",
+        },
+        {
+          "label": "2027",
+          "value": "2027",
+        },
+        {
+          "label": "2026",
+          "value": "2026",
+        },
+        {
+          "label": "2025",
+          "value": "2025",
+        },
+        {
+          "label": "2024",
+          "value": "2024",
+        },
+        {
+          "label": "2023",
+          "value": "2023",
+        },
+        {
+          "label": "2022",
+          "value": "2022",
+        },
+        {
+          "label": "2021",
+          "value": "2021",
+        },
+        {
+          "label": "2020",
+          "value": "2020",
+        },
+        {
+          "label": "2019",
+          "value": "2019",
+        },
+        {
+          "label": "2018",
+          "value": "2018",
+        },
+        {
+          "label": "2017",
+          "value": "2017",
+        },
+        {
+          "label": "2016",
+          "value": "2016",
+        },
+        {
+          "label": "2015",
+          "value": "2015",
+        },
+        {
+          "label": "2014",
+          "value": "2014",
+        },
+        {
+          "label": "2013",
+          "value": "2013",
+        },
+        {
+          "label": "2012",
+          "value": "2012",
+        },
+        {
+          "label": "2011",
+          "value": "2011",
+        },
+        {
+          "label": "2010",
+          "value": "2010",
+        },
+        {
+          "label": "2009",
+          "value": "2009",
+        },
+        {
+          "label": "2008",
+          "value": "2008",
+        },
+        {
+          "label": "2007",
+          "value": "2007",
+        },
+        {
+          "label": "2006",
+          "value": "2006",
+        },
+        {
+          "label": "2005",
+          "value": "2005",
+        },
+        {
+          "label": "2004",
+          "value": "2004",
+        },
+        {
+          "label": "2003",
+          "value": "2003",
+        },
+        {
+          "label": "2002",
+          "value": "2002",
+        },
+        {
+          "label": "2001",
+          "value": "2001",
+        },
+        {
+          "label": "2000",
+          "value": "2000",
+        },
+        {
+          "label": "1999",
+          "value": "1999",
+        },
+        {
+          "label": "1998",
+          "value": "1998",
+        },
+        {
+          "label": "1997",
+          "value": "1997",
+        },
+        {
+          "label": "1996",
+          "value": "1996",
+        },
+        {
+          "label": "1995",
+          "value": "1995",
+        },
+        {
+          "label": "1994",
+          "value": "1994",
+        },
+        {
+          "label": "1993",
+          "value": "1993",
+        },
+        {
+          "label": "1992",
+          "value": "1992",
+        },
+        {
+          "label": "1991",
+          "value": "1991",
+        },
+        {
+          "label": "1990",
+          "value": "1990",
+        },
+        {
+          "label": "1989",
+          "value": "1989",
+        },
+        {
+          "label": "1988",
+          "value": "1988",
+        },
+        {
+          "label": "1987",
+          "value": "1987",
+        },
+        {
+          "label": "1986",
+          "value": "1986",
+        },
+        {
+          "label": "1985",
+          "value": "1985",
+        },
+        {
+          "label": "1984",
+          "value": "1984",
+        },
+        {
+          "label": "1983",
+          "value": "1983",
+        },
+        {
+          "label": "1982",
+          "value": "1982",
+        },
+        {
+          "label": "1981",
+          "value": "1981",
+        },
+        {
+          "label": "1980",
+          "value": "1980",
+        },
+        {
+          "label": "1979",
+          "value": "1979",
+        },
+        {
+          "label": "1978",
+          "value": "1978",
+        },
+        {
+          "label": "1977",
+          "value": "1977",
+        },
+        {
+          "label": "1976",
+          "value": "1976",
+        },
+        {
+          "label": "1975",
+          "value": "1975",
+        },
+        {
+          "label": "1974",
+          "value": "1974",
+        },
+        {
+          "label": "1973",
+          "value": "1973",
+        },
+        {
+          "label": "1972",
+          "value": "1972",
+        },
+        {
+          "label": "1971",
+          "value": "1971",
+        },
+        {
+          "label": "1970",
+          "value": "1970",
+        },
+        {
+          "label": "1969",
+          "value": "1969",
+        },
+        {
+          "label": "1968",
+          "value": "1968",
+        },
+        {
+          "label": "1967",
+          "value": "1967",
+        },
+        {
+          "label": "1966",
+          "value": "1966",
+        },
+        {
+          "label": "1965",
+          "value": "1965",
+        },
+        {
+          "label": "1964",
+          "value": "1964",
+        },
+        {
+          "label": "1963",
+          "value": "1963",
+        },
+        {
+          "label": "1962",
+          "value": "1962",
+        },
+        {
+          "label": "1961",
+          "value": "1961",
+        },
+        {
+          "label": "1960",
+          "value": "1960",
+        },
+        {
+          "label": "1959",
+          "value": "1959",
+        },
+        {
+          "label": "1958",
+          "value": "1958",
+        },
+        {
+          "label": "1957",
+          "value": "1957",
+        },
+        {
+          "label": "1956",
+          "value": "1956",
+        },
+        {
+          "label": "1955",
+          "value": "1955",
+        },
+        {
+          "label": "1954",
+          "value": "1954",
+        },
+        {
+          "label": "1953",
+          "value": "1953",
+        },
+        {
+          "label": "1952",
+          "value": "1952",
+        },
+        {
+          "label": "1951",
+          "value": "1951",
+        },
+        {
+          "label": "1950",
+          "value": "1950",
+        },
+        {
+          "label": "1949",
+          "value": "1949",
+        },
+        {
+          "label": "1948",
+          "value": "1948",
+        },
+        {
+          "label": "1947",
+          "value": "1947",
+        },
+        {
+          "label": "1946",
+          "value": "1946",
+        },
+        {
+          "label": "1945",
+          "value": "1945",
+        },
+        {
+          "label": "1944",
+          "value": "1944",
+        },
+        {
+          "label": "1943",
+          "value": "1943",
+        },
+        {
+          "label": "1942",
+          "value": "1942",
+        },
+        {
+          "label": "1941",
+          "value": "1941",
+        },
+        {
+          "label": "1940",
+          "value": "1940",
+        },
+        {
+          "label": "1939",
+          "value": "1939",
+        },
+        {
+          "label": "1938",
+          "value": "1938",
+        },
+        {
+          "label": "1937",
+          "value": "1937",
+        },
+        {
+          "label": "1936",
+          "value": "1936",
+        },
+        {
+          "label": "1935",
+          "value": "1935",
+        },
+        {
+          "label": "1934",
+          "value": "1934",
+        },
+        {
+          "label": "1933",
+          "value": "1933",
+        },
+        {
+          "label": "1932",
+          "value": "1932",
+        },
+        {
+          "label": "1931",
+          "value": "1931",
+        },
+        {
+          "label": "1930",
+          "value": "1930",
+        },
+        {
+          "label": "1929",
+          "value": "1929",
+        },
+        {
+          "label": "1928",
+          "value": "1928",
+        },
+        {
+          "label": "1927",
+          "value": "1927",
+        },
+        {
+          "label": "1926",
+          "value": "1926",
+        },
+        {
+          "label": "1925",
+          "value": "1925",
+        },
+        {
+          "label": "1924",
+          "value": "1924",
+        },
+        {
+          "label": "1923",
+          "value": "1923",
+        },
+        {
+          "label": "1922",
+          "value": "1922",
+        },
+        {
+          "label": "1921",
+          "value": "1921",
+        },
+        {
+          "label": "1920",
+          "value": "1920",
+        },
+        {
+          "label": "1919",
+          "value": "1919",
+        },
+        {
+          "label": "1918",
+          "value": "1918",
+        },
+        {
+          "label": "1917",
+          "value": "1917",
+        },
+        {
+          "label": "1916",
+          "value": "1916",
+        },
+        {
+          "label": "1915",
+          "value": "1915",
+        },
+        {
+          "label": "1914",
+          "value": "1914",
+        },
+        {
+          "label": "1913",
+          "value": "1913",
+        },
+        {
+          "label": "1912",
+          "value": "1912",
+        },
+        {
+          "label": "1911",
+          "value": "1911",
+        },
+        {
+          "label": "1910",
+          "value": "1910",
+        },
+        {
+          "label": "1909",
+          "value": "1909",
+        },
+        {
+          "label": "1908",
+          "value": "1908",
+        },
+        {
+          "label": "1907",
+          "value": "1907",
+        },
+        {
+          "label": "1906",
+          "value": "1906",
+        },
+        {
+          "label": "1905",
+          "value": "1905",
+        },
+        {
+          "label": "1904",
+          "value": "1904",
+        },
+        {
+          "label": "1903",
+          "value": "1903",
+        },
+        {
+          "label": "1902",
+          "value": "1902",
+        },
+        {
+          "label": "1901",
+          "value": "1901",
+        },
+        {
+          "label": "1900",
+          "value": "1900",
+        },
+      ],
+      "group": "openingDate",
+      "label": "",
+      "name": "openingYear",
+      "placeholder": "AddTiersLieux.fields.year",
+      "type": "string",
+      "widget": "select",
+    },
+    "phone": {
+      "label": "AddTiersLieux.fields.phone",
+      "name": "phone",
+      "path": "telephone",
+      "placeholder": "AddTiersLieux.fields.phonePlaceholder",
+      "read": "coerce:pickString",
+      "type": "string",
+      "widget": "text",
+      "widgetProps": {
+        "inputType": "tel",
+      },
+      "write": "coerce:orUndef",
+    },
+    "postalCode": {
+      "group": "address",
+      "label": "postalCode",
+      "name": "postalCode",
+      "type": "string",
+      "widget": "hidden",
+    },
+    "shortDescription": {
+      "label": "AddTiersLieux.fields.shortDescription",
+      "name": "shortDescription",
+      "read": "coerce:pickString",
+      "required": true,
+      "type": "string",
+      "widget": "textarea",
+      "widgetProps": {
+        "rows": 2,
+      },
+      "write": "coerce:orUndef",
+    },
+    "socialLinks": {
+      "clear": "",
+      "label": "AddTiersLieux.fields.socialNetworks",
+      "name": "socialLinks",
+      "path": "socialNetwork",
+      "read": "tl:socialRead",
+      "type": "array",
+      "widget": "fieldArray",
+      "widgetProps": {
+        "addLabel": "AddTiersLieux.fields.addSocial",
+        "itemFields": [
+          {
+            "kind": "select",
+            "label": "AddTiersLieux.fields.socialPlatform",
+            "name": "platform",
+            "options": [
+              {
+                "label": "Facebook",
+                "value": "facebook",
+              },
+              {
+                "label": "Twitter / X",
+                "value": "twitter",
+              },
+              {
+                "label": "Instagram",
+                "value": "instagram",
+              },
+              {
+                "label": "LinkedIn",
+                "value": "linkedin",
+              },
+              {
+                "label": "YouTube",
+                "value": "youtube",
+              },
+              {
+                "label": "Mastodon",
+                "value": "mastodon",
+              },
+              {
+                "label": "Telegram",
+                "value": "telegram",
+              },
+              {
+                "label": "Discord",
+                "value": "discord",
+              },
+            ],
+          },
+          {
+            "kind": "text",
+            "name": "url",
+            "placeholder": "AddTiersLieux.fields.socialUrlPlaceholder",
+          },
+        ],
+      },
+      "write": "tl:socialWrite",
+    },
+    "streetAddress": {
+      "group": "address",
+      "label": "streetAddress",
+      "name": "streetAddress",
+      "type": "string",
+      "widget": "hidden",
+    },
+    "structureName": {
+      "label": "AddTiersLieux.fields.structureName",
+      "name": "structureName",
+      "path": "holderOrganization",
+      "read": "coerce:pickString",
+      "type": "string",
+      "widget": "text",
+      "write": "coerce:orUndef",
+    },
+    "surfaceBuilt": {
+      "label": "AddTiersLieux.fields.surfaceBuilt",
+      "name": "surfaceBuilt",
+      "path": "buildingSurfaceArea",
+      "placeholder": "AddTiersLieux.fields.surfacePlaceholder",
+      "read": "coerce:string",
+      "type": "number",
+      "widget": "number",
+      "write": "tl:numOrUndef",
+    },
+    "surfaceOutdoor": {
+      "label": "AddTiersLieux.fields.surfaceOutdoor",
+      "name": "surfaceOutdoor",
+      "path": "siteSurfaceArea",
+      "placeholder": "AddTiersLieux.fields.surfacePlaceholder",
+      "read": "coerce:string",
+      "type": "number",
+      "widget": "number",
+      "write": "tl:numOrUndef",
+    },
+    "videoUrl": {
+      "label": "",
+      "name": "videoUrl",
+      "path": "video",
+      "placeholder": "AddTiersLieux.fields.videoUrlPlaceholder",
+      "read": "tl:video0",
+      "type": "string",
+      "widget": "text",
+      "write": "tl:videoWrite",
+    },
+    "websiteUrl": {
+      "label": "AddTiersLieux.fields.websiteUrl",
+      "name": "websiteUrl",
+      "path": "url",
+      "placeholder": "AddTiersLieux.fields.websiteUrlPlaceholder",
+      "read": "coerce:pickString",
+      "type": "string",
+      "widget": "text",
+      "write": "coerce:orUndef",
+    },
+  },
+  "icon": "building-2",
+  "id": "tiers-lieux",
+  "layout": {
+    "header": "gradient",
+    "kind": "wizard",
+    "progress": "bar",
+    "stepper": "tabs",
+    "validatePerStep": true,
+  },
+  "sections": [
+    {
+      "groups": [
+        {
+          "columns": 1,
+          "fields": [
+            "name",
+          ],
+        },
+        {
+          "columns": 2,
+          "fields": [
+            "openingMonth",
+            "openingYear",
+          ],
+          "label": "AddTiersLieux.fields.openingDate",
+        },
+        {
+          "columns": 1,
+          "fields": [
+            "shortDescription",
+          ],
+        },
+        {
+          "columns": 1,
+          "fields": [
+            "structureName",
+          ],
+        },
+        {
+          "columns": 1,
+          "fields": [
+            "managementType",
+            "managementTypeOther",
+          ],
+        },
+        {
+          "columns": 1,
+          "fields": [
+            "family",
+          ],
+        },
+        {
+          "columns": 2,
+          "fields": [
+            "surfaceBuilt",
+            "surfaceOutdoor",
+          ],
+        },
+      ],
+      "icon": "building-2",
+      "id": "info",
+      "label": "AddTiersLieux.steps.info",
+    },
+    {
+      "groups": [
+        {
+          "columns": 1,
+          "fields": [
+            "address",
+          ],
+        },
+        {
+          "columns": 1,
+          "divider": true,
+          "fields": [
+            "email",
+            "phone",
+          ],
+          "label": "Contact",
+          "titleClassName": "text-sm font-semibold",
+        },
+      ],
+      "icon": "map-pin",
+      "id": "contact",
+      "label": "AddTiersLieux.steps.contact",
+    },
+    {
+      "groups": [
+        {
+          "columns": 1,
+          "fields": [
+            "_logoFile",
+          ],
+        },
+        {
+          "columns": 1,
+          "divider": true,
+          "fields": [
+            "videoUrl",
+          ],
+          "label": "AddTiersLieux.fields.videoUrl",
+          "titleClassName": "text-base font-semibold",
+        },
+      ],
+      "icon": "image",
+      "id": "media",
+      "label": "AddTiersLieux.steps.media",
+    },
+    {
+      "groups": [
+        {
+          "columns": 1,
+          "fields": [
+            "websiteUrl",
+          ],
+        },
+        {
+          "columns": 1,
+          "divider": true,
+          "fields": [
+            "socialLinks",
+          ],
+        },
+      ],
+      "icon": "globe",
+      "id": "online",
+      "label": "AddTiersLieux.steps.online",
+    },
+    {
+      "groups": [
+        {
+          "columns": 1,
+          "fields": [
+            "hours",
+          ],
+        },
+        {
+          "columns": 1,
+          "divider": true,
+          "fields": [
+            "description",
+          ],
+        },
+      ],
+      "icon": "file-text",
+      "id": "details",
+      "label": "AddTiersLieux.steps.details",
+    },
+  ],
+  "serializeGroups": {
+    "address": {
+      "read": "address:read",
+      "serverKey": "address",
+      "write": "tl:addressWrite",
+    },
+    "manageModel": {
+      "read": "tl:manageModelRead",
+      "serverKey": "manageModel",
+      "write": "tl:manageModelWrite",
+    },
+    "openingDate": {
+      "read": "tl:openingDateRead",
+      "serverKey": "openingDate",
+      "write": "tl:openingDateWrite",
+    },
+    "typePlace": {
+      "read": "tl:typePlaceRead",
+      "serverKey": "typePlace",
+      "write": "tl:typePlaceWrite",
+    },
+  },
+  "validate": "addressComplete",
+}
+`;
+
+exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > spec figée (snapshot) 1`] = `
+{
+  "defaults": {
+    "base": "tl:emptyDefaults",
+  },
+  "descriptor": {
+    "ref": "tiers-lieux",
+  },
+  "dialogClassName": "sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden",
+  "gradientHeader": true,
+  "icon": "building-2",
+  "id": "tiers-lieux",
+  "image": {
+    "existingUrlFrom": "image:profilUrl",
+    "field": "_logoFile",
+  },
+  "mutation": {
+    "entityType": "organizations",
+    "errorContext": {
+      "add": "EntityFormModal · ADD_TIERSLIEU",
+      "edit": "EntityFormModal · EDIT_TIERSLIEU",
+    },
+    "errorKey": {
+      "add": "AddTiersLieux.toast.error",
+      "edit": "EditTiersLieux.toast.error",
+    },
+    "inject": {
+      "extraFields": {
+        "preferences": {
+          "isOpenData": true,
+          "isOpenEdition": true,
+        },
+        "type": "NGO",
+      },
+    },
+    "invalidateFn": "tl:invalidate",
+    "payloadEmitEmptyOnEdit": true,
+    "payloadFn": "tl:payload",
+    "successKey": {
+      "add": "AddTiersLieux.toast.success",
+      "edit": "EditTiersLieux.toast.success",
+    },
+  },
+  "navText": {
+    "cancel": "AddTiersLieux.buttons.cancel",
+    "next": "AddTiersLieux.buttons.next",
+    "previous": "AddTiersLieux.buttons.previous",
+    "stepTemplate": {
+      "ofKey": "AddTiersLieux.stepOf",
+      "stepKey": "AddTiersLieux.step",
+    },
+  },
+  "scope": {
+    "derive": "tl:scope",
+    "slugFrom": "derived",
+    "slugKey": "slug",
+  },
+  "submitLabel": {
+    "add": "AddTiersLieux.buttons.submit",
+    "edit": "EditTiersLieux.buttons.submit",
+  },
+  "title": {
+    "add": "AddTiersLieux.title",
+    "edit": "EditTiersLieux.title",
+  },
+  "validationFailedKey": "AddTiersLieux.errors.validationFailed",
+}
+`;

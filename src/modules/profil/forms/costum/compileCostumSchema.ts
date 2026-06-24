@@ -31,8 +31,13 @@ export interface CostumFormSchema {
   entityType: SpecMutation["entityType"];
   /** collection FormDescriptor ; dérivée d'`entityType` si absente. */
   collection?: FormCollection;
+  /** Icône du FORMULAIRE (badge de titre, nom lucide) → descriptor.icon ; défaut aussi de l'icône de modale. */
+  icon?: string;
   /** slug costum statique du descripteur (= scope.defaults.sourceKey, source unique). */
   costumSlug?: string;
+  /** Dériver un `field.default` du widget (string→"", bool→false, array→[]). Défaut TRUE. Mettre FALSE quand
+   *  le socle vient d'une fn enregistrée (`defaultsBase`) et qu'aucun champ ne porte de défaut (ex. tiers-lieu). */
+  deriveDefaults?: boolean;
   layout: LayoutSpec;
   serializeGroups?: FormDescriptor["serializeGroups"];
   /** clé → `validateRegistry` (validation cross-champ). */
@@ -88,6 +93,8 @@ const WIDGET_DEFAULTS: Partial<Record<WidgetKind, Partial<FieldDescriptor>>> = {
   urlList: { type: "array", read: "coerce:stringArray", default: [] },
   image: { type: "object", renderOnly: true },     // ancre UI composite (image hors element/save)
   location: { type: "object", renderOnly: true },  // ancre UI composite (adresse via serializeGroups)
+  fieldArray: { type: "array" },                    // liste répétée (ex. socialLinks) ; read via transform dédié
+  openingHours: { type: "object" },                 // horaires 7-DOW ; read/write via transform dédié
   hidden: { type: "string" },                       // type par défaut ; sur-écrit si array/object
 };
 
@@ -95,10 +102,18 @@ const SELECT_LIKE = new Set<WidgetKind>(["select", "selectFromLists"]);
 const cloneDefault = (v: unknown): unknown => (Array.isArray(v) ? [...v] : v);
 
 /** Terse + défauts du widget + preset → FieldDescriptor complet (champ explicite > preset > widget). */
-function buildField(name: string, terse: TerseField, presets?: CostumFormSchema["fieldPresets"]): FieldDescriptor {
+function buildField(name: string, terse: TerseField, presets: CostumFormSchema["fieldPresets"], deriveDefaults: boolean): FieldDescriptor {
   const widget = terse.widget;
-  const base = WIDGET_DEFAULTS[widget] ?? {};
-  const preset = presets?.[widget] ?? {};
+  const base = { ...(WIDGET_DEFAULTS[widget] ?? {}) };
+  const preset = { ...(presets?.[widget] ?? {}) };
+  // Membre d'un GROUPE de sérialisation : lu/écrit PAR le groupe (cf. serializeGroups) → aucun read/write/
+  // default INDIVIDUEL dérivé (un read/write EXPLICITE du champ reste appliqué via `terse`).
+  if (terse.group) {
+    delete base.read; delete base.write; delete base.default;
+    delete preset.read; delete preset.write; delete preset.default;
+  }
+  // Défauts dérivés OFF : aucun field.default (le socle vient de `defaultsBase`). cf. tiers-lieu.
+  if (!deriveDefaults) { delete base.default; delete preset.default; }
   const merged = { name, ...base, ...preset, ...terse } as FieldDescriptor;
   if ("default" in merged) merged.default = cloneDefault(merged.default); // éviter le partage de réf (arrays)
   if (merged.label == null) merged.label = name;                          // parité L(name) = LABELS[name] ?? name
@@ -107,10 +122,12 @@ function buildField(name: string, terse: TerseField, presets?: CostumFormSchema[
 }
 
 function buildDescriptor(s: CostumFormSchema): FormDescriptor {
+  const deriveDefaults = s.deriveDefaults !== false;
   const fields: Record<string, FieldDescriptor> = {};
-  for (const [name, terse] of Object.entries(s.fields)) fields[name] = buildField(name, terse, s.fieldPresets);
+  for (const [name, terse] of Object.entries(s.fields)) fields[name] = buildField(name, terse, s.fieldPresets, deriveDefaults);
   return {
     id: s.id,
+    ...(s.icon ? { icon: s.icon } : {}),
     collection: s.collection ?? ENTITY_TO_COLLECTION[s.entityType] ?? "citoyens",
     ...(s.costumSlug ? { costumSlug: s.costumSlug } : {}),
     layout: s.layout,
@@ -123,6 +140,7 @@ function buildDescriptor(s: CostumFormSchema): FormDescriptor {
 
 function buildSpec(s: CostumFormSchema): EntityModalSpec {
   const c = s.chrome;
+  const icon = c.icon ?? s.icon; // l'icône de modale retombe sur celle du formulaire (badge de titre)
   return {
     id: s.id,
     descriptor: { ref: s.id },
@@ -130,7 +148,7 @@ function buildSpec(s: CostumFormSchema): EntityModalSpec {
     title: c.title,
     ...(c.description ? { description: c.description } : {}),
     ...(c.submitLabel ? { submitLabel: c.submitLabel } : {}),
-    ...(c.icon ? { icon: c.icon } : {}),
+    ...(icon ? { icon } : {}),
     ...(c.gradientHeader ? { gradientHeader: c.gradientHeader } : {}),
     ...(c.dialogClassName ? { dialogClassName: c.dialogClassName } : {}),
     ...(c.validationFailedKey ? { validationFailedKey: c.validationFailedKey } : {}),
