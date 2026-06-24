@@ -11,7 +11,7 @@ import type { AddPoiFormData } from "../../../schemaForm";
 import { createElement } from "react";
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
 import { coerceString } from "@/modules/formEngine/engine/coercions"; // side-effect : enregistre coerce:* + fournit coerceString (poi:addressRead)
-import { buildPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
+import { seedEntity, buildPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
 import "../../geoTransforms"; // enregistre geo:write / geoPosition:write (partagés)
 import type { FormValues } from "@/modules/formEngine";
 import { equipementsSportifsDescriptor } from "./descriptor";
@@ -62,62 +62,23 @@ export function resolvePoiEquipementScope(entity: ScopeEntity, defaults: PoiEqui
   };
 }
 
-// Coerceurs de TYPE (string/number/bool/array/date) : désormais GÉNÉRIQUES dans formEngine
-// (`coerceString`/`coerceNumber`/… enregistrés `coerce:*`). poi:addressRead réutilise `coerceString`.
-
-export const createEmptyDefaults = (scope: PoiEquipementScope): AddPoiFormData => ({
-  name: "",
-  type: scope.poiType as AddPoiFormData["type"],
-  description: "",
-  tags: [],
-  urls: [],
-  addressCountry: scope.addressCountry,
-  addressLocality: "",
-  localityId: "",
-  postalCode: "",
-  streetAddress: "",
-  level1: "", level1Name: "", level2: "", level2Name: "",
-  level3: "", level3Name: "", level4: "", level4Name: "", codeInsee: "",
-  inst_acc_handi_bool: false,
-  inst_trans_bool: false,
-  equip_type_name: "",
-  equip_type_famille: "",
-  inst_date_creation: "",
-  inst_enqu_date: "",
-  equip_maj_date: "",
-  equip_nature: "",
-  equip_sol: "",
-  equip_surf: undefined,
-  equip_eclair: false,
-  categorie: "",
-  aps_name: [],
-  equip_acc_libre: false,
-  inst_acc_handi_type: "",
-  inst_trans_type: "",
-  inst_part_bool: false,
-  inst_part_type: [],
-  equip_prop_nom: "",
-  equip_prop_type: "",
-  equip_gest_type: "",
-  equip_pmr_acc: false,
-  equip_pmr_chem: false,
-  equip_pmr_douche: false,
-  equip_pmr_sanit: false,
-  equip_pmr_trib: false,
-  equip_pmr_vest: false,
-  equip_pshs_aire: false,
-  equip_pshs_chem: false,
-  equip_pshs_sanit: false,
-  equip_pshs_trib: false,
-  equip_pshs_vest: false,
-  equip_pshs_sign: false,
-  equip_larg: undefined,
-  equip_long: undefined,
-  equip_douche: false,
-  equip_loc_type: [],
-  equip_utilisateur: [],
-  inst_nom: "",
+// Socle ADRESSE : membres du groupe `address`. seedFromEntity n'applique PAS de `field.default` aux membres
+// de groupe (read via le groupe), donc on les fournit ici. `addressCountry` = pays du scope ; les 9 SIG
+// (level1..4/codeInsee, valeurs de form en round-trip, non rendues) + les 4 autres → "".
+const POI_ADDRESS_BASE = (scope: PoiEquipementScope): Record<string, unknown> => ({
+  addressCountry: scope.addressCountry, addressLocality: "", localityId: "", postalCode: "", streetAddress: "",
+  level1: "", level1Name: "", level2: "", level2Name: "", level3: "", level3Name: "", level4: "", level4Name: "", codeInsee: "",
 });
+
+// Defaults DÉRIVÉS du descripteur — plus de re-listage des ~36 champs. `seedEntity(descriptor, null)` applique
+// les `field.default` (text→"", number→undefined via coerce:number, switch→false, array→[]) et EXCLUT déjà
+// renderOnly/writeOnly (_imageFile/address/geo/geoPosition). On ajoute seulement le socle adresse (membres de
+// groupe) + `type` (stamp, conservé pour AddPoiFormData ; émis au create par inject.extraFieldsFromScope).
+// Byte-parité figée par defaults.byteparity.test (snapshot).
+export const createEmptyDefaults = (scope: PoiEquipementScope): AddPoiFormData => ({
+  ...(seedEntity({ descriptor: equipementsSportifsDescriptor, baseDefaults: () => POI_ADDRESS_BASE(scope) }, null) as Record<string, unknown>),
+  type: scope.poiType,
+}) as unknown as AddPoiFormData;
 
 // ── READ adresse (serializeGroup) : objet serveur `address` → champs plats ──────
 // 14 clés SIG (round-trip COMPLET requis par l'édition unifiée S6 : sinon l'adresse reconstruite écraserait
