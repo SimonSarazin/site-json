@@ -1,17 +1,14 @@
 import { useMemo, useRef, useCallback, useState } from "react";
 import type { FieldErrors } from "react-hook-form";
 import { FileText, Upload, X, Loader2, FolderOpen } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getBaseUrl } from "@/lib/constant/common";
-import { useCocolight } from "@/hooks/useCocolight";
 import { showErrorToast } from "@/lib/toastUtils";
 import { useT } from "@/hooks/useT";
 import "../i18n/i18n";
 import type { FormFieldMapping, UploaderValue, UploaderLegacyValue, ImageUploadValue, ExistingUploadFile } from "../types";
 import { useCoFormAnswerFiles } from "../hooks/useCoFormAnswerFiles";
-import { COFORM_QUERY_KEYS } from "../constants";
 import { FieldError, HintText } from "./FormFields";
 
 // Formats par défaut élargis pour supporter images + documents courants
@@ -60,8 +57,6 @@ function isExistingFile(item: unknown): item is ExistingUploadFile {
 
 export function UploaderField({ field, errors, value = [], onChange, formId, answerId, subKey }: UploaderFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const { api, me } = useCocolight();
-  const queryClient = useQueryClient();
   const baseUrl = getBaseUrl();
   const t = useT("modules/coform");
   const hasError = !!errors[field.name];
@@ -70,7 +65,6 @@ export function UploaderField({ field, errors, value = [], onChange, formId, ans
   // Mode d'affichage déterminé par la config admin
   const displayMode = config?.displayMode ?? "simple";
   const [isDragOver, setIsDragOver] = useState(false);
-  const [deletingIndex, setDeletingIndex] = useState<number | null>(null);
 
   // Détection du format legacy (objet avec updateDate)
   const isLegacyVal = !Array.isArray(value) && typeof value === "object" && value !== null && "updateDate" in value;
@@ -158,55 +152,41 @@ export function UploaderField({ field, errors, value = [], onChange, formId, ans
     if (inputRef.current) inputRef.current.value = "";
   }, [onChange, files, legacyVal, value, maxFiles, maxSize, config?.formats, t]);
 
-  // Callback async (suppression de fichier serveur) : le React Compiler ne peut
-  // pas préserver cette mémoïsation manuelle, mais le useCallback reste correct
-  // et nécessaire (référence stable passée aux items de la liste).
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
-  const handleRemove = useCallback(async (index: number) => {
+  // Suppression DIFFÉRÉE : on retire seulement la réf du form value (purge serveur
+  // à la réconciliation post-save). On RECONSTRUIT la map `{docId: docPath}` (pas
+  // un Array) pour ne pas flip-floper le format, et on trace le docId réel retiré
+  // dans `deletedDocIds` — seul moyen de supprimer un legacy résolu via getFiles.
+  const handleRemove = useCallback((index: number) => {
     if (!onChange) return;
-    const item = files[index];
-
-    // Si c'est un fichier existant en DB, le supprimer côté serveur via la
-    // méthode entity `answer.deleteFile(docId)` (lib ≥ 1.0.135). La lib fait
-    // le cleanup local automatique des structures `{updateDate, files}` dans
-    // `serverData.answers` post-suppression, donc le caller n'a pas besoin de
-    // refetch — on conserve quand même l'invalidation RQ pour le cache des
-    // listes d'answer files éventuellement préchargées.
-    if (isExistingFile(item)) {
-      if (!api || !answerId) {
-        showErrorToast(
-          new Error("API ou answerId manquants"),
-          "coform.uploader.deleteFileError",
-          t,
-        );
-        return;
-      }
-      setDeletingIndex(index);
-      try {
-        const form = await api.form({ id: formId });
-        const answer = await form.answer({ id: answerId });
-        await answer.deleteFile(item.docId);
-        // Invalidation : la liste des fichiers de l'answer doit être refetchée
-        // si un consommateur (ReadOnlyUploaderGallery) en a affiché.
-        if (subKey) {
-          await queryClient.invalidateQueries({
-            queryKey: COFORM_QUERY_KEYS.ANSWER_FILES(answerId, subKey, me?.id ?? null),
-          });
-        }
-      } catch (error) {
-        showErrorToast(error, "coform.uploader.deleteFileError", t);
-        setDeletingIndex(null);
-        return;
-      }
-      setDeletingIndex(null);
-    }
-
-    if (legacyVal !== undefined) {
-      onChange({ ...legacyVal, files: files.filter((_, i) => i !== index) });
-    } else {
+    if (legacyVal === undefined) {
       onChange((Array.isArray(value) ? value : []).filter((_, i) => i !== index));
+      return;
     }
-  }, [files, onChange, legacyVal, value, api, queryClient, formId, answerId, subKey, t]);
+
+    const removedItem = files[index];
+    const remaining = files.filter((_, i) => i !== index);
+
+    let nextFiles: UploaderLegacyValue["files"];
+    if (remaining.every(isExistingFile)) {
+      const filesMap: Record<string, string> = {};
+      for (const item of remaining) {
+        if (isExistingFile(item)) filesMap[item.docId] = item.docPath;
+      }
+      nextFiles = filesMap;
+    } else {
+      nextFiles = remaining;
+    }
+
+    const deletedDocIds = isExistingFile(removedItem)
+      ? [...(legacyVal.deletedDocIds ?? []), removedItem.docId]
+      : legacyVal.deletedDocIds;
+
+    onChange({
+      ...legacyVal,
+      files: nextFiles,
+      ...(deletedDocIds && deletedDocIds.length > 0 ? { deletedDocIds } : {}),
+    });
+  }, [files, onChange, legacyVal, value]);
 
   const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -363,15 +343,13 @@ export function UploaderField({ field, errors, value = [], onChange, formId, ans
               ? item.split("/").pop() || `Fichier ${index + 1}`
               : (item.name || (existing ? item.docPath.split("/").pop() : null) || `Fichier ${index + 1}`);
             const isImage = src.startsWith("data:image/") || /\.(jpg|jpeg|png|gif|webp)$/i.test(name);
-            const isDeleting = deletingIndex === index;
 
             return (
               <div
                 key={`${name}-${index}`}
                 className={cn(
                   "flex items-center justify-between gap-2 rounded-md px-2 py-1.5 transition-opacity",
-                  "bg-muted/40 hover:bg-muted/70",
-                  isDeleting && "opacity-50 pointer-events-none"
+                  "bg-muted/40 hover:bg-muted/70"
                 )}
               >
                 <div className="min-w-0 flex items-center gap-2">
@@ -393,11 +371,10 @@ export function UploaderField({ field, errors, value = [], onChange, formId, ans
                   variant="ghost"
                   size="sm"
                   className="h-7 w-7 p-0 shrink-0 text-muted-foreground hover:text-destructive"
-                  disabled={isDeleting}
-                  onClick={() => void handleRemove(index)}
+                  onClick={() => handleRemove(index)}
                   aria-label={t("coform.uploader.deleteFile", "Supprimer {{name}}").replace("{{name}}", name)}
                 >
-                  {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
+                  <X className="h-4 w-4" />
                 </Button>
               </div>
             );

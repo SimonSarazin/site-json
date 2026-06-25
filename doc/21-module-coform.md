@@ -679,6 +679,42 @@ Depuis le refactor Module 2, toute l'orchestration upload est **déléguée à `
 3. `answer.processUploads(allData)` → **pipeline complet en une ligne** : scanne les `data:URI`, upload par batches, normalise le format legacy uploader, nettoie les URLs absolues en chemins relatifs
 4. `answer.data.answers = prepared` + affectation des champs annexes (`addedOptions`, `links`)
 5. `answer.save()` → POST `SAVE_COFORM_ANSWER` + refresh `canEdit`/`editDeniedReason`
+6. **Réconciliation des fichiers** (miroir de l'étape 3) : après un `save()`
+   réussi, les fichiers présents à l'ouverture (`answer.serverData.answers`,
+   fetché par `form.answer({id})`) mais absents du payload sauvegardé sont
+   supprimés en **un seul** `answer.deleteFiles(removed)` (batch parallèle SDK
+   via `_uploadInBatches`, best-effort). Helper de diff : `collectUploaderDocIds`
+   (exporté de `file.ts`, testé).
+
+### Suppression de fichier : DIFFÉRÉE au save
+
+`UploaderField` ne supprime plus le fichier serveur au clic sur ✕ : il retire
+**seulement la référence du form value**. La suppression réelle est différée au
+save (étape 6 ci-dessus). Conséquences :
+
+- Un retrait **non sauvegardé ne détruit rien** (annuler/fermer = aucun effet) —
+  cohérent avec tous les autres champs (en attente jusqu'au save).
+- L'ordre **save → delete** garantit qu'un save échoué ne supprime jamais un
+  fichier encore référencé en base (pas de référence orpheline / image cassée).
+
+**Réconciliation = DIFF ∪ EXPLICITE** (`useCoFormFinalMutation`, `actions/mutations/file.ts`). Au save on supprime l'UNION de :
+
+- **diff** : `collectUploaderDocIds(serverData) − collectUploaderDocIds(soumis)` (présents à l'ouverture, retirés du payload). ⚠️ Le collecteur gère SYMÉTRIQUEMENT les 2 formes de `files` — map `{docId:path}` ET Array `[{docId}]` : ignorer l'Array faisait voir le côté soumis VIDE → **sur-suppression** de tout le champ.
+- **explicite** : `deletedDocIds` — `handleRemove` trace le vrai `docId` retiré (connu via `getFiles`). SEULE source pour un fichier **legacy non-en-map** (champ `{updateDate}` sans clé `files`), invisible au snapshot. Clé TRANSITOIRE : extraite + strippée au save (`extractDeletedDocIds`), jamais persistée. ⚠️ Doit figurer dans le schéma Zod uploader (`formParser.ts`), sinon strippée à la validation du submit single-step.
+
+`handleRemove` reconstruit la **map** `{docId:path}` (pas un Array) quand tous les fichiers restants sont existants → pas de flip-flop de format en base. Helpers `collectUploaderDocIds` / `extractDeletedDocIds` exportés + testés (`file.test.ts`).
+
+**Autorisation côté answer.** `answer.deleteFile`/`deleteFiles` appellent
+l'endpoint coform `DELETE_COFORM_ANSWER_FILE` (`DeleteAnswerFileAction`,
+citizenToolKit), **miroir de l'upload** : autorisé par
+`$isOwner || Coform::canAdminAnswer($formId, $answer)` — la MÊME auth que le save
+et l'upload — puis suppression via `Document::removeDocumentById($docId, true)`
+(`canDelete=true` **bypasse le `canEdit` générique** du document, car l'auth
+answer-side a déjà validé, + check d'appartenance `docId → answer`). C'est ce qui
+permet à un membre autorisé d'éditer une réponse partagée
+(`publicCanEditSharedAnswer` / `membersCanEditSharedAnswer`) de **gérer ses
+fichiers**. La **lecture** (`GetAnswerFilesAction`) utilise la même
+`canAdminAnswer` — sinon l'uploader serait cassé en édition partagée.
 
 ---
 

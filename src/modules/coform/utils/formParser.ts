@@ -880,6 +880,11 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
             z.object({
               updateDate: z.array(z.string()),
               files: z.union([z.array(z.any()), z.record(z.string(), z.string())]).optional(),
+              // Trace TRANSITOIRE des fichiers retirés (suppression différée). DOIT
+              // figurer dans le schéma : sinon z.object la strip à la validation du
+              // submit (path single-step DynamicCoForm) → la réconciliation ne peut
+              // plus supprimer un legacy non-en-map. Strippée au save par la mutation.
+              deletedDocIds: z.array(z.string()).optional(),
             }),
           ]);
           schemaShape[field.name] = field.isRequired
