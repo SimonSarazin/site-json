@@ -18,7 +18,7 @@ export { LocalizedString, LOCALES };
 import { ProfilesConfigSchema, MemberSectionSchema } from "../modules/profil/schema";
 import { AmpliConfigSchema } from "@/modules/ampli/schema";
 import { CommandPaletteConfigSchema } from "@/modules/commandPalette/schema";
-import { VisibilityConditionSchema } from "@/lib/visibility/schema";
+import { VisibilityConditionSchema, type VisibilityCondition } from "@/lib/visibility/schema";
 
 /**
  * Schéma réutilisable pour les champs qui acceptent soit un nom d'icône
@@ -64,6 +64,7 @@ interface NavItemType {
   icon?: string;
   badge?: z.infer<typeof NavBadge>;
   roles?: string[];
+  visibility?: VisibilityCondition;
   children?: NavItemType[];
 }
 
@@ -75,6 +76,7 @@ export const NavItem: z.ZodType<NavItemType> = z.lazy(() =>
     icon: z.string().optional(),
     badge: NavBadge,
     roles: z.array(z.string()).optional(), // visibilité RBAC
+    visibility: VisibilityConditionSchema, // condition de visibilité (auth/routes/permissions)
     children: z.array(NavItem).optional(), // sous‑menu infini
   }).refine(d => d.path || d.href, { message: "NavItem : path ou href obligatoire" })
 );
@@ -1498,6 +1500,7 @@ export interface EnhancedNavItemType {
   icon?: string;
   badge?: z.infer<typeof NavBadge>;
   roles?: string[];
+  visibility?: VisibilityCondition;
   children?: EnhancedNavItemType[];
   megaMenu?: {
     columns: z.infer<typeof MegaMenuColumn>[];
@@ -1516,6 +1519,7 @@ const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
     icon: z.string().optional(),
     badge: NavBadge,
     roles: z.array(z.string()).optional(),
+    visibility: VisibilityConditionSchema, // condition de visibilité (auth/routes/permissions)
     children: z.array(EnhancedNavItem).optional(),
     megaMenu: MegaMenu.optional(),
     description: LocalizedString.optional(),

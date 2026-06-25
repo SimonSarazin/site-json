@@ -1,31 +1,49 @@
 {
   "version": "1.0.0",
-  "generated": "2025-09-08T10:30:00.000Z",
+  "generated": "2026-06-25T00:00:00.000Z",
   "meta": {
     "title": {
-      "fr": "Extreme defi",
-      "en": "Extreme defi"
+      "fr": "eXtrême Défi",
+      "en": "eXtreme Challenge"
     },
     "description": {
-      "fr": "Le réseau des passionné·es de la mer",
-      "en": "The network for ocean enthusiasts"
+      "fr": "Le programme de l'ADEME pour réinventer la mobilité du quotidien : concevoir, expérimenter et industrialiser des véhicules intermédiaires légers, sobres et réparables — les vélis.",
+      "en": "ADEME's programme to reinvent everyday mobility: design, experiment and manufacture light, frugal and repairable intermediate vehicles — the 'vélis'."
     },
     "defaultLang": "fr",
     "languages": [
       "fr",
       "en"
     ],
-    "favicon": "images/rezoLaMer/logo.png",
-    "themeColor": "#151844",
+    "favicon": "images/eXtremeDefiAdeme/icon-xd-blue.png",
+    "themeColor": "#1b2340",
     "keywords": [
-      "océan",
-      "mer",
-      "communauté",
-      "protection marine",
-      "environnement"
+      "mobilité",
+      "véhicules intermédiaires",
+      "vélis",
+      "ADEME",
+      "transition écologique",
+      "mobilité durable",
+      "véhicule électrique léger",
+      "éco-conception"
     ]
   },
   "header": {
+    "type": "transparent-scroll",
+    "path": "/",
+    "logo": "images/eXtremeDefiAdeme/icon-xd-blue.png",
+    "logoAlt": {
+      "fr": "eXtrême Défi — ADEME Mobilité",
+      "en": "eXtreme Challenge — ADEME Mobility"
+    },
+    "logoTitle": {
+      "fr": "eXtrême Défi",
+      "en": "eXtreme Challenge"
+    },
+    "logoSubtitle": {
+      "fr": "ADEME Mobilité",
+      "en": "ADEME Mobility"
+    },
     "nav": [
       {
         "label": {
@@ -39,33 +57,42 @@
           "fr": "Projets",
           "en": "Projects"
         },
-        "path": "/projets"
+        "path": "/projets",
+        "visibility": {
+          "auth": "required"
+        }
       },
       {
         "label": {
-          "fr": "Événements",
-          "en": "Events"
+          "fr": "Agenda",
+          "en": "Agenda"
         },
-        "path": "/evenements"
+        "path": "/agenda",
+        "visibility": {
+          "auth": "required"
+        }
       },
       {
         "label": {
           "fr": "Communauté",
           "en": "Community"
         },
-        "path": "/communaute"
+        "path": "/communaute",
+        "visibility": {
+          "auth": "required"
+        }
       }
     ],
-    "type": "transparent-scroll",
-    "path": "/",
-    "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path></svg>",
-    "logoTitle": {
-      "fr": "Extreme defi",
-      "en": "Extreme defi"
-    },
     "sticky": true,
     "transparent": false,
     "height": "lg",
+    "ctaButton": {
+      "label": {
+        "fr": "Participer",
+        "en": "Get involved"
+      },
+      "path": "/communaute"
+    },
     "utilities": {
       "piggyBank": false,
       "themeSwitch": true,
@@ -80,67 +107,66 @@
     {
       "path": "/",
       "title": {
-        "fr": "Accueil - Extreme defi",
-        "en": "Home - Extreme defi"
+        "fr": "Accueil - eXtrême Défi",
+        "en": "Home - eXtreme Challenge"
       },
       "layout": "fullwidth",
       "sections": [
         {
           "type": "hero-parallax",
-          "id": "hero-rezo-la-mer",
+          "id": "hero-xd",
           "props": {
             "headline": {
-              "fr": "Extreme defi",
-              "en": "Extreme defi"
+              "fr": "Réinventons la mobilité du quotidien",
+              "en": "Reinventing everyday mobility"
             },
             "subhead": {
-              "fr": "Outiller et connecter le réseau de passionné·es de la mer pour construire ensemble un océan vivant et résilient",
-              "en": "Equip and connect the network of ocean enthusiasts to build together a living and resilient ocean"
+              "fr": "Réduire les risques, les coûts et les délais pour concevoir, expérimenter puis industrialiser une collection d'objets roulants légers : les véhicules intermédiaires, ou vélis.",
+              "en": "Cutting risks, costs and lead times to design, experiment and then manufacture a collection of light rolling objects: intermediate vehicles, or 'vélis'."
             },
-            "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" class=\"w-20 h-20\"><path d=\"M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path></svg>",
-            "backgroundImage": "images/rezoLaMer/hero-ocean.jpg",
+            "backgroundImage": "images/eXtremeDefiAdeme/hero-velis.jpg",
             "backgroundImageAlt": {
-              "fr": "Récif corallien vibrant avec vie marine",
-              "en": "Vibrant coral reef with marine life"
+              "fr": "Illustration eXtrême Défi : des constructeurs assemblent un véhicule léger près d'une route",
+              "en": "eXtreme Challenge illustration: makers assembling a light vehicle by a road"
             },
             "badges": [
               {
                 "label": {
-                  "fr": "Communauté citoyenne",
-                  "en": "Citizen community"
+                  "fr": "Léger & sobre",
+                  "en": "Light & frugal"
                 },
-                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"></path><circle cx=\"9\" cy=\"7\" r=\"4\"></circle><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"></path><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"></path></svg>"
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z\"></path><line x1=\"16\" y1=\"8\" x2=\"2\" y2=\"22\"></line><line x1=\"17.5\" y1=\"15\" x2=\"9\" y2=\"15\"></line></svg>"
               },
               {
                 "label": {
-                  "fr": "Science participative",
-                  "en": "Citizen science"
+                  "fr": "Réparable & local",
+                  "en": "Repairable & local"
                 },
-                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><ellipse cx=\"12\" cy=\"5\" rx=\"9\" ry=\"3\"></ellipse><path d=\"M3 5V19A9 3 0 0 0 21 19V5\"></path><path d=\"M3 12A9 3 0 0 0 21 12\"></path></svg>"
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z\"></path></svg>"
               },
               {
                 "label": {
-                  "fr": "Projets collaboratifs",
-                  "en": "Collaborative projects"
+                  "fr": "Bas carbone",
+                  "en": "Low-carbon"
                 },
-                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\"></path></svg>"
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z\"></path><path d=\"M2 21c0-3 1.85-5.36 5.08-6\"></path></svg>"
               }
             ],
             "ctaButtons": [
               {
                 "label": {
-                  "fr": "Rejoindre le réseau",
-                  "en": "Join the network"
+                  "fr": "Découvrir les projets",
+                  "en": "Discover the projects"
                 },
-                "path": "#rejoindre",
+                "path": "/projets",
                 "variant": "default"
               },
               {
                 "label": {
-                  "fr": "Découvrir les projets",
-                  "en": "Discover projects"
+                  "fr": "Rejoindre la communauté",
+                  "en": "Join the community"
                 },
-                "path": "#projets",
+                "path": "/communaute",
                 "variant": "secondary"
               }
             ],
@@ -148,327 +174,686 @@
           }
         },
         {
+          "type": "stats",
+          "id": "chiffres-cles",
+          "props": {
+            "layout": "horizontal",
+            "animated": true,
+            "items": [
+              {
+                "value": "10×",
+                "label": {
+                  "fr": "moins coûteux",
+                  "en": "cheaper"
+                },
+                "description": {
+                  "fr": "Une voiture coûte 0,6 à 0,8 €/km pour 10 000 km/an (source A.C.F.)",
+                  "en": "A car costs €0.6–0.8/km for 10,000 km/year"
+                },
+                "icon": "piggy-bank"
+              },
+              {
+                "value": "10×",
+                "label": {
+                  "fr": "plus durable",
+                  "en": "more durable"
+                },
+                "description": {
+                  "fr": "Réparable à l'infini — 13 ans de durée de vie moyenne d'une voiture",
+                  "en": "Endlessly repairable — cars last 13 years on average"
+                },
+                "icon": "recycle"
+              },
+              {
+                "value": "10×",
+                "label": {
+                  "fr": "plus léger",
+                  "en": "lighter"
+                },
+                "description": {
+                  "fr": "1 240 kg : masse moyenne d'une voiture neuve vendue en 2019",
+                  "en": "1,240 kg: average mass of a new car sold in 2019"
+                },
+                "icon": "feather"
+              },
+              {
+                "value": "10×",
+                "label": {
+                  "fr": "plus simple",
+                  "en": "simpler"
+                },
+                "description": {
+                  "fr": "Matériaux et assemblages locaux, pièces simplifiées et standardisées",
+                  "en": "Local materials and assembly, simplified standardised parts"
+                },
+                "icon": "puzzle"
+              },
+              {
+                "value": "10×",
+                "label": {
+                  "fr": "plus efficient",
+                  "en": "more efficient"
+                },
+                "description": {
+                  "fr": "10 à 50 Wh/km au lieu de plus de 150 Wh/km",
+                  "en": "10–50 Wh/km instead of over 150 Wh/km"
+                },
+                "icon": "battery-charging"
+              },
+              {
+                "value": "1×",
+                "label": {
+                  "fr": "la vitesse qu'il faut",
+                  "en": "the right speed"
+                },
+                "description": {
+                  "fr": "Aussi rapide à l'usage : 25 à 80 km/h selon le territoire",
+                  "en": "Just as fast in practice: 25–80 km/h depending on the area"
+                },
+                "icon": "gauge"
+              }
+            ]
+          }
+        },
+        {
           "type": "html",
           "id": "mission",
           "props": {
-            "html": "<section class=\"relative py-32 px-4 overflow-hidden\"><div class=\"absolute inset-0 z-0\"><img src=\"/images/rezoLaMer/whale-ocean.jpg\" alt=\"Baleine nageant paisiblement dans l'océan\" class=\"w-full h-full object-cover\" /><div class=\"absolute inset-0 bg-linear-to-r from-background via-background/80 to-background/60\"></div></div><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"space-y-8\"><h2 class=\"text-4xl md:text-5xl font-bold mb-6 text-foreground\">Notre mission</h2><div class=\"space-y-6 text-lg md:text-xl leading-relaxed\"><p class=\"text-muted-foreground\"><span class=\"text-primary font-semibold\">Extreme defi</span> est bien plus qu'une plateforme : c'est un <span class=\"text-primary font-medium\">mouvement collectif</span> pour reconnecter l'humanité avec l'océan.</p><p class=\"text-muted-foreground\">Nous créons un <span class=\"text-chart-2 font-medium\">espace numérique ouvert</span> où citoyens, associations, scientifiques et passionné·es peuvent se rencontrer, collaborer et agir ensemble pour la protection et la valorisation de nos océans.</p><div class=\"grid md:grid-cols-2 gap-6 pt-8\"><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-md border border-primary/20\"><h3 class=\"text-2xl font-semibold mb-3 text-primary\">Approche collaborative</h3><p class=\"text-muted-foreground\">Construire ensemble les solutions de demain à travers le partage, la mutualisation et l'intelligence collective</p></div><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-md border border-primary/20\"><h3 class=\"text-2xl font-semibold mb-3 text-chart-2\">Démocratie participative</h3><p class=\"text-muted-foreground\">Une gouvernance transparente et ouverte où chaque voix compte dans les décisions importantes</p></div></div></div></div></div></section>"
+            "html": "<section class=\"py-24 px-4\"><div class=\"container mx-auto max-w-6xl grid md:grid-cols-2 gap-12 items-center\"><div class=\"space-y-6\"><h2 class=\"text-3xl md:text-4xl font-bold text-foreground\">Qu'est-ce qu'un véli ?</h2><p class=\"text-lg text-muted-foreground\">L'<span class=\"text-primary font-semibold\">eXtrême Défi Mobilité</span> est le programme lancé par l'ADEME qui rassemble les constructeurs de petits véhicules électriques ultra efficients, économiques et réparables : les <span class=\"text-primary font-medium\">véhicules intermédiaires</span>, ou <span class=\"text-primary font-medium\">vélis</span>.</p><p class=\"text-muted-foreground\">Positionnés entre le vélo et la voiture, ils véhiculent 1 à 2 personnes et 100 kg de charge — ou 3 personnes et leurs sacs — pour remplacer la voiture sur les trajets du quotidien, en ville comme en zone rurale.</p></div><div class=\"rounded-xl overflow-hidden border border-border bg-secondary/30\"><img src=\"/images/eXtremeDefiAdeme/scene-xd.png\" alt=\"Des constructeurs imaginent et assemblent des véhicules légers\" class=\"w-full h-auto\" loading=\"lazy\" /></div></div></section>"
           }
         },
         {
           "type": "features-glass",
-          "id": "features",
+          "id": "demarche",
           "props": {
             "headline": {
-              "fr": "Une plateforme complète pour l'océan",
-              "en": "A complete platform for the ocean"
+              "fr": "Une démarche ouverte et collaborative",
+              "en": "An open, collaborative approach"
             },
             "subhead": {
-              "fr": "Tous les outils nécessaires pour dynamiser la communauté océanique et créer un impact durable",
-              "en": "All the tools needed to energize the ocean community and create lasting impact"
+              "fr": "De l'idée à l'usine : un commun pour accélérer l'arrivée de véhicules légers dans le quotidien des Français",
+              "en": "From idea to factory: a commons to speed up light vehicles into everyday life"
             },
             "features": [
               {
-                "icon": "network",
+                "icon": "lightbulb",
                 "title": {
-                  "fr": "Connecter la communauté",
-                  "en": "Connect the community"
+                  "fr": "Concevoir",
+                  "en": "Design"
                 },
                 "description": {
-                  "fr": "Un réseau vivant qui relie citoyens et associations autour de la passion commune de l'océan",
-                  "en": "A living network connecting citizens and associations around a shared passion for the ocean"
+                  "fr": "Imaginer des objets roulants sobres, éco-conçus et réparables",
+                  "en": "Imagine frugal, eco-designed, repairable rolling objects"
                 },
                 "color": "primary"
               },
               {
-                "icon": "trending-up",
+                "icon": "flask-conical",
                 "title": {
-                  "fr": "Valoriser les projets",
-                  "en": "Promote projects"
+                  "fr": "Expérimenter",
+                  "en": "Experiment"
                 },
                 "description": {
-                  "fr": "Mettre en lumière les initiatives, leurs impacts réels et les actions de chacun·e",
-                  "en": "Highlight initiatives, their real impacts and everyone's actions"
+                  "fr": "Tester prototypes et pré-séries dans des territoires partenaires",
+                  "en": "Test prototypes and pre-series in partner areas"
+                },
+                "color": "chart-2"
+              },
+              {
+                "icon": "factory",
+                "title": {
+                  "fr": "Industrialiser",
+                  "en": "Manufacture"
+                },
+                "description": {
+                  "fr": "Faire émerger de nouvelles usines, de nouveaux outils et métiers",
+                  "en": "Grow new factories, tools and jobs"
+                },
+                "color": "primary"
+              },
+              {
+                "icon": "unlock",
+                "title": {
+                  "fr": "Communs ouverts",
+                  "en": "Open commons"
+                },
+                "description": {
+                  "fr": "Livrables sous licence Creative Commons, partagés par tous",
+                  "en": "Deliverables under Creative Commons, shared by all"
+                },
+                "color": "accent"
+              },
+              {
+                "icon": "map-pin",
+                "title": {
+                  "fr": "Territoires d'expérimentation",
+                  "en": "Test territories"
+                },
+                "description": {
+                  "fr": "Des collectivités qui accueillent et éprouvent les véhicules",
+                  "en": "Local authorities hosting and testing the vehicles"
                 },
                 "color": "chart-2"
               },
               {
                 "icon": "users",
                 "title": {
-                  "fr": "Mobiliser les bénévoles",
-                  "en": "Mobilize volunteers"
+                  "fr": "Communauté de constructeurs",
+                  "en": "Community of makers"
                 },
                 "description": {
-                  "fr": "Proposer des actions concrètes et fédérer une communauté volontaire et engagée",
-                  "en": "Offer concrete actions and unite a willing and engaged community"
+                  "fr": "Industriels, labos, écoles, associations et passionnés réunis",
+                  "en": "Industry, labs, schools, associations and enthusiasts united"
                 },
                 "color": "primary"
+              }
+            ]
+          }
+        },
+        {
+          "type": "timeline",
+          "id": "saisons",
+          "props": {
+            "alternating": true,
+            "events": [
+              {
+                "date": "2022",
+                "title": {
+                  "fr": "Lancement de l'XD — « Rêvons la roue »",
+                  "en": "XD launch — 'Let's dream the wheel'"
+                },
+                "text": {
+                  "fr": "Idéation : des dizaines d'équipes sélectionnées, accompagnées et financées par l'ADEME. Narratifs, design, faisabilité, modèles économiques et maquettes sous licence Creative Commons.",
+                  "en": "Ideation: dozens of teams selected, supported and funded by ADEME, with deliverables under Creative Commons."
+                }
               },
               {
-                "icon": "database",
+                "date": "2023",
                 "title": {
-                  "fr": "Science participative",
-                  "en": "Citizen science"
+                  "fr": "Des concepts aux expérimentations",
+                  "en": "From concepts to experiments"
                 },
-                "description": {
-                  "fr": "Collecter et partager des données pour créer un jumeau numérique océanique",
-                  "en": "Collect and share data to create an oceanic digital twin"
-                },
-                "color": "accent"
+                "text": {
+                  "fr": "Des dizaines d'objets roulants prototypés et expérimentés dans des territoires partenaires, en recherche de co-financeurs.",
+                  "en": "Dozens of rolling objects prototyped and tested in partner territories, looking for co-funders."
+                }
               },
               {
-                "icon": "share-2",
+                "date": "2024",
                 "title": {
-                  "fr": "Mutualiser les ressources",
-                  "en": "Pool resources"
+                  "fr": "Vers les premières usines",
+                  "en": "Towards the first factories"
                 },
-                "description": {
-                  "fr": "Créer un commun de connaissances, d'outils et de ressources partagées",
-                  "en": "Create a commons of shared knowledge, tools and resources"
-                },
-                "color": "chart-2"
+                "text": {
+                  "fr": "Nouveaux véhicules d'idéation et prototypes, territoires d'expérimentation et appel à projets d'industrialisation.",
+                  "en": "New ideation vehicles and prototypes, test territories and an industrialisation call for projects."
+                }
               },
               {
-                "icon": "vote",
+                "date": "2025",
                 "title": {
-                  "fr": "Gouvernance ouverte",
-                  "en": "Open governance"
+                  "fr": "Industrialisation",
+                  "en": "Industrialisation"
                 },
-                "description": {
-                  "fr": "Une approche démocratique et participative pour toutes les décisions",
-                  "en": "A democratic and participatory approach to all decisions"
+                "text": {
+                  "fr": "Plus de 10 projets sélectionnés à l'AAP Industrialisation : nouvelles entreprises, outils de production et métiers.",
+                  "en": "Over 10 projects selected for the industrialisation call: new companies, tools and jobs."
+                }
+              },
+              {
+                "date": "2026",
+                "title": {
+                  "fr": "Aidons les marchés à mûrir",
+                  "en": "Helping markets mature"
                 },
-                "color": "primary"
+                "text": {
+                  "fr": "Déployer les vélis dans les territoires autour de 5 cas d'usage prioritaires (en préparation).",
+                  "en": "Rolling out vélis across territories around 5 priority use cases (in preparation)."
+                }
               }
             ]
           }
         },
         {
           "type": "action-tiles",
-          "id": "actions",
+          "id": "participer",
           "props": {
             "headline": {
-              "fr": "Passez à l'action",
-              "en": "Take action"
+              "fr": "Participer au Défi",
+              "en": "Take part in the Challenge"
             },
             "subhead": {
-              "fr": "Engagez-vous concrètement pour l'océan selon vos envies et disponibilités",
-              "en": "Get involved in the ocean according to your desires and availability"
+              "fr": "Constructeurs, territoires, citoyens : il y a une place pour chacun·e",
+              "en": "Makers, territories, citizens: there's a place for everyone"
             },
             "actions": [
               {
                 "icon": "plus-circle",
                 "title": {
-                  "fr": "Soumettre un projet",
-                  "en": "Submit a project"
+                  "fr": "Proposer un véli",
+                  "en": "Submit a véli"
                 },
                 "subtitle": {
-                  "fr": "Proposez votre initiative",
-                  "en": "Propose your initiative"
+                  "fr": "Présentez votre véhicule",
+                  "en": "Showcase your vehicle"
                 },
-                "href": "#proposer-projet",
+                "href": "/projets",
                 "color": "primary"
               },
               {
                 "icon": "users",
                 "title": {
-                  "fr": "Participer",
-                  "en": "Participate"
+                  "fr": "Rejoindre la communauté",
+                  "en": "Join the community"
                 },
                 "subtitle": {
-                  "fr": "Études participatives",
-                  "en": "Participatory studies"
+                  "fr": "Constructeurs & passionnés",
+                  "en": "Makers & enthusiasts"
                 },
-                "href": "#participer",
+                "href": "/communaute",
                 "color": "primary"
               },
               {
-                "icon": "alert-triangle",
+                "icon": "map-pin",
                 "title": {
-                  "fr": "Actions",
-                  "en": "Actions"
+                  "fr": "Devenir territoire",
+                  "en": "Become a territory"
                 },
                 "subtitle": {
-                  "fr": "Actions prioritaires",
-                  "en": "Priority actions"
+                  "fr": "Accueillir des essais",
+                  "en": "Host trials"
                 },
-                "href": "#actions",
-                "color": "amber"
-              },
-              {
-                "icon": "coins",
-                "title": {
-                  "fr": "Co-financer",
-                  "en": "Co-finance"
-                },
-                "subtitle": {
-                  "fr": "Soutenez un projet",
-                  "en": "Support a project"
-                },
-                "href": "/projets",
-                "color": "chart-2"
-              }
-            ]
-          }
-        },
-        {
-          "type": "cta-card-grid",
-          "id": "community",
-          "props": {
-            "headline": {
-              "fr": "Rejoignez la communauté",
-              "en": "Join the community"
-            },
-            "subhead": {
-              "fr": "Ensemble, nous construisons un écosystème vivant au service de l'océan",
-              "en": "Together, we build a living ecosystem for the ocean"
-            },
-            "image": "/images/rezoLaMer/community-ocean.jpg",
-            "imageAlt": {
-              "fr": "Vue aérienne de la côte avec dauphins dans l'eau turquoise",
-              "en": "Aerial view of the coast with dolphins in turquoise water"
-            },
-            "actions": [
-              {
-                "icon": "anchor",
-                "title": {
-                  "fr": "Proposer un projet",
-                  "en": "Propose a project"
-                },
-                "description": {
-                  "fr": "Partagez votre initiative et trouvez du soutien",
-                  "en": "Share your initiative and find support"
-                },
-                "ctaLabel": {
-                  "fr": "Soumettre un projet",
-                  "en": "Submit a project"
-                },
-                "href": "#proposer-projet"
-              },
-              {
-                "icon": "lightbulb",
-                "title": {
-                  "fr": "Contribuer aux données",
-                  "en": "Contribute data"
-                },
-                "description": {
-                  "fr": "Participez à la science citoyenne océanique",
-                  "en": "Participate in ocean citizen science"
-                },
-                "ctaLabel": {
-                  "fr": "Participer",
-                  "en": "Participate"
-                },
-                "href": "#participer"
-              },
-              {
-                "icon": "heart-handshake",
-                "title": {
-                  "fr": "Rejoindre une action",
-                  "en": "Join an action"
-                },
-                "description": {
-                  "fr": "Trouvez des missions bénévoles près de vous",
-                  "en": "Find volunteer missions near you"
-                },
-                "ctaLabel": {
-                  "fr": "Voir les actions",
-                  "en": "See actions"
-                },
-                "href": "#actions"
-              },
-              {
-                "icon": "git-branch",
-                "title": {
-                  "fr": "Co-financer",
-                  "en": "Co-finance"
-                },
-                "description": {
-                  "fr": "Soutenez les projets qui vous inspirent",
-                  "en": "Support projects that inspire you"
-                },
-                "ctaLabel": {
-                  "fr": "Découvrir",
-                  "en": "Discover"
-                },
-                "href": "/projets"
-              }
-            ],
-            "stats": [
-              {
-                "value": "2.5K+",
-                "label": {
-                  "fr": "Membres actifs",
-                  "en": "Active members"
-                },
+                "href": "/communaute",
                 "color": "primary"
               },
               {
-                "value": "150+",
-                "label": {
-                  "fr": "Projets en cours",
-                  "en": "Ongoing projects"
+                "icon": "calendar",
+                "title": {
+                  "fr": "Voir l'agenda",
+                  "en": "See the agenda"
                 },
-                "color": "primary"
-              },
-              {
-                "value": "85+",
-                "label": {
-                  "fr": "Associations",
-                  "en": "Associations"
+                "subtitle": {
+                  "fr": "Rencontres & ateliers",
+                  "en": "Meetups & workshops"
                 },
-                "color": "chart-2"
-              },
-              {
-                "value": "12K+",
-                "label": {
-                  "fr": "Données collectées",
-                  "en": "Data collected"
-                },
+                "href": "/agenda",
                 "color": "primary"
               }
             ]
           }
         },
         {
-          "type": "cta-newsletter",
-          "id": "cta",
+          "type": "logoCloud",
+          "id": "partenaires",
           "props": {
-            "headline": {
-              "fr": "Prêt·e à plonger dans l'aventure ?",
-              "en": "Ready to dive into the adventure?"
+            "title": {
+              "fr": "Les partenaires du Défi",
+              "en": "The Challenge partners"
             },
-            "subhead": {
-              "fr": "Rejoignez dès maintenant la communauté Extreme defi et participez à la construction d'un avenir durable pour nos océans",
-              "en": "Join the Extreme defi community now and participate in building a sustainable future for our oceans"
-            },
-            "newsletterPlaceholder": {
-              "fr": "Votre email",
-              "en": "Your email"
-            },
-            "newsletterButtonLabel": {
-              "fr": "S'inscrire",
-              "en": "Subscribe"
-            },
-            "newsletterDisclaimer": {
-              "fr": "Recevez les dernières actualités et opportunités de la communauté",
-              "en": "Receive the latest news and opportunities from the community"
-            },
-            "buttons": [
+            "grayscale": true,
+            "animated": false,
+            "logos": [
               {
-                "label": {
-                  "fr": "Explorer la plateforme",
-                  "en": "Explore the platform"
-                },
-                "href": "#explorer",
-                "variant": "outline"
+                "src": "images/eXtremeDefiAdeme/partners/p-270391.png",
+                "alt": {
+                  "fr": "Keep Motion",
+                  "en": "Keep Motion"
+                }
               },
               {
-                "label": {
-                  "fr": "Contacter l'équipe",
-                  "en": "Contact the team"
+                "src": "images/eXtremeDefiAdeme/partners/p-370241.png",
+                "alt": {
+                  "fr": "Transalley",
+                  "en": "Transalley"
                 },
-                "href": "#contact",
-                "variant": "outline"
+                "href": "https://www.transalley.com"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-387796.png",
+                "alt": {
+                  "fr": "La Fabrique des Mobilités",
+                  "en": "La Fabrique des Mobilités"
+                },
+                "href": "https://lafabriquedesmobilites.fr"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-489848.png",
+                "alt": {
+                  "fr": "Le Mans Tech",
+                  "en": "Le Mans Tech"
+                }
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-770182.png",
+                "alt": {
+                  "fr": "Movin'On",
+                  "en": "Movin'On"
+                },
+                "href": "https://www.movinonconnect.com"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-775731.png",
+                "alt": {
+                  "fr": "Réseau Français des FabLabs",
+                  "en": "Réseau Français des FabLabs"
+                },
+                "href": "https://www.rfflabs.fr"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-817185.png",
+                "alt": {
+                  "fr": "Agil'ESS",
+                  "en": "Agil'ESS"
+                }
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-873145.png",
+                "alt": {
+                  "fr": "ID4CAR",
+                  "en": "ID4CAR"
+                },
+                "href": "https://www.id4car.org"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-936384.png",
+                "alt": {
+                  "fr": "Fabrique Logistique",
+                  "en": "Fabrique Logistique"
+                }
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-981672.png",
+                "alt": {
+                  "fr": "Fer de France",
+                  "en": "Fer de France"
+                },
+                "href": "https://www.ferdefrance.fr"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-106047.png",
+                "alt": {
+                  "fr": "ZEWAY",
+                  "en": "ZEWAY"
+                },
+                "href": "https://www.zeway.com"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-125754.png",
+                "alt": {
+                  "fr": "Vitesco Technologies",
+                  "en": "Vitesco Technologies"
+                },
+                "href": "https://www.vitesco-technologies.com"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-177507.png",
+                "alt": {
+                  "fr": "IUT de l'Aisne",
+                  "en": "IUT de l'Aisne"
+                }
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-194846.png",
+                "alt": {
+                  "fr": "Mobilians",
+                  "en": "Mobilians"
+                },
+                "href": "https://www.mobilians.fr"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-232888.png",
+                "alt": {
+                  "fr": "MAIF",
+                  "en": "MAIF"
+                },
+                "href": "https://www.maif.fr"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-234348.png",
+                "alt": {
+                  "fr": "Savoy International",
+                  "en": "Savoy International"
+                },
+                "href": "https://www.savoy-international.com"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-298925.png",
+                "alt": {
+                  "fr": "Valeo",
+                  "en": "Valeo"
+                },
+                "href": "https://www.valeo.com"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-317204.png",
+                "alt": {
+                  "fr": "Continental",
+                  "en": "Continental"
+                },
+                "href": "https://www.continental.com"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-330224.png",
+                "alt": {
+                  "fr": "Direction Générale des Entreprises",
+                  "en": "Direction Générale des Entreprises"
+                },
+                "href": "https://www.entreprises.gouv.fr"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-356428.png",
+                "alt": {
+                  "fr": "SolarCloth",
+                  "en": "SolarCloth"
+                },
+                "href": "https://www.solarcloth-company.com"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-365820.png",
+                "alt": {
+                  "fr": "CPM Industries",
+                  "en": "CPM Industries"
+                }
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-368527.png",
+                "alt": {
+                  "fr": "Refactory",
+                  "en": "Refactory"
+                }
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-386870.png",
+                "alt": {
+                  "fr": "Autonomy",
+                  "en": "Autonomy"
+                },
+                "href": "https://www.autonomy.paris"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-407276.png",
+                "alt": {
+                  "fr": "La Fabrique des Communs Pédagogiques",
+                  "en": "La Fabrique des Communs Pédagogiques"
+                }
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-417021.png",
+                "alt": {
+                  "fr": "NTN",
+                  "en": "NTN"
+                },
+                "href": "https://www.ntn-snr.com"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-431392.png",
+                "alt": {
+                  "fr": "QuadriBot",
+                  "en": "QuadriBot"
+                }
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-472311.png",
+                "alt": {
+                  "fr": "XD Innovation",
+                  "en": "XD Innovation"
+                }
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-494461.png",
+                "alt": {
+                  "fr": "Ampère",
+                  "en": "Ampère"
+                },
+                "href": "https://www.renaultgroup.com"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-499064.png",
+                "alt": {
+                  "fr": "Société des Ingénieurs de l'Automobile",
+                  "en": "Société des Ingénieurs de l'Automobile"
+                },
+                "href": "https://www.sia.fr"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-508676.png",
+                "alt": {
+                  "fr": "Les Chemins de la Transition",
+                  "en": "Les Chemins de la Transition"
+                }
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-509851.png",
+                "alt": {
+                  "fr": "INSA",
+                  "en": "INSA"
+                },
+                "href": "https://www.insa-france.fr"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-537300.png",
+                "alt": {
+                  "fr": "Würth Elektronik",
+                  "en": "Würth Elektronik"
+                },
+                "href": "https://www.we-online.com"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-562811.png",
+                "alt": {
+                  "fr": "Institut VEDECOM",
+                  "en": "Institut VEDECOM"
+                },
+                "href": "https://www.vedecom.fr"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-571312.png",
+                "alt": {
+                  "fr": "CARA",
+                  "en": "CARA"
+                },
+                "href": "https://www.pole-cara.fr"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-630050.png",
+                "alt": {
+                  "fr": "ARaymond",
+                  "en": "ARaymond"
+                },
+                "href": "https://www.araymond.com"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-659842.png",
+                "alt": {
+                  "fr": "Gouach",
+                  "en": "Gouach"
+                },
+                "href": "https://www.gouach.com"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-664870.png",
+                "alt": {
+                  "fr": "Cerema",
+                  "en": "Cerema"
+                },
+                "href": "https://www.cerema.fr"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-689779.png",
+                "alt": {
+                  "fr": "Feel in Glass",
+                  "en": "Feel in Glass"
+                }
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-704587.png",
+                "alt": {
+                  "fr": "Forvia Faurecia",
+                  "en": "Forvia Faurecia"
+                },
+                "href": "https://www.forvia.com"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-707906.png",
+                "alt": {
+                  "fr": "Agence de l'innovation pour les transports",
+                  "en": "Agence de l'innovation pour les transports"
+                },
+                "href": "https://www.ecologie.gouv.fr"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-708302.png",
+                "alt": {
+                  "fr": "Groupe SAB",
+                  "en": "Groupe SAB"
+                },
+                "href": "https://www.groupe-sab.com"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-710498.png",
+                "alt": {
+                  "fr": "TETMET",
+                  "en": "TETMET"
+                }
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-717061.png",
+                "alt": {
+                  "fr": "Innovation Véhicules Doux",
+                  "en": "Innovation Véhicules Doux"
+                }
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-761490.png",
+                "alt": {
+                  "fr": "ACTIA",
+                  "en": "ACTIA"
+                },
+                "href": "https://www.actia.com"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-802495.png",
+                "alt": {
+                  "fr": "NextMove",
+                  "en": "NextMove"
+                },
+                "href": "https://www.nextmove.fr"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-884333.png",
+                "alt": {
+                  "fr": "ENSCi — Les Ateliers",
+                  "en": "ENSCi — Les Ateliers"
+                },
+                "href": "https://www.ensci.com"
+              },
+              {
+                "src": "images/eXtremeDefiAdeme/partners/p-897127.png",
+                "alt": {
+                  "fr": "Agence nationale de la cohésion des territoires",
+                  "en": "Agence nationale de la cohésion des territoires"
+                },
+                "href": "https://agence-cohesion-territoires.gouv.fr"
               }
             ]
           }
@@ -478,22 +863,25 @@
     {
       "path": "/projets",
       "title": {
-        "fr": "Projets Marins - Extreme defi",
-        "en": "Marine Projects - Extreme defi"
+        "fr": "Projets - eXtrême Défi",
+        "en": "Projects - eXtreme Challenge"
       },
       "layout": "fullwidth",
+      "auth": {
+        "required": true
+      },
       "sections": [
         {
           "type": "searchHeader",
-          "id": "projets-marins",
+          "id": "velis-header",
           "props": {
             "headline": {
-              "fr": "Projets marins",
-              "en": "Marine Projects"
+              "fr": "Les projets du Défi",
+              "en": "The Challenge projects"
             },
             "subhead": {
-              "fr": "Découvrez et soutenez les initiatives qui protègent nos océans",
-              "en": "Discover and support initiatives protecting our oceans"
+              "fr": "Découvrez les véhicules intermédiaires conçus, prototypés et industrialisés dans le cadre du Défi",
+              "en": "Discover the intermediate vehicles designed, prototyped and industrialised through the Challenge"
             },
             "buttons": [
               {
@@ -508,14 +896,14 @@
             ],
             "showSearch": true,
             "searchPlaceholder": {
-              "fr": "Rechercher...",
-              "en": "Search..."
+              "fr": "Rechercher un véli...",
+              "en": "Search a véli..."
             }
           }
         },
         {
           "type": "searchProStatic",
-          "id": "section-project-list",
+          "id": "section-velis-list",
           "props": {
             "useFilter": true,
             "showMap": false,
@@ -527,7 +915,10 @@
               "defaultTypes": [
                 "projects"
               ],
-              "indexStepList": 5
+              "sourceKey": [
+                "eXtremeDefiAdeme"
+              ],
+              "indexStepList": 6
             },
             "list": {
               "columns": {
@@ -537,8 +928,7 @@
                 "xl": 4
               },
               "card": {
-                "type": "funding",
-                "variant": "funding",
+                "type": "default",
                 "detailsMode": "drawer"
               }
             }
@@ -547,24 +937,27 @@
       ]
     },
     {
-      "path": "/evenements",
+      "path": "/agenda",
       "title": {
-        "fr": "Événements océaniques - Extreme defi",
-        "en": "Ocean Events - Extreme defi"
+        "fr": "Agenda - eXtrême Défi",
+        "en": "Agenda - eXtreme Challenge"
       },
       "layout": "fullwidth",
+      "auth": {
+        "required": true
+      },
       "sections": [
         {
           "type": "searchHeader",
           "id": "evenements-header",
           "props": {
             "headline": {
-              "fr": "Événements océaniques",
-              "en": "Ocean Events"
+              "fr": "L'agenda du Défi",
+              "en": "The Challenge agenda"
             },
             "subhead": {
-              "fr": "Retrouvez tous les événements, rencontres et actions pour vivre votre passion de l'océan",
-              "en": "Find all the events, meetings and actions to live your passion for the ocean"
+              "fr": "Rencontres, ateliers et essais de vélis partout en France",
+              "en": "Meetups, workshops and véli trials across France"
             },
             "buttons": [
               {
@@ -576,68 +969,11 @@
                 "action": "add-event",
                 "variant": "primary"
               }
-            ]
-          }
-        },
-        {
-          "type": "title",
-          "id": "evenements-subtitle",
-          "props": {
-            "title": {
-              "fr": "Événements à la une",
-              "en": "Featured Events"
-            },
-            "align": "center",
-            "size": "md"
-          }
-        },
-        {
-          "type": "searchProStatic",
-          "id": "section-event-featured",
-          "props": {
-            "useFilter": false,
-            "showMap": false,
-            "enableMap": false,
-            "showActiveFiltersTypes": false,
-            "showActiveFiltersTags": false,
-            "disableInfiniteScroll": false,
-            "width": "container",
-            "baseParams": {
-              "defaultTypes": [
-                "events"
-              ],
-              "indexStepList": 3,
-              "defaultFilters": {
-                "isStarred": true
-              }
-            },
-            "list": {
-              "columns": {
-                "sm": 1,
-                "md": 2,
-                "lg": 3,
-                "xl": 4
-              },
-              "card": {
-                "type": "event-featured",
-                "variant": "event-featured",
-                "detailsMode": "drawer"
-              }
-            }
-          }
-        },
-        {
-          "type": "searchHeader",
-          "id": "events-filter",
-          "props": {
-            "subhead": {
-              "fr": "Tous les événements",
-              "en": "All events"
-            },
+            ],
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher un événement...",
-              "en": "Search for an event..."
+              "en": "Search an event..."
             }
           }
         },
@@ -651,28 +987,27 @@
             "showActiveFiltersTypes": true,
             "showActiveFiltersTags": true,
             "disableInfiniteScroll": false,
-            "showDetailedViewToggle": false,
-            "defaultDetailedView": true,
             "width": "container",
             "baseParams": {
               "defaultTypes": [
                 "events"
               ],
-              "indexStepList": 3
+              "sourceKey": [
+                "eXtremeDefiAdeme"
+              ],
+              "indexStepList": 6
             },
             "list": {
               "columns": {
                 "sm": 1,
-                "md": 1,
-                "lg": 1,
-                "xl": 1
+                "md": 2,
+                "lg": 3,
+                "xl": 4
               },
               "card": {
-                "showStar": true,
                 "type": "event-featured",
                 "variant": "event-featured",
-                "detailsMode": "drawer",
-                "viewDetail": true
+                "detailsMode": "drawer"
               }
             }
           }
@@ -682,43 +1017,26 @@
     {
       "path": "/communaute",
       "title": {
-        "fr": "Communauté marine - Extreme defi",
-        "en": "Marine Community - Extreme defi"
+        "fr": "Communauté - eXtrême Défi",
+        "en": "Community - eXtreme Challenge"
       },
       "layout": "fullwidth",
+      "auth": {
+        "required": true
+      },
       "sections": [
         {
           "type": "searchHeader",
           "id": "communaute-header",
           "props": {
             "headline": {
-              "fr": "Communauté marine",
-              "en": "Marine Community"
+              "fr": "La communauté",
+              "en": "The community"
             },
             "subhead": {
-              "fr": "Connectez-vous avec des passionnés et des organisations engagées pour l'océan",
-              "en": "Connect with enthusiasts and organizations committed to the ocean"
-            },
-            "buttons": [
-              {
-                "label": {
-                  "fr": "Rejoindre la communauté",
-                  "en": "Join the community"
-                },
-                "icon": "user",
-                "href": "#rejoindre",
-                "variant": "primary"
-              },
-              {
-                "label": {
-                  "fr": "Inscrire mon organisation",
-                  "en": "Register my organization"
-                },
-                "icon": "building-2",
-                "href": "#inscrire-organisation",
-                "variant": "outline"
-              }
-            ]
+              "fr": "Constructeurs, territoires, laboratoires et passionnés réunis autour du Défi",
+              "en": "Makers, territories, labs and enthusiasts gathered around the Challenge"
+            }
           }
         },
         {
@@ -745,16 +1063,11 @@
                       "disableInfiniteScroll": false,
                       "baseParams": {
                         "defaultTypes": [
-                          "citoyens",
-                          "NGO",
-                          "LocalBusiness",
-                          "Group",
-                          "GovernmentOrganization",
-                          "Cooperative"
+                          "citoyens"
                         ],
-                        "filters[preferences.toBeValidated.rezoLaMer][$exists]": false,
-                        "filters[links.memberOf.5a8d040040bb4eba04d62bdf][$exists]": true,
-                        "notSourceKey": 30
+                        "sourceKey": [
+                          "eXtremeDefiAdeme"
+                        ]
                       },
                       "list": {
                         "columns": {
@@ -764,8 +1077,8 @@
                           "xl": 4
                         },
                         "card": {
-                          "type": "event",
-                          "variant": "event",
+                          "type": "profile",
+                          "variant": "profile",
                           "detailsMode": "drawer"
                         }
                       }
@@ -776,8 +1089,8 @@
               {
                 "id": "organizations",
                 "label": {
-                  "fr": "Organisations",
-                  "en": "Organizations"
+                  "fr": "Constructeurs & organisations",
+                  "en": "Makers & organisations"
                 },
                 "icon": "building-2",
                 "content": [
@@ -792,15 +1105,11 @@
                       "showDetailedViewToggle": true,
                       "baseParams": {
                         "defaultTypes": [
-                          "NGO",
-                          "LocalBusiness",
-                          "Group",
-                          "GovernmentOrganization",
-                          "Cooperative"
+                          "organizations"
                         ],
-                        "filters[preferences.toBeValidated.rezoLaMer][$exists]": false,
-                        "filters[links.members.5a8d040040bb4eba04d62bdf][$exists]": true,
-                        "notSourceKey": true
+                        "sourceKey": [
+                          "eXtremeDefiAdeme"
+                        ]
                       },
                       "list": {
                         "columns": {
@@ -810,8 +1119,8 @@
                           "xl": 4
                         },
                         "card": {
-                          "type": "event",
-                          "variant": "event",
+                          "type": "profile",
+                          "variant": "profile",
                           "detailsMode": "drawer"
                         }
                       }
@@ -826,238 +1135,98 @@
     }
   ],
   "footer": {
-    "type": "sidebar-columns",
-    "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path></svg>",
-    "logoTitle": {
-      "fr": "Extreme defi",
-      "en": "Extreme defi"
+    "type": "contact-partners",
+    "contactSection": {
+      "title": {
+        "fr": "L'eXtrême Défi",
+        "en": "The eXtreme Challenge"
+      },
+      "items": [
+        {
+          "icon": "map-pin",
+          "lines": [
+            {
+              "fr": "ADEME — 20 avenue du Grésillé, BP 90406",
+              "en": "ADEME — 20 avenue du Grésillé, BP 90406"
+            },
+            {
+              "fr": "49004 Angers Cedex 01",
+              "en": "49004 Angers Cedex 01, France"
+            }
+          ]
+        },
+        {
+          "icon": "globe",
+          "value": {
+            "fr": "xd.ademe.fr",
+            "en": "xd.ademe.fr"
+          },
+          "href": "https://xd.ademe.fr"
+        },
+        {
+          "icon": "film",
+          "value": {
+            "fr": "Découvrir le film",
+            "en": "Watch the film"
+          },
+          "href": "https://xd.ademe.fr/le-film"
+        }
+      ]
     },
-    "description": {
-      "fr": "Le réseau qui connecte et outille les passionné·es de l'océan",
-      "en": "The network that connects and empowers ocean enthusiasts"
+    "partners": {
+      "logos": [
+        {
+          "image": "images/eXtremeDefiAdeme/soutiens/rf.png",
+          "alt": {
+            "fr": "République Française",
+            "en": "French Republic"
+          },
+          "href": "https://www.gouvernement.fr"
+        },
+        {
+          "image": "images/eXtremeDefiAdeme/soutiens/ademe.png",
+          "alt": {
+            "fr": "ADEME — Agence de la transition écologique",
+            "en": "ADEME — French Agency for Ecological Transition"
+          },
+          "href": "https://www.ademe.fr"
+        },
+        {
+          "image": "images/eXtremeDefiAdeme/soutiens/france2030.png",
+          "alt": {
+            "fr": "France 2030",
+            "en": "France 2030"
+          },
+          "href": "https://www.gouvernement.fr/france-2030"
+        }
+      ]
     },
-    "columns": [
-      {
-        "title": {
-          "fr": "Plateforme",
-          "en": "Platform"
-        },
-        "links": [
-          {
-            "href": "#projets",
-            "label": {
-              "fr": "Projets",
-              "en": "Projects"
-            }
-          },
-          {
-            "href": "#communaute",
-            "label": {
-              "fr": "Communauté",
-              "en": "Community"
-            }
-          },
-          {
-            "href": "#actions",
-            "label": {
-              "fr": "Actions",
-              "en": "Actions"
-            }
-          },
-          {
-            "href": "#donnees",
-            "label": {
-              "fr": "Données",
-              "en": "Data"
-            }
-          },
-          {
-            "href": "#ressources",
-            "label": {
-              "fr": "Ressources",
-              "en": "Resources"
-            }
-          }
-        ]
-      },
-      {
-        "title": {
-          "fr": "À propos",
-          "en": "About"
-        },
-        "links": [
-          {
-            "href": "#mission",
-            "label": {
-              "fr": "Notre mission",
-              "en": "Our mission"
-            }
-          },
-          {
-            "href": "#equipe",
-            "label": {
-              "fr": "L'équipe",
-              "en": "The team"
-            }
-          },
-          {
-            "href": "#gouvernance",
-            "label": {
-              "fr": "Gouvernance",
-              "en": "Governance"
-            }
-          },
-          {
-            "href": "#partenaires",
-            "label": {
-              "fr": "Partenaires",
-              "en": "Partners"
-            }
-          },
-          {
-            "href": "#blog",
-            "label": {
-              "fr": "Blog",
-              "en": "Blog"
-            }
-          }
-        ]
-      },
-      {
-        "title": {
-          "fr": "Participer",
-          "en": "Participate"
-        },
-        "links": [
-          {
-            "href": "#rejoindre",
-            "label": {
-              "fr": "Créer un compte",
-              "en": "Create account"
-            }
-          },
-          {
-            "href": "#proposer-projet",
-            "label": {
-              "fr": "Proposer un projet",
-              "en": "Propose a project"
-            }
-          },
-          {
-            "href": "#cagnotte",
-            "label": {
-              "fr": "Faire un don",
-              "en": "Make a donation"
-            }
-          },
-          {
-            "href": "#benevole",
-            "label": {
-              "fr": "Devenir bénévole",
-              "en": "Become a volunteer"
-            }
-          },
-          {
-            "href": "#contact",
-            "label": {
-              "fr": "Contact",
-              "en": "Contact"
-            }
-          }
-        ]
-      },
-      {
-        "title": {
-          "fr": "Légal",
-          "en": "Legal"
-        },
-        "links": [
-          {
-            "href": "#mentions-legales",
-            "label": {
-              "fr": "Mentions légales",
-              "en": "Legal notice"
-            }
-          },
-          {
-            "href": "#cgu",
-            "label": {
-              "fr": "CGU",
-              "en": "Terms of use"
-            }
-          },
-          {
-            "href": "#confidentialite",
-            "label": {
-              "fr": "Confidentialité",
-              "en": "Privacy policy"
-            }
-          },
-          {
-            "href": "#cookies",
-            "label": {
-              "fr": "Cookies",
-              "en": "Cookies"
-            }
-          },
-          {
-            "href": "#licences",
-            "label": {
-              "fr": "Licences",
-              "en": "Licenses"
-            }
-          }
-        ]
-      }
-    ],
-    "socials": [
-      {
-        "platform": "facebook",
-        "url": "https://facebook.com/rezolamer"
-      },
-      {
-        "platform": "twitter",
-        "url": "https://twitter.com/rezolamer"
-      },
-      {
-        "platform": "instagram",
-        "url": "https://instagram.com/rezolamer"
-      },
-      {
-        "platform": "linkedin",
-        "url": "https://linkedin.com/company/rezolamer"
-      },
-      {
-        "platform": "mail",
-        "url": "mailto:contact@rezolamer.org"
-      }
-    ],
     "legalLinks": [
       {
-        "href": "#accessibilite",
+        "href": "https://xd.ademe.fr/accessibilite",
         "label": {
           "fr": "Accessibilité",
           "en": "Accessibility"
         }
       },
       {
-        "href": "#plan-du-site",
+        "href": "https://xd.ademe.fr/politique-de-protection-des-donnees",
         "label": {
-          "fr": "Plan du site",
-          "en": "Sitemap"
+          "fr": "Données personnelles",
+          "en": "Data protection"
         }
       },
       {
-        "href": "#contribuer",
+        "href": "https://xd.ademe.fr/politique-des-cookies",
         "label": {
-          "fr": "Contribuer",
-          "en": "Contribute"
+          "fr": "Cookies",
+          "en": "Cookies"
         }
       }
     ],
     "copyright": {
-      "fr": "© 2025 Extreme defi. Tous droits réservés. Plateforme open-source sous licence MIT.",
-      "en": "© 2025 Extreme defi. All rights reserved. Open-source platform under MIT license."
+      "fr": "© 2026 ADEME — eXtrême Défi Mobilité. Avec le soutien de France 2030.",
+      "en": "© 2026 ADEME — eXtreme Challenge Mobility. With the support of France 2030."
     }
   },
   "features": [
@@ -1080,72 +1249,72 @@
   "theme": {
     "colors": {
       "light": {
-        "background": "oklch(1.0000 0 0)",
-        "foreground": "oklch(0.2686 0 0)",
-        "card": "oklch(1.0000 0 0)",
-        "cardForeground": "oklch(0.2686 0 0)",
-        "popover": "oklch(1.0000 0 0)",
-        "popoverForeground": "oklch(0.2686 0 0)",
-        "primary": "oklch(0.2367 0.0816 275.30)",
+        "background": "oklch(1 0 0)",
+        "foreground": "oklch(0.24 0.05 268)",
+        "card": "oklch(1 0 0)",
+        "cardForeground": "oklch(0.24 0.05 268)",
+        "popover": "oklch(1 0 0)",
+        "popoverForeground": "oklch(0.24 0.05 268)",
+        "primary": "oklch(0.50 0.19 264)",
         "primaryForeground": "oklch(1 0 0)",
-        "secondary": "oklch(0.9670 0.0029 264.5419)",
-        "secondaryForeground": "oklch(0.4461 0.0263 256.8018)",
-        "muted": "oklch(0.9846 0.0017 247.8389)",
-        "mutedForeground": "oklch(0.5510 0.0234 264.3637)",
-        "accent": "oklch(0.962 0.032 55)",
-        "accentForeground": "oklch(0.55 0.18 40)",
+        "secondary": "oklch(0.96 0.02 256)",
+        "secondaryForeground": "oklch(0.30 0.06 266)",
+        "muted": "oklch(0.97 0.01 256)",
+        "mutedForeground": "oklch(0.44 0.03 262)",
+        "accent": "oklch(0.70 0.16 45)",
+        "accentForeground": "oklch(0.22 0.05 45)",
         "destructive": "oklch(0.6368 0.2078 25.3313)",
-        "destructiveForeground": "oklch(1.0000 0 0)",
-        "border": "oklch(0.9276 0.0058 264.5313)",
-        "input": "oklch(0.9276 0.0058 264.5313)",
-        "ring": "oklch(0.488 0.243 264.376)",
-        "chart1": "oklch(0.488 0.243 264.376)",
-        "chart2": "oklch(0.685 0.17 42)",
-        "chart3": "oklch(0.707 0.165 254.624)",
-        "chart4": "oklch(0.80 0.15 75)",
-        "chart5": "oklch(0.585 0.233 277.117)",
-        "sidebar": "oklch(0.9846 0.0017 247.8389)",
-        "sidebarForeground": "oklch(0.2686 0 0)",
-        "sidebarPrimary": "oklch(0.488 0.243 264.376)",
-        "sidebarPrimaryForeground": "oklch(1.0000 0 0)",
-        "sidebarAccent": "oklch(0.962 0.032 55)",
-        "sidebarAccentForeground": "oklch(0.55 0.18 40)",
-        "sidebarBorder": "oklch(0.9276 0.0058 264.5313)",
-        "sidebarRing": "oklch(0.488 0.243 264.376)"
+        "destructiveForeground": "oklch(1 0 0)",
+        "border": "oklch(0.92 0.015 256)",
+        "input": "oklch(0.92 0.015 256)",
+        "ring": "oklch(0.50 0.19 264)",
+        "chart1": "oklch(0.50 0.19 264)",
+        "chart2": "oklch(0.70 0.16 45)",
+        "chart3": "oklch(0.62 0.13 250)",
+        "chart4": "oklch(0.35 0.09 266)",
+        "chart5": "oklch(0.70 0.12 210)",
+        "sidebar": "oklch(0.98 0.008 256)",
+        "sidebarForeground": "oklch(0.24 0.05 268)",
+        "sidebarPrimary": "oklch(0.50 0.19 264)",
+        "sidebarPrimaryForeground": "oklch(1 0 0)",
+        "sidebarAccent": "oklch(0.70 0.16 45)",
+        "sidebarAccentForeground": "oklch(0.22 0.05 45)",
+        "sidebarBorder": "oklch(0.92 0.015 256)",
+        "sidebarRing": "oklch(0.50 0.19 264)"
       },
       "dark": {
-        "background": "oklch(0.25 0.08 230)",
-        "foreground": "oklch(0.95 0.02 200)",
-        "card": "oklch(0.28 0.07 230)",
-        "cardForeground": "oklch(0.95 0.02 200)",
-        "popover": "oklch(0.22 0.07 230)",
-        "popoverForeground": "oklch(0.95 0.02 200)",
-        "primary": "oklch(0.2367 0.0816 275.30)",
-        "primaryForeground": "oklch(1 0 0)",
-        "secondary": "oklch(0.40 0.12 220)",
-        "secondaryForeground": "oklch(0.95 0.02 200)",
-        "muted": "oklch(0.35 0.10 225)",
-        "mutedForeground": "oklch(0.82 0.03 210)",
-        "accent": "oklch(0.62 0.16 42)",
-        "accentForeground": "oklch(0.95 0.02 200)",
+        "background": "oklch(0.20 0.04 266)",
+        "foreground": "oklch(0.96 0.01 255)",
+        "card": "oklch(0.24 0.045 266)",
+        "cardForeground": "oklch(0.96 0.01 255)",
+        "popover": "oklch(0.22 0.045 266)",
+        "popoverForeground": "oklch(0.96 0.01 255)",
+        "primary": "oklch(0.64 0.18 262)",
+        "primaryForeground": "oklch(0.17 0.03 266)",
+        "secondary": "oklch(0.30 0.06 264)",
+        "secondaryForeground": "oklch(0.96 0.01 255)",
+        "muted": "oklch(0.28 0.05 264)",
+        "mutedForeground": "oklch(0.80 0.03 258)",
+        "accent": "oklch(0.70 0.16 45)",
+        "accentForeground": "oklch(0.18 0.04 45)",
         "destructive": "oklch(0.6368 0.2078 25.3313)",
-        "destructiveForeground": "oklch(1.0000 0 0)",
-        "border": "oklch(0.45 0.10 220)",
-        "input": "oklch(0.35 0.08 225)",
-        "ring": "oklch(0.488 0.243 264.376)",
-        "chart1": "oklch(0.488 0.243 264.376)",
+        "destructiveForeground": "oklch(1 0 0)",
+        "border": "oklch(0.34 0.05 264)",
+        "input": "oklch(0.32 0.05 264)",
+        "ring": "oklch(0.62 0.18 262)",
+        "chart1": "oklch(0.62 0.18 262)",
         "chart2": "oklch(0.72 0.16 45)",
-        "chart3": "oklch(0.70 0.14 256)",
-        "chart4": "oklch(0.55 0.14 210)",
-        "chart5": "oklch(0.40 0.12 220)",
-        "sidebar": "oklch(0.20 0.06 230)",
-        "sidebarForeground": "oklch(0.95 0.02 200)",
-        "sidebarPrimary": "oklch(0.488 0.243 264.376)",
+        "chart3": "oklch(0.70 0.13 250)",
+        "chart4": "oklch(0.55 0.10 266)",
+        "chart5": "oklch(0.74 0.12 210)",
+        "sidebar": "oklch(0.18 0.04 266)",
+        "sidebarForeground": "oklch(0.96 0.01 255)",
+        "sidebarPrimary": "oklch(0.62 0.18 262)",
         "sidebarPrimaryForeground": "oklch(1 0 0)",
-        "sidebarAccent": "oklch(0.62 0.16 42)",
-        "sidebarAccentForeground": "oklch(0.95 0.02 200)",
-        "sidebarBorder": "oklch(0.40 0.10 220)",
-        "sidebarRing": "oklch(0.488 0.243 264.376)"
+        "sidebarAccent": "oklch(0.70 0.16 45)",
+        "sidebarAccentForeground": "oklch(0.18 0.04 45)",
+        "sidebarBorder": "oklch(0.34 0.05 264)",
+        "sidebarRing": "oklch(0.62 0.18 262)"
       }
     },
     "typography": {
@@ -1190,7 +1359,8 @@
         "shadow2xl": "0px 4px 8px -1px oklch(0.15 0.06 230 / 0.6)"
       }
     },
-    "customCSS": ""
+    "customCSS": "",
+    "defaultMode": "light"
   },
   "auth": {
     "login": {
@@ -1199,8 +1369,18 @@
         "en": "Sign in"
       },
       "subtitle": {
-        "fr": "Accédez au réseau des passionné·es de la mer",
-        "en": "Access the network for ocean enthusiasts"
+        "fr": "Rejoignez la communauté de l'eXtrême Défi Mobilité",
+        "en": "Join the eXtreme Challenge Mobility community"
+      }
+    },
+    "register": {
+      "title": {
+        "fr": "Créer un compte",
+        "en": "Create an account"
+      },
+      "subtitle": {
+        "fr": "Participez à la construction de la mobilité de demain",
+        "en": "Help build tomorrow's mobility"
       }
     }
   },

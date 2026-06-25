@@ -18,6 +18,7 @@ import { PiggyBankHeaderButton } from "@/modules/cagnotte/components/PiggyBankHe
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
 import { useScrollAware, useScrollToTopOnRouteChange, useNavItemActive, useHeaderOpaqueAtRest } from "./useHeaderBehavior";
+import { useVisibilityList } from "@/lib/visibility/useVisibility";
 
 interface HeaderTransparentScrollProps {
     header: Header;
@@ -61,9 +62,14 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
         && !isPathInsideNav(secondaryNavItems)
     );
 
-    const navItemsToDisplay = !shouldHideNav
+    const navSource = !shouldHideNav
         ? header.nav
         : (!shouldHideSecondaryNav ? secondaryNavItems : []);
+
+    // Filtre les entrées par condition de visibilité (auth/routes/permissions).
+    // SSR : les items dépendant de l'auth sont masqués jusqu'à l'hydratation.
+    const navVisibility = useVisibilityList(navSource.map((item) => item.visibility));
+    const navItemsToDisplay = navSource.filter((_, idx) => navVisibility[idx]);
 
     return (
         <>
