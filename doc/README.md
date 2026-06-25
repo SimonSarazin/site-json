@@ -16,7 +16,7 @@
 | Ajouter/personnaliser une section | [Sections dynamiques](06-sections-dynamiques.md) |
 | Module de recherche | [Module Search](07-module-search.md) |
 | Module profil | [Module Profil](08-module-profil.md) |
-| Formulaires & costums config-driven | [Module formEngine](28-module-formengine.md) — voir aussi [moteur](moteur-formulaire-generique.md), [couche config](formulaire-config-driven.md), [pipeline read/write](refactor-field-treatment.md) |
+| Formulaires & costums config-driven | [Module formEngine](28-module-formengine.md) |
 | Module actualités | [Module News](09-module-news.md) |
 | Module cagnotte (financement) | [Module Cagnotte](18-module-cagnotte.md) |
 | Module ampli (amplification) | [Module Ampli](22-module-ampli.md) |
