@@ -1,9 +1,9 @@
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { Header } from "@/types/site-schema";
-import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { ChevronDown } from "lucide-react";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
+import HeaderLogo from "./HeaderLogo";
 import { ClientOnly } from "../ClientOnly";
 import NavLink from "../NavLink";
 import LangSwitch from "./LangSwitch";
@@ -80,19 +80,13 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
                         long déborderait de la barre h-20 sur mobile et
                         recouvrirait le contenu) — il s'ellipse. */}
                     <NavLink to={header.path || "/"} className="flex min-w-0 items-center gap-3 cursor-pointer group">
-                        {header.logo ? (
-                            <OptimizedImage
-                                src={header.logo}
-                                alt={header.logoAlt ? t(header.logoAlt) : ""}
-                                height={32}
-                                className="h-8 w-8 shrink-0 object-contain group-hover:scale-110 transition-transform"
-                            />
-                        ) : header.logoIcon ? (
-                            <IconOrSvg
-                                value={header.logoIcon}
-                                className="w-8 h-8 shrink-0 text-primary group-hover:scale-110 transition-transform"
-                            />
-                        ) : null}
+                        <HeaderLogo
+                            header={header}
+                            isOverlay={!opaque}
+                            iconTone="primary"
+                            imageClassName="h-8 w-8 shrink-0 object-contain group-hover:scale-110 transition-transform"
+                            iconClassName="w-8 h-8 shrink-0 group-hover:scale-110 transition-transform"
+                        />
                         {(header.logoTitle || header.logoSubtitle) && (
                             <span className="flex min-w-0 flex-col leading-tight">
                                 {header.logoTitle && (

@@ -11,7 +11,7 @@ import MobileMenuBrand from "./MobileMenuBrand";
 import MobileNavItems from "./MobileNavItems";
 import NavIcon from "./NavIcon";
 import { Badge } from "@/components/ui/badge";
-import { IconOrSvg } from "@/components/ui/icon-or-svg";
+import HeaderLogo from "./HeaderLogo";
 import { AuthMenu } from "@/modules/auth";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
@@ -60,18 +60,13 @@ export default function HeaderTransparentDark({ header }: HeaderTransparentDarkP
                         to={header.path || "/"}
                         className="flex items-center gap-2 cursor-pointer group"
                     >
-                        {logo ? (
-                            <img
-                                src={`${logo}`}
-                                alt={header.logoAlt ? t(header.logoAlt) : ""}
-                                className="h-9 w-auto object-contain group-hover:scale-105 transition-transform"
-                            />
-                        ) : header.logoIcon ? (
-                            <IconOrSvg
-                                value={header.logoIcon}
-                                className="w-8 h-8 text-primary group-hover:scale-110 transition-transform"
-                            />
-                        ) : null}
+                        <HeaderLogo
+                            header={header}
+                            overrideSrc={useEntityOverride && logo ? logo : undefined}
+                            iconTone="primary"
+                            imageClassName="h-9 w-auto object-contain group-hover:scale-105 transition-transform"
+                            iconClassName="w-8 h-8 group-hover:scale-110 transition-transform"
+                        />
                         {logoTitle && (
                             <span className="text-white font-bold text-lg hidden sm:block">
                                 {t(logoTitle)}

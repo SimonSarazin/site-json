@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils";
 import { AnnouncementBanner } from "../AnnouncementBanner";
 import ToggleButtonTheme from "../ToggleButtonTheme";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import HeaderLogo from "./HeaderLogo";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
 
@@ -179,7 +180,6 @@ interface HeaderStandardProps {
 
 export function HeaderStandard({ header }: HeaderStandardProps) {
   useLoadNamespace("components/layout");
-  const t = useT("components/layout");
 
   const headerBg = header.transparent ? 'bg-transparent' : 'bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60';
   const headerHeight = {
@@ -195,7 +195,7 @@ export function HeaderStandard({ header }: HeaderStandardProps) {
         <div className="flex items-center justify-between h-full">
           {/* Logo */}
           <NavLink to={header.path || "/"} className="flex items-center gap-2">
-            <OptimizedImage src={header.logo ?? ""} alt={header.logoAlt ? t(header.logoAlt) : 'Logo'} height={32} className="h-8 w-auto rounded" />
+            <HeaderLogo header={header} imageClassName="h-8 w-auto rounded" iconClassName="h-8 w-8" />
           </NavLink>
 
           {/* Desktop Nav */}

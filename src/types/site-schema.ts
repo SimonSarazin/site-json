@@ -1542,6 +1542,17 @@ export const Header = z.object({
   // Permet un logo "marque sur 2 lignes" (titre + localité/baseline).
   logoSubtitle: LocalizedString.optional(),
   logoIcon: LucideIconOrSvg.optional(),
+  // Variantes contextuelles de l'IMAGE de logo (toutes optionnelles, repli sur
+  // `logo`). Résolues par `<HeaderLogo>` / `resolveHeaderLogo` :
+  // - `logoDark` : image affichée en mode sombre (swap CSS `dark:`, sans flash SSR).
+  // - `logoOverlay` : image quand le header transparent est posé sur un héro
+  //   (état non opaque) — typiquement une version claire/monochrome.
+  logoDark: z.string().optional(),
+  logoOverlay: z.string().optional(),
+  // Ton du `logoIcon` (SVG/Lucide rendu en `currentColor`). Défaut côté header
+  // (ex. transparent-scroll = "primary"). "foreground" suit l'ink du thème →
+  // marine en clair, clair en sombre, idéal pour une marque monochrome.
+  logoIconTone: z.enum(["foreground", "primary", "white"]).optional(),
   // Opt-in : remplace logo/titre par ceux de l'entité costum au runtime
   // (plateforme communecter `transparentCommune`). Désactivé par défaut → le
   // header ne dépend d'aucune logique de site sans cette option.
