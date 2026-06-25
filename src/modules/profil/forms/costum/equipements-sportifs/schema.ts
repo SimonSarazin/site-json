@@ -141,10 +141,11 @@ export const EQUIPEMENTS_SPORTIFS_SCHEMA: CostumFormSchema = {
   },
   image: { field: "_imageFile", existingUrlFrom: "image:profilUrl" },
   listsFromCarrier: true,
-  // Scope du costum = DONNÉE (parentId/sourceKey surchargés par le carrier live ; poiType/addressCountry = SSBE/974).
+  // Scope du costum : parentId/sourceKey LUS du carrier live (slugKey "sourceKey") ; defaults = SEULES les
+  // constantes de domaine SSBE (poiType/addressCountry) — plus d'id de déploiement en dur en fallback.
   scope: {
     derive: "poi:scope", slugFrom: "derived", slugKey: "sourceKey",
-    defaults: { parentId: "6a04155ed047177b92399685", sourceKey: "equipementsSportifs974", poiType: "recoveryCenter", addressCountry: "RE" },
+    defaults: { poiType: "recoveryCenter", addressCountry: "RE" },
   },
   defaultsBase: "poi:emptyDefaults",
   slots: { parentInfo: "parentInfo", doublons: "poiDoublons" },

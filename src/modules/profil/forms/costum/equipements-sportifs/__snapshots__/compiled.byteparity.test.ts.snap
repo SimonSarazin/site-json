@@ -913,9 +913,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > spe
   "scope": {
     "defaults": {
       "addressCountry": "RE",
-      "parentId": "6a04155ed047177b92399685",
       "poiType": "recoveryCenter",
-      "sourceKey": "equipementsSportifs974",
     },
     "derive": "poi:scope",
     "slugFrom": "derived",

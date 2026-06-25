@@ -28,12 +28,10 @@ import "../sharedFns"; // side-effect : enregistre la clé commune image:profilU
 
 // ── Scope du costum "équipement sportif" (dérivé de l'entité costum) ──────────
 /**
- * Périmètre du costum équipement sportif. `parentId`/`sourceKey` sont dérivés de
- * l'ENTITÉ du costum (`useCocolight().entity` : `entity.id` / `entity.serverData.slug`),
- * pas d'une config — l'entité est la source de vérité et le scope s'adapte donc
- * automatiquement par déploiement. Les constantes ci-dessous ne servent que de
- * FALLBACK (entité indisponible). `poiType`/`addressCountry` sont des constantes
- * du domaine SSBE.
+ * Périmètre du costum équipement sportif. `parentId`/`sourceKey` viennent EXCLUSIVEMENT de l'ENTITÉ porteuse
+ * (`useCocolight().entity` : `entity.id` / `entity.serverData.slug`) — l'entité live est la source de vérité,
+ * le scope s'adapte donc automatiquement par déploiement (PLUS de fallback en dur, qui ré-injectait l'id SSBE).
+ * `poiType`/`addressCountry` sont les SEULES constantes de config (`spec.scope.defaults`).
  */
 export interface PoiEquipementScope {
   parentId: string;
@@ -42,20 +40,25 @@ export interface PoiEquipementScope {
   addressCountry: string;
 }
 
+/** Constantes de déploiement du scope (DONNÉE de config `spec.scope.defaults`) — uniquement le domaine SSBE. */
+export interface PoiEquipementScopeDefaults {
+  poiType: string;
+  addressCountry: string;
+}
+
 /** Entité costum minimale utile à la résolution du scope (cf. `useCocolight().entity`). */
 type ScopeEntity = { id?: string | null; serverData?: { slug?: string | null } | null } | null | undefined;
 
 /**
- * Résout le scope depuis l'entité du costum + les `defaults` de config (`spec.scope.defaults`) :
- * `parentId` = id de l'org costum (sinon defaults), `sourceKey` = son slug (sinon defaults). `poiType` /
- * `addressCountry` = constantes de déploiement, fournies par les defaults (DONNÉE de config). Plus aucune
- * constante de scope codée en dur ici (ex-DEFAULT_POI_EQUIPEMENT_SCOPE retiré → vit dans `spec.scope.defaults`).
+ * Résout le scope : `parentId`/`sourceKey` LUS du carrier live (id + slug), `poiType`/`addressCountry` = les
+ * constantes de config. Si le carrier est absent, parentId/sourceKey sont vides (la modale n'a pas lieu d'être
+ * ouverte hors contexte costum) — pas de fallback en dur sur un id de déploiement.
  */
-export function resolvePoiEquipementScope(entity: ScopeEntity, defaults: PoiEquipementScope): PoiEquipementScope {
+export function resolvePoiEquipementScope(entity: ScopeEntity, defaults: PoiEquipementScopeDefaults): PoiEquipementScope {
   const slug = entity?.serverData?.slug;
   return {
-    parentId: entity?.id || defaults.parentId,
-    sourceKey: typeof slug === "string" && slug.trim().length > 0 ? slug.trim() : defaults.sourceKey,
+    parentId: entity?.id ?? "",
+    sourceKey: typeof slug === "string" ? slug.trim() : "",
     poiType: defaults.poiType,
     addressCountry: defaults.addressCountry,
   };
@@ -110,7 +113,7 @@ export function buildAddPoiPayload(data: FormValues): Record<string, unknown> {
 // Le payload (add ET edit) passe par le PIPELINE générique (défaut du résolveur) : buildAddPoiPayload(d) ≡
 // buildPipelinePayload(config, d, {emitEmpty:false}) par round-trip lossless → AUCUN payloadFn custom requis.
 registerDescriptor(equipementsSportifsDescriptor);
-registerScopeFn("poi:scope", (carrier, defaults) => resolvePoiEquipementScope(carrier as ScopeEntity, defaults as unknown as PoiEquipementScope));
+registerScopeFn("poi:scope", (carrier, defaults) => resolvePoiEquipementScope(carrier as ScopeEntity, defaults as unknown as PoiEquipementScopeDefaults));
 registerDefaultsFn("poi:emptyDefaults", (ctx) => createEmptyDefaults(ctx.scope as PoiEquipementScope) as unknown as Record<string, unknown>);
 registerSlot("parentInfo", (ctx: EntityModalCtx) => createElement(ParentInfoReadonly, { parent: ctx.parent ?? null }));
 registerSlot("poiDoublons", (ctx: EntityModalCtx) => createElement(PoiEquipementDoublonsSlot, { scope: ctx.scope as PoiEquipementScope }));
