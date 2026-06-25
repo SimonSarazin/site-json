@@ -40,6 +40,11 @@ const control = (form: UseFormReturn<FieldValues>) => form.control as Control<Fi
 const fname = (n: string) => n as FieldPath<FieldValues>;
 // Label vide (`field.label` falsy) → on ne passe rien (le composant masque alors le FormLabel).
 const lbl = (p: WidgetProps) => (p.field.label ? p.t(p.field.label) : "");
+// Repli TRADUIT pour la zone de recherche d'un select/multiselect : sans `placeholderSearch` déclaré, le
+// composant SelectObject retombait sur un "Search..." codé en dur (non traduit). LocalizedString inline →
+// résolu locale-aware par `p.t`, sans dépendre d'une clé i18n d'un autre module (LEAF).
+const SEARCH_PLACEHOLDER_FALLBACK: I18n = { fr: "Rechercher…", en: "Search…" };
+const searchPh = (p: WidgetProps) => p.t(p.field.placeholderSearch ?? SEARCH_PLACEHOLDER_FALLBACK);
 
 const registry: Partial<Record<string, WidgetComponent>> = {
   hidden: () => null,
@@ -68,17 +73,17 @@ const registry: Partial<Record<string, WidgetComponent>> = {
   select: (p) => <FormFieldSelectObject control={control(p.form)} name={fname(p.field.name)} label={lbl(p)}
     required={p.field.required} options={p.options}
     placeholder={p.field.placeholder ? p.t(p.field.placeholder) : undefined}
-    placeholderSearch={p.field.placeholderSearch ? p.t(p.field.placeholderSearch) : undefined} errorTranslate={p.t} />,
+    placeholderSearch={searchPh(p)} errorTranslate={p.t} />,
 
   selectFromLists: (p) => <FormFieldSelectObject control={control(p.form)} name={fname(p.field.name)} label={lbl(p)}
     required={p.field.required} options={p.options}
     placeholder={p.field.placeholder ? p.t(p.field.placeholder) : undefined}
-    placeholderSearch={p.field.placeholderSearch ? p.t(p.field.placeholderSearch) : undefined} errorTranslate={p.t} />,
+    placeholderSearch={searchPh(p)} errorTranslate={p.t} />,
 
   multiselect: (p) => <FormFieldSelectObject control={control(p.form)} name={fname(p.field.name)} label={lbl(p)}
     required={p.field.required} multiple options={p.options}
     placeholder={p.field.placeholder ? p.t(p.field.placeholder) : undefined}
-    placeholderSearch={p.field.placeholderSearch ? p.t(p.field.placeholderSearch) : undefined} errorTranslate={p.t} />,
+    placeholderSearch={searchPh(p)} errorTranslate={p.t} />,
 
   date: (p) => <FormFieldDate control={control(p.form)} name={fname(p.field.name)} label={lbl(p)} required={p.field.required}
     placeholder={p.field.placeholder ? p.t(p.field.placeholder) : undefined}
