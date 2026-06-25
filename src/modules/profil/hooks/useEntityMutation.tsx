@@ -8,7 +8,9 @@
  * méthodes/scope, cf. useEntityMutation.test). Le hook ajoute juste le wiring React (useCocolight/navigate/
  * useMutationWithToast). Les SPÉCIFICITÉS d'entité passent par le spec :
  *  - `buildPayload` : closure (capture le runtime : tags/costum) → le cœur reste générique ;
- *  - `costumSlug` : create scopé costum (`me.costum(slug).X()`) au lieu de `(target??me).X()` ;
+ *  - `costumSlug` : create scopé costum EXPLICITE (`me.costum(slug).X()`) ; à défaut, tout create hérite du
+ *    costum AMBIANT du déploiement (`me.costum(useCocolight().entity)` via `deps.contextEntity`), MÊME sous un
+ *    parent (le lien parent est replié dans `payload.parent`) ;
  *  - `imageField` : champ form portant le File image (→ `profil_avatar`, routé bloc PROFIL_IMAGE par save) ;
  *  - `inject` : extras create (role / parent / organizer fallback / email vide / extraFields) ;
  *  - create = `target.X(payload).save()` ; edit = `submitEntityEdit` (Object.assign + save + removeImage).
@@ -81,7 +83,7 @@ export interface EntityMutationSpec {
 export async function runEntityMutation(
   spec: EntityMutationSpec,
   values: Data,
-  deps: { me: MeLike },
+  deps: { me: MeLike; contextEntity?: EntityTypes | null },
 ): Promise<{ entity: EntityTypes }> {
   const { me } = deps;
   const imageFile = spec.imageField ? (values[spec.imageField] as File | null | undefined) ?? undefined : undefined;
@@ -127,12 +129,38 @@ export async function runEntityMutation(
   if (imageFile) payload.profil_avatar = imageFile;
 
   const method = SDK_METHOD[spec.entityType];
-  // Scope costum : `me.costum(slug)` (slug réel typé KnownCostumSlug côté lib → cast). Sinon cible directe.
-  const costumOf = me as unknown as { costum?: (slug: string) => Promise<SdkTarget> } | null;
-  const scope: SdkTarget =
-    spec.costumSlug && costumOf?.costum
-      ? await costumOf.costum(spec.costumSlug)
-      : (target as unknown as SdkTarget);
+  // Scope de création, par priorité :
+  //  (1) costum EXPLICITE de la modale → `me.costum(slug)` (registry + champs costum) ;
+  //  (2) costum AMBIANT du déploiement → `me.costum(contextEntity)` (overload ENTITÉ, zéro fetch), appliqué
+  //      MÊME sous un parent (legacy : tout contenu créé sous un costum actif est estampillé `source.key`).
+  //      ⚠ En basculant la cible vers le costum, `this.parent` devient `me` (id === userId) → l'AUTO-INJECTION
+  //      parent/organizer des sous-classes (Poi/Project → `data.parent`, Event → `data.organizer` ; gated
+  //      `this.parent.id !== userId && !data.x`) ne se déclenche plus. On la RÉPLIQUE dans le payload depuis
+  //      `spec.target`, au MÊME format (`buildParentReference`/`buildOrganizerReference`). Le backend `found`
+  //      gate l'estampillage → SANS effet sur un déploiement standard ;
+  //  (3) sinon cible directe (parent explicite, ou `me`).
+  const costumOf = me as unknown as { costum?: (arg: unknown) => Promise<SdkTarget> } | null;
+  let scope: SdkTarget;
+  if (spec.costumSlug && costumOf?.costum) {
+    scope = await costumOf.costum(spec.costumSlug);
+  } else if (deps.contextEntity && costumOf?.costum) {
+    scope = await costumOf.costum(deps.contextEntity);
+    if (spec.target) { // réplique l'auto-injection parent/organizer perdue (this.parent = me)
+      if (spec.entityType === "events") {
+        if (!payload.organizer) {
+          const org = buildOrganizerReference(spec.target, me as EntityTypes | null);
+          if (org) payload.organizer = org;
+        }
+      } else if (spec.entityType === "projects" || spec.entityType === "poi") {
+        if (!payload.parent) {
+          const ref = buildParentReference(spec.target);
+          if (ref) payload.parent = ref;
+        }
+      }
+    }
+  } else {
+    scope = target as unknown as SdkTarget;
+  }
   const entity = await scope[method](payload);
   try {
     await entity.save();
@@ -145,10 +173,10 @@ export async function runEntityMutation(
 
 /** Hook React : `runEntityMutation` + toasts/invalidation/navigation (useMutationWithToast). */
 export function useEntityMutation(spec: EntityMutationSpec) {
-  const { me } = useCocolight();
+  const { me, entity } = useCocolight();
   const navigate = useNavigate();
   return useMutationWithToast<{ entity: EntityTypes }, Data>({
-    mutationFn: (values) => runEntityMutation(spec, values, { me: me as MeLike }),
+    mutationFn: (values) => runEntityMutation(spec, values, { me: me as MeLike, contextEntity: entity as EntityTypes | null }),
     namespace: "modules/profil",
     successKey: spec.successKey,
     errorKey: spec.errorKey,

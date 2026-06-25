@@ -30,7 +30,9 @@ function makeSdk() {
     }
     return t;
   };
-  const me = { ...target("me"), id: "meId", serverData: { name: "Moi" }, costum: async (slug: string) => target(`costum:${slug}`) };
+  // costum : fidèle à l'overload lib (string slug OU entité chargée → son serverData.slug).
+  const me = { ...target("me"), id: "meId", serverData: { name: "Moi" },
+    costum: async (arg: unknown) => target(`costum:${typeof arg === "string" ? arg : (arg as { serverData?: { slug?: string } })?.serverData?.slug ?? "entity"}`) };
   return { me: me as unknown as EntityTypes, calls, getSaves: () => saves };
 }
 
@@ -141,6 +143,56 @@ describe("runEntityMutation — parité avec les hooks bespoke", () => {
     expect(sdk.calls[0].payload.type).toBe("NGO"); // STAMP costum (inject.extraFields)
     expect(sdk.calls[0].payload.preferences).toEqual({ isOpenData: true, isOpenEdition: true });
     expect(sdk.calls[0].payload.profil_avatar).toBe(fakeFile);
+  });
+
+  it("CREATE RACINE sous déploiement costum : scope = costum AMBIANT (me.costum(contextEntity))", async () => {
+    const sdk = makeSdk();
+    const contextEntity = { id: "ctx", getEntityType: () => "organizations", serverData: { slug: "youthCare" } } as unknown as EntityTypes;
+    const values = { name: "Org", type: "NGO", url: "", tags: [], shortDescription: "" };
+    const spec: EntityMutationSpec = {
+      ...base, mode: "add", entityType: "organizations",
+      buildPayload: (d) => buildProfileUpdateData("organizations", d),
+    };
+    // ni costumSlug ni spec.target → le costum AMBIANT du déploiement s'applique (legacy : tout create estampillé)
+    await runEntityMutation(spec, values, { me: sdk.me, contextEntity });
+    expect(sdk.calls[0]).toMatchObject({ scope: "costum:youthCare", method: "organization" });
+  });
+
+  it("CREATE sous PARENT sur site costum : ambiant appliqué + lien parent préservé dans le payload", async () => {
+    const sdk = makeSdk();
+    const contextEntity = { id: "ctx", getEntityType: () => "organizations", serverData: { slug: "youthCare" } } as unknown as EntityTypes;
+    const spec: EntityMutationSpec = {
+      ...base, mode: "add", entityType: "projects",
+      target: fakeRef, // parent SDK (spec.target)
+      buildPayload: (d) => buildProfileUpdateData("projects", d),
+    };
+    await runEntityMutation(spec, { name: "Proj", url: "", tags: [], shortDescription: "" }, { me: sdk.me, contextEntity });
+    expect(sdk.calls[0].scope).toBe("costum:youthCare");                       // ambiant MALGRÉ le parent
+    expect(sdk.calls[0].payload.parent).toEqual(buildParentReference(fakeRef)); // lien parent préservé (payload)
+  });
+
+  it("CREATE EVENT sous parent sur site costum : ambiant + ORGANIZER (pas parent) préservé dans le payload", async () => {
+    const sdk = makeSdk();
+    const contextEntity = { id: "ctx", getEntityType: () => "organizations", serverData: { slug: "youthCare" } } as unknown as EntityTypes;
+    const spec: EntityMutationSpec = {
+      ...base, mode: "add", entityType: "events",
+      target: fakeRef, // parent SDK → pour un event, l'auto-injection vise organizer
+      buildPayload: (d) => buildProfileUpdateData("events", d),
+    };
+    await runEntityMutation(spec, { name: "Ev", url: "", tags: [], shortDescription: "" }, { me: sdk.me, contextEntity });
+    expect(sdk.calls[0].scope).toBe("costum:youthCare");
+    expect(sdk.calls[0].payload.organizer).toEqual(buildOrganizerReference(fakeRef, sdk.me));
+  });
+
+  it("CREATE : costumSlug EXPLICITE prime sur l'ambiant du déploiement", async () => {
+    const sdk = makeSdk();
+    const contextEntity = { id: "ctx", getEntityType: () => "organizations", serverData: { slug: "youthCare" } } as unknown as EntityTypes;
+    const spec: EntityMutationSpec = {
+      ...base, mode: "add", entityType: "poi", costumSlug: "equipementsSportifs974",
+      buildPayload: (d) => buildAddPoiPayload(d as never),
+    };
+    await runEntityMutation(spec, { name: "P", type: "place", tags: [] }, { me: sdk.me, contextEntity });
+    expect(sdk.calls[0].scope).toBe("costum:equipementsSportifs974"); // explicite gagne
   });
 
   it("EDIT poi : submitEntityEdit (Object.assign payload + image) + save ; payload pré-construit (identité)", async () => {
