@@ -8,7 +8,7 @@
  * Les transformers GÉNÉRIQUES vivent ici (formEngine). Les transformers MÉTIER (ex. family↔typePlace
  * d'un tiers-lieu) s'enregistrent depuis le module domaine (profil) via `registerTransform`.
  */
-import type { FormValues } from "../types";
+import type { EnumOption, FormValues } from "../types";
 
 /** read/write : (value, allValues, params?) → value. `params` = DONNÉES du groupe de sérialisation
  *  (`serializeGroups[x].params`) pour les codecs PARAMÉTRÉS génériques (monthYear/enumOrOther/multiCsv…) ;
@@ -69,6 +69,19 @@ export function resolveValidate(validate: string | ValidateFn | undefined): Vali
   if (!fn) {
     console.warn(`[formEngine] validate "${validate}" introuvable dans validateRegistry — validation cross-champ IGNORÉE. Le module qui l'enregistre (ex. forms/validators) est-il importé ?`);
   }
+  return fn;
+}
+
+// ── Options DYNAMIQUES nommées (field.enumFrom) : () → EnumOption[], résolues au rendu ────────
+// Pour les listes CALCULÉES/datées (ex. années courante±N) qu'un `enum` statique figerait dans une config JSON.
+export type OptionsFn = () => EnumOption[];
+const optionsRegistry = new Map<string, OptionsFn>();
+export function registerOptions(name: string, fn: OptionsFn): void {
+  optionsRegistry.set(name, fn);
+}
+export function getOptions(name: string): OptionsFn | undefined {
+  const fn = optionsRegistry.get(name);
+  if (!fn) console.warn(`[formEngine] options "${name}" introuvables (enumFrom). Le module qui les enregistre est-il importé ?`);
   return fn;
 }
 

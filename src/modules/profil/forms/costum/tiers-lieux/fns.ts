@@ -1,5 +1,5 @@
 // Pipeline (P3) — imports DIRECTS (pas le barrel formEngine) pour rester un util pur. cf. doc/refactor-field-treatment.md.
-import { registerTransform } from "@/modules/formEngine/engine/transforms";
+import { registerTransform, registerOptions } from "@/modules/formEngine/engine/transforms";
 import "@/modules/formEngine/engine/coercions"; // side-effect : enregistre coerce:string/pickString/orUndef référencés par le descripteur tiers-lieu
 import "../../geoTransforms"; // enregistre geo:write / geoPosition:write (partagés)
 // Codecs COMMUNS (l'import déclenche l'enregistrement de address:read + openingHours:read/write).
@@ -223,6 +223,12 @@ export function buildTiersLieuxPayload(
 
 // ── Enregistrement des CLÉS référencées par `spec.ts` (descripteur + fns costum) ───────────────────────────
 registerDescriptor(tiersLieuxDescriptor);
+// Options DYNAMIQUES `tl:years` (champ openingYear via enumFrom) : années courante+5 → 1900, recalculées au rendu
+// (PAS figées dans le JSON). new Date() à chaque appel → toujours à jour.
+registerOptions("tl:years", () => {
+  const now = new Date().getFullYear();
+  return Array.from({ length: now + 5 - 1900 + 1 }, (_, i) => String(now + 5 - i)).map((y) => ({ value: y, label: y }));
+});
 registerDefaultsFn("tl:emptyDefaults", () => getDefaultTiersLieuxValues() as unknown as Record<string, unknown>);
 // Scope = slug du costum porteur (VITE_SLUG), fallback getSlug() — exposé via {slug} (slugKey "slug").
 registerScopeFn("tl:scope", (carrier) => {

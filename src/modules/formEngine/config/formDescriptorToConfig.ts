@@ -32,6 +32,7 @@ function fieldToConfig(f: FieldDescriptor): JsonFormFieldConfig {
     ...(f.multiple ? { multiple: f.multiple } : {}),
     ...(f.optionsKey ? { optionsKey: f.optionsKey } : {}),
     ...(f.enum ? { enum: f.enum.map((e) => ({ value: e.value, label: e.label })) } : {}),
+    ...(f.enumFrom ? { enumFrom: f.enumFrom } : {}),
     ...(f.required ? { required: f.required } : {}),
     ...(f.requiredIf ? { requiredIf: f.requiredIf } : {}),
     ...(f.visibleIf ? { visibleIf: f.visibleIf } : {}),

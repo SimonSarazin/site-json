@@ -16,7 +16,7 @@ import { Form } from "@/components/ui/form";
 import type { FormDescriptor, FormValues, I18n } from "../types";
 import { buildZodSchema } from "../engine/zodGen";
 import { check } from "../engine/conditional";
-import { getCompute, resolveValidate } from "../engine/transforms";
+import { getCompute, resolveValidate, getOptions } from "../engine/transforms";
 import { getWidget } from "../widgets/registry";
 import { getLayout, type LayoutProps } from "../layouts";
 
@@ -110,11 +110,14 @@ export function GenericForm(props: GenericFormProps) {
     // options `{value,label}` : enum statique (value≠label, label traduit) sinon runtime string[]
     // (serverData.lists → value=label, gardé string[] + filtré comme getListOptions).
     const raw = listsOptions?.[field.optionsKey ?? name];
+    const dynamicEnum = field.enumFrom ? getOptions(field.enumFrom)?.() : undefined; // options dynamiques (registre)
     const options = field.enum
       ? field.enum.map((e) => ({ value: e.value, label: t(e.label) }))
-      : Array.isArray(raw)
-        ? raw.filter((v): v is string => typeof v === "string").map((v) => ({ value: v, label: v }))
-        : [];
+      : dynamicEnum
+        ? dynamicEnum.map((e) => ({ value: e.value, label: t(e.label) }))
+        : Array.isArray(raw)
+          ? raw.filter((v): v is string => typeof v === "string").map((v) => ({ value: v, label: v }))
+          : [];
     // widgetProps runtime par champ (ex. existingUrl en édition) fusionnés au descripteur statique.
     const fp = fieldProps?.[name];
     const fieldR = fp ? { ...field, widgetProps: { ...field.widgetProps, ...fp } } : field;

@@ -54,6 +54,9 @@ export interface FieldDescriptor {
   path?: string;                 // chemin de stockage si ≠ name (ex. "preferences.isOpenData")
   type: FieldType;
   enum?: EnumOption[];
+  /** Options DYNAMIQUES par CLÉ de registre (`registerOptions`), résolues au RENDU — pour les listes calculées/
+   *  datées (ex. années) qu'un `enum` statique figerait (cf. JSON config). Prioritaire après `enum`. */
+  enumFrom?: string;
   multiple?: boolean;
   default?: unknown;
   // UI (site-json)

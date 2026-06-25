@@ -60,6 +60,8 @@ const FieldConfig = z.object({
   multiple: z.boolean().optional(),
   optionsKey: z.string().optional(),
   enum: z.array(EnumOption).optional(),
+  enumFrom: z.string().optional(), // clé d'options dynamiques (registerOptions) — résolues au rendu
+
   required: z.boolean().optional(),
   requiredIf: PredicateJson.optional(),
   visibleIf: PredicateJson.optional(),

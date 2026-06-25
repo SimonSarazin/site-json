@@ -51,6 +51,7 @@ export function configToDescriptor(config: JsonFormConfig, opts: ConfigToDescrip
       multiple: f.multiple,
       optionsKey: f.optionsKey,
       enum: f.enum?.map((e): EnumOption => ({ value: e.value, label: resolveLabel(e.label, tLoc) ?? e.value })),
+      enumFrom: f.enumFrom,
       required: f.required,
       requiredIf: f.requiredIf as Predicate | undefined,
       visibleIf: f.visibleIf as Predicate | undefined,

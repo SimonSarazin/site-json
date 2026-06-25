@@ -51,9 +51,8 @@ const SOCIAL_PLATFORMS = [
 // ⚠️ EN AUTORÉ (mois anglais) — fr inchangé.
 const MONTHS = ([["Janvier", "January"], ["Février", "February"], ["Mars", "March"], ["Avril", "April"], ["Mai", "May"], ["Juin", "June"], ["Juillet", "July"], ["Août", "August"], ["Septembre", "September"], ["Octobre", "October"], ["Novembre", "November"], ["Décembre", "December"]] as const)
   .map(([fr, en], i) => ({ value: String(i + 1).padStart(2, "0"), label: L(fr, en) }));
-// Plage identique à l'original : (année courante + 5) → 1900, décroissant.
-const NOW_Y = new Date().getFullYear();
-const YEARS = Array.from({ length: NOW_Y + 5 - 1900 + 1 }, (_, i) => String(NOW_Y + 5 - i)).map((y) => ({ value: y, label: y }));
+// Années (courante+5 → 1900) : options DYNAMIQUES via `enumFrom:"tl:years"` (registre, enregistré dans ./fns) —
+// PAS un `enum` figé (qui se périmerait dans une config JSON statique). cf. mécanisme enumFrom.
 
 const VIS_MGMT_AUTRE = { field: "managementType", op: "eq", value: "autre" } as const;
 
@@ -81,7 +80,7 @@ export const TIERS_LIEUX_SCHEMA: CostumFormSchema = {
     name: { widget: "text", label: L("Nom du tiers-lieu", "Name of the third-place"), required: true, placeholder: L("Nom du tiers-lieu", "Name of the third-place"), read: "coerce:pickString" },
     // Mois/année : pas de label propre (sous le titre de GROUPE « Date d'ouverture »).
     openingMonth: { widget: "select", label: "", enum: MONTHS, placeholder: L("Mois", "Month"), group: "openingDate" },
-    openingYear: { widget: "select", label: "", enum: YEARS, placeholder: L("Année", "Year"), group: "openingDate" },
+    openingYear: { widget: "select", label: "", enumFrom: "tl:years", placeholder: L("Année", "Year"), group: "openingDate" },
     shortDescription: { widget: "textarea", label: L("Description courte", "Short description"), required: true, widgetProps: { rows: 2 }, read: "coerce:pickString", write: "coerce:orUndef" },
     structureName: { widget: "text", label: L("Nom de la structure porteuse (si différent)", "Operating organization (if different)"), read: "coerce:pickString", write: "coerce:orUndef", path: "holderOrganization" },
     managementType: { widget: "select", label: L("Mode de gestion", "Management type"), enum: MANAGEMENT_TYPES, required: true, placeholder: L("Sélectionner...", "Select..."), group: "manageModel" },
