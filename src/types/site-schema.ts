@@ -1934,13 +1934,9 @@ export const SiteConfig = z.object({
   }).optional(),
   floatingActionButton: z.object({
     enabled: z.boolean().default(false),
-    modal: z.enum([
-      "add-organization",
-      "add-project",
-      "add-event",
-      "add-poi",
-      "add-tiers-lieux",
-    ]),
+    // Modale à ouvrir. Entités standard + `add-<id>` d'un costum (résolu par la table runtime costumFormRegistry,
+    // qu'il soit déclaré en TS ou dans `config.costumForms`). Ouvert en string (ex-enum fermé) pour les costums de config.
+    modal: z.string(),
     label: LocalizedString,
     icon: z.string().optional().default("plus"),
     position: z.enum(["bottom-right", "bottom-left", "top-right", "top-left"]).default("bottom-right"),

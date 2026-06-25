@@ -2618,6 +2618,1410 @@
     "mainTag": "TiersLieux",
     "compagnon": "Compagnon France Tiers-Lieux"
   },
+  "costumForms": {
+    "tiers-lieux": {
+      "id": "tiers-lieux",
+      "entityType": "organizations",
+      "collection": "organizations",
+      "costumSlug": "navigatorDesTierslieux",
+      "icon": "building-2",
+      "deriveDefaults": false,
+      "layout": {
+        "kind": "wizard",
+        "validatePerStep": true,
+        "stepper": "tabs",
+        "progress": "bar",
+        "header": "gradient"
+      },
+      "validateFn": "addressComplete",
+      "serializeGroups": {
+        "openingDate": {
+          "serverKey": "openingDate",
+          "read": "monthYear:read",
+          "write": "monthYear:write",
+          "params": {
+            "monthField": "openingMonth",
+            "yearField": "openingYear",
+            "day": "01"
+          }
+        },
+        "manageModel": {
+          "serverKey": "manageModel",
+          "read": "enumOrOther:read",
+          "write": "enumOrOther:write",
+          "params": {
+            "valueField": "managementType",
+            "otherField": "managementTypeOther",
+            "known": [
+              "association",
+              "collectif-citoyen",
+              "universites",
+              "etablissements-scolaires",
+              "collectivites",
+              "sarl-sa-sas",
+              "scic",
+              "scop",
+              "autre"
+            ],
+            "other": "autre"
+          }
+        },
+        "typePlace": {
+          "serverKey": "typePlace",
+          "read": "multiCsv:read",
+          "write": "multiCsv:write",
+          "params": {
+            "arrayField": "family",
+            "otherField": "familyOther",
+            "other": "autre",
+            "separator": ", ",
+            "readOtherFrom": "typePlaceOther"
+          }
+        },
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        }
+      },
+      "fields": {
+        "name": {
+          "widget": "text",
+          "label": {
+            "fr": "Nom du tiers-lieu",
+            "en": "Name of the third-place"
+          },
+          "required": true,
+          "placeholder": {
+            "fr": "Nom du tiers-lieu",
+            "en": "Name of the third-place"
+          },
+          "read": "coerce:pickString"
+        },
+        "openingMonth": {
+          "widget": "select",
+          "label": "",
+          "enum": [
+            {
+              "value": "01",
+              "label": {
+                "fr": "Janvier",
+                "en": "January"
+              }
+            },
+            {
+              "value": "02",
+              "label": {
+                "fr": "Février",
+                "en": "February"
+              }
+            },
+            {
+              "value": "03",
+              "label": {
+                "fr": "Mars",
+                "en": "March"
+              }
+            },
+            {
+              "value": "04",
+              "label": {
+                "fr": "Avril",
+                "en": "April"
+              }
+            },
+            {
+              "value": "05",
+              "label": {
+                "fr": "Mai",
+                "en": "May"
+              }
+            },
+            {
+              "value": "06",
+              "label": {
+                "fr": "Juin",
+                "en": "June"
+              }
+            },
+            {
+              "value": "07",
+              "label": {
+                "fr": "Juillet",
+                "en": "July"
+              }
+            },
+            {
+              "value": "08",
+              "label": {
+                "fr": "Août",
+                "en": "August"
+              }
+            },
+            {
+              "value": "09",
+              "label": {
+                "fr": "Septembre",
+                "en": "September"
+              }
+            },
+            {
+              "value": "10",
+              "label": {
+                "fr": "Octobre",
+                "en": "October"
+              }
+            },
+            {
+              "value": "11",
+              "label": {
+                "fr": "Novembre",
+                "en": "November"
+              }
+            },
+            {
+              "value": "12",
+              "label": {
+                "fr": "Décembre",
+                "en": "December"
+              }
+            }
+          ],
+          "placeholder": {
+            "fr": "Mois",
+            "en": "Month"
+          },
+          "group": "openingDate"
+        },
+        "openingYear": {
+          "widget": "select",
+          "label": "",
+          "enum": [
+            {
+              "value": "2031",
+              "label": "2031"
+            },
+            {
+              "value": "2030",
+              "label": "2030"
+            },
+            {
+              "value": "2029",
+              "label": "2029"
+            },
+            {
+              "value": "2028",
+              "label": "2028"
+            },
+            {
+              "value": "2027",
+              "label": "2027"
+            },
+            {
+              "value": "2026",
+              "label": "2026"
+            },
+            {
+              "value": "2025",
+              "label": "2025"
+            },
+            {
+              "value": "2024",
+              "label": "2024"
+            },
+            {
+              "value": "2023",
+              "label": "2023"
+            },
+            {
+              "value": "2022",
+              "label": "2022"
+            },
+            {
+              "value": "2021",
+              "label": "2021"
+            },
+            {
+              "value": "2020",
+              "label": "2020"
+            },
+            {
+              "value": "2019",
+              "label": "2019"
+            },
+            {
+              "value": "2018",
+              "label": "2018"
+            },
+            {
+              "value": "2017",
+              "label": "2017"
+            },
+            {
+              "value": "2016",
+              "label": "2016"
+            },
+            {
+              "value": "2015",
+              "label": "2015"
+            },
+            {
+              "value": "2014",
+              "label": "2014"
+            },
+            {
+              "value": "2013",
+              "label": "2013"
+            },
+            {
+              "value": "2012",
+              "label": "2012"
+            },
+            {
+              "value": "2011",
+              "label": "2011"
+            },
+            {
+              "value": "2010",
+              "label": "2010"
+            },
+            {
+              "value": "2009",
+              "label": "2009"
+            },
+            {
+              "value": "2008",
+              "label": "2008"
+            },
+            {
+              "value": "2007",
+              "label": "2007"
+            },
+            {
+              "value": "2006",
+              "label": "2006"
+            },
+            {
+              "value": "2005",
+              "label": "2005"
+            },
+            {
+              "value": "2004",
+              "label": "2004"
+            },
+            {
+              "value": "2003",
+              "label": "2003"
+            },
+            {
+              "value": "2002",
+              "label": "2002"
+            },
+            {
+              "value": "2001",
+              "label": "2001"
+            },
+            {
+              "value": "2000",
+              "label": "2000"
+            },
+            {
+              "value": "1999",
+              "label": "1999"
+            },
+            {
+              "value": "1998",
+              "label": "1998"
+            },
+            {
+              "value": "1997",
+              "label": "1997"
+            },
+            {
+              "value": "1996",
+              "label": "1996"
+            },
+            {
+              "value": "1995",
+              "label": "1995"
+            },
+            {
+              "value": "1994",
+              "label": "1994"
+            },
+            {
+              "value": "1993",
+              "label": "1993"
+            },
+            {
+              "value": "1992",
+              "label": "1992"
+            },
+            {
+              "value": "1991",
+              "label": "1991"
+            },
+            {
+              "value": "1990",
+              "label": "1990"
+            },
+            {
+              "value": "1989",
+              "label": "1989"
+            },
+            {
+              "value": "1988",
+              "label": "1988"
+            },
+            {
+              "value": "1987",
+              "label": "1987"
+            },
+            {
+              "value": "1986",
+              "label": "1986"
+            },
+            {
+              "value": "1985",
+              "label": "1985"
+            },
+            {
+              "value": "1984",
+              "label": "1984"
+            },
+            {
+              "value": "1983",
+              "label": "1983"
+            },
+            {
+              "value": "1982",
+              "label": "1982"
+            },
+            {
+              "value": "1981",
+              "label": "1981"
+            },
+            {
+              "value": "1980",
+              "label": "1980"
+            },
+            {
+              "value": "1979",
+              "label": "1979"
+            },
+            {
+              "value": "1978",
+              "label": "1978"
+            },
+            {
+              "value": "1977",
+              "label": "1977"
+            },
+            {
+              "value": "1976",
+              "label": "1976"
+            },
+            {
+              "value": "1975",
+              "label": "1975"
+            },
+            {
+              "value": "1974",
+              "label": "1974"
+            },
+            {
+              "value": "1973",
+              "label": "1973"
+            },
+            {
+              "value": "1972",
+              "label": "1972"
+            },
+            {
+              "value": "1971",
+              "label": "1971"
+            },
+            {
+              "value": "1970",
+              "label": "1970"
+            },
+            {
+              "value": "1969",
+              "label": "1969"
+            },
+            {
+              "value": "1968",
+              "label": "1968"
+            },
+            {
+              "value": "1967",
+              "label": "1967"
+            },
+            {
+              "value": "1966",
+              "label": "1966"
+            },
+            {
+              "value": "1965",
+              "label": "1965"
+            },
+            {
+              "value": "1964",
+              "label": "1964"
+            },
+            {
+              "value": "1963",
+              "label": "1963"
+            },
+            {
+              "value": "1962",
+              "label": "1962"
+            },
+            {
+              "value": "1961",
+              "label": "1961"
+            },
+            {
+              "value": "1960",
+              "label": "1960"
+            },
+            {
+              "value": "1959",
+              "label": "1959"
+            },
+            {
+              "value": "1958",
+              "label": "1958"
+            },
+            {
+              "value": "1957",
+              "label": "1957"
+            },
+            {
+              "value": "1956",
+              "label": "1956"
+            },
+            {
+              "value": "1955",
+              "label": "1955"
+            },
+            {
+              "value": "1954",
+              "label": "1954"
+            },
+            {
+              "value": "1953",
+              "label": "1953"
+            },
+            {
+              "value": "1952",
+              "label": "1952"
+            },
+            {
+              "value": "1951",
+              "label": "1951"
+            },
+            {
+              "value": "1950",
+              "label": "1950"
+            },
+            {
+              "value": "1949",
+              "label": "1949"
+            },
+            {
+              "value": "1948",
+              "label": "1948"
+            },
+            {
+              "value": "1947",
+              "label": "1947"
+            },
+            {
+              "value": "1946",
+              "label": "1946"
+            },
+            {
+              "value": "1945",
+              "label": "1945"
+            },
+            {
+              "value": "1944",
+              "label": "1944"
+            },
+            {
+              "value": "1943",
+              "label": "1943"
+            },
+            {
+              "value": "1942",
+              "label": "1942"
+            },
+            {
+              "value": "1941",
+              "label": "1941"
+            },
+            {
+              "value": "1940",
+              "label": "1940"
+            },
+            {
+              "value": "1939",
+              "label": "1939"
+            },
+            {
+              "value": "1938",
+              "label": "1938"
+            },
+            {
+              "value": "1937",
+              "label": "1937"
+            },
+            {
+              "value": "1936",
+              "label": "1936"
+            },
+            {
+              "value": "1935",
+              "label": "1935"
+            },
+            {
+              "value": "1934",
+              "label": "1934"
+            },
+            {
+              "value": "1933",
+              "label": "1933"
+            },
+            {
+              "value": "1932",
+              "label": "1932"
+            },
+            {
+              "value": "1931",
+              "label": "1931"
+            },
+            {
+              "value": "1930",
+              "label": "1930"
+            },
+            {
+              "value": "1929",
+              "label": "1929"
+            },
+            {
+              "value": "1928",
+              "label": "1928"
+            },
+            {
+              "value": "1927",
+              "label": "1927"
+            },
+            {
+              "value": "1926",
+              "label": "1926"
+            },
+            {
+              "value": "1925",
+              "label": "1925"
+            },
+            {
+              "value": "1924",
+              "label": "1924"
+            },
+            {
+              "value": "1923",
+              "label": "1923"
+            },
+            {
+              "value": "1922",
+              "label": "1922"
+            },
+            {
+              "value": "1921",
+              "label": "1921"
+            },
+            {
+              "value": "1920",
+              "label": "1920"
+            },
+            {
+              "value": "1919",
+              "label": "1919"
+            },
+            {
+              "value": "1918",
+              "label": "1918"
+            },
+            {
+              "value": "1917",
+              "label": "1917"
+            },
+            {
+              "value": "1916",
+              "label": "1916"
+            },
+            {
+              "value": "1915",
+              "label": "1915"
+            },
+            {
+              "value": "1914",
+              "label": "1914"
+            },
+            {
+              "value": "1913",
+              "label": "1913"
+            },
+            {
+              "value": "1912",
+              "label": "1912"
+            },
+            {
+              "value": "1911",
+              "label": "1911"
+            },
+            {
+              "value": "1910",
+              "label": "1910"
+            },
+            {
+              "value": "1909",
+              "label": "1909"
+            },
+            {
+              "value": "1908",
+              "label": "1908"
+            },
+            {
+              "value": "1907",
+              "label": "1907"
+            },
+            {
+              "value": "1906",
+              "label": "1906"
+            },
+            {
+              "value": "1905",
+              "label": "1905"
+            },
+            {
+              "value": "1904",
+              "label": "1904"
+            },
+            {
+              "value": "1903",
+              "label": "1903"
+            },
+            {
+              "value": "1902",
+              "label": "1902"
+            },
+            {
+              "value": "1901",
+              "label": "1901"
+            },
+            {
+              "value": "1900",
+              "label": "1900"
+            }
+          ],
+          "placeholder": {
+            "fr": "Année",
+            "en": "Year"
+          },
+          "group": "openingDate"
+        },
+        "shortDescription": {
+          "widget": "textarea",
+          "label": {
+            "fr": "Description courte",
+            "en": "Short description"
+          },
+          "required": true,
+          "widgetProps": {
+            "rows": 2
+          },
+          "read": "coerce:pickString",
+          "write": "coerce:orUndef"
+        },
+        "structureName": {
+          "widget": "text",
+          "label": {
+            "fr": "Nom de la structure porteuse (si différent)",
+            "en": "Operating organization (if different)"
+          },
+          "read": "coerce:pickString",
+          "write": "coerce:orUndef",
+          "path": "holderOrganization"
+        },
+        "managementType": {
+          "widget": "select",
+          "label": {
+            "fr": "Mode de gestion",
+            "en": "Management type"
+          },
+          "enum": [
+            {
+              "value": "association",
+              "label": {
+                "fr": "Association",
+                "en": "Association"
+              }
+            },
+            {
+              "value": "collectif-citoyen",
+              "label": {
+                "fr": "Collectif citoyen",
+                "en": "Citizen collective"
+              }
+            },
+            {
+              "value": "universites",
+              "label": {
+                "fr": "Universités / Écoles",
+                "en": "Universities / Schools"
+              }
+            },
+            {
+              "value": "etablissements-scolaires",
+              "label": {
+                "fr": "Établissements scolaires",
+                "en": "Schools"
+              }
+            },
+            {
+              "value": "collectivites",
+              "label": {
+                "fr": "Collectivités",
+                "en": "Local authorities"
+              }
+            },
+            {
+              "value": "sarl-sa-sas",
+              "label": {
+                "fr": "SARL / SA / SAS",
+                "en": "SARL / SA / SAS"
+              }
+            },
+            {
+              "value": "scic",
+              "label": {
+                "fr": "SCIC",
+                "en": "SCIC"
+              }
+            },
+            {
+              "value": "scop",
+              "label": {
+                "fr": "SCOP",
+                "en": "SCOP"
+              }
+            },
+            {
+              "value": "autre",
+              "label": {
+                "fr": "Autre mode de gestion",
+                "en": "Other management type"
+              }
+            }
+          ],
+          "required": true,
+          "placeholder": {
+            "fr": "Sélectionner...",
+            "en": "Select..."
+          },
+          "group": "manageModel"
+        },
+        "managementTypeOther": {
+          "widget": "text",
+          "label": {
+            "fr": "Si autre mode de gestion, précisez",
+            "en": "If other management type, please specify"
+          },
+          "visibleIf": {
+            "field": "managementType",
+            "op": "eq",
+            "value": "autre"
+          },
+          "group": "manageModel"
+        },
+        "family": {
+          "widget": "checkboxGroup",
+          "label": {
+            "fr": "Famille(s) de tiers-lieux",
+            "en": "Third-place family/families"
+          },
+          "enum": [
+            {
+              "value": "ateliers-artisanaux",
+              "label": {
+                "fr": "Ateliers artisanaux partagés",
+                "en": "Shared craft workshops"
+              }
+            },
+            {
+              "value": "coworking",
+              "label": {
+                "fr": "Bureaux partagés / Coworking",
+                "en": "Shared offices / Coworking"
+              }
+            },
+            {
+              "value": "foodlab",
+              "label": {
+                "fr": "Cuisine partagée / Foodlab",
+                "en": "Shared kitchen / Foodlab"
+              }
+            },
+            {
+              "value": "fablab",
+              "label": {
+                "fr": "Fablab / Makerspace / Hackerspace",
+                "en": "Fablab / Makerspace / Hackerspace"
+              }
+            },
+            {
+              "value": "livinglab",
+              "label": {
+                "fr": "LivingLab / Innovation sociale",
+                "en": "LivingLab / Social innovation"
+              }
+            },
+            {
+              "value": "nourricier",
+              "label": {
+                "fr": "Tiers-lieu nourricier",
+                "en": "Food third-place"
+              }
+            },
+            {
+              "value": "culturel",
+              "label": {
+                "fr": "Tiers-lieu culturel",
+                "en": "Cultural third-place"
+              }
+            },
+            {
+              "value": "autre",
+              "label": {
+                "fr": "Autre famille de tiers-lieux",
+                "en": "Other third-place family"
+              }
+            }
+          ],
+          "widgetProps": {
+            "variant": "card"
+          },
+          "group": "typePlace"
+        },
+        "surfaceBuilt": {
+          "widget": "number",
+          "label": {
+            "fr": "Surface bâtie (m²)",
+            "en": "Built surface (m²)"
+          },
+          "placeholder": {
+            "fr": "En m²",
+            "en": "In m²"
+          },
+          "read": "coerce:string",
+          "write": "tl:numOrUndef",
+          "path": "buildingSurfaceArea"
+        },
+        "surfaceOutdoor": {
+          "widget": "number",
+          "label": {
+            "fr": "Surface extérieure (m²)",
+            "en": "Outdoor surface (m²)"
+          },
+          "placeholder": {
+            "fr": "En m²",
+            "en": "In m²"
+          },
+          "read": "coerce:string",
+          "write": "tl:numOrUndef",
+          "path": "siteSurfaceArea"
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Adresse",
+            "en": "Address"
+          },
+          "widgetProps": {
+            "required": true
+          }
+        },
+        "email": {
+          "widget": "text",
+          "label": {
+            "fr": "Email",
+            "en": "Email"
+          },
+          "required": true,
+          "placeholder": {
+            "fr": "contact@exemple.org",
+            "en": "contact@example.org"
+          },
+          "widgetProps": {
+            "inputType": "email"
+          },
+          "rules": {
+            "regex": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+          },
+          "read": "coerce:pickString"
+        },
+        "phone": {
+          "widget": "text",
+          "label": {
+            "fr": "Téléphone",
+            "en": "Phone"
+          },
+          "placeholder": {
+            "fr": "+33 ...",
+            "en": "+1 ..."
+          },
+          "widgetProps": {
+            "inputType": "tel"
+          },
+          "read": "coerce:pickString",
+          "write": "coerce:orUndef",
+          "path": "telephone"
+        },
+        "_logoFile": {
+          "widget": "image",
+          "label": {
+            "fr": "Logo du tiers-lieu",
+            "en": "Third-place logo"
+          },
+          "info": {
+            "fr": "Format carré recommandé · PNG ou JPG",
+            "en": "Square format recommended · PNG or JPG"
+          },
+          "widgetProps": {
+            "shape": "square",
+            "aspect": 1
+          }
+        },
+        "videoUrl": {
+          "widget": "text",
+          "label": "",
+          "placeholder": {
+            "fr": "https://youtube.com/...",
+            "en": "https://youtube.com/..."
+          },
+          "read": "tl:video0",
+          "write": "tl:videoWrite",
+          "path": "video"
+        },
+        "websiteUrl": {
+          "widget": "text",
+          "label": {
+            "fr": "Site internet",
+            "en": "Website"
+          },
+          "placeholder": {
+            "fr": "http://www.exemple.org",
+            "en": "http://www.example.org"
+          },
+          "read": "coerce:pickString",
+          "write": "coerce:orUndef",
+          "path": "url"
+        },
+        "socialLinks": {
+          "widget": "fieldArray",
+          "label": {
+            "fr": "Réseaux sociaux",
+            "en": "Social networks"
+          },
+          "read": "social:read",
+          "write": "social:write",
+          "path": "socialNetwork",
+          "clear": "",
+          "widgetProps": {
+            "addLabel": {
+              "fr": "Ajouter un réseau social",
+              "en": "Add a social network"
+            },
+            "itemFields": [
+              {
+                "name": "platform",
+                "kind": "select",
+                "label": {
+                  "fr": "Plateforme",
+                  "en": "Platform"
+                },
+                "options": [
+                  {
+                    "value": "facebook",
+                    "label": "Facebook"
+                  },
+                  {
+                    "value": "twitter",
+                    "label": "Twitter / X"
+                  },
+                  {
+                    "value": "instagram",
+                    "label": "Instagram"
+                  },
+                  {
+                    "value": "linkedin",
+                    "label": "LinkedIn"
+                  },
+                  {
+                    "value": "youtube",
+                    "label": "YouTube"
+                  },
+                  {
+                    "value": "mastodon",
+                    "label": "Mastodon"
+                  },
+                  {
+                    "value": "telegram",
+                    "label": "Telegram"
+                  },
+                  {
+                    "value": "discord",
+                    "label": "Discord"
+                  }
+                ]
+              },
+              {
+                "name": "url",
+                "kind": "text",
+                "placeholder": {
+                  "fr": "https://...",
+                  "en": "https://..."
+                }
+              }
+            ]
+          }
+        },
+        "hours": {
+          "widget": "openingHours",
+          "label": {
+            "fr": "Horaires d'ouverture",
+            "en": "Opening hours"
+          },
+          "widgetProps": {
+            "dayLabelPrefix": "AddTiersLieux.days"
+          },
+          "path": "openingHours"
+        },
+        "description": {
+          "widget": "textarea",
+          "label": {
+            "fr": "Description longue",
+            "en": "Long description"
+          },
+          "placeholder": {
+            "fr": "Décrivez votre tiers-lieu...",
+            "en": "Describe your third-place..."
+          },
+          "widgetProps": {
+            "rows": 10
+          },
+          "read": "coerce:pickString",
+          "write": "coerce:orUndef"
+        },
+        "familyOther": {
+          "widget": "hidden",
+          "group": "typePlace"
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
+        }
+      },
+      "sections": [
+        {
+          "id": "info",
+          "label": {
+            "fr": "Infos",
+            "en": "Info"
+          },
+          "icon": "building-2",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "name"
+              ]
+            },
+            {
+              "columns": 2,
+              "label": {
+                "fr": "Date d'ouverture du tiers-lieu",
+                "en": "Opening date"
+              },
+              "fields": [
+                "openingMonth",
+                "openingYear"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "shortDescription"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "structureName"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "managementType",
+                "managementTypeOther"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "family"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "surfaceBuilt",
+                "surfaceOutdoor"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "contact",
+          "label": {
+            "fr": "Contact",
+            "en": "Contact"
+          },
+          "icon": "map-pin",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "address"
+              ]
+            },
+            {
+              "columns": 1,
+              "divider": true,
+              "label": {
+                "fr": "Contact",
+                "en": "Contact"
+              },
+              "titleClassName": "text-sm font-semibold",
+              "fields": [
+                "email",
+                "phone"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "media",
+          "label": {
+            "fr": "Médias",
+            "en": "Media"
+          },
+          "icon": "image",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "_logoFile"
+              ]
+            },
+            {
+              "columns": 1,
+              "divider": true,
+              "label": {
+                "fr": "Lien vers vidéo de présentation",
+                "en": "Presentation video URL"
+              },
+              "titleClassName": "text-base font-semibold",
+              "fields": [
+                "videoUrl"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "online",
+          "label": {
+            "fr": "En ligne",
+            "en": "Online"
+          },
+          "icon": "globe",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "websiteUrl"
+              ]
+            },
+            {
+              "columns": 1,
+              "divider": true,
+              "fields": [
+                "socialLinks"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "details",
+          "label": {
+            "fr": "Détails",
+            "en": "Details"
+          },
+          "icon": "file-text",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "hours"
+              ]
+            },
+            {
+              "columns": 1,
+              "divider": true,
+              "fields": [
+                "description"
+              ]
+            }
+          ]
+        }
+      ],
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Créer votre tiers-lieu",
+            "en": "Create your third-place"
+          },
+          "edit": {
+            "fr": "Modifier votre tiers-lieu",
+            "en": "Edit your third-place"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Créer le tiers-lieu",
+            "en": "Create the third-place"
+          },
+          "edit": {
+            "fr": "Enregistrer les modifications",
+            "en": "Save changes"
+          }
+        },
+        "gradientHeader": true,
+        "dialogClassName": "sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden",
+        "validationFailedKey": {
+          "fr": "Veuillez corriger les champs en erreur (voir les onglets signalés).",
+          "en": "Please fix the highlighted fields (see the flagged tabs)."
+        },
+        "navText": {
+          "next": {
+            "fr": "Suivant →",
+            "en": "Next →"
+          },
+          "previous": {
+            "fr": "← Précédent",
+            "en": "← Previous"
+          },
+          "cancel": {
+            "fr": "Annuler",
+            "en": "Cancel"
+          },
+          "stepTemplate": {
+            "stepKey": {
+              "fr": "Étape",
+              "en": "Step"
+            },
+            "ofKey": {
+              "fr": "sur",
+              "en": "of"
+            }
+          }
+        }
+      },
+      "image": {
+        "field": "_logoFile",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "scope": {
+        "derive": "tl:scope",
+        "slugFrom": "derived",
+        "slugKey": "slug"
+      },
+      "defaultsBase": "tl:emptyDefaults",
+      "mutation": {
+        "entityType": "organizations",
+        "payloadFn": "tl:payload",
+        "payloadEmitEmptyOnEdit": true,
+        "inject": {
+          "extraFields": {
+            "type": "NGO",
+            "preferences": {
+              "isOpenData": true,
+              "isOpenEdition": true
+            }
+          }
+        },
+        "successKey": {
+          "add": "AddTiersLieux.toast.success",
+          "edit": "EditTiersLieux.toast.success"
+        },
+        "errorKey": {
+          "add": "AddTiersLieux.toast.error",
+          "edit": "EditTiersLieux.toast.error"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_TIERSLIEU",
+          "edit": "EntityFormModal · EDIT_TIERSLIEU"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard",
+          "params": {
+            "userList": "organizations"
+          }
+        }
+      }
+    }
+  },
   "profiles": {
     "default": {
       "layout": "full-width",
