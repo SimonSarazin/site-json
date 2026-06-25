@@ -146,7 +146,12 @@ export function specToConfig(spec: EntityModalSpec): EntityModalConfig {
       }
       return base as FieldValues;
     },
-    cleanValues: spec.cleanValues ? (v) => (getCleanValuesFn(spec.cleanValues!)?.(v) ?? v) as FieldValues : undefined,
+    cleanValues: spec.cleanValues ? (v) => {
+      const cv = spec.cleanValues!;
+      const fn = typeof cv === "string" ? cv : cv.fn;
+      const params = typeof cv === "string" ? undefined : cv.params;
+      return (getCleanValuesFn(fn)?.(v, params) ?? v) as FieldValues;
+    } : undefined,
     afterSubmit: spec.afterSubmit ? (ctx, v) => { getAfterSubmitFn(spec.afterSubmit!)?.(ctx, v); } : undefined,
     slots: spec.slots
       ? (ctx) => {

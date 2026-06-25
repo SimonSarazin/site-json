@@ -847,7 +847,14 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
 
 exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > spec figée (snapshot) 1`] = `
 {
-  "cleanValues": "poi:dropEmptyUrls",
+  "cleanValues": {
+    "fn": "cleanValues:dropEmptyArrayItems",
+    "params": {
+      "fields": [
+        "urls",
+      ],
+    },
+  },
   "defaults": {
     "base": "poi:emptyDefaults",
   },

@@ -19,7 +19,7 @@
 import type {
   FieldDescriptor, FormCollection, FormDescriptor, I18n, LayoutSpec, SectionDescriptor, WidgetKind,
 } from "@/modules/formEngine";
-import type { EntityModalSpec, SpecMutation } from "../entityModalSpec";
+import type { EntityModalSpec, SpecMutation, FnRef } from "../entityModalSpec";
 
 /** Champ TERSE : le widget est requis, tout le reste est un OVERRIDE optionnel des défauts du widget. */
 export type TerseField = { widget: WidgetKind } & Partial<Omit<FieldDescriptor, "name" | "widget">>;
@@ -66,7 +66,7 @@ export interface CostumFormSchema {
   defaultsBase?: string;
   slots?: Record<string, string>;
   schemaFn?: string;
-  cleanValues?: string;
+  cleanValues?: FnRef;
   afterSubmit?: string;
   mutation: SpecMutation;
 }

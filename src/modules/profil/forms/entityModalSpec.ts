@@ -33,6 +33,10 @@ export interface EntityModalCtx {
 /** Référence à un descripteur : enregistré par `id` (TS, via `registerDescriptor`) OU `JsonFormConfig` embarquée (JSON). */
 export type DescriptorRef = { ref: string } | { config: JsonFormConfig };
 
+/** Référence à une fn de registre : clé string seule, OU clé + `params` (DONNÉES) pour une fn générique
+ *  paramétrée (ex. `cleanValues:dropEmptyArrayItems` + {fields}). Les deux formes sont JSON-able. */
+export type FnRef = string | { fn: string; params?: Record<string, unknown> };
+
 /** Valeur identique pour add+edit, OU distincte par mode (ex. successKey/errorContext add≠edit). */
 export type ByMode<T> = T | { add: T; edit: T };
 
@@ -120,5 +124,6 @@ export interface EntityModalSpec {
 
   // ── effets (clés optionnelles) ──
   afterSubmit?: string;
-  cleanValues?: string;
+  /** clé → `cleanValuesRegistry` ; ou {fn, params} pour une fn générique paramétrée (ex. dropEmptyArrayItems). */
+  cleanValues?: FnRef;
 }

@@ -129,8 +129,8 @@ export function getAfterSubmitFn(key: string): AfterSubmitFn | undefined {
   return fn;
 }
 
-// ── cleanValues (values → values) ─────────────────────────────────────────────
-export type CleanValuesFn = (values: Values) => Values;
+// ── cleanValues (values, params? → values) ────────────────────────────────────
+export type CleanValuesFn = (values: Values, params?: Record<string, unknown>) => Values;
 const cleanValuesFns = new Map<string, CleanValuesFn>();
 export function registerCleanValuesFn(key: string, fn: CleanValuesFn): void {
   cleanValuesFns.set(key, fn);

@@ -19,8 +19,7 @@ import { ParentInfoReadonly } from "../../../components/profile-edit/fields";
 import { PoiEquipementDoublonsSlot } from "../../PoiEquipementDoublonsSlot";
 import type { EntityModalCtx } from "../../entityModalSpec";
 import {
-  registerDescriptor, registerScopeFn, registerDefaultsFn, registerSlot,
-  registerCleanValuesFn, registerInvalidateFn,
+  registerDescriptor, registerScopeFn, registerDefaultsFn, registerSlot, registerInvalidateFn,
 } from "../../specRegistries";
 import "../sharedFns"; // side-effect : enregistre la clé commune image:profilUrl
 
@@ -87,10 +86,7 @@ registerScopeFn("poi:scope", (carrier, defaults) => resolvePoiEquipementScope(ca
 registerDefaultsFn("poi:emptyDefaults", (ctx) => createEmptyDefaults(ctx.scope as PoiEquipementScope) as unknown as Record<string, unknown>);
 registerSlot("parentInfo", (ctx: EntityModalCtx) => createElement(ParentInfoReadonly, { parent: ctx.parent ?? null }));
 registerSlot("poiDoublons", (ctx: EntityModalCtx) => createElement(PoiEquipementDoublonsSlot, { scope: ctx.scope as PoiEquipementScope }));
-registerCleanValuesFn("poi:dropEmptyUrls", (v) => ({
-  ...v,
-  urls: Array.isArray(v.urls) ? (v.urls as unknown[]).filter((u) => String(u ?? "").trim().length > 0) : v.urls,
-}));
+// poi:dropEmptyUrls SUPPRIMÉ → clé générique `cleanValues:dropEmptyArrayItems` (sharedFns) + params {fields:["urls"]} dans le schéma.
 // image:profilUrl : clé COMMUNE enregistrée dans ../sharedFns (importé en side-effect ci-dessous).
 const POI_SEARCH_KEYS = [
   SEARCH_QUERY_KEYS.RESULTS_PREFIX("searchCostumStatic"),

@@ -149,7 +149,7 @@ export const EQUIPEMENTS_SPORTIFS_SCHEMA: CostumFormSchema = {
   },
   defaultsBase: "poi:emptyDefaults",
   slots: { parentInfo: "parentInfo", doublons: "poiDoublons" },
-  cleanValues: "poi:dropEmptyUrls",
+  cleanValues: { fn: "cleanValues:dropEmptyArrayItems", params: { fields: ["urls"] } },
   mutation: {
     entityType: "poi",
     payloadEmitEmptyOnEdit: true, // édition = pipeline emitEmpty:true ; création = emitEmpty:false (défaut)
