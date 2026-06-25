@@ -159,6 +159,6 @@ export const EQUIPEMENTS_SPORTIFS_SCHEMA: CostumFormSchema = {
     successKey: { add: "toast.add.poiSuccess", edit: "toast.profile.updateSuccess" },
     errorKey: { add: "toast.add.poiError", edit: "toast.profile.updateError" },
     errorContext: { add: "EntityFormModal · ADD_POI", edit: "EntityFormModal · UPDATE_POI" },
-    invalidateFn: "poi:invalidate",
+    invalidateFn: { fn: "invalidate:standard", params: { userList: "pois", parentAboutOnAdd: true, searchKeys: ["searchCostumStatic", "poi-equipement-matches"] } },
   },
 };

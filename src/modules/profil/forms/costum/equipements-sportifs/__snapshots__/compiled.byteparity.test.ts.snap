@@ -894,7 +894,17 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > spe
       },
       "parent": true,
     },
-    "invalidateFn": "poi:invalidate",
+    "invalidateFn": {
+      "fn": "invalidate:standard",
+      "params": {
+        "parentAboutOnAdd": true,
+        "searchKeys": [
+          "searchCostumStatic",
+          "poi-equipement-matches",
+        ],
+        "userList": "pois",
+      },
+    },
     "navigateOnSuccess": false,
     "payloadEmitEmptyOnEdit": true,
     "successKey": {

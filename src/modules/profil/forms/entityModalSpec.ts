@@ -69,8 +69,8 @@ export interface SpecMutation {
   successKey: ByMode<string>;
   errorKey: ByMode<string>;
   errorContext: ByMode<string>;
-  /** clé → `invalidateRegistry` : (ctx) => QueryKey[]. */
-  invalidateFn?: string;
+  /** clé → `invalidateRegistry` : (ctx, params?) => QueryKey[] ; ou {fn, params} pour la fn générique paramétrée. */
+  invalidateFn?: FnRef;
 }
 
 /** Spec déclarative SÉRIALISABLE d'une modale d'entité. */

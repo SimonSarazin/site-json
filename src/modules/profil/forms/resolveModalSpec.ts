@@ -104,7 +104,10 @@ export function specToConfig(spec: EntityModalSpec): EntityModalConfig {
       successKey: pickMode(m.successKey, ctx.mode),
       errorKey: pickMode(m.errorKey, ctx.mode),
       errorContext: pickMode(m.errorContext, ctx.mode),
-      invalidateQueries: m.invalidateFn ? (getInvalidateFn(m.invalidateFn)?.(ctx) ?? []) : [],
+      invalidateQueries: m.invalidateFn
+        ? (getInvalidateFn(typeof m.invalidateFn === "string" ? m.invalidateFn : m.invalidateFn.fn)?.(
+            ctx, typeof m.invalidateFn === "string" ? undefined : m.invalidateFn.params) ?? [])
+        : [],
     };
   };
 

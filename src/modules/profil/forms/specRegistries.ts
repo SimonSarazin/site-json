@@ -141,8 +141,8 @@ export function getCleanValuesFn(key: string): CleanValuesFn | undefined {
   return fn;
 }
 
-// ── invalidateQueries (ctx → QueryKey[]) ──────────────────────────────────────
-export type InvalidateFn = (ctx: EntityModalCtx) => QueryKey[];
+// ── invalidateQueries (ctx, params? → QueryKey[]) ─────────────────────────────
+export type InvalidateFn = (ctx: EntityModalCtx, params?: Record<string, unknown>) => QueryKey[];
 const invalidateFns = new Map<string, InvalidateFn>();
 export function registerInvalidateFn(key: string, fn: InvalidateFn): void {
   invalidateFns.set(key, fn);

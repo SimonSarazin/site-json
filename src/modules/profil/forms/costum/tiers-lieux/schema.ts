@@ -179,6 +179,6 @@ export const TIERS_LIEUX_SCHEMA: CostumFormSchema = {
     successKey: { add: "AddTiersLieux.toast.success", edit: "EditTiersLieux.toast.success" },
     errorKey: { add: "AddTiersLieux.toast.error", edit: "EditTiersLieux.toast.error" },
     errorContext: { add: "EntityFormModal · ADD_TIERSLIEU", edit: "EntityFormModal · EDIT_TIERSLIEU" },
-    invalidateFn: "tl:invalidate",
+    invalidateFn: { fn: "invalidate:standard", params: { userList: "organizations" } },
   },
 };

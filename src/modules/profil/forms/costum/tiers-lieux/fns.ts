@@ -13,10 +13,9 @@ import { formDescriptorToConfig } from "@/modules/formEngine/config/formDescript
 import { configToDescriptor } from "@/modules/formEngine/config/configToDescriptor";
 import type { FormValues, JsonFormConfig } from "@/modules/formEngine";
 import { tiersLieuxDescriptor } from "./descriptor";
-import { PROFIL_QUERY_KEYS } from "../../../constants";
 import { getSlug } from "@/lib/constant/common";
 import type { EntityModalCtx } from "../../entityModalSpec";
-import { registerDescriptor, registerDefaultsFn, registerPayloadFn, registerScopeFn, registerInvalidateFn } from "../../specRegistries";
+import { registerDescriptor, registerDefaultsFn, registerPayloadFn, registerScopeFn } from "../../specRegistries";
 import "../sharedFns"; // side-effect : enregistre la clé commune image:profilUrl
 
 /** Lien social (fieldArray). */
@@ -240,9 +239,5 @@ registerPayloadFn("tl:payload", (form, ctx: EntityModalCtx) => {
   }
   return buildTiersLieuxPayload(form as unknown as TiersLieuxFormData, co ? { costum: co } : undefined);
 });
-registerInvalidateFn("tl:invalidate", (ctx) => {
-  if (ctx.mode === "edit") return ctx.entity?.slug ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(ctx.entity.slug)] : [];
-  const target = ctx.parent ?? ctx.me;
-  return target ? [PROFIL_QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(target.slug)] : [];
-});
+// tl:invalidate SUPPRIMÉ → clé générique `invalidate:standard` (sharedFns) + params {userList:"organizations"} dans le schéma.
 // image:profilUrl : clé COMMUNE enregistrée dans ../sharedFns (importé en side-effect en tête de fichier).

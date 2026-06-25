@@ -13,15 +13,11 @@ import { seedEntity } from "@/modules/formEngine/engine/entityForm";
 import "../../geoTransforms"; // enregistre geo:write / geoPosition:write (partagés)
 import type { FormValues } from "@/modules/formEngine";
 import { equipementsSportifsDescriptor } from "./descriptor";
-import { PROFIL_QUERY_KEYS } from "../../../constants";
-import { SEARCH_QUERY_KEYS } from "@/modules/search/constants";
 import { ParentInfoReadonly } from "../../../components/profile-edit/fields";
 import { PoiEquipementDoublonsSlot } from "../../PoiEquipementDoublonsSlot";
 import type { EntityModalCtx } from "../../entityModalSpec";
-import {
-  registerDescriptor, registerScopeFn, registerDefaultsFn, registerSlot, registerInvalidateFn,
-} from "../../specRegistries";
-import "../sharedFns"; // side-effect : enregistre la clé commune image:profilUrl
+import { registerDescriptor, registerScopeFn, registerDefaultsFn, registerSlot } from "../../specRegistries";
+import "../sharedFns"; // side-effect : enregistre les clés communes image:profilUrl + cleanValues/invalidate génériques
 
 
 // ── Scope du costum "équipement sportif" (dérivé de l'entité costum) ──────────
@@ -88,18 +84,5 @@ registerSlot("parentInfo", (ctx: EntityModalCtx) => createElement(ParentInfoRead
 registerSlot("poiDoublons", (ctx: EntityModalCtx) => createElement(PoiEquipementDoublonsSlot, { scope: ctx.scope as PoiEquipementScope }));
 // poi:dropEmptyUrls SUPPRIMÉ → clé générique `cleanValues:dropEmptyArrayItems` (sharedFns) + params {fields:["urls"]} dans le schéma.
 // image:profilUrl : clé COMMUNE enregistrée dans ../sharedFns (importé en side-effect ci-dessous).
-const POI_SEARCH_KEYS = [
-  SEARCH_QUERY_KEYS.RESULTS_PREFIX("searchCostumStatic"),
-  SEARCH_QUERY_KEYS.RESULTS_PREFIX("poi-equipement-matches"),
-];
-registerInvalidateFn("poi:invalidate", (ctx) => {
-  if (ctx.mode === "edit") {
-    return [...(ctx.entity?.slug ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(ctx.entity.slug)] : []), ...POI_SEARCH_KEYS];
-  }
-  const target = ctx.parent ?? ctx.me;
-  return [
-    ...(target ? [PROFIL_QUERY_KEYS.USER_POIS_PREFIX(target.slug)] : []),
-    ...(ctx.parent ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(ctx.parent.slug)] : []),
-    ...POI_SEARCH_KEYS,
-  ];
-});
+// poi:invalidate SUPPRIMÉ → clé générique `invalidate:standard` (sharedFns) + params {userList:"pois",
+// parentAboutOnAdd:true, searchKeys:[...]} dans le schéma.

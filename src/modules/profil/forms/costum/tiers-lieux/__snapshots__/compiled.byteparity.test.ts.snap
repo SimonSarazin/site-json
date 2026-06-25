@@ -1408,7 +1408,12 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > spec fig
         "type": "NGO",
       },
     },
-    "invalidateFn": "tl:invalidate",
+    "invalidateFn": {
+      "fn": "invalidate:standard",
+      "params": {
+        "userList": "organizations",
+      },
+    },
     "payloadEmitEmptyOnEdit": true,
     "payloadFn": "tl:payload",
     "successKey": {
