@@ -15,7 +15,7 @@
       "fr",
       "en"
     ],
-    "favicon": "images/eXtremeDefiAdeme/icon-xd-blue.png",
+    "favicon": "images/eXtremeDefiAdeme/icon-xd.png",
     "themeColor": "#1b2340",
     "keywords": [
       "mobilité",
@@ -31,7 +31,8 @@
   "header": {
     "type": "transparent-scroll",
     "path": "/",
-    "logo": "images/eXtremeDefiAdeme/icon-xd-blue.png",
+    "logo": "images/eXtremeDefiAdeme/icon-xd.png",
+    "logoDark": "images/eXtremeDefiAdeme/icon-xd-blue.png",
     "logoAlt": {
       "fr": "eXtrême Défi — ADEME Mobilité",
       "en": "eXtreme Challenge — ADEME Mobility"
@@ -84,7 +85,7 @@
       }
     ],
     "sticky": true,
-    "transparent": false,
+    "transparent": true,
     "height": "lg",
     "ctaButton": {
       "label": {
@@ -1323,7 +1324,8 @@
           "Inter"
         ],
         "serif": [
-          "Source Serif 4"
+          "Space Grotesk",
+          "sans-serif"
         ],
         "mono": [
           "JetBrains Mono"

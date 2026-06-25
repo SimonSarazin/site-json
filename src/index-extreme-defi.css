@@ -102,8 +102,12 @@
     letter-spacing: var(--tracking-normal);
   }
 
+  /* Titres en police de titrage (slot `serif` du thème = Space Grotesk),
+     géométrique/techy ; le corps de texte reste en `--font-sans` (Inter). */
   h1, h2, h3, h4, h5, h6 {
     @apply text-foreground;
+    font-family: var(--font-serif);
+    letter-spacing: -0.01em;
   }
 
   p {
