@@ -1,16 +1,15 @@
 /**
- * Module du costum « équipement sportif » (POI SSBE, equipementsSportifs974) : scope, defaults, transforms
- * `poi:*`, recherche de doublons, payload de création — ET enregistrement des CLÉS (descripteur + fns) que
- * la `spec.ts` référence. C'est le `fns.ts` du dossier `forms/costum/equipements-sportifs/` (cf. plan).
- * `buildAddPoiPayload` reste exporté (réutilisé transitoirement par le poi STANDARD via addStandard.tsx,
- * jusqu'à sa propre bascule pipeline).
+ * Module du costum « équipement sportif » (POI SSBE, equipementsSportifs974) : scope, defaults, recherche de
+ * doublons (slots) — ET enregistrement des CLÉS (descripteur + fns) que la `spec.ts` référence. C'est le
+ * `fns.ts` du dossier `forms/costum/equipements-sportifs/` (cf. plan). Le payload passe par le pipeline
+ * générique (aucun payloadFn custom). (`buildAddPoiPayload` du poi STANDARD a été déplacé → `../../addPoi.payload`.)
  */
 // Helpers de pipeline partagés (imports DIRECTS, pas le barrel formEngine → util pur testable sans
 // tirer les widgets/composants). cf. doc/refactor-field-treatment.md.
 import { createElement } from "react";
 import "@/modules/formEngine/engine/coercions"; // side-effect : enregistre les coerce:* (read par type des champs)
 import { ADDRESS_KEYS } from "../sharedCodecs"; // + side-effect : enregistre les codecs communs address:read/write
-import { seedEntity, buildPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
+import { seedEntity } from "@/modules/formEngine/engine/entityForm";
 import "../../geoTransforms"; // enregistre geo:write / geoPosition:write (partagés)
 import type { FormValues } from "@/modules/formEngine";
 import { equipementsSportifsDescriptor } from "./descriptor";
@@ -78,40 +77,11 @@ export const createEmptyDefaults = (scope: PoiEquipementScope): FormValues => ({
   type: scope.poiType,
 }) as FormValues;
 
-// READ adresse : codec COMMUN `address:read` (cf. ../sharedCodecs, omit-empty) référencé par serializeGroups.
-// WRITE adresse : champs plats du form → objet `address` imbriqué (ou `undefined` si pas de localityId →
-// clé omise, parité buildAddressFromForm). `all` = toutes les valeurs de form.
-// poi:addressWrite SUPPRIMÉ → codec commun `address:write` (sharedCodecs), référencé par serializeGroups.address.
-
-/**
- * Spec POI = descripteur UNIFIÉ (render + read/write) `equipementsSportifsDescriptor` + socle createEmptyDefaults.
- * Le MÊME descripteur pilote le rendu (GenericForm), le READ (seedEntity), le WRITE create/edit (buildPayload)
- * ET la config (formDescriptorToConfig). Les transforms `poi:*` référencés par ses champs sont enregistrés
- * ci-dessus (poi:addressWrite) + le codec commun `address:read` + `geo:*` via l'import geoTransforms. cf. tiers-lieu.
- */
-// baseDefaults omis : buildAddPoiPayload utilise buildPayload (WRITE), qui n'utilise PAS baseDefaults
-// (réservé au READ/seedEntity). createEmptyDefaults exige désormais un scope → fourni au READ via le résolveur.
-const POI_SPEC: FormSpec = { descriptor: equipementsSportifsDescriptor };
-
-/**
- * Payload de CRÉATION POI (pipeline, omit-empty) : adresse imbriquée, geo coercé, champs équipement typés
- * (poi:toString/toNumber/toBoolean), via le descripteur unifié. Le READ (defaults) et le WRITE d'édition
- * passent désormais par les helpers config-driven du host (buildPipelineDefaults/buildPipelinePayload, cf.
- * costum/equipements-sportifs/spec.ts). parent/extraFields/image gérés par l'appelant (useEntityMutation).
- */
-export function buildAddPoiPayload(data: FormValues): Record<string, unknown> {
-  const payload = buildPayload(POI_SPEC, data) as Record<string, unknown>;
-  // `type` n'est plus un champ du descripteur (devenu STAMP costum, posé au create par inject.extraFields).
-  // Le costum n'appelle plus ce builder (il passe par le pipeline). Mais le poi STANDARD (addStandard) le
-  // réutilise et porte SON type (ex. "place") via le form → on le réémet ici depuis `data`. (Pont transitoire
-  // jusqu'à ce que le poi standard ait son propre payload.)
-  if (data.type) payload.type = data.type;
-  return payload;
-}
+// READ/WRITE adresse : codecs COMMUNS `address:read`/`address:write` (cf. ../sharedCodecs), référencés par
+// serializeGroups.address. geo via ../../geoTransforms. Aucun codec propre à poi.
 
 // ── Enregistrement des CLÉS référencées par `spec.ts` (descripteur + fns costum) ───────────────────────────
-// Le payload (add ET edit) passe par le PIPELINE générique (défaut du résolveur) : buildAddPoiPayload(d) ≡
-// buildPipelinePayload(config, d, {emitEmpty:false}) par round-trip lossless → AUCUN payloadFn custom requis.
+// Le payload (add ET edit) passe par le PIPELINE générique (défaut du résolveur) → AUCUN payloadFn custom requis.
 registerDescriptor(equipementsSportifsDescriptor);
 registerScopeFn("poi:scope", (carrier, defaults) => resolvePoiEquipementScope(carrier as ScopeEntity, defaults as unknown as PoiEquipementScopeDefaults));
 registerDefaultsFn("poi:emptyDefaults", (ctx) => createEmptyDefaults(ctx.scope as PoiEquipementScope) as unknown as Record<string, unknown>);

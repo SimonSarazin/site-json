@@ -11,7 +11,7 @@ import { addProjectDescriptor } from "../addProject.descriptor";
 import { addOrganizationDescriptor } from "../addOrganization.descriptor";
 import { buildAddEventDescriptor } from "../addEvent.descriptor";
 import { buildProfileUpdateData } from "../editProfilePayload";
-import { buildAddPoiPayload } from "../costum/equipements-sportifs/fns";
+import { buildAddPoiPayload } from "../addPoi.payload";
 import type { EntityModalConfig } from "../EntityFormModal";
 
 const tabsTexts = (t: (k: string) => string) => ({ next: "", previous: "", cancel: t("common.cancel") });

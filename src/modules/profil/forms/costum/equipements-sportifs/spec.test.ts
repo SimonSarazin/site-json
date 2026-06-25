@@ -7,7 +7,8 @@ import { describe, it, expect } from "vitest";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { specToConfig } from "../../resolveModalSpec";
 import { equipementsSportifsSpec } from "./spec";
-import { createEmptyDefaults, buildAddPoiPayload, type PoiEquipementScope } from "./fns";
+import { createEmptyDefaults, type PoiEquipementScope } from "./fns";
+import { buildAddPoiPayload } from "../../addPoi.payload";
 import type { EntityModalCtx } from "../../entityModalSpec";
 
 const carrier = { id: "65a04155ed047177b9239968", serverData: { slug: "equipementsSportifs974", lists: {} } } as unknown as EntityTypes;
