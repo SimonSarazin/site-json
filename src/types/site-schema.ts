@@ -1917,6 +1917,10 @@ export const SiteConfig = z.object({
     mainTag: z.string().optional(),
     compagnon: z.string().optional(),
   }).optional(),
+  // Modales costum déclarées EN DONNÉES (document fusionné `CostumFormSchema` par id). Compilées au boot
+  // (`registerCostumForm`) en descriptor+spec → résolues par `add-/edit-<id>` via la table runtime, SANS code.
+  // zod permissif (record) : la structure est validée par le compilateur/registre (durcissement zod = à part).
+  costumForms: z.record(z.string(), z.unknown()).optional(),
   profiles: ProfilesConfigSchema,
   floatingQRCode: z.object({
     enabled: z.boolean().default(false),

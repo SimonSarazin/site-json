@@ -23,24 +23,34 @@ const modalRegistry: Record<string, () => Promise<{ default: ComponentType<Modal
   "add-poi": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/configs/addStandard")]).then(([m, c]) => ({
     default: (props: ModalProps) => <m.EntityFormModal config={c.addPoiConfig} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
   })),
-  "add-equipements-sportifs": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/costum/equipements-sportifs/spec")]).then(([m, c]) => ({
-    default: (props: ModalProps) => <m.EntityFormModal spec={c.equipementsSportifsSpec} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
-  })),
-  "add-tiers-lieux": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/costum/tiers-lieux/spec")]).then(([m, c]) => ({
-    default: (props: ModalProps) => <m.EntityFormModal spec={c.tiersLieuxSpec} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
-  })),
+  // add-equipements-sportifs / add-tiers-lieux : résolus DYNAMIQUEMENT par la table runtime costum (cf.
+  // costumModalThunk) — id = identité costum. Permet aussi les costums de config (config.costumForms) sans entrée ici.
 };
+
+/** Résolveur DYNAMIQUE des modales d'AJOUT costum : `add-<id>` → spec de la table runtime (TS connu OU config JSON). */
+function costumModalThunk(modalName: string): (() => Promise<{ default: ComponentType<ModalProps> }>) | undefined {
+  const m = /^add-(.+)$/.exec(modalName);
+  if (!m) return undefined;
+  const id = m[1];
+  return () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/costum/registerCostumForms")]).then(([mod, reg]) => {
+    const spec = reg.getCostumModalSpec(id);
+    return {
+      default: (props: ModalProps) =>
+        spec ? <mod.EntityFormModal spec={spec} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} /> : null,
+    };
+  });
+}
 
 const lazyComponents: Record<string, ComponentType<ModalProps>> = {};
 
 function ensureLazyModal(modalName: string): void {
-  if (!modalRegistry[modalName]) {
+  const thunk = modalRegistry[modalName] ?? costumModalThunk(modalName);
+  if (!thunk) {
     console.log(`Modal "${modalName}" not found in registry`);
     return;
   }
-
   if (!lazyComponents[modalName]) {
-    lazyComponents[modalName] = lazy(modalRegistry[modalName]);
+    lazyComponents[modalName] = lazy(thunk);
   }
 }
 

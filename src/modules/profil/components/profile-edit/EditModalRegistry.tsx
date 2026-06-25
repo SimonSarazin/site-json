@@ -20,41 +20,34 @@ const editModalRegistry: Record<string, () => Promise<{ default: ComponentType<E
         />
       ),
     })),
-  "edit-tiers-lieux": () =>
-    Promise.all([import("../../forms/EntityFormModal"), import("../../forms/costum/tiers-lieux/spec")]).then(([m, c]) => ({
-      default: (props: EditModalProps) => (
-        <m.EntityFormModal
-          spec={c.tiersLieuxSpec}
-          open={props.open}
-          onOpenChange={props.onOpenChange}
-          mode="edit"
-          entity={props.entity}
-        />
-      ),
-    })),
-  "edit-equipements-sportifs": () =>
-    Promise.all([import("../../forms/EntityFormModal"), import("../../forms/costum/equipements-sportifs/spec")]).then(([m, c]) => ({
-      default: (props: EditModalProps) => (
-        <m.EntityFormModal
-          spec={c.equipementsSportifsSpec}
-          open={props.open}
-          onOpenChange={props.onOpenChange}
-          mode="edit"
-          entity={props.entity}
-        />
-      ),
-    })),
+  // edit-tiers-lieux / edit-equipements-sportifs : résolus DYNAMIQUEMENT par la table runtime costum (cf.
+  // costumEditThunk) — id = identité costum. Permet aussi les costums de config (config.costumForms) sans entrée ici.
 };
+
+/** Résolveur DYNAMIQUE des modales d'ÉDITION costum : `edit-<id>` → spec de la table runtime (TS connu OU config JSON). */
+function costumEditThunk(modalName: string): (() => Promise<{ default: ComponentType<EditModalProps> }>) | undefined {
+  const m = /^edit-(.+)$/.exec(modalName);
+  if (!m) return undefined;
+  const id = m[1];
+  return () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/costum/registerCostumForms")]).then(([mod, reg]) => {
+    const spec = reg.getCostumModalSpec(id);
+    return {
+      default: (props: EditModalProps) =>
+        spec ? <mod.EntityFormModal spec={spec} open={props.open} onOpenChange={props.onOpenChange} mode="edit" entity={props.entity} /> : null,
+    };
+  });
+}
 
 const lazyComponents: Record<string, ComponentType<EditModalProps>> = {};
 
 function ensureLazyEditModal(modalName: string): void {
-  if (!editModalRegistry[modalName]) {
+  const thunk = editModalRegistry[modalName] ?? costumEditThunk(modalName);
+  if (!thunk) {
     console.warn(`Edit modal "${modalName}" not found in registry`);
     return;
   }
   if (!lazyComponents[modalName]) {
-    lazyComponents[modalName] = lazy(editModalRegistry[modalName]);
+    lazyComponents[modalName] = lazy(thunk);
   }
 }
 
