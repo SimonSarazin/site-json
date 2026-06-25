@@ -21,8 +21,9 @@ import { PoiEquipementDoublonsSlot } from "../../PoiEquipementDoublonsSlot";
 import type { EntityModalCtx } from "../../entityModalSpec";
 import {
   registerDescriptor, registerScopeFn, registerDefaultsFn, registerSlot,
-  registerCleanValuesFn, registerExistingUrlFn, registerInvalidateFn,
+  registerCleanValuesFn, registerInvalidateFn,
 } from "../../specRegistries";
+import "../sharedFns"; // side-effect : enregistre la clé commune image:profilUrl
 
 
 // ── Scope du costum "équipement sportif" (dérivé de l'entité costum) ──────────
@@ -117,10 +118,7 @@ registerCleanValuesFn("poi:dropEmptyUrls", (v) => ({
   ...v,
   urls: Array.isArray(v.urls) ? (v.urls as unknown[]).filter((u) => String(u ?? "").trim().length > 0) : v.urls,
 }));
-registerExistingUrlFn("image:profilUrl", (entity) => {
-  const sd = (entity as { serverData?: Record<string, unknown> }).serverData;
-  return (sd?.profilMediumImageUrl || sd?.profilImageUrl || sd?.profilThumbImageUrl || undefined) as string | undefined;
-});
+// image:profilUrl : clé COMMUNE enregistrée dans ../sharedFns (importé en side-effect ci-dessous).
 const POI_SEARCH_KEYS = [
   SEARCH_QUERY_KEYS.RESULTS_PREFIX("searchCostumStatic"),
   SEARCH_QUERY_KEYS.RESULTS_PREFIX("poi-equipement-matches"),

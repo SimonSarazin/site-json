@@ -16,7 +16,8 @@ import { tiersLieuxDescriptor } from "./descriptor";
 import { PROFIL_QUERY_KEYS } from "../../../constants";
 import { getSlug } from "@/lib/constant/common";
 import type { EntityModalCtx } from "../../entityModalSpec";
-import { registerDescriptor, registerDefaultsFn, registerPayloadFn, registerScopeFn, registerInvalidateFn, registerExistingUrlFn } from "../../specRegistries";
+import { registerDescriptor, registerDefaultsFn, registerPayloadFn, registerScopeFn, registerInvalidateFn } from "../../specRegistries";
+import "../sharedFns"; // side-effect : enregistre la clé commune image:profilUrl
 
 /** Lien social (fieldArray). */
 export interface TiersLieuxSocialLink { platform: string; url: string }
@@ -244,8 +245,4 @@ registerInvalidateFn("tl:invalidate", (ctx) => {
   const target = ctx.parent ?? ctx.me;
   return target ? [PROFIL_QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(target.slug)] : [];
 });
-// Générique (profilMedium/Image/ThumbImageUrl) — enregistré aussi ici pour que le dossier tiers-lieu soit auto-suffisant.
-registerExistingUrlFn("image:profilUrl", (entity) => {
-  const sd = (entity as { serverData?: Record<string, unknown> }).serverData;
-  return (sd?.profilMediumImageUrl || sd?.profilImageUrl || sd?.profilThumbImageUrl || undefined) as string | undefined;
-});
+// image:profilUrl : clé COMMUNE enregistrée dans ../sharedFns (importé en side-effect en tête de fichier).
