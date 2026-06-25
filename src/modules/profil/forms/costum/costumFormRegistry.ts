@@ -10,6 +10,7 @@ import type { EntityModalSpec } from "../entityModalSpec";
 import type { FormDescriptor } from "@/modules/formEngine";
 import { registerDescriptor } from "../specRegistries";
 import { compileCostumSchema, type CostumFormSchema } from "./compileCostumSchema";
+import { CostumFormSchemaZod } from "./costumFormSchema.zod";
 
 const costumSpecs = new Map<string, EntityModalSpec>();
 
@@ -18,8 +19,14 @@ export function registerCostumModalSpec(spec: EntityModalSpec): void {
   costumSpecs.set(spec.id, spec);
 }
 
-/** Compile un document costum (DONNÉES) → descripteur (registre) + spec (table). Voie du loader JSON (étape 2). */
+/** Compile un document costum (DONNÉES) → descripteur (registre) + spec (table). Voie du loader JSON (étape 2).
+ *  VALIDE la structure essentielle (zod) avant compilation → message clair si un costum de config est malformé. */
 export function registerCostumForm(schema: CostumFormSchema): { descriptor: FormDescriptor; spec: EntityModalSpec } {
+  const parsed = CostumFormSchemaZod.safeParse(schema);
+  if (!parsed.success) {
+    const id = (schema as { id?: unknown })?.id ?? "?";
+    throw new Error(`[costumForms] document costum invalide (id=${String(id)}) : ${parsed.error.issues.map((i) => `${i.path.join(".")} ${i.message}`).join(" ; ")}`);
+  }
   const compiled = compileCostumSchema(schema);
   registerDescriptor(compiled.descriptor);
   costumSpecs.set(compiled.spec.id, compiled.spec);

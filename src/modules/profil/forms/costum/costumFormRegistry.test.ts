@@ -25,4 +25,12 @@ describe("costumFormRegistry — table runtime des modales costum", () => {
     expect(norm(registerCostumForm(EQUIPEMENTS_SPORTIFS_SCHEMA).spec)).toEqual(norm(equipementsSportifsSpec));
     expect(norm(registerCostumForm(TIERS_LIEUX_SCHEMA).spec)).toEqual(norm(tiersLieuxSpec));
   });
+
+  it("registerCostumForm REJETTE un document malformé (zod) avec un message clair", () => {
+    // manque fields/sections/chrome/mutation → erreur de validation, pas un crash au rendu.
+    expect(() => registerCostumForm({ id: "x", entityType: "poi" } as never)).toThrow(/document costum invalide.*id=x/s);
+    // fields sans widget → invalide aussi.
+    const bad = { ...JSON.parse(JSON.stringify(TIERS_LIEUX_SCHEMA)), fields: { name: { label: "x" } } };
+    expect(() => registerCostumForm(bad as never)).toThrow(/invalide/);
+  });
 });
