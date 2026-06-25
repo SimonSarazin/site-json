@@ -17,6 +17,8 @@ Les faits volatils se LISENT à l'usage, ils ne sont pas écrits ici :
 | Liste des sections + description | `npm run config:schema sections` |
 | Forme exacte d'une section | `npm run config:schema section:<type>` (ex. `section:pricing`) |
 | Forme de `header`/`footer`/`theme`/`meta`/`auth`/`page`/`profiles`/`integrations` | `npm run config:schema <bloc>` |
+| Forme d'un document de **form costum** (`config.costumForms.<id>`) | `npm run config:schema costumForm` |
+| Squelette de form costum (générateur build-time) | `npm run config:costum` |
 | Valider UN config (boucle de correction) | `npm run config:validate -- <fichier.json>` |
 | Chercher / vérifier un slug d'entité | `npm run entity:slug -- search <nom>` / `check <slug>` |
 | Qualité (liens morts, i18n, thème) | `npm run audit:config` |
@@ -124,9 +126,46 @@ Pour corriger/améliorer un config existant :
 | `ampli` | routes ampli | `config.ampli` | campagne ampli |
 | `interop` | pods Discourse/Mediawiki | clés interop | instances externes |
 | `observatoire` | section `data-observatory` (dashboard déclaratif : dimensions, KPI, charts, table, filtres) | `props.baseParams` (périmètre) + `dimensions`/`filters`/`kpis`/`charts`/`table` | données indexées (sourceKey + type) |
+| `formEngine` | modales costum **add/edit pilotées par données** (moteur de formulaire générique) | `config.costumForms.<id>` (document `CostumFormSchema`) + déclencheur `floatingActionButton.modal:"add-<id>"` / `profiles.<type>.editModal:"edit-<id>"` | entité costum porteuse (`costumSlug`) ; clés read/write/scope déjà enregistrées (sinon `fns.ts`) — cf. § Formulaires costum |
 
 **Refuse d'activer un module dont le prérequis backend n'est pas confirmé**
 (ex. pas de `searchPro` sans `sourceKey` réel).
+
+## Formulaires costum (`config.costumForms`)
+
+Une modale **add+edit d'une entité scopée costum** (tiers-lieu, équipement sportif…) se déclare **EN DONNÉES**
+dans `config.costumForms.<id>` — aucun composant ni schéma TS. Mécanisme, forme du document et recette
+canonique : **[doc/28-module-formengine.md](../../../doc/28-module-formengine.md)** (couche 3). Forme
+introspectable (règle d'or « dériver ») : `npm run config:schema costumForm`.
+
+**Recette d'un costum « simple » (0 code)** — possible UNIQUEMENT si le formulaire ne référence que des clés
+**déjà enregistrées** (codecs/scope/validate partagés : `address:read/write`, `openingHours:read/write`,
+`social:read/write`, `geo:write`, `image:profilUrl`, `monthYear`, `validateFn:"addressComplete"`…) :
+
+1. **Le document** `config.costumForms.<id>` = un `CostumFormSchema`. Obligatoire : `id` (= `<id>`), `entityType`
+   (`organization|project|event|poi|citoyen`), `layout` (`{kind:"wizard"|"tabs"|"flat"}`), `sections`, `fields`
+   (chaque champ : au moins `widget`), `chrome.title.{add,edit}`, `mutation.entityType`. Recommandé : `costumSlug`
+   (slug du costum porteur — sert au create), `icon`, `submitLabel`. Laisser `payloadFn`/`defaultsBase` ABSENTS
+   = pipeline générique (read/write/defaults dérivés des widgets).
+2. **Déclencher l'ajout** : `floatingActionButton.modal = "add-<id>"` (ou un bouton de section `modal:"add-<id>"`).
+3. **Déclencher l'édition** : `profiles.<entityTypePluriel>.editModal = "edit-<id>"`, + `editModalMatch`
+   (`{champ_serverData: valeur}`) si plusieurs sous-types partagent le même `entityType`. La résolution
+   `add-/edit-<id>` → table runtime est **automatique** (aucune entrée hardcodée à ajouter).
+4. **Valider** : un test qui appelle `registerCostumForm(doc)` (cf. `costumFormRegistry.test.ts`) joue
+   `CostumFormSchemaZod` puis compile. ⚠️ Ce zod **ne vérifie PAS** que les clés citées
+   (`read`/`write`/`scope`/`payloadFn`/`validateFn`/`slots`) existent : une clé inconnue passe la validation et
+   échoue au rendu (`console.warn`). Vérifie que chaque clé figure dans les clés partagées, sinon → `fns.ts`.
+
+**Quand il faut du code (PAS 100 % config)** : transfo métier inédite (`payloadFn` propre), `scope` dérivé,
+defaults structurés, **slot React** (placé par `"$slot:<id>"` dans `sections`), codec `serializeGroup` inédit,
+`validate` cross-champ inédit. Créer alors `src/modules/profil/forms/costum/<id>/fns.ts`
+(`registerXxx("clé", impl)`) + l'ajouter au barrel `registerSpecFns.ts`. `npm run config:costum` génère un
+squelette de config depuis un costum.
+
+> ⚠️ **Piège** : les clés « partagées » ne sont aujourd'hui chargées que TRANSITIVEMENT par les `fns.ts` des 2
+> costums TS existants (importés par `registerSpecFns.ts`). Un costum purement-config qui en dépend marche par
+> effet de bord tant que ces imports restent — fragile tant qu'un barrel `sharedRegistrations` dédié n'existe
+> pas (dette connue, cf. doc/28 § limites).
 
 ## Règles maison
 
