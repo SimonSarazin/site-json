@@ -16,6 +16,7 @@
 | Ajouter/personnaliser une section | [Sections dynamiques](06-sections-dynamiques.md) |
 | Module de recherche | [Module Search](07-module-search.md) |
 | Module profil | [Module Profil](08-module-profil.md) |
+| Formulaires & costums config-driven | [Module formEngine](28-module-formengine.md) — voir aussi [moteur](moteur-formulaire-generique.md), [couche config](formulaire-config-driven.md), [pipeline read/write](refactor-field-treatment.md) |
 | Module actualités | [Module News](09-module-news.md) |
 | Module cagnotte (financement) | [Module Cagnotte](18-module-cagnotte.md) |
 | Module ampli (amplification) | [Module Ampli](22-module-ampli.md) |
@@ -25,6 +26,7 @@
 | Module notification (cloche + section) | [Module Notification](25-module-notification.md) |
 | Module observatoire (dashboard déclaratif) | [Module Observatoire](27-module-observatoire.md) |
 | Panneau d'administration (live edit) | [Admin Panel](24-admin-panel.md) |
+| Assistant de configuration | [Assistant Config](26-assistant-config.md) |
 | Système de visibilité | [Visibility System](19-visibility-system.md) |
 | Système de permissions | [Permissions](10-permissions.md) |
 | API et authentification | [API & Auth](11-api-authentification.md) |

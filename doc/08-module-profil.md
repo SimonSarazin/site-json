@@ -919,6 +919,12 @@ Le cas `"organizations"` remonte les **organisations partenaires** : les entité
 
 ## Création de Tiers-lieu (modale 5 étapes)
 
+> ⚠️ **Section historique — SUPERSÉDÉE.** Les modales costum (tiers-lieu, poi-équipement) ne reposent plus sur
+> des composants/schémas dédiés (`AddTiersLieuxModal`, `tiersLieuxSchema`, `tiersLieuxMapping`, `useEditTiersLieu`)
+> mais sur le **document fusionné `CostumFormSchema` → `compileCostumSchema` → modale générique `EntityFormModal`**,
+> avec résolution par la table runtime (`add-/edit-<id>`) et possibilité de déclaration dans `config.costumForms`.
+> Voir **[Module formEngine](28-module-formengine.md)**. Le contenu ci-dessous décrit l'ancien fonctionnement.
+
 La modale `AddTiersLieuxModal` (`src/modules/profil/components/add/AddTiersLieuxModal.tsx`) permet de créer un tiers-lieu en 5 étapes via un formulaire structuré.
 
 ### Composants
