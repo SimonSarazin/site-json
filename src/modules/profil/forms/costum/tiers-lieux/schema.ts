@@ -68,10 +68,11 @@ export const TIERS_LIEUX_SCHEMA: CostumFormSchema = {
   // wizard look « ancien form » : stepper onglets, barre de progression, header dégradé (sérialisable).
   layout: { kind: "wizard", validatePerStep: true, stepper: "tabs", progress: "bar", header: "gradient" },
   validateFn: "addressComplete",
+  // Codecs de groupe PARAMÉTRÉS (génériques + params en données) — plus de tl:openingDate*/manageModel*/typePlace*.
   serializeGroups: {
-    openingDate: { serverKey: "openingDate", read: "tl:openingDateRead", write: "tl:openingDateWrite" },
-    manageModel: { serverKey: "manageModel", read: "tl:manageModelRead", write: "tl:manageModelWrite" },
-    typePlace: { serverKey: "typePlace", read: "tl:typePlaceRead", write: "tl:typePlaceWrite" },
+    openingDate: { serverKey: "openingDate", read: "monthYear:read", write: "monthYear:write", params: { monthField: "openingMonth", yearField: "openingYear", day: "01" } },
+    manageModel: { serverKey: "manageModel", read: "enumOrOther:read", write: "enumOrOther:write", params: { valueField: "managementType", otherField: "managementTypeOther", known: MANAGEMENT_TYPES.map((o) => o.value), other: "autre" } },
+    typePlace: { serverKey: "typePlace", read: "multiCsv:read", write: "multiCsv:write", params: { arrayField: "family", otherField: "familyOther", other: "autre", separator: ", ", readOtherFrom: "typePlaceOther" } },
     address: { serverKey: "address", read: "address:read", write: "address:write" },
   },
 

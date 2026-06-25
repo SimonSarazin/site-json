@@ -126,3 +126,63 @@ function buildSocialNetwork(links?: Array<{ platform: string; url: string }>): R
 }
 registerTransform("social:read", (v) => parseSocialLinks(v));
 registerTransform("social:write", (links) => buildSocialNetwork(links as Array<{ platform: string; url: string }>));
+
+// ── Codecs de GROUPE PARAMÉTRÉS ───────────────────────────────────────────────────────────────────────────
+// Codec générique + `params` en DONNÉES (serializeGroups[x].params, reçus en 3e arg). Réutilisables par toute
+// entité : la spécificité (noms de champs, valeurs connues, format) vit dans le schéma, pas dans du code costum.
+const pickStr = (v: unknown): string => (typeof v === "string" ? v : "");
+
+// monthYear : 2 selects mois+année ↔ date-string serveur. params {monthField, yearField, day}. (Ex-tl:openingDate*.)
+registerTransform("monthYear:read", (v, _all, p) => {
+  const mf = String(p?.monthField ?? "month"), yf = String(p?.yearField ?? "year");
+  const s = pickStr(v);
+  let month = "", year = "";
+  if (s) {
+    const parts = s.split("/");
+    if (parts.length === 3) { month = parts[1] ?? ""; year = parts[2] ?? ""; }
+    else if (parts.length === 2) { month = parts[0] ?? ""; year = parts[1] ?? ""; }
+    else { year = s; }
+  }
+  return { [mf]: month, [yf]: year };
+});
+registerTransform("monthYear:write", (_v, all, p) => {
+  const mf = String(p?.monthField ?? "month"), yf = String(p?.yearField ?? "year"), day = String(p?.day ?? "01");
+  const month = pickStr((all as Record<string, unknown>)[mf]), year = pickStr((all as Record<string, unknown>)[yf]);
+  if (!month && !year) return undefined;
+  if (month && year) return `${day}/${month}/${year}`;
+  return month || year;
+});
+
+// enumOrOther : select « valeur connue OU 'autre' + texte libre » ↔ valeur serveur. params {valueField, otherField, known[], other}. (Ex-tl:manageModel*.)
+registerTransform("enumOrOther:read", (v, _all, p) => {
+  const vf = String(p?.valueField ?? "value"), of = String(p?.otherField ?? "valueOther");
+  const known = (p?.known as string[] | undefined) ?? [], other = String(p?.other ?? "autre");
+  const s = pickStr(v);
+  if (!s) return { [vf]: "", [of]: "" };
+  return known.includes(s) ? { [vf]: s, [of]: "" } : { [vf]: other, [of]: s };
+});
+registerTransform("enumOrOther:write", (_v, all, p) => {
+  const vf = String(p?.valueField ?? "value"), of = String(p?.otherField ?? "valueOther"), other = String(p?.other ?? "autre");
+  const a = all as Record<string, unknown>, v = pickStr(a[vf]);
+  if (!v) return undefined;
+  return v === other && pickStr(a[of]) ? pickStr(a[of]) : v;
+});
+
+// multiCsv : multi-select (+ 'autre' → texte libre) ↔ CSV serveur. params {arrayField, otherField, other, separator, readOtherFrom}. (Ex-tl:typePlace*.)
+registerTransform("multiCsv:read", (v, all, p) => {
+  const af = String(p?.arrayField ?? "items"), of = String(p?.otherField ?? "itemsOther");
+  const readOtherFrom = p?.readOtherFrom ? String(p.readOtherFrom) : undefined;
+  let arr: string[] = [];
+  if (Array.isArray(v)) arr = v.filter((x): x is string => typeof x === "string");
+  else if (typeof v === "string" && v) arr = v.split(",").map((s) => s.trim()).filter(Boolean);
+  const other = readOtherFrom ? pickStr((all as Record<string, unknown>)[readOtherFrom]) : "";
+  return { [af]: arr, [of]: other };
+});
+registerTransform("multiCsv:write", (_v, all, p) => {
+  const af = String(p?.arrayField ?? "items"), of = String(p?.otherField ?? "itemsOther");
+  const other = String(p?.other ?? "autre"), sep = String(p?.separator ?? ", ");
+  const a = all as Record<string, unknown>;
+  const arr = (a[af] as string[] | undefined) ?? [], otherText = pickStr(a[of]).trim();
+  const parts = arr.map((f) => (f === other ? otherText : f)).filter(Boolean);
+  return parts.length > 0 ? parts.join(sep) : undefined;
+});

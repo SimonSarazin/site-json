@@ -100,6 +100,8 @@ const SerializeGroup = z.object({
   read: z.string(),
   write: z.string(),
   groupReadOnly: z.boolean().optional(),
+  // DONNÉES passées aux codecs de groupe PARAMÉTRÉS (monthYear/enumOrOther/multiCsv…) — cf. applyTransform 3e arg.
+  params: z.record(z.string(), z.unknown()).optional(),
 });
 
 const Group = z.object({

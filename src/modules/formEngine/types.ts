@@ -177,7 +177,7 @@ export interface FormDescriptor {
    *  mais N'ÉCRIT PAS au niveau groupe (les membres sont alors émis INDIVIDUELLEMENT par leur propre `write`)
    *  — pour l'asymétrie profil `socialNetwork` (lu objet, écrit 9 clés plates). Subsume extractAddressFields/
    *  buildAddressFromForm, extractSocial/buildSocialNetwork, etc. cf. `fieldPipeline` + doc/refactor-field-treatment.md. */
-  serializeGroups?: Record<string, { serverKey: string; read: TransformName; write: TransformName; groupReadOnly?: boolean }>;
+  serializeGroups?: Record<string, { serverKey: string; read: TransformName; write: TransformName; groupReadOnly?: boolean; params?: Record<string, unknown> }>;
 }
 
 /** Valeurs de formulaire (plates, clé = name). */

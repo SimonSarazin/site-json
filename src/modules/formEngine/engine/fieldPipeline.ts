@@ -46,7 +46,7 @@ export function seedFromEntity(descriptor: FormDescriptor, serverData: FormValue
   const values: FormValues = {};
   // 1. Groupes : objet serveur → valeurs PLATES des membres (ex. serverData.address → addressCountry/…).
   for (const g of Object.values(descriptor.serializeGroups ?? {})) {
-    const decomposed = applyTransform(g.read, serverData[g.serverKey], serverData);
+    const decomposed = applyTransform(g.read, serverData[g.serverKey], serverData, g.params);
     if (decomposed && typeof decomposed === "object") Object.assign(values, decomposed as FormValues);
   }
   // 2. Champs simples (hors groupe) : serverData[path ?? name] + read, puis DÉFAUT si vide.
@@ -100,7 +100,7 @@ export function valuesToPayload(
   // `groupReadOnly` : pas d'écriture au niveau groupe (les membres ont été émis individuellement ci-dessus).
   for (const g of Object.values(groups)) {
     if (g.groupReadOnly) continue;
-    let obj = applyTransform(g.write, values, values);
+    let obj = applyTransform(g.write, values, values, g.params);
     if (emitEmpty) {
       if (obj === undefined || isEmptyValue(obj)) obj = ''; // objet serveur vidé -> "" (JAMAIS {}/[] ; cf. clear)
       payload[g.serverKey] = obj;

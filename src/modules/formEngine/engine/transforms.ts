@@ -10,8 +10,10 @@
  */
 import type { FormValues } from "../types";
 
-/** read/write : (value, allValues) → value. computed : reçoit allValues (deps lues par l'appelant). */
-export type TransformFn = (value: unknown, all: FormValues) => unknown;
+/** read/write : (value, allValues, params?) → value. `params` = DONNÉES du groupe de sérialisation
+ *  (`serializeGroups[x].params`) pour les codecs PARAMÉTRÉS génériques (monthYear/enumOrOther/multiCsv…) ;
+ *  undefined pour les transforms simples. computed : reçoit allValues (deps lues par l'appelant). */
+export type TransformFn = (value: unknown, all: FormValues, params?: Record<string, unknown>) => unknown;
 
 const registry = new Map<string, TransformFn>();
 
@@ -21,15 +23,16 @@ export function registerTransform(name: string, fn: TransformFn): void {
 export function getTransform(name: string): TransformFn | undefined {
   return registry.get(name);
 }
-/** Applique un transformer nommé (identité si inconnu — mais on PRÉVIENT, une clé fautive = silencieuse). */
-export function applyTransform(name: string | undefined, value: unknown, all: FormValues): unknown {
+/** Applique un transformer nommé (identité si inconnu — mais on PRÉVIENT, une clé fautive = silencieuse).
+ *  `params` (optionnel) = données du groupe de sérialisation, transmises aux codecs paramétrés. */
+export function applyTransform(name: string | undefined, value: unknown, all: FormValues, params?: Record<string, unknown>): unknown {
   if (!name) return value;
   const fn = registry.get(name);
   if (!fn) {
     console.warn(`[formEngine] transform "${name}" introuvable (valeur inchangée). Module d'enregistrement importé ?`);
     return value;
   }
-  return fn(value, all);
+  return fn(value, all, params);
 }
 
 // ── Transformers génériques de base ──────────────────────────────────────────

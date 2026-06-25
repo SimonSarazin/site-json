@@ -101,51 +101,9 @@ export interface CostumConfig {
   // `me.costum(slug)`. config.costum ne sert plus qu'aux TAGS (mainTag/compagnon) de l'observatoire.
 }
 
-const KNOWN_MANAGEMENT_TYPES = [
-  "association", "collectif-citoyen", "universites", "etablissements-scolaires",
-  "collectivites", "sarl-sa-sas", "scic", "scop", "autre",
-];
-
-function buildOpeningDatePayload(month?: string, year?: string): string | undefined {
-  if (!month && !year) return undefined;
-  if (month && year) return `01/${month}/${year}`;
-  return month || year;
-}
-
-function parseOpeningDate(value: unknown): { month: string; year: string } {
-  if (typeof value !== "string" || !value) return { month: "", year: "" };
-  const parts = value.split("/");
-  if (parts.length === 3) return { month: parts[1] ?? "", year: parts[2] ?? "" };
-  if (parts.length === 2) return { month: parts[0] ?? "", year: parts[1] ?? "" };
-  return { month: "", year: value };
-}
-
-function parseFamily(value: unknown): { family: string[]; familyOther: string } {
-  if (Array.isArray(value)) {
-    return { family: value.filter((v): v is string => typeof v === "string"), familyOther: "" };
-  }
-  if (typeof value === "string" && value) {
-    return { family: value.split(",").map((s) => s.trim()).filter(Boolean), familyOther: "" };
-  }
-  return { family: [], familyOther: "" };
-}
-
-function parseManagementType(value: unknown): { managementType: string; managementTypeOther: string } {
-  if (typeof value !== "string" || !value) return { managementType: "", managementTypeOther: "" };
-  if (KNOWN_MANAGEMENT_TYPES.includes(value)) {
-    return { managementType: value, managementTypeOther: "" };
-  }
-  return { managementType: "autre", managementTypeOther: value };
-}
-
-/** Écriture : family (multi) + familyOther → `{ typePlace }` (la valeur 'autre' est remplacée par le
- *  texte libre). Plus de clé `typePlaceOther` (non writable → rejet DraftProxy). */
-function buildTypePlace(family?: string[], familyOther?: string): Record<string, string> {
-  const parts = (family ?? [])
-    .map((f) => (f === "autre" ? (familyOther ?? "").trim() : f))
-    .filter(Boolean);
-  return parts.length > 0 ? { typePlace: parts.join(", ") } : {};
-}
+// openingDate/manageModel/typePlace : codecs de GROUPE PARAMÉTRÉS communs (monthYear/enumOrOther/multiCsv,
+// cf. sharedCodecs) — params dans serializeGroups du schéma. Ex-helpers locaux (buildOpeningDatePayload/
+// parseOpeningDate/parseFamily/parseManagementType/buildTypePlace + KNOWN_MANAGEMENT_TYPES) SUPPRIMÉS.
 
 function pickString(value: unknown): string {
   return typeof value === "string" ? value : "";
@@ -165,12 +123,7 @@ export interface EntityLike {
 registerTransform("tl:video0", (v) => pickString(Array.isArray(v) ? v[0] : undefined));
 // tl:socialRead/tl:socialWrite SUPPRIMÉS → codec commun `social:read`/`social:write` (sharedCodecs).
 // tl:hoursRead SUPPRIMÉ → codec du widget `openingHours:read` (sharedCodecs), hérité via WIDGET_DEFAULTS.
-registerTransform("tl:openingDateRead", (v) => { const o = parseOpeningDate(v); return { openingMonth: o.month, openingYear: o.year }; });
-registerTransform("tl:manageModelRead", (v) => { const m = parseManagementType(v); return { managementType: m.managementType, managementTypeOther: m.managementTypeOther }; });
-registerTransform("tl:typePlaceRead", (v, all) => {
-  const fam = parseFamily(v);
-  return { family: fam.family, familyOther: pickString((all as Record<string, unknown>).typePlaceOther) || fam.familyOther };
-});
+// tl:openingDateRead/manageModelRead/typePlaceRead SUPPRIMÉS → codecs paramétrés monthYear/enumOrOther/multiCsv (read).
 // Lit les 14 champs SIG (parité profil `pf:addressRead`) → round-trip COMPLET des niveaux (level1..4/
 // codeInsee). Sans eux, une édition sans toucher l'adresse reconstruisait un objet partiel ; et le schéma
 // stripait les niveaux posés par EditLocationTab. cf. doc/refactor-field-treatment.md (asymétrie adresse).
@@ -182,14 +135,7 @@ registerTransform("tl:typePlaceRead", (v, all) => {
 registerTransform("tl:numOrUndef", (v) => (v ? Number(v) : undefined));
 registerTransform("tl:videoWrite", (v) => (v ? [v] : undefined));
 // tl:hoursWrite SUPPRIMÉ → codec du widget `openingHours:write` (sharedCodecs), hérité via WIDGET_DEFAULTS.
-registerTransform("tl:openingDateWrite", (_v, all) =>
-  buildOpeningDatePayload((all as Record<string, string>).openingMonth, (all as Record<string, string>).openingYear));
-registerTransform("tl:manageModelWrite", (_v, all) => {
-  const a = all as Record<string, string>;
-  return a.managementType ? (a.managementType === "autre" && a.managementTypeOther ? a.managementTypeOther : a.managementType) : undefined;
-});
-registerTransform("tl:typePlaceWrite", (_v, all) =>
-  buildTypePlace((all as Record<string, unknown>).family as string[], (all as Record<string, unknown>).familyOther as string).typePlace);
+// tl:openingDateWrite/manageModelWrite/typePlaceWrite SUPPRIMÉS → codecs paramétrés monthYear/enumOrOther/multiCsv (write).
 // tl:addressWrite SUPPRIMÉ → codec commun `address:write` (sharedCodecs), référencé par serializeGroups.address.
 // geo/geoPosition : transforms PARTAGÉS `geo:write`/`geoPosition:write` (liés à localityId), uniformes
 // pour toutes les entités à composant adresse. cf. ../forms/geoTransforms (importé pour le side-effect).
