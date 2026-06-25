@@ -6,6 +6,8 @@
  */
 import type { EntityModalSpec } from "../../entityModalSpec";
 import { compileCostumSchema } from "../compileCostumSchema";
+import { registerCostumModalSpec } from "../costumFormRegistry";
 import { TIERS_LIEUX_SCHEMA } from "./schema";
 
 export const tiersLieuxSpec: EntityModalSpec = compileCostumSchema(TIERS_LIEUX_SCHEMA).spec;
+registerCostumModalSpec(tiersLieuxSpec); // table runtime (résolution par id, voie config-driven)
