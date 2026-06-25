@@ -86,6 +86,7 @@
     ],
     "sticky": true,
     "transparent": true,
+    "transparentMode": "auto",
     "height": "lg",
     "ctaButton": {
       "label": {
@@ -175,10 +176,29 @@
           }
         },
         {
+          "type": "cta",
+          "id": "manifeste",
+          "props": {
+            "headline": {
+              "fr": "Faisons 1000× mieux",
+              "en": "Let's do 1000× better"
+            },
+            "subhead": {
+              "fr": "Que la voiture au quotidien, par une collection d'objets roulants véhiculant 1 à 2 personnes et une charge de 100 kg — ou bien 3 personnes et leurs sacs.",
+              "en": "Than the everyday car — with a collection of rolling objects carrying 1 to 2 people and a 100 kg load, or 3 people and their bags."
+            },
+            "buttons": []
+          }
+        },
+        {
           "type": "stats",
           "id": "chiffres-cles",
           "props": {
             "layout": "horizontal",
+            "columns": {
+              "md": 2,
+              "lg": 3
+            },
             "animated": true,
             "items": [
               {
@@ -298,7 +318,7 @@
                   "fr": "Tester prototypes et pré-séries dans des territoires partenaires",
                   "en": "Test prototypes and pre-series in partner areas"
                 },
-                "color": "chart-2"
+                "color": "primary"
               },
               {
                 "icon": "factory",
@@ -334,7 +354,7 @@
                   "fr": "Des collectivités qui accueillent et éprouvent les véhicules",
                   "en": "Local authorities hosting and testing the vehicles"
                 },
-                "color": "chart-2"
+                "color": "accent"
               },
               {
                 "icon": "users",
@@ -346,7 +366,7 @@
                   "fr": "Industriels, labos, écoles, associations et passionnés réunis",
                   "en": "Industry, labs, schools, associations and enthusiasts united"
                 },
-                "color": "primary"
+                "color": "accent"
               }
             ]
           }
@@ -427,12 +447,15 @@
               "fr": "Constructeurs, territoires, citoyens : il y a une place pour chacun·e",
               "en": "Makers, territories, citizens: there's a place for everyone"
             },
+            "columns": {
+              "lg": 3
+            },
             "actions": [
               {
                 "icon": "plus-circle",
                 "title": {
-                  "fr": "Proposer un véli",
-                  "en": "Submit a véli"
+                  "fr": "Proposer un projet",
+                  "en": "Submit a project"
                 },
                 "subtitle": {
                   "fr": "Présentez votre véhicule",
@@ -450,19 +473,6 @@
                 "subtitle": {
                   "fr": "Constructeurs & passionnés",
                   "en": "Makers & enthusiasts"
-                },
-                "href": "/communaute",
-                "color": "primary"
-              },
-              {
-                "icon": "map-pin",
-                "title": {
-                  "fr": "Devenir territoire",
-                  "en": "Become a territory"
-                },
-                "subtitle": {
-                  "fr": "Accueillir des essais",
-                  "en": "Host trials"
                 },
                 "href": "/communaute",
                 "color": "primary"
@@ -490,6 +500,10 @@
             "title": {
               "fr": "Les partenaires du Défi",
               "en": "The Challenge partners"
+            },
+            "subtitle": {
+              "fr": "Industries, laboratoires, écoles, pouvoirs publics, pôles de compétitivité, associations\nIls mettent à disposition du Défi leurs ressources et compétences.",
+              "en": "Industry, labs, schools, public authorities, competitiveness clusters, associations\nThey put their resources and skills at the service of the Challenge."
             },
             "grayscale": true,
             "animated": false,
