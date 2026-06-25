@@ -1,4 +1,3 @@
-import { transformFormDataWithAddress } from "../../../hooks/mutationUtils";
 // Pipeline (P3) — imports DIRECTS (pas le barrel formEngine) pour rester un util pur. cf. doc/refactor-field-treatment.md.
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
 import "@/modules/formEngine/engine/coercions"; // side-effect : enregistre coerce:string/pickString/orUndef référencés par le descripteur tiers-lieu
@@ -139,37 +138,6 @@ function parseManagementType(value: unknown): { managementType: string; manageme
   return { managementType: "autre", managementTypeOther: value };
 }
 
-/** Lecture : `serverData.socialNetwork` est un OBJET `{ facebook: url, ... }` (dataBinding legacy
- *  `socialNetwork` + `TranslateFtl::socialNetwork`), pas un array. (Fallback array rétro-compat.)
- *  → liste {platform,url} pour le form. */
-function parseSocialLinks(value: unknown): Array<{ platform: string; url: string }> {
-  if (Array.isArray(value)) {
-    return value
-      .filter((s): s is { platform: string; url: string } =>
-        s !== null && typeof s === "object" && "platform" in s && "url" in s
-      )
-      .map((s) => ({ platform: String(s.platform ?? ""), url: String(s.url ?? "") }));
-  }
-  if (value && typeof value === "object") {
-    return Object.entries(value as Record<string, unknown>)
-      .filter(([, url]) => typeof url === "string" && (url as string).trim().length > 0)
-      .map(([platform, url]) => ({ platform, url: String(url) }));
-  }
-  return [];
-}
-
-/** Écriture : socialLinks (form) → OBJET `socialNetwork` `{ facebook: url, ... }` — le format réel
- *  attendu par le legacy (dataBinding org `socialNetwork`, toutes plateformes dont linkedin). */
-function buildSocialNetwork(links?: Array<{ platform: string; url: string }>): Record<string, unknown> {
-  const obj: Record<string, string> = {};
-  for (const l of links ?? []) {
-    const p = (l.platform ?? "").trim();
-    const url = (l.url ?? "").trim();
-    if (p && url) obj[p] = url;
-  }
-  return Object.keys(obj).length > 0 ? { socialNetwork: obj } : {};
-}
-
 /** Écriture : family (multi) + familyOther → `{ typePlace }` (la valeur 'autre' est remplacée par le
  *  texte libre). Plus de clé `typePlaceOther` (non writable → rejet DraftProxy). */
 function buildTypePlace(family?: string[], familyOther?: string): Record<string, string> {
@@ -195,7 +163,7 @@ export interface EntityLike {
 // typePlace (+typePlaceOther via le 2e arg `all`), address. cf. doc/refactor-field-treatment.md (P3).
 // tl:pickString → coerce:pickString ; tl:pickNumberString → coerce:string (byte-identique, prouvé) : GÉNÉRIQUES (formEngine/coercions).
 registerTransform("tl:video0", (v) => pickString(Array.isArray(v) ? v[0] : undefined));
-registerTransform("tl:socialRead", (v) => parseSocialLinks(v));
+// tl:socialRead/tl:socialWrite SUPPRIMÉS → codec commun `social:read`/`social:write` (sharedCodecs).
 // tl:hoursRead SUPPRIMÉ → codec du widget `openingHours:read` (sharedCodecs), hérité via WIDGET_DEFAULTS.
 registerTransform("tl:openingDateRead", (v) => { const o = parseOpeningDate(v); return { openingMonth: o.month, openingYear: o.year }; });
 registerTransform("tl:manageModelRead", (v) => { const m = parseManagementType(v); return { managementType: m.managementType, managementTypeOther: m.managementTypeOther }; });
@@ -213,7 +181,6 @@ registerTransform("tl:typePlaceRead", (v, all) => {
 // tl:emptyToUndef → coerce:orUndef (`v || undefined` ≡ `v ? v : undefined`, prouvé byte-identique) : GÉNÉRIQUE.
 registerTransform("tl:numOrUndef", (v) => (v ? Number(v) : undefined));
 registerTransform("tl:videoWrite", (v) => (v ? [v] : undefined));
-registerTransform("tl:socialWrite", (links) => buildSocialNetwork(links as Array<{ platform: string; url: string }>).socialNetwork);
 // tl:hoursWrite SUPPRIMÉ → codec du widget `openingHours:write` (sharedCodecs), hérité via WIDGET_DEFAULTS.
 registerTransform("tl:openingDateWrite", (_v, all) =>
   buildOpeningDatePayload((all as Record<string, string>).openingMonth, (all as Record<string, string>).openingYear));
@@ -223,7 +190,7 @@ registerTransform("tl:manageModelWrite", (_v, all) => {
 });
 registerTransform("tl:typePlaceWrite", (_v, all) =>
   buildTypePlace((all as Record<string, unknown>).family as string[], (all as Record<string, unknown>).familyOther as string).typePlace);
-registerTransform("tl:addressWrite", (_v, all) => transformFormDataWithAddress((all ?? {}) as Record<string, unknown>).address);
+// tl:addressWrite SUPPRIMÉ → codec commun `address:write` (sharedCodecs), référencé par serializeGroups.address.
 // geo/geoPosition : transforms PARTAGÉS `geo:write`/`geoPosition:write` (liés à localityId), uniformes
 // pour toutes les entités à composant adresse. cf. ../forms/geoTransforms (importé pour le side-effect).
 

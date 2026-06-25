@@ -9,6 +9,7 @@
  */
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
 import { coerceString } from "@/modules/formEngine/engine/coercions";
+import { buildAddressFromForm } from "../../hooks/mutationUtils";
 
 /** Clés d'une adresse PostalAddress (objet serveur `address` ↔ champs plats du form), incl. les 9 SIG
  *  (level1..4/level*Name/codeInsee) requis pour le round-trip complet (parité buildEditDefaults). */
@@ -32,6 +33,14 @@ registerTransform("address:read", (a) => {
   }
   return out;
 });
+
+/**
+ * WRITE adresse GÉNÉRIQUE (clé `address:write`) : champs plats du form → objet `address` imbriqué (PostalAddress),
+ * `undefined` si pas de `localityId` (→ clé omise). `buildAddressFromForm` ne lit que les champs adresse de `all`.
+ * Unifie l'ex-`poi:addressWrite` (buildAddressFromForm direct) et `tl:addressWrite` (transformFormDataWithAddress().address) —
+ * tous deux ≡ buildAddressFromForm(<champs adresse>). Référencé par `serializeGroups.address.write` des 2 costums.
+ */
+registerTransform("address:write", (all) => buildAddressFromForm((all ?? {}) as Record<string, string>));
 
 // ── Codec du WIDGET `openingHours` (clés `openingHours:read`/`openingHours:write`) ────────────────────────
 // Modèle form (7 jours `{enabled,start,end}`) ↔ format serveur legacy (array `{dayOfWeek:"Mo", hours:[{opens,
@@ -87,3 +96,33 @@ registerTransform("openingHours:write", (v) => {
   const oh = buildOpeningHoursPayload(v as OpeningHoursModel);
   return oh.some((e) => e !== "") ? oh : undefined; // omet openingHours si aucun jour ouvert
 });
+
+// ── Codec SOCIAL (clés `social:read`/`social:write`) ──────────────────────────────────────────────────────
+// Objet serveur `socialNetwork` `{facebook:url, …}` ↔ liste form `[{platform,url}]`. Clé PARTAGÉE NOMMÉE (le
+// widget `fieldArray` est générique → ne peut pas posséder ce codec ; le sens « social » vient du champ).
+// Référencé explicitement par le champ. Ex-`tl:socialRead`/`tl:socialWrite`. (Le profil a son propre `pf:*`,
+// widget 9-grille différent.)
+function parseSocialLinks(value: unknown): Array<{ platform: string; url: string }> {
+  if (Array.isArray(value)) {
+    return value
+      .filter((s): s is { platform: string; url: string } => s !== null && typeof s === "object" && "platform" in s && "url" in s)
+      .map((s) => ({ platform: String(s.platform ?? ""), url: String(s.url ?? "") }));
+  }
+  if (value && typeof value === "object") {
+    return Object.entries(value as Record<string, unknown>)
+      .filter(([, url]) => typeof url === "string" && (url as string).trim().length > 0)
+      .map(([platform, url]) => ({ platform, url: String(url) }));
+  }
+  return [];
+}
+function buildSocialNetwork(links?: Array<{ platform: string; url: string }>): Record<string, string> | undefined {
+  const obj: Record<string, string> = {};
+  for (const l of links ?? []) {
+    const p = (l.platform ?? "").trim();
+    const url = (l.url ?? "").trim();
+    if (p && url) obj[p] = url;
+  }
+  return Object.keys(obj).length > 0 ? obj : undefined;
+}
+registerTransform("social:read", (v) => parseSocialLinks(v));
+registerTransform("social:write", (links) => buildSocialNetwork(links as Array<{ platform: string; url: string }>));

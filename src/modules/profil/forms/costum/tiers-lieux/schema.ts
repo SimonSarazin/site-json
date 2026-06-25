@@ -72,7 +72,7 @@ export const TIERS_LIEUX_SCHEMA: CostumFormSchema = {
     openingDate: { serverKey: "openingDate", read: "tl:openingDateRead", write: "tl:openingDateWrite" },
     manageModel: { serverKey: "manageModel", read: "tl:manageModelRead", write: "tl:manageModelWrite" },
     typePlace: { serverKey: "typePlace", read: "tl:typePlaceRead", write: "tl:typePlaceWrite" },
-    address: { serverKey: "address", read: "address:read", write: "tl:addressWrite" },
+    address: { serverKey: "address", read: "address:read", write: "address:write" },
   },
 
   // ── CHAMPS : widget + overrides (read/write/path/enum hétérogènes). Membres de groupe = pas de read/write dérivé. ──
@@ -99,7 +99,7 @@ export const TIERS_LIEUX_SCHEMA: CostumFormSchema = {
     videoUrl: { widget: "text", label: "", placeholder: L("https://youtube.com/...", "https://youtube.com/..."), read: "tl:video0", write: "tl:videoWrite", path: "video" },
     websiteUrl: { widget: "text", label: L("Site internet", "Website"), placeholder: L("http://www.exemple.org", "http://www.example.org"), read: "coerce:pickString", write: "coerce:orUndef", path: "url" },
     socialLinks: {
-      widget: "fieldArray", label: L("Réseaux sociaux", "Social networks"), read: "tl:socialRead", write: "tl:socialWrite", path: "socialNetwork", clear: "",
+      widget: "fieldArray", label: L("Réseaux sociaux", "Social networks"), read: "social:read", write: "social:write", path: "socialNetwork", clear: "",
       widgetProps: {
         addLabel: L("Ajouter un réseau social", "Add a social network"),
         itemFields: [

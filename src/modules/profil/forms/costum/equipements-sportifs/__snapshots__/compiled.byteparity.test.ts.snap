@@ -839,7 +839,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
     "address": {
       "read": "address:read",
       "serverKey": "address",
-      "write": "poi:addressWrite",
+      "write": "address:write",
     },
   },
 }

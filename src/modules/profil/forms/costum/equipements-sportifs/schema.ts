@@ -20,7 +20,7 @@ export const EQUIPEMENTS_SPORTIFS_SCHEMA: CostumFormSchema = {
   costumSlug: "equipementsSportifs974",
   layout: { kind: "wizard", validatePerStep: true },
   // Groupe de sérialisation `address` (objet serveur ↔ 14 clés plates) — codec COMMUN `address:read` + poi:addressWrite.
-  serializeGroups: { address: { serverKey: "address", read: "address:read", write: "poi:addressWrite" } },
+  serializeGroups: { address: { serverKey: "address", read: "address:read", write: "address:write" } },
   // Défaut par widget : la zone de recherche des selects (placeholder = label, posé par le compilateur).
   fieldPresets: { selectFromLists: { placeholderSearch: L("Rechercher…", "Search…") } },
 

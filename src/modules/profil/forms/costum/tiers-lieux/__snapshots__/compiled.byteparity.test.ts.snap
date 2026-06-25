@@ -1002,7 +1002,7 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       },
       "name": "socialLinks",
       "path": "socialNetwork",
-      "read": "tl:socialRead",
+      "read": "social:read",
       "type": "array",
       "widget": "fieldArray",
       "widgetProps": {
@@ -1063,7 +1063,7 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
           },
         ],
       },
-      "write": "tl:socialWrite",
+      "write": "social:write",
     },
     "streetAddress": {
       "group": "address",
@@ -1323,7 +1323,7 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
     "address": {
       "read": "address:read",
       "serverKey": "address",
-      "write": "tl:addressWrite",
+      "write": "address:write",
     },
     "manageModel": {
       "read": "tl:manageModelRead",

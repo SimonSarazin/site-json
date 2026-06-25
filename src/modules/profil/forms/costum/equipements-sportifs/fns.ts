@@ -8,14 +8,12 @@
 // Helpers de pipeline partagés (imports DIRECTS, pas le barrel formEngine → util pur testable sans
 // tirer les widgets/composants). cf. doc/refactor-field-treatment.md.
 import { createElement } from "react";
-import { registerTransform } from "@/modules/formEngine/engine/transforms";
 import "@/modules/formEngine/engine/coercions"; // side-effect : enregistre les coerce:* (read par type des champs)
-import { ADDRESS_KEYS } from "../sharedCodecs"; // + side-effect : enregistre le codec commun `address:read`
+import { ADDRESS_KEYS } from "../sharedCodecs"; // + side-effect : enregistre les codecs communs address:read/write
 import { seedEntity, buildPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
 import "../../geoTransforms"; // enregistre geo:write / geoPosition:write (partagés)
 import type { FormValues } from "@/modules/formEngine";
 import { equipementsSportifsDescriptor } from "./descriptor";
-import { buildAddressFromForm } from "../../../hooks/mutationUtils";
 import { PROFIL_QUERY_KEYS } from "../../../constants";
 import { SEARCH_QUERY_KEYS } from "@/modules/search/constants";
 import { ParentInfoReadonly } from "../../../components/profile-edit/fields";
@@ -79,7 +77,7 @@ export const createEmptyDefaults = (scope: PoiEquipementScope): FormValues => ({
 // READ adresse : codec COMMUN `address:read` (cf. ../sharedCodecs, omit-empty) référencé par serializeGroups.
 // WRITE adresse : champs plats du form → objet `address` imbriqué (ou `undefined` si pas de localityId →
 // clé omise, parité buildAddressFromForm). `all` = toutes les valeurs de form.
-registerTransform("poi:addressWrite", (all) => buildAddressFromForm((all ?? {}) as Record<string, string>));
+// poi:addressWrite SUPPRIMÉ → codec commun `address:write` (sharedCodecs), référencé par serializeGroups.address.
 
 /**
  * Spec POI = descripteur UNIFIÉ (render + read/write) `equipementsSportifsDescriptor` + socle createEmptyDefaults.

@@ -39,7 +39,7 @@ describe("PILOTE config-driven tiers-lieu (Phase 2) — descripteur unifié", ()
     expect(norm(d2).serializeGroups).toEqual(tiersLieuxDescriptor.serializeGroups);
     expect(norm(d2).fields).toEqual(norm(tiersLieuxDescriptor).fields);
     // points sensibles
-    expect(d2.fields.socialLinks).toMatchObject({ widget: "fieldArray", read: "tl:socialRead", write: "tl:socialWrite", path: "socialNetwork", clear: "" });
+    expect(d2.fields.socialLinks).toMatchObject({ widget: "fieldArray", read: "social:read", write: "social:write", path: "socialNetwork", clear: "" });
     expect(d2.fields.address).toMatchObject({ widget: "location", renderOnly: true });
     expect(d2.fields.addressCountry).toMatchObject({ group: "address" });
     expect(d2.fields.geo).toMatchObject({ writeOnly: true, write: "geo:write" });
