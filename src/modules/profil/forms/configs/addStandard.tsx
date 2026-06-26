@@ -7,10 +7,7 @@ import type { FieldValues } from "react-hook-form";
 import { PROFIL_QUERY_KEYS } from "../../constants";
 import { ParentInfoReadonly } from "../../components/profile-edit/fields";
 import { addPoiDescriptor } from "../addPoi.descriptor";
-import { addProjectDescriptor } from "../addProject.descriptor";
-import { addOrganizationDescriptor } from "../addOrganization.descriptor";
-import { buildAddEventDescriptor } from "../addEvent.descriptor";
-import { buildProfileUpdateData } from "../editProfilePayload";
+import { MERGED_ADD_PROJECT, MERGED_ADD_ORGANIZATION, buildMergedAddEvent } from "../profilMerged";
 import { buildPayload } from "@/modules/formEngine/engine/entityForm";
 import type { EntityModalConfig } from "../EntityFormModal";
 
@@ -44,7 +41,7 @@ export const addPoiConfig: EntityModalConfig = {
 };
 
 export const addProjectConfig: EntityModalConfig = {
-  descriptor: addProjectDescriptor,
+  descriptor: MERGED_ADD_PROJECT, // descripteur unifié rendu+write (mergeRenderPipeline), comme les costums/poi
   title: { add: "AddEntity.modal.project.title", edit: "AddEntity.modal.project.title" },
   description: { add: "AddEntity.modal.project.description" },
   texts: tabsTexts,
@@ -57,7 +54,7 @@ export const addProjectConfig: EntityModalConfig = {
     const target = parent ?? me;
     return {
       mode: "add", entityType: "projects", target: parent ?? null,
-      buildPayload: (d) => buildProfileUpdateData("projects", d),
+      buildPayload: (d) => buildPayload({ descriptor: MERGED_ADD_PROJECT }, d),
       inject: { role: true, parent: parent ?? null },
       successKey: "toast.add.projectSuccess", errorKey: "toast.add.projectError", errorContext: "EntityFormModal · ADD_PROJECT",
       invalidateQueries: [
@@ -69,7 +66,7 @@ export const addProjectConfig: EntityModalConfig = {
 };
 
 export const addOrganizationConfig: EntityModalConfig = {
-  descriptor: addOrganizationDescriptor,
+  descriptor: MERGED_ADD_ORGANIZATION, // descripteur unifié rendu+write (mergeRenderPipeline), comme les costums/poi
   title: { add: "AddEntity.modal.organization.title", edit: "AddEntity.modal.organization.title" },
   description: { add: "AddEntity.modal.organization.description" },
   texts: tabsTexts,
@@ -81,7 +78,7 @@ export const addOrganizationConfig: EntityModalConfig = {
     const target = parent ?? me;
     return {
       mode: "add", entityType: "organizations", target: parent ?? null,
-      buildPayload: (d) => buildProfileUpdateData("organizations", d),
+      buildPayload: (d) => buildPayload({ descriptor: MERGED_ADD_ORGANIZATION }, d),
       inject: { role: true, dropEmptyEmail: true },
       successKey: "toast.add.organizationSuccess", errorKey: "toast.add.organizationError", errorContext: "EntityFormModal · ADD_ORGANIZATION",
       invalidateQueries: target ? [PROFIL_QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(target.slug)] : [],
@@ -90,8 +87,8 @@ export const addOrganizationConfig: EntityModalConfig = {
 };
 
 export const addEventConfig: EntityModalConfig = {
-  // Descripteur factory : validation organizer dépend de la présence d'un parent.
-  descriptor: ({ parent }) => buildAddEventDescriptor(Boolean(parent)),
+  // Descripteur factory unifié rendu+write : validation organizer dépend de la présence d'un parent.
+  descriptor: ({ parent }) => buildMergedAddEvent(Boolean(parent)),
   title: { add: "AddEntity.modal.event.title", edit: "AddEntity.modal.event.title" },
   description: { add: "AddEntity.modal.event.description" },
   texts: tabsTexts,
@@ -112,7 +109,7 @@ export const addEventConfig: EntityModalConfig = {
     const target = parent ?? me;
     return {
       mode: "add", entityType: "events", target: parent ?? null,
-      buildPayload: (d) => buildProfileUpdateData("events", d),
+      buildPayload: (d) => buildPayload({ descriptor: buildMergedAddEvent(Boolean(parent)) }, d),
       inject: { role: true, parent: parent ?? null, organizerFallback: parent ?? null },
       successKey: "toast.add.eventSuccess", errorKey: "toast.add.eventError", errorContext: "EntityFormModal · ADD_EVENT",
       invalidateQueries: [
