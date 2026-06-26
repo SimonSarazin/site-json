@@ -45,7 +45,9 @@ describe("résolveur — spec poi-équipement (parité avec l'ex-config)", () =>
     // payload create costum = pipeline (sans `type`) + STAMP (inject.extraFields) → doit égaler l'ex-payload
     // buildAddPoiPayload (qui portait `type` via le champ descripteur). Byte-parité de la création préservée.
     const form = { ...createEmptyDefaults(scope, equipementsSportifsDescriptor), name: "Stade", equip_type_name: "Terrain", equip_long: 25 } as unknown as Record<string, unknown>;
-    expect({ ...mut.buildPayload(form), ...(mut.inject?.extraFields ?? {}) }).toEqual(buildAddPoiPayload(form as never));
+    // buildAddPoiPayload (poi standard) tourne sur SON descripteur ; ici on lui passe le descripteur equipements
+    // (DI) pour comparer la modale equipements à l'ex-référence — parité création equipements préservée.
+    expect({ ...mut.buildPayload(form), ...(mut.inject?.extraFields ?? {}) }).toEqual(buildAddPoiPayload(form as never, equipementsSportifsDescriptor));
   });
 
   it("EDIT : target=entité, pas de costumSlug, keys d'update", () => {
