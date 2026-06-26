@@ -14,6 +14,7 @@ import { configToDescriptor } from "@/modules/formEngine/config/configToDescript
 import type { FormValues, JsonFormConfig } from "@/modules/formEngine";
 import { tiersLieuxDescriptor } from "./descriptor";
 import { getSlug } from "@/lib/constant/common";
+import { carrierSlug } from "../carrier";
 import type { EntityModalCtx } from "../../entityModalSpec";
 import { registerDescriptor, registerDefaultsFn, registerPayloadFn, registerScopeFn } from "../../specRegistries";
 import "../sharedFns"; // side-effect : enregistre la clé commune image:profilUrl
@@ -231,10 +232,7 @@ registerOptions("tl:years", () => {
 });
 registerDefaultsFn("tl:emptyDefaults", () => getDefaultTiersLieuxValues() as unknown as Record<string, unknown>);
 // Scope = slug du costum porteur (VITE_SLUG), fallback getSlug() — exposé via {slug} (slugKey "slug").
-registerScopeFn("tl:scope", (carrier) => {
-  const s = (carrier?.serverData as { slug?: unknown } | undefined)?.slug;
-  return { slug: typeof s === "string" && s.trim() ? s.trim() : getSlug() };
-});
+registerScopeFn("tl:scope", (carrier) => ({ slug: carrierSlug(carrier) || getSlug() }));
 // Payload mode-aware : create scopé costum (merge presets extraData + tags) ; edit complet (vides typés) + merge tags existants.
 registerPayloadFn("tl:payload", (form, ctx: EntityModalCtx) => {
   const co = ctx.costum as CostumConfig | undefined;
