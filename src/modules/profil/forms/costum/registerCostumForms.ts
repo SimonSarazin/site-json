@@ -1,19 +1,14 @@
 /**
  * Agrégateur SIDE-EFFECT des modales costum dans la TABLE runtime (`costumFormRegistry`). Importé par les
- * registries de modale (ModalRegistry/EditModalRegistry) pour résoudre un costum PAR ID (clé `add-/edit-<id>`).
+ * registries de modale (ModalRegistry/EditModalRegistry) pour résoudre un costum PAR ID (`add-/edit-<id>`).
  *
- * Remplit la table avec : (1) les costums TS connus (leur `spec.ts` s'auto-enregistre à l'import) ; (2) les
- * costums déclarés dans la CONFIG GLOBALE `config.costumForms` (JSON) — voie « costum sans code » : un document
- * `CostumFormSchema` posé dans la config est compilé (`registerCostumForm`) en descriptor+spec, à condition que
- * les CLÉS qu'il référence (scope/payload/codecs…) soient déjà enregistrées (fns connues + codecs communs).
- *
- * Les CLÉS MÉTIER (fns) sont enregistrées par `registerSpecFns` (importé par EntityFormModal) ; les clés
- * GÉNÉRIQUES sont garanties ici par `sharedRegistrations` (importé EN PREMIER) → un costum de config qui ne
- * réutilise que des clés génériques se compile correctement même si aucun costum TS n'est chargé.
+ * « CONFIG FAIT FOI » : au runtime, les costums sont chargés UNIQUEMENT depuis la config globale
+ * `config.costumForms` (JSON, par déploiement) → `registerCostumForm(doc)` (compile + garde des clés +
+ * enregistre descripteur + spec). PLUS AUCUN schéma TS hardcodé chargé ici (les `<costum>/spec.ts` ne servent
+ * plus qu'aux tests). `registerSpecFns` (importé EN PREMIER) garantit les CLÉS — génériques
+ * (`sharedRegistrations`) ET métier (`<costum>/fns`) — pour que la garde de `registerCostumForm` les trouve.
  */
-import "./sharedRegistrations"; // clés génériques (codecs/coercions/geo/validators/fns partagés) AVANT registerCostumForm
-import "./equipements-sportifs/spec"; // → registerCostumForm(SCHEMA) (descripteur + spec + garde)
-import "./tiers-lieux/spec"; // → registerCostumForm(SCHEMA)
+import "../registerSpecFns"; // clés génériques + métier (sharedRegistrations + fns) AVANT le chargement config
 import { registerCostumForm, getCostumModalSpec } from "./costumFormRegistry";
 import type { CostumFormSchema } from "./compileCostumSchema";
 
