@@ -6,15 +6,17 @@
 import { describe, it, expect } from "vitest";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { specToConfig } from "../../resolveModalSpec";
-import { tiersLieuxSpec } from "./spec";
 import {
   getDefaultTiersLieuxValues,
   buildTiersLieuxPayload as buildTiersLieuxPayloadRaw,
   mapEntityToTiersLieuxValues as mapEntityToTiersLieuxValuesRaw,
   type CostumConfig, type TiersLieuxFormData, type BuildPayloadOptions, type EntityLike,
 } from "./fns";
-import { tiersLieuxDescriptor } from "./descriptor";
 import type { EntityModalCtx } from "../../entityModalSpec";
+import { loadCostumForm } from "../__fixtures__/configCostum";
+
+// Source = document JSON de config (config.prod), compilé via la voie unique registerCostumForm — plus de schema/spec/descriptor TS.
+const { descriptor: tiersLieuxDescriptor, spec: tiersLieuxSpec } = loadCostumForm("tiers-lieux");
 
 // DI : injecte le descripteur (= celui résolu via getDescriptor par les closures en prod) → parité.
 const buildTiersLieuxPayload = (data: TiersLieuxFormData, options?: BuildPayloadOptions) =>

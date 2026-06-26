@@ -14,9 +14,12 @@ import { buildPayload } from "@/modules/formEngine/engine/entityForm";
 import { addPoiDescriptor } from "../forms/addPoi.descriptor"; // porte ses transforms (address/geo) en side-effect
 import { buildTiersLieuxPayload } from "../forms/costum/tiers-lieux/fns";
 import { getDefaultTiersLieuxValues } from "../forms/costum/tiers-lieux/fns";
-import { tiersLieuxDescriptor } from "../forms/costum/tiers-lieux/descriptor";
+import { loadCostumForm } from "../forms/costum/__fixtures__/configCostum";
 
 type Data = Record<string, unknown>;
+
+// descripteur tiers-lieux compilé depuis le JSON de config (config.prod) via la voie unique — plus de descriptor.ts TS.
+const { descriptor: tiersLieuxDescriptor } = loadCostumForm("tiers-lieux");
 
 // Payload poi standard = pipeline générique direct sur addPoiDescriptor (plus de buildAddPoiPayload).
 const buildAddPoiPayload = (d: Data) => buildPayload({ descriptor: addPoiDescriptor }, d) as Data;

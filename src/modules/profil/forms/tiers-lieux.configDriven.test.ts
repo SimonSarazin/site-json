@@ -16,10 +16,13 @@ import { buildPayload, type FormSpec } from "@/modules/formEngine/engine/entityF
 import { JsonFormConfigSchema } from "@/modules/formEngine/config/schema";
 import { formDescriptorToConfig } from "@/modules/formEngine/config/formDescriptorToConfig";
 import { configToDescriptor } from "@/modules/formEngine/config/configToDescriptor";
-import { tiersLieuxDescriptor } from "./costum/tiers-lieux/descriptor";
+import { loadCostumForm } from "./costum/__fixtures__/configCostum";
 import { getDefaultTiersLieuxValues } from "./costum/tiers-lieux/fns";
 // side-effect : enregistre les transforms tl:* + geo:write/geoPosition:write (référencés par clé dans le descripteur).
 import "./costum/tiers-lieux/fns";
+
+// descripteur compilé depuis le document JSON de config (config.prod) via la voie unique — plus de descriptor.ts TS.
+const { descriptor: tiersLieuxDescriptor } = loadCostumForm("tiers-lieux");
 
 // identité : préserve le LocalizedString inline (résolu locale-aware au rendu par useT) → round-trip exact des labels objets.
 const tLoc = (l: import("@/types/locale-schema").LocalizedString) => l;

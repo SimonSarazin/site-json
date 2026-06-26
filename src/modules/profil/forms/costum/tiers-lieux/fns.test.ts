@@ -19,7 +19,10 @@ import {
   type BuildPayloadOptions,
 } from "./fns";
 import { getDefaultTiersLieuxValues } from "./fns";
-import { tiersLieuxDescriptor } from "./descriptor";
+import { loadCostumForm } from "../__fixtures__/configCostum";
+
+// descripteur compilé depuis le JSON de config (config.prod) via la voie unique — plus de descriptor.ts TS.
+const { descriptor: tiersLieuxDescriptor } = loadCostumForm("tiers-lieux");
 
 // DI : les fns reçoivent désormais le descripteur (résolu au runtime via getDescriptor en prod). Ici on
 // l'injecte depuis ./descriptor (dérivation pure de schema.ts) → tests inchangés, fonctions restent pures.
