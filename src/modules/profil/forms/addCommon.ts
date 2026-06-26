@@ -30,9 +30,11 @@ export const tagsField: FieldDescriptor = {
   name: "tags", type: "array", widget: "tags", label: PE("tags.label"), widgetProps: { extendedTexts: true },
 };
 
-/** Bloc adresse complet (EditLocationTab via le widget location). Label ignoré par le widget. */
+/** Bloc adresse complet (EditLocationTab via le widget `location`). Ancre UI PURE : `renderOnly` (jamais émise
+ *  telle quelle) — l'ÉCRITURE de l'adresse passe par les membres plats + serializeGroups.address, comme
+ *  WIDGET_DEFAULTS.location (costum) et les composites profil. Label ignoré par le widget. */
 export const addressField: FieldDescriptor = {
-  name: "address", type: "object", widget: "location", label: "",
+  name: "address", type: "object", widget: "location", label: "", renderOnly: true,
 };
 
 /** Section « Localisation » (onglet) : adresse + `addressLocality` (rendu nul) pour le badge d'onglet. */
