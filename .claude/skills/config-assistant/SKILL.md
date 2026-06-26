@@ -152,9 +152,10 @@ introspectable (règle d'or « dériver ») : `npm run config:schema costumForm`
    (`{champ_serverData: valeur}`) si plusieurs sous-types partagent le même `entityType`. La résolution
    `add-/edit-<id>` → table runtime est **automatique** (aucune entrée hardcodée à ajouter).
 4. **Valider** : un test qui appelle `registerCostumForm(doc)` (cf. `costumFormRegistry.test.ts`) joue
-   `CostumFormSchemaZod` puis compile. ⚠️ Ce zod **ne vérifie PAS** que les clés citées
-   (`read`/`write`/`scope`/`payloadFn`/`validateFn`/`slots`) existent : une clé inconnue passe la validation et
-   échoue au rendu (`console.warn`). Vérifie que chaque clé figure dans les clés partagées, sinon → `fns.ts`.
+   `CostumFormSchemaZod` (structure) **puis** `assertCostumKeysRegistered` (existence des clés). Une clé citée
+   (`read`/`write`/`enumFrom`/`scope.derive`/`payloadFn`/`validateFn`/`slots`…) non enregistrée **lève une erreur
+   claire au load** (nom de la clé + où la définir), plus de `console.warn` silencieux au rendu. Si la garde
+   pointe une clé absente → c'est une clé **métier** → il te faut un `fns.ts` (voir ci-dessous).
 
 **Quand il faut du code (PAS 100 % config)** : transfo métier inédite (`payloadFn` propre), `scope` dérivé,
 defaults structurés, **slot React** (placé par `"$slot:<id>"` dans `sections`), codec `serializeGroup` inédit,
@@ -162,10 +163,11 @@ defaults structurés, **slot React** (placé par `"$slot:<id>"` dans `sections`)
 (`registerXxx("clé", impl)`) + l'ajouter au barrel `registerSpecFns.ts`. `npm run config:costum` génère un
 squelette de config depuis un costum.
 
-> ⚠️ **Piège** : les clés « partagées » ne sont aujourd'hui chargées que TRANSITIVEMENT par les `fns.ts` des 2
-> costums TS existants (importés par `registerSpecFns.ts`). Un costum purement-config qui en dépend marche par
-> effet de bord tant que ces imports restent — fragile tant qu'un barrel `sharedRegistrations` dédié n'existe
-> pas (dette connue, cf. doc/28 § limites).
+> **Clés génériques garanties** : les clés « partagées » (codecs/coercions/geo/validators/`image:profilUrl`/
+> `cleanValues:*`/`invalidate:standard`) sont enregistrées inconditionnellement par le barrel
+> `forms/costum/sharedRegistrations.ts` (importé par `registerSpecFns` et par le loader `registerCostumForms`
+> avant toute compilation) — un costum 100 %-config qui ne réutilise que ces clés se compile sans dépendre
+> d'aucun costum métier. Toute clé MÉTIER manquante est signalée par la garde du loader (cf. point 4).
 
 ## Règles maison
 
