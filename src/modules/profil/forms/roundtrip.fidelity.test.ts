@@ -5,9 +5,12 @@ import { addPoiDescriptor } from "./addPoi.descriptor";
 import { addProjectDescriptor } from "./addProject.descriptor";
 import { addOrganizationDescriptor } from "./addOrganization.descriptor";
 import { buildAddEventDescriptor } from "./addEvent.descriptor";
-import { equipementsSportifsDescriptor } from "./costum/equipements-sportifs/descriptor";
+import { loadCostumForm } from "./costum/__fixtures__/configCostum";
 import { tiersLieuxDescriptor } from "./costum/tiers-lieux/descriptor";
 import { EDIT_DESCRIPTORS } from "./editProfile.descriptor";
+
+// equipements : compilé depuis le JSON de config (config.prod) — plus de descriptor.ts TS. (tiers-lieux : phase 2.)
+const equipementsSportifsDescriptor = loadCostumForm("equipements-sportifs").descriptor;
 
 const ALL: Array<[string, FormDescriptor]> = [
   ["addPoi", addPoiDescriptor],

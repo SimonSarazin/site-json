@@ -6,11 +6,13 @@
 import { describe, it, expect } from "vitest";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { specToConfig } from "../../resolveModalSpec";
-import { equipementsSportifsSpec } from "./spec";
 import { createEmptyDefaults, type PoiEquipementScope } from "./fns";
-import { equipementsSportifsDescriptor } from "./descriptor";
 import { buildPayload } from "@/modules/formEngine/engine/entityForm";
 import type { EntityModalCtx } from "../../entityModalSpec";
+import { loadCostumForm } from "../__fixtures__/configCostum";
+
+// Source = document JSON de config (config.prod), compilé via la voie unique registerCostumForm — plus de schema/spec/descriptor TS.
+const { descriptor: equipementsSportifsDescriptor, spec: equipementsSportifsSpec } = loadCostumForm("equipements-sportifs");
 
 // Référence de parité : pipeline générique sur le descripteur equipements + STAMP `type` (form.type) —
 // reproduit l'ex-buildAddPoiPayload (le descripteur equipements n'a pas de champ `type`, c'est un stamp).

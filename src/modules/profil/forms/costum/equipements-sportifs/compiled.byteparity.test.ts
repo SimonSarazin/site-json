@@ -1,22 +1,23 @@
 /**
- * GARDE byte-parité STRUCTURELLE du pilote « fusion form+modal » : fige (snapshot) le descripteur ET la spec
- * du costum poi-équipement tels qu'ils sont AUJOURD'HUI (construits à la main). Quand on bascule leur SOURCE
- * sur le document fusionné `schema.ts` (via `compileCostumSchema`), ces snapshots doivent rester IDENTIQUES —
- * preuve que le compilateur reproduit byte-pour-byte la structure (champs/read/write/default/sections/spec).
- * Normalisé (JSON round-trip) pour ignorer les `undefined` (clés absentes ≡ undefined). cf. plan fusion.
+ * GARDE byte-parité STRUCTURELLE du costum poi-équipement : fige (snapshot) le descripteur ET la spec COMPILÉS
+ * depuis le document JSON `config.prod.equipements-Sportifs.json` (`costumForms.equipements-sportifs`) via la
+ * voie unique `registerCostumForm`. Toute dérive de la config (ou du compilateur) casse le snapshot.
+ * Normalisé (JSON round-trip) pour ignorer les `undefined` (clés absentes ≡ undefined).
+ *
+ * NB : le snapshot a été capturé du temps où la source était le `schema.ts` TS ; il reste IDENTIQUE car le JSON
+ * est byte-fidèle au schema (le compilé est le même) → preuve que la config produit exactement la même structure.
  */
 import { describe, it, expect } from "vitest";
-import { equipementsSportifsDescriptor } from "./descriptor";
-import { equipementsSportifsSpec } from "./spec";
-import "./fns"; // enregistre les transforms référencés par clé (pas requis pour le snapshot, mais cohérent)
+import { loadCostumForm } from "../__fixtures__/configCostum";
 
 const norm = <T,>(v: T): T => JSON.parse(JSON.stringify(v));
+const { descriptor, spec } = loadCostumForm("equipements-sportifs");
 
 describe("poi-équipement — byte-parité structurelle (descriptor + spec)", () => {
   it("descripteur figé (snapshot)", () => {
-    expect(norm(equipementsSportifsDescriptor)).toMatchSnapshot();
+    expect(norm(descriptor)).toMatchSnapshot();
   });
   it("spec figée (snapshot)", () => {
-    expect(norm(equipementsSportifsSpec)).toMatchSnapshot();
+    expect(norm(spec)).toMatchSnapshot();
   });
 });

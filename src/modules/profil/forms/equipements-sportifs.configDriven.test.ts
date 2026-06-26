@@ -19,10 +19,13 @@ import { seedEntity, buildPayload, buildEditPayload, type FormSpec } from "@/mod
 import { JsonFormConfigSchema } from "@/modules/formEngine/config/schema";
 import { formDescriptorToConfig } from "@/modules/formEngine/config/formDescriptorToConfig";
 import { configToDescriptor } from "@/modules/formEngine/config/configToDescriptor";
-import { equipementsSportifsDescriptor } from "./costum/equipements-sportifs/descriptor";
+import { loadCostumForm } from "./costum/__fixtures__/configCostum";
 // side-effect : enregistre les transforms poi:* (toString/…/addressRead/Write) + geo:write/geoPosition:write,
 // référencés PAR CLÉ dans le descripteur. Fournit aussi createEmptyDefaults (socle baseDefaults).
 import { createEmptyDefaults, type PoiEquipementScope } from "./costum/equipements-sportifs/fns";
+
+// descripteur compilé depuis le document JSON de config (config.prod) via la voie unique — plus de descriptor.ts TS.
+const { descriptor: equipementsSportifsDescriptor } = loadCostumForm("equipements-sportifs");
 
 // identité : préserve le LocalizedString inline (résolu locale-aware au rendu par useT) → round-trip exact des labels objets.
 const tLoc = (l: import("@/types/locale-schema").LocalizedString) => l;

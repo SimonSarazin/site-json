@@ -1,28 +1,33 @@
 /**
- * Garde de la table runtime des modales costum + GARDE ANTI-DRIFT du futur loader JSON : recompiler le SCHÉMA
- * (voie loader, `registerCostumForm`) doit produire EXACTEMENT la même spec que le module TS `spec.ts`. Tant
- * que c'est vrai, poser un costum en JSON dans `config.costumForms` donnera un comportement identique au TS.
+ * Garde de la table runtime des modales costum + garde du loader JSON.
+ * - equipements-sportifs : SOURCE = document JSON de config (`config.prod`), chargé via la voie unique
+ *   `registerCostumForm` (plus de schema/spec/descriptor TS). On vérifie résolution par id + compilation stable.
+ * - tiers-lieux : encore en TS → garde ANTI-DRIFT `registerCostumForm(SCHEMA) ≡ spec TS` (sera migré en phase 2).
  */
 import { describe, it, expect } from "vitest";
 import { getCostumModalSpec, registerCostumForm } from "./costumFormRegistry";
-import { equipementsSportifsSpec } from "./equipements-sportifs/spec"; // s'auto-enregistre dans la table
-import { tiersLieuxSpec } from "./tiers-lieux/spec"; // s'auto-enregistre
-import { EQUIPEMENTS_SPORTIFS_SCHEMA } from "./equipements-sportifs/schema";
+import { tiersLieuxSpec } from "./tiers-lieux/spec"; // s'auto-enregistre (tiers-lieux encore en TS)
 import { TIERS_LIEUX_SCHEMA } from "./tiers-lieux/schema";
-import "./equipements-sportifs/fns"; // enregistre les clés référencées (cohérence boot)
-import "./tiers-lieux/fns";
+import { loadCostumForm, costumDoc } from "./__fixtures__/configCostum"; // equipements : source = JSON config
+import "./tiers-lieux/fns"; // cohérence boot (clés tiers-lieux)
 
 const norm = <T,>(v: T): T => JSON.parse(JSON.stringify(v));
 
 describe("costumFormRegistry — table runtime des modales costum", () => {
-  it("les spec.ts s'auto-enregistrent → résolution par id", () => {
-    expect(getCostumModalSpec("equipements-sportifs")).toBe(equipementsSportifsSpec);
+  it("résolution par id (equipements = JSON config, tiers-lieux = TS)", () => {
+    const equip = loadCostumForm("equipements-sportifs"); // enregistre via le document JSON de config
+    expect(getCostumModalSpec("equipements-sportifs")).toBe(equip.spec);
     expect(getCostumModalSpec("tiers-lieux")).toBe(tiersLieuxSpec);
     expect(getCostumModalSpec("inconnu")).toBeUndefined();
   });
 
-  it("registerCostumForm(schema) (voie loader JSON) reproduit la spec du module TS — byte", () => {
-    expect(norm(registerCostumForm(EQUIPEMENTS_SPORTIFS_SCHEMA).spec)).toEqual(norm(equipementsSportifsSpec));
+  it("registerCostumForm : compilation stable (equipements, JSON) ; reproduit la spec TS (tiers-lieux, byte)", () => {
+    // equipements : la source EST le JSON → on vérifie que la voie loader compile la spec attendue + de façon stable.
+    const a = registerCostumForm(costumDoc("equipements-sportifs")).spec;
+    const b = registerCostumForm(costumDoc("equipements-sportifs")).spec;
+    expect(a.id).toBe("equipements-sportifs");
+    expect(norm(a)).toEqual(norm(b));
+    // tiers-lieux : encore en TS → garde anti-drift loader≡TS (byte). (phase 2 : passera au JSON.)
     expect(norm(registerCostumForm(TIERS_LIEUX_SCHEMA).spec)).toEqual(norm(tiersLieuxSpec));
   });
 
