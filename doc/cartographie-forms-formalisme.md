@@ -491,7 +491,7 @@ Tout widget composite (`location`/`image`/`editSocial`/`editSchedule`) **doit ê
 # 6. Incohérences inter-fichiers (classées par impact)
 
 
-## #1 — API morte / mensonge du descripteur : `atomicGroup` est déclaré + validé zod + round-trippé config + listé dans PIPELINE_KEYS mais AUCUNE fn moteur ne le lit ; les JSDoc renvoient à `diffForEdit`/`buildDelta` qui N'EXISTENT PLUS (migration vers buildEditPayload+emitEmpty). Viole types.ts:82-83 qui interdit de déclarer une clé non implémentée.
+## #1 — ✅ FAIT (commit a2ed2c1) — API morte / mensonge du descripteur : `atomicGroup` est déclaré + validé zod + round-trippé config + listé dans PIPELINE_KEYS mais AUCUNE fn moteur ne le lit ; les JSDoc renvoient à `diffForEdit`/`buildDelta` qui N'EXISTENT PLUS (migration vers buildEditPayload+emitEmpty). Viole types.ts:82-83 qui interdit de déclarer une clé non implémentée.
 
 - **Impact / effort** : Risque de bug ÉLEVÉ + frein à l'ajout d'entité : un mainteneur câble `atomicGroup` sur un groupe d'adresse en croyant qu'il protège du diff lossy → no-op silencieux, écrasement de level1..4/codeInsee. Les commentaires mentent sur le contrat d'effacement. — *(effort M)*
 
@@ -500,7 +500,7 @@ Tout widget composite (`location`/`image`/`editSocial`/`editSchedule`) **doit ê
 - **Forme canonique** : Retirer `atomicGroup` + ses 4 round-trips config et corriger tous les JSDoc citant diffForEdit/buildDelta (le diff est délégué au SDK via emitEmpty). OU câbler un vrai diff atomique dans valuesToPayload.
 
 
-## #2 — widgetRegistry sans `has*` ni warn : getWidget(kind) retombe TOUJOURS sur `registry.text` (registry.tsx:137) sans aucun avertissement, et assertCostumKeysRegistered ne vérifie JAMAIS field.widget faute de hasWidget. Un widget non injecté (ex. `tags`/`location` si le module profil n'est pas importé) rend un input texte muet.
+## #2 — ✅ FAIT (commit 064c5f8) — widgetRegistry sans `has*` ni warn : getWidget(kind) retombe TOUJOURS sur `registry.text` (registry.tsx:137) sans aucun avertissement, et assertCostumKeysRegistered ne vérifie JAMAIS field.widget faute de hasWidget. Un widget non injecté (ex. `tags`/`location` si le module profil n'est pas importé) rend un input texte muet. → hasWidget + warn + check au load + parade d'ordre (sharedRegistrations importe registerWidgets).
 
 - **Impact / effort** : Risque de bug ÉLEVÉ et silencieux : un costum qui référence un widget non enregistré passe toute la garde et rend un champ texte au lieu du composite → adresse/horaires/image cassés sans erreur. Asymétrie avec les 4 autres registres (tous ont hasRegistered/hasSpecFn). — *(effort S)*
 
@@ -518,7 +518,7 @@ Tout widget composite (`location`/`image`/`editSocial`/`editSchedule`) **doit ê
 - **Forme canonique** : Trancher : préfixe par CONCEPT partout. Renommer pf:addressRead→address:readFlat, pf:socialRead→social:readGrid, pf:rdPublic→pf:publicRead (suffixe Read). Migrer tl:numOrUndef→coerce:numOrUndef, tl:video0/videoWrite→firstOf:read/wrapArray:write, tl:years→options:yearsDesc. Cible : tiers-lieu à zéro clé propre comme equipements.
 
 
-## #4 — Ancre composite `addressField` NON marquée `renderOnly` (addCommon.ts:34) contrairement à la convention costum (WIDGET_DEFAULTS.location renderOnly) et profil (_location). Traitée comme un vrai champ read/write par le moteur ; ne « marche » qu'en s'appuyant sur l'ordre des loops dans valuesToPayload (groupe address écrit APRÈS le champ → écrase payload['address']).
+## #4 — ✅ FAIT (commit b899ce0) — Ancre composite `addressField` NON marquée `renderOnly` (addCommon.ts:34) contrairement à la convention costum (WIDGET_DEFAULTS.location renderOnly) et profil (_location). Traitée comme un vrai champ read/write par le moteur ; ne « marche » qu'en s'appuyant sur l'ordre des loops dans valuesToPayload (groupe address écrit APRÈS le champ → écrase payload['address']).
 
 - **Impact / effort** : Risque de bug FRAGILE : au READ, seedFromEntity charge serverData['address'] dans values['address'] que le widget location ne consomme jamais ; au WRITE, dépend de l'ordre champs-puis-groupes. Un refactor de l'ordre des loops casserait l'adresse de tous les POI standard. — *(effort S)*
 
