@@ -1,13 +1,16 @@
 /**
- * `EntityModalSpec` du costum poi-équipement (equipementsSportifs974) — DÉRIVÉE du document fusionné `./schema`
- * (`compileCostumSchema(...).spec`). 100 % DONNÉES + CLÉS (aucune closure). Le code référencé par clé est
- * enregistré dans `./fns` : descripteur `equipements-sportifs`, scope `poi:scope`, defaults `poi:emptyDefaults`,
- * slots `parentInfo`/`poiDoublons`, `poi:dropEmptyUrls`, `image:profilUrl`, `poi:invalidate`. Payload = pipeline.
+ * Enregistrement du costum poi-équipement (equipementsSportifs974) dans la table runtime, via la VOIE UNIQUE
+ * `registerCostumForm(SCHEMA)` — la MÊME que celle d'un costum posé en `config.costumForms` :
+ *   compile (`compileCostumSchema`) → garde des clés (`assertCostumKeysRegistered`) → enregistre le DESCRIPTEUR
+ *   (par id) ET la SPEC. Plus de duplication : `fns.ts` ne fait QUE déclarer les clés de code (scope/defaults/
+ *   slots) que le schéma référence ; `descriptor.ts`/`spec.ts` ne sont plus que des dérivations pures (tests).
+ *
+ * `import "./fns"` EN PREMIER : enregistre les clés de code (poi:scope / poi:emptyDefaults / parentInfo /
+ * poiDoublons) pour que la garde de `registerCostumForm` les trouve.
  */
+import "./fns";
 import type { EntityModalSpec } from "../../entityModalSpec";
-import { compileCostumSchema } from "../compileCostumSchema";
-import { registerCostumModalSpec } from "../costumFormRegistry";
+import { registerCostumForm } from "../costumFormRegistry";
 import { EQUIPEMENTS_SPORTIFS_SCHEMA } from "./schema";
 
-export const equipementsSportifsSpec: EntityModalSpec = compileCostumSchema(EQUIPEMENTS_SPORTIFS_SCHEMA).spec;
-registerCostumModalSpec(equipementsSportifsSpec); // table runtime (résolution par id, voie config-driven)
+export const equipementsSportifsSpec: EntityModalSpec = registerCostumForm(EQUIPEMENTS_SPORTIFS_SCHEMA).spec;

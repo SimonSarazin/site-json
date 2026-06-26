@@ -395,8 +395,12 @@ Gate à chaque commit : `tsc` 0, `vitest src/modules/profil src/modules/formEngi
 
 - **Codecs `pf:*` (profil) vs `tl:*`** : mêmes formats serveur (openingHours/social), widgets DIFFÉRENTS
   (`editSchedule`/`editSocial` vs `openingHours`/`fieldArray`) → codecs distincts, non fusionnés.
-- **Suppression de `descriptor.ts`/`spec.ts`** (le loader les produit) non faite : couplage `fns ↔ descripteur`
-  au module-load + faible valeur.
+- **Enregistrement UNIFIÉ** : un costum TS s'enregistre désormais par la MÊME voie qu'un costum de config —
+  `spec.ts` fait `registerCostumForm(SCHEMA)` (compile → garde des clés → descripteur + spec), et `fns.ts` ne
+  déclare QUE les clés de code (scope/payload/defaults/slots/options). `descriptor.ts`/`spec.ts` subsistent comme
+  **dérivations pures** (`compileCostumSchema(SCHEMA).descriptor/.spec`) car encore importées par des tests et
+  quelques utils runtime (`addPoi.payload`, `descriptorToTs`) ; les supprimer (repointer ces importeurs) reste un
+  nettoyage possible, à faible valeur.
 - **zod `CostumFormSchema` pragmatique** (structure essentielle + `.passthrough()`) — pas exhaustif champ par champ.
 - **Entités STANDARD** (org/projet/event/poi/edit-profil) : pilotées par des descripteurs TS + `EntityModalSpec`
   (`forms/configs/`), pas encore par le document fusionné — hors périmètre costum.

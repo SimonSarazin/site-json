@@ -16,7 +16,7 @@ import { tiersLieuxDescriptor } from "./descriptor";
 import { getSlug } from "@/lib/constant/common";
 import { carrierSlug } from "../carrier";
 import type { EntityModalCtx } from "../../entityModalSpec";
-import { registerDescriptor, registerDefaultsFn, registerPayloadFn, registerScopeFn } from "../../specRegistries";
+import { registerDefaultsFn, registerPayloadFn, registerScopeFn } from "../../specRegistries";
 import "../sharedFns"; // side-effect : enregistre la clé commune image:profilUrl
 
 /** Lien social (fieldArray). */
@@ -222,8 +222,9 @@ export function buildTiersLieuxPayload(
   return payload;
 }
 
-// ── Enregistrement des CLÉS référencées par `spec.ts` (descripteur + fns costum) ───────────────────────────
-registerDescriptor(tiersLieuxDescriptor);
+// ── Enregistrement des seules CLÉS DE CODE irréductibles référencées par le schéma ─────────────────────────
+// Le descripteur + la spec sont compilés et enregistrés par le LOADER (`spec.ts` → `registerCostumForm`),
+// EXACTEMENT comme un costum de config — plus de `registerDescriptor` ici.
 // Options DYNAMIQUES `tl:years` (champ openingYear via enumFrom) : années courante+5 → 1900, recalculées au rendu
 // (PAS figées dans le JSON). new Date() à chaque appel → toujours à jour.
 registerOptions("tl:years", () => {

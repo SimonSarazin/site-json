@@ -1,13 +1,15 @@
 /**
- * `EntityModalSpec` du costum tiers-lieu (navigatorDesTierslieux) — DÉRIVÉE du document fusionné `./schema`
- * (`compileCostumSchema(...).spec`). 100 % DONNÉES + CLÉS. Code référencé par clé enregistré dans `./fns` :
- * descripteur `tiers-lieux`, scope `tl:scope` (slug porteur), defaults `tl:emptyDefaults`, payload `tl:payload`
- * (merge tags costum + extraData), `tl:invalidate`. `image:profilUrl` partagé (enregistré par equipements-sportifs/fns).
+ * Enregistrement du costum tiers-lieu (navigatorDesTierslieux) dans la table runtime, via la VOIE UNIQUE
+ * `registerCostumForm(SCHEMA)` — la MÊME que celle d'un costum posé en `config.costumForms` :
+ *   compile (`compileCostumSchema`) → garde des clés (`assertCostumKeysRegistered`) → enregistre le DESCRIPTEUR
+ *   (par id) ET la SPEC. `fns.ts` ne fait QUE déclarer les clés de code (tl:scope / tl:emptyDefaults / tl:payload
+ *   / tl:years / tl:video* / tl:numOrUndef) que le schéma référence.
+ *
+ * `import "./fns"` EN PREMIER : enregistre ces clés pour que la garde de `registerCostumForm` les trouve.
  */
+import "./fns";
 import type { EntityModalSpec } from "../../entityModalSpec";
-import { compileCostumSchema } from "../compileCostumSchema";
-import { registerCostumModalSpec } from "../costumFormRegistry";
+import { registerCostumForm } from "../costumFormRegistry";
 import { TIERS_LIEUX_SCHEMA } from "./schema";
 
-export const tiersLieuxSpec: EntityModalSpec = compileCostumSchema(TIERS_LIEUX_SCHEMA).spec;
-registerCostumModalSpec(tiersLieuxSpec); // table runtime (résolution par id, voie config-driven)
+export const tiersLieuxSpec: EntityModalSpec = registerCostumForm(TIERS_LIEUX_SCHEMA).spec;

@@ -1,9 +1,10 @@
 /**
  * Registre RUNTIME des modales costum (table `id → EntityModalSpec`). C'est le SEAM du « costum dans la config
- * globale » : aujourd'hui les 2 costums TS s'y enregistrent (via leur `spec.ts`) ; demain un loader lira
- * `config.costumForms` (JSON) → `compileCostumSchema(json)` → `registerCostumForm(...)` ICI, sans toucher au code.
+ * globale » : les costums TS (via leur `spec.ts`) ET ceux de `config.costumForms` passent par la MÊME voie
+ * UNIQUE `registerCostumForm(schema)` (compile → garde des clés → enregistre descripteur + spec). Aucune
+ * duplication de chemin → pas de divergence TS↔config.
  *
- * `ModalRegistry`/`EditModalRegistry` peuvent consulter cette table par `id` (clé `add-<id>`/`edit-<id>`) au lieu
+ * `ModalRegistry`/`EditModalRegistry` consultent cette table par `id` (clé `add-<id>`/`edit-<id>`) au lieu
  * d'imports codés en dur — ce qui permet d'ajouter une entité costum SANS entrée hardcodée.
  */
 import type { EntityModalSpec } from "../entityModalSpec";
@@ -15,13 +16,8 @@ import { assertCostumKeysRegistered } from "./assertKeysRegistered";
 
 const costumSpecs = new Map<string, EntityModalSpec>();
 
-/** Enregistre une spec déjà compilée (réutilisé par les `spec.ts` TS — pas de recompilation). */
-export function registerCostumModalSpec(spec: EntityModalSpec): void {
-  costumSpecs.set(spec.id, spec);
-}
-
-/** Compile un document costum (DONNÉES) → descripteur (registre) + spec (table). Voie du loader JSON (étape 2).
- *  VALIDE la structure essentielle (zod) avant compilation → message clair si un costum de config est malformé. */
+/** Compile un document costum (DONNÉES) → descripteur (registre) + spec (table). VOIE UNIQUE (TS et config) :
+ *  VALIDE la structure (zod) puis l'EXISTENCE des clés (garde) avant d'enregistrer → message clair si malformé. */
 export function registerCostumForm(schema: CostumFormSchema): { descriptor: FormDescriptor; spec: EntityModalSpec } {
   const parsed = CostumFormSchemaZod.safeParse(schema);
   if (!parsed.success) {

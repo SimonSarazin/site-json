@@ -17,7 +17,7 @@ import { ParentInfoReadonly } from "../../../components/profile-edit/fields";
 import { PoiEquipementDoublonsSlot } from "../../PoiEquipementDoublonsSlot";
 import type { EntityModalCtx } from "../../entityModalSpec";
 import { carrierSlug, type CarrierLike } from "../carrier";
-import { registerDescriptor, registerScopeFn, registerDefaultsFn, registerSlot } from "../../specRegistries";
+import { registerScopeFn, registerDefaultsFn, registerSlot } from "../../specRegistries";
 import "../sharedFns"; // side-effect : enregistre les clés communes image:profilUrl + cleanValues/invalidate génériques
 
 
@@ -72,9 +72,10 @@ export const createEmptyDefaults = (scope: PoiEquipementScope): FormValues => ({
 // READ/WRITE adresse : codecs COMMUNS `address:read`/`address:write` (cf. ../sharedCodecs), référencés par
 // serializeGroups.address. geo via ../../geoTransforms. Aucun codec propre à poi.
 
-// ── Enregistrement des CLÉS référencées par `spec.ts` (descripteur + fns costum) ───────────────────────────
-// Le payload (add ET edit) passe par le PIPELINE générique (défaut du résolveur) → AUCUN payloadFn custom requis.
-registerDescriptor(equipementsSportifsDescriptor);
+// ── Enregistrement des seules CLÉS DE CODE irréductibles référencées par le schéma ─────────────────────────
+// Le descripteur + la spec sont compilés et enregistrés par le LOADER (`spec.ts` → `registerCostumForm`),
+// EXACTEMENT comme un costum de config — d'où plus de `registerDescriptor` ici. Le payload (add ET edit) passe
+// par le PIPELINE générique (défaut du résolveur) → AUCUN payloadFn custom requis.
 registerScopeFn("poi:scope", (carrier, defaults) =>
   resolvePoiEquipementScope(carrier, {
     poiType: String(defaults?.poiType ?? ""),

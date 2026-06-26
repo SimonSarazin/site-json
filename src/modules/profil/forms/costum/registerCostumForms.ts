@@ -12,8 +12,8 @@
  * réutilise que des clés génériques se compile correctement même si aucun costum TS n'est chargé.
  */
 import "./sharedRegistrations"; // clés génériques (codecs/coercions/geo/validators/fns partagés) AVANT registerCostumForm
-import "./equipements-sportifs/spec"; // s'auto-enregistre (registerCostumModalSpec)
-import "./tiers-lieux/spec"; // s'auto-enregistre
+import "./equipements-sportifs/spec"; // → registerCostumForm(SCHEMA) (descripteur + spec + garde)
+import "./tiers-lieux/spec"; // → registerCostumForm(SCHEMA)
 import { registerCostumForm, getCostumModalSpec } from "./costumFormRegistry";
 import type { CostumFormSchema } from "./compileCostumSchema";
 
