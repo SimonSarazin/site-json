@@ -7,7 +7,7 @@
  *     toutes les clés GÉNÉRIQUES qu'un costum 100 %-config peut référencer. Verrouille le fix anti-fragilité.
  */
 import { describe, it, expect } from "vitest";
-import type { FormDescriptor } from "@/modules/formEngine";
+import { hasWidget, type FormDescriptor } from "@/modules/formEngine";
 import { hasRegistered } from "@/modules/formEngine/engine/transforms";
 import { hasSpecFn } from "../specRegistries";
 import type { EntityModalSpec } from "../entityModalSpec";
@@ -24,6 +24,7 @@ describe("assertCostumKeysRegistered — complétude (A)", () => {
           read: "BOGUS_read", write: "BOGUS_write", enumFrom: "BOGUS_enumFrom",
           computedFrom: { deps: [], fn: "BOGUS_compute" },
         },
+        w: { name: "w", type: "string", widget: "BOGUS_widget", label: "" }, // widget non enregistré → doit être listé
       },
       serializeGroups: { g: { serverKey: "g", read: "BOGUS_gread", write: "BOGUS_gwrite" } },
       validate: "BOGUS_validate",
@@ -50,6 +51,7 @@ describe("assertCostumKeysRegistered — complétude (A)", () => {
       "BOGUS_read", "BOGUS_write", "BOGUS_enumFrom", "BOGUS_compute", "BOGUS_gread", "BOGUS_gwrite",
       "BOGUS_validate", "BOGUS_variant", "BOGUS_defaults", "BOGUS_existingUrl", "BOGUS_scope",
       "BOGUS_slot", "BOGUS_schema", "BOGUS_payload", "BOGUS_invalidate", "BOGUS_after", "BOGUS_clean",
+      "BOGUS_widget",
     ];
     let msg = "";
     try { assertCostumKeysRegistered(descriptor, spec); } catch (e) { msg = (e as Error).message; }
@@ -60,7 +62,10 @@ describe("assertCostumKeysRegistered — complétude (A)", () => {
   it("ne lève PAS quand toutes les clés sont génériques (enregistrées par le barrel)", () => {
     const descriptor = {
       id: "ok", collection: "organizations", layout: { kind: "flat" }, sections: [],
-      fields: { name: { name: "name", type: "string", widget: "text", label: "", read: "coerce:string", write: "coerce:string" } },
+      fields: {
+        name: { name: "name", type: "string", widget: "text", label: "", read: "coerce:string", write: "coerce:string" },
+        address: { name: "address", type: "object", widget: "location", label: "", renderOnly: true }, // widget DOMAINE → garanti par le barrel (parade #2)
+      },
       serializeGroups: { address: { serverKey: "address", read: "address:read", write: "address:write" } },
       validate: "addressComplete",
     } as unknown as FormDescriptor;
@@ -86,5 +91,9 @@ describe("sharedRegistrations — couverture des clés génériques (B, découpl
     expect(hasSpecFn("existingUrlFn", "image:profilUrl")).toBe(true);
     expect(hasSpecFn("cleanValuesFn", "cleanValues:dropEmptyArrayItems")).toBe(true);
     expect(hasSpecFn("invalidateFn", "invalidate:standard")).toBe(true);
+    // Widgets DOMAINE garantis par le barrel (parade #2) → la garde widget ne lève pas à tort en config/test.
+    for (const w of ["location", "image", "tags", "finder", "openingHours", "editSocial", "editSchedule"]) {
+      expect(hasWidget(w), `widget ${w}`).toBe(true);
+    }
   });
 });

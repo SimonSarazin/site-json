@@ -7,7 +7,7 @@ export type {
   Predicate, PredicateOp, EnumOption, WidgetKind, FieldType, FormValues, FormCollection, I18n,
 } from "./types";
 export { GenericForm, type GenericFormProps } from "./components/GenericForm";
-export { registerWidget, getWidget, type WidgetProps } from "./widgets/registry";
+export { registerWidget, getWidget, hasWidget, type WidgetProps } from "./widgets/registry";
 export { FormMessage, type FormMessageProps } from "./components/FormMessage";
 export { registerLayout, getLayout, type LayoutProps } from "./layouts";
 export { evaluatePredicate, check } from "./engine/conditional";

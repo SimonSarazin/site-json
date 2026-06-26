@@ -7,7 +7,7 @@
  * (cf. `sharedRegistrations`, importé par le loader) ; une clé MÉTIER inédite non enregistrée signale qu'il
  * faut un `forms/costum/<id>/fns.ts` (et son ajout au barrel `registerSpecFns`).
  */
-import type { FormDescriptor } from "@/modules/formEngine";
+import { hasWidget, type FormDescriptor } from "@/modules/formEngine";
 import { hasRegistered } from "@/modules/formEngine/engine/transforms";
 import type { EntityModalSpec, FnRef } from "../entityModalSpec";
 import { hasSpecFn, type SpecFnKind } from "../specRegistries";
@@ -38,6 +38,7 @@ export function assertCostumKeysRegistered(descriptor: FormDescriptor, spec: Ent
 
   // ── descripteur ──
   for (const field of Object.values(descriptor.fields)) {
+    if (field.widget && !hasWidget(field.widget)) missing.push({ kind: "widget", key: field.widget });
     tx("transform", field.read);
     tx("transform", field.write);
     tx("options", field.enumFrom);

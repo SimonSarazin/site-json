@@ -133,6 +133,18 @@ export function registerWidget(kind: string, comp: WidgetComponent): void {
   registry[kind] = comp;
 }
 
+/** Un widget est-il enregistré (générique OU domaine poussé) ? Utilisé par la garde des clés costum. */
+export function hasWidget(kind: string): boolean {
+  return registry[kind] != null;
+}
+
 export function getWidget(kind: string): WidgetComponent {
-  return registry[kind] ?? registry.text!;
+  const comp = registry[kind];
+  if (comp == null) {
+    // Repli silencieux historique → warn explicite : un widget DOMAINE non importé (cf. profil/forms/registerWidgets)
+    // rendrait un input texte muet. Valeur retournée INCHANGÉE (fallback text) pour ne rien casser.
+    console.warn(`[formEngine] widget "${kind}" non enregistré — repli sur "text" (widget domaine non importé ? cf. profil/forms/registerWidgets).`);
+    return registry.text!;
+  }
+  return comp;
 }
