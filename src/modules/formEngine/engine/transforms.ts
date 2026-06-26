@@ -100,3 +100,13 @@ computeRegistry.set("multiply", (deps) =>
     ? (deps as number[]).reduce((a, b) => a * b, 1)
     : undefined,
 );
+
+/** Existence SILENCIEUSE d'une clé dans l'un des 4 registres (pour les gardes : aucun warn, aucun effet). */
+export function hasRegistered(kind: "transform" | "validate" | "options" | "compute", name: string): boolean {
+  const map =
+    kind === "transform" ? registry
+    : kind === "validate" ? validateRegistry
+    : kind === "options" ? optionsRegistry
+    : computeRegistry;
+  return map.has(name);
+}

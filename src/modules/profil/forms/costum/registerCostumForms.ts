@@ -7,9 +7,11 @@
  * `CostumFormSchema` posé dans la config est compilé (`registerCostumForm`) en descriptor+spec, à condition que
  * les CLÉS qu'il référence (scope/payload/codecs…) soient déjà enregistrées (fns connues + codecs communs).
  *
- * Les CLÉS (fns) sont, elles, enregistrées par `registerSpecFns` (importé par EntityFormModal). Ici on ne
- * remplit que la table des SPECS.
+ * Les CLÉS MÉTIER (fns) sont enregistrées par `registerSpecFns` (importé par EntityFormModal) ; les clés
+ * GÉNÉRIQUES sont garanties ici par `sharedRegistrations` (importé EN PREMIER) → un costum de config qui ne
+ * réutilise que des clés génériques se compile correctement même si aucun costum TS n'est chargé.
  */
+import "./sharedRegistrations"; // clés génériques (codecs/coercions/geo/validators/fns partagés) AVANT registerCostumForm
 import "./equipements-sportifs/spec"; // s'auto-enregistre (registerCostumModalSpec)
 import "./tiers-lieux/spec"; // s'auto-enregistre
 import { registerCostumForm, getCostumModalSpec } from "./costumFormRegistry";

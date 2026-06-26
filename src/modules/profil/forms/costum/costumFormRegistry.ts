@@ -11,6 +11,7 @@ import type { FormDescriptor } from "@/modules/formEngine";
 import { registerDescriptor } from "../specRegistries";
 import { compileCostumSchema, type CostumFormSchema } from "./compileCostumSchema";
 import { CostumFormSchemaZod } from "./costumFormSchema.zod";
+import { assertCostumKeysRegistered } from "./assertKeysRegistered";
 
 const costumSpecs = new Map<string, EntityModalSpec>();
 
@@ -28,6 +29,9 @@ export function registerCostumForm(schema: CostumFormSchema): { descriptor: Form
     throw new Error(`[costumForms] document costum invalide (id=${String(id)}) : ${parsed.error.issues.map((i) => `${i.path.join(".")} ${i.message}`).join(" ; ")}`);
   }
   const compiled = compileCostumSchema(schema);
+  // Garde : toute clé citée (codecs/scope/payload/validate/slots…) doit être enregistrée → erreur claire au
+  // load plutôt qu'un warn silencieux au rendu. Les clés génériques sont garanties par `sharedRegistrations`.
+  assertCostumKeysRegistered(compiled.descriptor, compiled.spec);
   registerDescriptor(compiled.descriptor);
   costumSpecs.set(compiled.spec.id, compiled.spec);
   return compiled;

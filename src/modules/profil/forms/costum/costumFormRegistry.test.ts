@@ -33,4 +33,13 @@ describe("costumFormRegistry — table runtime des modales costum", () => {
     const bad = { ...JSON.parse(JSON.stringify(TIERS_LIEUX_SCHEMA)), fields: { name: { label: "x" } } };
     expect(() => registerCostumForm(bad as never)).toThrow(/invalide/);
   });
+
+  it("registerCostumForm REJETTE une clé de registre NON enregistrée (garde du loader)", () => {
+    // Structure valide (passe zod) MAIS payloadFn pointe une clé inexistante → erreur claire au load,
+    // pas un console.warn silencieux au rendu. (Les autres clés tl:* sont enregistrées par les fns importées.)
+    const bad = JSON.parse(JSON.stringify(TIERS_LIEUX_SCHEMA));
+    bad.id = "tiers-lieux-cle-fantome";
+    bad.mutation.payloadFn = "tl:CLE_INEXISTANTE";
+    expect(() => registerCostumForm(bad)).toThrow(/NON ENREGISTR.*payloadFn:"tl:CLE_INEXISTANTE"/s);
+  });
 });

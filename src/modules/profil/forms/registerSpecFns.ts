@@ -5,5 +5,6 @@
  *
  * (Se remplit au fil des migrations : poi-équipement puis tiers-lieu.)
  */
+import "./costum/sharedRegistrations"; // clés GÉNÉRIQUES garanties (codecs/coercions/geo/validators/fns partagés) AVANT les costums
 import "./costum/equipements-sportifs/fns";
 import "./costum/tiers-lieux/fns";

@@ -152,3 +152,24 @@ export function getInvalidateFn(key: string): InvalidateFn | undefined {
   if (!fn) warnMissing("invalidateFn", key);
   return fn;
 }
+
+// ── Existence SILENCIEUSE (gardes : pas de warn) ──────────────────────────────
+export type SpecFnKind =
+  | "descriptorVariant" | "defaultsFn" | "payloadFn" | "scopeFn" | "slot"
+  | "schemaFn" | "existingUrlFn" | "afterSubmitFn" | "cleanValuesFn" | "invalidateFn";
+
+/** Vrai si la clé est enregistrée dans le registre `kind` (sans warn — pour la garde du loader costum). */
+export function hasSpecFn(kind: SpecFnKind, key: string): boolean {
+  switch (kind) {
+    case "descriptorVariant": return descriptorVariants.has(key);
+    case "defaultsFn": return defaultsFns.has(key);
+    case "payloadFn": return payloadFns.has(key);
+    case "scopeFn": return scopeFns.has(key);
+    case "slot": return slotFns.has(key);
+    case "schemaFn": return schemaFns.has(key);
+    case "existingUrlFn": return existingUrlFns.has(key);
+    case "afterSubmitFn": return afterSubmitFns.has(key);
+    case "cleanValuesFn": return cleanValuesFns.has(key);
+    case "invalidateFn": return invalidateFns.has(key);
+  }
+}
