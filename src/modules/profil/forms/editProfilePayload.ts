@@ -17,6 +17,7 @@ import type { FieldDescriptor, FormDescriptor, FormValues } from "@/modules/form
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
 import "@/modules/formEngine/engine/coercions"; // side-effect : enregistre les coerce:* (orEmpty/orUndef/arrayOrEmpty/truthy/dateISO/dateYMDfromISO) référencés par clé ci-dessous
 import { seedEntity, buildPayload, type FormSpec, type EntityLike } from "@/modules/formEngine/engine/entityForm";
+import { buildAddressFromForm } from "../hooks/mutationUtils"; // builder d'adresse UNIQUE (partagé poi/costums/profil)
 // Imports DIRECTS de la couche config (PAS le barrel → pas de widgets/React tirés, le module reste pur).
 import { formDescriptorToConfig } from "@/modules/formEngine/config/formDescriptorToConfig";
 import { configToDescriptor } from "@/modules/formEngine/config/configToDescriptor";
@@ -29,31 +30,6 @@ const ADDRESS_KEYS = [
   "level1", "level1Name", "level2", "level2Name", "level3", "level3Name", "level4", "level4Name", "codeInsee",
 ] as const;
 const SOCIAL_KEYS = ["github", "gitlab", "facebook", "twitter", "instagram", "diaspora", "mastodon", "telegram", "signal"] as const;
-
-// Adresse : champs plats → objet PostalAddress, OU "" si pas de pays+ville+localityId (abandon silencieux, legacy).
-function buildAddress(data: Data): Record<string, unknown> | "" {
-  if (data.addressCountry && data.addressLocality && data.localityId) {
-    const address: Record<string, unknown> = {
-      "@type": "PostalAddress",
-      addressCountry: data.addressCountry,
-      addressLocality: data.addressLocality,
-      localityId: data.localityId,
-      level1: data.level1 || "",
-      level1Name: data.level1Name || "",
-      codeInsee: data.codeInsee || "",
-    };
-    if (data.level2) address.level2 = data.level2;
-    if (data.level2Name) address.level2Name = data.level2Name;
-    if (data.level3) address.level3 = data.level3;
-    if (data.level3Name) address.level3Name = data.level3Name;
-    if (data.level4) address.level4 = data.level4;
-    if (data.level4Name) address.level4Name = data.level4Name;
-    if (data.postalCode) address.postalCode = data.postalCode;
-    if (data.streetAddress) address.streetAddress = data.streetAddress;
-    return address;
-  }
-  return "";
-}
 
 const buildTags = (v: unknown) => (Array.isArray(v) && v.length > 0 ? v : "");
 
@@ -93,7 +69,10 @@ registerTransform("pf:entityRef", buildEntityReference);
 // (évite de sur-émettre un tableau 7-vides au CREATE, non strippé par le backend). L'édition fournit
 // toujours le tableau (form complet) → 7-DOW, ou [] tout-fermé → 7-vides = clear.
 registerTransform("pf:openingHours", (v) => (Array.isArray(v) ? buildOpeningHours(v) : undefined));
-registerTransform("pf:addressWrite", (_v, all) => buildAddress((all ?? {}) as Data));
+// Adresse profil = builder UNIQUE buildAddressFromForm, gate "countryLocality" (pays+ville+localityId, parité
+// de l'ex-buildAddress) ; abandon → "" (l'ex-buildAddress retournait "", buildAddressFromForm renvoie undefined).
+registerTransform("pf:addressWrite", (_v, all) =>
+  buildAddressFromForm((all ?? {}) as Parameters<typeof buildAddressFromForm>[0], { gate: "countryLocality" }) ?? "");
 
 // ── Transformers READ ────────────────────────────────────────────────────────
 // Adresse (objet serveur → 14 champs plats) + social (objet socialNetwork → 9 champs plats), via les groupes.

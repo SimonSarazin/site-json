@@ -45,13 +45,16 @@ const ADDRESS_FIELDS = [
  * Construit un objet address à partir des champs aplatis du formulaire
  * Retourne undefined si aucune donnée d'adresse n'est présente
  */
-export function buildAddressFromForm(data: AddressFormFields) {
-  // Vérifier si au moins un champ d'adresse est rempli
-  const hasAddressData =
-    data.addressCountry ||
-    data.addressLocality ||
-    data.postalCode ||
-    data.streetAddress;
+export function buildAddressFromForm(
+  data: AddressFormFields,
+  opts: { gate?: "any" | "countryLocality" } = {},
+) {
+  // GATE de déclenchement (param unique des 2 ex-builders fusionnés) :
+  //  - "any" (défaut : poi standard + costums) : un seul champ d'adresse suffit ;
+  //  - "countryLocality" (profil org/project/event/citoyen) : pays ET ville requis (gate historique plus strict).
+  const hasAddressData = opts.gate === "countryLocality"
+    ? Boolean(data.addressCountry && data.addressLocality)
+    : Boolean(data.addressCountry || data.addressLocality || data.postalCode || data.streetAddress);
 
   if (!hasAddressData) {
     return undefined;
