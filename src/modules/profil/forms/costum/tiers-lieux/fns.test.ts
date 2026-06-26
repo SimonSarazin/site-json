@@ -247,9 +247,12 @@ describe("buildTiersLieuxPayload — mode complete (édition unifiée S6)", () =
       level1: "11", level1Name: "IDF", codeInsee: "75056",
     };
     const edit = buildTiersLieuxPayload(data, { complete: true }) as { address: Record<string, unknown> };
-    expect(edit.address).toMatchObject({
-      "@type": "PostalAddress", addressCountry: "FR", localityId: "c1",
-      level1: "11", level1Name: "IDF", codeInsee: "75056",
+    // toEqual STRICT (fige la forme canonique unique du builder d'adresse partagé) : exactement ces 8 clés,
+    // pas de level2..4/streetAddress (vides → omis), addressLocality/postalCode présents.
+    expect(edit.address).toEqual({
+      "@type": "PostalAddress",
+      addressCountry: "FR", addressLocality: "Paris", localityId: "c1", postalCode: "75001",
+      codeInsee: "75056", level1: "11", level1Name: "IDF",
     });
   });
 
@@ -464,13 +467,16 @@ describe("adresse SIG complète (level1..4/codeInsee)", () => {
   it("round-trip : entity → form → payload reconstruit l'address SIG COMPLÈTE", () => {
     const form = mapEntityToTiersLieuxValues({ serverData: { address: fullAddress } });
     const payload = buildTiersLieuxPayload(form) as { address: Record<string, unknown> };
-    expect(payload.address).toMatchObject({
+    // toEqual STRICT (address SIG COMPLÈTE figée) : les 15 clés exactes du builder partagé, level2Name/level3Name inclus.
+    expect(payload.address).toEqual({
       "@type": "PostalAddress",
       addressCountry: "FR", addressLocality: "Saint-Pierre", localityId: "loc_974",
       postalCode: "97410", streetAddress: "12 Allée des Aubépines",
       codeInsee: "97416",
       level1: "REU", level1Name: "La Réunion",
-      level2: "974", level3: "9742", level4: "97416", level4Name: "Saint-Pierre",
+      level2: "974", level2Name: "La Réunion",
+      level3: "9742", level3Name: "Arrondissement",
+      level4: "97416", level4Name: "Saint-Pierre",
     });
   });
 });

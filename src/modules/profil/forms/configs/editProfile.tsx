@@ -33,7 +33,9 @@ export const editProfileConfig: EntityModalConfig = {
     return pid ? { parent: { filters: { filters: { [`organizer.${pid}`]: { $exists: true } } } } } : undefined;
   },
 
-  // WRITE : payload COMPLET via buildProfileUpdateData(entityType) → submitEntityEdit (S6).
+  // WRITE : buildProfileUpdateData → buildPayload (omit-empty) : un champ string vidé émet "" (effacé), un write
+  // → undefined (ex. number/adresse incomplète) est OMIS. NB : tension avec le contrat de submitEntityEdit
+  // (« jamais omit-empty ») → effacement OK pour les string, mais un champ undefined-producing n'est pas effacé ici.
   buildSpec: (ctx) => {
     const et = typeOf(ctx);
     return {
