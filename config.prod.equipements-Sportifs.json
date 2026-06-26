@@ -4139,5 +4139,739 @@
         }
       ]
     }
+  },
+  "costumForms": {
+    "equipements-sportifs": {
+      "id": "equipements-sportifs",
+      "entityType": "poi",
+      "costumSlug": "equipementsSportifs974",
+      "layout": {
+        "kind": "wizard",
+        "validatePerStep": true
+      },
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        }
+      },
+      "fieldPresets": {
+        "selectFromLists": {
+          "placeholderSearch": {
+            "fr": "Rechercher…",
+            "en": "Search…"
+          }
+        }
+      },
+      "fields": {
+        "addressCountry": {
+          "widget": "hidden",
+          "required": true,
+          "group": "address"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "required": true,
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "required": true,
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "required": true,
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "description": {
+          "widget": "hidden",
+          "read": "coerce:string",
+          "default": ""
+        },
+        "tags": {
+          "widget": "hidden",
+          "type": "array",
+          "read": "coerce:stringArray",
+          "default": []
+        },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
+        },
+        "name": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Nom",
+            "en": "Name"
+          },
+          "info": {
+            "fr": "Le nom qui sera affiché publiquement",
+            "en": "The name that will be publicly displayed"
+          }
+        },
+        "equip_type_name": {
+          "widget": "selectFromLists",
+          "required": true,
+          "label": {
+            "fr": "Type de l'équipement",
+            "en": "Facility type"
+          }
+        },
+        "equip_type_famille": {
+          "widget": "selectFromLists",
+          "label": {
+            "fr": "Famille d'équipement",
+            "en": "Facility family"
+          }
+        },
+        "_imageFile": {
+          "widget": "image",
+          "label": "image"
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Adresse",
+            "en": "Address"
+          }
+        },
+        "equip_prop_nom": {
+          "widget": "text",
+          "label": {
+            "fr": "Nom du propriétaire",
+            "en": "Owner name"
+          }
+        },
+        "equip_prop_type": {
+          "widget": "selectFromLists",
+          "label": {
+            "fr": "Type de propriétaire",
+            "en": "Owner type"
+          }
+        },
+        "inst_date_creation": {
+          "widget": "date",
+          "label": {
+            "fr": "Date de création",
+            "en": "Creation date"
+          }
+        },
+        "inst_enqu_date": {
+          "widget": "date",
+          "label": {
+            "fr": "Date d'enquête",
+            "en": "Survey date"
+          }
+        },
+        "equip_maj_date": {
+          "widget": "date",
+          "label": {
+            "fr": "Date de mise à jour",
+            "en": "Update date"
+          }
+        },
+        "inst_nom": {
+          "widget": "text",
+          "label": {
+            "fr": "Nom de l'institution",
+            "en": "Institution name"
+          }
+        },
+        "categorie": {
+          "widget": "text",
+          "label": {
+            "fr": "Catégorie",
+            "en": "Category"
+          }
+        },
+        "equip_gest_type": {
+          "widget": "text",
+          "label": {
+            "fr": "Type de gestionnaire",
+            "en": "Manager type"
+          }
+        },
+        "inst_part_bool": {
+          "widget": "switch",
+          "label": {
+            "fr": "Partenariat disponible",
+            "en": "Partnership available"
+          }
+        },
+        "inst_part_type": {
+          "widget": "tags",
+          "label": {
+            "fr": "Type de partenariat",
+            "en": "Partnership type"
+          },
+          "widgetProps": {
+            "searchable": false
+          },
+          "visibleIf": {
+            "field": "inst_part_bool",
+            "op": "truthy"
+          }
+        },
+        "equip_nature": {
+          "widget": "selectFromLists",
+          "label": {
+            "fr": "Nature de l'équipement",
+            "en": "Facility nature"
+          }
+        },
+        "equip_sol": {
+          "widget": "selectFromLists",
+          "label": {
+            "fr": "Type de sol",
+            "en": "Floor type"
+          }
+        },
+        "equip_long": {
+          "widget": "number",
+          "label": {
+            "fr": "Longueur",
+            "en": "Length"
+          }
+        },
+        "equip_larg": {
+          "widget": "number",
+          "label": {
+            "fr": "Largeur",
+            "en": "Width"
+          }
+        },
+        "equip_surf": {
+          "widget": "number",
+          "label": {
+            "fr": "Surface (calculée)",
+            "en": "Area (computed)"
+          },
+          "computedFrom": {
+            "deps": [
+              "equip_long",
+              "equip_larg"
+            ],
+            "fn": "multiply"
+          }
+        },
+        "inst_acc_handi_type": {
+          "widget": "text",
+          "label": {
+            "fr": "Type de handicap pris en charge",
+            "en": "Type of disability supported"
+          }
+        },
+        "inst_trans_type": {
+          "widget": "text",
+          "label": {
+            "fr": "Moyen de transport disponible",
+            "en": "Available means of transport"
+          }
+        },
+        "inst_acc_handi_bool": {
+          "widget": "switch",
+          "label": {
+            "fr": "Accessible aux personnes en situation de handicap",
+            "en": "Accessible to people with disabilities"
+          }
+        },
+        "inst_trans_bool": {
+          "widget": "switch",
+          "label": {
+            "fr": "Accessible en transport en commun",
+            "en": "Accessible by public transport"
+          }
+        },
+        "equip_eclair": {
+          "widget": "switch",
+          "label": {
+            "fr": "Éclairage de l'aire",
+            "en": "Area lighting"
+          }
+        },
+        "equip_douche": {
+          "widget": "switch",
+          "label": {
+            "fr": "Douche accessible",
+            "en": "Accessible shower"
+          }
+        },
+        "equip_pmr_acc": {
+          "widget": "switch",
+          "label": {
+            "fr": "Accès PMR disponible",
+            "en": "PRM access available"
+          }
+        },
+        "equip_pmr_chem": {
+          "widget": "switch",
+          "label": {
+            "fr": "Cheminement PMR adapté",
+            "en": "PRM-adapted pathway"
+          }
+        },
+        "equip_pmr_douche": {
+          "widget": "switch",
+          "label": {
+            "fr": "Douches accessibles PMR",
+            "en": "PRM-accessible showers"
+          }
+        },
+        "equip_pmr_trib": {
+          "widget": "switch",
+          "label": {
+            "fr": "Tribunes accessibles PMR",
+            "en": "PRM-accessible stands"
+          }
+        },
+        "equip_pmr_vest": {
+          "widget": "switch",
+          "label": {
+            "fr": "Vestiaires accessibles PMR",
+            "en": "PRM-accessible changing rooms"
+          }
+        },
+        "equip_pmr_sanit": {
+          "widget": "switch",
+          "label": {
+            "fr": "Sanitaires accessibles PMR",
+            "en": "PRM-accessible toilets"
+          }
+        },
+        "equip_loc_type": {
+          "widget": "checkboxGroup",
+          "label": {
+            "fr": "Locaux complémentaires",
+            "en": "Additional premises"
+          }
+        },
+        "equip_pshs_aire": {
+          "widget": "switch",
+          "label": {
+            "fr": "Aire de jeu",
+            "en": "Play area"
+          }
+        },
+        "equip_pshs_sanit": {
+          "widget": "switch",
+          "label": {
+            "fr": "Sanitaires",
+            "en": "Toilets"
+          }
+        },
+        "equip_pshs_trib": {
+          "widget": "switch",
+          "label": {
+            "fr": "Tribunes",
+            "en": "Stands"
+          }
+        },
+        "equip_pshs_sign": {
+          "widget": "switch",
+          "label": {
+            "fr": "Accueil / Signalétique",
+            "en": "Reception / Signage"
+          }
+        },
+        "equip_pshs_vest": {
+          "widget": "switch",
+          "label": {
+            "fr": "Vestiaires",
+            "en": "Changing rooms"
+          }
+        },
+        "equip_pshs_chem": {
+          "widget": "switch",
+          "label": {
+            "fr": "Cheminements",
+            "en": "Pathways"
+          }
+        },
+        "urls": {
+          "widget": "urlList",
+          "label": {
+            "fr": "Site internet",
+            "en": "Website"
+          },
+          "widgetProps": {
+            "addLabel": {
+              "fr": "Ajouter une URL",
+              "en": "Add a URL"
+            },
+            "removeLabel": {
+              "fr": "Retirer l'URL",
+              "en": "Remove URL"
+            }
+          }
+        },
+        "equip_utilisateur": {
+          "widget": "checkboxGroup",
+          "label": {
+            "fr": "Types d'utilisateurs",
+            "en": "User types"
+          }
+        },
+        "equip_acc_libre": {
+          "widget": "switch",
+          "label": {
+            "fr": "Accès libre",
+            "en": "Free access"
+          }
+        },
+        "aps_name": {
+          "widget": "multiselect",
+          "required": true,
+          "label": {
+            "fr": "Sports pratiqués",
+            "en": "Sports practised"
+          },
+          "placeholder": {
+            "fr": "Sélectionner un sport",
+            "en": "Select a sport"
+          },
+          "placeholderSearch": {
+            "fr": "Rechercher un sport",
+            "en": "Search a sport"
+          }
+        }
+      },
+      "sections": [
+        {
+          "id": "general",
+          "label": {
+            "fr": "Informations générales",
+            "en": "General information"
+          },
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "$slot:parentInfo",
+                "name"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "equip_type_name",
+                "equip_type_famille"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "_imageFile"
+              ]
+            },
+            {
+              "columns": 1,
+              "label": {
+                "fr": "Adresse",
+                "en": "Address"
+              },
+              "required": true,
+              "fields": [
+                "address",
+                "addressCountry",
+                "addressLocality",
+                "postalCode",
+                "streetAddress"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "$slot:doublons"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "legal",
+          "label": {
+            "fr": "Caractéristiques juridiques",
+            "en": "Legal characteristics"
+          },
+          "groups": [
+            {
+              "columns": 2,
+              "fields": [
+                "equip_prop_nom",
+                "equip_prop_type"
+              ]
+            },
+            {
+              "columns": 3,
+              "fields": [
+                "inst_date_creation",
+                "inst_enqu_date",
+                "equip_maj_date"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "inst_nom",
+                "categorie",
+                "equip_gest_type"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "inst_part_bool",
+                "inst_part_type"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "structure",
+          "label": {
+            "fr": "Caractéristiques structurantes",
+            "en": "Structural characteristics"
+          },
+          "groups": [
+            {
+              "columns": 2,
+              "fields": [
+                "equip_nature",
+                "equip_sol"
+              ]
+            },
+            {
+              "columns": 3,
+              "fields": [
+                "equip_long",
+                "equip_larg",
+                "equip_surf"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "inst_acc_handi_type",
+                "inst_trans_type"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "inst_acc_handi_bool",
+                "inst_trans_bool",
+                "equip_eclair",
+                "equip_douche"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "equip_pmr_acc"
+              ]
+            },
+            {
+              "columns": 2,
+              "label": {
+                "fr": "Accessibilité PMR",
+                "en": "PRM accessibility"
+              },
+              "visibleIf": {
+                "field": "equip_pmr_acc",
+                "op": "truthy"
+              },
+              "fields": [
+                "equip_pmr_chem",
+                "equip_pmr_douche",
+                "equip_pmr_trib",
+                "equip_pmr_vest",
+                "equip_pmr_sanit"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "equip_loc_type"
+              ]
+            },
+            {
+              "columns": 2,
+              "label": {
+                "fr": "Accessibilité PSHS",
+                "en": "PSHS accessibility"
+              },
+              "fields": [
+                "equip_pshs_aire",
+                "equip_pshs_sanit",
+                "equip_pshs_trib",
+                "equip_pshs_sign",
+                "equip_pshs_vest",
+                "equip_pshs_chem"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "usage",
+          "label": {
+            "fr": "Caractéristiques d'usages",
+            "en": "Usage characteristics"
+          },
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "urls"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "equip_utilisateur"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "equip_acc_libre"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "aps_name"
+              ]
+            }
+          ]
+        }
+      ],
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter un équipement",
+            "en": "Add a facility"
+          },
+          "edit": {
+            "fr": "Éditer un équipement",
+            "en": "Edit a facility"
+          }
+        },
+        "description": {
+          "add": {
+            "fr": "Compléter les informations de l'équipement.",
+            "en": "Fill in the facility information."
+          },
+          "edit": {
+            "fr": "Mettre à jour les informations de l'équipement.",
+            "en": "Update the facility information."
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Créer",
+            "en": "Create"
+          },
+          "edit": {
+            "fr": "Sauvegarder",
+            "en": "Save"
+          }
+        },
+        "dialogClassName": "sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden",
+        "validationFailedKey": {
+          "fr": "Veuillez corriger les champs en erreur.",
+          "en": "Please fix the highlighted fields."
+        },
+        "navText": {
+          "next": {
+            "fr": "Suivant",
+            "en": "Next"
+          },
+          "previous": {
+            "fr": "Précédent",
+            "en": "Previous"
+          },
+          "cancel": {
+            "fr": "Annuler",
+            "en": "Cancel"
+          },
+          "stepLabelKey": "AddPoiEquipement.stepIndicator"
+        }
+      },
+      "image": {
+        "field": "_imageFile",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "listsFromCarrier": true,
+      "scope": {
+        "derive": "poi:scope",
+        "slugFrom": "derived",
+        "slugKey": "sourceKey",
+        "defaults": {
+          "poiType": "recoveryCenter",
+          "addressCountry": "RE"
+        }
+      },
+      "defaultsBase": "poi:emptyDefaults",
+      "slots": {
+        "parentInfo": "parentInfo",
+        "doublons": "poiDoublons"
+      },
+      "cleanValues": {
+        "fn": "cleanValues:dropEmptyArrayItems",
+        "params": {
+          "fields": [
+            "urls"
+          ]
+        }
+      },
+      "mutation": {
+        "entityType": "poi",
+        "payloadEmitEmptyOnEdit": true,
+        "inject": {
+          "parent": true,
+          "extraFieldsFromScope": {
+            "type": "poiType"
+          }
+        },
+        "navigateOnSuccess": false,
+        "successKey": {
+          "add": "toast.add.poiSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.poiError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_POI",
+          "edit": "EntityFormModal · UPDATE_POI"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard",
+          "params": {
+            "userList": "pois",
+            "parentAboutOnAdd": true,
+            "searchKeys": [
+              "searchCostumStatic",
+              "poi-equipement-matches"
+            ]
+          }
+        }
+      }
+    }
   }
 }
