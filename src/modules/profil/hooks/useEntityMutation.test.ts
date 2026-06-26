@@ -13,6 +13,7 @@ import { buildProfileUpdateData } from "../forms/editProfilePayload";
 import { buildAddPoiPayload } from "../forms/addPoi.payload";
 import { buildTiersLieuxPayload } from "../forms/costum/tiers-lieux/fns";
 import { getDefaultTiersLieuxValues } from "../forms/costum/tiers-lieux/fns";
+import { tiersLieuxDescriptor } from "../forms/costum/tiers-lieux/descriptor";
 
 type Data = Record<string, unknown>;
 
@@ -134,7 +135,7 @@ describe("runEntityMutation — parité avec les hooks bespoke", () => {
     const values = { ...getDefaultTiersLieuxValues(), name: "TL", _logoFile: fakeFile };
     const spec: EntityMutationSpec = {
       ...base, mode: "add", entityType: "organizations", costumSlug: "franceTiersLieux", imageField: "_logoFile",
-      buildPayload: (d) => buildTiersLieuxPayload(d as never, { costum: {} }),
+      buildPayload: (d) => buildTiersLieuxPayload(d as never, tiersLieuxDescriptor, { costum: {} }),
       // STAMP costum : type/preferences posés au CREATE par runEntityMutation via inject.extraFields.
       inject: { extraFields: { type: "NGO", preferences: { isOpenData: true, isOpenEdition: true } } },
     };

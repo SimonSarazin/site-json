@@ -7,8 +7,20 @@ import { describe, it, expect } from "vitest";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { specToConfig } from "../../resolveModalSpec";
 import { tiersLieuxSpec } from "./spec";
-import { getDefaultTiersLieuxValues, buildTiersLieuxPayload, mapEntityToTiersLieuxValues, type CostumConfig } from "./fns";
+import {
+  getDefaultTiersLieuxValues,
+  buildTiersLieuxPayload as buildTiersLieuxPayloadRaw,
+  mapEntityToTiersLieuxValues as mapEntityToTiersLieuxValuesRaw,
+  type CostumConfig, type TiersLieuxFormData, type BuildPayloadOptions, type EntityLike,
+} from "./fns";
+import { tiersLieuxDescriptor } from "./descriptor";
 import type { EntityModalCtx } from "../../entityModalSpec";
+
+// DI : injecte le descripteur (= celui résolu via getDescriptor par les closures en prod) → parité.
+const buildTiersLieuxPayload = (data: TiersLieuxFormData, options?: BuildPayloadOptions) =>
+  buildTiersLieuxPayloadRaw(data, tiersLieuxDescriptor, options);
+const mapEntityToTiersLieuxValues = (entity: EntityLike) =>
+  mapEntityToTiersLieuxValuesRaw(entity, tiersLieuxDescriptor);
 
 const carrier = { id: "carrierId", serverData: { slug: "franceTiersLieux" } } as unknown as EntityTypes;
 const me = { id: "meId" } as unknown as EntityTypes;

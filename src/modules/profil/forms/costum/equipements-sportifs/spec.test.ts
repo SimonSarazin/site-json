@@ -8,6 +8,7 @@ import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { specToConfig } from "../../resolveModalSpec";
 import { equipementsSportifsSpec } from "./spec";
 import { createEmptyDefaults, type PoiEquipementScope } from "./fns";
+import { equipementsSportifsDescriptor } from "./descriptor";
 import { buildAddPoiPayload } from "../../addPoi.payload";
 import type { EntityModalCtx } from "../../entityModalSpec";
 
@@ -39,11 +40,11 @@ describe("résolveur — spec poi-équipement (parité avec l'ex-config)", () =>
     expect(mut.inject).toMatchObject({ parent: null });
     // STAMP costum : type "recoveryCenter" posé au CREATE via inject.extraFields (plus dans le descripteur).
     expect(mut.inject?.extraFields).toEqual({ type: "recoveryCenter" });
-    // defaults add = createEmptyDefaults(scope)
-    expect(config.buildDefaults(ctx)).toEqual(createEmptyDefaults(scope));
+    // defaults add = createEmptyDefaults(scope, equipementsSportifsDescriptor)
+    expect(config.buildDefaults(ctx)).toEqual(createEmptyDefaults(scope, equipementsSportifsDescriptor));
     // payload create costum = pipeline (sans `type`) + STAMP (inject.extraFields) → doit égaler l'ex-payload
     // buildAddPoiPayload (qui portait `type` via le champ descripteur). Byte-parité de la création préservée.
-    const form = { ...createEmptyDefaults(scope), name: "Stade", equip_type_name: "Terrain", equip_long: 25 } as unknown as Record<string, unknown>;
+    const form = { ...createEmptyDefaults(scope, equipementsSportifsDescriptor), name: "Stade", equip_type_name: "Terrain", equip_long: 25 } as unknown as Record<string, unknown>;
     expect({ ...mut.buildPayload(form), ...(mut.inject?.extraFields ?? {}) }).toEqual(buildAddPoiPayload(form as never));
   });
 
@@ -59,7 +60,7 @@ describe("résolveur — spec poi-équipement (parité avec l'ex-config)", () =>
     expect(mut.costumSlug).toBeUndefined();
     // STAMP non-effaçant : le payload d'édition n'émet PAS `type` (ni l'inject, create-only) → clé ABSENTE
     // → Object.assign(entity.data, payload) ne touche pas le `type` existant (préservé, jamais $unset).
-    const editForm = { ...createEmptyDefaults(scope), name: "Equip X" } as unknown as Record<string, unknown>;
+    const editForm = { ...createEmptyDefaults(scope, equipementsSportifsDescriptor), name: "Equip X" } as unknown as Record<string, unknown>;
     expect(mut.buildPayload(editForm)).not.toHaveProperty("type");
     expect(mut.inject).toBeUndefined(); // édition : aucun inject (donc pas d'extraFields type)
   });

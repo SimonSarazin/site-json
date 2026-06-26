@@ -5,11 +5,12 @@
  */
 import { describe, it, expect } from "vitest";
 import { createEmptyDefaults, type PoiEquipementScope } from "./fns";
+import { equipementsSportifsDescriptor } from "./descriptor";
 
 const SCOPE: PoiEquipementScope = { parentId: "p", sourceKey: "s", poiType: "recoveryCenter", addressCountry: "RE" };
 
 describe("createEmptyDefaults — byte-parité (dérivation)", () => {
   it("objet de defaults figé (snapshot)", () => {
-    expect(createEmptyDefaults(SCOPE)).toMatchSnapshot();
+    expect(createEmptyDefaults(SCOPE, equipementsSportifsDescriptor)).toMatchSnapshot();
   });
 });

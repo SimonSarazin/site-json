@@ -8,15 +8,11 @@ import { emptyOpeningHours, buildOpeningHoursPayload, type DayHours } from "../s
 export { buildOpeningHoursPayload }; // re-export (consommé par fns.test)
 export type { DayHours };
 import { seedEntity, buildPayload, buildEditPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
-// Imports DIRECTS de la couche config (PAS le barrel → pas de widgets/React tirés ici, l'util reste pur).
-import { formDescriptorToConfig } from "@/modules/formEngine/config/formDescriptorToConfig";
-import { configToDescriptor } from "@/modules/formEngine/config/configToDescriptor";
-import type { FormValues, JsonFormConfig } from "@/modules/formEngine";
-import { tiersLieuxDescriptor } from "./descriptor";
+import type { FormValues, FormDescriptor } from "@/modules/formEngine";
 import { getSlug } from "@/lib/constant/common";
 import { carrierSlug } from "../carrier";
 import type { EntityModalCtx } from "../../entityModalSpec";
-import { registerDefaultsFn, registerPayloadFn, registerScopeFn } from "../../specRegistries";
+import { registerDefaultsFn, registerPayloadFn, registerScopeFn, getDescriptor } from "../../specRegistries";
 import "../sharedFns"; // side-effect : enregistre la clé commune image:profilUrl
 
 /** Lien social (fieldArray). */
@@ -79,18 +75,10 @@ export function getDefaultTiersLieuxValues(): TiersLieuxFormData {
   };
 }
 
-// CONFIG-DRIVEN : le SPEC tiers-lieu tourne sur le descripteur ISSU DE LA CONFIG (round-trip identique au
-// descripteur unifié → parité byte garantie). READ (seedEntity) ET WRITE (buildPayload/buildEditPayload)
-// passent donc par la config. Labels gardés = clés i18n (résolues par GenericForm au rendu).
-// Le contexte costum CREATE (type/preferences) est désormais un STAMP déclaratif dans la spec
-// (`mutation.inject.extraFields`), plus dans `submit.extraData` ici. cf. costum stamp.
-const TIERSLIEU_CONFIG: JsonFormConfig = {
-  ...formDescriptorToConfig(tiersLieuxDescriptor),
-  submit: { mode: "sdk" },
-};
-const KEEP_KEYS = (l: unknown) => (typeof l === "string" ? l : ((l as { fr?: string })?.fr ?? ""));
-/** Descripteur tiers-lieu dérivé de la config (= tiersLieuxDescriptor round-trip). Rendu par la modale. */
-export const tiersLieuConfigDescriptor = configToDescriptor(TIERSLIEU_CONFIG, { tLoc: KEEP_KEYS });
+// READ (seedEntity) ET WRITE (buildPayload/buildEditPayload) passent par le DESCRIPTEUR fourni au runtime
+// (DI : `getDescriptor("tiers-lieux")`, enregistré par registerCostumForm — TS ou config). `fns.ts` ne dépend
+// donc NI de descriptor.ts NI de schema.ts (plus de descripteur figé importé). La parité byte est garantie
+// par les tests configDriven (le descripteur registre = celui round-trippé par EntityFormModal au rendu).
 
 export interface CostumConfig {
   /** Tag principal du costum (filtre observatoire). Ajouté à `tags`. NB : la lib pose aussi le *champ* mainTag via presets. */
@@ -142,18 +130,18 @@ registerTransform("tl:videoWrite", (v) => (v ? [v] : undefined));
 // pour toutes les entités à composant adresse. cf. ../forms/geoTransforms (importé pour le side-effect).
 
 
-/** Spec tiers-lieu (pattern unifié, CONFIG-DRIVEN) : descripteur issu de la config + socle typé. */
-const TIERSLIEU_SPEC: FormSpec = {
-  descriptor: tiersLieuConfigDescriptor,
+/** FormSpec tiers-lieu construit À LA DEMANDE sur le descripteur fourni (DI) + socle typé. */
+const tiersLieuSpec = (descriptor: FormDescriptor): FormSpec => ({
+  descriptor,
   baseDefaults: () => getDefaultTiersLieuxValues() as unknown as FormValues,
-};
+});
 
 /**
- * Entité serveur → valeurs de form tiers-lieu, via la primitive générique `seedEntity` (socle
- * `getDefaultTiersLieuxValues` + seed serveur). Équivalent à l'ancien mapping (prouvé en test).
+ * Entité serveur → valeurs de form tiers-lieu, via `seedEntity` (socle `getDefaultTiersLieuxValues` + seed
+ * serveur) sur le descripteur fourni. Équivalent à l'ancien mapping (prouvé en test).
  */
-export function mapEntityToTiersLieuxValues(entity: EntityLike): TiersLieuxFormData {
-  return seedEntity(TIERSLIEU_SPEC, entity) as unknown as TiersLieuxFormData;
+export function mapEntityToTiersLieuxValues(entity: EntityLike, descriptor: FormDescriptor): TiersLieuxFormData {
+  return seedEntity(tiersLieuSpec(descriptor), entity) as unknown as TiersLieuxFormData;
 }
 
 export interface BuildPayloadOptions {
@@ -188,16 +176,18 @@ export interface BuildPayloadOptions {
 
 export function buildTiersLieuxPayload(
   data: TiersLieuxFormData,
+  descriptor: FormDescriptor,
   options: BuildPayloadOptions = {}
 ): Record<string, unknown> {
-  // Assemblage via le pipeline (TIERSLIEU_DESCRIPTOR : write transforms + path + groupes openingDate/
+  // Assemblage via le pipeline sur le descripteur FOURNI (write transforms + path + groupes openingDate/
   // manageModel/typePlace/address). Un write renvoyant `undefined` sur vide → clé OMISE (parité exacte de
   // l'ancien omit-empty ; prouvé par tiersLieuxMapping.test.ts). EditLocationTab a posé level1..4/codeInsee/geo
   // dans `data` → l'objet `address` reconstruit reste COMPLET. Le contexte costum (presets + merge tags)
   // dépend de la config (hors descripteur) → géré ci-dessous.
+  const spec = tiersLieuSpec(descriptor);
   const payload = (options.complete
-    ? buildEditPayload(TIERSLIEU_SPEC, data as unknown as FormValues)
-    : buildPayload(TIERSLIEU_SPEC, data as unknown as FormValues)) as Record<string, unknown>;
+    ? buildEditPayload(spec, data as unknown as FormValues)
+    : buildPayload(spec, data as unknown as FormValues)) as Record<string, unknown>;
 
   // Contexte costum CREATE (type/preferences) = STAMP déclaratif `spec.mutation.inject.extraFields` (appliqué
   // au create par runEntityMutation) — PLUS fusionné dans le payload ici. role/mainTag/source restent des
@@ -235,14 +225,17 @@ registerDefaultsFn("tl:emptyDefaults", () => getDefaultTiersLieuxValues() as unk
 // Scope = slug du costum porteur (VITE_SLUG), fallback getSlug() — exposé via {slug} (slugKey "slug").
 registerScopeFn("tl:scope", (carrier) => ({ slug: carrierSlug(carrier) || getSlug() }));
 // Payload mode-aware : create scopé costum (merge presets extraData + tags) ; edit complet (vides typés) + merge tags existants.
+// Descripteur résolu au RUNTIME depuis le registre (registerCostumForm — TS ou config) → plus de descripteur figé.
 registerPayloadFn("tl:payload", (form, ctx: EntityModalCtx) => {
+  const descriptor = getDescriptor("tiers-lieux");
+  if (!descriptor) throw new Error("[tiers-lieux] descripteur non enregistré (registerCostumForm)");
   const co = ctx.costum as CostumConfig | undefined;
   if (ctx.mode === "edit") {
     const existingTags = (ctx.entity?.serverData?.tags as string[] | undefined) ?? [];
     const addTags = co?.mainTag ? [co.mainTag] : [];
-    return buildTiersLieuxPayload(form as unknown as TiersLieuxFormData, { existingTags, addTags, complete: true });
+    return buildTiersLieuxPayload(form as unknown as TiersLieuxFormData, descriptor, { existingTags, addTags, complete: true });
   }
-  return buildTiersLieuxPayload(form as unknown as TiersLieuxFormData, co ? { costum: co } : undefined);
+  return buildTiersLieuxPayload(form as unknown as TiersLieuxFormData, descriptor, co ? { costum: co } : undefined);
 });
 // tl:invalidate SUPPRIMÉ → clé générique `invalidate:standard` (sharedFns) + params {userList:"organizations"} dans le schéma.
 // image:profilUrl : clé COMMUNE enregistrée dans ../sharedFns (importé en side-effect en tête de fichier).

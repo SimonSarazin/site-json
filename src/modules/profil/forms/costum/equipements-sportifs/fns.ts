@@ -11,13 +11,12 @@ import "@/modules/formEngine/engine/coercions"; // side-effect : enregistre les 
 import { ADDRESS_KEYS } from "../sharedCodecs"; // + side-effect : enregistre les codecs communs address:read/write
 import { seedEntity } from "@/modules/formEngine/engine/entityForm";
 import "../../geoTransforms"; // enregistre geo:write / geoPosition:write (partagés)
-import type { FormValues } from "@/modules/formEngine";
-import { equipementsSportifsDescriptor } from "./descriptor";
+import type { FormValues, FormDescriptor } from "@/modules/formEngine";
 import { ParentInfoReadonly } from "../../../components/profile-edit/fields";
 import { PoiEquipementDoublonsSlot } from "../../PoiEquipementDoublonsSlot";
 import type { EntityModalCtx } from "../../entityModalSpec";
 import { carrierSlug, type CarrierLike } from "../carrier";
-import { registerScopeFn, registerDefaultsFn, registerSlot } from "../../specRegistries";
+import { registerScopeFn, registerDefaultsFn, registerSlot, getDescriptor } from "../../specRegistries";
 import "../sharedFns"; // side-effect : enregistre les clés communes image:profilUrl + cleanValues/invalidate génériques
 
 
@@ -64,8 +63,8 @@ const POI_ADDRESS_BASE = (scope: PoiEquipementScope): Record<string, unknown> =>
 // les `field.default` (text→"", number→undefined via coerce:number, switch→false, array→[]) et EXCLUT déjà
 // renderOnly/writeOnly (_imageFile/address/geo/geoPosition). On ajoute seulement le socle adresse (membres de
 // groupe) + `type` (stamp ; émis au create par inject.extraFieldsFromScope). Byte-parité figée par defaults.byteparity.test.
-export const createEmptyDefaults = (scope: PoiEquipementScope): FormValues => ({
-  ...(seedEntity({ descriptor: equipementsSportifsDescriptor, baseDefaults: () => POI_ADDRESS_BASE(scope) }, null) as Record<string, unknown>),
+export const createEmptyDefaults = (scope: PoiEquipementScope, descriptor: FormDescriptor): FormValues => ({
+  ...(seedEntity({ descriptor, baseDefaults: () => POI_ADDRESS_BASE(scope) }, null) as Record<string, unknown>),
   type: scope.poiType,
 }) as FormValues;
 
@@ -82,7 +81,13 @@ registerScopeFn("poi:scope", (carrier, defaults) =>
     addressCountry: String(defaults?.addressCountry ?? ""),
   }),
 );
-registerDefaultsFn("poi:emptyDefaults", (ctx) => createEmptyDefaults(ctx.scope as PoiEquipementScope) as unknown as Record<string, unknown>);
+registerDefaultsFn("poi:emptyDefaults", (ctx) => {
+  // descripteur résolu au RUNTIME depuis le registre (enregistré par registerCostumForm — TS ou config),
+  // PLUS d'import du descripteur figé : `fns.ts` ne dépend ni de descriptor.ts ni de schema.ts.
+  const descriptor = getDescriptor("equipements-sportifs");
+  if (!descriptor) throw new Error("[equipements-sportifs] descripteur non enregistré (registerCostumForm)");
+  return createEmptyDefaults(ctx.scope as PoiEquipementScope, descriptor) as unknown as Record<string, unknown>;
+});
 registerSlot("parentInfo", (ctx: EntityModalCtx) => createElement(ParentInfoReadonly, { parent: ctx.parent ?? null }));
 registerSlot("poiDoublons", (ctx: EntityModalCtx) => createElement(PoiEquipementDoublonsSlot, { scope: ctx.scope as PoiEquipementScope }));
 // poi:dropEmptyUrls SUPPRIMÉ → clé générique `cleanValues:dropEmptyArrayItems` (sharedFns) + params {fields:["urls"]} dans le schéma.

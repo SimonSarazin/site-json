@@ -8,7 +8,8 @@
  * `import "./fns"` EN PREMIER : enregistre les clés de code (poi:scope / poi:emptyDefaults / parentInfo /
  * poiDoublons) pour que la garde de `registerCostumForm` les trouve.
  */
-import "./fns";
+import "../sharedRegistrations"; // clés GÉNÉRIQUES (codecs/coercions/geo/validators/image:profilUrl/cleanValues/invalidate)
+import "./fns"; // clés MÉTIER (poi:scope/poi:emptyDefaults/parentInfo/poiDoublons)
 import type { EntityModalSpec } from "../../entityModalSpec";
 import { registerCostumForm } from "../costumFormRegistry";
 import { EQUIPEMENTS_SPORTIFS_SCHEMA } from "./schema";

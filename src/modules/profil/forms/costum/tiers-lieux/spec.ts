@@ -7,7 +7,8 @@
  *
  * `import "./fns"` EN PREMIER : enregistre ces clés pour que la garde de `registerCostumForm` les trouve.
  */
-import "./fns";
+import "../sharedRegistrations"; // clés GÉNÉRIQUES (codecs/coercions/geo/validators…) — dont addressComplete (validateFn du schéma)
+import "./fns"; // clés MÉTIER (tl:scope/tl:payload/tl:emptyDefaults/tl:years/tl:video*)
 import type { EntityModalSpec } from "../../entityModalSpec";
 import { registerCostumForm } from "../costumFormRegistry";
 import { TIERS_LIEUX_SCHEMA } from "./schema";

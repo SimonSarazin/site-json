@@ -12,11 +12,21 @@ vi.mock("@/hooks/useLoadNamespace", () => ({
 
 import {
   buildOpeningHoursPayload,
-  buildTiersLieuxPayload,
-  mapEntityToTiersLieuxValues,
+  buildTiersLieuxPayload as buildTiersLieuxPayloadRaw,
+  mapEntityToTiersLieuxValues as mapEntityToTiersLieuxValuesRaw,
   type EntityLike,
+  type TiersLieuxFormData,
+  type BuildPayloadOptions,
 } from "./fns";
 import { getDefaultTiersLieuxValues } from "./fns";
+import { tiersLieuxDescriptor } from "./descriptor";
+
+// DI : les fns reçoivent désormais le descripteur (résolu au runtime via getDescriptor en prod). Ici on
+// l'injecte depuis ./descriptor (dérivation pure de schema.ts) → tests inchangés, fonctions restent pures.
+const buildTiersLieuxPayload = (data: TiersLieuxFormData, options?: BuildPayloadOptions) =>
+  buildTiersLieuxPayloadRaw(data, tiersLieuxDescriptor, options);
+const mapEntityToTiersLieuxValues = (entity: EntityLike) =>
+  mapEntityToTiersLieuxValuesRaw(entity, tiersLieuxDescriptor);
 
 /**
  * Tests de tiersLieuxMapping : conversions entity ↔ form pour l'entité

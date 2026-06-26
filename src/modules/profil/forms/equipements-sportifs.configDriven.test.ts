@@ -35,7 +35,7 @@ describe("PILOTE config-driven POI équipement — descripteur unifié", () => {
   const config = formDescriptorToConfig(equipementsSportifsDescriptor);
   const d2 = configToDescriptor(config, { tLoc });
 
-  const baseDefaults = () => createEmptyDefaults(SCOPE) as unknown as Record<string, unknown>;
+  const baseDefaults = () => createEmptyDefaults(SCOPE, equipementsSportifsDescriptor) as unknown as Record<string, unknown>;
   const specOrig: FormSpec = { descriptor: equipementsSportifsDescriptor, baseDefaults };
   const specCfg: FormSpec = { descriptor: d2, baseDefaults };
 
@@ -75,7 +75,7 @@ describe("PILOTE config-driven POI équipement — descripteur unifié", () => {
 
   it("4. buildPayload (CREATE) + buildEditPayload (EDIT) via config === via l'original (byte-parité)", () => {
     const form = {
-      ...createEmptyDefaults(SCOPE),
+      ...createEmptyDefaults(SCOPE, equipementsSportifsDescriptor),
       name: "Stade Pilote", equip_type_name: "Terrain", description: "d",
       equip_long: 25, equip_larg: 10, equip_eclair: false, inst_part_bool: true,
       tags: ["a"], aps_name: ["foot"], inst_part_type: ["x"], urls: ["https://x.fr"],
