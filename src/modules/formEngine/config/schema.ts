@@ -83,8 +83,6 @@ const FieldConfig = z.object({
   // ── Pipeline READ/WRITE (parité descripteur ; aligné sur FieldDescriptor) ──────
   // Membre d'un groupe de SÉRIALISATION (cf. `serializeGroups`) : N champs plats ↔ 1 objet serveur.
   group: z.string().optional(),
-  // Groupe ATOMIQUE : si un membre change, tout le groupe est ré-émis ENSEMBLE au diff d'édition.
-  atomicGroup: z.string().optional(),
   // WRITE-only : ignoré au READ (seed), émis au payload (ex. geo/geoPosition posés par EditLocationTab).
   writeOnly: z.boolean().optional(),
   // READ-only : seedé mais jamais émis au payload (ex. `public`/`urls`).

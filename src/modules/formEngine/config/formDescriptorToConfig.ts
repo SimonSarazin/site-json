@@ -44,7 +44,6 @@ function fieldToConfig(f: FieldDescriptor): JsonFormFieldConfig {
     ...(f.widgetProps ? { widgetProps: f.widgetProps } : {}),
     // Pipeline READ/WRITE (parité descripteur) — tous sérialisables (string/bool/clear primitif).
     ...(f.group ? { group: f.group } : {}),
-    ...(f.atomicGroup ? { atomicGroup: f.atomicGroup } : {}),
     ...(f.writeOnly ? { writeOnly: f.writeOnly } : {}),
     ...(f.readOnly ? { readOnly: f.readOnly } : {}),
     ...(f.renderOnly ? { renderOnly: f.renderOnly } : {}),

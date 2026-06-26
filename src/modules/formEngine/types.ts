@@ -87,12 +87,9 @@ export interface FieldDescriptor {
   // Read / Write (transformers nommés)
   read?: TransformName;
   write?: TransformName;
-  /** Valeur émise pour EFFACER ce champ (diff d'édition `fieldPipeline.diffForEdit`). Défaut dérivé du
-   *  type : `[]` (array) sinon `""`. ⚠ Jamais `{}` (non reconnu comme clear par le SDK costum → no-op). */
+  /** Valeur émise pour EFFACER ce champ en ÉDITION (`valuesToPayload` emitEmpty ; le delta réel est fait par
+   *  le SDK `save()`). Défaut dérivé du type : `[]` (array) sinon `""`. ⚠ Jamais `{}` (non reconnu comme clear). */
   clear?: unknown;
-  /** Id de GROUPE ATOMIQUE : si UN champ du groupe change, TOUT le groupe est (ré)émis ENSEMBLE au save —
-   *  évite l'écrasement lossy (ex. adresse : level1..4/codeInsee/geo non relus). cf. fieldPipeline.diffForEdit. */
-  atomicGroup?: string;
   /** Membre d'un GROUPE DE SÉRIALISATION (cf. `FormDescriptor.serializeGroups`) : N champs plats ↔ 1 objet
    *  serveur (ex. `address` 14 clés, `socialNetwork` 9 clés). Lu/écrit PAR le groupe, pas individuellement.
    *  EXCEPTION : si le groupe est `groupReadOnly`, le membre est LU par le groupe mais ÉCRIT individuellement. */

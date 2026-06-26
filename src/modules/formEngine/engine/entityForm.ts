@@ -3,10 +3,10 @@
  * UN `FormSpec` par entité (descripteur read+write unifié + overlays) ; 3 primitives PURES au-dessus du pipeline :
  *  - `seedEntity(spec, entity?)` : READ (création + édition) — socle + valeurs serveur seedées.
  *  - `buildPayload(spec, values)`: WRITE complet (omit-empty natif) — pour la CRÉATION.
- *  - `buildDelta(spec, values, baseline)` : ÉDITION — delta serveur (modifié + effacé typé) vs baseline.
+ *  - `buildEditPayload(spec, values)` : ÉDITION — payload complet (vides typés via `clear`) ; le delta réel est fait par le SDK `save()`.
  *
  * Remplace les wrappers ad hoc par entité (buildEditDefaults / mapEntityToTiersLieuxValues / buildTiersLieuxPayload /
- * buildEditDelta / buildProfileUpdateData) par UN seul jeu de fonctions. Ajouter une entité = écrire UN spec.
+ * buildProfileUpdateData) par UN seul jeu de fonctions. Ajouter une entité = écrire UN spec.
  */
 import type { FormDescriptor, FormValues } from "../types";
 import { seedFromEntity, valuesToPayload } from "./fieldPipeline";

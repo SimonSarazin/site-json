@@ -21,7 +21,7 @@ beforeAll(() => {
 });
 
 // Descripteur minimal : un remap de nom (structureName↔holderOrganization via path), un champ avec read/write,
-// un array, et un groupe atomique "address" (2 champs flat).
+// un array, et 2 champs flat (addressLocality/codeInsee, utilisés pour leurs valeurs).
 const D: FormDescriptor = {
   id: "t", collection: "organizations", layout: { kind: "flat" }, sections: [],
   fields: {
@@ -29,8 +29,8 @@ const D: FormDescriptor = {
     structureName: { name: "structureName", path: "holderOrganization", type: "string", widget: "text", label: "" },
     code: { name: "code", type: "string", widget: "text", label: "", read: "test:upper", write: "test:lower" },
     tags: { name: "tags", type: "array", widget: "tags", label: "" },
-    addressLocality: { name: "addressLocality", type: "string", widget: "text", label: "", atomicGroup: "address" },
-    codeInsee: { name: "codeInsee", type: "string", widget: "text", label: "", atomicGroup: "address" },
+    addressLocality: { name: "addressLocality", type: "string", widget: "text", label: "" },
+    codeInsee: { name: "codeInsee", type: "string", widget: "text", label: "" },
   },
 };
 

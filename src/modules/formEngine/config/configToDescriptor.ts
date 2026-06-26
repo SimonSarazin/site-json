@@ -69,7 +69,6 @@ export function configToDescriptor(config: JsonFormConfig, opts: ConfigToDescrip
       widgetProps: f.widgetProps,
       // Pipeline READ/WRITE (parité descripteur) : sérialisation par groupe, write/read-only, clear.
       group: f.group,
-      atomicGroup: f.atomicGroup,
       writeOnly: f.writeOnly,
       readOnly: f.readOnly,
       renderOnly: f.renderOnly,

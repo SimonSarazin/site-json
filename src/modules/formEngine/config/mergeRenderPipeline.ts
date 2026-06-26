@@ -20,7 +20,7 @@
 import type { FieldDescriptor, FormDescriptor } from "../types";
 
 /** Props PIPELINE superposées sur le champ de RENDU homonyme (toutes sérialisables). */
-const PIPELINE_KEYS = ["read", "write", "group", "atomicGroup", "path", "writeOnly", "readOnly", "clear", "default"] as const;
+const PIPELINE_KEYS = ["read", "write", "group", "path", "writeOnly", "readOnly", "clear", "default"] as const;
 
 export function mergeRenderPipeline(render: FormDescriptor, pipeline: FormDescriptor): FormDescriptor {
   const fields: Record<string, FieldDescriptor> = {};

@@ -1,13 +1,13 @@
 /**
  * Pipeline de TRAITEMENT DES CHAMPS unifié (cf. doc/refactor-field-treatment.md, P1) — PUR, additif.
- * Sort le quadruplet READ / WRITE / diff / clear des mappers bespoke par entité et le rend déclaratif
- * sur le `FieldDescriptor` (`path`, `read`, `write`, `clear`, `atomicGroup`), exécuté ici :
+ * Sort le triplet READ / WRITE / clear des mappers bespoke par entité et le rend déclaratif
+ * sur le `FieldDescriptor` (`path`, `read`, `write`, `clear`), exécuté ici :
  *  - `seedFromEntity` : entité serveur → valeurs de form (READ : path + transformer `read`)
- *  - `valuesToPayload` : valeurs de form → payload serveur COMPLET (WRITE : transformer `write` + path)
- *  - `diffForEdit`     : payload (complet) vs baseline → delta à envoyer (modifiés + EFFACÉS), atomic-aware
+ *  - `valuesToPayload` : valeurs de form → payload serveur COMPLET (WRITE : transformer `write` + path).
+ *    En mode `emitEmpty` (ÉDITION), un vide typé est émis via `clear` ; le delta réel est fait par le SDK `save()`.
  *
- * Modèle « payload COMPLET » (vs builders bespoke qui omettent les vides) : on émet TOUS les champs, et
- * le diff décide quoi envoyer. Un champ vidé devient une clé MODIFIÉE vers vide → branche clear → le bug
+ * Modèle « payload COMPLET » (vs builders bespoke qui omettent les vides) : en édition on émet TOUS les champs
+ * (vides typés via clear) et le SDK `save()` calcule le delta. Un champ vidé → branche clear → le bug
  * d'effacement est absorbé NATIVEMENT (plus de réconciliation ad-hoc des clés absentes).
  *
  * Les GROUPES DE SÉRIALISATION (N champs plats ↔ 1 objet serveur : address 14 clés, socialNetwork 9 clés,

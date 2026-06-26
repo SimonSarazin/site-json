@@ -119,7 +119,8 @@ registerTransform("tl:video0", (v) => pickString(Array.isArray(v) ? v[0] : undef
 // READ adresse : codec COMMUN `address:read` (cf. ../sharedCodecs, omit-empty — le socle getDefaultTiersLieuxValues
 // fournit les vides ""). Remplace l'ex-`tl:addressRead` (pickString) ≡ pour des strings.
 // WRITE (P3) — réutilisent les helpers de build. `undefined` sur vide = clé OMISE par valuesToPayload
-// (parité de l'omit-empty de l'ancien buildTiersLieuxPayload ; le diff d'édition efface, lui, via diffForEdit).
+// (parité de l'omit-empty de l'ancien buildTiersLieuxPayload ; en ÉDITION le vide est émis via clear/emitEmpty,
+// le delta réel étant calculé par le SDK `save()`).
 // tl:emptyToUndef → coerce:orUndef (`v || undefined` ≡ `v ? v : undefined`, prouvé byte-identique) : GÉNÉRIQUE.
 registerTransform("tl:numOrUndef", (v) => (v ? Number(v) : undefined));
 registerTransform("tl:videoWrite", (v) => (v ? [v] : undefined));
