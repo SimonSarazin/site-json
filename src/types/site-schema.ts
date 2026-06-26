@@ -18,7 +18,7 @@ export { LocalizedString, LOCALES };
 import { ProfilesConfigSchema, MemberSectionSchema } from "../modules/profil/schema";
 import { AmpliConfigSchema } from "@/modules/ampli/schema";
 import { CommandPaletteConfigSchema } from "@/modules/commandPalette/schema";
-import { VisibilityConditionSchema } from "@/lib/visibility/schema";
+import { VisibilityConditionSchema, type VisibilityCondition } from "@/lib/visibility/schema";
 
 /**
  * Schéma réutilisable pour les champs qui acceptent soit un nom d'icône
@@ -64,6 +64,7 @@ interface NavItemType {
   icon?: string;
   badge?: z.infer<typeof NavBadge>;
   roles?: string[];
+  visibility?: VisibilityCondition;
   children?: NavItemType[];
 }
 
@@ -75,6 +76,7 @@ export const NavItem: z.ZodType<NavItemType> = z.lazy(() =>
     icon: z.string().optional(),
     badge: NavBadge,
     roles: z.array(z.string()).optional(), // visibilité RBAC
+    visibility: VisibilityConditionSchema, // condition de visibilité (auth/routes/permissions)
     children: z.array(NavItem).optional(), // sous‑menu infini
   }).refine(d => d.path || d.href, { message: "NavItem : path ou href obligatoire" })
 );
@@ -86,6 +88,15 @@ export type NavItem = z.infer<typeof NavItem>;
 // Helpers génériques
 const Alignment = z.enum(["left", "center", "right"]);
 const Columns = z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5), z.literal(6)]);
+// Nombre de colonnes de grille par breakpoint (mobile = 1 implicite). Partagé
+// par les sections en grille (stats, action-tiles…) ; rendu via le helper
+// `buildGridColsClass` (mapping de classes statiques, cf. responsiveGridCols.ts).
+const ResponsiveColumns = z.object({
+  sm: Columns.optional(),
+  md: Columns.optional(),
+  lg: Columns.optional(),
+  xl: Columns.optional(),
+});
 
 // eslint-disable-next-line prefer-const
 let SectionSchemaLazy: z.ZodTypeAny;
@@ -440,6 +451,9 @@ export const ActionTilesSchema = z.object({
     // Tonalité des décorations (primary par défaut).
     variant: z.enum(["primary", "accent"]).optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
+    // Colonnes par breakpoint (mobile = 1). Sans lui : défaut sm:2 lg:4 (idéal
+    // pour 4/8 tuiles). À régler quand le compte ne tombe pas sur 4 (ex. 3 → lg:3).
+    columns: ResponsiveColumns.optional(),
     actions: z.array(
       z.object({
         icon: z.string(),
@@ -851,6 +865,10 @@ const StatsSectionSchema = z.object({
       icon: z.string().optional(),
     })),
     layout: z.enum(["horizontal", "vertical"]).default("horizontal"),
+    // Nombre de colonnes par breakpoint (mobile = 1). Optionnel : sans lui, le
+    // défaut `horizontal` reste md:2 lg:4 (idéal pour 4/8 items). À régler quand
+    // le nombre d'items ne « tombe » pas juste sur 4 (ex. 6 items → lg:3 = 3×2).
+    columns: ResponsiveColumns.optional(),
     animated: z.boolean().default(true),
   }),
 });
@@ -887,6 +905,9 @@ const LogoCloudSectionSchema = z.object({
   id: z.string().optional(),
   props: z.object({
     title: LocalizedString.optional(),
+    // Sous-titre/description optionnel sous le titre (paragraphe muted, centré).
+    // Les sauts de ligne (`\n`) du contenu sont préservés (whitespace-pre-line).
+    subtitle: LocalizedString.optional(),
     logos: z.array(z.object({
       src: z.string(),
       alt: LocalizedString,
@@ -1498,6 +1519,7 @@ export interface EnhancedNavItemType {
   icon?: string;
   badge?: z.infer<typeof NavBadge>;
   roles?: string[];
+  visibility?: VisibilityCondition;
   children?: EnhancedNavItemType[];
   megaMenu?: {
     columns: z.infer<typeof MegaMenuColumn>[];
@@ -1516,6 +1538,7 @@ const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
     icon: z.string().optional(),
     badge: NavBadge,
     roles: z.array(z.string()).optional(),
+    visibility: VisibilityConditionSchema, // condition de visibilité (auth/routes/permissions)
     children: z.array(EnhancedNavItem).optional(),
     megaMenu: MegaMenu.optional(),
     description: LocalizedString.optional(),
@@ -1538,6 +1561,17 @@ export const Header = z.object({
   // Permet un logo "marque sur 2 lignes" (titre + localité/baseline).
   logoSubtitle: LocalizedString.optional(),
   logoIcon: LucideIconOrSvg.optional(),
+  // Variantes contextuelles de l'IMAGE de logo (toutes optionnelles, repli sur
+  // `logo`). Résolues par `<HeaderLogo>` / `resolveHeaderLogo` :
+  // - `logoDark` : image affichée en mode sombre (swap CSS `dark:`, sans flash SSR).
+  // - `logoOverlay` : image quand le header transparent est posé sur un héro
+  //   (état non opaque) — typiquement une version claire/monochrome.
+  logoDark: z.string().optional(),
+  logoOverlay: z.string().optional(),
+  // Ton du `logoIcon` (SVG/Lucide rendu en `currentColor`). Défaut côté header
+  // (ex. transparent-scroll = "primary"). "foreground" suit l'ink du thème →
+  // marine en clair, clair en sombre, idéal pour une marque monochrome.
+  logoIconTone: z.enum(["foreground", "primary", "white"]).optional(),
   // Opt-in : remplace logo/titre par ceux de l'entité costum au runtime
   // (plateforme communecter `transparentCommune`). Désactivé par défaut → le
   // header ne dépend d'aucune logique de site sans cette option.
