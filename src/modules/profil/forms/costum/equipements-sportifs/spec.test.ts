@@ -9,8 +9,13 @@ import { specToConfig } from "../../resolveModalSpec";
 import { equipementsSportifsSpec } from "./spec";
 import { createEmptyDefaults, type PoiEquipementScope } from "./fns";
 import { equipementsSportifsDescriptor } from "./descriptor";
-import { buildAddPoiPayload } from "../../addPoi.payload";
+import { buildPayload } from "@/modules/formEngine/engine/entityForm";
 import type { EntityModalCtx } from "../../entityModalSpec";
+
+// Référence de parité : pipeline générique sur le descripteur equipements + STAMP `type` (form.type) —
+// reproduit l'ex-buildAddPoiPayload (le descripteur equipements n'a pas de champ `type`, c'est un stamp).
+const refPayload = (form: Record<string, unknown>) =>
+  ({ ...buildPayload({ descriptor: equipementsSportifsDescriptor }, form), ...(form.type ? { type: form.type } : {}) });
 
 const carrier = { id: "65a04155ed047177b9239968", serverData: { slug: "equipementsSportifs974", lists: {} } } as unknown as EntityTypes;
 const me = { id: "meId" } as unknown as EntityTypes;
@@ -45,9 +50,8 @@ describe("résolveur — spec poi-équipement (parité avec l'ex-config)", () =>
     // payload create costum = pipeline (sans `type`) + STAMP (inject.extraFields) → doit égaler l'ex-payload
     // buildAddPoiPayload (qui portait `type` via le champ descripteur). Byte-parité de la création préservée.
     const form = { ...createEmptyDefaults(scope, equipementsSportifsDescriptor), name: "Stade", equip_type_name: "Terrain", equip_long: 25 } as unknown as Record<string, unknown>;
-    // buildAddPoiPayload (poi standard) tourne sur SON descripteur ; ici on lui passe le descripteur equipements
-    // (DI) pour comparer la modale equipements à l'ex-référence — parité création equipements préservée.
-    expect({ ...mut.buildPayload(form), ...(mut.inject?.extraFields ?? {}) }).toEqual(buildAddPoiPayload(form as never, equipementsSportifsDescriptor));
+    // Parité création equipements : la modale (pipeline + stamp inject) == pipeline générique + stamp type.
+    expect({ ...mut.buildPayload(form), ...(mut.inject?.extraFields ?? {}) }).toEqual(refPayload(form as Record<string, unknown>));
   });
 
   it("EDIT : target=entité, pas de costumSlug, keys d'update", () => {

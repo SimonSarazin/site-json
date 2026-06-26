@@ -11,7 +11,7 @@ import { addProjectDescriptor } from "../addProject.descriptor";
 import { addOrganizationDescriptor } from "../addOrganization.descriptor";
 import { buildAddEventDescriptor } from "../addEvent.descriptor";
 import { buildProfileUpdateData } from "../editProfilePayload";
-import { buildAddPoiPayload } from "../addPoi.payload";
+import { buildPayload } from "@/modules/formEngine/engine/entityForm";
 import type { EntityModalConfig } from "../EntityFormModal";
 
 const tabsTexts = (t: (k: string) => string) => ({ next: "", previous: "", cancel: t("common.cancel") });
@@ -32,7 +32,7 @@ export const addPoiConfig: EntityModalConfig = {
     const target = parent ?? me;
     return {
       mode: "add", entityType: "poi", target: parent ?? null,
-      buildPayload: (d) => buildAddPoiPayload(d),
+      buildPayload: (d) => buildPayload({ descriptor: addPoiDescriptor }, d), // pipeline générique direct (comme les costums)
       inject: { parent: parent ?? null },
       successKey: "toast.add.poiSuccess", errorKey: "toast.add.poiError", errorContext: "EntityFormModal · ADD_POI",
       invalidateQueries: [

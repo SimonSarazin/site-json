@@ -10,12 +10,16 @@ import { runEntityMutation, type EntityMutationSpec } from "./useEntityMutation"
 import { buildParentReference, buildOrganizerReference } from "./mutationUtils";
 // side-effect : enregistre pf:* / poi:* / tl:* + fournit les builders de référence.
 import { buildProfileUpdateData } from "../forms/editProfilePayload";
-import { buildAddPoiPayload } from "../forms/addPoi.payload";
+import { buildPayload } from "@/modules/formEngine/engine/entityForm";
+import { addPoiDescriptor } from "../forms/addPoi.descriptor"; // porte ses transforms (address/geo) en side-effect
 import { buildTiersLieuxPayload } from "../forms/costum/tiers-lieux/fns";
 import { getDefaultTiersLieuxValues } from "../forms/costum/tiers-lieux/fns";
 import { tiersLieuxDescriptor } from "../forms/costum/tiers-lieux/descriptor";
 
 type Data = Record<string, unknown>;
+
+// Payload poi standard = pipeline générique direct sur addPoiDescriptor (plus de buildAddPoiPayload).
+const buildAddPoiPayload = (d: Data) => buildPayload({ descriptor: addPoiDescriptor }, d) as Data;
 
 /** Faux SDK : capture chaque appel {scope, method, payload} et compte les save(). */
 function makeSdk() {

@@ -6,6 +6,8 @@
 import type { FieldDescriptor, FormDescriptor } from "@/modules/formEngine";
 import { addressField, locationSection, nameField, tagsField } from "./addCommon";
 import "./validators"; // side-effect : enregistre la clé "addressValid" dans le validateRegistry
+import "./costum/sharedCodecs"; // side-effect : address:read/write (serializeGroups.address) — le descripteur porte ses transforms d'écriture
+import "./geoTransforms"; // side-effect : geo:write / geoPosition:write (champs geo writeOnly)
 
 // Types de POI + libellés (FR codés en dur dans l'ancien modal — pas de clés i18n).
 const POI_TYPES: Array<{ value: string; label: string }> = [
