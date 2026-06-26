@@ -17,12 +17,23 @@ const POI_TYPES: Array<{ value: string; label: string }> = [
   { value: "other", label: "Autre" },
 ];
 
+// Champ caché (write-only / membre de groupe adresse), non rendu.
+const hidden = (name: string, extra: Partial<FieldDescriptor> = {}): FieldDescriptor =>
+  ({ name, type: "string", widget: "hidden", label: "", ...extra });
+// Membres plats du groupe `address` recomposés en objet serveur par `address:write` (level1..4/codeInsee
+// éventuels LUS par le codec depuis les valeurs, non déclarés). EditLocationTab (widget `location`) les pose.
+const ADDRESS_MEMBERS = ["addressCountry", "addressLocality", "postalCode", "streetAddress", "localityId"];
+
 const fields: FieldDescriptor[] = [
   nameField(),
   { name: "type", type: "string", widget: "select", required: true, label: "Type", placeholder: "Sélectionner un type", enum: POI_TYPES },
   { name: "description", type: "string", widget: "textarea", label: "ProfileEdit.fields.description.label", placeholder: "ProfileEdit.fields.description.placeholder", widgetProps: { rows: 4 } },
   tagsField,
-  addressField,
+  addressField, // widget `location` (RENDU) ; l'ÉCRITURE de l'adresse passe par les membres + serializeGroups ci-dessous
+  // ── écriture adresse/geo (write-only, non rendus) : UN SEUL descripteur rendu+write, comme les costums ──
+  ...ADDRESS_MEMBERS.map((n) => hidden(n, { group: "address" })),
+  hidden("geo", { type: "object", writeOnly: true, write: "geo:write" }),
+  hidden("geoPosition", { type: "object", writeOnly: true, write: "geoPosition:write" }),
 ];
 
 export const addPoiDescriptor: FormDescriptor = {
@@ -36,5 +47,8 @@ export const addPoiDescriptor: FormDescriptor = {
     locationSection,
   ],
   fields: Object.fromEntries(fields.map((f) => [f.name, f])),
+  // Adresse plate → objet serveur (codecs COMMUNS sharedCodecs) : rend addPoiDescriptor capable d'ÉCRIRE l'adresse
+  // → plus besoin d'un descripteur d'écriture séparé (addPoiWriteDescriptor supprimé).
+  serializeGroups: { address: { serverKey: "address", read: "address:read", write: "address:write" } },
   validate: "addressValid", // clé de registre (= addressValidate) → sérialisable, round-trip config exact
 };
