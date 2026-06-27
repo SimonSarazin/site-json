@@ -36,10 +36,10 @@ export function getDescriptor(id: string): FormDescriptor | undefined {
 // ── Variante de descripteur runtime (event hasParent / edit-profil byType) ────
 export type DescriptorVariantFn = (ctx: EntityModalCtx) => FormDescriptor;
 const descriptorVariants = new Map<string, DescriptorVariantFn>();
-export function registerDescriptorVariant(key: string, fn: DescriptorVariantFn): void {
+export function registerDescriptorVariantFn(key: string, fn: DescriptorVariantFn): void {
   descriptorVariants.set(key, fn);
 }
-export function getDescriptorVariant(key: string): DescriptorVariantFn | undefined {
+export function getDescriptorVariantFn(key: string): DescriptorVariantFn | undefined {
   const fn = descriptorVariants.get(key);
   if (!fn) warnMissing("descriptorVariant", key);
   return fn;
@@ -84,10 +84,10 @@ export function getScopeFn(key: string): ScopeFn | undefined {
 // ── Slots UI (id → composant, reçoit le ctx) ──────────────────────────────────
 export type SlotFn = (ctx: EntityModalCtx) => ReactNode;
 const slotFns = new Map<string, SlotFn>();
-export function registerSlot(id: string, fn: SlotFn): void {
+export function registerSlotFn(id: string, fn: SlotFn): void {
   slotFns.set(id, fn);
 }
-export function getSlot(id: string): SlotFn | undefined {
+export function getSlotFn(id: string): SlotFn | undefined {
   const fn = slotFns.get(id);
   if (!fn) warnMissing("slot", id);
   return fn;

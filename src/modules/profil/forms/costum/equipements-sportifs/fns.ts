@@ -16,7 +16,7 @@ import { ParentInfoReadonly } from "../../../components/profile-edit/fields";
 import { PoiEquipementDoublonsSlot } from "../../PoiEquipementDoublonsSlot";
 import type { EntityModalCtx } from "../../entityModalSpec";
 import { carrierSlug, type CarrierLike } from "../carrier";
-import { registerScopeFn, registerDefaultsFn, registerSlot, getDescriptor } from "../../specRegistries";
+import { registerScopeFn, registerDefaultsFn, registerSlotFn, getDescriptor } from "../../specRegistries";
 import "../sharedFns"; // side-effect : enregistre les clés communes image:profilUrl + cleanValues/invalidate génériques
 
 
@@ -88,8 +88,8 @@ registerDefaultsFn("poi:emptyDefaults", (ctx) => {
   if (!descriptor) throw new Error("[equipements-sportifs] descripteur non enregistré (registerCostumForm)");
   return createEmptyDefaults(ctx.scope as PoiEquipementScope, descriptor) as unknown as Record<string, unknown>;
 });
-registerSlot("parentInfo", (ctx: EntityModalCtx) => createElement(ParentInfoReadonly, { parent: ctx.parent ?? null }));
-registerSlot("poiDoublons", (ctx: EntityModalCtx) => createElement(PoiEquipementDoublonsSlot, { scope: ctx.scope as PoiEquipementScope }));
+registerSlotFn("parentInfo", (ctx: EntityModalCtx) => createElement(ParentInfoReadonly, { parent: ctx.parent ?? null }));
+registerSlotFn("poiDoublons", (ctx: EntityModalCtx) => createElement(PoiEquipementDoublonsSlot, { scope: ctx.scope as PoiEquipementScope }));
 // poi:dropEmptyUrls SUPPRIMÉ → clé générique `cleanValues:dropEmptyArrayItems` (sharedFns) + params {fields:["urls"]} dans le schéma.
 // image:profilUrl : clé COMMUNE enregistrée dans ../sharedFns (importé en side-effect ci-dessous).
 // poi:invalidate SUPPRIMÉ → clé générique `invalidate:standard` (sharedFns) + params {userList:"pois",

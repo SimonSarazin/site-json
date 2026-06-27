@@ -17,7 +17,7 @@ import type { EntityModalConfig } from "./EntityFormModal";
 import type { ByMode, EntityModalCtx, EntityModalSpec } from "./entityModalSpec";
 import type { EntityMutationSpec } from "../hooks/useEntityMutation";
 import {
-  getDescriptor, getDescriptorVariant, getDefaultsFn, getPayloadFn, getScopeFn, getSlot,
+  getDescriptor, getDescriptorVariantFn, getDefaultsFn, getPayloadFn, getScopeFn, getSlotFn,
   getSchemaFn, getExistingUrlFn, getAfterSubmitFn, getCleanValuesFn, getInvalidateFn,
 } from "./specRegistries";
 
@@ -58,7 +58,7 @@ export function specToConfig(spec: EntityModalSpec): EntityModalConfig {
   /** Descripteur résolu pour un ctx (variante runtime éventuelle, sinon ref registre ou config embarquée). */
   const resolveDescriptor = (ctx: EntityModalCtx): FormDescriptor => {
     if (spec.descriptorVariant) {
-      const fn = getDescriptorVariant(spec.descriptorVariant);
+      const fn = getDescriptorVariantFn(spec.descriptorVariant);
       if (fn) return fn(ctx);
     }
     if ("config" in spec.descriptor) return configToDescriptor(spec.descriptor.config, { tLoc: PRESERVE_LABELS });
@@ -159,7 +159,7 @@ export function specToConfig(spec: EntityModalSpec): EntityModalConfig {
     slots: spec.slots
       ? (ctx) => {
           const out: Record<string, ReactNode> = {};
-          for (const [id, key] of Object.entries(spec.slots!)) out[id] = getSlot(key)?.(ctx) ?? null;
+          for (const [id, key] of Object.entries(spec.slots!)) out[id] = getSlotFn(key)?.(ctx) ?? null;
           return out;
         }
       : undefined,
