@@ -108,7 +108,7 @@ export interface EntityLike {
 // Transformers nommés réutilisant les helpers ci-dessus (side-effect à l'import). Champs 1→1 (path +
 // read) + 4 GROUPES décompose (1 champ serveur → N champs form) : openingDate, manageModel,
 // typePlace (+typePlaceOther via le 2e arg `all`), address. cf. doc/refactor-field-treatment.md (P3).
-// tl:pickString → coerce:pickString ; tl:pickNumberString → coerce:string (byte-identique, prouvé) : GÉNÉRIQUES (formEngine/coercions).
+// tl:pickString → coerce:stringStrict ; tl:pickNumberString → coerce:string (byte-identique, prouvé) : GÉNÉRIQUES (formEngine/coercions).
 registerTransform("tl:video0", (v) => pickString(Array.isArray(v) ? v[0] : undefined));
 // tl:socialRead/tl:socialWrite SUPPRIMÉS → codec commun `social:read`/`social:write` (sharedCodecs).
 // tl:hoursRead SUPPRIMÉ → codec du widget `openingHours:read` (sharedCodecs), hérité via WIDGET_DEFAULTS.

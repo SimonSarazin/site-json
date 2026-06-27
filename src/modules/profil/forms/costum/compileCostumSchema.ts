@@ -85,7 +85,7 @@ const WIDGET_DEFAULTS: Partial<Record<WidgetKind, Partial<FieldDescriptor>>> = {
   selectFromLists: { type: "string", read: "coerce:string", default: "" },
   switch: { type: "boolean", read: "coerce:bool", default: false },
   checkbox: { type: "boolean", read: "coerce:bool", default: false },
-  date: { type: "date", read: "coerce:dateYMD", default: "" },
+  date: { type: "date", read: "coerce:dateYMDlocale", default: "" },
   number: { type: "number", read: "coerce:number" }, // pas de default (→ undefined)
   checkboxGroup: { type: "array", read: "coerce:stringArray", default: [] },
   tags: { type: "array", read: "coerce:stringArray", default: [] },

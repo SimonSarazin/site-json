@@ -2696,7 +2696,7 @@
             "fr": "Nom du tiers-lieu",
             "en": "Name of the third-place"
           },
-          "read": "coerce:pickString"
+          "read": "coerce:stringStrict"
         },
         "openingMonth": {
           "widget": "select",
@@ -2813,7 +2813,7 @@
           "widgetProps": {
             "rows": 2
           },
-          "read": "coerce:pickString",
+          "read": "coerce:stringStrict",
           "write": "coerce:orUndef"
         },
         "structureName": {
@@ -2822,7 +2822,7 @@
             "fr": "Nom de la structure porteuse (si différent)",
             "en": "Operating organization (if different)"
           },
-          "read": "coerce:pickString",
+          "read": "coerce:stringStrict",
           "write": "coerce:orUndef",
           "path": "holderOrganization"
         },
@@ -3041,7 +3041,7 @@
           "rules": {
             "regex": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
           },
-          "read": "coerce:pickString"
+          "read": "coerce:stringStrict"
         },
         "phone": {
           "widget": "text",
@@ -3056,7 +3056,7 @@
           "widgetProps": {
             "inputType": "tel"
           },
-          "read": "coerce:pickString",
+          "read": "coerce:stringStrict",
           "write": "coerce:orUndef",
           "path": "telephone"
         },
@@ -3096,7 +3096,7 @@
             "fr": "http://www.exemple.org",
             "en": "http://www.example.org"
           },
-          "read": "coerce:pickString",
+          "read": "coerce:stringStrict",
           "write": "coerce:orUndef",
           "path": "url"
         },
@@ -3193,7 +3193,7 @@
           "widgetProps": {
             "rows": 10
           },
-          "read": "coerce:pickString",
+          "read": "coerce:stringStrict",
           "write": "coerce:orUndef"
         },
         "familyOther": {

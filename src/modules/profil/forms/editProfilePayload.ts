@@ -84,7 +84,7 @@ registerTransform("pf:socialRead", (v) => {
   const sn = (v ?? {}) as Data;
   return Object.fromEntries(SOCIAL_KEYS.map((k) => [k, sn[k] || ""]));
 });
-// coerce:arrayOrEmpty (rdArr) / coerce:truthy (rdBool) / coerce:dateYMDfromISO (rdDateYMD birthDate) /
+// coerce:arrayOrEmpty (rdArr) / coerce:boolLoose (rdBool) / coerce:dateYMDutc (rdDateYMD birthDate) /
 // coerce:dateISO (rdDateISO start/endDate) : désormais GÉNÉRIQUES (formEngine/coercions).
 registerTransform("pf:rdRefOrUndef", (v) => v ?? undefined);        // `serverData.parent ?? undefined`
 registerTransform("pf:rdOrganizer", (v) => v ?? {});               // `serverData.organizer ?? {}`
@@ -140,7 +140,7 @@ export const PROFIL_DESCRIPTORS: Record<string, FormDescriptor> = {
     name: COMMON.name, slug: COMMON.slug, shortDescription: COMMON.shortDescription, description: COMMON.description,
     url: COMMON.url, email: COMMON.email,
     mobile: f("mobile", "coerce:orEmpty", "coerce:orEmpty"), fixe: f("fixe", "coerce:orEmpty", "coerce:orEmpty"),
-    birthDate: f("birthDate", "coerce:dateYMDfromISO", "coerce:orEmpty"),
+    birthDate: f("birthDate", "coerce:dateYMDutc", "coerce:orEmpty"),
     tags: COMMON.tags, ...ADDR_MEMBERS, ...GEO_FIELDS, ...SOCIAL_FIELDS,
   } },
   organizations: { ...base("organizations", { ...ADDR_GROUP, ...SOCIAL_GROUP }), fields: {
@@ -161,7 +161,7 @@ export const PROFIL_DESCRIPTORS: Record<string, FormDescriptor> = {
     name: COMMON.name, slug: COMMON.slug, shortDescription: COMMON.shortDescription,
     url: COMMON.url, email: COMMON.email,
     type: f("type", undefined, "coerce:orUndef"),
-    recurrency: f("recurrency", "coerce:truthy", "pf:recurrency", "boolean"),
+    recurrency: f("recurrency", "coerce:boolLoose", "pf:recurrency", "boolean"),
     startDate: f("startDate", "coerce:dateISO", "pf:isoDate"), endDate: f("endDate", "coerce:dateISO", "pf:isoDate"),
     timeZone: f("timeZone", "coerce:orEmpty", "pf:timeZone"),
     parent: f("parent", "pf:rdRefOrUndef", "pf:entityRef", "object"),
