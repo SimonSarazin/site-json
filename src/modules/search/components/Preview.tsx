@@ -10,6 +10,7 @@ import PreviewDefault from "./preview/PreviewDefault";
  */
 const PreviewPoiAmenities = lazy(() => import("./preview/PreviewPoiAmenities"));
 const PreviewCoformAnswer = lazy(() => import("./preview/PreviewCoformAnswer"));
+const PreviewEvent = lazy(() => import("./preview/PreviewEvent"));
 
 const Preview: React.FC<PreviewProps> = ({ item, preview = { type: "default" }, onClose }) => {
   switch (preview?.type) {
@@ -17,6 +18,8 @@ const Preview: React.FC<PreviewProps> = ({ item, preview = { type: "default" }, 
       return <PreviewPoiAmenities item={item} onClose={onClose} />;
     case "coform-answer":
       return <PreviewCoformAnswer item={item} onClose={onClose} />;
+    case "event":
+      return <PreviewEvent item={item} onClose={onClose} />;
     case "default":
     default:
       return <PreviewDefault item={item} />;
