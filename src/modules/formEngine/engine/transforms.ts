@@ -94,8 +94,9 @@ export function registerCompute(name: string, fn: ComputeFn): void {
 export function getCompute(name: string): ComputeFn | undefined {
   return computeRegistry.get(name);
 }
-/** Produit le produit des deps si TOUTES sont des nombres finis, sinon undefined (ex. surface = long × larg). */
-computeRegistry.set("multiply", (deps) =>
+/** Produit le produit des deps si TOUTES sont des nombres finis, sinon undefined (ex. surface = long × larg).
+ *  Clé préfixée `compute:` (registre compute distinct des transforms ; évite la confusion read/computedFrom). */
+computeRegistry.set("compute:multiply", (deps) =>
   deps.every((d) => typeof d === "number" && Number.isFinite(d))
     ? (deps as number[]).reduce((a, b) => a * b, 1)
     : undefined,

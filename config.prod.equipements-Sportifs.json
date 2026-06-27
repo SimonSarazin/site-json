@@ -4366,7 +4366,7 @@
               "equip_long",
               "equip_larg"
             ],
-            "fn": "multiply"
+            "fn": "compute:multiply"
           }
         },
         "inst_acc_handi_type": {
@@ -4827,8 +4827,8 @@
       },
       "defaultsBase": "poi:emptyDefaults",
       "slots": {
-        "parentInfo": "parentInfo",
-        "doublons": "poiDoublons"
+        "parentInfo": "slot:parentInfo",
+        "doublons": "slot:poiDoublons"
       },
       "cleanValues": {
         "fn": "cleanValues:dropEmptyArrayItems",

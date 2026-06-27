@@ -33,8 +33,8 @@ describe("transforms (read/write registre)", () => {
 
 describe("compute (multiply)", () => {
   it("produit si tous nombres finis, sinon undefined", () => {
-    expect(getCompute("multiply")!([2, 3])).toBe(6);
-    expect(getCompute("multiply")!([2, "x"])).toBeUndefined();
-    expect(getCompute("multiply")!([5])).toBe(5);
+    expect(getCompute("compute:multiply")!([2, 3])).toBe(6);
+    expect(getCompute("compute:multiply")!([2, "x"])).toBeUndefined();
+    expect(getCompute("compute:multiply")!([5])).toBe(5);
   });
 });

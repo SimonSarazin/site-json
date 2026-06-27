@@ -369,7 +369,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
           "equip_long",
           "equip_larg",
         ],
-        "fn": "multiply",
+        "fn": "compute:multiply",
       },
       "label": {
         "en": "Area (computed)",
@@ -937,8 +937,8 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > spe
     "slugKey": "sourceKey",
   },
   "slots": {
-    "doublons": "poiDoublons",
-    "parentInfo": "parentInfo",
+    "doublons": "slot:poiDoublons",
+    "parentInfo": "slot:parentInfo",
   },
   "submitLabel": {
     "add": {
