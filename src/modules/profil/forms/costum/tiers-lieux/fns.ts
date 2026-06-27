@@ -7,7 +7,7 @@ import "../../geoTransforms"; // enregistre geo:write / geoPosition:write (parta
 import { emptyOpeningHours, buildOpeningHoursPayload, type DayHours } from "../sharedCodecs";
 export { buildOpeningHoursPayload }; // re-export (consommé par fns.test)
 export type { DayHours };
-import { seedEntity, buildPayload, buildEditPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
+import { buildPayload, buildEditPayload, type FormSpec } from "@/modules/formEngine/engine/entityForm";
 import type { FormValues, FormDescriptor } from "@/modules/formEngine";
 import { getSlug } from "@/lib/constant/common";
 import { carrierSlug } from "../carrier";
@@ -137,13 +137,9 @@ const tiersLieuSpec = (descriptor: FormDescriptor): FormSpec => ({
   baseDefaults: () => getDefaultTiersLieuxValues() as unknown as FormValues,
 });
 
-/**
- * Entité serveur → valeurs de form tiers-lieu, via `seedEntity` (socle `getDefaultTiersLieuxValues` + seed
- * serveur) sur le descripteur fourni. Équivalent à l'ancien mapping (prouvé en test).
- */
-export function mapEntityToTiersLieuxValues(entity: EntityLike, descriptor: FormDescriptor): TiersLieuxFormData {
-  return seedEntity(tiersLieuSpec(descriptor), entity) as unknown as TiersLieuxFormData;
-}
+// READ : pas de fonction propre. La lecture entité→form du tiers-lieu = pipeline GÉNÉRIQUE
+// (`seedEntity(descripteur + socle)`), AUCUNE logique costum → le runtime passe par `buildPipelineDefaults`.
+// (Contraste : le WRITE garde `buildTiersLieuxPayload` car il a le merge tags observatoire, irréductible.)
 
 export interface BuildPayloadOptions {
   /**

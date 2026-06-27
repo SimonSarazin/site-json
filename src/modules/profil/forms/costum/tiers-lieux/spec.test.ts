@@ -9,9 +9,10 @@ import { specToConfig } from "../../resolveModalSpec";
 import {
   getDefaultTiersLieuxValues,
   buildTiersLieuxPayload as buildTiersLieuxPayloadRaw,
-  mapEntityToTiersLieuxValues as mapEntityToTiersLieuxValuesRaw,
   type CostumConfig, type TiersLieuxFormData, type BuildPayloadOptions, type EntityLike,
 } from "./fns";
+import { seedEntity } from "@/modules/formEngine/engine/entityForm";
+import type { FormValues } from "@/modules/formEngine";
 import type { EntityModalCtx } from "../../entityModalSpec";
 import { loadCostumForm } from "../__fixtures__/configCostum";
 
@@ -21,8 +22,9 @@ const { descriptor: tiersLieuxDescriptor, spec: tiersLieuxSpec } = loadCostumFor
 // DI : injecte le descripteur (= celui résolu via getDescriptor par les closures en prod) → parité.
 const buildTiersLieuxPayload = (data: TiersLieuxFormData, options?: BuildPayloadOptions) =>
   buildTiersLieuxPayloadRaw(data, tiersLieuxDescriptor, options);
-const mapEntityToTiersLieuxValues = (entity: EntityLike) =>
-  mapEntityToTiersLieuxValuesRaw(entity, tiersLieuxDescriptor);
+// READ = pipeline générique (seedEntity + socle), aucune logique costum — l'ex-wrapper prod a été retiré.
+const mapEntityToTiersLieuxValues = (entity: EntityLike): TiersLieuxFormData =>
+  seedEntity({ descriptor: tiersLieuxDescriptor, baseDefaults: () => getDefaultTiersLieuxValues() as unknown as FormValues }, entity) as unknown as TiersLieuxFormData;
 
 const carrier = { id: "carrierId", serverData: { slug: "franceTiersLieux" } } as unknown as EntityTypes;
 const me = { id: "meId" } as unknown as EntityTypes;

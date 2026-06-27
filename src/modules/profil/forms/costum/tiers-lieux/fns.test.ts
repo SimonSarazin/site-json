@@ -13,12 +13,13 @@ vi.mock("@/hooks/useLoadNamespace", () => ({
 import {
   buildOpeningHoursPayload,
   buildTiersLieuxPayload as buildTiersLieuxPayloadRaw,
-  mapEntityToTiersLieuxValues as mapEntityToTiersLieuxValuesRaw,
   type EntityLike,
   type TiersLieuxFormData,
   type BuildPayloadOptions,
 } from "./fns";
 import { getDefaultTiersLieuxValues } from "./fns";
+import { seedEntity } from "@/modules/formEngine/engine/entityForm";
+import type { FormValues } from "@/modules/formEngine";
 import { loadCostumForm } from "../__fixtures__/configCostum";
 
 // descripteur compilé depuis le JSON de config (config.prod) via la voie unique — plus de descriptor.ts TS.
@@ -28,8 +29,10 @@ const { descriptor: tiersLieuxDescriptor } = loadCostumForm("tiers-lieux");
 // l'injecte depuis ./descriptor (dérivation pure de schema.ts) → tests inchangés, fonctions restent pures.
 const buildTiersLieuxPayload = (data: TiersLieuxFormData, options?: BuildPayloadOptions) =>
   buildTiersLieuxPayloadRaw(data, tiersLieuxDescriptor, options);
-const mapEntityToTiersLieuxValues = (entity: EntityLike) =>
-  mapEntityToTiersLieuxValuesRaw(entity, tiersLieuxDescriptor);
+// READ tiers-lieu = pipeline GÉNÉRIQUE (seedEntity sur le descripteur + socle de defaults), AUCUNE logique
+// costum — l'ex-wrapper mapEntityToTiersLieuxValues (prod, retiré) n'était que ça. Inliné ici pour le test.
+const mapEntityToTiersLieuxValues = (entity: EntityLike): TiersLieuxFormData =>
+  seedEntity({ descriptor: tiersLieuxDescriptor, baseDefaults: () => getDefaultTiersLieuxValues() as unknown as FormValues }, entity) as unknown as TiersLieuxFormData;
 
 /**
  * Tests de tiersLieuxMapping : conversions entity ↔ form pour l'entité
