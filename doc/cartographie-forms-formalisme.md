@@ -509,7 +509,7 @@ Tout widget composite (`location`/`image`/`editSocial`/`editSchedule`) **doit ê
 - **Forme canonique** : Ajouter hasWidget(kind) dans widgets/registry.tsx, l'appeler dans assertCostumKeysRegistered (boucle sur field.widget), et émettre un console.warn dans getWidget quand on retombe sur le fallback `text`.
 
 
-## #3 — Préfixe par MODULE (`pf:`, `tl:`, `poi:`) vs par CONCEPT (`address:`, `social:`, `openingHours:`) pour le MÊME concept — axe de nommage non résolu. Le refactor a fusionné poi:addressRead + tl:addressRead → address:read mais N'A PAS inclus le profil (pf:addressRead/pf:socialRead/pf:openingHours), et tiers-lieu garde encore tl:video0/numOrUndef/videoWrite/years.
+## #3 — ⏳ PARTIEL (commit a757741) : tl:numOrUndef → coerce:numOrUndef fait. RESTE : tl:video0/videoWrite (génériser = refactor sémantique), tl:years (options propre TL), pf:* (interne profil, hors vocabulaire config). — Préfixe par MODULE (`pf:`, `tl:`, `poi:`) vs par CONCEPT (`address:`, `social:`, `openingHours:`) pour le MÊME concept — axe de nommage non résolu. Le refactor a fusionné poi:addressRead + tl:addressRead → address:read mais N'A PAS inclus le profil (pf:addressRead/pf:socialRead/pf:openingHours), et tiers-lieu garde encore tl:video0/numOrUndef/videoWrite/years.
 
 - **Impact / effort** : Confusion forte + frein à l'ajout d'entité : un nouveau costum ne sait pas s'il doit créer `xx:foo` ou réutiliser `foo:read` ; la migration partielle laisse 2 conventions concurrentes. pf:rd* (abréviation 'rd') ajoute une 3e convention DANS le même fichier que pf:addressRead. — *(effort L)*
 
@@ -558,7 +558,7 @@ Tout widget composite (`location`/`image`/`editSocial`/`editSchedule`) **doit ê
 - **Forme canonique** : Réduire tl:payload au merge tags via une clé générique paramétrée (payload:mergeTags) ; déléguer create/edit/emitEmpty au pipeline (payloadEmitEmptyOnEdit:true), supprimer le payloadFn custom — comme equipements.
 
 
-## #8 — Nommage des enregistreurs INCOHÉRENT entre/dans les fichiers : transforms.ts sans suffixe (registerTransform/Compute/Options/Validate) ; specRegistries.ts avec suffixe Fn (registerPayloadFn/ScopeFn/...) SAUF registerDescriptor/registerDescriptorVariant/registerSlot. Le compute partage le type TransformName avec les transforms (2 Maps distinctes, pas de namespace).
+## #8 — ✅ FAIT (commit 92696d3 : register*Fn) — Nommage des enregistreurs INCOHÉRENT entre/dans les fichiers : transforms.ts sans suffixe (registerTransform/Compute/Options/Validate) ; specRegistries.ts avec suffixe Fn (registerPayloadFn/ScopeFn/...) SAUF registerDescriptor/registerDescriptorVariant/registerSlot. Le compute partage le type TransformName avec les transforms (2 Maps distinctes, pas de namespace).
 
 - **Impact / effort** : Confusion + risque de collision silencieuse : un champ peut déclarer computedFrom.fn:'multiply' (compute) et read:'multiply' (transform) résolus sur 2 fns différentes (GenericForm.tsx:95 appelle getCompute, le pipeline appelle getTransform). Aucun préfixe ne sépare les familles. — *(effort M)*
 
@@ -567,7 +567,7 @@ Tout widget composite (`location`/`image`/`editSocial`/`editSchedule`) **doit ê
 - **Forme canonique** : Suffixe Fn pour tous les enregistreurs de FONCTIONS de domaine (registerSlot→registerSlotFn) ; pas de suffixe pour les primitives du moteur. Préfixer les clés compute (compute:multiply) et typer computedFrom.fn par un ComputeName distinct de TransformName.
 
 
-## #9 — Coercions à noms quasi-interchangeables masquant des différences byte RÉELLES : coerce:string vs coerce:pickString (ne stringifie pas les nombres), coerce:bool vs coerce:truthy, coerce:dateYMD (locale) vs coerce:dateYMDfromISO (UTC). Les commentaires documentent la nuance, pas les noms.
+## #9 — ✅ FAIT (commit ab3892a) — Coercions à noms quasi-interchangeables masquant des différences byte RÉELLES : coerce:string vs coerce:pickString (ne stringifie pas les nombres), coerce:bool vs coerce:truthy, coerce:dateYMD (locale) vs coerce:dateYMDfromISO (UTC). Les commentaires documentent la nuance, pas les noms.
 
 - **Impact / effort** : Risque de bug byte SUBTIL : choisir coerce:string là où coerce:pickString est requis (ou inversement) casse la parité byte sans erreur visible. Frein à l'ajout : il faut lire le code source de chaque coerce pour choisir. — *(effort S)*
 
@@ -576,7 +576,7 @@ Tout widget composite (`location`/`image`/`editSocial`/`editSchedule`) **doit ê
 - **Forme canonique** : Renommer pour exposer la nuance : coerce:pickString→coerce:stringStrict ; coerce:truthy→coerce:boolLoose ; coerce:dateYMD→coerce:dateYMDlocale ; coerce:dateYMDfromISO→coerce:dateYMDutc. orEmpty/orUndef restent (suffixe explicite).
 
 
-## #10 — Clés sans préfixe mélangeant validators (verbe-Valid, registre validate) et slots React (nom, registre slot). Concept 'image' modélisé en specFn (image:profilUrl, registre existingUrlFn) alors que les autres codecs read sont des transforms — le préfixe image: suggère un codec de champ co-localisé avec address:/social: mais le registre diffère.
+## #10 — ✅ FAIT (commits ed60c19 validate: / 7d6a7bd slot:+compute:) — Clés sans préfixe mélangeant validators (verbe-Valid, registre validate) et slots React (nom, registre slot). Concept 'image' modélisé en specFn (image:profilUrl, registre existingUrlFn) alors que les autres codecs read sont des transforms — le préfixe image: suggère un codec de champ co-localisé avec address:/social: mais le registre diffère.
 
 - **Impact / effort** : Confusion de lecture : impossible de distinguer addressValid (validator) de parentInfo (slot) ou image:profilUrl (existingUrl) du call-site sans connaître le registre cible. Incohérence d'axe alors que tous les autres concepts sont préfixés. — *(effort M)*
 
