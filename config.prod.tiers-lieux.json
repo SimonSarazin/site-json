@@ -2997,7 +2997,7 @@
             "en": "In m²"
           },
           "read": "coerce:string",
-          "write": "tl:numOrUndef",
+          "write": "coerce:numOrUndef",
           "path": "buildingSurfaceArea"
         },
         "surfaceOutdoor": {
@@ -3011,7 +3011,7 @@
             "en": "In m²"
           },
           "read": "coerce:string",
-          "write": "tl:numOrUndef",
+          "write": "coerce:numOrUndef",
           "path": "siteSurfaceArea"
         },
         "address": {

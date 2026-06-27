@@ -569,7 +569,7 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       "read": "coerce:string",
       "type": "number",
       "widget": "number",
-      "write": "tl:numOrUndef",
+      "write": "coerce:numOrUndef",
     },
     "surfaceOutdoor": {
       "label": {
@@ -585,7 +585,7 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       "read": "coerce:string",
       "type": "number",
       "widget": "number",
-      "write": "tl:numOrUndef",
+      "write": "coerce:numOrUndef",
     },
     "videoUrl": {
       "label": "",

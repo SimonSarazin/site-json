@@ -121,8 +121,8 @@ registerTransform("tl:video0", (v) => pickString(Array.isArray(v) ? v[0] : undef
 // WRITE (P3) — réutilisent les helpers de build. `undefined` sur vide = clé OMISE par valuesToPayload
 // (parité de l'omit-empty de l'ancien buildTiersLieuxPayload ; en ÉDITION le vide est émis via clear/emitEmpty,
 // le delta réel étant calculé par le SDK `save()`).
-// tl:emptyToUndef → coerce:orUndef (`v || undefined` ≡ `v ? v : undefined`, prouvé byte-identique) : GÉNÉRIQUE.
-registerTransform("tl:numOrUndef", (v) => (v ? Number(v) : undefined));
+// tl:emptyToUndef → coerce:orUndef ET tl:numOrUndef → coerce:numOrUndef (`v ? Number(v) : undefined`) : GÉNÉRIQUES
+// (formEngine/coercions). Seul tl:videoWrite reste ici (array↔scalaire, spécifique vidéo).
 registerTransform("tl:videoWrite", (v) => (v ? [v] : undefined));
 // tl:hoursWrite SUPPRIMÉ → codec du widget `openingHours:write` (sharedCodecs), hérité via WIDGET_DEFAULTS.
 // tl:openingDateWrite/manageModelWrite/typePlaceWrite SUPPRIMÉS → codecs paramétrés monthYear/enumOrOther/multiCsv (write).

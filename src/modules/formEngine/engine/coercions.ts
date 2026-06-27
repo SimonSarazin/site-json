@@ -61,6 +61,10 @@ export const coerceOrEmpty = (value: unknown): unknown => value || "";
 /** truthy → v tel quel ; falsy → undefined (clé omise). `v || undefined` ≡ `v ? v : undefined` (prouvé byte-identique). */
 export const coerceOrUndef = (value: unknown): unknown => value || undefined;
 
+/** truthy → Number(v) (peut être NaN si non-numérique) ; falsy → undefined (clé omise). Ex-`tl:numOrUndef`
+ *  (générique : champs surface… ≠ coerce:number qui valide la finitude). */
+export const coerceNumOrUndef = (value: unknown): number | undefined => (value ? Number(value) : undefined);
+
 /** string → v ; sinon "" (string-ONLY, STRICT : NE coerce PAS les nombres → distinct de coerce:string). */
 export const coerceStringStrict = (value: unknown): string => (typeof value === "string" ? value : "");
 
@@ -85,6 +89,7 @@ registerTransform("coerce:stringArray", coerceStringArray);
 registerTransform("coerce:dateYMDlocale", coerceDateYMDlocale);
 registerTransform("coerce:orEmpty", coerceOrEmpty);
 registerTransform("coerce:orUndef", coerceOrUndef);
+registerTransform("coerce:numOrUndef", coerceNumOrUndef);
 registerTransform("coerce:stringStrict", coerceStringStrict);
 registerTransform("coerce:arrayOrEmpty", coerceArrayOrEmpty);
 registerTransform("coerce:boolLoose", coerceBoolLoose);

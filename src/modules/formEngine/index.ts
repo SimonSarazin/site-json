@@ -18,7 +18,7 @@ export { registerTransform, getTransform, applyTransform, registerCompute, getCo
   registerValidate, getValidate, resolveValidate, type ValidateFn } from "./engine/transforms";
 // Coercions génériques (`coerce:*`) : ce ré-export exécute le module → ENREGISTRE les transforms au chargement.
 export { coerceString, coerceNumber, coerceBool, coerceStringArray, coerceDateYMDlocale,
-  coerceOrEmpty, coerceOrUndef, coerceStringStrict, coerceArrayOrEmpty, coerceBoolLoose,
+  coerceOrEmpty, coerceOrUndef, coerceNumOrUndef, coerceStringStrict, coerceArrayOrEmpty, coerceBoolLoose,
   coerceDateISO, coerceDateYMDutc } from "./engine/coercions";
 export { JsonFormConfigSchema, configToDescriptor, formDescriptorToConfig, descriptorToTsSource, defaultWidgetForType, INPUT_TYPE_TO_WIDGET,
   mergeRenderPipeline, costumToConfig, descriptorToConfig, type CostumExtensionsArtifact,
