@@ -12,8 +12,7 @@ import NavIcon from "./NavIcon";
 import { Badge } from "@/components/ui/badge";
 import { AuthMenu } from "@/modules/auth";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
-import { IconOrSvg } from "@/components/ui/icon-or-svg";
-import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import HeaderLogo from "./HeaderLogo";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
 import { useNavItemActive } from "./useHeaderBehavior";
@@ -39,11 +38,7 @@ export default function HeaderMinimal({ header }: HeaderMinimalProps) {
 
                     <div className="flex items-center gap-3">
                         <NavLink to={header.path || "/"} className="flex items-center gap-3 group">
-                             {header.logo ? (
-                                <OptimizedImage src={header.logo} alt={header.logoAlt ? t(header.logoAlt) : "Logo"} height={32} className="w-8 h-8 object-contain" />
-                            ) : header.logoIcon ? (
-                                <IconOrSvg value={header.logoIcon} className="w-8 h-8 text-primary" />
-                            ) : null}
+                            <HeaderLogo header={header} iconTone="primary" imageClassName="w-8 h-8 object-contain" iconClassName="w-8 h-8" />
 
                             {header.logoTitle && (
                                 <span className="font-bold uppercase tracking-[0.2em] text-foreground text-xs hidden md:block group-hover:text-primary transition-colors">
