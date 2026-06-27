@@ -14,6 +14,7 @@ import { JsonFormModalConfigSchema } from "./form-modal-schema";
 import { ActionButtonSchema } from "./action-button-schema";
 import { z } from "zod";
 import { LocalizedString, LOCALES } from "./locale-schema";
+import { AgendaSectionSchema } from "@/modules/agenda/schema";
 export { LocalizedString, LOCALES };
 import { ProfilesConfigSchema, MemberSectionSchema } from "../modules/profil/schema";
 import { AmpliConfigSchema } from "@/modules/ampli/schema";
@@ -1451,6 +1452,7 @@ export const Section = z.discriminatedUnion("type", [
   CagnotteLayoutSectionSchema,
   CoFormSectionSchema,
   DataObservatorySectionSchema,
+  AgendaSectionSchema,
 ]);
 export type Section = z.infer<typeof Section>;
 
