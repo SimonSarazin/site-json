@@ -840,7 +840,7 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       "write": "multiCsv:write",
     },
   },
-  "validate": "addressComplete",
+  "validate": "validate:addressComplete",
 }
 `;
 

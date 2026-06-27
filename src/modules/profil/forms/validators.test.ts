@@ -6,13 +6,13 @@ const paths = (issues: Array<{ path: string }>) => issues.map((i) => i.path);
 
 describe("validators profil (registre)", () => {
   it("addressValid : enregistré + adresse sans localityId → erreur", () => {
-    expect(getValidate("addressValid")).toBe(addressValid);
+    expect(getValidate("validate:address")).toBe(addressValid);
     expect(addressValid({ addressCountry: "FR", localityId: "" })).toEqual([{ path: "addressLocality", message: "validation.addressLocality" }]);
     expect(addressValid({})).toEqual([]);
   });
 
   it("addressComplete : enregistré + exige ville + code postal + rue", () => {
-    expect(getValidate("addressComplete")).toBe(addressComplete);
+    expect(getValidate("validate:addressComplete")).toBe(addressComplete);
     const err = [{ path: "address", message: "validation.address.required" }];
     expect(addressComplete({})).toEqual(err);                                                   // rien → erreur
     expect(addressComplete({ localityId: "abc" })).toEqual(err);                                 // ville seule → incomplet
@@ -21,7 +21,7 @@ describe("validators profil (registre)", () => {
   });
 
   it("eventDatesValid : enregistré + ponctuel sans dates → erreurs start/end", () => {
-    expect(getValidate("eventDatesValid")).toBe(eventDatesValid);
+    expect(getValidate("validate:eventDates")).toBe(eventDatesValid);
     const r = eventDatesValid({ recurrency: false });
     expect(r.some((i) => i.path === "startDate")).toBe(true);
     expect(r.some((i) => i.path === "endDate")).toBe(true);
@@ -39,7 +39,7 @@ describe("validators profil (registre)", () => {
   // addEventValid (option a) : organizer requis SAUF si _hasParent — reproduit la closure d'origine.
   describe("addEventValid : organizer requis selon _hasParent (parité closure)", () => {
     const okDates = { recurrency: false, startDate: "2030-01-01", endDate: "2030-01-02" };
-    it("enregistré", () => { expect(getValidate("addEventValid")).toBe(addEventValid); });
+    it("enregistré", () => { expect(getValidate("validate:eventAdd")).toBe(addEventValid); });
     it("sans parent + organizer {} → organizer requis (Object.keys, pas isEmpty)", () => {
       expect(paths(addEventValid({ ...okDates, _hasParent: false, organizer: {} }))).toContain("organizer");
     });
@@ -57,7 +57,7 @@ describe("validators profil (registre)", () => {
 
   describe("editEventValid : organizer requis (inconditionnel) + dates", () => {
     it("enregistré + organizer {} → requis", () => {
-      expect(getValidate("editEventValid")).toBe(editEventValid);
+      expect(getValidate("validate:eventEdit")).toBe(editEventValid);
       expect(paths(editEventValid({ recurrency: false, startDate: "a", endDate: "b", organizer: {} }))).toContain("organizer");
     });
   });

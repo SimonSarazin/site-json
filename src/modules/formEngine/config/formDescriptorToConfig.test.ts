@@ -9,7 +9,7 @@ const desc: FormDescriptor = {
   collection: "organizations",
   costumSlug: "demo",
   layout: { kind: "tabs" },
-  validate: "addressValid", // CLÉ de registre (string) → sérialisable
+  validate: "validate:address", // CLÉ de registre (string) → sérialisable
   // Groupes de sérialisation (N champs plats ↔ 1 objet serveur) — read/write = clés de registre.
   serializeGroups: {
     address: { serverKey: "address", read: "pf:addressRead", write: "pf:addressWrite" },
@@ -42,7 +42,7 @@ describe("formDescriptorToConfig (sens inverse + bidirectionnalité)", () => {
     expect(config.entityType).toBe("organization");
     expect(config.collection).toBe("organizations");
     expect(config.costum?.slug).toBe("demo");
-    expect(config.validateFn).toBe("addressValid");
+    expect(config.validateFn).toBe("validate:address");
     expect(config.i18n).toBe("keys");
   });
 
@@ -51,7 +51,7 @@ describe("formDescriptorToConfig (sens inverse + bidirectionnalité)", () => {
     expect(d2.collection).toBe(desc.collection);
     expect(d2.costumSlug).toBe(desc.costumSlug);
     expect(d2.layout).toEqual(desc.layout);
-    expect(d2.validate).toBe("addressValid");
+    expect(d2.validate).toBe("validate:address");
     expect(Object.keys(d2.fields)).toEqual(["name", "type", "addr", "addressCountry", "github", "geo", "public"]);
     expect(d2.fields.name).toMatchObject({ widget: "text", label: "Nom", required: true, placeholder: "ph", info: "aide", rules: { minLength: 3 }, messages: { required: "Obligatoire" } });
     expect(d2.fields.type.enum).toEqual([{ value: "NGO", label: "Asso" }]);

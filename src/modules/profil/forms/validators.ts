@@ -61,8 +61,8 @@ export const addEventValid: ValidateFn = (v: FormValues) => {
   return [...issues, ...eventDatesValid(v), ...addressValid(v)];
 };
 
-registerValidate("addressValid", addressValid);
-registerValidate("addressComplete", addressComplete);
-registerValidate("eventDatesValid", eventDatesValid);
-registerValidate("editEventValid", editEventValid);
-registerValidate("addEventValid", addEventValid);
+registerValidate("validate:address", addressValid);
+registerValidate("validate:addressComplete", addressComplete);
+registerValidate("validate:eventDates", eventDatesValid);
+registerValidate("validate:eventEdit", editEventValid);
+registerValidate("validate:eventAdd", addEventValid);

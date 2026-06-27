@@ -2633,7 +2633,7 @@
         "progress": "bar",
         "header": "gradient"
       },
-      "validateFn": "addressComplete",
+      "validateFn": "validate:addressComplete",
       "serializeGroups": {
         "openingDate": {
           "serverKey": "openingDate",

@@ -8,7 +8,7 @@
 import { EVENT_TYPES } from "@communecter/cocolight-api-client";
 import type { FieldDescriptor, FormDescriptor } from "@/modules/formEngine";
 import { addressField, locationSection, nameField, shortDescriptionField, tagsField, urlField, PE } from "./addCommon";
-import "./validators"; // side-effect : enregistre la clé "addEventValid" dans le validateRegistry
+import "./validators"; // side-effect : enregistre la clé "validate:eventAdd" dans le validateRegistry
 
 const TYPE_OPTIONS = EVENT_TYPES.map((t) => ({ value: t, label: `ProfileEdit.fields.eventType.options.${t}` }));
 
@@ -53,6 +53,6 @@ export function buildAddEventDescriptor(hasParent: boolean): FormDescriptor {
         { name: "_hasParent", type: "boolean", widget: "hidden", label: "", default: hasParent } as FieldDescriptor,
       ].map((f) => [f.name, f]),
     ),
-    validate: "addEventValid",
+    validate: "validate:eventAdd",
   };
 }

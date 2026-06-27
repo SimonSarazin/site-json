@@ -99,7 +99,7 @@ export const addEventConfig: EntityModalConfig = {
       ? { [parent.id]: { type: parent.getEntityType?.() || "organizations", name: parent.serverData?.name } }
       : undefined,
     ...ADDR_EMPTY, parent: undefined,
-    _hasParent: Boolean(parent), // lu par la clé de validate "addEventValid"
+    _hasParent: Boolean(parent), // lu par la clé de validate "validate:eventAdd"
   }) as FieldValues,
   // Filtre runtime du finder sous-événement : events organisés par le parent.
   buildFieldProps: ({ parent }) =>

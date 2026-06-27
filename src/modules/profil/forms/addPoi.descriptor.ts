@@ -5,7 +5,7 @@
  */
 import type { FieldDescriptor, FormDescriptor } from "@/modules/formEngine";
 import { addressField, locationSection, nameField, tagsField } from "./addCommon";
-import "./validators"; // side-effect : enregistre la clé "addressValid" dans le validateRegistry
+import "./validators"; // side-effect : enregistre la clé "validate:address" dans le validateRegistry
 import "./costum/sharedCodecs"; // side-effect : address:read/write (serializeGroups.address) — le descripteur porte ses transforms d'écriture
 import "./geoTransforms"; // side-effect : geo:write / geoPosition:write (champs geo writeOnly)
 
@@ -52,5 +52,5 @@ export const addPoiDescriptor: FormDescriptor = {
   // Adresse plate → objet serveur (codecs COMMUNS sharedCodecs) : rend addPoiDescriptor capable d'ÉCRIRE l'adresse
   // → plus besoin d'un descripteur d'écriture séparé (addPoiWriteDescriptor supprimé).
   serializeGroups: { address: { serverKey: "address", read: "address:read", write: "address:write" } },
-  validate: "addressValid", // clé de registre (= addressValidate) → sérialisable, round-trip config exact
+  validate: "validate:address", // clé de registre (= addressValidate) → sérialisable, round-trip config exact
 };

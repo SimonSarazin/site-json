@@ -7,7 +7,7 @@
  */
 import { EVENT_TYPES, ORGANIZATION_TYPES } from "@communecter/cocolight-api-client";
 import type { FieldDescriptor, FormDescriptor } from "@/modules/formEngine";
-import "./validators"; // side-effect : enregistre la clé "editEventValid" dans le validateRegistry
+import "./validators"; // side-effect : enregistre la clé "validate:eventEdit" dans le validateRegistry
 
 const PE = (k: string) => `ProfileEdit.fields.${k}`;
 const TAB = (k: string) => `ProfileEdit.tabs.${k}`;
@@ -127,7 +127,7 @@ const eventFields: FieldDescriptor[] = [
   { name: "_eventDates", type: "object", widget: "eventDates", label: "" },
 ];
 
-// Validation conditionnelle events : organizer requis + dates (clé "editEventValid" du registre, cf. validators.ts).
+// Validation conditionnelle events : organizer requis + dates (clé "validate:eventEdit" du registre, cf. validators.ts).
 export const editEventDescriptor: FormDescriptor = {
   id: "edit-events",
   collection: "events",
@@ -140,7 +140,7 @@ export const editEventDescriptor: FormDescriptor = {
     { id: "eventDates", label: TAB("eventDates.label"), groups: [{ columns: 1, fields: ["_eventDates", "startDate", "endDate", "openingHours"] }] },
   ],
   fields: Object.fromEntries(eventFields.map((f) => [f.name, f])),
-  validate: "editEventValid",
+  validate: "validate:eventEdit",
 };
 
 // ── POI ───────────────────────────────────────────────────────────────────────

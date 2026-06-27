@@ -7,7 +7,7 @@
 import { ORGANIZATION_TYPES } from "@communecter/cocolight-api-client";
 import type { FieldDescriptor, FormDescriptor } from "@/modules/formEngine";
 import { addressField, locationSection, nameField, shortDescriptionField, tagsField, urlField, PE } from "./addCommon";
-import "./validators"; // side-effect : enregistre la clé "addressValid" dans le validateRegistry
+import "./validators"; // side-effect : enregistre la clé "validate:address" dans le validateRegistry
 
 const TYPE_OPTIONS = ORGANIZATION_TYPES.map((t) => ({ value: t, label: PE(`type.options.${t}`) }));
 const ROLE_OPTIONS = [
@@ -41,5 +41,5 @@ export const addOrganizationDescriptor: FormDescriptor = {
     locationSection,
   ],
   fields: Object.fromEntries(fields.map((f) => [f.name, f])),
-  validate: "addressValid", // clé de registre (= addressValidate) → sérialisable, round-trip config exact
+  validate: "validate:address", // clé de registre (= addressValidate) → sérialisable, round-trip config exact
 };

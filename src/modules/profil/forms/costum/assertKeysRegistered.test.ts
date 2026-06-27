@@ -67,7 +67,7 @@ describe("assertCostumKeysRegistered — complétude (A)", () => {
         address: { name: "address", type: "object", widget: "location", label: "", renderOnly: true }, // widget DOMAINE → garanti par le barrel (parade #2)
       },
       serializeGroups: { address: { serverKey: "address", read: "address:read", write: "address:write" } },
-      validate: "addressComplete",
+      validate: "validate:addressComplete",
     } as unknown as FormDescriptor;
     const spec = {
       id: "ok", descriptor: { ref: "ok" }, title: { add: "", edit: "" },
@@ -85,7 +85,7 @@ describe("sharedRegistrations — couverture des clés génériques (B, découpl
       "address:read", "address:write", "social:read", "social:write", "geo:write", "geoPosition:write"]) {
       expect(hasRegistered("transform", k), `transform ${k}`).toBe(true);
     }
-    for (const k of ["addressComplete", "addressValid"]) {
+    for (const k of ["validate:addressComplete", "validate:address"]) {
       expect(hasRegistered("validate", k), `validate ${k}`).toBe(true);
     }
     expect(hasSpecFn("existingUrlFn", "image:profilUrl")).toBe(true);
