@@ -1006,11 +1006,26 @@
               "tags": true
             },
             "detailsMode": "drawer",
+            "enableMap": true,
+            "mapView": "split",
+            "map": {
+              "marker": {
+                "useItemImage": true,
+                "style": "pin",
+                "color": "primary"
+              }
+            },
             "columns": {
               "sm": 1,
               "md": 2,
-              "lg": 3,
-              "xl": 4
+              "lg": 2,
+              "xl": 2
+            },
+            "baseParams": {
+              "sourceKey": [
+                "eXtremeDefiAdeme"
+              ],
+              "indexStepList": 12
             }
           }
         }

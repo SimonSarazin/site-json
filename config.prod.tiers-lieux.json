@@ -817,7 +817,7 @@
           }
         },
         {
-          "type": "searchProStatic",
+          "type": "agenda",
           "id": "section-events",
           "props": {
             "customHeader": {
@@ -826,40 +826,32 @@
                 "en": "Upcoming events"
               },
               "linkText": {
-                "fr": "Voir tous les evénements",
-                "en": "See all results"
+                "fr": "Voir tous les événements",
+                "en": "See all events"
               },
               "linkHref": "/evenements"
             },
-            "useFilter": true,
-            "showMap": false,
-            "enableMap": false,
-            "showActiveFiltersTypes": true,
-            "showActiveFiltersTags": true,
-            "disableInfiniteScroll": true,
+            "showViewToggle": false,
+            "showTabs": false,
+            "defaultTab": "upcoming",
+            "limit": 4,
+            "filters": {
+              "text": false,
+              "type": false
+            },
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 4,
+              "xl": 4
+            },
             "baseParams": {
-              "defaultTypes": [
-                "events"
-              ],
               "sourceKey": [
                 "franceTierslieux",
                 "tierslieuxbelgique",
                 "navigatorDesTierslieux"
               ],
               "indexStepList": 4
-            },
-            "list": {
-              "columns": {
-                "sm": 1,
-                "md": 2,
-                "lg": 4,
-                "xl": 4
-              },
-              "card": {
-                "type": "event",
-                "variant": "event",
-                "detailsMode": "drawer"
-              }
             }
           }
         },
@@ -2192,7 +2184,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "searchProStatic",
+          "type": "agenda",
           "id": "section-evenements",
           "props": {
             "customHeader": {
@@ -2201,60 +2193,35 @@
                 "en": "events around tiers-lieux.org"
               }
             },
-            "useFilter": true,
-            "showMap": false,
+            "filters": {
+              "type": true,
+              "text": true,
+              "tags": true
+            },
+            "detailsMode": "drawer",
             "enableMap": true,
-            "showActiveFiltersTypes": true,
-            "showActiveFiltersTags": true,
-            "disableInfiniteScroll": false,
-            "showDetailedViewToggle": true,
-            "baseParams": {
-              "defaultTypes": [
-                "events"
-              ],
-              "sourceKey": [
-                "franceTierslieux",
-                "tierslieuxbelgique",
-                "navigatorDesTierslieux"
-              ],
-              "indexStepList": 20,
-              "fediverse": false,
-              "costumEditMode": false,
-              "defaultSortBy": {
-                "startDate": 1
-              },
-              "defaultFields": [
-                "name",
-                "profilMediumImageUrl",
-                "profilThumbImageUrl",
-                "slug",
-                "address",
-                "geo",
-                "startDate",
-                "endDate",
-                "shortDescription",
-                "tags"
-              ]
-            },
-            "list": {
-              "columns": {
-                "sm": 1,
-                "md": 2,
-                "lg": 3,
-                "xl": 4
-              },
-              "card": {
-                "type": "event",
-                "variant": "event",
-                "detailsMode": "drawer"
-              }
-            },
+            "mapView": "split",
             "map": {
               "marker": {
                 "useItemImage": true,
                 "style": "pin",
                 "color": "primary"
               }
+            },
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 2,
+              "xl": 2
+            },
+            "baseParams": {
+              "sourceKey": [
+                "franceTierslieux",
+                "tierslieuxbelgique",
+                "navigatorDesTierslieux"
+              ],
+              "indexStepList": 20,
+              "fediverse": false
             }
           }
         }
