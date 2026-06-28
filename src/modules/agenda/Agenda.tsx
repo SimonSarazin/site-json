@@ -1,4 +1,5 @@
-import { Suspense, lazy, useMemo, useState } from "react";
+import { Suspense, lazy, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router";
 import { endOfMonth, startOfMonth } from "date-fns";
 import { CalendarDays, List, Loader2, Search } from "lucide-react";
 import { EVENT_TYPES, type SearchEntity } from "@communecter/cocolight-api-client";
@@ -19,6 +20,7 @@ import { useAgendaClock } from "./hooks/useAgendaClock";
 import { partitionByTime } from "./lib/partitionByTime";
 import { eventOccurrence } from "./lib/eventDates";
 import { distinctTags, filterByTags } from "./lib/eventTags";
+import { readAgendaUrl, writeAgendaUrl, type AgendaFilterDefaults } from "./lib/agendaUrlParams";
 import type { AgendaSectionProps, AgendaTab } from "./schema";
 
 const AgendaCalendar = lazy(() => import("./components/AgendaCalendar"));
@@ -43,14 +45,31 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
     columns,
   } = props;
 
-  const [mode, setMode] = useState<"list" | "calendar">(defaultMode);
-  const [tab, setTab] = useState<AgendaTab>(tabs.includes(defaultTab) ? defaultTab : tabs[0]);
-  const [text, setText] = useState("");
-  const [type, setType] = useState("");
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  // ── Filtres synchronisés à l'URL (partage/bookmark/retour navigateur) ──────
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlDefaults = useMemo<AgendaFilterDefaults>(
+    () => ({ mode: defaultMode, tab: tabs.includes(defaultTab) ? defaultTab : tabs[0], tabs }),
+    [defaultMode, defaultTab, tabs],
+  );
+  // Seed UNE fois depuis l'URL au montage (URL identique serveur↔client → état initial cohérent).
+  const initial = useMemo(() => readAgendaUrl(searchParams, urlDefaults), []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const [mode, setMode] = useState<"list" | "calendar">(initial.mode);
+  const [tab, setTab] = useState<AgendaTab>(initial.tab);
+  const [text, setText] = useState(initial.text);
+  const [type, setType] = useState(initial.type);
+  const [selectedTags, setSelectedTags] = useState<string[]>(initial.tags);
   const debouncedText = useDebounce(text, 500);
   const typeParam = type || undefined;
   const nameParam = debouncedText || undefined;
+
+  // Projette les filtres dans l'URL (texte débouncé pour ne pas spammer l'historique).
+  useEffect(() => {
+    setSearchParams(
+      (prev) => writeAgendaUrl(prev, { mode, tab, text: debouncedText, type, tags: selectedTags }, urlDefaults),
+      { replace: true, preventScrollReset: true },
+    );
+  }, [mode, tab, debouncedText, type, selectedTags, urlDefaults, setSearchParams]);
 
   const showText = filters?.text !== false;
   const showType = filters?.type !== false;
