@@ -1,7 +1,9 @@
 {
   "view": { "list": "Liste", "calendar": "Calendrier" },
   "filters": {
+    "searchLabel": "Recherche",
     "searchPlaceholder": "Rechercher un événement…",
+    "typeLabel": "Type",
     "allTypes": "Tous les types",
     "typeAria": "Type d'événement",
     "tags": "Tags"

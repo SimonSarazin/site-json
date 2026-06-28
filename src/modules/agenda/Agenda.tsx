@@ -6,6 +6,8 @@ import { EVENT_TYPES, type SearchEntity } from "@communecter/cocolight-api-clien
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { SelectField } from "@/modules/search/components/filterFields";
 import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useHydrated } from "@/hooks/useHydrated";
@@ -158,25 +160,26 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
       </div>
 
       {(showText || showType) && (
-        <div className="flex flex-col sm:flex-row gap-2 mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-end gap-2 mb-4">
           {showText && (
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input value={text} onChange={(e) => setText(e.target.value)} placeholder={t("filters.searchPlaceholder")} className="pl-9" />
+            <div className="flex flex-col gap-1.5 flex-1">
+              <Label className="text-xs font-medium text-muted-foreground">{t("filters.searchLabel")}</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input value={text} onChange={(e) => setText(e.target.value)} placeholder={t("filters.searchPlaceholder")} className="pl-9" />
+              </div>
             </div>
           )}
           {showType && (
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              className="h-10 rounded-md border border-input bg-background px-3 text-sm text-foreground"
-              aria-label={t("filters.typeAria")}
-            >
-              <option value="">{t("filters.allTypes")}</option>
-              {EVENT_TYPES.map((evType) => (
-                <option key={evType} value={evType}>{t(`eventType.${evType}`)}</option>
-              ))}
-            </select>
+            <div className="sm:w-56">
+              <SelectField
+                label={t("filters.typeLabel")}
+                value={type}
+                onChange={setType}
+                allLabel={t("filters.allTypes")}
+                options={EVENT_TYPES.map((evType) => ({ id: evType, label: t(`eventType.${evType}`) }))}
+              />
+            </div>
           )}
         </div>
       )}
