@@ -7,8 +7,8 @@ export const AGENDA_TABS = ["ongoing", "upcoming", "past"] as const;
 /**
  * Section `agenda` (config-driven) : expérience event d'un costum sur `searchEventsCostum`.
  * Deux vues complémentaires basculables : LISTE à onglets temporels (En cours / À venir / Passés,
- * mode calendrier now→fenêtre + mode liste paginé pour les passés) et GRILLE calendrier (schedule-x,
- * refetch à la navigation). Filtres : type + texte (backend) et tags (client).
+ * mode calendrier now→fenêtre + mode liste paginé pour les passés) et GRILLE calendrier (grille mois
+ * maison Tailwind/shadcn, refetch à la navigation). Filtres : type + texte (backend) et tags (client).
  */
 export const AgendaSectionSchema = z.object({
   type: z.literal("agenda"),
