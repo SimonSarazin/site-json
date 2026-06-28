@@ -1,13 +1,13 @@
 import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
 import { endOfMonth, startOfMonth } from "date-fns";
-import { CalendarDays, List, Loader2, Search } from "lucide-react";
+import { CalendarDays, List, Loader2, Search, SlidersHorizontal } from "lucide-react";
 import { EVENT_TYPES, type SearchEntity } from "@communecter/cocolight-api-client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
-import { SelectField } from "@/modules/search/components/filterFields";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Sheet, SheetClose, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useHydrated } from "@/hooks/useHydrated";
@@ -142,6 +142,43 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
   const toggleTag = (tag: string) =>
     setSelectedTags((prev) => (prev.includes(tag) ? prev.filter((x) => x !== tag) : [...prev, tag]));
 
+  // ── Barre de filtres (alignée sur search : pas de label, h-11/rounded-xl/bg-muted,
+  //     inline ≥ lg, repliée dans un Sheet bas en mobile) ─────────────────────
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const hasFilters = showType || showTags;
+  const activeFilterCount = (type ? 1 : 0) + selectedTags.length;
+  const TYPE_ALL = "__all__"; // Radix Select interdit value="" → sentinelle « Tous ».
+
+  const renderTypeSelect = () => (
+    <Select value={type === "" ? TYPE_ALL : type} onValueChange={(v) => setType(v === TYPE_ALL ? "" : v)}>
+      <SelectTrigger className="h-11 w-full rounded-xl border-border bg-muted/60! text-foreground shadow-sm dark:bg-muted/50! lg:w-auto lg:min-w-[170px]">
+        <SelectValue placeholder={t("filters.allTypes")} />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value={TYPE_ALL}>{t("filters.allTypes")}</SelectItem>
+        {EVENT_TYPES.map((evType) => (
+          <SelectItem key={evType} value={evType}>{t(`eventType.${evType}`)}</SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+
+  const renderTags = () =>
+    availableTags.length > 0 ? (
+      <div className="flex flex-wrap gap-2">
+        {availableTags.map((tag) => (
+          <Badge
+            key={tag}
+            variant={selectedTags.includes(tag) ? "default" : "outline"}
+            className={cn("cursor-pointer select-none")}
+            onClick={() => toggleTag(tag)}
+          >
+            #{tag}
+          </Badge>
+        ))}
+      </div>
+    ) : null;
+
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
@@ -159,45 +196,81 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
         </div>
       </div>
 
-      {(showText || showType) && (
-        <div className="flex flex-col sm:flex-row sm:items-end gap-2 mb-4">
+      {(showText || hasFilters) && (
+        <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center">
           {showText && (
-            <div className="flex flex-col gap-1.5 flex-1">
-              <Label className="text-xs font-medium text-muted-foreground">{t("filters.searchLabel")}</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input value={text} onChange={(e) => setText(e.target.value)} placeholder={t("filters.searchPlaceholder")} className="pl-9" />
-              </div>
-            </div>
-          )}
-          {showType && (
-            <div className="sm:w-56">
-              <SelectField
-                label={t("filters.typeLabel")}
-                value={type}
-                onChange={setType}
-                allLabel={t("filters.allTypes")}
-                options={EVENT_TYPES.map((evType) => ({ id: evType, label: t(`eventType.${evType}`) }))}
+            <div className="relative w-full">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Input
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder={t("filters.searchPlaceholder")}
+                className="h-11 rounded-xl border-border bg-muted/60! pl-12 text-foreground shadow-sm placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25 dark:bg-muted/50!"
               />
             </div>
+          )}
+
+          {hasFilters && (
+            <>
+              {/* Desktop : type inline */}
+              {showType && <div className="hidden shrink-0 lg:block">{renderTypeSelect()}</div>}
+
+              {/* Mobile : bouton « Filtres » → Sheet bas (type + tags) */}
+              <div className="w-full lg:hidden">
+                <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
+                  <SheetTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="h-11 w-full justify-between rounded-xl border-border bg-muted/60! px-3 text-foreground shadow-sm hover:bg-muted! dark:bg-muted/50!"
+                    >
+                      <span className="flex items-center gap-2">
+                        <SlidersHorizontal className="h-4 w-4" />
+                        {t("filters.title")}
+                      </span>
+                      {activeFilterCount > 0 && <Badge className="ml-2 rounded-full px-2">{activeFilterCount}</Badge>}
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="bottom" className="max-h-[85vh] gap-0 rounded-t-2xl p-0">
+                    <SheetHeader className="border-b border-border">
+                      <SheetTitle className="flex items-center gap-2">
+                        <SlidersHorizontal className="h-5 w-5 text-primary" />
+                        {t("filters.title")}
+                      </SheetTitle>
+                    </SheetHeader>
+                    <div className="flex flex-col gap-4 overflow-y-auto p-4">
+                      {showType && (
+                        <div className="flex flex-col gap-1.5">
+                          <span className="text-xs font-medium text-muted-foreground">{t("filters.typeLabel")}</span>
+                          {renderTypeSelect()}
+                        </div>
+                      )}
+                      {showTags && availableTags.length > 0 && (
+                        <div className="flex flex-col gap-1.5">
+                          <span className="text-xs font-medium text-muted-foreground">{t("filters.tags")}</span>
+                          {renderTags()}
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="flex-row gap-2 border-t border-border">
+                      {activeFilterCount > 0 && (
+                        <Button variant="ghost" className="flex-1" onClick={() => { setType(""); setSelectedTags([]); }}>
+                          {t("filters.reset")}
+                        </Button>
+                      )}
+                      <SheetClose asChild>
+                        <Button className="flex-1">{t("filters.apply")}</Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+              </div>
+            </>
           )}
         </div>
       )}
 
-      {showTags && availableTags.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-6">
-          {availableTags.map((tag) => (
-            <Badge
-              key={tag}
-              variant={selectedTags.includes(tag) ? "default" : "outline"}
-              className={cn("cursor-pointer select-none")}
-              onClick={() => toggleTag(tag)}
-            >
-              #{tag}
-            </Badge>
-          ))}
-        </div>
-      )}
+      {/* Tags : desktop seulement (mobile = dans le Sheet) */}
+      {showTags && availableTags.length > 0 && <div className="mb-6 hidden lg:block">{renderTags()}</div>}
 
       {!hydrated ? (
         // Squelette identique serveur ↔ 1ᵉʳ render client → hydratation propre, puis montage du contenu.

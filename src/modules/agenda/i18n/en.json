@@ -1,12 +1,14 @@
 {
   "view": { "list": "List", "calendar": "Calendar" },
   "filters": {
-    "searchLabel": "Search",
     "searchPlaceholder": "Search an event…",
     "typeLabel": "Type",
     "allTypes": "All types",
     "typeAria": "Event type",
-    "tags": "Tags"
+    "tags": "Tags",
+    "title": "Filters",
+    "reset": "Reset",
+    "apply": "See results"
   },
   "tab": { "ongoing": "Ongoing", "upcoming": "Upcoming", "past": "Past" },
   "empty": "No event",

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
 import "@schedule-x/theme-shadcn/dist/index.css";
+import "./agenda-calendar-theme.css"; // remap des --sx-color-* sur nos tokens (après le thème du paquet)
 import { useCalendarApp, ScheduleXCalendar } from "@schedule-x/react";
 import { createViewMonthGrid, createViewWeek, createViewDay, createViewMonthAgenda } from "@schedule-x/calendar";
 import { createEventsServicePlugin } from "@schedule-x/events-service";
