@@ -17,8 +17,9 @@ import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import { SwitchDetailsMode } from "@/modules/search/components/SwitchDetailsMode";
 import SearchListView from "@/modules/search/components/SearchListView";
+import ActiveFiltersBar from "@/modules/search/components/ActiveFiltersBar";
 import { SearchPropsProvider } from "@/modules/search/contexts/SearchPropsProvider";
-import type { ListConf, SearchProStaticSectionProps } from "@/modules/search/schema";
+import type { ListConf, SearchProStaticSectionProps, TagsFilter } from "@/modules/search/schema";
 import AgendaList from "./components/AgendaList";
 import { useAgendaCalendar } from "./hooks/useAgendaCalendar";
 import { useAgendaList } from "./hooks/useAgendaList";
@@ -181,6 +182,15 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
   const searchProps = useMemo(
     () => ({ list: { card, preview, columns } }) as unknown as SearchProStaticSectionProps,
     [card, preview, columns],
+  );
+  // Chips de filtres actifs (type + tags) via ActiveFiltersBar de search : `list` mappe value→libellé
+  // (type → "Foire"… ; tags : value=libellé, list vide → repli sur la valeur).
+  const activeFilters = useMemo<Record<string, TagsFilter>>(
+    () => ({
+      type: { type: "type", name: "Type", list: Object.fromEntries(EVENT_TYPES.map((et) => [et, t(`eventType.${et}`)])) },
+      tags: { type: "tags", name: "Tags", list: {} },
+    }),
+    [t],
   );
 
   const toggleTag = (tag: string) =>
@@ -349,6 +359,17 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
           )}
         </div>
       )}
+
+      {/* Chips de filtres actifs (type + tags), removables — composant ActiveFiltersBar de search */}
+      <ActiveFiltersBar
+        filters={activeFilters}
+        showActiveFiltersTypes={showType}
+        showActiveFiltersTags={showTags}
+        filtersSearchType={{ type: type ? [type] : [] }}
+        filtersSearchTags={{ tags: selectedTags }}
+        onRemoveType={() => setType("")}
+        onRemove={(_key, value) => setSelectedTags((prev) => prev.filter((x) => x !== value))}
+      />
 
       {!hydrated ? (
         // Squelette identique serveur ↔ 1ᵉʳ render client → hydratation propre, puis montage du contenu.
