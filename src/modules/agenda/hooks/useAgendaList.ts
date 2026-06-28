@@ -3,6 +3,7 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { useInfiniteQueryScrollNextWithTransform } from "@/hooks/useInfiniteQueryScroll";
 import type { Event } from "@communecter/cocolight-api-client";
 import { AGENDA_QUERY_KEYS } from "../constants/queryKeys";
+import { buildAgendaListParams } from "../lib/buildAgendaParams";
 
 export interface UseAgendaListParams {
   type?: string;
@@ -26,11 +27,7 @@ export function useAgendaList({ type, name, enabled = true, indexStep = 20 }: Us
       // 1ʳᵉ page seulement : le hook commun appelle `.next()` pour les suivantes.
       queryFn: async () => {
         if (!entity) throw new Error("API non initialisée - entity manquante");
-        return entity.searchEventsCostum({
-          indexStep,
-          ...(type ? { type } : {}),
-          ...(name ? { name } : {}),
-        });
+        return entity.searchEventsCostum(buildAgendaListParams(indexStep, { type, name }));
       },
       options: { enabled: !!entity && enabled, staleTime: 60 * 1000, initialPageParam: undefined },
       transform: entity ? { entity, helper } : undefined,

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useCocolight } from "@/hooks/useCocolight";
 import type { Event } from "@communecter/cocolight-api-client";
 import { AGENDA_QUERY_KEYS } from "../constants/queryKeys";
+import { buildAgendaCalendarParams } from "../lib/buildAgendaParams";
 
 export interface UseAgendaCalendarParams {
   /** Bornes de la période demandée (mode CALENDRIER de `searchEventsCostum` → récurrence dépliée). */
@@ -34,12 +35,9 @@ export function useAgendaCalendar({ rangeStart, rangeEnd, type, name, enabled = 
     queryFn: async (): Promise<Event[]> => {
       if (!entity) throw new Error("API non initialisée - entity manquante");
       try {
-        const page = await entity.searchEventsCostum({
-          startDateUTC: rangeStart,
-          endDateUTC: rangeEnd,
-          ...(type ? { type } : {}),
-          ...(name ? { name } : {}),
-        });
+        const page = await entity.searchEventsCostum(
+          buildAgendaCalendarParams(rangeStart, rangeEnd, { type, name }),
+        );
         return page.results;
       } catch (e) {
         console.error("[agenda] searchEventsCostum (calendar) a échoué", e);

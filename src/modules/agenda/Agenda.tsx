@@ -1,5 +1,5 @@
 import { Suspense, lazy, useMemo, useState } from "react";
-import { addMonths, endOfMonth, startOfMonth } from "date-fns";
+import { endOfMonth, startOfMonth } from "date-fns";
 import { CalendarDays, List, Loader2, Search } from "lucide-react";
 import { EVENT_TYPES, type SearchEntity } from "@communecter/cocolight-api-client";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useHydrated } from "@/hooks/useHydrated";
 import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import { SwitchDetailsMode } from "@/modules/search/components/SwitchDetailsMode";
@@ -14,6 +15,7 @@ import type { ListConf } from "@/modules/search/schema";
 import AgendaList from "./components/AgendaList";
 import { useAgendaCalendar } from "./hooks/useAgendaCalendar";
 import { useAgendaList } from "./hooks/useAgendaList";
+import { useAgendaClock } from "./hooks/useAgendaClock";
 import { partitionByTime } from "./lib/partitionByTime";
 import { eventOccurrence } from "./lib/eventDates";
 import { distinctTags, filterByTags } from "./lib/eventTags";
@@ -54,19 +56,25 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
   const showType = filters?.type !== false;
   const showTags = filters?.tags === true;
 
-  const now = useMemo(() => new Date(), []);
-  const upcomingRangeEnd = useMemo(() => addMonths(now, upcomingWindowMonths), [now, upcomingWindowMonths]);
+  // Île client : on ne fetch (ni ne rend le contenu data-dépendant) qu'APRÈS hydratation. Le serveur
+  // et le 1ᵉʳ render client produisent ainsi le MÊME squelette → pas de mismatch d'hydratation
+  // (donc pas de section dupliquée). L'agenda est `now`-relatif → mal adapté au SSR de données.
+  const hydrated = useHydrated();
 
-  // ── Fetch (gaté par le mode) — backend searchEventsCostum ──────────────────
+  // Horloge STABLE (react-query staleTime: Infinity) → `now`/bornes constants au re-render,
+  // y compris double-invoke StrictMode → queryKey CALENDAR stable (pas de boucle de refetch).
+  const { now, upcomingStart, upcomingEnd } = useAgendaClock(upcomingWindowMonths);
+
+  // ── Fetch (gaté par hydratation + mode) — backend searchEventsCostum ────────
   // Liste : À venir/En cours = mode CALENDRIER now→fenêtre ; Passés = mode LISTE paginé.
   const upcomingFetch = useAgendaCalendar({
-    rangeStart: now,
-    rangeEnd: upcomingRangeEnd,
+    rangeStart: upcomingStart,
+    rangeEnd: upcomingEnd,
     type: typeParam,
     name: nameParam,
-    enabled: mode === "list",
+    enabled: hydrated && mode === "list",
   });
-  const pastFetch = useAgendaList({ type: typeParam, name: nameParam, enabled: mode === "list" });
+  const pastFetch = useAgendaList({ type: typeParam, name: nameParam, enabled: hydrated && mode === "list" });
   // Calendrier : plage = mois visible (refetch à la navigation via onRangeChange).
   const [calRange, setCalRange] = useState(() => ({ start: startOfMonth(now), end: endOfMonth(now) }));
   const gridFetch = useAgendaCalendar({
@@ -74,7 +82,7 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
     rangeEnd: calRange.end,
     type: typeParam,
     name: nameParam,
-    enabled: mode === "calendar",
+    enabled: hydrated && mode === "calendar",
   });
 
   // ── Tags disponibles (selon le mode) + filtrage client ─────────────────────
@@ -169,7 +177,10 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
         </div>
       )}
 
-      {mode === "calendar" ? (
+      {!hydrated ? (
+        // Squelette identique serveur ↔ 1ᵉʳ render client → hydratation propre, puis montage du contenu.
+        <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+      ) : mode === "calendar" ? (
         <Suspense fallback={<div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
           <AgendaCalendar
             events={calendarEvents}
