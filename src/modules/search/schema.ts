@@ -204,7 +204,7 @@ const ListConfSchema = z.object({
 export type ListConf = z.infer<typeof ListConfSchema>;
 
 
-const MapConfSchema = z.object({
+export const MapConfSchema = z.object({
   initialZoom: z.number().min(1).max(20).optional(),
   cluster:     z.boolean().optional(),
   popup: z.object({

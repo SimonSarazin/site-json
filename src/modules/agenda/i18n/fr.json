@@ -1,5 +1,5 @@
 {
-  "view": { "list": "Liste", "calendar": "Calendrier" },
+  "view": { "list": "Liste", "calendar": "Calendrier", "map": "Carte" },
   "calendar": { "month": "Mois", "week": "Semaine", "day": "Jour", "today": "Aujourd'hui", "noEvents": "Aucun événement" },
   "filters": {
     "searchPlaceholder": "Rechercher un événement…",

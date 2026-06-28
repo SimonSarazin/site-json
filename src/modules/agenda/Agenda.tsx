@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import { endOfMonth, startOfMonth } from "date-fns";
-import { ArrowRight, CalendarDays, List, Loader2, Search, SlidersHorizontal } from "lucide-react";
+import { ArrowRight, CalendarDays, List, Loader2, MapPin, Search, SlidersHorizontal } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { EVENT_TYPES, type SearchEntity } from "@communecter/cocolight-api-client";
 import { Input } from "@/components/ui/input";
@@ -23,10 +23,11 @@ import { useAgendaClock } from "./hooks/useAgendaClock";
 import { partitionByTime } from "./lib/partitionByTime";
 import { eventOccurrence } from "./lib/eventDates";
 import { distinctTags, filterByTags } from "./lib/eventTags";
-import { readAgendaUrl, writeAgendaUrl, type AgendaFilterDefaults } from "./lib/agendaUrlParams";
+import { readAgendaUrl, writeAgendaUrl, type AgendaFilterDefaults, type AgendaMode } from "./lib/agendaUrlParams";
 import type { AgendaSectionProps, AgendaTab } from "./schema";
 
 const AgendaCalendar = lazy(() => import("./components/AgendaCalendar"));
+const SearchMapWrapper = lazy(() => import("@/modules/search/components/SearchMapWrapper"));
 
 /**
  * Conteneur agenda (event-centré) — SOURCE UNIQUE de données : bascule Liste/Calendrier, filtres
@@ -51,6 +52,8 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
     limit,
     showViewToggle = true,
     showTabs = true,
+    enableMap = false,
+    map: mapConf,
   } = props;
 
   // ── Filtres synchronisés à l'URL (partage/bookmark/retour navigateur) ──────
@@ -62,7 +65,7 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
   // Seed UNE fois depuis l'URL au montage (URL identique serveur↔client → état initial cohérent).
   const initial = useMemo(() => readAgendaUrl(searchParams, urlDefaults), []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const [mode, setMode] = useState<"list" | "calendar">(initial.mode);
+  const [mode, setMode] = useState<AgendaMode>(initial.mode);
   const [tab, setTab] = useState<AgendaTab>(initial.tab);
   const [text, setText] = useState(initial.text);
   const [type, setType] = useState(initial.type);
@@ -94,15 +97,16 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
 
   // ── Fetch (gaté par hydratation + mode) — backend searchEventsCostum ────────
   // Liste : À venir/En cours = mode CALENDRIER now→fenêtre ; Passés = mode LISTE paginé.
+  const needsEventList = mode === "list" || mode === "map"; // la carte agrège upcoming + past
   const upcomingFetch = useAgendaCalendar({
     rangeStart: upcomingStart,
     rangeEnd: upcomingEnd,
     type: typeParam,
     name: nameParam,
     baseParams,
-    enabled: hydrated && mode === "list",
+    enabled: hydrated && needsEventList,
   });
-  const pastFetch = useAgendaList({ type: typeParam, name: nameParam, baseParams, enabled: hydrated && mode === "list" });
+  const pastFetch = useAgendaList({ type: typeParam, name: nameParam, baseParams, enabled: hydrated && needsEventList });
   // Calendrier : plage = mois visible (refetch à la navigation via onRangeChange).
   const [calRange, setCalRange] = useState(() => ({ start: startOfMonth(now), end: endOfMonth(now) }));
   const gridFetch = useAgendaCalendar({
@@ -137,6 +141,19 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
     [pastFetch.events, selectedTags, now],
   );
   const calendarEvents = useMemo(() => filterByTags(gridFetch.events, selectedTags), [gridFetch.events, selectedTags]);
+  // Carte : union dédupliquée upcoming + past (events géolocalisés), filtrée tags. SearchMap ignore les sans-geo.
+  const mapEvents = useMemo(() => {
+    const seen = new Set<string>();
+    const out: typeof past = [];
+    for (const ev of [...upcomingFetch.events, ...pastFetch.events]) {
+      const id = String((ev.serverData as { id?: string } | undefined)?.id ?? "");
+      if (id && !seen.has(id)) {
+        seen.add(id);
+        out.push(ev);
+      }
+    }
+    return filterByTags(out, selectedTags);
+  }, [upcomingFetch.events, pastFetch.events, selectedTags]);
 
   // `limit` (teaser home) : plafonne chaque bucket ; sinon tous (+ « charger plus » pour Passés).
   const cap = (arr: typeof past) => (limit ? arr.slice(0, limit) : arr);
@@ -220,6 +237,11 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
               <Button variant={mode === "calendar" ? "default" : "outline"} size="sm" onClick={() => setMode("calendar")}>
                 <CalendarDays className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">{t("view.calendar")}</span>
               </Button>
+              {enableMap && (
+                <Button variant={mode === "map" ? "default" : "outline"} size="sm" onClick={() => setMode("map")}>
+                  <MapPin className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">{t("view.map")}</span>
+                </Button>
+              )}
             </div>
           )}
         </div>
@@ -313,6 +335,16 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
               setOpenDetails(true);
             }}
             onRangeChange={(s, e) => setCalRange({ start: s, end: e })}
+          />
+        </Suspense>
+      ) : mode === "map" ? (
+        // Vue CARTE : réutilise SearchMapWrapper (lazy/client-only) ; clic marqueur → même détail (card/preview).
+        <Suspense fallback={<div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
+          <SearchMapWrapper
+            results={mapEvents as unknown as SearchEntity[]}
+            card={card}
+            preview={preview}
+            map={mapConf ?? { marker: { useItemImage: true, style: "pin", color: "primary" } }}
           />
         </Suspense>
       ) : (

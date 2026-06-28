@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { LocalizedString } from "@/types/locale-schema";
+import { MapConfSchema } from "@/modules/search/schema";
 
 /** Onglets temporels de la liste agenda. */
 export const AGENDA_TABS = ["ongoing", "upcoming", "past"] as const;
@@ -37,6 +38,10 @@ export const AgendaSectionSchema = z.object({
     showTabs: z.boolean().default(true),
     /** Vue par défaut : liste à onglets temporels ou grille calendrier. */
     defaultMode: z.enum(["list", "calendar"]).default("list"),
+    /** Activer la vue CARTE (toggle « Carte », réutilise SearchMap de search). */
+    enableMap: z.boolean().default(false),
+    /** Config carte (marqueurs/popup/zoom) — MÊME schéma que searchProStatic.map. */
+    map: MapConfSchema.optional(),
     /** Onglets affichés + onglet par défaut. */
     tabs: z.array(z.enum(AGENDA_TABS)).default(["upcoming", "ongoing", "past"]),
     defaultTab: z.enum(AGENDA_TABS).default("upcoming"),

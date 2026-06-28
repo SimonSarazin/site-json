@@ -5,8 +5,10 @@ import type { AgendaTab } from "../schema";
  * et testables, dans l'esprit de `computeFiltersFromUrl`/`computeUrlFromFilters` (search). Le `vue`/`tab`
  * ne sont écrits que s'ils diffèrent du défaut (URL propre) ; `q`/`type`/`tags` s'ils sont renseignés.
  */
+export type AgendaMode = "list" | "calendar" | "map";
+
 export interface AgendaFilterState {
-  mode: "list" | "calendar";
+  mode: AgendaMode;
   tab: AgendaTab;
   text: string;
   type: string;
@@ -14,7 +16,7 @@ export interface AgendaFilterState {
 }
 
 export interface AgendaFilterDefaults {
-  mode: "list" | "calendar";
+  mode: AgendaMode;
   tab: AgendaTab;
   tabs: AgendaTab[];
 }
@@ -25,7 +27,7 @@ export const AGENDA_URL_PARAMS = { mode: "vue", tab: "tab", text: "q", type: "ty
 /** Lit l'état des filtres depuis l'URL (avec repli sur les défauts de la section). */
 export function readAgendaUrl(sp: URLSearchParams, d: AgendaFilterDefaults): AgendaFilterState {
   const modeRaw = sp.get(AGENDA_URL_PARAMS.mode);
-  const mode = modeRaw === "calendar" || modeRaw === "list" ? modeRaw : d.mode;
+  const mode = modeRaw === "calendar" || modeRaw === "list" || modeRaw === "map" ? modeRaw : d.mode;
 
   const tabRaw = sp.get(AGENDA_URL_PARAMS.tab) as AgendaTab | null;
   const tab = tabRaw && d.tabs.includes(tabRaw) ? tabRaw : d.tab;
