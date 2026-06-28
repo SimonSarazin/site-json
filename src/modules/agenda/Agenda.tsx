@@ -17,7 +17,8 @@ import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import { SwitchDetailsMode } from "@/modules/search/components/SwitchDetailsMode";
 import SearchListView from "@/modules/search/components/SearchListView";
-import type { ListConf } from "@/modules/search/schema";
+import { SearchPropsProvider } from "@/modules/search/contexts/SearchPropsProvider";
+import type { ListConf, SearchProStaticSectionProps } from "@/modules/search/schema";
 import AgendaList from "./components/AgendaList";
 import { useAgendaCalendar } from "./hooks/useAgendaCalendar";
 import { useAgendaList } from "./hooks/useAgendaList";
@@ -171,6 +172,11 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
   const [focusedItemId, setFocusedItemId] = useState<string | null>(null); // synchro liste↔carte (split)
   const card = useMemo<ListConf["card"]>(() => ({ type: "event", detailsMode }), [detailsMode]);
   const preview = useMemo<ListConf["preview"]>(() => ({ type: "event" }), []);
+  // La carte de search lit `inSection` via useSearchProps → fournir le provider (sinon throw).
+  const searchProps = useMemo(
+    () => ({ list: { card, preview, columns } }) as unknown as SearchProStaticSectionProps,
+    [card, preview, columns],
+  );
 
   const toggleTag = (tag: string) =>
     setSelectedTags((prev) => (prev.includes(tag) ? prev.filter((x) => x !== tag) : [...prev, tag]));
@@ -348,7 +354,9 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
         // Vue CARTE : réutilise SearchMapWrapper (lazy/client-only) ; clic marqueur → même détail (card/preview).
         // `split` (desktop) : liste (gauche) + carte (droite) SYNCHRONISÉES via focusedItemId (clic carte → flyTo,
         // clic marqueur → highlight) — même source mapEvents → ids alignés. Sinon carte plein écran.
-        isSplit ? (
+        // SearchPropsProvider : la carte de search lit `inSection` via useSearchProps.
+        <SearchPropsProvider props={searchProps} inSection>
+        {isSplit ? (
           <div className="flex flex-col gap-4 md:flex-row">
             <div className="md:h-[78vh] md:w-2/5 md:overflow-y-auto">
               {mapEvents.length === 0 ? (
@@ -387,7 +395,8 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
               map={mapConf ?? { marker: { useItemImage: true, style: "pin", color: "primary" } }}
             />
           </Suspense>
-        )
+        )}
+        </SearchPropsProvider>
       ) : (
         <AgendaList
           tab={tab}
