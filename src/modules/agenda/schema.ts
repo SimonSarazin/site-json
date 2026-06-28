@@ -40,6 +40,8 @@ export const AgendaSectionSchema = z.object({
     defaultMode: z.enum(["list", "calendar"]).default("list"),
     /** Activer la vue CARTE (toggle « Carte », réutilise SearchMap de search). */
     enableMap: z.boolean().default(false),
+    /** Rendu de la vue carte : plein écran (`map`) ou liste+carte synchronisées (`split`, desktop ; mobile → map). */
+    mapView: z.enum(["map", "split"]).default("map"),
     /** Config carte (marqueurs/popup/zoom) — MÊME schéma que searchProStatic.map. */
     map: MapConfSchema.optional(),
     /** Onglets affichés + onglet par défaut. */

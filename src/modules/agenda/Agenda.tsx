@@ -12,9 +12,11 @@ import { Sheet, SheetClose, SheetContent, SheetFooter, SheetHeader, SheetTitle, 
 import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useHydrated } from "@/hooks/useHydrated";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import { SwitchDetailsMode } from "@/modules/search/components/SwitchDetailsMode";
+import SearchListView from "@/modules/search/components/SearchListView";
 import type { ListConf } from "@/modules/search/schema";
 import AgendaList from "./components/AgendaList";
 import { useAgendaCalendar } from "./hooks/useAgendaCalendar";
@@ -53,8 +55,11 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
     showViewToggle = true,
     showTabs = true,
     enableMap = false,
+    mapView = "map",
     map: mapConf,
   } = props;
+  const isMobile = useIsMobile();
+  const isSplit = mapView === "split" && !isMobile; // split = desktop only ; mobile → carte plein écran
 
   // ── Filtres synchronisés à l'URL (partage/bookmark/retour navigateur) ──────
   const [searchParams, setSearchParams] = useSearchParams();
@@ -163,6 +168,7 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
   // ── Détail au clic (partagé liste/calendrier) ──────────────────────────────
   const [openDetails, setOpenDetails] = useState(false);
   const [selected, setSelected] = useState<SearchEntity | null>(null);
+  const [focusedItemId, setFocusedItemId] = useState<string | null>(null); // synchro liste↔carte (split)
   const card = useMemo<ListConf["card"]>(() => ({ type: "event", detailsMode }), [detailsMode]);
   const preview = useMemo<ListConf["preview"]>(() => ({ type: "event" }), []);
 
@@ -239,7 +245,8 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
               </Button>
               {enableMap && (
                 <Button variant={mode === "map" ? "default" : "outline"} size="sm" onClick={() => setMode("map")}>
-                  <MapPin className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">{t("view.map")}</span>
+                  <MapPin className="h-4 w-4 sm:mr-1" />
+                  <span className="hidden sm:inline">{isSplit ? t("view.mapSplit") : t("view.map")}</span>
                 </Button>
               )}
             </div>
@@ -339,14 +346,48 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
         </Suspense>
       ) : mode === "map" ? (
         // Vue CARTE : réutilise SearchMapWrapper (lazy/client-only) ; clic marqueur → même détail (card/preview).
-        <Suspense fallback={<div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
-          <SearchMapWrapper
-            results={mapEvents as unknown as SearchEntity[]}
-            card={card}
-            preview={preview}
-            map={mapConf ?? { marker: { useItemImage: true, style: "pin", color: "primary" } }}
-          />
-        </Suspense>
+        // `split` (desktop) : liste (gauche) + carte (droite) SYNCHRONISÉES via focusedItemId (clic carte → flyTo,
+        // clic marqueur → highlight) — même source mapEvents → ids alignés. Sinon carte plein écran.
+        isSplit ? (
+          <div className="flex flex-col gap-4 md:flex-row">
+            <div className="md:h-[78vh] md:w-2/5 md:overflow-y-auto">
+              {mapEvents.length === 0 ? (
+                <div className="py-8 text-center text-muted-foreground">{t("calendar.noEvents")}</div>
+              ) : (
+                <SearchListView
+                  results={mapEvents as unknown as SearchEntity[]}
+                  columns={columns}
+                  card={card}
+                  preview={preview}
+                  focusedItemId={focusedItemId}
+                  onFocusItem={setFocusedItemId}
+                />
+              )}
+            </div>
+            <div className="relative h-[55vh] overflow-hidden rounded-xl border border-border shadow-sm md:sticky md:top-20 md:h-[78vh] md:w-3/5">
+              <Suspense fallback={<div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
+                <SearchMapWrapper
+                  results={mapEvents as unknown as SearchEntity[]}
+                  card={card}
+                  preview={preview}
+                  map={mapConf ?? { marker: { useItemImage: true, style: "pin", color: "primary" } }}
+                  focusedItemId={focusedItemId}
+                  onMarkerFocus={setFocusedItemId}
+                  containerClass="absolute inset-0 z-10 rounded-xl"
+                />
+              </Suspense>
+            </div>
+          </div>
+        ) : (
+          <Suspense fallback={<div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
+            <SearchMapWrapper
+              results={mapEvents as unknown as SearchEntity[]}
+              card={card}
+              preview={preview}
+              map={mapConf ?? { marker: { useItemImage: true, style: "pin", color: "primary" } }}
+            />
+          </Suspense>
+        )
       ) : (
         <AgendaList
           tab={tab}
