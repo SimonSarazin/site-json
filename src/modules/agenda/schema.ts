@@ -15,6 +15,8 @@ export const AgendaSectionSchema = z.object({
   props: z.object({
     title: LocalizedString.optional(),
     description: LocalizedString.optional(),
+    /** Vue par défaut : liste à onglets temporels ou grille calendrier. */
+    defaultMode: z.enum(["list", "calendar"]).default("list"),
     /** Onglets affichés + onglet par défaut. */
     tabs: z.array(z.enum(AGENDA_TABS)).default(["upcoming", "ongoing", "past"]),
     defaultTab: z.enum(AGENDA_TABS).default("upcoming"),
