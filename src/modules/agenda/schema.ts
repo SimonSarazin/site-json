@@ -16,6 +16,25 @@ export const AgendaSectionSchema = z.object({
   props: z.object({
     title: LocalizedString.optional(),
     description: LocalizedString.optional(),
+    /**
+     * En-tête avec lien « voir tous » — MÊME convention que `searchProStatic.customHeader`
+     * (`title` prioritaire sur `title` ci-dessus ; `linkText`/`linkHref`/`linkIcon` pour un bloc
+     * teaser → page complète, ex. home → `/evenements`).
+     */
+    customHeader: z
+      .object({
+        title: LocalizedString.optional(),
+        linkText: LocalizedString.optional(),
+        linkHref: z.string().optional(),
+        linkIcon: z.string().optional(),
+      })
+      .optional(),
+    /** Limite d'events par bucket (teaser home). Absent = tous (+ « charger plus » pour Passés). */
+    limit: z.number().int().positive().optional(),
+    /** Afficher le toggle Liste/Calendrier (false = teaser : vue figée à `defaultMode`). */
+    showViewToggle: z.boolean().default(true),
+    /** Afficher les onglets temporels (false = teaser : un seul bucket = `defaultTab`, sans onglets). */
+    showTabs: z.boolean().default(true),
     /** Vue par défaut : liste à onglets temporels ou grille calendrier. */
     defaultMode: z.enum(["list", "calendar"]).default("list"),
     /** Onglets affichés + onglet par défaut. */

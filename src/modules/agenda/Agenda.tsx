@@ -1,7 +1,8 @@
 import { Suspense, lazy, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { endOfMonth, startOfMonth } from "date-fns";
-import { CalendarDays, List, Loader2, Search, SlidersHorizontal } from "lucide-react";
+import { ArrowRight, CalendarDays, List, Loader2, Search, SlidersHorizontal } from "lucide-react";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { EVENT_TYPES, type SearchEntity } from "@communecter/cocolight-api-client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,10 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
     filters,
     detailsMode = "drawer",
     columns,
+    customHeader,
+    limit,
+    showViewToggle = true,
+    showTabs = true,
   } = props;
 
   // ── Filtres synchronisés à l'URL (partage/bookmark/retour navigateur) ──────
@@ -133,7 +138,9 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
   );
   const calendarEvents = useMemo(() => filterByTags(gridFetch.events, selectedTags), [gridFetch.events, selectedTags]);
 
-  const buckets: Record<AgendaTab, typeof past> = { ongoing, upcoming, past };
+  // `limit` (teaser home) : plafonne chaque bucket ; sinon tous (+ « charger plus » pour Passés).
+  const cap = (arr: typeof past) => (limit ? arr.slice(0, limit) : arr);
+  const buckets: Record<AgendaTab, typeof past> = { ongoing: cap(ongoing), upcoming: cap(upcoming), past: cap(past) };
   const listLoading = tab === "past" ? pastFetch.isLoading : upcomingFetch.isLoading;
 
   // ── Détail au clic (partagé liste/calendrier) ──────────────────────────────
@@ -186,16 +193,35 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
         <div>
-          {title && <h2 className="text-2xl font-bold text-foreground">{tl(title)}</h2>}
+          {(customHeader?.title ?? title) && (
+            <h2 className="text-2xl font-bold text-foreground">{tl(customHeader?.title ?? title!)}</h2>
+          )}
           {description && <p className="text-muted-foreground mt-1">{tl(description)}</p>}
         </div>
-        <div className="flex gap-1">
-          <Button variant={mode === "list" ? "default" : "outline"} size="sm" onClick={() => setMode("list")}>
-            <List className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">{t("view.list")}</span>
-          </Button>
-          <Button variant={mode === "calendar" ? "default" : "outline"} size="sm" onClick={() => setMode("calendar")}>
-            <CalendarDays className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">{t("view.calendar")}</span>
-          </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Lien « voir tous » (teaser → page complète, ex. home → /evenements) */}
+          {customHeader?.linkText && customHeader?.linkHref && (
+            <Button asChild variant="outline" size="sm" className="text-foreground">
+              <Link to={customHeader.linkHref}>
+                {customHeader.linkIcon ? (
+                  <DynamicIcon name={customHeader.linkIcon as IconName} className="h-4 w-4 sm:mr-1" />
+                ) : (
+                  <ArrowRight className="h-4 w-4 sm:mr-1" />
+                )}
+                <span className="hidden sm:inline">{tl(customHeader.linkText)}</span>
+              </Link>
+            </Button>
+          )}
+          {showViewToggle && (
+            <div className="flex gap-1">
+              <Button variant={mode === "list" ? "default" : "outline"} size="sm" onClick={() => setMode("list")}>
+                <List className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">{t("view.list")}</span>
+              </Button>
+              <Button variant={mode === "calendar" ? "default" : "outline"} size="sm" onClick={() => setMode("calendar")}>
+                <CalendarDays className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">{t("view.calendar")}</span>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -299,7 +325,9 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
           card={card}
           preview={preview}
           columns={columns}
-          hasMorePast={pastFetch.hasNextPage}
+          showTabs={showTabs}
+          // Teaser (limit) : pas de « charger plus » — on plafonne déjà les buckets.
+          hasMorePast={!limit && pastFetch.hasNextPage}
           onLoadMorePast={() => pastFetch.fetchNextPage()}
           loadingMorePast={pastFetch.isFetchingNextPage}
         />

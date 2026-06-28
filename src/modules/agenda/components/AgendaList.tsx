@@ -20,11 +20,13 @@ export interface AgendaListProps {
   hasMorePast?: boolean;
   onLoadMorePast?: () => void;
   loadingMorePast?: boolean;
+  /** false = teaser : un seul bucket (= `tab`), sans barre d'onglets. */
+  showTabs?: boolean;
 }
 
 /**
- * Vue LISTE présentationnelle : onglets temporels + `SearchListView` par bucket (cartes event + détail au clic).
- * Aucune donnée propre — tout vient d'Agenda (fetch + filtres centralisés).
+ * Vue LISTE présentationnelle : onglets temporels (ou bucket unique en teaser) + `SearchListView`
+ * (cartes event + détail au clic). Aucune donnée propre — tout vient d'Agenda (fetch + filtres centralisés).
  */
 export default function AgendaList({
   tab,
@@ -38,8 +40,33 @@ export default function AgendaList({
   hasMorePast,
   onLoadMorePast,
   loadingMorePast,
+  showTabs = true,
 }: AgendaListProps) {
   const t = useT("modules/agenda");
+
+  const renderBucket = (tb: AgendaTab) =>
+    loading && tab === tb ? (
+      <div className="flex justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    ) : buckets[tb].length > 0 ? (
+      <>
+        <SearchListView results={buckets[tb] as unknown as SearchEntity[]} columns={columns} card={card} preview={preview} />
+        {tb === "past" && hasMorePast && (
+          <div className="mt-6 flex justify-center">
+            <Button variant="outline" onClick={onLoadMorePast} disabled={loadingMorePast}>
+              {loadingMorePast ? t("loadingMore") : t("loadMore")}
+            </Button>
+          </div>
+        )}
+      </>
+    ) : (
+      <div className="py-12 text-center text-muted-foreground">{t("empty")}</div>
+    );
+
+  // Teaser : un seul bucket (= onglet par défaut), sans barre d'onglets.
+  if (!showTabs) return <div className="mt-2">{renderBucket(tab)}</div>;
+
   return (
     <Tabs value={tab} onValueChange={(v) => onTabChange(v as AgendaTab)} className="w-full">
       <TabsList>
@@ -50,24 +77,7 @@ export default function AgendaList({
 
       {tabs.map((tb) => (
         <TabsContent key={tb} value={tb} className="mt-6">
-          {loading && tab === tb ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : buckets[tb].length > 0 ? (
-            <>
-              <SearchListView results={buckets[tb] as unknown as SearchEntity[]} columns={columns} card={card} preview={preview} />
-              {tb === "past" && hasMorePast && (
-                <div className="flex justify-center mt-6">
-                  <Button variant="outline" onClick={onLoadMorePast} disabled={loadingMorePast}>
-                    {loadingMorePast ? t("loadingMore") : t("loadMore")}
-                  </Button>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="text-center py-12 text-muted-foreground">{t("empty")}</div>
-          )}
+          {renderBucket(tb)}
         </TabsContent>
       ))}
     </Tabs>
