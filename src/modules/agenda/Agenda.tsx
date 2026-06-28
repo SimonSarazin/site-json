@@ -29,6 +29,11 @@ import { distinctTags, filterByTags } from "./lib/eventTags";
 import { readAgendaUrl, writeAgendaUrl, type AgendaFilterDefaults, type AgendaMode } from "./lib/agendaUrlParams";
 import type { AgendaSectionProps, AgendaTab } from "./schema";
 
+// Défaut STABLE (référence constante) : un `tabs = [...]` en défaut de destructuration crée un
+// NOUVEAU tableau à chaque render → `urlDefaults` instable → effet de sync URL en boucle (re-render
+// permanent qui empêche l'effet `useHydrated` de commiter). Cf. bug /evenements.
+const DEFAULT_TABS: AgendaTab[] = ["upcoming", "ongoing", "past"];
+
 const AgendaCalendar = lazy(() => import("./components/AgendaCalendar"));
 const SearchMapWrapper = lazy(() => import("@/modules/search/components/SearchMapWrapper"));
 
@@ -44,7 +49,7 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
     title,
     description,
     defaultMode = "list",
-    tabs = ["upcoming", "ongoing", "past"],
+    tabs = DEFAULT_TABS,
     defaultTab = "upcoming",
     upcomingWindowMonths = 12,
     baseParams,
