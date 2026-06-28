@@ -5,9 +5,10 @@ import { LocalizedString } from "@/types/locale-schema";
 export const AGENDA_TABS = ["ongoing", "upcoming", "past"] as const;
 
 /**
- * Section `agenda` (config-driven) : expérience event d'un costum. v1 = vue LISTE à onglets temporels
- * (En cours / À venir / Passés) sur `searchEventsCostum`. La grille calendrier (vue "calendar") s'ajoute
- * dans une itération suivante (prop `defaultMode`/`calendar` réservée).
+ * Section `agenda` (config-driven) : expérience event d'un costum sur `searchEventsCostum`.
+ * Deux vues complémentaires basculables : LISTE à onglets temporels (En cours / À venir / Passés,
+ * mode calendrier now→fenêtre + mode liste paginé pour les passés) et GRILLE calendrier (schedule-x,
+ * refetch à la navigation). Filtres : type + texte (backend) et tags (client).
  */
 export const AgendaSectionSchema = z.object({
   type: z.literal("agenda"),
@@ -23,7 +24,7 @@ export const AgendaSectionSchema = z.object({
     /** Fenêtre (mois) du fetch CALENDRIER now→futur pour À venir/En cours. */
     upcomingWindowMonths: z.number().int().positive().default(12),
     /** Filtres activés. */
-    filters: z.object({ type: z.boolean(), text: z.boolean() }).partial().optional(),
+    filters: z.object({ type: z.boolean(), text: z.boolean(), tags: z.boolean() }).partial().optional(),
     /** Conteneur du détail au clic. */
     detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
     /** Colonnes de la grille de cartes (réutilise SearchListView). */

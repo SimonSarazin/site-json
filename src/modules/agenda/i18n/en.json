@@ -1,0 +1,35 @@
+{
+  "view": { "list": "List", "calendar": "Calendar" },
+  "filters": {
+    "searchPlaceholder": "Search an event…",
+    "allTypes": "All types",
+    "typeAria": "Event type",
+    "tags": "Tags"
+  },
+  "tab": { "ongoing": "Ongoing", "upcoming": "Upcoming", "past": "Past" },
+  "empty": "No event",
+  "loadMore": "Load more",
+  "loadingMore": "Loading…",
+  "eventType": {
+    "workshop": "Workshop",
+    "competition": "Competition",
+    "concert": "Concert",
+    "contest": "Contest",
+    "conference": "Conference",
+    "debate": "Debate",
+    "exhibition": "Exhibition",
+    "festival": "Festival",
+    "crowdfunding": "Crowdfunding",
+    "fair": "Fair",
+    "course": "Course",
+    "protest": "Protest",
+    "market": "Market",
+    "film": "Screening",
+    "getTogether": "Meetup",
+    "meeting": "Meeting",
+    "spectacle": "Show",
+    "internship": "Internship",
+    "stand": "Stand",
+    "others": "Other"
+  }
+}

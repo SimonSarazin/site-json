@@ -1,3 +1,4 @@
+import "../i18n"; // side-effect : enregistre le namespace i18n "modules/agenda"
 import type { AgendaSectionProps } from "../schema";
 import Agenda from "../Agenda";
 

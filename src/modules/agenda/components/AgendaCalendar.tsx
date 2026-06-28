@@ -10,6 +10,8 @@ import { EVENT_CALENDARS } from "../constants/eventTypeColors";
 export interface AgendaCalendarProps {
   events: Event[];
   onEventClick: (event: Event) => void;
+  /** Plage visible (mois affiché) → le parent refetch `searchEventsCostum` sur cette plage. */
+  onRangeChange?: (start: Date, end: Date) => void;
   locale?: string;
 }
 
@@ -18,7 +20,7 @@ export interface AgendaCalendarProps {
  * les occurrences déjà dépliées par `searchEventsCostum` ; clic event → `onEventClick(Event)` (→ détail réutilisé).
  * Composant CLIENT-ONLY (rendu lazy par le conteneur) : schedule-x (preact/DOM/Temporal) ne tourne pas en SSR.
  */
-export default function AgendaCalendar({ events, onEventClick, locale = "fr-FR" }: AgendaCalendarProps) {
+export default function AgendaCalendar({ events, onEventClick, onRangeChange, locale = "fr-FR" }: AgendaCalendarProps) {
   const eventsService = useMemo(() => createEventsServicePlugin(), []);
   const { calendarEvents, entityMap } = useMemo(() => mapEventsToCalendar(events), [events]);
 
@@ -27,6 +29,8 @@ export default function AgendaCalendar({ events, onEventClick, locale = "fr-FR" 
   entityMapRef.current = entityMap;
   const onClickRef = useRef(onEventClick);
   onClickRef.current = onEventClick;
+  const onRangeRef = useRef(onRangeChange);
+  onRangeRef.current = onRangeChange;
 
   const calendar = useCalendarApp(
     {
@@ -38,6 +42,10 @@ export default function AgendaCalendar({ events, onEventClick, locale = "fr-FR" 
         onEventClick: (e) => {
           const ent = entityMapRef.current.get(String(e.id));
           if (ent) onClickRef.current(ent);
+        },
+        // Fire à l'init + à chaque navigation (mois/semaine) → le parent refetch la plage visible.
+        onRangeUpdate: (range) => {
+          onRangeRef.current?.(new Date(range.start.epochMilliseconds), new Date(range.end.epochMilliseconds));
         },
       },
     },
