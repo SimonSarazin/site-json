@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useCocolight } from "@/hooks/useCocolight";
 import type { Event } from "@communecter/cocolight-api-client";
 import { AGENDA_QUERY_KEYS } from "../constants/queryKeys";
-import { buildAgendaCalendarParams } from "../lib/buildAgendaParams";
+import { agendaBaseSig, buildAgendaCalendarParams, type AgendaBaseParams } from "../lib/buildAgendaParams";
 
 export interface UseAgendaCalendarParams {
   /** Bornes de la période demandée (mode CALENDRIER de `searchEventsCostum` → récurrence dépliée). */
@@ -12,15 +12,17 @@ export interface UseAgendaCalendarParams {
   type?: string;
   /** Recherche texte (name) — filtre backend. */
   name?: string;
+  /** Scope/filtres de la section (sourceKey multi, fediverse, filters…) — même convention que search. */
+  baseParams?: AgendaBaseParams;
   enabled?: boolean;
 }
 
 /**
- * Events d'un costum sur une plage (mode CALENDRIER de `searchEventsCostum` : récurrents dépliés,
- * triés par occurrence, **une seule page**). Sert la grille calendrier ET les onglets À venir/En cours.
- * La plage/type/name sont dans la queryKey → refetch auto à la navigation/filtre. Scope costum auto (sourceKey=[slug]).
+ * Events sur une plage (mode CALENDRIER de `searchEventsCostum` : récurrents dépliés, triés par
+ * occurrence, **une seule page**). Sert la grille calendrier ET les onglets À venir/En cours.
+ * plage/type/name/baseParams dans la queryKey → refetch auto. Scope = baseParams.sourceKey sinon costum courant.
  */
-export function useAgendaCalendar({ rangeStart, rangeEnd, type, name, enabled = true }: UseAgendaCalendarParams) {
+export function useAgendaCalendar({ rangeStart, rangeEnd, type, name, baseParams, enabled = true }: UseAgendaCalendarParams) {
   const { entity } = useCocolight();
   const scope = (entity as { serverData?: { slug?: string } } | null)?.serverData?.slug;
 
@@ -31,12 +33,13 @@ export function useAgendaCalendar({ rangeStart, rangeEnd, type, name, enabled = 
       rangeEnd: rangeEnd.toISOString(),
       type,
       name,
+      base: agendaBaseSig(baseParams),
     }),
     queryFn: async (): Promise<Event[]> => {
       if (!entity) throw new Error("API non initialisée - entity manquante");
       try {
         const page = await entity.searchEventsCostum(
-          buildAgendaCalendarParams(rangeStart, rangeEnd, { type, name }),
+          buildAgendaCalendarParams(rangeStart, rangeEnd, { type, name }, baseParams),
         );
         return page.results;
       } catch (e) {

@@ -42,6 +42,7 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
     tabs = ["upcoming", "ongoing", "past"],
     defaultTab = "upcoming",
     upcomingWindowMonths = 12,
+    baseParams,
     filters,
     detailsMode = "drawer",
     columns,
@@ -93,9 +94,10 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
     rangeEnd: upcomingEnd,
     type: typeParam,
     name: nameParam,
+    baseParams,
     enabled: hydrated && mode === "list",
   });
-  const pastFetch = useAgendaList({ type: typeParam, name: nameParam, enabled: hydrated && mode === "list" });
+  const pastFetch = useAgendaList({ type: typeParam, name: nameParam, baseParams, enabled: hydrated && mode === "list" });
   // Calendrier : plage = mois visible (refetch à la navigation via onRangeChange).
   const [calRange, setCalRange] = useState(() => ({ start: startOfMonth(now), end: endOfMonth(now) }));
   const gridFetch = useAgendaCalendar({
@@ -103,6 +105,7 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
     rangeEnd: calRange.end,
     type: typeParam,
     name: nameParam,
+    baseParams,
     enabled: hydrated && mode === "calendar",
   });
 

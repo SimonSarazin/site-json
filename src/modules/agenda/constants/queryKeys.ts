@@ -6,8 +6,8 @@ export const AGENDA_QUERY_KEYS = {
    * coïncident serveur↔client (pas de mismatch d'hydratation sur une plage qui dépend de `now`).
    */
   CLOCK: (windowMonths: number) => ["agenda", "clock", windowMonths] as const,
-  CALENDAR: (p: { scope?: string; rangeStart: string; rangeEnd: string; type?: string; name?: string }) =>
-    ["agenda", "calendar", p.scope ?? "", p.rangeStart, p.rangeEnd, p.type ?? "", p.name ?? ""] as const,
-  LIST: (p: { scope?: string; type?: string; name?: string }) =>
-    ["agenda", "list", p.scope ?? "", p.type ?? "", p.name ?? ""] as const,
+  CALENDAR: (p: { scope?: string; rangeStart: string; rangeEnd: string; type?: string; name?: string; base?: string }) =>
+    ["agenda", "calendar", p.scope ?? "", p.rangeStart, p.rangeEnd, p.type ?? "", p.name ?? "", p.base ?? ""] as const,
+  LIST: (p: { scope?: string; type?: string; name?: string; base?: string }) =>
+    ["agenda", "list", p.scope ?? "", p.type ?? "", p.name ?? "", p.base ?? ""] as const,
 };

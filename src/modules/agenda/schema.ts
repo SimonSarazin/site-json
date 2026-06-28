@@ -23,6 +23,23 @@ export const AgendaSectionSchema = z.object({
     defaultTab: z.enum(AGENDA_TABS).default("upcoming"),
     /** Fenêtre (mois) du fetch CALENDRIER now→futur pour À venir/En cours. */
     upcomingWindowMonths: z.number().int().positive().default(12),
+    /**
+     * Scope & filtres backend de `searchEventsCostum` — MÊME convention que `searchProStatic.baseParams`
+     * (page /evenements). Champs repris : `sourceKey` (multi-sources ; vide → costum courant),
+     * `indexStepList` (pagination liste), `fediverse`, `filters`, `locality`. Les autres clés (ex.
+     * `defaultFields`/`defaultSortBy`/`defaultTypes`) sont tolérées (passthrough) mais ignorées :
+     * searchEventsCostum force `searchType=["events"]` et trie par occurrence.
+     */
+    baseParams: z
+      .object({
+        sourceKey: z.array(z.string()).optional(),
+        indexStepList: z.number().int().positive().optional(),
+        fediverse: z.boolean().optional(),
+        filters: z.record(z.string(), z.unknown()).optional(),
+        locality: z.record(z.string(), z.unknown()).optional(),
+      })
+      .passthrough()
+      .optional(),
     /** Filtres activés. */
     filters: z.object({ type: z.boolean(), text: z.boolean(), tags: z.boolean() }).partial().optional(),
     /** Conteneur du détail au clic. */
