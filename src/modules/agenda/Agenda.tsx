@@ -1,15 +1,15 @@
 import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import { endOfMonth, startOfMonth } from "date-fns";
-import { ArrowRight, CalendarDays, List, Loader2, MapPin, Search, SlidersHorizontal } from "lucide-react";
+import { ArrowRight, CalendarDays, ChevronDown, List, Loader2, MapPin, Search, SlidersHorizontal } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { EVENT_TYPES, type SearchEntity } from "@communecter/cocolight-api-client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { MultiCombobox } from "@/components/ui/multi-combobox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetClose, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useHydrated } from "@/hooks/useHydrated";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -195,7 +195,7 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
 
   const renderTypeSelect = () => (
     <Select value={type === "" ? TYPE_ALL : type} onValueChange={(v) => setType(v === TYPE_ALL ? "" : v)}>
-      <SelectTrigger className="h-11 w-full rounded-xl border-border bg-muted/60! text-foreground shadow-sm dark:bg-muted/50! lg:w-auto lg:min-w-[170px]">
+      <SelectTrigger className="h-11! w-full rounded-xl border-border bg-muted/60! text-foreground shadow-sm dark:bg-muted/50! lg:w-auto lg:min-w-[170px]">
         <SelectValue placeholder={t("filters.allTypes")} />
       </SelectTrigger>
       <SelectContent>
@@ -207,20 +207,31 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
     </Select>
   );
 
-  const renderTags = () =>
+  // Tags : multi-select (réutilise `MultiCombobox` ui/, comme les filtres de search) au lieu d'une
+  // rangée de chips-toggle → unité de style (dropdown shadcn aligné sur le type, même hauteur).
+  const renderTagsSelect = () =>
     availableTags.length > 0 ? (
-      <div className="flex flex-wrap gap-2">
-        {availableTags.map((tag) => (
-          <Badge
-            key={tag}
-            variant={selectedTags.includes(tag) ? "default" : "outline"}
-            className={cn("cursor-pointer select-none")}
-            onClick={() => toggleTag(tag)}
-          >
-            #{tag}
-          </Badge>
-        ))}
-      </div>
+      <MultiCombobox
+        options={availableTags.map((tag) => ({ id: tag, label: tag }))}
+        selected={selectedTags}
+        onToggle={toggleTag}
+        allLabel={t("filters.allTags")}
+        onClear={() => setSelectedTags([])}
+      >
+        <Button
+          variant="outline"
+          className="h-11! w-full justify-between rounded-xl border-border bg-muted/60! px-3 font-normal text-foreground shadow-sm hover:bg-muted! dark:bg-muted/50! lg:w-auto lg:min-w-[150px]"
+        >
+          <span className="truncate">
+            {selectedTags.length === 0
+              ? t("filters.tags")
+              : selectedTags.length === 1
+                ? selectedTags[0]
+                : `${selectedTags.length} ${t("filters.tags").toLowerCase()}`}
+          </span>
+          <ChevronDown className="ml-1 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </MultiCombobox>
     ) : null;
 
   return (
@@ -281,8 +292,9 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
 
           {hasFilters && (
             <>
-              {/* Desktop : type inline */}
+              {/* Desktop : type + tags inline (dropdowns shadcn, même hauteur que la recherche) */}
               {showType && <div className="hidden shrink-0 lg:block">{renderTypeSelect()}</div>}
+              {showTags && <div className="hidden shrink-0 lg:block">{renderTagsSelect()}</div>}
 
               {/* Mobile : bouton « Filtres » → Sheet bas (type + tags) */}
               <div className="w-full lg:hidden">
@@ -316,7 +328,7 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
                       {showTags && availableTags.length > 0 && (
                         <div className="flex flex-col gap-1.5">
                           <span className="text-xs font-medium text-muted-foreground">{t("filters.tags")}</span>
-                          {renderTags()}
+                          {renderTagsSelect()}
                         </div>
                       )}
                     </div>
@@ -337,9 +349,6 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
           )}
         </div>
       )}
-
-      {/* Tags : desktop seulement (mobile = dans le Sheet) */}
-      {showTags && availableTags.length > 0 && <div className="mb-6 hidden lg:block">{renderTags()}</div>}
 
       {!hydrated ? (
         // Squelette identique serveur ↔ 1ᵉʳ render client → hydratation propre, puis montage du contenu.
