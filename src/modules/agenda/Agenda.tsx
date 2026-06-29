@@ -2,7 +2,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { lazy } from "vite-preload";
 import { Link, useSearchParams } from "react-router";
 import { endOfMonth, startOfMonth } from "date-fns";
-import { ArrowRight, CalendarDays, ChevronDown, List, Loader2, MapPin, Search, SlidersHorizontal } from "lucide-react";
+import { ArrowRight, CalendarDays, ChevronDown, List, Loader2, MapPin, RotateCcw, Search, SlidersHorizontal, X } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { EVENT_TYPES, type SearchEntity } from "@communecter/cocolight-api-client";
 import { Input } from "@/components/ui/input";
@@ -18,9 +18,8 @@ import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import { SwitchDetailsMode } from "@/modules/search/components/SwitchDetailsMode";
 import SearchListView from "@/modules/search/components/SearchListView";
-import ActiveFiltersBar from "@/modules/search/components/ActiveFiltersBar";
 import { SearchPropsProvider } from "@/modules/search/contexts/SearchPropsProvider";
-import type { ListConf, SearchProStaticSectionProps, TagsFilter } from "@/modules/search/schema";
+import type { ListConf, SearchProStaticSectionProps } from "@/modules/search/schema";
 import AgendaList from "./components/AgendaList";
 import { useAgendaCalendar } from "./hooks/useAgendaCalendar";
 import { useAgendaList } from "./hooks/useAgendaList";
@@ -188,16 +187,6 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
     () => ({ list: { card, preview, columns } }) as unknown as SearchProStaticSectionProps,
     [card, preview, columns],
   );
-  // Chips de filtres actifs (type + tags) via ActiveFiltersBar de search : `list` mappe value→libellé
-  // (type → "Foire"… ; tags : value=libellé, list vide → repli sur la valeur).
-  const activeFilters = useMemo<Record<string, TagsFilter>>(
-    () => ({
-      type: { type: "type", name: "Type", list: Object.fromEntries(EVENT_TYPES.map((et) => [et, t(`eventType.${et}`)])) },
-      tags: { type: "tags", name: "Tags", list: {} },
-    }),
-    [t],
-  );
-
   const toggleTag = (tag: string) =>
     setSelectedTags((prev) => (prev.includes(tag) ? prev.filter((x) => x !== tag) : [...prev, tag]));
 
@@ -210,7 +199,7 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
 
   const renderTypeSelect = () => (
     <Select value={type === "" ? TYPE_ALL : type} onValueChange={(v) => setType(v === TYPE_ALL ? "" : v)}>
-      <SelectTrigger className="h-11! w-full rounded-xl border-border bg-muted/60! text-foreground shadow-sm dark:bg-muted/50! lg:w-auto lg:min-w-[170px]">
+      <SelectTrigger className="h-11! w-full rounded-xl border-border bg-muted/60! text-foreground shadow-sm hover:border-primary/50 hover:bg-muted! dark:bg-muted/50! dark:hover:bg-muted/70! lg:w-auto lg:min-w-[170px]">
         <SelectValue placeholder={t("filters.allTypes")} />
       </SelectTrigger>
       <SelectContent>
@@ -232,10 +221,11 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
         onToggle={toggleTag}
         allLabel={t("filters.allTags")}
         onClear={() => setSelectedTags([])}
+        contentClassName="w-72"
       >
         <Button
           variant="outline"
-          className="h-11! w-full justify-between rounded-xl border-border bg-muted/60! px-3 font-normal text-foreground shadow-sm hover:bg-muted! dark:bg-muted/50! lg:w-auto lg:min-w-[150px]"
+          className="h-11! w-full justify-between rounded-xl border-border bg-muted/60! px-3 font-normal text-foreground shadow-sm hover:border-primary/50 hover:bg-muted! hover:text-foreground dark:bg-muted/50! dark:hover:bg-muted/70! lg:w-auto lg:min-w-[150px] lg:max-w-full"
         >
           <span className="truncate">
             {selectedTags.length === 0
@@ -325,6 +315,22 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
               {showType && <div className="hidden shrink-0 lg:block">{renderTypeSelect()}</div>}
               {showTags && <div className="hidden shrink-0 lg:block">{renderTagsSelect()}</div>}
 
+              {/* Desktop : compteur + Réinitialiser inline (comme SearchHeaderSection) */}
+              {activeFilterCount > 0 && (
+                <div className="hidden shrink-0 items-center gap-2 lg:flex">
+                  <Badge className="rounded-full px-2">{activeFilterCount}</Badge>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => { setType(""); setSelectedTags([]); }}
+                    className="h-9 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    <RotateCcw className="h-3 w-3" /> {t("filters.reset")}
+                  </Button>
+                </div>
+              )}
+
               {/* Mobile : bouton « Filtres » → Sheet bas (type + tags) */}
               <div className="w-full lg:hidden">
                 <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
@@ -379,20 +385,40 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
         </div>
       )}
 
-      {/* Chips de filtres actifs (type + tags), removables — composant ActiveFiltersBar de search.
-          Marge basse SEULEMENT quand des chips s'affichent (sinon ActiveFiltersBar rend null →
-          on évite un gap fantôme) : sans ça les chips se collaient aux tabs en dessous. */}
-      <div className={(showType && !!type) || (showTags && selectedTags.length > 0) ? "mb-6" : undefined}>
-        <ActiveFiltersBar
-          filters={activeFilters}
-          showActiveFiltersTypes={showType}
-          showActiveFiltersTags={showTags}
-          filtersSearchType={{ type: type ? [type] : [] }}
-          filtersSearchTags={{ tags: selectedTags }}
-          onRemoveType={() => setType("")}
-          onRemove={(_key, value) => setSelectedTags((prev) => prev.filter((x) => x !== value))}
-        />
-      </div>
+      {/* Chips de filtres actifs (type + tags), supprimables — même encart « pilulier » que
+          SearchHeaderSection (rounded-2xl + bg-card/80 + shadow + backdrop, badges rounded-full
+          + X rond). Affiché uniquement quand un filtre est actif ; mb-6 → ne colle pas aux tabs. */}
+      {((showType && !!type) || (showTags && selectedTags.length > 0)) && (
+        <div className="mt-2 mb-6 flex flex-wrap gap-2 rounded-2xl border border-border/60 bg-card/80 px-3 py-2 shadow-lg backdrop-blur-md">
+          {showType && type && (
+            <Badge className="gap-1 rounded-full py-1 pe-1">
+              {t(`eventType.${type}`)}
+              <button
+                type="button"
+                onClick={() => setType("")}
+                className="-me-0.5 ml-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full hover:bg-primary-foreground/15 hover:text-primary-foreground/80"
+                aria-label={`Supprimer ${t(`eventType.${type}`)}`}
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </Badge>
+          )}
+          {showTags &&
+            selectedTags.map((tag) => (
+              <Badge key={tag} className="gap-1 rounded-full py-1 pe-1">
+                {tag}
+                <button
+                  type="button"
+                  onClick={() => setSelectedTags((prev) => prev.filter((x) => x !== tag))}
+                  className="-me-0.5 ml-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full hover:bg-primary-foreground/15 hover:text-primary-foreground/80"
+                  aria-label={`Supprimer ${tag}`}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </Badge>
+            ))}
+        </div>
+      )}
 
       {!hydrated ? (
         // Squelette identique serveur ↔ 1ᵉʳ render client → hydratation propre, puis montage du contenu.
