@@ -58,30 +58,21 @@
           "fr": "Projets",
           "en": "Projects"
         },
-        "path": "/projets",
-        "visibility": {
-          "auth": "required"
-        }
+        "path": "/projets"
       },
       {
         "label": {
           "fr": "Agenda",
           "en": "Agenda"
         },
-        "path": "/agenda",
-        "visibility": {
-          "auth": "required"
-        }
+        "path": "/agenda"
       },
       {
         "label": {
           "fr": "Communauté",
           "en": "Community"
         },
-        "path": "/communaute",
-        "visibility": {
-          "auth": "required"
-        }
+        "path": "/communaute"
       }
     ],
     "sticky": true,
@@ -1006,8 +997,8 @@
               "tags": true
             },
             "detailsMode": "drawer",
-            "enableMap": true,
-            "mapView": "split",
+            "enableMap": false,
+            "mapView": "map",
             "map": {
               "marker": {
                 "useItemImage": true,
@@ -1018,8 +1009,8 @@
             "columns": {
               "sm": 1,
               "md": 2,
-              "lg": 2,
-              "xl": 2
+              "lg": 3,
+              "xl": 4
             },
             "baseParams": {
               "sourceKey": [
