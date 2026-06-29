@@ -1,4 +1,5 @@
-import { Suspense, lazy, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { lazy } from "vite-preload";
 import { Link, useSearchParams } from "react-router";
 import { endOfMonth, startOfMonth } from "date-fns";
 import { ArrowRight, CalendarDays, ChevronDown, List, Loader2, MapPin, Search, SlidersHorizontal } from "lucide-react";
@@ -34,6 +35,10 @@ import type { AgendaSectionProps, AgendaTab } from "./schema";
 // NOUVEAU tableau à chaque render → `urlDefaults` instable → effet de sync URL en boucle (re-render
 // permanent qui empêche l'effet `useHydrated` de commiter). Cf. bug /evenements.
 const DEFAULT_TABS: AgendaTab[] = ["upcoming", "ongoing", "past"];
+// Split liste+carte : la liste (panneau étroit ~2/5) affiche UNE carte par ligne, comme search
+// (cf. configs search en `defaultViewMode: split` → list.columns {1,1,1,1}). Les `columns` de la
+// section ne s'appliquent qu'aux vues pleine largeur (liste/teaser). Réf. stable.
+const SPLIT_COLUMNS = { sm: 1, md: 1, lg: 1, xl: 1 } as const;
 
 const AgendaCalendar = lazy(() => import("./components/AgendaCalendar"));
 const SearchMapWrapper = lazy(() => import("@/modules/search/components/SearchMapWrapper"));
@@ -272,11 +277,25 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
               <Button variant={mode === "list" ? "default" : "outline"} size="sm" onClick={() => setMode("list")}>
                 <List className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">{t("view.list")}</span>
               </Button>
-              <Button variant={mode === "calendar" ? "default" : "outline"} size="sm" onClick={() => setMode("calendar")}>
+              {/* Préchauffe le chunk au survol/focus (vite-preload `.preload()`) → pas de
+                  flash de squelette au 1ᵉʳ basculement vers la vue. */}
+              <Button
+                variant={mode === "calendar" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setMode("calendar")}
+                onMouseEnter={() => AgendaCalendar.preload()}
+                onFocus={() => AgendaCalendar.preload()}
+              >
                 <CalendarDays className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">{t("view.calendar")}</span>
               </Button>
               {enableMap && (
-                <Button variant={mode === "map" ? "default" : "outline"} size="sm" onClick={() => setMode("map")}>
+                <Button
+                  variant={mode === "map" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setMode("map")}
+                  onMouseEnter={() => SearchMapWrapper.preload()}
+                  onFocus={() => SearchMapWrapper.preload()}
+                >
                   <MapPin className="h-4 w-4 sm:mr-1" />
                   <span className="hidden sm:inline">{isSplit ? t("view.mapSplit") : t("view.map")}</span>
                 </Button>
@@ -399,7 +418,7 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
               ) : (
                 <SearchListView
                   results={mapEvents as unknown as SearchEntity[]}
-                  columns={columns}
+                  columns={SPLIT_COLUMNS}
                   card={card}
                   preview={preview}
                   focusedItemId={focusedItemId}
