@@ -873,9 +873,6 @@
         "en": "Projects - eXtreme Challenge"
       },
       "layout": "fullwidth",
-      "auth": {
-        "required": true
-      },
       "sections": [
         {
           "type": "searchHeader",
@@ -949,9 +946,6 @@
         "en": "Agenda - eXtreme Challenge"
       },
       "layout": "fullwidth",
-      "auth": {
-        "required": true
-      },
       "sections": [
         {
           "type": "searchHeader",
@@ -1029,9 +1023,6 @@
         "en": "Community - eXtreme Challenge"
       },
       "layout": "fullwidth",
-      "auth": {
-        "required": true
-      },
       "sections": [
         {
           "type": "searchHeader",
