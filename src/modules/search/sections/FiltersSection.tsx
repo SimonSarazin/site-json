@@ -4,7 +4,7 @@ import { useLocalization } from "@/hooks/useLocalization";
 import "@/modules/search/i18n";
 import { cn } from "@/lib/utils";
 import type { FiltersSectionProps } from "../schema";
-import { useState, useEffect, useMemo, type ReactElement, type ReactNode } from "react";
+import { useState, useEffect, useMemo, useRef, type ReactElement, type ReactNode } from "react";
 import { Check, ChevronDown, Search, SlidersHorizontal } from "lucide-react";
 import { useFilterToggles } from "../hooks/useFilterToggles";
 import { useFiltersByAnswersQuery } from "../hooks/useFiltersByAnswers";
@@ -14,6 +14,7 @@ import { useFiltersByPathQuery } from "../hooks/useFiltersByPath";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useSearchParams } from "react-router";
 import { computeFiltersFromUrl } from "../lib/computeFiltersFromUrl";
+import { computeUrlFromFilters } from "../lib/computeUrlFromFilters";
 import { SelectField, MultiCheckboxField, MultiField } from "../components/filterFields";
 import { pickFilterField } from "../lib/pickFilterField";
 import { Badge } from "@/components/ui/badge";
@@ -312,7 +313,16 @@ export function FiltersSection({
     setFilterGroups(newFilterGroups);
   }, [propsFiltersGroups, filterZoneData, filterEntityData, setSelectedFilters]);
 
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  // Synchro URL ⇄ filtres. L'URL est un MIROIR écrit en `replace` ; le contexte
+  // `PageFilters` reste la source de vérité.
+  //  - `lastSyncedSearch` mémorise notre dernière écriture → l'effet de lecture
+  //    ignore son propre écho (sinon re-dérivation inutile à chaque clic).
+  //  - `urlHydrated` n'autorise l'écriture qu'APRÈS la 1ʳᵉ lecture : au montage,
+  //    l'état est encore vide et écrirait une URL nue, effaçant un éventuel
+  //    deep-link `?reseauxRegionaux=…` avant qu'il soit hydraté.
+  const lastSyncedSearch = useRef<string | null>(null);
+  const [urlHydrated, setUrlHydrated] = useState(false);
 
   // Recherche texte reportée depuis l'URL (`?search=`) — ex. lien « voir sur /lieux »
   // de la home, qui transporte la saisie texte en plus des filtres catégorie.
@@ -325,8 +335,14 @@ export function FiltersSection({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
+  // URL → état. Continu (deep-link, liens d'accueil, back/forward) mais on saute
+  // nos propres écritures (écho) repérées via `lastSyncedSearch`.
   useEffect(() => {
     if (filterGroups.length === 0 && !filterAnswerData) return;
+    if (searchParams.toString() === lastSyncedSearch.current) {
+      if (!urlHydrated) setUrlHydrated(true);
+      return;
+    }
     const { applySelected, applySearchFields } = computeFiltersFromUrl(
       searchParams,
       filterGroups,
@@ -334,8 +350,23 @@ export function FiltersSection({
     );
     setSelectedFilters(applySelected);
     setSearchByFields(applySearchFields);
+    if (!urlHydrated) setUrlHydrated(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, filterGroups, filterAnswerData]);
+
+  // état → URL. Miroir des filtres (texte `search`, category, entityList,
+  // scopeList — cf. computeUrlFromFilters). Démarre seulement après l'hydratation
+  // initiale et n'écrit que sur changement réel (comparaison de chaîne) → pas de
+  // boucle avec l'effet de lecture.
+  useEffect(() => {
+    if (!urlHydrated) return;
+    const next = computeUrlFromFilters(searchParams, selectedFilters, searchByFields, filterGroups, searchQuery, filterAnswerData);
+    const nextStr = next.toString();
+    if (nextStr === searchParams.toString()) return;
+    lastSyncedSearch.current = nextStr;
+    setSearchParams(next, { replace: true, preventScrollReset: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedFilters, searchByFields, filterGroups, searchQuery, filterAnswerData, searchParams, urlHydrated]);
 
   const clearFilters = () => {
     clearFiltersContext();
@@ -535,11 +566,20 @@ export function FiltersSection({
                 label={t(option.label)}
                 variant={group.optionStyle}
                 selected={isFilterSelected(group.id, filterName)}
-                onToggle={() =>
-                  group.type === "scopeList"
-                    ? toggleFilter(group.id, filterName, group.field ?? `${option.id}${option.level}`, filterName, option.level as ScopeLevel)
-                    : toggleFilter(group.id, filterName)
-                }
+                onToggle={() => {
+                  if (group.type === "scopeList") {
+                    toggleFilter(group.id, filterName, group.field ?? `${option.id}${option.level}`, filterName, option.level as ScopeLevel);
+                  } else if (group.type === "entityList") {
+                    // entityList → searchByFields (type sourceKey), à l'identique
+                    // de computeFiltersFromUrl (chemin URL ?reseauxRegionaux=…).
+                    // Sans ça le clic rangeait le réseau dans selectedFilters et
+                    // le sourceKey n'était jamais envoyé à l'API.
+                    const fType = group.filterType ?? "sourceKey";
+                    toggleFilter(group.id, filterName, fType, filterName, null, fType);
+                  } else {
+                    toggleFilter(group.id, filterName);
+                  }
+                }}
               />
             );
           };
@@ -572,6 +612,9 @@ export function FiltersSection({
                 const option = (group.options ?? []).find((o) => (o.name || o.id) === name);
                 if (group.type === "scopeList" && option) {
                   toggleFilter(group.id, name, group.field ?? `${option.id}${option.level}`, name, option.level as ScopeLevel);
+                } else if (group.type === "entityList") {
+                  const fType = group.filterType ?? "sourceKey";
+                  toggleFilter(group.id, name, fType, name, null, fType);
                 } else {
                   toggleFilter(group.id, name);
                 }
@@ -666,7 +709,7 @@ export function FiltersSection({
               <Button
                 key={group}
                 variant="ghost"
-                onClick={() => toggleFilter(group, group, "_id", singleValue.orgaNameArray)}
+                onClick={() => toggleFilter(group, singleKey, "_id", singleValue.orgaNameArray)}
                 className="h-auto w-full justify-between rounded-none border-b border-border py-3 text-sm font-normal hover:bg-muted"
               >
                 {headerLabel}

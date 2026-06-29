@@ -102,8 +102,12 @@
     letter-spacing: var(--tracking-normal);
   }
 
+  /* Titres en police de titrage (slot `serif` du thème = Space Grotesk),
+     géométrique/techy ; le corps de texte reste en `--font-sans` (Inter). */
   h1, h2, h3, h4, h5, h6 {
     @apply text-foreground;
+    font-family: var(--font-serif);
+    letter-spacing: -0.01em;
   }
 
   p {
@@ -306,192 +310,25 @@ html {
 }
 
 /* ==========================================
-   Extreme Defi (ADEME) - Theme bleu clair
-   ========================================== */
+   eXtrême Défi (ADEME) — surcharges du thème
+   ==========================================
+   Les particularités « océan » (rezo-la-mer) ont été retirées : palette
+   ocean / turquoise / coral, classes btn-ocean, card-ocean, bg-wave-gradient,
+   text-ocean-gradient, animate-wave, divider-ocean, shimmer et leurs
+   surcharges .dark. Tous les effets de section/header (animations float,
+   shadow-glow, text-shadow-glow, --gradient-section…) proviennent désormais de
+   styles/shared.css, DÉRIVÉS des tokens de thème (primary/accent/secondary)
+   injectés au runtime → lisibles en mode clair ET sombre sans réglage par mode. */
 
-/* Palette bleue - primaire #1d4ed8 (bleu vif) sur fond clair.
-   Vars « ocean » héritées du modèle rezo-la-mer, réglées en bleu. */
+/* Seul ajustement conservé : la bande des searchHeader (projets/agenda/
+   communauté). Le dégradé est bâti sur secondary/muted, qui suivent le
+   contraste du `text-foreground` dans les deux modes (pâle en clair, sombre en
+   sombre) → titre/sous-titre toujours lisibles. Léger voile primary pour
+   garder l'identité bleue ADEME. */
 :root {
-  /* Deep ocean blues */
-  --ocean-deep: oklch(0.25 0.08 230);
-  --ocean-mid: oklch(0.40 0.12 220);
-  --ocean-light: oklch(0.55 0.14 210);
-
-  /* Surface and foam - lighter blues */
-  --ocean-surface: oklch(0.70 0.14 256);
-  --ocean-foam: oklch(0.90 0.06 254);
-
-  /* Text colors */
-  --ocean-text-light: oklch(0.95 0.02 200);
-  --ocean-text-muted: oklch(0.82 0.03 210);
-
-  /* Blue accents */
-  --turquoise: oklch(0.488 0.243 264.376);
-  --turquoise-light: oklch(0.80 0.12 258);
-  --cyan-bright: oklch(0.70 0.17 262);
-
-  /* Coral/warm accent for contrast */
-  --coral: oklch(0.685 0.17 42);
-  --sand: oklch(0.92 0.05 85);
-
-  /* Ocean shadows and effects */
-  --shadow-ocean: 0 10px 40px -10px oklch(0.25 0.08 230 / 0.5);
-  --shadow-glow: 0 0 30px oklch(0.488 0.243 264.376 / 0.4);
-}
-
-@theme inline {
-  --color-ocean-deep: var(--ocean-deep);
-  --color-ocean-mid: var(--ocean-mid);
-  --color-ocean-light: var(--ocean-light);
-  --color-ocean-surface: var(--ocean-surface);
-  --color-ocean-foam: var(--ocean-foam);
-  --color-ocean-text-light: var(--ocean-text-light);
-  --color-ocean-text-muted: var(--ocean-text-muted);
-  --color-turquoise: var(--turquoise);
-  --color-turquoise-light: var(--turquoise-light);
-  --color-cyan-bright: var(--cyan-bright);
-  --color-coral: var(--coral);
-  --color-sand: var(--sand);
-}
-
-.bg-wave-gradient {
-  background: linear-gradient(180deg, oklch(0.55 0.14 210 / 0.1), oklch(0.488 0.243 264.376 / 0.2));
-}
-
-.bg-ocean-surface {
-  background: linear-gradient(180deg, var(--ocean-surface), var(--turquoise-light));
-}
-
-/* Text gradient ocean effect */
-.text-ocean-gradient {
-  background: linear-gradient(135deg, var(--turquoise), var(--cyan-bright), var(--ocean-light));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Ocean card styles */
-.card-ocean {
-  background: oklch(0.25 0.08 230 / 0.3);
-  backdrop-filter: blur(12px);
-  border: 1px solid oklch(0.488 0.243 264.376 / 0.2);
-}
-
-.card-ocean-light {
-  background: oklch(1 0 0 / 0.05);
-  backdrop-filter: blur(12px);
-  border: 1px solid oklch(0.488 0.243 264.376 / 0.1);
-}
-
-/* Ocean animations */
-@keyframes wave {
-  0% {
-    transform: translateX(0) translateZ(0) scaleY(1);
-  }
-  50% {
-    transform: translateX(-25%) translateZ(0) scaleY(0.55);
-  }
-  100% {
-    transform: translateX(-50%) translateZ(0) scaleY(1);
-  }
-}
-
-.animate-wave {
-  animation: wave 7s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
-}
-
-/* Pulse animation for badges */
-.pulse {
-  animation: pulse-badge 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse-badge {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
-/* Ripple effect for ocean buttons */
-@keyframes ripple {
-  0% {
-    transform: scale(0);
-    opacity: 0.5;
-  }
-  100% {
-    transform: scale(4);
-    opacity: 0;
-  }
-}
-
-.btn-ocean {
-  position: relative;
-  overflow: hidden;
-  background: var(--turquoise);
-  color: var(--ocean-deep);
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.btn-ocean:hover {
-  box-shadow: var(--shadow-glow);
-  transform: translateY(-2px);
-}
-
-.btn-ocean-outline {
-  background: transparent;
-  border: 2px solid var(--turquoise);
-  color: var(--turquoise);
-}
-
-.btn-ocean-outline:hover {
-  background: oklch(0.488 0.243 264.376 / 0.1);
-  box-shadow: var(--shadow-glow);
-}
-
-/* Shimmer effect for highlights */
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.shimmer {
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    oklch(0.488 0.243 264.376 / 0.3) 50%,
-    transparent 100%
+  --gradient-section: linear-gradient(
+    135deg,
+    var(--secondary),
+    color-mix(in oklch, var(--primary) 8%, var(--muted))
   );
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
-}
-
-/* Ocean divider */
-.divider-ocean {
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--turquoise), transparent);
-}
-
-/* Ocean dark mode overrides */
-.dark {
-  --ocean-deep: oklch(0.15 0.06 230);
-  --ocean-mid: oklch(0.25 0.10 220);
-  --ocean-light: oklch(0.40 0.12 210);
-  --ocean-surface: oklch(0.55 0.14 256);
-  --ocean-foam: oklch(0.75 0.10 254);
-  --shadow-ocean: 0 10px 40px -10px oklch(0.10 0.06 230 / 0.7);
-  --shadow-glow: 0 0 40px oklch(0.488 0.243 264.376 / 0.5);
-}
-
-/* Surcharges des tokens partagés (styles/shared.css) — valeurs du thème. */
-:root {
-  --shadow-deep: 0 25px 50px -12px oklch(0.25 0.08 230 / 0.6);
-  --gradient-section: linear-gradient(135deg, var(--ocean-deep), var(--ocean-mid), var(--ocean-light));
-  --text-shadow-glow: 0 0 20px oklch(0.488 0.243 264.376 / 0.5), 0 0 40px oklch(0.488 0.243 264.376 / 0.3);
 }
