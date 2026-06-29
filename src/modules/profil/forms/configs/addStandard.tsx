@@ -4,7 +4,10 @@
  */
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import type { FieldValues } from "react-hook-form";
+import type { QueryKey } from "@tanstack/react-query";
 import { PROFIL_QUERY_KEYS } from "../../constants";
+import { SEARCH_QUERY_KEYS } from "@/modules/search/constants";
+import { AGENDA_QUERY_KEYS } from "@/modules/agenda/constants/queryKeys";
 import { ParentInfoReadonly } from "../../components/profile-edit/fields";
 import { addPoiDescriptor } from "../addPoi.descriptor";
 import { MERGED_ADD_PROJECT, MERGED_ADD_ORGANIZATION, buildMergedAddEvent } from "../profilMerged";
@@ -17,6 +20,19 @@ const parentSlot = (parent: EntityTypes | null | undefined, organizerLabelKey?: 
   organizerInfo: <ParentInfoReadonly parent={parent ?? null} labelKey={organizerLabelKey} />,
 });
 const ADDR_EMPTY = { addressCountry: "", addressLocality: "", localityId: "", postalCode: "", streetAddress: "" };
+
+// Listes de RECHERCHE (annuaire/carte) à rafraîchir après toute création/édition — préfixes FIXES
+// (cf. SearchProStatic "searchCostumStatic"/"…MapAll", SearchPro "searchCostum"/"…MapAll", CardCount).
+// Sans ça, la liste search (ex. /projets) reste périmée au retour : la mutation n'invalidait que les
+// listes du PROFIL (USER_*_PREFIX), pas la query search. RESULTS_PREFIX = partial-match → toutes les
+// variations de filtres ; invalidation niveau queryClient → persiste malgré le navigate post-création.
+const SEARCH_LISTS_INVALIDATION: QueryKey[] = [
+  SEARCH_QUERY_KEYS.RESULTS_PREFIX("searchCostumStatic"),
+  SEARCH_QUERY_KEYS.RESULTS_PREFIX("searchCostumStaticMapAll"),
+  SEARCH_QUERY_KEYS.RESULTS_PREFIX("searchCostum"),
+  SEARCH_QUERY_KEYS.RESULTS_PREFIX("searchCostumMapAll"),
+  SEARCH_QUERY_KEYS.RESULTS_PREFIX("cardCountCT"),
+];
 
 export const addPoiConfig: EntityModalConfig = {
   descriptor: addPoiDescriptor,
@@ -35,6 +51,7 @@ export const addPoiConfig: EntityModalConfig = {
       invalidateQueries: [
         ...(target ? [PROFIL_QUERY_KEYS.USER_POIS_PREFIX(target.slug)] : []),
         ...(parent ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(parent.slug)] : []),
+        ...SEARCH_LISTS_INVALIDATION,
       ],
     };
   },
@@ -60,6 +77,7 @@ export const addProjectConfig: EntityModalConfig = {
       invalidateQueries: [
         ...(target ? [PROFIL_QUERY_KEYS.USER_PROJECTS_PREFIX(target.slug)] : []),
         ...(parent ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(parent.slug)] : []),
+        ...SEARCH_LISTS_INVALIDATION,
       ],
     };
   },
@@ -81,7 +99,10 @@ export const addOrganizationConfig: EntityModalConfig = {
       buildPayload: (d) => buildPayload({ descriptor: MERGED_ADD_ORGANIZATION }, d),
       inject: { role: true, dropEmptyEmail: true },
       successKey: "toast.add.organizationSuccess", errorKey: "toast.add.organizationError", errorContext: "EntityFormModal · ADD_ORGANIZATION",
-      invalidateQueries: target ? [PROFIL_QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(target.slug)] : [],
+      invalidateQueries: [
+        ...(target ? [PROFIL_QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(target.slug)] : []),
+        ...SEARCH_LISTS_INVALIDATION,
+      ],
     };
   },
 };
@@ -115,6 +136,10 @@ export const addEventConfig: EntityModalConfig = {
       invalidateQueries: [
         ...(target ? [PROFIL_QUERY_KEYS.USER_EVENTS_PREFIX(target.slug)] : []),
         ...(parent ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(parent.slug)] : []),
+        ...SEARCH_LISTS_INVALIDATION,
+        // Un event s'affiche aussi dans le module agenda (clés propres) → on rafraîchit calendrier + liste.
+        AGENDA_QUERY_KEYS.CALENDAR_PREFIX(),
+        AGENDA_QUERY_KEYS.LIST_PREFIX(),
       ],
     };
   },
