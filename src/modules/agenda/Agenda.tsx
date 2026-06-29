@@ -379,16 +379,20 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
         </div>
       )}
 
-      {/* Chips de filtres actifs (type + tags), removables — composant ActiveFiltersBar de search */}
-      <ActiveFiltersBar
-        filters={activeFilters}
-        showActiveFiltersTypes={showType}
-        showActiveFiltersTags={showTags}
-        filtersSearchType={{ type: type ? [type] : [] }}
-        filtersSearchTags={{ tags: selectedTags }}
-        onRemoveType={() => setType("")}
-        onRemove={(_key, value) => setSelectedTags((prev) => prev.filter((x) => x !== value))}
-      />
+      {/* Chips de filtres actifs (type + tags), removables — composant ActiveFiltersBar de search.
+          Marge basse SEULEMENT quand des chips s'affichent (sinon ActiveFiltersBar rend null →
+          on évite un gap fantôme) : sans ça les chips se collaient aux tabs en dessous. */}
+      <div className={(showType && !!type) || (showTags && selectedTags.length > 0) ? "mb-6" : undefined}>
+        <ActiveFiltersBar
+          filters={activeFilters}
+          showActiveFiltersTypes={showType}
+          showActiveFiltersTags={showTags}
+          filtersSearchType={{ type: type ? [type] : [] }}
+          filtersSearchTags={{ tags: selectedTags }}
+          onRemoveType={() => setType("")}
+          onRemove={(_key, value) => setSelectedTags((prev) => prev.filter((x) => x !== value))}
+        />
+      </div>
 
       {!hydrated ? (
         // Squelette identique serveur ↔ 1ᵉʳ render client → hydratation propre, puis montage du contenu.
