@@ -36,6 +36,9 @@ const PreviewEvent: React.FC<PreviewProps> = ({ item }) => {
   const timeLine = startDate
     ? `${format(startDate, "p", { locale })}${endDate ? ` – ${format(endDate, "p", { locale })}` : ""}`
     : null;
+  // Vignette « calendrier » (jour + mois) posée sur l'image.
+  const dayNum = startDate ? format(startDate, "d", { locale }) : null;
+  const monthAbbr = startDate ? format(startDate, "LLL", { locale }) : null;
 
   // Compteur participants RÉACTIF : on s'abonne à `links` via le proxy réactif cocolight
   // (useReactiveProperty → useSyncExternalStore). Même pattern que useFormatProfileEntity
@@ -77,40 +80,54 @@ const PreviewEvent: React.FC<PreviewProps> = ({ item }) => {
             }}
             className="object-cover w-full h-full"
           />
+          {dayNum && (
+            <div className="absolute left-3 top-3 flex flex-col items-center rounded-lg bg-background/95 px-3 py-1.5 shadow-md ring-1 ring-border backdrop-blur">
+              <span className="text-xl font-bold leading-none text-foreground">{dayNum}</span>
+              {monthAbbr && (
+                <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{monthAbbr}</span>
+              )}
+            </div>
+          )}
         </AspectRatio>
       </CardHeader>
 
       <Separator />
 
       <CardContent className="px-4 py-4 space-y-5">
-        <div className="space-y-2">
-          <h2 className="text-2xl font-bold">{name}</h2>
-          {dateLine && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4 text-accent shrink-0" /><span>{dateLine}</span>
-            </div>
-          )}
-          {timeLine && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Clock className="h-4 w-4 text-accent shrink-0" /><span>{timeLine}</span>
-            </div>
-          )}
-          {displayAddress && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <MapPin className="h-4 w-4 text-accent shrink-0" /><span>{displayAddress}</span>
-            </div>
-          )}
-          {organizerName && (
-            <div className="text-sm text-muted-foreground">
-              {t("Organisé par")} <span className="font-medium text-foreground">{organizerName}</span>
-            </div>
-          )}
-          {attendeesCount > 0 && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Users className="h-4 w-4 text-accent shrink-0" /><span>{attendeesCount} {t("participant·es")}</span>
-            </div>
-          )}
-        </div>
+        <h2 className="text-2xl font-bold">{name}</h2>
+
+        {(dateLine || timeLine || displayAddress || organizerName || attendeesCount > 0) && (
+          <div className="space-y-2 rounded-lg border border-border bg-muted/40 p-3">
+            {dateLine && (
+              <div className="flex items-center gap-2 text-sm text-foreground">
+                <Calendar className="h-4 w-4 text-accent shrink-0" /><span>{dateLine}</span>
+              </div>
+            )}
+            {timeLine && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Clock className="h-4 w-4 text-accent shrink-0" /><span>{timeLine}</span>
+              </div>
+            )}
+            {displayAddress && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <MapPin className="h-4 w-4 text-accent shrink-0" /><span>{displayAddress}</span>
+              </div>
+            )}
+            {(organizerName || attendeesCount > 0) && (dateLine || timeLine || displayAddress) && (
+              <Separator className="my-1" />
+            )}
+            {organizerName && (
+              <div className="text-sm text-muted-foreground">
+                {t("Organisé par")} <span className="font-medium text-foreground">{organizerName}</span>
+              </div>
+            )}
+            {attendeesCount > 0 && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Users className="h-4 w-4 text-accent shrink-0" /><span>{attendeesCount} {t("participant·es")}</span>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Actions utilisateur (participer / suivre / éditer…) — système d'actions réutilisé */}
         <EntityActionButtons entity={item as unknown as EntityTypes} />
