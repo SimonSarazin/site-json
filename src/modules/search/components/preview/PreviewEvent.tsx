@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Calendar, Clock, MapPin, Users } from "lucide-react";
 import { format } from "date-fns";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
@@ -10,9 +10,11 @@ import LazyImage from "@/components/layout/LazyImage";
 import { useT } from "@/hooks/useT";
 import getDateFnsLocale from "@/dateFns";
 import useItem from "@/modules/search/hooks/useItem";
+import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 import { PreviewProps } from "@/modules/search/schema";
 import { renderMarkdown } from "@/helpers/renderMarkdown";
 import { EntityActionButtons } from "@/modules/profil/components/EntityActionButtons";
+import { useEntityActionEffect } from "@/modules/profil/actions/entityActionBus";
 
 /**
  * Détail d'un ÉVÉNEMENT : infos (date/heure, lieu, organisateur, participants) + barre d'ACTIONS réutilisée
@@ -35,8 +37,27 @@ const PreviewEvent: React.FC<PreviewProps> = ({ item }) => {
     ? `${format(startDate, "p", { locale })}${endDate ? ` – ${format(endDate, "p", { locale })}` : ""}`
     : null;
 
-  const attendees = (item.serverData as { links?: { attendees?: Record<string, unknown> } } | undefined)?.links?.attendees;
-  const attendeesCount = attendees && typeof attendees === "object" ? Object.keys(attendees).length : 0;
+  // Compteur participants RÉACTIF : on s'abonne à `links` via le proxy réactif cocolight
+  // (useReactiveProperty → useSyncExternalStore). Même pattern que useFormatProfileEntity
+  // (membersCount).
+  const linksReactive = useReactiveProperty<Record<string, unknown>>(item.serverData, "links");
+  const attendeesCount = useMemo(() => {
+    const att = linksReactive?.attendees;
+    return att && typeof att === "object" ? Object.keys(att as Record<string, unknown>).length : 0;
+  }, [linksReactive]);
+
+  // Le PROBLÈME : Participer/Quitter (entity.requestToJoin()/leave()) met à jour `me` mais
+  // ne re-fetche PAS le proxy de l'event → `links.attendees` resterait figé. SOLUTION : on
+  // écoute le bus d'actions et on rappelle `item.refresh()` (recharge l'entité depuis le
+  // serveur) sur SON entité → le proxy `links` est ré-hydraté → l'abonnement ci-dessus monte
+  // le compteur. Bus = point d'extension : un autre écran peut réagir sans toucher aux mutations.
+  useEntityActionEffect((e) => {
+    if (e.type === "follow" || e.type === "unfollow" || e.type === "promote") return; // n'affectent pas les participants
+    const evId = (e.entity.serverData as { id?: string } | undefined)?.id;
+    const myId = (item.serverData as { id?: string } | undefined)?.id;
+    if (!evId || evId !== myId) return;
+    void (item as unknown as { refresh?: () => Promise<unknown> }).refresh?.();
+  });
 
   const displayAddress = address
     ? `${address.streetAddress ?? ""}${address.streetAddress ? ", " : ""}${address.postalCode ?? ""}${
