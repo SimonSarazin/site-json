@@ -1451,6 +1451,7 @@
                 "disableInfiniteScroll": false,
                 "showDetailedViewToggle": true,
                 "searchVariant": "navigator-tl",
+                "defaultViewMode": "split",
                 "baseParams": {
                   "defaultTypes": [
                     "organizations"
@@ -1505,10 +1506,12 @@
                   }
                 },
                 "map": {
+                  "layout": "split",
                   "marker": {
-                    "useItemImage": true,
-                    "style": "pin",
-                    "color": "primary"
+                    "useItemImage": false,
+                    "style": "circle",
+                    "color": "secondary",
+                    "borderColor": "background"
                   }
                 }
               }

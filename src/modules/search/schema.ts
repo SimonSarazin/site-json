@@ -204,6 +204,35 @@ const ListConfSchema = z.object({
 export type ListConf = z.infer<typeof ListConfSchema>;
 
 
+/**
+ * Apparence d'un marqueur de la carte — chaîne de repli (par PRIORITÉ) :
+ *   1. `useItemImage` ET l'item a une image → vignette RONDE de l'item ;
+ *   2. `iconUrl`                            → icône custom (image/SVG, ex. pin brandé) ;
+ *   3. `style: "pin"` (+ `color` en jeton)  → pin SVG aux couleurs du thème ;
+ *   4. sinon                                → pin par défaut (primary).
+ * Schéma PARTAGÉ : configurable PAR SITE (`integrations.map.marker`, cf.
+ * site-schema) et surchargeable PAR SECTION (`map.marker`) — les champs de la
+ * section l'emportent sur ceux du site, sinon repli sur le défaut.
+ */
+export const MarkerConfSchema = z.object({
+  /** Vignette ronde = image de l'item (si présente), sinon repli (icône/pin). */
+  useItemImage: z.boolean().optional(),
+  style: z.enum(["default", "pin", "circle"]).optional(),
+  /** Couleur du pin en JETON de thème (jamais d'hex — suit light/dark). */
+  color: z.enum(["primary", "secondary", "accent", "chart-1", "chart-2", "chart-3", "chart-4", "chart-5"]).optional(),
+  /** Couleur du contour + de la pastille du pin, en JETON de thème (déf.
+   *  `background` — contraste lisible sur tout fond). Même palette que `color`. */
+  borderColor: z.enum(["background", "primary", "secondary", "accent", "chart-1", "chart-2", "chart-3", "chart-4", "chart-5"]).optional(),
+  /** URL d'une icône custom (relative → préfixée par baseUrl, ou absolue http). */
+  iconUrl: z.string().optional(),
+  /** Taille de l'icône custom en px (déf. 34). */
+  iconSize: z.number().int().min(8).max(128).optional(),
+  /** Ancrage de l'icône custom : "bottom" (pointe sur le point, déf.) ou "center". */
+  iconAnchor: z.enum(["bottom", "center"]).optional(),
+});
+
+export type MarkerConf = z.infer<typeof MarkerConfSchema>;
+
 const MapConfSchema = z.object({
   initialZoom: z.number().min(1).max(20).optional(),
   cluster:     z.boolean().optional(),
@@ -214,14 +243,8 @@ const MapConfSchema = z.object({
    *  `preview` — `SwitchDetailsMode` avec `list.card`/`list.preview`) ou
    *  navigation `/profil/:slug` (pattern rowAction observatoire / palette). */
   itemAction: z.object({ kind: z.enum(["profil", "preview"]) }).optional(),
-  /** Apparence des marqueurs — chaîne de repli : vignette RONDE de l'item
-   *  (`useItemImage`, si l'item a une image) → pin SVG aux couleurs du thème
-   *  (`style: "pin"` + `color` en jeton, jamais d'hex) → pin Leaflet. */
-  marker: z.object({
-    useItemImage: z.boolean().optional(),
-    style: z.enum(["default", "pin"]).optional(),
-    color: z.enum(["primary", "accent", "chart-1", "chart-2", "chart-3", "chart-4", "chart-5"]).optional(),
-  }).optional(),
+  /** Apparence des marqueurs — cf. `MarkerConfSchema` (surcharge le site). */
+  marker: MarkerConfSchema.optional(),
 }).partial();
 
 export type MapConf = z.infer<typeof MapConfSchema>;
@@ -750,9 +773,9 @@ export interface SearchMapProps<T extends SearchEntity = SearchEntity> {
 
 export interface MapPopupProps<T extends SearchEntity = SearchEntity> {
   item: T;
-  popup?: MapConf["popup"];
-  id: string;
   t: (key: string) => string;
   /** Libellé/intention du bouton d'action (cf. MapConf.itemAction). */
   actionKind?: "profil" | "preview";
+  /** Handler du bouton d'action — fourni par SearchMap (popup react-map-gl). */
+  onAction?: () => void;
 }

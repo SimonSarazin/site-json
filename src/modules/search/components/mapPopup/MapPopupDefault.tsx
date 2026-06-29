@@ -7,14 +7,12 @@ import { MapPopupProps } from "../../schema";
 import { getBaseUrl } from "@/lib/constant/common";
 
 /**
- * Popup de marker — rendue en HTML STATIQUE (`renderToString`, cf.
- * renderMapPopup) : AUCUN état/effet React ne fonctionne ici (pas
- * d'hydratation dans une popup Leaflet). Le seul élément interactif est le
- * bouton `data-id` : SearchMap lui attache un listener natif au `popupopen`
- * (action selon `map.itemAction` : détail modal ou navigation profil).
- * Les icônes lucide sont OK (SVG inline, rendues statiquement).
+ * Popup de marker — vrai composant React rendu dans le <Popup> react-map-gl
+ * (plus de `renderToString` : état, effets et handlers fonctionnent). Le bouton
+ * d'action appelle `onAction` (fourni par SearchMap selon `map.itemAction` :
+ * détail modal ou navigation profil).
  */
-export function MapPopupDefault({ item, id, t, actionKind }: MapPopupProps) {
+export function MapPopupDefault({ item, t, actionKind, onAction }: MapPopupProps) {
   const data = useItem(item);
 
   const { name, shortDescription, address, tags = [], image } = data;
@@ -27,7 +25,7 @@ export function MapPopupDefault({ item, id, t, actionKind }: MapPopupProps) {
     .join(", ");
 
   return (
-    <Card className="max-w-64 gap-0 overflow-hidden border-border bg-background py-0 shadow-xl sm:max-w-72" id={id}>
+    <Card className="max-w-64 gap-0 overflow-hidden border-border bg-background py-0 shadow-xl sm:max-w-72">
       {imgSrc && (
         <img src={imgSrc} alt="" loading="lazy" className="h-24 w-full object-cover" />
       )}
@@ -50,7 +48,6 @@ export function MapPopupDefault({ item, id, t, actionKind }: MapPopupProps) {
                 #{tag}
               </Badge>
             ))}
-            {/* Statique : pas d'interaction possible dans la popup — simple compteur. */}
             {remaining > 0 && (
               <Badge variant="outline" className="text-xs">
                 +{remaining}
@@ -59,7 +56,7 @@ export function MapPopupDefault({ item, id, t, actionKind }: MapPopupProps) {
           </div>
         )}
 
-        <Button variant="default" size="sm" className="w-full" data-id={id}>
+        <Button variant="default" size="sm" className="w-full" onClick={onAction}>
           {actionKind === "profil" ? t("Voir le profil") : t("En savoir plus")}
           <ArrowRight className="h-4 w-4" />
         </Button>
@@ -67,3 +64,7 @@ export function MapPopupDefault({ item, id, t, actionKind }: MapPopupProps) {
     </Card>
   );
 }
+
+// export default requis pour le `lazy(() => import(...))` du dispatcher
+// `SearchMapPopup` (l'export nommé reste pour les tests).
+export default MapPopupDefault;
