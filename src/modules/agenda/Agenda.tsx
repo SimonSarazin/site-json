@@ -134,11 +134,19 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
     enabled: hydrated && mode === "calendar",
   });
 
-  // ── Tags disponibles (selon le mode) + filtrage client ─────────────────────
-  const availableTags = useMemo(
-    () => (mode === "calendar" ? distinctTags(gridFetch.events) : distinctTags([...upcomingFetch.events, ...pastFetch.events])),
-    [mode, gridFetch.events, upcomingFetch.events, pastFetch.events],
-  );
+  // ── Tags disponibles + filtrage client ─────────────────────────────────────
+  // Vocabulaire de tags STABLE (M1) : union des tags des events chargés des 3 fetchs
+  // (à-venir ∪ passés ∪ grille calendrier), INDÉPENDANT du `mode` → la liste ne se réordonne
+  // pas en changeant de vue/de mois, elle ne fait que grandir au fil des chargements. On y
+  // inclut TOUJOURS `selectedTags` → un tag actif reste proposable dans toutes les vues (le
+  // chip et les options du menu ne divergent jamais). Set + re-tri = liste dédupliquée/triée.
+  const availableTags = useMemo(() => {
+    const set = new Set<string>([
+      ...distinctTags([...upcomingFetch.events, ...pastFetch.events, ...gridFetch.events]),
+      ...selectedTags,
+    ]);
+    return [...set].sort((a, b) => a.localeCompare(b));
+  }, [upcomingFetch.events, pastFetch.events, gridFetch.events, selectedTags]);
 
   const { ongoing, upcoming } = useMemo(
     () => partitionByTime(filterByTags(upcomingFetch.events, selectedTags), now),
