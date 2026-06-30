@@ -27,7 +27,11 @@
       "url": "Invalid URL",
       "number": "Must be a number",
       "selectOption": "Please select an option",
-      "selectAtLeastOne": "Please select at least one option"
+      "selectAtLeastOne": "Please select at least one option",
+      "requiredField": "{{label}} is required",
+      "urlInvalid": "{{label}} must be a valid URL",
+      "simpleTableRequired": "{{label}} is required (at least one data row)",
+      "multiCheckboxPlusCplxRequired": "All complementary fields must be filled"
     },
     "fields": {
       "selectPlaceholder": "Select",

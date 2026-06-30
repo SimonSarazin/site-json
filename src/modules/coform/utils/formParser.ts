@@ -668,7 +668,17 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
  */
 const LENIENT_URL_RE = /^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(:\d+)?([/?#]\S*)?$/i;
 
-export function generateZodSchema(subFormsFields: SubFormFields[]) {
+/**
+ * Traducteur injecté dans `generateZodSchema` pour l'i18n des messages de
+ * validation. Signature compatible avec `useT` : (clé, fallback?, params?). Le
+ * défaut renvoie le fallback français → schéma utilisable hors React (tests).
+ */
+type ZodMessageT = (key: string, fallback?: string, params?: Record<string, unknown>) => string;
+
+export function generateZodSchema(
+  subFormsFields: SubFormFields[],
+  t: ZodMessageT = (_key, fallback) => fallback ?? "",
+) {
   const schemaShape: Record<string, z.ZodTypeAny> = {};
 
   subFormsFields.forEach(({ fields }) => {
@@ -681,13 +691,13 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
           // vide reste valide ; un champ requis vide est déjà rejeté par min(1).
           if (field.componentType === "text" && field.inputType === "url") {
             const isUrlOrEmpty = (v: string) => v === "" || LENIENT_URL_RE.test(v);
-            const msg = `${field.label} doit être une URL valide`;
+            const msg = t("coform.validation.urlInvalid", `${field.label} doit être une URL valide`, { label: field.label });
             schemaShape[field.name] = field.isRequired
-              ? z.string().min(1, `${field.label} est requis`).refine(isUrlOrEmpty, msg)
+              ? z.string().min(1, t("coform.validation.requiredField", `${field.label} est requis`, { label: field.label })).refine(isUrlOrEmpty, msg)
               : z.string().refine(isUrlOrEmpty, msg).optional();
           } else {
             schemaShape[field.name] = field.isRequired
-              ? z.string().min(1, `${field.label} est requis`)
+              ? z.string().min(1, t("coform.validation.requiredField", `${field.label} est requis`, { label: field.label }))
               : z.string().optional();
           }
           break;
@@ -708,7 +718,7 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
 
         case "checkbox":
           schemaShape[field.name] = field.isRequired
-            ? z.array(z.string()).min(1, `${field.label} est requis`)
+            ? z.array(z.string()).min(1, t("coform.validation.requiredField", `${field.label} est requis`, { label: field.label }))
             : z.array(z.string()).optional();
           break;
 
@@ -722,7 +732,7 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
           schemaShape[field.name] = field.isRequired
             ? multiRadioSchema.refine(
                 (v) => v.value.trim() !== "",
-                { message: `${field.label} est requis` }
+                { message: t("coform.validation.requiredField", `${field.label} est requis`, { label: field.label }) }
               )
             : multiRadioSchema.optional();
           break;
@@ -755,14 +765,14 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
                 }
                 return true;
               });
-            }, { message: "Tous les champs complémentaires doivent être remplis" });
+            }, { message: t("coform.validation.multiCheckboxPlusCplxRequired", "Tous les champs complémentaires doivent être remplis") });
             
             schemaShape[field.name] = field.isRequired
-              ? refinedSchema.min(1, `${field.label} est requis`)
+              ? refinedSchema.min(1, t("coform.validation.requiredField", `${field.label} est requis`, { label: field.label }))
               : refinedSchema.optional();
           } else {
             schemaShape[field.name] = field.isRequired
-              ? baseSchema.min(1, `${field.label} est requis`)
+              ? baseSchema.min(1, t("coform.validation.requiredField", `${field.label} est requis`, { label: field.label }))
               : baseSchema.optional();
           }
           break;
@@ -770,7 +780,7 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
 
         case "select":
           schemaShape[field.name] = field.isRequired
-            ? z.string().min(1, `${field.label} est requis`)
+            ? z.string().min(1, t("coform.validation.requiredField", `${field.label} est requis`, { label: field.label }))
             : z.string().optional();
           break;
 
@@ -794,7 +804,7 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
                   Object.values(criteria).some(vote => vote !== "" && vote !== 0)
                 );
               },
-              { message: `${field.label} est requis` }
+              { message: t("coform.validation.requiredField", `${field.label} est requis`, { label: field.label }) }
             );
           } else {
             schemaShape[field.name] = evaluationSchema.optional();
@@ -841,7 +851,7 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
                     sol.yesOrNo ||
                     sol.comment.trim() !== ""
                 ),
-              { message: `${field.label} est requis` }
+              { message: t("coform.validation.requiredField", `${field.label} est requis`, { label: field.label }) }
             );
           } else {
             schemaShape[field.name] = commonTableSchema.optional();
@@ -870,7 +880,7 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
             // Vérifier qu'au moins un élément est sélectionné
             schemaShape[field.name] = finderSchema.refine(
               (obj) => obj !== null && Object.keys(obj).length > 0,
-              { message: `${field.label} est requis` }
+              { message: t("coform.validation.requiredField", `${field.label} est requis`, { label: field.label }) }
             );
           } else {
             schemaShape[field.name] = finderSchema.optional();
@@ -885,7 +895,7 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
           if (field.isRequired) {
             schemaShape[field.name] = simpleTableSchema.refine(
               (arr) => arr.length >= 2,
-              { message: `${field.label} est requis (au moins une ligne de données)` }
+              { message: t("coform.validation.simpleTableRequired", `${field.label} est requis (au moins une ligne de données)`, { label: field.label }) }
             );
           } else {
             schemaShape[field.name] = simpleTableSchema.optional();
@@ -909,7 +919,7 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
           schemaShape[field.name] = field.isRequired
             ? uploaderSchema.refine(
                 (v) => (Array.isArray(v) ? v.length > 0 : true),
-                `${field.label} est requis`
+                t("coform.validation.requiredField", `${field.label} est requis`, { label: field.label })
               )
             : uploaderSchema.optional();
           break;
