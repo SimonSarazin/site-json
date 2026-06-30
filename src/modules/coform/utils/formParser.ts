@@ -661,6 +661,13 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
 /**
  * Génère un schéma Zod dynamique basé sur les champs CoForm
  */
+/**
+ * URL tolérante : schéma http(s) optionnel, host.tld[:port] requis, chemin/query/
+ * fragment optionnels. Accepte les URL sans schéma (ex. "exemple.dokos.fr").
+ * Volontairement permissive — on débloque la saisie, pas un parseur RFC strict.
+ */
+const LENIENT_URL_RE = /^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(:\d+)?([/?#]\S*)?$/i;
+
 export function generateZodSchema(subFormsFields: SubFormFields[]) {
   const schemaShape: Record<string, z.ZodTypeAny> = {};
 
@@ -668,11 +675,23 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
     fields.forEach((field) => {
       switch (field.componentType) {
         case "text":
-        case "textarea":
-          schemaShape[field.name] = field.isRequired
-            ? z.string().min(1, `${field.label} est requis`)
-            : z.string().optional();
+        case "textarea": {
+          // Validation de format URL (tolérante) uniquement pour inputType "url".
+          // Ne s'applique JAMAIS à une valeur vide : un champ non requis laissé
+          // vide reste valide ; un champ requis vide est déjà rejeté par min(1).
+          if (field.componentType === "text" && field.inputType === "url") {
+            const isUrlOrEmpty = (v: string) => v === "" || LENIENT_URL_RE.test(v);
+            const msg = `${field.label} doit être une URL valide`;
+            schemaShape[field.name] = field.isRequired
+              ? z.string().min(1, `${field.label} est requis`).refine(isUrlOrEmpty, msg)
+              : z.string().refine(isUrlOrEmpty, msg).optional();
+          } else {
+            schemaShape[field.name] = field.isRequired
+              ? z.string().min(1, `${field.label} est requis`)
+              : z.string().optional();
+          }
           break;
+        }
 
         case "radio":
           if (field.options && field.options.length > 0) {

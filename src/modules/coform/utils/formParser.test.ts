@@ -524,6 +524,36 @@ describe("generateZodSchema", () => {
     ]);
     expect(schema.parse({ em: "anything-string" })).toEqual({ em: "anything-string" });
   });
+
+  it("inputType url valide le format (tolérant, sans schéma) — requis", () => {
+    const schema = generateZodSchema([
+      makeSubFormFields([
+        makeField({ name: "u", componentType: "text", inputType: "url", isRequired: true }),
+      ]),
+    ]);
+    // URL sans schéma acceptée
+    expect(schema.parse({ u: "laplumealoup.dokos.fr" })).toEqual({ u: "laplumealoup.dokos.fr" });
+    // URL avec schéma + chemin/query acceptée
+    expect(schema.parse({ u: "https://exemple.fr/path?q=1" })).toEqual({ u: "https://exemple.fr/path?q=1" });
+    // chaîne non-URL rejetée
+    expect(() => schema.parse({ u: "pas une url" })).toThrow();
+    // requis + vide rejeté (par min(1))
+    expect(() => schema.parse({ u: "" })).toThrow();
+  });
+
+  it("inputType url non requis : la validation ne s'applique PAS au champ vide", () => {
+    const schema = generateZodSchema([
+      makeSubFormFields([
+        makeField({ name: "u", componentType: "text", inputType: "url", isRequired: false }),
+      ]),
+    ]);
+    // non requis + vide → valide (pas de validation de format)
+    expect(() => schema.parse({ u: "" })).not.toThrow();
+    // non requis + URL sans schéma → valide
+    expect(schema.parse({ u: "monsite.re" })).toEqual({ u: "monsite.re" });
+    // non requis mais renseigné avec une non-URL → rejeté
+    expect(() => schema.parse({ u: "nope" })).toThrow();
+  });
 });
 
 // ============================================================================

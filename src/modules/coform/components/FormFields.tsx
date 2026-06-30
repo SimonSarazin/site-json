@@ -113,6 +113,10 @@ interface FormFieldProps {
  */
 export function TextField({ field, register, errors }: FormFieldProps) {
   const hasError = !!errors[field.name];
+  // `type="url"` natif (validation HTML5) rejette les URL sans schéma. Le format
+  // est validé côté Zod par une regex tolérante (cf. generateZodSchema) qui
+  // accepte les URL sans http, et n'est pas appliquée à un champ vide non requis.
+  const isUrl = field.inputType === "url";
   
   return (
     <div className={cn("space-y-2", field.width)}>
@@ -139,7 +143,8 @@ export function TextField({ field, register, errors }: FormFieldProps) {
       )}>
         <Input
           id={field.name}
-          type={field.inputType || "text"}
+          type={isUrl ? "text" : field.inputType || "text"}
+          inputMode={isUrl ? "url" : undefined}
           placeholder={field.placeholder}
           aria-invalid={hasError || undefined}
           aria-describedby={hasError ? `${field.name}-error` : undefined}
