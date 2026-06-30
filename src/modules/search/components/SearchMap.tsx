@@ -217,17 +217,10 @@ export default function SearchMap({ results, card, preview, map: mapConf, focuse
   /* ── fitBounds UNE fois par périmètre (1ʳᵉ page) ─────────────────────── */
   useEffect(() => {
     const map = mapRef.current?.getMap();
-    if (import.meta.env.DEV) {
-      console.info(
-        `[fitBounds] run: map=${!!map} mapLoaded=${mapLoaded} results=${results.length} ` +
-          `ref=${fittedFirstIdRef.current ?? "—"}`,
-      );
-    }
     if (!map || !mapLoaded) return;
     const coords = results
       .map(getEntryCoords)
       .filter((c): c is [number, number] => c !== null);
-    if (import.meta.env.DEV) console.info(`[fitBounds] coords trouvées=${coords.length}`);
     if (coords.length === 0) return; // pas (encore) de point géolocalisé
     // Signature du périmètre = id du 1er résultat si dispo, SINON ses coords.
     // Jamais `undefined` quand il y a des points : sinon la garde sautait à vie
@@ -236,7 +229,6 @@ export default function SearchMap({ results, card, preview, map: mapConf, focuse
     // après dézoom manuel). Les pages suivantes gardent la même signature → pas
     // de re-recadrage ; un nouveau périmètre (filtres) change la signature.
     const signature = getEntryId(results[0]) ?? `${coords[0][0]},${coords[0][1]}`;
-    if (import.meta.env.DEV) console.info(`[fitBounds] signature=${signature} ref=${fittedFirstIdRef.current ?? "—"}`);
     if (signature === fittedFirstIdRef.current) return;
     fittedFirstIdRef.current = signature;
     // La carte a pu peindre sa 1ʳᵉ frame (onRender) AVANT que sa colonne (split,
@@ -258,9 +250,6 @@ export default function SearchMap({ results, card, preview, map: mapConf, focuse
       if (lng > east) east = lng;
       if (lat < south) south = lat;
       if (lat > north) north = lat;
-    }
-    if (import.meta.env.DEV) {
-      console.info(`[fitBounds] FIT → bounds W=${west.toFixed(2)} S=${south.toFixed(2)} E=${east.toFixed(2)} N=${north.toFixed(2)} (n=${coords.length})`);
     }
     map.fitBounds(
       [
