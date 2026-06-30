@@ -117,13 +117,16 @@ const registry: Partial<Record<string, WidgetComponent>> = {
 /** Résout les sous-champs d'un `fieldArray` (labels/placeholders/options traduits) depuis widgetProps. */
 function resolveItemFields(p: WidgetProps): FieldArrayItem[] {
   const raw = (p.field.widgetProps?.itemFields as Array<Record<string, unknown>> | undefined) ?? [];
+  // `label`/`placeholder`/`options.label` peuvent être une clé i18n (string) OU une LocalizedString
+  // inline `{fr,en}`. On passe la valeur BRUTE à `p.t` (qui gère les deux) — surtout PAS `String(...)`,
+  // qui transformerait `{fr,en}` en "[object Object]".
   return raw.map((f) => ({
     name: String(f.name),
     kind: f.kind === "select" ? "select" : "text",
-    label: f.label ? p.t(String(f.label)) : undefined,
-    placeholder: f.placeholder ? p.t(String(f.placeholder)) : undefined,
+    label: f.label ? p.t(f.label as I18n) : undefined,
+    placeholder: f.placeholder ? p.t(f.placeholder as I18n) : undefined,
     options: Array.isArray(f.options)
-      ? (f.options as Array<{ value: string; label: string }>).map((o) => ({ value: String(o.value), label: p.t(String(o.label)) }))
+      ? (f.options as Array<{ value: unknown; label: I18n }>).map((o) => ({ value: String(o.value), label: p.t(o.label) }))
       : undefined,
   }));
 }
