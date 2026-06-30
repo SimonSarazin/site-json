@@ -23,11 +23,11 @@ export interface EmailInvite {
   roles?: string[];
 }
 
-/** Types d'entité pour lesquels inviteEvent accepte l'invitation par email. */
+/** Types d'entité pour lesquels l'invitation par email est supportée (cf. garde lib inviteByEmail). */
 export function canInviteByEmail(entity: EntityTypes | null): boolean {
   if (!entity) return false;
   const type = entity.getEntityType();
-  return type === "organizations" || type === "projects";
+  return type === "organizations" || type === "projects" || type === "events";
 }
 
 /**
