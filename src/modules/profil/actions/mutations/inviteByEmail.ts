@@ -1,13 +1,12 @@
 /**
  * Invitation de membres PAR EMAIL (personnes sans compte existant).
  *
- * Appelle `entity.endpointApi.inviteEvent` → POST /co2/link/multiconnect avec `listInvite.invites`
- * (cf. port backend de Link::invite). Le backend crée un citoyen "pending" par email puis envoie
- * un mail d'invitation contenant le lien d'activation.
+ * Passe par la méthode d'entité de haut niveau `entity.inviteByEmail(invites)` (lib) — qui génère
+ * les UUID, construit `listInvite.invites`, valide le type et wrappe INVITE_EVENT
+ * (POST /co2/link/multiconnect). On N'appelle PAS `endpointApi.inviteEvent` directement.
+ * Le backend crée un citoyen "pending" par email puis envoie un mail d'invitation.
  *
- * ⚠️ Le contrat `inviteEvent` n'autorise `parentType` que parmi citoyens|projects|organizations :
- *    l'invitation par email N'EST PAS disponible pour les events tant que le contrat de la lib
- *    publiée n'inclut pas "events" (gardé côté UI via `canInviteByEmail`).
+ * ⚠️ Dispo pour organisations/projets uniquement (cf. `canInviteByEmail` + garde dans la lib).
  */
 import { useQueryClient } from "@tanstack/react-query";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
@@ -40,12 +39,9 @@ export function useInviteByEmail(entity: EntityTypes | null) {
   return useMutationWithToast<unknown, EmailInvite[]>({
     mutationFn: async (invites) => {
       if (!entity) throw new Error("No entity provided");
-      const parentType = entity.getEntityType() as "citoyens" | "projects" | "organizations";
-      // UUID v4 par invité (clé attendue par le contrat listInvite.invites).
-      const listInvite = {
-        invites: Object.fromEntries(invites.map((inv) => [crypto.randomUUID(), inv])),
-      };
-      return entity.endpointApi.inviteEvent({ parentId: entity.id!, parentType, listInvite });
+      // Méthode d'entité de haut niveau : génère les UUID + listInvite, valide le type,
+      // wrappe inviteEvent. Pas d'appel direct à endpointApi.
+      return entity.inviteByEmail(invites);
     },
     namespace: "modules/profil",
     successKey: "toast.members.emailInviteSuccess",
