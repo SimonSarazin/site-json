@@ -3,10 +3,18 @@ import { T } from "@/components/ui/T";
 import { cn } from '@/lib/utils';
 import { DynamicIcon, type IconName } from 'lucide-react/dynamic';
 import { StatsSectionProps } from '@/types/site-schema';
+import { buildGridColsClass } from './responsiveGridCols';
 
 export function StatsSection({ id, props }: { id?: string; props: StatsSectionProps }) {
-  const { items, layout = 'horizontal', animated = true } = props;
+  const { items, layout = 'horizontal', animated = true, columns } = props;
   const [isVisible, setIsVisible] = useState(false);
+
+  // `columns` (si fourni) pilote la grille ; sinon, défauts historiques par layout.
+  const gridColsClass = columns
+    ? buildGridColsClass(columns)
+    : layout === 'horizontal'
+      ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
+      : "grid-cols-1 md:grid-cols-2";
 
   useEffect(() => {
     if (!animated) return;
@@ -75,8 +83,8 @@ export function StatsSection({ id, props }: { id?: string; props: StatsSectionPr
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className={cn(
           "grid gap-8",
-          layout === 'horizontal' && "grid-cols-1 md:grid-cols-2 lg:grid-cols-4",
-          layout === 'vertical' && "grid-cols-1 md:grid-cols-2 gap-12"
+          gridColsClass,
+          layout === 'vertical' && "gap-12"
         )}>
           {items.map((item, index) => (
             <div

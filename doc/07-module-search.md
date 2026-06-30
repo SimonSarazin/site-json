@@ -18,6 +18,7 @@
   - [buildSearchPayload](#buildsearchpayload)
   - [searchByFieldsToQuery](#searchbyfieldstoquery)
   - [computeFiltersFromUrl](#computefiltersfromurl)
+  - [computeUrlFromFilters](#computeurlfromfilters)
   - [canonicalBaseParams](#canonicalbaseparams)
   - [schedules — regroupement des créneaux CoForm](#schedules--regroupement-des-créneaux-coform)
   - [coformAnswer — parser partagé carte + détail](#coformanswer--parser-partagé-carte--détail)
@@ -166,6 +167,7 @@ src/modules/search/
 │   ├── buildSearchPayload.ts      # SOURCE UNIQUE : baseParams → payload searchCostum
 │   ├── searchByFieldsToQuery.ts   # searchByFields → { filters, locality, sourceKeys }
 │   ├── computeFiltersFromUrl.ts   # URL query params → mutations PageFilters
+│   ├── computeUrlFromFilters.ts   # PageFilters → URL query params (miroir, inverse du précédent)
 │   ├── canonicalBaseParams.ts     # canonicalSearchProStaticBaseParams()
 │   ├── filterToggles.ts           # Logique des toggles de filtres
 │   ├── schedules.ts               # groupSchedules — créneaux CoForm groupés par jour (Lun→Dim)
@@ -383,6 +385,15 @@ Les filtres `scopeList` chargent les zones géographiques via `useSearchZoneQuer
 
 `FiltersSection` lit également `?search=` pour reporter la recherche texte dans son champ local quand on arrive depuis un lien.
 
+**Synchro URL bidirectionnelle.** Au-delà de la lecture, `FiltersSection` écrit aussi l'URL au clic (miroir en `replace`, le `PageFiltersContext` reste la source) via `computeUrlFromFilters` (inverse exact de `computeFiltersFromUrl`). Tous les types de filtres de la sidebar sont couverts dans les deux sens : recherche texte (`?search=`), groupes « tag » (`selectedFilters`), `entityList` / `scopeList` / `filtersByAnswers`-`filtersByPath` (`searchByFields`). Résultat : un clic produit un permalien partageable et le bouton retour restaure l'état précédent.
+
+Trois garde-fous évitent toute boucle avec l'effet de lecture (continu) :
+- **echo guard** (`lastSyncedSearch`) — l'effet de lecture ignore les écritures que la section vient elle-même de faire ;
+- **`urlHydrated`** — l'écriture ne démarre qu'après la 1ʳᵉ lecture, sinon l'état vide du montage effacerait un deep-link `?reseauxRegionaux=…` avant son hydratation ;
+- **options non chargées** (entités / zones / CoForm en vol) — le param correspondant est préservé, jamais effacé.
+
+> Note : `scopeList` (pays / régions) range sa sélection dans `searchByFields` (encodage zone → `locality`). La lecture URL le reconstruit à l'identique du clic ; auparavant elle le rangeait par erreur dans `selectedFilters`, ce qui l'envoyait comme **tag** au lieu d'un filtre de localité.
+
 ### `searchHeader` — header de filtres horizontal
 
 Section bandeau de filtres **horizontal** (variante de `FiltersSection` présentée en haut de page). Même `PageFiltersContext` — peut cohabiter avec `SearchProStatic` dans le même provider. Alias rétro-compat : `searchHeader` (9 configs existantes, même composant `SearchHeaderSection.tsx`).
@@ -555,10 +566,28 @@ export function computeFiltersFromUrl(
 
 Logique de mapping des query params :
 - Groupe `type === "entityList"` → `searchByFields` (type `sourceKey`)
-- Groupe statique (options en config) → `selectedFilters[groupId]`
+- Groupe `type === "scopeList"` → `searchByFields` (type `scopeList`, encodage `{ id, type: level }` → `locality`)
+- Groupe « tag » (options en config) → `selectedFilters[groupId]`
 - Clé matchant une entrée `filterAnswerData` → `searchByFields[optionKey] = { field: "_id", value: orgaNameArray }`
 
 Les fonctions retournées sont des **fonctions de merge** (elles préservent les clés non gérées par les groupes déclarés) — sûres à passer directement à `setSelectedFilters` / `setSearchByFields`.
+
+### computeUrlFromFilters
+
+`src/modules/search/lib/computeUrlFromFilters.ts` — **inverse** de `computeFiltersFromUrl` : projette l'état `PageFilters` (selectedFilters + searchByFields + recherche texte) dans des query params, au même format que ceux qu'il lit. C'est le moteur du miroir URL écrit par `FiltersSection` au clic (cf. [§`filters`](#filters--sidebar-de-filtres-partagée)).
+
+```ts
+export function computeUrlFromFilters(
+  current: URLSearchParams,
+  selectedFilters: Record<string, string[]>,
+  searchByFields: Record<string, SearchByFieldValue>,
+  filterGroups: FilterGroupLike[],
+  searchQuery?: string,
+  filterAnswerData?: FilterAnswerDataLike,
+): URLSearchParams
+```
+
+Couvre `?search=` (texte), groupes « tag » (`selectedFilters`), `entityList` / `scopeList` (noms d'options présents dans `searchByFields`) et « par réponses » (clés d'options présentes dans `searchByFields`). Clone `current` → préserve les params hors filtres (pagination…) ; ne touche pas un param dont les options ne sont pas encore chargées. Round-trip et idempotence couverts par `computeUrlFromFilters.test.ts`.
 
 ### canonicalBaseParams
 

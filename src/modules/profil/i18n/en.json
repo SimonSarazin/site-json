@@ -1,4 +1,10 @@
 {
+  "UnsavedChanges": {
+    "title": "Unsaved changes",
+    "description": "You started filling out the form without saving. Do you really want to close? Your changes will be lost.",
+    "confirm": "Close without saving",
+    "cancel": "Keep editing"
+  },
   "ImageUploadField": {
     "dropHint": "Drag & drop or click to choose",
     "remove": "Remove image",
@@ -387,100 +393,6 @@
       "processing": "Processing...",
       "compressing": "Compressing...",
       "complete": "Upload complete"
-    }
-  },
-  "AddProjectModal": {
-    "title": "Create a project",
-    "creatingAs": "Creating as",
-    "form": {
-      "name": {
-        "label": "Project name",
-        "placeholder": "Your project name"
-      },
-      "visibility": {
-        "label": "Make the project publicly visible?",
-        "public": "Public",
-        "private": "Private"
-      },
-      "images": {
-        "label": "Project images"
-      },
-      "shortDescription": {
-        "label": "Short description",
-        "placeholder": "Briefly describe your project..."
-      },
-      "url": {
-        "label": "Main URL",
-        "placeholder": "https://your-site.com"
-      },
-      "tags": {
-        "label": "Tags"
-      }
-    },
-    "actions": {
-      "cancel": "Cancel",
-      "create": "Create project",
-      "creating": "Creating..."
-    },
-    "validation": {
-      "nameRequired": "Project name is required",
-      "nameTooShort": "Name must be at least 3 characters"
-    }
-  },
-  "AddOrganizationModal": {
-    "title": "Create an organization",
-    "creatingAs": "Creating as",
-    "form": {
-      "name": {
-        "label": "Organization name",
-        "placeholder": "Your organization name"
-      },
-      "type": {
-        "label": "Organization type",
-        "placeholder": "Select a type",
-        "options": {
-          "ngo": "NGO",
-          "localBusiness": "Local Business",
-          "group": "Group",
-          "government": "Government Organization",
-          "cooperative": "Cooperative"
-        }
-      },
-      "role": {
-        "label": "Your role",
-        "placeholder": "Select a role",
-        "options": {
-          "admin": "Administrator",
-          "member": "Member"
-        }
-      },
-      "tags": {
-        "label": "Tags"
-      },
-      "images": {
-        "label": "Your images here"
-      },
-      "email": {
-        "label": "Main email",
-        "placeholder": "contact@example.com"
-      },
-      "shortDescription": {
-        "label": "Short description",
-        "placeholder": "Briefly describe your organization..."
-      },
-      "url": {
-        "label": "Main URL",
-        "placeholder": "https://your-site.com"
-      }
-    },
-    "actions": {
-      "cancel": "Cancel",
-      "create": "Create organization",
-      "creating": "Creating..."
-    },
-    "validation": {
-      "nameRequired": "Organization name is required",
-      "nameTooShort": "Name must be at least 3 characters"
     }
   },
   "AboutTab": {
@@ -1195,7 +1107,8 @@
       "selectNature": "Select a nature",
       "selectSol": "Select a floor type",
       "selectSport": "Select a sport",
-      "searchSport": "Search a sport"
+      "searchSport": "Search a sport",
+      "search": "Search…"
     },
     "buttons": {
       "previous": "Previous",
@@ -1320,6 +1233,14 @@
     "noRelatedEntities": "No related entities yet"
   },
   "validation": {
+    "required": "This field is required",
+    "addressLocality": "Select a city from the list to validate the address",
+    "address": { "required": "Complete address required: city, postal code and street" },
+    "minLength": "Too short",
+    "maxLength": "Too long",
+    "min": "Value too small",
+    "max": "Value too large",
+    "format": "Invalid format",
     "name": {
       "required": "Name is required",
       "minLength": "Name must be at least 2 characters"

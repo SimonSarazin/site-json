@@ -11,26 +11,46 @@ export interface ModalProps {
 }
 
 const modalRegistry: Record<string, () => Promise<{ default: ComponentType<ModalProps> }>> = {
-  "add-organization": () => import("./AddOrganizationModal").then(m => ({ default: m.AddOrganizationModal })),
-  "add-project": () => import("./AddProjectModal").then(m => ({ default: m.AddProjectModal })),
-  "add-event": () => import("./AddEventModal").then(m => ({ default: m.AddEventModal })),
-  "add-poi": () => import("./AddPoiModal").then(m => ({ default: m.AddPoiModal })),
-  "add-poi-equipement": () => import("./AddPoiEquipementModal").then(m => ({ default: m.AddPoiEquipementModal })),
-  "add-tiers-lieux": () => import("./AddTiersLieuxModal").then(m => ({ default: m.AddTiersLieuxModal })),
-  "register-cyber-reunion": () => import("./RegisterCyberReunionModal").then(m => ({ default: m.RegisterCyberReunionModal })),
-  "json-form": () => import("./JsonFormModal").then(m => ({ default: m.JsonFormModal })),
+  "add-organization": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/configs/addStandard")]).then(([m, c]) => ({
+    default: (props: ModalProps) => <m.EntityFormModal config={c.addOrganizationConfig} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
+  })),
+  "add-project": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/configs/addStandard")]).then(([m, c]) => ({
+    default: (props: ModalProps) => <m.EntityFormModal config={c.addProjectConfig} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
+  })),
+  "add-event": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/configs/addStandard")]).then(([m, c]) => ({
+    default: (props: ModalProps) => <m.EntityFormModal config={c.addEventConfig} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
+  })),
+  "add-poi": () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/configs/addStandard")]).then(([m, c]) => ({
+    default: (props: ModalProps) => <m.EntityFormModal config={c.addPoiConfig} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} />,
+  })),
+  // add-equipements-sportifs / add-tiers-lieux : résolus DYNAMIQUEMENT par la table runtime costum (cf.
+  // costumModalThunk) — id = identité costum. Permet aussi les costums de config (config.costumForms) sans entrée ici.
 };
+
+/** Résolveur DYNAMIQUE des modales d'AJOUT costum : `add-<id>` → spec de la table runtime (TS connu OU config JSON). */
+function costumModalThunk(modalName: string): (() => Promise<{ default: ComponentType<ModalProps> }>) | undefined {
+  const m = /^add-(.+)$/.exec(modalName);
+  if (!m) return undefined;
+  const id = m[1];
+  return () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/costum/registerCostumForms")]).then(([mod, reg]) => {
+    const spec = reg.getCostumModalSpec(id);
+    return {
+      default: (props: ModalProps) =>
+        spec ? <mod.EntityFormModal spec={spec} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} /> : null,
+    };
+  });
+}
 
 const lazyComponents: Record<string, ComponentType<ModalProps>> = {};
 
 function ensureLazyModal(modalName: string): void {
-  if (!modalRegistry[modalName]) {
+  const thunk = modalRegistry[modalName] ?? costumModalThunk(modalName);
+  if (!thunk) {
     console.log(`Modal "${modalName}" not found in registry`);
     return;
   }
-
   if (!lazyComponents[modalName]) {
-    lazyComponents[modalName] = lazy(modalRegistry[modalName]);
+    lazyComponents[modalName] = lazy(thunk);
   }
 }
 
@@ -65,10 +85,4 @@ export function DynamicModal({
       <ModalComponent open={open} onOpenChange={onOpenChange} parent={parent} formConfig={formConfig} />
     </Suspense>
   );
-}
-
-export const availableModals = Object.keys(modalRegistry);
-
-export function isValidModal(modalName: string): boolean {
-  return modalName in modalRegistry;
 }

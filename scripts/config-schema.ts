@@ -7,7 +7,8 @@
  * Usage :
  *   npx tsx scripts/config-schema.ts sections          # liste type + description des sections
  *   npx tsx scripts/config-schema.ts section:<type>    # JSON Schema d'une section (ex. section:pricing)
- *   npx tsx scripts/config-schema.ts header|footer|theme|meta|auth|page|profiles|integrations|root
+ *   npx tsx scripts/config-schema.ts header|footer|theme|meta|auth|page|profiles|integrations|costumForm|root
+ *   npx tsx scripts/config-schema.ts costumForm        # forme d'un document config.costumForms.<id> (cf. doc/28)
  *
  * Les refinements Zod (.refine/.check) ne sont PAS représentables en JSON
  * Schema (`unrepresentable: "any"`) → toujours revalider avec
@@ -23,6 +24,7 @@ import {
   Page,
 } from "../src/types/site-schema";
 import SECTION_META from "../src/components/admin/section-meta";
+import { CostumFormSchemaZod } from "../src/modules/profil/forms/costum/costumFormSchema.zod";
 
 // Sortie souvent pipée vers head/grep — ne pas crasher sur le tube fermé.
 process.stdout.on("error", (e: NodeJS.ErrnoException) => {
@@ -51,7 +53,7 @@ function sectionOptions(): Map<string, z.ZodType> {
 
 if (!arg) {
   console.error(
-    "Usage : config-schema.ts <sections | section:<type> | header | footer | theme | meta | auth | page | profiles | integrations | root>",
+    "Usage : config-schema.ts <sections | section:<type> | header | footer | theme | meta | auth | page | profiles | integrations | costumForm | root>",
   );
   process.exit(2);
 }
@@ -86,6 +88,7 @@ const ROOT_PARTS: Record<string, () => void> = {
   auth: () => print(SiteConfig.shape.auth, "// config.auth (module auth — cf. doc/23)"),
   profiles: () => print(SiteConfig.shape.profiles, "// config.profiles (module profil — cf. doc/08)"),
   integrations: () => print(SiteConfig.shape.integrations, "// config.integrations (analytics, seo, map MapTiler — clé en env VITE_MAPTILER_API_KEY)"),
+  costumForm: () => print(CostumFormSchemaZod, "// config.costumForms.<id> = document CostumFormSchema (zod PRAGMATIQUE : structure essentielle + passthrough) — forme complète : doc/28-module-formengine.md"),
   root: () => {
     // Vue d'ensemble : clés racine + type sommaire (pas le schéma complet, volumineux).
     for (const [key, value] of Object.entries(SiteConfig.shape)) {

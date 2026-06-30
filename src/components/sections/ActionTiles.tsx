@@ -3,6 +3,7 @@ import { type ActionTilesProps } from "@/types/site-schema";
 import { Button } from "@/components/ui/button";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Link } from "react-router";
+import { buildGridColsClass } from "./responsiveGridCols";
 
 interface ActionTilesSectionProps {
     id?: string;
@@ -13,6 +14,11 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
     const { t } = useLocalization();
     const variant = props.variant || "primary";
     const isAccent = variant === "accent";
+
+    // `columns` (si fourni) pilote la grille ; sinon défaut sm:2 lg:4.
+    const gridColsClass = props.columns
+        ? buildGridColsClass(props.columns)
+        : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4";
 
     const DEFAULT_ICON_SIZE = 32;
 
@@ -130,7 +136,7 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
                     )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className={`grid ${gridColsClass} gap-4`}>
                     {props.actions.map((action, index) => (
                         <Link key={index} to={action.href}>
                             <Button

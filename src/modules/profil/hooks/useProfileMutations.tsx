@@ -11,31 +11,6 @@ interface BannerUploadData {
 }
 
 /**
- * Hook pour mettre à jour les informations d'un profil
- */
-export function useUpdateProfile(entity: EntityTypes | null) {
-  return useMutationWithToast<{ entity: EntityTypes; result: unknown }, Record<string, unknown>>({
-    mutationFn: async (newData) => {
-      if (!entity) {
-        throw new Error("No entity provided");
-      }
-
-      // Modifier les données du Proxy
-      Object.assign(entity.data, newData);
-
-      // Sauvegarder via l'API
-      const result = await entity.save();
-
-      return { entity, result };
-    },
-    namespace: "modules/profil",
-    successKey: "toast.profile.updateSuccess",
-    errorKey: "toast.profile.updateError",
-    invalidateQueries: entity ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : [],
-  });
-}
-
-/**
  * Hook pour uploader une image de profil
  */
 export function useUploadProfileImage(entity: EntityTypes | null) {
