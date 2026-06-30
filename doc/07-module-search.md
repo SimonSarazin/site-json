@@ -997,7 +997,7 @@ docker-compose), la carte utilise les **styles VECTORIELS MapTiler** via
 au chargement du chunk). On passe juste l'**ID de style** — le SDK l'expanse en
 `style.json` avec la clé, **aucune URL construite à la main**. Style par thème
 **configurable par site** via `integrations.map` : `styleLight` (déf.
-`streets-v2`) / `styleDark` (déf. `streets-v2-dark`) — ids MapTiler
+`streets-v4`) / `styleDark` (déf. `streets-v4-dark`) — ids MapTiler
 (`outdoor-v2`, `dataviz`, `satellite`…). La bascule light↔dark = changement de
 `mapStyle` (react-map-gl restyle sans toucher aux `<Marker>`/`<Popup>` React).
 **Sans clé : repli automatique** sur un style **raster** MapLibre minimal (OSM
