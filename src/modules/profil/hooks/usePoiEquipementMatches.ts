@@ -1,12 +1,53 @@
 import type { Poi } from "@communecter/cocolight-api-client";
 import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
 import { useDebounce } from "@/hooks/useDebounce";
-import {
-  POI_DETAIL_FIELDS,
-  buildPoiMatchFilters,
-  isFilled,
-  type PoiEquipementScope,
-} from "../components/add/poiEquipement";
+import type { PoiEquipementScope } from "../forms/costum/equipements-sportifs/fns";
+
+/**
+ * Projection de la recherche de DOUBLONS : champs ramenés pour CHAQUE équipement existant trouvé
+ * (panneau doublons + aperçu détail PoiDetailSSBE/CardPoiSSBE, sans re-fetch). C'est une projection de
+ * RECHERCHE — distincte des champs du FORMULAIRE (qui vivent dans le descripteur). Inclut donc des champs
+ * non-form (enqueteStatut, parent, profil*ImageUrl, geo) nécessaires à l'affichage des résultats.
+ */
+const POI_DETAIL_FIELDS = [
+  "name", "equip_type_name", "equip_type_famille", "categorie", "enqueteStatut",
+  "equip_nature", "equip_sol", "equip_surf", "equip_larg", "equip_long", "aps_name",
+  "inst_nom", "equip_prop_nom", "equip_prop_type", "equip_gest_type",
+  "inst_acc_handi_bool", "inst_acc_handi_type", "equip_pmr_acc", "equip_pmr_chem",
+  "equip_pmr_douche", "equip_pmr_sanit", "equip_pmr_trib", "equip_pmr_vest",
+  "equip_pshs_aire", "equip_pshs_chem", "equip_pshs_sanit", "equip_pshs_trib",
+  "equip_pshs_vest", "equip_pshs_sign", "equip_acc_libre", "inst_trans_bool",
+  "inst_trans_type", "equip_eclair", "equip_douche", "inst_part_bool", "inst_part_type",
+  "equip_loc_type", "equip_utilisateur", "inst_date_creation", "inst_enqu_date",
+  "equip_maj_date", "address", "geo", "geoPosition", "parent",
+  "profilImageUrl", "profileImageUrl", "profilMediumImageUrl", "profilThumbImageUrl", "image",
+] as const;
+
+/** Vrai si la valeur est une chaîne non vide (trim) ou tout autre truthy. */
+function isFilled(value: unknown): boolean {
+  return typeof value === "string" ? value.trim().length > 0 : !!value;
+}
+
+/** Filtres de la recherche d'équipements existants à une adresse (code postal + type, scopés au costum). */
+function buildPoiMatchFilters(
+  scope: PoiEquipementScope,
+  params: { postalCode: string; equipTypeName: string; streetAddress?: string }
+): Record<string, unknown> {
+  const filters: Record<string, unknown> = {
+    "address.postalCode": params.postalCode,
+    equip_type_name: params.equipTypeName,
+    $or: {
+      "source.key": scope.sourceKey,
+      "source.keys": scope.sourceKey,
+      [`parent.${scope.parentId}`]: { $exists: true },
+    },
+    type: scope.poiType,
+  };
+  if (params.streetAddress && params.streetAddress.trim().length > 0) {
+    filters["address.streetAddress"] = params.streetAddress;
+  }
+  return filters;
+}
 
 interface PoiMatchesParams {
   postalCode: string;

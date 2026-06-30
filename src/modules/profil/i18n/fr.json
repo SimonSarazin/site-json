@@ -1,4 +1,10 @@
 {
+  "UnsavedChanges": {
+    "title": "Modifications non enregistrées",
+    "description": "Vous avez commencé à remplir le formulaire sans l'enregistrer. Voulez-vous vraiment fermer ? Vos modifications seront perdues.",
+    "confirm": "Fermer sans enregistrer",
+    "cancel": "Continuer l'édition"
+  },
   "ImageUploadField": {
     "dropHint": "Glisser-déposer ou cliquer pour choisir",
     "remove": "Retirer l'image",
@@ -387,100 +393,6 @@
       "processing": "Traitement en cours...",
       "compressing": "Compression en cours...",
       "complete": "Téléchargement terminé"
-    }
-  },
-  "AddProjectModal": {
-    "title": "Créer un projet",
-    "creatingAs": "Création en tant que",
-    "form": {
-      "name": {
-        "label": "Nom du projet",
-        "placeholder": "Nom de votre projet"
-      },
-      "visibility": {
-        "label": "Rendre le projet visible publiquement ?",
-        "public": "Public",
-        "private": "Privé"
-      },
-      "images": {
-        "label": "Images du projet"
-      },
-      "shortDescription": {
-        "label": "Description courte",
-        "placeholder": "Décrivez brièvement votre projet..."
-      },
-      "url": {
-        "label": "URL principale",
-        "placeholder": "https://votre-site.com"
-      },
-      "tags": {
-        "label": "Tags"
-      }
-    },
-    "actions": {
-      "cancel": "Annuler",
-      "create": "Créer le projet",
-      "creating": "Création..."
-    },
-    "validation": {
-      "nameRequired": "Le nom du projet est requis",
-      "nameTooShort": "Le nom doit contenir au moins 3 caractères"
-    }
-  },
-  "AddOrganizationModal": {
-    "title": "Créer une organisation",
-    "creatingAs": "Création en tant que",
-    "form": {
-      "name": {
-        "label": "Nom de votre organisation",
-        "placeholder": "Nom de votre organisation"
-      },
-      "type": {
-        "label": "Type d'organisation",
-        "placeholder": "Sélectionner un type",
-        "options": {
-          "ngo": "Association",
-          "localBusiness": "Entreprise locale",
-          "group": "Groupe",
-          "government": "Organisation gouvernementale",
-          "cooperative": "Coopérative"
-        }
-      },
-      "role": {
-        "label": "Votre rôle",
-        "placeholder": "Sélectionner un rôle",
-        "options": {
-          "admin": "Administrateur",
-          "member": "Membre"
-        }
-      },
-      "tags": {
-        "label": "Tags"
-      },
-      "images": {
-        "label": "Vos images ici"
-      },
-      "email": {
-        "label": "E-mail principal",
-        "placeholder": "contact@exemple.com"
-      },
-      "shortDescription": {
-        "label": "Description courte",
-        "placeholder": "Décrivez brièvement votre organisation..."
-      },
-      "url": {
-        "label": "URL principale",
-        "placeholder": "https://votre-site.com"
-      }
-    },
-    "actions": {
-      "cancel": "Annuler",
-      "create": "Créer l'organisation",
-      "creating": "Création..."
-    },
-    "validation": {
-      "nameRequired": "Le nom de l'organisation est requis",
-      "nameTooShort": "Le nom doit contenir au moins 3 caractères"
     }
   },
   "AboutTab": {
@@ -1195,7 +1107,8 @@
       "selectNature": "Sélectionner une nature",
       "selectSol": "Sélectionner un type de sol",
       "selectSport": "Sélectionner un sport",
-      "searchSport": "Rechercher un sport"
+      "searchSport": "Rechercher un sport",
+      "search": "Rechercher…"
     },
     "buttons": {
       "previous": "Précédent",
@@ -1320,6 +1233,14 @@
     "noRelatedEntities": "Aucune entité liée pour le moment"
   },
   "validation": {
+    "required": "Ce champ est requis",
+    "addressLocality": "Sélectionnez une ville dans la liste pour valider l'adresse",
+    "address": { "required": "Adresse complète obligatoire : ville, code postal et rue" },
+    "minLength": "Valeur trop courte",
+    "maxLength": "Valeur trop longue",
+    "min": "Valeur trop petite",
+    "max": "Valeur trop grande",
+    "format": "Format invalide",
     "name": {
       "required": "Le nom est requis",
       "minLength": "Le nom doit contenir au moins 2 caractères"

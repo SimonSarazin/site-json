@@ -14,6 +14,7 @@ import { JsonFormModalConfigSchema } from "./form-modal-schema";
 import { ActionButtonSchema } from "./action-button-schema";
 import { z } from "zod";
 import { LocalizedString, LOCALES } from "./locale-schema";
+import { AgendaSectionSchema } from "@/modules/agenda/schema";
 export { LocalizedString, LOCALES };
 import { ProfilesConfigSchema, MemberSectionSchema } from "../modules/profil/schema";
 import { AmpliConfigSchema } from "@/modules/ampli/schema";
@@ -1451,6 +1452,7 @@ export const Section = z.discriminatedUnion("type", [
   CagnotteLayoutSectionSchema,
   CoFormSectionSchema,
   DataObservatorySectionSchema,
+  AgendaSectionSchema,
 ]);
 export type Section = z.infer<typeof Section>;
 
@@ -1947,14 +1949,17 @@ export const SiteConfig = z.object({
     allowedIPs: z.array(z.string()).optional(),
   }).optional(),
   auth: AuthConfigSchema.optional(),
+  // Contexte costum du déploiement. Le SLUG du costum vient de l'entité porteuse
+  // (useCocolight().entity = VITE_SLUG, constant) ; costumId/costumType viennent du registry de la lib
+  // via `me.costum(slug)`. Ce bloc ne sert donc plus qu'aux TAGS observatoire (mainTag/compagnon).
   costum: z.object({
-    slug: z.string(),
-    id: z.string(),
-    type: z.string(),
-    editMode: z.boolean().optional().default(false),
     mainTag: z.string().optional(),
     compagnon: z.string().optional(),
   }).optional(),
+  // Modales costum déclarées EN DONNÉES (document fusionné `CostumFormSchema` par id). Compilées au boot
+  // (`registerCostumForm`) en descriptor+spec → résolues par `add-/edit-<id>` via la table runtime, SANS code.
+  // zod permissif (record) : la structure est validée par le compilateur/registre (durcissement zod = à part).
+  costumForms: z.record(z.string(), z.unknown()).optional(),
   profiles: ProfilesConfigSchema,
   floatingQRCode: z.object({
     enabled: z.boolean().default(false),
@@ -1968,15 +1973,9 @@ export const SiteConfig = z.object({
   }).optional(),
   floatingActionButton: z.object({
     enabled: z.boolean().default(false),
-    modal: z.enum([
-      "add-organization",
-      "add-project",
-      "add-event",
-      "add-poi",
-      "add-tiers-lieux",
-      "register-cyber-reunion",
-      "json-form",
-    ]),
+    // Modale à ouvrir. Entités standard + `add-<id>` d'un costum (résolu par la table runtime costumFormRegistry,
+    // qu'il soit déclaré en TS ou dans `config.costumForms`). Ouvert en string (ex-enum fermé) pour les costums de config.
+    modal: z.string(),
     label: LocalizedString,
     icon: z.string().optional().default("plus"),
     position: z.enum(["bottom-right", "bottom-left", "top-right", "top-left"]).default("bottom-right"),

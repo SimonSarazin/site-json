@@ -58,30 +58,21 @@
           "fr": "Projets",
           "en": "Projects"
         },
-        "path": "/projets",
-        "visibility": {
-          "auth": "required"
-        }
+        "path": "/projets"
       },
       {
         "label": {
           "fr": "Agenda",
           "en": "Agenda"
         },
-        "path": "/agenda",
-        "visibility": {
-          "auth": "required"
-        }
+        "path": "/agenda"
       },
       {
         "label": {
           "fr": "Communauté",
           "en": "Community"
         },
-        "path": "/communaute",
-        "visibility": {
-          "auth": "required"
-        }
+        "path": "/communaute"
       }
     ],
     "sticky": true,
@@ -882,9 +873,6 @@
         "en": "Projects - eXtreme Challenge"
       },
       "layout": "fullwidth",
-      "auth": {
-        "required": true
-      },
       "sections": [
         {
           "type": "searchHeader",
@@ -958,9 +946,6 @@
         "en": "Agenda - eXtreme Challenge"
       },
       "layout": "fullwidth",
-      "auth": {
-        "required": true
-      },
       "sections": [
         {
           "type": "searchHeader",
@@ -985,45 +970,47 @@
                 "variant": "primary"
               }
             ],
-            "showSearch": true,
-            "searchPlaceholder": {
-              "fr": "Rechercher un événement...",
-              "en": "Search an event..."
-            }
+            "showSearch": false
           }
         },
         {
-          "type": "searchProStatic",
-          "id": "section-event-list",
+          "type": "agenda",
+          "id": "agenda-defi",
           "props": {
-            "useFilter": true,
-            "showMap": false,
+            "defaultMode": "list",
+            "tabs": [
+              "upcoming",
+              "ongoing",
+              "past"
+            ],
+            "defaultTab": "upcoming",
+            "upcomingWindowMonths": 12,
+            "filters": {
+              "type": true,
+              "text": true,
+              "tags": true
+            },
+            "detailsMode": "drawer",
             "enableMap": false,
-            "showActiveFiltersTypes": true,
-            "showActiveFiltersTags": true,
-            "disableInfiniteScroll": false,
-            "width": "container",
+            "mapView": "map",
+            "map": {
+              "marker": {
+                "useItemImage": true,
+                "style": "pin",
+                "color": "primary"
+              }
+            },
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 3,
+              "xl": 4
+            },
             "baseParams": {
-              "defaultTypes": [
-                "events"
-              ],
               "sourceKey": [
                 "eXtremeDefiAdeme"
               ],
-              "indexStepList": 6
-            },
-            "list": {
-              "columns": {
-                "sm": 1,
-                "md": 2,
-                "lg": 3,
-                "xl": 4
-              },
-              "card": {
-                "type": "event-featured",
-                "variant": "event-featured",
-                "detailsMode": "drawer"
-              }
+              "indexStepList": 12
             }
           }
         }
@@ -1036,9 +1023,6 @@
         "en": "Community - eXtreme Challenge"
       },
       "layout": "fullwidth",
-      "auth": {
-        "required": true
-      },
       "sections": [
         {
           "type": "searchHeader",

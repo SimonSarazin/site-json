@@ -1,0 +1,949 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descripteur figé (snapshot) 1`] = `
+{
+  "collection": "organizations",
+  "costumSlug": "navigatorDesTierslieux",
+  "fields": {
+    "_logoFile": {
+      "info": {
+        "en": "Square format recommended · PNG or JPG",
+        "fr": "Format carré recommandé · PNG ou JPG",
+      },
+      "label": {
+        "en": "Third-place logo",
+        "fr": "Logo du tiers-lieu",
+      },
+      "name": "_logoFile",
+      "renderOnly": true,
+      "type": "object",
+      "widget": "image",
+      "widgetProps": {
+        "aspect": 1,
+        "shape": "square",
+      },
+    },
+    "address": {
+      "label": {
+        "en": "Address",
+        "fr": "Adresse",
+      },
+      "name": "address",
+      "renderOnly": true,
+      "type": "object",
+      "widget": "location",
+      "widgetProps": {
+        "required": true,
+      },
+    },
+    "addressCountry": {
+      "group": "address",
+      "label": "addressCountry",
+      "name": "addressCountry",
+      "type": "string",
+      "widget": "hidden",
+    },
+    "addressLocality": {
+      "group": "address",
+      "label": "addressLocality",
+      "name": "addressLocality",
+      "type": "string",
+      "widget": "hidden",
+    },
+    "description": {
+      "label": {
+        "en": "Long description",
+        "fr": "Description longue",
+      },
+      "name": "description",
+      "placeholder": {
+        "en": "Describe your third-place...",
+        "fr": "Décrivez votre tiers-lieu...",
+      },
+      "read": "coerce:stringStrict",
+      "type": "string",
+      "widget": "textarea",
+      "widgetProps": {
+        "rows": 10,
+      },
+      "write": "coerce:orUndef",
+    },
+    "email": {
+      "label": {
+        "en": "Email",
+        "fr": "Email",
+      },
+      "name": "email",
+      "placeholder": {
+        "en": "contact@example.org",
+        "fr": "contact@exemple.org",
+      },
+      "read": "coerce:stringStrict",
+      "required": true,
+      "rules": {
+        "regex": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+      },
+      "type": "string",
+      "widget": "text",
+      "widgetProps": {
+        "inputType": "email",
+      },
+    },
+    "family": {
+      "enum": [
+        {
+          "label": {
+            "en": "Shared craft workshops",
+            "fr": "Ateliers artisanaux partagés",
+          },
+          "value": "ateliers-artisanaux",
+        },
+        {
+          "label": {
+            "en": "Shared offices / Coworking",
+            "fr": "Bureaux partagés / Coworking",
+          },
+          "value": "coworking",
+        },
+        {
+          "label": {
+            "en": "Shared kitchen / Foodlab",
+            "fr": "Cuisine partagée / Foodlab",
+          },
+          "value": "foodlab",
+        },
+        {
+          "label": {
+            "en": "Fablab / Makerspace / Hackerspace",
+            "fr": "Fablab / Makerspace / Hackerspace",
+          },
+          "value": "fablab",
+        },
+        {
+          "label": {
+            "en": "LivingLab / Social innovation",
+            "fr": "LivingLab / Innovation sociale",
+          },
+          "value": "livinglab",
+        },
+        {
+          "label": {
+            "en": "Food third-place",
+            "fr": "Tiers-lieu nourricier",
+          },
+          "value": "nourricier",
+        },
+        {
+          "label": {
+            "en": "Cultural third-place",
+            "fr": "Tiers-lieu culturel",
+          },
+          "value": "culturel",
+        },
+        {
+          "label": {
+            "en": "Other third-place family",
+            "fr": "Autre famille de tiers-lieux",
+          },
+          "value": "autre",
+        },
+      ],
+      "group": "typePlace",
+      "label": {
+        "en": "Third-place family/families",
+        "fr": "Famille(s) de tiers-lieux",
+      },
+      "name": "family",
+      "type": "array",
+      "widget": "checkboxGroup",
+      "widgetProps": {
+        "variant": "card",
+      },
+    },
+    "familyOther": {
+      "group": "typePlace",
+      "label": "familyOther",
+      "name": "familyOther",
+      "type": "string",
+      "widget": "hidden",
+    },
+    "geo": {
+      "label": "geo",
+      "name": "geo",
+      "type": "object",
+      "widget": "hidden",
+      "write": "geo:write",
+      "writeOnly": true,
+    },
+    "geoPosition": {
+      "label": "geoPosition",
+      "name": "geoPosition",
+      "type": "object",
+      "widget": "hidden",
+      "write": "geoPosition:write",
+      "writeOnly": true,
+    },
+    "hours": {
+      "label": {
+        "en": "Opening hours",
+        "fr": "Horaires d'ouverture",
+      },
+      "name": "hours",
+      "path": "openingHours",
+      "read": "openingHours:read",
+      "type": "object",
+      "widget": "openingHours",
+      "widgetProps": {
+        "dayLabelPrefix": "AddTiersLieux.days",
+      },
+      "write": "openingHours:write",
+    },
+    "localityId": {
+      "group": "address",
+      "label": "localityId",
+      "name": "localityId",
+      "type": "string",
+      "widget": "hidden",
+    },
+    "managementType": {
+      "enum": [
+        {
+          "label": {
+            "en": "Association",
+            "fr": "Association",
+          },
+          "value": "association",
+        },
+        {
+          "label": {
+            "en": "Citizen collective",
+            "fr": "Collectif citoyen",
+          },
+          "value": "collectif-citoyen",
+        },
+        {
+          "label": {
+            "en": "Universities / Schools",
+            "fr": "Universités / Écoles",
+          },
+          "value": "universites",
+        },
+        {
+          "label": {
+            "en": "Schools",
+            "fr": "Établissements scolaires",
+          },
+          "value": "etablissements-scolaires",
+        },
+        {
+          "label": {
+            "en": "Local authorities",
+            "fr": "Collectivités",
+          },
+          "value": "collectivites",
+        },
+        {
+          "label": {
+            "en": "SARL / SA / SAS",
+            "fr": "SARL / SA / SAS",
+          },
+          "value": "sarl-sa-sas",
+        },
+        {
+          "label": {
+            "en": "SCIC",
+            "fr": "SCIC",
+          },
+          "value": "scic",
+        },
+        {
+          "label": {
+            "en": "SCOP",
+            "fr": "SCOP",
+          },
+          "value": "scop",
+        },
+        {
+          "label": {
+            "en": "Other management type",
+            "fr": "Autre mode de gestion",
+          },
+          "value": "autre",
+        },
+      ],
+      "group": "manageModel",
+      "label": {
+        "en": "Management type",
+        "fr": "Mode de gestion",
+      },
+      "name": "managementType",
+      "placeholder": {
+        "en": "Select...",
+        "fr": "Sélectionner...",
+      },
+      "required": true,
+      "type": "string",
+      "widget": "select",
+    },
+    "managementTypeOther": {
+      "group": "manageModel",
+      "label": {
+        "en": "If other management type, please specify",
+        "fr": "Si autre mode de gestion, précisez",
+      },
+      "name": "managementTypeOther",
+      "type": "string",
+      "visibleIf": {
+        "field": "managementType",
+        "op": "eq",
+        "value": "autre",
+      },
+      "widget": "text",
+    },
+    "name": {
+      "label": {
+        "en": "Name of the third-place",
+        "fr": "Nom du tiers-lieu",
+      },
+      "name": "name",
+      "placeholder": {
+        "en": "Name of the third-place",
+        "fr": "Nom du tiers-lieu",
+      },
+      "read": "coerce:stringStrict",
+      "required": true,
+      "type": "string",
+      "widget": "text",
+    },
+    "openingMonth": {
+      "enum": [
+        {
+          "label": {
+            "en": "January",
+            "fr": "Janvier",
+          },
+          "value": "01",
+        },
+        {
+          "label": {
+            "en": "February",
+            "fr": "Février",
+          },
+          "value": "02",
+        },
+        {
+          "label": {
+            "en": "March",
+            "fr": "Mars",
+          },
+          "value": "03",
+        },
+        {
+          "label": {
+            "en": "April",
+            "fr": "Avril",
+          },
+          "value": "04",
+        },
+        {
+          "label": {
+            "en": "May",
+            "fr": "Mai",
+          },
+          "value": "05",
+        },
+        {
+          "label": {
+            "en": "June",
+            "fr": "Juin",
+          },
+          "value": "06",
+        },
+        {
+          "label": {
+            "en": "July",
+            "fr": "Juillet",
+          },
+          "value": "07",
+        },
+        {
+          "label": {
+            "en": "August",
+            "fr": "Août",
+          },
+          "value": "08",
+        },
+        {
+          "label": {
+            "en": "September",
+            "fr": "Septembre",
+          },
+          "value": "09",
+        },
+        {
+          "label": {
+            "en": "October",
+            "fr": "Octobre",
+          },
+          "value": "10",
+        },
+        {
+          "label": {
+            "en": "November",
+            "fr": "Novembre",
+          },
+          "value": "11",
+        },
+        {
+          "label": {
+            "en": "December",
+            "fr": "Décembre",
+          },
+          "value": "12",
+        },
+      ],
+      "group": "openingDate",
+      "label": "",
+      "name": "openingMonth",
+      "placeholder": {
+        "en": "Month",
+        "fr": "Mois",
+      },
+      "type": "string",
+      "widget": "select",
+    },
+    "openingYear": {
+      "enumFrom": "tl:years",
+      "group": "openingDate",
+      "label": "",
+      "name": "openingYear",
+      "placeholder": {
+        "en": "Year",
+        "fr": "Année",
+      },
+      "type": "string",
+      "widget": "select",
+    },
+    "phone": {
+      "label": {
+        "en": "Phone",
+        "fr": "Téléphone",
+      },
+      "name": "phone",
+      "path": "telephone",
+      "placeholder": {
+        "en": "+1 ...",
+        "fr": "+33 ...",
+      },
+      "read": "coerce:stringStrict",
+      "type": "string",
+      "widget": "text",
+      "widgetProps": {
+        "inputType": "tel",
+      },
+      "write": "coerce:orUndef",
+    },
+    "postalCode": {
+      "group": "address",
+      "label": "postalCode",
+      "name": "postalCode",
+      "type": "string",
+      "widget": "hidden",
+    },
+    "shortDescription": {
+      "label": {
+        "en": "Short description",
+        "fr": "Description courte",
+      },
+      "name": "shortDescription",
+      "read": "coerce:stringStrict",
+      "required": true,
+      "type": "string",
+      "widget": "textarea",
+      "widgetProps": {
+        "rows": 2,
+      },
+      "write": "coerce:orUndef",
+    },
+    "socialLinks": {
+      "clear": "",
+      "label": {
+        "en": "Social networks",
+        "fr": "Réseaux sociaux",
+      },
+      "name": "socialLinks",
+      "path": "socialNetwork",
+      "read": "social:read",
+      "type": "array",
+      "widget": "fieldArray",
+      "widgetProps": {
+        "addLabel": {
+          "en": "Add a social network",
+          "fr": "Ajouter un réseau social",
+        },
+        "itemFields": [
+          {
+            "kind": "select",
+            "label": {
+              "en": "Platform",
+              "fr": "Plateforme",
+            },
+            "name": "platform",
+            "options": [
+              {
+                "label": "Facebook",
+                "value": "facebook",
+              },
+              {
+                "label": "Twitter / X",
+                "value": "twitter",
+              },
+              {
+                "label": "Instagram",
+                "value": "instagram",
+              },
+              {
+                "label": "LinkedIn",
+                "value": "linkedin",
+              },
+              {
+                "label": "YouTube",
+                "value": "youtube",
+              },
+              {
+                "label": "Mastodon",
+                "value": "mastodon",
+              },
+              {
+                "label": "Telegram",
+                "value": "telegram",
+              },
+              {
+                "label": "Discord",
+                "value": "discord",
+              },
+            ],
+          },
+          {
+            "kind": "text",
+            "name": "url",
+            "placeholder": {
+              "en": "https://...",
+              "fr": "https://...",
+            },
+          },
+        ],
+      },
+      "write": "social:write",
+    },
+    "streetAddress": {
+      "group": "address",
+      "label": "streetAddress",
+      "name": "streetAddress",
+      "type": "string",
+      "widget": "hidden",
+    },
+    "structureName": {
+      "label": {
+        "en": "Operating organization (if different)",
+        "fr": "Nom de la structure porteuse (si différent)",
+      },
+      "name": "structureName",
+      "path": "holderOrganization",
+      "read": "coerce:stringStrict",
+      "type": "string",
+      "widget": "text",
+      "write": "coerce:orUndef",
+    },
+    "surfaceBuilt": {
+      "label": {
+        "en": "Built surface (m²)",
+        "fr": "Surface bâtie (m²)",
+      },
+      "name": "surfaceBuilt",
+      "path": "buildingSurfaceArea",
+      "placeholder": {
+        "en": "In m²",
+        "fr": "En m²",
+      },
+      "read": "coerce:string",
+      "type": "number",
+      "widget": "number",
+      "write": "coerce:numOrUndef",
+    },
+    "surfaceOutdoor": {
+      "label": {
+        "en": "Outdoor surface (m²)",
+        "fr": "Surface extérieure (m²)",
+      },
+      "name": "surfaceOutdoor",
+      "path": "siteSurfaceArea",
+      "placeholder": {
+        "en": "In m²",
+        "fr": "En m²",
+      },
+      "read": "coerce:string",
+      "type": "number",
+      "widget": "number",
+      "write": "coerce:numOrUndef",
+    },
+    "videoUrl": {
+      "label": "",
+      "name": "videoUrl",
+      "path": "video",
+      "placeholder": {
+        "en": "https://youtube.com/...",
+        "fr": "https://youtube.com/...",
+      },
+      "read": "tl:video0",
+      "type": "string",
+      "widget": "text",
+      "write": "tl:videoWrite",
+    },
+    "websiteUrl": {
+      "label": {
+        "en": "Website",
+        "fr": "Site internet",
+      },
+      "name": "websiteUrl",
+      "path": "url",
+      "placeholder": {
+        "en": "http://www.example.org",
+        "fr": "http://www.exemple.org",
+      },
+      "read": "coerce:stringStrict",
+      "type": "string",
+      "widget": "text",
+      "write": "coerce:orUndef",
+    },
+  },
+  "icon": "building-2",
+  "id": "tiers-lieux",
+  "layout": {
+    "header": "gradient",
+    "kind": "wizard",
+    "progress": "bar",
+    "stepper": "tabs",
+    "validatePerStep": true,
+  },
+  "sections": [
+    {
+      "groups": [
+        {
+          "columns": 1,
+          "fields": [
+            "name",
+          ],
+        },
+        {
+          "columns": 2,
+          "fields": [
+            "openingMonth",
+            "openingYear",
+          ],
+          "label": {
+            "en": "Opening date",
+            "fr": "Date d'ouverture du tiers-lieu",
+          },
+        },
+        {
+          "columns": 1,
+          "fields": [
+            "shortDescription",
+          ],
+        },
+        {
+          "columns": 1,
+          "fields": [
+            "structureName",
+          ],
+        },
+        {
+          "columns": 1,
+          "fields": [
+            "managementType",
+            "managementTypeOther",
+          ],
+        },
+        {
+          "columns": 1,
+          "fields": [
+            "family",
+          ],
+        },
+        {
+          "columns": 2,
+          "fields": [
+            "surfaceBuilt",
+            "surfaceOutdoor",
+          ],
+        },
+      ],
+      "icon": "building-2",
+      "id": "info",
+      "label": {
+        "en": "Info",
+        "fr": "Infos",
+      },
+    },
+    {
+      "groups": [
+        {
+          "columns": 1,
+          "fields": [
+            "address",
+          ],
+        },
+        {
+          "columns": 1,
+          "divider": true,
+          "fields": [
+            "email",
+            "phone",
+          ],
+          "label": {
+            "en": "Contact",
+            "fr": "Contact",
+          },
+          "titleClassName": "text-sm font-semibold",
+        },
+      ],
+      "icon": "map-pin",
+      "id": "contact",
+      "label": {
+        "en": "Contact",
+        "fr": "Contact",
+      },
+    },
+    {
+      "groups": [
+        {
+          "columns": 1,
+          "fields": [
+            "_logoFile",
+          ],
+        },
+        {
+          "columns": 1,
+          "divider": true,
+          "fields": [
+            "videoUrl",
+          ],
+          "label": {
+            "en": "Presentation video URL",
+            "fr": "Lien vers vidéo de présentation",
+          },
+          "titleClassName": "text-base font-semibold",
+        },
+      ],
+      "icon": "image",
+      "id": "media",
+      "label": {
+        "en": "Media",
+        "fr": "Médias",
+      },
+    },
+    {
+      "groups": [
+        {
+          "columns": 1,
+          "fields": [
+            "websiteUrl",
+          ],
+        },
+        {
+          "columns": 1,
+          "divider": true,
+          "fields": [
+            "socialLinks",
+          ],
+        },
+      ],
+      "icon": "globe",
+      "id": "online",
+      "label": {
+        "en": "Online",
+        "fr": "En ligne",
+      },
+    },
+    {
+      "groups": [
+        {
+          "columns": 1,
+          "fields": [
+            "hours",
+          ],
+        },
+        {
+          "columns": 1,
+          "divider": true,
+          "fields": [
+            "description",
+          ],
+        },
+      ],
+      "icon": "file-text",
+      "id": "details",
+      "label": {
+        "en": "Details",
+        "fr": "Détails",
+      },
+    },
+  ],
+  "serializeGroups": {
+    "address": {
+      "read": "address:read",
+      "serverKey": "address",
+      "write": "address:write",
+    },
+    "manageModel": {
+      "params": {
+        "known": [
+          "association",
+          "collectif-citoyen",
+          "universites",
+          "etablissements-scolaires",
+          "collectivites",
+          "sarl-sa-sas",
+          "scic",
+          "scop",
+          "autre",
+        ],
+        "other": "autre",
+        "otherField": "managementTypeOther",
+        "valueField": "managementType",
+      },
+      "read": "enumOrOther:read",
+      "serverKey": "manageModel",
+      "write": "enumOrOther:write",
+    },
+    "openingDate": {
+      "params": {
+        "day": "01",
+        "monthField": "openingMonth",
+        "yearField": "openingYear",
+      },
+      "read": "monthYear:read",
+      "serverKey": "openingDate",
+      "write": "monthYear:write",
+    },
+    "typePlace": {
+      "params": {
+        "arrayField": "family",
+        "other": "autre",
+        "otherField": "familyOther",
+        "readOtherFrom": "typePlaceOther",
+        "separator": ", ",
+      },
+      "read": "multiCsv:read",
+      "serverKey": "typePlace",
+      "write": "multiCsv:write",
+    },
+  },
+  "validate": "validate:addressComplete",
+}
+`;
+
+exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > spec figée (snapshot) 1`] = `
+{
+  "defaults": {
+    "base": "tl:emptyDefaults",
+  },
+  "descriptor": {
+    "ref": "tiers-lieux",
+  },
+  "dialogClassName": "sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden",
+  "gradientHeader": true,
+  "icon": "building-2",
+  "id": "tiers-lieux",
+  "image": {
+    "existingUrlFrom": "image:profilUrl",
+    "field": "_logoFile",
+  },
+  "mutation": {
+    "entityType": "organizations",
+    "errorContext": {
+      "add": "EntityFormModal · ADD_TIERSLIEU",
+      "edit": "EntityFormModal · EDIT_TIERSLIEU",
+    },
+    "errorKey": {
+      "add": "AddTiersLieux.toast.error",
+      "edit": "EditTiersLieux.toast.error",
+    },
+    "inject": {
+      "extraFields": {
+        "preferences": {
+          "isOpenData": true,
+          "isOpenEdition": true,
+        },
+        "type": "NGO",
+      },
+    },
+    "invalidateFn": {
+      "fn": "invalidate:standard",
+      "params": {
+        "userList": "organizations",
+      },
+    },
+    "payloadEmitEmptyOnEdit": true,
+    "payloadFn": "tl:payload",
+    "successKey": {
+      "add": "AddTiersLieux.toast.success",
+      "edit": "EditTiersLieux.toast.success",
+    },
+  },
+  "navText": {
+    "cancel": {
+      "en": "Cancel",
+      "fr": "Annuler",
+    },
+    "next": {
+      "en": "Next →",
+      "fr": "Suivant →",
+    },
+    "previous": {
+      "en": "← Previous",
+      "fr": "← Précédent",
+    },
+    "stepTemplate": {
+      "ofKey": {
+        "en": "of",
+        "fr": "sur",
+      },
+      "stepKey": {
+        "en": "Step",
+        "fr": "Étape",
+      },
+    },
+  },
+  "scope": {
+    "derive": "tl:scope",
+    "slugFrom": "derived",
+    "slugKey": "slug",
+  },
+  "submitLabel": {
+    "add": {
+      "en": "Create the third-place",
+      "fr": "Créer le tiers-lieu",
+    },
+    "edit": {
+      "en": "Save changes",
+      "fr": "Enregistrer les modifications",
+    },
+  },
+  "title": {
+    "add": {
+      "en": "Create your third-place",
+      "fr": "Créer votre tiers-lieu",
+    },
+    "edit": {
+      "en": "Edit your third-place",
+      "fr": "Modifier votre tiers-lieu",
+    },
+  },
+  "validationFailedKey": {
+    "en": "Please fix the highlighted fields (see the flagged tabs).",
+    "fr": "Veuillez corriger les champs en erreur (voir les onglets signalés).",
+  },
+}
+`;

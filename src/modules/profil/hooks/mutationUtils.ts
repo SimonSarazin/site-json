@@ -1,4 +1,5 @@
 import type { EntityTypes } from "@communecter/cocolight-api-client";
+import { normalizeGeoWrite, normalizeGeoPositionWrite } from "../forms/geoTransforms";
 
 /**
  * Champs d'adresse aplatis utilisés dans les formulaires
@@ -44,19 +45,27 @@ const ADDRESS_FIELDS = [
  * Construit un objet address à partir des champs aplatis du formulaire
  * Retourne undefined si aucune donnée d'adresse n'est présente
  */
-export function buildAddressFromForm(data: AddressFormFields) {
-  // Vérifier si au moins un champ d'adresse est rempli
-  const hasAddressData =
-    data.addressCountry ||
-    data.addressLocality ||
-    data.postalCode ||
-    data.streetAddress;
+export function buildAddressFromForm(
+  data: AddressFormFields,
+  opts: { gate?: "any" | "countryLocality" } = {},
+) {
+  // GATE de déclenchement (param unique des 2 ex-builders fusionnés) :
+  //  - "any" (défaut : poi standard + costums) : un seul champ d'adresse suffit ;
+  //  - "countryLocality" (profil org/project/event/citoyen) : pays ET ville requis (gate historique plus strict).
+  const hasAddressData = opts.gate === "countryLocality"
+    ? Boolean(data.addressCountry && data.addressLocality)
+    : Boolean(data.addressCountry || data.addressLocality || data.postalCode || data.streetAddress);
 
   if (!hasAddressData) {
     return undefined;
   }
 
-  if (!data.addressCountry && !data.localityId) {
+  // Un `localityId` (id de ville réel, sélectionné via l'autocomplete SIG) est OBLIGATOIRE : sans lui,
+  // le backend rejette l'address (`addressValid` → "CityId missing in the address !" / "Invalid object ID"),
+  // et comme la validation du save est ATOMIQUE, TOUTE la sauvegarde échoue (perte des autres champs édités).
+  // On n'envoie donc pas d'adresse partielle tant qu'une ville n'a pas été réellement sélectionnée.
+  // (Aligne le comportement sur EditProfileModal qui garde déjà `&& data.localityId`.)
+  if (!data.localityId) {
     return undefined;
   }
 
@@ -79,7 +88,11 @@ export function buildAddressFromForm(data: AddressFormFields) {
 }
 
 /**
- * Extrait les champs d'adresse des données du formulaire et les remplace par l'objet address
+ * Extrait les champs d'adresse PLATS du formulaire (CRÉATION) et les remplace par l'objet `address`
+ * imbriqué. Normalise AUSSI geo/geoPosition (posés par EditLocationTab AVEC l'adresse) : lat/lng coercés
+ * en STRING (geoValid), coords en number (geoPositionValid), liés à `localityId` — uniforme avec l'édition
+ * (cf. forms/geoTransforms). geo non lié à une adresse (pas de localityId) → omis au create.
+ * ⚠ À n'utiliser que sur des données à champs PLATS (création) ; l'édition passe par les descripteurs.
  */
 export function transformFormDataWithAddress<T extends Record<string, unknown>>(
   data: T
@@ -99,6 +112,13 @@ export function transformFormDataWithAddress<T extends Record<string, unknown>>(
   }
 
   const address = buildAddressFromForm(addressData);
+
+  // geo/geoPosition : coercition uniforme (string lat/lng, coords number) liée à localityId. Au CREATE on
+  // n'émet le geo que s'il accompagne une adresse valide (objet) ; sinon on l'omet (pas de "" inutile).
+  const geo = normalizeGeoWrite(data);
+  const geoPosition = normalizeGeoPositionWrite(data);
+  if (geo && typeof geo === "object") rest.geo = geo; else delete rest.geo;
+  if (geoPosition && typeof geoPosition === "object") rest.geoPosition = geoPosition; else delete rest.geoPosition;
 
   return {
     ...rest,
@@ -164,4 +184,27 @@ export function buildOrganizerReference(
   }
 
   return undefined;
+}
+
+/**
+ * Log détaillé d'une erreur de la lib Cocolight. Les échecs de validation backend remontent en
+ * `ApiValidationError` (→ `messages: string[]` AJV champ par champ + `details`) ou `ApiResponseError`
+ * (→ `responseData`). `console.error(err)` masque ces props custom : on les extrait explicitement, avec
+ * le payload envoyé pour comparer aux champs rejetés (ex. `ADD_ORGANIZATION - Request validation failed`,
+ * `UPDATE_BLOCK_INFO - parent must be an object`). Partagé par tous les hooks de mutation (add/edit).
+ */
+export function logCocolightError(context: string, err: unknown, payload?: unknown) {
+  const e = err as {
+    name?: string; message?: string; status?: number;
+    messages?: unknown; details?: unknown; responseData?: unknown;
+  };
+  console.error(`[${context}] échec lib`, {
+    name: e?.name,
+    message: e?.message,
+    status: e?.status,
+    messages: e?.messages, // ApiValidationError → erreurs AJV champ par champ
+    details: e?.details,
+    responseData: e?.responseData, // ApiResponseError
+    payloadSent: payload,
+  });
 }

@@ -1,0 +1,41 @@
+/**
+ * API GÉNÉRIQUE de traitement d'un formulaire d'entité (architecture C-light, cf. doc/refactor-field-treatment.md).
+ * UN `FormSpec` par entité (descripteur read+write unifié + overlays) ; 3 primitives PURES au-dessus du pipeline :
+ *  - `seedEntity(spec, entity?)` : READ (création + édition) — socle + valeurs serveur seedées.
+ *  - `buildPayload(spec, values)`: WRITE complet (omit-empty natif) — pour la CRÉATION.
+ *  - `buildEditPayload(spec, values)` : ÉDITION — payload complet (vides typés via `clear`) ; le delta réel est fait par le SDK `save()`.
+ *
+ * Remplace les wrappers ad hoc par entité (buildEditDefaults / mapEntityToTiersLieuxValues / buildTiersLieuxPayload /
+ * buildProfileUpdateData) par UN seul jeu de fonctions. Ajouter une entité = écrire UN spec.
+ */
+import type { FormDescriptor, FormValues } from "../types";
+import { seedFromEntity, valuesToPayload } from "./fieldPipeline";
+
+export interface FormSpec {
+  /** Descripteur UNIQUE read+write (asymétries déclarées via path/group/writeOnly/readOnly/groupReadOnly). */
+  descriptor: FormDescriptor;
+  /** Socle typé : champs hors descripteur (logo/photos/…) + complétude du type form. À terme dérivable du descripteur. */
+  baseDefaults?: () => FormValues;
+}
+
+export type EntityLike = { serverData?: Record<string, unknown> | null } | null | undefined;
+
+/** READ (création + édition) : socle `baseDefaults` écrasé par les valeurs serveur seedées (path + read + défauts). */
+export function seedEntity(spec: FormSpec, entity?: EntityLike): FormValues {
+  return { ...(spec.baseDefaults?.() ?? {}), ...seedFromEntity(spec.descriptor, (entity?.serverData ?? {}) as FormValues) };
+}
+
+/** WRITE complet (CRÉATION) : valeurs de form → payload serveur. Un `write` renvoyant `undefined` sur vide → clé omise. */
+export function buildPayload(spec: FormSpec, values: FormValues): FormValues {
+  return valuesToPayload(spec.descriptor, values);
+}
+
+/**
+ * ÉDITION (pattern unifié S6) : payload COMPLET, vides typés (`""`/`[]`). À `Object.assign` sur `entity.data`
+ * puis `entity.save()` — le SDK diffe en interne (n'envoie que les champs réellement changés) et le backend
+ * efface les vides (`$unset`). Remplace les diff/clear ad hoc côté site (reconcileClearedFields, buildEditDelta) :
+ * prouvé par tests/integration/advanced/unified-save-clear.test.ts (5080↔5099, chemins costum & standard).
+ */
+export function buildEditPayload(spec: FormSpec, values: FormValues): FormValues {
+  return valuesToPayload(spec.descriptor, values, { emitEmpty: true });
+}

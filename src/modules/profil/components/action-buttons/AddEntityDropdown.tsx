@@ -14,10 +14,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { AddConfig } from "../../schema";
 
-import { AddOrganizationModal } from "../add/AddOrganizationModal";
-import { AddProjectModal } from "../add/AddProjectModal";
-import { AddEventModal } from "../add/AddEventModal";
-import { AddPoiModal } from "../add/AddPoiModal";
 import { DynamicModal } from "../add/ModalRegistry";
 import { useVisibilityList } from "@/lib/visibility";
 
@@ -140,27 +136,15 @@ export function AddEntityDropdown({ entity, config, label, variant = "outline", 
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Modals builtins */}
-      <AddOrganizationModal
-        open={openModal === "organization"}
-        onOpenChange={(open) => !open && handleCloseModal()}
-        parent={entity}
-      />
-      <AddProjectModal
-        open={openModal === "project"}
-        onOpenChange={(open) => !open && handleCloseModal()}
-        parent={entity}
-      />
-      <AddEventModal
-        open={openModal === "event"}
-        onOpenChange={(open) => !open && handleCloseModal()}
-        parent={entity}
-      />
-      <AddPoiModal
-        open={openModal === "poi"}
-        onOpenChange={(open) => !open && handleCloseModal()}
-        parent={entity}
-      />
+      {/* Modals builtins — via ModalRegistry (add-organization/project/event/poi = modals génériques formEngine). */}
+      {typeof openModal === "string" && (
+        <DynamicModal
+          modalName={`add-${openModal}`}
+          open
+          onOpenChange={(open) => !open && handleCloseModal()}
+          parent={entity}
+        />
+      )}
 
       {/* Modals customs (seulement ceux dont la condition est satisfaite) */}
       {visibleCustomItems.map((item) => (
