@@ -10,6 +10,10 @@ interface ImageUploadFieldProps {
 	onChange: (file: File | null) => void;
 	/** Image existante affichée en aperçu tant qu'aucune nouvelle n'est choisie (édition). */
 	existingUrl?: string;
+	/** Image existante marquée pour suppression (édition) → masque l'aperçu existant. */
+	existingDeleted?: boolean;
+	/** Demande de suppression de l'image EXISTANTE (✕ sans nouveau fichier). */
+	onRemoveExisting?: () => void;
 	/** Ratio de recadrage imposé (défaut 1:1, comme l'avatar). */
 	aspect?: number;
 	shape?: "square" | "circle";
@@ -27,6 +31,8 @@ export function ImageUploadField({
 	value,
 	onChange,
 	existingUrl,
+	existingDeleted = false,
+	onRemoveExisting,
 	aspect = 1,
 	shape = "square",
 	label,
@@ -45,7 +51,11 @@ export function ImageUploadField({
 		if (!objectUrl) return;
 		return () => URL.revokeObjectURL(objectUrl);
 	}, [objectUrl]);
-	const preview = objectUrl ?? existingUrl ?? null;
+	// Aperçu : nouveau fichier > image existante (sauf si marquée supprimée).
+	const preview = objectUrl ?? (existingDeleted ? null : existingUrl) ?? null;
+	// ✕ visible si : un nouveau fichier, OU une image existante non supprimée MAIS uniquement si
+	// l'appelant a câblé la suppression de l'existante (`onRemoveExisting`) — sinon pas de ✕ mort.
+	const canRemove = Boolean(value) || Boolean(existingUrl && !existingDeleted && onRemoveExisting);
 
 	const openPicker = () => inputRef.current?.click();
 
@@ -72,7 +82,11 @@ export function ImageUploadField({
 	};
 
 	const removeImage = () => {
-		onChange(null);
+		if (value) {
+			onChange(null); // retire le nouveau fichier choisi (revient à l'existante)
+		} else if (existingUrl && !existingDeleted) {
+			onRemoveExisting?.(); // marque l'image EXISTANTE pour suppression
+		}
 		if (inputRef.current) inputRef.current.value = "";
 	};
 
@@ -92,7 +106,7 @@ export function ImageUploadField({
 						<div className={`h-40 w-40 overflow-hidden border-2 border-border bg-muted shadow-sm ${rounded}`}>
 							<img src={preview} alt={label ?? ""} className="h-full w-full object-cover" />
 						</div>
-						{value && (
+						{canRemove && (
 							<button
 								type="button"
 								onClick={(event) => {

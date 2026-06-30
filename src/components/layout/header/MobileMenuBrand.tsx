@@ -1,6 +1,5 @@
 import { Header } from "@/types/site-schema";
-import { IconOrSvg } from "@/components/ui/icon-or-svg";
-import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import HeaderLogo from "./HeaderLogo";
 import NavLink from "../NavLink";
 import { useT } from "@/hooks/useT";
 import { cn } from "@/lib/utils";
@@ -30,21 +29,15 @@ export default function MobileMenuBrand({ header, tone = "default", onNavigate }
       onClick={onNavigate}
       className="flex min-w-0 items-center gap-3"
     >
-      {header.logo ? (
-        // Hauteur fixe, largeur LIBRE (max-w-40) : les logos horizontaux
-        // (ex. tiers-lieux) seraient écrasés par un carré h-8 w-8.
-        <OptimizedImage
-          src={header.logo}
-          alt={header.logoAlt ? t(header.logoAlt) : ""}
-          height={36}
-          className="h-9 w-auto max-w-40 shrink-0 object-contain"
-        />
-      ) : header.logoIcon ? (
-        <IconOrSvg
-          value={header.logoIcon}
-          className={cn("h-8 w-8 shrink-0", onColor ? "text-white" : "text-primary")}
-        />
-      ) : null}
+      {/* Hauteur fixe, largeur LIBRE (max-w-40) : les logos horizontaux
+          (ex. tiers-lieux) seraient écrasés par un carré h-8 w-8. */}
+      <HeaderLogo
+        header={header}
+        iconTone={onColor ? "white" : "primary"}
+        imageHeight={36}
+        imageClassName="h-9 w-auto max-w-40 shrink-0 object-contain"
+        iconClassName="h-8 w-8 shrink-0"
+      />
       {(header.logoTitle || header.logoSubtitle) && (
         <span className="flex min-w-0 flex-col leading-tight">
           {header.logoTitle && (

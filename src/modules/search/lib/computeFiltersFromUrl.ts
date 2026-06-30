@@ -7,7 +7,9 @@ export interface FilterGroupLike {
   id: string;
   type?: string;
   filterType?: string;
-  options?: Array<{ id: string; name?: string }>;
+  /** scopeList (zones) : clé de `locality`. Défaut `${option.id}${option.level}`. */
+  field?: string;
+  options?: Array<{ id: string; name?: string; level?: string }>;
 }
 
 /** Données `filtersByAnswers`/`filtersByPath` résolues (services → orgaNameArray). */
@@ -42,14 +44,17 @@ export function computeFiltersFromUrl(
   Object.values(filterAnswerData ?? {}).forEach((g) => {
     Object.keys(g.values).forEach((k) => managedAnswerOptionKeys.add(k));
   });
-  // Clés searchByFields gérées par les groupes entityList (= leurs options) →
-  // reconstruites depuis l'URL plutôt que préservées.
+  // Clés searchByFields gérées par les groupes entityList / scopeList (= leurs
+  // options) → reconstruites depuis l'URL plutôt que préservées.
   const managedEntityOptionKeys = new Set<string>();
-  filterGroups
-    .filter((g) => g.type === "entityList")
-    .forEach((g) => {
+  const managedScopeOptionKeys = new Set<string>();
+  filterGroups.forEach((g) => {
+    if (g.type === "entityList") {
       (g.options ?? []).forEach((o) => managedEntityOptionKeys.add(o.name || o.id));
-    });
+    } else if (g.type === "scopeList") {
+      (g.options ?? []).forEach((o) => managedScopeOptionKeys.add(o.name || o.id));
+    }
+  });
 
   searchParams.forEach((rawValue, groupId) => {
     const values = rawValue.split(",").map((v) => v.trim()).filter(Boolean);
@@ -66,6 +71,24 @@ export function computeFiltersFromUrl(
           if (slug) {
             nextSearchFields[slug] = { field: fType, type: fType, value: [slug] };
           }
+        });
+        return;
+      }
+      // scopeList (zones : pays / régions) → searchByFields (type scopeList,
+      // encodage `{ id, type: level }` → locality), à l'identique du clic. Sans
+      // ça, un deep-link `?regions=…` partait en `selectedFilters` → envoyé comme
+      // TAG au lieu de filtre de localité.
+      if (group.type === "scopeList") {
+        values.forEach((v) => {
+          const opt = (group.options ?? []).find((o) => (o.name || o.id) === v || o.id === v);
+          if (!opt || !opt.level) return;
+          const key = opt.name || opt.id;
+          const field = group.field ?? `${opt.id}${opt.level}`;
+          nextSearchFields[key] = {
+            field,
+            type: "scopeList",
+            value: { id: key, type: opt.level },
+          };
         });
         return;
       }
@@ -109,7 +132,12 @@ export function computeFiltersFromUrl(
     applySearchFields: (prev) => {
       const preserved: Record<string, SearchByFieldValue> = {};
       Object.entries(prev).forEach(([key, val]) => {
-        if (!managedAnswerOptionKeys.has(key) && !managedEntityOptionKeys.has(key)) preserved[key] = val;
+        if (
+          !managedAnswerOptionKeys.has(key) &&
+          !managedEntityOptionKeys.has(key) &&
+          !managedScopeOptionKeys.has(key)
+        )
+          preserved[key] = val;
       });
       return { ...preserved, ...nextSearchFields };
     },

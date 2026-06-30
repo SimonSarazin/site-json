@@ -1,0 +1,968 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > descripteur figé (snapshot) 1`] = `
+{
+  "collection": "poi",
+  "costumSlug": "equipementsSportifs974",
+  "fields": {
+    "_imageFile": {
+      "label": "image",
+      "name": "_imageFile",
+      "renderOnly": true,
+      "type": "object",
+      "widget": "image",
+    },
+    "address": {
+      "label": {
+        "en": "Address",
+        "fr": "Adresse",
+      },
+      "name": "address",
+      "renderOnly": true,
+      "type": "object",
+      "widget": "location",
+    },
+    "addressCountry": {
+      "group": "address",
+      "label": "addressCountry",
+      "name": "addressCountry",
+      "required": true,
+      "type": "string",
+      "widget": "hidden",
+    },
+    "addressLocality": {
+      "group": "address",
+      "label": "addressLocality",
+      "name": "addressLocality",
+      "required": true,
+      "type": "string",
+      "widget": "hidden",
+    },
+    "aps_name": {
+      "default": [],
+      "label": {
+        "en": "Sports practised",
+        "fr": "Sports pratiqués",
+      },
+      "name": "aps_name",
+      "placeholder": {
+        "en": "Select a sport",
+        "fr": "Sélectionner un sport",
+      },
+      "placeholderSearch": {
+        "en": "Search a sport",
+        "fr": "Rechercher un sport",
+      },
+      "read": "coerce:stringArray",
+      "required": true,
+      "type": "array",
+      "widget": "multiselect",
+    },
+    "categorie": {
+      "default": "",
+      "label": {
+        "en": "Category",
+        "fr": "Catégorie",
+      },
+      "name": "categorie",
+      "read": "coerce:string",
+      "type": "string",
+      "widget": "text",
+    },
+    "description": {
+      "default": "",
+      "label": "description",
+      "name": "description",
+      "read": "coerce:string",
+      "type": "string",
+      "widget": "hidden",
+    },
+    "equip_acc_libre": {
+      "default": false,
+      "label": {
+        "en": "Free access",
+        "fr": "Accès libre",
+      },
+      "name": "equip_acc_libre",
+      "read": "coerce:bool",
+      "type": "boolean",
+      "widget": "switch",
+    },
+    "equip_douche": {
+      "default": false,
+      "label": {
+        "en": "Accessible shower",
+        "fr": "Douche accessible",
+      },
+      "name": "equip_douche",
+      "read": "coerce:bool",
+      "type": "boolean",
+      "widget": "switch",
+    },
+    "equip_eclair": {
+      "default": false,
+      "label": {
+        "en": "Area lighting",
+        "fr": "Éclairage de l'aire",
+      },
+      "name": "equip_eclair",
+      "read": "coerce:bool",
+      "type": "boolean",
+      "widget": "switch",
+    },
+    "equip_gest_type": {
+      "default": "",
+      "label": {
+        "en": "Manager type",
+        "fr": "Type de gestionnaire",
+      },
+      "name": "equip_gest_type",
+      "read": "coerce:string",
+      "type": "string",
+      "widget": "text",
+    },
+    "equip_larg": {
+      "label": {
+        "en": "Width",
+        "fr": "Largeur",
+      },
+      "name": "equip_larg",
+      "read": "coerce:number",
+      "type": "number",
+      "widget": "number",
+    },
+    "equip_loc_type": {
+      "default": [],
+      "label": {
+        "en": "Additional premises",
+        "fr": "Locaux complémentaires",
+      },
+      "name": "equip_loc_type",
+      "read": "coerce:stringArray",
+      "type": "array",
+      "widget": "checkboxGroup",
+    },
+    "equip_long": {
+      "label": {
+        "en": "Length",
+        "fr": "Longueur",
+      },
+      "name": "equip_long",
+      "read": "coerce:number",
+      "type": "number",
+      "widget": "number",
+    },
+    "equip_maj_date": {
+      "default": "",
+      "label": {
+        "en": "Update date",
+        "fr": "Date de mise à jour",
+      },
+      "name": "equip_maj_date",
+      "read": "coerce:dateYMDlocale",
+      "type": "date",
+      "widget": "date",
+    },
+    "equip_nature": {
+      "default": "",
+      "label": {
+        "en": "Facility nature",
+        "fr": "Nature de l'équipement",
+      },
+      "name": "equip_nature",
+      "placeholder": {
+        "en": "Facility nature",
+        "fr": "Nature de l'équipement",
+      },
+      "placeholderSearch": {
+        "en": "Search…",
+        "fr": "Rechercher…",
+      },
+      "read": "coerce:string",
+      "type": "string",
+      "widget": "selectFromLists",
+    },
+    "equip_pmr_acc": {
+      "default": false,
+      "label": {
+        "en": "PRM access available",
+        "fr": "Accès PMR disponible",
+      },
+      "name": "equip_pmr_acc",
+      "read": "coerce:bool",
+      "type": "boolean",
+      "widget": "switch",
+    },
+    "equip_pmr_chem": {
+      "default": false,
+      "label": {
+        "en": "PRM-adapted pathway",
+        "fr": "Cheminement PMR adapté",
+      },
+      "name": "equip_pmr_chem",
+      "read": "coerce:bool",
+      "type": "boolean",
+      "widget": "switch",
+    },
+    "equip_pmr_douche": {
+      "default": false,
+      "label": {
+        "en": "PRM-accessible showers",
+        "fr": "Douches accessibles PMR",
+      },
+      "name": "equip_pmr_douche",
+      "read": "coerce:bool",
+      "type": "boolean",
+      "widget": "switch",
+    },
+    "equip_pmr_sanit": {
+      "default": false,
+      "label": {
+        "en": "PRM-accessible toilets",
+        "fr": "Sanitaires accessibles PMR",
+      },
+      "name": "equip_pmr_sanit",
+      "read": "coerce:bool",
+      "type": "boolean",
+      "widget": "switch",
+    },
+    "equip_pmr_trib": {
+      "default": false,
+      "label": {
+        "en": "PRM-accessible stands",
+        "fr": "Tribunes accessibles PMR",
+      },
+      "name": "equip_pmr_trib",
+      "read": "coerce:bool",
+      "type": "boolean",
+      "widget": "switch",
+    },
+    "equip_pmr_vest": {
+      "default": false,
+      "label": {
+        "en": "PRM-accessible changing rooms",
+        "fr": "Vestiaires accessibles PMR",
+      },
+      "name": "equip_pmr_vest",
+      "read": "coerce:bool",
+      "type": "boolean",
+      "widget": "switch",
+    },
+    "equip_prop_nom": {
+      "default": "",
+      "label": {
+        "en": "Owner name",
+        "fr": "Nom du propriétaire",
+      },
+      "name": "equip_prop_nom",
+      "read": "coerce:string",
+      "type": "string",
+      "widget": "text",
+    },
+    "equip_prop_type": {
+      "default": "",
+      "label": {
+        "en": "Owner type",
+        "fr": "Type de propriétaire",
+      },
+      "name": "equip_prop_type",
+      "placeholder": {
+        "en": "Owner type",
+        "fr": "Type de propriétaire",
+      },
+      "placeholderSearch": {
+        "en": "Search…",
+        "fr": "Rechercher…",
+      },
+      "read": "coerce:string",
+      "type": "string",
+      "widget": "selectFromLists",
+    },
+    "equip_pshs_aire": {
+      "default": false,
+      "label": {
+        "en": "Play area",
+        "fr": "Aire de jeu",
+      },
+      "name": "equip_pshs_aire",
+      "read": "coerce:bool",
+      "type": "boolean",
+      "widget": "switch",
+    },
+    "equip_pshs_chem": {
+      "default": false,
+      "label": {
+        "en": "Pathways",
+        "fr": "Cheminements",
+      },
+      "name": "equip_pshs_chem",
+      "read": "coerce:bool",
+      "type": "boolean",
+      "widget": "switch",
+    },
+    "equip_pshs_sanit": {
+      "default": false,
+      "label": {
+        "en": "Toilets",
+        "fr": "Sanitaires",
+      },
+      "name": "equip_pshs_sanit",
+      "read": "coerce:bool",
+      "type": "boolean",
+      "widget": "switch",
+    },
+    "equip_pshs_sign": {
+      "default": false,
+      "label": {
+        "en": "Reception / Signage",
+        "fr": "Accueil / Signalétique",
+      },
+      "name": "equip_pshs_sign",
+      "read": "coerce:bool",
+      "type": "boolean",
+      "widget": "switch",
+    },
+    "equip_pshs_trib": {
+      "default": false,
+      "label": {
+        "en": "Stands",
+        "fr": "Tribunes",
+      },
+      "name": "equip_pshs_trib",
+      "read": "coerce:bool",
+      "type": "boolean",
+      "widget": "switch",
+    },
+    "equip_pshs_vest": {
+      "default": false,
+      "label": {
+        "en": "Changing rooms",
+        "fr": "Vestiaires",
+      },
+      "name": "equip_pshs_vest",
+      "read": "coerce:bool",
+      "type": "boolean",
+      "widget": "switch",
+    },
+    "equip_sol": {
+      "default": "",
+      "label": {
+        "en": "Floor type",
+        "fr": "Type de sol",
+      },
+      "name": "equip_sol",
+      "placeholder": {
+        "en": "Floor type",
+        "fr": "Type de sol",
+      },
+      "placeholderSearch": {
+        "en": "Search…",
+        "fr": "Rechercher…",
+      },
+      "read": "coerce:string",
+      "type": "string",
+      "widget": "selectFromLists",
+    },
+    "equip_surf": {
+      "computedFrom": {
+        "deps": [
+          "equip_long",
+          "equip_larg",
+        ],
+        "fn": "compute:multiply",
+      },
+      "label": {
+        "en": "Area (computed)",
+        "fr": "Surface (calculée)",
+      },
+      "name": "equip_surf",
+      "read": "coerce:number",
+      "type": "number",
+      "widget": "number",
+    },
+    "equip_type_famille": {
+      "default": "",
+      "label": {
+        "en": "Facility family",
+        "fr": "Famille d'équipement",
+      },
+      "name": "equip_type_famille",
+      "placeholder": {
+        "en": "Facility family",
+        "fr": "Famille d'équipement",
+      },
+      "placeholderSearch": {
+        "en": "Search…",
+        "fr": "Rechercher…",
+      },
+      "read": "coerce:string",
+      "type": "string",
+      "widget": "selectFromLists",
+    },
+    "equip_type_name": {
+      "default": "",
+      "label": {
+        "en": "Facility type",
+        "fr": "Type de l'équipement",
+      },
+      "name": "equip_type_name",
+      "placeholder": {
+        "en": "Facility type",
+        "fr": "Type de l'équipement",
+      },
+      "placeholderSearch": {
+        "en": "Search…",
+        "fr": "Rechercher…",
+      },
+      "read": "coerce:string",
+      "required": true,
+      "type": "string",
+      "widget": "selectFromLists",
+    },
+    "equip_utilisateur": {
+      "default": [],
+      "label": {
+        "en": "User types",
+        "fr": "Types d'utilisateurs",
+      },
+      "name": "equip_utilisateur",
+      "read": "coerce:stringArray",
+      "type": "array",
+      "widget": "checkboxGroup",
+    },
+    "geo": {
+      "label": "geo",
+      "name": "geo",
+      "type": "object",
+      "widget": "hidden",
+      "write": "geo:write",
+      "writeOnly": true,
+    },
+    "geoPosition": {
+      "label": "geoPosition",
+      "name": "geoPosition",
+      "type": "object",
+      "widget": "hidden",
+      "write": "geoPosition:write",
+      "writeOnly": true,
+    },
+    "inst_acc_handi_bool": {
+      "default": false,
+      "label": {
+        "en": "Accessible to people with disabilities",
+        "fr": "Accessible aux personnes en situation de handicap",
+      },
+      "name": "inst_acc_handi_bool",
+      "read": "coerce:bool",
+      "type": "boolean",
+      "widget": "switch",
+    },
+    "inst_acc_handi_type": {
+      "default": "",
+      "label": {
+        "en": "Type of disability supported",
+        "fr": "Type de handicap pris en charge",
+      },
+      "name": "inst_acc_handi_type",
+      "read": "coerce:string",
+      "type": "string",
+      "widget": "text",
+    },
+    "inst_date_creation": {
+      "default": "",
+      "label": {
+        "en": "Creation date",
+        "fr": "Date de création",
+      },
+      "name": "inst_date_creation",
+      "read": "coerce:dateYMDlocale",
+      "type": "date",
+      "widget": "date",
+    },
+    "inst_enqu_date": {
+      "default": "",
+      "label": {
+        "en": "Survey date",
+        "fr": "Date d'enquête",
+      },
+      "name": "inst_enqu_date",
+      "read": "coerce:dateYMDlocale",
+      "type": "date",
+      "widget": "date",
+    },
+    "inst_nom": {
+      "default": "",
+      "label": {
+        "en": "Institution name",
+        "fr": "Nom de l'institution",
+      },
+      "name": "inst_nom",
+      "read": "coerce:string",
+      "type": "string",
+      "widget": "text",
+    },
+    "inst_part_bool": {
+      "default": false,
+      "label": {
+        "en": "Partnership available",
+        "fr": "Partenariat disponible",
+      },
+      "name": "inst_part_bool",
+      "read": "coerce:bool",
+      "type": "boolean",
+      "widget": "switch",
+    },
+    "inst_part_type": {
+      "default": [],
+      "label": {
+        "en": "Partnership type",
+        "fr": "Type de partenariat",
+      },
+      "name": "inst_part_type",
+      "read": "coerce:stringArray",
+      "type": "array",
+      "visibleIf": {
+        "field": "inst_part_bool",
+        "op": "truthy",
+      },
+      "widget": "tags",
+      "widgetProps": {
+        "searchable": false,
+      },
+    },
+    "inst_trans_bool": {
+      "default": false,
+      "label": {
+        "en": "Accessible by public transport",
+        "fr": "Accessible en transport en commun",
+      },
+      "name": "inst_trans_bool",
+      "read": "coerce:bool",
+      "type": "boolean",
+      "widget": "switch",
+    },
+    "inst_trans_type": {
+      "default": "",
+      "label": {
+        "en": "Available means of transport",
+        "fr": "Moyen de transport disponible",
+      },
+      "name": "inst_trans_type",
+      "read": "coerce:string",
+      "type": "string",
+      "widget": "text",
+    },
+    "localityId": {
+      "group": "address",
+      "label": "localityId",
+      "name": "localityId",
+      "type": "string",
+      "widget": "hidden",
+    },
+    "name": {
+      "default": "",
+      "info": {
+        "en": "The name that will be publicly displayed",
+        "fr": "Le nom qui sera affiché publiquement",
+      },
+      "label": {
+        "en": "Name",
+        "fr": "Nom",
+      },
+      "name": "name",
+      "read": "coerce:string",
+      "required": true,
+      "type": "string",
+      "widget": "text",
+    },
+    "postalCode": {
+      "group": "address",
+      "label": "postalCode",
+      "name": "postalCode",
+      "required": true,
+      "type": "string",
+      "widget": "hidden",
+    },
+    "streetAddress": {
+      "group": "address",
+      "label": "streetAddress",
+      "name": "streetAddress",
+      "required": true,
+      "type": "string",
+      "widget": "hidden",
+    },
+    "tags": {
+      "default": [],
+      "label": "tags",
+      "name": "tags",
+      "read": "coerce:stringArray",
+      "type": "array",
+      "widget": "hidden",
+    },
+    "urls": {
+      "default": [],
+      "label": {
+        "en": "Website",
+        "fr": "Site internet",
+      },
+      "name": "urls",
+      "read": "coerce:stringArray",
+      "type": "array",
+      "widget": "urlList",
+      "widgetProps": {
+        "addLabel": {
+          "en": "Add a URL",
+          "fr": "Ajouter une URL",
+        },
+        "removeLabel": {
+          "en": "Remove URL",
+          "fr": "Retirer l'URL",
+        },
+      },
+    },
+  },
+  "id": "equipements-sportifs",
+  "layout": {
+    "kind": "wizard",
+    "validatePerStep": true,
+  },
+  "sections": [
+    {
+      "groups": [
+        {
+          "columns": 1,
+          "fields": [
+            "$slot:parentInfo",
+            "name",
+          ],
+        },
+        {
+          "columns": 2,
+          "fields": [
+            "equip_type_name",
+            "equip_type_famille",
+          ],
+        },
+        {
+          "columns": 1,
+          "fields": [
+            "_imageFile",
+          ],
+        },
+        {
+          "columns": 1,
+          "fields": [
+            "address",
+            "addressCountry",
+            "addressLocality",
+            "postalCode",
+            "streetAddress",
+          ],
+          "label": {
+            "en": "Address",
+            "fr": "Adresse",
+          },
+          "required": true,
+        },
+        {
+          "columns": 1,
+          "fields": [
+            "$slot:doublons",
+          ],
+        },
+      ],
+      "id": "general",
+      "label": {
+        "en": "General information",
+        "fr": "Informations générales",
+      },
+    },
+    {
+      "groups": [
+        {
+          "columns": 2,
+          "fields": [
+            "equip_prop_nom",
+            "equip_prop_type",
+          ],
+        },
+        {
+          "columns": 3,
+          "fields": [
+            "inst_date_creation",
+            "inst_enqu_date",
+            "equip_maj_date",
+          ],
+        },
+        {
+          "columns": 1,
+          "fields": [
+            "inst_nom",
+            "categorie",
+            "equip_gest_type",
+          ],
+        },
+        {
+          "columns": 1,
+          "fields": [
+            "inst_part_bool",
+            "inst_part_type",
+          ],
+        },
+      ],
+      "id": "legal",
+      "label": {
+        "en": "Legal characteristics",
+        "fr": "Caractéristiques juridiques",
+      },
+    },
+    {
+      "groups": [
+        {
+          "columns": 2,
+          "fields": [
+            "equip_nature",
+            "equip_sol",
+          ],
+        },
+        {
+          "columns": 3,
+          "fields": [
+            "equip_long",
+            "equip_larg",
+            "equip_surf",
+          ],
+        },
+        {
+          "columns": 2,
+          "fields": [
+            "inst_acc_handi_type",
+            "inst_trans_type",
+          ],
+        },
+        {
+          "columns": 2,
+          "fields": [
+            "inst_acc_handi_bool",
+            "inst_trans_bool",
+            "equip_eclair",
+            "equip_douche",
+          ],
+        },
+        {
+          "columns": 1,
+          "fields": [
+            "equip_pmr_acc",
+          ],
+        },
+        {
+          "columns": 2,
+          "fields": [
+            "equip_pmr_chem",
+            "equip_pmr_douche",
+            "equip_pmr_trib",
+            "equip_pmr_vest",
+            "equip_pmr_sanit",
+          ],
+          "label": {
+            "en": "PRM accessibility",
+            "fr": "Accessibilité PMR",
+          },
+          "visibleIf": {
+            "field": "equip_pmr_acc",
+            "op": "truthy",
+          },
+        },
+        {
+          "columns": 1,
+          "fields": [
+            "equip_loc_type",
+          ],
+        },
+        {
+          "columns": 2,
+          "fields": [
+            "equip_pshs_aire",
+            "equip_pshs_sanit",
+            "equip_pshs_trib",
+            "equip_pshs_sign",
+            "equip_pshs_vest",
+            "equip_pshs_chem",
+          ],
+          "label": {
+            "en": "PSHS accessibility",
+            "fr": "Accessibilité PSHS",
+          },
+        },
+      ],
+      "id": "structure",
+      "label": {
+        "en": "Structural characteristics",
+        "fr": "Caractéristiques structurantes",
+      },
+    },
+    {
+      "groups": [
+        {
+          "columns": 1,
+          "fields": [
+            "urls",
+          ],
+        },
+        {
+          "columns": 1,
+          "fields": [
+            "equip_utilisateur",
+          ],
+        },
+        {
+          "columns": 1,
+          "fields": [
+            "equip_acc_libre",
+          ],
+        },
+        {
+          "columns": 1,
+          "fields": [
+            "aps_name",
+          ],
+        },
+      ],
+      "id": "usage",
+      "label": {
+        "en": "Usage characteristics",
+        "fr": "Caractéristiques d'usages",
+      },
+    },
+  ],
+  "serializeGroups": {
+    "address": {
+      "read": "address:read",
+      "serverKey": "address",
+      "write": "address:write",
+    },
+  },
+}
+`;
+
+exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > spec figée (snapshot) 1`] = `
+{
+  "cleanValues": {
+    "fn": "cleanValues:dropEmptyArrayItems",
+    "params": {
+      "fields": [
+        "urls",
+      ],
+    },
+  },
+  "defaults": {
+    "base": "poi:emptyDefaults",
+  },
+  "description": {
+    "add": {
+      "en": "Fill in the facility information.",
+      "fr": "Compléter les informations de l'équipement.",
+    },
+    "edit": {
+      "en": "Update the facility information.",
+      "fr": "Mettre à jour les informations de l'équipement.",
+    },
+  },
+  "descriptor": {
+    "ref": "equipements-sportifs",
+  },
+  "dialogClassName": "sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden",
+  "id": "equipements-sportifs",
+  "image": {
+    "existingUrlFrom": "image:profilUrl",
+    "field": "_imageFile",
+  },
+  "listsFromCarrier": true,
+  "mutation": {
+    "entityType": "poi",
+    "errorContext": {
+      "add": "EntityFormModal · ADD_POI",
+      "edit": "EntityFormModal · UPDATE_POI",
+    },
+    "errorKey": {
+      "add": "toast.add.poiError",
+      "edit": "toast.profile.updateError",
+    },
+    "inject": {
+      "extraFieldsFromScope": {
+        "type": "poiType",
+      },
+      "parent": true,
+    },
+    "invalidateFn": {
+      "fn": "invalidate:standard",
+      "params": {
+        "parentAboutOnAdd": true,
+        "searchKeys": [
+          "searchCostumStatic",
+          "poi-equipement-matches",
+        ],
+        "userList": "pois",
+      },
+    },
+    "navigateOnSuccess": false,
+    "payloadEmitEmptyOnEdit": true,
+    "successKey": {
+      "add": "toast.add.poiSuccess",
+      "edit": "toast.profile.updateSuccess",
+    },
+  },
+  "navText": {
+    "cancel": {
+      "en": "Cancel",
+      "fr": "Annuler",
+    },
+    "next": {
+      "en": "Next",
+      "fr": "Suivant",
+    },
+    "previous": {
+      "en": "Previous",
+      "fr": "Précédent",
+    },
+    "stepLabelKey": "AddPoiEquipement.stepIndicator",
+  },
+  "scope": {
+    "defaults": {
+      "addressCountry": "RE",
+      "poiType": "recoveryCenter",
+    },
+    "derive": "poi:scope",
+    "slugFrom": "derived",
+    "slugKey": "sourceKey",
+  },
+  "slots": {
+    "doublons": "slot:poiDoublons",
+    "parentInfo": "slot:parentInfo",
+  },
+  "submitLabel": {
+    "add": {
+      "en": "Create",
+      "fr": "Créer",
+    },
+    "edit": {
+      "en": "Save",
+      "fr": "Sauvegarder",
+    },
+  },
+  "title": {
+    "add": {
+      "en": "Add a facility",
+      "fr": "Ajouter un équipement",
+    },
+    "edit": {
+      "en": "Edit a facility",
+      "fr": "Éditer un équipement",
+    },
+  },
+  "validationFailedKey": {
+    "en": "Please fix the highlighted fields.",
+    "fr": "Veuillez corriger les champs en erreur.",
+  },
+}
+`;

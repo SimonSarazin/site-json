@@ -1,4 +1,5 @@
-import { MapPin, Calendar, ExternalLink } from "lucide-react";
+import { useState } from "react";
+import { MapPin, Calendar, ExternalLink, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useT } from "@/hooks/useT";
@@ -6,6 +7,7 @@ import { Link } from "react-router";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { getEntityIcon } from "@/lib/entityIcons";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { EntityPreviewDrawer } from "./EntityPreviewDrawer";
 
 interface EntityCardProps {
   entity: EntityTypes;
@@ -20,6 +22,13 @@ export function EntityCard({
 }: EntityCardProps) {
   const t = useT("modules/profil");
   const type = entity.getEntityType?.() || "";
+
+  // Les entités SANS slug (ex. POI importés) n'ont pas de page profil `/profil/:slug` :
+  // on ouvre un aperçu en drawer plutôt que de produire un lien cassé `/profil/null`.
+  const hasSlug = Boolean(entity.slug);
+  const profileUrl = `/profil/${entity.slug}`;
+  const [openDetails, setOpenDetails] = useState(false);
+  const openPreview = () => setOpenDetails(true);
 
   const getTypeLabel = () => {
     switch (type) {
@@ -36,6 +45,19 @@ export function EntityCard({
     }
   };
 
+  // Enveloppe cliquable : <Link> si l'entité a un slug, sinon bouton ouvrant l'aperçu (drawer).
+  // Fonction de rendu (pas un composant imbriqué) pour éviter un remount à chaque render.
+  const renderClickable = (className: string, children: React.ReactNode) =>
+    hasSlug ? (
+      <Link to={profileUrl} className={className}>
+        {children}
+      </Link>
+    ) : (
+      <button type="button" onClick={openPreview} className={`${className} text-left`}>
+        {children}
+      </button>
+    );
+
   return (
     <div
       ref={lastItemRef}
@@ -43,11 +65,9 @@ export function EntityCard({
     >
       <div className="flex items-start gap-4">
         {/* Image/Logo */}
-        <Link
-          to={`/profil/${entity.slug}`}
-          className="w-16 h-16 rounded-lg border border-border overflow-hidden bg-muted shrink-0 hover:opacity-80 transition-opacity"
-        >
-          {entity.serverData?.profilImageUrl ? (
+        {renderClickable(
+          "w-16 h-16 rounded-lg border border-border overflow-hidden bg-muted shrink-0 hover:opacity-80 transition-opacity",
+          entity.serverData?.profilImageUrl ? (
             <OptimizedImage
               src={entity.serverData.profilImageUrl}
               alt={entity.serverData?.name || ""}
@@ -58,20 +78,18 @@ export function EntityCard({
             <div className="w-full h-full flex items-center justify-center">
               {getEntityIcon(type, { className: "w-5 h-5", withColor: true })}
             </div>
-          )}
-        </Link>
+          ),
+        )}
 
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-2">
-                <Link
-                  to={`/profil/${entity.slug}`}
-                  className="font-semibold text-foreground truncate hover:text-primary hover:underline transition-colors"
-                >
-                  {entity.serverData?.name || t("common.untitled")}
-                </Link>
+                {renderClickable(
+                  "font-semibold text-foreground truncate hover:text-primary hover:underline transition-colors",
+                  entity.serverData?.name || t("common.untitled"),
+                )}
                 <Badge variant="secondary" className="text-xs">
                   {getTypeLabel()}
                 </Badge>
@@ -139,21 +157,34 @@ export function EntityCard({
               )}
             </div>
 
-            {/* Actions */}
+            {/* Actions : lien profil si slug, sinon aperçu (drawer) */}
             <div className="flex items-center gap-2 ml-4">
-              <Button variant="outline" size="sm" asChild>
-                <Link to={`/profil/${entity.slug}`}>
-                  <ExternalLink className="w-4 h-4" />
+              {hasSlug ? (
+                <Button variant="outline" size="sm" asChild>
+                  <Link to={profileUrl}>
+                    <ExternalLink className="w-4 h-4" />
+                    <span className="hidden sm:inline ml-1">
+                      {t("common.viewProfile")}
+                    </span>
+                  </Link>
+                </Button>
+              ) : (
+                <Button variant="outline" size="sm" onClick={openPreview}>
+                  <Eye className="w-4 h-4" />
                   <span className="hidden sm:inline ml-1">
-                    {t("common.viewProfile")}
+                    {t("common.preview")}
                   </span>
-                </Link>
-              </Button>
+                </Button>
+              )}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Aperçu drawer "léger actionnable" pour les entités sans slug (Édition auteur + Email + carte). */}
+      {!hasSlug && (
+        <EntityPreviewDrawer entity={entity} open={openDetails} onOpenChange={setOpenDetails} />
+      )}
     </div>
   );
 }
-

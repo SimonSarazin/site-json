@@ -5,7 +5,7 @@ import { useSearchUsers } from "@/hooks/useSearchUsers";
 import type { EntityTypes, User } from "@communecter/cocolight-api-client";
 import { useEntityLabels } from "../../hooks/useEntityLabels";
 import { useConfirmationDialog } from "../../hooks/useConfirmationDialog";
-import { useAdminActions } from "../../actions";
+import { useAdminActions, useInviteByEmail, canInviteByEmail } from "../../actions";
 import { useUserStatusBadge } from "../../hooks/useUserStatusBadge";
 import { ConfirmationDialog } from "./ConfirmationDialog";
 import {
@@ -27,7 +27,21 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserPlus, Search, Loader2, Mail, MoreVertical } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
+import { UserPlus, Search, Loader2, Mail, MoreVertical, Plus, X } from "lucide-react";
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Une ligne d'invitation par email — un invité = ses propres champs (cf. contrat listInvite.invites). */
+interface InviteRow {
+  email: string;
+  name: string;
+  message: string;
+  admin: boolean;
+}
+const EMPTY_INVITE: InviteRow = { email: "", name: "", message: "", admin: false };
 
 
 interface InviteMemberDialogProps {
@@ -40,10 +54,48 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
   const t = useT("modules/profil");
   const [activeTab, setActiveTab] = useState("users");
   const [searchTerm, setSearchTerm] = useState("");
+  // Une ligne par invité : email + nom + message + admin (réglables indépendamment).
+  const [invites, setInvites] = useState<InviteRow[]>([{ ...EMPTY_INVITE }]);
   const debouncedSearch = useDebounce(searchTerm, 300);
   const { confirmation, showConfirmation, hideConfirmation, executeAction } = useConfirmationDialog();
   const { getUserActionButtons } = useAdminActions(entity, showConfirmation);
   const { getUserStatusBadge } = useUserStatusBadge();
+
+  // Invitation par email (personnes sans compte) — dispo pour organizations/projects uniquement.
+  const inviteByEmail = useInviteByEmail(entity);
+  const emailEnabled = canInviteByEmail(entity);
+
+  const addInvite = () => setInvites((rows) => [...rows, { ...EMPTY_INVITE }]);
+  const removeInvite = (i: number) =>
+    setInvites((rows) => (rows.length > 1 ? rows.filter((_, idx) => idx !== i) : rows));
+  const updateInvite = (i: number, patch: Partial<InviteRow>) =>
+    setInvites((rows) => rows.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
+
+  const handleSendInvites = () => {
+    // On ne garde que les lignes avec un email saisi.
+    const filled = invites
+      .map((r) => ({ ...r, email: r.email.trim() }))
+      .filter((r) => r.email !== "");
+    const invalid = filled.filter((r) => !EMAIL_RE.test(r.email)).map((r) => r.email);
+    if (invalid.length > 0) {
+      toast.error(t("InviteMemberDialog.invalidEmailsError", undefined, { emails: invalid.join(", ") }));
+      return;
+    }
+    if (filled.length === 0) {
+      toast.error(t("InviteMemberDialog.noEmailsError"));
+      return;
+    }
+    // Par invité : name (défaut = email, fallback legacy), mail (clé legacy), msg, isAdmin.
+    inviteByEmail.mutate(
+      filled.map((r) => ({
+        name: r.name.trim() || r.email,
+        mail: r.email,
+        ...(r.message.trim() ? { msg: r.message.trim() } : {}),
+        isAdmin: (r.admin ? "admin" : "") as "" | "admin",
+      })),
+      { onSuccess: () => setInvites([{ ...EMPTY_INVITE }]) },
+    );
+  };
 
   // Recherche d'utilisateurs en temps réel via l'API
   const { data: users = [], isLoading } = useSearchUsers(debouncedSearch, debouncedSearch.length >= 2, entity);
@@ -107,6 +159,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
 
   const handleClose = () => {
     setSearchTerm("");
+    setInvites([{ ...EMPTY_INVITE }]);
     setActiveTab("users");
     hideConfirmation();
     onOpenChange(false);
@@ -226,15 +279,70 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
             </TabsContent>
 
             <TabsContent value="emails" className="space-y-4 mt-6">
-              <div className="text-center py-8">
-                <Mail className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-foreground font-medium mb-2">
-                  {t("InviteMemberDialog.emailInvitationsComingSoon")}
-                </p>
-                <p className="text-muted-foreground text-sm">
-                  {t("InviteMemberDialog.useSearchForNow")}
-                </p>
-              </div>
+              {emailEnabled ? (
+                <div className="space-y-3">
+                  <Label>{t("InviteMemberDialog.emailAddresses")}</Label>
+
+                  <div className="space-y-3 max-h-[24rem] overflow-y-auto pr-1">
+                    {invites.map((row, i) => (
+                      <div key={i} className="rounded-lg border border-border p-3 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="email"
+                            placeholder={t("InviteMemberDialog.emailPlaceholder")}
+                            value={row.email}
+                            onChange={(e) => updateInvite(i, { email: e.target.value })}
+                            className="flex-1"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeInvite(i)}
+                            disabled={invites.length === 1}
+                            aria-label={t("InviteMemberDialog.remove")}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <Input
+                          placeholder={t("InviteMemberDialog.namePlaceholder")}
+                          value={row.name}
+                          onChange={(e) => updateInvite(i, { name: e.target.value })}
+                        />
+                        <Textarea
+                          placeholder={t("InviteMemberDialog.messagePlaceholder")}
+                          value={row.message}
+                          onChange={(e) => updateInvite(i, { message: e.target.value })}
+                          rows={2}
+                        />
+                        <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+                          <Checkbox
+                            checked={row.admin}
+                            onCheckedChange={(c) => updateInvite(i, { admin: c === true })}
+                          />
+                          {t("InviteMemberDialog.inviteAsAdmin", undefined, { role: labels.admin })}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Button type="button" variant="outline" size="sm" onClick={addInvite}>
+                    <Plus className="w-4 h-4 mr-1" />
+                    {t("InviteMemberDialog.addInvitee")}
+                  </Button>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Mail className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-foreground font-medium mb-2">
+                    {t("InviteMemberDialog.emailInvitationsComingSoon")}
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    {t("InviteMemberDialog.emailNotAvailableForEvents")}
+                  </p>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
 
@@ -242,6 +350,24 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
             <Button variant="outline" onClick={handleClose}>
               {t("common.cancel")}
             </Button>
+            {activeTab === "emails" && emailEnabled && (
+              <Button
+                onClick={handleSendInvites}
+                disabled={!invites.some((r) => r.email.trim()) || inviteByEmail.isPending}
+              >
+                {inviteByEmail.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {t("InviteMemberDialog.sending")}
+                  </>
+                ) : (
+                  <>
+                    <Mail className="w-4 h-4 mr-2" />
+                    {t("InviteMemberDialog.sendInvitations")}
+                  </>
+                )}
+              </Button>
+            )}
           </DialogFooter>
         </div>
       </DialogContent>

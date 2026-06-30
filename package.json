@@ -27,7 +27,8 @@
     "config:validate": "tsx scripts/validate-config.ts",
     "config:schema": "tsx scripts/config-schema.ts",
     "entity:slug": "tsx scripts/entity-slug.ts",
-    "map:functions": "tsx scripts/map-functions.ts"
+    "map:functions": "tsx scripts/map-functions.ts",
+    "config:costum": "tsx scripts/gen-costum-config.ts"
   },
   "resolutions": {
     "react": "19.2.1",
@@ -41,13 +42,14 @@
     "@codemirror/lang-html": "^6.4.11",
     "@codemirror/lang-javascript": "^6.2.4",
     "@codemirror/theme-one-dark": "^6.1.3",
-    "@communecter/cocolight-api-client": "^1.0.149",
+    "@communecter/cocolight-api-client": "^1.0.155",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@dr.pogodin/react-helmet": "^3.0.2",
     "@hookform/resolvers": "^5.2.2",
     "@icons-pack/react-simple-icons": "^13.3.0",
+    "@preact/signals": "^2.9.2",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-aspect-ratio": "^1.1.7",
@@ -101,6 +103,7 @@
     "multer": "^2.1.1",
     "next-themes": "^0.4.6",
     "papaparse": "^5.5.3",
+    "preact": "^10.29.3",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.1",
     "react-day-picker": "^9.7.0",

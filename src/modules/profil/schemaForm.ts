@@ -42,8 +42,21 @@ const socialFieldsSchema = z.object({
   signal: urlOrEmptySchema.optional(),
 });
 
-// Localisation (14 champs, tous optionnels)
-const localityFieldsSchema = z.object({
+// Coordonnées géographiques (geo = GeoCoordinates ; geoPosition = GeoJSON Point). Définies AVANT
+// localityFieldsSchema qui les réutilise. EXPORTÉ : réutilisé aussi par tiersLieuxSchema.
+export const geoSchema = z.object({
+  latitude: z.union([z.string(), z.number()]),
+  longitude: z.union([z.string(), z.number()]),
+});
+export const geoPositionSchema = z.object({
+  type: z.literal("Point"),
+  coordinates: z.array(z.number()).length(2),
+});
+
+// Localisation : 14 champs SIG + geo/geoPosition (posés par EditLocationTab AVEC l'adresse). EXPORTÉ +
+// PARTAGÉ : tout schéma montant le composant adresse le spread → geo/level1..4/codeInsee survivent au
+// zodResolver (sinon STRIPÉS → perte). Écriture liée à localityId : cf. forms/geoTransforms.
+export const localityFieldsSchema = z.object({
   addressCountry: z.string().optional(),
   streetAddress: z.string().optional(),
   postalCode: z.string().optional(),
@@ -58,23 +71,13 @@ const localityFieldsSchema = z.object({
   level4: z.string().optional(),
   level4Name: z.string().optional(),
   codeInsee: z.string().optional(),
+  geo: geoSchema.optional(),
+  geoPosition: geoPositionSchema.optional(),
 });
 
 // ============================================================================
 // SCHÉMAS PARTAGÉS POUR ADD_BLOCKS
 // ============================================================================
-
-// Schéma pour les coordonnées géographiques
-const geoSchema = z.object({
-  latitude: z.union([z.string(), z.number()]),
-  longitude: z.union([z.string(), z.number()]),
-});
-
-// Schéma pour la position GeoJSON
-const geoPositionSchema = z.object({
-  type: z.literal("Point"),
-  coordinates: z.array(z.number()).length(2),
-});
 
 // Schéma parent (référence entité parente)
 const parentSchema = z.record(
@@ -231,11 +234,7 @@ export const eventProfileSchema = z.object({
   // SLUG
   slug: slugSchema,
 
-  // GEO (optionnel, format objet) - spécifique à Event
-  geo: geoSchema.optional(),
-  geoPosition: geoPositionSchema.optional(),
-
-  // LOCALITY
+  // LOCALITY (inclut geo/geoPosition, cf. localityFieldsSchema)
   ...localityFieldsSchema.shape,
 });
 // Note: Les validations conditionnelles (organizer requis, startDate/endDate requis si !recurrency,
@@ -285,11 +284,7 @@ export const addOrganizationSchema = z.object({
   url: urlOrEmptySchema.optional(),
   preferences: preferencesSchema.optional(),
 
-  // GEO (spécifique aux add schemas)
-  geo: geoSchema.optional(),
-  geoPosition: geoPositionSchema.optional(),
-
-  // LOCALITY
+  // LOCALITY (inclut geo/geoPosition, cf. localityFieldsSchema)
   ...localityFieldsSchema.shape,
 });
 
@@ -316,80 +311,11 @@ export const addProjectSchema = z.object({
     crowdfunding: z.boolean().default(true),
   }).optional(),
 
-  // GEO (spécifique aux add schemas)
-  geo: geoSchema.optional(),
-  geoPosition: geoPositionSchema.optional(),
-
-  // LOCALITY
+  // LOCALITY (inclut geo/geoPosition, cf. localityFieldsSchema)
   ...localityFieldsSchema.shape,
 });
 
 export type AddProjectFormData = z.infer<typeof addProjectSchema>;
-
-// ============================================================================
-// ADD_POI SCHEMA
-// ============================================================================
-
-export const addPoiSchema = z.object({
-  // Champs requis - type REQUIS pour add (pas .optional())
-  name: z.string().min(1, "validation.name.required"),
-  type: z.enum(POI_TYPES),
-
-  // Champs optionnels - tags SANS vide (add forms)
-  parent: parentSchema.optional(),
-  description: z.string().optional(),
-  tags: z.array(z.string()).optional(),
-  urls: z.array(z.string()).optional(),
-
-  inst_acc_handi_bool: z.boolean().optional(),
-  inst_trans_bool: z.boolean().optional(),
-  equip_type_famille: z.string().optional(),
-  equip_type_name: z.string().optional(),
-  inst_date_creation: z.string().optional(),
-  inst_enqu_date: z.string().optional(),
-  equip_maj_date: z.string().optional(),
-  equip_nature: z.string().optional(),
-  equip_sol: z.string().optional(),
-  equip_surf: z.number().optional(),
-  equip_eclair: z.boolean().optional(),
-  categorie: z.string().optional(),
-  aps_name: z.array(z.string()).optional(),
-  equip_acc_libre: z.boolean().optional(),
-  inst_acc_handi_type: z.string().optional(),
-  inst_trans_type: z.string().optional(),
-  inst_part_bool: z.boolean().optional(),
-  inst_part_type: z.array(z.string()).optional(),
-  equip_prop_nom: z.string().optional(),
-  equip_prop_type: z.string().optional(),
-  equip_gest_type: z.string().optional(),
-  equip_pmr_acc: z.boolean().optional(),
-  equip_pmr_chem: z.boolean().optional(),
-  equip_pmr_douche: z.boolean().optional(),
-  equip_pmr_sanit: z.boolean().optional(),
-  equip_pmr_trib: z.boolean().optional(),
-  equip_pmr_vest: z.boolean().optional(),
-  equip_pshs_aire: z.boolean().optional(),
-  equip_pshs_chem: z.boolean().optional(),
-  equip_pshs_sanit: z.boolean().optional(),
-  equip_pshs_trib: z.boolean().optional(),
-  equip_pshs_vest: z.boolean().optional(),
-  equip_pshs_sign: z.boolean().optional(),
-  equip_larg: z.number().optional(),
-  equip_long: z.number().optional(),
-  equip_douche: z.boolean().optional(),
-  equip_loc_type: z.array(z.string()).optional(),
-  equip_utilisateur: z.array(z.string()).optional(),
-  inst_nom: z.string().optional(),
-
-  // GEO (spécifique aux add schemas)
-  geo: geoSchema.optional(),
-  geoPosition: geoPositionSchema.optional(),
-
-  // LOCALITY
-  ...localityFieldsSchema.shape,
-});
-
-export type AddPoiFormData = z.infer<typeof addPoiSchema>;
 
 // ============================================================================
 // ADD_EVENT SCHEMA (simplifié pour le formulaire de création)

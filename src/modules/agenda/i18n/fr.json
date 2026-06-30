@@ -1,0 +1,41 @@
+{
+  "view": { "list": "Liste", "calendar": "Calendrier", "map": "Carte", "mapSplit": "Liste + carte" },
+  "calendar": { "month": "Mois", "week": "Semaine", "day": "Jour", "today": "Aujourd'hui", "noEvents": "Aucun événement" },
+  "filters": {
+    "searchPlaceholder": "Rechercher un événement…",
+    "typeLabel": "Type",
+    "allTypes": "Tous les types",
+    "typeAria": "Type d'événement",
+    "tags": "Tags",
+    "allTags": "Tous les tags",
+    "title": "Filtres",
+    "reset": "Réinitialiser",
+    "apply": "Voir les résultats"
+  },
+  "tab": { "ongoing": "En cours", "upcoming": "À venir", "past": "Passés" },
+  "empty": "Aucun événement",
+  "loadMore": "Charger plus",
+  "loadingMore": "Chargement…",
+  "eventType": {
+    "workshop": "Atelier",
+    "competition": "Compétition",
+    "concert": "Concert",
+    "contest": "Concours",
+    "conference": "Conférence",
+    "debate": "Débat",
+    "exhibition": "Exposition",
+    "festival": "Festival",
+    "crowdfunding": "Financement participatif",
+    "fair": "Foire",
+    "course": "Formation",
+    "protest": "Manifestation",
+    "market": "Marché",
+    "film": "Projection",
+    "getTogether": "Rencontre",
+    "meeting": "Réunion",
+    "spectacle": "Spectacle",
+    "internship": "Stage",
+    "stand": "Stand",
+    "others": "Autre"
+  }
+}

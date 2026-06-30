@@ -45,6 +45,7 @@ const SECTION_META: Record<string, SectionMeta> = {
   member: { label: "Member", desc: "Section membre / profil", image: "https://placehold.co/300x180/6c5ce7/eee?text=Member" },
   socialFeed: { label: "Social Feed", desc: "Flux de réseaux sociaux", image: "https://placehold.co/300x180/e84393/eee?text=Social+Feed" },
   eventList: { label: "Event List", desc: "Liste d'événements", image: "https://placehold.co/300x180/fdcb6e/333?text=Events" },
+  agenda: { label: "Agenda", desc: "Events d'un costum : liste (onglets temporels), calendrier (mois/semaine/jour), carte et split", image: "https://placehold.co/300x180/0984e3/eee?text=Agenda" },
   productShowcase: { label: "Product Showcase", desc: "Vitrine de produits", image: "https://placehold.co/300x180/00b894/eee?text=Products" },
   breadcrumb: { label: "Breadcrumb", desc: "Fil d'Ariane de navigation", image: "https://placehold.co/300x180/b2bec3/333?text=Breadcrumb" },
   cookieConsent: { label: "Cookie Consent", desc: "Bannière de consentement cookies", image: "https://placehold.co/300x180/2d3436/eee?text=Cookie" },

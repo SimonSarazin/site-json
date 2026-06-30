@@ -12,21 +12,26 @@ export function TimelineSection({ id, props }: { id?: string; props: TimelineSec
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="relative">
-            {/* Timeline Line */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 w-0.5 h-full bg-border" />
+            {/* Timeline Line : à gauche en mobile, centrée à partir de md */}
+            <div className="absolute left-4 md:left-1/2 -translate-x-1/2 w-0.5 h-full bg-border" />
 
-            {events.map((event, index) => (
+            {events.map((event, index) => {
+              const onLeft = alternating && index % 2 === 0;
+              return (
               <div
                 key={index}
                 className={cn(
                   "relative flex items-center mb-12 last:mb-0",
-                  alternating && index % 2 === 0 ? "flex-row" : "flex-row-reverse"
+                  // Mobile : colonne unique. md+ : alterne gauche/droite.
+                  onLeft ? "md:flex-row" : "md:flex-row-reverse"
                 )}
               >
-                {/* Content */}
+                {/* Content : pleine largeur (décalée après la ligne) en mobile,
+                    5/12 alterné en md+ */}
                 <div className={cn(
-                  "w-5/12 p-6 bg-card rounded-lg border shadow-xs",
-                  alternating && index % 2 === 0 ? "mr-auto" : "ml-auto"
+                  "ml-12 w-[calc(100%-3rem)] p-6 bg-card rounded-lg border shadow-xs",
+                  "md:ml-0 md:w-5/12",
+                  onLeft ? "md:mr-auto" : "md:ml-auto"
                 )}>
                   {(event.date) && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
@@ -40,10 +45,11 @@ export function TimelineSection({ id, props }: { id?: string; props: TimelineSec
                   <T k={event.text} as="p" className="text-muted-foreground leading-relaxed" />
                 </div>
 
-                {/* Timeline Dot */}
-                <div className="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-primary rounded-full border-4 border-background z-10" />
+                {/* Timeline Dot : alignée sur la ligne (gauche en mobile, centre en md+) */}
+                <div className="absolute left-4 md:left-1/2 -translate-x-1/2 w-4 h-4 bg-primary rounded-full border-4 border-background z-10" />
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

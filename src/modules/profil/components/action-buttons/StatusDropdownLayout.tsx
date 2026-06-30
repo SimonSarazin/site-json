@@ -69,7 +69,10 @@ export function StatusDropdownLayout({
             <ChevronDown className="w-4 h-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
+        {/* z au-dessus de CustomDrawer (z-99999) : sinon le menu portalé (défaut
+            shadcn z-50) sort SOUS le panneau du drawer quand l'aperçu event est
+            ouvert (Participer/Suivre invisibles). */}
+        <DropdownMenuContent align="end" className="z-[100000] w-56">
           {/* Actions Follow/Unfollow */}
           {followActions.filter((a) => a.show).map((action) => (
             <DropdownMenuItem key={action.id} onClick={() => handleActionClick(action)}>
