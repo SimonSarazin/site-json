@@ -880,7 +880,7 @@ interface CoFormProviderProps {
 | Fonction | Description |
 |---|---|
 | `parseCoFormFields(formData)` | `CoFormData → SubFormFields[]` avec mapping vers `componentType`, largeurs Tailwind col-span, options, configs avancées. Filtre les champs `validateStep*`. |
-| `generateZodSchema(subFormsFields)` | `SubFormFields[] → z.ZodObject` dynamique avec validation `isRequired` par champ et type |
+| `generateZodSchema(subFormsFields, t?)` | `SubFormFields[] → z.ZodObject` dynamique : validation `isRequired` par champ et type, + format **URL tolérant** (`inputType: "url"`, accepte sans schéma, jamais appliqué à un champ vide non requis). Le param `t` (signature `useT`, **optionnel**, défaut = fallback FR) i18n les messages via `t("coform.validation.*", fallbackFR, { label })` — voir [§ i18n](#i18n). |
 | `generateDefaultValues(subFormsFields)` | Valeurs par défaut vides typées selon `componentType` |
 | `normalizeAnswerData(rawAnswers, subFormsFields)` | Déplace les champs root-level (ex: `evaluation`) de la racine vers leur sous-formulaire pour react-hook-form |
 | `denormalizeAnswerData(formData, subFormsFields)` | Inverse : déplace les champs root-level du sous-formulaire vers la racine pour le format PHP |
@@ -1056,7 +1056,7 @@ t("coform.access.formClosed.title"); // → "Période de réponse terminée"
 | `coform.steps.*` | `step`, `of`, `completed`, `current`, `pending` |
 | `coform.navigation.*` | `next`, `previous`, `submit`, `save`, `reset` |
 | `coform.progress.*` | `title`, `percent` |
-| `coform.validation.*` | `required`, `minLength`, `maxLength`, `email`, `url`, `number`, `selectOption`, `selectAtLeastOne` |
+| `coform.validation.*` | `required`, `minLength`, `maxLength`, `email`, `url`, `number`, `selectOption`, `selectAtLeastOne`, `requiredField` (`{{label}}`), `urlInvalid` (`{{label}}`), `simpleTableRequired` (`{{label}}`), `multiCheckboxPlusCplxRequired` |
 | `coform.status.*` | `loading`, `submitting`, `success`, `updateSuccess`, `error`, `stepSuccess`, `stepError` |
 | `coform.errors.*` | `formNotFound`, `networkError`, `serverError` |
 | `coform.banner.*` | `alt` |
@@ -1070,6 +1070,21 @@ t("coform.access.formClosed.title"); // → "Période de réponse terminée"
 | `coform.uploader.*` | `addFile`, `addFiles`, `dropzoneLabel`, `maxFiles`, `maxSize`, `invalidExtension`, `fileTooLarge`, `tooManyFiles`, `deleteFile`, `gallery.{openPdf,download}` |
 | `coform.finder.*` | `fallbackElement`, `modal.{title,searchPlaceholder,noResults,addNewButton,validate,...}`, `types.{organizations,citoyens,...}` |
 | `coform.answerPicker.*` | `title`, `description`, `answerLabel`, `updated`, `newAnswer` |
+
+**Messages de validation Zod (traduits au build-time, pas à l'affichage).** Les
+sinks (`FieldError`, `ErrorSummary`) rendent le message **verbatim** ; la
+traduction se fait donc à la construction du schéma. `generateZodSchema` reçoit
+un traducteur `t` (signature `useT`, **optionnel** — défaut = fallback FR pour un
+usage hors React / tests) et chaque message devient
+`t("coform.validation.<clé>", fallbackFR, { label })` (forme **3-args** :
+clé, fallback, params — sinon l'interpolation `{{label}}` ne s'applique pas). Les
+call-sites (`DynamicCoForm`, `useCoFormStep`) passent leur `t` **et l'ajoutent aux
+deps du `useMemo`** du schéma → recompilation au changement de langue (sinon
+messages figés). ⚠️ Le `{{label}}` provient de la **définition backend du
+formulaire** (langue de l'auteur), pas de l'UI : un formulaire FR vu en EN garde
+son label FR. **Non couverts** : les messages Zod **par défaut** (anglais) sans
+chaîne custom — radio sans options, borne `note 0-5` du commonTable, enum radio —
+qui nécessiteraient un `errorMap` Zod global.
 
 ---
 
