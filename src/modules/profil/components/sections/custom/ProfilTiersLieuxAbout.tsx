@@ -424,7 +424,6 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
   // Navigation vers les onglets
   const slug = entity.serverData?.slug as string | undefined;
   const goToNewsTab = () => slug && navigate(`/profil/${slug}/news`);
-  const goToRoomsTab = () => slug && navigate(`/profil/${slug}/coworking`);
 
   // Description repliable
   const descText = description ?? "";
@@ -713,11 +712,22 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                       const halfday: number = section.roomPath?.halfday ? row[section.roomPath.halfday] as number : 0;
                       const fullday: number = section.roomPath?.fullday ? row[section.roomPath.fullday] as number : 0;
                       const images: string[] = section.roomPath?.images ? row[section.roomPath.images] as Array<string> : [];
+                      // Détail de la salle cliquée — même payload que le bouton "En savoir plus".
+                      const modalData: ModalItem = {
+                        name: String(name ?? ""),
+                        minPers: Number(minPers) || 0,
+                        maxPers: Number(maxPers) || 0,
+                        hourly: Number(hourly) || 0,
+                        halfday: Number(halfday) || 0,
+                        fullday: Number(fullday) || 0,
+                        images: (typeof images === "string" ? [] : (images as string[]).map(src => `${getServerUrl()}${src}`)),
+                        reserveUrl: linkValue ?? externalLink ?? null,
+                      };
                       return (
                         <div
                           key={`${room.id}-${idx}`}
                           className="overflow-hidden rounded-lg border border-border cursor-pointer hover:shadow-md transition-shadow"
-                          onClick={goToRoomsTab}
+                          onClick={() => setModalItem(modalData)}
                         >
                           <div className="relative h-36 bg-muted overflow-hidden">
                             {images && images.length > 0 ? (
@@ -782,16 +792,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                               className="mt-2 w-full text-xs"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setModalItem({
-                                  name: String(name ?? ""),
-                                  minPers: Number(minPers) || 0,
-                                  maxPers: Number(maxPers) || 0,
-                                  hourly: Number(hourly) || 0,
-                                  halfday: Number(halfday) || 0,
-                                  fullday: Number(fullday) || 0,
-                                  images: (typeof images === "string" ? [] : (images as string[]).map(src => `${getServerUrl()}${src}`)),
-                                  reserveUrl: linkValue ?? externalLink ?? null,
-                                });
+                                setModalItem(modalData);
                               }}
                             >
                               {t("ProfilTiersLieuxAbout.learnMore")}
