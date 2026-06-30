@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { CoFormModal } from "@/modules/coform/components/CoFormModal";
 import type { AllStepsData } from "@/modules/coform/types";
@@ -14,6 +14,8 @@ import {
     Facebook,
     Instagram,
     Twitter,
+    Linkedin,
+    Youtube,
     ExternalLink,
     MessageCircle,
     CalendarDays,
@@ -100,11 +102,19 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
     // Champs supplémentaires via serverData
     const fax = useReactiveProperty<string>(entity.serverData, "fax") ?? null;
     const externalLink = z.string().nullable().parse(parsedTools.find(t => t.key === "reservation")?.items[0]?.url ?? null);
-    const facebook = useReactiveProperty<string>(entity.serverData, "facebook") ?? null;
-    const instagram = useReactiveProperty<string>(entity.serverData, "instagram") ?? null;
-    const twitter = useReactiveProperty<string>(entity.serverData, "twitter") ?? null;
-    const mastodon = useReactiveProperty<string>(entity.serverData, "mastodon") ?? null;
-    const telegram = useReactiveProperty<string>(entity.serverData, "telegram") ?? null;
+    // Réseaux sociaux : deux formes coexistent — FLAT (`serverData.facebook`, orgs « normales »)
+    // et IMBRIQUÉE (`serverData.socialNetwork.facebook`, écrite par le form tiers-lieux via le codec
+    // `social:write`). On lit la flat en priorité puis on retombe sur la forme imbriquée, pour afficher
+    // les liens quelle que soit la voie d'écriture.
+    const socialNetwork = useReactiveProperty<Record<string, string>>(entity.serverData, "socialNetwork") ?? {};
+    const facebook = (useReactiveProperty<string>(entity.serverData, "facebook") ?? socialNetwork.facebook) ?? null;
+    const instagram = (useReactiveProperty<string>(entity.serverData, "instagram") ?? socialNetwork.instagram) ?? null;
+    const twitter = (useReactiveProperty<string>(entity.serverData, "twitter") ?? socialNetwork.twitter) ?? null;
+    const linkedin = (useReactiveProperty<string>(entity.serverData, "linkedin") ?? socialNetwork.linkedin) ?? null;
+    const youtube = (useReactiveProperty<string>(entity.serverData, "youtube") ?? socialNetwork.youtube) ?? null;
+    const mastodon = (useReactiveProperty<string>(entity.serverData, "mastodon") ?? socialNetwork.mastodon) ?? null;
+    const telegram = (useReactiveProperty<string>(entity.serverData, "telegram") ?? socialNetwork.telegram) ?? null;
+    const discord = (useReactiveProperty<string>(entity.serverData, "discord") ?? socialNetwork.discord) ?? null;
     const roomCount = useMemo(() => {
         const roomPath = section.roomPath?.place ?? section.roomPath?.roomPath;
         const type = section.roomPath?.type ?? "single";
@@ -210,7 +220,21 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
     });
     const evaluationSteps = multiEvalData?.steps ?? [];
 
-    const hasSocials = !!(facebook || instagram || twitter || mastodon || telegram);
+    // Liste ordonnée des réseaux présents (flat OU socialNetwork.*), avec leur icône, rendue en map.
+    const socials = (
+        [
+            facebook && { key: "facebook", url: facebook, label: "Facebook", icon: <Facebook className="h-4 w-4" /> },
+            instagram && { key: "instagram", url: instagram, label: "Instagram", icon: <Instagram className="h-4 w-4" /> },
+            twitter && { key: "twitter", url: twitter, label: "Twitter / X", icon: <Twitter className="h-4 w-4" /> },
+            linkedin && { key: "linkedin", url: linkedin, label: "LinkedIn", icon: <Linkedin className="h-4 w-4" /> },
+            youtube && { key: "youtube", url: youtube, label: "YouTube", icon: <Youtube className="h-4 w-4" /> },
+            mastodon && { key: "mastodon", url: mastodon, label: "Mastodon", icon: <span className="text-xs font-bold">M</span> },
+            telegram && { key: "telegram", url: telegram, label: "Telegram", icon: <ExternalLink className="h-4 w-4" /> },
+            discord && { key: "discord", url: discord, label: "Discord", icon: <MessageCircle className="h-4 w-4" /> },
+        ] as Array<false | { key: string; url: string; label: string; icon: ReactNode }>
+    ).filter((s): s is { key: string; url: string; label: string; icon: ReactNode } => Boolean(s));
+    const hasSocials = socials.length > 0;
+
 
     // ─── CoFormModal state (mode "modal") ─────────────────────────────────────
     const queryClient = useQueryClient();
@@ -501,39 +525,13 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
                         <div>
                             <SectionTitle label={t("ProfileTiersLieuxInfo.socialNetworks")} />
                             <div className="flex flex-wrap gap-2">
-                                {facebook && (
-                                    <a href={facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                                {socials.map((s) => (
+                                    <a key={s.key} href={s.url} target="_blank" rel="noopener noreferrer" aria-label={s.label}>
                                         <Button variant="outline" size="icon" className="h-8 w-8">
-                                            <Facebook className="h-4 w-4" />
+                                            {s.icon}
                                         </Button>
                                     </a>
-                                )}
-                                {instagram && (
-                                    <a href={instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                                        <Button variant="outline" size="icon" className="h-8 w-8">
-                                            <Instagram className="h-4 w-4" />
-                                        </Button>
-                                    </a>
-                                )}
-                                {twitter && (
-                                    <a href={twitter} target="_blank" rel="noopener noreferrer" aria-label="Twitter / X">
-                                        <Button variant="outline" size="icon" className="h-8 w-8">
-                                            <Twitter className="h-4 w-4" />
-                                        </Button>
-                                    </a>
-                                )}
-                                {mastodon && (
-                                    <a href={mastodon} target="_blank" rel="noopener noreferrer" aria-label="Mastodon">
-                                        <Button variant="outline" size="icon" className="h-8 w-8 text-xs font-bold">M</Button>
-                                    </a>
-                                )}
-                                {telegram && (
-                                    <a href={telegram} target="_blank" rel="noopener noreferrer" aria-label="Telegram">
-                                        <Button variant="outline" size="icon" className="h-8 w-8">
-                                            <ExternalLink className="h-4 w-4" />
-                                        </Button>
-                                    </a>
-                                )}
+                                ))}
                             </div>
                         </div>
                     </>
