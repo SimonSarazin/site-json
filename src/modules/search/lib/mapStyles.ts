@@ -7,7 +7,7 @@
 //
 // Avec une clé MapTiler (VITE_MAPTILER_API_KEY) : on délègue à `@maptiler/sdk`
 // (utilisé comme `mapLib` du <Map>) — il suffit de lui passer l'ID de style
-// (`streets-v2`, `outdoor-v2`…) ; le SDK expanse l'ID en `style.json` VECTORIEL
+// (`streets-v4`, `outdoor-v2`…) ; le SDK expanse l'ID en `style.json` VECTORIEL
 // avec la clé de `maptilersdk.config.apiKey`. On ne construit donc AUCUNE URL à
 // la main ici. L'ID de style est configurable par site via `integrations.map`
 // (styleLight/styleDark). SANS clé : repli sur un style RASTER minimal construit
@@ -28,8 +28,8 @@ export interface ResolvedMapStyles {
   provider: "maptiler" | "fallback";
 }
 
-export const MAPTILER_DEFAULT_STYLE_LIGHT = "streets-v2";
-export const MAPTILER_DEFAULT_STYLE_DARK = "streets-v2-dark";
+export const MAPTILER_DEFAULT_STYLE_LIGHT = "streets-v4";
+export const MAPTILER_DEFAULT_STYLE_DARK = "streets-v4-dark";
 
 const OSM_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>';

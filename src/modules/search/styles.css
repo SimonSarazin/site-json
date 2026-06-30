@@ -19,6 +19,19 @@
   cursor: pointer;
 }
 
+/* Marqueur FOCALISÉ (mode split, liste→carte) : agrandi + halo `--primary`,
+   au-dessus des voisins. Cible le visuel interne (`> *`) → variant-agnostic
+   (le halo `drop-shadow` épouse la forme : pin / pastille / vignette / icône). */
+.search-map-marker-btn.is-focused {
+  position: relative;
+  z-index: 10;
+}
+.search-map-marker-btn.is-focused > * {
+  transform: scale(1.4);
+  filter: drop-shadow(0 0 2px var(--primary)) drop-shadow(0 0 5px var(--primary));
+  transition: transform 120ms ease;
+}
+
 /* Marqueur « vignette d'item » (map.marker.useItemImage) — rond */
 .search-map-avatar {
   display: block;

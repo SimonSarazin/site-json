@@ -236,6 +236,9 @@ export type MarkerConf = z.infer<typeof MarkerConfSchema>;
 const MapConfSchema = z.object({
   initialZoom: z.number().min(1).max(20).optional(),
   cluster:     z.boolean().optional(),
+  /** Disposition de la vue carte (SearchProStatic) : "full" (défaut, plein
+   *  écran) ou "split" (liste + carte côte à côte, sélection synchronisée). */
+  layout: z.enum(["full", "split"]).optional(),
   popup: z.object({
     type: z.enum(["default"]).default("default"),
   }).partial().optional(),

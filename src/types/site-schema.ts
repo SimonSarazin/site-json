@@ -1754,10 +1754,10 @@ const CRMIntegration = z.object({
  * NB : la carte du module profil reste sur Leaflet (mêmes ids de style raster).
  */
 const MapIntegration = z.object({
-  /** Id de style MapTiler en thème clair (ex. "streets-v2", "outdoor-v2", "dataviz"). */
-  styleLight: z.string().default("streets-v2"),
-  /** Id de style MapTiler en thème sombre (ex. "streets-v2-dark", "dataviz-dark"). */
-  styleDark: z.string().default("streets-v2-dark"),
+  /** Id de style MapTiler en thème clair (ex. "streets-v4", "outdoor-v4", "dataviz"). */
+  styleLight: z.string().default("streets-v4"),
+  /** Id de style MapTiler en thème sombre (ex. "streets-v4-dark", "dataviz-dark"). */
+  styleDark: z.string().default("streets-v4-dark"),
   /** Marqueur PAR DÉFAUT du site (surchargé par `map.marker` de chaque section). */
   marker: MarkerConfSchema.optional(),
 });

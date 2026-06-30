@@ -19,6 +19,12 @@ import { useMapContainerClass } from "../hooks/useMapContainerClass";
 import { SwitchDetailsMode } from "./SwitchDetailsMode";
 import SearchMapPopup from "./SearchMapPopup";
 import { ClusterMarker, PointMarker } from "./SearchMapMarkers";
+import {
+  findEntryById,
+  getEntryCoords,
+  getEntryId,
+  getEntrySlug,
+} from "../lib/searchMapSelection";
 
 // Clé MapTiler résolue UNE fois au chargement du chunk (client-only — ce module
 // n'est importé que via SearchMapWrapper/useClientModule). Avec clé, on délègue
@@ -43,19 +49,6 @@ const SDK_CONTROL_PROPS = {
 /** Props d'un point supercluster : on transporte l'entité dans le feature. */
 type PointProps = { entry: SearchEntity };
 
-function isValidGeoPoint(coords: unknown): coords is [number, number] {
-  if (!Array.isArray(coords) || coords.length !== 2) return false;
-  const [lng, lat] = coords;
-  return (
-    typeof lat === "number" &&
-    typeof lng === "number" &&
-    lat >= -90 &&
-    lat <= 90 &&
-    lng >= -180 &&
-    lng <= 180
-  );
-}
-
 /**
  * Carte MapLibre GL (react-map-gl/maplibre) du module search.
  *
@@ -76,6 +69,8 @@ function isValidGeoPoint(coords: unknown): coords is [number, number] {
  */
 export default function SearchMap({ results, card, preview, map: mapConf, focusedItemId, onMarkerFocus, containerClass }: SearchMapProps) {
   const mapRef = useRef<MapRef | null>(null);
+  /** Init carte jouée une seule fois (load OU idle, le 1ᵉʳ qui arrive). */
+  const readyRef = useRef(false);
   /** 1ᵉʳ id du périmètre déjà recadré (fitBounds une fois par périmètre). */
   const fittedFirstIdRef = useRef<string | undefined>(undefined);
   /** Ref du callback de focus sortant — évite de l'ajouter aux deps de handleSelect. */
@@ -123,9 +118,8 @@ export default function SearchMap({ results, card, preview, map: mapConf, focuse
   const points = useMemo<Supercluster.PointFeature<PointProps>[]>(
     () =>
       results.flatMap((entry) => {
-        const coords = (entry?.serverData as { geoPosition?: { coordinates?: unknown } } | undefined)
-          ?.geoPosition?.coordinates;
-        if (!isValidGeoPoint(coords)) return [];
+        const coords = getEntryCoords(entry);
+        if (!coords) return [];
         return [
           {
             type: "Feature" as const,
@@ -162,12 +156,11 @@ export default function SearchMap({ results, card, preview, map: mapConf, focuse
 
   // Clic sur un marqueur point → ouvre la popup à ses coordonnées.
   const handleSelect = useCallback((entry: SearchEntity) => {
-    const coords = (entry?.serverData as { geoPosition?: { coordinates?: unknown } } | undefined)
-      ?.geoPosition?.coordinates;
-    if (!isValidGeoPoint(coords)) return;
+    const coords = getEntryCoords(entry);
+    if (!coords) return;
     // Synchro carte→liste : clic marqueur → remonte l'id (highlight liste, mode split).
-    const id = (entry.serverData as { id?: string } | undefined)?.id;
-    if (id != null) onMarkerFocusRef.current?.(String(id));
+    const id = getEntryId(entry);
+    if (id) onMarkerFocusRef.current?.(id);
     setSelected({ entry, lng: coords[0], lat: coords[1] });
   }, []);
 
@@ -184,9 +177,7 @@ export default function SearchMap({ results, card, preview, map: mapConf, focuse
   const handlePopupAction = useCallback(
     (entry: SearchEntity) => {
       if (actionKind === "profil") {
-        const slug =
-          (entry as { slug?: string }).slug ??
-          (entry.serverData as { slug?: string } | undefined)?.slug;
+        const slug = getEntrySlug(entry);
         if (slug) {
           navigate(`/profil/${slug}`);
           return;
@@ -200,22 +191,60 @@ export default function SearchMap({ results, card, preview, map: mapConf, focuse
     [actionKind, navigate],
   );
 
+  /* ── Init robuste : 'load' OU 'render' OU 'idle' (le 1ᵉʳ qui arrive) ──── */
+  // `mapLoaded` pilote fitBounds + le focus, `syncViewport` alimente le
+  // clustering. S'appuyer sur le SEUL `onLoad` était fragile : avec `reuseMaps`,
+  // @vis.gl/react-maplibre « simule » l'event 'load' au remontage via
+  // `map.once('style.load', …)` qui NE rejoue PAS si le style est déjà chargé
+  // (carte réutilisée / double-montage StrictMode, fenêtre élargie par un style
+  // MapTiler lent) → 'load' jamais émis → `mapLoaded` bloqué à false → fitBounds
+  // jamais appelé (constaté : `mapLoaded=false` avec 4284 points). On débloque
+  // via des PROPS (react-map-gl les attache à la carte elle-même → pas de course
+  // sur le ref) : `onRender` est le filet ULTIME — il survient au 1ᵉʳ rendu de
+  // la carte, INDÉPENDAMMENT du chargement des tuiles. C'est lui qui couvre le
+  // cas « fitBounds pas toujours » : si les tuiles MapTiler n'arrivent pas
+  // (clé restreinte au domaine, réseau), la carte ne passe jamais en 'idle' et
+  // 'load' peut manquer → seul 'render' (le canvas a peint une frame) reste
+  // fiable. `readyRef` borne l'init au 1ᵉʳ event ; les rendus suivants sont des
+  // no-op. `onMoveEnd` garde la synchro viewport pendant l'interaction.
+  const handleMapReady = useCallback(() => {
+    if (readyRef.current) return;
+    readyRef.current = true;
+    setMapLoaded(true);
+    syncViewport();
+  }, [syncViewport]);
+
   /* ── fitBounds UNE fois par périmètre (1ʳᵉ page) ─────────────────────── */
   useEffect(() => {
     const map = mapRef.current?.getMap();
+    if (import.meta.env.DEV) {
+      console.info(
+        `[fitBounds] run: map=${!!map} mapLoaded=${mapLoaded} results=${results.length} ` +
+          `ref=${fittedFirstIdRef.current ?? "—"}`,
+      );
+    }
     if (!map || !mapLoaded) return;
-    const firstId = (results?.[0]?.serverData as { id?: string } | undefined)?.id;
-    // Périmètre déjà recadré : les pages suivantes ne déplacent pas le viewport.
-    if (firstId === fittedFirstIdRef.current) return;
     const coords = results
-      .map(
-        (e) =>
-          (e?.serverData as { geoPosition?: { coordinates?: unknown } } | undefined)?.geoPosition
-            ?.coordinates,
-      )
-      .filter(isValidGeoPoint);
-    if (coords.length === 0) return;
-    fittedFirstIdRef.current = firstId;
+      .map(getEntryCoords)
+      .filter((c): c is [number, number] => c !== null);
+    if (import.meta.env.DEV) console.info(`[fitBounds] coords trouvées=${coords.length}`);
+    if (coords.length === 0) return; // pas (encore) de point géolocalisé
+    // Signature du périmètre = id du 1er résultat si dispo, SINON ses coords.
+    // Jamais `undefined` quand il y a des points : sinon la garde sautait à vie
+    // (`undefined === ref initial undefined`) et fitBounds ne jouait jamais —
+    // la carte restait sur la vue initiale (bug : données visibles seulement
+    // après dézoom manuel). Les pages suivantes gardent la même signature → pas
+    // de re-recadrage ; un nouveau périmètre (filtres) change la signature.
+    const signature = getEntryId(results[0]) ?? `${coords[0][0]},${coords[0][1]}`;
+    if (import.meta.env.DEV) console.info(`[fitBounds] signature=${signature} ref=${fittedFirstIdRef.current ?? "—"}`);
+    if (signature === fittedFirstIdRef.current) return;
+    fittedFirstIdRef.current = signature;
+    // La carte a pu peindre sa 1ʳᵉ frame (onRender) AVANT que sa colonne (split,
+    // `w-3/5` dans un flex) ait sa taille finale → le canvas garde une taille
+    // transitoire et fitBounds cadrerait sur une zone fausse (bug : « ne marche
+    // pas en split »). Cet effet tourne APRÈS le layout : on force la carte à
+    // relire la taille réelle de son conteneur avant de cadrer.
+    map.resize();
     if (coords.length === 1) {
       map.easeTo({ center: [coords[0][0], coords[0][1]], zoom: mapConf?.initialZoom ?? 12, duration: 400 });
       return;
@@ -229,6 +258,9 @@ export default function SearchMap({ results, card, preview, map: mapConf, focuse
       if (lng > east) east = lng;
       if (lat < south) south = lat;
       if (lat > north) north = lat;
+    }
+    if (import.meta.env.DEV) {
+      console.info(`[fitBounds] FIT → bounds W=${west.toFixed(2)} S=${south.toFixed(2)} E=${east.toFixed(2)} N=${north.toFixed(2)} (n=${coords.length})`);
     }
     map.fitBounds(
       [
@@ -245,16 +277,18 @@ export default function SearchMap({ results, card, preview, map: mapConf, focuse
   // clustering) → pas besoin de dé-clusteriser pour l'ouvrir.
   useEffect(() => {
     if (!mapLoaded || !focusedItemId) return;
-    const entry = results.find(
-      (e) => String((e?.serverData as { id?: string } | undefined)?.id) === String(focusedItemId),
-    );
+    const entry = findEntryById(results, focusedItemId);
     if (!entry) return; // item pas (encore) sur la carte
-    const coords = (entry.serverData as { geoPosition?: { coordinates?: unknown } } | undefined)
-      ?.geoPosition?.coordinates;
-    if (!isValidGeoPoint(coords)) return; // sans géolocalisation → no-op
+    const coords = getEntryCoords(entry);
+    if (!coords) return; // sans géolocalisation → no-op
     const map = mapRef.current?.getMap();
     if (!map) return;
     map.easeTo({ center: [coords[0], coords[1]], zoom: Math.max(map.getZoom(), 14), duration: 400 });
+    // Synchronisation d'un prop EXTERNE (`focusedItemId` venu de la liste) : on
+    // déplace la carte (easeTo, impératif) ET on ouvre la popup. `selected` a
+    // plusieurs sources (clic marqueur, clic carte vide) → impossible à dériver ;
+    // ce setState est volontaire et borné (une fois par changement de focus).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelected({ entry, lng: coords[0], lat: coords[1] });
   }, [mapLoaded, focusedItemId, results]);
 
@@ -286,13 +320,17 @@ export default function SearchMap({ results, card, preview, map: mapConf, focuse
             mapStyle={mapStyle}
             initialViewState={{ longitude: 4.5, latitude: 44.5, zoom: mapConf?.initialZoom ?? 7 }}
             reuseMaps
-            onLoad={() => {
-              setMapLoaded(true);
-              syncViewport();
-            }}
+            onLoad={handleMapReady}
+            onRender={handleMapReady}
+            onIdle={handleMapReady}
             onMoveEnd={syncViewport}
             onClick={() => setSelected(null)}
-            style={{ width: "100%", height: "100vh" }}
+            // Embarqué (split, `containerClass` fourni) → la carte remplit sa
+            // colonne (100% de la colonne `h-[78vh]` → le canvas MapLibre = la
+            // zone VISIBLE, donc fitBounds cadre juste). Sinon plein écran (100vh)
+            // comme la vue carte seule. Mettre 100vh en embarqué casserait le fit :
+            // le canvas serait plus grand que la colonne visible.
+            style={{ width: "100%", height: containerClass ? "100%" : "100vh" }}
           >
             <NavigationControl position="top-left" />
 
@@ -313,7 +351,7 @@ export default function SearchMap({ results, card, preview, map: mapConf, focuse
                 );
               }
               const entry = (props as PointProps).entry;
-              const id = (entry.serverData as { id?: string } | undefined)?.id;
+              const id = getEntryId(entry);
               return (
                 <PointMarker
                   key={`pt-${id ?? `${lng},${lat}`}`}
@@ -322,6 +360,7 @@ export default function SearchMap({ results, card, preview, map: mapConf, focuse
                   entry={entry}
                   markerConf={markerConf}
                   baseUrl={baseUrl}
+                  isFocused={id != null && id === focusedItemId}
                   onSelect={handleSelect}
                 />
               );

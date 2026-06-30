@@ -31,7 +31,6 @@ import MapMarkerPin from "./mapMarker/MapMarkerPin";
  * l'importer ci-dessus, ajouter le `case` (+ le `kind` dans markerVisual.ts).
  */
 function MarkerVisualView({ visual }: { visual: MarkerVisual }) {
-  console.log("MarkerVisualView render", visual); // eslint-disable-line no-console
   switch (visual.kind) {
     case "image":
       return <MapMarkerAvatar src={visual.src} />;
@@ -52,6 +51,8 @@ export interface PointMarkerProps {
   entry: SearchEntity;
   markerConf: MapConf["marker"];
   baseUrl: string;
+  /** Mode split : marqueur de l'item focalisé (mis en évidence, cf. .is-focused). */
+  isFocused?: boolean;
   /** Stable (useCallback côté parent) → préserve la mémoïsation. */
   onSelect: (entry: SearchEntity) => void;
 }
@@ -62,6 +63,7 @@ export const PointMarker = memo(function PointMarker({
   entry,
   markerConf,
   baseUrl,
+  isFocused = false,
   onSelect,
 }: PointMarkerProps) {
   // Apparence (vignette / icône custom / pin / pastille / défaut) — chaîne de repli pure, cf. markerVisual.ts.
@@ -89,7 +91,11 @@ export const PointMarker = memo(function PointMarker({
         onSelect(entry);
       }}
     >
-      <button type="button" className="search-map-marker-btn" aria-label={typeof name === "string" ? name : undefined}>
+      <button
+        type="button"
+        className={isFocused ? "search-map-marker-btn is-focused" : "search-map-marker-btn"}
+        aria-label={typeof name === "string" ? name : undefined}
+      >
         <MarkerVisualView visual={visual} />
       </button>
     </Marker>
