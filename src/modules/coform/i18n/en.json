@@ -31,7 +31,8 @@
       "requiredField": "{{label}} is required",
       "urlInvalid": "{{label}} must be a valid URL",
       "simpleTableRequired": "{{label}} is required (at least one data row)",
-      "multiCheckboxPlusCplxRequired": "All complementary fields must be filled"
+      "multiCheckboxPlusCplxRequired": "All complementary fields must be filled",
+      "noteRange": "The rating must be between 0 and 5"
     },
     "fields": {
       "selectPlaceholder": "Select",

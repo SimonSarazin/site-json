@@ -705,13 +705,19 @@ export function generateZodSchema(
 
         case "radio":
           if (field.options && field.options.length > 0) {
-            const enumSchema = z.enum(field.options as [string, ...string[]]);
+            // `error` (Zod v4) traduit l'échec de l'enum. Via l'UI radio le seul
+            // échec possible d'un champ requis est « rien sélectionné » (valeur
+            // "" hors options) → message "requis". Le cas non requis ("" accepté
+            // par la branche literal de l'union) ne déclenche jamais ce message.
+            const enumSchema = z.enum(field.options as [string, ...string[]], {
+              error: t("coform.validation.requiredField", `${field.label} est requis`, { label: field.label }),
+            });
             schemaShape[field.name] = field.isRequired
               ? enumSchema
               : z.union([enumSchema, z.literal("")]).optional();
           } else {
             schemaShape[field.name] = field.isRequired
-              ? z.string().min(1)
+              ? z.string().min(1, t("coform.validation.requiredField", `${field.label} est requis`, { label: field.label }))
               : z.string().optional();
           }
           break;
@@ -815,12 +821,15 @@ export function generateZodSchema(
         case "commonTable": {
           // Valeur composite : { scores: Record<criteriaId, ...>, myCatalog: Record<criteriaId, ...> }
           const happinessEnum = z.enum(["", "love", "happySmile", "neutral", "sad", "cry"]);
+          // Même message pour les deux bornes (une seule clé `noteRange`) : on
+          // l'évalue une fois pour ne pas répéter l'appel `t`.
+          const noteRangeMsg = t("coform.validation.noteRange", "La note doit être comprise entre 0 et 5");
           const solutionSchema = z.object({
             criteriaId: z.string(),
             criteria: z.string(),
             usage: z.string(),
             usageKey: z.string(),
-            note: z.number().min(0).max(5),
+            note: z.number().min(0, noteRangeMsg).max(5, noteRangeMsg),
             happiness: happinessEnum,
             yesOrNo: z.boolean(),
             comment: z.string(),

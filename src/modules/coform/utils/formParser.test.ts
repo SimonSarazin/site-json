@@ -554,6 +554,72 @@ describe("generateZodSchema", () => {
     // non requis mais renseigné avec une non-URL → rejeté
     expect(() => schema.parse({ u: "nope" })).toThrow();
   });
+
+  it("radio requis (avec options) : sélection vide → message traduit, pas le défaut Zod enum", () => {
+    const schema = generateZodSchema([
+      makeSubFormFields([
+        makeField({ name: "r", label: "Choix", componentType: "radio", options: ["a", "b"], isRequired: true }),
+      ]),
+    ]);
+    const res = schema.safeParse({ r: "" });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.issues.map((i) => i.message)).toContain("Choix est requis");
+    }
+    // valeur valide acceptée
+    expect(schema.parse({ r: "a" })).toEqual({ r: "a" });
+  });
+
+  it("radio requis (sans options) : valeur vide → message traduit, pas le défaut Zod min", () => {
+    const schema = generateZodSchema([
+      makeSubFormFields([
+        makeField({ name: "r2", label: "Libre", componentType: "radio", isRequired: true }),
+      ]),
+    ]);
+    const res = schema.safeParse({ r2: "" });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.issues.map((i) => i.message)).toContain("Libre est requis");
+    }
+  });
+
+  it("commonTable : note hors de [0,5] → message traduit, pas le défaut Zod min/max", () => {
+    const schema = generateZodSchema([
+      makeSubFormFields([
+        makeField({ name: "ct", label: "Besoins", componentType: "commonTable", isRequired: false }),
+      ]),
+    ]);
+    const composite = {
+      scores: {
+        c1: { criteriaId: "c1", criteria: "Outil", usage: "U", usageKey: "c1", note: 6, happiness: "", yesOrNo: false, comment: "" },
+      },
+      myCatalog: {},
+    };
+    const res = schema.safeParse({ ct: composite });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.issues.map((i) => i.message)).toContain("La note doit être comprise entre 0 et 5");
+    }
+  });
+
+  it("injecte le traducteur `t` pour les nouveaux messages Zod (radio enum + note)", () => {
+    const calls: string[] = [];
+    const t = (key: string, fallback?: string) => {
+      calls.push(key);
+      return fallback ?? "";
+    };
+    generateZodSchema(
+      [
+        makeSubFormFields([
+          makeField({ name: "r", componentType: "radio", options: ["a"], isRequired: true }),
+          makeField({ name: "ct", componentType: "commonTable", isRequired: false }),
+        ]),
+      ],
+      t,
+    );
+    expect(calls).toContain("coform.validation.requiredField");
+    expect(calls).toContain("coform.validation.noteRange");
+  });
 });
 
 // ============================================================================

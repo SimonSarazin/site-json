@@ -31,7 +31,8 @@
       "requiredField": "{{label}} est requis",
       "urlInvalid": "{{label}} doit être une URL valide",
       "simpleTableRequired": "{{label}} est requis (au moins une ligne de données)",
-      "multiCheckboxPlusCplxRequired": "Tous les champs complémentaires doivent être remplis"
+      "multiCheckboxPlusCplxRequired": "Tous les champs complémentaires doivent être remplis",
+      "noteRange": "La note doit être comprise entre 0 et 5"
     },
     "fields": {
       "selectPlaceholder": "Sélectionner",
