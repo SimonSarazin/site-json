@@ -1056,7 +1056,7 @@ t("coform.access.formClosed.title"); // → "Période de réponse terminée"
 | `coform.steps.*` | `step`, `of`, `completed`, `current`, `pending` |
 | `coform.navigation.*` | `next`, `previous`, `submit`, `save`, `reset` |
 | `coform.progress.*` | `title`, `percent` |
-| `coform.validation.*` | `required`, `minLength`, `maxLength`, `email`, `url`, `number`, `selectOption`, `selectAtLeastOne`, `requiredField` (`{{label}}`), `urlInvalid` (`{{label}}`), `simpleTableRequired` (`{{label}}`), `multiCheckboxPlusCplxRequired` |
+| `coform.validation.*` | `required`, `minLength`, `maxLength`, `email`, `url`, `number`, `selectOption`, `selectAtLeastOne`, `requiredField` (`{{label}}`), `urlInvalid` (`{{label}}`), `simpleTableRequired` (`{{label}}`), `multiCheckboxPlusCplxRequired`, `noteRange` |
 | `coform.status.*` | `loading`, `submitting`, `success`, `updateSuccess`, `error`, `stepSuccess`, `stepError` |
 | `coform.errors.*` | `formNotFound`, `networkError`, `serverError` |
 | `coform.banner.*` | `alt` |
@@ -1082,9 +1082,16 @@ call-sites (`DynamicCoForm`, `useCoFormStep`) passent leur `t` **et l'ajoutent a
 deps du `useMemo`** du schéma → recompilation au changement de langue (sinon
 messages figés). ⚠️ Le `{{label}}` provient de la **définition backend du
 formulaire** (langue de l'auteur), pas de l'UI : un formulaire FR vu en EN garde
-son label FR. **Non couverts** : les messages Zod **par défaut** (anglais) sans
-chaîne custom — radio sans options, borne `note 0-5` du commonTable, enum radio —
-qui nécessiteraient un `errorMap` Zod global.
+son label FR. **Couverture complète** : les 3 derniers constructs qui émettaient
+encore un défaut Zod (anglais) sont désormais traduits sans `errorMap` global —
+radio requis avec options (`z.enum(opts, { error: t(...) })`, forme Zod v4 ; via
+l'UI le seul échec est « rien sélectionné » → message « requis »), radio requis
+sans options (`z.string().min(1, t(...))`) et borne `note 0-5` du commonTable
+(`z.number().min(0, t("…noteRange")).max(5, …)`). Restent en défaut Zod **par
+design** les `z.string()/z.number()/z.enum` **structurels internes** des schémas
+composites (commonTable `solutionSchema`/`myCatalogEntrySchema`, finder, uploader)
+— jamais saisis directement par l'utilisateur (data machine), le `.refine()`
+au-dessus porte déjà le message user-facing traduit.
 
 ---
 
