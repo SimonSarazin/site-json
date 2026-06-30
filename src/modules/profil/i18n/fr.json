@@ -18,6 +18,7 @@
   "common": {
     "organizedBy": "Organisé par",
     "viewProfile": "Voir le profil",
+    "preview": "Aperçu",
     "date": "Date",
     "back": "Retour",
     "loading": "Chargement...",
@@ -283,6 +284,10 @@
     "tryDifferentSearch": "Essayez une recherche différente",
     "emailInvitationsComingSoon": "Invitations par email bientôt disponibles",
     "useSearchForNow": "Utilisez la recherche d'utilisateurs en attendant",
+    "emailNotAvailableForEvents": "L'invitation par email n'est pas encore disponible pour les événements.",
+    "emailHint": "Saisissez une adresse email puis appuyez sur Entrée. La personne recevra une invitation par email.",
+    "inviteAs": "Inviter en tant que",
+    "invalidEmailsError": "Adresse(s) email invalide(s) : {{emails}}",
     "demote": "Rétrograder",
     "remove": "Supprimer",
     "promoteToAdmin": "Promouvoir admin",
@@ -685,7 +690,9 @@
       "inviteSuccess": "Invitation envoyée à {{name}}",
       "inviteError": "Impossible d'envoyer l'invitation à {{name}}",
       "inviteAdminSuccess": "Invitation d'administrateur envoyée à {{name}}",
-      "inviteAdminError": "Impossible d'envoyer l'invitation d'administrateur à {{name}}"
+      "inviteAdminError": "Impossible d'envoyer l'invitation d'administrateur à {{name}}",
+      "emailInviteSuccess": "{{count}} invitation(s) envoyée(s) par email",
+      "emailInviteError": "Impossible d'envoyer les invitations par email"
     },
     "comment": {
       "addSuccess": "Commentaire ajouté avec succès",

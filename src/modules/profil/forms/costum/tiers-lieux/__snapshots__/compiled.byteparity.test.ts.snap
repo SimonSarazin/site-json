@@ -251,6 +251,13 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
         },
         {
           "label": {
+            "en": "SARL / SA / SAS with ESUS approval",
+            "fr": "SARL / SA / SAS avec agrément ESUS",
+          },
+          "value": "sarl-sa-sas-esus",
+        },
+        {
+          "label": {
             "en": "SCIC",
             "fr": "SCIC",
           },
@@ -805,6 +812,7 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
           "etablissements-scolaires",
           "collectivites",
           "sarl-sa-sas",
+          "sarl-sa-sas-esus",
           "scic",
           "scop",
           "autre",

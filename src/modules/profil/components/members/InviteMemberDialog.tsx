@@ -5,7 +5,7 @@ import { useSearchUsers } from "@/hooks/useSearchUsers";
 import type { EntityTypes, User } from "@communecter/cocolight-api-client";
 import { useEntityLabels } from "../../hooks/useEntityLabels";
 import { useConfirmationDialog } from "../../hooks/useConfirmationDialog";
-import { useAdminActions } from "../../actions";
+import { useAdminActions, useInviteByEmail, canInviteByEmail } from "../../actions";
 import { useUserStatusBadge } from "../../hooks/useUserStatusBadge";
 import { ConfirmationDialog } from "./ConfirmationDialog";
 import {
@@ -27,7 +27,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { TagsInput } from "@/components/form/TagsInput";
+import { toast } from "sonner";
 import { UserPlus, Search, Loader2, Mail, MoreVertical } from "lucide-react";
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 
 interface InviteMemberDialogProps {
@@ -40,10 +51,42 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
   const t = useT("modules/profil");
   const [activeTab, setActiveTab] = useState("users");
   const [searchTerm, setSearchTerm] = useState("");
+  const [emails, setEmails] = useState<string[]>([]);
+  // Inviter comme membre (membre/contributeur/participant selon le type) ou admin → flag isAdmin du lien.
+  const [inviteAs, setInviteAs] = useState<"member" | "admin">("member");
   const debouncedSearch = useDebounce(searchTerm, 300);
   const { confirmation, showConfirmation, hideConfirmation, executeAction } = useConfirmationDialog();
   const { getUserActionButtons } = useAdminActions(entity, showConfirmation);
   const { getUserStatusBadge } = useUserStatusBadge();
+
+  // Invitation par email (personnes sans compte) — dispo pour organizations/projects uniquement.
+  const inviteByEmail = useInviteByEmail(entity);
+  const emailEnabled = canInviteByEmail(entity);
+
+  const handleSendInvites = () => {
+    const invalid = emails.filter((e) => !EMAIL_RE.test(e));
+    if (invalid.length > 0) {
+      toast.error(t("InviteMemberDialog.invalidEmailsError", undefined, { emails: invalid.join(", ") }));
+      return;
+    }
+    if (emails.length === 0) {
+      toast.error(t("InviteMemberDialog.noEmailsError"));
+      return;
+    }
+    // name = email (fallback du front legacy quand seule l'adresse est fournie).
+    // clé `mail` (pas `email`) : le legacy lit $value["mail"] (contrat lib aligné).
+    // isAdmin: "admin" => invité comme administrateur ; "" => membre/contributeur/participant.
+    const isAdmin = inviteAs === "admin" ? "admin" : "";
+    inviteByEmail.mutate(
+      emails.map((email) => ({ name: email, mail: email, isAdmin })),
+      {
+        onSuccess: () => {
+          setEmails([]);
+          setInviteAs("member");
+        },
+      },
+    );
+  };
 
   // Recherche d'utilisateurs en temps réel via l'API
   const { data: users = [], isLoading } = useSearchUsers(debouncedSearch, debouncedSearch.length >= 2, entity);
@@ -107,6 +150,8 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
 
   const handleClose = () => {
     setSearchTerm("");
+    setEmails([]);
+    setInviteAs("member");
     setActiveTab("users");
     hideConfirmation();
     onOpenChange(false);
@@ -226,15 +271,45 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
             </TabsContent>
 
             <TabsContent value="emails" className="space-y-4 mt-6">
-              <div className="text-center py-8">
-                <Mail className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-foreground font-medium mb-2">
-                  {t("InviteMemberDialog.emailInvitationsComingSoon")}
-                </p>
-                <p className="text-muted-foreground text-sm">
-                  {t("InviteMemberDialog.useSearchForNow")}
-                </p>
-              </div>
+              {emailEnabled ? (
+                <div className="space-y-4">
+                  <div className="space-y-3">
+                    <Label>{t("InviteMemberDialog.emailAddresses")}</Label>
+                    <TagsInput
+                      tags={emails}
+                      onTagsChange={setEmails}
+                      searchable={false}
+                      maxTags={50}
+                      texts={{ placeholder: t("InviteMemberDialog.emailPlaceholder") }}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {t("InviteMemberDialog.emailHint")}
+                    </p>
+                  </div>
+                  <div className="space-y-3">
+                    <Label>{t("InviteMemberDialog.inviteAs")}</Label>
+                    <Select value={inviteAs} onValueChange={(v) => setInviteAs(v as "member" | "admin")}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="member">{labels.member}</SelectItem>
+                        <SelectItem value="admin">{labels.admin}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Mail className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-foreground font-medium mb-2">
+                    {t("InviteMemberDialog.emailInvitationsComingSoon")}
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    {t("InviteMemberDialog.emailNotAvailableForEvents")}
+                  </p>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
 
@@ -242,6 +317,24 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
             <Button variant="outline" onClick={handleClose}>
               {t("common.cancel")}
             </Button>
+            {activeTab === "emails" && emailEnabled && (
+              <Button
+                onClick={handleSendInvites}
+                disabled={emails.length === 0 || inviteByEmail.isPending}
+              >
+                {inviteByEmail.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {t("InviteMemberDialog.sending")}
+                  </>
+                ) : (
+                  <>
+                    <Mail className="w-4 h-4 mr-2" />
+                    {t("InviteMemberDialog.sendInvitations")}
+                  </>
+                )}
+              </Button>
+            )}
           </DialogFooter>
         </div>
       </DialogContent>
