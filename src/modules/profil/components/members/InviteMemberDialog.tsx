@@ -27,18 +27,21 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { TagsInput } from "@/components/form/TagsInput";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { UserPlus, Search, Loader2, Mail, MoreVertical } from "lucide-react";
+import { UserPlus, Search, Loader2, Mail, MoreVertical, Plus, X } from "lucide-react";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Une ligne d'invitation par email — un invité = ses propres champs (cf. contrat listInvite.invites). */
+interface InviteRow {
+  email: string;
+  name: string;
+  message: string;
+  admin: boolean;
+}
+const EMPTY_INVITE: InviteRow = { email: "", name: "", message: "", admin: false };
 
 
 interface InviteMemberDialogProps {
@@ -51,9 +54,8 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
   const t = useT("modules/profil");
   const [activeTab, setActiveTab] = useState("users");
   const [searchTerm, setSearchTerm] = useState("");
-  const [emails, setEmails] = useState<string[]>([]);
-  // Inviter comme membre (membre/contributeur/participant selon le type) ou admin → flag isAdmin du lien.
-  const [inviteAs, setInviteAs] = useState<"member" | "admin">("member");
+  // Une ligne par invité : email + nom + message + admin (réglables indépendamment).
+  const [invites, setInvites] = useState<InviteRow[]>([{ ...EMPTY_INVITE }]);
   const debouncedSearch = useDebounce(searchTerm, 300);
   const { confirmation, showConfirmation, hideConfirmation, executeAction } = useConfirmationDialog();
   const { getUserActionButtons } = useAdminActions(entity, showConfirmation);
@@ -63,28 +65,35 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
   const inviteByEmail = useInviteByEmail(entity);
   const emailEnabled = canInviteByEmail(entity);
 
+  const addInvite = () => setInvites((rows) => [...rows, { ...EMPTY_INVITE }]);
+  const removeInvite = (i: number) =>
+    setInvites((rows) => (rows.length > 1 ? rows.filter((_, idx) => idx !== i) : rows));
+  const updateInvite = (i: number, patch: Partial<InviteRow>) =>
+    setInvites((rows) => rows.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
+
   const handleSendInvites = () => {
-    const invalid = emails.filter((e) => !EMAIL_RE.test(e));
+    // On ne garde que les lignes avec un email saisi.
+    const filled = invites
+      .map((r) => ({ ...r, email: r.email.trim() }))
+      .filter((r) => r.email !== "");
+    const invalid = filled.filter((r) => !EMAIL_RE.test(r.email)).map((r) => r.email);
     if (invalid.length > 0) {
       toast.error(t("InviteMemberDialog.invalidEmailsError", undefined, { emails: invalid.join(", ") }));
       return;
     }
-    if (emails.length === 0) {
+    if (filled.length === 0) {
       toast.error(t("InviteMemberDialog.noEmailsError"));
       return;
     }
-    // name = email (fallback du front legacy quand seule l'adresse est fournie).
-    // clé `mail` (pas `email`) : le legacy lit $value["mail"] (contrat lib aligné).
-    // isAdmin: "admin" => invité comme administrateur ; "" => membre/contributeur/participant.
-    const isAdmin = inviteAs === "admin" ? "admin" : "";
+    // Par invité : name (défaut = email, fallback legacy), mail (clé legacy), msg, isAdmin.
     inviteByEmail.mutate(
-      emails.map((email) => ({ name: email, mail: email, isAdmin })),
-      {
-        onSuccess: () => {
-          setEmails([]);
-          setInviteAs("member");
-        },
-      },
+      filled.map((r) => ({
+        name: r.name.trim() || r.email,
+        mail: r.email,
+        ...(r.message.trim() ? { msg: r.message.trim() } : {}),
+        isAdmin: (r.admin ? "admin" : "") as "" | "admin",
+      })),
+      { onSuccess: () => setInvites([{ ...EMPTY_INVITE }]) },
     );
   };
 
@@ -150,8 +159,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
 
   const handleClose = () => {
     setSearchTerm("");
-    setEmails([]);
-    setInviteAs("member");
+    setInvites([{ ...EMPTY_INVITE }]);
     setActiveTab("users");
     hideConfirmation();
     onOpenChange(false);
@@ -272,32 +280,57 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
 
             <TabsContent value="emails" className="space-y-4 mt-6">
               {emailEnabled ? (
-                <div className="space-y-4">
-                  <div className="space-y-3">
-                    <Label>{t("InviteMemberDialog.emailAddresses")}</Label>
-                    <TagsInput
-                      tags={emails}
-                      onTagsChange={setEmails}
-                      searchable={false}
-                      maxTags={50}
-                      texts={{ placeholder: t("InviteMemberDialog.emailPlaceholder") }}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      {t("InviteMemberDialog.emailHint")}
-                    </p>
+                <div className="space-y-3">
+                  <Label>{t("InviteMemberDialog.emailAddresses")}</Label>
+
+                  <div className="space-y-3 max-h-[24rem] overflow-y-auto pr-1">
+                    {invites.map((row, i) => (
+                      <div key={i} className="rounded-lg border border-border p-3 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="email"
+                            placeholder={t("InviteMemberDialog.emailPlaceholder")}
+                            value={row.email}
+                            onChange={(e) => updateInvite(i, { email: e.target.value })}
+                            className="flex-1"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeInvite(i)}
+                            disabled={invites.length === 1}
+                            aria-label={t("InviteMemberDialog.remove")}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <Input
+                          placeholder={t("InviteMemberDialog.namePlaceholder")}
+                          value={row.name}
+                          onChange={(e) => updateInvite(i, { name: e.target.value })}
+                        />
+                        <Textarea
+                          placeholder={t("InviteMemberDialog.messagePlaceholder")}
+                          value={row.message}
+                          onChange={(e) => updateInvite(i, { message: e.target.value })}
+                          rows={2}
+                        />
+                        <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+                          <Checkbox
+                            checked={row.admin}
+                            onCheckedChange={(c) => updateInvite(i, { admin: c === true })}
+                          />
+                          {t("InviteMemberDialog.inviteAsAdmin", undefined, { role: labels.admin })}
+                        </label>
+                      </div>
+                    ))}
                   </div>
-                  <div className="space-y-3">
-                    <Label>{t("InviteMemberDialog.inviteAs")}</Label>
-                    <Select value={inviteAs} onValueChange={(v) => setInviteAs(v as "member" | "admin")}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="member">{labels.member}</SelectItem>
-                        <SelectItem value="admin">{labels.admin}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+
+                  <Button type="button" variant="outline" size="sm" onClick={addInvite}>
+                    <Plus className="w-4 h-4 mr-1" />
+                    {t("InviteMemberDialog.addInvitee")}
+                  </Button>
                 </div>
               ) : (
                 <div className="text-center py-8">
@@ -320,7 +353,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
             {activeTab === "emails" && emailEnabled && (
               <Button
                 onClick={handleSendInvites}
-                disabled={emails.length === 0 || inviteByEmail.isPending}
+                disabled={!invites.some((r) => r.email.trim()) || inviteByEmail.isPending}
               >
                 {inviteByEmail.isPending ? (
                   <>
