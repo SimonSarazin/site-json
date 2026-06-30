@@ -1451,7 +1451,6 @@
                 "disableInfiniteScroll": false,
                 "showDetailedViewToggle": true,
                 "searchVariant": "navigator-tl",
-                "defaultViewMode": "split",
                 "baseParams": {
                   "defaultTypes": [
                     "organizations"
