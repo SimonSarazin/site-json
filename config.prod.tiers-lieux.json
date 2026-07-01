@@ -2628,6 +2628,7 @@
               "etablissements-scolaires",
               "collectivites",
               "sarl-sa-sas",
+              "sarl-sa-sas-esus",
               "scic",
               "scop",
               "autre"
@@ -2842,6 +2843,13 @@
               "label": {
                 "fr": "SARL / SA / SAS",
                 "en": "SARL / SA / SAS"
+              }
+            },
+            {
+              "value": "sarl-sa-sas-esus",
+              "label": {
+                "fr": "SARL / SA / SAS avec agrément ESUS",
+                "en": "SARL / SA / SAS with ESUS approval"
               }
             },
             {

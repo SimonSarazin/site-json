@@ -18,6 +18,7 @@
   "common": {
     "organizedBy": "Organized by",
     "viewProfile": "View profile",
+    "preview": "Preview",
     "date": "Date",
     "back": "Back",
     "loading": "Loading...",
@@ -283,6 +284,14 @@
     "tryDifferentSearch": "Try a different search",
     "emailInvitationsComingSoon": "Email invitations coming soon",
     "useSearchForNow": "Use user search for now",
+    "emailNotAvailableForEvents": "Email invitations are not available for events yet.",
+    "emailHint": "Type an email address then press Enter. The person will receive an email invitation.",
+    "inviteAs": "Invite as",
+    "namePlaceholder": "Name (optional)",
+    "messagePlaceholder": "Invitation message (optional)",
+    "addInvitee": "Add an invitee",
+    "inviteAsAdmin": "Invite as {{role}}",
+    "invalidEmailsError": "Invalid email address(es): {{emails}}",
     "demote": "Demote",
     "remove": "Remove",
     "promoteToAdmin": "Promote to admin",
@@ -685,7 +694,9 @@
       "inviteSuccess": "Invitation sent to {{name}}",
       "inviteError": "Unable to send invitation to {{name}}",
       "inviteAdminSuccess": "Admin invitation sent to {{name}}",
-      "inviteAdminError": "Unable to send admin invitation to {{name}}"
+      "inviteAdminError": "Unable to send admin invitation to {{name}}",
+      "emailInviteSuccess": "{{count}} email invitation(s) sent",
+      "emailInviteError": "Unable to send email invitations"
     },
     "comment": {
       "addSuccess": "Comment added successfully",

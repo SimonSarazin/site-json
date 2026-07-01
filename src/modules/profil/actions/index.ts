@@ -50,6 +50,10 @@ export {
   useInviteAdmin,
 } from "./mutations/member";
 
+// Invitation par email (personnes sans compte) — inviteEvent → multiconnect listInvite.invites
+export { useInviteByEmail, canInviteByEmail } from "./mutations/inviteByEmail";
+export type { EmailInvite } from "./mutations/inviteByEmail";
+
 // ============ BUILDERS ============
 export {
   buildEntityAction,
