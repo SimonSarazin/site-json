@@ -1872,6 +1872,7 @@
                 "inst_part_type",
                 "equip_loc_type",
                 "equip_utilisateur",
+                "equip_numero",
                 "inst_date_creation",
                 "inst_enqu_date",
                 "equip_maj_date",

@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router";
 import { format } from "date-fns";
@@ -36,6 +36,7 @@ import {
   Heart,
   History,
   Info,
+  Loader2,
   MapPin,
   Settings,
   Tag,
@@ -106,6 +107,7 @@ interface PoiDetail {
   equipPshsTrib?: string;
   equipPshsVest?: string;
   equipPshsSign?: string;
+  equipNumero?: string;
   address: PoiAddress;
   geo?: PoiGeo;
 }
@@ -293,6 +295,7 @@ function toPoi(item: Poi): PoiDetail {
     equipPshsTrib: str(sd.equip_pshs_trib),
     equipPshsVest: str(sd.equip_pshs_vest),
     equipPshsSign: str(sd.equip_pshs_sign),
+    equipNumero: str(sd.equip_numero),
     address: {
       streetAddress: str(address?.streetAddress),
       postalCode: str(address?.postalCode),
@@ -435,6 +438,30 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
 
   const poiEntity = item as Poi;
   const sd = poiEntity.serverData;
+
+  // La palette Ctrl+K retourne des entités partielles (searchCostum ne renvoie
+  // que name/address). On recharge les données complètes si les champs équipements
+  // sont absents, puis on force un re-render pour mettre à jour l'affichage.
+  const [isLoadingFull, setIsLoadingFull] = useState(false);
+  useEffect(() => {
+    const hasEquipmentData =
+      sd.equip_type_name !== undefined ||
+      sd.inst_nom !== undefined ||
+      sd.equip_nature !== undefined ||
+      sd.equip_numero !== undefined;
+    if (!hasEquipmentData && poiEntity.id) {
+      setIsLoadingFull(true);
+      poiEntity
+        .refresh()
+        .then(() => setIsLoadingFull(false))
+        .catch((err) => {
+          console.error("[PreviewPoiAmenities] Failed to load full POI data", err);
+          setIsLoadingFull(false);
+        });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [poiEntity.id]);
+
   const poi = toPoi(poiEntity);
 
   // Stable (useCallback) pour ne pas recréer la référence à chaque render et forcer
@@ -621,6 +648,11 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto">
+          {isLoadingFull ? (
+            <div className="flex items-center justify-center py-16 text-muted-foreground">
+              <Loader2 className="h-6 w-6 animate-spin" />
+            </div>
+          ) : (
           <div className="grid gap-6 p-6 pb-12 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div className="space-y-6">
               <section className="rounded-2xl border border-border bg-card/70 p-5 shadow-sm">
@@ -849,8 +881,24 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
                   )}
                 </div>
               </section>
+
+              {poi.equipNumero && (
+                <section className="rounded-2xl border border-border bg-card/70 p-5 shadow-sm">
+                  <a
+                    href={`https://equipements.sports.gouv.fr/pages/fiche/?refine.equip_numero=${encodeURIComponent(poi.equipNumero)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/20"
+                  >
+                    <Info className="h-4 w-4 shrink-0" />
+                    {t("PreviewPoiAmenities.equipNumero.link")}
+                    <span className="ml-1 font-mono text-xs opacity-70">{poi.equipNumero}</span>
+                  </a>
+                </section>
+              )}
             </aside>
           </div>
+          )}
         </div>
       </div>
 

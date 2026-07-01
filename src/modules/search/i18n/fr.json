@@ -130,6 +130,9 @@
             "created": "Création",
             "lastSurvey": "Dernière enquête",
             "lastUpdate": "Dernière mise à jour"
+        },
+        "equipNumero": {
+            "link": "Voir la fiche nationale"
         }
     },
     "Filtres actifs :": "Filtres actifs :",
