@@ -146,7 +146,7 @@ export type TagsFilter = z.infer<typeof TagsFilterSchema>;
  *  de la carte : `Preview.tsx` dispatche dessus. Noms design/fonctionnalité.
  *  Exporté : réutilisé par le module observatoire (rowAction preview). */
 export const PreviewConfSchema = z.object({
-  type: z.enum(["default", "poi-amenities", "coform-answer"]).default("default"),
+  type: z.enum(["default", "poi-amenities", "coform-answer", "event"]).default("default"),
   // Mapping rôle→suffixe de champ CoForm (pour `coform-answer`). Surcharge la
   // table par défaut du composant — découple les IDs de champs du code.
   fields: z.record(z.string(), z.string()).optional(),
@@ -209,7 +209,7 @@ const ListConfSchema = z.object({
 export type ListConf = z.infer<typeof ListConfSchema>;
 
 
-const MapConfSchema = z.object({
+export const MapConfSchema = z.object({
   initialZoom: z.number().min(1).max(20).optional(),
   cluster:     z.boolean().optional(),
   popup: z.object({

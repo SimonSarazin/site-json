@@ -19,6 +19,7 @@ export const useFollowEntity = createEntityMutation({
       await entity.follow();
     }
   },
+  actionType: "follow",
   i18n: {
     successKey: "toast.relationship.followSuccess",
     errorKey: "toast.relationship.followError",
@@ -35,6 +36,7 @@ export const useUnfollowEntity = createEntityMutation({
       await entity.unfollow();
     }
   },
+  actionType: "unfollow",
   i18n: {
     successKey: "toast.relationship.unfollowSuccess",
     errorKey: "toast.relationship.unfollowError",
@@ -56,6 +58,7 @@ export const useRequestToJoin = createEntityMutation({
       await entity.requestToJoin();
     }
   },
+  actionType: "join",
   i18n: {
     successKey: "toast.relationship.memberRequestSent",
     errorKey: "toast.relationship.memberRequestError",
@@ -76,6 +79,7 @@ export const useRequestToJoinAdmin = createEntityMutation({
       await entity.requestToJoinAdmin();
     }
   },
+  actionType: "join",
   i18n: {
     successKey: "toast.relationship.orgAdminRequestSent",
     errorKey: "toast.relationship.orgAdminRequestError",
@@ -96,6 +100,7 @@ export const useLeaveEntity = createEntityMutation({
       await entity.leave();
     }
   },
+  actionType: "leave",
   i18n: {
     successKey: "toast.relationship.memberLeftSuccess",
     errorKey: "toast.relationship.memberLeftError",
@@ -120,6 +125,7 @@ export const useAcceptInvitation = createEntityMutation({
       await entity.acceptInvitation();
     }
   },
+  actionType: "accept",
   i18n: {
     successKey: "toast.invitation.acceptSuccess",
     errorKey: "toast.invitation.acceptError",
@@ -140,6 +146,7 @@ export const useRejectInvitation = createEntityMutation({
       await entity.leave();
     }
   },
+  actionType: "reject",
   i18n: {
     successKey: "toast.invitation.rejectSuccess",
     errorKey: "toast.invitation.rejectError",
@@ -164,6 +171,7 @@ export const useRequestPromoteToAdmin = createEntityMutation({
       await entity.requestPromoteToAdmin();
     }
   },
+  actionType: "promote",
   i18n: {
     successKey: "toast.members.requestPromoteSuccess",
     errorKey: "toast.members.requestPromoteError",

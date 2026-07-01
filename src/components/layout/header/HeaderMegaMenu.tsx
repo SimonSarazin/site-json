@@ -12,7 +12,7 @@ import NavIcon from "./NavIcon";
 import { Badge } from "@/components/ui/badge";
 import { ClientOnly } from "../ClientOnly";
 import { AuthMenu } from "@/modules/auth";
-import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import HeaderLogo from "./HeaderLogo";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
@@ -32,15 +32,13 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
                 <div className="flex items-center justify-between">
                     <div className="flex items-center shrink-0 gap-2 sm:gap-3">
                         <Link to={header.path || "/"} className="flex items-center shrink-0">
-                            {header.logo && (
-                                <OptimizedImage
-                                    src={`/${header.logo}`}
-                                    alt={header.logoAlt ? t(header.logoAlt) : ""}
-                                    width={207}
-                                    height={48}
-                                    className="h-6 xs:h-8 sm:h-9 w-auto max-w-28 xs:max-w-32 sm:max-w-40 object-contain"
-                                />
-                            )}
+                            <HeaderLogo
+                                header={header}
+                                imageHeight={48}
+                                imageWidth={207}
+                                imageClassName="h-6 xs:h-8 sm:h-9 w-auto max-w-28 xs:max-w-32 sm:max-w-40 object-contain"
+                                iconClassName="h-8 w-8"
+                            />
                         </Link>
                     </div>
 

@@ -1,6 +1,6 @@
 import { lazy, Suspense, type ComponentType } from "react";
 import { Loader2 } from "lucide-react";
-import type { EntityTypes, Organization, Poi } from "@communecter/cocolight-api-client";
+import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useSite } from "@/hooks/useSite";
 
 export interface EditModalProps {
@@ -11,47 +11,43 @@ export interface EditModalProps {
 
 const editModalRegistry: Record<string, () => Promise<{ default: ComponentType<EditModalProps> }>> = {
   "edit-profile": () =>
-    import("./EditProfileModal").then((m) => ({
+    import("../../forms/EditProfileGenericModal").then((m) => ({
       default: (props: EditModalProps) => (
-        <m.EditProfileModal
+        <m.EditProfileGenericModal
           open={props.open}
           onOpenChange={props.onOpenChange}
           entity={props.entity}
         />
       ),
     })),
-  "edit-tiers-lieux": () =>
-    import("../edit/EditTiersLieuxModal").then((m) => ({
-      default: (props: EditModalProps) => (
-        <m.EditTiersLieuxModal
-          open={props.open}
-          onOpenChange={props.onOpenChange}
-          organization={props.entity as Organization}
-        />
-      ),
-    })),
-  "edit-poi-equipement": () =>
-    import("../add/AddPoiEquipementModal").then((m) => ({
-      default: (props: EditModalProps) => (
-        <m.AddPoiEquipementModal
-          open={props.open}
-          onOpenChange={props.onOpenChange}
-          mode="edit"
-          poi={props.entity as Poi}
-        />
-      ),
-    })),
+  // edit-tiers-lieux / edit-equipements-sportifs : résolus DYNAMIQUEMENT par la table runtime costum (cf.
+  // costumEditThunk) — id = identité costum. Permet aussi les costums de config (config.costumForms) sans entrée ici.
 };
+
+/** Résolveur DYNAMIQUE des modales d'ÉDITION costum : `edit-<id>` → spec de la table runtime (TS connu OU config JSON). */
+function costumEditThunk(modalName: string): (() => Promise<{ default: ComponentType<EditModalProps> }>) | undefined {
+  const m = /^edit-(.+)$/.exec(modalName);
+  if (!m) return undefined;
+  const id = m[1];
+  return () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/costum/registerCostumForms")]).then(([mod, reg]) => {
+    const spec = reg.getCostumModalSpec(id);
+    return {
+      default: (props: EditModalProps) =>
+        spec ? <mod.EntityFormModal spec={spec} open={props.open} onOpenChange={props.onOpenChange} mode="edit" entity={props.entity} /> : null,
+    };
+  });
+}
 
 const lazyComponents: Record<string, ComponentType<EditModalProps>> = {};
 
 function ensureLazyEditModal(modalName: string): void {
-  if (!editModalRegistry[modalName]) {
+  const thunk = editModalRegistry[modalName] ?? costumEditThunk(modalName);
+  if (!thunk) {
     console.warn(`Edit modal "${modalName}" not found in registry`);
     return;
   }
   if (!lazyComponents[modalName]) {
-    lazyComponents[modalName] = lazy(editModalRegistry[modalName]);
+    lazyComponents[modalName] = lazy(thunk);
   }
 }
 

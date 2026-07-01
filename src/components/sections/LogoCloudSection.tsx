@@ -6,7 +6,7 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 export function LogoCloudSection({ id, props }: { id?: string; props: LogoCloudSectionProps }) {
   const { t } = useLocalization();
-  const { title, logos, grayscale = true, animated = false } = props;
+  const { title, subtitle, logos, grayscale = true, animated = false } = props;
 
   const LogoItem = ({ logo, index }: { logo: LogoCloudSectionProps["logos"][number]; index: number }) => {
     const content = (
@@ -44,9 +44,16 @@ export function LogoCloudSection({ id, props }: { id?: string; props: LogoCloudS
   return (
     <section id={id} className="py-16 bg-muted/30 text-foreground">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {title && (
+        {(title || subtitle) && (
           <div className="text-center mb-12">
-            <T k={title} as="h2" className="text-2xl md:text-3xl font-bold text-foreground" />
+            {title && <T k={title} as="h2" className="text-2xl md:text-3xl font-bold text-foreground" />}
+            {subtitle && (
+              <T
+                k={subtitle}
+                as="p"
+                className="mt-3 max-w-3xl mx-auto whitespace-pre-line text-base text-muted-foreground"
+              />
+            )}
           </div>
         )}
 

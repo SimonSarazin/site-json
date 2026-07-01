@@ -43,7 +43,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps = {}
   const [loadingRegister, setLoading] = useState<boolean>(false);
 
   const navigate                     = useNavigate();
-  const { userApi, loading, me }     = useCocolight();
+  const { userApi, loading, me, entity, contextId, contextType } = useCocolight();
   const { loaded }                   = useLoadNamespace("modules/auth");
   const t                            = useT("modules/auth");
   const { config }                   = useSite();
@@ -122,11 +122,19 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps = {}
     try {
       const { name, username, email, pwd } = formData;
 
+      // Contexte costum du déploiement → le backend estampille `source.key` du citoyen (port Person::insert,
+      // legacy : inscription sous un costum actif). Slug/id/type de l'entité porteuse (résolue de VITE_SLUG au boot).
+      const deploymentSlug = (entity?.serverData as { slug?: string } | undefined)?.slug;
+      const costumCtx = deploymentSlug && contextId && contextType
+        ? { costumSlug: deploymentSlug, costumId: contextId, costumType: contextType }
+        : {};
+
       const response = await userApi.register({
         name,
         username,
         email,
         pwd,
+        ...costumCtx,
       });
 
       if (response.result) {

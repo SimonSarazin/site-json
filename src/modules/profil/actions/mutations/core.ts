@@ -7,6 +7,7 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { isUser, isOrganization, isProject, isEvent } from "@/lib/getTypedEntity";
 import { PROFIL_QUERY_KEYS } from "../../constants/queryKeys";
+import { emitEntityAction, type EntityActionType } from "../entityActionBus";
 
 export type EntityType = "user" | "organization" | "project" | "event";
 
@@ -36,6 +37,8 @@ export interface EntityMutationConfig<TParams = void> {
   };
   /** Fonction pour calculer les query keys à invalider */
   invalidate: (entity: EntityTypes, me: User | null) => QueryKey[];
+  /** Type d'action émis sur le bus post-succès (entityActionBus) — opt-in, additif */
+  actionType?: EntityActionType;
   /** Paramètres dynamiques pour les messages (optionnel) */
   getSuccessParams?: (entity: EntityTypes, params: TParams) => Record<string, string>;
   getErrorParams?: (error: Error, entity: EntityTypes, params: TParams) => Record<string, string>;
@@ -82,6 +85,11 @@ export function createEntityMutation<TParams = void>(config: EntityMutationConfi
         if (entity) {
           const keys = config.invalidate(entity, me as User | null);
           keys.forEach((key) => queryClient.invalidateQueries({ queryKey: key }));
+          // Émission post-succès (additif) : les abonnés (ex. PreviewEvent) réagissent
+          // « suivant le besoin » sans que les mutations connaissent leurs consommateurs.
+          if (config.actionType) {
+            emitEntityAction({ type: config.actionType, entity, me: me as User | null });
+          }
         }
       },
       invalidateQueries: [],

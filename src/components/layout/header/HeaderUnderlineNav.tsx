@@ -1,7 +1,7 @@
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { Header } from "@/types/site-schema";
-import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import HeaderLogo from "./HeaderLogo";
 import { useLocation } from "react-router";
 import { useScrollAware, useScrollToTopOnRouteChange, useNavItemActive } from "./useHeaderBehavior";
 import NavLink from "../NavLink";
@@ -38,19 +38,12 @@ export default function HeaderUnderlineNav({ header }: HeaderUnderlineNavProps) 
             <div className="container mx-auto px-4">
                 <div className="flex items-center justify-between h-20">
                     <NavLink to={header.path || "/"} className="flex items-center gap-3 cursor-pointer group">
-                        {header.logo ? (
-                            <OptimizedImage
-                                src={header.logo}
-                                alt={header.logoAlt ? t(header.logoAlt) : ""}
-                                height={32}
-                                className="h-8 w-8 object-contain group-hover:scale-110 transition-transform"
-                            />
-                        ) : header.logoIcon ? (
-                            <IconOrSvg
-                                value={header.logoIcon}
-                                className="w-8 h-8 text-primary group-hover:scale-110 transition-transform"
-                            />
-                        ) : null}
+                        <HeaderLogo
+                            header={header}
+                            iconTone="primary"
+                            imageClassName="h-8 w-8 object-contain group-hover:scale-110 transition-transform"
+                            iconClassName="w-8 h-8 group-hover:scale-110 transition-transform"
+                        />
                         {header.logoTitle && (
                             <span className="text-xl font-bold text-white">{t(header.logoTitle)}</span>
                         )}
