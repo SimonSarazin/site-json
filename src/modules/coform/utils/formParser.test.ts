@@ -524,6 +524,102 @@ describe("generateZodSchema", () => {
     ]);
     expect(schema.parse({ em: "anything-string" })).toEqual({ em: "anything-string" });
   });
+
+  it("inputType url valide le format (tolérant, sans schéma) — requis", () => {
+    const schema = generateZodSchema([
+      makeSubFormFields([
+        makeField({ name: "u", componentType: "text", inputType: "url", isRequired: true }),
+      ]),
+    ]);
+    // URL sans schéma acceptée
+    expect(schema.parse({ u: "laplumealoup.dokos.fr" })).toEqual({ u: "laplumealoup.dokos.fr" });
+    // URL avec schéma + chemin/query acceptée
+    expect(schema.parse({ u: "https://exemple.fr/path?q=1" })).toEqual({ u: "https://exemple.fr/path?q=1" });
+    // chaîne non-URL rejetée
+    expect(() => schema.parse({ u: "pas une url" })).toThrow();
+    // requis + vide rejeté (par min(1))
+    expect(() => schema.parse({ u: "" })).toThrow();
+  });
+
+  it("inputType url non requis : la validation ne s'applique PAS au champ vide", () => {
+    const schema = generateZodSchema([
+      makeSubFormFields([
+        makeField({ name: "u", componentType: "text", inputType: "url", isRequired: false }),
+      ]),
+    ]);
+    // non requis + vide → valide (pas de validation de format)
+    expect(() => schema.parse({ u: "" })).not.toThrow();
+    // non requis + URL sans schéma → valide
+    expect(schema.parse({ u: "monsite.re" })).toEqual({ u: "monsite.re" });
+    // non requis mais renseigné avec une non-URL → rejeté
+    expect(() => schema.parse({ u: "nope" })).toThrow();
+  });
+
+  it("radio requis (avec options) : sélection vide → message traduit, pas le défaut Zod enum", () => {
+    const schema = generateZodSchema([
+      makeSubFormFields([
+        makeField({ name: "r", label: "Choix", componentType: "radio", options: ["a", "b"], isRequired: true }),
+      ]),
+    ]);
+    const res = schema.safeParse({ r: "" });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.issues.map((i) => i.message)).toContain("Choix est requis");
+    }
+    // valeur valide acceptée
+    expect(schema.parse({ r: "a" })).toEqual({ r: "a" });
+  });
+
+  it("radio requis (sans options) : valeur vide → message traduit, pas le défaut Zod min", () => {
+    const schema = generateZodSchema([
+      makeSubFormFields([
+        makeField({ name: "r2", label: "Libre", componentType: "radio", isRequired: true }),
+      ]),
+    ]);
+    const res = schema.safeParse({ r2: "" });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.issues.map((i) => i.message)).toContain("Libre est requis");
+    }
+  });
+
+  it("commonTable : note hors de [0,5] → message traduit, pas le défaut Zod min/max", () => {
+    const schema = generateZodSchema([
+      makeSubFormFields([
+        makeField({ name: "ct", label: "Besoins", componentType: "commonTable", isRequired: false }),
+      ]),
+    ]);
+    const composite = {
+      scores: {
+        c1: { criteriaId: "c1", criteria: "Outil", usage: "U", usageKey: "c1", note: 6, happiness: "", yesOrNo: false, comment: "" },
+      },
+      myCatalog: {},
+    };
+    const res = schema.safeParse({ ct: composite });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.issues.map((i) => i.message)).toContain("La note doit être comprise entre 0 et 5");
+    }
+  });
+
+  it("injecte le traducteur `t` pour les nouveaux messages Zod (radio enum + note)", () => {
+    const calls: string[] = [];
+    const t = (key: string, fallback?: string) => {
+      calls.push(key);
+      return fallback ?? "";
+    };
+    generateZodSchema(
+      [
+        makeSubFormFields([
+          makeField({ name: "r", componentType: "radio", options: ["a"], isRequired: true }),
+          makeField({ name: "ct", componentType: "commonTable", isRequired: false }),
+        ]),
+      ],
+      t,
+    );
+    expect(calls).toContain("coform.validation.requiredField");
+    expect(calls).toContain("coform.validation.noteRange");
+  });
 });
 
 // ============================================================================

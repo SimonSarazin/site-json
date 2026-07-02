@@ -946,6 +946,12 @@ export interface UploaderLegacyValue {
   updateDate: string[];
   /** En DB: objet { docId: docPath }. Pendant l'édition: tableau mixte (string | ImageUploadValue | ExistingUploadFile). */
   files?: Array<string | ImageUploadValue | ExistingUploadFile> | Record<string, string>;
+  /**
+   * Traçage TRANSITOIRE des docId réels retirés à l'édition. Seule source pour
+   * supprimer un legacy non-en-map (snapshot de réconciliation aveugle). Lu puis
+   * STRIPé au save — jamais persisté.
+   */
+  deletedDocIds?: string[];
 }
 
 /** Valeur d'une cellule : URL déjà enregistrée (string) ou image en attente (ImageUploadValue) */

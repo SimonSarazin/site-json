@@ -503,9 +503,12 @@
               ],
               "indexStepList": 5,
               "defaultFilters": {
-                "tags": [
-                  "TiersLieux"
-                ],
+                "$or": {
+                  "tags": { "$in": ["TiersLieux"] }
+                },
+                "tags": {
+                  "$nin": ["RéseauTiersLieux"]
+                },
                 "address.addressCountry": {
                   "$in": [
                     "BE",
@@ -663,9 +666,12 @@
               ],
               "indexStepList": 5,
               "defaultFilters": {
-                "tags": [
-                  "TiersLieux"
-                ],
+                "$or": {
+                  "tags": { "$in": ["TiersLieux"] }
+                },
+                "tags": {
+                  "$nin": ["RéseauTiersLieux"]
+                },
                 "address.addressCountry": {
                   "$in": [
                     "BE",
@@ -1448,9 +1454,12 @@
                     "organizations"
                   ],
                   "defaultFilters": {
-                    "tags": [
-                      "TiersLieux"
-                    ],
+                    "$or": {
+                      "tags": { "$in": ["TiersLieux"] }
+                    },
+                    "tags": {
+                      "$nin": ["RéseauTiersLieux"]
+                    },
                     "address.addressCountry": {
                       "$in": [
                         "BE",

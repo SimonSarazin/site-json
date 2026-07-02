@@ -47,7 +47,7 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { type Answer } from "@communecter/cocolight-api-client";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
 import { useMultiEvalData } from "@/modules/coform/hooks/useMultiEvalData";
-import { MultiEvalRadarCarousel } from "@/modules/coform/components/MultiEvalRadarCarousel";
+import { MultiEvalRadarTabs } from "@/modules/coform/components/MultiEvalRadarTabs";
 
 interface ProfileTiersLieuxInfoProps {
     section: ProfileTiersLieuxInfoSection;
@@ -567,7 +567,7 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
                                     {t("ProfileTiersLieuxInfo.evaluateLoading")}
                                 </div>
                             ) : evaluationForm.answerId && evaluationSteps.length > 0 ? (
-                                <MultiEvalRadarCarousel steps={evaluationSteps} />
+                                <MultiEvalRadarTabs steps={evaluationSteps} />
                             ) : (
                                 <p className="text-xs text-muted-foreground italic">
                                     {t("ProfileTiersLieuxInfo.evaluateNoData")}
