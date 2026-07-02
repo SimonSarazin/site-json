@@ -83,5 +83,10 @@
     "slug": "equipementsSportifs974",
     "config": "config.prod.equipements-Sportifs.json",
     "css": "index-equipements-sportifs"
+  },
+  {
+    "slug": "parents62",
+    "config": "config.prod.parents62.json",
+    "css": "index-parents62"
   }
 ]

@@ -1,0 +1,1713 @@
+{
+  "version": "1.0.0",
+  "generated": "2026-07-02T00:00:00.000Z",
+  "meta": {
+    "title": {
+      "fr": "Réseau Parentalité 62"
+    },
+    "description": {
+      "fr": "Le réseau des acteurs du soutien à la parentalité du Pas-de-Calais : s'informer, se rencontrer et agir ensemble pour accompagner les familles."
+    },
+    "defaultLang": "fr",
+    "languages": [
+      "fr"
+    ],
+    "favicon": "images/parents62/logo.png",
+    "themeColor": "#8DC63F",
+    "keywords": [
+      "parentalité",
+      "familles",
+      "parents",
+      "Pas-de-Calais",
+      "soutien à la parentalité",
+      "réseau",
+      "accompagnement",
+      "éducation"
+    ]
+  },
+  "header": {
+    "type": "transparent-scroll",
+    "path": "/",
+    "logo": "images/parents62/logo.png",
+    "logoAlt": {
+      "fr": "Réseau Parentalité 62"
+    },
+    "nav": [
+      {
+        "label": {
+          "fr": "Accueil"
+        },
+        "path": "/"
+      },
+      {
+        "label": {
+          "fr": "Actions"
+        },
+        "path": "/actions"
+      },
+      {
+        "label": {
+          "fr": "Agenda"
+        },
+        "path": "/agenda"
+      },
+      {
+        "label": {
+          "fr": "Communauté"
+        },
+        "path": "/communaute"
+      }
+    ],
+    "sticky": true,
+    "transparent": true,
+    "transparentMode": "auto",
+    "height": "lg",
+    "ctaButton": {
+      "label": {
+        "fr": "Rejoindre le réseau"
+      },
+      "path": "/communaute"
+    },
+    "utilities": {
+      "piggyBank": false,
+      "themeSwitch": true,
+      "langSwitch": false,
+      "search": false,
+      "auth": true,
+      "cart": false,
+      "notifications": true
+    }
+  },
+  "pages": [
+    {
+      "path": "/",
+      "title": {
+        "fr": "Accueil - Réseau Parentalité 62"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "hero-parallax",
+          "id": "hero-parents62",
+          "props": {
+            "headline": {
+              "fr": "Accompagner les familles du Pas-de-Calais"
+            },
+            "subhead": {
+              "fr": "Le Réseau Parentalité 62 rassemble parents et professionnels autour du soutien à la parentalité : s'informer, échanger et trouver près de chez soi des actions pour vivre sa parentalité sereinement."
+            },
+            "badges": [
+              {
+                "label": {
+                  "fr": "Écoute & entraide"
+                },
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\"></path></svg>"
+              },
+              {
+                "label": {
+                  "fr": "Près de chez vous"
+                },
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z\"></path><circle cx=\"12\" cy=\"10\" r=\"3\"></circle></svg>"
+              },
+              {
+                "label": {
+                  "fr": "Ouvert à toutes les familles"
+                },
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"></path><circle cx=\"9\" cy=\"7\" r=\"4\"></circle><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"></path><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"></path></svg>"
+              }
+            ],
+            "ctaButtons": [
+              {
+                "label": {
+                  "fr": "Découvrir les actions"
+                },
+                "path": "/actions",
+                "variant": "default"
+              },
+              {
+                "label": {
+                  "fr": "Rejoindre la communauté"
+                },
+                "path": "/communaute",
+                "variant": "secondary"
+              }
+            ],
+            "showScrollIndicator": true
+          }
+        },
+        {
+          "type": "cta",
+          "id": "manifeste",
+          "props": {
+            "headline": {
+              "fr": "Grandir ensemble"
+            },
+            "subhead": {
+              "fr": "Être parent, ça se partage et ça se vit à plusieurs. Le réseau relie celles et ceux qui accompagnent les familles, partout dans le Pas-de-Calais."
+            },
+            "buttons": []
+          }
+        },
+        {
+          "type": "html",
+          "id": "mission",
+          "props": {
+            "html": "<section class=\"py-24 px-4\"><div class=\"container mx-auto max-w-6xl grid md:grid-cols-2 gap-12 items-center\"><div class=\"space-y-6\"><h2 class=\"text-3xl md:text-4xl font-bold text-foreground\">Qu'est-ce que le Réseau Parentalité 62 ?</h2><p class=\"text-lg text-muted-foreground\">Le <span class=\"text-primary font-semibold\">Réseau Parentalité 62</span> fédère les acteurs du soutien à la parentalité du Pas-de-Calais : institutions, associations, professionnels et parents.</p><p class=\"text-muted-foreground\">Il facilite l'interconnaissance entre acteurs, la mise en réseau et la visibilité des actions menées auprès des familles — pour qu'aucun parent ne reste seul face à ses questions.</p></div><div class=\"rounded-xl overflow-hidden border border-border bg-white p-10\"><img src=\"/images/parents62/logo.png\" alt=\"Logo du Réseau Parentalité 62\" class=\"w-full h-auto\" loading=\"lazy\" /></div></div></section>"
+          }
+        },
+        {
+          "type": "features-glass",
+          "id": "missions",
+          "props": {
+            "headline": {
+              "fr": "Les missions du réseau"
+            },
+            "subhead": {
+              "fr": "Un commun au service des parents et des professionnels du département"
+            },
+            "features": [
+              {
+                "icon": "heart-handshake",
+                "title": {
+                  "fr": "Écouter"
+                },
+                "description": {
+                  "fr": "Accueillir les questions et les besoins des parents, sans jugement"
+                },
+                "color": "primary"
+              },
+              {
+                "icon": "book-open",
+                "title": {
+                  "fr": "Informer"
+                },
+                "description": {
+                  "fr": "Relayer les actions, ressources et dispositifs de soutien à la parentalité"
+                },
+                "color": "primary"
+              },
+              {
+                "icon": "compass",
+                "title": {
+                  "fr": "Orienter"
+                },
+                "description": {
+                  "fr": "Guider chaque famille vers l'acteur ou l'action qui lui correspond"
+                },
+                "color": "primary"
+              },
+              {
+                "icon": "network",
+                "title": {
+                  "fr": "Mettre en réseau"
+                },
+                "description": {
+                  "fr": "Favoriser l'interconnaissance entre professionnels et bénévoles"
+                },
+                "color": "accent"
+              },
+              {
+                "icon": "graduation-cap",
+                "title": {
+                  "fr": "Se former"
+                },
+                "description": {
+                  "fr": "Partager pratiques et savoir-faire entre acteurs de la parentalité"
+                },
+                "color": "accent"
+              },
+              {
+                "icon": "sparkles",
+                "title": {
+                  "fr": "Agir ensemble"
+                },
+                "description": {
+                  "fr": "Co-construire des projets et des événements pour les familles"
+                },
+                "color": "accent"
+              }
+            ]
+          }
+        },
+        {
+          "type": "action-tiles",
+          "id": "participer",
+          "props": {
+            "headline": {
+              "fr": "Participer au réseau"
+            },
+            "subhead": {
+              "fr": "Parents, professionnels, bénévoles : il y a une place pour chacun·e"
+            },
+            "columns": {
+              "lg": 3
+            },
+            "actions": [
+              {
+                "icon": "plus-circle",
+                "title": {
+                  "fr": "Référencer une action"
+                },
+                "subtitle": {
+                  "fr": "Faites connaître vos initiatives"
+                },
+                "href": "/actions",
+                "color": "primary"
+              },
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Rejoindre la communauté"
+                },
+                "subtitle": {
+                  "fr": "Parents & professionnels"
+                },
+                "href": "/communaute",
+                "color": "primary"
+              },
+              {
+                "icon": "calendar",
+                "title": {
+                  "fr": "Voir l'agenda"
+                },
+                "subtitle": {
+                  "fr": "Rencontres & ateliers"
+                },
+                "href": "/agenda",
+                "color": "primary"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/actions",
+      "title": {
+        "fr": "Actions - Réseau Parentalité 62"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "actions-header",
+          "props": {
+            "headline": {
+              "fr": "Les actions du réseau"
+            },
+            "subhead": {
+              "fr": "Ateliers, groupes de parole, lieux d'accueil : découvrez les actions de soutien à la parentalité près de chez vous"
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Proposer une action"
+                },
+                "icon": "plus",
+                "action": "add-project",
+                "variant": "primary"
+              }
+            ],
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher une action..."
+            }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "section-actions-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": {
+              "defaultTypes": [
+                "projects"
+              ],
+              "sourceKey": [
+                "parents62"
+              ],
+              "indexStepList": 6
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3,
+                "xl": 4
+              },
+              "card": {
+                "type": "default",
+                "detailsMode": "drawer"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/agenda",
+      "title": {
+        "fr": "Agenda - Réseau Parentalité 62"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "evenements-header",
+          "props": {
+            "headline": {
+              "fr": "L'agenda du réseau"
+            },
+            "subhead": {
+              "fr": "Rencontres, ateliers et temps forts pour les familles, partout dans le Pas-de-Calais"
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Proposer un événement"
+                },
+                "icon": "calendar-plus",
+                "action": "add-event",
+                "variant": "primary"
+              }
+            ],
+            "showSearch": false
+          }
+        },
+        {
+          "type": "agenda",
+          "id": "agenda-parents62",
+          "props": {
+            "defaultMode": "list",
+            "tabs": [
+              "upcoming",
+              "ongoing",
+              "past"
+            ],
+            "defaultTab": "upcoming",
+            "upcomingWindowMonths": 12,
+            "filters": {
+              "type": true,
+              "text": true,
+              "tags": true
+            },
+            "detailsMode": "drawer",
+            "enableMap": false,
+            "mapView": "map",
+            "map": {
+              "marker": {
+                "useItemImage": true,
+                "style": "pin",
+                "color": "primary"
+              }
+            },
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 3,
+              "xl": 4
+            },
+            "baseParams": {
+              "sourceKey": [
+                "parents62"
+              ],
+              "indexStepList": 12
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/communaute",
+      "title": {
+        "fr": "Communauté - Réseau Parentalité 62"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "communaute-header",
+          "props": {
+            "headline": {
+              "fr": "La communauté"
+            },
+            "subhead": {
+              "fr": "Parents, professionnels, associations et institutions réunis autour du soutien à la parentalité"
+            }
+          }
+        },
+        {
+          "type": "tabs",
+          "id": "community-tabs",
+          "props": {
+            "defaultTab": "members",
+            "tabs": [
+              {
+                "id": "members",
+                "label": {
+                  "fr": "Membres"
+                },
+                "icon": "users",
+                "content": [
+                  {
+                    "type": "searchProStatic",
+                    "id": "search-members",
+                    "props": {
+                      "useFilter": false,
+                      "showMap": false,
+                      "enableMap": false,
+                      "disableInfiniteScroll": false,
+                      "baseParams": {
+                        "defaultTypes": [
+                          "citoyens"
+                        ],
+                        "sourceKey": [
+                          "parents62"
+                        ]
+                      },
+                      "list": {
+                        "columns": {
+                          "sm": 1,
+                          "md": 2,
+                          "lg": 3,
+                          "xl": 4
+                        },
+                        "card": {
+                          "type": "profile",
+                          "variant": "profile",
+                          "detailsMode": "drawer"
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "organizations",
+                "label": {
+                  "fr": "Structures & associations"
+                },
+                "icon": "building-2",
+                "content": [
+                  {
+                    "type": "searchProStatic",
+                    "id": "search-organizations",
+                    "props": {
+                      "useFilter": true,
+                      "showMap": false,
+                      "enableMap": false,
+                      "disableInfiniteScroll": false,
+                      "showDetailedViewToggle": true,
+                      "baseParams": {
+                        "defaultTypes": [
+                          "organizations"
+                        ],
+                        "sourceKey": [
+                          "parents62"
+                        ]
+                      },
+                      "list": {
+                        "columns": {
+                          "sm": 1,
+                          "md": 2,
+                          "lg": 3,
+                          "xl": 4
+                        },
+                        "card": {
+                          "type": "profile",
+                          "variant": "profile",
+                          "detailsMode": "drawer"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "type": "minimal-centered",
+    "logo": "images/parents62/logo.png",
+    "logoAlt": {
+      "fr": "Réseau Parentalité 62"
+    },
+    "description": {
+      "fr": "Le réseau des acteurs du soutien à la parentalité du Pas-de-Calais."
+    },
+    "columns": [
+      {
+        "title": {
+          "fr": "Le réseau"
+        },
+        "links": [
+          {
+            "href": "/",
+            "label": {
+              "fr": "Accueil"
+            }
+          },
+          {
+            "href": "/actions",
+            "label": {
+              "fr": "Actions"
+            }
+          },
+          {
+            "href": "/agenda",
+            "label": {
+              "fr": "Agenda"
+            }
+          },
+          {
+            "href": "/communaute",
+            "label": {
+              "fr": "Communauté"
+            }
+          }
+        ]
+      }
+    ],
+    "copyright": {
+      "fr": "© 2026 Réseau Parentalité 62"
+    }
+  },
+  "features": [
+    {
+      "key": "communityFeatures",
+      "enabled": true,
+      "rolloutPercentage": 100
+    },
+    {
+      "key": "lightMode",
+      "enabled": true,
+      "rolloutPercentage": 100
+    }
+  ],
+  "theme": {
+    "colors": {
+      "light": {
+        "background": "oklch(1 0 0)",
+        "foreground": "oklch(0.32 0.01 260)",
+        "card": "oklch(1 0 0)",
+        "cardForeground": "oklch(0.32 0.01 260)",
+        "popover": "oklch(1 0 0)",
+        "popoverForeground": "oklch(0.32 0.01 260)",
+        "primary": "oklch(0.55 0.14 132)",
+        "primaryForeground": "oklch(1 0 0)",
+        "secondary": "oklch(0.96 0.03 125)",
+        "secondaryForeground": "oklch(0.35 0.08 132)",
+        "muted": "oklch(0.97 0.01 120)",
+        "mutedForeground": "oklch(0.47 0.02 260)",
+        "accent": "oklch(0.72 0.15 45)",
+        "accentForeground": "oklch(0.24 0.06 45)",
+        "destructive": "oklch(0.6368 0.2078 25.3313)",
+        "destructiveForeground": "oklch(1 0 0)",
+        "border": "oklch(0.92 0.015 120)",
+        "input": "oklch(0.92 0.015 120)",
+        "ring": "oklch(0.55 0.14 132)",
+        "chart1": "oklch(0.68 0.16 128)",
+        "chart2": "oklch(0.72 0.15 45)",
+        "chart3": "oklch(0.70 0.11 200)",
+        "chart4": "oklch(0.51 0.12 290)",
+        "chart5": "oklch(0.72 0.10 350)",
+        "sidebar": "oklch(0.98 0.008 120)",
+        "sidebarForeground": "oklch(0.32 0.01 260)",
+        "sidebarPrimary": "oklch(0.55 0.14 132)",
+        "sidebarPrimaryForeground": "oklch(1 0 0)",
+        "sidebarAccent": "oklch(0.72 0.15 45)",
+        "sidebarAccentForeground": "oklch(0.24 0.06 45)",
+        "sidebarBorder": "oklch(0.92 0.015 120)",
+        "sidebarRing": "oklch(0.55 0.14 132)"
+      },
+      "dark": {
+        "background": "oklch(0.20 0.02 145)",
+        "foreground": "oklch(0.96 0.01 120)",
+        "card": "oklch(0.24 0.025 145)",
+        "cardForeground": "oklch(0.96 0.01 120)",
+        "popover": "oklch(0.22 0.025 145)",
+        "popoverForeground": "oklch(0.96 0.01 120)",
+        "primary": "oklch(0.76 0.17 127)",
+        "primaryForeground": "oklch(0.20 0.05 130)",
+        "secondary": "oklch(0.30 0.04 140)",
+        "secondaryForeground": "oklch(0.96 0.01 120)",
+        "muted": "oklch(0.28 0.03 140)",
+        "mutedForeground": "oklch(0.78 0.02 130)",
+        "accent": "oklch(0.72 0.15 45)",
+        "accentForeground": "oklch(0.20 0.05 45)",
+        "destructive": "oklch(0.6368 0.2078 25.3313)",
+        "destructiveForeground": "oklch(1 0 0)",
+        "border": "oklch(0.33 0.03 140)",
+        "input": "oklch(0.32 0.03 140)",
+        "ring": "oklch(0.76 0.17 127)",
+        "chart1": "oklch(0.76 0.17 127)",
+        "chart2": "oklch(0.74 0.15 45)",
+        "chart3": "oklch(0.74 0.11 200)",
+        "chart4": "oklch(0.62 0.13 290)",
+        "chart5": "oklch(0.75 0.10 350)",
+        "sidebar": "oklch(0.18 0.02 145)",
+        "sidebarForeground": "oklch(0.96 0.01 120)",
+        "sidebarPrimary": "oklch(0.76 0.17 127)",
+        "sidebarPrimaryForeground": "oklch(0.20 0.05 130)",
+        "sidebarAccent": "oklch(0.72 0.15 45)",
+        "sidebarAccentForeground": "oklch(0.20 0.05 45)",
+        "sidebarBorder": "oklch(0.33 0.03 140)",
+        "sidebarRing": "oklch(0.76 0.17 127)"
+      }
+    },
+    "typography": {
+      "fontFamily": {
+        "sans": [
+          "Inter"
+        ],
+        "serif": [
+          "Space Grotesk",
+          "sans-serif"
+        ],
+        "mono": [
+          "JetBrains Mono"
+        ]
+      },
+      "letterSpacing": "0em"
+    },
+    "spacing": {
+      "base": "0.25rem"
+    },
+    "borderRadius": {
+      "base": "0.75rem"
+    },
+    "shadows": {
+      "light": {
+        "shadow2xs": "0px 4px 8px -1px hsl(0 0% 0% / 0.05)",
+        "shadowXs": "0px 4px 8px -1px hsl(0 0% 0% / 0.05)",
+        "shadowSm": "0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 1px 2px -2px hsl(0 0% 0% / 0.10)",
+        "shadow": "0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 1px 2px -2px hsl(0 0% 0% / 0.10)",
+        "shadowMd": "0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 2px 4px -2px hsl(0 0% 0% / 0.10)",
+        "shadowLg": "0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 4px 6px -2px hsl(0 0% 0% / 0.10)",
+        "shadowXl": "0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 8px 10px -2px hsl(0 0% 0% / 0.10)",
+        "shadow2xl": "0px 4px 8px -1px hsl(0 0% 0% / 0.25)"
+      },
+      "dark": {
+        "shadow2xs": "0px 4px 8px -1px oklch(0.15 0.04 145 / 0.2)",
+        "shadowXs": "0px 4px 8px -1px oklch(0.15 0.04 145 / 0.2)",
+        "shadowSm": "0px 4px 8px -1px oklch(0.15 0.04 145 / 0.3), 0px 1px 2px -2px oklch(0.15 0.04 145 / 0.2)",
+        "shadow": "0px 4px 8px -1px oklch(0.15 0.04 145 / 0.3), 0px 1px 2px -2px oklch(0.15 0.04 145 / 0.2)",
+        "shadowMd": "0px 4px 8px -1px oklch(0.15 0.04 145 / 0.4), 0px 2px 4px -2px oklch(0.15 0.04 145 / 0.3)",
+        "shadowLg": "0px 4px 8px -1px oklch(0.15 0.04 145 / 0.4), 0px 4px 6px -2px oklch(0.15 0.04 145 / 0.3)",
+        "shadowXl": "0px 4px 8px -1px oklch(0.15 0.04 145 / 0.5), 0px 8px 10px -2px oklch(0.15 0.04 145 / 0.4)",
+        "shadow2xl": "0px 4px 8px -1px oklch(0.15 0.04 145 / 0.6)"
+      }
+    },
+    "customCSS": "",
+    "defaultMode": "light"
+  },
+  "auth": {
+    "login": {
+      "title": {
+        "fr": "Se connecter"
+      },
+      "subtitle": {
+        "fr": "Retrouvez la communauté du Réseau Parentalité 62"
+      }
+    },
+    "register": {
+      "title": {
+        "fr": "Créer un compte"
+      },
+      "subtitle": {
+        "fr": "Rejoignez les acteurs de la parentalité du Pas-de-Calais"
+      }
+    }
+  },
+  "profiles": {
+    "default": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete"
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gallery",
+          "label": {
+            "fr": "Galerie"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-gallery"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "map",
+          "label": {
+            "fr": "Localisation"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-map"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "citoyens": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": true,
+          "addConfig": {
+            "organization": true,
+            "project": true,
+            "event": true,
+            "poi": true
+          }
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "news",
+          "label": {
+            "fr": "Actualités"
+          },
+          "sections": [
+            {
+              "type": "news",
+              "props": {
+                "maxItems": 10,
+                "showAddButton": true,
+                "showComments": true,
+                "showReactions": true
+              }
+            }
+          ],
+          "subRoutes": [
+            {
+              "path": ":newsId",
+              "component": "NewsDetailPage"
+            }
+          ]
+        },
+        {
+          "id": "social",
+          "label": {
+            "fr": "Amis"
+          },
+          "condition": {
+            "entityTypes": [
+              "citoyens"
+            ],
+            "userContext": "own"
+          },
+          "component": "SocialTab"
+        },
+        {
+          "id": "membership",
+          "label": {
+            "fr": "Communautés"
+          },
+          "condition": {
+            "entityTypes": [
+              "citoyens"
+            ],
+            "userContext": "own"
+          },
+          "component": "MembershipTab"
+        }
+      ]
+    },
+    "organizations": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": true,
+          "addConfig": {
+            "organization": false,
+            "project": true,
+            "event": true,
+            "poi": true
+          }
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "news",
+          "label": {
+            "fr": "Actualités"
+          },
+          "sections": [
+            {
+              "type": "news",
+              "props": {
+                "maxItems": 10,
+                "showAddButton": true,
+                "showComments": true,
+                "showReactions": true
+              }
+            }
+          ],
+          "subRoutes": [
+            {
+              "path": ":newsId",
+              "component": "NewsDetailPage"
+            }
+          ]
+        },
+        {
+          "id": "members",
+          "label": {
+            "fr": "Membres"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-members",
+                  "showRole": true,
+                  "showManagement": true
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "projects",
+          "label": {
+            "fr": "Projets"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-related",
+                  "relationType": "projects",
+                  "title": {
+                    "fr": "Projets"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "events",
+          "label": {
+            "fr": "Événements"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-related",
+                  "relationType": "events",
+                  "title": {
+                    "fr": "Événements"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "projects": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": true,
+          "addConfig": {
+            "organization": false,
+            "project": false,
+            "event": true,
+            "poi": true
+          }
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-event-dates"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "news",
+          "label": {
+            "fr": "Actualités"
+          },
+          "sections": [
+            {
+              "type": "news",
+              "props": {
+                "maxItems": 10,
+                "showAddButton": true,
+                "showComments": true,
+                "showReactions": true
+              }
+            }
+          ],
+          "subRoutes": [
+            {
+              "path": ":newsId",
+              "component": "NewsDetailPage"
+            }
+          ]
+        },
+        {
+          "id": "contributors",
+          "label": {
+            "fr": "Contributeurs"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-members",
+                  "showRole": true,
+                  "showManagement": true
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "organizations",
+          "label": {
+            "fr": "Organisations"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-related",
+                  "relationType": "projects",
+                  "title": {
+                    "fr": "Organisations partenaires"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "events",
+          "label": {
+            "fr": "Événements"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-related",
+                  "relationType": "events",
+                  "title": {
+                    "fr": "Événements"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "actions",
+          "label": {
+            "fr": "Actions"
+          },
+          "sections": [
+            {
+              "type": "cagnotte-layout",
+              "props": {
+                "leftSections": [
+                  {
+                    "type": "actions",
+                    "props": {
+                      "maxItems": 20,
+                      "showStatus": true,
+                      "showProgress": true,
+                      "showDates": true,
+                      "layout": "list"
+                    }
+                  }
+                ],
+                "rightSections": [
+                  {
+                    "type": "actions-summary",
+                    "props": {
+                      "showKpis": true,
+                      "showCharts": true,
+                      "charts": {
+                        "statusDistribution": {
+                          "enabled": true,
+                          "type": "pie"
+                        },
+                        "timeline": {
+                          "enabled": true,
+                          "type": "bar"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "finance",
+          "label": {
+            "fr": "Financements"
+          },
+          "sections": [
+            {
+              "type": "cagnotte-layout",
+              "props": {
+                "leftSections": [
+                  {
+                    "type": "finance",
+                    "props": {
+                      "maxItems": 20,
+                      "showProgress": true,
+                      "showFundingGoal": true,
+                      "showContributors": true,
+                      "layout": "cards"
+                    }
+                  }
+                ],
+                "rightSections": [
+                  {
+                    "type": "finance-summary",
+                    "props": {
+                      "showKpis": true,
+                      "showCharts": true,
+                      "charts": {
+                        "fundingProgress": {
+                          "enabled": true,
+                          "type": "progress"
+                        },
+                        "amountByMilestone": {
+                          "enabled": true,
+                          "type": "bar"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "events": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": false
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "dates",
+          "label": {
+            "fr": "Dates & Horaires"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "location",
+          "label": {
+            "fr": "Lieu"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-map"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "organizer",
+          "label": {
+            "fr": "Organisateur"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-related",
+                  "relationType": "events",
+                  "title": {
+                    "fr": "Autres événements"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showOrganizer": true,
+                  "showEmail": true,
+                  "showPhone": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gallery",
+          "label": {
+            "fr": "Galerie"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-gallery"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "poi": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": false
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "practicalInfo",
+          "label": {
+            "fr": "Infos pratiques"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-opening-hours"
+                },
+                {
+                  "type": "profile-about"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showOpeningDate": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "map",
+          "label": {
+            "fr": "Carte"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-map"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gallery",
+          "label": {
+            "fr": "Galerie"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-gallery"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
