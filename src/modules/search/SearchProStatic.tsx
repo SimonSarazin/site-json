@@ -528,6 +528,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                 columns={{ sm: 1, md: 2, lg: 2, xl: 2 }}
                 card={list?.card}
                 preview={list?.preview}
+                previewParam={list?.previewParam}
                 focusedItemId={focusedItemId}
                 onFocusItem={setFocusedItemId}
               />
@@ -794,6 +795,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                   columns={list?.columns}
                   card={list?.card}
                   preview={list?.preview}
+                  previewParam={list?.previewParam}
                   isDetailedView={isDetailedView}
                 />
 

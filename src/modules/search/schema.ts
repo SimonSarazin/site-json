@@ -145,11 +145,27 @@ export type TagsFilter = z.infer<typeof TagsFilterSchema>;
 /** Contenu du détail (rendu DANS le conteneur `detailsMode`). Axe indépendant
  *  de la carte : `Preview.tsx` dispatche dessus. Noms design/fonctionnalité.
  *  Exporté : réutilisé par le module observatoire (rowAction preview). */
+/**
+ * Une facette du preview générique `facets` : un champ `serverData` affiché et,
+ * s'il est indexé par un dropdownFilter (`filter.field === field`), cliquable
+ * pour filtrer le listing (cf. `ClickableFacet` / `useDropdownFilterNav`).
+ */
+export const PreviewFacetSchema = z.object({
+  /** Chemin `serverData` (dot-path supporté, ex. `address.postalCode`). */
+  field: z.string(),
+  label: LocalizedString.optional(),
+  /** Nom d'icône lucide (via `DynamicIcon`). */
+  icon: z.string().optional(),
+});
+export type PreviewFacetConfig = z.infer<typeof PreviewFacetSchema>;
+
 export const PreviewConfSchema = z.object({
-  type: z.enum(["default", "poi-amenities", "coform-answer", "event"]).default("default"),
+  type: z.enum(["default", "poi-amenities", "coform-answer", "event", "facets"]).default("default"),
   // Mapping rôle→suffixe de champ CoForm (pour `coform-answer`). Surcharge la
   // table par défaut du composant — découple les IDs de champs du code.
   fields: z.record(z.string(), z.string()).optional(),
+  /** Facettes du preview générique (`type: "facets"`) — data-driven, sans code. */
+  facets: z.array(PreviewFacetSchema).optional(),
 }).partial();
 
 const ListConfSchema = z.object({
@@ -199,6 +215,11 @@ const ListConfSchema = z.object({
     variant: z.enum(["default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer"]).optional(),
   }).partial().optional(),
   preview: PreviewConfSchema.optional(),
+  /**
+   * Nom du paramètre URL pour synchroniser l'item en preview. Défaut : "preview".
+   * Utile pour plusieurs sections sur une même page (ex. "preview-equipements").
+   */
+  previewParam: z.string().optional(),
 }).partial();
 
 export type ListConf = z.infer<typeof ListConfSchema>;
@@ -718,6 +739,12 @@ export interface SearchListViewProps<T extends SearchEntity = SearchEntity> {
   focusedItemId?: string | null;
   /** Synchro split : clic sur une carte de liste → focus carte (au lieu d'ouvrir le détail). */
   onFocusItem?: (id: string) => void;
+  /**
+   * Nom du paramètre URL utilisé pour synchroniser l'item affiché en preview.
+   * Défaut : "preview". Permet d'avoir plusieurs sections sur une même page
+   * sans collision (ex. "preview-equipements", "preview-answer")
+   */
+  previewParam?: string;
 }
 
 export interface SwitchDetailsModeProps<T extends SearchEntity = SearchEntity> {
