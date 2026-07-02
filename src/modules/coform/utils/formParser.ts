@@ -533,6 +533,7 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
             rows,
             activeNewLine: toBool(paramData.activeNewLine),
             singleAnswerByLine: toBool(paramData.singleAnswerByLine),
+            editInModal: toBool(paramData.editInModal),
           };
         }
       }

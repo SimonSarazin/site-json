@@ -459,6 +459,8 @@ export interface CoFormFieldConfig {
   tableName?: string;
   activeNewLine?: boolean | string;
   singleAnswerByLine?: boolean | string;
+  /** Édition en modal : la ligne devient cliquable → formulaire en modal (CRUD complet), plus d'édition directe dans le tableau. */
+  editInModal?: boolean | string;
   // ─── SectionTitle ──────────────────────────────────────────────────────
   showBar?: boolean | string;
   barPosition?: string;
@@ -899,6 +901,12 @@ export interface SimpleTableConfig {
   rows: SimpleTableRow[];
   activeNewLine: boolean;
   singleAnswerByLine: boolean;
+  /**
+   * Si `true` : le tableau passe en lecture seule et chaque ligne s'édite dans
+   * un formulaire modal (CRUD complet — ajout/édition/suppression dans le modal,
+   * indépendamment de `activeNewLine`). Plus aucune édition directe dans le tableau.
+   */
+  editInModal: boolean;
 }
 
 /**
