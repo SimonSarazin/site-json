@@ -130,6 +130,9 @@
       "created": "Creation",
       "lastSurvey": "Last survey",
       "lastUpdate": "Last update"
+    },
+    "equipNumero": {
+      "link": "View national record"
     }
   },
   "Filtres actifs :": "Active filters:",
