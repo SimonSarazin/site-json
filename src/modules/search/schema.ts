@@ -145,11 +145,27 @@ export type TagsFilter = z.infer<typeof TagsFilterSchema>;
 /** Contenu du détail (rendu DANS le conteneur `detailsMode`). Axe indépendant
  *  de la carte : `Preview.tsx` dispatche dessus. Noms design/fonctionnalité.
  *  Exporté : réutilisé par le module observatoire (rowAction preview). */
+/**
+ * Une facette du preview générique `facets` : un champ `serverData` affiché et,
+ * s'il est indexé par un dropdownFilter (`filter.field === field`), cliquable
+ * pour filtrer le listing (cf. `ClickableFacet` / `useDropdownFilterNav`).
+ */
+export const PreviewFacetSchema = z.object({
+  /** Chemin `serverData` (dot-path supporté, ex. `address.postalCode`). */
+  field: z.string(),
+  label: LocalizedString.optional(),
+  /** Nom d'icône lucide (via `DynamicIcon`). */
+  icon: z.string().optional(),
+});
+export type PreviewFacetConfig = z.infer<typeof PreviewFacetSchema>;
+
 export const PreviewConfSchema = z.object({
-  type: z.enum(["default", "poi-amenities", "coform-answer", "event"]).default("default"),
+  type: z.enum(["default", "poi-amenities", "coform-answer", "event", "facets"]).default("default"),
   // Mapping rôle→suffixe de champ CoForm (pour `coform-answer`). Surcharge la
   // table par défaut du composant — découple les IDs de champs du code.
   fields: z.record(z.string(), z.string()).optional(),
+  /** Facettes du preview générique (`type: "facets"`) — data-driven, sans code. */
+  facets: z.array(PreviewFacetSchema).optional(),
 }).partial();
 
 const ListConfSchema = z.object({
