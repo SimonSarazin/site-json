@@ -447,8 +447,10 @@ export interface CoFormFieldConfig {
   /** Images par option (array d'objets avec docPath) */
   optimage?: Record<string, Array<{ docPath?: string; [key: string]: unknown }> | null>;
   // ─── Finder ─────────────────────────────────────────────────────────────
-  /** Filtres backend (id de filtre → `{attributeName, valueName}`) */
+  /** Filtres backend d'inclusion (id de filtre → `{attributeName, valueName}`) */
   filter?: Record<string, { attributeName?: string; valueName?: string }>;
+  /** Filtres backend d'exclusion (`$nin`) — même shape que `filter` */
+  filterExclude?: Record<string, { attributeName?: string; valueName?: string }>;
   // ─── SimpleTable ────────────────────────────────────────────────────────
   /** Colonnes : array OU object keyé par id de colonne */
   columns?:
@@ -818,8 +820,10 @@ export interface FinderAddToLinks {
 export interface FinderConfig {
   /** Type d'élément à rechercher (organizations, citoyens, etc.) */
   type: FinderElementType;
-  /** Filtres appliqués à la recherche */
+  /** Filtres d'inclusion appliqués à la recherche */
   filters: FinderFilter[];
+  /** Filtres d'exclusion (`$nin`) — ex: exclure les orgs taguées `RéseauTiersLieux` */
+  excludeFilters?: FinderFilter[];
   /** Recherche globale (true) ou sourcée (false) */
   notSourceKey: boolean;
   /** Chercher parmi mes contacts */

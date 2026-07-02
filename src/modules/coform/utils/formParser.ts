@@ -460,12 +460,25 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
             });
           }
 
+          // Filtres d'exclusion (`$nin`) — symétrique à `filter`. Appliqués par
+          // le builder partagé `buildFinderMongoFilters` sur les deux chemins de
+          // recherche du finder.
+          const excludeFilters: FinderFilter[] = [];
+          if (paramData.filterExclude && typeof paramData.filterExclude === "object") {
+            Object.values(paramData.filterExclude).forEach((f) => {
+              if (f.attributeName && f.valueName) {
+                excludeFilters.push({ attributeName: f.attributeName, valueName: f.valueName });
+              }
+            });
+          }
+
           // Helper pour convertir "true"/"false" string en boolean
           const toBool = (val: unknown): boolean => val === true || val === "true";
 
           finderConfig = {
             type: (paramData.type as FinderConfig["type"]) || "organizations",
             filters,
+            excludeFilters,
             notSourceKey: toBool(paramData.notSourceKey ?? true),
             myContacts: toBool(paramData.myContacts),
             initCurrentUser: toBool(paramData.initCurrentUser),
@@ -1610,6 +1623,8 @@ export interface SharedFinderInfo {
   fullPath: string;
   /** Filtres tags / sourceKey / etc. (mêmes que FinderSearchModal) */
   filters: FinderFilter[];
+  /** Filtres d'exclusion (`$nin`) — mêmes que FinderSearchModal */
+  excludeFilters: FinderFilter[];
   /** Exclure les éléments avec sourceKey */
   notSourceKey: boolean;
   /** Type d'élément ciblé (organizations, projects, ...) */
@@ -1650,6 +1665,7 @@ export function getSharedFinderInfo(formData: CoFormData): SharedFinderInfo | nu
     fieldName,
     fullPath: finderPath,
     filters: cfg.filters ?? [],
+    excludeFilters: cfg.excludeFilters ?? [],
     notSourceKey: !!cfg.notSourceKey,
     type: cfg.type,
   };
