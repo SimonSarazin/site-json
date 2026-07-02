@@ -4,48 +4,50 @@
 
 **Sommaire**
 
-- [Vue d'ensemble](#vue-densemble)
-- [Architecture interne](#architecture-interne)
-- [Routes](#routes)
-- [Pages](#pages)
-  - [CoFormPage](#coformpage)
-- [Composants principaux](#composants-principaux)
-  - [SmartCoForm](#smartcoform)
-  - [DynamicCoForm](#dynamiccoform)
-  - [MultiStepCoForm](#multistepcoform)
-  - [CoFormModal](#coformmodal)
-  - [CoFormAccessGuard](#coformaccessguard)
-  - [CoFormReadOnly](#coformreadonly)
-  - [CoFormThankYou](#coformthankyou)
-  - [CoFormBanner](#coformbanner)
-- [Types de champs](#types-de-champs)
-  - [Champs standard](#champs-standard)
-  - [MultiRadioField](#multiradiofield)
-  - [MultiCheckboxPlusField](#multicheckboxplusfield)
-  - [EvaluationField](#evaluationfield)
-  - [FinderField](#finderfield)
-  - [SimpleTableField](#simpletablefield)
-  - [UploaderField](#uploaderfield)
-- [Hooks](#hooks)
-  - [useCoFormQuery](#usecoformquery)
-  - [useCoFormAnswerQuery](#usecoformanswerquery)
-  - [useCoForm / useCoFormNavigation / useCoFormStep / useCoFormSubmit](#usecoform--usecoformnavigation--usecoformstep--usecoformsubmit)
-  - [useConditionalFields](#useconditionalfields)
-  - [useCoFormPermissions](#usecoformpermissions)
-  - [useFinderSearchResults](#usefindersearchresults)
-- [Factory `createCoFormMutation`](#factory-createcoformmutation)
-- [Pipeline d'upload de fichiers](#pipeline-dupload-de-fichiers)
-- [Contrôle d'accès (CoFormAccessInfo)](#contrôle-daccès-coformaccessinfo)
-- [Permissions CoForm](#permissions-coform)
-- [CoFormProvider et contexte](#coformprovider-et-contexte)
-- [Utils : formParser](#utils--formparser)
-- [Utils : helpers, toFinderSearchResult, toRelativeImageUrl](#utils--helpers-tofindersearchresult-torelativeimageurl)
-- [Types principaux](#types-principaux)
-- [Constantes](#constantes)
-- [i18n](#i18n)
-- [Prefetch SSR](#prefetch-ssr)
-- [Intégration JSON (section)](#intégration-json-section)
-- [Voir aussi](#voir-aussi)
+- [Module CoForm](#module-coform)
+  - [Vue d'ensemble](#vue-densemble)
+  - [Architecture interne](#architecture-interne)
+  - [Routes](#routes)
+  - [Pages](#pages)
+    - [CoFormPage](#coformpage)
+  - [Composants principaux](#composants-principaux)
+    - [SmartCoForm](#smartcoform)
+    - [DynamicCoForm](#dynamiccoform)
+    - [MultiStepCoForm](#multistepcoform)
+    - [CoFormModal](#coformmodal)
+    - [CoFormAccessGuard](#coformaccessguard)
+    - [CoFormReadOnly](#coformreadonly)
+    - [CoFormThankYou](#coformthankyou)
+    - [CoFormBanner](#coformbanner)
+  - [Types de champs](#types-de-champs)
+    - [Champs standard](#champs-standard)
+    - [MultiRadioField](#multiradiofield)
+    - [MultiCheckboxPlusField](#multicheckboxplusfield)
+    - [EvaluationField](#evaluationfield)
+    - [FinderField](#finderfield)
+    - [SimpleTableField](#simpletablefield)
+    - [UploaderField](#uploaderfield)
+  - [Hooks](#hooks)
+    - [useCoFormQuery](#usecoformquery)
+    - [useCoFormAnswerQuery](#usecoformanswerquery)
+    - [useCoForm / useCoFormNavigation / useCoFormStep / useCoFormSubmit](#usecoform--usecoformnavigation--usecoformstep--usecoformsubmit)
+    - [useConditionalFields](#useconditionalfields)
+    - [useCoFormPermissions](#usecoformpermissions)
+    - [useFinderSearchResults](#usefindersearchresults)
+  - [Factory `createCoFormMutation`](#factory-createcoformmutation)
+  - [Pipeline d'upload de fichiers](#pipeline-dupload-de-fichiers)
+    - [Suppression de fichier : DIFFÉRÉE au save](#suppression-de-fichier--différée-au-save)
+  - [Contrôle d'accès (CoFormAccessInfo)](#contrôle-daccès-coformaccessinfo)
+  - [Permissions CoForm](#permissions-coform)
+  - [CoFormProvider et contexte](#coformprovider-et-contexte)
+  - [Utils : formParser](#utils--formparser)
+  - [Utils : helpers, toFinderSearchResult, toRelativeImageUrl](#utils--helpers-tofindersearchresult-torelativeimageurl)
+  - [Types principaux](#types-principaux)
+  - [Constantes](#constantes)
+  - [i18n](#i18n)
+  - [Prefetch SSR](#prefetch-ssr)
+  - [Intégration JSON (section)](#intégration-json-section)
+  - [Voir aussi](#voir-aussi)
 
 ---
 
@@ -715,6 +717,25 @@ permet à un membre autorisé d'éditer une réponse partagée
 (`publicCanEditSharedAnswer` / `membersCanEditSharedAnswer`) de **gérer ses
 fichiers**. La **lecture** (`GetAnswerFilesAction`) utilise la même
 `canAdminAnswer` — sinon l'uploader serait cassé en édition partagée.
+
+**Couverture de test SDK (MR !4).** Les méthodes entité coform du SDK sont
+verrouillées par des tests d'intégration ajoutés (commit
+`1b0fb86`, `cocolight-api-client/tests/integration/`) :
+- `advanced/answer-delete-file.test.ts` — `deleteFile`/`deleteFiles` : préconditions
+  client (docId ≠ 24 chars → 400, draft sans id → 400, `deleteFiles([])` no-op),
+  round-trip upload→save→delete, **best-effort** (jamais de throw, même sur
+  échec/doublon). Tolère un **404 serveur** (route `deleteanswerfile` pas déployée
+  sur le backend de test) mais **jamais** le 404 client « Endpoint introuvable »
+  (qui trahirait un `endpoints.module.ts` non régénéré).
+- `advanced/coform-entity-methods.test.ts` — `getMultiEvalData` (radar) : verrouille
+  le contrat **client** post-MR4 (auth `none` → plus de garde `callIsConnected`,
+  l'appel atteint le serveur en anonyme ; toute erreur doit venir du serveur, pas
+  du verrou client). ⚠️ **Bug backend connu** : `GET_COFORM_MULTIEVAL_DATA` peut
+  répondre **500** — Notice PHP « Undefined index: name » dans
+  `Coform::getCompleteFormData` (`citizenToolKit/models/Coform.php:438` :
+  `$subFormVal["name"]` lu sans garde `isset` quand un subform n'a pas de `name`).
+  **À corriger côté PHP.** Le contrat serveur « radar public » peut aussi ne pas
+  être déployé sur le backend de test (répond alors `result:false`).
 
 ---
 
