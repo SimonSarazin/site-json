@@ -1,10 +1,11 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router";
 import SearchCard from "./SearchCard";
 import { SearchListViewProps } from "../schema";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { SwitchDetailsMode } from "./SwitchDetailsMode";
 import SearchCardDetailed from "./SearchCardDetailed";
+import { PreviewNavContext } from "../contexts/previewNav";
 import { cn } from "@/lib/utils";
 
 export default function SearchListView({
@@ -24,10 +25,24 @@ export default function SearchListView({
   // Mémorise le dernier id traité pour éviter de rouvrir si l'URL ne change pas.
   const lastHandledPreviewId = useRef<string | null>(null);
 
-  // Ouvre automatiquement le preview si l'URL contient ?<previewParam>=<id>
+  // Sync bidirectionnelle URL ↔ preview :
+  //  - param présent (nouveau) → ouvre le preview de l'item correspondant ;
+  //  - param absent alors qu'un preview est ouvert → ferme (back/forward, nav
+  //    depuis une section sœur) pour que l'état suive toujours l'URL.
+  // setState dans l'effet = LE pattern sanctionné « s'abonner à un système
+  // externe » (ici l'URL/`searchParams`) → désactivation ciblée de la règle
+  // react-compiler qui sur-déclenche sur ce cas légitime.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const previewId = searchParams.get(previewParam);
-    if (!previewId || previewId === lastHandledPreviewId.current) return;
+    if (!previewId) {
+      if (openDetails) {
+        lastHandledPreviewId.current = null;
+        setOpenDetails(false);
+      }
+      return;
+    }
+    if (previewId === lastHandledPreviewId.current) return;
     const found = results.find(
       (r) => String(r.serverData?.id ?? r.id) === previewId,
     );
@@ -36,7 +51,8 @@ export default function SearchListView({
       setItem(found);
       setOpenDetails(true);
     }
-  }, [results, searchParams, previewParam]);
+  }, [results, searchParams, previewParam, openDetails]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const handleOpenDetails = (it: SearchEntity) => {
     const id = String(it.serverData?.id ?? it.id);
@@ -68,6 +84,15 @@ export default function SearchListView({
       );
     }
   };
+
+  // Ferme le preview SANS retoucher l'URL : la navigation par facette
+  // (useDropdownFilterNav) supprime le param dans sa mutation atomique unique —
+  // un 2e setSearchParams ici l'écraserait (même `prev`, cf. React Router).
+  const closeRaw = useCallback(() => {
+    lastHandledPreviewId.current = null;
+    setOpenDetails(false);
+  }, []);
+  const previewNavValue = useMemo(() => ({ previewParam, closeRaw }), [previewParam, closeRaw]);
 
   // Mode split (onFocusItem fourni) : un clic sur une carte FOCALISE la carte
   // (flyTo + popup) au lieu d'ouvrir le détail ; sinon comportement historique.
@@ -129,7 +154,11 @@ export default function SearchListView({
           )}
         </div>
 
-        {item && <SwitchDetailsMode openDetails={openDetails} setOpenDetails={handleSetOpenDetails} item={item} card={card} preview={preview} />}
+        {item && (
+          <PreviewNavContext.Provider value={previewNavValue}>
+            <SwitchDetailsMode openDetails={openDetails} setOpenDetails={handleSetOpenDetails} item={item} card={card} preview={preview} />
+          </PreviewNavContext.Provider>
+        )}
       </>
     );
   }
@@ -144,7 +173,11 @@ export default function SearchListView({
       </div>
 
       {/* faire switch sur card?.detailsMode */}
-      {item && <SwitchDetailsMode openDetails={openDetails} setOpenDetails={handleSetOpenDetails} item={item} card={card} preview={preview} />}
+      {item && (
+        <PreviewNavContext.Provider value={previewNavValue}>
+          <SwitchDetailsMode openDetails={openDetails} setOpenDetails={handleSetOpenDetails} item={item} card={card} preview={preview} />
+        </PreviewNavContext.Provider>
+      )}
     </>
   );
 }

@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useSearchParams } from "react-router";
 import { format } from "date-fns";
 import type { Poi } from "@communecter/cocolight-api-client";
 import getDateFnsLocale from "@/dateFns";
@@ -20,11 +19,10 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
 import { SEARCH_QUERY_KEYS } from "@/modules/search/constants/queryKeys";
-import { usePageFiltersOptional } from "@/modules/search/contexts/pageFilters";
+import { ClickableFacet } from "@/modules/search/components/ClickableFacet";
 import "@/modules/search/i18n";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import { useSite } from "@/hooks/useSite";
 import {
   Accessibility,
   Building2,
@@ -153,77 +151,6 @@ function getPoiImage(category?: string, name?: string) {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
-type FilterOption = {
-  id?: string;
-  value?: string;
-  field?: string;
-  label?: { fr?: string; en?: string } | string;
-};
-
-type DropdownFilter = {
-  id?: string;
-  field?: string;
-  options?: FilterOption[];
-};
-
-function getSiteDropdownFilters(siteConfig: unknown): DropdownFilter[] | null {
-  const config = siteConfig as {
-    pages?: Array<{
-      path?: string;
-      sections?: Array<{ type?: string; props?: { dropdownFilters?: DropdownFilter[] } }>;
-    }>;
-  };
-  const page = config?.pages?.find((p) => p.path === "/equipements-sportifs");
-  const section = page?.sections?.find((s) => s.type === "searchHeader");
-  return section?.props?.dropdownFilters ?? null;
-}
-
-/**
- * Résout en une seule passe l'option de filtre correspondant à `value` dans `filterId`
- */
-function findFilterOption(
-  siteConfig: unknown,
-  filterId: string,
-  value: string,
-): { optionId: string; filter: DropdownFilter; option: FilterOption } | null {
-  const filters = getSiteDropdownFilters(siteConfig);
-  const filter = filters?.find((f) => f.id === filterId);
-  if (!filter?.options) return null;
-
-  const normalized = value.trim().toLowerCase();
-
-  let option = filter.options.find((o) => o.value?.trim().toLowerCase() === normalized);
-
-  if (!option) {
-    option = filter.options.find((o) => {
-      const lbl = o.label;
-      return typeof lbl === "object" && lbl !== null && "fr" in lbl
-        ? (lbl as { fr?: string }).fr?.trim().toLowerCase() === normalized
-        : false;
-    });
-  }
-
-  // Correspondance partielle pour gérer les variantes orthographiques (ex. "Individuel(s)" vs "Individuels")
-  if (!option) {
-    option = filter.options.find((o) => {
-      const optVal = o.value?.trim().toLowerCase() ?? "";
-      const labelFr =
-        typeof o.label === "object" && o.label !== null && "fr" in o.label
-          ? ((o.label as { fr?: string }).fr?.trim().toLowerCase() ?? "")
-          : "";
-      return (
-        optVal.includes(normalized) ||
-        normalized.includes(optVal) ||
-        labelFr.includes(normalized) ||
-        normalized.includes(labelFr)
-      );
-    });
-  }
-
-  if (!option?.id) return null;
-  return { optionId: option.id, filter, option };
-}
-
 /**
  * Vue d'affichage du POI, lue depuis `serverData` **typé** (PoiItemNormalized) :
  * champs de base (name/address/geo/geoPosition) via les types SDK, champs costum
@@ -335,16 +262,21 @@ function InfoRow({
  * Valeur(s) cliquable(s) qui navigue vers la page de listing avec un filtre appliqué.
  * Gère les valeurs multiples séparées par des virgules.
  */
+/**
+ * Ligne « label + valeur(s) cliquable(s) ». Chaque token (valeurs multiples
+ * séparées par des virgules) est rendu via `<ClickableFacet>` : cliquable si un
+ * dropdownFilter indexe `field` et résout le token, sinon texte simple.
+ */
 function ClickableFilterValue({
   label,
   value,
-  filterId,
-  onNavigate,
+  field,
+  onClose,
 }: {
   label: string;
   value: string | undefined;
-  filterId: string;
-  onNavigate: (filterId: string, value: string) => void;
+  field: string;
+  onClose?: () => void;
 }) {
   if (!value || value === "—") {
     return (
@@ -357,7 +289,6 @@ function ClickableFilterValue({
     );
   }
 
-  // Parse les valeurs multiples séparées par des virgules
   const values = value
     .split(",")
     .map((v) => v.trim())
@@ -372,13 +303,12 @@ function ClickableFilterValue({
         {values.map((val, index) => (
           <span key={`${val}-${index}`}>
             {index > 0 && ", "}
-            <button
-              type="button"
-              onClick={() => onNavigate(filterId, val)}
+            <ClickableFacet
+              field={field}
+              token={val}
+              onClose={onClose}
               className="cursor-pointer font-medium text-primary underline decoration-primary/30 underline-offset-2 transition-colors hover:decoration-primary hover:text-primary/80"
-            >
-              {val}
-            </button>
+            />
           </span>
         ))}
       </div>
@@ -418,10 +348,6 @@ function Feature({
 export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
   useLoadNamespace("modules/search");
   const t = useT("modules/search");
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const { config: siteConfig } = useSite();
-  const pageFilters = usePageFiltersOptional();
   const { canEditProfile } = useProfilPermissions(item ?? null);
   const queryClient = useQueryClient();
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -463,45 +389,6 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
   }, [poiEntity.id]);
 
   const poi = toPoi(poiEntity);
-
-  // Stable (useCallback) pour ne pas recréer la référence à chaque render et forcer
-  // le re-render des instances de ClickableFilterValue qui reçoivent onNavigate.
-  const handleFilterNavigation = useCallback((filterId: string, value: string) => {
-    const match = findFilterOption(siteConfig, filterId, value);
-    if (!match) {
-      console.warn(`Option ID not found for filter "${filterId}" and value "${value}"`);
-      return;
-    }
-    const { optionId, filter, option } = match;
-
-    onClose?.();
-
-    // Petit délai pour permettre au modal de se fermer et à onClose de nettoyer l'URL
-    setTimeout(() => {
-      const currentParams = new URLSearchParams(searchParams);
-      currentParams.delete("preview");
-      currentParams.set(filterId, optionId);
-
-      if (filter.field && pageFilters?.setSearchByFields) {
-        const optionField = option.field ?? filter.field;
-        const optionValue = option.value ?? option.id ?? "";
-        pageFilters.setSearchByFields((prev) => {
-          const prefix = `${filterId}:`;
-          const cleaned = Object.fromEntries(
-            Object.entries(prev).filter(([key]) => !key.startsWith(prefix))
-          );
-          return {
-            ...cleaned,
-            [`${filterId}:${optionId}`]: { field: optionField, value: [optionValue] },
-          };
-        });
-      } else if (pageFilters?.setSelectedFilters) {
-        pageFilters.setSelectedFilters((prev) => ({ ...prev, [filterId]: [optionId] }));
-      }
-
-      navigate(`/equipements-sportifs?${currentParams.toString()}`);
-    }, 50);
-  }, [siteConfig, searchParams, navigate, onClose, pageFilters]);
 
   const imageUrl =
     sd.profilMediumImageUrl ||
@@ -614,13 +501,14 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
                 {poi.address.postalCode ? (
-                  <button
-                    type="button"
-                    onClick={() => handleFilterNavigation("poi-postalCode", poi.address.postalCode!)}
+                  <ClickableFacet
+                    field="address.postalCode"
+                    token={poi.address.postalCode}
+                    onClose={onClose}
                     className="cursor-pointer font-medium underline decoration-primary-foreground/30 underline-offset-2 transition-colors hover:decoration-primary-foreground hover:opacity-80"
                   >
                     {cityLine || poi.address.addressLocality || "—"}
-                  </button>
+                  </ClickableFacet>
                 ) : (
                   <span>{poi.address.addressLocality || "—"}</span>
                 )}
@@ -664,8 +552,8 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
                   <ClickableFilterValue
                     label={t("PreviewPoiAmenities.fields.category")}
                     value={poi.category}
-                    filterId="poi-category"
-                    onNavigate={handleFilterNavigation}
+                    field="equip_type_name"
+                    onClose={onClose}
                   />
                   <InfoRow label={t("PreviewPoiAmenities.fields.family")} value={poi.familleEquipement || "—"} />
                   <InfoRow label={t("PreviewPoiAmenities.fields.installation")} value={poi.installation || "—"} />
@@ -685,21 +573,21 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
                   <ClickableFilterValue
                     label={t("PreviewPoiAmenities.fields.ownerType")}
                     value={poi.entrepriseFonciere}
-                    filterId="propertyType"
-                    onNavigate={handleFilterNavigation}
+                    field="equip_prop_type"
+                    onClose={onClose}
                   />
                   <InfoRow label={t("PreviewPoiAmenities.fields.managementType")} value={poi.equipGestType || "—"} />
                   <ClickableFilterValue
                     label={t("PreviewPoiAmenities.fields.premises")}
                     value={poi.equipLocType}
-                    filterId="availableSpaces"
-                    onNavigate={handleFilterNavigation}
+                    field="equip_loc_type"
+                    onClose={onClose}
                   />
                   <ClickableFilterValue
                     label={t("PreviewPoiAmenities.fields.users")}
                     value={poi.equipUtilisateur}
-                    filterId="utilisateur"
-                    onNavigate={handleFilterNavigation}
+                    field="equip_utilisateur"
+                    onClose={onClose}
                   />
                 </div>
               </section>
