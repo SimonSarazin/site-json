@@ -210,6 +210,27 @@
       "rank": "Rank",
       "addNewValue": "Add an option..."
     },
+    "simpleTable": {
+      "imageButton": "Image",
+      "columnFallback": "Column {{index}}",
+      "cellAria": "Row {{row}}, {{column}}",
+      "checkedAria": "Yes",
+      "editRowAria": "Edit row {{label}}",
+      "rowLabelAria": "Row label {{index}}",
+      "deleteRowAria": "Delete row {{index}}",
+      "addRow": "Add a row",
+      "empty": "No rows.",
+      "emptyHintModal": "Click “Add a row”.",
+      "emptyHintInline": "Click the button below to add one.",
+      "modal": {
+        "addTitle": "Add a row",
+        "editTitle": "Edit row",
+        "description": "Fill in the fields below then save.",
+        "delete": "Delete this row",
+        "cancel": "Cancel",
+        "save": "Save"
+      }
+    },
     "evaluation": {
       "noCategories": "No category defined"
     },

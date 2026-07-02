@@ -210,6 +210,27 @@
       "rank": "Rang",
       "addNewValue": "Ajouter une option..."
     },
+    "simpleTable": {
+      "imageButton": "Image",
+      "columnFallback": "Colonne {{index}}",
+      "cellAria": "Ligne {{row}}, {{column}}",
+      "checkedAria": "Oui",
+      "editRowAria": "Modifier la ligne {{label}}",
+      "rowLabelAria": "Label ligne {{index}}",
+      "deleteRowAria": "Supprimer ligne {{index}}",
+      "addRow": "Ajouter une ligne",
+      "empty": "Aucune ligne.",
+      "emptyHintModal": "Cliquez sur « Ajouter une ligne ».",
+      "emptyHintInline": "Cliquez sur le bouton ci-dessous pour en ajouter.",
+      "modal": {
+        "addTitle": "Ajouter une ligne",
+        "editTitle": "Modifier la ligne",
+        "description": "Renseignez les champs ci-dessous puis enregistrez.",
+        "delete": "Supprimer cette ligne",
+        "cancel": "Annuler",
+        "save": "Enregistrer"
+      }
+    },
     "evaluation": {
       "noCategories": "Aucune catégorie définie"
     },

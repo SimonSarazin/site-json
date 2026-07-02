@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useId, memo } from "react";
+import { useState, useCallback, useMemo, useRef, useId, memo } from "react";
 import type { FieldErrors } from "react-hook-form";
 import { Trash2, Plus, ImagePlus, X, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -34,6 +34,9 @@ import {
   upsertSimpleTableRow,
   removeSimpleTableRow,
 } from "../utils/simpleTable";
+import { useT } from "@/hooks/useT";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import "../i18n/i18n";
 
 /** Résout une src d'image (data URL / absolue / relative au baseUrl). */
 function resolveMediaSrc(baseUrl: string, src: string): string {
@@ -43,6 +46,25 @@ function resolveMediaSrc(baseUrl: string, src: string): string {
   return `${baseUrl}/${src}`;
 }
 
+/**
+ * Libellés i18n pré-résolus au composant racine puis threadés en prop
+ * (convention module : pas de `useT` dans les sous-composants). Les libellés
+ * paramétrés (aria de cellule/ligne, fallback de colonne) sont résolus au
+ * call-site où les params sont connus et passés en string finale.
+ */
+interface SimpleTableI18n {
+  imageButton: string;
+  checkedAria: string;
+  modal: {
+    addTitle: string;
+    editTitle: string;
+    description: string;
+    delete: string;
+    cancel: string;
+    save: string;
+  };
+}
+
 // ─── Image Cell Component ──────────────────────────────────────
 
 interface ImageCellProps {
@@ -50,10 +72,12 @@ interface ImageCellProps {
   multiple: boolean;
   onChange: (value: SimpleTableCell | SimpleTableCell[]) => void;
   ariaLabel: string;
+  /** Libellé du bouton d'ajout (i18n threadé depuis le composant racine). */
+  addLabel: string;
   readOnly?: boolean;
 }
 
-const ImageCell = memo(function ImageCell({ value, multiple, onChange, ariaLabel, readOnly }: ImageCellProps) {
+const ImageCell = memo(function ImageCell({ value, multiple, onChange, ariaLabel, addLabel, readOnly }: ImageCellProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const baseUrl = getBaseUrl();
   const [viewerOpen, setViewerOpen] = useState<number | null>(null);
@@ -167,7 +191,7 @@ const ImageCell = memo(function ImageCell({ value, multiple, onChange, ariaLabel
           onClick={() => inputRef.current?.click()}
         >
           <ImagePlus className="w-3 h-3" />
-          {images.length > 0 ? "+" : "Image"}
+          {images.length > 0 ? "+" : addLabel}
         </Button>
       )}
       <ImageViewer
@@ -197,6 +221,10 @@ interface CellRendererProps {
   rowValues: (SimpleTableCell | SimpleTableCell[])[];
   columns: SimpleTableConfig["columns"];
   onCellChange: (rowIndex: number, colIndex: number, value: SimpleTableCell | SimpleTableCell[]) => void;
+  /** aria-label de la cellule, pré-résolu au composant racine. */
+  ariaLabel: string;
+  /** Libellé du bouton d'ajout d'image, threadé vers ImageCell. */
+  addImageLabel: string;
   readOnly?: boolean;
 }
 
@@ -209,10 +237,10 @@ const CellRenderer = memo(function CellRenderer({
   rowValues,
   columns,
   onCellChange,
+  ariaLabel,
+  addImageLabel,
   readOnly,
 }: CellRendererProps) {
-  const ariaLabel = `Ligne ${rowIndex}, ${columns[colIndex - 1]?.label || `Colonne ${colIndex}`}`;
-
   switch (columnType) {
     case "Text":
       return (
@@ -270,6 +298,7 @@ const CellRenderer = memo(function CellRenderer({
           multiple={false}
           onChange={(v) => onCellChange(rowIndex, colIndex, v)}
           ariaLabel={ariaLabel}
+          addLabel={addImageLabel}
           readOnly={readOnly}
         />
       );
@@ -281,6 +310,7 @@ const CellRenderer = memo(function CellRenderer({
           multiple={true}
           onChange={(v) => onCellChange(rowIndex, colIndex, v)}
           ariaLabel={ariaLabel}
+          addLabel={addImageLabel}
           readOnly={readOnly}
         />
       );
@@ -305,14 +335,17 @@ function ReadOnlyCell({
   value,
   columnType,
   baseUrl,
+  checkedAria,
 }: {
   value: SimpleTableCell | SimpleTableCell[];
   columnType: string;
   baseUrl: string;
+  /** aria-label de la case cochée (i18n threadé). */
+  checkedAria: string;
 }) {
   if (columnType === "Case à cocher") {
     return value === "x" ? (
-      <Check className="w-4 h-4 text-primary mx-auto" aria-label="Oui" />
+      <Check className="w-4 h-4 text-primary mx-auto" aria-label={checkedAria} />
     ) : (
       <span className="text-muted-foreground" aria-hidden="true">—</span>
     );
@@ -349,11 +382,14 @@ function RowFieldEditor({
   columnType,
   value,
   onChange,
+  addImageLabel,
 }: {
   label: string;
   columnType: string;
   value: SimpleTableCell | SimpleTableCell[];
   onChange: (v: SimpleTableCell | SimpleTableCell[]) => void;
+  /** Libellé du bouton d'ajout d'image, threadé vers ImageCell. */
+  addImageLabel: string;
 }) {
   const id = useId();
 
@@ -378,7 +414,7 @@ function RowFieldEditor({
       return (
         <div className="space-y-1">
           <span className="text-sm font-medium">{label}</span>
-          <ImageCell value={Array.isArray(value) ? "" : value} multiple={false} onChange={onChange} ariaLabel={label} />
+          <ImageCell value={Array.isArray(value) ? "" : value} multiple={false} onChange={onChange} ariaLabel={label} addLabel={addImageLabel} />
         </div>
       );
 
@@ -386,7 +422,7 @@ function RowFieldEditor({
       return (
         <div className="space-y-1">
           <span className="text-sm font-medium">{label}</span>
-          <ImageCell value={Array.isArray(value) ? value : []} multiple onChange={onChange} ariaLabel={label} />
+          <ImageCell value={Array.isArray(value) ? value : []} multiple onChange={onChange} ariaLabel={label} addLabel={addImageLabel} />
         </div>
       );
 
@@ -407,8 +443,14 @@ interface SimpleTableRowModalProps {
   /** En-tête de la colonne 0 (label de ligne). */
   rowLabelHeader: string;
   columns: SimpleTableConfig["columns"];
+  /** Libellés de colonne pré-résolus (col.label ou fallback), 1 par colonne. */
+  columnLabels: string[];
   singleAnswerByLine: boolean;
   initialRow: (SimpleTableCell | SimpleTableCell[])[];
+  /** Libellés i18n du modal, threadés depuis le composant racine. */
+  i18n: SimpleTableI18n["modal"];
+  /** Libellé du bouton d'ajout d'image, threadé vers RowFieldEditor/ImageCell. */
+  addImageLabel: string;
   onSave: (row: (SimpleTableCell | SimpleTableCell[])[]) => void;
   onDelete: () => void;
   onClose: () => void;
@@ -418,8 +460,11 @@ function SimpleTableRowModal({
   isNew,
   rowLabelHeader,
   columns,
+  columnLabels,
   singleAnswerByLine,
   initialRow,
+  i18n,
+  addImageLabel,
   onSave,
   onDelete,
   onClose,
@@ -448,8 +493,8 @@ function SimpleTableRowModal({
     <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isNew ? "Ajouter une ligne" : "Modifier la ligne"}</DialogTitle>
-          <DialogDescription>Renseignez les champs ci-dessous puis enregistrez.</DialogDescription>
+          <DialogTitle>{isNew ? i18n.addTitle : i18n.editTitle}</DialogTitle>
+          <DialogDescription>{i18n.description}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
@@ -459,14 +504,16 @@ function SimpleTableRowModal({
             columnType="Text"
             value={draft[0] ?? ""}
             onChange={(v) => setCell(0, v)}
+            addImageLabel={addImageLabel}
           />
           {columns.map((col, colIdx) => (
             <RowFieldEditor
               key={colIdx}
-              label={col.label || `Colonne ${colIdx + 1}`}
+              label={columnLabels[colIdx]}
               columnType={col.type}
               value={draft[colIdx + 1] ?? (col.type === "Images" ? [] : "")}
               onChange={(v) => setCell(colIdx + 1, v)}
+              addImageLabel={addImageLabel}
             />
           ))}
         </div>
@@ -480,14 +527,18 @@ function SimpleTableRowModal({
               onClick={onDelete}
             >
               <Trash2 className="h-4 w-4" />
-              Supprimer cette ligne
+              {i18n.delete}
             </Button>
           ) : (
             <span />
           )}
           <div className="flex gap-2">
-            <Button type="button" variant="outline" onClick={onClose}>Annuler</Button>
-            <Button type="button" onClick={() => onSave(draft)}>Enregistrer</Button>
+            <Button type="button" variant="outline" onClick={onClose}>
+              {i18n.cancel}
+            </Button>
+            <Button type="button" onClick={() => onSave(draft)}>
+              {i18n.save}
+            </Button>
           </div>
         </DialogFooter>
       </DialogContent>
@@ -514,14 +565,41 @@ export function SimpleTableField({
   readOnly,
   hideLabel,
 }: SimpleTableFieldProps) {
+  useLoadNamespace("modules/coform");
+  const t = useT("modules/coform");
   const config = field.simpleTableConfig;
   const hasError = !!errors[field.name];
-  const columns = config?.columns ?? [];
+  const columns = useMemo(() => config?.columns ?? [], [config?.columns]);
   const activeNewLine = config?.activeNewLine ?? false;
   const singleAnswerByLine = config?.singleAnswerByLine ?? false;
   const editInModal = config?.editInModal ?? false;
   const interactive = !readOnly;
   const baseUrl = getBaseUrl();
+
+  // Bundle i18n résolu ici (racine) puis threadé aux sous-composants — convention
+  // module : pas de `useT` dans les sous-composants (cf. CommonTableField.rowI18n).
+  const i18n = useMemo<SimpleTableI18n>(
+    () => ({
+      imageButton: t("coform.simpleTable.imageButton", "Image"),
+      checkedAria: t("coform.simpleTable.checkedAria", "Oui"),
+      modal: {
+        addTitle: t("coform.simpleTable.modal.addTitle", "Ajouter une ligne"),
+        editTitle: t("coform.simpleTable.modal.editTitle", "Modifier la ligne"),
+        description: t("coform.simpleTable.modal.description", "Renseignez les champs ci-dessous puis enregistrez."),
+        delete: t("coform.simpleTable.modal.delete", "Supprimer cette ligne"),
+        cancel: t("coform.simpleTable.modal.cancel", "Annuler"),
+        save: t("coform.simpleTable.modal.save", "Enregistrer"),
+      },
+    }),
+    [t],
+  );
+
+  // Libellés de colonne pré-résolus (col.label ou fallback "Colonne N"), partagés
+  // par l'aria des cellules inline et par les champs du modal.
+  const columnLabels = useMemo(
+    () => columns.map((col, i) => col.label || t("coform.simpleTable.columnFallback", "Colonne {{index}}", { index: i + 1 })),
+    [columns, t],
+  );
 
   // Mode modal : index de la ligne en cours d'édition (`"new"` = ajout, `null` = fermé).
   const [modalRow, setModalRow] = useState<number | "new" | null>(null);
@@ -643,7 +721,7 @@ export function SimpleTableField({
                         onClick={interactive ? () => setModalRow(actualRowIndex) : undefined}
                         role={interactive ? "button" : undefined}
                         tabIndex={interactive ? 0 : undefined}
-                        aria-label={interactive ? `Modifier la ligne ${rowLabel}` : undefined}
+                        aria-label={interactive ? t("coform.simpleTable.editRowAria", "Modifier la ligne {{label}}", { label: rowLabel }) : undefined}
                         onKeyDown={
                           interactive
                             ? (e) => {
@@ -661,7 +739,7 @@ export function SimpleTableField({
                         </TableHead>
                         {columns.map((col, colIdx) => (
                           <TableCell key={colIdx} className="border border-border px-3 py-2 align-middle">
-                            <ReadOnlyCell value={row[colIdx + 1] ?? ""} columnType={col.type} baseUrl={baseUrl} />
+                            <ReadOnlyCell value={row[colIdx + 1] ?? ""} columnType={col.type} baseUrl={baseUrl} checkedAria={i18n.checkedAria} />
                           </TableCell>
                         ))}
                       </TableRow>
@@ -674,7 +752,8 @@ export function SimpleTableField({
                         colSpan={columns.length + 1}
                         className="text-center text-muted-foreground py-6"
                       >
-                        Aucune ligne.{interactive && " Cliquez sur « Ajouter une ligne »."}
+                        {t("coform.simpleTable.empty", "Aucune ligne.")}
+                        {interactive && ` ${t("coform.simpleTable.emptyHintModal", "Cliquez sur « Ajouter une ligne ».")}`}
                       </TableCell>
                     </TableRow>
                   )}
@@ -694,7 +773,7 @@ export function SimpleTableField({
               onClick={() => setModalRow("new")}
             >
               <Plus className="w-4 h-4" />
-              Ajouter une ligne
+              {t("coform.simpleTable.addRow", "Ajouter une ligne")}
             </Button>
           )}
 
@@ -704,8 +783,11 @@ export function SimpleTableField({
               isNew={modalRow === "new"}
               rowLabelHeader={rowLabelHeader}
               columns={columns}
+              columnLabels={columnLabels}
               singleAnswerByLine={singleAnswerByLine}
               initialRow={modalRow === "new" ? makeEmptyRow() : (value[modalRow] ?? makeEmptyRow())}
+              i18n={i18n.modal}
+              addImageLabel={i18n.imageButton}
               onSave={handleModalSave}
               onDelete={handleModalDelete}
               onClose={() => setModalRow(null)}
@@ -743,7 +825,7 @@ export function SimpleTableField({
                           <Input
                             value={typeof row[0] === "string" ? row[0] : ""}
                             onChange={(e) => handleRowLabelChange(actualRowIndex, e.target.value)}
-                            aria-label={`Label ligne ${dataIndex + 1}`}
+                            aria-label={t("coform.simpleTable.rowLabelAria", "Label ligne {{index}}", { index: dataIndex + 1 })}
                             className={cn(CELL_INPUT_CN, "font-medium")}
                             readOnly={readOnly}
                             tabIndex={readOnly ? -1 : undefined}
@@ -754,6 +836,7 @@ export function SimpleTableField({
                         {columns.map((col, colIdx) => {
                           const cellIndex = colIdx + 1; // +1 because column 0 is the row label
                           const isTypedInput = col.type === "Text" || col.type === "Nombre";
+                          const cellAria = t("coform.simpleTable.cellAria", "Ligne {{row}}, {{column}}", { row: actualRowIndex, column: columnLabels[colIdx] });
                           return (
                             <TableCell key={colIdx} className={cn("border border-border", isTypedInput ? CELL_CN : "p-2")}>
                               <CellRenderer
@@ -765,6 +848,8 @@ export function SimpleTableField({
                                 rowValues={row}
                                 columns={columns}
                                 onCellChange={handleCellChange}
+                                ariaLabel={cellAria}
+                                addImageLabel={i18n.imageButton}
                                 readOnly={readOnly}
                               />
                             </TableCell>
@@ -780,7 +865,7 @@ export function SimpleTableField({
                               size="sm"
                               className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                               onClick={() => handleRemoveRow(actualRowIndex)}
-                              aria-label={`Supprimer ligne ${dataIndex + 1}`}
+                              aria-label={t("coform.simpleTable.deleteRowAria", "Supprimer ligne {{index}}", { index: dataIndex + 1 })}
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </Button>
@@ -796,7 +881,8 @@ export function SimpleTableField({
                         colSpan={columns.length + 1 + (activeNewLine && !readOnly ? 1 : 0)}
                         className="text-center text-muted-foreground py-6"
                       >
-                        Aucune ligne. {activeNewLine && "Cliquez sur le bouton ci-dessous pour en ajouter."}
+                        {t("coform.simpleTable.empty", "Aucune ligne.")}
+                        {activeNewLine && ` ${t("coform.simpleTable.emptyHintInline", "Cliquez sur le bouton ci-dessous pour en ajouter.")}`}
                       </TableCell>
                     </TableRow>
                   )}
@@ -816,7 +902,7 @@ export function SimpleTableField({
               onClick={handleAddRow}
             >
               <Plus className="w-4 h-4" />
-              Ajouter une ligne
+              {t("coform.simpleTable.addRow", "Ajouter une ligne")}
             </Button>
           )}
         </>
