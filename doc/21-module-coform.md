@@ -679,6 +679,42 @@ Depuis le refactor Module 2, toute l'orchestration upload est **déléguée à `
 3. `answer.processUploads(allData)` → **pipeline complet en une ligne** : scanne les `data:URI`, upload par batches, normalise le format legacy uploader, nettoie les URLs absolues en chemins relatifs
 4. `answer.data.answers = prepared` + affectation des champs annexes (`addedOptions`, `links`)
 5. `answer.save()` → POST `SAVE_COFORM_ANSWER` + refresh `canEdit`/`editDeniedReason`
+6. **Réconciliation des fichiers** (miroir de l'étape 3) : après un `save()`
+   réussi, les fichiers présents à l'ouverture (`answer.serverData.answers`,
+   fetché par `form.answer({id})`) mais absents du payload sauvegardé sont
+   supprimés en **un seul** `answer.deleteFiles(removed)` (batch parallèle SDK
+   via `_uploadInBatches`, best-effort). Helper de diff : `collectUploaderDocIds`
+   (exporté de `file.ts`, testé).
+
+### Suppression de fichier : DIFFÉRÉE au save
+
+`UploaderField` ne supprime plus le fichier serveur au clic sur ✕ : il retire
+**seulement la référence du form value**. La suppression réelle est différée au
+save (étape 6 ci-dessus). Conséquences :
+
+- Un retrait **non sauvegardé ne détruit rien** (annuler/fermer = aucun effet) —
+  cohérent avec tous les autres champs (en attente jusqu'au save).
+- L'ordre **save → delete** garantit qu'un save échoué ne supprime jamais un
+  fichier encore référencé en base (pas de référence orpheline / image cassée).
+
+**Réconciliation = DIFF ∪ EXPLICITE** (`useCoFormFinalMutation`, `actions/mutations/file.ts`). Au save on supprime l'UNION de :
+
+- **diff** : `collectUploaderDocIds(serverData) − collectUploaderDocIds(soumis)` (présents à l'ouverture, retirés du payload). ⚠️ Le collecteur gère SYMÉTRIQUEMENT les 2 formes de `files` — map `{docId:path}` ET Array `[{docId}]` : ignorer l'Array faisait voir le côté soumis VIDE → **sur-suppression** de tout le champ.
+- **explicite** : `deletedDocIds` — `handleRemove` trace le vrai `docId` retiré (connu via `getFiles`). SEULE source pour un fichier **legacy non-en-map** (champ `{updateDate}` sans clé `files`), invisible au snapshot. Clé TRANSITOIRE : extraite + strippée au save (`extractDeletedDocIds`), jamais persistée. ⚠️ Doit figurer dans le schéma Zod uploader (`formParser.ts`), sinon strippée à la validation du submit single-step.
+
+`handleRemove` reconstruit la **map** `{docId:path}` (pas un Array) quand tous les fichiers restants sont existants → pas de flip-flop de format en base. Helpers `collectUploaderDocIds` / `extractDeletedDocIds` exportés + testés (`file.test.ts`).
+
+**Autorisation côté answer.** `answer.deleteFile`/`deleteFiles` appellent
+l'endpoint coform `DELETE_COFORM_ANSWER_FILE` (`DeleteAnswerFileAction`,
+citizenToolKit), **miroir de l'upload** : autorisé par
+`$isOwner || Coform::canAdminAnswer($formId, $answer)` — la MÊME auth que le save
+et l'upload — puis suppression via `Document::removeDocumentById($docId, true)`
+(`canDelete=true` **bypasse le `canEdit` générique** du document, car l'auth
+answer-side a déjà validé, + check d'appartenance `docId → answer`). C'est ce qui
+permet à un membre autorisé d'éditer une réponse partagée
+(`publicCanEditSharedAnswer` / `membersCanEditSharedAnswer`) de **gérer ses
+fichiers**. La **lecture** (`GetAnswerFilesAction`) utilise la même
+`canAdminAnswer` — sinon l'uploader serait cassé en édition partagée.
 
 ---
 
@@ -844,7 +880,7 @@ interface CoFormProviderProps {
 | Fonction | Description |
 |---|---|
 | `parseCoFormFields(formData)` | `CoFormData → SubFormFields[]` avec mapping vers `componentType`, largeurs Tailwind col-span, options, configs avancées. Filtre les champs `validateStep*`. |
-| `generateZodSchema(subFormsFields)` | `SubFormFields[] → z.ZodObject` dynamique avec validation `isRequired` par champ et type |
+| `generateZodSchema(subFormsFields, t?)` | `SubFormFields[] → z.ZodObject` dynamique : validation `isRequired` par champ et type, + format **URL tolérant** (`inputType: "url"`, accepte sans schéma, jamais appliqué à un champ vide non requis). Le param `t` (signature `useT`, **optionnel**, défaut = fallback FR) i18n les messages via `t("coform.validation.*", fallbackFR, { label })` — voir [§ i18n](#i18n). |
 | `generateDefaultValues(subFormsFields)` | Valeurs par défaut vides typées selon `componentType` |
 | `normalizeAnswerData(rawAnswers, subFormsFields)` | Déplace les champs root-level (ex: `evaluation`) de la racine vers leur sous-formulaire pour react-hook-form |
 | `denormalizeAnswerData(formData, subFormsFields)` | Inverse : déplace les champs root-level du sous-formulaire vers la racine pour le format PHP |
@@ -1020,7 +1056,7 @@ t("coform.access.formClosed.title"); // → "Période de réponse terminée"
 | `coform.steps.*` | `step`, `of`, `completed`, `current`, `pending` |
 | `coform.navigation.*` | `next`, `previous`, `submit`, `save`, `reset` |
 | `coform.progress.*` | `title`, `percent` |
-| `coform.validation.*` | `required`, `minLength`, `maxLength`, `email`, `url`, `number`, `selectOption`, `selectAtLeastOne` |
+| `coform.validation.*` | `required`, `minLength`, `maxLength`, `email`, `url`, `number`, `selectOption`, `selectAtLeastOne`, `requiredField` (`{{label}}`), `urlInvalid` (`{{label}}`), `simpleTableRequired` (`{{label}}`), `multiCheckboxPlusCplxRequired`, `noteRange` |
 | `coform.status.*` | `loading`, `submitting`, `success`, `updateSuccess`, `error`, `stepSuccess`, `stepError` |
 | `coform.errors.*` | `formNotFound`, `networkError`, `serverError` |
 | `coform.banner.*` | `alt` |
@@ -1034,6 +1070,28 @@ t("coform.access.formClosed.title"); // → "Période de réponse terminée"
 | `coform.uploader.*` | `addFile`, `addFiles`, `dropzoneLabel`, `maxFiles`, `maxSize`, `invalidExtension`, `fileTooLarge`, `tooManyFiles`, `deleteFile`, `gallery.{openPdf,download}` |
 | `coform.finder.*` | `fallbackElement`, `modal.{title,searchPlaceholder,noResults,addNewButton,validate,...}`, `types.{organizations,citoyens,...}` |
 | `coform.answerPicker.*` | `title`, `description`, `answerLabel`, `updated`, `newAnswer` |
+
+**Messages de validation Zod (traduits au build-time, pas à l'affichage).** Les
+sinks (`FieldError`, `ErrorSummary`) rendent le message **verbatim** ; la
+traduction se fait donc à la construction du schéma. `generateZodSchema` reçoit
+un traducteur `t` (signature `useT`, **optionnel** — défaut = fallback FR pour un
+usage hors React / tests) et chaque message devient
+`t("coform.validation.<clé>", fallbackFR, { label })` (forme **3-args** :
+clé, fallback, params — sinon l'interpolation `{{label}}` ne s'applique pas). Les
+call-sites (`DynamicCoForm`, `useCoFormStep`) passent leur `t` **et l'ajoutent aux
+deps du `useMemo`** du schéma → recompilation au changement de langue (sinon
+messages figés). ⚠️ Le `{{label}}` provient de la **définition backend du
+formulaire** (langue de l'auteur), pas de l'UI : un formulaire FR vu en EN garde
+son label FR. **Couverture complète** : les 3 derniers constructs qui émettaient
+encore un défaut Zod (anglais) sont désormais traduits sans `errorMap` global —
+radio requis avec options (`z.enum(opts, { error: t(...) })`, forme Zod v4 ; via
+l'UI le seul échec est « rien sélectionné » → message « requis »), radio requis
+sans options (`z.string().min(1, t(...))`) et borne `note 0-5` du commonTable
+(`z.number().min(0, t("…noteRange")).max(5, …)`). Restent en défaut Zod **par
+design** les `z.string()/z.number()/z.enum` **structurels internes** des schémas
+composites (commonTable `solutionSchema`/`myCatalogEntrySchema`, finder, uploader)
+— jamais saisis directement par l'utilisateur (data machine), le `.refine()`
+au-dessus porte déjà le message user-facing traduit.
 
 ---
 

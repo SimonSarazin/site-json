@@ -15,6 +15,76 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { COFORM_QUERY_KEYS } from "../../constants";
 import type { AllStepsData } from "../../types";
 
+/**
+ * Collecte les `docId` des feuilles uploader, en gérant SYMÉTRIQUEMENT les deux
+ * formes de `files` : map `{docId: docPath}` ET Array `[{docId}]`. Ignorer
+ * l'Array sur-supprimait (côté soumis vu vide). Exporté pour les tests.
+ */
+export function collectUploaderDocIds(answers: unknown): Set<string> {
+  const docIds = new Set<string>();
+  const walk = (node: unknown): void => {
+    if (!node || typeof node !== "object") return;
+    const record = node as Record<string, unknown>;
+    const files = record.files;
+    if ("updateDate" in record && files && typeof files === "object") {
+      if (Array.isArray(files)) {
+        // Forme de travail UI : [{ docId, docPath }]
+        for (const item of files) {
+          if (
+            item &&
+            typeof item === "object" &&
+            typeof (item as { docId?: unknown }).docId === "string"
+          ) {
+            docIds.add((item as { docId: string }).docId);
+          }
+        }
+      } else {
+        // Forme canonique : { docId: docPath }
+        for (const docId of Object.keys(files as Record<string, unknown>)) {
+          docIds.add(docId);
+        }
+      }
+      return; // feuille uploader : pas de descente plus profonde
+    }
+    for (const value of Object.values(record)) walk(value);
+  };
+  walk(answers);
+  return docIds;
+}
+
+/**
+ * Extrait les `docId` tracés dans `deletedDocIds` (retraits explicites par
+ * UploaderField) et renvoie la structure NETTOYÉE de cette clé transitoire. Seule
+ * source pour supprimer un legacy non-en-map (snapshot aveugle) ; STRIPé ici pour
+ * ne jamais le persister. Exporté pour les tests.
+ */
+export function extractDeletedDocIds(answers: unknown): {
+  cleaned: unknown;
+  deletedDocIds: Set<string>;
+} {
+  const deletedDocIds = new Set<string>();
+  const walk = (node: unknown): unknown => {
+    if (!node || typeof node !== "object") return node;
+    if (Array.isArray(node)) return node.map(walk);
+    const record = node as Record<string, unknown>;
+    if ("updateDate" in record && Array.isArray(record.deletedDocIds)) {
+      for (const id of record.deletedDocIds) {
+        if (typeof id === "string") deletedDocIds.add(id);
+      }
+      const rest: Record<string, unknown> = {};
+      for (const [key, val] of Object.entries(record)) {
+        if (key !== "deletedDocIds") rest[key] = val;
+      }
+      return rest; // feuille uploader nettoyée (on ne descend pas dans `files`)
+    }
+    const out: Record<string, unknown> = {};
+    for (const [key, val] of Object.entries(record)) out[key] = walk(val);
+    return out;
+  };
+  const cleaned = walk(answers);
+  return { cleaned, deletedDocIds };
+}
+
 export interface UseCoFormFinalMutationOptions {
   formId: string;
   answerId?: string | null;
@@ -53,14 +123,27 @@ export function useCoFormFinalMutation({
         ? await form.answer({ id: answerId })
         : await form.answer();
 
+      // Snapshot des fichiers uploader déjà attachés à la réponse AVANT toute
+      // mutation (form.answer({id}) a fetché le serverData via .get()). Sert à
+      // la suppression DIFFÉRÉE : les fichiers retirés du formulaire mais non
+      // encore supprimés côté serveur seront purgés au save (étape 5).
+      const filesAtLoad = collectUploaderDocIds(
+        (answer.serverData as { answers?: unknown } | undefined)?.answers,
+      );
+
       // 2. Pipeline upload complet (data:URI → docPath, batching, normalisation
       //    legacy uploader, clean URLs absolues) en UNE ligne.
       const prepared = await answer.processUploads(
         allData as Record<string, Record<string, unknown>>,
       );
 
-      // 3. Affecter les données préparées + champs annexes sur le draft.
-      answer.data.answers = prepared;
+      // 3. Extraire + stripper la trace `deletedDocIds` (transitoire, jamais
+      //    persistée). `cleanedAnswers` = payload réellement sauvegardé.
+      const { cleaned: cleanedAnswers, deletedDocIds: explicitlyDeleted } =
+        extractDeletedDocIds(prepared);
+
+      // Affecter les données préparées (nettoyées) + champs annexes sur le draft.
+      answer.data.answers = cleanedAnswers as Record<string, Record<string, unknown>>;
       if (addedOptions && Object.keys(addedOptions).length > 0) {
         answer.data.addedOptions = addedOptions;
       }
@@ -71,6 +154,18 @@ export function useCoFormFinalMutation({
       // 4. Save (POST SAVE_COFORM_ANSWER + refresh automatique avec
       //    canEdit/editDeniedReason calculés backend).
       await answer.save();
+
+      // 5. Réconciliation APRÈS le save (un save échoué ne supprime rien) :
+      //    suppression batchée en un appel. removed = UNION du diff (load − soumis,
+      //    pour les fichiers en map) et de l'explicite (`deletedDocIds`, seule
+      //    source pour les legacy non-en-map invisibles au snapshot). Best-effort.
+      const filesAfterSubmit = collectUploaderDocIds(cleanedAnswers);
+      const removedByDiff = [...filesAtLoad].filter(
+        (docId) => !filesAfterSubmit.has(docId),
+      );
+      const removedDocIds = [...new Set([...removedByDiff, ...explicitlyDeleted])];
+      await answer.deleteFiles(removedDocIds);
+
       return answer.serverData;
     },
     onSuccess: (data) => {

@@ -1404,6 +1404,32 @@ La carte Leaflet intégrée dans `PreviewPoiAmenities` (`ProfileMapLeaflet`) ne 
 
 La zone de résultats de `SearchProStatic` (mode liste en sidebar désactivée) utilise désormais `mx-auto w-full max-w-[1536px]` pour éviter un étalement excessif sur très grands écrans. Ce changement affecte uniquement la mise en page — pas la logique de filtres.
 
+### 12. `baseParams.defaultFilters` — DSL backend des filtres (⚠️ pas du Mongo standard)
+
+`defaultFilters` est envoyé **verbatim** au backend (`buildSearchPayload` → `searchCostum`/`globalautocomplete` → `SearchNew::searchFilters`, `modules/citizenToolKit/models/SearchNew.php`). Ce n'est **pas** du Mongo standard : le backend a sa propre traduction, avec quatre pièges à connaître avant d'écrire un filtre.
+
+**a. `tags: ["X"]` (tableau) = match SOUS-CHAÎNE non ancré.** Traduit en `tags: {$in: [/.*X.*/i]}` (regex non ancrée, casse-insensible). Donc `"tags": ["TiersLieux"]` matche aussi **`RéseauTiersLieux`** (qui *contient* « TiersLieux ») → les réseaux fuient dans les listes de lieux. À l'inverse, `tags: {"$in": ["X"]}` en **forme objet** fait un match **exact**.
+
+**b. On ne peut PAS combiner `$in` et `$nin` sur la même clé `tags`.** `searchFilters` est une chaîne if/else qui s'arrête au premier opérateur trouvé, et `$nin` est testé **avant** `$in` (~l.589 vs ~l.598). `"tags": {"$in": [...], "$nin": [...]}` n'appliquera donc QUE le `$nin`.
+
+**c. `$or` doit être un OBJET, jamais un tableau.** Le handler `$or` (~l.549) itère un objet `champ => condition`. Si on passe un tableau `[{...}]`, la clé d'itération est l'entier `0` → `array(0 => …)` devient un array PHP **indexé** → encodé en BSON comme un *array* (pas un document) → crash Mongo **« $or/$and/$nor entries need to be full objects »**. Écrire `"$or": { "tags": {...} }`, **jamais** `"$or": [ { "tags": {...} } ]`.
+
+**d. Tout est empilé en `$and`.** `addQuery` (~l.7) pousse chaque clé de `defaultFilters` dans un `$and` top-level → deux clés distinctes = deux conditions ET.
+
+**Idiome : exiger un tag ET en exclure un autre.** Impossible sur une seule clé `tags` (cf. b) → on utilise deux clés : un `$or` **objet** mono-clause pour le positif + `tags: {$nin: [...]}` pour l'exclusion. Exemple réel (config `tiers-lieux`, les listes de lieux ne doivent pas montrer les réseaux `RéseauTiersLieux`) :
+
+```json
+"defaultFilters": {
+  "$or": { "tags": { "$in": ["TiersLieux"] } },
+  "tags": { "$nin": ["RéseauTiersLieux"] },
+  "address.addressCountry": { "$in": ["FR", "BE", "…"] }
+}
+```
+
+→ backend : `{$and: [ {$or: [{tags: {$in: [/TiersLieux/i]}}]}, {tags: {$nin: ["RéseauTiersLieux"]}}, {address.addressCountry: {$in: […]}} ]}`. Le `$nin` (exact) retire **tous** les réseaux, y compris ceux **double-taggés** `TiersLieux` + `RéseauTiersLieux`. Appliqué aux 3 recherches `navigator-tl` de lieux (hero, aperçu home, page `/lieux`) ; **pas** à la section `data-observatory` (stats).
+
+> ⚠️ JSON n'autorise pas de commentaire inline, donc ce `$or`-objet mono-clause restera cryptique dans le config — c'est un idiome du DSL backend assumé. Une alternative plus lisible (`"$and": [ {tags:[…]}, {tags:{$nin:[…]}} ]`) nécessiterait d'ajouter le support de `$and` dans `SearchNew::searchFilters` (écarté : code partagé par tous les sites).
+
 ---
 
 ## Voir aussi
