@@ -478,6 +478,25 @@ Valeur stockée : `Record<string, FinderElement> | null` (clé = `element.id`).
 
 Types d'éléments recherchables (`FinderElementType`) : `organizations`, `citoyens`, `events`, `projects`, `news`, `cities`, `things`, `poi`, `classified`, `products`, `services`, `surveys`, `bookmarks`, `proposals`, `rooms`, `actions`, `networks`, `urls`, `circuits`, `risks`, `badges`.
 
+**Filtres d'inclusion + exclusion.** La config finder legacy porte deux listes
+`{attributeName, valueName}` : `filter` (inclusions, « Filtres appliqués ») et
+`filterExclude` (exclusions, « Filtres d'exclusion »), toutes deux réglées dans
+`finder.php` (module survey). Elles sont parsées en `FinderConfig.filters` /
+`FinderConfig.excludeFilters` puis converties en filtres Mongo par le **builder
+partagé** [`utils/finderFilters.ts`](../src/modules/coform/utils/finderFilters.ts)
+(`buildFinderMongoFilters(include, exclude)`), consommé à l'identique par les
+**deux chemins** de recherche : la liste collaborative (`PlacesListView` →
+`getEligiblePlaces`) **et** la modale (`useFinderSearchResults` → `searchCostum`).
+
+Sémantique (DSL legacy `SearchNew::searchFilters`, cf. [[search-filters-backend-dsl]]) :
+inclusions groupées → scalaire / `$in`, exclusions → `$nin`. Cas d'usage type :
+exclure les **réseaux** (orgs taguées `RéseauTiersLieux`) d'une liste de lieux.
+Quand un attribut porte **à la fois** inclusion et exclusion (ex. `tags`
+`TiersLieux` inclus + `RéseauTiersLieux` exclu), l'inclusion est relocalisée sous
+`$or`-objet + `tags:{$nin}` (le DSL ne combine pas `$in`+`$nin` sur une clé).
+⚠️ Hypothèse : **une seule collision** attendue (`$or` mono-niveau → ≥2 attributs
+en collision donneraient un OR). Sans exclusion, sortie identique à l'historique.
+
 ---
 
 ### SimpleTableField
@@ -641,6 +660,7 @@ Hook React Query pour la recherche d'entités via `entity.searchCostum`. Caract�
 - Cache 30s
 - Transforme `SearchEntity → FinderSearchResult` via `toFinderSearchResult`
 - Le filtrage des éléments déjà sélectionnés se fait côté composant
+- Les `filters` envoyés sont construits par le builder partagé `buildFinderMongoFilters(config.filters, config.excludeFilters)` (DSL backend, inclusions + exclusions) — même sortie que la liste `getEligiblePlaces`
 
 ---
 
