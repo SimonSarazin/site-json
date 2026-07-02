@@ -17,6 +17,7 @@ import { LocalizedString, LOCALES } from "./locale-schema";
 import { AgendaSectionSchema } from "@/modules/agenda/schema";
 export { LocalizedString, LOCALES };
 import { ProfilesConfigSchema, MemberSectionSchema } from "../modules/profil/schema";
+import { AdminConfigSchema } from "../modules/admin/schema";
 import { AmpliConfigSchema } from "@/modules/ampli/schema";
 import { CommandPaletteConfigSchema } from "@/modules/commandPalette/schema";
 import { VisibilityConditionSchema, type VisibilityCondition } from "@/lib/visibility/schema";
@@ -1980,6 +1981,9 @@ export const SiteConfig = z.object({
   }).optional(),
   ampli: z.array(AmpliConfigSchema).optional(),
   commandPalette: CommandPaletteConfigSchema.optional(),
+  // Page d'Administration (config-driven, jumeau du module profil). Onglets/sections/accès déclarés en
+  // données. Absent → pas de page admin. cf. modules/admin + commentaire/plan-module-admin-generique.md
+  admin: AdminConfigSchema.optional(),
 });
 export type SiteConfig = z.infer<typeof SiteConfig>;
 

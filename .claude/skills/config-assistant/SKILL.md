@@ -116,6 +116,7 @@ Pour corriger/améliorer un config existant :
 | module | surface | clés JSON | prérequis backend |
 |---|---|---|---|
 | `search` | sections `searchPro`/`searchProStatic`/`filters`/`searchHeader`/`cardCountCT`/`thematics` | `baseParams` (`sourceKey`…), `list` (card/detailsMode/preview), `map` (`itemAction`/`marker`), `filters[].select`/`optionStyle`/`order` (widgets par groupe) | données indexées (sourceKey) ; carte : fond MapTiler via env `VITE_MAPTILER_API_KEY` (sinon repli OSM/Carto) + `integrations.map.styleLight/Dark` |
+| `agenda` | section `agenda` (liste/calendrier/carte/split) | `props.baseParams` (sources), `views`, filtres type/tags | événements indexés (`searchEventsCostum`) |
 | `news` | section `news` | `props.entitySlug`, `maxItems` | fil d'actus de l'entité |
 | `coform` | routes `/coform` | réf. de formulaire | CoForm défini côté backend |
 | `cagnotte` | sections `actions`/`finance`/`*-summary` | `idProjet` | projet + Stripe/HelloAsso |
@@ -127,6 +128,7 @@ Pour corriger/améliorer un config existant :
 | `interop` | pods Discourse/Mediawiki | clés interop | instances externes |
 | `observatoire` | section `data-observatory` (dashboard déclaratif : dimensions, KPI, charts, table, filtres) | `props.baseParams` (périmètre) + `dimensions`/`filters`/`kpis`/`charts`/`table` | données indexées (sourceKey + type) |
 | `formEngine` | modales costum **add/edit pilotées par données** (moteur de formulaire générique) | `config.costumForms.<id>` (document `CostumFormSchema`) + déclencheur `floatingActionButton.modal:"add-<id>"` / `profiles.<type>.editModal:"edit-<id>"` | entité costum porteuse (`costumSlug`) ; clés read/write/scope déjà enregistrées (sinon `fns.ts`) — cf. § Formulaires costum |
+| `admin` | page `/admin` config-driven (onglets Membres/Contenu/Import-Export/Validation) | `config.admin` (`tabs[].sections[]`, `access.min`) | endpoints admin (`getMembersAdmin`, import/export, `validategroup`…) ; accès siteAdmin/superAdmin — cf. commentaire/plan-module-admin-generique.md |
 
 **Refuse d'activer un module dont le prérequis backend n'est pas confirmé**
 (ex. pas de `searchPro` sans `sourceKey` réel).
