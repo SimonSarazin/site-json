@@ -204,6 +204,8 @@
       "maxSelections": "Maximum {{max}} choices",
       "withInput": "with text",
       "enterDetails": "Please specify...",
+      "inputLabel": "Details",
+      "inputPlaceholder": "Your answer…",
       "textRequired": "This field is required",
       "rank": "Rank",
       "addNewValue": "Add an option..."
