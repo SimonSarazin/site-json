@@ -488,6 +488,20 @@ Valeur stockée : `(SimpleTableCell | SimpleTableCell[])[][]` où la première l
 
 Nouvelles lignes ajoutables si `config.activeNewLine: true`.
 
+**Édition en modal (`config.editInModal`).** Quand `true`, le tableau passe en
+**lecture seule** et chaque ligne devient cliquable → ouvre un **formulaire modal**
+(un champ par colonne). CRUD complet dans le modal (ajout via « Ajouter une ligne »,
+suppression via « Supprimer cette ligne »), **indépendant de `activeNewLine`**.
+Le mode `readOnly` (vue réponse) désactive toute interaction. Utile pour les
+tableaux larges (évite le scroll horizontal pénible à la saisie). **Le shape de
+valeur persisté est identique** au mode inline → aucune régression Zod. Mutations
+via helpers purs [`utils/simpleTable.ts`](../src/modules/coform/utils/simpleTable.ts)
+(`upsertSimpleTableRow` / `removeSimpleTableRow` / `buildSimpleTableHeaders` /
+`buildEmptySimpleTableRow` — sans mutation, sème les en-têtes si la valeur est
+vide, testés + parité Zod). Le flag est réglé **côté legacy** dans la config de
+l'input (`survey/.../cplx/simpleTable.php` → `params.simpleTable{champ}.editInModal`) ;
+**le legacy ne rend pas le modal**, seul le rendu React consomme le flag.
+
 ---
 
 ### UploaderField
@@ -996,7 +1010,7 @@ Convertit une URL d'image absolue en chemin relatif (`pathname + search`) pour u
 | `FinderValue` | `Record<string, FinderElement> \| null` |
 | `FinderSearchResult` | `{ id, name, type, profilThumbImageUrl?, email?, address? }` |
 | `FinderLinksMap` | `Record<type, Record<id, { name, type }>>` — liens à injecter dans `answer.links` |
-| `SimpleTableConfig` | `{ tableName, columns, rows, activeNewLine, singleAnswerByLine }` |
+| `SimpleTableConfig` | `{ tableName, columns, rows, activeNewLine, singleAnswerByLine, editInModal }` |
 | `UploaderConfig` | `{ docType, itemLimit, sizeLimit, formats?, displayMode? }` |
 | `UploaderValue` | `Array<string \| ImageUploadValue \| ExistingUploadFile>` |
 | `MultiRadioValue` | `{ value: string; type?: "simple"\|"cplx"; textsup?: string }` |
