@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import type { Poi } from "@communecter/cocolight-api-client";
@@ -19,6 +19,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
 import { SEARCH_QUERY_KEYS } from "@/modules/search/constants/queryKeys";
+import { ClickableFacet } from "@/modules/search/components/ClickableFacet";
 import "@/modules/search/i18n";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -33,6 +34,7 @@ import {
   Heart,
   History,
   Info,
+  Loader2,
   MapPin,
   Settings,
   Tag,
@@ -103,6 +105,7 @@ interface PoiDetail {
   equipPshsTrib?: string;
   equipPshsVest?: string;
   equipPshsSign?: string;
+  equipNumero?: string;
   address: PoiAddress;
   geo?: PoiGeo;
 }
@@ -219,6 +222,7 @@ function toPoi(item: Poi): PoiDetail {
     equipPshsTrib: str(sd.equip_pshs_trib),
     equipPshsVest: str(sd.equip_pshs_vest),
     equipPshsSign: str(sd.equip_pshs_sign),
+    equipNumero: str(sd.equip_numero),
     address: {
       streetAddress: str(address?.streetAddress),
       postalCode: str(address?.postalCode),
@@ -249,6 +253,64 @@ function InfoRow({
       </div>
       <div className={muted ? "text-sm text-muted-foreground" : "text-sm text-foreground"}>
         {value}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Valeur(s) cliquable(s) qui navigue vers la page de listing avec un filtre appliqué.
+ * Gère les valeurs multiples séparées par des virgules.
+ */
+/**
+ * Ligne « label + valeur(s) cliquable(s) ». Chaque token (valeurs multiples
+ * séparées par des virgules) est rendu via `<ClickableFacet>` : cliquable si un
+ * dropdownFilter indexe `field` et résout le token, sinon texte simple.
+ */
+function ClickableFilterValue({
+  label,
+  value,
+  field,
+  onClose,
+}: {
+  label: string;
+  value: string | undefined;
+  field: string;
+  onClose?: () => void;
+}) {
+  if (!value || value === "—") {
+    return (
+      <div className="space-y-1">
+        <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          {label}
+        </div>
+        <div className="text-sm text-foreground">—</div>
+      </div>
+    );
+  }
+
+  const values = value
+    .split(",")
+    .map((v) => v.trim())
+    .filter((v) => v.length > 0);
+
+  return (
+    <div className="space-y-1">
+      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        {label}
+      </div>
+      <div className="text-sm text-foreground">
+        {values.map((val, index) => (
+          <span key={`${val}-${index}`}>
+            {index > 0 && ", "}
+            <ClickableFacet
+              field={field}
+              token={val}
+              onClose={onClose}
+              className="cursor-pointer font-medium text-primary underline decoration-primary/30 underline-offset-2 transition-colors hover:decoration-primary hover:text-primary/80"
+            />
+          </span>
+        ))}
       </div>
     </div>
   );
@@ -302,6 +364,30 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
 
   const poiEntity = item as Poi;
   const sd = poiEntity.serverData;
+
+  // La palette Ctrl+K retourne des entités partielles (searchCostum ne renvoie
+  // que name/address). On recharge les données complètes si les champs équipements
+  // sont absents, puis on force un re-render pour mettre à jour l'affichage.
+  const [isLoadingFull, setIsLoadingFull] = useState(false);
+  useEffect(() => {
+    const hasEquipmentData =
+      sd.equip_type_name !== undefined ||
+      sd.inst_nom !== undefined ||
+      sd.equip_nature !== undefined ||
+      sd.equip_numero !== undefined;
+    if (!hasEquipmentData && poiEntity.id) {
+      setIsLoadingFull(true);
+      poiEntity
+        .refresh()
+        .then(() => setIsLoadingFull(false))
+        .catch((err) => {
+          console.error("[PreviewPoiAmenities] Failed to load full POI data", err);
+          setIsLoadingFull(false);
+        });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [poiEntity.id]);
+
   const poi = toPoi(poiEntity);
 
   const imageUrl =
@@ -414,7 +500,18 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
-                <span>{poi.address.addressLocality || "—"}</span>
+                {poi.address.postalCode ? (
+                  <ClickableFacet
+                    field="address.postalCode"
+                    token={poi.address.postalCode}
+                    onClose={onClose}
+                    className="cursor-pointer font-medium underline decoration-primary-foreground/30 underline-offset-2 transition-colors hover:decoration-primary-foreground hover:opacity-80"
+                  >
+                    {cityLine || poi.address.addressLocality || "—"}
+                  </ClickableFacet>
+                ) : (
+                  <span>{poi.address.addressLocality || "—"}</span>
+                )}
               </div>
               {poi.sportPratiquer && (
                 <div className="flex items-center gap-2">
@@ -439,6 +536,11 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto">
+          {isLoadingFull ? (
+            <div className="flex items-center justify-center py-16 text-muted-foreground">
+              <Loader2 className="h-6 w-6 animate-spin" />
+            </div>
+          ) : (
           <div className="grid gap-6 p-6 pb-12 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div className="space-y-6">
               <section className="rounded-2xl border border-border bg-card/70 p-5 shadow-sm">
@@ -447,7 +549,12 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
                   <h2 className="text-base font-semibold">{t("PreviewPoiAmenities.sections.general")}</h2>
                 </div>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                  <InfoRow label={t("PreviewPoiAmenities.fields.category")} value={poi.category || "—"} />
+                  <ClickableFilterValue
+                    label={t("PreviewPoiAmenities.fields.category")}
+                    value={poi.category}
+                    field="equip_type_name"
+                    onClose={onClose}
+                  />
                   <InfoRow label={t("PreviewPoiAmenities.fields.family")} value={poi.familleEquipement || "—"} />
                   <InfoRow label={t("PreviewPoiAmenities.fields.installation")} value={poi.installation || "—"} />
                   <div className="sm:col-span-2">
@@ -463,10 +570,25 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
                 </div>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   <InfoRow label={t("PreviewPoiAmenities.fields.ownerName")} value={poi.equipPropNom || "—"} />
-                  <InfoRow label={t("PreviewPoiAmenities.fields.ownerType")} value={poi.entrepriseFonciere || "—"} />
+                  <ClickableFilterValue
+                    label={t("PreviewPoiAmenities.fields.ownerType")}
+                    value={poi.entrepriseFonciere}
+                    field="equip_prop_type"
+                    onClose={onClose}
+                  />
                   <InfoRow label={t("PreviewPoiAmenities.fields.managementType")} value={poi.equipGestType || "—"} />
-                  <InfoRow label={t("PreviewPoiAmenities.fields.premises")} value={poi.equipLocType || "—"} />
-                  <InfoRow label={t("PreviewPoiAmenities.fields.users")} value={poi.equipUtilisateur || "—"} />
+                  <ClickableFilterValue
+                    label={t("PreviewPoiAmenities.fields.premises")}
+                    value={poi.equipLocType}
+                    field="equip_loc_type"
+                    onClose={onClose}
+                  />
+                  <ClickableFilterValue
+                    label={t("PreviewPoiAmenities.fields.users")}
+                    value={poi.equipUtilisateur}
+                    field="equip_utilisateur"
+                    onClose={onClose}
+                  />
                 </div>
               </section>
 
@@ -647,8 +769,24 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
                   )}
                 </div>
               </section>
+
+              {poi.equipNumero && (
+                <section className="rounded-2xl border border-border bg-card/70 p-5 shadow-sm">
+                  <a
+                    href={`https://equipements.sports.gouv.fr/pages/fiche/?refine.equip_numero=${encodeURIComponent(poi.equipNumero)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/20"
+                  >
+                    <Info className="h-4 w-4 shrink-0" />
+                    {t("PreviewPoiAmenities.equipNumero.link")}
+                    <span className="ml-1 font-mono text-xs opacity-70">{poi.equipNumero}</span>
+                  </a>
+                </section>
+              )}
             </aside>
           </div>
+          )}
         </div>
       </div>
 
