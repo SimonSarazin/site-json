@@ -10,7 +10,6 @@ export default function MapMarkerCircle({
   cssColor: string;
   borderCssColor?: string;
 }) {
-  console.log("MapMarkerCircle render", cssColor, borderCssColor); // eslint-disable-line no-console
   return (
     <span className="search-map-circle" style={{ background: cssColor, borderColor: borderCssColor }} />
   );

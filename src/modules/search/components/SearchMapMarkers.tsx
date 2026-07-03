@@ -108,6 +108,8 @@ export interface ClusterMarkerProps {
   clusterId: number;
   pointCount: number;
   totalPoints: number;
+  /** Libellé accessible (traduit par le parent qui a `t`), déf. = nombre brut. */
+  ariaLabel?: string;
   /** Stable (useCallback côté parent) → préserve la mémoïsation. */
   onExpand: (clusterId: number, longitude: number, latitude: number) => void;
 }
@@ -118,6 +120,7 @@ export const ClusterMarker = memo(function ClusterMarker({
   clusterId,
   pointCount,
   totalPoints,
+  ariaLabel,
   onExpand,
 }: ClusterMarkerProps) {
   // Diamètre ∝ part du cluster dans le total (clamp 40→68 px).
@@ -136,7 +139,7 @@ export const ClusterMarker = memo(function ClusterMarker({
         type="button"
         className="search-map-cluster"
         style={{ width: size, height: size }}
-        aria-label={`${pointCount}`}
+        aria-label={ariaLabel ?? `${pointCount}`}
       >
         {pointCount}
       </button>

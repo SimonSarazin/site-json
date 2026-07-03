@@ -260,6 +260,10 @@ export const MapConfSchema = z.object({
   /** Disposition de la vue carte (SearchProStatic) : "full" (défaut, plein
    *  écran) ou "split" (liste + carte côte à côte, sélection synchronisée). */
   layout: z.enum(["full", "split"]).optional(),
+  /** En mode split, répartition de largeur liste/carte : "40-60" (défaut —
+   *  liste étroite 1 colonne + carte large, aligné sur l'agenda), "50-50" ou
+   *  "60-40" (liste plus large, 2 colonnes). Pilote aussi les colonnes de la liste. */
+  splitRatio: z.enum(["40-60", "50-50", "60-40"]).optional(),
   popup: z.object({
     type: z.enum(["default"]).default("default"),
   }).partial().optional(),

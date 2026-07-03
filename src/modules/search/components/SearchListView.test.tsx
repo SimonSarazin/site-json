@@ -1,8 +1,13 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { MemoryRouter } from "react-router";
+import type { ReactElement } from "react";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import SearchListView from "./SearchListView";
+
+// SearchListView appelle useSearchParams() → il DOIT être rendu sous un Router.
+const renderInRouter = (ui: ReactElement) => render(<MemoryRouter>{ui}</MemoryRouter>);
 
 /**
  * Mode split : SearchListView devient contrôlé via `focusedItemId`/`onFocusItem`.
@@ -37,7 +42,7 @@ beforeEach(() => {
 
 describe("SearchListView (mode split / focus)", () => {
   it("applique le ring sur la carte dont l'id == focusedItemId", () => {
-    const { container } = render(
+    const { container } = renderInRouter(
       <SearchListView results={results} focusedItemId="2" onFocusItem={vi.fn()} />,
     );
     const focused = container.querySelector('[data-item-id="2"]');
@@ -48,19 +53,19 @@ describe("SearchListView (mode split / focus)", () => {
 
   it("clic sur une carte → onFocusItem(id), sans ouvrir le détail", () => {
     const onFocusItem = vi.fn();
-    render(<SearchListView results={results} onFocusItem={onFocusItem} />);
+    renderInRouter(<SearchListView results={results} onFocusItem={onFocusItem} />);
     fireEvent.click(screen.getByText("Bravo"));
     expect(onFocusItem).toHaveBeenCalledWith("2");
     expect(screen.queryByTestId("details-modal")).toBeNull();
   });
 
   it("scrollIntoView appelé quand un focus est présent", () => {
-    render(<SearchListView results={results} focusedItemId="1" onFocusItem={vi.fn()} />);
+    renderInRouter(<SearchListView results={results} focusedItemId="1" onFocusItem={vi.fn()} />);
     expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
   });
 
   it("mode liste classique (ni focusedItemId ni onFocusItem) : aucun ring, clic ouvre le détail", () => {
-    const { container } = render(<SearchListView results={results} />);
+    const { container } = renderInRouter(<SearchListView results={results} />);
     expect(container.querySelector('[data-item-id="2"]')?.className).not.toContain("ring-2");
     fireEvent.click(screen.getByText("Alpha"));
     expect(screen.getByTestId("details-modal")).toBeInTheDocument();

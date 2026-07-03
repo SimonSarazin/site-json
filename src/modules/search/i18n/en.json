@@ -193,5 +193,6 @@
   "Voir le profil": "View profile",
   "Adresse inconnue": "Address unknown",
   "Tous": "All",
-  "{{count}} sélectionnés": "{{count}} selected"
+  "{{count}} sélectionnés": "{{count}} selected",
+  "{{count}} résultats groupés": "{{count}} results grouped"
 }

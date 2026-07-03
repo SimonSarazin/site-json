@@ -73,6 +73,10 @@ export default function SearchMap({ results, card, preview, map: mapConf, focuse
   const readyRef = useRef(false);
   /** 1ᵉʳ id du périmètre déjà recadré (fitBounds une fois par périmètre). */
   const fittedFirstIdRef = useRef<string | undefined>(undefined);
+  /** Dernier `focusedItemId` réellement appliqué (easeTo + popup). Empêche que
+   *  la simple croissance de `results` (pages progressives) rejoue le focus et
+   *  ramène la carte / rouvre une popup que l'utilisateur venait de fermer. */
+  const appliedFocusRef = useRef<string | null>(null);
   /** Ref du callback de focus sortant — évite de l'ajouter aux deps de handleSelect. */
   const onMarkerFocusRef = useRef(onMarkerFocus);
   useEffect(() => {
@@ -210,6 +214,17 @@ export default function SearchMap({ results, card, preview, map: mapConf, focuse
   const handleMapReady = useCallback(() => {
     if (readyRef.current) return;
     readyRef.current = true;
+    // Styles vectoriels MapTiler : certaines icônes (boucliers autoroutiers
+    // régionaux, ex. "IT-highway_6") ne sont pas dans le sprite → MapLibre loggue
+    // « Image … could not be loaded » à chaque tuile concernée. On enregistre un
+    // pixel transparent pour toute image manquante → plus de bruit console (l'icône
+    // était de toute façon absente ; le fond de carte et les marqueurs sont intacts).
+    const map = mapRef.current?.getMap();
+    map?.on("styleimagemissing", (e) => {
+      if (!map.hasImage(e.id)) {
+        map.addImage(e.id, { width: 1, height: 1, data: new Uint8Array(4) });
+      }
+    });
     setMapLoaded(true);
     syncViewport();
   }, [syncViewport]);
@@ -261,17 +276,26 @@ export default function SearchMap({ results, card, preview, map: mapConf, focuse
   }, [results, mapLoaded, mapConf]);
 
   /* ── Focus (mode split) : liste→carte — recentre + ouvre la popup ─────── */
-  // `results` en deps : si l'item focalisé arrive sur une page suivante, le
-  // focus se rejoue. La popup est ancrée aux coordonnées (indépendante du
-  // clustering) → pas besoin de dé-clusteriser pour l'ouvrir.
+  // `results` en deps : si l'item focalisé arrive sur une page SUIVANTE, on
+  // réessaie jusqu'à le trouver. Mais une fois le focus APPLIQUÉ (appliedFocusRef),
+  // la seule croissance de `results` ne doit PLUS le rejouer — sinon, pendant le
+  // chargement progressif, la carte se recentre et rouvre la popup à chaque page,
+  // même après que l'utilisateur ait pané ailleurs / fermé la popup. La popup est
+  // ancrée aux coordonnées (indépendante du clustering) → pas besoin de dé-clusteriser.
   useEffect(() => {
-    if (!mapLoaded || !focusedItemId) return;
+    if (!mapLoaded || !focusedItemId) {
+      // Focus levé → un prochain focus (même id) pourra rejouer.
+      appliedFocusRef.current = null;
+      return;
+    }
+    if (appliedFocusRef.current === focusedItemId) return; // déjà appliqué pour cet id
     const entry = findEntryById(results, focusedItemId);
-    if (!entry) return; // item pas (encore) sur la carte
+    if (!entry) return; // item pas (encore) sur la carte → réessai à l'arrivée de sa page
     const coords = getEntryCoords(entry);
     if (!coords) return; // sans géolocalisation → no-op
     const map = mapRef.current?.getMap();
     if (!map) return;
+    appliedFocusRef.current = focusedItemId; // marque appliqué : une seule fois par valeur de focus
     map.easeTo({ center: [coords[0], coords[1]], zoom: Math.max(map.getZoom(), 14), duration: 400 });
     // Synchronisation d'un prop EXTERNE (`focusedItemId` venu de la liste) : on
     // déplace la carte (easeTo, impératif) ET on ouvre la popup. `selected` a
@@ -335,6 +359,7 @@ export default function SearchMap({ results, card, preview, map: mapConf, focuse
                     clusterId={props.cluster_id}
                     pointCount={props.point_count}
                     totalPoints={points.length}
+                    ariaLabel={t("{{count}} résultats groupés", undefined, { count: props.point_count })}
                     onExpand={expandCluster}
                   />
                 );

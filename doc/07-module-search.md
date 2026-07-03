@@ -1087,7 +1087,11 @@ et l'alerte de plafond.
 **Options `map` de la section** (`MapConfSchema`) :
 `map.itemAction: {kind: "profil"|"preview"}` — action du bouton de la popup
 (défaut `preview` : détail `SwitchDetailsMode` avec `list.card`/`list.preview` ;
-`profil` : navigation `/profil/:slug`) · `map.initialZoom` — zoom initial · `map.marker`
+`profil` : navigation `/profil/:slug`) · `map.initialZoom` — zoom initial ·
+`map.layout: "full"|"split"` — plein écran (défaut) ou split liste+carte · `map.splitRatio:
+"40-60"|"50-50"|"60-40"` — répartition largeur liste/carte du split (défaut `40-60`,
+liste étroite 1 colonne + carte large, aligné sur l'agenda ; les ratios plus larges
+passent la liste à 2 colonnes) · `map.marker`
 — apparence des marqueurs (cf. ci-dessous). La **popup** est un
 **vrai composant React** (plus de `renderToString` ni de `window.dispatchEvent`) :
 le bouton appelle directement `onAction` (handler React fourni par `SearchMap`).
