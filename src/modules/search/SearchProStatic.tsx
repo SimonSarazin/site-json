@@ -20,6 +20,7 @@ const ThematicCards = lazy(() => import("./components/ThematicCards"));
 import { SwitchDetailsMode } from "./components/SwitchDetailsMode";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
+import { getEntryCoords } from "./lib/searchMapSelection";
 
 import { ClientOnly } from "@/components/layout/ClientOnly";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -41,6 +42,19 @@ import { useAuthModal } from "@/modules/auth";
 import { useLocalization } from "@/hooks/useLocalization";
 import { DynamicModal } from "@/modules/profil/components/add/ModalRegistry";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
+
+/**
+ * Répartition {largeur liste, largeur carte, colonnes de la liste} du mode split,
+ * selon `map.splitRatio`. Classes Tailwind écrites EN TOUTES LETTRES (le JIT ne
+ * génère pas de classe construite dynamiquement). Défaut "40-60" : parité avec le
+ * split de l'agenda (liste étroite 1 colonne, carte large). Les ratios plus larges
+ * passent la liste à 2 colonnes (largeur suffisante).
+ */
+const SPLIT_LAYOUTS = {
+  "40-60": { list: "w-2/5", map: "w-3/5", columns: { sm: 1, md: 1, lg: 1, xl: 1 } },
+  "50-50": { list: "w-1/2", map: "w-1/2", columns: { sm: 1, md: 2, lg: 2, xl: 2 } },
+  "60-40": { list: "w-3/5", map: "w-2/5", columns: { sm: 1, md: 2, lg: 2, xl: 2 } },
+} as const;
 
 /**
  * SearchProStatic: Version statique sans synchronisation URL
@@ -90,10 +104,17 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   const defaultViewMode = props.defaultViewMode || (showMap ? "map" : "list");
   const [viewMode, setViewMode] = useState<"list" | "map" | "graph" | "regions" | "thematics" | "split">(defaultViewMode);
   const isMobile = useIsMobile();
-  // Vue "carte" canonique de la section pour les toggles : "split" sur desktop
-  // si la section est en split, sinon "map". Sur MOBILE, pas de côte-à-côte (la
-  // liste et la carte s'enfouiraient) → repli en TOGGLE liste ↔ carte plein
-  // écran. Sans ce mapView, le bouton « Carte » sortirait du split sans retour.
+  // La vue carte peut être SPLIT (liste + carte synchronisées) via DEUX
+  // déclencheurs : `defaultViewMode: "split"` (la vue carte canonique de la
+  // section EST le split) OU `map.layout: "split"` (la vue « Carte » plein écran
+  // devient split). Le split est DESKTOP only : sur mobile (côte-à-côte
+  // illisible) on retombe sur la carte plein écran (cf. `!isMobile`).
+  const isSplit = props.map?.layout === "split";
+  // Répartition liste/carte du split (déf. "40-60", aligné sur l'agenda) —
+  // configurable via `map.splitRatio`. Cf. SPLIT_LAYOUTS (classes littérales).
+  const splitLayout = SPLIT_LAYOUTS[props.map?.splitRatio ?? "40-60"];
+  // Cible « carte » du bouton de bascule : "split" si la section démarre en
+  // split (desktop), sinon "map" (le déclencheur `map.layout` reste sur "map").
   const mapView: "split" | "map" = props.defaultViewMode === "split" && !isMobile ? "split" : "map";
   const [isDetailedView, setIsDetailedView] = useState(defaultDetailedView);
   const [localSearchInput, setLocalSearchInput] = useState("");
@@ -318,6 +339,14 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     variant: searchVariant,
   });
 
+  // Split : la liste ne montre que les résultats GÉOLOCALISÉS (= ceux qui ont un
+  // marqueur sur la carte) → liste et carte correspondent, pas d'item sans point.
+  // `getEntryCoords` est exactement le critère de rendu d'un marqueur (cf. SearchMap).
+  const splitGeoResults = useMemo(
+    () => mapAll.results.filter((e) => getEntryCoords(e as SearchEntity)),
+    [mapAll.results],
+  );
+
   if (!loaded) {
     return (
       <div className="flex-1 flex items-center justify-center py-10 text-muted-foreground">
@@ -502,45 +531,69 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
           </div>
         )}
 
-        {viewMode === "split" && enableMap && !isMobile ? (
-          /* Mode SPLIT (desktop) : liste (gauche) + carte (droite) SYNCHRONISÉES. Les deux
-             sont alimentées par mapAll.results (source UNIQUE → les ids matchent
-             toujours). Clic carte-liste → flyTo+popup ; clic marqueur → highlight
-             liste. Empilé en mobile (flex-col), côte-à-côte ≥ md. */
-          <div className="flex flex-col gap-4 p-4 md:flex-row">
-            <div className="md:h-[78vh] md:w-2/5 md:overflow-y-auto">
-              {!isPending && mapAll.isComplete && mapAll.results.length === 0 && (
+        {((viewMode === "split") || (viewMode === "map" && isSplit)) && enableMap && !isMobile ? (
+          /* Mode SPLIT (desktop) : liste (gauche) + carte (droite) SYNCHRONISÉES,
+             alimentées par mapAll.results (source UNIQUE → ids alignés). Clic
+             carte-liste → flyTo+popup ; clic marqueur → highlight liste. Rendu
+             uniquement hors mobile (cf. !isMobile) → côte-à-côte. Hauteur EXPLICITE
+             `h-[78vh]` sur les deux colonnes : indispensable pour que la carte
+             (`height:100%`) ait une référence et que son canvas = la zone visible
+             (sinon fitBounds cadre sur une mauvaise taille). */
+          <div className="flex w-full gap-4 overflow-hidden">
+            {/* Liste (gauche) — défile dans sa hauteur ; 2 colonnes max (panneau
+                étroit), pas les colonnes pleines de la vue liste. */}
+            <div className={`h-[78vh] ${splitLayout.list} overflow-y-auto p-4`}>
+              {!isPending && mapAll.isComplete && splitGeoResults.length === 0 && (
                 <div className="py-8 text-center text-secondary-foreground">
                   {t("Aucun résultat trouvé.")}
                 </div>
               )}
               <SearchListView
-                results={mapAll.results}
-                columns={list?.columns}
+                results={splitGeoResults}
+                columns={splitLayout.columns}
                 card={list?.card}
                 preview={list?.preview}
+                previewParam={list?.previewParam}
                 focusedItemId={focusedItemId}
                 onFocusItem={setFocusedItemId}
               />
             </div>
-            <div className="relative h-[55vh] overflow-hidden rounded shadow md:sticky md:top-20 md:h-[78vh] md:w-3/5">
+            {/* Carte (droite) : `h-[78vh]` borne la hauteur → la carte embarquée
+                (height:100% via containerClass) la remplit exactement (cf. SearchMap). */}
+            <div className={`relative h-[78vh] ${splitLayout.map} overflow-hidden rounded shadow`}>
+              {/* Sortie du split → vue liste (détail), UNIQUEMENT quand le split
+                  vient de `map.layout` (viewMode "map" + isSplit) : on est arrivé
+                  depuis la liste, il faut pouvoir y retourner. Quand le split EST
+                  la vue canonique (`defaultViewMode: "split"`), pas de bouton —
+                  il n'y a pas de « retour liste » à proposer. */}
+              {viewMode === "map" && (
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="absolute top-2 right-2 z-50"
+                  onClick={() => setViewMode("list")}
+                  aria-label={t("Voir en liste")}
+                >
+                  <List className="h-5 w-5 text-primary" />
+                </Button>
+              )}
               <MapProgress
                 loaded={mapAll.loaded}
                 total={mapAll.total}
                 isComplete={mapAll.isComplete}
                 capped={mapAll.capped}
               />
-              {mapAll.results.length > 0 ? (
+              {splitGeoResults.length > 0 ? (
                 <ClientOnly fallback={<MapSkeleton label={t("Chargement de la carte…")} />}>
                   {() => (
                     <SearchMapWrapper
-                      results={mapAll.results}
+                      results={splitGeoResults}
                       card={list?.card}
                       preview={list?.preview}
                       map={props.map}
                       focusedItemId={focusedItemId}
                       onMarkerFocus={setFocusedItemId}
-                      containerClass="absolute inset-0 z-10 rounded shadow"
+                      containerClass="absolute inset-0 z-10 rounded shadow overflow-hidden"
                     />
                   )}
                 </ClientOnly>
@@ -767,6 +820,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                   columns={list?.columns}
                   card={list?.card}
                   preview={list?.preview}
+                  previewParam={list?.previewParam}
                   isDetailedView={isDetailedView}
                 />
 

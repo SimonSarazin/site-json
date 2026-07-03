@@ -19,6 +19,13 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      // Le React Compiler ne tourne PAS au build (vite = @vitejs/plugin-react
+      // sans babel-plugin-react-compiler). La règle preserve-manual-memoization,
+      // promue en `error` dans le preset `recommended` par le bump v5→v7
+      // (commit 039f73f), double `exhaustive-deps` (déjà `warn`) et n'apporte
+      // aucune garantie runtime ici → rétrogradée en `warn` pour ne pas casser
+      // le lint/CI, tout en gardant le signal « compiler-ready ».
+      'react-hooks/preserve-manual-memoization': 'warn',
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },

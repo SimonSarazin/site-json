@@ -116,7 +116,7 @@ Pour corriger/améliorer un config existant :
 | module | surface | clés JSON | prérequis backend |
 |---|---|---|---|
 | `search` | sections `searchPro`/`searchProStatic`/`filters`/`searchHeader`/`cardCountCT`/`thematics` | `baseParams` (`sourceKey`…), `list` (card/detailsMode/preview), `map` (`itemAction`/`marker`), `filters[].select`/`optionStyle`/`order` (widgets par groupe) | données indexées (sourceKey) ; carte : fond MapTiler via env `VITE_MAPTILER_API_KEY` (sinon repli OSM/Carto) + `integrations.map.styleLight/Dark` |
-| `agenda` | section `agenda` (liste/calendrier/carte/split) | `props.baseParams` (sources), `views`, filtres type/tags | événements indexés (`searchEventsCostum`) |
+| `agenda` | section `agenda` (vues liste/calendrier/carte/split) | `baseParams`, `filters` (text/type/tags), `defaultMode`/`tabs`/`detailsMode`, `enableMap`/`map` | événements indexés (`searchEventsCostum`) |
 | `news` | section `news` | `props.entitySlug`, `maxItems` | fil d'actus de l'entité |
 | `coform` | routes `/coform` | réf. de formulaire | CoForm défini côté backend |
 | `cagnotte` | sections `actions`/`finance`/`*-summary` | `idProjet` | projet + Stripe/HelloAsso |

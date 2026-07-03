@@ -130,6 +130,9 @@
             "created": "Création",
             "lastSurvey": "Dernière enquête",
             "lastUpdate": "Dernière mise à jour"
+        },
+        "equipNumero": {
+            "link": "Voir la fiche nationale"
         }
     },
     "Filtres actifs :": "Filtres actifs :",
@@ -190,5 +193,6 @@
     "Voir le profil": "Voir le profil",
     "Adresse inconnue": "Adresse inconnue",
     "Tous": "Tous",
-    "{{count}} sélectionnés": "{{count}} sélectionnés"
+    "{{count}} sélectionnés": "{{count}} sélectionnés",
+    "{{count}} résultats groupés": "{{count}} résultats groupés"
 }

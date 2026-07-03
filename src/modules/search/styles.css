@@ -1,17 +1,40 @@
-.custom-leaflet-popup .leaflet-popup-content-wrapper {
+/* Popup MapLibre (react-map-gl) : conteneur transparent + tip masqué → on laisse
+   la <Card> de MapPopupDefault porter tout le style (fond, ombre, arrondi). */
+.search-map-popup .maplibregl-popup-content {
+  padding: 0;
   background: transparent;
   box-shadow: none;
+  border-radius: 0;
 }
-.custom-leaflet-popup .leaflet-popup-content {
-  padding: 0;
-  margin: 0;
-  background: transparent;
-}
-.custom-leaflet-popup .leaflet-popup-tip {
+.search-map-popup .maplibregl-popup-tip {
   display: none;
 }
-/* Marqueur « vignette d'item » (map.marker.useItemImage) — divIcon rond */
-.search-map-avatar-marker img {
+
+/* Bouton-conteneur d'un marqueur point (reset visuel : seul le visuel compte). */
+.search-map-marker-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  line-height: 0;
+  cursor: pointer;
+}
+
+/* Marqueur FOCALISÉ (mode split, liste→carte) : agrandi + halo `--primary`,
+   au-dessus des voisins. Cible le visuel interne (`> *`) → variant-agnostic
+   (le halo `drop-shadow` épouse la forme : pin / pastille / vignette / icône). */
+.search-map-marker-btn.is-focused {
+  position: relative;
+  z-index: 10;
+}
+.search-map-marker-btn.is-focused > * {
+  transform: scale(1.4);
+  filter: drop-shadow(0 0 2px var(--primary)) drop-shadow(0 0 5px var(--primary));
+  transition: transform 120ms ease;
+}
+
+/* Marqueur « vignette d'item » (map.marker.useItemImage) — rond */
+.search-map-avatar {
+  display: block;
   width: 36px;
   height: 36px;
   border-radius: 9999px;
@@ -21,7 +44,41 @@
   background: var(--background);
 }
 
-/* Pin SVG thème (map.marker.style: "pin") */
-.search-map-pin-marker svg {
+/* Pin SVG thème (map.marker.style: "pin" ou défaut) */
+.search-map-pin {
+  display: block;
   filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.45));
+}
+
+/* Icône custom (map.marker.iconUrl) — image/SVG brandée par site/section. */
+.search-map-icon {
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.45));
+}
+
+/* Pastille ronde thème (map.marker.style: "circle") — fond = `color`, anneau =
+   `borderColor` (piloté inline par MapMarkerCircle ; déf. `--background`). */
+.search-map-circle {
+  display: block;
+  width: 30px;
+  height: 30px;
+  border-radius: 9999px;
+  border: 3px solid var(--background);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.4);
+}
+
+/* Bulle de cluster (supercluster) — couleurs de thème, suit light/dark. */
+.search-map-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 4px solid var(--secondary);
+  background: var(--color-sidebar-primary);
+  color: var(--primary-foreground);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.4);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
 }
