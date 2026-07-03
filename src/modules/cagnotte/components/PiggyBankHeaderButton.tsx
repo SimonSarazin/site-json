@@ -52,7 +52,7 @@ export function PiggyBankHeaderButton() {
   return (
     <CagnotteDialog
       totalAmount={piggyAmount}
-      defaultProjectId={projectModalId || targetProject?.id || undefined}
+      defaultResourceId={projectModalId || targetProject?.id || undefined}
       onRefresh={refresh}
     >
       <button

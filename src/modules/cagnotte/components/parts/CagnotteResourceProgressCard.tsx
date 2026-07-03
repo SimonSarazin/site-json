@@ -6,17 +6,17 @@ import { Progress } from "@/components/ui/progress";
 import { useT } from "@/hooks/useT";
 import { formatNumber } from "@/modules/cagnotte/utils/format";
 
-export interface CagnotteProjectProgressCardProps {
+export interface CagnotteResourceProgressCardProps {
   /** Montant total financé sur le projet (en euros, entier). */
   totalAmount: number;
   /** Cible totale à atteindre (en euros, entier). */
   targetAmount: number;
 }
 
-export function CagnotteProjectProgressCard({
+export function CagnotteResourceProgressCard({
   totalAmount,
   targetAmount,
-}: CagnotteProjectProgressCardProps) {
+}: CagnotteResourceProgressCardProps) {
   const t = useT("modules/cagnotte");
   const progressPercentage =
     targetAmount > 0 ? Math.min((totalAmount / targetAmount) * 100, 100) : 0;

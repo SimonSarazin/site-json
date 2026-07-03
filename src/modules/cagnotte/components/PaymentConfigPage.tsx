@@ -45,23 +45,17 @@ import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 import { useQueryClient } from "@tanstack/react-query";
 import { launchConfettiBurst } from "@/lib/confetti";
 import StripePaymentForm from "./StripePaymentForm";
-
-interface ProjectMilestone {
-    milestoneId: string;
-    name: string;
-    description?: string;
-    price: number;
-    currentFunding: number;
-}
+import {CagnotteFundableItem, DepenseFunding} from "@/modules/cagnotte/types.ts";
 
 interface PaymentConfigPageProps {
-    projectName: string;
-    projectId: string;
-    projectImage?: string;
+    resourceName: string;
+    resourceId: string;
+    resourceImage?: string;
     amount: number;
-    milestones: ProjectMilestone[];
-    activeMilestoneIds: Set<string>;
-    answerId?: string; //  ID de l'Answer associée au projet
+    items: CagnotteFundableItem[] | undefined;
+    activeItemsIds: Set<string>;
+    itemAnswerId?: string; //  ID de l'Answer associée
+    itemProjectId?: string; //  ID de l'Projet associée
     onBack: () => void;
     onPaymentSuccess: (paymentData: Record<string, unknown>) => void;
     onContributionSaved?: () => void | Promise<void>;
@@ -93,13 +87,14 @@ function normalizeFundingContextType(type: string | undefined): string {
 }
 
 const PaymentConfigPage = ({
-    projectName,
-    projectId,
-    projectImage,
+    resourceName,
+    resourceId,
+    resourceImage,
     amount,
-    milestones,
-    activeMilestoneIds,
-    answerId, //  ID de l'Answer pour enregistrer les financements
+    items,
+    activeItemsIds,
+    itemAnswerId,
+    itemProjectId,
     onBack,
     onPaymentSuccess,
     onContributionSaved,
@@ -120,7 +115,7 @@ const PaymentConfigPage = ({
     const [isWaitingHelloAssoCallback, setIsWaitingHelloAssoCallback] = useState(false);
     useLoadNamespace("modules/cagnotte");
     const t = useT("modules/cagnotte");
-    const fundingEnvelopeQuery = useFundingEnvelope(projectId);
+    const fundingEnvelopeQuery = useFundingEnvelope(resourceId);
     const fundingPaymentMethods = fundingEnvelopeQuery.data?.paymentMethods ?? fundingEnvelopeQuery.data?.selectedProject?.paymentMethods ?? null;
 
     const stripePublicKey = fundingPaymentMethods?.stripePublicKey || getStripePublicKey();
@@ -146,29 +141,29 @@ const PaymentConfigPage = ({
         ]);
     }, [queryClient, onContributionSaved]);
 
-    const activeMilestones = useMemo(
-        () => milestones.filter((m) => activeMilestoneIds.has(m.milestoneId)),
-        [milestones, activeMilestoneIds]
+    const activeItems = useMemo(
+        () => (items || []).filter((i) => activeItemsIds.has(i.itemId)),
+        [items, activeItemsIds]
     );
 
-    // Allouer le montant saisi du premier au dernier milestone actif
-    const milestoneFunding = useMemo(() => {
+    // Allouer le montant saisi du premier au dernier depens actif
+    const depenseFunding = useMemo(() => {
         let remainingAmount = amount;
 
-        return activeMilestones.map((milestone) => {
-            const currentFunding = Number(milestone.currentFunding || 0);
-            const targetAmount = Number(milestone.price || 0);
+        return activeItems.map((item) => {
+            const currentFunding = Number(item.currentFunding || 0);
+            const targetAmount = Number(item.price || 0);
             const remainingToTarget = Math.max(targetAmount - currentFunding, 0);
             const allocatedAmount = Math.max(Math.min(remainingAmount, remainingToTarget), 0);
 
             remainingAmount -= allocatedAmount;
 
             return {
-                milestoneId: milestone.milestoneId,
+                depenseIndex: item.depenseIndex,
                 amount: allocatedAmount,
             };
         });
-    }, [activeMilestones, amount]);
+    }, [activeItems, amount]);
 
     const redirectToHome = useCallback((showToast = false) => {
         let didNavigate = false;
@@ -199,8 +194,8 @@ const PaymentConfigPage = ({
             throw new Error(String(t("PaymentConfigPage.errors.fundingEnvelopeUnavailable")));
         }
 
-        const effectiveContextId = contextId || entity.id || projectId;
-        const effectiveContextType = normalizeFundingContextType(contextType || entity.getEntityType?.()) || "projects";
+        const effectiveContextId = contextId || entity.id || itemProjectId;
+        const effectiveContextType = normalizeFundingContextType(contextType || entity.getEntityType?.()) || "projects" ;
 
         if (!effectiveContextId) {
             throw new Error(String(t("PaymentConfigPage.errors.noContextId")));
@@ -224,20 +219,19 @@ const PaymentConfigPage = ({
         }
 
         return response;
-    }, [entity, contextId, contextType, projectId]);
+    }, [entity, contextId, contextType, t]);
 
     // Envelopper completePayment dans useCallback pour éviter les dépendances changeantes
     const completePayment = useCallback(async (
         paymentData: Record<string, unknown>,
-        fundingData: Array<{ milestoneId: string; amount: number }>
+        fundingData: DepenseFunding[],
     ) => {
         try {
             //  Enregistrer les financements dans Answer (si answerId disponible)
-            if (answerId && api) {
+            if (itemAnswerId && api) {
                 // Préparer les données structurées pour le hook
-                const milestoneFundingData = fundingData.map((f) => ({
-                    milestoneId: f.milestoneId,
-                    milestoneIndex: 0, // Sera calculé dans le hook
+                const itemFundingData = fundingData.map((f) => ({
+                    depenseIndex: f.depenseIndex,
                     amount: f.amount,
                 }));
 
@@ -245,8 +239,8 @@ const PaymentConfigPage = ({
                 // via api.answer({id}) en interne et utilise `answer.updateField` pour
                 // la mutation atomique de chaque dépense.
                 const saved = await saveContribution(
-                    answerId,
-                    milestoneFundingData,
+                    itemAnswerId,
+                    itemFundingData,
                     {
                         type: contributorType,
                         name: contributorName,
@@ -280,7 +274,7 @@ const PaymentConfigPage = ({
             //scheduleRedirectToHome(3000, false);
             await refreshAfterContributionSave();
         }
-    }, [answerId, api, contributorType, contributorName, contributorId, t, onPaymentSuccess, saveContribution, refreshAfterContributionSave]);
+    }, [itemAnswerId, api, contributorType, contributorName, contributorId, t, onPaymentSuccess, saveContribution, refreshAfterContributionSave]);
 
     // Récupérer les organisations où l'utilisateur courant est admin (recherche server-side)
     const currentUserEntity = (me && isUser(me) ? me : null) as User | null;
@@ -338,15 +332,15 @@ const PaymentConfigPage = ({
                 const paymentData = buildHelloAssoPaymentData(
                     {
                         amount,
-                        projectName,
-                        projectId,
-                        milestoneIds: Array.from(activeMilestoneIds),
+                        resourceName,
+                        resourceId,
+                        itemsIds: Array.from(activeItemsIds),
                         contributorType: contributorType as "citoyens" | "organizations",
                         organizationId: contributorId || undefined,
                     },
                     helloAssoPaymentId
                 );
-                completePayment(paymentData, milestoneFunding);
+                completePayment(paymentData, depenseFunding);
             } else if (verification.status === "failed") {
                 console.error("Paiement HelloAsso échoué");
                 clearInterval(verifyInterval);
@@ -362,7 +356,7 @@ const PaymentConfigPage = ({
         }, 5000);
 
         return () => clearInterval(verifyInterval);
-    }, [isVerifyingPayment, helloAssoPaymentId, amount, projectName, projectId, activeMilestoneIds, contributorType, contributorId, t, completePayment, milestoneFunding]);
+    }, [isVerifyingPayment, helloAssoPaymentId, amount, resourceName, resourceId, activeItemsIds, contributorType, contributorId, t, completePayment, depenseFunding]);
 
 
     const isFormComplete = Boolean(
@@ -375,12 +369,12 @@ const PaymentConfigPage = ({
         transactionId,
         method,
         amount,
-        projectName,
-        milestones: activeMilestones.map((m) => {
-            const allocation = milestoneFunding.find((mf) => mf.milestoneId === m.milestoneId);
+        resourceName,
+        items: activeItems.map((i) => {
+            const allocation = depenseFunding.find((df) => df.depenseIndex === i.depenseIndex);
             return {
-                id: m.milestoneId,
-                name: m.name,
+                id: i.itemId,
+                name: i.name,
                 amount: allocation?.amount || 0,
             };
         }),
@@ -405,7 +399,7 @@ const PaymentConfigPage = ({
                 ...buildPaymentData("stripe", String(stripeData.transactionId || `stripe_${Date.now()}`)),
                 ...stripeData,
             };
-            completePayment(paymentData, milestoneFunding);
+            completePayment(paymentData, depenseFunding);
         } catch (error) {
             console.error("Erreur financement Stripe via fundingEnvelope:", error);
             showErrorToast(error, "PaymentConfigPage.toasts.stripeError.title", t);
@@ -423,9 +417,9 @@ const PaymentConfigPage = ({
             // Préparer la configuration HelloAsso
             const helloAssoConfig = {
                 amount,
-                projectName,
-                projectId,
-                milestoneIds: Array.from(activeMilestoneIds),
+                resourceName,
+                resourceId,
+                itemsIds: Array.from(activeItemsIds),
                 contributorType: contributorType as "citoyens" | "organizations",
                 organizationId: contributorId || undefined,
             };
@@ -536,29 +530,29 @@ const PaymentConfigPage = ({
 
             <div className="bg-linear-to-r from-primary/20 to-accent/20 rounded-xl p-6 space-y-4">
                 <div className="flex items-start gap-4">
-                    {projectImage && (
-                        <img src={projectImage} alt={projectName} className="w-20 h-20 rounded-lg object-cover" />
+                    {resourceImage && (
+                        <img src={resourceImage} alt={resourceName} className="w-20 h-20 rounded-lg object-cover" />
                     )}
                     <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-foreground">{projectName}</h3>
+                        <h3 className="text-lg font-semibold text-foreground">{resourceName}</h3>
                         <p className="text-3xl font-bold text-primary">{amount}€</p>
                         <p className="text-sm text-muted-foreground">
-                            {activeMilestones.length} milestone{activeMilestones.length > 1 ? "s" : ""} selectionne{activeMilestones.length > 1 ? "s" : ""}
+                            {activeItems.length} item{activeItems.length > 1 ? "s" : ""} selectionne{activeItems.length > 1 ? "s" : ""}
                         </p>
                     </div>
                 </div>
 
-                {activeMilestones.length > 0 && (
+                {activeItems.length > 0 && (
                     <div className="space-y-2 border-t border-border/50 pt-4">
                         <p className="text-sm font-medium text-foreground">{t("PaymentConfigPage.milestonesLabel")}</p>
                         <div className="grid grid-cols-1 gap-2">
-                            {activeMilestones.map((m) => {
-                                const allocation = milestoneFunding.find(mf => mf.milestoneId === m.milestoneId);
+                            {activeItems.map((i) => {
+                                const allocation = depenseFunding.find(df => df.depenseIndex === i.depenseIndex);
                                 const allocatedAmount = allocation?.amount || 0;
                                 return (
-                                    <div key={m.milestoneId} className="bg-background/50 rounded-lg p-3">
+                                    <div key={i.depenseIndex} className="bg-background/50 rounded-lg p-3">
                                         <div className="flex items-center justify-between">
-                                            <span className="font-medium text-sm">{m.name}</span>
+                                            <span className="font-medium text-sm">{i.name}</span>
                                             <Badge variant="outline">{formatNumber(allocatedAmount)}€</Badge>
                                         </div>
                                     </div>

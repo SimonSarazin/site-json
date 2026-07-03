@@ -113,8 +113,8 @@ export default function ActionsSection({ id, props }: { id?: string; props: Acti
   const projectEntity: Project | null =
     profileCtx?.entity && isProject(profileCtx.entity) ? profileCtx.entity : null;
   const cagnottePerms = useCagnottePermissions(permissionEntity, {
-    hasActiveMilestones: (fundingData?.milestones ?? []).some((m) => (m as { status?: string }).status !== 'close'),
-    projectId: String(fundingData?.selectedProject?.id || id || '').trim(),
+    hasActiveItems: (fundingData?.milestones ?? []).some((m) => (m as { status?: string }).status !== 'close'),
+    resourceId: String(fundingData?.selectedProject?.id || id || '').trim(),
   });
   const cagnotteCtx = useCagnotteContext();
   const isConnected = cagnottePerms.isConnected;

@@ -169,8 +169,8 @@ export default function FinanceSection({ id, props }: { id?: string; props: Fina
   const profileCtx = useOptionalProfileEntity();
   const permissionEntity = profileCtx?.entity ?? entity;
   const cagnottePerms = useCagnottePermissions(permissionEntity, {
-    hasActiveMilestones: openMilestones.length > 0,
-    projectId,
+    hasActiveItems: openMilestones.length > 0,
+    resourceId: projectId,
   });
   const cagnotteCtx = useCagnotteContext();
 
@@ -583,7 +583,7 @@ export default function FinanceSection({ id, props }: { id?: string; props: Fina
               <div className="flex flex-wrap items-center gap-1">
                 <CagnotteDialog
                   totalAmount={financeTotalFunding}
-                  defaultProjectId={selectedProjectContextId || undefined}
+                  defaultResourceId={selectedProjectContextId || undefined}
                   onRefresh={() => {
                     void refetchFundingEnvelope();
                   }}

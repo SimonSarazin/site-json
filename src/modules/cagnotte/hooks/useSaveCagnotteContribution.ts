@@ -16,15 +16,8 @@ import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useCocolight } from "@/hooks/useCocolight";
 import { launchConfettiBurst } from "@/lib/confetti";
-import { asRecord as toRecord } from "@/modules/cagnotte/utils/dataTransform";
-
-interface MilestoneFunding {
-  milestoneId: string;
-  milestoneIndex: number;
-  amount: number;
-  name?: string;
-  price?: number;
-}
+import {asRecord as toRecord, toSafeInt} from "@/modules/cagnotte/utils/dataTransform";
+import {DepenseFunding} from "@/modules/cagnotte/types.ts";
 
 interface FinancerEntry {
   amount: number;
@@ -37,7 +30,7 @@ interface FinancerEntry {
   [k: string]: unknown;
 }
 
-interface financerData {
+interface FinancerData {
   id: string;
   name: string;
   type: string;
@@ -45,7 +38,7 @@ interface financerData {
 
 function createFinancerEntry(params: {
   amount: number;
-  financerData: financerData;
+  financerData: FinancerData;
   userId: string;
 }): FinancerEntry {
   return {
@@ -88,10 +81,10 @@ function getFormIdFromAnswerData(currentAnswerData: AnswerItemNormalized): strin
   return "";
 }
 
-function applyMilestoneFundingsToAnswerData(
+function applyDepenseFundingsToAnswerData(
   currentAnswerData: AnswerItemNormalized,
-  milestoneFundings: MilestoneFunding[],
-  financerData: financerData,
+  depenseFundings: DepenseFunding[],
+  financerData: FinancerData,
   userId: string,
 ) {
   const cloned = JSON.parse(JSON.stringify(currentAnswerData ?? {})) as Record<string, unknown>;
@@ -100,50 +93,24 @@ function applyMilestoneFundingsToAnswerData(
   const depensesRaw = aapStep1.depense;
   const depenses = Array.isArray(depensesRaw) ? depensesRaw : depensesRaw ? [depensesRaw] : [];
 
-  const depenseMap = new Map<string, Record<string, unknown>>();
-  depenses.forEach((depense) => {
-    const depenseRecord = toRecord(depense);
-    const milestoneId = typeof depenseRecord.milestone === "string" ? depenseRecord.milestone : "";
-    if (milestoneId) {
-      depenseMap.set(milestoneId, depenseRecord);
-    }
-  });
+  depenseFundings.forEach(({ depenseIndex, amount }) => {
+    if (amount <= 0 || !depenseIndex) return;
 
-  milestoneFundings.forEach(({ milestoneId, amount }) => {
-    if (amount <= 0 || !milestoneId) return;
-
-    const depense = depenseMap.get(milestoneId);
+    const depense = depenses[toSafeInt(depenseIndex)];
     if (!depense) return;
 
     const currentFinancers = Array.isArray(depense.financer) ? depense.financer : [];
     const financerEntry = createFinancerEntry({ amount, financerData, userId });
 
     depense.financer = [...currentFinancers, financerEntry];
-    depenseMap.set(milestoneId, depense);
+    depenses[toSafeInt(depenseIndex)] = depense;
   });
 
-  aapStep1.depense = Array.from(depenseMap.values());
+  aapStep1.depense = depenses;
   answers.aapStep1 = aapStep1;
   cloned.answers = answers;
 
   return cloned;
-}
-
-function resolveDepenseIndex(params: {
-  depenses: Array<Record<string, unknown>>;
-  milestoneId: string;
-  preferredIndex?: number;
-}): number {
-  const { depenses, milestoneId, preferredIndex } = params;
-
-  if (Number.isInteger(preferredIndex) && preferredIndex! >= 0 && preferredIndex! < depenses.length) {
-    const preferredDepense = toRecord(depenses[preferredIndex as number]);
-    if (String(preferredDepense.milestone ?? "").trim() === milestoneId) {
-      return preferredIndex as number;
-    }
-  }
-
-  return depenses.findIndex((d) => String(d.milestone ?? "").trim() === milestoneId);
 }
 
 export const useSaveCagnotteContribution = () => {
@@ -158,8 +125,8 @@ export const useSaveCagnotteContribution = () => {
   const saveViaUpdatePathValue = useCallback(
     async (
       answer: Answer,
-      milestoneFundings: MilestoneFunding[],
-      financerData: financerData
+      depenseFundings: DepenseFunding[],
+      financerData: FinancerData
     ): Promise<boolean> => {
       try {
         if (!api) {
@@ -171,40 +138,25 @@ export const useSaveCagnotteContribution = () => {
         }
         // `answer.serverData` est typé AnswerItemNormalized (rempli par api.answer({id}) qui
         // appelle get() automatiquement).
-        const currentAnswerData = answer.serverData;
-        const answers = (currentAnswerData.answers as Record<string, unknown> | undefined) ?? {};
-        const aapStep1 = (answers.aapStep1 as Record<string, unknown>) || {};
-        const depensesRaw = aapStep1.depense;
-        const depenses = Array.isArray(depensesRaw)
-          ? (depensesRaw as Array<Record<string, unknown>>)
-          : depensesRaw && typeof depensesRaw === "object"
-            ? [depensesRaw as Record<string, unknown>]
-            : [];
 
         let successCount = 0;
         const errors: string[] = [];
 
-        for (const { milestoneId, amount, milestoneIndex } of milestoneFundings) {
+        for (const { depenseIndex, amount } of depenseFundings) {
           if (amount <= 0) continue;
 
-          const depenseIndex = resolveDepenseIndex({
-            depenses,
-            milestoneId,
-            preferredIndex: milestoneIndex,
-          });
-
           if (depenseIndex === -1) {
-            errors.push(String(t("toasts.errors.noMilestoneForId", undefined, { milestoneId })));
+            errors.push(String(t("toasts.errors.noMilestoneForId", undefined, { depenseIndex })));
             continue;
           }
           const financerEntry = createFinancerEntry({ amount, financerData, userId });
 
           if (!Number.isFinite(financerEntry.amount) || financerEntry.amount <= 0) {
-            errors.push(String(t("toasts.errors.invalidAmount", undefined, { milestoneId })));
+            errors.push(String(t("toasts.errors.invalidAmount", undefined, { depenseIndex })));
             continue;
           }
           if (!financerEntry.id || !financerEntry.user) {
-            errors.push(String(t("toasts.errors.invalidFinancer", undefined, { milestoneId })));
+            errors.push(String(t("toasts.errors.invalidFinancer", undefined, { depenseIndex })));
             continue;
           }
 
@@ -248,8 +200,8 @@ export const useSaveCagnotteContribution = () => {
   const saveViaDraftAndSave = useCallback(
     async (
       answer: Answer,
-      milestoneFundings: MilestoneFunding[],
-      financerData: financerData
+      depenseFundings: DepenseFunding[],
+      financerData: FinancerData
     ): Promise<boolean> => {
       try {
         const userId = me?.serverData?.id;
@@ -257,7 +209,7 @@ export const useSaveCagnotteContribution = () => {
           throw new Error(String(t("toasts.errors.notLoggedIn")));
         }
         const currentAnswerData = answer.serverData;
-        const updatedAnswerData = applyMilestoneFundingsToAnswerData(currentAnswerData, milestoneFundings, financerData, userId);
+        const updatedAnswerData = applyDepenseFundingsToAnswerData(currentAnswerData, depenseFundings, financerData, userId);
         const formId = getFormIdFromAnswerData(currentAnswerData);
 
         if (api && formId) {
@@ -291,11 +243,11 @@ export const useSaveCagnotteContribution = () => {
   const saveContribution = useCallback(
     async (
       answerOrId: Answer | string,
-      milestoneFundings: MilestoneFunding[],
-      financerData: financerData
+      depenseFundings: DepenseFunding[],
+      financerData: FinancerData
     ): Promise<boolean> => {
       try {
-        if (!milestoneFundings.length) throw new Error(String(t("toasts.errors.noMilestoneFundings")));
+        if (!depenseFundings.length) throw new Error(String(t("toasts.errors.noMilestoneFundings")));
         if (typeof answerOrId === "string" && !answerOrId.trim()) {
           throw new Error(String(t("toasts.errors.noAnswerId")));
         }
@@ -310,12 +262,12 @@ export const useSaveCagnotteContribution = () => {
         if (!answer.id) throw new Error(String(t("toasts.errors.noAnswerId")));
 
         try {
-          const success = await saveViaUpdatePathValue(answer, milestoneFundings, financerData);
+          const success = await saveViaUpdatePathValue(answer, depenseFundings, financerData);
           if (success) {
             showSuccessToast("toasts.contributionSaved.title", t, {
-              count: String(milestoneFundings.length),
+              count: String(depenseFundings.length),
             });
-            launchConfettiBurst({ originY: 0.36, spread: 78, count: Math.min(36, 18 + milestoneFundings.length * 6) });
+            launchConfettiBurst({ originY: 0.36, spread: 78, count: Math.min(36, 18 + depenseFundings.length * 6) });
             return true;
           }
         } catch (pathError) {

@@ -1899,6 +1899,15 @@ const PerformanceConfig = z.object({
   criticalCSS: z.boolean().default(true),
 });
 
+const CagnotteModuleConfig = z.object({
+    defaultType: z.enum(["standard", "aac"]).optional().default("standard"),
+    predefinedAmounts: z.array(z.number()).optional(),
+});
+
+export type CagnotteModuleConfig = z.infer<typeof CagnotteModuleConfig>;
+
+
+
 /*───────────────────────────────────────────────────────────────*/
 /* 10. SiteConfig – racine                                        */
 /*───────────────────────────────────────────────────────────────*/
@@ -1983,6 +1992,7 @@ export const SiteConfig = z.object({
   }).optional(),
   ampli: z.array(AmpliConfigSchema).optional(),
   commandPalette: CommandPaletteConfigSchema.optional(),
+  cagnotteModuleConfig: CagnotteModuleConfig.optional(),
 });
 export type SiteConfig = z.infer<typeof SiteConfig>;
 

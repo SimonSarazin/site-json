@@ -3,23 +3,15 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-
-interface CagnotteMilestone {
-  milestoneId: string;
-  name: string;
-  description?: string;
-  price: number;
-  currentFunding: number;
-  status?: string;
-}
+import { CagnotteFundableItem } from "../../types";
 
 interface CagnotteMilestoneListProps {
   /** Milestones à afficher (typiquement filtrés sur non-close + visibles selon le contexte). */
-  milestones: CagnotteMilestone[];
+  items: CagnotteFundableItem[] | undefined;
   /** Set des milestones activés (cochés) pour la contribution. */
-  activeMilestoneIds: Set<string>;
+  activeItemIds: Set<string>;
   /** Callback de toggle au click sur une carte. */
-  onMilestoneClick: (milestoneId: string) => void;
+  onItemClick: (itemId: string) => void;
 }
 
 /**
@@ -27,15 +19,15 @@ interface CagnotteMilestoneListProps {
  * `CagnotteDialog`. Affiche pour chaque milestone : checkbox custom, nom,
  * description, montants courant/cible, progress bar, badge status.
  */
-export function CagnotteMilestoneList({
-  milestones,
-  activeMilestoneIds,
-  onMilestoneClick,
+export function CagnotteItemList({
+  items,
+  activeItemIds,
+  onItemClick,
 }: CagnotteMilestoneListProps) {
   useLoadNamespace("modules/cagnotte");
   const t = useT("modules/cagnotte");
 
-  if (milestones.length === 0) return null;
+  if (items && items.length === 0) return null;
 
   return (
     <div className="space-y-3">
@@ -43,12 +35,12 @@ export function CagnotteMilestoneList({
         {t("CagnotteDialog.labels.milestonesTitle")}
       </p>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {milestones.map((milestone) => {
-          const isActive = activeMilestoneIds.has(milestone.milestoneId);
+        {(items || []).map((item) => {
+          const isActive = activeItemIds.has(item.itemId);
           return (
             <div
-              key={milestone.milestoneId}
-              onClick={() => onMilestoneClick(milestone.milestoneId)}
+              key={item.itemId}
+              onClick={() => onItemClick(item.itemId)}
               className={`p-4 rounded-lg cursor-pointer transition-all space-y-2 ${
                 isActive
                   ? "bg-primary/20 border-primary/50 border-2"
@@ -68,11 +60,11 @@ export function CagnotteMilestoneList({
                 </div>
                 <div className="flex-1 min-w-0">
                   <h4 className="text-sm font-semibold text-foreground line-clamp-1">
-                    {milestone.name}
+                    {item.name}
                   </h4>
-                  {milestone.description && (
+                  {item.description && (
                     <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
-                      {milestone.description}
+                      {item.description}
                     </p>
                   )}
                 </div>
@@ -85,13 +77,13 @@ export function CagnotteMilestoneList({
                     {t("CagnotteDialog.labels.fundingLabel")}
                   </span>
                   <span className="font-semibold text-foreground">
-                    {milestone.currentFunding}€ / {milestone.price}€
+                    {item.currentFunding}€ / {item.price}€
                   </span>
                 </div>
                 <Progress
                   value={
-                    milestone.price > 0
-                      ? (milestone.currentFunding / milestone.price) * 100
+                    item.price > 0
+                      ? (item.currentFunding / item.price) * 100
                       : 0
                   }
                   className="h-2"
@@ -99,9 +91,9 @@ export function CagnotteMilestoneList({
               </div>
 
               {/* Status badge */}
-              {milestone.status && (
+              {item.status && (
                 <Badge variant="outline" className="text-xs">
-                  {milestone.status}
+                  {item.status}
                 </Badge>
               )}
             </div>

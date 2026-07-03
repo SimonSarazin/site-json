@@ -16,31 +16,31 @@ import {
 } from "@/components/ui/tooltip";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import type { OrgProject } from "@/modules/cagnotte/hooks/useOrganizationProjectsWithAnswers";
+import {CagnotteResource} from "@/modules/cagnotte/types.ts";
 
-interface CagnotteProjectSelectorProps {
+interface CagnotteResourceSelectorProps {
   /** Entité orga courante. Si `null` → affiche un placeholder "no organization". */
   hasEntity: boolean;
   /** `true` tant que la liste des projets se charge. */
   isLoading: boolean;
   /** Liste des projets typés. */
-  projects: OrgProject[];
+  resources: CagnotteResource[];
   /** Projet actuellement sélectionné (peut être `undefined` au mount). */
-  selectedProject: OrgProject | undefined;
+  selectedResource: CagnotteResource | undefined;
   /** Id du projet sélectionné (state controlled). */
-  selectedProjectId: string;
-  /** Callback pour changer le projet sélectionné. */
-  onSelectedProjectIdChange: (id: string) => void;
+  selectedResourceId: string;
+  /** Callback pour changer le projet/proposition sélectionné. */
+  onSelectedResourceIdChange: (id: string) => void;
   /** Si `true` → mode read-only (pas de select, juste affichage du projet). */
-  hideProjectSelect: boolean;
-  /** Map projetId → montants agrégés (priorité sur `OrgProject.cagnotte{Total,Target}Amount`). */
-  fundingByProjectId: Map<string, { totalFunding: number; totalCost: number }>;
-  /** `true` si le projet sélectionné est déjà le projectModalId courant → cache le bouton save. */
-  isCurrentProjectModalId: boolean;
+  hideResourceSelect: boolean;
+  /** Map resourceId → montants agrégés. */
+  fundingByResourceId: Map<string, { totalFunding: number; totalCost: number }>;
+  /** `true` si le projet/proposition sélectionné est déjà le resourceModalId courant → cache le bouton save. */
+  isCurrentResourceModalId: boolean;
   /** `true` pendant la sauvegarde "main cagnotte". */
-  isSavingProjectModal: boolean;
+  isSavingResourceModal: boolean;
   /** Callback déclenché par le bouton "definir comme cagnotte principale". */
-  onSaveProjectModal: () => void;
+  onSaveResourceModal: () => void;
 }
 
 /**
@@ -49,22 +49,22 @@ interface CagnotteProjectSelectorProps {
  * Gère 4 états visuels :
  *  1. Pas d'entité → message "aucune organisation".
  *  2. Loading → spinner + label.
- *  3. Projets chargés + `hideProjectSelect` → affichage read-only du projet.
- *  4. Projets chargés + select interactif → dropdown + bouton "main cagnotte".
+ *  3. Projets/Propositions chargés + `hideResourceSelect` → affichage read-only du projet.
+ *  4. Projets/Propositions chargés + select interactif → dropdown + bouton "main cagnotte".
  */
-export function CagnotteProjectSelector({
+export function CagnotteResourceSelector({
   hasEntity,
   isLoading,
-  projects,
-  selectedProject,
-  selectedProjectId,
-  onSelectedProjectIdChange,
-  hideProjectSelect,
-  fundingByProjectId,
-  isCurrentProjectModalId,
-  isSavingProjectModal,
-  onSaveProjectModal,
-}: CagnotteProjectSelectorProps) {
+  resources,
+  selectedResource,
+  selectedResourceId,
+  onSelectedResourceIdChange,
+  hideResourceSelect,
+  fundingByResourceId,
+  isCurrentResourceModalId,
+  isSavingResourceModal,
+  onSaveResourceModal,
+}: CagnotteResourceSelectorProps) {
   useLoadNamespace("modules/cagnotte");
   const t = useT("modules/cagnotte");
   const untitled = String(t("CagnotteDialog.fallbacks.untitled"));
@@ -74,7 +74,7 @@ export function CagnotteProjectSelector({
       <div className="flex items-center gap-2">
         <Briefcase className="w-5 h-5 text-primary" />
         <Label className="text-sm font-medium text-foreground">
-          {hideProjectSelect
+          {hideResourceSelect
             ? t("CagnotteDialog.labels.supportedProject")
             : t("CagnotteDialog.labels.selectProject")}
         </Label>
@@ -89,35 +89,35 @@ export function CagnotteProjectSelector({
           <Loader className="w-4 h-4 animate-spin" />
           <span className="text-sm">{t("CagnotteDialog.labels.loadingProjects")}</span>
         </div>
-      ) : projects.length > 0 ? (
-        hideProjectSelect ? (
+      ) : resources.length > 0 ? (
+        hideResourceSelect ? (
           <div className="h-10 rounded-md border bg-muted/20 px-3 flex items-center gap-2">
-            {selectedProject?.image ? (
+            {selectedResource?.image ? (
               <img
-                src={selectedProject.image}
-                alt={selectedProject.name || untitled}
+                src={selectedResource.image}
+                alt={selectedResource.name || untitled}
                 className="w-5 h-5 rounded object-cover"
               />
             ) : null}
             <span className="text-sm font-medium truncate">
-              {selectedProject?.name || untitled}
+              {selectedResource?.name || untitled}
             </span>
           </div>
         ) : (
           <div className="flex items-end gap-2">
             <div className="flex-1">
-              <Select value={selectedProjectId} onValueChange={onSelectedProjectIdChange}>
+              <Select value={selectedResourceId} onValueChange={onSelectedResourceIdChange}>
                 <SelectTrigger className="h-10">
-                  {selectedProject ? (
+                  {selectedResource ? (
                     <div className="flex items-center gap-2">
-                      {selectedProject.image && (
+                      {selectedResource.image && (
                         <img
-                          src={selectedProject.image}
-                          alt={selectedProject.name || untitled}
+                          src={selectedResource.image}
+                          alt={selectedResource.name || untitled}
                           className="w-5 h-5 rounded object-cover"
                         />
                       )}
-                      <span>{selectedProject.name || untitled}</span>
+                      <span>{selectedResource.name || untitled}</span>
                     </div>
                   ) : (
                     <SelectValue
@@ -126,19 +126,19 @@ export function CagnotteProjectSelector({
                   )}
                 </SelectTrigger>
                 <SelectContent>
-                  {projects.map((project) => {
-                    if (!project.id) return null;
-                    const funding = fundingByProjectId.get(project.id);
-                    const totalFunding = funding?.totalFunding ?? project.cagnotteTotalAmount;
-                    const totalCost = funding?.totalCost ?? project.cagnotteTargetAmount;
-                    const displayName = project.name || untitled;
+                  {resources.map((resource) => {
+                    if (!resource.id) return null;
+                    const funding = fundingByResourceId.get(resource.id);
+                    const totalFunding = funding?.totalFunding ?? resource.resourceFinancedAmount;
+                    const totalCost = funding?.totalCost ?? resource.resourceTotalAmount;
+                    const displayName = resource.name || untitled;
                     return (
-                      <SelectItem key={project.id} value={project.id}>
+                      <SelectItem key={resource.id} value={resource.id}>
                         <div className="flex items-center justify-between gap-3 w-full">
                           <div className="flex items-center gap-2">
-                            {project.image && (
+                            {resource.image && (
                               <img
-                                src={project.image}
+                                src={resource.image}
                                 alt={displayName}
                                 className="w-5 h-5 rounded object-cover"
                               />
@@ -157,18 +157,18 @@ export function CagnotteProjectSelector({
             </div>
 
             {/* Bouton "définir comme cagnotte principale" (icône + tooltip) */}
-            {selectedProjectId && !isCurrentProjectModalId && (
+            {selectedResourceId && !isCurrentResourceModalId && (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      onClick={onSaveProjectModal}
-                      disabled={isSavingProjectModal}
+                      onClick={onSaveResourceModal}
+                      disabled={isSavingResourceModal}
                       variant="secondary"
                       size="icon"
                       className="h-10 w-10"
                     >
-                      {isSavingProjectModal ? (
+                      {isSavingResourceModal ? (
                         <Loader className="w-4 h-4 animate-spin" />
                       ) : (
                         <Save className="w-4 h-4" />

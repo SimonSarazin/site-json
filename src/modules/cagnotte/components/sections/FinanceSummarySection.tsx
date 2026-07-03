@@ -77,8 +77,8 @@ export default function FinanceSummarySection({ id, props }: { id?: string; prop
   const profileCtx = useOptionalProfileEntity();
   const permissionEntity = profileCtx?.entity ?? entity;
   const cagnottePerms = useCagnottePermissions(permissionEntity, {
-    hasActiveMilestones: data.milestones.some((m) => m.status !== 'close'),
-    projectId: props?.idProjet || fundingData?.selectedProject?.id || '',
+    hasActiveItems: data.milestones.some((m) => m.status !== 'close'),
+    resourceId: props?.idProjet || fundingData?.selectedProject?.id || '',
   });
   if (isLoading) {
     return (
@@ -138,7 +138,7 @@ export default function FinanceSummarySection({ id, props }: { id?: string; prop
             {cagnottePerms.canContribute ? (
               <CagnotteDialog
                 totalAmount={data.finance.totalFunding}
-                defaultProjectId={props?.idProjet}
+                defaultResourceId={props?.idProjet}
                 onRefresh={() => {
                   void refetchFundingEnvelope();
                 }}

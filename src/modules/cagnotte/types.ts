@@ -135,3 +135,59 @@ export type PendingDeleteActionContext = {
   milestoneId: string;
   action: FundingAction;
 };
+
+export type CagnotteType = "standard" | "aac" ;
+export const DEFAULT_CAGNOTTE_TYPE: CagnotteType = "standard";
+export type CagnotteTypeConfig = {
+  selectorType: "proposition" | "project",
+  financerTags: string[],
+  defaultPredefinedAmounts: number[],
+};
+
+export const CAGNOTTE_TYPE_CONFIGS: Record<CagnotteType, CagnotteTypeConfig> = {
+  standard: {
+    selectorType: "project",
+    financerTags: [],
+    defaultPredefinedAmounts: [10, 20, 30, 50]
+  },
+  aac: {
+    selectorType: "proposition",
+    financerTags: ["financeur"],
+    defaultPredefinedAmounts: [10, 20, 30, 50]
+  }
+};
+
+// Représente un projet ou une proposition
+export interface CagnotteResource {
+  fromType: "project" | "proposition";
+  id: string;
+  name: string;
+  image?: string;
+  answerId?: string;
+  projectId?: string;
+  resourceTotalAmount: number;
+  resourceFinancedAmount: number;
+  items: CagnotteFundableItem[];
+}
+
+// Représente un Milestone ou une dépense
+export interface CagnotteFundableItem {
+  fromType: "milestone" | "depense";
+  itemId: string;
+  milestoneId: string;
+  depenseIndex: number;
+  name: string;
+  description?: string;
+  price: number;
+  status: string;
+  actions: FundingAction[];
+  currentFunding: number;
+}
+
+export interface DepenseFunding {
+  itemId?: string;
+  depenseIndex: number;
+  amount: number;
+  name?: string;
+  price?: number;
+}
