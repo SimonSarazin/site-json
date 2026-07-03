@@ -34,8 +34,8 @@ const MAPTILER_ATTRIBUTION =
   '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> ' +
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>';
 
-export const MAPTILER_DEFAULT_STYLE_LIGHT = "streets-v2";
-export const MAPTILER_DEFAULT_STYLE_DARK = "streets-v2-dark";
+export const MAPTILER_DEFAULT_STYLE_LIGHT = "streets-v4";
+export const MAPTILER_DEFAULT_STYLE_DARK = "streets-v4-dark";
 
 function maptilerLayer(style: string, apiKey: string): TileLayerSpec {
   return {

@@ -1506,10 +1506,12 @@
                   }
                 },
                 "map": {
+                  "layout": "split",
                   "marker": {
-                    "useItemImage": true,
-                    "style": "pin",
-                    "color": "primary"
+                    "useItemImage": false,
+                    "style": "circle",
+                    "color": "secondary",
+                    "borderColor": "background"
                   }
                 }
               }
