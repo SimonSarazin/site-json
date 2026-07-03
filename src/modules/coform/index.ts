@@ -26,7 +26,7 @@ export { TextField, TextAreaField, RadioField, CheckboxField } from "./component
 export { MultiCheckboxPlusField } from "./components/MultiCheckboxPlusField";
 export { CommonTableField } from "./components/CommonTableField";
 export { MultiEvalChartDialog } from "./components/MultiEvalChartDialog";
-export { MultiEvalRadarCarousel } from "./components/MultiEvalRadarCarousel";
+export { MultiEvalRadarTabs } from "./components/MultiEvalRadarTabs";
 export { AnswerActivityDialog } from "./components/AnswerActivityDialog";
 export { CoFormModal, type CoFormModalProps } from "./components/CoFormModal";
 

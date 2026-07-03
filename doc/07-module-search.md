@@ -43,6 +43,7 @@
     - [CardProfile — authentification requise](#cardprofile--authentification-requise)
   - [Mode détails (detailsMode)](#mode-détails-detailsmode)
     - [PreviewPoiAmenities — fiche détail POI (`preview.type: "poi-amenities"`)](#previewpoiamenities--fiche-détail-poi-previewtype-poi-amenities)
+  - [Facettes cliquables & navigation par filtre (`dropdownFilters`)](#facettes-cliquables--navigation-par-filtre-dropdownfilters)
   - [SearchMap et vue carte](#searchmap-et-vue-carte)
   - [SearchBubbleChart](#searchbubblechart)
   - [FranceRegionsMap](#franceregionsmap)
@@ -107,6 +108,7 @@ src/modules/search/
 │   ├── ActiveFiltersBar.tsx       # Barre des filtres actifs (chips supprimables)
 │   ├── FilterDropdown.tsx         # Dropdown sélection filtre individuel
 │   ├── Preview.tsx                # Dispatcher → variante de preview
+│   ├── ClickableFacet.tsx        # Primitive : valeur cliquable → filtre (dérivé du field)
 │   ├── SwitchDetailsMode.tsx      # Ouvre la fiche en drawer ou dialog
 │   ├── SearchMap.tsx              # Carte Leaflet avec clusters et popups
 │   ├── SearchMapWrapper.tsx       # Wrapper (lazy-loads Leaflet via useClientModule)
@@ -141,10 +143,12 @@ src/modules/search/
 │   └── preview/                   # Variantes de CONTENU détail (preview.type)
 │       ├── PreviewDefault.tsx     # Prévisualisation standard (type: "default")
 │       ├── PreviewPoiAmenities.tsx # Fiche détail POI aménagements (type: "poi-amenities")
-│       └── PreviewCoformAnswer.tsx # Fiche détail réponse CoForm (type: "coform-answer")
+│       ├── PreviewCoformAnswer.tsx # Fiche détail réponse CoForm (type: "coform-answer")
+│       └── PreviewFacets.tsx       # Preview générique data-driven (type: "facets")
 │
 ├── contexts/
 │   ├── pageFilters.ts             # PageFilters (createPageActionsState) + usePageFilters
+│   ├── previewNav.ts              # PreviewNavContext (previewParam + closeRaw) — facettes
 │   ├── SearchPropsContext.tsx     # Context des props de configuration
 │   └── SearchPropsProvider.tsx   # Provider du context
 │
@@ -161,6 +165,7 @@ src/modules/search/
 │   ├── useZonesQuery.ts           # Query zones pour le ZoneSelector
 │   ├── useItem.tsx                # Fusion données serveur + defaults
 │   ├── useSearchProps.tsx         # Accès typé aux props via SearchPropsContext
+│   ├── useDropdownFilterNav.ts   # Navigation par facette route-aware (même/cross-route)
 │   └── loadLeaflet.ts             # Import dynamique Leaflet (client only)
 │
 ├── lib/
@@ -171,7 +176,8 @@ src/modules/search/
 │   ├── canonicalBaseParams.ts     # canonicalSearchProStaticBaseParams()
 │   ├── filterToggles.ts           # Logique des toggles de filtres
 │   ├── schedules.ts               # groupSchedules — créneaux CoForm groupés par jour (Lun→Dim)
-│   └── coformAnswer.ts            # parseCoformAnswer / getStatusStyle — partagé Card+Preview
+│   ├── coformAnswer.ts            # parseCoformAnswer / getStatusStyle — partagé Card+Preview
+│   └── dropdownFilters.ts        # helpers purs facettes cliquables (resolve/normalize/owner/toState)
 │
 ├── prefetch/
 │   ├── prefetchSearchResults.ts   # prefetchSearchQuery (SSR)
@@ -798,6 +804,8 @@ Les deux composants partagent les mêmes sous-composants (`SearchListView`, `Sea
 
 Grille responsive des résultats. Propriétés CSS grid pilotées par `list.columns.{sm,md,lg,xl}`. Chaque item est rendu par `<SearchCard>` + déclenchement infinite scroll via `lastItemRef` sur le dernier item.
 
+**Sync URL ↔ preview** (`list.previewParam`, défaut `"preview"`) : ouvrir un item écrit `?<previewParam>=<id>` (`{replace}`) → **deep-link / partage / reload** persistants ; l'effet d'auto-ouverture relit ce param (ouvre l'item correspondant) **et** ferme quand le param disparaît (back/forward, nav sœur) → l'état suit toujours l'URL. Pour **plusieurs listes preview sur une même page**, donner à chacune un `previewParam` distinct en config (ex. `"preview-equipements"`) pour éviter la collision. `SearchListView` fournit aussi le `PreviewNavContext` (`{ previewParam, closeRaw }`) consommé par `useDropdownFilterNav` (cf. [§Facettes cliquables](#facettes-cliquables--navigation-par-filtre-dropdownfilters)).
+
 ### Cartes (card variants)
 
 `<SearchCard>` (`components/SearchCard.tsx`) dispatch vers la bonne variante selon `list.card.variant || list.card.type`. **Les variantes sont nommées par DESIGN / FONCTIONNALITÉ, jamais par site** (découplage commit 8cd4070 — les anciens noms `tiers-lieux`, `rezo-la-mer`, `poi-ssbe`, `ssbe`, `card-elts`, `event-rezo-la-mer`, `poi-rezo-la-mer`… ont été supprimés).
@@ -806,7 +814,7 @@ Trois **axes orthogonaux** pilotent le rendu (commit 8cd4070) :
 
 - **`card.type` / `card.variant`** → la carte de liste (`SearchCard`) ;
 - **`card.detailsMode`** → le *conteneur* de détail (`SwitchDetailsMode` : `drawer`/`dialog`) ;
-- **`preview.type`** → le *contenu* du détail rendu DANS ce conteneur (`Preview` : `default`/`poi-amenities`/`coform-answer`).
+- **`preview.type`** → le *contenu* du détail rendu DANS ce conteneur (`Preview` : `default`/`poi-amenities`/`coform-answer`/`event`/`facets`).
 
 | `card.type` (ou `variant`) | Composant | Usage |
 |--------|-----------|-------|
@@ -886,9 +894,11 @@ Le détail d'une entité sélectionnée est **découplé en deux axes** (commit 
 
 | `preview.type` | Composant | Description |
 |----------|-----------|-------------|
-| `default` (défaut) | `PreviewDefault` | Aperçu générique |
+| `default` (défaut) | `PreviewDefault` | Aperçu générique (caractéristiques = filtres tags/type via `props.filters`) |
 | `poi-amenities` | `PreviewPoiAmenities` | Fiche détail POI avec aménagements (ex-`PoiDetailSSBE`, voir ci-dessous) |
 | `coform-answer` | `PreviewCoformAnswer` | Fiche détail réponse CoForm (activité + horaires, ex-`AnswerDetailModeDialog`) |
+| `event` | `PreviewEvent` | Fiche détail événement (actions Participer/Suivre/Éditer) |
+| `facets` | `PreviewFacets` | **Preview générique data-driven** : rend `preview.facets` (champs `serverData` cliquables) — voir [§Facettes cliquables](#facettes-cliquables--navigation-par-filtre-dropdownfilters) |
 
 Chaque contenu de `Preview` borne lui-même sa hauteur/scroll (indépendant du conteneur). `list.preview.fields` surcharge le mappage des IDs de champ CoForm (voir « parser CoForm » ci-dessous).
 
@@ -956,6 +966,61 @@ Colonne latérale :
 **Suppression du champ `subCategory`** (badge `Star`) : retiré de l'interface `PoiDetail` et du rendu.
 
 **Labels traduits** : tous les libellés passent par `t("PreviewPoiAmenities.*")` (namespace `modules/search`). La fonction helper `yesNo(value?)` retourne `t("PreviewPoiAmenities.yes")` / `t("PreviewPoiAmenities.no")` / `"—"` pour les champs booléens des tableaux PMR/PSHS.
+
+**Valeurs cliquables** : catégorie, type de propriété, locaux, utilisateurs et code postal sont rendus via `<ClickableFacet>` (cf. section suivante) — un clic applique le filtre correspondant sur le listing. `PreviewPoiAmenities` n'embarque **plus** de logique de navigation : plus de `getSiteDropdownFilters`/`findFilterOption`/`handleFilterNavigation`/`setTimeout`/path en dur — tout passe par le mécanisme générique ci-dessous.
+
+### Facettes cliquables & navigation par filtre (`dropdownFilters`)
+
+Mécanisme **générique et agnostique de l'entité** : une valeur affichée dans un preview (ou toute carte/cellule) qui correspond à un `dropdownFilter` du `searchHeader` devient **cliquable** pour filtrer le listing — pattern « recherche à facettes » (rebondir d'un équipement vers tous ceux qui partagent une caractéristique).
+
+**Insight clé** : le lien « champ affiché → filtre » existe DÉJÀ en config, car chaque `dropdownFilter` déclare son `field` (le champ `serverData` qu'il indexe). Le filtre est donc **dérivé du `field`**, jamais codé en dur par site/path.
+
+#### `lib/dropdownFilters.ts` — helpers purs (Layer 0)
+
+Source unique, sans React, testée (`dropdownFilters.test.ts`) :
+
+| Export | Rôle |
+|---|---|
+| `keyFor(filterId, optionId)` / `splitKey(key)` | Contrat unique de clé `searchByFields` (`filterId:optionId`), écriture ET lecture |
+| `normalizeFilterValue(s)` | Normalisation **déterministe** : diacritiques + minuscules + suppression des caractères `(`/`)` seuls (garde le contenu : `Individuel(s)`→`individuels`) + variantes d'apostrophe + espaces autour du `/`. **Pas** de matching substring (élimine les faux positifs ordre-dépendants) |
+| `resolveDropdownOption(filter, value)` | id exact → value normalisée → label normalisé → `null` |
+| `getDropdownFilterOwner(config, filterId, preferPathname?)` | Page propriétaire + filtre (scan de tous les `searchHeader`, mergés par id) — remplace tout path en dur |
+| `findFilterByField(config, field, preferPathname?)` | Idem par `field` `serverData` (dérivation champ → filtre) |
+| `dropdownFilterToParam(params, filter, ids)` | Miroir URL `?filterId=ids` ; ids vide → suppression |
+| `dropdownFilterToState(setSelected, setSearchByFields, filter, ids)` | Écrit `PageFilters`, sémantique **REPLACE** (prefix-clean + field par option `option.field ?? filter.field`) |
+| `resolveServerDataPath(serverData, path)` | Lecture dot-path (`address.postalCode`) |
+| `toFacetTokens(value)` | Tokens d'un champ : array → strings, `"a, b"` → `["a","b"]`, number/bool → `[String]` |
+
+> Ces helpers écrivent **exactement** les mêmes shapes que `SearchHeaderSection` lit (`keyFor`) : la feature marche par **compatibilité de contrat**, sans refactorer le header.
+
+#### `useDropdownFilterNav()` — hook route-aware (Layer 1)
+
+`hooks/useDropdownFilterNav.ts` — expose `navigateToFilter(filterId, value, onClose?)` et `navigateToFacet(field, value, onClose?)`. Résout le filtre + sa page propriétaire depuis la config, puis :
+
+- **Même route** (`owner.pathname === current`) : **UNE** mutation `setSearchParams` atomique (supprime le `previewParam` + pose le filtre, `{replace, preventScrollReset}`) + `dropdownFilterToState` (écriture `PageFilters` — **obligatoire**, car l'hydratation URL→état du `searchHeader` est *one-time* au montage) + fermeture brute. **Pas de `setTimeout`, pas de `navigate`.**
+- **Route différente** (observatoire, command palette, autre page) : `navigate(owner.pathname?filterId=optionId)` (PUSH → Back revient à l'origine) + `onClose`. L'hydratation au montage de la page cible applique le filtre depuis l'URL (on n'écrit PAS `PageFilters` : provider hors scope).
+
+> **Mutation unique** : deux `setSearchParams` dans le même cycle voient le même `prev` (React Router) et s'écraseraient — d'où le `PreviewNavContext` optionnel (`{ previewParam, closeRaw }`) fourni par `SearchListView` pour fermer sans re-toucher l'URL. Contrainte connue : depuis la **command palette** montée hors `PageFiltersProvider` (`RootLayout`), le cas *même-route* n'applique pas le filtre (comme avant) → le cross-route reste le chemin nominal.
+
+#### `<ClickableFacet field token>` — primitive (Layer 2)
+
+`components/ClickableFacet.tsx` — rend un `token` cliquable **si** un `dropdownFilter` indexe `field` ET résout le token (sinon **texte simple** — jamais de lien mort → dégradation propre sur un site où le filtre n'existe pas). Le contenu affiché (`children`) peut différer du `token` de résolution (ex. code postal `token="97400"` affiché « 97400 Saint-Denis »). Utilisable par n'importe quel preview/entité.
+
+#### `preview.type: "facets"` — renderer générique config-driven
+
+`components/preview/PreviewFacets.tsx` — preview **piloté par la config**, zéro code par site : rend l'en-tête (image/nom/adresse via `useItem`) puis les `preview.facets` déclarées, chacune via `<ClickableFacet>`.
+
+```json
+"preview": {
+  "type": "facets",
+  "facets": [
+    { "field": "equip_type_name", "label": { "fr": "Catégorie" }, "icon": "tag" },
+    { "field": "address.postalCode", "label": { "fr": "Code postal" }, "icon": "map-pin" }
+  ]
+}
+```
+
+Chaque facette : `{ field, label?, icon? }` (`PreviewFacetSchema`). `field` supporte le dot-path ; les valeurs multiples (`coerce:stringArray` ou `"a, b"`) sont splittées en tokens. L'axe **bespoke** reste disponible (un `preview.type` dédié comme `poi-amenities` compose la même primitive) — cf. le dispatch `Preview.tsx` (générique `default`/`facets` ↔ variantes sur-mesure).
 
 ### SearchMap et vue carte
 
@@ -1102,7 +1167,7 @@ La carte de liste est pilotée par `list.card.variant` (sinon `list.card.type` �
 `card.type`/`variant` est **orthogonal** à deux autres axes (commit 8cd4070), à configurer indépendamment :
 
 - **`list.card.detailsMode`** (`drawer` / `dialog`) → le *conteneur* de la fiche détail (`SwitchDetailsMode` → `DetailsModeDrawer` / `DetailsModeDialog`) ;
-- **`list.preview.type`** (`default` / `poi-amenities` / `coform-answer`) → le *contenu* rendu DANS ce conteneur (`Preview` → `PreviewDefault` / `PreviewPoiAmenities` / `PreviewCoformAnswer`). `list.preview.fields` surcharge le mappage des IDs de champ CoForm consommés par `parseCoformAnswer` (cf. `lib/coformAnswer.ts`).
+- **`list.preview.type`** (`default` / `poi-amenities` / `coform-answer` / `event` / `facets`) → le *contenu* rendu DANS ce conteneur (`Preview` → `PreviewDefault` / `PreviewPoiAmenities` / `PreviewCoformAnswer` / `PreviewEvent` / `PreviewFacets`). `list.preview.fields` surcharge le mappage des IDs de champ CoForm consommés par `parseCoformAnswer` (cf. `lib/coformAnswer.ts`) ; `list.preview.facets` déclare les champs cliquables du preview générique `facets` (cf. [§Facettes cliquables](#facettes-cliquables--navigation-par-filtre-dropdownfilters)).
 
 **Règle d'extension** : pour ajouter une nouvelle variante, créer `components/card/CardMonDesign.tsx` (nom DESIGN, pas de site), l'enregistrer dans `SearchCard.tsx` (switch), et ajouter l'entrée dans le schéma `ListConfSchema.card.variant` / `card.type`.
 
@@ -1338,6 +1403,32 @@ La carte Leaflet intégrée dans `PreviewPoiAmenities` (`ProfileMapLeaflet`) ne 
 ### 11. `SearchProStatic` — conteneur pleine largeur
 
 La zone de résultats de `SearchProStatic` (mode liste en sidebar désactivée) utilise désormais `mx-auto w-full max-w-[1536px]` pour éviter un étalement excessif sur très grands écrans. Ce changement affecte uniquement la mise en page — pas la logique de filtres.
+
+### 12. `baseParams.defaultFilters` — DSL backend des filtres (⚠️ pas du Mongo standard)
+
+`defaultFilters` est envoyé **verbatim** au backend (`buildSearchPayload` → `searchCostum`/`globalautocomplete` → `SearchNew::searchFilters`, `modules/citizenToolKit/models/SearchNew.php`). Ce n'est **pas** du Mongo standard : le backend a sa propre traduction, avec quatre pièges à connaître avant d'écrire un filtre.
+
+**a. `tags: ["X"]` (tableau) = match SOUS-CHAÎNE non ancré.** Traduit en `tags: {$in: [/.*X.*/i]}` (regex non ancrée, casse-insensible). Donc `"tags": ["TiersLieux"]` matche aussi **`RéseauTiersLieux`** (qui *contient* « TiersLieux ») → les réseaux fuient dans les listes de lieux. À l'inverse, `tags: {"$in": ["X"]}` en **forme objet** fait un match **exact**.
+
+**b. On ne peut PAS combiner `$in` et `$nin` sur la même clé `tags`.** `searchFilters` est une chaîne if/else qui s'arrête au premier opérateur trouvé, et `$nin` est testé **avant** `$in` (~l.589 vs ~l.598). `"tags": {"$in": [...], "$nin": [...]}` n'appliquera donc QUE le `$nin`.
+
+**c. `$or` doit être un OBJET, jamais un tableau.** Le handler `$or` (~l.549) itère un objet `champ => condition`. Si on passe un tableau `[{...}]`, la clé d'itération est l'entier `0` → `array(0 => …)` devient un array PHP **indexé** → encodé en BSON comme un *array* (pas un document) → crash Mongo **« $or/$and/$nor entries need to be full objects »**. Écrire `"$or": { "tags": {...} }`, **jamais** `"$or": [ { "tags": {...} } ]`.
+
+**d. Tout est empilé en `$and`.** `addQuery` (~l.7) pousse chaque clé de `defaultFilters` dans un `$and` top-level → deux clés distinctes = deux conditions ET.
+
+**Idiome : exiger un tag ET en exclure un autre.** Impossible sur une seule clé `tags` (cf. b) → on utilise deux clés : un `$or` **objet** mono-clause pour le positif + `tags: {$nin: [...]}` pour l'exclusion. Exemple réel (config `tiers-lieux`, les listes de lieux ne doivent pas montrer les réseaux `RéseauTiersLieux`) :
+
+```json
+"defaultFilters": {
+  "$or": { "tags": { "$in": ["TiersLieux"] } },
+  "tags": { "$nin": ["RéseauTiersLieux"] },
+  "address.addressCountry": { "$in": ["FR", "BE", "…"] }
+}
+```
+
+→ backend : `{$and: [ {$or: [{tags: {$in: [/TiersLieux/i]}}]}, {tags: {$nin: ["RéseauTiersLieux"]}}, {address.addressCountry: {$in: […]}} ]}`. Le `$nin` (exact) retire **tous** les réseaux, y compris ceux **double-taggés** `TiersLieux` + `RéseauTiersLieux`. Appliqué aux 3 recherches `navigator-tl` de lieux (hero, aperçu home, page `/lieux`) ; **pas** à la section `data-observatory` (stats).
+
+> ⚠️ JSON n'autorise pas de commentaire inline, donc ce `$or`-objet mono-clause restera cryptique dans le config — c'est un idiome du DSL backend assumé. Une alternative plus lisible (`"$and": [ {tags:[…]}, {tags:{$nin:[…]}} ]`) nécessiterait d'ajouter le support de `$and` dans `SearchNew::searchFilters` (écarté : code partagé par tous les sites).
 
 ---
 
