@@ -1,4 +1,4 @@
-import { MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
+import { BadgeCheck, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import {
@@ -29,6 +29,7 @@ import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
 import type { SearchType } from "@/modules/search/schema";
 
 import { useDeleteEntity, type DeletableEntity } from "../hooks/useDeleteEntity";
+import { useValidateGroup, type ValidatableCarrier } from "../hooks/useValidateGroup";
 import type { AdminResourceSection, AdminSection } from "../schema";
 import { formatCell, getPath, resolveCreateModal } from "./resourceHelpers";
 
@@ -61,6 +62,9 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   const [createOpen, setCreateOpen] = useState(false);
   const del = useDeleteEntity(() => {
     setToDelete(null);
+    void refetch();
+  });
+  const validate = useValidateGroup(() => {
     void refetch();
   });
   const createModal = resolveCreateModal(resource);
@@ -96,6 +100,9 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
               const id = String((data as { id?: unknown }).id ?? i);
               const label = String((data as { name?: unknown }).name ?? id);
               const isLast = i === rows.length - 1;
+              // Statut costum : toBeValidated absent/non-vide → en attente (« Valider ») ; {} vide → validé.
+              const tbv = (data as { preferences?: { toBeValidated?: Record<string, unknown> } }).preferences?.toBeValidated;
+              const isPending = !tbv || (typeof tbv === "object" && Object.keys(tbv).length > 0);
               return (
                 <TableRow key={id} ref={isLast ? lastItemRef : undefined}>
                   {columns.map((col) => (
@@ -112,6 +119,20 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                         {rowActions.includes("edit") && (
                           <DropdownMenuItem onClick={() => setEditEntity(item as unknown as EntityTypes)}>
                             <Pencil className="mr-2 h-4 w-4" /> Éditer
+                          </DropdownMenuItem>
+                        )}
+                        {rowActions.includes("validate") && carrier && (
+                          <DropdownMenuItem
+                            onClick={() =>
+                              validate.mutate({
+                                carrier: carrier as unknown as ValidatableCarrier,
+                                type: resource.entityType,
+                                id,
+                                valid: isPending,
+                              })
+                            }
+                          >
+                            <BadgeCheck className="mr-2 h-4 w-4" /> {isPending ? "Valider" : "Dévalider"}
                           </DropdownMenuItem>
                         )}
                         {rowActions.includes("delete") && (

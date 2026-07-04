@@ -1,5 +1,7 @@
 import { createElement } from "react";
 
+import AdminExportSection from "./sections/AdminExportSection";
+import AdminImportSection from "./sections/AdminImportSection";
 import AdminResourceTable from "./sections/AdminResourceTable";
 import DashboardSection from "./sections/DashboardSection";
 import MembersSection from "./sections/MembersSection";
@@ -22,7 +24,9 @@ export function AdminSectionRenderer({ section }: { section: AdminSection }) {
     case "resource":
       return <AdminResourceTable section={section} />;
     case "import":
+      return <AdminImportSection section={section} />;
     case "export":
+      return <AdminExportSection section={section} />;
     case "reference":
     case "moderation":
       return <PlaceholderSection section={section} />;

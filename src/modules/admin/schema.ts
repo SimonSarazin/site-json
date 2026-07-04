@@ -65,6 +65,7 @@ const AdminImportSectionSchema = z.object({
   type: z.literal("import"),
   entityTypes: z.array(z.string()).optional(),
 });
+export type AdminImportSection = z.infer<typeof AdminImportSectionSchema>;
 
 const AdminExportSectionSchema = z.object({ type: z.literal("export") });
 const AdminReferenceSectionSchema = z.object({ type: z.literal("reference") });

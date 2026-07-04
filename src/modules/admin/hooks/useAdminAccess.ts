@@ -31,16 +31,13 @@ export function useAdminAccess(): AdminAccess {
   const hydrated = useHydrated();
 
   return useMemo(() => {
-    // La lib PUBLIÉE n'a pas encore `me.isSuperAdmin()` (méthode non publiée) → on lit `roles` en direct
-    // (pattern site-json). TODO(publish lib): remplacer par `me.isSuperAdmin()` / `me.isCostumAdmin(slug)`.
-    const roles = (me?.serverData as { roles?: Record<string, unknown> } | undefined)?.roles ?? {};
-    const isSuper = roles.superAdmin === true || roles.adminPlatform === true;
-
     let level: AdminAccessLevel | null = null;
-    if (isSuper) {
+    if (me?.isSuperAdmin?.() || me?.isAdminPlatform?.()) {
+      // superAdmin plateforme (lib 1.0.158 : isSuperAdmin/isAdminPlatform ; canPlatformAdmin pour l'UI).
       level = "superAdmin";
     } else if (entity?.isAdmin?.()) {
-      // siteAdmin = admin de l'entité porteuse du costum (carrier). TODO(merge lib): || me.isCostumAdmin(slug)
+      // siteAdmin = admin de l'entité porteuse du costum (carrier). TODO(lib): || me.isCostumAdmin(slug)
+      // quand la lib exposera isCostumAdmin (user ∈ costum.admins) — non livré en 1.0.158.
       level = "siteAdmin";
     }
     return {
