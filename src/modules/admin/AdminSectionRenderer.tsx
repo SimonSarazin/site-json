@@ -2,6 +2,8 @@ import { createElement } from "react";
 
 import AdminExportSection from "./sections/AdminExportSection";
 import AdminImportSection from "./sections/AdminImportSection";
+import AdminModerationSection from "./sections/AdminModerationSection";
+import AdminReferenceSection from "./sections/AdminReferenceSection";
 import AdminResourceTable from "./sections/AdminResourceTable";
 import DashboardSection from "./sections/DashboardSection";
 import MembersSection from "./sections/MembersSection";
@@ -28,8 +30,9 @@ export function AdminSectionRenderer({ section }: { section: AdminSection }) {
     case "export":
       return <AdminExportSection section={section} />;
     case "reference":
+      return <AdminReferenceSection section={section} />;
     case "moderation":
-      return <PlaceholderSection section={section} />;
+      return <AdminModerationSection section={section} />;
     default:
       // Section costum enregistrée via `registerAdminSection`, sinon fallback.
       return createElement(getAdminSection(section.type) ?? PlaceholderSection, { section });

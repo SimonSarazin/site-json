@@ -55,7 +55,7 @@ const AdminResourceSectionSchema = z.object({
   filters: z.array(z.string()).optional(),
   create: AdminFormRefSchema.default("inherit"),
   edit: AdminFormRefSchema.default("inherit"),
-  rowActions: z.array(z.enum(["edit", "delete", "validate"])).optional(),
+  rowActions: z.array(z.enum(["edit", "delete", "validate", "reference"])).optional(),
   bulkActions: z.array(z.enum(["export", "validate", "delete"])).optional(),
   status: AdminStatusConfigSchema.optional(),
 });

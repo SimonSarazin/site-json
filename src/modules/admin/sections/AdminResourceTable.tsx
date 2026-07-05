@@ -1,4 +1,4 @@
-import { BadgeCheck, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
+import { BadgeCheck, Link2, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import {
@@ -29,6 +29,7 @@ import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
 import type { SearchType } from "@/modules/search/schema";
 
 import { useDeleteEntity, type DeletableEntity } from "../hooks/useDeleteEntity";
+import { useReferenceElement, type ReferencingCarrier } from "../hooks/useReferenceElement";
 import { useValidateGroup, type ValidatableCarrier } from "../hooks/useValidateGroup";
 import type { AdminResourceSection, AdminSection } from "../schema";
 import { formatCell, getPath, resolveCreateModal } from "./resourceHelpers";
@@ -67,6 +68,10 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   const validate = useValidateGroup(() => {
     void refetch();
   });
+  const reference = useReferenceElement(() => {
+    void refetch();
+  });
+  const costumSlug = (carrier as { slug?: string } | null)?.slug ?? "";
   const createModal = resolveCreateModal(resource);
 
   return (
@@ -103,6 +108,9 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
               // Statut costum : toBeValidated absent/non-vide → en attente (« Valider ») ; {} vide → validé.
               const tbv = (data as { preferences?: { toBeValidated?: Record<string, unknown> } }).preferences?.toBeValidated;
               const isPending = !tbv || (typeof tbv === "object" && Object.keys(tbv).length > 0);
+              // Rattachement : source.keys contient le slug du costum courant → détachable ; sinon référençable.
+              const sourceKeys = (data as { source?: { keys?: unknown[] } }).source?.keys;
+              const isAttached = Array.isArray(sourceKeys) && !!costumSlug && sourceKeys.includes(costumSlug);
               return (
                 <TableRow key={id} ref={isLast ? lastItemRef : undefined}>
                   {columns.map((col) => (
@@ -133,6 +141,20 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                             }
                           >
                             <BadgeCheck className="mr-2 h-4 w-4" /> {isPending ? "Valider" : "Dévalider"}
+                          </DropdownMenuItem>
+                        )}
+                        {rowActions.includes("reference") && carrier && costumSlug && (
+                          <DropdownMenuItem
+                            onClick={() =>
+                              reference.mutate({
+                                carrier: carrier as unknown as ReferencingCarrier,
+                                op: isAttached ? "detach" : "reference",
+                                type: resource.entityType,
+                                id,
+                              })
+                            }
+                          >
+                            <Link2 className="mr-2 h-4 w-4" /> {isAttached ? "Détacher" : "Référencer"}
                           </DropdownMenuItem>
                         )}
                         {rowActions.includes("delete") && (
