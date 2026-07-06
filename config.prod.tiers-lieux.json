@@ -2141,17 +2141,13 @@
               "costumSlug": "navigatorDesTierslieux",
               "costumEditMode": false,
               "defaultFilters": {
-                "preferences.toBeValidated.franceTierslieux": {
-                  "$exists": false
-                },
-                "links.memberOf.5ec3b895690864db108b46b8": {
-                  "$exists": true
-                },
-                "links.memberOf.5ec3b895690864db108b46b8.toBeValidated": {
-                  "$exists": false
-                },
-                "links.memberOf.5ec3b895690864db108b46b8.isInviting": {
-                  "$exists": false
+                "$or": {
+                  "links.projects.649ed498f93ee7202e6c8b12": {
+                    "$exists": true
+                  },
+                  "links.memberOf.649ed498f93ee7202e6c8b12": {
+                    "$exists": true
+                  }
                 }
               },
               "defaultSortBy": {
