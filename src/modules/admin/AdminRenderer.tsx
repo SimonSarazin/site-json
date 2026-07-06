@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useT } from "@/hooks/useT";
@@ -16,6 +16,7 @@ export function AdminRenderer({ config }: { config: AdminConfig }) {
   const t = useT();
   const access = useAdminAccess();
   const { section } = useParams<{ section?: string }>();
+  const navigate = useNavigate();
   const tabs = (config.tabs ?? []).filter((tab) => !tab.access || access.has(tab.access));
   const [active, setActive] = useState("");
   // Onglet effectif dérivé à CHAQUE rendu (pas d'état figé) :
@@ -32,7 +33,15 @@ export function AdminRenderer({ config }: { config: AdminConfig }) {
   }
 
   return (
-    <Tabs value={activeTab} onValueChange={setActive} className="w-full">
+    <Tabs
+      value={activeTab}
+      onValueChange={(v) => {
+        setActive(v);
+        // Sync URL (deep-link bidirectionnel) : l'onglet actif est adressable/partageable.
+        navigate(`/admin/${v}`, { replace: true });
+      }}
+      className="w-full"
+    >
       <TabsList>
         {tabs.map((tab) => (
           <TabsTrigger key={tab.id} value={tab.id}>

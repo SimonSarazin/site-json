@@ -4922,9 +4922,9 @@
               "defaultSortBy": { "name": 1 }
             },
             "columns": [
-              "name",
-              "address.addressLocality",
-              "address.postalCode"
+              { "path": "name", "label": { "fr": "Nom" } },
+              { "path": "address.addressLocality", "label": { "fr": "Commune" } },
+              { "path": "address.postalCode", "label": { "fr": "Code postal" } }
             ],
             "rowActions": [
               "edit",
@@ -4942,9 +4942,9 @@
               "fr": "Organisations"
             },
             "columns": [
-              "name",
-              "type",
-              "address.addressLocality"
+              { "path": "name", "label": { "fr": "Nom" } },
+              { "path": "type", "label": { "fr": "Type" } },
+              { "path": "address.addressLocality", "label": { "fr": "Commune" } }
             ],
             "rowActions": [
               "edit",

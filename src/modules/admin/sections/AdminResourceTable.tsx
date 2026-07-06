@@ -26,6 +26,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useCocolight } from "@/hooks/useCocolight";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useSite } from "@/hooks/useSite";
+import { useT } from "@/hooks/useT";
 import SearchTextInput from "@/modules/search/components/SearchTextInput";
 import { DynamicModal } from "@/modules/profil/components/add/ModalRegistry";
 import { DynamicEditModal } from "@/modules/profil/components/profile-edit/EditModalRegistry";
@@ -53,7 +54,11 @@ type StatusFilter = "all" | "pending" | "validated";
 export default function AdminResourceTable({ section }: { section: AdminSection }) {
   const resource = section as AdminResourceSection;
   const { entity: carrier } = useCocolight();
-  const columns = resource.columns ?? ["name"];
+  const t = useT();
+  // Colonnes : `"path"` brut OU `{path, label}` (libellé localisé) — cf. AdminColumnSchema.
+  const columns = (resource.columns ?? ["name"]).map((c) =>
+    typeof c === "string" ? { path: c, label: undefined } : c,
+  );
   const rowActions = resource.rowActions ?? ["edit", "delete"];
   const costumSlug = (carrier as { slug?: string } | null)?.slug ?? "";
   // Mode ADMIN (variant SDK `admin` → globalautocompleteadmin, SDK ≥ 1.0.161) dès que la table gère la
@@ -141,8 +146,8 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
-        <CardTitle className="text-lg capitalize">
-          {resource.entityType}
+        <CardTitle className="text-lg">
+          {resource.label ? t(resource.label) : <span className="capitalize">{resource.entityType}</span>}
           {totalCount != null ? ` (${totalCount})` : ""}
         </CardTitle>
         {createModal && (
@@ -180,13 +185,13 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                 // Tri SERVEUR au clic (asc → desc → aucun) — les données étant paginées en scroll
                 // infini, un tri client ne trierait que les pages chargées.
                 <TableHead
-                  key={col}
-                  className="cursor-pointer select-none capitalize hover:bg-muted/50"
-                  onClick={() => toggleSort(col)}
+                  key={col.path}
+                  className={col.label ? "cursor-pointer select-none hover:bg-muted/50" : "cursor-pointer select-none capitalize hover:bg-muted/50"}
+                  onClick={() => toggleSort(col.path)}
                 >
                   <span className="inline-flex items-center gap-1">
-                    {col}
-                    {sort?.col === col && (sort.dir === 1 ? <ChevronUp className="h-3 w-3 text-primary" /> : <ChevronDown className="h-3 w-3 text-primary" />)}
+                    {col.label ? t(col.label) : col.path}
+                    {sort?.col === col.path && (sort.dir === 1 ? <ChevronUp className="h-3 w-3 text-primary" /> : <ChevronDown className="h-3 w-3 text-primary" />)}
                   </span>
                 </TableHead>
               ))}
@@ -212,7 +217,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
               return (
                 <TableRow key={id} ref={isLast ? lastItemRef : undefined}>
                   {columns.map((col) => (
-                    <TableCell key={col}>{formatCell(getPath(data, col))}</TableCell>
+                    <TableCell key={col.path}>{formatCell(getPath(data, col.path))}</TableCell>
                   ))}
                   {adminMode && (
                     <TableCell>
@@ -226,7 +231,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Actions pour ${label}`}>
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -291,6 +296,11 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
         )}
         {!isLoading && rows.length === 0 && (
           <p className="py-8 text-center text-sm text-muted-foreground">Aucun élément.</p>
+        )}
+        {rows.length > 0 && totalCount != null && (
+          <p className="pt-2 text-xs text-muted-foreground">
+            {rows.length} affiché{rows.length > 1 ? "s" : ""} sur {totalCount} — faites défiler pour charger la suite.
+          </p>
         )}
       </CardContent>
 

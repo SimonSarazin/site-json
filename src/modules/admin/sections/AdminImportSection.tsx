@@ -1,4 +1,4 @@
-import { Upload } from "lucide-react";
+import { Download, Upload } from "lucide-react";
 import Papa from "papaparse";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -45,6 +45,23 @@ export default function AdminImportSection({ section }: { section: AdminSection 
   const [progress, setProgress] = useState<{ current: number; total: number } | null>(null);
   const [summary, setSummary] = useState<{ created: number; updated: number; errors: number } | null>(null);
   const [busy, setBusy] = useState(false);
+
+  /** Modèle CSV : les en-têtes standard comprises par shapeImportRow (adresse pliée automatiquement). */
+  function downloadTemplate() {
+    const headers = type === "events"
+      ? "name,type,startDate,endDate,streetAddress,postalCode,city,tags,shortDescription"
+      : "name,type,streetAddress,postalCode,city,tags,shortDescription";
+    const example = type === "events"
+      ? `Mon événement,meeting,2026-09-01,2026-09-02,1 rue Exemple,97400,Saint-Denis,"tag1,tag2",Description courte`
+      : `Mon élément,typeExemple,1 rue Exemple,97400,Saint-Denis,"tag1,tag2",Description courte`;
+    const blob = new Blob([headers + "\n" + example + "\n"], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `modele-import-${type}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   function handleFile(file: File | undefined) {
     if (!file) return;
@@ -116,6 +133,9 @@ export default function AdminImportSection({ section }: { section: AdminSection 
               </SelectContent>
             </Select>
           </div>
+          <Button variant="ghost" size="sm" onClick={downloadTemplate}>
+            <Download className="mr-1.5 h-3.5 w-3.5" /> Modèle CSV
+          </Button>
           <div className="space-y-1">
             <span className="text-sm font-medium">Fichier CSV</span>
             <Input

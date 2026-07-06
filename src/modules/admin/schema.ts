@@ -59,7 +59,11 @@ const AdminResourceSectionSchema = z.object({
    * (résolution d'édition costum + forms préremplis, cf. AdminResourceTable).
    */
   source: SearchBaseParamsSchema.partial().optional(),
-  columns: z.array(z.string()).optional(),
+  /** Colonnes : chemin pointé brut (`"address.addressLocality"`) OU `{path, label}` (libellé localisé). */
+  columns: z.array(z.union([
+    z.string(),
+    z.object({ path: z.string(), label: LocalizedString.optional() }),
+  ])).optional(),
   create: AdminFormRefSchema.default("inherit"),
   edit: AdminFormRefSchema.default("inherit"),
   rowActions: z.array(z.enum(["edit", "delete", "validate", "reference"])).optional(),
