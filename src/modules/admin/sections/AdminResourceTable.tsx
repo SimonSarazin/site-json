@@ -1,5 +1,5 @@
-import { BadgeCheck, BadgeX, Link2, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { BadgeCheck, BadgeX, ChevronDown, ChevronUp, Link2, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
 
 import {
   AlertDialog,
@@ -11,6 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -19,9 +20,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useCocolight } from "@/hooks/useCocolight";
+import { useDebounce } from "@/hooks/useDebounce";
+import SearchTextInput from "@/modules/search/components/SearchTextInput";
 import { DynamicModal } from "@/modules/profil/components/add/ModalRegistry";
 import { DynamicEditModal } from "@/modules/profil/components/profile-edit/EditModalRegistry";
 import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
@@ -42,25 +46,57 @@ import type { EntityTypes } from "@communecter/cocolight-api-client";
  * costum résolu PAR-LIGNE via editModalMatch) et Supprimer (`useDeleteEntity` → `canDeleteElement`).
  * Création via `DynamicModal` (clé `resolveCreateModal`). cf. plan §3/§4.
  */
+/** Statut de validation costum, par filtre serveur : Tous / À valider / Validés. */
+type StatusFilter = "all" | "pending" | "validated";
+
 export default function AdminResourceTable({ section }: { section: AdminSection }) {
   const resource = section as AdminResourceSection;
   const { entity: carrier } = useCocolight();
   const columns = resource.columns ?? ["name"];
   const rowActions = resource.rowActions ?? ["edit", "delete"];
-  const src = (resource.source ?? {}) as { defaultFields?: string[] } & Record<string, unknown>;
-  // M3 : on FORCE `source` dans la projection — absent du jeu legacy par défaut (DEFAULT_FIELD_LIST) — pour que
-  // le toggle Référencer/Détacher reflète l'appartenance réelle à source.keys. NB : `preferences` est strippé
-  // côté serveur (byte-legacy SearchNew::$forbidenFields) → le statut de validation n'est PAS lisible ici,
-  // d'où deux actions explicites Valider / Dévalider plus bas (cf. M4).
-  const baseParams = {
-    defaultTypes: [resource.entityType] as SearchType[],
-    ...src,
-    defaultFields: [...new Set(["source", ...(src.defaultFields ?? [])])],
-  };
+  const costumSlug = (carrier as { slug?: string } | null)?.slug ?? "";
+  // Mode ADMIN (variant SDK `admin` → globalautocompleteadmin, SDK ≥ 1.0.161) dès que la table gère la
+  // validation : la projection admin renvoie `preferences` (strippé byte-legacy sur l'endpoint public)
+  // → badge « En attente / Validé » + filtre statut + action contextuelle. Gate : la page /admin est déjà
+  // réservée aux admins de l'hôte — même population que la gate serveur (canEditItem sur l'hôte).
+  const adminMode = rowActions.includes("validate") || !!resource.status;
+
+  // Recherche plein-texte débouncée (300ms comme MembersSection) — searchText est dans la queryKey → refetch auto.
+  const [q, setQ] = useState("");
+  const searchText = useDebounce(q, 300);
+  // Tri SERVEUR mono-colonne (payload sortBy {champ:1|-1} — byte-vérifié : la direction est préservée).
+  const [sort, setSort] = useState<{ col: string; dir: 1 | -1 } | null>(null);
+  // Filtre statut (serveur : preferences.toBeValidated.<slug> $exists) — admin uniquement.
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+
+  const src = (resource.source ?? {}) as { defaultFields?: string[]; defaultFilters?: Record<string, unknown> } & Record<string, unknown>;
+  const baseParams = useMemo(() => {
+    // M3 : `source` FORCÉ dans la projection (absent du jeu legacy par défaut) → le toggle
+    // Référencer/Détacher reflète l'appartenance réelle à source.keys.
+    const fields = [...new Set(["source", ...(src.defaultFields ?? [])])];
+    if (adminMode) {
+      // Projection admin = EXACTE (aucune base ajoutée par le serveur) : il faut demander TOUT ce que la
+      // table consomme — colonnes configurées (chemins pointés acceptés), preferences (badge), name/slug/
+      // updated (affichage/tri). `collection` est garanti par le SDK (variant admin).
+      fields.push("name", "slug", "preferences", "updated", ...columns);
+    }
+    const filters: Record<string, unknown> = { ...(src.defaultFilters ?? {}) };
+    if (adminMode && statusFilter !== "all" && costumSlug) {
+      filters[`preferences.toBeValidated.${costumSlug}`] = { $exists: statusFilter === "pending" };
+    }
+    return {
+      defaultTypes: [resource.entityType] as SearchType[],
+      ...src,
+      defaultFields: [...new Set(fields)],
+      ...(Object.keys(filters).length > 0 ? { defaultFilters: filters } : {}),
+      ...(sort ? { defaultSortBy: { [sort.col]: sort.dir } } : {}),
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- src/columns dérivés de la config (stables par rendu)
+  }, [adminMode, statusFilter, costumSlug, sort, resource.entityType, JSON.stringify(src), JSON.stringify(columns)]);
 
   const { transformedResults, totalCount, isLoading, lastItemRef, refetch } = useSearchQuery({
     queryKeyPrefix: `admin-${resource.entityType}`,
-    searchText: "",
+    searchText,
     searchTags: {},
     // Le type de recherche DOIT passer par `searchType` (et non le seul `baseParams.defaultTypes`) :
     // useSearchQuery mappe `searchType:null` en `type=[]` (tableau vide), or buildSearchPayload ne
@@ -69,8 +105,12 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
     searchType: { type: [resource.entityType] },
     mapUsed: false,
     baseParams,
+    ...(adminMode ? { variant: "admin" as const } : {}),
   });
   const rows = transformedResults ?? [];
+
+  const toggleSort = (col: string) =>
+    setSort((s) => (s?.col === col ? (s.dir === 1 ? { col, dir: -1 } : null) : { col, dir: 1 }));
 
   const [editEntity, setEditEntity] = useState<EntityTypes | null>(null);
   const [toDelete, setToDelete] = useState<{ entity: DeletableEntity; label: string } | null>(null);
@@ -85,7 +125,6 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   const reference = useReferenceElement(() => {
     void refetch();
   });
-  const costumSlug = (carrier as { slug?: string } | null)?.slug ?? "";
   const createModal = resolveCreateModal(resource);
 
   return (
@@ -102,6 +141,22 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
         )}
       </CardHeader>
       <CardContent>
+        {/* Barre d'outils : recherche plein-texte (débouncée) + filtre statut (mode admin). */}
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <SearchTextInput className="max-w-xs" placeholder="Rechercher…" value={q} onChange={setQ} />
+          {adminMode && costumSlug && (
+            <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les statuts</SelectItem>
+                <SelectItem value="pending">À valider</SelectItem>
+                <SelectItem value="validated">Validés</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+        </div>
         {/* Hauteur bornée + scroll interne : la sentinelle du scroll infini (lastItemRef) est CLIPPÉE hors
             de cette zone tant qu'on n'a pas scrollé → l'IntersectionObserver ne re-déclenche pas en cascade.
             Sans ça, un gros costum (p.ex. 3120 POI = 312 pages) enchaîne des dizaines de fetchNextPage
@@ -111,10 +166,20 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
           <TableHeader>
             <TableRow>
               {columns.map((col) => (
-                <TableHead key={col} className="capitalize">
-                  {col}
+                // Tri SERVEUR au clic (asc → desc → aucun) — les données étant paginées en scroll
+                // infini, un tri client ne trierait que les pages chargées.
+                <TableHead
+                  key={col}
+                  className="cursor-pointer select-none capitalize hover:bg-muted/50"
+                  onClick={() => toggleSort(col)}
+                >
+                  <span className="inline-flex items-center gap-1">
+                    {col}
+                    {sort?.col === col && (sort.dir === 1 ? <ChevronUp className="h-3 w-3 text-primary" /> : <ChevronDown className="h-3 w-3 text-primary" />)}
+                  </span>
                 </TableHead>
               ))}
+              {adminMode && <TableHead>Statut</TableHead>}
               <TableHead className="w-12" />
             </TableRow>
           </TableHeader>
@@ -129,11 +194,24 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
               // Rattachement : source.keys (projeté via defaultFields) contient le slug du costum courant → détachable ; sinon référençable.
               const sourceKeys = (data as { source?: { keys?: unknown[] } }).source?.keys;
               const isAttached = Array.isArray(sourceKeys) && !!costumSlug && sourceKeys.includes(costumSlug);
+              // Statut de validation costum — LISIBLE en mode admin (le variant admin renvoie preferences,
+              // strippé sur l'endpoint public) : flag posé → « En attente », absent → « Validé ».
+              const tbv = (data as { preferences?: { toBeValidated?: Record<string, unknown> } }).preferences?.toBeValidated;
+              const isPending = adminMode && !!costumSlug && !!tbv && typeof tbv === "object" && tbv[costumSlug] === true;
               return (
                 <TableRow key={id} ref={isLast ? lastItemRef : undefined}>
                   {columns.map((col) => (
                     <TableCell key={col}>{formatCell(getPath(data, col))}</TableCell>
                   ))}
+                  {adminMode && (
+                    <TableCell>
+                      {isPending ? (
+                        <Badge variant="outline" className="border-amber-500 text-amber-600">En attente</Badge>
+                      ) : (
+                        <Badge variant="secondary">Validé</Badge>
+                      )}
+                    </TableCell>
+                  )}
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -148,28 +226,19 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                           </DropdownMenuItem>
                         )}
                         {rowActions.includes("validate") && carrier && (
-                          // M4 : le statut de validation (preferences.toBeValidated) n'est PAS dans les résultats de
-                          // recherche (strippé byte-legacy) → on ne devine plus l'état ; deux actions explicites,
-                          // toutes deux idempotentes côté serveur (unset/set du flag pour le slug courant).
+                          // Le statut est LISIBLE en mode admin (variant admin → preferences projeté) : on
+                          // n'affiche que l'action PERTINENTE (« Valider » un en-attente, « Dévalider » un validé).
                           // ⚠ On appelle sur `item` (l'entité de la ligne) et NON `carrier` : validateGroup/addReference
                           // exigent un `_costumCtx` COMPLET (slug+costumId+costumType) via `_requireCostumCtx`, que l'hôte
                           // costum (carrier) n'a pas forcément ; l'item l'auto-dérive de sa `source.keys` (projetée par M3).
-                          <>
-                            <DropdownMenuItem
-                              onClick={() =>
-                                validate.mutate({ carrier: item as unknown as ValidatableCarrier, type: resource.entityType, id, valid: true })
-                              }
-                            >
-                              <BadgeCheck className="mr-2 h-4 w-4" /> Valider
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() =>
-                                validate.mutate({ carrier: item as unknown as ValidatableCarrier, type: resource.entityType, id, valid: false })
-                              }
-                            >
-                              <BadgeX className="mr-2 h-4 w-4" /> Dévalider
-                            </DropdownMenuItem>
-                          </>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              validate.mutate({ carrier: item as unknown as ValidatableCarrier, type: resource.entityType, id, valid: isPending })
+                            }
+                          >
+                            {isPending ? <BadgeCheck className="mr-2 h-4 w-4" /> : <BadgeX className="mr-2 h-4 w-4" />}
+                            {isPending ? "Valider" : "Dévalider"}
+                          </DropdownMenuItem>
                         )}
                         {rowActions.includes("reference") && carrier && costumSlug && (
                           <DropdownMenuItem
