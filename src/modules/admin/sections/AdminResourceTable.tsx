@@ -151,17 +151,20 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                           // M4 : le statut de validation (preferences.toBeValidated) n'est PAS dans les résultats de
                           // recherche (strippé byte-legacy) → on ne devine plus l'état ; deux actions explicites,
                           // toutes deux idempotentes côté serveur (unset/set du flag pour le slug courant).
+                          // ⚠ On appelle sur `item` (l'entité de la ligne) et NON `carrier` : validateGroup/addReference
+                          // exigent un `_costumCtx` COMPLET (slug+costumId+costumType) via `_requireCostumCtx`, que l'hôte
+                          // costum (carrier) n'a pas forcément ; l'item l'auto-dérive de sa `source.keys` (projetée par M3).
                           <>
                             <DropdownMenuItem
                               onClick={() =>
-                                validate.mutate({ carrier: carrier as unknown as ValidatableCarrier, type: resource.entityType, id, valid: true })
+                                validate.mutate({ carrier: item as unknown as ValidatableCarrier, type: resource.entityType, id, valid: true })
                               }
                             >
                               <BadgeCheck className="mr-2 h-4 w-4" /> Valider
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() =>
-                                validate.mutate({ carrier: carrier as unknown as ValidatableCarrier, type: resource.entityType, id, valid: false })
+                                validate.mutate({ carrier: item as unknown as ValidatableCarrier, type: resource.entityType, id, valid: false })
                               }
                             >
                               <BadgeX className="mr-2 h-4 w-4" /> Dévalider
@@ -172,7 +175,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                           <DropdownMenuItem
                             onClick={() =>
                               reference.mutate({
-                                carrier: carrier as unknown as ReferencingCarrier,
+                                carrier: item as unknown as ReferencingCarrier,
                                 op: isAttached ? "detach" : "reference",
                                 type: resource.entityType,
                                 id,
