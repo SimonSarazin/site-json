@@ -296,6 +296,7 @@
       "contributors": {
         "title": "Contributions for this need",
         "description": "See who has filled a solution for: {{usage}}",
+        "descriptionPlace": "See which places have filled a solution for: {{usage}}",
         "loading": "Loading contributions…",
         "error": "Unable to load contributions.",
         "empty": "No contributor has filled a solution for this need yet.",

@@ -296,6 +296,7 @@
       "contributors": {
         "title": "Contributions sur ce besoin",
         "description": "Voir qui a renseigné une solution pour : {{usage}}",
+        "descriptionPlace": "Voir quels lieux ont renseigné une solution pour : {{usage}}",
         "loading": "Chargement des contributions…",
         "error": "Impossible de charger les contributions.",
         "empty": "Aucun contributeur n'a encore renseigné de solution sur ce besoin.",
