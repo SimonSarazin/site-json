@@ -1,4 +1,4 @@
-import { BadgeCheck, Link2, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
+import { BadgeCheck, BadgeX, Link2, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import {
@@ -47,6 +47,16 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   const { entity: carrier } = useCocolight();
   const columns = resource.columns ?? ["name"];
   const rowActions = resource.rowActions ?? ["edit", "delete"];
+  const src = (resource.source ?? {}) as { defaultFields?: string[] } & Record<string, unknown>;
+  // M3 : on FORCE `source` dans la projection — absent du jeu legacy par défaut (DEFAULT_FIELD_LIST) — pour que
+  // le toggle Référencer/Détacher reflète l'appartenance réelle à source.keys. NB : `preferences` est strippé
+  // côté serveur (byte-legacy SearchNew::$forbidenFields) → le statut de validation n'est PAS lisible ici,
+  // d'où deux actions explicites Valider / Dévalider plus bas (cf. M4).
+  const baseParams = {
+    defaultTypes: [resource.entityType] as SearchType[],
+    ...src,
+    defaultFields: [...new Set(["source", ...(src.defaultFields ?? [])])],
+  };
 
   const { transformedResults, totalCount, isLoading, lastItemRef, refetch } = useSearchQuery({
     queryKeyPrefix: `admin-${resource.entityType}`,
@@ -54,7 +64,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
     searchTags: {},
     searchType: null,
     mapUsed: false,
-    baseParams: { defaultTypes: [resource.entityType] as SearchType[], ...(resource.source ?? {}) },
+    baseParams,
   });
   const rows = transformedResults ?? [];
 
@@ -102,13 +112,12 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
           <TableBody>
             {rows.map((item, i) => {
               const data = (item as { serverData?: Record<string, unknown> }).serverData ?? {};
-              const id = String((data as { id?: unknown }).id ?? i);
+              // H1 : privilégier le GETTER d'entité `item.id` (serverData.id pas toujours peuplé par
+              // searchCostum — cf. SearchListView) ; l'index i n'est qu'un ultime repli anti-crash.
+              const id = String((item as { id?: unknown }).id ?? (data as { id?: unknown }).id ?? i);
               const label = String((data as { name?: unknown }).name ?? id);
               const isLast = i === rows.length - 1;
-              // Statut costum : toBeValidated absent/non-vide → en attente (« Valider ») ; {} vide → validé.
-              const tbv = (data as { preferences?: { toBeValidated?: Record<string, unknown> } }).preferences?.toBeValidated;
-              const isPending = !tbv || (typeof tbv === "object" && Object.keys(tbv).length > 0);
-              // Rattachement : source.keys contient le slug du costum courant → détachable ; sinon référençable.
+              // Rattachement : source.keys (projeté via defaultFields) contient le slug du costum courant → détachable ; sinon référençable.
               const sourceKeys = (data as { source?: { keys?: unknown[] } }).source?.keys;
               const isAttached = Array.isArray(sourceKeys) && !!costumSlug && sourceKeys.includes(costumSlug);
               return (
@@ -130,18 +139,25 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                           </DropdownMenuItem>
                         )}
                         {rowActions.includes("validate") && carrier && (
-                          <DropdownMenuItem
-                            onClick={() =>
-                              validate.mutate({
-                                carrier: carrier as unknown as ValidatableCarrier,
-                                type: resource.entityType,
-                                id,
-                                valid: isPending,
-                              })
-                            }
-                          >
-                            <BadgeCheck className="mr-2 h-4 w-4" /> {isPending ? "Valider" : "Dévalider"}
-                          </DropdownMenuItem>
+                          // M4 : le statut de validation (preferences.toBeValidated) n'est PAS dans les résultats de
+                          // recherche (strippé byte-legacy) → on ne devine plus l'état ; deux actions explicites,
+                          // toutes deux idempotentes côté serveur (unset/set du flag pour le slug courant).
+                          <>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                validate.mutate({ carrier: carrier as unknown as ValidatableCarrier, type: resource.entityType, id, valid: true })
+                              }
+                            >
+                              <BadgeCheck className="mr-2 h-4 w-4" /> Valider
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                validate.mutate({ carrier: carrier as unknown as ValidatableCarrier, type: resource.entityType, id, valid: false })
+                              }
+                            >
+                              <BadgeX className="mr-2 h-4 w-4" /> Dévalider
+                            </DropdownMenuItem>
+                          </>
                         )}
                         {rowActions.includes("reference") && carrier && costumSlug && (
                           <DropdownMenuItem

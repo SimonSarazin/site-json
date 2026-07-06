@@ -4874,5 +4874,127 @@
         }
       }
     }
+  },
+  "admin": {
+    "enabled": true,
+    "access": {
+      "min": "siteAdmin"
+    },
+    "tabs": [
+      {
+        "id": "dashboard",
+        "label": {
+          "fr": "Tableau de bord"
+        },
+        "sections": [
+          {
+            "type": "dashboard"
+          }
+        ]
+      },
+      {
+        "id": "members",
+        "label": {
+          "fr": "Membres"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "members",
+            "scope": "carrier"
+          }
+        ]
+      },
+      {
+        "id": "content",
+        "label": {
+          "fr": "Contenu"
+        },
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "poi",
+            "label": {
+              "fr": "Équipements"
+            },
+            "columns": [
+              "name",
+              "address.addressLocality",
+              "address.postalCode"
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate",
+              "reference"
+            ],
+            "create": "inherit",
+            "edit": "inherit"
+          },
+          {
+            "type": "resource",
+            "entityType": "organizations",
+            "label": {
+              "fr": "Organisations"
+            },
+            "columns": [
+              "name",
+              "type",
+              "address.addressLocality"
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate"
+            ],
+            "create": "inherit",
+            "edit": "inherit"
+          }
+        ]
+      },
+      {
+        "id": "import-export",
+        "label": {
+          "fr": "Import / Export"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "import",
+            "entityTypes": [
+              "poi",
+              "organizations"
+            ]
+          },
+          {
+            "type": "export"
+          }
+        ]
+      },
+      {
+        "id": "reference",
+        "label": {
+          "fr": "Référencement"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "reference"
+          }
+        ]
+      },
+      {
+        "id": "moderation",
+        "label": {
+          "fr": "Modération"
+        },
+        "access": "superAdmin",
+        "sections": [
+          {
+            "type": "moderation"
+          }
+        ]
+      }
+    ]
   }
 }

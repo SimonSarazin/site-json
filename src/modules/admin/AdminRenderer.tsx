@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useParams } from "react-router";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useT } from "@/hooks/useT";
@@ -14,15 +15,24 @@ import type { AdminConfig } from "./schema";
 export function AdminRenderer({ config }: { config: AdminConfig }) {
   const t = useT();
   const access = useAdminAccess();
+  const { section } = useParams<{ section?: string }>();
   const tabs = (config.tabs ?? []).filter((tab) => !tab.access || access.has(tab.access));
-  const [active, setActive] = useState(() => tabs[0]?.id ?? "");
+  const [active, setActive] = useState("");
+  // Onglet effectif dérivé à CHAQUE rendu (pas d'état figé) :
+  // - M1 (deep-link) : au 1er rendu `active===""` → on prend l'onglet de l'URL `admin/:section` s'il existe ;
+  // - M2 (réconciliation) : si `active` sort du jeu filtré (accès révoqué / config changée) → repli sur URL puis tabs[0].
+  const activeTab = tabs.some((tb) => tb.id === active)
+    ? active
+    : tabs.some((tb) => tb.id === section)
+      ? (section as string)
+      : (tabs[0]?.id ?? "");
 
   if (tabs.length === 0) {
     return <AdminSectionRenderer section={{ type: "dashboard" }} />;
   }
 
   return (
-    <Tabs value={active} onValueChange={setActive} className="w-full">
+    <Tabs value={activeTab} onValueChange={setActive} className="w-full">
       <TabsList>
         {tabs.map((tab) => (
           <TabsTrigger key={tab.id} value={tab.id}>
