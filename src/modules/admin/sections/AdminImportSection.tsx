@@ -175,6 +175,27 @@ export default function AdminImportSection({ section }: { section: AdminSection 
           </p>
         )}
 
+        {preview && preview.some((r) => !r.success || r.msgErrorAddress) && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              const bad = preview.filter((r) => !r.success || r.msgErrorAddress);
+              const csv = ["ligne,nom,erreur", ...bad.map((r) =>
+                `${r.rowIndex},"${String((r.data?.name as string | undefined) ?? "")}","${r.msgErrorAddress ?? "échec"}"`,
+              )].join("\n");
+              const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "rapport-erreurs-import.csv";
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+          >
+            <Download className="mr-1.5 h-3.5 w-3.5" /> Rapport d'erreurs ({preview.filter((r) => !r.success || r.msgErrorAddress).length})
+          </Button>
+        )}
         {preview && (
           <div className="max-h-96 overflow-auto rounded border">
             <Table>
@@ -183,6 +204,7 @@ export default function AdminImportSection({ section }: { section: AdminSection 
                   <TableHead>#</TableHead>
                   <TableHead>OK</TableHead>
                   <TableHead>Nom</TableHead>
+                  <TableHead>Adresse résolue</TableHead>
                   <TableHead>Avertissements</TableHead>
                   <TableHead>Erreur adresse</TableHead>
                 </TableRow>
@@ -193,6 +215,19 @@ export default function AdminImportSection({ section }: { section: AdminSection 
                     <TableCell>{r.rowIndex}</TableCell>
                     <TableCell>{r.success ? "✓" : "✗"}</TableCell>
                     <TableCell>{String((r.data?.name as string | undefined) ?? "—")}</TableCell>
+                    <TableCell>
+                      {(() => {
+                        // Le POINT DE VALEUR du géocodage : la commune résolue (localityId) + geo.
+                        const addr = r.data?.address as { addressLocality?: string; postalCode?: string; localityId?: string } | undefined;
+                        const geo = r.data?.geo as { latitude?: unknown } | undefined;
+                        if (!addr?.localityId) return <span className="text-muted-foreground">—</span>;
+                        return (
+                          <span className="text-emerald-700">
+                            {addr.addressLocality}{addr.postalCode ? ` (${addr.postalCode})` : ""}{geo?.latitude ? " · 📍" : ""}
+                          </span>
+                        );
+                      })()}
+                    </TableCell>
                     <TableCell className="text-amber-600">{(r.warnings ?? []).join(", ") || "—"}</TableCell>
                     <TableCell className="text-destructive">{r.msgErrorAddress ?? "—"}</TableCell>
                   </TableRow>

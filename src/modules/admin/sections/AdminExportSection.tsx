@@ -34,8 +34,10 @@ export default function AdminExportSection({ section }: { section: AdminSection 
   const t = useT();
   const { entity: carrier, me, contextId, contextType } = useCocolight();
   const [type, setType] = useState("organizations");
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "validated">("all");
   const [busy, setBusy] = useState(false);
   const canExport = me?.isSuperAdmin?.() ?? false;
+  const costumSlug = (carrier as { slug?: string } | null)?.slug ?? "";
 
   async function handleExport() {
     if (!carrier) return;
@@ -43,7 +45,10 @@ export default function AdminExportSection({ section }: { section: AdminSection 
     try {
       // exportElements exige un _costumCtx complet — l'hôte costum n'en a pas (cf. ensureCostumScope).
       ensureCostumScope(carrier, { contextId, contextType });
-      const { results, fields } = await carrier.exportElements({ searchType: [type] });
+      const filters = statusFilter !== "all" && costumSlug
+        ? { [`preferences.toBeValidated.${costumSlug}`]: { $exists: statusFilter === "pending" } }
+        : undefined;
+      const { results, fields } = await carrier.exportElements({ searchType: [type], ...(filters ? { filters } : {}) });
       downloadCsv(toCsv(results, fields as Parameters<typeof toCsv>[1]), `export-${type}-${Date.now()}.csv`);
       toast.success(`${results.length} élément(s) exporté(s)`);
     } catch (error) {
@@ -75,6 +80,19 @@ export default function AdminExportSection({ section }: { section: AdminSection 
                     {t}
                   </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <span className="text-sm font-medium">Statut</span>
+            <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
+              <SelectTrigger className="w-44">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous</SelectItem>
+                <SelectItem value="pending">À valider</SelectItem>
+                <SelectItem value="validated">Validés</SelectItem>
               </SelectContent>
             </Select>
           </div>
