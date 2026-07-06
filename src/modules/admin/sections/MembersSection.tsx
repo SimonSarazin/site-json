@@ -16,7 +16,7 @@ import { useEntityLabels } from "@/modules/profil/hooks/useEntityLabels";
 import { useEntityMembers } from "@/modules/profil/hooks/useMembersQuery";
 import "@/modules/profil/i18n";
 
-import type { AdminSection } from "../schema";
+import type { AdminMembersSection, AdminSection } from "../schema";
 
 /**
  * Section `members` (P1) — gestion de la communauté du CARRIER costum : élévation de
@@ -27,7 +27,8 @@ import type { AdminSection } from "../schema";
  *  - `InviteMemberDialog` (invitation unitaire + email + recherche multi = multiconnect).
  * cf. plan §3 · commentaire/plan-module-admin-generique.md
  */
-export default function MembersSection({ section: _section }: { section: AdminSection }) {
+export default function MembersSection({ section }: { section: AdminSection }) {
+  const cfg = section as AdminMembersSection;
   const { entity } = useCocolight();
   const t = useT("modules/profil");
   const [activeTab, setActiveTab] = useState("all");
@@ -39,7 +40,14 @@ export default function MembersSection({ section: _section }: { section: AdminSe
   const allMembers = useEntityMembers(entity, { toBeValidated: false }, { search: debouncedSearch });
   const pendingMembers = useEntityMembers(entity, { toBeValidated: true }, { search: debouncedSearch });
   const adminMembers = useEntityMembers(entity, { isAdmin: true }, { search: debouncedSearch });
+  const invitedMembers = useEntityMembers(entity, { isInviting: true }, { search: debouncedSearch });
   const labels = useEntityLabels(entity);
+  // Onglets pilotés par la config (`filters`) — REVIEW : la section ignorait totalement sa config.
+  // Défaut (filters absent) : comportement historique (à-valider / tous / admins). `isInviting`
+  // ajoute l'onglet Invités (invitations en attente d'acceptation) ; `text` ne gate que la
+  // barre de recherche.
+  const wanted = cfg.filters ?? ["toBeValidated", "isAdmin"];
+  const showSearch = !cfg.filters || cfg.filters.includes("text");
 
   if (!entity) {
     return (
@@ -52,9 +60,16 @@ export default function MembersSection({ section: _section }: { section: AdminSe
   }
 
   const tabs = [
-    { id: "pending", label: `${labels.pending} (${pendingMembers.totalCount || 0})`, q: pendingMembers, isPending: true, showBadges: false },
+    ...(wanted.includes("toBeValidated")
+      ? [{ id: "pending", label: `${labels.pending} (${pendingMembers.totalCount || 0})`, q: pendingMembers, isPending: true, showBadges: false }]
+      : []),
     { id: "all", label: `${labels.members} (${allMembers.totalCount || 0})`, q: allMembers, isPending: false, showBadges: true },
-    { id: "admins", label: `${labels.admin}s (${adminMembers.totalCount || 0})`, q: adminMembers, isPending: false, showBadges: true },
+    ...(wanted.includes("isAdmin")
+      ? [{ id: "admins", label: `${labels.admin}s (${adminMembers.totalCount || 0})`, q: adminMembers, isPending: false, showBadges: true }]
+      : []),
+    ...(wanted.includes("isInviting")
+      ? [{ id: "invited", label: `Invités (${invitedMembers.totalCount || 0})`, q: invitedMembers, isPending: false, showBadges: false }]
+      : []),
   ];
 
   return (
@@ -67,6 +82,7 @@ export default function MembersSection({ section: _section }: { section: AdminSe
         </Button>
       </CardHeader>
       <CardContent className="space-y-4">
+        {showSearch && (
         <div className="relative">
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
@@ -76,6 +92,7 @@ export default function MembersSection({ section: _section }: { section: AdminSe
             className="pl-10"
           />
         </div>
+        )}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             {tabs.map((tab) => (

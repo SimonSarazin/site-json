@@ -42,9 +42,13 @@ const AdminDashboardSectionSchema = z.object({
 const AdminMembersSectionSchema = z.object({
   type: z.literal("members"),
   scope: z.enum(["carrier", "entity"]).default("carrier"),
+  /** Onglets/outils rendus : toBeValidated (à valider), isAdmin (admins), isInviting (invités),
+   *  text (barre de recherche). Absent → à-valider + admins + recherche (l'onglet « tous » est
+   *  toujours présent). */
   filters: z.array(z.enum(["isAdmin", "toBeValidated", "isInviting", "text"])).optional(),
   actions: z.array(z.string()).optional(),
 });
+export type AdminMembersSection = z.infer<typeof AdminMembersSectionSchema>;
 
 const AdminResourceSectionSchema = z.object({
   type: z.literal("resource"),

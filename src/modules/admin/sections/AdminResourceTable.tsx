@@ -1,4 +1,5 @@
 import { BadgeCheck, BadgeX, ChevronDown, ChevronUp, Link2, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
 import {
@@ -12,6 +13,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -41,6 +43,9 @@ import { useValidateGroup, type ValidatableCarrier } from "../hooks/useValidateG
 import type { AdminResourceSection, AdminSection } from "../schema";
 import { ensureCostumScope } from "../lib/ensureCostumScope";
 import { formatCell, getPath, resolveCreateModal, resolveEditModal, type CostumFormDocLike } from "./resourceHelpers";
+
+import { toCsv } from "@communecter/cocolight-api-client";
+import { toast } from "sonner";
 
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 
@@ -123,6 +128,65 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   const [toDelete, setToDelete] = useState<{ entity: DeletableEntity; label: string } | null>(null);
   // Détacher = action FORTE (l'élément sort du scope costum et disparaît de la table) → confirmation.
   const [toDetach, setToDetach] = useState<{ item: unknown; id: string; label: string } | null>(null);
+  // ── bulkActions (config resource.bulkActions : validate/delete/export) ──────────────────────────
+  const bulkActions = resource.bulkActions ?? [];
+  const queryClient = useQueryClient();
+  const [selected, setSelected] = useState<Map<string, unknown>>(new Map());
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const invalidateAdmin = () =>
+    queryClient.invalidateQueries({ predicate: (q) => String(q.queryKey[0] ?? "").startsWith("admin-") });
+  const toggleSelect = (id: string, item: unknown) =>
+    setSelected((m) => { const n = new Map(m); if (n.has(id)) n.delete(id); else n.set(id, item); return n; });
+
+  /** Validation en masse — API unitaire : boucle SÉQUENTIELLE (pas de Promise.all, évite les races). */
+  const bulkValidate = async (valid: boolean) => {
+    setBulkBusy(true);
+    const c = scopedCarrier() as ValidatableCarrier;
+    let ok = 0, ko = 0;
+    for (const id of selected.keys()) {
+      try { await c.validateGroup(resource.entityType, id, valid); ok++; } catch { ko++; }
+    }
+    setBulkBusy(false);
+    setSelected(new Map());
+    (ko ? toast.warning : toast.success)(`${ok} élément(s) ${valid ? "validé(s)" : "dévalidé(s)"}${ko ? ` — ${ko} échec(s)` : ""}`);
+    void invalidateAdmin();
+  };
+
+  const bulkDelete = async () => {
+    setBulkBusy(true);
+    let ok = 0, ko = 0;
+    let firstError: string | null = null;
+    for (const item of selected.values()) {
+      try { await (item as DeletableEntity).delete("admin bulk delete"); ok++; }
+      catch (e) { ko++; if (!firstError) firstError = e instanceof Error ? e.message : String(e); }
+    }
+    setBulkBusy(false);
+    setSelected(new Map());
+    setBulkDeleteOpen(false);
+    (ko ? toast.warning : toast.success)(
+      `${ok} élément(s) supprimé(s)${ko ? ` — ${ko} échec(s)${firstError ? ` : ${firstError}` : ""}` : ""}`,
+    );
+    void invalidateAdmin();
+  };
+
+  /** Export CSV de la sélection : colonnes configurées (serverData). */
+  const bulkExport = () => {
+    const rowsCsv = [...selected.values()].map((item) => {
+      const d = (item as { serverData?: Record<string, unknown> }).serverData ?? {};
+      const out: Record<string, unknown> = {};
+      for (const col of columns) out[col.path] = getPath(d, col.path);
+      return out;
+    });
+    const csv = toCsv(rowsCsv as Parameters<typeof toCsv>[0], columns.map((c) => c.path) as Parameters<typeof toCsv>[1]);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `selection-${resource.entityType}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
   const [createOpen, setCreateOpen] = useState(false);
   const del = useDeleteEntity(() => {
     setToDelete(null);
@@ -185,6 +249,34 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
             </Select>
           )}
         </div>
+        {bulkActions.length > 0 && selected.size > 0 && (
+          <div className="mb-3 flex flex-wrap items-center gap-2 rounded-md border bg-muted/40 px-3 py-2">
+            <span className="text-sm font-medium">{selected.size} sélectionné{selected.size > 1 ? "s" : ""}</span>
+            {bulkActions.includes("validate") && (
+              <>
+                <Button size="sm" variant="outline" disabled={bulkBusy} onClick={() => void bulkValidate(true)}>
+                  <BadgeCheck className="mr-1.5 h-3.5 w-3.5" /> Valider
+                </Button>
+                <Button size="sm" variant="outline" disabled={bulkBusy} onClick={() => void bulkValidate(false)}>
+                  <BadgeX className="mr-1.5 h-3.5 w-3.5" /> Dévalider
+                </Button>
+              </>
+            )}
+            {bulkActions.includes("export") && (
+              <Button size="sm" variant="outline" disabled={bulkBusy} onClick={bulkExport}>
+                Exporter la sélection
+              </Button>
+            )}
+            {bulkActions.includes("delete") && (
+              <Button size="sm" variant="destructive" disabled={bulkBusy} onClick={() => setBulkDeleteOpen(true)}>
+                <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Supprimer
+              </Button>
+            )}
+            <Button size="sm" variant="ghost" disabled={bulkBusy} onClick={() => setSelected(new Map())}>
+              Annuler
+            </Button>
+          </div>
+        )}
         {/* Hauteur bornée + scroll interne : la sentinelle du scroll infini (lastItemRef) est CLIPPÉE hors
             de cette zone tant qu'on n'a pas scrollé → l'IntersectionObserver ne re-déclenche pas en cascade.
             Sans ça, un gros costum (p.ex. 3120 POI = 312 pages) enchaîne des dizaines de fetchNextPage
@@ -193,6 +285,23 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
         <Table>
           <TableHeader>
             <TableRow>
+              {bulkActions.length > 0 && (
+                <TableHead className="w-10">
+                  <Checkbox
+                    aria-label="Tout sélectionner (lignes chargées)"
+                    checked={rows.length > 0 && selected.size >= rows.length}
+                    onCheckedChange={(v) => {
+                      if (!v) { setSelected(new Map()); return; }
+                      const m = new Map<string, unknown>();
+                      rows.forEach((item) => {
+                        const rid = (item as { id?: unknown }).id ?? ((item as { serverData?: { id?: unknown } }).serverData?.id);
+                        if (rid != null) m.set(String(rid), item);
+                      });
+                      setSelected(m);
+                    }}
+                  />
+                </TableHead>
+              )}
               {columns.map((col) => (
                 // Tri SERVEUR au clic (asc → desc → aucun) — les données étant paginées en scroll
                 // infini, un tri client ne trierait que les pages chargées.
@@ -235,6 +344,16 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
               const isPending = adminMode && !!costumSlug && !!tbv && typeof tbv === "object" && tbv[costumSlug] === true;
               return (
                 <TableRow key={id} ref={isLast ? lastItemRef : undefined}>
+                  {bulkActions.length > 0 && (
+                    <TableCell className="w-10">
+                      <Checkbox
+                        aria-label={`Sélectionner ${label}`}
+                        disabled={!hasRealId}
+                        checked={selected.has(id)}
+                        onCheckedChange={() => toggleSelect(id, item)}
+                      />
+                    </TableCell>
+                  )}
                   {columns.map((col) => (
                     <TableCell key={col.path}>{formatCell(getPath(data, col.path))}</TableCell>
                   ))}
@@ -352,6 +471,21 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
           parent={carrier}
         />
       )}
+
+      <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer {selected.size} élément{selected.size > 1 ? "s" : ""} ?</AlertDialogTitle>
+            <AlertDialogDescription>Cette action est irréversible.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkBusy}>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={() => void bulkDelete()} disabled={bulkBusy}>
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog
         open={!!toDetach}

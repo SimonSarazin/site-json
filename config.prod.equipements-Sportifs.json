@@ -4901,7 +4901,8 @@
         "sections": [
           {
             "type": "members",
-            "scope": "carrier"
+            "scope": "carrier",
+            "filters": ["toBeValidated", "isAdmin", "isInviting", "text"]
           }
         ]
       },
@@ -4931,6 +4932,11 @@
               "delete",
               "validate",
               "reference"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
             ],
             "create": "inherit",
             "edit": "inherit"
