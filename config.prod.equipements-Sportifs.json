@@ -4917,6 +4917,10 @@
             "label": {
               "fr": "Équipements"
             },
+            "source": {
+              "defaultFilters": { "type": "recoveryCenter" },
+              "defaultSortBy": { "name": 1 }
+            },
             "columns": [
               "name",
               "address.addressLocality",

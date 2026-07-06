@@ -50,9 +50,16 @@ const AdminResourceSectionSchema = z.object({
   type: z.literal("resource"),
   entityType: z.string(), // organizations | projects | poi | events | answers | citoyens | …
   label: LocalizedString.optional(),
-  source: SearchBaseParamsSchema.partial().optional(), // baseParams searchCostum (defaultTypes/tags/filters…)
+  /**
+   * Paramètres de la requête de recherche — MÊME forme que les `baseParams` de `searchProStatic`
+   * (SearchBaseParamsSchema) : `defaultFilters` (filtres Mongo, ex. {"type":"recoveryCenter"}),
+   * `defaultTags`, `searchBy`, `defaultSortBy` (tri initial, surchargé par le tri colonne UI),
+   * `indexStepList` (taille de page), `notSourceKey`, `locality`… NB : en mode admin (rowActions
+   * `validate`/`status`), `defaultFields` est ignoré — la table charge les documents COMPLETS
+   * (résolution d'édition costum + forms préremplis, cf. AdminResourceTable).
+   */
+  source: SearchBaseParamsSchema.partial().optional(),
   columns: z.array(z.string()).optional(),
-  filters: z.array(z.string()).optional(),
   create: AdminFormRefSchema.default("inherit"),
   edit: AdminFormRefSchema.default("inherit"),
   rowActions: z.array(z.enum(["edit", "delete", "validate", "reference"])).optional(),
