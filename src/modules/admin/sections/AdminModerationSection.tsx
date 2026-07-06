@@ -33,6 +33,8 @@ import type { AdminSection } from "../schema";
  * Accès superAdmin (gaté par l'onglet). Requiert le SDK ≥ 1.0.162 (consolidateModeration/saveModeration).
  */
 interface Flagged {
+  /** Posé par la normalisation lib (_transformData/_reviveClean) — `_id` brut est un ObjectId revivé. */
+  id?: string;
   _id?: { $id?: string };
   text?: string;
   name?: string;
@@ -62,7 +64,7 @@ function FlaggedList({
   return (
     <ul className="divide-y">
       {items.map((it, i) => {
-        const id = it._id?.$id ?? "";
+        const id = it.id ?? it._id?.$id ?? "";
         return (
           <li key={id || i} className="flex items-center justify-between gap-3 py-3">
             <div className="min-w-0 flex-1">
