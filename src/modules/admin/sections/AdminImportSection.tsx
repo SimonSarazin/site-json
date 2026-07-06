@@ -9,14 +9,18 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+
 import { useCocolight } from "@/hooks/useCocolight";
 
+import { ensureCostumScope } from "../lib/ensureCostumScope";
+import { shapeImportRow } from "../lib/shapeImportRow";
 import type { AdminImportSection, AdminSection } from "../schema";
 
 /**
  * Section `import` (P3) — import CSV en masse sous le costum courant. Câble : papaparse (CSV→lignes) →
- * `entity.previewImport` (IMPORT_PREVIEW : géocodage + warnings AVANT insertion) → `entity.importElements`
- * (IMPORT_ELEMENTS, chunké + onProgress) → résumé {créés, maj, erreurs}. Scope source.key auto (carrier).
+ * `shapeImportRows` (colonnes plates → structure microformat) → `entity.previewImport` (GEOCODAGE :
+ * résolution d'adresse + warnings AVANT insertion) → `entity.importElements` (IMPORT_ELEMENTS, chunké +
+ * onProgress) → résumé {créés, maj, erreurs}. Scope source.key auto (carrier ctx-ifié, cf. useAdminCostumCarrier).
  */
 const IMPORT_TYPES = ["poi", "organizations", "projects", "events", "citoyens"] as const;
 type ImportType = (typeof IMPORT_TYPES)[number];
@@ -31,7 +35,7 @@ interface PreviewRow {
 
 export default function AdminImportSection({ section }: { section: AdminSection }) {
   const importSection = section as AdminImportSection;
-  const { entity: carrier } = useCocolight();
+  const { entity: carrier, contextId, contextType } = useCocolight();
   const allowed = importSection.entityTypes?.filter((t): t is ImportType =>
     (IMPORT_TYPES as readonly string[]).includes(t),
   ) ?? [...IMPORT_TYPES];
@@ -50,7 +54,7 @@ export default function AdminImportSection({ section }: { section: AdminSection 
       header: true,
       skipEmptyLines: true,
       complete: (res) => {
-        setRows(res.data);
+        setRows(res.data.map(shapeImportRow));
         toast.success(`${res.data.length} ligne(s) chargée(s)`);
       },
       error: () => toast.error("Fichier CSV illisible"),
@@ -61,6 +65,7 @@ export default function AdminImportSection({ section }: { section: AdminSection 
     if (!carrier || rows.length === 0) return;
     setBusy(true);
     try {
+      ensureCostumScope(carrier, { contextId, contextType });
       const res = await carrier.previewImport(rows);
       setPreview(res.rows);
     } catch (error) {
@@ -75,6 +80,7 @@ export default function AdminImportSection({ section }: { section: AdminSection 
     setBusy(true);
     setProgress({ current: 0, total: rows.length });
     try {
+      ensureCostumScope(carrier, { contextId, contextType });
       const res = await carrier.importElements(type, rows, {
         onProgress: (current, total) => setProgress({ current, total }),
       });

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCocolight } from "@/hooks/useCocolight";
 
+import { ensureCostumScope } from "../lib/ensureCostumScope";
 import type { AdminSection } from "../schema";
 
 /**
@@ -28,7 +29,7 @@ function downloadCsv(csv: string, filename: string): void {
 }
 
 export default function AdminExportSection({ section: _section }: { section: AdminSection }) {
-  const { entity: carrier, me } = useCocolight();
+  const { entity: carrier, me, contextId, contextType } = useCocolight();
   const [type, setType] = useState("organizations");
   const [busy, setBusy] = useState(false);
   const canExport = me?.isSuperAdmin?.() ?? false;
@@ -37,6 +38,8 @@ export default function AdminExportSection({ section: _section }: { section: Adm
     if (!carrier) return;
     setBusy(true);
     try {
+      // exportElements exige un _costumCtx complet — l'hôte costum n'en a pas (cf. ensureCostumScope).
+      ensureCostumScope(carrier, { contextId, contextType });
       const { results, fields } = await carrier.exportElements({ searchType: [type] });
       downloadCsv(toCsv(results, fields as Parameters<typeof toCsv>[1]), `export-${type}-${Date.now()}.csv`);
       toast.success(`${results.length} élément(s) exporté(s)`);
