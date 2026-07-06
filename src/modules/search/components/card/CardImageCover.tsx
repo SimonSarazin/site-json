@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Monitor, Users, UtensilsCrossed, type LucideIcon } from "lucide-react";
+import { Monitor, Users, BedDouble, type LucideIcon } from "lucide-react";
 import { SearchCardProps } from "../../schema";
 import type { Answer, FormId, SearchEntity } from "@communecter/cocolight-api-client";
 import { getLocation } from "../../helpers/getLocation";
@@ -18,7 +18,7 @@ import {
 const STAT_ICONS: Record<ServicePricingStatKind, LucideIcon> = {
   coworking: Monitor,
   meeting: Users,
-  accommodation: UtensilsCrossed,
+  accommodation: BedDouble,
 };
 
 export default function CardImageCover({
