@@ -62,7 +62,11 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
     queryKeyPrefix: `admin-${resource.entityType}`,
     searchText: "",
     searchTags: {},
-    searchType: null,
+    // Le type de recherche DOIT passer par `searchType` (et non le seul `baseParams.defaultTypes`) :
+    // useSearchQuery mappe `searchType:null` en `type=[]` (tableau vide), or buildSearchPayload ne
+    // retombe sur `defaultTypes` que si `type===undefined` → sans ça, `param.searchType` reste vide et
+    // le queryFn court-circuite (résultat vide, AUCUN appel réseau). Idiome repris de SearchProStatic.
+    searchType: { type: [resource.entityType] },
     mapUsed: false,
     baseParams,
   });
@@ -98,6 +102,11 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
         )}
       </CardHeader>
       <CardContent>
+        {/* Hauteur bornée + scroll interne : la sentinelle du scroll infini (lastItemRef) est CLIPPÉE hors
+            de cette zone tant qu'on n'a pas scrollé → l'IntersectionObserver ne re-déclenche pas en cascade.
+            Sans ça, un gros costum (p.ex. 3120 POI = 312 pages) enchaîne des dizaines de fetchNextPage
+            d'affilée dans une table non virtualisée → gel du renderer. Le chargement reste incrémental au scroll. */}
+        <div className="max-h-[60vh] overflow-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -189,6 +198,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
             })}
           </TableBody>
         </Table>
+        </div>
         {isLoading && (
           <div className="space-y-2 py-2">
             <Skeleton className="h-8 w-full" />
