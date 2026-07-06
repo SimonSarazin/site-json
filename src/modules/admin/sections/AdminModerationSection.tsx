@@ -18,6 +18,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCocolight } from "@/hooks/useCocolight";
+import { useT } from "@/hooks/useT";
 
 import { ADMIN_QUERY_KEYS } from "../constants/queryKeys";
 import type { AdminSection } from "../schema";
@@ -92,7 +93,9 @@ function FlaggedList({
   );
 }
 
-export default function AdminModerationSection({ section: _section }: { section: AdminSection }) {
+export default function AdminModerationSection({ section }: { section: AdminSection }) {
+  const modSection = section as { title?: Parameters<ReturnType<typeof useT>>[0] };
+  const t = useT();
   const { me } = useCocolight();
   const mod = me as unknown as ModerationUser | null;
   const queryClient = useQueryClient();
@@ -141,7 +144,7 @@ export default function AdminModerationSection({ section: _section }: { section:
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
           <AlertTriangle className="h-5 w-5 text-destructive" />
-          Modération
+          {modSection.title ? t(modSection.title) : "Modération"}
         </CardTitle>
       </CardHeader>
       <CardContent>

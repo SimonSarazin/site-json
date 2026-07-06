@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCocolight } from "@/hooks/useCocolight";
+import { useT } from "@/hooks/useT";
 
 import { ensureCostumScope } from "../lib/ensureCostumScope";
 import type { AdminSection } from "../schema";
@@ -28,7 +29,9 @@ function downloadCsv(csv: string, filename: string): void {
   URL.revokeObjectURL(url);
 }
 
-export default function AdminExportSection({ section: _section }: { section: AdminSection }) {
+export default function AdminExportSection({ section }: { section: AdminSection }) {
+  const exportSection = section as { title?: Parameters<ReturnType<typeof useT>>[0] };
+  const t = useT();
   const { entity: carrier, me, contextId, contextType } = useCocolight();
   const [type, setType] = useState("organizations");
   const [busy, setBusy] = useState(false);
@@ -53,7 +56,7 @@ export default function AdminExportSection({ section: _section }: { section: Adm
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Export CSV</CardTitle>
+        <CardTitle className="text-lg">{exportSection.title ? t(exportSection.title) : "Export CSV"}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {!canExport && (

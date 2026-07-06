@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useT } from "@/hooks/useT";
 import SearchTextInput from "@/modules/search/components/SearchTextInput";
 import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
 
@@ -41,6 +42,7 @@ const DEFAULT_TYPES = ["organizations", "projects", "events", "poi"];
  */
 export default function AdminReferenceSection({ section }: { section: AdminSection }) {
   const cfg = section as AdminReferenceSectionConfig;
+  const t = useT();
   const { entity: carrier, contextId, contextType } = useCocolight();
   const costumSlug = (carrier as { slug?: string } | null)?.slug ?? "";
   const types = cfg.entityTypes ?? DEFAULT_TYPES;
@@ -156,7 +158,7 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
           <Link2 className="h-5 w-5" />
-          Référencement
+          {cfg.title ? t(cfg.title) : "Référencement"}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">

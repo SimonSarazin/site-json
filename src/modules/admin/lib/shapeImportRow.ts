@@ -20,8 +20,10 @@ const ADDRESS_KEYS: Record<string, string> = {
  */
 export function shapeImportRow(row: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {};
-  for (const [rawKey, rawVal] of Object.entries(row)) {
+  for (const [rawKey, rawValIn] of Object.entries(row)) {
     const key = rawKey.trim();
+    // REVIEW LOW : trim des valeurs string (espaces parasites des CSV Excel → résolution de commune ratée).
+    const rawVal = typeof rawValIn === "string" ? rawValIn.trim() : rawValIn;
     if (!key || rawVal === "" || rawVal == null) continue;
     // 1) clés pointées → imbrication générique
     if (key.includes(".")) {

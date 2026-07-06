@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useT } from "@/hooks/useT";
 
@@ -19,6 +21,15 @@ export function AdminRenderer({ config }: { config: AdminConfig }) {
   const navigate = useNavigate();
   const tabs = (config.tabs ?? []).filter((tab) => !tab.access || access.has(tab.access));
   const [active, setActive] = useState("");
+  // REVIEW M3 : une navigation EXTERNE (palette Ctrl+K, tuile dashboard) change :section — l'URL
+  // reprend la main sur l'état cliqué. Pattern React « adjust state during render » (pas d'effet :
+  // la règle react-compiler interdit le setState synchrone en effet, et ce pattern évite un
+  // rendu intermédiaire avec le mauvais onglet).
+  const [lastSection, setLastSection] = useState(section);
+  if (section !== lastSection) {
+    setLastSection(section);
+    if (section) setActive(section);
+  }
   // Onglet effectif dérivé à CHAQUE rendu (pas d'état figé) :
   // - M1 (deep-link) : au 1er rendu `active===""` → on prend l'onglet de l'URL `admin/:section` s'il existe ;
   // - M2 (réconciliation) : si `active` sort du jeu filtré (accès révoqué / config changée) → repli sur URL puis tabs[0].
@@ -45,6 +56,7 @@ export function AdminRenderer({ config }: { config: AdminConfig }) {
       <TabsList>
         {tabs.map((tab) => (
           <TabsTrigger key={tab.id} value={tab.id}>
+            {tab.icon && <DynamicIcon name={tab.icon as IconName} className="mr-1.5 h-3.5 w-3.5" />}
             {t(tab.label)}
           </TabsTrigger>
         ))}

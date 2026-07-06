@@ -74,19 +74,21 @@ export type AdminResourceSection = z.infer<typeof AdminResourceSectionSchema>;
 
 const AdminImportSectionSchema = z.object({
   type: z.literal("import"),
+  title: LocalizedString.optional(),
   entityTypes: z.array(z.string()).optional(),
 });
 export type AdminImportSection = z.infer<typeof AdminImportSectionSchema>;
 
-const AdminExportSectionSchema = z.object({ type: z.literal("export") });
+const AdminExportSectionSchema = z.object({ type: z.literal("export"), title: LocalizedString.optional() });
 /** Section référencement : recherche globale (hors costum) + rattacher/retirer une référence.
  *  `entityTypes` : types proposés dans le sélecteur (défaut organizations/projects/events/poi). */
 const AdminReferenceSectionSchema = z.object({
   type: z.literal("reference"),
+  title: LocalizedString.optional(),
   entityTypes: z.array(z.string()).optional(),
 });
 export type AdminReferenceSection = z.infer<typeof AdminReferenceSectionSchema>;
-const AdminModerationSectionSchema = z.object({ type: z.literal("moderation") });
+const AdminModerationSectionSchema = z.object({ type: z.literal("moderation"), title: LocalizedString.optional() });
 
 /** Section costum : `type` libre enregistré via `registerAdminSection` (comme une section profil costum).
  *  Permissif (le composant enregistré valide ses props) — mis EN DERNIER dans l'union (fallback). */
@@ -120,6 +122,8 @@ export type AdminTab = z.infer<typeof AdminTabSchema>;
 
 export const AdminConfigSchema = z.object({
   enabled: z.boolean().default(true),
+  /** Titre de la page (h1 + tuile). Défaut : « Administration ». */
+  title: LocalizedString.optional(),
   /** Accès minimum à la page admin (surchargé par onglet/section). */
   access: z.object({ min: AdminAccessLevelSchema.default("siteAdmin") }).default({ min: "siteAdmin" }),
   /** Onglets. Si absent → dérivés automatiquement de `config.profiles.addConfig` (P2+). */

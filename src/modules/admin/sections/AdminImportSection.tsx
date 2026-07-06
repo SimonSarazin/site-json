@@ -1,4 +1,5 @@
 import { Download, Upload } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import Papa from "papaparse";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -11,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 import { useCocolight } from "@/hooks/useCocolight";
+import { useT } from "@/hooks/useT";
 
 import { ensureCostumScope } from "../lib/ensureCostumScope";
 import { shapeImportRow } from "../lib/shapeImportRow";
@@ -36,6 +38,8 @@ interface PreviewRow {
 export default function AdminImportSection({ section }: { section: AdminSection }) {
   const importSection = section as AdminImportSection;
   const { entity: carrier, contextId, contextType } = useCocolight();
+  const t = useT();
+  const queryClient = useQueryClient();
   const allowed = importSection.entityTypes?.filter((t): t is ImportType =>
     (IMPORT_TYPES as readonly string[]).includes(t),
   ) ?? [...IMPORT_TYPES];
@@ -103,6 +107,8 @@ export default function AdminImportSection({ section }: { section: AdminSection 
       });
       setSummary(res.summary);
       toast.success(`Import : ${res.summary.created} créés · ${res.summary.updated} maj · ${res.summary.errors} erreurs`);
+      // REVIEW M4 : les éléments importés doivent apparaître dans les tables/tuiles sans attendre le staleTime.
+      void queryClient.invalidateQueries({ predicate: (q) => String(q.queryKey[0] ?? "").startsWith("admin-") });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Import impossible");
     } finally {
@@ -114,7 +120,7 @@ export default function AdminImportSection({ section }: { section: AdminSection 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Import CSV</CardTitle>
+        <CardTitle className="text-lg">{importSection.title ? t(importSection.title) : "Import CSV"}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-wrap items-end gap-3">

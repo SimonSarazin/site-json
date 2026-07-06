@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 /**
@@ -15,12 +15,15 @@ export interface DeletableEntity {
  * Best-effort côté bulk : l'appelant boucle et agrège (cf. deleteFiles legacy).
  */
 export function useDeleteEntity(onDeleted?: () => void) {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ entity, reason }: { entity: DeletableEntity; reason?: string }) => {
       await entity.delete(reason);
     },
     onSuccess: () => {
       toast.success("Élément supprimé");
+      // REVIEW M5 : invalide toutes les requêtes admin (autres onglets/filtres/tuiles dashboard).
+      void queryClient.invalidateQueries({ predicate: (q) => String(q.queryKey[0] ?? "").startsWith("admin-") });
       onDeleted?.();
     },
     onError: (error: unknown) => {

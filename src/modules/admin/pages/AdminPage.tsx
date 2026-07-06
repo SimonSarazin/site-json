@@ -2,6 +2,8 @@ import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { useSite } from "@/hooks/useSite";
 
+import { useT } from "@/hooks/useT";
+
 import { AdminRenderer } from "../AdminRenderer";
 import { useAdminAccess } from "../hooks/useAdminAccess";
 
@@ -11,6 +13,7 @@ import { useAdminAccess } from "../hooks/useAdminAccess";
  * → pas de prefetch SSR, on évite un flash d'admin). cf. plan §1.
  */
 export default function AdminPage() {
+  const t = useT();
   const { config } = useSite();
   const admin = config?.admin;
   const access = useAdminAccess();
@@ -38,7 +41,7 @@ export default function AdminPage() {
     <>
       <SiteHeader />
       <main className="container mx-auto py-6">
-        <h1 className="mb-4 text-2xl font-semibold">Administration</h1>
+        <h1 className="mb-4 text-2xl font-semibold">{admin.title ? t(admin.title) : "Administration"}</h1>
         <AdminRenderer config={admin} />
       </main>
       <SiteFooter />

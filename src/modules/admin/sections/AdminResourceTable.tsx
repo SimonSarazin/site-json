@@ -39,6 +39,7 @@ import { useDeleteEntity, type DeletableEntity } from "../hooks/useDeleteEntity"
 import { useReferenceElement, type ReferencingCarrier } from "../hooks/useReferenceElement";
 import { useValidateGroup, type ValidatableCarrier } from "../hooks/useValidateGroup";
 import type { AdminResourceSection, AdminSection } from "../schema";
+import { ensureCostumScope } from "../lib/ensureCostumScope";
 import { formatCell, getPath, resolveCreateModal, resolveEditModal, type CostumFormDocLike } from "./resourceHelpers";
 
 import type { EntityTypes } from "@communecter/cocolight-api-client";
@@ -54,7 +55,7 @@ type StatusFilter = "all" | "pending" | "validated";
 
 export default function AdminResourceTable({ section }: { section: AdminSection }) {
   const resource = section as AdminResourceSection;
-  const { entity: carrier } = useCocolight();
+  const { entity: carrier, contextId, contextType } = useCocolight();
   const t = useT();
   // Colonnes : `"path"` brut OU `{path, label}` (libellé localisé) — cf. AdminColumnSchema.
   const columns = (resource.columns ?? ["name"]).map((c) =>
@@ -93,14 +94,14 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
     return {
       defaultTypes: [resource.entityType] as SearchType[],
       ...src,
-      ...(adminMode ? { defaultFields: undefined } : { defaultFields: [...new Set(["source", ...(src.defaultFields ?? [])])] }),
+      ...(adminMode ? { defaultFields: undefined } : { defaultFields: [...new Set(["source", "reference", ...(src.defaultFields ?? [])])] }),
       ...(Object.keys(filters).length > 0 ? { defaultFilters: filters } : {}),
       ...(sort ? { defaultSortBy: { [sort.col]: sort.dir } } : {}),
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- src dérivé de la config (stable par rendu)
   }, [adminMode, statusFilter, costumSlug, sort, resource.entityType, JSON.stringify(src)]);
 
-  const { transformedResults, totalCount, isLoading, lastItemRef, refetch } = useSearchQuery({
+  const { transformedResults, totalCount, isLoading, lastItemRef, refetch, error: searchError } = useSearchQuery({
     queryKeyPrefix: ADMIN_QUERY_KEYS.RESOURCE_PREFIX(resource.entityType),
     searchText,
     searchTags: {},
@@ -137,6 +138,16 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   // création prend le form COSTUM du site s'il en existe un pour ce type (config.costumForms,
   // même form que le bouton public), et l'édition suit la résolution publique (editModal/Match).
   const { config } = useSite();
+  // ⚠ REVIEW HIGH : les mutations validate/reference s'appellent sur le CARRIER ctx-ifié
+  // (ensureCostumScope → slug DU SITE), PAS sur l'entité de ligne : le _costumCtx d'un item est
+  // dérivé de SON source.key — pour un élément créé sous un AUTRE costum mais référencé ici,
+  // item.validateGroup aurait écrit toBeValidated.<autre-slug> (mauvais costum) ; et un élément
+  // seulement référencé (sans source) n'a aucun ctx → échec avant réseau.
+  const scopedCarrier = (): unknown => {
+    ensureCostumScope(carrier, { contextId, contextType });
+    return carrier;
+  };
+
   const createModal = resolveCreateModal(
     resource,
     (config as { costumForms?: Record<string, CostumFormDocLike> }).costumForms,
@@ -205,12 +216,19 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
               const data = (item as { serverData?: Record<string, unknown> }).serverData ?? {};
               // H1 : privilégier le GETTER d'entité `item.id` (serverData.id pas toujours peuplé par
               // searchCostum — cf. SearchListView) ; l'index i n'est qu'un ultime repli anti-crash.
-              const id = String((item as { id?: unknown }).id ?? (data as { id?: unknown }).id ?? i);
+              const realId = (item as { id?: unknown }).id ?? (data as { id?: unknown }).id;
+              // REVIEW LOW : sans id réel, l'index n'est qu'une clé React — JAMAIS envoyé aux mutations.
+              const id = String(realId ?? i);
+              const hasRealId = realId != null;
               const label = String((data as { name?: unknown }).name ?? id);
               const isLast = i === rows.length - 1;
-              // Rattachement : source.keys (projeté via defaultFields) contient le slug du costum courant → détachable ; sinon référençable.
+              // 3 états de rattachement (source ET reference projetés) : sourcé → « Détacher » ;
+              // seulement référencé → « Retirer la référence » (re-référencer dupliquerait,
+              // add/reference ne déduplique pas — parité) ; sinon → « Référencer ».
               const sourceKeys = (data as { source?: { keys?: unknown[] } }).source?.keys;
               const isAttached = Array.isArray(sourceKeys) && !!costumSlug && sourceKeys.includes(costumSlug);
+              const refCostum = (data as { reference?: { costum?: unknown[] } }).reference?.costum;
+              const isReferenced = !isAttached && Array.isArray(refCostum) && !!costumSlug && refCostum.includes(costumSlug);
               // Statut de validation costum — LISIBLE en mode admin (le variant admin renvoie preferences,
               // strippé sur l'endpoint public) : flag posé → « En attente », absent → « Validé ».
               const tbv = (data as { preferences?: { toBeValidated?: Record<string, unknown> } }).preferences?.toBeValidated;
@@ -242,7 +260,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                             <Pencil className="mr-2 h-4 w-4" /> Éditer
                           </DropdownMenuItem>
                         )}
-                        {rowActions.includes("validate") && carrier && (
+                        {rowActions.includes("validate") && carrier && hasRealId && (
                           // Le statut est LISIBLE en mode admin (variant admin → preferences projeté) : on
                           // n'affiche que l'action PERTINENTE (« Valider » un en-attente, « Dévalider » un validé).
                           // ⚠ On appelle sur `item` (l'entité de la ligne) et NON `carrier` : validateGroup/addReference
@@ -250,29 +268,29 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                           // costum (carrier) n'a pas forcément ; l'item l'auto-dérive de sa `source.keys` (projetée par M3).
                           <DropdownMenuItem
                             onClick={() =>
-                              validate.mutate({ carrier: item as unknown as ValidatableCarrier, type: resource.entityType, id, valid: isPending })
+                              validate.mutate({ carrier: scopedCarrier() as ValidatableCarrier, type: resource.entityType, id, valid: isPending })
                             }
                           >
                             {isPending ? <BadgeCheck className="mr-2 h-4 w-4" /> : <BadgeX className="mr-2 h-4 w-4" />}
                             {isPending ? "Valider" : "Dévalider"}
                           </DropdownMenuItem>
                         )}
-                        {rowActions.includes("reference") && carrier && costumSlug && (
+                        {rowActions.includes("reference") && carrier && costumSlug && hasRealId && (
                           <DropdownMenuItem
                             onClick={() => {
                               if (isAttached) { setToDetach({ item, id, label }); return; }
                               reference.mutate({
-                                carrier: item as unknown as ReferencingCarrier,
-                                op: "reference",
+                                carrier: scopedCarrier() as ReferencingCarrier,
+                                op: isReferenced ? "unreference" : "reference",
                                 type: resource.entityType,
                                 id,
                               });
                             }}
                           >
-                            <Link2 className="mr-2 h-4 w-4" /> {isAttached ? "Détacher" : "Référencer"}
+                            <Link2 className="mr-2 h-4 w-4" /> {isAttached ? "Détacher" : isReferenced ? "Retirer la référence" : "Référencer"}
                           </DropdownMenuItem>
                         )}
-                        {rowActions.includes("delete") && (
+                        {rowActions.includes("delete") && hasRealId && (
                           <DropdownMenuItem
                             className="text-destructive"
                             onClick={() => setToDelete({ entity: item as unknown as DeletableEntity, label })}
@@ -295,8 +313,14 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
             <Skeleton className="h-8 w-full" />
           </div>
         )}
-        {!isLoading && rows.length === 0 && (
+        {!isLoading && rows.length === 0 && !searchError && (
           <p className="py-8 text-center text-sm text-muted-foreground">Aucun élément.</p>
+        )}
+        {searchError != null && (
+          // REVIEW M6 : une erreur de recherche n'est PAS « Aucun élément » — l'afficher.
+          <p className="py-8 text-center text-sm text-destructive">
+            La recherche a échoué : {searchError instanceof Error ? searchError.message : "erreur serveur"}.
+          </p>
         )}
         {rows.length > 0 && totalCount != null && (
           <p className="pt-2 text-xs text-muted-foreground">
@@ -316,7 +340,17 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
         />
       )}
       {createModal && (
-        <DynamicModal modalName={createModal} open={createOpen} onOpenChange={setCreateOpen} parent={carrier} />
+        <DynamicModal
+          modalName={createModal}
+          open={createOpen}
+          onOpenChange={(o) => {
+            setCreateOpen(o);
+            // REVIEW M4 : à la fermeture de la modale de création, refetch (un élément vient
+            // peut-être d'être créé — staleTime 60s sinon).
+            if (!o) void refetch();
+          }}
+          parent={carrier}
+        />
       )}
 
       <AlertDialog
@@ -338,7 +372,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
             <AlertDialogAction
               onClick={() => {
                 if (toDetach) {
-                  reference.mutate({ carrier: toDetach.item as unknown as ReferencingCarrier, op: "detach", type: resource.entityType, id: toDetach.id });
+                  reference.mutate({ carrier: scopedCarrier() as ReferencingCarrier, op: "detach", type: resource.entityType, id: toDetach.id });
                   setToDetach(null);
                 }
               }}

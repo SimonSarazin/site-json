@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 /**
@@ -11,12 +11,16 @@ export interface ValidatableCarrier {
 
 /** Mutation de (dé)validation d'un élément sous le costum du carrier (P4). Toast + refetch de la liste. */
 export function useValidateGroup(onDone?: () => void) {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ carrier, type, id, valid }: { carrier: ValidatableCarrier; type: string; id: string; valid: boolean }) => {
       return carrier.validateGroup(type, id, valid);
     },
     onSuccess: (_res, vars) => {
       toast.success(vars.valid ? "Élément validé" : "Validation retirée");
+      // REVIEW M5 : invalide TOUTES les requêtes admin (autres filtres statut, Contenu vs
+      // Référencement, tuiles dashboard) — le refetch() du composant ne couvre que la clé active.
+      void queryClient.invalidateQueries({ predicate: (q) => String(q.queryKey[0] ?? "").startsWith("admin-") });
       onDone?.();
     },
     onError: (error: unknown) => {
