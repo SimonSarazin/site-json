@@ -72,28 +72,27 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
 
   const src = (resource.source ?? {}) as { defaultFields?: string[]; defaultFilters?: Record<string, unknown> } & Record<string, unknown>;
   const baseParams = useMemo(() => {
-    // M3 : `source` FORCÉ dans la projection (absent du jeu legacy par défaut) → le toggle
-    // Référencer/Détacher reflète l'appartenance réelle à source.keys.
-    const fields = [...new Set(["source", ...(src.defaultFields ?? [])])];
-    if (adminMode) {
-      // Projection admin = EXACTE (aucune base ajoutée par le serveur) : il faut demander TOUT ce que la
-      // table consomme — colonnes configurées (chemins pointés acceptés), preferences (badge), name/slug/
-      // updated (affichage/tri). `collection` est garanti par le SDK (variant admin).
-      fields.push("name", "slug", "preferences", "updated", ...columns);
-    }
     const filters: Record<string, unknown> = { ...(src.defaultFilters ?? {}) };
     if (adminMode && statusFilter !== "all" && costumSlug) {
       filters[`preferences.toBeValidated.${costumSlug}`] = { $exists: statusFilter === "pending" };
     }
+    // Projection :
+    //  - mode ADMIN : AUCUN `fields` → la route admin renvoie les DOCUMENTS COMPLETS (sémantique
+    //    legacy searchAdmin, moins pwd). Indispensable au-delà du badge : la résolution d'édition
+    //    (`editModalMatch`, ex. {type:"recoveryCenter"}) lit serverData.type, et le form costum
+    //    d'édition doit être PRÉREMPLI (champs equip_*) — une projection partielle ouvrait le form
+    //    générique et/ou des champs vides. Coût maîtrisé : pagination par 10.
+    //  - mode public : `source` FORCÉ (M3, absent du jeu legacy par défaut) → le toggle
+    //    Référencer/Détacher reflète l'appartenance réelle à source.keys.
     return {
       defaultTypes: [resource.entityType] as SearchType[],
       ...src,
-      defaultFields: [...new Set(fields)],
+      ...(adminMode ? { defaultFields: undefined } : { defaultFields: [...new Set(["source", ...(src.defaultFields ?? [])])] }),
       ...(Object.keys(filters).length > 0 ? { defaultFilters: filters } : {}),
       ...(sort ? { defaultSortBy: { [sort.col]: sort.dir } } : {}),
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- src/columns dérivés de la config (stables par rendu)
-  }, [adminMode, statusFilter, costumSlug, sort, resource.entityType, JSON.stringify(src), JSON.stringify(columns)]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- src dérivé de la config (stable par rendu)
+  }, [adminMode, statusFilter, costumSlug, sort, resource.entityType, JSON.stringify(src)]);
 
   const { transformedResults, totalCount, isLoading, lastItemRef, refetch } = useSearchQuery({
     queryKeyPrefix: `admin-${resource.entityType}`,
