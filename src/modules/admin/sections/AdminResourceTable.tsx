@@ -34,6 +34,7 @@ import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
 
 import type { SearchType } from "@/modules/search/schema";
 
+import { ADMIN_QUERY_KEYS } from "../constants/queryKeys";
 import { useDeleteEntity, type DeletableEntity } from "../hooks/useDeleteEntity";
 import { useReferenceElement, type ReferencingCarrier } from "../hooks/useReferenceElement";
 import { useValidateGroup, type ValidatableCarrier } from "../hooks/useValidateGroup";
@@ -100,7 +101,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   }, [adminMode, statusFilter, costumSlug, sort, resource.entityType, JSON.stringify(src)]);
 
   const { transformedResults, totalCount, isLoading, lastItemRef, refetch } = useSearchQuery({
-    queryKeyPrefix: `admin-${resource.entityType}`,
+    queryKeyPrefix: ADMIN_QUERY_KEYS.RESOURCE_PREFIX(resource.entityType),
     searchText,
     searchTags: {},
     // Le type de recherche DOIT passer par `searchType` (et non le seul `baseParams.defaultTypes`) :

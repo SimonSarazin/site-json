@@ -19,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCocolight } from "@/hooks/useCocolight";
 
+import { ADMIN_QUERY_KEYS } from "../constants/queryKeys";
 import type { AdminSection } from "../schema";
 
 /**
@@ -99,7 +100,7 @@ export default function AdminModerationSection({ section: _section }: { section:
   const [detail, setDetail] = useState<{ id: string; ctx: "news" | "comments" } | null>(null);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["admin-moderation"],
+    queryKey: ADMIN_QUERY_KEYS.MODERATION,
     queryFn: async () => {
       if (!mod) throw new Error("Non connecté");
       return mod.getModerationQueue();
@@ -116,7 +117,8 @@ export default function AdminModerationSection({ section: _section }: { section:
     onSuccess: (res, vars) => {
       if (res.result) {
         toast.success(vars.isAnAbuse ? "Signalé comme abus" : "Laissé publié");
-        void queryClient.invalidateQueries({ queryKey: ["admin-moderation"] });
+        void queryClient.invalidateQueries({ queryKey: ADMIN_QUERY_KEYS.MODERATION });
+        void queryClient.invalidateQueries({ queryKey: ADMIN_QUERY_KEYS.DASHBOARD_MODERATION });
       } else {
         toast.error(res.msg || "Échec de la modération");
       }
@@ -125,7 +127,7 @@ export default function AdminModerationSection({ section: _section }: { section:
   });
 
   const detailQuery = useQuery({
-    queryKey: ["admin-moderation-detail", detail?.ctx, detail?.id],
+    queryKey: ADMIN_QUERY_KEYS.MODERATION_DETAIL(detail?.ctx, detail?.id),
     queryFn: async () => mod!.consolidateModeration(detail!.ctx, detail!.id),
     enabled: !!mod && !!detail,
     retry: false,

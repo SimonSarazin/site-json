@@ -15,6 +15,7 @@ import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
 
 import type { SearchType } from "@/modules/search/schema";
 
+import { ADMIN_QUERY_KEYS } from "../constants/queryKeys";
 import { useReferenceElement, type ReferencingCarrier } from "../hooks/useReferenceElement";
 import { ensureCostumScope } from "../lib/ensureCostumScope";
 import type { AdminReferenceSection as AdminReferenceSectionConfig, AdminSection } from "../schema";
@@ -61,7 +62,7 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
   }), [type, costumSlug]);
 
   const global = useSearchQuery({
-    queryKeyPrefix: `admin-ref-search-${type}`,
+    queryKeyPrefix: ADMIN_QUERY_KEYS.REFERENCE_SEARCH_PREFIX(type),
     searchText,
     searchTags: {},
     searchType: { type: [type] },
@@ -78,7 +79,7 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
   }), [type, costumSlug]);
 
   const referenced = useSearchQuery({
-    queryKeyPrefix: `admin-ref-listed-${type}`,
+    queryKeyPrefix: ADMIN_QUERY_KEYS.REFERENCE_LISTED_PREFIX(type),
     searchText,
     searchTags: {},
     searchType: { type: [type] },

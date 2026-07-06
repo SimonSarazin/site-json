@@ -9,6 +9,7 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { useSite } from "@/hooks/useSite";
 import { useT } from "@/hooks/useT";
 
+import { ADMIN_QUERY_KEYS } from "../constants/queryKeys";
 import type { AdminConfig, AdminResourceSection, AdminSection } from "../schema";
 
 /**
@@ -53,7 +54,7 @@ export default function DashboardSection({ section: _section }: { section: Admin
   const moderationTab = (admin?.tabs ?? []).find((tab) => tab.sections.some((s) => s.type === "moderation"));
 
   const stats = useQuery({
-    queryKey: ["admin-dashboard-stats", costumSlug, resources.map((r) => r.resource.entityType).join(",")],
+    queryKey: ADMIN_QUERY_KEYS.DASHBOARD_STATS(costumSlug, resources.map((r) => r.resource.entityType)),
     enabled: !!carrier && resources.length > 0,
     staleTime: 60_000,
     retry: false,
@@ -90,7 +91,7 @@ export default function DashboardSection({ section: _section }: { section: Admin
   });
 
   const moderation = useQuery({
-    queryKey: ["admin-dashboard-moderation"],
+    queryKey: ADMIN_QUERY_KEYS.DASHBOARD_MODERATION,
     enabled: !!me && !!moderationTab,
     staleTime: 60_000,
     retry: false,
