@@ -114,6 +114,8 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
 
   const [editEntity, setEditEntity] = useState<EntityTypes | null>(null);
   const [toDelete, setToDelete] = useState<{ entity: DeletableEntity; label: string } | null>(null);
+  // Détacher = action FORTE (l'élément sort du scope costum et disparaît de la table) → confirmation.
+  const [toDetach, setToDetach] = useState<{ item: unknown; id: string; label: string } | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const del = useDeleteEntity(() => {
     setToDelete(null);
@@ -251,14 +253,15 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                         )}
                         {rowActions.includes("reference") && carrier && costumSlug && (
                           <DropdownMenuItem
-                            onClick={() =>
+                            onClick={() => {
+                              if (isAttached) { setToDetach({ item, id, label }); return; }
                               reference.mutate({
                                 carrier: item as unknown as ReferencingCarrier,
-                                op: isAttached ? "detach" : "reference",
+                                op: "reference",
                                 type: resource.entityType,
                                 id,
-                              })
-                            }
+                              });
+                            }}
                           >
                             <Link2 className="mr-2 h-4 w-4" /> {isAttached ? "Détacher" : "Référencer"}
                           </DropdownMenuItem>
@@ -304,6 +307,37 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
       {createModal && (
         <DynamicModal modalName={createModal} open={createOpen} onOpenChange={setCreateOpen} parent={carrier} />
       )}
+
+      <AlertDialog
+        open={!!toDetach}
+        onOpenChange={(o) => {
+          if (!o) setToDetach(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Détacher « {toDetach?.label} » ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              L'élément sera retiré du costum (source) et disparaîtra de cette table. Vous pourrez le
+              re-référencer depuis l'onglet Référencement.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (toDetach) {
+                  reference.mutate({ carrier: toDetach.item as unknown as ReferencingCarrier, op: "detach", type: resource.entityType, id: toDetach.id });
+                  setToDetach(null);
+                }
+              }}
+              disabled={reference.isPending}
+            >
+              Détacher
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog
         open={!!toDelete}

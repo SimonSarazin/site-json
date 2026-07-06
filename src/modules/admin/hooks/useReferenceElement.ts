@@ -22,7 +22,8 @@ export function useReferenceElement(onDone?: () => void) {
       return carrier.removeFromSource(type, id);
     },
     onSuccess: (_res, vars) => {
-      toast.success(vars.op === "reference" ? "Élément référencé" : "Élément détaché");
+      const msg = vars.op === "reference" ? "Élément référencé" : vars.op === "unreference" ? "Référence retirée" : "Élément détaché";
+      toast.success(msg);
       onDone?.();
     },
     onError: (error: unknown) => {

@@ -75,7 +75,13 @@ const AdminImportSectionSchema = z.object({
 export type AdminImportSection = z.infer<typeof AdminImportSectionSchema>;
 
 const AdminExportSectionSchema = z.object({ type: z.literal("export") });
-const AdminReferenceSectionSchema = z.object({ type: z.literal("reference") });
+/** Section référencement : recherche globale (hors costum) + rattacher/retirer une référence.
+ *  `entityTypes` : types proposés dans le sélecteur (défaut organizations/projects/events/poi). */
+const AdminReferenceSectionSchema = z.object({
+  type: z.literal("reference"),
+  entityTypes: z.array(z.string()).optional(),
+});
+export type AdminReferenceSection = z.infer<typeof AdminReferenceSectionSchema>;
 const AdminModerationSectionSchema = z.object({ type: z.literal("moderation") });
 
 /** Section costum : `type` libre enregistré via `registerAdminSection` (comme une section profil costum).
