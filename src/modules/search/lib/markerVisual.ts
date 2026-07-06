@@ -1,29 +1,44 @@
 // ------------------------------------------------------------
 // markerVisual.ts — apparence des marqueurs de la carte search
 // ------------------------------------------------------------
-// Chaîne de repli déclarée par `map.marker` (config) :
+// Chaîne de repli déclarée par `map.marker` (config), par PRIORITÉ :
 //   1. `useItemImage` ET l'item a une image  → vignette RONDE de l'item ;
-//   2. `style: "pin"`                        → pin SVG aux couleurs du THÈME
-//      (token `color`, déf. primary — jamais d'hex, suit light/dark) ;
-//   3. sinon                                 → pin Leaflet par défaut.
-// Fonctions PURES (testées sans rendu) — SearchMap les mappe en divIcon.
+//   2. `iconUrl`                             → icône custom (image/SVG, ex. pin
+//      brandé par site) — relative préfixée par baseUrl, ou absolue http ;
+//   3. `style: "pin"` / `style: "circle"`    → pin SVG (goutte) ou pastille
+//      ronde, aux couleurs du THÈME (token `color`, déf. primary — jamais
+//      d'hex, suit light/dark ; contour via `borderColor`, déf. background) ;
+//   4. sinon                                 → pin par défaut (couleur primary).
+// La config est mergée AVANT (site `integrations.map.marker` < section
+// `map.marker`) — cf. SearchMap. Fonction PURE (testée sans rendu) ;
+// `SearchMapMarkers` la rend en React (<Marker> react-map-gl/maplibre).
 
 import type { MapConf } from "../schema";
 
 export type MarkerVisual =
   | { kind: "image"; src: string }
-  | { kind: "pin"; cssColor: string }
+  | { kind: "icon"; src: string; size: number; anchor: "bottom" | "center" }
+  | { kind: "pin"; cssColor: string; borderCssColor: string }
+  | { kind: "circle"; cssColor: string; borderCssColor: string }
   | { kind: "default" };
 
 /** Jeton de thème → variable CSS (le pin suit le thème au paint). */
 const PIN_COLOR_VARS: Record<string, string> = {
   primary: "var(--primary)",
+  secondary: "var(--secondary)",
   accent: "var(--accent)",
   "chart-1": "var(--chart-1)",
   "chart-2": "var(--chart-2)",
   "chart-3": "var(--chart-3)",
   "chart-4": "var(--chart-4)",
   "chart-5": "var(--chart-5)",
+};
+
+/** Palette de la BORDURE (contour + pastille) du pin : `color` + `background`
+ *  (défaut, contraste sur tout fond). */
+const PIN_BORDER_VARS: Record<string, string> = {
+  background: "var(--background)",
+  ...PIN_COLOR_VARS,
 };
 
 export function resolveMarkerVisual(
@@ -39,21 +54,20 @@ export function resolveMarkerVisual(
     if (img) {
       return { kind: "image", src: img.startsWith("http") ? img : `${baseUrl}${img}` };
     }
-    // pas d'image : on retombe sur le pin stylisé si déclaré (ci-dessous)
+    // pas d'image : on retombe sur l'icône custom / le pin (ci-dessous)
   }
-  if (conf?.style === "pin") {
-    return { kind: "pin", cssColor: PIN_COLOR_VARS[conf.color ?? "primary"] ?? "var(--primary)" };
+  if (conf?.iconUrl) {
+    const src = conf.iconUrl.startsWith("http") ? conf.iconUrl : `${baseUrl}${conf.iconUrl}`;
+    return { kind: "icon", src, size: conf.iconSize ?? 34, anchor: conf.iconAnchor ?? "bottom" };
+  }
+  if (conf?.style === "pin" || conf?.style === "circle") {
+    const cssColor = PIN_COLOR_VARS[conf.color ?? "primary"] ?? "var(--primary)";
+    // Contour (pin : tracé + pastille ; circle : anneau) — jeton de bordure,
+    // déf. background (contraste lisible sur tout fond, en light comme en dark).
+    const borderCssColor = PIN_BORDER_VARS[conf.borderColor ?? "background"] ?? "var(--background)";
+    return conf.style === "circle"
+      ? { kind: "circle", cssColor, borderCssColor }
+      : { kind: "pin", cssColor, borderCssColor };
   }
   return { kind: "default" };
-}
-
-/** SVG du pin (goutte) — contour et pastille en `--background` : lisible sur
- *  tout fond de carte, en light comme en dark. */
-export function pinSvg(cssColor: string): string {
-  return (
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="34" height="34">` +
-    `<path d="M12 1C7.6 1 4 4.6 4 9c0 5.8 8 14 8 14s8-8.2 8-14c0-4.4-3.6-8-8-8Z" fill="${cssColor}" stroke="var(--background)" stroke-width="1.2"/>` +
-    `<circle cx="12" cy="9" r="3" fill="var(--background)"/>` +
-    `</svg>`
-  );
 }
