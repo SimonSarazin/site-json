@@ -9,6 +9,8 @@ import { navigationSource } from "./navigationSource";
 import { actionsSource } from "./actionsSource";
 // Source du module profil (recherche d'entités backend) — self-register.
 import "@/modules/profil/commands/register";
+// Source du module admin (entrée « Administration », gate d'accès) — self-register.
+import "@/modules/admin/commands/register";
 
 registerCommandSource(navigationSource);
 registerCommandSource(actionsSource);
