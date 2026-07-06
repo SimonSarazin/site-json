@@ -25,6 +25,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useSite } from "@/hooks/useSite";
 import SearchTextInput from "@/modules/search/components/SearchTextInput";
 import { DynamicModal } from "@/modules/profil/components/add/ModalRegistry";
 import { DynamicEditModal } from "@/modules/profil/components/profile-edit/EditModalRegistry";
@@ -36,7 +37,7 @@ import { useDeleteEntity, type DeletableEntity } from "../hooks/useDeleteEntity"
 import { useReferenceElement, type ReferencingCarrier } from "../hooks/useReferenceElement";
 import { useValidateGroup, type ValidatableCarrier } from "../hooks/useValidateGroup";
 import type { AdminResourceSection, AdminSection } from "../schema";
-import { formatCell, getPath, resolveCreateModal } from "./resourceHelpers";
+import { formatCell, getPath, resolveCreateModal, resolveEditModal, type CostumFormDocLike } from "./resourceHelpers";
 
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 
@@ -125,7 +126,16 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   const reference = useReferenceElement(() => {
     void refetch();
   });
-  const createModal = resolveCreateModal(resource);
+  // Choix costum/standard par CONFIG (`create`/`edit`) — cf. resourceHelpers. En `inherit`, la
+  // création prend le form COSTUM du site s'il en existe un pour ce type (config.costumForms,
+  // même form que le bouton public), et l'édition suit la résolution publique (editModal/Match).
+  const { config } = useSite();
+  const createModal = resolveCreateModal(
+    resource,
+    (config as { costumForms?: Record<string, CostumFormDocLike> }).costumForms,
+    costumSlug,
+  );
+  const editModal = resolveEditModal(resource);
 
   return (
     <Card>
@@ -220,7 +230,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        {rowActions.includes("edit") && (
+                        {rowActions.includes("edit") && editModal.enabled && (
                           <DropdownMenuItem onClick={() => setEditEntity(item as unknown as EntityTypes)}>
                             <Pencil className="mr-2 h-4 w-4" /> Éditer
                           </DropdownMenuItem>
@@ -289,6 +299,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
             if (!o) setEditEntity(null);
           }}
           entity={editEntity}
+          {...(editModal.modalName ? { modalName: editModal.modalName } : {})}
         />
       )}
       {createModal && (

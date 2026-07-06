@@ -111,14 +111,18 @@ export function resolveEditModalName(
 /**
  * Wrapper config-driven : choisit dynamiquement le modal d'édition pour l'entité.
  * Remplace les usages directs de `<EditProfileModal>` dans les headers de profil.
+ * `modalName` (optionnel) FORCE une clé (ex. `edit-<costum>` ou `edit-profile`) en
+ * court-circuitant la résolution `profiles[type].editModal` — utilisé par l'admin
+ * quand la config de section choisit explicitement costum ou standard.
  */
 export function DynamicEditModal({
   open,
   onOpenChange,
   entity,
-}: EditModalProps) {
+  modalName: forcedModalName,
+}: EditModalProps & { modalName?: string }) {
   const { config } = useSite();
-  const modalName = resolveEditModalName(entity, config);
+  const modalName = forcedModalName ?? resolveEditModalName(entity, config);
   ensureLazyEditModal(modalName);
   const ModalComponent = lazyComponents[modalName];
 
