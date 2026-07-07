@@ -92,7 +92,6 @@
     "previewFailed": "Prévisualisation impossible",
     "importFailed": "Import impossible",
     "importDone": "Import : {{created}} créés · {{updated}} maj · {{errors}} erreurs",
-    "summary": "✅ {{created}} créés · ✏️ {{updated}} mis à jour · ⚠️ {{errors}} erreurs",
     "errorReport": "Rapport d'erreurs ({{count}})",
     "importErrorReport": "Rapport d'erreurs d'import ({{count}})",
     "colIndex": "#",
@@ -104,7 +103,10 @@
     "blockerTitle": "Import en cours",
     "blockerDescription": "Quitter la page interrompra le suivi de l'import (les lignes déjà envoyées restent importées). Quitter quand même ?",
     "blockerConfirm": "Quitter",
-    "blockerCancel": "Rester"
+    "blockerCancel": "Rester",
+    "summaryCreated": "{{count}} créés",
+    "summaryUpdated": "{{count}} mis à jour",
+    "summaryErrors": "{{count}} erreurs"
   },
   "AdminReferenceSection": {
     "title": "Référencement",

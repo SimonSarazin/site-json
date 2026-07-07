@@ -1,10 +1,11 @@
-import { Download, Upload } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Download, MapPin, Pencil, Upload, XCircle } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import Papa from "papaparse";
 import { useEffect, useState } from "react";
 import { useBlocker } from "react-router";
 import { toast } from "sonner";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -201,13 +202,20 @@ export default function AdminImportSection({ section }: { section: AdminSection 
         )}
 
         {summary && (
-          <p className="text-sm">
-            {tAdmin("AdminImportSection.summary", undefined, {
-              created: String(summary.created),
-              updated: String(summary.updated),
-              errors: String(summary.errors),
-            })}
-          </p>
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="secondary" className="gap-1">
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+              {tAdmin("AdminImportSection.summaryCreated", undefined, { count: String(summary.created) })}
+            </Badge>
+            <Badge variant="secondary" className="gap-1">
+              <Pencil className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
+              {tAdmin("AdminImportSection.summaryUpdated", undefined, { count: String(summary.updated) })}
+            </Badge>
+            <Badge variant={summary.errors > 0 ? "destructive" : "secondary"} className="gap-1">
+              <AlertTriangle className="h-3.5 w-3.5" />
+              {tAdmin("AdminImportSection.summaryErrors", undefined, { count: String(summary.errors) })}
+            </Badge>
+          </div>
         )}
         {importErrors && (
           <Button
@@ -256,7 +264,11 @@ export default function AdminImportSection({ section }: { section: AdminSection 
                 {preview.map((r) => (
                   <TableRow key={r.rowIndex}>
                     <TableCell>{r.rowIndex}</TableCell>
-                    <TableCell>{r.success ? "✓" : "✗"}</TableCell>
+                    <TableCell>
+                      {r.success
+                        ? <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                        : <XCircle className="h-4 w-4 text-destructive" />}
+                    </TableCell>
                     <TableCell>{String((r.data?.name as string | undefined) ?? "—")}</TableCell>
                     <TableCell>
                       {(() => {
@@ -265,8 +277,9 @@ export default function AdminImportSection({ section }: { section: AdminSection 
                         const geo = r.data?.geo as { latitude?: unknown } | undefined;
                         if (!addr?.localityId) return <span className="text-muted-foreground">—</span>;
                         return (
-                          <span className="text-emerald-700 dark:text-emerald-400">
-                            {addr.addressLocality}{addr.postalCode ? ` (${addr.postalCode})` : ""}{geo?.latitude ? " · 📍" : ""}
+                          <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
+                            {addr.addressLocality}{addr.postalCode ? ` (${addr.postalCode})` : ""}
+                            {geo?.latitude ? <MapPin className="h-3.5 w-3.5" /> : null}
                           </span>
                         );
                       })()}

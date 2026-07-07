@@ -92,7 +92,6 @@
     "previewFailed": "Preview failed",
     "importFailed": "Import failed",
     "importDone": "Import: {{created}} created · {{updated}} updated · {{errors}} errors",
-    "summary": "✅ {{created}} created · ✏️ {{updated}} updated · ⚠️ {{errors}} errors",
     "errorReport": "Error report ({{count}})",
     "importErrorReport": "Import error report ({{count}})",
     "colIndex": "#",
@@ -104,7 +103,10 @@
     "blockerTitle": "Import in progress",
     "blockerDescription": "Leaving the page will interrupt import tracking (rows already sent remain imported). Leave anyway?",
     "blockerConfirm": "Leave",
-    "blockerCancel": "Stay"
+    "blockerCancel": "Stay",
+    "summaryCreated": "{{count}} created",
+    "summaryUpdated": "{{count}} updated",
+    "summaryErrors": "{{count}} errors"
   },
   "AdminReferenceSection": {
     "title": "Referencing",
