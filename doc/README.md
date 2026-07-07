@@ -38,4 +38,5 @@
 | Tests | [Tests](15-tests.md) |
 | Déploiement | [Docker](16-deploiement-docker.md) |
 | 🚧 Vision : palette Cmd+K | [Command Palette (RFC)](17-module-command-palette.md) — document d'architecture, pas encore implémenté |
+| 🚧 RFC : assistant config × costums | [Assistant config costum (RFC)](31-rfc-assistant-config-costum.md) — formulaires costum générés, config admin, cycle de vie sans re-publication |
 
