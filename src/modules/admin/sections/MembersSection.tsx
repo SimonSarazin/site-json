@@ -39,11 +39,6 @@ export default function MembersSection({ section }: { section: AdminSection }) {
   const debouncedSearch = useDebounce(searchTerm, 300);
   const { confirmation, showConfirmation, hideConfirmation, executeAction } = useConfirmationDialog();
 
-  const allMembers = useEntityMembers(entity, { toBeValidated: false }, { search: debouncedSearch });
-  const pendingMembers = useEntityMembers(entity, { toBeValidated: true }, { search: debouncedSearch });
-  const adminMembers = useEntityMembers(entity, { isAdmin: true }, { search: debouncedSearch });
-  const invitedMembers = useEntityMembers(entity, { isInviting: true }, { search: debouncedSearch });
-  const labels = useEntityLabels(entity);
   // Onglets pilotés par la config (`filters`) — REVIEW : la section ignorait totalement sa config.
   // Défaut (filters absent) : comportement historique (à-valider / tous / admins). `isInviting`
   // ajoute l'onglet Invités (invitations en attente d'acceptation) ; `text` ne gate que la
@@ -52,6 +47,13 @@ export default function MembersSection({ section }: { section: AdminSection }) {
   const showSearch = !cfg.filters || cfg.filters.includes("text");
   // `actions` absent → tout (historique) ; sinon `invite` gate le bouton (champ mort câblé — audit config).
   const canInvite = !cfg.actions || cfg.actions.includes("invite");
+  // Requêtes GATÉES par la config (entity:null = hook inerte) : un onglet non configuré ne
+  // fetche plus — la section lançait systématiquement les 4 requêtes (audit perf).
+  const allMembers = useEntityMembers(entity, { toBeValidated: false }, { search: debouncedSearch });
+  const pendingMembers = useEntityMembers(wanted.includes("toBeValidated") ? entity : null, { toBeValidated: true }, { search: debouncedSearch });
+  const adminMembers = useEntityMembers(wanted.includes("isAdmin") ? entity : null, { isAdmin: true }, { search: debouncedSearch });
+  const invitedMembers = useEntityMembers(wanted.includes("isInviting") ? entity : null, { isInviting: true }, { search: debouncedSearch });
+  const labels = useEntityLabels(entity);
 
   if (!entity) {
     return (

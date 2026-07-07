@@ -2,6 +2,7 @@ import { Download, Upload } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import Papa from "papaparse";
 import { useEffect, useState } from "react";
+import { useBlocker } from "react-router";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 import { useCocolight } from "@/hooks/useCocolight";
 import { useT } from "@/hooks/useT";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { useUnsavedChangesWarning } from "@/modules/coform/hooks/useUnsavedChangesWarning";
 
 import { ensureCostumScope } from "../lib/ensureCostumScope";
 import { shapeImportRow } from "../lib/shapeImportRow";
@@ -54,7 +57,15 @@ export default function AdminImportSection({ section }: { section: AdminSection 
   const [preview, setPreview] = useState<PreviewRow[] | null>(null);
   const [progress, setProgress] = useState<{ current: number; total: number } | null>(null);
   const [summary, setSummary] = useState<{ created: number; updated: number; errors: number } | null>(null);
+  /** Erreurs PAR LIGNE du dernier import (res.elements[].msgError — existait dans la réponse mais
+   *  n'était jamais exploité : seul le résumé agrégé était affiché — audit UX). */
+  const [importErrors, setImportErrors] = useState<Array<{ rowIndex: string; name: string; error: string }> | null>(null);
   const [busy, setBusy] = useState(false);
+  // Garde de navigation pendant l'import : fermeture/refresh (beforeunload natif) + navigation SPA
+  // (useBlocker — un changement d'onglet admin démonte la section : progression et résumé perdus,
+  // l'import continue en aveugle). Les lignes déjà envoyées restent importées côté serveur.
+  useUnsavedChangesWarning(busy);
+  const blocker = useBlocker(busy);
 
   /** Modèle CSV : les en-têtes standard comprises par shapeImportRow (adresse pliée automatiquement). */
   function downloadTemplate() {
@@ -77,6 +88,7 @@ export default function AdminImportSection({ section }: { section: AdminSection 
     if (!file) return;
     setPreview(null);
     setSummary(null);
+    setImportErrors(null);
     Papa.parse<Record<string, unknown>>(file, {
       header: true,
       skipEmptyLines: true,
@@ -112,6 +124,11 @@ export default function AdminImportSection({ section }: { section: AdminSection 
         onProgress: (current, total) => setProgress({ current, total }),
       });
       setSummary(res.summary);
+      const errs = Object.entries((res.elements ?? {}) as Record<string, unknown>).flatMap(([k, v]) => {
+        const el = v as { name?: unknown; msgError?: unknown } | null;
+        return el?.msgError ? [{ rowIndex: k, name: String(el.name ?? ""), error: String(el.msgError) }] : [];
+      });
+      setImportErrors(errs.length ? errs : null);
       toast.success(`Import : ${res.summary.created} créés · ${res.summary.updated} maj · ${res.summary.errors} erreurs`);
       // REVIEW M4 : les éléments importés doivent apparaître dans les tables/tuiles sans attendre le staleTime.
       void queryClient.invalidateQueries({ predicate: (q) => String(q.queryKey[0] ?? "").startsWith("admin-") });
@@ -153,7 +170,9 @@ export default function AdminImportSection({ section }: { section: AdminSection 
             <Input
               type="file"
               accept=".csv,text/csv"
-              onChange={(e) => handleFile(e.target.files?.[0])}
+              // value remis à vide : sans ça, re-sélectionner LE MÊME fichier (corrigé) ne
+              // déclenche plus change sur Chromium — l'import repartait sur les anciennes lignes.
+              onChange={(e) => { handleFile(e.target.files?.[0]); e.currentTarget.value = ""; }}
               className="w-64"
             />
           </div>
@@ -179,6 +198,26 @@ export default function AdminImportSection({ section }: { section: AdminSection 
           <p className="text-sm">
             ✅ {summary.created} créés · ✏️ {summary.updated} mis à jour · ⚠️ {summary.errors} erreurs
           </p>
+        )}
+        {importErrors && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              const csv = ["ligne,nom,erreur", ...importErrors.map((r) =>
+                `${r.rowIndex},"${r.name.replaceAll('"', '""')}","${r.error.replaceAll('"', '""')}"`,
+              )].join("\n");
+              const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "rapport-erreurs-import.csv";
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+          >
+            <Download className="mr-1.5 h-3.5 w-3.5" /> Rapport d'erreurs d'import ({importErrors.length})
+          </Button>
         )}
 
         {preview && preview.some((r) => !r.success || r.msgErrorAddress) && (
@@ -243,6 +282,16 @@ export default function AdminImportSection({ section }: { section: AdminSection 
           </div>
         )}
       </CardContent>
+      <ConfirmDialog
+        open={blocker.state === "blocked"}
+        onOpenChange={(o) => { if (!o) blocker.reset?.(); }}
+        onConfirm={() => blocker.proceed?.()}
+        title="Import en cours"
+        description="Quitter la page interrompra le suivi de l'import (les lignes déjà envoyées restent importées). Quitter quand même ?"
+        confirmLabel="Quitter"
+        cancelLabel="Rester"
+        isDestructive
+      />
     </Card>
   );
 }

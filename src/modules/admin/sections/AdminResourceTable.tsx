@@ -22,6 +22,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -124,6 +125,15 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   const toggleSort = (col: string) =>
     setSort((s) => (s?.col === col ? (s.dir === 1 ? { col, dir: -1 } : null) : { col, dir: 1 }));
 
+  // La sélection est liée à la VUE : recherche/filtre/tri changent → reset (sinon on peut agir
+  // sur des éléments sortis de l'écran — audit robustesse). Pattern adjust-during-render (repo).
+  const selectionScopeKey = `${searchText}|${statusFilter}|${sort ? `${sort.col}:${sort.dir}` : ""}`;
+  const [lastScopeKey, setLastScopeKey] = useState(selectionScopeKey);
+  if (selectionScopeKey !== lastScopeKey) {
+    setLastScopeKey(selectionScopeKey);
+    if (selected.size) setSelected(new Map());
+  }
+
   const [editEntity, setEditEntity] = useState<EntityTypes | null>(null);
   const [toDelete, setToDelete] = useState<{ entity: DeletableEntity; label: string } | null>(null);
   // Détacher = action FORTE (l'élément sort du scope costum et disparaît de la table) → confirmation.
@@ -138,36 +148,65 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
     queryClient.invalidateQueries({ predicate: (q) => String(q.queryKey[0] ?? "").startsWith("admin-") });
   const toggleSelect = (id: string, item: unknown) =>
     setSelected((m) => { const n = new Map(m); if (n.has(id)) n.delete(id); else n.set(id, item); return n; });
+  const rowId = (item: unknown): string | null => {
+    const rid = (item as { id?: unknown }).id ?? ((item as { serverData?: { id?: unknown } }).serverData?.id);
+    return rid != null ? String(rid) : null;
+  };
+  // Progression des mutations en masse (boucle séquentielle potentiellement longue — 10-20s sur
+  // 50 éléments) : sans compteur, le seul feedback était des boutons grisés (audit UX).
+  const [bulkProgress, setBulkProgress] = useState<{ current: number; total: number } | null>(null);
+  /** Fin de mutation en masse : les ÉCHECS restent SÉLECTIONNÉS (retry ciblé via l'action du
+   *  toast ou les boutons de la barre) au lieu d'être silencieusement désélectionnés (audit UX). */
+  const finishBulk = (total: number, failed: Map<string, unknown>, firstError: string | null, verb: string, retry: () => void) => {
+    const ok = total - failed.size;
+    if (failed.size === 0) {
+      setSelected(new Map());
+      toast.success(`${ok} élément(s) ${verb}`);
+    } else {
+      setSelected(new Map(failed));
+      toast.warning(
+        `${ok} élément(s) ${verb} — ${failed.size} échec(s)${firstError ? ` : ${firstError}` : ""} (resélectionnés)`,
+        { action: { label: "Réessayer", onClick: retry } },
+      );
+    }
+    void invalidateAdmin();
+  };
 
   /** Validation en masse — API unitaire : boucle SÉQUENTIELLE (pas de Promise.all, évite les races). */
   const bulkValidate = async (valid: boolean) => {
     setBulkBusy(true);
     const c = scopedCarrier() as ValidatableCarrier;
-    let ok = 0, ko = 0;
-    for (const id of selected.keys()) {
-      try { await c.validateGroup(resource.entityType, id, valid); ok++; } catch { ko++; }
+    const failed = new Map<string, unknown>();
+    let firstError: string | null = null;
+    const total = selected.size;
+    let done = 0;
+    setBulkProgress({ current: 0, total });
+    for (const [id, item] of selected) {
+      try { await c.validateGroup(resource.entityType, id, valid); }
+      catch (e) { failed.set(id, item); if (!firstError) firstError = e instanceof Error ? e.message : String(e); }
+      setBulkProgress({ current: ++done, total });
     }
     setBulkBusy(false);
-    setSelected(new Map());
-    (ko ? toast.warning : toast.success)(`${ok} élément(s) ${valid ? "validé(s)" : "dévalidé(s)"}${ko ? ` — ${ko} échec(s)` : ""}`);
-    void invalidateAdmin();
+    setBulkProgress(null);
+    finishBulk(total, failed, firstError, valid ? "validé(s)" : "dévalidé(s)", () => void bulkValidate(valid));
   };
 
   const bulkDelete = async () => {
     setBulkBusy(true);
-    let ok = 0, ko = 0;
+    setBulkDeleteOpen(false);
+    const failed = new Map<string, unknown>();
     let firstError: string | null = null;
-    for (const item of selected.values()) {
-      try { await (item as DeletableEntity).delete("admin bulk delete"); ok++; }
-      catch (e) { ko++; if (!firstError) firstError = e instanceof Error ? e.message : String(e); }
+    const total = selected.size;
+    let done = 0;
+    setBulkProgress({ current: 0, total });
+    for (const [id, item] of selected) {
+      try { await (item as DeletableEntity).delete("admin bulk delete"); }
+      catch (e) { failed.set(id, item); if (!firstError) firstError = e instanceof Error ? e.message : String(e); }
+      setBulkProgress({ current: ++done, total });
     }
     setBulkBusy(false);
-    setSelected(new Map());
-    setBulkDeleteOpen(false);
-    (ko ? toast.warning : toast.success)(
-      `${ok} élément(s) supprimé(s)${ko ? ` — ${ko} échec(s)${firstError ? ` : ${firstError}` : ""}` : ""}`,
-    );
-    void invalidateAdmin();
+    setBulkProgress(null);
+    finishBulk(total, failed, firstError, "supprimé(s)", () => setBulkDeleteOpen(true));
   };
 
   /** Export CSV de la sélection : colonnes configurées (serverData). */
@@ -275,6 +314,12 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
             <Button size="sm" variant="ghost" disabled={bulkBusy} onClick={() => setSelected(new Map())}>
               Annuler
             </Button>
+            {bulkProgress && (
+              <div className="flex w-full items-center gap-2 sm:w-64">
+                <Progress value={bulkProgress.total ? (bulkProgress.current / bulkProgress.total) * 100 : 0} className="h-2" />
+                <span className="text-xs tabular-nums text-muted-foreground">{bulkProgress.current}/{bulkProgress.total}</span>
+              </div>
+            )}
           </div>
         )}
         {/* Hauteur bornée + scroll interne : la sentinelle du scroll infini (lastItemRef) est CLIPPÉE hors
@@ -292,7 +337,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                 <TableHead className="w-10">
                   <Checkbox
                     aria-label="Tout sélectionner (lignes chargées)"
-                    checked={rows.length > 0 && selected.size >= rows.length}
+                    checked={rows.length > 0 && selected.size > 0 && rows.every((it) => { const rid = rowId(it); return rid == null || selected.has(rid); })}
                     onCheckedChange={(v) => {
                       if (!v) { setSelected(new Map()); return; }
                       const m = new Map<string, unknown>();
