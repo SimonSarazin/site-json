@@ -511,6 +511,7 @@
   "CagnotteDialog": {
     "title": "Participatory Funding",
     "description": "Support initiatives and the community platform",
+    "loadingPayment": "Loading payment…",
     "fallbacks": {
       "untitled": "Untitled project",
       "untitled_proposition": "Untitled proposal"

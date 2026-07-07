@@ -117,6 +117,9 @@ function applyDepenseFundingsToAnswerData(
   let depenses = cloned.answers.aapStep1.depense;
   depenses = Array.isArray(depenses) ? depenses : depenses ? [depenses] : [];
 
+  // `appliedCount` distingue « rien appliqué » (depenseIndex introuvable / montant nul)
+  // d'un vrai enregistrement : l'appelant s'en sert pour ne pas simuler un succès à vide.
+  let appliedCount = 0;
   depenseFundings.forEach(({ depenseIndex, amount }) => {
     if (amount <= 0 || depenseIndex === undefined) return;
 
@@ -128,10 +131,11 @@ function applyDepenseFundingsToAnswerData(
 
     depense.financer = [...currentFinancers, financerEntry];
     depenses[depenseIndex] = depense;
+    appliedCount++;
   });
 
   cloned.answers.aapStep1.depense = depenses;
-  return cloned;
+  return { data: cloned, appliedCount };
 }
 
 export const useSaveCagnotteContribution = () => {
@@ -223,7 +227,13 @@ export const useSaveCagnotteContribution = () => {
         if (!userId) throw new Error(String(t("toasts.errors.notLoggedIn")));
 
         const currentAnswerData = answer.serverData;
-        const updatedAnswerData = applyDepenseFundingsToAnswerData(currentAnswerData, depenseFundings, financerData, userId, method, transactionId);
+        const { data: updatedAnswerData, appliedCount } = applyDepenseFundingsToAnswerData(currentAnswerData, depenseFundings, financerData, userId, method, transactionId);
+
+        // Aucun financer effectivement appliqué (ex. depenseIndex introuvable) :
+        // ne PAS enregistrer ni renvoyer `true`, sinon on afficherait un succès
+        // alors que l'argent a déjà été débité et que rien n'est persisté.
+        if (appliedCount === 0) return false;
+
         const formId = getFormIdFromAnswerData(currentAnswerData);
 
         if (api && formId) {

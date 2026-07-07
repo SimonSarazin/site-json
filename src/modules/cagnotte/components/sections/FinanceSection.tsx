@@ -82,7 +82,9 @@ function MilestoneStatusBadge({status}: { status: Milestone['status'] }) {
         done: {label: 'done', className: 'bg-success/20 text-success'},
         close: {label: 'clôturé', className: 'bg-muted text-muted-foreground'},
     };
-    const current = config[status];
+    // Fallback : un statut hors enum (donnée backend inattendue) ne doit pas
+    // faire planter toute la section via un accès à `undefined.className`.
+    const current = config[status] ?? config.open;
     return <span
         className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${current.className}`}>{current.label}</span>;
 }
@@ -102,7 +104,10 @@ function PaymentStatusBadge({status}: { status: PaymentStatus }) {
             className: 'bg-muted text-muted-foreground'
         },
     };
-    const current = config[status];
+    // Fallback : le backend peut renvoyer un paymentStatus hors des 4 clés connues
+    // (le cast `as PaymentStatus` en amont le masque au type-check) → sans ce garde,
+    // `undefined.className` planterait toute la section.
+    const current = config[status] ?? config.pending;
     return (
         <span
             className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${current.className}`}>

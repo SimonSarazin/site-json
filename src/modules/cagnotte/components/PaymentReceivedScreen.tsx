@@ -27,8 +27,13 @@ export function PaymentReceivedScreen({
                                           closeLabel,
                                       }: PaymentReceivedScreenProps) {
     const t = useT("modules/cagnotte");
+    // amount ET itemCount sont figés au premier rendu : le refresh React Query
+    // déclenché après paiement vide la sélection (amount->0, count->0/undefined),
+    // ce qui ferait basculer l'écran de « Vos 3 promesses » à « Votre… ».
     const initialAmountRef = useRef(amount);
+    const initialItemCountRef = useRef(itemCount);
     const formattedAmount = formatNumber(initialAmountRef.current);
+    const frozenItemCount = initialItemCountRef.current;
 
     return (
         <div className="py-10 text-center space-y-4 animate-fade-in flex-1 overflow-y-auto">
@@ -40,8 +45,8 @@ export function PaymentReceivedScreen({
                 {t("PaymentReceivedScreen.title")}
             </h3>
             <p className="text-muted-foreground">
-                {itemCount
-                    ? t("PaymentReceivedScreen.subtitleMultiple", undefined, { count: itemCount, amount: formattedAmount })
+                {frozenItemCount && frozenItemCount > 1
+                    ? t("PaymentReceivedScreen.subtitleMultiple", undefined, { count: frozenItemCount, amount: formattedAmount })
                     : t("PaymentReceivedScreen.subtitleSingle", undefined, { amount: formattedAmount })}
             </p>
 

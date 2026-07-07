@@ -511,6 +511,7 @@
   "CagnotteDialog": {
     "title": "Cagnotte Participative",
     "description": "Soutenez les initiatives et la plateforme communautaire",
+    "loadingPayment": "Chargement du paiement…",
     "fallbacks": {
       "untitled": "Projet sans titre",
       "untitled_proposition": "Proposition sans titre"

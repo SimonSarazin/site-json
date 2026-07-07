@@ -384,7 +384,7 @@ export function PledgePaymentPage({ pledges, onBack, onClose, onContributionSave
                             className="flex items-center justify-between w-full group"
                         >
                             <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
-                                {pledges.length} {String(t("Pledges.payform.selectedPledge"))}
+                                {pledges.length} {String(t("Pledges.payform.selectedPledge", undefined, { count: pledges.length }))}
                             </span>
                             <ChevronDown 
                                 className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${
@@ -511,7 +511,7 @@ export function PledgePaymentPage({ pledges, onBack, onClose, onContributionSave
                         <ExternalLink className="w-5 h-5 mr-2" />
                         {isHelloAssoProcessing
                             ? t("PaymentConfigPage.helloasso.buttonLoading")
-                            : t("PaymentConfigPage.helloasso.button", undefined, { amount })}
+                            : t("PaymentConfigPage.helloasso.button", undefined, { amount: formatNumber(amount) })}
                     </Button>
                 )}
 

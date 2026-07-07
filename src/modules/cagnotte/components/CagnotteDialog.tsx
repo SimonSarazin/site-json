@@ -623,9 +623,13 @@ const CagnotteDialogContent = ({
                         onBack={() => setShowPaymentConfig(false)}
                         onPaymentSuccess={(payload) => {
                             setShowPaymentConfig(false);
+                            // `method` présent ⇒ paiement réel (stripe/helloasso) ; absent ⇒ promesse.
+                            // `payload.amount` porte l'effectiveAmount réellement débité/enregistré
+                            // (potentiellement < montant saisi si un item a été désélectionné),
+                            // donc on l'affiche plutôt que `pendingContributionAmount` brut.
                             setCompletedContribution({
-                                type: payload?.method ? "paid" : "pledged", // HYPOTHÈSE — voir ci-dessous
-                                amount: pendingContributionAmount,
+                                type: payload?.method ? "paid" : "pledged",
+                                amount: typeof payload?.amount === "number" ? payload.amount : (pendingContributionAmount ?? 0),
                             });
                             setPendingContributionAmount(null);
                         }}
