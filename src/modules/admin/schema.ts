@@ -28,9 +28,12 @@ export const AdminFormRefSchema = z.union([z.literal(false), z.literal("inherit"
  *  `preferences.toBeValidated[slug]` (legacy ValidateGroupAction) ; `statusField` = champ métier.
  *
  *  ⚠ CONTRAT FUTUR — aujourd'hui `status` n'est lu qu'en BOOLÉEN (présence = active le mode admin,
- *  au même titre que rowActions:["validate"]) : les 5 sous-champs ne sont PAS ENCORE câblés
- *  (filtre/badge sur `field`+`mode`, `states`, `cascade`/`notifyEmail` transmis à validategroup).
- *  Ne PAS compter sur une valeur non-défaut tant que l'implémentation n'est pas livrée. */
+ *  au même titre que rowActions:["validate"]) : les sous-champs ne sont PAS ENCORE câblés.
+ *  Décision 2026-07-07 : à l'implémentation (prévue avec SSBE), `mode`/`field`/`states` seront
+ *  câblés (filtre Select des states + badge + UPDATE_PATH_VALUE) ; `cascade` et `notifyEmail`
+ *  seront RETIRÉS — la cascade legacy est intrinsèque (pas un paramètre de requête, à re-vérifier
+ *  dans ValidateGroupAction) et l'email de statut est un hook costum BACKEND (chantier
+ *  costum-hooks), pas un levier du front. Ne PAS écrire de valeur non-défaut d'ici là. */
 export const AdminStatusConfigSchema = z.object({
   field: z.string().default("preferences.toBeValidated"),
   mode: z.enum(["costumFlag", "statusField"]).default("costumFlag"),
@@ -168,7 +171,8 @@ export const AdminConfigSchema = z.object({
   title: LocalizedString.optional(),
   /** Accès minimum à la page admin (surchargé par onglet/section). */
   access: z.object({ min: AdminAccessLevelSchema.default("siteAdmin") }).default({ min: "siteAdmin" }),
-  /** Onglets. Si absent → dérivés automatiquement de `config.profiles.addConfig` (P2+). */
+  /** Onglets. Si absent → dashboard SEUL (pas de dérivation automatique — décision 2026-07-07 :
+   *  les tabs se GÉNÈRENT explicitement, la config reste la source de vérité inspectable). */
   tabs: z.array(AdminTabSchema).optional(),
 });
 export type AdminConfig = z.infer<typeof AdminConfigSchema>;

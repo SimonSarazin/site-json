@@ -193,13 +193,18 @@ silencieusement dans la section custom. Champs stricts notables : `import.entity
 
 ## Limites connues / backlog
 
-- `status.*` (field/mode/states/cascade/notifyEmail) : déclaré au schéma, **non câblé** (contrat
-  futur — nécessite aussi de vérifier ce que `validategroup` legacy accepte).
-- Dérivation automatique des `tabs` depuis `profiles.addConfig` : non implémentée.
-- `me.isCostumAdmin(slug)` (user ∈ `costum.admins`) : pas encore exposé par la lib — `siteAdmin`
-  = admin du carrier en attendant.
-- Emails automatiques au changement de statut (`elementAfterUpdate` legacy) : non portés
-  (chantier costum-hooks).
+- `status.*` : déclaré au schéma, **non câblé**. Décision 2026-07-07 : `mode`/`field`/`states`
+  seront implémentés à l'arrivée de SSBE (workflows multi-états, via `UPDATE_PATH_VALUE`) ;
+  `cascade` et `notifyEmail` seront **retirés** (cascade legacy intrinsèque, email = hook costum
+  backend — mauvaise couche pour un flag de config front).
+- Dérivation automatique des `tabs` : ne sera **pas** implémentée en runtime — les tabs se
+  génèrent explicitement (assistant config / commande à venir), la config reste inspectable.
+- `me.isCostumAdmin(slug)` : pas exposé par la lib, et **0/65 costums** de la base n'a
+  d'`admins` — backlog froid. Symptôme d'alerte si ça change : un user de `costum.admins`
+  passerait les gates API backend mais ne verrait pas l'entrée UI.
+- Emails automatiques au changement de statut : responsabilité **backend** (chantier
+  costum-hooks, `elementAfterUpdate`) — aucun site déployé n'a de hook email de statut à ce
+  jour ; rien à déclarer côté config site-json.
 - « Tout sélectionner » ne couvre que les lignes chargées (pas de « sélectionner les N
   correspondants » — exigerait un mécanisme serveur) ; pas d'undo sur Valider/Référencer ;
   `entityAdmin` pas résolu par-ligne ; colonnes d'export non configurables (réutilisent `columns`).
