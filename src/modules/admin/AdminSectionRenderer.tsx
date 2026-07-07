@@ -9,7 +9,8 @@ import DashboardSection from "./sections/DashboardSection";
 import MembersSection from "./sections/MembersSection";
 import PlaceholderSection from "./sections/PlaceholderSection";
 import { getAdminSection } from "./sections/registry";
-import type { AdminSection } from "./schema";
+import { useAdminAccess } from "./hooks/useAdminAccess";
+import type { AdminAccessLevel, AdminSection } from "./schema";
 
 /**
  * Mappe `section.type` → composant (jumeau de `ProfileSectionRenderer`).
@@ -18,6 +19,10 @@ import type { AdminSection } from "./schema";
  * resource/import/export/reference/moderation pointent sur le placeholder (remplacés phase par phase).
  */
 export function AdminSectionRenderer({ section }: { section: AdminSection }) {
+  const access = useAdminAccess();
+  // `access` par SECTION (surcharge page/onglet — promis par le schéma, câblé par l'audit config).
+  const required = (section as { access?: AdminAccessLevel }).access;
+  if (required && !access.has(required)) return null;
   switch (section.type) {
     case "dashboard":
       return <DashboardSection section={section} />;

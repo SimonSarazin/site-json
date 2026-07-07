@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { AlertTriangle, ArrowRight, Clock, Database } from "lucide-react";
 import { useNavigate } from "react-router";
 
@@ -8,6 +9,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useSite } from "@/hooks/useSite";
 import { useT } from "@/hooks/useT";
+import { useVisibilityList } from "@/lib/visibility";
+
+import { useAdminAccess } from "../hooks/useAdminAccess";
 
 import { ADMIN_QUERY_KEYS } from "../constants/queryKeys";
 import type { AdminConfig, AdminResourceSection, AdminSection } from "../schema";
@@ -37,21 +41,28 @@ interface ResourceStat {
   pending: number | null;
 }
 
-export default function DashboardSection({ section: _section }: { section: AdminSection }) {
+export default function DashboardSection({ section }: { section: AdminSection }) {
   const t = useT();
   const navigate = useNavigate();
   const { entity: carrier, me } = useCocolight();
   const { config } = useSite();
+  const access = useAdminAccess();
   const admin = (config as { admin?: AdminConfig }).admin;
   const costumSlug = (carrier as { slug?: string } | null)?.slug ?? "";
+  const title = (section as { title?: Parameters<typeof t>[0] }).title;
+
+  // MÊME filtre d'onglets qu'AdminRenderer (condition + access) : pas de tuile vers un onglet masqué.
+  const allTabs = useMemo(() => admin?.tabs ?? [], [admin?.tabs]);
+  const conditionResults = useVisibilityList(useMemo(() => allTabs.map((tb) => tb.condition), [allTabs]));
+  const visibleTabs = allTabs.filter((tab, i) => conditionResults[i] && (!tab.access || access.has(tab.access)));
 
   // Dérivation : toutes les sections resource des onglets (avec l'id d'onglet pour le raccourci).
-  const resources = (admin?.tabs ?? []).flatMap((tab) =>
+  const resources = visibleTabs.flatMap((tab) =>
     tab.sections
       .filter((s): s is AdminResourceSection => s.type === "resource")
       .map((s) => ({ tabId: tab.id, resource: s })),
   );
-  const moderationTab = (admin?.tabs ?? []).find((tab) => tab.sections.some((s) => s.type === "moderation"));
+  const moderationTab = visibleTabs.find((tab) => tab.sections.some((s) => s.type === "moderation"));
 
   const stats = useQuery({
     queryKey: ADMIN_QUERY_KEYS.DASHBOARD_STATS(costumSlug, resources.map((r) => r.resource.entityType)),
@@ -102,6 +113,8 @@ export default function DashboardSection({ section: _section }: { section: Admin
   });
 
   return (
+    <div className="space-y-3">
+    {title && <h2 className="text-lg font-semibold">{t(title)}</h2>}
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {stats.isLoading &&
         resources.map(({ tabId, resource }) => (
@@ -165,6 +178,7 @@ export default function DashboardSection({ section: _section }: { section: Admin
           </CardContent>
         </Card>
       )}
+    </div>
     </div>
   );
 }

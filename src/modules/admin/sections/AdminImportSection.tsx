@@ -1,7 +1,7 @@
 import { Download, Upload } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import Papa from "papaparse";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -44,6 +44,12 @@ export default function AdminImportSection({ section }: { section: AdminSection 
     (IMPORT_TYPES as readonly string[]).includes(t),
   ) ?? [...IMPORT_TYPES];
   const [type, setType] = useState<ImportType>(allowed[0] ?? "poi");
+  // Filet runtime (le schéma z.enum attrape désormais ce cas à la VALIDATION, mais le runtime
+  // consomme le JSON brut) : signaler les types de config rejetés au lieu de les avaler.
+  const rejected = (importSection.entityTypes ?? []).filter((t) => !(IMPORT_TYPES as readonly string[]).includes(t)).join(", ");
+  useEffect(() => {
+    if (rejected) toast.warning(`Import : types de config non importables ignorés — ${rejected}`);
+  }, [rejected]);
   const [rows, setRows] = useState<Record<string, unknown>[]>([]);
   const [preview, setPreview] = useState<PreviewRow[] | null>(null);
   const [progress, setProgress] = useState<{ current: number; total: number } | null>(null);

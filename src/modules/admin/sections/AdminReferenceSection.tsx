@@ -25,6 +25,10 @@ import type { AdminReferenceSection as AdminReferenceSectionConfig, AdminSection
 import { formatCell, getPath } from "./resourceHelpers";
 
 const DEFAULT_TYPES = ["organizations", "projects", "events", "poi"];
+const DEFAULT_COLUMNS = [
+  { path: "name", label: { fr: "Nom" } },
+  { path: "address.addressLocality", label: { fr: "Commune" } },
+];
 
 /**
  * Section `reference` — port moderne de l'onglet « search & reference » du referenceTable legacy :
@@ -48,6 +52,11 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
   const { entity: carrier, contextId, contextType } = useCocolight();
   const costumSlug = (carrier as { slug?: string } | null)?.slug ?? "";
   const types = cfg.entityTypes ?? DEFAULT_TYPES;
+  // Colonnes de DONNÉES configurables (`columns`, même forme que resource — audit config) ;
+  // Type (badge collection) et Action restent structurelles.
+  const columns = (cfg.columns ?? DEFAULT_COLUMNS).map((c) =>
+    typeof c === "string" ? { path: c, label: undefined } : c,
+  );
 
   const [tab, setTab] = useState<"search" | "referenced">("search");
   const [type, setType] = useState(types[0] ?? "poi");
@@ -114,9 +123,10 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
       const itemType = String((data as { collection?: unknown }).collection ?? type);
       return (
         <TableRow key={id} ref={i === rows.length - 1 ? (lastItemRef as never) : undefined}>
-          <TableCell>{formatCell(getPath(data, "name"))}</TableCell>
+          {columns.map((col) => (
+            <TableCell key={col.path} className="max-w-[14rem] truncate">{formatCell(getPath(data, col.path))}</TableCell>
+          ))}
           <TableCell><Badge variant="outline">{itemType}</Badge></TableCell>
-          <TableCell>{formatCell(getPath(data, "address.addressLocality"))}</TableCell>
           <TableCell className="text-right">
             <Button size="sm" variant="outline" disabled={mutation.isPending} onClick={() => runMutation(action.op, itemType, id)}>
               {action.icon}
@@ -137,9 +147,12 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Nom</TableHead>
+            {columns.map((col) => (
+              <TableHead key={col.path} className={col.label ? undefined : "capitalize"}>
+                {col.label ? t(col.label) : col.path}
+              </TableHead>
+            ))}
             <TableHead>Type</TableHead>
-            <TableHead>Commune</TableHead>
             <TableHead className="w-44 text-right">Action</TableHead>
           </TableRow>
         </TableHeader>

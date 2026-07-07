@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 
 import { Tabs, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import { useT } from "@/hooks/useT";
+import { useVisibilityList } from "@/lib/visibility";
 
 import { AdminSectionRenderer } from "./AdminSectionRenderer";
 import { ScrollableTabsList } from "./components/ScrollableTabsList";
@@ -20,7 +21,11 @@ export function AdminRenderer({ config }: { config: AdminConfig }) {
   const access = useAdminAccess();
   const { section } = useParams<{ section?: string }>();
   const navigate = useNavigate();
-  const tabs = (config.tabs ?? []).filter((tab) => !tab.access || access.has(tab.access));
+  const allTabs = useMemo(() => config.tabs ?? [], [config.tabs]);
+  // `tab.condition` (VisibilityCondition, même moteur que les sections de page) évalué en une passe
+  // — champ déclaré au schéma mais ignoré jusqu'ici (audit config : faux contrat).
+  const conditionResults = useVisibilityList(useMemo(() => allTabs.map((tb) => tb.condition), [allTabs]));
+  const tabs = allTabs.filter((tab, i) => conditionResults[i] && (!tab.access || access.has(tab.access)));
   const [active, setActive] = useState("");
   // REVIEW M3 : une navigation EXTERNE (palette Ctrl+K, tuile dashboard) change :section — l'URL
   // reprend la main sur l'état cliqué. Pattern React « adjust state during render » (pas d'effet :

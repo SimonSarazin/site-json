@@ -4901,7 +4901,6 @@
         "sections": [
           {
             "type": "members",
-            "scope": "carrier",
             "filters": ["toBeValidated", "isAdmin", "isInviting", "text"]
           }
         ]

@@ -33,7 +33,11 @@ registerCommandSource({
       },
     ];
     // Un raccourci par onglet configuré (deep-link /admin/:section), même gate.
+    // Un onglet porteur d'une `condition` est EXCLU : le moteur de visibilité vit dans des hooks
+    // React (pathname/permissions) inévaluables ici — mieux vaut aucun raccourci qu'un raccourci
+    // vers un onglet masqué (le filtre fidèle est dans AdminRenderer/DashboardSection).
     for (const tab of ctx.config.admin?.tabs ?? []) {
+      if (tab.condition) continue;
       commands.push({
         id: `nav:/admin/${tab.id}`,
         label: tab.label ?? { fr: tab.id },

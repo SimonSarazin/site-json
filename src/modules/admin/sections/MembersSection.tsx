@@ -50,6 +50,8 @@ export default function MembersSection({ section }: { section: AdminSection }) {
   // barre de recherche.
   const wanted = cfg.filters ?? ["toBeValidated", "isAdmin"];
   const showSearch = !cfg.filters || cfg.filters.includes("text");
+  // `actions` absent → tout (historique) ; sinon `invite` gate le bouton (champ mort câblé — audit config).
+  const canInvite = !cfg.actions || cfg.actions.includes("invite");
 
   if (!entity) {
     return (
@@ -78,10 +80,12 @@ export default function MembersSection({ section }: { section: AdminSection }) {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
         <CardTitle className="text-lg">{labels.managementTitle}</CardTitle>
-        <Button size="sm" onClick={() => setInviteOpen(true)}>
-          <UserPlus className="mr-2 h-4 w-4" />
-          Inviter
-        </Button>
+        {canInvite && (
+          <Button size="sm" onClick={() => setInviteOpen(true)}>
+            <UserPlus className="mr-2 h-4 w-4" />
+            Inviter
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="space-y-4">
         {showSearch && (

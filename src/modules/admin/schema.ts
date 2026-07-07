@@ -25,7 +25,12 @@ export type AdminAccessLevel = z.infer<typeof AdminAccessLevelSchema>;
 export const AdminFormRefSchema = z.union([z.literal(false), z.literal("inherit"), z.string()]);
 
 /** Workflow de statut d'une resource (validation pending→validated). `costumFlag` =
- *  `preferences.toBeValidated[slug]` (legacy ValidateGroupAction) ; `statusField` = champ métier. */
+ *  `preferences.toBeValidated[slug]` (legacy ValidateGroupAction) ; `statusField` = champ métier.
+ *
+ *  ⚠ CONTRAT FUTUR — aujourd'hui `status` n'est lu qu'en BOOLÉEN (présence = active le mode admin,
+ *  au même titre que rowActions:["validate"]) : les 5 sous-champs ne sont PAS ENCORE câblés
+ *  (filtre/badge sur `field`+`mode`, `states`, `cascade`/`notifyEmail` transmis à validategroup).
+ *  Ne PAS compter sur une valeur non-défaut tant que l'implémentation n'est pas livrée. */
 export const AdminStatusConfigSchema = z.object({
   field: z.string().default("preferences.toBeValidated"),
   mode: z.enum(["costumFlag", "statusField"]).default("costumFlag"),
@@ -34,23 +39,35 @@ export const AdminStatusConfigSchema = z.object({
   notifyEmail: z.boolean().default(false),
 });
 
+/** Colonnes de table : chemin pointé brut (`"address.addressLocality"`) OU `{path, label}` (libellé localisé). */
+export const AdminColumnsSchema = z.array(z.union([
+  z.string(),
+  z.object({ path: z.string(), label: LocalizedString.optional() }),
+]));
+
+/** Accès minimum d'une SECTION (surcharge l'accès page/onglet — cf. AdminConfig.access). */
+const sectionAccess = { access: AdminAccessLevelSchema.optional() };
+
 const AdminDashboardSectionSchema = z.object({
+  ...sectionAccess,
   type: z.literal("dashboard"),
   title: LocalizedString.optional(),
 });
 
 const AdminMembersSectionSchema = z.object({
+  ...sectionAccess,
   type: z.literal("members"),
-  scope: z.enum(["carrier", "entity"]).default("carrier"),
   /** Onglets/outils rendus : toBeValidated (à valider), isAdmin (admins), isInviting (invités),
    *  text (barre de recherche). Absent → à-valider + admins + recherche (l'onglet « tous » est
    *  toujours présent). */
   filters: z.array(z.enum(["isAdmin", "toBeValidated", "isInviting", "text"])).optional(),
-  actions: z.array(z.string()).optional(),
+  /** Actions proposées. Absent → tout (comportement historique). `invite` gate le bouton « Inviter ». */
+  actions: z.array(z.enum(["invite"])).optional(),
 });
 export type AdminMembersSection = z.infer<typeof AdminMembersSectionSchema>;
 
 const AdminResourceSectionSchema = z.object({
+  ...sectionAccess,
   type: z.literal("resource"),
   entityType: z.string(), // organizations | projects | poi | events | answers | citoyens | …
   label: LocalizedString.optional(),
@@ -63,11 +80,7 @@ const AdminResourceSectionSchema = z.object({
    * (résolution d'édition costum + forms préremplis, cf. AdminResourceTable).
    */
   source: SearchBaseParamsSchema.partial().optional(),
-  /** Colonnes : chemin pointé brut (`"address.addressLocality"`) OU `{path, label}` (libellé localisé). */
-  columns: z.array(z.union([
-    z.string(),
-    z.object({ path: z.string(), label: LocalizedString.optional() }),
-  ])).optional(),
+  columns: AdminColumnsSchema.optional(),
   create: AdminFormRefSchema.default("inherit"),
   edit: AdminFormRefSchema.default("inherit"),
   rowActions: z.array(z.enum(["edit", "delete", "validate", "reference"])).optional(),
@@ -77,38 +90,63 @@ const AdminResourceSectionSchema = z.object({
 export type AdminResourceSection = z.infer<typeof AdminResourceSectionSchema>;
 
 const AdminImportSectionSchema = z.object({
+  ...sectionAccess,
   type: z.literal("import"),
   title: LocalizedString.optional(),
-  entityTypes: z.array(z.string()).optional(),
+  /** Types importables (aligné IMPORT_ELEMENTS backend). Strict : un type hors liste échoue à la
+   *  validation de config (avant ce z.enum, il était silencieusement filtré au runtime → Select vide). */
+  entityTypes: z.array(z.enum(["poi", "organizations", "projects", "events", "citoyens"])).optional(),
 });
 export type AdminImportSection = z.infer<typeof AdminImportSectionSchema>;
 
-const AdminExportSectionSchema = z.object({ type: z.literal("export"), title: LocalizedString.optional() });
+const AdminExportSectionSchema = z.object({
+  ...sectionAccess,
+  type: z.literal("export"),
+  title: LocalizedString.optional(),
+  /** Types proposés à l'export (défaut organizations/projects/poi/events). NB : l'export reste
+   *  réservé super-admin (plancher BACKEND, non contournable par config). */
+  entityTypes: z.array(z.string()).optional(),
+});
+export type AdminExportSection = z.infer<typeof AdminExportSectionSchema>;
 /** Section référencement : recherche globale (hors costum) + rattacher/retirer une référence.
  *  `entityTypes` : types proposés dans le sélecteur (défaut organizations/projects/events/poi). */
 const AdminReferenceSectionSchema = z.object({
+  ...sectionAccess,
   type: z.literal("reference"),
   title: LocalizedString.optional(),
   entityTypes: z.array(z.string()).optional(),
+  /** Colonnes de DONNÉES des deux tables (défaut name + address.addressLocality). Les colonnes
+   *  structurelles Type (badge collection) et Action restent fixes. */
+  columns: AdminColumnsSchema.optional(),
 });
 export type AdminReferenceSection = z.infer<typeof AdminReferenceSectionSchema>;
-const AdminModerationSectionSchema = z.object({ type: z.literal("moderation"), title: LocalizedString.optional() });
+const AdminModerationSectionSchema = z.object({ ...sectionAccess, type: z.literal("moderation"), title: LocalizedString.optional() });
+
+const BUILTIN_SECTION_TYPES = ["dashboard", "members", "resource", "import", "export", "reference", "moderation"] as const;
 
 /** Section costum : `type` libre enregistré via `registerAdminSection` (comme une section profil costum).
- *  Permissif (le composant enregistré valide ses props) — mis EN DERNIER dans l'union (fallback). */
+ *  Permissif (le composant enregistré valide ses props) — mais REFUSE les types builtin : sans ce
+ *  refine, une section builtin fautive (ex. rowActions:["edite"]) retombait silencieusement ici et
+ *  passait la validation (l'erreur réelle avalée, l'action absente au runtime sans aucun message). */
 const AdminCustomSectionSchema = z.object({
-  type: z.string(),
+  ...sectionAccess,
+  type: z.string().refine((t) => !(BUILTIN_SECTION_TYPES as readonly string[]).includes(t), {
+    message: "type de section builtin invalide (voir les erreurs du schéma builtin correspondant)",
+  }),
   props: z.record(z.string(), z.unknown()).optional(),
 });
 
+/** Builtin en discriminatedUnion (erreurs précises par type) + fallback custom pour les types costum. */
 export const AdminSectionSchema = z.union([
-  AdminDashboardSectionSchema,
-  AdminMembersSectionSchema,
-  AdminResourceSectionSchema,
-  AdminImportSectionSchema,
-  AdminExportSectionSchema,
-  AdminReferenceSectionSchema,
-  AdminModerationSectionSchema,
+  z.discriminatedUnion("type", [
+    AdminDashboardSectionSchema,
+    AdminMembersSectionSchema,
+    AdminResourceSectionSchema,
+    AdminImportSectionSchema,
+    AdminExportSectionSchema,
+    AdminReferenceSectionSchema,
+    AdminModerationSectionSchema,
+  ]),
   AdminCustomSectionSchema,
 ]);
 export type AdminSection = z.infer<typeof AdminSectionSchema>;

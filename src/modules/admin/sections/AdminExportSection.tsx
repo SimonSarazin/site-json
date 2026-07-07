@@ -10,7 +10,7 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { useT } from "@/hooks/useT";
 
 import { ensureCostumScope } from "../lib/ensureCostumScope";
-import type { AdminSection } from "../schema";
+import type { AdminExportSection as AdminExportSectionConfig, AdminSection } from "../schema";
 
 /**
  * Section `export` (P3) — export CSV des éléments du costum courant. Câble `entity.exportElements`
@@ -30,10 +30,12 @@ function downloadCsv(csv: string, filename: string): void {
 }
 
 export default function AdminExportSection({ section }: { section: AdminSection }) {
-  const exportSection = section as { title?: Parameters<ReturnType<typeof useT>>[0] };
+  const exportSection = section as AdminExportSectionConfig;
   const t = useT();
   const { entity: carrier, me, contextId, contextType } = useCocolight();
-  const [type, setType] = useState("organizations");
+  // Types pilotés par la config (`entityTypes`), défaut = liste historique (audit config).
+  const types = exportSection.entityTypes ?? EXPORTABLE_TYPES;
+  const [type, setType] = useState(types[0] ?? "organizations");
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "validated">("all");
   const [busy, setBusy] = useState(false);
   const canExport = me?.isSuperAdmin?.() ?? false;
@@ -76,7 +78,7 @@ export default function AdminExportSection({ section }: { section: AdminSection 
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {EXPORTABLE_TYPES.map((t) => (
+                {types.map((t) => (
                   <SelectItem key={t} value={t}>
                     {t}
                   </SelectItem>
