@@ -4,6 +4,18 @@ import { COFORM_QUERY_KEYS } from "../constants/queryKeys";
 import type { HappinessValue } from "../types";
 
 /**
+ * Lieu évalué d'une contribution (form collaboratif "par lieu" : la réponse
+ * porte un finder partagé, cf. `getSharedFinderInfo`). Résolu côté backend.
+ */
+export interface CommonTableContributorPlace {
+  id: string;
+  type: string;
+  name: string;
+  slug: string;
+  image: string;
+}
+
+/**
  * Une contribution individuelle d'un user à une ligne du commonTable.
  * Plusieurs entries possibles pour le même user s'il a déclaré plusieurs
  * solutions au même usage.
@@ -18,6 +30,12 @@ export interface CommonTableContributor {
   note: number;
   comment: string;
   fromAnswerId: string;
+  /**
+   * Lieu évalué (form collaboratif "par lieu"). `null`/absent → afficher
+   * l'évaluateur (`userName`) comme fallback. Renseigné par le backend quand
+   * le form a un `sharedQuestionPath` pointant un finder.
+   */
+  place?: CommonTableContributorPlace | null;
 }
 
 interface UseCommonTableContributorsOptions {

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Monitor, Users, UtensilsCrossed, type LucideIcon } from "lucide-react";
+import { Monitor, Users, BedDouble, type LucideIcon } from "lucide-react";
 import { SearchCardProps } from "../../schema";
 import type { Answer, FormId, SearchEntity } from "@communecter/cocolight-api-client";
 import { getLocation } from "../../helpers/getLocation";
@@ -18,7 +18,7 @@ import {
 const STAT_ICONS: Record<ServicePricingStatKind, LucideIcon> = {
   coworking: Monitor,
   meeting: Users,
-  accommodation: UtensilsCrossed,
+  accommodation: BedDouble,
 };
 
 export default function CardImageCover({
@@ -53,19 +53,46 @@ export default function CardImageCover({
   );
   const badges = showServicePricingStats ? [] : getBadges(item);
 
+  // "contain" (logos) : au lieu de rogner (cover), on montre le logo ENTIER,
+  // centré, sur un FOND FLOUTÉ = la même image en cover + blur (pattern « ambient
+  // backdrop » Spotify / Apple Music). Remplit le cadre sans bande grise, quelle
+  // que soit la proportion du logo, et pose une teinte douce de ses couleurs.
+  const isContain = card?.imageFit === "contain";
+
   return (
     <div
       onClick={onClick}
-      className="relative w-full h-96 rounded-xl overflow-hidden shadow-lg group cursor-pointer"
+      className={cn(
+        "relative w-full h-96 rounded-xl overflow-hidden shadow-lg group cursor-pointer",
+        isContain && "bg-muted",
+      )}
     >
-      {/* Image de fond */}
-      {image && (
+      {/* Mode "cover" (défaut) : image plein cadre, rognée. */}
+      {image && !isContain && (
         <OptimizedImage
           src={image}
           alt={title || ""}
           width={400}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
+      )}
+
+      {/* Mode "contain" (logos) : fond flouté + logo entier centré. */}
+      {image && isContain && (
+        <>
+          <div
+            aria-hidden
+            className="absolute inset-0 scale-110 bg-cover bg-center opacity-70 blur-2xl"
+            style={{ backgroundImage: `url("${image}")` }}
+          />
+          <div aria-hidden className="absolute inset-0 bg-background/30" />
+          <OptimizedImage
+            src={image}
+            alt={title || ""}
+            width={400}
+            className="relative h-full w-full object-contain p-6 drop-shadow-md group-hover:scale-105 transition-transform duration-300"
+          />
+        </>
       )}
 
       {/* Pastilles de stats (opt-in `card.overlayStats`) en haut à droite */}
