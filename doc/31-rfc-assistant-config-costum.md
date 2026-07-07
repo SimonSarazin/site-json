@@ -101,12 +101,33 @@ déploiements) mais elle est traitée comme du **code** (bundlée, versionnée, 
 backend l'a déjà compris (résolution live à chaque save). La question : jusqu'où amener la
 lib au même modèle ?
 
-Note `getcostumjson` : l'endpoint existant (`/co2/cms/getcostumjson?slug=`) sert le sous-objet
-`costum` de l'élément **hôte** (orienté CMS/apps) — ce n'est PAS la définition des champs
-(`typeObj` de la collection `costum`, fusion `Costum::init` engine+overlay). Il ne suffit pas
-tel quel.
+Note `getcostumjson` (VÉRIFIÉ sur pièces, 2026-07-07) : l'endpoint legacy porté
+(`/co2/cms/getcostumjson?slug=`) sert le champ `costum` de l'élément **hôte** — qui CONTIENT le
+`typeObj.dynFormCostum` complet pour les costums embarqués sur l'hôte (equipementsSportifs974 :
+39 champs servis, vérifié live ; c'est le cas de nos déploiements site-json). Il ne suffit pas
+À LUI SEUL pour 4 raisons : (1) **couverture** — 28/65 costums ont leur définition dans la
+collection `costum` (engine : ctenat, siteDuPacte, hva…) et le legacy ne fusionne PAS dans
+cette action (GetCostumJsonAction.php:20-21) ; endpoint legacy = réponse gelée, inextensible ;
+(2) **format brut** legacy (inputTypes, presets `onload.actions`, hidden `<champ><inputType>`)
+— la digestion vers la forme lib (schema/fields/setType) devrait migrer dans la lib ;
+(3) pas d'**inférence de type par valeurs** possible ; (4) pas de résolution des **lists**
+(enums, 22 costums) + cache `costumlite` potentiellement périmé après `updatecostum` sans
+`resetcache`.
 
 ### Options
+
+**Option 3bis — « zéro endpoint nouveau »** (ouverte par la vérification ci-dessus) : la lib
+porte la digestion (fonction pure `typeObj → extensions`) et se nourrit de `getcostumjson`
+pour les costums EMBARQUÉS sur l'hôte (nos déploiements) ; inférence de type dégradée à
+`inputType` ; les 28 engine-costums restent sur l'artefact bundlé. Moins propre que
+`costum/describe` (digestion dans la lib, couverture partielle, cache legacy) mais aucune
+question de politique d'endpoint.
+
+**Versant ÉCRITURE** (ajout/màj d'un costum par l'assistant) : le legacy expose `updatecostum`
++ `saveversion`/`restoreversion`/`resetcache` dans le même contrôleur CMS — non portés au
+backend à ce jour. S'ils le sont (ports byte-compat, pas d'additif), l'assistant pourrait
+créer/modifier un costum en base puis invalider le cache : la boucle complète
+« définir → servir → former » se ferme sans re-publication.
 
 | | Option 1 — statu quo outillé | Option 2 — tout runtime | Option 3 — hybride (reco) |
 |---|---|---|---|
@@ -154,7 +175,8 @@ byte-parité stricte — à trancher.
 ## Décisions à trancher
 
 1. **Politique d'endpoint** : accepte-t-on un endpoint additif cocolight-only
-   (`costum/describe`) hors périmètre legacy ? (Sinon l'option 3 tombe.)
+   (`costum/describe`) hors périmètre legacy ? (Sinon : option 3bis via `getcostumjson`,
+   couverture partielle et digestion dans la lib.)
 2. **Priorité des chemins** dans la lib : bundlé-d'abord (fallback live) ou live-d'abord
    (fallback bundlé) ? Reco : bundlé-d'abord + `refresh` explicite, live-d'abord pour les
    slugs hors registre.
