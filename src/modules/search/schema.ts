@@ -191,6 +191,11 @@ const ListConfSchema = z.object({
     // badges génériques (serverData.badges / tags) ; "service-pricing" les
     // remplace par les pastilles de capacité (postes/personnes/couverts).
     overlayStats: z.enum(["service-pricing"]).optional(),
+    // Ajustement de l'image des cartes `image-cover` : "cover" (défaut, remplit
+    // la carte en rognant — idéal pour des photos plein cadre) ou "contain"
+    // (logo entier visible, centré sur un FOND FLOUTÉ de la même image — idéal
+    // pour des LOGOS d'aspect hétérogène qui, en cover, seraient rognés).
+    imageFit: z.enum(["cover", "contain"]).optional(),
     // Chemins CoForm des données service-pricing (cartes `detailedMode` /
     // `overlayStats`). Surcharge PAR CATÉGORIE la table par défaut du code
     // (précédent : `preview.fields`) — découple les IDs de formulaires/champs.
