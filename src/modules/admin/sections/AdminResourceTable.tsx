@@ -2,16 +2,6 @@ import { BadgeCheck, BadgeX, ChevronDown, ChevronUp, Link2, MoreHorizontal, Penc
 import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
@@ -23,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Progress } from "@/components/ui/progress";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -30,6 +21,7 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useSite } from "@/hooks/useSite";
 import { useT } from "@/hooks/useT";
+import "@/modules/admin/i18n";
 import SearchTextInput from "@/modules/search/components/SearchTextInput";
 import { DynamicModal } from "@/modules/profil/components/add/ModalRegistry";
 import { DynamicEditModal } from "@/modules/profil/components/profile-edit/EditModalRegistry";
@@ -42,6 +34,7 @@ import { useDeleteEntity, type DeletableEntity } from "../hooks/useDeleteEntity"
 import { useReferenceElement, type ReferencingCarrier } from "../hooks/useReferenceElement";
 import { useValidateGroup, type ValidatableCarrier } from "../hooks/useValidateGroup";
 import type { AdminResourceSection, AdminSection } from "../schema";
+import { downloadCsv } from "../lib/downloadCsv";
 import { ensureCostumScope } from "../lib/ensureCostumScope";
 import { formatCell, getPath, resolveCreateModal, resolveEditModal, type CostumFormDocLike } from "./resourceHelpers";
 
@@ -63,6 +56,8 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   const resource = section as AdminResourceSection;
   const { entity: carrier, contextId, contextType } = useCocolight();
   const t = useT();
+  // Second hook nommé : `t` reste réservé aux LocalizedString de config, `tAdmin` au namespace du module.
+  const tAdmin = useT("modules/admin");
   // Colonnes : `"path"` brut OU `{path, label}` (libellé localisé) — cf. AdminColumnSchema.
   const columns = (resource.columns ?? ["name"]).map((c) =>
     typeof c === "string" ? { path: c, label: undefined } : c,
@@ -161,12 +156,17 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
     const ok = total - failed.size;
     if (failed.size === 0) {
       setSelected(new Map());
-      toast.success(`${ok} élément(s) ${verb}`);
+      toast.success(tAdmin("AdminResourceTable.bulkSuccess", undefined, { ok: String(ok), verb }));
     } else {
       setSelected(new Map(failed));
       toast.warning(
-        `${ok} élément(s) ${verb} — ${failed.size} échec(s)${firstError ? ` : ${firstError}` : ""} (resélectionnés)`,
-        { action: { label: "Réessayer", onClick: retry } },
+        tAdmin("AdminResourceTable.bulkPartial", undefined, {
+          ok: String(ok),
+          verb,
+          failed: String(failed.size),
+          error: firstError ? ` : ${firstError}` : "",
+        }),
+        { action: { label: tAdmin("AdminResourceTable.retry"), onClick: retry } },
       );
     }
     void invalidateAdmin();
@@ -188,7 +188,13 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
     }
     setBulkBusy(false);
     setBulkProgress(null);
-    finishBulk(total, failed, firstError, valid ? "validé(s)" : "dévalidé(s)", () => void bulkValidate(valid));
+    finishBulk(
+      total,
+      failed,
+      firstError,
+      tAdmin(valid ? "AdminResourceTable.bulkVerbValidated" : "AdminResourceTable.bulkVerbInvalidated"),
+      () => void bulkValidate(valid),
+    );
   };
 
   const bulkDelete = async () => {
@@ -206,7 +212,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
     }
     setBulkBusy(false);
     setBulkProgress(null);
-    finishBulk(total, failed, firstError, "supprimé(s)", () => setBulkDeleteOpen(true));
+    finishBulk(total, failed, firstError, tAdmin("AdminResourceTable.bulkVerbDeleted"), () => setBulkDeleteOpen(true));
   };
 
   /** Export CSV de la sélection : colonnes configurées (serverData). */
@@ -218,25 +224,16 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
       return out;
     });
     const csv = toCsv(rowsCsv as Parameters<typeof toCsv>[0], columns.map((c) => c.path) as Parameters<typeof toCsv>[1]);
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `selection-${resource.entityType}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadCsv(csv, `selection-${resource.entityType}.csv`);
   };
   const [createOpen, setCreateOpen] = useState(false);
+  // Pas de refetch() dans les callbacks : les hooks invalident déjà par prédicat admin-* (queryKeys),
+  // ce qui couvre cette table ET les tuiles dashboard (le refetch doublait la requête — audit réseau).
   const del = useDeleteEntity(() => {
     setToDelete(null);
-    void refetch();
   });
-  const validate = useValidateGroup(() => {
-    void refetch();
-  });
-  const reference = useReferenceElement(() => {
-    void refetch();
-  });
+  const validate = useValidateGroup(() => {});
+  const reference = useReferenceElement(() => {});
   // Choix costum/standard par CONFIG (`create`/`edit`) — cf. resourceHelpers. En `inherit`, la
   // création prend le form COSTUM du site s'il en existe un pour ce type (config.costumForms,
   // même form que le bouton public), et l'édition suit la résolution publique (editModal/Match).
@@ -267,52 +264,54 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
         </CardTitle>
         {createModal && (
           <Button size="sm" onClick={() => setCreateOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" /> Créer
+            <Plus className="mr-2 h-4 w-4" /> {tAdmin("AdminResourceTable.create")}
           </Button>
         )}
       </CardHeader>
       <CardContent>
         {/* Barre d'outils : recherche plein-texte (débouncée) + filtre statut (mode admin). */}
         <div className="mb-3 flex flex-wrap items-center gap-2">
-          <SearchTextInput className="max-w-xs" placeholder="Rechercher…" value={q} onChange={setQ} />
+          <SearchTextInput className="max-w-xs" placeholder={tAdmin("AdminResourceTable.searchPlaceholder")} value={q} onChange={setQ} />
           {adminMode && costumSlug && (
             <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
               <SelectTrigger className="w-40">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les statuts</SelectItem>
-                <SelectItem value="pending">À valider</SelectItem>
-                <SelectItem value="validated">Validés</SelectItem>
+                <SelectItem value="all">{tAdmin("AdminResourceTable.statusAll")}</SelectItem>
+                <SelectItem value="pending">{tAdmin("AdminResourceTable.statusPending")}</SelectItem>
+                <SelectItem value="validated">{tAdmin("AdminResourceTable.statusValidated")}</SelectItem>
               </SelectContent>
             </Select>
           )}
         </div>
         {bulkActions.length > 0 && selected.size > 0 && (
           <div className="mb-3 flex flex-wrap items-center gap-2 rounded-md border bg-muted/40 px-3 py-2">
-            <span className="text-sm font-medium">{selected.size} sélectionné{selected.size > 1 ? "s" : ""}</span>
+            <span className="text-sm font-medium">
+              {tAdmin(selected.size > 1 ? "AdminResourceTable.selectedCountPlural" : "AdminResourceTable.selectedCount", undefined, { count: String(selected.size) })}
+            </span>
             {bulkActions.includes("validate") && (
               <>
                 <Button size="sm" variant="outline" disabled={bulkBusy} onClick={() => void bulkValidate(true)}>
-                  <BadgeCheck className="mr-1.5 h-3.5 w-3.5" /> Valider
+                  <BadgeCheck className="mr-1.5 h-3.5 w-3.5" /> {tAdmin("AdminResourceTable.bulkValidate")}
                 </Button>
                 <Button size="sm" variant="outline" disabled={bulkBusy} onClick={() => void bulkValidate(false)}>
-                  <BadgeX className="mr-1.5 h-3.5 w-3.5" /> Dévalider
+                  <BadgeX className="mr-1.5 h-3.5 w-3.5" /> {tAdmin("AdminResourceTable.bulkInvalidate")}
                 </Button>
               </>
             )}
             {bulkActions.includes("export") && (
               <Button size="sm" variant="outline" disabled={bulkBusy} onClick={bulkExport}>
-                Exporter la sélection
+                {tAdmin("AdminResourceTable.bulkExport")}
               </Button>
             )}
             {bulkActions.includes("delete") && (
               <Button size="sm" variant="destructive" disabled={bulkBusy} onClick={() => setBulkDeleteOpen(true)}>
-                <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Supprimer
+                <Trash2 className="mr-1.5 h-3.5 w-3.5" /> {tAdmin("AdminResourceTable.bulkDelete")}
               </Button>
             )}
             <Button size="sm" variant="ghost" disabled={bulkBusy} onClick={() => setSelected(new Map())}>
-              Annuler
+              {tAdmin("AdminResourceTable.bulkCancel")}
             </Button>
             {bulkProgress && (
               <div className="flex w-full items-center gap-2 sm:w-64">
@@ -336,7 +335,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
               {bulkActions.length > 0 && (
                 <TableHead className="w-10">
                   <Checkbox
-                    aria-label="Tout sélectionner (lignes chargées)"
+                    aria-label={tAdmin("AdminResourceTable.selectAll")}
                     checked={rows.length > 0 && selected.size > 0 && rows.every((it) => { const rid = rowId(it); return rid == null || selected.has(rid); })}
                     onCheckedChange={(v) => {
                       if (!v) { setSelected(new Map()); return; }
@@ -355,16 +354,21 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                 // infini, un tri client ne trierait que les pages chargées.
                 <TableHead
                   key={col.path}
-                  className={col.label ? "cursor-pointer select-none hover:bg-muted/50" : "cursor-pointer select-none capitalize hover:bg-muted/50"}
-                  onClick={() => toggleSort(col.path)}
+                  aria-sort={sort?.col === col.path ? (sort.dir === 1 ? "ascending" : "descending") : "none"}
                 >
-                  <span className="inline-flex items-center gap-1">
+                  {/* Vrai <button> (pattern shadcn data-table) : tri accessible au CLAVIER + aria-sort. */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={col.label ? "-ml-3 h-8" : "-ml-3 h-8 capitalize"}
+                    onClick={() => toggleSort(col.path)}
+                  >
                     {col.label ? t(col.label) : col.path}
-                    {sort?.col === col.path && (sort.dir === 1 ? <ChevronUp className="h-3 w-3 text-primary" /> : <ChevronDown className="h-3 w-3 text-primary" />)}
-                  </span>
+                    {sort?.col === col.path && (sort.dir === 1 ? <ChevronUp className="ml-1 h-3 w-3 text-primary" /> : <ChevronDown className="ml-1 h-3 w-3 text-primary" />)}
+                  </Button>
                 </TableHead>
               ))}
-              {adminMode && <TableHead>Statut</TableHead>}
+              {adminMode && <TableHead>{tAdmin("AdminResourceTable.statusColumn")}</TableHead>}
               <TableHead className="sticky right-0 z-10 w-12 bg-background" />
             </TableRow>
           </TableHeader>
@@ -395,7 +399,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                   {bulkActions.length > 0 && (
                     <TableCell className="w-10">
                       <Checkbox
-                        aria-label={`Sélectionner ${label}`}
+                        aria-label={tAdmin("AdminResourceTable.selectRow", undefined, { label })}
                         disabled={!hasRealId}
                         checked={selected.has(id)}
                         onCheckedChange={() => toggleSelect(id, item)}
@@ -410,23 +414,23 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                   {adminMode && (
                     <TableCell>
                       {isPending ? (
-                        <Badge variant="outline" className="border-amber-500 text-amber-600">En attente</Badge>
+                        <Badge variant="outline" className="border-amber-500 text-amber-600 dark:border-amber-400 dark:text-amber-400">{tAdmin("AdminResourceTable.badgePending")}</Badge>
                       ) : (
-                        <Badge variant="secondary">Validé</Badge>
+                        <Badge variant="secondary">{tAdmin("AdminResourceTable.badgeValidated")}</Badge>
                       )}
                     </TableCell>
                   )}
                   <TableCell className="sticky right-0 bg-background">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" aria-label={`Actions pour ${label}`}>
+                        <Button variant="ghost" size="icon" aria-label={tAdmin("AdminResourceTable.rowActions", undefined, { label })}>
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         {rowActions.includes("edit") && editModal.enabled && (
                           <DropdownMenuItem onClick={() => setEditEntity(item as unknown as EntityTypes)}>
-                            <Pencil className="mr-2 h-4 w-4" /> Éditer
+                            <Pencil className="mr-2 h-4 w-4" /> {tAdmin("AdminResourceTable.edit")}
                           </DropdownMenuItem>
                         )}
                         {rowActions.includes("validate") && carrier && hasRealId && (
@@ -441,7 +445,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                             }
                           >
                             {isPending ? <BadgeCheck className="mr-2 h-4 w-4" /> : <BadgeX className="mr-2 h-4 w-4" />}
-                            {isPending ? "Valider" : "Dévalider"}
+                            {tAdmin(isPending ? "AdminResourceTable.validate" : "AdminResourceTable.invalidate")}
                           </DropdownMenuItem>
                         )}
                         {rowActions.includes("reference") && carrier && costumSlug && hasRealId && (
@@ -456,7 +460,8 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                               });
                             }}
                           >
-                            <Link2 className="mr-2 h-4 w-4" /> {isAttached ? "Détacher" : isReferenced ? "Retirer la référence" : "Référencer"}
+                            <Link2 className="mr-2 h-4 w-4" />{" "}
+                            {tAdmin(isAttached ? "AdminResourceTable.detach" : isReferenced ? "AdminResourceTable.unreference" : "AdminResourceTable.reference")}
                           </DropdownMenuItem>
                         )}
                         {rowActions.includes("delete") && hasRealId && (
@@ -464,7 +469,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                             className="text-destructive"
                             onClick={() => setToDelete({ entity: item as unknown as DeletableEntity, label })}
                           >
-                            <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                            <Trash2 className="mr-2 h-4 w-4" /> {tAdmin("AdminResourceTable.delete")}
                           </DropdownMenuItem>
                         )}
                       </DropdownMenuContent>
@@ -483,17 +488,22 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
           </div>
         )}
         {!isLoading && rows.length === 0 && !searchError && (
-          <p className="py-8 text-center text-sm text-muted-foreground">Aucun élément.</p>
+          <p className="py-8 text-center text-sm text-muted-foreground">{tAdmin("AdminResourceTable.empty")}</p>
         )}
         {searchError != null && (
           // REVIEW M6 : une erreur de recherche n'est PAS « Aucun élément » — l'afficher.
           <p className="py-8 text-center text-sm text-destructive">
-            La recherche a échoué : {searchError instanceof Error ? searchError.message : "erreur serveur"}.
+            {tAdmin("AdminResourceTable.searchFailed", undefined, {
+              message: searchError instanceof Error ? searchError.message : tAdmin("AdminResourceTable.serverError"),
+            })}
           </p>
         )}
         {rows.length > 0 && totalCount != null && (
           <p className="pt-2 text-xs text-muted-foreground">
-            {rows.length} affiché{rows.length > 1 ? "s" : ""} sur {totalCount} — faites défiler pour charger la suite.
+            {tAdmin(rows.length > 1 ? "AdminResourceTable.shownCountPlural" : "AdminResourceTable.shownCount", undefined, {
+              shown: String(rows.length),
+              total: String(totalCount),
+            })}
           </p>
         )}
       </CardContent>
@@ -522,76 +532,46 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
         />
       )}
 
-      <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer {selected.size} élément{selected.size > 1 ? "s" : ""} ?</AlertDialogTitle>
-            <AlertDialogDescription>Cette action est irréversible.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={bulkBusy}>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={() => void bulkDelete()} disabled={bulkBusy}>
-              Supprimer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Confirmations via le ConfirmDialog PARTAGÉ (pattern du site — MembersSection l'utilisait
+          déjà via son wrapper profil) : style destructif uniforme, ~70 lignes en moins. */}
+      <ConfirmDialog
+        open={bulkDeleteOpen}
+        onOpenChange={setBulkDeleteOpen}
+        onConfirm={() => void bulkDelete()}
+        title={tAdmin(selected.size > 1 ? "AdminResourceTable.bulkDeleteTitlePlural" : "AdminResourceTable.bulkDeleteTitle", undefined, { count: String(selected.size) })}
+        description={tAdmin("AdminResourceTable.irreversible")}
+        confirmLabel={tAdmin("AdminResourceTable.delete")}
+        isDestructive
+        isPending={bulkBusy}
+      />
 
-      <AlertDialog
+      <ConfirmDialog
         open={!!toDetach}
-        onOpenChange={(o) => {
-          if (!o) setToDetach(null);
+        onOpenChange={(o) => { if (!o) setToDetach(null); }}
+        onConfirm={() => {
+          if (toDetach) {
+            reference.mutate({ carrier: scopedCarrier() as ReferencingCarrier, op: "detach", type: resource.entityType, id: toDetach.id });
+            setToDetach(null);
+          }
         }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Détacher « {toDetach?.label} » ?</AlertDialogTitle>
-            <AlertDialogDescription>
-              L'élément sera retiré du costum (source) et disparaîtra de cette table. Vous pourrez le
-              re-référencer depuis l'onglet Référencement.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                if (toDetach) {
-                  reference.mutate({ carrier: scopedCarrier() as ReferencingCarrier, op: "detach", type: resource.entityType, id: toDetach.id });
-                  setToDetach(null);
-                }
-              }}
-              disabled={reference.isPending}
-            >
-              Détacher
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        title={tAdmin("AdminResourceTable.detachTitle", undefined, { label: toDetach?.label ?? "" })}
+        description={tAdmin("AdminResourceTable.detachDescription")}
+        confirmLabel={tAdmin("AdminResourceTable.detach")}
+        isPending={reference.isPending}
+      />
 
-      <AlertDialog
+      <ConfirmDialog
         open={!!toDelete}
-        onOpenChange={(o) => {
-          if (!o) setToDelete(null);
+        onOpenChange={(o) => { if (!o) setToDelete(null); }}
+        onConfirm={() => {
+          if (toDelete) del.mutate({ entity: toDelete.entity, reason: "admin delete" });
         }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer « {toDelete?.label} » ?</AlertDialogTitle>
-            <AlertDialogDescription>Cette action est irréversible.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                if (toDelete) del.mutate({ entity: toDelete.entity, reason: "admin delete" });
-              }}
-              disabled={del.isPending}
-            >
-              Supprimer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        title={tAdmin("AdminResourceTable.deleteTitle", undefined, { label: toDelete?.label ?? "" })}
+        description={tAdmin("AdminResourceTable.irreversible")}
+        confirmLabel={tAdmin("AdminResourceTable.delete")}
+        isDestructive
+        isPending={del.isPending}
+      />
     </Card>
   );
 }

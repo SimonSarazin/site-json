@@ -13,10 +13,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 import { useCocolight } from "@/hooks/useCocolight";
+import { Label } from "@/components/ui/label";
 import { useT } from "@/hooks/useT";
+import "@/modules/admin/i18n";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { useUnsavedChangesWarning } from "@/modules/coform/hooks/useUnsavedChangesWarning";
 
+import { downloadCsv } from "../lib/downloadCsv";
 import { ensureCostumScope } from "../lib/ensureCostumScope";
 import { shapeImportRow } from "../lib/shapeImportRow";
 import type { AdminImportSection, AdminSection } from "../schema";
@@ -42,6 +45,7 @@ export default function AdminImportSection({ section }: { section: AdminSection 
   const importSection = section as AdminImportSection;
   const { entity: carrier, contextId, contextType } = useCocolight();
   const t = useT();
+  const tAdmin = useT("modules/admin");
   const queryClient = useQueryClient();
   const allowed = importSection.entityTypes?.filter((t): t is ImportType =>
     (IMPORT_TYPES as readonly string[]).includes(t),
@@ -50,9 +54,12 @@ export default function AdminImportSection({ section }: { section: AdminSection 
   // Filet runtime (le schéma z.enum attrape désormais ce cas à la VALIDATION, mais le runtime
   // consomme le JSON brut) : signaler les types de config rejetés au lieu de les avaler.
   const rejected = (importSection.entityTypes ?? []).filter((t) => !(IMPORT_TYPES as readonly string[]).includes(t)).join(", ");
+  // Message calculé HORS effet : `tAdmin` change d'identité à chaque rendu (closure) — en dépendance
+  // directe, le toast se rejouerait à chaque rendu ; la chaîne, elle, est stable par contenu.
+  const rejectedMsg = rejected ? tAdmin("AdminImportSection.rejectedTypes", undefined, { types: rejected }) : "";
   useEffect(() => {
-    if (rejected) toast.warning(`Import : types de config non importables ignorés — ${rejected}`);
-  }, [rejected]);
+    if (rejectedMsg) toast.warning(rejectedMsg);
+  }, [rejectedMsg]);
   const [rows, setRows] = useState<Record<string, unknown>[]>([]);
   const [preview, setPreview] = useState<PreviewRow[] | null>(null);
   const [progress, setProgress] = useState<{ current: number; total: number } | null>(null);
@@ -75,13 +82,7 @@ export default function AdminImportSection({ section }: { section: AdminSection 
     const example = type === "events"
       ? `Mon événement,meeting,2026-09-01,2026-09-02,1 rue Exemple,97400,Saint-Denis,"tag1,tag2",Description courte`
       : `Mon élément,typeExemple,1 rue Exemple,97400,Saint-Denis,"tag1,tag2",Description courte`;
-    const blob = new Blob([headers + "\n" + example + "\n"], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `modele-import-${type}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadCsv(headers + "\n" + example + "\n", `modele-import-${type}.csv`);
   }
 
   function handleFile(file: File | undefined) {
@@ -94,9 +95,9 @@ export default function AdminImportSection({ section }: { section: AdminSection 
       skipEmptyLines: true,
       complete: (res) => {
         setRows(res.data.map(shapeImportRow));
-        toast.success(`${res.data.length} ligne(s) chargée(s)`);
+        toast.success(tAdmin("AdminImportSection.rowsLoaded", undefined, { count: String(res.data.length) }));
       },
-      error: () => toast.error("Fichier CSV illisible"),
+      error: () => toast.error(tAdmin("AdminImportSection.fileUnreadable")),
     });
   }
 
@@ -108,7 +109,7 @@ export default function AdminImportSection({ section }: { section: AdminSection 
       const res = await carrier.previewImport(rows);
       setPreview(res.rows);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Prévisualisation impossible");
+      toast.error(error instanceof Error ? error.message : tAdmin("AdminImportSection.previewFailed"));
     } finally {
       setBusy(false);
     }
@@ -129,11 +130,15 @@ export default function AdminImportSection({ section }: { section: AdminSection 
         return el?.msgError ? [{ rowIndex: k, name: String(el.name ?? ""), error: String(el.msgError) }] : [];
       });
       setImportErrors(errs.length ? errs : null);
-      toast.success(`Import : ${res.summary.created} créés · ${res.summary.updated} maj · ${res.summary.errors} erreurs`);
+      toast.success(tAdmin("AdminImportSection.importDone", undefined, {
+        created: String(res.summary.created),
+        updated: String(res.summary.updated),
+        errors: String(res.summary.errors),
+      }));
       // REVIEW M4 : les éléments importés doivent apparaître dans les tables/tuiles sans attendre le staleTime.
       void queryClient.invalidateQueries({ predicate: (q) => String(q.queryKey[0] ?? "").startsWith("admin-") });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Import impossible");
+      toast.error(error instanceof Error ? error.message : tAdmin("AdminImportSection.importFailed"));
     } finally {
       setBusy(false);
       setProgress(null);
@@ -143,14 +148,14 @@ export default function AdminImportSection({ section }: { section: AdminSection 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">{importSection.title ? t(importSection.title) : "Import CSV"}</CardTitle>
+        <CardTitle className="text-lg">{importSection.title ? t(importSection.title) : tAdmin("AdminImportSection.title")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-wrap items-end gap-3">
           <div className="space-y-1">
-            <span className="text-sm font-medium">Type</span>
+            <Label htmlFor="admin-import-type" className="text-sm font-medium">{tAdmin("AdminImportSection.typeLabel")}</Label>
             <Select value={type} onValueChange={(v) => setType(v as ImportType)}>
-              <SelectTrigger className="w-44">
+              <SelectTrigger id="admin-import-type" className="w-44">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -163,11 +168,12 @@ export default function AdminImportSection({ section }: { section: AdminSection 
             </Select>
           </div>
           <Button variant="ghost" size="sm" onClick={downloadTemplate}>
-            <Download className="mr-1.5 h-3.5 w-3.5" /> Modèle CSV
+            <Download className="mr-1.5 h-3.5 w-3.5" /> {tAdmin("AdminImportSection.template")}
           </Button>
           <div className="space-y-1">
-            <span className="text-sm font-medium">Fichier CSV</span>
+            <Label htmlFor="admin-import-file" className="text-sm font-medium">{tAdmin("AdminImportSection.fileLabel")}</Label>
             <Input
+              id="admin-import-file"
               type="file"
               accept=".csv,text/csv"
               // value remis à vide : sans ça, re-sélectionner LE MÊME fichier (corrigé) ne
@@ -182,10 +188,10 @@ export default function AdminImportSection({ section }: { section: AdminSection 
           <div className="flex gap-2">
             <Button variant="outline" onClick={handlePreview} disabled={busy}>
               <Upload className="mr-2 h-4 w-4" />
-              Prévisualiser ({rows.length})
+              {tAdmin("AdminImportSection.preview", undefined, { count: String(rows.length) })}
             </Button>
             <Button onClick={handleImport} disabled={busy || !carrier}>
-              Importer
+              {tAdmin("AdminImportSection.import")}
             </Button>
           </div>
         )}
@@ -196,7 +202,11 @@ export default function AdminImportSection({ section }: { section: AdminSection 
 
         {summary && (
           <p className="text-sm">
-            ✅ {summary.created} créés · ✏️ {summary.updated} mis à jour · ⚠️ {summary.errors} erreurs
+            {tAdmin("AdminImportSection.summary", undefined, {
+              created: String(summary.created),
+              updated: String(summary.updated),
+              errors: String(summary.errors),
+            })}
           </p>
         )}
         {importErrors && (
@@ -207,16 +217,10 @@ export default function AdminImportSection({ section }: { section: AdminSection 
               const csv = ["ligne,nom,erreur", ...importErrors.map((r) =>
                 `${r.rowIndex},"${r.name.replaceAll('"', '""')}","${r.error.replaceAll('"', '""')}"`,
               )].join("\n");
-              const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = "rapport-erreurs-import.csv";
-              a.click();
-              URL.revokeObjectURL(url);
+              downloadCsv(csv, "rapport-erreurs-import.csv");
             }}
           >
-            <Download className="mr-1.5 h-3.5 w-3.5" /> Rapport d'erreurs d'import ({importErrors.length})
+            <Download className="mr-1.5 h-3.5 w-3.5" /> {tAdmin("AdminImportSection.importErrorReport", undefined, { count: String(importErrors.length) })}
           </Button>
         )}
 
@@ -229,16 +233,10 @@ export default function AdminImportSection({ section }: { section: AdminSection 
               const csv = ["ligne,nom,erreur", ...bad.map((r) =>
                 `${r.rowIndex},"${String((r.data?.name as string | undefined) ?? "")}","${r.msgErrorAddress ?? "échec"}"`,
               )].join("\n");
-              const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = "rapport-erreurs-import.csv";
-              a.click();
-              URL.revokeObjectURL(url);
+              downloadCsv(csv, "rapport-erreurs-preview.csv");
             }}
           >
-            <Download className="mr-1.5 h-3.5 w-3.5" /> Rapport d'erreurs ({preview.filter((r) => !r.success || r.msgErrorAddress).length})
+            <Download className="mr-1.5 h-3.5 w-3.5" /> {tAdmin("AdminImportSection.errorReport", undefined, { count: String(preview.filter((r) => !r.success || r.msgErrorAddress).length) })}
           </Button>
         )}
         {preview && (
@@ -246,12 +244,12 @@ export default function AdminImportSection({ section }: { section: AdminSection 
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>#</TableHead>
-                  <TableHead>OK</TableHead>
-                  <TableHead>Nom</TableHead>
-                  <TableHead>Adresse résolue</TableHead>
-                  <TableHead>Avertissements</TableHead>
-                  <TableHead>Erreur adresse</TableHead>
+                  <TableHead>{tAdmin("AdminImportSection.colIndex")}</TableHead>
+                  <TableHead>{tAdmin("AdminImportSection.colOk")}</TableHead>
+                  <TableHead>{tAdmin("AdminImportSection.colName")}</TableHead>
+                  <TableHead>{tAdmin("AdminImportSection.colAddress")}</TableHead>
+                  <TableHead>{tAdmin("AdminImportSection.colWarnings")}</TableHead>
+                  <TableHead>{tAdmin("AdminImportSection.colAddressError")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -267,13 +265,13 @@ export default function AdminImportSection({ section }: { section: AdminSection 
                         const geo = r.data?.geo as { latitude?: unknown } | undefined;
                         if (!addr?.localityId) return <span className="text-muted-foreground">—</span>;
                         return (
-                          <span className="text-emerald-700">
+                          <span className="text-emerald-700 dark:text-emerald-400">
                             {addr.addressLocality}{addr.postalCode ? ` (${addr.postalCode})` : ""}{geo?.latitude ? " · 📍" : ""}
                           </span>
                         );
                       })()}
                     </TableCell>
-                    <TableCell className="text-amber-600">{(r.warnings ?? []).join(", ") || "—"}</TableCell>
+                    <TableCell className="text-amber-600 dark:text-amber-400">{(r.warnings ?? []).join(", ") || "—"}</TableCell>
                     <TableCell className="text-destructive">{r.msgErrorAddress ?? "—"}</TableCell>
                   </TableRow>
                 ))}
@@ -286,10 +284,10 @@ export default function AdminImportSection({ section }: { section: AdminSection 
         open={blocker.state === "blocked"}
         onOpenChange={(o) => { if (!o) blocker.reset?.(); }}
         onConfirm={() => blocker.proceed?.()}
-        title="Import en cours"
-        description="Quitter la page interrompra le suivi de l'import (les lignes déjà envoyées restent importées). Quitter quand même ?"
-        confirmLabel="Quitter"
-        cancelLabel="Rester"
+        title={tAdmin("AdminImportSection.blockerTitle")}
+        description={tAdmin("AdminImportSection.blockerDescription")}
+        confirmLabel={tAdmin("AdminImportSection.blockerConfirm")}
+        cancelLabel={tAdmin("AdminImportSection.blockerCancel")}
         isDestructive
       />
     </Card>

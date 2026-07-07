@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { AlertTriangle, ArrowRight, Clock, Database } from "lucide-react";
-import { useNavigate } from "react-router";
+import { Link } from "react-router";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useSite } from "@/hooks/useSite";
 import { useT } from "@/hooks/useT";
+import "@/modules/admin/i18n";
 import { useVisibilityList } from "@/lib/visibility";
 
 import { useAdminAccess } from "../hooks/useAdminAccess";
@@ -43,7 +44,7 @@ interface ResourceStat {
 
 export default function DashboardSection({ section }: { section: AdminSection }) {
   const t = useT();
-  const navigate = useNavigate();
+  const tAdmin = useT("modules/admin");
   const { entity: carrier, me } = useCocolight();
   const { config } = useSite();
   const access = useAdminAccess();
@@ -124,10 +125,9 @@ export default function DashboardSection({ section }: { section: AdminSection })
           </Card>
         ))}
       {(stats.data ?? []).map((s) => (
+        <Link key={`${s.tabId}-${s.entityType}`} to={`/admin/${s.tabId}`} className="rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
         <Card
-          key={`${s.tabId}-${s.entityType}`}
-          className="cursor-pointer transition-colors hover:bg-muted/40"
-          onClick={() => navigate(`/admin/${s.tabId}`)}
+          className="h-full cursor-pointer transition-colors hover:bg-muted/40"
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -139,42 +139,44 @@ export default function DashboardSection({ section }: { section: AdminSection })
             <div className="flex items-end justify-between">
               <span className="text-2xl font-bold">{s.total ?? "—"}</span>
               {s.withStatus && s.pending != null && s.pending > 0 && (
-                <Badge variant="outline" className="border-amber-500 text-amber-600">
+                <Badge variant="outline" className="border-amber-500 text-amber-600 dark:border-amber-400 dark:text-amber-400">
                   <Clock className="mr-1 h-3 w-3" />
-                  {s.pending} à valider
+                  {tAdmin("DashboardSection.pendingBadge", undefined, { count: String(s.pending) })}
                 </Badge>
               )}
             </div>
             <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-              Gérer <ArrowRight className="h-3 w-3" />
+              {tAdmin("DashboardSection.manage")} <ArrowRight className="h-3 w-3" />
             </p>
           </CardContent>
         </Card>
+        </Link>
       ))}
       {moderationTab && moderation.data != null && (
-        <Card
-          className="cursor-pointer transition-colors hover:bg-muted/40"
-          onClick={() => navigate(`/admin/${moderationTab.id}`)}
-        >
+        <Link to={`/admin/${moderationTab.id}`} className="rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+        <Card className="h-full cursor-pointer transition-colors hover:bg-muted/40">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Modération</CardTitle>
+            <CardTitle className="text-sm font-medium">{tAdmin("DashboardSection.moderationTitle")}</CardTitle>
             <AlertTriangle className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
             <div className="flex items-end justify-between">
               <span className="text-2xl font-bold">{moderation.data}</span>
-              <span className="text-xs text-muted-foreground">signalement{moderation.data > 1 ? "s" : ""} en attente</span>
+              <span className="text-xs text-muted-foreground">
+                {tAdmin(moderation.data > 1 ? "DashboardSection.reportsPendingPlural" : "DashboardSection.reportsPending")}
+              </span>
             </div>
             <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-              Modérer <ArrowRight className="h-3 w-3" />
+              {tAdmin("DashboardSection.moderate")} <ArrowRight className="h-3 w-3" />
             </p>
           </CardContent>
         </Card>
+        </Link>
       )}
       {!stats.isLoading && resources.length === 0 && !moderationTab && (
         <Card className="sm:col-span-2 lg:col-span-3">
           <CardContent className="py-8 text-center text-sm text-muted-foreground">
-            Aucune resource configurée — déclarez des sections <code>resource</code> dans <code>config.admin.tabs</code>.
+            {tAdmin("DashboardSection.noResourceBefore")} <code>resource</code> {tAdmin("DashboardSection.noResourceBetween")} <code>config.admin.tabs</code>.
           </CardContent>
         </Card>
       )}

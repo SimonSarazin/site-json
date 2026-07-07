@@ -19,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useT } from "@/hooks/useT";
+import "@/modules/admin/i18n";
 
 import { ADMIN_QUERY_KEYS } from "../constants/queryKeys";
 import { ScrollableTabsList } from "../components/ScrollableTabsList";
@@ -64,6 +65,7 @@ function FlaggedList({
   onDetail: (id: string) => void;
   votePending: boolean;
 }) {
+  const t = useT("modules/admin");
   if (items.length === 0) return <p className="py-6 text-center text-sm text-muted-foreground">{empty}</p>;
   return (
     <ul className="divide-y">
@@ -73,20 +75,20 @@ function FlaggedList({
         return (
           <li key={id || i} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             <div className="min-w-0 flex-1">
-              <span className="line-clamp-2 break-words text-sm">{it.text || it.name || "(sans texte)"}</span>
+              <span className="line-clamp-2 break-words text-sm">{it.text || it.name || t("AdminModerationSection.noText")}</span>
             </div>
             <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
               <Badge variant="destructive">
-                {it.reportAbuseCount ?? 0} signalement{(it.reportAbuseCount ?? 0) > 1 ? "s" : ""}
+                {t((it.reportAbuseCount ?? 0) > 1 ? "AdminModerationSection.reportCountPlural" : "AdminModerationSection.reportCount", undefined, { count: String(it.reportAbuseCount ?? 0) })}
               </Badge>
-              <Button size="sm" variant="ghost" title="Détail des signalements" onClick={() => onDetail(id)} disabled={!id}>
-                <Flag className="h-4 w-4 text-amber-600" />
+              <Button size="sm" variant="ghost" aria-label={t("AdminModerationSection.detailTitle")} title={t("AdminModerationSection.detailTitle")} onClick={() => onDetail(id)} disabled={!id}>
+                <Flag className="h-4 w-4 text-amber-600 dark:text-amber-400" />
               </Button>
               <Button size="sm" variant="outline" disabled={!id || votePending} onClick={() => onVote(id, false)}>
-                <Check className="mr-1.5 h-3.5 w-3.5" /> Laisser publié
+                <Check className="mr-1.5 h-3.5 w-3.5" /> {t("AdminModerationSection.keepPublished")}
               </Button>
               <Button size="sm" variant="destructive" disabled={!id || votePending} onClick={() => onVote(id, true)}>
-                <ShieldX className="mr-1.5 h-3.5 w-3.5" /> C&apos;est un abus
+                <ShieldX className="mr-1.5 h-3.5 w-3.5" /> {t("AdminModerationSection.isAbuse")}
               </Button>
             </div>
           </li>
@@ -99,6 +101,7 @@ function FlaggedList({
 export default function AdminModerationSection({ section }: { section: AdminSection }) {
   const modSection = section as { title?: Parameters<ReturnType<typeof useT>>[0] };
   const t = useT();
+  const tAdmin = useT("modules/admin");
   const { me } = useCocolight();
   const mod = me as unknown as ModerationUser | null;
   const queryClient = useQueryClient();
@@ -108,7 +111,7 @@ export default function AdminModerationSection({ section }: { section: AdminSect
   const { data, isLoading, error } = useQuery({
     queryKey: ADMIN_QUERY_KEYS.MODERATION,
     queryFn: async () => {
-      if (!mod) throw new Error("Non connecté");
+      if (!mod) throw new Error(tAdmin("AdminModerationSection.notConnected"));
       return mod.getModerationQueue();
     },
     enabled: !!mod,
@@ -122,14 +125,14 @@ export default function AdminModerationSection({ section }: { section: AdminSect
       mod!.saveModeration(ctx, id, isAnAbuse),
     onSuccess: (res, vars) => {
       if (res.result) {
-        toast.success(vars.isAnAbuse ? "Signalé comme abus" : "Laissé publié");
+        toast.success(tAdmin(vars.isAnAbuse ? "AdminModerationSection.votedAbuse" : "AdminModerationSection.votedKeep"));
         void queryClient.invalidateQueries({ queryKey: ADMIN_QUERY_KEYS.MODERATION });
         void queryClient.invalidateQueries({ queryKey: ADMIN_QUERY_KEYS.DASHBOARD_MODERATION });
       } else {
-        toast.error(res.msg || "Échec de la modération");
+        toast.error(res.msg || tAdmin("AdminModerationSection.voteFailed"));
       }
     },
-    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Échec de la modération"),
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : tAdmin("AdminModerationSection.voteFailed")),
   });
 
   const detailQuery = useQuery({
@@ -147,7 +150,7 @@ export default function AdminModerationSection({ section }: { section: AdminSect
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
           <AlertTriangle className="h-5 w-5 text-destructive" />
-          {modSection.title ? t(modSection.title) : "Modération"}
+          {modSection.title ? t(modSection.title) : tAdmin("AdminModerationSection.title")}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -155,9 +158,9 @@ export default function AdminModerationSection({ section }: { section: AdminSect
           // Erreur VISIBLE (plus de « 0 » silencieux) — cas typique : backend sans file JSON (legacy).
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>File de modération indisponible</AlertTitle>
+            <AlertTitle>{tAdmin("AdminModerationSection.unavailableTitle")}</AlertTitle>
             <AlertDescription>
-              {error instanceof Error ? error.message : "Le serveur n'a pas renvoyé la file de modération."}
+              {error instanceof Error ? error.message : tAdmin("AdminModerationSection.unavailableFallback")}
             </AlertDescription>
           </Alert>
         ) : isLoading ? (
@@ -168,13 +171,13 @@ export default function AdminModerationSection({ section }: { section: AdminSect
         ) : (
           <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
             <ScrollableTabsList>
-              <TabsTrigger value="news">Actualités ({news.length})</TabsTrigger>
-              <TabsTrigger value="comments">Commentaires ({comments.length})</TabsTrigger>
+              <TabsTrigger value="news">{tAdmin("AdminModerationSection.tabNews", undefined, { count: String(news.length) })}</TabsTrigger>
+              <TabsTrigger value="comments">{tAdmin("AdminModerationSection.tabComments", undefined, { count: String(comments.length) })}</TabsTrigger>
             </ScrollableTabsList>
             <TabsContent value="news" className="mt-3">
               <FlaggedList
                 items={news}
-                empty="Aucune actualité à modérer."
+                empty={tAdmin("AdminModerationSection.emptyNews")}
                 votePending={vote.isPending}
                 onVote={(id, isAnAbuse) => vote.mutate({ ctx: "news", id, isAnAbuse })}
                 onDetail={(id) => setDetail({ id, ctx: "news" })}
@@ -183,7 +186,7 @@ export default function AdminModerationSection({ section }: { section: AdminSect
             <TabsContent value="comments" className="mt-3">
               <FlaggedList
                 items={comments}
-                empty="Aucun commentaire à modérer."
+                empty={tAdmin("AdminModerationSection.emptyComments")}
                 votePending={vote.isPending}
                 onVote={(id, isAnAbuse) => vote.mutate({ ctx: "comments", id, isAnAbuse })}
                 onDetail={(id) => setDetail({ id, ctx: "comments" })}
@@ -197,23 +200,23 @@ export default function AdminModerationSection({ section }: { section: AdminSect
       <Dialog open={!!detail} onOpenChange={(o) => { if (!o) setDetail(null); }}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Détail des signalements</DialogTitle>
+            <DialogTitle>{tAdmin("AdminModerationSection.detailTitle")}</DialogTitle>
             <DialogDescription className="line-clamp-3">
-              {detailQuery.isLoading ? "Chargement…" : detailData?.text || "(sans texte)"}
+              {detailQuery.isLoading ? tAdmin("AdminModerationSection.loading") : detailData?.text || tAdmin("AdminModerationSection.noText")}
             </DialogDescription>
           </DialogHeader>
           {detailQuery.isLoading ? (
             <div className="flex justify-center py-4"><Loader2 className="h-6 w-6 animate-spin" /></div>
           ) : detailQuery.error ? (
             <Alert variant="destructive">
-              <AlertDescription>Impossible de charger le détail des signalements.</AlertDescription>
+              <AlertDescription>{tAdmin("AdminModerationSection.detailLoadError")}</AlertDescription>
             </Alert>
           ) : (
             <div className="space-y-3 text-sm">
               <div>
-                <p className="mb-1 font-medium">Motifs</p>
+                <p className="mb-1 font-medium">{tAdmin("AdminModerationSection.reasonsTitle")}</p>
                 {reasons.length === 0 ? (
-                  <p className="text-muted-foreground">Aucun motif renseigné.</p>
+                  <p className="text-muted-foreground">{tAdmin("AdminModerationSection.noReasons")}</p>
                 ) : (
                   <ul className="list-inside list-disc">
                     {reasons.map(([reason, count]) => (
@@ -224,7 +227,7 @@ export default function AdminModerationSection({ section }: { section: AdminSect
               </div>
               {reporters.length > 0 && (
                 <div>
-                  <p className="mb-1 font-medium">Signalé par</p>
+                  <p className="mb-1 font-medium">{tAdmin("AdminModerationSection.reportedBy")}</p>
                   <ul className="list-inside list-disc text-muted-foreground">
                     {reporters.map((r, i) => (
                       <li key={i}>{r}</li>
@@ -240,14 +243,14 @@ export default function AdminModerationSection({ section }: { section: AdminSect
               disabled={!detail || vote.isPending}
               onClick={() => { if (detail) { vote.mutate({ ctx: detail.ctx, id: detail.id, isAnAbuse: false }); setDetail(null); } }}
             >
-              <Check className="mr-1.5 h-3.5 w-3.5" /> Laisser publié
+              <Check className="mr-1.5 h-3.5 w-3.5" /> {tAdmin("AdminModerationSection.keepPublished")}
             </Button>
             <Button
               variant="destructive"
               disabled={!detail || vote.isPending}
               onClick={() => { if (detail) { vote.mutate({ ctx: detail.ctx, id: detail.id, isAnAbuse: true }); setDetail(null); } }}
             >
-              <ShieldX className="mr-1.5 h-3.5 w-3.5" /> C&apos;est un abus
+              <ShieldX className="mr-1.5 h-3.5 w-3.5" /> {tAdmin("AdminModerationSection.isAbuse")}
             </Button>
           </DialogFooter>
         </DialogContent>

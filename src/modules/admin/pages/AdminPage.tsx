@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { useSite } from "@/hooks/useSite";
 
 import { useT } from "@/hooks/useT";
+import "@/modules/admin/i18n";
 
 import { AdminRenderer } from "../AdminRenderer";
 import { useAdminAccess } from "../hooks/useAdminAccess";
@@ -14,6 +15,7 @@ import { useAdminAccess } from "../hooks/useAdminAccess";
  */
 export default function AdminPage() {
   const t = useT();
+  const tAdmin = useT("modules/admin");
   const { config } = useSite();
   const admin = config?.admin;
   const access = useAdminAccess();
@@ -24,7 +26,7 @@ export default function AdminPage() {
   if (!admin || admin.enabled === false) {
     return (
       <div className="container mx-auto px-4 py-16 text-center text-muted-foreground">
-        Administration non activée sur ce site.
+        {tAdmin("AdminPage.notEnabled")}
       </div>
     );
   }
@@ -32,7 +34,7 @@ export default function AdminPage() {
   if (!access.has(admin.access?.min ?? "siteAdmin")) {
     return (
       <div className="container mx-auto px-4 py-16 text-center text-muted-foreground">
-        Accès réservé aux administrateurs.
+        {tAdmin("AdminPage.accessDenied")}
       </div>
     );
   }
@@ -41,7 +43,7 @@ export default function AdminPage() {
     <>
       <SiteHeader />
       <main className="container mx-auto px-4 py-6">
-        <h1 className="mb-4 text-2xl font-semibold">{admin.title ? t(admin.title) : "Administration"}</h1>
+        <h1 className="mb-4 text-2xl font-semibold">{admin.title ? t(admin.title) : tAdmin("AdminPage.title")}</h1>
         <AdminRenderer config={admin} />
       </main>
       <SiteFooter />

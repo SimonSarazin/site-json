@@ -14,6 +14,7 @@ import { MemberListRenderer } from "@/modules/profil/components/members/MemberLi
 import { useConfirmationDialog } from "@/modules/profil/hooks/useConfirmationDialog";
 import { useEntityLabels } from "@/modules/profil/hooks/useEntityLabels";
 import { useEntityMembers } from "@/modules/profil/hooks/useMembersQuery";
+import "@/modules/admin/i18n";
 import "@/modules/profil/i18n";
 
 import { ScrollableTabsList } from "../components/ScrollableTabsList";
@@ -33,6 +34,7 @@ export default function MembersSection({ section }: { section: AdminSection }) {
   const cfg = section as AdminMembersSection;
   const { entity } = useCocolight();
   const t = useT("modules/profil");
+  const tAdmin = useT("modules/admin");
   const [activeTab, setActiveTab] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -59,7 +61,7 @@ export default function MembersSection({ section }: { section: AdminSection }) {
     return (
       <Card>
         <CardContent className="py-8 text-center text-sm text-muted-foreground">
-          Aucune entité porteuse (carrier) : la gestion des membres nécessite un costum porteur.
+          {tAdmin("MembersSection.noCarrier")}
         </CardContent>
       </Card>
     );
@@ -74,7 +76,7 @@ export default function MembersSection({ section }: { section: AdminSection }) {
       ? [{ id: "admins", label: `${labels.admin}s (${adminMembers.totalCount || 0})`, q: adminMembers, isPending: false, showBadges: true }]
       : []),
     ...(wanted.includes("isInviting")
-      ? [{ id: "invited", label: `Invités (${invitedMembers.totalCount || 0})`, q: invitedMembers, isPending: false, showBadges: false }]
+      ? [{ id: "invited", label: tAdmin("MembersSection.invitedTab", undefined, { count: String(invitedMembers.totalCount || 0) }), q: invitedMembers, isPending: false, showBadges: false }]
       : []),
   ];
 
@@ -85,7 +87,7 @@ export default function MembersSection({ section }: { section: AdminSection }) {
         {canInvite && (
           <Button size="sm" onClick={() => setInviteOpen(true)}>
             <UserPlus className="mr-2 h-4 w-4" />
-            Inviter
+            {tAdmin("MembersSection.invite")}
           </Button>
         )}
       </CardHeader>

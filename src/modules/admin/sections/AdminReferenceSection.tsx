@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useT } from "@/hooks/useT";
+import "@/modules/admin/i18n";
 import SearchTextInput from "@/modules/search/components/SearchTextInput";
 import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
 
@@ -26,8 +27,8 @@ import { formatCell, getPath } from "./resourceHelpers";
 
 const DEFAULT_TYPES = ["organizations", "projects", "events", "poi"];
 const DEFAULT_COLUMNS = [
-  { path: "name", label: { fr: "Nom" } },
-  { path: "address.addressLocality", label: { fr: "Commune" } },
+  { path: "name", label: { fr: "Nom", en: "Name" } },
+  { path: "address.addressLocality", label: { fr: "Commune", en: "Municipality" } },
 ];
 
 /**
@@ -49,6 +50,7 @@ const DEFAULT_COLUMNS = [
 export default function AdminReferenceSection({ section }: { section: AdminSection }) {
   const cfg = section as AdminReferenceSectionConfig;
   const t = useT();
+  const tAdmin = useT("modules/admin");
   const { entity: carrier, contextId, contextType } = useCocolight();
   const costumSlug = (carrier as { slug?: string } | null)?.slug ?? "";
   const types = cfg.entityTypes ?? DEFAULT_TYPES;
@@ -152,8 +154,8 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
                 {col.label ? t(col.label) : col.path}
               </TableHead>
             ))}
-            <TableHead>Type</TableHead>
-            <TableHead className="w-44 text-right">Action</TableHead>
+            <TableHead>{tAdmin("AdminReferenceSection.colType")}</TableHead>
+            <TableHead className="w-44 text-right">{tAdmin("AdminReferenceSection.colAction")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>{body}</TableBody>
@@ -173,14 +175,14 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
           <Link2 className="h-5 w-5" />
-          {cfg.title ? t(cfg.title) : "Référencement"}
+          {cfg.title ? t(cfg.title) : tAdmin("AdminReferenceSection.title")}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex flex-wrap items-center gap-2">
-          <SearchTextInput className="max-w-xs" placeholder="Rechercher…" value={q} onChange={setQ} />
+          <SearchTextInput className="max-w-xs" placeholder={tAdmin("AdminReferenceSection.searchPlaceholder")} value={q} onChange={setQ} />
           <Select value={type} onValueChange={setType}>
-            <SelectTrigger className="w-44">
+            <SelectTrigger className="w-44" aria-label={tAdmin("AdminReferenceSection.entityTypeAria")}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -195,31 +197,32 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
           <ScrollableTabsList>
             <TabsTrigger value="search">
               <Search className="mr-1.5 h-3.5 w-3.5" />
-              Rechercher &amp; référencer{global.totalCount != null ? ` (${global.totalCount})` : ""}
+              {tAdmin("AdminReferenceSection.tabSearch")}{global.totalCount != null ? ` (${global.totalCount})` : ""}
             </TabsTrigger>
             <TabsTrigger value="referenced">
               <Link2 className="mr-1.5 h-3.5 w-3.5" />
-              Référencés{referenced.totalCount != null ? ` (${referenced.totalCount})` : ""}
+              {tAdmin("AdminReferenceSection.tabReferenced")}{referenced.totalCount != null ? ` (${referenced.totalCount})` : ""}
             </TabsTrigger>
           </ScrollableTabsList>
           <TabsContent value="search" className="pt-3">
             <p className="mb-2 text-xs text-muted-foreground">
-              Éléments publics (openData) de tout Communecter, hors de ce costum. « Référencer » les propose
-              au costum (<code>reference.costum</code>) — ils apparaissent ensuite dans les tables Contenu.
+              {tAdmin("AdminReferenceSection.openDataHintBefore")}
+              <code>reference.costum</code>
+              {tAdmin("AdminReferenceSection.openDataHintAfter")}
             </p>
             {tableShell(
-              renderRows(global.transformedResults ?? [], global.lastItemRef, { label: "Référencer", icon: <Plus className="mr-1.5 h-3.5 w-3.5" />, op: "reference" }),
+              renderRows(global.transformedResults ?? [], global.lastItemRef, { label: tAdmin("AdminReferenceSection.reference"), icon: <Plus className="mr-1.5 h-3.5 w-3.5" />, op: "reference" }),
               global.isLoading,
               (global.transformedResults ?? []).length === 0,
-              "Aucun élément à référencer.",
+              tAdmin("AdminReferenceSection.emptySearch"),
             )}
           </TabsContent>
           <TabsContent value="referenced" className="pt-3">
             {tableShell(
-              renderRows(referenced.transformedResults ?? [], referenced.lastItemRef, { label: "Retirer", icon: <Link2Off className="mr-1.5 h-3.5 w-3.5" />, op: "unreference" }),
+              renderRows(referenced.transformedResults ?? [], referenced.lastItemRef, { label: tAdmin("AdminReferenceSection.remove"), icon: <Link2Off className="mr-1.5 h-3.5 w-3.5" />, op: "unreference" }),
               referenced.isLoading,
               (referenced.transformedResults ?? []).length === 0,
-              "Aucun élément référencé.",
+              tAdmin("AdminReferenceSection.emptyReferenced"),
             )}
           </TabsContent>
         </Tabs>
