@@ -18,7 +18,9 @@ Les faits volatils se LISENT à l'usage, ils ne sont pas écrits ici :
 | Forme exacte d'une section | `npm run config:schema section:<type>` (ex. `section:pricing`) |
 | Forme de `header`/`footer`/`theme`/`meta`/`auth`/`page`/`profiles`/`integrations` | `npm run config:schema <bloc>` |
 | Forme d'un document de **form costum** (`config.costumForms.<id>`) | `npm run config:schema costumForm` |
-| Squelette de form costum (générateur build-time) | `npm run config:costum` |
+| Forme du bloc **admin** (`config.admin` — back-office /admin, cf. doc/30) | `npm run config:schema admin` |
+| Squelette de form costum (générateur build-time) | `npm run config:costum -- <slugCostum> <collection> --format costumForm` |
+| Squelette du bloc **admin** dérivé du site (types gérés) | `npm run admin:scaffold -- <config.prod.X.json>` (`--write` pour insérer, `--force` pour remplacer) |
 | Valider UN config (boucle de correction) | `npm run config:validate -- <fichier.json>` |
 | Chercher / vérifier un slug d'entité | `npm run entity:slug -- search <nom>` / `check <slug>` |
 | Qualité (liens morts, i18n, thème) | `npm run audit:config` |
@@ -159,17 +161,44 @@ introspectable (règle d'or « dériver ») : `npm run config:schema costumForm`
    claire au load** (nom de la clé + où la définir), plus de `console.warn` silencieux au rendu. Si la garde
    pointe une clé absente → c'est une clé **métier** → il te faut un `fns.ts` (voir ci-dessous).
 
+**Point de départ GÉNÉRÉ (recommandé)** : `npm run config:costum -- <slugCostum> <collection> --format costumForm`
+émet un `CostumFormSchema` complet et VALIDE (auto-vérifié zod + clés partagées uniquement) depuis la
+connaissance costum de la lib : sections base+costum, widgets déduits des types, pattern adresse
+(groupe + codecs), image de profil, mutation/invalidation standard, presets → `mutation.inject.extraFields`.
+Ce squelette se pose tel quel dans `config.costumForms.<id>` puis s'ENRICHIT conversationnellement — les
+5 écarts attendus vs un costum fini : (1) layout `flat` → `wizard`/groups/colonnes ; (2) labels humanisés →
+libellés fr/en curés ; (3) `text`/`tags` → `selectFromLists`/`urlList`/`checkboxGroup` selon le sens métier ;
+(4) scope/type dérivés (`scope.derive` métier) + masquage des champs stampés ; (5) `visibleIf`/`computedFrom`/
+`cleanValues` métier. Le préflight `tests/preflight/costum-forms.test.ts` re-valide tous les costumForms du
+repo (zod + garde des clés) à chaque run.
+
 **Quand il faut du code (PAS 100 % config)** : transfo métier inédite (`payloadFn` propre), `scope` dérivé,
 defaults structurés, **slot React** (placé par `"$slot:<id>"` dans `sections`), codec `serializeGroup` inédit,
 `validate` cross-champ inédit. Créer alors `src/modules/profil/forms/costum/<id>/fns.ts`
-(`registerXxx("clé", impl)`) + l'ajouter au barrel `registerSpecFns.ts`. `npm run config:costum` génère un
-squelette de config depuis un costum.
+(`registerXxx("clé", impl)`) + l'ajouter au barrel `registerSpecFns.ts`.
 
 > **Clés génériques garanties** : les clés « partagées » (codecs/coercions/geo/validators/`image:profilUrl`/
 > `cleanValues:*`/`invalidate:standard`) sont enregistrées inconditionnellement par le barrel
 > `forms/costum/sharedRegistrations.ts` (importé par `registerSpecFns` et par le loader `registerCostumForms`
 > avant toute compilation) — un costum 100 %-config qui ne réutilise que ces clés se compile sans dépendre
 > d'aucun costum métier. Toute clé MÉTIER manquante est signalée par la garde du loader (cf. point 4).
+
+## Administration (`config.admin`)
+
+Le back-office `/admin` (gestion membres/contenu/import-export/référencement/modération) est 100 %
+config-driven — référence : **[doc/30-module-admin.md](../../../doc/30-module-admin.md)**. PAS de
+dérivation runtime : le bloc se GÉNÈRE explicitement puis se personnalise.
+
+1. **Squelette** : `npm run admin:scaffold -- <config> [--write]` — dérive les onglets des types
+   gérés par le site (`profiles.addConfig` ∪ `costumForms.entityType`), auto-validé par le schéma.
+2. **Personnaliser** : colonnes (`columns` : `"chemin"` ou `{path,label}` localisé), `rowActions`/
+   `bulkActions`, filtres `source` (mêmes `baseParams` que searchProStatic), `access` par
+   page/onglet/section (`superAdmin`|`siteAdmin`|`entityAdmin`), `condition` (VisibilityCondition).
+   Forme exacte : `npm run config:schema admin`. ⚠ `status.*` = contrat futur (ne pas configurer),
+   l'export est réservé super-admin (plancher backend).
+3. **Valider + voir** : `config:validate` (le discriminatedUnion attrape toute section fautive avec
+   l'erreur précise) puis préversion `/admin` (l'entrée apparaît dans le menu avatar + Ctrl+K pour
+   les admins du carrier).
 
 ## Règles maison
 
