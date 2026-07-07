@@ -194,7 +194,7 @@ byte-parité stricte — à trancher.
 | **F2** | `gen-costum-config --format costumForm` + recette Skill + préflight costumForms | fil A (build-time) |
 | **F3** | backend `costum/describe` (extraction typeObj à chaud, types en cache) | fondation C |
 | **F4** | ✅ **C1 FAIT** (scope live hors registre via getcostumjson : liveDigest + resolveCostumScope tier 3b + LIVE_CTX_CACHE + loadCostumScope — comble L3/L4, lib master c24db5f) ; reste C2 (describeForm live+cache pour rafraîchir presets/enums/hidden = L2/L5/L7) | L3/L4 ✅ |
-| **F5** | lib C3 (types live) + registerCostumForm dynamique site-json | boucle complète sans re-publication |
+| **F5** | ✅ **voie B CÂBLÉE** (types live via digest F4/C1 + `useCostumFormLive` : describeForm → descriptorToConfig → JsonFormConfig, testé site-json f16c038) ; reste le BRANCHEMENT modale (fallback quand pas de config.costumForms) + publication lib 1.0.164 | mécanisme complet ✅ |
 
 F1/F2 sont indépendants de F3-F5 et livrables immédiatement.
 
