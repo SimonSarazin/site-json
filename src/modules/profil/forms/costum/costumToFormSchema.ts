@@ -21,7 +21,7 @@
  *    + champs plats cachés (`group:"address"`) + `serializeGroups.address` (codec partagé) ;
  *  - base `format:"image"` → champ `widget:"image"` + bloc modale `image.existingUrlFrom:"image:profilUrl"`.
  */
-import type { EntityFormDescriptor, BaseFieldDescriptor } from "@communecter/cocolight-api-client";
+import type { EntityFormDescriptor, BaseFieldDescriptor, CostumFormDescriptor, Collection } from "@communecter/cocolight-api-client";
 import type { EnumOption, SectionDescriptor } from "@/modules/formEngine";
 import { fieldLabel } from "@/modules/formEngine/config/fieldLabels";
 import {
@@ -64,15 +64,15 @@ export function kebabCaseSlug(slug: string): string {
 const enumOptions = (values: readonly unknown[]): EnumOption[] =>
   values.map((v) => ({ value: String(v), label: String(v) }));
 
-/** Champ COSTUM (artefact) → champ TERSE : widget inverse de WIDGET_DEFAULTS, label catalogue/humanisé,
- *  `required` jamais deviné. */
-function costumTerseField(f: CostumFieldArtifact): TerseField {
+/** Champ COSTUM (descripteur describeForm/artefact) → champ TERSE : widget inverse de WIDGET_DEFAULTS,
+ *  label catalogue/humanisé, `required` jamais deviné. `f.type` = type logique déjà résolu. */
+function costumTerseField(f: { name: string; path: string; type: string; multiple: boolean; enum?: readonly (string | number)[] }): TerseField {
   const label = fieldLabel(f.name);
   const path = f.path && f.path !== f.name ? { path: f.path } : {};
   if (Array.isArray(f.enum) && f.enum.length > 0) {
     return { widget: f.multiple ? "multiselect" : "select", label, enum: enumOptions(f.enum), ...path };
   }
-  switch (artifactFieldType(f)) {
+  switch (f.type) {
     case "array": return { widget: "tags", label, ...path };
     case "boolean": return { widget: "switch", label, ...path };
     case "number": return { widget: "number", label, ...path };
@@ -110,28 +110,27 @@ function baseTerseField(f: BaseFieldDescriptor): TerseField {
 }
 
 /**
- * Artefact + base lib → `CostumFormSchema` complet (id kebab-case, sections base/costum, chrome squelette,
- * mutation générique). Retourne `null` si la collection n'est pas créable ou si `slug`/`collection` est
- * absent de l'artefact (mêmes gardes que `costumToConfig`).
+ * CŒUR : `CostumFormDescriptor` (source UNIFIÉE — `describeForm()` live de la lib OU artefact build-time)
+ * + base lib → `CostumFormSchema` complet (id kebab-case, sections base/costum, chrome squelette, mutation
+ * générique). Symétrique de `descriptorToConfig`. Retourne `null` si la collection n'est pas créable.
  */
-export function costumToFormSchema(
-  extensions: CostumExtensionsArtifact,
-  slug: string,
-  collection: string,
+export function descriptorToFormSchema(
+  desc: CostumFormDescriptor,
   base?: EntityFormDescriptor | null,
 ): CostumFormSchema | null {
+  const collection = desc.collection;
   if (!(ENTITY_KINDS as readonly string[]).includes(collection)) return null;
-  const ext = extensions.costumExtensions?.[slug]?.[collection];
-  if (!ext) return null;
   const kind = collection as Kind;
+  const slug = desc.slug;
 
-  const hidden = new Set(ext.hidden ?? []);
-  const presets = ext.presets ?? {};
+  const hidden = new Set(desc.hidden ?? []);
+  const presets = desc.presets ?? {};
   const presetNames = new Set(Object.keys(presets));
+  const createLabel = desc.createLabel;
 
   // Champs costum retenus : ni cachés (dynForm `hide`), ni stampés (preset → inject.extraFields, qui
   // écraserait la saisie au CREATE — contrairement à la voie JsonFormConfig où les presets passent AVANT data).
-  const costumFields = (ext.fields ?? []).filter((f) => !hidden.has(f.name) && !presetNames.has(f.name));
+  const costumFields = (desc.fields ?? []).filter((f) => !hidden.has(f.name) && !presetNames.has(f.name));
   const costumNames = new Set(costumFields.map((f) => f.name));
 
   const fields: Record<string, TerseField> = {};
@@ -188,7 +187,7 @@ export function costumToFormSchema(
     fields,
     chrome: {
       title: { add: { fr: `Ajouter — ${slug}` }, edit: { fr: `Modifier — ${slug}` } },
-      submitLabel: { add: { fr: ext.createLabel || "Créer" }, edit: { fr: "Enregistrer" } },
+      submitLabel: { add: { fr: createLabel || "Créer" }, edit: { fr: "Enregistrer" } },
     },
     ...(image ? { image } : {}),
     mutation: {
@@ -200,4 +199,39 @@ export function costumToFormSchema(
       ...(userList ? { invalidateFn: { fn: "invalidate:standard", params: { userList } } } : {}),
     },
   };
+}
+
+/**
+ * Variante ARTEFACT (build-time) : construit le `CostumFormDescriptor` depuis `costum-extensions.json`
+ * (comme `costumToConfig`) puis délègue à `descriptorToFormSchema`. La voie LIVE (`describeForm()`)
+ * appelle `descriptorToFormSchema` directement — même sortie, source différente.
+ */
+export function costumToFormSchema(
+  extensions: CostumExtensionsArtifact,
+  slug: string,
+  collection: string,
+  base?: EntityFormDescriptor | null,
+): CostumFormSchema | null {
+  const ext = extensions.costumExtensions?.[slug]?.[collection];
+  if (!ext) return null;
+  const hidden = new Set(ext.hidden ?? []);
+  const desc: CostumFormDescriptor = {
+    slug,
+    collection: collection as Collection,
+    costumId: "",
+    costumType: "",
+    add: ext.add ?? false,
+    createLabel: ext.createLabel ?? null,
+    presets: ext.presets ?? {},
+    hidden: ext.hidden ?? [],
+    fields: (ext.fields ?? []).map((f: CostumFieldArtifact) => ({
+      name: f.name,
+      path: f.path ?? f.name,
+      type: artifactFieldType(f),
+      multiple: f.multiple === true,
+      ...(Array.isArray(f.enum) && f.enum.length ? { enum: f.enum } : {}),
+      hidden: hidden.has(f.name),
+    })),
+  };
+  return descriptorToFormSchema(desc, base);
 }

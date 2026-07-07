@@ -19,7 +19,8 @@ Les faits volatils se LISENT à l'usage, ils ne sont pas écrits ici :
 | Forme de `header`/`footer`/`theme`/`meta`/`auth`/`page`/`profiles`/`integrations` | `npm run config:schema <bloc>` |
 | Forme d'un document de **form costum** (`config.costumForms.<id>`) | `npm run config:schema costumForm` |
 | Forme du bloc **admin** (`config.admin` — back-office /admin, cf. doc/30) | `npm run config:schema admin` |
-| Squelette de form costum (générateur build-time) | `npm run config:costum -- <slugCostum> <collection> --format costumForm` |
+| Squelette de form costum (artefact build-time) | `npm run config:costum -- <slugCostum> <collection> --format costumForm` |
+| Squelette de form costum depuis le costum RÉEL en base (tout costum) | `CONFIG_LIVE_BACKEND=… CONFIG_LIVE_EMAIL=… CONFIG_LIVE_PWD=… npm run config:costum -- <slugCostum> <collection> --format costumForm --live` |
 | Squelette du bloc **admin** dérivé du site (types gérés) | `npm run admin:scaffold -- <config.prod.X.json>` (`--write` pour insérer, `--force` pour remplacer) |
 | Valider UN config (boucle de correction) | `npm run config:validate -- <fichier.json>` |
 | Chercher / vérifier un slug d'entité | `npm run entity:slug -- search <nom>` / `check <slug>` |
@@ -163,7 +164,8 @@ introspectable (règle d'or « dériver ») : `npm run config:schema costumForm`
 
 **Point de départ GÉNÉRÉ (recommandé)** : `npm run config:costum -- <slugCostum> <collection> --format costumForm`
 émet un `CostumFormSchema` complet et VALIDE (auto-vérifié zod + clés partagées uniquement) depuis la
-connaissance costum de la lib : sections base+costum, widgets déduits des types, pattern adresse
+connaissance costum de la lib. Ajoute `--live` (+ env CONFIG_LIVE_BACKEND/EMAIL/PWD) pour partir du costum
+RÉEL en base (getcostumjson) — couvre TOUT costum, même absent de l'artefact bundlé (lib ≥ 1.0.164). Contenu : sections base+costum, widgets déduits des types, pattern adresse
 (groupe + codecs), image de profil, mutation/invalidation standard, presets → `mutation.inject.extraFields`.
 Ce squelette se pose tel quel dans `config.costumForms.<id>` puis s'ENRICHIT conversationnellement — les
 5 écarts attendus vs un costum fini : (1) layout `flat` → `wizard`/groups/colonnes ; (2) labels humanisés →

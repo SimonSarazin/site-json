@@ -8,10 +8,11 @@
  */
 import { describe, it, expect } from "vitest";
 import { describeEntityForm } from "@communecter/cocolight-api-client";
+import type { CostumFormDescriptor } from "@communecter/cocolight-api-client";
 import "./sharedRegistrations"; // SEUL import de clés (PAS de fns métier) — prouve l'invariant shared-only
 import { registerCostumForm } from "./costumFormRegistry";
 import { CostumFormSchemaZod } from "./costumFormSchema.zod";
-import { costumToFormSchema, kebabCaseSlug } from "./costumToFormSchema";
+import { costumToFormSchema, descriptorToFormSchema, kebabCaseSlug } from "./costumToFormSchema";
 import type { CostumExtensionsArtifact } from "@/modules/formEngine/config/costumToConfig";
 
 const ARTEFACT: CostumExtensionsArtifact = {
@@ -111,5 +112,42 @@ describe("costumToFormSchema — squelette CostumFormSchema posable (fil A / F2)
   it("gardes : collection non créable ou slug absent → null", () => {
     expect(costumToFormSchema(ARTEFACT, "monCostumTest974", "badges", null)).toBeNull();
     expect(costumToFormSchema(ARTEFACT, "inconnu", "organizations", null)).toBeNull();
+  });
+
+  describe("voie LIVE — descriptorToFormSchema (describeForm → CostumFormSchema)", () => {
+    // Forme exacte de scope.describeForm() (source live unifiée) — avec enum (présent hors registre).
+    const desc: CostumFormDescriptor = {
+      slug: "costumLive974",
+      collection: "poi",
+      costumId: "6a04155ed047177b92399685",
+      costumType: "organizations",
+      add: true,
+      createLabel: "Ajouter un équipement",
+      presets: { type: "recoveryCenter" },
+      hidden: ["typeCache"],
+      fields: [
+        { name: "equip_sol", path: "equip_sol", type: "string", multiple: false, enum: ["Bitume", "Gazon"], hidden: false },
+        { name: "aps_name", path: "aps_name", type: "array", multiple: true, hidden: false },
+        { name: "type", path: "type", type: "string", multiple: false, hidden: false }, // stampé (preset) → omis
+        { name: "typeCache", path: "typeCache", type: "string", multiple: false, hidden: true }, // caché → omis
+      ],
+    };
+
+    const doc = descriptorToFormSchema(desc, null)!;
+
+    it("produit un CostumFormSchema VALIDE + id kebab", () => {
+      expect(doc).not.toBeNull();
+      expect(doc.id).toBe("costum-live-974");
+      expect(CostumFormSchemaZod.safeParse(doc).success).toBe(true);
+    });
+
+    it("enum → widget select ; array → tags ; preset stampé → inject + omis ; caché → omis", () => {
+      expect(doc.fields.equip_sol).toMatchObject({ widget: "select" });
+      expect(doc.fields.equip_sol.enum).toEqual([{ value: "Bitume", label: "Bitume" }, { value: "Gazon", label: "Gazon" }]);
+      expect(doc.fields.aps_name).toMatchObject({ widget: "tags" });
+      expect(doc.fields.type).toBeUndefined(); // stampé
+      expect(doc.fields.typeCache).toBeUndefined(); // caché
+      expect(doc.mutation.inject?.extraFields).toEqual({ type: "recoveryCenter" });
+    });
   });
 });
