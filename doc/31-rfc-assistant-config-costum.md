@@ -204,3 +204,58 @@ F1/F2 sont indépendants de F3-F5 et livrables immédiatement.
 - [Module Admin](30-module-admin.md) — la config générée par le fil B
 - Backend : `tools/parity/scripts/costum-fields.mjs` (scanner), `src/shared/costumHooks.ts`
   (résolution live) · Lib : `src/costum/runtime.ts` (CostumScope, resolveCostumCtxFromSource)
+
+---
+
+## Cadrage C2 — live-first + cache (costum « vivant », lib)
+
+> Décisions 2026-07 : **résolution LIVE-FIRST + cache TTL** (un costum modifié en base se reflète sans
+> republier) ; l'**artefact bundlé est CONSERVÉ** (warm-start/fallback offline + autocomplétion TS).
+> Lève le dernier verrou vers le live : le revive synchrone.
+
+### Le verrou
+
+`BaseEntity.fromServerData` (`:977`) est LE point de revive : chaque entité y résout son `_costumCtx`
+en **SYNCHRONE** — `resolveCostumCtxFromSource(source.key, collection)`. Le live est async → impossible
+de fetcher là. Deux familles de points de revive :
+- **listes** : `searchCostum` → paginator → `_linkEntities` → `fromServerData` par doc ;
+- **entité seule** : `me.poi({id}).get()`, `entitySlug`/`entityBySlug`.
+
+### Architecture retenue
+
+**Pré-fetch batch ASYNC avant le revive**, le revive restant sync :
+
+```
+réponse réseau (docs bruts)
+  → source.keys DISTINCTS absents de {cache live FRAIS}
+  → await prefetchCostums(user, sourceKeys)     // getcostumjson + digest → cache {ctx, fetchedAt}
+  → revive (fromServerData sync → lit le cache)
+```
+
+`resolveCostumCtxFromSource` (sync) devient **live-first** :
+1. cache live **frais** (`now - fetchedAt < TTL`) → l'utiliser ;
+2. sinon `COSTUM_RUNTIME` bundlé (warm-start / offline) ;
+3. sinon ctx nu (identité) / null.
+
+Le fetch n'a lieu qu'au **prefetch** (async, hors revive) ; le sync ne fait que lire. Un slug déjà en
+cache frais n'est pas refetché (TTL). Fallback bundle si le fetch échoue (offline).
+
+### Découpage
+
+| Inc | Contenu | Effet |
+|---|---|---|
+| **C2a** | `LIVE_CTX_CACHE` → `{ctx, fetchedAt}` + TTL ; `resolveCostumCtxFromSource` live-first (cache frais → bundle → nu) | priorité live posée |
+| **C2b** | `prefetchCostums(user, sourceKeys[])` (batch, dédup, TTL, fallback) + insertion **finalizer paginator `searchCostum`** | listes vivantes |
+| **C2c** | insertion prefetch dans `get()` / `entitySlug` (entité seule) | édition d'un élément vivante |
+| **C2d** | coercition lecture des champs live (number/date depuis le type digéré) — parité `normalize.ts` pour les non-bundlés | lecture typée (impact faible : setType BSON = 0/490) |
+| **C2e** | TTL configurable + invalidation explicite (`refresh`) | contrôle de fraîcheur |
+
+### Perf & risques
+
+- **Coût** : 1 batch de N `getcostumjson` par page de résultats (N = costums distincts, souvent **1** sur
+  un site mono-costum), amorti par le TTL. Négligeable.
+- **Latence 1er rendu** : live-first ATTEND le fetch avant de reviver → +1 RTT au 1er affichage d'un
+  costum non caché. Atténuation : pré-charger le costum du **déploiement** au boot (avant le 1er search).
+- **Offline** : le bundle reste le filet (warm-start + fallback).
+- **L'artefact n'est PAS retiré** : la génération/vendorisation subsiste mais devient **non bloquante**
+  (un nouveau costum marche en live sans elle ; la régénérer reste utile pour le warm-start + les types).
