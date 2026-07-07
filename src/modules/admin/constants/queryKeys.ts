@@ -21,6 +21,8 @@ export const ADMIN_QUERY_KEYS = {
   DASHBOARD_MODERATION: ["admin-dashboard-moderation"] as const,
   /** `costum.import.mapping` du carrier (GET_COSTUM_JSON) — pilote la traduction en-têtes d'import. */
   IMPORT_MAPPING: (costumSlug: string) => ["admin-import-mapping", costumSlug] as const,
+  /** Formulaire costum dérivé EN LIVE (describeForm → JsonFormConfig) pour un costum sans config.costumForms. */
+  COSTUM_FORM_LIVE: (slug: string, collection: string) => ["admin-costum-form-live", slug, collection] as const,
 
   // ── Préfixes useSearchQuery (le module search compose le reste de la clé) ─────────────
   /** Table de contenu d'une resource. */
