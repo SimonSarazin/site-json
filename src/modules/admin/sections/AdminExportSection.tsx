@@ -67,11 +67,12 @@ export default function AdminExportSection({ section }: { section: AdminSection 
         {!canExport && (
           <p className="text-sm text-muted-foreground">L&apos;export est réservé aux super-administrateurs.</p>
         )}
-        <div className="flex items-end gap-3">
-          <div className="space-y-1">
+        {/* flex-wrap + largeurs responsives : à 390px la rangée empilait 530px fixes hors écran (audit mobile). */}
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="w-full space-y-1 sm:w-auto">
             <span className="text-sm font-medium">Type</span>
             <Select value={type} onValueChange={setType}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-full sm:w-48">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -83,10 +84,10 @@ export default function AdminExportSection({ section }: { section: AdminSection 
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-1">
+          <div className="w-full space-y-1 sm:w-auto">
             <span className="text-sm font-medium">Statut</span>
             <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
-              <SelectTrigger className="w-44">
+              <SelectTrigger className="w-full sm:w-44">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

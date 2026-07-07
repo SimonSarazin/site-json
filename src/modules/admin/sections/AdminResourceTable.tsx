@@ -281,9 +281,12 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
             de cette zone tant qu'on n'a pas scrollé → l'IntersectionObserver ne re-déclenche pas en cascade.
             Sans ça, un gros costum (p.ex. 3120 POI = 312 pages) enchaîne des dizaines de fetchNextPage
             d'affilée dans une table non virtualisée → gel du renderer. Le chargement reste incrémental au scroll. */}
-        <div className="max-h-[60vh] overflow-auto">
+        {/* Wrapper = UNIQUE scrolleur (X+Y) : le conteneur interne shadcn (data-slot=table-container,
+            overflow-x-auto) est neutralisé — sinon sticky top (en-tête) et sticky right (actions)
+            se réfèrent à deux ancêtres différents et se cassent mutuellement (audit mobile). */}
+        <div className="max-h-[60vh] overflow-auto [&_[data-slot=table-container]]:overflow-x-visible">
         <Table>
-          <TableHeader>
+          <TableHeader className="sticky top-0 z-20 bg-background">
             <TableRow>
               {bulkActions.length > 0 && (
                 <TableHead className="w-10">
@@ -317,7 +320,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                 </TableHead>
               ))}
               {adminMode && <TableHead>Statut</TableHead>}
-              <TableHead className="w-12" />
+              <TableHead className="sticky right-0 z-10 w-12 bg-background" />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -355,7 +358,9 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                     </TableCell>
                   )}
                   {columns.map((col) => (
-                    <TableCell key={col.path}>{formatCell(getPath(data, col.path))}</TableCell>
+                    <TableCell key={col.path} className="max-w-[14rem] truncate" title={formatCell(getPath(data, col.path))}>
+                      {formatCell(getPath(data, col.path))}
+                    </TableCell>
                   ))}
                   {adminMode && (
                     <TableCell>
@@ -366,10 +371,10 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                       )}
                     </TableCell>
                   )}
-                  <TableCell>
+                  <TableCell className="sticky right-0 bg-background">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Actions pour ${label}`}>
+                        <Button variant="ghost" size="icon" aria-label={`Actions pour ${label}`}>
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>

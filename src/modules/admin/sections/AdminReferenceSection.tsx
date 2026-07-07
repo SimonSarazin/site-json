@@ -7,12 +7,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useT } from "@/hooks/useT";
 import SearchTextInput from "@/modules/search/components/SearchTextInput";
 import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
+
+import { ScrollableTabsList } from "../components/ScrollableTabsList";
 
 import type { SearchType } from "@/modules/search/schema";
 
@@ -177,7 +179,7 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
         </div>
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
-          <TabsList>
+          <ScrollableTabsList>
             <TabsTrigger value="search">
               <Search className="mr-1.5 h-3.5 w-3.5" />
               Rechercher &amp; référencer{global.totalCount != null ? ` (${global.totalCount})` : ""}
@@ -186,7 +188,7 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
               <Link2 className="mr-1.5 h-3.5 w-3.5" />
               Référencés{referenced.totalCount != null ? ` (${referenced.totalCount})` : ""}
             </TabsTrigger>
-          </TabsList>
+          </ScrollableTabsList>
           <TabsContent value="search" className="pt-3">
             <p className="mb-2 text-xs text-muted-foreground">
               Éléments publics (openData) de tout Communecter, hors de ce costum. « Référencer » les propose

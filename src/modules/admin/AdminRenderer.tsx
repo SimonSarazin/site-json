@@ -3,10 +3,11 @@ import { useNavigate, useParams } from "react-router";
 
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import { useT } from "@/hooks/useT";
 
 import { AdminSectionRenderer } from "./AdminSectionRenderer";
+import { ScrollableTabsList } from "./components/ScrollableTabsList";
 import { useAdminAccess } from "./hooks/useAdminAccess";
 import type { AdminConfig } from "./schema";
 
@@ -53,14 +54,14 @@ export function AdminRenderer({ config }: { config: AdminConfig }) {
       }}
       className="w-full"
     >
-      <TabsList>
+      <ScrollableTabsList>
         {tabs.map((tab) => (
           <TabsTrigger key={tab.id} value={tab.id}>
             {tab.icon && <DynamicIcon name={tab.icon as IconName} className="mr-1.5 h-3.5 w-3.5" />}
             {t(tab.label)}
           </TabsTrigger>
         ))}
-      </TabsList>
+      </ScrollableTabsList>
       {tabs.map((tab) => (
         <TabsContent key={tab.id} value={tab.id} className="space-y-4 py-4">
           {tab.sections.map((section, i) => (

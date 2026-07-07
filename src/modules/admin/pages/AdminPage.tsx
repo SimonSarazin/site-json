@@ -23,7 +23,7 @@ export default function AdminPage() {
   // Défensif : le config client peut être le JSON brut (defaults Zod pas garantis appliqués).
   if (!admin || admin.enabled === false) {
     return (
-      <div className="container mx-auto py-16 text-center text-muted-foreground">
+      <div className="container mx-auto px-4 py-16 text-center text-muted-foreground">
         Administration non activée sur ce site.
       </div>
     );
@@ -31,7 +31,7 @@ export default function AdminPage() {
 
   if (!access.has(admin.access?.min ?? "siteAdmin")) {
     return (
-      <div className="container mx-auto py-16 text-center text-muted-foreground">
+      <div className="container mx-auto px-4 py-16 text-center text-muted-foreground">
         Accès réservé aux administrateurs.
       </div>
     );
@@ -40,7 +40,7 @@ export default function AdminPage() {
   return (
     <>
       <SiteHeader />
-      <main className="container mx-auto py-6">
+      <main className="container mx-auto px-4 py-6">
         <h1 className="mb-4 text-2xl font-semibold">{admin.title ? t(admin.title) : "Administration"}</h1>
         <AdminRenderer config={admin} />
       </main>

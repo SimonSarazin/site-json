@@ -16,11 +16,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useT } from "@/hooks/useT";
 
 import { ADMIN_QUERY_KEYS } from "../constants/queryKeys";
+import { ScrollableTabsList } from "../components/ScrollableTabsList";
+
 import type { AdminSection } from "../schema";
 
 /**
@@ -67,12 +69,13 @@ function FlaggedList({
     <ul className="divide-y">
       {items.map((it, i) => {
         const id = it.id ?? it._id?.$id ?? "";
+        // Mobile : texte au-dessus, actions en dessous (les ~420px de boutons nowrap écrasaient le texte à 0).
         return (
-          <li key={id || i} className="flex items-center justify-between gap-3 py-3">
+          <li key={id || i} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             <div className="min-w-0 flex-1">
-              <span className="line-clamp-2 text-sm">{it.text || it.name || "(sans texte)"}</span>
+              <span className="line-clamp-2 break-words text-sm">{it.text || it.name || "(sans texte)"}</span>
             </div>
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
               <Badge variant="destructive">
                 {it.reportAbuseCount ?? 0} signalement{(it.reportAbuseCount ?? 0) > 1 ? "s" : ""}
               </Badge>
@@ -164,10 +167,10 @@ export default function AdminModerationSection({ section }: { section: AdminSect
           </div>
         ) : (
           <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
-            <TabsList>
+            <ScrollableTabsList>
               <TabsTrigger value="news">Actualités ({news.length})</TabsTrigger>
               <TabsTrigger value="comments">Commentaires ({comments.length})</TabsTrigger>
-            </TabsList>
+            </ScrollableTabsList>
             <TabsContent value="news" className="mt-3">
               <FlaggedList
                 items={news}

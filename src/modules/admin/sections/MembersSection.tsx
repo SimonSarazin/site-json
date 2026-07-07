@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useT } from "@/hooks/useT";
@@ -15,6 +15,8 @@ import { useConfirmationDialog } from "@/modules/profil/hooks/useConfirmationDia
 import { useEntityLabels } from "@/modules/profil/hooks/useEntityLabels";
 import { useEntityMembers } from "@/modules/profil/hooks/useMembersQuery";
 import "@/modules/profil/i18n";
+
+import { ScrollableTabsList } from "../components/ScrollableTabsList";
 
 import type { AdminMembersSection, AdminSection } from "../schema";
 
@@ -94,13 +96,13 @@ export default function MembersSection({ section }: { section: AdminSection }) {
         </div>
         )}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
+          <ScrollableTabsList>
             {tabs.map((tab) => (
               <TabsTrigger key={tab.id} value={tab.id}>
                 {tab.label}
               </TabsTrigger>
             ))}
-          </TabsList>
+          </ScrollableTabsList>
           {tabs.map((tab) => (
             <TabsContent key={tab.id} value={tab.id} className="mt-4 max-h-[32rem] overflow-y-auto">
               <MemberListRenderer
