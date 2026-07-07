@@ -26,6 +26,7 @@
 | Module auth (connexion/inscription/SSO) | [Module Auth](23-module-auth.md) |
 | Module notification (cloche + section) | [Module Notification](25-module-notification.md) |
 | Module observatoire (dashboard déclaratif) | [Module Observatoire](27-module-observatoire.md) |
+| Module admin (back-office /admin config-driven) | [Module Admin](30-module-admin.md) |
 | Panneau d'administration (live edit) | [Admin Panel](24-admin-panel.md) |
 | Assistant de configuration | [Assistant Config](26-assistant-config.md) |
 | Système de visibilité | [Visibility System](19-visibility-system.md) |
