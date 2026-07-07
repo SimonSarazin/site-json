@@ -15,9 +15,9 @@ export function GallerySection() {
     const t = useT("modules/aac");
 
     const images = [
-        { src: null, alt: String(t("detail.gallery.editionsAlt")), label: String(t("detail.gallery.editions")) },
-        { src: null, alt: String(t("detail.gallery.workshopAlt")), label: String(t("detail.gallery.workshop")) },
-        { src: null, alt: String(t("detail.gallery.printingAlt")), label: String(t("detail.gallery.printing")) },
+        { src: undefined, alt: String(t("detail.gallery.editionsAlt")), label: String(t("detail.gallery.editions")) },
+        { src: undefined, alt: String(t("detail.gallery.workshopAlt")), label: String(t("detail.gallery.workshop")) },
+        { src: undefined, alt: String(t("detail.gallery.printingAlt")), label: String(t("detail.gallery.printing")) },
     ];
 
     return (

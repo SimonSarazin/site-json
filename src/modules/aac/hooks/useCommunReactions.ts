@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import type { Answer, AnswerItemNormalized } from "@communecter/cocolight-api-client";
+import type { Answer } from "@communecter/cocolight-api-client";
 import { showErrorToast } from "@/lib/toastUtils";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -38,7 +38,7 @@ function buildReactionEntry(type: CommunReactionType, reactor: Reactor, useIsoDa
 }
 
 export function getCommunReactionState(
-  answerData: AnswerItemNormalized | Record<string, unknown> | null | undefined,
+  answerData: unknown,
   reactorId: string | undefined
 ): Record<CommunReactionType, boolean> {
   if (!reactorId || !answerData) {

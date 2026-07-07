@@ -18,7 +18,7 @@ export function CommunCofinancersTable({formData: _formData, aacConfig: _aacConf
     const { entity } = useCocolight();
     const porteurId = entity?.id;
 
-    const cofinancers = funding?.items
+    const cofinancers: any[] = funding?.items
         .filter((item: any) => item?.status !== "close")
         .flatMap((item: any) => item?.allFunding ?? []) ?? [];
         

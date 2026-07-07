@@ -10,7 +10,7 @@ interface CommunHeroProps {
     aacConfig: AacResolvedConfig | null;
 }
 
-export function CommunHero({formData, answerData, aacConfig}: CommunHeroProps) {
+export function CommunHero({formData: _formData, answerData, aacConfig}: CommunHeroProps) {
     useLoadNamespace("modules/aac");
     const t = useT("modules/aac");
 

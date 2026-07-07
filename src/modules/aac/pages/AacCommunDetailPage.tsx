@@ -130,7 +130,7 @@ export default function AacCommunDetailPage() {
     });
 
     // Requête Configuration Aac
-    const { config } = useAacConfig(formId);
+    const { config } = useAacConfig(formId ?? null);
 
     const pageTitle = useMemo(() => {
         return formQuery.data?.name || String(t("page.communDetail"));
@@ -178,13 +178,13 @@ export default function AacCommunDetailPage() {
     const answer = answerQuery.data;
     const formData = formQuery.data;
 
-    const modeleEco = [answer?.answers?.aapStep1?.aapStep1lpvinn7ld70wbk7w339 ?? ""];
-    const gouvernance = [answer?.answers?.aapStep1?.aapStep1lpvioouzejcnjy7ffw ?? ""];
-    const juridique = [answer?.answers?.aapStep1?.aapStep1lpvip7f9pa6et762ysa ?? ""];
-    const partenariats = [answer?.answers?.aapStep1?.aapStep1lpvipvzp13vf2jypqgxq ?? ""];
-    const modalites = [answer?.answers?.aapStep1?.aapStep1lqb428ajrbhwdbmg6qi ?? ""];
-    const usages = [answer?.answers?.aapStep1?.aapStep1lusoklfzokkn4svl1ei ?? ""];
-    const equipe = [answer?.answers?.aapStep1?.aapStep1m0w49vpl5jm001xwvsv ?? ""];
+    const modeleEco = [String(answer?.answers?.aapStep1?.aapStep1lpvinn7ld70wbk7w339 ?? "")];
+    const gouvernance = [String(answer?.answers?.aapStep1?.aapStep1lpvioouzejcnjy7ffw ?? "")];
+    const juridique = [String(answer?.answers?.aapStep1?.aapStep1lpvip7f9pa6et762ysa ?? "")];
+    const partenariats = [String(answer?.answers?.aapStep1?.aapStep1lpvipvzp13vf2jypqgxq ?? "")];
+    const modalites = [String(answer?.answers?.aapStep1?.aapStep1lqb428ajrbhwdbmg6qi ?? "")];
+    const usages = [String(answer?.answers?.aapStep1?.aapStep1lusoklfzokkn4svl1ei ?? "")];
+    const equipe = [String(answer?.answers?.aapStep1?.aapStep1m0w49vpl5jm001xwvsv ?? "")];
     return (
         <PageShell>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-24">
