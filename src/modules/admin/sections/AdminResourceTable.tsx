@@ -122,6 +122,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
 
   // La sélection est liée à la VUE : recherche/filtre/tri changent → reset (sinon on peut agir
   // sur des éléments sortis de l'écran — audit robustesse). Pattern adjust-during-render (repo).
+  const [selected, setSelected] = useState<Map<string, unknown>>(new Map());
   const selectionScopeKey = `${searchText}|${statusFilter}|${sort ? `${sort.col}:${sort.dir}` : ""}`;
   const [lastScopeKey, setLastScopeKey] = useState(selectionScopeKey);
   if (selectionScopeKey !== lastScopeKey) {
@@ -136,7 +137,6 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   // ── bulkActions (config resource.bulkActions : validate/delete/export) ──────────────────────────
   const bulkActions = resource.bulkActions ?? [];
   const queryClient = useQueryClient();
-  const [selected, setSelected] = useState<Map<string, unknown>>(new Map());
   const [bulkBusy, setBulkBusy] = useState(false);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const invalidateAdmin = () =>

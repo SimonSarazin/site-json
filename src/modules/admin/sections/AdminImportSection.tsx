@@ -215,7 +215,7 @@ export default function AdminImportSection({ section }: { section: AdminSection 
             size="sm"
             onClick={() => {
               const csv = ["ligne,nom,erreur", ...importErrors.map((r) =>
-                `${r.rowIndex},"${r.name.replaceAll('"', '""')}","${r.error.replaceAll('"', '""')}"`,
+                `${r.rowIndex},"${r.name.replace(/"/g, '""')}","${r.error.replace(/"/g, '""')}"`,
               )].join("\n");
               downloadCsv(csv, "rapport-erreurs-import.csv");
             }}
