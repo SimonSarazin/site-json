@@ -1,4 +1,4 @@
-import { Loader2, AlertCircle, User } from "lucide-react";
+import { Loader2, AlertCircle, User, Building2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -59,17 +59,30 @@ function ContributorRow({
   const noteLabel = c.note > 0 ? (noteLevels[noteAppearance.idx] ?? "") : "";
   const happinessEmoji = c.happiness !== "" ? HAPPINESS_EMOJI[c.happiness] : null;
   const happinessLabel = c.happiness !== "" ? happinessLabels[c.happiness] : "";
-  const profileLink = c.userSlug ? `/profil/${c.userSlug}` : null;
+
+  // Form collaboratif "par lieu" : on affiche le LIEU évalué au lieu de
+  // l'évaluateur. Fallback sur l'évaluateur quand la réponse n'a pas de lieu.
+  const place = c.place ?? null;
+  const displayName = place ? place.name : c.userName;
+  const displaySlug = place ? place.slug : c.userSlug;
+  const displayImage = place ? place.image : "";
+  const profileLink = displaySlug ? `/profil/${displaySlug}` : null;
 
   return (
     <tr className="border-b border-border last:border-0">
-      {/* Colonne user (avatar + nom + solution + commentaire) */}
+      {/* Colonne identité (avatar + nom + solution + commentaire) */}
       <td className="py-3 pr-3 align-top">
         <div className="flex items-start gap-3">
           <Avatar className="h-9 w-9 shrink-0">
-            <AvatarImage src={undefined} alt={c.userName} />
+            <AvatarImage src={displayImage || undefined} alt={displayName} className="object-cover" />
             <AvatarFallback className="bg-muted text-xs">
-              {c.userName ? getInitials(c.userName) : <User className="h-4 w-4" />}
+              {displayName ? (
+                getInitials(displayName)
+              ) : place ? (
+                <Building2 className="h-4 w-4" />
+              ) : (
+                <User className="h-4 w-4" />
+              )}
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0">
@@ -80,10 +93,10 @@ function ContributorRow({
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                {c.userName}
+                {displayName}
               </a>
             ) : (
-              <span className="font-medium text-sm">{c.userName}</span>
+              <span className="font-medium text-sm">{displayName}</span>
             )}
             <div className="text-sm text-muted-foreground mt-0.5 truncate">
               {c.criteria}
@@ -134,6 +147,10 @@ export function CommonTableContributorsDialog({
     enabled: open,
   });
 
+  // Form collaboratif "par lieu" → les contributions portent un `place` : on
+  // adapte le sous-titre ("quels lieux" au lieu de "qui").
+  const isPlaceMode = contributors.some((c) => !!c.place);
+
   // Mêmes labels que dans `UrgencyGauge` — résolus ici via i18n et passés
   // aux rows (pas de duplication des chaînes dans ce fichier).
   const noteLevels = [
@@ -158,7 +175,13 @@ export function CommonTableContributorsDialog({
         <DialogHeader>
           <DialogTitle>{t("coform.commonTable.contributors.title")}</DialogTitle>
           <DialogDescription>
-            {t("coform.commonTable.contributors.description", undefined, { usage: usageLabel })}
+            {t(
+              isPlaceMode
+                ? "coform.commonTable.contributors.descriptionPlace"
+                : "coform.commonTable.contributors.description",
+              undefined,
+              { usage: usageLabel },
+            )}
           </DialogDescription>
         </DialogHeader>
 

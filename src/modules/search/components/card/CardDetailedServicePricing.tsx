@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Monitor, Users, UtensilsCrossed, type LucideIcon } from "lucide-react";
+import { Monitor, Users, BedDouble, type LucideIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useT } from "@/hooks/useT";
 import { SearchCardProps } from "../../schema";
@@ -18,7 +18,7 @@ import {
 const STAT_ICONS: Record<ServicePricingStatKind, LucideIcon> = {
   coworking: Monitor,
   meeting: Users,
-  accommodation: UtensilsCrossed,
+  accommodation: BedDouble,
 };
 
 const SERVICE_NAME_KEY: Record<ServicePricingStatKind, string> = {
