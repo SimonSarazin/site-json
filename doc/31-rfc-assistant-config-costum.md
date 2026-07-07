@@ -244,11 +244,11 @@ cache frais n'est pas refetché (TTL). Fallback bundle si le fetch échoue (offl
 
 | Inc | Contenu | Effet |
 |---|---|---|
-| **C2a** | `LIVE_CTX_CACHE` → `{ctx, fetchedAt}` + TTL ; `resolveCostumCtxFromSource` live-first (cache frais → bundle → nu) | priorité live posée |
-| **C2b** | `prefetchCostums(user, sourceKeys[])` (batch, dédup, TTL, fallback) + insertion **finalizer paginator `searchCostum`** | listes vivantes |
-| **C2c** | insertion prefetch dans `get()` / `entitySlug` (entité seule) | édition d'un élément vivante |
-| **C2d** | coercition lecture des champs live (number/date depuis le type digéré) — parité `normalize.ts` pour les non-bundlés | lecture typée (impact faible : setType BSON = 0/490) |
-| **C2e** | TTL configurable + invalidation explicite (`refresh`) | contrôle de fraîcheur |
+| **C2a** | ✅ cache `{ctx,fetchedAt}` + TTL 5 min ; `resolveCostumCtxFromSource` live-first | priorité live posée |
+| **C2b** | ✅ `prefetchCostums` (batch/dédup/TTL/fallback) inséré dans `_createPaginatorEngine` avant `_linkEntities` | listes vivantes |
+| **C2c** | ✅ prefetch dans `get()` (entité seule) avant `_setData` | édition d'un élément vivante |
+| **C2d** | ⏸ DETTE assumée (impact quasi nul : stockage string byte-fidèle, widgets tolérants) | lecture typée |
+| **C2e** | ✅ `invalidateCostumCache(slug?)` (TTL 5 min fixe) | contrôle de fraîcheur |
 
 ### Perf & risques
 
