@@ -1,7 +1,7 @@
 import { AlertTriangle, CheckCircle2, Download, MapPin, Pencil, Upload, XCircle } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import Papa from "papaparse";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useBlocker } from "react-router";
 import { toast } from "sonner";
 
@@ -22,6 +22,7 @@ import { useUnsavedChangesWarning } from "@/modules/coform/hooks/useUnsavedChang
 
 import { downloadCsv } from "../lib/downloadCsv";
 import { ensureCostumScope } from "../lib/ensureCostumScope";
+import { useCostumImportMapping } from "../hooks/useCostumImportMapping";
 import { shapeImportRow } from "../lib/shapeImportRow";
 import type { AdminImportSection, AdminSection } from "../schema";
 
@@ -61,7 +62,13 @@ export default function AdminImportSection({ section }: { section: AdminSection 
   useEffect(() => {
     if (rejectedMsg) toast.warning(rejectedMsg);
   }, [rejectedMsg]);
-  const [rows, setRows] = useState<Record<string, unknown>[]>([]);
+  // Lignes CSV BRUTES (clés = en-têtes du fichier) + en-têtes détectées : la traduction en-tête →
+  // attribut (costum.import.mapping) est faite au moment de dériver `rows`, ajustable via le wizard.
+  const [rawRows, setRawRows] = useState<Record<string, unknown>[]>([]);
+  const [headers, setHeaders] = useState<string[]>([]);
+  const [columnMap, setColumnMap] = useState<Record<string, string>>({});
+  const { entries: mappingEntries, targetAttrs } = useCostumImportMapping(carrier, type);
+  const hasMapping = mappingEntries.length > 0;
   const [preview, setPreview] = useState<PreviewRow[] | null>(null);
   const [progress, setProgress] = useState<{ current: number; total: number } | null>(null);
   const [summary, setSummary] = useState<{ created: number; updated: number; errors: number } | null>(null);
@@ -75,15 +82,38 @@ export default function AdminImportSection({ section }: { section: AdminSection 
   useUnsavedChangesWarning(busy);
   const blocker = useBlocker(busy);
 
-  /** Modèle CSV : les en-têtes standard comprises par shapeImportRow (adresse pliée automatiquement). */
+  // Correspondance en-tête CSV → attribut : auto-remplie (col du mapping costum, sinon l'en-tête telle
+  // quelle = nom technique/champ standard). Recalculée quand le fichier ou le mapping change (les édits
+  // manuels du wizard persistent tant que ces deux-là ne bougent pas). Pattern adjust-during-render.
+  const autoKey = `${headers.join("|")}::${mappingEntries.map((e) => `${e.col}>${e.attr}`).join("|")}`;
+  const [lastAutoKey, setLastAutoKey] = useState("");
+  if (headers.length > 0 && autoKey !== lastAutoKey) {
+    setLastAutoKey(autoKey);
+    const auto: Record<string, string> = {};
+    for (const h of headers) auto[h] = mappingEntries.find((e) => e.col === h)?.attr ?? h;
+    setColumnMap(auto);
+  }
+  // `rows` DÉRIVÉ des lignes brutes + correspondance : shapeImportRow traduit puis met en forme.
+  const rows = useMemo(
+    () => rawRows.map((r) => shapeImportRow(r, headers.length > 0 ? columnMap : undefined)),
+    [rawRows, columnMap, headers.length],
+  );
+
+  /** Modèle CSV : les EN-TÊTES du costum (`col` du mapping) si présent — l'utilisateur obtient un fichier
+   *  qui matche exactement le mapping ; sinon les en-têtes standard comprises par shapeImportRow. */
   function downloadTemplate() {
-    const headers = type === "events"
+    if (hasMapping) {
+      const cols = mappingEntries.map((e) => e.col);
+      downloadCsv(cols.map((c) => `"${c.replace(/"/g, '""')}"`).join(",") + "\n", `modele-import-${type}.csv`);
+      return;
+    }
+    const headerLine = type === "events"
       ? "name,type,startDate,endDate,streetAddress,postalCode,city,tags,shortDescription"
       : "name,type,streetAddress,postalCode,city,tags,shortDescription";
     const example = type === "events"
       ? `Mon événement,meeting,2026-09-01,2026-09-02,1 rue Exemple,97400,Saint-Denis,"tag1,tag2",Description courte`
       : `Mon élément,typeExemple,1 rue Exemple,97400,Saint-Denis,"tag1,tag2",Description courte`;
-    downloadCsv(headers + "\n" + example + "\n", `modele-import-${type}.csv`);
+    downloadCsv(headerLine + "\n" + example + "\n", `modele-import-${type}.csv`);
   }
 
   function handleFile(file: File | undefined) {
@@ -95,7 +125,8 @@ export default function AdminImportSection({ section }: { section: AdminSection 
       header: true,
       skipEmptyLines: true,
       complete: (res) => {
-        setRows(res.data.map(shapeImportRow));
+        setRawRows(res.data);
+        setHeaders((res.meta.fields ?? []).map((h) => h.trim()).filter(Boolean));
         toast.success(tAdmin("AdminImportSection.rowsLoaded", undefined, { count: String(res.data.length) }));
       },
       error: () => toast.error(tAdmin("AdminImportSection.fileUnreadable")),
@@ -184,6 +215,52 @@ export default function AdminImportSection({ section }: { section: AdminSection 
             />
           </div>
         </div>
+
+        {/* Wizard de correspondance en-tête CSV → attribut (rôle du `col` de costum.import.mapping) :
+            auto-rempli, ajustable. Une colonne mise sur « (ignorer) » est retirée de l'import. */}
+        {headers.length > 0 && (
+          <div className="space-y-2 rounded-md border p-3">
+            <p className="text-sm font-medium">{tAdmin("AdminImportSection.mappingTitle")}</p>
+            <p className="text-xs text-muted-foreground">
+              {tAdmin(hasMapping ? "AdminImportSection.mappingHintCostum" : "AdminImportSection.mappingHintStd")}
+            </p>
+            <div className="max-h-64 overflow-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{tAdmin("AdminImportSection.mappingColCsv")}</TableHead>
+                    <TableHead>{tAdmin("AdminImportSection.mappingColAttr")}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {headers.map((h) => {
+                    const current = columnMap[h] ?? "";
+                    const opts = [...new Set([...targetAttrs, ...(current && !targetAttrs.includes(current) ? [current] : [])])];
+                    return (
+                      <TableRow key={h}>
+                        <TableCell className="max-w-[16rem] truncate font-medium" title={h}>{h}</TableCell>
+                        <TableCell>
+                          <Select
+                            value={current || "__ignore__"}
+                            onValueChange={(v) => setColumnMap((m) => ({ ...m, [h]: v === "__ignore__" ? "" : v }))}
+                          >
+                            <SelectTrigger className="h-8 w-full sm:w-72"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="__ignore__">{tAdmin("AdminImportSection.mappingIgnore")}</SelectItem>
+                              {opts.map((a) => (
+                                <SelectItem key={a} value={a}>{a}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        )}
 
         {rows.length > 0 && (
           <div className="flex gap-2">

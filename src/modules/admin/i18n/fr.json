@@ -106,7 +106,13 @@
     "blockerCancel": "Rester",
     "summaryCreated": "{{count}} créés",
     "summaryUpdated": "{{count}} mis à jour",
-    "summaryErrors": "{{count}} erreurs"
+    "summaryErrors": "{{count}} erreurs",
+    "mappingTitle": "Correspondance des colonnes",
+    "mappingHintCostum": "Les en-têtes de votre fichier ont été associées automatiquement aux champs du costum. Ajustez si besoin ; « (ignorer) » exclut la colonne.",
+    "mappingHintStd": "Associez chaque colonne de votre fichier à un champ. « (ignorer) » exclut la colonne de l'import.",
+    "mappingColCsv": "Colonne du fichier",
+    "mappingColAttr": "Champ cible",
+    "mappingIgnore": "(ignorer)"
   },
   "AdminReferenceSection": {
     "title": "Référencement",

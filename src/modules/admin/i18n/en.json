@@ -106,7 +106,13 @@
     "blockerCancel": "Stay",
     "summaryCreated": "{{count}} created",
     "summaryUpdated": "{{count}} updated",
-    "summaryErrors": "{{count}} errors"
+    "summaryErrors": "{{count}} errors",
+    "mappingTitle": "Column mapping",
+    "mappingHintCostum": "Your file headers were matched automatically to the costum fields. Adjust if needed; “(ignore)” drops the column.",
+    "mappingHintStd": "Map each column of your file to a field. “(ignore)” drops the column from the import.",
+    "mappingColCsv": "File column",
+    "mappingColAttr": "Target field",
+    "mappingIgnore": "(ignore)"
   },
   "AdminReferenceSection": {
     "title": "Referencing",

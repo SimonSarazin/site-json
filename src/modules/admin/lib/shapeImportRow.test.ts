@@ -158,4 +158,36 @@ describe("shapeImportRow — addressCountry dérivé du code postal", () => {
   it("pas d'address → pas d'addressCountry inventé", () => {
     expect(shapeImportRow({ name: "Foo" })).toEqual({ name: "Foo" });
   });
+
+  describe("headerToAttr (traduction en-tête → attribut, rôle du costum.import.mapping)", () => {
+    it("traduit l'en-tête humaine vers l'attribut technique", () => {
+      const out = shapeImportRow({ Sol: "Bitume", Installation: "Stade A" }, { Sol: "equip_sol", Installation: "inst_nom" });
+      expect(out).toEqual({ equip_sol: "Bitume", inst_nom: "Stade A" });
+    });
+
+    it("en-tête absente de la map → colonne IGNORÉE (comme infoCreateData legacy)", () => {
+      const out = shapeImportRow({ Sol: "Bitume", Inconnu: "x" }, { Sol: "equip_sol" });
+      expect(out).toEqual({ equip_sol: "Bitume" });
+    });
+
+    it("en-tête mappée à \"\" → ignorée", () => {
+      const out = shapeImportRow({ Sol: "Bitume", Note: "à retirer" }, { Sol: "equip_sol", Note: "" });
+      expect(out).toEqual({ equip_sol: "Bitume" });
+    });
+
+    it("attribut pointé après traduction → imbrication (Département → address.level4Name)", () => {
+      const out = shapeImportRow({ "Département": "La Réunion" }, { "Département": "address.level4Name" });
+      expect(out).toEqual({ address: { level4Name: "La Réunion", addressCountry: "FR" } });
+    });
+
+    it("traduction vers un alias adresse → repli sous address{} + pays dérivé du CP", () => {
+      const out = shapeImportRow({ CP: "97410", Ville: "Saint-Pierre" }, { CP: "postalCode", Ville: "city" });
+      expect(out.address).toEqual({ postalCode: "97410", addressLocality: "Saint-Pierre", addressCountry: "RE" });
+    });
+
+    it("sans map → comportement historique inchangé (noms techniques passent)", () => {
+      const out = shapeImportRow({ equip_sol: "Bitume", name: "X" });
+      expect(out).toEqual({ equip_sol: "Bitume", name: "X" });
+    });
+  });
 });

@@ -19,6 +19,8 @@ export const ADMIN_QUERY_KEYS = {
     ["admin-dashboard-stats", costumSlug, entityTypes.join(",")] as const,
   /** Tuile modération du tableau de bord (taille de la file). */
   DASHBOARD_MODERATION: ["admin-dashboard-moderation"] as const,
+  /** `costum.import.mapping` du carrier (GET_COSTUM_JSON) — pilote la traduction en-têtes d'import. */
+  IMPORT_MAPPING: (costumSlug: string) => ["admin-import-mapping", costumSlug] as const,
 
   // ── Préfixes useSearchQuery (le module search compose le reste de la clé) ─────────────
   /** Table de contenu d'une resource. */

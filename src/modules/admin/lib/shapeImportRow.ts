@@ -13,15 +13,29 @@ const ADDRESS_KEYS: Record<string, string> = {
 
 /**
  * Met en forme une ligne CSV plate pour l'API d'import :
+ * - `headerToAttr` (optionnel) : traduit l'EN-TÊTE CSV → attribut technique AVANT tout traitement
+ *   (rôle du `col` de `costum.import.mapping` : « Sol » → `equip_sol`). Une en-tête mappée à `""`
+ *   (ou absente de la map, quand une map est fournie) est IGNORÉE — comme le legacy `infoCreateData` ;
  * - clés pointées `address.postalCode` → objets imbriqués (dépliage générique) ;
  * - alias plats d'adresse (`postalCode`, `city`, …) → repliés sous `address{}` ;
  * - `tags` chaîne → tableau (séparateurs `,` ou `;`) ;
  * - valeurs vides ("") retirées (Papa.parse produit "" pour les cellules vides → bruit).
+ *
+ * Le CAST des types (ARRAY/INT/FLOAT) reste au BACKEND (attributesWithTypes ← import.mapping).
  */
-export function shapeImportRow(row: Record<string, unknown>): Record<string, unknown> {
+export function shapeImportRow(
+  row: Record<string, unknown>,
+  headerToAttr?: Record<string, string>,
+): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [rawKey, rawValIn] of Object.entries(row)) {
-    const key = rawKey.trim();
+    // Traduction en-tête → attribut (si une map est fournie) : hors map ou mappé à "" → colonne ignorée.
+    let key = rawKey.trim();
+    if (headerToAttr) {
+      const mapped = headerToAttr[key] ?? headerToAttr[rawKey];
+      if (!mapped) continue;
+      key = mapped.trim();
+    }
     // REVIEW LOW : trim des valeurs string (espaces parasites des CSV Excel → résolution de commune ratée).
     const rawVal = typeof rawValIn === "string" ? rawValIn.trim() : rawValIn;
     if (!key || rawVal === "" || rawVal == null) continue;
