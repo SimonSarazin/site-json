@@ -30,6 +30,7 @@ import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
 import type { SearchType } from "@/modules/search/schema";
 
 import { ADMIN_QUERY_KEYS } from "../constants/queryKeys";
+import { useAdminAccess } from "../hooks/useAdminAccess";
 import { useDeleteEntity, type DeletableEntity } from "../hooks/useDeleteEntity";
 import { useReferenceElement, type ReferencingCarrier } from "../hooks/useReferenceElement";
 import { useValidateGroup, type ValidatableCarrier } from "../hooks/useValidateGroup";
@@ -55,6 +56,16 @@ type StatusFilter = "all" | "pending" | "validated";
 export default function AdminResourceTable({ section }: { section: AdminSection }) {
   const resource = section as AdminResourceSection;
   const { entity: carrier, contextId, contextType } = useCocolight();
+  // Droit-parapluie costum : dans /admin (gate `siteAdmin` = admin du host du costum), l'utilisateur peut
+  // éditer/supprimer TOUS les éléments du costum. On pose le flag client `setCostumAdminAuthorized` sur
+  // l'entité avant edit/delete pour que la garde lib (_update/_deleteViaElement) ne bloque pas un non-auteur ;
+  // le backend reste la source de vérité (canEditItem/canDeleteElement portent isCostumAdmin).
+  const adminAccess = useAdminAccess();
+  const canCostumAdmin = adminAccess.has("siteAdmin");
+  const grantCostumAdmin = <T,>(item: T): T => {
+    if (canCostumAdmin) (item as { setCostumAdminAuthorized?: (v?: boolean) => void })?.setCostumAdminAuthorized?.();
+    return item;
+  };
   const t = useT();
   // Second hook nommé : `t` reste réservé aux LocalizedString de config, `tAdmin` au namespace du module.
   const tAdmin = useT("modules/admin");
@@ -206,7 +217,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
     let done = 0;
     setBulkProgress({ current: 0, total });
     for (const [id, item] of selected) {
-      try { await (item as DeletableEntity).delete("admin bulk delete"); }
+      try { await grantCostumAdmin(item as DeletableEntity).delete("admin bulk delete"); }
       catch (e) { failed.set(id, item); if (!firstError) firstError = e instanceof Error ? e.message : String(e); }
       setBulkProgress({ current: ++done, total });
     }
@@ -429,7 +440,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         {rowActions.includes("edit") && editModal.enabled && (
-                          <DropdownMenuItem onClick={() => setEditEntity(item as unknown as EntityTypes)}>
+                          <DropdownMenuItem onClick={() => setEditEntity(grantCostumAdmin(item) as unknown as EntityTypes)}>
                             <Pencil className="mr-2 h-4 w-4" /> {tAdmin("AdminResourceTable.edit")}
                           </DropdownMenuItem>
                         )}
@@ -467,7 +478,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                         {rowActions.includes("delete") && hasRealId && (
                           <DropdownMenuItem
                             className="text-destructive"
-                            onClick={() => setToDelete({ entity: item as unknown as DeletableEntity, label })}
+                            onClick={() => setToDelete({ entity: grantCostumAdmin(item) as unknown as DeletableEntity, label })}
                           >
                             <Trash2 className="mr-2 h-4 w-4" /> {tAdmin("AdminResourceTable.delete")}
                           </DropdownMenuItem>
