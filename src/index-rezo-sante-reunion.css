@@ -1,0 +1,168 @@
+@import 'tailwindcss';
+@import "tw-animate-css";
+@import "./styles/shared.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ==========================================
+   RéseauSanté — réseau réunionnais de la santé globale
+   Direction « Lumière du matin » : fond papier chaud, vert végétal en ancre,
+   accents pastel par thématique (nutrition/activité/sommeil/addictions/mental).
+   Titres Fraunces (serif douce, taille optique), corps Hanken Grotesk.
+
+   Ce fichier ne porte AUCUN token de thème : la palette, les polices, le rayon,
+   les ombres et l'espacement vivent dans `config.theme`
+   (config.prod.rezo-sante-reunion.json) et sont injectés au runtime — SSR
+   compris — par `SiteTheme`. Le voile des héros plein écran (`--hero-tint`) est
+   posé de la même façon, par `theme.customCSS`. Même modèle que
+   index-parent62.css et index-tiers-lieux.css.
+
+   Il ne reste donc ici que le mapping `@theme inline` (ce qui CRÉE les
+   utilitaires Tailwind depuis les tokens), les réglages de document
+   (box-sizing, gouttière de scrollbar, corps, titres), la mini-prose des pages
+   légales, la scrollbar custom et le dégradé de bande.
+
+   Créé le 2026-07-30. Le site pointait jusque-là sur `index-parent62.css`, par
+   défaut de `config:init --from parent62` : il embarquait donc ~60 lignes
+   d'identité parent62 (les 10 couleurs de territoire du Pas-de-Calais,
+   `.p62-deep`, `.p62-bubble`, `.p62-communes`) dont AUCUN sélecteur ne pouvait
+   correspondre ici. Partager une feuille reste légitime quand c'est le même
+   design (6 communes sur index-commune-transparente) — ce n'était pas le cas.
+   ========================================== */
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  /* Statuts — extension maison du jeu shadcn, qui ne fournit que `destructive`.
+     Les VALEURS viennent de config.theme.colors.{light,dark} (SiteTheme les
+     injecte au runtime) ; ce mapping est ce qui CRÉE les utilitaires
+     correspondants et leurs modificateurs d'opacité.
+     Sans lui, la couleur est écrite pour rien. */
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+  --font-mono: var(--font-mono);
+  /* `font-display` (hero-quick-access…) : alias de la police de titre. */
+  --font-display: var(--font-serif);
+  --radius: var(--radius);
+}
+
+*, *::before, *::after { box-sizing: border-box; border-color: var(--border); }
+/* Réserve EN PERMANENCE la gouttière de scrollbar. Sans ça, l'ouverture d'une modale
+   (Radix scroll-lock → `body{overflow:hidden}` retire la scrollbar de 8px) élargit le
+   viewport de 8px : la compensation `margin-right` du body protège le flux normal, mais
+   PAS le header `nav.fixed left-0 right-0` (ancré au viewport) → il « saute » de 8px à
+   l'ouverture/fermeture = le flash. `scrollbar-gutter: stable` garde la gouttière réservée
+   même sous `overflow:hidden` → largeur du viewport constante, aucun saut (react-remove-scroll
+   mesure alors 0px de scrollbar et n'ajoute pas de compensation). */
+html { scrollbar-gutter: stable; }
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Titres : la police `serif` de la config — ici Fraunces, serif douce à taille
+   optique : chaleureuse sans être puérile, et qui tient les pages sensibles
+   (addictions, santé mentale) comme la crédibilité face aux partenaires
+   institutionnels. Aucune section n'applique `font-serif` elle-même, tout passe
+   par cette règle et par l'alias `--font-display`. */
+h1, h2, h3, h4 { font-family: var(--font-serif); }
+h1, h2 { letter-spacing: -0.015em; }
+
+/* Mini-prose : les sections `html` (mentions légales, confidentialité) posent
+   class="prose …" mais le plugin typography n'est pas chargé — on donne ici
+   la hiérarchie minimale. */
+.prose h1, .prose h2, .prose h3 { font-family: var(--font-serif); margin: 1.4em 0 0.5em; }
+.prose h1 { font-size: 1.9rem; }
+.prose h2 { font-size: 1.5rem; }
+.prose h3 { font-size: 1.2rem; }
+.prose p, .prose li { line-height: 1.7; margin: 0.5em 0; }
+.prose ul { list-style: disc; padding-left: 1.4rem; }
+.prose ol { list-style: decimal; padding-left: 1.4rem; }
+.prose a { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
+.prose strong { font-weight: 600; }
+
+/* Custom scrollbar (même bloc que les autres thèmes — pistes/pouces aux tokens,
+   sinon scrollbars natives du navigateur en rupture avec le fond papier) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--muted);
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--muted-foreground) 30%, transparent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklch, var(--muted-foreground) 50%, transparent);
+}
+
+/* Firefox uniquement (pas de ::-webkit-scrollbar) : équivalent standard.
+   Scopé — si `scrollbar-color` est posé, Chrome ignore ::-webkit-scrollbar
+   et on perdrait la barre custom commune aux autres thèmes. */
+@supports not selector(::-webkit-scrollbar) {
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklch, var(--muted-foreground) 30%, transparent) var(--muted);
+  }
+}
+
+/* Bandeau searchHeader (et cta-newsletter) : le token partagé par défaut de
+   shared.css est un dégradé primary→accent plein pot — trop criard pour une
+   page d'annuaire. Lavis pastel vert→miel, obtenu en diluant les deux tokens
+   dans le fond, donc il suit tout seul le mode clair/sombre. */
+:root {
+  --gradient-section: linear-gradient(135deg,
+    color-mix(in oklab, var(--primary) 14%, var(--background)),
+    color-mix(in oklab, var(--accent) 20%, var(--background)));
+}
+.dark {
+  --gradient-section: linear-gradient(135deg,
+    color-mix(in oklab, var(--primary) 30%, var(--background)),
+    color-mix(in oklab, var(--accent) 22%, var(--background)));
+}

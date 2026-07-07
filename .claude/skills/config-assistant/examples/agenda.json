@@ -1,0 +1,43 @@
+{
+  "feature": "agenda",
+  "titre": "Section agenda (events du costum)",
+  "description": "4 vues Liste/Calendrier/Carte/Split sur searchEventsCostum, filtres + sync URL ; module agenda (doc/29).",
+  "source": "config.prod.parent62.json",
+  "selector": "pages[path=/agenda].sections[id=agenda-parent62]",
+  "snapshot": {
+    "type": "agenda",
+    "id": "agenda-parent62",
+    "props": {
+      "defaultMode": "list",
+      "tabs": [
+        "upcoming",
+        "ongoing",
+        "past"
+      ],
+      "defaultTab": "upcoming",
+      "upcomingWindowMonths": 12,
+      "filters": {
+        "type": false,
+        "text": false,
+        "tags": false
+      },
+      "detailsMode": "drawer",
+      "enableMap": false,
+      "columns": {
+        "sm": 1,
+        "md": 2,
+        "lg": 3,
+        "xl": 4
+      },
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "indexStepList": 12,
+        "filters": {
+          "type": "others"
+        }
+      }
+    }
+  }
+}

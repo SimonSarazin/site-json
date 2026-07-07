@@ -1,0 +1,319 @@
+{
+  "feature": "admin",
+  "titre": "Back-office /admin (6 onglets)",
+  "description": "config.admin complet : onglets par type d'entité géré ; forme exacte via `npm run config:schema admin` (doc/30).",
+  "source": "config.prod.parent62.json",
+  "selector": "admin",
+  "snapshot": {
+    "enabled": true,
+    "access": {
+      "min": "siteAdmin"
+    },
+    "tabs": [
+      {
+        "id": "dashboard",
+        "label": {
+          "fr": "Tableau de bord",
+          "en": "Dashboard"
+        },
+        "sections": [
+          {
+            "type": "dashboard"
+          }
+        ]
+      },
+      {
+        "id": "membres",
+        "label": {
+          "fr": "Membres",
+          "en": "Members"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "members",
+            "filters": [
+              "toBeValidated",
+              "isAdmin",
+              "isInviting",
+              "text"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "actualites",
+        "label": {
+          "fr": "Actualités",
+          "en": "News"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "poi",
+            "label": {
+              "fr": "Actualités",
+              "en": "News"
+            },
+            "source": {
+              "defaultFilters": {
+                "type": "article"
+              },
+              "defaultSortBy": {
+                "created": -1
+              },
+              "costumSlug": "parent62",
+              "sourceKey": [
+                "parent62"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Titre",
+                  "en": "Title"
+                }
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Date",
+                  "en": "Date"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ],
+            "create": "add-parent62-article",
+            "edit": "inherit"
+          }
+        ]
+      },
+      {
+        "id": "paroles",
+        "label": {
+          "fr": "Paroles de parents",
+          "en": "Parents' testimonies"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "poi",
+            "label": {
+              "fr": "Paroles de parents",
+              "en": "Parents' testimonies"
+            },
+            "source": {
+              "defaultFilters": {
+                "type": "affiche"
+              },
+              "defaultSortBy": {
+                "created": -1
+              },
+              "costumSlug": "parent62",
+              "sourceKey": [
+                "parent62"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Titre",
+                  "en": "Title"
+                }
+              },
+              {
+                "path": "category",
+                "label": {
+                  "fr": "Catégorie",
+                  "en": "Category"
+                }
+              },
+              {
+                "path": "medias",
+                "label": {
+                  "fr": "Audio",
+                  "en": "Audio"
+                },
+                "type": "audio"
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Date",
+                  "en": "Date"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ],
+            "create": "add-parent62-affiche",
+            "edit": "inherit"
+          }
+        ]
+      },
+      {
+        "id": "ressources",
+        "label": {
+          "fr": "Ressources",
+          "en": "Resources"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "poi",
+            "label": {
+              "fr": "Ressources",
+              "en": "Resources"
+            },
+            "source": {
+              "defaultFilters": {
+                "type": "recoveryCenter"
+              },
+              "defaultSortBy": {
+                "created": -1
+              },
+              "costumSlug": "parent62",
+              "sourceKey": [
+                "parent62"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Titre",
+                  "en": "Title"
+                }
+              },
+              {
+                "path": "category",
+                "label": {
+                  "fr": "Type",
+                  "en": "Type"
+                }
+              },
+              {
+                "path": "address.addressLocality",
+                "label": {
+                  "fr": "Commune",
+                  "en": "City"
+                }
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Date",
+                  "en": "Date"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete"
+            ],
+            "bulkActions": [
+              "export",
+              "delete"
+            ],
+            "create": "add-parent62-recovery-center",
+            "edit": "inherit"
+          }
+        ]
+      },
+      {
+        "id": "agenda",
+        "label": {
+          "fr": "Agenda",
+          "en": "Agenda"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "events",
+            "label": {
+              "fr": "Agenda",
+              "en": "Agenda"
+            },
+            "source": {
+              "defaultFilters": {
+                "type": "others"
+              },
+              "defaultSortBy": {
+                "startDate": -1
+              },
+              "costumSlug": "parent62",
+              "sourceKey": [
+                "parent62"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Titre",
+                  "en": "Title"
+                }
+              },
+              {
+                "path": "startDate",
+                "label": {
+                  "fr": "Début",
+                  "en": "Start"
+                }
+              },
+              {
+                "path": "address.addressLocality",
+                "label": {
+                  "fr": "Commune",
+                  "en": "City"
+                }
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Proposé le",
+                  "en": "Submitted"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ],
+            "create": "add-parent62-event",
+            "edit": "inherit"
+          }
+        ]
+      }
+    ]
+  }
+}

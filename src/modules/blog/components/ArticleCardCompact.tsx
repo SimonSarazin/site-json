@@ -2,7 +2,7 @@ import { Link } from "react-router";
 import { Calendar } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { formatDateLong } from "@/helpers/formatDate";
-import { stripMarkdown } from "./ArticleCard";
+import { stripMarkdown } from "../lib/markdown";
 import type { ArticleCardProps } from "./ArticleCard";
 
 /** Date de l'article (created unix s) → libellé long, tolérant. */

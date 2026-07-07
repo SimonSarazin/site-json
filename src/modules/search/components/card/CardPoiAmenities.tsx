@@ -18,6 +18,8 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { cn } from "@/lib/utils";
+import { useInstallationFilter } from "../../hooks/useInstallationFilter";
 import { toValidDate } from "@/helpers/formatDate";
 import { isTrue } from "../../lib/poiAmenities";
 import { SearchCardProps } from "../../schema";
@@ -55,9 +57,10 @@ function getPoiImage(seed: string) {
 	return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
-export default function CardPoiAmenities({ item, onClick }: SearchCardProps) {
+export default function CardPoiAmenities({ item, onClick, card }: SearchCardProps) {
 	useLoadNamespace("modules/search");
 	const t = useT("modules/search");
+	const instFilter = useInstallationFilter(card?.installationFilter);
 
 	// La variante `poi-ssbe` n'est routée que pour des POI (registry `SearchCard`),
 	// mais le switch runtime passe un `SearchEntity` → on narrow vers `Poi`.
@@ -72,6 +75,14 @@ export default function CardPoiAmenities({ item, onClick }: SearchCardProps) {
 		(serverData.equip_type_famille as string | undefined) ||
 		"";
 	const installation = serverData.inst_nom as string | undefined;
+	// On AFFICHE le libellé mais on FILTRE sur l'identifiant stable (cf.
+	// `installationFilter.ts`). Absent en base sur quelques POI → texte simple.
+	const instValueRaw = card?.installationFilter
+		? serverData[card.installationFilter.groupKey ?? "inst_numero"]
+		: undefined;
+	const instValue =
+		typeof instValueRaw === "string" && instValueRaw.trim() ? instValueRaw.trim() : undefined;
+	const instClickable = instFilter.enabled && Boolean(instValue);
 
 	const imageSrc =
 		serverData.profilMediumImageUrl ||
@@ -125,7 +136,28 @@ export default function CardPoiAmenities({ item, onClick }: SearchCardProps) {
 				{installation && (
 					<div className="flex items-center gap-1.5 text-xs text-muted-foreground">
 						<Building2 className="h-3.5 w-3.5 shrink-0" />
-						<span className="truncate">{installation}</span>
+						{instClickable ? (
+							// stopPropagation : la <Card> parente porte onClick (ouvre le détail).
+							<button
+								type="button"
+								onClick={(e) => {
+									e.stopPropagation();
+									instFilter.toggle(instValue!);
+								}}
+								aria-pressed={instFilter.isActive(instValue!)}
+								aria-label={t("CardPoiAmenities.filterByInstallation", undefined, {
+									name: installation,
+								})}
+								className={cn(
+									"truncate underline-offset-2 hover:underline focus-visible:underline",
+									instFilter.isActive(instValue!) && "font-medium text-primary",
+								)}
+							>
+								{installation}
+							</button>
+						) : (
+							<span className="truncate">{installation}</span>
+						)}
 					</div>
 				)}
 			</CardHeader>

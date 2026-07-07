@@ -17,6 +17,8 @@ import type { SearchCardProps } from "../../schema";
 export interface CardProfileCardConfig {
   showDescription?: boolean;
   showAddress?: boolean;
+  /** Bloc de compteurs (projets liés). Absent = affiché — cf. `CardConfSchema.showStats`. */
+  showStats?: boolean;
   detailsMode?: "drawer" | "dialog" | "link";
 }
 
@@ -27,11 +29,21 @@ export interface CardProfileProps {
   isPending?: boolean;
   card?: CardProfileCardConfig | SearchCardProps["card"];
   onClick?: () => void;
+  /** Conf de liste complète, transmise à tous les variants par `SearchCard` — non lue ici. */
+  list?: SearchCardProps["list"];
 }
 
+/**
+ * Monogramme de repli quand la structure n'a pas de logo.
+ *
+ * On découpe sur tout ce qui n'est pas alphanumérique — pas seulement l'espace :
+ * les raisons sociales sont pleines de tirets, points et slashs (« EDIH - Cyber
+ * Réunion », « CERT/CSIRT », « L.R. Développement »). Un découpage sur l'espace
+ * seul retenait le séparateur comme initiale et rendait « E- » ou « H- ».
+ */
 function getInitials(name: string): string {
   return name
-    .split(" ")
+    .split(/[^\p{L}\p{N}]+/u)
     .filter(Boolean)
     .map((n) => n[0])
     .join("")
@@ -87,6 +99,7 @@ export default function CardProfile({
 
   const showDescription = card?.showDescription !== false;
   const showAddress = card?.showAddress !== false;
+  const showStats = card?.showStats !== false;
   const detailsMode = card?.detailsMode || "drawer";
 
   const [isFollowingState, setIsFollowingState] = useState(isFollowing);
@@ -212,12 +225,14 @@ export default function CardProfile({
             )}
           </div>
 
-          <div className="flex gap-4 text-center">
-            <div>
-              <div className="text-lg sm:text-xl md:text-2xl font-bold text-primary">{projectsCount}</div>
-              <div className="text-[10px] sm:text-xs text-muted-foreground">{t("Projets")}</div>
+          {showStats && (
+            <div className="flex gap-4 text-center">
+              <div>
+                <div className="text-lg sm:text-xl md:text-2xl font-bold text-primary">{projectsCount}</div>
+                <div className="text-[10px] sm:text-xs text-muted-foreground">{t("Projets")}</div>
+              </div>
             </div>
-          </div>
+          )}
 
           {!isMe && (
             <div className="flex gap-2 w-full">

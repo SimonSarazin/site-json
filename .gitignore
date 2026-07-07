@@ -10,6 +10,8 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+# Rapport rollup-plugin-visualizer (hors dist/ : voir vite.config.ts)
+stats.html
 *.local
 src/.tmp-site-theme.css
 .env
@@ -55,3 +57,4 @@ ds-bundle/
 .design-sync/.cache/
 .design-sync/learnings/
 .design-sync/node_modules
+tools/

@@ -1,0 +1,365 @@
+{
+  "feature": "list-item-rules",
+  "titre": "Recherche globale hétérogène (rendu par item)",
+  "description": "searchProStatic dont la liste mélange plusieurs collections : list.itemRules donne à chaque famille son presenter (article/parole/ressource/événement/structure) et son action au clic. Noter baseParams.defaultFields, qui DOIT projeter tous les champs testés par les prédicats when, et l'ancrage sur collection avant type.",
+  "source": "config.prod.parent62.json",
+  "selector": "pages[path=/recherche].sections[id=recherche-grid].props.rightSection",
+  "snapshot": {
+    "type": "searchProStatic",
+    "id": "recherche-resultats",
+    "props": {
+      "useFilter": true,
+      "showMap": false,
+      "enableMap": true,
+      "showActiveFiltersTypes": true,
+      "showActiveFiltersTags": true,
+      "disableInfiniteScroll": false,
+      "baseParams": {
+        "defaultTypes": [
+          "projects",
+          "events",
+          "poi",
+          "organizations"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "searchBy": [
+          "name",
+          "address.addressLocality",
+          "address.postalCode",
+          "tags"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "collection",
+          "type",
+          "source",
+          "category",
+          "description",
+          "shortDescription",
+          "profilImageUrl",
+          "profilMediumImageUrl",
+          "profilThumbImageUrl",
+          "medias",
+          "urls",
+          "address",
+          "tags",
+          "territoires",
+          "publics",
+          "ages",
+          "themes",
+          "created",
+          "startDate",
+          "endDate",
+          "organizer",
+          "geo",
+          "geoPosition"
+        ],
+        "indexStepList": 20
+      },
+      "map": {
+        "cluster": true,
+        "itemAction": {
+          "kind": "preview"
+        },
+        "marker": {
+          "style": "pin",
+          "colorBy": {
+            "path": "territoires",
+            "mapping": {
+              "Arrageois": "var(--territoire-arrageois)",
+              "Artois": "var(--territoire-artois)",
+              "Audomarois": "var(--territoire-audomarois)",
+              "Boulonnais": "var(--territoire-boulonnais)",
+              "Calaisis": "var(--territoire-calaisis)",
+              "Entre Mer et Terres": "var(--territoire-entre-mer-et-terres)",
+              "Familles en sol mineur Hénin Carvin": "var(--territoire-fsm-henin-carvin)",
+              "Familles en sol mineur Lens Liévin": "var(--territoire-fsm-lens-lievin)",
+              "Ternois Bruaysis": "var(--territoire-ternois-bruaysis)"
+            }
+          }
+        }
+      },
+      "list": {
+        "columns": {
+          "sm": 1,
+          "md": 2,
+          "lg": 3
+        },
+        "card": {
+          "type": "default",
+          "detailsMode": "drawer",
+          "showDescription": true,
+          "tagColors": {
+            "mapping": {
+              "Arrageois": "var(--territoire-arrageois)",
+              "Artois": "var(--territoire-artois)",
+              "Audomarois": "var(--territoire-audomarois)",
+              "Boulonnais": "var(--territoire-boulonnais)",
+              "Calaisis": "var(--territoire-calaisis)",
+              "Entre Mer et Terres": "var(--territoire-entre-mer-et-terres)",
+              "Familles en sol mineur Hénin Carvin": "var(--territoire-fsm-henin-carvin)",
+              "Familles en sol mineur Lens Liévin": "var(--territoire-fsm-lens-lievin)",
+              "Ternois Bruaysis": "var(--territoire-ternois-bruaysis)"
+            },
+            "paths": [
+              "territoires"
+            ]
+          }
+        },
+        "itemRules": [
+          {
+            "id": "poi-article",
+            "when": {
+              "and": [
+                {
+                  "field": "collection",
+                  "op": "eq",
+                  "value": "poi"
+                },
+                {
+                  "field": "type",
+                  "op": "eq",
+                  "value": "article"
+                }
+              ]
+            },
+            "card": {
+              "type": "resource"
+            },
+            "resource": {
+              "design": "card",
+              "titleField": "name",
+              "descriptionField": "shortDescription",
+              "dateField": "created",
+              "imageField": "profilMediumImageUrl",
+              "badge": {
+                "field": "themes"
+              },
+              "facets": [
+                {
+                  "field": "territoires",
+                  "label": {
+                    "fr": "Territoires",
+                    "en": "Territories"
+                  }
+                },
+                {
+                  "field": "themes",
+                  "label": {
+                    "fr": "Thèmes",
+                    "en": "Themes"
+                  }
+                }
+              ]
+            },
+            "itemAction": {
+              "kind": "link",
+              "to": "/blog/:slug",
+              "toById": "/blog/id/:id"
+            }
+          },
+          {
+            "id": "poi-parole",
+            "when": {
+              "and": [
+                {
+                  "field": "collection",
+                  "op": "eq",
+                  "value": "poi"
+                },
+                {
+                  "field": "type",
+                  "op": "eq",
+                  "value": "affiche"
+                }
+              ]
+            },
+            "card": {
+              "type": "testimonial",
+              "detailsMode": "dialog"
+            },
+            "preview": {
+              "type": "testimonial",
+              "width": "2xl"
+            },
+            "testimonial": {
+              "design": "bubble",
+              "quoteField": "description",
+              "titleField": "name",
+              "dateField": "created",
+              "audioField": "medias",
+              "subtitleField": "themes",
+              "badge": {
+                "field": "category",
+                "colors": {
+                  "Compliqué": "var(--chart-3)",
+                  "Difficile": "var(--chart-2)",
+                  "À changer": "var(--chart-4)"
+                }
+              },
+              "accent": {
+                "field": "territoires",
+                "colors": {
+                  "Arrageois": "#6d5da8",
+                  "Artois": "#b7cb6b",
+                  "Audomarois": "#e5af32",
+                  "Boulonnais": "#c34a42",
+                  "Calaisis": "#ed8a4c",
+                  "Entre Mer et Terres": "#3fb4be",
+                  "Familles en sol mineur": "#a2537e",
+                  "Familles en sol mineur Hénin Carvin": "#a2537e",
+                  "Familles en sol mineur Lens Liévin": "#97776b",
+                  "Ternois Bruaysis": "#d492a9"
+                }
+              },
+              "facets": [
+                {
+                  "field": "territoires",
+                  "label": {
+                    "fr": "Territoires",
+                    "en": "Territories"
+                  }
+                },
+                {
+                  "field": "publics",
+                  "label": {
+                    "fr": "Publics",
+                    "en": "Audiences"
+                  }
+                },
+                {
+                  "field": "ages",
+                  "label": {
+                    "fr": "Âges",
+                    "en": "Ages"
+                  }
+                },
+                {
+                  "field": "themes",
+                  "label": {
+                    "fr": "Thèmes",
+                    "en": "Themes"
+                  }
+                },
+                {
+                  "field": "tags",
+                  "label": {
+                    "fr": "Mots-clés",
+                    "en": "Keywords"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "poi-ressource",
+            "when": {
+              "and": [
+                {
+                  "field": "collection",
+                  "op": "eq",
+                  "value": "poi"
+                },
+                {
+                  "field": "type",
+                  "op": "eq",
+                  "value": "recoveryCenter"
+                }
+              ]
+            },
+            "card": {
+              "type": "resource",
+              "detailsMode": "dialog"
+            },
+            "preview": {
+              "type": "resource",
+              "width": "2xl"
+            },
+            "resource": {
+              "design": "card",
+              "titleField": "name",
+              "descriptionField": "description",
+              "dateField": "created",
+              "imageField": "profilMediumImageUrl",
+              "cityField": "address.addressLocality",
+              "urlsField": "urls",
+              "badge": {
+                "field": "category",
+                "colors": {
+                  "Vidéo": "var(--chart-1)",
+                  "Photo": "var(--chart-2)",
+                  "Compte-rendu": "var(--chart-3)",
+                  "Jeu": "var(--chart-4)",
+                  "Document": "var(--chart-5)",
+                  "Lien": "var(--primary)"
+                }
+              },
+              "facets": [
+                {
+                  "field": "territoires",
+                  "label": {
+                    "fr": "Territoires",
+                    "en": "Territories"
+                  }
+                },
+                {
+                  "field": "publics",
+                  "label": {
+                    "fr": "Publics",
+                    "en": "Audiences"
+                  }
+                },
+                {
+                  "field": "themes",
+                  "label": {
+                    "fr": "Thèmes",
+                    "en": "Themes"
+                  }
+                },
+                {
+                  "field": "tags",
+                  "label": {
+                    "fr": "Mots-clés",
+                    "en": "Keywords"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "events",
+            "when": {
+              "field": "collection",
+              "op": "eq",
+              "value": "events"
+            },
+            "card": {
+              "type": "event"
+            },
+            "preview": {
+              "type": "event"
+            }
+          },
+          {
+            "id": "structures",
+            "when": {
+              "field": "collection",
+              "op": "eq",
+              "value": "organizations"
+            },
+            "card": {
+              "type": "image-cover",
+              "imageFit": "contain"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

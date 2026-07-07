@@ -60,7 +60,8 @@
     "lighting": "Lighting",
     "showers": "Showers",
     "freeAccess": "Free access",
-    "yearsAgo": "{{count}} years ago"
+    "yearsAgo": "{{count}} years ago",
+    "filterByInstallation": "Filter by facility {{name}}"
   },
   "PreviewPoiAmenities": {
     "edit": "Edit",
@@ -147,9 +148,28 @@
     },
     "equipNumero": {
       "link": "View national record"
+    },
+    "installationDashboard": {
+      "open": "Open the facility dashboard"
     }
   },
+  "PreviewReservations": {
+    "title": "Bookings",
+    "empty": "No bookings recorded for this facility.",
+    "error": "Unable to load bookings.",
+    "unknownUser": "Unspecified user",
+    "slotCount_one": "{{count}} time slot",
+    "slotCount_other": "{{count}} time slots",
+    "activityLabel": "Activity",
+    "bookingTypeLabel": "Booking type",
+    "periodLabel": "Period",
+    "period": "From {{start}} to {{end}}",
+    "periodFrom": "From {{start}}",
+    "periodUntil": "Until {{end}}"
+  },
   "Filtres actifs :": "Active filters:",
+  "À partir du": "From",
+  "Jusqu'au": "Until",
   "Description": "Description",
   "Tags": "Tags",
   "En savoir plus": "Learn more",

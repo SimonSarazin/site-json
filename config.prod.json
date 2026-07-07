@@ -2347,7 +2347,7 @@
                 "href": "/admin/settings"
               },
               {
-                "icon": "barChart",
+                "icon": "chart-column",
                 "title": {
                   "fr": "Statistiques",
                   "en": "Analytics"

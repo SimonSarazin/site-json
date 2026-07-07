@@ -237,6 +237,38 @@ export const ProfileTagsSectionSchema = z.object({
   searchOnClick: z.boolean().optional().default(false),
 });
 
+/**
+ * Un champ affiché par `profile-fields` — MÊME contrat que `preview.facets` du
+ * module search (`{ field, label?, icon? }`), étendu d'un `format` de rendu.
+ * `field` accepte un dot-path `serverData` (ex. `address.postalCode`).
+ */
+export const ProfileFieldSchema = z.object({
+  field: z.string(),
+  label: LocalizedString.optional(),
+  /** Icône lucide (via `DynamicIcon`). Défaut : `tag`. */
+  icon: z.string().optional(),
+  /**
+   * Rendu de la valeur :
+   * - `text` (défaut) : tokens séparés par des virgules ;
+   * - `link` / `email` / `tel` : ancre cliquable ;
+   * - `socialLinks` : liste `[{ type, link }]` (champ `otherSociaNetworks` du legacy).
+   */
+  format: z.enum(["text", "link", "email", "tel", "socialLinks"]).optional(),
+});
+
+/**
+ * Section **générique** d'affichage de champs d'entité — l'équivalent profil de
+ * `preview.type: "facets"` côté recherche. Expose les champs costum (acronyme,
+ * SIRET, catégories…) SANS code par site. Les champs vides sont omis.
+ */
+export const ProfileFieldsSectionSchema = z.object({
+  type: z.literal("profile-fields"),
+  title: LocalizedString.optional(),
+  variant: z.enum(["card", "plain"]).optional().default("card"),
+  columns: z.union([z.literal(1), z.literal(2)]).optional().default(1),
+  fields: z.array(ProfileFieldSchema),
+});
+
 export const ProfileOpeningHoursSectionSchema = z.object({
   type: z.literal("profile-opening-hours"),
   title: LocalizedString.optional(),
@@ -254,8 +286,19 @@ export const ProfileTemplateDynamicSchema = z.object({
   type: z.literal("profile-template-dynamic"),
 });
 
+/**
+ * Section générique "Nos outils" — affiche/édite `serverData.ourTools`
+ * (regroupé par catégorie via `TOOLS_MAP`), sans vocabulaire tiers-lieux.
+ * Éditable par les admins de l'entité (`canEditProfile`) via `OurToolsEditDialog`.
+ */
+export const ProfileToolsSectionSchema = z.object({
+  type: z.literal("profile-tools"),
+  title: LocalizedString.optional(),
+  sticky: z.boolean().optional(),
+});
+
 // Profile-specific sections union
-const ProfileOnlySectionSchema = z.discriminatedUnion("type", [
+export const ProfileOnlySectionSchema = z.discriminatedUnion("type", [
   ProfileHeaderSectionSchema,
   ProfileInfoSectionSchema,
   ProfileTiersLieuxInfoSectionSchema,
@@ -272,9 +315,11 @@ const ProfileOnlySectionSchema = z.discriminatedUnion("type", [
   ProfileEventDatesSectionSchema,
   ProfileBadgesSectionSchema,
   ProfileTagsSectionSchema,
+  ProfileFieldsSectionSchema,
   ProfileOpeningHoursSectionSchema,
   ProfileTabLayoutSectionSchema,
   ProfileTemplateDynamicSchema,
+  ProfileToolsSectionSchema,
 ]);
 
 // Union of profile sections + any site section (to avoid circular dependency)
@@ -409,10 +454,13 @@ export type AddConfig = z.infer<typeof AddConfigSchema>;
 export type ProfileEventDatesSection = z.infer<typeof ProfileEventDatesSectionSchema>;
 export type ProfileBadgesSection = z.infer<typeof ProfileBadgesSectionSchema>;
 export type ProfileTagsSection = z.infer<typeof ProfileTagsSectionSchema>;
+export type ProfileField = z.infer<typeof ProfileFieldSchema>;
+export type ProfileFieldsSection = z.infer<typeof ProfileFieldsSectionSchema>;
 export type ProfileOpeningHoursSection = z.infer<typeof ProfileOpeningHoursSectionSchema>;
 export type ProfileTabLayoutSection = z.infer<typeof ProfileTabLayoutSectionSchema>;
 export type ProfileTiersLieuxAboutSection = z.infer<typeof ProfileTiersLieuxAboutSectionSchema>;
 export type ProfileTiersLieuxInfoSection = z.infer<typeof ProfileTiersLieuxInfoSectionSchema>;
+export type ProfileToolsSection = z.infer<typeof ProfileToolsSectionSchema>;
 //──────────────── Section site `member`
 // Section JSON-driven (SectionRenderer) affichant les membres/contributeurs/
 // participants d'une entité. L'entité est résolue par `useSectionEntity`
@@ -421,6 +469,10 @@ const MemberCardConfSchema = z.object({
   type: z.enum(["default", "profile"]).default("default"),
   showDescription: z.boolean().optional().default(true),
   showAddress: z.boolean().optional().default(true),
+  // Bloc de compteurs de `CardProfile` (projets liés). Absent = affiché.
+  // Miroir de `CardConfSchema.showStats` du module search : la MÊME carte est
+  // rendue ici, elle doit donc se piloter pareil depuis les deux sections.
+  showStats: z.boolean().optional(),
   detailsMode: z.enum(["drawer", "dialog", "link"]).default("link"),
 }).partial();
 

@@ -9,21 +9,12 @@ import { helloassoCheckoutIntentHandler, helloassoTokenHandler, helloassoCallbac
 import { createImageOptimizer } from "./middleware/imageOptimizer.js";
 import { createImageUpload } from "./middleware/imageUpload.js";
 import { normalizeSiteConfig } from "./utils/normalizeSiteConfig.js";
+import { findSiteBySlug, knownSlugs } from "./utils/sites.js";
+import { registerSeoRoutes } from "./lib/sitemap.js";
 
 dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-function loadSitesJson() {
-  const sitesPath = path.resolve(process.cwd(), "sites.json");
-  if (!fs.existsSync(sitesPath)) return [];
-  return JSON.parse(fs.readFileSync(sitesPath, "utf-8"));
-}
-
-function findSiteBySlug(slug) {
-  const sites = loadSitesJson();
-  return sites.find((s) => s.slug === slug) || null;
-}
 
 function resolveSiteConfigPath() {
   if (process.env.SITE_CONFIG_PATH) return process.env.SITE_CONFIG_PATH;
@@ -33,12 +24,14 @@ function resolveSiteConfigPath() {
 
   const site = findSiteBySlug(slug);
   if (!site) {
-    const sites = loadSitesJson();
-    console.warn(`[sites.json] Slug "${slug}" non trouvé, slugs disponibles : ${sites.map((s) => s.slug).join(", ")}`);
+    console.warn(`[sites.json] Slug "${slug}" non trouvé, slugs disponibles : ${knownSlugs().join(", ")}`);
     return null;
   }
 
   const configPath = `./${site.config}`;
+  // Effet de bord VOLONTAIRE et load-bearing : le watcher de config (plus bas) et
+  // la sauvegarde depuis l'AdminPanel relisent process.env.SITE_CONFIG_PATH. Il
+  // reste ici, hors du module partagé, parce que prod-server n'en veut pas.
   process.env.SITE_CONFIG_PATH = configPath;
   console.log(`[sites.json] Slug "${slug}" → ${site.config}`);
   return configPath;
@@ -142,6 +135,11 @@ async function createServer() {
     console.log("[Admin] Config saved to", configPath);
   });
 
+  // SEO : robots.txt + sitemap.xml générés depuis la config. DOIT être avant le
+  // middleware 404 ci-dessous (son regex 404-erait l'extension .txt) et avant le
+  // fallback SSR. `() => cachedConfig` : lecture de la config vivante (watcher).
+  registerSeoRoutes(app, () => cachedConfig);
+
   app.use((req, res, next) => {
     // Exclure les routes API
     if (req.url.startsWith("/api/")) {
@@ -168,8 +166,11 @@ async function createServer() {
 
       const cfgScript = `<script>window.__CONFIG__=${serialize(config, { isJSON: true })}</script>`;
 
+      // Même passerelle qu'en prod (prod-server.js) : en dev `import.meta.env`
+      // suffirait, mais laisser les deux serveurs injecter des jeux de clés
+      // différents fait diverger dev et prod sur le même drapeau.
       const envSlug = slug || process.env.VITE_SLUG || "";
-      const envScript = envSlug ? `<script>window.__ENV__={VITE_SLUG:${JSON.stringify(envSlug)},VITE_BASE_URL_BACKEND:${JSON.stringify(process.env.VITE_BASE_URL_BACKEND || "")},VITE_SERVER_URL:${JSON.stringify(process.env.VITE_SERVER_URL || "")}}</script>` : "";
+      const envScript = envSlug ? `<script>window.__ENV__={VITE_SLUG:${JSON.stringify(envSlug)},VITE_BASE_URL_BACKEND:${JSON.stringify(process.env.VITE_BASE_URL_BACKEND || "")},VITE_SERVER_URL:${JSON.stringify(process.env.VITE_SERVER_URL || "")},VITE_MAPTILER_API_KEY:${JSON.stringify(process.env.VITE_MAPTILER_API_KEY || "")},VITE_COSTUM_FORCE_LIVE:${JSON.stringify(process.env.VITE_COSTUM_FORCE_LIVE || "")}}</script>` : "";
 
       const [headStart, rest] = template.split("<!--app-head-->");
       const [beforeBody, tail] = rest.split("<!--app-html-->");

@@ -16,8 +16,10 @@ import type {
   ProfileEventDatesSection,
   ProfileBadgesSection,
   ProfileTagsSection,
+  ProfileFieldsSection,
   ProfileOpeningHoursSection,
   ProfileTabLayoutSection,
+  ProfileToolsSection,
   ProfileSection
 } from "@/modules/profil/schema";
 import type { Section } from "@/types/site-schema";
@@ -38,11 +40,13 @@ const ProfileActions = lazy(() => import("./components/sections/ProfileActions")
 const ProfileEventDates = lazy(() => import("./components/sections/ProfileEventDates"));
 const ProfileBadges = lazy(() => import("./components/sections/ProfileBadges"));
 const ProfileTags = lazy(() => import("./components/sections/ProfileTags"));
+const ProfileFields = lazy(() => import("./components/sections/ProfileFields"));
 const ProfileOpeningHours = lazy(() => import("./components/sections/ProfileOpeningHours"));
 const ProfileTabLayout = lazy(() => import("./components/sections/ProfileTabLayout"));
 const ProfileTiersLieuxInfo = lazy(() => import("./components/sections/custom/ProfileTiersLieuxInfo"));
 const ProfileTiersLieuxAbout = lazy(() => import("./components/sections/custom/ProfilTiersLieuxAbout"));
 const ProfileSsbeAbout = lazy(() => import("./components/sections/custom/ProfileSsbeAbout"));
+const ProfileTools = lazy(() => import("./components/sections/custom/ProfileTools"));
 // Lazy load des templates
 const ProfileTemplateDynamic = lazy(() => import("./components/templates/ProfileTemplateDynamic"));
 
@@ -68,9 +72,11 @@ const PROFILE_SECTION_TYPES = [
   "profile-event-dates",
   "profile-badges",
   "profile-tags",
+  "profile-fields",
   "profile-opening-hours",
   "profile-tab-layout",
   "profile-template-dynamic",
+  "profile-tools",
 ] as const;
 
 export function ProfileSectionRenderer({ section }: ProfileSectionRendererProps) {
@@ -145,6 +151,9 @@ export function ProfileSectionRenderer({ section }: ProfileSectionRendererProps)
     case "profile-tags":
       return <ProfileTags section={section as ProfileTagsSection} />;
 
+    case "profile-fields":
+      return <ProfileFields section={section as ProfileFieldsSection} />;
+
     case "profile-opening-hours":
       return <ProfileOpeningHours section={section as ProfileOpeningHoursSection} />;
 
@@ -153,6 +162,9 @@ export function ProfileSectionRenderer({ section }: ProfileSectionRendererProps)
 
     case "profile-template-dynamic":
       return <ProfileTemplateDynamic />;
+
+    case "profile-tools":
+      return <ProfileTools section={section as ProfileToolsSection} />;
 
     default: {
       const unknownSection = section as { type: string };

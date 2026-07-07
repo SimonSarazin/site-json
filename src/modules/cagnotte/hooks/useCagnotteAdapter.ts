@@ -48,7 +48,7 @@ interface RawProposition {
 
 export const findMetadataById = (id?: string, links?: any) => {
     if (!links || !id) return null;
-    
+
     for (const typeKey in links) {
         if (links[typeKey] && links[typeKey][id]) {
             return links[typeKey][id];
@@ -110,20 +110,34 @@ function enrichActionContributors(action: any, globalLinks: any) {
     };
 }
 
+/**
+ * Financeur tel qu'il arrive de l'API, avant l'enrichissement fait ci-dessous :
+ * il porte `name` là où une FundingTransaction porte `financerName`, et les
+ * champs dérivés (`financerName`, `financerId`, `fundingIndex`) n'existent pas
+ * encore. D'où leur caractère optionnel ici.
+ */
+type RawFinancer = Omit<FundingTransaction, "financerName"> & {
+    name?: string;
+    financerName?: string;
+    method?: string;
+};
+
 export const getUserFunding = (
-    transactions: Array<any>,
+    transactions: RawFinancer[],
     orgsId: string[],
     userId?: string
 ): FundingTransaction[] => {
     if (!Array.isArray(transactions)){
         return [];
     }
+    // Enrichissement en place, volontairement conservé : les objets renvoyés
+    // sont ceux de l'enveloppe brute, et d'autres lectures s'appuient dessus.
     return transactions.map((fund, index) => {
-        fund["fundingIndex"] = index;
-        fund["financerName"] = fund.name;
-        fund["financerId"] = fund.id;
+        fund.fundingIndex = index;
+        fund.financerName = fund.name;
+        fund.financerId = fund.id;
         return fund;
-    }).filter(fund => orgsId.indexOf(fund.id) > -1 || fund.id === userId);
+    }).filter(fund => orgsId.indexOf(fund.id) > -1 || fund.id === userId) as FundingTransaction[];
 };
 
 export function useCagnotteAdapter(
@@ -139,7 +153,7 @@ export function useCagnotteAdapter(
     return useMemo(() => {
         const rawEnvelopeTypeAssertion = fundingEnvelope?.rawEnvelope as { projects?: RawProposition[], links?: any } | undefined;
         const rawProjects = rawEnvelopeTypeAssertion?.projects || [];
-        const globalLinks = rawEnvelopeTypeAssertion?.links || {}; 
+        const globalLinks = rawEnvelopeTypeAssertion?.links || {};
 
         const orgsIds = userAdminOrganizations?.map(user => user.id);
 
@@ -164,7 +178,7 @@ export function useCagnotteAdapter(
                 const items = (projet?.milestones || []).map(m => {
                     const milestoneIdStr = String(m.milestoneId);
                     const matchedDepense = depensesByMilestone[milestoneIdStr];
-                    
+
                     const rawFinancers = (matchedDepense?.depense?.financer || []) as Array<FundingTransaction & { method?: string }>;
                     const enrichedFinancers = rawFinancers.map(fund => ({
                         ...fund,
@@ -233,7 +247,7 @@ export function useCagnotteAdapter(
                         : [];
 
                     const enrichedActions = filteredActions.map((action: any) => enrichActionContributors(action, globalLinks));
-                    
+
                     return {
                         fromType: "depense" as const,
                         itemId: d.id ? String(d.id) : String(index),

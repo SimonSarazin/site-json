@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import Papa from "papaparse";
+import { csvValue } from "../lib/csvValue";
 import type { CsvButtonConfig } from "../schema";
 import type { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
 
@@ -29,12 +30,10 @@ function extractValue(item: Record<string, unknown>, path: string): string {
       return parts.join(", ");
     }
 
-    default: {
-      if (raw == null) return "";
-      if (Array.isArray(raw)) return raw.join(", ");
-      if (typeof raw === "object") return Object.keys(raw).join(", ");
-      return String(raw);
-    }
+    // Tableaux d'objets (`otherSociaNetworks`), objets composites (`telephone: {mobile:[…]}`) :
+    // `csvValue` va chercher la valeur LISIBLE au lieu de rendre la structure. cf. lib/csvValue.ts
+    default:
+      return csvValue(raw);
   }
 }
 

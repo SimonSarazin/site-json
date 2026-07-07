@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useT } from "@/hooks/useT";
 import { formatNumber } from "@/modules/cagnotte/utils/format";
 import type { Objective } from "@/modules/cagnotte/types.ts";
-import { useRef } from "react";
+import { useState } from "react";
 
 interface PaymentReceivedScreenProps {
     amount: number;
@@ -30,10 +30,15 @@ export function PaymentReceivedScreen({
     // amount ET itemCount sont figés au premier rendu : le refresh React Query
     // déclenché après paiement vide la sélection (amount->0, count->0/undefined),
     // ce qui ferait basculer l'écran de « Vos 3 promesses » à « Votre… ».
-    const initialAmountRef = useRef(amount);
-    const initialItemCountRef = useRef(itemCount);
-    const formattedAmount = formatNumber(initialAmountRef.current);
-    const frozenItemCount = initialItemCountRef.current;
+    //
+    // useState plutôt que useRef : l'initialiseur ne s'exécute qu'au montage, ce
+    // qui fige la valeur tout autant, mais la LECTURE reste pure. Lire un ref
+    // pendant le rendu est interdit par les règles React Compiler, et pour cause
+    // — rien ne garantit qu'un rendu concurrent voie la même valeur. Aucun
+    // setter n'est exposé : ces deux valeurs ne changent jamais après le montage.
+    const [initialAmount] = useState(amount);
+    const [frozenItemCount] = useState(itemCount);
+    const formattedAmount = formatNumber(initialAmount);
 
     return (
         <div className="py-10 text-center space-y-4 animate-fade-in flex-1 overflow-y-auto">

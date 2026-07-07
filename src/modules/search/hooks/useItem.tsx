@@ -90,11 +90,20 @@ const useItem = (item: User | Organization | Project | Poi | EventType) => {
     merged.countMembers = countLinks("members");
     merged.countContributors = countLinks("contributors");
 
-    // Sélection de l'image
+    // Sélection de l'image : on préfère les déclinaisons dérivées (plus légères),
+    // et à défaut l'originale.
+    //
+    // `profilImageUrl` en dernier recours n'est pas décoratif : `searchEventsCostum`
+    // ne projette QUE ce champ-là (ni `…Medium…` ni `…Thumb…`), si bien que tout
+    // événement était rendu sans image alors qu'il en avait une. Le reste du code
+    // (news, cagnotte) retombait déjà sur `profilImageUrl` ; `useItem` était le
+    // seul à l'ignorer.
     if (merged.profilMediumImageUrl) {
       merged.image = merged.profilMediumImageUrl;
     } else if (merged.profilThumbImageUrl) {
       merged.image = merged.profilThumbImageUrl;
+    } else if (merged.profilImageUrl) {
+      merged.image = merged.profilImageUrl;
     }
 
     // Champs spécifiques Event

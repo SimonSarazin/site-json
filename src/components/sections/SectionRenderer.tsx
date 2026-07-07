@@ -31,6 +31,7 @@ const LazySections: {
   "cta-newsletter": lazy(() => import("./CtaNewsletter")),
   "expandable-actions": lazy(() => import("./ExpandableActions")),
   "hero-tinted-overlay": lazy(() => import("./HeroTintedOverlay")),
+  "hero-carousel": lazy(() => import("./HeroCarousel")),
   "hero-entity-banner": lazy(() => import("./HeroEntityBanner")),
   "categories-grid": lazy(() => import("./CategoriesGridSection")),
   markdown: lazy(() => import("./MarkdownSection")),

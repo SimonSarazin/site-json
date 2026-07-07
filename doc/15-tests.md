@@ -563,6 +563,10 @@ D'autres tests CoForm couvrent : `formParser.test.ts` (parsing schéma de form),
 - `hooks/useFiltersByAnswers.test.ts` : hook filtres par réponses
 - `hooks/useSearchQuery.test.tsx` : hook query de recherche
 - `lib/canonicalBaseParams.test.ts` : construction des paramètres canoniques
+- `lib/resolveListItemConf.test.ts` : conf de liste par item. Verrou de non-régression par **identité référentielle** (`toBe(list)` sans `itemRules`), sémantique de fusion (`card`/`preview` fusionnés, contrats remplacés), et le piège des deux sémantiques de `serverData.type`
+- `lib/itemAction.test.ts` : gabarits `:slug`/`:id` et cascade de décision au clic — tous les replis vers l'ouverture du détail
+- `components/SearchListView.test.tsx` : rendu par item sur liste hétérogène, détail unique hors boucle recevant la conf de l'item ouvert, action `link`, et non-régression du mode split
+- `src/lib/entityMatch.test.ts` (hors module) : vue matchable, `sourceKeys` en tableau ou en **objet à trous**, première règle gagnante, catch-all, garde sur règle malformée
 
 #### Permissions par module
 
@@ -627,7 +631,7 @@ Script `scripts/audit-config.mjs` (non bloquant) qui complète les invariants st
 - liens **internes morts** (pas de page du config ni de route module connue ; query/anchor ignorés),
 - locales présentes mais **non déclarées** dans `meta.languages`,
 - **état du theme** par config — `complet` (colors light+dark dans le JSON) / `sans-couleurs` (theme mais couleurs via le CSS) / `absent` (aucun bloc theme) — pour repérer où **la config theme n'est pas faite**,
-- configs prod **orphelines** (sur disque mais hors `sites.json`, ex. `config.prod.jardin-ocean.json` — non testées en strict).
+- configs prod **orphelines** (sur disque mais hors `sites.json`) — non testées en strict.
 
 Sortie : rapport par config + récapitulatif (`tiers-lieux` = 0 constat ; les démos portent le backlog). `npm run audit:config -- --strict` sort en code 1 s'il y a au moins un constat (utilisable comme gate CI). Choisi plutôt que des tests `console.warn` car le reporter Vitest par défaut masque ces warnings.
 
@@ -639,6 +643,21 @@ Scanne statiquement tous les fichiers `src/` (`.ts`, `.tsx`, `.js`, `.jsx`) pour
 - Garde-fou : vérifie que le scan a effectivement trouvé plus de 100 fichiers (détecte un walk silencieusement vide)
 
 Voir [CLAUDE.md§Known Issues 1](../CLAUDE.md#known-issues--gotchas) pour le contexte : ce pattern défait le tree-shaking et injecte ~1 MB d'icônes dans le chunk concerné.
+
+#### Règles de rendu par item (`tests/preflight/list-item-rules.test.ts`)
+
+Parcourt les `list.itemRules` de toutes les configs de `sites.json`. C'est le **seul endroit où
+`ListItemRuleSchema` est réellement exécuté** : la config JSON n'est jamais parsée par Zod au
+runtime, donc une règle mal écrite ne produit aucune erreur — juste un rendu qui retombe
+silencieusement sur la carte par défaut.
+
+- conformité de chaque règle au schéma, et `id` uniques
+- chaque règle produit au moins une surcharge (pas de règle sans effet)
+- une règle sans `when` (catch-all) est la **dernière** — en tête elle masquerait tout
+- toute règle testant `type` ancre aussi `collection` (les deux sémantiques de `serverData.type`)
+- **projection** : tout champ testé figure dans le `baseParams.defaultFields` de la section, sinon la règle ne matcherait jamais
+- **contrat de presenter** : une règle résolvant en `testimonial`/`resource` porte (ou hérite) le bloc correspondant
+- une action `kind: "link"` porte un gabarit `to` ou `toById`
 
 #### Taille des bundles (`tests/preflight/bundle-size.test.ts`)
 

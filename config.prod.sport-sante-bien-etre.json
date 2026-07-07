@@ -43,13 +43,6 @@
       "fr": "La Réunion",
       "en": "Réunion"
     },
-    "ctaButton": {
-      "label": {
-        "fr": "Se connecter",
-        "en": "Log in"
-      },
-      "path": "/activites"
-    },
     "nav": [
       {
         "label": {
@@ -1066,8 +1059,8 @@
                   "en": "Register my structure"
                 },
                 "icon": "building-2",
-                "href": "/inscrire-organisation",
-                "variant": "outline"
+                "variant": "outline",
+                "modal": "add-sport-sante-bienetre-organizations"
               }
             ]
           }
@@ -5574,7 +5567,7 @@
             {
               "columns": 1,
               "fields": [
-                "socialNetwork"
+                "socialLinks"
               ]
             },
             {
@@ -5598,12 +5591,6 @@
               "fields": [
                 "legalStatus",
                 "siren"
-              ]
-            },
-            {
-              "columns": 1,
-              "fields": [
-                "recepisseDeclaration"
               ]
             }
           ]
@@ -5719,11 +5706,73 @@
           "widget": "hidden",
           "group": "address"
         },
-        "socialNetwork": {
-          "widget": "editSocial",
+        "socialLinks": {
+          "widget": "fieldArray",
           "label": {
             "fr": "Réseaux sociaux",
             "en": "Social networks"
+          },
+          "read": "social:read",
+          "write": "social:write",
+          "path": "socialNetwork",
+          "clear": "",
+          "widgetProps": {
+            "addLabel": {
+              "fr": "Ajouter un réseau social",
+              "en": "Add a social network"
+            },
+            "itemFields": [
+              {
+                "name": "platform",
+                "kind": "select",
+                "label": {
+                  "fr": "Plateforme",
+                  "en": "Platform"
+                },
+                "options": [
+                  {
+                    "value": "facebook",
+                    "label": "Facebook"
+                  },
+                  {
+                    "value": "twitter",
+                    "label": "Twitter / X"
+                  },
+                  {
+                    "value": "instagram",
+                    "label": "Instagram"
+                  },
+                  {
+                    "value": "linkedin",
+                    "label": "LinkedIn"
+                  },
+                  {
+                    "value": "youtube",
+                    "label": "YouTube"
+                  },
+                  {
+                    "value": "mastodon",
+                    "label": "Mastodon"
+                  },
+                  {
+                    "value": "telegram",
+                    "label": "Telegram"
+                  },
+                  {
+                    "value": "discord",
+                    "label": "Discord"
+                  }
+                ]
+              },
+              {
+                "name": "url",
+                "kind": "text",
+                "placeholder": {
+                  "fr": "https://...",
+                  "en": "https://..."
+                }
+              }
+            ]
           }
         },
         "openingHours": {
@@ -5751,14 +5800,8 @@
           "widget": "hidden",
           "type": "object",
           "label": {
-            "fr": "Info general"
-          }
-        },
-        "sextionInfo": {
-          "widget": "hidden",
-          "type": "object",
-          "label": {
-            "fr": "Sextion info"
+            "fr": "Info general",
+            "en": "General information"
           }
         },
         "name": {
@@ -5786,13 +5829,15 @@
         "affiliate": {
           "widget": "switch",
           "label": {
-            "fr": "Affiliate"
+            "fr": "Affiliate",
+            "en": "Affiliate"
           }
         },
         "affiliateTo": {
           "widget": "text",
           "label": {
-            "fr": "Affiliate to"
+            "fr": "Affiliate to",
+            "en": "Affiliated to"
           }
         },
         "thematic": {
@@ -5851,13 +5896,15 @@
         "image": {
           "widget": "text",
           "label": {
-            "fr": "Image"
+            "fr": "Image",
+            "en": "Image"
           }
         },
         "mobile": {
           "widget": "text",
           "label": {
-            "fr": "Mobile"
+            "fr": "Mobile",
+            "en": "Mobile"
           }
         },
         "formLocality": {
@@ -5888,28 +5935,18 @@
             "en": "Website"
           }
         },
-        "facebook": {
-          "widget": "text",
-          "label": {
-            "fr": "Facebook"
-          }
-        },
-        "instagram": {
-          "widget": "text",
-          "label": {
-            "fr": "Instagram"
-          }
-        },
         "youtube": {
           "widget": "text",
           "label": {
-            "fr": "Youtube"
+            "fr": "Youtube",
+            "en": "YouTube"
           }
         },
         "linkedin": {
           "widget": "text",
           "label": {
-            "fr": "Linkedin"
+            "fr": "Linkedin",
+            "en": "LinkedIn"
           }
         },
         "legalStatus": {
@@ -5919,55 +5956,11 @@
             "en": "Legal status"
           }
         },
-        "statusFile": {
-          "widget": "hidden",
-          "type": "object",
-          "label": {
-            "fr": "Status file"
-          }
-        },
-        "responsableCivilePro": {
-          "widget": "text",
-          "label": {
-            "fr": "Responsable civile pro"
-          }
-        },
-        "recepisseDeclaration": {
-          "widget": "text",
-          "label": {
-            "fr": "Récépissé de déclaration",
-            "en": "Declaration receipt"
-          }
-        },
-        "statusPrimaire": {
-          "widget": "text",
-          "label": {
-            "fr": "Status primaire"
-          }
-        },
-        "statusSecondaire": {
-          "widget": "text",
-          "label": {
-            "fr": "Status secondaire"
-          }
-        },
-        "statusCommunale": {
-          "widget": "text",
-          "label": {
-            "fr": "Status communale"
-          }
-        },
         "autreDescription": {
           "widget": "text",
           "label": {
-            "fr": "Autre description"
-          }
-        },
-        "sextionInfoRepresentant": {
-          "widget": "hidden",
-          "type": "object",
-          "label": {
-            "fr": "Sextion info representant"
+            "fr": "Autre description",
+            "en": "Other description"
           }
         },
         "representativeTitle": {
@@ -6032,13 +6025,6 @@
           "label": {
             "fr": "Téléphone",
             "en": "Phone"
-          }
-        },
-        "sextionInfoResponsable": {
-          "widget": "hidden",
-          "type": "object",
-          "label": {
-            "fr": "Sextion info responsable"
           }
         },
         "responsableSameAsRepresent": {
@@ -6443,7 +6429,7 @@
             {
               "columns": 1,
               "fields": [
-                "socialNetwork"
+                "socialLinks"
               ]
             }
           ]
@@ -6566,11 +6552,73 @@
           "widget": "hidden",
           "group": "address"
         },
-        "socialNetwork": {
-          "widget": "editSocial",
+        "socialLinks": {
+          "widget": "fieldArray",
           "label": {
             "fr": "Réseaux sociaux",
             "en": "Social networks"
+          },
+          "read": "social:read",
+          "write": "social:write",
+          "path": "socialNetwork",
+          "clear": "",
+          "widgetProps": {
+            "addLabel": {
+              "fr": "Ajouter un réseau social",
+              "en": "Add a social network"
+            },
+            "itemFields": [
+              {
+                "name": "platform",
+                "kind": "select",
+                "label": {
+                  "fr": "Plateforme",
+                  "en": "Platform"
+                },
+                "options": [
+                  {
+                    "value": "facebook",
+                    "label": "Facebook"
+                  },
+                  {
+                    "value": "twitter",
+                    "label": "Twitter / X"
+                  },
+                  {
+                    "value": "instagram",
+                    "label": "Instagram"
+                  },
+                  {
+                    "value": "linkedin",
+                    "label": "LinkedIn"
+                  },
+                  {
+                    "value": "youtube",
+                    "label": "YouTube"
+                  },
+                  {
+                    "value": "mastodon",
+                    "label": "Mastodon"
+                  },
+                  {
+                    "value": "telegram",
+                    "label": "Telegram"
+                  },
+                  {
+                    "value": "discord",
+                    "label": "Discord"
+                  }
+                ]
+              },
+              {
+                "name": "url",
+                "kind": "text",
+                "placeholder": {
+                  "fr": "https://...",
+                  "en": "https://..."
+                }
+              }
+            ]
           }
         },
         "openingHours": {
@@ -6612,13 +6660,15 @@
         "image": {
           "widget": "text",
           "label": {
-            "fr": "Image"
+            "fr": "Image",
+            "en": "Image"
           }
         },
         "mobile": {
           "widget": "text",
           "label": {
-            "fr": "Mobile"
+            "fr": "Mobile",
+            "en": "Mobile"
           }
         },
         "email": {
@@ -6654,13 +6704,6 @@
           "label": {
             "fr": "Description courte",
             "en": "Short description"
-          }
-        },
-        "sextionInfoRepresentant": {
-          "widget": "hidden",
-          "type": "object",
-          "label": {
-            "fr": "Sextion info representant"
           }
         },
         "representativeTitle": {
@@ -6725,13 +6768,6 @@
           "label": {
             "fr": "Téléphone",
             "en": "Phone"
-          }
-        },
-        "sextionInfoResponsable": {
-          "widget": "hidden",
-          "type": "object",
-          "label": {
-            "fr": "Sextion info responsable"
           }
         },
         "responsableSameAsRepresent": {
@@ -6956,7 +6992,7 @@
               "columns": 1,
               "fields": [
                 "email",
-                "socialNetwork",
+                "socialLinks",
                 "address"
               ]
             }
@@ -6991,11 +7027,73 @@
           "widget": "hidden",
           "group": "address"
         },
-        "socialNetwork": {
-          "widget": "editSocial",
+        "socialLinks": {
+          "widget": "fieldArray",
           "label": {
             "fr": "Réseaux sociaux",
             "en": "Social networks"
+          },
+          "read": "social:read",
+          "write": "social:write",
+          "path": "socialNetwork",
+          "clear": "",
+          "widgetProps": {
+            "addLabel": {
+              "fr": "Ajouter un réseau social",
+              "en": "Add a social network"
+            },
+            "itemFields": [
+              {
+                "name": "platform",
+                "kind": "select",
+                "label": {
+                  "fr": "Plateforme",
+                  "en": "Platform"
+                },
+                "options": [
+                  {
+                    "value": "facebook",
+                    "label": "Facebook"
+                  },
+                  {
+                    "value": "twitter",
+                    "label": "Twitter / X"
+                  },
+                  {
+                    "value": "instagram",
+                    "label": "Instagram"
+                  },
+                  {
+                    "value": "linkedin",
+                    "label": "LinkedIn"
+                  },
+                  {
+                    "value": "youtube",
+                    "label": "YouTube"
+                  },
+                  {
+                    "value": "mastodon",
+                    "label": "Mastodon"
+                  },
+                  {
+                    "value": "telegram",
+                    "label": "Telegram"
+                  },
+                  {
+                    "value": "discord",
+                    "label": "Discord"
+                  }
+                ]
+              },
+              {
+                "name": "url",
+                "kind": "text",
+                "placeholder": {
+                  "fr": "https://...",
+                  "en": "https://..."
+                }
+              }
+            ]
           }
         },
         "profil_avatar": {
@@ -7037,28 +7135,32 @@
           "widget": "hidden",
           "type": "object",
           "label": {
-            "fr": "Documentation"
+            "fr": "Documentation",
+            "en": "Documentation"
           }
         },
         "parent": {
           "widget": "hidden",
           "type": "object",
           "label": {
-            "fr": "Parent"
+            "fr": "Parent",
+            "en": "Parent"
           }
         },
         "partner": {
           "widget": "hidden",
           "type": "object",
           "label": {
-            "fr": "Partner"
+            "fr": "Partner",
+            "en": "Partner"
           }
         },
         "trainer": {
           "widget": "hidden",
           "type": "object",
           "label": {
-            "fr": "Trainer"
+            "fr": "Trainer",
+            "en": "Trainer"
           }
         },
         "rate": {
@@ -7078,7 +7180,8 @@
         "image": {
           "widget": "text",
           "label": {
-            "fr": "Image"
+            "fr": "Image",
+            "en": "Image"
           }
         },
         "email": {
@@ -7384,14 +7487,16 @@
           "widget": "hidden",
           "type": "object",
           "label": {
-            "fr": "Organizer"
+            "fr": "Organizer",
+            "en": "Organizer"
           }
         },
         "trainer": {
           "widget": "hidden",
           "type": "object",
           "label": {
-            "fr": "Trainer"
+            "fr": "Trainer",
+            "en": "Trainer"
           }
         },
         "url": {
@@ -7404,7 +7509,8 @@
         "image": {
           "widget": "text",
           "label": {
-            "fr": "Image"
+            "fr": "Image",
+            "en": "Image"
           }
         },
         "public": {
