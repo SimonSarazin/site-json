@@ -357,6 +357,16 @@ export const ProfileConfigSchema = z.object({
    * @example { tags: "TL", type: "Lab" } // les deux conditions doivent matcher
    */
   editModalMatch: z.record(z.string(), z.unknown()).optional(),
+  /**
+   * Table de routage MULTI sous-types (optionnelle) : plusieurs `editModal` conditionnels pour un même kind
+   * (ex. poi → `recoveryCenter` vs `article` selon `serverData.type`). Le PREMIER dont `editModalMatch`
+   * satisfait `serverData` gagne ; sinon fallback sur `editModal`/`editModalMatch` ci-dessus, puis
+   * `"edit-profile"`. Émise par l'assistant costum pour les costums à plusieurs formulaires par collection.
+   */
+  editModals: z.array(z.object({
+    editModal: z.string(),
+    editModalMatch: z.record(z.string(), z.unknown()).optional(),
+  })).optional(),
   seo: z.object({
     titleTemplate: z.string().optional(),
     descriptionTemplate: z.string().optional(),

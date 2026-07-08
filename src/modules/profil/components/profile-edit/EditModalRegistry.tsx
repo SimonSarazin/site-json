@@ -94,18 +94,30 @@ export function resolveEditModalName(
   // Pas besoin de pluraliser à nouveau.
   const profileKey = typeof entity.getEntityType === "function" ? entity.getEntityType() : null;
   const profiles = config.profiles as
-    | Record<string, { editModal?: string; editModalMatch?: Record<string, unknown> } | undefined>
+    | Record<string, {
+        editModal?: string;
+        editModalMatch?: Record<string, unknown>;
+        editModals?: Array<{ editModal: string; editModalMatch?: Record<string, unknown> }>;
+      } | undefined>
     | undefined;
   const profileConfig = profileKey ? profiles?.[profileKey] : undefined;
-
-  if (!profileConfig?.editModal) return "edit-profile";
-
   const serverData = (entity.serverData ?? {}) as Record<string, unknown>;
-  if (!matchesEditModalCondition(serverData, profileConfig.editModalMatch)) {
-    return "edit-profile";
+
+  // 1. Table de routage multi sous-types (costum à plusieurs forms / collection) : PREMIER match gagne.
+  //    (ex. poi → edit-<slug>-recoveryCenter si type==="recoveryCenter", edit-<slug>-article si "article", …)
+  if (Array.isArray(profileConfig?.editModals)) {
+    for (const route of profileConfig.editModals) {
+      if (route.editModal && matchesEditModalCondition(serverData, route.editModalMatch)) return route.editModal;
+    }
   }
 
-  return profileConfig.editModal;
+  // 2. Rétro-compat : editModal unique conditionnel (comportement historique).
+  if (profileConfig?.editModal && matchesEditModalCondition(serverData, profileConfig.editModalMatch)) {
+    return profileConfig.editModal;
+  }
+
+  // 3. Générique.
+  return "edit-profile";
 }
 
 /**

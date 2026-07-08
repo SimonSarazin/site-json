@@ -12,10 +12,10 @@
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import Cocolight, { describeEntityForm } from "@communecter/cocolight-api-client";
+import Cocolight, { describeEntityForm, describeCostumForms } from "@communecter/cocolight-api-client";
 import type { Collection, CostumFormDescriptor } from "@communecter/cocolight-api-client";
 import { costumToConfig, descriptorToConfig } from "../src/modules/formEngine/config/costumToConfig";
-import { costumToFormSchema, descriptorToFormSchema } from "../src/modules/profil/forms/costum/costumToFormSchema";
+import { costumToFormSchema, descriptorToFormSchema, kebabCaseSlug } from "../src/modules/profil/forms/costum/costumToFormSchema";
 import { CostumFormSchemaZod } from "../src/modules/profil/forms/costum/costumFormSchema.zod";
 
 const FORMATS = ["jsonForm", "costumForm"] as const;
@@ -24,6 +24,7 @@ type Format = (typeof FORMATS)[number];
 // ── args : positionnels <slug> <collection> [out.json] + flags --format / --live ─────────────────
 let format: Format = "jsonForm";
 let live = false;
+let all = false;
 const positional: string[] = [];
 const argv = process.argv.slice(2);
 for (let i = 0; i < argv.length; i++) {
@@ -37,16 +38,79 @@ for (let i = 0; i < argv.length; i++) {
     format = value as Format;
   } else if (a === "--live") {
     live = true;
+  } else if (a === "--all") {
+    all = true;
   } else {
     positional.push(a);
   }
 }
-const [slug, collection, out] = positional;
-if (!slug || !collection) {
+// `--all` : pas de <collection> (on énumère TOUS les sous-types), positionnels = <slug> [out.json].
+const [slug, p1, p2] = positional;
+const collection = all ? undefined : p1;
+const out = all ? p1 : p2;
+if (!slug || (!all && !collection)) {
   console.error("Usage: tsx scripts/gen-costum-config.ts <slug> <collection> [out.json] [--format jsonForm|costumForm] [--live]");
+  console.error("   ou : tsx scripts/gen-costum-config.ts <slug> [out.json] --all --live   (bundle multi-form + routage)");
   console.error("  Artefact (défaut) : env COSTUM_EXTENSIONS ou ../cocolight-api-endpoint/costum-extensions.json");
   console.error("  --live : costum RÉEL via API (env CONFIG_LIVE_BACKEND/EMAIL/PWD) — couvre tout costum sans artefact.");
+  console.error("  --all  : UN CostumFormSchema par SOUS-TYPE (clé typeObj) + table de routage profiles.editModals (requiert --live).");
   process.exit(1);
+}
+
+// ── MODE --all : bundle multi-form { costumForms, profiles } (tous les sous-types + routage editModalMatch) ──
+if (all) {
+  if (!live) {
+    console.error("❌ --all requiert --live (énumération via getcostumjson).");
+    process.exit(1);
+  }
+  const backend = process.env.CONFIG_LIVE_BACKEND ?? process.env.VITE_BASE_URL_BACKEND;
+  const email = process.env.CONFIG_LIVE_EMAIL;
+  const pwd = process.env.CONFIG_LIVE_PWD;
+  if (!backend || !email || !pwd) {
+    console.error("❌ --live requiert CONFIG_LIVE_BACKEND (ou VITE_BASE_URL_BACKEND), CONFIG_LIVE_EMAIL, CONFIG_LIVE_PWD.");
+    process.exit(1);
+  }
+  const api = await Cocolight.Api.userLogin(email, pwd, { baseURL: backend } as never);
+  const me = await api.me();
+  const descriptors = await describeCostumForms(me as never, slug);
+  await api.logout();
+  if (!descriptors.length) {
+    console.error(`❌ Aucun formulaire pour "${slug}" (costum sans dynFormCostum, ou lib < 1.0.166).`);
+    process.exit(2);
+  }
+  const costumForms: Record<string, unknown> = {};
+  const profiles: Record<string, { editModals: Array<{ editModal: string; editModalMatch?: Record<string, unknown> }> }> = {};
+  for (const desc of descriptors) {
+    const schema = descriptorToFormSchema(desc, describeEntityForm(desc.collection));
+    if (!schema) continue;
+    // id UNIQUE par sous-type (évite la collision `<slug>` partout) : `<slug>-<typeKey>`.
+    const id = `${kebabCaseSlug(slug)}-${kebabCaseSlug(desc.typeKey ?? desc.collection)}`;
+    (schema as { id: string }).id = id;
+    const parsed = CostumFormSchemaZod.safeParse(schema);
+    if (!parsed.success) {
+      console.error(`⚠️  sous-type "${desc.typeKey}" ignoré (schema invalide) : ${parsed.error.issues.map((i) => i.message).join(" ; ")}`);
+      continue;
+    }
+    costumForms[id] = schema;
+    (profiles[desc.collection] ??= { editModals: [] }).editModals.push({
+      editModal: `edit-${id}`,
+      ...(desc.discriminator ? { editModalMatch: { type: desc.discriminator } } : {}),
+    });
+  }
+  // Les sous-types AVEC `editModalMatch` doivent passer AVANT les catch-alls (form de base sans match) —
+  // sinon un catch-all (match=always) masquerait les sous-types (1er match gagne côté EditModalRegistry).
+  for (const cfg of Object.values(profiles)) {
+    cfg.editModals.sort((a, b) => (a.editModalMatch ? 0 : 1) - (b.editModalMatch ? 0 : 1));
+  }
+  const bundle = { costumForms, profiles };
+  const jsonAll = JSON.stringify(bundle, null, 2);
+  if (out) {
+    writeFileSync(out, jsonAll, "utf-8");
+    console.error(`✅ ${Object.keys(costumForms).length} form(s) + routage profiles générés → ${out} (fusionner dans config.costumForms + config.profiles, puis éditer).`);
+  } else {
+    process.stdout.write(jsonAll + "\n");
+  }
+  process.exit(0);
 }
 
 // Base curée par la lib (null si l'entité n'a pas encore de base curée → config costum-only).

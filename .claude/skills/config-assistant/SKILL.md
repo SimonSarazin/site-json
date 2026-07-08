@@ -21,6 +21,7 @@ Les faits volatils se LISENT à l'usage, ils ne sont pas écrits ici :
 | Forme du bloc **admin** (`config.admin` — back-office /admin, cf. doc/30) | `npm run config:schema admin` |
 | Squelette de form costum (artefact build-time) | `npm run config:costum -- <slugCostum> <collection> --format costumForm` |
 | Squelette de form costum depuis le costum RÉEL en base (tout costum) | `CONFIG_LIVE_BACKEND=… CONFIG_LIVE_EMAIL=… CONFIG_LIVE_PWD=… npm run config:costum -- <slugCostum> <collection> --format costumForm --live` |
+| Bundle MULTI-form (TOUS les sous-types d'un costum + routage `editModals`) | `CONFIG_LIVE_… npm run config:costum -- <slugCostum> [out.json] --all --live` |
 | Squelette du bloc **admin** dérivé du site (types gérés) | `npm run admin:scaffold -- <config.prod.X.json>` (`--write` pour insérer, `--force` pour remplacer) |
 | Valider UN config (boucle de correction) | `npm run config:validate -- <fichier.json>` |
 | Chercher / vérifier un slug d'entité | `npm run entity:slug -- search <nom>` / `check <slug>` |
@@ -154,8 +155,11 @@ introspectable (règle d'or « dériver ») : `npm run config:schema costumForm`
    = pipeline générique (read/write/defaults dérivés des widgets).
 2. **Déclencher l'ajout** : `floatingActionButton.modal = "add-<id>"` (ou un bouton de section `modal:"add-<id>"`).
 3. **Déclencher l'édition** : `profiles.<entityTypePluriel>.editModal = "edit-<id>"`, + `editModalMatch`
-   (`{champ_serverData: valeur}`) si plusieurs sous-types partagent le même `entityType`. La résolution
-   `add-/edit-<id>` → table runtime est **automatique** (aucune entrée hardcodée à ajouter).
+   (`{champ_serverData: valeur}`) pour UN sous-type conditionnel. Si PLUSIEURS sous-types partagent le même
+   `entityType` (ex. `poi` = `recoveryCenter` + `article`), utiliser la **TABLE** `profiles.<pluriel>.editModals`
+   = `[{editModal, editModalMatch:{type:…}}, …]` (**1er match gagne** ; le catch-all sans `editModalMatch` doit
+   être **EN DERNIER**, sinon il masque les sous-types). La résolution `add-/edit-<id>` → table runtime est
+   **automatique** (aucune entrée hardcodée à ajouter).
 4. **Valider** : un test qui appelle `registerCostumForm(doc)` (cf. `costumFormRegistry.test.ts`) joue
    `CostumFormSchemaZod` (structure) **puis** `assertCostumKeysRegistered` (existence des clés). Une clé citée
    (`read`/`write`/`enumFrom`/`scope.derive`/`payloadFn`/`validateFn`/`slots`…) non enregistrée **lève une erreur
@@ -168,6 +172,15 @@ connaissance costum de la lib. Ajoute `--live` (+ env CONFIG_LIVE_BACKEND/EMAIL/
 RÉEL en base (getcostumjson) — couvre TOUT costum, même absent de l'artefact bundlé (lib ≥ 1.0.164). Contenu : sections base+costum, widgets déduits des types, pattern adresse
 (groupe + codecs), image de profil, mutation/invalidation standard, presets → `mutation.inject.extraFields`.
 Ce squelette se pose tel quel dans `config.costumForms.<id>` puis s'ENRICHIT conversationnellement — les
+
+**Costum à PLUSIEURS formulaires par collection (sous-types)** — ex. `sportSanteBienetre` = `poi`(recoveryCenter+article),
+`organizations`(base+mss), `projects`(formation), `events`(sessionFormation). Utiliser le mode **`--all`** (requiert
+`--live`, lib ≥ 1.0.166) : `npm run config:costum -- <slugCostum> [out.json] --all --live` émet un **BUNDLE**
+`{ costumForms:{ <slug>-<typeKey>:<CostumFormSchema>, … }, profiles:{ <kind>:{ editModals:[…] } } }` — UN form par clé
+`typeObj` (id unique `<slug>-<typeKey>`) + la **table de routage** `editModals` (discriminant = `presetValue.type` ;
+sous-types matchés d'abord, form de base en catch-all). **Fusionner** `costumForms` (les N forms) + chaque
+`profiles[kind].editModals` dans le config du site, puis enrichir (libellés, widgets, discriminant si faux). Les
+sous-types non-standard (sans `sameAs` vers poi/org/project/event, ex. `Cooperative`) sont ignorés.
 5 écarts attendus vs un costum fini : (1) layout `flat` → `wizard`/groups/colonnes ; (2) labels humanisés →
 libellés fr/en curés ; (3) `text`/`tags` → `selectFromLists`/`urlList`/`checkboxGroup` selon le sens métier ;
 (4) scope/type dérivés (`scope.derive` métier) + masquage des champs stampés ; (5) `visibleIf`/`computedFrom`/
