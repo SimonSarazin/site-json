@@ -56,6 +56,22 @@
       },
       {
         "label": {
+          "fr": "Actualités",
+          "en": "News"
+        },
+        "path": "/actualites",
+        "icon": "newspaper"
+      },
+      {
+        "label": {
+          "fr": "Agenda",
+          "en": "Agenda"
+        },
+        "path": "/agenda",
+        "icon": "calendar"
+      },
+      {
+        "label": {
           "fr": "Equipements",
           "en": "Facilities"
         },
@@ -2602,6 +2618,136 @@
         "description": {
           "fr": "Données complètes des équipements sportifs de Saint-Paul : tableau détaillé et export CSV de toutes les caractéristiques.",
           "en": "Complete data of Saint-Paul's sports facilities: detailed table and CSV export of all characteristics."
+        }
+      }
+    },
+    {
+      "path": "/actualites",
+      "title": {
+        "fr": "Actualités - Saint-Paul Sport",
+        "en": "News - Saint-Paul Sport"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "actualites-header",
+          "props": {
+            "headline": {
+              "fr": "Actualités",
+              "en": "News"
+            },
+            "subhead": {
+              "fr": "Toutes les actualités de Saint-Paul",
+              "en": "All news from Saint-Paul"
+            }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "actualites-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": {
+              "defaultTypes": ["news"],
+              "notSourceKey": true,
+              "defaultFilters": {
+                "$or": {
+                  "address.localityId": "54c0965cf6b95c141800a518",
+                  "source.key": "saintpaulSport1",
+                  "source.keys": "saintpaulSport1"
+                }
+              }
+            },
+            "list": {
+              "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 3 },
+              "card": { "type": "profile", "variant": "profile", "detailsMode": "drawer" }
+            }
+          }
+        }
+      ],
+      "seo": {
+        "description": {
+          "fr": "Actualités liées au sport et aux équipements sportifs de Saint-Paul.",
+          "en": "Sports and facilities news from Saint-Paul."
+        }
+      }
+    },
+    {
+      "path": "/agenda",
+      "title": {
+        "fr": "Agenda - Saint-Paul Sport",
+        "en": "Agenda - Saint-Paul Sport"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "agenda-header",
+          "props": {
+            "headline": {
+              "fr": "Agenda",
+              "en": "Agenda"
+            },
+            "subhead": {
+              "fr": "Tous les événements sportifs de Saint-Paul",
+              "en": "All sports events in Saint-Paul"
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Proposer un événement",
+                  "en": "Submit an event"
+                },
+                "icon": "plus",
+                "action": "add-event",
+                "variant": "primary"
+              }
+            ],
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher un événement...",
+              "en": "Search for an event..."
+            }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "agenda-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": {
+              "defaultTypes": ["events"],
+              "notSourceKey": true,
+              "defaultFilters": {
+                "$or": {
+                  "address.localityId": "54c0965cf6b95c141800a518",
+                  "source.key": "saintpaulSport1",
+                  "source.keys": "saintpaulSport1"
+                }
+              }
+            },
+            "list": {
+              "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 4 },
+              "card": { "type": "profile", "variant": "profile", "detailsMode": "drawer" }
+            }
+          }
+        }
+      ],
+      "seo": {
+        "description": {
+          "fr": "Agenda des événements sportifs de la commune de Saint-Paul.",
+          "en": "Sports events calendar for the municipality of Saint-Paul."
         }
       }
     },
