@@ -22,11 +22,10 @@ export default function CardAnswer({ item, onClick }: SearchCardProps) {
 
 	const handleOpenActivityDetails = (event: MouseEvent<HTMLButtonElement>) => {
 		event.stopPropagation();
-		if (typeof onClick === "function") {
-			onClick();
-			return;
-		}
-		window.dispatchEvent(new CustomEvent("openDetails", { detail: item }));
+		// Détail ouvert via le handler fourni par SearchCard/SearchListView.
+		// (L'ancien fallback `dispatchEvent("openDetails")` n'a plus de listener
+		//  depuis la migration MapLibre — SearchCard passe toujours `onClick`.)
+		onClick?.();
 	};
 
 	const title = a.title ?? t("coformAnswer.noTitle");

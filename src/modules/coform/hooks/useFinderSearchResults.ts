@@ -9,6 +9,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { COFORM_QUERY_KEYS } from "../constants/queryKeys";
 import type { FinderConfig, FinderSearchResult, FinderElementType } from "../types";
 import { toFinderSearchResult } from "../utils";
+import { buildFinderMongoFilters } from "../utils/finderFilters";
 
 /**
  * Constantes UX du finder — alignées sur le comportement historique du modal.
@@ -42,8 +43,9 @@ interface UseFinderSearchResultsResult {
  *
  * Pourquoi un hook local plutôt qu'un wrapper du `useSearchCostumQuery` global :
  * le besoin du Finder est très spécifique (transformation `SearchEntity → FinderSearchResult`,
- * `filters` aplatis depuis `FinderFilter[]`, fallbackType depuis `config.type`).
- * Le jour où un autre site aura le même besoin, on extraira un helper commun.
+ * `filters` construits en DSL backend via `buildFinderMongoFilters` — inclusions +
+ * exclusions, même sortie que la liste `getEligiblePlaces` — et fallbackType depuis
+ * `config.type`). Le jour où un autre site aura le même besoin, on extraira un helper commun.
  *
  * Caractéristiques :
  *  - Debounce 300ms intégré (cf. `FINDER_DEBOUNCE_MS`)
@@ -67,16 +69,14 @@ export function useFinderSearchResults({
   const { entity, helper } = useCocolight();
   const debouncedQuery = useDebounce(query, FINDER_DEBOUNCE_MS);
 
-  // Aplatir `FinderFilter[]` (config.filters) en objet `{ attributeName: valueName }`
-  // attendu par le payload `searchCostum`.
-  const filtersPayload = useMemo<Record<string, string> | undefined>(() => {
-    if (!config.filters || config.filters.length === 0) return undefined;
-    const obj: Record<string, string> = {};
-    for (const f of config.filters) {
-      obj[f.attributeName] = f.valueName;
-    }
-    return obj;
-  }, [config.filters]);
+  // Construit le payload de filtres backend (DSL `SearchNew::searchFilters`)
+  // depuis les inclusions + exclusions du finder, via le builder PARTAGÉ (même
+  // sortie que la liste collaborative `getEligiblePlaces`). `undefined` si aucun
+  // filtre, pour ne pas envoyer un `filters: {}` inutile.
+  const filtersPayload = useMemo<Record<string, unknown> | undefined>(() => {
+    const built = buildFinderMongoFilters(config.filters ?? [], config.excludeFilters ?? []);
+    return Object.keys(built).length > 0 ? built : undefined;
+  }, [config.filters, config.excludeFilters]);
 
   const searchTypeArray = useMemo<GlobalAutocompleteCostumData["searchType"]>(
     () =>

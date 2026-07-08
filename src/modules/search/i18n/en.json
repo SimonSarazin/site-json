@@ -177,7 +177,7 @@
   "card.detailed.removeFavorite": "Remove from favorites",
   "card.servicePricing.coworkingPlaces": "{{value}} desks",
   "card.servicePricing.meetingPersons": "{{value}} ppl",
-  "card.servicePricing.accommodationCovers": "{{value}} covers",
+  "card.servicePricing.accommodationCovers": "{{value}} Accommodation",
   "card.servicePricing.service.coworking": "Coworking",
   "card.servicePricing.service.meetingRoom": "Meeting room",
   "card.servicePricing.service.room": "Room",
@@ -193,5 +193,6 @@
   "Voir le profil": "View profile",
   "Adresse inconnue": "Address unknown",
   "Tous": "All",
-  "{{count}} sélectionnés": "{{count}} selected"
+  "{{count}} sélectionnés": "{{count}} selected",
+  "{{count}} résultats groupés": "{{count}} results grouped"
 }

@@ -20,6 +20,7 @@ import { SwitchDetailsMode } from "@/modules/search/components/SwitchDetailsMode
 import SearchListView from "@/modules/search/components/SearchListView";
 import { SearchPropsProvider } from "@/modules/search/contexts/SearchPropsProvider";
 import type { ListConf, SearchProStaticSectionProps } from "@/modules/search/schema";
+import { getEntryCoords } from "@/modules/search/lib/searchMapSelection";
 import AgendaList from "./components/AgendaList";
 import { useAgendaCalendar } from "./hooks/useAgendaCalendar";
 import { useAgendaList } from "./hooks/useAgendaList";
@@ -165,11 +166,16 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
     [pastFetch.events, selectedTags, now],
   );
   const calendarEvents = useMemo(() => filterByTags(gridFetch.events, selectedTags), [gridFetch.events, selectedTags]);
-  // Carte : union dédupliquée upcoming + past (events géolocalisés), filtrée tags. SearchMap ignore les sans-geo.
+  // Carte + liste du split : union dédupliquée upcoming + past, GÉOLOCALISÉS
+  // uniquement (mêmes que les marqueurs), filtrée tags. La liste du split partage
+  // CETTE source → un event sans coordonnées (que la carte ne peut pas afficher)
+  // ne doit pas apparaître dans la liste (sinon item sans marqueur). Le filtre géo
+  // utilise `getEntryCoords` — exactement le critère de rendu d'un marqueur.
   const mapEvents = useMemo(() => {
     const seen = new Set<string>();
     const out: typeof past = [];
     for (const ev of [...upcomingFetch.events, ...pastFetch.events]) {
+      if (!getEntryCoords(ev as unknown as SearchEntity)) continue; // sans géoloc → ni marqueur ni ligne
       const id = String((ev.serverData as { id?: string } | undefined)?.id ?? "");
       if (id && !seen.has(id)) {
         seen.add(id);
