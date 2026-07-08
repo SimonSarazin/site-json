@@ -4176,6 +4176,34 @@
           }
         }
       ]
+    },
+    {
+      "path": "/actualites",
+      "title": {
+        "fr": "Actualités",
+        "en": "News"
+      },
+      "layout": "default",
+      "sections": [
+        {
+          "type": "articleFeed",
+          "id": "ssb-article-feed",
+          "props": {
+            "title": {
+              "fr": "Actualités",
+              "en": "News"
+            },
+            "description": {
+              "fr": "Les dernières actualités Sport Santé Bien-être à La Réunion.",
+              "en": "Latest Sport-Health news in Réunion."
+            },
+            "costumSlug": "sportSanteBienetre",
+            "pageSize": 12,
+            "featured": true,
+            "detailBasePath": "/blog"
+          }
+        }
+      ]
     }
   ],
   "footer": {

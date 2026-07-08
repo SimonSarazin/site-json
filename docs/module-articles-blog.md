@@ -161,9 +161,18 @@ site-json a **deux mécanismes** de module (auto-découverts par convention de f
 6. **Slug** : conservés depuis WP (le script garde `slug`) ; fallback `/blog/id/:id` pour les rares sans slug.
 7. **Scope** : ✅ parent62 = **son PROPRE costum** (source.key dédié) → nouveau site-json + costum parent62.
 
-### Reste à réfléchir (import)
-- L'**import JSON+images → POI** : `importData` gère-t-il le **téléchargement/rattachement d'images** en import ? Sinon pipeline lib (save article + upload image par POI). À trancher avant P2.
-- Rythme/robustesse du run complet (~6 486 articles, ~16 k images, ~1,5–2 h) : le script est **reprenable** (checkpoint + skip-if-exists) et throttlé.
+### Import — mécanisme tranché + implémenté (2026-07-09)
+
+On réutilise **`importData`** (machinerie admin import : CSV → mapping → checkdataimport → importData, scopé costum). Deux chantiers de **parité legacy/backend** ont comblé ce qui manquait :
+- **A — date d'origine (`created`)** : le save standard stampe `created=now` (inchangé) ; l'**action importData** corrige `created` par un update ciblé SI la ligne fournit une date (unix s / parsable). **`created` reste le champ standard** (pas de `publishedAt` divergent), le save cœur n'est pas touché. Ajouté au **legacy** (`Import.php`) + **backend** (route importData).
+- **B — image à la une** : la branche `afterSaveImport` du **backend** (stubée) est **portée** → `importData` télécharge l'image depuis `profilImageUrl` (URL) et la **réhéberge** (`saveDocument` contentKey=profil) exactement comme le legacy. (Fix : l'id réel est passé à afterSaveImport.)
+
+Prouvé (backend e2e, 283 passed) : `created` préservé + image réhébergée. Champs POI : **aucun ajout** (name/description[markdown]/shortDescription/tags/type/profilImageUrl/created/slug/source suffisent). Costum import.mapping : non requis pour le contenu (descripteur poi couvre) ; `created` lu **en propre** par l'action d'import (hors descripteur).
+
+**Reste** :
+- **Images inline** du corps : `importData` ne gère QUE l'image à la une → passe séparée (upload local → réécrit markdown). Ou v1 : garder les URLs inline en attendant.
+- Serveur d'import : cibler **5099 (backend)** ou **5080 (legacy)** — les deux réhébergent maintenant (parité faite).
+- Run complet `fetch-wp` (~6 486 articles, ~16 k images, reprenable) : à lancer.
 
 ---
 

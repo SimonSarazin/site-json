@@ -15,6 +15,7 @@ import { ActionButtonSchema } from "./action-button-schema";
 import { z } from "zod";
 import { LocalizedString, LOCALES } from "./locale-schema";
 import { AgendaSectionSchema } from "@/modules/agenda/schema";
+import { ArticleFeedSectionSchema } from "@/modules/blog/schema";
 export { LocalizedString, LOCALES };
 import { ProfilesConfigSchema, MemberSectionSchema } from "../modules/profil/schema";
 import { AdminConfigSchema } from "../modules/admin/schema";
@@ -1454,6 +1455,7 @@ export const Section = z.discriminatedUnion("type", [
   CoFormSectionSchema,
   DataObservatorySectionSchema,
   AgendaSectionSchema,
+  ArticleFeedSectionSchema,
 ]);
 export type Section = z.infer<typeof Section>;
 
