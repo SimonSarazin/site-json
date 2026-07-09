@@ -221,6 +221,13 @@ P0 est codé + testé navigateur (fil `/blog` + reader markdown + SEO). Points i
    `BLOG_QUERY_KEYS`, point 5) sur la mutation du form article — probablement un `invalidateFn` dédié
    (ex. `invalidate:blog`) posé dans le `costumForm` du sous-type article.
 
+7. **Champ contenu en MARKDOWN dans le form article (authoring).** Le champ `description` (corps) du
+   `costumForm` `sport-sante-bienetre-article` est aujourd'hui un **`textarea`** (widget `text`). Or le reader
+   rend le corps en **markdown** (`renderMarkdown`) → l'auteur doit pouvoir écrire du markdown. Mettre un
+   **widget markdown** (l'éditeur `MarkdownEditor` de coform, déjà client-only/SSR-safe) sur le champ
+   `description` du sous-type `article` (config.costumForms) — et vérifier que le formEngine sait rendre ce
+   widget d'édition. Cohérent avec la décision « corps = markdown » (§9.3).
+
 ## 12. État P0 (2026-07-09)
 Fait + testé : module `blog` core, section `articleFeed` (data-backed), routes `/blog/:slug` + `/blog/id/:id`,
 `ArticleReader` (markdown sanitizé) + `BlogArticleSeo` (JSON-LD). 4 bugs corrigés au test (react-router v7,
