@@ -1321,10 +1321,10 @@
     "socialNetworks": "Social networks",
     "keywords": "Keywords",
     "forms": "Forms",
-    "evaluation": "Place evaluation",
-    "evaluateButton": "Evaluate this place",
-    "evaluateNoData": "No evaluation for this place yet.",
-    "evaluateLoading": "Loading evaluations…",
+    "evaluation": "Collective diagnosis",
+    "evaluateButton": "Start collective diagnosis",
+    "evaluateNoData": "No diagnosis for this place yet.",
+    "evaluateLoading": "Loading diagnosis…",
     "noPois": "No spaces available"
   },
   "ProfilTiersLieuxAbout": {
