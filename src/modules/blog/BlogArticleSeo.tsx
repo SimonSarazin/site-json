@@ -35,7 +35,8 @@ export function BlogArticleSeo({ article, url }: { article: ArticleData; url?: s
       {image && <meta property="og:image" content={image} />}
       {url && <meta property="og:url" content={url} />}
       {url && <link rel="canonical" href={url} />}
-      <script type="application/ld+json">{JSON.stringify(ld)}</script>
+      {/* JSON-LD : dangerouslySetInnerHTML (Helmet refuse un enfant string dans <script>) — cf. ProfileSeo. */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
     </Helmet>
   );
 }
