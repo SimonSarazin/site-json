@@ -1,6 +1,7 @@
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { useSite } from "@/hooks/useSite";
 import { useLocalization } from "@/hooks/useLocalization";
+import { getServerUrl } from "@/lib/constant/common";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { useT } from "@/hooks/useT";
 import type { ProfileConfig } from "./schema";
@@ -101,14 +102,16 @@ export function ProfileSeo({ entity, isLoading, entityType, activeTab, profileCo
   // présentation CANONIQUE → cette vue profil canonicalise vers /blog/:slug (évite le contenu dupliqué SEO).
   const isArticle = entity.serverData?.type === "article";
 
-  // Construction de l'URL canonique avec le tab actif
+  // Construction de l'URL canonique avec le tab actif. `getServerUrl()` (env) fonctionne SSR + client
+  // (contrairement à window.location.origin, vide au SSR → canonical/og:url absents du HTML serveur).
   const slug = entity.serverData?.slug || "";
-  const canonicalUrl = typeof window !== 'undefined' && slug
+  const origin = getServerUrl().replace(/\/$/, "");
+  const canonicalUrl = origin && slug
     ? isArticle
-      ? `${window.location.origin}/blog/${slug}`
+      ? `${origin}/blog/${slug}`
       : currentTab !== firstTabId
-        ? `${window.location.origin}/profil/${slug}/${currentTab}`
-        : `${window.location.origin}/profil/${slug}`
+        ? `${origin}/profil/${slug}/${currentTab}`
+        : `${origin}/profil/${slug}`
     : "";
 
   // Titre de la page dynamique selon le tab actif

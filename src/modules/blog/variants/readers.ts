@@ -8,6 +8,8 @@ export interface ArticleReaderProps {
   backTo?: string;
   /** Masquer le lien « Retour aux articles » (ex. section `articleReader` embarquée sur une page). */
   hideBack?: boolean;
+  /** Balise du titre : `h1` (route reader, défaut) ou `h2` (section embarquée, évite un 2ᵉ h1 sur la page). */
+  titleAs?: "h1" | "h2";
 }
 
 /**

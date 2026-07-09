@@ -3,13 +3,15 @@ import { useParams, Link } from "react-router";
 import "../i18n";
 import { useT } from "@/hooks/useT";
 import { useSite } from "@/hooks/useSite";
+import { getServerUrl } from "@/lib/constant/common";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useArticle } from "../hooks/useArticle";
 import { READER_VARIANTS } from "../variants/readers";
 import { BlogArticleSeo } from "../BlogArticleSeo";
 
 const ReaderSkeleton = () => (
-  <div className="mx-auto max-w-3xl space-y-4 px-4 py-8">
+  <div role="status" aria-busy="true" className="mx-auto max-w-3xl space-y-4 px-4 py-8">
+    <span className="sr-only">Chargement…</span>
     <Skeleton className="h-10 w-3/4" />
     <Skeleton className="h-64 w-full rounded-xl" />
     <Skeleton className="h-40 w-full" />
@@ -33,9 +35,10 @@ export default function ArticlePage() {
       </div>
     );
   }
-  // Canonical/og:url (aligné ProfileSeo : origine côté client). Priorité au slug → un article slugué
-  // ouvert via /blog/id/:id canonicalise vers /blog/:slug (évite le duplicate content).
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  // Canonical/og:url. `getServerUrl()` (env) marche SSR + client → les balises sont dans le HTML serveur
+  // (window.location.origin serait vide au SSR). Priorité au slug → un article slugué ouvert via
+  // /blog/id/:id canonicalise vers /blog/:slug (évite le duplicate content).
+  const origin = getServerUrl().replace(/\/$/, "");
   const path = article.slug ? `/blog/${article.slug}` : id ? `/blog/id/${id}` : slug ? `/blog/${slug}` : "";
   const canonicalUrl = origin && path ? origin + path : undefined;
 

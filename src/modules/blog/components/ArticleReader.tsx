@@ -26,7 +26,7 @@ function authorName(article: ArticleData): string | null {
  * Retour DYNAMIQUE : `navigate(-1)` si on vient d'une page de l'app (retour là d'où on vient — le fil peut
  * donc être à N endroits), sinon (deep-link / pas d'historique) repli sur `backTo` (défaut `/blog`).
  */
-export function ArticleReader({ article, backTo = "/blog", hideBack = false }: ArticleReaderProps) {
+export function ArticleReader({ article, backTo = "/blog", hideBack = false, titleAs: Title = "h1" }: ArticleReaderProps) {
   const t = useT("modules/blog");
   const navigate = useNavigate();
   const location = useLocation();
@@ -41,14 +41,15 @@ export function ArticleReader({ article, backTo = "/blog", hideBack = false }: A
   return (
     <article className="mx-auto w-full max-w-3xl px-4 py-8">
       {!hideBack && (
-        <button type="button" onClick={goBack} className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" />{t("article.backToList")}
+        <button type="button" onClick={goBack} aria-label={t("article.backToList")}
+          className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded">
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />{t("article.backToList")}
         </button>
       )}
-      <h1 className="mb-3 text-3xl font-bold leading-tight text-foreground sm:text-4xl">{article.name}</h1>
+      <Title className="mb-3 text-3xl font-bold leading-tight text-foreground sm:text-4xl">{article.name}</Title>
       <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-        {date && <span className="inline-flex items-center gap-1.5"><Calendar className="h-4 w-4" />{date}</span>}
-        {author && <span className="inline-flex items-center gap-1.5"><User className="h-4 w-4" />{t("article.by")} {author}</span>}
+        {date && <span className="inline-flex items-center gap-1.5"><Calendar className="h-4 w-4" aria-hidden="true" />{date}</span>}
+        {author && <span className="inline-flex items-center gap-1.5"><User className="h-4 w-4" aria-hidden="true" />{t("article.by")} {author}</span>}
       </div>
       {image && (
         <AspectRatio ratio={16 / 9} className="mb-8 overflow-hidden rounded-xl bg-muted">

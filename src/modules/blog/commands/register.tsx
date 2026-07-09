@@ -29,13 +29,15 @@ registerCommandSource({
     if (!entity || query.trim().length < 2) return [];
 
     const limit = cfg.limit ?? 8;
-    const base = (cfg.detailBasePath ?? "/blog").replace(/\/$/, "");
+    // Reader CANONIQUE unique = /blog (cf. items 2+3, detailBasePath déprécié). Forcé pour éviter tout
+    // open-redirect : un base configurable vide + slug `//host` produirait une URL protocol-relative.
+    const base = "/blog";
 
     let results: ArticleResult[] = [];
     try {
-      // Payload canonique (filters type=article + scope costum + name), comme le fil (useArticleFeed).
+      // Payload canonique (filters type=article + scope costum + name + tri date DESC), comme le fil.
       const payload = buildSearchPayload(
-        { defaultFilters: { type: "article" }, costumSlug: cfg.costumSlug, sourceKey: [cfg.costumSlug] } as never,
+        { defaultFilters: { type: "article" }, defaultSortBy: { created: -1 }, costumSlug: cfg.costumSlug, sourceKey: [cfg.costumSlug] } as never,
         { name: query, type: ["poi"], indexStep: limit },
       );
       const page = (await entity.searchCostum(

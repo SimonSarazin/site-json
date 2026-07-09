@@ -27,17 +27,17 @@ export function ArticleCardCompact({ article, href, lastRef, featured = false }:
     <Link
       ref={lastRef as never}
       to={href}
-      className="group flex gap-4 rounded-lg border border-border/60 p-3 transition-colors hover:bg-muted/40"
+      className="group flex gap-4 rounded-lg border border-border/60 p-3 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
     >
       <div className={`${featured ? "h-28 w-28" : "h-20 w-20"} shrink-0 overflow-hidden rounded-md bg-muted`}>
         {image
           ? <OptimizedImage src={image} alt={article.name || ""} width={featured ? 240 : 160} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
-          : <div className="flex h-full w-full items-center justify-center text-muted-foreground/40">—</div>}
+          : <div className="flex h-full w-full items-center justify-center text-muted-foreground/70">—</div>}
       </div>
       <div className="min-w-0 flex-1 space-y-1">
         {date && (
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Calendar className="h-3.5 w-3.5" />{date}
+            <Calendar className="h-3.5 w-3.5" aria-hidden="true" />{date}
           </div>
         )}
         <h3 className={`font-semibold leading-snug text-foreground line-clamp-2 ${featured ? "text-lg" : "text-base"}`}>

@@ -21,12 +21,15 @@ function norm(r: unknown): ArticleData {
   return rootId != null ? { ...base, id: String(rootId) } : base;
 }
 function hrefFor(a: ArticleData, base: string): string {
-  return a.slug ? `${base}/${a.slug}` : `${base}/id/${a.id}`;
+  if (a.slug) return `${base}/${a.slug}`;
+  if (a.id) return `${base}/id/${a.id}`;
+  return base; // ni slug ni id (article mal formé) → la liste, jamais `/blog/id/undefined`
 }
 
 function FeedSkeleton() {
   return (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div role="status" aria-busy="true" className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <span className="sr-only">Chargement…</span>
       {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-72 w-full rounded-xl" />)}
     </div>
   );

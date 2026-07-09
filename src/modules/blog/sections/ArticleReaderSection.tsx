@@ -9,7 +9,8 @@ import { READER_VARIANTS } from "../variants/readers";
 import type { ArticleReaderSectionProps } from "../schema";
 
 const ReaderSkeleton = () => (
-  <div className="mx-auto max-w-3xl space-y-4 px-4 py-8">
+  <div role="status" aria-busy="true" className="mx-auto max-w-3xl space-y-4 px-4 py-8">
+    <span className="sr-only">Chargement…</span>
     <Skeleton className="h-10 w-3/4" />
     <Skeleton className="h-64 w-full rounded-xl" />
     <Skeleton className="h-40 w-full" />
@@ -29,8 +30,8 @@ function Inner({ props }: { props: ArticleReaderSectionProps }) {
   }
   return (
     <Suspense fallback={<ReaderSkeleton />}>
-      {/* Section EMBARQUÉE → pas de bouton retour par défaut (showBack pour l'activer). */}
-      <Reader article={article} hideBack={!props.showBack} backTo={props.backTo} />
+      {/* Section EMBARQUÉE → pas de bouton retour + titre en h2 (évite un 2ᵉ h1 sur la page hôte). */}
+      <Reader article={article} hideBack={!props.showBack} backTo={props.backTo} titleAs="h2" />
     </Suspense>
   );
 }

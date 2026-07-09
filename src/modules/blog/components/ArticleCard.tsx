@@ -45,16 +45,16 @@ export function ArticleCard({ article, href, lastRef, featured = false }: Articl
 
   return (
     <Card ref={lastRef as never} className="group overflow-hidden border-border/60 transition-shadow hover:shadow-md">
-      <Link to={href} className="block">
+      <Link to={href} className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
         <AspectRatio ratio={16 / 9} className="bg-muted">
           {image
             ? <OptimizedImage src={image} alt={article.name || ""} width={featured ? 900 : 480} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" />
-            : <div className="flex h-full w-full items-center justify-center text-muted-foreground/40">—</div>}
+            : <div className="flex h-full w-full items-center justify-center text-muted-foreground/70">—</div>}
         </AspectRatio>
         <CardContent className="space-y-2 p-4">
           {date && (
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Calendar className="h-3.5 w-3.5" />{date}
+              <Calendar className="h-3.5 w-3.5" aria-hidden="true" />{date}
             </div>
           )}
           <h3 className={`font-semibold leading-snug text-foreground line-clamp-2 ${featured ? "text-2xl" : "text-base"}`}>
