@@ -382,3 +382,21 @@ vite-preload), compteur de vues, follow auteur.
 
 **En attente backend (phase 2)** : réactions emoji, commentaires, notifications éditeur (`article:published`),
 historique/révisions — tous nécessitent des endpoints/perms côté legacy+backend.
+
+### État Top-5 P1 quick-wins (2026-07-09)
+
+- ✅ **#1 SEO enrichi** — `BlogArticleSeo` : JSON-LD `BlogPosting` complet (articleBody borné, wordCount,
+  dateModified, keywords, publisher) + `article:published/modified_time`. Le JSON-LD est rendu en `<script>`
+  DIRECT (Helmet n'injecte pas ses `<script>` en SSR) → **présent dans le HTML serveur** (vérifié curl) +
+  échappement `<`→`<` (anti `</script>` breakout). Canonical/og en SSR déjà OK (getServerUrl).
+- ✅ **#4 temps de lecture + articles liés** — `lib/readingTime` (estimateReadingTime, `stripMarkdown` extrait
+  dans `lib/markdown`) + badge Clock (card + reader) ; `useRelatedArticles` (tags `$in`, scope source.key,
+  exclut courant, île client `enabled=hydrated`) + `RelatedArticles` (bas de la ROUTE reader) + `BLOG_QUERY_KEYS.RELATED`.
+- ✅ **#5 extrait** — champ `shortDescription` (textarea) au costum form article + **chapô** (bordure gauche)
+  dans `ArticleReader`. Cover 16:9 déjà OK (`profil_avatar` → `profilImageUrl`).
+- 🟡 **#2 flux RSS** — `renderBlogFeed` (server/feed.ts, réutilise `initApi`+`buildSearchPayload`+`searchCostum`)
+  ré-exporté par `entry-server` ; routes `/blog/feed.xml` (dev `ssrLoadModule`, prod `import dist/server`) ;
+  `config.blog.feedCostumSlug`. ⚠️ **nécessite un redémarrage du dev-server** pour tester (route au démarrage).
+- ⏸️ **#3 workflow statut/publishedAt** — **DIFFÉRÉ = chantier BACKEND** (champ `status`/`publishedAt` POI +
+  projection `DEFAULT_FIELD_LIST` + job scheduler draft→published + route admin + parité legacy). Rejoint la
+  task admin #37. NON bâclé en frontend.
