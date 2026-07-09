@@ -25,18 +25,21 @@ export function BlogArticleSeo({ article, url }: { article: ArticleData; url?: s
     ...(url ? { mainEntityOfPage: url } : {}),
   };
 
+  // Enfants en TABLEAU avec `key` + conditionnels `? … : null` (jamais `cond && …` qui, si `cond` est une
+  // chaîne VIDE, produit `""` — un descendant string rejeté par Helmet). Pattern aligné sur Seo.tsx.
   return (
     <Helmet>
-      <title>{title}</title>
-      {desc && <meta name="description" content={desc} />}
-      <meta property="og:type" content="article" />
-      <meta property="og:title" content={title} />
-      {desc && <meta property="og:description" content={desc} />}
-      {image && <meta property="og:image" content={image} />}
-      {url && <meta property="og:url" content={url} />}
-      {url && <link rel="canonical" href={url} />}
-      {/* JSON-LD : dangerouslySetInnerHTML (Helmet refuse un enfant string dans <script>) — cf. ProfileSeo. */}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
+      {[
+        <title key="title">{title || "Article"}</title>,
+        desc ? <meta key="desc" name="description" content={desc} /> : null,
+        <meta key="og-type" property="og:type" content="article" />,
+        <meta key="og-title" property="og:title" content={title || "Article"} />,
+        desc ? <meta key="og-desc" property="og:description" content={desc} /> : null,
+        image ? <meta key="og-img" property="og:image" content={image} /> : null,
+        url ? <meta key="og-url" property="og:url" content={url} /> : null,
+        url ? <link key="canonical" rel="canonical" href={url} /> : null,
+        <script key="ld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />,
+      ]}
     </Helmet>
   );
 }
