@@ -209,16 +209,17 @@ P0 est codé + testé navigateur (fil `/blog` + reader markdown + SEO). Points i
      le state du Link, pour que « retour » = la page qui portait CE `articleFeed`).
    → Objectif : plusieurs `articleFeed` à des endroits différents, retour toujours cohérent, sans page `/blog` imposée.
 
-5. **queryKeys dédiés (convention module).** P0 réutilise `PROFIL_QUERY_KEYS.ELEMENT_ABOUT` (slug) + une clé
-   ad-hoc `["blog:article:id", id]` + le prefix `blog:${slug}` du feed. À centraliser dans un
-   **`BLOG_QUERY_KEYS`** (comme `NEWS_QUERY_KEYS`/`SEARCH_QUERY_KEYS`) : feed(costumSlug), article(slug|id).
-   Prérequis du point 6 (on ne peut invalider proprement que des clés centralisées).
+5. ✅ **FAIT (2026-07-09).** **queryKeys dédiés (convention module).** `BLOG_QUERY_KEYS`
+   (`src/modules/blog/constants/queryKeys.ts`) : `FEED_PREFIX(costumSlug)`, `ARTICLE_BY_ID(id)`,
+   `ARTICLE_BY_ID_PREFIX()`. `useArticleFeed`/`useArticle`/`prefetchArticleById` refactorés (valeurs
+   identiques → comportement inchangé).
 
-6. **Invalidation des queries blog à l'ajout/édition d'un article.** ⚠️ **SUIVANT IMMÉDIAT** — confirmé au test
-   authoring (§14 done) : `invalidate:standard` du `costumForm` article n'invalide PAS les queries blog
-   (`blog:${costumSlug}` du fil ni `["blog:article:id", id]`), donc **un article créé/édité n'apparaît qu'au
-   reload**. Fix : créer `BLOG_QUERY_KEYS` (point 5) + un `invalidateFn` dédié (ex. `invalidate:blog`) posé
-   sur `mutation.invalidateFn` du `costumForm` `sport-sante-bienetre-article` (add + edit).
+6. ✅ **FAIT (2026-07-09).** **Invalidation des queries blog à l'ajout/édition d'un article.** Nouveau
+   `invalidateFn` **`invalidate:blog`** (`sharedFns.ts`) = `invalidate:standard` (fil via `searchKeys` +
+   about-par-slug en édition + userList en création) **+ la clé détail PAR ID** (`ARTICLE_BY_ID` — les ~82 %
+   d'articles slugless routés `/blog/id/:id`, non couverts par l'about-slug). Câblé sur `mutation.invalidateFn`
+   du `costumForm` `sport-sante-bienetre-article` (`fn: "invalidate:blog"`, `searchKeys: ["blog:sportSanteBienetre"]`).
+   Vérifié par test comportemental déterministe (`invalidateBlog.test.ts`, sans mutation).
 
 7. ✅ **FAIT (2026-07-09).** **Champ contenu en MARKDOWN dans le form article (authoring).** Le champ `description` (corps) du
    `costumForm` `sport-sante-bienetre-article` est aujourd'hui un **`textarea`** (widget `text`). Or le reader
