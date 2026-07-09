@@ -8,6 +8,7 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { renderMarkdown } from "@/helpers/renderMarkdown";
 import { formatDateLong } from "@/helpers/formatDate";
 import type { ArticleData } from "../hooks/useArticle";
+import type { ArticleReaderProps } from "../variants/readers";
 
 function articleDate(created: unknown): string | null {
   if (created == null || created === "") return null;
@@ -25,7 +26,7 @@ function authorName(article: ArticleData): string | null {
  * Retour DYNAMIQUE : `navigate(-1)` si on vient d'une page de l'app (retour là d'où on vient — le fil peut
  * donc être à N endroits), sinon (deep-link / pas d'historique) repli sur `backTo` (défaut `/blog`).
  */
-export function ArticleReader({ article, backTo = "/blog" }: { article: ArticleData; backTo?: string }) {
+export function ArticleReader({ article, backTo = "/blog", hideBack = false }: ArticleReaderProps) {
   const t = useT("modules/blog");
   const navigate = useNavigate();
   const location = useLocation();
@@ -39,9 +40,11 @@ export function ArticleReader({ article, backTo = "/blog" }: { article: ArticleD
 
   return (
     <article className="mx-auto w-full max-w-3xl px-4 py-8">
-      <button type="button" onClick={goBack} className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" />{t("article.backToList")}
-      </button>
+      {!hideBack && (
+        <button type="button" onClick={goBack} className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="h-4 w-4" />{t("article.backToList")}
+        </button>
+      )}
       <h1 className="mb-3 text-3xl font-bold leading-tight text-foreground sm:text-4xl">{article.name}</h1>
       <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
         {date && <span className="inline-flex items-center gap-1.5"><Calendar className="h-4 w-4" />{date}</span>}

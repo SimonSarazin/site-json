@@ -267,10 +267,13 @@ P0 est codé + testé navigateur (fil `/blog` + reader markdown + SEO). Points i
     justifie un contexte blog dédié → on ne sur-architecture pas. À rouvrir seulement si un besoin concret
     d'état partagé non couvert par PageFilters émerge.
 
-12. **Section d'affichage d'UN article (data-backed).** Une section config-driven `articleReader` (ou
-    `articlePost`) pour poser **un article précis** (par slug/id) sur n'importe quelle page — data-backed
-    (fetch entité), à distinguer du `blogPost` STATIQUE existant. Utile pour une home (« article à la une »),
-    une page dédiée, etc. Réutilise `ArticleReader` + `useArticle`.
+12. ✅ **FAIT (2026-07-09).** **Section d'affichage d'UN article (data-backed).** Section config-driven
+    **`articleReader`** (`sections/ArticleReaderSection.tsx`, île client) : affiche un article précis par
+    `slug` OU `id` (`schema` avec `refine` slug|id requis), fetch via `useArticle`, rendu via le registre
+    `READER_VARIANTS` (variant `props.readerVariant` > `config.blog.readerVariant`). Bouton retour masqué par
+    défaut (`showBack` pour l'activer — nouveau prop `hideBack` du reader). Câblée : union `Section` +
+    `SectionRenderer` (lazy). ≠ `blogPost` STATIQUE. Pas de SEO propre (canonical reste `/blog/:slug`, item 2).
+    Testé : schema `schema.test.ts` (3/3) + live (article inline sur `/blog`, sans bouton retour).
 
 ## 12. État P0 (2026-07-09)
 Fait + testé : module `blog` core, section `articleFeed` (data-backed), routes `/blog/:slug` + `/blog/id/:id`,

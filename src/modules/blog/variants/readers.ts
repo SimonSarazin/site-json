@@ -5,6 +5,8 @@ import type { ArticleData } from "../hooks/useArticle";
 export interface ArticleReaderProps {
   article: ArticleData;
   backTo?: string;
+  /** Masquer le lien « Retour aux articles » (ex. section `articleReader` embarquée sur une page). */
+  hideBack?: boolean;
 }
 
 /**

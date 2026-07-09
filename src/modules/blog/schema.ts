@@ -37,3 +37,27 @@ export const ArticleFeedSectionSchema = z.object({
   }),
 });
 export type ArticleFeedSectionProps = z.infer<typeof ArticleFeedSectionSchema>["props"];
+
+/**
+ * Section `articleReader` (config-driven, data-backed) : affiche UN article précis (par `slug` OU `id`) sur
+ * n'importe quelle page — fetch entité (`useArticle`) + rendu via le registre `READER_VARIANTS`. À distinguer
+ * du `blogPost` STATIQUE (contenu figé en config). Île client (pas de SEO propre — le canonical reste
+ * `/blog/:slug`, cf. item 2). Ex. « article à la une » sur une home. cf. docs/module-articles-blog.md §11.12.
+ */
+export const ArticleReaderSectionSchema = z.object({
+  type: z.literal("articleReader"),
+  id: z.string().optional(),
+  props: z.object({
+    /** Slug de l'article à afficher. */
+    slug: z.string().optional(),
+    /** Id de l'article (pour les articles sans slug). */
+    id: z.string().optional(),
+    /** Variant de reader (registre `READER_VARIANTS`). Défaut : `config.blog.readerVariant` sinon `default`. */
+    readerVariant: z.string().optional(),
+    /** Afficher le lien « Retour aux articles » (défaut : non — section embarquée). */
+    showBack: z.boolean().optional(),
+    /** Cible du retour si `showBack` (défaut `/blog`). */
+    backTo: z.string().optional(),
+  }).refine((p) => Boolean(p.slug || p.id), { message: "articleReader : `slug` ou `id` requis" }),
+});
+export type ArticleReaderSectionProps = z.infer<typeof ArticleReaderSectionSchema>["props"];
