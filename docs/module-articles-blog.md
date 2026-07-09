@@ -186,4 +186,31 @@ Prouvé (backend e2e, 283 passed) : `created` préservé + image réhébergée. 
 
 ---
 
-*Rien n'est codé. Ce doc est le support de la réflexion — à amender avant P0.*
+## 11. Backlog — à traiter APRÈS la revue adversariale de P0
+
+P0 est codé + testé navigateur (fil `/blog` + reader markdown + SEO). Points identifiés à reprendre :
+
+1. **Command palette (Ctrl+K) — recherche d'articles.** Le `commandPalette` doit pouvoir chercher et
+   ouvrir des **articles** (POI `type:"article"`) → `/blog/:slug`. Aujourd'hui il ne les cible pas.
+
+2. **Un POI `article` = 2 vues possibles.** Un article est à la fois un **POI** (profil générique
+   `/profil/:slug` + preview drawer des cartes de recherche) ET un **article** (reader blog `/blog/:slug`).
+   À trancher : les deux voies coexistent (et laquelle une carte de recherche générique ouvre), gestion du
+   **contenu dupliqué / canonical SEO**, cohérence du lien selon le contexte (annuaire vs fil blog).
+
+3. **`articleFeed` posable sur N pages.** La section est config-driven donc déjà posable partout — mais
+   c'est lié au point 4 : tant que le retour est figé, on ne peut avoir les articles qu'à UN endroit.
+
+4. **Retour DYNAMIQUE (ne pas hardcoder `/blog`).** ⚠️ Défaut actuel : le reader force `backTo="/blog"` →
+   oblige un seul emplacement de fil. Il faut découpler. Pistes à évaluer :
+   - `navigate(-1)` (retour historique = revient d'où on vient) + **fallback** si deep-link/pas d'historique ;
+   - OU la carte passe la page d'origine via le **state react-router** (`<Link state>`) ou une query `?from=` ;
+   - OU un **base configurable** (ex. `detailBasePath` déjà en props de la section — le propager au reader via
+     le state du Link, pour que « retour » = la page qui portait CE `articleFeed`).
+   → Objectif : plusieurs `articleFeed` à des endroits différents, retour toujours cohérent, sans page `/blog` imposée.
+
+## 12. État P0 (2026-07-09)
+Fait + testé : module `blog` core, section `articleFeed` (data-backed), routes `/blog/:slug` + `/blog/id/:id`,
+`ArticleReader` (markdown sanitizé) + `BlogArticleSeo` (JSON-LD). 4 bugs corrigés au test (react-router v7,
+Helmet string-child ×2, retour/extrait). Reste connu : **images non chargées en dev** (URL `/upload` relative +
+backend 5080 → 404 ; OK en prod même host — à confirmer / absolutiser `OptimizedImage` en dev).
