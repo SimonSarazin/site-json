@@ -209,6 +209,18 @@ P0 est codé + testé navigateur (fil `/blog` + reader markdown + SEO). Points i
      le state du Link, pour que « retour » = la page qui portait CE `articleFeed`).
    → Objectif : plusieurs `articleFeed` à des endroits différents, retour toujours cohérent, sans page `/blog` imposée.
 
+5. **queryKeys dédiés (convention module).** P0 réutilise `PROFIL_QUERY_KEYS.ELEMENT_ABOUT` (slug) + une clé
+   ad-hoc `["blog:article:id", id]` + le prefix `blog:${slug}` du feed. À centraliser dans un
+   **`BLOG_QUERY_KEYS`** (comme `NEWS_QUERY_KEYS`/`SEARCH_QUERY_KEYS`) : feed(costumSlug), article(slug|id).
+   Prérequis du point 6 (on ne peut invalider proprement que des clés centralisées).
+
+6. **Invalidation des queries blog à l'ajout/édition d'un article.** Quand un article est créé/édité via le
+   **form costum** (add/edit du sous-type `article`), il faut **invalider** les queries blog (feed + détail)
+   pour que le nouvel/édité article apparaisse. Aujourd'hui la mutation costum a un `invalidateFn` générique
+   (`invalidate:standard`) qui ne touche pas le fil blog. → brancher une invalidation blog (via
+   `BLOG_QUERY_KEYS`, point 5) sur la mutation du form article — probablement un `invalidateFn` dédié
+   (ex. `invalidate:blog`) posé dans le `costumForm` du sous-type article.
+
 ## 12. État P0 (2026-07-09)
 Fait + testé : module `blog` core, section `articleFeed` (data-backed), routes `/blog/:slug` + `/blog/id/:id`,
 `ArticleReader` (markdown sanitizé) + `BlogArticleSeo` (JSON-LD). 4 bugs corrigés au test (react-router v7,
