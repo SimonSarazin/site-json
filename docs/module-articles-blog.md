@@ -228,6 +228,13 @@ P0 est codé + testé navigateur (fil `/blog` + reader markdown + SEO). Points i
    `description` du sous-type `article` (config.costumForms) — et vérifier que le formEngine sait rendre ce
    widget d'édition. Cohérent avec la décision « corps = markdown » (§9.3).
 
+8. **`heroSearch` sur la page blog → SearchProvider.** Pour poser une section **`heroSearch`** (barre de
+   recherche en tête, chercher DANS les articles) sur la page blog, il faudra probablement le **Provider de
+   search** (`contexts/SearchProps` / `SearchProvider`) pour partager l'état (texte + facettes) entre le hero
+   et l'`articleFeed`. À cadrer : le fil devient-il piloté par la recherche du hero (le `articleFeed` lit le
+   texte/tags du provider au lieu de son fetch autonome), et où wrapper le provider (la page blog, ou la
+   section). Lié au point 1 (palette) et à la réutilisation de l'infra search.
+
 ## 12. État P0 (2026-07-09)
 Fait + testé : module `blog` core, section `articleFeed` (data-backed), routes `/blog/:slug` + `/blog/id/:id`,
 `ArticleReader` (markdown sanitizé) + `BlogArticleSeo` (JSON-LD). 4 bugs corrigés au test (react-router v7,
