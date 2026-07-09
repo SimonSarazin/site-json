@@ -52,6 +52,21 @@ export const CommandPaletteConfigSchema = z.object({
       itemActionByType: z.record(z.string(), EntityItemActionSchema).optional(),
     })
     .optional(),
+  /**
+   * Config de la source de recherche d'ARTICLES (POI `type:"article"` → `/blog/:slug`) — fournie par le
+   * module blog. Absente → source inactive. `costumSlug` requis (scope `source.key` des articles du blog).
+   */
+  articleSearch: z
+    .object({
+      enabled: z.boolean().default(true),
+      /** Slug du costum dont on cherche les articles (scope `source.key`). Requis pour activer la source. */
+      costumSlug: z.string(),
+      /** Nombre max de résultats (= `indexStep`). */
+      limit: z.number().int().positive().default(8),
+      /** Base de l'URL de détail (défaut `/blog`) — le reader vit à `<base>/:slug` (+ `<base>/id/:id`). */
+      detailBasePath: z.string().optional(),
+    })
+    .optional(),
 });
 
 export type CommandPaletteConfig = z.infer<typeof CommandPaletteConfigSchema>;

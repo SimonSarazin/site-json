@@ -4499,6 +4499,9 @@
           }
         }
       }
+    },
+    "articleSearch": {
+      "costumSlug": "sportSanteBienetre"
     }
   },
   "profiles": {
