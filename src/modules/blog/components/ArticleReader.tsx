@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { ArrowLeft, Calendar, User } from "lucide-react";
 import "../i18n";
 import { useT } from "@/hooks/useT";

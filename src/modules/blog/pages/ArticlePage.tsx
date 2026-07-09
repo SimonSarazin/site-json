@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link } from "react-router";
 import "../i18n";
 import { useT } from "@/hooks/useT";
 import { Skeleton } from "@/components/ui/skeleton";
