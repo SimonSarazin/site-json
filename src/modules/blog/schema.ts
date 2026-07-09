@@ -27,6 +27,13 @@ export const ArticleFeedSectionSchema = z.object({
     detailBasePath: z.string().optional(),
     /** Afficher un article « à la une » (le plus récent) en tête. */
     featured: z.boolean().optional(),
+    /**
+     * Variant de carte (registre `CARD_VARIANTS`, lazy) : `default` (éditorial 16/9) · `compact` (ligne).
+     * Défaut : `config.blog.defaultCardVariant` sinon `default`. Un variant inconnu retombe sur `default`.
+     */
+    cardVariant: z.string().optional(),
+    /** Layout du fil : `grid` (défaut, grille responsive) ou `list` (liste verticale, va bien avec `compact`). */
+    feedLayout: z.enum(["grid", "list"]).optional(),
   }),
 });
 export type ArticleFeedSectionProps = z.infer<typeof ArticleFeedSectionSchema>["props"];

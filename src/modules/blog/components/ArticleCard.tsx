@@ -27,13 +27,16 @@ function articleDate(created: unknown): string | null {
   return Number.isNaN(d.getTime()) ? null : formatDateLong(d);
 }
 
-/** Carte éditoriale d'article (image 16/9, date, titre, extrait, tags). `featured` = grand format. */
-export function ArticleCard({ article, href, lastRef, featured = false }: {
+/** Props communes à TOUS les variants de carte (registre `CARD_VARIANTS`). */
+export interface ArticleCardProps {
   article: ArticleData;
   href: string;
   lastRef?: (el: HTMLElement | null) => void;
   featured?: boolean;
-}) {
+}
+
+/** Carte éditoriale d'article (image 16/9, date, titre, extrait, tags). `featured` = grand format. */
+export function ArticleCard({ article, href, lastRef, featured = false }: ArticleCardProps) {
   const image = article.profilMediumImageUrl || article.profilImageUrl;
   const excerpt = article.shortDescription
     || (typeof article.description === "string" ? stripMarkdown(article.description).slice(0, 180) : "");

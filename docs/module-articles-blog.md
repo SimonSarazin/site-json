@@ -249,20 +249,23 @@ P0 est codé + testé navigateur (fil `/blog` + reader markdown + SEO). Points i
 
 ### Extensibilité / architecture (à cadrer)
 
-9. **Registres de variants (layout de fil, carte, reader) — lazy + default.** Comme les **cartes de search**
-   (~13 variants `components/card/`) et les **layouts du formEngine** (flat/wizard/tabs, `lazy()` + registry) :
-   permettre plusieurs **layouts de fil**, **variants de `ArticleCard`** et **variants de `ArticleReader`**,
-   sélectionnables par config, **lazy-loadés (vite-preload)**, avec un **default**. But : étendre l'apparence
-   sans toucher le cœur (un déploiement choisit sa carte/son reader). Patron : une map `Record<string, lazy(...)>`
-   + une clé de config + fallback default (cf. `SectionRenderer.LazySections`, `formEngine/layouts`).
+9. ✅ **FAIT (2026-07-09).** **Registres de variants — lazy + default.** Helper générique
+   `variants/registry.ts` (`makeVariantRegistry` : map `Record<string, lazy(loader)>` + `get(key)` avec
+   fallback `default` + `preload` vite-preload + garde « default requis »). Registres : **`CARD_VARIANTS`**
+   (`default` éditorial 16/9 + `compact` liste ; `ArticleCardProps` partagé) et **`READER_VARIANTS`**
+   (`default` ; extensible). Ajouter un variant = un composant + une entrée. Le **feedLayout** (`grid`/`list`)
+   est un enum léger (arrangement du conteneur, pas un chunk lazy). Test `registry.test.ts` (5/5).
 
-10. **Config liée aux variants.** Étendre `ArticleFeedSectionSchema` (+ éventuel bloc `config.blog`) pour
-    choisir/paramétrer ces variants (cardVariant, readerVariant, feedLayout) et les options associées
-    (colonnes, featured, facettes, tri…).
+10. ✅ **FAIT (2026-07-09).** **Config liée aux variants.** Section : `articleFeed.props.cardVariant` +
+    `feedLayout`. Site-level : **bloc `config.blog`** (`configSchema.ts`, câblé dans `SiteConfig`) —
+    `readerVariant` (lu par `ArticlePage`), `defaultCardVariant`, `defaultFeedLayout`. Résolution :
+    props section > `config.blog` > défaut registre/enum. `ArticleFeed` préchauffe le chunk carte (`preload`).
 
-11. **`BlogContext` (SI nécessaire — à trancher).** Évaluer le besoin d'un contexte blog (état partagé
-    fil↔reader↔hero, ex. filtres/tags actifs, article courant). Pas certain que ce soit utile en P0/P1 ;
-    à décider quand le heroSearch (point 8) et les facettes (P1) arrivent — ne pas sur-architecturer avant.
+11. ✅ **FAIT (2026-07-09) — DÉCISION : PAS de `BlogContext`.** L'état partagé fil↔reader↔hero vit déjà dans
+    **`PageFilters`** (item 8, monté par page) ; les variants sont de la **config** (items 9+10) ; le fil est
+    une île autonome (`useArticleFeed`) et le reader une route (`useArticle`). Aucun état transverse ne
+    justifie un contexte blog dédié → on ne sur-architecture pas. À rouvrir seulement si un besoin concret
+    d'état partagé non couvert par PageFilters émerge.
 
 12. **Section d'affichage d'UN article (data-backed).** Une section config-driven `articleReader` (ou
     `articlePost`) pour poser **un article précis** (par slug/id) sur n'importe quelle page — data-backed

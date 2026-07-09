@@ -1,11 +1,13 @@
 import "../i18n"; // side-effect : namespace i18n "modules/blog"
+import { Suspense, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import { useHydrated } from "@/hooks/useHydrated";
+import { useSite } from "@/hooks/useSite";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useArticleFeed } from "../hooks/useArticleFeed";
-import { ArticleCard } from "../components/ArticleCard";
+import { CARD_VARIANTS } from "../variants/cards";
 import type { ArticleFeedSectionProps } from "../schema";
 import type { ArticleData } from "../hooks/useArticle";
 
@@ -31,12 +33,20 @@ function FeedSkeleton() {
 }
 
 /** Contenu data-backed du fil — monté APRÈS hydratation (île client, pas de fetch SSR). */
-function Feed({ props, base }: { props: ArticleFeedSectionProps; base: string }) {
+function Feed({ props, base, cardVariant, feedLayout }: {
+  props: ArticleFeedSectionProps;
+  base: string;
+  cardVariant?: string;
+  feedLayout: "grid" | "list";
+}) {
   const t = useT("modules/blog");
   const { transformedResults, lastItemRef, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, error, refetch } = useArticleFeed({
     costumSlug: props.costumSlug, pageSize: props.pageSize, filters: props.filters,
   });
   const items = ((transformedResults as unknown[]) ?? []).map(norm);
+  // Variant de carte (lazy, registre CARD_VARIANTS) — un variant inconnu retombe sur `default`.
+  const Card = CARD_VARIANTS.get(cardVariant);
+
   if (isLoading) return <FeedSkeleton />;
   // Erreur AVANT le test "vide" : une panne du search ne doit pas être déguisée en fil vide.
   if (error && !items.length) {
@@ -51,29 +61,38 @@ function Feed({ props, base }: { props: ArticleFeedSectionProps; base: string })
 
   const featured = props.featured ? items[0] : undefined;
   const rest = props.featured ? items.slice(1) : items;
+  const containerCls = feedLayout === "list" ? "flex flex-col gap-4" : "grid gap-6 sm:grid-cols-2 lg:grid-cols-3";
   return (
-    <>
-      {featured && <div className="mb-8"><ArticleCard article={featured} href={hrefFor(featured, base)} featured /></div>}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    // Suspense : le chunk de la carte (lazy) est chargé (préchargé en amont via `preload`, cf. section).
+    <Suspense fallback={<FeedSkeleton />}>
+      {featured && <div className="mb-8"><Card article={featured} href={hrefFor(featured, base)} featured /></div>}
+      <div className={containerCls}>
         {rest.map((a, i) => (
-          <ArticleCard key={a.id ?? i} article={a} href={hrefFor(a, base)} lastRef={i === rest.length - 1 ? (lastItemRef as never) : undefined} />
+          <Card key={a.id ?? i} article={a} href={hrefFor(a, base)} lastRef={i === rest.length - 1 ? (lastItemRef as never) : undefined} />
         ))}
       </div>
       {isFetchingNextPage && <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>}
       {hasNextPage && !isFetchingNextPage && (
         <div className="flex justify-center py-6"><Button variant="outline" onClick={() => fetchNextPage()}>{t("feed.loadMore")}</Button></div>
       )}
-    </>
+    </Suspense>
   );
 }
 
 export default function ArticleFeed({ id, props }: { id?: string; props: ArticleFeedSectionProps }) {
   const t = useT("modules/blog");
   const hydrated = useHydrated();
-  // ⚠️ detailBasePath ≠ /blog n'est PAS encore câblé (routes figées /blog — backlog §11 items 3+4).
-  // On force /blog pour ne pas générer de liens morts, et on signale la mauvaise config en dev.
+  const { config } = useSite();
+  const blogCfg = config.blog;
+  // Résolution des variants : props de section > défauts config.blog > défaut du registre/enum.
+  const cardVariant = props.cardVariant ?? blogCfg?.defaultCardVariant;
+  const feedLayout = (props.feedLayout ?? blogCfg?.defaultFeedLayout ?? "grid") as "grid" | "list";
+  // vite-preload : chauffe le chunk de la carte tôt (client) → pas de flash Suspense après le fetch.
+  useEffect(() => { CARD_VARIANTS.preload(cardVariant); }, [cardVariant]);
+
+  // ⚠️ detailBasePath déprécié : reader canonique unique /blog (cf. schema/items 2+3). On force /blog.
   if (import.meta.env.DEV && props.detailBasePath && props.detailBasePath.replace(/\/$/, "") !== "/blog") {
-    console.warn(`[blog] detailBasePath="${props.detailBasePath}" ignoré (routing multi-base non câblé) → /blog.`);
+    console.warn(`[blog] detailBasePath="${props.detailBasePath}" ignoré (reader canonique unique) → /blog.`);
   }
   const base = "/blog";
   return (
@@ -85,7 +104,7 @@ export default function ArticleFeed({ id, props }: { id?: string; props: Article
             {props.description && <p className="text-muted-foreground">{t(props.description as never)}</p>}
           </header>
         )}
-        {hydrated ? <Feed props={props} base={base} /> : <FeedSkeleton />}
+        {hydrated ? <Feed props={props} base={base} cardVariant={cardVariant} feedLayout={feedLayout} /> : <FeedSkeleton />}
       </div>
     </section>
   );
