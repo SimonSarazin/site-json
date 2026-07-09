@@ -202,16 +202,16 @@ P0 est codé + testé navigateur (fil `/blog` + reader markdown + SEO). Points i
    les cartes de recherche génériques (/lieux, preview drawer) ouvrent encore un article via `/profil/:slug` —
    acceptable (le canonical corrige le SEO) ; router ces cartes vers `/blog` serait un raffinement ultérieur.
 
-3. **`articleFeed` posable sur N pages.** La section est config-driven donc déjà posable partout — mais
-   c'est lié au point 4 : tant que le retour est figé, on ne peut avoir les articles qu'à UN endroit.
+3. ✅ **FAIT (2026-07-09) — par l'item 4.** **`articleFeed` posable sur N pages.** La section est config-driven
+   et autonome (costumSlug dans ses props) → posable sur autant de pages qu'on veut. Tous les fils pointent vers
+   le **reader canonique unique `/blog/:slug`** (décision item 2), et le retour dynamique (item 4) ramène à la
+   page d'origine → cohérent depuis N emplacements. Le `detailBasePath` (multi-base) devient **obsolète** (il
+   contredisait le reader canonique unique) : la section force `/blog` (garde P0) ; prop dépréciée.
 
-4. **Retour DYNAMIQUE (ne pas hardcoder `/blog`).** ⚠️ Défaut actuel : le reader force `backTo="/blog"` →
-   oblige un seul emplacement de fil. Il faut découpler. Pistes à évaluer :
-   - `navigate(-1)` (retour historique = revient d'où on vient) + **fallback** si deep-link/pas d'historique ;
-   - OU la carte passe la page d'origine via le **state react-router** (`<Link state>`) ou une query `?from=` ;
-   - OU un **base configurable** (ex. `detailBasePath` déjà en props de la section — le propager au reader via
-     le state du Link, pour que « retour » = la page qui portait CE `articleFeed`).
-   → Objectif : plusieurs `articleFeed` à des endroits différents, retour toujours cohérent, sans page `/blog` imposée.
+4. ✅ **FAIT (2026-07-09).** **Retour DYNAMIQUE.** `ArticleReader` : bouton retour = `navigate(-1)` si on vient
+   d'une page de l'app (`location.key !== "default"` → retour exactement là d'où on vient, préserve scroll/filtres
+   SPA), sinon (deep-link) repli sur `backTo` (défaut `/blog`). Plus de `/blog` imposé → débloque l'item 3
+   (fils à N endroits, retour toujours cohérent). Vérifié live : `/blog` → article → Retour → `/blog`.
 
 5. ✅ **FAIT (2026-07-09).** **queryKeys dédiés (convention module).** `BLOG_QUERY_KEYS`
    (`src/modules/blog/constants/queryKeys.ts`) : `FEED_PREFIX(costumSlug)`, `ARTICLE_BY_ID(id)`,

@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { ArrowLeft, Calendar, User } from "lucide-react";
 import "../i18n";
 import { useT } from "@/hooks/useT";
@@ -20,9 +20,17 @@ function authorName(article: ArticleData): string | null {
   return (p?.name as string) || null;
 }
 
-/** Lecteur d'article : hero + titre + méta (date, auteur) + corps markdown sanitizé (prose) + tags. */
+/**
+ * Lecteur d'article : hero + titre + méta (date, auteur) + corps markdown sanitizé (prose) + tags.
+ * Retour DYNAMIQUE : `navigate(-1)` si on vient d'une page de l'app (retour là d'où on vient — le fil peut
+ * donc être à N endroits), sinon (deep-link / pas d'historique) repli sur `backTo` (défaut `/blog`).
+ */
 export function ArticleReader({ article, backTo = "/blog" }: { article: ArticleData; backTo?: string }) {
   const t = useT("modules/blog");
+  const navigate = useNavigate();
+  const location = useLocation();
+  // `location.key === "default"` = 1re entrée d'historique (chargement direct/deep-link) → pas de retour in-app.
+  const goBack = () => (location.key !== "default" ? navigate(-1) : navigate(backTo));
   const image = article.profilImageUrl || article.profilMediumImageUrl;
   const date = articleDate(article.created);
   const author = authorName(article);
@@ -31,9 +39,9 @@ export function ArticleReader({ article, backTo = "/blog" }: { article: ArticleD
 
   return (
     <article className="mx-auto w-full max-w-3xl px-4 py-8">
-      <Link to={backTo} className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+      <button type="button" onClick={goBack} className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="h-4 w-4" />{t("article.backToList")}
-      </Link>
+      </button>
       <h1 className="mb-3 text-3xl font-bold leading-tight text-foreground sm:text-4xl">{article.name}</h1>
       <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
         {date && <span className="inline-flex items-center gap-1.5"><Calendar className="h-4 w-4" />{date}</span>}

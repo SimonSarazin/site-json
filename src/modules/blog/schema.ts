@@ -20,10 +20,9 @@ export const ArticleFeedSectionSchema = z.object({
     /** Filtre serveur additionnel (ex. `{ category: "actus" }`). `type:"article"` est toujours injecté. */
     filters: z.record(z.string(), z.unknown()).optional(),
     /**
-     * ⚠️ RÉSERVÉ — PAS ENCORE CÂBLÉ (backlog §11 items 3+4). Le reader n'est enregistré QUE sur
-     * `/blog/:slug` et `/blog/id/:id` (routes.tsx). Toute autre valeur produit des liens vers des
-     * routes inexistantes (→ page d'accueil). Laisser vide (défaut `/blog`) tant que le routing
-     * multi-base n'est pas livré ; un warning dev le signale.
+     * ⚠️ DÉPRÉCIÉ (items 2+3). Le reader d'article est CANONIQUE et unique : `/blog/:slug` (+ `/blog/id/:id`).
+     * Un `articleFeed` peut être posé sur N pages mais pointe TOUJOURS vers ce reader (le retour est dynamique,
+     * `navigate(-1)` — cf. ArticleReader). Toute autre valeur est ignorée (la section force `/blog`, warning dev).
      */
     detailBasePath: z.string().optional(),
     /** Afficher un article « à la une » (le plus récent) en tête. */
