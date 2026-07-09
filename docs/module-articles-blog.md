@@ -236,12 +236,16 @@ P0 est codé + testé navigateur (fil `/blog` + reader markdown + SEO). Points i
    tags → les `dropdownFilters` restent vides. Une fois le champ `tags` posé (+ articles tagués), déclarer les
    facettes correspondantes en config allume le filtrage. Cf. le caveat §14.
 
-8. **`heroSearch` sur la page blog → SearchProvider.** Pour poser une section **`heroSearch`** (barre de
-   recherche en tête, chercher DANS les articles) sur la page blog, il faudra probablement le **Provider de
-   search** (`contexts/SearchProps` / `SearchProvider`) pour partager l'état (texte + facettes) entre le hero
-   et l'`articleFeed`. À cadrer : le fil devient-il piloté par la recherche du hero (le `articleFeed` lit le
-   texte/tags du provider au lieu de son fetch autonome), et où wrapper le provider (la page blog, ou la
-   section). Lié au point 1 (palette) et à la réutilisation de l'infra search.
+8. ✅ **FAIT (2026-07-09) — par l'archi P1 (§14).** **`heroSearch` sur la page blog.** Toutes les questions
+   ouvertes sont tranchées : le **« SearchProvider » = `PageFilters`**, monté **par page** par `SiteRenderer`
+   (`key={pathname}`) → PAS besoin de wrapper quoi que ce soit. Le fil **EST piloté** par la recherche partagée
+   (`useArticleFeed` lit `PageFilters.searchQuery` + filtres). N'importe quelle section de recherche qui écrit
+   `setSearchQuery` pilote le fil : **`searchHeader`** (posé sur `/blog` en P1, prouvé live « Opération » → fil
+   filtré) OU **`heroSearch`** (`triggerSearch()` fait le même `pageFilters.setSearchQuery`) — au choix, sans
+   code. **Reliquat optionnel** (mutualisé avec le reliquat item 2) : l'autocomplete de `heroSearch` et les
+   cartes de recherche génériques ouvrent un article via `/profil/:slug` ; un helper « href de détail selon le
+   type » (article → `/blog`, sinon `/profil`) partagé les routerait vers `/blog` — raffinement ultérieur (le
+   canonical, item 2, couvre déjà le SEO).
 
 ### Extensibilité / architecture (à cadrer)
 
