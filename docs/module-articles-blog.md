@@ -235,6 +235,28 @@ P0 est codé + testé navigateur (fil `/blog` + reader markdown + SEO). Points i
    texte/tags du provider au lieu de son fetch autonome), et où wrapper le provider (la page blog, ou la
    section). Lié au point 1 (palette) et à la réutilisation de l'infra search.
 
+### Extensibilité / architecture (à cadrer)
+
+9. **Registres de variants (layout de fil, carte, reader) — lazy + default.** Comme les **cartes de search**
+   (~13 variants `components/card/`) et les **layouts du formEngine** (flat/wizard/tabs, `lazy()` + registry) :
+   permettre plusieurs **layouts de fil**, **variants de `ArticleCard`** et **variants de `ArticleReader`**,
+   sélectionnables par config, **lazy-loadés (vite-preload)**, avec un **default**. But : étendre l'apparence
+   sans toucher le cœur (un déploiement choisit sa carte/son reader). Patron : une map `Record<string, lazy(...)>`
+   + une clé de config + fallback default (cf. `SectionRenderer.LazySections`, `formEngine/layouts`).
+
+10. **Config liée aux variants.** Étendre `ArticleFeedSectionSchema` (+ éventuel bloc `config.blog`) pour
+    choisir/paramétrer ces variants (cardVariant, readerVariant, feedLayout) et les options associées
+    (colonnes, featured, facettes, tri…).
+
+11. **`BlogContext` (SI nécessaire — à trancher).** Évaluer le besoin d'un contexte blog (état partagé
+    fil↔reader↔hero, ex. filtres/tags actifs, article courant). Pas certain que ce soit utile en P0/P1 ;
+    à décider quand le heroSearch (point 8) et les facettes (P1) arrivent — ne pas sur-architecturer avant.
+
+12. **Section d'affichage d'UN article (data-backed).** Une section config-driven `articleReader` (ou
+    `articlePost`) pour poser **un article précis** (par slug/id) sur n'importe quelle page — data-backed
+    (fetch entité), à distinguer du `blogPost` STATIQUE existant. Utile pour une home (« article à la une »),
+    une page dédiée, etc. Réutilise `ArticleReader` + `useArticle`.
+
 ## 12. État P0 (2026-07-09)
 Fait + testé : module `blog` core, section `articleFeed` (data-backed), routes `/blog/:slug` + `/blog/id/:id`,
 `ArticleReader` (markdown sanitizé) + `BlogArticleSeo` (JSON-LD). 4 bugs corrigés au test (react-router v7,
