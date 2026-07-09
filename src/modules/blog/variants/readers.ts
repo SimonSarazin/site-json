@@ -1,3 +1,4 @@
+import { lazy } from "vite-preload";
 import { makeVariantRegistry } from "./registry";
 import type { ArticleData } from "../hooks/useArticle";
 
@@ -10,10 +11,11 @@ export interface ArticleReaderProps {
 }
 
 /**
- * Registre des variants de READER d'article (lazy). Choisi au niveau site (`config.blog.readerVariant`), lu
- * par `ArticlePage`. Ajouter un variant = créer `components/ArticleReader<X>.tsx` (props `ArticleReaderProps`,
- * `export default`) + une entrée ici. Seul `default` (le reader éditorial) est fourni pour l'instant.
+ * Registre des variants de READER d'article (lazy vite-preload). Choisi au niveau site
+ * (`config.blog.readerVariant`), lu par `ArticlePage`/`ArticleReaderSection`. Ajouter un variant = créer
+ * `components/ArticleReader<X>.tsx` (props `ArticleReaderProps`, `export default`) + une entrée
+ * `lazy(() => import(...))` ici. Seul `default` (le reader éditorial) est fourni pour l'instant.
  */
 export const READER_VARIANTS = makeVariantRegistry<ArticleReaderProps>({
-  default: () => import("../components/ArticleReader"),
+  default: lazy(() => import("../components/ArticleReader")),
 });

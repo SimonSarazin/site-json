@@ -1,31 +1,33 @@
-import { lazy, type ComponentType, type LazyExoticComponent } from "react";
+import type { ComponentType } from "react";
 
 /**
- * Registre générique de VARIANTS lazy (patron des cartes de search / layouts formEngine). Chaque variant est
- * un composant chargé à la demande (code-split Vite) ; `get(key)` retourne le variant demandé ou le `default`
- * (fallback jamais cassé). `preload(key)` déclenche le chunk (vite-preload) sans rendre.
+ * Registre générique de VARIANTS (patron des cartes de search / layouts formEngine). Les variants sont des
+ * composants **`lazy` de `vite-preload`** (`PreloadableComponent`) : chunk code-splitté, tracé par le plugin
+ * `vite-preload` (→ `<link modulepreload>` injectés en SSR, `preloadAll` serveur) ET méthode `.preload()`
+ * (préchauffe le chunk, ex. au survol — cf. `Agenda.tsx`). `get(key)` retourne le variant ou le `default`
+ * (fallback jamais cassé).
  *
- * ⚠️ Pour que vite-preload fonctionne, les `loaders` DOIVENT être des `() => import("chemin/statique")`
- * (chaîne littérale) au point d'appel (cf. `cards.ts`, `readers.ts`) — pas d'import dynamique calculé.
+ * ⚠️ Les variants DOIVENT être déclarés `lazy(() => import("chemin/statique"))` DIRECTEMENT au point de
+ * définition (`cards.ts`, `readers.ts`) — jamais via une indirection (loader passé en variable), sinon le
+ * plugin `vite-preload` ne trace pas le chunk (même piège que `lazyNamed`). Le registre ne fait qu'INDEXER
+ * des composants déjà `lazy`.
  */
+export type BlogVariant<P> = ComponentType<P> & { preload: () => Promise<unknown> };
+
 export interface VariantRegistry<P> {
-  get: (key?: string) => LazyExoticComponent<ComponentType<P>>;
+  get: (key?: string) => BlogVariant<P>;
   has: (key: string) => boolean;
   keys: () => string[];
   preload: (key?: string) => void;
 }
 
-export function makeVariantRegistry<P>(
-  loaders: Record<string, () => Promise<{ default: ComponentType<P> }>>,
-): VariantRegistry<P> {
-  if (!loaders.default) throw new Error("[blog] un registre de variants exige une entrée 'default'");
-  const lazyMap = Object.fromEntries(
-    Object.entries(loaders).map(([k, loader]) => [k, lazy(loader)]),
-  ) as Record<string, LazyExoticComponent<ComponentType<P>>>;
+export function makeVariantRegistry<P>(variants: Record<string, BlogVariant<P>>): VariantRegistry<P> {
+  if (!variants.default) throw new Error("[blog] un registre de variants exige une entrée 'default'");
+  const pick = (key?: string) => variants[key ?? "default"] ?? variants.default;
   return {
-    get: (key) => lazyMap[key ?? "default"] ?? lazyMap.default,
-    has: (key) => key in lazyMap,
-    keys: () => Object.keys(lazyMap),
-    preload: (key) => { void (loaders[key ?? "default"] ?? loaders.default)(); },
+    get: pick,
+    has: (key) => key in variants,
+    keys: () => Object.keys(variants),
+    preload: (key) => { void pick(key).preload(); },
   };
 }

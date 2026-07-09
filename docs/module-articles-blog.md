@@ -249,12 +249,15 @@ P0 est codé + testé navigateur (fil `/blog` + reader markdown + SEO). Points i
 
 ### Extensibilité / architecture (à cadrer)
 
-9. ✅ **FAIT (2026-07-09).** **Registres de variants — lazy + default.** Helper générique
-   `variants/registry.ts` (`makeVariantRegistry` : map `Record<string, lazy(loader)>` + `get(key)` avec
-   fallback `default` + `preload` vite-preload + garde « default requis »). Registres : **`CARD_VARIANTS`**
-   (`default` éditorial 16/9 + `compact` liste ; `ArticleCardProps` partagé) et **`READER_VARIANTS`**
-   (`default` ; extensible). Ajouter un variant = un composant + une entrée. Le **feedLayout** (`grid`/`list`)
-   est un enum léger (arrangement du conteneur, pas un chunk lazy). Test `registry.test.ts` (5/5).
+9. ✅ **FAIT (2026-07-09).** **Registres de variants — lazy vite-preload + default.** Helper générique
+   `variants/registry.ts` (`makeVariantRegistry` : INDEXE des composants `lazy` de **`vite-preload`**
+   (`PreloadableComponent` — comme partout dans le repo : chunk tracé par le plugin → `<link modulepreload>`
+   en SSR + `preloadAll` serveur + **vraie méthode `.preload()`**) + `get(key)` fallback `default` + garde
+   « default requis »). ⚠️ Les variants sont déclarés `lazy(() => import("literal"))` DIRECTEMENT dans
+   `cards.ts`/`readers.ts` (jamais via un loader-variable, sinon le plugin ne trace pas — piège `lazyNamed`).
+   Registres : **`CARD_VARIANTS`** (`default` éditorial 16/9 + `compact` liste ; `ArticleCardProps` partagé)
+   et **`READER_VARIANTS`** (`default` ; extensible). `ArticleFeed` fait `CARD_VARIANTS.preload(...)` (chauffe
+   le chunk). Le **feedLayout** (`grid`/`list`) est un enum léger (arrangement, pas un chunk). Test 5/5.
 
 10. ✅ **FAIT (2026-07-09).** **Config liée aux variants.** Section : `articleFeed.props.cardVariant` +
     `feedLayout`. Site-level : **bloc `config.blog`** (`configSchema.ts`, câblé dans `SiteConfig`) —

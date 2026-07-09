@@ -1,27 +1,34 @@
-import { describe, it, expect } from "vitest";
-import { makeVariantRegistry } from "./registry";
+import { describe, it, expect, vi } from "vitest";
+import { makeVariantRegistry, type BlogVariant } from "./registry";
 
-const loader = () => Promise.resolve({ default: () => null });
+// Faux variant : composant + méthode .preload() (comme un `lazy` de vite-preload).
+const mkVariant = () => Object.assign(() => null, { preload: vi.fn(() => Promise.resolve()) }) as unknown as BlogVariant<unknown>;
 
 describe("makeVariantRegistry", () => {
-  const reg = makeVariantRegistry({ default: loader, compact: loader });
+  const def = mkVariant();
+  const compact = mkVariant();
+  const reg = makeVariantRegistry<unknown>({ default: def, compact });
 
   it("get(undefined) et get(inconnu) retombent sur default", () => {
-    expect(reg.get()).toBe(reg.get("default"));
-    expect(reg.get("nexistepas")).toBe(reg.get("default"));
+    expect(reg.get()).toBe(def);
+    expect(reg.get("nexistepas")).toBe(def);
   });
-  it("get(connu) diffère de default", () => {
-    expect(reg.get("compact")).not.toBe(reg.get("default"));
+  it("get(connu) retourne le bon variant", () => {
+    expect(reg.get("compact")).toBe(compact);
   });
   it("has / keys", () => {
     expect(reg.has("compact")).toBe(true);
     expect(reg.has("nexistepas")).toBe(false);
     expect(reg.keys().sort()).toEqual(["compact", "default"]);
   });
-  it("preload ne jette pas (clé connue, inconnue → default, ou vide)", () => {
-    expect(() => { reg.preload("compact"); reg.preload("nope"); reg.preload(); }).not.toThrow();
+  it("preload délègue à `.preload()` du variant (connu / inconnu→default / vide)", () => {
+    reg.preload("compact");
+    expect(compact.preload).toHaveBeenCalled();
+    reg.preload("nope");
+    reg.preload();
+    expect(def.preload).toHaveBeenCalled();
   });
   it("exige une entrée `default`", () => {
-    expect(() => makeVariantRegistry({ x: loader })).toThrow();
+    expect(() => makeVariantRegistry<unknown>({ x: mkVariant() })).toThrow();
   });
 });
