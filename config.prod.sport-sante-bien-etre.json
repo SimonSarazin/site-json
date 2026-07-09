@@ -6182,7 +6182,8 @@
               "fields": [
                 "name",
                 "description",
-                "profil_avatar"
+                "profil_avatar",
+                "tags"
               ]
             }
           ]
@@ -6247,10 +6248,24 @@
           }
         },
         "description": {
-          "widget": "text",
+          "widget": "markdown",
           "label": {
             "fr": "Contenu",
             "en": "Content"
+          },
+          "widgetProps": {
+            "height": 320,
+            "preview": "edit"
+          }
+        },
+        "tags": {
+          "widget": "tags",
+          "label": {
+            "fr": "Mots-clés",
+            "en": "Tags"
+          },
+          "widgetProps": {
+            "searchable": true
           }
         }
       },
