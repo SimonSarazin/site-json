@@ -42,15 +42,38 @@ Pour une documentation complète (installation, configuration, schémas JSON, SS
 ## 🛠️ Installation
 
 ```bash
-# cloner le dépôt
+# cloner ces deux dépôts
+git clone https://gitlab.adullact.net/pixelhumain/site-json
+git clone https://gitlab.adullact.net/pixelhumain/cocolight-api-client
+
+cd site-json
 
 # installer les dépendances
-yarn install
-# ou npm install
+npm install
+# ou yarn install
+
+npm i @communecter/cocolight-api-client 
+
+# configurer le fichier de configuration avec vos propres éléments (ici en exemple en violet, avec le serveur QA, qui sert de serveur de test, ainsi que le slug pour tiers-lieux.org et son fichier de configuration )
+
+créer .env avec 
+```
+VITE_BASE_URL_BACKEND=http://localhost:3000
+# VITE_BASE_URL_BACKEND=https://qa.communecter.org
+VITE_SERVER_URL=http://localhost:3000
+# VITE_BASE_URL_BACKEND= https://qa.communecter.org
+VITE_SLUG=default
+# VITE_SLUG=franceTierslieux
+VITE_MON_DOMAIN=
+monsite-exemple.com
+
+SITE_CONFIG_PATH=./config.prod.json 
+# SITE_CONFIG_PATH= ./config.prod.tiers-lieux.json
+```
 
 # démarrer en mode développement
-yarn dev
-# ou npm run dev
+npm run dev
+# ou yarn run dev
 ```
 
 ## Commandes principales
