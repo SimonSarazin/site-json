@@ -7,6 +7,18 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { formatDateLong } from "@/helpers/formatDate";
 import type { ArticleData } from "../hooks/useArticle";
 
+/** Retire la syntaxe markdown pour un APERÇU en texte brut (carte) : liens/images/titres/emphase/code. */
+export function stripMarkdown(md: string): string {
+  return md
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, "")      // images ![alt](url) → rien
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")    // liens [texte](url) → texte
+    .replace(/^#{1,6}\s+/gm, "")                // titres
+    .replace(/[*_`~>#]/g, "")                    // emphase/code/citation/reliquat
+    .replace(/\r?\n+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 /** Date de l'article (created unix s) → libellé long, tolérant (number s / ms / string / absent). */
 function articleDate(created: unknown): string | null {
   if (created == null || created === "") return null;
@@ -23,7 +35,8 @@ export function ArticleCard({ article, href, lastRef, featured = false }: {
   featured?: boolean;
 }) {
   const image = article.profilMediumImageUrl || article.profilImageUrl;
-  const excerpt = article.shortDescription || (typeof article.description === "string" ? article.description.slice(0, 180) : "");
+  const excerpt = article.shortDescription
+    || (typeof article.description === "string" ? stripMarkdown(article.description).slice(0, 180) : "");
   const date = articleDate(article.created);
   const tags = Array.isArray(article.tags) ? article.tags.slice(0, 3) : [];
 
