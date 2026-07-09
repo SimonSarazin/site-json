@@ -3,6 +3,7 @@ import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { getBaseUrl } from "@/lib/constant/common";
 import { initApi } from "@/lib/apiClient";
 import { PROFIL_QUERY_KEYS } from "@/modules/profil/constants/queryKeys";
+import { BLOG_QUERY_KEYS } from "../constants/queryKeys";
 
 /**
  * Prefetch SSR d'un article par slug — même clé de cache que `useEntityBySlugQuery`
@@ -25,7 +26,7 @@ export async function prefetchArticleBySlug(queryClient: QueryClient, slug: stri
  */
 export async function prefetchArticleById(queryClient: QueryClient, id: string): Promise<unknown> {
   return queryClient.ensureQueryData({
-    queryKey: ["blog:article:id", id],
+    queryKey: BLOG_QUERY_KEYS.ARTICLE_BY_ID(id),
     queryFn: async () => {
       const { api } = await initApi({ baseURL: getBaseUrl() });
       if (!api) throw new Error("API non initialisée");

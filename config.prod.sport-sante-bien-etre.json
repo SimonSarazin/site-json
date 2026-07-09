@@ -6315,9 +6315,12 @@
           "edit": "EntityFormModal · UPDATE_POI"
         },
         "invalidateFn": {
-          "fn": "invalidate:standard",
+          "fn": "invalidate:blog",
           "params": {
-            "userList": "pois"
+            "userList": "pois",
+            "searchKeys": [
+              "blog:sportSanteBienetre"
+            ]
           }
         }
       }

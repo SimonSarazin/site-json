@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
 import { usePageFiltersOptional } from "@/modules/search/contexts/pageFilters";
 import { searchByFieldsToQuery } from "@/modules/search/lib/searchByFieldsToQuery";
+import { BLOG_QUERY_KEYS } from "../constants/queryKeys";
 
 /**
  * Fil d'articles d'un costum (POI type=article, scope source.key) — paginé, trié par date décroissante.
@@ -42,7 +43,7 @@ export function useArticleFeed({ costumSlug, pageSize = 12, filters }: UseArticl
   );
 
   return useSearchQuery({
-    queryKeyPrefix: `blog:${costumSlug}`,
+    queryKeyPrefix: BLOG_QUERY_KEYS.FEED_PREFIX(costumSlug),
     searchText,
     searchTags,
     // ⚠ searchType explicite obligatoire (buildSearchPayload n'applique defaultTypes que si type===undefined).

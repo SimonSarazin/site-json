@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useEntityBySlugQuery } from "@/hooks/useEntityBySlugQuery";
+import { BLOG_QUERY_KEYS } from "../constants/queryKeys";
 
 /** Article normalisé (champs POI type=article utiles au reader). */
 export interface ArticleData {
@@ -35,7 +36,7 @@ export function useArticle({ slug, id }: { slug?: string; id?: string }) {
   const { api, loading } = useCocolight();
   const bySlug = useEntityBySlugQuery({ slug, options: { enabled: !!slug } });
   const byId = useQuery<unknown>({
-    queryKey: ["blog:article:id", id],
+    queryKey: BLOG_QUERY_KEYS.ARTICLE_BY_ID(id ?? ""),
     enabled: !slug && !!id && !loading && !!api,
     queryFn: async () => {
       if (!api) throw new Error("API non initialisée");
