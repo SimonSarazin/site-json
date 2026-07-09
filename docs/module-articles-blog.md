@@ -214,14 +214,13 @@ P0 est codé + testé navigateur (fil `/blog` + reader markdown + SEO). Points i
    **`BLOG_QUERY_KEYS`** (comme `NEWS_QUERY_KEYS`/`SEARCH_QUERY_KEYS`) : feed(costumSlug), article(slug|id).
    Prérequis du point 6 (on ne peut invalider proprement que des clés centralisées).
 
-6. **Invalidation des queries blog à l'ajout/édition d'un article.** Quand un article est créé/édité via le
-   **form costum** (add/edit du sous-type `article`), il faut **invalider** les queries blog (feed + détail)
-   pour que le nouvel/édité article apparaisse. Aujourd'hui la mutation costum a un `invalidateFn` générique
-   (`invalidate:standard`) qui ne touche pas le fil blog. → brancher une invalidation blog (via
-   `BLOG_QUERY_KEYS`, point 5) sur la mutation du form article — probablement un `invalidateFn` dédié
-   (ex. `invalidate:blog`) posé dans le `costumForm` du sous-type article.
+6. **Invalidation des queries blog à l'ajout/édition d'un article.** ⚠️ **SUIVANT IMMÉDIAT** — confirmé au test
+   authoring (§14 done) : `invalidate:standard` du `costumForm` article n'invalide PAS les queries blog
+   (`blog:${costumSlug}` du fil ni `["blog:article:id", id]`), donc **un article créé/édité n'apparaît qu'au
+   reload**. Fix : créer `BLOG_QUERY_KEYS` (point 5) + un `invalidateFn` dédié (ex. `invalidate:blog`) posé
+   sur `mutation.invalidateFn` du `costumForm` `sport-sante-bienetre-article` (add + edit).
 
-7. **Champ contenu en MARKDOWN dans le form article (authoring).** Le champ `description` (corps) du
+7. ✅ **FAIT (2026-07-09).** **Champ contenu en MARKDOWN dans le form article (authoring).** Le champ `description` (corps) du
    `costumForm` `sport-sante-bienetre-article` est aujourd'hui un **`textarea`** (widget `text`). Or le reader
    rend le corps en **markdown** (`renderMarkdown`) → l'auteur doit pouvoir écrire du markdown. Mettre un
    **widget markdown** (l'éditeur `MarkdownEditor` de coform, déjà client-only/SSR-safe) sur le champ
@@ -320,8 +319,9 @@ Chacun devient une facette en le déclarant dans `dropdownFilters` d'un `searchH
 
 - **Livré** : `articleFeed` piloté par PageFilters ; page `/blog` sport-sante = `searchHeader` (recherche texte
   **fonctionnelle** : filtre par nom d'article) + `articleFeed`.
-- **Caveat** : les 3 articles costum sport-sante n'ont **ni tags ni champ `list`** (le costum form article ne les
-  définit pas encore — cf. P4 authoring §11.7). Les **facettes** s'allument donc quand : (a) le **WordPress est
-  importé** (categories+tags fusionnés en `tags[]`, cf. §8), ou (b) un champ `list` est **ajouté au costum form**.
-  Le mécanisme est prêt : il ne reste qu'à déclarer les `dropdownFilters` correspondants en config.
+- **Caveat** : le **champ `tags` existe désormais** dans le costum form article (§11.7 done), mais les 3 articles
+  costum sport-sante **ne sont pas encore tagués** (données). Les **facettes** s'allument donc quand des articles
+  portent des `tags` : (a) via le **WordPress importé** (categories+tags fusionnés en `tags[]`, cf. §8), (b) en
+  **taguant les articles** via le nouveau champ, ou (c) via un autre champ `list` costum. Il ne reste alors qu'à
+  déclarer les `dropdownFilters` correspondants en config (zéro code).
 - **Pas de `BlogContext`** (backlog §11 item 11) : l'état vit dans le `PageFilters` partagé → inutile.
