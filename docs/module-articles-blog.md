@@ -343,3 +343,42 @@ Chacun devient une facette en le déclarant dans `dropdownFilters` d'un `searchH
   **taguant les articles** via le nouveau champ, ou (c) via un autre champ `list` costum. Il ne reste alors qu'à
   déclarer les `dropdownFilters` correspondants en config (zéro code).
 - **Pas de `BlogContext`** (backlog §11 item 11) : l'état vit dans le `PageFilters` partagé → inutile.
+
+## 15. Revue adversariale items 5-12 + backlog features/design (2026-07-09)
+
+Workflow revue (5 dim → réfutation) : **20 confirmés** (avec doublons) → corrigés dans commit
+`6aacce7` : **canonical SSR** (`getServerUrl()` au lieu de `window.location` — vérifié : `<link canonical>`
++ `og:url` désormais dans le HTML serveur, dans `ArticlePage` + `ProfileSeo`), **open-redirect** palette
+(base forcée `/blog`), palette **triée** (`defaultSortBy`), `hrefFor` **gardé** (plus de `/blog/id/undefined`),
+**a11y** (focus-visible cartes+retour, `aria-hidden` icônes déco, contraste placeholder, skeleton `role=status`,
+titre reader `h2` en section embarquée, aria-label retour). Écartés : regex slug (neutralisé), excludeTypes
+type-null (déjà correct), prefetch userContextId (pré-existant).
+
+### Backlog features/design (workflow expansion — 55 propositions → priorisé)
+
+**Top 5 ROI** (tous P1) — réutilisent l'existant, config-driven :
+1. **BlogArticleSeo enrichi** : JSON-LD `BlogPosting` complet (`articleBody`, `author`, `dateModified`,
+   `keywords`, `wordCount`) — +indexation Google/IA. (canonical SSR déjà fait ci-dessus)
+2. **Flux RSS/Atom** `/blog/feed.xml` (route serveur, réutilise `useArticleFeed`/`formatDate` + xml-builder) —
+   distribution (Google News, lecteurs RSS).
+3. **Workflow article** (brouillon/planifié/publié) + **`publishedAt`** programmé (filtre `publishedAt<=now`) —
+   éditorial production-ready ; aligne le chantier admin `status.*` (task #37).
+4. **Temps de lecture** (`estimateReadingTime` via `stripMarkdown`) + **Articles liés** (`useArticleFeed` par
+   tags `$all`) — engagement/rétention.
+5. **`shortDescription` (extrait édité)** + **image de couverture 16:9** (widget image + crop/placeholder) —
+   qualité éditoriale des cartes ; sync WordPress (`excerpt` + `featured_media`).
+
+**P1 additionnels (quick-wins S)** : sitemap XML articles + `robots`/`Sitemap` ; balises pagination
+`rel prev/next` ; bouton **copier-lien** + **partage social** (Web Share API + fallback) ; landmarks a11y
+(`<main>`, skip-link, heading order — partiellement fait).
+
+**P2** : SEO metadata par article (`seo.title/description`) ; **table des matières** (H2/H3) ; prévisualisation
+avant publication ; **tags cliquables** (`ClickableFacet field:"tags"`) + filtrage par auteur (`dropdownFilter
+field:"creator"`) ; breadcrumb (JSON-LD `BreadcrumbList`) ; OG image dédiée ; hreflang i18n.
+
+**P3 / polish** : progression de lecture, précédent/suivant, variants de carte (magazine/minimal) + animations,
+blur placeholder (LQIP) + prefetch reader au survol (`READER_VARIANTS.preload()` — débloqué par le fix
+vite-preload), compteur de vues, follow auteur.
+
+**En attente backend (phase 2)** : réactions emoji, commentaires, notifications éditeur (`article:published`),
+historique/révisions — tous nécessitent des endpoints/perms côté legacy+backend.
