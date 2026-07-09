@@ -56,7 +56,8 @@ npm i @communecter/cocolight-api-client
 
 # configurer le fichier de configuration avec vos propres éléments (ici en exemple en violet, avec le serveur QA, qui sert de serveur de test, ainsi que le slug pour tiers-lieux.org et son fichier de configuration )
 
-créer .env avec 
+Créez un fichier `.env` à la racine du projet (voir [Configuration](02-configuration.md) pour le détail des variables) :
+
 ```
 VITE_BASE_URL_BACKEND=http://localhost:3000
 # VITE_BASE_URL_BACKEND=https://qa.communecter.org
