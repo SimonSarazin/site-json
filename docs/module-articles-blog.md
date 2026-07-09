@@ -193,10 +193,14 @@ P0 est codé + testé navigateur (fil `/blog` + reader markdown + SEO). Points i
 1. **Command palette (Ctrl+K) — recherche d'articles.** Le `commandPalette` doit pouvoir chercher et
    ouvrir des **articles** (POI `type:"article"`) → `/blog/:slug`. Aujourd'hui il ne les cible pas.
 
-2. **Un POI `article` = 2 vues possibles.** Un article est à la fois un **POI** (profil générique
-   `/profil/:slug` + preview drawer des cartes de recherche) ET un **article** (reader blog `/blog/:slug`).
-   À trancher : les deux voies coexistent (et laquelle une carte de recherche générique ouvre), gestion du
-   **contenu dupliqué / canonical SEO**, cohérence du lien selon le contexte (annuaire vs fil blog).
+2. ✅ **FAIT (2026-07-09).** **Un POI `article` = 2 vues possibles.** **Décision : le reader `/blog/:slug` est
+   la présentation CANONIQUE** ; `/profil/:slug` reste accessible (un article EST un POI) mais **canonicalise
+   vers `/blog/:slug`** (`ProfileSeo` : `type==="article"` → canonical + og:url `/blog/:slug`, JSON-LD
+   `@type:"BlogPosting"`, og:type `article`) → plus de contenu dupliqué SEO. **Palette** : les articles sont
+   exclus de l'annuaire générique (`entitySearch.excludeTypes:["article"]`, post-filtre sur `serverData.type`)
+   → ils n'apparaissent QUE dans le groupe « Articles » (source `blog:articles`, item 1). **Reliquat optionnel** :
+   les cartes de recherche génériques (/lieux, preview drawer) ouvrent encore un article via `/profil/:slug` —
+   acceptable (le canonical corrige le SEO) ; router ces cartes vers `/blog` serait un raffinement ultérieur.
 
 3. **`articleFeed` posable sur N pages.** La section est config-driven donc déjà posable partout — mais
    c'est lié au point 4 : tant que le retour est figé, on ne peut avoir les articles qu'à UN endroit.

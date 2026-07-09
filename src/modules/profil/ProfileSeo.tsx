@@ -97,12 +97,18 @@ export function ProfileSeo({ entity, isLoading, entityType, activeTab, profileCo
     config.meta?.favicon ||
     "";
 
+  // Un POI `type:"article"` a DEUX vues (profil générique + reader blog /blog/:slug). Le reader blog est la
+  // présentation CANONIQUE → cette vue profil canonicalise vers /blog/:slug (évite le contenu dupliqué SEO).
+  const isArticle = entity.serverData?.type === "article";
+
   // Construction de l'URL canonique avec le tab actif
   const slug = entity.serverData?.slug || "";
   const canonicalUrl = typeof window !== 'undefined' && slug
-    ? currentTab !== firstTabId
-      ? `${window.location.origin}/profil/${slug}/${currentTab}`
-      : `${window.location.origin}/profil/${slug}`
+    ? isArticle
+      ? `${window.location.origin}/blog/${slug}`
+      : currentTab !== firstTabId
+        ? `${window.location.origin}/profil/${slug}/${currentTab}`
+        : `${window.location.origin}/profil/${slug}`
     : "";
 
   // Titre de la page dynamique selon le tab actif
@@ -131,7 +137,7 @@ export function ProfileSeo({ entity, isLoading, entityType, activeTab, profileCo
   const entityUrl = entity.serverData?.url as string[] | undefined;
   const structuredData = {
     "@context": "https://schema.org",
-    "@type": getSchemaType(entityType),
+    "@type": isArticle ? "BlogPosting" : getSchemaType(entityType),
     name: entityName,
     ...(description.length > 0 && { description }),
     ...(imageUrl.length > 0 && { image: imageUrl }),
@@ -158,7 +164,7 @@ export function ProfileSeo({ entity, isLoading, entityType, activeTab, profileCo
       )}
 
       {/* Open Graph */}
-      <meta property="og:type" content="website" />
+      <meta property="og:type" content={isArticle ? "article" : "website"} />
       <meta property="og:title" content={entityName} />
       {description.length > 0 && (
         <meta property="og:description" content={description.substring(0, 160)} />
