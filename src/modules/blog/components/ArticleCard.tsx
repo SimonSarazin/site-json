@@ -1,23 +1,17 @@
 import { Link } from "react-router";
-import { Calendar } from "lucide-react";
+import { Calendar, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { formatDateLong } from "@/helpers/formatDate";
+import { useT } from "@/hooks/useT";
+import { estimateReadingTime } from "../lib/readingTime";
 import type { ArticleData } from "../hooks/useArticle";
 
-/** Retire la syntaxe markdown pour un APERÇU en texte brut (carte) : liens/images/titres/emphase/code. */
-export function stripMarkdown(md: string): string {
-  return md
-    .replace(/!\[[^\]]*\]\([^)]*\)/g, "")      // images ![alt](url) → rien
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")    // liens [texte](url) → texte
-    .replace(/^#{1,6}\s+/gm, "")                // titres
-    .replace(/[*_`~>#]/g, "")                    // emphase/code/citation/reliquat
-    .replace(/\r?\n+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
+// Re-export (rétro-compat des imports existants : ArticleCardCompact, BlogArticleSeo).
+export { stripMarkdown } from "../lib/markdown";
+import { stripMarkdown } from "../lib/markdown";
 
 /** Date de l'article (created unix s) → libellé long, tolérant (number s / ms / string / absent). */
 function articleDate(created: unknown): string | null {
@@ -37,10 +31,12 @@ export interface ArticleCardProps {
 
 /** Carte éditoriale d'article (image 16/9, date, titre, extrait, tags). `featured` = grand format. */
 export function ArticleCard({ article, href, lastRef, featured = false }: ArticleCardProps) {
+  const t = useT("modules/blog");
   const image = article.profilMediumImageUrl || article.profilImageUrl;
   const excerpt = article.shortDescription
     || (typeof article.description === "string" ? stripMarkdown(article.description).slice(0, 180) : "");
   const date = articleDate(article.created);
+  const minutes = estimateReadingTime(article.description);
   const tags = Array.isArray(article.tags) ? article.tags.slice(0, 3) : [];
 
   return (
@@ -52,9 +48,10 @@ export function ArticleCard({ article, href, lastRef, featured = false }: Articl
             : <div className="flex h-full w-full items-center justify-center text-muted-foreground/70">—</div>}
         </AspectRatio>
         <CardContent className="space-y-2 p-4">
-          {date && (
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Calendar className="h-3.5 w-3.5" aria-hidden="true" />{date}
+          {(date || minutes > 0) && (
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+              {date && <span className="inline-flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" aria-hidden="true" />{date}</span>}
+              {minutes > 0 && <span className="inline-flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" aria-hidden="true" />{t("article.readingTime", undefined, { count: minutes })}</span>}
             </div>
           )}
           <h3 className={`font-semibold leading-snug text-foreground line-clamp-2 ${featured ? "text-2xl" : "text-base"}`}>

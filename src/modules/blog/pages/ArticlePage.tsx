@@ -7,6 +7,7 @@ import { getServerUrl } from "@/lib/constant/common";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useArticle } from "../hooks/useArticle";
 import { READER_VARIANTS } from "../variants/readers";
+import { RelatedArticles } from "../components/RelatedArticles";
 import { BlogArticleSeo } from "../BlogArticleSeo";
 
 const ReaderSkeleton = () => (
@@ -48,6 +49,7 @@ export default function ArticlePage() {
       <Suspense fallback={<ReaderSkeleton />}>
         <Reader article={article} />
       </Suspense>
+      <RelatedArticles article={article} />
     </>
   );
 }

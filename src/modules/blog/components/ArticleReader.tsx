@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router";
-import { ArrowLeft, Calendar, User } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, User } from "lucide-react";
 import "../i18n";
 import { useT } from "@/hooks/useT";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { renderMarkdown } from "@/helpers/renderMarkdown";
 import { formatDateLong } from "@/helpers/formatDate";
+import { estimateReadingTime } from "../lib/readingTime";
 import type { ArticleData } from "../hooks/useArticle";
 import type { ArticleReaderProps } from "../variants/readers";
 
@@ -35,6 +36,8 @@ export function ArticleReader({ article, backTo = "/blog", hideBack = false, tit
   const image = article.profilImageUrl || article.profilMediumImageUrl;
   const date = articleDate(article.created);
   const author = authorName(article);
+  const minutes = estimateReadingTime(article.description);
+  const chapo = typeof article.shortDescription === "string" ? article.shortDescription.trim() : "";
   const tags = Array.isArray(article.tags) ? article.tags : [];
   const bodyHtml = typeof article.description === "string" ? renderMarkdown(article.description, { markdownEnabled: true }) : "";
 
@@ -50,7 +53,9 @@ export function ArticleReader({ article, backTo = "/blog", hideBack = false, tit
       <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
         {date && <span className="inline-flex items-center gap-1.5"><Calendar className="h-4 w-4" aria-hidden="true" />{date}</span>}
         {author && <span className="inline-flex items-center gap-1.5"><User className="h-4 w-4" aria-hidden="true" />{t("article.by")} {author}</span>}
+        {minutes > 0 && <span className="inline-flex items-center gap-1.5"><Clock className="h-4 w-4" aria-hidden="true" />{t("article.readingTime", undefined, { count: minutes })}</span>}
       </div>
+      {chapo && <p className="mb-6 border-l-4 border-primary/40 pl-4 text-lg italic leading-relaxed text-muted-foreground">{chapo}</p>}
       {image && (
         <AspectRatio ratio={16 / 9} className="mb-8 overflow-hidden rounded-xl bg-muted">
           <OptimizedImage src={image} alt={article.name || ""} width={900} priority className="h-full w-full object-cover" />

@@ -6187,6 +6187,7 @@
               "columns": 1,
               "fields": [
                 "name",
+                "shortDescription",
                 "description",
                 "profil_avatar",
                 "tags"
@@ -6251,6 +6252,17 @@
           "label": {
             "fr": "Titre",
             "en": "Title"
+          }
+        },
+        "shortDescription": {
+          "widget": "textarea",
+          "label": {
+            "fr": "Chapô / extrait",
+            "en": "Excerpt"
+          },
+          "info": {
+            "fr": "Résumé court (~1-2 phrases) affiché en tête d'article et sur les cartes.",
+            "en": "Short summary (~1-2 sentences) shown at the top of the article and on cards."
           }
         },
         "description": {

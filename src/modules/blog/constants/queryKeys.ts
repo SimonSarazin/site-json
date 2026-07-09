@@ -14,4 +14,7 @@ export const BLOG_QUERY_KEYS = {
   ARTICLE_BY_ID: (id: string) => ["blog:article:id", id] as const,
   /** Préfixe de TOUTES les queries « article par id » (invalidation large). */
   ARTICLE_BY_ID_PREFIX: () => ["blog:article:id"] as const,
+  /** Articles liés d'un article (par tags, scope costum, hors article courant). */
+  RELATED: (costumSlug: string, id: string, tags: readonly string[]) =>
+    ["blog:related", costumSlug, id, [...tags]] as const,
 } as const;
