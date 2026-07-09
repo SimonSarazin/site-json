@@ -28,9 +28,10 @@ export function useArticleFeed({ costumSlug, pageSize = 12, filters }: UseArticl
   const filterNames = cf?.filterNames;
   const searchByFields = cf?.searchByFields;
 
-  // Filtres sans `field` (types/tags cochés) → searchTags ($all).
+  // Filtres sans `field` (types/tags cochés) → searchTags ($all). Clé canonique `tags` (comme
+  // SearchProStatic) — buildSearchPayload aplatit de toute façon les valeurs, mais on garde la convention.
   const searchTags = useMemo(
-    () => (filterNames && filterNames.length ? { article: [...filterNames] } : {}),
+    () => (filterNames && filterNames.length ? { tags: [...filterNames] } : {}),
     [filterNames],
   );
   // Filtres avec `field` (ex. champ `list` du costum) → filtres Mongo `{ field: { $in } }`
@@ -50,7 +51,8 @@ export function useArticleFeed({ costumSlug, pageSize = 12, filters }: UseArticl
     baseParams: {
       indexStepList: pageSize,
       // fieldFilters fusionnés comme `canonicalSearchProStaticBaseParams` (dans defaultFilters).
-      defaultFilters: { type: "article", ...(filters ?? {}), ...fieldFilters },
+      // `type: "article"` en DERNIER = garantie d'immuabilité (un filtre field:"type" ne peut pas l'écraser).
+      defaultFilters: { ...(filters ?? {}), ...fieldFilters, type: "article" },
       defaultSortBy: { created: -1 },
       // scope costum : lus par buildSearchPayload via cast (présents en config, hors type strict).
       costumSlug,

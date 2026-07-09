@@ -227,6 +227,10 @@ P0 est codé + testé navigateur (fil `/blog` + reader markdown + SEO). Points i
    **widget markdown** (l'éditeur `MarkdownEditor` de coform, déjà client-only/SSR-safe) sur le champ
    `description` du sous-type `article` (config.costumForms) — et vérifier que le formEngine sait rendre ce
    widget d'édition. Cohérent avec la décision « corps = markdown » (§9.3).
+   **⇒ Dans la MÊME passe d'authoring : ajouter un champ `tags`** (multi-select / liste) au costum form
+   article. C'est le prérequis data des **facettes P1 (§14)** : aujourd'hui les articles costum n'ont pas de
+   tags → les `dropdownFilters` restent vides. Une fois le champ `tags` posé (+ articles tagués), déclarer les
+   facettes correspondantes en config allume le filtrage. Cf. le caveat §14.
 
 8. **`heroSearch` sur la page blog → SearchProvider.** Pour poser une section **`heroSearch`** (barre de
    recherche en tête, chercher DANS les articles) sur la page blog, il faudra probablement le **Provider de
