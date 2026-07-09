@@ -28,9 +28,15 @@ export default function ArticlePage() {
       </div>
     );
   }
+  // Canonical/og:url (aligné ProfileSeo : origine côté client). Priorité au slug → un article slugué
+  // ouvert via /blog/id/:id canonicalise vers /blog/:slug (évite le duplicate content).
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const path = article.slug ? `/blog/${article.slug}` : id ? `/blog/id/${id}` : slug ? `/blog/${slug}` : "";
+  const canonicalUrl = origin && path ? origin + path : undefined;
+
   return (
     <>
-      <BlogArticleSeo article={article} />
+      <BlogArticleSeo article={article} url={canonicalUrl} />
       <ArticleReader article={article} />
     </>
   );

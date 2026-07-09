@@ -262,3 +262,16 @@ Fait + testé : module `blog` core, section `articleFeed` (data-backed), routes 
 `ArticleReader` (markdown sanitizé) + `BlogArticleSeo` (JSON-LD). 4 bugs corrigés au test (react-router v7,
 Helmet string-child ×2, retour/extrait). Reste connu : **images non chargées en dev** (URL `/upload` relative +
 backend 5080 → 404 ; OK en prod même host — à confirmer / absolutiser `OptimizedImage` en dev).
+
+## 13. Revue adversariale P0 (2026-07-09) — 5 findings confirmés / 11, TOUS traités
+Workflow 4 dimensions (security/correctness/react-ssr/data-robustness) → vérif par réfutation. 6 réfutés
+(dont le « XSS JSON-LD » : `helmet.script` n'est jamais réinjecté au SSR ; et « serverData.id absent » :
+empiriquement peuplé sur l'appel searchCostum réel — repli ajouté quand même par convention).
+
+| # | Sév. | Défaut | Correctif |
+|---|---|---|---|
+| 1 | HIGH | `/blog/id/:id` sans loader → ~82% articles (slugless) sans SEO/contenu SSR | `prefetchArticleById` (clé `["blog:article:id",id]`) + `articleByIdLoader` sur la route (`routes.tsx`, `prefetch/prefetchArticle.ts`) |
+| 2 | MED | `canonical`/`og:url` jamais émis (prop `url` jamais passée) → duplicate content | `ArticlePage` calcule l'URL absolue (`window.location.origin`, priorité slug) et la passe à `BlogArticleSeo` |
+| 4 | MED | Feed lit `id` sur `serverData` seul (pas de repli) → risque `/blog/id/undefined` | `norm()` : repli `?? item.id` (id racine, comme SearchListView/CardFunding/AdminResourceTable) |
+| 5 | LOW | Feed sans état d'erreur → panne search déguisée en « aucun article » | branche erreur + bouton Réessayer (`error`/`refetch`, i18n `feed.error`/`feed.retry`) |
+| 3 | MED (latent) | `detailBasePath ≠ /blog` = liens morts (prod OK, défaut `/blog`) | **gardé** : `base` figé `/blog` + `console.warn` dev + `schema.ts` marqué « RÉSERVÉ, non câblé » → **relève des backlog §11 items 3+4** (routing multi-base) |

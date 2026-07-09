@@ -18,3 +18,18 @@ export async function prefetchArticleBySlug(queryClient: QueryClient, slug: stri
     },
   });
 }
+
+/**
+ * Prefetch SSR d'un article par id (les ~82% d'articles slugless) — MÊME clé que la branche `byId`
+ * de `useArticle` (`["blog:article:id", id]`) → le reader lit le cache déshydraté et rend le SEO côté serveur.
+ */
+export async function prefetchArticleById(queryClient: QueryClient, id: string): Promise<unknown> {
+  return queryClient.ensureQueryData({
+    queryKey: ["blog:article:id", id],
+    queryFn: async () => {
+      const { api } = await initApi({ baseURL: getBaseUrl() });
+      if (!api) throw new Error("API non initialisée");
+      return api.poi({ id });
+    },
+  });
+}
