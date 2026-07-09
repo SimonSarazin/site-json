@@ -12,5 +12,7 @@ export const BlogConfigSchema = z.object({
   defaultCardVariant: z.string().optional(),
   /** Layout de fil par défaut si une section ne le précise pas. Défaut : `grid`. */
   defaultFeedLayout: z.enum(["grid", "list"]).optional(),
+  /** Costum du flux RSS `/blog/feed.xml` (scope `source.key`). Sans lui, le flux répond 400 (sauf `?costum=`). */
+  feedCostumSlug: z.string().optional(),
 });
 export type BlogConfig = z.infer<typeof BlogConfigSchema>;

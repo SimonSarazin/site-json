@@ -4469,6 +4469,9 @@
       }
     }
   },
+  "blog": {
+    "feedCostumSlug": "sportSanteBienetre"
+  },
   "commandPalette": {
     "enabled": true,
     "triggerVariant": "compact",
