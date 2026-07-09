@@ -4186,6 +4186,18 @@
       "layout": "default",
       "sections": [
         {
+          "type": "searchHeader",
+          "id": "ssb-blog-search",
+          "props": {
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher un article…",
+              "en": "Search an article…"
+            },
+            "showActiveFiltersTags": true
+          }
+        },
+        {
           "type": "articleFeed",
           "id": "ssb-article-feed",
           "props": {

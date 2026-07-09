@@ -1,7 +1,21 @@
+import { useMemo } from "react";
 import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
+import { usePageFiltersOptional } from "@/modules/search/contexts/pageFilters";
+import { searchByFieldsToQuery } from "@/modules/search/lib/searchByFieldsToQuery";
 
-/** Fil d'articles d'un costum (POI type=article, scope source.key) — paginé, trié par date décroissante.
- *  Réutilise useSearchQuery (searchCostum) : searchType poi + defaultFilters type=article + scope costum. */
+/**
+ * Fil d'articles d'un costum (POI type=article, scope source.key) — paginé, trié par date décroissante.
+ * Réutilise `useSearchQuery` (searchCostum) : searchType poi + defaultFilters type=article + scope costum.
+ *
+ * **Piloté par le `PageFilters` partagé de la page** (exactement comme `SearchProStatic`) : un `heroSearch`
+ * ou un `searchHeader` de la MÊME page écrit le texte + les filtres → le fil re-requête automatiquement
+ * (la queryKey de useSearchQuery inclut searchText/searchTags/baseParams). Le filtrage est donc
+ * CONFIG-DRIVEN et agnostique au champ :
+ *  - filtres SANS `field` (types/tags) → `searchTags` ($all) ;
+ *  - filtres AVEC `field` (ex. un champ `list` ajouté au costum form article) → `{ <field>: { $in } }`
+ *    fusionné dans `defaultFilters` (via `searchByFieldsToQuery`, comme la liste search).
+ * Hors provider PageFilters, tout est vide → fil de base (comportement P0).
+ */
 export interface UseArticleFeedParams {
   costumSlug: string;
   pageSize?: number;
@@ -9,16 +23,34 @@ export interface UseArticleFeedParams {
 }
 
 export function useArticleFeed({ costumSlug, pageSize = 12, filters }: UseArticleFeedParams) {
+  const cf = usePageFiltersOptional();
+  const searchText = cf?.searchQuery ?? "";
+  const filterNames = cf?.filterNames;
+  const searchByFields = cf?.searchByFields;
+
+  // Filtres sans `field` (types/tags cochés) → searchTags ($all).
+  const searchTags = useMemo(
+    () => (filterNames && filterNames.length ? { article: [...filterNames] } : {}),
+    [filterNames],
+  );
+  // Filtres avec `field` (ex. champ `list` du costum) → filtres Mongo `{ field: { $in } }`
+  // (locality/sourceKeys ignorés : le fil est scopé au costum, pas de scopeList — cf. doc §14).
+  const fieldFilters = useMemo(
+    () => searchByFieldsToQuery(searchByFields ?? {}).filters,
+    [searchByFields],
+  );
+
   return useSearchQuery({
     queryKeyPrefix: `blog:${costumSlug}`,
-    searchText: "",
-    searchTags: {},
+    searchText,
+    searchTags,
     // ⚠ searchType explicite obligatoire (buildSearchPayload n'applique defaultTypes que si type===undefined).
     searchType: { type: ["poi"] },
     mapUsed: false,
     baseParams: {
       indexStepList: pageSize,
-      defaultFilters: { type: "article", ...(filters ?? {}) },
+      // fieldFilters fusionnés comme `canonicalSearchProStaticBaseParams` (dans defaultFilters).
+      defaultFilters: { type: "article", ...(filters ?? {}), ...fieldFilters },
       defaultSortBy: { created: -1 },
       // scope costum : lus par buildSearchPayload via cast (présents en config, hors type strict).
       costumSlug,

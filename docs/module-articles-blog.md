@@ -275,3 +275,49 @@ empiriquement peuplé sur l'appel searchCostum réel — repli ajouté quand mê
 | 4 | MED | Feed lit `id` sur `serverData` seul (pas de repli) → risque `/blog/id/undefined` | `norm()` : repli `?? item.id` (id racine, comme SearchListView/CardFunding/AdminResourceTable) |
 | 5 | LOW | Feed sans état d'erreur → panne search déguisée en « aucun article » | branche erreur + bouton Réessayer (`error`/`refetch`, i18n `feed.error`/`feed.retry`) |
 | 3 | MED (latent) | `detailBasePath ≠ /blog` = liens morts (prod OK, défaut `/blog`) | **gardé** : `base` figé `/blog` + `console.warn` dev + `schema.ts` marqué « RÉSERVÉ, non câblé » → **relève des backlog §11 items 3+4** (routing multi-base) |
+
+## 14. P1 — Design éditorial + filtrage (2026-07-09)
+
+**Décision d'archi (après retour utilisateur) : RÉUTILISER le moteur de filtres du module `search`, PAS de
+bespoke.** Un premier jet (CategoryNav/TagFacets/articleUrlParams maison) a été **jeté** : il réinventait
+`PageFilters` + sa synchro URL + `FiltersSection`. Le bon patron :
+
+- **`PageFilters` est monté par page** (`SiteRenderer.tsx`, `key={pathname}`). Toutes les sections d'une page
+  partagent donc l'état filtres/texte.
+- **`useArticleFeed` lit `PageFilters`** (comme `SearchProStatic`) : `searchQuery`→searchText,
+  `filterNames`→searchTags (filtres SANS `field`), `searchByFields`→`searchByFieldsToQuery`→`defaultFilters`
+  (filtres AVEC `field`). La queryKey de `useSearchQuery` intègre tout ça → **re-fetch + reset scroll auto**.
+- **Facettes = composer les sections search existantes** sur la page blog (config) : `heroSearch` (texte) et/ou
+  `searchHeader` (recherche + `dropdownFilters` + chips actifs + Sheet mobile + synchro URL). Le fil (`articleFeed`)
+  ne fait que **lire** PageFilters — aucun code de filtre propre au blog.
+
+### Filtrage CONFIG-DRIVEN et agnostique au champ (la demande clé)
+
+Au-delà de `tags`, un POI article peut recevoir des champs via le **costum form** (dont des champs **`list`**).
+Chacun devient une facette en le déclarant dans `dropdownFilters` d'un `searchHeader` — **zéro code** :
+
+- **Filtre par tags** (facette SANS `field`) — l'`id` d'option = la valeur de tag :
+  ```json
+  { "id": "cat", "label": {"fr":"Catégorie"}, "options": [
+      { "id": "Actus", "label": {"fr":"Actus"} }, { "id": "Zoom", "label": {"fr":"Zoom"} } ] }
+  ```
+  → `selectedFilters.cat` → `filterNames` → `searchTags` (`$all`) côté backend.
+- **Filtre par un champ `list` du costum** (facette AVEC `field`) — ex. un champ `theme` :
+  ```json
+  { "id": "theme", "label": {"fr":"Thème"}, "field": "theme", "multiple": true, "options": [
+      { "id": "prevention", "label": {"fr":"Prévention"}, "value": "prevention" } ] }
+  ```
+  → `searchByFields` → `searchByFieldsToQuery` → `defaultFilters.theme = { $in: [...] }` (Mongo) côté backend.
+- **Tags cliquables sur la carte** (recette, non câblé par défaut pour ne pas coupler `ArticleCard`) : envelopper
+  chaque tag dans `<ClickableFacet field="tags" token={tag}>` ; il devient cliquable SSI un `dropdownFilter`
+  `field:"tags"` est déclaré sur la page (sinon texte simple, dégradé gracieux).
+
+### État & caveat données
+
+- **Livré** : `articleFeed` piloté par PageFilters ; page `/blog` sport-sante = `searchHeader` (recherche texte
+  **fonctionnelle** : filtre par nom d'article) + `articleFeed`.
+- **Caveat** : les 3 articles costum sport-sante n'ont **ni tags ni champ `list`** (le costum form article ne les
+  définit pas encore — cf. P4 authoring §11.7). Les **facettes** s'allument donc quand : (a) le **WordPress est
+  importé** (categories+tags fusionnés en `tags[]`, cf. §8), ou (b) un champ `list` est **ajouté au costum form**.
+  Le mécanisme est prêt : il ne reste qu'à déclarer les `dropdownFilters` correspondants en config.
+- **Pas de `BlogContext`** (backlog §11 item 11) : l'état vit dans le `PageFilters` partagé → inutile.
