@@ -13,6 +13,7 @@ import "@/modules/admin/i18n";
 
 import { downloadCsv } from "../lib/downloadCsv";
 import { ensureCostumScope } from "../lib/ensureCostumScope";
+import { validationStatusFilter } from "../lib/validationFilter";
 import type { AdminExportSection as AdminExportSectionConfig, AdminSection } from "../schema";
 
 /**
@@ -41,8 +42,9 @@ export default function AdminExportSection({ section }: { section: AdminSection 
     try {
       // exportElements exige un _costumCtx complet — l'hôte costum n'en a pas (cf. ensureCostumScope).
       ensureCostumScope(carrier, { contextId, contextType });
+      // Double flag (preferences + source), cf. validationStatusFilter / SearchNew::getQueries:783-818.
       const filters = statusFilter !== "all" && costumSlug
-        ? { [`preferences.toBeValidated.${costumSlug}`]: { $exists: statusFilter === "pending" } }
+        ? validationStatusFilter(costumSlug, statusFilter)
         : undefined;
       const { results, fields } = await carrier.exportElements({ searchType: [type], ...(filters ? { filters } : {}) });
       downloadCsv(toCsv(results, fields as Parameters<typeof toCsv>[1]), `export-${type}-${Date.now()}.csv`);

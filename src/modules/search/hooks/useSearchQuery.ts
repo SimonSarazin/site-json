@@ -113,6 +113,8 @@ export function useSearchQuery({
         type,
         mapUsed,
         graphUsed,
+        // variant transmis → le filtre de validation ne s'applique jamais en mode admin.
+        variant,
       });
 
       if (!param.searchType) {

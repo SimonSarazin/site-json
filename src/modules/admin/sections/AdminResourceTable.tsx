@@ -26,6 +26,7 @@ import SearchTextInput from "@/modules/search/components/SearchTextInput";
 import { DynamicModal } from "@/modules/profil/components/add/ModalRegistry";
 import { DynamicEditModal } from "@/modules/profil/components/profile-edit/EditModalRegistry";
 import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
+import { validationStatusFilter } from "@/modules/admin/lib/validationFilter";
 
 import type { SearchType } from "@/modules/search/schema";
 
@@ -93,7 +94,8 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   const baseParams = useMemo(() => {
     const filters: Record<string, unknown> = { ...(src.defaultFilters ?? {}) };
     if (adminMode && statusFilter !== "all" && costumSlug) {
-      filters[`preferences.toBeValidated.${costumSlug}`] = { $exists: statusFilter === "pending" };
+      // Double flag (preferences + source), cf. validationStatusFilter / SearchNew::getQueries:783-818.
+      Object.assign(filters, validationStatusFilter(costumSlug, statusFilter));
     }
     // Projection :
     //  - mode ADMIN : AUCUN `fields` → la route admin renvoie les DOCUMENTS COMPLETS (sémantique
@@ -401,10 +403,16 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
               const isAttached = Array.isArray(sourceKeys) && !!costumSlug && sourceKeys.includes(costumSlug);
               const refCostum = (data as { reference?: { costum?: unknown[] } }).reference?.costum;
               const isReferenced = !isAttached && Array.isArray(refCostum) && !!costumSlug && refCostum.includes(costumSlug);
-              // Statut de validation costum — LISIBLE en mode admin (le variant admin renvoie preferences,
-              // strippé sur l'endpoint public) : flag posé → « En attente », absent → « Validé ».
-              const tbv = (data as { preferences?: { toBeValidated?: Record<string, unknown> } }).preferences?.toBeValidated;
-              const isPending = adminMode && !!costumSlug && !!tbv && typeof tbv === "object" && tbv[costumSlug] === true;
+              // Statut de validation costum — LISIBLE en mode admin (le variant admin renvoie preferences/source,
+              // strippés sur l'endpoint public). EN ATTENTE si l'UNE des deux voies a le flag (double flag
+              // legacy SearchNew::getQueries:783-818) : preferences.toBeValidated.<slug> OU source.toBeValidated.<slug>.
+              const d = data as { preferences?: { toBeValidated?: Record<string, unknown> }; source?: { toBeValidated?: Record<string, unknown> } };
+              const prefTbv = d.preferences?.toBeValidated;
+              const srcTbv = d.source?.toBeValidated;
+              const isPending = adminMode && !!costumSlug && (
+                (!!prefTbv && typeof prefTbv === "object" && prefTbv[costumSlug] === true) ||
+                (!!srcTbv && typeof srcTbv === "object" && srcTbv[costumSlug] === true)
+              );
               return (
                 <TableRow key={id} ref={isLast ? lastItemRef : undefined}>
                   {bulkActions.length > 0 && (

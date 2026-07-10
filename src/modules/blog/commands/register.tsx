@@ -36,6 +36,7 @@ registerCommandSource({
     let results: ArticleResult[] = [];
     try {
       // Payload canonique (filters type=article + scope costum + name + tri date DESC), comme le fil.
+      // Les articles EN ATTENTE ne sont pas proposés : applyValidationGate le pose (costumSlug présent). §16.
       const payload = buildSearchPayload(
         { defaultFilters: { type: "article" }, defaultSortBy: { created: -1 }, costumSlug: cfg.costumSlug, sourceKey: [cfg.costumSlug] } as never,
         { name: query, type: ["poi"], indexStep: limit },

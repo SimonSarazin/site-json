@@ -399,4 +399,78 @@ historique/révisions — tous nécessitent des endpoints/perms côté legacy+ba
   `config.blog.feedCostumSlug`. ⚠️ **nécessite un redémarrage du dev-server** pour tester (route au démarrage).
 - ⏸️ **#3 workflow statut/publishedAt** — **DIFFÉRÉ = chantier BACKEND** (champ `status`/`publishedAt` POI +
   projection `DEFAULT_FIELD_LIST` + job scheduler draft→published + route admin + parité legacy). Rejoint la
-  task admin #37. NON bâclé en frontend.
+  task admin #37. NON bâclé en frontend. **La partie frontend-faisable est traitée en §16.**
+
+## 16. Analyse holistique visibilité/validation — le front respecte l'état existant (2026-07-10)
+
+Réflexion demandée : « analyser ce qui est en place déjà et faire que l'affichage front le prenne
+en compte ». Workflow d'analyse (3 scouts : forms admin · searches d'affichage · modèle statut) + synthèse.
+
+### Modèle de visibilité EXISTANT (rien à inventer)
+
+Une entité (POI/org/projet/event) porte 3 axes déjà en base :
+
+| Champ | Sémantique | Filtré où AUJOURD'HUI |
+|-------|-----------|------------------------|
+| `status` (`{$nin:['uncomplete','deleted','deletePending']}`) | cycle de vie / suppression | **buildQuery public ET admin** ✅ |
+| `preferences.private` | audience (public/privé) | **buildQuery public seulement** (admin voit les privés — by-design) |
+| `preferences.toBeValidated[costumSlug]=true` | modération par costum (posé par hook `prepData`, ex. CressReunion ; retiré par `validategroup`) | **admin seulement, CÔTÉ CLIENT** (`$exists`) — `buildQuery` backend est **STATELESS** dessus |
+
+**Le trou** : `buildQuery` (backend Node) n'applique jamais `toBeValidated` de lui-même (STATELESS) ;
+le legacy 5080 le pose seulement si le **cache costum est chaud** (non déterministe). Donc toute search
+PUBLIQUE scopée costum **peut montrer les `en attente`** — sauf si la search poste elle-même le filtre.
+
+**Double flag legacy** (vérifié source `SearchNew::getQueries:783-818`) : un élément est EN ATTENTE si
+`preferences.toBeValidated.<slug>` **OU** `source.toBeValidated.<slug>` existe. En public non-connecté :
+`$and[ pref $exists:false, src $exists:false ]` (les deux absents = validé). Connecté : l'auteur voit EN PLUS
+ses propres en-attente (`creator==me`). Escape hatch : param `showTobevaledated`.
+
+### Fix : gate central `buildSearchPayload` (2026-07-10) — 0 backend
+
+Plutôt que 4 filtres en dur (approche initiale, mono-flag → incomplète), la règle est posée UNE fois dans
+`buildSearchPayload` via `applyValidationGate` (`src/modules/search/lib/buildSearchPayload.ts`) : il ajoute
+**les DEUX flags** `$exists:false` aux `param.filters`. Le backend les applique (`buildFilters` : `preferences`/
+`source` ne sont pas des `FILTER_DENY_ROOTS`, `coerceFilterValue` préserve `$exists`) — même mécanisme `$exists`
+que le filtre statut admin, déjà prouvé live sur 5080.
+
+- **ACTIF PAR DÉFAUT** dès qu'un `costumSlug` est scopé (opt-out `baseParams.showUnvalidated`, miroir du
+  `showTobevaledated` legacy). Couvre d'un coup : fil blog, liés, palette, RSS, **+ annuaire `SearchProStatic`,
+  heroSearch, prefetch SSR** (tout ce qui passe par `buildSearchPayload`).
+- **Garde-fous** (byte-corrects vs legacy) : jamais en `variant:'admin'` (l'admin gère par son `statusFilter`),
+  jamais en `notSourceKey` (réseau-wide, pas de slug), jamais sur collections non-élément (**news** :
+  visibilité par `scope`/`target`, route dédiée — cf. §17). Sous-types org (NGO/…) inclus.
+- **Divergence ASSUMÉE vs legacy** : PAS de branche `author-sees-own` (creator==me) — le client est stateless
+  comme le backend Node → un fil public montre les validés uniquement. À réintroduire seulement si le fil
+  devient session-aware (chantier backend #37).
+- **Vérifié** : `buildSearchPayload.test.ts` (8 cas gate) ; **live end-to-end** `/blog/feed.xml` via SDK→legacy
+  5080 = 3 items (= baseline, aucun sur-filtrage) ; `db.poi.count({type:"article","preferences.toBeValidated":{$exists:true}})`
+  = **0/2354** (latent aujourd'hui — filet préventif, s'activera dès qu'un hook/config posera la modération).
+
+### Fix connexe : double flag manquant côté ADMIN
+
+`AdminResourceTable` (filtre + badge), `DashboardSection` (compteur en attente), `AdminExportSection` ne
+testaient que `preferences.toBeValidated` → rataient les éléments mis en attente par la voie `source`.
+Corrigé via helper partagé `src/modules/admin/lib/validationFilter.ts` (`validationStatusFilter`) :
+`validated` = deux flags `$exists:false` (AND) ; `pending` = `$or` en **objet-map** `{champ: op}` (forme
+`SearchNew::searchFilters:549` ET backend Node `buildFilters:144` — vérifié compatible byte des deux côtés).
+
+### Parité BACKEND `buildQuery` (2026-07-10) — FAIT
+
+Le backend Node **applique désormais** `toBeValidated` nativement (port byte de `SearchNew::getQueries:783-818`),
+plus besoin de dépendre du filtre client : `cocolight-backend/src/shared/search.ts` `buildQuery` pose le
+**double flag** gaté au costum résolu (`resolveActiveCostum`, keyé sur le `costumSlug` demandé) + session
+(`opts.userId` → author-sees-own) + bypass `showTobevaledated`. `userId` threadé via `optionalAuth` sur
+`/co2/search/globalautocomplete` et `/co2/search/agenda`. **Byte-vérifié L(5080)=B(5099)** sur 5 scénarios
+(costum `cressReunion`, 2 events en attente via `source.toBeValidated`) + branche author-sees-own (l'auteur
+voit ses en-attente, anon/autre non) + suite e2e verte (283). Le filtre client (gate §16) reste utile comme
+**défense en profondeur** (déterministe même cache legacy froid) et se superpose sans effet de bord (idempotent).
+
+**Reste (non fait, task #37)** : `publishedAt`+brouillon (job scheduler+backfill) ; `AdminStatusConfigSchema`
+câblé ; blocs `showMembersCodev`/`badgeCodev` (divergence assumée).
+
+### News (cf. synthèse §17 du workflow) — modèle ORTHOGONAL
+
+Les news/activityStream **n'ont pas** `toBeValidated`/`state`/`status` : visibilité par `scope.type`
+(public/restricted/private) + rôle communauté (`canManageNews`) + mur (author/target/sharedBy/mentions) +
+`isAnAbuse`. **Ne JAMAIS** router un fil news via `buildSearchPayload`/`searchCostum` (fuite `restricted`/
+`private`) → route dédiée `/news/...` avec `optionalAuth` ; ne pas y poster de filtre `toBeValidated`.

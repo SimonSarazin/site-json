@@ -52,6 +52,9 @@ export function useArticleFeed({ costumSlug, pageSize = 12, filters }: UseArticl
     baseParams: {
       indexStepList: pageSize,
       // fieldFilters fusionnés comme `canonicalSearchProStaticBaseParams` (dans defaultFilters).
+      // NB : le masquage des articles EN ATTENTE de validation (double flag toBeValidated) est posé
+      // AUTOMATIQUEMENT par buildSearchPayload (applyValidationGate) dès qu'un costumSlug est présent.
+      // Cf docs/module-articles-blog.md §16.
       // `type: "article"` en DERNIER = garantie d'immuabilité (un filtre field:"type" ne peut pas l'écraser).
       defaultFilters: { ...(filters ?? {}), ...fieldFilters, type: "article" },
       defaultSortBy: { created: -1 },

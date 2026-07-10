@@ -34,7 +34,13 @@ export function useRelatedArticles(article: ArticleData | null | undefined, limi
     refetchOnWindowFocus: false,
     queryFn: async () => {
       const payload = buildSearchPayload(
-        { defaultFilters: { type: "article", tags: { $in: tags } }, defaultSortBy: { created: -1 }, costumSlug, sourceKey: [costumSlug] } as never,
+        {
+          // Masquage des liés EN ATTENTE : posé automatiquement par applyValidationGate (costumSlug présent). Cf §16.
+          defaultFilters: { type: "article", tags: { $in: tags } },
+          defaultSortBy: { created: -1 },
+          costumSlug,
+          sourceKey: [costumSlug],
+        } as never,
         { name: "", type: ["poi"], indexStep: limit + 4 },
       );
       const page = (await entity!.searchCostum(

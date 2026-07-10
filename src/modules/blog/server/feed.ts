@@ -38,6 +38,7 @@ export async function renderBlogFeed(opts: {
   if (!entity) throw new Error("API non initialisée (feed)");
 
   const payload = buildSearchPayload(
+    // Le flux public ne distribue pas les articles EN ATTENTE : applyValidationGate le pose (costumSlug présent). §16.
     { defaultFilters: { type: "article" }, defaultSortBy: { created: -1 }, costumSlug, sourceKey: [costumSlug] } as never,
     { name: "", type: ["poi"], indexStep: limit },
   );

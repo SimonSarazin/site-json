@@ -15,6 +15,7 @@ import { useVisibilityList } from "@/lib/visibility";
 import { useAdminAccess } from "../hooks/useAdminAccess";
 
 import { ADMIN_QUERY_KEYS } from "../constants/queryKeys";
+import { validationStatusFilter } from "../lib/validationFilter";
 import type { AdminConfig, AdminResourceSection, AdminSection } from "../schema";
 
 /**
@@ -89,7 +90,8 @@ export default function DashboardSection({ section }: { section: AdminSection })
           if (withStatus && costumSlug) {
             const pendingPage = await c.searchCostum({
               ...base,
-              filters: { ...(resource.source?.defaultFilters ?? {}), [`preferences.toBeValidated.${costumSlug}`]: { $exists: true } },
+              // Double flag (preferences + source) via $or — cf. validationStatusFilter.
+              filters: { ...(resource.source?.defaultFilters ?? {}), ...validationStatusFilter(costumSlug, "pending") },
             }, { variant: "admin" });
             pending = pendingPage.count?.total ?? 0;
           }
