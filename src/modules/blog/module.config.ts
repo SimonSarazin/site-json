@@ -2,7 +2,7 @@ import type { ModuleConfigSchema } from "@/lib/modules";
 
 /**
  * Module blog/articles — piloté par les DONNÉES (POI `type:"article"` scopés costum, cf.
- * docs/module-articles-blog.md). Expose :
+ * doc/32-module-articles-blog.md). Expose :
  *  - une SECTION config-driven `articleFeed` (fil paginé, île client calquée sur agenda) ;
  *  - des ROUTES `/blog/:slug` (+ `/blog/id/:id` pour les articles sans slug) — reader + SEO SSR.
  *

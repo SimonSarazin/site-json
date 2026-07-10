@@ -90,7 +90,7 @@ function isTruthy(v: unknown): boolean {
  *  - types explicitement hors collections « élément » (news/answers : visibilité par `scope`, route dédiée).
  *
  * Divergence ASSUMÉE vs legacy : PAS de branche `author-sees-own` (creator==me). Le client est
- * stateless (comme le backend Node) → un fil public montre les validés uniquement. Cf docs/module-articles-blog.md §16.
+ * stateless (comme le backend Node) → un fil public montre les validés uniquement. Cf doc/19-visibility-system.md (Visibilité des données).
  */
 function applyValidationGate(
   filters: Record<string, unknown> | undefined,

@@ -5,7 +5,7 @@ import { LocalizedString } from "@/types/locale-schema";
  * Section `articleFeed` (config-driven, data-backed) : fil d'articles d'un costum (POI `type:"article"`
  * scopés `source.key`), paginé (scroll infini), trié par date. Île client (fetch après hydratation, comme
  * agenda). Distincte des sections STATIQUES `blogList`/`blogPost` (posts figés en config). cf.
- * docs/module-articles-blog.md.
+ * doc/32-module-articles-blog.md.
  */
 export const ArticleFeedSectionSchema = z.object({
   type: z.literal("articleFeed"),
@@ -42,7 +42,7 @@ export type ArticleFeedSectionProps = z.infer<typeof ArticleFeedSectionSchema>["
  * Section `articleReader` (config-driven, data-backed) : affiche UN article précis (par `slug` OU `id`) sur
  * n'importe quelle page — fetch entité (`useArticle`) + rendu via le registre `READER_VARIANTS`. À distinguer
  * du `blogPost` STATIQUE (contenu figé en config). Île client (pas de SEO propre — le canonical reste
- * `/blog/:slug`, cf. item 2). Ex. « article à la une » sur une home. cf. docs/module-articles-blog.md §11.12.
+ * `/blog/:slug`, cf. item 2). Ex. « article à la une » sur une home. cf. doc/32-module-articles-blog.md (Sections).
  */
 export const ArticleReaderSectionSchema = z.object({
   type: z.literal("articleReader"),
