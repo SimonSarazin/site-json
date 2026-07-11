@@ -4939,25 +4939,6 @@
             ],
             "create": "inherit",
             "edit": "inherit"
-          },
-          {
-            "type": "resource",
-            "entityType": "organizations",
-            "label": {
-              "fr": "Organisations"
-            },
-            "columns": [
-              { "path": "name", "label": { "fr": "Nom" } },
-              { "path": "type", "label": { "fr": "Type" } },
-              { "path": "address.addressLocality", "label": { "fr": "Commune" } }
-            ],
-            "rowActions": [
-              "edit",
-              "delete",
-              "validate"
-            ],
-            "create": "inherit",
-            "edit": "inherit"
           }
         ]
       },
@@ -4971,8 +4952,7 @@
           {
             "type": "import",
             "entityTypes": [
-              "poi",
-              "organizations"
+              "poi"
             ]
           },
           {
@@ -4989,18 +4969,6 @@
         "sections": [
           {
             "type": "reference"
-          }
-        ]
-      },
-      {
-        "id": "moderation",
-        "label": {
-          "fr": "Modération"
-        },
-        "access": "superAdmin",
-        "sections": [
-          {
-            "type": "moderation"
           }
         ]
       }
