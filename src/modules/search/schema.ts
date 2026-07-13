@@ -191,6 +191,11 @@ const ListConfSchema = z.object({
     // badges génériques (serverData.badges / tags) ; "service-pricing" les
     // remplace par les pastilles de capacité (postes/personnes/couverts).
     overlayStats: z.enum(["service-pricing"]).optional(),
+    // Ajustement de l'image des cartes `image-cover` : "cover" (défaut, remplit
+    // la carte en rognant — idéal pour des photos plein cadre) ou "contain"
+    // (logo entier visible, centré sur un FOND FLOUTÉ de la même image — idéal
+    // pour des LOGOS d'aspect hétérogène qui, en cover, seraient rognés).
+    imageFit: z.enum(["cover", "contain"]).optional(),
     // Chemins CoForm des données service-pricing (cartes `detailedMode` /
     // `overlayStats`). Surcharge PAR CATÉGORIE la table par défaut du code
     // (précédent : `preview.fields`) — découple les IDs de formulaires/champs.
@@ -299,8 +304,11 @@ export type SearchType = z.infer<typeof SearchTypeSchema>;
  * Variant du endpoint backend pour `searchCostum` (cf. SDK v1.0.132).
  * - `default` (ou absent) → `/co2/search/globalautocomplete` (comportement historique)
  * - `navigator-tl` → `/costum/navigator/gettl` (payload enrichi avec auto-link Answer)
+ * - `admin` → `/co2/search/globalautocompleteadmin/…` (SDK ≥ 1.0.161 : réservé aux admins de
+ *   l'hôte costum ; `fields` = projection EXACTE, `preferences` renvoyé → badge/filtre
+ *   `toBeValidated` des tables d'administration ; tri serveur via `sort`)
  */
-export const SearchVariantSchema = z.enum(["default", "navigator-tl"]);
+export const SearchVariantSchema = z.enum(["default", "navigator-tl", "admin"]);
 export type SearchVariant = z.infer<typeof SearchVariantSchema>;
 
 /**

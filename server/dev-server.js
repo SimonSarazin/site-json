@@ -91,6 +91,21 @@ async function createServer() {
   app.get("/api/helloasso/checkout-status/:checkoutIntentId", helloassoCheckoutStatusHandler);
   app.get("/api/helloasso/orgs", helloassoDiagnosticHandler);
 
+  // Flux RSS des articles blog (SEO/distribution). costumSlug : ?costum= > config.blog.feedCostumSlug > env.
+  app.get("/blog/feed.xml", async (req, res) => {
+    try {
+      const slug = req.query.costum || cachedConfig?.blog?.feedCostumSlug || process.env.VITE_FEED_COSTUM_SLUG;
+      if (!slug) { res.status(400).type("application/xml").send('<?xml version="1.0"?><error>costumSlug manquant (?costum=slug ou config.blog.feedCostumSlug)</error>'); return; }
+      const { renderBlogFeed } = await vite.ssrLoadModule("/src/modules/blog/server/feed.ts");
+      const title = cachedConfig?.meta?.title?.fr || cachedConfig?.meta?.title || "Articles";
+      const xml = await renderBlogFeed({ costumSlug: String(slug), title });
+      res.type("application/rss+xml").send(xml);
+    } catch (e) {
+      console.error("[blog-feed]", e);
+      res.status(500).type("application/xml").send('<?xml version="1.0"?><error>erreur flux</error>');
+    }
+  });
+
   // ⚠️ Middleware Vite DOIT être après les routes API
   app.use(vite.middlewares);
 

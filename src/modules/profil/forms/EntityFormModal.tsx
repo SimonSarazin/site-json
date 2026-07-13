@@ -128,7 +128,7 @@ export function EntityFormModal({ config: configProp, spec, open, onOpenChange, 
   const submitLabel = config.submitLabel
     ? (isEdit ? config.submitLabel.edit : config.submitLabel.add)
     : (isEdit ? "ProfileEdit.save" : "AddEntity.create");
-  const texts = config.texts?.(t as never) ?? { next: "", previous: "", cancel: tr("common.cancel") };
+  const texts = config.texts?.(t as never) ?? { next: tr("common.next"), previous: tr("common.previous"), cancel: tr("common.cancel") };
 
   return (
     <>

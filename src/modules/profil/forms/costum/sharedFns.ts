@@ -3,9 +3,10 @@
  * enregistre les clés partagées. Pendant de `sharedCodecs` mais pour les fns de modale (existingUrl, …).
  */
 import type { QueryKey } from "@tanstack/react-query";
-import { registerExistingUrlFn, registerCleanValuesFn, registerInvalidateFn } from "../specRegistries";
+import { registerExistingUrlFn, registerCleanValuesFn, registerInvalidateFn, type InvalidateFn } from "../specRegistries";
 import { PROFIL_QUERY_KEYS } from "../../constants";
 import { SEARCH_QUERY_KEYS } from "@/modules/search/constants";
+import { BLOG_QUERY_KEYS } from "@/modules/blog/constants/queryKeys";
 
 /** URL d'image existante GÉNÉRIQUE (clé `image:profilUrl`) : medium > image > thumb du serverData. Partagé par
  *  tous les costums (avant : enregistré à l'identique dans chaque `<entity>/fns`). */
@@ -38,7 +39,7 @@ const USER_LIST_BUILDERS: Record<string, (slug: string) => QueryKey> = {
  * invalidée pour le parent/me en CRÉATION), `searchKeys` (préfixes de recherche à rafraîchir, 2 modes),
  * `parentAboutOnAdd` (rafraîchir l'about du parent en création). Édition → about de l'entité. Ex-poi/tl:invalidate.
  */
-registerInvalidateFn("invalidate:standard", (ctx, params) => {
+const standardInvalidate: InvalidateFn = (ctx, params) => {
   const searchKeys = ((params?.searchKeys as string[] | undefined) ?? []).map((k) => SEARCH_QUERY_KEYS.RESULTS_PREFIX(k));
   if (ctx.mode === "edit") {
     return [...(ctx.entity?.slug ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(ctx.entity.slug)] : []), ...searchKeys];
@@ -50,4 +51,16 @@ registerInvalidateFn("invalidate:standard", (ctx, params) => {
     ...(params?.parentAboutOnAdd && ctx.parent ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(ctx.parent.slug)] : []),
     ...searchKeys,
   ];
+};
+registerInvalidateFn("invalidate:standard", standardInvalidate);
+
+/**
+ * invalidate BLOG (clé `invalidate:blog`) = `invalidate:standard` (fil via `searchKeys`, about-par-slug en
+ * édition, userList en création) + la clé détail PAR ID (`useArticle` byId — les ~82 % d'articles slugless
+ * routés `/blog/id/:id`, NON couverts par l'about-par-slug). Mêmes params que standard (`userList`,
+ * `searchKeys`). Sans ça, un article créé/édité via le form costum ne rafraîchit ni le fil ni son reader.
+ */
+registerInvalidateFn("invalidate:blog", (ctx, params) => {
+  const byId = ctx.entity?.id ? [BLOG_QUERY_KEYS.ARTICLE_BY_ID(String(ctx.entity.id))] : [];
+  return [...standardInvalidate(ctx, params), ...byId];
 });
