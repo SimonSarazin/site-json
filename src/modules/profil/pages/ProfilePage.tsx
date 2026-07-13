@@ -23,8 +23,11 @@ function isValidProfileKey(key: string): key is ProfileType | "default" {
 }
 
 function ProfileSkeleton() {
+  // `-m-4` = exactement le `px-4` du parent (full-bleed absorbé). Pas de
+  // `md:-m-8` : le parent reste en `px-4`, donc -2rem déborderait de 1rem par
+  // côté → scroll horizontal pendant le chargement.
   return (
-    <div className="bg-muted -m-4 md:-m-8 animate-pulse">
+    <div className="bg-muted -m-4 animate-pulse">
       <div className="w-full mx-auto bg-card shadow-lg">
         <div className="relative h-96 bg-muted rounded-md"></div>
 

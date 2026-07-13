@@ -25,7 +25,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { FinderSearchModal } from "./FinderSearchModal";
-import { getSharedFinderInfo, type SharedFinderInfo } from "../utils/formParser";
+import { getSharedFinderInfo } from "../utils/formParser";
+import { buildFinderMongoFilters } from "../utils/finderFilters";
 import { pickProfileImageUrl } from "../utils/helpers";
 import type { CoFormData, FinderConfig, FinderElement } from "../types";
 import type { Organization } from "@communecter/cocolight-api-client";
@@ -33,27 +34,6 @@ import type { Organization } from "@communecter/cocolight-api-client";
 interface PlacesListViewProps {
   formData: CoFormData;
   formId: string;
-}
-
-/**
- * Convertit les filtres du finder (`[{attributeName, valueName}]`) en filtres
- * MongoDB consommables par `SearchNew::searchFilters` côté serveur.
- *
- * Plusieurs entrées sur la même clé sont regroupées via `$in` (n'importe
- * laquelle des valeurs matche), comportement standard d'un finder.
- */
-function buildMongoFilters(info: SharedFinderInfo): Record<string, unknown> {
-  const grouped = new Map<string, string[]>();
-  for (const f of info.filters) {
-    const arr = grouped.get(f.attributeName) ?? [];
-    arr.push(f.valueName);
-    grouped.set(f.attributeName, arr);
-  }
-  const out: Record<string, unknown> = {};
-  for (const [attr, values] of grouped) {
-    out[attr] = values.length === 1 ? values[0] : { $in: values };
-  }
-  return out;
 }
 
 // ─── Sub-component : ligne d'un lieu (Admin / Membre) ──────────────────────
@@ -275,7 +255,10 @@ export function PlacesListView({ formData, formId }: PlacesListViewProps) {
   // sont aussi tag-filtered. Si on veut séparer "Mes lieux" vs "En attente
   // sans filtre", on bascule à 2 requêtes parallèles.
   const mongoFilters = useMemo(
-    () => (sharedFinderInfo ? buildMongoFilters(sharedFinderInfo) : undefined),
+    () =>
+      sharedFinderInfo
+        ? buildFinderMongoFilters(sharedFinderInfo.filters, sharedFinderInfo.excludeFilters)
+        : undefined,
     [sharedFinderInfo]
   );
 
@@ -411,6 +394,9 @@ export function PlacesListView({ formData, formId }: PlacesListViewProps) {
   const searchConfig: FinderConfig = {
     type: sharedFinderInfo.type,
     filters: sharedFinderInfo.filters,
+    // Propager l'exclusion à la modale « rejoindre un lieu » pour rester
+    // cohérent avec la liste (sinon un réseau réapparaîtrait à la recherche).
+    excludeFilters: sharedFinderInfo.excludeFilters,
     notSourceKey: sharedFinderInfo.notSourceKey,
     myContacts: false,
     initCurrentUser: false,

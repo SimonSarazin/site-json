@@ -30,6 +30,7 @@ interface FinderFieldProps {
 const defaultFinderConfig: FinderConfig = {
   type: "organizations",
   filters: [],
+  excludeFilters: [],
   notSourceKey: true,
   myContacts: false,
   initCurrentUser: false,

@@ -91,8 +91,9 @@ describe("sharedRegistrations — couverture des clés génériques (B, découpl
     expect(hasSpecFn("existingUrlFn", "image:profilUrl")).toBe(true);
     expect(hasSpecFn("cleanValuesFn", "cleanValues:dropEmptyArrayItems")).toBe(true);
     expect(hasSpecFn("invalidateFn", "invalidate:standard")).toBe(true);
+    expect(hasSpecFn("invalidateFn", "invalidate:blog")).toBe(true); // référencé par le form article (blog)
     // Widgets DOMAINE garantis par le barrel (parade #2) → la garde widget ne lève pas à tort en config/test.
-    for (const w of ["location", "image", "tags", "finder", "openingHours", "editSocial", "editSchedule"]) {
+    for (const w of ["location", "image", "tags", "finder", "openingHours", "editSocial", "editSchedule", "markdown"]) {
       expect(hasWidget(w), `widget ${w}`).toBe(true);
     }
   });

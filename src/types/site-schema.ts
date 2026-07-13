@@ -6,7 +6,7 @@
 // Validation : Zod 4.x – le schéma sert à la fois de typings, de runtime‑guard,
 //               et d'autocomplétion dans VS Code.
 // ------------------------------------------------------------
-import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema, FiltersSectionSchema, SearchVariantSchema, SearchBaseParamsSchema, FilterGroupsSchema, FiltersByAnswersSchema, SearchHeaderSectionSchema } from "@/modules/search/schema";
+import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema, FiltersSectionSchema, SearchVariantSchema, SearchBaseParamsSchema, FilterGroupsSchema, FiltersByAnswersSchema, SearchHeaderSectionSchema, MarkerConfSchema } from "@/modules/search/schema";
 import { DataObservatorySectionSchema } from "@/modules/observatoire/schema";
 import { NewsSectionSchema } from "@/modules/news/schema";
 import { NotificationsSectionSchema } from "@/modules/notification/schema";
@@ -15,10 +15,13 @@ import { ActionButtonSchema } from "./action-button-schema";
 import { z } from "zod";
 import { LocalizedString, LOCALES } from "./locale-schema";
 import { AgendaSectionSchema } from "@/modules/agenda/schema";
+import { ArticleFeedSectionSchema, ArticleReaderSectionSchema } from "@/modules/blog/schema";
 export { LocalizedString, LOCALES };
 import { ProfilesConfigSchema, MemberSectionSchema } from "../modules/profil/schema";
+import { AdminConfigSchema } from "../modules/admin/schema";
 import { AmpliConfigSchema } from "@/modules/ampli/schema";
 import { CommandPaletteConfigSchema } from "@/modules/commandPalette/schema";
+import { BlogConfigSchema } from "@/modules/blog/configSchema";
 import { VisibilityConditionSchema, type VisibilityCondition } from "@/lib/visibility/schema";
 
 /**
@@ -1453,6 +1456,8 @@ export const Section = z.discriminatedUnion("type", [
   CoFormSectionSchema,
   DataObservatorySectionSchema,
   AgendaSectionSchema,
+  ArticleFeedSectionSchema,
+  ArticleReaderSectionSchema,
 ]);
 export type Section = z.infer<typeof Section>;
 
@@ -1749,16 +1754,19 @@ const CRMIntegration = z.object({
 });
 
 /**
- * Fond de carte des cartes Leaflet (module search) — styles raster MapTiler
- * par thème. La CLÉ d'API vit en ENVIRONNEMENT (`VITE_MAPTILER_API_KEY`),
- * jamais dans le config versionné ; sans clé, repli sur les tuiles libres
- * (OSM / Carto) quel que soit ce bloc.
+ * Carte du module search (MapLibre GL) — réglages PAR SITE. Le fond utilise les
+ * styles vectoriels MapTiler par thème ; la CLÉ d'API vit en ENVIRONNEMENT
+ * (`VITE_MAPTILER_API_KEY`), jamais dans le config versionné — sans clé, repli
+ * sur un style raster libre (OSM / Carto) quel que soit ce bloc.
+ * NB : la carte du module profil reste sur Leaflet (mêmes ids de style raster).
  */
 const MapIntegration = z.object({
-  /** Id de style MapTiler en thème clair (ex. "streets-v2", "outdoor-v2", "dataviz"). */
-  styleLight: z.string().default("streets-v2"),
-  /** Id de style MapTiler en thème sombre (ex. "streets-v2-dark", "dataviz-dark"). */
-  styleDark: z.string().default("streets-v2-dark"),
+  /** Id de style MapTiler en thème clair (ex. "streets-v4", "outdoor-v4", "dataviz"). */
+  styleLight: z.string().default("streets-v4"),
+  /** Id de style MapTiler en thème sombre (ex. "streets-v4-dark", "dataviz-dark"). */
+  styleDark: z.string().default("streets-v4-dark"),
+  /** Marqueur PAR DÉFAUT du site (surchargé par `map.marker` de chaque section). */
+  marker: MarkerConfSchema.optional(),
 });
 
 export const Integrations = z.object({
@@ -1980,6 +1988,11 @@ export const SiteConfig = z.object({
   }).optional(),
   ampli: z.array(AmpliConfigSchema).optional(),
   commandPalette: CommandPaletteConfigSchema.optional(),
+  // Config site-level du blog : défauts des variants extensibles (card/reader/feedLayout). cf. modules/blog.
+  blog: BlogConfigSchema.optional(),
+  // Page d'Administration (config-driven, jumeau du module profil). Onglets/sections/accès déclarés en
+  // données. Absent → pas de page admin. cf. modules/admin + commentaire/plan-module-admin-generique.md
+  admin: AdminConfigSchema.optional(),
 });
 export type SiteConfig = z.infer<typeof SiteConfig>;
 

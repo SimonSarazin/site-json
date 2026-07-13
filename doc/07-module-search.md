@@ -64,7 +64,7 @@
 
 ## Vue d'ensemble
 
-Le module **Search** (`src/modules/search/`) implémente l'interface de recherche avancée de SiteForge. Il expose plusieurs sections JSON, gère la pagination infinie, les filtres multidimensionnels (tags, types, zones géographiques, réponses CoForm), la vue carte Leaflet, l'export CSV, et les graphiques en bulles.
+Le module **Search** (`src/modules/search/`) implémente l'interface de recherche avancée de SiteForge. Il expose plusieurs sections JSON, gère la pagination infinie, les filtres multidimensionnels (tags, types, zones géographiques, réponses CoForm), la vue carte (MapLibre GL), l'export CSV, et les graphiques en bulles.
 
 **Type de module** : `core` (module.config.ts présent). Pas de routes propres — le module expose des **sections** chargées lazily par `SectionRenderer` et monte automatiquement un `PageFiltersProvider` via `module.config.PageProvider`.
 
@@ -84,7 +84,7 @@ src/modules/search/
 │                                  #   FilterGroupsSchema, FiltersByAnswersSchema,
 │                                  #   FiltersByPathSchema, IconNameSchema, SearchBaseParamsSchema,
 │                                  #   SearchHeaderSectionSchema (+ types dérivés)
-├── styles.css                     # Styles spécifiques (carte, overrides Leaflet)
+├── styles.css                     # Styles spécifiques (carte, overrides popup/marqueurs MapLibre)
 ├── module.config.ts               # type: "core", PageProvider: PageFiltersProvider
 ├── index.ts                       # Exports publics (incl. useAutocomplete, buildSearchPayload)
 │
@@ -110,8 +110,10 @@ src/modules/search/
 │   ├── Preview.tsx                # Dispatcher → variante de preview
 │   ├── ClickableFacet.tsx        # Primitive : valeur cliquable → filtre (dérivé du field)
 │   ├── SwitchDetailsMode.tsx      # Ouvre la fiche en drawer ou dialog
-│   ├── SearchMap.tsx              # Carte Leaflet avec clusters et popups
-│   ├── SearchMapWrapper.tsx       # Wrapper (lazy-loads Leaflet via useClientModule)
+│   ├── SearchMap.tsx              # Carte MapLibre GL (react-map-gl) — clusters supercluster + popups React
+│   ├── SearchMapMarkers.tsx       # PointMarker/ClusterMarker + dispatcher de vue marqueur (→ mapMarker/)
+│   ├── SearchMapPopup.tsx         # Dispatcher popup (switch popup.type → mapPopup/, lazy)
+│   ├── SearchMapWrapper.tsx       # Wrapper (charge la carte client-only via useClientModule)
 │   ├── FranceRegionsMap.tsx       # Carte choroplèthe régions France (type: "regions")
 │   ├── SearchBubbleChart.tsx      # Graphique en bulles (enableGraph: true)
 │   ├── ThematicCards.tsx          # Grille cards thématiques (defaultViewMode: "thematics")
@@ -137,7 +139,13 @@ src/modules/search/
 │   │   ├── DetailsModeDialog.tsx  # Dialog centré
 │   │   └── DetailsModeDrawer.tsx  # Drawer latéral droit
 │   │
-│   ├── mapPopup/
+│   ├── mapMarker/                 # Variants de vue marqueur (dispatcher non-lazy, perf : rendu par point)
+│   │   ├── MapMarkerPin.tsx        #   goutte (pin) — défaut
+│   │   ├── MapMarkerCircle.tsx     #   pastille ronde (style: "circle")
+│   │   ├── MapMarkerIcon.tsx       #   icône custom (iconUrl)
+│   │   └── MapMarkerAvatar.tsx     #   vignette ronde de l'item (useItemImage)
+│   │
+│   ├── mapPopup/                   # Variants de popup (dispatcher lazy SearchMapPopup, comme SearchCardDetailed)
 │   │   └── MapPopupDefault.tsx    # Popup marqueur carte (défaut)
 │   │
 │   └── preview/                   # Variantes de CONTENU détail (preview.type)
@@ -166,7 +174,7 @@ src/modules/search/
 │   ├── useItem.tsx                # Fusion données serveur + defaults
 │   ├── useSearchProps.tsx         # Accès typé aux props via SearchPropsContext
 │   ├── useDropdownFilterNav.ts   # Navigation par facette route-aware (même/cross-route)
-│   └── loadLeaflet.ts             # Import dynamique Leaflet (client only)
+│   └── loadLeaflet.ts             # Import dynamique Leaflet (client only — carte profil)
 │
 ├── lib/
 │   ├── buildSearchPayload.ts      # SOURCE UNIQUE : baseParams → payload searchCostum
@@ -1024,22 +1032,41 @@ Chaque facette : `{ field, label?, icon? }` (`PreviewFacetSchema`). `field` supp
 
 ### SearchMap et vue carte
 
-`SearchMapWrapper` : charge Leaflet en client-only via `useClientModule()`. `SearchMap` : carte Leaflet avec markers et clustering (`leaflet.markercluster`). Chaque marker ouvre un popup via `renderMapPopup()` → `MapPopupDefault`.
+`SearchMapWrapper` : charge la carte en client-only via `useClientModule()`
+(MapLibre accède à `window`/WebGL → jamais en SSR). `SearchMap` : carte
+**MapLibre GL** via `react-map-gl/maplibre` (composant `<Map>`). Clustering
+**supercluster** (regroupement selon le bbox+zoom courant) → marqueurs HTML
+`<Marker>` (`SearchMapMarkers.tsx`) ; chaque point ouvre un `<Popup>`.
 
-`loadLeaflet.ts` : import dynamique du bundle Leaflet (déclenché uniquement si `showMap: true`, optimisation bundle).
+**Vues customisables (pattern dispatcher, comme `SearchCard`)** : le **marqueur**
+et la **popup** suivent le modèle dispatcher + composants-variants. Le marqueur :
+`SearchMapMarkers` dispatche sur le `kind` résolu (cf. `markerVisual.ts` ← config
+`map.marker`) vers `mapMarker/MapMarker<X>.tsx` (Pin / Circle / Icon / Avatar) —
+**non-lazy** (rendu par point ; un Suspense par marqueur serait coûteux). La
+popup : `SearchMapPopup` dispatche sur `map.popup.type` vers
+`mapPopup/MapPopup<X>.tsx` en **`lazy()`** (un chunk par page, comme
+`SearchCardDetailed`). Pour ajouter une vue : créer le fichier variant
+(`export default`), l'importer dans le dispatcher, ajouter le `case`.
 
-**Fond de carte** (`lib/mapTiles.ts`) : avec la variable d'environnement
+> ⚠️ Ne pas confondre avec `ProfileMapLeaflet` (module profil) qui reste sur
+> **Leaflet** (`loadLeaflet.ts`, `lib/mapTiles.ts` — tuiles **raster**). Les
+> deux moteurs cohabitent et sont dans des chunks séparés (`maps-vendor` =
+> Leaflet, `maplibre-vendor` = MapLibre/MapTiler) : une fiche profil ne tire
+> pas le SDK MapTiler, et inversement.
+
+**Fond de carte** (`lib/mapStyles.ts`) : avec la variable d'environnement
 `VITE_MAPTILER_API_KEY` (jamais dans le config versionné — `.env` en dev,
 injectée dans `window.__ENV__` par le prod-server, passthrough
-docker-compose), la carte utilise les **tuiles raster MapTiler** (512 px →
-`tileSize: 512` + `zoomOffset: -1`), avec un style par thème **configurable
-par site** via `integrations.map` : `styleLight` (déf. `streets-v2`) /
-`styleDark` (déf. `streets-v2-dark`) — ids de styles MapTiler (`outdoor-v2`,
-`dataviz`, `satellite`…). **Sans clé : repli automatique** sur les tuiles
-libres historiques (OSM light / Carto Dark Matter) — aucun site ne casse.
-⚠️ Les `style.json` MapTiler sont des styles vectoriels MapLibre GL,
-inutilisables avec Leaflet : on consomme l'endpoint raster (une migration
-MapLibre est un chantier séparé, au backlog).
+docker-compose), la carte utilise les **styles VECTORIELS MapTiler** via
+**`@maptiler/sdk`** (branché comme `mapLib` du `<Map>` ; `config.apiKey` posée
+au chargement du chunk). On passe juste l'**ID de style** — le SDK l'expanse en
+`style.json` avec la clé, **aucune URL construite à la main**. Style par thème
+**configurable par site** via `integrations.map` : `styleLight` (déf.
+`streets-v4`) / `styleDark` (déf. `streets-v4-dark`) — ids MapTiler
+(`outdoor-v2`, `dataviz`, `satellite`…). La bascule light↔dark = changement de
+`mapStyle` (react-map-gl restyle sans toucher aux `<Marker>`/`<Popup>` React).
+**Sans clé : repli automatique** sur un style **raster** MapLibre minimal (OSM
+light / Carto Dark Matter), MapLibre standard (sans SDK) — aucun site ne casse.
 
 **Chargement de la vue carte** (progressif — même mécanique que
 l'observatoire) : la carte ne fait plus un `indexStep: 0` tout-en-1-appel ;
@@ -1050,21 +1077,44 @@ IGNORÉ par le backend, avec ou sans `mapUsed`), plafond **5000**
 (`maxResults`), **cache 30 min/1 h** (re-toggle liste↔carte instantané),
 `mapUsed: true` conservé dans le payload (sémantique backend préservée).
 `indexStepMap` en config : taille de page (déf. 500) ; `0` restaure le
-tout-en-1-appel legacy. Côté rendu, `SearchMap` est créé UNE fois et les
-markers sont ajoutés **incrémentalement** (`addLayers` par page,
-`chunkedLoading`) ; `fitBounds` ne joue qu'à la 1ʳᵉ page d'un périmètre — le
-viewport de l'utilisateur est préservé pendant le chargement. `MapProgress`
-affiche la progression « X / Y » et l'alerte de plafond.
+tout-en-1-appel legacy. Côté rendu, l'index supercluster est **reconstruit à
+chaque page** (opération bon marché) et seuls les marqueurs du viewport sont
+posés en DOM ; `fitBounds` ne joue qu'à la 1ʳᵉ page d'un périmètre (carte non
+contrôlée : `initialViewState` + ref) — le viewport de l'utilisateur est
+préservé pendant le chargement. `MapProgress` affiche la progression « X / Y »
+et l'alerte de plafond.
 
 **Options `map` de la section** (`MapConfSchema`) :
 `map.itemAction: {kind: "profil"|"preview"}` — action du bouton de la popup
 (défaut `preview` : détail `SwitchDetailsMode` avec `list.card`/`list.preview` ;
-`profil` : navigation `/profil/:slug`) · `map.marker.useItemImage: true` —
-marqueur = vignette RONDE de l'item quand elle existe (sinon pin Leaflet).
-La **popup** est du HTML **statique** (`renderToString`) : aucun état React
-n'y fonctionne — seul le bouton `data-id` est interactif (listener natif posé
-au `popupopen`). En dev, `window.__searchMapDebug = {map, markers}` permet de
-piloter la carte depuis la console/les tests navigateur.
+`profil` : navigation `/profil/:slug`) · `map.initialZoom` — zoom initial ·
+`map.layout: "full"|"split"` — plein écran (défaut) ou split liste+carte · `map.splitRatio:
+"40-60"|"50-50"|"60-40"` — répartition largeur liste/carte du split (défaut `40-60`,
+liste étroite 1 colonne + carte large, aligné sur l'agenda ; les ratios plus larges
+passent la liste à 2 colonnes) · `map.marker`
+— apparence des marqueurs (cf. ci-dessous). La **popup** est un
+**vrai composant React** (plus de `renderToString` ni de `window.dispatchEvent`) :
+le bouton appelle directement `onAction` (handler React fourni par `SearchMap`).
+En dev, `window.__searchMapDebug = {map, index, clusters}` permet de piloter la
+carte depuis la console/les tests navigateur.
+
+**Marqueurs (`MarkerConfSchema`)** — configurables **par site** via
+`integrations.map.marker` (défaut du site) ET **par section** via `map.marker`
+(surcharge champ par champ ; sinon repli sur le défaut intégré). Chaîne de repli
+par **priorité** (cf. `lib/markerVisual.ts`) :
+1. `useItemImage: true` ET l'item a une image → **vignette RONDE** de l'item ;
+2. `iconUrl` → **icône custom** (image/SVG brandée — URL relative préfixée par
+   `baseUrl`, ou absolue ; `iconSize` px déf. 34, `iconAnchor` `"bottom"`/`"center"`) ;
+3. `style: "pin"` / `style: "circle"` (+ `color` en **jeton de thème** :
+   `primary`/`secondary`/`accent`/`chart-1..5`) → goutte SVG ou pastille ronde ;
+4. sinon → pin par défaut (primary).
+
+```jsonc
+// par site (config racine) :
+"integrations": { "map": { "marker": { "iconUrl": "/upload/pin.png", "iconSize": 40 } } }
+// surcharge ponctuelle d'une section :
+"map": { "marker": { "style": "circle", "color": "chart-2" } }
+```
 
 ### SearchBubbleChart
 
@@ -1076,7 +1126,7 @@ Carte choroplèthe des régions françaises. Activée via `enableRegions: true` 
 
 ### Preview et MapPopup
 
-`Preview` / `PreviewDefault` : aperçu rapide d'une entité au survol ou au clic. `MapPopupDefault` : popup dans la carte Leaflet.
+`Preview` / `PreviewDefault` : aperçu rapide d'une entité au survol ou au clic. `MapPopupDefault` : popup (composant React) de la carte MapLibre du search.
 
 ### ActiveFiltersBar et FilterDropdown
 
@@ -1368,9 +1418,9 @@ La section `filters` lit et écrit dans `PageFiltersContext`. Si elle n'est pas 
 
 Une seule instance de `SearchPro` par page — les filtres sont dans l'URL et une deuxième instance écraserait les query params de la première. Utiliser `SearchProStatic` si plusieurs instances sont nécessaires.
 
-### 3. Leaflet SSR
+### 3. Cartes SSR (MapLibre / Leaflet)
 
-Leaflet doit être chargé en client-only via `useClientModule()` / `loadLeaflet`. Ne jamais importer `leaflet` directement dans un composant SSR. `SearchMapWrapper` gère ce lazy-loading.
+Les moteurs de carte accèdent à `window` / WebGL → **jamais en SSR**. La carte du search (**MapLibre GL** via `react-map-gl/maplibre` + `@maptiler/sdk`) est chargée client-only par `SearchMapWrapper` (`useClientModule()`, import dynamique de `SearchMap`). La carte du profil (**Leaflet**) passe par `useClientModule()` / `loadLeaflet`. Ne jamais importer `maplibre-gl`, `react-map-gl`, `@maptiler/sdk` ni `leaflet` directement dans un composant rendu en SSR.
 
 ### 4. `searchVariant: "navigator-tl"` — support backend requis
 

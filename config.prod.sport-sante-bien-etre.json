@@ -291,7 +291,7 @@
                   "fr": "Communauté citoyenne",
                   "en": "Citizen Community"
                 },
-                "icon":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2\"/></svg>"
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2\"/></svg>"
               }
             ],
             "ctaButtons": [
@@ -360,7 +360,7 @@
                   "en": "Labeled activities, a guarantee of quality and safety"
                 }
               }
-            }, 
+            },
             "rightSection": {
               "type": "searchHeader",
               "id": "right-showcase-header",
@@ -370,7 +370,7 @@
                   "en": "The sport health for all and sport health on prescription labeled slots meet regional requirements according to safety and quality criteria. Professionals are trained and offer you activities adapted to your needs, your goals. You will be supervised and supported throughout your practice. Alon bougé sora valab !"
                 },
                 "buttons": [
-                  {   
+                  {
                     "label": {
                       "fr": "Ajouter une activité",
                       "en": "Add an activity"
@@ -387,7 +387,7 @@
                     "variant": "outline"
                   }
                 ]
-              } 
+              }
             }
           }
         },
@@ -403,7 +403,7 @@
               "fr": "L'activité physique régulière prévient de nombreuses maladies chroniques et améliore la qualité de vie.",
               "en": "Regular physical activity prevents many chronic diseases and improves quality of life."
             }
-          } 
+          }
         },
         {
           "type": "gridLayout",
@@ -436,7 +436,6 @@
             }
           }
         },
-
         {
           "type": "cta-card-grid",
           "id": "community-ssbe",
@@ -489,7 +488,7 @@
       ]
     },
     {
-      "path":"/espace-professionnels",
+      "path": "/espace-professionnels",
       "title": {
         "fr": "Le réseau Sport Santé",
         "en": "The Sport Health Network"
@@ -546,15 +545,15 @@
           }
         },
         {
-          "type":"html",
-          "id":"national-plan",
+          "type": "html",
+          "id": "national-plan",
           "props": {
-            "html":"<section class=\"py-16 bg-muted/40\"><div class=\"container mx-auto px-4\"><div class=\"max-w-4xl mx-auto\"><p class=\"text-muted-foreground leading-relaxed mb-8\">Elle s'articule avec différents plans nationaux dont le plan « Héritage 2024 » des Jeux Olympiques et Paralympiques, la stratégie nationale sport et handicaps, le plan national « priorité prévention », la stratégie nationale de prévention et de lutte contre la pauvreté, la feuille de route « Prise en charge des personnes en situation d'obésité », le livre bleu outre-mer, le plan d'action national pour lutter contre les chutes des personnes âgées, etc.</p><div class=\"rounded-2xl overflow-hidden shadow-card bg-card p-2\"><img src=\"/images/sportSanteBienetre/SRSSBE1.png\" alt=\"Schéma Stratégie Régionale SSBE\" class=\"w-full rounded-xl\" loading=\"lazy\" /></div></div></div></section>"
+            "html": "<section class=\"py-16 bg-muted/40\"><div class=\"container mx-auto px-4\"><div class=\"max-w-4xl mx-auto\"><p class=\"text-muted-foreground leading-relaxed mb-8\">Elle s'articule avec différents plans nationaux dont le plan « Héritage 2024 » des Jeux Olympiques et Paralympiques, la stratégie nationale sport et handicaps, le plan national « priorité prévention », la stratégie nationale de prévention et de lutte contre la pauvreté, la feuille de route « Prise en charge des personnes en situation d'obésité », le livre bleu outre-mer, le plan d'action national pour lutter contre les chutes des personnes âgées, etc.</p><div class=\"rounded-2xl overflow-hidden shadow-card bg-card p-2\"><img src=\"/images/sportSanteBienetre/SRSSBE1.png\" alt=\"Schéma Stratégie Régionale SSBE\" class=\"w-full rounded-xl\" loading=\"lazy\" /></div></div></div></section>"
           }
         },
         {
-          "type":"html",
-          "id":"declinaison-regionale",
+          "type": "html",
+          "id": "declinaison-regionale",
           "props": {
             "html": "<section class=\"py-16 md:py-20\"><div class=\"container mx-auto px-4\"><div class=\"max-w-4xl mx-auto\"><div class=\"bg-card rounded-2xl p-8 md:p-10 shadow-soft border border-border/50\"><span class=\"inline-block px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-semibold mb-4\">À La Réunion</span><h2 class=\"font-display font-bold text-xl md:text-2xl text-foreground mb-4\">La Stratégie Régionale SSBE</h2><p class=\"text-muted-foreground leading-relaxed mb-6\">À La Réunion, la Stratégie Régionale SSBE est plus qu'une déclinaison de la SNSS 2019-2024 puisqu'elle vient en lien et en complémentarité du Programme Réunionnais Nutrition Diabète (PRND 2020-2023), lui-même issu du 4ème programme national nutrition santé (PNNS) 2019-2023.</p><p class=\"text-muted-foreground leading-relaxed\">Véritable outil fédérateur, sa mise en œuvre nécessite <strong class=\"text-foreground\">une collaboration intersectorielle et une cohérence réelle</strong> entre les politiques du ministère de la santé et de la prévention, de l'agriculture de l'alimentation et des forêts, de la jeunesse et l'éducation, des solidarités et de l'autonomie et personnes handicapées à celle du ministère des sports des jeux olympiques et paralympiques ainsi que les collectivités locales et le mouvement sportif.</p></div></div></div></section>"
           }
@@ -783,7 +782,7 @@
                   "en": "Looking for physical activity in Réunion?"
                 }
               }
-            }, 
+            },
             "rightSection": {
               "type": "html",
               "id": "subtitle-activity",
@@ -806,7 +805,7 @@
               "props": {
                 "html": "<section class=\"relative py-32 px-4 overflow-hidden\"><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"space-y-8\"><h4 class=\"text-4xl md:text-5xl font-bold mb-6 text-foreground\">Le sport santé bien-être en quelques mots</h4></div></div></div></div></section>"
               }
-            }, 
+            },
             "rightSection": {
               "type": "features-glass",
               "id": "features",
@@ -841,7 +840,7 @@
             }
           }
         },
-                {
+        {
           "type": "searchHeader",
           "id": "title-header-webtv",
           "props": {
@@ -853,7 +852,7 @@
               "fr": "L'activité physique régulière prévient de nombreuses maladies chroniques et améliore la qualité de vie.",
               "en": "Regular physical activity prevents many chronic diseases and improves quality of life."
             }
-          } 
+          }
         },
         {
           "type": "gridLayout",
@@ -886,7 +885,7 @@
             }
           }
         },
-         {
+        {
           "type": "categories-grid",
           "id": "sport-categories-section",
           "props": {
@@ -1194,6 +1193,7 @@
                 },
                 "icon": "plus",
                 "action": "add-organization",
+                "modal": "add-sport-sante-bienetre-organizations",
                 "variant": "primary"
               }
             ],
@@ -1227,18 +1227,32 @@
               }
             },
             "list": {
-              "columns": { "sm": 1, "md": 1, "lg": 1, "xl": 1 },
-              "card": { "type": "contact-card", "detailsMode": "drawer" }
+              "columns": {
+                "sm": 1,
+                "md": 1,
+                "lg": 1,
+                "xl": 1
+              },
+              "card": {
+                "type": "contact-card",
+                "detailsMode": "drawer"
+              }
             },
             "map": {
-              "marker": { "useItemImage": true, "style": "pin", "color": "primary" },
-              "itemAction": { "kind": "preview" }
+              "marker": {
+                "useItemImage": true,
+                "style": "pin",
+                "color": "primary"
+              },
+              "itemAction": {
+                "kind": "preview"
+              }
             }
           }
         }
       ]
     },
-     {
+    {
       "path": "/mss",
       "title": {
         "fr": "Maisons Sport Santé",
@@ -1293,7 +1307,7 @@
               "props": {
                 "html": "<section class=\"relative py-16 px-4 overflow-hidden\"><div class=\"relative z-10 container mx-auto max-w-4xl\"><div><div class=\"inline-flex items-center gap-2 bg-primary/10 text-primary rounded-full px-4 py-1.5 text-sm font-medium mb-6\">🏠 Qu'est-ce qu'une MSS ?</div><h2 class=\"font-display text-3xl md:text-4xl font-bold text-foreground mb-6 leading-tight\">Une structure labellisée <span class=\"text-gradient\">au service de votre santé</span></h2><div class=\"space-y-4 text-muted-foreground text-base leading-relaxed\"><p>Les Maisons Sport Santé (MSS) sont des structures labellisées par le <strong class=\"text-foreground\">Ministère des Sports</strong> et le <strong class=\"text-foreground\">Ministère de la Santé</strong>. Elles ont pour mission d'accueillir et d'orienter toutes les personnes souhaitant pratiquer, développer ou reprendre une activité physique à des fins de santé.</p><p>À La Réunion, les MSS travaillent en lien étroit avec les professionnels de santé et les structures sportives labellisées pour proposer un <strong class=\"text-foreground\">parcours personnalisé</strong> adapté à chaque situation.</p></div><div class=\"mt-8 p-6 bg-muted/50 rounded-2xl border border-border\"><h3 class=\"font-semibold text-foreground mb-4\">👥 Pour qui ?</h3><div class=\"grid grid-cols-2 gap-3\"><div class=\"flex items-center gap-2 text-sm text-muted-foreground\"><span>🧓 Seniors</span></div><div class=\"flex items-center gap-2 text-sm text-muted-foreground\"><span>🤒 Personnes malades</span></div><div class=\"flex items-center gap-2 text-sm text-muted-foreground\"><span>💊 Patients sous APA</span></div><div class=\"flex items-center gap-2 text-sm text-muted-foreground\"><span>🏋️ Personnes sédentaires</span></div><div class=\"flex items-center gap-2 text-sm text-muted-foreground\"><span>👶 Jeunes en surpoids</span></div><div class=\"flex items-center gap-2 text-sm text-muted-foreground\"><span>♿ Personnes handicapées</span></div></div></div></div></div></section>"
               }
-            }, 
+            },
             "rightSection": {
               "type": "categories-grid",
               "id": "sport-categories-section",
@@ -1385,16 +1399,32 @@
                   "source.keys": "sportSanteBienetre",
                   "reference.costum": "sportSanteBienetre"
                 },
-                "tags": ["mss"]
+                "tags": [
+                  "mss"
+                ]
               }
             },
             "list": {
-              "columns": { "sm": 1, "md": 1, "lg": 1, "xl": 1 },
-              "card": { "type": "contact-card", "detailsMode": "drawer" }
+              "columns": {
+                "sm": 1,
+                "md": 1,
+                "lg": 1,
+                "xl": 1
+              },
+              "card": {
+                "type": "contact-card",
+                "detailsMode": "drawer"
+              }
             },
             "map": {
-              "marker": { "useItemImage": true, "style": "pin", "color": "primary" },
-              "itemAction": { "kind": "preview" }
+              "marker": {
+                "useItemImage": true,
+                "style": "pin",
+                "color": "primary"
+              },
+              "itemAction": {
+                "kind": "preview"
+              }
             }
           }
         }
@@ -1449,7 +1479,9 @@
               "Periscolaire 2eme degré"
             ],
             "baseParams": {
-              "defaultTypes": ["organizations"],
+              "defaultTypes": [
+                "organizations"
+              ],
               "defaultFilters": {
                 "$or": {
                   "source.keys": "sportSanteBienetre",
@@ -1499,24 +1531,24 @@
           }
         },
         {
-          "type":"gridLayout",
-          "id":"presentation-grid",
-          "props":{
+          "type": "gridLayout",
+          "id": "presentation-grid",
+          "props": {
             "leftColumns": 2,
             "rightColumns": 2,
             "gap": 4,
-            "leftSection":{
-              "type":"html",
-              "id":"presentation-mission",
-              "props":{
-                "html":"<section class=\"relative py-20 px-4 overflow-hidden\"><div class=\"relative z-10 container mx-auto max-w-4xl\"><div><h2 class=\"font-display text-3xl font-bold text-foreground mb-6\">Une approche globale de la santé par le mouvement</h2><div class=\"space-y-4 text-muted-foreground\"><p>Le Sport Santé s'adresse à tous : personnes sédentaires souhaitant reprendre une activité, patients atteints de maladies chroniques (diabète, cancer, maladies cardiovasculaires), seniors en perte d'autonomie, ou personnes en situation de handicap.</p><p>À La Réunion, le dispositif Sport Santé Bien-Être coordonne un réseau de professionnels formés et de structures labellisées pour proposer des activités adaptées et sécurisées.</p></div><div class=\"mt-8 space-y-3\"><div class=\"flex items-center gap-3\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" class=\"h-5 w-5 text-primary flex-shrink-0\"><path d=\"M9 12l2 2 4-4\"/><circle cx=\"12\" cy=\"12\" r=\"9\"/></svg><span>Activités adaptées à votre condition</span></div><div class=\"flex items-center gap-3\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" class=\"h-5 w-5 text-primary flex-shrink-0\"><path d=\"M9 12l2 2 4-4\"/><circle cx=\"12\" cy=\"12\" r=\"9\"/></svg><span>Encadrement par des professionnels formés</span></div><div class=\"flex items-center gap-3\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" class=\"h-5 w-5 text-primary flex-shrink-0\"><path d=\"M9 12l2 2 4-4\"/><circle cx=\"12\" cy=\"12\" r=\"9\"/></svg><span>Suivi et évaluation des progrès</span></div><div class=\"flex items-center gap-3\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" class=\"h-5 w-5 text-primary flex-shrink-0\"><path d=\"M9 12l2 2 4-4\"/><circle cx=\"12\" cy=\"12\" r=\"9\"/></svg><span>Coordination avec votre médecin</span></div></div></div></div></section>"
+            "leftSection": {
+              "type": "html",
+              "id": "presentation-mission",
+              "props": {
+                "html": "<section class=\"relative py-20 px-4 overflow-hidden\"><div class=\"relative z-10 container mx-auto max-w-4xl\"><div><h2 class=\"font-display text-3xl font-bold text-foreground mb-6\">Une approche globale de la santé par le mouvement</h2><div class=\"space-y-4 text-muted-foreground\"><p>Le Sport Santé s'adresse à tous : personnes sédentaires souhaitant reprendre une activité, patients atteints de maladies chroniques (diabète, cancer, maladies cardiovasculaires), seniors en perte d'autonomie, ou personnes en situation de handicap.</p><p>À La Réunion, le dispositif Sport Santé Bien-Être coordonne un réseau de professionnels formés et de structures labellisées pour proposer des activités adaptées et sécurisées.</p></div><div class=\"mt-8 space-y-3\"><div class=\"flex items-center gap-3\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" class=\"h-5 w-5 text-primary flex-shrink-0\"><path d=\"M9 12l2 2 4-4\"/><circle cx=\"12\" cy=\"12\" r=\"9\"/></svg><span>Activités adaptées à votre condition</span></div><div class=\"flex items-center gap-3\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" class=\"h-5 w-5 text-primary flex-shrink-0\"><path d=\"M9 12l2 2 4-4\"/><circle cx=\"12\" cy=\"12\" r=\"9\"/></svg><span>Encadrement par des professionnels formés</span></div><div class=\"flex items-center gap-3\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" class=\"h-5 w-5 text-primary flex-shrink-0\"><path d=\"M9 12l2 2 4-4\"/><circle cx=\"12\" cy=\"12\" r=\"9\"/></svg><span>Suivi et évaluation des progrès</span></div><div class=\"flex items-center gap-3\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" class=\"h-5 w-5 text-primary flex-shrink-0\"><path d=\"M9 12l2 2 4-4\"/><circle cx=\"12\" cy=\"12\" r=\"9\"/></svg><span>Coordination avec votre médecin</span></div></div></div></div></section>"
               }
             },
-            "rightSection":{
-              "type":"html",
-              "id":"presentation-facts",
-              "props":{
-                "html":"<section class=\"relative py-20 px-4 overflow-hidden\"><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"bg-muted/50 rounded-2xl p-8\"><h3 class=\"font-display text-xl font-semibold mb-6\">Le saviez-vous ?</h3><div class=\"space-y-6\"><div class=\"p-4 bg-background rounded-xl\"><p class=\"text-3xl font-bold text-primary mb-1\">30 min</p><p class=\"text-sm text-muted-foreground\">d'activité physique par jour recommandées par l'OMS</p></div><div class=\"p-4 bg-background rounded-xl\"><p class=\"text-3xl font-bold text-primary mb-1\">-30%</p><p class=\"text-sm text-muted-foreground\">de risque de mortalité prématurée avec une activité régulière</p></div><div class=\"p-4 bg-background rounded-xl\"><p class=\"text-3xl font-bold text-primary mb-1\">1ère</p><p class=\"text-sm text-muted-foreground\">cause de maladie évitable : la sédentarité</p></div></div></div></div></section>"
+            "rightSection": {
+              "type": "html",
+              "id": "presentation-facts",
+              "props": {
+                "html": "<section class=\"relative py-20 px-4 overflow-hidden\"><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"bg-muted/50 rounded-2xl p-8\"><h3 class=\"font-display text-xl font-semibold mb-6\">Le saviez-vous ?</h3><div class=\"space-y-6\"><div class=\"p-4 bg-background rounded-xl\"><p class=\"text-3xl font-bold text-primary mb-1\">30 min</p><p class=\"text-sm text-muted-foreground\">d'activité physique par jour recommandées par l'OMS</p></div><div class=\"p-4 bg-background rounded-xl\"><p class=\"text-3xl font-bold text-primary mb-1\">-30%</p><p class=\"text-sm text-muted-foreground\">de risque de mortalité prématurée avec une activité régulière</p></div><div class=\"p-4 bg-background rounded-xl\"><p class=\"text-3xl font-bold text-primary mb-1\">1ère</p><p class=\"text-sm text-muted-foreground\">cause de maladie évitable : la sédentarité</p></div></div></div></div></section>"
               }
             }
           }
@@ -1596,7 +1628,7 @@
               "en": "They tried Sport Health and share their experience."
             }
           }
-        }, 
+        },
         {
           "type": "testimonials",
           "id": "presentation-testimonials-Participant",
@@ -1605,30 +1637,48 @@
             "autoplay": false,
             "items": [
               {
-                "quote": { 
-                  "fr": "Grâce à la marche nordique adaptée, j'ai réduit mes doses d'insuline et retrouvé de l'énergie. Je ne pensais pas que le sport pouvait autant m'aider.", 
-                  "en": "Thanks to adapted Nordic walking, I reduced my insulin doses and regained energy. I didn't think sport could help me that much." 
+                "quote": {
+                  "fr": "Grâce à la marche nordique adaptée, j'ai réduit mes doses d'insuline et retrouvé de l'énergie. Je ne pensais pas que le sport pouvait autant m'aider.",
+                  "en": "Thanks to adapted Nordic walking, I reduced my insulin doses and regained energy. I didn't think sport could help me that much."
                 },
-                "author": { "fr": "Marie L., 58 ans", "en": "Marie L., 58 years old" },
-                "role": { "fr": "Diabète de type 2  (Marche Nordique)", "en": "Type 2 Diabetes (Nordic Walking)" },
+                "author": {
+                  "fr": "Marie L., 58 ans",
+                  "en": "Marie L., 58 years old"
+                },
+                "role": {
+                  "fr": "Diabète de type 2  (Marche Nordique)",
+                  "en": "Type 2 Diabetes (Nordic Walking)"
+                },
                 "avatar": ""
               },
               {
-                "quote": { 
-                  "fr": "Mon cardiologue m'a prescrit du sport. L'aquagym encadrée m'a permis de reprendre confiance en mon corps progressivement", 
-                  "en": "My cardiologist prescribed sport. Supervised aquagym allowed me to regain confidence in my body gradually." 
+                "quote": {
+                  "fr": "Mon cardiologue m'a prescrit du sport. L'aquagym encadrée m'a permis de reprendre confiance en mon corps progressivement",
+                  "en": "My cardiologist prescribed sport. Supervised aquagym allowed me to regain confidence in my body gradually."
                 },
-                "author": { "fr": "Jean-Pierre M., 65 ans", "en": "Jean-Pierre M., 65 years old" },
-                "role": { "fr": "Post-infarctus (Aquagym Santé)", "en": "Post-Infarction (Supervised Aquagym)" },
+                "author": {
+                  "fr": "Jean-Pierre M., 65 ans",
+                  "en": "Jean-Pierre M., 65 years old"
+                },
+                "role": {
+                  "fr": "Post-infarctus (Aquagym Santé)",
+                  "en": "Post-Infarction (Supervised Aquagym)"
+                },
                 "avatar": ""
               },
               {
-                "quote": { 
-                  "fr": "Après mes traitements, la gym douce m'a aidée à récupérer physiquement et moralement. Le groupe est devenu une vraie famille.", 
-                  "en": "After my treatments, gentle gym helped me recover physically and mentally. The group has become a real family." 
+                "quote": {
+                  "fr": "Après mes traitements, la gym douce m'a aidée à récupérer physiquement et moralement. Le groupe est devenu une vraie famille.",
+                  "en": "After my treatments, gentle gym helped me recover physically and mentally. The group has become a real family."
                 },
-                "author": { "fr": "Sophie T., 45 ans", "en": "Sophie T., 45 years old" },
-                "role": { "fr": "Rémission cancer (Gym Douce)", "en": "Cancer Remission (Gentle Gym)" },
+                "author": {
+                  "fr": "Sophie T., 45 ans",
+                  "en": "Sophie T., 45 years old"
+                },
+                "role": {
+                  "fr": "Rémission cancer (Gym Douce)",
+                  "en": "Cancer Remission (Gentle Gym)"
+                },
                 "avatar": ""
               }
             ]
@@ -1648,7 +1698,7 @@
             }
           }
         },
-         {
+        {
           "type": "testimonials",
           "id": "presentation-testimonials-Professional",
           "props": {
@@ -1656,21 +1706,33 @@
             "autoplay": false,
             "items": [
               {
-                "quote": { 
-                  "fr": "La prescription d'activité physique adaptée a transformé ma pratique. Mes patients diabétiques et hypertendus montrent des améliorations significatives.", 
-                  "en": "Prescribing adapted physical activity has transformed my practice. My diabetic and hypertensive patients show significant improvements." 
+                "quote": {
+                  "fr": "La prescription d'activité physique adaptée a transformé ma pratique. Mes patients diabétiques et hypertendus montrent des améliorations significatives.",
+                  "en": "Prescribing adapted physical activity has transformed my practice. My diabetic and hypertensive patients show significant improvements."
                 },
-                "author": { "fr": "Dr. Nathalie R.", "en": "Dr. Nathalie R." },
-                "role": { "fr": "Médecin généraliste, Saint-Denis", "en": "General Practitioner, Saint-Denis" },
+                "author": {
+                  "fr": "Dr. Nathalie R.",
+                  "en": "Dr. Nathalie R."
+                },
+                "role": {
+                  "fr": "Médecin généraliste, Saint-Denis",
+                  "en": "General Practitioner, Saint-Denis"
+                },
                 "avatar": ""
               },
               {
-                "quote": { 
-                  "fr": "Accompagner des personnes en situation de fragilité et les voir progresser est extrêmement gratifiant. La formation Sport Santé a enrichi mes compétences.", 
-                  "en": "Supporting people in situations of fragility and seeing them progress is extremely rewarding. The Sport Health training has enriched my skills." 
+                "quote": {
+                  "fr": "Accompagner des personnes en situation de fragilité et les voir progresser est extrêmement gratifiant. La formation Sport Santé a enrichi mes compétences.",
+                  "en": "Supporting people in situations of fragility and seeing them progress is extremely rewarding. The Sport Health training has enriched my skills."
                 },
-                "author": { "fr": "Thomas B.", "en": "Thomas B." },
-                "role": { "fr": "Éducateur sportif, Paris", "en": "Sports Educator, Paris" },
+                "author": {
+                  "fr": "Thomas B.",
+                  "en": "Thomas B."
+                },
+                "role": {
+                  "fr": "Éducateur sportif, Paris",
+                  "en": "Sports Educator, Paris"
+                },
                 "avatar": ""
               }
             ]
@@ -1679,7 +1741,7 @@
       ]
     },
     {
-      "path":"/labellisation",
+      "path": "/labellisation",
       "title": {
         "fr": "Labelliser votre activité",
         "en": "Label your activity"
@@ -1727,7 +1789,7 @@
                   "en": "The sport health wellness label is a voluntary approach for any organization offering sport health activities for audiences with or without medical prescription."
                 }
               }
-            }, 
+            },
             "rightSection": {
               "type": "searchHeader",
               "id": "right-label-header",
@@ -1736,7 +1798,7 @@
                   "fr": "Ce label permet d’attester de la qualité de votre offre et justifie d’un encadrement professionnel et sécuritaire pour les pratiquants et les professionnels de santé. Attention, la labellisation concerne un créneau Sport Santé et non pas une structure. Autrement dit, une demande est nécessaire pour chaque créneau proposé par une même structure. Pour faire votre demande, vous devez compléter le formulaire en ligne. Si vous êtes déjà labellisé SSBE et que vous souhaitez proposer des activités supplémentaires, connectez-vous à votre compte et suivez le lien.",
                   "en": "This label certifies the quality of your offer and ensures professional and secure supervision for practitioners and health professionals. Please note that the labeling concerns a Sport Health slot and not a structure. In other words, an application is required for each slot offered by the same structure. To apply, you must complete the online form. If you are already SSBE labeled and wish to offer additional activities, log in to your account and follow the link."
                 }
-              } 
+              }
             }
           }
         },
@@ -1799,46 +1861,60 @@
               "en": "A clear and supported process, from submitting your application to obtaining the label."
             }
           }
-        }, 
+        },
         {
           "type": "timeline",
           "id": "labellisation-timeline",
           "props": {
             "events": [
               {
-                
-                "title": { "fr": "Demande de la structure", "en": "Structure Request" },
-                "text": { 
-                  "fr": "Signature de la charte Sport Santé et renseignements de son créneau sur le formulaire en ligne ", 
-                  "en": "Launch of the idea and start of platform development." 
+                "title": {
+                  "fr": "Demande de la structure",
+                  "en": "Structure Request"
+                },
+                "text": {
+                  "fr": "Signature de la charte Sport Santé et renseignements de son créneau sur le formulaire en ligne ",
+                  "en": "Launch of the idea and start of platform development."
                 }
               },
               {
-                "title": { "fr": "Demande de la structure ", "en": "Structure Request" },
-                "text": { 
-                  "fr": "Vérification de la complétude des dossiers, (pièces justificatives et documents administratifs)", 
+                "title": {
+                  "fr": "Demande de la structure ",
+                  "en": "Structure Request"
+                },
+                "text": {
+                  "fr": "Vérification de la complétude des dossiers, (pièces justificatives et documents administratifs)",
                   "en": "Verification of the completeness of the files (supporting documents and administrative documents)"
                 }
               },
               {
-                "title": { "fr": "Comité de validation", "en": "Validation Committee" },
-                "text": { 
-                  "fr": "Passage en commission de labellisation et validation de votre activité sportive ", 
-                  "en": "Validation of your sports activity by the labeling committee" 
+                "title": {
+                  "fr": "Comité de validation",
+                  "en": "Validation Committee"
+                },
+                "text": {
+                  "fr": "Passage en commission de labellisation et validation de votre activité sportive ",
+                  "en": "Validation of your sports activity by the labeling committee"
                 }
               },
               {
-                "title": { "fr": "Publication des activités ", "en": "Activity Publication" },
-                "text": { 
-                  "fr": "Diffusion sur le site ssbe.re des créneaux labellisés et transmission du kit de communication", 
-                  "en": "Listing of labeled slots on the ssbe.re website and distribution of the communication kit." 
+                "title": {
+                  "fr": "Publication des activités ",
+                  "en": "Activity Publication"
+                },
+                "text": {
+                  "fr": "Diffusion sur le site ssbe.re des créneaux labellisés et transmission du kit de communication",
+                  "en": "Listing of labeled slots on the ssbe.re website and distribution of the communication kit."
                 }
               },
               {
-                "title": { "fr": "Mise à jour régulière ", "en": "Regular Updates" },
-                "text": { 
-                  "fr": "La structure s’engage à mettre à jour ses informations par le biais de son espace numérique", 
-                  "en": "The structure commits to updating its information through its digital space." 
+                "title": {
+                  "fr": "Mise à jour régulière ",
+                  "en": "Regular Updates"
+                },
+                "text": {
+                  "fr": "La structure s’engage à mettre à jour ses informations par le biais de son espace numérique",
+                  "en": "The structure commits to updating its information through its digital space."
                 }
               }
             ],
@@ -1859,7 +1935,7 @@
             }
           }
         },
-         {
+        {
           "type": "gridLayout",
           "id": "section-activity-grid",
           "props": {
@@ -1920,12 +1996,12 @@
                       "fr": "Conventions de partenariat",
                       "en": "Partnership Agreements"
                     }
-                  } 
+                  }
                 ]
               }
-            }, 
+            },
             "rightSection": {
-             "type": "html",
+              "type": "html",
               "id": "documents-right-section",
               "props": {
                 "html": "<section class=\"relative py-20 px-4 md:py-28 overflow-hidden\"><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"lg:col-span-2\"><div class=\"bg-gradient-hero text-primary-foreground rounded-3xl shadow-2xl sticky top-24 overflow-hidden\"><div class=\"absolute top-0 right-0 w-32 h-32 bg-primary-foreground/5 rounded-full -translate-y-1/2 translate-x-1/2\"></div><div class=\"absolute bottom-10 left-5 w-20 h-20 bg-primary-foreground/5 rounded-full\"></div><div class=\"relative p-8 md:p-10\"><span class=\"text-5xl mb-4 block\">🚀</span><h3 class=\"font-display text-2xl font-bold mb-4\">Prêt à vous lancer ?</h3><p class=\"mb-8 opacity-90 leading-relaxed\">Déposez votre demande en ligne. Notre équipe vous accompagne de A à Z, de la constitution du dossier à l'obtention du label !</p><div class=\"space-y-3\"><a href=\"/pro/labellisation/demande\" class=\"w-full inline-flex items-center justify-center bg-accent hover:bg-accent/90 text-accent-foreground font-bold rounded-full shadow-lg hover:scale-105 transition-all px-4 py-2\">Faire une demande<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" class=\"ml-2 h-4 w-4\"><path d=\"M5 12h14\"/><path d=\"m12 5 7-5-7-5\"/></svg></a><button class=\"w-full inline-flex items-center justify-center bg-transparent border border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 rounded-full px-4 py-2\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" class=\"mr-2 h-4 w-4\"><path d=\"M12 3v12\"/><path d=\"m7-5-7 7-7-7\"/><path d=\"M5 21h14\"/></svg>Télécharger le guide</button></div></div></div></div></div></section>"
@@ -1956,7 +2032,7 @@
               "en": "Explore the labeled sport health activities in Réunion and find the one that suits you!"
             },
             "buttons": [
-              {   
+              {
                 "label": {
                   "fr": "Ajouter un créneau",
                   "en": "Add a slot"
@@ -2386,7 +2462,7 @@
             "searchPlaceholder": {
               "fr": "Rechercher un créneau...",
               "en": "Search for a slot..."
-            } 
+            }
           }
         },
         {
@@ -2400,7 +2476,7 @@
             "showActiveFiltersTags": false,
             "disableInfiniteScroll": false,
             "customHeader": {},
-            "defaultViewMode" : "list",
+            "defaultViewMode": "list",
             "baseParams": {
               "defaultTypes": [
                 "answers"
@@ -2469,7 +2545,7 @@
           }
         },
         {
-          "type" :"html",
+          "type": "html",
           "id": "formation-html-section",
           "props": {
             "html": "<h2 class=\"font-display text-3xl md:text-4xl font-bold text-center text-foreground mb-4\">Organismes de <span class=\"text-gradient\">formation labellisé</span></h2>"
@@ -2496,7 +2572,9 @@
                   "source.keys": "sportSanteBienetre",
                   "reference.costum": "sportSanteBienetre"
                 },
-                "tags" : ["Labellisé"]
+                "tags": [
+                  "Labellisé"
+                ]
               }
             },
             "list": {
@@ -2514,8 +2592,6 @@
             }
           }
         }
-       
-
       ]
     },
     {
@@ -2532,7 +2608,7 @@
           "props": {
             "headline": {
               "fr": "Découvrez les offres de formation labellisées SSBE",
-              "en": "Discover the SSBE labeled training offers" 
+              "en": "Discover the SSBE labeled training offers"
             },
             "searchPlaceholder": {
               "fr": "Rechercher une formation...",
@@ -2562,7 +2638,9 @@
                   "source.keys": "sportSanteBienetre",
                   "reference.costum": "sportSanteBienetre"
                 },
-                "tags" : ["Formation"]
+                "tags": [
+                  "Formation"
+                ]
               }
             },
             "list": {
@@ -2579,7 +2657,7 @@
               }
             }
           }
-        } 
+        }
       ]
     },
     {
@@ -2596,19 +2674,9 @@
           "props": {
             "headline": {
               "fr": "Découvrez les équipements sportifs",
-              "en": "Discover sports facilities" 
+              "en": "Discover sports facilities"
             },
-            "buttons": [
-              {
-                "label": {
-                  "fr": "Ajouter équipement sportif",
-                  "en": "Add sports facility"
-                },
-                "action": "add-poi",
-                "modal": "add-equipements-sportifs",
-                "variant": "outline"
-              }
-            ],
+            "buttons": [],
             "searchPlaceholder": {
               "fr": "Rechercher un équipement...",
               "en": "Search for a facility..."
@@ -3770,7 +3838,6 @@
                   }
                 ]
               }
-
             ]
           }
         },
@@ -3779,11 +3846,11 @@
           "id": "section-poi-cards",
           "props": {
             "customHeader": {
-                "title": {
-                  "fr": "Tous les équipements sportifs",
-                  "en": "All sports facilities"
-                }
-              },
+              "title": {
+                "fr": "Tous les équipements sportifs",
+                "en": "All sports facilities"
+              }
+            },
             "useFilter": true,
             "showMap": false,
             "enableMap": true,
@@ -3870,15 +3937,24 @@
               }
             }
           }
-        } 
+        }
       ]
     },
     {
       "path": "/contact",
-      "title": { "fr": "Contact - SiteForge", "en": "Contact - SiteForge" },
+      "title": {
+        "fr": "Contact - SiteForge",
+        "en": "Contact - SiteForge"
+      },
       "seo": {
-        "title": { "fr": "Contact - SiteForge", "en": "Contact - SiteForge" },
-        "description": { "fr": "Contactez notre équipe pour toute question ou demande de support.", "en": "Contact our team for any questions or support requests." }
+        "title": {
+          "fr": "Contact - SiteForge",
+          "en": "Contact - SiteForge"
+        },
+        "description": {
+          "fr": "Contactez notre équipe pour toute question ou demande de support.",
+          "en": "Contact our team for any questions or support requests."
+        }
       },
       "layout": "default",
       "sections": [
@@ -3886,13 +3962,13 @@
           "type": "hero",
           "id": "contact-hero",
           "props": {
-            "headline": { 
-              "fr": "Contactez-Nous", 
-              "en": "Contact Us" 
+            "headline": {
+              "fr": "Contactez-Nous",
+              "en": "Contact Us"
             },
-            "subhead": { 
-              "fr": "Notre équipe est là pour vous aider", 
-              "en": "Our team is here to help you" 
+            "subhead": {
+              "fr": "Notre équipe est là pour vous aider",
+              "en": "Our team is here to help you"
             },
             "align": "center",
             "overlay": false
@@ -3905,50 +3981,95 @@
             "fields": [
               {
                 "name": "name",
-                "label": { "fr": "Nom complet", "en": "Full name" },
+                "label": {
+                  "fr": "Nom complet",
+                  "en": "Full name"
+                },
                 "type": "text",
                 "required": true,
-                "placeholder": { "fr": "Votre nom", "en": "Your name" }
+                "placeholder": {
+                  "fr": "Votre nom",
+                  "en": "Your name"
+                }
               },
               {
                 "name": "email",
-                "label": { "fr": "Adresse e-mail", "en": "Email address" },
+                "label": {
+                  "fr": "Adresse e-mail",
+                  "en": "Email address"
+                },
                 "type": "email",
                 "required": true,
-                "placeholder": { "fr": "votre@email.com", "en": "your@email.com"},
+                "placeholder": {
+                  "fr": "votre@email.com",
+                  "en": "your@email.com"
+                },
                 "validation": "email"
               },
               {
                 "name": "subject",
-                "label": { "fr": "Sujet", "en": "Subject" },
+                "label": {
+                  "fr": "Sujet",
+                  "en": "Subject"
+                },
                 "type": "select",
                 "required": true,
                 "options": [
-                  { "fr": "Question générale", "en": "General question" },
-                  { "fr": "Support technique", "en": "Technical support" },
-                  { "fr": "Demande commerciale", "en": "Sales inquiry" },
-                  { "fr": "Partenariat", "en": "Partnership" }
+                  {
+                    "fr": "Question générale",
+                    "en": "General question"
+                  },
+                  {
+                    "fr": "Support technique",
+                    "en": "Technical support"
+                  },
+                  {
+                    "fr": "Demande commerciale",
+                    "en": "Sales inquiry"
+                  },
+                  {
+                    "fr": "Partenariat",
+                    "en": "Partnership"
+                  }
                 ]
               },
               {
                 "name": "message",
-                "label": { "fr": "Message", "en": "Message" },
+                "label": {
+                  "fr": "Message",
+                  "en": "Message"
+                },
                 "type": "textarea",
                 "required": true,
-                "placeholder": { "fr": "Décrivez votre demande...", "en": "Describe your request..." }
+                "placeholder": {
+                  "fr": "Décrivez votre demande...",
+                  "en": "Describe your request..."
+                }
               },
               {
                 "name": "newsletter",
-                "label": { "fr": "Je souhaite recevoir la newsletter", "en": "I want to receive the newsletter" },
+                "label": {
+                  "fr": "Je souhaite recevoir la newsletter",
+                  "en": "I want to receive the newsletter"
+                },
                 "type": "checkbox",
                 "required": false
               }
             ],
-            "submitLabel": { "fr": "Envoyer le message", "en": "Send message" },
+            "submitLabel": {
+              "fr": "Envoyer le message",
+              "en": "Send message"
+            },
             "action": "/api/contact",
             "method": "POST",
-            "successMessage": { "fr": "Votre message a été envoyé avec succès !", "en": "Your message has been sent successfully!" },
-            "errorMessage": { "fr": "Une erreur est survenue lors de l'envoi", "en": "An error occurred while sending" }
+            "successMessage": {
+              "fr": "Votre message a été envoyé avec succès !",
+              "en": "Your message has been sent successfully!"
+            },
+            "errorMessage": {
+              "fr": "Une erreur est survenue lors de l'envoi",
+              "en": "An error occurred while sending"
+            }
           }
         },
         {
@@ -3960,18 +4081,36 @@
             "items": [
               {
                 "icon": "mail",
-                "title": { "fr": "Email", "en": "Email" },
-                "text": { "fr": "support@siteforge.com\nRéponse sous 24h", "en": "support@siteforge.com\nResponse within 24h" }
+                "title": {
+                  "fr": "Email",
+                  "en": "Email"
+                },
+                "text": {
+                  "fr": "support@siteforge.com\nRéponse sous 24h",
+                  "en": "support@siteforge.com\nResponse within 24h"
+                }
               },
               {
                 "icon": "phone",
-                "title": { "fr": "Téléphone", "en": "Phone" },
-                "text": { "fr": "+33 1 23 45 67 89\nLun-Ven 9h-18h", "en": "+33 1 23 45 67 89\nMon-Fri 9am-6pm" }
+                "title": {
+                  "fr": "Téléphone",
+                  "en": "Phone"
+                },
+                "text": {
+                  "fr": "+33 1 23 45 67 89\nLun-Ven 9h-18h",
+                  "en": "+33 1 23 45 67 89\nMon-Fri 9am-6pm"
+                }
               },
               {
                 "icon": "message-circle",
-                "title": { "fr": "Chat", "en": "Chat" },
-                "text": { "fr": "Chat en direct disponible\n24h/24 7j/7", "en": "Live chat available\n24/7" }
+                "title": {
+                  "fr": "Chat",
+                  "en": "Chat"
+                },
+                "text": {
+                  "fr": "Chat en direct disponible\n24h/24 7j/7",
+                  "en": "Live chat available\n24/7"
+                }
               }
             ]
           }
@@ -3980,7 +4119,10 @@
     },
     {
       "path": "/mentions-legales",
-      "title": { "fr": "Mentions légales", "en": "Legal notice" },
+      "title": {
+        "fr": "Mentions légales",
+        "en": "Legal notice"
+      },
       "layout": "default",
       "sections": [
         {
@@ -3997,7 +4139,10 @@
     },
     {
       "path": "/confidentialite",
-      "title": { "fr": "Politique de confidentialité", "en": "Privacy policy" },
+      "title": {
+        "fr": "Politique de confidentialité",
+        "en": "Privacy policy"
+      },
       "layout": "default",
       "sections": [
         {
@@ -4014,7 +4159,10 @@
     },
     {
       "path": "/accessibilite",
-      "title": { "fr": "Accessibilité", "en": "Accessibility" },
+      "title": {
+        "fr": "Accessibilité",
+        "en": "Accessibility"
+      },
       "layout": "default",
       "sections": [
         {
@@ -4025,6 +4173,46 @@
               "fr": "<div class=\"prose mx-auto max-w-3xl px-4 py-16\"><h1>Accessibilité</h1><p><em>Contenu à compléter :</em> niveau de conformité RGAA, état de l'audit, contenus non accessibles, voie de recours.</p></div>",
               "en": "<div class=\"prose mx-auto max-w-3xl px-4 py-16\"><h1>Accessibility</h1><p><em>Content to complete:</em> RGAA compliance level, audit status, non-accessible content, recourse channel.</p></div>"
             }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/blog",
+      "title": {
+        "fr": "Actualités",
+        "en": "News"
+      },
+      "layout": "default",
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "ssb-blog-search",
+          "props": {
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher un article…",
+              "en": "Search an article…"
+            },
+            "showActiveFiltersTags": true
+          }
+        },
+        {
+          "type": "articleFeed",
+          "id": "ssb-article-feed",
+          "props": {
+            "title": {
+              "fr": "Actualités",
+              "en": "News"
+            },
+            "description": {
+              "fr": "Les dernières actualités Sport Santé Bien-être à La Réunion.",
+              "en": "Latest Sport-Health news in Réunion."
+            },
+            "costumSlug": "sportSanteBienetre",
+            "pageSize": 12,
+            "featured": true,
+            "detailBasePath": "/blog"
           }
         }
       ]
@@ -4281,6 +4469,9 @@
       }
     }
   },
+  "blog": {
+    "feedCostumSlug": "sportSanteBienetre"
+  },
   "commandPalette": {
     "enabled": true,
     "triggerVariant": "compact",
@@ -4290,18 +4481,33 @@
     },
     "entitySearch": {
       "enabled": true,
-      "searchType": ["organizations", "projects", "poi"],
+      "searchType": [
+        "organizations",
+        "projects",
+        "poi"
+      ],
+      "excludeTypes": [
+        "article"
+      ],
       "limit": 8,
       "params": {
-        "sourceKey": ["sportSanteBienetre", "equipementsSportifs974"]
+        "sourceKey": [
+          "sportSanteBienetre",
+          "equipementsSportifs974"
+        ]
       },
       "itemActionByType": {
         "poi": {
           "kind": "preview",
           "detailsMode": "dialog",
-          "preview": { "type": "poi-amenities" }
+          "preview": {
+            "type": "poi-amenities"
+          }
         }
       }
+    },
+    "articleSearch": {
+      "costumSlug": "sportSanteBienetre"
     }
   },
   "profiles": {
@@ -4726,6 +4932,17 @@
             }
           ]
         }
+      ],
+      "editModals": [
+        {
+          "editModal": "edit-sport-sante-bienetre-mss",
+          "editModalMatch": {
+            "type": "NGO"
+          }
+        },
+        {
+          "editModal": "edit-sport-sante-bienetre-organizations"
+        }
       ]
     },
     "projects": {
@@ -4909,6 +5126,11 @@
             }
           ]
         }
+      ],
+      "editModals": [
+        {
+          "editModal": "edit-sport-sante-bienetre-formation"
+        }
       ]
     },
     "events": {
@@ -5088,6 +5310,14 @@
             }
           ]
         }
+      ],
+      "editModals": [
+        {
+          "editModal": "edit-sport-sante-bienetre-session-formation",
+          "editModalMatch": {
+            "type": "course"
+          }
+        }
       ]
     },
     "poi": {
@@ -5095,7 +5325,9 @@
       "hideHeader": false,
       "hideFooter": false,
       "editModal": "edit-equipements-sportifs",
-      "editModalMatch": { "type": "recoveryCenter" },
+      "editModalMatch": {
+        "type": "recoveryCenter"
+      },
       "sections": [
         {
           "type": "profile-header",
@@ -5229,6 +5461,20 @@
             }
           ]
         }
+      ],
+      "editModals": [
+        {
+          "editModal": "edit-sport-sante-bienetre-article",
+          "editModalMatch": {
+            "type": "article"
+          }
+        },
+        {
+          "editModal": "edit-sport-sante-bienetre-recovery-center",
+          "editModalMatch": {
+            "type": "recoveryCenter"
+          }
+        }
       ]
     }
   },
@@ -5241,5 +5487,3043 @@
     "includeFavicon": true,
     "bgColor": "#ffffff",
     "fgColor": "#000000"
+  },
+  "costumForms": {
+    "sport-sante-bienetre-organizations": {
+      "id": "sport-sante-bienetre-organizations",
+      "entityType": "organizations",
+      "collection": "organizations",
+      "costumSlug": "sportSanteBienetre",
+      "layout": {
+        "kind": "wizard",
+        "validatePerStep": true,
+        "stepper": "tabs",
+        "progress": "bar",
+        "header": "gradient"
+      },
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        }
+      },
+      "sections": [
+        {
+          "id": "identite",
+          "label": {
+            "fr": "Identité",
+            "en": "Identity"
+          },
+          "icon": "building-2",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "name"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "sigle",
+                "thematic"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "description"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "profil_avatar"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "coordonnees",
+          "label": {
+            "fr": "Coordonnées",
+            "en": "Contact"
+          },
+          "icon": "map-pin",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "address"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "telephone",
+                "email"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "link"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "socialNetwork"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "openingHours"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "juridique",
+          "label": {
+            "fr": "Juridique",
+            "en": "Legal"
+          },
+          "icon": "scale",
+          "groups": [
+            {
+              "columns": 2,
+              "fields": [
+                "legalStatus",
+                "siren"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "recepisseDeclaration"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "representant",
+          "label": {
+            "fr": "Représentant",
+            "en": "Representative"
+          },
+          "icon": "user",
+          "groups": [
+            {
+              "columns": 2,
+              "fields": [
+                "representativeCivility",
+                "representativeTitle"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "representativeFirstName",
+                "representativeName"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "representativeEmail",
+                "representativeTelephone"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "responsable",
+          "label": {
+            "fr": "Responsable",
+            "en": "Manager"
+          },
+          "icon": "user-check",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "responsableSameAsRepresent"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "personInChargeCivility",
+                "personInChargeTitle"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "personInChargeFirstName",
+                "personInChargeName"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "personInChargeEmail",
+                "personInChargeTelephone"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "telephone": {
+          "widget": "tel",
+          "label": {
+            "fr": "Téléphone",
+            "en": "Phone"
+          }
+        },
+        "description": {
+          "widget": "textarea",
+          "label": {
+            "fr": "Description",
+            "en": "Description"
+          }
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Adresse",
+            "en": "Address"
+          }
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "socialNetwork": {
+          "widget": "editSocial",
+          "label": {
+            "fr": "Réseaux sociaux",
+            "en": "Social networks"
+          }
+        },
+        "openingHours": {
+          "widget": "openingHours",
+          "label": {
+            "fr": "Horaires d’ouverture",
+            "en": "Opening hours"
+          }
+        },
+        "profil_avatar": {
+          "widget": "image",
+          "label": {
+            "fr": "Logo",
+            "en": "Logo"
+          }
+        },
+        "siren": {
+          "widget": "text",
+          "label": {
+            "fr": "N° SIREN",
+            "en": "SIREN number"
+          }
+        },
+        "infoGeneral": {
+          "widget": "hidden",
+          "type": "object",
+          "label": {
+            "fr": "Info general"
+          }
+        },
+        "sextionInfo": {
+          "widget": "hidden",
+          "type": "object",
+          "label": {
+            "fr": "Sextion info"
+          }
+        },
+        "name": {
+          "widget": "text",
+          "label": {
+            "fr": "Nom de la structure",
+            "en": "Structure name"
+          }
+        },
+        "similarLink": {
+          "widget": "hidden",
+          "type": "object",
+          "label": {
+            "fr": "Lien similaire",
+            "en": "Similar link"
+          }
+        },
+        "sigle": {
+          "widget": "text",
+          "label": {
+            "fr": "Sigle",
+            "en": "Acronym"
+          }
+        },
+        "affiliate": {
+          "widget": "switch",
+          "label": {
+            "fr": "Affiliate"
+          }
+        },
+        "affiliateTo": {
+          "widget": "text",
+          "label": {
+            "fr": "Affiliate to"
+          }
+        },
+        "thematic": {
+          "widget": "multiselect",
+          "label": {
+            "fr": "Thématiques",
+            "en": "Topics"
+          },
+          "enum": [
+            {
+              "value": "Sport",
+              "label": "Sport"
+            },
+            {
+              "value": "Santé/prévention",
+              "label": "Santé/prévention"
+            },
+            {
+              "value": "Social",
+              "label": "Social"
+            },
+            {
+              "value": "Insertion",
+              "label": "Insertion"
+            },
+            {
+              "value": "Culture",
+              "label": "Culture"
+            },
+            {
+              "value": "Tourisme",
+              "label": "Tourisme"
+            },
+            {
+              "value": "Handicap",
+              "label": "Handicap"
+            },
+            {
+              "value": "Scolaire 1er degré - Maternelle et primaire",
+              "label": "Scolaire 1er degré - Maternelle et primaire"
+            },
+            {
+              "value": "Scolaire 2nd degré - Collège et Lycée",
+              "label": "Scolaire 2nd degré - Collège et Lycée"
+            },
+            {
+              "value": "Périscolaire 1er degré - Maternelle et primaire",
+              "label": "Périscolaire 1er degré - Maternelle et primaire"
+            },
+            {
+              "value": "Périscolaire 2nd degré - Collège et Lycée",
+              "label": "Périscolaire 2nd degré - Collège et Lycée"
+            }
+          ]
+        },
+        "image": {
+          "widget": "text",
+          "label": {
+            "fr": "Image"
+          }
+        },
+        "mobile": {
+          "widget": "text",
+          "label": {
+            "fr": "Mobile"
+          }
+        },
+        "formLocality": {
+          "widget": "text",
+          "label": {
+            "fr": "Localité",
+            "en": "Locality"
+          }
+        },
+        "location": {
+          "widget": "text",
+          "label": {
+            "fr": "Localisation",
+            "en": "Location"
+          }
+        },
+        "email": {
+          "widget": "text",
+          "label": {
+            "fr": "E-mail",
+            "en": "Email"
+          }
+        },
+        "link": {
+          "widget": "text",
+          "label": {
+            "fr": "Site web",
+            "en": "Website"
+          }
+        },
+        "facebook": {
+          "widget": "text",
+          "label": {
+            "fr": "Facebook"
+          }
+        },
+        "instagram": {
+          "widget": "text",
+          "label": {
+            "fr": "Instagram"
+          }
+        },
+        "youtube": {
+          "widget": "text",
+          "label": {
+            "fr": "Youtube"
+          }
+        },
+        "linkedin": {
+          "widget": "text",
+          "label": {
+            "fr": "Linkedin"
+          }
+        },
+        "legalStatus": {
+          "widget": "text",
+          "label": {
+            "fr": "Statut juridique",
+            "en": "Legal status"
+          }
+        },
+        "statusFile": {
+          "widget": "hidden",
+          "type": "object",
+          "label": {
+            "fr": "Status file"
+          }
+        },
+        "responsableCivilePro": {
+          "widget": "text",
+          "label": {
+            "fr": "Responsable civile pro"
+          }
+        },
+        "recepisseDeclaration": {
+          "widget": "text",
+          "label": {
+            "fr": "Récépissé de déclaration",
+            "en": "Declaration receipt"
+          }
+        },
+        "statusPrimaire": {
+          "widget": "text",
+          "label": {
+            "fr": "Status primaire"
+          }
+        },
+        "statusSecondaire": {
+          "widget": "text",
+          "label": {
+            "fr": "Status secondaire"
+          }
+        },
+        "statusCommunale": {
+          "widget": "text",
+          "label": {
+            "fr": "Status communale"
+          }
+        },
+        "autreDescription": {
+          "widget": "text",
+          "label": {
+            "fr": "Autre description"
+          }
+        },
+        "sextionInfoRepresentant": {
+          "widget": "hidden",
+          "type": "object",
+          "label": {
+            "fr": "Sextion info representant"
+          }
+        },
+        "representativeTitle": {
+          "widget": "select",
+          "label": {
+            "fr": "Fonction",
+            "en": "Role"
+          },
+          "enum": [
+            {
+              "value": "Président",
+              "label": "Président"
+            },
+            {
+              "value": "Maire.sse",
+              "label": "Maire.sse"
+            },
+            {
+              "value": "Chef.fe d'entreprise",
+              "label": "Chef.fe d'entreprise"
+            },
+            {
+              "value": "Chef.fe d'établissement",
+              "label": "Chef.fe d'établissement"
+            },
+            {
+              "value": "Autre...",
+              "label": "Autre..."
+            }
+          ]
+        },
+        "representativeCivility": {
+          "widget": "text",
+          "label": {
+            "fr": "Civilité",
+            "en": "Title"
+          }
+        },
+        "representativeName": {
+          "widget": "text",
+          "label": {
+            "fr": "Nom",
+            "en": "Last name"
+          }
+        },
+        "representativeFirstName": {
+          "widget": "text",
+          "label": {
+            "fr": "Prénom",
+            "en": "First name"
+          }
+        },
+        "representativeEmail": {
+          "widget": "text",
+          "label": {
+            "fr": "E-mail",
+            "en": "Email"
+          }
+        },
+        "representativeTelephone": {
+          "widget": "text",
+          "label": {
+            "fr": "Téléphone",
+            "en": "Phone"
+          }
+        },
+        "sextionInfoResponsable": {
+          "widget": "hidden",
+          "type": "object",
+          "label": {
+            "fr": "Sextion info responsable"
+          }
+        },
+        "responsableSameAsRepresent": {
+          "widget": "switch",
+          "label": {
+            "fr": "Le responsable est le représentant légal",
+            "en": "Person in charge is the legal representative"
+          }
+        },
+        "personInChargeTitle": {
+          "widget": "select",
+          "label": {
+            "fr": "Fonction",
+            "en": "Role"
+          },
+          "enum": [
+            {
+              "value": "Président",
+              "label": "Président"
+            },
+            {
+              "value": "Maire.sse",
+              "label": "Maire.sse"
+            },
+            {
+              "value": "Chef.fe d'entreprise",
+              "label": "Chef.fe d'entreprise"
+            },
+            {
+              "value": "Chef.fe d'établissement",
+              "label": "Chef.fe d'établissement"
+            },
+            {
+              "value": "Autre...",
+              "label": "Autre..."
+            }
+          ]
+        },
+        "personInChargeCivility": {
+          "widget": "text",
+          "label": {
+            "fr": "Civilité",
+            "en": "Title"
+          }
+        },
+        "personInChargeName": {
+          "widget": "text",
+          "label": {
+            "fr": "Nom",
+            "en": "Last name"
+          }
+        },
+        "personInChargeFirstName": {
+          "widget": "text",
+          "label": {
+            "fr": "Prénom",
+            "en": "First name"
+          }
+        },
+        "personInChargeEmail": {
+          "widget": "text",
+          "label": {
+            "fr": "E-mail",
+            "en": "Email"
+          }
+        },
+        "personInChargeTelephone": {
+          "widget": "text",
+          "label": {
+            "fr": "Téléphone",
+            "en": "Phone"
+          }
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter une structure",
+            "en": "Add a structure"
+          },
+          "edit": {
+            "fr": "Modifier la structure",
+            "en": "Edit structure"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Créer la structure",
+            "en": "Create structure"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        },
+        "dialogClassName": "sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden"
+      },
+      "image": {
+        "field": "profil_avatar",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "mutation": {
+        "entityType": "organizations",
+        "successKey": {
+          "add": "toast.add.organizationSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.organizationError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_ORGANIZATION",
+          "edit": "EntityFormModal · UPDATE_ORGANIZATION"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard",
+          "params": {
+            "userList": "organizations"
+          }
+        }
+      }
+    },
+    "sport-sante-bienetre-article": {
+      "id": "sport-sante-bienetre-article",
+      "entityType": "poi",
+      "collection": "poi",
+      "costumSlug": "sportSanteBienetre",
+      "layout": {
+        "kind": "flat"
+      },
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        }
+      },
+      "sections": [
+        {
+          "id": "content",
+          "label": {
+            "fr": "Contenu",
+            "en": "Content"
+          },
+          "icon": "newspaper",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "name",
+                "shortDescription",
+                "description",
+                "profil_avatar",
+                "tags"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "location",
+          "label": {
+            "fr": "Localisation",
+            "en": "Location"
+          },
+          "icon": "map-pin",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "address"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Adresse",
+            "en": "Address"
+          }
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "profil_avatar": {
+          "widget": "image",
+          "label": {
+            "fr": "Image",
+            "en": "Image"
+          }
+        },
+        "name": {
+          "widget": "text",
+          "label": {
+            "fr": "Titre",
+            "en": "Title"
+          }
+        },
+        "shortDescription": {
+          "widget": "textarea",
+          "label": {
+            "fr": "Chapô / extrait",
+            "en": "Excerpt"
+          },
+          "info": {
+            "fr": "Résumé court (~1-2 phrases) affiché en tête d'article et sur les cartes.",
+            "en": "Short summary (~1-2 sentences) shown at the top of the article and on cards."
+          }
+        },
+        "description": {
+          "widget": "markdown",
+          "label": {
+            "fr": "Contenu",
+            "en": "Content"
+          },
+          "widgetProps": {
+            "height": 320,
+            "preview": "edit"
+          }
+        },
+        "tags": {
+          "widget": "tags",
+          "label": {
+            "fr": "Mots-clés",
+            "en": "Tags"
+          },
+          "widgetProps": {
+            "searchable": true
+          }
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter une actualité",
+            "en": "Add an article"
+          },
+          "edit": {
+            "fr": "Modifier l'actualité",
+            "en": "Edit article"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Créer l'actualité",
+            "en": "Create article"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        }
+      },
+      "image": {
+        "field": "profil_avatar",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "mutation": {
+        "entityType": "poi",
+        "inject": {
+          "extraFields": {
+            "type": "article"
+          }
+        },
+        "successKey": {
+          "add": "toast.add.poiSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.poiError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_POI",
+          "edit": "EntityFormModal · UPDATE_POI"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:blog",
+          "params": {
+            "userList": "pois",
+            "searchKeys": [
+              "blog:sportSanteBienetre"
+            ]
+          }
+        }
+      }
+    },
+    "sport-sante-bienetre-mss": {
+      "id": "sport-sante-bienetre-mss",
+      "entityType": "organizations",
+      "collection": "organizations",
+      "costumSlug": "sportSanteBienetre",
+      "layout": {
+        "kind": "wizard",
+        "validatePerStep": true,
+        "stepper": "tabs",
+        "progress": "bar",
+        "header": "gradient"
+      },
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        }
+      },
+      "sections": [
+        {
+          "id": "presentation",
+          "label": {
+            "fr": "Présentation",
+            "en": "About"
+          },
+          "icon": "building-2",
+          "groups": [
+            {
+              "columns": 2,
+              "fields": [
+                "name",
+                "sigle"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "profil_avatar"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "shortDescription"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "description"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "tags"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "contact",
+          "label": {
+            "fr": "Contact",
+            "en": "Contact"
+          },
+          "icon": "map-pin",
+          "groups": [
+            {
+              "columns": 2,
+              "fields": [
+                "telephone",
+                "email"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "link"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "address"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "openingHours"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "socialNetwork"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "representative",
+          "label": {
+            "fr": "Représentant",
+            "en": "Representative"
+          },
+          "icon": "user",
+          "groups": [
+            {
+              "columns": 2,
+              "fields": [
+                "representativeCivility",
+                "representativeTitle"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "representativeFirstName",
+                "representativeName"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "representativeEmail",
+                "representativeTelephone"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "manager",
+          "label": {
+            "fr": "Responsable",
+            "en": "Manager"
+          },
+          "icon": "user-check",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "responsableSameAsRepresent"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "personInChargeCivility",
+                "personInChargeTitle"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "personInChargeFirstName",
+                "personInChargeName"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "personInChargeEmail",
+                "personInChargeTelephone"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "telephone": {
+          "widget": "tel",
+          "label": {
+            "fr": "Téléphone",
+            "en": "Phone"
+          }
+        },
+        "description": {
+          "widget": "textarea",
+          "label": {
+            "fr": "Description",
+            "en": "Description"
+          }
+        },
+        "tags": {
+          "widget": "tags",
+          "label": {
+            "fr": "Mots-clés",
+            "en": "Tags"
+          }
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Adresse",
+            "en": "Address"
+          }
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "socialNetwork": {
+          "widget": "editSocial",
+          "label": {
+            "fr": "Réseaux sociaux",
+            "en": "Social networks"
+          }
+        },
+        "openingHours": {
+          "widget": "openingHours",
+          "label": {
+            "fr": "Horaires d'ouverture",
+            "en": "Opening hours"
+          }
+        },
+        "profil_avatar": {
+          "widget": "image",
+          "label": {
+            "fr": "Logo",
+            "en": "Logo"
+          }
+        },
+        "name": {
+          "widget": "text",
+          "label": {
+            "fr": "Nom de la structure",
+            "en": "Organization name"
+          }
+        },
+        "similarLink": {
+          "widget": "hidden",
+          "type": "object",
+          "label": {
+            "fr": "Lien similaire",
+            "en": "Similar link"
+          }
+        },
+        "sigle": {
+          "widget": "text",
+          "label": {
+            "fr": "Sigle",
+            "en": "Acronym"
+          }
+        },
+        "image": {
+          "widget": "text",
+          "label": {
+            "fr": "Image"
+          }
+        },
+        "mobile": {
+          "widget": "text",
+          "label": {
+            "fr": "Mobile"
+          }
+        },
+        "email": {
+          "widget": "text",
+          "label": {
+            "fr": "Email",
+            "en": "Email"
+          }
+        },
+        "formLocality": {
+          "widget": "text",
+          "label": {
+            "fr": "Localité",
+            "en": "Locality"
+          }
+        },
+        "location": {
+          "widget": "text",
+          "label": {
+            "fr": "Localisation",
+            "en": "Location"
+          }
+        },
+        "link": {
+          "widget": "text",
+          "label": {
+            "fr": "Site web",
+            "en": "Website"
+          }
+        },
+        "shortDescription": {
+          "widget": "text",
+          "label": {
+            "fr": "Description courte",
+            "en": "Short description"
+          }
+        },
+        "sextionInfoRepresentant": {
+          "widget": "hidden",
+          "type": "object",
+          "label": {
+            "fr": "Sextion info representant"
+          }
+        },
+        "representativeTitle": {
+          "widget": "select",
+          "label": {
+            "fr": "Titre / fonction",
+            "en": "Title / role"
+          },
+          "enum": [
+            {
+              "value": "Président",
+              "label": "Président"
+            },
+            {
+              "value": "Maire.sse",
+              "label": "Maire.sse"
+            },
+            {
+              "value": "Chef.fe d'entreprise",
+              "label": "Chef.fe d'entreprise"
+            },
+            {
+              "value": "Chef.fe d'établissement",
+              "label": "Chef.fe d'établissement"
+            },
+            {
+              "value": "Autre...",
+              "label": "Autre..."
+            }
+          ]
+        },
+        "representativeCivility": {
+          "widget": "text",
+          "label": {
+            "fr": "Civilité",
+            "en": "Civility"
+          }
+        },
+        "representativeName": {
+          "widget": "text",
+          "label": {
+            "fr": "Nom",
+            "en": "Last name"
+          }
+        },
+        "representativeFirstName": {
+          "widget": "text",
+          "label": {
+            "fr": "Prénom",
+            "en": "First name"
+          }
+        },
+        "representativeEmail": {
+          "widget": "text",
+          "label": {
+            "fr": "Email",
+            "en": "Email"
+          }
+        },
+        "representativeTelephone": {
+          "widget": "text",
+          "label": {
+            "fr": "Téléphone",
+            "en": "Phone"
+          }
+        },
+        "sextionInfoResponsable": {
+          "widget": "hidden",
+          "type": "object",
+          "label": {
+            "fr": "Sextion info responsable"
+          }
+        },
+        "responsableSameAsRepresent": {
+          "widget": "switch",
+          "label": {
+            "fr": "Identique au représentant légal",
+            "en": "Same as legal representative"
+          }
+        },
+        "personInChargeTitle": {
+          "widget": "select",
+          "label": {
+            "fr": "Titre / fonction",
+            "en": "Title / role"
+          },
+          "enum": [
+            {
+              "value": "Président",
+              "label": "Président"
+            },
+            {
+              "value": "Maire.sse",
+              "label": "Maire.sse"
+            },
+            {
+              "value": "Chef.fe d'entreprise",
+              "label": "Chef.fe d'entreprise"
+            },
+            {
+              "value": "Chef.fe d'établissement",
+              "label": "Chef.fe d'établissement"
+            },
+            {
+              "value": "Autre...",
+              "label": "Autre..."
+            }
+          ]
+        },
+        "personInChargeCivility": {
+          "widget": "text",
+          "label": {
+            "fr": "Civilité",
+            "en": "Civility"
+          }
+        },
+        "personInChargeName": {
+          "widget": "text",
+          "label": {
+            "fr": "Nom",
+            "en": "Last name"
+          }
+        },
+        "personInChargeFirstName": {
+          "widget": "text",
+          "label": {
+            "fr": "Prénom",
+            "en": "First name"
+          }
+        },
+        "personInChargeEmail": {
+          "widget": "text",
+          "label": {
+            "fr": "Email",
+            "en": "Email"
+          }
+        },
+        "personInChargeTelephone": {
+          "widget": "text",
+          "label": {
+            "fr": "Téléphone",
+            "en": "Phone"
+          }
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Créer une Maison Sport-Santé",
+            "en": "Create a Sport & Health House"
+          },
+          "edit": {
+            "fr": "Modifier la Maison Sport-Santé",
+            "en": "Edit the Sport & Health House"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Créer",
+            "en": "Create"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        },
+        "dialogClassName": "sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden"
+      },
+      "image": {
+        "field": "profil_avatar",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "mutation": {
+        "entityType": "organizations",
+        "inject": {
+          "extraFields": {
+            "type": "NGO",
+            "role": "admin"
+          }
+        },
+        "successKey": {
+          "add": "toast.add.organizationSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.organizationError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_ORGANIZATION",
+          "edit": "EntityFormModal · UPDATE_ORGANIZATION"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard",
+          "params": {
+            "userList": "organizations"
+          }
+        }
+      }
+    },
+    "sport-sante-bienetre-formation": {
+      "id": "sport-sante-bienetre-formation",
+      "entityType": "projects",
+      "collection": "projects",
+      "costumSlug": "sportSanteBienetre",
+      "layout": {
+        "kind": "wizard",
+        "validatePerStep": true,
+        "stepper": "tabs",
+        "progress": "bar",
+        "header": "gradient"
+      },
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        }
+      },
+      "sections": [
+        {
+          "id": "presentation",
+          "label": {
+            "fr": "Présentation",
+            "en": "Overview"
+          },
+          "icon": "graduation-cap",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "name",
+                "shortDescription",
+                "description",
+                "profil_avatar"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "programme",
+          "label": {
+            "fr": "Programme",
+            "en": "Program"
+          },
+          "icon": "book-open",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "thematic",
+                "competence",
+                "publicCible",
+                "teachingMethods",
+                "evaluation",
+                "urlsDoc"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "certification",
+          "label": {
+            "fr": "Certification",
+            "en": "Certification"
+          },
+          "icon": "award",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "certificationTraining"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "certificationsAwards",
+                "rate"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "contact",
+          "label": {
+            "fr": "Contact",
+            "en": "Contact"
+          },
+          "icon": "map-pin",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "email",
+                "socialNetwork",
+                "address"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Adresse",
+            "en": "Address"
+          }
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "socialNetwork": {
+          "widget": "editSocial",
+          "label": {
+            "fr": "Réseaux sociaux",
+            "en": "Social networks"
+          }
+        },
+        "profil_avatar": {
+          "widget": "image",
+          "label": {
+            "fr": "Logo / image",
+            "en": "Logo / image"
+          }
+        },
+        "name": {
+          "widget": "text",
+          "label": {
+            "fr": "Nom",
+            "en": "Name"
+          }
+        },
+        "shortDescription": {
+          "widget": "text",
+          "label": {
+            "fr": "Description courte",
+            "en": "Short description"
+          }
+        },
+        "description": {
+          "widget": "text",
+          "label": {
+            "fr": "Description",
+            "en": "Description"
+          }
+        },
+        "urlsDoc": {
+          "widget": "tags",
+          "label": {
+            "fr": "Liens de documentation",
+            "en": "Documentation links"
+          }
+        },
+        "documentation": {
+          "widget": "hidden",
+          "type": "object",
+          "label": {
+            "fr": "Documentation"
+          }
+        },
+        "parent": {
+          "widget": "hidden",
+          "type": "object",
+          "label": {
+            "fr": "Parent"
+          }
+        },
+        "partner": {
+          "widget": "hidden",
+          "type": "object",
+          "label": {
+            "fr": "Partner"
+          }
+        },
+        "trainer": {
+          "widget": "hidden",
+          "type": "object",
+          "label": {
+            "fr": "Trainer"
+          }
+        },
+        "rate": {
+          "widget": "text",
+          "label": {
+            "fr": "Tarif",
+            "en": "Price"
+          }
+        },
+        "competence": {
+          "widget": "tags",
+          "label": {
+            "fr": "Compétences visées",
+            "en": "Target skills"
+          }
+        },
+        "image": {
+          "widget": "text",
+          "label": {
+            "fr": "Image"
+          }
+        },
+        "email": {
+          "widget": "text",
+          "label": {
+            "fr": "Email",
+            "en": "Email"
+          }
+        },
+        "publicCible": {
+          "widget": "tags",
+          "label": {
+            "fr": "Public cible",
+            "en": "Target audience"
+          }
+        },
+        "teachingMethods": {
+          "widget": "tags",
+          "label": {
+            "fr": "Méthodes pédagogiques",
+            "en": "Teaching methods"
+          }
+        },
+        "evaluation": {
+          "widget": "text",
+          "label": {
+            "fr": "Modalités d'évaluation",
+            "en": "Assessment methods"
+          }
+        },
+        "thematic": {
+          "widget": "tags",
+          "label": {
+            "fr": "Thématiques",
+            "en": "Topics"
+          }
+        },
+        "certificationTraining": {
+          "widget": "switch",
+          "label": {
+            "fr": "Formation certifiante",
+            "en": "Certifying training"
+          }
+        },
+        "certificationsAwards": {
+          "widget": "text",
+          "label": {
+            "fr": "Certifications délivrées",
+            "en": "Certifications awarded"
+          }
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter une formation",
+            "en": "Add a training"
+          },
+          "edit": {
+            "fr": "Modifier la formation",
+            "en": "Edit the training"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Créer la formation",
+            "en": "Create training"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        },
+        "dialogClassName": "sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden"
+      },
+      "image": {
+        "field": "profil_avatar",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "mutation": {
+        "entityType": "projects",
+        "inject": {
+          "extraFields": {
+            "tags": "Formation",
+            "category": "formation"
+          }
+        },
+        "successKey": {
+          "add": "toast.add.projectSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.projectError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_PROJECT",
+          "edit": "EntityFormModal · UPDATE_PROJECT"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard",
+          "params": {
+            "userList": "projects"
+          }
+        }
+      }
+    },
+    "sport-sante-bienetre-session-formation": {
+      "id": "sport-sante-bienetre-session-formation",
+      "entityType": "events",
+      "collection": "events",
+      "costumSlug": "sportSanteBienetre",
+      "layout": {
+        "kind": "wizard",
+        "validatePerStep": true,
+        "stepper": "tabs",
+        "progress": "bar",
+        "header": "gradient"
+      },
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        }
+      },
+      "sections": [
+        {
+          "id": "presentation",
+          "label": {
+            "fr": "Présentation",
+            "en": "Overview"
+          },
+          "icon": "graduation-cap",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "name",
+                "shortDescription",
+                "description",
+                "profil_avatar"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "contenu",
+          "label": {
+            "fr": "Contenu",
+            "en": "Content"
+          },
+          "icon": "layers",
+          "groups": [
+            {
+              "columns": 2,
+              "fields": [
+                "parent",
+                "module"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "duration",
+                "public"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "planning",
+          "label": {
+            "fr": "Dates et lieu",
+            "en": "Schedule & location"
+          },
+          "icon": "calendar",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "openingHours"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "gatheringDates",
+                "visioDate"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "address"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "contact",
+          "label": {
+            "fr": "Contact",
+            "en": "Contact"
+          },
+          "icon": "mail",
+          "groups": [
+            {
+              "columns": 2,
+              "fields": [
+                "url",
+                "email"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "openingHours": {
+          "widget": "openingHours",
+          "label": {
+            "fr": "Horaires",
+            "en": "Opening hours"
+          }
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Adresse",
+            "en": "Address"
+          }
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "profil_avatar": {
+          "widget": "image",
+          "label": {
+            "fr": "Logo / image",
+            "en": "Logo / image"
+          }
+        },
+        "name": {
+          "widget": "text",
+          "label": {
+            "fr": "Nom de la session",
+            "en": "Session name"
+          }
+        },
+        "shortDescription": {
+          "widget": "text",
+          "label": {
+            "fr": "Description courte",
+            "en": "Short description"
+          }
+        },
+        "description": {
+          "widget": "text",
+          "label": {
+            "fr": "Description",
+            "en": "Description"
+          }
+        },
+        "parent": {
+          "widget": "tags",
+          "label": {
+            "fr": "Formation parente",
+            "en": "Parent training"
+          }
+        },
+        "module": {
+          "widget": "tags",
+          "label": {
+            "fr": "Module",
+            "en": "Module"
+          }
+        },
+        "duration": {
+          "widget": "number",
+          "label": {
+            "fr": "Durée",
+            "en": "Duration"
+          }
+        },
+        "organizer": {
+          "widget": "hidden",
+          "type": "object",
+          "label": {
+            "fr": "Organizer"
+          }
+        },
+        "trainer": {
+          "widget": "hidden",
+          "type": "object",
+          "label": {
+            "fr": "Trainer"
+          }
+        },
+        "url": {
+          "widget": "text",
+          "label": {
+            "fr": "Site web",
+            "en": "Website"
+          }
+        },
+        "image": {
+          "widget": "text",
+          "label": {
+            "fr": "Image"
+          }
+        },
+        "public": {
+          "widget": "text",
+          "label": {
+            "fr": "Public visé",
+            "en": "Target audience"
+          }
+        },
+        "email": {
+          "widget": "text",
+          "label": {
+            "fr": "Email",
+            "en": "Email"
+          }
+        },
+        "gatheringDates": {
+          "widget": "text",
+          "label": {
+            "fr": "Dates de rencontre",
+            "en": "Gathering dates"
+          }
+        },
+        "visioDate": {
+          "widget": "text",
+          "label": {
+            "fr": "Date de visioconférence",
+            "en": "Video call date"
+          }
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Nouvelle session de formation",
+            "en": "New training session"
+          },
+          "edit": {
+            "fr": "Modifier la session de formation",
+            "en": "Edit training session"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Créer la session",
+            "en": "Create session"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        },
+        "dialogClassName": "sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden"
+      },
+      "image": {
+        "field": "profil_avatar",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "mutation": {
+        "entityType": "events",
+        "inject": {
+          "extraFields": {
+            "type": "course",
+            "category": "sessionFormation"
+          }
+        },
+        "successKey": {
+          "add": "toast.add.eventSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.eventError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_EVENT",
+          "edit": "EntityFormModal · UPDATE_EVENT"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard",
+          "params": {
+            "userList": "events"
+          }
+        }
+      }
+    },
+    "sport-sante-bienetre-recovery-center": {
+      "id": "sport-sante-bienetre-recovery-center",
+      "entityType": "poi",
+      "collection": "poi",
+      "costumSlug": "sportSanteBienetre",
+      "layout": {
+        "kind": "wizard",
+        "validatePerStep": true,
+        "stepper": "tabs",
+        "progress": "bar",
+        "header": "gradient"
+      },
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        }
+      },
+      "sections": [
+        {
+          "id": "identite",
+          "label": {
+            "fr": "Identité",
+            "en": "Identity"
+          },
+          "icon": "building-2",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "name",
+                "description"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "profil_avatar"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "tags",
+                "urls"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "localisation",
+          "label": {
+            "fr": "Localisation",
+            "en": "Location"
+          },
+          "icon": "map-pin",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "address"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "caracteristiques",
+          "label": {
+            "fr": "Caractéristiques",
+            "en": "Features"
+          },
+          "icon": "dumbbell",
+          "groups": [
+            {
+              "columns": 2,
+              "fields": [
+                "familleEquipement",
+                "nature"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "sole",
+                "surface"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "category",
+                "subCategory"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "installation",
+                "entrepriseFonciere"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "parent",
+                "dateCreation"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "sportPratiquer"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "services",
+          "label": {
+            "fr": "Services",
+            "en": "Services"
+          },
+          "icon": "accessibility",
+          "groups": [
+            {
+              "columns": 2,
+              "fields": [
+                "handicap",
+                "typeAccessiblHandicap"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "transportCommun",
+                "typeTransportCommun"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "libreAccess",
+                "eclairage"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "gardiennage",
+                "hebergement"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "restaurant",
+                "partenariat"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "typePartenariat"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "description": {
+          "widget": "textarea",
+          "label": {
+            "fr": "Description",
+            "en": "Description"
+          }
+        },
+        "tags": {
+          "widget": "tags",
+          "label": {
+            "fr": "Tags",
+            "en": "Tags"
+          }
+        },
+        "urls": {
+          "widget": "tags",
+          "label": {
+            "fr": "Liens / sites web",
+            "en": "Links / websites"
+          }
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Adresse",
+            "en": "Address"
+          }
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "profil_avatar": {
+          "widget": "image",
+          "label": {
+            "fr": "Logo / photo",
+            "en": "Logo / photo"
+          }
+        },
+        "name": {
+          "widget": "text",
+          "label": {
+            "fr": "Nom de l'équipement",
+            "en": "Facility name"
+          }
+        },
+        "category": {
+          "widget": "tags",
+          "label": {
+            "fr": "Catégorie",
+            "en": "Category"
+          }
+        },
+        "installation": {
+          "widget": "text",
+          "label": {
+            "fr": "Installation",
+            "en": "Installation"
+          }
+        },
+        "entrepriseFonciere": {
+          "widget": "text",
+          "label": {
+            "fr": "Entreprise foncière",
+            "en": "Land owner"
+          }
+        },
+        "familleEquipement": {
+          "widget": "select",
+          "label": {
+            "fr": "Famille d'équipement",
+            "en": "Equipment family"
+          },
+          "enum": [
+            {
+              "value": "Multisports/City-stades",
+              "label": "Multisports/City-stades"
+            },
+            {
+              "value": "Terrain extérieur de petits jeux collectifs",
+              "label": "Terrain extérieur de petits jeux collectifs"
+            },
+            {
+              "value": "Terrain de grands jeux",
+              "label": "Terrain de grands jeux"
+            },
+            {
+              "value": "Salle non spécialisée",
+              "label": "Salle non spécialisée"
+            },
+            {
+              "value": "Equipement d'activités de forme et de santé",
+              "label": "Equipement d'activités de forme et de santé"
+            },
+            {
+              "value": "Salle multisports",
+              "label": "Salle multisports"
+            },
+            {
+              "value": "Boulodrome",
+              "label": "Boulodrome"
+            },
+            {
+              "value": "Equipement d'athlétisme",
+              "label": "Equipement d'athlétisme"
+            },
+            {
+              "value": "Site d'activités aquatiques et nautiques",
+              "label": "Site d'activités aquatiques et nautiques"
+            },
+            {
+              "value": "Court de tennis",
+              "label": "Court de tennis"
+            },
+            {
+              "value": "Bassin de natation",
+              "label": "Bassin de natation"
+            },
+            {
+              "value": "Divers équipements Sports de nature",
+              "label": "Divers équipements Sports de nature"
+            },
+            {
+              "value": "Salle de combat",
+              "label": "Salle de combat"
+            },
+            {
+              "value": "Parcours sportif/santé",
+              "label": "Parcours sportif/santé"
+            },
+            {
+              "value": "Structure Artificielle d'Escalade",
+              "label": "Structure Artificielle d'Escalade"
+            },
+            {
+              "value": "Equipement équestre",
+              "label": "Equipement équestre"
+            },
+            {
+              "value": "Salle ou terrain spécialisé",
+              "label": "Salle ou terrain spécialisé"
+            },
+            {
+              "value": "Mur et fronton",
+              "label": "Mur et fronton"
+            },
+            {
+              "value": "Site d'activités aériennes",
+              "label": "Site d'activités aériennes"
+            },
+            {
+              "value": "Circuit/piste de sports mécaniques",
+              "label": "Circuit/piste de sports mécaniques"
+            },
+            {
+              "value": "Equipement de cyclisme",
+              "label": "Equipement de cyclisme"
+            },
+            {
+              "value": "Pas de tir",
+              "label": "Pas de tir"
+            },
+            {
+              "value": "Site de modélisme",
+              "label": "Site de modélisme"
+            },
+            {
+              "value": "Skatepark &amp; vélo Freestyle",
+              "label": "Skatepark &amp; vélo Freestyle"
+            },
+            {
+              "value": "Parcours de golf",
+              "label": "Parcours de golf"
+            },
+            {
+              "value": "Divers équipements",
+              "label": "Divers équipements"
+            },
+            {
+              "value": "Bowling",
+              "label": "Bowling"
+            }
+          ]
+        },
+        "sole": {
+          "widget": "select",
+          "label": {
+            "fr": "Revêtement de sol",
+            "en": "Surface / flooring"
+          },
+          "enum": [
+            {
+              "value": "Synthétique (hors gazon)",
+              "label": "Synthétique (hors gazon)"
+            },
+            {
+              "value": "Bitume",
+              "label": "Bitume"
+            },
+            {
+              "value": "Gazon naturel",
+              "label": "Gazon naturel"
+            },
+            {
+              "value": "Carrelage",
+              "label": "Carrelage"
+            },
+            {
+              "value": "Stabilisé/cendrée",
+              "label": "Stabilisé/cendrée"
+            },
+            {
+              "value": "Gazon synthétique",
+              "label": "Gazon synthétique"
+            },
+            {
+              "value": "Béton",
+              "label": "Béton"
+            },
+            {
+              "value": "Surface naturelle",
+              "label": "Surface naturelle"
+            },
+            {
+              "value": "Terre battue",
+              "label": "Terre battue"
+            },
+            {
+              "value": "Sable",
+              "label": "Sable"
+            },
+            {
+              "value": "Parquet",
+              "label": "Parquet"
+            },
+            {
+              "value": "Non précisé",
+              "label": "Non précisé"
+            },
+            {
+              "value": "Autre",
+              "label": "Autre"
+            },
+            {
+              "value": "Bois",
+              "label": "Bois"
+            },
+            {
+              "value": "Synthétique",
+              "label": "Synthétique"
+            }
+          ]
+        },
+        "nature": {
+          "widget": "select",
+          "label": {
+            "fr": "Nature du site",
+            "en": "Site type"
+          },
+          "enum": [
+            {
+              "value": "Découvert",
+              "label": "Découvert"
+            },
+            {
+              "value": "Intérieur",
+              "label": "Intérieur"
+            },
+            {
+              "value": "Site naturel",
+              "label": "Site naturel"
+            },
+            {
+              "value": "Site naturel aménagé",
+              "label": "Site naturel aménagé"
+            },
+            {
+              "value": "Site artificiel",
+              "label": "Site artificiel"
+            },
+            {
+              "value": "Découvrable",
+              "label": "Découvrable"
+            },
+            {
+              "value": "Non précisé",
+              "label": "Non précisé"
+            },
+            {
+              "value": "Extérieur couvert",
+              "label": "Extérieur couvert"
+            }
+          ]
+        },
+        "surface": {
+          "widget": "text",
+          "label": {
+            "fr": "Superficie",
+            "en": "Surface area"
+          }
+        },
+        "parent": {
+          "widget": "tags",
+          "label": {
+            "fr": "Équipement parent",
+            "en": "Parent facility"
+          }
+        },
+        "hebergement": {
+          "widget": "switch",
+          "label": {
+            "fr": "Hébergement sur place",
+            "en": "On-site accommodation"
+          }
+        },
+        "restaurant": {
+          "widget": "switch",
+          "label": {
+            "fr": "Restauration sur place",
+            "en": "On-site catering"
+          }
+        },
+        "handicap": {
+          "widget": "switch",
+          "label": {
+            "fr": "Accessible aux personnes handicapées",
+            "en": "Wheelchair accessible"
+          }
+        },
+        "transportCommun": {
+          "widget": "switch",
+          "label": {
+            "fr": "Desservi par les transports en commun",
+            "en": "Public transport nearby"
+          }
+        },
+        "gardiennage": {
+          "widget": "switch",
+          "label": {
+            "fr": "Gardiennage",
+            "en": "On-site security"
+          }
+        },
+        "eclairage": {
+          "widget": "switch",
+          "label": {
+            "fr": "Éclairage",
+            "en": "Lighting"
+          }
+        },
+        "libreAccess": {
+          "widget": "switch",
+          "label": {
+            "fr": "Accès libre",
+            "en": "Free / open access"
+          }
+        },
+        "typeAccessiblHandicap": {
+          "widget": "text",
+          "label": {
+            "fr": "Type d'accessibilité handicap",
+            "en": "Accessibility details"
+          }
+        },
+        "typeTransportCommun": {
+          "widget": "text",
+          "label": {
+            "fr": "Type de transport en commun",
+            "en": "Public transport details"
+          }
+        },
+        "sportPratiquer": {
+          "widget": "text",
+          "label": {
+            "fr": "Sports pratiqués",
+            "en": "Sports practised"
+          }
+        },
+        "partenariat": {
+          "widget": "switch",
+          "label": {
+            "fr": "Partenariat",
+            "en": "Partnership"
+          }
+        },
+        "typePartenariat": {
+          "widget": "text",
+          "label": {
+            "fr": "Type de partenariat",
+            "en": "Partnership details"
+          }
+        },
+        "subCategory": {
+          "widget": "text",
+          "label": {
+            "fr": "Sous-catégorie",
+            "en": "Sub-category"
+          }
+        },
+        "dateCreation": {
+          "widget": "date",
+          "label": {
+            "fr": "Date de création",
+            "en": "Creation date"
+          }
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter un équipement sportif",
+            "en": "Add a sports facility"
+          },
+          "edit": {
+            "fr": "Modifier l'équipement sportif",
+            "en": "Edit sports facility"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Créer l'équipement",
+            "en": "Create facility"
+          },
+          "edit": {
+            "fr": "Enregistrer les modifications",
+            "en": "Save changes"
+          }
+        },
+        "dialogClassName": "sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden"
+      },
+      "image": {
+        "field": "profil_avatar",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "mutation": {
+        "entityType": "poi",
+        "inject": {
+          "extraFields": {
+            "type": "recoveryCenter"
+          }
+        },
+        "successKey": {
+          "add": "toast.add.poiSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.poiError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_POI",
+          "edit": "EntityFormModal · UPDATE_POI"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard",
+          "params": {
+            "userList": "pois"
+          }
+        }
+      }
+    }
+  },
+  "admin": {
+    "enabled": true,
+    "access": {
+      "min": "siteAdmin"
+    },
+    "tabs": [
+      {
+        "id": "dashboard",
+        "label": {
+          "fr": "Tableau de bord",
+          "en": "Dashboard"
+        },
+        "sections": [
+          {
+            "type": "dashboard"
+          }
+        ]
+      },
+      {
+        "id": "members",
+        "label": {
+          "fr": "Membres",
+          "en": "Members"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "members",
+            "filters": [
+              "toBeValidated",
+              "isAdmin",
+              "isInviting",
+              "text"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "organisations",
+        "label": {
+          "fr": "Organisations",
+          "en": "Organizations"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "organizations",
+            "label": {
+              "fr": "Structures",
+              "en": "Structures"
+            },
+            "source": {
+              "defaultSortBy": {
+                "name": 1
+              }
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Nom",
+                  "en": "Name"
+                }
+              },
+              {
+                "path": "address.addressLocality",
+                "label": {
+                  "fr": "Commune",
+                  "en": "City"
+                }
+              },
+              {
+                "path": "address.postalCode",
+                "label": {
+                  "fr": "Code postal",
+                  "en": "Postal code"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ],
+            "create": "add-sport-sante-bienetre-organizations",
+            "edit": "inherit"
+          },
+          {
+            "type": "resource",
+            "entityType": "organizations",
+            "label": {
+              "fr": "Maisons Sport Santé",
+              "en": "Sport-Health Houses"
+            },
+            "source": {
+              "defaultFilters": {
+                "type": "NGO"
+              },
+              "defaultSortBy": {
+                "name": 1
+              }
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Nom",
+                  "en": "Name"
+                }
+              },
+              {
+                "path": "address.addressLocality",
+                "label": {
+                  "fr": "Commune",
+                  "en": "City"
+                }
+              },
+              {
+                "path": "address.postalCode",
+                "label": {
+                  "fr": "Code postal",
+                  "en": "Postal code"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ],
+            "create": "add-sport-sante-bienetre-mss",
+            "edit": "inherit"
+          }
+        ]
+      },
+      {
+        "id": "lieux",
+        "label": {
+          "fr": "Lieux & actualités",
+          "en": "Places & news"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "poi",
+            "label": {
+              "fr": "Équipements sportifs",
+              "en": "Sports facilities"
+            },
+            "source": {
+              "defaultFilters": {
+                "type": "recoveryCenter"
+              },
+              "defaultSortBy": {
+                "name": 1
+              }
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Nom",
+                  "en": "Name"
+                }
+              },
+              {
+                "path": "address.addressLocality",
+                "label": {
+                  "fr": "Commune",
+                  "en": "City"
+                }
+              },
+              {
+                "path": "address.postalCode",
+                "label": {
+                  "fr": "Code postal",
+                  "en": "Postal code"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate",
+              "reference"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ],
+            "create": "add-sport-sante-bienetre-recovery-center",
+            "edit": "inherit"
+          },
+          {
+            "type": "resource",
+            "entityType": "poi",
+            "label": {
+              "fr": "Actualités",
+              "en": "News"
+            },
+            "source": {
+              "defaultFilters": {
+                "type": "article"
+              },
+              "defaultSortBy": {
+                "name": 1
+              }
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Nom",
+                  "en": "Name"
+                }
+              },
+              {
+                "path": "address.addressLocality",
+                "label": {
+                  "fr": "Commune",
+                  "en": "City"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ],
+            "create": "add-sport-sante-bienetre-article",
+            "edit": "inherit"
+          }
+        ]
+      },
+      {
+        "id": "formations",
+        "label": {
+          "fr": "Formations",
+          "en": "Trainings"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "projects",
+            "label": {
+              "fr": "Formations",
+              "en": "Trainings"
+            },
+            "source": {
+              "defaultFilters": {
+                "category": "formation"
+              },
+              "defaultSortBy": {
+                "name": 1
+              }
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Nom",
+                  "en": "Name"
+                }
+              },
+              {
+                "path": "address.addressLocality",
+                "label": {
+                  "fr": "Commune",
+                  "en": "City"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ],
+            "create": "add-sport-sante-bienetre-formation",
+            "edit": "inherit"
+          },
+          {
+            "type": "resource",
+            "entityType": "events",
+            "label": {
+              "fr": "Sessions de formation",
+              "en": "Training sessions"
+            },
+            "source": {
+              "defaultFilters": {
+                "category": "sessionFormation"
+              },
+              "defaultSortBy": {
+                "name": 1
+              }
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Nom",
+                  "en": "Name"
+                }
+              },
+              {
+                "path": "address.addressLocality",
+                "label": {
+                  "fr": "Commune",
+                  "en": "City"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ],
+            "create": "add-sport-sante-bienetre-session-formation",
+            "edit": "inherit"
+          }
+        ]
+      },
+      {
+        "id": "import-export",
+        "label": {
+          "fr": "Import / Export",
+          "en": "Import / Export"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "import",
+            "entityTypes": [
+              "organizations",
+              "poi",
+              "projects",
+              "events"
+            ]
+          },
+          {
+            "type": "export"
+          }
+        ]
+      },
+      {
+        "id": "reference",
+        "label": {
+          "fr": "Référencement",
+          "en": "Reference"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "reference"
+          }
+        ]
+      }
+    ]
   }
 }

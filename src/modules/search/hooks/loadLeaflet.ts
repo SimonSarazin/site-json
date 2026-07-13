@@ -1,17 +1,20 @@
 /* -------------------------------------------------------------
- * Dynamic Leaflet + MarkerCluster loader (client‑side only)
+ * Dynamic Leaflet loader (client‑side only)
  * -------------------------------------------------------------
  * Usage:
  *   const L = await loadLeaflet();
  *   const map = L.map("id");
+ *
+ * NB : le plugin MarkerCluster n'est plus chargé — la carte search est passée
+ * à MapLibre + supercluster, et la carte profil (ProfileMapLeaflet) ne
+ * clusterise pas. `leaflet.markercluster` a été retiré des dépendances.
  * -----------------------------------------------------------*/
 
 // We keep a single shared promise to avoid duplicate imports.
 let leafletPromise: Promise<typeof import("leaflet")> | undefined;
 
 /**
- * Dynamically loads Leaflet and its MarkerCluster plugin.
- * Throws if called on the server.
+ * Dynamically loads Leaflet (client only). Throws if called on the server.
  */
 export async function loadLeaflet(): Promise<typeof import("leaflet")> {
   if (typeof window === "undefined") {
@@ -20,20 +23,14 @@ export async function loadLeaflet(): Promise<typeof import("leaflet")> {
 
   if (!leafletPromise) {
     leafletPromise = (async () => {
-      // 1. Load core Leaflet library and CSS
+      // Load core Leaflet library and CSS
       const leafletModule = await import("leaflet");
       const L = leafletModule.default ?? leafletModule;
 
       await import("leaflet/dist/leaflet.css");
 
-      // 2. Expose Leaflet globally for plugins that expect window.L
-      //    (MarkerCluster still relies on a global reference)
+      // Expose Leaflet globally (plugins / debug helpers qui attendent window.L)
       window.L = L;
-
-      // 3. Load MarkerCluster JS + CSS once Leaflet is on window
-      await import("leaflet.markercluster");
-      await import("leaflet.markercluster/dist/MarkerCluster.css");
-      await import("leaflet.markercluster/dist/MarkerCluster.Default.css");
 
       return L;
     })();

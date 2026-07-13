@@ -18,8 +18,9 @@ export interface UseSearchQueryParams {
    * Variant SDK pour `searchCostum`. Cf. `SearchVariantSchema`. Si absent ou
    * `"default"`, on appelle `searchCostum(payload)` sans le 2e argument
    * (comportement préservé). Sinon on passe `{ variant }` → endpoint alternatif.
+   * `admin` requiert le SDK ≥ 1.0.161 (endpoint globalautocompleteadmin).
    */
-  variant?: "default" | "navigator-tl";
+  variant?: "default" | "navigator-tl" | "admin";
   /** Overrides du cache React Query (ex. dashboards « charger tout » : un
    *  staleTime long évite de re-chaîner toutes les pages au retour). */
   cache?: { staleTime?: number; gcTime?: number };
@@ -112,6 +113,8 @@ export function useSearchQuery({
         type,
         mapUsed,
         graphUsed,
+        // variant transmis → le filtre de validation ne s'applique jamais en mode admin.
+        variant,
       });
 
       if (!param.searchType) {
@@ -121,8 +124,10 @@ export function useSearchQuery({
       try {
         // Passe `{ variant }` au SDK uniquement quand non-default — préserve
         // le call site existant pour les sites qui n'utilisent pas le variant.
+        // Cast : le type SearchCostumVariant du SDK installé peut être en retard d'un variant
+        // (« admin » exige ≥ 1.0.161) — au runtime le SDK ancien lèverait, le nouveau route.
         const result = variant && variant !== "default"
-          ? await entity.searchCostum(param, { variant })
+          ? await entity.searchCostum(param, { variant } as unknown as Parameters<typeof entity.searchCostum>[1])
           : await entity.searchCostum(param);
         if (
           page &&

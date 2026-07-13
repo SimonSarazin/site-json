@@ -18,19 +18,11 @@ import {
     Youtube,
     ExternalLink,
     MessageCircle,
-    CalendarDays,
-    FolderKanban,
-    Video,
-    Cloud,
-    FolderOpen,
-    BarChart2,
-    Ticket,
-    UserCheck,
-    type LucideIcon,
     Monitor,
     BedDouble,
     Loader2,
     Activity,
+    Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,30 +40,18 @@ import { type Answer } from "@communecter/cocolight-api-client";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
 import { useMultiEvalData } from "@/modules/coform/hooks/useMultiEvalData";
 import { MultiEvalRadarTabs } from "@/modules/coform/components/MultiEvalRadarTabs";
+import { OurToolsEditDialog } from "./OurToolsEditDialog";
+import { TOOLS_MAP } from "./toolsMap";
 
 interface ProfileTiersLieuxInfoProps {
     section: ProfileTiersLieuxInfoSection;
 }
 
-// ─── Mapping des outils disponibles ────────────────────────────────────────
-const TOOLS_MAP: Record<string, { label: string; Icon: LucideIcon }> = {
-    site: { label: "Site", Icon: Globe },
-    chat: { label: "Chat entre membres", Icon: MessageCircle },
-    agenda: { label: "Agenda événementiel", Icon: CalendarDays },
-    projectManagement: { label: "Gestion de projet", Icon: FolderKanban },
-    videoPlatform: { label: "Plateforme vidéo", Icon: Video },
-    cloud: { label: "Cloud", Icon: Cloud },
-    annuaire: { label: "Annuaire", Icon: Users },
-    fileSharing: { label: "Partage de fichiers et édition", Icon: FolderOpen },
-    survey: { label: "Sondage / enquête", Icon: BarChart2 },
-    reservation: { label: "Système de réservation", Icon: Ticket },
-    membership: { label: "Gestion des adhésions", Icon: UserCheck },
-};
-
 export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfoProps) {
     const { entity, t } = useProfileSetup();
     const { me } = useCocolight();
     const { canEditProfile } = useProfilPermissions(entity);
+    const [toolsEditOpen, setToolsEditOpen] = useState(false);
     const toolsRaw = useReactiveProperty(entity.serverData, "ourTools");
     const { address, email, mobile, url, tags } = useFormatProfileEntity(entity);
 
@@ -472,11 +452,30 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
 
 
                 {/* ── 3. Nos outils ───────────────────────────────────── */}
-                {parsedTools.length > 0 && (
+                {(parsedTools.length > 0 || canEditProfile) && (
                     <>
                         <Separator />
                         <div>
-                            <SectionTitle label={t("ProfileTiersLieuxInfo.tools")} count={parsedTools.length} />
+                            <div className="flex items-center justify-between gap-2">
+                                <SectionTitle label={t("ProfileTiersLieuxInfo.tools")} count={parsedTools.length} />
+                                {canEditProfile && (
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="gap-1.5 text-muted-foreground hover:text-foreground"
+                                        onClick={() => setToolsEditOpen(true)}
+                                    >
+                                        <Pencil className="w-3.5 h-3.5" />
+                                        {t("ProfileTiersLieuxInfo.editTools")}
+                                    </Button>
+                                )}
+                            </div>
+                            {parsedTools.length === 0 ? (
+                                <p className="text-sm text-muted-foreground italic">
+                                    {t("ProfileTiersLieuxInfo.toolsEmpty")}
+                                </p>
+                            ) : (
                             <div className="space-y-2">
                                 {parsedTools.map(({ key, items }) => {
                                     const tool = TOOLS_MAP[key];
@@ -514,7 +513,15 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
                                     );
                                 })}
                             </div>
+                            )}
                         </div>
+                        {toolsEditOpen && (
+                            <OurToolsEditDialog
+                                entity={entity}
+                                isOpen={toolsEditOpen}
+                                onClose={() => setToolsEditOpen(false)}
+                            />
+                        )}
                     </>
                 )}
 

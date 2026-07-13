@@ -66,7 +66,7 @@ export function MultiRadioField({
   };
 
   return (
-    <div className={cn("space-y-4", field.width)}>
+    <div className={cn("space-y-3", field.width)}>
       <Label className="text-sm font-medium text-foreground">
         {field.label}
         {field.isRequired && <span className="text-destructive ml-1">*</span>}
@@ -79,36 +79,46 @@ export function MultiRadioField({
         aria-invalid={hasError || undefined}
         aria-describedby={hasError ? `${field.name}-error` : undefined}
         aria-required={field.isRequired || undefined}
-        className="flex-col space-y-1"
+        className="space-y-1"
       >
         {options.map((option, index) => {
           const optType = getOptionType(option);
           const isSelected = selectedValue === option;
           const isCplx = optType === "cplx";
+          const hasInlineInput = isCplx && isSelected;
+          const placeholder = getPlaceholder(option);
 
           return (
-            <div key={index} className="space-y-1.5">
-              <div className="flex items-center space-x-2.5 cursor-pointer">
-                <RadioGroupItem value={option} id={`${field.name}-${index}`} />
+            <div
+              key={index}
+              className="rounded-md px-2 py-1.5 transition-colors hover:bg-muted/40"
+            >
+              {/* Ligne : radio + label + input inline (cplx). flex-wrap → l'input
+                  reste en ligne quand il y a la place, passe dessous sinon. */}
+              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
+                <RadioGroupItem value={option} id={`${field.name}-${index}`} className="shrink-0" />
                 <Label
                   htmlFor={`${field.name}-${index}`}
-                  className="font-normal cursor-pointer flex-1"
+                  className={cn(
+                    "font-normal leading-snug cursor-pointer",
+                    !hasInlineInput && "flex-1"
+                  )}
                 >
                   {option}
                 </Label>
-              </div>
-              {/* Champ texte pour option cplx */}
-              {isCplx && isSelected && (
-                <div className="ml-7">
+
+                {/* Champ texte inline pour option cplx (nom accessible = label de l'option) */}
+                {hasInlineInput && (
                   <Input
                     ref={inputRef}
+                    aria-label={placeholder || option}
                     value={textsup}
                     onChange={(e) => handleTextsupChange(e.target.value)}
-                    placeholder={getPlaceholder(option)}
-                    className="text-sm"
+                    placeholder={placeholder}
+                    className="h-9 min-w-40 flex-1 basis-48 text-sm"
                   />
-                </div>
-              )}
+                )}
+              </div>
             </div>
           );
         })}

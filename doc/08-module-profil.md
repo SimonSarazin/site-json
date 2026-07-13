@@ -953,6 +953,25 @@ invalide React Query puis navigue. La byte-parité des defaults/payloads est fig
 
 ---
 
+### Édition inline d'une propriété `serverData` (pattern `updateField` + `refresh`)
+
+Pour éditer une **propriété simple** de l'entité (hors formulaire de création/édition complet), le pattern est :
+
+1. **Lecture** réactive : `useReactiveProperty(entity.serverData, "<champ>")` (Proxy réactif du SDK).
+2. **Écriture** : `entity.updateField("<champ>", value)` (équivalent React du `path2Value` legacy ; `$set` du champ).
+3. **Refresh** : dans `onSuccessCallback`, `await entity.refresh()` — re-fetch qui met à jour le `serverData` réactif → re-render (cf. `useProfileMutations.useUploadProfileBanner`). ⚠️ **Ne pas** faire `entity.serverData.x = …` : ESLint `react-hooks/immutability` interdit de muter une prop.
+4. **Gate** : `useProfilPermissions(entity).canEditProfile` (édition réservée aux admins du lieu).
+5. **Mutation** : `useMutationWithToast({ mutationFn, successKey, errorKey, namespace: "modules/profil", onSuccessCallback })`.
+6. Modale **montée conditionnellement** (`{isOpen && <Dialog open …/>}`) → état frais à chaque ouverture.
+
+**Instance concrète — éditeur des outils du lieu (`ourTools`).** Section « Nos outils » de `ProfileTiersLieuxInfo` : bouton « Modifier » (gaté `canEditProfile`) → `OurToolsEditDialog`. La donnée `entity.serverData.ourTools` = `{ [catégorie]: [{name, url?}] }` (catégorie ∈ `TOOLS_MAP`, 11 clés alignées sur le legacy `co2/views/pod/yourTools.php`). Helpers purs `parseRows`/`rowsToOurTools` dans `sections/custom/toolsMap.ts` (testés).
+
+**⚠️ Gotchas `updateField`** (à connaître pour tout champ objet/array) :
+- **Objet vide `{}` → 500.** En `application/x-www-form-urlencoded`, un objet vide n'émet **aucun** paramètre `value` → `$_POST["value"]` undefined côté backend. La lib gère l'array vide (`[]` → `""`) mais **pas** l'objet vide. → envoyer **`null`** ($unset) quand la valeur est vide : `updateField("champ", Object.keys(v).length ? v : null)`.
+- **`$set` remplace tout le champ.** Un éditeur qui reconstruit l'objet à partir de ses seules clés connues **efface** les clés inconnues présentes en base (le legacy, lui, les préserve). → les recopier depuis la valeur brute avant le merge.
+
+---
+
 ### Condition d'auth sur les tabs
 
 Depuis la branche `review`, les tabs de profil supportent une `condition.auth` en config JSON :

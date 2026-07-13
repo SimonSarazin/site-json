@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router";
-import { ChevronDown, User, LogOut } from "lucide-react";
+import { ChevronDown, User, LogOut, ShieldCheck } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +13,8 @@ import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { cn } from "@/lib/utils";
 import type { LocalizedString } from "@/types/site-schema";
+import { useCocolight } from "@/hooks/useCocolight";
+import { isAdminEntryVisible } from "@/modules/admin/lib/adminEntry";
 import { useAuthActions } from "../hooks/useAuthActions";
 import { CurrentUserAvatar } from "./CurrentUserAvatar";
 import { LoginButton } from "./LoginButton";
@@ -73,6 +75,10 @@ export function AuthMenu({
   const navigate = useNavigate();
   const { config } = useSite();
   const { isConnected, logout, profileUrl, name, avatarUrl, email } = useAuthActions();
+  // Entrée « Administration » — même gate que la page /admin (admin activé + niveau >= access.min).
+  // Rendu sous ClientOnly (les droits ne sont connus qu'hydraté) → pas de flash SSR.
+  const { me, entity } = useCocolight();
+  const showAdmin = isAdminEntryVisible(config, me, entity);
 
   // Précédence : config (bascule tous les headers) > prop (défaut du header) > défaut.
   const menuCfg = config.auth?.menu;
@@ -124,6 +130,19 @@ export function AuthMenu({
                 <User className="mr-2 h-4 w-4" />
                 {t("Profil")}
               </Button>
+              {showAdmin && (
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  onClick={() => {
+                    onAction?.();
+                    navigate("/admin");
+                  }}
+                >
+                  <ShieldCheck className="mr-2 h-4 w-4" />
+                  {t("Administration")}
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 className="w-full justify-start"
@@ -197,6 +216,12 @@ export function AuthMenu({
                 <User className="mr-2 h-4 w-4" />
                 {t("Profil")}
               </DropdownMenuItem>
+              {showAdmin && (
+                <DropdownMenuItem onClick={() => navigate("/admin")}>
+                  <ShieldCheck className="mr-2 h-4 w-4" />
+                  {t("Administration")}
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={logout}>
                 <LogOut className="mr-2 h-4 w-4" />
                 {t("Se déconnecter")}

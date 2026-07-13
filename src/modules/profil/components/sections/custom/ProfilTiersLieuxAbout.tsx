@@ -742,7 +742,8 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                                       <img
                                         src={`${getServerUrl()}${src}`}
                                         alt={`${name} – ${idx + 1}`}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover cursor-pointer"
+                                        onClick={() => setModalItem(modalData)}
                                       />
                                     </CarouselItem>
                                   ))}
@@ -755,7 +756,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                                 )}
                               </Carousel>
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center">
+                              <div className="w-full h-full flex items-center justify-center cursor-pointer" onClick={() => setModalItem(modalData)}>
                                 <Users className="w-10 h-10 text-muted-foreground/40" />
                               </div>
                             )}
@@ -862,6 +863,16 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                       const halfday: number = section.coworkingPath?.halfday ? row[section.coworkingPath.halfday] as number : 0;
                       const fullday: number = section.coworkingPath?.fullday ? row[section.coworkingPath.fullday] as number : 0;
                       const images: string[] = section.coworkingPath?.images ? row[section.coworkingPath.images] as Array<string> : [];
+                      const modalData: ModalItem = {
+                        name: String(name ?? ""),
+                        minPers: Number(minPers) || 0,
+                        maxPers: Number(maxPers) || 0,
+                        hourly: Number(hourly) || 0,
+                        halfday: Number(halfday) || 0,
+                        fullday: Number(fullday) || 0,
+                        images: (images as string[]).map(src => `${getServerUrl()}${src}`),
+                        reserveUrl: linkValue ?? externalLink ?? null,
+                      };
                       return (
                         <div
                           key={`${coworking.id}-${idx}`}
@@ -891,7 +902,8 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                                       <img
                                         src={`${getServerUrl()}${src}`}
                                         alt={`${name} – ${idx + 1}`}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover cursor-pointer"
+                                        onClick={() => setModalItem(modalData)}
                                       />
                                     </CarouselItem>
                                   ))}
@@ -904,7 +916,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                                 )}
                               </Carousel>
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center">
+                              <div className="w-full h-full flex items-center justify-center cursor-pointer" onClick={() => setModalItem(modalData)}>
                                 <Users className="w-10 h-10 text-muted-foreground/40" />
                               </div>
                             )}
@@ -941,16 +953,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                               className="mt-2 w-full text-xs"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setModalItem({
-                                  name: String(name ?? ""),
-                                  minPers: Number(minPers) || 0,
-                                  maxPers: Number(maxPers) || 0,
-                                  hourly: Number(hourly) || 0,
-                                  halfday: Number(halfday) || 0,
-                                  fullday: Number(fullday) || 0,
-                                  images: (images as string[]).map(src => `${getServerUrl()}${src}`),
-                                  reserveUrl: linkValue ?? externalLink ?? null,
-                                });
+                                setModalItem(modalData);
                               }}
                             >
                               {t("ProfilTiersLieuxAbout.learnMore")}
@@ -969,6 +972,18 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                     const hourly = (section.coworkingPath?.hourly ? getNestedValue(sd.answers as Record<string, unknown>, section.coworkingPath.hourly) : 0) as number;
                     const halfday = (section.coworkingPath?.halfday ? getNestedValue(sd.answers as Record<string, unknown>, section.coworkingPath.halfday) : 0) as number;
                     const fullday = (section.coworkingPath?.fullday ? getNestedValue(sd.answers as Record<string, unknown>, section.coworkingPath.fullday) : 0) as number;
+                    const modalData: ModalItem = {
+                      name: String(name ?? ""),
+                      capacity: Number(capacity) || 0,
+                      hourly: Number(hourly) || 0,
+                      halfday: Number(halfday) || 0,
+                      fullday: Number(fullday) || 0,
+                      images: (images as DocumentItem[]).map(src => {
+                        const p = typeof src === "object" && src !== null ? `/upload/${src.moduleId}/${src.folder}/${src.name}` : src;
+                        return `${getServerUrl()}${p}`;
+                      }),
+                      reserveUrl: linkValue ?? externalLink ?? null,
+                    };
                     return (
                       <div
                         key={`${sd.id}`}
@@ -1000,7 +1015,8 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                                       <img
                                         src={`${getServerUrl()}${url}`}
                                         alt={`${name} – ${idx + 1}`}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover cursor-pointer"
+                                        onClick={() => setModalItem(modalData)}
                                       />
                                     </CarouselItem>
                                   )
@@ -1014,7 +1030,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                               )}
                             </Carousel>
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center">
+                            <div className="w-full h-full flex items-center justify-center cursor-pointer" onClick={() => setModalItem(modalData)}>
                               <Users className="w-10 h-10 text-muted-foreground/40" />
                             </div>
                           )}
@@ -1051,18 +1067,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                             className="mt-2 w-full text-xs"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setModalItem({
-                                name: String(name ?? ""),
-                                capacity: Number(capacity) || 0,
-                                hourly: Number(hourly) || 0,
-                                halfday: Number(halfday) || 0,
-                                fullday: Number(fullday) || 0,
-                                images: (images as DocumentItem[]).map(src => {
-                                  const p = typeof src === "object" && src !== null ? `/upload/${src.moduleId}/${src.folder}/${src.name}` : src;
-                                  return `${getServerUrl()}${p}`;
-                                }),
-                                reserveUrl: linkValue ?? externalLink ?? null,
-                              });
+                              setModalItem(modalData);
                             }}
                           >
                             {t("ProfilTiersLieuxAbout.learnMore")}
@@ -1129,6 +1134,16 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                       const halfday : number = section.bedRoomPath?.halfday ? row[section.bedRoomPath.halfday] as number : 0;
                       const fullday : number = section.bedRoomPath?.fullday ? row[section.bedRoomPath.fullday] as number : 0;
                       const images : string[] = section.bedRoomPath?.images ? row[section.bedRoomPath.images] as Array<string> : [];
+                      const modalData: ModalItem = {
+                        name: String(name ?? ""),
+                        minPers: Number(minPers) || 0,
+                        maxPers: Number(maxPers) || 0,
+                        hourly: Number(hourly) || 0,
+                        halfday: Number(halfday) || 0,
+                        fullday: Number(fullday) || 0,
+                        images: (images as string[]).map(src => `${getServerUrl()}${src}`),
+                        reserveUrl: linkValue ?? externalLink ?? null,
+                      };
                       return (
                         <div
                           key={`${accommodation.id}-${idx}`}
@@ -1158,7 +1173,8 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                                       <img
                                         src={`${getServerUrl()}${src}`}
                                         alt={`${name} – ${idx + 1}`}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover cursor-pointer"
+                                        onClick={() => setModalItem(modalData)}
                                       />
                                     </CarouselItem>
                                   ))}
@@ -1171,7 +1187,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                                 )}
                               </Carousel>
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center">
+                              <div className="w-full h-full flex items-center justify-center cursor-pointer" onClick={() => setModalItem(modalData)}>
                                 <Users className="w-10 h-10 text-muted-foreground/40" />
                               </div>
                             )}
@@ -1208,16 +1224,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                               className="mt-2 w-full text-xs"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setModalItem({
-                                  name: String(name ?? ""),
-                                  minPers: Number(minPers) || 0,
-                                  maxPers: Number(maxPers) || 0,
-                                  hourly: Number(hourly) || 0,
-                                  halfday: Number(halfday) || 0,
-                                  fullday: Number(fullday) || 0,
-                                  images: (images as string[]).map(src => `${getServerUrl()}${src}`),
-                                  reserveUrl: linkValue ?? externalLink ?? null,
-                                });
+                                setModalItem(modalData);
                               }}
                             >
                               {t("ProfilTiersLieuxAbout.learnMore")}
@@ -1235,6 +1242,17 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                     const capacity = (section.bedRoomPath?.place && getNestedValue(sd.answers as Record<string, unknown>, section.bedRoomPath.place)) as number | undefined;
                     const bed = (section.bedRoomPath?.bedPrice ? getNestedValue(sd.answers as Record<string, unknown>, section.bedRoomPath.bedPrice) : 0) as number;
                     const room = (section.bedRoomPath?.roomPrice ? getNestedValue(sd.answers as Record<string, unknown>, section.bedRoomPath.roomPrice) : 0) as number;
+                    const modalData: ModalItem = {
+                      name: String(name ?? ""),
+                      capacity: Number(capacity) || 0,
+                      bed: Number(bed) || 0,
+                      room: Number(room) || 0,
+                      images: (images as DocumentItem[]).map(src => {
+                        const p = typeof src === "object" && src !== null ? `/upload/${src.moduleId}/${src.folder}/${src.name}` : src;
+                        return `${getServerUrl()}${p}`;
+                      }),
+                      reserveUrl: linkValue ?? externalLink ?? null,
+                    };
                     return (
                       <div
                         key={`${sd.id}`}
@@ -1266,7 +1284,8 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                                       <img
                                         src={`${getServerUrl()}${url}`}
                                         alt={`${name} – ${idx + 1}`}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover cursor-pointer"
+                                        onClick={() => setModalItem(modalData)}
                                       />
                                     </CarouselItem>
                                   )
@@ -1280,7 +1299,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                               )}
                             </Carousel>
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center">
+                            <div className="w-full h-full flex items-center justify-center cursor-pointer" onClick={() => setModalItem(modalData)}>
                               <Users className="w-10 h-10 text-muted-foreground/40" />
                             </div>
                           )}
@@ -1312,17 +1331,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                             className="mt-2 w-full text-xs border-primary"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setModalItem({
-                                name: String(name ?? ""),
-                                capacity: Number(capacity) || 0,
-                                bed: Number(bed) || 0,
-                                room: Number(room) || 0,
-                                images: (images as DocumentItem[]).map(src => {
-                                  const p = typeof src === "object" && src !== null ? `/upload/${src.moduleId}/${src.folder}/${src.name}` : src;
-                                  return `${getServerUrl()}${p}`;
-                                }),
-                                reserveUrl: linkValue ?? externalLink ?? null,
-                              });
+                              setModalItem(modalData);
                             }}
                           >
                             {t("ProfilTiersLieuxAbout.learnMore")}

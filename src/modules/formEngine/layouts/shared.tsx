@@ -124,7 +124,7 @@ export function TabBar(props: {
       {steps.map((s, i) => {
         const hasErr = sectionHasError(s, errors);
         return (
-          <TabsTrigger key={s.id} value={s.id} className="flex-1 flex-col gap-1 sm:flex-row"
+          <TabsTrigger key={s.id} value={s.id} className="min-w-0 flex-1 flex-col gap-1 px-1.5 sm:flex-row"
             data-testid={`step-${s.id}`} data-error={hasErr ? "true" : "false"}>
             {hasErr
               ? <AlertCircle className="h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />

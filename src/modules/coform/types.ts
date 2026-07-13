@@ -447,8 +447,10 @@ export interface CoFormFieldConfig {
   /** Images par option (array d'objets avec docPath) */
   optimage?: Record<string, Array<{ docPath?: string; [key: string]: unknown }> | null>;
   // ─── Finder ─────────────────────────────────────────────────────────────
-  /** Filtres backend (id de filtre → `{attributeName, valueName}`) */
+  /** Filtres backend d'inclusion (id de filtre → `{attributeName, valueName}`) */
   filter?: Record<string, { attributeName?: string; valueName?: string }>;
+  /** Filtres backend d'exclusion (`$nin`) — même shape que `filter` */
+  filterExclude?: Record<string, { attributeName?: string; valueName?: string }>;
   // ─── SimpleTable ────────────────────────────────────────────────────────
   /** Colonnes : array OU object keyé par id de colonne */
   columns?:
@@ -459,6 +461,8 @@ export interface CoFormFieldConfig {
   tableName?: string;
   activeNewLine?: boolean | string;
   singleAnswerByLine?: boolean | string;
+  /** Édition en modal : la ligne devient cliquable → formulaire en modal (CRUD complet), plus d'édition directe dans le tableau. */
+  editInModal?: boolean | string;
   // ─── SectionTitle ──────────────────────────────────────────────────────
   showBar?: boolean | string;
   barPosition?: string;
@@ -816,8 +820,10 @@ export interface FinderAddToLinks {
 export interface FinderConfig {
   /** Type d'élément à rechercher (organizations, citoyens, etc.) */
   type: FinderElementType;
-  /** Filtres appliqués à la recherche */
+  /** Filtres d'inclusion appliqués à la recherche */
   filters: FinderFilter[];
+  /** Filtres d'exclusion (`$nin`) — ex: exclure les orgs taguées `RéseauTiersLieux` */
+  excludeFilters?: FinderFilter[];
   /** Recherche globale (true) ou sourcée (false) */
   notSourceKey: boolean;
   /** Chercher parmi mes contacts */
@@ -899,6 +905,12 @@ export interface SimpleTableConfig {
   rows: SimpleTableRow[];
   activeNewLine: boolean;
   singleAnswerByLine: boolean;
+  /**
+   * Si `true` : le tableau passe en lecture seule et chaque ligne s'édite dans
+   * un formulaire modal (CRUD complet — ajout/édition/suppression dans le modal,
+   * indépendamment de `activeNewLine`). Plus aucune édition directe dans le tableau.
+   */
+  editInModal: boolean;
 }
 
 /**

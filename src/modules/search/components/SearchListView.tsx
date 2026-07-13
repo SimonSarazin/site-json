@@ -7,6 +7,7 @@ import { SwitchDetailsMode } from "./SwitchDetailsMode";
 import SearchCardDetailed from "./SearchCardDetailed";
 import { PreviewNavContext } from "../contexts/previewNav";
 import { cn } from "@/lib/utils";
+import { getEntryId } from "../lib/searchMapSelection";
 
 export default function SearchListView({
   results,
@@ -96,8 +97,11 @@ export default function SearchListView({
 
   // Mode split (onFocusItem fourni) : un clic sur une carte FOCALISE la carte
   // (flyTo + popup) au lieu d'ouvrir le détail ; sinon comportement historique.
-  const handleCardClick = (it: SearchEntity) =>
-    onFocusItem ? onFocusItem(String(it.serverData.id)) : handleOpenDetails(it);
+  const handleCardClick = (it: SearchEntity) => {
+    const id = getEntryId(it);
+    if (onFocusItem && id) onFocusItem(id);
+    else handleOpenDetails(it);
+  };
 
   // Synchro carte→liste : quand un marqueur est cliqué, amener sa carte dans la vue.
   useEffect(() => {
@@ -125,7 +129,7 @@ export default function SearchListView({
 
   // Enveloppe une carte : highlight (ring) quand focalisée + data-item-id (scroll).
   const wrap = (it: SearchEntity, child: React.ReactNode) => {
-    const id = String(it?.serverData?.id);
+    const id = getEntryId(it);
     return (
       <div
         key={id}

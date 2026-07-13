@@ -8,7 +8,9 @@ import type { ProfilPermissions } from "../types";
  * Calcule les permissions pour un Project
  */
 export function calculateProjectPermissions(entity: Project): ProfilPermissions {
-  const isProjectAdmin = entity.isAdmin?.() ?? false;
+  // checkHierarchy:true → admin de l'ORG parente peut éditer le projet (parité legacy canEditItem→
+  // isElementAdmin récursif ; aligne sur event.ts). Le créateur garde son droit via son lien admin direct.
+  const isProjectAdmin = entity.isAdmin?.({ checkHierarchy: true }) ?? false;
   const isProjectContributor = entity.isContributor?.() ?? false;
   const isFollowingProject = entity.isFollowing?.() ?? false;
   const isToBeValidated = entity.isToBeValidated?.() ?? false;

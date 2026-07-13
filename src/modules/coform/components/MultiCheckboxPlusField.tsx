@@ -201,78 +201,129 @@ export function MultiCheckboxPlusField({
     return selectedMap[option]?.rank;
   }, [selectedMap]);
 
+  const atMax = !!config?.nbAnswersMax && value.length >= config.nbAnswersMax;
+
   return (
-    <div className={cn("space-y-4", field.width)}>
-      {/* Label principal */}
-      <Label className="text-sm font-medium text-foreground">
-        {field.label}
-        {field.isRequired && <span className="text-destructive ml-1">*</span>}
-      </Label>
-      
+    <div className={cn("space-y-3", field.width)}>
+      {/* En-tête : label principal + compteur de sélection */}
+      <div className="flex items-start justify-between gap-3">
+        <Label className="text-sm font-medium text-foreground">
+          {field.label}
+          {field.isRequired && <span className="text-destructive ml-1">*</span>}
+        </Label>
+
+        {config?.nbAnswersMax && (
+          <span
+            className={cn(
+              "shrink-0 rounded-full px-2 py-0.5 text-xs font-medium tabular-nums transition-colors",
+              atMax ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+            )}
+          >
+            {value.length}/{config.nbAnswersMax}
+          </span>
+        )}
+      </div>
+
       {/* Info du champ */}
       {field.info && <HintText text={field.info} />}
-      
-      {/* Limite de sélection */}
+
+      {/* Rappel de la limite de sélection */}
       {config?.nbAnswersMax && (
         <p className="text-xs text-muted-foreground">
           {t("coform.multiCheckboxPlus.maxSelections", `Maximum ${config.nbAnswersMax} choix`, { max: config.nbAnswersMax })}
-          {" "}({value.length}/{config.nbAnswersMax})
         </p>
       )}
 
       {/* Liste des options */}
-      <div className="flex-col space-y-0.5">
+      <div className="space-y-1.5">
         {options.map((option, index) => {
           const isSelected = isOptionSelected(option);
           const optionType = config?.tofill?.[option] || "simple";
           const optionInfo = config?.optinfo?.[option];
-          const placeholder = config?.placeholdersckb?.[option] || "";
+          const placeholder = config?.placeholdersckb?.[option]?.trim() || "";
           const rank = getOptionRank(option);
           const isCplx = optionType === "cplx";
           const isTouched = touchedInputs[option];
           const showCplxError = config?.mandatoryCplx && isTouched && !textInputs[option];
           const optionImages = config?.optimage?.[option] || [];
-          const hasExtras = isCplx || !!optionInfo || optionImages.length > 0;
+          const isDisabled = !isSelected && atMax;
+          const hasInlineInput = isCplx && isSelected;
+          // Aligne la checkbox en haut seulement quand du contenu s'empile sous la
+          // 1re ligne (info / images) — l'input cplx reste sur la ligne du label.
+          const alignTop = !!optionInfo || optionImages.length > 0;
+          const inputId = `${field.name}-${index}-textsup`;
+          // A11y : l'input inline n'a pas de label texte propre → nom accessible via
+          // aria-label (placeholder configuré s'il existe, sinon fallback générique).
+          const inputPlaceholder = placeholder || t("coform.multiCheckboxPlus.inputPlaceholder", "Votre réponse…");
+          const cplxAccessibleName = placeholder || t("coform.multiCheckboxPlus.inputLabel", "Précisez");
 
           return (
-            <div key={index} className="py-1">
-              <div className={cn(
-                "flex gap-2.5 cursor-pointer",
-                hasExtras ? "items-start" : "items-center"
-              )}>
+            <div
+              key={index}
+              className={cn(
+                "rounded-md px-2 py-1.5 transition-colors hover:bg-muted/40",
+                isDisabled && "opacity-50"
+              )}
+            >
+              <div className={cn("flex gap-3", alignTop ? "items-start" : "items-center")}>
                 {/* Checkbox */}
                 <Checkbox
                   id={`${field.name}-${index}`}
                   checked={isSelected}
+                  disabled={isDisabled}
                   onCheckedChange={(checked) => handleCheckboxChange(option, checked as boolean)}
-                  className={hasExtras ? "mt-0.5" : ""}
+                  className={alignTop ? "mt-0.5" : ""}
                 />
-                
-                <div className="flex-1">
-                  {/* Label de l'option + badge rank */}
-                  <div className="flex items-center gap-2">
-                    <Label 
-                      htmlFor={`${field.name}-${index}`} 
-                      className="font-normal cursor-pointer flex-1"
+
+                <div className="min-w-0 flex-1">
+                  {/* Ligne principale : label + input inline (cplx) + badge rang.
+                      flex-wrap → l'input reste en ligne quand il y a la place, passe
+                      dessous sinon (labels longs / écrans étroits). */}
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+                    <Label
+                      htmlFor={`${field.name}-${index}`}
+                      className={cn(
+                        "font-normal leading-snug",
+                        !hasInlineInput && "flex-1",
+                        isDisabled ? "cursor-not-allowed" : "cursor-pointer"
+                      )}
                     >
                       {option}
                     </Label>
-                    
+
                     {/* Badge de rang */}
                     {config?.rank && isSelected && rank && (
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="shrink-0 text-xs tabular-nums">
                         #{rank}
                       </Badge>
                     )}
+
+                    {/* Champ texte conditionnel (type cplx) — inline sur l'option */}
+                    {hasInlineInput && (
+                      <Input
+                        id={inputId}
+                        ref={(el) => { inputRefs.current[option] = el; }}
+                        aria-label={cplxAccessibleName}
+                        placeholder={inputPlaceholder}
+                        value={textInputs[option] || ""}
+                        onChange={(e) => handleTextChange(option, e.target.value)}
+                        onBlur={() => setTouchedInputs(prev => ({ ...prev, [option]: true }))}
+                        aria-invalid={showCplxError || undefined}
+                        className={cn(
+                          "h-9 min-w-40 flex-1 basis-48 text-sm",
+                          showCplxError && "border-destructive"
+                        )}
+                      />
+                    )}
                   </div>
-                  
+
                   {/* Info de l'option */}
                   {optionInfo && (
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {optionInfo}
                     </p>
                   )}
-                  
+
                   {/* Images de l'option */}
                   {optionImages.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-2">
@@ -286,37 +337,22 @@ export function MultiCheckboxPlusField({
                       ))}
                     </div>
                   )}
-                  
-                  {/* Champ texte conditionnel (type cplx) */}
-                  {isCplx && isSelected && (
-                    <div className="mt-2">
-                      <Input
-                        ref={(el) => { inputRefs.current[option] = el; }}
-                        placeholder={placeholder || t("coform.multiCheckboxPlus.enterDetails", "Précisez...")}
-                        value={textInputs[option] || ""}
-                        onChange={(e) => handleTextChange(option, e.target.value)}
-                        onBlur={() => setTouchedInputs(prev => ({ ...prev, [option]: true }))}
-                        className={cn(
-                          "text-sm",
-                          showCplxError && "border-destructive"
-                        )}
-                      />
-                      {showCplxError && (
-                        <p className="text-xs text-destructive mt-1">
-                          {t("coform.multiCheckboxPlus.textRequired", "Ce champ est obligatoire")}
-                        </p>
-                      )}
-                    </div>
+
+                  {/* Erreur du champ cplx obligatoire */}
+                  {hasInlineInput && showCplxError && (
+                    <p className="text-xs text-destructive mt-1">
+                      {t("coform.multiCheckboxPlus.textRequired", "Ce champ est obligatoire")}
+                    </p>
                   )}
                 </div>
               </div>
             </div>
           );
         })}
-        
+
         {/* Ajout dynamique de valeur */}
         {config?.addValue && (
-          <div className="flex items-center gap-2 pt-2">
+          <div className="flex items-center gap-2 pt-1.5">
             <Input
               ref={newValueInputRef}
               placeholder={config.newValuePlaceholder || t("coform.multiCheckboxPlus.addNewValue", "Ajouter une option...")}
@@ -328,7 +364,7 @@ export function MultiCheckboxPlusField({
                   handleAddNewValue();
                 }
               }}
-              className="text-sm flex-1"
+              className="h-9 text-sm flex-1"
             />
             <Button
               type="button"

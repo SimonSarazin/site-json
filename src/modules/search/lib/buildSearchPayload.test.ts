@@ -64,3 +64,62 @@ describe("buildSearchPayload — mode carte (chargement progressif)", () => {
     expect(p).toMatchObject({ indexStep: 250 });
   });
 });
+
+/**
+ * Gate de validation (applyValidationGate) : masque du PUBLIC les éléments EN ATTENTE via le double
+ * flag legacy (preferences.toBeValidated.<slug> ET source.toBeValidated.<slug>, cf. SearchNew::getQueries:783-818).
+ * Actif par défaut sur les collections « élément » scopées costum ; jamais en admin / réseau-wide / news.
+ */
+describe("buildSearchPayload — gate de validation (double flag toBeValidated)", () => {
+  const poi = { name: "", type: ["poi"] as string[] };
+
+  it("pose les DEUX flags $exists:false quand un costum est scopé (public)", () => {
+    const p = buildSearchPayload({ costumSlug: "sportSanteBienetre" } as never, poi) as Record<string, unknown>;
+    expect(p.filters).toEqual({
+      "preferences.toBeValidated.sportSanteBienetre": { $exists: false },
+      "source.toBeValidated.sportSanteBienetre": { $exists: false },
+    });
+  });
+
+  it("préserve les defaultFilters existants et ajoute les deux flags", () => {
+    const p = buildSearchPayload(
+      { costumSlug: "sportSanteBienetre", defaultFilters: { type: "article" } } as never,
+      poi,
+    ) as Record<string, unknown>;
+    expect(p.filters).toMatchObject({
+      type: "article",
+      "preferences.toBeValidated.sportSanteBienetre": { $exists: false },
+      "source.toBeValidated.sportSanteBienetre": { $exists: false },
+    });
+  });
+
+  it("NE s'applique PAS en variant admin (l'admin voit les en-attente)", () => {
+    const p = buildSearchPayload({ costumSlug: "sportSanteBienetre" } as never, { ...poi, variant: "admin" }) as Record<string, unknown>;
+    expect(p.filters).toBeUndefined();
+  });
+
+  it("NE s'applique PAS si showUnvalidated (opt-out, miroir showTobevaledated)", () => {
+    const p = buildSearchPayload({ costumSlug: "sportSanteBienetre", showUnvalidated: true } as never, poi) as Record<string, unknown>;
+    expect(p.filters).toBeUndefined();
+  });
+
+  it("NE s'applique PAS en réseau-wide (notSourceKey)", () => {
+    const p = buildSearchPayload({ costumSlug: "sportSanteBienetre", notSourceKey: true } as never, poi) as Record<string, unknown>;
+    expect(p.filters).toBeUndefined();
+  });
+
+  it("NE s'applique PAS sans costumSlug", () => {
+    const p = buildSearchPayload({} as never, poi) as Record<string, unknown>;
+    expect(p.filters).toBeUndefined();
+  });
+
+  it("NE s'applique PAS aux collections non-élément (news : visibilité par scope)", () => {
+    const p = buildSearchPayload({ costumSlug: "sportSanteBienetre" } as never, { name: "", type: ["news"] }) as Record<string, unknown>;
+    expect(p.filters).toBeUndefined();
+  });
+
+  it("s'applique aux sous-types d'organisation (NGO)", () => {
+    const p = buildSearchPayload({ costumSlug: "sportSanteBienetre" } as never, { name: "", type: ["NGO"] }) as Record<string, unknown>;
+    expect(p.filters).toMatchObject({ "source.toBeValidated.sportSanteBienetre": { $exists: false } });
+  });
+});

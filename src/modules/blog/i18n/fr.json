@@ -1,0 +1,18 @@
+{
+  "feed": {
+    "empty": "Aucun article pour le moment.",
+    "loadMore": "Charger plus",
+    "loading": "Chargement des articles…",
+    "readMore": "Lire l'article",
+    "error": "Impossible de charger les articles.",
+    "retry": "Réessayer"
+  },
+  "article": {
+    "backToList": "Retour aux articles",
+    "publishedOn": "Publié le",
+    "by": "par",
+    "readingTime": "{{count}} min de lecture",
+    "notFound": "Article introuvable",
+    "related": "Articles liés"
+  }
+}

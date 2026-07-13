@@ -356,6 +356,35 @@ describe("parseCoFormFields", () => {
     expect(field.optionLabels).toEqual({ val1: "Label 1", val2: "Label 2" });
   });
 
+  it("simpleTable : parse le flag editInModal (bool ou string, défaut false)", () => {
+    const parseEditInModal = (editInModal: boolean | string | undefined) =>
+      parseCoFormFields(
+        makeCoFormData({
+          inputs: {
+            step1: {
+              name: "Step 1",
+              id: "step1",
+              formParent: "form123",
+              inputs: { tbl: { label: "Tableau", type: "tpls.forms.cplx.simpleTable" } },
+            },
+          },
+          params: {
+            simpleTabletbl: {
+              columns: [{ label: "Col1", type: "Text" }],
+              rows: [{ label: "R1" }],
+              activeNewLine: false,
+              editInModal,
+            },
+          },
+        }),
+      )[0].fields[0].simpleTableConfig?.editInModal;
+
+    expect(parseEditInModal(true)).toBe(true);
+    expect(parseEditInModal("true")).toBe(true); // PHP stocke souvent les bools en string
+    expect(parseEditInModal(false)).toBe(false);
+    expect(parseEditInModal(undefined)).toBe(false); // absent → false
+  });
+
   it("active searchable quand enableSelect2 est vrai (bool ou string)", () => {
     const makeSelect = (enableSelect2: unknown) =>
       parseCoFormFields(
@@ -456,6 +485,7 @@ describe("generateDefaultValues", () => {
         rows: [{ label: "Row1" }],
         activeNewLine: false,
         singleAnswerByLine: false,
+        editInModal: false,
       },
     });
     const result = generateDefaultValues([makeSubFormFields([field])]);
