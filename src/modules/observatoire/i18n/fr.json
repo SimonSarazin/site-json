@@ -30,5 +30,31 @@
     "page": "Page {{current}} / {{total}}",
     "prev": "Précédent",
     "next": "Suivant"
+  },
+  "installation": {
+    "title": "Tableau de bord de l'installation",
+    "subtitle": "{{count}} équipements",
+    "kpi": {
+      "equipments": "Équipements",
+      "reservedHours": "Heures réservées / sem.",
+      "utilization": "Taux d'utilisation",
+      "activities": "Activités"
+    },
+    "gauges": {
+      "title": "Taux d'utilisation par équipement",
+      "reference": "Amplitude de référence : {{hours}} h / semaine",
+      "hoursPerWeek": "{{hours}} h/sem"
+    },
+    "activityChart": {
+      "title": "Répartition des activités",
+      "empty": "Aucune activité à afficher.",
+      "unit": {
+        "hours": "heures / semaine",
+        "slots": "créneaux"
+      }
+    },
+    "unknownActivity": "Activité non renseignée",
+    "noReservations": "Aucun créneau de réservation pour cette installation.",
+    "error": "Impossible de charger les données de l'installation."
   }
 }

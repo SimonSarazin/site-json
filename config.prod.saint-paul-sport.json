@@ -54,22 +54,7 @@
         "path": "/",
         "icon": "house"
       },
-      {
-        "label": {
-          "fr": "Actualités",
-          "en": "News"
-        },
-        "path": "/actualites",
-        "icon": "newspaper"
-      },
-      {
-        "label": {
-          "fr": "Agenda",
-          "en": "Agenda"
-        },
-        "path": "/agenda",
-        "icon": "calendar"
-      },
+      
       {
         "label": {
           "fr": "Equipements",
@@ -1694,6 +1679,7 @@
                 "equip_long",
                 "aps_name",
                 "inst_nom",
+                "inst_numero",
                 "equip_prop_nom",
                 "equip_prop_type",
                 "equip_gest_type",
@@ -1747,7 +1733,34 @@
                 "detailsMode": "dialog"
               },
               "preview": {
-                "type": "poi-amenities"
+                "type": "poi-amenities",
+                "reservations": {
+                  "form": "6a4e1178a244dfbfa40706b3",
+                  "step": "equipementsSportifs974872026_1159_0",
+                  "fields": {
+                    "finder": "mrbuoxupnpde93b8abb",
+                    "user": "mrbuql5qly9698rtqc",
+                    "activity": "mrbura8qo4jyq0a7es",
+                    "slots": "mrbus54juh23pmwq1g7",
+                    "periodStart": "mrbut175fbtbfqmswxb",
+                    "periodEnd": "mrbutyzkdfce97ae0lk",
+                    "bookingType": "mrbv4donu3dodg0xixh"
+                  }
+                },
+                "installationDashboard": {
+                  "groupKey": "inst_numero",
+                  "labelKey": "inst_nom",
+                  "referenceAmplitude": {
+                    "startHour": 8,
+                    "endHour": 22,
+                    "days": 7
+                  },
+                  "sourceKey": ["equipementsSportifs974"],
+                  "poiFilters": {
+                    "type": "recoveryCenter"
+                  },
+                  "activityMetric": "hours"
+                }
               }
             },
             "map": {
@@ -1795,7 +1808,7 @@
               "defaultFields": [
                 "name", "equip_type_name", "equip_type_famille", "categorie",
                 "equip_nature", "equip_sol", "equip_surf", "equip_larg", "equip_long",
-                "aps_name", "inst_nom", "equip_nom", "equip_prop_nom", "equip_prop_type",
+                "aps_name", "inst_nom", "inst_numero", "equip_nom", "equip_prop_nom", "equip_prop_type",
                 "equip_gest_type", "equip_numero", "enqueteStatut",
                 "inst_acc_handi_bool", "inst_acc_handi_type",
                 "equip_pmr_acc", "equip_pmr_chem", "equip_pmr_douche",
@@ -2246,7 +2259,34 @@
                 "kind": "preview",
                 "detailsMode": "dialog",
                 "preview": {
-                  "type": "poi-amenities"
+                  "type": "poi-amenities",
+                  "reservations": {
+                    "form": "6a4e1178a244dfbfa40706b3",
+                    "step": "equipementsSportifs974872026_1159_0",
+                    "fields": {
+                      "finder": "mrbuoxupnpde93b8abb",
+                      "user": "mrbuql5qly9698rtqc",
+                      "activity": "mrbura8qo4jyq0a7es",
+                      "slots": "mrbus54juh23pmwq1g7",
+                      "periodStart": "mrbut175fbtbfqmswxb",
+                      "periodEnd": "mrbutyzkdfce97ae0lk",
+                      "bookingType": "mrbv4donu3dodg0xixh"
+                    }
+                  },
+                  "installationDashboard": {
+                    "groupKey": "inst_numero",
+                    "labelKey": "inst_nom",
+                    "referenceAmplitude": {
+                      "startHour": 8,
+                      "endHour": 22,
+                      "days": 7
+                    },
+                    "sourceKey": ["equipementsSportifs974"],
+                    "poiFilters": {
+                      "type": "recoveryCenter"
+                    },
+                    "activityMetric": "hours"
+                  }
                 }
               }
             }
@@ -2289,7 +2329,7 @@
               "defaultFields": [
                 "name", "equip_type_name", "equip_type_famille", "categorie",
                 "equip_nature", "equip_sol", "equip_surf", "equip_larg", "equip_long",
-                "aps_name", "inst_nom", "equip_nom", "equip_prop_nom", "equip_prop_type",
+                "aps_name", "inst_nom", "inst_numero", "equip_nom", "equip_prop_nom", "equip_prop_type",
                 "equip_gest_type", "equip_numero", "enqueteStatut",
                 "inst_acc_handi_bool", "inst_acc_handi_type",
                 "equip_pmr_acc", "equip_pmr_chem", "equip_pmr_douche",
@@ -2557,7 +2597,34 @@
                 "kind": "preview",
                 "detailsMode": "dialog",
                 "preview": {
-                  "type": "poi-amenities"
+                  "type": "poi-amenities",
+                  "reservations": {
+                    "form": "6a4e1178a244dfbfa40706b3",
+                    "step": "equipementsSportifs974872026_1159_0",
+                    "fields": {
+                      "finder": "mrbuoxupnpde93b8abb",
+                      "user": "mrbuql5qly9698rtqc",
+                      "activity": "mrbura8qo4jyq0a7es",
+                      "slots": "mrbus54juh23pmwq1g7",
+                      "periodStart": "mrbut175fbtbfqmswxb",
+                      "periodEnd": "mrbutyzkdfce97ae0lk",
+                      "bookingType": "mrbv4donu3dodg0xixh"
+                    }
+                  },
+                  "installationDashboard": {
+                    "groupKey": "inst_numero",
+                    "labelKey": "inst_nom",
+                    "referenceAmplitude": {
+                      "startHour": 8,
+                      "endHour": 22,
+                      "days": 7
+                    },
+                    "sourceKey": ["equipementsSportifs974"],
+                    "poiFilters": {
+                      "type": "recoveryCenter"
+                    },
+                    "activityMetric": "hours"
+                  }
                 }
               }
             },
@@ -2934,7 +3001,34 @@
         "kind": "preview",
         "detailsMode": "dialog",
         "preview": {
-          "type": "poi-amenities"
+          "type": "poi-amenities",
+          "reservations": {
+            "form": "6a4e1178a244dfbfa40706b3",
+            "step": "equipementsSportifs974872026_1159_0",
+            "fields": {
+              "finder": "mrbuoxupnpde93b8abb",
+              "user": "mrbuql5qly9698rtqc",
+              "activity": "mrbura8qo4jyq0a7es",
+              "slots": "mrbus54juh23pmwq1g7",
+              "periodStart": "mrbut175fbtbfqmswxb",
+              "periodEnd": "mrbutyzkdfce97ae0lk",
+              "bookingType": "mrbv4donu3dodg0xixh"
+            }
+          },
+          "installationDashboard": {
+            "groupKey": "inst_numero",
+            "labelKey": "inst_nom",
+            "referenceAmplitude": {
+              "startHour": 8,
+              "endHour": 22,
+              "days": 7
+            },
+            "sourceKey": ["equipementsSportifs974"],
+            "poiFilters": {
+              "type": "recoveryCenter"
+            },
+            "activityMetric": "hours"
+          }
         }
       }
     }

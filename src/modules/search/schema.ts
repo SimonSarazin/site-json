@@ -159,6 +159,70 @@ export const PreviewFacetSchema = z.object({
 });
 export type PreviewFacetConfig = z.infer<typeof PreviewFacetSchema>;
 
+/**
+ * Réservations récurrentes d'une ressource : answers d'un formulaire CoForm
+ * reliées à l'entité affichée par un champ finder. Tout l'ancrage (form, étape,
+ * suffixes de champs) vient de la CONFIG du site — le code ne connaît que des
+ * RÔLES. Clé réelle d'un champ = `<step><suffixe>` (et `finder<step><suffixe>`
+ * pour le finder), sous `serverData.answers[<step>]`.
+ */
+export const ReservationsConfSchema = z.object({
+  /** ObjectID du formulaire CoForm des réservations (champ `form` des answers). */
+  form: z.string(),
+  /** Clé d'étape CoForm (préfixe des clés de champs). */
+  step: z.string(),
+  /** Mapping rôle → SUFFIXE de champ. */
+  fields: z.object({
+    /** Finder vers la ressource (valeur = objet `{<id>: {id, name, type}}`). */
+    finder: z.string(),
+    /** Nom de l'usager (texte). */
+    user: z.string(),
+    /** Activité pratiquée (texte). */
+    activity: z.string(),
+    /** Créneaux hebdo récurrents (timeSlots `{day, startHour, …}`). */
+    slots: z.string(),
+    periodStart: z.string().optional(),
+    periodEnd: z.string().optional(),
+    bookingType: z.string().optional(),
+  }),
+  /** Plafond d'answers chargées (garde de pagination). Défaut : 200. */
+  maxAnswers: z.number().int().positive().optional(),
+});
+export type ReservationsConf = z.infer<typeof ReservationsConfSchema>;
+
+/**
+ * Tableau de bord d'installation : modal ouverte depuis le détail
+ * `poi-amenities` en cliquant le nom de l'installation. Agrège les équipements
+ * partageant `groupKey` et leurs réservations (requiert `reservations` dans le
+ * même bloc preview).
+ */
+export const InstallationDashboardConfSchema = z.object({
+  /** Champ `serverData` identifiant STABLE de l'installation (regroupement). */
+  groupKey: z.string().default("inst_numero"),
+  /** Champ `serverData` du libellé affiché. */
+  labelKey: z.string().default("inst_nom"),
+  /** Amplitude hebdomadaire de référence du taux d'utilisation
+   *  (ex. 8h–22h × 7j = 98 h/sem). */
+  referenceAmplitude: z.object({
+    startHour: z.number().int().min(0).max(24),
+    endHour: z.number().int().min(0).max(24),
+    days: z.number().int().min(1).max(7),
+  }),
+  /** Périmètre de la requête POI (fusionné avec `{[groupKey]: <valeur>}`) —
+   *  requis, comme pour l'observatoire : aucun défaut métier dans le code. */
+  poiFilters: z.record(z.string(), z.unknown()),
+  /** Périmètre `source.key` de la requête POI (param SDK natif). À renseigner
+   *  quand les équipements vivent sous un AUTRE costum que le site courant
+   *  (ex. site saintpaulSport1 → données equipementsSportifs974). Absent →
+   *  scope au costum courant. */
+  sourceKey: z.array(z.string()).optional(),
+  /** Pondération de la répartition des activités. Défaut : "hours". */
+  activityMetric: z.enum(["hours", "slots"]).optional(),
+  /** Champs POI additionnels projetés (en plus de name/groupKey/labelKey…). */
+  extraPoiFields: z.array(z.string()).optional(),
+});
+export type InstallationDashboardConf = z.infer<typeof InstallationDashboardConfSchema>;
+
 export const PreviewConfSchema = z.object({
   type: z.enum(["default", "poi-amenities", "coform-answer", "event", "facets"]).default("default"),
   // Mapping rôle→suffixe de champ CoForm (pour `coform-answer`). Surcharge la
@@ -166,6 +230,10 @@ export const PreviewConfSchema = z.object({
   fields: z.record(z.string(), z.string()).optional(),
   /** Facettes du preview générique (`type: "facets"`) — data-driven, sans code. */
   facets: z.array(PreviewFacetSchema).optional(),
+  /** Section « réservations » du preview `poi-amenities` (absente = masquée). */
+  reservations: ReservationsConfSchema.optional(),
+  /** Modal tableau de bord installation (requiert `reservations`). */
+  installationDashboard: InstallationDashboardConfSchema.optional(),
 }).partial();
 
 const ListConfSchema = z.object({

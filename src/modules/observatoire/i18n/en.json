@@ -30,5 +30,31 @@
     "page": "Page {{current}} / {{total}}",
     "prev": "Previous",
     "next": "Next"
+  },
+  "installation": {
+    "title": "Facility dashboard",
+    "subtitle": "{{count}} facilities",
+    "kpi": {
+      "equipments": "Facilities",
+      "reservedHours": "Booked hours / week",
+      "utilization": "Utilization rate",
+      "activities": "Activities"
+    },
+    "gauges": {
+      "title": "Utilization rate per facility",
+      "reference": "Reference amplitude: {{hours}} h / week",
+      "hoursPerWeek": "{{hours}} h/wk"
+    },
+    "activityChart": {
+      "title": "Activity breakdown",
+      "empty": "No activity to display.",
+      "unit": {
+        "hours": "hours / week",
+        "slots": "time slots"
+      }
+    },
+    "unknownActivity": "Unspecified activity",
+    "noReservations": "No booking slot for this facility.",
+    "error": "Unable to load the facility data."
   }
 }
