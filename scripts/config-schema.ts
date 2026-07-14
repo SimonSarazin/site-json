@@ -25,6 +25,7 @@ import {
 } from "../src/types/site-schema";
 import SECTION_META from "../src/components/admin/section-meta";
 import { CostumFormSchemaZod } from "../src/modules/profil/forms/costum/costumFormSchema.zod";
+import { AdminConfigSchema } from "../src/modules/admin/schema";
 
 // Sortie souvent pipée vers head/grep — ne pas crasher sur le tube fermé.
 process.stdout.on("error", (e: NodeJS.ErrnoException) => {
@@ -89,6 +90,7 @@ const ROOT_PARTS: Record<string, () => void> = {
   profiles: () => print(SiteConfig.shape.profiles, "// config.profiles (module profil — cf. doc/08)"),
   integrations: () => print(SiteConfig.shape.integrations, "// config.integrations (analytics, seo, map MapTiler — clé en env VITE_MAPTILER_API_KEY)"),
   costumForm: () => print(CostumFormSchemaZod, "// config.costumForms.<id> = document CostumFormSchema (zod PRAGMATIQUE : structure essentielle + passthrough) — forme complète : doc/28-module-formengine.md"),
+  admin: () => print(AdminConfigSchema, "// config.admin = back-office /admin config-driven (7 sections builtin, discriminatedUnion strict) — référence : doc/30-module-admin.md"),
   root: () => {
     // Vue d'ensemble : clés racine + type sommaire (pas le schéma complet, volumineux).
     for (const [key, value] of Object.entries(SiteConfig.shape)) {

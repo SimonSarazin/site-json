@@ -17,7 +17,7 @@ export type FieldType = "string" | "number" | "boolean" | "date" | "array" | "ob
 /** Widgets supportés (mappés vers des composants par le WidgetRegistry, §4). */
 export type WidgetKind =
   | "hidden"
-  | "text" | "email" | "tel" | "textarea" | "number"
+  | "text" | "email" | "tel" | "textarea" | "markdown" | "number"
   | "switch" | "checkbox" | "checkboxGroup"
   | "select" | "multiselect" | "selectFromLists"
   | "tags" | "date" | "datetime" | "time"

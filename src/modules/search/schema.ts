@@ -304,8 +304,11 @@ export type SearchType = z.infer<typeof SearchTypeSchema>;
  * Variant du endpoint backend pour `searchCostum` (cf. SDK v1.0.132).
  * - `default` (ou absent) → `/co2/search/globalautocomplete` (comportement historique)
  * - `navigator-tl` → `/costum/navigator/gettl` (payload enrichi avec auto-link Answer)
+ * - `admin` → `/co2/search/globalautocompleteadmin/…` (SDK ≥ 1.0.161 : réservé aux admins de
+ *   l'hôte costum ; `fields` = projection EXACTE, `preferences` renvoyé → badge/filtre
+ *   `toBeValidated` des tables d'administration ; tri serveur via `sort`)
  */
-export const SearchVariantSchema = z.enum(["default", "navigator-tl"]);
+export const SearchVariantSchema = z.enum(["default", "navigator-tl", "admin"]);
 export type SearchVariant = z.infer<typeof SearchVariantSchema>;
 
 /**

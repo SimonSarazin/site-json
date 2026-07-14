@@ -11,6 +11,15 @@ export interface PermissionContext {
   entity: EntityTypes | null;
   /** Utilisateur connecté */
   me: User | null;
+  /**
+   * L'utilisateur est-il ADMIN DU COSTUM du site courant (droit-parapluie) ? Résolu UNE fois dans
+   * `usePermissions` = `carrier.isAdmin()` (admin du host du costum, sync). Pendant client de
+   * `Authorisation::isCostumAdmin`. Un calculateur l'OR sur `canEdit` SSI l'entité appartient au costum
+   * (`costumSlug ∈ entity.source.keys`) — parité legacy `elementBanner` (canEditItem || isCostumAdmin).
+   */
+  isCostumAdmin?: boolean;
+  /** Slug du costum du site courant (= carrier.slug) — pour tester l'appartenance `source.keys ∋ costumSlug`. */
+  costumSlug?: string;
   /** Données additionnelles (news, etc.) */
   data?: Record<string, unknown>;
 }

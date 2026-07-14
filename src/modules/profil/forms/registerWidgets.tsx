@@ -13,6 +13,7 @@ import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/for
 import { registerWidget, type WidgetProps } from "@/modules/formEngine";
 import { IconFormField } from "../components/profile-edit/fields/IconFormField";
 import { FormFieldTags } from "../components/profile-edit/fields/FormFieldTags";
+import { FormFieldMarkdown } from "../components/profile-edit/fields/FormFieldMarkdown";
 import { TranslatedFormMessage } from "../components/profile-edit/fields/TranslatedFormMessage";
 
 // Composites LOURDS chargés à la demande (code-split Vite) — préservé à l'identique.
@@ -39,6 +40,12 @@ registerWidget("tel", (p) => <IconFormField control={control(p.form)} name={fnam
 registerWidget("tags", (p) => <FormFieldTags control={control(p.form)} name={fname(p.field.name)} label={lbl(p)}
   searchable={(p.field.widgetProps?.searchable as boolean) ?? true}
   extendedTexts={(p.field.widgetProps?.extendedTexts as boolean) ?? false} />);
+
+// markdown : éditeur markdown (coform MarkdownEditor, client-only/SSR-safe). Value = string markdown brut.
+registerWidget("markdown", (p) => <FormFieldMarkdown control={control(p.form)} name={fname(p.field.name)} label={lbl(p)}
+  required={Boolean(p.field.required)}
+  height={(p.field.widgetProps?.height as number) ?? 300}
+  preview={(p.field.widgetProps?.preview as "edit" | "live" | "preview") ?? "edit"} />);
 
 // image : ImageUploadField (dépend de @/modules/news ImageCropDialog).
 registerWidget("image", (p) => (
