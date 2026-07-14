@@ -54,7 +54,7 @@
         "path": "/",
         "icon": "house"
       },
-      
+
       {
         "label": {
           "fr": "Equipements",
@@ -1735,16 +1735,16 @@
               "preview": {
                 "type": "poi-amenities",
                 "reservations": {
-                  "form": "6a4e1178a244dfbfa40706b3",
-                  "step": "equipementsSportifs974872026_1159_0",
+                  "form": "6a4e4e4105e5972f7b4b1823",
+                  "step": "equipementsSportifs974872026_1619_0",
                   "fields": {
-                    "finder": "mrbuoxupnpde93b8abb",
-                    "user": "mrbuql5qly9698rtqc",
-                    "activity": "mrbura8qo4jyq0a7es",
-                    "slots": "mrbus54juh23pmwq1g7",
-                    "periodStart": "mrbut175fbtbfqmswxb",
-                    "periodEnd": "mrbutyzkdfce97ae0lk",
-                    "bookingType": "mrbv4donu3dodg0xixh"
+                    "finder": "mrc3ungb2a9vu945ik8",
+                    "user": "mrc3w4o7rguvxc2vkyq",
+                    "activity": "mrc3xumnggn5f530i9",
+                    "slots": "mrc40jaxu06fjaa6ngn",
+                    "periodStart": "mrc41scujf3aq9ppw1l",
+                    "periodEnd": "mrc4259ir2xnu4vp2fq",
+                    "bookingType": "mrc3zgl902y2fpfcby3y"
                   }
                 },
                 "installationDashboard": {
@@ -2261,16 +2261,16 @@
                 "preview": {
                   "type": "poi-amenities",
                   "reservations": {
-                    "form": "6a4e1178a244dfbfa40706b3",
-                    "step": "equipementsSportifs974872026_1159_0",
+                    "form": "6a4e4e4105e5972f7b4b1823",
+                    "step": "equipementsSportifs974872026_1619_0",
                     "fields": {
-                      "finder": "mrbuoxupnpde93b8abb",
-                      "user": "mrbuql5qly9698rtqc",
-                      "activity": "mrbura8qo4jyq0a7es",
-                      "slots": "mrbus54juh23pmwq1g7",
-                      "periodStart": "mrbut175fbtbfqmswxb",
-                      "periodEnd": "mrbutyzkdfce97ae0lk",
-                      "bookingType": "mrbv4donu3dodg0xixh"
+                      "finder": "mrc3ungb2a9vu945ik8",
+                      "user": "mrc3w4o7rguvxc2vkyq",
+                      "activity": "mrc3xumnggn5f530i9",
+                      "slots": "mrc40jaxu06fjaa6ngn",
+                      "periodStart": "mrc41scujf3aq9ppw1l",
+                      "periodEnd": "mrc4259ir2xnu4vp2fq",
+                      "bookingType": "mrc3zgl902y2fpfcby3y"
                     }
                   },
                   "installationDashboard": {
@@ -2599,16 +2599,16 @@
                 "preview": {
                   "type": "poi-amenities",
                   "reservations": {
-                    "form": "6a4e1178a244dfbfa40706b3",
-                    "step": "equipementsSportifs974872026_1159_0",
+                    "form": "6a4e4e4105e5972f7b4b1823",
+                    "step": "equipementsSportifs974872026_1619_0",
                     "fields": {
-                      "finder": "mrbuoxupnpde93b8abb",
-                      "user": "mrbuql5qly9698rtqc",
-                      "activity": "mrbura8qo4jyq0a7es",
-                      "slots": "mrbus54juh23pmwq1g7",
-                      "periodStart": "mrbut175fbtbfqmswxb",
-                      "periodEnd": "mrbutyzkdfce97ae0lk",
-                      "bookingType": "mrbv4donu3dodg0xixh"
+                      "finder": "mrc3ungb2a9vu945ik8",
+                      "user": "mrc3w4o7rguvxc2vkyq",
+                      "activity": "mrc3xumnggn5f530i9",
+                      "slots": "mrc40jaxu06fjaa6ngn",
+                      "periodStart": "mrc41scujf3aq9ppw1l",
+                      "periodEnd": "mrc4259ir2xnu4vp2fq",
+                      "bookingType": "mrc3zgl902y2fpfcby3y"
                     }
                   },
                   "installationDashboard": {
@@ -3003,16 +3003,16 @@
         "preview": {
           "type": "poi-amenities",
           "reservations": {
-            "form": "6a4e1178a244dfbfa40706b3",
-            "step": "equipementsSportifs974872026_1159_0",
+            "form": "6a4e4e4105e5972f7b4b1823",
+            "step": "equipementsSportifs974872026_1619_0",
             "fields": {
-              "finder": "mrbuoxupnpde93b8abb",
-              "user": "mrbuql5qly9698rtqc",
-              "activity": "mrbura8qo4jyq0a7es",
-              "slots": "mrbus54juh23pmwq1g7",
-              "periodStart": "mrbut175fbtbfqmswxb",
-              "periodEnd": "mrbutyzkdfce97ae0lk",
-              "bookingType": "mrbv4donu3dodg0xixh"
+              "finder": "mrc3ungb2a9vu945ik8",
+              "user": "mrc3w4o7rguvxc2vkyq",
+              "activity": "mrc3xumnggn5f530i9",
+              "slots": "mrc40jaxu06fjaa6ngn",
+              "periodStart": "mrc41scujf3aq9ppw1l",
+              "periodEnd": "mrc4259ir2xnu4vp2fq",
+              "bookingType": "mrc3zgl902y2fpfcby3y"
             }
           },
           "installationDashboard": {
