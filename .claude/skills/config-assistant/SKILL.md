@@ -122,6 +122,7 @@ Pour corriger/améliorer un config existant :
 | `search` | sections `searchPro`/`searchProStatic`/`filters`/`searchHeader`/`cardCountCT`/`thematics` | `baseParams` (`sourceKey`…), `list` (card/detailsMode/preview), `map` (`itemAction`/`marker`), `filters[].select`/`optionStyle`/`order` (widgets par groupe) | données indexées (sourceKey) ; carte : fond MapTiler via env `VITE_MAPTILER_API_KEY` (sinon repli OSM/Carto) + `integrations.map.styleLight/Dark` |
 | `agenda` | section `agenda` (vues liste/calendrier/carte/split) | `baseParams`, `filters` (text/type/tags), `defaultMode`/`tabs`/`detailsMode`, `enableMap`/`map` | événements indexés (`searchEventsCostum`) |
 | `news` | section `news` | `props.entitySlug`, `maxItems` | fil d'actus de l'entité |
+| `blog` | routes `/blog/:slug` (+ `/blog/id/:id`) + sections `articleFeed`/`articleReader` | `config.blog` (`feedCostumSlug`, variants card/reader), `costumForms.<article>`, `commandPalette.articleSearch` | POI `type:"article"` scopés costum (`source.key`) |
 | `coform` | routes `/coform` | réf. de formulaire | CoForm défini côté backend |
 | `cagnotte` | sections `actions`/`finance`/`*-summary` | `idProjet` | projet + Stripe/HelloAsso |
 | `profil` | `/profil/:slug`, section `member` | `config.profiles` (tabs, editModal) | types d'entités |
