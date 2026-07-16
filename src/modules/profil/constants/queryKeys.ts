@@ -31,6 +31,12 @@ export const PROFIL_QUERY_KEYS = {
   GALLERY: (id: string | null) => ["profil-gallery", id] as const,
 
   /**
+   * Documents (fichiers non-image, doctype="file") d'une entité, via `entity.getGalleryFiles`.
+   * Producteur : `useDocumentsList`. Consommateurs invalidants : `useDocumentsMutations` (add/delete inline).
+   */
+  DOCUMENTS: (id: string | null) => ["profil-documents", id] as const,
+
+  /**
    * Liste des amis d'un user (3 statuts friends/pending/sent partagent la même
    * queryKey racine — différenciés via params du hook).
    * Producteur : `useFriendsQuery`

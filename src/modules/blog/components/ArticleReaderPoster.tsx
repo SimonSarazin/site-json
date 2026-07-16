@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { renderMarkdown } from "@/helpers/renderMarkdown";
 import { ArticleGallery } from "./ArticleGallery";
+import { ArticleDocuments } from "./ArticleDocuments";
 import { formatDateLong } from "@/helpers/formatDate";
 import { estimateReadingTime } from "../lib/readingTime";
 import type { ArticleData } from "../hooks/useArticle";
@@ -72,6 +73,7 @@ export function ArticleReaderPoster({ article, backTo = "/blog", hideBack = fals
         />
       )}
       <ArticleGallery images={(article as { images?: unknown }).images} className="mt-10" />
+      <ArticleDocuments files={(article as { files?: unknown }).files} className="mt-10" />
       {tags.length > 0 && (
         <div className="mt-8 flex flex-wrap gap-2 border-t pt-6">
           {tags.map((tag) => <Badge key={tag} variant="secondary">{tag}</Badge>)}

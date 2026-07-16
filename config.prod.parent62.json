@@ -8603,6 +8603,9 @@
               "leftSections": [
                 {
                   "type": "profile-gallery"
+                },
+                {
+                  "type": "profile-documents"
                 }
               ],
               "rightSections": [

@@ -782,6 +782,12 @@
       "addError": "Échec de l'ajout de l'image",
       "deleteSuccess": "Image supprimée",
       "deleteError": "Échec de la suppression"
+    },
+    "documents": {
+      "addSuccess": "Document ajouté",
+      "addError": "Échec de l'ajout du document",
+      "deleteSuccess": "Document supprimé",
+      "deleteError": "Échec de la suppression"
     }
   },
   "ProfileEdit": {

@@ -782,6 +782,12 @@
       "addError": "Failed to add image",
       "deleteSuccess": "Image removed",
       "deleteError": "Failed to remove image"
+    },
+    "documents": {
+      "addSuccess": "Document added",
+      "addError": "Failed to add document",
+      "deleteSuccess": "Document removed",
+      "deleteError": "Failed to remove document"
     }
   },
   "ProfileEdit": {
