@@ -25,6 +25,12 @@ export const PROFIL_QUERY_KEYS = {
   ELEMENT_ABOUT_PREFIX: (slug: string | null) => ["element-about", slug] as const,
 
   /**
+   * Galerie d'images d'une entité (documents contentKey="slider", via `entity.getGallery`).
+   * Producteur : `useGalleryImages`. Consommateurs invalidants : `useGalleryMutations` (add/delete inline).
+   */
+  GALLERY: (id: string | null) => ["profil-gallery", id] as const,
+
+  /**
    * Liste des amis d'un user (3 statuts friends/pending/sent partagent la même
    * queryKey racine — différenciés via params du hook).
    * Producteur : `useFriendsQuery`

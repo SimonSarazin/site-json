@@ -776,6 +776,12 @@
       "eventError": "Failed to create event",
       "poiSuccess": "Location created successfully",
       "poiError": "Failed to create location"
+    },
+    "gallery": {
+      "addSuccess": "Image added to gallery",
+      "addError": "Failed to add image",
+      "deleteSuccess": "Image removed",
+      "deleteError": "Failed to remove image"
     }
   },
   "ProfileEdit": {
