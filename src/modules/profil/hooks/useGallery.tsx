@@ -13,7 +13,10 @@ import { PROFIL_QUERY_KEYS } from "../constants";
  * NB : `getGallery` est gardé pour `poi`/`events` côté lib (les POI lisent leur galerie via `about`/images).
  * Ce hook cible donc org/projet/citoyen/classified (périmètre A).
  */
-const GALLERY_TYPES = new Set(["organizations", "projects", "citoyens", "classifieds"]);
+// classifieds EXCLU : la lib override Classified.getGallery() pour throw 501 (pas de galerie image sur
+// une annonce) → l'inclure mettait la query en erreur permanente. Les documents (getGalleryFiles, non
+// overridé) restent supportés pour classifieds (cf. DOCUMENT_TYPES dans useDocuments).
+const GALLERY_TYPES = new Set(["organizations", "projects", "citoyens"]);
 
 interface EntityWithGallery {
   id?: string | null;
