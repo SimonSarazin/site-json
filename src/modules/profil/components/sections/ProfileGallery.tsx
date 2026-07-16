@@ -4,10 +4,10 @@ import { useProfilPermissions } from "../../hooks/useProfilPermissions";
 import { useGalleryImages, useGalleryMutations } from "../../hooks/useGallery";
 import { GalleryGrid } from "@/components/media/GalleryGrid";
 import { useT } from "@/hooks/useT";
-import type { I18n } from "@/types/site-schema";
+import type { LocalizedString } from "@/types/locale-schema";
 import type { ProfileGallerySection } from "../../schema";
 
-const TITLE: I18n = { fr: "Galerie", en: "Gallery" };
+const TITLE: LocalizedString = { fr: "Galerie", en: "Gallery" };
 
 /**
  * Section galerie du profil (entités NORMALES : org/projet/citoyen). Affichage + gestion INLINE (admin) :

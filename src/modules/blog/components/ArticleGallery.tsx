@@ -1,5 +1,5 @@
 import { useT } from "@/hooks/useT";
-import type { I18n } from "@/types/site-schema";
+import type { LocalizedString } from "@/types/locale-schema";
 import { GalleryGrid, type GalleryImage } from "@/components/media/GalleryGrid";
 
 /**
@@ -7,7 +7,7 @@ import { GalleryGrid, type GalleryImage } from "@/components/media/GalleryGrid";
  * `article.images` par `about` (chantier 2 backend, URLs déjà absolues via `_imageFields` de la lib).
  * Affichage seul (grille + lightbox partagés via `GalleryGrid`). Rien si aucune image slider.
  */
-const TITLE: I18n = { fr: "Galerie", en: "Gallery" };
+const TITLE: LocalizedString = { fr: "Galerie", en: "Gallery" };
 
 export function ArticleGallery({ images, className }: { images?: unknown; className?: string }) {
   const t = useT("modules/blog");
