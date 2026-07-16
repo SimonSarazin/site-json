@@ -55,7 +55,7 @@ export function GalleryGrid({ images, onDelete, onAddClick, deletingId, classNam
                 type="button"
                 onClick={() => onDelete(im)}
                 disabled={!!deletingId && deletingId === im.id}
-                className="absolute right-1 top-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-background/80 opacity-0 shadow transition group-hover:opacity-100 hover:bg-destructive hover:text-destructive-foreground disabled:opacity-50"
+                className="absolute right-1 top-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-background/80 opacity-100 shadow transition hover:bg-destructive hover:text-destructive-foreground disabled:opacity-50 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
                 aria-label="Supprimer l'image"
               >
                 <X className="h-3.5 w-3.5" />
