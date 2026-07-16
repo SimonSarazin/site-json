@@ -54,6 +54,26 @@ function resolveCostumSlug(scope: EntityModalSpec["scope"], ctx: EntityModalCtx)
   return undefined;
 }
 
+/**
+ * Seed des champs GALERIE (widget "gallery") en ÉDITION : les `renderOnly` sont ignorés par le pipeline
+ * de defaults → on injecte `existing` depuis `entity.getGalleryImages(contentKey)` (champ `images` fusionné
+ * par about, chantier 2 backend). Valeur = GalleryValue, reconnue par le widget ET l'orchestration.
+ */
+function seedGalleryDefaults(defaults: FieldValues, jsonConfig: unknown, entity: unknown): void {
+  const fields = (jsonConfig as { fields?: Record<string, { widget?: string; widgetProps?: Record<string, unknown> }> }).fields;
+  const ent = entity as { getGalleryImages?: (ck: string) => Array<Record<string, unknown>> };
+  if (!fields || typeof ent.getGalleryImages !== "function") return;
+  for (const [name, cfg] of Object.entries(fields)) {
+    if (cfg?.widget !== "gallery") continue;
+    const contentKey = (cfg.widgetProps?.contentKey as string) ?? "slider";
+    const docType = (cfg.widgetProps?.docType as string) ?? "image";
+    const existing = (ent.getGalleryImages(contentKey) ?? [])
+      .map((im) => ({ docId: String(im.id ?? ""), url: String(im.imagePath ?? im.imageMediumPath ?? "") }))
+      .filter((e) => e.docId);
+    (defaults as Record<string, unknown>)[name] = { existing, added: [], removedDocIds: [], contentKey, docType };
+  }
+}
+
 export function specToConfig(spec: EntityModalSpec): EntityModalConfig {
   /** Descripteur résolu pour un ctx (variante runtime éventuelle, sinon ref registre ou config embarquée). */
   const resolveDescriptor = (ctx: EntityModalCtx): FormDescriptor => {
@@ -145,7 +165,11 @@ export function specToConfig(spec: EntityModalSpec): EntityModalConfig {
       const base = baseDefaults(ctx);
       if (ctx.mode === "edit" && ctx.entity) {
         const jsonConfig = formDescriptorToConfig(resolveDescriptor(ctx));
-        return buildPipelineDefaults(jsonConfig, ctx.entity as unknown as EntityLike, { baseDefaults: () => base }) as FieldValues;
+        const defaults = buildPipelineDefaults(jsonConfig, ctx.entity as unknown as EntityLike, { baseDefaults: () => base }) as FieldValues;
+        // Seed des champs GALERIE (widget "gallery", renderOnly → ignorés par le pipeline) : `existing`
+        // depuis entity.getGalleryImages(contentKey) (champ `images` fusionné par about, chantier 2 backend).
+        seedGalleryDefaults(defaults, jsonConfig, ctx.entity);
+        return defaults;
       }
       return base as FieldValues;
     },
