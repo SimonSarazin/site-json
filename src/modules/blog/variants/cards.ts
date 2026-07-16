@@ -11,4 +11,6 @@ import type { ArticleCardProps } from "../components/ArticleCard";
 export const CARD_VARIANTS = makeVariantRegistry<ArticleCardProps>({
   default: lazy(() => import("../components/ArticleCard")),
   compact: lazy(() => import("../components/ArticleCardCompact")),
+  /** Affiches/flyers : image entière (object-contain), cadre portrait 3/4 en grille. */
+  poster: lazy(() => import("../components/ArticleCardPoster")),
 });

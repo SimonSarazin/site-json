@@ -1,15 +1,19 @@
 import "../i18n";
 import { useT } from "@/hooks/useT";
-import { ArticleCard } from "./ArticleCard";
+import { useSite } from "@/hooks/useSite";
+import { CARD_VARIANTS } from "../variants/cards";
 import { useRelatedArticles } from "../hooks/useRelatedArticles";
 import type { ArticleData } from "../hooks/useArticle";
 
 /**
  * Bloc « Articles liés » (bas du reader) : articles partageant des tags avec l'article courant, même costum.
  * Île client (le hook est gaté `hydrated`) → n'affiche rien tant qu'aucun lié (ou sans tags).
+ * Carte résolue via le registre `CARD_VARIANTS` (`config.blog.defaultCardVariant`), comme le fil.
  */
 export function RelatedArticles({ article }: { article: ArticleData }) {
   const t = useT("modules/blog");
+  const { config } = useSite();
+  const Card = CARD_VARIANTS.get(config.blog?.defaultCardVariant);
   const { articles } = useRelatedArticles(article);
   if (!articles.length) return null;
 
@@ -18,7 +22,7 @@ export function RelatedArticles({ article }: { article: ArticleData }) {
       <h2 className="mb-6 text-xl font-bold text-foreground">{t("article.related")}</h2>
       <div className="grid gap-6 sm:grid-cols-2">
         {articles.map((a) => (
-          <ArticleCard key={a.id} article={a} href={a.slug ? `/blog/${a.slug}` : `/blog/id/${a.id}`} />
+          <Card key={a.id} article={a} href={a.slug ? `/blog/${a.slug}` : `/blog/id/${a.id}`} />
         ))}
       </div>
     </section>

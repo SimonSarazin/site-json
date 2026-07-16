@@ -20,4 +20,6 @@ export interface ArticleReaderProps {
  */
 export const READER_VARIANTS = makeVariantRegistry<ArticleReaderProps>({
   default: lazy(() => import("../components/ArticleReader")),
+  /** Affiches/flyers : couverture entière (ratio naturel), pas de recadrage 16/9. */
+  poster: lazy(() => import("../components/ArticleReaderPoster")),
 });
