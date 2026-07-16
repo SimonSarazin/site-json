@@ -9199,6 +9199,7 @@
                 "description",
                 "profil_avatar",
                 "galerie",
+                "documents",
                 "tags"
               ]
             }
@@ -9625,6 +9626,22 @@
           "widgetProps": {
             "contentKey": "slider",
             "maxItems": 12
+          },
+          "renderOnly": true
+        },
+        "documents": {
+          "widget": "file",
+          "label": {
+            "fr": "Documents",
+            "en": "Documents"
+          },
+          "info": {
+            "fr": "Fichiers joints à l'article (PDF, bureautique…, jusqu'à 8).",
+            "en": "Files attached to the article (PDF, office…, up to 8)."
+          },
+          "widgetProps": {
+            "contentKey": "file",
+            "maxItems": 8
           },
           "renderOnly": true
         }

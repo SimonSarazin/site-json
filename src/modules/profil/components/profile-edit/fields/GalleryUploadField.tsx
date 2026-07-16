@@ -11,7 +11,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { X, ImagePlus } from "lucide-react";
 import { FormItem, FormLabel } from "@/components/ui/form";
 
-export interface GalleryExistingImage { docId: string; url: string }
+export interface GalleryExistingImage { docId: string; url: string; name?: string }
 
 export interface GalleryValue {
   existing: GalleryExistingImage[];

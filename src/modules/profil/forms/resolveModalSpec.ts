@@ -61,16 +61,38 @@ function resolveCostumSlug(scope: EntityModalSpec["scope"], ctx: EntityModalCtx)
  */
 function seedGalleryDefaults(defaults: FieldValues, jsonConfig: unknown, entity: unknown): void {
   const fields = (jsonConfig as { fields?: Record<string, { widget?: string; widgetProps?: Record<string, unknown> }> }).fields;
-  const ent = entity as { getGalleryImages?: (ck: string) => Array<Record<string, unknown>> };
-  if (!fields || typeof ent.getGalleryImages !== "function") return;
+  if (!fields) return;
+  const ent = entity as {
+    getGalleryImages?: (ck: string) => Array<Record<string, unknown>>;
+    data?: { files?: unknown };
+  };
   for (const [name, cfg] of Object.entries(fields)) {
-    if (cfg?.widget !== "gallery") continue;
-    const contentKey = (cfg.widgetProps?.contentKey as string) ?? "slider";
-    const docType = (cfg.widgetProps?.docType as string) ?? "image";
-    const existing = (ent.getGalleryImages(contentKey) ?? [])
-      .map((im) => ({ docId: String(im.id ?? ""), url: String(im.imagePath ?? im.imageMediumPath ?? "") }))
-      .filter((e) => e.docId);
-    (defaults as Record<string, unknown>)[name] = { existing, added: [], removedDocIds: [], contentKey, docType };
+    if (cfg?.widget === "gallery" && typeof ent.getGalleryImages === "function") {
+      const contentKey = (cfg.widgetProps?.contentKey as string) ?? "slider";
+      const docType = (cfg.widgetProps?.docType as string) ?? "image";
+      const existing = (ent.getGalleryImages(contentKey) ?? [])
+        .map((im) => ({ docId: String(im.id ?? ""), url: String(im.imagePath ?? im.imageMediumPath ?? "") }))
+        .filter((e) => e.docId);
+      (defaults as Record<string, unknown>)[name] = { existing, added: [], removedDocIds: [], contentKey, docType };
+    } else if (cfg?.widget === "file") {
+      // Widget FICHIER : `existing` lu SYNC depuis about.files (objet keyé _id, présent pour poi/
+      // classifieds/projects ; buildDefaults est sync donc pas de getGalleryFiles async ici). Pour les
+      // types sans about.files (org/citoyen/event), `existing` reste vide → ajout seul dans le form
+      // (l'affichage/suppression des fichiers existants passe par la section profil / la vue article).
+      const contentKey = (cfg.widgetProps?.contentKey as string) ?? "file";
+      const filesObj = ent.data?.files;
+      const raw = filesObj && typeof filesObj === "object" && !Array.isArray(filesObj)
+        ? Object.values(filesObj as Record<string, Record<string, unknown>>)
+        : Array.isArray(filesObj) ? (filesObj as Array<Record<string, unknown>>) : [];
+      const existing = raw
+        .map((f) => {
+          const _id = f._id as { $id?: string } | string | undefined;
+          const docId = _id && typeof _id === "object" ? _id.$id : _id;
+          return { docId: String(docId ?? f.id ?? ""), url: String(f.docPath ?? ""), name: String(f.name ?? "") };
+        })
+        .filter((e) => e.docId);
+      (defaults as Record<string, unknown>)[name] = { existing, added: [], removedDocIds: [], contentKey, docType: "file" };
+    }
   }
 }
 
