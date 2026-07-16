@@ -1579,6 +1579,11 @@ export const Header = z.object({
   // (ex. transparent-scroll = "primary"). "foreground" suit l'ink du thème →
   // marine en clair, clair en sombre, idéal pour une marque monochrome.
   logoIconTone: z.enum(["foreground", "primary", "white"]).optional(),
+  // Taille du logo dans la barre : "sm" = défaut historique de chaque header,
+  // "md" ≈ 40px, "lg" ≈ 48px sur desktop — toujours ramené plus compact sur
+  // mobile (classes responsive, cf. header/logoSize.ts). Honoré par les 6
+  // headers ; sur `standard`, "lg" suppose `height: "md"|"lg"` (barre sm = 48px).
+  logoSize: z.enum(["sm", "md", "lg"]).optional(),
   // Opt-in : remplace logo/titre par ceux de l'entité costum au runtime
   // (plateforme communecter `transparentCommune`). Désactivé par défaut → le
   // header ne dépend d'aucune logique de site sans cette option.

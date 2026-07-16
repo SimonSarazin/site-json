@@ -29,6 +29,7 @@ import { AnnouncementBanner } from "../AnnouncementBanner";
 import ToggleButtonTheme from "../ToggleButtonTheme";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import HeaderLogo from "./HeaderLogo";
+import { logoHeightClass, logoSizePx } from "./logoSize";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
 
@@ -195,7 +196,7 @@ export function HeaderStandard({ header }: HeaderStandardProps) {
         <div className="flex items-center justify-between h-full">
           {/* Logo */}
           <NavLink to={header.path || "/"} className="flex items-center gap-2">
-            <HeaderLogo header={header} imageClassName="h-8 w-auto rounded" iconClassName="h-8 w-8" />
+            <HeaderLogo header={header} imageClassName={`${logoHeightClass(header.logoSize)} w-auto rounded`} iconClassName="h-8 w-8" imageHeight={logoSizePx(header.logoSize)} />
           </NavLink>
 
           {/* Desktop Nav */}
