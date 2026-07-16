@@ -4,9 +4,13 @@ import { useEffect, useMemo } from "react";
 
 function extractFontFamilies(families?: string[]): string[] {
   if (!families) return [];
+  // Mêmes génériques que extractCriticalResources : un générique demandé à
+  // Google Fonts (ex. `ui-sans-serif`) répond 400 → stylesheet jamais chargé.
+  const genericFonts = ["sans-serif", "serif", "monospace", "system-ui", "cursive", "fantasy",
+    "ui-sans-serif", "ui-serif", "ui-monospace", "ui-rounded"];
   return families
     .map(f => f.trim().replace(/['"]/g, "").split(",")[0]) // on garde juste le nom de la police
-    .filter(f => !["sans-serif", "serif", "monospace"].includes(f));
+    .filter(f => !genericFonts.includes(f.toLowerCase()));
 }
 
 function buildGoogleFontURL(font: string): string {
