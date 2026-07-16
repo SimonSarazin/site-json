@@ -339,7 +339,10 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
 
     return (
         <section id={id} className="relative pt-10 px-4 bg-[image:var(--gradient-section)] overflow-hidden">
-            <div className="inset-0 opacity-10">
+            {/* Bulles décoratives floutées — purement visuelles : `pointer-events-none`
+                sinon la bulle bas-droite (absolute) peint AU-DESSUS de la barre de
+                filtres statique et intercepte les clics du dernier dropdown. */}
+            <div className="pointer-events-none absolute inset-0 opacity-10">
                 <div className="absolute top-10 left-10 w-64 h-64 bg-primary rounded-full blur-3xl animate-float" />
                 <div
                     className="absolute bottom-10 right-10 w-96 h-96 bg-chart-2 rounded-full blur-3xl animate-float"
