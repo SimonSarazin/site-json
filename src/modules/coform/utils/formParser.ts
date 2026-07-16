@@ -181,6 +181,9 @@ export function mapCoFormTypeToComponentType(
     "tpls.forms.uploader": "uploader",
     sectionTitle: "sectionTitle",
     "tpls.forms.sectionTitle": "sectionTitle",
+    // Alias AAP legacy : `titleSeparator` = séparateur/titre de section.
+    titleSeparator: "sectionTitle",
+    "tpls.forms.titleSeparator": "sectionTitle",
     "tpls.forms.sectionDescription": "sectionDescription",
     select: "select",
     // Liste déroulante : les forms stockent le type tantôt en raccourci

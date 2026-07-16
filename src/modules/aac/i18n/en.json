@@ -1,0 +1,24 @@
+{
+  "page": {
+    "backHome": "Back to home"
+  },
+  "section": {
+    "stubTitle": "Call for Commons configuration",
+    "stubHint": "Preview of the resolved configuration (foundation only — no functional surface yet).",
+    "loading": "Loading configuration…",
+    "error": "Unable to load the AAC configuration.",
+    "noForm": "No Call for Commons declared for this site (missing \"config.aac.formId\")."
+  },
+  "config": {
+    "steps": "Form steps",
+    "depenseStep": "Expense step",
+    "evalStep": "Evaluation step",
+    "financementStep": "Funding step",
+    "suiviStep": "Follow-up step",
+    "criteria": "Evaluation criteria",
+    "criteriaSource": "Criteria source",
+    "gates": "Access & options",
+    "campaigns": "Declared campaigns",
+    "none": "—"
+  }
+}

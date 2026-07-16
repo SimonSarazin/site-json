@@ -17,8 +17,9 @@
  * - JSDoc obligatoire : Producteur + Consommateurs invalidants
  */
 
-// Re-export des query keys des 7 modules (ampli, cagnotte, coform, interop,
+// Re-export des query keys des 8 modules (aac, ampli, cagnotte, coform, interop,
 // news, profil, search — ordre alphabétique).
+export { AAC_QUERY_KEYS } from "@/modules/aac/constants/queryKeys";
 export { AMPLI_QUERY_KEYS } from "@/modules/ampli/constants/queryKeys";
 export { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 export { COFORM_QUERY_KEYS } from "@/modules/coform/constants/queryKeys";
@@ -28,6 +29,7 @@ export { PROFIL_QUERY_KEYS } from "@/modules/profil/constants/queryKeys";
 export { SEARCH_QUERY_KEYS } from "@/modules/search/constants/queryKeys";
 
 // Re-export des types associés
+export type { AacQueryKeyType } from "@/modules/aac/constants/queryKeys";
 export type { AmpliQueryKeyType } from "@/modules/ampli/constants/queryKeys";
 export type { CagnotteQueryKeyType } from "@/modules/cagnotte/constants/queryKeys";
 export type { CoformQueryKeyType } from "@/modules/coform/constants/queryKeys";

@@ -60,6 +60,7 @@ const SECTION_META: Record<string, SectionMeta> = {
   "cta-newsletter": { label: "CTA newsletter", desc: "Appel à l'action avec capture newsletter intégrée", image: "https://placehold.co/300x180/a29bfe/eee?text=CTA+News" },
   "expandable-actions": { label: "Actions dépliables", desc: "Cartes d'action en accordéon exclusif ouvrant des modales", image: "https://placehold.co/300x180/6c5ce7/eee?text=Expandable" },
   "data-observatory": { label: "Observatoire de données", desc: "Dashboard déclaratif : dimensions, KPI, graphiques, filtres et table pilotés par la config", image: "https://placehold.co/300x180/0984e3/eee?text=Observatory" },
+  aac: { label: "Appel à Communs", desc: "Appel à Communs (AAC) — socle : aperçu de la configuration résolue d'un formulaire aap/aac", image: "https://placehold.co/300x180/00b894/eee?text=AAC" },
 };
 
 export default SECTION_META;
