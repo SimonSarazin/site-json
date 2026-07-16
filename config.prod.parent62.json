@@ -9169,6 +9169,7 @@
                 "shortDescription",
                 "description",
                 "profil_avatar",
+                "galerie",
                 "tags"
               ]
             }
@@ -9581,6 +9582,22 @@
               }
             }
           ]
+        },
+        "galerie": {
+          "widget": "gallery",
+          "label": {
+            "fr": "Galerie d'images",
+            "en": "Image gallery"
+          },
+          "info": {
+            "fr": "Images additionnelles affichées avec l'article (jusqu'à 12).",
+            "en": "Additional images shown with the article (up to 12)."
+          },
+          "widgetProps": {
+            "contentKey": "slider",
+            "maxItems": 12
+          },
+          "renderOnly": true
         }
       },
       "chrome": {

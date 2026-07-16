@@ -15,6 +15,7 @@ import { IconFormField } from "../components/profile-edit/fields/IconFormField";
 import { FormFieldTags } from "../components/profile-edit/fields/FormFieldTags";
 import { FormFieldMarkdown } from "../components/profile-edit/fields/FormFieldMarkdown";
 import { TranslatedFormMessage } from "../components/profile-edit/fields/TranslatedFormMessage";
+import GalleryUploadField, { emptyGalleryValue, type GalleryValue } from "../components/profile-edit/fields/GalleryUploadField";
 
 // Composites LOURDS chargés à la demande (code-split Vite) — préservé à l'identique.
 const ImageUploadField = lazy(() => import("../components/profile-edit/fields/ImageUploadField"));
@@ -65,6 +66,24 @@ registerWidget("image", (p) => (
     )} />
   </Suspense>
 ));
+
+// gallery : galerie multi-images (Option C). Collecte locale ; upload post-save par `runEntityMutation`
+// (via `entity.uploadDocument(file, {contentKey})`). Valeur = GalleryValue (auto-reconnue par l'orchestration).
+registerWidget("gallery", (p) => {
+  const contentKey = (p.field.widgetProps?.contentKey as string) ?? "slider";
+  const docType = ((p.field.widgetProps?.docType as string) ?? "image") as "image" | "file";
+  return (
+    <FormField control={control(p.form)} name={fname(p.field.name)} render={({ field }) => (
+      <GalleryUploadField
+        value={(field.value as GalleryValue) ?? emptyGalleryValue(contentKey, docType)}
+        onChange={(v) => field.onChange(v)}
+        label={lbl(p)}
+        hint={p.field.info ? p.t(p.field.info) : undefined}
+        maxItems={p.field.widgetProps?.maxItems as number | undefined}
+      />
+    )} />
+  );
+});
 
 // location : EditLocationTab (API villes/rues via useCocolight). Erreur cross-champ portée sur `address`.
 registerWidget("location", (p) => {

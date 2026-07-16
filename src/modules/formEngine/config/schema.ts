@@ -16,7 +16,7 @@ const WidgetKind = z.enum([
   "switch", "checkbox", "checkboxGroup",
   "select", "multiselect", "selectFromLists",
   "tags", "date", "datetime", "time",
-  "urlList", "image", "location", "openingHours",
+  "urlList", "image", "gallery", "location", "openingHours",
   "finder", "eventDates", "fieldArray", "custom",
   "editSocial", "editSchedule",
 ]);

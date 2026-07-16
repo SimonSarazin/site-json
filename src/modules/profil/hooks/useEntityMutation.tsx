@@ -80,6 +80,36 @@ export interface EntityMutationSpec {
  * CREATE : payload métier + extras + image → `(scope).X(payload).save()`.
  * EDIT   : `submitEntityEdit(target, payload, {imageFile, imageDeleted})` (Object.assign + save + removeImage).
  */
+/** Valeur d'un champ widget "gallery" (Option C) — reconnue structurellement (sans coupler le hook au widget). */
+interface GalleryFieldValue { added?: File[]; removedDocIds?: string[]; contentKey: string; docType?: "image" | "file" }
+function isGalleryFieldValue(v: unknown): v is GalleryFieldValue {
+  const g = v as GalleryFieldValue | null;
+  return !!g && typeof g === "object" && Array.isArray(g.added) && Array.isArray(g.removedDocIds) && typeof g.contentKey === "string";
+}
+interface GalleryCapableEntity {
+  uploadDocument: (file: File, opts: { contentKey: string; docType?: "image" | "file" }) => Promise<{ docId: string; docPath: string }>;
+  deleteFile: (docId: string) => Promise<void>;
+}
+/**
+ * Traite les champs GALERIE APRÈS le save (l'entité a désormais un `id`) : supprime les documents retirés
+ * puis uploade les nouveaux fichiers via `entity.uploadDocument(file, {contentKey})` (Option C). Best-effort
+ * sur les suppressions ; les uploads propagent l'erreur (le save métier a réussi, on veut le signaler).
+ */
+async function processGalleryFields(entity: unknown, values: Data): Promise<void> {
+  const ent = entity as Partial<GalleryCapableEntity>;
+  if (typeof ent.uploadDocument !== "function") return;
+  for (const key of Object.keys(values)) {
+    const v = values[key];
+    if (!isGalleryFieldValue(v)) continue;
+    for (const docId of v.removedDocIds ?? []) {
+      try { await ent.deleteFile?.(docId); } catch { /* best-effort : doc déjà supprimé / droit */ }
+    }
+    for (const file of v.added ?? []) {
+      await ent.uploadDocument!(file, { contentKey: v.contentKey, docType: v.docType });
+    }
+  }
+}
+
 export async function runEntityMutation(
   spec: EntityMutationSpec,
   values: Data,
@@ -92,6 +122,8 @@ export async function runEntityMutation(
   const formData: Data = { ...values };
   if (spec.imageField) delete formData[spec.imageField];
   delete formData[spec.imageDeletedField ?? "_imageDeleted"];
+  // Champs GALERIE (widget "gallery") : hors payload `element/save` → uploadés APRÈS via processGalleryFields.
+  for (const k of Object.keys(formData)) if (isGalleryFieldValue(formData[k])) delete formData[k];
 
   const payload = spec.buildPayload(formData);
 
@@ -104,6 +136,7 @@ export async function runEntityMutation(
       logCocolightError(spec.errorContext, err, (spec.target as unknown as { data?: Data }).data ?? payload);
       throw err;
     }
+    await processGalleryFields(spec.target, values); // galerie : upload/suppression après le save (entité a un id)
     return { entity: spec.target };
   }
 
@@ -168,6 +201,7 @@ export async function runEntityMutation(
     logCocolightError(spec.errorContext, err, payload);
     throw err;
   }
+  await processGalleryFields(entity, values); // galerie : upload après création (l'entité a désormais un id)
   return { entity: entity as unknown as EntityTypes };
 }
 
