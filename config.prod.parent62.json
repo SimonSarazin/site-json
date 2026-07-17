@@ -9172,10 +9172,6 @@
       "entityType": "poi",
       "collection": "poi",
       "costumSlug": "parent62",
-      "scope": {
-        "slugFrom": "constant",
-        "constant": "parent62"
-      },
       "layout": {
         "kind": "flat"
       },
