@@ -201,6 +201,9 @@ export const InstallationDashboardConfSchema = z.object({
   groupKey: z.string().default("inst_numero"),
   /** Champ `serverData` du libellé affiché. */
   labelKey: z.string().default("inst_nom"),
+  /** Champ `serverData` du type d'équipement — affiché dans la liste de repli
+   *  quand l'installation n'a aucun créneau. */
+  typeKey: z.string().default("equip_type_name"),
   /** Amplitude hebdomadaire de référence du taux d'utilisation
    *  (ex. 8h–22h × 7j = 98 h/sem). */
   referenceAmplitude: z.object({
@@ -220,8 +223,14 @@ export const InstallationDashboardConfSchema = z.object({
   activityMetric: z.enum(["hours", "slots"]).optional(),
   /** Champs POI additionnels projetés (en plus de name/groupKey/labelKey…). */
   extraPoiFields: z.array(z.string()).optional(),
+  /** Nom du param d'URL qui ouvre la fiche (partage/deep-link) — miroir de
+   *  `list.previewParam` pour l'équipement. Défaut : "installation". */
+  param: z.string().optional(),
 });
 export type InstallationDashboardConf = z.infer<typeof InstallationDashboardConfSchema>;
+
+/** Param d'URL par défaut de la fiche installation (cf. `installationDashboard.param`). */
+export const DEFAULT_INSTALLATION_PARAM = "installation";
 
 export const PreviewConfSchema = z.object({
   type: z.enum(["default", "poi-amenities", "coform-answer", "event", "facets"]).default("default"),
@@ -235,6 +244,23 @@ export const PreviewConfSchema = z.object({
   /** Modal tableau de bord installation (requiert `reservations`). */
   installationDashboard: InstallationDashboardConfSchema.optional(),
 }).partial();
+
+/**
+ * Filtre de listing déclenché par une valeur cliquable de la CARTE (pas de
+ * dropdown : la cardinalité — plus de 1000 installations — l'interdit).
+ *
+ * On filtre sur `groupKey` (identifiant STABLE) et non sur le libellé affiché :
+ * un libellé peut contenir une virgule (séparateur multi-valeurs de l'URL) et
+ * deux installations distinctes peuvent être homonymes. Même symétrie que
+ * `installationDashboard.groupKey`/`labelKey`.
+ */
+export const InstallationFilterConfSchema = z.object({
+  /** Champ `serverData` filtré — identifiant stable. */
+  groupKey: z.string().default("inst_numero"),
+  /** Nom du param d'URL (miroir de la sélection). */
+  param: z.string().default("poi-installation"),
+});
+export type InstallationFilterConf = z.infer<typeof InstallationFilterConfSchema>;
 
 const ListConfSchema = z.object({
   columns: z.object({
@@ -282,6 +308,9 @@ const ListConfSchema = z.object({
         price: z.object({ bed: z.string(), room: z.string() }),
       }).optional(),
     }).optional(),
+    /** Rend l'installation de la carte (`poi-amenities`) cliquable → filtre le
+     *  listing. Absent = valeur affichée en texte simple. */
+    installationFilter: InstallationFilterConfSchema.optional(),
     // Valeurs DESIGN/FONCTIONNALITÉ (jamais de nom de site). `Preview`/détail =
     // axe séparé (`preview.type`/`detailsMode`).
     type: z.enum(["overlay", "default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer"]).default("default"),

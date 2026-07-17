@@ -1,5 +1,6 @@
-import { useMemo } from "react";
-import { Building2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Building2, Check, Link2 } from "lucide-react";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -9,9 +10,10 @@ import {
 import "@/modules/observatoire/i18n";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import type {
-  InstallationDashboardConf,
-  ReservationsConf,
+import {
+  DEFAULT_INSTALLATION_PARAM,
+  type InstallationDashboardConf,
+  type ReservationsConf,
 } from "@/modules/search/schema";
 import { KpiCard } from "../KpiCards";
 import { TOKEN_TINT_CLASSES } from "../../dimensions";
@@ -25,6 +27,7 @@ import {
 import { useInstallationPoisQuery } from "../../hooks/useInstallationPoisQuery";
 import { useInstallationAnswersQuery } from "../../hooks/useInstallationAnswersQuery";
 import { EquipmentUtilizationList } from "./EquipmentUtilizationList";
+import { EquipmentList } from "./EquipmentList";
 import { ActivityDonut } from "./ActivityDonut";
 
 interface InstallationDashboardModalProps {
@@ -73,6 +76,31 @@ export default function InstallationDashboardModal({
   const amplitude = weeklyAmplitudeMinutes(conf.referenceAmplitude);
   const metric = conf.activityMetric ?? "hours";
 
+  // Ouverte par deep-link, la modal n'a pas de nom : on le dérive du 1ᵉʳ POI
+  // chargé (`labelKey`) — même source que la fiche équipement.
+  const displayName = useMemo(() => {
+    if (instName) return instName;
+    const sd = pois[0]?.serverData as Record<string, unknown> | undefined;
+    const label = sd?.[conf.labelKey];
+    return typeof label === "string" ? label.trim() : "";
+  }, [instName, pois, conf.labelKey]);
+
+  const [copied, setCopied] = useState(false);
+  // Lien de partage : page courante + le SEUL param installation (jamais le
+  // `previewParam` de l'équipement) → le destinataire ne voit que cette fiche.
+  const handleShare = async () => {
+    const param = conf.param ?? DEFAULT_INSTALLATION_PARAM;
+    const url = `${window.location.origin}${window.location.pathname}?${param}=${encodeURIComponent(instValue)}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      toast.success(t("installation.share.copied"));
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error(t("installation.share.error"));
+    }
+  };
+
   const usage = useMemo(
     () => computeEquipmentUsage(answers ?? [], poiIds),
     [answers, poiIds],
@@ -104,8 +132,20 @@ export default function InstallationDashboardModal({
         <div className="flex max-h-[90vh] flex-col">
           <div className="shrink-0 px-6 py-5" style={{ background: "var(--card-header-gradient)" }}>
             <div className="flex items-center gap-2 text-primary-foreground">
-              <Building2 className="h-5 w-5" />
-              <h2 className="text-xl font-bold">{instName || instValue}</h2>
+              <Building2 className="h-5 w-5 shrink-0" />
+              <h2 className="min-w-0 flex-1 truncate text-xl font-bold">
+                {displayName || instValue}
+              </h2>
+              {/* Décalé de la croix de fermeture du DialogContent (top-4 right-4). */}
+              <button
+                type="button"
+                onClick={handleShare}
+                aria-label={t("installation.share.action")}
+                title={t("installation.share.action")}
+                className="mr-7 shrink-0 rounded-md p-1.5 text-primary-foreground/80 transition-colors hover:bg-primary-foreground/15 hover:text-primary-foreground focus-visible:bg-primary-foreground/15"
+              >
+                {copied ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
+              </button>
             </div>
             <p className="mt-1 text-sm text-primary-foreground/85">
               {t("installation.subtitle", undefined, { count: pois.length })}
@@ -150,10 +190,19 @@ export default function InstallationDashboardModal({
                   </p>
                 )}
 
+                {/* Sans créneau, jauges à 0 % et donut vide n'apprennent rien :
+                    on liste les équipements (déjà chargés, indépendants des answers). */}
                 {!reservationsLoading && !hasReservations && !answersError ? (
-                  <p className="text-sm text-muted-foreground">
-                    {t("installation.noReservations")}
-                  </p>
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      {t("installation.noReservations")}
+                    </p>
+                    <EquipmentList
+                      pois={pois}
+                      typeKey={conf.typeKey ?? "equip_type_name"}
+                      loading={poisLoading}
+                    />
+                  </div>
                 ) : (
                   <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                     <EquipmentUtilizationList

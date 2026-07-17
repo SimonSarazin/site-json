@@ -46,7 +46,8 @@
     "lighting": "Lighting",
     "showers": "Showers",
     "freeAccess": "Free access",
-    "yearsAgo": "{{count}} years ago"
+    "yearsAgo": "{{count}} years ago",
+    "filterByInstallation": "Filter by facility {{name}}"
   },
   "PreviewPoiAmenities": {
     "edit": "Edit",

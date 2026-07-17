@@ -53,6 +53,14 @@
         "slots": "créneaux"
       }
     },
+    "equipmentList": {
+      "title": "Équipements de l'installation"
+    },
+    "share": {
+      "action": "Copier le lien de cette fiche",
+      "copied": "Lien copié !",
+      "error": "Impossible de copier le lien."
+    },
     "unknownActivity": "Activité non renseignée",
     "noReservations": "Aucun créneau de réservation pour cette installation.",
     "error": "Impossible de charger les données de l'installation."

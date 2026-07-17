@@ -53,6 +53,14 @@
         "slots": "time slots"
       }
     },
+    "equipmentList": {
+      "title": "Facilities in this site"
+    },
+    "share": {
+      "action": "Copy the link to this page",
+      "copied": "Link copied!",
+      "error": "Unable to copy the link."
+    },
     "unknownActivity": "Unspecified activity",
     "noReservations": "No booking slot for this facility.",
     "error": "Unable to load the facility data."

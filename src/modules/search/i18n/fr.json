@@ -46,7 +46,8 @@
         "lighting": "Éclairage",
         "showers": "Douches",
         "freeAccess": "Libre accès",
-        "yearsAgo": "Il y a {{count}} ans"
+        "yearsAgo": "Il y a {{count}} ans",
+        "filterByInstallation": "Filtrer par l'installation {{name}}"
     },
     "PreviewPoiAmenities": {
         "edit": "Éditer",
