@@ -9629,6 +9629,7 @@
       },
       "mutation": {
         "entityType": "poi",
+        "navigateOnSuccess": false,
         "inject": {
           "extraFields": {
             "type": "article"
@@ -9651,7 +9652,8 @@
           "params": {
             "userList": "pois",
             "searchKeys": [
-              "blog:parent62"
+              "blog:parent62",
+              "admin-poi"
             ]
           }
         }
