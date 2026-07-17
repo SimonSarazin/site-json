@@ -78,6 +78,21 @@ app.post("/api/helloasso/checkout-intent", helloassoCheckoutIntentHandler);
 app.get("/api/helloasso/callback", helloassoCallbackHandler);
 app.get("/api/helloasso/checkout-status/:checkoutIntentId", helloassoCheckoutStatusHandler);
 
+// Flux RSS des articles blog (SEO/distribution). costumSlug : ?costum= > config.blog.feedCostumSlug > env.
+app.get("/blog/feed.xml", async (req, res) => {
+  try {
+    const slug = req.query.costum || cachedConfig?.blog?.feedCostumSlug || process.env.VITE_FEED_COSTUM_SLUG;
+    if (!slug) { res.status(400).type("application/xml").send('<?xml version="1.0"?><error>costumSlug manquant (?costum=slug ou config.blog.feedCostumSlug)</error>'); return; }
+    const { renderBlogFeed } = await import("../dist/server/entry-server.js");
+    const title = cachedConfig?.meta?.title?.fr || cachedConfig?.meta?.title || "Articles";
+    const xml = await renderBlogFeed({ costumSlug: String(slug), title });
+    res.type("application/rss+xml").send(xml);
+  } catch (e) {
+    console.error("[blog-feed]", e);
+    res.status(500).type("application/xml").send('<?xml version="1.0"?><error>erreur flux</error>');
+  }
+});
+
 // Cache long terme pour assets hashés Vite (1 an, immutable)
 app.use('/assets', (req, res, next) => {
   res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');

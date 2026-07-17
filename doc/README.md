@@ -19,6 +19,7 @@
 | Module profil | [Module Profil](08-module-profil.md) |
 | Formulaires & costums config-driven | [Module formEngine](28-module-formengine.md) |
 | Module actualités | [Module News](09-module-news.md) |
+| Module articles / blog (POI type=article) | [Module Articles/Blog](32-module-articles-blog.md) — voir aussi `src/modules/blog/README.md` |
 | Module cagnotte (financement) | [Module Cagnotte](18-module-cagnotte.md) |
 | Module ampli (amplification) | [Module Ampli](22-module-ampli.md) |
 | Module interop (Discourse/Mediawiki) | [Module Interop](20-module-interop.md) |
@@ -26,6 +27,7 @@
 | Module auth (connexion/inscription/SSO) | [Module Auth](23-module-auth.md) |
 | Module notification (cloche + section) | [Module Notification](25-module-notification.md) |
 | Module observatoire (dashboard déclaratif) | [Module Observatoire](27-module-observatoire.md) |
+| Module admin (back-office /admin config-driven) | [Module Admin](30-module-admin.md) |
 | Panneau d'administration (live edit) | [Admin Panel](24-admin-panel.md) |
 | Assistant de configuration | [Assistant Config](26-assistant-config.md) |
 | Système de visibilité | [Visibility System](19-visibility-system.md) |
@@ -37,4 +39,5 @@
 | Tests | [Tests](15-tests.md) |
 | Déploiement | [Docker](16-deploiement-docker.md) |
 | 🚧 Vision : palette Cmd+K | [Command Palette (RFC)](17-module-command-palette.md) — document d'architecture, pas encore implémenté |
+| 🚧 RFC : assistant config × costums | [Assistant config costum (RFC)](31-rfc-assistant-config-costum.md) — formulaires costum générés, config admin, cycle de vie sans re-publication |
 

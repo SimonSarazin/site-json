@@ -15,10 +15,13 @@ import { ActionButtonSchema } from "./action-button-schema";
 import { z } from "zod";
 import { LocalizedString, LOCALES } from "./locale-schema";
 import { AgendaSectionSchema } from "@/modules/agenda/schema";
+import { ArticleFeedSectionSchema, ArticleReaderSectionSchema } from "@/modules/blog/schema";
 export { LocalizedString, LOCALES };
 import { ProfilesConfigSchema, MemberSectionSchema } from "../modules/profil/schema";
+import { AdminConfigSchema } from "../modules/admin/schema";
 import { AmpliConfigSchema } from "@/modules/ampli/schema";
 import { CommandPaletteConfigSchema } from "@/modules/commandPalette/schema";
+import { BlogConfigSchema } from "@/modules/blog/configSchema";
 import { VisibilityConditionSchema, type VisibilityCondition } from "@/lib/visibility/schema";
 
 /**
@@ -1453,6 +1456,8 @@ export const Section = z.discriminatedUnion("type", [
   CoFormSectionSchema,
   DataObservatorySectionSchema,
   AgendaSectionSchema,
+  ArticleFeedSectionSchema,
+  ArticleReaderSectionSchema,
 ]);
 export type Section = z.infer<typeof Section>;
 
@@ -1983,6 +1988,11 @@ export const SiteConfig = z.object({
   }).optional(),
   ampli: z.array(AmpliConfigSchema).optional(),
   commandPalette: CommandPaletteConfigSchema.optional(),
+  // Config site-level du blog : défauts des variants extensibles (card/reader/feedLayout). cf. modules/blog.
+  blog: BlogConfigSchema.optional(),
+  // Page d'Administration (config-driven, jumeau du module profil). Onglets/sections/accès déclarés en
+  // données. Absent → pas de page admin. cf. modules/admin + commentaire/plan-module-admin-generique.md
+  admin: AdminConfigSchema.optional(),
 });
 export type SiteConfig = z.infer<typeof SiteConfig>;
 

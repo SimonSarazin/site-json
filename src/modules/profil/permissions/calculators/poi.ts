@@ -9,12 +9,17 @@ import type { ProfilPermissions } from "../types";
  */
 export function calculatePoiPermissions(entity: Poi): ProfilPermissions {
   const isPoiAuthor = entity.isAuthor?.() ?? false;
+  // Admin via la hiérarchie parent (org/projet parent → memberOf.isAdmin) — aligne sur Org/Project/Event.
+  // NB : un POI de costum SANS `parent` (ex. equipementsSportifs974) est couvert en AMONT par le dispatcher
+  // `register.ts` (droit-parapluie `ctx.isCostumAdmin && source.keys ∋ costumSlug`) — pas besoin ici.
+  const isPoiAdmin = entity.isAdmin?.({ checkHierarchy: true }) ?? false;
+  const canEdit = isPoiAuthor || isPoiAdmin;
   const isFollowingPoi = entity.isFollowing?.() ?? false;
 
   return {
-    canEditProfile: isPoiAuthor,
-    editProfileReason: isPoiAuthor ? undefined : "Must be author of POI",
-    canFollow: !isPoiAuthor, // Peut suivre si pas l'auteur
+    canEditProfile: canEdit,
+    editProfileReason: canEdit ? undefined : "Must be author or admin of POI",
+    canFollow: !canEdit, // Peut suivre si pas gestionnaire
     isFollowing: isFollowingPoi,
     canSendFriendRequest: false, // Pas de demandes d'ami pour les POI
     isFriend: false,

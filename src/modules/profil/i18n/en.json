@@ -26,7 +26,9 @@
     "untitled": "Untitled",
     "cancel": "Cancel",
     "confirm": "Confirm",
-    "searchPlaceholder": "Search..."
+    "searchPlaceholder": "Search...",
+    "next": "Next",
+    "previous": "Previous"
   },
   "ProfilePage": {
     "error": {
@@ -1246,7 +1248,9 @@
   "validation": {
     "required": "This field is required",
     "addressLocality": "Select a city from the list to validate the address",
-    "address": { "required": "Complete address required: city, postal code and street" },
+    "address": {
+      "required": "Complete address required: city, postal code and street"
+    },
     "minLength": "Too short",
     "maxLength": "Too long",
     "min": "Value too small",
