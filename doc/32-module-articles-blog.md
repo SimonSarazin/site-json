@@ -38,6 +38,8 @@ src/modules/blog/
 ├── components/
 │   ├── ArticleCard.tsx · ArticleCardCompact.tsx  # variants de carte
 │   ├── ArticleReader.tsx                         # variant de reader (default)
+│   ├── ArticleGallery.tsx                        # galerie d'images de l'article (about.images contentKey=slider → GalleryGrid + lightbox)
+│   ├── ArticleDocuments.tsx                      # documents/fichiers joints (about.files objet keyé _id → FilesList, téléchargement)
 │   └── RelatedArticles.tsx                        # bas du reader
 ├── variants/
 │   ├── registry.ts          # makeVariantRegistry (lazy vite-preload + .preload())

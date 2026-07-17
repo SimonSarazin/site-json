@@ -111,20 +111,24 @@ type PredicateOp =
 domaine **injecte** les siens par side-effect (`profil/forms/registerWidgets.tsx`, importé par `EntityFormModal`).
 
 `WidgetKind` (`types.ts`) :
-`hidden`, `text`/`email`/`tel`/`textarea`/`number`, `switch`/`checkbox`/`checkboxGroup`,
-`select`/`multiselect`/`selectFromLists`, `tags`, `date`/`datetime`/`time`, `urlList`, `image`, `location`,
-`openingHours`, `finder`, `eventDates`, `fieldArray`, `editSocial`, `editSchedule`, `custom`.
+`hidden`, `text`/`email`/`tel`/`textarea`/`markdown`/`number`, `switch`/`checkbox`/`checkboxGroup`,
+`select`/`multiselect`/`selectFromLists`, `tags`, `date`/`datetime`/`time`, `urlList`, `image`, `gallery`,
+`file`, `location`, `openingHours`, `finder`, `eventDates`, `fieldArray`, `editSocial`, `editSchedule`, `custom`.
 
 | Origine | Widgets | Composant |
 |---|---|---|
 | **Génériques** (`formEngine/widgets/fields/genericFields.tsx`) | text/number/switch/checkbox/checkboxGroup/select/multiselect/date | `FormFieldText`/`Number`/`Switch`/`Checkbox`/`CheckboxGroup`/`SelectObject`/`Date` |
 | **Génériques** (autres fichiers) | textarea, urlList, openingHours, fieldArray | `TextareaFormField`, `FormFieldUrlList`, `OpeningHoursField`, `FieldArrayField` (les 2 derniers lazy) |
-| **Domaine profil** (`profil/forms/registerWidgets.tsx`, lazy) | email/tel, tags, image, location, finder, eventDates, editSocial, editSchedule | `IconFormField`, `FormFieldTags`, `ImageUploadField`, `EditLocationTab`, `SelectParent`, `EditEventDatesTab`, `EditSocialTab`, `EditScheduleTab` |
+| **Domaine profil** (`profil/forms/registerWidgets.tsx`, lazy) | email/tel, tags, markdown, image, gallery, file, location, finder, eventDates, editSocial, editSchedule | `IconFormField`, `FormFieldTags`, `FormFieldMarkdown`, `ImageUploadField`, `GalleryUploadField`, `DocumentUploadField`, `EditLocationTab`, `SelectParent`, `EditEventDatesTab`, `EditSocialTab`, `EditScheduleTab` |
 
 Widgets **composites** (une valeur structurée par-dessous) : `openingHours`/`editSchedule` = `{ [jour]:
 {enabled,start,end} }` ; `location` = adresse plate + `geo`/`geoPosition` (autocomplétion BAN/villes) ;
 `fieldArray` = `Array<{ <sous-champ>: string }>` (`widgetProps.itemFields`) ; `finder` = `{ id: {type,name} }` ;
-`image` = `File | null` (+ flag `_imageDeleted`) routé vers `profil_avatar`.
+`image` = `File | null` (+ flag `_imageDeleted`) routé vers `profil_avatar` ;
+`gallery`/`file` = `GalleryValue { existing, added, removedDocIds, contentKey, docType }` (collecte locale ;
+upload/suppression APRÈS le save par `processGalleryFields` → `uploadDocument`/`deleteFile`). `gallery` =
+images (grille + preview, `GalleryUploadField`, `docType:"image"`), `file` = documents non-image (lignes
+icône+nom+taille, `DocumentUploadField`, `docType:"file"`, `contentKey:"file"`).
 
 ## Layouts (registre pluggable)
 
@@ -279,7 +283,9 @@ closure → posable tel quel en JSON. Type/compilateur : `forms/costum/compileCo
 `compileCostumSchema(schema) → { descriptor, spec }`.
 
 - **`WIDGET_DEFAULTS`** : table `widget → { type, read, default }` (le « commun » : text→string/coerce:string/"",
-  switch→bool/false, number→number/coerce:number, image/location→object/renderOnly, openingHours→object + codec…).
+  switch→bool/false, number→number/coerce:number, image/location/file→object/renderOnly, openingHours→object + codec…).
+  Note : `gallery`/`file` sont `renderOnly` (uploadés APRÈS le save par `processGalleryFields`, hors payload
+  `element/save`) ; `gallery` n'a pas d'entrée `WIDGET_DEFAULTS` et exige `renderOnly:true` en config, `file` l'a.
   Précédence : champ explicite > `fieldPresets[widget]` > widget.
 - **Conventions** : `label` ⇐ nom si absent ; placeholder d'un `select` ⇐ son label.
 - **Règle GROUPE** : un champ avec `group` (membre d'un `serializeGroup`) ne reçoit AUCUN read/write/default

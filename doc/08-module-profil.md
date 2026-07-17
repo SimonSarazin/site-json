@@ -104,7 +104,8 @@ src/modules/profil/
 │   │   ├── ProfileMapWrapper.tsx   // Wrapper carte
 │   │   ├── ProfileOrganizer.tsx    // Organisateur/Porteur de projet
 │   │   ├── ProfileMembers.tsx      // Liste des membres
-│   │   ├── ProfileGallery.tsx      // Galerie d'images
+│   │   ├── ProfileGallery.tsx      // Galerie d'images (add/delete inline via useGallery)
+│   │   ├── ProfileDocuments.tsx    // Documents/fichiers non-image (add/delete inline via useDocuments)
 │   │   ├── ProfileRelated.tsx      // Entités liées
 │   │   ├── ProfileActions.tsx      // Boutons d'action
 │   │   ├── ProfileEventDates.tsx   // Dates d'événement
@@ -186,6 +187,8 @@ src/modules/profil/
 │   ├── useFormatProfileEntity.tsx  // Formatage des données du profil
 │   ├── useFriendsQuery.tsx         // Query amis
 │   ├── useGetAnwersByFormsQuery.tsx // Query réponses formulaires
+│   ├── useGallery.tsx              // Galerie d'images (useGalleryImages lit getGallery + useGalleryMutations add/delete inline)
+│   ├── useDocuments.tsx            // Documents fichiers non-image (useDocumentsList lit getGalleryFiles + add/delete inline)
 │   ├── useMembershipQuery.tsx      // Query membership
 │   ├── useMembersQuery.tsx         // Query membres
 │   ├── useNewsDetailUrlGenerator.tsx // Générateur URL détail news
@@ -511,7 +514,7 @@ export const ProfilesConfigSchema = z.object({
 
 ## Sections de profil
 
-Le module profil propose **17 types de sections** configurables:
+Le module profil propose **18 types de sections** configurables:
 
 | Section                    | Type                         | Variantes/Options                              | Description                               |
 | -------------------------- | ---------------------------- | ---------------------------------------------- | ----------------------------------------- |
@@ -523,7 +526,8 @@ Le module profil propose **17 types de sections** configurables:
 | `profile-map`              | ProfileMapSection            | height, zoom, showMarker                       | Carte de localisation (Leaflet)           |
 | `profile-organizer`        | ProfileOrganizerSection      | showLogo, showDescription, showLink            | Organisateur/Porteur de projet            |
 | `profile-members`          | ProfileMembersSection        | limit, showRole, showManagement                | Liste des membres                         |
-| `profile-gallery`          | ProfileGallerySection        | columns, lightbox                              | Galerie d'images avec lightbox            |
+| `profile-gallery`          | ProfileGallerySection        | columns, lightbox                              | Galerie d'images avec lightbox (add/delete inline admin) |
+| `profile-documents`        | ProfileDocumentsSection      | —                                              | Documents/fichiers non-image (liste + télécharger ; add/delete inline admin) |
 | `profile-related`          | ProfileRelatedSection        | relationType, limit                            | Entités liées (projects, events, poi, organizations) |
 | `profile-actions`          | ProfileActionsSectionSchema  | showEditButton, showAddDropdown, layout        | Boutons d'action (éditer, ajouter, email) |
 | `profile-event-dates`      | ProfileEventDatesSectionSchema | showType, dateFormat                         | Dates d'événement (start/end)             |
