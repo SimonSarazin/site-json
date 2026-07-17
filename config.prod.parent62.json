@@ -9268,8 +9268,7 @@
           }
         },
         "territoires": {
-          "widget": "multiselect",
-          "multiple": true,
+          "widget": "select",
           "label": {
             "fr": "Territoires",
             "en": "Territories"
