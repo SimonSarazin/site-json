@@ -9175,13 +9175,7 @@
       "layout": {
         "kind": "flat"
       },
-      "serializeGroups": {
-        "address": {
-          "serverKey": "address",
-          "read": "address:read",
-          "write": "address:write"
-        }
-      },
+      "serializeGroups": {},
       "sections": [
         {
           "id": "content",
@@ -9222,52 +9216,9 @@
               ]
             }
           ]
-        },
-        {
-          "id": "location",
-          "label": {
-            "fr": "Localisation",
-            "en": "Location"
-          },
-          "icon": "map-pin",
-          "groups": [
-            {
-              "columns": 1,
-              "fields": [
-                "address"
-              ]
-            }
-          ]
         }
       ],
       "fields": {
-        "address": {
-          "widget": "location",
-          "label": {
-            "fr": "Adresse",
-            "en": "Address"
-          }
-        },
-        "addressCountry": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "addressLocality": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "postalCode": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "streetAddress": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "localityId": {
-          "widget": "hidden",
-          "group": "address"
-        },
         "profil_avatar": {
           "widget": "image",
           "label": {
@@ -9277,6 +9228,7 @@
         },
         "name": {
           "widget": "text",
+          "required": true,
           "label": {
             "fr": "Titre",
             "en": "Title"
@@ -9295,6 +9247,7 @@
         },
         "description": {
           "widget": "markdown",
+          "required": true,
           "label": {
             "fr": "Contenu",
             "en": "Content"
@@ -9400,7 +9353,8 @@
                 "en": "Ternois Bruaysis"
               }
             }
-          ]
+          ],
+          "required": true
         },
         "publics": {
           "widget": "multiselect",
@@ -9467,7 +9421,8 @@
                 "en": "Professionnels"
               }
             }
-          ]
+          ],
+          "required": true
         },
         "themes": {
           "widget": "multiselect",
@@ -9611,7 +9566,8 @@
                 "en": "Les violences"
               }
             }
-          ]
+          ],
+          "required": true
         },
         "galerie": {
           "widget": "gallery",
