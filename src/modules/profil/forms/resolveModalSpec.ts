@@ -62,15 +62,19 @@ function resolveCostumSlug(scope: EntityModalSpec["scope"], ctx: EntityModalCtx)
 function seedGalleryDefaults(defaults: FieldValues, jsonConfig: unknown, entity: unknown): void {
   const fields = (jsonConfig as { fields?: Record<string, { widget?: string; widgetProps?: Record<string, unknown> }> }).fields;
   if (!fields) return;
-  const ent = entity as {
+  const ent = (entity ?? {}) as {
     getGalleryImages?: (ck: string) => Array<Record<string, unknown>>;
     data?: { files?: unknown };
   };
   for (const [name, cfg] of Object.entries(fields)) {
-    if (cfg?.widget === "gallery" && typeof ent.getGalleryImages === "function") {
+    if (cfg?.widget === "gallery") {
       const contentKey = (cfg.widgetProps?.contentKey as string) ?? "slider";
       const docType = (cfg.widgetProps?.docType as string) ?? "image";
-      const existing = (ent.getGalleryImages(contentKey) ?? [])
+      // CREATE (pas d'entité) → `existing` vide ; EDIT → depuis about.images. Dans TOUS les cas on pose la
+      // FORME complète {existing,added,removedDocIds,contentKey,docType} : sinon le default "" laisse le widget
+      // produire une valeur sans `contentKey`/`removedDocIds` (`{...""}` = `{}`) → `isGalleryFieldValue` faux
+      // → `processGalleryFields` saute le champ → AUCUN upload à la création.
+      const existing = (typeof ent.getGalleryImages === "function" ? (ent.getGalleryImages(contentKey) ?? []) : [])
         .map((im) => ({ docId: String(im.id ?? ""), url: String(im.imagePath ?? im.imageMediumPath ?? "") }))
         .filter((e) => e.docId);
       (defaults as Record<string, unknown>)[name] = { existing, added: [], removedDocIds: [], contentKey, docType };
@@ -185,14 +189,17 @@ export function specToConfig(spec: EntityModalSpec): EntityModalConfig {
     getSchema: spec.schemaFn ? (ctx) => getSchemaFn(spec.schemaFn!)!(ctx) : undefined,
     buildDefaults: (ctx) => {
       const base = baseDefaults(ctx);
+      const jsonConfig = formDescriptorToConfig(resolveDescriptor(ctx));
       if (ctx.mode === "edit" && ctx.entity) {
-        const jsonConfig = formDescriptorToConfig(resolveDescriptor(ctx));
         const defaults = buildPipelineDefaults(jsonConfig, ctx.entity as unknown as EntityLike, { baseDefaults: () => base }) as FieldValues;
         // Seed des champs GALERIE (widget "gallery", renderOnly → ignorés par le pipeline) : `existing`
         // depuis entity.getGalleryImages(contentKey) (champ `images` fusionné par about, chantier 2 backend).
         seedGalleryDefaults(defaults, jsonConfig, ctx.entity);
         return defaults;
       }
+      // CREATE : seeder AUSSI la forme vide des champs galerie/fichier (sinon le default "" empêche le widget
+      // de produire une valeur `isGalleryFieldValue` → upload sauté à la création). `entity=null` → existing vide.
+      seedGalleryDefaults(base as FieldValues, jsonConfig, null);
       return base as FieldValues;
     },
     cleanValues: spec.cleanValues ? (v) => {
