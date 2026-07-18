@@ -43,6 +43,11 @@ export function MarkdownEditor({ value, onChange, height = 200, preview = "edit"
         onChange={(val) => onChange?.(val || "")}
         height={height}
         preview={preview}
+        // overflow={false} : l'éditeur gère le scroll du <body> pour son plein écran via un useEffect SANS
+        // cleanup au démontage (Toolbar : `document.body.style.overflow = ...`). Dans une modale, à la
+        // fermeture l'éditeur est démonté et laisse `<body>` avec `overflow:hidden` inline → scroll de page
+        // perdu. On désactive cette gestion (inutile dans une modale) pour éviter la fuite.
+        overflow={false}
       />
     </div>
   );
