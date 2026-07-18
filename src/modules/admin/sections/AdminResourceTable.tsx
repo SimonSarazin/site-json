@@ -56,7 +56,7 @@ type StatusFilter = "all" | "pending" | "validated";
 
 export default function AdminResourceTable({ section }: { section: AdminSection }) {
   const resource = section as AdminResourceSection;
-  const { entity: carrier, contextId, contextType } = useCocolight();
+  const { entity: carrier, contextId, contextType, me } = useCocolight();
   // Droit-parapluie costum : dans /admin (gate `siteAdmin` = admin du host du costum), l'utilisateur peut
   // éditer/supprimer TOUS les éléments du costum. On pose le flag client `setCostumAdminAuthorized` sur
   // l'entité avant edit/delete pour que la garde lib (_update/_deleteViaElement) ne bloque pas un non-auteur ;
@@ -66,6 +66,24 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   const grantCostumAdmin = <T,>(item: T): T => {
     if (canCostumAdmin) (item as { setCostumAdminAuthorized?: (v?: boolean) => void })?.setCostumAdminAuthorized?.();
     return item;
+  };
+  // Ouverture de l'édition : la ligne de liste (searchCostum) est ALLÉGÉE — sans les champs `images`/`files`
+  // fusionnés par `about`. On (re)charge l'entité COMPLÈTE par id avant d'ouvrir le form, sinon le seed galerie
+  // (`getGalleryImages` / `data.files`) est vide → les images/documents EXISTANTS ne s'affichent pas à l'édition.
+  // Repli sur la ligne allégée si le chargement échoue (au moins le form s'ouvre).
+  const EDIT_LOAD_METHOD: Record<string, "poi" | "organization" | "project" | "event"> = {
+    poi: "poi", organizations: "organization", projects: "project", events: "event",
+  };
+  const openEditEntity = async (item: unknown, realId: string | undefined): Promise<void> => {
+    const method = EDIT_LOAD_METHOD[resource.entityType];
+    const sdk = me as unknown as Record<string, ((a: { id: string }) => Promise<unknown>) | undefined> | null;
+    if (sdk && realId && method && typeof sdk[method] === "function") {
+      try {
+        const full = await sdk[method]!({ id: realId });
+        if (full) { setEditEntity(grantCostumAdmin(full) as unknown as EntityTypes); return; }
+      } catch { /* repli sur la ligne allégée */ }
+    }
+    setEditEntity(grantCostumAdmin(item) as unknown as EntityTypes);
   };
   const t = useT();
   // Second hook nommé : `t` reste réservé aux LocalizedString de config, `tAdmin` au namespace du module.
@@ -448,7 +466,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         {rowActions.includes("edit") && editModal.enabled && (
-                          <DropdownMenuItem onClick={() => setEditEntity(grantCostumAdmin(item) as unknown as EntityTypes)}>
+                          <DropdownMenuItem onClick={() => void openEditEntity(item, hasRealId ? id : undefined)}>
                             <Pencil className="mr-2 h-4 w-4" /> {tAdmin("AdminResourceTable.edit")}
                           </DropdownMenuItem>
                         )}
