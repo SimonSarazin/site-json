@@ -1,3 +1,5 @@
+import { useTheme } from "next-themes";
+
 import { useClientModule } from "@/hooks/useClientModule";
 
 interface MarkdownEditorProps {
@@ -21,6 +23,11 @@ interface MarkdownEditorProps {
  * initial (1er render client), un skeleton est rendu.
  */
 export function MarkdownEditor({ value, onChange, height = 200, preview = "edit" }: MarkdownEditorProps) {
+  // `@uiw/react-md-editor` se thème via l'attribut `data-color-mode="light"|"dark"` sur un wrapper (ou <html>).
+  // On le branche sur le thème GLOBAL du site (next-themes) au lieu d'un "light" figé → l'éditeur suit
+  // le clair/sombre. `resolvedTheme` résout aussi le mode "system".
+  const { resolvedTheme } = useTheme();
+  const colorMode: "light" | "dark" = resolvedTheme === "dark" ? "dark" : "light";
   const [mounted, mod] = useClientModule(() => import("@uiw/react-md-editor"));
 
   if (!mounted || !mod) {
@@ -37,7 +44,7 @@ export function MarkdownEditor({ value, onChange, height = 200, preview = "edit"
   const MDEditor = mod.default;
 
   return (
-    <div data-color-mode="light">
+    <div data-color-mode={colorMode}>
       <MDEditor
         value={value}
         onChange={(val) => onChange?.(val || "")}
