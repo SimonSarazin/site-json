@@ -15,7 +15,7 @@
       "fr",
       "en"
     ],
-    "favicon": "/images/maisonSportSanteLaTampon/logo.svg",
+    "favicon": "/images/maisonSportSanteLaTampon/pictogramme.png",
     "themeColor": "#2ab3ab",
     "keywords": [
       "sport santé",
@@ -33,6 +33,7 @@
     "type": "transparent-scroll",
     "path": "/",
     "logo": "images/maisonSportSanteLaTampon/logo.svg",
+    "logoClass": "h-[60px] w-auto shrink-0 object-contain group-hover:scale-110 transition-transform",
     "logoAlt": {
       "fr": "Ekilib.re – Maison Sport Santé du Tampon",
       "en": "Ekilib.re – Sport Health House of Le Tampon"
@@ -120,7 +121,7 @@
               "fr": "Trouvez une activité physique adaptée à votre âge et à votre état de santé sur la commune du Tampon. Accessible à tous, gratuit sur prescription médicale.",
               "en": "Find a physical activity adapted to your age and health condition in Le Tampon. Open to everyone, free with a medical prescription."
             },
-            "backgroundImage": "/images/sportSanteBienetre/hero.jpg",
+            "backgroundImage": "/images/maisonSportSanteLaTampon/hero.jpg",
             "backgroundImageAlt": {
               "fr": "Activité physique adaptée au Tampon – Ekilib.re",
               "en": "Adapted physical activity in Le Tampon – Ekilib.re"
@@ -451,6 +452,7 @@
               "fr": "Explorez les créneaux sport santé labellisés de la commune du Tampon et trouvez l'activité adaptée à votre situation.",
               "en": "Explore the labeled sport health slots in Le Tampon and find the activity that suits your situation."
             },
+            "filtersClassName": "mx-auto flex w-full max-w-4xl flex-col gap-3 rounded-2xl border border-border/60 bg-card/95 p-3 shadow-2xl backdrop-blur-md",
             "buttons": [
               {
                 "label": {
@@ -458,6 +460,14 @@
                   "en": "How to register?"
                 },
                 "href": "/s-informer",
+                "variant": "outline"
+              },
+              {
+                "label": {
+                  "fr": "Structure référentes",
+                  "en": "Reference structures"
+                },
+                "href": "/structure",
                 "variant": "outline"
               }
             ],
@@ -670,6 +680,12 @@
           "type": "searchProStatic",
           "id": "creneaux-list",
           "props": {
+            "customHeader": {
+              "title": {
+                "fr": "Toutes les créneaux",
+                "en": "All slots"
+              }
+            },
             "useFilter": true,
             "showMap": true,
             "enableMap": true,
@@ -689,7 +705,8 @@
                     "97430",
                     "97418"
                   ]
-                }
+                },
+                "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdn1jcq445i0mb9bap7": "Validé"
               }
             },
             "list": {
@@ -1481,6 +1498,9 @@
         "fr": "Espace Professionnel de Santé – Ekilib.re",
         "en": "Health Professional Area – Ekilib.re"
       },
+      "auth": {
+        "required": true
+      },
       "layout": "fullwidth",
       "sections": [
         {
@@ -1495,7 +1515,7 @@
               "fr": "Médecins, kinésithérapeutes, infirmiers… Retrouvez ici les informations et documents utiles pour orienter vos patients vers un créneau adapté ou prescrire de l'Activité Physique Adaptée (APA).",
               "en": "Doctors, physiotherapists, nurses… Find here the information and documents you need to direct your patients to a suitable slot or prescribe Adapted Physical Activity (APA)."
             },
-            "backgroundImage": "/images/sportSanteBienetre/hero2.jpg",
+            "backgroundImage": "/images/maisonSportSanteLaTampon/hero2.jpg",
             "backgroundImageAlt": {
               "fr": "Espace professionnels de santé Ekilib.re",
               "en": "Ekilib.re health professionals area"
@@ -1737,6 +1757,70 @@
               }
             ],
             "align": "center"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/structure",
+      "title": {
+        "fr": "Les structures",
+        "en": "Structures"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "structure-sport-sante",
+          "props": {
+            "headline": {
+              "fr": "Structures",
+              "en": "Structures"
+            },
+            "subhead": {
+              "fr": "Découvrez les structures référentes",
+              "en": "Discover reference structures in Réunion"
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher une structure...",
+              "en": "Search for a structure..."
+            }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "section-structure-cards",
+          "props": {
+            "useFilter": true,
+            "showMap": true,
+            "enableMap": true,
+            "defaultViewMode": "split",
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "baseParams": {
+              "defaultTypes": [
+                "organizations"
+              ],
+              "notSourceKey": true,
+              "defaultFilters": {
+                "source.key": "sportSanteBienetre",
+                "address.postalCode": {
+                  "$in": [
+                    "97430",
+                    "97418"
+                  ]
+                }
+              }
+            },
+            "list": {
+              "columns": { "sm": 1, "md": 1, "lg": 1, "xl": 1 },
+              "card": { "type": "contact-card", "detailsMode": "drawer" }
+            },
+            "map": {
+              "marker": { "useItemImage": true, "style": "pin", "color": "primary" },
+              "itemAction": { "kind": "preview" }
+            }
           }
         }
       ]
@@ -2009,6 +2093,14 @@
       },
       "items": [
         {
+          "icon": "phone",
+          "value": {
+            "fr": "06 93 51 42 24",
+            "en": "+262 693 51 42 24"
+          },
+          "href": "tel:+262693514224"
+        },
+        {
           "icon": "map-pin",
           "lines": [
             {
@@ -2022,22 +2114,6 @@
           ]
         },
         {
-          "icon": "phone",
-          "value": {
-            "fr": "06 93 51 42 24",
-            "en": "+262 693 51 42 24"
-          },
-          "href": "tel:+262693514224"
-        },
-        {
-          "icon": "mail",
-          "value": {
-            "fr": "contact@ekilib.re",
-            "en": "contact@ekilib.re"
-          },
-          "href": "mailto:contact@ekilib.re"
-        },
-        {
           "icon": "clock",
           "lines": [
             {
@@ -2049,26 +2125,26 @@
               "en": "Saturday: 8:30am – 12:00pm"
             }
           ]
+        },
+        {
+          "icon": "mail",
+          "value": {
+            "fr": "contact@ekilib.re",
+            "en": "contact@ekilib.re"
+          },
+          "href": "mailto:contact@ekilib.re"
         }
       ]
     },
     "partners": {
       "logos": [
         {
-          "image": "images/sportSanteBienetre/partners/ars.jpeg",
+          "image": "images/maisonSportSanteLaTampon/logo-mss.jpg",
           "alt": {
-            "fr": "ARS La Réunion",
-            "en": "Regional Health Agency of Réunion"
+            "fr": "Maison Sport Santé du Tampon",
+            "en": "Sport Health House of Le Tampon"
           },
-          "href": "https://www.lareunion.ars.sante.fr/"
-        },
-        {
-          "image": "images/sportSanteBienetre/partners/ac-reunion.png",
-          "alt": {
-            "fr": "Jeunesse, Engagement et Sports – Académie de La Réunion",
-            "en": "Youth, Engagement and Sports – Réunion Academy"
-          },
-          "href": "https://www.ac-reunion.fr/jeunesse-engagement-sports"
+          "href": "https://ssbe.re/maison-sport-sante-mss/"
         }
       ]
     },
@@ -2221,7 +2297,8 @@
         "sidebarBorder": "oklch(0.29 0.022 205)",
         "sidebarRing": "oklch(0.72 0.10 185)"
       }
-    }
+    },
+     "customCSS": ".ssso-card .header-gradient {\n  background: linear-gradient(135deg, var(--accent), var(--warning))!important;\n}\n\n .sspt-card .header-gradient {\n background: linear-gradient(135deg, var(--primary), var(--muted-foreground))!important;\n} \n\n .ssso-card .border-card-border-left {\n border-color: var(--accent)!important;}"
   },
   "auth": {
     "login": {
