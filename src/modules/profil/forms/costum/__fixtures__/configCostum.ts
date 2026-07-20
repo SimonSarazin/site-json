@@ -21,6 +21,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../../..
 const CONFIG_FILE: Record<string, string> = {
   "equipements-sportifs": "config.prod.equipements-Sportifs.json",
   "tiers-lieux": "config.prod.tiers-lieux.json",
+  "parents62-parole": "config.prod.parents62.json",
 };
 
 /** Document costum BRUT (JSON config), tel que servi au runtime via `window.__CONFIG__.costumForms`. */

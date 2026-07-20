@@ -331,10 +331,38 @@ html {
   /* Barre du header transparent-dark (bg-header-bar, cf. shared.css) :
      teal de la charte parent62.org. */
   --header-bar: oklch(0.58 0.1 193);
+
+  /* ---- Code couleur par TERRITOIRE (CDC : une couleur par territoire) ----
+     Consommées par `map.marker.colorBy` / `card.tagColors` (configs) et le
+     référentiel src/data/territoires62.ts. Teintes APPROCHÉES de la carte des
+     territoires de parent62.org (captures 17/07/2026) — à valider par le
+     réseau (T0.5) : arrageois violet, artois vert-jaune, audomarois or,
+     boulonnais rouge, calaisis orange, entre-mer-et-terres turquoise,
+     fsm-henin-carvin magenta, fsm-lens-lievin taupe, ternois-bruaysis rose. */
+  --territoire-arrageois: oklch(0.55 0.15 295);
+  --territoire-artois: oklch(0.75 0.15 112);
+  --territoire-audomarois: oklch(0.78 0.14 75);
+  --territoire-boulonnais: oklch(0.6 0.19 28);
+  --territoire-calaisis: oklch(0.72 0.17 55);
+  --territoire-entre-mer-et-terres: oklch(0.75 0.11 200);
+  --territoire-fsm-henin-carvin: oklch(0.6 0.15 355);
+  --territoire-fsm-lens-lievin: oklch(0.62 0.05 55);
+  --territoire-ternois-bruaysis: oklch(0.72 0.11 350);
 }
 
 .dark {
   --header-bar: oklch(0.42 0.08 200);
+
+  /* Territoires : mêmes teintes éclaircies pour rester lisibles sur fond sombre. */
+  --territoire-arrageois: oklch(0.68 0.14 295);
+  --territoire-artois: oklch(0.8 0.15 112);
+  --territoire-audomarois: oklch(0.82 0.13 75);
+  --territoire-boulonnais: oklch(0.7 0.17 28);
+  --territoire-calaisis: oklch(0.78 0.15 55);
+  --territoire-entre-mer-et-terres: oklch(0.8 0.1 200);
+  --territoire-fsm-henin-carvin: oklch(0.7 0.14 355);
+  --territoire-fsm-lens-lievin: oklch(0.7 0.05 55);
+  --territoire-ternois-bruaysis: oklch(0.78 0.1 350);
 }
 
 /* ---- Bandes et panneaux de la page d'accueil (charte parent62.org) ----
@@ -412,4 +440,25 @@ html {
 .p62-btn:hover {
   background: #0c8585;
   transform: translateY(-1px);
+}
+
+/* Liste des communes d'un territoire (pages /territoires/<slug>) : colonnes
+   CSS car les utilities Tailwind `columns-*` ne sont pas safelistées pour le
+   HTML venant de la config. */
+.p62-communes {
+  columns: 2;
+  column-gap: 2rem;
+  list-style: none;
+  padding: 0;
+}
+
+.p62-communes li {
+  padding: 0.15rem 0;
+  break-inside: avoid;
+}
+
+@media (min-width: 768px) {
+  .p62-communes {
+    columns: 3;
+  }
 }

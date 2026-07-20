@@ -34,8 +34,19 @@ export function computeUrlFromFilters(
   else params.delete("search");
 
   for (const group of filterGroups) {
-    // entityList & scopeList : sélection en `searchByFields`, clé = nom d'option.
-    if (group.type === "entityList" || group.type === "scopeList") {
+    // dateRange : sélection en `searchByFields` sous la clé du GROUPE —
+    // miroir `?<group.id>=start[,end]`.
+    if (group.type === "dateRange") {
+      const entry = searchByFields[group.id];
+      const range = (entry?.value ?? {}) as { start?: string; end?: string };
+      const csv = [range.start, range.end].filter(Boolean).join(",");
+      if (csv) params.set(group.id, csv);
+      else params.delete(group.id);
+      continue;
+    }
+    // entityList, scopeList & searchTargets : sélection en `searchByFields`,
+    // clé = nom d'option.
+    if (group.type === "entityList" || group.type === "scopeList" || group.type === "searchTargets") {
       const optionNames = (group.options ?? []).map((o) => o.name || o.id);
       // Options pas encore chargées (query entités/zones en vol) : on ne touche
       // PAS au param — sinon un deep-link `?<group.id>=…` serait effacé avant que

@@ -41,9 +41,178 @@
       },
       {
         "label": {
+          "fr": "Le réseau"
+        },
+        "children": [
+          {
+            "label": {
+              "fr": "Du REAAP au Réseau Parentalité"
+            },
+            "path": "/reseau/presentation",
+            "icon": "network",
+            "description": {
+              "fr": "L'histoire, les valeurs et les membres du réseau"
+            }
+          },
+          {
+            "label": {
+              "fr": "La Charte du REAAP 62"
+            },
+            "path": "/reseau/charte",
+            "icon": "book-open",
+            "description": {
+              "fr": "8 valeurs au service de la « cause des parents »"
+            }
+          },
+          {
+            "label": {
+              "fr": "Équipe & contact"
+            },
+            "path": "/reseau/equipe",
+            "icon": "users",
+            "description": {
+              "fr": "L'animation départementale et les 9 coordinations de territoire"
+            }
+          },
+          {
+            "label": {
+              "fr": "Nos champs d'actions"
+            },
+            "path": "/reseau/champs-actions",
+            "icon": "heart-handshake",
+            "description": {
+              "fr": "REAAP, CLAS et LAEP : les dispositifs portés par le réseau"
+            }
+          },
+          {
+            "label": {
+              "fr": "Le Mois de la Parentalité"
+            },
+            "href": "https://www.parent62.org/semaine-de-la-parentalite/",
+            "icon": "calendar",
+            "description": {
+              "fr": "Les éditions annuelles, sur parents62.org"
+            }
+          }
+        ]
+      },
+      {
+        "label": {
+          "fr": "Territoires"
+        },
+        "children": [
+          {
+            "label": {
+              "fr": "Arrageois"
+            },
+            "path": "/territoires/arrageois",
+            "description": {
+              "fr": "Comité local — Bénédicte Porcaro"
+            }
+          },
+          {
+            "label": {
+              "fr": "Artois"
+            },
+            "path": "/territoires/artois",
+            "description": {
+              "fr": "Comité local — Margaux Daron"
+            }
+          },
+          {
+            "label": {
+              "fr": "Audomarois"
+            },
+            "path": "/territoires/audomarois",
+            "description": {
+              "fr": "Comité local — Ludivine Dupire Fait"
+            }
+          },
+          {
+            "label": {
+              "fr": "Boulonnais"
+            },
+            "path": "/territoires/boulonnais",
+            "description": {
+              "fr": "Comité local — Céline Devillard"
+            }
+          },
+          {
+            "label": {
+              "fr": "Calaisis"
+            },
+            "path": "/territoires/calaisis",
+            "description": {
+              "fr": "Comité local — Laëtitia Dumoulin"
+            }
+          },
+          {
+            "label": {
+              "fr": "Entre Mer et Terres"
+            },
+            "path": "/territoires/entre-mer-et-terres",
+            "description": {
+              "fr": "Comité local — Adeline Cadet"
+            }
+          },
+          {
+            "label": {
+              "fr": "Familles en sol mineur Hénin Carvin"
+            },
+            "path": "/territoires/fsm-henin-carvin",
+            "description": {
+              "fr": "Comité local — Fiona Karkri"
+            }
+          },
+          {
+            "label": {
+              "fr": "Familles en sol mineur Lens Liévin"
+            },
+            "path": "/territoires/fsm-lens-lievin",
+            "description": {
+              "fr": "Comité local — Guillaume Mondot"
+            }
+          },
+          {
+            "label": {
+              "fr": "Ternois Bruaysis"
+            },
+            "path": "/territoires/ternois-bruaysis",
+            "description": {
+              "fr": "Comité local — Sarah Darras"
+            }
+          }
+        ]
+      },
+      {
+        "label": {
+          "fr": "Parents"
+        },
+        "path": "/parents"
+      },
+      {
+        "label": {
+          "fr": "Professionnels"
+        },
+        "path": "/pro"
+      },
+      {
+        "label": {
+          "fr": "Rechercher"
+        },
+        "path": "/recherche"
+      },
+      {
+        "label": {
           "fr": "Actions"
         },
         "path": "/actions"
+      },
+      {
+        "label": {
+          "fr": "Paroles de parents"
+        },
+        "path": "/paroles"
       },
       {
         "label": {
@@ -119,16 +288,16 @@
             "ctaButtons": [
               {
                 "label": {
-                  "fr": "Découvrir les actions"
+                  "fr": "Je suis parent"
                 },
-                "path": "/actions",
+                "path": "/parents",
                 "variant": "default"
               },
               {
                 "label": {
-                  "fr": "Rejoindre la communauté"
+                  "fr": "Je suis professionnel·le"
                 },
-                "path": "/communaute",
+                "path": "/pro",
                 "variant": "secondary"
               }
             ],
@@ -153,6 +322,13 @@
           "id": "mission",
           "props": {
             "html": "<section class=\"py-24 px-4\"><div class=\"container mx-auto max-w-6xl grid md:grid-cols-2 gap-12 items-center\"><div class=\"space-y-6\"><h2 class=\"text-3xl md:text-4xl font-bold text-foreground\">Qu'est-ce que le Réseau Parentalité 62 ?</h2><p class=\"text-lg text-muted-foreground\">Le <span class=\"text-primary font-semibold\">Réseau Parentalité 62</span> fédère les acteurs du soutien à la parentalité du Pas-de-Calais : institutions, associations, professionnels et parents.</p><p class=\"text-muted-foreground\">Il facilite l'interconnaissance entre acteurs, la mise en réseau et la visibilité des actions menées auprès des familles — pour qu'aucun parent ne reste seul face à ses questions.</p></div><div class=\"rounded-xl overflow-hidden border border-border bg-white p-10\"><img src=\"/images/parents62/logo.png\" alt=\"Logo du Réseau Parentalité 62\" class=\"w-full h-auto\" loading=\"lazy\" /></div></div></section>"
+          }
+        },
+        {
+          "type": "html",
+          "id": "votre-territoire",
+          "props": {
+            "html": "<section class=\"p62-deep py-16 px-4\"><div class=\"container mx-auto max-w-5xl text-center space-y-6\"><h2>Votre territoire</h2><p class=\"text-white/80\">Chaque territoire du Pas-de-Calais a sa couleur : cliquez sur le vôtre pour découvrir les actions, événements et paroles près de chez vous.</p><div class=\"flex flex-wrap items-center justify-center gap-4\"><a href=\"/territoires/arrageois\" class=\"p62-bubble\" style=\"--s:104px;background:var(--territoire-arrageois)\">Arrageois</a><a href=\"/territoires/artois\" class=\"p62-bubble\" style=\"--s:104px;background:var(--territoire-artois)\">Artois</a><a href=\"/territoires/audomarois\" class=\"p62-bubble\" style=\"--s:104px;background:var(--territoire-audomarois)\">Audomarois</a><a href=\"/territoires/boulonnais\" class=\"p62-bubble\" style=\"--s:104px;background:var(--territoire-boulonnais)\">Boulonnais</a><a href=\"/territoires/calaisis\" class=\"p62-bubble\" style=\"--s:104px;background:var(--territoire-calaisis)\">Calaisis</a><a href=\"/territoires/entre-mer-et-terres\" class=\"p62-bubble\" style=\"--s:104px;background:var(--territoire-entre-mer-et-terres)\">Entre Mer et Terres</a><a href=\"/territoires/fsm-henin-carvin\" class=\"p62-bubble\" style=\"--s:104px;background:var(--territoire-fsm-henin-carvin)\">FSM Hénin-Carvin</a><a href=\"/territoires/fsm-lens-lievin\" class=\"p62-bubble\" style=\"--s:104px;background:var(--territoire-fsm-lens-lievin)\">FSM Lens-Liévin</a><a href=\"/territoires/ternois-bruaysis\" class=\"p62-bubble\" style=\"--s:104px;background:var(--territoire-ternois-bruaysis)\">Ternois Bruaysis</a></div></div></section>"
           }
         },
         {
@@ -240,7 +416,204 @@
               "fr": "Parents, professionnels, bénévoles : il y a une place pour chacun·e"
             },
             "columns": {
+              "lg": 4
+            },
+            "actions": [
+              {
+                "icon": "search",
+                "title": {
+                  "fr": "Rechercher"
+                },
+                "subtitle": {
+                  "fr": "Actions, événements, paroles…"
+                },
+                "href": "/recherche",
+                "color": "primary"
+              },
+              {
+                "icon": "message-circle-heart",
+                "title": {
+                  "fr": "Paroles de parents"
+                },
+                "subtitle": {
+                  "fr": "À écouter ou à lire"
+                },
+                "href": "/paroles",
+                "color": "primary"
+              },
+              {
+                "icon": "calendar",
+                "title": {
+                  "fr": "Voir l'agenda"
+                },
+                "subtitle": {
+                  "fr": "Rencontres & ateliers"
+                },
+                "href": "/agenda",
+                "color": "primary"
+              },
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Rejoindre la communauté"
+                },
+                "subtitle": {
+                  "fr": "Parents & professionnels"
+                },
+                "href": "/communaute",
+                "color": "primary"
+              }
+            ]
+          }
+        }
+      ],
+      "seo": {
+        "title": {
+          "fr": "Réseau Parentalité 62 - Le réseau du soutien à la parentalité du Pas-de-Calais"
+        },
+        "description": {
+          "fr": "S'informer, se rencontrer et agir ensemble pour accompagner les familles du Pas-de-Calais : actions, événements, paroles de parents et structures près de chez vous."
+        },
+        "structuredData": {
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "name": "Réseau Parentalité 62",
+          "url": "https://reseau.parents62.org",
+          "logo": "https://reseau.parents62.org/images/parents62/logo.png",
+          "sameAs": [
+            "https://www.parent62.org"
+          ]
+        }
+      }
+    },
+    {
+      "path": "/parents",
+      "title": {
+        "fr": "Vous êtes parent dans le Pas-de-Calais - Réseau Parentalité 62"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Parents - Réseau Parentalité 62"
+        },
+        "description": {
+          "fr": "Parents du Pas-de-Calais : trouvez des actions, des rencontres et des paroles de parents près de chez vous, territoire par territoire."
+        }
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "parents-header",
+          "props": {
+            "headline": {
+              "fr": "Vous êtes parent dans le Pas-de-Calais"
+            },
+            "subhead": {
+              "fr": "Des lieux, des rencontres et des ressources près de chez vous, pour vivre votre parentalité plus sereinement."
+            },
+            "showSearch": false
+          }
+        },
+        {
+          "type": "html",
+          "id": "parents-intro",
+          "props": {
+            "html": "<section class=\"py-12 px-4\"><div class=\"container mx-auto max-w-3xl space-y-4 text-center\"><p class=\"text-lg text-muted-foreground\">Être parent, ça se partage. Le réseau rassemble les acteurs du soutien à la parentalité du département : trouvez une action près de chez vous, écoutez ce que d'autres parents traversent, ou venez simplement échanger.</p></div></section>"
+          }
+        },
+        {
+          "type": "action-tiles",
+          "id": "parents-tuiles",
+          "props": {
+            "headline": {
+              "fr": "Par où commencer ?"
+            },
+            "columns": {
               "lg": 3
+            },
+            "actions": [
+              {
+                "icon": "message-circle-heart",
+                "title": {
+                  "fr": "Écouter des paroles de parents"
+                },
+                "subtitle": {
+                  "fr": "Compliqué, difficile… et à changer"
+                },
+                "href": "/paroles",
+                "color": "primary"
+              },
+              {
+                "icon": "search",
+                "title": {
+                  "fr": "Trouver une action près de chez moi"
+                },
+                "subtitle": {
+                  "fr": "Filtrée par territoire et par âge"
+                },
+                "href": "/recherche?typeInfo=typeinfo-actions&public=public:parents",
+                "color": "primary"
+              },
+              {
+                "icon": "calendar",
+                "title": {
+                  "fr": "Voir l'agenda"
+                },
+                "subtitle": {
+                  "fr": "Rencontres et ateliers familles"
+                },
+                "href": "/agenda",
+                "color": "primary"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/pro",
+      "title": {
+        "fr": "Vous accompagnez des familles - Réseau Parentalité 62"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Professionnels - Réseau Parentalité 62"
+        },
+        "description": {
+          "fr": "Professionnel·les du soutien à la parentalité dans le Pas-de-Calais : référencez vos actions, rejoignez le réseau et suivez l'agenda."
+        }
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "pro-header",
+          "props": {
+            "headline": {
+              "fr": "Vous accompagnez des familles"
+            },
+            "subhead": {
+              "fr": "Professionnel·les et bénévoles de la parentalité : rendez vos actions visibles et rejoignez le réseau départemental."
+            },
+            "showSearch": false
+          }
+        },
+        {
+          "type": "html",
+          "id": "pro-intro",
+          "props": {
+            "html": "<section class=\"py-12 px-4\"><div class=\"container mx-auto max-w-3xl space-y-4 text-center\"><p class=\"text-lg text-muted-foreground\">Le réseau facilite l'interconnaissance entre acteurs, la mise en réseau et la visibilité des actions menées auprès des familles. Référencez vos actions et événements, et appuyez-vous sur les paroles de parents pour nourrir vos pratiques.</p></div></section>"
+          }
+        },
+        {
+          "type": "action-tiles",
+          "id": "pro-tuiles",
+          "props": {
+            "headline": {
+              "fr": "Par où commencer ?"
+            },
+            "columns": {
+              "lg": 4
             },
             "actions": [
               {
@@ -257,23 +630,34 @@
               {
                 "icon": "users",
                 "title": {
-                  "fr": "Rejoindre la communauté"
+                  "fr": "Rejoindre le réseau"
                 },
                 "subtitle": {
-                  "fr": "Parents & professionnels"
+                  "fr": "Structures et professionnel·les"
                 },
                 "href": "/communaute",
                 "color": "primary"
               },
               {
-                "icon": "calendar",
+                "icon": "search",
                 "title": {
-                  "fr": "Voir l'agenda"
+                  "fr": "Explorer les événements pro"
                 },
                 "subtitle": {
-                  "fr": "Rencontres & ateliers"
+                  "fr": "Formations, rencontres réseau"
                 },
-                "href": "/agenda",
+                "href": "/recherche?typeInfo=typeinfo-evenements&public=public:pro",
+                "color": "primary"
+              },
+              {
+                "icon": "message-circle-heart",
+                "title": {
+                  "fr": "Écouter les parents"
+                },
+                "subtitle": {
+                  "fr": "Paroles recueillies par le réseau"
+                },
+                "href": "/paroles",
                 "color": "primary"
               }
             ]
@@ -320,7 +704,7 @@
           "props": {
             "useFilter": true,
             "showMap": false,
-            "enableMap": false,
+            "enableMap": true,
             "showActiveFiltersTypes": true,
             "showActiveFiltersTags": true,
             "disableInfiniteScroll": false,
@@ -342,12 +726,71 @@
               },
               "card": {
                 "type": "default",
-                "detailsMode": "drawer"
+                "detailsMode": "drawer",
+                "tagColors": {
+                  "mapping": {
+                    "territoire62:arrageois": "var(--territoire-arrageois)",
+                    "territoire62:artois": "var(--territoire-artois)",
+                    "territoire62:audomarois": "var(--territoire-audomarois)",
+                    "territoire62:boulonnais": "var(--territoire-boulonnais)",
+                    "territoire62:calaisis": "var(--territoire-calaisis)",
+                    "territoire62:entre-mer-et-terres": "var(--territoire-entre-mer-et-terres)",
+                    "territoire62:fsm-henin-carvin": "var(--territoire-fsm-henin-carvin)",
+                    "territoire62:fsm-lens-lievin": "var(--territoire-fsm-lens-lievin)",
+                    "territoire62:ternois-bruaysis": "var(--territoire-ternois-bruaysis)"
+                  },
+                  "labels": {
+                    "territoire62:arrageois": "Arrageois",
+                    "territoire62:artois": "Artois",
+                    "territoire62:audomarois": "Audomarois",
+                    "territoire62:boulonnais": "Boulonnais",
+                    "territoire62:calaisis": "Calaisis",
+                    "territoire62:entre-mer-et-terres": "Entre Mer et Terres",
+                    "territoire62:fsm-henin-carvin": "Familles en sol mineur Hénin Carvin",
+                    "territoire62:fsm-lens-lievin": "Familles en sol mineur Lens Liévin",
+                    "territoire62:ternois-bruaysis": "Ternois Bruaysis"
+                  },
+                  "hidePrefixes": [
+                    "public:",
+                    "age:"
+                  ]
+                }
+              }
+            },
+            "map": {
+              "cluster": true,
+              "itemAction": {
+                "kind": "preview"
+              },
+              "marker": {
+                "style": "pin",
+                "colorBy": {
+                  "path": "tags",
+                  "mapping": {
+                    "territoire62:arrageois": "var(--territoire-arrageois)",
+                    "territoire62:artois": "var(--territoire-artois)",
+                    "territoire62:audomarois": "var(--territoire-audomarois)",
+                    "territoire62:boulonnais": "var(--territoire-boulonnais)",
+                    "territoire62:calaisis": "var(--territoire-calaisis)",
+                    "territoire62:entre-mer-et-terres": "var(--territoire-entre-mer-et-terres)",
+                    "territoire62:fsm-henin-carvin": "var(--territoire-fsm-henin-carvin)",
+                    "territoire62:fsm-lens-lievin": "var(--territoire-fsm-lens-lievin)",
+                    "territoire62:ternois-bruaysis": "var(--territoire-ternois-bruaysis)"
+                  }
+                }
               }
             }
           }
         }
-      ]
+      ],
+      "seo": {
+        "title": {
+          "fr": "Les actions du réseau - Réseau Parentalité 62"
+        },
+        "description": {
+          "fr": "Ateliers, groupes de parole et lieux d'accueil de soutien à la parentalité dans le Pas-de-Calais, filtrables par territoire et par thème."
+        }
+      }
     },
     {
       "path": "/agenda",
@@ -397,13 +840,27 @@
               "tags": true
             },
             "detailsMode": "drawer",
-            "enableMap": false,
+            "enableMap": true,
             "mapView": "map",
             "map": {
               "marker": {
                 "useItemImage": true,
                 "style": "pin",
-                "color": "primary"
+                "color": "primary",
+                "colorBy": {
+                  "path": "tags",
+                  "mapping": {
+                    "territoire62:arrageois": "var(--territoire-arrageois)",
+                    "territoire62:artois": "var(--territoire-artois)",
+                    "territoire62:audomarois": "var(--territoire-audomarois)",
+                    "territoire62:boulonnais": "var(--territoire-boulonnais)",
+                    "territoire62:calaisis": "var(--territoire-calaisis)",
+                    "territoire62:entre-mer-et-terres": "var(--territoire-entre-mer-et-terres)",
+                    "territoire62:fsm-henin-carvin": "var(--territoire-fsm-henin-carvin)",
+                    "territoire62:fsm-lens-lievin": "var(--territoire-fsm-lens-lievin)",
+                    "territoire62:ternois-bruaysis": "var(--territoire-ternois-bruaysis)"
+                  }
+                }
               }
             },
             "columns": {
@@ -417,6 +874,932 @@
                 "parents62"
               ],
               "indexStepList": 12
+            }
+          }
+        }
+      ],
+      "seo": {
+        "title": {
+          "fr": "L'agenda du réseau - Réseau Parentalité 62"
+        },
+        "description": {
+          "fr": "Rencontres, ateliers et temps forts pour les familles du Pas-de-Calais, territoire par territoire."
+        }
+      }
+    },
+    {
+      "path": "/paroles",
+      "title": {
+        "fr": "Paroles de parents - Réseau Parentalité 62"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Paroles de parents - Réseau Parentalité 62"
+        },
+        "description": {
+          "fr": "Des paroles de parents du Pas-de-Calais, à écouter ou à lire : ce qui est compliqué, difficile, et ce qui est à changer."
+        }
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "paroles-header",
+          "props": {
+            "headline": {
+              "fr": "Paroles de parents"
+            },
+            "subhead": {
+              "fr": "Des mots de parents du Pas-de-Calais, à écouter ou à lire : ce qui est compliqué, ce qui est difficile, et ce qui est à changer."
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Ajouter une parole"
+                },
+                "icon": "plus",
+                "modal": "add-parents62-parole",
+                "variant": "primary"
+              }
+            ],
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher une parole..."
+            }
+          }
+        },
+        {
+          "type": "tabs",
+          "id": "paroles-tabs",
+          "props": {
+            "defaultTab": "toutes",
+            "tabs": [
+              {
+                "id": "toutes",
+                "label": {
+                  "fr": "Toutes"
+                },
+                "icon": "messages-square",
+                "content": [
+                  {
+                    "type": "searchProStatic",
+                    "id": "paroles-toutes",
+                    "props": {
+                      "useFilter": false,
+                      "showMap": true,
+                      "enableMap": true,
+                      "disableInfiniteScroll": false,
+                      "baseParams": {
+                        "defaultTypes": [
+                          "poi"
+                        ],
+                        "sourceKey": [
+                          "parents62"
+                        ],
+                        "defaultFilters": {
+                          "type": "affiche",
+                          "status": "validated"
+                        },
+                        "indexStepList": 12
+                      },
+                      "list": {
+                        "columns": {
+                          "sm": 1,
+                          "md": 2,
+                          "lg": 3
+                        },
+                        "card": {
+                          "type": "default",
+                          "detailsMode": "drawer",
+                          "showDescription": true,
+                          "tagColors": {
+                            "mapping": {
+                              "territoire62:arrageois": "var(--territoire-arrageois)",
+                              "territoire62:artois": "var(--territoire-artois)",
+                              "territoire62:audomarois": "var(--territoire-audomarois)",
+                              "territoire62:boulonnais": "var(--territoire-boulonnais)",
+                              "territoire62:calaisis": "var(--territoire-calaisis)",
+                              "territoire62:entre-mer-et-terres": "var(--territoire-entre-mer-et-terres)",
+                              "territoire62:fsm-henin-carvin": "var(--territoire-fsm-henin-carvin)",
+                              "territoire62:fsm-lens-lievin": "var(--territoire-fsm-lens-lievin)",
+                              "territoire62:ternois-bruaysis": "var(--territoire-ternois-bruaysis)"
+                            },
+                            "labels": {
+                              "territoire62:arrageois": "Arrageois",
+                              "territoire62:artois": "Artois",
+                              "territoire62:audomarois": "Audomarois",
+                              "territoire62:boulonnais": "Boulonnais",
+                              "territoire62:calaisis": "Calaisis",
+                              "territoire62:entre-mer-et-terres": "Entre Mer et Terres",
+                              "territoire62:fsm-henin-carvin": "Familles en sol mineur Hénin Carvin",
+                              "territoire62:fsm-lens-lievin": "Familles en sol mineur Lens Liévin",
+                              "territoire62:ternois-bruaysis": "Ternois Bruaysis"
+                            },
+                            "hidePrefixes": [
+                              "public:",
+                              "age:"
+                            ]
+                          }
+                        },
+                        "preview": {
+                          "type": "parole",
+                          "tagColors": {
+                            "mapping": {
+                              "territoire62:arrageois": "var(--territoire-arrageois)",
+                              "territoire62:artois": "var(--territoire-artois)",
+                              "territoire62:audomarois": "var(--territoire-audomarois)",
+                              "territoire62:boulonnais": "var(--territoire-boulonnais)",
+                              "territoire62:calaisis": "var(--territoire-calaisis)",
+                              "territoire62:entre-mer-et-terres": "var(--territoire-entre-mer-et-terres)",
+                              "territoire62:fsm-henin-carvin": "var(--territoire-fsm-henin-carvin)",
+                              "territoire62:fsm-lens-lievin": "var(--territoire-fsm-lens-lievin)",
+                              "territoire62:ternois-bruaysis": "var(--territoire-ternois-bruaysis)"
+                            },
+                            "labels": {
+                              "territoire62:arrageois": "Arrageois",
+                              "territoire62:artois": "Artois",
+                              "territoire62:audomarois": "Audomarois",
+                              "territoire62:boulonnais": "Boulonnais",
+                              "territoire62:calaisis": "Calaisis",
+                              "territoire62:entre-mer-et-terres": "Entre Mer et Terres",
+                              "territoire62:fsm-henin-carvin": "Familles en sol mineur Hénin Carvin",
+                              "territoire62:fsm-lens-lievin": "Familles en sol mineur Lens Liévin",
+                              "territoire62:ternois-bruaysis": "Ternois Bruaysis"
+                            },
+                            "hidePrefixes": [
+                              "public:",
+                              "age:"
+                            ]
+                          }
+                        },
+                        "previewParam": "parole-toutes"
+                      },
+                      "map": {
+                        "cluster": true,
+                        "itemAction": {
+                          "kind": "preview"
+                        },
+                        "marker": {
+                          "style": "pin",
+                          "colorBy": {
+                            "path": "tags",
+                            "mapping": {
+                              "territoire62:arrageois": "var(--territoire-arrageois)",
+                              "territoire62:artois": "var(--territoire-artois)",
+                              "territoire62:audomarois": "var(--territoire-audomarois)",
+                              "territoire62:boulonnais": "var(--territoire-boulonnais)",
+                              "territoire62:calaisis": "var(--territoire-calaisis)",
+                              "territoire62:entre-mer-et-terres": "var(--territoire-entre-mer-et-terres)",
+                              "territoire62:fsm-henin-carvin": "var(--territoire-fsm-henin-carvin)",
+                              "territoire62:fsm-lens-lievin": "var(--territoire-fsm-lens-lievin)",
+                              "territoire62:ternois-bruaysis": "var(--territoire-ternois-bruaysis)"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "complique",
+                "label": {
+                  "fr": "Compliqué"
+                },
+                "content": [
+                  {
+                    "type": "searchProStatic",
+                    "id": "paroles-complique",
+                    "props": {
+                      "useFilter": false,
+                      "showMap": false,
+                      "enableMap": false,
+                      "disableInfiniteScroll": false,
+                      "baseParams": {
+                        "defaultTypes": [
+                          "poi"
+                        ],
+                        "sourceKey": [
+                          "parents62"
+                        ],
+                        "defaultFilters": {
+                          "type": "affiche",
+                          "status": "validated",
+                          "category": "complique"
+                        },
+                        "indexStepList": 12
+                      },
+                      "list": {
+                        "columns": {
+                          "sm": 1,
+                          "md": 2,
+                          "lg": 3
+                        },
+                        "card": {
+                          "type": "default",
+                          "detailsMode": "drawer",
+                          "showDescription": true,
+                          "tagColors": {
+                            "mapping": {
+                              "territoire62:arrageois": "var(--territoire-arrageois)",
+                              "territoire62:artois": "var(--territoire-artois)",
+                              "territoire62:audomarois": "var(--territoire-audomarois)",
+                              "territoire62:boulonnais": "var(--territoire-boulonnais)",
+                              "territoire62:calaisis": "var(--territoire-calaisis)",
+                              "territoire62:entre-mer-et-terres": "var(--territoire-entre-mer-et-terres)",
+                              "territoire62:fsm-henin-carvin": "var(--territoire-fsm-henin-carvin)",
+                              "territoire62:fsm-lens-lievin": "var(--territoire-fsm-lens-lievin)",
+                              "territoire62:ternois-bruaysis": "var(--territoire-ternois-bruaysis)"
+                            },
+                            "labels": {
+                              "territoire62:arrageois": "Arrageois",
+                              "territoire62:artois": "Artois",
+                              "territoire62:audomarois": "Audomarois",
+                              "territoire62:boulonnais": "Boulonnais",
+                              "territoire62:calaisis": "Calaisis",
+                              "territoire62:entre-mer-et-terres": "Entre Mer et Terres",
+                              "territoire62:fsm-henin-carvin": "Familles en sol mineur Hénin Carvin",
+                              "territoire62:fsm-lens-lievin": "Familles en sol mineur Lens Liévin",
+                              "territoire62:ternois-bruaysis": "Ternois Bruaysis"
+                            },
+                            "hidePrefixes": [
+                              "public:",
+                              "age:"
+                            ]
+                          }
+                        },
+                        "preview": {
+                          "type": "parole",
+                          "tagColors": {
+                            "mapping": {
+                              "territoire62:arrageois": "var(--territoire-arrageois)",
+                              "territoire62:artois": "var(--territoire-artois)",
+                              "territoire62:audomarois": "var(--territoire-audomarois)",
+                              "territoire62:boulonnais": "var(--territoire-boulonnais)",
+                              "territoire62:calaisis": "var(--territoire-calaisis)",
+                              "territoire62:entre-mer-et-terres": "var(--territoire-entre-mer-et-terres)",
+                              "territoire62:fsm-henin-carvin": "var(--territoire-fsm-henin-carvin)",
+                              "territoire62:fsm-lens-lievin": "var(--territoire-fsm-lens-lievin)",
+                              "territoire62:ternois-bruaysis": "var(--territoire-ternois-bruaysis)"
+                            },
+                            "labels": {
+                              "territoire62:arrageois": "Arrageois",
+                              "territoire62:artois": "Artois",
+                              "territoire62:audomarois": "Audomarois",
+                              "territoire62:boulonnais": "Boulonnais",
+                              "territoire62:calaisis": "Calaisis",
+                              "territoire62:entre-mer-et-terres": "Entre Mer et Terres",
+                              "territoire62:fsm-henin-carvin": "Familles en sol mineur Hénin Carvin",
+                              "territoire62:fsm-lens-lievin": "Familles en sol mineur Lens Liévin",
+                              "territoire62:ternois-bruaysis": "Ternois Bruaysis"
+                            },
+                            "hidePrefixes": [
+                              "public:",
+                              "age:"
+                            ]
+                          }
+                        },
+                        "previewParam": "parole-complique"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "difficile",
+                "label": {
+                  "fr": "Difficile"
+                },
+                "content": [
+                  {
+                    "type": "searchProStatic",
+                    "id": "paroles-difficile",
+                    "props": {
+                      "useFilter": false,
+                      "showMap": false,
+                      "enableMap": false,
+                      "disableInfiniteScroll": false,
+                      "baseParams": {
+                        "defaultTypes": [
+                          "poi"
+                        ],
+                        "sourceKey": [
+                          "parents62"
+                        ],
+                        "defaultFilters": {
+                          "type": "affiche",
+                          "status": "validated",
+                          "category": "difficile"
+                        },
+                        "indexStepList": 12
+                      },
+                      "list": {
+                        "columns": {
+                          "sm": 1,
+                          "md": 2,
+                          "lg": 3
+                        },
+                        "card": {
+                          "type": "default",
+                          "detailsMode": "drawer",
+                          "showDescription": true,
+                          "tagColors": {
+                            "mapping": {
+                              "territoire62:arrageois": "var(--territoire-arrageois)",
+                              "territoire62:artois": "var(--territoire-artois)",
+                              "territoire62:audomarois": "var(--territoire-audomarois)",
+                              "territoire62:boulonnais": "var(--territoire-boulonnais)",
+                              "territoire62:calaisis": "var(--territoire-calaisis)",
+                              "territoire62:entre-mer-et-terres": "var(--territoire-entre-mer-et-terres)",
+                              "territoire62:fsm-henin-carvin": "var(--territoire-fsm-henin-carvin)",
+                              "territoire62:fsm-lens-lievin": "var(--territoire-fsm-lens-lievin)",
+                              "territoire62:ternois-bruaysis": "var(--territoire-ternois-bruaysis)"
+                            },
+                            "labels": {
+                              "territoire62:arrageois": "Arrageois",
+                              "territoire62:artois": "Artois",
+                              "territoire62:audomarois": "Audomarois",
+                              "territoire62:boulonnais": "Boulonnais",
+                              "territoire62:calaisis": "Calaisis",
+                              "territoire62:entre-mer-et-terres": "Entre Mer et Terres",
+                              "territoire62:fsm-henin-carvin": "Familles en sol mineur Hénin Carvin",
+                              "territoire62:fsm-lens-lievin": "Familles en sol mineur Lens Liévin",
+                              "territoire62:ternois-bruaysis": "Ternois Bruaysis"
+                            },
+                            "hidePrefixes": [
+                              "public:",
+                              "age:"
+                            ]
+                          }
+                        },
+                        "preview": {
+                          "type": "parole",
+                          "tagColors": {
+                            "mapping": {
+                              "territoire62:arrageois": "var(--territoire-arrageois)",
+                              "territoire62:artois": "var(--territoire-artois)",
+                              "territoire62:audomarois": "var(--territoire-audomarois)",
+                              "territoire62:boulonnais": "var(--territoire-boulonnais)",
+                              "territoire62:calaisis": "var(--territoire-calaisis)",
+                              "territoire62:entre-mer-et-terres": "var(--territoire-entre-mer-et-terres)",
+                              "territoire62:fsm-henin-carvin": "var(--territoire-fsm-henin-carvin)",
+                              "territoire62:fsm-lens-lievin": "var(--territoire-fsm-lens-lievin)",
+                              "territoire62:ternois-bruaysis": "var(--territoire-ternois-bruaysis)"
+                            },
+                            "labels": {
+                              "territoire62:arrageois": "Arrageois",
+                              "territoire62:artois": "Artois",
+                              "territoire62:audomarois": "Audomarois",
+                              "territoire62:boulonnais": "Boulonnais",
+                              "territoire62:calaisis": "Calaisis",
+                              "territoire62:entre-mer-et-terres": "Entre Mer et Terres",
+                              "territoire62:fsm-henin-carvin": "Familles en sol mineur Hénin Carvin",
+                              "territoire62:fsm-lens-lievin": "Familles en sol mineur Lens Liévin",
+                              "territoire62:ternois-bruaysis": "Ternois Bruaysis"
+                            },
+                            "hidePrefixes": [
+                              "public:",
+                              "age:"
+                            ]
+                          }
+                        },
+                        "previewParam": "parole-difficile"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "a-changer",
+                "label": {
+                  "fr": "Ce qui est à changer"
+                },
+                "content": [
+                  {
+                    "type": "searchProStatic",
+                    "id": "paroles-a-changer",
+                    "props": {
+                      "useFilter": false,
+                      "showMap": false,
+                      "enableMap": false,
+                      "disableInfiniteScroll": false,
+                      "baseParams": {
+                        "defaultTypes": [
+                          "poi"
+                        ],
+                        "sourceKey": [
+                          "parents62"
+                        ],
+                        "defaultFilters": {
+                          "type": "affiche",
+                          "status": "validated",
+                          "category": "a-changer"
+                        },
+                        "indexStepList": 12
+                      },
+                      "list": {
+                        "columns": {
+                          "sm": 1,
+                          "md": 2,
+                          "lg": 3
+                        },
+                        "card": {
+                          "type": "default",
+                          "detailsMode": "drawer",
+                          "showDescription": true,
+                          "tagColors": {
+                            "mapping": {
+                              "territoire62:arrageois": "var(--territoire-arrageois)",
+                              "territoire62:artois": "var(--territoire-artois)",
+                              "territoire62:audomarois": "var(--territoire-audomarois)",
+                              "territoire62:boulonnais": "var(--territoire-boulonnais)",
+                              "territoire62:calaisis": "var(--territoire-calaisis)",
+                              "territoire62:entre-mer-et-terres": "var(--territoire-entre-mer-et-terres)",
+                              "territoire62:fsm-henin-carvin": "var(--territoire-fsm-henin-carvin)",
+                              "territoire62:fsm-lens-lievin": "var(--territoire-fsm-lens-lievin)",
+                              "territoire62:ternois-bruaysis": "var(--territoire-ternois-bruaysis)"
+                            },
+                            "labels": {
+                              "territoire62:arrageois": "Arrageois",
+                              "territoire62:artois": "Artois",
+                              "territoire62:audomarois": "Audomarois",
+                              "territoire62:boulonnais": "Boulonnais",
+                              "territoire62:calaisis": "Calaisis",
+                              "territoire62:entre-mer-et-terres": "Entre Mer et Terres",
+                              "territoire62:fsm-henin-carvin": "Familles en sol mineur Hénin Carvin",
+                              "territoire62:fsm-lens-lievin": "Familles en sol mineur Lens Liévin",
+                              "territoire62:ternois-bruaysis": "Ternois Bruaysis"
+                            },
+                            "hidePrefixes": [
+                              "public:",
+                              "age:"
+                            ]
+                          }
+                        },
+                        "preview": {
+                          "type": "parole",
+                          "tagColors": {
+                            "mapping": {
+                              "territoire62:arrageois": "var(--territoire-arrageois)",
+                              "territoire62:artois": "var(--territoire-artois)",
+                              "territoire62:audomarois": "var(--territoire-audomarois)",
+                              "territoire62:boulonnais": "var(--territoire-boulonnais)",
+                              "territoire62:calaisis": "var(--territoire-calaisis)",
+                              "territoire62:entre-mer-et-terres": "var(--territoire-entre-mer-et-terres)",
+                              "territoire62:fsm-henin-carvin": "var(--territoire-fsm-henin-carvin)",
+                              "territoire62:fsm-lens-lievin": "var(--territoire-fsm-lens-lievin)",
+                              "territoire62:ternois-bruaysis": "var(--territoire-ternois-bruaysis)"
+                            },
+                            "labels": {
+                              "territoire62:arrageois": "Arrageois",
+                              "territoire62:artois": "Artois",
+                              "territoire62:audomarois": "Audomarois",
+                              "territoire62:boulonnais": "Boulonnais",
+                              "territoire62:calaisis": "Calaisis",
+                              "territoire62:entre-mer-et-terres": "Entre Mer et Terres",
+                              "territoire62:fsm-henin-carvin": "Familles en sol mineur Hénin Carvin",
+                              "territoire62:fsm-lens-lievin": "Familles en sol mineur Lens Liévin",
+                              "territoire62:ternois-bruaysis": "Ternois Bruaysis"
+                            },
+                            "hidePrefixes": [
+                              "public:",
+                              "age:"
+                            ]
+                          }
+                        },
+                        "previewParam": "parole-a-changer"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/recherche",
+      "title": {
+        "fr": "Rechercher - Réseau Parentalité 62"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Rechercher dans le réseau - Réseau Parentalité 62"
+        },
+        "description": {
+          "fr": "Le moteur de recherche du Réseau Parentalité 62 : actions, événements, paroles de parents et structures, filtrables par territoire, public, âge, thème et date."
+        }
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "recherche-header",
+          "props": {
+            "headline": {
+              "fr": "Rechercher dans le réseau"
+            },
+            "subhead": {
+              "fr": "Actions, événements, paroles de parents et structures du Pas-de-Calais — filtrez par territoire, public, âge, thème ou date."
+            },
+            "showSearch": false
+          }
+        },
+        {
+          "type": "gridLayout",
+          "id": "recherche-grid",
+          "props": {
+            "leftColumns": 1,
+            "rightColumns": 3,
+            "gap": 4,
+            "leftSection": {
+              "type": "filters",
+              "id": "recherche-filtres",
+              "props": {
+                "title": {
+                  "fr": "Filtres"
+                },
+                "defaultOpenGroups": [
+                  "typeInfo",
+                  "territoire"
+                ],
+                "className": "lg:sticky lg:top-20",
+                "filterGroups": [
+                  {
+                    "id": "typeInfo",
+                    "label": {
+                      "fr": "Type d'information"
+                    },
+                    "type": "searchTargets",
+                    "optionStyle": "check",
+                    "options": [
+                      {
+                        "id": "typeinfo-actions",
+                        "label": {
+                          "fr": "Actions & projets"
+                        },
+                        "name": "typeinfo-actions",
+                        "target": {
+                          "defaultTypes": [
+                            "projects"
+                          ]
+                        }
+                      },
+                      {
+                        "id": "typeinfo-evenements",
+                        "label": {
+                          "fr": "Événements"
+                        },
+                        "name": "typeinfo-evenements",
+                        "target": {
+                          "defaultTypes": [
+                            "events"
+                          ]
+                        }
+                      },
+                      {
+                        "id": "typeinfo-paroles",
+                        "label": {
+                          "fr": "Paroles de parents"
+                        },
+                        "name": "typeinfo-paroles",
+                        "target": {
+                          "defaultTypes": [
+                            "poi"
+                          ],
+                          "defaultFilters": {
+                            "type": "affiche",
+                            "status": "validated"
+                          }
+                        }
+                      },
+                      {
+                        "id": "typeinfo-structures",
+                        "label": {
+                          "fr": "Structures & partenaires"
+                        },
+                        "name": "typeinfo-structures",
+                        "target": {
+                          "defaultTypes": [
+                            "organizations"
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "territoire",
+                    "label": {
+                      "fr": "Territoire"
+                    },
+                    "options": [
+                      {
+                        "id": "territoire62:arrageois",
+                        "label": {
+                          "fr": "Arrageois"
+                        },
+                        "name": "territoire62:arrageois",
+                        "color": "var(--territoire-arrageois)"
+                      },
+                      {
+                        "id": "territoire62:artois",
+                        "label": {
+                          "fr": "Artois"
+                        },
+                        "name": "territoire62:artois",
+                        "color": "var(--territoire-artois)"
+                      },
+                      {
+                        "id": "territoire62:audomarois",
+                        "label": {
+                          "fr": "Audomarois"
+                        },
+                        "name": "territoire62:audomarois",
+                        "color": "var(--territoire-audomarois)"
+                      },
+                      {
+                        "id": "territoire62:boulonnais",
+                        "label": {
+                          "fr": "Boulonnais"
+                        },
+                        "name": "territoire62:boulonnais",
+                        "color": "var(--territoire-boulonnais)"
+                      },
+                      {
+                        "id": "territoire62:calaisis",
+                        "label": {
+                          "fr": "Calaisis"
+                        },
+                        "name": "territoire62:calaisis",
+                        "color": "var(--territoire-calaisis)"
+                      },
+                      {
+                        "id": "territoire62:entre-mer-et-terres",
+                        "label": {
+                          "fr": "Entre Mer et Terres"
+                        },
+                        "name": "territoire62:entre-mer-et-terres",
+                        "color": "var(--territoire-entre-mer-et-terres)"
+                      },
+                      {
+                        "id": "territoire62:fsm-henin-carvin",
+                        "label": {
+                          "fr": "Familles en sol mineur Hénin Carvin"
+                        },
+                        "name": "territoire62:fsm-henin-carvin",
+                        "color": "var(--territoire-fsm-henin-carvin)"
+                      },
+                      {
+                        "id": "territoire62:fsm-lens-lievin",
+                        "label": {
+                          "fr": "Familles en sol mineur Lens Liévin"
+                        },
+                        "name": "territoire62:fsm-lens-lievin",
+                        "color": "var(--territoire-fsm-lens-lievin)"
+                      },
+                      {
+                        "id": "territoire62:ternois-bruaysis",
+                        "label": {
+                          "fr": "Ternois Bruaysis"
+                        },
+                        "name": "territoire62:ternois-bruaysis",
+                        "color": "var(--territoire-ternois-bruaysis)"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "public",
+                    "label": {
+                      "fr": "Public"
+                    },
+                    "options": [
+                      {
+                        "id": "public:parents",
+                        "label": {
+                          "fr": "Parents"
+                        },
+                        "name": "public:parents"
+                      },
+                      {
+                        "id": "public:pro",
+                        "label": {
+                          "fr": "Professionnels"
+                        },
+                        "name": "public:pro"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "ages",
+                    "label": {
+                      "fr": "Tranches d'âge"
+                    },
+                    "options": [
+                      {
+                        "id": "age:0-3",
+                        "label": {
+                          "fr": "0-3 ans"
+                        },
+                        "name": "age:0-3"
+                      },
+                      {
+                        "id": "age:4-6",
+                        "label": {
+                          "fr": "4-6 ans"
+                        },
+                        "name": "age:4-6"
+                      },
+                      {
+                        "id": "age:7-11",
+                        "label": {
+                          "fr": "7-11 ans"
+                        },
+                        "name": "age:7-11"
+                      },
+                      {
+                        "id": "age:12-17",
+                        "label": {
+                          "fr": "12-17 ans"
+                        },
+                        "name": "age:12-17"
+                      },
+                      {
+                        "id": "age:18-25",
+                        "label": {
+                          "fr": "18-25 ans"
+                        },
+                        "name": "age:18-25"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "themes",
+                    "label": {
+                      "fr": "Thèmes"
+                    },
+                    "options": [
+                      {
+                        "id": "éducation",
+                        "label": {
+                          "fr": "Éducation"
+                        },
+                        "name": "éducation"
+                      },
+                      {
+                        "id": "santé",
+                        "label": {
+                          "fr": "Santé"
+                        },
+                        "name": "santé"
+                      },
+                      {
+                        "id": "handicap",
+                        "label": {
+                          "fr": "Handicap"
+                        },
+                        "name": "handicap"
+                      },
+                      {
+                        "id": "séparation",
+                        "label": {
+                          "fr": "Séparation"
+                        },
+                        "name": "séparation"
+                      },
+                      {
+                        "id": "numérique",
+                        "label": {
+                          "fr": "Numérique"
+                        },
+                        "name": "numérique"
+                      },
+                      {
+                        "id": "loisirs",
+                        "label": {
+                          "fr": "Loisirs"
+                        },
+                        "name": "loisirs"
+                      },
+                      {
+                        "id": "petite enfance",
+                        "label": {
+                          "fr": "Petite enfance"
+                        },
+                        "name": "petite enfance"
+                      },
+                      {
+                        "id": "adolescence",
+                        "label": {
+                          "fr": "Adolescence"
+                        },
+                        "name": "adolescence"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "dates",
+                    "label": {
+                      "fr": "Dates"
+                    },
+                    "type": "dateRange",
+                    "field": "startDate"
+                  }
+                ]
+              }
+            },
+            "rightSection": {
+              "type": "searchProStatic",
+              "id": "recherche-resultats",
+              "props": {
+                "useFilter": true,
+                "showMap": true,
+                "enableMap": true,
+                "showActiveFiltersTypes": true,
+                "showActiveFiltersTags": true,
+                "disableInfiniteScroll": false,
+                "baseParams": {
+                  "defaultTypes": [
+                    "projects",
+                    "events",
+                    "poi",
+                    "organizations"
+                  ],
+                  "sourceKey": [
+                    "parents62"
+                  ],
+                  "searchBy": [
+                    "name",
+                    "address.addressLocality",
+                    "address.postalCode",
+                    "tags"
+                  ],
+                  "indexStepList": 20
+                },
+                "map": {
+                  "cluster": true,
+                  "itemAction": {
+                    "kind": "preview"
+                  },
+                  "marker": {
+                    "style": "pin",
+                    "colorBy": {
+                      "path": "tags",
+                      "mapping": {
+                        "territoire62:arrageois": "var(--territoire-arrageois)",
+                        "territoire62:artois": "var(--territoire-artois)",
+                        "territoire62:audomarois": "var(--territoire-audomarois)",
+                        "territoire62:boulonnais": "var(--territoire-boulonnais)",
+                        "territoire62:calaisis": "var(--territoire-calaisis)",
+                        "territoire62:entre-mer-et-terres": "var(--territoire-entre-mer-et-terres)",
+                        "territoire62:fsm-henin-carvin": "var(--territoire-fsm-henin-carvin)",
+                        "territoire62:fsm-lens-lievin": "var(--territoire-fsm-lens-lievin)",
+                        "territoire62:ternois-bruaysis": "var(--territoire-ternois-bruaysis)"
+                      }
+                    }
+                  }
+                },
+                "list": {
+                  "columns": {
+                    "sm": 1,
+                    "md": 2,
+                    "lg": 3
+                  },
+                  "card": {
+                    "type": "default",
+                    "detailsMode": "drawer",
+                    "showDescription": true,
+                    "tagColors": {
+                      "mapping": {
+                        "territoire62:arrageois": "var(--territoire-arrageois)",
+                        "territoire62:artois": "var(--territoire-artois)",
+                        "territoire62:audomarois": "var(--territoire-audomarois)",
+                        "territoire62:boulonnais": "var(--territoire-boulonnais)",
+                        "territoire62:calaisis": "var(--territoire-calaisis)",
+                        "territoire62:entre-mer-et-terres": "var(--territoire-entre-mer-et-terres)",
+                        "territoire62:fsm-henin-carvin": "var(--territoire-fsm-henin-carvin)",
+                        "territoire62:fsm-lens-lievin": "var(--territoire-fsm-lens-lievin)",
+                        "territoire62:ternois-bruaysis": "var(--territoire-ternois-bruaysis)"
+                      },
+                      "labels": {
+                        "territoire62:arrageois": "Arrageois",
+                        "territoire62:artois": "Artois",
+                        "territoire62:audomarois": "Audomarois",
+                        "territoire62:boulonnais": "Boulonnais",
+                        "territoire62:calaisis": "Calaisis",
+                        "territoire62:entre-mer-et-terres": "Entre Mer et Terres",
+                        "territoire62:fsm-henin-carvin": "Familles en sol mineur Hénin Carvin",
+                        "territoire62:fsm-lens-lievin": "Familles en sol mineur Lens Liévin",
+                        "territoire62:ternois-bruaysis": "Ternois Bruaysis"
+                      },
+                      "hidePrefixes": [
+                        "public:",
+                        "age:"
+                      ]
+                    }
+                  }
+                }
+              }
             }
           }
         }
@@ -531,6 +1914,2212 @@
             ]
           }
         }
+      ],
+      "seo": {
+        "title": {
+          "fr": "La communauté - Réseau Parentalité 62"
+        },
+        "description": {
+          "fr": "Parents, professionnels, structures et associations du réseau de soutien à la parentalité du Pas-de-Calais."
+        }
+      }
+    },
+    {
+      "path": "/reseau/presentation",
+      "title": {
+        "fr": "Du REAAP au Réseau Parentalité - Réseau Parentalité 62"
+      },
+      "layout": "default",
+      "seo": {
+        "title": {
+          "fr": "Du REAAP au Réseau Parentalité — histoire, valeurs et membres du réseau"
+        },
+        "description": {
+          "fr": "Depuis 1999, le Pas-de-Calais structure l'un des premiers réseaux d'écoute, d'appui et d'accompagnement des parents de France. Découvrez l'histoire, les valeurs et les membres du Réseau Parentalité 62."
+        }
+      },
+      "sections": [
+        {
+          "type": "title",
+          "props": {
+            "title": {
+              "fr": "Du REAAP au Réseau Parentalité"
+            },
+            "subtitle": {
+              "fr": "Qui sommes-nous ?"
+            }
+          }
+        },
+        {
+          "type": "content",
+          "props": {
+            "category": {
+              "fr": "Notre histoire"
+            },
+            "title": {
+              "fr": "Un réseau pionnier depuis 1999"
+            },
+            "description": {
+              "fr": "En 1999, le département du Pas-de-Calais a été l'un des premiers en France à organiser le dispositif REAAP (Réseaux d'Écoute, d'Appui et d'Accompagnement des Parents) sur son territoire. Dès mai 1999, une organisation multi-partenariale pilotée par la DDASS 62 structure le réseau avec une animation départementale et locale. En 2014, la CAF du Pas-de-Calais prend le pilotage de la démarche : elle crée 9 postes de coordonnatrices et coordonnateurs sur l'ensemble du département ainsi que 2 postes d'animation départementale, et impulse une nouvelle dynamique au plus près des acteurs."
+            },
+            "image": "/images/parents62/logo.png",
+            "imagePosition": "right"
+          }
+        },
+        {
+          "type": "timeline",
+          "props": {
+            "events": [
+              {
+                "date": "1999",
+                "title": {
+                  "fr": "Le REAAP 62, parmi les premiers de France"
+                },
+                "text": {
+                  "fr": "Dès mai 1999, une organisation multi-partenariale pilotée par la DDASS 62 met en réseau les acteurs du soutien à la parentalité du département."
+                }
+              },
+              {
+                "date": "2004",
+                "title": {
+                  "fr": "Signature de la charte du REAAP 62"
+                },
+                "text": {
+                  "fr": "La charte est signée le 9 février 2004 par le Préfet du Pas-de-Calais, la DDASS, le Conseil Général, la Fé.Dé.Caf 62 et l'Éducation Nationale."
+                }
+              },
+              {
+                "date": "2014",
+                "title": {
+                  "fr": "La CAF du Pas-de-Calais pilote la démarche"
+                },
+                "text": {
+                  "fr": "Création de 9 postes de coordonnatrices et coordonnateurs de territoire et de 2 postes d'animation départementale : le réseau se déploie au plus près des familles."
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "features-glass",
+          "props": {
+            "headline": {
+              "fr": "8 valeurs au service de la « cause des parents »"
+            },
+            "subhead": {
+              "fr": "Adoptées par la charte du REAAP 62 — cliquez sur une valeur pour découvrir la charte."
+            },
+            "features": [
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "La participation"
+                },
+                "description": {
+                  "fr": "Les parents, acteurs des actions qui les concernent."
+                },
+                "link": "/reseau/charte"
+              },
+              {
+                "icon": "graduation-cap",
+                "title": {
+                  "fr": "La co-éducation"
+                },
+                "description": {
+                  "fr": "Les parents, premiers éducateurs de leurs enfants."
+                },
+                "link": "/reseau/charte"
+              },
+              {
+                "icon": "sparkles",
+                "title": {
+                  "fr": "La diversité"
+                },
+                "description": {
+                  "fr": "Toutes les formes de famille reconnues comme une richesse."
+                },
+                "link": "/reseau/charte"
+              },
+              {
+                "icon": "heart-handshake",
+                "title": {
+                  "fr": "La mixité sociale"
+                },
+                "description": {
+                  "fr": "Des initiatives ouvertes à l'ensemble des parents."
+                },
+                "link": "/reseau/charte"
+              },
+              {
+                "icon": "map-pin",
+                "title": {
+                  "fr": "La priorité du territoire"
+                },
+                "description": {
+                  "fr": "Les réseaux se construisent sur les lieux de vie."
+                },
+                "link": "/reseau/charte"
+              },
+              {
+                "icon": "rocket",
+                "title": {
+                  "fr": "Le soutien à l'initiative"
+                },
+                "description": {
+                  "fr": "Aider, susciter et inscrire les initiatives dans le temps."
+                },
+                "link": "/reseau/charte"
+              },
+              {
+                "icon": "baby",
+                "title": {
+                  "fr": "La solidarité intergénérationnelle"
+                },
+                "description": {
+                  "fr": "La parentalité se partage entre les générations."
+                },
+                "link": "/reseau/charte"
+              },
+              {
+                "icon": "messages-square",
+                "title": {
+                  "fr": "L'échange"
+                },
+                "description": {
+                  "fr": "Soutenir et fédérer les acteurs par l'échange et la formation."
+                },
+                "link": "/reseau/charte"
+              }
+            ]
+          }
+        },
+        {
+          "type": "html",
+          "props": {
+            "html": "<section class=\"py-12 px-4\"><div class=\"container mx-auto max-w-3xl space-y-8\"><div><h2 class=\"text-2xl font-bold mb-3\">Les membres du réseau : une synergie entre parents, professionnel·le·s et institutionnel·le·s</h2><ul class=\"list-disc pl-6 space-y-1 text-muted-foreground\"><li>des associations et groupes de parents acteurs (cafés des parents, groupes de pairs, associations de parents, parents d'élèves…) ;</li><li>des Centres Sociaux et des Espaces de Vie Sociale, des associations et établissements spécialisés (accompagnement social, petite enfance, enfance, familles, éducation, adolescence, handicap, situations familiales spécifiques, santé) ;</li><li>la CAF, l'Éducation Nationale, le Conseil Départemental, l'UDAF, l'EPDEF et les services des collectivités locales (relais petite enfance, jeunesse, culture, famille, CCAS, PRE…).</li></ul></div><div><h2 class=\"text-2xl font-bold mb-3\">Qu'est-ce que la parentalité ?</h2><p class=\"text-muted-foreground\">« La parentalité désigne l'ensemble des façons d'être et de vivre le fait d'être parent. C'est un processus qui conjugue les différentes dimensions de la fonction parentale : matérielle, psychologique, morale, culturelle, sociale. » — définition validée en 2011 par le Comité national de soutien à la parentalité (CNSP).</p></div><div><h2 class=\"text-2xl font-bold mb-3\">INFORESO, la lettre d'information du réseau</h2><p class=\"text-muted-foreground\">INFORESO permet à ses membres, mais aussi à un public plus large, de prendre connaissance des projets menés par les 9 comités locaux, des actions parentalité engagées sur les territoires, de l'actualité nationale et départementale et de l'agenda des rencontres.</p><p class=\"mt-2\"><a class=\"underline\" href=\"https://www.parent62.org/ressources/inforeso/\" target=\"_blank\" rel=\"noopener noreferrer\">Lire INFORESO sur parents62.org</a> — <a class=\"underline\" href=\"https://www.parent62.org/wp-content/uploads/2023/04/plaket-pro_reseauparent62-2-modifiee.pdf\" target=\"_blank\" rel=\"noopener noreferrer\">Télécharger la plaquette du réseau (PDF)</a></p></div></div></section>"
+          }
+        },
+        {
+          "type": "cta",
+          "props": {
+            "headline": {
+              "fr": "Aller plus loin"
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Lire la charte du REAAP 62"
+                },
+                "href": "/reseau/charte"
+              },
+              {
+                "label": {
+                  "fr": "Contacter l'équipe"
+                },
+                "href": "/reseau/equipe",
+                "variant": "outline"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/reseau/charte",
+      "title": {
+        "fr": "La Charte du REAAP 62 - Réseau Parentalité 62"
+      },
+      "layout": "default",
+      "seo": {
+        "title": {
+          "fr": "La Charte du REAAP 62 — 8 valeurs au service de la « cause des parents »"
+        },
+        "description": {
+          "fr": "Signée le 9 février 2004, la charte du REAAP du Pas-de-Calais fédère 74 acteurs départementaux autour de 8 valeurs : participation, co-éducation, diversité, mixité sociale, priorité du territoire, soutien à l'initiative, solidarité intergénérationnelle et échange."
+        }
+      },
+      "sections": [
+        {
+          "type": "title",
+          "props": {
+            "title": {
+              "fr": "La Charte du REAAP 62"
+            },
+            "subtitle": {
+              "fr": "8 valeurs au service de la « cause des parents »"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "props": {
+            "html": "<section class=\"py-4 px-4\"><div class=\"container mx-auto max-w-3xl space-y-4 text-center\"><p class=\"text-lg text-muted-foreground\">Élaborée par des acteurs locaux associatifs et institutionnels engagés dans le soutien à la parentalité, la charte du REAAP 62 a été validée et signée le 9 février 2004 par le Préfet du Pas-de-Calais, la DDASS, le Conseil Général, la Fé.Dé.Caf 62 et l'Éducation Nationale.</p><p>À ce jour, <strong>74 acteurs départementaux</strong> sont signataires de la charte du REAAP du Pas-de-Calais. <a class=\"underline\" href=\"https://www.parent62.org/wp-content/uploads/2021/10/signataires_de_la_charte-octobre-2021.pdf\" target=\"_blank\" rel=\"noopener noreferrer\">Consulter la liste des signataires (PDF, octobre 2021)</a>.</p></div></section>"
+          }
+        },
+        {
+          "type": "cards",
+          "props": {
+            "columns": 4,
+            "items": [
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "La participation"
+                },
+                "text": {
+                  "fr": "La participation des parents aux actions qui les concernent, eux ou leurs enfants, est un objectif central. Toutes les actions collectives visent à favoriser leur implication avec les professionnels, les autres parents, les enfants eux-mêmes. (cliquer pour voir la vidéo)"
+                },
+                "href": "https://www.dailymotion.com/video/x8q4s0",
+                "target": "_blank"
+              },
+              {
+                "icon": "baby",
+                "title": {
+                  "fr": "La solidarité intergénérationnelle"
+                },
+                "text": {
+                  "fr": "Au sein d'une famille, la parentalité est souvent partagée avec les grands-parents, les beaux-parents, les autres membres de la fratrie… Toute intervention doit respecter et encourager ce partage. Le rôle des grands-parents et la dimension intergénérationnelle de la parentalité sont à promouvoir. (cliquer pour voir la vidéo)"
+                },
+                "href": "https://www.dailymotion.com/video/x8q6a8",
+                "target": "_blank"
+              },
+              {
+                "icon": "rocket",
+                "title": {
+                  "fr": "Le soutien à l'initiative"
+                },
+                "text": {
+                  "fr": "Institutions et professionnels, élus locaux et responsables associatifs ont pour responsabilité d'aider et de soutenir les initiatives. Ils doivent les susciter, favoriser leur adaptation et leur inscription dans le temps. (cliquer pour voir la vidéo)"
+                },
+                "href": "https://www.dailymotion.com/video/x8q5dk",
+                "target": "_blank"
+              },
+              {
+                "icon": "sparkles",
+                "title": {
+                  "fr": "La diversité"
+                },
+                "text": {
+                  "fr": "Les différentes formes d'exercice de la fonction parentale doivent être prises en compte. La diversité et la variété des formes de la famille, la présence sur les territoires de cultures et de modes de vie différents doivent être considérées comme une richesse, dans le respect des droits de l'enfant et dans le cadre de la Loi. (cliquer pour voir la vidéo)"
+                },
+                "href": "https://www.dailymotion.com/video/x9grw8",
+                "target": "_blank"
+              },
+              {
+                "icon": "graduation-cap",
+                "title": {
+                  "fr": "La co-éducation"
+                },
+                "text": {
+                  "fr": "Les parents sont les premiers éducateurs de leurs enfants. À leur côté, plusieurs acteurs forment une chaîne éducative qui permet à l'enfant de devenir un adulte intégré, autonome, responsable, en plaçant l'intérêt de l'enfant au cœur des préoccupations. (cliquer pour voir la vidéo)"
+                },
+                "href": "https://www.dailymotion.com/video/x8q5qb",
+                "target": "_blank"
+              },
+              {
+                "icon": "messages-square",
+                "title": {
+                  "fr": "L'échange"
+                },
+                "text": {
+                  "fr": "Le champ de l'aide à la parentalité est vaste : il fait intervenir une multitude d'acteurs, d'initiatives et de projets qu'il est intéressant de soutenir et de fédérer, par l'échange, la formation et l'information. (cliquer pour voir la vidéo)"
+                },
+                "href": "https://www.dailymotion.com/video/x9grww",
+                "target": "_blank"
+              },
+              {
+                "icon": "heart-handshake",
+                "title": {
+                  "fr": "La mixité sociale"
+                },
+                "text": {
+                  "fr": "Les interventions des acteurs sociaux et les initiatives locales doivent veiller à être ouvertes à l'ensemble des parents, à préserver la cohésion sociale des territoires et à éviter de stigmatiser ceux qui y participent. (cliquer pour voir la vidéo)"
+                },
+                "href": "https://www.dailymotion.com/video/x9grwo",
+                "target": "_blank"
+              },
+              {
+                "icon": "map-pin",
+                "title": {
+                  "fr": "La priorité du territoire"
+                },
+                "text": {
+                  "fr": "C'est sur les territoires de vie des personnes (commune, quartier, îlot…) que se développent les réseaux et les solidarités de voisinage susceptibles de favoriser l'exercice de la responsabilité parentale, notamment à partir des lieux et services de proximité tels que l'école ou les associations. (cliquer pour voir la vidéo)"
+                },
+                "href": "https://www.dailymotion.com/video/x8q4z3",
+                "target": "_blank"
+              }
+            ]
+          }
+        },
+        {
+          "type": "accordion",
+          "props": {
+            "allowMultiple": false,
+            "items": [
+              {
+                "title": {
+                  "fr": "Adhérer à la charte du REAAP 62, c'est…"
+                },
+                "content": {
+                  "fr": "<p>Défendre et partager les valeurs qu'elle définit, et conforter l'alliance avec les familles autour de l'éducation de leurs enfants.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Qui peut adhérer ?"
+                },
+                "content": {
+                  "fr": "<p>Les collectivités, les associations, les établissements scolaires…</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Comment adhérer ?"
+                },
+                "content": {
+                  "fr": "<p>Votre dossier de candidature doit comporter :</p><ul><li>un courrier de demande d'adhésion signé du responsable légal, retraçant les actions déjà menées sur le champ de la parentalité, qu'elles soient ou non financées dans le cadre du dispositif REAAP ;</li><li>une délibération de l'instance dirigeante (conseil municipal, communautaire, d'administration…) témoignant du débat autour des valeurs soutenues par la charte ;</li><li>une copie des statuts (pour les communautés de communes ou d'agglomération, les associations…).</li></ul><p>Dossier à adresser à : CAF du Pas-de-Calais — Site de Calais, Service Action Sociale, à l'attention de Sophie Halle, Conseillère Thématique Parentalité, Quai de la gendarmerie, 62908 Calais Cedex — <a class=\"underline\" href=\"mailto:secretariat-action-sociale@caf62.caf.fr\">secretariat-action-sociale@caf62.caf.fr</a>.</p><p>Si le dossier est validé, l'adhésion est officialisée au cours d'une cérémonie où est paraphé le Livre d'Or du REAAP.</p>"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "cta",
+          "props": {
+            "headline": {
+              "fr": "Envie de rejoindre le réseau ?"
+            },
+            "subhead": {
+              "fr": "L'équipe est là pour répondre à vos questions."
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Contacter l'équipe"
+                },
+                "href": "/reseau/equipe"
+              },
+              {
+                "label": {
+                  "fr": "Nos champs d'actions"
+                },
+                "href": "/reseau/champs-actions",
+                "variant": "outline"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/reseau/equipe",
+      "title": {
+        "fr": "Équipe & contact - Réseau Parentalité 62"
+      },
+      "layout": "default",
+      "seo": {
+        "title": {
+          "fr": "Équipe & contact — Réseau Parentalité 62"
+        },
+        "description": {
+          "fr": "Contactez l'animation départementale du Réseau Parentalité 62 et les coordinatrices et coordinateurs des 9 comités locaux parentalité du Pas-de-Calais."
+        }
+      },
+      "sections": [
+        {
+          "type": "title",
+          "props": {
+            "title": {
+              "fr": "Équipe & contact"
+            },
+            "subtitle": {
+              "fr": "Pour suivre l'actualité des comités locaux Parentalité 62 et prendre part aux rencontres, contactez l'équipe"
+            }
+          }
+        },
+        {
+          "type": "cards",
+          "props": {
+            "columns": 3,
+            "className": "whitespace-pre-line",
+            "showHeader": true,
+            "headerTitle": {
+              "fr": "L'animation départementale"
+            },
+            "items": [
+              {
+                "icon": "user",
+                "title": {
+                  "fr": "Antoine Legrand"
+                },
+                "text": {
+                  "fr": "Coordonnateur départemental — Fédération des Centres Sociaux Nord Pas-de-Calais\nantoine.legrand@parent62.org\n06 98 99 93 09\n199-201 rue Colbert, centre Vauban, bâtiment Rochefort, 59000 Lille"
+                }
+              },
+              {
+                "icon": "user",
+                "title": {
+                  "fr": "Clarisse Feutry"
+                },
+                "text": {
+                  "fr": "Coordonnatrice départementale — Fédération des Centres Sociaux Nord Pas-de-Calais\nclarisse.feutry@parent62.org\n06 11 21 40 75\n199-201 rue Colbert, centre Vauban, bâtiment Rochefort, 59000 Lille"
+                }
+              },
+              {
+                "icon": "landmark",
+                "title": {
+                  "fr": "Sophie Halle — CAF du Pas-de-Calais"
+                },
+                "text": {
+                  "fr": "Conseillère thématique Parentalité (pilote du réseau)\nsophie.halle@caf62.caf.fr\n03 21 46 93 85\nCAF du Pas-de-Calais, Quai de la gendarmerie, 62908 Calais"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "cards",
+          "props": {
+            "columns": 3,
+            "className": "whitespace-pre-line",
+            "showHeader": true,
+            "headerTitle": {
+              "fr": "Les coordinatrices et coordinateurs de territoire"
+            },
+            "items": [
+              {
+                "icon": "map-pin",
+                "title": {
+                  "fr": "Arrageois — Bénédicte Porcaro"
+                },
+                "text": {
+                  "fr": "Coordonnatrice du comité local\narrageois@parent62.org\n07 52 03 41 26 · 03 21 24 27 95\nCentre Socioculturel d'Achicourt, rue de Roubaix, 62217 Achicourt"
+                },
+                "href": "/territoires/arrageois"
+              },
+              {
+                "icon": "map-pin",
+                "title": {
+                  "fr": "Artois — Margaux Daron"
+                },
+                "text": {
+                  "fr": "Coordonnatrice du comité local\nartois@parent62.org\n07 67 16 84 28\nCentre Social La Maison pour Tous, place des FFI, 62190 Lillers"
+                },
+                "href": "/territoires/artois"
+              },
+              {
+                "icon": "map-pin",
+                "title": {
+                  "fr": "Audomarois — Ludivine Dupire Fait"
+                },
+                "text": {
+                  "fr": "Coordonnatrice du comité local\naudomarois@parent62.org\n07 88 15 57 38 · 03 21 98 19 98\nCentre Social Inter-Générations, rue Brueghel, Longuenesse"
+                },
+                "href": "/territoires/audomarois"
+              },
+              {
+                "icon": "map-pin",
+                "title": {
+                  "fr": "Boulonnais — Céline Devillard"
+                },
+                "text": {
+                  "fr": "Coordonnatrice du comité local\nboulonnais@parent62.org\n06 72 61 17 12 · 03 21 10 31 10\nCentre Social Espace Carnot, 46 rue du Général San Martin, 62480 Le Portel"
+                },
+                "href": "/territoires/boulonnais"
+              },
+              {
+                "icon": "map-pin",
+                "title": {
+                  "fr": "Calaisis — Laëtitia Dumoulin"
+                },
+                "text": {
+                  "fr": "Coordonnatrice du comité local\ncalaisis@parent62.org\n07 85 51 27 40 · 03 21 34 16 85\nCentre social et culturel Marie-Jeanne Bassot, 1578 chemin Départemental 940, 62231 Sangatte"
+                },
+                "href": "/territoires/calaisis"
+              },
+              {
+                "icon": "map-pin",
+                "title": {
+                  "fr": "Entre Mer et Terres — Adeline Cadet"
+                },
+                "text": {
+                  "fr": "Coordonnatrice du comité local\nentremeretterres@parent62.org\n07 49 35 93 15 · 03 21 90 91 10\nCentre Socioculturel Intercommunal d'Hucqueliers, 9 bis rue de la Longeville, 62650 Hucqueliers"
+                },
+                "href": "/territoires/entre-mer-et-terres"
+              },
+              {
+                "icon": "map-pin",
+                "title": {
+                  "fr": "Familles en sol mineur Hénin Carvin — Fiona Karkri"
+                },
+                "text": {
+                  "fr": "Coordonnatrice du comité local\nfsm.henincarvin@parent62.org\n06 73 75 40 49 · 03 21 70 90 20\nCentre Social, rue du Maréchal Leclerc, Noyelles-sous-Lens"
+                },
+                "href": "/territoires/fsm-henin-carvin"
+              },
+              {
+                "icon": "map-pin",
+                "title": {
+                  "fr": "Familles en sol mineur Lens Liévin — Guillaume Mondot"
+                },
+                "text": {
+                  "fr": "Coordonnateur du comité local\nfamillesensolmineur@parent62.org\n06 43 33 41 31\nCentre Social des Brebis, place de la Marne, 62670 Mazingarbe"
+                },
+                "href": "/territoires/fsm-lens-lievin"
+              },
+              {
+                "icon": "map-pin",
+                "title": {
+                  "fr": "Ternois Bruaysis — Sarah Darras"
+                },
+                "text": {
+                  "fr": "Coordonnatrice du comité local\nternoisbruaysis@parent62.org\n07 46 29 04 60"
+                },
+                "href": "/territoires/ternois-bruaysis"
+              }
+            ]
+          }
+        },
+        {
+          "type": "cta",
+          "props": {
+            "headline": {
+              "fr": "Votre comité local vous attend"
+            },
+            "subhead": {
+              "fr": "Chaque territoire a sa page : présentation, communes couvertes et actions près de chez vous."
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Trouver mon territoire"
+                },
+                "href": "/recherche"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/reseau/champs-actions",
+      "title": {
+        "fr": "Nos champs d'actions - Réseau Parentalité 62"
+      },
+      "layout": "default",
+      "seo": {
+        "title": {
+          "fr": "Nos champs d'actions — REAAP, CLAS et LAEP"
+        },
+        "description": {
+          "fr": "Les dispositifs de soutien à la parentalité portés par le Réseau Parentalité 62 : REAAP, accompagnement à la scolarité (CLAS) et Lieux d'Accueil Enfants Parents (LAEP)."
+        }
+      },
+      "sections": [
+        {
+          "type": "title",
+          "props": {
+            "title": {
+              "fr": "Nos champs d'actions"
+            },
+            "subtitle": {
+              "fr": "Les dispositifs de soutien à la parentalité portés par le réseau"
+            }
+          }
+        },
+        {
+          "type": "features-glass",
+          "props": {
+            "features": [
+              {
+                "icon": "heart-handshake",
+                "title": {
+                  "fr": "Les REAAP"
+                },
+                "description": {
+                  "fr": "Réseaux d'Écoute, d'Appui et d'Accompagnement des Parents : le dispositif fondateur du réseau."
+                }
+              },
+              {
+                "icon": "graduation-cap",
+                "title": {
+                  "fr": "Les CLAS"
+                },
+                "description": {
+                  "fr": "Contrats Locaux d'Accompagnement à la Scolarité, en complémentarité avec l'école."
+                }
+              },
+              {
+                "icon": "baby",
+                "title": {
+                  "fr": "Les LAEP"
+                },
+                "description": {
+                  "fr": "Lieux d'Accueil Enfants Parents : des espaces conviviaux de jeux et d'échanges."
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "accordion",
+          "props": {
+            "allowMultiple": true,
+            "items": [
+              {
+                "title": {
+                  "fr": "Les REAAP (Réseaux d'Écoute, d'Appui et d'Accompagnement des Parents)"
+                },
+                "defaultOpen": true,
+                "content": {
+                  "fr": "<p>Dispositif national créé en 1999, piloté par la CNAF et, dans chaque département, par les CAF. Il s'appuie sur des valeurs fondamentales :</p><ul><li>la reconnaissance de l'enfant en tant que personne ;</li><li>la reconnaissance des parents comme premiers éducateurs de leur enfant ;</li><li>l'importance de la cohérence éducative autour de l'enfant ;</li><li>le respect de la différence ;</li><li>l'ouverture à tous.</li></ul><p>Chaque année, un appel à projets est lancé dans chaque département pour le financement d'actions parentalité.</p>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Les CLAS (Contrat Local d'Accompagnement à la Scolarité)"
+                },
+                "content": {
+                  "fr": "<p>Il s'agit d'actions d'accompagnement à la scolarité inscrites dans le cadre de la charte nationale CLAS. Elles ont lieu en dehors du temps scolaire, dans des espaces adaptés, en complémentarité avec l'école.</p><p><strong>Elles proposent aux parents :</strong></p><ul><li>un soutien dans leur rôle éducatif ;</li><li>un accompagnement scolaire personnalisé de l'enfant au sein de groupes de travail restreints.</li></ul><p><strong>Les actions d'accompagnement à la scolarité ont pour objectifs :</strong></p><ul><li>d'aider les enfants à acquérir des méthodes ;</li><li>de faciliter leur accès au savoir et à la culture ;</li><li>de promouvoir leur apprentissage de la citoyenneté ;</li><li>de valoriser les acquis afin de renforcer leur autonomie ;</li><li>de soutenir les parents dans le suivi scolaire de leurs enfants.</li></ul>"
+                }
+              },
+              {
+                "title": {
+                  "fr": "Les LAEP (Lieux d'Accueil Enfants Parents)"
+                },
+                "content": {
+                  "fr": "<p>Les Lieux d'Accueil Enfants Parents sont ouverts à tous les petits enfants (moins de 4 ans ou moins de 6 ans selon les lieux) et aux adultes qui les accompagnent : parents, grands-parents, éventuellement assistantes maternelles… Des accueillants sont présents et offrent un espace convivial de jeux et d'échanges.</p><p><a class=\"underline\" href=\"https://www.caf.fr/sites/default/files/medias/cnaf/Nous_connaitre/qui%20sommes%20nous/Textes%20de%20r%C3%A9f%C3%A9rence/Circulaires/2023/C2023-002_Annexe_Laep_guide_accompagnement_creation.pdf\" target=\"_blank\" rel=\"noopener noreferrer\">Guide d'accompagnement à la création d'un LAEP (PDF, caf.fr)</a></p>"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "cta",
+          "props": {
+            "headline": {
+              "fr": "Découvrir les actions près de chez vous"
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Voir les actions du réseau"
+                },
+                "href": "/actions"
+              },
+              {
+                "label": {
+                  "fr": "Consulter l'agenda"
+                },
+                "href": "/agenda",
+                "variant": "outline"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/territoires/arrageois",
+      "title": {
+        "fr": "Arrageois - Réseau Parentalité 62"
+      },
+      "layout": "default",
+      "seo": {
+        "title": {
+          "fr": "Comité Local Parentalité Arrageois — Réseau Parentalité 62"
+        },
+        "description": {
+          "fr": "Le comité local Arrageois du Réseau Parentalité 62 : coordonnées de la coordination, communes du territoire et actions de soutien à la parentalité près de chez vous."
+        }
+      },
+      "sections": [
+        {
+          "type": "html",
+          "props": {
+            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-arrageois)\"><div class=\"container mx-auto max-w-4xl text-center text-white\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Arrageois</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Arrageois est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
+          }
+        },
+        {
+          "type": "cards",
+          "props": {
+            "columns": 2,
+            "className": "whitespace-pre-line",
+            "items": [
+              {
+                "icon": "user",
+                "title": {
+                  "fr": "Bénédicte Porcaro, coordonnatrice"
+                },
+                "text": {
+                  "fr": "Coordonnatrice du comité local\narrageois@parent62.org\n07 52 03 41 26 · 03 21 24 27 95\nCentre Socioculturel d'Achicourt, rue de Roubaix, 62217 Achicourt"
+                }
+              },
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Le comité local"
+                },
+                "text": {
+                  "fr": "Professionnel·le·s et parents du territoire se retrouvent régulièrement pour partager les actualités, construire des actions communes et faire vivre le réseau localement. Les dates de réunion sont annoncées dans l'agenda.\nComptes rendus des réunions : cliquer sur cette carte (Google Drive)."
+                },
+                "href": "https://drive.google.com/drive/folders/1-xR70C3jtA6XK7bAhzVyysK-8_Gx-Hy_",
+                "target": "_blank"
+              }
+            ]
+          }
+        },
+        {
+          "type": "accordion",
+          "props": {
+            "items": [
+              {
+                "title": {
+                  "fr": "Les communes du territoire (224)"
+                },
+                "content": {
+                  "fr": "<ul class=\"p62-communes\"><li>Ablainzevelle</li><li>Achicourt</li><li>Achiet-le-Grand</li><li>Achiet-le-Petit</li><li>Acq</li><li>Adinfer</li><li>Agnez-lès-Duisans</li><li>Agny</li><li>Amplier</li><li>Anzin-Saint-Aubin</li><li>Arleux-en-Gohelle</li><li>Arras</li><li>Athies</li><li>Avesnes-les-Bapaume</li><li>Ayette</li><li>Bailleul-Sire-Berthoult</li><li>Bailleulmont</li><li>Bailleulval</li><li>Bancourt</li><li>Bapaume</li><li>Baralle</li><li>Barastre</li><li>Barly</li><li>Basseux</li><li>Bavincourt</li><li>Beaudricourt</li><li>Beaufort-Blavincourt</li><li>Beaulencourt</li><li>Beaumetz les Loges</li><li>Beaumetz-les-Cambrai</li><li>Beaurains</li><li>Behagnies</li><li>Bellonne</li><li>Berles-au-Bois</li><li>Berneville</li><li>Bertencourt-le-Cauroy</li><li>Bertincourt</li><li>Beugnatre</li><li>Beugny</li><li>Biache-Saint-Vaast</li><li>Biefvillers-les-Bapaume</li><li>Bienvillers-au-Bois</li><li>Bihucourt</li><li>Blairville</li><li>Boiry-Becquerelle</li><li>Boiry-Notre-Dame</li><li>Boiry-Saint-Martin</li><li>Boiry-Sainte-Rictrude</li><li>Boisleux au Mont</li><li>Boisleux-Saint-Marc</li><li>Bourlon</li><li>Boyelles</li><li>Brebieres</li><li>Bucquoy</li><li>Buissy</li><li>Bullecourt</li><li>Bus</li><li>Cagnicourt</li><li>Canettemont</li><li>Cherisy</li><li>Corbehem</li><li>Couin</li><li>Coullemont</li><li>Courcelles-le-Comte</li><li>Croisilles</li><li>Dainville</li><li>Denier</li><li>Douchy-les-Ayette</li><li>Duisans</li><li>Dury</li><li>Écourt-Saint-Quentin</li><li>Écoust-Saint-Mein</li><li>Écurie</li><li>Épinoy</li><li>Ervillers</li><li>Estree-Wamin</li><li>Étaing</li><li>Éterpigny</li><li>Étrun</li><li>Famechon</li><li>Fampoux</li><li>Farbus</li><li>Favreuil</li><li>Feuchy</li><li>Ficheux</li><li>Foncquevillers</li><li>Fontaine-les-Croisilles</li><li>Fosseux</li><li>Fremicourt</li><li>Fresnes-les-Montauban</li><li>Fresnoy-en-Gohelle</li><li>Gaudiempre</li><li>Gavrelle</li><li>Givenchy-le-Noble</li><li>Gomiecourt</li><li>Gommecourt</li><li>Gouves</li><li>Gouy-en-Artois</li><li>Gouy-sous-Bellonne</li><li>Graincourt-les-Havrincourt</li><li>Grand-Rullecourt</li><li>Grevillers</li><li>Grincourt-les-Pas</li><li>Guemappe</li><li>Habarcq</li><li>Hally</li><li>Hamblain-les-Pres</li><li>Hamelincourt</li><li>Hannescamp</li><li>Haplincourt</li><li>Haucourt</li><li>Haudecourt-les-Rensart</li><li>Haute-Avesnes</li><li>Hauteville</li><li>Havrincourt</li><li>Hebuterne</li><li>Hendecourt-les-Cagnicourt</li><li>Henin sur Cojeul</li><li>Heninel</li><li>Henu</li><li>Hermies</li><li>Houvin-Houvigneul</li><li>Humbercamps</li><li>Inchy-en-Artois</li><li>Ivergny</li><li>Izel-les-Équerchin</li><li>La Cauchie</li><li>Lagnicourt-Marcel</li><li>Latter-Saint-Quentin</li><li>Le Sars</li><li>Le Souichet</li><li>Le Transloy</li><li>Lebucquiere</li><li>Lechelle</li><li>Liencourt</li><li>Lignereuil</li><li>Ligny-Thilloy</li><li>Magnicourt-sur-Canche</li><li>Marœuil</li><li>Marquion</li><li>Martinpuich</li><li>Mercatel</li><li>Metz-en-Couture</li><li>Monchiet</li><li>Monchy-au-Bois</li><li>Monchy-le-Preux</li><li>Mondicourt</li><li>Mont-Saint-Éloi</li><li>Montenescourt</li><li>Morchies</li><li>Morval</li><li>Mory</li><li>Moyenneville</li><li>Neuville-Bourjonval</li><li>Neuville-Saint-Vaast</li><li>Neuville-Vitasse</li><li>Neuvireuil</li><li>Noreuil</li><li>Noyelles-sous-Bellonne</li><li>Noyellette</li><li>Oisy-le-Verger</li><li>Oppy</li><li>Orville</li><li>Palluel</li><li>Pas-en-Artois</li><li>Pelves</li><li>Plouvain</li><li>Pommera</li><li>Pommier</li><li>Pronville-en-Artois</li><li>Puisieux</li><li>Queant</li><li>Quiery-la-Motte</li><li>Ransart</li><li>Rebreuviette</li><li>Recourt</li><li>Remy</li><li>Riencourt-les-Bapaume</li><li>Riencourt-les-Cagnicourt</li><li>Riviere</li><li>Roclincourt</li><li>Rocquigny</li><li>Rœux</li><li>Rumaucourt</li><li>Ruyaulcourt</li><li>Sailly-au-Bois</li><li>Sailly-en-Ostrevent</li><li>Sains-les-Marquion</li><li>Saint Martin sur Cojeul</li><li>Saint-Amand</li><li>Saint-Laurent-Blangy</li><li>Saint-Léger</li><li>Saint-Nicolas-Lez-Arras</li><li>Sainte-Catherine</li><li>Sapignies</li><li>Sarton</li><li>Sauchy-Cauchy</li><li>Sauchy-Lestree</li><li>Saudemont</li><li>Saulty</li><li>Simencourt</li><li>Sombrin</li><li>Souastre</li><li>Sus-Saint-Leger</li><li>Thelus</li><li>Thievres</li><li>Tilloy-les-Mofflaines</li><li>Tortequesne</li><li>Trescault</li><li>Vaulx-Vraucourt</li><li>Velu</li><li>Villers-au-Flos</li><li>Villers-les-Cagnicourt</li><li>Vis-en-Artois</li><li>Vitry-en-Artois</li><li>Wailly</li><li>Walrus</li><li>Wancourt</li><li>Wanquetin</li><li>Warlencourt-Eaucourt</li><li>Warlincourt-les-Pas</li><li>Warluzel</li><li>Willerval</li><li>Ytres</li></ul>"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "props": {
+            "useFilter": false,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": false,
+            "showActiveFiltersTags": false,
+            "disableInfiniteScroll": true,
+            "customHeader": {
+              "title": {
+                "fr": "Les actions sur le territoire"
+              },
+              "linkText": {
+                "fr": "Tout voir dans la recherche"
+              },
+              "linkHref": "/recherche?territoire=territoire62:arrageois"
+            },
+            "baseParams": {
+              "defaultTypes": [
+                "projects"
+              ],
+              "sourceKey": [
+                "parents62"
+              ],
+              "defaultTags": [
+                "territoire62:arrageois"
+              ],
+              "indexStepList": 6
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3
+              },
+              "card": {
+                "type": "default",
+                "detailsMode": "drawer",
+                "tagColors": {
+                  "mapping": {
+                    "territoire62:arrageois": "var(--territoire-arrageois)",
+                    "territoire62:artois": "var(--territoire-artois)",
+                    "territoire62:audomarois": "var(--territoire-audomarois)",
+                    "territoire62:boulonnais": "var(--territoire-boulonnais)",
+                    "territoire62:calaisis": "var(--territoire-calaisis)",
+                    "territoire62:entre-mer-et-terres": "var(--territoire-entre-mer-et-terres)",
+                    "territoire62:fsm-henin-carvin": "var(--territoire-fsm-henin-carvin)",
+                    "territoire62:fsm-lens-lievin": "var(--territoire-fsm-lens-lievin)",
+                    "territoire62:ternois-bruaysis": "var(--territoire-ternois-bruaysis)"
+                  },
+                  "labels": {
+                    "territoire62:arrageois": "Arrageois",
+                    "territoire62:artois": "Artois",
+                    "territoire62:audomarois": "Audomarois",
+                    "territoire62:boulonnais": "Boulonnais",
+                    "territoire62:calaisis": "Calaisis",
+                    "territoire62:entre-mer-et-terres": "Entre Mer et Terres",
+                    "territoire62:fsm-henin-carvin": "Familles en sol mineur Hénin Carvin",
+                    "territoire62:fsm-lens-lievin": "Familles en sol mineur Lens Liévin",
+                    "territoire62:ternois-bruaysis": "Ternois Bruaysis"
+                  },
+                  "hidePrefixes": [
+                    "public:",
+                    "age:"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "html",
+          "props": {
+            "html": "<section class=\"py-10 px-4\"><div class=\"container mx-auto max-w-3xl\"><h2 class=\"text-2xl font-bold mb-3\">Ressources du territoire</h2><ul class=\"list-disc pl-6 space-y-1\"><li><a class=\"underline\" href=\"https://rp62-arrageois.gogocarto.fr\" target=\"_blank\" rel=\"noopener noreferrer\">Carte interactive du territoire (GoGoCarto)</a></li><li><a class=\"underline\" href=\"https://www.parent62.org/plaquette-ressource-parentalite-et-eloignement-du-reseau-parentalite-de-larrageois/\" target=\"_blank\" rel=\"noopener noreferrer\">Plaquette ressource « Parentalité et éloignement »</a></li><li><a class=\"underline\" href=\"https://www.parent62.org/guide-ressource-parents-dados-a-destination-des-partenaires-realisation-et-participation-des-parents-du-territoire-de-larrageois/\" target=\"_blank\" rel=\"noopener noreferrer\">Guide ressource « Parents d'Ados » à destination des partenaires</a></li></ul></div></section>"
+          }
+        },
+        {
+          "type": "cta",
+          "props": {
+            "headline": {
+              "fr": "Explorer le territoire"
+            },
+            "subhead": {
+              "fr": "Actions, événements et paroles de parents près de chez vous."
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Rechercher sur ce territoire"
+                },
+                "href": "/recherche?territoire=territoire62:arrageois"
+              },
+              {
+                "label": {
+                  "fr": "Contacter l'équipe"
+                },
+                "href": "/reseau/equipe",
+                "variant": "outline"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/territoires/artois",
+      "title": {
+        "fr": "Artois - Réseau Parentalité 62"
+      },
+      "layout": "default",
+      "seo": {
+        "title": {
+          "fr": "Comité Local Parentalité Artois — Réseau Parentalité 62"
+        },
+        "description": {
+          "fr": "Le comité local Artois du Réseau Parentalité 62 : coordonnées de la coordination, communes du territoire et actions de soutien à la parentalité près de chez vous."
+        }
+      },
+      "sections": [
+        {
+          "type": "html",
+          "props": {
+            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-artois)\"><div class=\"container mx-auto max-w-4xl text-center text-white\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Artois</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Artois est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
+          }
+        },
+        {
+          "type": "cards",
+          "props": {
+            "columns": 2,
+            "className": "whitespace-pre-line",
+            "items": [
+              {
+                "icon": "user",
+                "title": {
+                  "fr": "Margaux Daron, coordonnatrice"
+                },
+                "text": {
+                  "fr": "Coordonnatrice du comité local\nartois@parent62.org\n07 67 16 84 28\nCentre Social La Maison pour Tous, place des FFI, 62190 Lillers"
+                }
+              },
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Le comité local"
+                },
+                "text": {
+                  "fr": "Professionnel·le·s et parents du territoire se retrouvent régulièrement pour partager les actualités, construire des actions communes et faire vivre le réseau localement. Les dates de réunion sont annoncées dans l'agenda.\nComptes rendus des réunions : cliquer sur cette carte (Google Drive)."
+                },
+                "href": "https://drive.google.com/drive/folders/1P9CBZfe71ri7FU8Vc9H_8e_yF_v6_hye?usp=sharing",
+                "target": "_blank"
+              }
+            ]
+          }
+        },
+        {
+          "type": "accordion",
+          "props": {
+            "items": [
+              {
+                "title": {
+                  "fr": "Les communes du territoire (62)"
+                },
+                "content": {
+                  "fr": "<ul class=\"p62-communes\"><li>Allouagne</li><li>Ames</li><li>Amettes</li><li>Annequin</li><li>Annezin</li><li>Auchy-au-Bois</li><li>Auchy-les-Mines</li><li>Béthune</li><li>Beuvry</li><li>Billy-Berclau</li><li>Bourecq</li><li>Burbure</li><li>Busnes</li><li>Calonne-sur-la-Lys</li><li>Cambrin</li><li>Chocques</li><li>Cuinchy</li><li>Douvrin</li><li>Drouvin</li><li>Ecquedecques</li><li>Essars</li><li>Ferfay</li><li>Festubert</li><li>Fleurbaix</li><li>Fouquereuil</li><li>Fouquières-les-Béthunes</li><li>Ginvenchy-les-la-Bassée</li><li>Gonnehem</li><li>Haisnes</li><li>Ham</li><li>Hinges</li><li>La Couture</li><li>Labeuvrière</li><li>Labourse</li><li>Lapugnoy</li><li>Laventie</li><li>Lespesses</li><li>Lestrem</li><li>Lières</li><li>Lillers</li><li>Locon</li><li>Lorgies</li><li>Mont-Bernenchon</li><li>Neuve Chapelle</li><li>Noeux-les-Mines</li><li>Norrent-Fontes</li><li>Noyelles-les-Vermelles</li><li>Oblinghem</li><li>Richebourg</li><li>Robecq</li><li>Sailly-Labourse</li><li>Sailly-sur-la-Lys</li><li>Saint-Floris</li><li>Saint-Venant</li><li>Vaudricourt</li><li>Vemelles</li><li>Vendin-les-Béthune</li><li>Verquigneul</li><li>Verquin</li><li>Vieille Chapelle</li><li>Violaines</li><li>Westrehem</li></ul>"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "props": {
+            "useFilter": false,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": false,
+            "showActiveFiltersTags": false,
+            "disableInfiniteScroll": true,
+            "customHeader": {
+              "title": {
+                "fr": "Les actions sur le territoire"
+              },
+              "linkText": {
+                "fr": "Tout voir dans la recherche"
+              },
+              "linkHref": "/recherche?territoire=territoire62:artois"
+            },
+            "baseParams": {
+              "defaultTypes": [
+                "projects"
+              ],
+              "sourceKey": [
+                "parents62"
+              ],
+              "defaultTags": [
+                "territoire62:artois"
+              ],
+              "indexStepList": 6
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3
+              },
+              "card": {
+                "type": "default",
+                "detailsMode": "drawer",
+                "tagColors": {
+                  "mapping": {
+                    "territoire62:arrageois": "var(--territoire-arrageois)",
+                    "territoire62:artois": "var(--territoire-artois)",
+                    "territoire62:audomarois": "var(--territoire-audomarois)",
+                    "territoire62:boulonnais": "var(--territoire-boulonnais)",
+                    "territoire62:calaisis": "var(--territoire-calaisis)",
+                    "territoire62:entre-mer-et-terres": "var(--territoire-entre-mer-et-terres)",
+                    "territoire62:fsm-henin-carvin": "var(--territoire-fsm-henin-carvin)",
+                    "territoire62:fsm-lens-lievin": "var(--territoire-fsm-lens-lievin)",
+                    "territoire62:ternois-bruaysis": "var(--territoire-ternois-bruaysis)"
+                  },
+                  "labels": {
+                    "territoire62:arrageois": "Arrageois",
+                    "territoire62:artois": "Artois",
+                    "territoire62:audomarois": "Audomarois",
+                    "territoire62:boulonnais": "Boulonnais",
+                    "territoire62:calaisis": "Calaisis",
+                    "territoire62:entre-mer-et-terres": "Entre Mer et Terres",
+                    "territoire62:fsm-henin-carvin": "Familles en sol mineur Hénin Carvin",
+                    "territoire62:fsm-lens-lievin": "Familles en sol mineur Lens Liévin",
+                    "territoire62:ternois-bruaysis": "Ternois Bruaysis"
+                  },
+                  "hidePrefixes": [
+                    "public:",
+                    "age:"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "cta",
+          "props": {
+            "headline": {
+              "fr": "Explorer le territoire"
+            },
+            "subhead": {
+              "fr": "Actions, événements et paroles de parents près de chez vous."
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Rechercher sur ce territoire"
+                },
+                "href": "/recherche?territoire=territoire62:artois"
+              },
+              {
+                "label": {
+                  "fr": "Contacter l'équipe"
+                },
+                "href": "/reseau/equipe",
+                "variant": "outline"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/territoires/audomarois",
+      "title": {
+        "fr": "Audomarois - Réseau Parentalité 62"
+      },
+      "layout": "default",
+      "seo": {
+        "title": {
+          "fr": "Comité Local Parentalité Audomarois — Réseau Parentalité 62"
+        },
+        "description": {
+          "fr": "Le comité local Audomarois du Réseau Parentalité 62 : coordonnées de la coordination, communes du territoire et actions de soutien à la parentalité près de chez vous."
+        }
+      },
+      "sections": [
+        {
+          "type": "html",
+          "props": {
+            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-audomarois)\"><div class=\"container mx-auto max-w-4xl text-center text-white\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Audomarois</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Audomarois est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
+          }
+        },
+        {
+          "type": "cards",
+          "props": {
+            "columns": 2,
+            "className": "whitespace-pre-line",
+            "items": [
+              {
+                "icon": "user",
+                "title": {
+                  "fr": "Ludivine Dupire Fait, coordonnatrice"
+                },
+                "text": {
+                  "fr": "Coordonnatrice du comité local\naudomarois@parent62.org\n07 88 15 57 38 · 03 21 98 19 98\nCentre Social Inter-Générations, rue Brueghel, Longuenesse"
+                }
+              },
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Le comité local"
+                },
+                "text": {
+                  "fr": "Professionnel·le·s et parents du territoire se retrouvent régulièrement pour partager les actualités, construire des actions communes et faire vivre le réseau localement. Les dates de réunion sont annoncées dans l'agenda.\nComptes rendus des réunions : cliquer sur cette carte (Google Drive)."
+                },
+                "href": "https://drive.google.com/drive/folders/15CKV2rLe8fGPRcAveEjSP9PtZTLKY3c5?usp=sharing",
+                "target": "_blank"
+              }
+            ]
+          }
+        },
+        {
+          "type": "accordion",
+          "props": {
+            "items": [
+              {
+                "title": {
+                  "fr": "Les communes du territoire (89)"
+                },
+                "content": {
+                  "fr": "<ul class=\"p62-communes\"><li>Acquin-Westbecourt</li><li>Affringues</li><li>Aire-sur-la-Lys</li><li>Alquines</li><li>Arques</li><li>Audincthun</li><li>Audrehem</li><li>Avroult</li><li>Bayenghem-les-Éperlecques</li><li>Bayenghem-lès-Seninghem</li><li>Beaumetz-les-Aire</li><li>Bellinghem</li><li>Blendecques</li><li>Bléquin</li><li>Boisdinghem</li><li>Bomy</li><li>Bonningues-les-Ardres</li><li>Bouvelinghem</li><li>Campagne-les-Wardrecques</li><li>Clairmarais</li><li>Clerques</li><li>Clety</li><li>Coulomby</li><li>Coyecques</li><li>Delettes</li><li>Dennebrœucq</li><li>Dohem</li><li>Ecques</li><li>Elnes</li><li>Enquin-Lez-Guinegatte</li><li>Éperlecques</li><li>Erny-Saint-Julien</li><li>Escœuilles</li><li>Esquerdes</li><li>Fauquembergues</li><li>Febvin-Palfart</li><li>Fléchin</li><li>Hallines</li><li>Haut-Loquin</li><li>Helfaut</li><li>Heuringhem</li><li>Houlle</li><li>Journy</li><li>Laires</li><li>Ledinghem</li><li>Leulinghem</li><li>Longuenesse</li><li>Lumbres</li><li>Mametz</li><li>Mentque-Nortbecourt</li><li>Merck-Saint-Lievin</li><li>Moringhem</li><li>Moulle</li><li>Nielles-les-Blequin</li><li>Nordausques</li><li>Nort-Leulinghem</li><li>Ouve-Wirquin</li><li>Pihem</li><li>Quelmes</li><li>Quercamps</li><li>Quiestède</li><li>Racquinghem</li><li>Rebergues</li><li>Reclinghem</li><li>Remilly-Wirquin</li><li>Renty</li><li>Roquetoire</li><li>Saint-Augustin</li><li>Saint-Martin-d'Hardinghem</li><li>Saint-Martin-Lez-Tatinghem</li><li>Saint-Omer</li><li>Salperwick</li><li>Seninghem</li><li>Serques</li><li>Setques</li><li>Surques</li><li>Therouanne</li><li>Thiembronne</li><li>Tilques</li><li>Tournehem-sur-la-Hem</li><li>Vaudringhem</li><li>Wardrecques</li><li>Wavrans-sur-l'Aa</li><li>Wismes</li><li>Wisques</li><li>Wittes</li><li>Wizernes</li><li>Zouafques</li><li>Zudausques</li></ul>"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "props": {
+            "useFilter": false,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": false,
+            "showActiveFiltersTags": false,
+            "disableInfiniteScroll": true,
+            "customHeader": {
+              "title": {
+                "fr": "Les actions sur le territoire"
+              },
+              "linkText": {
+                "fr": "Tout voir dans la recherche"
+              },
+              "linkHref": "/recherche?territoire=territoire62:audomarois"
+            },
+            "baseParams": {
+              "defaultTypes": [
+                "projects"
+              ],
+              "sourceKey": [
+                "parents62"
+              ],
+              "defaultTags": [
+                "territoire62:audomarois"
+              ],
+              "indexStepList": 6
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3
+              },
+              "card": {
+                "type": "default",
+                "detailsMode": "drawer",
+                "tagColors": {
+                  "mapping": {
+                    "territoire62:arrageois": "var(--territoire-arrageois)",
+                    "territoire62:artois": "var(--territoire-artois)",
+                    "territoire62:audomarois": "var(--territoire-audomarois)",
+                    "territoire62:boulonnais": "var(--territoire-boulonnais)",
+                    "territoire62:calaisis": "var(--territoire-calaisis)",
+                    "territoire62:entre-mer-et-terres": "var(--territoire-entre-mer-et-terres)",
+                    "territoire62:fsm-henin-carvin": "var(--territoire-fsm-henin-carvin)",
+                    "territoire62:fsm-lens-lievin": "var(--territoire-fsm-lens-lievin)",
+                    "territoire62:ternois-bruaysis": "var(--territoire-ternois-bruaysis)"
+                  },
+                  "labels": {
+                    "territoire62:arrageois": "Arrageois",
+                    "territoire62:artois": "Artois",
+                    "territoire62:audomarois": "Audomarois",
+                    "territoire62:boulonnais": "Boulonnais",
+                    "territoire62:calaisis": "Calaisis",
+                    "territoire62:entre-mer-et-terres": "Entre Mer et Terres",
+                    "territoire62:fsm-henin-carvin": "Familles en sol mineur Hénin Carvin",
+                    "territoire62:fsm-lens-lievin": "Familles en sol mineur Lens Liévin",
+                    "territoire62:ternois-bruaysis": "Ternois Bruaysis"
+                  },
+                  "hidePrefixes": [
+                    "public:",
+                    "age:"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "html",
+          "props": {
+            "html": "<section class=\"py-10 px-4\"><div class=\"container mx-auto max-w-3xl\"><h2 class=\"text-2xl font-bold mb-3\">Ressources du territoire</h2><ul class=\"list-disc pl-6 space-y-1\"><li><a class=\"underline\" href=\"https://acteur-parentalite-audomarois.gogocarto.fr/\" target=\"_blank\" rel=\"noopener noreferrer\">Cartographie interactive des acteurs de la parentalité (GoGoCarto)</a></li></ul></div></section>"
+          }
+        },
+        {
+          "type": "cta",
+          "props": {
+            "headline": {
+              "fr": "Explorer le territoire"
+            },
+            "subhead": {
+              "fr": "Actions, événements et paroles de parents près de chez vous."
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Rechercher sur ce territoire"
+                },
+                "href": "/recherche?territoire=territoire62:audomarois"
+              },
+              {
+                "label": {
+                  "fr": "Contacter l'équipe"
+                },
+                "href": "/reseau/equipe",
+                "variant": "outline"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/territoires/boulonnais",
+      "title": {
+        "fr": "Boulonnais - Réseau Parentalité 62"
+      },
+      "layout": "default",
+      "seo": {
+        "title": {
+          "fr": "Comité Local Parentalité Boulonnais — Réseau Parentalité 62"
+        },
+        "description": {
+          "fr": "Le comité local Boulonnais du Réseau Parentalité 62 : coordonnées de la coordination, communes du territoire et actions de soutien à la parentalité près de chez vous."
+        }
+      },
+      "sections": [
+        {
+          "type": "html",
+          "props": {
+            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-boulonnais)\"><div class=\"container mx-auto max-w-4xl text-center text-white\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Boulonnais</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Boulonnais est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
+          }
+        },
+        {
+          "type": "cards",
+          "props": {
+            "columns": 2,
+            "className": "whitespace-pre-line",
+            "items": [
+              {
+                "icon": "user",
+                "title": {
+                  "fr": "Céline Devillard, coordonnatrice"
+                },
+                "text": {
+                  "fr": "Coordonnatrice du comité local\nboulonnais@parent62.org\n06 72 61 17 12 · 03 21 10 31 10\nCentre Social Espace Carnot, 46 rue du Général San Martin, 62480 Le Portel"
+                }
+              },
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Le comité local"
+                },
+                "text": {
+                  "fr": "Professionnel·le·s et parents du territoire se retrouvent régulièrement pour partager les actualités, construire des actions communes et faire vivre le réseau localement. Les dates de réunion sont annoncées dans l'agenda.\nComptes rendus des réunions : cliquer sur cette carte (Google Drive)."
+                },
+                "href": "https://drive.google.com/open?id=1eUFrIrM-fUOJ0nWkNcm7VDidfrszZrLg",
+                "target": "_blank"
+              }
+            ]
+          }
+        },
+        {
+          "type": "accordion",
+          "props": {
+            "items": [
+              {
+                "title": {
+                  "fr": "Les communes du territoire (75)"
+                },
+                "content": {
+                  "fr": "<ul class=\"p62-communes\"><li>Alincthun</li><li>Ambleteuse</li><li>Audembert</li><li>Audinghen</li><li>Audresselles</li><li>Baincthun</li><li>Bazinghen</li><li>Belle et Houllefort</li><li>Bellebrune</li><li>Beuvrequen</li><li>Boulogne-sur-Mer</li><li>Bournonville</li><li>Brunembert</li><li>Carly</li><li>Colembert</li><li>Condette</li><li>Conteville-lès-Boulogne</li><li>Courset</li><li>Crémarest</li><li>Dannes</li><li>Desvres</li><li>Doudeauville</li><li>Echinghen</li><li>Elinghen</li><li>Equihen-Plage</li><li>Ferques</li><li>Halinghen</li><li>Henneveux</li><li>Hervelinghen</li><li>Hesdigneul-lès-Boulogne</li><li>Hesdin-l’Abbé</li><li>Isques</li><li>La Capelle-lès-Boulogne</li><li>Lacres</li><li>Landrethun-le-Nord</li><li>Le Portel</li><li>Le Wast</li><li>Leubringhen</li><li>Leulinghen-Bernes</li><li>Longfossé</li><li>Longueville</li><li>Lottinghen</li><li>Maninghen-Henne</li><li>Marquise</li><li>Menneville</li><li>Nabringhen</li><li>Nesles</li><li>Neufchâtel-Hardelot</li><li>Offrethun</li><li>Outreau</li><li>Pernes-lès-Boulogne</li><li>Pittefaux</li><li>Quesques</li><li>Questrecques</li><li>Réty</li><li>Rinxent</li><li>Saint Inglevert</li><li>Saint Léonard</li><li>Saint-Etienne-au-Mont</li><li>Saint-Martin-Boulogne</li><li>Saint-Martin-Choquel</li><li>Samer</li><li>Selles</li><li>Senlecques</li><li>Tardinghen</li><li>Tingry</li><li>Verlincthun</li><li>Vieil-Moutier</li><li>Wacquinghen</li><li>Wierre-au-Bois</li><li>Wierre-Effroy</li><li>Wimereux</li><li>Wimille</li><li>Wirwignes</li><li>Wissant</li></ul>"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "props": {
+            "useFilter": false,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": false,
+            "showActiveFiltersTags": false,
+            "disableInfiniteScroll": true,
+            "customHeader": {
+              "title": {
+                "fr": "Les actions sur le territoire"
+              },
+              "linkText": {
+                "fr": "Tout voir dans la recherche"
+              },
+              "linkHref": "/recherche?territoire=territoire62:boulonnais"
+            },
+            "baseParams": {
+              "defaultTypes": [
+                "projects"
+              ],
+              "sourceKey": [
+                "parents62"
+              ],
+              "defaultTags": [
+                "territoire62:boulonnais"
+              ],
+              "indexStepList": 6
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3
+              },
+              "card": {
+                "type": "default",
+                "detailsMode": "drawer",
+                "tagColors": {
+                  "mapping": {
+                    "territoire62:arrageois": "var(--territoire-arrageois)",
+                    "territoire62:artois": "var(--territoire-artois)",
+                    "territoire62:audomarois": "var(--territoire-audomarois)",
+                    "territoire62:boulonnais": "var(--territoire-boulonnais)",
+                    "territoire62:calaisis": "var(--territoire-calaisis)",
+                    "territoire62:entre-mer-et-terres": "var(--territoire-entre-mer-et-terres)",
+                    "territoire62:fsm-henin-carvin": "var(--territoire-fsm-henin-carvin)",
+                    "territoire62:fsm-lens-lievin": "var(--territoire-fsm-lens-lievin)",
+                    "territoire62:ternois-bruaysis": "var(--territoire-ternois-bruaysis)"
+                  },
+                  "labels": {
+                    "territoire62:arrageois": "Arrageois",
+                    "territoire62:artois": "Artois",
+                    "territoire62:audomarois": "Audomarois",
+                    "territoire62:boulonnais": "Boulonnais",
+                    "territoire62:calaisis": "Calaisis",
+                    "territoire62:entre-mer-et-terres": "Entre Mer et Terres",
+                    "territoire62:fsm-henin-carvin": "Familles en sol mineur Hénin Carvin",
+                    "territoire62:fsm-lens-lievin": "Familles en sol mineur Lens Liévin",
+                    "territoire62:ternois-bruaysis": "Ternois Bruaysis"
+                  },
+                  "hidePrefixes": [
+                    "public:",
+                    "age:"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "html",
+          "props": {
+            "html": "<section class=\"py-10 px-4\"><div class=\"container mx-auto max-w-3xl\"><h2 class=\"text-2xl font-bold mb-3\">Ressources du territoire</h2><ul class=\"list-disc pl-6 space-y-1\"><li><a class=\"underline\" href=\"https://www.parent62.org/jeux-et-outils-du-reseau-2/\" target=\"_blank\" rel=\"noopener noreferrer\">Jeux et outils du réseau</a></li><li><a class=\"underline\" href=\"https://www.parent62.org/les-lieux-daccueil-enfants-parents-du-boulonnais/\" target=\"_blank\" rel=\"noopener noreferrer\">Les Lieux d'Accueil Enfants Parents du Boulonnais</a></li><li><a class=\"underline\" href=\"http://soutenirlesaidants.fr\" target=\"_blank\" rel=\"noopener noreferrer\">Plateforme répit — soutenirlesaidants.fr</a></li></ul></div></section>"
+          }
+        },
+        {
+          "type": "cta",
+          "props": {
+            "headline": {
+              "fr": "Explorer le territoire"
+            },
+            "subhead": {
+              "fr": "Actions, événements et paroles de parents près de chez vous."
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Rechercher sur ce territoire"
+                },
+                "href": "/recherche?territoire=territoire62:boulonnais"
+              },
+              {
+                "label": {
+                  "fr": "Contacter l'équipe"
+                },
+                "href": "/reseau/equipe",
+                "variant": "outline"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/territoires/calaisis",
+      "title": {
+        "fr": "Calaisis - Réseau Parentalité 62"
+      },
+      "layout": "default",
+      "seo": {
+        "title": {
+          "fr": "Comité Local Parentalité Calaisis — Réseau Parentalité 62"
+        },
+        "description": {
+          "fr": "Le comité local Calaisis du Réseau Parentalité 62 : coordonnées de la coordination, communes du territoire et actions de soutien à la parentalité près de chez vous."
+        }
+      },
+      "sections": [
+        {
+          "type": "html",
+          "props": {
+            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-calaisis)\"><div class=\"container mx-auto max-w-4xl text-center text-white\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Calaisis</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Calaisis est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
+          }
+        },
+        {
+          "type": "cards",
+          "props": {
+            "columns": 2,
+            "className": "whitespace-pre-line",
+            "items": [
+              {
+                "icon": "user",
+                "title": {
+                  "fr": "Laëtitia Dumoulin, coordonnatrice"
+                },
+                "text": {
+                  "fr": "Coordonnatrice du comité local\ncalaisis@parent62.org\n07 85 51 27 40 · 03 21 34 16 85\nCentre social et culturel Marie-Jeanne Bassot, 1578 chemin Départemental 940, 62231 Sangatte"
+                }
+              },
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Le comité local"
+                },
+                "text": {
+                  "fr": "Professionnel·le·s et parents du territoire se retrouvent régulièrement pour partager les actualités, construire des actions communes et faire vivre le réseau localement. Les dates de réunion sont annoncées dans l'agenda.\nComptes rendus des réunions : cliquer sur cette carte (Google Drive)."
+                },
+                "href": "https://drive.google.com/open?id=1AsrYqbr9j1lQsr-8NhtEPUH4V_axjGzK",
+                "target": "_blank"
+              }
+            ]
+          }
+        },
+        {
+          "type": "accordion",
+          "props": {
+            "items": [
+              {
+                "title": {
+                  "fr": "Les communes du territoire (53)"
+                },
+                "content": {
+                  "fr": "<ul class=\"p62-communes\"><li>Alembon</li><li>Andres</li><li>Ardres</li><li>Audruicq</li><li>Autingues</li><li>Bainghen</li><li>Balinghem</li><li>Bonningues les Calais</li><li>Bouquehault</li><li>Boursin</li><li>Bremes les Ardres</li><li>Caffiers</li><li>Calais</li><li>Campagne les Guines</li><li>Ccra Audruicq</li><li>Coquelles</li><li>Coulogne</li><li>Escalles</li><li>Fiennes</li><li>Frethun</li><li>Guemps</li><li>Guines</li><li>Hames Boucres</li><li>Hardinghem</li><li>Herbinghem</li><li>Hermelinghen</li><li>Hocquinghen</li><li>Landrethun les Ardres</li><li>Les Attaques</li><li>Licques</li><li>Louches</li><li>Marck</li><li>Muncq Nieurlet</li><li>Nielles les Ardres</li><li>Nielles les Calais</li><li>Nortkerque</li><li>Nouvelle Eglise</li><li>Offekerque</li><li>Oye Plage</li><li>Peuplingues</li><li>Pihen les Guines</li><li>Polincove</li><li>Recques sur Hem</li><li>Rodelinghem</li><li>Ruminghem</li><li>Saint Folquin</li><li>Saint Omer Capelle</li><li>Saint Tricat</li><li>Sainte Marie Kerque</li><li>Sangatte</li><li>Sanghen</li><li>Vieille Eglise</li><li>Zutkerque</li></ul>"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "props": {
+            "useFilter": false,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": false,
+            "showActiveFiltersTags": false,
+            "disableInfiniteScroll": true,
+            "customHeader": {
+              "title": {
+                "fr": "Les actions sur le territoire"
+              },
+              "linkText": {
+                "fr": "Tout voir dans la recherche"
+              },
+              "linkHref": "/recherche?territoire=territoire62:calaisis"
+            },
+            "baseParams": {
+              "defaultTypes": [
+                "projects"
+              ],
+              "sourceKey": [
+                "parents62"
+              ],
+              "defaultTags": [
+                "territoire62:calaisis"
+              ],
+              "indexStepList": 6
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3
+              },
+              "card": {
+                "type": "default",
+                "detailsMode": "drawer",
+                "tagColors": {
+                  "mapping": {
+                    "territoire62:arrageois": "var(--territoire-arrageois)",
+                    "territoire62:artois": "var(--territoire-artois)",
+                    "territoire62:audomarois": "var(--territoire-audomarois)",
+                    "territoire62:boulonnais": "var(--territoire-boulonnais)",
+                    "territoire62:calaisis": "var(--territoire-calaisis)",
+                    "territoire62:entre-mer-et-terres": "var(--territoire-entre-mer-et-terres)",
+                    "territoire62:fsm-henin-carvin": "var(--territoire-fsm-henin-carvin)",
+                    "territoire62:fsm-lens-lievin": "var(--territoire-fsm-lens-lievin)",
+                    "territoire62:ternois-bruaysis": "var(--territoire-ternois-bruaysis)"
+                  },
+                  "labels": {
+                    "territoire62:arrageois": "Arrageois",
+                    "territoire62:artois": "Artois",
+                    "territoire62:audomarois": "Audomarois",
+                    "territoire62:boulonnais": "Boulonnais",
+                    "territoire62:calaisis": "Calaisis",
+                    "territoire62:entre-mer-et-terres": "Entre Mer et Terres",
+                    "territoire62:fsm-henin-carvin": "Familles en sol mineur Hénin Carvin",
+                    "territoire62:fsm-lens-lievin": "Familles en sol mineur Lens Liévin",
+                    "territoire62:ternois-bruaysis": "Ternois Bruaysis"
+                  },
+                  "hidePrefixes": [
+                    "public:",
+                    "age:"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "html",
+          "props": {
+            "html": "<section class=\"py-10 px-4\"><div class=\"container mx-auto max-w-3xl\"><h2 class=\"text-2xl font-bold mb-3\">Ressources du territoire</h2><ul class=\"list-disc pl-6 space-y-1\"><li><a class=\"underline\" href=\"https://www.parent62.org/jeux-et-outils-du-reseau/\" target=\"_blank\" rel=\"noopener noreferrer\">Jeux et outils du réseau</a></li><li><a class=\"underline\" href=\"https://www.parent62.org/autour-des-parents-une-nouvelle-application-pour-les-familles-du-calaisis/\" target=\"_blank\" rel=\"noopener noreferrer\">« Autour des Parents » : une application pour les familles du Calaisis</a></li></ul></div></section>"
+          }
+        },
+        {
+          "type": "cta",
+          "props": {
+            "headline": {
+              "fr": "Explorer le territoire"
+            },
+            "subhead": {
+              "fr": "Actions, événements et paroles de parents près de chez vous."
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Rechercher sur ce territoire"
+                },
+                "href": "/recherche?territoire=territoire62:calaisis"
+              },
+              {
+                "label": {
+                  "fr": "Contacter l'équipe"
+                },
+                "href": "/reseau/equipe",
+                "variant": "outline"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/territoires/entre-mer-et-terres",
+      "title": {
+        "fr": "Entre Mer et Terres - Réseau Parentalité 62"
+      },
+      "layout": "default",
+      "seo": {
+        "title": {
+          "fr": "Comité Local Parentalité Entre Mer et Terres — Réseau Parentalité 62"
+        },
+        "description": {
+          "fr": "Le comité local Entre Mer et Terres du Réseau Parentalité 62 : coordonnées de la coordination, communes du territoire et actions de soutien à la parentalité près de chez vous."
+        }
+      },
+      "sections": [
+        {
+          "type": "html",
+          "props": {
+            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-entre-mer-et-terres)\"><div class=\"container mx-auto max-w-4xl text-center text-white\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Entre Mer et Terres</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Entre Mer et Terres est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
+          }
+        },
+        {
+          "type": "cards",
+          "props": {
+            "columns": 2,
+            "className": "whitespace-pre-line",
+            "items": [
+              {
+                "icon": "user",
+                "title": {
+                  "fr": "Adeline Cadet, coordonnatrice"
+                },
+                "text": {
+                  "fr": "Coordonnatrice du comité local\nentremeretterres@parent62.org\n07 49 35 93 15 · 03 21 90 91 10\nCentre Socioculturel Intercommunal d'Hucqueliers, 9 bis rue de la Longeville, 62650 Hucqueliers"
+                }
+              },
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Le comité local"
+                },
+                "text": {
+                  "fr": "Professionnel·le·s et parents du territoire se retrouvent régulièrement pour partager les actualités, construire des actions communes et faire vivre le réseau localement. Les dates de réunion sont annoncées dans l'agenda.\nComptes rendus des réunions : cliquer sur cette carte (Google Drive)."
+                },
+                "href": "https://drive.google.com/drive/folders/1vDZliknVKG2QukWnVQ5-WxSvaiW2O4en?usp=sharing",
+                "target": "_blank"
+              }
+            ]
+          }
+        },
+        {
+          "type": "accordion",
+          "props": {
+            "items": [
+              {
+                "title": {
+                  "fr": "Les communes du territoire (163)"
+                },
+                "content": {
+                  "fr": "<ul class=\"p62-communes\"><li>Airon-Notre-Dame</li><li>Airon-Saint-Vaast</li><li>Aix-en-Ergny</li><li>Aix-en-Issart</li><li>Alette</li><li>Ambricourt</li><li>Attin</li><li>Aubin-Saint-Vaast</li><li>Auchy-lès-Hesdin</li><li>Avesnes</li><li>Avondance</li><li>Azincourt</li><li>Béalancourt</li><li>Beaumerie-Saint-Martin</li><li>Beaurainville</li><li>Bécourt</li><li>Berck-sur-Mer</li><li>Bernieulles</li><li>Beussent</li><li>Beutin</li><li>Bezinghem</li><li>Bimont</li><li>Blangy-sur-Ternoise</li><li>Blingel</li><li>Boisjean</li><li>Boubers-lès-Hesmond</li><li>Bouin-Plumoison</li><li>Bourthes</li><li>Brévillers</li><li>Bréxent-Enocq</li><li>Brimeux</li><li>Buire-le-Sec</li><li>Camiers</li><li>Campagne-lès-Boulonnais</li><li>Campagne-lès-Hesdin</li><li>Campigneulles-les-Grandes</li><li>Campigneulles-les-Petites</li><li>Canlers</li><li>Capelle-lès-Hesdin</li><li>Caumont</li><li>Cavron-Saint-Martin</li><li>Chériennes</li><li>Clenleu</li><li>Colline-Beaumont</li><li>Conchil-le-Temple</li><li>Contes</li><li>Cormont</li><li>Coupelle-Neuve</li><li>Coupelle-Vieille</li><li>Crépy</li><li>Créquy</li><li>Cucq</li><li>Douriez</li><li>Eclimeux</li><li>Ecuires</li><li>Embry</li><li>Enquin-sur-Baillons</li><li>Ergny</li><li>Estrée</li><li>Estréelles</li><li>Etaples</li><li>Fillièvres</li><li>Frencq</li><li>Fresnoy</li><li>Fressin</li><li>Fruges</li><li>Galametz</li><li>Gouy-Saint-André</li><li>Grigny</li><li>Groﬄiers</li><li>Guigny</li><li>Guisy</li><li>Herly</li><li>Hesdin</li><li>Hesmond</li><li>Hézecques</li><li>Hubersent</li><li>Huby-Saint-Leu</li><li>Hucqueliers</li><li>Humbert</li><li>Incourt</li><li>Inxent</li><li>La Caloterie</li><li>La Loge</li><li>La Madelaine-sous-Montreuil</li><li>Labroye</li><li>Le Faux</li><li>Le Parcq</li><li>Le Touquet-Paris-Plage</li><li>Lebiez</li><li>Lépine</li><li>Lespinoy</li><li>Loison-sur-Créquoise</li><li>Longvilliers</li><li>Lugy</li><li>Maintenay</li><li>Maisoncelle</li><li>Maninghem</li><li>Marant</li><li>Marconne</li><li>Marconnelle</li><li>Marenla</li><li>Maresquel-Ecquemicourt</li><li>Maresville</li><li>Marles-sur-Canche</li><li>Matringhem</li><li>Mencas</li><li>Merlimont</li><li>Moncavrel</li><li>Montreuil</li><li>Mouriez</li><li>Nempont-Saint-Firmin</li><li>Neulette</li><li>Neuville-sous-Montreuil</li><li>Noyelles-lès-Humières</li><li>Oﬃn</li><li>Parenty</li><li>Planques</li><li>Preures</li><li>Quilen</li><li>Radinghem</li><li>Rang-du-Fliers</li><li>Raye-sur-Authie</li><li>Recques-sur-Course</li><li>Regnauville</li><li>Rimboval</li><li>Rollancourt</li><li>Roussent</li><li>Royon</li><li>Ruisseauville</li><li>Rumilly</li><li>Saint Michel-sous-Bois</li><li>Saint-Aubin</li><li>Saint-Denoeux</li><li>Saint-Georges</li><li>Saint-Josse</li><li>Saint-Rémy-au-Bois</li><li>Sainte-Austreberthe</li><li>Saulchoy</li><li>Seins-lès-Fressin</li><li>Sempy</li><li>Senlis</li><li>Sorrus</li><li>Tigny-Noyelle</li><li>Torcy</li><li>Tortefontaine</li><li>Tramecourt</li><li>Tubersent</li><li>Vacqueriette-Erquières</li><li>Verchin</li><li>Verchocq</li><li>Verton</li><li>Vieil-Hesdin</li><li>Vincly</li><li>Waben</li><li>Wail</li><li>Wailly-Beaucamp</li><li>Wambercourt</li><li>Wamin</li><li>Wicquinghem</li><li>Widehem</li><li>Willeman</li><li>Zoteux</li></ul>"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "props": {
+            "useFilter": false,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": false,
+            "showActiveFiltersTags": false,
+            "disableInfiniteScroll": true,
+            "customHeader": {
+              "title": {
+                "fr": "Les actions sur le territoire"
+              },
+              "linkText": {
+                "fr": "Tout voir dans la recherche"
+              },
+              "linkHref": "/recherche?territoire=territoire62:entre-mer-et-terres"
+            },
+            "baseParams": {
+              "defaultTypes": [
+                "projects"
+              ],
+              "sourceKey": [
+                "parents62"
+              ],
+              "defaultTags": [
+                "territoire62:entre-mer-et-terres"
+              ],
+              "indexStepList": 6
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3
+              },
+              "card": {
+                "type": "default",
+                "detailsMode": "drawer",
+                "tagColors": {
+                  "mapping": {
+                    "territoire62:arrageois": "var(--territoire-arrageois)",
+                    "territoire62:artois": "var(--territoire-artois)",
+                    "territoire62:audomarois": "var(--territoire-audomarois)",
+                    "territoire62:boulonnais": "var(--territoire-boulonnais)",
+                    "territoire62:calaisis": "var(--territoire-calaisis)",
+                    "territoire62:entre-mer-et-terres": "var(--territoire-entre-mer-et-terres)",
+                    "territoire62:fsm-henin-carvin": "var(--territoire-fsm-henin-carvin)",
+                    "territoire62:fsm-lens-lievin": "var(--territoire-fsm-lens-lievin)",
+                    "territoire62:ternois-bruaysis": "var(--territoire-ternois-bruaysis)"
+                  },
+                  "labels": {
+                    "territoire62:arrageois": "Arrageois",
+                    "territoire62:artois": "Artois",
+                    "territoire62:audomarois": "Audomarois",
+                    "territoire62:boulonnais": "Boulonnais",
+                    "territoire62:calaisis": "Calaisis",
+                    "territoire62:entre-mer-et-terres": "Entre Mer et Terres",
+                    "territoire62:fsm-henin-carvin": "Familles en sol mineur Hénin Carvin",
+                    "territoire62:fsm-lens-lievin": "Familles en sol mineur Lens Liévin",
+                    "territoire62:ternois-bruaysis": "Ternois Bruaysis"
+                  },
+                  "hidePrefixes": [
+                    "public:",
+                    "age:"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "html",
+          "props": {
+            "html": "<section class=\"py-10 px-4\"><div class=\"container mx-auto max-w-3xl\"><h2 class=\"text-2xl font-bold mb-3\">Ressources du territoire</h2><ul class=\"list-disc pl-6 space-y-1\"><li><a class=\"underline\" href=\"https://reseau-parentalite-entre-mer-e.gogocarto.fr/map\" target=\"_blank\" rel=\"noopener noreferrer\">Cartographie interactive du territoire (GoGoCarto)</a></li><li><a class=\"underline\" href=\"https://www.parent62.org/decouvrez-biblioboost-site-de-consultation-et-demprunt-des-jeux-et-outils-disponibles-sur-le-montreuillois/\" target=\"_blank\" rel=\"noopener noreferrer\">Biblioboost — consultation et emprunt des jeux et outils</a></li></ul></div></section>"
+          }
+        },
+        {
+          "type": "cta",
+          "props": {
+            "headline": {
+              "fr": "Explorer le territoire"
+            },
+            "subhead": {
+              "fr": "Actions, événements et paroles de parents près de chez vous."
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Rechercher sur ce territoire"
+                },
+                "href": "/recherche?territoire=territoire62:entre-mer-et-terres"
+              },
+              {
+                "label": {
+                  "fr": "Contacter l'équipe"
+                },
+                "href": "/reseau/equipe",
+                "variant": "outline"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/territoires/fsm-henin-carvin",
+      "title": {
+        "fr": "Familles en sol mineur Hénin Carvin - Réseau Parentalité 62"
+      },
+      "layout": "default",
+      "seo": {
+        "title": {
+          "fr": "Comité Local Parentalité Familles en sol mineur Hénin Carvin — Réseau Parentalité 62"
+        },
+        "description": {
+          "fr": "Le comité local Familles en sol mineur Hénin Carvin du Réseau Parentalité 62 : coordonnées de la coordination, communes du territoire et actions de soutien à la parentalité près de chez vous."
+        }
+      },
+      "sections": [
+        {
+          "type": "html",
+          "props": {
+            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-fsm-henin-carvin)\"><div class=\"container mx-auto max-w-4xl text-center text-white\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Familles en sol mineur Hénin Carvin</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Familles en sol mineur Hénin Carvin est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
+          }
+        },
+        {
+          "type": "cards",
+          "props": {
+            "columns": 2,
+            "className": "whitespace-pre-line",
+            "items": [
+              {
+                "icon": "user",
+                "title": {
+                  "fr": "Fiona Karkri, coordonnatrice"
+                },
+                "text": {
+                  "fr": "Coordonnatrice du comité local\nfsm.henincarvin@parent62.org\n06 73 75 40 49 · 03 21 70 90 20\nCentre Social, rue du Maréchal Leclerc, Noyelles-sous-Lens"
+                }
+              },
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Le comité local"
+                },
+                "text": {
+                  "fr": "Professionnel·le·s et parents du territoire se retrouvent régulièrement pour partager les actualités, construire des actions communes et faire vivre le réseau localement. Les dates de réunion sont annoncées dans l'agenda."
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "accordion",
+          "props": {
+            "items": [
+              {
+                "title": {
+                  "fr": "Les communes du territoire (25)"
+                },
+                "content": {
+                  "fr": "<ul class=\"p62-communes\"><li>Bénifontaine</li><li>Billy-Montigny</li><li>Bois-Bernard</li><li>Carvin</li><li>Courcelles-les-Lens</li><li>Courrières</li><li>Dourges</li><li>Drocourt</li><li>Estevelles</li><li>Evin-Malmaison</li><li>Fouquières-les-Lens</li><li>Harnes</li><li>Hénin-Beaumont</li><li>Hulluch</li><li>Leforest</li><li>Libercourt</li><li>Meurchin</li><li>Montigny-en-Gohelle</li><li>Noyelles-Godault</li><li>Noyelles-sous-Lens</li><li>Oignies</li><li>Pont à Vendin</li><li>Rouvroy</li><li>Vendin-le Vieil</li><li>Wingles</li></ul>"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "props": {
+            "useFilter": false,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": false,
+            "showActiveFiltersTags": false,
+            "disableInfiniteScroll": true,
+            "customHeader": {
+              "title": {
+                "fr": "Les actions sur le territoire"
+              },
+              "linkText": {
+                "fr": "Tout voir dans la recherche"
+              },
+              "linkHref": "/recherche?territoire=territoire62:fsm-henin-carvin"
+            },
+            "baseParams": {
+              "defaultTypes": [
+                "projects"
+              ],
+              "sourceKey": [
+                "parents62"
+              ],
+              "defaultTags": [
+                "territoire62:fsm-henin-carvin"
+              ],
+              "indexStepList": 6
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3
+              },
+              "card": {
+                "type": "default",
+                "detailsMode": "drawer",
+                "tagColors": {
+                  "mapping": {
+                    "territoire62:arrageois": "var(--territoire-arrageois)",
+                    "territoire62:artois": "var(--territoire-artois)",
+                    "territoire62:audomarois": "var(--territoire-audomarois)",
+                    "territoire62:boulonnais": "var(--territoire-boulonnais)",
+                    "territoire62:calaisis": "var(--territoire-calaisis)",
+                    "territoire62:entre-mer-et-terres": "var(--territoire-entre-mer-et-terres)",
+                    "territoire62:fsm-henin-carvin": "var(--territoire-fsm-henin-carvin)",
+                    "territoire62:fsm-lens-lievin": "var(--territoire-fsm-lens-lievin)",
+                    "territoire62:ternois-bruaysis": "var(--territoire-ternois-bruaysis)"
+                  },
+                  "labels": {
+                    "territoire62:arrageois": "Arrageois",
+                    "territoire62:artois": "Artois",
+                    "territoire62:audomarois": "Audomarois",
+                    "territoire62:boulonnais": "Boulonnais",
+                    "territoire62:calaisis": "Calaisis",
+                    "territoire62:entre-mer-et-terres": "Entre Mer et Terres",
+                    "territoire62:fsm-henin-carvin": "Familles en sol mineur Hénin Carvin",
+                    "territoire62:fsm-lens-lievin": "Familles en sol mineur Lens Liévin",
+                    "territoire62:ternois-bruaysis": "Ternois Bruaysis"
+                  },
+                  "hidePrefixes": [
+                    "public:",
+                    "age:"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "cta",
+          "props": {
+            "headline": {
+              "fr": "Explorer le territoire"
+            },
+            "subhead": {
+              "fr": "Actions, événements et paroles de parents près de chez vous."
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Rechercher sur ce territoire"
+                },
+                "href": "/recherche?territoire=territoire62:fsm-henin-carvin"
+              },
+              {
+                "label": {
+                  "fr": "Contacter l'équipe"
+                },
+                "href": "/reseau/equipe",
+                "variant": "outline"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/territoires/fsm-lens-lievin",
+      "title": {
+        "fr": "Familles en sol mineur Lens Liévin - Réseau Parentalité 62"
+      },
+      "layout": "default",
+      "seo": {
+        "title": {
+          "fr": "Comité Local Parentalité Familles en sol mineur Lens Liévin — Réseau Parentalité 62"
+        },
+        "description": {
+          "fr": "Le comité local Familles en sol mineur Lens Liévin du Réseau Parentalité 62 : coordonnées de la coordination, communes du territoire et actions de soutien à la parentalité près de chez vous."
+        }
+      },
+      "sections": [
+        {
+          "type": "html",
+          "props": {
+            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-fsm-lens-lievin)\"><div class=\"container mx-auto max-w-4xl text-center text-white\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Familles en sol mineur Lens Liévin</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Familles en sol mineur Lens Liévin est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
+          }
+        },
+        {
+          "type": "cards",
+          "props": {
+            "columns": 2,
+            "className": "whitespace-pre-line",
+            "items": [
+              {
+                "icon": "user",
+                "title": {
+                  "fr": "Guillaume Mondot, coordonnateur"
+                },
+                "text": {
+                  "fr": "Coordonnateur du comité local\nfamillesensolmineur@parent62.org\n06 43 33 41 31\nCentre Social des Brebis, place de la Marne, 62670 Mazingarbe"
+                }
+              },
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Le comité local"
+                },
+                "text": {
+                  "fr": "Professionnel·le·s et parents du territoire se retrouvent régulièrement pour partager les actualités, construire des actions communes et faire vivre le réseau localement. Les dates de réunion sont annoncées dans l'agenda.\nComptes rendus des réunions : cliquer sur cette carte (Google Drive)."
+                },
+                "href": "https://drive.google.com/drive/u/4/folders/18FsQlISmxbXIkeduz6ZXD6yL8TI8dKU8",
+                "target": "_blank"
+              }
+            ]
+          }
+        },
+        {
+          "type": "accordion",
+          "props": {
+            "items": [
+              {
+                "title": {
+                  "fr": "Les communes du territoire (24)"
+                },
+                "content": {
+                  "fr": "<ul class=\"p62-communes\"><li>Ablain-Saint-Nazaire</li><li>Acheville</li><li>Aix-Noulette</li><li>Angres</li><li>Annay-sous-Lens</li><li>Avion</li><li>Bouvigny-Boyeﬄes</li><li>Bully-les-Mines</li><li>Carency</li><li>Eleu-Dit-Leauwette</li><li>Givenchy-en-Gohelle</li><li>Gouy-Servins</li><li>Grenay</li><li>Lens</li><li>Liévin</li><li>Loison-sous-Lens</li><li>Loos-en-Gohelle</li><li>Mazingarbe</li><li>Sains-en-Gohelle</li><li>Sallaumines</li><li>Servins</li><li>Souchez</li><li>Villers-au-Bois</li><li>Vimy</li></ul>"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "props": {
+            "useFilter": false,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": false,
+            "showActiveFiltersTags": false,
+            "disableInfiniteScroll": true,
+            "customHeader": {
+              "title": {
+                "fr": "Les actions sur le territoire"
+              },
+              "linkText": {
+                "fr": "Tout voir dans la recherche"
+              },
+              "linkHref": "/recherche?territoire=territoire62:fsm-lens-lievin"
+            },
+            "baseParams": {
+              "defaultTypes": [
+                "projects"
+              ],
+              "sourceKey": [
+                "parents62"
+              ],
+              "defaultTags": [
+                "territoire62:fsm-lens-lievin"
+              ],
+              "indexStepList": 6
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3
+              },
+              "card": {
+                "type": "default",
+                "detailsMode": "drawer",
+                "tagColors": {
+                  "mapping": {
+                    "territoire62:arrageois": "var(--territoire-arrageois)",
+                    "territoire62:artois": "var(--territoire-artois)",
+                    "territoire62:audomarois": "var(--territoire-audomarois)",
+                    "territoire62:boulonnais": "var(--territoire-boulonnais)",
+                    "territoire62:calaisis": "var(--territoire-calaisis)",
+                    "territoire62:entre-mer-et-terres": "var(--territoire-entre-mer-et-terres)",
+                    "territoire62:fsm-henin-carvin": "var(--territoire-fsm-henin-carvin)",
+                    "territoire62:fsm-lens-lievin": "var(--territoire-fsm-lens-lievin)",
+                    "territoire62:ternois-bruaysis": "var(--territoire-ternois-bruaysis)"
+                  },
+                  "labels": {
+                    "territoire62:arrageois": "Arrageois",
+                    "territoire62:artois": "Artois",
+                    "territoire62:audomarois": "Audomarois",
+                    "territoire62:boulonnais": "Boulonnais",
+                    "territoire62:calaisis": "Calaisis",
+                    "territoire62:entre-mer-et-terres": "Entre Mer et Terres",
+                    "territoire62:fsm-henin-carvin": "Familles en sol mineur Hénin Carvin",
+                    "territoire62:fsm-lens-lievin": "Familles en sol mineur Lens Liévin",
+                    "territoire62:ternois-bruaysis": "Ternois Bruaysis"
+                  },
+                  "hidePrefixes": [
+                    "public:",
+                    "age:"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "cta",
+          "props": {
+            "headline": {
+              "fr": "Explorer le territoire"
+            },
+            "subhead": {
+              "fr": "Actions, événements et paroles de parents près de chez vous."
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Rechercher sur ce territoire"
+                },
+                "href": "/recherche?territoire=territoire62:fsm-lens-lievin"
+              },
+              {
+                "label": {
+                  "fr": "Contacter l'équipe"
+                },
+                "href": "/reseau/equipe",
+                "variant": "outline"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/territoires/ternois-bruaysis",
+      "title": {
+        "fr": "Ternois Bruaysis - Réseau Parentalité 62"
+      },
+      "layout": "default",
+      "seo": {
+        "title": {
+          "fr": "Comité Local Parentalité Ternois Bruaysis — Réseau Parentalité 62"
+        },
+        "description": {
+          "fr": "Le comité local Ternois Bruaysis du Réseau Parentalité 62 : coordonnées de la coordination, communes du territoire et actions de soutien à la parentalité près de chez vous."
+        }
+      },
+      "sections": [
+        {
+          "type": "html",
+          "props": {
+            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-ternois-bruaysis)\"><div class=\"container mx-auto max-w-4xl text-center text-white\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Ternois Bruaysis</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Ternois Bruaysis est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
+          }
+        },
+        {
+          "type": "cards",
+          "props": {
+            "columns": 2,
+            "className": "whitespace-pre-line",
+            "items": [
+              {
+                "icon": "user",
+                "title": {
+                  "fr": "Sarah Darras, coordonnatrice"
+                },
+                "text": {
+                  "fr": "Coordonnatrice du comité local\nternoisbruaysis@parent62.org\n07 46 29 04 60"
+                }
+              },
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Le comité local"
+                },
+                "text": {
+                  "fr": "Professionnel·le·s et parents du territoire se retrouvent régulièrement pour partager les actualités, construire des actions communes et faire vivre le réseau localement. Les dates de réunion sont annoncées dans l'agenda."
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "accordion",
+          "props": {
+            "items": [
+              {
+                "title": {
+                  "fr": "Les communes du territoire (172)"
+                },
+                "content": {
+                  "fr": "<ul class=\"p62-communes\"><li>Agnieres</li><li>Ambrines</li><li>Anvin</li><li>Aubigny en Artois</li><li>Aubrometz</li><li>Auchel</li><li>Aumerval</li><li>Auxi le Chateau</li><li>Averdoingt</li><li>Avesnes le Comte</li><li>Bailleul aux Cornailles</li><li>Bailleul les Pernes</li><li>Bajus</li><li>Barlin</li><li>Beauvoir Wavrans</li><li>Beauvois</li><li>Bergueneuse</li><li>Berles Monchel</li><li>Bernicourt</li><li>Bethonsart</li><li>Beugin</li><li>Blangerval Blangermont</li><li>Blessy</li><li>Boffles</li><li>Bonnieres</li><li>Boubers sur Canche</li><li>Bouret sur Canche</li><li>Bours</li><li>Boyaval</li><li>Brias</li><li>Bruay la Buissiere</li><li>Buire au Bois</li><li>Buneville</li><li>Calonne Ricouart</li><li>Camblain Chatelain</li><li>Camblain l’Abbe</li><li>Cambligneul</li><li>Canteleux</li><li>Capelle Fermont</li><li>Cauchy A la Tour</li><li>Caucourt</li><li>Chelers</li><li>Conchy sur Canche</li><li>Contreville</li><li>Croisette</li><li>Croix en Ternois</li><li>Dieval</li><li>Divion</li><li>Ecoivres</li><li>Eps</li><li>Equirre</li><li>Erin</li><li>Estree Blanche</li><li>Estree Cauchy</li><li>Flefs</li><li>Flers</li><li>Fleury</li><li>Floringhem</li><li>Fontaine l’Etalon</li><li>Fontaine les Boulans</li><li>Fontaine les Hermans</li><li>Fortel en Artois</li><li>Foufflin Ricamets</li><li>Framecourt</li><li>Fresnicourt le Dolmen</li><li>Frevent</li><li>Frevillers</li><li>Frevin Capelle</li><li>Gauchin le Gal</li><li>Gauchin Verloingt</li><li>Gennes Ivergny</li><li>Gosnay</li><li>Gouy</li><li>Guarbecque</li><li>Guinecourt</li><li>Haillicourt</li><li>Haravesnes</li><li>Hautecloque</li><li>Hericourt</li><li>Herlin le Sec</li><li>Herlincourt</li><li>Hermaville</li><li>Hermin</li><li>Hernicourt</li><li>Hersin Coupigny</li><li>Hesdigneul les Bethune</li><li>Hestrus</li><li>Heuchin</li><li>Houchin</li><li>Houdain</li><li>Huclier</li><li>Humeroeuille</li><li>Humieres</li><li>Isbergues-Molinghem-Berguette</li><li>Izel les Hameaux</li><li>La Comte</li><li>Lambres</li><li>Le Ponchel</li><li>Le Thieuloye</li><li>Liettres</li><li>Ligny les Aires</li><li>Ligny St Flochel</li><li>Ligny sur Canche</li><li>Linghem</li><li>Linzeux</li><li>Lisbourg</li><li>Lozinghem</li><li>Magnicourt en Comte</li><li>Maisnil</li><li>Maisnil les Ruitz</li><li>Maizieres</li><li>Manin</li><li>Marest</li><li>Marles les Mines</li><li>Marquay</li><li>Mazinghem</li><li>Mingoval</li><li>Moncheaux les Frevent</li><li>Monchel sur Canche</li><li>Monchy Breton</li><li>Monchy Cayeux</li><li>Monts en Ternois</li><li>Nedon</li><li>Nedonchel</li><li>Noeux les Auxi</li><li>Nouville au Cornet</li><li>Noyelle Vion</li><li>Nuncq Hautecote</li><li>Œuf en Ternois</li><li>Ostreville</li><li>Ourton</li><li>Penin</li><li>Pernes</li><li>Pierremont</li><li>Predefin</li><li>Pressy</li><li>Quernes</li><li>Quoeux Haut Maisnil</li><li>Ramecourt</li><li>Rebreuve Ranchicourt</li><li>Rely</li><li>Roellecourt</li><li>Rombly</li><li>Rougefay</li><li>Ruitz</li><li>Sachin</li><li>Sains les Pernes</li><li>Saint Pol sur Ternoise</li><li>Savy Berlette</li><li>Sericourt</li><li>Sibiville</li><li>Siracourt</li><li>St Hillaire Cottes</li><li>St Michel sur Ternoise</li><li>Tangry</li><li>Teneur</li><li>Ternas</li><li>Tilloy les Hermaville</li><li>Tilly Capelle</li><li>Tincques</li><li>Tollent</li><li>Troisveaux</li><li>Vacquerie le Boucq</li><li>Valhuon</li><li>Vaulx</li><li>Villers Brulin</li><li>Villers Chatel</li><li>Villers l’Hopital</li><li>Villers Sir Simon</li><li>Wavrans sur Ternoise</li><li>Willencourt</li><li>Witternesse</li></ul>"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "props": {
+            "useFilter": false,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": false,
+            "showActiveFiltersTags": false,
+            "disableInfiniteScroll": true,
+            "customHeader": {
+              "title": {
+                "fr": "Les actions sur le territoire"
+              },
+              "linkText": {
+                "fr": "Tout voir dans la recherche"
+              },
+              "linkHref": "/recherche?territoire=territoire62:ternois-bruaysis"
+            },
+            "baseParams": {
+              "defaultTypes": [
+                "projects"
+              ],
+              "sourceKey": [
+                "parents62"
+              ],
+              "defaultTags": [
+                "territoire62:ternois-bruaysis"
+              ],
+              "indexStepList": 6
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3
+              },
+              "card": {
+                "type": "default",
+                "detailsMode": "drawer",
+                "tagColors": {
+                  "mapping": {
+                    "territoire62:arrageois": "var(--territoire-arrageois)",
+                    "territoire62:artois": "var(--territoire-artois)",
+                    "territoire62:audomarois": "var(--territoire-audomarois)",
+                    "territoire62:boulonnais": "var(--territoire-boulonnais)",
+                    "territoire62:calaisis": "var(--territoire-calaisis)",
+                    "territoire62:entre-mer-et-terres": "var(--territoire-entre-mer-et-terres)",
+                    "territoire62:fsm-henin-carvin": "var(--territoire-fsm-henin-carvin)",
+                    "territoire62:fsm-lens-lievin": "var(--territoire-fsm-lens-lievin)",
+                    "territoire62:ternois-bruaysis": "var(--territoire-ternois-bruaysis)"
+                  },
+                  "labels": {
+                    "territoire62:arrageois": "Arrageois",
+                    "territoire62:artois": "Artois",
+                    "territoire62:audomarois": "Audomarois",
+                    "territoire62:boulonnais": "Boulonnais",
+                    "territoire62:calaisis": "Calaisis",
+                    "territoire62:entre-mer-et-terres": "Entre Mer et Terres",
+                    "territoire62:fsm-henin-carvin": "Familles en sol mineur Hénin Carvin",
+                    "territoire62:fsm-lens-lievin": "Familles en sol mineur Lens Liévin",
+                    "territoire62:ternois-bruaysis": "Ternois Bruaysis"
+                  },
+                  "hidePrefixes": [
+                    "public:",
+                    "age:"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "cta",
+          "props": {
+            "headline": {
+              "fr": "Explorer le territoire"
+            },
+            "subhead": {
+              "fr": "Actions, événements et paroles de parents près de chez vous."
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Rechercher sur ce territoire"
+                },
+                "href": "/recherche?territoire=territoire62:ternois-bruaysis"
+              },
+              {
+                "label": {
+                  "fr": "Contacter l'équipe"
+                },
+                "href": "/reseau/equipe",
+                "variant": "outline"
+              }
+            ]
+          }
+        }
       ]
     }
   ],
@@ -556,9 +4145,33 @@
             }
           },
           {
+            "href": "/parents",
+            "label": {
+              "fr": "Parents"
+            }
+          },
+          {
+            "href": "/pro",
+            "label": {
+              "fr": "Professionnels"
+            }
+          },
+          {
+            "href": "/recherche",
+            "label": {
+              "fr": "Rechercher"
+            }
+          },
+          {
             "href": "/actions",
             "label": {
               "fr": "Actions"
+            }
+          },
+          {
+            "href": "/paroles",
+            "label": {
+              "fr": "Paroles de parents"
             }
           },
           {
@@ -571,6 +4184,36 @@
             "href": "/communaute",
             "label": {
               "fr": "Communauté"
+            }
+          },
+          {
+            "href": "/reseau/presentation",
+            "label": {
+              "fr": "Le réseau : qui sommes-nous ?"
+            }
+          },
+          {
+            "href": "/reseau/charte",
+            "label": {
+              "fr": "La Charte du REAAP 62"
+            }
+          },
+          {
+            "href": "/reseau/equipe",
+            "label": {
+              "fr": "Équipe & contact"
+            }
+          },
+          {
+            "href": "/reseau/champs-actions",
+            "label": {
+              "fr": "Nos champs d'actions"
+            }
+          },
+          {
+            "href": "https://www.parent62.org/",
+            "label": {
+              "fr": "parents62.org"
             }
           }
         ]
@@ -1708,6 +5351,409 @@
           ]
         }
       ]
+    }
+  },
+  "costumForms": {
+    "parents62-parole": {
+      "id": "parents62-parole",
+      "entityType": "poi",
+      "costumSlug": "parents62",
+      "icon": "message-circle-heart",
+      "layout": {
+        "kind": "flat"
+      },
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        }
+      },
+      "scope": {
+        "derive": "poi:scope",
+        "slugFrom": "derived",
+        "slugKey": "sourceKey",
+        "defaults": {
+          "poiType": "affiche",
+          "addressCountry": "FR"
+        }
+      },
+      "fields": {
+        "name": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Titre de la parole"
+          }
+        },
+        "category": {
+          "widget": "select",
+          "required": true,
+          "label": {
+            "fr": "Type de contenu"
+          },
+          "enum": [
+            {
+              "value": "complique",
+              "label": {
+                "fr": "Compliqué"
+              }
+            },
+            {
+              "value": "difficile",
+              "label": {
+                "fr": "Difficile"
+              }
+            },
+            {
+              "value": "a-changer",
+              "label": {
+                "fr": "Ce qui est à changer"
+              }
+            }
+          ]
+        },
+        "description": {
+          "widget": "textarea",
+          "required": true,
+          "label": {
+            "fr": "Texte de la parole (ou transcription intégrale de l'audio)"
+          }
+        },
+        "paroleAudioUrl": {
+          "widget": "text",
+          "label": {
+            "fr": "URL du fichier audio (mp3)"
+          },
+          "placeholder": {
+            "fr": "https://…"
+          },
+          "read": "parents62:audioUrlRead",
+          "write": "parents62:omit"
+        },
+        "paroleTerritoire": {
+          "widget": "select",
+          "required": true,
+          "label": {
+            "fr": "Territoire"
+          },
+          "read": "parents62:territoireRead",
+          "write": "parents62:omit",
+          "enum": [
+            {
+              "value": "territoire62:arrageois",
+              "label": {
+                "fr": "Arrageois"
+              }
+            },
+            {
+              "value": "territoire62:artois",
+              "label": {
+                "fr": "Artois"
+              }
+            },
+            {
+              "value": "territoire62:audomarois",
+              "label": {
+                "fr": "Audomarois"
+              }
+            },
+            {
+              "value": "territoire62:boulonnais",
+              "label": {
+                "fr": "Boulonnais"
+              }
+            },
+            {
+              "value": "territoire62:calaisis",
+              "label": {
+                "fr": "Calaisis"
+              }
+            },
+            {
+              "value": "territoire62:entre-mer-et-terres",
+              "label": {
+                "fr": "Entre Mer et Terres"
+              }
+            },
+            {
+              "value": "territoire62:fsm-henin-carvin",
+              "label": {
+                "fr": "Familles en sol mineur Hénin Carvin"
+              }
+            },
+            {
+              "value": "territoire62:fsm-lens-lievin",
+              "label": {
+                "fr": "Familles en sol mineur Lens Liévin"
+              }
+            },
+            {
+              "value": "territoire62:ternois-bruaysis",
+              "label": {
+                "fr": "Ternois Bruaysis"
+              }
+            }
+          ]
+        },
+        "parolePublic": {
+          "widget": "multiselect",
+          "label": {
+            "fr": "Public concerné"
+          },
+          "read": "parents62:publicRead",
+          "write": "parents62:omit",
+          "enum": [
+            {
+              "value": "public:parents",
+              "label": {
+                "fr": "Parents"
+              }
+            },
+            {
+              "value": "public:pro",
+              "label": {
+                "fr": "Professionnels"
+              }
+            }
+          ]
+        },
+        "paroleAges": {
+          "widget": "multiselect",
+          "label": {
+            "fr": "Tranches d'âge concernées"
+          },
+          "read": "parents62:agesRead",
+          "write": "parents62:omit",
+          "enum": [
+            {
+              "value": "age:0-3",
+              "label": {
+                "fr": "0-3 ans"
+              }
+            },
+            {
+              "value": "age:4-6",
+              "label": {
+                "fr": "4-6 ans"
+              }
+            },
+            {
+              "value": "age:7-11",
+              "label": {
+                "fr": "7-11 ans"
+              }
+            },
+            {
+              "value": "age:12-17",
+              "label": {
+                "fr": "12-17 ans"
+              }
+            },
+            {
+              "value": "age:18-25",
+              "label": {
+                "fr": "18-25 ans"
+              }
+            }
+          ]
+        },
+        "paroleThemes": {
+          "widget": "tags",
+          "label": {
+            "fr": "Thèmes"
+          },
+          "read": "parents62:themesRead",
+          "write": "parents62:omit"
+        },
+        "paroleConsentement": {
+          "widget": "switch",
+          "required": true,
+          "label": {
+            "fr": "Consentement de publication recueilli"
+          }
+        },
+        "tags": {
+          "widget": "hidden",
+          "type": "array",
+          "read": "coerce:stringArray",
+          "write": "parents62:tagsWrite",
+          "default": []
+        },
+        "medias": {
+          "widget": "hidden",
+          "type": "array",
+          "write": "parents62:mediasWrite",
+          "default": []
+        },
+        "_imageFile": {
+          "widget": "image",
+          "label": {
+            "fr": "Illustration (optionnelle)"
+          }
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Commune (optionnelle)"
+          }
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
+        }
+      },
+      "sections": [
+        {
+          "id": "parole",
+          "label": {
+            "fr": "La parole"
+          },
+          "groups": [
+            {
+              "columns": 2,
+              "fields": [
+                "name",
+                "category"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "description"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "paroleAudioUrl"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "paroleTerritoire",
+                "parolePublic"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "paroleAges",
+                "paroleThemes"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "_imageFile"
+              ]
+            },
+            {
+              "columns": 1,
+              "label": {
+                "fr": "Localisation"
+              },
+              "fields": [
+                "address",
+                "addressCountry",
+                "addressLocality",
+                "postalCode",
+                "streetAddress"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "paroleConsentement"
+              ]
+            }
+          ]
+        }
+      ],
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter une parole"
+          },
+          "edit": {
+            "fr": "Éditer une parole"
+          }
+        },
+        "description": {
+          "add": {
+            "fr": "Publier une parole de parent (audio ou écrite). La transcription sert de sous-titrage."
+          },
+          "edit": {
+            "fr": "Mettre à jour cette parole."
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Publier"
+          },
+          "edit": {
+            "fr": "Sauvegarder"
+          }
+        },
+        "validationFailedKey": {
+          "fr": "Veuillez corriger les champs en erreur."
+        }
+      },
+      "image": {
+        "field": "_imageFile",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "mutation": {
+        "entityType": "poi",
+        "inject": {
+          "parent": true,
+          "extraFieldsFromScope": {
+            "type": "poiType"
+          }
+        },
+        "navigateOnSuccess": false,
+        "successKey": {
+          "add": "toast.add.poiSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.poiError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_POI parole",
+          "edit": "EntityFormModal · UPDATE_POI parole"
+        }
+      }
     }
   }
 }

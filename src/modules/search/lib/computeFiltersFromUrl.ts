@@ -9,7 +9,13 @@ export interface FilterGroupLike {
   filterType?: string;
   /** scopeList (zones) : clé de `locality`. Défaut `${option.id}${option.level}`. */
   field?: string;
-  options?: Array<{ id: string; name?: string; level?: string }>;
+  options?: Array<{
+    id: string;
+    name?: string;
+    level?: string;
+    /** searchTargets : cible (defaultTypes/defaultFilters) portée par l'option. */
+    target?: Record<string, unknown>;
+  }>;
 }
 
 /** Données `filtersByAnswers`/`filtersByPath` résolues (services → orgaNameArray). */
@@ -44,15 +50,22 @@ export function computeFiltersFromUrl(
   Object.values(filterAnswerData ?? {}).forEach((g) => {
     Object.keys(g.values).forEach((k) => managedAnswerOptionKeys.add(k));
   });
-  // Clés searchByFields gérées par les groupes entityList / scopeList (= leurs
-  // options) → reconstruites depuis l'URL plutôt que préservées.
+  // Clés searchByFields gérées par les groupes entityList / scopeList /
+  // searchTargets (= leurs options) → reconstruites depuis l'URL plutôt que
+  // préservées.
   const managedEntityOptionKeys = new Set<string>();
   const managedScopeOptionKeys = new Set<string>();
+  const managedTargetOptionKeys = new Set<string>();
   filterGroups.forEach((g) => {
     if (g.type === "entityList") {
       (g.options ?? []).forEach((o) => managedEntityOptionKeys.add(o.name || o.id));
     } else if (g.type === "scopeList") {
       (g.options ?? []).forEach((o) => managedScopeOptionKeys.add(o.name || o.id));
+    } else if (g.type === "searchTargets") {
+      (g.options ?? []).forEach((o) => managedTargetOptionKeys.add(o.name || o.id));
+    } else if (g.type === "dateRange") {
+      // Clé searchByFields = id du groupe (une plage par groupe).
+      managedTargetOptionKeys.add(g.id);
     }
   });
 
@@ -72,6 +85,32 @@ export function computeFiltersFromUrl(
             nextSearchFields[slug] = { field: fType, type: fType, value: [slug] };
           }
         });
+        return;
+      }
+      // dateRange → searchByFields sous la clé du groupe : `?dates=2026-07-01`
+      // (borne début) ou `?dates=2026-07-01,2026-08-31` (début,fin).
+      if (group.type === "dateRange") {
+        const [start, end] = values;
+        nextSearchFields[group.id] = {
+          field: group.field ?? "startDate",
+          type: "dateRange",
+          value: { ...(start ? { start } : {}), ...(end ? { end } : {}) },
+        } as SearchByFieldValue;
+        return;
+      }
+      // searchTargets (« type d'info ») → searchByFields, à l'identique du clic
+      // (radio : seule la 1ʳᵉ valeur est prise) — deep-link `?typeInfo=paroles`.
+      if (group.type === "searchTargets") {
+        const opt = (group.options ?? []).find(
+          (o) => (o.name || o.id) === values[0] || o.id === values[0],
+        );
+        if (opt) {
+          nextSearchFields[opt.name || opt.id] = {
+            field: "searchTarget",
+            type: "searchTarget",
+            value: opt.target ?? {},
+          };
+        }
         return;
       }
       // scopeList (zones : pays / régions) → searchByFields (type scopeList,
@@ -135,7 +174,8 @@ export function computeFiltersFromUrl(
         if (
           !managedAnswerOptionKeys.has(key) &&
           !managedEntityOptionKeys.has(key) &&
-          !managedScopeOptionKeys.has(key)
+          !managedScopeOptionKeys.has(key) &&
+          !managedTargetOptionKeys.has(key)
         )
           preserved[key] = val;
       });

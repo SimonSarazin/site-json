@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useT } from "@/hooks/useT";
 import { SearchCardProps } from "../../schema";
 import useItem from "../../hooks/useItem";
+import { decorateTags } from "../../lib/colorBy";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useMemo } from "react";
 
@@ -52,6 +53,13 @@ export default function CardDefault({
     [name]
   );
 
+  // Chips préparées par `card.tagColors` (couleur territoire, masquage des
+  // tags techniques) — sans conf, identité (comportement historique).
+  const displayTags = useMemo(
+    () => decorateTags(tags, card.tagColors),
+    [tags, card.tagColors]
+  );
+
   return (
     <Card
       className="group hover:shadow-lg transition-all duration-300 cursor-pointer"
@@ -91,22 +99,29 @@ export default function CardDefault({
               </span>
             </div>
 
-            {tags.length > 0 && (
+            {displayTags.length > 0 && (
               <div className="flex flex-wrap gap-1">
-                {tags.slice(0, card.tagLimit).map((tag, index) => (
+                {displayTags.slice(0, card.tagLimit).map(({ tag, label, cssColor }, index) => (
                   <Badge
                     key={index}
                     variant="secondary"
                     className="text-xs max-w-[8rem] overflow-hidden"
                     title={tag}
                   >
-                    {shortenTag(tag)}
+                    {cssColor && (
+                      <span
+                        aria-hidden
+                        className="mr-1 inline-block h-2 w-2 shrink-0 rounded-full"
+                        style={{ backgroundColor: cssColor }}
+                      />
+                    )}
+                    {shortenTag(label)}
                   </Badge>
                 ))}
 
-                {tags.length > (card?.tagLimit ?? 5) && (
+                {displayTags.length > (card?.tagLimit ?? 5) && (
                   <Badge variant="secondary" className="text-xs">
-                    +{tags.length - (card?.tagLimit ?? 5)}
+                    +{displayTags.length - (card?.tagLimit ?? 5)}
                   </Badge>
                 )}
               </div>

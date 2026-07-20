@@ -167,3 +167,98 @@ describe("computeUrlFromFilters", () => {
     expect(url2.toString()).toBe(url.toString());
   });
 });
+
+// ─── searchTargets (filtre « type d'info », CDC parents62) ──────────────────
+const TYPE_INFO: FilterGroupLike = {
+  id: "typeInfo",
+  type: "searchTargets",
+  options: [
+    { id: "typeinfo-actions", name: "typeinfo-actions", target: { defaultTypes: ["projects"] } },
+    {
+      id: "typeinfo-paroles",
+      name: "typeinfo-paroles",
+      target: { defaultTypes: ["poi"], defaultFilters: { type: "affiche" } },
+    },
+  ],
+};
+const targetEntry = (target: Record<string, unknown>) =>
+  ({ field: "searchTarget", type: "searchTarget", value: target }) as unknown as SearchByFieldValue;
+
+describe("searchTargets — miroir URL", () => {
+  it("écriture : option active dans searchByFields → ?typeInfo=<option>", () => {
+    const out = computeUrlFromFilters(
+      new URLSearchParams(),
+      {},
+      { "typeinfo-paroles": targetEntry({ defaultTypes: ["poi"] }) },
+      [TYPE_INFO],
+    );
+    expect(out.get("typeInfo")).toBe("typeinfo-paroles");
+  });
+
+  it("écriture : aucune option active → param retiré", () => {
+    const out = computeUrlFromFilters(
+      new URLSearchParams("typeInfo=typeinfo-paroles"),
+      {},
+      {},
+      [TYPE_INFO],
+    );
+    expect(out.get("typeInfo")).toBeNull();
+  });
+
+  it("lecture : deep-link ?typeInfo=… → entrée searchByFields avec la cible de l'option (radio : 1ʳᵉ valeur)", () => {
+    const { applySearchFields } = computeFiltersFromUrl(
+      new URLSearchParams("typeInfo=typeinfo-paroles,typeinfo-actions"),
+      [TYPE_INFO],
+      null,
+    );
+    expect(applySearchFields({})).toEqual({
+      "typeinfo-paroles": {
+        field: "searchTarget",
+        type: "searchTarget",
+        value: { defaultTypes: ["poi"], defaultFilters: { type: "affiche" } },
+      },
+    });
+  });
+
+  it("lecture : les clés d'options searchTargets sont reconstruites (pas préservées), les autres clés le sont", () => {
+    const { applySearchFields } = computeFiltersFromUrl(new URLSearchParams(), [TYPE_INFO], null);
+    const prev = {
+      "typeinfo-actions": targetEntry({ defaultTypes: ["projects"] }),
+      autre: { field: "tags", value: ["sport"] } as unknown as SearchByFieldValue,
+    };
+    expect(applySearchFields(prev)).toEqual({
+      autre: { field: "tags", value: ["sport"] },
+    });
+  });
+});
+
+// ─── dateRange (filtre par date, CDC parents62) ─────────────────────────────
+const DATES: FilterGroupLike = { id: "dates", type: "dateRange", field: "startDate" };
+const rangeEntry = (value: Record<string, unknown>) =>
+  ({ field: "startDate", type: "dateRange", value }) as unknown as SearchByFieldValue;
+
+describe("dateRange — miroir URL", () => {
+  it("écriture : plage active → ?dates=start[,end] ; vide → param retiré", () => {
+    const out = computeUrlFromFilters(
+      new URLSearchParams(),
+      {},
+      { dates: rangeEntry({ start: "2026-07-01", end: "2026-08-31" }) },
+      [DATES],
+    );
+    expect(out.get("dates")).toBe("2026-07-01,2026-08-31");
+
+    const cleared = computeUrlFromFilters(new URLSearchParams("dates=2026-07-01"), {}, {}, [DATES]);
+    expect(cleared.get("dates")).toBeNull();
+  });
+
+  it("lecture : deep-link ?dates=start,end → entrée searchByFields sous la clé du groupe", () => {
+    const { applySearchFields } = computeFiltersFromUrl(
+      new URLSearchParams("dates=2026-07-01,2026-08-31"),
+      [DATES],
+      null,
+    );
+    expect(applySearchFields({})).toEqual({
+      dates: { field: "startDate", type: "dateRange", value: { start: "2026-07-01", end: "2026-08-31" } },
+    });
+  });
+});

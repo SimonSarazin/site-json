@@ -92,13 +92,23 @@ function FilterOptionRow({
   selected,
   onToggle,
   variant = "checkbox",
+  dotColor,
 }: {
   label: string;
   selected: boolean;
   onToggle: () => void;
   /** "check" : ligne à coche à DROITE (look SelectItem) — cf. optionStyle. */
   variant?: "checkbox" | "check";
+  /** Pastille de couleur de l'option (ex. territoire — `options[].color`). */
+  dotColor?: string;
 }) {
+  const dot = dotColor ? (
+    <span
+      aria-hidden
+      className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
+      style={{ backgroundColor: dotColor }}
+    />
+  ) : null;
   if (variant === "check") {
     return (
       <Button
@@ -111,7 +121,10 @@ function FilterOptionRow({
           selected ? "text-foreground" : "text-muted-foreground hover:text-foreground",
         )}
       >
-        <span className="truncate">{label}</span>
+        <span className="flex min-w-0 items-center gap-2">
+          {dot}
+          <span className="truncate">{label}</span>
+        </span>
         <Check className={cn("h-4 w-4 shrink-0", selected ? "opacity-100" : "opacity-0")} />
       </Button>
     );
@@ -119,6 +132,7 @@ function FilterOptionRow({
   return (
     <Label className="group flex cursor-pointer items-start gap-2 font-normal">
       <Checkbox checked={selected} onCheckedChange={onToggle} className="mt-0.5" />
+      {dot && <span className="mt-1">{dot}</span>}
       <span className="flex-1 text-sm text-muted-foreground group-hover:text-foreground">
         {label}
       </span>
@@ -218,7 +232,7 @@ export function FiltersSection({
   const filterEntityData = entityListGroup ? entityResult.data : null;
 
   // Context partagé + logique de toggle mutualisée (cf. useFilterToggles).
-  const { selectedFilters, setSelectedFilters, searchQuery, setSearchQuery, clearFilters: clearFiltersContext, searchByFields, setSearchByFields, toggleFilter } = useFilterToggles();
+  const { selectedFilters, setSelectedFilters, searchQuery, setSearchQuery, clearFilters: clearFiltersContext, searchByFields, setSearchByFields, toggleFilter, toggleTarget, setRange } = useFilterToggles();
 
   // Input texte : état local réactif visuellement + debounce avant de publier
   // dans le context (sinon chaque frappe relance `searchCostum` côté backend).
@@ -537,6 +551,42 @@ export function FiltersSection({
           if (queryEmpty && group.type === "entityList" && entityResult.isLoading) {
             return renderGroupLoading(group.id, t(group.label), !!group.select);
           }
+          // Groupe `dateRange` : champ(s) date, sélection stockée sous la clé du
+          // GROUPE dans searchByFields (une plage par groupe). La borne de fin
+          // n'est proposée que si `withEnd` (support backend $lte requis).
+          if (group.type === "dateRange") {
+            const rangeField = group.field ?? "startDate";
+            const current = (searchByFields[group.id]?.value ?? {}) as { start?: string; end?: string };
+            const rangeCount = (current.start ? 1 : 0) + (current.end ? 1 : 0);
+            return renderGroupCollapsible(
+              group.id,
+              <span className={cn("flex items-center gap-2 font-medium", rangeCount > 0 ? "text-primary" : "text-foreground")}>
+                {t(group.label)}
+                {rangeCount > 0 && <Badge className={COUNT_BADGE_CLASS}>{rangeCount}</Badge>}
+              </span>,
+              "space-y-2",
+              <div className="space-y-2">
+                <div className="flex flex-col gap-1.5">
+                  <Label className="text-xs font-medium text-muted-foreground">{t("À partir du")}</Label>
+                  <Input
+                    type="date"
+                    value={current.start ?? ""}
+                    onChange={(e) => setRange(group.id, rangeField, { ...current, start: e.target.value })}
+                  />
+                </div>
+                {group.withEnd && (
+                  <div className="flex flex-col gap-1.5">
+                    <Label className="text-xs font-medium text-muted-foreground">{t("Jusqu'au")}</Label>
+                    <Input
+                      type="date"
+                      value={current.end ?? ""}
+                      onChange={(e) => setRange(group.id, rangeField, { ...current, end: e.target.value })}
+                    />
+                  </div>
+                )}
+              </div>,
+            );
+          }
           const groupOptionNames = (group.options ?? []).map(o => o.name || o.id);
           const activeCount = getGroupActiveCount(group.id, groupOptionNames);
           const isActive = activeCount > 0;
@@ -565,6 +615,7 @@ export function FiltersSection({
                 key={option.id}
                 label={t(option.label)}
                 variant={group.optionStyle}
+                dotColor={(option as { color?: string }).color}
                 selected={isFilterSelected(group.id, filterName)}
                 onToggle={() => {
                   if (group.type === "scopeList") {
@@ -576,6 +627,10 @@ export function FiltersSection({
                     // le sourceKey n'était jamais envoyé à l'API.
                     const fType = group.filterType ?? "sourceKey";
                     toggleFilter(group.id, filterName, fType, filterName, null, fType);
+                  } else if (group.type === "searchTargets") {
+                    // Radio au sein du groupe : la cible (defaultTypes/defaultFilters)
+                    // remplace celle de la section (cf. searchByFieldsToQuery).
+                    toggleTarget(groupOptionNames, filterName, option.target ?? {});
                   } else {
                     toggleFilter(group.id, filterName);
                   }
@@ -615,6 +670,8 @@ export function FiltersSection({
                 } else if (group.type === "entityList") {
                   const fType = group.filterType ?? "sourceKey";
                   toggleFilter(group.id, name, fType, name, null, fType);
+                } else if (group.type === "searchTargets") {
+                  toggleTarget(groupOptionNames, name, option?.target ?? {});
                 } else {
                   toggleFilter(group.id, name);
                 }

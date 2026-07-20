@@ -262,18 +262,24 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     return tags.length > 0 ? { tags } : {} as Record<string, string[]>;
   }, [filterNames, selectedTagValue]);
 
-  const [searchType] = useState<Record<string, string[]> | null>(
-    baseParams?.defaultTypes ? { type: baseParams.defaultTypes } : null
-  );
-
   const searchByFields = contextFilters?.searchByFields;
 
-  // Traduction `searchByFields` → filtres MongoDB / locality / sourceKeys (helper
-  // partagé avec l'autocomplete du hero → mêmes filtres dynamiques des deux côtés).
-  const { filters, contextLocality, dynamicSourceKeys } = useMemo(() => {
-    const { filters, locality, sourceKeys } = searchByFieldsToQuery(searchByFields ?? {});
-    return { filters, contextLocality: locality, dynamicSourceKeys: sourceKeys };
+  // Traduction `searchByFields` → filtres MongoDB / locality / sourceKeys / cible
+  // « type d'info » (helper partagé avec l'autocomplete du hero → mêmes filtres
+  // dynamiques des deux côtés).
+  const { filters, contextLocality, dynamicSourceKeys, searchTarget } = useMemo(() => {
+    const { filters, locality, sourceKeys, searchTarget } = searchByFieldsToQuery(searchByFields ?? {});
+    return { filters, contextLocality: locality, dynamicSourceKeys: sourceKeys, searchTarget };
   }, [searchByFields]);
+
+  // Le filtre « type d'info » (groupe `searchTargets`) REMPLACE les types par
+  // défaut de la section — réactif (useMemo, plus useState) : la sélection
+  // change les collections interrogées. Contenu identique → queryKey stable
+  // (React Query sérialise la clé).
+  const searchType = useMemo<Record<string, string[]> | null>(() => {
+    const types = searchTarget?.defaultTypes ?? baseParams?.defaultTypes;
+    return types ? { type: types } : null;
+  }, [searchTarget, baseParams?.defaultTypes]);
 
   const locality = useMemo<Record<string, unknown>>(
     () => ({ ...contextLocality, ...zoneLocality }),
@@ -287,8 +293,16 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
       merged.sourceKey = dynamicSourceKeys;
       delete merged.notSourceKey;
     }
+    // La cible « type d'info » fusionne ses defaultFilters (ex. {"type":"affiche"})
+    // PAR-DESSUS ceux de la section — mêmes clés = la cible gagne.
+    if (searchTarget?.defaultFilters) {
+      merged.defaultFilters = {
+        ...(merged.defaultFilters as Record<string, unknown> | undefined),
+        ...searchTarget.defaultFilters,
+      };
+    }
     return merged;
-  }, [baseParams, filters, locality, dynamicSourceKeys]);
+  }, [baseParams, filters, locality, dynamicSourceKeys, searchTarget]);
 
   const csvSearchParams = useMemo(() => ({
     searchText,

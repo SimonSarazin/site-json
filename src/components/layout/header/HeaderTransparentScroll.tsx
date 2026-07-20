@@ -108,8 +108,11 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
                             const hasChildren = !!item.children?.length;
                             return (
                                 <div key={idx} className="relative group">
+                                    {/* `path ?? href` : parité avec `MobileNavItems.navTarget` — un item
+                                        de nav peut être un lien EXTERNE (`href` seul, ex. WordPress) ;
+                                        sans le repli, NavLink recevait undefined → <span> inerte. */}
                                     <NavLink
-                                        to={item.path}
+                                        to={item.path ?? item.href}
                                         ariaCurrent={isActive ? "page" : undefined}
                                         className={`transition-colors font-medium relative group inline-flex items-center gap-1.5 ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
                                     >
@@ -124,7 +127,7 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
                                             {item.children.length > 2 ? (
                                                 <div className="grid grid-cols-2 gap-6">
                                                     {item.children.map((sub, i) => (
-                                                        <NavLink key={i} to={sub.path} className="block">
+                                                        <NavLink key={i} to={sub.path ?? sub.href} className="block">
                                                             <h4 className="flex items-center gap-1.5 font-bold text-popover-foreground mb-2"><NavIcon icon={sub.icon} />{t(sub.label)}</h4>
                                                             <p className="text-muted-foreground text-xs leading-relaxed">
                                                                 {sub.description ? t(sub.description) : ""}
@@ -135,7 +138,7 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
                                             ) : (
                                                 <div className="space-y-4">
                                                     {item.children.map((sub, i) => (
-                                                        <NavLink key={i} to={sub.path} className="block">
+                                                        <NavLink key={i} to={sub.path ?? sub.href} className="block">
                                                             <h4 className="flex items-center gap-1.5 font-bold text-popover-foreground mb-2"><NavIcon icon={sub.icon} />{t(sub.label)}</h4>
                                                             <p className="text-muted-foreground text-xs leading-relaxed">
                                                                 {sub.description ? t(sub.description) : ""}
