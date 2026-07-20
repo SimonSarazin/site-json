@@ -44,13 +44,6 @@
       "fr": "Réseau Parentalité 62",
       "en": "Parenting Network 62"
     },
-    "ctaButton": {
-      "label": {
-        "fr": "Contact",
-        "en": "Contact"
-      },
-      "path": "/contact"
-    },
     "sticky": true,
     "transparent": true,
     "transparentMode": "auto",
