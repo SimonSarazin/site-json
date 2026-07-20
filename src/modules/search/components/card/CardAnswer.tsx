@@ -40,10 +40,10 @@ export default function CardAnswer({ item, onClick }: SearchCardProps) {
 	return (
 		<article
 			onClick={onClick}
-			className="rounded-xl bg-card shadow-md border border-border overflow-hidden transition-shadow hover:shadow-lg cursor-pointer"
+			className={`rounded-xl bg-card shadow-md border border-border overflow-hidden transition-shadow hover:shadow-lg cursor-pointer ${a.typeLabel.toLowerCase()}-card`}
 		>
 			<div
-				className="px-5 py-4 flex items-center justify-between gap-3"
+				className="px-5 py-4 flex items-center justify-between gap-3 header-gradient"
 				style={{ background: "var(--card-header-gradient)" }}
 			>
 				<h2 className="text-sm font-bold tracking-wide uppercase text-primary-foreground line-clamp-2">

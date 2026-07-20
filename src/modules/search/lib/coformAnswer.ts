@@ -121,7 +121,10 @@ export function parseCoformAnswer(
   { slug, fields: override }: ParseCoformOptions = {},
 ): CoformAnswer {
   const fields = { ...DEFAULT_COFORM_FIELDS, ...(override ?? {}) };
-  const keyPrefix = slug ?? "sportSanteBienetre";
+  // "associationEkilibre" est le slug d'entité, mais les champs CoForm sont
+  // préfixés "sportSanteBienetre" (form partagé) : remap nécessaire ici pour
+  // que CardAnswer et PreviewCoformAnswer restent alignés.
+  const keyPrefix = !slug || slug === "associationEkilibre" ? "sportSanteBienetre" : slug;
   const get = (role: string) => serverData[`${keyPrefix}${fields[role]}`];
 
   const typeRaw = (get("type") as string | undefined) ?? "";
