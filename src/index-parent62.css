@@ -214,6 +214,35 @@ h1, h2 { letter-spacing: -0.015em; }
 .prose a { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
 .prose strong { font-weight: 600; }
 
+/* Custom scrollbar (même bloc que les autres thèmes — pistes/pouces aux tokens,
+   sinon scrollbars natives du navigateur en rupture avec le papier grège) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--muted);
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--muted-foreground) 30%, transparent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklch, var(--muted-foreground) 50%, transparent);
+}
+
+/* Firefox uniquement (pas de ::-webkit-scrollbar) : équivalent standard.
+   Scopé — si `scrollbar-color` est posé, Chrome ignore ::-webkit-scrollbar
+   et on perdrait la barre custom commune aux autres thèmes. */
+@supports not selector(::-webkit-scrollbar) {
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklch, var(--muted-foreground) 30%, transparent) var(--muted);
+  }
+}
+
 /* Bandeau searchHeader (et cta-newsletter) : le token partagé par défaut est un
    dégradé primary→accent plein pot — trop criard ici. Voile pastel indigo→miel. */
 :root {
