@@ -8156,6 +8156,22 @@
     "defaultCardVariant": "poster"
   },
   "commandPalette": {
+    "enabled": true,
+    "triggerVariant": "compact",
+    "placeholder": {
+      "fr": "Rechercher une page, une actualité, une structure...",
+      "en": "Search a page, an article, an organisation..."
+    },
+    "maxResultsPerGroup": 8,
+    "entitySearch": {
+      "enabled": true,
+      "searchType": ["organizations", "projects", "events", "poi"],
+      "excludeTypes": ["article"],
+      "limit": 8,
+      "params": {
+        "sourceKey": ["parent62"]
+      }
+    },
     "articleSearch": {
       "enabled": true,
       "costumSlug": "parent62",
