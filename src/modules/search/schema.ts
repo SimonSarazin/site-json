@@ -191,6 +191,11 @@ const ListConfSchema = z.object({
     // badges génériques (serverData.badges / tags) ; "service-pricing" les
     // remplace par les pastilles de capacité (postes/personnes/couverts).
     overlayStats: z.enum(["service-pricing"]).optional(),
+    // Ajustement de l'image des cartes `image-cover` : "cover" (défaut, remplit
+    // la carte en rognant — idéal pour des photos plein cadre) ou "contain"
+    // (logo entier visible, centré sur un FOND FLOUTÉ de la même image — idéal
+    // pour des LOGOS d'aspect hétérogène qui, en cover, seraient rognés).
+    imageFit: z.enum(["cover", "contain"]).optional(),
     // Chemins CoForm des données service-pricing (cartes `detailedMode` /
     // `overlayStats`). Surcharge PAR CATÉGORIE la table par défaut du code
     // (précédent : `preview.fields`) — découple les IDs de formulaires/champs.
@@ -225,9 +230,45 @@ const ListConfSchema = z.object({
 export type ListConf = z.infer<typeof ListConfSchema>;
 
 
+/**
+ * Apparence d'un marqueur de la carte — chaîne de repli (par PRIORITÉ) :
+ *   1. `useItemImage` ET l'item a une image → vignette RONDE de l'item ;
+ *   2. `iconUrl`                            → icône custom (image/SVG, ex. pin brandé) ;
+ *   3. `style: "pin"` (+ `color` en jeton)  → pin SVG aux couleurs du thème ;
+ *   4. sinon                                → pin par défaut (primary).
+ * Schéma PARTAGÉ : configurable PAR SITE (`integrations.map.marker`, cf.
+ * site-schema) et surchargeable PAR SECTION (`map.marker`) — les champs de la
+ * section l'emportent sur ceux du site, sinon repli sur le défaut.
+ */
+export const MarkerConfSchema = z.object({
+  /** Vignette ronde = image de l'item (si présente), sinon repli (icône/pin). */
+  useItemImage: z.boolean().optional(),
+  style: z.enum(["default", "pin", "circle"]).optional(),
+  /** Couleur du pin en JETON de thème (jamais d'hex — suit light/dark). */
+  color: z.enum(["primary", "secondary", "accent", "chart-1", "chart-2", "chart-3", "chart-4", "chart-5"]).optional(),
+  /** Couleur du contour + de la pastille du pin, en JETON de thème (déf.
+   *  `background` — contraste lisible sur tout fond). Même palette que `color`. */
+  borderColor: z.enum(["background", "primary", "secondary", "accent", "chart-1", "chart-2", "chart-3", "chart-4", "chart-5"]).optional(),
+  /** URL d'une icône custom (relative → préfixée par baseUrl, ou absolue http). */
+  iconUrl: z.string().optional(),
+  /** Taille de l'icône custom en px (déf. 34). */
+  iconSize: z.number().int().min(8).max(128).optional(),
+  /** Ancrage de l'icône custom : "bottom" (pointe sur le point, déf.) ou "center". */
+  iconAnchor: z.enum(["bottom", "center"]).optional(),
+});
+
+export type MarkerConf = z.infer<typeof MarkerConfSchema>;
+
 export const MapConfSchema = z.object({
   initialZoom: z.number().min(1).max(20).optional(),
   cluster:     z.boolean().optional(),
+  /** Disposition de la vue carte (SearchProStatic) : "full" (défaut, plein
+   *  écran) ou "split" (liste + carte côte à côte, sélection synchronisée). */
+  layout: z.enum(["full", "split"]).optional(),
+  /** En mode split, répartition de largeur liste/carte : "40-60" (défaut —
+   *  liste étroite 1 colonne + carte large, aligné sur l'agenda), "50-50" ou
+   *  "60-40" (liste plus large, 2 colonnes). Pilote aussi les colonnes de la liste. */
+  splitRatio: z.enum(["40-60", "50-50", "60-40"]).optional(),
   popup: z.object({
     type: z.enum(["default"]).default("default"),
   }).partial().optional(),
@@ -235,14 +276,8 @@ export const MapConfSchema = z.object({
    *  `preview` — `SwitchDetailsMode` avec `list.card`/`list.preview`) ou
    *  navigation `/profil/:slug` (pattern rowAction observatoire / palette). */
   itemAction: z.object({ kind: z.enum(["profil", "preview"]) }).optional(),
-  /** Apparence des marqueurs — chaîne de repli : vignette RONDE de l'item
-   *  (`useItemImage`, si l'item a une image) → pin SVG aux couleurs du thème
-   *  (`style: "pin"` + `color` en jeton, jamais d'hex) → pin Leaflet. */
-  marker: z.object({
-    useItemImage: z.boolean().optional(),
-    style: z.enum(["default", "pin"]).optional(),
-    color: z.enum(["primary", "accent", "chart-1", "chart-2", "chart-3", "chart-4", "chart-5"]).optional(),
-  }).optional(),
+  /** Apparence des marqueurs — cf. `MarkerConfSchema` (surcharge le site). */
+  marker: MarkerConfSchema.optional(),
 }).partial();
 
 export type MapConf = z.infer<typeof MapConfSchema>;
@@ -269,8 +304,11 @@ export type SearchType = z.infer<typeof SearchTypeSchema>;
  * Variant du endpoint backend pour `searchCostum` (cf. SDK v1.0.132).
  * - `default` (ou absent) → `/co2/search/globalautocomplete` (comportement historique)
  * - `navigator-tl` → `/costum/navigator/gettl` (payload enrichi avec auto-link Answer)
+ * - `admin` → `/co2/search/globalautocompleteadmin/…` (SDK ≥ 1.0.161 : réservé aux admins de
+ *   l'hôte costum ; `fields` = projection EXACTE, `preferences` renvoyé → badge/filtre
+ *   `toBeValidated` des tables d'administration ; tri serveur via `sort`)
  */
-export const SearchVariantSchema = z.enum(["default", "navigator-tl"]);
+export const SearchVariantSchema = z.enum(["default", "navigator-tl", "admin"]);
 export type SearchVariant = z.infer<typeof SearchVariantSchema>;
 
 /**
@@ -777,9 +815,9 @@ export interface SearchMapProps<T extends SearchEntity = SearchEntity> {
 
 export interface MapPopupProps<T extends SearchEntity = SearchEntity> {
   item: T;
-  popup?: MapConf["popup"];
-  id: string;
   t: (key: string) => string;
   /** Libellé/intention du bouton d'action (cf. MapConf.itemAction). */
   actionKind?: "profil" | "preview";
+  /** Handler du bouton d'action — fourni par SearchMap (popup react-map-gl). */
+  onAction?: () => void;
 }

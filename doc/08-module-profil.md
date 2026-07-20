@@ -104,7 +104,8 @@ src/modules/profil/
 │   │   ├── ProfileMapWrapper.tsx   // Wrapper carte
 │   │   ├── ProfileOrganizer.tsx    // Organisateur/Porteur de projet
 │   │   ├── ProfileMembers.tsx      // Liste des membres
-│   │   ├── ProfileGallery.tsx      // Galerie d'images
+│   │   ├── ProfileGallery.tsx      // Galerie d'images (add/delete inline via useGallery)
+│   │   ├── ProfileDocuments.tsx    // Documents/fichiers non-image (add/delete inline via useDocuments)
 │   │   ├── ProfileRelated.tsx      // Entités liées
 │   │   ├── ProfileActions.tsx      // Boutons d'action
 │   │   ├── ProfileEventDates.tsx   // Dates d'événement
@@ -186,6 +187,8 @@ src/modules/profil/
 │   ├── useFormatProfileEntity.tsx  // Formatage des données du profil
 │   ├── useFriendsQuery.tsx         // Query amis
 │   ├── useGetAnwersByFormsQuery.tsx // Query réponses formulaires
+│   ├── useGallery.tsx              // Galerie d'images (useGalleryImages lit getGallery + useGalleryMutations add/delete inline)
+│   ├── useDocuments.tsx            // Documents fichiers non-image (useDocumentsList lit getGalleryFiles + add/delete inline)
 │   ├── useMembershipQuery.tsx      // Query membership
 │   ├── useMembersQuery.tsx         // Query membres
 │   ├── useNewsDetailUrlGenerator.tsx // Générateur URL détail news
@@ -511,7 +514,7 @@ export const ProfilesConfigSchema = z.object({
 
 ## Sections de profil
 
-Le module profil propose **17 types de sections** configurables:
+Le module profil propose **18 types de sections** configurables:
 
 | Section                    | Type                         | Variantes/Options                              | Description                               |
 | -------------------------- | ---------------------------- | ---------------------------------------------- | ----------------------------------------- |
@@ -523,7 +526,8 @@ Le module profil propose **17 types de sections** configurables:
 | `profile-map`              | ProfileMapSection            | height, zoom, showMarker                       | Carte de localisation (Leaflet)           |
 | `profile-organizer`        | ProfileOrganizerSection      | showLogo, showDescription, showLink            | Organisateur/Porteur de projet            |
 | `profile-members`          | ProfileMembersSection        | limit, showRole, showManagement                | Liste des membres                         |
-| `profile-gallery`          | ProfileGallerySection        | columns, lightbox                              | Galerie d'images avec lightbox            |
+| `profile-gallery`          | ProfileGallerySection        | columns, lightbox                              | Galerie d'images avec lightbox (add/delete inline admin) |
+| `profile-documents`        | ProfileDocumentsSection      | —                                              | Documents/fichiers non-image (liste + télécharger ; add/delete inline admin) |
 | `profile-related`          | ProfileRelatedSection        | relationType, limit                            | Entités liées (projects, events, poi, organizations) |
 | `profile-actions`          | ProfileActionsSectionSchema  | showEditButton, showAddDropdown, layout        | Boutons d'action (éditer, ajouter, email) |
 | `profile-event-dates`      | ProfileEventDatesSectionSchema | showType, dateFormat                         | Dates d'événement (start/end)             |
@@ -950,6 +954,25 @@ par le couple **`runEntityMutation` (cœur pur, testable) + `useEntityMutation` 
 le `payloadFn` registré (ex. `tl:payload`), crée (`scope.X(payload).save()`) ou édite (`submitEntityEdit`),
 invalide React Query puis navigue. La byte-parité des defaults/payloads est figée par
 `tiers-lieux.configDriven.test`, `costum/*/fns.test.ts`, `costum/*/spec.test.ts` et `useEntityMutation.test.ts`.
+
+---
+
+### Édition inline d'une propriété `serverData` (pattern `updateField` + `refresh`)
+
+Pour éditer une **propriété simple** de l'entité (hors formulaire de création/édition complet), le pattern est :
+
+1. **Lecture** réactive : `useReactiveProperty(entity.serverData, "<champ>")` (Proxy réactif du SDK).
+2. **Écriture** : `entity.updateField("<champ>", value)` (équivalent React du `path2Value` legacy ; `$set` du champ).
+3. **Refresh** : dans `onSuccessCallback`, `await entity.refresh()` — re-fetch qui met à jour le `serverData` réactif → re-render (cf. `useProfileMutations.useUploadProfileBanner`). ⚠️ **Ne pas** faire `entity.serverData.x = …` : ESLint `react-hooks/immutability` interdit de muter une prop.
+4. **Gate** : `useProfilPermissions(entity).canEditProfile` (édition réservée aux admins du lieu).
+5. **Mutation** : `useMutationWithToast({ mutationFn, successKey, errorKey, namespace: "modules/profil", onSuccessCallback })`.
+6. Modale **montée conditionnellement** (`{isOpen && <Dialog open …/>}`) → état frais à chaque ouverture.
+
+**Instance concrète — éditeur des outils du lieu (`ourTools`).** Section « Nos outils » de `ProfileTiersLieuxInfo` : bouton « Modifier » (gaté `canEditProfile`) → `OurToolsEditDialog`. La donnée `entity.serverData.ourTools` = `{ [catégorie]: [{name, url?}] }` (catégorie ∈ `TOOLS_MAP`, 11 clés alignées sur le legacy `co2/views/pod/yourTools.php`). Helpers purs `parseRows`/`rowsToOurTools` dans `sections/custom/toolsMap.ts` (testés).
+
+**⚠️ Gotchas `updateField`** (à connaître pour tout champ objet/array) :
+- **Objet vide `{}` → 500.** En `application/x-www-form-urlencoded`, un objet vide n'émet **aucun** paramètre `value` → `$_POST["value"]` undefined côté backend. La lib gère l'array vide (`[]` → `""`) mais **pas** l'objet vide. → envoyer **`null`** ($unset) quand la valeur est vide : `updateField("champ", Object.keys(v).length ? v : null)`.
+- **`$set` remplace tout le champ.** Un éditeur qui reconstruit l'objet à partir de ses seules clés connues **efface** les clés inconnues présentes en base (le legacy, lui, les préserve). → les recopier depuis la valeur brute avant le merge.
 
 ---
 

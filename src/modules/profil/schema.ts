@@ -188,6 +188,11 @@ export const ProfileGallerySectionSchema = z.object({
   lightbox: z.boolean().optional().default(true),
 });
 
+export const ProfileDocumentsSectionSchema = z.object({
+  type: z.literal("profile-documents"),
+  title: LocalizedString.optional(),
+});
+
 export const ProfileRelatedSectionSchema = z.object({
   type: z.literal("profile-related"),
   title: LocalizedString.optional(),
@@ -261,6 +266,7 @@ const ProfileOnlySectionSchema = z.discriminatedUnion("type", [
   ProfileOrganizerSectionSchema,
   ProfileMembersSectionSchema,
   ProfileGallerySectionSchema,
+  ProfileDocumentsSectionSchema,
   ProfileRelatedSectionSchema,
   ProfileActionsSectionSchema,
   ProfileEventDatesSectionSchema,
@@ -357,6 +363,16 @@ export const ProfileConfigSchema = z.object({
    * @example { tags: "TL", type: "Lab" } // les deux conditions doivent matcher
    */
   editModalMatch: z.record(z.string(), z.unknown()).optional(),
+  /**
+   * Table de routage MULTI sous-types (optionnelle) : plusieurs `editModal` conditionnels pour un même kind
+   * (ex. poi → `recoveryCenter` vs `article` selon `serverData.type`). Le PREMIER dont `editModalMatch`
+   * satisfait `serverData` gagne ; sinon fallback sur `editModal`/`editModalMatch` ci-dessus, puis
+   * `"edit-profile"`. Émise par l'assistant costum pour les costums à plusieurs formulaires par collection.
+   */
+  editModals: z.array(z.object({
+    editModal: z.string(),
+    editModalMatch: z.record(z.string(), z.unknown()).optional(),
+  })).optional(),
   seo: z.object({
     titleTemplate: z.string().optional(),
     descriptionTemplate: z.string().optional(),
@@ -386,6 +402,7 @@ export type ProfileMapSection = z.infer<typeof ProfileMapSectionSchema>;
 export type ProfileOrganizerSection = z.infer<typeof ProfileOrganizerSectionSchema>;
 export type ProfileMembersSection = z.infer<typeof ProfileMembersSectionSchema>;
 export type ProfileGallerySection = z.infer<typeof ProfileGallerySectionSchema>;
+export type ProfileDocumentsSection = z.infer<typeof ProfileDocumentsSectionSchema>;
 export type ProfileRelatedSection = z.infer<typeof ProfileRelatedSectionSchema>;
 export type ProfileActionsSection = z.infer<typeof ProfileActionsSectionSchema>;
 export type AddConfig = z.infer<typeof AddConfigSchema>;

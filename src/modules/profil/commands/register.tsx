@@ -29,7 +29,7 @@ const DEFAULT_ENTITY_TYPES = ["organizations", "projects", "events", "poi", "cit
 interface SearchResultEntity {
   id?: string;
   slug?: string;
-  serverData?: { name?: string; slug?: string };
+  serverData?: { name?: string; slug?: string; type?: string };
   getEntityType?: () => string;
 }
 
@@ -65,7 +65,13 @@ registerCommandSource({
       return [];
     }
 
-    return results.slice(0, limit).map((e): Command => {
+    // Exclusion par sous-type POI (serverData.type) — ex. les articles, gérés par la source blog:articles.
+    const exclude = new Set(cfg?.excludeTypes ?? []);
+    const kept = exclude.size > 0
+      ? results.filter((e) => !exclude.has(e.serverData?.type ?? ""))
+      : results;
+
+    return kept.slice(0, limit).map((e): Command => {
       const type = e.getEntityType?.() ?? "poi";
       const slug = e.slug ?? e.serverData?.slug;
       const name = e.serverData?.name ?? slug ?? "—";

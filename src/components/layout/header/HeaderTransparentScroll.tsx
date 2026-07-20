@@ -18,6 +18,7 @@ import { PiggyBankHeaderButton } from "@/modules/cagnotte/components/PiggyBankHe
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
 import { useScrollAware, useScrollToTopOnRouteChange, useNavItemActive, useHeaderOpaqueAtRest } from "./useHeaderBehavior";
+import { logoSquareClass, logoSizePx } from "./logoSize";
 import { useVisibilityList } from "@/lib/visibility/useVisibility";
 
 interface HeaderTransparentScrollProps {
@@ -25,6 +26,7 @@ interface HeaderTransparentScrollProps {
     /** La page courante débute-t-elle par un héro ? (fourni par SiteHeader). Pilote `transparentMode: "auto"`. */
     pageHasHero?: boolean;
 }
+
 
 type HeaderNavItem = Header['nav'][number];
 
@@ -84,8 +86,9 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
                             header={header}
                             isOverlay={!opaque}
                             iconTone="primary"
-                            imageClassName="h-8 w-8 shrink-0 object-contain group-hover:scale-110 transition-transform"
+                            imageClassName={`${logoSquareClass(header.logoSize)} shrink-0 object-contain group-hover:scale-110 transition-transform`}
                             iconClassName="w-8 h-8 shrink-0 group-hover:scale-110 transition-transform"
+                            imageHeight={logoSizePx(header.logoSize)}
                         />
                         {(header.logoTitle || header.logoSubtitle) && (
                             <span className="flex min-w-0 flex-col leading-tight">

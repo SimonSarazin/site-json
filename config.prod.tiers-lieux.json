@@ -711,7 +711,8 @@
               "card": {
                 "type": "image-cover",
                 "variant": "image-cover",
-                "detailsMode": "drawer"
+                "detailsMode": "drawer",
+                "imageFit": "contain"
               }
             }
           }
@@ -919,7 +920,7 @@
           "type": "html",
           "id": "tiers-lieux-actions",
           "props": {
-            "html": "<div class=\"grid md:grid-cols-3 gap-8\">\n  <div class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4\">\n    <div class=\"w-14 h-14 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0 shadow-md transform rotate-y-180\">\n      <i class=\"fa-solid fa-magnifying-glass text-white text-xl transform scale-x-[-1]\"></i>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Découvrir</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Explorez la carte des lieux et découvrez leur diversité.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <i class=\"fa-solid fa-arrow-right text-gray-900 dark:text-gray-300 text-xl\"></i>\n    </div>\n  </div>\n\n  <div class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4\">\n    <div class=\"w-14 h-14 bg-yellow-400 flex items-center justify-center flex-shrink-0 shadow-md\" style=\"clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)\">\n      <i class=\"fa-solid fa-gear text-white text-xl\"></i>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Se réunir</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Trouvez la salle de réunion idéale pour organiser votre rencontre.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <i class=\"fa-solid fa-arrow-right text-gray-900 dark:text-gray-300 text-xl\"></i>\n    </div>\n  </div>\n\n  <div class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4\">\n    <div class=\"w-14 h-14 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0 shadow-md\">\n      <i class=\"fa-solid fa-heart text-white text-xl\"></i>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Se reconnaître</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Via les marques collectives, identifiez les lieux qui vous inspirent.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <i class=\"fa-solid fa-arrow-right text-gray-900 dark:text-gray-300 text-xl\"></i>\n    </div>\n  </div>\n</div>"
+            "html": "<div class=\"container mx-auto px-6\"><div class=\"grid md:grid-cols-3 gap-8\">\n  <div class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4\">\n    <div class=\"w-14 h-14 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0 shadow-md transform rotate-y-180\">\n      <i class=\"fa-solid fa-magnifying-glass text-white text-xl transform scale-x-[-1]\"></i>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Découvrir</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Explorez la carte des lieux et découvrez leur diversité.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <i class=\"fa-solid fa-arrow-right text-gray-900 dark:text-gray-300 text-xl\"></i>\n    </div>\n  </div>\n\n  <div class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4\">\n    <div class=\"w-14 h-14 bg-yellow-400 flex items-center justify-center flex-shrink-0 shadow-md\" style=\"clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)\">\n      <i class=\"fa-solid fa-gear text-white text-xl\"></i>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Se réunir</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Trouvez la salle de réunion idéale pour organiser votre rencontre.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <i class=\"fa-solid fa-arrow-right text-gray-900 dark:text-gray-300 text-xl\"></i>\n    </div>\n  </div>\n\n  <div class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4\">\n    <div class=\"w-14 h-14 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0 shadow-md\">\n      <i class=\"fa-solid fa-heart text-white text-xl\"></i>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Se reconnaître</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Via les marques collectives, identifiez les lieux qui vous inspirent.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <i class=\"fa-solid fa-arrow-right text-gray-900 dark:text-gray-300 text-xl\"></i>\n    </div>\n  </div>\n</div></div>"
           }
         },
         {
@@ -1502,14 +1503,17 @@
                     "variant": "image-cover",
                     "detailsMode": "drawer",
                     "detailedMode": "service-pricing",
-                    "overlayStats": "service-pricing"
+                    "overlayStats": "service-pricing",
+                    "imageFit": "contain"
                   }
                 },
                 "map": {
+                  "layout": "split",
                   "marker": {
                     "useItemImage": true,
-                    "style": "pin",
-                    "color": "primary"
+                    "style": "circle",
+                    "color": "secondary",
+                    "borderColor": "background"
                   }
                 }
               }
@@ -1995,7 +1999,8 @@
               "card": {
                 "type": "image-cover",
                 "variant": "image-cover",
-                "detailsMode": "drawer"
+                "detailsMode": "drawer",
+                "imageFit": "contain"
               }
             },
             "defaultViewMode": "regions",
@@ -2079,7 +2084,8 @@
               "card": {
                 "type": "image-cover",
                 "variant": "image-cover",
-                "detailsMode": "drawer"
+                "detailsMode": "drawer",
+                "imageFit": "contain"
               }
             },
             "defaultViewMode": "thematics",
@@ -2141,17 +2147,13 @@
               "costumSlug": "navigatorDesTierslieux",
               "costumEditMode": false,
               "defaultFilters": {
-                "preferences.toBeValidated.franceTierslieux": {
-                  "$exists": false
-                },
-                "links.memberOf.5ec3b895690864db108b46b8": {
-                  "$exists": true
-                },
-                "links.memberOf.5ec3b895690864db108b46b8.toBeValidated": {
-                  "$exists": false
-                },
-                "links.memberOf.5ec3b895690864db108b46b8.isInviting": {
-                  "$exists": false
+                "$or": {
+                  "links.projects.649ed498f93ee7202e6c8b12": {
+                    "$exists": true
+                  },
+                  "links.memberOf.649ed498f93ee7202e6c8b12": {
+                    "$exists": true
+                  }
                 }
               },
               "defaultSortBy": {

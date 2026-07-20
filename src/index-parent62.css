@@ -1,0 +1,280 @@
+@import 'tailwindcss';
+@import "tw-animate-css";
+@import "./styles/shared.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ==========================================
+   Parent62 — Réseau Parentalité du Pas-de-Calais
+   Direction « La carte aux bulles » : papier grège chaud, indigo de marque
+   #4054b2 en ancre, bulles-territoires (orange/rose/or/turquoise/olive/prune)
+   comme système d'accents (chart-1..5). Titres ronds Baloo 2 (écho du
+   lettrage du logo), corps Hanken Grotesk. Tokens réels injectés au runtime par config.theme
+   (SiteTheme.tsx) ; ce fichier = fallback :root/.dark + mapping @theme inline
+   + utilitaires bespoke (.access-card).
+   ========================================== */
+
+:root {
+  /* Papier grège chaud (neutres chauds, marque froide : tension voulue) */
+  --background: oklch(0.9760 0.0070 85);
+  --foreground: oklch(0.2600 0.0350 270);
+  --card: oklch(1.0000 0 0);
+  --card-foreground: oklch(0.2600 0.0350 270);
+  --popover: oklch(1.0000 0 0);
+  --popover-foreground: oklch(0.2600 0.0350 270);
+
+  /* Primary : indigo de marque #4054b2 */
+  --primary: oklch(0.4800 0.1500 264);
+  --primary-foreground: oklch(0.9850 0.0100 255);
+
+  /* Secondary : voile indigo clair */
+  --secondary: oklch(0.9350 0.0280 265);
+  --secondary-foreground: oklch(0.3900 0.1100 265);
+
+  --muted: oklch(0.9530 0.0090 85);
+  --muted-foreground: oklch(0.5000 0.0250 275);
+
+  /* Accent : miel (chaleur dosée) */
+  --accent: oklch(0.7600 0.1300 78);
+  --accent-foreground: oklch(0.2800 0.0500 70);
+
+  --destructive: oklch(0.5800 0.1900 25);
+  --destructive-foreground: oklch(0.9850 0.0100 20);
+
+  --border: oklch(0.9060 0.0120 85);
+  --input: oklch(0.9060 0.0120 85);
+  --ring: oklch(0.4800 0.1500 264);
+
+  /* Bulles de la carte : indigo / rose poudré / orange / turquoise / olive */
+  --chart-1: oklch(0.5500 0.1400 264);
+  --chart-2: oklch(0.7100 0.1100 358);
+  --chart-3: oklch(0.7200 0.1300 45);
+  --chart-4: oklch(0.7000 0.1000 195);
+  --chart-5: oklch(0.7500 0.1100 125);
+
+  --sidebar: oklch(0.9850 0.0050 85);
+  --sidebar-foreground: oklch(0.2600 0.0350 270);
+  --sidebar-primary: oklch(0.4800 0.1500 264);
+  --sidebar-primary-foreground: oklch(0.9850 0.0100 255);
+  --sidebar-accent: oklch(0.9350 0.0280 265);
+  --sidebar-accent-foreground: oklch(0.3900 0.1100 265);
+  --sidebar-border: oklch(0.9060 0.0120 85);
+  --sidebar-ring: oklch(0.4800 0.1500 264);
+
+  --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Baloo 2", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Spline Sans Mono", ui-monospace, monospace;
+  /* Rondeur « bulle » assumée */
+  --radius: 1rem;
+
+  /* Ombres teintées indigo (jamais de gris sale) */
+  --shadow-2xs: 0px 1px 2px -1px hsl(265 45% 25% / 0.06);
+  --shadow-xs:  0px 1px 2px -1px hsl(265 45% 25% / 0.06);
+  --shadow-sm:  0px 2px 4px -1px hsl(265 45% 25% / 0.08), 0px 1px 2px -2px hsl(265 45% 25% / 0.06);
+  --shadow:     0px 4px 10px -3px hsl(265 45% 25% / 0.10), 0px 2px 4px -2px hsl(265 45% 25% / 0.06);
+  --shadow-md:  0px 6px 14px -4px hsl(265 45% 25% / 0.12), 0px 2px 4px -2px hsl(265 45% 25% / 0.06);
+  --shadow-lg:  0px 12px 28px -8px hsl(265 45% 25% / 0.16), 0px 4px 8px -4px hsl(265 45% 25% / 0.08);
+  --shadow-xl:  0px 20px 40px -12px hsl(265 45% 25% / 0.22), 0px 8px 12px -6px hsl(265 45% 25% / 0.10);
+  --shadow-2xl: 0px 28px 56px -18px hsl(265 45% 25% / 0.28);
+
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+}
+
+.dark {
+  --background: oklch(0.2000 0.0300 265);
+  --foreground: oklch(0.9400 0.0080 250);
+  --card: oklch(0.2450 0.0320 265);
+  --card-foreground: oklch(0.9400 0.0080 250);
+  --popover: oklch(0.2300 0.0320 265);
+  --popover-foreground: oklch(0.9400 0.0080 250);
+
+  --primary: oklch(0.6400 0.1500 264);
+  --primary-foreground: oklch(0.1600 0.0300 265);
+
+  --secondary: oklch(0.3100 0.0400 264);
+  --secondary-foreground: oklch(0.8800 0.0300 260);
+
+  --muted: oklch(0.2900 0.0200 262);
+  --muted-foreground: oklch(0.7100 0.0200 258);
+
+  --accent: oklch(0.7900 0.1300 78);
+  --accent-foreground: oklch(0.2200 0.0400 70);
+
+  --destructive: oklch(0.6200 0.1800 25);
+  --destructive-foreground: oklch(0.9850 0.0100 20);
+
+  --border: oklch(0.3300 0.0200 262);
+  --input: oklch(0.3000 0.0200 262);
+  --ring: oklch(0.6400 0.1500 264);
+
+  --chart-1: oklch(0.6800 0.1400 264);
+  --chart-2: oklch(0.7600 0.1100 358);
+  --chart-3: oklch(0.7600 0.1300 45);
+  --chart-4: oklch(0.7500 0.1000 195);
+  --chart-5: oklch(0.7800 0.1100 125);
+
+  --sidebar: oklch(0.2200 0.0300 265);
+  --sidebar-foreground: oklch(0.9400 0.0080 250);
+  --sidebar-primary: oklch(0.6400 0.1500 264);
+  --sidebar-primary-foreground: oklch(0.1600 0.0300 265);
+  --sidebar-accent: oklch(0.3100 0.0400 264);
+  --sidebar-accent-foreground: oklch(0.8800 0.0300 260);
+  --sidebar-border: oklch(0.3300 0.0200 262);
+  --sidebar-ring: oklch(0.6400 0.1500 264);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+  --font-mono: var(--font-mono);
+  /* `font-display` (hero-quick-access…) → Bricolage Grotesque */
+  --font-display: var(--font-serif);
+  --radius: var(--radius);
+}
+
+*, *::before, *::after { box-sizing: border-box; border-color: var(--border); }
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Titres : Bricolage Grotesque partout (aucune section n'applique font-serif) */
+h1, h2, h3, h4 { font-family: var(--font-serif); }
+h1, h2 { letter-spacing: -0.015em; }
+
+/* Cartes d'accès rapide du hero (hero-quick-access) — verre chaud, lift doux.
+   Le composant alterne access-card-public / access-card-pro. */
+.access-card {
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 0.35rem);
+  background: color-mix(in oklab, var(--card) 82%, transparent);
+  box-shadow: var(--shadow-xs);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+.access-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+.access-card-public:hover {
+  border-color: color-mix(in oklab, var(--primary) 45%, var(--border));
+}
+.access-card-pro:hover {
+  border-color: color-mix(in oklab, var(--accent) 60%, var(--border));
+}
+@media (prefers-reduced-motion: reduce) {
+  .access-card, .access-card:hover { transform: none; transition: none; }
+}
+
+/* Mini-prose : les sections `html` (mentions légales, confidentialité) posent
+   class="prose …" mais le plugin typography n'est pas chargé — on donne ici
+   la hiérarchie minimale. */
+.prose h1, .prose h2, .prose h3 { font-family: var(--font-serif); margin: 1.4em 0 0.5em; }
+.prose h1 { font-size: 1.9rem; }
+.prose h2 { font-size: 1.5rem; }
+.prose h3 { font-size: 1.2rem; }
+.prose p, .prose li { line-height: 1.7; margin: 0.5em 0; }
+.prose ul { list-style: disc; padding-left: 1.4rem; }
+.prose ol { list-style: decimal; padding-left: 1.4rem; }
+.prose a { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
+.prose strong { font-weight: 600; }
+
+/* Custom scrollbar (même bloc que les autres thèmes — pistes/pouces aux tokens,
+   sinon scrollbars natives du navigateur en rupture avec le papier grège) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--muted);
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--muted-foreground) 30%, transparent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklch, var(--muted-foreground) 50%, transparent);
+}
+
+/* Firefox uniquement (pas de ::-webkit-scrollbar) : équivalent standard.
+   Scopé — si `scrollbar-color` est posé, Chrome ignore ::-webkit-scrollbar
+   et on perdrait la barre custom commune aux autres thèmes. */
+@supports not selector(::-webkit-scrollbar) {
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklch, var(--muted-foreground) 30%, transparent) var(--muted);
+  }
+}
+
+/* Bandeau searchHeader (et cta-newsletter) : le token partagé par défaut est un
+   dégradé primary→accent plein pot — trop criard ici. Voile pastel indigo→miel. */
+:root {
+  --gradient-section: linear-gradient(135deg,
+    color-mix(in oklab, var(--primary) 14%, var(--background)),
+    color-mix(in oklab, var(--accent) 20%, var(--background)));
+}
+.dark {
+  --gradient-section: linear-gradient(135deg,
+    color-mix(in oklab, var(--primary) 30%, var(--background)),
+    color-mix(in oklab, var(--accent) 22%, var(--background)));
+}
+
+/* Pastille-bulle des pages territoire (couleurs de la carte, comme sur le site
+   historique) — posée devant le titre `title` de chaque page /territoire/…. */
+[id^="territoire-"][id$="-titre"] h2::before {
+  content: "";
+  display: inline-block;
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 9999px;
+  margin-right: 0.4em;
+  vertical-align: 0.05em;
+  background: var(--territoire-bulle, var(--primary));
+}
+#territoire-arrageois-titre { --territoire-bulle: #6d5da8; }
+#territoire-artois-titre { --territoire-bulle: #b7cb6b; }
+#territoire-audomarois-titre { --territoire-bulle: #e5af32; }
+#territoire-boulonnais-titre { --territoire-bulle: #c34a42; }
+#territoire-calaisis-titre { --territoire-bulle: #ed8a4c; }
+#territoire-entre-mer-et-terres-titre { --territoire-bulle: #3fb4be; }
+#territoire-familles-en-sol-mineur-titre { --territoire-bulle: #a2537e; }
+#territoire-familles-en-sol-mineur-henin-carvin-titre { --territoire-bulle: #a2537e; }
+#territoire-familles-en-sol-mineur-lens-lievin-titre { --territoire-bulle: #97776b; }
+#territoire-ternois-bruaysis-titre { --territoire-bulle: #d492a9; }

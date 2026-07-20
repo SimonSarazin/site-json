@@ -122,7 +122,7 @@ describe("useFinderSearchResults", () => {
       });
     });
 
-    it("aplatit FinderFilter[] en objet { attributeName: valueName }", async () => {
+    it("inclusions mono-valeur → scalaire { attributeName: valueName } (parité historique)", async () => {
       searchCostumMock.mockResolvedValue({ results: [] });
       renderHook(
         () =>

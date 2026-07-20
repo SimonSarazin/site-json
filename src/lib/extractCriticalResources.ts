@@ -160,7 +160,8 @@ export interface CriticalFont {
  */
 function extractFontFamilies(families?: string[]): string[] {
   if (!families) return [];
-  const genericFonts = ['sans-serif', 'serif', 'monospace', 'system-ui', 'cursive', 'fantasy'];
+  const genericFonts = ['sans-serif', 'serif', 'monospace', 'system-ui', 'cursive', 'fantasy',
+    'ui-sans-serif', 'ui-serif', 'ui-monospace', 'ui-rounded'];
   return families
     .map(f => f.trim().replace(/['"]/g, '').split(',')[0].trim())
     .filter(f => f && !genericFonts.includes(f.toLowerCase()));

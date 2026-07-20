@@ -1,6 +1,7 @@
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { useSite } from "@/hooks/useSite";
 import { useLocalization } from "@/hooks/useLocalization";
+import { getServerUrl } from "@/lib/constant/common";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { useT } from "@/hooks/useT";
 import type { ProfileConfig } from "./schema";
@@ -97,12 +98,20 @@ export function ProfileSeo({ entity, isLoading, entityType, activeTab, profileCo
     config.meta?.favicon ||
     "";
 
-  // Construction de l'URL canonique avec le tab actif
+  // Un POI `type:"article"` a DEUX vues (profil générique + reader blog /blog/:slug). Le reader blog est la
+  // présentation CANONIQUE → cette vue profil canonicalise vers /blog/:slug (évite le contenu dupliqué SEO).
+  const isArticle = entity.serverData?.type === "article";
+
+  // Construction de l'URL canonique avec le tab actif. `getServerUrl()` (env) fonctionne SSR + client
+  // (contrairement à window.location.origin, vide au SSR → canonical/og:url absents du HTML serveur).
   const slug = entity.serverData?.slug || "";
-  const canonicalUrl = typeof window !== 'undefined' && slug
-    ? currentTab !== firstTabId
-      ? `${window.location.origin}/profil/${slug}/${currentTab}`
-      : `${window.location.origin}/profil/${slug}`
+  const origin = getServerUrl().replace(/\/$/, "");
+  const canonicalUrl = origin && slug
+    ? isArticle
+      ? `${origin}/blog/${slug}`
+      : currentTab !== firstTabId
+        ? `${origin}/profil/${slug}/${currentTab}`
+        : `${origin}/profil/${slug}`
     : "";
 
   // Titre de la page dynamique selon le tab actif
@@ -131,7 +140,7 @@ export function ProfileSeo({ entity, isLoading, entityType, activeTab, profileCo
   const entityUrl = entity.serverData?.url as string[] | undefined;
   const structuredData = {
     "@context": "https://schema.org",
-    "@type": getSchemaType(entityType),
+    "@type": isArticle ? "BlogPosting" : getSchemaType(entityType),
     name: entityName,
     ...(description.length > 0 && { description }),
     ...(imageUrl.length > 0 && { image: imageUrl }),
@@ -158,7 +167,7 @@ export function ProfileSeo({ entity, isLoading, entityType, activeTab, profileCo
       )}
 
       {/* Open Graph */}
-      <meta property="og:type" content="website" />
+      <meta property="og:type" content={isArticle ? "article" : "website"} />
       <meta property="og:title" content={entityName} />
       {description.length > 0 && (
         <meta property="og:description" content={description.substring(0, 160)} />

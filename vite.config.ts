@@ -173,9 +173,22 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
           // Recharts has circular dependencies - keep in main bundle or with react
           // Do not separate recharts to avoid initialization issues
 
+          // Carte Leaflet (module profil — ProfileMapLeaflet). Chunk SÉPARÉ de
+          // MapLibre : une fiche profil ne doit pas tirer tout le SDK MapTiler.
           if (id.includes('node_modules/leaflet') ||
               id.includes('node_modules/leaflet.markercluster')) {
             return 'maps-vendor';
+          }
+
+          // Carte MapLibre/MapTiler (module search — SearchMap) + supercluster.
+          // Lazy (SearchMapWrapper) et isolée du chunk Leaflet ci-dessus.
+          if (id.includes('node_modules/maplibre-gl') ||
+              id.includes('node_modules/react-map-gl') ||
+              id.includes('node_modules/@vis.gl/react-maplibre') ||
+              id.includes('node_modules/@maptiler/') ||
+              id.includes('node_modules/supercluster') ||
+              id.includes('node_modules/kdbush')) {
+            return 'maplibre-vendor';
           }
 
           if (id.includes('node_modules/markdown-it')) {

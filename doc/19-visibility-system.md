@@ -5,11 +5,13 @@
 **Sommaire**
 
 - [Vue d'ensemble](#vue-densemble)
+- [Deux couches de visibilité](#deux-couches-de-visibilité)
 - [Schéma `VisibilityCondition`](#schéma-visibilitycondition)
 - [Hooks](#hooks)
   - [`useVisibility`](#usevisibility)
   - [`useVisibilityList`](#usevisibilitylist)
 - [Comportement SSR](#comportement-ssr)
+- [Visibilité des données (recherche / validation)](#visibilité-des-données-recherchevalidation)
 - [Usages dans la config JSON](#usages-dans-la-config-json)
   - [FloatingActionButton (bouton global)](#floatingactionbutton-bouton-global)
   - [Items custom du dropdown "Ajouter" (profil)](#items-custom-du-dropdown-ajouter-profil)
@@ -22,6 +24,12 @@
 ## Vue d'ensemble
 
 Le système de visibilité (`src/lib/visibility/`) permet de déclarer dans la config JSON si un élément UI doit être visible ou masqué selon l'état courant de l'application : statut d'authentification, route active, permissions de l'utilisateur.
+
+> **Deux couches distinctes.** Ce document couvre d'abord la visibilité **UI** (afficher/masquer un bouton,
+> un onglet, une section — via `VisibilityCondition`). Une **seconde couche**, orthogonale, gouverne la
+> visibilité **des données** dans les recherches (quelles entités apparaissent dans un fil/annuaire selon leur
+> `state` / `preferences.private` / `preferences.toBeValidated`) : voir
+> [Visibilité des données](#visibilité-des-données-recherchevalidation).
 
 Il est composé de trois fichiers :
 - `schema.ts` — schéma Zod + type TypeScript (`VisibilityConditionSchema`)
@@ -112,6 +120,61 @@ Avant hydration côté client :
 - Si seules `routes`/`excludeRoutes` sont utilisées → le pathname est stable entre SSR et client, la condition est évaluée normalement.
 
 Ce comportement est géré via le hook `useHydrated()` interne. La variable `dependsOnUser` dans `evaluateCondition` détecte si la condition nécessite `auth !== "any"` ou des permissions non vides, et retourne `false` immédiatement si `!ctx.hydrated`.
+
+---
+
+## Visibilité des données (recherche / validation)
+
+Couche **orthogonale** à `VisibilityCondition` : elle ne cache pas un élément d'UI, elle décide **quelles
+entités** (POI, organisations, projets, events…) apparaissent dans une **recherche** (fil blog, annuaire,
+heroSearch, palette, RSS…). Elle repose sur des champs portés par la donnée, filtrés à la lecture. Byte-alignée
+sur le legacy (`SearchNew::getQueries`).
+
+### Les champs de visibilité
+
+| Champ | Sémantique | Filtré où |
+|---|---|---|
+| `state` / `status` (`$nin ['uncomplete','deleted','deletePending']`) | cycle de vie / suppression | **partout** (public ET admin) |
+| `preferences.private` | privé / public | **public seulement** (l'admin voit les privés — voulu) |
+| `roles.isBanned` | banni | **public seulement** |
+| `preferences.toBeValidated.<slug>` **et** `source.toBeValidated.<slug>` | **en attente de validation** par un costum (double voie : préférences ou source) | **public** : masqué ; **admin** : visible + filtrable ; **auteur connecté** : voit ses propres en-attente |
+
+Un costum active la modération en posant `toBeValidated.<slug>` à la création (hook `prepData`, ex. CressReunion) ;
+`validategroup` (module admin) le retire à la validation.
+
+### Où c'est appliqué
+
+- **Backend Node** (`cocolight-backend/src/shared/search.ts`, `buildQuery`) : applique **nativement** le double
+  flag `toBeValidated`, gaté au costum résolu + session (`userId` → l'auteur voit ses en-attente) + bypass
+  `showTobevaledated`. Port byte-fidèle de `SearchNew::getQueries:783-818`, vérifié L=B.
+- **Client** (`src/modules/search/lib/buildSearchPayload.ts`, `applyValidationGate`) : pose le **même** double
+  flag **par défaut** dès qu'une recherche est scopée à un costum (défense en profondeur, idempotent avec le
+  backend). Garde-fous : **jamais** en `variant:'admin'`, en réseau-wide (`notSourceKey`), ni sur les collections
+  non-élément (**news** : visibilité par `scope`/`target`, route dédiée). Opt-out : `baseParams.showUnvalidated`
+  (miroir du `showTobevaledated` legacy).
+
+  ```ts
+  // Résultat pour une recherche publique scopée costum "monCostum" :
+  filters: {
+    "preferences.toBeValidated.monCostum": { $exists: false },
+    "source.toBeValidated.monCostum":      { $exists: false },
+  }
+  ```
+
+- **Admin** : voit tous les statuts. Filtre/badge « en attente » via le helper partagé
+  `src/modules/admin/lib/validationFilter.ts` (`validationStatusFilter`) — `validated` = les deux flags absents (AND) ;
+  `pending` = `$or` objet-map des deux flags (byte-compatible legacy `searchFilters` + backend `buildFilters`).
+
+### Divergence assumée
+
+Le **fil public** ne modélise **pas** la branche « l'auteur voit ses propres en-attente » côté client (il est
+stateless) → un fil public montre les **validés uniquement**. Le backend, lui, la porte (il a la session).
+
+### Non couvert (chantier)
+
+`publishedAt` / brouillon (draft→published, embargo), `AdminStatusConfigSchema` (workflow métier `status.*`),
+blocs `showMembersCodev` / `badgeCodev`. Cf. [Module Admin](30-module-admin.md) et
+[Module Articles/Blog](32-module-articles-blog.md#visibilité--validation).
 
 ---
 
@@ -306,3 +369,6 @@ Exemple JSON :
 - [Architecture](03-architecture.md) — section "Système de visibilité"
 - [Module Profil](08-module-profil.md) — condition sur les tabs et le dropdown d'ajout
 - [Permissions](10-permissions.md) — les permissions vérifiables via `condition.permissions`
+- [Module Search](07-module-search.md) — `buildSearchPayload` / `applyValidationGate` (visibilité des données)
+- [Module Admin](30-module-admin.md) — filtre/badge de validation, `validategroup`
+- [Module Articles/Blog](32-module-articles-blog.md) — application au fil public
