@@ -130,6 +130,14 @@ upload/suppression APRÈS le save par `processGalleryFields` → `uploadDocument
 images (grille + preview, `GalleryUploadField`, `docType:"image"`), `file` = documents non-image (lignes
 icône+nom+taille, `DocumentUploadField`, `docType:"file"`, `contentKey:"file"`).
 
+> **⚠️ Ces champs DOIVENT être seedés avec la FORME complète, même en création.** Le default générique d'un
+> `gallery`/`file` non seedé serait `""` — or le widget fait `value={field.value ?? emptyGalleryValue()}` et `""`
+> ne retombe PAS (ni `null` ni `undefined`). À l'ajout d'un fichier, `onChange({ ...field.value, added:[File] })`
+> part alors de `{...""}` = `{}` → valeur `{added:[File]}` SANS `contentKey`/`removedDocIds` →
+> `isGalleryFieldValue` (useEntityMutation) faux → `processGalleryFields` **saute le champ → aucun upload à la
+> création**. Le seed (`seedGalleryDefaults`, cf. Couche 3) doit donc poser `{existing,added,removedDocIds,
+> contentKey,docType}` au create comme à l'édition (voir `gallery-create-seed.test.ts`).
+
 ## Layouts (registre pluggable)
 
 `registerLayout(kind, comp)` / `getLayout(kind)` (`formEngine/layouts/index.tsx`, fallback `flat`). Le descripteur
@@ -332,6 +340,7 @@ dispatchent vers les registres (`forms/specRegistries.ts`, peuplés par `forms/r
 | descriptor | `registerDescriptor` / `getDescriptor(id)` | champs + layout (résolu par `descriptor:{ref}`) |
 | scope | `registerScopeFn` | contexte costum lu du **carrier live** (`useCocolight().entity`) |
 | defaults | `registerDefaultsFn` | état initial du form en création |
+| gallery seed | `resolveModalSpec.ts:seedGalleryDefaults` (pas un registre) | pose la forme `{existing,added,removedDocIds,contentKey,docType}` des champs `gallery`/`file` |
 | slots | `registerSlot` | UI React EN PLUS des champs (ancrée par `"$slot:<id>"`) |
 | payload | `registerPayloadFn` | form → payload (défaut = pipeline générique) |
 | invalidate | `registerInvalidateFn` | clés TanStack Query à rafraîchir |
@@ -342,6 +351,16 @@ dispatchent vers les registres (`forms/specRegistries.ts`, peuplés par `forms/r
 
 Pour les 2 costums actuels, l'irréductible-TS se réduit à : slots React (`poiDoublons`/`parentInfo`), `tl:payload`
 (merge des tags observatoire), et les `scope` (lecture carrier live).
+
+> **`buildDefaults` seede les champs galerie DANS LES DEUX MODES.** `specToConfig.buildDefaults` appelle
+> `seedGalleryDefaults(defaults, jsonConfig, entity)` : les champs `widget:"gallery"` (et `file`) sont `renderOnly`
+> → ignorés par le pipeline read/write, donc jamais seedés par `seedFromEntity`. En **édition**, `existing` vient
+> de `entity.getGalleryImages(contentKey)` (champ `images` fusionné par about) ; en **création**, `entity=null` →
+> `existing:[]`. Dans les DEUX cas on pose la forme complète `{existing,added,removedDocIds,contentKey,docType}`
+> (jamais le default `""`) — sinon l'upload est sauté au create (cf. l'encart Couche 1 sur le widget `gallery`).
+> Le fix (`resolveModalSpec.ts`) a (a) sorti le calcul de `jsonConfig` hors du bloc `mode==="edit"`, (b) rendu
+> `seedGalleryDefaults` tolérant à `entity=null` (`ent = (entity ?? {})` ; boucle indépendante de
+> `getGalleryImages`), (c) ajouté l'appel au create. Garde : `gallery-create-seed.test.ts` (parent62-article).
 
 ## Poser un costum dans la CONFIG GLOBALE (le loader)
 
@@ -370,6 +389,25 @@ config.costumForms.<id>  (JSON)
 add/edit du tiers-lieu est alors pilotée par la config (prouvé byte-identique au TS).
 
 ---
+
+## Pièges / gotchas
+
+### Scroll-lock des modales coincé sur `<body>` (scroll de page perdu)
+
+**Symptôme.** Ouvrir une modale add/edit (form costum) à contenu lourd (surtout l'éditeur markdown
+`@uiw/react-md-editor`) **puis la fermer** laissait `<body style="overflow:hidden">` verrouillé → la page ne
+scrolle plus jusqu'au reload. **TROIS causes indépendantes**, toutes trouvées + corrigées (chacune nécessaire) :
+
+| # | Cause | Mécanisme | Fix | Fichier |
+|---|---|---|---|---|
+| a | **Animation de SORTIE du `Dialog` partagé** | Radix `Presence` attend l'event `animationend` de l'anim de sortie avant de démonter. L'éditeur markdown re-render pendant la fermeture → l'event n'est jamais émis → le `Dialog` reste monté `data-state=closed` → son `react-remove-scroll` garde `<body>` verrouillé. | Retirer les classes d'anim de sortie (`data-[state=closed]:animate-out/fade-out-0/zoom-out-95`) de `DialogOverlay` + `DialogContent` → démontage immédiat. Anim d'ENTRÉE conservée. | `src/components/ui/dialog.tsx` (e7db310) |
+| b | **`modal` sur le `Popover` de `SelectObject`** | `<Popover modal>` pose un 2ᵉ scroll-lock `react-remove-scroll` sur le **même compteur partagé**. Imbriqué dans le `Dialog`, à la fermeture (après ouverture d'un select) le compteur se désynchronise → `overflow:hidden` reste. | Retirer `modal` du `Popover` (le `Dialog` gère la modalité ; un dropdown ne doit pas bloquer le scroll — comportement shadcn standard). Bénéficie à tous les `select`/`multiselect`. | `src/components/ui/select-objet.tsx` (edbc1f6) |
+| c | **`MDEditor` écrit `body.style.overflow` inline** | Le `Toolbar` de `@uiw/react-md-editor` gère le scroll du body pour son plein écran via un `useEffect` **SANS cleanup** (`document.body.style.overflow = 'hidden'`). Dans une modale, à la fermeture l'éditeur est démonté et laisse l'inline `overflow:hidden`. Seule lib du repo à toucher `body.style.overflow` en assignation directe. | Passer `overflow={false}` au `MDEditor` (inutile dans une modale). | `src/modules/coform/components/MarkdownEditor.tsx` (643c6b0 — cf. doc coform) |
+
+**Diagnostic (navigateur).** `document.body.getAttribute('data-scroll-locked')` → `null` = libre, `"1"` = coincé ;
+`document.querySelectorAll('[data-radix-focus-guard]').length` → `0` attendu après fermeture (guards résiduels =
+`Dialog` toujours monté). Vérifier aussi `body.style.overflow` inline (cause **c**). Après les 3 fixes : baseline /
+open / close → `locked=null`, guards `0`, la page scrolle.
 
 ## Byte-parité (les gardes)
 

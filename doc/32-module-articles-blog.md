@@ -72,6 +72,35 @@ Champs utiles d'un POI `type:"article"` (cf. `hooks/useArticle.ts`) :
 | `source.key` | **costum de rattachement** (scope du fil) |
 | `source.originUrl` | URL WordPress d'origine (migration) |
 
+## Édition : le costum form `parent62-article`
+
+Un article s'édite via un **costum form config-driven** déclaré dans `config.prod.parent62.json` sous
+`costumForms.parent62-article` (`entityType/collection:"poi"`, `costumSlug:"parent62"`, `layout.kind:"flat"`).
+Le POI est **typé à la création** par `mutation.inject.extraFields.type:"article"`. Exemple concret de
+**personnalisation d'un costum form** pour l'article (les widgets `gallery`/`file` + affichage sont déjà décrits
+côté composants — voir `ArticleGallery` / `ArticleDocuments`) :
+
+**Sections & champs.** Deux sections : `content` (`name`, `shortDescription`, `description` markdown,
+`profil_avatar`, `galerie`, `documents`, `tags`) et `taxo` (`territoires`, `publics`, `themes`).
+
+**Champs obligatoires** (`required:true`) : `name`, `description`, **et les 3 taxonomies** `territoires` /
+`publics` / `themes` (au moins un choix — `zodGen` traite `isEmpty([])` comme vide, donc un multiselect vide
+échoue la validation).
+
+**Territoire en choix UNIQUE.** `territoires` passe de `multiselect` (`string[]`) à **`widget:"select"`**
+(sans `multiple`) → valeur **`string`** (un seul territoire). `publics` / `themes` restent `multiselect`
+(`string[]`). Même `FormFieldSelectObject`, seul le flag `multiple` distingue les deux modes du form engine.
+
+**Widget adresse RETIRÉ.** Un article n'a pas d'adresse : suppression du champ `location` (`address`) + des
+5 champs cachés (`addressCountry`, `addressLocality`, `postalCode`, `streetAddress`, `localityId`) + de la
+section `location` + de `serializeGroups.address` (→ `serializeGroups:{}`).
+
+**CREATE reste sur l'admin.** Le form n'est ouvert que **depuis l'admin** (`admin.tabs[2].sections[0]`), donc
+`mutation.navigateOnSuccess:false` (plus de redirection vers `/profil/{slug}` au succès) + la table admin est
+**rafraîchie** : `mutation.invalidateFn.params.searchKeys` = `["blog:parent62", "admin-poi"]` — `admin-poi`
+invalide la requête de la table admin (`useSearchQuery` `queryKeyPrefix = ADMIN_QUERY_KEYS.RESOURCE_PREFIX('poi')`),
+donc le nouvel article apparaît immédiatement dans la liste (create **et** edit), en plus du fil blog.
+
 ## Sources de données
 
 Tout passe par **`entity.searchCostum`** (moteur générique) via **`buildSearchPayload`** — jamais de payload
@@ -135,8 +164,11 @@ bespoke. Trois hooks :
 (`PreloadableComponent`) : chunk code-splitté **tracé par le plugin** (→ `<link modulepreload>` en SSR,
 `preloadAll`) **et** méthode `.preload()` (préchauffe au survol). `get(key)` retombe **toujours** sur `default`.
 
-- `CARD_VARIANTS` — `default` (carte éditoriale 16/9) · `compact` (ligne).
-- `READER_VARIANTS` — `default` (reader éditorial). Extensible.
+- `CARD_VARIANTS` — `default` (carte éditoriale 16/9) · `compact` (ligne) · `poster` (`ArticleCardPoster` :
+  affiches/flyers, image **entière** `object-contain` sur fond flou tiré de la même URL, cadre portrait **3/4** en grille ;
+  vedette = écran scindé affiche | texte).
+- `READER_VARIANTS` — `default` (reader éditorial) · `poster` (`ArticleReaderPoster` : couverture **entière**
+  au ratio naturel, hauteur plafonnée `max-h-[85vh]`, pas de recadrage 16/9). Extensible.
 
 ⚠️ Déclarer les variants `lazy(() => import("chemin/statique"))` **directement** dans `cards.ts` / `readers.ts`
 (jamais via une indirection/variable, sinon `vite-preload` ne trace pas le chunk — même piège que `lazyNamed`).
@@ -195,5 +227,11 @@ Namespace `modules/blog` (`i18n/{fr,en}.json`), chargé en side-effect (`import 
 
 - **Search** : `buildSearchPayload` / `useSearchQuery` / `PageFilters` / `searchHeader` (fil + filtres).
 - **Agenda** : même patron d'**île client** config-driven + registre de variants + teaser.
-- **formEngine** : le costum form du POI `article` déclare les champs éditables (`name`,
-  `shortDescription`, `description` markdown, `profil_avatar`, `tags`).
+- **formEngine** : le costum form `parent62-article` du POI `article` déclare les champs éditables (`name`,
+  `shortDescription`, `description` markdown, `profil_avatar`, `galerie`, `documents`, `tags`, taxonomies
+  `territoires`/`publics`/`themes`) — voir [Édition](#édition--le-costum-form-parent62-article). Il illustre
+  la personnalisation config-driven d'un costum : champs requis, `select` vs `multiselect`, sections retirées,
+  ciblage du `navigateOnSuccess` / `invalidateFn` selon le point d'ouverture (admin).
+
+> Config parent62 (hors module) : le CTA header « Contact » (`config.header.ctaButton`) a été supprimé
+> (824ad17) — sans rapport avec l'édition d'article, mais dans le même fichier de config.

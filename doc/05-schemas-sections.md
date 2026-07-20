@@ -1864,6 +1864,8 @@ const TitleSectionSchema = z.object({
 | `size` | `"sm" \| "md" \| "lg" \| "xl"` | Taille du titre |
 | `className` | `string?` | Classes CSS additionnelles |
 
+> **Rendu du sous-titre** (`TitleSection.tsx:22-27`, `48-58`) : `subtitle` est rendu en `<p>` **subordonné** au titre — `text-muted-foreground`, `font-normal`, `leading-relaxed`, `max-w-3xl` (centré via `mx-auto` si `align === "center"`), et non plus en `<h3>` gras. Sa taille suit `subtitleSizeClasses[size]` (`sm→text-base`, `md→text-lg`, `lg→text-lg md:text-xl`, `xl→text-xl`), toujours plus petite que celle du titre quelle que soit la valeur de `size`.
+
 ---
 
 ## `content`
@@ -1909,9 +1911,18 @@ const ContentSectionSchema = z.object({
 | `tags` | `LocalizedString[]?` | Liste de tags |
 | `image` | `string?` | URL de l'image |
 | `imagePosition` | `"left" \| "right"` | Position de l'image |
-| `links` | `array?` | Liens vers d'autres pages |
-| `iconCard` | `object?` | Carte avec icone SVG |
-| `stats` | `array?` | Statistiques a afficher |
+| `links` | `array?` | Liens vers d'autres pages (label, href) |
+| `iconCard` | `object?` | Carte avec icone SVG (`{ svg }`) |
+| `infoText` | `LocalizedString?` | Ligne d'info avec icone (rendue en HTML brut) |
+| `decorativeElements` | `object?` | Element decoratif : `{ type: "corner-icon" \| "colored-squares" \| "none" }` |
+| `stats` | `array?` | Statistiques a afficher (`{ value: string, label: LocalizedString }`) |
+| `className` | `string?` | Classes CSS additionnelles |
+
+> **Rendu du bloc `stats`** (`ContentSection.tsx:55-65`) : rangee flex à retour à la ligne, chaque entree = `value` en `text-3xl font-bold text-primary` surmontant `label` en `text-sm text-muted-foreground`. Placé entre la description et les tags.
+>
+> **Colonne unique sans visuel** (`ContentSection.tsx:32`, `42`, `128`) : `hasVisual = image OU (decorativeElements.type !== "none")`. Quand il n'y a pas de visuel, la mise en page passe de la grille `lg:grid-cols-2` à une **colonne unique** `max-w-3xl` et la colonne image n'est pas rendue (au lieu d'une colonne de droite vide).
+>
+> **iconCard/links découplés** (`ContentSection.tsx:82-114`) : le bloc s'affiche dès que `iconCard` **ou** `links` est présent (auparavant les deux étaient requis). L'icone et la carte de liens sont rendues indépendamment.
 
 ---
 
