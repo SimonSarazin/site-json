@@ -1570,6 +1570,8 @@ export const Header = z.object({
   //   (état non opaque) — typiquement une version claire/monochrome.
   logoDark: z.string().optional(),
   logoOverlay: z.string().optional(),
+  // Classes de l'IMAGE de logo — surcharge la classe par défaut du header (ex. "h-8 w-8 ...").
+  logoClass: z.string().optional(),
   // Ton du `logoIcon` (SVG/Lucide rendu en `currentColor`). Défaut côté header
   // (ex. transparent-scroll = "primary"). "foreground" suit l'ink du thème →
   // marine en clair, clair en sombre, idéal pour une marque monochrome.

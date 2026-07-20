@@ -1,5 +1,5 @@
 import NavLink from "../NavLink";
-import { MapPin, Phone, Mail, Globe, Building2 } from "lucide-react";
+import { MapPin, Phone, Mail, Globe, Building2, Clock } from "lucide-react";
 import { useLocalization } from "@/hooks/useLocalization";
 import { Footer } from "@/types/site-schema";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
@@ -21,6 +21,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   globe: Globe,
   website: Globe,
   building: Building2,
+  clock: Clock,
 };
 
 function getIconComponent(icon?: string) {

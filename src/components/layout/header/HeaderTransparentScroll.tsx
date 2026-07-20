@@ -55,6 +55,8 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
         header.navVisibleOnlyForListedPages && !isPathInsideNav(header.nav)
     );
 
+    const logoImageClassName = header.logoClass ?? "h-8 w-8 shrink-0 object-contain group-hover:scale-110 transition-transform";
+
     const secondaryNavItems = header.secondaryNav ?? [];
     const shouldHideSecondaryNav = Boolean(
         secondaryNavItems.length > 0
@@ -84,7 +86,7 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
                             header={header}
                             isOverlay={!opaque}
                             iconTone="primary"
-                            imageClassName="h-8 w-8 shrink-0 object-contain group-hover:scale-110 transition-transform"
+                            imageClassName={logoImageClassName}
                             iconClassName="w-8 h-8 shrink-0 group-hover:scale-110 transition-transform"
                         />
                         {(header.logoTitle || header.logoSubtitle) && (
