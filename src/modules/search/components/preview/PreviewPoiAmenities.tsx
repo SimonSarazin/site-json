@@ -3,6 +3,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import type { Poi } from "@communecter/cocolight-api-client";
 import getDateFnsLocale from "@/dateFns";
+import { toValidDate } from "@/helpers/formatDate";
+import { isTrue } from "@/modules/search/lib/poiAmenities";
 import ProfileMapLeaflet from "@/modules/profil/components/sections/ProfileMapLeaflet";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Button } from "@/components/ui/button";
@@ -110,26 +112,6 @@ interface PoiDetail {
   geo?: PoiGeo;
 }
 
-const isTrue = (value?: string) => {
-  if (!value) return false;
-  const normalized = value.trim().toLowerCase();
-  return normalized === "true" || normalized === "1" || normalized === "oui" || normalized === "yes";
-};
-
-/**
- * `serverData` expose les dates soit en `Date` (entités revifiées, normalisées
- * par la lib), soit en string ISO (après hydratation SSR où les `Date` JSON sont
- * sérialisées). On gère donc Date + string ISO — sans heuristique epoch.
- */
-function toDate(value: unknown): Date | null {
-  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
-  if (typeof value === "string" && value.trim().length > 0) {
-    const date = new Date(value.trim());
-    return Number.isNaN(date.getTime()) ? null : date;
-  }
-  return null;
-}
-
 const formatDateFr = (date: Date | null) =>
   date ? format(date, "d MMMM yyyy", { locale: getDateFnsLocale() }) : "—";
 
@@ -187,9 +169,9 @@ function toPoi(item: Poi): PoiDetail {
     enqueteStatut: str(sd.enqueteStatut),
     installation: str(sd.inst_nom),
     sportPratiquer: str(sd.aps_name),
-    dateCreation: toDate(sd.inst_date_creation),
-    dateEnquete: toDate(sd.inst_enqu_date),
-    lastUpdate: toDate(sd.equip_maj_date),
+    dateCreation: toValidDate(sd.inst_date_creation),
+    dateEnquete: toValidDate(sd.inst_enqu_date),
+    lastUpdate: toValidDate(sd.equip_maj_date),
     familleEquipement,
     nature: str(sd.equip_nature),
     sol: str(sd.equip_sol),
