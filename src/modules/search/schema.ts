@@ -160,7 +160,7 @@ export const PreviewFacetSchema = z.object({
 export type PreviewFacetConfig = z.infer<typeof PreviewFacetSchema>;
 
 export const PreviewConfSchema = z.object({
-  type: z.enum(["default", "poi-amenities", "coform-answer", "event", "facets", "news"]).default("default"),
+  type: z.enum(["default", "poi-amenities", "coform-answer", "event", "facets", "news", "parole"]).default("default"),
   // Mapping rôle→suffixe de champ CoForm (pour `coform-answer`). Surcharge la
   // table par défaut du composant — découple les IDs de champs du code.
   fields: z.record(z.string(), z.string()).optional(),
@@ -221,7 +221,7 @@ const ListConfSchema = z.object({
     }).optional(),
     // Valeurs DESIGN/FONCTIONNALITÉ (jamais de nom de site). `Preview`/détail =
     // axe séparé (`preview.type`/`detailsMode`).
-    type: z.enum(["overlay", "default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer", "news"]).default("default"),
+    type: z.enum(["overlay", "default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer", "news", "parole"]).default("default"),
     variant: z.enum(["default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer"]).optional(),
   }).partial().optional(),
   preview: PreviewConfSchema.optional(),
