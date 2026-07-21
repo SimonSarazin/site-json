@@ -9167,6 +9167,12 @@
           }
         },
         {
+          "editModal": "edit-parent62-affiche",
+          "editModalMatch": {
+            "type": "affiche"
+          }
+        },
+        {
           "editModal": "edit-parent62-recovery-center",
           "editModalMatch": {
             "type": "recoveryCenter"
@@ -9277,7 +9283,8 @@
           }
         },
         "territoires": {
-          "widget": "select",
+          "widget": "multiselect",
+          "multiple": true,
           "label": {
             "fr": "Territoires",
             "en": "Territories"
@@ -9667,6 +9674,569 @@
           }
         }
       }
+    },
+    "parent62-affiche": {
+      "id": "parent62-affiche",
+      "entityType": "poi",
+      "collection": "poi",
+      "costumSlug": "parent62",
+      "layout": {
+        "kind": "flat"
+      },
+      "serializeGroups": {},
+      "sections": [
+        {
+          "id": "contenu",
+          "label": {
+            "fr": "La parole",
+            "en": "The testimony"
+          },
+          "icon": "comment",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "name",
+                "category",
+                "description",
+                "audio"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "taxo",
+          "label": {
+            "fr": "Catégorisation",
+            "en": "Taxonomy"
+          },
+          "icon": "tags",
+          "groups": [
+            {
+              "columns": 2,
+              "fields": [
+                "territoires",
+                "publics",
+                "ages",
+                "themes"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "tags"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "rgpd",
+          "label": {
+            "fr": "Consentement",
+            "en": "Consent"
+          },
+          "icon": "shield-check",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "paroleConsentement"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "name": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Titre de la parole",
+            "en": "Title"
+          },
+          "placeholder": {
+            "fr": "Un titre court et parlant",
+            "en": "A short, clear title"
+          }
+        },
+        "category": {
+          "widget": "select",
+          "required": true,
+          "label": {
+            "fr": "Catégorie",
+            "en": "Category"
+          },
+          "placeholder": {
+            "fr": "Choisir une catégorie",
+            "en": "Choose a category"
+          },
+          "enum": [
+            {
+              "value": "Compliqué",
+              "label": {
+                "fr": "Compliqué",
+                "en": "Compliqué"
+              }
+            },
+            {
+              "value": "Difficile",
+              "label": {
+                "fr": "Difficile",
+                "en": "Difficile"
+              }
+            },
+            {
+              "value": "À changer",
+              "label": {
+                "fr": "À changer",
+                "en": "À changer"
+              }
+            }
+          ]
+        },
+        "description": {
+          "widget": "markdown",
+          "widgetProps": {
+            "height": 280
+          },
+          "label": {
+            "fr": "Transcription / texte (accessibilité audio)",
+            "en": "Transcript / text"
+          },
+          "placeholder": {
+            "fr": "Transcrivez ou saisissez le texte de la parole…",
+            "en": "Transcribe or type the testimony…"
+          }
+        },
+        "audio": {
+          "widget": "file",
+          "label": {
+            "fr": "Audio de la parole (mp3/m4a)",
+            "en": "Audio (mp3/m4a)"
+          },
+          "placeholder": {
+            "fr": "Déposer un fichier audio",
+            "en": "Drop an audio file"
+          },
+          "widgetProps": {
+            "accept": "audio/mpeg,audio/mp4",
+            "contentKey": "audio",
+            "docType": "file",
+            "maxItems": 1,
+            "mediaTarget": {
+              "field": "medias",
+              "type": "audio"
+            }
+          }
+        },
+        "territoires": {
+          "widget": "multiselect",
+          "multiple": true,
+          "label": {
+            "fr": "Territoires",
+            "en": "Territories"
+          },
+          "placeholder": {
+            "fr": "Sélectionner…",
+            "en": "Select…"
+          },
+          "enum": [
+            {
+              "value": "Arrageois",
+              "label": {
+                "fr": "Arrageois",
+                "en": "Arrageois"
+              }
+            },
+            {
+              "value": "Artois",
+              "label": {
+                "fr": "Artois",
+                "en": "Artois"
+              }
+            },
+            {
+              "value": "Audomarois",
+              "label": {
+                "fr": "Audomarois",
+                "en": "Audomarois"
+              }
+            },
+            {
+              "value": "Boulonnais",
+              "label": {
+                "fr": "Boulonnais",
+                "en": "Boulonnais"
+              }
+            },
+            {
+              "value": "Calaisis",
+              "label": {
+                "fr": "Calaisis",
+                "en": "Calaisis"
+              }
+            },
+            {
+              "value": "Entre Mer et Terres",
+              "label": {
+                "fr": "Entre Mer et Terres",
+                "en": "Entre Mer et Terres"
+              }
+            },
+            {
+              "value": "Familles en sol mineur",
+              "label": {
+                "fr": "Familles en sol mineur",
+                "en": "Familles en sol mineur"
+              }
+            },
+            {
+              "value": "Familles en sol mineur Hénin Carvin",
+              "label": {
+                "fr": "Familles en sol mineur Hénin Carvin",
+                "en": "Familles en sol mineur Hénin Carvin"
+              }
+            },
+            {
+              "value": "Familles en sol mineur Lens Liévin",
+              "label": {
+                "fr": "Familles en sol mineur Lens Liévin",
+                "en": "Familles en sol mineur Lens Liévin"
+              }
+            },
+            {
+              "value": "Ternois Bruaysis",
+              "label": {
+                "fr": "Ternois Bruaysis",
+                "en": "Ternois Bruaysis"
+              }
+            }
+          ]
+        },
+        "publics": {
+          "widget": "multiselect",
+          "multiple": true,
+          "label": {
+            "fr": "Publics",
+            "en": "Publics"
+          },
+          "placeholder": {
+            "fr": "Sélectionner…",
+            "en": "Select…"
+          },
+          "enum": [
+            {
+              "value": "Bénévoles",
+              "label": {
+                "fr": "Bénévoles",
+                "en": "Bénévoles"
+              }
+            },
+            {
+              "value": "En famille",
+              "label": {
+                "fr": "En famille",
+                "en": "En famille"
+              }
+            },
+            {
+              "value": "Enfance",
+              "label": {
+                "fr": "Enfance",
+                "en": "Enfance"
+              }
+            },
+            {
+              "value": "Futurs parents",
+              "label": {
+                "fr": "Futurs parents",
+                "en": "Futurs parents"
+              }
+            },
+            {
+              "value": "Parents",
+              "label": {
+                "fr": "Parents",
+                "en": "Parents"
+              }
+            },
+            {
+              "value": "Parents-enfants",
+              "label": {
+                "fr": "Parents-enfants",
+                "en": "Parents-enfants"
+              }
+            },
+            {
+              "value": "Professionnels",
+              "label": {
+                "fr": "Professionnels",
+                "en": "Professionnels"
+              }
+            }
+          ]
+        },
+        "ages": {
+          "widget": "multiselect",
+          "multiple": true,
+          "label": {
+            "fr": "Âges",
+            "en": "Ages"
+          },
+          "placeholder": {
+            "fr": "Sélectionner…",
+            "en": "Select…"
+          },
+          "enum": [
+            {
+              "value": "0-3 ans",
+              "label": {
+                "fr": "0-3 ans",
+                "en": "0-3 ans"
+              }
+            },
+            {
+              "value": "3-6 ans",
+              "label": {
+                "fr": "3-6 ans",
+                "en": "3-6 ans"
+              }
+            },
+            {
+              "value": "6-11 ans",
+              "label": {
+                "fr": "6-11 ans",
+                "en": "6-11 ans"
+              }
+            },
+            {
+              "value": "adolescence",
+              "label": {
+                "fr": "adolescence",
+                "en": "adolescence"
+              }
+            },
+            {
+              "value": "jeune adulte",
+              "label": {
+                "fr": "jeune adulte",
+                "en": "jeune adulte"
+              }
+            }
+          ]
+        },
+        "themes": {
+          "widget": "multiselect",
+          "multiple": true,
+          "label": {
+            "fr": "Thèmes",
+            "en": "Themes"
+          },
+          "placeholder": {
+            "fr": "Sélectionner…",
+            "en": "Select…"
+          },
+          "enum": [
+            {
+              "value": "La citoyenneté",
+              "label": {
+                "fr": "La citoyenneté",
+                "en": "La citoyenneté"
+              }
+            },
+            {
+              "value": "La communication",
+              "label": {
+                "fr": "La communication",
+                "en": "La communication"
+              }
+            },
+            {
+              "value": "La culture",
+              "label": {
+                "fr": "La culture",
+                "en": "La culture"
+              }
+            },
+            {
+              "value": "La petite enfance",
+              "label": {
+                "fr": "La petite enfance",
+                "en": "La petite enfance"
+              }
+            },
+            {
+              "value": "La santé",
+              "label": {
+                "fr": "La santé",
+                "en": "La santé"
+              }
+            },
+            {
+              "value": "L’adolescence",
+              "label": {
+                "fr": "L’adolescence",
+                "en": "L’adolescence"
+              }
+            },
+            {
+              "value": "L’arrivée d’un enfant",
+              "label": {
+                "fr": "L’arrivée d’un enfant",
+                "en": "L’arrivée d’un enfant"
+              }
+            },
+            {
+              "value": "Le deuil",
+              "label": {
+                "fr": "Le deuil",
+                "en": "Le deuil"
+              }
+            },
+            {
+              "value": "Le handicap",
+              "label": {
+                "fr": "Le handicap",
+                "en": "Le handicap"
+              }
+            },
+            {
+              "value": "Le répit",
+              "label": {
+                "fr": "Le répit",
+                "en": "Le répit"
+              }
+            },
+            {
+              "value": "L’école",
+              "label": {
+                "fr": "L’école",
+                "en": "L’école"
+              }
+            },
+            {
+              "value": "L’éducation",
+              "label": {
+                "fr": "L’éducation",
+                "en": "L’éducation"
+              }
+            },
+            {
+              "value": "Les activités supports à la relation",
+              "label": {
+                "fr": "Les activités supports à la relation",
+                "en": "Les activités supports à la relation"
+              }
+            },
+            {
+              "value": "Les écrans – Le numérique",
+              "label": {
+                "fr": "Les écrans – Le numérique",
+                "en": "Les écrans – Le numérique"
+              }
+            },
+            {
+              "value": "Les émotions",
+              "label": {
+                "fr": "Les émotions",
+                "en": "Les émotions"
+              }
+            },
+            {
+              "value": "Les jeux",
+              "label": {
+                "fr": "Les jeux",
+                "en": "Les jeux"
+              }
+            },
+            {
+              "value": "Les situations de séparation",
+              "label": {
+                "fr": "Les situations de séparation",
+                "en": "Les situations de séparation"
+              }
+            },
+            {
+              "value": "Les violences",
+              "label": {
+                "fr": "Les violences",
+                "en": "Les violences"
+              }
+            }
+          ]
+        },
+        "tags": {
+          "widget": "tags",
+          "label": {
+            "fr": "Mots-clés",
+            "en": "Tags"
+          },
+          "placeholder": {
+            "fr": "Ajouter des mots-clés…",
+            "en": "Add tags…"
+          }
+        },
+        "paroleConsentement": {
+          "widget": "switch",
+          "label": {
+            "fr": "Consentement de recueil obtenu",
+            "en": "Consent obtained"
+          }
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter une parole",
+            "en": "Add a testimony"
+          },
+          "edit": {
+            "fr": "Modifier la parole",
+            "en": "Edit testimony"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Publier",
+            "en": "Publish"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        }
+      },
+      "mutation": {
+        "entityType": "poi",
+        "navigateOnSuccess": false,
+        "inject": {
+          "extraFields": {
+            "type": "affiche"
+          }
+        },
+        "successKey": {
+          "add": "toast.add.poiSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.poiError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_POI",
+          "edit": "EntityFormModal · UPDATE_POI"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:blog",
+          "params": {
+            "userList": "pois",
+            "searchKeys": [
+              "blog:parent62",
+              "admin-poi"
+            ]
+          }
+        }
+      }
     }
   },
   "admin": {
@@ -9760,6 +10330,79 @@
               "delete"
             ],
             "create": "add-parent62-article",
+            "edit": "inherit"
+          }
+        ]
+      },
+      {
+        "id": "paroles",
+        "label": {
+          "fr": "Paroles de parents",
+          "en": "Parents' testimonies"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "poi",
+            "label": {
+              "fr": "Paroles de parents",
+              "en": "Parents' testimonies"
+            },
+            "source": {
+              "defaultFilters": {
+                "type": "affiche"
+              },
+              "defaultSortBy": {
+                "created": -1
+              },
+              "costumSlug": "parent62",
+              "sourceKey": [
+                "parent62"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Titre",
+                  "en": "Title"
+                }
+              },
+              {
+                "path": "category",
+                "label": {
+                  "fr": "Catégorie",
+                  "en": "Category"
+                }
+              },
+              {
+                "path": "medias",
+                "label": {
+                  "fr": "Audio",
+                  "en": "Audio"
+                },
+                "type": "audio"
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Date",
+                  "en": "Date"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ],
+            "create": "add-parent62-affiche",
             "edit": "inherit"
           }
         ]

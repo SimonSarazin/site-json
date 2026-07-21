@@ -81,7 +81,13 @@ export interface EntityMutationSpec {
  * EDIT   : `submitEntityEdit(target, payload, {imageFile, imageDeleted})` (Object.assign + save + removeImage).
  */
 /** Valeur d'un champ widget "gallery" (Option C) — reconnue structurellement (sans coupler le hook au widget). */
-interface GalleryFieldValue { added?: File[]; removedDocIds?: string[]; contentKey: string; docType?: "image" | "file" }
+interface GalleryFieldValue {
+  added?: File[]; removedDocIds?: string[]; contentKey: string; docType?: "image" | "file";
+  /** Fichiers déjà présents (seed édition) : {docId, url} — sert à retirer l'entrée `medias[]` d'un fichier supprimé. */
+  existing?: Array<{ docId: string; url?: string; name?: string }>;
+  /** Matérialise l'upload dans un tableau structuré de l'entité (ex. audio Paroles → `medias:[{type,url}]`). */
+  mediaTarget?: { field: string; type: string };
+}
 function isGalleryFieldValue(v: unknown): v is GalleryFieldValue {
   const g = v as GalleryFieldValue | null;
   return !!g && typeof g === "object" && Array.isArray(g.added) && Array.isArray(g.removedDocIds) && typeof g.contentKey === "string";
@@ -89,24 +95,57 @@ function isGalleryFieldValue(v: unknown): v is GalleryFieldValue {
 interface GalleryCapableEntity {
   uploadDocument: (file: File, opts: { contentKey: string; docType?: "image" | "file" }) => Promise<{ docId: string; docPath: string }>;
   deleteFile: (docId: string) => Promise<void>;
+  data?: Record<string, unknown>;
+  save?: () => Promise<unknown>;
+}
+/** Clé de correspondance médias↔document : nom de fichier (dernier segment, sans query) — robuste au base URL. */
+function mediaKey(url: unknown): string {
+  return typeof url === "string" ? (url.split("?")[0].split("/").pop() ?? "") : "";
 }
 /**
  * Traite les champs GALERIE APRÈS le save (l'entité a désormais un `id`) : supprime les documents retirés
  * puis uploade les nouveaux fichiers via `entity.uploadDocument(file, {contentKey})` (Option C). Best-effort
  * sur les suppressions ; les uploads propagent l'erreur (le save métier a réussi, on veut le signaler).
+ *
+ * Si un champ porte `mediaTarget`, le `docPath` de chaque upload est MATÉRIALISÉ dans un tableau structuré de
+ * l'entité (ex. `medias:[{type:"audio",url:docPath}]`) — ET l'entrée correspondante est RETIRÉE de `medias[]`
+ * quand le fichier est supprimé (matché par nom de fichier). Persisté par UN `save()` (poi costum → `element/save`,
+ * qui porte le champ `medias` du contrat ADD_POI). Cf. Paroles de parents (audio).
  */
 async function processGalleryFields(entity: unknown, values: Data): Promise<void> {
   const ent = entity as Partial<GalleryCapableEntity>;
   if (typeof ent.uploadDocument !== "function") return;
+  const mediaAdds: Record<string, Array<{ type: string; url: string }>> = {};
+  const mediaRemoveKeys: Record<string, Set<string>> = {};
   for (const key of Object.keys(values)) {
     const v = values[key];
     if (!isGalleryFieldValue(v)) continue;
     for (const docId of v.removedDocIds ?? []) {
       try { await ent.deleteFile?.(docId); } catch { /* best-effort : doc déjà supprimé / droit */ }
+      // Retrait de l'entrée `medias[]` du fichier supprimé (via son url dans `existing`, matché par nom).
+      if (v.mediaTarget?.field) {
+        const ex = (v.existing ?? []).find((e) => e.docId === docId);
+        const k = mediaKey(ex?.url);
+        if (k) (mediaRemoveKeys[v.mediaTarget.field] ??= new Set()).add(k);
+      }
     }
     for (const file of v.added ?? []) {
-      await ent.uploadDocument!(file, { contentKey: v.contentKey, docType: v.docType });
+      const res = await ent.uploadDocument!(file, { contentKey: v.contentKey, docType: v.docType });
+      if (v.mediaTarget?.field && res?.docPath) {
+        (mediaAdds[v.mediaTarget.field] ??= []).push({ type: v.mediaTarget.type, url: res.docPath });
+      }
     }
+  }
+  // Applique retraits + ajouts sur `medias[]` de l'entité + UN save (si un champ a bougé).
+  const fields = new Set([...Object.keys(mediaAdds), ...Object.keys(mediaRemoveKeys)]);
+  if (fields.size && ent.data && typeof ent.save === "function") {
+    for (const f of fields) {
+      const current = Array.isArray(ent.data[f]) ? (ent.data[f] as Array<Record<string, unknown>>) : [];
+      const remove = mediaRemoveKeys[f];
+      const kept = remove ? current.filter((m) => !(m && typeof m === "object" && remove.has(mediaKey(m.url)))) : current;
+      ent.data[f] = [...kept, ...(mediaAdds[f] ?? [])];
+    }
+    await ent.save();
   }
 }
 
