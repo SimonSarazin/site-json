@@ -13,7 +13,7 @@ export default function DetailsModeDialog({ openDetails, setOpenDetails, item, p
 
     return (
         <Dialog open={openDetails} onOpenChange={setOpenDetails}>
-          <DialogContent className="p-0 gap-0 sm:max-w-5xl max-h-[90vh] overflow-hidden">
+          <DialogContent aria-describedby={undefined} className="p-0 gap-0 sm:max-w-5xl max-h-[90vh] overflow-hidden">
             <DialogTitle className="sr-only">{t("Aperçu")}</DialogTitle>
             {item && (
               <Preview item={item} preview={preview} onClose={() => setOpenDetails(false)} />

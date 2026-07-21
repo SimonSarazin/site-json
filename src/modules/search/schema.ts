@@ -1,6 +1,6 @@
 import { LocalizedString } from "@/types/locale-schema";
 import { ActionButtonSchema } from "@/types/action-button-schema";
-import type { SearchEntity } from "@communecter/cocolight-api-client";
+import type { SearchEntity, News } from "@communecter/cocolight-api-client";
 import { IconName } from "lucide-react/dynamic";
 import { z } from "zod";
 
@@ -160,12 +160,17 @@ export const PreviewFacetSchema = z.object({
 export type PreviewFacetConfig = z.infer<typeof PreviewFacetSchema>;
 
 export const PreviewConfSchema = z.object({
-  type: z.enum(["default", "poi-amenities", "coform-answer", "event", "facets"]).default("default"),
+  type: z.enum(["default", "poi-amenities", "coform-answer", "event", "facets", "news"]).default("default"),
   // Mapping rôle→suffixe de champ CoForm (pour `coform-answer`). Surcharge la
   // table par défaut du composant — découple les IDs de champs du code.
   fields: z.record(z.string(), z.string()).optional(),
   /** Facettes du preview générique (`type: "facets"`) — data-driven, sans code. */
   facets: z.array(PreviewFacetSchema).optional(),
+  /**
+   * Affiche le lien « Voir en page » (permalien vers le détail/profil) dans l'en-tête de la
+   * modal de détail. Défaut : affiché (mettre `false` pour le masquer). Lu par `PreviewNews`.
+   */
+  showDetailLink: z.boolean().optional(),
 }).partial();
 
 const ListConfSchema = z.object({
@@ -216,7 +221,7 @@ const ListConfSchema = z.object({
     }).optional(),
     // Valeurs DESIGN/FONCTIONNALITÉ (jamais de nom de site). `Preview`/détail =
     // axe séparé (`preview.type`/`detailsMode`).
-    type: z.enum(["overlay", "default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer"]).default("default"),
+    type: z.enum(["overlay", "default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer", "news"]).default("default"),
     variant: z.enum(["default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer"]).optional(),
   }).partial().optional(),
   preview: PreviewConfSchema.optional(),
@@ -741,7 +746,7 @@ export type SearchHeaderSection = z.infer<typeof SearchHeaderSectionSchema>;
 export type SearchHeaderSectionProps = z.infer<typeof SearchHeaderSectionSchema>["props"];
 
 
-export interface SearchListViewProps<T extends SearchEntity = SearchEntity> {
+export interface SearchListViewProps<T extends SearchListEntity = SearchEntity> {
   results: T[];
   columns?: ListConf["columns"];
   card?: ListConf["card"];
@@ -759,7 +764,15 @@ export interface SearchListViewProps<T extends SearchEntity = SearchEntity> {
   previewParam?: string;
 }
 
-export interface SwitchDetailsModeProps<T extends SearchEntity = SearchEntity> {
+/**
+ * Entités affichables dans une liste de recherche. Élargit `SearchEntity` (lib) avec
+ * `News` : les actualités sont un type de recherche à part entière (globalautocomplete),
+ * mais héritent d'un `serverData` hétérogène — d'où un type LOCAL au module search plutôt
+ * qu'un élargissement de `SearchEntity` côté lib (qui casserait `useItem` & co).
+ */
+export type SearchListEntity = SearchEntity | News;
+
+export interface SwitchDetailsModeProps<T extends SearchListEntity = SearchEntity> {
   openDetails: boolean;
   setOpenDetails: (open: boolean) => void;
   item: T;
@@ -767,27 +780,27 @@ export interface SwitchDetailsModeProps<T extends SearchEntity = SearchEntity> {
   preview?: ListConf["preview"];
 }
 
-export interface DetailsModeProps<T extends SearchEntity = SearchEntity> {
+export interface DetailsModeProps<T extends SearchListEntity = SearchEntity> {
   openDetails: boolean;
   setOpenDetails: (open: boolean) => void;
   preview?: ListConf["preview"];
   item: T;
 }
 
-export interface SearchCardProps<T extends SearchEntity = SearchEntity> {
+export interface SearchCardProps<T extends SearchListEntity = SearchEntity> {
   item: T;
   onClick?: () => void;
   card?: ListConf["card"];
 }
 
-export interface PreviewProps<T extends SearchEntity = SearchEntity> {
+export interface PreviewProps<T extends SearchListEntity = SearchEntity> {
   item: T;
   preview?: ListConf["preview"];
   /** Ferme le conteneur de détail (drawer/dialog) — fourni par le conteneur. */
   onClose?: () => void;
 }
 
-export interface SearchMapWrapperProps<T extends SearchEntity = SearchEntity> {
+export interface SearchMapWrapperProps<T extends SearchListEntity = SearchEntity> {
   results: T[];
   card?: ListConf["card"];
   preview?: ListConf["preview"];
@@ -800,7 +813,7 @@ export interface SearchMapWrapperProps<T extends SearchEntity = SearchEntity> {
   containerClass?: string;
 }
 
-export interface SearchMapProps<T extends SearchEntity = SearchEntity> {
+export interface SearchMapProps<T extends SearchListEntity = SearchEntity> {
   results: T[];
   card?: ListConf["card"];
   preview?: ListConf["preview"];
@@ -813,7 +826,7 @@ export interface SearchMapProps<T extends SearchEntity = SearchEntity> {
   containerClass?: string;
 }
 
-export interface MapPopupProps<T extends SearchEntity = SearchEntity> {
+export interface MapPopupProps<T extends SearchListEntity = SearchEntity> {
   item: T;
   t: (key: string) => string;
   /** Libellé/intention du bouton d'action (cf. MapConf.itemAction). */

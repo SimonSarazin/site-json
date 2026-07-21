@@ -1,3 +1,4 @@
+import type { News } from "@communecter/cocolight-api-client";
 import { SearchCardProps } from "../schema";
 import { lazy } from "vite-preload";
 
@@ -18,6 +19,7 @@ const CardResourceBooking = lazy(() => import("./card/CardResourceBooking"));
 const CardPoiAmenities = lazy(() => import("./card/CardPoiAmenities"));
 const CardContact = lazy(() => import("./card/CardContact"));
 const CardAnswer = lazy(() => import("./card/CardAnswer"));
+const CardNews = lazy(() => import("./card/CardNews"));
 
 export default function SearchCard({
   item,
@@ -58,6 +60,10 @@ export default function SearchCard({
       return <CardImagePanel item={item} onClick={onClick} card={card} />;
     case "card-answer":
       return <CardAnswer item={item} onClick={onClick} card={card} />;
+    case "news":
+      // card.type "news" ⇒ l'item est une News (wrappée par _linkEntity via collection:"news"),
+      // mais SearchEntity ne l'inclut pas (serverData hétérogène) → cast au point de dispatch.
+      return <CardNews item={item as unknown as News} onClick={onClick} card={card} />;
     case "default":
       return <CardDefault item={item} onClick={onClick} card={card} />;
     default:

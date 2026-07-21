@@ -194,5 +194,17 @@
   "Adresse inconnue": "Address unknown",
   "Tous": "All",
   "{{count}} sélectionnés": "{{count}} selected",
-  "{{count}} résultats groupés": "{{count}} results grouped"
+  "{{count}} résultats groupés": "{{count}} results grouped",
+  "a créé": "created",
+  "a partagé": "shared",
+  "a modifié": "updated",
+  "a publié": "posted",
+  "sur": "on",
+  "Quelqu'un": "Someone",
+  "Actualité": "News",
+  "Voir en page": "Open full page",
+  "Aperçu détaillé indisponible pour cette actualité.": "Detailed preview unavailable for this news.",
+  "Lire": "Read",
+  "Privé": "Private",
+  "Réservé aux membres": "Members only"
 }
