@@ -2480,17 +2480,6 @@
               "en": "Search a testimony…"
             },
             "showActiveFiltersTags": "desktop",
-            "buttons": [
-              {
-                "label": {
-                  "fr": "Partager une parole",
-                  "en": "Share a testimony"
-                },
-                "action": "add-poi",
-                "modal": "add-parent62-affiche",
-                "variant": "default"
-              }
-            ],
             "dropdownFilters": [
               {
                 "id": "category",
@@ -10737,12 +10726,7 @@
         "navigateOnSuccess": false,
         "inject": {
           "extraFields": {
-            "type": "affiche",
-            "preferences": {
-              "toBeValidated": {
-                "parent62": true
-              }
-            }
+            "type": "affiche"
           }
         },
         "successKey": {
