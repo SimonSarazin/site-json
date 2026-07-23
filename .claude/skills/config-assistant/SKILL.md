@@ -14,7 +14,9 @@ Les faits volatils se LISENT à l'usage, ils ne sont pas écrits ici :
 
 | Besoin | Commande |
 |---|---|
-| Liste des sections + description | `npm run config:schema sections` |
+| Liste des sections + description (groupée par famille) | `npm run config:schema sections` |
+| Archétypes de référence (quel site imiter, ce qu'il démontre) + liste des exemples | `npm run config:example` |
+| Exemple canonique d'un bloc réel (theme, command-palette, agenda, list-resource…) | `npm run config:example -- <feature>` |
 | Forme exacte d'une section | `npm run config:schema section:<type>` (ex. `section:pricing`) |
 | Forme de `header`/`footer`/`theme`/`meta`/`auth`/`page`/`profiles`/`integrations` | `npm run config:schema <bloc>` |
 | Forme d'un document de **form costum** (`config.costumForms.<id>`) | `npm run config:schema costumForm` |
@@ -38,14 +40,16 @@ Vérifie via les scripts, puis propose une mise à jour de cette skill (§ Maint
    (logo ? photos ?).
 2. **Conception design** : propose **2-3 directions argumentées** (archétype le
    plus proche, header/footer, composition de pages, direction de thème) —
-   **l'utilisateur tranche avant de générer**. Appuie-toi sur les tables ci-dessous
+   **l'utilisateur tranche avant de générer**. Appuie-toi sur `archetypes.json`
+   (dossier de cette skill) pour choisir l'archétype, sur les tables ci-dessous
    et sur `config:schema sections` pour composer les pages.
 3. **Slug** : `npm run entity:slug -- check <slug>` — prérequis DUR : le slug de
    `sites.json` charge AUSSI l'entité Cocolight au boot ; sans entité, le site ne
    démarre pas. (`search <nom>` pour trouver l'existant ; la création d'entité
    exige une auth → faire créer in-app, cf. point ouvert doc/26.)
-4. **Setup** : partir du config archétype le plus proche (jamais d'une page
-   blanche) ; entrée `sites.json` `{slug, config, css}` ; dossier
+4. **Setup** : partir du config archétype le plus proche — choisi dans
+   `archetypes.json`, cf. § Archétypes — (jamais d'une page blanche) ; entrée
+   `sites.json` `{slug, config, css}` ; dossier
    `public/images/<slug>/` ; CSS : réutiliser un `src/index-<theme>.css` existant
    (les couleurs vivent dans `config.theme`, pas dans le CSS — cf. § Thème).
 5. **Génération PAR MORCEAU** (jamais le config entier d'un coup) :
@@ -92,6 +96,24 @@ Pour corriger/améliorer un config existant :
    QUELS) → seul un **appel A/B réel** (avec/sans la clé, comparer les
    réponses) prouve que le backend l'ignore. Précédent : `domGroup`
    (héritage costum) — envoyé, ignoré (réponses byte-identiques), purgé.
+
+## Archétypes & exemples canoniques
+
+- `archetypes.json` (dossier de cette skill) désigne les **4 configs de
+  référence** — portail complet (`parent62`), portail réseau multi-sources
+  (`navigatorDesTierslieux`), cartographie/observatoire (`saintpaulSport1`),
+  vitrine compacte (`eXtremeDefiAdeme`) — et liste ce que chacune démontre.
+  Le gate préflight `tests/preflight/archetypes.test.ts` garantit leur
+  fraîcheur : présentes dans `sites.json`, audit sans constat autre que
+  `knownFindings` (constats assumés, versionnés dans le manifest — à ne pas
+  confondre avec `.audit-baseline.json`, gitignoré).
+- `examples/<feature>.json` = **snapshots versionnés** de blocs réels extraits
+  des archétypes (theme, command-palette, agenda, list-resource,
+  list-testimonial, admin, profiles, header-mega-menu…). Le même gate échoue
+  si un snapshot dérive de sa config source → resynchroniser en conscience :
+  `npm run config:example -- <feature> --write`.
+- **Toujours partir d'un exemple canonique** (`npm run config:example -- <feature>`)
+  plutôt que d'inventer la forme d'un bloc complexe.
 
 ## Tables de design (semi-stables — vérifiées par le test `skill-integrity`)
 
@@ -249,6 +271,9 @@ dérivation runtime : le bloc se GÉNÈRE explicitement puis se personnalise.
 - Le test préflight `skill-integrity` croise les tables ci-dessus avec le code
   (enums header/footer, modules, scripts) : s'il échoue, **mets cette skill à
   jour, pas le test**.
+- Le test préflight `archetypes` garantit manifest + snapshots (cf. § Archétypes) :
+  constat d'audit nouveau → le corriger ou l'assumer dans `knownFindings` ;
+  snapshot dérivé → `config:example -- <feature> --write`.
 - Sur demande « mets-toi à jour » (ou si tu détectes une dérive) : analyse les
   commits récents touchant `src/types/site-schema.ts`, `src/modules/*/`,
   `src/components/admin/section-meta.ts`, `sites.json`, mets à jour les tables

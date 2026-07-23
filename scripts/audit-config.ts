@@ -18,9 +18,12 @@
  * `fixability` pilote le flux de réparation de l'assistant config (doc/26) :
  * `auto` (lot mécanique) · `proposer` (choix humain) · `suggestion` (opt-in).
  *
- * Constats ASSUMÉS : `.audit-baseline.json` (versionné, à la racine) — clés =
- * fichier de config, valeurs = [{category, path}]. Un constat assumé est
- * reporté à part et n'échoue pas `--strict`.
+ * Constats ASSUMÉS : `.audit-baseline.json` (racine, GITIGNORÉ — état local,
+ * jamais partagé) — clés = fichier de config, valeurs = [{category, path}]. Un
+ * constat assumé est reporté à part (`assumed`) et n'échoue pas `--strict`.
+ * Pour les constats assumés PARTAGÉS des configs archétypes, utiliser
+ * `knownFindings` dans .claude/skills/config-assistant/archetypes.json
+ * (versionné, vérifié par tests/preflight/archetypes.test.ts).
  *
  * Usage :
  *   npm run audit:config                      → tous les configs, rapport humain

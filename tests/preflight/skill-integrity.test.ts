@@ -63,11 +63,11 @@ describe("skill config-assistant ⇄ code (anti-dérive)", () => {
     const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf-8")) as {
       scripts: Record<string, string>;
     };
-    for (const alias of ["config:validate", "config:schema", "entity:slug", "audit:config", "test:preflight", "config:costum", "admin:scaffold"]) {
+    for (const alias of ["config:validate", "config:schema", "entity:slug", "audit:config", "test:preflight", "config:costum", "admin:scaffold", "config:example"]) {
       expect(pkg.scripts[alias], `script npm "${alias}" référencé par la skill`).toBeDefined();
       expect(skill).toContain(alias);
     }
-    for (const file of ["scripts/validate-config.ts", "scripts/config-schema.ts", "scripts/entity-slug.ts", "scripts/admin-scaffold.ts", "scripts/gen-costum-config.ts", "src/styles/shared.css", "doc/26-assistant-config.md", "doc/30-module-admin.md"]) {
+    for (const file of ["scripts/validate-config.ts", "scripts/config-schema.ts", "scripts/entity-slug.ts", "scripts/admin-scaffold.ts", "scripts/gen-costum-config.ts", "scripts/config-example.ts", "scripts/lib/archetypes.ts", ".claude/skills/config-assistant/archetypes.json", ".claude/skills/config-assistant/examples", "src/styles/shared.css", "doc/26-assistant-config.md", "doc/30-module-admin.md"]) {
       expect(fs.existsSync(path.join(ROOT, file)), `fichier ${file}`).toBe(true);
     }
   });
