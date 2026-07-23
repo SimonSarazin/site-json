@@ -23,7 +23,7 @@ import {
   ThemeConfig,
   Page,
 } from "../src/types/site-schema";
-import SECTION_META from "../src/components/admin/section-meta";
+import SECTION_META, { SECTION_FAMILIES } from "../src/components/admin/section-meta";
 import { CostumFormSchemaZod } from "../src/modules/profil/forms/costum/costumFormSchema.zod";
 import { AdminConfigSchema } from "../src/modules/admin/schema";
 
@@ -60,11 +60,19 @@ if (!arg) {
 }
 
 if (arg === "sections") {
-  // Catalogue : type → description française (section-meta du panel admin).
-  const meta = SECTION_META as Record<string, { label: string; desc: string }>;
+  // Catalogue : type → description française (section-meta du panel admin), groupé par famille.
+  const byFamily = new Map<string, string[]>();
   for (const [type] of [...sectionOptions()].sort(([a], [b]) => a.localeCompare(b))) {
-    const m = meta[type];
-    console.log(`${type.padEnd(28)} ${m ? `${m.label} — ${m.desc}` : "(absent de section-meta)"}`);
+    const m = SECTION_META[type];
+    const line = `${type.padEnd(28)} ${m ? `${m.label} — ${m.desc}` : "(absent de section-meta)"}`;
+    const family = m?.family ?? "(sans famille)";
+    byFamily.set(family, [...(byFamily.get(family) ?? []), line]);
+  }
+  for (const family of [...SECTION_FAMILIES, "(sans famille)"]) {
+    const lines = byFamily.get(family);
+    if (!lines) continue;
+    console.log(`\n# ${family}`);
+    for (const line of lines) console.log(line);
   }
   process.exit(0);
 }

@@ -52,7 +52,7 @@ L'idée est étonnamment peu coûteuse parce que **les quatre briques dures exis
 ### 1. Le schéma Zod est la source de vérité… et il est exportable en JSON Schema
 
 - `src/types/site-schema.ts` (~2 030 lignes) : `SiteConfig` racine, `Header`,
-  `Footer`, `Page`, et **68 sections** discriminées par
+  `Footer`, `Page`, et **70 sections** discriminées par
   `z.discriminatedUnion("type", […])` (L1325).
 - **zod 4.1.13 fournit `z.toJSONSchema()` natif** (vérifié sur place : il
   fonctionne sur nos schémas). On peut donc produire, à la volée ou au build,
@@ -146,15 +146,15 @@ scripts** comme backend de validation ; A n'a plus d'intérêt propre.
 
 ## Design de la boucle de génération (cœur du sujet)
 
-**Ne jamais générer tout le config d'un coup.** Le JSON Schema des 68 sections
-est volumineux et le contexte se dilue. Découper en étapes outillées :
+**Ne jamais générer tout le config d'un coup.** Le JSON Schema de toutes les
+sections réunies est volumineux et le contexte se dilue. Découper en étapes outillées :
 
 1. **Interview** (modèle conversationnel) : type de site, langues, pages
    souhaitées, ton/couleurs → produit un *plan* (liste de pages + sections
    pressenties, choix `header.type`/`footer.type` parmi les noms de DESIGN).
 2. **Génération par morceau** : `meta` + `theme` → `header`/`footer` → puis
    **page par page**, chaque page limitée aux schémas des sections retenues par
-   le plan (pas les 68). La forme exacte de chaque morceau vient de
+   le plan (pas l'intégralité du catalogue). La forme exacte de chaque morceau vient de
    `z.toJSONSchema(<sous-schéma>)` — consultée via `config-schema.mjs` dans
    l'architecture C (skill), ou fournie comme `input_schema` d'un tool dans
    l'architecture B (API).
@@ -374,7 +374,7 @@ Conventions vérifiées sur les 17 configs + `public/` :
 - Chemins internes : doivent exister dans `pages[].path` ou les routes de
   modules (`/profil`, `/login`, `/coform`…) — pas de chemin inventé.
 - Images : pas d'URL inventée — assets existants du site, ou laisser vide.
-- Sections : choisir dans le catalogue réel (68 types, descriptions dans
+- Sections : choisir dans le catalogue réel (descriptions dans
   `src/components/admin/section-meta.ts`) ; en cas de doute sur les props,
   `config-schema.mjs section:<type>`.
 - Familles de configs : pour un site « commune », partir de
@@ -405,7 +405,7 @@ l'usage :
 | Connaissance | Source vivante (à l'invocation) |
 |---|---|
 | Types de header/footer/card/preview, enums | `config-schema.mjs` → `z.toJSONSchema` du schéma **courant** |
-| Liste + props des 68 sections | `config-schema.mjs sections` (membres de la discriminatedUnion) + `section-meta.ts` lu en direct |
+| Liste + props de toutes les sections | `config-schema.mjs sections` (membres de la discriminatedUnion) + `section-meta.ts` lu en direct |
 | Modules disponibles + leurs sections | `src/modules/*/` (découverte `import.meta.glob` — listable par script) |
 | Archétypes / configs existants | `sites.json` + `config.prod.*.json` lus en direct |
 | Slugs d'entité | `entity-slug.mjs` (backend interrogé en direct) |
