@@ -15,7 +15,40 @@ export interface FilterGroupLike {
     level?: string;
     /** searchTargets : cible (defaultTypes/defaultFilters) portée par l'option. */
     target?: Record<string, unknown>;
+    /** searchTargets : option pré-sélectionnée (cf. applyDefaultSearchTargets). */
+    defaultChecked?: boolean;
   }>;
+}
+
+/**
+ * Applique la sélection PAR DÉFAUT des groupes `searchTargets` (option
+ * `defaultChecked`) dans `searchByFields` — jamais dans `selectedFilters` :
+ * une cible rangée en `selectedFilters` fuirait en TAG `$all` inexistant
+ * (`typeinfo-…`) et viderait la recherche.
+ *
+ * L'URL prime : pas de défaut si le param du groupe est présent, ni si une
+ * option du groupe est déjà sélectionnée. À n'appeler qu'à l'hydratation
+ * initiale (pas au back/forward : une URL sans param y signifie « décoché »).
+ */
+export function applyDefaultSearchTargets(
+  prev: Record<string, SearchByFieldValue>,
+  filterGroups: FilterGroupLike[],
+  searchParams: URLSearchParams,
+): Record<string, SearchByFieldValue> {
+  let next = prev;
+  for (const group of filterGroups) {
+    if (group.type !== "searchTargets") continue;
+    if (searchParams.has(group.id)) continue;
+    const optionKeys = (group.options ?? []).map((o) => o.name || o.id);
+    if (optionKeys.some((k) => Object.prototype.hasOwnProperty.call(next, k))) continue;
+    const def = (group.options ?? []).find((o) => o.defaultChecked);
+    if (!def) continue;
+    next = {
+      ...next,
+      [def.name || def.id]: { field: "searchTarget", type: "searchTarget", value: def.target ?? {} },
+    };
+  }
+  return next;
 }
 
 /** Données `filtersByAnswers`/`filtersByPath` résolues (services → orgaNameArray). */
@@ -66,6 +99,10 @@ export function computeFiltersFromUrl(
     } else if (g.type === "dateRange") {
       // Clé searchByFields = id du groupe (une plage par groupe).
       managedTargetOptionKeys.add(g.id);
+    } else if (g.field) {
+      // Groupe « champ » (taxonomie en champs : parent62) → searchByFields,
+      // clé = nom d'option, comme entityList/scopeList.
+      (g.options ?? []).forEach((o) => managedScopeOptionKeys.add(o.name || o.id));
     }
   });
 
@@ -128,6 +165,18 @@ export function computeFiltersFromUrl(
             type: "scopeList",
             value: { id: key, type: opt.level },
           };
+        });
+        return;
+      }
+      // Groupe « champ » : deep-link `?territoire=Arrageois` → searchByFields
+      // → `{ territoires: { $in: ["Arrageois"] } }`, à l'identique du clic.
+      if (group.field) {
+        const field = group.field;
+        values.forEach((v) => {
+          const opt = (group.options ?? []).find((o) => (o.name || o.id) === v || o.id === v);
+          if (!opt) return;
+          const key = opt.name || opt.id;
+          nextSearchFields[key] = { field, value: [key] };
         });
         return;
       }

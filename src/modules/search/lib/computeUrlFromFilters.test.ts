@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { computeUrlFromFilters } from "./computeUrlFromFilters";
-import { computeFiltersFromUrl, type FilterGroupLike } from "./computeFiltersFromUrl";
+import { applyDefaultSearchTargets, computeFiltersFromUrl, type FilterGroupLike } from "./computeFiltersFromUrl";
 import type { SearchByFieldValue } from "../contexts/pageFilters";
 
 const TYPO: FilterGroupLike = {
@@ -260,5 +260,119 @@ describe("dateRange — miroir URL", () => {
     expect(applySearchFields({})).toEqual({
       dates: { field: "startDate", type: "dateRange", value: { start: "2026-07-01", end: "2026-08-31" } },
     });
+  });
+});
+
+// Groupe « champ » (taxonomie en CHAMPS, parent62) : `field` sur un groupe
+// `filters` → la sélection vit dans searchByFields, clé = nom d'option, et la
+// valeur envoyée au backend est le libellé EXACT stocké en base.
+const TERRITOIRES_CHAMP: FilterGroupLike = {
+  id: "territoire",
+  type: "filters",
+  field: "territoires",
+  options: [
+    { id: "arrageois", name: "Arrageois" },
+    { id: "entre-mer-et-terres", name: "Entre Mer et Terres" },
+  ],
+};
+
+describe("groupe « champ » (field sur un groupe filters)", () => {
+  it("écriture : options actives dans searchByFields → ?territoire=<valeurs>", () => {
+    const sbf: Record<string, SearchByFieldValue> = {
+      Arrageois: { field: "territoires", value: ["Arrageois"] },
+    };
+    const out = computeUrlFromFilters(new URLSearchParams(), {}, sbf, [TERRITOIRES_CHAMP]);
+    expect(out.get("territoire")).toBe("Arrageois");
+  });
+
+  it("lecture : deep-link par id OU par valeur → searchByFields sur le champ du groupe", () => {
+    const byValue = computeFiltersFromUrl(
+      new URLSearchParams("territoire=Arrageois"),
+      [TERRITOIRES_CHAMP],
+      null,
+    ).applySearchFields({});
+    expect(byValue).toEqual({ Arrageois: { field: "territoires", value: ["Arrageois"] } });
+
+    // La bulle territoire de l'accueil deep-linke par slug d'option.
+    const byId = computeFiltersFromUrl(
+      new URLSearchParams("territoire=entre-mer-et-terres"),
+      [TERRITOIRES_CHAMP],
+      null,
+    ).applySearchFields({});
+    expect(byId).toEqual({
+      "Entre Mer et Terres": { field: "territoires", value: ["Entre Mer et Terres"] },
+    });
+  });
+
+  it("round-trip : write(state) relu redonne le même state", () => {
+    const sbf: Record<string, SearchByFieldValue> = {
+      Arrageois: { field: "territoires", value: ["Arrageois"] },
+      "Entre Mer et Terres": { field: "territoires", value: ["Entre Mer et Terres"] },
+    };
+    const url = computeUrlFromFilters(new URLSearchParams(), {}, sbf, [TERRITOIRES_CHAMP]);
+    expect(computeFiltersFromUrl(url, [TERRITOIRES_CHAMP], null).applySearchFields({})).toEqual(sbf);
+  });
+
+  it("sans sélection → param retiré ; les clés du groupe sont reconstruites, pas préservées", () => {
+    const out = computeUrlFromFilters(
+      new URLSearchParams("territoire=Arrageois"),
+      {},
+      {},
+      [TERRITOIRES_CHAMP],
+    );
+    expect(out.has("territoire")).toBe(false);
+
+    const applied = computeFiltersFromUrl(new URLSearchParams(), [TERRITOIRES_CHAMP], null)
+      .applySearchFields({
+        Arrageois: { field: "territoires", value: ["Arrageois"] },
+        service1: { field: "_id", value: ["orga"] },
+      });
+    expect(applied).toEqual({ service1: { field: "_id", value: ["orga"] } });
+  });
+});
+
+// ─── défaut d'un groupe searchTargets (option defaultChecked) ────────────────
+// Régression parent62 : le défaut rangé en selectedFilters fuyait en tag `$all`
+// « typeinfo-… » inexistant → 0 résultat. Le défaut doit vivre en searchByFields.
+const TYPE_INFO_DEFAULT: FilterGroupLike = {
+  ...TYPE_INFO,
+  options: [
+    { ...TYPE_INFO.options![0], defaultChecked: true },
+    TYPE_INFO.options![1],
+  ],
+};
+
+describe("applyDefaultSearchTargets (défaut à l'hydratation)", () => {
+  it("URL vierge → la cible defaultChecked est posée en searchByFields", () => {
+    const out = applyDefaultSearchTargets({}, [TYPE_INFO_DEFAULT], new URLSearchParams());
+    expect(out).toEqual({
+      "typeinfo-actions": targetEntry({ defaultTypes: ["projects"] }),
+    });
+  });
+
+  it("l'URL prime : param du groupe présent → aucun défaut appliqué", () => {
+    const fromUrl = computeFiltersFromUrl(
+      new URLSearchParams("typeInfo=typeinfo-paroles"),
+      [TYPE_INFO_DEFAULT],
+      null,
+    ).applySearchFields({});
+    const out = applyDefaultSearchTargets(
+      fromUrl,
+      [TYPE_INFO_DEFAULT],
+      new URLSearchParams("typeInfo=typeinfo-paroles"),
+    );
+    expect(out).toEqual({
+      "typeinfo-paroles": targetEntry({ defaultTypes: ["poi"], defaultFilters: { type: "affiche" } }),
+    });
+  });
+
+  it("une option du groupe déjà sélectionnée → pas d'écrasement", () => {
+    const prev = { "typeinfo-paroles": targetEntry({ defaultTypes: ["poi"] }) };
+    expect(applyDefaultSearchTargets(prev, [TYPE_INFO_DEFAULT], new URLSearchParams())).toBe(prev);
+  });
+
+  it("groupe sans defaultChecked ou non-searchTargets → identité", () => {
+    expect(applyDefaultSearchTargets({}, [TYPE_INFO], new URLSearchParams())).toEqual({});
+    expect(applyDefaultSearchTargets({}, [TYPO], new URLSearchParams())).toEqual({});
   });
 });

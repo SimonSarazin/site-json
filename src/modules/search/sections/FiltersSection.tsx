@@ -13,7 +13,7 @@ import { useFilterEntitiesQuery } from "../hooks/useFilterEntities";
 import { useFiltersByPathQuery } from "../hooks/useFiltersByPath";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useSearchParams } from "react-router";
-import { computeFiltersFromUrl } from "../lib/computeFiltersFromUrl";
+import { applyDefaultSearchTargets, computeFiltersFromUrl } from "../lib/computeFiltersFromUrl";
 import { computeUrlFromFilters } from "../lib/computeUrlFromFilters";
 import { SelectField, MultiCheckboxField, MultiField } from "../components/filterFields";
 import { pickFilterField } from "../lib/pickFilterField";
@@ -309,6 +309,12 @@ export function FiltersSection({
           name: e.value,
         }));
         newFilterGroups.push(group);
+      } else if (group.type === "searchTargets") {
+        // Une cible pré-cochée ne passe JAMAIS par selectedFilters : elle
+        // fuirait en tag `$all` inexistant (typeinfo-…) et viderait la
+        // recherche. Le défaut est appliqué dans searchByFields à
+        // l'hydratation URL (applyDefaultSearchTargets, effet ci-dessous).
+        newFilterGroups.push(group);
       } else {
         const defaultCheckedIds = (group.options ?? [])
           .filter(option => option.defaultChecked)
@@ -363,7 +369,14 @@ export function FiltersSection({
       filterAnswerData,
     );
     setSelectedFilters(applySelected);
-    setSearchByFields(applySearchFields);
+    // À l'hydratation initiale SEULEMENT : sélection par défaut des groupes
+    // searchTargets (option defaultChecked) si l'URL n'impose rien — ensuite,
+    // une URL sans param signifie « décoché par l'utilisateur ».
+    const seedDefaults = !urlHydrated;
+    setSearchByFields((prev) => {
+      const fromUrl = applySearchFields(prev);
+      return seedDefaults ? applyDefaultSearchTargets(fromUrl, filterGroups, searchParams) : fromUrl;
+    });
     if (!urlHydrated) setUrlHydrated(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, filterGroups, filterAnswerData]);
@@ -631,6 +644,12 @@ export function FiltersSection({
                     // Radio au sein du groupe : la cible (defaultTypes/defaultFilters)
                     // remplace celle de la section (cf. searchByFieldsToQuery).
                     toggleTarget(groupOptionNames, filterName, option.target ?? {});
+                  } else if (group.field) {
+                    // Groupe filtrant un CHAMP de l'entité (taxonomie en champs :
+                    // parent62 `territoires`/`publics`/`themes`) → searchByFields
+                    // → `{ champ: { $in: [...] } }` (cf. searchByFieldsToQuery).
+                    // Sans `field`, le groupe filtre par TAG (comportement historique).
+                    toggleFilter(group.id, filterName, group.field, filterName);
                   } else {
                     toggleFilter(group.id, filterName);
                   }
@@ -672,6 +691,8 @@ export function FiltersSection({
                   toggleFilter(group.id, name, fType, name, null, fType);
                 } else if (group.type === "searchTargets") {
                   toggleTarget(groupOptionNames, name, option?.target ?? {});
+                } else if (group.field) {
+                  toggleFilter(group.id, name, group.field, name);
                 } else {
                   toggleFilter(group.id, name);
                 }

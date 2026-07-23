@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useT } from "@/hooks/useT";
 import { SearchCardProps } from "../../schema";
 import useItem from "../../hooks/useItem";
-import { decorateTags } from "../../lib/colorBy";
+import { collectChipValues, decorateTags } from "../../lib/colorBy";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useMemo } from "react";
 
@@ -55,9 +55,15 @@ export default function CardDefault({
 
   // Chips préparées par `card.tagColors` (couleur territoire, masquage des
   // tags techniques) — sans conf, identité (comportement historique).
+  // `tagColors.paths` ajoute les valeurs de champs serverData aux chips : la
+  // taxonomie de parent62 vit dans `territoires`/`publics`/`themes`, pas dans `tags`.
   const displayTags = useMemo(
-    () => decorateTags(tags, card.tagColors),
-    [tags, card.tagColors]
+    () =>
+      decorateTags(
+        collectChipValues(tags, item?.serverData, card.tagColors),
+        card.tagColors
+      ),
+    [tags, item?.serverData, card.tagColors]
   );
 
   return (

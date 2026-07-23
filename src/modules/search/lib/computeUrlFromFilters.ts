@@ -44,9 +44,15 @@ export function computeUrlFromFilters(
       else params.delete(group.id);
       continue;
     }
-    // entityList, scopeList & searchTargets : sélection en `searchByFields`,
-    // clé = nom d'option.
-    if (group.type === "entityList" || group.type === "scopeList" || group.type === "searchTargets") {
+    // entityList, scopeList, searchTargets & groupes « champ » (taxonomie en
+    // champs : parent62) : sélection en `searchByFields`, clé = nom d'option.
+    // (`dateRange` est traité au-dessus, il n'atteint jamais cette branche.)
+    if (
+      group.type === "entityList" ||
+      group.type === "scopeList" ||
+      group.type === "searchTargets" ||
+      group.field
+    ) {
       const optionNames = (group.options ?? []).map((o) => o.name || o.id);
       // Options pas encore chargées (query entités/zones en vol) : on ne touche
       // PAS au param — sinon un deep-link `?<group.id>=…` serait effacé avant que

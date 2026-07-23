@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { decorateTags, resolveColorBy, stripTagNamespace } from "./colorBy";
+import { collectChipValues, decorateTags, resolveColorBy, stripTagNamespace } from "./colorBy";
 
 const TERRITOIRES = {
   "territoire62:arrageois": "var(--territoire-arrageois)",
@@ -66,5 +66,30 @@ describe("decorateTags (chips des cartes)", () => {
       { tag: "a", label: "a" },
       { tag: "public:parents", label: "public:parents" },
     ]);
+  });
+});
+
+describe("collectChipValues (taxonomie en CHAMPS, parent62)", () => {
+  const conf = {
+    mapping: { Arrageois: "var(--territoire-arrageois)" },
+    paths: ["territoires"],
+  };
+
+  it("ajoute les valeurs du champ aux tags, sans doublon et dans l'ordre", () => {
+    expect(
+      collectChipValues(["Actus"], { territoires: ["Arrageois", "Artois", "Actus"] }, conf)
+    ).toEqual(["Actus", "Arrageois", "Artois"]);
+  });
+
+  it("accepte une valeur simple et ignore les non-chaînes", () => {
+    expect(collectChipValues([], { territoires: "Calaisis" }, conf)).toEqual(["Calaisis"]);
+    expect(collectChipValues([], { territoires: [null, 3, ""] }, conf)).toEqual([]);
+  });
+
+  it("sans `paths` (ou sans serverData) → tags inchangés", () => {
+    expect(collectChipValues(["Actus"], { territoires: ["Arrageois"] }, { mapping: {} })).toEqual([
+      "Actus",
+    ]);
+    expect(collectChipValues(["Actus"], undefined, conf)).toEqual(["Actus"]);
   });
 });

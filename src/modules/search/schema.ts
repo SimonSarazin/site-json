@@ -48,6 +48,11 @@ export const FilterGroupSchema = z.object({
   // mais son rendu est conditionné à `withEnd` (activable quand le backend
   // convertira $lte — demande transmise à Aboire).
   type: z.enum(['scopeList', "filters", "entityList", "searchTargets", "dateRange"]).default("filters"),
+  /** Champ filtré. Sur un groupe `filters`, sa présence bascule le groupe du
+   *  filtrage par TAG (défaut historique) au filtrage par CHAMP de l'entité :
+   *  la sélection part dans `searchByFields` → `{ <field>: { $in: [noms
+   *  d'options] } }`. Les `options[].name` doivent alors porter la valeur EXACTE
+   *  stockée en base (ex. parent62 : `field:"territoires"`, name `"Arrageois"`). */
   field: z.string().optional(),
   /** `dateRange` : affiche aussi la borne de fin (nécessite le support backend $lte). */
   withEnd: z.boolean().optional(),
@@ -200,11 +205,15 @@ export type ColorByConf = z.infer<typeof ColorByConfSchema>;
 /** Chips de tags des cartes : couleur par tag (`mapping`), libellé lisible
  *  (`labels`, déf. namespace retiré + capitalisation) et MASQUAGE des tags
  *  techniques (`hidePrefixes`, ex. `public:`/`age:` — filtrants mais pas
- *  affichables bruts). Consommé par `decorateTags` (lib/colorBy). */
+ *  affichables bruts). Consommé par `decorateTags` (lib/colorBy).
+ *  `paths` : dot-paths serverData dont les valeurs s'ajoutent aux chips —
+ *  nécessaire quand la taxonomie vit dans des CHAMPS et non dans `tags`
+ *  (parent62 : `["territoires"]`), cf. `collectChipValues`. */
 export const TagColorsConfSchema = z.object({
   mapping: z.record(z.string(), z.string()),
   labels: z.record(z.string(), z.string()).optional(),
   hidePrefixes: z.array(z.string()).optional(),
+  paths: z.array(z.string()).optional(),
 });
 export type TagColorsConf = z.infer<typeof TagColorsConfSchema>;
 

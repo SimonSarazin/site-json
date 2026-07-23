@@ -36,6 +36,29 @@ export function resolveColorBy(
 
 export type DecoratedTag = { tag: string; label: string; cssColor?: string };
 
+/**
+ * Valeurs à afficher en chips : les `tags` de l'item PUIS les valeurs lues aux
+ * `conf.paths` (dot-paths serverData, string ou tableau), dédoublonnées en
+ * conservant l'ordre. Sert quand la taxonomie vit dans des CHAMPS et non dans
+ * `tags` (parent62 : `territoires`/`publics`/`themes`) — sans `paths`, retourne
+ * les tags inchangés (comportement historique).
+ */
+export function collectChipValues(
+  tags: string[],
+  serverData: Record<string, unknown> | undefined,
+  conf: TagColorsConf | undefined,
+): string[] {
+  if (!conf?.paths?.length || !serverData) return tags;
+  const out = [...tags];
+  for (const path of conf.paths) {
+    const raw = getValueByPath(serverData, path);
+    for (const v of Array.isArray(raw) ? raw : [raw]) {
+      if (typeof v === "string" && v.length > 0 && !out.includes(v)) out.push(v);
+    }
+  }
+  return out;
+}
+
 /** `territoire62:arrageois` → `Arrageois` (libellé par défaut, surchargeable via `labels`). */
 export function stripTagNamespace(tag: string): string {
   const idx = tag.indexOf(":");
