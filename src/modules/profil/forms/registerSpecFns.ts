@@ -8,5 +8,5 @@
 import "./costum/sharedRegistrations"; // clés GÉNÉRIQUES garanties (codecs/coercions/geo/validators/fns partagés) AVANT les costums
 import "./costum/equipements-sportifs/fns";
 import "./costum/tiers-lieux/fns";
-// parents62 réutilise poi:scope (equipements-sportifs) → doit être importé APRÈS lui.
-import "./costum/parents62/fns";
+// parent62 réutilise poi:scope (equipements-sportifs) → importé APRÈS lui.
+import "./costum/parent62/fns";

@@ -13,7 +13,7 @@
  * Le script n'écrit AUCUN fichier du dépôt : il imprime sur stdout, pour
  * chaque territoire, (a) le littéral `communes: [...]` à coller dans
  * `src/data/territoires62.ts`, (b) la liste HTML `<ul class="p62-communes">`
- * à coller dans la page territoire de `config.prod.parents62.json`, et
+ * à coller dans la page territoire de `config.prod.parent62.json`, et
  * (c) un décompte par territoire à contrôler visuellement contre les PDF.
  * La relecture humaine du diff reste le garde-fou (noms publiés tels quels).
  */
@@ -81,7 +81,7 @@ async function main(): Promise<void> {
     console.log(`communes: ${JSON.stringify(communes)},`);
   }
 
-  console.log("\n=== (b) Listes HTML pour config.prod.parents62.json ===");
+  console.log("\n=== (b) Listes HTML pour config.prod.parent62.json ===");
   for (const { slug, communes } of all) {
     const items = communes.map((c) => `<li>${escapeHtml(c)}</li>`).join("");
     console.log(`<!-- ${slug} -->`);

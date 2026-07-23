@@ -1,24 +1,31 @@
 /**
- * Référentiel des territoires du Réseau Parentalité 62 (CDC parents62).
+ * Référentiel des territoires du Réseau Parentalité 62 (CDC parent62).
  *
  * Source unique consommée par : les options de filtre territoire (config
  * `/recherche`), le code couleur carte/cartes (`colorBy`/`tagColors`), le
- * formulaire « Parole » (options + dérivation commune → territoire) et, en P2,
- * l'import WordPress. Les entités portent le tag namespacé
- * `territoire62:<slug>` (cf. dictionnaire de données parents62).
+ * formulaire « Parole » et les pages `/territoire/<slug>`.
+ *
+ * ⚠️ **Le territoire n'est PAS un tag** : il vit dans le champ POI
+ * `territoires` (tableau de LIBELLÉS — `label` ci-dessous), aux côtés de
+ * `publics` et `themes`. C'est la convention du costum `parent62` (cf.
+ * `organizations.costum.lists` et `doc/33-projet-parent62.md`) : les 6 434
+ * articles importés la portent déjà.
  *
  * Slugs et libellés alignés sur les 9 comités locaux du WordPress
- * parent62.org (menu « Territoires », relevé 17/07/2026). `communes` = noms
- * publiés dans les PDF officiels « Liste des communes » (octobre 2020),
- * importés via `scripts/import-communes-territoires62.ts` — casse uniformisée
- * mais graphies conservées telles quelles (accents parfois absents des PDF en
+ * parent62.org (menu « Territoires », relevé 17/07/2026) ; `label` est la
+ * valeur EXACTE stockée en base — toute divergence (accent, apostrophe)
+ * ferait silencieusement remonter 0 résultat. `communes` = noms publiés dans
+ * les PDF officiels « Liste des communes » (octobre 2020), importés via
+ * `scripts/import-communes-territoires62.ts` — casse uniformisée mais
+ * graphies conservées telles quelles (accents parfois absents des PDF en
  * majuscules) : corriger la donnée ici même si le réseau signale une erreur.
  * Les couleurs référencent les variables CSS `--territoire-*`
- * (`src/index-parents62.css`) — jamais d'hex dans les configs ; teintes
- * approchées de la carte du WordPress, à valider par le réseau.
+ * (`src/index-parent62.css`) — jamais d'hex dans les configs ; teintes reprises
+ * de la carte du site historique.
+ *
+ * NB : `costum.lists.territoires` compte une 10ᵉ valeur, « Familles en sol
+ * mineur » (générique, 43 articles), absente ici — arbitrage en attente.
  */
-
-export const TERRITOIRE_TAG_PREFIX = "territoire62:";
 
 export interface Territoire62 {
   slug: string;
@@ -247,40 +254,3 @@ export const TERRITOIRES_62: Territoire62[] = [
   },
 ];
 
-/** Tag canonique d'un territoire : `territoire62:<slug>`. */
-export function territoireTag(slug: string): string {
-  return `${TERRITOIRE_TAG_PREFIX}${slug}`;
-}
-
-/** Mapping `{ tag → couleur }` prêt pour `map.marker.colorBy` / `card.tagColors`. */
-export function territoireColorMapping(): Record<string, string> {
-  return Object.fromEntries(TERRITOIRES_62.map((t) => [territoireTag(t.slug), t.color]));
-}
-
-/** Mapping `{ tag → libellé }` prêt pour `tagColors.labels`. */
-export function territoireLabels(): Record<string, string> {
-  return Object.fromEntries(TERRITOIRES_62.map((t) => [territoireTag(t.slug), t.label]));
-}
-
-/**
- * Dérive le territoire d'une commune (code postal OU code INSEE) — utilisé par
- * les formulaires pour taguer automatiquement.
- *
- * ⚠️ INACTIVE à ce jour : `communes` contient des NOMS (les PDF officiels ne
- * publient aucun code), donc la comparaison par code ne matche jamais et la
- * fonction retourne null — même comportement qu'avant le remplissage. La
- * dérivation par nom de commune (`addressLocality`) est un lot optionnel en
- * attente de décision (cf. plan pages statiques, lot D-C).
- */
-export function findTerritoireByCommune(codes: {
-  postalCode?: string | null;
-  codeInsee?: string | null;
-}): Territoire62 | null {
-  const candidates = [codes.postalCode, codes.codeInsee].filter(
-    (c): c is string => typeof c === "string" && c.length > 0,
-  );
-  if (candidates.length === 0) return null;
-  return (
-    TERRITOIRES_62.find((t) => t.communes.some((c) => candidates.includes(c))) ?? null
-  );
-}

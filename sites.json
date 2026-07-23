@@ -90,11 +90,6 @@
     "css": "index-equipements-sportifs"
   },
   {
-    "slug": "parents62",
-    "config": "config.prod.parents62.json",
-    "css": "index-parents62"
-  },
-  {
     "slug": "saintpaulSport1",
     "config": "config.prod.saint-paul-sport.json",
     "css": "index-equipements-sportifs"
