@@ -20,7 +20,8 @@ const CardPoiAmenities = lazy(() => import("./card/CardPoiAmenities"));
 const CardContact = lazy(() => import("./card/CardContact"));
 const CardAnswer = lazy(() => import("./card/CardAnswer"));
 const CardNews = lazy(() => import("./card/CardNews"));
-const CardParole = lazy(() => import("./card/CardParole"));
+const CardTestimonial = lazy(() => import("./card/CardTestimonial"));
+const CardResource = lazy(() => import("./card/CardResource"));
 
 export default function SearchCard({
   item,
@@ -33,6 +34,7 @@ export default function SearchCard({
     shareButton: false,
     type: "overlay"
   },
+  list,
 }: SearchCardProps) {
 
   // Switch sur le type/variant de carte (valeurs design/fonctionnalité).
@@ -65,8 +67,10 @@ export default function SearchCard({
       // card.type "news" ⇒ l'item est une News (wrappée par _linkEntity via collection:"news"),
       // mais SearchEntity ne l'inclut pas (serverData hétérogène) → cast au point de dispatch.
       return <CardNews item={item as unknown as News} onClick={onClick} card={card} />;
-    case "parole":
-      return <CardParole item={item} onClick={onClick} card={card} />;
+    case "testimonial":
+      return <CardTestimonial item={item} onClick={onClick} card={card} list={list} />;
+    case "resource":
+      return <CardResource item={item} onClick={onClick} card={card} list={list} />;
     case "default":
       return <CardDefault item={item} onClick={onClick} card={card} />;
     default:

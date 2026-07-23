@@ -14,9 +14,10 @@ const PreviewCoformAnswer = lazy(() => import("./preview/PreviewCoformAnswer"));
 const PreviewEvent = lazy(() => import("./preview/PreviewEvent"));
 const PreviewFacets = lazy(() => import("./preview/PreviewFacets"));
 const PreviewNews = lazy(() => import("./preview/PreviewNews"));
-const PreviewParole = lazy(() => import("./preview/PreviewParole"));
+const PreviewTestimonial = lazy(() => import("./preview/PreviewTestimonial"));
+const PreviewResource = lazy(() => import("./preview/PreviewResource"));
 
-const Preview: React.FC<PreviewProps> = ({ item, preview = { type: "default" }, onClose }) => {
+const Preview: React.FC<PreviewProps> = ({ item, preview = { type: "default" }, list, onClose }) => {
   switch (preview?.type) {
     case "poi-amenities":
       return <PreviewPoiAmenities item={item} onClose={onClose} />;
@@ -28,8 +29,10 @@ const Preview: React.FC<PreviewProps> = ({ item, preview = { type: "default" }, 
       return <PreviewFacets item={item} preview={preview} onClose={onClose} />;
     case "news":
       return <PreviewNews item={item as unknown as News} preview={preview} onClose={onClose} />;
-    case "parole":
-      return <PreviewParole item={item} onClose={onClose} />;
+    case "testimonial":
+      return <PreviewTestimonial item={item} preview={preview} list={list} onClose={onClose} />;
+    case "resource":
+      return <PreviewResource item={item} preview={preview} list={list} onClose={onClose} />;
     case "default":
     default:
       return <PreviewDefault item={item} />;

@@ -96,6 +96,7 @@ const WIDGET_DEFAULTS: Partial<Record<WidgetKind, Partial<FieldDescriptor>>> = {
   location: { type: "object", renderOnly: true },  // ancre UI composite (adresse via serializeGroups)
   fieldArray: { type: "array" },                    // liste répétée GÉNÉRIQUE → pas de codec par widget (le sens dépend du champ)
   openingHours: { type: "object", read: "openingHours:read", write: "openingHours:write" }, // codec livré par le widget (cf. sharedCodecs)
+  eventDates: { renderOnly: true },                 // ancre UI composite (dates event) : gère startDate/endDate/recurrency/openingHours ; JAMAIS sérialisée elle-même
   hidden: { type: "string" },                       // type par défaut ; sur-écrit si array/object
 };
 

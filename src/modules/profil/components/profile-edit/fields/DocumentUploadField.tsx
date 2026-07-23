@@ -23,9 +23,11 @@ interface Props {
   hint?: string;
   maxItems?: number;
   accept?: string;
+  /** Champ audio : proposer l'enregistrement in-navigateur ? Défaut `true` ; `false` = upload de fichier seul. */
+  allowRecording?: boolean;
 }
 
-export default function DocumentUploadField({ value, onChange, label, hint, maxItems, accept }: Props) {
+export default function DocumentUploadField({ value, onChange, label, hint, maxItems, accept, allowRecording }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const existing = value.existing ?? [];
   const added = value.added ?? [];
@@ -33,8 +35,9 @@ export default function DocumentUploadField({ value, onChange, label, hint, maxI
   const visibleExisting = existing.filter((e) => !removed.includes(e.docId));
   const total = visibleExisting.length + added.length;
   const canAdd = !maxItems || total < maxItems;
-  // Champ AUDIO (accept `audio/*`) → propose l'enregistrement in-navigateur en plus de l'upload de fichier.
-  const isAudioField = (accept ?? "").includes("audio");
+  // Champ AUDIO (accept `audio/*`) → propose l'enregistrement in-navigateur EN PLUS de l'upload — sauf
+  // `allowRecording:false` (upload seul). Configurable par `widgetProps.allowRecording`.
+  const isAudioField = (accept ?? "").includes("audio") && allowRecording !== false;
 
   const addFiles = (files: FileList | null) => {
     if (!files) return;

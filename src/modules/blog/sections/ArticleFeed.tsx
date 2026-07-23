@@ -64,7 +64,10 @@ function Feed({ props, base, cardVariant, feedLayout }: {
 
   const featured = props.featured ? items[0] : undefined;
   const rest = props.featured ? items.slice(1) : items;
-  const containerCls = feedLayout === "list" ? "flex flex-col gap-4" : "grid gap-6 sm:grid-cols-2 lg:grid-cols-3";
+  const containerCls =
+    feedLayout === "list"
+      ? "flex flex-col gap-4"
+      : `grid gap-6 sm:grid-cols-2 lg:grid-cols-3${props.fullWidth ? " xl:grid-cols-4" : ""}`;
   return (
     // Suspense : le chunk de la carte (lazy) est chargé (préchargé en amont via `preload`, cf. section).
     <Suspense fallback={<FeedSkeleton />}>
@@ -100,7 +103,7 @@ export default function ArticleFeed({ id, props }: { id?: string; props: Article
   const base = "/blog";
   return (
     <section id={id} className="bg-background text-foreground">
-      <div className="mx-auto w-full max-w-6xl px-4 py-8">
+      <div className={`mx-auto w-full px-4 py-8 ${props.fullWidth ? "max-w-[1536px]" : "max-w-6xl"}`}>
         {(props.title || props.description) && (
           <header className="mb-6 space-y-1">
             {props.title && <h2 className="text-2xl font-bold text-foreground">{t(props.title as never)}</h2>}

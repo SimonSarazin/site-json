@@ -172,8 +172,8 @@ src/modules/profil/
 │       ├── costumFormRegistry.ts   // Table runtime id→EntityModalSpec (+ registerCostumForm zod)
 │       ├── registerCostumForms.ts  // Loader : lit window.__CONFIG__.costumForms
 │       ├── costumFormSchema.zod.ts // Validation du document costum
-│       ├── sharedCodecs.ts         // address/openingHours/social + codecs paramétrés
-│       ├── sharedFns.ts            // image:profilUrl, cleanValues, invalidate:standard
+│       ├── sharedCodecs.ts         // address/openingHours/social + omitEmpty/eventDate/eventTimeZone + codecs paramétrés
+│       ├── sharedFns.ts            // image:profilUrl, cleanValues, invalidate:standard/blog/event
 │       ├── tiers-lieux/            // schema.ts (LA source) + fns.ts + spec.ts
 │       └── equipements-sportifs/   // schema.ts + fns.ts + spec.ts
 ├── hooks/
@@ -946,6 +946,21 @@ Le document ne porte que des **clés string** ; le code correspondant est enregi
 - **équipement sportif** — `poi:scope` (création scopée `me.costum(slug)`), `poi:emptyDefaults` (défauts
   structurés), slots `parentInfo`/`poiDoublons`, `image:profilUrl`, nettoyage des URLs vides.
 
+**Invalidations partagées (`sharedFns.ts`).** Trois clés d'invalidation registrées, toutes paramétrées par
+`userList`/`searchKeys` : `invalidate:standard` (userList parent/me en création + about-par-slug en édition +
+préfixes de recherche `SEARCH_QUERY_KEYS.RESULTS`), `invalidate:blog` (= standard + la clé détail article par id
+`BLOG_QUERY_KEYS.ARTICLE_BY_ID`), et **`invalidate:event`** = `standardInvalidate` + `AGENDA_QUERY_KEYS.CALENDAR_PREFIX()`
++ `AGENDA_QUERY_KEYS.LIST_PREFIX()`. L'espace de clés agenda `["agenda", …]` est **disjoint** de
+`SEARCH_QUERY_KEYS.RESULTS` (ce qu'invalide `searchKeys`) : sans ces deux préfixes, un event créé/validé ne
+rafraîchirait pas la page `/agenda`. `invalidate:event` crée donc un import cross-module profil→agenda.
+
+**Soumission d'événement costum (`config.prod.parent62.json`).** `invalidate:event` sert de `fn` d'invalidation
+au form costum de soumission d'événement, dont les groupes de sérialisation utilisent les codecs WRITE de
+`sharedCodecs.ts` : `startDate`/`endDate` en `write:eventDate:write` (ISO offset local sans millis, accepté par
+le legacy), `openingHours` en `write:omitEmpty` (omis si vide), `timeZone` en `write:eventTimeZone:write` (fuseau
+navigateur si non fourni). Le form embarque un champ DocumentUpload **audio** avec `widgetProps.allowRecording:false`
+(upload seul, pas d'enregistrement in-navigateur).
+
 ### Mutation : `useEntityMutation` générique
 
 Les anciens hooks par entité (`useAddTiersLieu`, `useEditTiersLieu`, `useAddPoi`, `useUpdatePoi`) sont remplacés
@@ -1204,6 +1219,24 @@ champ `_imageFile`, posé dans le draft SDK sous `profil_avatar` avant `save()` 
 Monté par le **widget `tags`**. Prop `searchable?: boolean` (défaut `true`) : à `false`, le `TagInput` interne
 passe en saisie libre (valeurs hors tags existants acceptées, sans autocomplète) — p. ex. pour les types de
 partenariat de l'équipement sportif.
+
+### `DocumentUploadField` — prop `allowRecording` (`fields/DocumentUploadField.tsx`)
+
+Champ de collecte de **fichiers non-image** (pendant FICHIER de `GalleryUploadField`), monté par le **widget
+`file`** de `registerWidgets.tsx`. Rendu en lignes (icône-ext + nom + taille) ; les fichiers sont uploadés
+APRÈS le `save()` par l'orchestration (`processGalleryFields` → `entity.uploadDocument(file, {contentKey,
+docType:"file"})`). Options via `widgetProps` : `contentKey` (défaut `"file"`), `maxItems`, `accept`, et
+`allowRecording`.
+
+**Prop `allowRecording?: boolean` (défaut `true`).** Pour un champ **audio** (`accept` contient `'audio'`), le
+composant propose l'enregistrement in-navigateur (`AudioRecorder`) EN PLUS de l'upload :
+`isAudioField = accept.includes('audio') && allowRecording !== false`. Poser `allowRecording:false` désactive
+l'enregistrement → **upload de fichier seul**. Câblé depuis le widget par
+`allowRecording={p.field.widgetProps?.allowRecording}`.
+
+> Le défaut `true` est un défaut de code (le Zod de config n'est jamais parsé au runtime) : pour le désactiver
+> il faut écrire explicitement `widgetProps.allowRecording: false` dans le JSON (cf.
+> `config.prod.parent62.json`, champ audio « paroles de parents »).
 
 ### Autres champs domaine
 

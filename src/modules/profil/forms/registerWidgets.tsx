@@ -99,6 +99,7 @@ registerWidget("file", (p) => {
         hint={p.field.info ? p.t(p.field.info) : undefined}
         maxItems={p.field.widgetProps?.maxItems as number | undefined}
         accept={p.field.widgetProps?.accept as string | undefined}
+        allowRecording={p.field.widgetProps?.allowRecording as boolean | undefined}
       />
     )} />
   );

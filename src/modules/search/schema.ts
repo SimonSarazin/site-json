@@ -160,7 +160,7 @@ export const PreviewFacetSchema = z.object({
 export type PreviewFacetConfig = z.infer<typeof PreviewFacetSchema>;
 
 export const PreviewConfSchema = z.object({
-  type: z.enum(["default", "poi-amenities", "coform-answer", "event", "facets", "news", "parole"]).default("default"),
+  type: z.enum(["default", "poi-amenities", "coform-answer", "event", "facets", "news", "testimonial", "resource"]).default("default"),
   // Mapping rôle→suffixe de champ CoForm (pour `coform-answer`). Surcharge la
   // table par défaut du composant — découple les IDs de champs du code.
   fields: z.record(z.string(), z.string()).optional(),
@@ -171,9 +171,82 @@ export const PreviewConfSchema = z.object({
    * modal de détail. Défaut : affiché (mettre `false` pour le masquer). Lu par `PreviewNews`.
    */
   showDetailLink: z.boolean().optional(),
+  /**
+   * Largeur MAX du conteneur de détail en mode `dialog` (échelle Tailwind `max-w-*`). Découple la
+   * taille de la modale du type de preview : un témoignage (lecture) veut une mesure resserrée
+   * (`2xl` ≈ 672px), un contenu riche (news+images, POI+carte) profite de `5xl`. Défaut code : `5xl`
+   * (comportement historique). Sans effet en mode `drawer` (panneau latéral). Lu par `DetailsModeDialog`.
+   */
+  width: z.enum(["sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "5xl", "full"]).optional(),
 }).partial();
 
-const ListConfSchema = z.object({
+/**
+ * Contrat « testimonial » (témoignage) — GÉNÉRIQUE et config-driven : découple le composant des noms de
+ * champs / couleurs d'un site. Un `design` sélectionne une paire cohérente Card+Preview, toutes deux nourries
+ * par le même contrat (`useTestimonialData`). Les couleurs (badge/accent) vivent en config (map valeur→couleur,
+ * matchée par `normalizeFilterValue`) avec repli palette déterministe ; les repères réutilisent
+ * `PreviewFacetSchema` (aucun champ en dur).
+ */
+export const TestimonialConfSchema = z.object({
+  /** Look — sélectionne `CardTestimonial{Design}` + `PreviewTestimonial{Design}` (repli code : "bubble"). */
+  design: z.enum(["bubble"]).default("bubble"),
+  /** Champ `serverData` de la citation (le héros). Repli code : "description". */
+  quoteField: z.string(),
+  /** Champ du titre / attribution. Repli code : "name". */
+  titleField: z.string().optional(),
+  /** Champ de la date. Repli code : "created". */
+  dateField: z.string().optional(),
+  /** Champ secondaire affiché en pied de la carte teaser (ex. thème). Optionnel. */
+  subtitleField: z.string().optional(),
+  /** Champ du média audio (`[{type:"audio", url}]`). Repli code : "medias". */
+  audioField: z.string().optional(),
+  /** Catégorie : pilote la teinte de la bulle + la pastille. `colors` = map valeur→couleur (`var()` ou hex). */
+  badge: z.object({ field: z.string(), colors: z.record(z.string(), z.string()).optional() }).optional(),
+  /** Accent (ex. territoire) : pilote le point coloré. `colors` = map valeur→couleur (`var()` ou hex). */
+  accent: z.object({ field: z.string(), colors: z.record(z.string(), z.string()).optional() }).optional(),
+  /** Repères (taxonomies) — data-driven, réutilise le mécanisme facettes générique (aucun champ en dur). */
+  facets: z.array(PreviewFacetSchema).optional(),
+}).partial();
+
+export type TestimonialConf = z.infer<typeof TestimonialConfSchema>;
+
+/**
+ * Contrat « resource » (ressource) — GÉNÉRIQUE et config-driven, même esprit que `testimonial` : découple la
+ * card/preview des noms de champs / couleurs d'un site. Une ressource est image-first (galerie/photo) + liens
+ * + documents, avec une catégorie (badge coloré), une ville (adresse) et des repères (taxonomies). Alimenté
+ * par `useResourceData` (défauts génériques : name/description/created/profilMediumImageUrl/urls/address).
+ */
+export const ResourceConfSchema = z.object({
+  /** Look — sélectionne `CardResource{Design}` + `PreviewResource{Design}` (repli code : "card"). */
+  design: z.enum(["card"]).default("card"),
+  /** Champ du titre. Repli code : "name". */
+  titleField: z.string().optional(),
+  /** Champ de la description (extrait card / markdown preview). Repli code : "description". */
+  descriptionField: z.string().optional(),
+  /** Champ de la date. Repli code : "created". */
+  dateField: z.string().optional(),
+  /** Champ de l'image de vignette. Repli code : "profilMediumImageUrl". */
+  imageField: z.string().optional(),
+  /** Catégorie (pilote la pastille colorée + l'icône de type). `colors`/`icons` = maps valeur→(couleur|nom
+   *  d'icône lucide). Repli code : `field="category"` + map d'icônes par défaut (vidéo→video, photo→images…). */
+  badge: z.object({
+    field: z.string(),
+    colors: z.record(z.string(), z.string()).optional(),
+    icons: z.record(z.string(), z.string()).optional(),
+  }).optional(),
+  /** Champ de la ville affichée. Repli code : "address.addressLocality". */
+  cityField: z.string().optional(),
+  /** Champ des liens externes (`string[]`). Repli code : "urls". */
+  urlsField: z.string().optional(),
+  /** Champ des médias (`[{type,url,name}]`) → galerie (images), documents (fichiers), audio, vidéo. Repli : "medias". */
+  mediasField: z.string().optional(),
+  /** Repères (taxonomies) — data-driven, réutilise le mécanisme facettes générique. */
+  facets: z.array(PreviewFacetSchema).optional(),
+}).partial();
+
+export type ResourceConf = z.infer<typeof ResourceConfSchema>;
+
+export const ListConfSchema = z.object({
   columns: z.object({
     lg: z.number().int().min(1).max(6).optional(),
     md: z.number().int().min(1).max(6).optional(),
@@ -221,10 +294,14 @@ const ListConfSchema = z.object({
     }).optional(),
     // Valeurs DESIGN/FONCTIONNALITÉ (jamais de nom de site). `Preview`/détail =
     // axe séparé (`preview.type`/`detailsMode`).
-    type: z.enum(["overlay", "default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer", "news", "parole"]).default("default"),
+    type: z.enum(["overlay", "default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer", "news", "testimonial", "resource"]).default("default"),
     variant: z.enum(["default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer"]).optional(),
   }).partial().optional(),
   preview: PreviewConfSchema.optional(),
+  /** Contrat « testimonial » (générique, config-driven) — lu par Card/PreviewTestimonial via `useTestimonialData`. */
+  testimonial: TestimonialConfSchema.optional(),
+  /** Contrat « resource » (générique, config-driven) — lu par Card/PreviewResource via `useResourceData`. */
+  resource: ResourceConfSchema.optional(),
   /**
    * Nom du paramètre URL pour synchroniser l'item en preview. Défaut : "preview".
    * Utile pour plusieurs sections sur une même page (ex. "preview-equipements").
@@ -730,6 +807,10 @@ const SearchHeaderProps = z.object({
   buttons: z.array(ActionButtonSchema).optional(),
   showSearch: z.boolean().optional(),
   searchPlaceholder: LocalizedString.optional(),
+  /** Padding vertical du bloc hero RÉDUIT (`py-4` au lieu de `py-12`). À activer quand le titre de la page
+   *  vient d'une section `title` AU-DESSUS (le searchHeader n'est alors PAS le hero) — évite ~64px de vide.
+   *  Défaut `false` : padding hero plein (un searchHeader nu qui EST le hero garde son air). */
+  compact: z.boolean().optional(),
   /** Rangée de chips de filtres actifs (supprimables) sous la barre.
    *  `true`/absent = partout · `"desktop"` = uniquement ≥ lg · `"mobile"` =
    *  uniquement < lg · `false` = masquée. */
@@ -751,6 +832,10 @@ export interface SearchListViewProps<T extends SearchListEntity = SearchEntity> 
   columns?: ListConf["columns"];
   card?: ListConf["card"];
   preview?: ListConf["preview"];
+  /** Config `list` COMPLÈTE — porte les configs PAR-TYPE (testimonial, resource, … futurs) que le
+   *  CardX/PreviewX correspondant lit lui-même. Évite de tuyauter une prop par type (ne passe pas à
+   *  l'échelle). Sert aussi de repli pour columns/card/preview/previewParam (call-sites search allégés). */
+  list?: ListConf;
   isDetailedView?: boolean;
   /** Synchro liste↔carte (mode split) : id de l'item focalisé → highlight + scrollIntoView. */
   focusedItemId?: string | null;
@@ -778,12 +863,16 @@ export interface SwitchDetailsModeProps<T extends SearchListEntity = SearchEntit
   item: T;
   card?: ListConf["card"];
   preview?: ListConf["preview"];
+  /** Config `list` complète — thread une fois pour les configs par-type (cf. SearchListViewProps.list). */
+  list?: ListConf;
 }
 
 export interface DetailsModeProps<T extends SearchListEntity = SearchEntity> {
   openDetails: boolean;
   setOpenDetails: (open: boolean) => void;
   preview?: ListConf["preview"];
+  /** Config `list` complète — thread une fois pour les configs par-type (cf. SearchListViewProps.list). */
+  list?: ListConf;
   item: T;
 }
 
@@ -791,11 +880,15 @@ export interface SearchCardProps<T extends SearchListEntity = SearchEntity> {
   item: T;
   onClick?: () => void;
   card?: ListConf["card"];
+  /** Config `list` complète — le CardX typé y lit SA tranche (`list.testimonial`, `list.resource`, …). */
+  list?: ListConf;
 }
 
 export interface PreviewProps<T extends SearchListEntity = SearchEntity> {
   item: T;
   preview?: ListConf["preview"];
+  /** Config `list` complète — le PreviewX typé y lit SA tranche (`list.testimonial`, `list.resource`, …). */
+  list?: ListConf;
   /** Ferme le conteneur de détail (drawer/dialog) — fourni par le conteneur. */
   onClose?: () => void;
 }

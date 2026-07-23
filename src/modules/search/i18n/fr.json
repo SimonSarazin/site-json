@@ -8,6 +8,20 @@
         "saturday": "Samedi",
         "sunday": "Dimanche"
     },
+    "testimonial": {
+        "listen": "Écouter",
+        "listenTitle": "Écouter le témoignage"
+    },
+    "resource": {
+        "open": "Ouvrir le lien",
+        "watch": "Regarder la vidéo",
+        "download": "Télécharger",
+        "gallery": "Galerie",
+        "documents": "Documents",
+        "audio": "Audio",
+        "video": "Vidéo",
+        "links": "Liens"
+    },
     "CardResourceBooking": {
         "price": "Prix d'usage:",
         "location": "Localisation:",
