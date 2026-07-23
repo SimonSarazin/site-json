@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { z } from "zod";
 import { Header, Footer } from "@/types/site-schema";
+import { ListConfSchema, PreviewConfSchema } from "@/modules/search/schema";
 
 /**
  * Anti-dérive de la skill `config-assistant` (.claude/skills/config-assistant/
@@ -28,6 +29,18 @@ function enumOptions(schema: z.ZodType): string[] {
   throw new Error("enum introuvable");
 }
 
+/** Shape d'un ZodObject éventuellement enveloppé (ZodOptional/ZodDefault). */
+function innerShape(schema: z.ZodType): Record<string, z.ZodType> {
+  let cur: unknown = schema;
+  for (let i = 0; i < 4; i++) {
+    const rec = cur as { shape?: Record<string, z.ZodType>; def?: { innerType?: unknown } };
+    if (rec.shape) return rec.shape;
+    if (rec.def?.innerType) cur = rec.def.innerType;
+    else break;
+  }
+  throw new Error("shape introuvable");
+}
+
 /** Types backtickés en 1re colonne des lignes de table d'une section du SKILL. */
 function tableTypes(sectionHeading: string): string[] {
   const start = skill.indexOf(sectionHeading);
@@ -50,6 +63,18 @@ describe("skill config-assistant ⇄ code (anti-dérive)", () => {
     expect(documented.sort()).toEqual(real.sort());
   });
 
+  it("la table Presenters — cartes couvre exactement l'enum card.type", () => {
+    const real = enumOptions(innerShape(ListConfSchema.shape.card).type);
+    const documented = tableTypes("### Presenters — cartes");
+    expect(documented.sort()).toEqual(real.sort());
+  });
+
+  it("la table Presenters — previews couvre exactement l'enum preview.type", () => {
+    const real = enumOptions(PreviewConfSchema.shape.type);
+    const documented = tableTypes("### Presenters — previews");
+    expect(documented.sort()).toEqual(real.sort());
+  });
+
   it("la table Modules couvre exactement src/modules/", () => {
     const real = fs
       .readdirSync(path.join(ROOT, "src/modules"), { withFileTypes: true })
@@ -67,7 +92,7 @@ describe("skill config-assistant ⇄ code (anti-dérive)", () => {
       expect(pkg.scripts[alias], `script npm "${alias}" référencé par la skill`).toBeDefined();
       expect(skill).toContain(alias);
     }
-    for (const file of ["scripts/validate-config.ts", "scripts/config-schema.ts", "scripts/entity-slug.ts", "scripts/admin-scaffold.ts", "scripts/gen-costum-config.ts", "scripts/config-example.ts", "scripts/lib/archetypes.ts", ".claude/skills/config-assistant/archetypes.json", ".claude/skills/config-assistant/examples", "src/styles/shared.css", "doc/26-assistant-config.md", "doc/30-module-admin.md"]) {
+    for (const file of ["scripts/validate-config.ts", "scripts/config-schema.ts", "scripts/entity-slug.ts", "scripts/admin-scaffold.ts", "scripts/gen-costum-config.ts", "scripts/config-example.ts", "scripts/lib/archetypes.ts", ".claude/skills/config-assistant/archetypes.json", ".claude/skills/config-assistant/examples", ".design-sync/config.json", ".design-sync/conventions.md", ".design-sync/NOTES.md", "src/modules/search/components/SearchCard.tsx", "src/modules/search/components/Preview.tsx", "src/styles/shared.css", "doc/26-assistant-config.md", "doc/30-module-admin.md"]) {
       expect(fs.existsSync(path.join(ROOT, file)), `fichier ${file}`).toBe(true);
     }
   });

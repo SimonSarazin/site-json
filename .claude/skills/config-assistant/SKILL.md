@@ -119,23 +119,68 @@ Pour corriger/améliorer un config existant :
 
 ### Headers (`header.type`)
 
-| type | identité | champs spécifiques |
-|---|---|---|
-| `standard` | barre horizontale sticky, fond plein, dropdowns | `height`, `announcement` |
-| `mega-menu` | méga-menu au survol en colonnes | `nav[].megaMenu` |
-| `transparent-scroll` | transparent sur le hero → opaque au scroll | `transparent`, `urgenceButton`, `ctaButton` |
-| `minimal` | barre compacte, typo uppercase espacée | `logoTitle`, `logoIcon` |
-| `underline-nav` | nav soulignée animée, fond marqué | `piggyBank`, `urgenceButton`, `ctaButton` |
-| `transparent-dark` | barre sombre fixe (teinte : token `--header-bar`) | `logoTitle`, `entityLogoOverride` |
+| type | identité | quand l'utiliser | champs spécifiques |
+|---|---|---|---|
+| `standard` | barre horizontale sticky, fond plein, dropdowns | défaut polyvalent sans hero plein écran (0 usage prod à ce jour) | `height`, `announcement` |
+| `mega-menu` | méga-menu au survol en colonnes | portail à navigation riche/profonde (multi-réseaux) — ex. tiers-lieux | `nav[].megaMenu` |
+| `transparent-scroll` | transparent sur le hero → opaque au scroll | hero visuel plein écran — le standard de fait du parc (10/14 configs) | `transparent`, `urgenceButton`, `ctaButton` |
+| `minimal` | barre compacte, typo uppercase espacée | petite vitrine épurée — ex. julie-pot-vin | `logoTitle`, `logoIcon` |
+| `underline-nav` | nav soulignée animée, fond marqué | identité marquée, communes/collectivités — ex. nos-commune | `piggyBank`, `urgenceButton`, `ctaButton` |
+| `transparent-dark` | barre sombre fixe (teinte : token `--header-bar`) | site à dominante sombre — ex. commune-transparente | `logoTitle`, `entityLogoOverride` |
 
 ### Footers (`footer.type`)
 
-| type | identité | champs spécifiques |
+| type | identité | quand l'utiliser | champs spécifiques |
+|---|---|---|---|
+| `rich` | newsletter + colonnes + socials | marketing complet avec newsletter (0 usage prod à ce jour) | `newsletter`, `columns[]`, `socials[]` |
+| `minimal-centered` | logo centré + nav + légal | discrétion maximale — ex. tiers-lieux | `columns[0].links`, `legalLinks` |
+| `sidebar-columns` | sidebar (logo+desc+socials) + colonnes | identité + nav riche (5/14 configs) — ex. rezo-la-mer | `style: "plain"\|"card"` |
+| `contact-partners` | bloc contact + logos partenaires | portail institutionnel avec partenaires (5/14) — ex. parent62 | `contactSection`, `partners.logos[]` |
+
+### Presenters — cartes (`list.card.type`)
+
+Dispatch : `src/modules/search/components/SearchCard.tsx` (clé = `card.variant || card.type`).
+
+| type | rend | quand / options |
 |---|---|---|
-| `rich` | newsletter + colonnes + socials | `newsletter`, `columns[]`, `socials[]` |
-| `minimal-centered` | logo centré + nav + légal | `columns[0].links`, `legalLinks` |
-| `sidebar-columns` | sidebar (logo+desc+socials) + colonnes | `style: "plain"\|"card"` |
-| `contact-partners` | bloc contact + logos partenaires | `contactSection`, `partners.logos[]` |
+| `default` | carte sobre générique | fallback du schéma ; listes hétérogènes simples |
+| `overlay` | image + contenu superposé | ⚠ défaut du PROP côté code (le schéma, lui, dit `default`) |
+| `image-cover` | photo plein cadre, badges en coin | annuaires visuels ; `imageFit`, `overlayStats:"service-pricing"` + `servicePricing` |
+| `event` | carte événement (icônes par tag) | listes d'événements hors module agenda |
+| `event-featured` | événement vedette | mise en avant d'un événement |
+| `funding` | barre de progression de financement | projets cagnotte ; `showFunding` |
+| `profile` | carte profil personne/organisation | annuaires de membres/structures — le plus utilisé du parc (×24) |
+| `resource-booking` | réservation de ressource | ressources réservables |
+| `poi-amenities` | POI + équipements/accessibilité | cartographies d'équipements — ex. saint-paul-sport |
+| `contact-card` | nom/email/téléphone | listes de contacts |
+| `image-panel` | panneau image | vitrines visuelles |
+| `card-answer` | réponse de formulaire | listings de réponses CoForm |
+| `news` | carte actualité (item `News`) | fils d'actus en recherche |
+| `testimonial` | témoignage (leaf `CardTestimonialBubble`) | paroles/citations ; bloc `list.testimonial` (`design: "bubble"`) |
+| `resource` | ressource image-first (leaf `CardResourceCard`) | médiathèques/ressources ; bloc `list.resource` (`design: "card"`) |
+
+### Presenters — previews (`list.preview.type`)
+
+Dispatch : `src/modules/search/components/Preview.tsx` ; conteneur = `card.detailsMode` (`drawer` défaut \| `dialog`).
+
+| type | rend | quand / options |
+|---|---|---|
+| `default` | détail générique | fallback |
+| `poi-amenities` | détail POI + équipements | le plus utilisé du parc (×10) |
+| `coform-answer` | détail réponse CoForm | `preview.fields` (rôle → suffixe de champ) |
+| `event` | détail événement | réutilisé par le module agenda |
+| `facets` | détail data-driven à facettes cliquables | `preview.facets[]` — zéro code |
+| `news` | détail actualité | `preview.showDetailLink` |
+| `testimonial` | détail témoignage (leaf `PreviewTestimonialBubble`) | bloc `list.testimonial` |
+| `resource` | détail ressource (leaf `PreviewResourceCard`) | bloc `list.resource` |
+
+Variantes transverses : `preview.width` (`sm`…`5xl`\|`full`, défaut code `5xl`, dialog
+seulement) ; `card.variant` surcharge `card.type` pour le dispatch (sous-ensemble
+sans `overlay`/`news`/`testimonial`/`resource`) ; `card.detailedMode`
+(`default`\|`service-pricing`) pour la vue detailed ; `defaultViewMode`
+(`list`\|`map`\|`graph`, + `regions`\|`thematics`\|`split` en static) ;
+`map.layout` (`full`\|`split`) + `map.splitRatio`. Exemples vivants :
+`config:example -- list-resource` / `list-testimonial`.
 
 ### Modules (recette d'activation)
 
@@ -158,6 +203,27 @@ Pour corriger/améliorer un config existant :
 | `admin` | page `/admin` config-driven (onglets Membres/Contenu/Import-Export/Validation) | `config.admin` (`tabs[].sections[]`, `access.min`) | endpoints admin (`getMembersAdmin`, import/export, `validategroup`…) ; accès siteAdmin/superAdmin — cf. commentaire/plan-module-admin-generique.md |
 
 **Refuse d'activer un module dont le prérequis backend n'est pas confirmé**
+
+## Design system (voir le rendu réel avant de choisir)
+
+- **Vérité versionnée : `.design-sync/`** — `config.json` (`componentSrcMap` :
+  ~153 composants exportés → chemin source dans `src/`), `conventions.md`
+  (règles : enveloppe `DsProvider`, **tokens CSS d'abord — jamais de couleur en
+  dur**, composants de modules props-driven qui ne fetchent rien),
+  `NOTES.md` (pièges connus, exclusions volontaires).
+- **Artefact local : `ds-bundle/` (GITIGNORÉ, régénérable via design-sync)** —
+  quand il est présent : `components/<groupe>/<Name>/<Name>.prompt.md` (usage
+  recommandé + exemples JSX réalistes), `<Name>.d.ts`,
+  `_screenshots/<groupe>__<Name>.png` (un par composant + planches-contact),
+  `README.md`. ⚠ `tokens/` et `guidelines/` y sont VIDES — les ~375 variables
+  CSS sont déclarées dans `_ds_bundle.css`.
+- **Usage pour cette skill** : avant de trancher un `header.type`,
+  `footer.type` ou un presenter, regarder le screenshot
+  (`_screenshots/header__HeaderMegaMenu.png`…) et le `prompt.md` correspondant
+  si le bundle est présent ; sinon lire le composant source via
+  `componentSrcMap`. Y sont notamment : les 6 headers, les 4 footers, et les
+  leaves search `CardResourceCard` / `CardTestimonialBubble` /
+  `PreviewResourceCard` / `PreviewTestimonialBubble`.
 (ex. pas de `searchPro` sans `sourceKey` réel).
 
 ## Formulaires costum (`config.costumForms`)
