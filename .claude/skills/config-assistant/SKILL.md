@@ -33,6 +33,19 @@ Les faits volatils se LISENT à l'usage, ils ne sont pas écrits ici :
 **En cas de contradiction entre ce fichier et le code : le code a raison.**
 Vérifie via les scripts, puis propose une mise à jour de cette skill (§ Maintenance).
 
+## Répartition des rôles
+
+Trois surfaces « config » coexistent — ne pas les confondre :
+
+| Surface | Rôle | Quand |
+|---|---|---|
+| **Cette skill** | génération/édition interactive d'UNE config (conversation, patchs, validation) | créer un site, modifier pages/sections/design, réparer un audit |
+| **`npm run audit:config`** | vérité mécanique ponctuelle (9 catégories, advisory ; `--strict` en gate) | avant/après toute édition ; alimente le Mode réparation |
+| **Agent `siteforge-config-auditor`** | audits de fond multi-configs, croisement config ⇄ code, rapports dans `commentaire/` | revue périodique du parc — PAS l'édition au fil de l'eau |
+
+Les trois partagent `archetypes.json` (dossier de cette skill) comme
+référentiel des configs de référence.
+
 ## Workflow
 
 1. **Interview** (si nouveau site) : nom, langues, pages voulues, ton/couleurs,
@@ -43,10 +56,15 @@ Vérifie via les scripts, puis propose une mise à jour de cette skill (§ Maint
    **l'utilisateur tranche avant de générer**. Appuie-toi sur `archetypes.json`
    (dossier de cette skill) pour choisir l'archétype, sur les tables ci-dessous
    et sur `config:schema sections` pour composer les pages.
-3. **Slug** : `npm run entity:slug -- check <slug>` — prérequis DUR : le slug de
-   `sites.json` charge AUSSI l'entité Cocolight au boot ; sans entité, le site ne
-   démarre pas. (`search <nom>` pour trouver l'existant ; la création d'entité
-   exige une auth → faire créer in-app, cf. point ouvert doc/26.)
+3. **Slug d'entité — prérequis DUR, en partie MANUEL** : le slug de
+   `sites.json` charge AUSSI l'entité Cocolight au boot ; sans entité, le site
+   ne démarre pas. Procédure :
+   a. `npm run entity:slug -- search <nom>` (sans auth) → candidats existants ;
+   b. si aucune entité : **l'utilisateur la crée lui-même** dans l'app ou
+      Communecter (backend `VITE_BASE_URL_BACKEND`) — `entity:slug` n'a
+      volontairement PAS de `create` (la création exige une auth) ; tu ne peux
+      pas faire cette étape à sa place, demande-la explicitement ;
+   c. `npm run entity:slug -- check <slug>` (exit 0) AVANT d'écrire `sites.json`.
 4. **Setup** : partir du config archétype le plus proche — choisi dans
    `archetypes.json`, cf. § Archétypes — (jamais d'une page blanche) ; entrée
    `sites.json` `{slug, config, css}` ; dossier
@@ -55,13 +73,37 @@ Vérifie via les scripts, puis propose une mise à jour de cette skill (§ Maint
 5. **Génération PAR MORCEAU** (jamais le config entier d'un coup) :
    `meta`+`theme` → `header`/`footer` → page par page. Avant chaque morceau :
    `config:schema` pour la forme ; après : `config:validate` → corriger → re-valider.
-6. **Gates qualité** : `npm run audit:config` puis `npm run test:preflight`.
+6. **Gates qualité** : `npm run audit:config` puis `npm run test:preflight`,
+   et dérouler la **Checklist de maturité** ci-dessous.
 7. **Préversion live** : `VITE_SLUG=<slug> npm run dev` — le watcher pousse chaque
    écriture du config au navigateur sans reload. ⚠️ Utiliser le slug de
    `sites.json` (ex. `rezoLaMer`), PAS le nom du fichier config : un slug inconnu
    retombe silencieusement sur le site par défaut.
 8. **Édition incrémentale** (cas le plus fréquent) : localiser le morceau
    (page/section), `config:schema` si besoin, patch minimal, valider, HMR.
+
+## Checklist de maturité (avant de livrer)
+
+Signature d'une config aboutie, extraite du parc réel (les configs de référence
+la cochent toutes). Les points 1-2 sont mécaniques, le reste est un choix de
+site à confirmer avec l'utilisateur — ne PAS l'imposer à une petite vitrine :
+
+1. **Audit RAS** : `npm run audit:config -- --file <config> --json` sans constat
+   (ou assumés) — couvre i18n (`trad`/`locale-extra`), assets, liens,
+   `theme` complet (`colors.light` ET `dark`), `baseParams` sur chaque
+   searchPro/searchProStatic (avec `sourceKey` réel).
+2. **Préflight vert** : `npm run test:preflight` (schéma strict + invariants +
+   gates archétypes).
+3. **Modules à la hauteur du besoin** : `commandPalette` (+ `entitySearch`,
+   `iconRules`, `itemActionBySubType` si entités hétérogènes), `auth`,
+   `profiles` par type d'entité, `admin`, `costumForms`, `blog` — selon le site.
+4. **Presenters câblés** : `list.card.type` + `list.preview.type` choisis pour
+   la donnée (pas le fallback `default` par accident) ; blocs
+   `list.testimonial`/`list.resource` renseignés pour les presenters typés.
+5. **Sections raisonnées** : 8-18 types dont des « premium » (`data-observatory`,
+   `agenda`, `hero-*`, `features-glass`) — pas 5 sections génériques.
+6. **Visibilité conditionnelle** (`condition`/`visibleIf`/`role`) là où le
+   contenu est privé ou réservé.
 
 ## Mode réparation : partir d'un audit
 
@@ -82,9 +124,11 @@ Pour corriger/améliorer un config existant :
 4. **Traductions** : tu les écris directement, mais TOUJOURS en lot séparé
    présenté pour relecture au diff — jamais mélangées à du mécanique.
 5. **Constats assumés** (choix délibérés) : `.audit-baseline.json` à la racine
-   (versionné) — `{ "<config>.json": [{ "category", "path" }] }`. Un constat
-   assumé n'échoue pas `--strict`. N'y mettre que ce que l'utilisateur assume
-   explicitement.
+   (**GITIGNORÉ** — état purement local, jamais partagé) — `{ "<config>.json":
+   [{ "category", "path" }] }`. Un constat assumé n'échoue pas `--strict` en
+   local. Pour un constat assumé PARTAGÉ sur une config **archétype** → le
+   déclarer dans `knownFindings` d'`archetypes.json` (versionné, vérifié par le
+   gate préflight). N'y mettre que ce que l'utilisateur assume explicitement.
 6. Re-audit → vert (ou assumés) ; `--strict` comme gate final.
 
 ⚠️ Une `cle-strippee` a TROIS lectures possibles — vérifier avant de purger :
@@ -199,10 +243,11 @@ sans `overlay`/`news`/`testimonial`/`resource`) ; `card.detailedMode`
 | `ampli` | routes ampli | `config.ampli` | campagne ampli |
 | `interop` | pods Discourse/Mediawiki | clés interop | instances externes |
 | `observatoire` | section `data-observatory` (dashboard déclaratif : dimensions, KPI, charts, table, filtres) | `props.baseParams` (périmètre) + `dimensions`/`filters`/`kpis`/`charts`/`table` | données indexées (sourceKey + type) |
-| `formEngine` | modales costum **add/edit pilotées par données** (moteur de formulaire générique) | `config.costumForms.<id>` (document `CostumFormSchema`) + déclencheur `floatingActionButton.modal:"add-<id>"` / `profiles.<type>.editModal:"edit-<id>"` | entité costum porteuse (`costumSlug`) ; clés read/write/scope déjà enregistrées (sinon `fns.ts`) — cf. § Formulaires costum |
+| `formEngine` | modales costum **add/edit pilotées par données** (moteur de formulaire générique) | `config.costumForms.<id>` (document `CostumFormSchema`) + déclencheur `floatingActionButton.modal:"add-<id>"` / `profiles.<type>.editModal:"edit-<id>"` | entité costum porteuse (`costumSlug`) ; clés read/write/scope déjà enregistrées (sinon `fns.ts`) — cf. § Recettes avancées |
 | `admin` | page `/admin` config-driven (onglets Membres/Contenu/Import-Export/Validation) | `config.admin` (`tabs[].sections[]`, `access.min`) | endpoints admin (`getMembersAdmin`, import/export, `validategroup`…) ; accès siteAdmin/superAdmin — cf. commentaire/plan-module-admin-generique.md |
 
 **Refuse d'activer un module dont le prérequis backend n'est pas confirmé**
+(ex. pas de `searchPro` sans `sourceKey` réel).
 
 ## Design system (voir le rendu réel avant de choisir)
 
@@ -224,85 +269,18 @@ sans `overlay`/`news`/`testimonial`/`resource`) ; `card.detailedMode`
   `componentSrcMap`. Y sont notamment : les 6 headers, les 4 footers, et les
   leaves search `CardResourceCard` / `CardTestimonialBubble` /
   `PreviewResourceCard` / `PreviewTestimonialBubble`.
-(ex. pas de `searchPro` sans `sourceKey` réel).
 
-## Formulaires costum (`config.costumForms`)
+## Recettes avancées (chargées à la demande)
 
-Une modale **add+edit d'une entité scopée costum** (tiers-lieu, équipement sportif…) se déclare **EN DONNÉES**
-dans `config.costumForms.<id>` — aucun composant ni schéma TS. Mécanisme, forme du document et recette
-canonique : **[doc/28-module-formengine.md](../../../doc/28-module-formengine.md)** (couche 3). Forme
-introspectable (règle d'or « dériver ») : `npm run config:schema costumForm`.
+Ne lis ces fichiers QUE quand la tâche les concerne :
 
-**Recette d'un costum « simple » (0 code)** — possible UNIQUEMENT si le formulaire ne référence que des clés
-**déjà enregistrées** (codecs/scope/validate partagés : `address:read/write`, `openingHours:read/write`,
-`social:read/write`, `geo:write`, `image:profilUrl`, `monthYear`, `validateFn:"addressComplete"`…) :
-
-1. **Le document** `config.costumForms.<id>` = un `CostumFormSchema`. Obligatoire : `id` (= `<id>`), `entityType`
-   (`organization|project|event|poi|citoyen`), `layout` (`{kind:"wizard"|"tabs"|"flat"}`), `sections`, `fields`
-   (chaque champ : au moins `widget`), `chrome.title.{add,edit}`, `mutation.entityType`. Recommandé : `costumSlug`
-   (slug du costum porteur — sert au create), `icon`, `submitLabel`. Laisser `payloadFn`/`defaultsBase` ABSENTS
-   = pipeline générique (read/write/defaults dérivés des widgets).
-2. **Déclencher l'ajout** : `floatingActionButton.modal = "add-<id>"` (ou un bouton de section `modal:"add-<id>"`).
-3. **Déclencher l'édition** : `profiles.<entityTypePluriel>.editModal = "edit-<id>"`, + `editModalMatch`
-   (`{champ_serverData: valeur}`) pour UN sous-type conditionnel. Si PLUSIEURS sous-types partagent le même
-   `entityType` (ex. `poi` = `recoveryCenter` + `article`), utiliser la **TABLE** `profiles.<pluriel>.editModals`
-   = `[{editModal, editModalMatch:{type:…}}, …]` (**1er match gagne** ; le catch-all sans `editModalMatch` doit
-   être **EN DERNIER**, sinon il masque les sous-types). La résolution `add-/edit-<id>` → table runtime est
-   **automatique** (aucune entrée hardcodée à ajouter).
-4. **Valider** : un test qui appelle `registerCostumForm(doc)` (cf. `costumFormRegistry.test.ts`) joue
-   `CostumFormSchemaZod` (structure) **puis** `assertCostumKeysRegistered` (existence des clés). Une clé citée
-   (`read`/`write`/`enumFrom`/`scope.derive`/`payloadFn`/`validateFn`/`slots`…) non enregistrée **lève une erreur
-   claire au load** (nom de la clé + où la définir), plus de `console.warn` silencieux au rendu. Si la garde
-   pointe une clé absente → c'est une clé **métier** → il te faut un `fns.ts` (voir ci-dessous).
-
-**Point de départ GÉNÉRÉ (recommandé)** : `npm run config:costum -- <slugCostum> <collection> --format costumForm`
-émet un `CostumFormSchema` complet et VALIDE (auto-vérifié zod + clés partagées uniquement) depuis la
-connaissance costum de la lib. Ajoute `--live` (+ env CONFIG_LIVE_BACKEND/EMAIL/PWD) pour partir du costum
-RÉEL en base (getcostumjson) — couvre TOUT costum, même absent de l'artefact bundlé (lib ≥ 1.0.164). Contenu : sections base+costum, widgets déduits des types, pattern adresse
-(groupe + codecs), image de profil, mutation/invalidation standard, presets → `mutation.inject.extraFields`.
-Ce squelette se pose tel quel dans `config.costumForms.<id>` puis s'ENRICHIT conversationnellement — les
-
-**Costum à PLUSIEURS formulaires par collection (sous-types)** — ex. `sportSanteBienetre` = `poi`(recoveryCenter+article),
-`organizations`(base+mss), `projects`(formation), `events`(sessionFormation). Utiliser le mode **`--all`** (requiert
-`--live`, lib ≥ 1.0.166) : `npm run config:costum -- <slugCostum> [out.json] --all --live` émet un **BUNDLE**
-`{ costumForms:{ <slug>-<typeKey>:<CostumFormSchema>, … }, profiles:{ <kind>:{ editModals:[…] } } }` — UN form par clé
-`typeObj` (id unique `<slug>-<typeKey>`) + la **table de routage** `editModals` (discriminant = `presetValue.type` ;
-sous-types matchés d'abord, form de base en catch-all). **Fusionner** `costumForms` (les N forms) + chaque
-`profiles[kind].editModals` dans le config du site, puis enrichir (libellés, widgets, discriminant si faux). Les
-sous-types non-standard (sans `sameAs` vers poi/org/project/event, ex. `Cooperative`) sont ignorés.
-5 écarts attendus vs un costum fini : (1) layout `flat` → `wizard`/groups/colonnes ; (2) labels humanisés →
-libellés fr/en curés ; (3) `text`/`tags` → `selectFromLists`/`urlList`/`checkboxGroup` selon le sens métier ;
-(4) scope/type dérivés (`scope.derive` métier) + masquage des champs stampés ; (5) `visibleIf`/`computedFrom`/
-`cleanValues` métier. Le préflight `tests/preflight/costum-forms.test.ts` re-valide tous les costumForms du
-repo (zod + garde des clés) à chaque run.
-
-**Quand il faut du code (PAS 100 % config)** : transfo métier inédite (`payloadFn` propre), `scope` dérivé,
-defaults structurés, **slot React** (placé par `"$slot:<id>"` dans `sections`), codec `serializeGroup` inédit,
-`validate` cross-champ inédit. Créer alors `src/modules/profil/forms/costum/<id>/fns.ts`
-(`registerXxx("clé", impl)`) + l'ajouter au barrel `registerSpecFns.ts`.
-
-> **Clés génériques garanties** : les clés « partagées » (codecs/coercions/geo/validators/`image:profilUrl`/
-> `cleanValues:*`/`invalidate:standard`) sont enregistrées inconditionnellement par le barrel
-> `forms/costum/sharedRegistrations.ts` (importé par `registerSpecFns` et par le loader `registerCostumForms`
-> avant toute compilation) — un costum 100 %-config qui ne réutilise que ces clés se compile sans dépendre
-> d'aucun costum métier. Toute clé MÉTIER manquante est signalée par la garde du loader (cf. point 4).
-
-## Administration (`config.admin`)
-
-Le back-office `/admin` (gestion membres/contenu/import-export/référencement/modération) est 100 %
-config-driven — référence : **[doc/30-module-admin.md](../../../doc/30-module-admin.md)**. PAS de
-dérivation runtime : le bloc se GÉNÈRE explicitement puis se personnalise.
-
-1. **Squelette** : `npm run admin:scaffold -- <config> [--write]` — dérive les onglets des types
-   gérés par le site (`profiles.addConfig` ∪ `costumForms.entityType`), auto-validé par le schéma.
-2. **Personnaliser** : colonnes (`columns` : `"chemin"` ou `{path,label}` localisé), `rowActions`/
-   `bulkActions`, filtres `source` (mêmes `baseParams` que searchProStatic), `access` par
-   page/onglet/section (`superAdmin`|`siteAdmin`|`entityAdmin`), `condition` (VisibilityCondition).
-   Forme exacte : `npm run config:schema admin`. ⚠ `status.*` = contrat futur (ne pas configurer),
-   l'export est réservé super-admin (plancher backend).
-3. **Valider + voir** : `config:validate` (le discriminatedUnion attrape toute section fautive avec
-   l'erreur précise) puis préversion `/admin` (l'entrée apparaît dans le menu avatar + Ctrl+K pour
-   les admins du carrier).
+- **Formulaires costum** (`config.costumForms`, moteur formEngine) :
+  [references/formulaires-costum.md](references/formulaires-costum.md) —
+  recette 0-code, générateur `config:costum` (`--live`, `--all` multi-forms),
+  quand il faut du code (`fns.ts`), garde des clés.
+- **Administration** (`config.admin`, back-office `/admin`) :
+  [references/admin.md](references/admin.md) — squelette `admin:scaffold`,
+  personnalisation (colonnes, actions, accès), validation.
 
 ## Règles maison
 
@@ -317,6 +295,8 @@ dérivation runtime : le bloc se GÉNÈRE explicitement puis se personnalise.
   existant, ou rien. Sans logo : `logoIcon` (nom Lucide ou SVG inline).
 - Valeurs de filtres/variants : pas de virgule dans une valeur de filtre
   (format URL `?param=v1,v2` partagé avec les sidebars).
+- La config n'est **JAMAIS parsée par Zod au runtime** : les `.default()` du
+  schéma ne s'appliquent pas — écrire chaque clé EXPLICITEMENT dans le JSON.
 
 ## Thème
 
@@ -335,12 +315,12 @@ dérivation runtime : le bloc se GÉNÈRE explicitement puis se personnalise.
 ## Maintenance (anti-dérive)
 
 - Le test préflight `skill-integrity` croise les tables ci-dessus avec le code
-  (enums header/footer, modules, scripts) : s'il échoue, **mets cette skill à
-  jour, pas le test**.
+  (enums header/footer/presenters, modules, scripts, fichiers references/) :
+  s'il échoue, **mets cette skill à jour, pas le test**.
 - Le test préflight `archetypes` garantit manifest + snapshots (cf. § Archétypes) :
   constat d'audit nouveau → le corriger ou l'assumer dans `knownFindings` ;
   snapshot dérivé → `config:example -- <feature> --write`.
 - Sur demande « mets-toi à jour » (ou si tu détectes une dérive) : analyse les
   commits récents touchant `src/types/site-schema.ts`, `src/modules/*/`,
   `src/components/admin/section-meta.ts`, `sites.json`, mets à jour les tables
-  semi-stables de ce fichier et propose le diff.
+  semi-stables de ce fichier **et les recettes `references/*.md`**, propose le diff.

@@ -92,7 +92,7 @@ describe("skill config-assistant ⇄ code (anti-dérive)", () => {
       expect(pkg.scripts[alias], `script npm "${alias}" référencé par la skill`).toBeDefined();
       expect(skill).toContain(alias);
     }
-    for (const file of ["scripts/validate-config.ts", "scripts/config-schema.ts", "scripts/entity-slug.ts", "scripts/admin-scaffold.ts", "scripts/gen-costum-config.ts", "scripts/config-example.ts", "scripts/lib/archetypes.ts", ".claude/skills/config-assistant/archetypes.json", ".claude/skills/config-assistant/examples", ".design-sync/config.json", ".design-sync/conventions.md", ".design-sync/NOTES.md", "src/modules/search/components/SearchCard.tsx", "src/modules/search/components/Preview.tsx", "src/styles/shared.css", "doc/26-assistant-config.md", "doc/30-module-admin.md"]) {
+    for (const file of ["scripts/validate-config.ts", "scripts/config-schema.ts", "scripts/entity-slug.ts", "scripts/admin-scaffold.ts", "scripts/gen-costum-config.ts", "scripts/config-example.ts", "scripts/lib/archetypes.ts", ".claude/skills/config-assistant/archetypes.json", ".claude/skills/config-assistant/examples", ".claude/skills/config-assistant/references/formulaires-costum.md", ".claude/skills/config-assistant/references/admin.md", ".claude/agents/siteforge-config-auditor.md", ".design-sync/config.json", ".design-sync/conventions.md", ".design-sync/NOTES.md", "src/modules/search/components/SearchCard.tsx", "src/modules/search/components/Preview.tsx", "src/styles/shared.css", "doc/26-assistant-config.md", "doc/30-module-admin.md"]) {
       expect(fs.existsSync(path.join(ROOT, file)), `fichier ${file}`).toBe(true);
     }
   });
