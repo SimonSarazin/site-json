@@ -103,7 +103,6 @@ registerCommandSource({
       try {
         iconName = cfg?.iconRules?.find((r) => check(r.when as Predicate, matchData))?.icon;
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.warn("[commandPalette] iconRule invalide, ignorée :", err);
       }
       return {
