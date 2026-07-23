@@ -51,6 +51,9 @@
       "@/lib/permissions": [
         "src/lib/permissions/index.ts"
       ],
+      "@/lib/pageState": [
+        "src/lib/pageState/index.ts"
+      ],
       "@/*": [
         "src/*"
       ],
