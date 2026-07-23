@@ -20,6 +20,7 @@
 | Formulaires & costums config-driven | [Module formEngine](28-module-formengine.md) |
 | Module actualités | [Module News](09-module-news.md) |
 | Module articles / blog (POI type=article) | [Module Articles/Blog](32-module-articles-blog.md) — voir aussi `src/modules/blog/README.md` |
+| Projet Parent62 (CDC, modèle de données, avancement) | [Projet Parent62](33-projet-parent62.md) — document de référence du site `reseau.parent62.org` |
 | Module cagnotte (financement) | [Module Cagnotte](18-module-cagnotte.md) |
 | Module ampli (amplification) | [Module Ampli](22-module-ampli.md) |
 | Module interop (Discourse/Mediawiki) | [Module Interop](20-module-interop.md) |
