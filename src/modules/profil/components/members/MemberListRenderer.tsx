@@ -78,53 +78,39 @@ export function MemberListRenderer({
 
     // Actions spéciales pour les membres en attente
     if (isPending) {
+      const actions = getUserActionButtons(member);
+      const validateAction = actions.find(
+        (action) =>
+          action.id === "validate" || action.id === "validate-admin"
+      );
+      const rejectAction = actions.find((action) => action.id === "reject");
+
       return (
         <div className="flex items-center space-x-2">
-          <Button
-            size="sm"
-            variant="default"
-            onClick={() =>
-              showConfirmation({
-                title: t("MemberManagementDialog.acceptDialog.title"),
-                description: t(
-                  "MemberManagementDialog.acceptDialog.description",
-                  undefined,
-                  { name: member.serverData?.name }
-                ),
-                action: () => {
-                  const actions = getUserActionButtons(member);
-                  const validateAction = actions.find(
-                    (a) => a.id === "validate"
-                  );
-                  validateAction?.onClick();
-                },
-              })
-            }
-          >
-            <Check className="h-4 w-4" />
-          </Button>
-          <Button
-            size="sm"
-            variant="destructive"
-            onClick={() =>
-              showConfirmation({
-                title: t("MemberManagementDialog.rejectDialog.title"),
-                description: t(
-                  "MemberManagementDialog.rejectDialog.description",
-                  undefined,
-                  { name: member.serverData?.name }
-                ),
-                action: () => {
-                  const actions = getUserActionButtons(member);
-                  const rejectAction = actions.find((a) => a.id === "reject");
-                  rejectAction?.onClick();
-                },
-                isDestructive: true,
-              })
-            }
-          >
-            <X className="h-4 w-4" />
-          </Button>
+          {validateAction && (
+            <Button
+              size="sm"
+              variant="default"
+              onClick={validateAction.onClick}
+              disabled={validateAction.disabled}
+              aria-label={validateAction.label}
+              title={validateAction.label}
+            >
+              <Check className="h-4 w-4" />
+            </Button>
+          )}
+          {rejectAction && (
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={rejectAction.onClick}
+              disabled={rejectAction.disabled}
+              aria-label={rejectAction.label}
+              title={rejectAction.label}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       );
     }
