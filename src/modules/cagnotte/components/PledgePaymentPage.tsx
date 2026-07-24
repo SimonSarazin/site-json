@@ -3,68 +3,39 @@ import { useNavigate } from "react-router";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import {
     CreditCard,
-    Users,
     ArrowLeft,
     Check,
     ExternalLink,
-    Search,
     Info,
-    Clock,
+    ChevronDown,
 } from "lucide-react";
 import { showErrorToast, showSuccessToast } from "@/lib/toastUtils";
 import { useCocolight } from "@/hooks/useCocolight";
-import { useDebounce } from "@/hooks/useDebounce";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { formatNumber } from "@/modules/cagnotte/utils/format";
-import { asRecord, type UnknownRecord } from "@/modules/cagnotte/utils/dataTransform";
-import type { EntityTypes, User } from "@communecter/cocolight-api-client";
-import { isUser } from "@/lib/getTypedEntity";
-import {
-    buildHelloAssoPaymentData,
-    validateHelloAssoConfig,
-} from "@/modules/cagnotte/services/helloAssoService";
+import { asRecord, toSafeInt, type UnknownRecord } from "@/modules/cagnotte/utils/dataTransform";
 import { openHelloAssoPaymentWithCheckout } from "@/modules/cagnotte/services/helloAssoCheckoutIntent";
 import { verifyHelloAssoCheckoutStatus } from "@/modules/cagnotte/services/helloAssoVerification";
 import { getStripePublicKey } from "@/modules/cagnotte/services/stripeService";
 import { useFundingEnvelope } from "@/modules/cagnotte/hooks/useFundingEnvelope";
-import { useUserAdminOrganizations } from "@/modules/cagnotte/hooks/useUserAdminOrganizations";
 import { useSaveCagnotteContribution } from "@/modules/cagnotte/hooks/useSaveCagnotteContribution";
 import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 import { useQueryClient } from "@tanstack/react-query";
 import { launchConfettiBurst } from "@/lib/confetti";
 import StripePaymentForm from "./StripePaymentForm";
-import {CagnotteFundableItem, DepenseFunding, CagnotteTypeConfig} from "@/modules/cagnotte/types.ts";
+import { Pledge } from "@/modules/cagnotte/types";
 
-interface PaymentConfigPageProps {
-
-    resourceName: string;
-    resourceId: string;
-    resourceImage?: string;
-    amount: number;
-    items: CagnotteFundableItem[] | undefined;
-    activeItemsIds: Set<string>;
-    itemAnswerId?: string; //  ID de l'Answer associée
-    itemProjectId?: string; //  ID de du Projet associée
+interface PledgePaymentPageProps {
+    pledges: Pledge[];
     onBack: () => void;
-    onPaymentSuccess: (paymentData: Record<string, unknown>) => void;
-    onContributionSaved?: () => void | Promise<void>;
     onClose: () => void;
-    currentUser: EntityTypes | null;
-    context: string;
-    cagnotteConfig: CagnotteTypeConfig;
+    onContributionSaved?: () => void | Promise<void>;
+    onPaymentSuccess?: (paymentData: Record<string, unknown>) => void;
 }
 
 interface PaymentDataPayload extends Record<string, unknown> {
@@ -72,8 +43,7 @@ interface PaymentDataPayload extends Record<string, unknown> {
     transactionId?: string;
 }
 
-type PaymentMethod = "stripe" | "helloasso" | "pledge" | null;
-type ContributorType = "citoyens" | "organizations";
+type PaymentMethod = "stripe" | "helloasso" | null;
 
 function normalizeFundingEnvelopeResponse(value: unknown): UnknownRecord {
     if (typeof value === "string") {
@@ -95,39 +65,20 @@ function normalizeFundingContextType(type: string | undefined): string {
     return lowered;
 }
 
-const PaymentConfigPage = ({
-    resourceName,
-    resourceId,
-    resourceImage,
-    amount,
-    items,
-    activeItemsIds,
-    itemAnswerId,
-    itemProjectId,
-    onBack,
-    onPaymentSuccess,
-    onContributionSaved,
-    onClose,
-    context,
-    cagnotteConfig
-}: PaymentConfigPageProps) => {
+export function PledgePaymentPage({ pledges, onBack, onClose, onContributionSaved, onPaymentSuccess }: PledgePaymentPageProps) {
     const navigate = useNavigate();
     const { entity, me, api, contextId, contextType } = useCocolight();
     const queryClient = useQueryClient();
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(null);
-    const [contributorType, setContributorType] = useState<ContributorType>(cagnotteConfig.allowPersonToFinance ? "citoyens" : "organizations");
-    const [contributorId, setContributorId] = useState<string>(cagnotteConfig.allowPersonToFinance ? (me?.serverData?.id || "") : "");
-    const [contributorName, setContributorName] = useState<string>(me?.serverData?.name || "");
-    const [searchOrgQuery, setSearchOrgQuery] = useState("");
     const [isHelloAssoProcessing, setIsHelloAssoProcessing] = useState(false);
     const [paymentSuccess, setPaymentSuccess] = useState(false);
     const [helloAssoPaymentId, setHelloAssoPaymentId] = useState<string | null>(null);
     const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
     const [isWaitingHelloAssoCallback, setIsWaitingHelloAssoCallback] = useState(false);
-    const [acceptPledgeCondition, setAcceptPledgeCondition] = useState(false);
+    const [isPledgesExpanded, setIsPledgesExpanded] = useState(false);
     useLoadNamespace("modules/cagnotte");
     const t = useT("modules/cagnotte");
-    const fundingEnvelopeQuery = useFundingEnvelope(resourceId);
+    const fundingEnvelopeQuery = useFundingEnvelope();
     const fundingPaymentMethods = fundingEnvelopeQuery.data?.paymentMethods ?? fundingEnvelopeQuery.data?.selectedProject?.paymentMethods ?? null;
 
     const stripePublicKey = fundingPaymentMethods?.stripePublicKey || getStripePublicKey();
@@ -136,48 +87,21 @@ const PaymentConfigPage = ({
         [stripePublicKey]
     );
 
-    const acceptCondition = (e: { target: { checked: boolean | ((prevState: boolean) => boolean); }; }) => {setAcceptPledgeCondition(e.target.checked);};
+    const amount = pledges.reduce((sum, p) => sum + toSafeInt(p.fundingAmount), 0);
 
     const stripeUnavailableReason = !stripePublicKey
         ? String(t("PaymentConfigPage.errors.stripeUnavailable"))
         : null;
 
-    // Hook pour sauvegarder les contributions (dual-strategy: Answer.updateField + fallback save)
-    const { saveContribution } = useSaveCagnotteContribution();
+    const { payContribution } = useSaveCagnotteContribution();
 
     const refreshAfterContributionSave = useCallback(async () => {
-        // `invalidateQueries` déclenche déjà le refetch des queries actives et await
-        // jusqu'à leur résolution — pas besoin d'un `refetchFundingEnvelope()` supplémentaire.
         await Promise.allSettled([
             queryClient.invalidateQueries({ queryKey: CAGNOTTE_QUERY_KEYS.FUNDING_ENVELOPE_PREFIX() }),
             queryClient.invalidateQueries({ queryKey: CAGNOTTE_QUERY_KEYS.ORGANIZATION_PROJECTS_WITH_ANSWERS_PREFIX() }),
             Promise.resolve(onContributionSaved?.()),
         ]);
     }, [queryClient, onContributionSaved]);
-
-    const activeItems = useMemo(
-        () => (items || []).filter((i) => activeItemsIds.has(i.itemId)),
-        [items, activeItemsIds]
-    );
-
-    // Allouer le montant saisi du premier au dernier depens actif
-    const depenseFunding = useMemo(() => {
-        let remainingAmount = amount;
-
-        return activeItems.map((item) => {
-            const currentFunding = Number(item.currentFunding || 0);
-            const targetAmount = Number(item.price || 0);
-            const remainingToTarget = Math.max(targetAmount - currentFunding, 0);
-            const allocatedAmount = Math.max(Math.min(remainingAmount, remainingToTarget), 0);
-
-            remainingAmount -= allocatedAmount;
-
-            return {
-                depenseIndex: item.depenseIndex,
-                amount: allocatedAmount,
-            };
-        });
-    }, [activeItems, amount]);
 
     const redirectToHome = useCallback((showToast = false) => {
         let didNavigate = false;
@@ -201,14 +125,14 @@ const PaymentConfigPage = ({
     }, [navigate, onClose, t]);
 
     const submitFundingEnvelopeAction = useCallback(async (
-        action: "stripePay" | "helloassoPay" | "pledge",
+        action: "stripePay" | "helloassoPay" ,
         payload: Record<string, unknown>
     ) => {
         if (!entity || typeof entity.fundingEnvelope !== "function") {
             throw new Error(String(t("PaymentConfigPage.errors.fundingEnvelopeUnavailable")));
         }
 
-        const effectiveContextId = contextId || entity.id || itemProjectId;
+        const effectiveContextId = contextId || entity.id;
         const effectiveContextType = normalizeFundingContextType(contextType || entity.getEntityType?.()) || "projects" ;
 
         if (!effectiveContextId) {
@@ -235,61 +159,27 @@ const PaymentConfigPage = ({
         return response;
     }, [entity, contextId, contextType, t]);
 
-    // Envelopper completePayment dans useCallback pour éviter les dépendances changeantes
     const completePayment = useCallback(async (
-        paymentData: PaymentDataPayload,
-        fundingData: DepenseFunding[],
+        paymentData: PaymentDataPayload
     ) => {
         try {
-            //  Enregistrer les financements dans Answer (si answerId disponible)
-            if (itemAnswerId && api) {
-                const itemFundingData = fundingData.map((f) => ({
-                    depenseIndex: f.depenseIndex,
-                    amount: f.amount,
-                }));
-
-                // `saveContribution` accepte directement un id — il charge l'Answer
-                // via api.answer({id}) en interne et utilise `answer.updateField` pour
-                // la mutation atomique de chaque dépense.
-                // Si c'est un pledge, method et transactionId seront undefined ici
-                const { method, transactionId } = paymentData;
-
-                const saved = await saveContribution(
-                    itemAnswerId,
-                    itemFundingData,
-                    {
-                        type: contributorType,
-                        name: contributorName,
-                        id: contributorId
-                    },
-                    method,
-                    transactionId
-                );
-
-                if (!saved) throw new Error(String(t("PaymentConfigPage.errors.saveFailed")));
-            }
-
+            if (!api) throw new Error(String(t("PaymentConfigPage.errors.noApiClient")));
+            const { method, transactionId } = paymentData;
+            const saved = await payContribution(pledges, method, transactionId);
+            if (!saved) throw new Error(String(t("PaymentConfigPage.errors.saveFailed")));
             setPaymentSuccess(true);
-            onPaymentSuccess(paymentData);
+            if(onPaymentSuccess) {
+                onPaymentSuccess(paymentData);
+            }
             launchConfettiBurst({ originY: 0.34, spread: 84, count: 40 });
         } catch (error) {
             console.error('Erreur completePayment:', error);
             showErrorToast(error, "PaymentConfigPage.toasts.paymentAcceptedIncomplete.title", t);
-            setPaymentSuccess(true);
-            onPaymentSuccess(paymentData);
         } finally {
             await refreshAfterContributionSave();
         }
-    }, [itemAnswerId, api, contributorType, contributorName, contributorId, t, onPaymentSuccess, saveContribution, refreshAfterContributionSave]);
+    }, [api, onPaymentSuccess, payContribution, pledges, t, refreshAfterContributionSave]);
 
-    // Récupérer les organisations où l'utilisateur courant est admin (recherche server-side)
-    const currentUserEntity = (me && isUser(me) ? me : null) as User | null;
-    const debouncedSearchOrgQuery = useDebounce(searchOrgQuery, 300);
-    const userAdminOrganizations = useUserAdminOrganizations(currentUserEntity, {
-        search: debouncedSearchOrgQuery,
-    });
-
-    // Callback réel depuis /api/helloasso/callback (popup -> parent)
     useEffect(() => {
         const handleHelloAssoCallback = (event: MessageEvent) => {
             const data = (event.data || {}) as Record<string, unknown>;
@@ -314,7 +204,6 @@ const PaymentConfigPage = ({
                 return;
             }
 
-            // Démarre la vérification réelle côté API HelloAsso avant toute sauvegarde.
             setIsVerifyingPayment(true);
         };
 
@@ -322,7 +211,6 @@ const PaymentConfigPage = ({
         return () => window.removeEventListener("message", handleHelloAssoCallback);
     }, [helloAssoPaymentId, t]);
 
-    // Vérifier le statut du paiement HelloAsso toutes les 5 secondes quand en attente
     useEffect(() => {
         if (!isVerifyingPayment || !helloAssoPaymentId) return;
 
@@ -334,21 +222,12 @@ const PaymentConfigPage = ({
                 setIsVerifyingPayment(false);
                 setIsHelloAssoProcessing(false);
 
-                // Créer les données finales de paiement
-                const paymentData = buildHelloAssoPaymentData(
-                    {
-                        amount,
-                        resourceName,
-                        resourceId,
-                        itemsIds: Array.from(activeItemsIds),
-                        contributorType: contributorType as "citoyens" | "organizations",
-                        organizationId: contributorId || undefined,
-                    },
-                    helloAssoPaymentId
-                );
-                completePayment(paymentData, depenseFunding);
+                const finalPayload = {
+                    method: "helloasso",
+                    transactionId: helloAssoPaymentId
+                };
+                completePayment(finalPayload);
             } else if (verification.status === "failed") {
-                console.error("Paiement HelloAsso échoué");
                 clearInterval(verifyInterval);
                 setIsVerifyingPayment(false);
                 setIsHelloAssoProcessing(false);
@@ -358,34 +237,12 @@ const PaymentConfigPage = ({
                     t,
                 );
             }
-            // Si status === "pending" ou "error", continuer à vérifier
         }, 5000);
 
         return () => clearInterval(verifyInterval);
-    }, [isVerifyingPayment, helloAssoPaymentId, amount, resourceName, resourceId, activeItemsIds, contributorType, contributorId, t, completePayment, depenseFunding]);
+    }, [isVerifyingPayment, helloAssoPaymentId, amount, t, completePayment]);
 
-
-    const isFormComplete = Boolean(
-        paymentMethod &&
-        contributorType &&
-        (contributorType === "citoyens" || (contributorType === "organizations" && contributorId))
-    );
-
-    const buildContributionData = () => ({
-        amount,
-        resourceName,
-        items: activeItems.map((i) => {
-            const allocation = depenseFunding.find((df) => df.depenseIndex === i.depenseIndex);
-            return {
-                id: i.itemId,
-                name: i.name,
-                amount: allocation?.amount || 0,
-            };
-        }),
-        contributorType,
-        organizationId: contributorId || null,
-        timestamp: new Date().toISOString(),
-    });
+    const isFormComplete = Boolean(paymentMethod);
 
     const handleStripePaymentSuccess = async (stripeData: Record<string, unknown>) => {
         try {
@@ -395,22 +252,14 @@ const PaymentConfigPage = ({
                     stripeData.paymentMethodId ||
                     stripeData.payment_method_id ||
                     ""
-                ),
-                amount,
+                )
             });
 
-            const contributionData = buildContributionData();
-
             const finalPayload = {
-                ...contributionData,
                 method: "stripe",
                 transactionId: String(stripeData.transactionId || `stripe_${Date.now()}`)
             };
-            const paymentData = {
-                ...finalPayload,
-                ...stripeData,
-            }
-            completePayment(paymentData, depenseFunding);
+            completePayment(finalPayload);
         } catch (error) {
             console.error("Erreur financement Stripe via fundingEnvelope:", error);
             showErrorToast(error, "PaymentConfigPage.toasts.stripeError.title", t);
@@ -425,25 +274,6 @@ const PaymentConfigPage = ({
         setIsVerifyingPayment(false);
 
         try {
-            // Préparer la configuration HelloAsso
-            const helloAssoConfig = {
-                amount,
-                resourceName,
-                resourceId,
-                itemsIds: Array.from(activeItemsIds),
-                contributorType: contributorType as "citoyens" | "organizations",
-                organizationId: contributorId || undefined,
-            };
-
-            // Valider la configuration (codes d'erreur traduits côté UI)
-            const validation = validateHelloAssoConfig(helloAssoConfig);
-            if (!validation.valid) {
-                const messages = validation.errors.map((code) =>
-                    String(t(`PaymentConfigPage.helloAssoConfigErrors.${code}`))
-                );
-                throw new Error(messages.join(" | "));
-            }
-
             const fundingEnvelopeResponse = await submitFundingEnvelopeAction("helloassoPay", {
                 amount,
                 email: me?.serverData?.email,
@@ -462,7 +292,6 @@ const PaymentConfigPage = ({
                 throw new Error(String(t("PaymentConfigPage.errors.noRedirectUrl")));
             }
 
-            // 2. Ouvrir la popup avec l'URL officielle du checkout
             const { success, popup } = await openHelloAssoPaymentWithCheckout(
                 redirectUrl,
                 {
@@ -491,22 +320,9 @@ const PaymentConfigPage = ({
         }
     };
 
-    const saveContributionAsPromise = async ()  => {
-        if (!isFormComplete) return;
-        try {
-            const paymentData: PaymentDataPayload = {
-                ...buildContributionData(),
-            };
-            completePayment(paymentData, depenseFunding);
-            showSuccessToast("toasts.contributionSaved.title", t);
-        } catch (error) {
-            showErrorToast(error, "PaymentConfigPage.toasts.paymentError.title", t);
-        }
-    };
-
     if (paymentSuccess) {
         return (
-            <div className="py-10 text-center space-y-4 animate-fade-in">
+            <div className="py-10 text-center space-y-4 animate-fade-in flex-1 overflow-y-auto">
                 <div className="w-20 h-20 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
                     <Check className="w-10 h-10 text-primary" />
                 </div>
@@ -519,7 +335,7 @@ const PaymentConfigPage = ({
 
     if (isVerifyingPayment) {
         return (
-            <div className="py-10 text-center space-y-4 animate-fade-in">
+            <div className="py-10 text-center space-y-4 animate-fade-in flex-1 overflow-y-auto">
                 <div className="w-20 h-20 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
                     <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
                 </div>
@@ -532,7 +348,7 @@ const PaymentConfigPage = ({
 
     if (isWaitingHelloAssoCallback) {
         return (
-            <div className="py-10 text-center space-y-4 animate-fade-in">
+            <div className="py-10 text-center space-y-4 animate-fade-in flex-1 overflow-y-auto">
                 <div className="w-20 h-20 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
                     <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
                 </div>
@@ -544,7 +360,7 @@ const PaymentConfigPage = ({
     }
 
     return (
-        <div className="space-y-6 py-4">
+        <div className="space-y-6 p-6 flex-1 overflow-y-auto h-full w-full">
             <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-foreground">{t("PaymentConfigPage.title")}</h2>
                 <Button onClick={onBack} variant="ghost" size="icon" aria-label={String(t("a11y.back"))} disabled={isHelloAssoProcessing}>
@@ -554,136 +370,59 @@ const PaymentConfigPage = ({
 
             <div className="bg-linear-to-r from-primary/20 to-accent/20 rounded-xl p-6 space-y-4">
                 <div className="flex items-start gap-4">
-                    {resourceImage && (
-                        <img src={resourceImage} alt={resourceName} className="w-20 h-20 rounded-lg object-cover" />
-                    )}
                     <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-foreground">{resourceName}</h3>
-                        <p className="text-3xl font-bold text-primary">{amount}€</p>
-                        <p className="text-sm text-muted-foreground">
-                            {activeItems.length} {cagnotteConfig.selectorType}{activeItems.length > 1 ? "s" : ""} selectionné{activeItems.length > 1 ? "s" : ""}
-                        </p>
+                        <h3 className="text-lg font-semibold text-foreground">Total:</h3>
+                        <p className="text-3xl font-bold text-primary">{formatNumber(amount)} €</p>
                     </div>
                 </div>
 
-                {activeItems.length > 0 && (
+                {pledges.length > 0 && (
                     <div className="space-y-2 border-t border-border/50 pt-4">
-                        <p className="text-sm font-medium text-foreground">{t("PaymentConfigPage.milestonesLabel")}</p>
-                        <div className="grid grid-cols-1 gap-2">
-                            {activeItems.map((i) => {
-                                const allocation = depenseFunding.find(df => df.depenseIndex === i.depenseIndex);
-                                const allocatedAmount = allocation?.amount || 0;
-                                return (
-                                    <div key={i.depenseIndex} className="bg-background/50 rounded-lg p-3">
-                                        <div className="flex items-center justify-between">
-                                            <span className="font-medium text-sm">{i.name}</span>
-                                            <Badge variant="outline">{formatNumber(allocatedAmount)}€</Badge>
+                        <button
+                            type="button"
+                            onClick={() => setIsPledgesExpanded(!isPledgesExpanded)}
+                            aria-expanded={isPledgesExpanded}
+                            className="flex items-center justify-between w-full group"
+                        >
+                            <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                                {pledges.length} {String(t("Pledges.payform.selectedPledge"))}
+                            </span>
+                            <ChevronDown 
+                                className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${
+                                    isPledgesExpanded ? "rotate-180" : ""
+                                }`} 
+                            />
+                        </button>
+                        
+                        <div
+                            className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${
+                                isPledgesExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                            }`}
+                        >
+                            <div className="overflow-hidden">
+                                <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto pr-2 mt-2 pt-1 pb-1">
+                                    {pledges.map((i, index) => (
+                                        <div key={i.id || `${i.depenseIndex}-${i.fundingIndex}-${index}`} className="bg-background/50 rounded-lg p-3">
+                                            <div className="flex items-center justify-between">
+                                                <span className="font-medium text-sm truncate mr-2" title={i.depenseName}>
+                                                    {i.depenseName}
+                                                </span>
+                                                <Badge variant="outline" className="shrink-0">
+                                                    {formatNumber(i.fundingAmount)} €
+                                                </Badge>
+                                            </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}
             </div>
-
-            <div className="space-y-3">
-                <p className="text-sm font-medium text-foreground">{t( "PaymentConfigPage.contributorTypeLabel")}</p>
-                { cagnotteConfig.allowPersonToFinance && (
-                    <ToggleGroup
-                        type="single"
-                        value={contributorType}
-                        onValueChange={(value) => {
-                            if (!value) return;
-                            if (value === "citoyens") {
-                                setContributorType("citoyens");
-                                setContributorId(currentUserEntity?.serverData?.id || "");
-                                setContributorName(currentUserEntity?.serverData?.name || "");
-                            } else if (value === "organizations") {
-                                setContributorType("organizations");
-                            }
-                        }}
-                        className="grid grid-cols-1 sm:grid-cols-2 gap-3"
-                    >
-                        <ToggleGroupItem
-                            value="citoyens"
-                            aria-label={String(t("PaymentConfigPage.contributorOptions.person"))}
-                            className="p-4 rounded-lg border-2 transition-all text-left h-auto justify-start data-[state=on]:bg-primary/20 data-[state=on]:border-primary bg-background border-border hover:border-primary/50"
-                        >
-                            <div className="flex items-center gap-2 text-sm font-semibold">
-                                <Users className="w-4 h-4" /> {t("PaymentConfigPage.contributorOptions.person")}
-                            </div>
-                        </ToggleGroupItem>
-
-                        <ToggleGroupItem
-                            value="organizations"
-                            aria-label={String(t("PaymentConfigPage.contributorOptions.organization"))}
-                            className="p-4 rounded-lg border-2 transition-all text-left h-auto justify-start data-[state=on]:bg-primary/20 data-[state=on]:border-primary bg-background border-border hover:border-primary/50"
-                        >
-                            <div className="flex items-center gap-2 text-sm font-semibold">
-                                <Users className="w-4 h-4" /> {t("PaymentConfigPage.contributorOptions.organization")}
-                            </div>
-                        </ToggleGroupItem>
-                    </ToggleGroup>
-                )}
-            </div>
-            
-
-            {contributorType === "organizations" && (
-                <div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-border/50">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                        <Input
-                            type="text"
-                            placeholder={String(t("PaymentConfigPage.orgPicker.searchPlaceholder"))}
-                            value={searchOrgQuery}
-                            onChange={(e) => setSearchOrgQuery(e.target.value)}
-                            className="h-10 pl-10"
-                        />
-                    </div>
-
-                    {userAdminOrganizations.length === 0 ? (
-                        <div className="py-4 text-center text-sm text-muted-foreground">
-                            <p>{t("PaymentConfigPage.orgPicker.notAdminTitle")}</p>
-                            <p className="text-xs mt-2">
-                                {t("PaymentConfigPage.orgPicker.notAdminHelp")}
-                            </p>
-                        </div>
-                    ) : (
-                        <Select
-                            value={contributorId}
-                            onValueChange={(value) => {
-                                setContributorId(value);
-                                const selectedOrg = userAdminOrganizations.find((org) => org.id === value);
-                                setContributorName(selectedOrg?.name || "");
-                            }}
-                        >
-                            <SelectTrigger className="h-10">
-                                <SelectValue placeholder={String(t("PaymentConfigPage.orgPicker.selectPlaceholder"))} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {userAdminOrganizations.map((org) => (
-                                    <SelectItem key={org.id} value={org.id}>
-                                        <div className="flex items-center gap-2">
-                                            {org.profilThumbImageUrl && (
-                                                <img
-                                                    src={org.profilThumbImageUrl}
-                                                    alt={org.name}
-                                                    className="w-4 h-4 rounded-full object-cover"
-                                                />
-                                            )}
-                                            <span>{org.name}</span>
-                                        </div>
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    )}
-                </div>
-            )}
 
             <div className="space-y-3">
                 <p className="text-sm font-medium text-foreground">{t("PaymentConfigPage.paymentMethodLabel")}</p>
+
                 <ToggleGroup
                     type="single"
                     value={paymentMethod ?? ""}
@@ -701,8 +440,6 @@ const PaymentConfigPage = ({
                             setPaymentMethod("stripe");
                         } else if (value === "helloasso") {
                             setPaymentMethod("helloasso");
-                        } else if (value === "pledge") {
-                            setPaymentMethod("pledge");
                         }
                     }}
                     className="grid grid-cols-1 sm:grid-cols-2 gap-3"
@@ -742,29 +479,11 @@ const PaymentConfigPage = ({
                             </div>
                         </div>
                     </ToggleGroupItem>
-
-                    {cagnotteConfig.allowContributionWithoutPaiement && (
-                        <ToggleGroupItem
-                            value="pledge"
-                            aria-label={String(t("PaymentConfigPage.pledge.title"))}
-                            className="p-4 rounded-lg border-2 transition-all text-left h-auto justify-start data-[state=on]:bg-primary/20 data-[state=on]:border-primary bg-background border-border hover:border-primary/50"
-                        >
-                            <div className="flex items-start gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-success/20 flex items-center justify-center shrink-0">
-                                    <Clock className="w-5 h-5 text-success" />
-                                </div>
-                                <div className="flex-1">
-                                    <p className="font-semibold text-sm">{t("PaymentConfigPage.pledge.title")}</p>
-                                    <p className="text-xs text-muted-foreground">{t("PaymentConfigPage.pledge.description")}</p>
-                                </div>
-                            </div>
-                        </ToggleGroupItem>
-                    )}
                 </ToggleGroup>
             </div>
 
-            <div className="space-y-3 pt-4 border-t border-border/50">
-                {paymentMethod === "stripe" && isFormComplete && (
+            <div className="space-y-3 pt-4 border-t border-border/50 pb-8">
+                {paymentMethod === "stripe" && (
                     <div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-border/50">
                         <p className="text-sm font-medium text-foreground">{t("PaymentConfigPage.stripe.formLabel")}</p>
                         {!stripePromise ? (
@@ -797,33 +516,6 @@ const PaymentConfigPage = ({
                     </Button>
                 )}
 
-                {paymentMethod === "pledge" && (
-                    <div className="rounded-xl border bg-[var(--color-surface)] p-4 space-y-4">
-                        <h3 className="text-sm font-medium">Payer plus tard</h3>
-                        <p className="text-sm text-muted-foreground">
-                            Votre engagement de {amount}€ sera enregistré. Pour payer veuillez accéder à vos promesses en cours.
-                        </p>
-                        <label className="flex items-start gap-2 text-sm text-muted-foreground">
-                            <input type="checkbox" required className="mt-1 accent-[var(--color-primary)]" onChange={acceptCondition}  />
-                            <span> En cochant cette case, je valide ma promesse de contribution.</span>
-                        </label>
-                        <Button
-                            onClick={saveContributionAsPromise}
-                            disabled={!isFormComplete || !acceptPledgeCondition}
-                            size="lg"
-                            className="w-full h-12 bg-success hover:bg-success/90 text-success-foreground"
-                        >
-                            {t("PaymentConfigPage.pledge.button", undefined,
-                                {
-                                    amount,
-                                    context: cagnotteConfig.selectorType+context
-                                }
-                            )}
-                        </Button>
-                    </div>
-
-                )}
-
                 {!paymentMethod && (
                     <Button disabled size="lg" className="w-full h-12">
                         <CreditCard className="w-5 h-5 mr-2" />
@@ -832,9 +524,8 @@ const PaymentConfigPage = ({
                 )}
             </div>
 
-            {/* Information supplémentaire pour HelloAsso */}
             {paymentMethod === "helloasso" && (
-                <div className="text-xs text-muted-foreground space-y-2 p-3 bg-muted/30 rounded-md border border-border/50">
+                <div className="text-xs text-muted-foreground space-y-2 p-3 bg-muted/30 rounded-md border border-border/50 mb-8">
                     <p className="font-semibold flex items-center gap-2"><Info className="w-3.5 h-3.5" />{t("PaymentConfigPage.helloasso.info.title")}</p>
                     <ul className="space-y-1 ml-3 list-disc">
                         <li>{t("PaymentConfigPage.helloasso.info.li1")}</li>
@@ -849,5 +540,4 @@ const PaymentConfigPage = ({
     );
 };
 
-export default PaymentConfigPage;
-
+export default PledgePaymentPage;

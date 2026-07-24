@@ -5,11 +5,18 @@
 import { useMemo } from "react";
 import {
     CagnotteResource,
-    CagnotteTypeConfig, FundingAction,
+    CagnotteTypeConfig,
+    FundingAction,
     FundingEnvelopeNormalizedData,
-    FundingTransaction
+    FundingTransaction,
+    Pledge
 } from "../types";
-import {OrgProject} from "@/modules/cagnotte/hooks/useOrganizationProjectsWithAnswers.ts";
+import { OrgProject } from "@/modules/cagnotte/hooks/useOrganizationProjectsWithAnswers.ts";
+import {useUserAdminOrganizations} from "@/modules/cagnotte/hooks/useUserAdminOrganizations";
+import { isUser } from "@/lib/getTypedEntity";
+import type { User } from "@communecter/cocolight-api-client";
+import { useCocolight } from "@/hooks/useCocolight";
+import {toSafeInt} from "@/modules/cagnotte/utils/dataTransform.ts";
 
 interface RawDepense {
     id?: string | number;
@@ -17,9 +24,9 @@ interface RawDepense {
     poste?: string;
     description?: string;
     priceInt?: number | string;
-    visible?: boolean;
+    include?: boolean;
     actions?: FundingAction[];
-    financer?: FundingTransaction[];
+    financer?: Array<FundingTransaction & { method?: string }>;
 }
 
 interface RawProposition {
@@ -31,74 +38,158 @@ interface RawProposition {
     depenses?: RawDepense[];
 }
 
+// Typage sécurisé pour étendre les jalons de l'API
+interface ExtendedProjectMilestone {
+    milestoneId: string | number;
+    name?: string;
+    description?: string;
+    price?: number | string;
+    status?: string;
+    currentFunding?: number;
+    transactions?: FundingTransaction[];
+}
+
+export const calculateFundingStatus = (
+    transactions: FundingTransaction[],
+    fallbackCurrent: number,
+    orgsId: string[],
+    userId?: string
+): { currentFunding: number; unpaidFunding: number; userPledge: number } => {
+    if (!transactions || !transactions.length) {
+        return { currentFunding: fallbackCurrent, unpaidFunding: 0, userPledge: 0 };
+    }
+    return transactions.reduce((acc, t) => {
+        const amount = Number(t.amount) || 0;
+
+        const isUnpaid = t.fundingType !== "prepaid" || (t.paymentStatus as string) === "unpaid";
+
+        if (isUnpaid) {
+            acc.unpaidFunding += amount;
+            if(t.id === userId || orgsId.indexOf(t.id) > -1 ){
+                acc.userPledge += amount;
+            }
+        }
+        acc.currentFunding += amount;
+        return acc;
+    }, { currentFunding: 0, unpaidFunding: 0, userPledge: 0});
+}
+
+export const getUserFunding = (
+    transactions: Array<any>,
+    orgsId: string[],
+    userId?: string
+): FundingTransaction[] => {
+    if (!Array.isArray(transactions)){
+        return [];
+    }
+    return transactions.map((fund, index) => {
+        fund["fundingIndex"] = index;
+        fund["financerName"] = fund.name;
+        fund["financerId"] = fund.id;
+        return fund;
+    }).filter(fund => orgsId.indexOf(fund.id) > -1 || fund.id === userId);
+};
+
 export function useCagnotteAdapter(
     fundingEnvelope: FundingEnvelopeNormalizedData | null | undefined,
     allProjects: OrgProject[],
     config: CagnotteTypeConfig,
     selectedId: string,
 ) {
-    return useMemo(() => {
-        let resources: CagnotteResource[] = [];
-        let savedSelectedResource: CagnotteResource | undefined = undefined;
+    const {me} = useCocolight();
+    const currentUserEntity = (me && isUser(me) ? me : null) as User | null;
+    const userAdminOrganizations = useUserAdminOrganizations(currentUserEntity, {});
 
+    return useMemo(() => {
         const rawEnvelopeTypeAssertion = fundingEnvelope?.rawEnvelope as { projects?: RawProposition[] } | undefined;
         const rawProjects = rawEnvelopeTypeAssertion?.projects || [];
+        const orgsIds =  userAdminOrganizations?.map(user => user.id);
+
+        let resources: CagnotteResource[] = [];
 
         if (config.selectorType === "project") {
-            resources = (allProjects || []).map((projet: OrgProject) => {
+            const rawProjectsMap = rawProjects.reduce<Record<string, RawProposition>>((acc, p) => {
+                if (p.projectId) acc[p.projectId] = p;
+                return acc;
+            }, {});
 
-                const propositionMatch = rawProjects.find(
-                    (p: RawProposition) => p.projectId === String(projet.id)
-                );
+            resources = (allProjects || []).map((projet: OrgProject) => {
+                const projectIdStr = String(projet.id);
+                const propositionMatch = rawProjectsMap[projectIdStr];
                 const depenses = propositionMatch?.depenses || [];
 
+                const depensesByMilestone = depenses.reduce<Record<string, { depense: RawDepense; index: number }>>((acc, d, idx) => {
+                    if (d.milestone) acc[d.milestone] = { depense: d, index: idx };
+                    return acc;
+                }, {});
+
                 const items = (projet?.milestones || []).map(m => {
-                    const depenseIndex = depenses.findIndex(
-                        (depense: RawDepense) => depense.milestone === String(m.milestoneId)
+                    const milestoneIdStr = String(m.milestoneId);
+                    const matchedDepense = depensesByMilestone[milestoneIdStr];
+                    const milestoneExtended = m as ExtendedProjectMilestone;
+                    const { currentFunding, unpaidFunding, userPledge } = calculateFundingStatus(
+                        milestoneExtended.transactions as Array<FundingTransaction & { method?: string }>,
+                        typeof m.currentFunding === "number" ? m.currentFunding : 0,
+                        orgsIds,
+                        me?.serverData?.id
                     );
-                    const depense = depenseIndex >= 0 ? depenses[depenseIndex] : null;
 
                     return {
                         fromType: "milestone" as const,
-                        itemId: String(m.milestoneId),
-                        milestoneId: String(m.milestoneId),
-                        depenseIndex,
+                        itemId: milestoneIdStr,
+                        milestoneId: milestoneIdStr,
+                        depenseIndex: matchedDepense?.index ?? -1,
                         name: m.name ?? "",
                         description: m.description ?? "",
-                        price: typeof m.price === "number" ? m.price : Number(m.price) || 0,
+                        price: Number(m.price) || 0,
                         status: m?.status ?? "open",
-                        actions: depense?.actions ?? [],
-                        currentFunding: m.currentFunding || 0
+                        actions: matchedDepense?.depense?.actions ?? [],
+                        currentFunding,
+                        unpaidFunding,
+                        userPledge,
+                        funding: getUserFunding((matchedDepense?.depense?.financer || []),orgsIds,me?.serverData?.id)
                     };
                 });
 
                 return {
                     fromType: config.selectorType,
-                    id: String(projet.id),
+                    id: projectIdStr,
                     name: projet.name ?? "",
-                    projectId: String(projet.id),
+                    projectId: projectIdStr,
                     answerId: projet.answerId ?? "",
                     resourceTotalAmount: Number(projet.cagnotteTargetAmount) || 0,
                     resourceFinancedAmount: Number(projet.cagnotteTotalAmount) || 0,
-                    items: items || [],
+                    items,
                 };
             });
         }
         else if (config.selectorType === "proposition") {
             resources = rawProjects.map((proposition: RawProposition) => {
+                const items = (proposition?.depenses || []).map((d: RawDepense, index: number) => {
 
-                const items = (proposition?.depenses || []).map((d: RawDepense, index: number) => ({
-                    fromType: "depense" as const,
-                    itemId: d.id ? String(d.id) : String(index),
-                    milestoneId: d.milestone ?? "",
-                    depenseIndex: index,
-                    name: d.poste ?? "",
-                    description: d.description ?? "",
-                    price: typeof d.priceInt === "number" ? d.priceInt : Number(d.priceInt) || 0,
-                    status: d.visible !== false ? "open" : "close",
-                    actions: d.actions ?? [],
-                    currentFunding: d.financer && Array.isArray(d.financer) ? d.financer.reduce((sum, f) => sum + (typeof f.amount === "number" ? f.amount : Number(f.amount) || 0), 0) : 0
-                }));
+                    const { currentFunding, unpaidFunding, userPledge  } = calculateFundingStatus(
+                        d.financer as Array<FundingTransaction & { method?: string }> | [],
+                        0,
+                        orgsIds,
+                        me?.serverData?.id
+                    );
+
+                    return {
+                        fromType: "depense" as const,
+                        itemId: d.id ? String(d.id) : String(index),
+                        milestoneId: d.milestone ?? "",
+                        depenseIndex: index,
+                        name: d.poste ?? "",
+                        description: d.description ?? "",
+                        price: Number(d.priceInt) || 0,
+                        status: d.include !== false ? "open" : "close",
+                        actions: d.actions ?? [],
+                        currentFunding,
+                        unpaidFunding,
+                        userPledge,
+                        funding: getUserFunding((d?.financer || []),orgsIds,me?.serverData?.id)
+                    };
+                });
 
                 return {
                     fromType: config.selectorType,
@@ -108,13 +199,38 @@ export function useCagnotteAdapter(
                     answerId: String(proposition.id),
                     resourceTotalAmount: Number(proposition.totalCouts) || 0,
                     resourceFinancedAmount: Number(proposition.totalFinancement) || 0,
-                    items: items,
+                    items,
                 };
             });
         }
 
-        savedSelectedResource = resources.find(t => t.id === selectedId);
-
+        const savedSelectedResource = resources.find(t => t.id === selectedId);
+        resources = resources.filter(re => re.name !== "");
         return { resources, savedSelectedResource };
-    }, [fundingEnvelope, allProjects, config.selectorType, selectedId]);
+    }, [fundingEnvelope, allProjects, config.selectorType, selectedId, me?.serverData?.id, userAdminOrganizations]);
+}
+
+export function computePledgesFromResources(resources: CagnotteResource[]): Pledge[] {
+
+    return resources.flatMap((resource) =>
+        (resource.items ?? [])
+            .filter((item) => item.userPledge > 0)
+            .flatMap((item) =>
+                item.funding
+                    .filter((fund) => fund?.fundingType !== "prepaid")
+                    .map((fund) => ({
+                        id: `${resource.id}-${item.itemId}-${fund.fundingIndex}`,
+                        resourceId: resource.answerId,
+                        resourceName: resource.name,
+                        depenseIndex: item.depenseIndex,
+                        depenseName: item.name,
+                        fundingIndex: fund.fundingIndex,
+                        fundingAmount: toSafeInt(fund.amount),
+                        financerId: fund.financerId || "unknown_id",
+                        financerName: fund.financerName,
+                        userPledge: item.userPledge,
+                        userfundingPledge: item.funding,
+                    }))
+            )
+    );
 }

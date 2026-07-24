@@ -46,6 +46,8 @@ export type FundingTransaction = {
   date: number;
   paymentStatus: FundingPaymentStatus;
   transactionId: string;
+  fundingType?: string;
+  fundingIndex?: number;
 };
 
 export type FundingAction = {
@@ -142,18 +144,33 @@ export type CagnotteTypeConfig = {
   selectorType: "proposition" | "project",
   financerTags: string[],
   defaultPredefinedAmounts: number[],
+  context: string,
+  showInfoText: boolean,
+  allowPersonToFinance: boolean,
+  allowContributionWithPaiement: boolean,
+  allowContributionWithoutPaiement: boolean,
 };
 
 export const CAGNOTTE_TYPE_CONFIGS: Record<CagnotteType, CagnotteTypeConfig> = {
   standard: {
     selectorType: "project",
     financerTags: [],
-    defaultPredefinedAmounts: [10, 20, 30, 50]
+    defaultPredefinedAmounts: [10, 20, 30, 50],
+    context: '',
+    showInfoText: true,
+    allowPersonToFinance: true,
+    allowContributionWithPaiement: true,
+    allowContributionWithoutPaiement: true,
   },
   aac: {
     selectorType: "proposition",
     financerTags: ["financeur"],
-    defaultPredefinedAmounts: [10, 20, 30, 50]
+    defaultPredefinedAmounts: [10, 20, 30, 50],
+    context: '',
+    showInfoText: false,
+    allowPersonToFinance: true,
+    allowContributionWithPaiement: true,
+    allowContributionWithoutPaiement: true,
   }
 };
 
@@ -181,7 +198,10 @@ export interface CagnotteFundableItem {
   price: number;
   status: string;
   actions: FundingAction[];
+  funding: FundingTransaction[];
   currentFunding: number;
+  unpaidFunding: number;
+  userPledge: number;
 }
 
 export interface DepenseFunding {
@@ -190,4 +210,18 @@ export interface DepenseFunding {
   amount: number;
   name?: string;
   price?: number;
+}
+
+export interface Pledge {
+  id: string,
+  financerId: string;
+  resourceId?: string,
+  resourceName: string,
+  depenseIndex: number,
+  depenseName: string,
+  fundingIndex?: number,
+  financerName?: string,
+  fundingAmount: number,
+  userPledge: number,
+  userfundingPledge:  FundingTransaction[];
 }

@@ -1610,6 +1610,7 @@ export const Header = z.object({
     cart: z.boolean().default(false),
     notifications: z.boolean().default(false),
     piggyBank: z.boolean().default(false),
+    pledge: z.boolean().default(false)
   }),
   ctaButton: z.object({
     label: LocalizedString,
@@ -1902,6 +1903,7 @@ const PerformanceConfig = z.object({
 const CagnotteModuleConfig = z.object({
     defaultType: z.enum(["standard", "aac"]).optional().default("standard"),
     predefinedAmounts: z.array(z.number()).optional(),
+    context: z.string().optional(),
 });
 
 export type CagnotteModuleConfig = z.infer<typeof CagnotteModuleConfig>;
@@ -2025,7 +2027,8 @@ export function getDefaultSiteConfig(): Partial<SiteConfig> {
         auth: false,
         cart: false,
         notifications: false,
-        piggyBank: false
+        piggyBank: false,
+        pledge: false
       },
       sticky: false,
       transparent: false,
@@ -2072,7 +2075,8 @@ export const example: SiteConfig = {
       auth: false,
       cart: false,
       notifications: false,
-      piggyBank: false
+      piggyBank: false,
+      pledge: false
     }
   },
   pages: [

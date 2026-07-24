@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import { CagnotteFundableItem } from "../../types";
+import { CagnotteFundableItem, CagnotteTypeConfig } from "../../types";
 
 interface CagnotteMilestoneListProps {
   /** Milestones à afficher (typiquement filtrés sur non-close + visibles selon le contexte). */
@@ -12,6 +12,10 @@ interface CagnotteMilestoneListProps {
   activeItemIds: Set<string>;
   /** Callback de toggle au click sur une carte. */
   onItemClick: (itemId: string) => void;
+  /** Configuration de la cagnotte */
+  cagnotteConfig: CagnotteTypeConfig;
+  /** Pour personalisation des textes à afficher pour certain groupe d'organisation */
+  context: string;
 }
 
 /**
@@ -23,6 +27,8 @@ export function CagnotteItemList({
   items,
   activeItemIds,
   onItemClick,
+  cagnotteConfig,
+  context
 }: CagnotteMilestoneListProps) {
   useLoadNamespace("modules/cagnotte");
   const t = useT("modules/cagnotte");
@@ -32,10 +38,12 @@ export function CagnotteItemList({
   return (
     <div className="space-y-3">
       <p className="text-sm font-medium text-foreground">
-        {t("CagnotteDialog.labels.milestonesTitle")}
+        {t("CagnotteDialog.labels.itemsTitle", undefined, { context: cagnotteConfig.selectorType+context })}
       </p>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {(items || []).map((item) => {
+        {(items || [])
+            .filter((item) => item?.status !== "close")
+            .map((item) => {
           const isActive = activeItemIds.has(item.itemId);
           return (
             <div
@@ -74,10 +82,10 @@ export function CagnotteItemList({
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">
-                    {t("CagnotteDialog.labels.fundingLabel")}
+                    {t("CagnotteDialog.labels.fundingLabel", undefined, { context: cagnotteConfig.selectorType+context })}
                   </span>
                   <span className="font-semibold text-foreground">
-                    {item.currentFunding}€ / {item.price}€
+                    {item.currentFunding.toLocaleString("fr-FR")} € / {item.price.toLocaleString("fr-FR")} €
                   </span>
                 </div>
                 <Progress

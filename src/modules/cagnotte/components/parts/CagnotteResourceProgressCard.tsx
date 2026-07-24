@@ -5,17 +5,24 @@
 import { Progress } from "@/components/ui/progress";
 import { useT } from "@/hooks/useT";
 import { formatNumber } from "@/modules/cagnotte/utils/format";
+import { CagnotteTypeConfig } from "../../types";
 
 export interface CagnotteResourceProgressCardProps {
   /** Montant total financé sur le projet (en euros, entier). */
   totalAmount: number;
   /** Cible totale à atteindre (en euros, entier). */
   targetAmount: number;
+  /** Configuration de la cagnotte */
+  cagnotteConfig: CagnotteTypeConfig;
+  /** Pour personalisation des textes à afficher pour certain groupe d'organisation */
+  context: string;
 }
 
 export function CagnotteResourceProgressCard({
   totalAmount,
   targetAmount,
+  cagnotteConfig,
+  context
 }: CagnotteResourceProgressCardProps) {
   const t = useT("modules/cagnotte");
   const progressPercentage =
@@ -25,12 +32,13 @@ export function CagnotteResourceProgressCard({
     <div className="bg-linear-to-r from-primary/20 to-accent/20 rounded-xl p-6 space-y-4">
       <div className="text-center">
         <p className="text-sm text-muted-foreground mb-2">
-          {t("CagnotteDialog.labels.projectCagnotte")}
+          {t("CagnotteDialog.labels.resourceCagnotte", undefined, { context: cagnotteConfig.selectorType+context })}
         </p>
         <p className="text-4xl font-bold text-primary">{formatNumber(totalAmount)} €</p>
         <p className="text-xs text-muted-foreground mt-1">
           {t("CagnotteDialog.labels.targetSuffix", undefined, {
             target: formatNumber(targetAmount),
+            context: cagnotteConfig.selectorType+context
           })}
         </p>
       </div>

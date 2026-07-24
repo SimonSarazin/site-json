@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import {CagnotteResource} from "@/modules/cagnotte/types.ts";
+import {CagnotteResource, CagnotteTypeConfig} from "@/modules/cagnotte/types.ts";
 
 interface CagnotteResourceSelectorProps {
   /** Entité orga courante. Si `null` → affiche un placeholder "no organization". */
@@ -41,6 +41,10 @@ interface CagnotteResourceSelectorProps {
   isSavingResourceModal: boolean;
   /** Callback déclenché par le bouton "definir comme cagnotte principale". */
   onSaveResourceModal: () => void;
+  /** Configuration de la cagnotte */
+  cagnotteConfig: CagnotteTypeConfig;
+  /** Pour personalisation des textes à afficher pour certain groupe d'organisation */
+  context: string;
 }
 
 /**
@@ -64,30 +68,32 @@ export function CagnotteResourceSelector({
   isCurrentResourceModalId,
   isSavingResourceModal,
   onSaveResourceModal,
+  cagnotteConfig,
+  context
 }: CagnotteResourceSelectorProps) {
   useLoadNamespace("modules/cagnotte");
   const t = useT("modules/cagnotte");
-  const untitled = String(t("CagnotteDialog.fallbacks.untitled"));
+  const untitled = String(t("CagnotteDialog.fallbacks.untitled", undefined, { context: cagnotteConfig.selectorType+context }));
 
   return (
-    <div className="space-y-3 border-t pt-6">
+    <div className="space-y-3 pt-3">
       <div className="flex items-center gap-2">
         <Briefcase className="w-5 h-5 text-primary" />
         <Label className="text-sm font-medium text-foreground">
           {hideResourceSelect
-            ? t("CagnotteDialog.labels.supportedProject")
-            : t("CagnotteDialog.labels.selectProject")}
+            ? t("CagnotteDialog.labels.supportedResource", undefined, { context: cagnotteConfig.selectorType+context })
+            : t("CagnotteDialog.labels.selectResource", undefined, { context: cagnotteConfig.selectorType+context })}
         </Label>
       </div>
 
       {!hasEntity ? (
         <div className="py-4 text-center text-sm text-muted-foreground border border-dashed rounded-lg">
-          <p>{t("CagnotteDialog.labels.noOrganization")}</p>
+          <p>{t("CagnotteDialog.labels.noOrganization", undefined, { context: cagnotteConfig.selectorType+context })}</p>
         </div>
       ) : isLoading ? (
         <div className="flex items-center justify-center gap-2 py-4 text-muted-foreground">
           <Loader className="w-4 h-4 animate-spin" />
-          <span className="text-sm">{t("CagnotteDialog.labels.loadingProjects")}</span>
+          <span className="text-sm">{t("CagnotteDialog.labels.loadingResources", undefined, { context: cagnotteConfig.selectorType+context })}</span>
         </div>
       ) : resources.length > 0 ? (
         hideResourceSelect ? (
@@ -104,7 +110,7 @@ export function CagnotteResourceSelector({
             </span>
           </div>
         ) : (
-          <div className="flex items-end gap-2">
+          <div className="flex items-end gap-2 max-w-0">
             <div className="flex-1">
               <Select value={selectedResourceId} onValueChange={onSelectedResourceIdChange}>
                 <SelectTrigger className="h-10">
@@ -121,7 +127,7 @@ export function CagnotteResourceSelector({
                     </div>
                   ) : (
                     <SelectValue
-                      placeholder={String(t("CagnotteDialog.labels.selectProjectPlaceholder"))}
+                      placeholder={String(t("CagnotteDialog.labels.selectResourcePlaceholder", undefined, { context: cagnotteConfig.selectorType+context }))}
                     />
                   )}
                 </SelectTrigger>
@@ -176,7 +182,7 @@ export function CagnotteResourceSelector({
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{t("CagnotteDialog.labels.setAsMainCagnotte")}</p>
+                    <p>{t("CagnotteDialog.labels.setAsMainCagnotte", undefined, { context: cagnotteConfig.selectorType+context })}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -185,7 +191,7 @@ export function CagnotteResourceSelector({
         )
       ) : (
         <div className="py-4 text-center text-sm text-muted-foreground border border-dashed rounded-lg">
-          <p>{t("CagnotteDialog.labels.noProjects")}</p>
+          <p>{t("CagnotteDialog.labels.noResource", undefined, { context: cagnotteConfig.selectorType+context })}</p>
         </div>
       )}
     </div>
