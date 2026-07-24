@@ -63,7 +63,7 @@ async function waitForHydration(page: Page) {
 }
 
 test.describe("Parent62 — Partie 1 (lecture seule)", () => {
-  test("accueil : titre, nav à 6 entrées, double entrée parents/pro, 9 bulles territoire", async ({
+  test("accueil : titre, nav à 5 entrées, double entrée parents/pro, 9 bulles territoire", async ({
     page,
   }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
@@ -75,7 +75,7 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     const headerNav = page.locator("nav.fixed").first();
     await expect(headerNav).toBeVisible();
 
-    expect(config.header.nav, "la nav de la config doit rester à 6 entrées").toHaveLength(6);
+    expect(config.header.nav, "la nav de la config doit rester à 5 entrées").toHaveLength(5);
     const headerText = (await headerNav.textContent()) ?? "";
     for (const item of config.header.nav) {
       expect(headerText, `entrée « ${item.label.fr} » attendue dans le header`).toContain(
@@ -143,18 +143,17 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     await expect(artois).toHaveAttribute("data-state", "unchecked");
   });
 
-  test("/paroles : la page rend avec ses onglets de catégories", async ({ page }) => {
-    await page.goto("/paroles", { waitUntil: "domcontentloaded" });
+  test("/temoignages : la page « Paroles de parents » rend (recherche)", async ({ page }) => {
+    // Réconciliation 24/07 (main canonique) : la parole passe par la page
+    // /temoignages de Thomas (searchHeader + searchProStatic) — l'ancienne
+    // /paroles du MR a été retirée comme doublon.
+    await page.goto("/temoignages", { waitUntil: "domcontentloaded" });
     await waitForHydration(page);
 
-    await expect(page.getByRole("heading", { name: /Paroles de parents/ })).toBeVisible();
-    for (const tab of ["Toutes", "Compliqué", "Difficile", "Ce qui est à changer"]) {
-      await expect(page.getByRole("tab", { name: tab })).toBeVisible();
-    }
-    await expect(page.getByRole("tab", { name: "Toutes" })).toHaveAttribute(
-      "aria-selected",
-      "true",
-    );
+    await expect(
+      page.getByRole("heading", { name: "Paroles de parents" }).first(),
+    ).toBeVisible();
+    await expect(page.getByPlaceholder("Rechercher une parole…")).toBeVisible();
   });
 
   test("/territoire/arrageois : bandeau et liste des communes", async ({ page }) => {
@@ -187,7 +186,9 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     // next-themes (attribute="class") lit localStorage.theme au démarrage.
     await page.addInitScript(() => localStorage.setItem("theme", "dark"));
     await page.goto("/", { waitUntil: "domcontentloaded" });
-    await page.waitForTimeout(2000);
+    // Attendre l'hydratation (listener de scroll attaché) avant de scroller —
+    // sinon le wheel part avant que `useScrollAware` n'écoute (bundle lourd).
+    await waitForHydration(page);
 
     await expect(page.locator("html")).toHaveClass(/dark/);
 
@@ -195,8 +196,9 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     await expect(headerNav).toHaveClass(/bg-linear-to-b/);
     await expect(headerNav.locator("a", { hasText: "Rechercher" }).first()).toBeVisible();
 
-    await page.mouse.wheel(0, 800);
-    await page.waitForTimeout(600);
+    // Scroll réel (window.scrollTo → event `scroll`) ; l'assertion auto-retry
+    // jusqu'à ce que le header bascule opaque.
+    await page.evaluate(() => window.scrollTo(0, 800));
     await expect(headerNav).toHaveClass(/bg-background\/90/);
   });
 });
