@@ -188,6 +188,11 @@ export const ProfileGallerySectionSchema = z.object({
   lightbox: z.boolean().optional().default(true),
 });
 
+export const ProfileDocumentsSectionSchema = z.object({
+  type: z.literal("profile-documents"),
+  title: LocalizedString.optional(),
+});
+
 export const ProfileRelatedSectionSchema = z.object({
   type: z.literal("profile-related"),
   title: LocalizedString.optional(),
@@ -261,6 +266,7 @@ const ProfileOnlySectionSchema = z.discriminatedUnion("type", [
   ProfileOrganizerSectionSchema,
   ProfileMembersSectionSchema,
   ProfileGallerySectionSchema,
+  ProfileDocumentsSectionSchema,
   ProfileRelatedSectionSchema,
   ProfileActionsSectionSchema,
   ProfileEventDatesSectionSchema,
@@ -396,6 +402,7 @@ export type ProfileMapSection = z.infer<typeof ProfileMapSectionSchema>;
 export type ProfileOrganizerSection = z.infer<typeof ProfileOrganizerSectionSchema>;
 export type ProfileMembersSection = z.infer<typeof ProfileMembersSectionSchema>;
 export type ProfileGallerySection = z.infer<typeof ProfileGallerySectionSchema>;
+export type ProfileDocumentsSection = z.infer<typeof ProfileDocumentsSectionSchema>;
 export type ProfileRelatedSection = z.infer<typeof ProfileRelatedSectionSchema>;
 export type ProfileActionsSection = z.infer<typeof ProfileActionsSectionSchema>;
 export type AddConfig = z.infer<typeof AddConfigSchema>;

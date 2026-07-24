@@ -32,7 +32,7 @@ export function useArticleFeed({ costumSlug, pageSize = 12, filters }: UseArticl
   // Filtres sans `field` (types/tags cochés) → searchTags ($all). Clé canonique `tags` (comme
   // SearchProStatic) — buildSearchPayload aplatit de toute façon les valeurs, mais on garde la convention.
   const searchTags = useMemo(
-    () => (filterNames && filterNames.length ? { tags: [...filterNames] } : {}),
+    (): Record<string, string[]> => (filterNames && filterNames.length ? { tags: [...filterNames] } : {}),
     [filterNames],
   );
   // Filtres avec `field` (ex. champ `list` du costum) → filtres Mongo `{ field: { $in } }`

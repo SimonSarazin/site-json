@@ -8,16 +8,7 @@ import { SearchCardProps } from "../../schema";
 import useItem from "../../hooks/useItem";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useMemo } from "react";
-
-/**
- * Raccourcit un tag très long: conserve le début et la fin pour lisibilité.
- * Exemple: «super-long-hyper-tag» → «super‑lo…tag»
- */
-function shortenTag(tag: string, maxLength = 18): string {
-  if (tag.length <= maxLength) return tag;
-  const sliceLen = Math.floor((maxLength - 1) / 2);
-  return `${tag.slice(0, sliceLen)}…${tag.slice(-sliceLen)}`;
-}
+import { shortenTag } from "@/helpers/shortenTag";
 
 export default function CardDefault({
   item,

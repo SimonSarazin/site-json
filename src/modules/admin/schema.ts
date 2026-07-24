@@ -42,10 +42,15 @@ export const AdminStatusConfigSchema = z.object({
   notifyEmail: z.boolean().default(false),
 });
 
-/** Colonnes de table : chemin pointé brut (`"address.addressLocality"`) OU `{path, label}` (libellé localisé). */
+/** Colonnes de table : chemin pointé brut (`"address.addressLocality"`) OU `{path, label, type}` (libellé localisé). */
 export const AdminColumnsSchema = z.array(z.union([
   z.string(),
-  z.object({ path: z.string(), label: LocalizedString.optional() }),
+  z.object({
+    path: z.string(),
+    label: LocalizedString.optional(),
+    /** Rendu de la cellule : `text` (défaut) ou `audio` (lecteur audio depuis un `medias[].url` / une URL). */
+    type: z.enum(["text", "audio"]).optional(),
+  }),
 ]));
 
 /** Accès minimum d'une SECTION (surcharge l'accès page/onglet — cf. AdminConfig.access). */

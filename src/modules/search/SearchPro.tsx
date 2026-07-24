@@ -391,9 +391,7 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
 
             <SearchListView
               results={transformedResults}
-              columns={list?.columns}
-              card={list?.card}
-              preview={list?.preview}
+              list={list}
               isDetailedView={isDetailedView}
             />
 

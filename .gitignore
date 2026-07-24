@@ -49,3 +49,9 @@ agent-os/
 
 # Référence locale (symlink vers la lib cocolight-api-endpoint = source de @communecter/cocolight-api-client) — non versionné
 reference/
+# design-sync (scripts stagés + sorties machine)
+.ds-sync/
+ds-bundle/
+.design-sync/.cache/
+.design-sync/learnings/
+.design-sync/node_modules

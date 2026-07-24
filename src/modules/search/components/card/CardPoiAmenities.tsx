@@ -20,18 +20,9 @@ import { Separator } from "@/components/ui/separator";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { cn } from "@/lib/utils";
 import { useInstallationFilter } from "../../hooks/useInstallationFilter";
+import { toValidDate } from "@/helpers/formatDate";
+import { isTrue } from "../../lib/poiAmenities";
 import { SearchCardProps } from "../../schema";
-
-/** Champ costum d'accessibilité stocké en `"1"`/`"oui"`/`true` → booléen. */
-const isTrue = (value: unknown): boolean => {
-	if (typeof value === "boolean") return value;
-	if (typeof value === "number") return value === 1;
-	if (typeof value === "string") {
-		const n = value.trim().toLowerCase();
-		return n === "true" || n === "1" || n === "oui" || n === "yes";
-	}
-	return false;
-};
 
 function Feature({
 	label,
@@ -54,20 +45,6 @@ function Feature({
 			<span className="truncate">{label}</span>
 		</div>
 	);
-}
-
-/**
- * `serverData` expose les dates en `Date` (entités revifiées, normalisées par la
- * lib) ou en string ISO (après hydratation SSR où les `Date` JSON sont sérialisées).
- * On gère Date + string ISO — sans heuristique epoch.
- */
-function toDate(value: unknown): Date | null {
-	if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
-	if (typeof value === "string" && value.trim().length > 0) {
-		const date = new Date(value.trim());
-		return Number.isNaN(date.getTime()) ? null : date;
-	}
-	return null;
 }
 
 /** Placeholder déterministe (SSR-safe) : initiales sur fond coloré par hash. */
@@ -120,7 +97,7 @@ export default function CardPoiAmenities({ item, onClick, card }: SearchCardProp
 		.filter(Boolean)
 		.join(" ");
 
-	const createdDate = toDate(serverData.inst_date_creation ?? serverData.created);
+	const createdDate = toValidDate(serverData.inst_date_creation ?? serverData.created);
 	const formattedDate = createdDate
 		? format(createdDate, "d MMMM yyyy", { locale: getDateFnsLocale() })
 		: null;

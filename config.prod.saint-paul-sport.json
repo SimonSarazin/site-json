@@ -2849,6 +2849,59 @@
       }
     },
     {
+      "path": "/actualites",
+      "title": {
+        "fr": "Actualités - Saint-Paul Sport",
+        "en": "News - Saint-Paul Sport"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "actualites-header",
+          "props": {
+            "headline": { "fr": "Actualités", "en": "News" },
+            "subhead": { "fr": "Toutes les actualités du sport à Saint-Paul", "en": "All sports news in Saint-Paul" }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "actualites-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": {
+              "defaultTypes": ["news"],
+              "notSourceKey": true,
+              "defaultSortBy": { "created": -1 },
+              "defaultFilters": {
+                "$or": {
+                  "address.localityId": "54c0965cf6b95c141800a518",
+                  "source.key": "saintpaulSport1",
+                  "source.keys": "saintpaulSport1"
+                }
+              }
+            },
+            "list": {
+              "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 3 },
+              "card": { "type": "news", "detailsMode": "dialog" },
+              "preview": { "type": "news", "showDetailLink": true }
+            }
+          }
+        }
+      ],
+      "seo": {
+        "description": {
+          "fr": "Les actualités des équipements et du sport à Saint-Paul.",
+          "en": "News about sports and facilities in Saint-Paul."
+        }
+      }
+    },
+    {
       "path": "/mentions-legales",
       "title": {
         "fr": "Mentions légales - Saint-Paul Sport",

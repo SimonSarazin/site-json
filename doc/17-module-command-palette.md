@@ -1,6 +1,6 @@
 [← Retour à l'index](README.md)
 
-# Module Command Palette (Cmd+K) — RFC
+# Module Command Palette (Cmd+K)
 
 > ✅ **Statut : IMPLÉMENTÉ.** Le module `src/modules/commandPalette/` existe et
 > est fonctionnel. Ce document conserve le RFC d'origine (sections 1-11) comme
@@ -25,23 +25,113 @@ globale, montée dans `RootLayout`/`SiteShell` autour de `<Outlet/>`.
 | racine | `schema.ts` (`CommandPaletteConfigSchema`) ; `i18n.ts` + `i18n/{fr,en}.json` ; `module.config.ts` ; `index.ts` |
 | `__tests__/` | 41 tests (registry, matchCommand, commandFilter, sources, useGlobalShortcut, CommandTriggerButton, CommandPalette) |
 
-**Source externe** : `src/modules/profil/commands/register.tsx` — recherche
-d'entités backend (`entity.searchCostum`), source **async**, dégradée en `[]`
-sans backend/entité costum. **Payload configurable** via
-`commandPalette.entitySearch` : `enabled`, `searchType`, `limit`, et un
-passe-plat `params` (fusionné dans le payload `searchCostum` — filters, scope…).
+**Sources externes** : `sources/bootstrap.ts` auto-enregistre **trois** sources
+de modules **core** (en plus des sources `navigation`/`actions` du core) :
+`profil` (namespace `profil:entities`, décrite ici), `admin` (`admin:entry`) et
+`blog` (`blog:articles`) — ces deux dernières détaillées dans la sous-section
+« Sources externes supplémentaires » plus bas.
 
-**Action au clic sur un résultat d'entité** (`itemAction` / `itemActionByType`,
-pattern `table.rowAction` de l'observatoire) : défaut = navigation
-`/profil/:slug` ; `{"kind": "preview", "detailsMode": "drawer"|"dialog",
-"preview": {"type": "poi-amenities"…}}` ouvre le **détail du module search**
-(`SwitchDetailsMode`, chargé lazy au premier clic) au lieu de naviguer —
-surchargeable **par type d'entité** (`itemActionByType: {"poi": {…}}` prime sur
-`itemAction`). L'état du détail vit dans `CommandPalette` (qui reste monté) :
+**Source `profil`** : `src/modules/profil/commands/register.tsx` — recherche
+d'entités backend (`entity.searchCostum`), source **async**, dégradée en `[]`
+sans backend/entité costum. Payload et action configurables via
+`commandPalette.entitySearch` — **9 champs** (cf. la table ci-dessous).
+
+**Action au clic sur un résultat d'entité** (`itemAction` / `itemActionByType` /
+`itemActionBySubType`, pattern `table.rowAction` de l'observatoire) : défaut =
+navigation `/profil/:slug` ; un objet
+`{"kind": "preview", "detailsMode"?, "preview"?, "list"?}` ouvre le **détail du
+module search** (`SwitchDetailsMode`, chargé lazy au premier clic) au lieu de
+naviguer. La résolution suit **4 niveaux** de précédence (cf. `register.tsx`) :
+`itemActionBySubType[serverData.type]` (sous-type POI, ex. `recoveryCenter` /
+`affiche`) > `itemActionByType[getEntityType()]` (ex. `poi` / `events`) >
+`itemAction` (global) > défaut navigation profil. `itemActionBySubType` est le
+**seul** moyen de router des POI de sous-types différents — qui partagent le
+type d'entité `poi` — vers des previews distincts (`recoveryCenter` → `resource`,
+`affiche` → `testimonial`). Le champ `detailsMode` est désormais **optionnel** :
+`CommandPalette` ne force **plus** `dialog` par défaut (`opts.detailsMode ??
+"dialog"` retiré) — sans valeur explicite, le conteneur est dérivé de
+`list.card.detailsMode`, sinon défaut **drawer** de `SwitchDetailsMode` (`card`
+n'est passé à `SwitchDetailsMode` que si `detailsMode` est fourni). Le champ
+`list` (bloc `list` du module search : mappings de champs, couleurs, facettes)
+est **indispensable** aux previews CONFIG-DRIVEN `resource`/`testimonial` (sans
+lui ils rendent en défauts génériques) ; `PreviewEvent`/`PreviewDefault` n'en
+ont pas besoin. L'état du détail vit dans `CommandPalette` (qui reste monté) :
 la palette se ferme puis le détail s'ouvre. Sans hôte (`run.openEntityPreview`
 absent), repli sur la navigation profil. Exemple :
 `config.prod.equipements-Sportifs.json` (résultats = équipements POI → dialog
 `poi-amenities`, comme la liste `/equipements-sportifs` et l'observatoire).
+
+### Champs de `entitySearch` (source profil)
+
+La source `profil:entities` lit le bloc top-level optionnel
+`commandPalette.entitySearch` (`src/modules/commandPalette/schema.ts`) — **9
+champs**, tous optionnels :
+
+| Champ | Type | Défaut | Rôle |
+|---|---|---|---|
+| `enabled` | `boolean` | `true` | `false` → source entièrement désactivée. |
+| `searchType` | `string[]` | `["organizations","projects","events","poi","citoyens"]` | Types d'entités cherchés (fallback dans `register.tsx`). |
+| `excludeTypes` | `string[]` | — | Valeurs de `serverData.type` (sous-type POI) EXCLUES des résultats (post-filtre client). Ex. `["article"]` : les articles sont servis par `blog:articles`, pas l'annuaire. |
+| `limit` | `number` | `8` | Nombre max de résultats (passé en `indexStep`). |
+| `params` | `Record<string, unknown>` | — | Champs additionnels fusionnés dans le payload `searchCostum` (avancé : `filters`, `notSourceKey`, scope costum…). |
+| `iconRules` | `IconRule[]` | — | Icône du résultat par RÈGLE prédicat→icône lucide (cf. `IconRuleSchema`). |
+| `itemAction` | `EntityItemAction` | — | Action au clic **globale** (défaut : navigation `/profil/:slug`). |
+| `itemActionByType` | `Record<string, EntityItemAction>` | — | Surcharge par TYPE d'entité (clé = `getEntityType()`, ex. `"poi"`, `"events"`). |
+| `itemActionBySubType` | `Record<string, EntityItemAction>` | — | Surcharge par SOUS-TYPE POI (clé = `serverData.type`, ex. `"recoveryCenter"`, `"affiche"`) — **plus prioritaire** que `itemActionByType`. |
+
+> Aucun `.default()` n'est appliqué au runtime (config jamais Zod-parsée) : les
+> fallbacks (`searchType`, `limit = 8`) vivent dans `register.tsx` — écrire les
+> clés explicitement dans le JSON.
+
+**`IconRuleSchema`** (symbole exporté par `schema.ts`) =
+`z.object({ when: PredicateJson, icon: z.string() })`. Pour chaque résultat, la
+**1re** règle de `iconRules[]` dont le prédicat `when` matche
+`{ ...serverData, collection }` gagne → `<DynamicIcon name={icon}/>` ; sinon repli
+sur `getEntityIcon(type)`. Le prédicat réutilise **exactement** `PredicateJson`
+de `requiredIf`/`visibleIf` (`{field, op, value}` + `and`/`or`/`not`). Imports :
+`register.tsx` importe `check` depuis `@/modules/formEngine/engine/conditional`,
+`Predicate`/`FormValues` depuis `@/modules/formEngine/types`, `DynamicIcon`/
+`IconName` depuis `lucide-react/dynamic` ; `schema.ts` importe `PredicateJson`
+depuis `@/modules/formEngine/config` et `ListConfSchema` depuis
+`@/modules/search/schema`.
+
+**`EntityItemActionSchema`** =
+`{ kind: "profil"|"preview", detailsMode?: "drawer"|"dialog", preview?: PreviewConf, list?: ListConf }`.
+Le champ `list` est threadé de bout en bout :
+`openEntityPreview(item, {detailsMode, preview, list})` (`registry/types.ts`,
+`CommandRunContext`) → `CommandPalette` → `SwitchDetailsMode`, qui dérive
+`card`/`preview` de `list.card`/`list.preview` quand ils ne sont pas fournis
+explicitement.
+
+### Sources externes supplémentaires (`admin:entry`, `blog:articles`) et bloc `articleSearch`
+
+**Source `admin`** (`src/modules/admin/commands/register.tsx`, namespace
+`admin:entry`, ordre 20) : entrée « Administration » (`nav:/admin`) + un
+raccourci par onglet `config.admin.tabs[]` **sans `condition`** (deep-link
+`/admin/:id`). Visible **uniquement** si `isAdminEntryVisible(config, me, entity)`
+(admin activé en config + niveau ≥ admin). Le gate est porté par la **source
+elle-même**, pas par un namespace `permissions` (celui-ci reste inutilisé).
+
+**Source `blog`** (`src/modules/blog/commands/register.tsx`, namespace
+`blog:articles`, ordre 40) : articles (POI `type:"article"`) scopés au costum via
+`entity.searchCostum` (payload construit par `buildSearchPayload`), source
+**async** (ouverture + requête ≥ 2 caractères). Au clic → reader
+**`/blog/:slug`** (ou `/blog/id/:id` pour les articles sans slug), **jamais**
+`/profil/:slug` : c'est ce qui la distingue de `profil:entities`. Dégradée en
+`[]` sans backend, sans config ou sur erreur.
+
+Config via le bloc top-level `commandPalette.articleSearch` (fourni par le module
+blog) :
+
+| Champ | Type | Défaut | Rôle |
+|---|---|---|---|
+| `enabled` | `boolean` | `true` | `false` → source inactive. |
+| `costumSlug` | `string` | — (**requis**) | Scope `source.key` des articles ; sans lui la source est inactive. |
+| `limit` | `number` | `8` | Nombre max de résultats (passé en `indexStep`). |
+| `detailBasePath` | `string` | `/blog` | Base de l'URL de détail. **Actuellement ignoré** : le reader est **forcé** à `/blog` (garde anti open-redirect). |
+
+Bloc `articleSearch` absent → source `blog:articles` inactive. (Fallbacks en
+code, config jamais Zod-parsée : écrire `costumSlug` explicitement.)
 
 **Intégration** : le bouton de header réutilise le flag **existant**
 `header.utilities.search` — qui ouvre désormais la palette (au lieu d'un bouton
@@ -68,7 +158,10 @@ Activé sur `config.prod.tiers-lieux.json` (`utilities.search: true`
    était signalé § 11.2.6.
 3. **Pas de namespace `permissions`** : le `canRunAdminActions` du RFC n'a aucun
    consommateur (code mort). Les commandes s'auto-gatent (ex. la déconnexion
-   n'apparaît que si `me`). À ajouter quand une source admin existera.
+   n'apparaît que si `me`) — y compris la source `admin:entry`
+   (`src/modules/admin/commands/register.tsx`), qui existe désormais mais se
+   gate via `isAdminEntryVisible(config, me, entity)` et **non** via le namespace
+   `permissions` (celui-ci reste donc inutilisé).
 4. **Sources = fonctions PURES d'un `CommandReadContext`** résolu par
    `useCommands` (config, me, entity, locale, theme) ; les capacités impératives
    (navigate, setTheme, setLocale, api) passent par le `CommandRunContext` de

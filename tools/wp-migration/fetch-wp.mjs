@@ -57,6 +57,33 @@ function decodeEntities(s = "") {
 }
 const htmlToText = (html = "") => decodeEntities(html.replace(/<[^>]+>/g, "").replace(/\s+/g, " ")).trim();
 
+// ── Taxonomies CUSTOM (territoires / publics / themes) ────────────────────────
+// Non exposées en REST (404/401) → seule source = `post.class_list` (préfixes
+// `territoires-<slug>` / `publics-<slug>` / `themes-<slug>`). On mappe le slug WP
+// vers le NOM canonique (listes officielles du widget Search&Filter du site).
+const wpSlug = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "")
+  .replace(/['’‘]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+const TAX_NAMES = {
+  territoires: ["Arrageois", "Artois", "Audomarois", "Boulonnais", "Calaisis", "Entre Mer et Terres",
+    "Familles en sol mineur", "Familles en sol mineur Hénin Carvin", "Familles en sol mineur Lens Liévin", "Ternois Bruaysis"],
+  publics: ["Bénévoles", "En famille", "Enfance", "Futurs parents", "Parents", "Parents-enfants", "Professionnels"],
+  themes: ["L’arrivée d’un enfant", "L’école", "L’éducation", "L’adolescence", "La citoyenneté", "La communication",
+    "La culture", "La petite enfance", "La santé", "Le deuil", "Le handicap", "Le répit",
+    "Les activités supports à la relation", "Les écrans – Le numérique", "Les émotions", "Les jeux",
+    "Les situations de séparation", "Les violences"],
+};
+const TAX_MAP = Object.fromEntries(Object.entries(TAX_NAMES).map(([k, names]) =>
+  [k, Object.fromEntries(names.map((n) => [wpSlug(n), n]))]));
+// Alias slug WP → nom canonique quand le slug diffère du slug dérivé du nom (slug historique conservé au renommage) :
+TAX_MAP.publics["professionnel"] = "Professionnels";          // term slug singulier ⇒ nom "Professionnels"
+TAX_MAP.themes["le-numerique"] = "Les écrans – Le numérique"; // ancien slug ⇒ nom "Les écrans – Le numérique" (id 2131)
+const deSlug = (s) => s.split("-").map((w) => w ? w[0].toUpperCase() + w.slice(1) : w).join(" ");
+function taxFromClassList(classList, kind) {
+  const pfx = kind + "-", map = TAX_MAP[kind];
+  return [...new Set((classList || []).filter((c) => c.startsWith(pfx))
+    .map((c) => { const s = c.slice(pfx.length); return map[s] || deSlug(s); }))];
+}
+
 // ── fetch JSON avec entêtes (pour X-WP-Total*) + retries ──────────────────────
 async function getJson(url) {
   for (let attempt = 1; attempt <= 4; attempt++) {
@@ -162,6 +189,10 @@ async function fetchTaxonomy(kind) {
         categories: (p.categories || []).map((id) => cats.get(id)?.name).filter(Boolean),
         categorySlugs: (p.categories || []).map((id) => cats.get(id)?.slug).filter(Boolean),
         tags: (p.tags || []).map((id) => tags.get(id)?.name).filter(Boolean),
+        // Taxonomies custom depuis class_list (territoire/public/thème) — cf. TAX_MAP ci-dessus.
+        territoires: taxFromClassList(p.class_list, "territoires"),
+        publics: taxFromClassList(p.class_list, "publics"),
+        themes: taxFromClassList(p.class_list, "themes"),
         author: users.get(p.author)?.name || p._embedded?.author?.[0]?.name || null,
         featuredImage: featuredUrl ? { originalUrl: featuredUrl, localPath: featuredLocal, alt: decodeEntities(fm?.alt_text || "") } : null,
         inlineImages: inline.filter((i) => i.localPath),

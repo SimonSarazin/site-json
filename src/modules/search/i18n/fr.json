@@ -8,6 +8,20 @@
         "saturday": "Samedi",
         "sunday": "Dimanche"
     },
+    "testimonial": {
+        "listen": "Écouter",
+        "listenTitle": "Écouter le témoignage"
+    },
+    "resource": {
+        "open": "Ouvrir le lien",
+        "watch": "Regarder la vidéo",
+        "download": "Télécharger",
+        "gallery": "Galerie",
+        "documents": "Documents",
+        "audio": "Audio",
+        "video": "Vidéo",
+        "links": "Liens"
+    },
     "CardResourceBooking": {
         "price": "Prix d'usage:",
         "location": "Localisation:",
@@ -212,5 +226,17 @@
     "Adresse inconnue": "Adresse inconnue",
     "Tous": "Tous",
     "{{count}} sélectionnés": "{{count}} sélectionnés",
-    "{{count}} résultats groupés": "{{count}} résultats groupés"
+    "{{count}} résultats groupés": "{{count}} résultats groupés",
+    "a créé": "a créé",
+    "a partagé": "a partagé",
+    "a modifié": "a modifié",
+    "a publié": "a publié",
+    "sur": "sur",
+    "Quelqu'un": "Quelqu'un",
+    "Actualité": "Actualité",
+    "Voir en page": "Voir en page",
+    "Aperçu détaillé indisponible pour cette actualité.": "Aperçu détaillé indisponible pour cette actualité.",
+    "Lire": "Lire",
+    "Privé": "Privé",
+    "Réservé aux membres": "Réservé aux membres"
 }

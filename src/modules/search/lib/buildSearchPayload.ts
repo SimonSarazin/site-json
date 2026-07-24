@@ -157,6 +157,10 @@ export function buildSearchPayload(
     variant,
   });
 
+  // NB : l'exclusion des items de FIL (activityStream/activitypub) pour `searchType: news` est désormais
+  // faite DANS LA LIB (`withNewsActivityExclusion`, appliqué par `entity.searchCostum`) — invariant valable
+  // pour tout consommateur, source unique. On ne la duplique donc plus ici.
+
   const indexing =
     indexStep !== undefined
       ? { indexMin: 0, indexStep }

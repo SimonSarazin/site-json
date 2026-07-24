@@ -15,6 +15,8 @@ import { IconFormField } from "../components/profile-edit/fields/IconFormField";
 import { FormFieldTags } from "../components/profile-edit/fields/FormFieldTags";
 import { FormFieldMarkdown } from "../components/profile-edit/fields/FormFieldMarkdown";
 import { TranslatedFormMessage } from "../components/profile-edit/fields/TranslatedFormMessage";
+import GalleryUploadField, { emptyGalleryValue, type GalleryValue } from "../components/profile-edit/fields/GalleryUploadField";
+import DocumentUploadField from "../components/profile-edit/fields/DocumentUploadField";
 
 // Composites LOURDS chargés à la demande (code-split Vite) — préservé à l'identique.
 const ImageUploadField = lazy(() => import("../components/profile-edit/fields/ImageUploadField"));
@@ -65,6 +67,43 @@ registerWidget("image", (p) => (
     )} />
   </Suspense>
 ));
+
+// gallery : galerie multi-images (Option C). Collecte locale ; upload post-save par `runEntityMutation`
+// (via `entity.uploadDocument(file, {contentKey})`). Valeur = GalleryValue (auto-reconnue par l'orchestration).
+registerWidget("gallery", (p) => {
+  const contentKey = (p.field.widgetProps?.contentKey as string) ?? "slider";
+  const docType = ((p.field.widgetProps?.docType as string) ?? "image") as "image" | "file";
+  return (
+    <FormField control={control(p.form)} name={fname(p.field.name)} render={({ field }) => (
+      <GalleryUploadField
+        value={(field.value as GalleryValue) ?? emptyGalleryValue(contentKey, docType)}
+        onChange={(v) => field.onChange(v)}
+        label={lbl(p)}
+        hint={p.field.info ? p.t(p.field.info) : undefined}
+        maxItems={p.field.widgetProps?.maxItems as number | undefined}
+      />
+    )} />
+  );
+});
+
+// file : documents non-image (pendant fichier de "gallery"). Collecte locale ; upload/suppression
+// post-save par `processGalleryFields` (via `entity.uploadDocument(file, {contentKey, docType:"file"})`).
+registerWidget("file", (p) => {
+  const contentKey = (p.field.widgetProps?.contentKey as string) ?? "file";
+  return (
+    <FormField control={control(p.form)} name={fname(p.field.name)} render={({ field }) => (
+      <DocumentUploadField
+        value={(field.value as GalleryValue) ?? emptyGalleryValue(contentKey, "file")}
+        onChange={(v) => field.onChange(v)}
+        label={lbl(p)}
+        hint={p.field.info ? p.t(p.field.info) : undefined}
+        maxItems={p.field.widgetProps?.maxItems as number | undefined}
+        accept={p.field.widgetProps?.accept as string | undefined}
+        allowRecording={p.field.widgetProps?.allowRecording as boolean | undefined}
+      />
+    )} />
+  );
+});
 
 // location : EditLocationTab (API villes/rues via useCocolight). Erreur cross-champ portée sur `address`.
 registerWidget("location", (p) => {

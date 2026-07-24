@@ -2,6 +2,7 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { Header } from "@/types/site-schema";
 import HeaderLogo from "./HeaderLogo";
+import { logoSquareClass, logoSizePx } from "./logoSize";
 import { useLocation } from "react-router";
 import { useScrollAware, useScrollToTopOnRouteChange, useNavItemActive } from "./useHeaderBehavior";
 import NavLink from "../NavLink";
@@ -41,8 +42,9 @@ export default function HeaderUnderlineNav({ header }: HeaderUnderlineNavProps) 
                         <HeaderLogo
                             header={header}
                             iconTone="primary"
-                            imageClassName="h-8 w-8 object-contain group-hover:scale-110 transition-transform"
+                            imageClassName={`${logoSquareClass(header.logoSize)} object-contain group-hover:scale-110 transition-transform`}
                             iconClassName="w-8 h-8 group-hover:scale-110 transition-transform"
+                            imageHeight={logoSizePx(header.logoSize)}
                         />
                         {header.logoTitle && (
                             <span className="text-xl font-bold text-white">{t(header.logoTitle)}</span>

@@ -572,9 +572,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
               <SearchListView
                 results={splitGeoResults}
                 columns={splitLayout.columns}
-                card={list?.card}
-                preview={list?.preview}
-                previewParam={list?.previewParam}
+                list={list}
                 focusedItemId={focusedItemId}
                 onFocusItem={setFocusedItemId}
               />
@@ -718,7 +716,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                 setOpenDetails={setGraphOpenDetails}
                 item={graphSelectedItem}
                 card={{ detailsMode: graphDetailsMode === "link" ? "drawer" : graphDetailsMode }}
-                preview={list?.preview}
+                list={list}
               />
             )}
           </div>
@@ -838,10 +836,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
 
                 <SearchListView
                   results={transformedResults}
-                  columns={list?.columns}
-                  card={list?.card}
-                  preview={list?.preview}
-                  previewParam={list?.previewParam}
+                  list={list}
                   isDetailedView={isDetailedView}
                 />
 

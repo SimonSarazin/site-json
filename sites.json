@@ -1,5 +1,10 @@
 [
   {
+    "slug": "parent62",
+    "config": "config.prod.parent62.json",
+    "css": "index-parent62"
+  },
+  {
     "slug": "cyberReunion",
     "config": "config.prod.cyber-reunion.json",
     "css": "index-cyber-reunion"

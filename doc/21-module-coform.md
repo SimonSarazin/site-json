@@ -91,7 +91,8 @@ src/modules/coform/
 │   ├── FinderSearchModal.tsx    # Modale de recherche du Finder
 │   ├── FormFields.tsx           # TextField, TextAreaField, RadioField, CheckboxField,
 │   │                            #   SectionTitleField, SectionDescriptionField, ProseContent, FieldError
-│   ├── MarkdownEditor.tsx       # Éditeur Markdown client-only (@uiw/react-md-editor)
+│   ├── MarkdownEditor.tsx       # Éditeur Markdown client-only (@uiw/react-md-editor) — thème global,
+│   │                            #   toolbar réduite, preview sanitisée (renderMarkdown), overflow={false}
 │   ├── MultiCheckboxPlusField.tsx # Checkbox + champ texte optionnel par option
 │   ├── MultiRadioField.tsx      # Radio à sélection unique avec options simples/complexes
 │   ├── MultiStepCoForm.tsx      # Wizard multi-étapes avec navigation
@@ -412,6 +413,16 @@ Définis dans `FormFields.tsx` :
 `FormFields.tsx` exporte aussi `ProseContent` (HTML ou Markdown selon le contenu) et `FieldError` (message d'erreur accessible avec `role="alert"` et `aria-describedby`).
 
 **`MarkdownEditor`** (`components/MarkdownEditor.tsx`) : wrapper client-only autour de `@uiw/react-md-editor`. Utilise `useClientModule` (et non `React.lazy`) pour éviter l'erreur SSR `ERR_UNKNOWN_FILE_EXTENSION` causée par le CSS interne de la lib.
+
+Props : `{ value, onChange?, height=200, preview="edit"|"live"|"preview" }`.
+
+**Thème dynamique.** La lib se thème via l'attribut `data-color-mode="light"|"dark"` sur le wrapper. Le wrapper est branché sur le thème **global** du site via `useTheme().resolvedTheme` (next-themes ; `resolvedTheme` résout aussi `"system"`) → `colorMode = resolvedTheme === "dark" ? "dark" : "light"`. L'éditeur suit donc le clair/sombre du site (avant : figé `"light"`).
+
+**`overflow={false}` (fuite `body.style.overflow`).** Le Toolbar de `@uiw/react-md-editor` gère le scroll du `<body>` pour son plein écran via un `useEffect` **SANS cleanup** au démontage (`document.body.style.overflow = 'hidden'/originalOverflow`). Dans une **modale** (`CoFormModal`), à la fermeture l'éditeur est démonté et laisse `<body style="overflow:hidden">` inline → **scroll de page perdu**. C'est la seule lib du repo qui touche `body.style.overflow` en assignation directe. `overflow={false}` désactive cette gestion (inutile dans une modale). Complémentaire du fix Dialog `e7db310` (animation de sortie → libère le compteur `react-remove-scroll`) : les **deux** sont nécessaires (compteur + overflow inline).
+
+**Toolbar réduite** (`commands` / `extraCommands`). La barre par défaut (~25 boutons) est ramenée à l'essentiel article : gras, italique, barré, titres, lien, citation, listes (à puces / numérotée / cochée), image, code, + bascule édition/aperçu (`codeEdit`/`codePreview`). Sont retirés table, code block, comment, et surtout **`fullscreen`** — volontairement, car c'est lui qui manipule `body.style.overflow` (cf. `overflow={false}`).
+
+**Preview sanitisée** (`components.preview`). L'aperçu est rendu via `helpers/renderMarkdown` (markdown-it + DOMPurify de `lib/sanitize`) dans un `<div className="wmde-markdown">` — **exactement le même pipeline** que le rendu public de l'article (`ArticleReader`). Remplace le rendu rehype par défaut de la lib (non assaini) → **anti-XSS** + WYSIWYG fidèle à la publication.
 
 ---
 

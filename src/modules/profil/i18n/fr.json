@@ -776,6 +776,18 @@
       "eventError": "Impossible de créer l'événement",
       "poiSuccess": "Lieu créé avec succès",
       "poiError": "Impossible de créer le lieu"
+    },
+    "gallery": {
+      "addSuccess": "Image ajoutée à la galerie",
+      "addError": "Échec de l'ajout de l'image",
+      "deleteSuccess": "Image supprimée",
+      "deleteError": "Échec de la suppression"
+    },
+    "documents": {
+      "addSuccess": "Document ajouté",
+      "addError": "Échec de l'ajout du document",
+      "deleteSuccess": "Document supprimé",
+      "deleteError": "Échec de la suppression"
     }
   },
   "ProfileEdit": {
