@@ -94,31 +94,47 @@ export function resolveEditModalName(
   // Pas besoin de pluraliser à nouveau.
   const profileKey = typeof entity.getEntityType === "function" ? entity.getEntityType() : null;
   const profiles = config.profiles as
-    | Record<string, { editModal?: string; editModalMatch?: Record<string, unknown> } | undefined>
+    | Record<string, {
+        editModal?: string;
+        editModalMatch?: Record<string, unknown>;
+        editModals?: Array<{ editModal: string; editModalMatch?: Record<string, unknown> }>;
+      } | undefined>
     | undefined;
   const profileConfig = profileKey ? profiles?.[profileKey] : undefined;
-
-  if (!profileConfig?.editModal) return "edit-profile";
-
   const serverData = (entity.serverData ?? {}) as Record<string, unknown>;
-  if (!matchesEditModalCondition(serverData, profileConfig.editModalMatch)) {
-    return "edit-profile";
+
+  // 1. Table de routage multi sous-types (costum à plusieurs forms / collection) : PREMIER match gagne.
+  //    (ex. poi → edit-<slug>-recoveryCenter si type==="recoveryCenter", edit-<slug>-article si "article", …)
+  if (Array.isArray(profileConfig?.editModals)) {
+    for (const route of profileConfig.editModals) {
+      if (route.editModal && matchesEditModalCondition(serverData, route.editModalMatch)) return route.editModal;
+    }
   }
 
-  return profileConfig.editModal;
+  // 2. Rétro-compat : editModal unique conditionnel (comportement historique).
+  if (profileConfig?.editModal && matchesEditModalCondition(serverData, profileConfig.editModalMatch)) {
+    return profileConfig.editModal;
+  }
+
+  // 3. Générique.
+  return "edit-profile";
 }
 
 /**
  * Wrapper config-driven : choisit dynamiquement le modal d'édition pour l'entité.
  * Remplace les usages directs de `<EditProfileModal>` dans les headers de profil.
+ * `modalName` (optionnel) FORCE une clé (ex. `edit-<costum>` ou `edit-profile`) en
+ * court-circuitant la résolution `profiles[type].editModal` — utilisé par l'admin
+ * quand la config de section choisit explicitement costum ou standard.
  */
 export function DynamicEditModal({
   open,
   onOpenChange,
   entity,
-}: EditModalProps) {
+  modalName: forcedModalName,
+}: EditModalProps & { modalName?: string }) {
   const { config } = useSite();
-  const modalName = resolveEditModalName(entity, config);
+  const modalName = forcedModalName ?? resolveEditModalName(entity, config);
   ensureLazyEditModal(modalName);
   const ModalComponent = lazyComponents[modalName];
 

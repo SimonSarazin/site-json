@@ -10,7 +10,7 @@ interface UseAutocompleteOptions {
   /** Scope réseau — mêmes `baseParams` que le `searchProStatic` de la page. */
   baseParams?: SearchBaseParamsInput;
   /** Variant SDK `searchCostum` (ex. `"navigator-tl"`) — comme la liste. */
-  variant?: "default" | "navigator-tl";
+  variant?: "default" | "navigator-tl" | "admin";
   /** Tags de filtres actifs (catégorie/tab) — appliqués comme la liste. */
   tags?: string[];
   indexMax?: number;
@@ -69,7 +69,9 @@ export function useAutocomplete(
         });
         const result =
           variant && variant !== "default"
-            ? await entity.searchCostum(param, { variant })
+            // Cast : le type SearchCostumVariant du SDK installé peut être en retard d'un
+            // variant (« admin » exige ≥ 1.0.161) — même pont temporaire que useSearchQuery.
+            ? await entity.searchCostum(param, { variant } as unknown as Parameters<typeof entity.searchCostum>[1])
             : await entity.searchCostum(param);
 
         // Les results sont un objet avec des IDs comme clés, pas un tableau

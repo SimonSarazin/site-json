@@ -46,12 +46,20 @@ export function readAgendaUrl(sp: URLSearchParams, d: AgendaFilterDefaults): Age
   };
 }
 
-/** Projette l'état des filtres dans l'URL (préserve les autres paramètres). */
+/**
+ * Projette l'état des filtres dans l'URL (préserve les autres paramètres).
+ * `manage` = par param, l'agenda POSSÈDE-t-il ce filtre (true = il gère le param URL). Un param non
+ * possédé (`false`) N'EST PAS TOUCHÉ : le filtre est délégué à un `searchHeader` sœur (qui possède le
+ * param + le PageFilters) → évite que les deux écrivains se battent sur la même clé (cf. Agenda avec
+ * `filters.{text,type,tags}:false`). `mode`/`tab` sont TOUJOURS propres à l'agenda. Défaut : tout géré.
+ */
 export function writeAgendaUrl(
   sp: URLSearchParams,
   s: AgendaFilterState,
   d: AgendaFilterDefaults,
+  manage: { text?: boolean; type?: boolean; tags?: boolean } = {},
 ): URLSearchParams {
+  const { text: mText = true, type: mType = true, tags: mTags = true } = manage;
   const next = new URLSearchParams(sp);
   const apply = (key: string, value: string, keep: boolean) => {
     if (keep && value) next.set(key, value);
@@ -59,8 +67,8 @@ export function writeAgendaUrl(
   };
   apply(AGENDA_URL_PARAMS.mode, s.mode, s.mode !== d.mode);
   apply(AGENDA_URL_PARAMS.tab, s.tab, s.tab !== d.tab);
-  apply(AGENDA_URL_PARAMS.text, s.text.trim(), s.text.trim().length > 0);
-  apply(AGENDA_URL_PARAMS.type, s.type, s.type.length > 0);
-  apply(AGENDA_URL_PARAMS.tags, s.tags.join(","), s.tags.length > 0);
+  if (mText) apply(AGENDA_URL_PARAMS.text, s.text.trim(), s.text.trim().length > 0);
+  if (mType) apply(AGENDA_URL_PARAMS.type, s.type, s.type.length > 0);
+  if (mTags) apply(AGENDA_URL_PARAMS.tags, s.tags.join(","), s.tags.length > 0);
   return next;
 }

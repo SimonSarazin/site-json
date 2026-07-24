@@ -36,6 +36,7 @@
 - [i18n](#i18n)
 - [Exemple de configuration JSON](#exemple-de-configuration-json)
 - [Modal de login pour les actions protégées](#modal-de-login-pour-les-actions-protégées)
+- [Réutilisation hors du mur profil : intégration dans le module Search](#réutilisation-hors-du-mur-profil--intégration-dans-le-module-search-cardnews--previewnews)
 - [Voir aussi](#voir-aussi)
 
 ---
@@ -89,7 +90,7 @@ src/modules/news/
 │   │   ├── NewsReactionsModal.tsx  # Modal listant qui a voté quoi
 │   │   └── NewsVoteDisplay.tsx     # Affichage agrégé des votes/réactions
 │   ├── media/
-│   │   ├── NewsImageGrid.tsx       # Grille d'images attachées (1-5 images)
+│   │   ├── NewsImageGrid.tsx       # Collage type réseau social à ratio constant (1=héro 16/10, 2=côte à côte, 3=1 grande+2, 4=2×2, 5+=2×2 avec surcouche « +N »), lightbox Modal ; renderTile est une fonction (pas un composant) pour éviter le remontage à l'ouverture de la lightbox
 │   │   └── NewsFileList.tsx        # Liste de fichiers/documents attachés
 │   ├── mention/
 │   │   ├── MentionInput.tsx        # Textarea avec auto-complétion @user
@@ -138,6 +139,11 @@ src/modules/news/
 │   ├── reportReasons.ts            # REPORT_REASONS (7 raisons avec labelKey i18n)
 │   ├── supportedTypes.ts           # NEWS_SUPPORTED_TYPES (Set)
 │   └── index.ts
+│
+├── lib/
+│   ├── newsExcerpt.ts              # markdown News.text → extrait texte brut 1 ligne (maxLength défaut 240), consommé par CardNews (module search)
+│   ├── newsExcerpt.test.ts         # tests unitaires du helper
+│   └── resolveHostEntity.ts        # targetRef(ref)→{type,id} (robuste instance|brut, lit .serverData) + resolveHostEntity(api,type,id)→entité porteuse via api.<type>({id}) (organizations→organization, projects→project, events→event, poi→poi, citoyens→user ; null si non résoluble, ex. cms)
 │
 └── utils/
     ├── commentCacheUtils.ts        # findAndRemoveComment, findAndUpdateComment, findAndAddReply, countAllComments, getMaxDepth
@@ -225,6 +231,10 @@ const editNewsMutation = useEditNews(entity: EntityTypes, options?: { optimistic
 // Création
 const addNewsMutation = useAddNews(entity: EntityTypes);
 // addNewsMutation.mutate({ newsData, images?, documents? })
+// Routage interne : crée la news sous le costum AMBIANT du déploiement
+//   → me.costum(deploymentEntity).news(entity, newsData) — source.key = site (parité poi/org
+//   via useEntityMutation) ; fallback entity.news(newsData) si le déploiement costum est
+//   absent (site nu / me indisponible).
 
 // Ajout d'images à une news existante
 const addNewsImageMutation = useAddNewsImage(entity: EntityTypes);
@@ -421,13 +431,27 @@ Props : `item`, `entity?`, `isLastItem?`, `lastItemRef?`, `onEdit?`, `onDelete?`
 
 Props : `text: string`, `mentions?: NewsMention[]`, `maxLength?: number`.
 
+**Note** : `parseMentionsToMarkdown` sécurise l'entrée avec `const safeText = text ?? ""`. Bien que le type déclare `text: string`, la donnée runtime peut être `undefined` (news de fil d'activité type « X a créé Y » sans corps), d'où cette garde.
+
 ### NewsDetailPage
 
-`components/NewsDetailPage.tsx` — Page de détail d'une news (rendu via sous-route dans le module profil). Charge la news via `useNewsByIdQuery`. Intègre les modaux d'édition, suppression, partage, signalement. En cas de suppression, navigue vers `/profil/:slug/news`.
+`components/NewsDetailPage.tsx` — Page de détail d'une news (rendu via sous-route dans le module profil). Charge la news via `useNewsByIdQuery`. Intègre les modaux d'édition, suppression, partage, signalement. En cas de suppression, navigue vers `/profil/:slug/news`. Dispose d'un `export default` (en plus de l'export nommé), ce qui permet sa réutilisation **hors du mur profil**.
 
-Props : `params: Record<string, string | undefined>` (contient `newsId`), `entity: EntityTypes`, `sectionProps?: NewsSection["props"]`.
+Props :
+
+| Prop | Type | Défaut | Description |
+|------|------|--------|-------------|
+| `params` | `Record<string, string \| undefined>` | — | Contient `newsId` |
+| `entity` | `EntityTypes` | — | Entité porteuse de la news |
+| `sectionProps` | `NewsSection["props"]?` | — | Configuration de la section parente |
+| `showBackButton` | `boolean?` | `true` | Masque le bouton « retour » (réutilisation en modal/preview où la coque gère la fermeture) |
+| `embedded` | `boolean?` | `false` | Retire le CADRE externe (bordure/ombre/rayon) autour du `NewsItem` pour éviter l'empilement carte-dans-carte (drawer + wrapper + `article`) |
+
+Les valeurs par défaut (`showBackButton = true`, `embedded = false`) sont des paramètres de fonction côté code — à écrire explicitement si l'appelant veut un autre comportement.
 
 Enveloppe dans `<NewsProvider>` avec permissions calculées depuis `useNewsPermissions(entity)`.
+
+**Réutilisation en preview** : `PreviewNews` (module search) monte `NewsDetailPage` en mode `embedded` + `showBackButton={false}`, avec `sectionProps` `{ showAddButton: false, showFilters: false, showComments: true, showReactions: true, maxItems: 1 }`. Voir la section [Réutilisation hors du mur profil](#réutilisation-hors-du-mur-profil--intégration-dans-le-module-search-cardnews--previewnews).
 
 ### Formulaires (AddNewsModal, EditNewsModal)
 
@@ -572,7 +596,11 @@ NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId, userContextId)        // ["news-comments",
 NEWS_QUERY_KEYS.NEWS_COMMENTS_PREFIX(newsId)                // ["news-comments", newsId]
 NEWS_QUERY_KEYS.NEWS_VOTES(newsId, userContextId)           // ["news-votes", newsId, userContextId]
 NEWS_QUERY_KEYS.NEWS_VOTES_PREFIX(newsId)                   // ["news-votes", newsId]
+NEWS_QUERY_KEYS.NEWS_HOST(type, id, userContextId)          // ["news-host", type, id, userContextId]
+NEWS_QUERY_KEYS.NEWS_HOST_PREFIX(type, id)                  // ["news-host", type, id]
 ```
+
+**`NEWS_HOST`** : producteur `PreviewNews` (module search) — cache l'entité PORTEUSE d'une news résolue par `(type, id)` via `resolveHostEntity`, pour monter le détail news et construire le permalien profil.
 
 **Pourquoi `userContextId` dans les clés ?** La liste des news visible dépend de la session (news privées uniquement pour les membres). Un changement de contexte utilisateur (connexion/déconnexion) doit déclencher un refetch. `useHydratedUserContextId()` retourne `null` côté SSR (évite le mismatch d'hydratation), puis la vraie valeur après montage côté client.
 
@@ -694,6 +722,18 @@ onClick={() => (isConnected ? doAction() : openLogin())}
 Dans `NewsComments`, `<LoginPrompt>` ne passe pas `openOptions` — le callback `onSuccess` n'est pas nécessaire car l'état de connexion est réactif (le composant se re-rend automatiquement après connexion via `me?.isConnected`).
 
 Voir [Module Auth](23-module-auth.md) pour le mécanisme global (`AuthModalProvider`, `AuthModalContext`, `useAuthModal`).
+
+---
+
+## Réutilisation hors du mur profil : intégration dans le module Search (CardNews / PreviewNews)
+
+Depuis le commit `174e7953`, la **news est une entité de premier plan du module search** : une news peut apparaître comme carte de résultat (`card.type = "news"`) et comme aperçu de détail (`preview.type = "news"`), en dehors du mur du module profil. Les composants `CardNews` et `PreviewNews` vivent, eux, dans le **module search** (voir [Module Search](07-module-search.md)) ; côté module News, ce couplage s'appuie sur des points d'accroche publics :
+
+- **`NewsDetailPage` (export default) réutilisé en mode `embedded`** : `PreviewNews` monte `NewsDetailPage` avec `embedded` (pas de cadre externe pour éviter la carte-dans-carte) + `showBackButton={false}` (la coque du preview gère la fermeture) et `sectionProps` `{ showAddButton: false, showFilters: false, showComments: true, showReactions: true, maxItems: 1 }`. Voir [NewsDetailPage](#newsdetailpage).
+- **`lib/newsExcerpt.ts`** : convertit le markdown de `News.text` en un extrait texte brut sur une ligne (`maxLength` défaut 240), consommé par `CardNews` pour un aperçu lisible sans fuite de syntaxe markdown.
+- **`lib/resolveHostEntity.ts`** : `targetRef(ref)` extrait `{ type, id }` du `target`/`object` d'une news (robuste aux formes instance | brut, lit `.serverData`) ; `resolveHostEntity(api, type, id)` récupère l'entité PORTEUSE via `api.<type>({ id })` (`organizations`→`organization`, `projects`→`project`, `events`→`event`, `poi`→`poi`, `citoyens`→`user` ; `null` si non résoluble, ex. `cms`). Une news enrichie ne porte que `target.{type,id}` (le legacy ne projette pas `target.slug`), d'où cette résolution vers l'entité et son slug pour le permalien profil.
+- **Clé `NEWS_HOST`** : `PreviewNews` cache l'entité porteuse résolue par `(type, id)` sous `NEWS_HOST(type, id, userContextId)`. Voir [React Query — clés et invalidations](#react-query--clés-et-invalidations).
+- **`useAddNews` routé via costum** : la création de news passe par le costum ambiant du déploiement (`source.key` = site), garantissant que les news créées restent visibles dans les recherches costumisées. Voir [Mutations news](#mutations-news-usenewsmutationstsx).
 
 ---
 

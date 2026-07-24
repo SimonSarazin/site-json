@@ -22,9 +22,17 @@ interface NewsDetailPageProps {
   params: Record<string, string | undefined>;
   entity: EntityTypes;
   sectionProps?: NewsSection["props"]; // Configuration de la section parente
+  /** Masque le bouton "retour" (réutilisation en modal/preview où la coque gère la fermeture). */
+  showBackButton?: boolean;
+  /**
+   * Mode "embarqué" (preview/drawer) : supprime le CADRE externe (bordure/ombre/rayon) autour du
+   * `NewsItem` — sinon on empile drawer + wrapper + `article` = carte-dans-carte. Le `NewsItem`
+   * garde son propre cadre, qui devient l'unique surface dans la coque.
+   */
+  embedded?: boolean;
 }
 
-export const NewsDetailPage = ({ params, entity, sectionProps }: NewsDetailPageProps) => {
+export const NewsDetailPage = ({ params, entity, sectionProps, showBackButton = true, embedded = false }: NewsDetailPageProps) => {
   useLoadNamespace("modules/news");
   const t = useT("modules/news");
   const navigate = useNavigate();
@@ -104,19 +112,21 @@ export const NewsDetailPage = ({ params, entity, sectionProps }: NewsDetailPageP
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleBack}
-            className="gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            {t("NewsDetailPage.back")}
-          </Button>
-        </div>
+        {showBackButton && (
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleBack}
+              className="gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              {t("NewsDetailPage.back")}
+            </Button>
+          </div>
+        )}
 
-        <div className="bg-background p-8 rounded-xl border border-border shadow-sm">
+        <div className={embedded ? "" : "bg-background p-8 rounded-xl border border-border shadow-sm"}>
           <div className="animate-pulse space-y-4">
             <div className="h-6 bg-muted rounded w-3/4"></div>
             <div className="h-4 bg-muted rounded w-1/2"></div>
@@ -134,19 +144,21 @@ export const NewsDetailPage = ({ params, entity, sectionProps }: NewsDetailPageP
   if (isError || !news) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleBack}
-            className="gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            {t("NewsDetailPage.back")}
-          </Button>
-        </div>
+        {showBackButton && (
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleBack}
+              className="gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              {t("NewsDetailPage.back")}
+            </Button>
+          </div>
+        )}
 
-        <div className="bg-background p-8 rounded-xl border border-border shadow-sm">
+        <div className={embedded ? "" : "bg-background p-8 rounded-xl border border-border shadow-sm"}>
           <div className="text-center py-12">
             <div className="text-destructive mb-4">
               <Calendar className="w-16 h-16 mx-auto" />
@@ -188,20 +200,22 @@ export const NewsDetailPage = ({ params, entity, sectionProps }: NewsDetailPageP
     }}>
       <div className="space-y-6">
         {/* Header avec navigation */}
-        <div className="flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleBack}
-            className="gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            {t("NewsDetailPage.back")}
-          </Button>
-        </div>
+        {showBackButton && (
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleBack}
+              className="gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              {t("NewsDetailPage.back")}
+            </Button>
+          </div>
+        )}
 
         {/* Contenu détaillé de la news */}
-        <div className="bg-background rounded-xl border border-border shadow-sm overflow-hidden">
+        <div className={embedded ? "" : "bg-background rounded-xl border border-border shadow-sm overflow-hidden"}>
           <NewsItem
             item={news}
             entity={entity}

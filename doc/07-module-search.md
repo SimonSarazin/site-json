@@ -44,6 +44,8 @@
   - [Mode détails (detailsMode)](#mode-détails-detailsmode)
     - [PreviewPoiAmenities — fiche détail POI (`preview.type: "poi-amenities"`)](#previewpoiamenities--fiche-détail-poi-previewtype-poi-amenities)
   - [Facettes cliquables & navigation par filtre (`dropdownFilters`)](#facettes-cliquables--navigation-par-filtre-dropdownfilters)
+  - [Cartes news dans la recherche (CardNews et PreviewNews)](#cartes-news-dans-la-recherche-cardnews-et-previewnews)
+  - [Cartes et previews génériques config-driven (testimonial, resource)](#cartes-et-previews-génériques-config-driven-testimonial-resource)
   - [SearchMap et vue carte](#searchmap-et-vue-carte)
   - [SearchBubbleChart](#searchbubblechart)
   - [FranceRegionsMap](#franceregionsmap)
@@ -133,6 +135,13 @@ src/modules/search/
 │   │   ├── CardContact.tsx        # Carte contact (type: "contact-card")
 │   │   ├── CardProfile.tsx        # Profil générique (type: "profile")
 │   │   ├── CardAnswer.tsx         # Réponse CoForm (type: "card-answer")
+│   │   ├── CardNews.tsx           # Actualité éditoriale text-first (type: "news")
+│   │   ├── CardTestimonial.tsx    # Coque témoignage (type: "testimonial") → dispatch design
+│   │   ├── testimonial/
+│   │   │   └── CardTestimonialBubble.tsx  # Design "bubble" (config-driven)
+│   │   ├── CardResource.tsx       # Coque ressource (type: "resource") → dispatch design
+│   │   ├── resource/
+│   │   │   └── CardResourceCard.tsx        # Design "card" (image-first, config-driven)
 │   │   └── CardCountCT.tsx        # Compteur Commune Transparente
 │   │
 │   ├── detailsMode/               # Variantes de CONTENEUR (card.detailsMode)
@@ -152,7 +161,15 @@ src/modules/search/
 │       ├── PreviewDefault.tsx     # Prévisualisation standard (type: "default")
 │       ├── PreviewPoiAmenities.tsx # Fiche détail POI aménagements (type: "poi-amenities")
 │       ├── PreviewCoformAnswer.tsx # Fiche détail réponse CoForm (type: "coform-answer")
-│       └── PreviewFacets.tsx       # Preview générique data-driven (type: "facets")
+│       ├── PreviewEvent.tsx        # Fiche détail événement (type: "event")
+│       ├── PreviewFacets.tsx       # Preview générique data-driven (type: "facets")
+│       ├── PreviewNews.tsx         # Détail actualité — NewsDetailPage embedded (type: "news")
+│       ├── PreviewTestimonial.tsx  # Coque témoignage (type: "testimonial") → dispatch design
+│       ├── testimonial/
+│       │   └── PreviewTestimonialBubble.tsx  # Design "bubble"
+│       ├── PreviewResource.tsx     # Coque ressource (type: "resource") → dispatch design
+│       └── resource/
+│           └── PreviewResourceCard.tsx        # Design "card"
 │
 ├── contexts/
 │   ├── pageFilters.ts             # PageFilters (createPageActionsState) + usePageFilters
@@ -174,6 +191,9 @@ src/modules/search/
 │   ├── useItem.tsx                # Fusion données serveur + defaults
 │   ├── useSearchProps.tsx         # Accès typé aux props via SearchPropsContext
 │   ├── useDropdownFilterNav.ts   # Navigation par facette route-aware (même/cross-route)
+│   ├── useTestimonialData.ts     # Normalise un item → TestimonialData (config-driven)
+│   ├── useResourceData.ts        # Normalise un item → ResourceData (config-driven, split medias)
+│   ├── useResourceEntity.ts      # Charge le POI complet → galerie/documents/audio/vidéo
 │   └── loadLeaflet.ts             # Import dynamique Leaflet (client only — carte profil)
 │
 ├── lib/
@@ -185,7 +205,8 @@ src/modules/search/
 │   ├── filterToggles.ts           # Logique des toggles de filtres
 │   ├── schedules.ts               # groupSchedules — créneaux CoForm groupés par jour (Lun→Dim)
 │   ├── coformAnswer.ts            # parseCoformAnswer / getStatusStyle — partagé Card+Preview
-│   └── dropdownFilters.ts        # helpers purs facettes cliquables (resolve/normalize/owner/toState)
+│   ├── dropdownFilters.ts        # helpers purs facettes cliquables (resolve/normalize/owner/toState)
+│   └── testimonial.ts             # valueColor/bubbleTint/firstMediaUrl/hostname — partagé testimonial+resource
 │
 ├── prefetch/
 │   ├── prefetchSearchResults.ts   # prefetchSearchQuery (SSR)
@@ -814,6 +835,8 @@ Grille responsive des résultats. Propriétés CSS grid pilotées par `list.colu
 
 **Sync URL ↔ preview** (`list.previewParam`, défaut `"preview"`) : ouvrir un item écrit `?<previewParam>=<id>` (`{replace}`) → **deep-link / partage / reload** persistants ; l'effet d'auto-ouverture relit ce param (ouvre l'item correspondant) **et** ferme quand le param disparaît (back/forward, nav sœur) → l'état suit toujours l'URL. Pour **plusieurs listes preview sur une même page**, donner à chacune un `previewParam` distinct en config (ex. `"preview-equipements"`) pour éviter la collision. `SearchListView` fournit aussi le `PreviewNavContext` (`{ previewParam, closeRaw }`) consommé par `useDropdownFilterNav` (cf. [§Facettes cliquables](#facettes-cliquables--navigation-par-filtre-dropdownfilters)).
 
+**Config `list` tuyautée d'un bout à l'autre** : depuis l'introduction des cartes typées (`testimonial` / `resource`), la config `list` COMPLÈTE (`list?: ListConf`, `ListConfSchema` désormais **exporté**) descend tout le pipeline — `SearchListView` → `SearchCard` et `SearchListView` → `SwitchDetailsMode` → `DetailsModeDialog` / `DetailsModeDrawer` → `Preview`. Chaque `CardX` / `PreviewX` typé lit alors **sa** tranche (`list.testimonial`, `list.resource`). `SearchListView` / `SwitchDetailsMode` gardent des props `columns` / `card` / `preview` / `previewParam` optionnelles (agenda, observatoire, profil… qui appellent sans objet `list`) et dérivent chaque valeur via `prop ?? list?.x` ; les call-sites search ne passent plus que `list={list}`. Conséquence : **`SearchPro` honore désormais `list.previewParam`** (auparavant ignoré — il ne transmettait pas ce champ à `SearchListView`).
+
 ### Cartes (card variants)
 
 `<SearchCard>` (`components/SearchCard.tsx`) dispatch vers la bonne variante selon `list.card.variant || list.card.type`. **Les variantes sont nommées par DESIGN / FONCTIONNALITÉ, jamais par site** (découplage commit 8cd4070 — les anciens noms `tiers-lieux`, `rezo-la-mer`, `poi-ssbe`, `ssbe`, `card-elts`, `event-rezo-la-mer`, `poi-rezo-la-mer`… ont été supprimés).
@@ -822,7 +845,7 @@ Trois **axes orthogonaux** pilotent le rendu (commit 8cd4070) :
 
 - **`card.type` / `card.variant`** → la carte de liste (`SearchCard`) ;
 - **`card.detailsMode`** → le *conteneur* de détail (`SwitchDetailsMode` : `drawer`/`dialog`) ;
-- **`preview.type`** → le *contenu* du détail rendu DANS ce conteneur (`Preview` : `default`/`poi-amenities`/`coform-answer`/`event`/`facets`).
+- **`preview.type`** → le *contenu* du détail rendu DANS ce conteneur (`Preview` : `default`/`poi-amenities`/`coform-answer`/`event`/`facets`/`news`/`testimonial`/`resource`).
 
 | `card.type` (ou `variant`) | Composant | Usage |
 |--------|-----------|-------|
@@ -838,6 +861,11 @@ Trois **axes orthogonaux** pilotent le rendu (commit 8cd4070) :
 | `contact-card` | `CardContact` | Fiche contact |
 | `profile` | `CardProfile` | Profil (avatar, nom, bio) — auth requise pour les actions |
 | `card-answer` | `CardAnswer` | Réponse CoForm (activité avec horaires) |
+| `news` | `CardNews` | Carte éditoriale **text-first** (l'item est une `News`, cast au point de dispatch) — cf. [§Cartes news](#cartes-news-dans-la-recherche-cardnews-et-previewnews) |
+| `testimonial` | `CardTestimonial` | Coque (`export default`) → dispatch sur `list.testimonial.design` (repli `bubble`) → `CardTestimonialBubble` — cf. [§génériques config-driven](#cartes-et-previews-génériques-config-driven-testimonial-resource) |
+| `resource` | `CardResource` | Coque → dispatch sur `list.resource.design` (repli `card`) → `CardResourceCard` (média-library, **distinct** de `resource-booking`/`CardResourceBooking`) |
+
+> `news`, `testimonial` et `resource` ne sont acceptées **que** par `card.type` : l'enum `card.variant` (schema.ts) ne les inclut pas (comme `overlay`).
 
 Toutes les variantes sont lazy-loadées ; à une page donnée, seul le type configuré est téléchargé côté client. Les **couleurs en dur** des cartes ont été remplacées par des **tokens de thème** (commits 4936978 / ad11831 / 06baffb) → chaque carte s'adapte au thème du site et au mode clair/sombre.
 
@@ -907,8 +935,13 @@ Le détail d'une entité sélectionnée est **découplé en deux axes** (commit 
 | `coform-answer` | `PreviewCoformAnswer` | Fiche détail réponse CoForm (activité + horaires, ex-`AnswerDetailModeDialog`) |
 | `event` | `PreviewEvent` | Fiche détail événement (actions Participer/Suivre/Éditer) |
 | `facets` | `PreviewFacets` | **Preview générique data-driven** : rend `preview.facets` (champs `serverData` cliquables) — voir [§Facettes cliquables](#facettes-cliquables--navigation-par-filtre-dropdownfilters) |
+| `news` | `PreviewNews` | Détail actualité — embarque `NewsDetailPage` (mode `embedded`) + permalien « Voir en page » (cf. `preview.showDetailLink`) |
+| `testimonial` | `PreviewTestimonial` | Coque → `PreviewTestimonialBubble` (dispatch `list.testimonial.design`) |
+| `resource` | `PreviewResource` | Coque → `PreviewResourceCard` (dispatch `list.resource.design`) |
 
 Chaque contenu de `Preview` borne lui-même sa hauteur/scroll (indépendant du conteneur). `list.preview.fields` surcharge le mappage des IDs de champ CoForm (voir « parser CoForm » ci-dessous).
+
+**`list.preview.width`** (enum `sm|md|lg|xl|2xl|3xl|4xl|5xl|full`) pilote la largeur MAX du conteneur en mode **`dialog`** : `DetailsModeDialog` mappe la valeur sur une classe `sm:max-w-*` (`full` → `sm:max-w-[95vw]`) ; défaut **code** `5xl` (comportement historique). Sans effet en mode `drawer`. **`list.preview.showDetailLink`** (boolean) affiche le lien « Voir en page » dans l'en-tête de la modale de détail (lu par `PreviewNews`, testé `!== false`) ; défaut = affiché, mettre `false` pour le masquer. Comme toute clé de config, ces champs ne sont **jamais** parsés par Zod au runtime (les `.default()` n'agissent pas) → à poser explicitement dans le JSON.
 
 #### PreviewPoiAmenities — fiche détail POI (`preview.type: "poi-amenities"`)
 
@@ -1029,6 +1062,91 @@ Source unique, sans React, testée (`dropdownFilters.test.ts`) :
 ```
 
 Chaque facette : `{ field, label?, icon? }` (`PreviewFacetSchema`). `field` supporte le dot-path ; les valeurs multiples (`coerce:stringArray` ou `"a, b"`) sont splittées en tokens. L'axe **bespoke** reste disponible (un `preview.type` dédié comme `poi-amenities` compose la même primitive) — cf. le dispatch `Preview.tsx` (générique `default`/`facets` ↔ variantes sur-mesure).
+
+### Cartes news dans la recherche (CardNews et PreviewNews)
+
+Le module search sait rendre des **actualités** (`News`) comme n'importe quelle
+entité de résultat — utilisé par les pages type `/actualites` (commit `174e7953`).
+Deux nouveaux type strings s'ajoutent aux axes carte/détail :
+
+- **`list.card.type: "news"`** → `CardNews`
+  (`components/card/CardNews.tsx`) — carte **éditoriale text-first**. Normalise
+  l'item via `useFormatNews` (même source que le mur profil : auteur / avatar /
+  date / portée / compteurs) et aplatit le markdown en clair via `newsExcerpt`.
+  Trois layouts selon la donnée : extrait **+ image** (vraie news avec média),
+  extrait **plein cadre** (news sans image, fondu de coupe) ou **ligne-entité
+  citée** (item de fil `activityStream` : « a créé / partagé / modifié [object] »
+  + vignette). Tags limités par `card.tagLimit` (repli **code** 3), pied
+  d'engagement (votes / commentaires) + affordance « Lire ».
+- **`list.preview.type: "news"`** → `PreviewNews`
+  (`components/preview/PreviewNews.tsx`) — détail **pleinement fonctionnel** : il
+  embarque le **même** `NewsDetailPage` que le mur profil en mode `embedded`
+  (commentaires / votes / actions selon permissions) sous un bandeau mince
+  (étiquette « Actualité » + CTA permalien « Voir en page »). L'entité **porteuse**
+  est résolue via `resolveHostEntity` / `targetRef` (`modules/news/lib`), le
+  permalien construit par `buildNewsDetailUrl` (fallback `/profil/:slug`). Le CTA
+  est masquable via `list.preview.showDetailLink: false`.
+
+Comme `SearchEntity` (lib) n'inclut pas `News` (serverData hétérogène), le type
+local **`SearchListEntity = SearchEntity | News`** (schema.ts) élargit tous les
+generics search (`SearchListViewProps`, `SearchCardProps`, `PreviewProps`… tous
+défaut `SearchEntity`) ; `SearchCard` / `Preview` **castent** l'item en `News` au
+point de dispatch (`case "news"`).
+
+### Cartes et previews génériques config-driven (testimonial, resource)
+
+Deux familles **Card + Preview entièrement config-driven** (elles remplacent
+l'ancienne implémentation « parole » spécifique à parent62, supprimée) : le
+composant ne connaît **aucun** nom de champ ni couleur de site — tout vient d'un
+contrat de config lu par un hook normalizer.
+
+**Contrats de config** (`schema.ts`, exportés) — posés dans `list.testimonial` /
+`list.resource` (à côté de `list.card` / `list.preview`) :
+
+- **`TestimonialConfSchema`** (`TestimonialConf`) — champs `.partial()` : `design`
+  (enum `["bubble"]`), `quoteField`, `titleField`, `dateField`, `subtitleField`,
+  `audioField`, `badge` (`{field, colors?}`), `accent` (`{field, colors?}`),
+  `facets` (`PreviewFacetSchema[]`). Replis **code** appliqués par
+  `useTestimonialData` (config jamais parsée par Zod au runtime) : `design`→`bubble`,
+  `quoteField`→`description`, `titleField`→`name`, `dateField`→`created`,
+  `audioField`→`medias`.
+- **`ResourceConfSchema`** (`ResourceConf`) — `.partial()` : `design` (enum
+  `["card"]`), `titleField`, `descriptionField`, `dateField`, `imageField`, `badge`
+  (`{field, colors?, icons?}`), `cityField`, `urlsField`, `mediasField`, `facets`.
+  Replis code (`useResourceData`) : `design`→`card`, `name`, `description`,
+  `created`, `profilMediumImageUrl`, `badge.field`→`category`,
+  `address.addressLocality`, `urls`, `medias`.
+
+**Dispatch à deux niveaux** : `card.type` / `preview.type` sélectionne la famille
+(`CardTestimonial` / `CardResource`, `PreviewTestimonial` / `PreviewResource` —
+coques `export default`), puis la coque dispatche sur `list.<type>.design` vers le
+design concret (`CardTestimonialBubble` / `CardResourceCard`,
+`PreviewTestimonialBubble` / `PreviewResourceCard`). Card ↔ Preview partagent le
+même contrat → cohérence par construction.
+
+**Hooks normalizers** (`hooks/`) — lisent `serverData` par dot-path
+(`resolveServerDataPath`) + splits multi-valeurs (`toFacetTokens`), appliquent les
+replis code et résolvent les couleurs :
+
+- `useTestimonialData(item, cfg)` → `TestimonialData` (quote / title / date /
+  badge+couleur / accent / audio 1er média / facets).
+- `useResourceData(item, cfg)` → `ResourceData` (image héros, badge + icône de
+  type, ville, liens, galerie / documents / audio / vidéo **splittés depuis
+  `medias` indexé**, facets).
+- `useResourceEntity({slug|id})` → charge le **POI complet** (`entityBySlug` ou
+  `api.poi`) pour la galerie / documents / audio / vidéo complets (`about.images` /
+  `about.files`, classés par **extension**) — la donnée indexée `medias` ne porte
+  qu'un sous-ensemble.
+
+**Lib partagée** `lib/testimonial.ts` : `valueColor(value, {map})` (couleur d'une
+taxonomie — map de config matchée par `normalizeFilterValue`, sinon palette
+déterministe `var(--chart-*)`), `bubbleTint(color)` (teintes `color-mix`
+clair/sombre), `firstMediaUrl(medias, kind)`, `hostname(url)`.
+
+Les repères (taxonomies) réutilisent le mécanisme **facettes** générique (`facets`
+= `PreviewFacetSchema[]`, rendus en `ClickableFacet`). Pour activer une ressource
+ou un témoignage, poser **3 clés** explicites : `list.card.type`,
+`list.preview.type` et le bloc `list.<type>` correspondant.
 
 ### SearchMap et vue carte
 
@@ -1212,12 +1330,12 @@ Le « Design A » désigne le pattern où le hero de la page d'accueil pose des 
 
 ## Variantes de carte JSON (`list.card.type`)
 
-La carte de liste est pilotée par `list.card.variant` (sinon `list.card.type` — `SearchCard` résout `variant || type`). **Les valeurs sont des noms de DESIGN / FONCTIONNALITÉ, jamais de site** (découplage commit 8cd4070). Variantes actuelles : `default`, `overlay`, `image-cover`, `image-panel`, `event`, `event-featured`, `funding`, `resource-booking`, `poi-amenities`, `contact-card`, `profile`, `card-answer` (cf. la table « Cartes (card variants) » ci-dessus pour le composant correspondant). À noter : `overlay` n'est sélectionnable que via `card.type` (l'enum `card.variant` ne l'inclut pas) ; les autres valeurs sont acceptées par les deux clés.
+La carte de liste est pilotée par `list.card.variant` (sinon `list.card.type` — `SearchCard` résout `variant || type`). **Les valeurs sont des noms de DESIGN / FONCTIONNALITÉ, jamais de site** (découplage commit 8cd4070). Variantes actuelles : `default`, `overlay`, `image-cover`, `image-panel`, `event`, `event-featured`, `funding`, `resource-booking`, `poi-amenities`, `contact-card`, `profile`, `card-answer`, `news`, `testimonial`, `resource` (cf. la table « Cartes (card variants) » ci-dessus pour le composant correspondant). À noter : `overlay`, `news`, `testimonial` et `resource` ne sont sélectionnables que via `card.type` (l'enum `card.variant` — schema.ts — ne les inclut pas) ; les autres valeurs sont acceptées par les deux clés.
 
 `card.type`/`variant` est **orthogonal** à deux autres axes (commit 8cd4070), à configurer indépendamment :
 
 - **`list.card.detailsMode`** (`drawer` / `dialog`) → le *conteneur* de la fiche détail (`SwitchDetailsMode` → `DetailsModeDrawer` / `DetailsModeDialog`) ;
-- **`list.preview.type`** (`default` / `poi-amenities` / `coform-answer` / `event` / `facets`) → le *contenu* rendu DANS ce conteneur (`Preview` → `PreviewDefault` / `PreviewPoiAmenities` / `PreviewCoformAnswer` / `PreviewEvent` / `PreviewFacets`). `list.preview.fields` surcharge le mappage des IDs de champ CoForm consommés par `parseCoformAnswer` (cf. `lib/coformAnswer.ts`) ; `list.preview.facets` déclare les champs cliquables du preview générique `facets` (cf. [§Facettes cliquables](#facettes-cliquables--navigation-par-filtre-dropdownfilters)).
+- **`list.preview.type`** (`default` / `poi-amenities` / `coform-answer` / `event` / `facets` / `news` / `testimonial` / `resource`) → le *contenu* rendu DANS ce conteneur (`Preview` → `PreviewDefault` / `PreviewPoiAmenities` / `PreviewCoformAnswer` / `PreviewEvent` / `PreviewFacets` / `PreviewNews` / `PreviewTestimonial` / `PreviewResource`). `list.preview.fields` surcharge le mappage des IDs de champ CoForm consommés par `parseCoformAnswer` (cf. `lib/coformAnswer.ts`) ; `list.preview.facets` déclare les champs cliquables du preview générique `facets` (cf. [§Facettes cliquables](#facettes-cliquables--navigation-par-filtre-dropdownfilters)) ; `list.preview.width` / `list.preview.showDetailLink` (cf. [§Mode détails](#mode-détails--conteneur-detailsmode-vs-contenu-previewtype)).
 
 **Règle d'extension** : pour ajouter une nouvelle variante, créer `components/card/CardMonDesign.tsx` (nom DESIGN, pas de site), l'enregistrer dans `SearchCard.tsx` (switch), et ajouter l'entrée dans le schéma `ListConfSchema.card.variant` / `card.type`.
 
@@ -1237,7 +1355,7 @@ Utilisé pour les sites tiers-lieux qui enrichissent les fiches avec des donnée
 
 Namespace : **`modules/search`**. Enregistré en side-effect par `i18n.ts`.
 
-Structure de `fr.json` / `en.json` : fichiers **mixtes** — clés plates (chaînes françaises littérales) pour les libellés généraux, plus des blocs **imbriqués** par composant : `CardPoiAmenities` + `PreviewPoiAmenities` (POI aménagements), `coformAnswer` (carte + fiche détail réponse CoForm) et `days` (jours de la semaine, utilisés par `groupSchedules`).
+Structure de `fr.json` / `en.json` : fichiers **mixtes** — clés plates (chaînes françaises littérales) pour les libellés généraux, plus des blocs **imbriqués** par composant : `CardPoiAmenities` + `PreviewPoiAmenities` (POI aménagements), `coformAnswer` (carte + fiche détail réponse CoForm), `days` (jours de la semaine, utilisés par `groupSchedules`), `testimonial` (Card/PreviewTestimonial) et `resource` (Card/PreviewResource).
 
 **Clés plates (exemples représentatifs)** :
 
@@ -1299,6 +1417,12 @@ PreviewPoiAmenities.tracking.created / .lastSurvey / .lastUpdate
 **Bloc `coformAnswer`** (carte `CardAnswer` + fiche détail `PreviewCoformAnswer`) — clés plates : `noTitle`, `noDescription`, `address`, `addressEmpty`, `contact`, `schedule`, `scheduleEmpty`, `activity`, `beneficiaries`, `beneficiariesEmpty`, `accessibility`, `reducedMobility`, `notProvided`, `installation`, `installationEmpty`, `validated`, `noName`, `by`, `showLess`, `moreSlots` (interpolation `{{count}}`), `activitySheet`, `structureSheet`.
 
 **Bloc `days`** (jours de la semaine, utilisés par `groupSchedules` via `t("days." + dayKey)`) : `monday` → `sunday` (fr `"Lundi"`…`"Dimanche"` / en `"Monday"`…`"Sunday"`).
+
+**Bloc `testimonial`** (Card/PreviewTestimonial) — clés : `listen` (`"Écouter"` / `"Listen"`), `listenTitle` (`"Écouter le témoignage"` / `"Listen to the testimony"`).
+
+**Bloc `resource`** (Card/PreviewResource) — clés : `open`, `watch`, `download`, `gallery`, `documents`, `audio`, `video`, `links`.
+
+**Clés plates news** (`CardNews` / `PreviewNews`) : `Actualité`, `Voir en page`, `Lire`, `Aperçu détaillé indisponible pour cette actualité.`, les verbes activity-stream (`a créé`, `a partagé`, `a modifié`, `a publié`, `sur`, `Quelqu'un`) et les libellés de portée (`Privé`, `Réservé aux membres`).
 
 Aucun des préfixes hiérarchiques génériques (`SearchPro.*`, `SearchFilters.*`, `ActiveFiltersBar.*`, etc.) n'existe dans les fichiers réels — uniquement les blocs ci-dessus.
 

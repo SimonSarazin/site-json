@@ -1,3 +1,5 @@
+import "@/modules/search/i18n"; // Required: registers i18n resources — la LISTE/cards est montée hors
+// section search (agenda, split map…) ; import explicite (indépendant de la chaîne SwitchDetailsMode).
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router";
 import SearchCard from "./SearchCard";
@@ -11,14 +13,21 @@ import { getEntryId } from "../lib/searchMapSelection";
 
 export default function SearchListView({
   results,
-  columns,
-  card,
-  preview,
+  columns: columnsProp,
+  card: cardProp,
+  preview: previewProp,
+  list,
   isDetailedView = false,
   focusedItemId,
   onFocusItem,
-  previewParam = "preview",
+  previewParam: previewParamProp,
 }: SearchListViewProps) {
+  // Config EFFECTIVE : prop explicite (agenda/observatoire/profil… passent card/preview/columns
+  // sans objet `list`) OU dérivée de `list` (call-sites search, qui ne passent plus que `list`).
+  const columns = columnsProp ?? list?.columns;
+  const card = cardProp ?? list?.card;
+  const preview = previewProp ?? list?.preview;
+  const previewParam = previewParamProp ?? list?.previewParam ?? "preview";
   const [openDetails, setOpenDetails] = useState(false);
   const [item, setItem] = useState<SearchEntity | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -160,7 +169,7 @@ export default function SearchListView({
 
         {item && (
           <PreviewNavContext.Provider value={previewNavValue}>
-            <SwitchDetailsMode openDetails={openDetails} setOpenDetails={handleSetOpenDetails} item={item} card={card} preview={preview} />
+            <SwitchDetailsMode openDetails={openDetails} setOpenDetails={handleSetOpenDetails} item={item} card={card} preview={preview} list={list} />
           </PreviewNavContext.Provider>
         )}
       </>
@@ -172,14 +181,14 @@ export default function SearchListView({
     <>
       <div ref={containerRef} className={gridClasses}>
         {results.map((item) =>
-          wrap(item, <SearchCard item={item} onClick={() => handleCardClick(item)} card={card} />),
+          wrap(item, <SearchCard item={item} onClick={() => handleCardClick(item)} card={card} list={list} />),
         )}
       </div>
 
       {/* faire switch sur card?.detailsMode */}
       {item && (
         <PreviewNavContext.Provider value={previewNavValue}>
-          <SwitchDetailsMode openDetails={openDetails} setOpenDetails={handleSetOpenDetails} item={item} card={card} preview={preview} />
+          <SwitchDetailsMode openDetails={openDetails} setOpenDetails={handleSetOpenDetails} item={item} card={card} preview={preview} list={list} />
         </PreviewNavContext.Provider>
       )}
     </>

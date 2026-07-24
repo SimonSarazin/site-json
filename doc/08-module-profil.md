@@ -104,7 +104,8 @@ src/modules/profil/
 │   │   ├── ProfileMapWrapper.tsx   // Wrapper carte
 │   │   ├── ProfileOrganizer.tsx    // Organisateur/Porteur de projet
 │   │   ├── ProfileMembers.tsx      // Liste des membres
-│   │   ├── ProfileGallery.tsx      // Galerie d'images
+│   │   ├── ProfileGallery.tsx      // Galerie d'images (add/delete inline via useGallery)
+│   │   ├── ProfileDocuments.tsx    // Documents/fichiers non-image (add/delete inline via useDocuments)
 │   │   ├── ProfileRelated.tsx      // Entités liées
 │   │   ├── ProfileActions.tsx      // Boutons d'action
 │   │   ├── ProfileEventDates.tsx   // Dates d'événement
@@ -171,8 +172,8 @@ src/modules/profil/
 │       ├── costumFormRegistry.ts   // Table runtime id→EntityModalSpec (+ registerCostumForm zod)
 │       ├── registerCostumForms.ts  // Loader : lit window.__CONFIG__.costumForms
 │       ├── costumFormSchema.zod.ts // Validation du document costum
-│       ├── sharedCodecs.ts         // address/openingHours/social + codecs paramétrés
-│       ├── sharedFns.ts            // image:profilUrl, cleanValues, invalidate:standard
+│       ├── sharedCodecs.ts         // address/openingHours/social + omitEmpty/eventDate/eventTimeZone + codecs paramétrés
+│       ├── sharedFns.ts            // image:profilUrl, cleanValues, invalidate:standard/blog/event
 │       ├── tiers-lieux/            // schema.ts (LA source) + fns.ts + spec.ts
 │       └── equipements-sportifs/   // schema.ts + fns.ts + spec.ts
 ├── hooks/
@@ -186,6 +187,8 @@ src/modules/profil/
 │   ├── useFormatProfileEntity.tsx  // Formatage des données du profil
 │   ├── useFriendsQuery.tsx         // Query amis
 │   ├── useGetAnwersByFormsQuery.tsx // Query réponses formulaires
+│   ├── useGallery.tsx              // Galerie d'images (useGalleryImages lit getGallery + useGalleryMutations add/delete inline)
+│   ├── useDocuments.tsx            // Documents fichiers non-image (useDocumentsList lit getGalleryFiles + add/delete inline)
 │   ├── useMembershipQuery.tsx      // Query membership
 │   ├── useMembersQuery.tsx         // Query membres
 │   ├── useNewsDetailUrlGenerator.tsx // Générateur URL détail news
@@ -511,7 +514,7 @@ export const ProfilesConfigSchema = z.object({
 
 ## Sections de profil
 
-Le module profil propose **17 types de sections** configurables:
+Le module profil propose **18 types de sections** configurables:
 
 | Section                    | Type                         | Variantes/Options                              | Description                               |
 | -------------------------- | ---------------------------- | ---------------------------------------------- | ----------------------------------------- |
@@ -523,7 +526,8 @@ Le module profil propose **17 types de sections** configurables:
 | `profile-map`              | ProfileMapSection            | height, zoom, showMarker                       | Carte de localisation (Leaflet)           |
 | `profile-organizer`        | ProfileOrganizerSection      | showLogo, showDescription, showLink            | Organisateur/Porteur de projet            |
 | `profile-members`          | ProfileMembersSection        | limit, showRole, showManagement                | Liste des membres                         |
-| `profile-gallery`          | ProfileGallerySection        | columns, lightbox                              | Galerie d'images avec lightbox            |
+| `profile-gallery`          | ProfileGallerySection        | columns, lightbox                              | Galerie d'images avec lightbox (add/delete inline admin) |
+| `profile-documents`        | ProfileDocumentsSection      | —                                              | Documents/fichiers non-image (liste + télécharger ; add/delete inline admin) |
 | `profile-related`          | ProfileRelatedSection        | relationType, limit                            | Entités liées (projects, events, poi, organizations) |
 | `profile-actions`          | ProfileActionsSectionSchema  | showEditButton, showAddDropdown, layout        | Boutons d'action (éditer, ajouter, email) |
 | `profile-event-dates`      | ProfileEventDatesSectionSchema | showType, dateFormat                         | Dates d'événement (start/end)             |
@@ -942,6 +946,21 @@ Le document ne porte que des **clés string** ; le code correspondant est enregi
 - **équipement sportif** — `poi:scope` (création scopée `me.costum(slug)`), `poi:emptyDefaults` (défauts
   structurés), slots `parentInfo`/`poiDoublons`, `image:profilUrl`, nettoyage des URLs vides.
 
+**Invalidations partagées (`sharedFns.ts`).** Trois clés d'invalidation registrées, toutes paramétrées par
+`userList`/`searchKeys` : `invalidate:standard` (userList parent/me en création + about-par-slug en édition +
+préfixes de recherche `SEARCH_QUERY_KEYS.RESULTS`), `invalidate:blog` (= standard + la clé détail article par id
+`BLOG_QUERY_KEYS.ARTICLE_BY_ID`), et **`invalidate:event`** = `standardInvalidate` + `AGENDA_QUERY_KEYS.CALENDAR_PREFIX()`
++ `AGENDA_QUERY_KEYS.LIST_PREFIX()`. L'espace de clés agenda `["agenda", …]` est **disjoint** de
+`SEARCH_QUERY_KEYS.RESULTS` (ce qu'invalide `searchKeys`) : sans ces deux préfixes, un event créé/validé ne
+rafraîchirait pas la page `/agenda`. `invalidate:event` crée donc un import cross-module profil→agenda.
+
+**Soumission d'événement costum (`config.prod.parent62.json`).** `invalidate:event` sert de `fn` d'invalidation
+au form costum de soumission d'événement, dont les groupes de sérialisation utilisent les codecs WRITE de
+`sharedCodecs.ts` : `startDate`/`endDate` en `write:eventDate:write` (ISO offset local sans millis, accepté par
+le legacy), `openingHours` en `write:omitEmpty` (omis si vide), `timeZone` en `write:eventTimeZone:write` (fuseau
+navigateur si non fourni). Le form embarque un champ DocumentUpload **audio** avec `widgetProps.allowRecording:false`
+(upload seul, pas d'enregistrement in-navigateur).
+
 ### Mutation : `useEntityMutation` générique
 
 Les anciens hooks par entité (`useAddTiersLieu`, `useEditTiersLieu`, `useAddPoi`, `useUpdatePoi`) sont remplacés
@@ -950,6 +969,25 @@ par le couple **`runEntityMutation` (cœur pur, testable) + `useEntityMutation` 
 le `payloadFn` registré (ex. `tl:payload`), crée (`scope.X(payload).save()`) ou édite (`submitEntityEdit`),
 invalide React Query puis navigue. La byte-parité des defaults/payloads est figée par
 `tiers-lieux.configDriven.test`, `costum/*/fns.test.ts`, `costum/*/spec.test.ts` et `useEntityMutation.test.ts`.
+
+---
+
+### Édition inline d'une propriété `serverData` (pattern `updateField` + `refresh`)
+
+Pour éditer une **propriété simple** de l'entité (hors formulaire de création/édition complet), le pattern est :
+
+1. **Lecture** réactive : `useReactiveProperty(entity.serverData, "<champ>")` (Proxy réactif du SDK).
+2. **Écriture** : `entity.updateField("<champ>", value)` (équivalent React du `path2Value` legacy ; `$set` du champ).
+3. **Refresh** : dans `onSuccessCallback`, `await entity.refresh()` — re-fetch qui met à jour le `serverData` réactif → re-render (cf. `useProfileMutations.useUploadProfileBanner`). ⚠️ **Ne pas** faire `entity.serverData.x = …` : ESLint `react-hooks/immutability` interdit de muter une prop.
+4. **Gate** : `useProfilPermissions(entity).canEditProfile` (édition réservée aux admins du lieu).
+5. **Mutation** : `useMutationWithToast({ mutationFn, successKey, errorKey, namespace: "modules/profil", onSuccessCallback })`.
+6. Modale **montée conditionnellement** (`{isOpen && <Dialog open …/>}`) → état frais à chaque ouverture.
+
+**Instance concrète — éditeur des outils du lieu (`ourTools`).** Section « Nos outils » de `ProfileTiersLieuxInfo` : bouton « Modifier » (gaté `canEditProfile`) → `OurToolsEditDialog`. La donnée `entity.serverData.ourTools` = `{ [catégorie]: [{name, url?}] }` (catégorie ∈ `TOOLS_MAP`, 11 clés alignées sur le legacy `co2/views/pod/yourTools.php`). Helpers purs `parseRows`/`rowsToOurTools` dans `sections/custom/toolsMap.ts` (testés).
+
+**⚠️ Gotchas `updateField`** (à connaître pour tout champ objet/array) :
+- **Objet vide `{}` → 500.** En `application/x-www-form-urlencoded`, un objet vide n'émet **aucun** paramètre `value` → `$_POST["value"]` undefined côté backend. La lib gère l'array vide (`[]` → `""`) mais **pas** l'objet vide. → envoyer **`null`** ($unset) quand la valeur est vide : `updateField("champ", Object.keys(v).length ? v : null)`.
+- **`$set` remplace tout le champ.** Un éditeur qui reconstruit l'objet à partir de ses seules clés connues **efface** les clés inconnues présentes en base (le legacy, lui, les préserve). → les recopier depuis la valeur brute avant le merge.
 
 ---
 
@@ -1181,6 +1219,24 @@ champ `_imageFile`, posé dans le draft SDK sous `profil_avatar` avant `save()` 
 Monté par le **widget `tags`**. Prop `searchable?: boolean` (défaut `true`) : à `false`, le `TagInput` interne
 passe en saisie libre (valeurs hors tags existants acceptées, sans autocomplète) — p. ex. pour les types de
 partenariat de l'équipement sportif.
+
+### `DocumentUploadField` — prop `allowRecording` (`fields/DocumentUploadField.tsx`)
+
+Champ de collecte de **fichiers non-image** (pendant FICHIER de `GalleryUploadField`), monté par le **widget
+`file`** de `registerWidgets.tsx`. Rendu en lignes (icône-ext + nom + taille) ; les fichiers sont uploadés
+APRÈS le `save()` par l'orchestration (`processGalleryFields` → `entity.uploadDocument(file, {contentKey,
+docType:"file"})`). Options via `widgetProps` : `contentKey` (défaut `"file"`), `maxItems`, `accept`, et
+`allowRecording`.
+
+**Prop `allowRecording?: boolean` (défaut `true`).** Pour un champ **audio** (`accept` contient `'audio'`), le
+composant propose l'enregistrement in-navigateur (`AudioRecorder`) EN PLUS de l'upload :
+`isAudioField = accept.includes('audio') && allowRecording !== false`. Poser `allowRecording:false` désactive
+l'enregistrement → **upload de fichier seul**. Câblé depuis le widget par
+`allowRecording={p.field.widgetProps?.allowRecording}`.
+
+> Le défaut `true` est un défaut de code (le Zod de config n'est jamais parsé au runtime) : pour le désactiver
+> il faut écrire explicitement `widgetProps.allowRecording: false` dans le JSON (cf.
+> `config.prod.parent62.json`, champ audio « paroles de parents »).
 
 ### Autres champs domaine
 

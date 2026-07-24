@@ -1,6 +1,6 @@
-import { useState, useCallback, useRef, memo } from "react";
+import { useState, useCallback, useMemo, useRef, useId, memo } from "react";
 import type { FieldErrors } from "react-hook-form";
-import { Trash2, Plus, ImagePlus, X } from "lucide-react";
+import { Trash2, Plus, ImagePlus, X, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -16,10 +16,55 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import type { FormFieldMapping, SimpleTableValue, SimpleTableConfig, SimpleTableCell, ImageUploadValue } from "../types";
 import { validateImageFile, compressImage, canCompressImage, DEFAULT_IMAGE_VALIDATION_CONFIG } from "@/utils/imageUtils";
 import { getBaseUrl } from "@/lib/constant/common";
 import { toast } from "sonner";
+import {
+  buildEmptySimpleTableRow,
+  buildSimpleTableHeaders,
+  upsertSimpleTableRow,
+  removeSimpleTableRow,
+} from "../utils/simpleTable";
+import { useT } from "@/hooks/useT";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import "../i18n/i18n";
+
+/** Résout une src d'image (data URL / absolue / relative au baseUrl). */
+function resolveMediaSrc(baseUrl: string, src: string): string {
+  if (!src) return src;
+  if (/^(https?:)?\/\//i.test(src) || src.startsWith("data:")) return src;
+  if (src.startsWith("/")) return `${baseUrl}${src}`;
+  return `${baseUrl}/${src}`;
+}
+
+/**
+ * Libellés i18n pré-résolus au composant racine puis threadés en prop
+ * (convention module : pas de `useT` dans les sous-composants). Les libellés
+ * paramétrés (aria de cellule/ligne, fallback de colonne) sont résolus au
+ * call-site où les params sont connus et passés en string finale.
+ */
+interface SimpleTableI18n {
+  imageButton: string;
+  checkedAria: string;
+  modal: {
+    addTitle: string;
+    editTitle: string;
+    description: string;
+    delete: string;
+    cancel: string;
+    save: string;
+  };
+}
+
 // ─── Image Cell Component ──────────────────────────────────────
 
 interface ImageCellProps {
@@ -27,24 +72,17 @@ interface ImageCellProps {
   multiple: boolean;
   onChange: (value: SimpleTableCell | SimpleTableCell[]) => void;
   ariaLabel: string;
+  /** Libellé du bouton d'ajout (i18n threadé depuis le composant racine). */
+  addLabel: string;
   readOnly?: boolean;
 }
 
-const ImageCell = memo(function ImageCell({ value, multiple, onChange, ariaLabel, readOnly }: ImageCellProps) {
+const ImageCell = memo(function ImageCell({ value, multiple, onChange, ariaLabel, addLabel, readOnly }: ImageCellProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const baseUrl = getBaseUrl();
   const [viewerOpen, setViewerOpen] = useState<number | null>(null);
 
-  const resolveImageSrc = useCallback((src: string) => {
-    if (!src) return src;
-    if (/^(https?:)?\/\//i.test(src) || src.startsWith("data:")) {
-      return src;
-    }
-    if (src.startsWith("/")) {
-      return `${baseUrl}${src}`;
-    }
-    return `${baseUrl}/${src}`;
-  }, [baseUrl]);
+  const resolveImageSrc = useCallback((src: string) => resolveMediaSrc(baseUrl, src), [baseUrl]);
 
   const handleFiles = useCallback(async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -153,7 +191,7 @@ const ImageCell = memo(function ImageCell({ value, multiple, onChange, ariaLabel
           onClick={() => inputRef.current?.click()}
         >
           <ImagePlus className="w-3 h-3" />
-          {images.length > 0 ? "+" : "Image"}
+          {images.length > 0 ? "+" : addLabel}
         </Button>
       )}
       <ImageViewer
@@ -172,7 +210,7 @@ const CELL_INPUT_CN =
 const CELL_CN =
   "p-0 border border-border hover:bg-muted/20 focus-within:bg-accent/10 focus-within:ring-1 focus-within:ring-inset focus-within:ring-ring/40 transition-colors";
 
-// ─── Table Cell Renderer ────────────────────────────────────────
+// ─── Table Cell Renderer (édition inline) ───────────────────────
 
 interface CellRendererProps {
   value: SimpleTableCell | SimpleTableCell[];
@@ -183,6 +221,10 @@ interface CellRendererProps {
   rowValues: (SimpleTableCell | SimpleTableCell[])[];
   columns: SimpleTableConfig["columns"];
   onCellChange: (rowIndex: number, colIndex: number, value: SimpleTableCell | SimpleTableCell[]) => void;
+  /** aria-label de la cellule, pré-résolu au composant racine. */
+  ariaLabel: string;
+  /** Libellé du bouton d'ajout d'image, threadé vers ImageCell. */
+  addImageLabel: string;
   readOnly?: boolean;
 }
 
@@ -195,10 +237,10 @@ const CellRenderer = memo(function CellRenderer({
   rowValues,
   columns,
   onCellChange,
+  ariaLabel,
+  addImageLabel,
   readOnly,
 }: CellRendererProps) {
-  const ariaLabel = `Ligne ${rowIndex}, ${columns[colIndex - 1]?.label || `Colonne ${colIndex}`}`;
-
   switch (columnType) {
     case "Text":
       return (
@@ -256,6 +298,7 @@ const CellRenderer = memo(function CellRenderer({
           multiple={false}
           onChange={(v) => onCellChange(rowIndex, colIndex, v)}
           ariaLabel={ariaLabel}
+          addLabel={addImageLabel}
           readOnly={readOnly}
         />
       );
@@ -267,6 +310,7 @@ const CellRenderer = memo(function CellRenderer({
           multiple={true}
           onChange={(v) => onCellChange(rowIndex, colIndex, v)}
           ariaLabel={ariaLabel}
+          addLabel={addImageLabel}
           readOnly={readOnly}
         />
       );
@@ -284,6 +328,223 @@ const CellRenderer = memo(function CellRenderer({
       );
   }
 });
+
+// ─── Rendu lecture seule d'une cellule (mode modal) ─────────────
+
+function ReadOnlyCell({
+  value,
+  columnType,
+  baseUrl,
+  checkedAria,
+}: {
+  value: SimpleTableCell | SimpleTableCell[];
+  columnType: string;
+  baseUrl: string;
+  /** aria-label de la case cochée (i18n threadé). */
+  checkedAria: string;
+}) {
+  if (columnType === "Case à cocher") {
+    return value === "x" ? (
+      <Check className="w-4 h-4 text-primary mx-auto" aria-label={checkedAria} />
+    ) : (
+      <span className="text-muted-foreground" aria-hidden="true">—</span>
+    );
+  }
+
+  if (columnType === "Image" || columnType === "Images") {
+    const items = Array.isArray(value) ? value : value ? [value] : [];
+    if (items.length === 0) return <span className="text-muted-foreground">—</span>;
+    return (
+      <div className="flex flex-wrap gap-1">
+        {items.map((item, i) => {
+          const src = typeof item === "string" ? item : item.data;
+          return (
+            <img
+              key={i}
+              src={resolveMediaSrc(baseUrl, src)}
+              alt=""
+              className="w-8 h-8 object-cover rounded border"
+            />
+          );
+        })}
+      </div>
+    );
+  }
+
+  const s = typeof value === "string" ? value : "";
+  return s ? <span className="text-sm">{s}</span> : <span className="text-muted-foreground">—</span>;
+}
+
+// ─── Éditeur d'un champ dans le modal (une colonne = un champ) ───
+
+function RowFieldEditor({
+  label,
+  columnType,
+  value,
+  onChange,
+  addImageLabel,
+}: {
+  label: string;
+  columnType: string;
+  value: SimpleTableCell | SimpleTableCell[];
+  onChange: (v: SimpleTableCell | SimpleTableCell[]) => void;
+  /** Libellé du bouton d'ajout d'image, threadé vers ImageCell. */
+  addImageLabel: string;
+}) {
+  const id = useId();
+
+  switch (columnType) {
+    case "Case à cocher":
+      return (
+        <div className="flex items-center gap-2">
+          <Checkbox id={id} checked={value === "x"} onCheckedChange={(c) => onChange(c ? "x" : "")} />
+          <label htmlFor={id} className="text-sm font-medium">{label}</label>
+        </div>
+      );
+
+    case "Nombre":
+      return (
+        <div className="space-y-1">
+          <label htmlFor={id} className="text-sm font-medium">{label}</label>
+          <Input id={id} type="number" value={typeof value === "string" ? value : ""} onChange={(e) => onChange(e.target.value)} />
+        </div>
+      );
+
+    case "Image":
+      return (
+        <div className="space-y-1">
+          <span className="text-sm font-medium">{label}</span>
+          <ImageCell value={Array.isArray(value) ? "" : value} multiple={false} onChange={onChange} ariaLabel={label} addLabel={addImageLabel} />
+        </div>
+      );
+
+    case "Images":
+      return (
+        <div className="space-y-1">
+          <span className="text-sm font-medium">{label}</span>
+          <ImageCell value={Array.isArray(value) ? value : []} multiple onChange={onChange} ariaLabel={label} addLabel={addImageLabel} />
+        </div>
+      );
+
+    default: // Text
+      return (
+        <div className="space-y-1">
+          <label htmlFor={id} className="text-sm font-medium">{label}</label>
+          <Input id={id} value={typeof value === "string" ? value : ""} onChange={(e) => onChange(e.target.value)} />
+        </div>
+      );
+  }
+}
+
+// ─── Modal d'édition d'une ligne (mode editInModal) ─────────────
+
+interface SimpleTableRowModalProps {
+  isNew: boolean;
+  /** En-tête de la colonne 0 (label de ligne). */
+  rowLabelHeader: string;
+  columns: SimpleTableConfig["columns"];
+  /** Libellés de colonne pré-résolus (col.label ou fallback), 1 par colonne. */
+  columnLabels: string[];
+  singleAnswerByLine: boolean;
+  initialRow: (SimpleTableCell | SimpleTableCell[])[];
+  /** Libellés i18n du modal, threadés depuis le composant racine. */
+  i18n: SimpleTableI18n["modal"];
+  /** Libellé du bouton d'ajout d'image, threadé vers RowFieldEditor/ImageCell. */
+  addImageLabel: string;
+  onSave: (row: (SimpleTableCell | SimpleTableCell[])[]) => void;
+  onDelete: () => void;
+  onClose: () => void;
+}
+
+function SimpleTableRowModal({
+  isNew,
+  rowLabelHeader,
+  columns,
+  columnLabels,
+  singleAnswerByLine,
+  initialRow,
+  i18n,
+  addImageLabel,
+  onSave,
+  onDelete,
+  onClose,
+}: SimpleTableRowModalProps) {
+  // Copie profonde des cellules (les cellules Array = Images ne doivent pas être mutées en place).
+  const [draft, setDraft] = useState<(SimpleTableCell | SimpleTableCell[])[]>(
+    () => initialRow.map((c) => (Array.isArray(c) ? [...c] : c)),
+  );
+
+  const setCell = (cellIndex: number, val: SimpleTableCell | SimpleTableCell[]) => {
+    setDraft((prev) => {
+      const next = prev.map((c) => (Array.isArray(c) ? [...c] : c));
+      next[cellIndex] = val;
+      // Exclusivité des cases à cocher sur la ligne.
+      if (singleAnswerByLine && val === "x") {
+        columns.forEach((col, colIdx) => {
+          const ci = colIdx + 1;
+          if (ci !== cellIndex && col.type === "Case à cocher") next[ci] = "";
+        });
+      }
+      return next;
+    });
+  };
+
+  return (
+    <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{isNew ? i18n.addTitle : i18n.editTitle}</DialogTitle>
+          <DialogDescription>{i18n.description}</DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-2">
+          {/* Colonne 0 : label de ligne (toujours un texte) */}
+          <RowFieldEditor
+            label={rowLabelHeader}
+            columnType="Text"
+            value={draft[0] ?? ""}
+            onChange={(v) => setCell(0, v)}
+            addImageLabel={addImageLabel}
+          />
+          {columns.map((col, colIdx) => (
+            <RowFieldEditor
+              key={colIdx}
+              label={columnLabels[colIdx]}
+              columnType={col.type}
+              value={draft[colIdx + 1] ?? (col.type === "Images" ? [] : "")}
+              onChange={(v) => setCell(colIdx + 1, v)}
+              addImageLabel={addImageLabel}
+            />
+          ))}
+        </div>
+
+        <DialogFooter className="flex-row justify-between gap-2 sm:justify-between">
+          {!isNew ? (
+            <Button
+              type="button"
+              variant="ghost"
+              className="gap-1 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              onClick={onDelete}
+            >
+              <Trash2 className="h-4 w-4" />
+              {i18n.delete}
+            </Button>
+          ) : (
+            <span />
+          )}
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" onClick={onClose}>
+              {i18n.cancel}
+            </Button>
+            <Button type="button" onClick={() => onSave(draft)}>
+              {i18n.save}
+            </Button>
+          </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 // ─── Main SimpleTableField Component ─────────────────────────────
 
@@ -304,11 +565,44 @@ export function SimpleTableField({
   readOnly,
   hideLabel,
 }: SimpleTableFieldProps) {
+  useLoadNamespace("modules/coform");
+  const t = useT("modules/coform");
   const config = field.simpleTableConfig;
   const hasError = !!errors[field.name];
-  const columns = config?.columns ?? [];
+  const columns = useMemo(() => config?.columns ?? [], [config?.columns]);
   const activeNewLine = config?.activeNewLine ?? false;
   const singleAnswerByLine = config?.singleAnswerByLine ?? false;
+  const editInModal = config?.editInModal ?? false;
+  const interactive = !readOnly;
+  const baseUrl = getBaseUrl();
+
+  // Bundle i18n résolu ici (racine) puis threadé aux sous-composants — convention
+  // module : pas de `useT` dans les sous-composants (cf. CommonTableField.rowI18n).
+  const i18n = useMemo<SimpleTableI18n>(
+    () => ({
+      imageButton: t("coform.simpleTable.imageButton", "Image"),
+      checkedAria: t("coform.simpleTable.checkedAria", "Oui"),
+      modal: {
+        addTitle: t("coform.simpleTable.modal.addTitle", "Ajouter une ligne"),
+        editTitle: t("coform.simpleTable.modal.editTitle", "Modifier la ligne"),
+        description: t("coform.simpleTable.modal.description", "Renseignez les champs ci-dessous puis enregistrez."),
+        delete: t("coform.simpleTable.modal.delete", "Supprimer cette ligne"),
+        cancel: t("coform.simpleTable.modal.cancel", "Annuler"),
+        save: t("coform.simpleTable.modal.save", "Enregistrer"),
+      },
+    }),
+    [t],
+  );
+
+  // Libellés de colonne pré-résolus (col.label ou fallback "Colonne N"), partagés
+  // par l'aria des cellules inline et par les champs du modal.
+  const columnLabels = useMemo(
+    () => columns.map((col, i) => col.label || t("coform.simpleTable.columnFallback", "Colonne {{index}}", { index: i + 1 })),
+    [columns, t],
+  );
+
+  // Mode modal : index de la ligne en cours d'édition (`"new"` = ajout, `null` = fermé).
+  const [modalRow, setModalRow] = useState<number | "new" | null>(null);
 
   // Row 0 = headers, Row 1+ = data
   const headers = value[0] || [];
@@ -335,23 +629,45 @@ export function SimpleTableField({
       onChange(newValue);
     };
 
+  const makeEmptyRow = () => buildEmptySimpleTableRow(columns);
+  const makeHeadersRow = () => buildSimpleTableHeaders({ tableName: config?.tableName ?? "", columns });
+
   const handleAddRow = () => {
-    if (!value || !onChange) return;
-    const newRow: (SimpleTableCell | SimpleTableCell[])[] = [""];
-    for (const col of columns) {
-      newRow.push(col.type === "Images" ? [] : "");
-    }
-    onChange([...value, newRow]);
+    if (!onChange) return;
+    onChange(upsertSimpleTableRow(value, "new", makeEmptyRow(), makeHeadersRow()));
   };
 
-  const handleRemoveRow =
-    (rowIndex: number) => {
-      if (!value || !onChange) return;
-      const newValue = value.filter((_, i) => i !== rowIndex);
-      onChange(newValue);
-    };
+  const handleRemoveRow = (rowIndex: number) => {
+    if (!onChange) return;
+    onChange(removeSimpleTableRow(value, rowIndex));
+  };
+
+  // ── Handlers du mode modal ──
+  const handleModalSave = (row: (SimpleTableCell | SimpleTableCell[])[]) => {
+    if (!onChange || modalRow === null) return;
+    onChange(upsertSimpleTableRow(value, modalRow, row, makeHeadersRow()));
+    setModalRow(null);
+  };
+
+  const handleModalDelete = () => {
+    if (!onChange || typeof modalRow !== "number") return;
+    onChange(removeSimpleTableRow(value, modalRow));
+    setModalRow(null);
+  };
 
   if (!config) return null;
+
+  const rowLabelHeader =
+    (typeof headers[0] === "string" ? headers[0] : "") || config.tableName || "";
+
+  // Texte d'en-tête robuste : les headers stockés (`value[0]`) sont normalement
+  // des strings, mais une donnée legacy corrompue (objet) donnerait
+  // "[object Object]" via String(). On retombe alors sur le label de config.
+  const headerText = (header: unknown, colIndex: number): string => {
+    if (typeof header === "string") return header;
+    if (typeof header === "number") return String(header);
+    return colIndex === 0 ? config.tableName : (columns[colIndex - 1]?.label ?? "");
+  };
 
   return (
     <div className={cn("space-y-2", field.width || "col-span-12")}>
@@ -371,110 +687,225 @@ export function SimpleTableField({
 
       {field.info && <HintText text={field.info} />}
 
-      {/* Table */}
-      <div
-        className="rounded-md border border-border"
-        aria-labelledby={!hideLabel ? `${field.name}-label` : undefined}
-        aria-invalid={hasError || undefined}
-        aria-describedby={hasError ? `${field.name}-error` : undefined}
-      >
-        <ScrollArea className="w-full whitespace-nowrap">
-            <Table className="w-max min-w-full border-collapse">
-            <TableHeader>
-                <TableRow className="bg-muted/50">
-                {headers.map((header, colIndex) => (
-                    <TableHead key={colIndex} scope="col" className="text-xs font-semibold border border-border">
-                    {typeof header === "string" ? header : String(header)}
-                    </TableHead>
-                ))}
-                {activeNewLine && !readOnly && <TableHead scope="col" aria-hidden="true" className="w-10 border border-border" />}
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {dataRows.map((row, dataIndex) => {
-                const actualRowIndex = dataIndex + 1; // +1 because row 0 is headers
-                return (
-                    <TableRow key={dataIndex}>
-                    {/* Column 0: row label */}
-                    <TableHead scope="row" className={cn("bg-muted/30 min-w-30 border border-border", CELL_CN)}>
-                        <Input
-                        value={typeof row[0] === "string" ? row[0] : ""}
-                        onChange={(e) => handleRowLabelChange(actualRowIndex, e.target.value)}
-                        aria-label={`Label ligne ${dataIndex + 1}`}
-                        className={cn(CELL_INPUT_CN, "font-medium")}
-                        readOnly={readOnly}
-                        tabIndex={readOnly ? -1 : undefined}
-                        />
-                    </TableHead>
+      {editInModal ? (
+        /* ─── Mode ÉDITION EN MODAL : tableau lecture seule, lignes cliquables ─── */
+        <>
+          <div
+            className="rounded-md border border-border"
+            aria-labelledby={!hideLabel ? `${field.name}-label` : undefined}
+            aria-invalid={hasError || undefined}
+            aria-describedby={hasError ? `${field.name}-error` : undefined}
+          >
+            <ScrollArea className="w-full whitespace-nowrap">
+              <Table className="w-max min-w-full border-collapse">
+                <TableHeader>
+                  <TableRow className="bg-muted/50">
+                    {headers.map((header, colIndex) => (
+                      <TableHead key={colIndex} scope="col" className="text-xs font-semibold border border-border">
+                        {headerText(header, colIndex)}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {dataRows.map((row, dataIndex) => {
+                    const actualRowIndex = dataIndex + 1; // +1 car la ligne 0 = en-têtes
+                    const rowLabel = typeof row[0] === "string" && row[0] ? row[0] : `${dataIndex + 1}`;
+                    return (
+                      <TableRow
+                        key={dataIndex}
+                        className={cn(
+                          interactive &&
+                            "cursor-pointer hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                        )}
+                        onClick={interactive ? () => setModalRow(actualRowIndex) : undefined}
+                        role={interactive ? "button" : undefined}
+                        tabIndex={interactive ? 0 : undefined}
+                        aria-label={interactive ? t("coform.simpleTable.editRowAria", "Modifier la ligne {{label}}", { label: rowLabel }) : undefined}
+                        onKeyDown={
+                          interactive
+                            ? (e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.preventDefault();
+                                  setModalRow(actualRowIndex);
+                                }
+                              }
+                            : undefined
+                        }
+                      >
+                        {/* Colonne 0 : label de ligne */}
+                        <TableHead scope="row" className="bg-muted/30 min-w-30 border border-border px-3 py-2 text-sm font-medium">
+                          {typeof row[0] === "string" && row[0] ? row[0] : <span className="text-muted-foreground">—</span>}
+                        </TableHead>
+                        {columns.map((col, colIdx) => (
+                          <TableCell key={colIdx} className="border border-border px-3 py-2 align-middle">
+                            <ReadOnlyCell value={row[colIdx + 1] ?? ""} columnType={col.type} baseUrl={baseUrl} checkedAria={i18n.checkedAria} />
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    );
+                  })}
 
-                    {/* Data columns */}
-                    {columns.map((col, colIdx) => {
-                        const cellIndex = colIdx + 1; // +1 because column 0 is the row label
-                        const isTypedInput = col.type === "Text" || col.type === "Nombre";
-                        return (
-                        <TableCell key={colIdx} className={cn("border border-border", isTypedInput ? CELL_CN : "p-2")}>
-                            <CellRenderer
-                            value={row[cellIndex] ?? ""}
-                            columnType={col.type}
-                            rowIndex={actualRowIndex}
-                            colIndex={cellIndex}
-                            singleAnswerByLine={singleAnswerByLine}
-                            rowValues={row}
-                            columns={columns}
-                            onCellChange={handleCellChange}
-                            readOnly={readOnly}
-                            />
-                        </TableCell>
-                        );
-                    })}
-
-                    {/* Delete button */}
-                    {activeNewLine && !readOnly && (
-                        <TableCell className="border border-border p-1">
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => handleRemoveRow(actualRowIndex)}
-                            aria-label={`Supprimer ligne ${dataIndex + 1}`}
-                        >
-                            <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
-                        </TableCell>
-                    )}
+                  {dataRows.length === 0 && (
+                    <TableRow>
+                      <TableCell
+                        colSpan={columns.length + 1}
+                        className="text-center text-muted-foreground py-6"
+                      >
+                        {t("coform.simpleTable.empty", "Aucune ligne.")}
+                        {interactive && ` ${t("coform.simpleTable.emptyHintModal", "Cliquez sur « Ajouter une ligne ».")}`}
+                      </TableCell>
                     </TableRow>
-                );
-                })}
+                  )}
+                </TableBody>
+              </Table>
+              <ScrollBar orientation="horizontal" className="h-2" />
+            </ScrollArea>
+          </div>
 
-                {dataRows.length === 0 && (
-                <TableRow>
-                    <TableCell
-                    colSpan={columns.length + 1 + (activeNewLine && !readOnly ? 1 : 0)}
-                    className="text-center text-muted-foreground py-6"
-                    >
-                    Aucune ligne. {activeNewLine && "Cliquez sur le bouton ci-dessous pour en ajouter."}
-                    </TableCell>
-                </TableRow>
-                )}
-            </TableBody>
-            </Table>
-            <ScrollBar orientation="horizontal" className="h-2" />
-        </ScrollArea>
-      </div>
+          {/* Ajout de ligne (CRUD complet dans le modal, indépendant de activeNewLine) */}
+          {interactive && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full gap-2"
+              onClick={() => setModalRow("new")}
+            >
+              <Plus className="w-4 h-4" />
+              {t("coform.simpleTable.addRow", "Ajouter une ligne")}
+            </Button>
+          )}
 
-      {/* Add row button */}
-      {activeNewLine && !readOnly && (
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="w-full gap-2"
-          onClick={handleAddRow}
-        >
-          <Plus className="w-4 h-4" />
-          Ajouter une ligne
-        </Button>
+          {/* Modal monté conditionnellement (état réinitialisé à chaque ouverture) */}
+          {modalRow !== null && (
+            <SimpleTableRowModal
+              isNew={modalRow === "new"}
+              rowLabelHeader={rowLabelHeader}
+              columns={columns}
+              columnLabels={columnLabels}
+              singleAnswerByLine={singleAnswerByLine}
+              initialRow={modalRow === "new" ? makeEmptyRow() : (value[modalRow] ?? makeEmptyRow())}
+              i18n={i18n.modal}
+              addImageLabel={i18n.imageButton}
+              onSave={handleModalSave}
+              onDelete={handleModalDelete}
+              onClose={() => setModalRow(null)}
+            />
+          )}
+        </>
+      ) : (
+        /* ─── Mode ÉDITION INLINE (comportement historique) ─── */
+        <>
+          <div
+            className="rounded-md border border-border"
+            aria-labelledby={!hideLabel ? `${field.name}-label` : undefined}
+            aria-invalid={hasError || undefined}
+            aria-describedby={hasError ? `${field.name}-error` : undefined}
+          >
+            <ScrollArea className="w-full whitespace-nowrap">
+              <Table className="w-max min-w-full border-collapse">
+                <TableHeader>
+                  <TableRow className="bg-muted/50">
+                    {headers.map((header, colIndex) => (
+                      <TableHead key={colIndex} scope="col" className="text-xs font-semibold border border-border">
+                        {headerText(header, colIndex)}
+                      </TableHead>
+                    ))}
+                    {activeNewLine && !readOnly && <TableHead scope="col" aria-hidden="true" className="w-10 border border-border" />}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {dataRows.map((row, dataIndex) => {
+                    const actualRowIndex = dataIndex + 1; // +1 because row 0 is headers
+                    return (
+                      <TableRow key={dataIndex}>
+                        {/* Column 0: row label */}
+                        <TableHead scope="row" className={cn("bg-muted/30 min-w-30 border border-border", CELL_CN)}>
+                          <Input
+                            value={typeof row[0] === "string" ? row[0] : ""}
+                            onChange={(e) => handleRowLabelChange(actualRowIndex, e.target.value)}
+                            aria-label={t("coform.simpleTable.rowLabelAria", "Label ligne {{index}}", { index: dataIndex + 1 })}
+                            className={cn(CELL_INPUT_CN, "font-medium")}
+                            readOnly={readOnly}
+                            tabIndex={readOnly ? -1 : undefined}
+                          />
+                        </TableHead>
+
+                        {/* Data columns */}
+                        {columns.map((col, colIdx) => {
+                          const cellIndex = colIdx + 1; // +1 because column 0 is the row label
+                          const isTypedInput = col.type === "Text" || col.type === "Nombre";
+                          const cellAria = t("coform.simpleTable.cellAria", "Ligne {{row}}, {{column}}", { row: actualRowIndex, column: columnLabels[colIdx] });
+                          return (
+                            <TableCell key={colIdx} className={cn("border border-border", isTypedInput ? CELL_CN : "p-2")}>
+                              <CellRenderer
+                                value={row[cellIndex] ?? ""}
+                                columnType={col.type}
+                                rowIndex={actualRowIndex}
+                                colIndex={cellIndex}
+                                singleAnswerByLine={singleAnswerByLine}
+                                rowValues={row}
+                                columns={columns}
+                                onCellChange={handleCellChange}
+                                ariaLabel={cellAria}
+                                addImageLabel={i18n.imageButton}
+                                readOnly={readOnly}
+                              />
+                            </TableCell>
+                          );
+                        })}
+
+                        {/* Delete button */}
+                        {activeNewLine && !readOnly && (
+                          <TableCell className="border border-border p-1">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                              onClick={() => handleRemoveRow(actualRowIndex)}
+                              aria-label={t("coform.simpleTable.deleteRowAria", "Supprimer ligne {{index}}", { index: dataIndex + 1 })}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    );
+                  })}
+
+                  {dataRows.length === 0 && (
+                    <TableRow>
+                      <TableCell
+                        colSpan={columns.length + 1 + (activeNewLine && !readOnly ? 1 : 0)}
+                        className="text-center text-muted-foreground py-6"
+                      >
+                        {t("coform.simpleTable.empty", "Aucune ligne.")}
+                        {activeNewLine && ` ${t("coform.simpleTable.emptyHintInline", "Cliquez sur le bouton ci-dessous pour en ajouter.")}`}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+              <ScrollBar orientation="horizontal" className="h-2" />
+            </ScrollArea>
+          </div>
+
+          {/* Add row button */}
+          {activeNewLine && !readOnly && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full gap-2"
+              onClick={handleAddRow}
+            >
+              <Plus className="w-4 h-4" />
+              {t("coform.simpleTable.addRow", "Ajouter une ligne")}
+            </Button>
+          )}
+        </>
       )}
 
       {/* Error message */}

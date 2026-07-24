@@ -52,7 +52,7 @@ src/modules/agenda/
     ├── eventDates.ts           # eventOccurrence (startDate | startDateSort → {start,end})
     ├── eventTags.ts (+test)    # distinctTags / filterByTags (OR)
     ├── partitionByTime.ts (+test) # eventTimeBucket / partitionByTime (ongoing/upcoming/past)
-    └── agendaUrlParams.ts (+test) # read/write filtres ↔ URL (vue/tab/q/type/tags)
+    └── agendaUrlParams.ts (+test) # read/write filtres ↔ URL (vue/tab/q/type/tags) ; writeAgendaUrl(sp,s,d,manageText=true) — manageText=false saute l'écriture de `q` (délégué au searchHeader) ; Agenda.tsx passe `showText`
 ```
 
 Câblage standard (comme tout module) :
@@ -102,7 +102,7 @@ Activée par `enableMap`. Réutilise `SearchMapWrapper` (Leaflet, lazy/client-on
 
 | Filtre | Portée | Composant | Notes |
 |---|---|---|---|
-| Texte (`name`) | backend | `Input` shadcn (`h-11`) | débounce 500ms |
+| Texte (`name`) | backend | `Input` shadcn (`h-11`) | débounce 500ms ; **délégable** au header (cf. bullet ci-dessous) |
 | Type | backend | `Select` shadcn (`h-11!`) | mono-select (contrainte SDK) |
 | Tags | **client** | `MultiCombobox` (ui/, `h-11!`) | multi ; masqué si aucun tag |
 | Filtres actifs | — | `ActiveFiltersBar` (search) | chips removables (type + tags) |
@@ -110,6 +110,7 @@ Activée par `enableMap`. Réutilise `SearchMapWrapper` (Leaflet, lazy/client-on
 - **Hauteur unifiée** : Input/Select/Tags = `h-11` (44px). Le `SelectTrigger` shadcn impose `data-[size=default]:h-9` (sélecteur d'attribut, spécificité > `.h-11`) → il faut `h-11!` (important) sur les triggers Select/Tags.
 - **Responsive** : inline ≥ `lg`, repliés dans un `Sheet` bas en mobile (bouton « Filtres » + compteur).
 - **Sync URL** (`agendaUrlParams`) : `vue` (mode), `tab`, `q` (texte), `type`, `tags` (CSV) — partageable/bookmarkable. `vue`/`tab` écrits seulement si ≠ défaut.
+- **Recherche déléguée au header** : quand la prop `filters.text` vaut `false`, le terme de recherche ne vient plus de l'input débouncé propre à l'agenda mais du `searchHeader` sœur, via le store partagé `PageFilters` (`pageFilters.searchQuery`, déjà débouncé) — même patron que `SearchProStatic`. Dans ce cas l'agenda **n'écrit PAS** le paramètre d'URL `q` (délégué au header) : `writeAgendaUrl` est appelé avec `manageText=showText`, pour ne pas que deux écrivains se battent sur `q`. Quand `filters.text` vaut `true` (défaut), le comportement est inchangé (input débouncé propre → écrit `q`).
 
 ---
 
@@ -127,6 +128,16 @@ Même convention que `searchProStatic.baseParams`. Champs **repris** (= ceux que
 **Ignorés** (tolérés en passthrough mais non supportés par `searchEventsCostum`) : `defaultFields`, `defaultSortBy` (tri par occurrence interne), `defaultTypes` (forcé à `["events"]`).
 
 > Côté lib, `_withCostumContext` : `sourceKey = inSourceKey.length > 0 ? inSourceKey : [sd.slug]` → un `sourceKey` explicite (multi) est respecté tel quel ; sinon repli sur le costum porteur. Le contexte costum (`costumSlug`/`contextId`/`contextType`) reste posé dans les deux cas.
+
+### `effectiveBaseParams` — fusion des facettes de page (runtime)
+
+Avant de passer `baseParams` aux trois hooks de fetch (`upcomingFetch`/`pastFetch`/`gridFetch`), `Agenda.tsx` y fusionne les **facettes de page** issues du store partagé `PageFilters` (écrites par un `searchHeader`/`filters` sœur de la même page). `searchByFieldsToQuery(pageFilters?.searchByFields)` renvoie `{ filters, locality, sourceKeys }` :
+
+- les facettes `filters` (mongo brut `{ <field>: { $in:[…] } }`) sont **shallow-merged par-dessus** `baseParams.filters` ;
+- la facette `locality` est shallow-merged par-dessus `baseParams.locality` ;
+- les facettes `sourceKeys` **écrasent** `baseParams.sourceKey` quand elles sont non vides (parité avec `SearchProStatic`).
+
+Le résultat (`effectiveBaseParams`) est appliqué **côté serveur** par `searchEventsCostum`. Hors provider `PageFilters` (page `["agenda"]` seule) → tout est vide → no-op (`effectiveBaseParams` = `baseParams`).
 
 ---
 
@@ -204,5 +215,7 @@ Namespace **`modules/agenda`** (`i18n/{fr,en}.json`), chargé en side-effect par
 ## Composants/patterns partagés avec Search (unité)
 
 `MultiCombobox`, `Select`/`SelectField`, `SearchListView`/`SearchCard`/`CardEvent`, `SearchMapWrapper`/`SearchMap`, `SwitchDetailsMode`/`PreviewEvent`, `ActiveFiltersBar`, `EntityActionButtons`, `useInfiniteQueryScrollNextWithTransform`, `buildAgendaParams` (pendant de `buildSearchPayload`), `MapConfSchema`.
+
+**Couplage `PageFilters`** : `Agenda.tsx` importe `usePageFiltersOptional` (`src/modules/search/contexts/pageFilters`) et `searchByFieldsToQuery` (`src/modules/search/lib/searchByFieldsToQuery`) pour lire la recherche déléguée (`searchQuery`) et fusionner les facettes de page (cf. [§ `effectiveBaseParams`](#effectivebaseparams--fusion-des-facettes-de-page-runtime)). Cela couple la section agenda au provider `PageFilters` du module search (monté par son `PageProvider`) ; la variante **Optional** garde le tout sûr (no-op) quand il est absent — ex. une page agenda seule.
 
 Voir aussi : [Module Search](07-module-search.md) · [Schémas de sections](05-schemas-sections.md) · [README module](../src/modules/agenda/README.md).

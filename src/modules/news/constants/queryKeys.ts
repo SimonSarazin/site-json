@@ -59,6 +59,20 @@ export const NEWS_QUERY_KEYS = {
   NEWS_VOTES: (newsId: string | null, userContextId: string | null = null) =>
     ["news-votes", newsId, userContextId] as const,
   NEWS_VOTES_PREFIX: (newsId: string | null) => ["news-votes", newsId] as const,
+
+  /**
+   * Entité PORTEUSE d'une news (son `target`), résolue par (type, id).
+   *
+   * Producteur : `PreviewNews` (module search) — résout l'entité pour monter le
+   *   détail news fonctionnel et construire le permalien profil (cf. `resolveHostEntity`).
+   */
+  NEWS_HOST: (
+    type: string | null,
+    id: string | null,
+    userContextId: string | null = null,
+  ) => ["news-host", type, id, userContextId] as const,
+  NEWS_HOST_PREFIX: (type: string | null, id: string | null) =>
+    ["news-host", type, id] as const,
 } as const;
 
 export type NewsQueryKeyType = ReturnType<(typeof NEWS_QUERY_KEYS)[keyof typeof NEWS_QUERY_KEYS]>;

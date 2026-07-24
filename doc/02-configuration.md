@@ -171,7 +171,8 @@ Tous les fichiers doivent être conformes au `SiteConfigSchema` défini dans `sr
   },
   "header": {
     "nav": [ /* … */ ],
-    "utilities": { "themeSwitch": true, "auth": true }
+    "logoSize": "sm",
+    "utilities": { "themeSwitch": true, "auth": true, "piggyBank": false }
   },
   "pages": [
     {
@@ -192,6 +193,32 @@ Tous les fichiers doivent être conformes au `SiteConfigSchema` défini dans `sr
   ]
 }
 ```
+
+#### Taille du logo (`header.logoSize`)
+
+`header.logoSize` (enum `"sm"` | `"md"` | `"lg"`, optionnel, défaut `"sm"`) contrôle la taille du logo dans la barre. Le défaut `"sm"` reproduit le comportement historique de chaque header. Les classes responsive (toujours plus compactes en mobile, taille pleine dès `sm:`) sont centralisées dans `src/components/layout/header/logoSize.ts` et honorées par les 6 variantes de header (`HeaderMegaMenu`, `HeaderMinimal`, `HeaderStandard`, `HeaderTransparentDark`, `HeaderTransparentScroll`, `HeaderUnderlineNav`).
+
+| Valeur | Hauteur desktop (hint px optimiseur) |
+| ------ | ------------------------------------ |
+| `sm` | 32 px |
+| `md` | 40 px |
+| `lg` | 48 px |
+
+> Sur `HeaderStandard`, un logo `"lg"` (48 px) suppose `header.height: "md"` ou `"lg"` (la barre `"sm"` fait 48 px).
+
+#### Utilitaires du header (`header.utilities`)
+
+Le bloc `header.utilities` active des widgets dans la barre (tous des booléens `default false` sauf `themeSwitch`/`langSwitch` à `true`) : `themeSwitch`, `langSwitch`, `search`, `auth`, `cart`, `notifications` et **`piggyBank`** (bouton cagnotte). Voir le schéma `src/types/site-schema.ts` (`Header.utilities`) et le bloc optionnel `header.piggyBank` (`amount`, `icon`, `path`).
+
+#### Pages d'authentification
+
+La config de base SiteForge (`config.prod.json`) déclare les pages d'authentification comme des **pages/sections classiques** (le bloc racine `auth` a été retiré). Chaque page porte `middleware: ["redirect-if-authenticated"]`, `seo.noIndex: true` et une seule section :
+
+| Page | Type de section |
+| ---- | --------------- |
+| `/login` | `loginForm` |
+| `/register` | `registerForm` |
+| `/recover-password` | `recoverPasswordForm` |
 
 ### Mécanisme `sites.json`
 

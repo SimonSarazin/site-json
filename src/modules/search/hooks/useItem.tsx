@@ -2,21 +2,7 @@ import { useMemo } from "react";
 import { format } from "date-fns";
 import type { Organization, Poi, Project, User, Event as EventType} from "@communecter/cocolight-api-client";
 import getDateFnsLocale from "@/dateFns";
-
-/**
- * Convertit une valeur de type `Date | string | null | undefined` en `Date | null`.
- * – Si la valeur est déjà un objet `Date`, on la renvoie telle quelle.
- * – Si c'est une chaîne ISO‑8601 valide, on crée un `Date`.
- * – Dans tous les autres cas, on renvoie `null`.
- */
-function toDate(value: unknown): Date | null {
-  if (value instanceof Date) return value;
-  if (typeof value === "string" && value.trim() !== "") {
-    const d = new Date(value);
-    return isNaN(d.getTime()) ? null : d;
-  }
-  return null;
-}
+import { toValidDate } from "@/helpers/formatDate";
 
 const useItem = (item: User | Organization | Project | Poi | EventType) => {
   /**
@@ -67,8 +53,8 @@ const useItem = (item: User | Organization | Project | Poi | EventType) => {
     const merged = { ...defaults, ...raw } as typeof defaults & { [k: string]: unknown };
 
     // Normalisation des dates
-    merged.created = toDate(raw.created);
-    merged.updated = toDate(raw.updated);
+    merged.created = toValidDate(raw.created);
+    merged.updated = toValidDate(raw.updated);
 
     // Normalisation tags : le backend peut renvoyer un objet ({tag: true})
     // ou autre chose qu'un array de strings → on garde uniquement les strings.
@@ -113,14 +99,14 @@ const useItem = (item: User | Organization | Project | Poi | EventType) => {
 
     // Champs spécifiques Event
     if (raw.startDate) {
-      merged.startDate = toDate(raw.startDate);
+      merged.startDate = toValidDate(raw.startDate);
       if (merged.startDate) {
         merged.eventDate = format(merged.startDate, 'P', { locale: getDateFnsLocale() });
       }
     }
 
     if (raw.endDate) {
-      merged.endDate = toDate(raw.endDate);
+      merged.endDate = toValidDate(raw.endDate);
     }
 
     // Extraire le nom de l'organisateur

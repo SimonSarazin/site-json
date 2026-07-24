@@ -55,8 +55,9 @@ const SwitchDetailsModeLazy = lazy(() =>
 
 interface EntityPreviewState {
   item: SearchEntity;
-  detailsMode: "drawer" | "dialog";
+  detailsMode?: "drawer" | "dialog";
   preview?: ListConf["preview"];
+  list?: ListConf;
 }
 
 export function CommandPalette() {
@@ -75,8 +76,8 @@ export function CommandPalette() {
   const [entityPreview, setEntityPreview] = useState<EntityPreviewState | null>(null);
   const run = {
     ...baseRun,
-    openEntityPreview: (item: SearchEntity, opts: { detailsMode?: "drawer" | "dialog"; preview?: ListConf["preview"] }) =>
-      setEntityPreview({ item, detailsMode: opts.detailsMode ?? "dialog", preview: opts.preview }),
+    openEntityPreview: (item: SearchEntity, opts: { detailsMode?: "drawer" | "dialog"; preview?: ListConf["preview"]; list?: ListConf }) =>
+      setEntityPreview({ item, detailsMode: opts.detailsMode, preview: opts.preview, list: opts.list }),
   };
 
   const handleOpenChange = (next: boolean) => {
@@ -153,8 +154,12 @@ export function CommandPalette() {
               if (!open) setEntityPreview(null);
             }}
             item={entityPreview.item}
-            card={{ detailsMode: entityPreview.detailsMode }}
+            // `card`/`preview` explicites si fournis ; sinon SwitchDetailsMode les dérive de `list`
+            // (`list.card.detailsMode` / `list.preview`). `list` porte le bloc config-driven (resource/
+            // testimonial) que lisent PreviewResource/PreviewTestimonial.
+            card={entityPreview.detailsMode ? { detailsMode: entityPreview.detailsMode } : undefined}
             preview={entityPreview.preview}
+            list={entityPreview.list}
           />
         </Suspense>
       )}

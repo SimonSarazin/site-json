@@ -1,5 +1,10 @@
 [
   {
+    "slug": "parent62",
+    "config": "config.prod.parent62.json",
+    "css": "index-parent62"
+  },
+  {
     "slug": "cyberReunion",
     "config": "config.prod.cyber-reunion.json",
     "css": "index-cyber-reunion"
@@ -82,6 +87,11 @@
   {
     "slug": "equipementsSportifs974",
     "config": "config.prod.equipements-Sportifs.json",
+    "css": "index-equipements-sportifs"
+  },
+  {
+    "slug": "saintpaulSport1",
+    "config": "config.prod.saint-paul-sport.json",
     "css": "index-equipements-sportifs"
   }
 ]

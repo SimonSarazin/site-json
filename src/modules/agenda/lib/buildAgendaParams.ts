@@ -78,8 +78,23 @@ export function buildAgendaListParams(
   };
 }
 
-/** Signature stable de baseParams pour la queryKey (scope/filtres affectant les résultats). */
+/** Tri récursif des clés d'objet → JSON.stringify CANONIQUE : deux `filters` logiquement identiques mais
+ *  d'ordre d'insertion différent (ex. facette theme→public vs public→theme) donnent la MÊME signature →
+ *  pas de cache-miss / refetch redondant. (L'ordre des tableaux est préservé : sourceKey/$in restent tels quels.) */
+function sortKeys(o: unknown): unknown {
+  if (Array.isArray(o)) return o.map(sortKeys);
+  if (o && typeof o === "object") {
+    return Object.fromEntries(
+      Object.keys(o as object)
+        .sort()
+        .map((k) => [k, sortKeys((o as Record<string, unknown>)[k])]),
+    );
+  }
+  return o;
+}
+
+/** Signature stable de baseParams pour la queryKey (scope/filtres affectant les résultats). Canonique. */
 export function agendaBaseSig(bp?: AgendaBaseParams): string {
   if (!bp) return "";
-  return JSON.stringify({ s: bp.sourceKey ?? null, f: bp.fediverse ?? null, fl: bp.filters ?? null, l: bp.locality ?? null });
+  return JSON.stringify(sortKeys({ s: bp.sourceKey ?? null, f: bp.fediverse ?? null, fl: bp.filters ?? null, l: bp.locality ?? null }));
 }

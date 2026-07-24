@@ -12,6 +12,7 @@ import MobileNavItems from "./MobileNavItems";
 import NavIcon from "./NavIcon";
 import { Badge } from "@/components/ui/badge";
 import HeaderLogo from "./HeaderLogo";
+import { logoSizePx, type LogoSize } from "./logoSize";
 import { AuthMenu } from "@/modules/auth";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
@@ -20,6 +21,12 @@ interface HeaderTransparentDarkProps {
     header: Header;
 }
 
+// `header.logoSize` — base historique h-9 (logo large `w-auto`).
+const DARK_LOGO_CLASS: Record<LogoSize, string> = {
+    sm: "h-9",
+    md: "h-9 sm:h-10",
+    lg: "h-10 sm:h-12",
+};
 export default function HeaderTransparentDark({ header }: HeaderTransparentDarkProps) {
     useLoadNamespace("components/layout");
     const t = useT("components/layout");
@@ -64,8 +71,9 @@ export default function HeaderTransparentDark({ header }: HeaderTransparentDarkP
                             header={header}
                             overrideSrc={useEntityOverride && logo ? logo : undefined}
                             iconTone="primary"
-                            imageClassName="h-9 w-auto object-contain group-hover:scale-105 transition-transform"
+                            imageClassName={`${DARK_LOGO_CLASS[header.logoSize ?? "sm"]} w-auto object-contain group-hover:scale-105 transition-transform`}
                             iconClassName="w-8 h-8 group-hover:scale-110 transition-transform"
+                            imageHeight={logoSizePx(header.logoSize)}
                         />
                         {logoTitle && (
                             <span className="text-white font-bold text-lg hidden sm:block">
