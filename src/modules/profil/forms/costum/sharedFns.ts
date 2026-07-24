@@ -7,6 +7,7 @@ import { registerExistingUrlFn, registerCleanValuesFn, registerInvalidateFn, typ
 import { PROFIL_QUERY_KEYS } from "../../constants";
 import { SEARCH_QUERY_KEYS } from "@/modules/search/constants";
 import { BLOG_QUERY_KEYS } from "@/modules/blog/constants/queryKeys";
+import { AGENDA_QUERY_KEYS } from "@/modules/agenda/constants/queryKeys";
 
 /** URL d'image existante GÉNÉRIQUE (clé `image:profilUrl`) : medium > image > thumb du serverData. Partagé par
  *  tous les costums (avant : enregistré à l'identique dans chaque `<entity>/fns`). */
@@ -64,3 +65,16 @@ registerInvalidateFn("invalidate:blog", (ctx, params) => {
   const byId = ctx.entity?.id ? [BLOG_QUERY_KEYS.ARTICLE_BY_ID(String(ctx.entity.id))] : [];
   return [...standardInvalidate(ctx, params), ...byId];
 });
+
+/**
+ * invalidate EVENT (clé `invalidate:event`) = `invalidate:standard` (userList "events" en création,
+ * about-par-slug en édition, fil admin via `searchKeys`) + les DEUX préfixes AGENDA (calendrier + liste,
+ * tous scopes/plages). L'agenda utilise un espace de clés `["agenda", …]` DISJOINT de
+ * `SEARCH_QUERY_KEYS.RESULTS` (ce que `searchKeys` invalide) → sans ces préfixes, un event créé/validé ne
+ * rafraîchit pas la page /agenda. Mêmes params que standard (`userList`, `searchKeys`).
+ */
+registerInvalidateFn("invalidate:event", (ctx, params) => [
+  ...standardInvalidate(ctx, params),
+  AGENDA_QUERY_KEYS.CALENDAR_PREFIX(),
+  AGENDA_QUERY_KEYS.LIST_PREFIX(),
+]);

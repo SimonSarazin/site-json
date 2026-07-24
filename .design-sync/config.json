@@ -169,7 +169,11 @@
     "SearchCardSkeleton": "src/modules/search/components/SearchCardSkeleton.tsx",
     "SearchListSkeleton": "src/modules/search/components/SearchListSkeleton.tsx",
     "SearchTextInput": "src/modules/search/components/SearchTextInput.tsx",
-    "SectionTitleTL": "src/modules/profil/components/sections/custom/SectionTitleTL.tsx"
+    "SectionTitleTL": "src/modules/profil/components/sections/custom/SectionTitleTL.tsx",
+    "CardTestimonialBubble": "src/modules/search/components/card/testimonial/CardTestimonialBubble.tsx",
+    "CardResourceCard": "src/modules/search/components/card/resource/CardResourceCard.tsx",
+    "PreviewTestimonialBubble": "src/modules/search/components/preview/testimonial/PreviewTestimonialBubble.tsx",
+    "PreviewResourceCard": "src/modules/search/components/preview/resource/PreviewResourceCard.tsx"
   },
   "overrides": {
     "BlogListSection": {
@@ -343,6 +347,20 @@
     },
     "NavLink": {
       "cardMode": "column"
+    },
+    "CardTestimonialBubble": {
+      "cardMode": "column"
+    },
+    "CardResourceCard": {
+      "cardMode": "column"
+    },
+    "PreviewTestimonialBubble": {
+      "cardMode": "single",
+      "primaryStory": "Temoignage"
+    },
+    "PreviewResourceCard": {
+      "cardMode": "single",
+      "primaryStory": "Ressource"
     }
   },
   "readmeHeader": ".design-sync/conventions.md",

@@ -54,6 +54,11 @@ function resolveCostumSlug(scope: EntityModalSpec["scope"], ctx: EntityModalCtx)
   return undefined;
 }
 
+/** Clé de correspondance médias↔document : nom de fichier (dernier segment, sans query). Cf. useEntityMutation.mediaKey. */
+function mediaFileKey(url: unknown): string {
+  return typeof url === "string" ? (url.split("?")[0].split("/").pop() ?? "") : "";
+}
+
 /**
  * Seed des champs GALERIE (widget "gallery") en ÉDITION : les `renderOnly` sont ignorés par le pipeline
  * de defaults → on injecte `existing` depuis `entity.getGalleryImages(contentKey)` (champ `images` fusionné
@@ -84,18 +89,28 @@ function seedGalleryDefaults(defaults: FieldValues, jsonConfig: unknown, entity:
       // types sans about.files (org/citoyen/event), `existing` reste vide → ajout seul dans le form
       // (l'affichage/suppression des fichiers existants passe par la section profil / la vue article).
       const contentKey = (cfg.widgetProps?.contentKey as string) ?? "file";
+      const mediaTarget = cfg.widgetProps?.mediaTarget as { field: string; type: string } | undefined;
       const filesObj = ent.data?.files;
       const raw = filesObj && typeof filesObj === "object" && !Array.isArray(filesObj)
         ? Object.values(filesObj as Record<string, Record<string, unknown>>)
         : Array.isArray(filesObj) ? (filesObj as Array<Record<string, unknown>>) : [];
-      const existing = raw
+      let existing = raw
         .map((f) => {
           const _id = f._id as { $id?: string } | string | undefined;
           const docId = _id && typeof _id === "object" ? _id.$id : _id;
           return { docId: String(docId ?? f.id ?? ""), url: String(f.docPath ?? ""), name: String(f.name ?? "") };
         })
         .filter((e) => e.docId);
-      (defaults as Record<string, unknown>)[name] = { existing, added: [], removedDocIds: [], contentKey, docType: "file" };
+      // Champ AUDIO (mediaTarget) : ne montrer QUE les fichiers présents dans `medias[]` du bon type — sinon
+      // `about.files` renverrait TOUS les documents (l'audio a son contentKey réécrit en "presentation", donc
+      // on ne peut pas filtrer par contentKey ; on corrèle par NOM DE FICHIER avec `medias[].url`).
+      if (mediaTarget) {
+        const mediasRaw = (ent.data as Record<string, unknown> | undefined)?.[mediaTarget.field];
+        const medias = Array.isArray(mediasRaw) ? (mediasRaw as Array<Record<string, unknown>>) : [];
+        const keys = new Set(medias.filter((m) => m?.type === mediaTarget.type).map((m) => mediaFileKey(m.url)));
+        existing = existing.filter((e) => keys.has(mediaFileKey(e.url)));
+      }
+      (defaults as Record<string, unknown>)[name] = { existing, added: [], removedDocIds: [], contentKey, docType: "file", ...(mediaTarget ? { mediaTarget } : {}) };
     }
   }
 }

@@ -141,9 +141,16 @@ bespoke. Trois hooks :
   "filters": { "category": "actus" }, // filtre serveur additionnel (type:"article" toujours injecté)
   "featured": true,                    // article « à la une » (le plus récent) en tête
   "cardVariant": "compact",            // registre CARD_VARIANTS ; défaut config.blog.defaultCardVariant sinon "default"
-  "feedLayout": "list"                 // "grid" (défaut) | "list"
+  "feedLayout": "list",                // "grid" (défaut) | "list"
+  "fullWidth": true                    // élargit le fil : max-w-[1536px] + 4ᵉ colonne xl (xl:grid-cols-4) ; défaut false → max-w-6xl
 } }
 ```
+`fullWidth` (`z.boolean().optional()` sur `ArticleFeedSectionSchema.props`) élargit le conteneur externe de
+`max-w-6xl` à `max-w-[1536px]` (les **deux** layouts) et, en `feedLayout:"grid"` uniquement, ajoute une 4ᵉ colonne
+en xl (`xl:grid-cols-4`) — le layout `list` (`flex flex-col gap-4`) n'est pas affecté par ce changement de colonnes.
+But : aligner une page blog avec les pages `layout:"fullwidth"` de searchProStatic/agenda. Comme toute clé de config,
+`.optional()` n'a **pas** de défaut runtime (config jamais parsée par Zod) → il faut écrire explicitement `"fullWidth": true`.
+
 `detailBasePath` est **déprécié** (le reader est canonique `/blog/:slug` ; toute autre valeur est ignorée, warning dev).
 
 ### `articleReader`
@@ -183,6 +190,9 @@ bespoke. Trois hooks :
   "feedCostumSlug": "monCostum"     // costum du flux RSS /blog/feed.xml (sinon 400, sauf ?costum=)
 } }
 ```
+
+> `fullWidth` est une prop **par section** uniquement : il n'existe **pas** de `config.blog.defaultFullWidth`
+> — chaque section `articleFeed` la déclare individuellement.
 
 ## Visibilité / validation
 
@@ -227,6 +237,12 @@ Namespace `modules/blog` (`i18n/{fr,en}.json`), chargé en side-effect (`import 
 
 - **Search** : `buildSearchPayload` / `useSearchQuery` / `PageFilters` / `searchHeader` (fil + filtres).
 - **Agenda** : même patron d'**île client** config-driven + registre de variants + teaser.
+- **Search (preview `resource`)** : le nouveau preview config-driven `resource` du module search
+  (`useResourceEntity` dans `src/modules/search/hooks/`, `PreviewResourceCard`) est un **miroir fidèle** du
+  patron blog `useArticle` / `ArticleGallery` / `ArticleDocuments` — même extraction `about.images`
+  (`contentKey="slider"` → `GalleryGrid`) + `about.files` (→ `FilesList`, plus audio via `AudioPlayer` /
+  `<video>` natif) au-dessus des **mêmes primitives partagées** `src/components/media/{GalleryGrid,FilesList,AudioPlayer}`.
+  L'unité blog ↔ search reste ainsi explicite.
 - **formEngine** : le costum form `parent62-article` du POI `article` déclare les champs éditables (`name`,
   `shortDescription`, `description` markdown, `profil_avatar`, `galerie`, `documents`, `tags`, taxonomies
   `territoires`/`publics`/`themes`) — voir [Édition](#édition--le-costum-form-parent62-article). Il illustre

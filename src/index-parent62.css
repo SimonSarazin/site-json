@@ -166,6 +166,14 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; border-color: var(--border); }
+/* Réserve EN PERMANENCE la gouttière de scrollbar. Sans ça, l'ouverture d'une modale
+   (Radix scroll-lock → `body{overflow:hidden}` retire la scrollbar de 8px) élargit le
+   viewport de 8px : la compensation `margin-right` du body protège le flux normal, mais
+   PAS le header `nav.fixed left-0 right-0` (ancré au viewport) → il « saute » de 8px à
+   l'ouverture/fermeture = le flash. `scrollbar-gutter: stable` garde la gouttière réservée
+   même sous `overflow:hidden` → largeur du viewport constante, aucun saut (react-remove-scroll
+   mesure alors 0px de scrollbar et n'ajoute pas de compensation). */
+html { scrollbar-gutter: stable; }
 body {
   background-color: var(--background);
   color: var(--foreground);

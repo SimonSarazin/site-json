@@ -141,6 +141,15 @@ export { default as SearchCardSkeleton } from "@/modules/search/components/Searc
 export { default as SearchListSkeleton } from "@/modules/search/components/SearchListSkeleton";
 export { default as SearchTextInput } from "@/modules/search/components/SearchTextInput";
 export { default as SectionTitleTL } from "@/modules/profil/components/sections/custom/SectionTitleTL";
+// Recherche — cartes & previews config-driven (contenu type-de-contenu) : testimonial (bulle) + resource (médiathèque).
+export { default as CardTestimonialBubble } from "@/modules/search/components/card/testimonial/CardTestimonialBubble";
+export { default as CardResourceCard } from "@/modules/search/components/card/resource/CardResourceCard";
+export { default as PreviewTestimonialBubble } from "@/modules/search/components/preview/testimonial/PreviewTestimonialBubble";
+export { default as PreviewResourceCard } from "@/modules/search/components/preview/resource/PreviewResourceCard";
+// Seed React Query pour les aperçus qui chargent une entité (PreviewResourceCard → useResourceEntity) :
+// exposé DEPUIS le bundle → même instance @tanstack/react-query que DsProvider (les previews externalisent
+// react + le paquet DS, mais bundleraient une 2e copie de react-query s'ils l'importaient directement).
+export { useQueryClient } from "@tanstack/react-query";
 
 // Chrome de site : headers, footers, primitives partagées (présentationnels,
 // header/footer passés en prop — utilities auth/notifications OFF en preview)

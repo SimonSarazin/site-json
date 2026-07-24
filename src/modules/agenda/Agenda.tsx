@@ -19,8 +19,11 @@ import { useLocalization } from "@/hooks/useLocalization";
 import { SwitchDetailsMode } from "@/modules/search/components/SwitchDetailsMode";
 import SearchListView from "@/modules/search/components/SearchListView";
 import { SearchPropsProvider } from "@/modules/search/contexts/SearchPropsProvider";
+import { usePageFiltersOptional } from "@/modules/search/contexts/pageFilters";
+import { searchByFieldsToQuery } from "@/modules/search/lib/searchByFieldsToQuery";
 import type { ListConf, SearchProStaticSectionProps } from "@/modules/search/schema";
 import { getEntryCoords } from "@/modules/search/lib/searchMapSelection";
+import type { AgendaBaseParams } from "./lib/buildAgendaParams";
 import AgendaList from "./components/AgendaList";
 import { useAgendaCalendar } from "./hooks/useAgendaCalendar";
 import { useAgendaList } from "./hooks/useAgendaList";
@@ -87,21 +90,54 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
   const [text, setText] = useState(initial.text);
   const [type, setType] = useState(initial.type);
   const [selectedTags, setSelectedTags] = useState<string[]>(initial.tags);
-  const debouncedText = useDebounce(text, 500);
-  const typeParam = type || undefined;
-  const nameParam = debouncedText || undefined;
-
-  // Projette les filtres dans l'URL (texte débouncé pour ne pas spammer l'historique).
-  useEffect(() => {
-    setSearchParams(
-      (prev) => writeAgendaUrl(prev, { mode, tab, text: debouncedText, type, tags: selectedTags }, urlDefaults),
-      { replace: true, preventScrollReset: true },
-    );
-  }, [mode, tab, debouncedText, type, selectedTags, urlDefaults, setSearchParams]);
-
   const showText = filters?.text !== false;
   const showType = filters?.type !== false;
   const showTags = filters?.tags === true;
+
+  const pageFilters = usePageFiltersOptional();
+  const debouncedText = useDebounce(text, 500);
+  const typeParam = type || undefined;
+  // Recherche : barre PROPRE de l'agenda (`showText`) OU, si elle est coupée (`filters.text:false`),
+  // celle du `searchHeader` sœur via `pageFilters.searchQuery` (déjà débouncée 400ms) — patron
+  // identique à `SearchProStatic:234`. → recherche + facettes réunies dans le header (cf. /ressources).
+  const nameParam = (showText ? debouncedText : (pageFilters?.searchQuery ?? "")) || undefined;
+
+  // Projette les filtres dans l'URL (texte débouncé). `manageText=showText` : quand la recherche est
+  // déléguée au header (showText=false), l'agenda NE touche PAS `q` (le header le possède) → pas de
+  // bataille de deux écrivains sur le même paramètre.
+  useEffect(() => {
+    setSearchParams(
+      (prev) =>
+        writeAgendaUrl(prev, { mode, tab, text: debouncedText, type, tags: selectedTags }, urlDefaults, {
+          text: showText,
+          type: showType,
+          tags: showTags,
+        }),
+      { replace: true, preventScrollReset: true },
+    );
+  }, [mode, tab, debouncedText, type, selectedTags, urlDefaults, setSearchParams, showText, showType, showTags]);
+
+  // ── Facettes de page (générique, comme `useArticleFeed` / `SearchProStatic`) ─────────────────
+  // Un `searchHeader`/`filters` SŒUR de la même page écrit dans le PageFilters partagé (provider
+  // page-level, toujours monté). Les facettes AVEC `field` (territoires/publics/thèmes) deviennent
+  // `{ <field>: { $in:[…] } }` et sont injectées dans `baseParams.filters` (mongo brut) → appliquées
+  // CÔTÉ SERVEUR par searchEventsCostum (parité legacy `/co2/search/agenda` → SearchNew::searchFilters,
+  // sans whitelist). Hors provider (page `['agenda']` seule) → tout vide = no-op (fil de base).
+  // `pageFilters` est déclaré plus haut (aussi lu pour `searchQuery` quand la recherche est déléguée au header).
+  const { filters: facetFilters, locality: facetLocality, sourceKeys: facetSourceKeys } = useMemo(
+    () => searchByFieldsToQuery(pageFilters?.searchByFields ?? {}),
+    [pageFilters?.searchByFields],
+  );
+  const effectiveBaseParams = useMemo<AgendaBaseParams>(() => {
+    const hasFilters = Object.keys(facetFilters).length > 0;
+    const hasLocality = Object.keys(facetLocality).length > 0;
+    return {
+      ...baseParams,
+      ...(hasFilters ? { filters: { ...(baseParams?.filters ?? {}), ...facetFilters } } : {}),
+      ...(hasLocality ? { locality: { ...(baseParams?.locality ?? {}), ...facetLocality } } : {}),
+      ...(facetSourceKeys.length ? { sourceKey: facetSourceKeys } : {}),
+    };
+  }, [baseParams, facetFilters, facetLocality, facetSourceKeys]);
 
   // Île client : on ne fetch (ni ne rend le contenu data-dépendant) qu'APRÈS hydratation. Le serveur
   // et le 1ᵉʳ render client produisent ainsi le MÊME squelette → pas de mismatch d'hydratation
@@ -120,10 +156,10 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
     rangeEnd: upcomingEnd,
     type: typeParam,
     name: nameParam,
-    baseParams,
+    baseParams: effectiveBaseParams,
     enabled: hydrated && needsEventList,
   });
-  const pastFetch = useAgendaList({ type: typeParam, name: nameParam, baseParams, enabled: hydrated && needsEventList });
+  const pastFetch = useAgendaList({ type: typeParam, name: nameParam, baseParams: effectiveBaseParams, enabled: hydrated && needsEventList });
   // Calendrier : plage = mois visible (refetch à la navigation via onRangeChange).
   const [calRange, setCalRange] = useState(() => ({ start: startOfMonth(now), end: endOfMonth(now) }));
   const gridFetch = useAgendaCalendar({
@@ -131,7 +167,7 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
     rangeEnd: calRange.end,
     type: typeParam,
     name: nameParam,
-    baseParams,
+    baseParams: effectiveBaseParams,
     enabled: hydrated && mode === "calendar",
   });
 

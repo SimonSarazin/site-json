@@ -115,11 +115,25 @@ describe("buildSearchPayload — gate de validation (double flag toBeValidated)"
 
   it("NE s'applique PAS aux collections non-élément (news : visibilité par scope)", () => {
     const p = buildSearchPayload({ costumSlug: "sportSanteBienetre" } as never, { name: "", type: ["news"] }) as Record<string, unknown>;
+    // Pas de gate toBeValidated pour news ; l'exclusion des items de fil est faite par la LIB (searchCostum),
+    // plus par buildSearchPayload → aucun `filters` produit ici.
     expect(p.filters).toBeUndefined();
   });
 
   it("s'applique aux sous-types d'organisation (NGO)", () => {
     const p = buildSearchPayload({ costumSlug: "sportSanteBienetre" } as never, { name: "", type: ["NGO"] }) as Record<string, unknown>;
     expect(p.filters).toMatchObject({ "source.toBeValidated.sportSanteBienetre": { $exists: false } });
+  });
+});
+
+describe("buildSearchPayload — news : l'exclusion des items de fil est déléguée à la lib (searchCostum)", () => {
+  // La logique `withNewsActivityExclusion` vit désormais dans la lib (BaseEntity), appliquée par
+  // `entity.searchCostum`. `buildSearchPayload` ne fait donc plus que transporter les defaultFilters.
+  it("passe les defaultFilters ($or localité/source) TELS QUELS, sans injecter d'exclusion `type`", () => {
+    const p = buildSearchPayload(
+      { defaultTypes: ["news"], notSourceKey: true, defaultFilters: { $or: { "source.keys": "etangsale1" } } } as never,
+      { name: "", type: undefined as unknown as string[] },
+    ) as Record<string, unknown>;
+    expect(p.filters).toEqual({ $or: { "source.keys": "etangsale1" } });
   });
 });

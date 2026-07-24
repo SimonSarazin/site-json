@@ -66,4 +66,28 @@ describe("writeAgendaUrl", () => {
     const written = writeAgendaUrl(new URLSearchParams(""), state, defaults);
     expect(readAgendaUrl(written, defaults)).toEqual(state);
   });
+
+  it("délégation : un param NON possédé (manage=false) N'EST PAS touché (préserve celui d'un searchHeader sœur)", () => {
+    const out = writeAgendaUrl(
+      new URLSearchParams("q=header-search&type=header-type&tags=X,Y"),
+      { mode: "calendar", tab: "upcoming", text: "local", type: "local", tags: ["Z"] },
+      defaults,
+      { text: false, type: false, tags: false },
+    );
+    expect(out.get("q")).toBe("header-search"); // délégué → non touché
+    expect(out.get("type")).toBe("header-type"); // délégué → non touché
+    expect(out.get("tags")).toBe("X,Y"); // délégué → non touché
+    expect(out.get("vue")).toBe("calendar"); // mode : toujours propre à l'agenda
+  });
+
+  it("délégation PARTIELLE : seul le param possédé est géré, l'autre est préservé", () => {
+    const out = writeAgendaUrl(
+      new URLSearchParams("type=header-type"),
+      { mode: "list", tab: "upcoming", text: "recherche", type: "", tags: [] },
+      defaults,
+      { text: true, type: false, tags: true },
+    );
+    expect(out.get("q")).toBe("recherche"); // possédé → géré
+    expect(out.get("type")).toBe("header-type"); // délégué → non touché malgré `type` local vide
+  });
 });

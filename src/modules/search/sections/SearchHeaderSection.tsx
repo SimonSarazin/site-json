@@ -350,7 +350,15 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
                 />
             </div>
 
-            <div className="relative z-10 container mx-auto max-w-6xl text-center py-12 px-4">
+            {/* Padding hero : `py-12` par défaut ; `py-4` UNIQUEMENT si `props.compact` (opt-in explicite,
+                ex. pages territoire/thème dont le titre vient d'une section `title` au-dessus). L'auto-détection
+                « pas de headline → py-4 » cassait les pages dont le searchHeader nu EST le hero (ex.
+                sport-sante-bien-etre /blog) → on rend le compactage EXPLICITE. */}
+            <div
+                className={`relative z-10 container mx-auto max-w-6xl px-4 text-center ${
+                    props.compact ? "py-4" : "py-12"
+                }`}
+            >
                 {props.headline && (
                     <h1 className={`text-4xl md:text-6xl font-bold mb-6 ${props.headlineClassName ?? "text-foreground"} animate-fade-in`}>
                         {t(props.headline)}

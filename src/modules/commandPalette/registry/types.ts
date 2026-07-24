@@ -49,7 +49,7 @@ export interface CommandRunContext {
    */
   openEntityPreview?: (
     item: SearchEntity,
-    opts: { detailsMode?: "drawer" | "dialog"; preview?: ListConf["preview"] },
+    opts: { detailsMode?: "drawer" | "dialog"; preview?: ListConf["preview"]; list?: ListConf },
   ) => void;
 }
 

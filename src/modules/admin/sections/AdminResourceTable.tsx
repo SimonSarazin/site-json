@@ -38,7 +38,17 @@ import { useValidateGroup, type ValidatableCarrier } from "../hooks/useValidateG
 import type { AdminResourceSection, AdminSection } from "../schema";
 import { downloadCsv } from "../lib/downloadCsv";
 import { ensureCostumScope } from "../lib/ensureCostumScope";
+import { AudioPlayer } from "@/components/media/AudioPlayer";
 import { formatCell, getPath, resolveCreateModal, resolveEditModal, type CostumFormDocLike } from "./resourceHelpers";
+
+/** Cellule audio : lecteur du 1er `medias[].url` de type audio de la ligne (ou d'une URL directe). */
+function AudioCell({ value }: { value: unknown }) {
+  const url = Array.isArray(value)
+    ? (value.find((m): m is { type?: string; url?: string } => !!m && typeof m === "object" && (m as { type?: string }).type === "audio")?.url)
+    : (typeof value === "string" ? value : undefined);
+  if (!url) return <span className="text-muted-foreground">—</span>;
+  return <AudioPlayer compact src={url} />;
+}
 
 import { toCsv } from "@communecter/cocolight-api-client";
 import { toast } from "sonner";
@@ -90,7 +100,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   const tAdmin = useT("modules/admin");
   // Colonnes : `"path"` brut OU `{path, label}` (libellé localisé) — cf. AdminColumnSchema.
   const columns = (resource.columns ?? ["name"]).map((c) =>
-    typeof c === "string" ? { path: c, label: undefined } : c,
+    typeof c === "string" ? { path: c, label: undefined, type: undefined } : c,
   );
   const rowActions = resource.rowActions ?? ["edit", "delete"];
   const costumSlug = (carrier as { slug?: string } | null)?.slug ?? "";
@@ -444,8 +454,14 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                     </TableCell>
                   )}
                   {columns.map((col) => (
-                    <TableCell key={col.path} className="max-w-[14rem] truncate" title={formatCell(getPath(data, col.path))}>
-                      {formatCell(getPath(data, col.path))}
+                    <TableCell
+                      key={col.path}
+                      className={col.type === "audio" ? "min-w-[13rem]" : "max-w-[14rem] truncate"}
+                      title={col.type === "audio" ? undefined : formatCell(getPath(data, col.path))}
+                    >
+                      {col.type === "audio"
+                        ? <AudioCell value={getPath(data, col.path)} />
+                        : formatCell(getPath(data, col.path))}
                     </TableCell>
                   ))}
                   {adminMode && (

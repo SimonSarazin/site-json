@@ -7,9 +7,11 @@
  *    (cf. compileCostumSchema) : tout champ `widget:"openingHours"` hérite read/write, zéro code dans le costum.
  * Importé en side-effect par chaque `costum/<entity>/fns`.
  */
+import { formatISO } from "date-fns";
 import { registerTransform } from "@/modules/formEngine/engine/transforms";
 import { coerceString } from "@/modules/formEngine/engine/coercions";
 import { buildAddressFromForm } from "../../hooks/mutationUtils";
+import { DAYS } from "@/constants/DAYS";
 
 /** Clés d'une adresse PostalAddress (objet serveur `address` ↔ champs plats du form), incl. les 9 SIG
  *  (level1..4/level*Name/codeInsee) requis pour le round-trip complet (parité buildEditDefaults). */
@@ -96,6 +98,51 @@ registerTransform("openingHours:write", (v) => {
   const oh = buildOpeningHoursPayload(v as OpeningHoursModel);
   return oh.some((e) => e !== "") ? oh : undefined; // omet openingHours si aucun jour ouvert
 });
+
+// ── Codec WRITE générique `omitEmpty` ─────────────────────────────────────────────────────────────
+// OMET le champ du payload si la valeur est vide (`null`/`""`/`[]`/`{}`) → clé absente (omit-empty),
+// sinon passe la valeur BRUTE. Pour des champs OPTIONNELS/CONDITIONNELS déclarés (sérialisation) que
+// l'AJV ADD rejette si envoyés vides — ex. `startDate`/`endDate`/`openingHours` pilotés par le composite
+// `eventDates` : en mode ponctuel `openingHours` reste `[]` (→ omis) ; en récurrent `startDate`/`endDate`
+// restent `""` (→ omis). Pendant costum du « le base ne déclare pas ces champs » (donc ne les émet pas).
+registerTransform("omitEmpty", (v) =>
+  v == null ||
+  v === "" ||
+  (Array.isArray(v) && v.length === 0) ||
+  (typeof v === "object" && Object.keys(v as object).length === 0)
+    ? undefined
+    : v,
+);
+
+// ── Codecs WRITE date d'EVENT (pendants costum de `pf:isoDate`/`pf:timeZone` de editProfilePayload, qui
+// ne sont PAS importés par les forms costum) ──────────────────────────────────────────────────────────
+// `eventDate:write` : le composite `eventDates` (EditEventDatesTab) stocke une STRING `toISOString()`
+// (`…:05.000Z`, millis+Z) que le LEGACY REJETTE (« The start date is not well formated »). `formatISO(new
+// Date(v))` la réémet en ISO offset LOCAL SANS millis (ex. `…:05+04:00`), le format que le base envoie et
+// que le legacy accepte. Vide/invalide → `undefined` (omis, omit-empty). Identique à `pf:isoDate`.
+// RECURRENCY-AWARE : le composite `eventDates` ne DÉMONTE pas les champs à la bascule (RHF
+// shouldUnregister=false) → une startDate/endDate rémanente d'un mode ponctuel survivrait en récurrent.
+// On l'OMET donc dès que `recurrency` est vrai (branche récurrente du contrat = openingHours, PAS de dates),
+// ignorant toute valeur rémanente. Sinon : `.000Z` (composite) → offset local sans millis (accepté legacy).
+registerTransform("eventDate:write", (v, all) => {
+  if ((all as Record<string, unknown> | undefined)?.recurrency) return undefined; // récurrent → date omise
+  if (typeof v !== "string" || v.trim() === "") return undefined;
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? undefined : formatISO(d);
+});
+// RECURRENCY-AWARE : en PONCTUEL, `openingHours` (rémanent) est OMIS ; en RÉCURRENT, on NORMALISE l'array
+// partiel du composite (jours cochés uniquement) en EXACTEMENT 7 entrées Mo→Su (jour vide → `""`), comme
+// le form event de base (`editProfilePayload.buildOpeningHours`) — le contrat ADD_EVENT exige `minItems:7`.
+registerTransform("eventOpeningHours:write", (v, all) => {
+  if (!(all as Record<string, unknown> | undefined)?.recurrency) return undefined; // ponctuel → omis
+  const arr = Array.isArray(v) ? v : [];
+  return DAYS.map((day) => arr.find((o) => (o as { dayOfWeek?: unknown })?.dayOfWeek === day) ?? "");
+});
+// `eventTimeZone:write` : fuseau du navigateur si non fourni (comme `pf:timeZone`) — métadonnée envoyée par
+// le form de base (`timeZone=Indian/Reunion`).
+registerTransform("eventTimeZone:write", (v) =>
+  v && String(v).trim() ? v : Intl.DateTimeFormat().resolvedOptions().timeZone,
+);
 
 // ── Codec SOCIAL (clés `social:read`/`social:write`) ──────────────────────────────────────────────────────
 // Objet serveur `socialNetwork` `{facebook:url, …}` ↔ liste form `[{platform,url}]`. Clé PARTAGÉE NOMMÉE (le
