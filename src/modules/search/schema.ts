@@ -266,6 +266,32 @@ export const ResourceConfSchema = z.object({
 
 export type ResourceConf = z.infer<typeof ResourceConfSchema>;
 
+/** Coloration data-driven par VALEUR de `serverData` (ex. tag territoire →
+ *  couleur du territoire, CDC parents62). `mapping` : valeur exacte → couleur
+ *  CSS — `var(--…)` recommandé (suit light/dark via le thème), jamais d'hex.
+ *  `path` : dot-path serverData (déf. `tags`) ; valeur string ou tableau —
+ *  le premier tag de l'item présent dans le mapping gagne (cf. lib/colorBy). */
+export const ColorByConfSchema = z.object({
+  path: z.string().optional(),
+  mapping: z.record(z.string(), z.string()),
+});
+export type ColorByConf = z.infer<typeof ColorByConfSchema>;
+
+/** Chips de tags des cartes : couleur par tag (`mapping`), libellé lisible
+ *  (`labels`, déf. namespace retiré + capitalisation) et MASQUAGE des tags
+ *  techniques (`hidePrefixes`, ex. `public:`/`age:` — filtrants mais pas
+ *  affichables bruts). Consommé par `decorateTags` (lib/colorBy).
+ *  `paths` : dot-paths serverData dont les valeurs s'ajoutent aux chips —
+ *  nécessaire quand la taxonomie vit dans des CHAMPS et non dans `tags`
+ *  (parent62 : `["territoires"]`), cf. `collectChipValues`. */
+export const TagColorsConfSchema = z.object({
+  mapping: z.record(z.string(), z.string()),
+  labels: z.record(z.string(), z.string()).optional(),
+  hidePrefixes: z.array(z.string()).optional(),
+  paths: z.array(z.string()).optional(),
+});
+export type TagColorsConf = z.infer<typeof TagColorsConfSchema>;
+
 export const ListConfSchema = z.object({
   columns: z.object({
     lg: z.number().int().min(1).max(6).optional(),
