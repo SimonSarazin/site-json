@@ -33,7 +33,8 @@
   },
   "installation": {
     "title": "Tableau de bord de l'installation",
-    "subtitle": "{{count}} équipements",
+    "subtitle_one": "{{count}} équipement",
+    "subtitle_other": "{{count}} équipements",
     "kpi": {
       "equipments": "Équipements",
       "reservedHours": "Heures réservées / sem.",

@@ -69,7 +69,11 @@ export default function InstallationDashboardModal({
   } = useInstallationPoisQuery(conf, instValue);
   const {
     data: answers,
-    isPending: answersPending,
+    // `isLoading` (et non `isPending`) : une query désactivée — cas d'une
+    // installation sans équipement correspondant (poiIds vide) — reste
+    // `isPending: true` en React Query v5 mais `isLoading: false`, ce qui évite
+    // de figer la fiche sur des skeletons.
+    isLoading: answersPending,
     isError: answersError,
   } = useInstallationAnswersQuery(reservations, poiIds);
 

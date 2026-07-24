@@ -33,7 +33,8 @@
   },
   "installation": {
     "title": "Facility dashboard",
-    "subtitle": "{{count}} facilities",
+    "subtitle_one": "{{count}} facility",
+    "subtitle_other": "{{count}} facilities",
     "kpi": {
       "equipments": "Facilities",
       "reservedHours": "Booked hours / week",

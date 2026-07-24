@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { CalendarClock } from "lucide-react";
 import getDateFnsLocale from "@/dateFns";
 import {
@@ -27,7 +27,9 @@ type Translate = ReturnType<typeof useT>;
 
 /** "2026-01-01" → "1 janv. 2026" (locale) ; repli sur l'ISO brut si invalide. */
 function formatIsoDate(iso: string): string {
-  const date = new Date(iso);
+  // `parseISO` traite une date-only ("2026-01-01") comme minuit LOCAL, alors que
+  // `new Date(iso)` la parse en UTC → recul d'un jour aux offsets UTC négatifs.
+  const date = parseISO(iso);
   if (Number.isNaN(date.getTime())) return iso;
   return format(date, "d MMM yyyy", { locale: getDateFnsLocale() });
 }
@@ -158,9 +160,9 @@ export default function PreviewReservations({
                 </AccordionTrigger>
                 <AccordionContent>
                   <div className="space-y-3 pl-5">
-                    {g.reservations.map((r) => (
+                    {g.reservations.map((r, ri) => (
                       <div
-                        key={r.id}
+                        key={r.id || `res-${ri}`}
                         className="rounded-lg border border-border/60 bg-background/60 p-3 text-sm"
                       >
                         <div className="flex flex-wrap items-center gap-2">

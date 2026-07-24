@@ -212,11 +212,16 @@ export function buildWeeklyGrid(groups: UserReservations[]): WeeklyGridDay[] {
   const byDay = new Map<DayKey, WeeklySlotBlock[]>(
     DAY_KEYS.map((d) => [d, []]),
   );
+  let resIndex = 0;
   for (const g of groups) {
     for (const r of g.reservations) {
+      // `r.id` peut être "" (repli assumé) → clé positionnelle de repli pour
+      // éviter des clés React dupliquées ("-0", "-0"…) entre réservations.
+      const rKey = r.id || `res${resIndex}`;
+      resIndex += 1;
       r.slots.forEach((s, i) => {
         byDay.get(s.day)!.push({
-          key: `${r.id}-${i}`,
+          key: `${rKey}-${i}`,
           dayKey: s.day,
           start: s.start,
           end: s.end,
