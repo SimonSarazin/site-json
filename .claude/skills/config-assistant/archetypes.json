@@ -56,6 +56,35 @@
         "theme complet — le bon point de départ pour un petit site"
       ],
       "knownFindings": []
+    },
+    {
+      "slug": "equipementsSportifs974",
+      "config": "config.prod.equipements-Sportifs.json",
+      "titre": "Cartographie d'équipements",
+      "demontre": [
+        "presenter poi-amenities (card + preview) sur données d'équipements",
+        "2 sections data-observatory + searchHeader ×3",
+        "admin 5 onglets, commandPalette (poi), 1 costumForm",
+        "theme complet + le customCSS le plus fourni du parc",
+        "visibilité conditionnelle (visibleIf/condition)",
+        "LA source du réseau equipementsSportifs974 (sourceKey réutilisé par saint-paul-sport)"
+      ],
+      "knownFindings": [],
+      "wip": true
+    },
+    {
+      "slug": "sportSanteBienetre",
+      "config": "config.prod.sport-sante-bien-etre.json",
+      "titre": "Portail multi-formulaires maximal",
+      "demontre": [
+        "19 pages, 17 types de sections",
+        "admin 7 onglets (le max du parc) et 6 costumForms (le max) — multi-forms par collection (poi recoveryCenter+article, organizations base+mss…)",
+        "les presenters les plus variés : funding, profile, contact-card, card-answer, poi-amenities, coform-answer",
+        "floatingQRCode, blog, 9 blocs baseParams",
+        "visibilité par role/condition"
+      ],
+      "knownFindings": [],
+      "wip": true
     }
   ]
 }

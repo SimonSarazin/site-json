@@ -33,6 +33,12 @@ export interface Archetype {
   titre: string;
   demontre: string[];
   knownFindings: KnownFinding[];
+  /**
+   * Chantier ACTIF : archétype référencé (sources d'exemples autorisées, listé
+   * par config:example) mais gate d'audit allégé — le préflight ne compare pas
+   * ses constats à knownFindings tant qu'il n'est pas gradué (retirer wip).
+   */
+  wip?: boolean;
 }
 
 export interface ArchetypesManifest {

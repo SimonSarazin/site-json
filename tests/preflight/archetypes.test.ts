@@ -76,6 +76,9 @@ describe("archétypes de l'assistant config (gate de fraîcheur)", () => {
 
       for (const a of manifest.archetypes) {
         expect(report.orphans, `${a.config} orpheline`).not.toContain(a.config);
+        // Archétype WIP (chantier actif) : gate d'audit allégé — pas d'égalité
+        // stricte tant qu'il n'est pas gradué (retirer `wip` du manifest).
+        if (a.wip) continue;
         const cfg = report.configs[a.config];
         // findings ∪ assumed : invariant quel que soit l'état du
         // .audit-baseline.json LOCAL (gitignoré) — seul knownFindings (versionné)

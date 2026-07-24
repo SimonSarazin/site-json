@@ -53,7 +53,7 @@ if (!feature) {
   const manifest = loadManifest();
   console.log("Archétypes (configs de référence, gate préflight tests/preflight/archetypes.test.ts) :\n");
   for (const a of manifest.archetypes) {
-    console.log(`  ${a.slug.padEnd(24)} ${a.config.padEnd(36)} ${a.titre}`);
+    console.log(`  ${a.slug.padEnd(24)} ${a.config.padEnd(42)} ${a.titre}${a.wip ? "  [WIP : audit non garanti]" : ""}`);
   }
   console.log("\nExemples canoniques (npm run config:example -- <feature>) :\n");
   for (const doc of examples) {

@@ -149,14 +149,18 @@ Pour corriger/améliorer un config existant :
 
 ## Archétypes & exemples canoniques
 
-- `archetypes.json` (dossier de cette skill) désigne les **4 configs de
-  référence** — portail complet (`parent62`), portail réseau multi-sources
-  (`navigatorDesTierslieux`), cartographie/observatoire (`saintpaulSport1`),
-  vitrine compacte (`eXtremeDefiAdeme`) — et liste ce que chacune démontre.
-  Le gate préflight `tests/preflight/archetypes.test.ts` garantit leur
-  fraîcheur : présentes dans `sites.json`, audit sans constat autre que
-  `knownFindings` (constats assumés, versionnés dans le manifest — à ne pas
-  confondre avec `.audit-baseline.json`, gitignoré).
+- `archetypes.json` (dossier de cette skill) désigne les configs de
+  référence : **4 stables** — portail complet (`parent62`), portail réseau
+  multi-sources (`navigatorDesTierslieux`), cartographie/observatoire
+  (`saintpaulSport1`), vitrine compacte (`eXtremeDefiAdeme`) — et des
+  **chantiers actifs marqués `wip`** (`equipementsSportifs974`,
+  `sportSanteBienetre` : riches mais audit non garanti — s'en inspirer avec
+  discernement). Le gate préflight `tests/preflight/archetypes.test.ts`
+  garantit la fraîcheur des stables : présentes dans `sites.json`, audit sans
+  constat autre que `knownFindings` (constats assumés, versionnés dans le
+  manifest — à ne pas confondre avec `.audit-baseline.json`, gitignoré) ; les
+  `wip` ne sont soumis qu'aux checks structurels tant qu'ils ne sont pas
+  gradués (retirer `wip`).
 - `examples/<feature>.json` = **snapshots versionnés** de blocs réels extraits
   des archétypes (theme, command-palette, agenda, list-resource,
   list-testimonial, admin, profiles, header-mega-menu…). Le même gate échoue
