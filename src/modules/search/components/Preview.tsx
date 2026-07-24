@@ -13,7 +13,6 @@ const PreviewPoiAmenities = lazy(() => import("./preview/PreviewPoiAmenities"));
 const PreviewCoformAnswer = lazy(() => import("./preview/PreviewCoformAnswer"));
 const PreviewEvent = lazy(() => import("./preview/PreviewEvent"));
 const PreviewFacets = lazy(() => import("./preview/PreviewFacets"));
-const PreviewParole = lazy(() => import("./preview/PreviewParole"));
 const PreviewNews = lazy(() => import("./preview/PreviewNews"));
 const PreviewTestimonial = lazy(() => import("./preview/PreviewTestimonial"));
 const PreviewResource = lazy(() => import("./preview/PreviewResource"));
@@ -28,8 +27,6 @@ const Preview: React.FC<PreviewProps> = ({ item, preview = { type: "default" }, 
       return <PreviewEvent item={item} onClose={onClose} />;
     case "facets":
       return <PreviewFacets item={item} preview={preview} onClose={onClose} />;
-    case "parole":
-      return <PreviewParole item={item} preview={preview} onClose={onClose} />;
     case "news":
       return <PreviewNews item={item as unknown as News} preview={preview} onClose={onClose} />;
     case "testimonial":
