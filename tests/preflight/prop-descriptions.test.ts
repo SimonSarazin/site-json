@@ -51,7 +51,7 @@ describe("registre prop-descriptions ⇄ schéma (garde-fou)", () => {
   });
 
   it("couverture des blocs chauds (informative)", () => {
-    const hot = ["header", "footer", "theme", "commandPalette", "section:searchPro", "section:searchProStatic", "section:agenda"];
+    const hot = ["header", "footer", "theme", "commandPalette", "section:searchPro", "section:searchProStatic", "section:agenda", "profiles", "admin", "auth"];
     const lines = hot.map((s) => `${s.padEnd(28)} ${Object.keys(PROP_DESCRIPTIONS[s] ?? {}).length} descriptions`);
     console.log(`\nCouverture prop-descriptions :\n${lines.join("\n")}`);
     // Ratchet minimal : les blocs chauds ne doivent pas retomber à zéro.
