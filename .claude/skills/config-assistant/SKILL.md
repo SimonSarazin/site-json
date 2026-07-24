@@ -18,7 +18,7 @@ Les faits volatils se LISENT à l'usage, ils ne sont pas écrits ici :
 | Archétypes de référence (quel site imiter, ce qu'il démontre) + liste des exemples | `npm run config:example` |
 | Exemple canonique d'un bloc réel (theme, command-palette, agenda, list-resource…) | `npm run config:example -- <feature>` |
 | Forme exacte d'une section | `npm run config:schema section:<type>` (ex. `section:pricing`) |
-| Forme de `header`/`footer`/`theme`/`meta`/`auth`/`page`/`profiles`/`integrations` | `npm run config:schema <bloc>` |
+| Forme de `header`/`footer`/`theme`/`meta`/`auth`/`page`/`profiles`/`integrations`/`commandPalette` | `npm run config:schema <bloc>` |
 | Forme d'un document de **form costum** (`config.costumForms.<id>`) | `npm run config:schema costumForm` |
 | Forme du bloc **admin** (`config.admin` — back-office /admin, cf. doc/30) | `npm run config:schema admin` |
 | Squelette de form costum (artefact build-time) | `npm run config:costum -- <slugCostum> <collection> --format costumForm` |
@@ -29,6 +29,12 @@ Les faits volatils se LISENT à l'usage, ils ne sont pas écrits ici :
 | Chercher / vérifier un slug d'entité | `npm run entity:slug -- search <nom>` / `check <slug>` |
 | Qualité (liens morts, i18n, thème) | `npm run audit:config` |
 | Validation finale stricte | `npm run test:preflight` |
+
+Les dumps `config:schema` portent la SÉMANTIQUE des props (`description` sur
+les nœuds, registre `scripts/lib/prop-descriptions.ts`) et impriment en
+commentaire les contraintes NON exportables (refinements, gates, précédences)
+— lis-les avant de générer un bloc chaud (header, theme, search, agenda,
+commandPalette, presenters).
 
 **En cas de contradiction entre ce fichier et le code : le code a raison.**
 Vérifie via les scripts, puis propose une mise à jour de cette skill (§ Maintenance).
@@ -320,6 +326,10 @@ Ne lis ces fichiers QUE quand la tâche les concerne :
 - Le test préflight `archetypes` garantit manifest + snapshots (cf. § Archétypes) :
   constat d'audit nouveau → le corriger ou l'assumer dans `knownFindings` ;
   snapshot dérivé → `config:example -- <feature> --write`.
+- Le test préflight `prop-descriptions` garantit le registre de sémantique
+  (`scripts/lib/prop-descriptions.ts`) : une entrée dont le chemin ne résout
+  plus dans le schéma est MORTE → corriger le chemin ou la supprimer ; toute
+  évolution d'un bloc chaud mérite ses descriptions.
 - Sur demande « mets-toi à jour » (ou si tu détectes une dérive) : analyse les
   commits récents touchant `src/types/site-schema.ts`, `src/modules/*/`,
   `src/components/admin/section-meta.ts`, `sites.json`, mets à jour les tables
