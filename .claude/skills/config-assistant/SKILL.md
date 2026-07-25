@@ -34,6 +34,8 @@ Les faits volatils se LISENT à l'usage, ils ne sont pas écrits ici :
 | **Appliquer** des corrections en lot (chemins d'audit → valeurs) | `npm run config:fix -- <config.json> --set <patch.json> --dry-run` (aussi `--add-locale <l>` / `--strip-locale <l>`) |
 | Chercher / vérifier un slug d'entité | `npm run entity:slug -- search <nom>` / `check <slug>` |
 | Qualité (liens morts, i18n, thème) | `npm run audit:config` |
+| **La config REND-elle ?** (SSR réel : sections déclarées vs rendues) | `npm run config:render -- <config.json>` |
+| **Les données EXISTENT-elles ?** (chaque `baseParams` sondé sur le backend) | `npm run config:probe -- <config.json>` |
 | Validation finale stricte | `npm run test:preflight` |
 
 Pour PARSER une sortie (jq, extraire un sous-arbre, script), appeler
@@ -102,8 +104,13 @@ référentiel des configs de référence.
 5. **Génération PAR MORCEAU** (jamais le config entier d'un coup) :
    `meta`+`theme` → `header`/`footer` → page par page. Avant chaque morceau :
    `config:schema` pour la forme ; après : `config:validate` → corriger → re-valider.
-6. **Gates qualité** : `npm run audit:config` puis `npm run test:preflight`,
-   et dérouler la **Checklist de maturité** ci-dessous.
+6. **Gates qualité**, dans cet ordre — les deux derniers sont les seuls qui
+   regardent le RÉEL, le reste ne juge que le fichier :
+   `npm run audit:config` → `npm run test:preflight` →
+   **`npm run config:render`** (chaque page rend-elle ses sections ? ~13 s,
+   démarre le vrai serveur SSR) → **`npm run config:probe`** (chaque
+   `baseParams` ramène-t-il des résultats ? ~1 s, backend requis).
+   Puis dérouler la **Checklist de maturité** ci-dessous.
 7. **Préversion live** : `VITE_SLUG=<slug> npm run dev` — le watcher pousse chaque
    écriture du config au navigateur sans reload. ⚠️ Utiliser le slug de
    `sites.json` (ex. `rezoLaMer`), PAS le nom du fichier config : un slug inconnu
@@ -126,6 +133,12 @@ site à confirmer avec l'utilisateur — ne PAS l'imposer à une petite vitrine 
    icône invisible), `ancre-morte`.
 2. **Préflight vert** : `npm run test:preflight` (schéma strict + invariants +
    gates archétypes).
+2bis. **Ça rend et il y a des données** : `config:render` sans page en échec
+   (une config valide peut servir une page blanche en HTTP 200) et
+   `config:probe` sans périmètre VIDE (une faute de frappe dans un `sourceKey`
+   livre une page de recherche déserte). ⚠ `config:probe` sur une config
+   ABSENTE de `sites.json` hérite du `VITE_SLUG` du `.env` : le verdict porte
+   alors sur un autre site — passer `--slug` (l'outil l'avertit).
 3. **Modules à la hauteur du besoin** : `commandPalette` (+ `entitySearch`,
    `iconRules`, `itemActionBySubType` si entités hétérogènes), `auth`,
    `profiles` par type d'entité, `admin`, `costumForms`, `blog` — selon le site.
