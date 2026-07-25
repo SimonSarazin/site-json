@@ -77,6 +77,15 @@ function printPresenterMatrix(selector: string) {
 }
 
 function print(selector: string, schema: z.ZodType) {
+  // Le dump émet ~1770 `"default"` sur l'ensemble des sélecteurs — or la config
+  // n'est JAMAIS parsée par Zod au runtime : aucun de ces défauts ne s'applique.
+  // Sans cet avertissement, l'outil enseigne exactement le contraire de la règle
+  // qu'il doit faire respecter (« écrire chaque clé explicitement »).
+  console.error(
+    "// ⚠ Les `default` ci-dessous viennent des schémas Zod et ne sont JAMAIS appliqués :\n" +
+      "//   la config n'est pas parsée au runtime. Toute clé voulue doit être ÉCRITE dans le JSON.\n" +
+      "//   Les vraies valeurs de repli vivent dans le code des composants.",
+  );
   const note = blockNote(selector);
   if (note) console.error(note);
   printPreviewHint(selector);

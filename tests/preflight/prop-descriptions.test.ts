@@ -50,13 +50,48 @@ describe("registre prop-descriptions ⇄ schéma (garde-fou)", () => {
     }
   });
 
-  it("couverture des blocs chauds (informative)", () => {
-    const hot = ["header", "footer", "theme", "commandPalette", "section:searchPro", "section:searchProStatic", "section:agenda", "profiles", "admin", "auth"];
-    const lines = hot.map((s) => `${s.padEnd(28)} ${Object.keys(PROP_DESCRIPTIONS[s] ?? {}).length} descriptions`);
+  /**
+   * Plancher PAR BLOC, à ne jamais descendre. L'ancien ratchet (`> 0`) laissait
+   * passer une chute de 57 descriptions à 1 : il ne protégeait rien.
+   * Faire MONTER ces nombres au fil des passes ; les baisser exige une raison
+   * écrite dans le message de commit.
+   */
+  const MIN_COVERAGE: Record<string, number> = {
+    admin: 25,
+    auth: 17,
+    commandPalette: 16,
+    footer: 11,
+    header: 26,
+    meta: 10,
+    page: 17,
+    profiles: 25,
+    "section:agenda": 14,
+    "section:cardCountCT": 3,
+    "section:filters": 10,
+    "section:searchHeader": 10,
+    "section:searchPro": 45,
+    "section:searchProStatic": 57,
+    "section:thematics": 2,
+    theme: 11,
+  };
+
+  it("la couverture par bloc ne régresse pas (plancher chiffré)", () => {
+    const lines = Object.keys(MIN_COVERAGE)
+      .sort()
+      .map((s) => `${s.padEnd(28)} ${Object.keys(PROP_DESCRIPTIONS[s] ?? {}).length} / min ${MIN_COVERAGE[s]}`);
     console.log(`\nCouverture prop-descriptions :\n${lines.join("\n")}`);
-    // Ratchet minimal : les blocs chauds ne doivent pas retomber à zéro.
-    for (const s of hot) {
-      expect(Object.keys(PROP_DESCRIPTIONS[s] ?? {}).length, `bloc chaud sans description : ${s}`).toBeGreaterThan(0);
+    for (const [selector, min] of Object.entries(MIN_COVERAGE)) {
+      expect(
+        Object.keys(PROP_DESCRIPTIONS[selector] ?? {}).length,
+        `couverture en baisse sur « ${selector} »`,
+      ).toBeGreaterThanOrEqual(min);
     }
+  });
+
+  it("tout bloc décrit est sous plancher (aucun bloc hors ratchet)", () => {
+    // Ajouter un bloc au registre sans l'inscrire au plancher le laisserait
+    // libre de régresser — le ratchet doit couvrir TOUT ce qui est décrit.
+    const nonSuivis = Object.keys(PROP_DESCRIPTIONS).filter((s) => !(s in MIN_COVERAGE));
+    expect(nonSuivis, "blocs décrits mais absents de MIN_COVERAGE").toEqual([]);
   });
 });

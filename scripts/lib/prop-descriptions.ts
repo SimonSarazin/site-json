@@ -70,6 +70,37 @@ const BASE_PARAMS: Record<string, string> = {
 };
 
 export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
+  page: {
+    path: "Chemin de la page (`/`, `/agenda`). Unique dans le config, et cible possible d'un lien de nav — `audit:config` flague tout lien vers un chemin qui n'existe ni ici ni dans les routes de modules.",
+    title: "Titre de la page. Sert de repli au titre SEO (`seo.title` prime) et s'affiche dans l'onglet du navigateur.",
+    layout: "⚠ 5 valeurs au schéma, DEUX seulement ont un effet : `fullwidth` (pleine largeur) vs tout le reste (conteneur centré). Les deux `sidebar-*` sont commentés dans le code et rendent comme `default`.",
+    sections: "Contenu de la page, dans l'ordre de rendu. Une page vide (`[]`) sert un HTTP 200 sans aucune section — ni `config:validate` ni le préflight ne le voient (`npm run config:render` le détecte).",
+    seo: "Surcharge SEO de CETTE page ; chaque champ absent retombe sur `meta.*` (Seo.tsx). Câblé, contrairement à `profiles.*.seo`.",
+    "seo.title": "Titre SEO de la page — prime sur `title` puis sur `meta.title`.",
+    "seo.description": "Description SEO — prime sur `meta.description`.",
+    "seo.keywords": "Mots-clés — priment sur `meta.keywords`.",
+    "seo.ogImage": "Image Open Graph de la page — prime sur `meta.ogImage`. Un chemin absolu (`/images/...`) est préfixé par l'URL serveur.",
+    auth: "Garde d'accès de la page (`usePageGuards`) : `required` exige une session, `roles` au moins un rôle actif. C'est une NAVIGATION de redirection, pas un masquage (pour masquer : `condition`/`visibleIf`).",
+    "auth.required": "Exige une session : un visiteur non connecté est redirigé (deep-link conservé).",
+    "auth.roles": "Au moins un de ces rôles doit valoir `true` dans `me.serverData.roles` (c'est un OBJET, pas un tableau).",
+    middleware: "Gardes nommées appliquées à la page : `auth-required`, `admin-required`, `redirect-if-authenticated` (usePageGuards).",
+    hideHeader: "Masque le header du site sur cette page (rendu conditionnel dans SiteRenderer).",
+    hideFooter: "Masque le footer du site sur cette page.",
+    customCSS: "⚠ PIÈGE : déclaré au schéma mais lu NULLE PART (seul `theme.customCSS` est injecté, par SiteTheme.tsx). Le poser ici n'a aucun effet.",
+    customJS: "⚠ PIÈGE : déclaré au schéma mais lu NULLE PART — aucun script de page n'est jamais injecté.",
+  },
+  meta: {
+    title: "Titre du site. Repli du titre SEO de chaque page et base du `<title>`.",
+    description: "Description du site — repli de `page.seo.description`.",
+    defaultLang: "Langue servie quand aucune préférence n'est connue. Doit figurer dans `languages`.",
+    languages: "Langues du site, et RÉFÉRENCE de l'audit i18n : LocalizedString incomplète → constat `trad`, locale non déclarée ici → `locale-extra`. Déclarer une langue engage à la traduire partout.",
+    favicon: "Favicon du site (chemin dans public/). Utilisé aussi comme image de repli par le SEO.",
+    ogImage: "Image Open Graph par défaut du site — repli de `page.seo.ogImage`.",
+    themeColor: "Couleur de la barre de navigateur mobile (`<meta name=\"theme-color\">`).",
+    author: "Auteur déclaré dans les métadonnées de la page.",
+    keywords: "Mots-clés par défaut — repli de `page.seo.keywords`.",
+    robots: "Directive robots par défaut (`index,follow`…). Une directive calculée au niveau de la page prime sur celle-ci.",
+  },
   header: {
     type: "Variante de DESIGN du header (jamais un nom de site) ; le parc utilise surtout transparent-scroll — voir table SKILL « quand l'utiliser ».",
     logo: "Image de logo par défaut (chemin /images/<slug>/… — jamais d'URL inventée).",
@@ -323,7 +354,11 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
  * `config:schema <selector>` (axe A4).
  */
 export const BLOCK_NOTES: Record<string, string[]> = {
-  page: ["Unicité des `path` entre toutes les pages (refinement non exportable)."],
+  page: [
+    "Unicité des `path` entre toutes les pages (refinement non exportable).",
+    "layout : usage réel du parc = fullwidth ×103, default ×30, sidebar-left ×1 (qui rend comme default, le cas étant commenté dans getLayoutClasses).",
+    "customCSS / customJS : déclarés au schéma, lus NULLE PART — seul theme.customCSS est injecté (SiteTheme.tsx).",
+  ],
   header: [
     "Chaque NavItem exige au moins un de path | href | children | megaMenu (refinement).",
     "utilities.* sont des GATES de modules : search→commandPalette, auth→AuthMenu, notifications→module notification, piggyBank→cagnotte.",
