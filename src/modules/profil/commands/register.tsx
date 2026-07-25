@@ -24,9 +24,7 @@ import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { registerCommandSource } from "@/modules/commandPalette";
 import type { Command, CommandReadContext } from "@/modules/commandPalette";
 import { getEntityIcon } from "@/lib/entityIcons";
-import { check } from "@/modules/formEngine/engine/conditional";
-import type { Predicate, FormValues } from "@/modules/formEngine/types";
-import { resolveServerDataPath } from "@/modules/search/lib/dropdownFilters";
+import { entityMatchData, firstMatching } from "@/lib/entityMatch";
 
 const DEFAULT_ENTITY_TYPES = ["organizations", "projects", "events", "poi", "citoyens"];
 
@@ -86,25 +84,13 @@ registerCommandSource({
         (subType ? cfg?.itemActionBySubType?.[subType] : undefined) ??
         cfg?.itemActionByType?.[type] ??
         cfg?.itemAction;
-      // Données du prédicat iconRules : `serverData` + `collection` injecté, DERRIÈRE un Proxy qui résout
-      // les chemins pointés (`address.addressLocality`, …) via `resolveServerDataPath` → un prédicat peut
-      // matcher n'importe quel champ, même imbriqué (pas seulement le top-level).
-      const matchData = new Proxy(
-        { ...((e.serverData ?? {}) as Record<string, unknown>), collection: type },
-        {
-          get: (t, p) =>
-            typeof p === "string" && p.includes(".") ? resolveServerDataPath(t, p) : t[p as keyof typeof t],
-        },
-      ) as unknown as FormValues;
       // Icône : 1re règle `iconRules` dont le prédicat matche → DynamicIcon ; sinon icône par défaut du type.
-      // GUARD : une règle malformée (ex. `op:"matches"` avec un regex invalide → `new RegExp` throw) NE doit
-      // PAS remonter hors de ce map (elle ferait renvoyer `[]` à toute la source → annuaire vidé). On l'ignore.
-      let iconName: string | undefined;
-      try {
-        iconName = cfg?.iconRules?.find((r) => check(r.when as Predicate, matchData))?.icon;
-      } catch (err) {
-        console.warn("[commandPalette] iconRule invalide, ignorée :", err);
-      }
+      // `entityMatchData` construit la vue matchable (serverData + collection/sourceKey/sourceKeys, chemins
+      // pointés résolus) et `firstMatching` porte la GARDE : une règle malformée (ex. `op:"matches"` avec un
+      // regex invalide) est ignorée au lieu de faire renvoyer `[]` à toute la source (annuaire vidé).
+      const iconName = firstMatching(cfg?.iconRules, entityMatchData(e), (err) =>
+        console.warn("[commandPalette] iconRule invalide, ignorée :", err),
+      )?.icon;
       return {
         id: `profil:${e.id ?? slug ?? name}`,
         label: name,

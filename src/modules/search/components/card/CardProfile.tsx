@@ -27,6 +27,8 @@ export interface CardProfileProps {
   isPending?: boolean;
   card?: CardProfileCardConfig | SearchCardProps["card"];
   onClick?: () => void;
+  /** Conf de liste complète, transmise à tous les variants par `SearchCard` — non lue ici. */
+  list?: SearchCardProps["list"];
 }
 
 function getInitials(name: string): string {

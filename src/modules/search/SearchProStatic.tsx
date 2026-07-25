@@ -623,6 +623,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                       results={splitGeoResults}
                       card={list?.card}
                       preview={list?.preview}
+                      list={list}
                       map={props.map}
                       focusedItemId={focusedItemId}
                       onMarkerFocus={setFocusedItemId}
@@ -670,6 +671,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                     results={mapAll.results}
                     card={list?.card}
                     preview={list?.preview}
+                    list={list}
                     map={props.map}
                   />
                 )}

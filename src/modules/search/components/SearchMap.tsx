@@ -13,8 +13,10 @@ import { useSite } from "@/hooks/useSite";
 import { getBaseUrl, getMaptilerApiKey } from "@/lib/constant/common";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 
-import { SearchMapProps } from "../schema";
+import { SearchMapProps, type ListConf } from "../schema";
 import { resolveMapStyles } from "../lib/mapStyles";
+import { resolveListItemConf } from "../lib/resolveListItemConf";
+import { resolveItemClick } from "../lib/itemAction";
 import { useMapContainerClass } from "../hooks/useMapContainerClass";
 import { SwitchDetailsMode } from "./SwitchDetailsMode";
 import SearchMapPopup from "./SearchMapPopup";
@@ -23,7 +25,6 @@ import {
   findEntryById,
   getEntryCoords,
   getEntryId,
-  getEntrySlug,
 } from "../lib/searchMapSelection";
 
 // Clé MapTiler résolue UNE fois au chargement du chunk (client-only — ce module
@@ -67,7 +68,7 @@ type PointProps = { entry: SearchEntity };
  * ouvre la popup de l'item ; `onMarkerFocus` (carte→liste) remonte l'id au clic
  * d'un marqueur ; `containerClass` laisse le parent dimensionner la colonne.
  */
-export default function SearchMap({ results, card, preview, map: mapConf, focusedItemId, onMarkerFocus, containerClass }: SearchMapProps) {
+export default function SearchMap({ results, card, preview, list, map: mapConf, focusedItemId, onMarkerFocus, containerClass }: SearchMapProps) {
   const mapRef = useRef<MapRef | null>(null);
   /** Init carte jouée une seule fois (load OU idle, le 1ᵉʳ qui arrive). */
   const readyRef = useRef(false);
@@ -88,7 +89,9 @@ export default function SearchMap({ results, card, preview, map: mapConf, focuse
   // Item sélectionné (popup ouverte) + détail modal (SwitchDetailsMode).
   const [selected, setSelected] = useState<{ entry: SearchEntity; lng: number; lat: number } | null>(null);
   const [openDetails, setOpenDetails] = useState(false);
-  const [item, setItem] = useState<SearchEntity | null>(null);
+  // L'item ouvert transporte SA conf de liste résolue (règles `list.itemRules`) — même contrat que
+  // SearchListView : le détail rend le presenter de la famille de l'item, pas celui de la section.
+  const [item, setItem] = useState<{ entry: SearchEntity; list?: ListConf } | null>(null);
 
   const { resolvedTheme } = useTheme();
   const t = useT("modules/search");
@@ -177,22 +180,38 @@ export default function SearchMap({ results, card, preview, map: mapConf, focuse
     [index],
   );
 
+  // Action EFFECTIVE au clic d'un item : l'`itemAction` de sa RÈGLE (`list.itemRules[]`) prime sur
+  // le `map.itemAction` de la section — elle seule connaît la famille de l'item (ex. un POI
+  // `type:"article"` doit partir vers le reader blog, pas ouvrir un détail générique).
+  const resolveAction = useCallback(
+    (entry: SearchEntity) => {
+      const itemList = resolveListItemConf(entry, list);
+      // Pas d'action de règle → on retombe sur le `map.itemAction` de la section, exprimé dans le
+      // même vocabulaire pour n'avoir qu'UNE cascade de décision (cf. resolveItemClick).
+      const action = itemList?.itemAction ?? (actionKind === "profil" ? { kind: "profil" as const } : undefined);
+      return { itemList, decision: resolveItemClick(entry, action) };
+    },
+    [list, actionKind],
+  );
+
   // Action du bouton de la popup (handler React direct — plus de DOM event).
   const handlePopupAction = useCallback(
     (entry: SearchEntity) => {
-      if (actionKind === "profil") {
-        const slug = getEntrySlug(entry);
-        if (slug) {
-          navigate(`/profil/${slug}`);
-          return;
-        }
-        // sans slug, repli sur le détail modal
+      const { itemList, decision } = resolveAction(entry);
+      if (decision.kind === "link") {
+        if (decision.newTab) window.open(decision.href, "_blank", "noopener");
+        else navigate(decision.href);
+        return;
       }
-      setItem(entry);
+      if (decision.kind === "profil") {
+        navigate(decision.href);
+        return;
+      }
+      setItem({ entry, list: itemList });
       setOpenDetails(true);
       setSelected(null);
     },
-    [actionKind, navigate],
+    [resolveAction, navigate],
   );
 
   /* ── Init robuste : 'load' OU 'render' OU 'idle' (le 1ᵉʳ qui arrive) ──── */
@@ -397,7 +416,9 @@ export default function SearchMap({ results, card, preview, map: mapConf, focuse
                     popup={mapConf?.popup}
                     item={selected.entry}
                     t={t}
-                    actionKind={actionKind}
+                    // Libellé aligné sur l'action EFFECTIVE de cet item : « Voir le profil » pour
+                    // `profil`, « En savoir plus » pour `preview` comme pour `link`.
+                    actionKind={resolveAction(selected.entry).decision.kind === "profil" ? "profil" : "preview"}
                     onAction={() => handlePopupAction(selected.entry)}
                   />
                 </Suspense>
@@ -411,9 +432,10 @@ export default function SearchMap({ results, card, preview, map: mapConf, focuse
         <SwitchDetailsMode
           openDetails={openDetails}
           setOpenDetails={setOpenDetails}
-          item={item}
-          card={card}
-          preview={preview}
+          item={item.entry}
+          card={item.list?.card ?? card}
+          preview={item.list?.preview ?? preview}
+          list={item.list ?? list}
         />
       )}
     </>
