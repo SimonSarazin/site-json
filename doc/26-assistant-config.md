@@ -490,7 +490,7 @@ réparation d'un config existant. Décisions prises :
 1. **Skill vs slash command** : une *skill* (`.claude/skills/`, auto-invocable
    quand le sujet s'y prête) ou une *commande* explicite (`/config-assistant`) ?
    Reco : skill avec description précise — l'invocation reste naturelle
-   (« ajoute une page contact au site jardin-ocean »).
+   (« ajoute une page contact au site rezo-la-mer »).
 2. **Granularité de `config-schema.mjs`** : sélecteurs à supporter
    (`section:<type>`, `header`, `footer`, `theme`, `meta`, `page`) — et faut-il
    un mode « liste des types de section + résumé une ligne » pour le plan ?

@@ -152,7 +152,6 @@ Les fichiers `config.prod.*.json` présents à la racine du dépôt :
 | `config.prod.commune-transparente.json` | Commune Transparente (partagée par plusieurs slugs communes) |
 | `config.prod.julie-pot-vin.json` | Julie Pot Vin |
 | `config.prod.institut-bleu.json` | Institut Bleu |
-| `config.prod.jardin-ocean.json` | Jardin Ocean |
 | `config.prod.open-atlas-test.json` | Open Atlas (test) |
 | `config.prod.equipements-Sportifs.json` | Équipements Sportifs 974 |
 | `config.prod.eXtremeDefiAdeme.json` | eXtrème Défi Ademe |
