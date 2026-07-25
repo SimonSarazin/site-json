@@ -14,6 +14,8 @@
  * exportables (refinements .refine/.check) sortent en commentaires stderr —
  * toujours revalider avec scripts/validate-config.ts après génération.
  */
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { SiteConfig } from "../src/types/site-schema";
 import SECTION_META, { SECTION_FAMILIES } from "../src/components/admin/section-meta";
@@ -26,6 +28,9 @@ import {
   type JsonSchemaNode,
 } from "./lib/config-blocks";
 import { PROP_DESCRIPTIONS, BLOCK_NOTES } from "./lib/prop-descriptions";
+import { sectionPreviews, chromePreviews } from "./lib/design-previews";
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 // Sortie souvent pipée vers head/grep — ne pas crasher sur le tube fermé.
 process.stdout.on("error", (e: NodeJS.ErrnoException) => {
@@ -35,9 +40,27 @@ process.stdout.on("error", (e: NodeJS.ErrnoException) => {
 
 const arg = process.argv[2];
 
+/**
+ * Story de props RÉELLE du bloc, quand elle existe (.design-sync/previews/) :
+ * le JSON Schema donne la forme, la story donne la COMPOSITION (ce qu'on
+ * renseigne vraiment, avec des valeurs plausibles).
+ */
+function printPreviewHint(selector: string) {
+  if (selector.startsWith("section:")) {
+    const p = sectionPreviews(ROOT).get(selector.slice("section:".length));
+    if (p) console.error(`// composition de props réelle : ${p}`);
+    return;
+  }
+  if (selector === "header" || selector === "footer") {
+    const files = chromePreviews(ROOT, selector === "header" ? "Header" : "Footer");
+    if (files.length) console.error(`// rendu de chaque variante : ${files.join(", ")}`);
+  }
+}
+
 function print(selector: string, schema: z.ZodType) {
   const note = blockNote(selector);
   if (note) console.error(note);
+  printPreviewHint(selector);
   const json = z.toJSONSchema(schema, { unrepresentable: "any" }) as JsonSchemaNode;
   const descs = PROP_DESCRIPTIONS[selector];
   if (descs) {
@@ -60,10 +83,15 @@ if (!arg) {
 
 if (arg === "sections") {
   // Catalogue : type → description française (section-meta du panel admin), groupé par famille.
+  const previews = sectionPreviews(ROOT);
+  console.log(
+    `# ◆ = story de props RÉELLE dans .design-sync/previews/ (${previews.size} types) — la copier plutôt qu'inventer\n` +
+      `#   → npx tsx scripts/config-schema.ts section:<type> imprime son chemin exact`,
+  );
   const byFamily = new Map<string, string[]>();
   for (const [type] of [...sectionOptions()].sort(([a], [b]) => a.localeCompare(b))) {
     const m = SECTION_META[type];
-    const line = `${type.padEnd(28)} ${m ? `${m.label} — ${m.desc}` : "(absent de section-meta)"}`;
+    const line = `${previews.has(type) ? "◆" : " "} ${type.padEnd(28)} ${m ? `${m.label} — ${m.desc}` : "(absent de section-meta)"}`;
     const family = m?.family ?? "(sans famille)";
     byFamily.set(family, [...(byFamily.get(family) ?? []), line]);
   }
