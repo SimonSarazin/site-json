@@ -159,6 +159,79 @@ export const PreviewFacetSchema = z.object({
 });
 export type PreviewFacetConfig = z.infer<typeof PreviewFacetSchema>;
 
+/**
+ * Réservations récurrentes d'une ressource : answers d'un formulaire CoForm
+ * reliées à l'entité affichée par un champ finder. Tout l'ancrage (form, étape,
+ * suffixes de champs) vient de la CONFIG du site — le code ne connaît que des
+ * RÔLES. Clé réelle d'un champ = `<step><suffixe>` (et `finder<step><suffixe>`
+ * pour le finder), sous `serverData.answers[<step>]`.
+ */
+export const ReservationsConfSchema = z.object({
+  /** ObjectID du formulaire CoForm des réservations (champ `form` des answers). */
+  form: z.string(),
+  /** Clé d'étape CoForm (préfixe des clés de champs). */
+  step: z.string(),
+  /** Mapping rôle → SUFFIXE de champ. */
+  fields: z.object({
+    /** Finder vers la ressource (valeur = objet `{<id>: {id, name, type}}`). */
+    finder: z.string(),
+    /** Nom de l'usager (texte). */
+    user: z.string(),
+    /** Activité pratiquée (texte). */
+    activity: z.string(),
+    /** Créneaux hebdo récurrents (timeSlots `{day, startHour, …}`). */
+    slots: z.string(),
+    periodStart: z.string().optional(),
+    periodEnd: z.string().optional(),
+    bookingType: z.string().optional(),
+  }),
+  /** Plafond d'answers chargées (garde de pagination). Défaut : 200. */
+  maxAnswers: z.number().int().positive().optional(),
+});
+export type ReservationsConf = z.infer<typeof ReservationsConfSchema>;
+
+/**
+ * Tableau de bord d'installation : modal ouverte depuis le détail
+ * `poi-amenities` en cliquant le nom de l'installation. Agrège les équipements
+ * partageant `groupKey` et leurs réservations (requiert `reservations` dans le
+ * même bloc preview).
+ */
+export const InstallationDashboardConfSchema = z.object({
+  /** Champ `serverData` identifiant STABLE de l'installation (regroupement). */
+  groupKey: z.string().default("inst_numero"),
+  /** Champ `serverData` du libellé affiché. */
+  labelKey: z.string().default("inst_nom"),
+  /** Champ `serverData` du type d'équipement — affiché dans la liste de repli
+   *  quand l'installation n'a aucun créneau. */
+  typeKey: z.string().default("equip_type_name"),
+  /** Amplitude hebdomadaire de référence du taux d'utilisation
+   *  (ex. 8h–22h × 7j = 98 h/sem). */
+  referenceAmplitude: z.object({
+    startHour: z.number().int().min(0).max(24),
+    endHour: z.number().int().min(0).max(24),
+    days: z.number().int().min(1).max(7),
+  }),
+  /** Périmètre de la requête POI (fusionné avec `{[groupKey]: <valeur>}`) —
+   *  requis, comme pour l'observatoire : aucun défaut métier dans le code. */
+  poiFilters: z.record(z.string(), z.unknown()),
+  /** Périmètre `source.key` de la requête POI (param SDK natif). À renseigner
+   *  quand les équipements vivent sous un AUTRE costum que le site courant
+   *  (ex. site saintpaulSport1 → données equipementsSportifs974). Absent →
+   *  scope au costum courant. */
+  sourceKey: z.array(z.string()).optional(),
+  /** Pondération de la répartition des activités. Défaut : "hours". */
+  activityMetric: z.enum(["hours", "slots"]).optional(),
+  /** Champs POI additionnels projetés (en plus de name/groupKey/labelKey…). */
+  extraPoiFields: z.array(z.string()).optional(),
+  /** Nom du param d'URL qui ouvre la fiche (partage/deep-link) — miroir de
+   *  `list.previewParam` pour l'équipement. Défaut : "installation". */
+  param: z.string().optional(),
+});
+export type InstallationDashboardConf = z.infer<typeof InstallationDashboardConfSchema>;
+
+/** Param d'URL par défaut de la fiche installation (cf. `installationDashboard.param`). */
+export const DEFAULT_INSTALLATION_PARAM = "installation";
+
 export const PreviewConfSchema = z.object({
   type: z.enum(["default", "poi-amenities", "coform-answer", "event", "facets", "news", "testimonial", "resource"]).default("default"),
   // Mapping rôle→suffixe de champ CoForm (pour `coform-answer`). Surcharge la
@@ -166,6 +239,10 @@ export const PreviewConfSchema = z.object({
   fields: z.record(z.string(), z.string()).optional(),
   /** Facettes du preview générique (`type: "facets"`) — data-driven, sans code. */
   facets: z.array(PreviewFacetSchema).optional(),
+  /** Section « réservations » du preview `poi-amenities` (absente = masquée). */
+  reservations: ReservationsConfSchema.optional(),
+  /** Modal tableau de bord installation (requiert `reservations`). */
+  installationDashboard: InstallationDashboardConfSchema.optional(),
   /**
    * Affiche le lien « Voir en page » (permalien vers le détail/profil) dans l'en-tête de la
    * modal de détail. Défaut : affiché (mettre `false` pour le masquer). Lu par `PreviewNews`.
@@ -179,6 +256,23 @@ export const PreviewConfSchema = z.object({
    */
   width: z.enum(["sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "5xl", "full"]).optional(),
 }).partial();
+
+/**
+ * Filtre de listing déclenché par une valeur cliquable de la CARTE (pas de
+ * dropdown : la cardinalité — plus de 1000 installations — l'interdit).
+ *
+ * On filtre sur `groupKey` (identifiant STABLE) et non sur le libellé affiché :
+ * un libellé peut contenir une virgule (séparateur multi-valeurs de l'URL) et
+ * deux installations distinctes peuvent être homonymes. Même symétrie que
+ * `installationDashboard.groupKey`/`labelKey`.
+ */
+export const InstallationFilterConfSchema = z.object({
+  /** Champ `serverData` filtré — identifiant stable. */
+  groupKey: z.string().default("inst_numero"),
+  /** Nom du param d'URL (miroir de la sélection). */
+  param: z.string().default("poi-installation"),
+});
+export type InstallationFilterConf = z.infer<typeof InstallationFilterConfSchema>;
 
 /**
  * Contrat « testimonial » (témoignage) — GÉNÉRIQUE et config-driven : découple le composant des noms de
@@ -292,6 +386,9 @@ export const ListConfSchema = z.object({
         price: z.object({ bed: z.string(), room: z.string() }),
       }).optional(),
     }).optional(),
+    /** Rend l'installation de la carte (`poi-amenities`) cliquable → filtre le
+     *  listing. Absent = valeur affichée en texte simple. */
+    installationFilter: InstallationFilterConfSchema.optional(),
     // Valeurs DESIGN/FONCTIONNALITÉ (jamais de nom de site). `Preview`/détail =
     // axe séparé (`preview.type`/`detailsMode`).
     type: z.enum(["overlay", "default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer", "news", "testimonial", "resource"]).default("default"),

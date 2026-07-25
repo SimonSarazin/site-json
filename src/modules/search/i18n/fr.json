@@ -60,7 +60,8 @@
         "lighting": "Éclairage",
         "showers": "Douches",
         "freeAccess": "Libre accès",
-        "yearsAgo": "Il y a {{count}} ans"
+        "yearsAgo": "Il y a {{count}} ans",
+        "filterByInstallation": "Filtrer par l'installation {{name}}"
     },
     "PreviewPoiAmenities": {
         "edit": "Éditer",
@@ -147,7 +148,24 @@
         },
         "equipNumero": {
             "link": "Voir la fiche nationale"
+        },
+        "installationDashboard": {
+            "open": "Voir le tableau de bord de l'installation"
         }
+    },
+    "PreviewReservations": {
+        "title": "Réservations",
+        "empty": "Aucune réservation enregistrée pour cet équipement.",
+        "error": "Impossible de charger les réservations.",
+        "unknownUser": "Usager non renseigné",
+        "slotCount_one": "{{count}} créneau",
+        "slotCount_other": "{{count}} créneaux",
+        "activityLabel": "Activité",
+        "bookingTypeLabel": "Type de réservation",
+        "periodLabel": "Période",
+        "period": "Du {{start}} au {{end}}",
+        "periodFrom": "À partir du {{start}}",
+        "periodUntil": "Jusqu'au {{end}}"
     },
     "Filtres actifs :": "Filtres actifs :",
     "Description": "Description",
