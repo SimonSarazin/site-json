@@ -342,6 +342,9 @@ Ne lis ces fichiers QUE quand la tâche les concerne :
   [references/formulaires-costum.md](references/formulaires-costum.md) —
   recette 0-code, générateur `config:costum` (`--live`, `--all` multi-forms),
   quand il faut du code (`fns.ts`), garde des clés.
+- **Thème** (`config.theme`, palettes, tokens) :
+  [references/theme.md](references/theme.md) — méthode de dérivation, pièges de
+  sémantique (`accent` ≠ hover), mapping CSS obligatoire, 4 directions du parc.
 - **Administration** (`config.admin`, back-office `/admin`) :
   [references/admin.md](references/admin.md) — squelette `admin:scaffold`,
   personnalisation (colonnes, actions, accès), validation.
@@ -367,6 +370,10 @@ Ne lis ces fichiers QUE quand la tâche les concerne :
   schéma ne s'appliquent pas — écrire chaque clé EXPLICITEMENT dans le JSON.
 
 ## Thème
+
+**Recette complète (méthode, sémantique des tokens, 4 directions réelles) :
+[references/theme.md](references/theme.md)** — à lire dès qu'on conçoit ou
+modifie une palette. L'essentiel :
 
 - **Les couleurs vivent dans `config.theme.colors.{light,dark}`** (injectées au
   runtime par `SiteTheme`, rendu SSR) — modèle prouvé par
