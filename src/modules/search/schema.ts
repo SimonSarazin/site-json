@@ -39,14 +39,34 @@ export const FilterOptionStyleSchema = z.enum(["checkbox", "check"]);
 export const FilterGroupSchema = z.object({
   id: z.string(),
   label: LocalizedString,
-  type: z.enum(['scopeList', "filters", "entityList"]).default("filters"),
+  // `searchTargets` : filtre « type d'info » (CDC parents62) — sélection UNIQUE
+  // (radio) ; chaque option porte sa cible `target` (defaultTypes/defaultFilters)
+  // appliquée par SearchProStatic (cf. searchByFieldsToQuery.searchTarget).
+  // `dateRange` : filtre par date (CDC parents62) — champ date « À partir du »
+  // traduit en `filters[field].$gt` (SEUL opérateur date converti par le
+  // backend, cf. SearchNew::getQueries). La borne de fin existe dans le state
+  // mais son rendu est conditionné à `withEnd` (activable quand le backend
+  // convertira $lte — demande transmise à Aboire).
+  type: z.enum(['scopeList', "filters", "entityList", "searchTargets", "dateRange"]).default("filters"),
+  /** Champ filtré. Sur un groupe `filters`, sa présence bascule le groupe du
+   *  filtrage par TAG (défaut historique) au filtrage par CHAMP de l'entité :
+   *  la sélection part dans `searchByFields` → `{ <field>: { $in: [noms
+   *  d'options] } }`. Les `options[].name` doivent alors porter la valeur EXACTE
+   *  stockée en base (ex. parent62 : `field:"territoires"`, name `"Arrageois"`). */
   field: z.string().optional(),
+  /** `dateRange` : affiche aussi la borne de fin (nécessite le support backend $lte). */
+  withEnd: z.boolean().optional(),
   options: z.array(z.object({
     id: z.string(),
     label: LocalizedString,
     level: z.string().optional(),
     name: z.string().optional(),
     defaultChecked: z.boolean().optional(),
+    /** Pastille de couleur de l'option (ex. territoire — valeur CSS `var(--…)`). */
+    color: z.string().optional(),
+    /** Cible de recherche (groupes `searchTargets`) — forward-ref car
+     *  SearchTargetSchema dépend de SearchTypeSchema, défini plus bas. */
+    target: z.lazy(() => SearchTargetSchema).optional(),
   })).optional(),
   config: z.object({
     countryCode: z.array(z.string()).optional(),
@@ -340,6 +360,32 @@ export const ResourceConfSchema = z.object({
 
 export type ResourceConf = z.infer<typeof ResourceConfSchema>;
 
+/** Coloration data-driven par VALEUR de `serverData` (ex. tag territoire →
+ *  couleur du territoire, CDC parents62). `mapping` : valeur exacte → couleur
+ *  CSS — `var(--…)` recommandé (suit light/dark via le thème), jamais d'hex.
+ *  `path` : dot-path serverData (déf. `tags`) ; valeur string ou tableau —
+ *  le premier tag de l'item présent dans le mapping gagne (cf. lib/colorBy). */
+export const ColorByConfSchema = z.object({
+  path: z.string().optional(),
+  mapping: z.record(z.string(), z.string()),
+});
+export type ColorByConf = z.infer<typeof ColorByConfSchema>;
+
+/** Chips de tags des cartes : couleur par tag (`mapping`), libellé lisible
+ *  (`labels`, déf. namespace retiré + capitalisation) et MASQUAGE des tags
+ *  techniques (`hidePrefixes`, ex. `public:`/`age:` — filtrants mais pas
+ *  affichables bruts). Consommé par `decorateTags` (lib/colorBy).
+ *  `paths` : dot-paths serverData dont les valeurs s'ajoutent aux chips —
+ *  nécessaire quand la taxonomie vit dans des CHAMPS et non dans `tags`
+ *  (parent62 : `["territoires"]`), cf. `collectChipValues`. */
+export const TagColorsConfSchema = z.object({
+  mapping: z.record(z.string(), z.string()),
+  labels: z.record(z.string(), z.string()).optional(),
+  hidePrefixes: z.array(z.string()).optional(),
+  paths: z.array(z.string()).optional(),
+});
+export type TagColorsConf = z.infer<typeof TagColorsConfSchema>;
+
 export const ListConfSchema = z.object({
   columns: z.object({
     lg: z.number().int().min(1).max(6).optional(),
@@ -349,6 +395,8 @@ export const ListConfSchema = z.object({
   }).partial().optional(),
   card: z.object({
     tagLimit:        z.number().int().min(1).max(50).optional(),
+    /** Chips colorées / masquage des tags techniques (cf. TagColorsConfSchema). */
+    tagColors:       TagColorsConfSchema.optional(),
     showDescription: z.boolean().optional(),
     showAddress:     z.boolean().optional(),
     shareButton:     z.boolean().optional(),
@@ -412,9 +460,10 @@ export type ListConf = z.infer<typeof ListConfSchema>;
 /**
  * Apparence d'un marqueur de la carte — chaîne de repli (par PRIORITÉ) :
  *   1. `useItemImage` ET l'item a une image → vignette RONDE de l'item ;
- *   2. `iconUrl`                            → icône custom (image/SVG, ex. pin brandé) ;
- *   3. `style: "pin"` (+ `color` en jeton)  → pin SVG aux couleurs du thème ;
- *   4. sinon                                → pin par défaut (primary).
+ *   2. `colorBy` ET une valeur mappée       → pin/pastille coloré PAR VALEUR ;
+ *   3. `iconUrl`                            → icône custom (image/SVG, ex. pin brandé) ;
+ *   4. `style: "pin"` (+ `color` en jeton)  → pin SVG aux couleurs du thème ;
+ *   5. sinon                                → pin par défaut (primary).
  * Schéma PARTAGÉ : configurable PAR SITE (`integrations.map.marker`, cf.
  * site-schema) et surchargeable PAR SECTION (`map.marker`) — les champs de la
  * section l'emportent sur ceux du site, sinon repli sur le défaut.
@@ -434,6 +483,10 @@ export const MarkerConfSchema = z.object({
   iconSize: z.number().int().min(8).max(128).optional(),
   /** Ancrage de l'icône custom : "bottom" (pointe sur le point, déf.) ou "center". */
   iconAnchor: z.enum(["bottom", "center"]).optional(),
+  /** Marqueur coloré PAR VALEUR de l'item (code couleur par territoire, CDC
+   *  parents62) : prioritaire sur le jeton `color` quand une valeur matche le
+   *  mapping, et implique le pin (ou la pastille si `style: "circle"`). */
+  colorBy: ColorByConfSchema.optional(),
 });
 
 export type MarkerConf = z.infer<typeof MarkerConfSchema>;
@@ -478,6 +531,17 @@ const SearchTypeSchema = z.enum([
 ]);
 
 export type SearchType = z.infer<typeof SearchTypeSchema>;
+
+/** Cible de recherche portée par une option de groupe `searchTargets` (filtre
+ *  « type d'info ») : REMPLACE les `defaultTypes` de la section et FUSIONNE ses
+ *  `defaultFilters` (ex. Paroles = `{ defaultTypes: ["poi"], defaultFilters:
+ *  { type: "affiche" } }`). Étendre le moteur en P2/P3 (actualités, ressources)
+ *  = ajouter des options en config, sans code. */
+export const SearchTargetSchema = z.object({
+  defaultTypes: z.array(SearchTypeSchema).optional(),
+  defaultFilters: z.record(z.string(), z.unknown()).optional(),
+});
+export type SearchTarget = z.infer<typeof SearchTargetSchema>;
 
 /**
  * Variant du endpoint backend pour `searchCostum` (cf. SDK v1.0.132).

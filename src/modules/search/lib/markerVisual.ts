@@ -3,15 +3,21 @@
 // ------------------------------------------------------------
 // Chaîne de repli déclarée par `map.marker` (config), par PRIORITÉ :
 //   1. `useItemImage` ET l'item a une image  → vignette RONDE de l'item ;
-//   2. `iconUrl`                             → icône custom (image/SVG, ex. pin
+//   2. `colorBy` ET une valeur de l'item mappée → pin (ou pastille si
+//      `style: "circle"`) coloré PAR VALEUR — code couleur par territoire du
+//      CDC parents62 ; prioritaire sur le token `color`, seul le remplissage
+//      vient du mapping (le contour reste `borderColor`) ;
+//   3. `iconUrl`                             → icône custom (image/SVG, ex. pin
 //      brandé par site) — relative préfixée par baseUrl, ou absolue http ;
-//   3. `style: "pin"` / `style: "circle"`    → pin SVG (goutte) ou pastille
+//   4. `style: "pin"` / `style: "circle"`    → pin SVG (goutte) ou pastille
 //      ronde, aux couleurs du THÈME (token `color`, déf. primary — jamais
 //      d'hex, suit light/dark ; contour via `borderColor`, déf. background) ;
-//   4. sinon                                 → pin par défaut (couleur primary).
+//   5. sinon                                 → pin par défaut (couleur primary).
 // La config est mergée AVANT (site `integrations.map.marker` < section
 // `map.marker`) — cf. SearchMap. Fonction PURE (testée sans rendu) ;
 // `SearchMapMarkers` la rend en React (<Marker> react-map-gl/maplibre).
+
+import { resolveColorBy } from "./colorBy";
 
 import type { MapConf } from "../schema";
 
@@ -55,6 +61,18 @@ export function resolveMarkerVisual(
       return { kind: "image", src: img.startsWith("http") ? img : `${baseUrl}${img}` };
     }
     // pas d'image : on retombe sur l'icône custom / le pin (ci-dessous)
+  }
+  if (conf?.colorBy) {
+    const match = resolveColorBy(serverData, conf.colorBy);
+    if (match) {
+      // Seul le REMPLISSAGE vient du mapping : le contour suit la même règle
+      // que le pin/pastille classique (déf. background, lisible sur tout fond).
+      return {
+        kind: conf.style === "circle" ? "circle" : "pin",
+        cssColor: match.cssColor,
+        borderCssColor: PIN_BORDER_VARS[conf.borderColor ?? "background"] ?? "var(--background)",
+      };
+    }
   }
   if (conf?.iconUrl) {
     const src = conf.iconUrl.startsWith("http") ? conf.iconUrl : `${baseUrl}${conf.iconUrl}`;
