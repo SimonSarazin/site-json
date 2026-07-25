@@ -5751,7 +5751,8 @@
           "widget": "hidden",
           "type": "object",
           "label": {
-            "fr": "Info general"
+            "fr": "Info general",
+            "en": "General information"
           }
         },
         "sextionInfo": {
@@ -5786,13 +5787,15 @@
         "affiliate": {
           "widget": "switch",
           "label": {
-            "fr": "Affiliate"
+            "fr": "Affiliate",
+            "en": "Affiliate"
           }
         },
         "affiliateTo": {
           "widget": "text",
           "label": {
-            "fr": "Affiliate to"
+            "fr": "Affiliate to",
+            "en": "Affiliated to"
           }
         },
         "thematic": {
@@ -5851,13 +5854,15 @@
         "image": {
           "widget": "text",
           "label": {
-            "fr": "Image"
+            "fr": "Image",
+            "en": "Image"
           }
         },
         "mobile": {
           "widget": "text",
           "label": {
-            "fr": "Mobile"
+            "fr": "Mobile",
+            "en": "Mobile"
           }
         },
         "formLocality": {
@@ -5891,25 +5896,29 @@
         "facebook": {
           "widget": "text",
           "label": {
-            "fr": "Facebook"
+            "fr": "Facebook",
+            "en": "Facebook"
           }
         },
         "instagram": {
           "widget": "text",
           "label": {
-            "fr": "Instagram"
+            "fr": "Instagram",
+            "en": "Instagram"
           }
         },
         "youtube": {
           "widget": "text",
           "label": {
-            "fr": "Youtube"
+            "fr": "Youtube",
+            "en": "YouTube"
           }
         },
         "linkedin": {
           "widget": "text",
           "label": {
-            "fr": "Linkedin"
+            "fr": "Linkedin",
+            "en": "LinkedIn"
           }
         },
         "legalStatus": {
@@ -5960,7 +5969,8 @@
         "autreDescription": {
           "widget": "text",
           "label": {
-            "fr": "Autre description"
+            "fr": "Autre description",
+            "en": "Other description"
           }
         },
         "sextionInfoRepresentant": {
@@ -6612,13 +6622,15 @@
         "image": {
           "widget": "text",
           "label": {
-            "fr": "Image"
+            "fr": "Image",
+            "en": "Image"
           }
         },
         "mobile": {
           "widget": "text",
           "label": {
-            "fr": "Mobile"
+            "fr": "Mobile",
+            "en": "Mobile"
           }
         },
         "email": {
@@ -7037,28 +7049,32 @@
           "widget": "hidden",
           "type": "object",
           "label": {
-            "fr": "Documentation"
+            "fr": "Documentation",
+            "en": "Documentation"
           }
         },
         "parent": {
           "widget": "hidden",
           "type": "object",
           "label": {
-            "fr": "Parent"
+            "fr": "Parent",
+            "en": "Parent"
           }
         },
         "partner": {
           "widget": "hidden",
           "type": "object",
           "label": {
-            "fr": "Partner"
+            "fr": "Partner",
+            "en": "Partner"
           }
         },
         "trainer": {
           "widget": "hidden",
           "type": "object",
           "label": {
-            "fr": "Trainer"
+            "fr": "Trainer",
+            "en": "Trainer"
           }
         },
         "rate": {
@@ -7078,7 +7094,8 @@
         "image": {
           "widget": "text",
           "label": {
-            "fr": "Image"
+            "fr": "Image",
+            "en": "Image"
           }
         },
         "email": {
@@ -7384,14 +7401,16 @@
           "widget": "hidden",
           "type": "object",
           "label": {
-            "fr": "Organizer"
+            "fr": "Organizer",
+            "en": "Organizer"
           }
         },
         "trainer": {
           "widget": "hidden",
           "type": "object",
           "label": {
-            "fr": "Trainer"
+            "fr": "Trainer",
+            "en": "Trainer"
           }
         },
         "url": {
@@ -7404,7 +7423,8 @@
         "image": {
           "widget": "text",
           "label": {
-            "fr": "Image"
+            "fr": "Image",
+            "en": "Image"
           }
         },
         "public": {
