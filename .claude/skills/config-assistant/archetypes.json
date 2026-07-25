@@ -14,28 +14,7 @@
         "header transparent-scroll, footer contact-partners",
         "baseParams avec sourceKey + filters (recherche périmétrée réseau)"
       ],
-      "knownFindings": [
-        {
-          "category": "theme-token-non-mappe",
-          "path": "theme.colors.light.warning",
-          "note": "Couleur écrite pour rien : correctif = 2 lignes dans src/index-parent62.css (@theme inline : --color-warning: var(--warning); --color-warning-foreground: var(--warning-foreground);). Non appliqué ici car activer ces classes CHANGE le rendu de composants en production — arbitrage en attente."
-        },
-        {
-          "category": "theme-token-non-mappe",
-          "path": "theme.colors.light.success",
-          "note": "Couleur écrite pour rien : correctif = 2 lignes dans src/index-parent62.css (@theme inline : --color-success: var(--success); --color-success-foreground: var(--success-foreground);). Non appliqué ici car activer ces classes CHANGE le rendu de composants en production — arbitrage en attente."
-        },
-        {
-          "category": "theme-token-non-mappe",
-          "path": "theme.colors.light.info",
-          "note": "Couleur écrite pour rien : correctif = 2 lignes dans src/index-parent62.css (@theme inline : --color-info: var(--info); --color-info-foreground: var(--info-foreground);). Non appliqué ici car activer ces classes CHANGE le rendu de composants en production — arbitrage en attente."
-        },
-        {
-          "category": "theme-token-non-mappe",
-          "path": "theme.colors.light.error",
-          "note": "Couleur écrite pour rien : correctif = 2 lignes dans src/index-parent62.css (@theme inline : --color-error: var(--error); --color-error-foreground: var(--error-foreground);). Non appliqué ici car activer ces classes CHANGE le rendu de composants en production — arbitrage en attente."
-        }
-      ]
+      "knownFindings": []
     },
     {
       "slug": "navigatorDesTierslieux",
@@ -52,21 +31,6 @@
           "category": "lien-inerte",
           "path": "header.nav.4.children.2.path",
           "note": "« Décider ensemble » : placeholder éditorial assumé, page à créer"
-        },
-        {
-          "category": "theme-token-non-mappe",
-          "path": "theme.colors.light.success",
-          "note": "Couleur écrite pour rien : correctif = 2 lignes dans src/index-tiers-lieux.css (@theme inline : --color-success: var(--success); --color-success-foreground: var(--success-foreground);). Non appliqué ici car activer ces classes CHANGE le rendu de composants en production — arbitrage en attente."
-        },
-        {
-          "category": "theme-token-non-mappe",
-          "path": "theme.colors.light.warning",
-          "note": "Couleur écrite pour rien : correctif = 2 lignes dans src/index-tiers-lieux.css (@theme inline : --color-warning: var(--warning); --color-warning-foreground: var(--warning-foreground);). Non appliqué ici car activer ces classes CHANGE le rendu de composants en production — arbitrage en attente."
-        },
-        {
-          "category": "theme-token-non-mappe",
-          "path": "theme.colors.light.info",
-          "note": "Couleur écrite pour rien : correctif = 2 lignes dans src/index-tiers-lieux.css (@theme inline : --color-info: var(--info); --color-info-foreground: var(--info-foreground);). Non appliqué ici car activer ces classes CHANGE le rendu de composants en production — arbitrage en attente."
         }
       ]
     },

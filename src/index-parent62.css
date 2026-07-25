@@ -141,6 +141,20 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+
+  /* Statuts — extension maison du jeu shadcn, qui ne fournit que `destructive`.
+     Les VALEURS viennent de config.theme.colors.{light,dark} (SiteTheme les
+     injecte au runtime) ; ce mapping est ce qui CRÉE les utilitaires
+     correspondants et leurs modificateurs d'opacité.
+     Sans lui, la couleur est écrite pour rien. */
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
