@@ -19,6 +19,7 @@ Les faits volatils se LISENT à l'usage, ils ne sont pas écrits ici :
 | Archétypes de référence (quel site imiter, ce qu'il démontre) + liste des exemples | `npm run config:example` |
 | Exemple canonique d'un bloc réel (theme, command-palette, agenda, list-resource…) | `npm run config:example -- <feature>` |
 | **Composition de props réelle** d'une section / d'un header / d'un footer | `.design-sync/previews/<Composant>.tsx` (152 stories versionnées) — chemin exact imprimé en tête de `config:schema section:<type>`, et `◆` dans le catalogue `sections` |
+| **Recette de composition de PAGE** (gabarit = une page réelle d'archétype) | `npm run config:example -- --recipe <id>` — imprime la page complète, prête à adapter |
 | Forme exacte d'une section | `npm run config:schema section:<type>` (ex. `section:pricing`) |
 | Forme de `header`/`footer`/`theme`/`meta`/`auth`/`page`/`profiles`/`integrations`/`commandPalette` | `npm run config:schema <bloc>` |
 | Forme d'un document de **form costum** (`config.costumForms.<id>`) | `npm run config:schema costumForm` |
@@ -68,6 +69,15 @@ référentiel des configs de référence.
    **l'utilisateur tranche avant de générer**. Appuie-toi sur `archetypes.json`
    (dossier de cette skill) pour choisir l'archétype, sur les tables ci-dessous
    et sur `config:schema sections` pour composer les pages.
+   **Compose depuis les recettes, pas depuis le catalogue** :
+   `npm run config:example` liste 11 gabarits de page mesurés sur le parc
+   (4 modèles de home + recherche, annuaire-grille, agenda, blog, éditoriale,
+   observatoire, légale), chacun avec son « quand » et son « rythme » ;
+   `-- --recipe <id>` imprime la page réelle correspondante. Repères du parc :
+   la page MÉDIANE fait **2 sections** (une page n'a pas à être longue), le
+   motif le plus fréquent est `searchHeader > searchProStatic` (×32), et une
+   page éditoriale tient par l'ALTERNANCE des registres (frise → texte →
+   cartes → FAQ → CTA), pas par l'empilement de `content`.
 3. **Slug d'entité — prérequis DUR, en partie MANUEL** : le slug de
    `sites.json` charge AUSSI l'entité Cocolight au boot ; sans entité, le site
    ne démarre pas. Procédure :

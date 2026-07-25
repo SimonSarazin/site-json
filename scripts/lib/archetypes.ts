@@ -20,6 +20,7 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "
 export const SKILL_DIR = path.join(ROOT, ".claude/skills/config-assistant");
 export const EXAMPLES_DIR = path.join(SKILL_DIR, "examples");
 export const MANIFEST_PATH = path.join(SKILL_DIR, "archetypes.json");
+export const RECIPES_PATH = path.join(SKILL_DIR, "page-recipes.json");
 
 export interface KnownFinding {
   category: string;
@@ -54,8 +55,35 @@ export interface ExampleDoc {
   snapshot: unknown;
 }
 
+/**
+ * Recette de COMPOSITION : une page VIVANTE d'une config archétype, désignée
+ * comme gabarit. `sequence` est vérifiée contre la page réelle par le préflight
+ * → une recette ne peut pas décrire une composition qui n'existe plus.
+ */
+export interface PageRecipe {
+  id: string;
+  titre: string;
+  quand: string;
+  source: string;
+  path: string;
+  sequence: string[];
+  rythme: string;
+}
+
 export function loadManifest(): ArchetypesManifest {
   return JSON.parse(fs.readFileSync(MANIFEST_PATH, "utf-8")) as ArchetypesManifest;
+}
+
+export function loadRecipes(): PageRecipe[] {
+  return (JSON.parse(fs.readFileSync(RECIPES_PATH, "utf-8")) as { recipes: PageRecipe[] }).recipes;
+}
+
+/** Types de sections d'une page de config, dans l'ordre (vide si page absente). */
+export function pageSectionTypes(config: unknown, pagePath: string): string[] | undefined {
+  const pages = (config as { pages?: { path?: string; sections?: { type?: string }[] }[] }).pages ?? [];
+  const page = pages.find((p) => p.path === pagePath);
+  if (!page) return undefined;
+  return (page.sections ?? []).map((s) => String(s.type));
 }
 
 export function loadConfig(file: string): unknown {

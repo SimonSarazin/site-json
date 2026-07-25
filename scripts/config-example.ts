@@ -1,8 +1,10 @@
 /**
  * Exemples canoniques (golden snippets) des configs archétypes.
  *
- *   npm run config:example                       → liste des exemples + archétypes
+ *   npm run config:example                       → archétypes + exemples + recettes de page
  *   npm run config:example -- <feature>          → affiche le snapshot + provenance
+ *   npm run config:example -- --recipe <id>      → imprime la PAGE RÉELLE qui sert de
+ *                                                  gabarit de composition (page-recipes.json)
  *   npm run config:example -- <feature> --write  → ré-extrait le bloc depuis la
  *                                                  config source et réécrit le snapshot
  *   npm run config:example -- --write-all        → resynchronise tous les snapshots
@@ -15,6 +17,7 @@ import fs from "node:fs";
 import {
   loadManifest,
   loadExamples,
+  loadRecipes,
   loadConfig,
   resolveSelector,
   examplePath,
@@ -24,7 +27,12 @@ import {
 const argv = process.argv.slice(2);
 const WRITE = argv.includes("--write");
 const WRITE_ALL = argv.includes("--write-all");
-const feature = argv.find((a) => !a.startsWith("--"));
+const recipeIdx = argv.indexOf("--recipe");
+const RECIPE = recipeIdx >= 0 ? argv[recipeIdx + 1] : undefined;
+// L'argument de --recipe n'est pas une feature (et sans --recipe, aucun index
+// n'est à exclure : recipeIdx vaut -1, pas 0).
+const recipeValueIdx = recipeIdx >= 0 ? recipeIdx + 1 : -1;
+const feature = argv.find((a, i) => !a.startsWith("--") && i !== recipeValueIdx);
 
 function rewrite(doc: ExampleDoc): void {
   const extracted = resolveSelector(loadConfig(doc.source), doc.selector);
@@ -34,6 +42,24 @@ function rewrite(doc: ExampleDoc): void {
 }
 
 const examples = loadExamples();
+
+// Recette de COMPOSITION : imprime la page RÉELLE qui sert de gabarit (le
+// meilleur point de départ est une page qui tourne, pas une liste de types).
+if (recipeIdx >= 0) {
+  const recipes = loadRecipes();
+  const r = recipes.find((x) => x.id === RECIPE);
+  if (!r) {
+    console.error(`✗ recette inconnue : « ${RECIPE ?? ""} »`);
+    console.error(`  disponibles : ${recipes.map((x) => x.id).join(", ")}`);
+    process.exit(1);
+  }
+  console.log(`// ${r.titre}`);
+  console.log(`// Quand : ${r.quand}`);
+  console.log(`// Rythme : ${r.rythme}`);
+  console.log(`// Page réelle : ${r.source} → ${r.path}  (${r.sequence.join(" > ")})`);
+  console.log(JSON.stringify(resolveSelector(loadConfig(r.source), `pages[path=${r.path}]`), null, 2));
+  process.exit(0);
+}
 
 if (WRITE_ALL) {
   if (feature) {
@@ -58,6 +84,11 @@ if (!feature) {
   console.log("\nExemples canoniques (npm run config:example -- <feature>) :\n");
   for (const doc of examples) {
     console.log(`  ${doc.feature.padEnd(28)} ${doc.titre}  [${doc.source}]`);
+  }
+  console.log("\nRecettes de page (npm run config:example -- --recipe <id>) — imprime la page RÉELLE :\n");
+  for (const r of loadRecipes()) {
+    console.log(`  ${r.id.padEnd(24)} ${r.titre}`);
+    console.log(`  ${" ".repeat(24)} ${r.sequence.join(" > ")}`);
   }
   process.exit(0);
 }
