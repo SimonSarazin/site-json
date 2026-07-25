@@ -12,7 +12,7 @@ Le formalisme et la maintenance de ces pages sont pilotés par le skill
 
 | Projet | Slug | Doc | État |
 |---|---|---|---|
-| Réseau Parentalité 62 | `parent62` | [parent62.md](parent62.md) | Partie 1 en cours (déploiement à faire) |
+| Réseau Parentalité 62 | `parent62` | [parent62.md](parent62.md) | Partie 1 en cours — moteur de recherche complété (25/07) ; **déploiement à faire** |
 
 ## Pourquoi un répertoire séparé de `doc/`
 
