@@ -1,10 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { z } from "zod";
 import {
   resolveBlockSchema,
   resolveJsonSchemaPath,
-  type JsonSchemaNode,
-} from "../../scripts/lib/config-blocks";
+  type JsonSchemaNode, dumpJsonSchema, ROOT_BLOCK_SELECTORS, sectionOptions, collapseSectionUnions } from "../../scripts/lib/config-blocks";
 import { PROP_DESCRIPTIONS, BLOCK_NOTES } from "../../scripts/lib/prop-descriptions";
 
 /**
@@ -18,7 +16,7 @@ import { PROP_DESCRIPTIONS, BLOCK_NOTES } from "../../scripts/lib/prop-descripti
 function dump(selector: string): JsonSchemaNode {
   const schema = resolveBlockSchema(selector);
   expect(schema, `sélecteur "${selector}" du registre inconnu de config-schema`).toBeDefined();
-  return z.toJSONSchema(schema!, { unrepresentable: "any" }) as JsonSchemaNode;
+  return dumpJsonSchema(schema!);
 }
 
 describe("registre prop-descriptions ⇄ schéma (garde-fou)", () => {
@@ -86,6 +84,24 @@ describe("registre prop-descriptions ⇄ schéma (garde-fou)", () => {
         `couverture en baisse sur « ${selector} »`,
       ).toBeGreaterThanOrEqual(min);
     }
+  });
+
+  it("aucun dump ne redevient illisible (plafond de taille)", () => {
+    // Avant `reused: "ref"` + repli de l'union Section, `profiles` sortait
+    // 683 Ko et `page` 509 Ko : l'outil central de la skill était inutilisable
+    // sur les blocs les plus courants. Plafond large (60 Ko ≈ 15k tokens, le
+    // maximum actuel étant ~40 Ko) : il n'attrape que la vraie régression.
+    const CEILING = 60_000;
+    const selectors = [...ROOT_BLOCK_SELECTORS, ...[...sectionOptions().keys()].map((t) => `section:${t}`)];
+    const oversized = selectors
+      .map((s) => {
+        const schema = resolveBlockSchema(s);
+        if (!schema) return null;
+        const size = JSON.stringify(collapseSectionUnions(dumpJsonSchema(schema)), null, 2).length;
+        return size > CEILING ? `${s} (${Math.round(size / 1000)} Ko)` : null;
+      })
+      .filter(Boolean);
+    expect(oversized, "dumps au-dessus du plafond").toEqual([]);
   });
 
   it("tout bloc décrit est sous plancher (aucun bloc hors ratchet)", () => {

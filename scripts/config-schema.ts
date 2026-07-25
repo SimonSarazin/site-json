@@ -24,8 +24,9 @@ import {
   resolveBlockSchema,
   blockNote,
   applyDescriptions,
+  dumpJsonSchema,
+  collapseSectionUnions,
   ROOT_BLOCK_SELECTORS,
-  type JsonSchemaNode,
 } from "./lib/config-blocks";
 import { PROP_DESCRIPTIONS, BLOCK_NOTES } from "./lib/prop-descriptions";
 import { sectionPreviews, chromePreviews } from "./lib/design-previews";
@@ -90,7 +91,7 @@ function print(selector: string, schema: z.ZodType) {
   if (note) console.error(note);
   printPreviewHint(selector);
   printPresenterMatrix(selector);
-  const json = z.toJSONSchema(schema, { unrepresentable: "any" }) as JsonSchemaNode;
+  const json = collapseSectionUnions(dumpJsonSchema(schema));
   const descs = PROP_DESCRIPTIONS[selector];
   if (descs) {
     for (const missing of applyDescriptions(json, descs)) {

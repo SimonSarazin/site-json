@@ -1,8 +1,7 @@
 import { describe, it, expect } from "vitest";
 import path from "node:path";
-import { z } from "zod";
 import { presenterMatrix, optionIndex } from "../../scripts/lib/presenter-options";
-import { resolveBlockSchema, resolveJsonSchemaPath, type JsonSchemaNode } from "../../scripts/lib/config-blocks";
+import { resolveBlockSchema, resolveJsonSchemaPath, dumpJsonSchema } from "../../scripts/lib/config-blocks";
 
 /**
  * Matrice OPTION × PRESENTER (imprimée par `config:schema section:searchPro`).
@@ -46,7 +45,7 @@ describe("matrice option × presenter (search)", () => {
   it("aucune option du schéma n'est morte (lue nulle part dans le module search)", () => {
     const schema = resolveBlockSchema("section:searchPro");
     expect(schema).toBeDefined();
-    const json = z.toJSONSchema(schema!, { unrepresentable: "any" }) as JsonSchemaNode;
+    const json = dumpJsonSchema(schema!);
     const keys = new Set<string>();
     for (const n of resolveJsonSchemaPath(json, "props.list.card"))
       for (const k of Object.keys(n.properties ?? {})) keys.add(k);

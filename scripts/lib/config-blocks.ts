@@ -80,12 +80,109 @@ export interface JsonSchemaNode {
   oneOf?: JsonSchemaNode[];
   allOf?: JsonSchemaNode[];
   description?: string;
+  $ref?: string;
+  $defs?: Record<string, JsonSchemaNode>;
+  type?: string;
+  enum?: unknown[];
+  required?: string[];
 }
 
-/** Aplati les unions (anyOf/oneOf/allOf) en feuilles explorables. */
-function branches(node: JsonSchemaNode): JsonSchemaNode[] {
-  const subs = [...(node.anyOf ?? []), ...(node.oneOf ?? []), ...(node.allOf ?? [])];
-  return subs.length ? [node, ...subs.flatMap(branches)] : [node];
+/**
+ * Dump JSON Schema d'un bloc. `reused: "ref"` FACTORISE les schémas réutilisés
+ * dans `$defs` : sans lui, l'union `Section` (70 membres) est ré-inlinée à
+ * chaque point d'usage et les blocs les plus courants deviennent illisibles
+ * (`profiles` 683 Ko, `page` 509 Ko — au-delà de ce qu'un agent peut lire).
+ *
+ * Source UNIQUE du dump : le garde-fou préflight doit voir exactement la même
+ * forme que l'assistant, sinon une description morte sous `$ref` passerait
+ * inaperçue.
+ */
+export function dumpJsonSchema(schema: z.ZodType): JsonSchemaNode {
+  return z.toJSONSchema(schema, { unrepresentable: "any", reused: "ref" }) as JsonSchemaNode;
+}
+
+/**
+ * Remplace l'union `Section` (70 membres) par un RENVOI au catalogue partout où
+ * elle apparaît. Même factorisée en `$defs`, elle pèse ~220 Ko : un dump de
+ * `page` ou de `gridLayout` reste alors illisible alors qu'à ce stade on veut
+ * l'ENVELOPPE, pas la forme des 70 sections — qui se demandent une par une
+ * (`config:schema section:<type>`).
+ *
+ * Détection structurelle (pas par nom) : une union d'au moins 20 branches dont
+ * chacune porte un littéral `type`.
+ */
+export function collapseSectionUnions(root: JsonSchemaNode): JsonSchemaNode {
+  const seen = new Set<JsonSchemaNode>();
+  const literalsOf = (node: JsonSchemaNode): string[] | undefined => {
+    const branchesOf = node.anyOf ?? node.oneOf;
+    if (!branchesOf || branchesOf.length < 20) return undefined;
+    const types: string[] = [];
+    for (const b of branchesOf) {
+      const t = deref(b, root).properties?.type as { const?: unknown } | undefined;
+      if (typeof t?.const !== "string") return undefined;
+      types.push(t.const);
+    }
+    return types;
+  };
+  const walk = (node: JsonSchemaNode | boolean | undefined) => {
+    if (!node || typeof node !== "object" || seen.has(node)) return;
+    seen.add(node);
+    const types = literalsOf(node);
+    if (types) {
+      delete node.anyOf;
+      delete node.oneOf;
+      node.type = "object";
+      node.description = `Section — union de ${types.length} types. Forme exacte d'un type : \`config:schema section:<type>\` ; catalogue complet : \`config:schema sections\`.`;
+      node.properties = {
+        type: { enum: types.sort() } as JsonSchemaNode,
+        id: { type: "string", description: "Identifiant de la section (ancre `#id`, ciblage CSS)." } as JsonSchemaNode,
+        props: { type: "object", description: "Propriétés propres au type — `config:schema section:<type>`." } as JsonSchemaNode,
+      };
+      node.required = ["type"];
+      return;
+    }
+    for (const child of Object.values(node.properties ?? {})) walk(child);
+    for (const child of Object.values(node.$defs ?? {})) walk(child);
+    walk(node.items);
+    walk(node.additionalProperties);
+    for (const b of [...(node.anyOf ?? []), ...(node.oneOf ?? []), ...(node.allOf ?? [])]) walk(b);
+  };
+  walk(root);
+  return root;
+}
+
+/**
+ * Suit `$ref` → `$defs`, ainsi que `$ref: "#"` — l'auto-référence à la RACINE
+ * du document, émise pour les schémas récursifs (une section `gridLayout`
+ * contient des sections, donc elle-même). Sans ce cas, l'union des sections
+ * n'était pas reconnue quand on dumpait un conteneur.
+ */
+function deref(node: JsonSchemaNode, root: JsonSchemaNode): JsonSchemaNode {
+  let cur = node;
+  for (let i = 0; i < 8 && cur.$ref; i++) {
+    if (cur.$ref === "#") {
+      if (root === cur) break;
+      cur = root;
+      continue;
+    }
+    const m = /^#\/\$defs\/(.+)$/.exec(cur.$ref);
+    const target = m && root.$defs?.[decodeURIComponent(m[1])];
+    if (!target) break;
+    cur = target;
+  }
+  return cur;
+}
+
+/**
+ * Aplati les unions (anyOf/oneOf/allOf) en feuilles explorables, `$ref` suivis.
+ * `seen` est indispensable : les schémas récursifs boucleraient sinon.
+ */
+function branches(node: JsonSchemaNode, root: JsonSchemaNode, seen = new Set<JsonSchemaNode>()): JsonSchemaNode[] {
+  const resolved = deref(node, root);
+  if (seen.has(resolved)) return [];
+  seen.add(resolved);
+  const subs = [...(resolved.anyOf ?? []), ...(resolved.oneOf ?? []), ...(resolved.allOf ?? [])];
+  return subs.length ? [resolved, ...subs.flatMap((s) => branches(s, root, seen))] : [resolved];
 }
 
 /**
@@ -95,8 +192,10 @@ function branches(node: JsonSchemaNode): JsonSchemaNode[] {
  * atteints (les unions font diverger le chemin).
  */
 export function resolveJsonSchemaPath(root: JsonSchemaNode, dottedPath: string): JsonSchemaNode[] {
-  let candidates = branches(root);
-  for (const seg of dottedPath.split(".")) {
+  let candidates = branches(root, root);
+  const segments = dottedPath.split(".");
+  for (const [i, seg] of segments.entries()) {
+    const last = i === segments.length - 1;
     const wantItems = seg.endsWith("[]");
     const key = wantItems ? seg.slice(0, -2) : seg;
     const next: JsonSchemaNode[] = [];
@@ -109,9 +208,20 @@ export function resolveJsonSchemaPath(root: JsonSchemaNode, dottedPath: string):
           : node.properties?.[key];
       if (!target) continue;
       if (wantItems) {
-        for (const b of branches(target)) if (b.items) next.push(...branches(b.items));
+        for (const b of branches(target, root)) {
+          if (!b.items) continue;
+          // Dernier segment : garder le nœud RÉFÉRENÇANT (cf. ci-dessous).
+          if (last) next.push(b.items);
+          else next.push(...branches(b.items, root));
+        }
+      } else if (last) {
+        // On annote le nœud qui RÉFÉRENCE, jamais la définition partagée : poser
+        // une description sur `$defs/LocalizedString` la collerait à TOUS les
+        // titres et libellés du dump. Une annotation à côté d'un `$ref` est
+        // valide en JSON Schema 2020-12.
+        next.push(target);
       } else {
-        next.push(...branches(target));
+        next.push(...branches(target, root));
       }
     }
     if (!next.length) return [];
