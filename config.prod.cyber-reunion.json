@@ -1106,7 +1106,7 @@
               "fr": "Annuaire",
               "en": "Directory"
             },
-            "icon": "building-1",
+            "icon": "building-2",
             "showSearch": true,
             "placeholder": {
               "fr": "Rechercher un annuaire ...",

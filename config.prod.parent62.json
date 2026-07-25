@@ -11570,7 +11570,7 @@
             "fr": "La parole",
             "en": "The testimony"
           },
-          "icon": "comment",
+          "icon": "message-circle",
           "groups": [
             {
               "columns": 1,
