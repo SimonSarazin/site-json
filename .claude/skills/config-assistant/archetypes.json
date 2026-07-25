@@ -9,6 +9,7 @@
         "theme complet : colors light+dark (~40 tokens), typography, borderRadius, shadows",
         "commandPalette enrichie : entitySearch multi-collections, iconRules, itemActionByType, itemActionBySubType",
         "presenters config-driven : list.resource (page /ressources) et list.testimonial (page /temoignages) avec preview.width, badge, facets",
+        "recherche globale HÉTÉROGÈNE (page /recherche) : filtre searchTargets + list.itemRules à prédicats (5 familles, presenter et action au clic par item, dont article → reader blog)",
         "section agenda (page /agenda)",
         "admin 6 onglets, blog, 4 costumForms, integrations.seo",
         "header transparent-scroll, footer contact-partners",
