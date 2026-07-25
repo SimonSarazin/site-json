@@ -46,7 +46,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { SiteConfig } from "../src/types/site-schema";
 import { moduleRoutePrefixes } from "./lib/module-routes";
-import { builtinModalNames, tsCostumIds, lucideIconNames } from "./lib/code-vocabulary";
+import {
+  builtinModalNames,
+  tsCostumIds,
+  lucideIconNames,
+  mappedColorTokens,
+  colorTokensUsedInCode,
+} from "./lib/code-vocabulary";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const argv = process.argv.slice(2);
@@ -127,8 +133,11 @@ if (fs.existsSync(manifestPath)) {
     if (a.knownFindings?.length) knownFindings[a.config] = a.knownFindings;
 }
 
+const STATUS_TOKENS_USED = colorTokensUsedInCode(ROOT);
+
 const sites = JSON.parse(fs.readFileSync(path.join(ROOT, "sites.json"), "utf-8")) as {
   config: string;
+  css?: string;
 }[];
 const sitesConfigs = new Set(sites.map((s) => s.config));
 const allConfigs = [...new Set(["config.prod.json", ...sites.map((s) => s.config)])].filter((f) =>
@@ -333,6 +342,29 @@ for (const cf of configs) {
     : tm.colors?.light && tm.colors?.dark
       ? "complet"
       : "sans-couleurs";
+  // Token déclaré dans config.theme MAIS non exposé à Tailwind par le CSS du
+  // site : SiteTheme l'injecte bien (`--warning`), mais sans le mapping
+  // `@theme inline { --color-warning: var(--warning) }`, aucune classe
+  // `bg-warning` ne résout — la couleur est écrite pour rien. On ne signale que
+  // les tokens qu'un composant utilise VRAIMENT via une classe utilitaire.
+  const css = sites.find((s) => s.config === cf)?.css;
+  if (css) {
+    const mapped = mappedColorTokens(ROOT, css);
+    const light = (tm?.colors as { light?: Record<string, unknown> } | undefined)?.light ?? {};
+    for (const token of Object.keys(light)) {
+      if (!STATUS_TOKENS_USED.has(token) || mapped.has(token)) continue;
+      findings.push({
+        category: "theme-token-non-mappe",
+        path: `theme.colors.light.${token}`,
+        message: `« ${token} » est injecté au runtime mais src/${css}.css ne mappe pas --color-${token} : les classes bg-${token}/text-${token} ne résolvent pas sur ce site`,
+        severity: "warn",
+        fixability: "proposer",
+        value: String(light[token]),
+        groupKey: `theme-token-non-mappe:${css}`,
+      });
+    }
+  }
+
   if (themeStatus !== "complet")
     findings.push({ category: "theme", path: "theme", message: themeStatus === "absent" ? "bloc theme ABSENT (couleurs via le CSS du site)" : "theme sans colors.light/dark (playbook : migration rezo-la-mer 90b5200)", severity: "info", fixability: "proposer" });
 

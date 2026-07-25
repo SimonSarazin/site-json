@@ -43,6 +43,42 @@ export function tsCostumIds(root: string): string[] {
 }
 
 /**
+ * Tokens de couleur qu'un CSS de site expose à Tailwind (`@theme inline` :
+ * `--color-x: var(--x)`). Sans ce mapping, un token pourtant injecté au runtime
+ * par SiteTheme reste INATTEIGNABLE par une classe `bg-x`/`text-x`.
+ */
+export function mappedColorTokens(root: string, cssName: string): Set<string> {
+  const file = path.join(root, "src", `${cssName}.css`);
+  if (!fs.existsSync(file)) return new Set();
+  return new Set(
+    [...fs.readFileSync(file, "utf-8").matchAll(/--color-([a-z0-9-]+)\s*:/g)].map((m) => m[1]),
+  );
+}
+
+/**
+ * Tokens réellement invoqués par une classe utilitaire dans le code source
+ * (`bg-warning`, `text-success`…). Sert à ne signaler un token non mappé que
+ * s'il a un consommateur — sinon le constat serait théorique.
+ */
+export function colorTokensUsedInCode(root: string): Set<string> {
+  const out = new Set<string>();
+  const walk = (dir: string) => {
+    if (!fs.existsSync(dir)) return;
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, e.name);
+      if (e.isDirectory()) walk(full);
+      else if (/\.tsx?$/.test(e.name) && !e.name.includes(".test."))
+        for (const m of fs
+          .readFileSync(full, "utf-8")
+          .matchAll(/\b(?:bg|text|border|ring|fill|stroke|from|to|via)-(warning|success|info|error)(?:-foreground)?\b/g))
+          out.add(m[1]);
+    }
+  };
+  walk(path.join(root, "src"));
+  return out;
+}
+
+/**
  * Noms d'icônes lucide valides (1901) — un fichier par icône dans le paquet.
  * Retourne un Set VIDE si lucide est absent : l'appelant doit alors sauter le
  * contrôle plutôt que tout flaguer.
