@@ -46,7 +46,14 @@ const PARTICLES = new Set([
  * « Villers l’Hopital ».
  */
 export function formatCommuneName(raw: string): string {
-  const lower = raw.trim().replace(/\s+/g, " ").toLocaleLowerCase("fr-FR");
+  // NFKC décompose les ligatures typographiques émises par pdftotext
+  // (ﬀ/ﬁ/ﬂ/ﬃ/ﬄ → ff/fi/fl/ffi/ffl) : sans ça, « Groﬄiers » embarque un
+  // codepoint U+FB04 qui casse Ctrl+F / copier-coller / tout match exact.
+  const lower = raw
+    .normalize("NFKC")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLocaleLowerCase("fr-FR");
   let wordIndex = 0;
   return lower.replace(/[^\s\-’']+/g, (word) => {
     const isFirst = wordIndex === 0;

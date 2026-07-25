@@ -57,6 +57,12 @@ export default function CardDefault({
     [tags, item?.serverData, card.tagColors]
   );
 
+  // Borne unique : le défaut `{ tagLimit: 5 }` de la signature ne s'applique
+  // que si `card` est absent ; dès qu'un config fournit un `card` sans
+  // `tagLimit` (cas parent62), `card.tagLimit` est undefined → `slice(0,
+  // undefined)` afficherait TOUS les chips tout en gardant le badge « +N ».
+  const tagLimit = card.tagLimit ?? 5;
+
   return (
     <Card
       className="group hover:shadow-lg transition-all duration-300 cursor-pointer"
@@ -98,7 +104,7 @@ export default function CardDefault({
 
             {displayTags.length > 0 && (
               <div className="flex flex-wrap gap-1">
-                {displayTags.slice(0, card.tagLimit).map(({ tag, label, cssColor }, index) => (
+                {displayTags.slice(0, tagLimit).map(({ tag, label, cssColor }, index) => (
                   <Badge
                     key={index}
                     variant="secondary"
@@ -116,9 +122,9 @@ export default function CardDefault({
                   </Badge>
                 ))}
 
-                {displayTags.length > (card?.tagLimit ?? 5) && (
+                {displayTags.length > tagLimit && (
                   <Badge variant="secondary" className="text-xs">
-                    +{displayTags.length - (card?.tagLimit ?? 5)}
+                    +{displayTags.length - tagLimit}
                   </Badge>
                 )}
               </div>
