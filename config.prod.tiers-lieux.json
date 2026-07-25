@@ -3829,7 +3829,7 @@
                       "linked": true
                     },
                     "645b300b6d70bb35426fc0e3": {
-                      "name": "Equipements proposés",
+                      "name": "Équipements proposés",
                       "finder": "answers.lesCommunsDesTierslieux1052023_949_0.finderlesCommunsDesTierslieux1052023_949_0lat3sl0xwwg06k856jc",
                       "linked": true
                     },
@@ -3920,7 +3920,7 @@
                       "openMode": "modal"
                     },
                     "645b300b6d70bb35426fc0e3": {
-                      "name": "Equipements",
+                      "name": "Équipements",
                       "finder": "answers.lesCommunsDesTierslieux1052023_949_0.finderlesCommunsDesTierslieux1052023_949_0lat3sl0xwwg06k856jc",
                       "openMode": "modal",
                       "linked": true
@@ -3982,6 +3982,7 @@
                       "finder": "answers.navigatorDesTierslieux1572025_2311_0.findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb",
                       "linked": true,
                       "category": "evaluation",
+                      "openMode": "modal",
                       "hide": true
                     }
                   }
