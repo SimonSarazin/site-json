@@ -8,11 +8,20 @@
  *   - liens INERTES (`#` seul = placeholder sans destination ; exclut les
  *     parents de nav qui utilisent `#` comme toggle de dropdown),
  *   - locales présentes mais non déclarées dans meta.languages,
+ *   - ANCRES mortes (`#frag` sans id de section ni de markup correspondant),
  *   - bloc `theme` absent ou sans couleurs,
- *   - ASSETS manquants (image/logo/favicon → fichier absent de public/),
+ *   - ASSETS manquants (toute valeur à extension d'image → fichier absent de
+ *     public/ ; règle inversée, une whitelist de clés ratait ogImage/path),
  *   - CLÉS STRIPPÉES par Zod (posées dans le config mais inconnues du schéma
  *     → config mort silencieux, ex. un `variant` ignoré par le composant),
- *   - PRÉREQUIS modules (searchPro/searchProStatic sans `baseParams`).
+ *   - RÉFÉRENCES mortes (`modal`/`editModal` sans costumForm ni builtin),
+ *   - ICÔNES inconnues (nom hors catalogue lucide),
+ *   - PRÉREQUIS modules (searchPro/searchProStatic/agenda sans `baseParams`).
+ *
+ * Les trois derniers contrôles visent la même classe de défaut : un échec
+ * SILENCIEUX à l'exécution (composant qui rend `null`) que ni `config:validate`
+ * ni le préflight ne voient. Leurs vocabulaires sont DÉRIVÉS du code
+ * (lib/code-vocabulary.ts), jamais recopiés.
  *
  * Chaque constat porte {category, path, message, severity, fixability} —
  * `fixability` pilote le flux de réparation de l'assistant config (doc/26) :
@@ -37,6 +46,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { SiteConfig } from "../src/types/site-schema";
 import { moduleRoutePrefixes } from "./lib/module-routes";
+import { builtinModalNames, tsCostumIds, lucideIconNames } from "./lib/code-vocabulary";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const argv = process.argv.slice(2);
@@ -59,11 +69,13 @@ const LOCALES = ["fr", "en", "es", "de"];
 // valides. DÉRIVÉES de src/modules/*/routes.tsx (cf. lib/module-routes.ts) :
 // la constante figée qu'elles remplacent avait dérivé (/admin, /blog absents).
 const KNOWN_ROUTE_PREFIXES = new Set(moduleRoutePrefixes(ROOT));
-// Clés portant des chemins d'images/fichiers locaux (relevé des configs réels).
-const ASSET_KEYS = new Set([
-  "favicon", "logo", "logoImage", "backgroundImage", "image", "src",
-  "imageSrc", "featuredImage", "avatar", "bannerImage", "beforeImage", "afterImage",
-]);
+// Vocabulaires résolus par le code (cf. lib/code-vocabulary.ts).
+const BUILTIN_MODALS = new Set(builtinModalNames(ROOT));
+const TS_COSTUM_IDS = new Set(tsCostumIds(ROOT));
+const LUCIDE_NAMES = lucideIconNames(ROOT);
+// Chemins de config dont l'`icon` suit un vocabulaire MAISON, pas lucide :
+// footer.contactSection a son propre iconMap (email→Mail, tel→Phone…).
+const OWN_ICON_VOCABULARY = [".contactSection."];
 
 type Fixability = "auto" | "proposer" | "suggestion";
 interface Finding {
@@ -157,6 +169,20 @@ for (const cf of configs) {
   const findings: Finding[] = [];
   const langs: string[] = (raw.meta as { languages?: string[] })?.languages ?? ["fr"];
   const pagePaths = new Set(((raw.pages as { path: string }[]) ?? []).map((pg) => pg.path));
+  const costumIds = new Set(Object.keys((raw.costumForms as Record<string, unknown>) ?? {}));
+
+  // Cibles d'ancres possibles : tout `id` du config (sections comprises) + tout
+  // id="…" posé dans du markup (sections html/customCSS) — sinon on flaguerait
+  // une ancre parfaitement valide pointant dans un bloc HTML libre.
+  const anchorIds = new Set<string>();
+  walk(raw, (n) => {
+    if (!n || typeof n !== "object" || Array.isArray(n)) return;
+    for (const [k, v] of Object.entries(n as Record<string, unknown>)) {
+      if (typeof v !== "string" || !v) continue;
+      if (k === "id") anchorIds.add(v);
+      if (v.includes('id="')) for (const m of v.matchAll(/id="([^"]+)"/g)) anchorIds.add(m[1]);
+    }
+  });
 
   walk(raw, (n, p) => {
     if (isLocalizedString(n)) {
@@ -180,15 +206,57 @@ for (const cf of configs) {
           findings.push({ category: "lien-inerte", path: `${p.join(".")}.${key}`, message: "lien « # » inerte (placeholder sans destination)", severity: "warn", fixability: "proposer" });
           continue;
         }
+        // Ancre interne (`#frag` sur la page courante, ou `/page#frag`) : la
+        // cible doit exister quelque part dans le config. Les `#` d'une URL
+        // EXTERNE ne sont pas de notre ressort.
+        if ((v.startsWith("#") || v.startsWith("/")) && v.includes("#")) {
+          const frag = v.slice(v.indexOf("#") + 1);
+          if (frag && !anchorIds.has(frag))
+            findings.push({ category: "ancre-morte", path: `${p.join(".")}.${key}`, message: `ancre « #${frag} » sans cible (aucun id de section ni de markup)`, severity: "warn", fixability: "proposer" });
+        }
         if (!v.startsWith("/")) continue;
         const clean = v.split("?")[0].split("#")[0];
         const base = `/${clean.split("/")[1]}`;
         if (clean !== "/" && !pagePaths.has(clean) && !KNOWN_ROUTE_PREFIXES.has(base) && !clean.startsWith("/images/"))
           findings.push({ category: "lien-mort", path: `${p.join(".")}.${key}`, message: `lien interne sans page/route : ${v}`, severity: "warn", fixability: "proposer" });
       }
-      // Assets locaux : le fichier doit exister dans public/.
+      // Références de MODALES : `add-<id>`/`edit-<id>` doit résoudre vers un
+      // costumForm du config, un costum TS, ou une modale builtin — sinon le
+      // bouton rend `null` en silence (ModalRegistry.tsx:49 : un console.log).
+      for (const key of ["modal", "editModal", "addModal"]) {
+        const v = rec[key];
+        if (typeof v !== "string" || !v || BUILTIN_MODALS.has(v)) continue;
+        const id = /^(?:add|edit)-(.+)$/.exec(v)?.[1];
+        if (id && (costumIds.has(id) || TS_COSTUM_IDS.has(id))) continue;
+        findings.push({
+          category: "ref-morte",
+          path: `${p.join(".")}.${key}`,
+          message: id
+            ? `modale « ${v} » : ni costumForms.${id} ni costum TS — le bouton rend null`
+            : `modale « ${v} » : hors registre (attendu add-<id> / edit-<id>) — le bouton rend null`,
+          severity: "warn",
+          fixability: "proposer",
+        });
+      }
+      // Icônes lucide : un nom inconnu rend `null` depuis un useEffect (rien en
+      // SSR, aucune trace) — l'icône disparaît sans que rien ne le signale.
+      if (LUCIDE_NAMES.size) {
+        for (const [k, v] of Object.entries(rec)) {
+          if (!/icon$/i.test(k) || k.toLowerCase() === "favicon") continue;
+          if (typeof v !== "string" || !v) continue;
+          // SVG inline et chemins d'image ne sont pas des noms lucide.
+          if (v.trim().startsWith("<") || v.includes("/") || v.includes(".")) continue;
+          const at = `${p.join(".")}.${k}`;
+          if (OWN_ICON_VOCABULARY.some((frag) => at.includes(frag))) continue;
+          if (!LUCIDE_NAMES.has(v))
+            findings.push({ category: "icone-inconnue", path: at, message: `icône « ${v} » hors catalogue lucide (1901 noms) — rendue null sans erreur`, severity: "warn", fixability: "proposer" });
+        }
+      }
+      // Assets locaux : le fichier doit exister dans public/. Règle INVERSÉE
+      // (toute valeur à extension d'image, quelle que soit la clé) — la
+      // whitelist de clés ratait `ogImage` (×28), `path`, `logoDark`, `iconImage`.
       for (const [k, v] of Object.entries(rec)) {
-        if (!ASSET_KEYS.has(k) || typeof v !== "string" || v.length === 0) continue;
+        if (typeof v !== "string" || v.length === 0) continue;
         if (/^(https?:|data:|blob:)/.test(v) || v.trim().startsWith("<svg")) continue;
         const rel = v.startsWith("/") ? v.slice(1) : v;
         // Ne juger que les valeurs qui RESSEMBLENT à des fichiers (extension
@@ -213,7 +281,9 @@ for (const cf of configs) {
   // Prérequis modules : recherche sans périmètre réseau.
   walk(raw.pages, (n, p) => {
     const rec = n as Record<string, unknown> | null;
-    if (rec && (rec.type === "searchPro" || rec.type === "searchProStatic")) {
+    // `agenda` porte lui aussi un `baseParams` (searchEventsCostum) : sans lui,
+    // l'agenda ratisse hors périmètre — et validate/preflight ne disent rien.
+    if (rec && (rec.type === "searchPro" || rec.type === "searchProStatic" || rec.type === "agenda")) {
       const bp = (rec.props as Record<string, unknown> | undefined)?.baseParams;
       if (!bp || (typeof bp === "object" && Object.keys(bp as object).length === 0))
         findings.push({ category: "module-prereq", path: `pages.${p.join(".")}.props.baseParams`, message: `${rec.type} sans baseParams — périmètre réseau non défini`, severity: "warn", fixability: "proposer" });

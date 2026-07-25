@@ -14,7 +14,28 @@
         "header transparent-scroll, footer contact-partners",
         "baseParams avec sourceKey + filters (recherche périmétrée réseau)"
       ],
-      "knownFindings": []
+      "knownFindings": [
+        {
+          "category": "ref-morte",
+          "path": "profiles.organizations.editModals.0.editModal",
+          "note": "BUG confirmé, PAS un choix : ids visiblement copiés de sport-sante-bien-etre ; les costumForms réels sont parent62-article/-affiche/-recovery-center/-event → le bouton « Modifier » rend null (EditModalRegistry : getCostumModalSpec introuvable → null). Arbitrage en attente : créer les costumForms, repointer, ou retirer l'entrée."
+        },
+        {
+          "category": "ref-morte",
+          "path": "profiles.organizations.editModals.1.editModal",
+          "note": "BUG confirmé, PAS un choix : ids visiblement copiés de sport-sante-bien-etre ; les costumForms réels sont parent62-article/-affiche/-recovery-center/-event → le bouton « Modifier » rend null (EditModalRegistry : getCostumModalSpec introuvable → null). Arbitrage en attente : créer les costumForms, repointer, ou retirer l'entrée."
+        },
+        {
+          "category": "ref-morte",
+          "path": "profiles.projects.editModals.0.editModal",
+          "note": "BUG confirmé, PAS un choix : ids visiblement copiés de sport-sante-bien-etre ; les costumForms réels sont parent62-article/-affiche/-recovery-center/-event → le bouton « Modifier » rend null (EditModalRegistry : getCostumModalSpec introuvable → null). Arbitrage en attente : créer les costumForms, repointer, ou retirer l'entrée."
+        },
+        {
+          "category": "ref-morte",
+          "path": "profiles.events.editModals.0.editModal",
+          "note": "BUG confirmé, PAS un choix : ids visiblement copiés de sport-sante-bien-etre ; les costumForms réels sont parent62-article/-affiche/-recovery-center/-event → le bouton « Modifier » rend null (EditModalRegistry : getCostumModalSpec introuvable → null). Arbitrage en attente : créer les costumForms, repointer, ou retirer l'entrée."
+        }
+      ]
     },
     {
       "slug": "navigatorDesTierslieux",
@@ -44,7 +65,18 @@
         "baseParams sur une source externe (sourceKey = equipementsSportifs974)",
         "theme complet + customCSS"
       ],
-      "knownFindings": []
+      "knownFindings": [
+        {
+          "category": "ref-morte",
+          "path": "pages.1.sections.0.props.buttons.0.modal",
+          "note": "BUG confirmé, PAS un choix : ce config n'a AUCUN costumForms et le costum TS s'appelle « equipements-sportifs » (pas « poi-equipement ») → la modale rend null. NB : le bouton porte aussi action:\"add-poi\", qui fonctionnerait si `modal` était retiré. Arbitrage en attente."
+        },
+        {
+          "category": "ref-morte",
+          "path": "profiles.poi.editModal",
+          "note": "BUG confirmé, PAS un choix : ce config n'a AUCUN costumForms et le costum TS s'appelle « equipements-sportifs » (pas « poi-equipement ») → la modale rend null. NB : le bouton porte aussi action:\"add-poi\", qui fonctionnerait si `modal` était retiré. Arbitrage en attente."
+        }
+      ]
     },
     {
       "slug": "eXtremeDefiAdeme",

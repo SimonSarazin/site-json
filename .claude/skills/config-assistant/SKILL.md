@@ -100,9 +100,12 @@ la cochent toutes). Les points 1-2 sont mécaniques, le reste est un choix de
 site à confirmer avec l'utilisateur — ne PAS l'imposer à une petite vitrine :
 
 1. **Audit RAS** : `npm run audit:config -- --file <config> --json` sans constat
-   (ou assumés) — couvre i18n (`trad`/`locale-extra`), assets, liens,
+   (ou assumés) — couvre i18n (`trad`/`locale-extra`), assets, liens et ancres,
    `theme` complet (`colors.light` ET `dark`), `baseParams` sur chaque
-   searchPro/searchProStatic (avec `sourceKey` réel).
+   searchPro/searchProStatic/agenda (avec `sourceKey` réel), et les échecs
+   SILENCIEUX : `ref-morte` (`modal`/`editModal` sans `costumForms` →
+   bouton qui rend `null`), `icone-inconnue` (nom hors catalogue lucide →
+   icône invisible), `ancre-morte`.
 2. **Préflight vert** : `npm run test:preflight` (schéma strict + invariants +
    gates archétypes).
 3. **Modules à la hauteur du besoin** : `commandPalette` (+ `entitySearch`,
