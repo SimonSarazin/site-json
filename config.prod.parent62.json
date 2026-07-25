@@ -10512,17 +10512,6 @@
             }
           ]
         }
-      ],
-      "editModals": [
-        {
-          "editModal": "edit-parent62-mss",
-          "editModalMatch": {
-            "type": "NGO"
-          }
-        },
-        {
-          "editModal": "edit-parent62-organizations"
-        }
       ]
     },
     "projects": {
@@ -10706,11 +10695,6 @@
             }
           ]
         }
-      ],
-      "editModals": [
-        {
-          "editModal": "edit-parent62-formation"
-        }
       ]
     },
     "events": {
@@ -10889,14 +10873,6 @@
               ]
             }
           ]
-        }
-      ],
-      "editModals": [
-        {
-          "editModal": "edit-parent62-session-formation",
-          "editModalMatch": {
-            "type": "course"
-          }
         }
       ]
     },

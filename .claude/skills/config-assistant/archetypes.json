@@ -16,26 +16,6 @@
       ],
       "knownFindings": [
         {
-          "category": "ref-morte",
-          "path": "profiles.organizations.editModals.0.editModal",
-          "note": "BUG confirmé, PAS un choix : ids visiblement copiés de sport-sante-bien-etre ; les costumForms réels sont parent62-article/-affiche/-recovery-center/-event → le bouton « Modifier » rend null (EditModalRegistry : getCostumModalSpec introuvable → null). Arbitrage en attente : créer les costumForms, repointer, ou retirer l'entrée."
-        },
-        {
-          "category": "ref-morte",
-          "path": "profiles.organizations.editModals.1.editModal",
-          "note": "BUG confirmé, PAS un choix : ids visiblement copiés de sport-sante-bien-etre ; les costumForms réels sont parent62-article/-affiche/-recovery-center/-event → le bouton « Modifier » rend null (EditModalRegistry : getCostumModalSpec introuvable → null). Arbitrage en attente : créer les costumForms, repointer, ou retirer l'entrée."
-        },
-        {
-          "category": "ref-morte",
-          "path": "profiles.projects.editModals.0.editModal",
-          "note": "BUG confirmé, PAS un choix : ids visiblement copiés de sport-sante-bien-etre ; les costumForms réels sont parent62-article/-affiche/-recovery-center/-event → le bouton « Modifier » rend null (EditModalRegistry : getCostumModalSpec introuvable → null). Arbitrage en attente : créer les costumForms, repointer, ou retirer l'entrée."
-        },
-        {
-          "category": "ref-morte",
-          "path": "profiles.events.editModals.0.editModal",
-          "note": "BUG confirmé, PAS un choix : ids visiblement copiés de sport-sante-bien-etre ; les costumForms réels sont parent62-article/-affiche/-recovery-center/-event → le bouton « Modifier » rend null (EditModalRegistry : getCostumModalSpec introuvable → null). Arbitrage en attente : créer les costumForms, repointer, ou retirer l'entrée."
-        },
-        {
           "category": "theme-token-non-mappe",
           "path": "theme.colors.light.warning",
           "note": "Couleur écrite pour rien : correctif = 2 lignes dans src/index-parent62.css (@theme inline : --color-warning: var(--warning); --color-warning-foreground: var(--warning-foreground);). Non appliqué ici car activer ces classes CHANGE le rendu de composants en production — arbitrage en attente."
