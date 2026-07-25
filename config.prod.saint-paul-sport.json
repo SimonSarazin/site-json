@@ -1854,7 +1854,8 @@
             "headline": {
               "fr": "Les équipements sportifs en chiffres",
               "en": "Sports facilities in numbers"
-            }
+            },
+            "headlineClassName": "text-white dark:text-foreground"
           }
         },
         {
@@ -2814,7 +2815,8 @@
             "headline": {
               "fr": "Données des équipements sportifs",
               "en": "Sports facilities data"
-            }
+            },
+            "headlineClassName": "text-white dark:text-foreground"
           }
         },
         {
@@ -3661,7 +3663,9 @@
             "searchPlaceholder": {
               "fr": "Rechercher un événement...",
               "en": "Search for an event..."
-            }
+            },
+            "headlineClassName": "text-white dark:text-foreground",
+            "subheadClassName": "text-white dark:text-foreground"
           }
         },
         {
@@ -3749,7 +3753,9 @@
             "subhead": {
               "fr": "Toutes les actualités du sport à Saint-Paul",
               "en": "All sports news in Saint-Paul"
-            }
+            },
+            "headlineClassName": "text-white dark:text-foreground",
+            "subheadClassName": "text-white dark:text-foreground"
           }
         },
         {

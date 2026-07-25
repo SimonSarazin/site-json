@@ -1963,7 +1963,8 @@
             "headline": {
               "fr": "Les équipements sportifs en chiffres",
               "en": "Sports facilities in numbers"
-            }
+            },
+            "headlineClassName": "text-white dark:text-foreground"
           }
         },
         {
@@ -2480,7 +2481,8 @@
             "headline": {
               "fr": "Données des équipements sportifs",
               "en": "Sports facilities data"
-            }
+            },
+            "headlineClassName": "text-white dark:text-foreground"
           }
         },
         {
