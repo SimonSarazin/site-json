@@ -86,6 +86,21 @@ interface Finding {
   fixability: Fixability;
   /** Renseignée sur les constats ASSUMÉS : pourquoi le choix est délibéré. */
   note?: string;
+  /**
+   * Valeur fautive telle qu'elle est dans le config. Évite de rouvrir un
+   * fichier de 267 à 431 Ko pour savoir ce qu'on corrige.
+   */
+  value?: string;
+  /**
+   * Contexte suffisant pour AGIR sans relire le fichier. Pour `trad` : les
+   * traductions déjà présentes (traduire depuis `fr` sans rien rouvrir).
+   */
+  sibling?: Record<string, string>;
+  /**
+   * Constats qui relèvent d'UNE SEULE décision. Les 123 `locale-extra` du parc
+   * sont 3 décisions (une par config), pas 123 corrections.
+   */
+  groupKey?: string;
 }
 
 interface AssumedEntry {
@@ -188,10 +203,30 @@ for (const cf of configs) {
     if (isLocalizedString(n)) {
       for (const l of langs)
         if (n[l] === undefined)
-          findings.push({ category: "trad", path: `${p.join(".")}[${l}]`, message: `traduction « ${l} » manquante`, severity: "warn", fixability: "proposer" });
+          findings.push({
+            category: "trad",
+            path: `${p.join(".")}[${l}]`,
+            message: `traduction « ${l} » manquante`,
+            severity: "warn",
+            fixability: "proposer",
+            // Le texte source voyage AVEC le constat : traduisible tel quel.
+            sibling: { ...n },
+            groupKey: `trad:${l}`,
+          });
       for (const l of Object.keys(n))
         if (!langs.includes(l))
-          findings.push({ category: "locale-extra", path: `${p.join(".")}[${l}]`, message: `locale « ${l} » hors meta.languages`, severity: "info", fixability: "auto" });
+          findings.push({
+            category: "locale-extra",
+            path: `${p.join(".")}[${l}]`,
+            message: `locale « ${l} » hors meta.languages (deux corrections possibles : ajouter « ${l} » à meta.languages, ou purger ces valeurs)`,
+            severity: "info",
+            // PAS `auto` : sur commune-transparente les 68 valeurs « en » sont de
+            // VRAIES traductions et meta.languages ne déclare que « fr ». Purger
+            // en lot détruirait le travail — c'est une décision, pas un nettoyage.
+            fixability: "proposer",
+            value: n[l],
+            groupKey: `locale-extra:${l}`,
+          });
     }
     if (n && typeof n === "object" && !Array.isArray(n)) {
       const rec = n as Record<string, unknown>;
@@ -203,7 +238,7 @@ for (const cf of configs) {
         // LÉGITIME sur un parent de nav (toggle du dropdown : a `children`/`megaMenu`)
         // → on ne flag que les FEUILLES (sans enfants ni megaMenu).
         if (v.trim() === "#" && !hasNavChildren && !rec.megaMenu) {
-          findings.push({ category: "lien-inerte", path: `${p.join(".")}.${key}`, message: "lien « # » inerte (placeholder sans destination)", severity: "warn", fixability: "proposer" });
+          findings.push({ category: "lien-inerte", path: `${p.join(".")}.${key}`, message: "lien « # » inerte (placeholder sans destination)", severity: "warn", fixability: "proposer", value: v });
           continue;
         }
         // Ancre interne (`#frag` sur la page courante, ou `/page#frag`) : la
@@ -212,13 +247,13 @@ for (const cf of configs) {
         if ((v.startsWith("#") || v.startsWith("/")) && v.includes("#")) {
           const frag = v.slice(v.indexOf("#") + 1);
           if (frag && !anchorIds.has(frag))
-            findings.push({ category: "ancre-morte", path: `${p.join(".")}.${key}`, message: `ancre « #${frag} » sans cible (aucun id de section ni de markup)`, severity: "warn", fixability: "proposer" });
+            findings.push({ category: "ancre-morte", path: `${p.join(".")}.${key}`, message: `ancre « #${frag} » sans cible (aucun id de section ni de markup)`, severity: "warn", fixability: "proposer", value: v });
         }
         if (!v.startsWith("/")) continue;
         const clean = v.split("?")[0].split("#")[0];
         const base = `/${clean.split("/")[1]}`;
         if (clean !== "/" && !pagePaths.has(clean) && !KNOWN_ROUTE_PREFIXES.has(base) && !clean.startsWith("/images/"))
-          findings.push({ category: "lien-mort", path: `${p.join(".")}.${key}`, message: `lien interne sans page/route : ${v}`, severity: "warn", fixability: "proposer" });
+          findings.push({ category: "lien-mort", path: `${p.join(".")}.${key}`, message: `lien interne sans page/route : ${v}`, severity: "warn", fixability: "proposer", value: v });
       }
       // Références de MODALES : `add-<id>`/`edit-<id>` doit résoudre vers un
       // costumForm du config, un costum TS, ou une modale builtin — sinon le
@@ -236,6 +271,7 @@ for (const cf of configs) {
             : `modale « ${v} » : hors registre (attendu add-<id> / edit-<id>) — le bouton rend null`,
           severity: "warn",
           fixability: "proposer",
+          value: v,
         });
       }
       // Icônes lucide : un nom inconnu rend `null` depuis un useEffect (rien en
@@ -249,7 +285,7 @@ for (const cf of configs) {
           const at = `${p.join(".")}.${k}`;
           if (OWN_ICON_VOCABULARY.some((frag) => at.includes(frag))) continue;
           if (!LUCIDE_NAMES.has(v))
-            findings.push({ category: "icone-inconnue", path: at, message: `icône « ${v} » hors catalogue lucide (1901 noms) — rendue null sans erreur`, severity: "warn", fixability: "proposer" });
+            findings.push({ category: "icone-inconnue", path: at, message: `icône « ${v} » hors catalogue lucide (1901 noms) — rendue null sans erreur`, severity: "warn", fixability: "proposer", value: v });
         }
       }
       // Assets locaux : le fichier doit exister dans public/. Règle INVERSÉE
@@ -264,7 +300,7 @@ for (const cf of configs) {
         // CoForm (ex. ampli.props.path.image = "formKey.fieldId", pas un fichier).
         if (!/\.(png|jpe?g|gif|webp|svg|avif|ico)$/i.test(rel)) continue;
         if (!fs.existsSync(path.join(ROOT, "public", rel)))
-          findings.push({ category: "asset-manquant", path: `${p.join(".")}.${k}`, message: `fichier absent de public/ : ${v}`, severity: "warn", fixability: "proposer" });
+          findings.push({ category: "asset-manquant", path: `${p.join(".")}.${k}`, message: `fichier absent de public/ : ${v}`, severity: "warn", fixability: "proposer", value: v });
       }
     }
   });
@@ -340,8 +376,13 @@ if (JSON_OUT) {
     printAssumed(assumed);
     const byCat = new Map<string, Finding[]>();
     for (const f of findings) byCat.set(f.category, [...(byCat.get(f.category) ?? []), f]);
-    for (const [cat, items] of byCat)
-      console.log(`   • ${cat} ×${items.length} [${items[0].fixability}]\n${preview(items.map((f) => `${f.path} — ${f.message}`))}`);
+    for (const [cat, items] of byCat) {
+      // Raisonner en DÉCISIONS, pas en occurrences : 68 `locale-extra` sur une
+      // même locale = un seul arbitrage.
+      const groups = new Set(items.map((f) => f.groupKey).filter(Boolean) as string[]);
+      const decisions = groups.size ? `  → ${groups.size} décision(s) : ${[...groups].join(", ")}` : "";
+      console.log(`   • ${cat} ×${items.length} [${items[0].fixability}]${decisions}\n${preview(items.map((f) => `${f.path} — ${f.message}`))}`);
+    }
   }
 
   console.log("\n" + "═".repeat(60) + "\nRécapitulatif :");

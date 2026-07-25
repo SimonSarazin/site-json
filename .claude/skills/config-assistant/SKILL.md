@@ -29,6 +29,7 @@ Les faits volatils se LISENT à l'usage, ils ne sont pas écrits ici :
 | Bundle MULTI-form (TOUS les sous-types d'un costum + routage `editModals`) | `CONFIG_LIVE_… npm run config:costum -- <slugCostum> [out.json] --all --live` |
 | Squelette du bloc **admin** dérivé du site (types gérés) | `npm run admin:scaffold -- <config.prod.X.json>` (`--write` pour insérer, `--force` pour remplacer) |
 | Valider UN config (boucle de correction) | `npm run config:validate -- <fichier.json>` |
+| **Appliquer** des corrections en lot (chemins d'audit → valeurs) | `npm run config:fix -- <config.json> --set <patch.json> --dry-run` (aussi `--add-locale <l>` / `--strip-locale <l>`) |
 | Chercher / vérifier un slug d'entité | `npm run entity:slug -- search <nom>` / `check <slug>` |
 | Qualité (liens morts, i18n, thème) | `npm run audit:config` |
 | Validation finale stricte | `npm run test:preflight` |
@@ -136,9 +137,20 @@ Pour corriger/améliorer un config existant :
 
 1. `npm run audit:config -- --file <x.json> --json` — chaque constat porte
    `{category, path, message, severity, fixability}`.
+   Chaque constat porte de quoi AGIR sans rouvrir le fichier : `value` (la
+   valeur fautive), `sibling` (pour un `trad` : les traductions déjà présentes —
+   traduis depuis `fr` directement), `groupKey` (les 68 `locale-extra` d'une
+   config = **1 décision**, pas 68 corrections).
 2. **Classer par `fixability`** et présenter un PLAN priorisé — l'utilisateur
-   valide avant toute écriture :
-   - `auto` (mécanique, ex. `cle-strippee`, `locale-extra`) → un lot d'un coup ;
+   valide avant toute écriture. Les corrections décidées s'appliquent EN LOT via
+   `npm run config:fix -- <config> --set <patch.json>` (le patch est adressé par
+   les chemins d'audit eux-mêmes ; revalidation Zod avant écriture, `--dry-run`
+   pour voir le diff) :
+   - `auto` (mécanique) → un lot d'un coup. ⚠ `locale-extra` n'en est PAS :
+     ses deux issues (déclarer la locale dans `meta.languages` vs purger les
+     valeurs) sont un ARBITRAGE — sur commune-transparente, purger détruirait
+     68 vraies traductions. `config:fix --add-locale`/`--strip-locale` applique
+     la décision une fois prise ;
    - `proposer` (jugement, ex. `lien-mort` : typo ? page à créer ? à retirer ?
      `asset-manquant` : corriger le chemin ou fournir le fichier ? `theme` :
      playbook migration rezo-la-mer 90b5200) → proposer la correction, choisir ;
