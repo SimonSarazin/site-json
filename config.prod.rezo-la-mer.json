@@ -1189,6 +1189,7 @@
     }
   ],
   "theme": {
+    "defaultMode": "dark",
     "colors": {
       "light": {
         "background": "oklch(1.0000 0 0)",
