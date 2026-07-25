@@ -258,72 +258,114 @@
             ],
             "quickAccessCards": [
               {
-                "label": { "fr": "Multisports/City-stades", "en": "Multisports/City-stades" },
+                "label": {
+                  "fr": "Multisports/City-stades",
+                  "en": "Multisports/City-stades"
+                },
                 "path": "/equipements-sportifs?poi-category=multisports-city-stades",
                 "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect x=\"2\" y=\"3\" width=\"20\" height=\"14\" rx=\"2\"></rect><path d=\"M12 3v14\"></path><path d=\"M2 10h20\"></path><path d=\"M7 21l5-4 5 4\"></path></svg>"
               },
               {
-                "label": { "fr": "Terrain de football", "en": "Football field" },
+                "label": {
+                  "fr": "Terrain de football",
+                  "en": "Football field"
+                },
                 "path": "/equipements-sportifs?poi-category=terrain-de-football",
                 "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M12 2a14.5 14.5 0 0 0 0 20\"></path><path d=\"M2 12h20\"></path><path d=\"M12 2C6.5 5.5 5 9 5 12s1.5 6.5 7 10\"></path><path d=\"M12 2c5.5 3.5 7 7 7 10s-1.5 6.5-7 10\"></path></svg>"
               },
               {
-                "label": { "fr": "Court de tennis", "en": "Tennis court" },
+                "label": {
+                  "fr": "Court de tennis",
+                  "en": "Tennis court"
+                },
                 "path": "/equipements-sportifs?poi-category=court-de-tennis",
                 "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect x=\"2\" y=\"4\" width=\"20\" height=\"16\" rx=\"1\"></rect><line x1=\"12\" y1=\"4\" x2=\"12\" y2=\"20\"></line><line x1=\"2\" y1=\"12\" x2=\"22\" y2=\"12\"></line><path d=\"M5 4v16\"></path><path d=\"M19 4v16\"></path></svg>"
               },
               {
-                "label": { "fr": "Boucle de randonnée", "en": "Hiking loop" },
+                "label": {
+                  "fr": "Boucle de randonnée",
+                  "en": "Hiking loop"
+                },
                 "path": "/equipements-sportifs?poi-category=boucle-de-randonnee",
                 "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M3 17l4-8 4 4 3-6 4 10\"></path><path d=\"M3 17h18\"></path><circle cx=\"17\" cy=\"7\" r=\"2\"></circle></svg>"
               },
               {
-                "label": { "fr": "Salles polyvalentes / des fêtes / non spécialisées", "en": "Multipurpose / party / non-specialized rooms" },
+                "label": {
+                  "fr": "Salles polyvalentes / des fêtes / non spécialisées",
+                  "en": "Multipurpose / party / non-specialized rooms"
+                },
                 "path": "/equipements-sportifs?poi-category=salles-polyvalentes-des-fetes-non-specialisees",
                 "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"></path><polyline points=\"9 22 9 12 15 12 15 22\"></polyline><path d=\"M8 2l4 3 4-3\"></path></svg>"
               },
               {
-                "label": { "fr": "Salle de musculation/cardiotraining", "en": "Weight training/cardiotraining room" },
+                "label": {
+                  "fr": "Salle de musculation/cardiotraining",
+                  "en": "Weight training/cardiotraining room"
+                },
                 "path": "/equipements-sportifs?poi-category=salle-de-musculation-cardiotraining",
                 "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M6 4v16\"></path><path d=\"M18 4v16\"></path><path d=\"M4 8h2\"></path><path d=\"M4 16h2\"></path><path d=\"M18 8h2\"></path><path d=\"M18 16h2\"></path><path d=\"M6 12h12\"></path></svg>"
               },
               {
-                "label": { "fr": "Salle multisports (gymnase)", "en": "Multipurpose sports hall (gymnasium)" },
+                "label": {
+                  "fr": "Salle multisports (gymnase)",
+                  "en": "Multipurpose sports hall (gymnasium)"
+                },
                 "path": "/equipements-sportifs?poi-category=salle-multisports-gymnase",
                 "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18\"></path><path d=\"M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2\"></path><path d=\"M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2\"></path><line x1=\"10\" y1=\"6\" x2=\"14\" y2=\"6\"></line><line x1=\"10\" y1=\"10\" x2=\"14\" y2=\"10\"></line></svg>"
               },
               {
-                "label": { "fr": "Canyon", "en": "Canyon" },
+                "label": {
+                  "fr": "Canyon",
+                  "en": "Canyon"
+                },
                 "path": "/equipements-sportifs?poi-category=canyon",
                 "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M2 20l4-12 4 6 3-4 4 10\"></path><path d=\"M2 4v16\"></path><path d=\"M22 4v16\"></path><path d=\"M2 20h20\"></path></svg>"
               },
               {
-                "label": { "fr": "Structure Artificielle d'Escalade", "en": "Artificial Climbing Structure" },
+                "label": {
+                  "fr": "Structure Artificielle d'Escalade",
+                  "en": "Artificial Climbing Structure"
+                },
                 "path": "/equipements-sportifs?poi-category=structure-artificielle-d-escalade",
                 "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M4 20L10 4l4 8 3-4 3 12\"></path><circle cx=\"10\" cy=\"9\" r=\"1\" fill=\"currentColor\"></circle><circle cx=\"14\" cy=\"13\" r=\"1\" fill=\"currentColor\"></circle><circle cx=\"7\" cy=\"15\" r=\"1\" fill=\"currentColor\"></circle></svg>"
               },
               {
-                "label": { "fr": "Terrain de volley-ball", "en": "Volleyball Court" },
+                "label": {
+                  "fr": "Terrain de volley-ball",
+                  "en": "Volleyball Court"
+                },
                 "path": "/equipements-sportifs?poi-category=terrain-de-volley-ball",
                 "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M12 2a10 10 0 0 1 6 17\"></path><path d=\"M2 12h20\"></path><path d=\"M12 2c-3 4-3 14 0 20\"></path></svg>"
               },
               {
-                "label": { "fr": "Terrain de basket-ball", "en": "Basketball Court" },
+                "label": {
+                  "fr": "Terrain de basket-ball",
+                  "en": "Basketball Court"
+                },
                 "path": "/equipements-sportifs?poi-category=terrain-de-basket-ball",
                 "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M12 2v20\"></path><path d=\"M2 12h20\"></path><path d=\"M5 5a14 14 0 0 1 7 7\"></path><path d=\"M19 5a14 14 0 0 0-7 7\"></path></svg>"
               },
               {
-                "label": { "fr": "Piste d'athlétisme isolée", "en": "Isolated Athletics Track" },
+                "label": {
+                  "fr": "Piste d'athlétisme isolée",
+                  "en": "Isolated Athletics Track"
+                },
                 "path": "/equipements-sportifs?poi-category=piste-d-athletisme-isolee",
                 "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><ellipse cx=\"12\" cy=\"12\" rx=\"10\" ry=\"6\"></ellipse><ellipse cx=\"12\" cy=\"12\" rx=\"6\" ry=\"3\"></ellipse><line x1=\"2\" y1=\"12\" x2=\"6\" y2=\"12\"></line><line x1=\"18\" y1=\"12\" x2=\"22\" y2=\"12\"></line></svg>"
               },
               {
-                "label": { "fr": "Dojo / Salle d'arts martiaux", "en": "Dojo / Martial Arts Room" },
+                "label": {
+                  "fr": "Dojo / Salle d'arts martiaux",
+                  "en": "Dojo / Martial Arts Room"
+                },
                 "path": "/equipements-sportifs?poi-category=dojo-salle-d-arts-martiaux",
                 "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"5\" r=\"2\"></circle><path d=\"M12 7v4\"></path><path d=\"M8 21l4-10 4 10\"></path><path d=\"M6 13h12\"></path><path d=\"M9 21h6\"></path></svg>"
               },
               {
-                "label": { "fr": "Terrain de boules", "en": "Boules Court" },
+                "label": {
+                  "fr": "Terrain de boules",
+                  "en": "Boules Court"
+                },
                 "path": "/equipements-sportifs?poi-category=terrain-de-boules",
                 "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M12 2a10 10 0 0 1 6 17\"></path><path d=\"M2 12h20\"></path><path d=\"M12 2c-3 4-3 14 0 20\"></path></svg>"
               }
@@ -364,7 +406,6 @@
                   "en": "Add sports facility"
                 },
                 "action": "add-poi",
-                "modal": "add-poi-equipement",
                 "variant": "outline"
               }
             ],
@@ -1712,12 +1753,19 @@
                 "geoPosition",
                 "parent"
               ],
-              "sourceKey": ["equipementsSportifs974"],
+              "sourceKey": [
+                "equipementsSportifs974"
+              ],
               "defaultFilters": {
                 "type": "recoveryCenter",
                 "address.localityId": "54c0965cf6b95c141800a518"
               },
-              "searchBy": ["name", "inst_nom", "equip_type_name", "categorie"]
+              "searchBy": [
+                "name",
+                "inst_nom",
+                "equip_type_name",
+                "categorie"
+              ]
             },
             "list": {
               "columns": {
@@ -1777,21 +1825,53 @@
                 "poi"
               ],
               "defaultFields": [
-                "name", "equip_type_name", "equip_type_famille", "categorie",
-                "equip_nature", "equip_sol", "equip_surf", "equip_larg", "equip_long",
-                "aps_name", "inst_nom", "equip_nom", "equip_prop_nom", "equip_prop_type",
-                "equip_gest_type", "equip_numero", "enqueteStatut",
-                "inst_acc_handi_bool", "inst_acc_handi_type",
-                "equip_pmr_acc", "equip_pmr_chem", "equip_pmr_douche",
-                "equip_pmr_sanit", "equip_pmr_trib", "equip_pmr_vest",
-                "equip_pshs_aire", "equip_pshs_chem", "equip_pshs_sanit",
-                "equip_pshs_trib", "equip_pshs_vest", "equip_pshs_sign",
-                "equip_acc_libre", "equip_eclair", "equip_douche",
-                "inst_trans_bool", "inst_trans_type",
-                "inst_part_bool", "inst_part_type",
-                "equip_loc_type", "equip_utilisateur",
-                "inst_date_creation", "inst_enqu_date", "equip_maj_date",
-                "address", "geo", "geoPosition", "parent"
+                "name",
+                "equip_type_name",
+                "equip_type_famille",
+                "categorie",
+                "equip_nature",
+                "equip_sol",
+                "equip_surf",
+                "equip_larg",
+                "equip_long",
+                "aps_name",
+                "inst_nom",
+                "equip_nom",
+                "equip_prop_nom",
+                "equip_prop_type",
+                "equip_gest_type",
+                "equip_numero",
+                "enqueteStatut",
+                "inst_acc_handi_bool",
+                "inst_acc_handi_type",
+                "equip_pmr_acc",
+                "equip_pmr_chem",
+                "equip_pmr_douche",
+                "equip_pmr_sanit",
+                "equip_pmr_trib",
+                "equip_pmr_vest",
+                "equip_pshs_aire",
+                "equip_pshs_chem",
+                "equip_pshs_sanit",
+                "equip_pshs_trib",
+                "equip_pshs_vest",
+                "equip_pshs_sign",
+                "equip_acc_libre",
+                "equip_eclair",
+                "equip_douche",
+                "inst_trans_bool",
+                "inst_trans_type",
+                "inst_part_bool",
+                "inst_part_type",
+                "equip_loc_type",
+                "equip_utilisateur",
+                "inst_date_creation",
+                "inst_enqu_date",
+                "equip_maj_date",
+                "address",
+                "geo",
+                "geoPosition",
+                "parent"
               ],
               "notSourceKey": true,
               "defaultFilters": {
@@ -1843,16 +1923,38 @@
                   "address.postalCode"
                 ],
                 "valueMap": {
-                  "97425": "CA Civis", "97427": "CA Civis", "97429": "CA Civis",
-                  "97421": "CA Civis", "97432": "CA Civis", "97413": "CA Civis",
-                  "97412": "Cirest", "97431": "Cirest", "97440": "Cirest",
-                  "97437": "Cirest", "97439": "Cirest", "97433": "Cirest",
-                  "97414": "CASUD", "97480": "CASUD", "97442": "CASUD", "97430": "CASUD",
-                  "97420": "TCO", "97419": "TCO", "97416": "TCO",
-                  "97411": "TCO", "97426": "TCO",
-                  "97400": "CINOR", "97438": "CINOR", "97441": "CINOR"
+                  "97400": "CINOR",
+                  "97411": "TCO",
+                  "97412": "Cirest",
+                  "97413": "CA Civis",
+                  "97414": "CASUD",
+                  "97416": "TCO",
+                  "97419": "TCO",
+                  "97420": "TCO",
+                  "97421": "CA Civis",
+                  "97425": "CA Civis",
+                  "97426": "TCO",
+                  "97427": "CA Civis",
+                  "97429": "CA Civis",
+                  "97430": "CASUD",
+                  "97431": "Cirest",
+                  "97432": "CA Civis",
+                  "97433": "Cirest",
+                  "97437": "Cirest",
+                  "97438": "CINOR",
+                  "97439": "Cirest",
+                  "97440": "Cirest",
+                  "97441": "CINOR",
+                  "97442": "CASUD",
+                  "97480": "CASUD"
                 },
-                "values": ["CA Civis", "Cirest", "CASUD", "TCO", "CINOR"],
+                "values": [
+                  "CA Civis",
+                  "Cirest",
+                  "CASUD",
+                  "TCO",
+                  "CINOR"
+                ],
                 "label": {
                   "fr": "EPCI",
                   "en": "EPCI"
@@ -1993,51 +2095,433 @@
             "export": {
               "filename": "equipements-sportifs",
               "fields": [
-                { "paths": ["name"], "label": { "fr": "Nom de l'équipement", "en": "Equipment name" } },
-                { "paths": ["inst_nom"], "label": { "fr": "Installation", "en": "Facility" } },
-                { "paths": ["equip_numero"], "label": { "fr": "Numéro", "en": "Number" } },
-                { "paths": ["equip_type_name"], "label": { "fr": "Type", "en": "Type" } },
-                { "paths": ["equip_type_famille"], "label": { "fr": "Famille", "en": "Family" } },
-                { "paths": ["categorie"], "label": { "fr": "Catégorie", "en": "Category" } },
-                { "paths": ["aps_name"], "kind": "list", "label": { "fr": "Sports pratiqués", "en": "Sport activities" } },
-                { "paths": ["enqueteStatut"], "label": { "fr": "Statut enquête", "en": "Survey status" } },
-                { "paths": ["address.streetAddress"], "label": { "fr": "Adresse", "en": "Address" } },
-                { "paths": ["address.postalCode"], "label": { "fr": "Code postal", "en": "Postal code" } },
-                { "paths": ["address.addressLocality"], "label": { "fr": "Commune", "en": "Municipality" } },
-                { "paths": ["equip_nature"], "label": { "fr": "Nature", "en": "Nature" } },
-                { "paths": ["equip_sol"], "label": { "fr": "Sol", "en": "Floor" } },
-                { "paths": ["equip_surf"], "kind": "number", "label": { "fr": "Surface (m²)", "en": "Area (m²)" } },
-                { "paths": ["equip_long"], "kind": "number", "label": { "fr": "Longueur (m)", "en": "Length (m)" } },
-                { "paths": ["equip_larg"], "kind": "number", "label": { "fr": "Largeur (m)", "en": "Width (m)" } },
-                { "paths": ["equip_eclair"], "kind": "anyTrue", "label": { "fr": "Éclairage", "en": "Lighting" } },
-                { "paths": ["equip_acc_libre"], "kind": "anyTrue", "label": { "fr": "Accès libre", "en": "Free access" } },
-                { "paths": ["equip_douche"], "kind": "anyTrue", "label": { "fr": "Douche", "en": "Shower" } },
-                { "paths": ["equip_prop_nom"], "label": { "fr": "Propriétaire (nom)", "en": "Owner (name)" } },
-                { "paths": ["equip_prop_type"], "label": { "fr": "Propriétaire (type)", "en": "Owner (type)" } },
-                { "paths": ["equip_gest_type"], "label": { "fr": "Type de gestion", "en": "Management type" } },
-                { "paths": ["equip_loc_type"], "label": { "fr": "Locaux disponibles", "en": "Available spaces" } },
-                { "paths": ["equip_utilisateur"], "label": { "fr": "Utilisateurs", "en": "Users" } },
-                { "paths": ["inst_acc_handi_bool"], "kind": "anyTrue", "label": { "fr": "Accès handicapé", "en": "Disability access" } },
-                { "paths": ["inst_acc_handi_type"], "label": { "fr": "Type accès handicapé", "en": "Disability access type" } },
-                { "paths": ["inst_trans_bool"], "kind": "anyTrue", "label": { "fr": "Transport en commun", "en": "Public transport" } },
-                { "paths": ["inst_trans_type"], "label": { "fr": "Type de transport", "en": "Transport type" } },
-                { "paths": ["equip_pmr_acc"], "kind": "anyTrue", "label": { "fr": "PMR accès", "en": "PMR access" } },
-                { "paths": ["equip_pmr_chem"], "kind": "anyTrue", "label": { "fr": "PMR cheminement", "en": "PMR path" } },
-                { "paths": ["equip_pmr_douche"], "kind": "anyTrue", "label": { "fr": "PMR douche", "en": "PMR shower" } },
-                { "paths": ["equip_pmr_sanit"], "kind": "anyTrue", "label": { "fr": "PMR sanitaires", "en": "PMR toilets" } },
-                { "paths": ["equip_pmr_trib"], "kind": "anyTrue", "label": { "fr": "PMR tribunes", "en": "PMR stands" } },
-                { "paths": ["equip_pmr_vest"], "kind": "anyTrue", "label": { "fr": "PMR vestiaires", "en": "PMR changing rooms" } },
-                { "paths": ["equip_pshs_aire"], "kind": "anyTrue", "label": { "fr": "PSHS aire de jeu", "en": "PSHS play area" } },
-                { "paths": ["equip_pshs_chem"], "kind": "anyTrue", "label": { "fr": "PSHS cheminement", "en": "PSHS path" } },
-                { "paths": ["equip_pshs_sanit"], "kind": "anyTrue", "label": { "fr": "PSHS sanitaires", "en": "PSHS toilets" } },
-                { "paths": ["equip_pshs_trib"], "kind": "anyTrue", "label": { "fr": "PSHS tribunes", "en": "PSHS stands" } },
-                { "paths": ["equip_pshs_vest"], "kind": "anyTrue", "label": { "fr": "PSHS vestiaires", "en": "PSHS changing rooms" } },
-                { "paths": ["equip_pshs_sign"], "kind": "anyTrue", "label": { "fr": "PSHS signalétique", "en": "PSHS signage" } },
-                { "paths": ["inst_part_bool"], "kind": "anyTrue", "label": { "fr": "Partenariat", "en": "Partnership" } },
-                { "paths": ["inst_part_type"], "label": { "fr": "Type de partenariat", "en": "Partnership type" } },
-                { "paths": ["inst_date_creation"], "label": { "fr": "Date de création", "en": "Creation date" } },
-                { "paths": ["inst_enqu_date"], "label": { "fr": "Date d'enquête", "en": "Survey date" } },
-                { "paths": ["equip_maj_date"], "label": { "fr": "Dernière mise à jour", "en": "Last update" } }
+                {
+                  "paths": [
+                    "name"
+                  ],
+                  "label": {
+                    "fr": "Nom de l'équipement",
+                    "en": "Equipment name"
+                  }
+                },
+                {
+                  "paths": [
+                    "inst_nom"
+                  ],
+                  "label": {
+                    "fr": "Installation",
+                    "en": "Facility"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_numero"
+                  ],
+                  "label": {
+                    "fr": "Numéro",
+                    "en": "Number"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_type_name"
+                  ],
+                  "label": {
+                    "fr": "Type",
+                    "en": "Type"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_type_famille"
+                  ],
+                  "label": {
+                    "fr": "Famille",
+                    "en": "Family"
+                  }
+                },
+                {
+                  "paths": [
+                    "categorie"
+                  ],
+                  "label": {
+                    "fr": "Catégorie",
+                    "en": "Category"
+                  }
+                },
+                {
+                  "paths": [
+                    "aps_name"
+                  ],
+                  "kind": "list",
+                  "label": {
+                    "fr": "Sports pratiqués",
+                    "en": "Sport activities"
+                  }
+                },
+                {
+                  "paths": [
+                    "enqueteStatut"
+                  ],
+                  "label": {
+                    "fr": "Statut enquête",
+                    "en": "Survey status"
+                  }
+                },
+                {
+                  "paths": [
+                    "address.streetAddress"
+                  ],
+                  "label": {
+                    "fr": "Adresse",
+                    "en": "Address"
+                  }
+                },
+                {
+                  "paths": [
+                    "address.postalCode"
+                  ],
+                  "label": {
+                    "fr": "Code postal",
+                    "en": "Postal code"
+                  }
+                },
+                {
+                  "paths": [
+                    "address.addressLocality"
+                  ],
+                  "label": {
+                    "fr": "Commune",
+                    "en": "Municipality"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_nature"
+                  ],
+                  "label": {
+                    "fr": "Nature",
+                    "en": "Nature"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_sol"
+                  ],
+                  "label": {
+                    "fr": "Sol",
+                    "en": "Floor"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_surf"
+                  ],
+                  "kind": "number",
+                  "label": {
+                    "fr": "Surface (m²)",
+                    "en": "Area (m²)"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_long"
+                  ],
+                  "kind": "number",
+                  "label": {
+                    "fr": "Longueur (m)",
+                    "en": "Length (m)"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_larg"
+                  ],
+                  "kind": "number",
+                  "label": {
+                    "fr": "Largeur (m)",
+                    "en": "Width (m)"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_eclair"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "Éclairage",
+                    "en": "Lighting"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_acc_libre"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "Accès libre",
+                    "en": "Free access"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_douche"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "Douche",
+                    "en": "Shower"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_prop_nom"
+                  ],
+                  "label": {
+                    "fr": "Propriétaire (nom)",
+                    "en": "Owner (name)"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_prop_type"
+                  ],
+                  "label": {
+                    "fr": "Propriétaire (type)",
+                    "en": "Owner (type)"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_gest_type"
+                  ],
+                  "label": {
+                    "fr": "Type de gestion",
+                    "en": "Management type"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_loc_type"
+                  ],
+                  "label": {
+                    "fr": "Locaux disponibles",
+                    "en": "Available spaces"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_utilisateur"
+                  ],
+                  "label": {
+                    "fr": "Utilisateurs",
+                    "en": "Users"
+                  }
+                },
+                {
+                  "paths": [
+                    "inst_acc_handi_bool"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "Accès handicapé",
+                    "en": "Disability access"
+                  }
+                },
+                {
+                  "paths": [
+                    "inst_acc_handi_type"
+                  ],
+                  "label": {
+                    "fr": "Type accès handicapé",
+                    "en": "Disability access type"
+                  }
+                },
+                {
+                  "paths": [
+                    "inst_trans_bool"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "Transport en commun",
+                    "en": "Public transport"
+                  }
+                },
+                {
+                  "paths": [
+                    "inst_trans_type"
+                  ],
+                  "label": {
+                    "fr": "Type de transport",
+                    "en": "Transport type"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_pmr_acc"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PMR accès",
+                    "en": "PMR access"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_pmr_chem"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PMR cheminement",
+                    "en": "PMR path"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_pmr_douche"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PMR douche",
+                    "en": "PMR shower"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_pmr_sanit"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PMR sanitaires",
+                    "en": "PMR toilets"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_pmr_trib"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PMR tribunes",
+                    "en": "PMR stands"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_pmr_vest"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PMR vestiaires",
+                    "en": "PMR changing rooms"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_pshs_aire"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PSHS aire de jeu",
+                    "en": "PSHS play area"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_pshs_chem"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PSHS cheminement",
+                    "en": "PSHS path"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_pshs_sanit"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PSHS sanitaires",
+                    "en": "PSHS toilets"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_pshs_trib"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PSHS tribunes",
+                    "en": "PSHS stands"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_pshs_vest"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PSHS vestiaires",
+                    "en": "PSHS changing rooms"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_pshs_sign"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PSHS signalétique",
+                    "en": "PSHS signage"
+                  }
+                },
+                {
+                  "paths": [
+                    "inst_part_bool"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "Partenariat",
+                    "en": "Partnership"
+                  }
+                },
+                {
+                  "paths": [
+                    "inst_part_type"
+                  ],
+                  "label": {
+                    "fr": "Type de partenariat",
+                    "en": "Partnership type"
+                  }
+                },
+                {
+                  "paths": [
+                    "inst_date_creation"
+                  ],
+                  "label": {
+                    "fr": "Date de création",
+                    "en": "Creation date"
+                  }
+                },
+                {
+                  "paths": [
+                    "inst_enqu_date"
+                  ],
+                  "label": {
+                    "fr": "Date d'enquête",
+                    "en": "Survey date"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_maj_date"
+                  ],
+                  "label": {
+                    "fr": "Dernière mise à jour",
+                    "en": "Last update"
+                  }
+                }
               ]
             },
             "drilldown": true,
@@ -2271,21 +2755,53 @@
                 "poi"
               ],
               "defaultFields": [
-                "name", "equip_type_name", "equip_type_famille", "categorie",
-                "equip_nature", "equip_sol", "equip_surf", "equip_larg", "equip_long",
-                "aps_name", "inst_nom", "equip_nom", "equip_prop_nom", "equip_prop_type",
-                "equip_gest_type", "equip_numero", "enqueteStatut",
-                "inst_acc_handi_bool", "inst_acc_handi_type",
-                "equip_pmr_acc", "equip_pmr_chem", "equip_pmr_douche",
-                "equip_pmr_sanit", "equip_pmr_trib", "equip_pmr_vest",
-                "equip_pshs_aire", "equip_pshs_chem", "equip_pshs_sanit",
-                "equip_pshs_trib", "equip_pshs_vest", "equip_pshs_sign",
-                "equip_acc_libre", "equip_eclair", "equip_douche",
-                "inst_trans_bool", "inst_trans_type",
-                "inst_part_bool", "inst_part_type",
-                "equip_loc_type", "equip_utilisateur",
-                "inst_date_creation", "inst_enqu_date", "equip_maj_date",
-                "address", "geo", "geoPosition", "parent"
+                "name",
+                "equip_type_name",
+                "equip_type_famille",
+                "categorie",
+                "equip_nature",
+                "equip_sol",
+                "equip_surf",
+                "equip_larg",
+                "equip_long",
+                "aps_name",
+                "inst_nom",
+                "equip_nom",
+                "equip_prop_nom",
+                "equip_prop_type",
+                "equip_gest_type",
+                "equip_numero",
+                "enqueteStatut",
+                "inst_acc_handi_bool",
+                "inst_acc_handi_type",
+                "equip_pmr_acc",
+                "equip_pmr_chem",
+                "equip_pmr_douche",
+                "equip_pmr_sanit",
+                "equip_pmr_trib",
+                "equip_pmr_vest",
+                "equip_pshs_aire",
+                "equip_pshs_chem",
+                "equip_pshs_sanit",
+                "equip_pshs_trib",
+                "equip_pshs_vest",
+                "equip_pshs_sign",
+                "equip_acc_libre",
+                "equip_eclair",
+                "equip_douche",
+                "inst_trans_bool",
+                "inst_trans_type",
+                "inst_part_bool",
+                "inst_part_type",
+                "equip_loc_type",
+                "equip_utilisateur",
+                "inst_date_creation",
+                "inst_enqu_date",
+                "equip_maj_date",
+                "address",
+                "geo",
+                "geoPosition",
+                "parent"
               ],
               "notSourceKey": true,
               "defaultFilters": {
@@ -2337,16 +2853,38 @@
                   "address.postalCode"
                 ],
                 "valueMap": {
-                  "97425": "CA Civis", "97427": "CA Civis", "97429": "CA Civis",
-                  "97421": "CA Civis", "97432": "CA Civis", "97413": "CA Civis",
-                  "97412": "Cirest", "97431": "Cirest", "97440": "Cirest",
-                  "97437": "Cirest", "97439": "Cirest", "97433": "Cirest",
-                  "97414": "CASUD", "97480": "CASUD", "97442": "CASUD", "97430": "CASUD",
-                  "97420": "TCO", "97419": "TCO", "97416": "TCO",
-                  "97411": "TCO", "97426": "TCO",
-                  "97400": "CINOR", "97438": "CINOR", "97441": "CINOR"
+                  "97400": "CINOR",
+                  "97411": "TCO",
+                  "97412": "Cirest",
+                  "97413": "CA Civis",
+                  "97414": "CASUD",
+                  "97416": "TCO",
+                  "97419": "TCO",
+                  "97420": "TCO",
+                  "97421": "CA Civis",
+                  "97425": "CA Civis",
+                  "97426": "TCO",
+                  "97427": "CA Civis",
+                  "97429": "CA Civis",
+                  "97430": "CASUD",
+                  "97431": "Cirest",
+                  "97432": "CA Civis",
+                  "97433": "Cirest",
+                  "97437": "Cirest",
+                  "97438": "CINOR",
+                  "97439": "Cirest",
+                  "97440": "Cirest",
+                  "97441": "CINOR",
+                  "97442": "CASUD",
+                  "97480": "CASUD"
                 },
-                "values": ["CA Civis", "Cirest", "CASUD", "TCO", "CINOR"],
+                "values": [
+                  "CA Civis",
+                  "Cirest",
+                  "CASUD",
+                  "TCO",
+                  "CINOR"
+                ],
                 "label": {
                   "fr": "EPCI",
                   "en": "EPCI"
@@ -2548,51 +3086,433 @@
             "export": {
               "filename": "equipements-sportifs-data",
               "fields": [
-                { "paths": ["name"], "label": { "fr": "Nom de l'équipement", "en": "Equipment name" } },
-                { "paths": ["inst_nom"], "label": { "fr": "Installation", "en": "Facility" } },
-                { "paths": ["equip_numero"], "label": { "fr": "Numéro", "en": "Number" } },
-                { "paths": ["equip_type_name"], "label": { "fr": "Type", "en": "Type" } },
-                { "paths": ["equip_type_famille"], "label": { "fr": "Famille", "en": "Family" } },
-                { "paths": ["categorie"], "label": { "fr": "Catégorie", "en": "Category" } },
-                { "paths": ["aps_name"], "kind": "list", "label": { "fr": "Sports pratiqués", "en": "Sport activities" } },
-                { "paths": ["enqueteStatut"], "label": { "fr": "Statut enquête", "en": "Survey status" } },
-                { "paths": ["address.streetAddress"], "label": { "fr": "Adresse", "en": "Address" } },
-                { "paths": ["address.postalCode"], "label": { "fr": "Code postal", "en": "Postal code" } },
-                { "paths": ["address.addressLocality"], "label": { "fr": "Commune", "en": "Municipality" } },
-                { "paths": ["equip_nature"], "label": { "fr": "Nature", "en": "Nature" } },
-                { "paths": ["equip_sol"], "label": { "fr": "Sol", "en": "Floor" } },
-                { "paths": ["equip_surf"], "kind": "number", "label": { "fr": "Surface (m²)", "en": "Area (m²)" } },
-                { "paths": ["equip_long"], "kind": "number", "label": { "fr": "Longueur (m)", "en": "Length (m)" } },
-                { "paths": ["equip_larg"], "kind": "number", "label": { "fr": "Largeur (m)", "en": "Width (m)" } },
-                { "paths": ["equip_eclair"], "kind": "anyTrue", "label": { "fr": "Éclairage", "en": "Lighting" } },
-                { "paths": ["equip_acc_libre"], "kind": "anyTrue", "label": { "fr": "Accès libre", "en": "Free access" } },
-                { "paths": ["equip_douche"], "kind": "anyTrue", "label": { "fr": "Douche", "en": "Shower" } },
-                { "paths": ["equip_prop_nom"], "label": { "fr": "Propriétaire (nom)", "en": "Owner (name)" } },
-                { "paths": ["equip_prop_type"], "label": { "fr": "Propriétaire (type)", "en": "Owner (type)" } },
-                { "paths": ["equip_gest_type"], "label": { "fr": "Type de gestion", "en": "Management type" } },
-                { "paths": ["equip_loc_type"], "label": { "fr": "Locaux disponibles", "en": "Available spaces" } },
-                { "paths": ["equip_utilisateur"], "label": { "fr": "Utilisateurs", "en": "Users" } },
-                { "paths": ["inst_acc_handi_bool"], "kind": "anyTrue", "label": { "fr": "Accès handicapé", "en": "Disability access" } },
-                { "paths": ["inst_acc_handi_type"], "label": { "fr": "Type accès handicapé", "en": "Disability access type" } },
-                { "paths": ["inst_trans_bool"], "kind": "anyTrue", "label": { "fr": "Transport en commun", "en": "Public transport" } },
-                { "paths": ["inst_trans_type"], "label": { "fr": "Type de transport", "en": "Transport type" } },
-                { "paths": ["equip_pmr_acc"], "kind": "anyTrue", "label": { "fr": "PMR accès", "en": "PMR access" } },
-                { "paths": ["equip_pmr_chem"], "kind": "anyTrue", "label": { "fr": "PMR cheminement", "en": "PMR path" } },
-                { "paths": ["equip_pmr_douche"], "kind": "anyTrue", "label": { "fr": "PMR douche", "en": "PMR shower" } },
-                { "paths": ["equip_pmr_sanit"], "kind": "anyTrue", "label": { "fr": "PMR sanitaires", "en": "PMR toilets" } },
-                { "paths": ["equip_pmr_trib"], "kind": "anyTrue", "label": { "fr": "PMR tribunes", "en": "PMR stands" } },
-                { "paths": ["equip_pmr_vest"], "kind": "anyTrue", "label": { "fr": "PMR vestiaires", "en": "PMR changing rooms" } },
-                { "paths": ["equip_pshs_aire"], "kind": "anyTrue", "label": { "fr": "PSHS aire de jeu", "en": "PSHS play area" } },
-                { "paths": ["equip_pshs_chem"], "kind": "anyTrue", "label": { "fr": "PSHS cheminement", "en": "PSHS path" } },
-                { "paths": ["equip_pshs_sanit"], "kind": "anyTrue", "label": { "fr": "PSHS sanitaires", "en": "PSHS toilets" } },
-                { "paths": ["equip_pshs_trib"], "kind": "anyTrue", "label": { "fr": "PSHS tribunes", "en": "PSHS stands" } },
-                { "paths": ["equip_pshs_vest"], "kind": "anyTrue", "label": { "fr": "PSHS vestiaires", "en": "PSHS changing rooms" } },
-                { "paths": ["equip_pshs_sign"], "kind": "anyTrue", "label": { "fr": "PSHS signalétique", "en": "PSHS signage" } },
-                { "paths": ["inst_part_bool"], "kind": "anyTrue", "label": { "fr": "Partenariat", "en": "Partnership" } },
-                { "paths": ["inst_part_type"], "label": { "fr": "Type de partenariat", "en": "Partnership type" } },
-                { "paths": ["inst_date_creation"], "label": { "fr": "Date de création", "en": "Creation date" } },
-                { "paths": ["inst_enqu_date"], "label": { "fr": "Date d'enquête", "en": "Survey date" } },
-                { "paths": ["equip_maj_date"], "label": { "fr": "Dernière mise à jour", "en": "Last update" } }
+                {
+                  "paths": [
+                    "name"
+                  ],
+                  "label": {
+                    "fr": "Nom de l'équipement",
+                    "en": "Equipment name"
+                  }
+                },
+                {
+                  "paths": [
+                    "inst_nom"
+                  ],
+                  "label": {
+                    "fr": "Installation",
+                    "en": "Facility"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_numero"
+                  ],
+                  "label": {
+                    "fr": "Numéro",
+                    "en": "Number"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_type_name"
+                  ],
+                  "label": {
+                    "fr": "Type",
+                    "en": "Type"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_type_famille"
+                  ],
+                  "label": {
+                    "fr": "Famille",
+                    "en": "Family"
+                  }
+                },
+                {
+                  "paths": [
+                    "categorie"
+                  ],
+                  "label": {
+                    "fr": "Catégorie",
+                    "en": "Category"
+                  }
+                },
+                {
+                  "paths": [
+                    "aps_name"
+                  ],
+                  "kind": "list",
+                  "label": {
+                    "fr": "Sports pratiqués",
+                    "en": "Sport activities"
+                  }
+                },
+                {
+                  "paths": [
+                    "enqueteStatut"
+                  ],
+                  "label": {
+                    "fr": "Statut enquête",
+                    "en": "Survey status"
+                  }
+                },
+                {
+                  "paths": [
+                    "address.streetAddress"
+                  ],
+                  "label": {
+                    "fr": "Adresse",
+                    "en": "Address"
+                  }
+                },
+                {
+                  "paths": [
+                    "address.postalCode"
+                  ],
+                  "label": {
+                    "fr": "Code postal",
+                    "en": "Postal code"
+                  }
+                },
+                {
+                  "paths": [
+                    "address.addressLocality"
+                  ],
+                  "label": {
+                    "fr": "Commune",
+                    "en": "Municipality"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_nature"
+                  ],
+                  "label": {
+                    "fr": "Nature",
+                    "en": "Nature"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_sol"
+                  ],
+                  "label": {
+                    "fr": "Sol",
+                    "en": "Floor"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_surf"
+                  ],
+                  "kind": "number",
+                  "label": {
+                    "fr": "Surface (m²)",
+                    "en": "Area (m²)"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_long"
+                  ],
+                  "kind": "number",
+                  "label": {
+                    "fr": "Longueur (m)",
+                    "en": "Length (m)"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_larg"
+                  ],
+                  "kind": "number",
+                  "label": {
+                    "fr": "Largeur (m)",
+                    "en": "Width (m)"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_eclair"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "Éclairage",
+                    "en": "Lighting"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_acc_libre"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "Accès libre",
+                    "en": "Free access"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_douche"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "Douche",
+                    "en": "Shower"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_prop_nom"
+                  ],
+                  "label": {
+                    "fr": "Propriétaire (nom)",
+                    "en": "Owner (name)"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_prop_type"
+                  ],
+                  "label": {
+                    "fr": "Propriétaire (type)",
+                    "en": "Owner (type)"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_gest_type"
+                  ],
+                  "label": {
+                    "fr": "Type de gestion",
+                    "en": "Management type"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_loc_type"
+                  ],
+                  "label": {
+                    "fr": "Locaux disponibles",
+                    "en": "Available spaces"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_utilisateur"
+                  ],
+                  "label": {
+                    "fr": "Utilisateurs",
+                    "en": "Users"
+                  }
+                },
+                {
+                  "paths": [
+                    "inst_acc_handi_bool"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "Accès handicapé",
+                    "en": "Disability access"
+                  }
+                },
+                {
+                  "paths": [
+                    "inst_acc_handi_type"
+                  ],
+                  "label": {
+                    "fr": "Type accès handicapé",
+                    "en": "Disability access type"
+                  }
+                },
+                {
+                  "paths": [
+                    "inst_trans_bool"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "Transport en commun",
+                    "en": "Public transport"
+                  }
+                },
+                {
+                  "paths": [
+                    "inst_trans_type"
+                  ],
+                  "label": {
+                    "fr": "Type de transport",
+                    "en": "Transport type"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_pmr_acc"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PMR accès",
+                    "en": "PMR access"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_pmr_chem"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PMR cheminement",
+                    "en": "PMR path"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_pmr_douche"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PMR douche",
+                    "en": "PMR shower"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_pmr_sanit"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PMR sanitaires",
+                    "en": "PMR toilets"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_pmr_trib"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PMR tribunes",
+                    "en": "PMR stands"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_pmr_vest"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PMR vestiaires",
+                    "en": "PMR changing rooms"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_pshs_aire"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PSHS aire de jeu",
+                    "en": "PSHS play area"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_pshs_chem"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PSHS cheminement",
+                    "en": "PSHS path"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_pshs_sanit"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PSHS sanitaires",
+                    "en": "PSHS toilets"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_pshs_trib"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PSHS tribunes",
+                    "en": "PSHS stands"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_pshs_vest"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PSHS vestiaires",
+                    "en": "PSHS changing rooms"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_pshs_sign"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "PSHS signalétique",
+                    "en": "PSHS signage"
+                  }
+                },
+                {
+                  "paths": [
+                    "inst_part_bool"
+                  ],
+                  "kind": "anyTrue",
+                  "label": {
+                    "fr": "Partenariat",
+                    "en": "Partnership"
+                  }
+                },
+                {
+                  "paths": [
+                    "inst_part_type"
+                  ],
+                  "label": {
+                    "fr": "Type de partenariat",
+                    "en": "Partnership type"
+                  }
+                },
+                {
+                  "paths": [
+                    "inst_date_creation"
+                  ],
+                  "label": {
+                    "fr": "Date de création",
+                    "en": "Creation date"
+                  }
+                },
+                {
+                  "paths": [
+                    "inst_enqu_date"
+                  ],
+                  "label": {
+                    "fr": "Date d'enquête",
+                    "en": "Survey date"
+                  }
+                },
+                {
+                  "paths": [
+                    "equip_maj_date"
+                  ],
+                  "label": {
+                    "fr": "Dernière mise à jour",
+                    "en": "Last update"
+                  }
+                }
               ]
             }
           }
@@ -2637,8 +3557,14 @@
           "type": "searchHeader",
           "id": "actualites-header",
           "props": {
-            "headline": { "fr": "Actualités", "en": "News" },
-            "subhead": { "fr": "Toutes les actualités du sport à Saint-Paul", "en": "All sports news in Saint-Paul" }
+            "headline": {
+              "fr": "Actualités",
+              "en": "News"
+            },
+            "subhead": {
+              "fr": "Toutes les actualités du sport à Saint-Paul",
+              "en": "All sports news in Saint-Paul"
+            }
           }
         },
         {
@@ -2652,9 +3578,13 @@
             "showActiveFiltersTags": true,
             "disableInfiniteScroll": false,
             "baseParams": {
-              "defaultTypes": ["news"],
+              "defaultTypes": [
+                "news"
+              ],
               "notSourceKey": true,
-              "defaultSortBy": { "created": -1 },
+              "defaultSortBy": {
+                "created": -1
+              },
               "defaultFilters": {
                 "$or": {
                   "address.localityId": "54c0965cf6b95c141800a518",
@@ -2664,9 +3594,20 @@
               }
             },
             "list": {
-              "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 3 },
-              "card": { "type": "news", "detailsMode": "dialog" },
-              "preview": { "type": "news", "showDetailLink": true }
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3,
+                "xl": 3
+              },
+              "card": {
+                "type": "news",
+                "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "news",
+                "showDetailLink": true
+              }
             }
           }
         }
@@ -3893,7 +4834,6 @@
       "layout": "default",
       "hideHeader": false,
       "hideFooter": false,
-      "editModal": "edit-poi-equipement",
       "editModalMatch": {
         "type": "recoveryCenter"
       },

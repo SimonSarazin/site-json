@@ -610,16 +610,6 @@
                 "icon": "user-plus",
                 "action": "join-dropdown",
                 "variant": "primary"
-              },
-              {
-                "label": {
-                  "fr": "Inscrire mon organisation",
-                  "en": "Register my organization"
-                },
-                "icon": "building-2",
-                "modal": "register-cyber-reunion",
-                "variant": "outline",
-                "requiresAdmin": false
               }
             ]
           }
@@ -752,19 +742,7 @@
             "headline": {
               "fr": "Cyber Sécurité Réunion",
               "en": "Cyber Security Réunion"
-            },
-            "buttons": [
-              {
-                "label": {
-                  "fr": "Inscrire mon organisation",
-                  "en": "Register my organization"
-                },
-                "icon": "building-2",
-                "modal": "register-cyber-reunion",
-                "variant": "primary",
-                "requiresAdmin": false
-              }
-            ]
+            }
           }
         },
         {
@@ -804,8 +782,22 @@
                 "fr": "Filtrer par zone...",
                 "en": "Filter by zone..."
               },
-              "countryCode": ["RE", "AU", "ZA", "KE", "MG", "MZ", "TZ", "SC", "LK", "IN", "MU"],
-              "level": [1],
+              "countryCode": [
+                "RE",
+                "AU",
+                "ZA",
+                "KE",
+                "MG",
+                "MZ",
+                "TZ",
+                "SC",
+                "LK",
+                "IN",
+                "MU"
+              ],
+              "level": [
+                1
+              ],
               "sortBy": "name",
               "costumSlug": "cyberReunion",
               "costumEditMode": false,
@@ -899,16 +891,26 @@
             "showMap": false,
             "enableMap": true,
             "baseParams": {
-              "defaultTypes": ["organizations"],
+              "defaultTypes": [
+                "organizations"
+              ],
               "defaultFilters": {
                 "$or": {
-                  "parent.695b58ca8693fc2c121208e4": { "$exists": true },
+                  "parent.695b58ca8693fc2c121208e4": {
+                    "$exists": true
+                  },
                   "source.keys": "cyberReunion",
                   "reference.costum": "cyberReunion",
-                  "links.projects.695b58ca8693fc2c121208e4": { "$exists": true },
-                  "links.memberOf.695b58ca8693fc2c121208e4": { "$exists": true }
+                  "links.projects.695b58ca8693fc2c121208e4": {
+                    "$exists": true
+                  },
+                  "links.memberOf.695b58ca8693fc2c121208e4": {
+                    "$exists": true
+                  }
                 },
-                "toBeValidated": { "$exists": false }
+                "toBeValidated": {
+                  "$exists": false
+                }
               },
               "notSourceKey": true
             },

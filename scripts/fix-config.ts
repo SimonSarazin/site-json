@@ -96,6 +96,12 @@ function resolveParent(root: unknown, dotted: string): { parent: Record<string, 
 }
 
 function applyPatch(patch: Record<string, unknown>) {
+  // Les suppressions d'ÉLÉMENTS DE TABLEAU sont mises de côté : `delete tab[i]`
+  // laisserait un trou (sérialisé en `null` — un config cassé). Elles sont
+  // splicées à la fin, par index DÉCROISSANT, pour que les décalages
+  // n'invalident pas les index suivants.
+  const splices: { arr: unknown[]; index: number; path: string; before: unknown }[] = [];
+
   for (const [dotted, value] of Object.entries(patch)) {
     let parent: Record<string, unknown>;
     let key: string;
@@ -111,11 +117,20 @@ function applyPatch(patch: Record<string, unknown>) {
         console.error(`✗ ${dotted} : clé absente, rien à supprimer`);
         process.exit(1);
       }
+      if (Array.isArray(parent)) {
+        splices.push({ arr: parent as unknown[], index: Number(key), path: dotted, before });
+        continue;
+      }
       delete parent[key];
     } else {
       parent[key] = value;
     }
     changes.push({ path: dotted, before, after: value });
+  }
+
+  for (const s of splices.sort((a, b) => b.index - a.index)) {
+    s.arr.splice(s.index, 1);
+    changes.push({ path: s.path, before: s.before, after: null });
   }
 }
 

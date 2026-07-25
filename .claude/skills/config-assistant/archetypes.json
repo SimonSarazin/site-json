@@ -44,18 +44,7 @@
         "baseParams sur une source externe (sourceKey = equipementsSportifs974)",
         "theme complet + customCSS"
       ],
-      "knownFindings": [
-        {
-          "category": "ref-morte",
-          "path": "pages.1.sections.0.props.buttons.0.modal",
-          "note": "BUG confirmé, PAS un choix : ce config n'a AUCUN costumForms et le costum TS s'appelle « equipements-sportifs » (pas « poi-equipement ») → la modale rend null. NB : le bouton porte aussi action:\"add-poi\", qui fonctionnerait si `modal` était retiré. Arbitrage en attente."
-        },
-        {
-          "category": "ref-morte",
-          "path": "profiles.poi.editModal",
-          "note": "BUG confirmé, PAS un choix : ce config n'a AUCUN costumForms et le costum TS s'appelle « equipements-sportifs » (pas « poi-equipement ») → la modale rend null. NB : le bouton porte aussi action:\"add-poi\", qui fonctionnerait si `modal` était retiré. Arbitrage en attente."
-        }
-      ]
+      "knownFindings": []
     },
     {
       "slug": "eXtremeDefiAdeme",
