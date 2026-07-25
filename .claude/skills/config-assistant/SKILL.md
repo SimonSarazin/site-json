@@ -249,6 +249,14 @@ Dispatch : `src/modules/search/components/Preview.tsx` ; conteneur = `card.detai
 | `testimonial` | détail témoignage (leaf `PreviewTestimonialBubble`) | bloc `list.testimonial` |
 | `resource` | détail ressource (leaf `PreviewResourceCard`) | bloc `list.resource` |
 
+⚠ **Une option de `card`/`preview` n'a d'effet que sur CERTAINS types** — posée
+ailleurs, elle est ignorée en silence. `config:schema section:searchPro` imprime
+la matrice complète, dérivée du code ; repères : `shareButton` → `overlay`
+seul ; `imageFit`/`overlayStats`/`servicePricing` → `image-cover` seul ;
+`showFunding` → `funding` seul ; `tagLimit` → `overlay`+`default` ;
+`showAddress`/`showDescription` → 4 types ; les autres cartes n'ont aucune
+option propre (leur rendu ne dépend que de la donnée).
+
 Variantes transverses : `preview.width` (`sm`…`5xl`\|`full`, défaut code `5xl`, dialog
 seulement) ; `card.variant` surcharge `card.type` pour le dispatch (sous-ensemble
 sans `overlay`/`news`/`testimonial`/`resource`) ; `card.detailedMode`

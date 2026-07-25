@@ -29,6 +29,7 @@ import {
 } from "./lib/config-blocks";
 import { PROP_DESCRIPTIONS, BLOCK_NOTES } from "./lib/prop-descriptions";
 import { sectionPreviews, chromePreviews } from "./lib/design-previews";
+import { presenterMatrix, optionIndex } from "./lib/presenter-options";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -57,10 +58,29 @@ function printPreviewHint(selector: string) {
   }
 }
 
+/**
+ * Sections à liste : quelles options de `list.card` / `list.preview` chaque
+ * presenter honore RÉELLEMENT. Le schéma les décrit toutes au même niveau, mais
+ * une option posée sur le mauvais `type` est ignorée en silence.
+ */
+function printPresenterMatrix(selector: string) {
+  if (!["section:searchPro", "section:searchProStatic", "section:cardCountCT"].includes(selector)) return;
+  const m = presenterMatrix(ROOT);
+  console.error("// option × presenter (une option posée sur un autre type est IGNORÉE en silence) :");
+  for (const [opt, types] of optionIndex(m.cards)) console.error(`//   card.${opt} → ${types.join(", ")}`);
+  for (const [opt, types] of optionIndex(m.previews)) console.error(`//   preview.${opt} → ${types.join(", ")}`);
+  for (const e of [...m.cards, ...m.previews]) {
+    if (!e.receivesConfig && e.options.length)
+      console.error(`// ⚠ ${e.type} lit ${e.options.join(", ")} mais le dispatcheur ne les lui TRANSMET PAS (option morte)`);
+  }
+  console.error("//   (les autres types n'ont pas d'option propre : leur rendu ne dépend que de la donnée)");
+}
+
 function print(selector: string, schema: z.ZodType) {
   const note = blockNote(selector);
   if (note) console.error(note);
   printPreviewHint(selector);
+  printPresenterMatrix(selector);
   const json = z.toJSONSchema(schema, { unrepresentable: "any" }) as JsonSchemaNode;
   const descs = PROP_DESCRIPTIONS[selector];
   if (descs) {
