@@ -1,6 +1,7 @@
 ---
 name: config-assistant
 description: Génère et édite les configs JSON de sites SiteForge (créer un site complet, ajouter/modifier des pages ou sections, choisir header/footer/thème, activer des modules, changer le slug d'entité). À utiliser dès qu'on demande de créer un site, modifier un config.prod.*.json, ajouter une section/page, ou ajuster le design d'un site via sa config.
+allowed-tools: Bash, Read, Write, Edit, Glob, Grep
 ---
 
 # Assistant de config SiteForge
@@ -14,6 +15,7 @@ Les faits volatils se LISENT à l'usage, ils ne sont pas écrits ici :
 
 | Besoin | Commande |
 |---|---|
+| **Amorcer un nouveau site** (config + sites.json + dossier images) | `npm run config:init -- <slug> --from <archétype> --pages /,/x [--dry-run]` |
 | Clés RACINE d'un config (quels blocs existent, requis/optionnels) | `npm run config:schema root` |
 | Liste des sections + description (groupée par famille) | `npm run config:schema sections` |
 | Archétypes de référence (quel site imiter, ce qu'il démontre) + liste des exemples | `npm run config:example` |
@@ -88,11 +90,15 @@ référentiel des configs de référence.
       volontairement PAS de `create` (la création exige une auth) ; tu ne peux
       pas faire cette étape à sa place, demande-la explicitement ;
    c. `npm run entity:slug -- check <slug>` (exit 0) AVANT d'écrire `sites.json`.
-4. **Setup** : partir du config archétype le plus proche — choisi dans
-   `archetypes.json`, cf. § Archétypes — (jamais d'une page blanche) ; entrée
-   `sites.json` `{slug, config, css}` ; dossier
-   `public/images/<slug>/` ; CSS : réutiliser un `src/index-<theme>.css` existant
-   (les couleurs vivent dans `config.theme`, pas dans le CSS — cf. § Thème).
+4. **Setup — une commande** :
+   `npm run config:init -- <slug> --from <archétype> --pages /,/x,/y --title "…"`
+   (`--dry-run` d'abord). Elle écrit `config.prod.<slug>.json` (thème et chrome
+   hérités de l'archétype, identité/CTA/contact de l'archétype RETIRÉS), l'entrée
+   `sites.json` `{slug, config, css}` et `public/images/<slug>/`. Refuse un slug
+   déjà pris ou un fichier existant. Le squelette sort **audit RAS**, avec des
+   pages VIDES : les composer ensuite via les recettes (étape 2).
+   CSS : par défaut celui de l'archétype — plusieurs sites peuvent partager un
+   `src/index-<theme>.css`, les couleurs vivant dans `config.theme` (§ Thème).
 5. **Génération PAR MORCEAU** (jamais le config entier d'un coup) :
    `meta`+`theme` → `header`/`footer` → page par page. Avant chaque morceau :
    `config:schema` pour la forme ; après : `config:validate` → corriger → re-valider.

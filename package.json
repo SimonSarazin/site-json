@@ -31,7 +31,8 @@
     "config:costum": "tsx scripts/gen-costum-config.ts",
     "admin:scaffold": "tsx scripts/admin-scaffold.ts",
     "config:example": "tsx scripts/config-example.ts",
-    "config:fix": "tsx scripts/fix-config.ts"
+    "config:fix": "tsx scripts/fix-config.ts",
+    "config:init": "tsx scripts/config-init.ts"
   },
   "resolutions": {
     "react": "19.2.1",
