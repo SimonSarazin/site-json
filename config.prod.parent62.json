@@ -11519,9 +11519,9 @@
         "warning": "oklch(0.80 0.14 65)",
         "warningForeground": "oklch(0.28 0.05 60)",
         "success": "oklch(0.62 0.12 155)",
-        "successForeground": "oklch(0.985 0.01 155)",
+        "successForeground": "oklch(0.180 0.06 155)",
         "info": "oklch(0.62 0.11 235)",
-        "infoForeground": "oklch(0.985 0.01 235)",
+        "infoForeground": "oklch(0.180 0.06 235)",
         "error": "oklch(0.58 0.19 25)",
         "errorForeground": "oklch(0.985 0.01 20)",
         "chart1": "oklch(0.55 0.14 264)",
@@ -12333,17 +12333,6 @@
             }
           ]
         }
-      ],
-      "editModals": [
-        {
-          "editModal": "edit-parent62-mss",
-          "editModalMatch": {
-            "type": "NGO"
-          }
-        },
-        {
-          "editModal": "edit-parent62-organizations"
-        }
       ]
     },
     "projects": {
@@ -12527,11 +12516,6 @@
             }
           ]
         }
-      ],
-      "editModals": [
-        {
-          "editModal": "edit-parent62-formation"
-        }
       ]
     },
     "events": {
@@ -12710,14 +12694,6 @@
               ]
             }
           ]
-        }
-      ],
-      "editModals": [
-        {
-          "editModal": "edit-parent62-session-formation",
-          "editModalMatch": {
-            "type": "course"
-          }
         }
       ]
     },
@@ -13391,7 +13367,7 @@
             "fr": "La parole",
             "en": "The testimony"
           },
-          "icon": "comment",
+          "icon": "message-circle",
           "groups": [
             {
               "columns": 1,

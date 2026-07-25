@@ -255,7 +255,7 @@ export const ProfileTemplateDynamicSchema = z.object({
 });
 
 // Profile-specific sections union
-const ProfileOnlySectionSchema = z.discriminatedUnion("type", [
+export const ProfileOnlySectionSchema = z.discriminatedUnion("type", [
   ProfileHeaderSectionSchema,
   ProfileInfoSectionSchema,
   ProfileTiersLieuxInfoSectionSchema,

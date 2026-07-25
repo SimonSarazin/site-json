@@ -183,7 +183,7 @@
             },
             "path": "https://visio.tiers-lieux.org/"
           },
-           {
+          {
             "label": {
               "fr": "Fichier",
               "en": "Fichier"
@@ -220,9 +220,9 @@
               "en": "Call for commons"
             },
             "description": {
-             "fr": "La plateforme pour référencer, mutualiser et cofinancer les communs des tiers-lieux",
-             "en": "The platform to reference, pool and co‑finance the commons of third places"
-                },
+              "fr": "La plateforme pour référencer, mutualiser et cofinancer les communs des tiers-lieux",
+              "en": "The platform to reference, pool and co‑finance the commons of third places"
+            },
             "path": "https://lescommuns.tiers-lieux.org/#les-communs"
           },
           {
@@ -504,10 +504,16 @@
               "indexStepList": 5,
               "defaultFilters": {
                 "$or": {
-                  "tags": { "$in": ["TiersLieux"] }
+                  "tags": {
+                    "$in": [
+                      "TiersLieux"
+                    ]
+                  }
                 },
                 "tags": {
-                  "$nin": ["RéseauTiersLieux"]
+                  "$nin": [
+                    "RéseauTiersLieux"
+                  ]
                 },
                 "address.addressCountry": {
                   "$in": [
@@ -667,10 +673,16 @@
               "indexStepList": 5,
               "defaultFilters": {
                 "$or": {
-                  "tags": { "$in": ["TiersLieux"] }
+                  "tags": {
+                    "$in": [
+                      "TiersLieux"
+                    ]
+                  }
                 },
                 "tags": {
-                  "$nin": ["RéseauTiersLieux"]
+                  "$nin": [
+                    "RéseauTiersLieux"
+                  ]
                 },
                 "address.addressCountry": {
                   "$in": [
@@ -1456,10 +1468,16 @@
                   ],
                   "defaultFilters": {
                     "$or": {
-                      "tags": { "$in": ["TiersLieux"] }
+                      "tags": {
+                        "$in": [
+                          "TiersLieux"
+                        ]
+                      }
                     },
                     "tags": {
-                      "$nin": ["RéseauTiersLieux"]
+                      "$nin": [
+                        "RéseauTiersLieux"
+                      ]
                     },
                     "address.addressCountry": {
                       "$in": [
@@ -2453,11 +2471,11 @@
         "destructive": "hsl(0, 72%, 51%)",
         "destructiveForeground": "hsl(0, 0%, 100%)",
         "success": "hsl(142, 60%, 40%)",
-        "successForeground": "hsl(0, 0%, 100%)",
+        "successForeground": "hsl(142, 30%, 12%)",
         "warning": "hsl(43, 91%, 52%)",
         "warningForeground": "hsl(25, 20%, 12%)",
         "info": "hsl(200, 70%, 48%)",
-        "infoForeground": "hsl(0, 0%, 100%)",
+        "infoForeground": "hsl(200, 30%, 12%)",
         "chart1": "hsl(182, 56%, 40%)",
         "chart2": "hsl(43, 91%, 52%)",
         "chart3": "hsl(182, 40%, 60%)",
@@ -2493,11 +2511,11 @@
         "destructive": "hsl(0, 65%, 55%)",
         "destructiveForeground": "hsl(0, 0%, 100%)",
         "success": "hsl(142, 55%, 45%)",
-        "successForeground": "hsl(0, 0%, 100%)",
+        "successForeground": "hsl(142, 30%, 12%)",
         "warning": "hsl(43, 85%, 48%)",
         "warningForeground": "hsl(25, 20%, 10%)",
         "info": "hsl(200, 65%, 52%)",
-        "infoForeground": "hsl(0, 0%, 100%)",
+        "infoForeground": "hsl(200, 30%, 12%)",
         "chart1": "hsl(182, 56%, 50%)",
         "chart2": "hsl(43, 85%, 48%)",
         "chart3": "hsl(182, 40%, 65%)",
