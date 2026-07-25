@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import serialize from "serialize-javascript";
 import { createImageOptimizer } from "./middleware/imageOptimizer.js";
 import { normalizeSiteConfig } from "./utils/normalizeSiteConfig.js";
+import { registerSeoRoutes } from "./lib/sitemap.js";
 import { helloassoCheckoutIntentHandler, helloassoTokenHandler, helloassoCallbackHandler, helloassoCheckoutStatusHandler } from "./api/helloasso-checkout.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -92,6 +93,10 @@ app.get("/blog/feed.xml", async (req, res) => {
     res.status(500).type("application/xml").send('<?xml version="1.0"?><error>erreur flux</error>');
   }
 });
+
+// SEO : robots.txt + sitemap.xml générés depuis la config — avant les statiques
+// et le fallback SSR (sinon le SSR rendrait du HTML sur ces URLs).
+registerSeoRoutes(app, () => cachedConfig);
 
 // Cache long terme pour assets hashés Vite (1 an, immutable)
 app.use('/assets', (req, res, next) => {

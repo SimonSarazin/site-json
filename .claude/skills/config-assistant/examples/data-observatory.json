@@ -24,6 +24,7 @@
           "equip_long",
           "aps_name",
           "inst_nom",
+          "inst_numero",
           "equip_nom",
           "equip_prop_nom",
           "equip_prop_type",
@@ -902,7 +903,36 @@
           "kind": "preview",
           "detailsMode": "dialog",
           "preview": {
-            "type": "poi-amenities"
+            "type": "poi-amenities",
+            "reservations": {
+              "form": "6a4e4e4105e5972f7b4b1823",
+              "step": "equipementsSportifs974872026_1619_0",
+              "fields": {
+                "finder": "mrc3ungb2a9vu945ik8",
+                "user": "mrc3w4o7rguvxc2vkyq",
+                "activity": "mrc3xumnggn5f530i9",
+                "slots": "mrc40jaxu06fjaa6ngn",
+                "periodStart": "mrc41scujf3aq9ppw1l",
+                "periodEnd": "mrc4259ir2xnu4vp2fq",
+                "bookingType": "mrc3zgl902y2fpfcby3y"
+              }
+            },
+            "installationDashboard": {
+              "groupKey": "inst_numero",
+              "labelKey": "inst_nom",
+              "referenceAmplitude": {
+                "startHour": 8,
+                "endHour": 22,
+                "days": 7
+              },
+              "sourceKey": [
+                "equipementsSportifs974"
+              ],
+              "poiFilters": {
+                "type": "recoveryCenter"
+              },
+              "activityMetric": "hours"
+            }
           }
         }
       }

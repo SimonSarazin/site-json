@@ -37,7 +37,8 @@ interface ChartCardProps {
  *  des ticks impossible côté serveur, dérives décimales de trigonométrie) —
  *  le SSR rend un Skeleton identique au 1er rendu client, le graphe monte
  *  juste après l'hydratation (les données sont déjà là, préchargées). */
-function ChartCard({ title, children, bodyClassName }: ChartCardProps) {
+// Exporté : réutilisé par la modal installation (ClientOnly + Skeleton inclus).
+export function ChartCard({ title, children, bodyClassName }: ChartCardProps) {
   return (
     <Card className="gap-0 rounded-2xl border-border/50 py-5">
       <CardContent className="px-5">

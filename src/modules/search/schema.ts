@@ -39,14 +39,34 @@ export const FilterOptionStyleSchema = z.enum(["checkbox", "check"]);
 export const FilterGroupSchema = z.object({
   id: z.string(),
   label: LocalizedString,
-  type: z.enum(['scopeList', "filters", "entityList"]).default("filters"),
+  // `searchTargets` : filtre « type d'info » (CDC parents62) — sélection UNIQUE
+  // (radio) ; chaque option porte sa cible `target` (defaultTypes/defaultFilters)
+  // appliquée par SearchProStatic (cf. searchByFieldsToQuery.searchTarget).
+  // `dateRange` : filtre par date (CDC parents62) — champ date « À partir du »
+  // traduit en `filters[field].$gt` (SEUL opérateur date converti par le
+  // backend, cf. SearchNew::getQueries). La borne de fin existe dans le state
+  // mais son rendu est conditionné à `withEnd` (activable quand le backend
+  // convertira $lte — demande transmise à Aboire).
+  type: z.enum(['scopeList', "filters", "entityList", "searchTargets", "dateRange"]).default("filters"),
+  /** Champ filtré. Sur un groupe `filters`, sa présence bascule le groupe du
+   *  filtrage par TAG (défaut historique) au filtrage par CHAMP de l'entité :
+   *  la sélection part dans `searchByFields` → `{ <field>: { $in: [noms
+   *  d'options] } }`. Les `options[].name` doivent alors porter la valeur EXACTE
+   *  stockée en base (ex. parent62 : `field:"territoires"`, name `"Arrageois"`). */
   field: z.string().optional(),
+  /** `dateRange` : affiche aussi la borne de fin (nécessite le support backend $lte). */
+  withEnd: z.boolean().optional(),
   options: z.array(z.object({
     id: z.string(),
     label: LocalizedString,
     level: z.string().optional(),
     name: z.string().optional(),
     defaultChecked: z.boolean().optional(),
+    /** Pastille de couleur de l'option (ex. territoire — valeur CSS `var(--…)`). */
+    color: z.string().optional(),
+    /** Cible de recherche (groupes `searchTargets`) — forward-ref car
+     *  SearchTargetSchema dépend de SearchTypeSchema, défini plus bas. */
+    target: z.lazy(() => SearchTargetSchema).optional(),
   })).optional(),
   config: z.object({
     countryCode: z.array(z.string()).optional(),
@@ -159,6 +179,79 @@ export const PreviewFacetSchema = z.object({
 });
 export type PreviewFacetConfig = z.infer<typeof PreviewFacetSchema>;
 
+/**
+ * Réservations récurrentes d'une ressource : answers d'un formulaire CoForm
+ * reliées à l'entité affichée par un champ finder. Tout l'ancrage (form, étape,
+ * suffixes de champs) vient de la CONFIG du site — le code ne connaît que des
+ * RÔLES. Clé réelle d'un champ = `<step><suffixe>` (et `finder<step><suffixe>`
+ * pour le finder), sous `serverData.answers[<step>]`.
+ */
+export const ReservationsConfSchema = z.object({
+  /** ObjectID du formulaire CoForm des réservations (champ `form` des answers). */
+  form: z.string(),
+  /** Clé d'étape CoForm (préfixe des clés de champs). */
+  step: z.string(),
+  /** Mapping rôle → SUFFIXE de champ. */
+  fields: z.object({
+    /** Finder vers la ressource (valeur = objet `{<id>: {id, name, type}}`). */
+    finder: z.string(),
+    /** Nom de l'usager (texte). */
+    user: z.string(),
+    /** Activité pratiquée (texte). */
+    activity: z.string(),
+    /** Créneaux hebdo récurrents (timeSlots `{day, startHour, …}`). */
+    slots: z.string(),
+    periodStart: z.string().optional(),
+    periodEnd: z.string().optional(),
+    bookingType: z.string().optional(),
+  }),
+  /** Plafond d'answers chargées (garde de pagination). Défaut : 200. */
+  maxAnswers: z.number().int().positive().optional(),
+});
+export type ReservationsConf = z.infer<typeof ReservationsConfSchema>;
+
+/**
+ * Tableau de bord d'installation : modal ouverte depuis le détail
+ * `poi-amenities` en cliquant le nom de l'installation. Agrège les équipements
+ * partageant `groupKey` et leurs réservations (requiert `reservations` dans le
+ * même bloc preview).
+ */
+export const InstallationDashboardConfSchema = z.object({
+  /** Champ `serverData` identifiant STABLE de l'installation (regroupement). */
+  groupKey: z.string().default("inst_numero"),
+  /** Champ `serverData` du libellé affiché. */
+  labelKey: z.string().default("inst_nom"),
+  /** Champ `serverData` du type d'équipement — affiché dans la liste de repli
+   *  quand l'installation n'a aucun créneau. */
+  typeKey: z.string().default("equip_type_name"),
+  /** Amplitude hebdomadaire de référence du taux d'utilisation
+   *  (ex. 8h–22h × 7j = 98 h/sem). */
+  referenceAmplitude: z.object({
+    startHour: z.number().int().min(0).max(24),
+    endHour: z.number().int().min(0).max(24),
+    days: z.number().int().min(1).max(7),
+  }),
+  /** Périmètre de la requête POI (fusionné avec `{[groupKey]: <valeur>}`) —
+   *  requis, comme pour l'observatoire : aucun défaut métier dans le code. */
+  poiFilters: z.record(z.string(), z.unknown()),
+  /** Périmètre `source.key` de la requête POI (param SDK natif). À renseigner
+   *  quand les équipements vivent sous un AUTRE costum que le site courant
+   *  (ex. site saintpaulSport1 → données equipementsSportifs974). Absent →
+   *  scope au costum courant. */
+  sourceKey: z.array(z.string()).optional(),
+  /** Pondération de la répartition des activités. Défaut : "hours". */
+  activityMetric: z.enum(["hours", "slots"]).optional(),
+  /** Champs POI additionnels projetés (en plus de name/groupKey/labelKey…). */
+  extraPoiFields: z.array(z.string()).optional(),
+  /** Nom du param d'URL qui ouvre la fiche (partage/deep-link) — miroir de
+   *  `list.previewParam` pour l'équipement. Défaut : "installation". */
+  param: z.string().optional(),
+});
+export type InstallationDashboardConf = z.infer<typeof InstallationDashboardConfSchema>;
+
+/** Param d'URL par défaut de la fiche installation (cf. `installationDashboard.param`). */
+export const DEFAULT_INSTALLATION_PARAM = "installation";
+
 export const PreviewConfSchema = z.object({
   type: z.enum(["default", "poi-amenities", "coform-answer", "event", "facets", "news", "testimonial", "resource"]).default("default"),
   // Mapping rôle→suffixe de champ CoForm (pour `coform-answer`). Surcharge la
@@ -166,6 +259,10 @@ export const PreviewConfSchema = z.object({
   fields: z.record(z.string(), z.string()).optional(),
   /** Facettes du preview générique (`type: "facets"`) — data-driven, sans code. */
   facets: z.array(PreviewFacetSchema).optional(),
+  /** Section « réservations » du preview `poi-amenities` (absente = masquée). */
+  reservations: ReservationsConfSchema.optional(),
+  /** Modal tableau de bord installation (requiert `reservations`). */
+  installationDashboard: InstallationDashboardConfSchema.optional(),
   /**
    * Affiche le lien « Voir en page » (permalien vers le détail/profil) dans l'en-tête de la
    * modal de détail. Défaut : affiché (mettre `false` pour le masquer). Lu par `PreviewNews`.
@@ -179,6 +276,23 @@ export const PreviewConfSchema = z.object({
    */
   width: z.enum(["sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "5xl", "full"]).optional(),
 }).partial();
+
+/**
+ * Filtre de listing déclenché par une valeur cliquable de la CARTE (pas de
+ * dropdown : la cardinalité — plus de 1000 installations — l'interdit).
+ *
+ * On filtre sur `groupKey` (identifiant STABLE) et non sur le libellé affiché :
+ * un libellé peut contenir une virgule (séparateur multi-valeurs de l'URL) et
+ * deux installations distinctes peuvent être homonymes. Même symétrie que
+ * `installationDashboard.groupKey`/`labelKey`.
+ */
+export const InstallationFilterConfSchema = z.object({
+  /** Champ `serverData` filtré — identifiant stable. */
+  groupKey: z.string().default("inst_numero"),
+  /** Nom du param d'URL (miroir de la sélection). */
+  param: z.string().default("poi-installation"),
+});
+export type InstallationFilterConf = z.infer<typeof InstallationFilterConfSchema>;
 
 /**
  * Contrat « testimonial » (témoignage) — GÉNÉRIQUE et config-driven : découple le composant des noms de
@@ -246,6 +360,32 @@ export const ResourceConfSchema = z.object({
 
 export type ResourceConf = z.infer<typeof ResourceConfSchema>;
 
+/** Coloration data-driven par VALEUR de `serverData` (ex. tag territoire →
+ *  couleur du territoire, CDC parents62). `mapping` : valeur exacte → couleur
+ *  CSS — `var(--…)` recommandé (suit light/dark via le thème), jamais d'hex.
+ *  `path` : dot-path serverData (déf. `tags`) ; valeur string ou tableau —
+ *  le premier tag de l'item présent dans le mapping gagne (cf. lib/colorBy). */
+export const ColorByConfSchema = z.object({
+  path: z.string().optional(),
+  mapping: z.record(z.string(), z.string()),
+});
+export type ColorByConf = z.infer<typeof ColorByConfSchema>;
+
+/** Chips de tags des cartes : couleur par tag (`mapping`), libellé lisible
+ *  (`labels`, déf. namespace retiré + capitalisation) et MASQUAGE des tags
+ *  techniques (`hidePrefixes`, ex. `public:`/`age:` — filtrants mais pas
+ *  affichables bruts). Consommé par `decorateTags` (lib/colorBy).
+ *  `paths` : dot-paths serverData dont les valeurs s'ajoutent aux chips —
+ *  nécessaire quand la taxonomie vit dans des CHAMPS et non dans `tags`
+ *  (parent62 : `["territoires"]`), cf. `collectChipValues`. */
+export const TagColorsConfSchema = z.object({
+  mapping: z.record(z.string(), z.string()),
+  labels: z.record(z.string(), z.string()).optional(),
+  hidePrefixes: z.array(z.string()).optional(),
+  paths: z.array(z.string()).optional(),
+});
+export type TagColorsConf = z.infer<typeof TagColorsConfSchema>;
+
 export const ListConfSchema = z.object({
   columns: z.object({
     lg: z.number().int().min(1).max(6).optional(),
@@ -255,6 +395,8 @@ export const ListConfSchema = z.object({
   }).partial().optional(),
   card: z.object({
     tagLimit:        z.number().int().min(1).max(50).optional(),
+    /** Chips colorées / masquage des tags techniques (cf. TagColorsConfSchema). */
+    tagColors:       TagColorsConfSchema.optional(),
     showDescription: z.boolean().optional(),
     showAddress:     z.boolean().optional(),
     shareButton:     z.boolean().optional(),
@@ -292,6 +434,9 @@ export const ListConfSchema = z.object({
         price: z.object({ bed: z.string(), room: z.string() }),
       }).optional(),
     }).optional(),
+    /** Rend l'installation de la carte (`poi-amenities`) cliquable → filtre le
+     *  listing. Absent = valeur affichée en texte simple. */
+    installationFilter: InstallationFilterConfSchema.optional(),
     // Valeurs DESIGN/FONCTIONNALITÉ (jamais de nom de site). `Preview`/détail =
     // axe séparé (`preview.type`/`detailsMode`).
     type: z.enum(["overlay", "default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer", "news", "testimonial", "resource"]).default("default"),
@@ -315,9 +460,10 @@ export type ListConf = z.infer<typeof ListConfSchema>;
 /**
  * Apparence d'un marqueur de la carte — chaîne de repli (par PRIORITÉ) :
  *   1. `useItemImage` ET l'item a une image → vignette RONDE de l'item ;
- *   2. `iconUrl`                            → icône custom (image/SVG, ex. pin brandé) ;
- *   3. `style: "pin"` (+ `color` en jeton)  → pin SVG aux couleurs du thème ;
- *   4. sinon                                → pin par défaut (primary).
+ *   2. `colorBy` ET une valeur mappée       → pin/pastille coloré PAR VALEUR ;
+ *   3. `iconUrl`                            → icône custom (image/SVG, ex. pin brandé) ;
+ *   4. `style: "pin"` (+ `color` en jeton)  → pin SVG aux couleurs du thème ;
+ *   5. sinon                                → pin par défaut (primary).
  * Schéma PARTAGÉ : configurable PAR SITE (`integrations.map.marker`, cf.
  * site-schema) et surchargeable PAR SECTION (`map.marker`) — les champs de la
  * section l'emportent sur ceux du site, sinon repli sur le défaut.
@@ -337,6 +483,10 @@ export const MarkerConfSchema = z.object({
   iconSize: z.number().int().min(8).max(128).optional(),
   /** Ancrage de l'icône custom : "bottom" (pointe sur le point, déf.) ou "center". */
   iconAnchor: z.enum(["bottom", "center"]).optional(),
+  /** Marqueur coloré PAR VALEUR de l'item (code couleur par territoire, CDC
+   *  parents62) : prioritaire sur le jeton `color` quand une valeur matche le
+   *  mapping, et implique le pin (ou la pastille si `style: "circle"`). */
+  colorBy: ColorByConfSchema.optional(),
 });
 
 export type MarkerConf = z.infer<typeof MarkerConfSchema>;
@@ -381,6 +531,17 @@ const SearchTypeSchema = z.enum([
 ]);
 
 export type SearchType = z.infer<typeof SearchTypeSchema>;
+
+/** Cible de recherche portée par une option de groupe `searchTargets` (filtre
+ *  « type d'info ») : REMPLACE les `defaultTypes` de la section et FUSIONNE ses
+ *  `defaultFilters` (ex. Paroles = `{ defaultTypes: ["poi"], defaultFilters:
+ *  { type: "affiche" } }`). Étendre le moteur en P2/P3 (actualités, ressources)
+ *  = ajouter des options en config, sans code. */
+export const SearchTargetSchema = z.object({
+  defaultTypes: z.array(SearchTypeSchema).optional(),
+  defaultFilters: z.record(z.string(), z.unknown()).optional(),
+});
+export type SearchTarget = z.infer<typeof SearchTargetSchema>;
 
 /**
  * Variant du endpoint backend pour `searchCostum` (cf. SDK v1.0.132).

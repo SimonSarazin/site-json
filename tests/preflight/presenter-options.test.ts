@@ -25,8 +25,8 @@ const OPTIONS_MORTES_CONNUES = new Set(["coform-answer"]);
 
 describe("matrice option × presenter (search)", () => {
   it("les deux dispatcheurs sont lus et couvrent les presenters", () => {
-    expect(matrix.cards.length).toBeGreaterThanOrEqual(14);
-    expect(matrix.previews.length).toBeGreaterThanOrEqual(7);
+    expect(matrix.cards.length).toBeGreaterThanOrEqual(15);
+    expect(matrix.previews.length).toBeGreaterThanOrEqual(8);
     for (const e of [...matrix.cards, ...matrix.previews]) {
       expect(e.component, `case "${e.type}" sans composant`).toMatch(/^(Card|Preview)/);
     }

@@ -100,6 +100,30 @@
               "fr": "Les archives des éditions.",
               "en": "Archive of past editions."
             }
+          },
+          {
+            "label": {
+              "fr": "Contact",
+              "en": "Contact"
+            },
+            "path": "/contact",
+            "icon": "mail",
+            "description": {
+              "fr": "Écrire au réseau.",
+              "en": "Write to the network."
+            }
+          },
+          {
+            "label": {
+              "fr": "La communauté",
+              "en": "The community"
+            },
+            "path": "/communaute",
+            "icon": "users-round",
+            "description": {
+              "fr": "Les membres et structures du réseau.",
+              "en": "Members and organisations of the network."
+            }
           }
         ]
       },
@@ -327,11 +351,11 @@
       },
       {
         "label": {
-          "fr": "Contact",
-          "en": "Contact"
+          "fr": "Rechercher",
+          "en": "Search"
         },
-        "path": "/contact",
-        "icon": "mail"
+        "path": "/recherche",
+        "icon": "search"
       }
     ],
     "logoSize": "lg"

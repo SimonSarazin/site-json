@@ -300,3 +300,83 @@ h1, h2 { letter-spacing: -0.015em; }
 #territoire-familles-en-sol-mineur-henin-carvin-titre { --territoire-bulle: #a2537e; }
 #territoire-familles-en-sol-mineur-lens-lievin-titre { --territoire-bulle: #97776b; }
 #territoire-ternois-bruaysis-titre { --territoire-bulle: #d492a9; }
+
+/* ---- Code couleur par TERRITOIRE (CDC : « une couleur correspond à chaque
+   territoire ») ------------------------------------------------------------
+   Teintes RÉELLES de la carte du site historique parent62.org — les mêmes que
+   les pastilles `--territoire-bulle` ci-dessus, exposées ici en variables
+   réutilisables. Consommées par : la bande « Votre territoire » de l'accueil et
+   les bandeaux des pages /territoire/… (config), `map.marker.colorBy` et
+   `card.tagColors` (moteur de recherche), et le référentiel
+   `src/data/territoires62.ts`. Valeurs identiques en clair et en sombre : ce
+   sont des couleurs de MARQUE, elles ne suivent pas le thème.
+   ⚠ Contraste : le texte blanc sur l'or de l'Audomarois et le vert-jaune de
+   l'Artois reste faible — c'est le parti pris du site historique. */
+:root,
+.dark {
+  --territoire-arrageois: #6d5da8;
+  --territoire-artois: #b7cb6b;
+  --territoire-audomarois: #e5af32;
+  --territoire-boulonnais: #c34a42;
+  --territoire-calaisis: #ed8a4c;
+  --territoire-entre-mer-et-terres: #3fb4be;
+  --territoire-familles-en-sol-mineur: #a2537e;
+  --territoire-fsm-henin-carvin: #a2537e;
+  --territoire-fsm-lens-lievin: #97776b;
+  --territoire-ternois-bruaysis: #d492a9;
+}
+
+/* Panneau sombre de la bande « Votre territoire » (charte parent62.org). */
+.p62-deep {
+  background: #1e3d51;
+}
+
+.p62-deep h2 {
+  color: #4fc3c3;
+  text-align: center;
+}
+
+/* Bulle territoire : cercle plein coloré (taille via --s), libellé centré. */
+.p62-bubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--s, 96px);
+  height: var(--s, 96px);
+  border-radius: 9999px;
+  padding: 0.5rem;
+  color: #fff !important;
+  font-weight: 700;
+  font-size: 0.72rem;
+  line-height: 1.15;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  box-shadow: 0 6px 14px rgb(0 0 0 / 0.25);
+  transition: transform 0.2s ease-in-out;
+}
+
+.p62-bubble:hover {
+  transform: scale(1.08);
+}
+
+/* Liste des communes d'un territoire (pages /territoire/<slug>) : colonnes CSS,
+   car les utilities Tailwind `columns-*` ne sont pas safelistées pour le HTML
+   venant de la config. */
+.p62-communes {
+  columns: 2;
+  column-gap: 2rem;
+  list-style: none;
+  padding: 0;
+}
+
+.p62-communes li {
+  padding: 0.15rem 0;
+  break-inside: avoid;
+}
+
+@media (min-width: 768px) {
+  .p62-communes {
+    columns: 3;
+  }
+}

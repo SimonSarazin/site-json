@@ -78,9 +78,13 @@ export interface PresenterEntry {
 function dispatchTable(root: string, file: string, rootName: string, files: Map<string, string>): PresenterEntry[] {
   const src = fs.readFileSync(path.join(root, COMPONENTS_DIR, file), "utf-8");
   const out: PresenterEntry[] = [];
-  // Capture jusqu'au `/>` fermant : la liste de props peut contenir des `/`
-  // (casts `import("@communecter/…")`) et s'étaler sur plusieurs lignes.
-  for (const m of src.matchAll(/case "([\w-]+)":\s*(?:\n\s*)?return <(\w+)([\s\S]*?)\/>/g)) {
+  // Entre le `case` et son `return` il peut y avoir un COMMENTAIRE (ou une
+  // étiquette `default:`) — n'accepter que du blanc faisait silencieusement
+  // disparaître le presenter de la matrice (constaté : un commentaire ajouté
+  // sur `poi-amenities` le faisait chuter de 7 à 6). Capture jusqu'au `/>`
+  // fermant : la liste de props contient des `/` (casts `import("@…")`) et
+  // s'étale sur plusieurs lignes.
+  for (const m of src.matchAll(/case "([\w-]+)":[\s\S]*?return <(\w+)([\s\S]*?)\/>/g)) {
     const [, type, component, propsSrc] = m;
     out.push({
       type,

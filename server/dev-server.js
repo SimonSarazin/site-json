@@ -9,6 +9,7 @@ import { helloassoCheckoutIntentHandler, helloassoTokenHandler, helloassoCallbac
 import { createImageOptimizer } from "./middleware/imageOptimizer.js";
 import { createImageUpload } from "./middleware/imageUpload.js";
 import { normalizeSiteConfig } from "./utils/normalizeSiteConfig.js";
+import { registerSeoRoutes } from "./lib/sitemap.js";
 
 dotenv.config();
 
@@ -141,6 +142,11 @@ async function createServer() {
     cachedConfig = normalizeSiteConfig(data);
     console.log("[Admin] Config saved to", configPath);
   });
+
+  // SEO : robots.txt + sitemap.xml générés depuis la config. DOIT être avant le
+  // middleware 404 ci-dessous (son regex 404-erait l'extension .txt) et avant le
+  // fallback SSR. `() => cachedConfig` : lecture de la config vivante (watcher).
+  registerSeoRoutes(app, () => cachedConfig);
 
   app.use((req, res, next) => {
     // Exclure les routes API

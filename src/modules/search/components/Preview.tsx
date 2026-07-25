@@ -20,7 +20,9 @@ const PreviewResource = lazy(() => import("./preview/PreviewResource"));
 const Preview: React.FC<PreviewProps> = ({ item, preview = { type: "default" }, list, onClose }) => {
   switch (preview?.type) {
     case "poi-amenities":
-      return <PreviewPoiAmenities item={item} onClose={onClose} />;
+      // `preview` transporte les blocs config `reservations` /
+      // `installationDashboard` (sections optionnelles du détail).
+      return <PreviewPoiAmenities item={item} preview={preview} onClose={onClose} />;
     case "coform-answer":
       return <PreviewCoformAnswer item={item} onClose={onClose} />;
     case "event":

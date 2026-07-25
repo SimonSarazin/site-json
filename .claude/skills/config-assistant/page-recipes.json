@@ -7,8 +7,8 @@
       "quand": "Le visiteur vient CHERCHER quelque chose de précis (une aide, un contact, un service). Portail institutionnel ou territorial.",
       "source": "config.prod.parent62.json",
       "path": "/",
-      "sequence": ["hero-quick-access", "action-tiles", "cta-card-grid", "articleFeed", "cta"],
-      "rythme": "Les accès rapides AVANT le discours : l'usager qui sait ce qu'il veut part en un clic. Puis les tuiles d'action, les cartes CTA, et seulement ensuite l'actualité — qui sert de preuve de vie. CTA final pour ceux qui ont tout lu."
+      "sequence": ["hero-quick-access", "action-tiles", "action-tiles", "cta-card-grid", "html", "articleFeed", "cta"],
+      "rythme": "Les accès rapides AVANT le discours : l'usager qui sait ce qu'il veut part en un clic. Puis deux rangées de tuiles d'action (les deux familles de services), les cartes CTA, un bloc éditorial libre, et seulement ensuite l'actualité — qui sert de preuve de vie. CTA final pour ceux qui ont tout lu."
     },
     {
       "id": "home-vitrine-dense",
@@ -51,9 +51,9 @@
       "titre": "Page thématique ou territoriale (grille)",
       "quand": "Décliner un même annuaire par thème / territoire / catégorie, avec un contexte éditorial propre à chaque déclinaison.",
       "source": "config.prod.parent62.json",
-      "path": "/territoire/arrageois",
+      "path": "/territoire/familles-en-sol-mineur",
       "sequence": ["title", "searchHeader", "gridLayout"],
-      "rythme": "`title` porte le contexte éditorial spécifique à la déclinaison (ce que searchHeader ne sait pas faire), searchHeader filtre, gridLayout présente. parent62 décline ce motif sur 9 territoires et 8 thématiques — c'est un gabarit, pas une page unique."
+      "rythme": "`title` porte le contexte éditorial spécifique à la déclinaison (ce que searchHeader ne sait pas faire), searchHeader filtre, gridLayout présente. parent62 décline ce motif sur ses territoires et thématiques — c'est un gabarit, pas une page unique. Certaines déclinaisons s'enrichissent ensuite (cf. /territoire/arrageois, passée à 8 sections) : le gabarit est un POINT DE DÉPART."
     },
     {
       "id": "page-agenda",

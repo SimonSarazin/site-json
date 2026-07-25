@@ -231,7 +231,7 @@
               "en": "Uses"
             },
             "description": {
-              "fr": "Le recensement des usages et outils utilisés dans les tiers-lieux, pour faciliter les pratiques de mutualisation",
+              "fr": "Le recensement des communs et outils utilisés dans les tiers-lieux, pour faciliter les pratiques de mutualisation",
               "en": "A catalogue of the uses and tools found in third places, to ease resource-sharing practices"
             },
             "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=list-tools#list-tools"
@@ -308,8 +308,8 @@
         "children": [
           {
             "label": {
-              "fr": "Diagnostic Licoop",
-              "en": "Licoop diagnostic"
+              "fr": "Auto-diagnostic collectif du lieu",
+              "en": "Collective self-diagnosis of the place"
             },
             "description": {
               "fr": "Un diagnostic dédié aux lieux comme communs de proximité",
@@ -3842,22 +3842,22 @@
                   },
                   "forms": {
                     "646498a5f2b3d6423d74b7f6": {
-                      "name": "Fréquentation des tiers-lieux",
+                      "name": "Fréquentation",
                       "finder": "answers.lesCommunsDesTierslieux1752023_1312_0.finderlesCommunsDesTierslieux1752023_1312_0lix4a7257iht8lp282r",
                       "linked": true
                     },
                     "645b300b6d70bb35426fc0e3": {
-                      "name": "Diagnostic des usages des équipements proposés en tiers-lieux",
+                      "name": "Équipements proposés",
                       "finder": "answers.lesCommunsDesTierslieux1052023_949_0.finderlesCommunsDesTierslieux1052023_949_0lat3sl0xwwg06k856jc",
                       "linked": true
                     },
                     "6486d24e9cad105cbf29a777": {
-                      "name": "Modèle économique des tiers-lieux",
+                      "name": "Modèle économique du lieu",
                       "finder": "answers.lesCommunsDesTierslieux1262023_1215_0.finderlesCommunsDesTierslieux1262023_1215_0lix46h1uhnukfgtzj6s",
                       "linked": true
                     },
                     "64a3fbd77c66a6036a282e8a": {
-                      "name": "Satisfaction du tiers-lieu",
+                      "name": "Satisfaction du lieu",
                       "finder": "answers.lesCommunsDesTierslieux472023_154_0.finderlesCommunsDesTierslieux472023_154_0ljo6ru90tnrau11hui",
                       "linked": true
                     },
@@ -3872,7 +3872,7 @@
                       "linked": true
                     },
                     "652e32b222c3cf69f018ec40": {
-                      "name": "Réseau régionnaux & thématique",
+                      "name": "Réseaux régionaux & thématiques d'appartenance",
                       "finder": "answers.lesCommunsDesTierslieux17102023_108_0.finderlesCommunsDesTierslieux17102023_108_0lo5zvgqitv0b2mx2rl",
                       "linked": true
                     },
@@ -3925,20 +3925,26 @@
                     "type": "array"
                   },
                   "forms": {
+                      "636cd563e2439b7fc12cd680": {
+                      "name": "Usages des communs et outils utilisés",
+                      "finder": "answers.lesCommunsDesTierslieux10112022_1423_0.finderlesCommunsDesTierslieux10112022_1423_0lmbmy4z4ze9v982h4fh",
+                      "openMode": "modal",
+                      "linked": true
+                    },
                     "646498a5f2b3d6423d74b7f6": {
-                      "name": "Fréquentation des tiers-lieux",
+                      "name": "Fréquentation",
                       "finder": "answers.lesCommunsDesTierslieux1752023_1312_0.finderlesCommunsDesTierslieux1752023_1312_0lix4a7257iht8lp282r",
                       "linked": true,
                       "openMode": "modal"
                     },
                     "645b300b6d70bb35426fc0e3": {
-                      "name": "Diagnostic des usages des équipements proposés en tiers-lieux",
+                      "name": "Équipements",
                       "finder": "answers.lesCommunsDesTierslieux1052023_949_0.finderlesCommunsDesTierslieux1052023_949_0lat3sl0xwwg06k856jc",
                       "openMode": "modal",
                       "linked": true
                     },
                     "6486d24e9cad105cbf29a777": {
-                      "name": "Modèle économique des tiers-lieux",
+                      "name": "Modèle économique",
                       "finder": "answers.lesCommunsDesTierslieux1262023_1215_0.finderlesCommunsDesTierslieux1262023_1215_0lix46h1uhnukfgtzj6s",
                       "linked": true,
                       "openMode": "modal"
@@ -3947,23 +3953,18 @@
                       "name": "Satisfaction du tiers-lieu",
                       "finder": "answers.lesCommunsDesTierslieux472023_154_0.finderlesCommunsDesTierslieux472023_154_0ljo6ru90tnrau11hui",
                       "openMode": "modal",
-                      "linked": true
+                      "linked": true,
+                      "hide": true
                     },
-                    "636cd563e2439b7fc12cd680": {
-                      "name": "Usages des outils numériques",
-                      "finder": "answers.lesCommunsDesTierslieux10112022_1423_0.finderlesCommunsDesTierslieux10112022_1423_0lmbmy4z4ze9v982h4fh",
-                      "openMode": "modal",
-                      "linked": true
+                    "652e32b222c3cf69f018ec40": {
+                      "name": "Réseaux régionaux & thématiques",
+                      "finder": "answers.lesCommunsDesTierslieux17102023_108_0.finderlesCommunsDesTierslieux17102023_108_0lo5zvgqitv0b2mx2rl",
+                      "linked": true,
+                      "openMode": "modal"
                     },
                     "63e0a8abeac0741b506fb4f7": {
                       "name": "Grand recensement 2023",
                       "finder": "answers.franceTierslieux1522023_1352_1.finderfranceTierslieux1522023_1352_1le5ofi0x733rc1gmbk4",
-                      "linked": true,
-                      "openMode": "modal"
-                    },
-                    "652e32b222c3cf69f018ec40": {
-                      "name": "Réseau régionnaux & thématique",
-                      "finder": "answers.lesCommunsDesTierslieux17102023_108_0.finderlesCommunsDesTierslieux17102023_108_0lo5zvgqitv0b2mx2rl",
                       "linked": true,
                       "openMode": "modal"
                     },
@@ -3995,7 +3996,7 @@
                       "hide": true
                     },
                     "6876c3e58fa8df3c7f024253": {
-                      "name": "Diagnostic Licoop",
+                      "name": "Auto-diagnostic collectif du lieu",
                       "finder": "answers.navigatorDesTierslieux1572025_2311_0.findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb",
                       "linked": true,
                       "category": "evaluation",

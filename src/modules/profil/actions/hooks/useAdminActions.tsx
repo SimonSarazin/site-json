@@ -86,7 +86,8 @@ export function useAdminActions(
 
       if (user.isAdminPending?.()) {
         actions.push(
-          buildUserAction({ configKey: "validateAdmin", t, mutation: validateAdminMutation, user, showConfirmation })
+          buildUserAction({ configKey: "validateAdmin", t, mutation: validateAdminMutation, user, showConfirmation }),
+          buildUserAction({ configKey: "reject", t, mutation: rejectMutation, user, showConfirmation })
         );
         return actions;
       }
@@ -131,7 +132,8 @@ export function useAdminActions(
 
       if (user.isAdminPending?.()) {
         actions.push(
-          buildUserAction({ configKey: "validateAdmin", t, mutation: validateAdminMutation, user, showConfirmation })
+          buildUserAction({ configKey: "validateAdmin", t, mutation: validateAdminMutation, user, showConfirmation }),
+          buildUserAction({ configKey: "reject", t, mutation: rejectMutation, user, showConfirmation })
         );
         return actions;
       }

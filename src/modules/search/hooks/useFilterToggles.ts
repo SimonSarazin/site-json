@@ -1,6 +1,8 @@
 import { usePageFilters } from "../contexts/pageFilters";
 import {
+  setDateRange,
   toggleSearchByField,
+  toggleSearchTarget,
   toggleSelectedFilters,
   type FilterLevel,
   type ToggleFieldArgs,
@@ -26,6 +28,18 @@ export function useFilterToggles() {
   const toggleField = (filterName: string, args: ToggleFieldArgs) =>
     setSearchByFields((prev) => toggleSearchByField(prev, filterName, args));
 
+  /** Pose/retire la plage de dates d'un groupe `dateRange` (clé = id du groupe). */
+  const setRange = (groupId: string, field: string, range: { start?: string; end?: string }) =>
+    setSearchByFields((prev) => setDateRange(prev, groupId, field, range));
+
+  /** Toggle d'une option `searchTargets` (radio au sein du groupe). */
+  const toggleTarget = (
+    groupOptionNames: string[],
+    filterName: string,
+    target: Record<string, unknown>,
+  ) =>
+    setSearchByFields((prev) => toggleSearchTarget(prev, groupOptionNames, filterName, target));
+
   /**
    * Signature historique de `FiltersSection.toggleFilter`, conservée pour ne
    * pas réécrire ses call sites : `field` + `value` présents → filtre par champ,
@@ -46,5 +60,5 @@ export function useFilterToggles() {
     }
   };
 
-  return { ...pf, toggleSelected, toggleField, toggleFilter };
+  return { ...pf, toggleSelected, toggleField, toggleFilter, toggleTarget, setRange };
 }
