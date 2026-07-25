@@ -19,7 +19,8 @@ interface KpiCardProps {
   accentClasses: string;
 }
 
-function KpiCard({ icon, label, value, accentClasses }: KpiCardProps) {
+// Exporté : réutilisé par la modal installation (même look de carte KPI).
+export function KpiCard({ icon, label, value, accentClasses }: KpiCardProps) {
   return (
     <Card className="gap-0 rounded-2xl border-border/50 py-5 hover:shadow-md transition-shadow min-w-0">
       <CardContent className="px-5">

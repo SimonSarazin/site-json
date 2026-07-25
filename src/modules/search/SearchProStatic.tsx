@@ -1,6 +1,6 @@
 import { Loader2, Map, List, LayoutGrid, Search, MapPin, Download, Plus, GitBranch, ArrowRight } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
-import React, { useState, useMemo, useCallback } from "react";
+import React, { Suspense, useState, useMemo, useCallback } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router";
 
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,12 @@ const SearchMapWrapper = lazy(() => import("./components/SearchMapWrapper"));
 const SearchBubbleChart = lazy(() => import("./components/SearchBubbleChart"));
 const FranceRegionsMap = lazy(() => import("./components/FranceRegionsMap"));
 const ThematicCards = lazy(() => import("./components/ThematicCards"));
+// Fiche installation ouverte par l'URL (lien partagé). Import DYNAMIQUE : pas
+// d'arête statique search → observatoire (l'inverse existe déjà), et le chunk
+// recharts n'est tiré que sur un deep-link effectif.
+const InstallationUrlModal = lazy(
+  () => import("@/modules/observatoire/components/installation/InstallationUrlModal"),
+);
 import { SwitchDetailsMode } from "./components/SwitchDetailsMode";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
@@ -27,7 +33,7 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import "@/modules/search/i18n"; // Required: registers i18n resources
 import "@/modules/search/styles.css";
-import { SearchProStaticSectionProps } from "./schema";
+import { DEFAULT_INSTALLATION_PARAM, SearchProStaticSectionProps } from "./schema";
 import { useSearchQuery } from "./hooks/useSearchQuery";
 import { useSearchAllResults } from "./hooks/useSearchAllResults";
 import MapProgress from "./components/MapProgress";
@@ -36,6 +42,7 @@ import { useCsvExport } from "./hooks/useCsvExport";
 import { canonicalSearchProStaticBaseParams } from "./lib/canonicalBaseParams";
 import { useZonesQuery, getZoneId, getZoneName } from "./hooks/useZonesQuery";
 import { usePageFiltersOptional } from "./contexts/pageFilters";
+import { useInstallationFilterUrlSync } from "./hooks/useInstallationFilter";
 import { searchByFieldsToQuery } from "./lib/searchByFieldsToQuery";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useAuthModal } from "@/modules/auth";
@@ -99,6 +106,20 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   const defaultDetailedView = props.defaultDetailedView ?? false;
 
   const contextFilters = usePageFiltersOptional();
+
+  // Filtre installation déclenché depuis les cartes : restauration one-time
+  // depuis l'URL (liens partagés / rechargement). Monté ICI et pas dans la
+  // carte — une seule hydratation par page.
+  useInstallationFilterUrlSync(list?.card?.installationFilter);
+
+  // Fiche installation partagée : on ne monte (donc ne télécharge) le chunk que
+  // si le param est effectivement présent.
+  const installationConf = list?.preview?.installationDashboard;
+  const showInstallationUrlModal = Boolean(
+    installationConf &&
+      list?.preview?.reservations &&
+      searchParams.get(installationConf.param ?? DEFAULT_INSTALLATION_PARAM),
+  );
 
   // État local (pas de sync URL)
   const defaultViewMode = props.defaultViewMode || (showMap ? "map" : "list");
@@ -854,6 +875,12 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
           parent={entity}
           formConfig={addButton?.formConfig}
         />
+      )}
+
+      {showInstallationUrlModal && (
+        <Suspense fallback={null}>
+          <InstallationUrlModal preview={list!.preview!} />
+        </Suspense>
       )}
     </div>
   );
