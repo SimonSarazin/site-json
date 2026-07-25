@@ -35,11 +35,16 @@ export function computeUrlFromFilters(
 
   for (const group of filterGroups) {
     // dateRange : sélection en `searchByFields` sous la clé du GROUPE —
-    // miroir `?<group.id>=start[,end]`.
+    // miroir `?<group.id>=start[,end]` (ou `,end` pour une plage « fin seule »).
     if (group.type === "dateRange") {
       const entry = searchByFields[group.id];
       const range = (entry?.value ?? {}) as { start?: string; end?: string };
-      const csv = [range.start, range.end].filter(Boolean).join(",");
+      const start = range.start ?? "";
+      const end = range.end ?? "";
+      // On CONSERVE la position de début vide (`,end`) : un `.filter(Boolean)`
+      // ferait glisser une borne de fin seule en position de début au round-trip
+      // (la borne « Jusqu'au » deviendrait « À partir du »).
+      const csv = end ? `${start},${end}` : start;
       if (csv) params.set(group.id, csv);
       else params.delete(group.id);
       continue;

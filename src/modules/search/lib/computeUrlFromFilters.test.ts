@@ -261,6 +261,46 @@ describe("dateRange — miroir URL", () => {
       dates: { field: "startDate", type: "dateRange", value: { start: "2026-07-01", end: "2026-08-31" } },
     });
   });
+
+  it("plage « fin seule » : position de début vide conservée (`,end`) et relue en borne de fin", () => {
+    // écriture : la position de début vide est gardée → `?dates=,end`.
+    const written = computeUrlFromFilters(
+      new URLSearchParams(),
+      {},
+      { dates: rangeEntry({ end: "2026-08-31" }) },
+      [DATES],
+    );
+    expect(written.get("dates")).toBe(",2026-08-31");
+
+    // lecture : `,end` reste une borne de FIN (et ne glisse pas en début).
+    const { applySearchFields } = computeFiltersFromUrl(
+      new URLSearchParams("dates=,2026-08-31"),
+      [DATES],
+      null,
+    );
+    expect(applySearchFields({})).toEqual({
+      dates: { field: "startDate", type: "dateRange", value: { end: "2026-08-31" } },
+    });
+  });
+
+  it("plage « début seul » → ?dates=start (sans virgule) et relue en borne de début", () => {
+    const written = computeUrlFromFilters(
+      new URLSearchParams(),
+      {},
+      { dates: rangeEntry({ start: "2026-07-01" }) },
+      [DATES],
+    );
+    expect(written.get("dates")).toBe("2026-07-01");
+
+    const { applySearchFields } = computeFiltersFromUrl(
+      new URLSearchParams("dates=2026-07-01"),
+      [DATES],
+      null,
+    );
+    expect(applySearchFields({})).toEqual({
+      dates: { field: "startDate", type: "dateRange", value: { start: "2026-07-01" } },
+    });
+  });
 });
 
 // Groupe « champ » (taxonomie en CHAMPS, parent62) : `field` sur un groupe
@@ -374,5 +414,24 @@ describe("applyDefaultSearchTargets (défaut à l'hydratation)", () => {
   it("groupe sans defaultChecked ou non-searchTargets → identité", () => {
     expect(applyDefaultSearchTargets({}, [TYPE_INFO], new URLSearchParams())).toEqual({});
     expect(applyDefaultSearchTargets({}, [TYPO], new URLSearchParams())).toEqual({});
+  });
+
+  // Régression : un defaultChecked sur un groupe « champ » doit lui aussi être
+  // posé en searchByFields (jamais selectedFilters, sinon tag `$all` fantôme).
+  it("groupe « champ » defaultChecked → posé en searchByFields (pas en tag)", () => {
+    const territoireDefault: FilterGroupLike = {
+      ...TERRITOIRES_CHAMP,
+      options: [
+        { ...TERRITOIRES_CHAMP.options![0], defaultChecked: true },
+        TERRITOIRES_CHAMP.options![1],
+      ],
+    };
+    const out = applyDefaultSearchTargets({}, [territoireDefault], new URLSearchParams());
+    expect(out).toEqual({ Arrageois: { field: "territoires", value: ["Arrageois"] } });
+
+    // L'URL prime : param présent → aucun défaut.
+    expect(
+      applyDefaultSearchTargets({}, [territoireDefault], new URLSearchParams("territoire=Entre Mer et Terres")),
+    ).toEqual({});
   });
 });

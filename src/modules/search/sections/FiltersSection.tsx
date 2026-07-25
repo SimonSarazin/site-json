@@ -315,6 +315,14 @@ export function FiltersSection({
         // recherche. Le défaut est appliqué dans searchByFields à
         // l'hydratation URL (applyDefaultSearchTargets, effet ci-dessous).
         newFilterGroups.push(group);
+      } else if (group.field) {
+        // Groupe « champ » (territoires/publics/thèmes) : même règle que
+        // searchTargets. Une option `defaultChecked` cible un CHAMP du document
+        // et doit vivre dans searchByFields → `{champ:{$in}}` ; routée par
+        // selectedFilters elle partirait en tag `$all` inexistant (recherche
+        // vidée). Le défaut est appliqué dans searchByFields à l'hydratation
+        // (applyDefaultSearchTargets).
+        newFilterGroups.push(group);
       } else {
         const defaultCheckedIds = (group.options ?? [])
           .filter(option => option.defaultChecked)
@@ -678,6 +686,24 @@ export function FiltersSection({
             const applyCsv = (csv: string) => {
               const next = csv.split(",").map((v) => v.trim()).filter(Boolean);
               const current = selectedNames;
+              // searchTargets = radio : UN seul toggle, pas un diff add/remove.
+              // `toggleTarget` efface le groupe puis coche l'option cliquée ;
+              // itérer le diff [ajoutée, retirée] appellerait toggleTarget deux
+              // fois → les deux s'annulent et on revient à l'option précédente.
+              if (group.type === "searchTargets") {
+                const applyTarget = (name: string) => {
+                  const option = (group.options ?? []).find((o) => (o.name || o.id) === name);
+                  toggleTarget(groupOptionNames, name, option?.target ?? {});
+                };
+                if (next.length > 0) {
+                  // Sélectionne la nouvelle option (rien à faire si déjà active).
+                  if (!current.includes(next[0])) applyTarget(next[0]);
+                } else if (current.length > 0) {
+                  // Select vidé → désélectionne l'option active.
+                  applyTarget(current[0]);
+                }
+                return;
+              }
               const changed = [
                 ...next.filter((n) => !current.includes(n)),
                 ...current.filter((c) => !next.includes(c)),
@@ -689,8 +715,6 @@ export function FiltersSection({
                 } else if (group.type === "entityList") {
                   const fType = group.filterType ?? "sourceKey";
                   toggleFilter(group.id, name, fType, name, null, fType);
-                } else if (group.type === "searchTargets") {
-                  toggleTarget(groupOptionNames, name, option?.target ?? {});
                 } else if (group.field) {
                   toggleFilter(group.id, name, group.field, name);
                 } else {

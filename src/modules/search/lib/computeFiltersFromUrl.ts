@@ -37,15 +37,24 @@ export function applyDefaultSearchTargets(
 ): Record<string, SearchByFieldValue> {
   let next = prev;
   for (const group of filterGroups) {
-    if (group.type !== "searchTargets") continue;
+    const isSearchTargets = group.type === "searchTargets";
+    const isField = !!group.field;
+    // Seuls les groupes searchTargets et « champ » posent leur défaut dans
+    // searchByFields ; les groupes « tag » gardent le leur en selectedFilters.
+    if (!isSearchTargets && !isField) continue;
     if (searchParams.has(group.id)) continue;
     const optionKeys = (group.options ?? []).map((o) => o.name || o.id);
     if (optionKeys.some((k) => Object.prototype.hasOwnProperty.call(next, k))) continue;
     const def = (group.options ?? []).find((o) => o.defaultChecked);
     if (!def) continue;
+    const key = def.name || def.id;
     next = {
       ...next,
-      [def.name || def.id]: { field: "searchTarget", type: "searchTarget", value: def.target ?? {} },
+      [key]: isSearchTargets
+        ? { field: "searchTarget", type: "searchTarget", value: def.target ?? {} }
+        // Groupe « champ » : même forme qu'un clic (cf. lecture URL du groupe
+        // `field`) → `{ <champ>: { $in: [key] } }` via searchByFieldsToQuery.
+        : ({ field: group.field as string, value: [key] } as SearchByFieldValue),
     };
   }
   return next;
@@ -125,9 +134,12 @@ export function computeFiltersFromUrl(
         return;
       }
       // dateRange → searchByFields sous la clé du groupe : `?dates=2026-07-01`
-      // (borne début) ou `?dates=2026-07-01,2026-08-31` (début,fin).
+      // (borne début), `?dates=2026-07-01,2026-08-31` (début,fin) ou
+      // `?dates=,2026-08-31` (fin seule). On lit `rawValue` (et non `values`
+      // filtré) pour préserver la position de début vide : sans ça une borne de
+      // fin seule serait relue comme une borne de début.
       if (group.type === "dateRange") {
-        const [start, end] = values;
+        const [start, end] = rawValue.split(",").map((v) => v.trim());
         nextSearchFields[group.id] = {
           field: group.field ?? "startDate",
           type: "dateRange",
