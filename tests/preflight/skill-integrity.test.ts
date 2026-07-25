@@ -51,14 +51,17 @@ function tableTypes(sectionHeading: string): string[] {
 }
 
 describe("skill config-assistant ⇄ code (anti-dérive)", () => {
-  it("la table Headers couvre exactement l'enum header.type (hors 'default')", () => {
-    const real = enumOptions(Header.shape.type).filter((t) => t !== "default");
+  // `default` INCLUS : ce n'est pas un design (il délègue à HeaderStandard /
+  // FooterRich) mais il existe dans des configs réelles — un agent qui en
+  // rencontre un doit trouver la ligne qui l'explique.
+  it("la table Headers couvre exactement l'enum header.type", () => {
+    const real = enumOptions(Header.shape.type);
     const documented = tableTypes("### Headers");
     expect(documented.sort()).toEqual(real.sort());
   });
 
-  it("la table Footers couvre exactement l'enum footer.type (hors 'default')", () => {
-    const real = enumOptions(Footer.shape.type).filter((t) => t !== "default");
+  it("la table Footers couvre exactement l'enum footer.type", () => {
+    const real = enumOptions(Footer.shape.type);
     const documented = tableTypes("### Footers");
     expect(documented.sort()).toEqual(real.sort());
   });

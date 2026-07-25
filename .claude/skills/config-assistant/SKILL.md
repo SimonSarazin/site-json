@@ -14,6 +14,7 @@ Les faits volatils se LISENT à l'usage, ils ne sont pas écrits ici :
 
 | Besoin | Commande |
 |---|---|
+| Clés RACINE d'un config (quels blocs existent, requis/optionnels) | `npm run config:schema root` |
 | Liste des sections + description (groupée par famille) | `npm run config:schema sections` |
 | Archétypes de référence (quel site imiter, ce qu'il démontre) + liste des exemples | `npm run config:example` |
 | Exemple canonique d'un bloc réel (theme, command-palette, agenda, list-resource…) | `npm run config:example -- <feature>` |
@@ -29,6 +30,10 @@ Les faits volatils se LISENT à l'usage, ils ne sont pas écrits ici :
 | Chercher / vérifier un slug d'entité | `npm run entity:slug -- search <nom>` / `check <slug>` |
 | Qualité (liens morts, i18n, thème) | `npm run audit:config` |
 | Validation finale stricte | `npm run test:preflight` |
+
+Pour PARSER une sortie (jq, extraire un sous-arbre, script), appeler
+`npx tsx scripts/<x>.ts …` : `npm run` préfixe 4 lignes de préambule qui
+cassent le JSON.
 
 Les dumps `config:schema` portent la SÉMANTIQUE des props (`description` sur
 les nœuds, registre `scripts/lib/prop-descriptions.ts`) et impriment en
@@ -175,21 +180,23 @@ Pour corriger/améliorer un config existant :
 
 | type | identité | quand l'utiliser | champs spécifiques |
 |---|---|---|---|
-| `standard` | barre horizontale sticky, fond plein, dropdowns | défaut polyvalent sans hero plein écran (0 usage prod à ce jour) | `height`, `announcement` |
+| `standard` | barre horizontale sticky, fond plein, dropdowns | défaut polyvalent sans hero plein écran (0/14 en direct — mais c'est lui que rend `default`) | `height`, `announcement` |
 | `mega-menu` | méga-menu au survol en colonnes | portail à navigation riche/profonde (multi-réseaux) — ex. tiers-lieux | `nav[].megaMenu` |
 | `transparent-scroll` | transparent sur le hero → opaque au scroll | hero visuel plein écran — le standard de fait du parc (10/14 configs) | `transparent`, `urgenceButton`, `ctaButton` |
 | `minimal` | barre compacte, typo uppercase espacée | petite vitrine épurée — ex. julie-pot-vin | `logoTitle`, `logoIcon` |
 | `underline-nav` | nav soulignée animée, fond marqué | identité marquée, communes/collectivités — ex. nos-commune | `piggyBank`, `urgenceButton`, `ctaButton` |
 | `transparent-dark` | barre sombre fixe (teinte : token `--header-bar`) | site à dominante sombre — ex. commune-transparente | `logoTitle`, `entityLogoOverride` |
+| `default` | **alias, pas un design** : rend `HeaderStandard` | héritage — n'en produis JAMAIS pour un site neuf, écris `standard` | ceux de `standard` |
 
 ### Footers (`footer.type`)
 
 | type | identité | quand l'utiliser | champs spécifiques |
 |---|---|---|---|
-| `rich` | newsletter + colonnes + socials | marketing complet avec newsletter (0 usage prod à ce jour) | `newsletter`, `columns[]`, `socials[]` |
+| `rich` | newsletter + colonnes + socials | marketing complet avec newsletter (0/14 en direct, mais rendu sur 3/14 via `default`) | `newsletter`, `columns[]`, `socials[]` |
 | `minimal-centered` | logo centré + nav + légal | discrétion maximale — ex. tiers-lieux | `columns[0].links`, `legalLinks` |
 | `sidebar-columns` | sidebar (logo+desc+socials) + colonnes | identité + nav riche (5/14 configs) — ex. rezo-la-mer | `style: "plain"\|"card"` |
 | `contact-partners` | bloc contact + logos partenaires | portail institutionnel avec partenaires (5/14) — ex. parent62 | `contactSection`, `partners.logos[]` |
+| `default` | **alias, pas un design** : rend `FooterRich` | héritage (3/14 : commune-transparente, julie-pot-vin, nos-commune) — n'en produis JAMAIS pour un site neuf | ceux de `rich` |
 
 ### Presenters — cartes (`list.card.type`)
 
@@ -244,7 +251,7 @@ sans `overlay`/`news`/`testimonial`/`resource`) ; `card.detailedMode`
 | `agenda` | section `agenda` (vues liste/calendrier/carte/split) | `baseParams`, `filters` (text/type/tags), `defaultMode`/`tabs`/`detailsMode`, `enableMap`/`map` | événements indexés (`searchEventsCostum`) |
 | `news` | section `news` | `props.entitySlug`, `maxItems` | fil d'actus de l'entité |
 | `blog` | routes `/blog/:slug` (+ `/blog/id/:id`) + sections `articleFeed`/`articleReader` | `config.blog` (`feedCostumSlug`, variants card/reader), `costumForms.<article>`, `commandPalette.articleSearch` | POI `type:"article"` scopés costum (`source.key`) |
-| `coform` | routes `/coform` | réf. de formulaire | CoForm défini côté backend |
+| `coform` | routes `/coform/:formId` (+ `/answer/:answerId`, `/place`) | réf. de formulaire | CoForm défini côté backend |
 | `cagnotte` | sections `actions`/`finance`/`*-summary` | `idProjet` | projet + Stripe/HelloAsso |
 | `profil` | `/profil/:slug`, section `member` | `config.profiles` (tabs, editModal) | types d'entités |
 | `auth` | `loginForm`/`registerForm`/`recoverPasswordForm`, `<AuthMenu>` | `config.auth`, `header.utilities.auth` | comptes/SSO Communecter |
@@ -299,7 +306,11 @@ Ne lis ces fichiers QUE quand la tâche les concerne :
 - `LocalizedString` : `fr` obligatoire ; couvrir toutes les langues de
   `meta.languages` (audit:config le vérifie).
 - Chemins internes : doivent exister dans `pages[].path` ou les routes de
-  modules (`/profil`, `/login`, `/coform`…) — **aucun chemin inventé**.
+  modules — **aucun chemin inventé**. ⚠ Une route à paramètre exige une valeur
+  concrète : `/profil/:slug`, `/coform/:formId`, `/blog/:slug`, `/ampli/:slug`
+  ne sont PAS navigables nus (`/profil` seul est un 404) ; nues et valides :
+  `/login`, `/register`, `/recover-password`, `/admin`. L'audit dérive ces
+  préfixes de `src/modules/*/routes.tsx` (`scripts/lib/module-routes.ts`).
 - **Aucune URL d'image inventée** : asset fourni (copié dans
   `public/images/<slug>/`, référencé en absolu `/images/<slug>/…`), asset
   existant, ou rien. Sans logo : `logoIcon` (nom Lucide ou SVG inline).

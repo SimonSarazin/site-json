@@ -18,16 +18,17 @@
  * `fixability` pilote le flux de réparation de l'assistant config (doc/26) :
  * `auto` (lot mécanique) · `proposer` (choix humain) · `suggestion` (opt-in).
  *
- * Constats ASSUMÉS : `.audit-baseline.json` (racine, GITIGNORÉ — état local,
- * jamais partagé) — clés = fichier de config, valeurs = [{category, path}]. Un
- * constat assumé est reporté à part (`assumed`) et n'échoue pas `--strict`.
- * Pour les constats assumés PARTAGÉS des configs archétypes, utiliser
- * `knownFindings` dans .claude/skills/config-assistant/archetypes.json
- * (versionné, vérifié par tests/preflight/archetypes.test.ts).
+ * Constats ASSUMÉS — DEUX sources, lues toutes les deux :
+ *   - `.audit-baseline.json` (racine, GITIGNORÉ — état local, jamais partagé) ;
+ *   - `knownFindings` de .claude/skills/config-assistant/archetypes.json
+ *     (VERSIONNÉ — constats assumés PARTAGÉS des configs archétypes, avec leur
+ *     `note` ; c'est aussi la référence du gate tests/preflight/archetypes.test.ts).
+ * Clés = fichier de config, valeurs = [{category, path}]. Un constat assumé est
+ * reporté à part (`assumed`) et n'échoue pas `--strict`.
  *
  * Usage :
  *   npm run audit:config                      → tous les configs, rapport humain
- *   npm run audit:config -- --file <x.json>   → un seul config
+ *   npm run audit:config -- --file <x.json>   → un seul config (chemin absolu accepté)
  *   npm run audit:config -- --json            → sortie structurée (assistant/CI)
  *   npm run audit:config -- --strict          → exit 1 si constat non assumé
  */
@@ -35,17 +36,29 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { SiteConfig } from "../src/types/site-schema";
+import { moduleRoutePrefixes } from "./lib/module-routes";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const argv = process.argv.slice(2);
 const STRICT = argv.includes("--strict");
 const JSON_OUT = argv.includes("--json");
 const fileArgIdx = argv.indexOf("--file");
-const ONLY_FILE = fileArgIdx >= 0 ? argv[fileArgIdx + 1] : undefined;
+const FILE_ARG = fileArgIdx >= 0 ? argv[fileArgIdx + 1] : undefined;
+// Chemin ABSOLU accepté (auditer un brouillon hors repo, ex. /tmp) ; relativisé
+// s'il pointe DANS le repo pour que baseline/knownFindings (clés relatives)
+// s'appliquent quand même.
+const ONLY_FILE =
+  FILE_ARG && path.isAbsolute(FILE_ARG) && FILE_ARG.startsWith(ROOT + path.sep)
+    ? path.relative(ROOT, FILE_ARG)
+    : FILE_ARG;
+/** Absolu tel quel, relatif résolu depuis la racine du repo. */
+const resolveConfigPath = (f: string) => (path.isAbsolute(f) ? f : path.join(ROOT, f));
 
 const LOCALES = ["fr", "en", "es", "de"];
-// Routes servies par les modules (pas des pages du JSON) → liens internes valides.
-const KNOWN_ROUTE_PREFIXES = ["/profil", "/login", "/register", "/recover-password", "/ampli", "/coform"];
+// Routes servies par les modules (pas des pages du JSON) → liens internes
+// valides. DÉRIVÉES de src/modules/*/routes.tsx (cf. lib/module-routes.ts) :
+// la constante figée qu'elles remplacent avait dérivé (/admin, /blog absents).
+const KNOWN_ROUTE_PREFIXES = new Set(moduleRoutePrefixes(ROOT));
 // Clés portant des chemins d'images/fichiers locaux (relevé des configs réels).
 const ASSET_KEYS = new Set([
   "favicon", "logo", "logoImage", "backgroundImage", "image", "src",
@@ -59,12 +72,33 @@ interface Finding {
   message: string;
   severity: "warn" | "info";
   fixability: Fixability;
+  /** Renseignée sur les constats ASSUMÉS : pourquoi le choix est délibéré. */
+  note?: string;
+}
+
+interface AssumedEntry {
+  category: string;
+  path: string;
+  note?: string;
 }
 
 const baselinePath = path.join(ROOT, ".audit-baseline.json");
-const baseline: Record<string, { category: string; path: string }[]> = fs.existsSync(baselinePath)
+const baseline: Record<string, AssumedEntry[]> = fs.existsSync(baselinePath)
   ? JSON.parse(fs.readFileSync(baselinePath, "utf-8"))
   : {};
+
+// Constats assumés PARTAGÉS des archétypes (versionnés dans le manifest de la
+// skill). Sans cette lecture, l'audit ressortait à chaque passage un choix
+// explicitement assumé et l'assistant re-proposait de le « corriger ».
+const manifestPath = path.join(ROOT, ".claude/skills/config-assistant/archetypes.json");
+const knownFindings: Record<string, AssumedEntry[]> = {};
+if (fs.existsSync(manifestPath)) {
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8")) as {
+    archetypes?: { config: string; knownFindings?: AssumedEntry[] }[];
+  };
+  for (const a of manifest.archetypes ?? [])
+    if (a.knownFindings?.length) knownFindings[a.config] = a.knownFindings;
+}
 
 const sites = JSON.parse(fs.readFileSync(path.join(ROOT, "sites.json"), "utf-8")) as {
   config: string;
@@ -73,9 +107,10 @@ const sitesConfigs = new Set(sites.map((s) => s.config));
 const allConfigs = [...new Set(["config.prod.json", ...sites.map((s) => s.config)])].filter((f) =>
   fs.existsSync(path.join(ROOT, f)),
 );
-const configs = ONLY_FILE ? [ONLY_FILE].filter((f) => fs.existsSync(path.join(ROOT, f))) : allConfigs;
+const configs = ONLY_FILE ? [ONLY_FILE].filter((f) => fs.existsSync(resolveConfigPath(f))) : allConfigs;
 if (ONLY_FILE && configs.length === 0) {
-  console.error(`✗ introuvable : ${ONLY_FILE}`);
+  console.error(`✗ introuvable : ${resolveConfigPath(ONLY_FILE)}`);
+  console.error(`  (--file accepte un chemin absolu, ou relatif à ${ROOT})`);
   process.exit(2);
 }
 // Configs prod ORPHELINES (hors --file) : sur disque mais ni défaut ni sites.json.
@@ -118,7 +153,7 @@ function strippedKeys(raw: unknown, parsed: unknown, p: (string | number)[] = []
 const report: Record<string, { findings: Finding[]; assumed: Finding[] }> = {};
 
 for (const cf of configs) {
-  const raw = JSON.parse(fs.readFileSync(path.join(ROOT, cf), "utf-8")) as Record<string, unknown>;
+  const raw = JSON.parse(fs.readFileSync(resolveConfigPath(cf), "utf-8")) as Record<string, unknown>;
   const findings: Finding[] = [];
   const langs: string[] = (raw.meta as { languages?: string[] })?.languages ?? ["fr"];
   const pagePaths = new Set(((raw.pages as { path: string }[]) ?? []).map((pg) => pg.path));
@@ -148,7 +183,7 @@ for (const cf of configs) {
         if (!v.startsWith("/")) continue;
         const clean = v.split("?")[0].split("#")[0];
         const base = `/${clean.split("/")[1]}`;
-        if (clean !== "/" && !pagePaths.has(clean) && !KNOWN_ROUTE_PREFIXES.includes(base) && !clean.startsWith("/images/"))
+        if (clean !== "/" && !pagePaths.has(clean) && !KNOWN_ROUTE_PREFIXES.has(base) && !clean.startsWith("/images/"))
           findings.push({ category: "lien-mort", path: `${p.join(".")}.${key}`, message: `lien interne sans page/route : ${v}`, severity: "warn", fixability: "proposer" });
       }
       // Assets locaux : le fichier doit exister dans public/.
@@ -195,10 +230,13 @@ for (const cf of configs) {
   if (themeStatus !== "complet")
     findings.push({ category: "theme", path: "theme", message: themeStatus === "absent" ? "bloc theme ABSENT (couleurs via le CSS du site)" : "theme sans colors.light/dark (playbook : migration rezo-la-mer 90b5200)", severity: "info", fixability: "proposer" });
 
-  // Baseline : sépare les constats assumés.
-  const assumedEntries = baseline[cf] ?? [];
-  const isAssumed = (f: Finding) => assumedEntries.some((b) => b.category === f.category && b.path === f.path);
-  report[cf] = { findings: findings.filter((f) => !isAssumed(f)), assumed: findings.filter(isAssumed) };
+  // Constats assumés : baseline LOCALE + knownFindings VERSIONNÉS du manifest.
+  const assumedEntries = [...(baseline[cf] ?? []), ...(knownFindings[cf] ?? [])];
+  const assumedBy = (f: Finding) => assumedEntries.find((b) => b.category === f.category && b.path === f.path);
+  report[cf] = {
+    findings: findings.filter((f) => !assumedBy(f)),
+    assumed: findings.filter(assumedBy).map((f) => ({ ...f, note: assumedBy(f)?.note })),
+  };
 }
 
 // ─── Sortie ───────────────────────────────────────────────────────────────
@@ -216,12 +254,20 @@ if (JSON_OUT) {
     for (const o of orphans) console.log(`      - ${o}  → à enregistrer dans sites.json ou supprimer`);
   }
 
+  // Un constat assumé se lit AVEC sa raison : sinon l'assistant repropose de le corriger.
+  const printAssumed = (items: Finding[]) => {
+    for (const a of items)
+      console.log(`   ↳ assumé · ${a.category} @ ${a.path}${a.note ? ` — ${a.note}` : ""}`);
+  };
+
   for (const [cf, { findings, assumed }] of Object.entries(report)) {
     if (findings.length === 0) {
       console.log(`\n✅  ${cf} — RAS${assumed.length ? ` (${assumed.length} assumé(s))` : ""}`);
+      printAssumed(assumed);
       continue;
     }
     console.log(`\n⚠️   ${cf}${assumed.length ? `  (+${assumed.length} assumé(s))` : ""}`);
+    printAssumed(assumed);
     const byCat = new Map<string, Finding[]>();
     for (const f of findings) byCat.set(f.category, [...(byCat.get(f.category) ?? []), f]);
     for (const [cat, items] of byCat)

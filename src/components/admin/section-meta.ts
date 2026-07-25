@@ -87,7 +87,7 @@ const SECTION_META: Record<string, SectionMeta> = {
   // data
   chart: { label: "Chart", desc: "Graphiques et visualisations", image: "https://placehold.co/300x180/6c5ce7/eee?text=Chart", family: "data" },
   table: { label: "Table", desc: "Tableau de données structurées", image: "https://placehold.co/300x180/dfe6e9/333?text=Table", family: "data" },
-  map: { label: "Map", desc: "Carte interactive (Leaflet)", image: "https://placehold.co/300x180/00b894/eee?text=Map", family: "data" },
+  map: { label: "Map", desc: "PLACEHOLDER non fonctionnel : encadré gris + liste texte des marqueurs (aucun rendu Leaflet). Pour une vraie carte : searchPro/searchProStatic (defaultViewMode \"map\") ou agenda (enableMap)", image: "https://placehold.co/300x180/00b894/eee?text=Map", family: "data" },
 
   // utilitaires
   breadcrumb: { label: "Breadcrumb", desc: "Fil d'Ariane de navigation", image: "https://placehold.co/300x180/b2bec3/333?text=Breadcrumb", family: "utilitaires" },
