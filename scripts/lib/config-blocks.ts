@@ -19,17 +19,32 @@ import {
 } from "../../src/types/site-schema";
 import { CostumFormSchemaZod } from "../../src/modules/profil/forms/costum/costumFormSchema.zod";
 import { AdminConfigSchema } from "../../src/modules/admin/schema";
+import { ProfileOnlySectionSchema as ProfileOnlySectionUnion } from "../../src/modules/profil/schema";
 
-/** Membres de la discriminatedUnion `Section`, indexés par littéral `type`. */
-export function sectionOptions(): Map<string, z.ZodType> {
+/** Membres d'une discriminatedUnion, indexés par leur littéral `type`. */
+function unionByType(union: unknown): Map<string, z.ZodType> {
   const out = new Map<string, z.ZodType>();
-  const options = (Section as unknown as { options: z.ZodObject<{ type: z.ZodLiteral<string> }>[] }).options;
+  const options = (union as { options?: z.ZodObject<{ type: z.ZodLiteral<string> }>[] }).options ?? [];
   for (const opt of options) {
-    const lit = opt.shape?.type;
-    const value = (lit as unknown as { value?: string }).value;
+    const value = (opt.shape?.type as unknown as { value?: string })?.value;
     if (typeof value === "string") out.set(value, opt);
   }
   return out;
+}
+
+/** Membres de la discriminatedUnion `Section` (sections de PAGE), par `type`. */
+export function sectionOptions(): Map<string, z.ZodType> {
+  return unionByType(Section);
+}
+
+/**
+ * Sections de PROFIL (`config.profiles.<type>.tabs[].sections[]`) — une union
+ * SÉPARÉE (src/modules/profil/schema.ts), invisible du catalogue des sections
+ * de page alors qu'elle pèse ~360 occurrences dans le parc. Sans ce résolveur,
+ * `config:schema section:profile-header` répondait « type inconnu ».
+ */
+export function profileSectionOptions(): Map<string, z.ZodType> {
+  return unionByType(ProfileOnlySectionUnion);
 }
 
 const ROOT_BLOCKS: Record<string, { schema: () => z.ZodType; note?: string }> = {
@@ -62,7 +77,10 @@ export const ROOT_BLOCK_SELECTORS = Object.keys(ROOT_BLOCKS);
 
 /** Sélecteur (`header`, `section:agenda`…) → schéma Zod du bloc, ou undefined. */
 export function resolveBlockSchema(selector: string): z.ZodType | undefined {
-  if (selector.startsWith("section:")) return sectionOptions().get(selector.slice("section:".length));
+  if (selector.startsWith("section:")) {
+    const type = selector.slice("section:".length);
+    return sectionOptions().get(type) ?? profileSectionOptions().get(type);
+  }
   return ROOT_BLOCKS[selector]?.schema();
 }
 

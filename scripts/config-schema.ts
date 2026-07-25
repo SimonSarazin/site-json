@@ -21,6 +21,7 @@ import { SiteConfig } from "../src/types/site-schema";
 import SECTION_META, { SECTION_FAMILIES } from "../src/components/admin/section-meta";
 import {
   sectionOptions,
+  profileSectionOptions,
   resolveBlockSchema,
   blockNote,
   applyDescriptions,
@@ -130,6 +131,12 @@ if (arg === "sections") {
     if (!lines) continue;
     console.log(`\n# ${family}`);
     for (const line of lines) console.log(line);
+  }
+  // Union SÉPARÉE : ces sections ne se posent pas dans `pages[].sections` mais
+  // sous `config.profiles.<type>.tabs[].sections[]` (module profil).
+  console.log(`\n# profil — sous config.profiles.<type>.tabs[].sections[], PAS dans pages[]`);
+  for (const type of [...profileSectionOptions().keys()].sort()) {
+    console.log(`  ${type.padEnd(28)} → config:schema section:${type}`);
   }
   process.exit(0);
 }

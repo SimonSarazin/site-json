@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { profileSectionOptions, sectionOptions, resolveBlockSchema } from "../../scripts/lib/config-blocks";
 import fs from "node:fs";
 import path from "node:path";
 import type { z } from "zod";
@@ -55,5 +56,20 @@ describe("catalogue SECTION_META ⇄ code (anti-dérive)", () => {
     for (const m of doc26.matchAll(/\*\*(\d+) sections\*\*/g)) {
       expect(Number(m[1]), "doc/26-assistant-config.md").toBe(real);
     }
+  });
+
+  it("les sections de PROFIL sont adressables par config:schema (union séparée)", () => {
+    // Elles vivent sous config.profiles.<type>.tabs[].sections[] et pèsent ~360
+    // occurrences dans le parc ; `section:profile-header` répondait « type
+    // inconnu ». Elles n'ont PAS d'entrée SECTION_META (qui décrit les sections
+    // de PAGE) — d'où ce test distinct de la parité ci-dessus.
+    const profil = profileSectionOptions();
+    expect(profil.size).toBeGreaterThanOrEqual(19);
+    for (const type of profil.keys()) {
+      expect(type.startsWith("profile-"), `type profil inattendu : ${type}`).toBe(true);
+      expect(resolveBlockSchema(`section:${type}`), `section:${type} non résolue`).toBeDefined();
+    }
+    // Aucun chevauchement avec les sections de page (deux catalogues distincts).
+    for (const type of profil.keys()) expect(sectionOptions().has(type)).toBe(false);
   });
 });
