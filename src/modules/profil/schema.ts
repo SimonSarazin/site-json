@@ -421,6 +421,10 @@ const MemberCardConfSchema = z.object({
   type: z.enum(["default", "profile"]).default("default"),
   showDescription: z.boolean().optional().default(true),
   showAddress: z.boolean().optional().default(true),
+  // Bloc de compteurs de `CardProfile` (projets liés). Absent = affiché.
+  // Miroir de `CardConfSchema.showStats` du module search : la MÊME carte est
+  // rendue ici, elle doit donc se piloter pareil depuis les deux sections.
+  showStats: z.boolean().optional(),
   detailsMode: z.enum(["drawer", "dialog", "link"]).default("link"),
 }).partial();
 

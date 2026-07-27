@@ -399,6 +399,11 @@ export const CardConfSchema = z.object({
     showAddress:     z.boolean().optional(),
     shareButton:     z.boolean().optional(),
     showStar:        z.boolean().optional(),
+    // Bloc de compteurs de la carte `profile` (aujourd'hui : nombre de projets liés).
+    // Absent = affiché, pour ne rien changer aux 24 usages existants du parc.
+    // `false` sur un annuaire de structures qui ne portent pas de projets : le
+    // compteur y afficherait « 0 » sur toutes les fiches, ce qui n'informe de rien.
+    showStats:       z.boolean().optional(),
     // Affiche la barre de progression de financement (cagnotte) sur la carte +
     // déclenche la query useFundingEnvelope. Découple la feature funding du style
     // de carte. Défaut : actif uniquement pour le variant "rezo-la-mer" (rétrocompat).

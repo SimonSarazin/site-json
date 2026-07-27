@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { RotateCcw, ListFilter } from "lucide-react";
+import { useCountryDisplayNames, countryLabel } from "@/hooks/useCountryDisplayNames";
 
 interface ServerData {
   _id: { $id: string } | string;
@@ -136,9 +137,24 @@ function getItemCategories(item: SearchResult, categories?: string[]): string[] 
   return matches;
 }
 
+/**
+ * Clé de regroupement « par pays » : le code ISO-3166 alpha-2, JAMAIS le libellé.
+ *
+ * `address.level1Name` est un libellé libre : sur un même pays il coexiste en
+ * plusieurs orthographes et plusieurs langues (« Tanzania »/« Tanzanie »,
+ * « Madagascar »/« Madagasikara », « Afrique du Sud »/« Nanzfeih »), ce qui
+ * éclatait un pays en plusieurs bulles et faussait les compteurs. On groupe
+ * donc sur `addressCountry`, seul champ normalisé ; le nom lisible est résolu
+ * à l'affichage par `useCountryDisplayNames`.
+ *
+ * Repli sur `level1Name` uniquement quand l'ISO manque : un acteur mal saisi
+ * vaut mieux dans un seau imparfait que perdu.
+ */
 function getItemCountry(item: SearchResult): string | null {
   const data = getData(item);
-  return data.address?.level1Name || data.address?.addressCountry || null;
+  const iso = data.address?.addressCountry?.trim().toUpperCase();
+  if (iso) return iso;
+  return data.address?.level1Name || null;
 }
 
 function getItemId(item: SearchResult): string {
@@ -245,6 +261,17 @@ export default function SearchBubbleChart({
     });
     return map;
   }, [groupsWithCount, groupMode]);
+
+  const countryDisplayNames = useCountryDisplayNames();
+  /**
+   * Nom AFFICHÉ d'un groupe. En mode « pays » la clé est un code ISO
+   * (cf. `getItemCountry`) : c'est le seul endroit qui le traduit. En mode
+   * « type d'acteur » la clé est déjà le libellé, on la rend telle quelle.
+   */
+  const groupLabel = useCallback(
+    (key: string) => (groupMode === "country" ? countryLabel(key, countryDisplayNames) : key),
+    [groupMode, countryDisplayNames],
+  );
 
   const hierarchyData = useMemo((): RootNode => {
     const groupMap = new Map<string, BubbleNode[]>();
@@ -367,7 +394,7 @@ export default function SearchBubbleChart({
         .attr("paint-order", "stroke")
         .attr("stroke", "white")
         .attr("stroke-width", 4)
-        .text(name);
+        .text(groupLabel(name));
     });
 
     // Item nodes (depth 2)
@@ -461,7 +488,7 @@ export default function SearchBubbleChart({
     return () => {
       zoomRef.current = null;
     };
-  }, [hierarchyData, dimensions, filteredResults, onItemClick, baseUrl, groupColorMap]);
+  }, [hierarchyData, dimensions, filteredResults, onItemClick, baseUrl, groupColorMap, groupLabel]);
 
   const zoomToGroup = useCallback((groupName: string | null) => {
     if (!svgRef.current || !zoomRef.current) return;
@@ -607,7 +634,7 @@ export default function SearchBubbleChart({
                   className="w-2.5 h-2.5 rounded-full shrink-0"
                   style={{ backgroundColor: color }}
                 />
-                <span className="truncate flex-1 text-left">{name}</span>
+                <span className="truncate flex-1 text-left">{groupLabel(name)}</span>
                 <Badge
                   variant="secondary"
                   className="ml-auto px-1.5 py-0 text-[10px] font-semibold"
