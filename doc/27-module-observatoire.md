@@ -115,8 +115,11 @@ salles/tarifs) ne sont pas encore lus.
         "colors": { "Cilaos": "chart-1" } },     // jetons de thème par VALEUR
       { "kind": "booleanGroups", "dimensions": ["access"], "layout": "half" },
       { "kind": "barsHorizontal", "dimension": "sports", "top": 10 },
-      { "kind": "bars", "dimension": "ville" }
+      { "kind": "bars", "dimension": "ville",
+        "colors": { "Saint-Denis": "chart-1" } } // `colors` vaut AUSSI pour bars/barsHorizontal
     ],
+    "maxWidth": "8xl",                           // largeur du conteneur (4xl…8xl, full) — défaut 8xl
+    "kpiLayout": "inline",                       // "cards" (défaut) ou "inline" (chiffres tabulaires)
     "export": { "filename": "mon-export" },     // opt-in : bouton CSV (filtré/trié)
     "drilldown": true,                           // opt-in : clic part/barre = filtre
     "table": {
@@ -151,6 +154,22 @@ colonnes : `text`, `title`, `badge`, `boolBadge`, `number`. Couleurs en
 **jetons de thème** uniquement (`chart-1..5`, `primary`, `accent`, `muted`)
 — jamais d'hex : le dashboard suit le thème light/dark du site. Icônes KPI :
 noms lucide kebab-case (DynamicIcon).
+
+**`colors` s'applique à TOUS les types de graphes**, `bars`/`barsHorizontal`
+compris (ils l'ignoraient en silence jusqu'au correctif). Sans `colors`, une
+série reste monochrome (`--chart-1`) : c'est le défaut, et il est presque
+toujours le bon — pour une série unique, la longueur des barres encode déjà la
+valeur. **Toujours nommer les valeurs** plutôt que compter sur le repli
+automatique : celui-ci colore par RANG dans la liste triée, si bien qu'une
+valeur change de couleur dès que les comptes bougent.
+
+**`maxWidth`** aligne le tableau de bord sur les autres sections de la page.
+Le défaut `8xl` (1440 px) convient à une page dédiée ; sur une page qui mêle
+plusieurs sections, reprendre la largeur des voisines (souvent `5xl` ou `6xl`)
+— deux largeurs différentes sur une même page se voient immédiatement.
+**`kpiLayout: "inline"`** rend les KPI en ligne de chiffres tabulaires au lieu
+de grandes cartes : préférable pour un résumé posé en accueil, où trois cartes
+pleine largeur écrasent le reste de la page.
 
 L'exemple complet en production : la page `/observatoire` de
 `config.prod.equipements-Sportifs.json` (dataset RES — 12 dimensions,
