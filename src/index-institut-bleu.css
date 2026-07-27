@@ -4,110 +4,23 @@
 
 @custom-variant dark (&:is(.dark *));
 
-:root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+/* ══════════════════════════════════════════════════════════════════════════
+   Institut Bleu — direction « Le trait de côte »
+   ──────────────────────────────────────────────────────────────────────────
+   Ce fichier ne porte AUCUN jeton de thème. La palette, les polices, le rayon
+   et les ombres vivent dans `config.theme` (config.prod.institut-bleu.json) et
+   sont injectés au runtime — SSR compris — par `SiteTheme`.
 
-  --info: oklch(0.941 0.065 260); /* Bleu clair */
-  --info-foreground: oklch(0.200 0.030 260);
+   Les blocs `:root`/`.dark` retirés ici portaient le thème shadcn PAR DÉFAUT,
+   en niveaux de gris : tous les jetons étaient en `oklch(… 0 0)`, chroma zéro.
+   Le site n'avait donc aucune couleur d'identité. Vérifié avant coupe : les 45
+   variables supprimées sont toutes couvertes par les 54 que la config injecte.
 
-  --success: oklch(0.830 0.180 135); /* Vert doux */
-  --success-foreground: oklch(0.150 0.030 135);
-
-  --warning: oklch(0.950 0.160 85); /* Orange clair */
-  --warning-foreground: oklch(0.200 0.060 85);
-
-  --error: oklch(0.680 0.250 30); /* Rouge vif */
-  --error-foreground: oklch(1 0 0); /* Blanc pur */
-  --font-sans: Quicksand, sans-serif;
-  --font-serif: Playfair Display, serif;
-  --font-mono: Space Mono, monospace;
-  --tracking-normal: 0em;
-  --spacing: 0.25rem;
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-
-  --info: oklch(0.600 0.140 260); /* Bleu foncé */
-  --info-foreground: oklch(0.950 0.040 260);
-
-  --success: oklch(0.600 0.180 135); /* Vert foncé */
-  --success-foreground: oklch(0.950 0.040 135);
-
-  --warning: oklch(0.750 0.180 85); /* Orange foncé */
-  --warning-foreground: oklch(0.950 0.040 85);
-
-  --error: oklch(0.680 0.250 30); /* Rouge sombre */
-  --error-foreground: oklch(0.990 0.030 100); /* Presque blanc, légèrement chaud */
-
-  --font-sans: Quicksand, sans-serif;
-  --font-serif: Playfair Display, serif;
-  --font-mono: Space Mono, monospace;
-  --radius: 0.625rem;
-  --tracking-normal: 0em;
-  --spacing: 0.25rem;
-}
+   La palette est dérivée du logo officiel (silhouette de La Réunion + vague) :
+   bleu de marque #0060b0 mesuré sur 97 % de sa surface, et une rampe de bleus
+   marins pour la vague. Le « trait de côte » est le motif structurant : un
+   filet fin, assumé visible, plutôt que des blocs pleins.
+   ══════════════════════════════════════════════════════════════════════════ */
 
 @theme inline {
   --color-background: var(--background);
@@ -146,6 +59,10 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
+  /* Rôle d'AFFICHAGE. Le chargeur Google Fonts n'expose que trois emplacements
+     (sans/serif/mono) : `serif` porte donc la police de titre — ici Zilla Slab,
+     un slab dont les empattements plats tiennent le registre scientifique. */
+  --font-display: var(--font-serif);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -257,8 +174,14 @@
     @apply bg-background text-foreground;
   }
 
-  /* Ensure proper text colors in all themes */
+  /* Les titres prennent la police d'AFFICHAGE. Sans cette règle, Zilla Slab
+     resterait déclarée au thème sans que rien ne l'emploie : aucune section ne
+     demande `font-serif` d'elle-même. On ne pose PAS de couleur ici — les
+     sections appliquent leur propre utilitaire (`text-foreground`, `text-white`),
+     qui bat la couche `base` : une règle de couleur y serait inerte là où on la
+     voudrait, et n'atteindrait que les titres de cartes. */
   h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
     @apply text-foreground;
   }
 
@@ -475,4 +398,103 @@ html {
 
 @layer utilities {
 
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Motif « trait de côte »
+   ──────────────────────────────────────────────────────────────────────────
+   Ces classes vivent ICI et pas dans le HTML de la config : Tailwind ne scanne
+   pas les `config.prod.*.json`. Une classe à valeur arbitraire écrite seulement
+   dans la config est PURGÉE du build — seuls les utilitaires déjà présents dans
+   `src/` survivent. Tout le reste doit être une vraie classe de thème.
+
+   Le motif est un FILET, pas un aplat : le sujet est un relevé d'acteurs le
+   long d'un littoral, et le logo lui-même est un contour. La couleur pleine est
+   donc réservée aux repères, la structure se dit en traits.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Séparateur de section : filet fin sur toute la largeur, amorcé par un segment
+   plein aux couleurs de marque — comme l'échelle d'une carte marine. */
+.trait-cote {
+  position: relative;
+  border-top: 1px solid var(--border);
+}
+
+.trait-cote::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 4rem;
+  height: 3px;
+  background: var(--primary);
+}
+
+/* Chiffres, codes et compteurs : la voix « relevé » du site. */
+.tabular {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* Surtitre de section, en mono espacée — annonce la nature du bloc. */
+.surtitre {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+/* Puces de familles thématiques du bandeau d'accueil : des jetons cernés d'un
+   filet, dans l'esprit du motif. Nommées `cote-*` — les classes `releve-*` de
+   cyber-reunion vivent dans SON thème et ne sont pas partagées. */
+.cote-puces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cote-puces span {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 0.25rem;
+  color: var(--muted-foreground);
+  line-height: 1.3;
+}
+
+.cote-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius, 0.5rem);
+  font-weight: 600;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  transition: opacity 0.2s ease;
+}
+
+.cote-cta:hover { opacity: 0.9; color: var(--primary-foreground); }
+
+.cote-cta-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius, 0.5rem);
+  font-weight: 600;
+  /* Le contour suit la couleur du texte : le bandeau est clair en mode clair et
+     sombre en mode sombre, une bordure dérivée d'un jeton figé y disparaîtrait. */
+  border: 1px solid color-mix(in oklab, currentColor 45%, transparent);
+  color: var(--foreground);
+  transition: background-color 0.2s ease;
+}
+
+.cote-cta-ghost:hover {
+  background: color-mix(in oklab, currentColor 8%, transparent);
+  color: var(--foreground);
 }
