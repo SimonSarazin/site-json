@@ -15,6 +15,7 @@ Le formalisme et la maintenance de ces pages sont pilotés par le skill
 | Réseau Parentalité 62 | `parent62` | [parent62.md](parent62.md) | Partie 1 en cours — moteur de recherche complété (25/07) ; **déploiement à faire** |
 | Institut Bleu — économie bleue (La Réunion) | `institutBleu` | [institut-bleu.md](institut-bleu.md) | Portage du costum legacy — lots 0→9 faits (annuaire · cartographie · agenda · fiche et formulaire acteur · pages éditoriales · back-office · auth · hooks backend · design). Restent les essais UI connectés, le build et le déploiement |
 | Sport Santé Bien-être (La Réunion) | `sportSanteBienetre` | [sport-sante-bien-etre.md](sport-sante-bien-etre.md) | 19 pages · 6 formulaires costum · back-office 7 onglets. Audit 16 → 4 constats (28/07) ; **4 arbitrages de contenu en attente** (grille professionnels, hero /public) et rendu navigateur jamais vérifié |
+| Rézo la mer (La Réunion) | `rezoLaMer` | [rezo-la-mer.md](rezo-la-mer.md) | **Portage arrêté en chemin** : 5 pages portées sur 14 au legacy, plus un module AAP de 21 pages jamais repris. 5 pages légales posées le 28/07 (à compléter). 14 liens morts et le cadrage de l'AAP en attente |
 
 ## Pourquoi un répertoire séparé de `doc/`
 
