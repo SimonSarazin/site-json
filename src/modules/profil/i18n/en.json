@@ -1302,7 +1302,9 @@
     },
     "datetime": {
       "invalid": "ISO 8601 format required"
-    }
+    },
+    "minItems": "Not enough items selected",
+    "maxItems": "Too many items selected"
   },
   "ProfileTiersLieuxInfo": {
     "reserveOnline": "Book online",
@@ -1384,5 +1386,9 @@
     "contactEmail": "Send email",
     "callPhone": "Call",
     "visitWebsite": "Visit website"
+  },
+  "AuthRequired": {
+    "title": "Sign in to continue",
+    "description": "A new listing is tied to your account, so you can edit and complete it later."
   }
 }

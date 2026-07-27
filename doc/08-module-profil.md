@@ -968,6 +968,43 @@ src/modules/profil/forms/costum/<id>/
 `<id>` ∈ `{ tiers-lieux, equipements-sportifs }`. Ajouter un 3ᵉ costum = copier un dossier — ou poser le document
 directement dans `config.costumForms` **sans aucun fichier TS** — cf. [formEngine § recette d'ajout](28-module-formengine.md).
 
+### Garde d'authentification des modales d'ajout
+
+Toutes les clés du registre `DynamicModal` sont des modales d'**ajout** (`add-*`), et
+`runEntityMutation` crée sur `me` — sans session elle lève `No entity provided`.
+`DynamicModal` intercepte donc **avant** de charger le formulaire : un visiteur non
+connecté reçoit une invite (`LoginPrompt` dans un `Dialog`) au lieu du formulaire, et
+non plus un toast d'erreur technique après avoir tout rempli. Une fois connecté,
+`isConnected` bascule et le formulaire prend la place de l'invite **à la même
+ouverture** — d'où l'absence de `onSuccess` à passer, il n'y a rien à rejouer.
+
+Le garde est testé sur `open` : au repos et en SSR il ne s'évalue pas, donc ni chunk
+chargé pour rien, ni divergence d'hydratation (cf. gotcha #10).
+
+Les textes sont surchargeables **par formulaire**, sous `chrome.authPrompt` — ils
+appartiennent au formulaire, pas au bouton qui l'ouvre (la même modale s'ouvre depuis
+un bouton flottant, un bouton « créer » de recherche ou un profil) :
+
+```jsonc
+"chrome": {
+  "title": { "add": { "fr": "…" }, "edit": { "fr": "…" } },
+  "authPrompt": {                     // les deux clés optionnelles
+    "title":       { "fr": "Un compte est nécessaire" },
+    "description": { "fr": "La fiche reste rattachée à votre compte : vous pourrez la compléter plus tard." }
+  }
+}
+```
+
+Chaque clé accepte une clé i18n **ou** un `LocalizedString` inline ; absente, elle
+retombe sur `AuthRequired.title` / `AuthRequired.description` du namespace
+`modules/profil`. Les textes sont lus depuis `config.costumForms` via `useSite()`, et
+**jamais** depuis le module du formulaire — le garde existe précisément pour ne pas le
+charger.
+
+Le garde `condition: {auth: "required"}` d'un `floatingActionButton` reste utile pour
+ne pas MONTRER l'action à un visiteur, mais il n'est plus le seul rempart : l'oublier
+ne produit plus de cul-de-sac.
+
 ### Logique métier irréductible (registrée par clé)
 
 Le document ne porte que des **clés string** ; le code correspondant est enregistré dans `fns.ts` (pattern
