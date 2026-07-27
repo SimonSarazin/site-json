@@ -13,7 +13,7 @@ Le formalisme et la maintenance de ces pages sont pilotés par le skill
 | Projet | Slug | Doc | État |
 |---|---|---|---|
 | Réseau Parentalité 62 | `parent62` | [parent62.md](parent62.md) | Partie 1 en cours — moteur de recherche complété (25/07) ; **déploiement à faire** |
-| Institut Bleu — économie bleue (La Réunion) | `institutBleu` | [institut-bleu.md](institut-bleu.md) | Portage du costum legacy — lots 0-2 faits (annuaire · cartographie · agenda) ; fiche acteur, formulaire acteur et back-office à venir |
+| Institut Bleu — économie bleue (La Réunion) | `institutBleu` | [institut-bleu.md](institut-bleu.md) | Portage du costum legacy — lots 0→9 faits (annuaire · cartographie · agenda · fiche et formulaire acteur · pages éditoriales · back-office · auth · hooks backend · design). Restent les essais UI connectés, le build et le déploiement |
 
 ## Pourquoi un répertoire séparé de `doc/`
 

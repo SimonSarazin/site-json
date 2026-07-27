@@ -13,10 +13,11 @@
 > [Module Admin](../doc/30-module-admin.md) · [Système de visibilité](../doc/19-visibility-system.md).
 > Mémoire : `[[project-institut-bleu]]` (à créer côté cocolight-backend).
 
-Dernière mise à jour : **2026-07-27** (lots 0→8 : annuaire · cartographie · agenda · fiche acteur ·
-formulaire acteur · pages éditoriales · back-office · auth & palette · **hooks costum backend**).
-Restent : les essais UI connectés, le `npm run build` et le déploiement (lot 9), plus les reliquats
-de parité listés en §8.6.
+Dernière mise à jour : **2026-07-28** (lots 0→9 : annuaire · cartographie · agenda · fiche acteur ·
+formulaire acteur · pages éditoriales · back-office · auth & palette · hooks costum backend ·
+**design de la home, thème et finitions**).
+Restent : les essais UI connectés (formulaire acteur, back-office), le `npm run build` et le
+déploiement (lot 10), plus les reliquats de parité listés en §8.6.
 
 ---
 
@@ -613,23 +614,97 @@ réelles — la base contient 4 valeurs hors liste costum : `Etablissement publi
 
 ---
 
+### Lot 9 — design de la home, thème et finitions (28/07)
+
+Branche `feat/institut-bleu-et-correctifs-parc`, **13 commits** au-dessus de `ac8ee07d`.
+
+#### Ce qui change dans la config
+
+| Page | Changement |
+|---|---|
+| `/` | Home portée de 2 à **4 sections** : `hero-parallax` (photo plein cadre, header transparent au repos et opaque au défilement) · `data-observatory` (portrait chiffré de la filière, KPI en ligne) · `agenda` en **teaser** · `action-tiles`. Les quatre alignées sur la **même largeur** (`5xl`) — deux échelons différents sur une page se voient immédiatement |
+| `/` | CTA du hero : « Voir la carte » remplacé par **« Référencer ma structure » → `/register`**. La cartographie avait déjà deux entrées (nav + tuile) ; se faire référencer n'en avait aucune, alors que c'est le mécanisme de croissance de l'annuaire |
+| `/annuaire` | Retrait de `showSearch` (doublon exact du champ que le panneau `filters` rend **sans condition**, cf. `FiltersSection.tsx:543`), de `searchPlaceholder` (sans objet) et de `showActiveFiltersTags` (**inerte** : `activeFilterTags` ne se dérive que de `dropdownFilters`, absent de cette section) |
+| Pied de page | Les **trois blocs-marques du cofinancement** (État — Ministère chargé de la Mer et de la Pêche · La Mer en Commun / Année de la mer · Région Réunion) et la mention légale complète, relevés sur la page « Outils de communication » du site institutionnel du client. Le logo Région, livré sur un carré 1500×1500 dont le dessin n'occupait qu'une bande, a été détouré puis remargé à 8 % (1260×593) |
+| Pied de page | Le guide de référencement rejoint la barre de liens bas. La colonne « Ressources » est **supprimée** : elle n'existait que pour porter ce lien orphelin, et ses deux autres entrées dupliquaient la nav |
+
+Thème « **le trait de côte** » : `src/index-institut-bleu.css` perd **90 déclarations de variables**
+que le bloc `theme.colors` de la config recouvrait déjà, et gagne les utilitaires propres au site
+(`.trait-cote`, `.surtitre`, `.tabular`, `.cote-puces`, `.cote-cta`).
+
+#### Six défauts du moteur trouvés en posant cette config
+
+Tous de la même famille, la plus insidieuse du projet : **une clé déclarée au schéma que le code
+ignore en silence**. La config n'étant jamais parsée par Zod à l'exécution, rien ne les signale.
+
+| Défaut | Correctif | Commit |
+|---|---|---|
+| `hero-parallax.badges[].icon` n'acceptait que du SVG inline — écrire `"waves"` imprimait le mot | accepte aussi un nom lucide, comme le reste du moteur | `bcf43aec` |
+| `ctaButtons[].variant: "outline"` retombait sur la branche primaire — deux boutons pleins identiques | variant implémenté ; les CTA passent sur le `Button` shadcn | `bcf43aec` |
+| `charts[].colors` déclarée pour TOUS les graphes, lue par `donut`/`pie` seulement | `<Cell>` gardés sur `bars`/`barsHorizontal` ; défaut monochrome inchangé | `5269fc8e` |
+| `max-w-8xl` ne générait aucun CSS (l'échelle Tailwind s'arrête à `7xl`) → conteneur sans largeur max | jeton `--container-8xl` dans `shared.css` + helper mono-source `src/lib/sectionMaxWidth.ts` | `23cdbd94` |
+| L'agenda plaçait son contenu dans `container` (plafond 1536 px), un échelon qu'aucune autre section n'emploie | `agenda.maxWidth` ; ABSENT = comportement historique, les 4 sections agenda du parc sont inchangées | `23cdbd94` |
+| `useItem` ne lisait que `profilMediumImageUrl`/`Thumb`, or `searchEventsCostum` ne projette QUE `profilImageUrl` | repli ajouté ; **15 des 41 événements du parc** retrouvent leur image | `0aed89c6` |
+
+Deux corrections d'ergonomie en découlent :
+
+- **`CardEvent` sans image** — carte-affiche dont la photo est le fond : sans elle, les deux panneaux
+  de verre flottaient sur 288 px de vide, ce qui est le cas des 26 autres événements du parc (appels
+  à projets, assises). Variante typographique bâtie sur le `Card` shadcn, `h-full` au lieu de `h-72`.
+  Même bascule si l'image **ne charge pas** — on observe des `profilImageUrl` dont le chemin contient
+  littéralement `/null/null/`.
+- **Garde d'authentification des modales d'ajout** (`f24a6531`) — toutes les clés de `DynamicModal`
+  sont des modales d'ajout, et `runEntityMutation` crée sur `me` : sans session elle lève
+  « No entity provided ». Un visiteur pouvait remplir les quatre onglets du formulaire acteur pour ne
+  récolter qu'un toast technique. Textes surchargeables par formulaire sous `chrome.authPrompt` —
+  écrits pour IB. Le garde `condition: {auth: "required"}` du bouton flottant reste en place, mais
+  **il n'est plus le seul rempart**.
+
+#### Revue adversariale
+
+Une revue multi-agents a passé le diff et le parc au crible : **85 constats bruts, 19 confirmés**
+après réfutation. Un seul portait sur ce lot, de gravité haute — et le panel l'avait **rejeté à
+tort** : dans `ExpandableActions` (6 communes, hors périmètre IB), les boutons vivent dans la branche
+`isExpanded &&` d'une carte portant `onClick={onToggle}` ; sans arrêt de propagation, tout clic
+repliait la carte et **démontait** le composant. Corrigé, avec un test validé par la négative.
+
+#### Gates au 28/07
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` | ✅ 11 pages / 22 sections |
+| `audit:config` | ✅ **0 constat actif** |
+| `config:probe` | ✅ **6 périmètres, 6 OK, 0 vide** (48 acteurs ×4, 21 events ×2) |
+| `typecheck` | ✅ `tsc -b` propre |
+| `lint` | ✅ **0 erreur**, 37 avertissements (1392 fichiers) — cf. `b8cfcf65`/`c7c555e9` |
+| `test:unit` | ✅ **2043 tests**, 163 fichiers |
+| `build` | ⬜ non lancé (lot 10) |
+
+---
+
 ## 10. Checklist d'avancement
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
 | 1 | Slug + CSS déclarés dans `sites.json` | ✅ | `institutBleu` → `config.prod.institut-bleu.json` / `index-institut-bleu` |
 | 2 | Config propre au site | ✅ | meta/header/nav/footer/home IB (session parallèle du 27/07) |
-| 3 | Thème IB (light/dark) | 🟡 | Palette posée en `theme.colors` ; `src/index-institut-bleu.css` encore générique |
+| 3 | Thème IB (light/dark) | ✅ | « Le trait de côte » : palette en `theme.colors`, CSS du site allégé de 90 déclarations redondantes, utilitaires propres (`.trait-cote`, `.surtitre`, `.tabular`, `.cote-*`). Contrastes des CTA mesurés en sombre : 6,35:1 et 5,87:1 |
 | 4 | Annuaire filtrable | ✅ | `/annuaire` — 48 acteurs, 3 facettes, export CSV, carte activable |
 | 4b | Cartographie | ✅ | `/cartographie` — 45 acteurs géolocalisés |
 | 5 | Fiche acteur | ✅ | 7 champs costum exposés via `profile-fields` (section générique ajoutée au moteur) |
 | 6 | Formulaire acteur | 🟡 | Document posé + gardes vertes ; **ouverture de la modale et création réelle non encore essayées** (exige un compte + une écriture en base) |
-| 7 | Agenda | 🟡 | `/agenda` posée (21 events via l'API) — **rendu client à vérifier en navigateur** |
+| 7 | Agenda | ✅ | `/agenda` (21 events) **vérifiée en navigateur** + teaser sur la home (3 événements, lien « Tout l'agenda ») |
 | 8 | Pages éditoriales | ✅ | 5 pages reprises ; les 5 pages legacy en brouillon (`forum`, `documentation`, `financement`, `bibliotheque`, `yuna-test`) restent hors périmètre |
 | 9 | Back-office | ✅ | 6 onglets (`config.admin`) ; **essai UI connecté à faire** |
 | 10 | Parité hooks backend | ✅ | 11 effets d'écriture portés + retrait de l'annuaire (`cocolight-backend`, e2e 5 cas) ; reliquats de lecture/export en §8.6 |
 | 11 | Connexion / inscription (`config.auth`) | ✅ | Textes IB, menu de compte ; `/login`, `/register`, `/recover-password` rendus |
 | 12 | Palette ⌘K (`config.commandPalette`) | ✅ | Recherche d'acteurs scopée **annuaire public** (`displayAuth` respecté) ; événements volontairement exclus |
+| 13 | Home (design) | ✅ | 4 sections alignées sur `5xl` : hero photo · portrait chiffré · teaser agenda · tuiles d'accès. Header transparent au repos, opaque au défilement |
+| 14 | Parcours « se faire référencer » | ✅ | CTA du hero → `/register` (route vérifiée). Le bouton flottant reste réservé aux connectés ; la modale d'ajout propose désormais la connexion au lieu d'une impasse |
+| 15 | Observatoire | ✅ | `/observatoire` + résumé en home (`kpiLayout: "inline"`, `maxWidth`) ; graphe monochrome assumé — la longueur des barres encode déjà la valeur |
+| 16 | Pied de page — cofinancement | ✅ | 3 blocs-marques (État/Mer-Pêche · Année de la mer · Région Réunion) + mention légale FIM/DGAMPA complète, via `footer.partners.note` |
+| 17 | Mode sombre | 🟡 | Home, agenda et pied de page vérifiés en navigateur ; **les 7 autres pages restent à parcourir** |
+| 18 | Rendu mobile | ❌ | Jamais vérifié — `resize_window` ne change pas le viewport rendu dans l'outillage employé |
 
 ---
 
@@ -667,6 +742,20 @@ réelles — la base contient 4 valeurs hors liste costum : `Etablissement publi
   toute généralisation faite pour IB doit rester réutilisable.
 - Config JSON **jamais parsée par Zod au runtime** : toute clé doit être écrite explicitement
   (les `.default()` des schémas ne s'appliquent pas).
+- **Corollaire mesuré au lot 9** : une clé déclarée au schéma mais non lue par le composant est
+  *invisible* — ni typecheck, ni audit, ni erreur au rendu. Six cas trouvés en posant cette seule
+  config (cf. §9 lot 9). Réflexe à garder : après avoir écrit une clé, **vérifier dans le composant
+  qu'elle est lue**, et se méfier des valeurs d'énumération (`variant: "outline"` était déclaré,
+  jamais traité).
+- **`searchEventsCostum` ne projette que `profilImageUrl`** — ni `profilMediumImageUrl`, ni
+  `profilThumbImageUrl`. Tout code qui résout une image d'événement doit retomber sur ce champ.
+- **Deux systèmes de filtrage qui ne se parlent pas** : le HERO (`searchHeader` avec `showSearch` /
+  `dropdownFilters`) et le PANNEAU (`gridLayout` + `filters`). `/annuaire` emploie le panneau ; y
+  ajouter `showSearch` produit deux champs de recherche, le panneau rendant le sien **sans
+  condition**. Même piège déjà rencontré sur cyber-reunion.
+- **Les logos de financeurs publics ont une zone de protection imposée par leur charte** : le
+  bloc-marque de l'État et celui de l'Année de la mer sont laissés tels que fournis, jamais détourés.
+  Seul le logo Région, livré sur un carré à marges excessives, a été recadré.
 
 ---
 
@@ -682,3 +771,8 @@ réelles — la base contient 4 valeurs hors liste costum : `Etablissement publi
 | 6 | Un acteur créé depuis SiteForge doit-il aussi porter `telephone.mobile[]` (le legacy écrit les deux) et `dateSign`/`nameSign` ? À trancher au premier ajout réel | Thomas |
 | 4 | Pages `financement` / `bibliothèque` / `forum` (draft côté legacy) : dans le périmètre du portage ? | Institut Bleu |
 | 5 | Invitations sans compte (`acceptInvitationWithoutUser`) : reprises dans `/admin` ? | Thomas |
+| 9 | ~~Logos des financeurs~~ **Tranché 28/07** : les trois blocs-marques (État — Mer et Pêche, Année de la mer, Région Réunion) ont été relevés sur la page « Outils de communication » du site institutionnel et installés dans `public/images/institutBleu/` | — |
+| 10 | **Logo ARIPA manquant** parmi les membres de `/nos-membres` (17 des 18 collectés) | Institut Bleu |
+| 11 | **Rendu mobile jamais vérifié** — l'outillage de capture ne change pas le viewport rendu. À reprendre sur un vrai appareil ou un navigateur piloté autrement | Thomas |
+| 12 | **Mode sombre** vérifié sur la home, l'agenda et le pied de page seulement ; les 7 autres pages restent à parcourir. Le hero photo est le point exposé (son voile dérive de `--color-background`) | Thomas |
+| 13 | Le **Cluster Maritime de La Réunion** est cité comme partenaire du projet (et non comme financeur) dans la mention légale du pied de page. Faut-il aussi afficher son logo, dans un bloc distinct de « Avec le soutien de » ? | Institut Bleu |
