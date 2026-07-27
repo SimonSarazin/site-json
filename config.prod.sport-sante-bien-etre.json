@@ -43,13 +43,6 @@
       "fr": "La Réunion",
       "en": "Réunion"
     },
-    "ctaButton": {
-      "label": {
-        "fr": "Se connecter",
-        "en": "Log in"
-      },
-      "path": "/activites"
-    },
     "nav": [
       {
         "label": {
@@ -1066,8 +1059,8 @@
                   "en": "Register my structure"
                 },
                 "icon": "building-2",
-                "href": "/inscrire-organisation",
-                "variant": "outline"
+                "variant": "outline",
+                "modal": "add-sport-sante-bienetre-organizations"
               }
             ]
           }
@@ -5755,13 +5748,6 @@
             "en": "General information"
           }
         },
-        "sextionInfo": {
-          "widget": "hidden",
-          "type": "object",
-          "label": {
-            "fr": "Sextion info"
-          }
-        },
         "name": {
           "widget": "text",
           "label": {
@@ -5928,19 +5914,6 @@
             "en": "Legal status"
           }
         },
-        "statusFile": {
-          "widget": "hidden",
-          "type": "object",
-          "label": {
-            "fr": "Status file"
-          }
-        },
-        "responsableCivilePro": {
-          "widget": "text",
-          "label": {
-            "fr": "Responsable civile pro"
-          }
-        },
         "recepisseDeclaration": {
           "widget": "text",
           "label": {
@@ -5948,36 +5921,11 @@
             "en": "Declaration receipt"
           }
         },
-        "statusPrimaire": {
-          "widget": "text",
-          "label": {
-            "fr": "Status primaire"
-          }
-        },
-        "statusSecondaire": {
-          "widget": "text",
-          "label": {
-            "fr": "Status secondaire"
-          }
-        },
-        "statusCommunale": {
-          "widget": "text",
-          "label": {
-            "fr": "Status communale"
-          }
-        },
         "autreDescription": {
           "widget": "text",
           "label": {
             "fr": "Autre description",
             "en": "Other description"
-          }
-        },
-        "sextionInfoRepresentant": {
-          "widget": "hidden",
-          "type": "object",
-          "label": {
-            "fr": "Sextion info representant"
           }
         },
         "representativeTitle": {
@@ -6042,13 +5990,6 @@
           "label": {
             "fr": "Téléphone",
             "en": "Phone"
-          }
-        },
-        "sextionInfoResponsable": {
-          "widget": "hidden",
-          "type": "object",
-          "label": {
-            "fr": "Sextion info responsable"
           }
         },
         "responsableSameAsRepresent": {
@@ -6668,13 +6609,6 @@
             "en": "Short description"
           }
         },
-        "sextionInfoRepresentant": {
-          "widget": "hidden",
-          "type": "object",
-          "label": {
-            "fr": "Sextion info representant"
-          }
-        },
         "representativeTitle": {
           "widget": "select",
           "label": {
@@ -6737,13 +6671,6 @@
           "label": {
             "fr": "Téléphone",
             "en": "Phone"
-          }
-        },
-        "sextionInfoResponsable": {
-          "widget": "hidden",
-          "type": "object",
-          "label": {
-            "fr": "Sextion info responsable"
           }
         },
         "responsableSameAsRepresent": {
