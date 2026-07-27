@@ -152,7 +152,6 @@ Les fichiers `config.prod.*.json` présents à la racine du dépôt :
 | `config.prod.commune-transparente.json` | Commune Transparente (partagée par plusieurs slugs communes) |
 | `config.prod.julie-pot-vin.json` | Julie Pot Vin |
 | `config.prod.institut-bleu.json` | Institut Bleu |
-| `config.prod.open-atlas-test.json` | Open Atlas (test) |
 | `config.prod.equipements-Sportifs.json` | Équipements Sportifs 974 |
 | `config.prod.eXtremeDefiAdeme.json` | eXtrème Défi Ademe |
 | `config.dev.json` | Config de développement |
@@ -237,7 +236,6 @@ Entrées actuelles de `sites.json` :
 | `institutBleu` | `config.prod.institut-bleu.json` | `index-institut-bleu` |
 | `navigatorDesTierslieux` | `config.prod.tiers-lieux.json` | `index-tiers-lieux` |
 | `juliePotVin` | `config.prod.julie-pot-vin.json` | `index-julie-pot-vin` |
-| `openAtlas` | `config.prod.open-atlas-test.json` | `index-rezo-la-mer` |
 | `nosCommunes` | `config.prod.nos-commune.json` | `index-nos-communes` |
 | `etangsale1` | `config.prod.commune-transparente.json` | `index-commune-transparente` |
 | `tampon` | `config.prod.commune-transparente.json` | `index-commune-transparente` |

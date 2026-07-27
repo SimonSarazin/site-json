@@ -98,7 +98,6 @@ SiteForge est un générateur de sites web piloté par un simple fichier JSON. S
 ├── config.prod.sport-sante-bien-etre.json # Variante Sport Santé Bien-être
 ├── config.prod.julie-pot-vin.json    # Variante Julie Pot Vin
 ├── config.prod.institut-bleu.json    # Variante Institut Bleu
-├── config.prod.open-atlas-test.json  # Variante Open Atlas (test)
 ├── config.prod.equipements-Sportifs.json  # Variante Équipements Sportifs
 ├── config.prod.eXtremeDefiAdeme.json # Variante eXtremeDefi Ademe
 ├── sites.json             # Table de correspondance slug → fichier config + CSS
