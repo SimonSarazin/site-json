@@ -13,7 +13,7 @@
 > [Module Cagnotte](../doc/18-module-cagnotte.md) · [Module Auth](../doc/23-module-auth.md).
 > Mémoire : `[[project-rezo-la-mer]]`.
 
-Dernière mise à jour : **2026-07-28** (création du dossier · les 5 pages légales posées).
+Dernière mise à jour : **2026-07-28** (création du dossier · 5 pages légales posées · analyse du contenu réel des données).
 **Le chantier principal reste à cadrer** — cf. §13.
 
 ---
@@ -154,8 +154,53 @@ aujourd'hui — les pages `/projets` et `/ressources` n'offrent donc pas ces axe
 | `/communaute` → onglet 2 | organisations | 4 |
 | `/ressources` | poi | 2 |
 
-Le réseau est **petit mais réel** : 79 entités. La config n'a aucun périmètre faux — ce qui distingue
-nettement ce projet de commune-transparente.
+La config n'a **aucun périmètre faux** — ce qui la distingue nettement de commune-transparente.
+Mais le contenu, lui, est très inégal.
+
+### 5.1 Ce que les données contiennent réellement (analysé le 28/07)
+
+Les 79 entités ont été relues une par une, par les mêmes fonctions que l'application
+(`buildSearchPayload` + `searchCostum`).
+
+| Page | Entités | Dont **données de test** |
+|---|---|---|
+| `/communaute` | 52 (23 citoyens + 29 organisations) | **0** ✅ |
+| `/projets` | 7 | 2 (« test », « Test meteolamer project ») |
+| `/evenements` | 9 | **8** — `Event Template 1` à `6`, « test tib », « testons tout » |
+| `/ressources` | 2 | **2** — « test » et « Bateau de croisiere » (tag `test`) |
+
+**Le seul contenu réel du site, c'est la communauté.** 37 fiches sur 52 ont un avatar, 31 une
+description, 35 sont taguées. C'est un vrai annuaire d'acteurs.
+
+**`/ressources` ne montre aucun contenu réel** : ses deux POI sont des fiches d'essai, de type
+`affiche`, dont l'une s'appelle littéralement « test ». **`/evenements` n'a qu'un événement
+authentique** — « Découverte du lagon Étang-Salé » — noyé dans sept gabarits de démonstration.
+
+### 5.2 Les 29 organisations
+
+Sous-types : `LocalBusiness` 17 · `NGO` 8 · `GovernmentOrganization` 3 · `Group` 1.
+27 sur 29 sont géolocalisées, mais **le réseau n'est pas strictement réunionnais** : à côté de
+Sainte-Clotilde, Saint-Denis, Saint-Leu et l'Étang-Salé, on trouve **Toliara et Ambodifotatra
+(Madagascar), Paris et Gradignan**. À prendre en compte avant tout filtre territorial.
+
+### 5.3 La taxonomie libre dérive
+
+143 tags distincts pour 35 fiches taguées — dont **121 employés une seule fois**. S'y ajoutent
+8 doublons de casse : `Océanographie`/`océanographie`, `Biodiversité`/`biodiversité`,
+`Développement Durable`/`développement durable`/`Développement durable`, `Recherche`/`recherche`…
+
+Les têtes de liste sont pourtant nettes et font un bon socle de facettes :
+Océanographie (18) · Biodiversité (12) · Océan (8) · Recherche (7) · Protection (4) · Plongée (4).
+
+### 5.4 ⚠️ Les listes costum ne sont portées par AUCUNE entité
+
+`domaine` (8 valeurs) et `impacttype` (6) sont déclarées dans le costum, mais **aucun des 7 projets
+ne les renseigne**. Contre-épreuve faite en les demandant EXPLICITEMENT dans `defaultFields` : les
+champs ne reviennent même pas — ce n'est donc pas un défaut de projection (le piège rencontré sur
+les images d'événements), c'est une absence réelle en base.
+
+**En faire des facettes aujourd'hui produirait des filtres vides.** Il faudrait d'abord que les
+projets soient qualifiés.
 
 ---
 
@@ -230,7 +275,7 @@ Vérifié : 0 couleur littérale, 0 lien interne mort dans les pages ajoutées, 
 |---|---|---|---|
 | 1 | Slug + CSS dans `sites.json` | ✅ | ⚠ CSS partagé avec `eXtremeDefiAdeme` |
 | 2 | Thème | ✅ | Bloc `theme` complet |
-| 3 | Pages de contenu | ✅ | 5 pages, 6 périmètres tous peuplés (79 entités) |
+| 3 | Pages de contenu | 🟡 | 5 pages, 6 périmètres peuplés (79 entités) — mais `/ressources` n'affiche QUE des données de test (2/2) et `/evenements` 8 sur 9. Seule `/communaute` (52 fiches) est du contenu réel |
 | 4 | Socle légal | 🟡 | 5 pages posées, **à compléter par le porteur** avant publication |
 | 5 | Publication par les membres | ✅ | `add-project`, `add-event`, `add-poi` — gardés par l'authentification depuis le 28/07 |
 | 6 | Page contact | ❌ | `#nous-contacter` existe au legacy, `/contact` est lié 2× et n'existe pas |
@@ -271,6 +316,9 @@ Aucune demande en cours. Un portage AAP en ferait probablement naître.
 | 3 | `/contact` et `/blog` correspondent à des pages legacy réelles (`#nous-contacter`, `#actus`) : reprise éditoriale à faire | Institut / Thomas |
 | 4 | **Compléter les 5 pages légales** : forme juridique, SIREN/RNA, voie du siège, directeur de la publication, hébergeur, cookies déposés, durées de conservation, statut de l'audit d'accessibilité, licences des contenus | Rézo la mer |
 | 5 | La campagne `ampli` « amplifions-le-sens-océanique » doit-elle être portée ? Le module existe et sert déjà tiers-lieux | Thomas |
-| 6 | Les listes costum `domaine` (8 valeurs) et `impacttype` (6) doivent-elles devenir des facettes de `/projets` et `/ressources` ? | Thomas |
+| 6 | ~~Facettes `domaine`/`impacttype` ?~~ **Tranché 28/07 par les données** : aucune entité ne renseigne ces champs (contre-épreuve avec projection explicite). Une facette serait vide. La vraie question devient : **qualifier les projets**, ou bâtir les facettes sur les tags réels (Océanographie 18 · Biodiversité 12 · Océan 8), après dédoublonnage de casse | Thomas |
 | 7 | Ancre `#donnees` du pied de page : à quelle section doit-elle mener ? | Thomas |
 | 8 | Rendu navigateur et mode sombre : jamais vérifiés | Thomas |
+| 9 | **Purger les données de test.** `/ressources` n'affiche QUE des fiches d'essai (2/2), `/evenements` 8 sur 9 (`Event Template 1-6`, « test tib », « testons tout »), `/projets` 2 sur 7. Ces pages sont en ligne | Rézo la mer |
+| 10 | **La taxonomie libre dérive** : 143 tags pour 35 fiches, 121 employés une seule fois, 8 doublons de casse. Dédoublonner avant d'en faire des facettes | Rézo la mer |
+| 11 | Le réseau **n'est pas strictement réunionnais** — organisations à Madagascar (Toliara, Ambodifotatra), Paris, Gradignan. Un filtre territorial les exclurait | Thomas |
