@@ -101,9 +101,20 @@ export function CtaCardGrid({ id, props }: CtaCardGridSectionProps) {
                                     {t(action.description)}
                                 </p>
                                 <Link to={action.href}>
+                                    {/* Les variantes `dark:` doivent être RÉPÉTÉES ici.
+                                        Le variant `outline` du Button porte
+                                        `dark:border-input` et `dark:hover:bg-input/50` : en mode
+                                        sombre leur spécificité (0,2,0 et 0,3,0, via
+                                        `:is(.dark *)`) bat `border-primary/50` (0,1,0) et
+                                        `hover:bg-primary` (0,2,0), et tailwind-merge ne les
+                                        déduplique pas — jeux de modificateurs différents.
+                                        Résultat sans ces classes : au survol, le fond restait
+                                        ardoise pendant que `hover:text-primary-foreground`
+                                        s'appliquait quand même → texte quasi noir sur fond
+                                        sombre, 1,35:1. */}
                                     <Button
                                         variant="outline"
-                                        className="w-full border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
+                                        className="w-full border-primary/50 dark:border-primary/50 text-primary hover:bg-primary dark:hover:bg-primary hover:text-primary-foreground"
                                     >
                                         {t(action.ctaLabel)}
                                     </Button>
