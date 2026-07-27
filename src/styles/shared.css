@@ -14,6 +14,17 @@
    ──────────────────────────────────────────────────────────────────────────── */
 
 @theme {
+  /* Échelon de largeur manquant. `max-w-8xl` était employé par
+     `DataObservatorySection` alors que l'échelle Tailwind s'arrête à `7xl` :
+     la classe ne générait AUCUN CSS et le conteneur n'avait donc pas de
+     largeur maximale. Invisible tant que la coquille de page plafonnait tout à
+     1280 px, mais dès qu'une page passe en `layout: "fullwidth"` — ce que fait
+     tout le parc — le tableau de bord s'étalait bord à bord, désaligné de tout
+     le reste. On définit le jeton plutôt que de renommer la classe : l'intention
+     de l'auteur (plus large que 7xl) est respectée, et `max-w-8xl` devient
+     utilisable partout. */
+  --container-8xl: 90rem;
+
   /* Animations décoratives (boucles) — valeurs canoniques (ex-rezo-la-mer). */
   --animate-float: float 3s ease-in-out infinite;
   --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
