@@ -1,0 +1,90 @@
+{
+  "$doc": "Configs de référence de l'assistant (voir commentaire/refonte-assistant-config.md, axe B). Chaque archétype est garanti propre par tests/preflight/archetypes.test.ts : présent dans sites.json, et audit:config sans constat autre que knownFindings (constats assumés, versionnés ici — PAS dans .audit-baseline.json qui est gitignoré). Les exemples canoniques extraits de ces configs vivent dans examples/ (npm run config:example).",
+  "archetypes": [
+    {
+      "slug": "parent62",
+      "config": "config.prod.parent62.json",
+      "titre": "Portail complet (la référence maximale)",
+      "demontre": [
+        "theme complet : colors light+dark (~40 tokens), typography, borderRadius, shadows",
+        "commandPalette enrichie : entitySearch multi-collections, iconRules, itemActionByType, itemActionBySubType",
+        "presenters config-driven : list.resource (page /ressources) et list.testimonial (page /temoignages) avec preview.width, badge, facets",
+        "section agenda (page /agenda)",
+        "admin 6 onglets, blog, 4 costumForms, integrations.seo",
+        "header transparent-scroll, footer contact-partners",
+        "baseParams avec sourceKey + filters (recherche périmétrée réseau)"
+      ],
+      "knownFindings": []
+    },
+    {
+      "slug": "navigatorDesTierslieux",
+      "config": "config.prod.tiers-lieux.json",
+      "titre": "Portail réseau multi-sources",
+      "demontre": [
+        "header mega-menu (le seul), footer minimal-centered",
+        "agenda et recherches multi-sources : baseParams.sourceKey = [franceTierslieux, tierslieuxbelgique, navigatorDesTierslieux]",
+        "intégration Communecter native : ampli + costum (mainTag/compagnon)",
+        "floatingActionButton, section filters, data-observatory"
+      ],
+      "knownFindings": [
+        {
+          "category": "lien-inerte",
+          "path": "header.nav.4.children.2.path",
+          "note": "« Décider ensemble » : placeholder éditorial assumé, page à créer"
+        }
+      ]
+    },
+    {
+      "slug": "saintpaulSport1",
+      "config": "config.prod.saint-paul-sport.json",
+      "titre": "Cartographie / observatoire de données",
+      "demontre": [
+        "presenters poi-amenities et news (card + preview)",
+        "2 sections data-observatory (pages /observatoire et /data)",
+        "baseParams sur une source externe (sourceKey = equipementsSportifs974)",
+        "theme complet + customCSS"
+      ],
+      "knownFindings": []
+    },
+    {
+      "slug": "eXtremeDefiAdeme",
+      "config": "config.prod.eXtremeDefiAdeme.json",
+      "titre": "Vitrine + agenda (compacte et propre)",
+      "demontre": [
+        "4 pages seulement mais 12 types de sections (forte densité) : hero-parallax, features-glass, timeline, action-tiles, stats, tabs, logoCloud…",
+        "section agenda (page /agenda)",
+        "theme complet — le bon point de départ pour un petit site"
+      ],
+      "knownFindings": []
+    },
+    {
+      "slug": "equipementsSportifs974",
+      "config": "config.prod.equipements-Sportifs.json",
+      "titre": "Cartographie d'équipements",
+      "demontre": [
+        "presenter poi-amenities (card + preview) sur données d'équipements",
+        "2 sections data-observatory + searchHeader ×3",
+        "admin 5 onglets, commandPalette (poi), 1 costumForm",
+        "theme complet + le customCSS le plus fourni du parc",
+        "visibilité conditionnelle (visibleIf/condition)",
+        "LA source du réseau equipementsSportifs974 (sourceKey réutilisé par saint-paul-sport)"
+      ],
+      "knownFindings": [],
+      "wip": true
+    },
+    {
+      "slug": "sportSanteBienetre",
+      "config": "config.prod.sport-sante-bien-etre.json",
+      "titre": "Portail multi-formulaires maximal",
+      "demontre": [
+        "19 pages, 17 types de sections",
+        "admin 7 onglets (le max du parc) et 6 costumForms (le max) — multi-forms par collection (poi recoveryCenter+article, organizations base+mss…)",
+        "les presenters les plus variés : funding, profile, contact-card, card-answer, poi-amenities, coform-answer",
+        "floatingQRCode, blog, 9 blocs baseParams",
+        "visibilité par role/condition"
+      ],
+      "knownFindings": [],
+      "wip": true
+    }
+  ]
+}
