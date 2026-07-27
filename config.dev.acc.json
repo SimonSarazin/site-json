@@ -3,35 +3,29 @@
   "generated": "2025-09-08T10:30:00.000Z",
   "meta": {
     "title": {
-      "fr": "Rézo la mer",
-      "en": "Rézo la mer"
+      "fr": "Mon ACC",
+      "en": "My ACC"
     },
     "description": {
-      "fr": "Le réseau des passionné·es de la mer",
-      "en": "The network for ocean enthusiasts"
+      "fr": "Test Cagnotte",
+      "en": "PiggyBank test"
     },
     "defaultLang": "fr",
     "languages": [
       "fr",
       "en"
     ],
-    "favicon": "images/rezoLaMer/logo.png",
-    "themeColor": "#00e7e3",
-    "keywords": [
-      "océan",
-      "mer",
-      "communauté",
-      "protection marine",
-      "environnement"
-    ]
+    "favicon": "",
+    "themeColor": "#4e863c",
+    "keywords": []
   },
   "header": {
     "type": "transparent-scroll",
     "path": "/",
     "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path></svg>",
     "logoTitle": {
-      "fr": "Rézo la mer",
-      "en": "Rézo la mer"
+      "fr": "Mon ACC",
+      "en": "My ACC"
     },
     "ctaButton": {
       "label": {
@@ -57,24 +51,10 @@
       },
       {
         "label": {
-          "fr": "Événements",
-          "en": "Events"
-        },
-        "path": "/evenements"
-      },
-      {
-        "label": {
           "fr": "Communauté",
           "en": "Community"
         },
         "path": "/communaute"
-      },
-      {
-        "label": {
-          "fr": "Ressources",
-          "en": "Resources"
-        },
-        "path": "/ressources"
       }
     ],
     "sticky": true,
@@ -95,8 +75,8 @@
     {
       "path": "/",
       "title": {
-        "fr": "Accueil - Rézo la mer",
-        "en": "Home - Rézo la mer"
+        "fr": "Accueil - Mon ACC",
+        "en": "Home - Mon ACC"
       },
       "layout": "fullwidth",
       "sections": [
@@ -105,8 +85,8 @@
           "id": "hero-rezo-la-mer",
           "props": {
             "headline": {
-              "fr": "Rézo la mer",
-              "en": "Rézo la mer"
+              "fr": "Mon ACC",
+              "en": "Mon ACC"
             },
             "subhead": {
               "fr": "Outiller et connecter le réseau de passionné·es de la mer pour construire ensemble un océan vivant et résilient",
@@ -166,7 +146,7 @@
           "type": "html",
           "id": "mission",
           "props": {
-            "html": "<section class=\"relative py-32 px-4 overflow-hidden\"><div class=\"absolute inset-0 z-0\"><img src=\"/images/rezoLaMer/whale-ocean.jpg\" alt=\"Baleine nageant paisiblement dans l'océan\" class=\"w-full h-full object-cover\" /><div class=\"absolute inset-0 bg-linear-to-r from-background via-background/80 to-background/60\"></div></div><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"space-y-8\"><h2 class=\"text-4xl md:text-5xl font-bold mb-6 text-foreground\">Notre mission</h2><div class=\"space-y-6 text-lg md:text-xl leading-relaxed\"><p class=\"text-muted-foreground\"><span class=\"text-primary font-semibold\">Rézo la mer</span> est bien plus qu'une plateforme : c'est un <span class=\"text-primary font-medium\">mouvement collectif</span> pour reconnecter l'humanité avec l'océan.</p><p class=\"text-muted-foreground\">Nous créons un <span class=\"text-chart-2 font-medium\">espace numérique ouvert</span> où citoyens, associations, scientifiques et passionné·es peuvent se rencontrer, collaborer et agir ensemble pour la protection et la valorisation de nos océans.</p><div class=\"grid md:grid-cols-2 gap-6 pt-8\"><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-md border border-primary/20\"><h3 class=\"text-2xl font-semibold mb-3 text-primary\">Approche collaborative</h3><p class=\"text-muted-foreground\">Construire ensemble les solutions de demain à travers le partage, la mutualisation et l'intelligence collective</p></div><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-md border border-primary/20\"><h3 class=\"text-2xl font-semibold mb-3 text-chart-2\">Démocratie participative</h3><p class=\"text-muted-foreground\">Une gouvernance transparente et ouverte où chaque voix compte dans les décisions importantes</p></div></div></div></div></div></section>"
+            "html": "<section class=\"relative py-32 px-4 overflow-hidden\"><div class=\"absolute inset-0 z-0\"><img src=\"/images/rezoLaMer/whale-ocean.jpg\" alt=\"Baleine nageant paisiblement dans l'océan\" class=\"w-full h-full object-cover\" /><div class=\"absolute inset-0 bg-linear-to-r from-background via-background/80 to-background/60\"></div></div><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"space-y-8\"><h2 class=\"text-4xl md:text-5xl font-bold mb-6 text-foreground\">Notre mission</h2><div class=\"space-y-6 text-lg md:text-xl leading-relaxed\"><p class=\"text-muted-foreground\"><span class=\"text-primary font-semibold\">Mon ACC</span> est bien plus qu'une plateforme : c'est un <span class=\"text-primary font-medium\">mouvement collectif</span> pour reconnecter l'humanité avec l'océan.</p><p class=\"text-muted-foreground\">Nous créons un <span class=\"text-chart-2 font-medium\">espace numérique ouvert</span> où citoyens, associations, scientifiques et passionné·es peuvent se rencontrer, collaborer et agir ensemble pour la protection et la valorisation de nos océans.</p><div class=\"grid md:grid-cols-2 gap-6 pt-8\"><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-md border border-primary/20\"><h3 class=\"text-2xl font-semibold mb-3 text-primary\">Approche collaborative</h3><p class=\"text-muted-foreground\">Construire ensemble les solutions de demain à travers le partage, la mutualisation et l'intelligence collective</p></div><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-md border border-primary/20\"><h3 class=\"text-2xl font-semibold mb-3 text-chart-2\">Démocratie participative</h3><p class=\"text-muted-foreground\">Une gouvernance transparente et ouverte où chaque voix compte dans les décisions importantes</p></div></div></div></div></div></section>"
           }
         },
         {
@@ -453,8 +433,8 @@
               "en": "Ready to dive into the adventure?"
             },
             "subhead": {
-              "fr": "Rejoignez dès maintenant la communauté Rézo la mer et participez à la construction d'un avenir durable pour nos océans",
-              "en": "Join the Rézo la mer community now and participate in building a sustainable future for our oceans"
+              "fr": "Rejoignez dès maintenant la communauté Mon ACC et participez à la construction d'un avenir durable pour nos océans",
+              "en": "Join the Mon ACC community now and participate in building a sustainable future for our oceans"
             },
             "newsletterPlaceholder": {
               "fr": "Votre email",
@@ -493,8 +473,8 @@
     {
       "path": "/projets",
       "title": {
-        "fr": "Projets Marins - Rézo la mer",
-        "en": "Marine Projects - Rézo la mer"
+        "fr": "Projets Marins - Mon ACC",
+        "en": "Marine Projects - Mon ACC"
       },
       "layout": "fullwidth",
       "sections": [
@@ -564,8 +544,8 @@
     {
       "path": "/evenements",
       "title": {
-        "fr": "Événements océaniques - Rézo la mer",
-        "en": "Ocean Events - Rézo la mer"
+        "fr": "Événements océaniques - Mon ACC",
+        "en": "Ocean Events - Mon ACC"
       },
       "layout": "fullwidth",
       "sections": [
@@ -687,7 +667,7 @@
                 "type": "event-featured",
                 "variant": "event-featured",
                 "detailsMode": "drawer",
-                "viewDetail": true 
+                "viewDetail": true
               }
             }
           }
@@ -697,8 +677,8 @@
     {
       "path": "/communaute",
       "title": {
-        "fr": "Communauté marine - Rézo la mer",
-        "en": "Marine Community - Rézo la mer"
+        "fr": "Communauté marine - Mon ACC",
+        "en": "Marine Community - Mon ACC"
       },
       "layout": "fullwidth",
       "sections": [
@@ -842,8 +822,8 @@
     {
       "path": "/ressources",
       "title": {
-        "fr": "Ressources mutualisées - Rézo la mer",
-        "en": "Shared Resources - Rézo la mer"
+        "fr": "Ressources mutualisées - Mon ACC",
+        "en": "Shared Resources - Mon ACC"
       },
       "layout": "fullwidth",
       "sections": [
@@ -938,8 +918,8 @@
     "type": "sidebar-columns",
     "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path></svg>",
     "logoTitle": {
-      "fr": "Rézo la mer",
-      "en": "Rézo la mer"
+      "fr": "Mon ACC",
+      "en": "Mon ACC"
     },
     "description": {
       "fr": "Le réseau qui connecte et outille les passionné·es de l'océan",
@@ -1165,8 +1145,8 @@
       }
     ],
     "copyright": {
-      "fr": "© 2025 Rézo la mer. Tous droits réservés. Plateforme open-source sous licence MIT.",
-      "en": "© 2025 Rézo la mer. All rights reserved. Open-source platform under MIT license."
+      "fr": "© 2025 Mon ACC. Tous droits réservés. Plateforme open-source sous licence MIT.",
+      "en": "© 2025 Mon ACC. All rights reserved. Open-source platform under MIT license."
     }
   },
   "features": [
@@ -2330,5 +2310,8 @@
         }
       ]
     }
+  },
+  "cagnotteModuleConfig": {
+    "defaultType": "aac"
   }
 }

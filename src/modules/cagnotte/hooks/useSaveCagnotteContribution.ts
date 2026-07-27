@@ -359,19 +359,19 @@ export const useSaveCagnotteContribution = () => {
                     depense.financer[pledge.fundingIndex].fundingType = "prepaid";
                     if (transactionId) depense.financer[pledge.fundingIndex].transactionId = transactionId;
                     if (method) depense.financer[pledge.fundingIndex].method = method;
+                    success = true;
                   }
                 }
                 cloned.answers.aapStep1.depense = depenses;
 
                 const formId = getFormIdFromAnswerData(currentAnswerData);
-                if (api && formId) {
+                if (api && formId && success) {
                   await api.endpointApi.saveCoformAnswer({
                     formId,
                     answerId: answer.id ?? undefined,
                     answers: JSON.stringify(cloned.answers ?? {}),
                     links: JSON.stringify(cloned.links ?? currentAnswerData.links ?? {}),
                   });
-                  success = true;
                 }
               }
             }

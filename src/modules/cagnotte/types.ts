@@ -147,7 +147,6 @@ export type CagnotteTypeConfig = {
   context: string,
   showInfoText: boolean,
   allowPersonToFinance: boolean,
-  allowContributionWithPaiement: boolean,
   allowContributionWithoutPaiement: boolean,
 };
 
@@ -159,7 +158,6 @@ export const CAGNOTTE_TYPE_CONFIGS: Record<CagnotteType, CagnotteTypeConfig> = {
     context: '',
     showInfoText: true,
     allowPersonToFinance: true,
-    allowContributionWithPaiement: true,
     allowContributionWithoutPaiement: true,
   },
   aac: {
@@ -169,7 +167,6 @@ export const CAGNOTTE_TYPE_CONFIGS: Record<CagnotteType, CagnotteTypeConfig> = {
     context: '',
     showInfoText: false,
     allowPersonToFinance: true,
-    allowContributionWithPaiement: true,
     allowContributionWithoutPaiement: true,
   }
 };
@@ -224,4 +221,11 @@ export interface Pledge {
   fundingAmount: number,
   userPledge: number,
   userfundingPledge:  FundingTransaction[];
+}
+
+export interface Objective {
+  target: number;
+  label: string;
+  description: string;
+  icon: React.ElementType;
 }

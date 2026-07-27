@@ -67,8 +67,8 @@ export default function FinanceSummarySection({ id, props }: { id?: string; prop
   const overflowFunders = data.funders.slice(3);
   const supportProjectContext = props?.idProjet
     ? {
-        projectId: props.idProjet,
-        hideProjectSelect: true,
+        resourceId: props.idProjet,
+        hideResourceSelect: true,
       }
     : undefined;
 

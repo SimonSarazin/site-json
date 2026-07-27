@@ -8,7 +8,6 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
     CreditCard,
     ArrowLeft,
-    Check,
     ExternalLink,
     Info,
     ChevronDown,
@@ -29,6 +28,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { launchConfettiBurst } from "@/lib/confetti";
 import StripePaymentForm from "./StripePaymentForm";
 import { Pledge } from "@/modules/cagnotte/types";
+import PaymentReceivedScreen from "@/modules/cagnotte/components/PaymentReceivedScreen.tsx";
 
 interface PledgePaymentPageProps {
     pledges: Pledge[];
@@ -247,6 +247,7 @@ export function PledgePaymentPage({ pledges, onBack, onClose, onContributionSave
     const handleStripePaymentSuccess = async (stripeData: Record<string, unknown>) => {
         try {
             await submitFundingEnvelopeAction("stripePay", {
+                amount,
                 payment_method_id: String(
                     stripeData.stripePaymentMethodId ||
                     stripeData.paymentMethodId ||
@@ -322,14 +323,12 @@ export function PledgePaymentPage({ pledges, onBack, onClose, onContributionSave
 
     if (paymentSuccess) {
         return (
-            <div className="py-10 text-center space-y-4 animate-fade-in flex-1 overflow-y-auto">
-                <div className="w-20 h-20 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
-                    <Check className="w-10 h-10 text-primary" />
-                </div>
-                <h3 className="text-2xl font-bold text-foreground">{t("PaymentConfigPage.successScreen.title")}</h3>
-                <p className="text-muted-foreground">{t("PaymentConfigPage.successScreen.subtitle")}</p>
-                <Button onClick={() => redirectToHome(false)} variant="outline">{t("PaymentConfigPage.successScreen.returnButton")}</Button>
-            </div>
+            <PaymentReceivedScreen
+                amount={amount}
+                itemCount={pledges.length}
+                closeLabel={t("PaymentReceivedScreen.returnHomeButton")}  // "Retour à l'accueil" — cohérent avec redirectToHome
+                onClose={() => redirectToHome(false)}
+            />
         );
     }
 

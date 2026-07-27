@@ -16,7 +16,7 @@ import {useUserAdminOrganizations} from "@/modules/cagnotte/hooks/useUserAdminOr
 import { isUser } from "@/lib/getTypedEntity";
 import type { User } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
-import {toSafeInt} from "@/modules/cagnotte/utils/dataTransform.ts";
+import { toNumber } from "@/modules/cagnotte/utils/dataTransform.ts";
 
 interface RawDepense {
     id?: string | number;
@@ -36,17 +36,6 @@ interface RawProposition {
     totalFinancement?: number | string;
     totalCouts?: number | string;
     depenses?: RawDepense[];
-}
-
-// Typage sécurisé pour étendre les jalons de l'API
-interface ExtendedProjectMilestone {
-    milestoneId: string | number;
-    name?: string;
-    description?: string;
-    price?: number | string;
-    status?: string;
-    currentFunding?: number;
-    transactions?: FundingTransaction[];
 }
 
 export const calculateFundingStatus = (
@@ -126,9 +115,8 @@ export function useCagnotteAdapter(
                 const items = (projet?.milestones || []).map(m => {
                     const milestoneIdStr = String(m.milestoneId);
                     const matchedDepense = depensesByMilestone[milestoneIdStr];
-                    const milestoneExtended = m as ExtendedProjectMilestone;
                     const { currentFunding, unpaidFunding, userPledge } = calculateFundingStatus(
-                        milestoneExtended.transactions as Array<FundingTransaction & { method?: string }>,
+                        (matchedDepense?.depense?.financer || []) as Array<FundingTransaction & { method?: string }>,
                         typeof m.currentFunding === "number" ? m.currentFunding : 0,
                         orgsIds,
                         me?.serverData?.id
@@ -210,14 +198,13 @@ export function useCagnotteAdapter(
     }, [fundingEnvelope, allProjects, config.selectorType, selectedId, me?.serverData?.id, userAdminOrganizations]);
 }
 
-export function computePledgesFromResources(resources: CagnotteResource[]): Pledge[] {
+export function computePledgesFromResources(resources: CagnotteResource[], userId?: string, orgsIds: string[] = []): Pledge[] {
 
     return resources.flatMap((resource) =>
         (resource.items ?? [])
-            .filter((item) => item.userPledge > 0)
             .flatMap((item) =>
                 item.funding
-                    .filter((fund) => fund?.fundingType !== "prepaid")
+                    .filter((fund) => fund?.fundingType !== "prepaid" && (fund.financerId === userId || orgsIds.includes(fund.financerId || "")))
                     .map((fund) => ({
                         id: `${resource.id}-${item.itemId}-${fund.fundingIndex}`,
                         resourceId: resource.answerId,
@@ -225,7 +212,7 @@ export function computePledgesFromResources(resources: CagnotteResource[]): Pled
                         depenseIndex: item.depenseIndex,
                         depenseName: item.name,
                         fundingIndex: fund.fundingIndex,
-                        fundingAmount: toSafeInt(fund.amount),
+                        fundingAmount: toNumber(fund.amount),
                         financerId: fund.financerId || "unknown_id",
                         financerName: fund.financerName,
                         userPledge: item.userPledge,

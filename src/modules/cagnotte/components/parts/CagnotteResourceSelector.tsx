@@ -110,7 +110,7 @@ export function CagnotteResourceSelector({
             </span>
           </div>
         ) : (
-          <div className="flex items-end gap-2 max-w-0">
+          <div className="flex items-end gap-2">
             <div className="flex-1">
               <Select value={selectedResourceId} onValueChange={onSelectedResourceIdChange}>
                 <SelectTrigger className="h-10">
@@ -123,7 +123,7 @@ export function CagnotteResourceSelector({
                           className="w-5 h-5 rounded object-cover"
                         />
                       )}
-                      <span>{selectedResource.name || untitled}</span>
+                      <span className="truncate block">{selectedResource.name || untitled}</span>
                     </div>
                   ) : (
                     <SelectValue

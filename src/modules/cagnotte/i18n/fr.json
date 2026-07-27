@@ -110,7 +110,14 @@
     "pledge": {
       "title": "Payer plus tard",
       "description": "Sans paiement immédiat",
-      "button": "Confirmer l'engagement de ({{amount}}€)"
+      "button": "Confirmer l'engagement de ({{amount}}€)",
+      "confirm": "Votre engagement de {{amount}}€ sera enregistré. Pour payer veuillez accéder à vos promesses en cours.",
+      "checkbox": "En cochant cette case, je valide ma promesse de contribution.",
+      "pledge": "Payer plus tard",
+      "selected": "selectionné",
+      "selected_plural": "selectionnés",
+      "proposition": "proposition",
+      "project": "projet"
     },
     "selectMethodPlaceholder": "Sélectionnez une méthode de paiement",
     "successScreen": {
@@ -572,8 +579,24 @@
       }
     },
     "pledges": {
-        "toast": "Vous avez {{count}} promesse de total {totalAmount}} € à régler!",
-        "toast_plural": "Vous avez {{count}} promesses de total {totalAmount}} € à régler!"
+        "toast": "Vous avez {{count}} promesse de total {{totalAmount}} € à régler!",
+        "toast_plural": "Vous avez {{count}} promesses de total {{totalAmount}} € à régler!",
+        "list": {
+          "title": "Mes promesses de financement",
+          "triggerResource": "Par ressource",
+          "triggerFunder": "Par financeur",
+          "noPledges": "Aucune promesse en attente.",
+          "engagement": "engagement",
+          "engagements": "engagements",
+          "by": "Par",
+          "for": "Pour",
+          "totalSelectedLabel": "Total sélectionné",
+          "PaySelected": "Payer ma sélection",
+          "return": "Retour à la cagnotte"
+        },
+        "payment": {
+          "title": "Paiement des promesses"
+        }
     }
   },
   "FinanceSection": {
@@ -764,5 +787,20 @@
       "selectedPledge" : "engagement sélectionnée",
       "selectedPledge_plural" : "engagements sélectionnées"
     }
+  },
+  "PaymentReceivedScreen": {
+    "title": "Paiement reçu",
+    "subtitleSingle": "Votre contribution de {{amount}} € a bien été enregistrée.",
+    "subtitleMultiple": "Vos {{count}} promesses ({{amount}} €) ont bien été payées.",
+    "objectiveReached": { "label": "Palier atteint !" },
+    "closeButton": "Fermer",
+    "returnHomeButton": "Retour à l'accueil"
+  },
+  "PledgeConfirmedScreen": {
+    "title": "Promesse enregistrée",
+    "subtitleSingle": "Votre promesse de {{amount}} € a bien été enregistrée.",
+    "subtitleMultiple": "Vos {{count}} promesses ({{amount}} €) ont bien été enregistrées.",
+    "hint": "Vous pourrez régler ce montant à tout moment depuis le bouton de vos promesses.",
+    "closeButton": "Fermer"
   }
 }

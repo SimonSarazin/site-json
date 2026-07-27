@@ -5,14 +5,20 @@ import { useFundingEnvelope } from "@/modules/cagnotte/hooks/useFundingEnvelope"
 import { useOrganizationProjectsWithAnswers } from "@/modules/cagnotte/hooks/useOrganizationProjectsWithAnswers";
 import { useCagnotteType } from "@/modules/cagnotte/hooks/useCagnotteType";
 import { useCagnotteAdapter , computePledgesFromResources } from "@/modules/cagnotte/hooks/useCagnotteAdapter";
+import { useUserAdminOrganizations } from "@/modules/cagnotte/hooks/useUserAdminOrganizations";
 import { useSite } from "@/hooks/useSite";
 import { Pledge } from "@/modules/cagnotte/types";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 import { toSafeInt } from "@/modules/cagnotte/utils/dataTransform";
+import {isUser} from "@/lib/getTypedEntity.ts";
+import type {User} from "@communecter/cocolight-api-client";
 const PromessesDialog = React.lazy(() => import("./PromessesDialog"));
 
 export function PledgeHeaderButton() {
     const { entity, me } = useCocolight();
+    const currentUserEntity = (me && isUser(me) ? me : null) as User | null;
+    const userAdminOrganizations = useUserAdminOrganizations(currentUserEntity, {});
+    const orgsIds = useMemo(() => userAdminOrganizations?.map((o) => o.id) || [], [userAdminOrganizations]);
     const [open, setOpen] = useState(false);
     const siteConfig = useSite();
     const { projects: allProjects } = useOrganizationProjectsWithAnswers({
@@ -36,7 +42,7 @@ export function PledgeHeaderButton() {
     );
 
     // calcule du tableau complet des promesses (pour la modale)
-    const computedPledges = useMemo<Pledge[]>(() => computePledgesFromResources(resources) , [resources]);
+    const computedPledges = useMemo<Pledge[]>(() => computePledgesFromResources(resources, me?.serverData?.id, orgsIds) , [resources, me?.serverData?.id, orgsIds]);
 
     // calcule la somme totale des promesses pour le bouton
     const totalPledgesAmount = useMemo<number>(() => {

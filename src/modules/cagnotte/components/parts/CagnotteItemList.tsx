@@ -33,7 +33,7 @@ export function CagnotteItemList({
   useLoadNamespace("modules/cagnotte");
   const t = useT("modules/cagnotte");
 
-  if (items && items.length === 0) return null;
+  if (items === undefined || items.length === 0) return null;
 
   return (
     <div className="space-y-3">

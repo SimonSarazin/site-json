@@ -6,6 +6,7 @@ import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Pledge} from "@/modules/cagnotte/types";
 import {useT} from "@/hooks/useT";
 import {useLoadNamespace} from "@/hooks/useLoadNamespace";
+import {toNumber} from "@/modules/cagnotte/utils/dataTransform.ts";
 
 // Lazy-load : PledgePaymentPage tire @stripe/stripe-js + @stripe/react-stripe-js
 // par import statique. En lazy, Stripe n'est téléchargé qu'au passage réel
@@ -53,14 +54,13 @@ export function PromessesDialog({
             return acc;
         }, {} as Record<string, { name: string; items: Pledge[] }>);
     }, [pledges, groupMode]);
-    console.log('Anatolelog pledges groupedData',pledges,groupedData)
 
     const selectedPledgesList = useMemo(() => {
         return pledges.filter((p) => localSelectedIds.has(p.id));
     }, [pledges, localSelectedIds]);
 
     const totalSelectedAmount = useMemo(() => {
-        return selectedPledgesList.reduce((sum, p) => sum + p.fundingAmount, 0);
+        return selectedPledgesList.reduce((sum, p) => sum + toNumber(p.fundingAmount), 0);
     }, [selectedPledgesList]);
 
     const handleToggleItem = (id: string) => {
@@ -105,6 +105,7 @@ export function PromessesDialog({
             if (!val) setStep("list");
         }}>
             <DialogContent
+                aria-describedby={undefined}
                 className="sm:max-w-2xl bg-card border-border max-h-[90vh] overflow-hidden flex flex-col p-0">
 
                 {step === "list" ? (
@@ -113,7 +114,7 @@ export function PromessesDialog({
                             className="border-b px-6 py-4 flex flex-row items-center justify-between space-y-0">
                             <DialogTitle className="flex items-center gap-2 text-xl font-bold">
                                 <CreditCard className="w-6 h-6 text-primary"/>
-                                {String(t("Pledges.list.title"))}
+                                {String(t("CagnotteDialog.pledges.list.title"))}
                             </DialogTitle>
 
                             <Tabs value={groupMode} onValueChange={(v) => {
@@ -133,7 +134,7 @@ export function PromessesDialog({
                                     data-[state=active]:text-primary-foreground 
                                     data-[state=active]:shadow-md
                                     ">
-                                        <Layers className="w-3.5 h-3.5"/> {String(t("Pledges.list.triggerProject"))}
+                                        <Layers className="w-3.5 h-3.5"/> {String(t("CagnotteDialog.pledges.list.triggerResource"))}
                                     </TabsTrigger>
                                     <TabsTrigger value="financer" className="
                                     flex items-center gap-1.5 text-xs
@@ -146,7 +147,7 @@ export function PromessesDialog({
                                     data-[state=active]:text-primary-foreground 
                                     data-[state=active]:shadow-md
                                     ">
-                                        <UserCheck className="w-3.5 h-3.5"/> {String(t("Pledges.list.triggerFunder"))}
+                                        <UserCheck className="w-3.5 h-3.5"/> {String(t("CagnotteDialog.pledges.list.triggerFunder"))}
                                     </TabsTrigger>
                                 </TabsList>
                             </Tabs>
@@ -154,7 +155,9 @@ export function PromessesDialog({
 
                         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
                             {Object.keys(groupedData).length === 0 ? (
-                                <p className="text-center text-muted-foreground py-8">Aucune promesse en attente.</p>
+                                <p className="text-center text-muted-foreground py-8">
+                                    {String(t("CagnotteDialog.pledges.list.noPledges"))}
+                                </p>
                             ) : (
                                 Object.entries(groupedData).map(([groupId, group]) => {
                                     const isAllGroupChecked = group.items.length > 0 && group.items.every((i) => localSelectedIds.has(i.id));
@@ -185,7 +188,7 @@ export function PromessesDialog({
                                                 >
                                                     <span
                                                         className="text-xs text-muted-foreground bg-background px-2.5 py-1 rounded-full border border-border/50 group-hover:border-primary/50 transition-colors">
-                                                        {group.items.length} engagement{group.items.length > 1 ? "s" : ""}
+                                                        {group.items.length} {group.items.length > 1 ? String(t("CagnotteDialog.pledges.list.engagements")) : String(t("CagnotteDialog.pledges.list.engagement"))}
                                                     </span>
                                                     <div className="text-muted-foreground group-hover:text-primary transition-colors">
                                                         {isExpanded ? (
@@ -215,8 +218,8 @@ export function PromessesDialog({
                                                                         className="text-sm font-medium text-foreground">{pledge.depenseName}</span>
                                                                     <span className="text-xs text-muted-foreground">
                                                                         {groupMode === "resource"
-                                                                            ? `Par : ${pledge.financerName}`
-                                                                            : `Pour : ${pledge.resourceName}`}
+                                                                            ? `${String(t("CagnotteDialog.pledges.list.by"))} : ${pledge.financerName}`
+                                                                            : `${String(t("CagnotteDialog.pledges.list.for"))} : ${pledge.resourceName}`}
                                                                     </span>
                                                                 </div>
                                                             </label>
@@ -235,7 +238,7 @@ export function PromessesDialog({
 
                         <div className="border-t border-border bg-secondary/5 px-6 py-4">
                             <div className="flex justify-between items-center mb-4 text-base font-bold">
-                                <span>{String(t("Pledges.list.totalSelectedLabel"))}</span>
+                                <span>{String(t("CagnotteDialog.pledges.list.totalSelectedLabel"))}</span>
                                 <span
                                     className="text-primary font-mono text-xl">{totalSelectedAmount.toLocaleString("fr-FR")} €</span>
                             </div>
@@ -245,28 +248,33 @@ export function PromessesDialog({
                                     onClick={() => setStep("payment")}
                                     className="w-full py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    {String(t("Pledges.list.PaySelected"))} ({totalSelectedAmount.toLocaleString("fr-FR")} €)
+                                    {String(t("CagnotteDialog.pledges.list.PaySelected"))} ({totalSelectedAmount.toLocaleString("fr-FR")} €)
                                 </button>
                                 {onOpenCagnotte && ( 
                                     <button onClick={onOpenCagnotte}
                                             className="w-full py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                                        {String(t("Pledges.list.return"))}
+                                        {String(t("CagnotteDialog.pledges.list.return"))}
                                     </button>
                                 )}
                             </div>
                         </div>
                     </>
                 ) : (
-                    <Suspense fallback={null}>
-                        <PledgePaymentPage
-                            pledges={selectedPledgesList}
-                            onBack={() => setStep("list")}
-                            onClose={() => {
-                                setStep("list");
-                                onOpenChange(false);
-                            }}
-                        />
-                    </Suspense>
+                    <div className="p-6 overflow-y-auto">
+                        <DialogTitle className="mb-4">
+                            {String(t("CagnotteDialog.pledges.payment.title"))}
+                        </DialogTitle>
+                        <Suspense fallback={null}>
+                            <PledgePaymentPage
+                                pledges={selectedPledgesList}
+                                onBack={() => setStep("list")}
+                                onClose={() => {
+                                    setStep("list");
+                                    onOpenChange(false);
+                                }}
+                            />
+                        </Suspense>
+                    </div>
                 )}
             </DialogContent>
         </Dialog>

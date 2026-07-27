@@ -3,6 +3,7 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace.tsx";
 import { AlertCircle, ArrowRight } from "lucide-react";
 import { CagnotteTypeConfig } from "../../types";
 import { useT } from "@/hooks/useT";
+import { toSafeInt } from "@/modules/cagnotte/utils/dataTransform";
 
 export interface UnpaidFundingToastProps {
     pending: Pledge[]
@@ -24,7 +25,7 @@ export function PledgeFundingToast({
     if (pending.length === 0) return null;
 
     const count = pending.length;
-    const totalAmount = pending.reduce((sum, p) => sum + p.fundingAmount, 0);
+    const totalAmount = pending.reduce((sum, p) => sum + toSafeInt(p.fundingAmount), 0);
 
     return (
         <button

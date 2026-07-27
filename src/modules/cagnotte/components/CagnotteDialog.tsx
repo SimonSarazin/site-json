@@ -22,7 +22,6 @@ import {ClientOnly} from "@/components/layout/ClientOnly";
 // initial — il est téléchargé uniquement quand l'utilisateur déclenche
 // `showPaymentConfig` (clic sur "Contribuer").
 const PaymentConfigPage = lazy(() => import("./PaymentConfigPage"));
-import {CagnotteSuccessScreen} from "./parts/CagnotteSuccessScreen";
 import {CagnotteAmountPicker} from "./parts/CagnotteAmountPicker";
 import {CagnotteResourceSelector} from "./parts/CagnotteResourceSelector.tsx";
 import {PledgeFundingToast} from "./parts/PledgeFundingToast.tsx";
@@ -42,22 +41,21 @@ import {
 import {useCagnotteType} from "@/modules/cagnotte/hooks/useCagnotteType.ts";
 import {computePledgesFromResources, useCagnotteAdapter} from "@/modules/cagnotte/hooks/useCagnotteAdapter";
 import {useSite} from "@/hooks/useSite.tsx";
-import {CagnotteResource, CagnotteType, Pledge} from "@/modules/cagnotte/types.ts";
+import {CagnotteResource, CagnotteType, Pledge, Objective} from "@/modules/cagnotte/types.ts";
 import {useOrganizationProjectsWithAnswers} from "@/modules/cagnotte/hooks/useOrganizationProjectsWithAnswers.ts";
+import {useUserAdminOrganizations} from "@/modules/cagnotte/hooks/useUserAdminOrganizations.ts";
 // Chargement à la demande du modal de paiement des promesses.
 const PromessesDialog = lazy(() => import("./PromessesDialog"));
+import type { User } from "@communecter/cocolight-api-client";
+import { isUser } from "@/lib/getTypedEntity";
+import PaymentReceivedScreen from "@/modules/cagnotte/components/PaymentReceivedScreen.tsx";
+import PledgeConfirmedScreen from "@/modules/cagnotte/components/PledgeConfirmedScreen.tsx";
 
 /**
  * Palier financier déclenchant une célébration (toast + confetti à venir).
  * Pas exposé via les sections JSON — défini ici jusqu'à ce que la feature de paliers
  * UX soit activée (cf. tableau vide ci-dessous).
  */
-interface Objective {
-    target: number;
-    label: string;
-    description: string;
-    icon: React.ElementType;
-}
 
 const objectives: Objective[] = [
     {target: 0, label: "", description: "", icon: Anchor}
@@ -151,6 +149,8 @@ const CagnotteDialogContent = ({
                                    onOpenPromesses,
                                    setPledges
                                }: CagnotteDialogContentProps) => {
+    type CompletedContribution = { type: "paid" | "pledged"; amount: number } | null;
+    const [completedContribution, setCompletedContribution] = useState<CompletedContribution>(null);
     const [customAmount, setCustomAmount] = useState("");
     const [selectedAmountType, setSelectedAmountType] = useState<"predefined" | "custom" | null>(null);
     const [selectedPredefinedAmount, setSelectedPredefinedAmount] = useState<number | null>(null);
@@ -158,7 +158,6 @@ const CagnotteDialogContent = ({
     const [objectiveReached, setObjectiveReached] = useState<Objective | null>(null);
     const [selectedResourceId, setSelectedResourceId] = useState<string>("");
     const [showPaymentConfig, setShowPaymentConfig] = useState(false);
-    const [paymentSuccess] = useState(false);
     const [isProcessing] = useState(false);
     const [optimisticResourceModalId, setOptimisticResourceModalId] = useState<string | null>(null);
     //  États pour les milestones activables
@@ -180,7 +179,7 @@ const CagnotteDialogContent = ({
     const lockItemSelection = hideOtherItems && !!forcedItemId;
 
     // Récupérer l'entité depuis le contexte
-    const {entity} = useCocolight();
+    const { entity, me } = useCocolight();
 
     // Récupérer TOUS les projets pour le SELECT.
     // Le content n'est monté qu'à l'ouverture du dialog → fetch démarre ici,
@@ -226,9 +225,11 @@ const CagnotteDialogContent = ({
 
         return nextMap;
     }, [resources]);
-
+    const currentUserEntity = (me && isUser(me) ? me : null) as User | null;
+    const userAdminOrganizations = useUserAdminOrganizations(currentUserEntity, {});
+    const orgsIds =  userAdminOrganizations?.map(user => user.id);
     //computedPledges : Promesses de financement non payé
-    const computedPledges = useMemo<Pledge[]>(() => computePledgesFromResources(resources) , [resources]);
+    const computedPledges = useMemo<Pledge[]>(() => computePledgesFromResources(resources, me?.serverData?.id, orgsIds) , [resources, me?.serverData?.id, orgsIds]);
 
     // Permissions cagnotte calculées sur l'ORGA (entity Cocolight), pas sur le
     // projet visité. La modale CagnotteDialog est rendue dans 2 contextes :
@@ -333,7 +334,7 @@ const CagnotteDialogContent = ({
             return itemsFinancedTotal;
         }
 
-        return toSafeInt(selectedResource?.resourceTotalAmount);
+        return toSafeInt(selectedResource?.resourceFinancedAmount);
     }, [activeResourceItems, selectedResource]);
 
     const resourceCagnotteTargetAmount = useMemo(() => {
@@ -508,12 +509,6 @@ const CagnotteDialogContent = ({
         ]);
     }, [queryClient, onRefresh]);
 
-    const handlePaymentConfigSuccess = () => {
-        // Le flux de fermeture/redirection est géré dans PaymentConfigPage.
-        setShowPaymentConfig(false);
-        setPendingContributionAmount(null);
-    };
-
     const isContributionEnabled = getSelectedAmount() > 0 && activeItems.size > 0 && !!selectedResourceId;
 
     // Hook qui encapsule la logique save (BDD + toasts via useMutationWithToast).
@@ -597,8 +592,19 @@ const CagnotteDialogContent = ({
                 </DialogDescription>
             </DialogHeader>
 
-            {paymentSuccess ? (
-                <CagnotteSuccessScreen objectiveReached={objectiveReached}/>
+            {completedContribution ? (
+                completedContribution.type === "paid" ? (
+                    <PaymentReceivedScreen
+                        amount={completedContribution.amount}
+                        objectiveReached={objectiveReached}
+                        onClose={() => setOpen(false)}
+                    />
+                ) : (
+                    <PledgeConfirmedScreen
+                        amount={completedContribution.amount}
+                        onClose={() => setOpen(false)}
+                    />
+                )
             ) : showPaymentConfig && pendingContributionAmount ? (
                 <Suspense fallback={
                     <div className="flex items-center justify-center py-12 text-muted-foreground">
@@ -615,7 +621,14 @@ const CagnotteDialogContent = ({
                         itemAnswerId={selectedResourceAnswerId} //  Passer l'answerId pour enregistrer les financements
                         itemProjectId={selectedResourceProjectId} //  Passer le projectId
                         onBack={() => setShowPaymentConfig(false)}
-                        onPaymentSuccess={handlePaymentConfigSuccess}
+                        onPaymentSuccess={(payload) => {
+                            setShowPaymentConfig(false);
+                            setCompletedContribution({
+                                type: payload?.method ? "paid" : "pledged", // HYPOTHÈSE — voir ci-dessous
+                                amount: pendingContributionAmount,
+                            });
+                            setPendingContributionAmount(null);
+                        }}
                         onContributionSaved={handleContributionSaved}
                         onClose={() => setOpen(false)} //  Fermer la modale après paiement réussi
                         currentUser={null}

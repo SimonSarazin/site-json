@@ -96,21 +96,21 @@ function normalizeFundingContextType(type: string | undefined): string {
 }
 
 const PaymentConfigPage = ({
-    resourceName,
-    resourceId,
-    resourceImage,
-    amount,
-    items,
-    activeItemsIds,
-    itemAnswerId,
-    itemProjectId,
-    onBack,
-    onPaymentSuccess,
-    onContributionSaved,
-    onClose,
-    context,
-    cagnotteConfig
-}: PaymentConfigPageProps) => {
+                               resourceName,
+                               resourceId,
+                               resourceImage,
+                               amount,
+                               items,
+                               activeItemsIds,
+                               itemAnswerId,
+                               itemProjectId,
+                               onBack,
+                               onPaymentSuccess,
+                               onContributionSaved,
+                               onClose,
+                               context,
+                               cagnotteConfig
+                           }: PaymentConfigPageProps) => {
     const navigate = useNavigate();
     const { entity, me, api, contextId, contextType } = useCocolight();
     const queryClient = useQueryClient();
@@ -160,11 +160,21 @@ const PaymentConfigPage = ({
         [items, activeItemsIds]
     );
 
+    const maxAllocatable = useMemo(
+        () => activeItems.reduce((sum, item) => {
+            const currentFunding = Number(item.currentFunding || 0);
+            const targetAmount = Number(item.price || 0);
+            return sum + Math.max(targetAmount - currentFunding, 0);
+        }, 0),
+        [activeItems]
+    );
+
+    const effectiveAmount = Math.min(amount, maxAllocatable);
+
     // Allouer le montant saisi du premier au dernier depens actif
     const depenseFunding = useMemo(() => {
-        let remainingAmount = amount;
-
-        return activeItems.map((item) => {
+        let remainingAmount = effectiveAmount;
+        const result = activeItems.map((item) => {
             const currentFunding = Number(item.currentFunding || 0);
             const targetAmount = Number(item.price || 0);
             const remainingToTarget = Math.max(targetAmount - currentFunding, 0);
@@ -177,7 +187,9 @@ const PaymentConfigPage = ({
                 amount: allocatedAmount,
             };
         });
-    }, [activeItems, amount]);
+
+        return result;
+    }, [activeItems, effectiveAmount]);
 
     const redirectToHome = useCallback((showToast = false) => {
         let didNavigate = false;
@@ -275,8 +287,6 @@ const PaymentConfigPage = ({
         } catch (error) {
             console.error('Erreur completePayment:', error);
             showErrorToast(error, "PaymentConfigPage.toasts.paymentAcceptedIncomplete.title", t);
-            setPaymentSuccess(true);
-            onPaymentSuccess(paymentData);
         } finally {
             await refreshAfterContributionSave();
         }
@@ -337,7 +347,7 @@ const PaymentConfigPage = ({
                 // Créer les données finales de paiement
                 const paymentData = buildHelloAssoPaymentData(
                     {
-                        amount,
+                        amount: effectiveAmount,
                         resourceName,
                         resourceId,
                         itemsIds: Array.from(activeItemsIds),
@@ -362,8 +372,7 @@ const PaymentConfigPage = ({
         }, 5000);
 
         return () => clearInterval(verifyInterval);
-    }, [isVerifyingPayment, helloAssoPaymentId, amount, resourceName, resourceId, activeItemsIds, contributorType, contributorId, t, completePayment, depenseFunding]);
-
+    }, [isVerifyingPayment, helloAssoPaymentId, effectiveAmount, resourceName, resourceId, activeItemsIds, contributorType, contributorId, t, completePayment, depenseFunding]);
 
     const isFormComplete = Boolean(
         paymentMethod &&
@@ -372,7 +381,7 @@ const PaymentConfigPage = ({
     );
 
     const buildContributionData = () => ({
-        amount,
+        amount: effectiveAmount,
         resourceName,
         items: activeItems.map((i) => {
             const allocation = depenseFunding.find((df) => df.depenseIndex === i.depenseIndex);
@@ -396,7 +405,7 @@ const PaymentConfigPage = ({
                     stripeData.payment_method_id ||
                     ""
                 ),
-                amount,
+                amount: effectiveAmount,
             });
 
             const contributionData = buildContributionData();
@@ -427,7 +436,7 @@ const PaymentConfigPage = ({
         try {
             // Préparer la configuration HelloAsso
             const helloAssoConfig = {
-                amount,
+                amount: effectiveAmount,
                 resourceName,
                 resourceId,
                 itemsIds: Array.from(activeItemsIds),
@@ -445,7 +454,7 @@ const PaymentConfigPage = ({
             }
 
             const fundingEnvelopeResponse = await submitFundingEnvelopeAction("helloassoPay", {
-                amount,
+                amount: effectiveAmount,
                 email: me?.serverData?.email,
             });
 
@@ -497,8 +506,7 @@ const PaymentConfigPage = ({
             const paymentData: PaymentDataPayload = {
                 ...buildContributionData(),
             };
-            completePayment(paymentData, depenseFunding);
-            showSuccessToast("toasts.contributionSaved.title", t);
+            await completePayment(paymentData, depenseFunding);
         } catch (error) {
             showErrorToast(error, "PaymentConfigPage.toasts.paymentError.title", t);
         }
@@ -559,9 +567,9 @@ const PaymentConfigPage = ({
                     )}
                     <div className="flex-1">
                         <h3 className="text-lg font-semibold text-foreground">{resourceName}</h3>
-                        <p className="text-3xl font-bold text-primary">{amount}€</p>
+                        <p className="text-3xl font-bold text-primary">{effectiveAmount.toLocaleString("fr-FR")} €</p>
                         <p className="text-sm text-muted-foreground">
-                            {activeItems.length} {cagnotteConfig.selectorType}{activeItems.length > 1 ? "s" : ""} selectionné{activeItems.length > 1 ? "s" : ""}
+                            {activeItems.length} {String(t("PaymentConfigPage.pledge.selected"))}
                         </p>
                     </div>
                 </div>
@@ -627,7 +635,7 @@ const PaymentConfigPage = ({
                     </ToggleGroup>
                 )}
             </div>
-            
+
 
             {contributorType === "organizations" && (
                 <div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-border/50">
@@ -774,7 +782,7 @@ const PaymentConfigPage = ({
                         ) : (
                             <Elements stripe={stripePromise}>
                                 <StripePaymentForm
-                                    amount={amount}
+                                    amount={effectiveAmount}
                                     onSuccess={handleStripePaymentSuccess}
                                     onError={() => undefined}
                                 />
@@ -793,19 +801,19 @@ const PaymentConfigPage = ({
                         <ExternalLink className="w-5 h-5 mr-2" />
                         {isHelloAssoProcessing
                             ? t("PaymentConfigPage.helloasso.buttonLoading")
-                            : t("PaymentConfigPage.helloasso.button", undefined, { amount })}
+                            : t("PaymentConfigPage.helloasso.button", undefined, { amount: effectiveAmount })}
                     </Button>
                 )}
 
                 {paymentMethod === "pledge" && (
                     <div className="rounded-xl border bg-[var(--color-surface)] p-4 space-y-4">
-                        <h3 className="text-sm font-medium">Payer plus tard</h3>
+                        <h3 className="text-sm font-medium">{String(t("PaymentConfigPage.pledge.pledge"))}</h3>
                         <p className="text-sm text-muted-foreground">
-                            Votre engagement de {amount}€ sera enregistré. Pour payer veuillez accéder à vos promesses en cours.
+                            {String(t("PaymentConfigPage.pledge.confirm", undefined, { amount: effectiveAmount }))}
                         </p>
                         <label className="flex items-start gap-2 text-sm text-muted-foreground">
                             <input type="checkbox" required className="mt-1 accent-[var(--color-primary)]" onChange={acceptCondition}  />
-                            <span> En cochant cette case, je valide ma promesse de contribution.</span>
+                            <span>{String(t("PaymentConfigPage.pledge.checkbox"))}</span>
                         </label>
                         <Button
                             onClick={saveContributionAsPromise}
@@ -815,7 +823,7 @@ const PaymentConfigPage = ({
                         >
                             {t("PaymentConfigPage.pledge.button", undefined,
                                 {
-                                    amount,
+                                    amount: effectiveAmount,
                                     context: cagnotteConfig.selectorType+context
                                 }
                             )}
@@ -850,4 +858,3 @@ const PaymentConfigPage = ({
 };
 
 export default PaymentConfigPage;
-
