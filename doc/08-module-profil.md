@@ -514,7 +514,7 @@ export const ProfilesConfigSchema = z.object({
 
 ## Sections de profil
 
-Le module profil propose **18 types de sections** configurables:
+Le module profil propose **19 types de sections** configurables:
 
 | Section                    | Type                         | Variantes/Options                              | Description                               |
 | -------------------------- | ---------------------------- | ---------------------------------------------- | ----------------------------------------- |
@@ -533,9 +533,44 @@ Le module profil propose **18 types de sections** configurables:
 | `profile-event-dates`      | ProfileEventDatesSectionSchema | showType, dateFormat                         | Dates d'événement (start/end)             |
 | `profile-badges`           | ProfileBadgesSectionSchema   | layout (grid, flex, list), maxDisplay          | Badges et certifications                  |
 | `profile-tags`             | ProfileTagsSectionSchema     | maxDisplay, linkable, searchOnClick            | Tags et mots-clés                         |
+| `profile-fields`           | ProfileFieldsSectionSchema   | variant (card, plain), columns (1, 2), fields[] | **Champs d'entité déclarés en config** — dont les champs costum, sans code par site |
 | `profile-opening-hours`    | ProfileOpeningHoursSectionSchema | format (table, list, compact), showCurrentStatus | Horaires d'ouverture          |
 | `profile-tab-layout`       | ProfileTabLayoutSectionSchema | leftSections, rightSections                   | Layout deux colonnes pour tabs            |
 | `profile-template-dynamic` | ProfileTemplateDynamicSchema | —                                              | Template dynamique basé sur config        |
+
+### `profile-fields` — champs d'entité config-driven
+
+Pendant profil de `preview.type: "facets"` (module search) : rend **les champs déclarés en config**,
+y compris les champs **costum**, sans une ligne de code par site. C'est l'alternative générique aux
+sections nommées par site (`profile-info-tl`, `profile-about-ssbe`) — à préférer pour tout nouveau
+besoin d'affichage de champs.
+
+```jsonc
+{
+  "type": "profile-fields",
+  "title": { "fr": "Informations de la structure" },
+  "variant": "card",          // "card" (défaut) | "plain"
+  "columns": 2,               // 1 (défaut) | 2
+  "fields": [
+    { "field": "acronym",           "label": { "fr": "Acronyme" },   "icon": "badge" },
+    { "field": "categoryThematic",  "label": { "fr": "Catégories" }, "icon": "layers" },
+    { "field": "address.postalCode","label": { "fr": "Code postal" },"icon": "map-pin" },
+    { "field": "otherSociaNetworks","label": { "fr": "Réseaux sociaux" },
+      "icon": "share-2", "format": "socialLinks" }
+  ]
+}
+```
+
+- `field` : dot-path dans `serverData` (`address.addressLocality`…).
+- `format` : `text` (défaut) · `link` · `email` · `tel` · `socialLinks`.
+- `socialLinks` lit la forme legacy `[{ type, link }]` **et** tolère les entrées où `type`/`link`
+  sont des tableaux parallèles (saisie legacy non normalisée) — elles sont aplaties.
+- **Les champs vides sont omis** ; si aucun champ n'a de valeur, la section ne rend rien.
+
+Logique pure isolée et testée dans `lib/profileFields.ts` (`buildProfileFieldRows`, `fieldHref`,
+tests `profileFields.test.ts`). La résolution de valeur réutilise `resolveServerDataPath` /
+`toFacetTokens` du module search — même sémantique que les facettes de recherche (une chaîne
+« a, b » compte pour deux valeurs).
 
 Chaque section a son propre schéma Zod avec des options configurables. Exemple pour `profile-header`:
 
