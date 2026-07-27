@@ -448,11 +448,7 @@
               "en": "Cyber Security Réunion"
             },
             "showActiveFiltersTags": true,
-            "showSearch": true,
-            "searchPlaceholder": {
-              "fr": "Rechercher un acteur, une ville…",
-              "en": "Search an actor, a city…"
-            }
+            "showSearch": false
           }
         },
         {
@@ -665,38 +661,10 @@
                   "en": "Directory"
                 },
                 "icon": "building-2",
-                "showSearch": true,
+                "showSearch": false,
                 "placeholder": {
                   "fr": "Rechercher un annuaire ...",
                   "en": "Search for a directory..."
-                },
-                "zoneSelector": {
-                  "show": true,
-                  "placeholder": {
-                    "fr": "Filtrer par pays...",
-                    "en": "Filter by country..."
-                  },
-                  "countryCode": [
-                    "RE",
-                    "AU",
-                    "ZA",
-                    "KE",
-                    "MG",
-                    "MZ",
-                    "TZ",
-                    "SC",
-                    "LK",
-                    "IN",
-                    "MU"
-                  ],
-                  "level": [
-                    1
-                  ],
-                  "sortBy": "name",
-                  "costumSlug": "cyberReunion",
-                  "costumEditMode": false,
-                  "costumId": "695b58ca8693fc2c121208e4",
-                  "costumType": "organizations"
                 },
                 "csvButton": {
                   "show": true,
@@ -758,8 +726,8 @@
                 "useFilter": true,
                 "showMap": false,
                 "enableMap": true,
-                "showActiveFiltersTypes": true,
-                "showActiveFiltersTags": true,
+                "showActiveFiltersTypes": false,
+                "showActiveFiltersTags": false,
                 "disableInfiniteScroll": false,
                 "baseParams": {
                   "defaultTypes": [
