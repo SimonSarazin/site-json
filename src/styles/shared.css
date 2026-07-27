@@ -67,6 +67,37 @@
   --gradient-section: linear-gradient(135deg, var(--primary), var(--accent));
 }
 
+/* Respect de `prefers-reduced-motion` — plancher d'accessibilité, pour TOUS les
+   thèmes puisque c'est ici que vivent les animations partagées.
+
+   Les boucles décoratives (`float`, `pulse-glow`, `marquee`) sont coupées net :
+   elles n'apportent aucune information. Les animations d'ENTRÉE
+   (`fade-in`, `fade-in-up`) ne sont pas supprimées mais réduites à une durée
+   quasi nulle : leur dernière image porte l'état visible (`forwards`), les
+   annuler laisserait le contenu à `opacity: 0` chez les personnes qui ont
+   justement demandé moins d'animation. On garde 1 ms plutôt que 0 pour que
+   `animationend` continue de se déclencher si un composant l'écoute.
+
+   Le défilement doux (`html { scroll-behavior: smooth }`, posé par les thèmes)
+   est ramené à `auto` pour la même raison. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .animate-float,
+  .animate-pulse-glow,
+  .animate-marquee {
+    animation: none;
+  }
+
+  .animate-fade-in,
+  .animate-fade-in-up {
+    animation-duration: 1ms;
+    animation-delay: 0ms;
+  }
+}
+
 /* Masque la scrollbar en conservant le scroll (aucun équivalent standard). */
 @utility scrollbar-hide {
   -ms-overflow-style: none;
