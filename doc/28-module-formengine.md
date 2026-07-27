@@ -53,7 +53,7 @@ interface FieldDescriptor {
   widgetProps?: Record<string, unknown>; optionsKey?: string;
   // — VALIDATION —
   required?: boolean;
-  rules?: { url?; min?; max?; minLength?; maxLength?; regex? };
+  rules?: { url?; min?; max?; minLength?; maxLength?; regex? };  // min/max sur un TABLEAU = nb d'éléments
   messages?: Partial<Record<"required"|"url"|"min"|"max"|"minLength"|"maxLength"|"format", string>>;
   // — CONDITIONNEL / CALCUL —
   visibleIf?: Predicate; requiredIf?: Predicate;
@@ -79,6 +79,12 @@ type I18n = string | LocalizedString;   // clé i18next OU { fr, en, … } inlin
 
 > **Champs qui N'EXISTENT PAS** (à ne pas inventer) : `createOnly`, `editOnly`, `hiddenIf`, `disabledIf`,
 > `optionsIf`. Pour cacher : `visibleIf` (+ `{ not }`). L'asymétrie create/edit passe par `writeOnly`/`readOnly`.
+
+> **Plafonner une multi-sélection** (pendant du `maximumSelectionLength` de select2, legacy) :
+> `widgetProps.maxItems` bloque la SAISIE au-delà de N (les N premiers sont conservés) et
+> `rules: { max: N }` garde la VALIDATION — sur un tableau, `min`/`max` portent sur le **nombre
+> d'éléments** (messages `validation.minItems` / `validation.maxItems`), sur un nombre ils gardent
+> leur sens scalaire. Pour le widget `tags`, la saisie se plafonne avec `widgetProps.maxTags`.
 
 ## Conditionnel — `Predicate`
 
