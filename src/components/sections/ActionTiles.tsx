@@ -70,66 +70,50 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
     };
 
     /**
-     * Couleurs de tuile — TOKENS DU THÈME uniquement.
+     * Couleurs de tuile.
      *
-     * `teal` / `amber` / `eco` codaient en dur `teal-500` / `amber-500` /
-     * `emerald-500` de la palette Tailwind : les mêmes trois couleurs sur tous
-     * les sites, sans aucun rapport avec leur charte (sur cyber-réunion, une
-     * identité bleu République / or européen s'affichait en menthe et pêche).
-     * Ces noms restent acceptés — 5 configs du parc les emploient — mais ils
-     * pointent désormais sur `chart-2..4`, la palette catégorielle que CHAQUE
-     * config déclare. Chaque site porte donc enfin ses propres couleurs.
+     * Les tokens du thème (`primary`, `accent`, `destructive`, `chart-1..5`)
+     * sont la voie à privilégier : ils suivent la charte du site.
+     *
+     * `teal` / `amber` / `eco` / `turquoise` / `cyan-bright` sont des littéraux
+     * Tailwind, identiques sur tous les sites. C'est un défaut — mais les
+     * REMAPPER sur `chart-2..4` a été essayé et fait pire : ces jetons forment
+     * une palette SÉQUENTIELLE (une rampe de graphique), pas catégorielle. Sur
+     * rezo-la-mer, `chart-2`/`chart-3`/`chart-4` sont trois nuances du même
+     * orange : les deux tuiles colorées de sa home passaient à 10/441 d'écart,
+     * indiscernables. Sur parent62, `teal → chart-2` rendait les deux tuiles
+     * `teal` STRICTEMENT identiques à la tuile `chart-2` voisine (écart 0),
+     * détruisant une distinction voulue par le concepteur.
+     *
+     * Les 5 configs qui emploient ces alias gardent donc leur rendu. Le vrai
+     * correctif est de migrer ces configs vers des tokens choisis un par un —
+     * un arbitrage de design par site, pas une substitution mécanique.
      */
-    const TILE_TOKEN: Record<string, string> = {
-        accent: "accent",
-        primary: "primary",
-        destructive: "destructive",
-        "chart-1": "chart-1",
-        "chart-2": "chart-2",
-        "chart-3": "chart-3",
-        "chart-4": "chart-4",
-        "chart-5": "chart-5",
-        // alias historiques
-        teal: "chart-2",
-        turquoise: "chart-2",
-        "cyan-bright": "chart-2",
-        amber: "chart-3",
-        eco: "chart-4",
+    const TILE_STYLES: Record<string, { button: string; icon: string }> = {
+        // Tokens du thème — à préférer pour toute nouvelle config.
+        // Classes écrites en toutes lettres : Tailwind ne détecte pas les noms
+        // concaténés à l'exécution, une classe construite serait purgée du build.
+        primary: { button: "bg-primary/20 hover:bg-primary/30 border-primary/30 hover:border-primary/50", icon: "text-primary" },
+        accent: { button: "bg-accent/20 hover:bg-accent/30 border-accent/30 hover:border-accent/50", icon: "text-accent" },
+        destructive: { button: "bg-destructive/20 hover:bg-destructive/30 border-destructive/30 hover:border-destructive/50", icon: "text-destructive" },
+        "chart-1": { button: "bg-chart-1/20 hover:bg-chart-1/30 border-chart-1/30 hover:border-chart-1/50", icon: "text-chart-1" },
+        "chart-2": { button: "bg-chart-2/20 hover:bg-chart-2/30 border-chart-2/30 hover:border-chart-2/50", icon: "text-chart-2" },
+        "chart-3": { button: "bg-chart-3/20 hover:bg-chart-3/30 border-chart-3/30 hover:border-chart-3/50", icon: "text-chart-3" },
+        "chart-4": { button: "bg-chart-4/20 hover:bg-chart-4/30 border-chart-4/30 hover:border-chart-4/50", icon: "text-chart-4" },
+        "chart-5": { button: "bg-chart-5/20 hover:bg-chart-5/30 border-chart-5/30 hover:border-chart-5/50", icon: "text-chart-5" },
+        // Littéraux hérités — conservés à l'identique (cf. commentaire ci-dessus).
+        amber: { button: "bg-amber-500/20 hover:bg-amber-500/30 border-amber-500/30 hover:border-amber-500/50", icon: "text-amber-400" },
+        teal: { button: "bg-teal-500/20 hover:bg-teal-500/30 border-teal-500/30 hover:border-teal-500/50", icon: "text-teal-500" },
+        turquoise: { button: "bg-teal-500/20 hover:bg-teal-500/30 border-teal-500/30 hover:border-teal-500/50", icon: "text-teal-500" },
+        "cyan-bright": { button: "bg-cyan-400/20 hover:bg-cyan-400/30 border-cyan-400/30 hover:border-cyan-400/50", icon: "text-cyan-400" },
+        eco: { button: "bg-emerald-500/20 hover:bg-emerald-500/30 border-emerald-500/30 hover:border-emerald-500/50", icon: "text-emerald-500" },
     };
 
-    // Classes écrites en toutes lettres : Tailwind ne détecte pas les noms
-    // concaténés à l'exécution, une classe construite serait purgée du build.
-    const BUTTON_CLASSES: Record<string, string> = {
-        primary: "bg-primary/20 hover:bg-primary/30 border-primary/30 hover:border-primary/50",
-        accent: "bg-accent/20 hover:bg-accent/30 border-accent/30 hover:border-accent/50",
-        destructive: "bg-destructive/20 hover:bg-destructive/30 border-destructive/30 hover:border-destructive/50",
-        "chart-1": "bg-chart-1/20 hover:bg-chart-1/30 border-chart-1/30 hover:border-chart-1/50",
-        "chart-2": "bg-chart-2/20 hover:bg-chart-2/30 border-chart-2/30 hover:border-chart-2/50",
-        "chart-3": "bg-chart-3/20 hover:bg-chart-3/30 border-chart-3/30 hover:border-chart-3/50",
-        "chart-4": "bg-chart-4/20 hover:bg-chart-4/30 border-chart-4/30 hover:border-chart-4/50",
-        "chart-5": "bg-chart-5/20 hover:bg-chart-5/30 border-chart-5/30 hover:border-chart-5/50",
-    };
+    const tileStyle = (color?: string) => TILE_STYLES[color ?? ""] ?? TILE_STYLES.primary;
 
-    const ICON_CLASSES: Record<string, string> = {
-        primary: "text-primary",
-        accent: "text-accent",
-        destructive: "text-destructive",
-        "chart-1": "text-chart-1",
-        "chart-2": "text-chart-2",
-        "chart-3": "text-chart-3",
-        "chart-4": "text-chart-4",
-        "chart-5": "text-chart-5",
-    };
+    const getButtonClasses = (color?: string) => tileStyle(color).button;
 
-    const getButtonClasses = (color?: string) => {
-        const token = TILE_TOKEN[color ?? ""] ?? "primary";
-        return BUTTON_CLASSES[token];
-    };
-
-    const getIconColorClass = (color?: string) => {
-        const token = TILE_TOKEN[color ?? ""] ?? "primary";
-        return ICON_CLASSES[token];
-    };
+    const getIconColorClass = (color?: string) => tileStyle(color).icon;
 
     const BG_MAP: Record<string, string> = {
         card: "bg-card",
