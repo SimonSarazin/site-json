@@ -34,7 +34,7 @@ import {
   CoolifyError,
   createApplication,
   deployApplication,
-  placementDapres,
+  resoudrePlacement,
   indexByName,
   lastSuccessfulDeployment,
   loadContext,
@@ -85,6 +85,9 @@ Options :
   --yes               applique sans confirmation (lock, push)
   --no-wait           push : déclenche sans attendre la fin
   --timeout <s>       push : abandon de l'attente (défaut 1500)
+  --server <nom>      create : serveur Coolify (sinon sites.json, sinon déduit)
+  --project <nom>     create : projet Coolify (idem)
+  --environment <nom> create : environnement (défaut production)
   --json              sortie machine`);
   process.exit(2);
 }
@@ -225,6 +228,21 @@ async function status(ctx: CoolifyContext): Promise<number> {
       );
       for (const e of x.ecarts.slice(1)) console.log(" ".repeat(marge) + `✗ ${e}`);
     }
+    // Répartition du parc — gratuite, `destination` est déjà dans la liste.
+    // Un parc étalé sur plusieurs serveurs empêche `create` de déduire son
+    // placement : autant le voir ici plutôt qu'au moment de créer.
+    const serveurs = [
+      ...new Set(
+        cibles
+          .map((s) => index.get(s.coolifyApp as string)?.destination?.server?.name)
+          .filter((n): n is string => Boolean(n)),
+      ),
+    ];
+    if (serveurs.length > 1) {
+      console.log(`\n· parc réparti sur ${serveurs.length} serveurs : ${serveurs.join(", ")}`);
+      console.log(`  create demandera --server / --project, ou les champs coolifyServer / coolifyProject.`);
+    }
+
     const local = git("rev-parse", "HEAD");
     if (local !== ref.sha) {
       console.log(
@@ -682,22 +700,22 @@ async function create(ctx: CoolifyContext): Promise<number> {
   );
   if (conflit) throw new CoolifyError(`${site.domain} est déjà servi par "${conflit.name}".`);
 
-  // Le placement n'est pas écrit en dur : il est lu sur un site déjà déployé.
-  // Un nouveau site atterrit ainsi, par construction, là où vivent ses voisins.
-  const modele = deployableSites()
+  // Le placement n'est jamais écrit en dur. Il vient, dans l'ordre : des
+  // drapeaux, des champs de l'entrée, sinon du parc — et seulement si celui-ci
+  // est homogène. Dès qu'un second serveur ou projet accueille des sites, la
+  // déduction refuse plutôt que de choisir à ta place.
+  const parc = deployableSites()
     .map((s) => index.get(s.coolifyApp as string))
-    .find((a): a is CoolifyApp => a !== undefined);
-  if (!modele) {
-    throw new CoolifyError(
-      `Aucune application du parc n'est présente sur l'instance : impossible d'en déduire ` +
-        `le serveur, le projet et l'environnement où créer "${site.coolifyApp}".`,
-    );
-  }
-  const placement = await placementDapres(ctx, modele);
+    .filter((a): a is CoolifyApp => a !== undefined);
+  const placement = await resoudrePlacement(ctx, parc, {
+    serveur: opt("--server") ?? site.coolifyServer,
+    projet: opt("--project") ?? site.coolifyProject,
+    environnement: opt("--environment"),
+  });
 
   const { variables, manquantes } = variablesAttendues(site);
   console.log(`Créer ${site.coolifyApp} pour ${slug}\n`);
-  console.log(`  placement    déduit de ${placement.modele}`);
+  console.log(`  placement    ${placement.modele}`);
   console.log(`  dépôt        ${placement.gitRepository} @ ${placement.gitBranch}`);
   console.log(`  build        ${placement.buildPack}, port ${placement.portsExposes}`);
   console.log(`  domaine      ${coolifyDomains(site)}`);

@@ -53,6 +53,25 @@ describe("Preflight — cibles de déploiement de sites.json", () => {
     }
   });
 
+  test("un placement déclaré est un nom non vide, pas un UUID", () => {
+    // Plusieurs sites peuvent partager un serveur ou un projet : aucune
+    // contrainte d'unicité ici, seulement de forme. Des noms, pas des UUID,
+    // pour la même raison que coolifyApp.
+    for (const s of deployables) {
+      for (const [champ, valeur] of [
+        ["coolifyServer", s.coolifyServer],
+        ["coolifyProject", s.coolifyProject],
+      ] as const) {
+        if (valeur === undefined) continue;
+        expect(valeur.trim(), `${s.slug} : "${champ}" est vide`).not.toBe("");
+        expect(
+          /^[a-z0-9]{20,}$/.test(valeur),
+          `${s.slug} : "${champ}" ressemble à un UUID Coolify — mettre le NOM.`,
+        ).toBe(false);
+      }
+    }
+  });
+
   test("les noms d'application sont uniques", () => {
     const noms = deployables.map((s) => s.coolifyApp as string);
     const dupes = noms.filter((n, i) => noms.indexOf(n) !== i);

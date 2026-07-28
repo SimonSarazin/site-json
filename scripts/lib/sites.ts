@@ -43,6 +43,14 @@ export interface SiteEntry {
    * déclarer à Coolify, et vérifie qu'ils résolvent déjà avant de le faire.
    */
   aliases?: string[];
+  /**
+   * NOM du serveur et du projet Coolify où poser ce site, quand le parc n'est
+   * pas homogène. Absents, ils sont déduits des sites déjà déployés — ce qui ne
+   * vaut que tant qu'ils vivent tous au même endroit. Des noms, pas des UUID,
+   * pour la même raison que `coolifyApp`.
+   */
+  coolifyServer?: string;
+  coolifyProject?: string;
 }
 
 /** Zone DNS d'amorce : la seule que l'outil ait le droit d'écrire. */
