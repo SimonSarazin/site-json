@@ -167,6 +167,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     contactSection: "Bloc contact du design contact-partners : items {icon, label, lines|value, href}.",
     partners: "Logos partenaires (contact-partners) — images EXTERNES rendues en <img> brut (pas /img : domaine non allowlisté → 403).",
     logoIcon: "Icône de marque du footer : nom Lucide ou SVG inline.",
+    "partners.note": "Mention de financement sous les logos. Un cofinancement public impose une formulation (dispositif, opérateur, cadre) que les logos seuls ne portent pas ; sans ce champ elle finit dans le copyright.",
   },
 
   theme: {
@@ -270,6 +271,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.cards": "Cartes-compteurs (countKey du count globalautocomplete + label/icon/color/href) ; absent → auto-détection des types.",
     "props.baseParams": "Périmètre du count (sans sourceKey — entité costum courante).",
     "props.bg": "Fond : token sémantique OU classe Tailwind brute (ex. bg-cyan-500).",
+    "props.scope": "Périmètre compté. auto (défaut code) = comportement historique : le $or est élargi à la localité ET au slug du costum — mesuré à 530 au lieu de 49. costum = strictement le costum ; config = le $or écrit tel quel.",
   },
 
   "section:thematics": {
@@ -277,6 +279,12 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.emptyMessage": "Message affiché quand l'entité n'a pas de filières.",
   },
 
+  "section:data-observatory": {
+    "props.maxWidth": "Largeur du conteneur (défaut code : 8xl = 1440 px). À aligner sur les sections voisines dès que le tableau de bord partage sa page — deux largeurs différentes se voient immédiatement.",
+    "props.kpiLayout": "Rendu des KPI : cards (défaut code, trois grandes cartes) ou inline (ligne de chiffres tabulaires). Préférer inline pour un résumé posé en accueil, où des cartes écrasent le reste.",
+    "props.drilldown": "Opt-in : un clic sur une part ou une barre applique le filtre de la dimension, si elle est filtrable.",
+    "props.export": "Opt-in : bouton CSV du résultat filtré et trié (BOM Excel). `fields` = export COMPLET des données détail plutôt que des colonnes du tableau.",
+  },
   "section:agenda": {
     "props.customHeader": "En-tête teaser avec lien « voir tous » — même convention que searchProStatic.customHeader (home → /evenements).",
     "props.limit": "Limite d'events par bucket (teaser home) ; absent = tous + « charger plus » pour Passés.",
@@ -286,6 +294,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.enableMap": "Active la vue Carte (réutilise SearchMap du module search).",
     "props.mapView": "Rendu de la vue carte : map (plein écran) ou split (liste+carte synchronisées, desktop).",
     "props.map": "Config carte (marqueurs/popup/zoom) — MÊME schéma que searchProStatic.map.",
+    "props.maxWidth": "Largeur du conteneur. ABSENT = `container` historique (plafond 1536 px), pour une page agenda dédiée. À RENSEIGNER dès que l'agenda est un teaser parmi d'autres sections, sinon il déborde de ses voisines.",
     "props.tabs": "Onglets affichés parmi ongoing/upcoming/past (défaut code : upcoming, ongoing, past).",
     "props.defaultTab": "Onglet initial (défaut code : upcoming).",
     "props.upcomingWindowMonths": "Fenêtre (mois) du fetch calendrier now→futur (défaut code 12).",
