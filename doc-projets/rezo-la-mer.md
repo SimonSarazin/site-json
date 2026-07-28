@@ -36,7 +36,7 @@ site d'origine, pas celui qui existe.
 | Siège | Saint-Leu (97411), La Réunion — *voie non renseignée en base* |
 | Contact public | `contact@rezolamer.org` |
 | Config | [`../config.prod.rezo-la-mer.json`](../config.prod.rezo-la-mer.json) |
-| CSS | [`../src/index-rezo-la-mer.css`](../src/index-rezo-la-mer.css) — également employé par `eXtremeDefiAdeme` |
+| CSS | [`../src/index-rezo-la-mer.css`](../src/index-rezo-la-mer.css) — propre au site |
 | Langues | `fr` (défaut) + `en` · bloc `theme` **complet** |
 | Header / Footer | `transparent-scroll` / `sidebar-columns` |
 | SDK | `@communecter/cocolight-api-client` **1.0.169** |
@@ -209,7 +209,7 @@ projets soient qualifiés.
 | Domaine | Fichiers |
 |---|---|
 | Config | [`../config.prod.rezo-la-mer.json`](../config.prod.rezo-la-mer.json) |
-| Thème | [`../src/index-rezo-la-mer.css`](../src/index-rezo-la-mer.css) — ⚠ **partagé avec `eXtremeDefiAdeme`** |
+| Thème | [`../src/index-rezo-la-mer.css`](../src/index-rezo-la-mer.css) |
 | Déclaration | [`../sites.json`](../sites.json) → slug `rezoLaMer` |
 | Modules candidats au portage AAP | [`../src/modules/coform/`](../src/modules/coform) · [`../src/modules/cagnotte/`](../src/modules/cagnotte) · [`../src/modules/observatoire/`](../src/modules/observatoire) · [`../src/modules/ampli/`](../src/modules/ampli) |
 
@@ -273,7 +273,7 @@ Vérifié : 0 couleur littérale, 0 lien interne mort dans les pages ajoutées, 
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| 1 | Slug + CSS dans `sites.json` | ✅ | ⚠ CSS partagé avec `eXtremeDefiAdeme` |
+| 1 | Slug + CSS dans `sites.json` | ✅ | `rezoLaMer` → `index-rezo-la-mer` (propre au site) |
 | 2 | Thème | ✅ | Bloc `theme` complet |
 | 3 | Pages de contenu | 🟡 | 5 pages, 6 périmètres peuplés (79 entités) — mais `/ressources` n'affiche QUE des données de test (2/2) et `/evenements` 8 sur 9. Seule `/communaute` (52 fiches) est du contenu réel |
 | 4 | Socle légal | 🟡 | 5 pages posées, **à compléter par le porteur** avant publication |
@@ -297,8 +297,6 @@ Aucune demande en cours. Un portage AAP en ferait probablement naître.
 
 ## 12. Points d'attention / limitations
 
-- **`src/index-rezo-la-mer.css` est partagé avec `eXtremeDefiAdeme`.** Toute retouche du thème
-  affecte deux sites.
 - **14 liens morts subsistent** (voir §13). Le pied de page décrit le site legacy.
 - L'ancre **`#donnees`** du pied de page ne correspond à aucun `id` de section — les ids déclarés
   sur `/` sont `hero-rezo-la-mer`, `mission`, `features`, `actions`, `community`, `cta`.

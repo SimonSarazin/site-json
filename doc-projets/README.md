@@ -17,6 +17,7 @@ Le formalisme et la maintenance de ces pages sont pilotés par le skill
 | Sport Santé Bien-être (La Réunion) | `sportSanteBienetre` | [sport-sante-bien-etre.md](sport-sante-bien-etre.md) | 19 pages · 6 formulaires costum · back-office 7 onglets. Audit 16 → 4 constats (28/07) ; **4 arbitrages de contenu en attente** (grille professionnels, hero /public) et rendu navigateur jamais vérifié |
 | Rézo la mer (La Réunion) | `rezoLaMer` | [rezo-la-mer.md](rezo-la-mer.md) | **Portage arrêté en chemin** : 5 pages portées sur 14 au legacy, plus un module AAP de 21 pages jamais repris. 5 pages légales posées le 28/07 (à compléter). 14 liens morts et le cadrage de l'AAP en attente |
 | Tiers-Lieux.org — réseau national | `navigatorDesTierslieux` | [tiers-lieux.md](tiers-lieux.md) | **Config aboutie** : 4 303 lieux, observatoire à 10 dimensions, panneau de filtres, formulaire costum, seul emploi du module `ampli`. 0 constat d'audit, 10/10 périmètres. État des lieux, pas de chantier en cours |
+| eXtrême Défi — ADEME | `eXtremeDefiAdeme` | [extreme-defi-ademe.md](extreme-defi-ademe.md) | **Vitrine aboutie, costum vide** : accueil éditoriale riche (argumentaire chiffré, feuille de route, 47 partenaires) mais 4 projets dont 3 saisies au clavier, 0 acteur. Audit vert, 2 périmètres vides sur 4 |
 
 ## Pourquoi un répertoire séparé de `doc/`
 
