@@ -95,6 +95,33 @@ const ITEM_RULES_NOTES: string[] = [
 ];
 
 export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
+  costumForm: {
+    id: "Identité du document — la modale s'ouvre par `add-<id>` / `edit-<id>`. Doit correspondre à la clé sous `config.costumForms`.",
+    entityType: "Collection SDK visée à la CRÉATION (organizations, projects, events, poi…).",
+    collection: "Collection réelle des documents, quand elle diffère de `entityType` (sous-type d'organisation, POI typé…).",
+    costumSlug: "Crée dans le scope costum EXPLICITE (`me.costum(slug)`) plutôt que sur `me`. À défaut, tout create hérite du costum AMBIANT du déploiement.",
+    icon: "Icône lucide (kebab-case) de l'en-tête de modale.",
+    deriveDefaults: "false = aucun `field.default` n'est dérivé du widget : le socle vient de `defaultsBase`. Défaut code : true.",
+    "layout.kind": "Gabarit de rendu du formulaire : tabs, wizard, flat… Décide comment `sections` est présenté.",
+    fields: "DÉCLARATION des champs, forme TERSE : seul `widget` est requis, `type`/`read`/`default` sont dérivés de WIDGET_DEFAULTS. Précédence : champ explicite > fieldPresets[widget] > widget.",
+    sections: "PLACEMENT des champs. ⚠ Le moteur rend en parcourant sections → groups → fields : un champ déclaré dans `fields` mais placé dans AUCUNE section n'est JAMAIS rendu (ni affiché, ni sérialisé).",
+    "sections[]": "Une section accepte DEUX formes : `groups: [{columns, fields}]` (multi-colonnes) OU `fields: []` à plat — `sectionGroups()` normalise l'une vers l'autre. Un outil qui ne lit que `groups` croit la section vide.",
+    serializeGroups: "N champs plats ↔ 1 objet serveur : décompose `serverData[serverKey]` à la lecture et le recompose à l'écriture (adresse, horaires…). `read`/`write` sont des clés de codec.",
+    fieldPresets: "Défauts PAR WIDGET, appliqués entre WIDGET_DEFAULTS et le champ lui-même (ex. placeholderSearch de tous les selects).",
+    chrome: "Textes de la modale. `title.add`/`title.edit` acceptent une clé i18n OU un LocalizedString inline.",
+    "chrome.authPrompt": "Textes de l'invite affichée à un visiteur NON connecté, à la place du formulaire (`title`, `description`). Absent = traductions `AuthRequired.*` du namespace modules/profil.",
+    slots: "UI React insérée ENTRE les champs, ancrée par une entrée `\"$slot:<id>\"` dans une section. Valeur = clé du registre `registerSlot`.",
+    "image.field": "Champ portant l'avatar. Idiome du projet : la valeur est posée dans le draft puis un seul `save()` — pas d'upload séparé.",
+    scope: "Contexte costum lu du carrier live (`useCocolight().entity`) — clé du registre `registerScopeFn`, pas une closure.",
+    defaultsBase: "Clé du registre `registerDefaultsFn` : état initial du formulaire en création. Employé surtout avec `deriveDefaults: false`.",
+    listsFromCarrier: "Alimente les selects depuis les listes du costum porteur (`serverData.lists`) plutôt que depuis une énumération figée.",
+    validateFn: "Clé de registre d'une validation CROSS-champ (ce qu'un schéma par champ ne peut pas exprimer).",
+    schemaFn: "Clé de registre d'un schéma Zod externe, quand la dérivation par widget ne suffit pas.",
+    cleanValues: "Hygiène des valeurs avant envoi. FnRef : une clé, ou `{fn, params}` pour une fonction générique paramétrée (ex. dropEmptyArrayItems + {fields}).",
+    afterSubmit: "Clé de registre d'un effet joué après enregistrement réussi.",
+    descriptorVariant: "Variante de descripteur à résoudre quand plusieurs rendus partagent le même document.",
+    "mutation.entityType": "Collection SDK réellement mutée — peut différer d'`entityType` quand la modale crée un sous-type.",
+  },
   page: {
     path: "Chemin de la page (`/`, `/agenda`). Unique dans le config, et cible possible d'un lien de nav — `audit:config` flague tout lien vers un chemin qui n'existe ni ici ni dans les routes de modules.",
     title: "Titre de la page. Sert de repli au titre SEO (`seo.title` prime) et s'affiche dans l'onglet du navigateur.",

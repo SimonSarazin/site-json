@@ -58,6 +58,7 @@ describe("registre prop-descriptions ⇄ schéma (garde-fou)", () => {
     admin: 25,
     auth: 17,
     commandPalette: 16,
+    costumForm: 25,
     footer: 12,
     header: 26,
     meta: 10,
