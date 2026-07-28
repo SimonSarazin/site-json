@@ -46,9 +46,9 @@ import {
   type CoolifyContext,
   type CoolifyDeployment,
 } from "./lib/coolify";
-import { BUILD, masquer, variablesAttendues } from "./lib/deploy-config";
+import { buildDuSite, cibleDnsDuServeur, masquer, variablesAttendues } from "./lib/deploy-config";
 import { impact } from "./lib/deploy-scope";
-import { IP_SERVEUR, pointeVersLeServeur, resoudre as resoudreDns } from "./lib/dns";
+import { atteintLaMemeCible, resoudre as resoudreDns } from "./lib/dns";
 import { chargerIdentifiants, creerCname, listerZones, OvhError, rafraichirZone, trouverCname } from "./lib/ovh";
 import {
   asList, coolifyDomains, deployableSites, loadSites, sousDomaineAmorce,
@@ -581,18 +581,23 @@ async function dns(): Promise<number> {
     );
   }
 
+  // La cible dépend du SERVEUR qui héberge le site : avec deux serveurs,
+  // envoyer tout le monde sur la même adresse enverrait la moitié du trafic
+  // sur la mauvaise machine, où Traefik ne connaît pas ces hôtes.
+  const cible = cibleDnsDuServeur(site.coolifyServer ?? "localhost");
+
   const ips = await resoudreDns(site.domain);
-  if (ips.includes(IP_SERVEUR)) {
-    console.log(`✓ ${site.domain} pointe déjà ${IP_SERVEUR}. Rien à faire.`);
+  if (await atteintLaMemeCible(site.domain, cible)) {
+    console.log(`✓ ${site.domain} atteint déjà ${cible} (${ips.join(", ")}). Rien à faire.`);
     return 0;
   }
   if (ips.length > 0) {
-    console.error(`✗ ${site.domain} résout vers ${ips.join(", ")} au lieu de ${IP_SERVEUR}.`);
+    console.error(`✗ ${site.domain} résout vers ${ips.join(", ")}, qui n'est pas ${cible}.`);
     console.error(`  L'outil n'écrase jamais un enregistrement existant — à corriger à la main.`);
     return 1;
   }
 
-  console.log(`${site.domain} ne résout pas. À créer : CNAME ${sous}.${ZONE_AMORCE} → ${ZONE_AMORCE}.`);
+  console.log(`${site.domain} ne résout pas. À créer : CNAME ${sous}.${ZONE_AMORCE} → ${cible}.`);
   if (!argv.includes("--write")) {
     console.log(`Relancer avec --write pour créer l'enregistrement.`);
     return 1;
@@ -608,7 +613,7 @@ async function dns(): Promise<number> {
     console.error(`✗ un CNAME ${sous} existe déjà chez OVH, cible "${existant.target}" — non écrasé.`);
     return 1;
   }
-  await creerCname(c, ZONE_AMORCE, sous, ZONE_AMORCE);
+  await creerCname(c, ZONE_AMORCE, sous, cible);
   await rafraichirZone(c, ZONE_AMORCE);
   console.log(`✓ CNAME créé et zone publiée. La propagation prend généralement quelques minutes.`);
   return 0;
@@ -639,14 +644,14 @@ async function alias(ctx: CoolifyContext): Promise<number> {
   const { site, app } = await resoudreSite(ctx, slug);
 
   const ips = await resoudreDns(domaine);
-  if (!ips.includes(IP_SERVEUR)) {
+  if (!(await atteintLaMemeCible(domaine, site.domain as string))) {
     console.error(`✗ ${domaine} ${ips.length ? `résout vers ${ips.join(", ")}` : "ne résout pas"}.`);
-    console.error(`  Attendu : ${IP_SERVEUR}. Poser d'abord, chez le registrar du domaine :`);
+    console.error(`  Attendu : la même cible que ${site.domain}. Poser d'abord, chez le registrar :`);
     console.error(`     CNAME ${domaine} → ${site.domain}`);
     console.error(`  L'ajouter à Coolify maintenant ferait échouer Let's Encrypt sur cet hôte.`);
     return 1;
   }
-  console.log(`✓ ${domaine} pointe ${IP_SERVEUR}.`);
+  console.log(`✓ ${domaine} atteint la même cible que ${site.domain} (${ips.join(", ")}).`);
 
   if ((site.aliases ?? []).includes(domaine)) {
     console.log(`· déjà déclaré dans sites.json.`);
@@ -716,8 +721,9 @@ async function create(ctx: CoolifyContext): Promise<number> {
   const { variables, manquantes } = variablesAttendues(site);
   console.log(`Créer ${site.coolifyApp} pour ${slug}\n`);
   console.log(`  placement    ${placement.origine}`);
-  console.log(`  dépôt        ${BUILD.depot} @ ${BUILD.branche}`);
-  console.log(`  build        ${BUILD.buildPack}, port ${BUILD.port}`);
+  const build = buildDuSite(site);
+  console.log(`  dépôt        ${build.depot} @ ${build.branche}`);
+  console.log(`  build        ${build.buildPack}, port ${build.port}`);
   console.log(`  domaine      ${coolifyDomains(site)}`);
   console.log(`  variables    ${variables.length}${manquantes.length ? ` (${manquantes.join(", ")} absente(s) de .env)` : ""}`);
   console.log(`  DNS          ${site.domain}`);
@@ -728,22 +734,23 @@ async function create(ctx: CoolifyContext): Promise<number> {
   }
 
   // 1. DNS d'abord, et on attend : sans lui, Let's Encrypt échoue en HTTP-01.
-  if (!(await pointeVersLeServeur(site.domain))) {
-    console.log(`\n[1/4] DNS — ${site.domain} ne résout pas encore`);
+  const cibleDns = cibleDnsDuServeur(site.coolifyServer ?? "localhost");
+  if (!(await atteintLaMemeCible(site.domain, cibleDns))) {
+    console.log(`\n[1/4] DNS — ${site.domain} n'atteint pas encore ${cibleDns}`);
     console.error(`  ✗ créer d'abord l'enregistrement :  npm run deploy:dns -- ${slug} --write`);
     return 1;
   }
-  console.log(`\n[1/4] DNS ✓ ${site.domain} → ${IP_SERVEUR}`);
+  console.log(`\n[1/4] DNS ✓ ${site.domain} → ${cibleDns}`);
 
   // 2. Application, sans instant_deploy : les variables ne sont pas encore là.
   const cree = await createApplication(ctx, {
     project_uuid: placement.projectUuid,
     server_uuid: placement.serverUuid,
     environment_name: placement.environmentName,
-    git_repository: BUILD.depot,
-    git_branch: BUILD.branche,
-    build_pack: BUILD.buildPack,
-    ports_exposes: BUILD.port,
+    git_repository: build.depot,
+    git_branch: build.branche,
+    build_pack: build.buildPack,
+    ports_exposes: build.port,
     name: site.coolifyApp,
     domains: coolifyDomains(site),
   });

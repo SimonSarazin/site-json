@@ -28,6 +28,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { buildVars, ROOT, type SiteEntry } from "./sites";
+export type { SiteEntry };
 
 /**
  * Comment ce dépôt se construit, quel que soit le site.
@@ -41,12 +42,56 @@ import { buildVars, ROOT, type SiteEntry } from "./sites";
  * `status` vérifie que les applications déployées s'y conforment encore : si
  * l'une d'elles dérive, c'est visible plutôt que silencieux.
  */
-export const BUILD = {
+export const BUILD_DEFAUT = {
   depot: "https://gitlab.adullact.net/pixelhumain/site-json.git",
   branche: "main",
   buildPack: "dockerfile",
   port: "3000",
-} as const;
+};
+
+export type Build = typeof BUILD_DEFAUT;
+
+/**
+ * Le build d'un site : le défaut, sauf ce que son entrée surcharge.
+ *
+ * La surcharge n'est pas théorique — un site de recette vit sur une autre
+ * branche, un site repris d'ailleurs peut venir d'un autre dépôt. Même principe
+ * que pour les URLs backend : une valeur commune écrite une fois, et la
+ * possibilité de dire l'exception sans alourdir les seize autres lignes.
+ */
+export const buildDuSite = (site: SiteEntry): Build => ({ ...BUILD_DEFAUT, ...(site.build ?? {}) });
+
+/**
+ * Où pointer le DNS d'un site, par serveur Coolify.
+ *
+ * Un site doit résoudre vers le serveur QUI L'HÉBERGE. Avec un seul serveur, un
+ * CNAME vers `00.re` suffit ; avec deux, envoyer tout le monde sur `00.re`
+ * enverrait la moitié du trafic sur la mauvaise machine, où Traefik ne connaît
+ * pas ces hôtes et répond 404.
+ *
+ * D'où une cible par serveur, déclarée ici plutôt que déduite : l'`ip` que rend
+ * l'API vaut `host.docker.internal` pour le serveur local, donc inexploitable,
+ * et un serveur neuf n'a de toute façon rien à en déduire.
+ *
+ * Pour ajouter un serveur : créer `<nom>.00.re A → son IP` chez OVH une fois,
+ * puis l'inscrire ici. Les sites qu'il héberge pointeront ce nom en CNAME, et
+ * un changement d'IP ne touchera qu'un enregistrement au lieu de N.
+ */
+export const CIBLE_DNS: Record<string, string> = {
+  localhost: "00.re",
+};
+
+export function cibleDnsDuServeur(serveur: string): string {
+  const cible = CIBLE_DNS[serveur];
+  if (!cible) {
+    throw new Error(
+      `Aucune cible DNS déclarée pour le serveur "${serveur}".\n` +
+        `  Créer "${serveur}.00.re A → <son IP>" chez OVH, puis ajouter l'entrée\n` +
+        `  à CIBLE_DNS dans scripts/lib/deploy-config.ts.`,
+    );
+  }
+  return cible;
+}
 
 /** Valeurs communes à tout le parc, surchargeables par entrée. */
 export const CONSTANTES: Record<string, string> = {

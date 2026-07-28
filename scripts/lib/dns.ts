@@ -13,8 +13,18 @@
  */
 import { Resolver } from "node:dns/promises";
 
-/** IP du serveur Coolify — la cible que tout domaine du parc doit atteindre. */
-export const IP_SERVEUR = "152.228.161.70";
+/**
+ * Un domaine atteint-il le même endroit que la cible de son serveur ?
+ *
+ * On compare deux RÉSOLUTIONS plutôt que de comparer à une IP écrite en dur.
+ * Une IP figée serait fausse dès le second serveur, et à refaire à chaque
+ * changement d'hébergement ; la comparaison, elle, reste juste sans rien savoir.
+ */
+export async function atteintLaMemeCible(nom: string, cible: string): Promise<boolean> {
+  const [ipsNom, ipsCible] = await Promise.all([resoudre(nom), resoudre(cible)]);
+  if (ipsCible.length === 0 || ipsNom.length === 0) return false;
+  return ipsNom.some((ip) => ipsCible.includes(ip));
+}
 
 /**
  * Les IPv4 auxquelles un nom aboutit, chaîne CNAME suivie.
@@ -33,22 +43,20 @@ export async function resoudre(nom: string, serveurs?: string[]): Promise<string
   }
 }
 
-/** Le nom pointe-t-il déjà le serveur ? */
-export const pointeVersLeServeur = async (nom: string, serveurs?: string[]): Promise<boolean> =>
-  (await resoudre(nom, serveurs)).includes(IP_SERVEUR);
-
 /**
- * Attend qu'un nom pointe le serveur. Rend `true` dès que c'est le cas, `false`
- * à l'expiration — jamais d'exception : l'appelant décide si c'est bloquant.
+ * Attend qu'un nom atteigne la même cible que son serveur. Rend `true` dès que
+ * c'est le cas, `false` à l'expiration — jamais d'exception : l'appelant décide
+ * si c'est bloquant.
  */
 export async function attendreResolution(
   nom: string,
+  cible: string,
   timeoutS: number,
   onTick?: (secondes: number) => void,
 ): Promise<boolean> {
   const debut = Date.now();
   for (;;) {
-    if (await pointeVersLeServeur(nom)) return true;
+    if (await atteintLaMemeCible(nom, cible)) return true;
     const ecoule = Math.round((Date.now() - debut) / 1000);
     if (ecoule >= timeoutS) return false;
     onTick?.(ecoule);

@@ -51,6 +51,12 @@ export interface SiteEntry {
    */
   coolifyServer?: string;
   coolifyProject?: string;
+  /**
+   * Surcharge du build pour ce site : dépôt, branche, moteur, port. Absent, les
+   * valeurs communes de `deploy-config.ts` s'appliquent. Sert au site de recette
+   * sur une autre branche, ou repris d'un autre dépôt.
+   */
+  build?: Partial<{ depot: string; branche: string; buildPack: string; port: string }>;
 }
 
 /** Zone DNS d'amorce : la seule que l'outil ait le droit d'écrire. */
