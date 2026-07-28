@@ -292,7 +292,7 @@ Vite est configuré pour supporter :
   - `preloadPlugin()` (de `vite-preload`) : trace les imports lazy pour générer les balises `<link rel="modulepreload">` en SSR. Doit être **avant** `react()` pour tracer les lazy imports
   - `react()` : support React avec JSX automatique
   - `tailwindcss()` : compilation Tailwind CSS 4
-  - `visualizer()` (de `rollup-plugin-visualizer`) : génère `dist/stats.html` pour l'analyse de bundle (uniquement pour le build client, absent du build SSR)
+  - `visualizer()` (de `rollup-plugin-visualizer`) : génère `stats.html` à la racine du dépôt pour l'analyse de bundle (uniquement pour le build client, absent du build SSR). Volontairement **hors de `dist/`** : le Dockerfile copie `dist/` en entier dans l'image de production, où ce rapport de ~4 Mo n'a rien à faire. Fichier gitignoré.
 * **Définition d'environnements** :
 
   ```ts

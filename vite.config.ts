@@ -92,8 +92,10 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
     react(),
     tailwindcss(),
     // Generate bundle analysis report
+    // Hors `dist/` : le Dockerfile copie `dist/` en entier dans l'image de prod,
+    // et le rapport (~4 Mo) n'a rien à y faire.
     !isSsrBuild && visualizer({
-      filename: './dist/stats.html',
+      filename: './stats.html',
       open: false,
       gzipSize: true,
       brotliSize: true,
@@ -116,6 +118,11 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
   },
   build: {
     manifest: true, // Génère le manifest.json pour vite-preload
+    // Le build SSR recopiait `public/` dans `dist/server/` (~43 Mo d'images et de
+    // geojson) alors que rien ne l'y sert : prod-server ne lit de ce dossier que
+    // `entry-server.js`, et `express.static` comme l'optimiseur d'images pointent
+    // sur `dist/client`. Seul le build client copie publicDir.
+    copyPublicDir: !isSsrBuild,
     rollupOptions: isSsrBuild ? {
       input: 'src/entry-server.tsx',
       output: {
