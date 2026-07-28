@@ -36,16 +36,19 @@ import {
   indexByName,
   lastSuccessfulDeployment,
   loadContext,
+  listEnvs,
   patchApplication,
   runningDeployments,
+  upsertEnv,
   type CoolifyApp,
   type CoolifyContext,
   type CoolifyDeployment,
 } from "./lib/coolify";
+import { masquer, variablesAttendues } from "./lib/deploy-config";
 import { asList, coolifyDomains, deployableSites, loadSites, ROOT, type SiteEntry } from "./lib/sites";
 
 const argv = process.argv.slice(2);
-const COMMANDES = ["status", "lock", "push"] as const;
+const COMMANDES = ["status", "lock", "push", "env"] as const;
 type Commande = (typeof COMMANDES)[number];
 
 const commande = argv.find((a) => !a.startsWith("--")) as Commande | undefined;
@@ -62,6 +65,7 @@ Commandes :
   status              état du parc : site ↔ application ↔ domaine ↔ commit déployé
   lock [--unlock]     coupe (ou rétablit) le déploiement automatique sur push
   push <slug…>        déploie les sites nommés, un par un
+  env <slug> [--write]  compare (et pose) les 8 variables du site
 
 Options :
   --context <nom>     instance Coolify (défaut : celle marquée par défaut)
@@ -381,6 +385,87 @@ async function push(ctx: CoolifyContext): Promise<number> {
   return 0;
 }
 
+/* ── env ──────────────────────────────────────────────────────────────────── */
+
+/** Résout un slug vers son application, ou lève. */
+async function resoudreSite(
+  ctx: CoolifyContext,
+  slug: string,
+): Promise<{ site: SiteEntry; app: CoolifyApp }> {
+  const site = loadSites().find((s) => s.slug === slug);
+  if (!site) throw new CoolifyError(`Slug "${slug}" absent de sites.json.`);
+  if (!site.coolifyApp) throw new CoolifyError(`"${slug}" n'a pas d'application déclarée (champ coolifyApp).`);
+  const app = (await indexByName(ctx)).get(site.coolifyApp);
+  if (!app) throw new CoolifyError(`Application "${site.coolifyApp}" introuvable sur l'instance.`);
+  return { site, app };
+}
+
+/**
+ * Compare les variables attendues à celles posées sur l'application.
+ *
+ * Ne supprime jamais : une variable présente côté Coolify mais hors du jeu
+ * attendu est signalée, pas retirée. Elle peut avoir été posée exprès.
+ */
+async function env(ctx: CoolifyContext): Promise<number> {
+  const slug = argv.filter((a) => !a.startsWith("--"))[1];
+  if (!slug) {
+    console.error(`✗ Usage : npm run deploy:env -- <slug> [--write]`);
+    return 2;
+  }
+  const { site, app } = await resoudreSite(ctx, slug);
+  const { variables, manquantes } = variablesAttendues(site);
+  const posees = await listEnvs(ctx, app.uuid);
+  const parCle = new Map(posees.map((e) => [e.key, e]));
+
+  console.log(`${slug} → ${app.name}\n`);
+  const aEcrire: typeof variables = [];
+  for (const v of variables) {
+    const actuelle = parCle.get(v.key);
+    const affiche = v.sensible ? masquer(v.value) : v.value;
+    if (!actuelle) {
+      console.log(`  ✗ ${v.key.padEnd(24)} absente — à créer (${affiche})`);
+      aEcrire.push(v);
+    } else if (actuelle.value !== v.value) {
+      console.log(`  ✗ ${v.key.padEnd(24)} attendu ${affiche}`);
+      console.log(`    ${" ".repeat(24)} présent ${v.sensible ? masquer(actuelle.value) : actuelle.value}`);
+      aEcrire.push(v);
+    } else if (!actuelle.is_buildtime || !actuelle.is_runtime) {
+      console.log(`  ✗ ${v.key.padEnd(24)} valeur bonne mais portée incomplète (build=${actuelle.is_buildtime}, run=${actuelle.is_runtime})`);
+      aEcrire.push(v);
+    } else {
+      console.log(`  ✓ ${v.key.padEnd(24)} ${affiche}`);
+    }
+  }
+
+  const attendues = new Set(variables.map((v) => v.key));
+  const enTrop = posees.filter((e) => !attendues.has(e.key)).map((e) => e.key);
+  for (const k of enTrop) console.log(`  · ${k.padEnd(24)} présente côté Coolify, hors du jeu attendu (jamais retirée)`);
+  for (const k of manquantes) console.log(`  · ${k.padEnd(24)} introuvable dans .env — non poussée`);
+
+  if (aEcrire.length === 0) {
+    console.log(`\n✓ aucun écart.`);
+    return 0;
+  }
+  if (!argv.includes("--write")) {
+    console.log(`\n${aEcrire.length} écart(s). Relancer avec --write pour appliquer.`);
+    return 1;
+  }
+
+  console.log("");
+  for (const v of aEcrire) {
+    const quoi = await upsertEnv(
+      ctx,
+      app.uuid,
+      { key: v.key, value: v.value, is_buildtime: true, is_runtime: true },
+      posees,
+    );
+    console.log(`  ✓ ${v.key} ${quoi}`);
+  }
+  console.log(`\n✓ ${aEcrire.length} variable(s) appliquée(s). Un déploiement est nécessaire pour qu'elles prennent effet :`);
+  console.log(`  npm run deploy -- ${slug} --yes`);
+  return 0;
+}
+
 /* ── Entrée ───────────────────────────────────────────────────────────────── */
 
 async function main(): Promise<number> {
@@ -393,6 +478,8 @@ async function main(): Promise<number> {
       return lock(ctx);
     case "push":
       return push(ctx);
+    case "env":
+      return env(ctx);
   }
 }
 

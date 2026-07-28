@@ -38,7 +38,8 @@
     "verify:build": "tsx scripts/verify-build.ts",
     "deploy:status": "tsx scripts/deploy.ts status",
     "deploy:lock": "tsx scripts/deploy.ts lock",
-    "deploy": "tsx scripts/deploy.ts push"
+    "deploy": "tsx scripts/deploy.ts push",
+    "deploy:env": "tsx scripts/deploy.ts env"
   },
   "resolutions": {
     "react": "19.2.1",
