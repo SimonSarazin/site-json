@@ -57,17 +57,42 @@ const LIST: Record<string, string> = {
   "resource.cityField": "Champ de la ville affichée (repli code : address.addressLocality).",
   "resource.urlsField": "Champ des liens externes string[] (repli code : urls).",
   previewParam: "Nom du paramètre URL de synchro du détail (défaut code : preview) — à différencier quand plusieurs sections cohabitent sur la page.",
+  // Rendu PAR ITEM. ⚠ Ne décrire QUE le dernier segment de chaque règle : les sous-schémas sont
+  // PARTAGÉS avec le bloc de base (CardConfSchema, PreviewConfSchema…), donc `itemRules[].card.type`
+  // et `card.type` désignent le MÊME nœud du dump — décrire les deux ferait s'écraser l'un l'autre.
+  itemRules: "Règles de rendu PAR ITEM d'une liste hétérogène (recherche globale) : la 1re dont `when` matche impose son presenter. Absent = une seule carte pour toute la liste (comportement historique).",
+  "itemRules[]": "Une règle = un prédicat `when` + les surcharges à appliquer aux items matchés. Une règle SANS `when` est un catch-all : à placer EN DERNIER, sinon elle masque toutes les suivantes.",
+  "itemRules[].id": "Identifiant lisible de la règle (debug, tests, warning DEV). Aucun effet fonctionnel.",
+  "itemRules[].when": "Prédicat PredicateJson (même grammaire que visibleIf) évalué contre {...serverData, collection, sourceKey, sourceKeys}, dot-paths résolus. Ancrer sur `collection` AVANT `type`.",
+  "itemRules[].card": "Carte des items matchés — FUSIONNÉE sur list.card : tagColors/detailsMode posés au niveau page restent hérités.",
+  "itemRules[].preview": "Détail des items matchés — FUSIONNÉ sur list.preview : width/showDetailLink posés au niveau page restent hérités.",
+  "itemRules[].testimonial": "Contrat testimonial de la règle — REMPLACE list.testimonial : un contrat de mapping est atomique, jamais fusionné.",
+  "itemRules[].resource": "Contrat resource de la règle — REMPLACE list.resource : un contrat de mapping est atomique, jamais fusionné.",
+  "itemRules[].itemAction": "Action au clic des items matchés — REMPLACE list.itemAction (ex. un POI type:article part vers le reader blog au lieu d'ouvrir un détail).",
+  itemAction: "Action au clic par DÉFAUT de la liste, surchargeable par règle. Absente = ouvrir le détail (comportement historique).",
+  "itemAction.kind": "preview (défaut, ouvre le détail) | profil (/profil/:slug) | link (gabarit `to`). En mode split, le clic focalise la carte et l'action est ignorée.",
+  "itemAction.to": "kind link : gabarit d'URL, `:slug` substitué (ex. /blog/:slug). Sans placeholder = lien statique. Non contrôlé contre les routes : n'y mettre aucune donnée utilisateur.",
+  "itemAction.toById": "kind link : gabarit de repli quand l'item n'a pas de slug, `:id` substitué (ex. /blog/id/:id). Ni slug ni id → aucune navigation, on retombe sur le détail.",
+  "itemAction.newTab": "kind link : ouvre dans un nouvel onglet (window.open noopener) au lieu de naviguer dans la page.",
 };
 
 /** Sous-bloc baseParams (recherche backend searchCostum) — clés communes. */
 const BASE_PARAMS: Record<string, string> = {
   defaultTypes: "Types d'entités cherchés (organizations/projects/events/citoyens/poi/answers/news…).",
   defaultFilters: "Filtres backend envoyés TELS QUELS à searchCostum (pass-through — une clé inconnue part au backend).",
+  defaultFields: "Projection des champs renvoyés. Tout champ testé par un list.itemRules[].when DOIT y figurer, sinon la règle ne matche JAMAIS, en silence. Absent = jeu par défaut du backend.",
   defaultSortBy: "Tri serveur : map champ→1|-1.",
   searchBy: "Champs matchés par la recherche texte : \"ALL\", CSV, ou array de paths (dot-paths supportés).",
   indexStepList: "Taille de page de la liste (pagination/scroll infini).",
   locality: "Périmètre géographique (zones actives par id/type/level).",
 };
+
+/** Notes partagées par searchPro et searchProStatic — pièges du rendu par item. */
+const ITEM_RULES_NOTES: string[] = [
+  "list.itemRules : la PREMIÈRE règle dont `when` matche gagne entièrement ; une règle sans `when` est un catch-all, à placer EN DERNIER.",
+  "serverData.type a DEUX sémantiques (sous-type POI article/affiche/recoveryCenter vs sous-type d'organisation NGO/Group/…) : ancrer toute règle sur `collection` avant `type`.",
+  "Trois `itemAction` homonymes coexistent : list.itemAction (clic sur une carte de liste, kind preview|profil|link), map.itemAction (bouton de popup carte, kind profil|preview), commandPalette.entitySearch.itemAction (clic dans la palette).",
+];
 
 export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
   page: {
@@ -374,10 +399,12 @@ export const BLOCK_NOTES: Record<string, string[]> = {
   "section:searchPro": [
     "Synchronise ses filtres dans l'URL → UNE seule instance par page (multi-instances = searchProStatic).",
     "baseParams n'a PAS de sourceKey ici : recherche réseau global (périmètre costum = searchProStatic).",
+    ...ITEM_RULES_NOTES,
   ],
   "section:searchProStatic": [
     "Conçue pour plusieurs instances par page (pas de sync URL des filtres).",
     "audit:config exige un baseParams (catégorie module-prereq) — toujours renseigner sourceKey.",
+    ...ITEM_RULES_NOTES,
   ],
   "section:agenda": [
     "baseParams est passthrough : les clés inconnues sont TOLÉRÉES mais ignorées (searchEventsCostum force searchType=events et trie par occurrence).",

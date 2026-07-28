@@ -1963,7 +1963,8 @@
             "headline": {
               "fr": "Les équipements sportifs en chiffres",
               "en": "Sports facilities in numbers"
-            }
+            },
+            "headlineClassName": "text-white dark:text-foreground"
           }
         },
         {
@@ -2480,7 +2481,8 @@
             "headline": {
               "fr": "Données des équipements sportifs",
               "en": "Sports facilities data"
-            }
+            },
+            "headlineClassName": "text-white dark:text-foreground"
           }
         },
         {
@@ -4992,7 +4994,8 @@
       {
         "id": "dashboard",
         "label": {
-          "fr": "Tableau de bord"
+          "fr": "Tableau de bord",
+          "en": "Dashboard"
         },
         "sections": [
           {
@@ -5003,7 +5006,8 @@
       {
         "id": "members",
         "label": {
-          "fr": "Membres"
+          "fr": "Membres",
+          "en": "Members"
         },
         "access": "siteAdmin",
         "sections": [
@@ -5016,23 +5020,25 @@
       {
         "id": "content",
         "label": {
-          "fr": "Contenu"
+          "fr": "Contenu",
+          "en": "Content"
         },
         "sections": [
           {
             "type": "resource",
             "entityType": "poi",
             "label": {
-              "fr": "Équipements"
+              "fr": "Équipements",
+              "en": "Facilities"
             },
             "source": {
               "defaultFilters": { "type": "recoveryCenter" },
               "defaultSortBy": { "name": 1 }
             },
             "columns": [
-              { "path": "name", "label": { "fr": "Nom" } },
-              { "path": "address.addressLocality", "label": { "fr": "Commune" } },
-              { "path": "address.postalCode", "label": { "fr": "Code postal" } }
+              { "path": "name", "label": { "fr": "Nom", "en": "Name" } },
+              { "path": "address.addressLocality", "label": { "fr": "Commune", "en": "Municipality" } },
+              { "path": "address.postalCode", "label": { "fr": "Code postal", "en": "Postal code" } }
             ],
             "rowActions": [
               "edit",
@@ -5053,7 +5059,8 @@
       {
         "id": "import-export",
         "label": {
-          "fr": "Import / Export"
+          "fr": "Import / Export",
+          "en": "Import / Export"
         },
         "access": "siteAdmin",
         "sections": [
@@ -5071,7 +5078,8 @@
       {
         "id": "reference",
         "label": {
-          "fr": "Référencement"
+          "fr": "Référencement",
+          "en": "SEO"
         },
         "access": "siteAdmin",
         "sections": [

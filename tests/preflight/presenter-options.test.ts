@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import path from "node:path";
 import { presenterMatrix, optionIndex } from "../../scripts/lib/presenter-options";
-import { resolveBlockSchema, resolveJsonSchemaPath, dumpJsonSchema } from "../../scripts/lib/config-blocks";
+import { resolveBlockSchema, resolveJsonSchemaPath, dumpJsonSchema, derefJsonSchemaNode } from "../../scripts/lib/config-blocks";
 
 /**
  * Matrice OPTION × PRESENTER (imprimée par `config:schema section:searchPro`).
@@ -47,8 +47,10 @@ describe("matrice option × presenter (search)", () => {
     expect(schema).toBeDefined();
     const json = dumpJsonSchema(schema!);
     const keys = new Set<string>();
+    // Déréférencement obligatoire : `CardConfSchema` est un schéma nommé (partagé avec
+    // `list.itemRules[].card`), donc émis en `$ref` — le nœud référençant n'a pas de `properties`.
     for (const n of resolveJsonSchemaPath(json, "props.list.card"))
-      for (const k of Object.keys(n.properties ?? {})) keys.add(k);
+      for (const k of Object.keys(derefJsonSchemaNode(n, json).properties ?? {})) keys.add(k);
     expect(keys.size).toBeGreaterThan(5);
     const dead = [...keys].filter((k) => !matrix.cardOptionsUsedAnywhere.has(k));
     expect(dead, "options de list.card déclarées au schéma mais lues nulle part").toEqual([]);

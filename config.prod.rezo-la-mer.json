@@ -154,7 +154,7 @@
                   "fr": "Découvrir les projets",
                   "en": "Discover projects"
                 },
-                "path": "#projets",
+                "path": "/projets",
                 "variant": "secondary"
               }
             ],
@@ -305,7 +305,7 @@
                   "fr": "Actions prioritaires",
                   "en": "Priority actions"
                 },
-                "href": "/actions",
+                "href": "/#actions",
                 "color": "amber"
               },
               {
@@ -388,7 +388,7 @@
                   "fr": "Voir les actions",
                   "en": "See actions"
                 },
-                "href": "/actions"
+                "href": "/#actions"
               },
               {
                 "icon": "git-branch",
@@ -685,8 +685,7 @@
                 "showStar": true,
                 "type": "event-featured",
                 "variant": "event-featured",
-                "detailsMode": "drawer",
-                "viewDetail": true 
+                "detailsMode": "drawer"
               }
             }
           }
@@ -766,8 +765,10 @@
                           "GovernmentOrganization",
                           "Cooperative"
                         ],
-                        "filters[preferences.toBeValidated.rezoLaMer][$exists]": false,
-                        "filters[links.memberOf.5a8d040040bb4eba04d62bdf][$exists]": true,
+                        "defaultFilters": {
+                          "preferences.toBeValidated.rezoLaMer": { "$exists": false },
+                          "links.memberOf.5a8d040040bb4eba04d62bdf": { "$exists": true }
+                        },
                         "notSourceKey": 30
                       },
                       "list": {
@@ -812,8 +813,10 @@
                           "GovernmentOrganization",
                           "Cooperative"
                         ],
-                        "filters[preferences.toBeValidated.rezoLaMer][$exists]": false,
-                        "filters[links.members.5a8d040040bb4eba04d62bdf][$exists]": true,
+                        "defaultFilters": {
+                          "preferences.toBeValidated.rezoLaMer": { "$exists": false },
+                          "links.members.5a8d040040bb4eba04d62bdf": { "$exists": true }
+                        },
                         "notSourceKey": true
                       },
                       "list": {
@@ -952,14 +955,14 @@
         },
         "links": [
           {
-            "href": "#projets",
+            "href": "/projets",
             "label": {
               "fr": "Projets",
               "en": "Projects"
             }
           },
           {
-            "href": "#communaute",
+            "href": "/communaute",
             "label": {
               "fr": "Communauté",
               "en": "Community"
@@ -980,7 +983,7 @@
             }
           },
           {
-            "href": "#ressources",
+            "href": "/ressources",
             "label": {
               "fr": "Ressources",
               "en": "Resources"
@@ -995,7 +998,7 @@
         },
         "links": [
           {
-            "href": "/mission",
+            "href": "/#mission",
             "label": {
               "fr": "Notre mission",
               "en": "Our mission"
@@ -1186,6 +1189,7 @@
     }
   ],
   "theme": {
+    "defaultMode": "dark",
     "colors": {
       "light": {
         "background": "oklch(1.0000 0 0)",

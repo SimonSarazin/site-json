@@ -1,5 +1,6 @@
 import { LocalizedString } from "@/types/locale-schema";
 import { ActionButtonSchema } from "@/types/action-button-schema";
+import { PredicateJson } from "@/modules/formEngine/config";
 import type { SearchEntity, News } from "@communecter/cocolight-api-client";
 import { IconName } from "lucide-react/dynamic";
 import { z } from "zod";
@@ -386,14 +387,11 @@ export const TagColorsConfSchema = z.object({
 });
 export type TagColorsConf = z.infer<typeof TagColorsConfSchema>;
 
-export const ListConfSchema = z.object({
-  columns: z.object({
-    lg: z.number().int().min(1).max(6).optional(),
-    md: z.number().int().min(1).max(6).optional(),
-    sm: z.number().int().min(1).max(6).optional(),
-    xl: z.number().int().min(1).max(6).optional(),
-  }).partial().optional(),
-  card: z.object({
+/**
+ * Bloc `card` d'une liste. Extrait de {@link ListConfSchema} pour être réutilisable par
+ * {@link ListItemRuleSchema} (une règle par item surcharge la carte) sans `z.lazy`.
+ */
+export const CardConfSchema = z.object({
     tagLimit:        z.number().int().min(1).max(50).optional(),
     /** Chips colorées / masquage des tags techniques (cf. TagColorsConfSchema). */
     tagColors:       TagColorsConfSchema.optional(),
@@ -401,6 +399,11 @@ export const ListConfSchema = z.object({
     showAddress:     z.boolean().optional(),
     shareButton:     z.boolean().optional(),
     showStar:        z.boolean().optional(),
+    // Bloc de compteurs de la carte `profile` (aujourd'hui : nombre de projets liés).
+    // Absent = affiché, pour ne rien changer aux 24 usages existants du parc.
+    // `false` sur un annuaire de structures qui ne portent pas de projets : le
+    // compteur y afficherait « 0 » sur toutes les fiches, ce qui n'informe de rien.
+    showStats:       z.boolean().optional(),
     // Affiche la barre de progression de financement (cagnotte) sur la carte +
     // déclenche la query useFundingEnvelope. Découple la feature funding du style
     // de carte. Défaut : actif uniquement pour le variant "rezo-la-mer" (rétrocompat).
@@ -441,7 +444,70 @@ export const ListConfSchema = z.object({
     // axe séparé (`preview.type`/`detailsMode`).
     type: z.enum(["overlay", "default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer", "news", "testimonial", "resource"]).default("default"),
     variant: z.enum(["default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer"]).optional(),
+}).partial();
+export type CardConf = z.infer<typeof CardConfSchema>;
+
+/**
+ * Action au clic sur une carte de liste.
+ *  - `preview` (défaut) — ouvre le détail (`SwitchDetailsMode`) : comportement historique ;
+ *  - `profil`  — navigue vers `/profil/:slug` ;
+ *  - `link`    — navigue vers un gabarit d'URL (ex. un POI `type:"article"` doit mener au reader
+ *    blog `/blog/:slug`, pas ouvrir un drawer).
+ */
+export const ListItemActionSchema = z.object({
+  kind: z.enum(["preview", "profil", "link"]).default("preview"),
+  /** `link` : gabarit d'URL, `:slug` substitué. Ex. `/blog/:slug`. */
+  to: z.string().optional(),
+  /** `link` : gabarit de repli quand l'item n'a pas de slug, `:id` substitué. Ex. `/blog/id/:id`. */
+  toById: z.string().optional(),
+  /** Ouvre dans un nouvel onglet (liens externes). */
+  newTab: z.boolean().optional(),
+});
+export type ListItemAction = z.infer<typeof ListItemActionSchema>;
+
+/**
+ * Règle de rendu PAR ITEM d'une liste HÉTÉROGÈNE (recherche globale sans filtre : articles, paroles,
+ * ressources, événements, projets et structures mélangés). Le choix du presenter ne peut alors pas
+ * venir du filtre coché — il se décide sur la donnée de chaque item.
+ *
+ * `when` est évalué (grammaire `PredicateJson` du formEngine) contre
+ * `{...serverData, collection, sourceKey, sourceKeys}`, chemins pointés résolus — cf.
+ * `entityMatchData` (`src/lib/entityMatch.ts`). PREMIÈRE règle qui matche gagne ; une règle SANS
+ * `when` est un catch-all, **à placer en dernier**. Aucune règle ne matche → `list` de base.
+ *
+ * Une règle porte SA tranche complète (carte + preview + contrat de presenter + action) : carte et
+ * détail sont cohérents PAR CONSTRUCTION, puisqu'ils sortent de la même résolution.
+ *
+ * ⚠ `serverData.type` a DEUX sémantiques — sous-type POI (`article`/`affiche`/`recoveryCenter`) et
+ * sous-type d'organisation (`NGO`/`Group`/…). Toujours ancrer sur `collection` AVANT `type`.
+ * ⚠ Les champs testés doivent être PROJETÉS (`baseParams.defaultFields`), sinon la règle ne matchera
+ * jamais, en silence.
+ */
+export const ListItemRuleSchema = z.object({
+  /** Identifiant lisible (debug / tests / warning DEV). Non fonctionnel. */
+  id: z.string().optional(),
+  when: PredicateJson.optional(),
+  /** Surcharges FUSIONNÉES (shallow) sur `list.card` — `tagColors`/`detailsMode`… restent hérités. */
+  card: CardConfSchema.optional(),
+  /** Surcharges FUSIONNÉES (shallow) sur `list.preview` — `width`/`showDetailLink`… restent hérités. */
+  preview: PreviewConfSchema.optional(),
+  /** Contrat presenter — REMPLACE `list.testimonial` (un contrat de mapping est atomique). */
+  testimonial: TestimonialConfSchema.optional(),
+  /** Contrat presenter — REMPLACE `list.resource`. */
+  resource: ResourceConfSchema.optional(),
+  /** Action au clic — REMPLACE `list.itemAction`. */
+  itemAction: ListItemActionSchema.optional(),
+});
+export type ListItemRule = z.infer<typeof ListItemRuleSchema>;
+
+export const ListConfSchema = z.object({
+  columns: z.object({
+    lg: z.number().int().min(1).max(6).optional(),
+    md: z.number().int().min(1).max(6).optional(),
+    sm: z.number().int().min(1).max(6).optional(),
+    xl: z.number().int().min(1).max(6).optional(),
   }).partial().optional(),
+  card: CardConfSchema.optional(),
   preview: PreviewConfSchema.optional(),
   /** Contrat « testimonial » (générique, config-driven) — lu par Card/PreviewTestimonial via `useTestimonialData`. */
   testimonial: TestimonialConfSchema.optional(),
@@ -452,6 +518,13 @@ export const ListConfSchema = z.object({
    * Utile pour plusieurs sections sur une même page (ex. "preview-equipements").
    */
   previewParam: z.string().optional(),
+  /**
+   * Règles de rendu PAR ITEM (cf. {@link ListItemRuleSchema}) — pour les listes hétérogènes.
+   * ABSENT = comportement mono-carte historique (`card`/`preview` valent pour toute la liste).
+   */
+  itemRules: z.array(ListItemRuleSchema).optional(),
+  /** Action au clic par DÉFAUT de la liste, surchargeable par règle. Absent = ouvrir le détail. */
+  itemAction: ListItemActionSchema.optional(),
 }).partial();
 
 export type ListConf = z.infer<typeof ListConfSchema>;
@@ -1058,6 +1131,9 @@ export interface SearchMapWrapperProps<T extends SearchListEntity = SearchEntity
   results: T[];
   card?: ListConf["card"];
   preview?: ListConf["preview"];
+  /** Conf de liste COMPLÈTE — nécessaire aux presenters config-driven du détail (`resource`/
+   *  `testimonial` lisent leur tranche) et aux règles par item (`itemRules`). */
+  list?: ListConf;
   map?: MapConf;
   /** Synchro split : id focalisé → flyTo + openPopup du marqueur. */
   focusedItemId?: string | null;
@@ -1071,6 +1147,8 @@ export interface SearchMapProps<T extends SearchListEntity = SearchEntity> {
   results: T[];
   card?: ListConf["card"];
   preview?: ListConf["preview"];
+  /** Cf. {@link SearchMapWrapperProps.list}. */
+  list?: ListConf;
   map?: MapConf;
   /** Synchro split : id focalisé → flyTo + openPopup du marqueur. */
   focusedItemId?: string | null;

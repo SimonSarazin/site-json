@@ -18,6 +18,8 @@ Module **piloté par les données** : un article **est un POI `type:"article"`**
   - `/blog/:slug` — reader d'un article slugué (~18 % des articles) ;
   - `/blog/id/:id` — reader des ~82 % d'articles **sans slug** ;
   - la **liste** `/blog` n'est pas une route du module : c'est une **page de config** portant une section `articleFeed`.
+- **Trois voies mènent au reader** : la section `articleFeed`, la source de palette `blog:articles`, et — depuis une liste de recherche — une règle `list.itemRules` portant `itemAction: {kind: "link", to: "/blog/:slug", toById: "/blog/id/:id"}` (cf. [doc/07](07-module-search.md#rendu-par-item-des-listes-hétérogènes-listitemrules)). C'est ainsi qu'un POI `type:"article"` remonté par la recherche globale ouvre l'article au lieu d'un drawer générique.
+  ⚠️ Contrairement à `detailBasePath` (déprécié, gardé contre l'open-redirect), `itemAction.to` accepte **n'importe quel gabarit sans garde** : n'y placer aucune URL dérivée d'une donnée utilisateur. `audit:config` contrôle en revanche que la route ciblée existe.
 
 ## Arborescence
 

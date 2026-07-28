@@ -46,6 +46,7 @@
   - [Facettes cliquables & navigation par filtre (`dropdownFilters`)](#facettes-cliquables--navigation-par-filtre-dropdownfilters)
   - [Cartes news dans la recherche (CardNews et PreviewNews)](#cartes-news-dans-la-recherche-cardnews-et-previewnews)
   - [Cartes et previews génériques config-driven (testimonial, resource)](#cartes-et-previews-génériques-config-driven-testimonial-resource)
+  - [Rendu PAR ITEM des listes hétérogènes (`list.itemRules`)](#rendu-par-item-des-listes-hétérogènes-listitemrules)
   - [SearchMap et vue carte](#searchmap-et-vue-carte)
   - [SearchBubbleChart](#searchbubblechart)
   - [FranceRegionsMap](#franceregionsmap)
@@ -85,7 +86,9 @@ src/modules/search/
 │                                  #   ThematicsSectionSchema, FilterGroupSchema,
 │                                  #   FilterGroupsSchema, FiltersByAnswersSchema,
 │                                  #   FiltersByPathSchema, IconNameSchema, SearchBaseParamsSchema,
-│                                  #   SearchHeaderSectionSchema (+ types dérivés)
+│                                  #   SearchHeaderSectionSchema, ListConfSchema, CardConfSchema,
+│                                  #   PreviewConfSchema, TestimonialConfSchema, ResourceConfSchema,
+│                                  #   ListItemRuleSchema, ListItemActionSchema (+ types dérivés)
 ├── styles.css                     # Styles spécifiques (carte, overrides popup/marqueurs MapLibre)
 ├── module.config.ts               # type: "core", PageProvider: PageFiltersProvider
 ├── index.ts                       # Exports publics (incl. useAutocomplete, buildSearchPayload)
@@ -206,6 +209,8 @@ src/modules/search/
 │   ├── schedules.ts               # groupSchedules — créneaux CoForm groupés par jour (Lun→Dim)
 │   ├── coformAnswer.ts            # parseCoformAnswer / getStatusStyle — partagé Card+Preview
 │   ├── dropdownFilters.ts        # helpers purs facettes cliquables (resolve/normalize/owner/toState)
+│   ├── resolveListItemConf.ts     # conf `list` EFFECTIVE d'un item (règles `itemRules`)
+│   ├── itemAction.ts              # resolveItemLink / resolveItemClick — gabarits :slug / :id
 │   └── testimonial.ts             # valueColor/bubbleTint/firstMediaUrl/hostname — partagé testimonial+resource
 │
 ├── prefetch/
@@ -251,6 +256,8 @@ Schéma principal (`SearchProSectionSchema`) — props clés :
 | `baseParams` | objet | — | Paramètres API (types, tags, tri, champs, locality…) |
 | `list.card.type` | string | `"default"` | Variante de carte |
 | `list.card.detailsMode` | `"drawer"\|"dialog"` | `"drawer"` | Mode ouverture détails |
+| `list.itemRules` | `ListItemRule[]` | — | Rendu PAR ITEM d'une liste hétérogène (cf. §dédiée) |
+| `list.itemAction` | objet | — | Action au clic par défaut (`preview`/`profil`/`link`) |
 | `map.initialZoom` | number | — | Zoom initial de la carte |
 
 **`customHeader`** : `{ title?, linkText?, linkHref?, linkIcon? }`. `linkIcon` est typé `IconName` (via `IconNameSchema`). Le champ `showMapButton` a été **supprimé** — le bouton carte est toujours présent quand `enableMap: true`.
@@ -831,15 +838,19 @@ Les deux composants partagent les mêmes sous-composants (`SearchListView`, `Sea
 
 ### SearchListView
 
-Grille responsive des résultats. Propriétés CSS grid pilotées par `list.columns.{sm,md,lg,xl}`. Chaque item est rendu par `<SearchCard>` + déclenchement infinite scroll via `lastItemRef` sur le dernier item.
+Grille responsive des résultats. Propriétés CSS grid pilotées par `list.columns.{sm,md,lg,xl}`. Chaque item est rendu par `<SearchCard>` — enveloppé dans son propre `<Suspense fallback={<SearchCardSkeleton/>}>` — + déclenchement infinite scroll via `lastItemRef` sur le dernier item.
 
-**Sync URL ↔ preview** (`list.previewParam`, défaut `"preview"`) : ouvrir un item écrit `?<previewParam>=<id>` (`{replace}`) → **deep-link / partage / reload** persistants ; l'effet d'auto-ouverture relit ce param (ouvre l'item correspondant) **et** ferme quand le param disparaît (back/forward, nav sœur) → l'état suit toujours l'URL. Pour **plusieurs listes preview sur une même page**, donner à chacune un `previewParam` distinct en config (ex. `"preview-equipements"`) pour éviter la collision. `SearchListView` fournit aussi le `PreviewNavContext` (`{ previewParam, closeRaw }`) consommé par `useDropdownFilterNav` (cf. [§Facettes cliquables](#facettes-cliquables--navigation-par-filtre-dropdownfilters)).
+**Conf résolue par item** : avant la boucle, `resolveListItemConfs(results, list)` (mémoïsé) calcule la conf de liste EFFECTIVE de chaque résultat (cf. [§Rendu PAR ITEM](#rendu-par-item-des-listes-hétérogènes-listitemrules)). Sans `list.itemRules`, chaque entrée vaut `list` **lui-même** — comportement mono-carte strictement inchangé. Le clic passe par `resolveItemClick` (`lib/itemAction.ts`) : `link` → navigation, `profil` → `/profil/:slug`, sinon ouverture du détail. Le **mode split** (`onFocusItem`) garde la priorité absolue : le clic focalise le marqueur et l'action est ignorée.
 
-**Config `list` tuyautée d'un bout à l'autre** : depuis l'introduction des cartes typées (`testimonial` / `resource`), la config `list` COMPLÈTE (`list?: ListConf`, `ListConfSchema` désormais **exporté**) descend tout le pipeline — `SearchListView` → `SearchCard` et `SearchListView` → `SwitchDetailsMode` → `DetailsModeDialog` / `DetailsModeDrawer` → `Preview`. Chaque `CardX` / `PreviewX` typé lit alors **sa** tranche (`list.testimonial`, `list.resource`). `SearchListView` / `SwitchDetailsMode` gardent des props `columns` / `card` / `preview` / `previewParam` optionnelles (agenda, observatoire, profil… qui appellent sans objet `list`) et dérivent chaque valeur via `prop ?? list?.x` ; les call-sites search ne passent plus que `list={list}`. Conséquence : **`SearchPro` honore désormais `list.previewParam`** (auparavant ignoré — il ne transmettait pas ce champ à `SearchListView`).
+**Un seul `<SwitchDetailsMode>`, monté HORS de la boucle** : il ne peut donc pas recalculer la règle de l'item ouvert. L'état de sélection porte la paire `{ item, list }` (même pattern que `EntityPreviewState` de la palette, `commandPalette/components/CommandPalette.tsx`) — c'est ce qui permet à `card.detailsMode` et `preview.type` de varier d'un item à l'autre dans la même liste.
+
+**Sync URL ↔ preview** (`list.previewParam`, défaut `"preview"`) : ouvrir un item écrit `?<previewParam>=<id>` (`{replace}`) → **deep-link / partage / reload** persistants. L'id est celui de `getEntryId` **des deux côtés** (écriture et relecture) : les deux formules divergeaient auparavant (`getEntryId` à l'écriture, `serverData?.id ?? id` à la relecture), et `serverData.id` n'est pas toujours peuplé sur un résultat de recherche (cf. `lib/searchMapSelection.ts`) — un deep-link pouvait donc ne pas rouvrir son item ; l'effet d'auto-ouverture relit ce param (ouvre l'item correspondant) **et** ferme quand le param disparaît (back/forward, nav sœur) → l'état suit toujours l'URL. Pour **plusieurs listes preview sur une même page**, donner à chacune un `previewParam` distinct en config (ex. `"preview-equipements"`) pour éviter la collision. `SearchListView` fournit aussi le `PreviewNavContext` (`{ previewParam, closeRaw }`) consommé par `useDropdownFilterNav` (cf. [§Facettes cliquables](#facettes-cliquables--navigation-par-filtre-dropdownfilters)).
+
+**Config `list` tuyautée d'un bout à l'autre** : depuis l'introduction des cartes typées (`testimonial` / `resource`), la config `list` COMPLÈTE (`list?: ListConf`, `ListConfSchema` désormais **exporté**) descend tout le pipeline — `SearchListView` → `SearchCard` et `SearchListView` → `SwitchDetailsMode` → `DetailsModeDialog` / `DetailsModeDrawer` → `Preview`. `list` est transmis à **TOUS** les variants de `SearchCard` et de `Preview` (et non aux seuls presenters typés) ; chacun y lit **sa** tranche (`list.testimonial`, `list.resource`), les autres l'ignorent. `SearchMapWrapper` / `SearchMap` le reçoivent aussi désormais — sans quoi un détail ouvert depuis la carte géographique retombait sur les presenters génériques. `SearchListView` / `SwitchDetailsMode` gardent des props `columns` / `card` / `preview` / `previewParam` optionnelles (agenda, observatoire, profil… qui appellent sans objet `list`) et dérivent chaque valeur via `prop ?? list?.x` ; les call-sites search ne passent plus que `list={list}`. Conséquence : **`SearchPro` honore désormais `list.previewParam`** (auparavant ignoré — il ne transmettait pas ce champ à `SearchListView`).
 
 ### Cartes (card variants)
 
-`<SearchCard>` (`components/SearchCard.tsx`) dispatch vers la bonne variante selon `list.card.variant || list.card.type`. **Les variantes sont nommées par DESIGN / FONCTIONNALITÉ, jamais par site** (découplage commit 8cd4070 — les anciens noms `tiers-lieux`, `rezo-la-mer`, `poi-ssbe`, `ssbe`, `card-elts`, `event-rezo-la-mer`, `poi-rezo-la-mer`… ont été supprimés).
+`<SearchCard>` (`components/SearchCard.tsx`) dispatch vers la bonne variante selon `list.card.variant || list.card.type` — où `list.card` est la conf **résolue de l'item** quand la liste porte des `itemRules` (cf. [§Rendu PAR ITEM](#rendu-par-item-des-listes-hétérogènes-listitemrules)). **Les variantes sont nommées par DESIGN / FONCTIONNALITÉ, jamais par site** (découplage commit 8cd4070 — les anciens noms `tiers-lieux`, `rezo-la-mer`, `poi-ssbe`, `ssbe`, `card-elts`, `event-rezo-la-mer`, `poi-rezo-la-mer`… ont été supprimés).
 
 Trois **axes orthogonaux** pilotent le rendu (commit 8cd4070) :
 
@@ -867,7 +878,7 @@ Trois **axes orthogonaux** pilotent le rendu (commit 8cd4070) :
 
 > `news`, `testimonial` et `resource` ne sont acceptées **que** par `card.type` : l'enum `card.variant` (schema.ts) ne les inclut pas (comme `overlay`).
 
-Toutes les variantes sont lazy-loadées ; à une page donnée, seul le type configuré est téléchargé côté client. Les **couleurs en dur** des cartes ont été remplacées par des **tokens de thème** (commits 4936978 / ad11831 / 06baffb) → chaque carte s'adapte au thème du site et au mode clair/sombre.
+Toutes les variantes sont lazy-loadées. Une page **mono-type** ne télécharge que le chunk configuré ; une liste **hétérogène** (`list.itemRules`, cf. [§Rendu PAR ITEM](#rendu-par-item-des-listes-hétérogènes-listitemrules)) en charge un par famille présente — c'est pourquoi `SearchListView` enveloppe chaque carte dans son **propre `<Suspense>`**. Les **couleurs en dur** des cartes ont été remplacées par des **tokens de thème** (commits 4936978 / ad11831 / 06baffb) → chaque carte s'adapte au thème du site et au mode clair/sombre.
 
 #### CardPoiAmenities — POI avec aménagements (`card.type: "poi-amenities"`)
 
@@ -919,7 +930,7 @@ Voir [doc/23-module-auth.md](doc/23-module-auth.md) pour l'API `useAuthModal`.
 
 Le détail d'une entité sélectionnée est **découplé en deux axes** (commit 8cd4070) :
 
-`<SwitchDetailsMode>` choisit le **conteneur** selon `list.card.detailsMode` **uniquement** (il ne lit plus jamais `card.type`) :
+`<SwitchDetailsMode>` choisit le **conteneur** selon `list.card.detailsMode` **uniquement** (il ne lit plus jamais `card.type`) — `list.card` étant, sur une liste à `itemRules`, la conf résolue de l'item ouvert :
 
 | `card.detailsMode` | Composant | Description |
 |----------|-----------|-------------|
@@ -1146,7 +1157,108 @@ clair/sombre), `firstMediaUrl(medias, kind)`, `hostname(url)`.
 Les repères (taxonomies) réutilisent le mécanisme **facettes** générique (`facets`
 = `PreviewFacetSchema[]`, rendus en `ClickableFacet`). Pour activer une ressource
 ou un témoignage, poser **3 clés** explicites : `list.card.type`,
-`list.preview.type` et le bloc `list.<type>` correspondant.
+`list.preview.type` et le bloc `list.<type>` correspondant. Dans une liste
+**hétérogène**, ces 3 clés vivent dans une RÈGLE plutôt qu'au niveau de la liste
+(§ suivant).
+
+### Rendu PAR ITEM des listes hétérogènes (`list.itemRules`)
+
+**Le problème.** Une recherche globale sans filtre de type mélange articles,
+paroles, ressources, événements, projets et structures dans la même grille. Le
+presenter ne peut alors pas venir du filtre coché — il doit se décider sur la
+donnée de **chaque item**.
+
+**Le principe.** On n'ajoute pas de prop au pipeline : on fait **varier la valeur
+de `list`**. `resolveListItemConf(item, list)` (`lib/resolveListItemConf.ts`)
+renvoie la conf effective d'un item ; tout l'aval (`SearchCard`, `Preview`,
+`SwitchDetailsMode`, `Card`/`PreviewTestimonial`, `Card`/`PreviewResource`) est
+**inchangé**. Deux corollaires :
+
+- carte et détail sortent de la MÊME résolution → l'incohérence est impossible
+  par construction ;
+- sans `itemRules`, la fonction renvoie `list` **par identité référentielle**
+  (`expect(...).toBe(list)`) → non-régression prouvable et mémoïsation aval
+  préservée. La fonction est **pure** (ni `window`, ni `Date`, ni `Math.random`)
+  → SSR ≡ hydratation.
+
+**Le prédicat `when`** utilise la grammaire `PredicateJson` du formEngine — la
+même que `visibleIf` / `requiredIf` (cf. [doc/28](28-module-formengine.md)) et
+que les `iconRules` de la palette (cf. [doc/17](17-module-command-palette.md)).
+Il est évalué contre `entityMatchData(item)` = `{...serverData, collection,
+sourceKey, sourceKeys}` derrière un Proxy qui résout les chemins pointés
+(`src/lib/entityMatch.ts`). **La première règle qui matche gagne** ; une règle
+**sans `when`** est un catch-all, à placer **en dernier** (en tête elle masque
+tout). Si aucune règle ne matche, on garde `list`.
+
+> ⚠ **Deux pièges, tous deux silencieux.**
+> 1. `serverData.type` a **deux sémantiques** : sous-type POI
+>    (`article`/`affiche`/`recoveryCenter`) mais sous-type d'ORGANISATION
+>    (`NGO`/`Group`/`Cooperative`…) sur `collection: "organizations"`. Toujours
+>    ancrer une règle sur `collection` **avant** `type`.
+> 2. Un champ **non projeté** par `baseParams.defaultFields` vaut `undefined` :
+>    la règle ne matchera **jamais**, sans erreur. Un `console.warn` DEV nomme
+>    les champs manquants au premier item, et `tests/preflight/list-item-rules.test.ts`
+>    le gate sur toutes les configs du parc.
+
+**Sémantique de fusion** — à connaître, c'est la source de bugs :
+
+| Clé de la règle | Appliquée comment | Pourquoi |
+|---|---|---|
+| `card`, `preview` | **fusionnées** (shallow) sur la base | `tagColors`, `detailsMode`, `width` posés une fois au niveau page restent hérités |
+| `testimonial`, `resource` | **remplacent** | fusionner deux contrats de mapping produirait un contrat Frankenstein indébuggable |
+| `itemAction` | **remplace** | atomique |
+| entre règles | aucun cumul — la 1ʳᵉ gagne entièrement | invariant partagé avec `iconRules` et `editModals` |
+
+**`list.itemAction`** route le clic. `resolveItemClick` (`lib/itemAction.ts`) est
+la source unique, partagée par la liste et la popup de carte :
+
+| `kind` | Effet | Champs |
+|---|---|---|
+| `preview` (défaut) | ouvre le détail (`SwitchDetailsMode`) | — |
+| `profil` | navigue vers `/profil/:slug` | — |
+| `link` | navigue vers un gabarit | `to` (`:slug`), `toById` (`:id`, repli), `newTab` |
+
+Toute action **inexploitable** retombe sur le détail : un `link` sans slug ni id,
+un `profil` sur un item sans slug. On ne navigue jamais vers une URL trouée.
+
+> ⚠ **Trois `itemAction` homonymes** coexistent dans le repo :
+>
+> | Clé | Schéma | Portée |
+> |---|---|---|
+> | `list.itemAction` / `itemRules[].itemAction` | `ListItemActionSchema` (`preview`\|`profil`\|`link`) | clic sur une **carte de liste** |
+> | `map.itemAction` | inline `{kind: "profil"\|"preview"}` | bouton de **popup carte** — sert de défaut quand la règle n'en porte pas |
+> | `commandPalette.entitySearch.itemAction[ByType][BySubType]` | `EntityItemActionSchema` | clic sur un résultat de **palette** |
+
+**Exemple** (`config.prod.parent62.json`, page `/recherche`) :
+
+```json
+"itemRules": [
+  {
+    "id": "poi-article",
+    "when": { "and": [
+      { "field": "collection", "op": "eq", "value": "poi" },
+      { "field": "type",       "op": "eq", "value": "article" }
+    ]},
+    "card": { "type": "resource" },
+    "resource": { "design": "card", "titleField": "name", "descriptionField": "shortDescription",
+                  "dateField": "created", "imageField": "profilMediumImageUrl" },
+    "itemAction": { "kind": "link", "to": "/blog/:slug", "toById": "/blog/id/:id" }
+  },
+  {
+    "id": "poi-parole",
+    "when": { "and": [
+      { "field": "collection", "op": "eq", "value": "poi" },
+      { "field": "type",       "op": "eq", "value": "affiche" }
+    ]},
+    "card":    { "type": "testimonial", "detailsMode": "dialog" },
+    "preview": { "type": "testimonial", "width": "2xl" },
+    "testimonial": { "…contrat identique à celui de /temoignages…" }
+  }
+]
+```
+
+Pas de catch-all ici : les collections non couvertes retombent sur `list.card`,
+qui joue le rôle de filet.
 
 ### SearchMap et vue carte
 
@@ -1258,7 +1370,7 @@ Modal de création d'une nouvelle entité directement depuis la recherche. Activ
 
 ### SwitchDetailsMode
 
-Composant qui gère l'ouverture du détail (drawer ou dialog) selon `list.card.detailsMode`. Stocke l'entité sélectionnée en state local et rend le composant de détail correspondant.
+Composant qui gère l'ouverture du détail (drawer ou dialog) selon `list.card.detailsMode`, et rend le composant de détail correspondant. Il est monté **hors de la boucle de résultats** : c'est l'appelant (`SearchListView`, `SearchMap`) qui garde en state la paire `{ item, list }` — la conf RÉSOLUE de l'item ouvert — et la lui passe. `detailsMode` et `preview.type` peuvent donc varier d'un item à l'autre au sein d'une même liste.
 
 ---
 
@@ -1337,7 +1449,7 @@ La carte de liste est pilotée par `list.card.variant` (sinon `list.card.type` �
 - **`list.card.detailsMode`** (`drawer` / `dialog`) → le *conteneur* de la fiche détail (`SwitchDetailsMode` → `DetailsModeDrawer` / `DetailsModeDialog`) ;
 - **`list.preview.type`** (`default` / `poi-amenities` / `coform-answer` / `event` / `facets` / `news` / `testimonial` / `resource`) → le *contenu* rendu DANS ce conteneur (`Preview` → `PreviewDefault` / `PreviewPoiAmenities` / `PreviewCoformAnswer` / `PreviewEvent` / `PreviewFacets` / `PreviewNews` / `PreviewTestimonial` / `PreviewResource`). `list.preview.fields` surcharge le mappage des IDs de champ CoForm consommés par `parseCoformAnswer` (cf. `lib/coformAnswer.ts`) ; `list.preview.facets` déclare les champs cliquables du preview générique `facets` (cf. [§Facettes cliquables](#facettes-cliquables--navigation-par-filtre-dropdownfilters)) ; `list.preview.width` / `list.preview.showDetailLink` (cf. [§Mode détails](#mode-détails--conteneur-detailsmode-vs-contenu-previewtype)).
 
-**Règle d'extension** : pour ajouter une nouvelle variante, créer `components/card/CardMonDesign.tsx` (nom DESIGN, pas de site), l'enregistrer dans `SearchCard.tsx` (switch), et ajouter l'entrée dans le schéma `ListConfSchema.card.variant` / `card.type`.
+**Règle d'extension** : pour ajouter une nouvelle variante, créer `components/card/CardMonDesign.tsx` (nom DESIGN, pas de site), l'enregistrer dans `SearchCard.tsx` (switch), et ajouter l'entrée dans **`CardConfSchema`** (`variant` / `type`) — le bloc `card` est un schéma nommé extrait de `ListConfSchema`, partagé avec `ListItemRuleSchema.card`.
 
 ---
 
@@ -1589,6 +1701,8 @@ La zone de résultats de `SearchProStatic` (mode liste en sidebar désactivée) 
 **c. `$or` doit être un OBJET, jamais un tableau.** Le handler `$or` (~l.549) itère un objet `champ => condition`. Si on passe un tableau `[{...}]`, la clé d'itération est l'entier `0` → `array(0 => …)` devient un array PHP **indexé** → encodé en BSON comme un *array* (pas un document) → crash Mongo **« $or/$and/$nor entries need to be full objects »**. Écrire `"$or": { "tags": {...} }`, **jamais** `"$or": [ { "tags": {...} } ]`.
 
 **d. Tout est empilé en `$and`.** `addQuery` (~l.7) pousse chaque clé de `defaultFilters` dans un `$and` top-level → deux clés distinctes = deux conditions ET.
+
+**e. `status: "validated"` ne matche RIEN.** `status` ne porte que le cycle de vie du document (`uncomplete` / `deleted` / `deletePending`) et ne prend jamais la valeur `validated` — cf. [doc/19](19-visibility-system.md). Un `"defaultFilters": {"status": "validated"}` renvoie donc **0 résultat, sans la moindre erreur** (le cas s'est produit en prod sur la cible « paroles » de parent62). La validation costum se pilote par `preferences.toBeValidated.<slug>` / `source.toBeValidated.<slug>`, posés AUTOMATIQUEMENT par `applyValidationGate` dès qu'un `costumSlug` est présent (opt-out `showUnvalidated`).
 
 **Idiome : exiger un tag ET en exclure un autre.** Impossible sur une seule clé `tags` (cf. b) → on utilise deux clés : un `$or` **objet** mono-clause pour le positif + `tags: {$nin: [...]}` pour l'exclusion. Exemple réel (config `tiers-lieux`, les listes de lieux ne doivent pas montrer les réseaux `RéseauTiersLieux`) :
 

@@ -10,11 +10,6 @@
     "css": "index-cyber-reunion"
   },
   {
-    "slug": "cocolight",
-    "config": "config.prod.cyber-reunion.json",
-    "css": "index-cyber-reunion"
-  },
-  {
     "slug": "rezoLaMer",
     "config": "config.prod.rezo-la-mer.json",
     "css": "index-rezo-la-mer"

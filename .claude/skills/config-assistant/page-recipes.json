@@ -7,7 +7,15 @@
       "quand": "Le visiteur vient CHERCHER quelque chose de précis (une aide, un contact, un service). Portail institutionnel ou territorial.",
       "source": "config.prod.parent62.json",
       "path": "/",
-      "sequence": ["hero-quick-access", "action-tiles", "action-tiles", "cta-card-grid", "html", "articleFeed", "cta"],
+      "sequence": [
+        "hero-quick-access",
+        "action-tiles",
+        "action-tiles",
+        "cta-card-grid",
+        "html",
+        "articleFeed",
+        "cta"
+      ],
       "rythme": "Les accès rapides AVANT le discours : l'usager qui sait ce qu'il veut part en un clic. Puis deux rangées de tuiles d'action (les deux familles de services), les cartes CTA, un bloc éditorial libre, et seulement ensuite l'actualité — qui sert de preuve de vie. CTA final pour ceux qui ont tout lu."
     },
     {
@@ -16,7 +24,16 @@
       "quand": "Le visiteur ne connaît pas encore le projet : il faut le convaincre. Site de campagne, de programme, d'association.",
       "source": "config.prod.eXtremeDefiAdeme.json",
       "path": "/",
-      "sequence": ["hero-parallax", "cta", "stats", "html", "features-glass", "timeline", "action-tiles", "logoCloud"],
+      "sequence": [
+        "hero-parallax",
+        "cta",
+        "stats",
+        "html",
+        "features-glass",
+        "timeline",
+        "action-tiles",
+        "logoCloud"
+      ],
       "rythme": "Hero plein écran → appel à l'action immédiat (pour les convaincus d'avance) → chiffres qui crédibilisent → récit libre → trois preuves → frise du parcours → actions → logos partenaires en caution finale. L'alternance visuel/texte évite le mur."
     },
     {
@@ -25,7 +42,11 @@
       "quand": "Le contenu du site EST la carte ou l'annuaire : la home n'est qu'un sas.",
       "source": "config.prod.saint-paul-sport.json",
       "path": "/",
-      "sequence": ["hero-parallax", "categories-grid", "hero-quick-access"],
+      "sequence": [
+        "hero-parallax",
+        "categories-grid",
+        "hero-quick-access"
+      ],
       "rythme": "Trois sections, pas plus. Le hero pose l'identité, la grille de catégories est la vraie navigation, les accès rapides ramassent le reste. Tout le contenu vit dans les pages de recherche."
     },
     {
@@ -34,7 +55,19 @@
       "quand": "Portail réseau à gros volume de données : le premier geste attendu est une recherche.",
       "source": "config.prod.tiers-lieux.json",
       "path": "/",
-      "sequence": ["hero-search", "searchProStatic", "title", "cards", "agenda", "content", "html", "content", "content", "content", "content"],
+      "sequence": [
+        "hero-search",
+        "searchProStatic",
+        "title",
+        "cards",
+        "agenda",
+        "content",
+        "html",
+        "content",
+        "content",
+        "content",
+        "content"
+      ],
       "rythme": "`hero-search` PILOTE la liste qui le suit immédiatement (c'est son rôle : la barre de recherche du hero filtre le searchProStatic en dessous). Le reste de la page est de l'éditorial qui se lit en scrollant, une fois la recherche passée."
     },
     {
@@ -43,8 +76,23 @@
       "quand": "Le motif le plus fréquent du parc (32 occurrences). Toute liste d'entités filtrable.",
       "source": "config.prod.saint-paul-sport.json",
       "path": "/equipements-sportifs",
-      "sequence": ["searchHeader", "searchProStatic"],
+      "sequence": [
+        "searchHeader",
+        "searchProStatic"
+      ],
       "rythme": "DEUX sections suffisent. `searchHeader` porte le titre, le chapô ET les filtres ; `searchProStatic` porte la liste, la carte et les presenters. N'ajoute pas un `title` en plus : searchHeader le fait déjà."
+    },
+    {
+      "id": "page-recherche-globale",
+      "titre": "Recherche globale multi-collections",
+      "quand": "L'usager cherche « tout » sans savoir dans quelle famille : une seule liste sert articles, paroles, ressources, événements et structures. À distinguer de page-recherche, qui ne sert qu'UNE famille.",
+      "source": "config.prod.parent62.json",
+      "path": "/recherche",
+      "sequence": [
+        "searchHeader",
+        "gridLayout"
+      ],
+      "rythme": "`searchHeader` ne porte QUE le titre et le chapô (`showSearch: false`) : les filtres descendent dans la colonne de gauche du `gridLayout` (1 colonne de filtres / 3 de résultats). Le groupe `searchTargets` choisit QUOI chercher, `list.itemRules` choisit COMMENT le rendre — deux mécanismes distincts à ne pas confondre. Sans filtre coché la liste est hétérogène : chaque famille doit avoir sa règle, sinon tout retombe sur la carte par défaut."
     },
     {
       "id": "page-annuaire-grille",
@@ -52,7 +100,11 @@
       "quand": "Décliner un même annuaire par thème / territoire / catégorie, avec un contexte éditorial propre à chaque déclinaison.",
       "source": "config.prod.parent62.json",
       "path": "/territoire/familles-en-sol-mineur",
-      "sequence": ["title", "searchHeader", "gridLayout"],
+      "sequence": [
+        "title",
+        "searchHeader",
+        "gridLayout"
+      ],
       "rythme": "`title` porte le contexte éditorial spécifique à la déclinaison (ce que searchHeader ne sait pas faire), searchHeader filtre, gridLayout présente. parent62 décline ce motif sur ses territoires et thématiques — c'est un gabarit, pas une page unique. Certaines déclinaisons s'enrichissent ensuite (cf. /territoire/arrageois, passée à 8 sections) : le gabarit est un POINT DE DÉPART."
     },
     {
@@ -61,7 +113,10 @@
       "quand": "Événements d'un costum, avec vues liste / calendrier / carte.",
       "source": "config.prod.eXtremeDefiAdeme.json",
       "path": "/agenda",
-      "sequence": ["searchHeader", "agenda"],
+      "sequence": [
+        "searchHeader",
+        "agenda"
+      ],
       "rythme": "Même économie que la page de recherche : searchHeader pour l'en-tête et les filtres, `agenda` pour tout le reste (il porte ses propres vues et son propre détail)."
     },
     {
@@ -70,7 +125,10 @@
       "quand": "Fil d'articles du module blog, filtrable. Exige `config.blog` et des POI de type article scopés costum.",
       "source": "config.prod.parent62.json",
       "path": "/blog",
-      "sequence": ["searchHeader", "articleFeed"],
+      "sequence": [
+        "searchHeader",
+        "articleFeed"
+      ],
       "rythme": "searchHeader + articleFeed (10 occurrences dans le parc). Le lecteur d'article vit sur la route `/blog/:slug`, pas dans une page du config."
     },
     {
@@ -79,7 +137,14 @@
       "quand": "Présenter une démarche, une charte, une équipe — du contenu qui se lit.",
       "source": "config.prod.parent62.json",
       "path": "/reseau",
-      "sequence": ["title", "timeline", "content", "features-glass", "faq", "cta"],
+      "sequence": [
+        "title",
+        "timeline",
+        "content",
+        "features-glass",
+        "faq",
+        "cta"
+      ],
       "rythme": "`title` ouvre, puis on ALTERNE les registres : frise (temps) → texte (fond) → cartes-icônes (synthèse) → FAQ (objections) → CTA. Trois `content` d'affilée fatiguent ; c'est l'alternation qui tient la page."
     },
     {
@@ -88,7 +153,10 @@
       "quand": "Tableau de bord déclaratif (KPI, graphiques, table) sur un périmètre de données.",
       "source": "config.prod.saint-paul-sport.json",
       "path": "/observatoire",
-      "sequence": ["searchHeader", "data-observatory"],
+      "sequence": [
+        "searchHeader",
+        "data-observatory"
+      ],
       "rythme": "searchHeader donne le contexte et le périmètre lisible ; `data-observatory` porte dimensions, KPI, charts et table — tout est dans sa config, aucun code."
     },
     {
@@ -97,7 +165,9 @@
       "quand": "Mentions légales, confidentialité, CGU, accessibilité.",
       "source": "config.prod.tiers-lieux.json",
       "path": "/mentions-legales",
-      "sequence": ["html"],
+      "sequence": [
+        "html"
+      ],
       "rythme": "UNE section `html`. C'est le seul cas où le html brut est le bon outil : contenu long, figé, sans interaction. Prévois les 4 pages d'un coup — elles manquent dans la moitié des configs du parc."
     }
   ]

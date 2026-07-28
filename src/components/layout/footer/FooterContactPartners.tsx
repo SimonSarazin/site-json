@@ -1,4 +1,5 @@
 import NavLink from "../NavLink";
+import SocialLinks from "./SocialLinks";
 import { MapPin, Phone, Mail, Globe, Building2 } from "lucide-react";
 import { useLocalization } from "@/hooks/useLocalization";
 import { Footer } from "@/types/site-schema";
@@ -35,6 +36,7 @@ export default function FooterContactPartners({ footer }: FooterContactPartnersP
   const { t } = useLocalization();
   const contactItems = footer.contactSection?.items ?? [];
   const partnerLogos = footer.partners?.logos ?? [];
+  const columns = footer.columns ?? [];
 
   return (
     <footer className="bg-background border-t border-border">
@@ -101,13 +103,19 @@ export default function FooterContactPartners({ footer }: FooterContactPartnersP
 
           {/* Logos */}
           {partnerLogos.length > 0 && (
-            <div
-              className={
-                partnerLogos.length > 1
-                  ? "grid grid-cols-2 md:grid-cols-3 gap-8 items-center justify-items-center flex-1 w-full"
-                  : "flex items-center justify-center md:justify-end shrink-0"
-              }
-            >
+            <div className={partnerLogos.length > 1 ? "flex-1 w-full min-w-0" : "shrink-0"}>
+              {footer.partners?.title && (
+                <h4 className="font-display font-bold text-foreground text-lg mb-4">
+                  {t(footer.partners.title)}
+                </h4>
+              )}
+              <div
+                className={
+                  partnerLogos.length > 1
+                    ? "grid grid-cols-2 md:grid-cols-3 gap-8 items-center justify-items-center"
+                    : "flex items-center justify-center md:justify-end"
+                }
+              >
               {partnerLogos.map((logo, idx) => {
                 // Logos partenaires LOCAUX → /img (redimensionne + avif/webp). Les logos
                 // EXTERNES restent en <img> brut (domaine non-allowlisté → /img renverrait 403).
@@ -119,14 +127,20 @@ export default function FooterContactPartners({ footer }: FooterContactPartnersP
                     loading="lazy"
                     width={160}
                     height={96}
-                    className="h-24 md:h-32 w-auto object-contain hover:opacity-85 transition-opacity"
+                    // `max-w-full` : ces bandeaux sont larges (ratios 3:1 à 5:1) ; à
+                    // hauteur fixe et largeur libre, ils débordent de leur colonne de
+                    // grille dès qu'on en aligne plus de trois.
+                    className="h-24 md:h-32 w-auto max-w-full object-contain hover:opacity-85 transition-opacity"
                   />
                 ) : (
                   <OptimizedImage
                     src={logo.image}
                     alt={t(logo.alt)}
                     height={128}
-                    className="h-24 md:h-32 w-auto object-contain hover:opacity-85 transition-opacity"
+                    // `max-w-full` : ces bandeaux sont larges (ratios 3:1 à 5:1) ; à
+                    // hauteur fixe et largeur libre, ils débordent de leur colonne de
+                    // grille dès qu'on en aligne plus de trois.
+                    className="h-24 md:h-32 w-auto max-w-full object-contain hover:opacity-85 transition-opacity"
                   />
                 );
 
@@ -141,10 +155,49 @@ export default function FooterContactPartners({ footer }: FooterContactPartnersP
                   </NavLink>
                 );
               })}
+              </div>
             </div>
           )}
 
         </div>
+
+        {/* Colonnes de navigation + réseaux sociaux.
+            Optionnels : les 5 sites historiques en `contact-partners` n'en déclarent
+            aucun et rendent donc exactement comme avant. Ils existent pour les
+            portails qui ont une vraie navigation de pied de page à porter en plus
+            du bloc contact/partenaires (sinon il faudrait choisir entre les deux). */}
+        {(columns.length > 0 || (footer.socials?.length ?? 0) > 0) && (
+          <div className="mt-10 pt-8 border-t border-border flex flex-col gap-8 md:flex-row md:justify-between">
+            {columns.length > 0 && (
+              <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                {columns.map((column, index) => (
+                  <div key={index}>
+                    <h3 className="font-semibold mb-4 text-foreground">{t(column.title)}</h3>
+                    <ul className="space-y-2">
+                      {column.links?.map((link, linkIdx) => (
+                        <li key={linkIdx}>
+                          <NavLink
+                            to={link.href}
+                            className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                          >
+                            {t(link.label)}
+                          </NavLink>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <SocialLinks
+              socials={footer.socials}
+              className="gap-3 shrink-0"
+              itemClassName="text-muted-foreground hover:text-primary transition-colors"
+              iconClassName="w-5 h-5"
+            />
+          </div>
+        )}
       </div>
 
       <div className="border-t border-border">

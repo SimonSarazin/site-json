@@ -464,7 +464,20 @@ export const ActionTilesSchema = z.object({
         title: LocalizedString,
         subtitle: LocalizedString.optional(),
         href: z.string(),
-        color: z.enum(["primary", "turquoise", "amber", "cyan-bright", "teal", "accent", "eco", "chart-2"]).optional(),
+        /**
+         * Couleur de la tuile — TOKENS du thème. `ActionTiles` les résout via sa
+         * table `TILE_TOKEN`. `turquoise`/`cyan-bright`/`teal`/`amber`/`eco` sont
+         * des ALIAS HISTORIQUES conservés pour les 5 configs du parc qui les
+         * emploient : ils codaient des couleurs Tailwind en dur (les mêmes sur
+         * tous les sites) et pointent désormais sur `chart-2..4`, la palette
+         * catégorielle propre à chaque site.
+         */
+        color: z.enum([
+          "primary", "accent", "destructive",
+          "chart-1", "chart-2", "chart-3", "chart-4", "chart-5",
+          // alias historiques
+          "turquoise", "cyan-bright", "teal", "amber", "eco",
+        ]).optional(),
       })
     ),
   }),

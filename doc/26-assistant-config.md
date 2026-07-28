@@ -220,9 +220,17 @@ tel quel.
   *tous* les configs et via le runner — trop lent pour itérer.)
 - **`config-schema.mjs <sélecteur>`** — ex. `config-schema.mjs section:pricing`
   ou `header` → imprime le JSON Schema (`z.toJSONSchema`, `unrepresentable:
-  "any"`) du morceau demandé. Évite à la skill de relire les 2 030 lignes de
-  `site-schema.ts` pour connaître la forme exacte d'une section ; la sortie est
-  compacte et exhaustive (enums, champs requis, défauts).
+  "any"`, `reused: "ref"`) du morceau demandé. Évite à la skill de relire les
+  2 030 lignes de `site-schema.ts` pour connaître la forme exacte d'une section ;
+  la sortie est compacte et exhaustive (enums, champs requis, défauts).
+  ⚠️ **Un schéma partagé sort en `$ref`** : `CardConfSchema`, réutilisé par
+  `list.card` ET `list.itemRules[].card`, n'apparaît qu'une fois en `$defs`, et
+  le nœud qui le référence n'a **aucune** `properties`. Un lecteur de forme doit
+  donc déréférencer — `derefJsonSchemaNode(node, root)`
+  (`scripts/lib/config-blocks.ts`). Corollaire pour le registre de descriptions :
+  décrire `list.itemRules[].card.type` écraserait `list.card.type`, les deux
+  chemins désignant le même nœud ; on ne décrit que le dernier segment propre à
+  chaque emplacement (`list.itemRules[].card`).
 
 ### Le workflow encodé dans SKILL.md
 

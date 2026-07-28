@@ -67,8 +67,8 @@ describe("registre prop-descriptions ⇄ schéma (garde-fou)", () => {
     "section:cardCountCT": 3,
     "section:filters": 10,
     "section:searchHeader": 10,
-    "section:searchPro": 45,
-    "section:searchProStatic": 57,
+    "section:searchPro": 60,
+    "section:searchProStatic": 72,
     "section:thematics": 2,
     theme: 11,
   };

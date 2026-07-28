@@ -145,6 +145,8 @@ site à confirmer avec l'utilisateur — ne PAS l'imposer à une petite vitrine 
 4. **Presenters câblés** : `list.card.type` + `list.preview.type` choisis pour
    la donnée (pas le fallback `default` par accident) ; blocs
    `list.testimonial`/`list.resource` renseignés pour les presenters typés.
+   Liste **hétérogène** (plusieurs familles dans la même grille) ⇒ `list.itemRules`
+   + `baseParams.defaultFields` couvrant tous les champs testés par les `when`.
 5. **Sections raisonnées** : 8-18 types dont des « premium » (`data-observatory`,
    `agenda`, `hero-*`, `features-glass`) — pas 5 sections génériques.
 6. **Visibilité conditionnelle** (`condition`/`visibleIf`/`role`) là où le
@@ -296,11 +298,48 @@ sans `overlay`/`news`/`testimonial`/`resource`) ; `card.detailedMode`
 `map.layout` (`full`\|`split`) + `map.splitRatio`. Exemples vivants :
 `config:example -- list-resource` / `list-testimonial`.
 
+### Rendu PAR ITEM (`list.itemRules`)
+
+**Quand.** Une liste **hétérogène** : recherche globale sans filtre de type, où
+articles, paroles, ressources, événements et structures cohabitent. Le presenter
+ne peut pas venir du filtre coché — il se décide sur la donnée de chaque item.
+Une seule famille par section ⇒ ne PAS utiliser `itemRules`, poser `list.card`.
+
+**Forme.** `list.itemRules: [{ id?, when?, card?, preview?, testimonial?,
+resource?, itemAction? }]`. `when` est un `PredicateJson` (même grammaire que
+`visibleIf` : `{field, op, value}` + `and`/`or`/`not` ; ops `eq` `ne` `in` `nin`
+`gt` `gte` `lt` `lte` `truthy` `falsy` `empty` `notEmpty` `matches` `contains`),
+évalué contre `{...serverData, collection, sourceKey, sourceKeys}`, dot-paths
+résolus. **1ʳᵉ règle qui matche gagne** ; règle **sans `when`** = catch-all, à
+placer **en dernier**. Aucune règle ne matche → `list.card` sert de filet.
+
+**Fusion** : `card` et `preview` sont **fusionnés** sur ceux de la liste (poser
+`tagColors`/`width` une fois au niveau `list` suffit) ; `testimonial`,
+`resource` et `itemAction` **remplacent** (un contrat de mapping est atomique).
+
+**`itemAction`** : `kind: "preview"` (défaut, ouvre le détail) \| `"profil"`
+(`/profil/:slug`) \| `"link"` (+ `to` avec `:slug`, `toById` avec `:id` en repli,
+`newTab`). Toute action inexploitable retombe sur le détail. En **mode split**,
+le clic focalise le marqueur et `itemAction` est ignorée.
+
+⚠ **Deux pièges, tous deux silencieux** :
+1. `serverData.type` a **deux sémantiques** — sous-type POI
+   (`article`/`affiche`/`recoveryCenter`) mais sous-type d'ORGANISATION
+   (`NGO`/`Group`…) sur `collection: "organizations"`. **Ancrer sur
+   `collection` avant `type`**, toujours.
+2. Un champ testé **absent de `baseParams.defaultFields`** vaut `undefined` : la
+   règle ne matche jamais. Projeter au minimum `collection`, `type`, `source`,
+   `slug` + les champs lus par les presenters.
+
+Le préflight `tests/preflight/list-item-rules.test.ts` gate ces deux points, plus
+l'ordre des règles et la présence des contrats. Exemple vivant :
+`config:example -- list-item-rules`.
+
 ### Modules (recette d'activation)
 
 | module | surface | clés JSON | prérequis backend |
 |---|---|---|---|
-| `search` | sections `searchPro`/`searchProStatic`/`filters`/`searchHeader`/`cardCountCT`/`thematics` | `baseParams` (`sourceKey`…), `list` (card/detailsMode/preview), `map` (`itemAction`/`marker`), `filters[].select`/`optionStyle`/`order` (widgets par groupe) | données indexées (sourceKey) ; carte : fond MapTiler via env `VITE_MAPTILER_API_KEY` (sinon repli OSM/Carto) + `integrations.map.styleLight/Dark` |
+| `search` | sections `searchPro`/`searchProStatic`/`filters`/`searchHeader`/`cardCountCT`/`thematics` | `baseParams` (`sourceKey`, `defaultFields`…), `list` (card/detailsMode/preview, `itemRules`/`itemAction` si liste hétérogène), `map` (`itemAction`/`marker`), `filters[].select`/`optionStyle`/`order` (widgets par groupe) | données indexées (sourceKey) ; carte : fond MapTiler via env `VITE_MAPTILER_API_KEY` (sinon repli OSM/Carto) + `integrations.map.styleLight/Dark` |
 | `agenda` | section `agenda` (vues liste/calendrier/carte/split) | `baseParams`, `filters` (text/type/tags), `defaultMode`/`tabs`/`detailsMode`, `enableMap`/`map` | événements indexés (`searchEventsCostum`) |
 | `news` | section `news` | `props.entitySlug`, `maxItems` | fil d'actus de l'entité |
 | `blog` | routes `/blog/:slug` (+ `/blog/id/:id`) + sections `articleFeed`/`articleReader` | `config.blog` (`feedCostumSlug`, variants card/reader), `costumForms.<article>`, `commandPalette.articleSearch` | POI `type:"article"` scopés costum (`source.key`) |
