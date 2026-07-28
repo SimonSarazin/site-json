@@ -63,20 +63,34 @@ export const calculateFundingStatus = (
     }, { currentFunding: 0, unpaidFunding: 0, userPledge: 0});
 }
 
+/**
+ * Financeur tel qu'il arrive de l'API, avant l'enrichissement fait ci-dessous :
+ * il porte `name` là où une FundingTransaction porte `financerName`, et les
+ * champs dérivés (`financerName`, `financerId`, `fundingIndex`) n'existent pas
+ * encore. D'où leur caractère optionnel ici.
+ */
+type RawFinancer = Omit<FundingTransaction, "financerName"> & {
+    name?: string;
+    financerName?: string;
+    method?: string;
+};
+
 export const getUserFunding = (
-    transactions: Array<any>,
+    transactions: RawFinancer[],
     orgsId: string[],
     userId?: string
 ): FundingTransaction[] => {
     if (!Array.isArray(transactions)){
         return [];
     }
+    // Enrichissement en place, volontairement conservé : les objets renvoyés
+    // sont ceux de l'enveloppe brute, et d'autres lectures s'appuient dessus.
     return transactions.map((fund, index) => {
-        fund["fundingIndex"] = index;
-        fund["financerName"] = fund.name;
-        fund["financerId"] = fund.id;
+        fund.fundingIndex = index;
+        fund.financerName = fund.name;
+        fund.financerId = fund.id;
         return fund;
-    }).filter(fund => orgsId.indexOf(fund.id) > -1 || fund.id === userId);
+    }).filter(fund => orgsId.indexOf(fund.id) > -1 || fund.id === userId) as FundingTransaction[];
 };
 
 export function useCagnotteAdapter(

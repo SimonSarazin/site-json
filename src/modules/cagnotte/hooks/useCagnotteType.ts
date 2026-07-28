@@ -38,7 +38,7 @@ export function useCagnotteType( params: UseCagnotteTypeParams ): UseCagnotteTyp
             siteGlobalCagnotteType ??
             DEFAULT_CAGNOTTE_TYPE;
 
-        let config = CAGNOTTE_TYPE_CONFIGS[resolvedType];
+        const config = CAGNOTTE_TYPE_CONFIGS[resolvedType];
         return { type: resolvedType, config };
     }, [params.propsOverride, siteGlobalCagnotteType]);
 }
