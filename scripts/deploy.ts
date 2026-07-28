@@ -34,6 +34,7 @@ import {
   CoolifyError,
   createApplication,
   deployApplication,
+  placementDapres,
   indexByName,
   lastSuccessfulDeployment,
   loadContext,
@@ -654,12 +655,6 @@ async function alias(ctx: CoolifyContext): Promise<number> {
 
 /* ── create ───────────────────────────────────────────────────────────────── */
 
-const DEPOT = "https://gitlab.adullact.net/pixelhumain/site-json.git";
-const BRANCHE = "main";
-const SERVEUR_UUID = "z8ocs84ows4cgccwgkcccww4";
-const PROJET_UUID = "i8skksssgcgwsskcwwg44kgk";
-const ENVIRONNEMENT = "production";
-
 /** Crée l'application d'un site déclaré mais pas encore déployé. */
 async function create(ctx: CoolifyContext): Promise<number> {
   const slug = argv.filter((a) => !a.startsWith("--"))[1];
@@ -687,9 +682,24 @@ async function create(ctx: CoolifyContext): Promise<number> {
   );
   if (conflit) throw new CoolifyError(`${site.domain} est déjà servi par "${conflit.name}".`);
 
+  // Le placement n'est pas écrit en dur : il est lu sur un site déjà déployé.
+  // Un nouveau site atterrit ainsi, par construction, là où vivent ses voisins.
+  const modele = deployableSites()
+    .map((s) => index.get(s.coolifyApp as string))
+    .find((a): a is CoolifyApp => a !== undefined);
+  if (!modele) {
+    throw new CoolifyError(
+      `Aucune application du parc n'est présente sur l'instance : impossible d'en déduire ` +
+        `le serveur, le projet et l'environnement où créer "${site.coolifyApp}".`,
+    );
+  }
+  const placement = await placementDapres(ctx, modele);
+
   const { variables, manquantes } = variablesAttendues(site);
   console.log(`Créer ${site.coolifyApp} pour ${slug}\n`);
-  console.log(`  dépôt        ${DEPOT} @ ${BRANCHE}`);
+  console.log(`  placement    déduit de ${placement.modele}`);
+  console.log(`  dépôt        ${placement.gitRepository} @ ${placement.gitBranch}`);
+  console.log(`  build        ${placement.buildPack}, port ${placement.portsExposes}`);
   console.log(`  domaine      ${coolifyDomains(site)}`);
   console.log(`  variables    ${variables.length}${manquantes.length ? ` (${manquantes.join(", ")} absente(s) de .env)` : ""}`);
   console.log(`  DNS          ${site.domain}`);
@@ -709,13 +719,14 @@ async function create(ctx: CoolifyContext): Promise<number> {
 
   // 2. Application, sans instant_deploy : les variables ne sont pas encore là.
   const cree = await createApplication(ctx, {
-    project_uuid: PROJET_UUID,
-    server_uuid: SERVEUR_UUID,
-    environment_name: ENVIRONNEMENT,
-    git_repository: DEPOT,
-    git_branch: BRANCHE,
-    build_pack: "dockerfile",
-    ports_exposes: "3000",
+    project_uuid: placement.projectUuid,
+    server_uuid: placement.serverUuid,
+    ...(placement.destinationUuid ? { destination_uuid: placement.destinationUuid } : {}),
+    environment_name: placement.environmentName,
+    git_repository: placement.gitRepository,
+    git_branch: placement.gitBranch,
+    build_pack: placement.buildPack,
+    ports_exposes: placement.portsExposes,
     name: site.coolifyApp,
     domains: coolifyDomains(site),
   });

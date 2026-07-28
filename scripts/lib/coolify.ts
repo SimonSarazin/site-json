@@ -32,6 +32,82 @@ export interface CoolifyApp {
   git_repository: string;
   git_commit_sha: string | null;
   watch_paths: string | null;
+  build_pack?: string;
+  ports_exposes?: string;
+  environment_id?: number;
+  destination?: { uuid?: string; server?: { uuid?: string; name?: string } };
+}
+
+export interface CoolifyProject {
+  uuid: string;
+  name: string;
+  environments?: Array<{ id: number; uuid: string; name: string }>;
+}
+
+/**
+ * Où et comment poser une nouvelle application : serveur, projet, environnement,
+ * dépôt, branche, moteur de build, port.
+ *
+ * Rien de tout cela n'est écrit en dur. Ces valeurs sont LUES sur une
+ * application déjà déployée, prise pour modèle. C'est le même raisonnement que
+ * pour `coolifyApp` : un UUID figé dans le dépôt le lierait à une instance et
+ * deviendrait faux à la première recréation. Ici, un site créé atterrit par
+ * construction exactement là où vivent ses voisins.
+ */
+export interface Placement {
+  serverUuid: string;
+  destinationUuid?: string;
+  projectUuid: string;
+  environmentName: string;
+  gitRepository: string;
+  gitBranch: string;
+  buildPack: string;
+  portsExposes: string;
+  modele: string;
+}
+
+export const listProjects = (ctx: CoolifyContext): Promise<CoolifyProject[]> =>
+  api<CoolifyProject[]>(ctx, "GET", "/projects");
+
+export const getProject = (ctx: CoolifyContext, uuid: string): Promise<CoolifyProject> =>
+  api<CoolifyProject>(ctx, "GET", `/projects/${uuid}`);
+
+/** Déduit le placement d'après une application existante. */
+export async function placementDapres(ctx: CoolifyContext, modele: CoolifyApp): Promise<Placement> {
+  const app = await getApplication(ctx, modele.uuid);
+  const serverUuid = app.destination?.server?.uuid;
+  if (!serverUuid) {
+    throw new CoolifyError(`Impossible de lire le serveur de "${modele.name}" — placement indéterminable.`);
+  }
+
+  let projectUuid: string | undefined;
+  let environmentName: string | undefined;
+  for (const p of await listProjects(ctx)) {
+    const detail = await getProject(ctx, p.uuid);
+    const env = detail.environments?.find((e) => e.id === app.environment_id);
+    if (env) {
+      projectUuid = p.uuid;
+      environmentName = env.name;
+      break;
+    }
+  }
+  if (!projectUuid || !environmentName) {
+    throw new CoolifyError(
+      `Aucun projet ne contient l'environnement ${app.environment_id} de "${modele.name}".`,
+    );
+  }
+
+  return {
+    serverUuid,
+    destinationUuid: app.destination?.uuid,
+    projectUuid,
+    environmentName,
+    gitRepository: app.git_repository,
+    gitBranch: app.git_branch,
+    buildPack: app.build_pack ?? "dockerfile",
+    portsExposes: app.ports_exposes ?? "3000",
+    modele: modele.name,
+  };
 }
 
 export interface CoolifyEnv {
