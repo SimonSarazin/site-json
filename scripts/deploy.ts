@@ -45,10 +45,11 @@ import {
   type CoolifyDeployment,
 } from "./lib/coolify";
 import { masquer, variablesAttendues } from "./lib/deploy-config";
+import { impact } from "./lib/deploy-scope";
 import { asList, coolifyDomains, deployableSites, loadSites, ROOT, type SiteEntry } from "./lib/sites";
 
 const argv = process.argv.slice(2);
-const COMMANDES = ["status", "lock", "push", "env"] as const;
+const COMMANDES = ["status", "lock", "push", "env", "affected"] as const;
 type Commande = (typeof COMMANDES)[number];
 
 const commande = argv.find((a) => !a.startsWith("--")) as Commande | undefined;
@@ -66,6 +67,7 @@ Commandes :
   lock [--unlock]     coupe (ou rétablit) le déploiement automatique sur push
   push <slug…>        déploie les sites nommés, un par un
   env <slug> [--write]  compare (et pose) les 8 variables du site
+  affected            quels sites les commits non déployés concernent-ils
 
 Options :
   --context <nom>     instance Coolify (défaut : celle marquée par défaut)
@@ -466,6 +468,72 @@ async function env(ctx: CoolifyContext): Promise<number> {
   return 0;
 }
 
+/* ── affected ─────────────────────────────────────────────────────────────── */
+
+/**
+ * Quels sites les commits depuis leur dernier déploiement concernent-ils ?
+ *
+ * L'intérêt n'est pas de RÉDUIRE la liste — un changement du générateur la
+ * ramène à tout le monde, et c'est correct. Il est de reconnaître les commits
+ * qui ne concernent PERSONNE (doc, tests, scripts) et ceux qui ne concernent
+ * qu'un site, au lieu de redéployer par précaution.
+ */
+async function affected(ctx: CoolifyContext): Promise<number> {
+  const tous = loadSites();
+  const cibles = deployableSites();
+  const index = await indexByName(ctx);
+  const ref = reference();
+
+  console.log(`Référence : ${ref.rev} @ ${ref.sha.slice(0, 8)}\n`);
+
+  const aRedeployer: string[] = [];
+  for (const site of cibles) {
+    const app = index.get(site.coolifyApp as string);
+    if (!app) {
+      console.log(`${site.slug.padEnd(24)} ✗ application introuvable`);
+      continue;
+    }
+    const dernier = await lastSuccessfulDeployment(ctx, app.uuid);
+    const base = dernier?.commit;
+    if (!base) {
+      console.log(`${site.slug.padEnd(24)} · jamais déployé`);
+      continue;
+    }
+    if (!resoudre(base)) {
+      console.log(`${site.slug.padEnd(24)} ✗ commit ${base.slice(0, 8)} inconnu localement — « git fetch » ?`);
+      continue;
+    }
+
+    const fichiers = git("diff", "--name-only", `${base}..${ref.sha}`).split("\n").filter(Boolean);
+    if (fichiers.length === 0) {
+      console.log(`${site.slug.padEnd(24)} ✓ à jour`);
+      continue;
+    }
+    const r = impact(fichiers, site, tous);
+    if (!r.aRedeployer) {
+      console.log(`${site.slug.padEnd(24)} ✓ à jour (${r.neutre.length} fichier(s) sans effet sur l'image)`);
+      continue;
+    }
+    aRedeployer.push(site.slug);
+    console.log(`${site.slug.padEnd(24)} ⟶ à redéployer, depuis ${base.slice(0, 8)}`);
+    if (r.propre.length) console.log(`    propre au site   ${r.propre.slice(0, 4).join(", ")}${r.propre.length > 4 ? ` … +${r.propre.length - 4}` : ""}`);
+    if (r.partage.length) console.log(`    partagé          ${r.partage.slice(0, 4).join(", ")}${r.partage.length > 4 ? ` … +${r.partage.length - 4}` : ""}`);
+  }
+
+  const local = git("rev-parse", "HEAD");
+  if (local !== ref.sha) {
+    console.log(`\n⚠ HEAD local (${local.slice(0, 8)}) n'est pas ${ref.rev} : Coolify bâtira ${ref.rev}.`);
+  }
+
+  if (aRedeployer.length === 0) {
+    console.log(`\n✓ aucun site à redéployer.`);
+    return 0;
+  }
+  console.log(`\n${aRedeployer.length} site(s) à redéployer :`);
+  console.log(`  npm run deploy -- ${aRedeployer.join(" ")} --yes`);
+  return 1;
+}
+
 /* ── Entrée ───────────────────────────────────────────────────────────────── */
 
 async function main(): Promise<number> {
@@ -480,6 +548,8 @@ async function main(): Promise<number> {
       return push(ctx);
     case "env":
       return env(ctx);
+    case "affected":
+      return affected(ctx);
   }
 }
 
