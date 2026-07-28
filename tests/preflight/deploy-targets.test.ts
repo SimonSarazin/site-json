@@ -7,7 +7,10 @@ import {
   buildVars,
   coolifyDomains,
   deployableSites,
+  sousDomaineAmorce,
+  tousLesDomaines,
   ROOT,
+  ZONE_AMORCE,
 } from "../../scripts/lib/sites";
 
 /**
@@ -27,12 +30,26 @@ const sites = loadSites();
 const deployables = deployableSites();
 
 describe("Preflight — cibles de déploiement de sites.json", () => {
-  test("chaque entrée avec coolifyApp a un domaine", () => {
+  test("chaque entrée avec coolifyApp a un sous-domaine d'amorce", () => {
     for (const s of deployables) {
+      expect(s.domain, `${s.slug} déclare "${s.coolifyApp}" mais aucun domaine`).toBeTruthy();
       expect(
-        asList(s.domain).length,
-        `${s.slug} déclare l'application "${s.coolifyApp}" mais aucun domaine`,
-      ).toBeGreaterThan(0);
+        sousDomaineAmorce(s),
+        `${s.slug} : "${s.domain}" n'est pas dans la zone d'amorce ${ZONE_AMORCE}. ` +
+          `Le domaine technique doit y vivre — un domaine propre se déclare dans "aliases".`,
+      ).toBeTruthy();
+    }
+  });
+
+  test("les alias ne sont jamais dans la zone d'amorce", () => {
+    for (const s of deployables) {
+      for (const a of s.aliases ?? []) {
+        expect(
+          a.endsWith(`.${ZONE_AMORCE}`),
+          `${s.slug} : "${a}" est dans ${ZONE_AMORCE} — c'est un domaine d'amorce, ` +
+            `et il ne peut y en avoir qu'un (champ "domain").`,
+        ).toBe(false);
+      }
     }
   });
 
@@ -43,7 +60,7 @@ describe("Preflight — cibles de déploiement de sites.json", () => {
   });
 
   test("les domaines sont uniques dans tout le parc", () => {
-    const tous = deployables.flatMap((s) => asList(s.domain));
+    const tous = deployables.flatMap((s) => tousLesDomaines(s));
     const dupes = tous.filter((d, i) => tous.indexOf(d) !== i);
     expect(
       dupes,
@@ -54,7 +71,7 @@ describe("Preflight — cibles de déploiement de sites.json", () => {
 
   test("les domaines sont des hôtes nus, sans protocole ni chemin", () => {
     for (const s of deployables) {
-      for (const d of asList(s.domain)) {
+      for (const d of tousLesDomaines(s)) {
         expect(d, `${s.slug} : "${d}" ne doit pas porter de protocole`).not.toMatch(/^https?:\/\//);
         expect(d, `${s.slug} : "${d}" ne doit pas porter de chemin`).not.toContain("/");
         expect(d, `${s.slug} : "${d}" n'est pas un nom d'hôte`).toMatch(

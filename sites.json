@@ -53,8 +53,8 @@
     "css": "index-tiers-lieux",
     "images": "tiersLieux",
     "coolifyApp": "site-json-tierslieux",
-    "domain": [
-      "tierslieux.00.re",
+    "domain": "tierslieux.00.re",
+    "aliases": [
       "www.tiers-lieux.org"
     ]
   },

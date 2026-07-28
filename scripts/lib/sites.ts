@@ -30,9 +30,23 @@ export interface SiteEntry {
    * nom → uuid à chaque exécution.
    */
   coolifyApp?: string;
-  /** Hôte(s) sans protocole, ex. `institut-bleu.00.re`. */
-  domain?: string | string[];
+  /**
+   * Sous-domaine d'AMORCE, dans la zone `00.re`. Toujours exactement un.
+   * C'est le domaine technique : l'outil crée son CNAME vers `00.re.`, il existe
+   * dès la mise en place et ne dépend de personne d'autre.
+   */
+  domain?: string;
+  /**
+   * Domaines PROPRES du site, ex. `www.tiers-lieux.org`. Leur DNS vit ailleurs
+   * — souvent chez le client — et se pointe À LA MAIN en CNAME vers le
+   * sous-domaine d'amorce. L'outil ne les crée jamais : il se contente de les
+   * déclarer à Coolify, et vérifie qu'ils résolvent déjà avant de le faire.
+   */
+  aliases?: string[];
 }
+
+/** Zone DNS d'amorce : la seule que l'outil ait le droit d'écrire. */
+export const ZONE_AMORCE = "00.re";
 
 /** Les cinq variables que le build attend, dérivées d'une entrée. */
 export interface BuildVars {
@@ -77,11 +91,21 @@ export function buildVars(site: SiteEntry): BuildVars {
   };
 }
 
+/** Tous les hôtes servis par le site : l'amorce d'abord, puis ses domaines propres. */
+export const tousLesDomaines = (site: SiteEntry): string[] =>
+  [...(site.domain ? [site.domain] : []), ...(site.aliases ?? [])];
+
 /** Le FQDN tel que Coolify l'attend : protocole obligatoire, virgules en séparateur. */
 export const coolifyDomains = (site: SiteEntry): string =>
-  asList(site.domain)
+  tousLesDomaines(site)
     .map((d) => (/^https?:\/\//.test(d) ? d : `https://${d}`))
     .join(",");
+
+/** L'étiquette à créer dans la zone d'amorce, ex. `institut-bleu` pour `institut-bleu.00.re`. */
+export function sousDomaineAmorce(site: SiteEntry): string | null {
+  if (!site.domain?.endsWith(`.${ZONE_AMORCE}`)) return null;
+  return site.domain.slice(0, -`.${ZONE_AMORCE}`.length);
+}
 
 /**
  * Les chemins du dépôt qui n'appartiennent qu'à ce site. Sert à `deploy:affected`
