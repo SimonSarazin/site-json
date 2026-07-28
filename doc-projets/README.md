@@ -18,6 +18,7 @@ Le formalisme et la maintenance de ces pages sont pilotés par le skill
 | Rézo la mer (La Réunion) | `rezoLaMer` | [rezo-la-mer.md](rezo-la-mer.md) | **Portage arrêté en chemin** : 5 pages portées sur 14 au legacy, plus un module AAP de 21 pages jamais repris. 5 pages légales posées le 28/07 (à compléter). 14 liens morts et le cadrage de l'AAP en attente |
 | Tiers-Lieux.org — réseau national | `navigatorDesTierslieux` | [tiers-lieux.md](tiers-lieux.md) | **Config aboutie** : 4 303 lieux, observatoire à 10 dimensions, panneau de filtres, formulaire costum, seul emploi du module `ampli`. 0 constat d'audit, 10/10 périmètres. État des lieux, pas de chantier en cours |
 | eXtrême Défi — ADEME | `eXtremeDefiAdeme` | [extreme-defi-ademe.md](extreme-defi-ademe.md) | **Vitrine aboutie, costum vide** : accueil éditoriale riche (argumentaire chiffré, feuille de route, 47 partenaires) mais 4 projets dont 3 saisies au clavier, 0 acteur. Audit vert, 2 périmètres vides sur 4 |
+| EDIH Cyber Réunion | `cyberReunion` | [cyber-reunion.md](cyber-reunion.md) | Annuaire de 693 acteurs, complément de `www.cyber-reunion.fr`. Refonte du 27/07 (home, footer, doublons de filtres). Audit vert, 2/2 périmètres. Reste : QR code de test, 5 CTA de home qui mènent tous au même endroit |
 
 ## Pourquoi un répertoire séparé de `doc/`
 
