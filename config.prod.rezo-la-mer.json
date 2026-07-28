@@ -87,7 +87,8 @@
       "search": false,
       "auth": true,
       "cart": false,
-      "notifications": true
+      "notifications": true,
+      "pledge": true
     }
   },
   "pages": [

@@ -292,6 +292,8 @@ export function normalizeFundingEnvelope(rawEnvelope: unknown, _contextEntityId?
             date: getTimestamp(financer.date) || getTimestamp(depense.date) || Date.now(),
             paymentStatus: normalizePaymentStatus(financer.paymentStatus || financer.status),
             transactionId: toString(financer.transactionId) || financerId || `TX-${milestoneId}-${depenseIndex}-${financerIndex}`,
+            fundingType: toString(financer.fundingType) || undefined,
+            fundingIndex: financerIndex
           };
         });
       });
@@ -414,7 +416,7 @@ export function normalizeFundingEnvelope(rawEnvelope: unknown, _contextEntityId?
       : undefined;
   const effectiveProfileSlug = forcedProfileSlug || profileSlugFromWindow;
   const selectedProject =
-    dedupedProjects.find((project) => project.id === preferredProjectId || project.slug == effectiveProfileSlug) ?? null;
+    dedupedProjects.find((project) => project.id === preferredProjectId || project.answerId === preferredProjectId || project.slug == effectiveProfileSlug) ?? null;
   const milestones = selectedProject?.milestones ?? [];
   const financialMilestones = milestones.filter((milestone) => milestone.status !== 'close');
   const paymentMethods = selectedProject?.paymentMethods ?? extractPaymentMethods(envelope.paymentMethods, asRecord(getNonEmptyRecord(envelope.contextData)?.paymentMethods));

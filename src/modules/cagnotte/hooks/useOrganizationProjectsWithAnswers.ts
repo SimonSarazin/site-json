@@ -168,7 +168,7 @@ function enrichMilestones(
  *  3. Enrichissement local : croise `oceco.milestones[]` × `aapStep1.depense[].financer[]`
  *     pour produire `OrgProject` typé.
  *
- * Consommé par `CagnotteDialog` + `CagnotteProjectSelector` pour peupler le
+ * Consommé par `CagnotteDialog` + `CagnotteResourceSelector` pour peupler le
  * dropdown projets de la modale de contribution.
  */
 export function useOrganizationProjectsWithAnswers({

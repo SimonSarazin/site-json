@@ -1633,6 +1633,7 @@ export const Header = z.object({
     cart: z.boolean().default(false),
     notifications: z.boolean().default(false),
     piggyBank: z.boolean().default(false),
+    pledge: z.boolean().default(false)
   }),
   ctaButton: z.object({
     label: LocalizedString,
@@ -1927,6 +1928,16 @@ const PerformanceConfig = z.object({
   criticalCSS: z.boolean().default(true),
 });
 
+const CagnotteModuleConfig = z.object({
+    defaultType: z.enum(["standard", "aac"]).optional().default("standard"),
+    predefinedAmounts: z.array(z.number()).optional(),
+    context: z.string().optional(),
+});
+
+export type CagnotteModuleConfig = z.infer<typeof CagnotteModuleConfig>;
+
+
+
 /*───────────────────────────────────────────────────────────────*/
 /* 10. SiteConfig – racine                                        */
 /*───────────────────────────────────────────────────────────────*/
@@ -2016,6 +2027,7 @@ export const SiteConfig = z.object({
   // Page d'Administration (config-driven, jumeau du module profil). Onglets/sections/accès déclarés en
   // données. Absent → pas de page admin. cf. modules/admin + commentaire/plan-module-admin-generique.md
   admin: AdminConfigSchema.optional(),
+  cagnotteModuleConfig: CagnotteModuleConfig.optional(),
 });
 export type SiteConfig = z.infer<typeof SiteConfig>;
 
@@ -2048,7 +2060,8 @@ export function getDefaultSiteConfig(): Partial<SiteConfig> {
         auth: false,
         cart: false,
         notifications: false,
-        piggyBank: false
+        piggyBank: false,
+        pledge: false
       },
       sticky: false,
       transparent: false,
@@ -2095,7 +2108,8 @@ export const example: SiteConfig = {
       auth: false,
       cart: false,
       notifications: false,
-      piggyBank: false
+      piggyBank: false,
+      pledge: false
     }
   },
   pages: [

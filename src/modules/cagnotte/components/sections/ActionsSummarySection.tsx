@@ -54,8 +54,8 @@ export default function ActionsSummarySection({ id, props }: { id?: string; prop
   const profileCtx = useOptionalProfileEntity();
   const permissionEntity = profileCtx?.entity ?? entity;
   const cagnottePerms = useCagnottePermissions(permissionEntity, {
-    hasActiveMilestones: data.milestones.some((m) => m.status !== 'close'),
-    projectId: props?.idProjet || fundingData?.selectedProject?.id || '',
+    hasActiveItems: data.milestones.some((m) => m.status !== 'close'),
+    resourceId: props?.idProjet || fundingData?.selectedProject?.id || '',
   });
 
   const stats = useMemo(() => {

@@ -2,7 +2,7 @@ import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { readEntityPreferences } from "@/modules/cagnotte/utils/dataTransform";
 
-const LOG_PREFIX = "[useProjectModalPreference]";
+const LOG_PREFIX = "[useResourceModalPreference]";
 
 interface UseProjectModalPreferenceResult {
   /**
@@ -26,13 +26,13 @@ interface UseProjectModalPreferenceResult {
  * `CagnotteDialog.toasts.saveSuccess` / `CagnotteDialog.toasts.saveError`).
  *
  * @example
- *   const { save, isSaving } = useProjectModalPreference(entity);
+ *   const { save, isSaving } = useResourceModalPreference(entity);
  *   const onClick = async () => {
  *     const success = await save(projectId);
  *     if (success) setOptimistic(projectId);
  *   };
  */
-export function useProjectModalPreference(entity: EntityTypes | null): UseProjectModalPreferenceResult {
+export function useResourceModalPreference(entity: EntityTypes | null): UseProjectModalPreferenceResult {
   const mutation = useMutationWithToast<void, string>({
     namespace: "modules/cagnotte",
     successKey: "CagnotteDialog.toasts.saveSuccess.title",
