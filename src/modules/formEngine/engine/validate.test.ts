@@ -53,6 +53,45 @@ describe("rules par champ (zodGen)", () => {
   it("champ vide NON requis → aucune règle appliquée", () => {
     expect(mk({ regex: "^[A-Z]+$" }).safeParse({ f: "" }).success).toBe(true);
   });
+
+  // Sur un TABLEAU, min/max portent sur le NOMBRE d'éléments (`maximumSelectionLength` legacy) —
+  // avant, `Number(["a","b"])` valait NaN et la règle ne se déclenchait jamais.
+  describe("min / max sur un TABLEAU = nombre d'éléments", () => {
+    const arr = (rules: Record<string, unknown>) =>
+      buildZodSchema({
+        id: "r", collection: "citoyens", layout: { kind: "flat" }, sections: [],
+        fields: { cats: { name: "cats", type: "array", widget: "multiselect", label: "Cats", multiple: true, rules } },
+      });
+
+    it("max : au-delà du plafond → invalide", () => {
+      const s = arr({ max: 2 });
+      expect(s.safeParse({ cats: ["a", "b"] }).success).toBe(true);
+      expect(s.safeParse({ cats: ["a"] }).success).toBe(true);
+      const bad = s.safeParse({ cats: ["a", "b", "c"] });
+      expect(bad.success).toBe(false);
+      if (!bad.success) expect(bad.error.issues[0].message).toBe("validation.maxItems");
+    });
+
+    it("min : en dessous du plancher → invalide", () => {
+      const bad = arr({ min: 2 }).safeParse({ cats: ["a"] });
+      expect(bad.success).toBe(false);
+      if (!bad.success) expect(bad.error.issues[0].message).toBe("validation.minItems");
+    });
+
+    it("tableau vide non requis → aucune règle appliquée", () => {
+      expect(arr({ min: 2, max: 2 }).safeParse({ cats: [] }).success).toBe(true);
+    });
+
+    it("les nombres gardent les messages min/max scalaires (non-régression)", () => {
+      const s = buildZodSchema({
+        id: "r", collection: "citoyens", layout: { kind: "flat" }, sections: [],
+        fields: { n: { name: "n", type: "number", widget: "number", label: "N", rules: { max: 2 } } },
+      });
+      const bad = s.safeParse({ n: 3 });
+      expect(bad.success).toBe(false);
+      if (!bad.success) expect(bad.error.issues[0].message).toBe("validation.max");
+    });
+  });
 });
 
 describe("field.messages (message custom par règle)", () => {

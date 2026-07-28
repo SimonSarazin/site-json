@@ -239,6 +239,24 @@ export const DataObservatorySectionSchema = z.object({
     drilldown: z.boolean().optional(),
     // Tableau de bord déclaratif : chaque entrée référence des dimensions.
     kpis: z.array(KpiDefSchema).optional(),
+    /**
+     * Densité des KPI. `cards` (défaut) pour une page d'observatoire, où le
+     * tableau de bord est le sujet. `inline` pour poser deux ou trois repères
+     * chiffrés sur une page dont le sujet est ailleurs — une accueil, par
+     * exemple — sans y planter un tableau de bord.
+     */
+    kpiLayout: z.enum(["cards", "inline"]).optional(),
+    /**
+     * Largeur du conteneur. `8xl` (1440px, défaut) est la bonne mesure pour une
+     * page dédiée : une table à colonnes multiples a besoin de place.
+     *
+     * Mais les autres sections du moteur s'arrêtent à `6xl` (1152px) — c'est la
+     * largeur de `searchProStatic`, `features-glass`, `cta-card-grid`… Poser
+     * l'observatoire à côté d'elles sur une même page décale donc le contenu de
+     * 144 px par côté. Cette clé permet de l'aligner quand il n'est qu'un bloc
+     * parmi d'autres, sans toucher aux pages où il est le sujet.
+     */
+    maxWidth: z.enum(["4xl", "5xl", "6xl", "7xl", "8xl", "full"]).optional(),
     charts: z.array(ChartDefSchema).optional(),
     table: TableDefSchema.optional(),
   }),

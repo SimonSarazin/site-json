@@ -152,7 +152,6 @@ Les fichiers `config.prod.*.json` présents à la racine du dépôt :
 | `config.prod.commune-transparente.json` | Commune Transparente (partagée par plusieurs slugs communes) |
 | `config.prod.julie-pot-vin.json` | Julie Pot Vin |
 | `config.prod.institut-bleu.json` | Institut Bleu |
-| `config.prod.open-atlas-test.json` | Open Atlas (test) |
 | `config.prod.equipements-Sportifs.json` | Équipements Sportifs 974 |
 | `config.prod.eXtremeDefiAdeme.json` | eXtrème Défi Ademe |
 | `config.dev.json` | Config de développement |
@@ -232,12 +231,11 @@ Entrées actuelles de `sites.json` :
 | `cyberReunion` | `config.prod.cyber-reunion.json` | `index-cyber-reunion` |
 | `cocolight` | `config.prod.cyber-reunion.json` | `index-cyber-reunion` |
 | `rezoLaMer` | `config.prod.rezo-la-mer.json` | `index-rezo-la-mer` |
-| `eXtremeDefiAdeme` | `config.prod.eXtremeDefiAdeme.json` | `index-rezo-la-mer` |
+| `eXtremeDefiAdeme` | `config.prod.eXtremeDefiAdeme.json` | `index-extreme-defi` |
 | `sportSanteBienetre` | `config.prod.sport-sante-bien-etre.json` | `index-sport-sante-bien-etre` |
 | `institutBleu` | `config.prod.institut-bleu.json` | `index-institut-bleu` |
 | `navigatorDesTierslieux` | `config.prod.tiers-lieux.json` | `index-tiers-lieux` |
 | `juliePotVin` | `config.prod.julie-pot-vin.json` | `index-julie-pot-vin` |
-| `openAtlas` | `config.prod.open-atlas-test.json` | `index-rezo-la-mer` |
 | `nosCommunes` | `config.prod.nos-commune.json` | `index-nos-communes` |
 | `etangsale1` | `config.prod.commune-transparente.json` | `index-commune-transparente` |
 | `tampon` | `config.prod.commune-transparente.json` | `index-commune-transparente` |
@@ -245,7 +243,7 @@ Entrées actuelles de `sites.json` :
 | `saintemarie1` | `config.prod.commune-transparente.json` | `index-commune-transparente` |
 | `saintpaul4` | `config.prod.commune-transparente.json` | `index-commune-transparente` |
 | `saintJoseph` | `config.prod.commune-transparente.json` | `index-commune-transparente` |
-| `equipementsSportifs974` | `config.prod.equipements-Sportifs.json` | `index-rezo-la-mer` |
+| `equipementsSportifs974` | `config.prod.equipements-Sportifs.json` | `index-equipements-sportifs` |
 
 > Plusieurs slugs peuvent pointer vers le même fichier de config ou de CSS (ex. les communes partagent toutes `config.prod.commune-transparente.json`).
 

@@ -40,11 +40,6 @@
     "css": "index-julie-pot-vin"
   },
   {
-    "slug": "openAtlas",
-    "config": "config.prod.open-atlas-test.json",
-    "css": "index-rezo-la-mer"
-  },
-  {
     "slug": "nosCommunes",
     "config": "config.prod.nos-commune.json",
     "css": "index-nos-communes"

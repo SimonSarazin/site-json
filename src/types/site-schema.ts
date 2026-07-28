@@ -1689,6 +1689,11 @@ const FooterPartnerLogo = z.object({
 const FooterPartnersSection = z.object({
   title: LocalizedString.optional(),
   logos: z.array(FooterPartnerLogo),
+  // Mention de financement, sous les logos. Un cofinancement public s'accompagne
+  // d'une formulation IMPOSÉE par le financeur (dispositif, opérateur, cadre) que
+  // les seuls logos ne portent pas : sans ce champ, elle finissait recopiée dans
+  // le `copyright`, où elle n'a rien à faire.
+  note: LocalizedString.optional(),
 });
 
 export const Footer = z.object({

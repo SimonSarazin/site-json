@@ -180,6 +180,7 @@ export function FormFieldSelectObject<T extends FieldValues>({
   placeholder,
   placeholderSearch,
   multiple = false,
+  maxItems,
   errorTranslate,
 }: BaseFieldProps<T> & {
   options: readonly SelectOptionInput[];
@@ -187,6 +188,12 @@ export function FormFieldSelectObject<T extends FieldValues>({
   placeholderSearch?: string;
   /** Multi-sélection : la valeur du champ est un `string[]` (sinon une `string`). */
   multiple?: boolean;
+  /**
+   * Multi-sélection : nombre MAX d'éléments retenus — pendant du `maximumSelectionLength` de select2
+   * (legacy). Au-delà, la sélection supplémentaire est IGNORÉE (les `maxItems` premiers sont gardés).
+   * La garde de validation reste `rules.max`, qui porte sur la longueur du tableau.
+   */
+  maxItems?: number;
 }) {
   return (
     <FormField
@@ -208,11 +215,14 @@ export function FormFieldSelectObject<T extends FieldValues>({
                   ? (Array.isArray(field.value) ? field.value : [])
                   : (typeof field.value === "string" ? field.value : "")
               }
-              onChange={(value) =>
-                multiple
-                  ? field.onChange(Array.isArray(value) ? value : [])
-                  : field.onChange(typeof value === "string" ? value : "")
-              }
+              onChange={(value) => {
+                if (!multiple) {
+                  field.onChange(typeof value === "string" ? value : "");
+                  return;
+                }
+                const next = Array.isArray(value) ? value : [];
+                field.onChange(maxItems != null && next.length > maxItems ? next.slice(0, maxItems) : next);
+              }}
               options={options.map((opt) => { const o = normOpt(opt); return { id: o.value, label: o.label, value: o.value }; })}
               placeholder={placeholder}
               placeholderSearch={placeholderSearch}

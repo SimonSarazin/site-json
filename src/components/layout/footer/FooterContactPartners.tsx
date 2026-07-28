@@ -2,6 +2,8 @@ import NavLink from "../NavLink";
 import SocialLinks from "./SocialLinks";
 import { MapPin, Phone, Mail, Globe, Building2 } from "lucide-react";
 import { useLocalization } from "@/hooks/useLocalization";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { useT } from "@/hooks/useT";
 import { Footer } from "@/types/site-schema";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
@@ -34,6 +36,12 @@ function getIconComponent(icon?: string) {
 
 export default function FooterContactPartners({ footer }: FooterContactPartnersProps) {
   const { t } = useLocalization();
+  // Le repli du titre de contact était écrit EN DUR en français : un site qui
+  // omet `contactSection.title` servait « Nos coordonnées » à un visiteur
+  // anglophone. `t` de useLocalization ne résout que les LocalizedString ;
+  // les clés i18n passent par useT.
+  useLoadNamespace("components/layout");
+  const tKey = useT("components/layout");
   const contactItems = footer.contactSection?.items ?? [];
   const partnerLogos = footer.partners?.logos ?? [];
   const columns = footer.columns ?? [];
@@ -47,7 +55,7 @@ export default function FooterContactPartners({ footer }: FooterContactPartnersP
           {contactItems.length > 0 && (
             <div className={partnerLogos.length === 1 ? "w-full" : "w-full md:w-auto"}>
               <h4 className="font-display font-bold text-foreground text-lg mb-4">
-                {footer.contactSection?.title ? t(footer.contactSection.title) : "Nos coordonnées"}
+                {footer.contactSection?.title ? t(footer.contactSection.title) : tKey("Nos coordonnées")}
               </h4>
               <ul
                 className={`text-sm text-muted-foreground ${
@@ -156,6 +164,13 @@ export default function FooterContactPartners({ footer }: FooterContactPartnersP
                 );
               })}
               </div>
+              {/* Mention de financement : sous les logos, en petit — c'est une
+                  obligation contractuelle, pas un argument de communication. */}
+              {footer.partners?.note && (
+                <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+                  {t(footer.partners.note)}
+                </p>
+              )}
             </div>
           )}
 
