@@ -406,15 +406,43 @@ Coolify ne filtre les webhooks git que sur le couple **(depot, branche)**. Les N
 
 ### La source de verite
 
-`sites.json` porte, en plus des champs de build, deux champs par site :
+`sites.json` porte, en plus des champs de build, jusqu'a six champs par site. Tous sont **optionnels** : une entree sans eux est un site pas encore deploye, ce qui est un etat valide.
 
 | Champ | Role |
 |-------|------|
 | `coolifyApp` | **nom** de l'application Coolify. Pas son UUID : un UUID lierait le depot a une instance et deviendrait faux a la moindre recreation. L'outil resout nom → uuid a chaque execution. |
-| `domain` | sous-domaine d'**amorce**, dans la zone `00.re`, toujours exactement un. Domaine technique : l'outil cree son CNAME, il ne depend de personne d'autre. |
-| `aliases` | domaines **propres** du site. Leur DNS vit ailleurs et se pointe **a la main** en CNAME vers le sous-domaine d'amorce. L'outil ne les cree jamais. |
+| `domain` | sous-domaine d'**amorce**, toujours exactement un, dans la zone declaree par `ZONE_AMORCE`. Domaine technique : l'outil cree son CNAME, il ne depend de personne d'autre. |
+| `aliases` | domaines **propres** du site. Leur DNS vit ailleurs et se pointe **a la main** en CNAME vers le sous-domaine d'amorce. L'outil ne les cree jamais — il verifie qu'ils resolvent deja avant de les declarer. |
+| `coolifyServer` | nom du serveur ou poser le site, quand le parc n'est pas homogene. Absent, il est deduit — voir ci-dessous. |
+| `coolifyProject` | idem pour le projet. |
+| `build` | surcharge du depot, de la branche, du moteur ou du port pour ce site. Sert au site de recette sur une autre branche, ou repris d'un autre depot. |
 
 Les 5 variables de build ne sont stockees nulle part : elles sont **derivees** de la ligne. Les 2 URLs backend sont des constantes de `scripts/lib/deploy-config.ts`, surchargeables par entree. La cle MapTiler vient de `.env`. Le token Coolify reste dans `~/.config/coolify/config.json`, celui du CLI.
+
+### Ou un site est pose : declare, sinon deduit
+
+`create` determine le serveur et le projet dans cet ordre :
+
+1. **declare** — drapeaux `--server` / `--project` / `--environment`, ou les champs `coolifyServer` / `coolifyProject` de l'entree ;
+2. **deduit** du parc, et **seulement s'il est homogene**.
+
+La declaration est la voie normale, et la **seule qui fonctionne sur un serveur ou il n'y a encore rien** : la deduction suppose un voisin, et un serveur neuf n'en a pas. Elle refuse aussi bien sur un parc vide que sur un parc reparti, en indiquant quoi declarer, plutot que de choisir a la place de l'utilisateur.
+
+Ce qui releve du **depot** — depot git, branche, moteur de build, port — ne vient jamais de la : ce sont des constantes de `deploy-config.ts`, justement pour qu'un serveur vide ne soit pas un cas particulier.
+
+### Le DNS suit le serveur, pas l'instance
+
+Chaque serveur Coolify fait tourner **son propre** proxy Traefik, et rien ne route entre eux — c'est [documente par Coolify](https://coolify.io/docs/knowledge-base/server/introduction) : *« Traffic for applications deployed on secondary servers goes directly to those servers, not through the main Coolify server. »* Un domaine pointe vers le mauvais serveur tombe sur le catch-all, qui repond **503**.
+
+La cible DNS est donc declaree **par serveur**, dans `CIBLE_DNS` (`deploy-config.ts`) :
+
+```
+localhost → 00.re
+```
+
+Pour ajouter un serveur : creer `<nom>.00.re A → son IP` une fois, puis l'inscrire dans la table. Les sites qu'il heberge pointeront ce nom en CNAME, et un changement d'IP ne touchera qu'un enregistrement au lieu de N. Un serveur sans cible fait echouer la commande en disant quoi creer.
+
+L'IP n'est ecrite nulle part : la verification compare deux **resolutions** — le domaine atteint-il la meme adresse que la cible de son serveur. Ca reste juste sans rien savoir, y compris apres un changement d'hebergement. L'API ne permettrait de toute facon pas de s'en sortir seule : elle rend `host.docker.internal` comme IP du serveur local.
 
 ### Les commandes
 
