@@ -9,6 +9,7 @@
       - [Arguments de build (ARG)](#arguments-de-build-arg)
     - [Deploiement avec Coolify](#deploiement-avec-coolify)
   - [Verifier un build : `npm run verify:build`](#verifier-un-build--npm-run-verifybuild)
+  - [Piloter les deploiements depuis le depot](#piloter-les-deploiements-depuis-le-depot)
   - [Variables d'environnement runtime](#variables-denvironnement-runtime)
   - [Volumes](#volumes)
   - [Ajouter des images de contenu en production](#ajouter-des-images-de-contenu-en-production)
@@ -394,6 +395,76 @@ Ce que pese `dist/` selon les arguments, mesure sur `institutBleu` :
 | `SITE_IMAGES` + `SITE_EMBED` | **42 Mo** |
 
 ---
+
+## Piloter les deploiements depuis le depot
+
+`scripts/deploy.ts` pilote les applications Coolify du parc. Il part d'un principe : **aucune automatisation implicite**. On nomme ce qu'on deploie, et les deploiements s'enchainent un par un.
+
+### Pourquoi ce parti pris
+
+Coolify ne filtre les webhooks git que sur le couple **(depot, branche)**. Les N applications du parc partagent les deux : un seul push les mettrait **toutes** en file. Et `is_auto_deploy_enabled` vaut `true` par defaut a la creation. Aucun webhook n'existe cote GitLab aujourd'hui, mais `npm run deploy:lock -- --yes` fait qu'ajouter un webhook un jour ne declenchera rien tout seul.
+
+### La source de verite
+
+`sites.json` porte, en plus des champs de build, deux champs par site :
+
+| Champ | Role |
+|-------|------|
+| `coolifyApp` | **nom** de l'application Coolify. Pas son UUID : un UUID lierait le depot a une instance et deviendrait faux a la moindre recreation. L'outil resout nom → uuid a chaque execution. |
+| `domain` | sous-domaine d'**amorce**, dans la zone `00.re`, toujours exactement un. Domaine technique : l'outil cree son CNAME, il ne depend de personne d'autre. |
+| `aliases` | domaines **propres** du site. Leur DNS vit ailleurs et se pointe **a la main** en CNAME vers le sous-domaine d'amorce. L'outil ne les cree jamais. |
+
+Les 5 variables de build ne sont stockees nulle part : elles sont **derivees** de la ligne. Les 2 URLs backend sont des constantes de `scripts/lib/deploy-config.ts`, surchargeables par entree. La cle MapTiler vient de `.env`. Le token Coolify reste dans `~/.config/coolify/config.json`, celui du CLI.
+
+### Les commandes
+
+| Commande | Role |
+|----------|------|
+| `npm run deploy:status` | site ↔ application ↔ domaine ↔ commit deploye. `--json` disponible |
+| `npm run deploy:affected` | quels sites les commits non deployes concernent-ils |
+| `npm run deploy -- <slug>…` | deploie les sites **nommes**, un par un |
+| `npm run deploy:lock` | coupe le deploiement automatique (`--unlock` pour l'inverse) |
+| `npm run deploy:env -- <slug>` | compare les 8 variables du site (`--write` pour poser) |
+| `npm run deploy:dns -- <slug>` | verifie/cree le CNAME d'amorce chez OVH |
+| `npm run deploy:alias -- <slug> <domaine>` | attache un domaine propre, apres verification DNS |
+| `npm run deploy:create -- <slug>` | cree l'application d'un site declare |
+
+Rien n'ecrit sans `--yes` (lock, push) ou `--write` (env, dns, alias, create) : sans le drapeau, la commande imprime son plan. `deploy` sans argument **refuse** en code 2 — il ne deploie jamais « tout » implicitement.
+
+Codes de sortie : `0` conforme, `1` le defaut cherche, `2` erreur d'usage ou d'outillage.
+
+### Deux pieges de l'API, traites
+
+`git_commit_sha` d'une application vaut **`"HEAD"`** : c'est la consigne de suivi de branche, pas le commit deploye. Le vrai commit ne se lit que dans `GET /deployments/applications/{uuid}` — dont chaque entree embarque ses logs, soit ~500 Ko. D'ou la pagination `?take=5`. Et l'attente d'un deploiement sonde `GET /deployments` (quelques octets) plutot que `GET /deployments/{uuid}` (un demi-megaoctet par sondage).
+
+La comparaison se fait contre **`origin/main`**, pas contre le HEAD local : Coolify batit la branche distante. L'ecart entre les deux est signale.
+
+### Ajouter un vrai domaine a un site existant
+
+L'ordre compte, et la premiere etape n'est pas automatisable :
+
+```bash
+# 1. chez le registrar du domaine, a la main :
+#      CNAME www.monsite.fr → monsite.00.re
+# 2. verifier et declarer :
+npm run deploy:alias -- monSlug www.monsite.fr --write
+# 3. Traefik ne regenere ses routes qu'au deploiement :
+npm run deploy -- monSlug --yes
+```
+
+L'etape 2 **refuse** si le domaine ne resout pas encore vers le serveur : le declarer trop tot ferait echouer Let's Encrypt en HTTP-01 sur cet hote. Le sous-domaine d'amorce continue de servir pendant toute la bascule.
+
+### Creer un site
+
+```bash
+# renseigner d'abord coolifyApp et domain dans sites.json —
+# ils ne sont derivables ni du slug ni de la config, il faut les choisir
+npm run deploy:dns    -- monSlug --write     # CNAME dans la zone 00.re
+npm run deploy:create -- monSlug --write     # application + 8 variables
+npm run deploy        -- monSlug --yes       # premier deploiement
+```
+
+`create` ne passe jamais `instant_deploy` : deployer avant d'avoir pose les variables produirait le theme par defaut et une config non figee. L'ordre DNS → application → variables → deploiement n'est pas negociable.
 
 ## Voir aussi
 

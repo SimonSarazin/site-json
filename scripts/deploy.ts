@@ -32,6 +32,7 @@ import { execFileSync } from "node:child_process";
 import {
   applicationDeployments,
   CoolifyError,
+  createApplication,
   deployApplication,
   indexByName,
   lastSuccessfulDeployment,
@@ -46,10 +47,15 @@ import {
 } from "./lib/coolify";
 import { masquer, variablesAttendues } from "./lib/deploy-config";
 import { impact } from "./lib/deploy-scope";
-import { asList, coolifyDomains, deployableSites, loadSites, ROOT, type SiteEntry } from "./lib/sites";
+import { IP_SERVEUR, pointeVersLeServeur, resoudre as resoudreDns } from "./lib/dns";
+import { chargerIdentifiants, creerCname, listerZones, OvhError, rafraichirZone, trouverCname } from "./lib/ovh";
+import {
+  asList, coolifyDomains, deployableSites, loadSites, sousDomaineAmorce,
+  ROOT, ZONE_AMORCE, type SiteEntry,
+} from "./lib/sites";
 
 const argv = process.argv.slice(2);
-const COMMANDES = ["status", "lock", "push", "env", "affected"] as const;
+const COMMANDES = ["status", "lock", "push", "env", "affected", "dns", "alias", "create"] as const;
 type Commande = (typeof COMMANDES)[number];
 
 const commande = argv.find((a) => !a.startsWith("--")) as Commande | undefined;
@@ -68,6 +74,9 @@ Commandes :
   push <slug…>        déploie les sites nommés, un par un
   env <slug> [--write]  compare (et pose) les 8 variables du site
   affected            quels sites les commits non déployés concernent-ils
+  dns <slug> [--write]         vérifie/crée le CNAME d'amorce dans la zone 00.re
+  alias <slug> <dom> [--write] attache un domaine propre (DNS déjà pointé)
+  create <slug> [--write]      crée l'application d'un site déclaré
 
 Options :
   --context <nom>     instance Coolify (défaut : celle marquée par défaut)
@@ -534,6 +543,194 @@ async function affected(ctx: CoolifyContext): Promise<number> {
   return 1;
 }
 
+/* ── dns ──────────────────────────────────────────────────────────────────── */
+
+/** Vérifie, et crée si besoin, le CNAME d'amorce d'un site dans la zone 00.re. */
+async function dns(): Promise<number> {
+  const slug = argv.filter((a) => !a.startsWith("--"))[1];
+  if (!slug) {
+    console.error(`✗ Usage : npm run deploy:dns -- <slug> [--write]`);
+    return 2;
+  }
+  const site = loadSites().find((s) => s.slug === slug);
+  if (!site) throw new CoolifyError(`Slug "${slug}" absent de sites.json.`);
+  const sous = sousDomaineAmorce(site);
+  if (!sous || !site.domain) {
+    throw new CoolifyError(
+      `"${slug}" n'a pas de sous-domaine d'amorce dans ${ZONE_AMORCE}. ` +
+        `Ce module ne touche que cette zone ; un domaine propre se pose à la main.`,
+    );
+  }
+
+  const ips = await resoudreDns(site.domain);
+  if (ips.includes(IP_SERVEUR)) {
+    console.log(`✓ ${site.domain} pointe déjà ${IP_SERVEUR}. Rien à faire.`);
+    return 0;
+  }
+  if (ips.length > 0) {
+    console.error(`✗ ${site.domain} résout vers ${ips.join(", ")} au lieu de ${IP_SERVEUR}.`);
+    console.error(`  L'outil n'écrase jamais un enregistrement existant — à corriger à la main.`);
+    return 1;
+  }
+
+  console.log(`${site.domain} ne résout pas. À créer : CNAME ${sous}.${ZONE_AMORCE} → ${ZONE_AMORCE}.`);
+  if (!argv.includes("--write")) {
+    console.log(`Relancer avec --write pour créer l'enregistrement.`);
+    return 1;
+  }
+
+  const c = chargerIdentifiants();
+  const zones = await listerZones(c);
+  if (!zones.includes(ZONE_AMORCE)) {
+    throw new OvhError(`Le compte OVH ne détient pas la zone ${ZONE_AMORCE} (zones : ${zones.join(", ")}).`);
+  }
+  const existant = await trouverCname(c, ZONE_AMORCE, sous);
+  if (existant) {
+    console.error(`✗ un CNAME ${sous} existe déjà chez OVH, cible "${existant.target}" — non écrasé.`);
+    return 1;
+  }
+  await creerCname(c, ZONE_AMORCE, sous, ZONE_AMORCE);
+  await rafraichirZone(c, ZONE_AMORCE);
+  console.log(`✓ CNAME créé et zone publiée. La propagation prend généralement quelques minutes.`);
+  return 0;
+}
+
+/* ── alias ────────────────────────────────────────────────────────────────── */
+
+/**
+ * Attache un domaine propre à un site.
+ *
+ * Le DNS d'un domaine propre ne nous appartient pas : il se pointe à la main, en
+ * CNAME vers le sous-domaine d'amorce. Cette commande ne l'écrit donc jamais —
+ * elle VÉRIFIE qu'il résout déjà, puis le déclare à Coolify. Sans cette
+ * vérification, Let's Encrypt échouerait sur cet hôte au déploiement suivant.
+ */
+async function alias(ctx: CoolifyContext): Promise<number> {
+  const [, slug, domaine] = argv.filter((a) => !a.startsWith("--"));
+  if (!slug || !domaine) {
+    console.error(`✗ Usage : npm run deploy:alias -- <slug> <domaine> [--write]`);
+    return 2;
+  }
+  if (domaine.endsWith(`.${ZONE_AMORCE}`)) {
+    throw new CoolifyError(
+      `"${domaine}" est dans la zone d'amorce : c'est un domaine technique, ` +
+        `et il ne peut y en avoir qu'un (champ "domain" de sites.json).`,
+    );
+  }
+  const { site, app } = await resoudreSite(ctx, slug);
+
+  const ips = await resoudreDns(domaine);
+  if (!ips.includes(IP_SERVEUR)) {
+    console.error(`✗ ${domaine} ${ips.length ? `résout vers ${ips.join(", ")}` : "ne résout pas"}.`);
+    console.error(`  Attendu : ${IP_SERVEUR}. Poser d'abord, chez le registrar du domaine :`);
+    console.error(`     CNAME ${domaine} → ${site.domain}`);
+    console.error(`  L'ajouter à Coolify maintenant ferait échouer Let's Encrypt sur cet hôte.`);
+    return 1;
+  }
+  console.log(`✓ ${domaine} pointe ${IP_SERVEUR}.`);
+
+  if ((site.aliases ?? []).includes(domaine)) {
+    console.log(`· déjà déclaré dans sites.json.`);
+  }
+  const cible = { ...site, aliases: [...new Set([...(site.aliases ?? []), domaine])] };
+  const fqdn = coolifyDomains(cible);
+  if (normaliserFqdn(app.fqdn ?? "") === normaliserFqdn(fqdn)) {
+    console.log(`✓ Coolify sert déjà exactement ces domaines. Rien à faire.`);
+    return 0;
+  }
+
+  console.log(`Coolify : "${app.fqdn ?? "(aucun)"}" → "${fqdn}"`);
+  if (!argv.includes("--write")) {
+    console.log(`Relancer avec --write pour appliquer.`);
+    return 1;
+  }
+  await patchApplication(ctx, app.uuid, { domains: fqdn });
+  console.log(`✓ domaines mis à jour.`);
+  console.log(`\nDeux choses à faire ensuite :`);
+  console.log(`  1. ajouter "${domaine}" au champ "aliases" de ${slug} dans sites.json`);
+  console.log(`  2. npm run deploy -- ${slug} --yes    (Traefik ne régénère ses routes qu'au déploiement)`);
+  return 0;
+}
+
+/* ── create ───────────────────────────────────────────────────────────────── */
+
+const DEPOT = "https://gitlab.adullact.net/pixelhumain/site-json.git";
+const BRANCHE = "main";
+const SERVEUR_UUID = "z8ocs84ows4cgccwgkcccww4";
+const PROJET_UUID = "i8skksssgcgwsskcwwg44kgk";
+const ENVIRONNEMENT = "production";
+
+/** Crée l'application d'un site déclaré mais pas encore déployé. */
+async function create(ctx: CoolifyContext): Promise<number> {
+  const slug = argv.filter((a) => !a.startsWith("--"))[1];
+  if (!slug) {
+    console.error(`✗ Usage : npm run deploy:create -- <slug> [--write]`);
+    return 2;
+  }
+  const site = loadSites().find((s) => s.slug === slug);
+  if (!site) throw new CoolifyError(`Slug "${slug}" absent de sites.json.`);
+  if (!site.coolifyApp || !site.domain) {
+    throw new CoolifyError(
+      `"${slug}" n'a pas de cible de déploiement. Renseigner d'abord "coolifyApp" et "domain" ` +
+        `dans sites.json — ils ne sont pas dérivables du slug, il faut les choisir.`,
+    );
+  }
+  const index = await indexByName(ctx);
+  if (index.has(site.coolifyApp)) {
+    throw new CoolifyError(
+      `L'application "${site.coolifyApp}" existe déjà. Pour la mettre à jour :\n` +
+        `  npm run deploy:env -- ${slug} --write   puis   npm run deploy -- ${slug} --yes`,
+    );
+  }
+  const conflit = [...index.values()].find((a) =>
+    (a.fqdn ?? "").split(",").some((d) => d.replace(/^https?:\/\//, "").replace(/\/$/, "") === site.domain),
+  );
+  if (conflit) throw new CoolifyError(`${site.domain} est déjà servi par "${conflit.name}".`);
+
+  const { variables, manquantes } = variablesAttendues(site);
+  console.log(`Créer ${site.coolifyApp} pour ${slug}\n`);
+  console.log(`  dépôt        ${DEPOT} @ ${BRANCHE}`);
+  console.log(`  domaine      ${coolifyDomains(site)}`);
+  console.log(`  variables    ${variables.length}${manquantes.length ? ` (${manquantes.join(", ")} absente(s) de .env)` : ""}`);
+  console.log(`  DNS          ${site.domain}`);
+
+  if (!argv.includes("--write")) {
+    console.log(`\nRelancer avec --write pour créer. Rien n'a été fait.`);
+    return 1;
+  }
+
+  // 1. DNS d'abord, et on attend : sans lui, Let's Encrypt échoue en HTTP-01.
+  if (!(await pointeVersLeServeur(site.domain))) {
+    console.log(`\n[1/4] DNS — ${site.domain} ne résout pas encore`);
+    console.error(`  ✗ créer d'abord l'enregistrement :  npm run deploy:dns -- ${slug} --write`);
+    return 1;
+  }
+  console.log(`\n[1/4] DNS ✓ ${site.domain} → ${IP_SERVEUR}`);
+
+  // 2. Application, sans instant_deploy : les variables ne sont pas encore là.
+  const cree = await createApplication(ctx, {
+    project_uuid: PROJET_UUID,
+    server_uuid: SERVEUR_UUID,
+    environment_name: ENVIRONNEMENT,
+    git_repository: DEPOT,
+    git_branch: BRANCHE,
+    build_pack: "dockerfile",
+    ports_exposes: "3000",
+    name: site.coolifyApp,
+    domains: coolifyDomains(site),
+  });
+  console.log(`[2/4] application ✓ ${cree.uuid}`);
+
+  // 3. Variables, avant tout déploiement.
+  for (const v of variables) {
+    await upsertEnv(ctx, cree.uuid, { key: v.key, value: v.value, is_buildtime: true, is_runtime: true }, []);
+  }
+  console.log(`[3/4] variables ✓ ${variables.length} posées`);
+
+  console.log(`[4/4] déploiement — à lancer :  npm run deploy -- ${slug} --yes`);
+  return 0;
+}
+
 /* ── Entrée ───────────────────────────────────────────────────────────────── */
 
 async function main(): Promise<number> {
@@ -550,13 +747,19 @@ async function main(): Promise<number> {
       return env(ctx);
     case "affected":
       return affected(ctx);
+    case "dns":
+      return dns();
+    case "alias":
+      return alias(ctx);
+    case "create":
+      return create(ctx);
   }
 }
 
 main()
   .then((code) => process.exit(code))
   .catch((e: unknown) => {
-    if (e instanceof CoolifyError) {
+    if (e instanceof CoolifyError || e instanceof OvhError) {
       console.error(`✗ ${e.message}`);
       process.exit(2);
     }

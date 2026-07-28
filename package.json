@@ -40,7 +40,10 @@
     "deploy:lock": "tsx scripts/deploy.ts lock",
     "deploy": "tsx scripts/deploy.ts push",
     "deploy:env": "tsx scripts/deploy.ts env",
-    "deploy:affected": "tsx scripts/deploy.ts affected"
+    "deploy:affected": "tsx scripts/deploy.ts affected",
+    "deploy:dns": "tsx scripts/deploy.ts dns",
+    "deploy:alias": "tsx scripts/deploy.ts alias",
+    "deploy:create": "tsx scripts/deploy.ts create"
   },
   "resolutions": {
     "react": "19.2.1",

@@ -230,6 +230,18 @@ export async function upsertEnv(
   return deja ? "modifiée" : "créée";
 }
 
+/**
+ * Crée une application depuis un dépôt git public.
+ *
+ * `instant_deploy` est volontairement absent : déployer avant d'avoir posé les
+ * variables produirait le thème par défaut et une config non figée. L'ordre
+ * application → variables → déploiement n'est pas négociable.
+ */
+export const createApplication = (
+  ctx: CoolifyContext,
+  payload: Record<string, unknown>,
+): Promise<{ uuid: string }> => api(ctx, "POST", "/applications/public", payload);
+
 /** Index nom → application, pour résoudre les `coolifyApp` de sites.json. */
 export async function indexByName(ctx: CoolifyContext): Promise<Map<string, CoolifyApp>> {
   const apps = await listApplications(ctx);
