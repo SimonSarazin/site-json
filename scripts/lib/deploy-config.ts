@@ -29,6 +29,25 @@ import fs from "node:fs";
 import path from "node:path";
 import { buildVars, ROOT, type SiteEntry } from "./sites";
 
+/**
+ * Comment ce dépôt se construit, quel que soit le site.
+ *
+ * Ces valeurs ne sont PAS déduites d'une application existante, et c'est
+ * délibéré : il faut pouvoir créer un site sur un serveur où il n'y a encore
+ * rien. Ce sont des faits sur le dépôt lui-même, identiques pour les 17 sites
+ * par construction — les déclarer par site serait du bruit, les déduire d'un
+ * voisin serait impossible le jour où il n'y a pas de voisin.
+ *
+ * `status` vérifie que les applications déployées s'y conforment encore : si
+ * l'une d'elles dérive, c'est visible plutôt que silencieux.
+ */
+export const BUILD = {
+  depot: "https://gitlab.adullact.net/pixelhumain/site-json.git",
+  branche: "main",
+  buildPack: "dockerfile",
+  port: "3000",
+} as const;
+
 /** Valeurs communes à tout le parc, surchargeables par entrée. */
 export const CONSTANTES: Record<string, string> = {
   VITE_BASE_URL_BACKEND: "https://www.communecter.org",

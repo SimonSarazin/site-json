@@ -45,25 +45,23 @@ export interface CoolifyProject {
 }
 
 /**
- * Où et comment poser une nouvelle application : serveur, projet, environnement,
- * dépôt, branche, moteur de build, port.
+ * OÙ poser une application : serveur, projet, environnement.
  *
- * Rien de tout cela n'est écrit en dur. Ces valeurs sont LUES sur une
- * application déjà déployée, prise pour modèle. C'est le même raisonnement que
- * pour `coolifyApp` : un UUID figé dans le dépôt le lierait à une instance et
- * deviendrait faux à la première recréation. Ici, un site créé atterrit par
- * construction exactement là où vivent ses voisins.
+ * Uniquement des identifiants résolus à chaud depuis des NOMS — jamais d'UUID
+ * versionné, qui lierait le dépôt à une instance et deviendrait faux à la
+ * première recréation.
+ *
+ * Le COMMENT — dépôt git, branche, moteur de build, port — n'est délibérément
+ * pas ici : ce sont des constantes de `deploy-config.ts`, faits du dépôt
+ * lui-même. Les déduire d'une application voisine rendrait impossible la
+ * création sur un serveur où il n'y a encore rien.
  */
 export interface Placement {
   serverUuid: string;
-  destinationUuid?: string;
   projectUuid: string;
   environmentName: string;
-  gitRepository: string;
-  gitBranch: string;
-  buildPack: string;
-  portsExposes: string;
-  modele: string;
+  /** D'où vient ce placement — déclaré, complété, ou déduit. */
+  origine: string;
 }
 
 export const listProjects = (ctx: CoolifyContext): Promise<CoolifyProject[]> =>
@@ -121,106 +119,107 @@ export interface ChoixPlacement {
   environnement?: string;
 }
 
+/** Résout un nom de serveur et un nom de projet vers leurs identifiants. */
+async function parLesNoms(
+  ctx: CoolifyContext,
+  serveur: string,
+  projet: string,
+  environnement?: string,
+): Promise<Placement> {
+  const serveurs = await listServers(ctx);
+  const s = serveurs.find((x) => x.name === serveur);
+  if (!s) {
+    throw new CoolifyError(
+      `Serveur "${serveur}" inconnu. Disponibles : ${serveurs.map((x) => x.name).join(", ") || "aucun"}`,
+    );
+  }
+  const projets = await listProjects(ctx);
+  const p = projets.find((x) => x.name === projet);
+  if (!p) {
+    throw new CoolifyError(
+      `Projet "${projet}" inconnu. Disponibles : ${projets.map((x) => x.name).join(", ") || "aucun"}`,
+    );
+  }
+  const envs = (await getProject(ctx, p.uuid)).environments ?? [];
+  const env = environnement
+    ? envs.find((e) => e.name === environnement)
+    : (envs.find((e) => e.name === "production") ?? envs[0]);
+  if (!env) {
+    throw new CoolifyError(
+      `Environnement ${environnement ? `"${environnement}" ` : ""}introuvable dans "${p.name}" ` +
+        `(${envs.map((e) => e.name).join(", ") || "aucun"}).`,
+    );
+  }
+  return {
+    serverUuid: s.uuid,
+    projectUuid: p.uuid,
+    environmentName: env.name,
+    origine: `${s.name} / ${p.name} / ${env.name}`,
+  };
+}
+
 /**
- * Détermine où créer une application, par ordre de priorité :
- *   1. ce qui est demandé explicitement (drapeaux, ou champs de sites.json)
- *   2. la déduction depuis le parc — VALABLE SEULEMENT s'il est homogène
+ * Détermine où créer une application.
  *
- * La vérification d'homogénéité n'est pas un luxe : dès qu'un second serveur ou
- * un second projet accueille des sites, « prendre le premier » devient un choix
- * arbitraire fait à la place de l'utilisateur. Dans ce cas la fonction refuse et
- * énumère les emplacements trouvés.
+ *   1. DÉCLARÉ — drapeaux `--server`/`--project`, ou champs `coolifyServer` /
+ *      `coolifyProject` de l'entrée. C'est la voie normale, et la SEULE qui
+ *      fonctionne sur un serveur où il n'y a encore rien.
+ *   2. DÉDUIT du parc — commodité, valable uniquement s'il est homogène.
+ *
+ * La déduction n'est pas la fondation : elle suppose un voisin, et un serveur
+ * neuf n'en a pas. Elle refuse dès que le parc est réparti ou vide, plutôt que
+ * de choisir à la place de l'utilisateur.
  */
 export async function resoudrePlacement(
   ctx: CoolifyContext,
   parc: CoolifyApp[],
   choix: ChoixPlacement = {},
 ): Promise<Placement> {
-  if (parc.length === 0) {
+  // 1. Entièrement déclaré : le parc n'est même pas consulté.
+  if (choix.serveur && choix.projet) {
+    const p = await parLesNoms(ctx, choix.serveur, choix.projet, choix.environnement);
+    return { ...p, origine: `déclaré : ${p.origine}` };
+  }
+
+  const emplacements = (await Promise.all(parc.map((a) => emplacementDe(ctx, a)))).filter(
+    (e): e is Emplacement => e !== null,
+  );
+  const distincts = [
+    ...new Map(
+      emplacements.map((e) => [`${e.serverName}/${e.projectName}/${e.environmentName}`, e]),
+    ).values(),
+  ];
+  const aDeclarer =
+    `  Déclarer où créer le site : --server <nom> --project <nom>,\n` +
+    `  ou les champs "coolifyServer" et "coolifyProject" de son entrée dans sites.json.`;
+
+  if (distincts.length === 0) {
+    throw new CoolifyError(`Aucun emplacement déductible : le parc est vide sur cette instance.\n${aDeclarer}`);
+  }
+  if (distincts.length > 1) {
     throw new CoolifyError(
-      `Aucune application du parc n'est présente sur l'instance : impossible d'en déduire un placement. ` +
-        `Le préciser avec --server et --project.`,
+      `Le parc est réparti sur plusieurs emplacements — ` +
+        `${distincts.map((e) => `${e.serverName}/${e.projectName}/${e.environmentName}`).join(", ")} — ` +
+        `« prendre le premier » serait un choix arbitraire.\n${aDeclarer}`,
     );
   }
 
-  const emplacements = await Promise.all(parc.map((a) => emplacementDe(ctx, a)));
-  const connus = emplacements.filter((e): e is Emplacement => e !== null);
-  const serveurs = [...new Set(connus.map((e) => e.serverName))];
-  const projets = [...new Set(connus.map((e) => e.projectName))];
-
-  // Un modèle pour tout ce qui n'est pas un choix d'emplacement : dépôt,
-  // branche, moteur de build, port. Ces valeurs-là sont homogènes par nature.
-  const modeleApp = await getApplication(ctx, parc[0].uuid);
-
-  let serverUuid: string;
-  let projectUuid: string;
-  let environmentName: string;
-  let origine: string;
-
-  if (choix.serveur || choix.projet) {
-    const serveurs_ = await listServers(ctx);
-    const projets_ = await listProjects(ctx);
-    const s = choix.serveur
-      ? serveurs_.find((x) => x.name === choix.serveur)
-      : serveurs_.find((x) => x.name === serveurs[0]);
-    if (!s) {
-      throw new CoolifyError(
-        `Serveur "${choix.serveur}" inconnu. Disponibles : ${serveurs_.map((x) => x.name).join(", ")}`,
-      );
-    }
-    const p = choix.projet
-      ? projets_.find((x) => x.name === choix.projet)
-      : projets_.find((x) => x.name === projets[0]);
-    if (!p) {
-      throw new CoolifyError(
-        `Projet "${choix.projet}" inconnu. Disponibles : ${projets_.map((x) => x.name).join(", ")}`,
-      );
-    }
-    const detail = await getProject(ctx, p.uuid);
-    const envs = detail.environments ?? [];
-    const env = choix.environnement
-      ? envs.find((e) => e.name === choix.environnement)
-      : (envs.find((e) => e.name === "production") ?? envs[0]);
-    if (!env) {
-      throw new CoolifyError(
-        `Environnement ${choix.environnement ? `"${choix.environnement}" ` : ""}introuvable dans "${p.name}"` +
-          ` (${envs.map((e) => e.name).join(", ") || "aucun"}).`,
-      );
-    }
-    serverUuid = s.uuid;
-    projectUuid = p.uuid;
-    environmentName = env.name;
-    origine = `demandé : ${s.name} / ${p.name} / ${env.name}`;
-  } else {
-    if (serveurs.length > 1 || projets.length > 1) {
-      const detail = connus
-        .map((e) => `${e.serverName}/${e.projectName}/${e.environmentName}`)
-        .filter((v, i, t) => t.indexOf(v) === i);
-      throw new CoolifyError(
-        `Le parc est réparti sur plusieurs emplacements — ${detail.join(", ")} — ` +
-          `« prendre le premier » serait un choix arbitraire.\n` +
-          `  Préciser avec --server <nom> --project <nom>, ou renseigner "coolifyServer" ` +
-          `et "coolifyProject" dans l'entrée de sites.json.`,
-      );
-    }
-    const ref = connus[0];
-    if (!ref) throw new CoolifyError(`Emplacement des applications du parc indéterminable.`);
-    serverUuid = ref.serverUuid;
-    projectUuid = ref.projectUuid;
-    environmentName = ref.environmentName;
-    origine = `déduit du parc : ${ref.serverName} / ${ref.projectName} / ${ref.environmentName}`;
+  // 2. Un seul emplacement : déduction, ou complément d'une déclaration partielle.
+  const ref = distincts[0];
+  if (choix.serveur || choix.projet || choix.environnement) {
+    const p = await parLesNoms(
+      ctx,
+      choix.serveur ?? ref.serverName,
+      choix.projet ?? ref.projectName,
+      choix.environnement,
+    );
+    return { ...p, origine: `complété : ${p.origine}` };
   }
-
   return {
-    serverUuid,
-    destinationUuid: serverUuid === modeleApp.destination?.server?.uuid ? modeleApp.destination?.uuid : undefined,
-    projectUuid,
-    environmentName,
-    gitRepository: modeleApp.git_repository,
-    gitBranch: modeleApp.git_branch,
-    buildPack: modeleApp.build_pack ?? "dockerfile",
-    portsExposes: modeleApp.ports_exposes ?? "3000",
-    modele: `${modeleApp.name} — ${origine}`,
+    serverUuid: ref.serverUuid,
+    projectUuid: ref.projectUuid,
+    environmentName: ref.environmentName,
+    origine: `déduit du parc : ${ref.serverName} / ${ref.projectName} / ${ref.environmentName}`,
   };
 }
 

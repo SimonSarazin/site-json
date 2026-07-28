@@ -46,7 +46,7 @@ import {
   type CoolifyContext,
   type CoolifyDeployment,
 } from "./lib/coolify";
-import { masquer, variablesAttendues } from "./lib/deploy-config";
+import { BUILD, masquer, variablesAttendues } from "./lib/deploy-config";
 import { impact } from "./lib/deploy-scope";
 import { IP_SERVEUR, pointeVersLeServeur, resoudre as resoudreDns } from "./lib/dns";
 import { chargerIdentifiants, creerCname, listerZones, OvhError, rafraichirZone, trouverCname } from "./lib/ovh";
@@ -715,9 +715,9 @@ async function create(ctx: CoolifyContext): Promise<number> {
 
   const { variables, manquantes } = variablesAttendues(site);
   console.log(`Créer ${site.coolifyApp} pour ${slug}\n`);
-  console.log(`  placement    ${placement.modele}`);
-  console.log(`  dépôt        ${placement.gitRepository} @ ${placement.gitBranch}`);
-  console.log(`  build        ${placement.buildPack}, port ${placement.portsExposes}`);
+  console.log(`  placement    ${placement.origine}`);
+  console.log(`  dépôt        ${BUILD.depot} @ ${BUILD.branche}`);
+  console.log(`  build        ${BUILD.buildPack}, port ${BUILD.port}`);
   console.log(`  domaine      ${coolifyDomains(site)}`);
   console.log(`  variables    ${variables.length}${manquantes.length ? ` (${manquantes.join(", ")} absente(s) de .env)` : ""}`);
   console.log(`  DNS          ${site.domain}`);
@@ -739,12 +739,11 @@ async function create(ctx: CoolifyContext): Promise<number> {
   const cree = await createApplication(ctx, {
     project_uuid: placement.projectUuid,
     server_uuid: placement.serverUuid,
-    ...(placement.destinationUuid ? { destination_uuid: placement.destinationUuid } : {}),
     environment_name: placement.environmentName,
-    git_repository: placement.gitRepository,
-    git_branch: placement.gitBranch,
-    build_pack: placement.buildPack,
-    ports_exposes: placement.portsExposes,
+    git_repository: BUILD.depot,
+    git_branch: BUILD.branche,
+    build_pack: BUILD.buildPack,
+    ports_exposes: BUILD.port,
     name: site.coolifyApp,
     domains: coolifyDomains(site),
   });
