@@ -202,9 +202,13 @@ Pour corriger/améliorer un config existant :
 ## Archétypes & exemples canoniques
 
 - `archetypes.json` (dossier de cette skill) désigne les configs de
-  référence : **4 stables** — portail complet (`parent62`), portail réseau
+  référence : **6 stables** — portail complet (`parent62`), portail réseau
   multi-sources (`navigatorDesTierslieux`), cartographie/observatoire
-  (`saintpaulSport1`), vitrine compacte (`eXtremeDefiAdeme`) — et des
+  (`saintpaulSport1`), vitrine éditoriale (`eXtremeDefiAdeme` — référence de
+  composition, ses pages de données sont posées sur un costum quasi vide),
+  annuaire adossé à
+  un observatoire (`institutBleu`), annuaire compact complémentaire d'un site
+  existant (`cyberReunion`) — et des
   **chantiers actifs marqués `wip`** (`equipementsSportifs974`,
   `sportSanteBienetre` : riches mais audit non garanti — s'en inspirer avec
   discernement). Le gate préflight `tests/preflight/archetypes.test.ts`
