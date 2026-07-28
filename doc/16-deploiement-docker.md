@@ -6,8 +6,9 @@
 
 - [Déploiement Docker](#déploiement-docker)
   - [Dockerfile — Build multi-stage](#dockerfile--build-multi-stage)
-    - [Arguments de build (ARG)](#arguments-de-build-arg)
+      - [Arguments de build (ARG)](#arguments-de-build-arg)
     - [Deploiement avec Coolify](#deploiement-avec-coolify)
+  - [Verifier un build : `npm run verify:build`](#verifier-un-build--npm-run-verifybuild)
   - [Variables d'environnement runtime](#variables-denvironnement-runtime)
   - [Volumes](#volumes)
   - [Ajouter des images de contenu en production](#ajouter-des-images-de-contenu-en-production)
@@ -132,6 +133,30 @@ Le contexte de build est le clone git : `.env`, `dist/`, `node_modules/` et `.ca
 Le **file mount de la config devient inutile** : le fichier est deja dans le clone, le remonter a la main en cree un double qui peut diverger. Contrepartie : la config se met alors a jour par commit et redeploiement, plus par edition du fichier monte. Si des retouches a chaud sont necessaires, garder le file mount et `SITE_CONFIG_PATH` en runtime — ils restent prioritaires sur la config figee.
 
 **Deploiement historique** : ne rien cocher d'autre que `VITE_SLUG` et garder `SITE_CONFIG_PATH` en variable runtime. Le comportement est strictement inchange.
+
+## Verifier un build : `npm run verify:build`
+
+Le depot n'a ni CI, ni healthcheck Docker, ni test qui execute `prod-server` ou lise `dist/` — les tests d'integration et E2E passent tous par le serveur de developpement. Le mode d'echec « le build a produit le mauvais site » n'est donc detectable qu'a l'œil, en production.
+
+`scripts/verify-build.ts` comble ce trou. Il se lance **avec les memes variables que le build** :
+
+```bash
+VITE_SLUG=institutBleu SITE_IMAGES=institutBleu SITE_EMBED=true \
+  SITE_CONFIG_PATH=./config.prod.institut-bleu.json \
+  npm run build && npm run verify:build
+```
+
+Il controle cinq choses, et sort en code 1 au premier ecart :
+
+| Controle | Detecte |
+|----------|---------|
+| `dist/client/index.html` present | build client interrompu |
+| `dist/server/` sans copie de `public/` | regression de `copyPublicDir` |
+| `dist/client/images/` ne contient que les dossiers demandes | elagage non applique (nom errone → no-op) ou mauvais dossier |
+| `dist/site-config.json` identique a sa source et valide Zod | mauvaise config figee, ou config corrompue |
+| le CSS bundle porte un selecteur exclusif du theme attendu, et d'aucun autre | mauvais theme bundle |
+
+Le controle CSS repose sur les classes sur-mesure de chaque `src/index-*.css` — en kebab-case dans tout le depot (`releve-eyebrow`, `trait-cote`, `p62-bubble`), ce qui les distingue des utilitaires Tailwind homonymes (`fixed`, `active`, `marker`). Six themes sur treize n'ont aucune classe sur-mesure : leur habillage vient entierement des tokens de `config.theme` injectes au runtime. Pour ceux-la le controle CSS est explicitement **saute**, jamais passe en silence — c'est alors le controle de la config qui distingue le site.
 
 ## Variables d'environnement runtime
 
