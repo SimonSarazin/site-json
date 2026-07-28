@@ -36,7 +36,9 @@
     "config:probe": "tsx scripts/config-probe.ts",
     "config:render": "tsx scripts/config-render.ts",
     "verify:build": "tsx scripts/verify-build.ts",
-    "deploy:status": "tsx scripts/deploy.ts status"
+    "deploy:status": "tsx scripts/deploy.ts status",
+    "deploy:lock": "tsx scripts/deploy.ts lock",
+    "deploy": "tsx scripts/deploy.ts push"
   },
   "resolutions": {
     "react": "19.2.1",

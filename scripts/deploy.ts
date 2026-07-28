@@ -12,8 +12,10 @@
  * CLI Coolify (`~/.config/coolify/config.json`) et n'entre jamais dans le dépôt.
  *
  * Usage :
- *   npm run deploy:status                     état du parc
- *   npm run deploy:status -- --json           idem, parsable
+ *   npm run deploy:status                       état du parc
+ *   npm run deploy:lock -- --yes                coupe l'auto-deploy sur toutes les apps
+ *   npm run deploy -- institutBleu --yes        déploie un site
+ *   npm run deploy -- a b c --yes               déploie a, puis b, puis c
  *
  * Options communes :
  *   --context <nom>   viser une instance Coolify précise
@@ -28,10 +30,14 @@
  */
 import { execFileSync } from "node:child_process";
 import {
+  applicationDeployments,
   CoolifyError,
+  deployApplication,
   indexByName,
   lastSuccessfulDeployment,
   loadContext,
+  patchApplication,
+  runningDeployments,
   type CoolifyApp,
   type CoolifyContext,
   type CoolifyDeployment,
@@ -39,7 +45,7 @@ import {
 import { asList, coolifyDomains, deployableSites, loadSites, ROOT, type SiteEntry } from "./lib/sites";
 
 const argv = process.argv.slice(2);
-const COMMANDES = ["status"] as const;
+const COMMANDES = ["status", "lock", "push"] as const;
 type Commande = (typeof COMMANDES)[number];
 
 const commande = argv.find((a) => !a.startsWith("--")) as Commande | undefined;
@@ -54,10 +60,15 @@ function usage(): never {
 
 Commandes :
   status              état du parc : site ↔ application ↔ domaine ↔ commit déployé
+  lock [--unlock]     coupe (ou rétablit) le déploiement automatique sur push
+  push <slug…>        déploie les sites nommés, un par un
 
 Options :
   --context <nom>     instance Coolify (défaut : celle marquée par défaut)
   --ref <rev>         référence de comparaison (défaut : origin/main)
+  --yes               applique sans confirmation (lock, push)
+  --no-wait           push : déclenche sans attendre la fin
+  --timeout <s>       push : abandon de l'attente (défaut 1500)
   --json              sortie machine`);
   process.exit(2);
 }
@@ -212,6 +223,164 @@ async function status(ctx: CoolifyContext): Promise<number> {
   return lignes.some((x) => x.ecarts.length > 0) ? 1 : 0;
 }
 
+/* ── lock ─────────────────────────────────────────────────────────────────── */
+
+/**
+ * Coupe le déploiement automatique sur push.
+ *
+ * POURQUOI — Coolify ne filtre les webhooks que sur (dépôt, branche). Nos N
+ * applications partagent les deux : un seul push les mettrait TOUTES en file. Et
+ * `is_auto_deploy_enabled` vaut `true` par défaut à la création. Aucun webhook
+ * n'existe aujourd'hui côté GitLab, mais rien n'empêche qu'on en ajoute un ; ce
+ * verrou fait que ce jour-là, rien ne partira tout seul.
+ *
+ * L'API 4.1.1 ne renvoie pas le sous-objet `settings` : on ne peut pas relire la
+ * valeur pour confirmer. Le contrôle se fait dans l'UI, onglet Advanced.
+ */
+async function lock(ctx: CoolifyContext): Promise<number> {
+  const unlock = argv.includes("--unlock");
+  const cible = !unlock;
+  const cibles = deployableSites();
+  const index = await indexByName(ctx);
+
+  const aTraiter = cibles
+    .map((s) => ({ site: s, app: index.get(s.coolifyApp as string) }))
+    .filter((x) => x.app !== undefined);
+
+  console.log(
+    `${unlock ? "Rétablir" : "Couper"} le déploiement automatique sur ${aTraiter.length} application(s) :`,
+  );
+  for (const { site, app } of aTraiter) console.log(`  ${site.slug.padEnd(24)} ${app!.name}`);
+
+  if (!argv.includes("--yes")) {
+    console.log(`\nRelancer avec --yes pour appliquer. Rien n'a été modifié.`);
+    return 0;
+  }
+
+  let echecs = 0;
+  for (const { site, app } of aTraiter) {
+    try {
+      await patchApplication(ctx, app!.uuid, { is_auto_deploy_enabled: cible });
+      console.log(`  ✓ ${site.slug}`);
+    } catch (e) {
+      echecs++;
+      console.error(`  ✗ ${site.slug} : ${(e as Error).message}`);
+    }
+  }
+  console.log(
+    `\n${aTraiter.length - echecs}/${aTraiter.length} appliqué(s).` +
+      ` L'API 4.1.1 ne renvoie pas ce réglage : vérifier dans l'UI Coolify, onglet Advanced.`,
+  );
+  return echecs === 0 ? 0 : 1;
+}
+
+/* ── push ─────────────────────────────────────────────────────────────────── */
+
+const dormir = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Attend qu'un déploiement quitte la file, puis rend son statut final.
+ *
+ * On sonde `GET /deployments` (quelques octets, la liste des déploiements en
+ * cours) et non `GET /deployments/{uuid}` qui embarque l'application ET les logs
+ * — un demi-mégaoctet par sondage. Le détail n'est lu qu'une fois, à la sortie.
+ */
+async function attendre(
+  ctx: CoolifyContext,
+  appUuid: string,
+  deploiement: string,
+  timeoutS: number,
+): Promise<string> {
+  const debut = Date.now();
+  let vuEnFile = false;
+  while ((Date.now() - debut) / 1000 < timeoutS) {
+    const file = await runningDeployments(ctx);
+    const present = file.some((d) => d.deployment_uuid === deploiement);
+    if (present) vuEnFile = true;
+    // Sortie de file : soit on l'y a vu puis il disparaît, soit il a été si
+    // rapide qu'on ne l'a jamais croisé — dans les deux cas on va lire le verdict.
+    if (!present && (vuEnFile || (Date.now() - debut) / 1000 > 15)) break;
+    process.stdout.write(`    …${Math.round((Date.now() - debut) / 1000)} s\r`);
+    await dormir(10_000);
+  }
+  process.stdout.write(" ".repeat(30) + "\r");
+
+  const historique = await applicationDeployments(ctx, appUuid, 5);
+  const trouve = historique.find((d) => d.deployment_uuid === deploiement);
+  return trouve?.status ?? "inconnu";
+}
+
+async function push(ctx: CoolifyContext): Promise<number> {
+  const slugs = argv.filter((a) => !a.startsWith("--")).slice(1);
+  if (slugs.length === 0) {
+    console.error(
+      `✗ Aucun site nommé. Cet outil ne déploie jamais « tout » implicitement.\n` +
+        `  Usage : npm run deploy -- <slug> [<slug>…]`,
+    );
+    return 2;
+  }
+
+  const index = await indexByName(ctx);
+  const cibles: Array<{ slug: string; nom: string; uuid: string }> = [];
+  for (const slug of slugs) {
+    const site = loadSites().find((s) => s.slug === slug);
+    if (!site) throw new CoolifyError(`Slug "${slug}" absent de sites.json.`);
+    if (!site.coolifyApp) throw new CoolifyError(`"${slug}" n'a pas d'application déclarée (champ coolifyApp).`);
+    const app = index.get(site.coolifyApp);
+    if (!app) throw new CoolifyError(`Application "${site.coolifyApp}" introuvable sur l'instance.`);
+    cibles.push({ slug, nom: app.name, uuid: app.uuid });
+  }
+
+  const ref = reference();
+  const local = git("rev-parse", "HEAD");
+  console.log(`Cible : ${ref.rev} @ ${ref.sha.slice(0, 8)}`);
+  if (local !== ref.sha) {
+    console.log(`⚠ HEAD local (${local.slice(0, 8)}) n'est pas ${ref.rev} : les commits non poussés ne partiront pas.`);
+  }
+  console.log(`À déployer, dans l'ordre (${cibles.length}) :`);
+  for (const c of cibles) console.log(`  ${c.slug.padEnd(24)} ${c.nom}`);
+
+  const enCours = await runningDeployments(ctx);
+  if (enCours.length > 0) {
+    console.log(`⚠ ${enCours.length} déploiement(s) déjà en file sur l'instance (partagée avec d'autres projets).`);
+  }
+
+  if (!argv.includes("--yes")) {
+    console.log(`\nRelancer avec --yes pour lancer. Rien n'a été déclenché.`);
+    return 0;
+  }
+
+  const timeoutS = Number(opt("--timeout") ?? 1500);
+  const attendreFin = !argv.includes("--no-wait");
+  let i = 0;
+  for (const c of cibles) {
+    i++;
+    console.log(`\n[${i}/${cibles.length}] ${c.slug}`);
+    const dep = await deployApplication(ctx, c.uuid, true);
+    if (!dep) {
+      console.error(`  ✗ déclenchement refusé par Coolify`);
+      console.error(`\nInterrompu. Non déployés : ${cibles.slice(i - 1).map((x) => x.slug).join(", ")}`);
+      return 1;
+    }
+    console.log(`  ✓ déclenché — ${dep}`);
+    if (!attendreFin) continue;
+
+    const statut = await attendre(ctx, c.uuid, dep, timeoutS);
+    if (statut === "finished") {
+      console.log(`  ✓ ${statut}`);
+    } else {
+      console.error(`  ✗ ${statut} — ${ctx.fqdn}/project (voir les logs du déploiement ${dep})`);
+      const restants = cibles.slice(i).map((x) => x.slug);
+      if (restants.length) {
+        console.error(`\nInterrompu. Reprendre :  npm run deploy -- ${restants.join(" ")} --yes`);
+      }
+      return 1;
+    }
+  }
+  console.log(`\n✓ ${cibles.length}/${cibles.length} déployé(s).`);
+  return 0;
+}
+
 /* ── Entrée ───────────────────────────────────────────────────────────────── */
 
 async function main(): Promise<number> {
@@ -220,6 +389,10 @@ async function main(): Promise<number> {
   switch (commande) {
     case "status":
       return status(ctx);
+    case "lock":
+      return lock(ctx);
+    case "push":
+      return push(ctx);
   }
 }
 
