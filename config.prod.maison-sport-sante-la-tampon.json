@@ -64,11 +64,11 @@
       },
       {
         "label": {
-          "fr": "Rejoindre & soutenir",
-          "en": "Join & support"
+          "fr": "Structure référentes",
+          "en": "Reference structures"
         },
-        "path": "/rejoindre-soutenir",
-        "icon": "heart-handshake"
+        "path": "/structure",
+        "icon": "building-2"
       },
       {
         "label": {
@@ -1785,7 +1785,44 @@
             "searchPlaceholder": {
               "fr": "Rechercher une structure...",
               "en": "Search for a structure..."
-            }
+            },
+            "dropdownFilters": [
+              {
+                "id": "structure-postalCode",
+                "label": {
+                  "fr": "Code postal",
+                  "en": "Postal code"
+                },
+                "field": "address.postalCode",
+                "multiple": true,
+                "options": [
+                  { "id": "97430", "label": { "fr": "97430 – Le Tampon", "en": "97430 – Le Tampon" }, "value": "97430" },
+                  { "id": "97418", "label": { "fr": "97418 – Saint-Joseph", "en": "97418 – Saint-Joseph" }, "value": "97418" }
+                ]
+              },
+              {
+                "id":"domaine-structure",
+                "label": {
+                  "fr": "Domaine d'intervention",
+                  "en": "Intervention domain"
+                },
+                "field": "tags",
+                "multiple": true,
+                "options": [
+                  { "id": "sport", "label": { "fr": "Sport", "en": "Sport" }, "value": "Sport" },
+                  { "id": "sante-prevention", "label": { "fr": "Santé/prévention", "en": "Health/Prevention" }, "value": "Santé/prévention" },
+                  { "id": "social", "label": { "fr": "Social", "en": "Social" }, "value": "Social" },
+                  { "id": "insertion", "label": { "fr": "Insertion", "en": "Insertion" }, "value": "Insertion" },
+                  { "id": "scolaire-1er-degre", "label": { "fr": "Scolaire 1er degré", "en": "Primary school" }, "value": "Scolaire 1er degré" },
+                  { "id": "scolaire-2nd-degre", "label": { "fr": "Scolaire 2nd degré", "en": "Secondary school" }, "value": "Scolaire 2nd degré" },
+                  { "id": "periscolaire-1er-degre", "label": { "fr": "Periscolaire 1er degré", "en": "After-school (primary)" }, "value": "Periscolaire 1er degré" },
+                  { "id": "periscolaire-2eme-degre", "label": { "fr": "Periscolaire 2eme degré", "en": "After-school (secondary)" }, "value": "Periscolaire 2eme degré" },
+                  { "id": "culture", "label": { "fr": "Culture", "en": "Culture" }, "value": "Culture" },
+                  { "id": "handicap", "label": { "fr": "Handicap", "en": "Disability" }, "value": "Handicap" },
+                  { "id": "tourisme", "label": { "fr": "Tourisme", "en": "Tourism" }, "value": "Tourisme" }
+                ]
+              }
+            ]
           }
         },
         {
