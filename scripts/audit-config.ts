@@ -42,7 +42,7 @@ const ONLY_FILE = fileArgIdx >= 0 ? argv[fileArgIdx + 1] : undefined;
 
 const LOCALES = ["fr", "en", "es", "de"];
 // Routes servies par les modules (pas des pages du JSON) → liens internes valides.
-const KNOWN_ROUTE_PREFIXES = ["/profil", "/login", "/register", "/recover-password", "/ampli", "/coform"];
+const KNOWN_ROUTE_PREFIXES = ["/profil", "/login", "/register", "/recover-password", "/ampli", "/coform", "/aac"];
 // Clés portant des chemins d'images/fichiers locaux (relevé des configs réels).
 const ASSET_KEYS = new Set([
   "favicon", "logo", "logoImage", "backgroundImage", "image", "src",

@@ -1,0 +1,24 @@
+{
+  "page": {
+    "backHome": "Retour à l'accueil"
+  },
+  "section": {
+    "stubTitle": "Configuration de l'Appel à Communs",
+    "stubHint": "Aperçu de la configuration résolue (socle — aucune surface fonctionnelle encore).",
+    "loading": "Chargement de la configuration…",
+    "error": "Impossible de charger la configuration de l'AAC.",
+    "noForm": "Aucun Appel à Communs déclaré pour ce site (« config.aac.formId » manquant)."
+  },
+  "config": {
+    "steps": "Étapes du formulaire",
+    "depenseStep": "Étape des dépenses",
+    "evalStep": "Étape d'évaluation",
+    "financementStep": "Étape de financement",
+    "suiviStep": "Étape de suivi",
+    "criteria": "Critères d'évaluation",
+    "criteriaSource": "Source des critères",
+    "gates": "Accès & options",
+    "campaigns": "Campagnes déclarées",
+    "none": "—"
+  }
+}

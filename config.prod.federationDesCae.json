@@ -1,0 +1,162 @@
+{
+  "version": "1.0.0",
+  "meta": {
+    "title": {
+      "fr": "Fédération des CAE — Appel à Communs"
+    },
+    "description": {
+      "fr": "La Fédération des coopératives d'activité et d'emploi recueille, présente, finance et suit les communs de son réseau via son Appel à Communs."
+    },
+    "defaultLang": "fr",
+    "languages": [
+      "fr"
+    ],
+    "keywords": [
+      "CAE",
+      "coopérative d'activité et d'emploi",
+      "les SCOP",
+      "appel à communs",
+      "financement participatif"
+    ]
+  },
+  "theme": {
+    "colors": {
+      "light": {
+        "background": "oklch(1.0000 0 0)",
+        "foreground": "oklch(0.2000 0 0)",
+        "card": "oklch(1.0000 0 0)",
+        "cardForeground": "oklch(0.2000 0 0)",
+        "popover": "oklch(1.0000 0 0)",
+        "popoverForeground": "oklch(0.2000 0 0)",
+        "primary": "oklch(0.5800 0.2450 356)",
+        "primaryForeground": "oklch(1.0000 0 0)",
+        "secondary": "oklch(0.9600 0.0150 356)",
+        "secondaryForeground": "oklch(0.3500 0.0500 356)",
+        "muted": "oklch(0.9700 0 0)",
+        "mutedForeground": "oklch(0.5500 0.0200 356)",
+        "accent": "oklch(0.9400 0.0500 356)",
+        "accentForeground": "oklch(0.4500 0.1800 356)",
+        "destructive": "oklch(0.6368 0.2078 25.3313)",
+        "destructiveForeground": "oklch(1.0000 0 0)",
+        "border": "oklch(0.9200 0.0050 356)",
+        "input": "oklch(0.9200 0.0050 356)",
+        "ring": "oklch(0.5800 0.2450 356)",
+        "chart1": "oklch(0.5800 0.2450 356)",
+        "chart2": "oklch(0.6500 0.1900 20)",
+        "chart3": "oklch(0.6200 0.1600 300)",
+        "chart4": "oklch(0.7000 0.1500 60)",
+        "chart5": "oklch(0.5500 0.1400 200)",
+        "sidebar": "oklch(0.9800 0.0030 356)",
+        "sidebarForeground": "oklch(0.2000 0 0)",
+        "sidebarPrimary": "oklch(0.5800 0.2450 356)",
+        "sidebarPrimaryForeground": "oklch(1.0000 0 0)",
+        "sidebarAccent": "oklch(0.9400 0.0500 356)",
+        "sidebarAccentForeground": "oklch(0.4500 0.1800 356)",
+        "sidebarBorder": "oklch(0.9200 0.0050 356)",
+        "sidebarRing": "oklch(0.5800 0.2450 356)"
+      },
+      "dark": {
+        "background": "oklch(0.1800 0.0100 356)",
+        "foreground": "oklch(0.9600 0.0050 356)",
+        "card": "oklch(0.2200 0.0150 356)",
+        "cardForeground": "oklch(0.9600 0.0050 356)",
+        "popover": "oklch(0.2000 0.0150 356)",
+        "popoverForeground": "oklch(0.9600 0.0050 356)",
+        "primary": "oklch(0.6800 0.2200 356)",
+        "primaryForeground": "oklch(0.1500 0.0200 356)",
+        "secondary": "oklch(0.3000 0.0400 356)",
+        "secondaryForeground": "oklch(0.9600 0.0050 356)",
+        "muted": "oklch(0.2800 0.0200 356)",
+        "mutedForeground": "oklch(0.7200 0.0300 356)",
+        "accent": "oklch(0.4000 0.1000 356)",
+        "accentForeground": "oklch(0.9600 0.0050 356)",
+        "destructive": "oklch(0.6368 0.2078 25.3313)",
+        "destructiveForeground": "oklch(1.0000 0 0)",
+        "border": "oklch(0.3500 0.0300 356)",
+        "input": "oklch(0.3000 0.0200 356)",
+        "ring": "oklch(0.6800 0.2200 356)",
+        "chart1": "oklch(0.6800 0.2200 356)",
+        "chart2": "oklch(0.7000 0.1800 20)",
+        "chart3": "oklch(0.6800 0.1500 300)",
+        "chart4": "oklch(0.7500 0.1400 60)",
+        "chart5": "oklch(0.6200 0.1300 200)",
+        "sidebar": "oklch(0.2000 0.0150 356)",
+        "sidebarForeground": "oklch(0.9600 0.0050 356)",
+        "sidebarPrimary": "oklch(0.6800 0.2200 356)",
+        "sidebarPrimaryForeground": "oklch(0.1500 0.0200 356)",
+        "sidebarAccent": "oklch(0.4000 0.1000 356)",
+        "sidebarAccentForeground": "oklch(0.9600 0.0050 356)",
+        "sidebarBorder": "oklch(0.3500 0.0300 356)",
+        "sidebarRing": "oklch(0.6800 0.2200 356)"
+      }
+    }
+  },
+  "aac": {
+    "formId": "677e7e389058e31575550ac8"
+  },
+  "header": {
+    "type": "standard",
+    "logo": "images/federationDesCae/logo.png",
+    "logoTitle": {
+      "fr": "Fédération des CAE"
+    },
+    "nav": [
+      {
+        "label": {
+          "fr": "Accueil"
+        },
+        "path": "/"
+      },
+      {
+        "label": {
+          "fr": "Appel à Communs"
+        },
+        "path": "#aac"
+      }
+    ],
+    "utilities": {
+      "themeSwitch": true,
+      "langSwitch": false,
+      "auth": true
+    }
+  },
+  "pages": [
+    {
+      "path": "/",
+      "title": {
+        "fr": "Appel à Communs — Fédération des CAE"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "html",
+          "id": "intro",
+          "props": {
+            "html": "<div class=\"max-w-5xl mx-auto px-6 pt-16 pb-8 text-center animate-in fade-in slide-in-from-bottom-6 duration-1000\"><img src=\"images/federationDesCae/logo.png\" alt=\"les SCOP — Fédération des coopératives d'activité et d'emploi\" class=\"mx-auto h-24 mb-8\"><h1 class=\"text-4xl md:text-5xl font-bold mb-4\">Appel à Communs</h1><p class=\"text-lg text-muted-foreground max-w-2xl mx-auto\">La Fédération des coopératives d'activité et d'emploi recueille, présente, finance et suit les <strong class=\"text-primary\">communs</strong> de son réseau.</p></div>"
+          }
+        },
+        {
+          "type": "aac",
+          "id": "aac",
+          "props": {
+            "title": {
+              "fr": "Appel à Communs de la Fédération des CAE"
+            },
+            "className": "max-w-5xl mx-auto px-6 pb-20"
+          }
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "type": "default",
+    "description": {
+      "fr": "Fédération des coopératives d'activité et d'emploi — les SCOP. Réseau des CAE engagées dans l'entrepreneuriat collectif."
+    },
+    "copyright": {
+      "fr": "© Fédération des CAE — les SCOP. Tous droits réservés."
+    },
+    "socials": [],
+    "columns": []
+  }
+}

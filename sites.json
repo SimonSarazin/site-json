@@ -93,5 +93,10 @@
     "slug": "saintpaulSport1",
     "config": "config.prod.saint-paul-sport.json",
     "css": "index-equipements-sportifs"
+  },
+  {
+    "slug": "federationDesCae",
+    "config": "config.prod.federationDesCae.json",
+    "css": "index-rezo-la-mer"
   }
 ]
