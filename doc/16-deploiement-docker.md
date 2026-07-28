@@ -92,11 +92,19 @@ Exemples :
 # Image mono-site autonome : CSS, config et images du seul institutBleu
 docker build \
   --build-arg VITE_SLUG=institutBleu \
+  --build-arg SITE_CSS_PATH=./src/index-institut-bleu.css \
   --build-arg SITE_IMAGES=institutBleu \
-  --build-arg SITE_EMBED=true \
   --build-arg SITE_CONFIG_PATH=./config.prod.institut-bleu.json \
+  --build-arg SITE_EMBED=true \
   -t institut-bleu .
-docker run -e VITE_SLUG=institutBleu -p 3000:3000 institut-bleu
+
+# Les memes variables peuvent etre repassees au run (cas Coolify) : seule
+# SITE_CONFIG_PATH y a un sens, et elle bascule sur la config figee.
+docker run -p 3000:3000 \
+  -e VITE_SLUG=institutBleu \
+  -e VITE_BASE_URL_BACKEND=https://www.communecter.org \
+  -e VITE_SERVER_URL=https://www.communecter.org \
+  institut-bleu
 
 # Build avec contenu CSS inline (fichier externe, pas dans le repo)
 docker build --build-arg SITE_CSS_CONTENT="$(cat /chemin/externe/theme.css)" -t site-custom .
@@ -120,19 +128,36 @@ Dans Coolify, les arguments de build se configurent comme des variables d'enviro
 
 Le contexte de build est le clone git : `.env`, `dist/`, `node_modules/` et `.cache/` y sont absents (gitignores), tandis que `sites.json` et les `config.prod.*.json` y sont presents et directement resolvables.
 
-**Deploiement mono-site** (une image autonome, sans file mount) :
+**Deploiement mono-site** (une image autonome, sans file mount) — les variables a declarer :
 
-| Variable | Build Variable | Runtime |
-|----------|:--------------:|:-------:|
-| `VITE_SLUG` | ✓ | ✓ |
-| `SITE_IMAGES` | ✓ | — |
-| `SITE_EMBED` = `true` | ✓ | — |
-| `SITE_CONFIG_PATH` | ✓ | — |
-| `VITE_BASE_URL_BACKEND`, `VITE_SERVER_URL`, `VITE_MAPTILER_API_KEY` | — | ✓ |
+| Variable | Exemple | Build Variable |
+|----------|---------|:--------------:|
+| `VITE_SLUG` | `institutBleu` | ✓ |
+| `SITE_CSS_PATH` | `./src/index-institut-bleu.css` | ✓ |
+| `SITE_IMAGES` | `institutBleu` | ✓ |
+| `SITE_CONFIG_PATH` | `./config.prod.institut-bleu.json` | ✓ |
+| `SITE_EMBED` | `true` | ✓ |
+| `VITE_BASE_URL_BACKEND` | `https://www.communecter.org` | — |
+| `VITE_SERVER_URL` | `https://www.communecter.org` | — |
+| `VITE_MAPTILER_API_KEY` | *(optionnel)* | — |
 
-Le **file mount de la config devient inutile** : le fichier est deja dans le clone, le remonter a la main en cree un double qui peut diverger. Contrepartie : la config se met alors a jour par commit et redeploiement, plus par edition du fichier monte. Si des retouches a chaud sont necessaires, garder le file mount et `SITE_CONFIG_PATH` en runtime — ils restent prioritaires sur la config figee.
+Les trois valeurs de site se lisent dans `sites.json` : `css` pour `SITE_CSS_PATH` (prefixe `./src/`, suffixe `.css`), `images` pour `SITE_IMAGES`, `config` pour `SITE_CONFIG_PATH`.
 
-**Deploiement historique** : ne rien cocher d'autre que `VITE_SLUG` et garder `SITE_CONFIG_PATH` en variable runtime. Le comportement est strictement inchange.
+> **Coolify pousse le meme jeu de variables au build ET au run.** Trois d'entre elles n'ont aucun sens a l'execution et sont simplement ignorees par `prod-server` : `SITE_CSS_PATH`, `SITE_IMAGES`, `SITE_EMBED`.
+>
+> La quatrieme, `SITE_CONFIG_PATH`, en a un — c'est le niveau 2 de la resolution. Au runtime elle pointe un fichier **absent de l'image** (l'etape runner ne copie ni `sites.json` ni les `config.prod.*.json`). `prod-server` bascule alors sur `dist/site-config.json` en l'annoncant :
+>
+> ```
+> [config] SITE_CONFIG_PATH "./config.prod.institut-bleu.json" introuvable depuis /app
+>          — bascule sur dist/site-config.json, figée au build.
+> Config chargée depuis dist/site-config.json : Institut Bleu …
+> ```
+>
+> Le message est volontairement bruyant : dans un deploiement a volume, un chemin errone doit rester visible. Si le fichier existe mais est illisible ou invalide, le serveur refuse toujours de demarrer.
+
+Le **file mount de la config devient inutile** : le fichier est deja dans le clone, le remonter a la main en cree un double qui peut diverger. Contrepartie : la config se met alors a jour par commit et redeploiement, plus par edition du fichier monte. Si des retouches a chaud sont necessaires, garder le file mount — un `SITE_CONFIG_PATH` qui **resout** reste prioritaire sur la config figee.
+
+**Deploiement historique** : ne rien cocher d'autre que `VITE_SLUG` et garder `SITE_CONFIG_PATH` avec son volume. Le comportement est strictement inchange.
 
 ## Verifier un build : `npm run verify:build`
 
@@ -181,7 +206,7 @@ Ordre de resolution au demarrage (`server/prod-server.js`) :
 | # | Source | Disponible ou |
 |---|--------|---------------|
 | 1 | `SITE_CONFIG_JSON` | partout |
-| 2 | `SITE_CONFIG_PATH` | partout — **prioritaire sur la config figee**, donc utilisable en surcharge |
+| 2 | `SITE_CONFIG_PATH` | partout — **prioritaire sur la config figee**, donc utilisable en surcharge. Si le fichier est **absent**, bascule sur le niveau 3 avec un avertissement ; s'il est present mais invalide, echec au demarrage |
 | 3 | `dist/site-config.json` | images construites avec `SITE_EMBED=true` |
 | 4 | `VITE_SLUG` → `sites.json` | hors conteneur uniquement (`npm start` depuis le depot) |
 

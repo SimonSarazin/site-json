@@ -31,9 +31,15 @@ services:
   #
   #   docker compose --profile embarque up --build
   #
-  # Les trois arguments se lisent dans sites.json : `config` pour
-  # SITE_CONFIG_PATH, `images` pour SITE_IMAGES. Le champ `images` existe parce
-  # que le nom du dossier ne suit pas le slug.
+  # Les trois valeurs de site se lisent dans sites.json : `css` pour
+  # SITE_CSS_PATH, `images` pour SITE_IMAGES, `config` pour SITE_CONFIG_PATH.
+  # Le champ `images` existe parce que le nom du dossier ne suit pas le slug.
+  #
+  # Les mêmes variables sont volontairement répétées en `environment` : c'est ce
+  # que fait Coolify, qui pousse un seul jeu au build et au run. SITE_CSS_PATH,
+  # SITE_IMAGES et SITE_EMBED y sont ignorées par prod-server ; SITE_CONFIG_PATH
+  # pointe un fichier absent de l'image et bascule sur dist/site-config.json en
+  # l'annonçant dans les logs.
   # ---------------------------------------------------------------------------
   cocostum-embarque:
     profiles: ["embarque"]
@@ -41,9 +47,10 @@ services:
       context: .
       args:
         VITE_SLUG: "institutBleu"
+        SITE_CSS_PATH: "./src/index-institut-bleu.css"
         SITE_IMAGES: "institutBleu"
-        SITE_EMBED: "true"
         SITE_CONFIG_PATH: "./config.prod.institut-bleu.json"
+        SITE_EMBED: "true"
     ports:
       - "3001:3000"
     environment:
@@ -51,6 +58,10 @@ services:
       VITE_SERVER_URL: "https://www.communecter.org"
       VITE_SLUG: "institutBleu"
       VITE_MAPTILER_API_KEY: "${VITE_MAPTILER_API_KEY:-}"
+      SITE_CSS_PATH: "./src/index-institut-bleu.css"
+      SITE_IMAGES: "institutBleu"
+      SITE_CONFIG_PATH: "./config.prod.institut-bleu.json"
+      SITE_EMBED: "true"
     volumes:
       - image-cache:/app/.cache/images
 

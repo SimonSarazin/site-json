@@ -30,15 +30,37 @@ function loadSiteConfig() {
 
   // 2. Chemin vers un fichier JSON
   if (process.env.SITE_CONFIG_PATH) {
-    try {
-      const envPath   = process.env.SITE_CONFIG_PATH;
-      const filePath  = path.isAbsolute(envPath)
-        ? envPath
-        : path.resolve(process.cwd(), envPath);
-      const raw      = fs.readFileSync(filePath, "utf-8");
-      return { config: JSON.parse(raw), origin: `SITE_CONFIG_PATH (${envPath})` };
-    } catch (e) {
-      throw new Error(`Impossible de lire SITE_CONFIG_PATH : ${e.message}`);
+    const envPath  = process.env.SITE_CONFIG_PATH;
+    const filePath = path.isAbsolute(envPath)
+      ? envPath
+      : path.resolve(process.cwd(), envPath);
+
+    if (fs.existsSync(filePath)) {
+      try {
+        return { config: JSON.parse(fs.readFileSync(filePath, "utf-8")), origin: `SITE_CONFIG_PATH (${envPath})` };
+      } catch (e) {
+        // Fichier présent mais illisible ou JSON invalide : vraie erreur.
+        throw new Error(`Impossible de lire SITE_CONFIG_PATH : ${e.message}`);
+      }
+    }
+
+    // Fichier ABSENT. C'est le cas normal sur Coolify, qui pousse le MÊME jeu de
+    // variables au build et au run : SITE_CONFIG_PATH a servi à figer la config
+    // pendant le build, et le chemin n'existe pas dans l'image (l'étape runner
+    // ne copie ni sites.json ni les config.prod.*.json). On bascule alors sur la
+    // config figée plutôt que de refuser de démarrer — mais bruyamment, parce
+    // qu'un chemin erroné dans un déploiement à volume doit rester visible.
+    if (fs.existsSync(BUILT_CONFIG)) {
+      console.warn(
+        `[config] SITE_CONFIG_PATH "${envPath}" introuvable depuis ${process.cwd()} — ` +
+        `bascule sur dist/site-config.json, figée au build. ` +
+        `(Attendu si la même variable sert au build et au run ; à corriger si un volume était prévu.)`
+      );
+    } else {
+      throw new Error(
+        `Impossible de lire SITE_CONFIG_PATH : "${envPath}" introuvable depuis ${process.cwd()}, ` +
+        `et aucune config figée dans dist/site-config.json.`
+      );
     }
   }
 
