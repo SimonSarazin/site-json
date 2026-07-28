@@ -32,17 +32,17 @@ const sites: SiteEntry[] = JSON.parse(
 );
 
 /**
- * Dossiers de public/images/ qu'aucun slug ne revendique, sciemment tolérés.
+ * Échappatoire pour un dossier de public/images/ qu'aucun slug ne revendique
+ * mais qu'on garde sciemment. Doit rester vide : un dossier orphelin est du
+ * poids mort embarqué dans toutes les images Docker non filtrées.
  *
- * `jardin` (17,3 Mo) et `jardinCommuns` (1,1 Mo) ne sont référencés par aucune
- * config ni par aucun code. Les noms de fichiers de `jardin` sont des hash de
- * 16 caractères hexadécimaux, la signature de server/middleware/imageUpload.js :
- * ce sont des uploads accumulés par l'AdminPanel sous un VITE_SLUG qui n'existe
- * plus dans sites.json. Leur suppression est une décision de contenu, pas de
- * build — elle attend un arbitrage. Tout NOUVEAU dossier orphelin doit, lui,
- * faire échouer ce test.
+ * `jardin` et `jardinCommuns` y ont figuré puis ont été supprimés du dépôt
+ * (19,2 Mo). Leurs fichiers portaient des noms en 16 caractères hexadécimaux,
+ * signature de server/middleware/imageUpload.js : des uploads accumulés par
+ * l'AdminPanel sous un VITE_SLUG absent de sites.json. Ce middleware crée son
+ * dossier au montage, donc le cas se reproduira à chaque slug essayé en dev.
  */
-const KNOWN_UNCLAIMED = ["jardin", "jardinCommuns"];
+const KNOWN_UNCLAIMED: string[] = [];
 
 /** Normalise le champ `images` (string | string[] | absent) en tableau. */
 const declaredFolders = (site: SiteEntry): string[] =>
