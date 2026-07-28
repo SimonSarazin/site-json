@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import serialize from "serialize-javascript";
 import { createImageOptimizer } from "./middleware/imageOptimizer.js";
 import { normalizeSiteConfig } from "./utils/normalizeSiteConfig.js";
+import { findSiteBySlug, knownSlugs } from "./utils/sites.js";
 import { registerSeoRoutes } from "./lib/sitemap.js";
 import { helloassoCheckoutIntentHandler, helloassoTokenHandler, helloassoCallbackHandler, helloassoCheckoutStatusHandler } from "./api/helloasso-checkout.js";
 
@@ -14,11 +15,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 /* ----------------------------------------------------------------------
  *  Chargement obligatoire de la configuration en production
  * -------------------------------------------------------------------- */
+/** Config figée dans le build par SITE_EMBED — cf. siteConfigPlugin (vite.config.ts). */
+const BUILT_CONFIG = path.resolve(__dirname, "../dist/site-config.json");
+
 function loadSiteConfig() {
   // 1. JSON inline (variable d'environnement complète)
   if (process.env.SITE_CONFIG_JSON) {
     try {
-      return JSON.parse(process.env.SITE_CONFIG_JSON);
+      return { config: JSON.parse(process.env.SITE_CONFIG_JSON), origin: "SITE_CONFIG_JSON" };
     } catch (e) {
       throw new Error(`SITE_CONFIG_JSON invalide : ${e.message}`);
     }
@@ -32,24 +36,60 @@ function loadSiteConfig() {
         ? envPath
         : path.resolve(process.cwd(), envPath);
       const raw      = fs.readFileSync(filePath, "utf-8");
-      return JSON.parse(raw);
+      return { config: JSON.parse(raw), origin: `SITE_CONFIG_PATH (${envPath})` };
     } catch (e) {
       throw new Error(`Impossible de lire SITE_CONFIG_PATH : ${e.message}`);
     }
   }
 
-  // Si nous sommes en production et rien n'a été fourni :
+  // 3. Config embarquée dans l'image au moment du build (SITE_EMBED=true).
+  //    C'est une copie conforme du fichier source : même lecture, même
+  //    normalisation qu'au niveau 2, seul le chemin change.
+  if (fs.existsSync(BUILT_CONFIG)) {
+    try {
+      return { config: JSON.parse(fs.readFileSync(BUILT_CONFIG, "utf-8")), origin: "dist/site-config.json" };
+    } catch (e) {
+      throw new Error(`dist/site-config.json illisible : ${e.message}`);
+    }
+  }
+
+  // 4. VITE_SLUG → sites.json. Ne peut se déclencher qu'EN DEHORS d'un conteneur
+  //    (`npm start` depuis le dépôt) : l'étape runner du Dockerfile ne copie ni
+  //    sites.json ni les config.prod.*.json. Donne la parité avec dev-server.
+  const slug = process.env.VITE_SLUG;
+  const site = findSiteBySlug(slug);
+  if (site) {
+    try {
+      const filePath = path.resolve(process.cwd(), site.config);
+      return {
+        config: JSON.parse(fs.readFileSync(filePath, "utf-8")),
+        origin: `sites.json (${slug} → ${site.config})`,
+      };
+    } catch (e) {
+      throw new Error(`Impossible de lire ${site.config} pour le slug "${slug}" : ${e.message}`);
+    }
+  }
+
+  const slugs = knownSlugs();
   throw new Error(
-    "🛑  Aucune configuration trouvée : définissez SITE_CONFIG_JSON ou SITE_CONFIG_PATH (obligatoire en production)"
+    "🛑  Aucune configuration trouvée. Quatre voies possibles :\n" +
+    "      • SITE_CONFIG_JSON — la configuration complète en variable d'environnement\n" +
+    "      • SITE_CONFIG_PATH — le chemin d'un fichier JSON\n" +
+    "      • une image construite avec SITE_EMBED=true, qui produit dist/site-config.json\n" +
+    "      • VITE_SLUG, si sites.json est présent (lancement depuis le dépôt)" +
+    (slug && slugs.length
+      ? `\n    VITE_SLUG vaut "${slug}", absent de sites.json — slugs connus : ${slugs.join(", ")}`
+      : "")
   );
 }
 
 /* ---- Charger la config UNE SEULE FOIS au démarrage -------------------- */
 // Normaliser au chargement : pré-sanitize les champs HTML/SVG pour que SSR et
 // client utilisent strictement le même contenu (évite mismatch hydration).
-const cachedConfig = normalizeSiteConfig(loadSiteConfig());
+const { config: rawSiteConfig, origin: configOrigin } = loadSiteConfig();
+const cachedConfig = normalizeSiteConfig(rawSiteConfig);
 const configScript = `<script>window.__CONFIG__=${serialize(cachedConfig, { isJSON: true })}</script>`;
-console.log("Config chargée :", cachedConfig?.meta?.title?.fr || "Config OK");
+console.log(`Config chargée depuis ${configOrigin} :`, cachedConfig?.meta?.title?.fr || "Config OK");
 
 const app = express();
 
