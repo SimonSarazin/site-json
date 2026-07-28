@@ -39,7 +39,9 @@ La configuration de SiteForge se fait principalement via :
 | -------- | ----------- | ----------------- |
 | `SITE_CONFIG_JSON` | JSON complet de la configuration du site (priorité maximale). Si présent, parsé directement sans lecture de fichier. | — |
 | `SITE_CONFIG_PATH` | Chemin vers un fichier JSON contenant la configuration du site (priorité 2). | — |
-| `VITE_SLUG` | Slug de site utilisé pour la résolution via `sites.json` (priorité 3, dev uniquement). | `default` |
+| `VITE_SLUG` | Slug de site utilisé pour la résolution via `sites.json` (priorité 4 en production, 3 en développement). En production, ne se déclenche que hors conteneur : l'image ne contient pas `sites.json`. | `default` |
+| `SITE_EMBED` | **Build uniquement.** À `true`, fige la config résolue dans `dist/site-config.json` (priorité 3 au démarrage). | — |
+| `SITE_IMAGES` | **Build uniquement.** Nom(s) de dossier de `public/images/` à embarquer, séparés par des virgules. Le nom se lit dans le champ `images` de `sites.json`. Absent : tous les dossiers. | — |
 | `NODE_ENV` | Mode d'exécution Node.js (`development` ou `production`). | Défini par Vite/npm |
 | `PORT` | Port d'écoute du serveur. | `5173` (dev), `3000` (prod) |
 | `VITE_BASE_URL_BACKEND` | URL de base pour les appels API depuis le client (`import.meta.env`). Injectée aussi dans `window.__ENV__` à l'exécution. | `http://localhost:3000` |
@@ -123,14 +125,19 @@ demo-site.ts  →  config de démonstration (chargée via vite.ssrLoadModule)
 ### En production (`prod-server.js`)
 
 ```
-SITE_CONFIG_JSON  →  parse direct
+SITE_CONFIG_JSON       →  parse direct
         ↓ (absent)
-SITE_CONFIG_PATH  →  lecture fichier
+SITE_CONFIG_PATH       →  lecture fichier
         ↓ (absent)
-Erreur de démarrage  →  arrêt immédiat avec message explicite
+dist/site-config.json  →  config figée au build par SITE_EMBED
+        ↓ (absent)
+VITE_SLUG + sites.json →  lookup (hors conteneur uniquement)
+        ↓ (absent)
+Erreur de démarrage  →  arrêt immédiat, message énumérant les quatre voies
 ```
 
-- La résolution via `VITE_SLUG` + `sites.json` **n'existe pas** en production : au moins `SITE_CONFIG_JSON` ou `SITE_CONFIG_PATH` est obligatoire.
+- Le niveau 3 n'existe que si l'image a été construite avec `SITE_EMBED=true` (voir [Déploiement Docker](16-deploiement-docker.md)). C'est une copie conforme du fichier source, lue et normalisée exactement comme au niveau 2.
+- Le niveau 4 ne peut pas se déclencher dans un conteneur : l'étape runner du Dockerfile ne copie ni `sites.json` ni les `config.prod.*.json`. Il sert au lancement depuis le dépôt (`npm start`) et donne la parité avec le serveur de développement.
 - La config est chargée **une seule fois** au démarrage, normalisée et mise en cache. Il n'y a pas de hot-reload en production.
 
 ---

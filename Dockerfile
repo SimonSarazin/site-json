@@ -2,17 +2,42 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 
-# CSS du site à bundler (par ordre de priorité) :
+# ---- Ce que le build embarque -----------------------------------------------
+#
+# CSS (par ordre de priorité) :
 #   1. --build-arg SITE_CSS_CONTENT="$(cat mon-theme.css)"  (contenu inline)
 #   2. --build-arg SITE_CSS_PATH=./src/index-cyber-reunion.css  (chemin)
 #   3. --build-arg VITE_SLUG=cyberReunion  (lookup dans sites.json)
 #   4. Sans argument → src/index.css (thème par défaut)
+#
+# Images : --build-arg SITE_IMAGES=institutBleu n'embarque que ce dossier de
+#   public/images/ (nom de DOSSIER, pas un chemin ; plusieurs séparés par des
+#   virgules). Le nom se lit dans le champ `images` de sites.json — il ne suit
+#   pas le slug. Sans l'argument, les 13 dossiers sont embarqués comme avant.
+#
+# Config : --build-arg SITE_EMBED=true fige SITE_CONFIG_JSON puis
+#   SITE_CONFIG_PATH dans dist/site-config.json, que prod-server lit au niveau 3.
+#   Le conteneur n'a alors plus besoin ni de volume ni de SITE_CONFIG_PATH.
+#   Le drapeau est nécessaire parce que ces deux variables ont déjà un sens à
+#   l'exécution : sans lui, rien n'est figé et le comportement est inchangé.
+#
+# Les ARG ci-dessous sont OBLIGATOIRES : Docker ignore silencieusement un
+# --build-arg qu'aucun ARG ne déclare, donc sans eux une variable cochée
+# « Build Variable » dans Coolify n'atteindrait jamais le build.
 ARG VITE_SLUG
 ARG SITE_CSS_PATH
 ARG SITE_CSS_CONTENT
+ARG SITE_IMAGES
+ARG SITE_EMBED
+ARG SITE_CONFIG_PATH
+ARG SITE_CONFIG_JSON
 ENV VITE_SLUG=${VITE_SLUG}
 ENV SITE_CSS_PATH=${SITE_CSS_PATH}
 ENV SITE_CSS_CONTENT=${SITE_CSS_CONTENT}
+ENV SITE_IMAGES=${SITE_IMAGES}
+ENV SITE_EMBED=${SITE_EMBED}
+ENV SITE_CONFIG_PATH=${SITE_CONFIG_PATH}
+ENV SITE_CONFIG_JSON=${SITE_CONFIG_JSON}
 
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -24,7 +49,10 @@ RUN npm run build
 FROM node:22-alpine AS runner
 WORKDIR /app
 
-# Config JSON du site (obligatoire : l'un des deux)
+# Config JSON du site. Obligatoire SAUF si l'image a été construite avec
+# SITE_EMBED=true, auquel cas dist/site-config.json prend le relais (niveau 3).
+# Les valeurs vides remises ici sont volontaires : elles neutralisent les ENV de
+# l'étape builder, qui ne doivent pas fuiter dans le runtime.
 ENV SITE_CONFIG_PATH=""
 ENV SITE_CONFIG_JSON=""
 # URLs backend
