@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
@@ -247,11 +247,21 @@ const PaymentConfigPage = ({
         return response;
     }, [entity, contextId, contextType, t]);
 
+    // Garde-fou de ré-entrance : `completePayment` enregistre le financement via
+    // `answer.updateField(..., {arrayForm:true})` qui AJOUTE une entrée financer à
+    // chaque appel. Or le poll HelloAsso (setInterval 5s + fetch awaité) peut déclencher
+    // deux ticks concurrents. Sans garde, la contribution serait enregistrée en double.
+    // "running"/"done" bloquent tout second appel ; on repasse à "idle" sur erreur pour
+    // autoriser une nouvelle tentative.
+    const completionStateRef = useRef<"idle" | "running" | "done">("idle");
+
     // Envelopper completePayment dans useCallback pour éviter les dépendances changeantes
     const completePayment = useCallback(async (
         paymentData: PaymentDataPayload,
         fundingData: DepenseFunding[],
     ) => {
+        if (completionStateRef.current !== "idle") return;
+        completionStateRef.current = "running";
         try {
             //  Enregistrer les financements dans Answer (si answerId disponible)
             if (itemAnswerId && api) {
@@ -281,10 +291,13 @@ const PaymentConfigPage = ({
                 if (!saved) throw new Error(String(t("PaymentConfigPage.errors.saveFailed")));
             }
 
+            completionStateRef.current = "done";
             setPaymentSuccess(true);
             onPaymentSuccess(paymentData);
             launchConfettiBurst({ originY: 0.34, spread: 84, count: 40 });
         } catch (error) {
+            // Échec de l'enregistrement : on repasse à "idle" pour permettre une relance.
+            completionStateRef.current = "idle";
             console.error('Erreur completePayment:', error);
             showErrorToast(error, "PaymentConfigPage.toasts.paymentAcceptedIncomplete.title", t);
         } finally {
@@ -336,39 +349,50 @@ const PaymentConfigPage = ({
     useEffect(() => {
         if (!isVerifyingPayment || !helloAssoPaymentId) return;
 
+        // Empêche deux ticks de se chevaucher si une vérification dépasse 5 s
+        // (le fetch n'a pas de timeout) : sinon deux ticks pourraient tous deux
+        // voir isValid et appeler completePayment.
+        let polling = false;
+
         const verifyInterval = setInterval(async () => {
-            const verification = await verifyHelloAssoCheckoutStatus(helloAssoPaymentId);
+            if (polling) return;
+            polling = true;
+            try {
+                const verification = await verifyHelloAssoCheckoutStatus(helloAssoPaymentId);
 
-            if (verification.isValid) {
-                clearInterval(verifyInterval);
-                setIsVerifyingPayment(false);
-                setIsHelloAssoProcessing(false);
+                if (verification.isValid) {
+                    clearInterval(verifyInterval);
+                    setIsVerifyingPayment(false);
+                    setIsHelloAssoProcessing(false);
 
-                // Créer les données finales de paiement
-                const paymentData = buildHelloAssoPaymentData(
-                    {
-                        amount: effectiveAmount,
-                        resourceName,
-                        resourceId,
-                        itemsIds: Array.from(activeItemsIds),
-                        contributorType: contributorType as "citoyens" | "organizations",
-                        organizationId: contributorId || undefined,
-                    },
-                    helloAssoPaymentId
-                );
-                completePayment(paymentData, depenseFunding);
-            } else if (verification.status === "failed") {
-                console.error("Paiement HelloAsso échoué");
-                clearInterval(verifyInterval);
-                setIsVerifyingPayment(false);
-                setIsHelloAssoProcessing(false);
-                showErrorToast(
-                    new Error(verification.error || String(t("PaymentConfigPage.toasts.paymentFailed.fallbackDescription"))),
-                    "PaymentConfigPage.toasts.paymentFailed.title",
-                    t,
-                );
+                    // Créer les données finales de paiement
+                    const paymentData = buildHelloAssoPaymentData(
+                        {
+                            amount: effectiveAmount,
+                            resourceName,
+                            resourceId,
+                            itemsIds: Array.from(activeItemsIds),
+                            contributorType: contributorType as "citoyens" | "organizations",
+                            organizationId: contributorId || undefined,
+                        },
+                        helloAssoPaymentId
+                    );
+                    completePayment(paymentData, depenseFunding);
+                } else if (verification.status === "failed") {
+                    console.error("Paiement HelloAsso échoué");
+                    clearInterval(verifyInterval);
+                    setIsVerifyingPayment(false);
+                    setIsHelloAssoProcessing(false);
+                    showErrorToast(
+                        new Error(verification.error || String(t("PaymentConfigPage.toasts.paymentFailed.fallbackDescription"))),
+                        "PaymentConfigPage.toasts.paymentFailed.title",
+                        t,
+                    );
+                }
+                // Si status === "pending" ou "error", continuer à vérifier
+            } finally {
+                polling = false;
             }
-            // Si status === "pending" ou "error", continuer à vérifier
         }, 5000);
 
         return () => clearInterval(verifyInterval);
@@ -569,7 +593,7 @@ const PaymentConfigPage = ({
                         <h3 className="text-lg font-semibold text-foreground">{resourceName}</h3>
                         <p className="text-3xl font-bold text-primary">{effectiveAmount.toLocaleString("fr-FR")} €</p>
                         <p className="text-sm text-muted-foreground">
-                            {activeItems.length} {String(t("PaymentConfigPage.pledge.selected"))}
+                            {activeItems.length} {String(t("PaymentConfigPage.pledge.selected", undefined, { count: activeItems.length }))}
                         </p>
                     </div>
                 </div>
@@ -801,7 +825,7 @@ const PaymentConfigPage = ({
                         <ExternalLink className="w-5 h-5 mr-2" />
                         {isHelloAssoProcessing
                             ? t("PaymentConfigPage.helloasso.buttonLoading")
-                            : t("PaymentConfigPage.helloasso.button", undefined, { amount: effectiveAmount })}
+                            : t("PaymentConfigPage.helloasso.button", undefined, { amount: formatNumber(effectiveAmount) })}
                     </Button>
                 )}
 

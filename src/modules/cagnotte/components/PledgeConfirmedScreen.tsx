@@ -34,7 +34,7 @@ export function PledgeConfirmedScreen({
                 {t("PledgeConfirmedScreen.title")}
             </h3>
             <p className="text-muted-foreground">
-                {itemCount
+                {itemCount && itemCount > 1
                     ? t("PledgeConfirmedScreen.subtitleMultiple", undefined, { count: itemCount, amount: formattedAmount })
                     : t("PledgeConfirmedScreen.subtitleSingle", undefined, { amount: formattedAmount })}
             </p>
