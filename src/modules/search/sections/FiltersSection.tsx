@@ -1,6 +1,7 @@
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useLocalization } from "@/hooks/useLocalization";
+import { useCountryDisplayNames } from "@/hooks/useCountryDisplayNames";
 import "@/modules/search/i18n";
 import { cn } from "@/lib/utils";
 import type { FiltersSectionProps } from "../schema";
@@ -172,15 +173,7 @@ export function FiltersSection({
   // On les merge dans un seul `filterAnswerData` → rendu + sélection communs.
   const filtersByAnswersOptions = filtersByAnswers ?? {};
   const filterAnswerResult = useFiltersByAnswersQuery(`filters-answers-${id}`, filtersByAnswersOptions as Parameters<typeof useFiltersByAnswersQuery>[1]);
-  const countryDisplayNames = useMemo(() => {
-    if (typeof Intl === "undefined" || typeof Intl.DisplayNames === "undefined") {
-      return null;
-    }
-
-    const supportedLocales = Intl.DisplayNames.supportedLocalesOf([currentLocale, "fr", "en"]);
-    const localeToUse = supportedLocales[0] ?? "fr";
-    return new Intl.DisplayNames([localeToUse], { type: "region" });
-  }, [currentLocale]);
+  const countryDisplayNames = useCountryDisplayNames();
 
   const filtersByPathOptions = filtersByPath ?? {};
   const filterByPathResult = useFiltersByPathQuery(`filters-by-path-${id}`, filtersByPathOptions as Parameters<typeof useFiltersByPathQuery>[1]);

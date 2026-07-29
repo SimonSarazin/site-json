@@ -1,5 +1,9 @@
+import { useState } from "react";
+import { format } from "date-fns";
 import { SearchCardProps } from "../../schema";
 import { cn } from "@/lib/utils";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import getDateFnsLocale from "@/dateFns";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import useItem from "../../hooks/useItem";
 import { getEntityColorClasses, getEntityIconName } from "@/lib/entityIcons";
@@ -22,16 +26,97 @@ function getEventAvatarIcon(tags: string[]): string {
   return getEntityIconName("events"); // "calendar"
 }
 
+interface EventCardPlainProps {
+  onClick?: () => void;
+  name: string | null;
+  eventDate: string | null;
+  startDate: Date | null;
+  organizerName: string | null;
+  location: string | null;
+  avatarIcon: string;
+  avatarColorClasses: string;
+}
+
+/**
+ * Variante SANS image de la carte événement.
+ *
+ * Bâtie sur le `Card` shadcn — c'est exactement la boîte qu'il décrit (fond,
+ * bordure, rayon, ombre), inutile de la réécrire à la main. L'espace laissé
+ * libre par l'absence de visuel est rendu à l'information plutôt qu'occupé par
+ * un décor : jour et mois en gros, titre, puis organisateur et lieu en pied.
+ *
+ * `h-full` plutôt que le `h-72` de la carte-affiche : les éléments d'une grille
+ * s'étirent par défaut, donc une rangée uniquement composée de ces cartes se
+ * règle sur son propre contenu (pas de vide de 288 px), tandis qu'une rangée
+ * MIXTE s'aligne d'elle-même sur la hauteur de la carte-affiche.
+ */
+function EventCardPlain({
+  onClick,
+  name,
+  eventDate,
+  startDate,
+  organizerName,
+  location,
+  avatarIcon,
+  avatarColorClasses,
+}: EventCardPlainProps) {
+  const locale = getDateFnsLocale();
+  return (
+    <Card
+      onClick={onClick}
+      className="h-full w-full cursor-pointer gap-4 py-5 shadow-lg transition-shadow hover:shadow-xl"
+    >
+      <CardContent className="px-5">
+        {startDate ? (
+          <div className="flex items-baseline gap-2 text-primary">
+            <span className="text-4xl font-bold leading-none tabular-nums">
+              {format(startDate, "d", { locale })}
+            </span>
+            <span className="text-sm font-semibold uppercase tracking-wide">
+              {format(startDate, "LLL yyyy", { locale })}
+            </span>
+          </div>
+        ) : (
+          eventDate && (
+            <div className="text-sm font-semibold text-primary tabular-nums">{eventDate}</div>
+          )
+        )}
+
+        {name && <h3 className="mt-3 line-clamp-3 text-base font-semibold">{name}</h3>}
+      </CardContent>
+
+      {/* `mt-auto` colle le pied en bas quel que soit le nombre de lignes du
+          titre ; `border-t` déclenche le `pt` que `CardFooter` prévoit pour lui. */}
+      <CardFooter className="mt-auto items-start gap-3 border-t px-5">
+        <div
+          className={cn(
+            "flex h-9 w-9 shrink-0 items-center justify-center rounded-full shadow-sm",
+            avatarColorClasses,
+          )}
+        >
+          <DynamicIcon name={avatarIcon as IconName} className="h-4 w-4" />
+        </div>
+        <div className="min-w-0 flex-1">
+          {organizerName && <p className="truncate text-sm font-bold">{organizerName}</p>}
+          {location && <p className="truncate text-xs text-muted-foreground">{location}</p>}
+        </div>
+      </CardFooter>
+    </Card>
+  );
+}
+
 export default function CardEvent({
   item,
   onClick,
 }: SearchCardProps) {
   const data = useItem(item);
+  const [imageFailed, setImageFailed] = useState(false);
 
   const {
     name,
     image,
     eventDate,
+    startDate,
     organizerName,
     address,
     tags = [],
@@ -40,6 +125,32 @@ export default function CardEvent({
   const location = address?.addressLocality || null;
   const avatarIcon = getEventAvatarIcon(tags);
   const avatarColorClasses = getEntityColorClasses("events");
+
+  // Sans image, la carte-affiche perdait son fond : les deux panneaux de verre
+  // flottaient sur 288 px de vide. Or beaucoup d'événements relayés (appels à
+  // projets, assises, réunions) n'ont AUCUN visuel — la variante ci-dessous les
+  // rend en typographie, la date devenant le repère principal.
+  //
+  // Même bascule si l'image ne CHARGE pas : un `profilImageUrl` peut pointer sur
+  // un fichier absent (on en observe dont le chemin contient littéralement
+  // `/null/null/`), et un cadre d'image rompu est pire que pas d'image du tout.
+  //
+  // Aiguillage en amont du rendu : la carte-affiche ci-dessous est INTACTE, un
+  // événement dont l'image charge passe exactement par le même code qu'avant.
+  if (!image || imageFailed) {
+    return (
+      <EventCardPlain
+        onClick={onClick}
+        name={name}
+        eventDate={eventDate}
+        startDate={startDate}
+        organizerName={organizerName}
+        location={location}
+        avatarIcon={avatarIcon}
+        avatarColorClasses={avatarColorClasses}
+      />
+    );
+  }
 
   return (
     <div
@@ -52,6 +163,7 @@ export default function CardEvent({
           src={image}
           alt={name}
           width={400}
+          onError={() => setImageFailed(true)}
           className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
         />
       )}

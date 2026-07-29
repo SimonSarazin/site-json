@@ -171,7 +171,16 @@ function BarsChart({ def, data, dims, labels, t, animate, onDrill }: RendererPro
           />
           <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
           <ChartTooltip content={<ChartTooltipContent />} cursor={{ fill: "var(--muted)" }} />
-          <Bar dataKey="value" fill="var(--chart-1)" radius={[6, 6, 0, 0]} isAnimationActive={animate} onClick={drill} />
+          <Bar dataKey="value" fill="var(--chart-1)" radius={[6, 6, 0, 0]} isAnimationActive={animate} onClick={drill}>
+            {/* `colors` était déclarée au schéma pour TOUS les types de graphe mais
+                seuls `donut`/`pie` l'honoraient : posée sur un `bars`, elle ne
+                produisait rien, sans erreur ni avertissement. On la respecte ici.
+                Sans elle, la barre garde `chart-1` — une série unique s'encode par
+                la LONGUEUR, une couleur par barre n'ajouterait aucune information. */}
+            {def.colors && items.map((it, i) => (
+              <Cell key={it.name} fill={colorFor(def, it.name, i)} />
+            ))}
+          </Bar>
         </BarChart>
       </ChartContainer>
     </ChartCard>
@@ -197,7 +206,12 @@ function BarsHorizontalChart({ def, data, dims, labels, t, animate, onDrill }: R
             interval={0}
           />
           <ChartTooltip content={<ChartTooltipContent />} cursor={{ fill: "var(--muted)" }} />
-          <Bar dataKey="value" fill="var(--chart-1)" radius={[0, 6, 6, 0]} isAnimationActive={animate} onClick={drill} />
+          <Bar dataKey="value" fill="var(--chart-1)" radius={[0, 6, 6, 0]} isAnimationActive={animate} onClick={drill}>
+            {/* Idem `bars` : `colors` n'était pas lue ici. Défaut monochrome conservé. */}
+            {def.colors && items.map((it, i) => (
+              <Cell key={it.name} fill={colorFor(def, it.name, i)} />
+            ))}
+          </Bar>
         </BarChart>
       </ChartContainer>
     </ChartCard>

@@ -89,7 +89,7 @@
     "paymentMethodLabel": "Méthode de paiement",
     "stripe": {
       "title": "Stripe",
-      "description": "Saisie carte directement dans la modale",
+      "description": "Saisie carte directement",
       "missingConfig": "Configuration manquante",
       "formLabel": "Informations carte bancaire (Stripe)"
     },
@@ -106,6 +106,18 @@
         "li4": "Fermez la popup après le paiement pour revenir",
         "li5": "Le financement est enregistré après confirmation réelle du paiement"
       }
+    },
+    "pledge": {
+      "title": "Payer plus tard",
+      "description": "Sans paiement immédiat",
+      "button": "Confirmer l'engagement de ({{amount}}€)",
+      "confirm": "Votre engagement de {{amount}}€ sera enregistré. Pour payer veuillez accéder à vos promesses en cours.",
+      "checkbox": "En cochant cette case, je valide ma promesse de contribution.",
+      "pledge": "Payer plus tard",
+      "selected": "selectionné",
+      "selected_plural": "selectionnés",
+      "proposition": "proposition",
+      "project": "projet"
     },
     "selectMethodPlaceholder": "Sélectionnez une méthode de paiement",
     "successScreen": {
@@ -498,21 +510,29 @@
   },
   "CagnotteDialog": {
     "title": "Cagnotte Participative",
-    "description": "Soutenez les projets océaniques et la plateforme communautaire",
+    "description": "Soutenez les initiatives et la plateforme communautaire",
+    "loadingPayment": "Chargement du paiement…",
     "fallbacks": {
-      "untitled": "Projet sans titre"
+      "untitled": "Projet sans titre",
+      "untitled_proposition": "Proposition sans titre"
     },
     "labels": {
-      "supportedProject": "Projet soutenu",
-      "selectProject": "Sélectionner un projet à soutenir",
+      "supportedResource": "Projet soutenu",
+      "supportedResource_proposition": "Proposition soutenu",
+      "selectResource": "Sélectionner un projet à soutenir",
+      "selectResource_proposition": "Sélectionner une proposition à soutenir",
       "noOrganization": "Aucune organisation sélectionnée",
-      "loadingProjects": "Chargement des projets...",
-      "noProjects": "Aucun projet disponible pour cette organisation",
-      "selectProjectPlaceholder": "Sélectionner un projet...",
+      "loadingResources": "Chargement des projets...",
+      "loadingResources_proposition": "Chargement des propositions...",
+      "noResource": "Aucun projet disponible pour cette organisation",
+      "noResource_proposition": "Aucune proposition disponible pour cette organisation",
+      "selectResourcePlaceholder": "Sélectionner un projet...",
+      "selectResourcePlaceholder_proposition": "Sélectionner une proposition...",
       "setAsMainCagnotte": "Définir comme cagnotte principale",
-      "projectCagnotte": "Cagnotte du projet",
+      "resourceCagnotte": "Cagnotte du projet",
+      "resourceCagnotte_proposition": "Cagnotte de la proposition",
       "targetSuffix": "sur {{target}} € objectif",
-      "milestonesTitle": "Objectifs de la cagnotte",
+      "itemsTitle": "Objectifs de la cagnotte",
       "amountSection": "Choisissez un montant",
       "customAmountSection": "Ou entrez un montant libre",
       "customAmountPlaceholder": "Montant",
@@ -520,7 +540,7 @@
       "contribute": "Contribuer",
       "processing": "Traitement...",
       "fundingLabel": "Financement",
-      "infoText1": "Chaque euro récolté soutient directement les projets de protection marine et le fonctionnement de la plateforme.",
+      "infoText1": "Chaque euro récolté soutient directement les projets et le fonctionnement de la plateforme communautaire",
       "infoText2": "Les fonds sont répartis équitablement entre les projets sélectionnés par la communauté et les frais de maintenance."
     },
     "successScreen": {
@@ -533,16 +553,19 @@
       "thankYou": "Merci pour votre contribution !"
     },
     "toasts": {
-      "milestoneReached": {
+      "itemReached": {
         "title": "Palier atteint : {{amount}} € !"
       },
-      "projectRequired": {
+      "resourceRequired": {
         "title": "Projet requis",
-        "description": "Veuillez sélectionner un projet."
+        "title_proposition": "Proposition requise",
+        "description": "Veuillez sélectionner un projet.",
+        "description_proposition": "Veuillez sélectionner une proposition."
       },
-      "milestoneRequired": {
+      "itemRequired": {
         "title": "Objectif requis",
-        "description": "Veuillez sélectionner au moins un milestone."
+        "description": "Veuillez sélectionner au moins un milestone.",
+        "description_proposition": "Veuillez sélectionner au moins un objectif."
       },
       "invalidAmount": {
         "title": "Montant invalide",
@@ -555,6 +578,26 @@
       "saveSuccess": {
         "title": "Succès"
       }
+    },
+    "pledges": {
+        "toast": "Vous avez {{count}} promesse de total {{totalAmount}} € à régler!",
+        "toast_plural": "Vous avez {{count}} promesses de total {{totalAmount}} € à régler!",
+        "list": {
+          "title": "Mes promesses de financement",
+          "triggerResource": "Par ressource",
+          "triggerFunder": "Par financeur",
+          "noPledges": "Aucune promesse en attente.",
+          "engagement": "engagement",
+          "engagements": "engagements",
+          "by": "Par",
+          "for": "Pour",
+          "totalSelectedLabel": "Total sélectionné",
+          "PaySelected": "Payer ma sélection",
+          "return": "Retour à la cagnotte"
+        },
+        "payment": {
+          "title": "Paiement des promesses"
+        }
     }
   },
   "FinanceSection": {
@@ -727,5 +770,38 @@
   },
   "a11y": {
     "back": "Retour"
+  },
+  "Pledges" : {
+    "list" : {
+      "title": "Paiement des Promesses",
+      "triggerProject": "Par projet",
+      "triggerFunder": "Par financeur",
+      "pledge": "engagement",
+      "pledge_plural": "engagements",
+      "For": "Pour",
+      "From": "Par",
+      "totalSelectedLabel": "Sélection totale :",
+      "PaySelected": "Payer ma sélection ",
+      "return": "Retour à la cagnotte"
+    },
+    "payform" : {
+      "selectedPledge" : "engagement sélectionnée",
+      "selectedPledge_plural" : "engagements sélectionnées"
+    }
+  },
+  "PaymentReceivedScreen": {
+    "title": "Paiement reçu",
+    "subtitleSingle": "Votre contribution de {{amount}} € a bien été enregistrée.",
+    "subtitleMultiple": "Vos {{count}} promesses ({{amount}} €) ont bien été payées.",
+    "objectiveReached": { "label": "Palier atteint !" },
+    "closeButton": "Fermer",
+    "returnHomeButton": "Retour à l'accueil"
+  },
+  "PledgeConfirmedScreen": {
+    "title": "Promesse enregistrée",
+    "subtitleSingle": "Votre promesse de {{amount}} € a bien été enregistrée.",
+    "subtitleMultiple": "Vos {{count}} promesses ({{amount}} €) ont bien été enregistrées.",
+    "hint": "Vous pourrez régler ce montant à tout moment depuis le bouton de vos promesses.",
+    "closeButton": "Fermer"
   }
 }

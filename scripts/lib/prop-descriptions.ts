@@ -57,19 +57,71 @@ const LIST: Record<string, string> = {
   "resource.cityField": "Champ de la ville affichée (repli code : address.addressLocality).",
   "resource.urlsField": "Champ des liens externes string[] (repli code : urls).",
   previewParam: "Nom du paramètre URL de synchro du détail (défaut code : preview) — à différencier quand plusieurs sections cohabitent sur la page.",
+  // Rendu PAR ITEM. ⚠ Ne décrire QUE le dernier segment de chaque règle : les sous-schémas sont
+  // PARTAGÉS avec le bloc de base (CardConfSchema, PreviewConfSchema…), donc `itemRules[].card.type`
+  // et `card.type` désignent le MÊME nœud du dump — décrire les deux ferait s'écraser l'un l'autre.
+  itemRules: "Règles de rendu PAR ITEM d'une liste hétérogène (recherche globale) : la 1re dont `when` matche impose son presenter. Absent = une seule carte pour toute la liste (comportement historique).",
+  "itemRules[]": "Une règle = un prédicat `when` + les surcharges à appliquer aux items matchés. Une règle SANS `when` est un catch-all : à placer EN DERNIER, sinon elle masque toutes les suivantes.",
+  "itemRules[].id": "Identifiant lisible de la règle (debug, tests, warning DEV). Aucun effet fonctionnel.",
+  "itemRules[].when": "Prédicat PredicateJson (même grammaire que visibleIf) évalué contre {...serverData, collection, sourceKey, sourceKeys}, dot-paths résolus. Ancrer sur `collection` AVANT `type`.",
+  "itemRules[].card": "Carte des items matchés — FUSIONNÉE sur list.card : tagColors/detailsMode posés au niveau page restent hérités.",
+  "itemRules[].preview": "Détail des items matchés — FUSIONNÉ sur list.preview : width/showDetailLink posés au niveau page restent hérités.",
+  "itemRules[].testimonial": "Contrat testimonial de la règle — REMPLACE list.testimonial : un contrat de mapping est atomique, jamais fusionné.",
+  "itemRules[].resource": "Contrat resource de la règle — REMPLACE list.resource : un contrat de mapping est atomique, jamais fusionné.",
+  "itemRules[].itemAction": "Action au clic des items matchés — REMPLACE list.itemAction (ex. un POI type:article part vers le reader blog au lieu d'ouvrir un détail).",
+  itemAction: "Action au clic par DÉFAUT de la liste, surchargeable par règle. Absente = ouvrir le détail (comportement historique).",
+  "itemAction.kind": "preview (défaut, ouvre le détail) | profil (/profil/:slug) | link (gabarit `to`). En mode split, le clic focalise la carte et l'action est ignorée.",
+  "itemAction.to": "kind link : gabarit d'URL, `:slug` substitué (ex. /blog/:slug). Sans placeholder = lien statique. Non contrôlé contre les routes : n'y mettre aucune donnée utilisateur.",
+  "itemAction.toById": "kind link : gabarit de repli quand l'item n'a pas de slug, `:id` substitué (ex. /blog/id/:id). Ni slug ni id → aucune navigation, on retombe sur le détail.",
+  "itemAction.newTab": "kind link : ouvre dans un nouvel onglet (window.open noopener) au lieu de naviguer dans la page.",
 };
 
 /** Sous-bloc baseParams (recherche backend searchCostum) — clés communes. */
 const BASE_PARAMS: Record<string, string> = {
   defaultTypes: "Types d'entités cherchés (organizations/projects/events/citoyens/poi/answers/news…).",
   defaultFilters: "Filtres backend envoyés TELS QUELS à searchCostum (pass-through — une clé inconnue part au backend).",
+  defaultFields: "Projection des champs renvoyés. Tout champ testé par un list.itemRules[].when DOIT y figurer, sinon la règle ne matche JAMAIS, en silence. Absent = jeu par défaut du backend.",
   defaultSortBy: "Tri serveur : map champ→1|-1.",
   searchBy: "Champs matchés par la recherche texte : \"ALL\", CSV, ou array de paths (dot-paths supportés).",
   indexStepList: "Taille de page de la liste (pagination/scroll infini).",
   locality: "Périmètre géographique (zones actives par id/type/level).",
 };
 
+/** Notes partagées par searchPro et searchProStatic — pièges du rendu par item. */
+const ITEM_RULES_NOTES: string[] = [
+  "list.itemRules : la PREMIÈRE règle dont `when` matche gagne entièrement ; une règle sans `when` est un catch-all, à placer EN DERNIER.",
+  "serverData.type a DEUX sémantiques (sous-type POI article/affiche/recoveryCenter vs sous-type d'organisation NGO/Group/…) : ancrer toute règle sur `collection` avant `type`.",
+  "Trois `itemAction` homonymes coexistent : list.itemAction (clic sur une carte de liste, kind preview|profil|link), map.itemAction (bouton de popup carte, kind profil|preview), commandPalette.entitySearch.itemAction (clic dans la palette).",
+];
+
 export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
+  costumForm: {
+    id: "Identité du document — la modale s'ouvre par `add-<id>` / `edit-<id>`. Doit correspondre à la clé sous `config.costumForms`.",
+    entityType: "Collection SDK visée à la CRÉATION (organizations, projects, events, poi…).",
+    collection: "Collection réelle des documents, quand elle diffère de `entityType` (sous-type d'organisation, POI typé…).",
+    costumSlug: "Crée dans le scope costum EXPLICITE (`me.costum(slug)`) plutôt que sur `me`. À défaut, tout create hérite du costum AMBIANT du déploiement.",
+    icon: "Icône lucide (kebab-case) de l'en-tête de modale.",
+    deriveDefaults: "false = aucun `field.default` n'est dérivé du widget : le socle vient de `defaultsBase`. Défaut code : true.",
+    "layout.kind": "Gabarit de rendu du formulaire : tabs, wizard, flat… Décide comment `sections` est présenté.",
+    fields: "DÉCLARATION des champs, forme TERSE : seul `widget` est requis, `type`/`read`/`default` sont dérivés de WIDGET_DEFAULTS. Précédence : champ explicite > fieldPresets[widget] > widget.",
+    sections: "PLACEMENT des champs. ⚠ Le moteur rend en parcourant sections → groups → fields : un champ déclaré dans `fields` mais placé dans AUCUNE section n'est JAMAIS rendu (ni affiché, ni sérialisé).",
+    "sections[]": "Une section accepte DEUX formes : `groups: [{columns, fields}]` (multi-colonnes) OU `fields: []` à plat — `sectionGroups()` normalise l'une vers l'autre. Un outil qui ne lit que `groups` croit la section vide.",
+    serializeGroups: "N champs plats ↔ 1 objet serveur : décompose `serverData[serverKey]` à la lecture et le recompose à l'écriture (adresse, horaires…). `read`/`write` sont des clés de codec.",
+    fieldPresets: "Défauts PAR WIDGET, appliqués entre WIDGET_DEFAULTS et le champ lui-même (ex. placeholderSearch de tous les selects).",
+    chrome: "Textes de la modale. `title.add`/`title.edit` acceptent une clé i18n OU un LocalizedString inline.",
+    "chrome.authPrompt": "Textes de l'invite affichée à un visiteur NON connecté, à la place du formulaire (`title`, `description`). Absent = traductions `AuthRequired.*` du namespace modules/profil.",
+    slots: "UI React insérée ENTRE les champs, ancrée par une entrée `\"$slot:<id>\"` dans une section. Valeur = clé du registre `registerSlot`.",
+    "image.field": "Champ portant l'avatar. Idiome du projet : la valeur est posée dans le draft puis un seul `save()` — pas d'upload séparé.",
+    scope: "Contexte costum lu du carrier live (`useCocolight().entity`) — clé du registre `registerScopeFn`, pas une closure.",
+    defaultsBase: "Clé du registre `registerDefaultsFn` : état initial du formulaire en création. Employé surtout avec `deriveDefaults: false`.",
+    listsFromCarrier: "Alimente les selects depuis les listes du costum porteur (`serverData.lists`) plutôt que depuis une énumération figée.",
+    validateFn: "Clé de registre d'une validation CROSS-champ (ce qu'un schéma par champ ne peut pas exprimer).",
+    schemaFn: "Clé de registre d'un schéma Zod externe, quand la dérivation par widget ne suffit pas.",
+    cleanValues: "Hygiène des valeurs avant envoi. FnRef : une clé, ou `{fn, params}` pour une fonction générique paramétrée (ex. dropEmptyArrayItems + {fields}).",
+    afterSubmit: "Clé de registre d'un effet joué après enregistrement réussi.",
+    descriptorVariant: "Variante de descripteur à résoudre quand plusieurs rendus partagent le même document.",
+    "mutation.entityType": "Collection SDK réellement mutée — peut différer d'`entityType` quand la modale crée un sous-type.",
+  },
   page: {
     path: "Chemin de la page (`/`, `/agenda`). Unique dans le config, et cible possible d'un lien de nav — `audit:config` flague tout lien vers un chemin qui n'existe ni ici ni dans les routes de modules.",
     title: "Titre de la page. Sert de repli au titre SEO (`seo.title` prime) et s'affiche dans l'onglet du navigateur.",
@@ -142,6 +194,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     contactSection: "Bloc contact du design contact-partners : items {icon, label, lines|value, href}.",
     partners: "Logos partenaires (contact-partners) — images EXTERNES rendues en <img> brut (pas /img : domaine non allowlisté → 403).",
     logoIcon: "Icône de marque du footer : nom Lucide ou SVG inline.",
+    "partners.note": "Mention de financement sous les logos. Un cofinancement public impose une formulation (dispositif, opérateur, cadre) que les logos seuls ne portent pas ; sans ce champ elle finit dans le copyright.",
   },
 
   theme: {
@@ -245,6 +298,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.cards": "Cartes-compteurs (countKey du count globalautocomplete + label/icon/color/href) ; absent → auto-détection des types.",
     "props.baseParams": "Périmètre du count (sans sourceKey — entité costum courante).",
     "props.bg": "Fond : token sémantique OU classe Tailwind brute (ex. bg-cyan-500).",
+    "props.scope": "Périmètre compté. auto (défaut code) = comportement historique : le $or est élargi à la localité ET au slug du costum — mesuré à 530 au lieu de 49. costum = strictement le costum ; config = le $or écrit tel quel.",
   },
 
   "section:thematics": {
@@ -252,6 +306,12 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.emptyMessage": "Message affiché quand l'entité n'a pas de filières.",
   },
 
+  "section:data-observatory": {
+    "props.maxWidth": "Largeur du conteneur (défaut code : 8xl = 1440 px). À aligner sur les sections voisines dès que le tableau de bord partage sa page — deux largeurs différentes se voient immédiatement.",
+    "props.kpiLayout": "Rendu des KPI : cards (défaut code, trois grandes cartes) ou inline (ligne de chiffres tabulaires). Préférer inline pour un résumé posé en accueil, où des cartes écrasent le reste.",
+    "props.drilldown": "Opt-in : un clic sur une part ou une barre applique le filtre de la dimension, si elle est filtrable.",
+    "props.export": "Opt-in : bouton CSV du résultat filtré et trié (BOM Excel). `fields` = export COMPLET des données détail plutôt que des colonnes du tableau.",
+  },
   "section:agenda": {
     "props.customHeader": "En-tête teaser avec lien « voir tous » — même convention que searchProStatic.customHeader (home → /evenements).",
     "props.limit": "Limite d'events par bucket (teaser home) ; absent = tous + « charger plus » pour Passés.",
@@ -261,6 +321,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.enableMap": "Active la vue Carte (réutilise SearchMap du module search).",
     "props.mapView": "Rendu de la vue carte : map (plein écran) ou split (liste+carte synchronisées, desktop).",
     "props.map": "Config carte (marqueurs/popup/zoom) — MÊME schéma que searchProStatic.map.",
+    "props.maxWidth": "Largeur du conteneur. ABSENT = `container` historique (plafond 1536 px), pour une page agenda dédiée. À RENSEIGNER dès que l'agenda est un teaser parmi d'autres sections, sinon il déborde de ses voisines.",
     "props.tabs": "Onglets affichés parmi ongoing/upcoming/past (défaut code : upcoming, ongoing, past).",
     "props.defaultTab": "Onglet initial (défaut code : upcoming).",
     "props.upcomingWindowMonths": "Fenêtre (mois) du fetch calendrier now→futur (défaut code 12).",
@@ -374,10 +435,12 @@ export const BLOCK_NOTES: Record<string, string[]> = {
   "section:searchPro": [
     "Synchronise ses filtres dans l'URL → UNE seule instance par page (multi-instances = searchProStatic).",
     "baseParams n'a PAS de sourceKey ici : recherche réseau global (périmètre costum = searchProStatic).",
+    ...ITEM_RULES_NOTES,
   ],
   "section:searchProStatic": [
     "Conçue pour plusieurs instances par page (pas de sync URL des filtres).",
     "audit:config exige un baseParams (catégorie module-prereq) — toujours renseigner sourceKey.",
+    ...ITEM_RULES_NOTES,
   ],
   "section:agenda": [
     "baseParams est passthrough : les clés inconnues sont TOLÉRÉES mais ignorées (searchEventsCostum force searchType=events et trie par occurrence).",

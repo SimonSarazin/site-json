@@ -142,6 +142,15 @@ sur le legacy (`SearchNew::getQueries`).
 Un costum active la modération en posant `toBeValidated.<slug>` à la création (hook `prepData`, ex. CressReunion) ;
 `validategroup` (module admin) le retire à la validation.
 
+> ⚠️ **N'écrivez jamais `"status": "validated"` dans un `defaultFilters`.** `status` ne porte que le
+> cycle de vie (`uncomplete` / `deleted` / `deletePending`) et ne prend **jamais** la valeur
+> `validated` : le filtre matche **0 document, sans la moindre erreur**. Le cas s'est produit en
+> production (cible « paroles » de parent62 : liste vide pendant des semaines). La validation costum
+> se pilote par `toBeValidated`, posé AUTOMATIQUEMENT côté client par `applyValidationGate`
+> (`src/modules/search/lib/buildSearchPayload.ts`) dès qu'un `costumSlug` est présent dans
+> `baseParams` — opt-out explicite via `showUnvalidated`. Corollaire : **une section sans
+> `costumSlug` n'a pas de gate**, et affiche donc aussi les éléments en attente.
+
 ### Où c'est appliqué
 
 - **Backend Node** (`cocolight-backend/src/shared/search.ts`, `buildQuery`) : applique **nativement** le double

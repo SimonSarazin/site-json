@@ -15,8 +15,8 @@
       "fr",
       "en"
     ],
-    "favicon": "/images/cyberReunion/logo.png",
-    "themeColor": "#d4a520",
+    "favicon": "/images/cyberReunion/favicon-cyber-reunion.png",
+    "themeColor": "#000091",
     "keywords": [
       "cybersécurité",
       "EDIH",
@@ -27,42 +27,17 @@
     ]
   },
   "header": {
-    "type": "transparent-scroll",
+    "type": "standard",
     "path": "/",
-    "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10\"></path></svg>",
-    "logoTitle": {
-      "fr": "Cyber Réunion",
-      "en": "Cyber Réunion"
-    },
+    "logoSize": "lg",
     "ctaButton": {
       "label": {
-        "fr": "Se connecter",
-        "en": "Log in"
+        "fr": "Démarrer mon parcours",
+        "en": "Start my journey"
       },
-      "path": "/aide-cyber"
+      "path": "https://www.cyber-reunion.fr/edih/demarrer-mon-parcours/"
     },
     "nav": [
-      {
-        "label": {
-          "fr": "Accueil",
-          "en": "Home"
-        },
-        "path": "/"
-      },
-      {
-        "label": {
-          "fr": "Projets",
-          "en": "Projects"
-        },
-        "path": "/projets"
-      },
-      {
-        "label": {
-          "fr": "Membres",
-          "en": "Members"
-        },
-        "path": "/membres"
-      },
       {
         "label": {
           "fr": "Annuaire",
@@ -72,22 +47,33 @@
       },
       {
         "label": {
-          "fr": "Mapping",
+          "fr": "Cartographie",
           "en": "Mapping"
         },
         "path": "/mapping"
+      },
+      {
+        "label": {
+          "fr": "Membres",
+          "en": "Members"
+        },
+        "path": "/membres"
       }
     ],
     "sticky": true,
-    "transparent": false,
     "height": "lg",
     "utilities": {
-      "themeSwitch": false,
+      "themeSwitch": true,
       "langSwitch": true,
       "search": false,
       "auth": true,
       "cart": false,
       "notifications": true
+    },
+    "logo": "/images/cyberReunion/logo-edih-la-reunion.png",
+    "logoAlt": {
+      "fr": "EDIH La Réunion — European Digital Innovation Hub, coordonné par Cyber Réunion",
+      "en": "EDIH La Réunion — European Digital Innovation Hub, coordinated by Cyber Réunion"
     }
   },
   "pages": [
@@ -100,73 +86,17 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-parallax",
-          "id": "hero-cyber-reunion",
+          "type": "html",
+          "id": "hero-releve",
           "props": {
-            "variant": "accent",
-            "headline": {
-              "fr": "Cyber Réunion gyugu",
-              "en": "Cyber Réunion"
-            },
-            "subhead": {
-              "fr": "Pôle européen d'innovation numérique pour la cybersécurité à La Réunion. Accompagnement, formation et sensibilisation pour protéger vos données.",
-              "en": "European Digital Innovation Hub for cybersecurity in Réunion. Support, training and awareness to protect your data."
-            },
-            "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10\"></path></svg>",
-            "backgroundImage": "/images/cyberReunion/hero.png",
-            "backgroundImageAlt": {
-              "fr": "Fond cybersécurité Cyber Réunion",
-              "en": "Cyber Réunion cybersecurity background"
-            },
-            "badges": [
-              {
-                "label": {
-                  "fr": "Protection des données",
-                  "en": "Data protection"
-                },
-                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\"></rect><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"></path></svg>"
-              },
-              {
-                "label": {
-                  "fr": "Formation cyber",
-                  "en": "Cyber training"
-                },
-                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M22 10v6M2 10l10-5 10 5-10 5z\"></path><path d=\"M6 12v5c3 3 9 3 12 0v-5\"></path></svg>"
-              },
-              {
-                "label": {
-                  "fr": "Innovation EDIH",
-                  "en": "EDIH Innovation"
-                },
-                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83\"></path></svg>"
-              }
-            ],
-            "ctaButtons": [
-              {
-                "label": {
-                  "fr": "Mon Aide Cyber",
-                  "en": "My Cyber Help"
-                },
-                "path": "/aide-cyber",
-                "variant": "default"
-              },
-              {
-                "label": {
-                  "fr": "Signaler une urgence",
-                  "en": "Report emergency"
-                },
-                "path": "/hero.png",
-                "variant": "accent"
-              }
-            ],
-            "showScrollIndicator": true
+            "html": "<section class=\"releve py-24 px-4\"><div class=\"container mx-auto max-w-5xl\"><p class=\"releve-eyebrow\">EDIH La Réunion · Cartographie publique</p><h1 class=\"text-4xl md:text-6xl font-bold leading-tight mt-6\">L’écosystème cybersécurité de l’océan Indien occidental</h1><p class=\"text-lg md:text-xl mt-6 max-w-3xl opacity-90\">Un relevé public et ouvert des acteurs de la cybersécurité, de l’Afrique australe à l’Inde et à l’Australie : entreprises, CERT, laboratoires, organismes de formation et réseaux.</p><div class=\"releve-iso mt-10\"><span>ZA</span><span>MZ</span><span>TZ</span><span>KE</span><span>MG</span><span>MU</span><span class=\"is-home\">RE</span><span>SC</span><span>MV</span><span>LK</span><span>IN</span><span>AU</span><span>FR</span></div><div class=\"flex flex-wrap gap-4 mt-10\"><a href=\"/annuaire\" class=\"releve-cta\">Explorer l’annuaire</a><a href=\"/mapping\" class=\"releve-cta-ghost\">Voir la cartographie</a></div></div></section>"
           }
         },
         {
           "type": "html",
           "id": "mission",
           "props": {
-            "html": "<section class=\"relative py-32 px-4 overflow-hidden\"><div class=\"absolute inset-0 z-0\"><img src=\"/images/cyberReunion/mission.png\" alt=\"Mission Cyber Réunion\" class=\"w-full h-full object-cover\" /><div class=\"absolute inset-0 bg-linear-to-r from-background via-background/80 to-background/60\"></div></div><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"space-y-8\"><h2 class=\"text-4xl md:text-5xl font-bold mb-6 text-foreground\">Notre mission</h2><div class=\"space-y-6 text-lg md:text-xl leading-relaxed\"><p class=\"text-muted-foreground\"><span class=\"text-primary font-semibold\">Cyber Réunion</span> est le pôle européen d'innovation numérique (EDIH) dédié à la <span class=\"text-primary font-medium\">cybersécurité</span> pour les entreprises et collectivités de La Réunion.</p><p class=\"text-muted-foreground\">Nous accompagnons la <span class=\"text-accent font-medium\">transformation numérique sécurisée</span> de notre territoire en proposant des services d'évaluation, de formation et de mise en relation avec l'écosystème cyber régional et européen.</p><div class=\"grid md:grid-cols-2 gap-6 pt-8\"><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-sm border border-primary/20\"><h3 class=\"text-2xl font-semibold mb-3 text-primary\">Accompagnement personnalisé</h3><p class=\"text-muted-foreground\">Diagnostic cyber, plan d'action sur mesure et suivi pour renforcer votre posture de sécurité informatique</p></div><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-sm border border-accent/20\"><h3 class=\"text-2xl font-semibold mb-3 text-accent\">Réponse aux incidents</h3><p class=\"text-muted-foreground\">En cas d'urgence cyber, notre équipe vous guide dans les premières actions et vous oriente vers les bons interlocuteurs</p></div></div></div></div></div></section>"
+            "html": "<section class=\"py-24 px-4 bg-muted\"><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"space-y-8\"><h2 class=\"text-4xl md:text-5xl font-bold mb-6 text-foreground\">Notre mission</h2><div class=\"space-y-6 text-lg md:text-xl leading-relaxed\"><p class=\"text-muted-foreground\"><span class=\"text-primary font-semibold\">Cyber Réunion</span> est le pôle européen d'innovation numérique (EDIH) dédié à la <span class=\"text-primary font-medium\">cybersécurité</span> pour les entreprises et collectivités de La Réunion.</p><p class=\"text-muted-foreground\">Nous accompagnons la <span class=\"text-accent font-medium\">transformation numérique sécurisée</span> de notre territoire en proposant des services d'évaluation, de formation et de mise en relation avec l'écosystème cyber régional et européen.</p><div class=\"grid md:grid-cols-2 gap-6 pt-8\"><div class=\"p-6 rounded-lg bg-background backdrop-blur-sm border border-primary/20\"><h3 class=\"text-2xl font-semibold mb-3 text-primary\">Accompagnement personnalisé</h3><p class=\"text-muted-foreground\">Diagnostic cyber, plan d'action sur mesure et suivi pour renforcer votre posture de sécurité informatique</p></div><div class=\"p-6 rounded-lg bg-background backdrop-blur-sm border border-accent/20\"><h3 class=\"text-2xl font-semibold mb-3 text-accent\">Réponse aux incidents</h3><p class=\"text-muted-foreground\">En cas d'urgence cyber, notre équipe vous guide dans les premières actions et vous oriente vers les bons interlocuteurs</p></div></div></div></div></div></section>"
           }
         },
         {
@@ -255,7 +185,8 @@
                 },
                 "color": "accent"
               }
-            ]
+            ],
+            "bg": "default"
           }
         },
         {
@@ -282,7 +213,7 @@
                   "fr": "Proposez votre projet",
                   "en": "Propose your project"
                 },
-                "href": "/proposer-projet",
+                "href": "/annuaire",
                 "color": "primary"
               },
               {
@@ -295,8 +226,8 @@
                   "fr": "Ateliers collectifs",
                   "en": "Collective workshops"
                 },
-                "href": "/participer",
-                "color": "teal"
+                "href": "/annuaire",
+                "color": "accent"
               },
               {
                 "icon": "alert-triangle",
@@ -308,8 +239,8 @@
                   "fr": "Priorités du moment",
                   "en": "Current priorities"
                 },
-                "href": "/urgence-cyber",
-                "color": "amber"
+                "href": "https://www.cyber-reunion.fr/edih/",
+                "color": "destructive"
               },
               {
                 "icon": "coins",
@@ -321,10 +252,11 @@
                   "fr": "Soutenez une initiative",
                   "en": "Support an initiative"
                 },
-                "href": "/projets",
-                "color": "eco"
+                "href": "/annuaire",
+                "color": "chart-4"
               }
-            ]
+            ],
+            "bg": "muted"
           }
         },
         {
@@ -339,11 +271,6 @@
             "subhead": {
               "fr": "Un réseau d'experts locaux pour accompagner la transformation numérique sécurisée de nos entreprises",
               "en": "A network of local experts to support the secure digital transformation of our businesses"
-            },
-            "image": "/images/cyberReunion/community.png",
-            "imageAlt": {
-              "fr": "Événement cybersécurité à La Réunion",
-              "en": "Cybersecurity event in Réunion"
             },
             "actions": [
               {
@@ -360,7 +287,7 @@
                   "fr": "Voir les projets",
                   "en": "View projects"
                 },
-                "href": "/projets"
+                "href": "/annuaire"
               },
               {
                 "icon": "clipboard-check",
@@ -376,7 +303,7 @@
                   "fr": "Faire le diagnostic",
                   "en": "Start assessment"
                 },
-                "href": "/aide-cyber"
+                "href": "https://www.cyber-reunion.fr/edih/"
               },
               {
                 "icon": "badge-check",
@@ -392,7 +319,7 @@
                   "fr": "Rejoindre",
                   "en": "Join"
                 },
-                "href": "/rejoindre"
+                "href": "/annuaire"
               },
               {
                 "icon": "alert-triangle",
@@ -408,175 +335,43 @@
                   "fr": "Appel urgence",
                   "en": "Emergency call"
                 },
-                "href": "/urgence-cyber"
+                "href": "https://www.cyber-reunion.fr/edih/"
               }
             ],
-            "stats": [
-              {
-                "value": "50+",
-                "label": {
-                  "fr": "Prestataires certifiés",
-                  "en": "Certified providers"
-                },
-                "color": "primary"
-              },
-              {
-                "value": "200+",
-                "label": {
-                  "fr": "Entreprises accompagnées",
-                  "en": "Companies supported"
-                },
-                "color": "primary"
-              },
-              {
-                "value": "6",
-                "label": {
-                  "fr": "Domaines d'expertise",
-                  "en": "Areas of expertise"
-                },
-                "color": "accent"
-              },
-              {
-                "value": "24/7",
-                "label": {
-                  "fr": "Assistance disponible",
-                  "en": "Support available"
-                },
-                "color": "primary"
-              }
-            ]
+            "bg": "default"
           }
         },
         {
-          "type": "cta-newsletter",
-          "id": "cta",
+          "type": "cta",
+          "id": "cta-referencement",
           "props": {
-            "variant": "accent",
             "headline": {
-              "fr": "Protégez votre entreprise dès aujourd'hui",
-              "en": "Protect your business today"
+              "fr": "Votre structure manque à la cartographie ?",
+              "en": "Is your organisation missing from the map?"
             },
             "subhead": {
-              "fr": "Rejoignez l'écosystème Cyber Réunion et bénéficiez de l'accompagnement EDIH pour sécuriser votre transformation numérique",
-              "en": "Join the Cyber Réunion ecosystem and benefit from EDIH support to secure your digital transformation"
+              "fr": "L’annuaire recense les acteurs de la cybersécurité de toute la zone, de l’Afrique australe à l’Inde. Référencez la vôtre pour la rendre visible auprès de l’écosystème et des donneurs d’ordre.",
+              "en": "The directory lists cybersecurity actors across the whole region, from southern Africa to India. Add yours to make it visible to the ecosystem and to contracting authorities."
             },
-            "newsletterPlaceholder": {
-              "fr": "Votre email professionnel",
-              "en": "Your professional email"
-            },
-            "newsletterButtonLabel": {
-              "fr": "S'abonner",
-              "en": "Subscribe"
-            },
-            "newsletterDisclaimer": {
-              "fr": "Recevez les alertes cyber et actualités EDIH Cyber Réunion",
-              "en": "Receive cyber alerts and EDIH Cyber Réunion news"
-            },
+            "align": "center",
             "buttons": [
               {
                 "label": {
-                  "fr": "Voir les projets",
-                  "en": "View projects"
+                  "fr": "Référencer ma structure",
+                  "en": "List my organisation"
                 },
-                "href": "/projets",
+                "href": "/register",
+                "variant": "default"
+              },
+              {
+                "label": {
+                  "fr": "Vérifier si elle y est déjà",
+                  "en": "Check if it is already listed"
+                },
+                "href": "/annuaire",
                 "variant": "outline"
-              },
-              {
-                "label": {
-                  "fr": "Signaler un incident",
-                  "en": "Report an incident"
-                },
-                "href": "/urgence-cyber",
-                "variant": "accent"
               }
             ]
-          }
-        }
-      ]
-    },
-    {
-      "path": "/projets",
-      "title": {
-        "fr": "Projets - Cyber Réunion",
-        "en": "Projects - Cyber Réunion"
-      },
-      "layout": "fullwidth",
-      "sections": [
-        {
-          "type": "searchHeader",
-          "id": "projets-cyber",
-          "props": {
-            "headline": {
-              "fr": "Projets",
-              "en": "Projects"
-            },
-            "subhead": {
-              "fr": "Découvrez les projets cybersécurité à La Réunion",
-              "en": "Discover cybersecurity projects in Réunion"
-            },
-            "buttons": [
-              {
-                "label": {
-                  "fr": "Proposer un projet",
-                  "en": "Submit a project"
-                },
-                "icon": "plus",
-                "action": "add-project",
-                "variant": "primary"
-              }
-            ],
-            "showSearch": true,
-            "searchPlaceholder": {
-              "fr": "Rechercher un projet...",
-              "en": "Search for a project..."
-            }
-          }
-        },
-        {
-          "type": "searchProStatic",
-          "id": "section-project-list",
-          "props": {
-            "useFilter": true,
-            "showMap": false,
-            "enableMap": true,
-            "showActiveFiltersTypes": true,
-            "showActiveFiltersTags": true,
-            "disableInfiniteScroll": false,
-            "baseParams": {
-              "defaultTypes": [
-                "projects"
-              ],
-              "notSourceKey": true,
-              "defaultFilters": {
-                "links.preferences.toBeValidated.openAtlas": {
-                  "$exists": false
-                },
-                "$or": {
-                  "links.contributors.695b58ca8693fc2c121208e4": {
-                    "$exists": true
-                  },
-                  "parent.695b58ca8693fc2c121208e4": {
-                    "$exists": true
-                  }
-                },
-                "links.contributors.695b58ca8693fc2c121208e4": {
-                  "$exists": true
-                }
-              }
-            },
-            "list": {
-              "columns": {
-                "sm": 1,
-                "md": 2,
-                "lg": 3,
-                "xl": 4
-              },
-              "card": {
-                "type": "profile",
-                "variant": "profile",
-                "detailsMode": "drawer"
-              }
-            }
           }
         }
       ]
@@ -618,7 +413,6 @@
           "type": "member",
           "id": "section-membres",
           "props": {
-            "organizationId": "695b58ca8693fc2c121208e4",
             "title": {
               "fr": "Membres de Cyber Réunion",
               "en": "Cyber Réunion Members"
@@ -626,9 +420,9 @@
             "showRole": true,
             "showManagement": true,
             "showCard": false,
-            "enableMap": true,
             "card": {
               "type": "profile",
+              "showStats": false,
               "showDescription": true,
               "showAddress": true,
               "detailsMode": "drawer"
@@ -652,180 +446,334 @@
             "headline": {
               "fr": "Cyber Sécurité Réunion",
               "en": "Cyber Security Réunion"
-            }
+            },
+            "showSearch": false
           }
         },
         {
-          "type": "searchProStatic",
-          "id": "section-annuaire-list",
+          "type": "gridLayout",
           "props": {
-            "title": {
-              "fr": "Annuaire",
-              "en": "Directory"
-            },
-            "icon": "building-2",
-            "showSearch": true,
-            "placeholder": {
-              "fr": "Rechercher un annuaire ...",
-              "en": "Search for a directory..."
-            },
-            "tagSelector": {
-              "show": true,
-              "placeholder": {
-                "fr": "Filtrer par typologie...",
-                "en": "Filter by typology..."
-              },
-              "options": {
-                "Entreprises(produits/solutions et services)": "Entreprises (produits/solutions et services)",
-                "CERT/CSIRT": "CERT/CSIRT",
-                "Organismes de formation": "Organismes de formation",
-                "Laboratoires/recherche": "Laboratoires/recherche",
-                "Structure d'accompagnement et financement": "Structure d'accompagnement et financement",
-                "Réseaux/cluster": "Réseaux/cluster",
-                "Services défense/intérieur": "Services défense/intérieur",
-                "Association/ONG": "Association/ONG"
+            "leftColumns": 1,
+            "rightColumns": 3,
+            "gap": 4,
+            "leftSection": {
+              "type": "filters",
+              "props": {
+                "title": {
+                  "fr": "Filtres",
+                  "en": "Filters"
+                },
+                "defaultOpenGroups": [
+                  "typologie",
+                  "pays"
+                ],
+                "filterGroups": [
+                  {
+                    "id": "typologie",
+                    "label": {
+                      "fr": "Type d'acteur",
+                      "en": "Type of actor"
+                    },
+                    "field": "typologie",
+                    "options": [
+                      {
+                        "id": "entreprises",
+                        "label": {
+                          "fr": "Entreprises (produits, solutions et services)",
+                          "en": "Companies (products, solutions, services)"
+                        },
+                        "name": "Entreprises(produits/solutions et services)"
+                      },
+                      {
+                        "id": "cert-csirt",
+                        "label": {
+                          "fr": "CERT / CSIRT",
+                          "en": "CERT / CSIRT"
+                        },
+                        "name": "CERT/CSIRT"
+                      },
+                      {
+                        "id": "formation",
+                        "label": {
+                          "fr": "Organismes de formation",
+                          "en": "Training organisations"
+                        },
+                        "name": "Organismes de formation"
+                      },
+                      {
+                        "id": "recherche",
+                        "label": {
+                          "fr": "Laboratoires / recherche",
+                          "en": "Labs / research"
+                        },
+                        "name": "Laboratoires /recherche"
+                      },
+                      {
+                        "id": "accompagnement",
+                        "label": {
+                          "fr": "Accompagnement et financement",
+                          "en": "Support & funding"
+                        },
+                        "name": "Structure d’accompagnement et financement"
+                      },
+                      {
+                        "id": "reseaux",
+                        "label": {
+                          "fr": "Réseaux / cluster",
+                          "en": "Networks / clusters"
+                        },
+                        "name": "Réseaux/cluster"
+                      },
+                      {
+                        "id": "defense",
+                        "label": {
+                          "fr": "Services défense / intérieur",
+                          "en": "Defence / interior"
+                        },
+                        "name": "Services défense/intérieur"
+                      },
+                      {
+                        "id": "association",
+                        "label": {
+                          "fr": "Association / ONG",
+                          "en": "Associations / NGOs"
+                        },
+                        "name": "Association/ONG"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "pays",
+                    "label": {
+                      "fr": "Pays",
+                      "en": "Country"
+                    },
+                    "field": "address.addressCountry",
+                    "options": [
+                      {
+                        "id": "in",
+                        "label": {
+                          "fr": "Inde",
+                          "en": "India"
+                        },
+                        "name": "IN"
+                      },
+                      {
+                        "id": "au",
+                        "label": {
+                          "fr": "Australie",
+                          "en": "Australia"
+                        },
+                        "name": "AU"
+                      },
+                      {
+                        "id": "ke",
+                        "label": {
+                          "fr": "Kenya",
+                          "en": "Kenya"
+                        },
+                        "name": "KE"
+                      },
+                      {
+                        "id": "tz",
+                        "label": {
+                          "fr": "Tanzanie",
+                          "en": "Tanzania"
+                        },
+                        "name": "TZ"
+                      },
+                      {
+                        "id": "lk",
+                        "label": {
+                          "fr": "Sri Lanka",
+                          "en": "Sri Lanka"
+                        },
+                        "name": "LK"
+                      },
+                      {
+                        "id": "re",
+                        "label": {
+                          "fr": "La Réunion",
+                          "en": "Réunion"
+                        },
+                        "name": "RE"
+                      },
+                      {
+                        "id": "mv",
+                        "label": {
+                          "fr": "Maldives",
+                          "en": "Maldives"
+                        },
+                        "name": "MV"
+                      },
+                      {
+                        "id": "sc",
+                        "label": {
+                          "fr": "Seychelles",
+                          "en": "Seychelles"
+                        },
+                        "name": "SC"
+                      },
+                      {
+                        "id": "mz",
+                        "label": {
+                          "fr": "Mozambique",
+                          "en": "Mozambique"
+                        },
+                        "name": "MZ"
+                      },
+                      {
+                        "id": "mu",
+                        "label": {
+                          "fr": "Maurice",
+                          "en": "Mauritius"
+                        },
+                        "name": "MU"
+                      },
+                      {
+                        "id": "mg",
+                        "label": {
+                          "fr": "Madagascar",
+                          "en": "Madagascar"
+                        },
+                        "name": "MG"
+                      },
+                      {
+                        "id": "za",
+                        "label": {
+                          "fr": "Afrique du Sud",
+                          "en": "South Africa"
+                        },
+                        "name": "ZA"
+                      }
+                    ]
+                  }
+                ]
               }
             },
-            "zoneSelector": {
-              "show": true,
-              "placeholder": {
-                "fr": "Filtrer par pays...",
-                "en": "Filter by country..."
-              },
-              "countryCode": [
-                "RE",
-                "AU",
-                "ZA",
-                "KE",
-                "MG",
-                "MZ",
-                "TZ",
-                "SC",
-                "LK",
-                "IN",
-                "MU"
-              ],
-              "level": [
-                1
-              ],
-              "sortBy": "name",
-              "costumSlug": "cyberReunion",
-              "costumEditMode": false,
-              "costumId": "695b58ca8693fc2c121208e4",
-              "costumType": "organizations"
-            },
-            "csvButton": {
-              "show": true,
-              "label": {
-                "fr": "CSV",
-                "en": "CSV"
-              },
-              "columns": [
-                {
-                  "header": "Nom",
-                  "path": "name"
+            "rightSection": {
+              "type": "searchProStatic",
+              "id": "section-annuaire-list",
+              "props": {
+                "title": {
+                  "fr": "Annuaire",
+                  "en": "Directory"
                 },
-                {
-                  "header": "SIREN",
-                  "path": "siren"
+                "icon": "building-2",
+                "showSearch": false,
+                "placeholder": {
+                  "fr": "Rechercher un annuaire ...",
+                  "en": "Search for a directory..."
                 },
-                {
-                  "header": "Email",
-                  "path": "email"
-                },
-                {
-                  "header": "Type d'acteur",
-                  "path": "typologie"
-                },
-                {
-                  "header": "Domaines/sous-domaines",
-                  "path": "domains"
-                },
-                {
-                  "header": "Spécialités",
-                  "path": "specialities"
-                },
-                {
-                  "header": "offre(matériels/logiciels/services)",
-                  "path": "offer"
-                },
-                {
-                  "header": "Contact",
-                  "path": "contact"
-                },
-                {
-                  "header": "Partenariats/affiliations",
-                  "path": "partners"
-                },
-                {
-                  "header": "Source(URL)",
-                  "path": "link"
-                },
-                {
-                  "header": "Date de vérification",
-                  "path": "date"
-                },
-                {
-                  "header": "Adresse",
-                  "path": "address"
-                }
-              ]
-            },
-            "useFilter": true,
-            "showMap": false,
-            "enableMap": true,
-            "showActiveFiltersTypes": true,
-            "showActiveFiltersTags": true,
-            "disableInfiniteScroll": false,
-            "baseParams": {
-              "defaultTypes": [
-                "organizations"
-              ],
-              "defaultFields": [
-                "name",
-                "shortDescription",
-                "siren",
-                "collection",
-                "email",
-                "typologie",
-                "domains",
-                "specialities",
-                "offer",
-                "contact",
-                "partners",
-                "link",
-                "date",
-                "address"
-              ],
-              "notSourceKey": true,
-              "defaultFilters": {
-                "$or": {
-                  "source.key": "cyberReunion",
-                  "source.keys": "cyberReunion",
-                  "reference.costum": "cyberReunion",
-                  "links.contributors.695b58ca8693fc2c121208e4": {
-                    "$exists": true
+                "csvButton": {
+                  "show": true,
+                  "label": {
+                    "fr": "CSV",
+                    "en": "CSV"
                   },
-                  "links.projects.695b58ca8693fc2c121208e4": {
-                    "$exists": true
+                  "columns": [
+                    {
+                      "header": "Nom",
+                      "path": "name"
+                    },
+                    {
+                      "header": "SIREN",
+                      "path": "siren"
+                    },
+                    {
+                      "header": "Email",
+                      "path": "email"
+                    },
+                    {
+                      "header": "Type d'acteur",
+                      "path": "typologie"
+                    },
+                    {
+                      "header": "Domaines/sous-domaines",
+                      "path": "domains"
+                    },
+                    {
+                      "header": "Spécialités",
+                      "path": "specialties"
+                    },
+                    {
+                      "header": "offre(matériels/logiciels/services)",
+                      "path": "offer"
+                    },
+                    {
+                      "header": "Contact",
+                      "path": "contact"
+                    },
+                    {
+                      "header": "Partenariats/affiliations",
+                      "path": "partners"
+                    },
+                    {
+                      "header": "Source(URL)",
+                      "path": "link"
+                    },
+                    {
+                      "header": "Date de vérification",
+                      "path": "date"
+                    },
+                    {
+                      "header": "Adresse",
+                      "path": "address"
+                    }
+                  ]
+                },
+                "useFilter": true,
+                "showMap": false,
+                "enableMap": true,
+                "showActiveFiltersTypes": false,
+                "showActiveFiltersTags": false,
+                "disableInfiniteScroll": false,
+                "baseParams": {
+                  "defaultTypes": [
+                    "organizations"
+                  ],
+                  "defaultFields": [
+                    "name",
+                    "shortDescription",
+                    "siren",
+                    "collection",
+                    "email",
+                    "typologie",
+                    "domains",
+                    "specialties",
+                    "offer",
+                    "contact",
+                    "partners",
+                    "link",
+                    "date",
+                    "address"
+                  ],
+                  "notSourceKey": true,
+                  "defaultFilters": {
+                    "$or": {
+                      "source.key": "cyberReunion",
+                      "source.keys": "cyberReunion",
+                      "costumId": "695b58ca8693fc2c121208e4"
+                    },
+                    "preferences.toBeValidated.cyberReunion": {
+                      "$exists": false
+                    }
+                  }
+                },
+                "list": {
+                  "columns": {
+                    "sm": 1,
+                    "md": 2,
+                    "lg": 3,
+                    "xl": 4
                   },
-                  "links.memberOf.695b58ca8693fc2c121208e4": {
-                    "$exists": true
+                  "card": {
+                    "type": "profile",
+                    "showStats": false,
+                    "variant": "profile",
+                    "detailsMode": "drawer"
                   }
                 }
-              }
-            },
-            "list": {
-              "columns": {
-                "sm": 1,
-                "md": 2,
-                "lg": 3,
-                "xl": 4
-              },
-              "card": {
-                "type": "profile",
-                "variant": "profile",
-                "detailsMode": "drawer"
               }
             }
           }
@@ -868,8 +816,8 @@
               "Entreprises(produits/solutions et services)",
               "CERT/CSIRT",
               "Organismes de formation",
-              "Laboratoires/recherche",
-              "Structure d'accompagnement et financement",
+              "Laboratoires /recherche",
+              "Structure d’accompagnement et financement",
               "Réseaux/cluster",
               "Services défense/intérieur",
               "Association/ONG"
@@ -880,19 +828,11 @@
               ],
               "defaultFilters": {
                 "$or": {
-                  "parent.695b58ca8693fc2c121208e4": {
-                    "$exists": true
-                  },
+                  "source.key": "cyberReunion",
                   "source.keys": "cyberReunion",
-                  "reference.costum": "cyberReunion",
-                  "links.projects.695b58ca8693fc2c121208e4": {
-                    "$exists": true
-                  },
-                  "links.memberOf.695b58ca8693fc2c121208e4": {
-                    "$exists": true
-                  }
+                  "costumId": "695b58ca8693fc2c121208e4"
                 },
-                "toBeValidated": {
+                "preferences.toBeValidated.cyberReunion": {
                   "$exists": false
                 }
               },
@@ -906,6 +846,7 @@
               },
               "card": {
                 "type": "profile",
+                "showStats": false,
                 "showDescription": true,
                 "showAddress": true,
                 "detailsMode": "drawer"
@@ -917,188 +858,113 @@
     }
   ],
   "footer": {
-    "type": "sidebar-columns",
-    "style": "card",
-    "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10\"></path></svg>",
-    "logoTitle": {
-      "fr": "Cyber Réunion",
-      "en": "Cyber Réunion"
-    },
-    "description": {
-      "fr": "EDIH La Réunion - Hub Européen d'Innovation Numérique en Cybersécurité",
-      "en": "EDIH Réunion - European Digital Innovation Hub for Cybersecurity"
-    },
-    "website": "https://www.cyber-reunion.fr",
+    "type": "contact-partners",
     "columns": [
       {
         "title": {
-          "fr": "Services",
-          "en": "Services"
+          "fr": "La cartographie",
+          "en": "The map"
         },
         "links": [
           {
-            "href": "/projets",
             "label": {
-              "fr": "Projets",
-              "en": "Projects"
-            }
+              "fr": "Accueil",
+              "en": "Home"
+            },
+            "href": "/"
           },
           {
-            "href": "/aide-cyber",
             "label": {
-              "fr": "Mon Aide Cyber",
-              "en": "My Cyber Help"
-            }
+              "fr": "Annuaire des acteurs",
+              "en": "Actor directory"
+            },
+            "href": "/annuaire"
           },
           {
-            "href": "/diagnostic",
             "label": {
-              "fr": "Diagnostic gratuit",
-              "en": "Free assessment"
-            }
+              "fr": "Cartographie",
+              "en": "Mapping"
+            },
+            "href": "/mapping"
           },
           {
-            "href": "/urgence-cyber",
             "label": {
-              "fr": "Urgence Cyber",
-              "en": "Cyber Emergency"
-            }
-          },
-          {
-            "href": "/formations",
-            "label": {
-              "fr": "Formations",
-              "en": "Training"
-            }
+              "fr": "Membres",
+              "en": "Members"
+            },
+            "href": "/membres"
           }
         ]
       },
       {
         "title": {
-          "fr": "Domaines",
-          "en": "Domains"
+          "fr": "EDIH La Réunion",
+          "en": "EDIH La Réunion"
         },
         "links": [
           {
-            "href": "/domaines/gouvernance",
             "label": {
-              "fr": "Gouvernance",
-              "en": "Governance"
-            }
+              "fr": "Le dispositif",
+              "en": "The programme"
+            },
+            "href": "https://www.cyber-reunion.fr/edih/"
           },
           {
-            "href": "/domaines/infrastructures",
             "label": {
-              "fr": "Sécurité infrastructures",
-              "en": "Infrastructure security"
-            }
+              "fr": "Démarrer mon parcours",
+              "en": "Start my journey"
+            },
+            "href": "https://www.cyber-reunion.fr/edih/demarrer-mon-parcours/"
           },
           {
-            "href": "/domaines/acces",
             "label": {
-              "fr": "Sécurité accès",
-              "en": "Access security"
-            }
+              "fr": "Aides financières",
+              "en": "Financial support"
+            },
+            "href": "https://www.cyber-reunion.fr/edih/aides-financieres/"
           },
           {
-            "href": "/domaines/postes",
             "label": {
-              "fr": "Sécurité postes",
-              "en": "Endpoint security"
-            }
-          },
-          {
-            "href": "/domaines/sensibilisation",
-            "label": {
-              "fr": "Sensibilisation",
-              "en": "Awareness"
-            }
+              "fr": "Ressources utiles",
+              "en": "Useful resources"
+            },
+            "href": "https://www.cyber-reunion.fr/ressources-utiles/"
           }
         ]
       },
       {
         "title": {
-          "fr": "EDIH",
-          "en": "EDIH"
+          "fr": "Cyber Réunion",
+          "en": "Cyber Réunion"
         },
         "links": [
           {
-            "href": "/a-propos",
             "label": {
-              "fr": "À propos",
-              "en": "About"
-            }
+              "fr": "Qui sommes-nous ?",
+              "en": "About us"
+            },
+            "href": "https://www.cyber-reunion.fr/qui-sommes-nous/"
           },
           {
-            "href": "/partenaires",
             "label": {
-              "fr": "Nos partenaires",
-              "en": "Our partners"
-            }
+              "fr": "CSIRT — signaler un incident",
+              "en": "CSIRT — report an incident"
+            },
+            "href": "https://www.cyber-reunion.fr/csirt/"
           },
           {
-            "href": "/rejoindre",
-            "label": {
-              "fr": "Devenir prestataire",
-              "en": "Become a provider"
-            }
-          },
-          {
-            "href": "/actualites",
             "label": {
               "fr": "Actualités",
               "en": "News"
-            }
+            },
+            "href": "https://www.cyber-reunion.fr/actualites/"
           },
           {
-            "href": "/contact",
             "label": {
-              "fr": "Contact",
-              "en": "Contact"
-            }
-          }
-        ]
-      },
-      {
-        "title": {
-          "fr": "Ressources",
-          "en": "Resources"
-        },
-        "links": [
-          {
-            "href": "/ressources/guides",
-            "label": {
-              "fr": "Guides pratiques",
-              "en": "Practical guides"
-            }
-          },
-          {
-            "href": "/ressources/alertes",
-            "label": {
-              "fr": "Alertes ANSSI",
-              "en": "ANSSI alerts"
-            }
-          },
-          {
-            "href": "/ressources/bonnes-pratiques",
-            "label": {
-              "fr": "Bonnes pratiques",
-              "en": "Best practices"
-            }
-          },
-          {
-            "href": "/faq",
-            "label": {
-              "fr": "FAQ",
-              "en": "FAQ"
-            }
-          },
-          {
-            "href": "/ressources/glossaire",
-            "label": {
-              "fr": "Glossaire",
-              "en": "Glossary"
-            }
+              "fr": "Espace presse",
+              "en": "Press room"
+            },
+            "href": "https://www.cyber-reunion.fr/espace-presse/"
           }
         ]
       }
@@ -1123,61 +989,222 @@
     ],
     "legalLinks": [
       {
-        "href": "/mentions-legales",
         "label": {
           "fr": "Mentions légales",
           "en": "Legal notice"
-        }
+        },
+        "href": "https://www.cyber-reunion.fr/mentions-legales/"
       },
       {
-        "href": "/confidentialite",
         "label": {
-          "fr": "Politique de confidentialité",
-          "en": "Privacy policy"
-        }
-      },
-      {
-        "href": "/accessibilite",
-        "label": {
-          "fr": "Accessibilité",
-          "en": "Accessibility"
-        }
+          "fr": "Politique de cookies",
+          "en": "Cookie policy"
+        },
+        "href": "https://www.cyber-reunion.fr/politique-de-cookies/"
       }
     ],
     "copyright": {
       "fr": "© 2025 Cyber Réunion - EDIH La Réunion. Projet cofinancé par l'Union européenne.",
       "en": "© 2025 Cyber Réunion - EDIH Réunion. Project co-financed by the European Union."
+    },
+    "contactSection": {
+      "title": {
+        "fr": "Nos coordonnées",
+        "en": "Contact us"
+      },
+      "items": [
+        {
+          "icon": "mail",
+          "value": {
+            "fr": "contact@cyber-reunion.fr",
+            "en": "contact@cyber-reunion.fr"
+          },
+          "href": "mailto:contact@cyber-reunion.fr"
+        },
+        {
+          "icon": "globe",
+          "value": {
+            "fr": "www.cyber-reunion.fr",
+            "en": "www.cyber-reunion.fr"
+          },
+          "href": "https://www.cyber-reunion.fr"
+        },
+        {
+          "icon": "map-pin",
+          "lines": [
+            {
+              "fr": "EDIH La Réunion",
+              "en": "EDIH Réunion"
+            },
+            {
+              "fr": "Pôle européen d'innovation numérique",
+              "en": "European Digital Innovation Hub"
+            },
+            {
+              "fr": "La Réunion, océan Indien",
+              "en": "Réunion, Indian Ocean"
+            }
+          ]
+        }
+      ]
+    },
+    "partners": {
+      "title": {
+        "fr": "Partenaires et soutiens",
+        "en": "Partners and supporters"
+      },
+      "logos": [
+        {
+          "image": "/images/cyberReunion/cofinancement-region-ue.png",
+          "alt": {
+            "fr": "Soutenu par la Région Réunion — cofinancé par l'Union européenne",
+            "en": "Supported by Région Réunion — co-financed by the European Union"
+          }
+        },
+        {
+          "image": "/images/cyberReunion/partenaires/edih-network.png",
+          "alt": {
+            "fr": "Réseau européen des EDIH",
+            "en": "European EDIH network"
+          }
+        },
+        {
+          "image": "/images/cyberReunion/partenaires/ecso.png",
+          "alt": {
+            "fr": "ECSO — European Cyber Security Organisation",
+            "en": "ECSO — European Cyber Security Organisation"
+          }
+        },
+        {
+          "image": "/images/cyberReunion/partenaires/cci-reunion.png",
+          "alt": {
+            "fr": "CCI Réunion",
+            "en": "CCI Réunion"
+          }
+        },
+        {
+          "image": "/images/cyberReunion/partenaires/clusir-roi.png",
+          "alt": {
+            "fr": "Clusir Réunion Océan Indien",
+            "en": "Clusir Réunion Indian Ocean"
+          }
+        },
+        {
+          "image": "/images/cyberReunion/partenaires/digital-reunion.png",
+          "alt": {
+            "fr": "Digital Réunion",
+            "en": "Digital Réunion"
+          }
+        },
+        {
+          "image": "/images/cyberReunion/partenaires/technopole-reunion.png",
+          "alt": {
+            "fr": "Technopole de La Réunion",
+            "en": "Réunion Technopole"
+          }
+        },
+        {
+          "image": "/images/cyberReunion/partenaires/la-reunion-developpement.png",
+          "alt": {
+            "fr": "La Réunion Développement",
+            "en": "La Réunion Développement"
+          }
+        },
+        {
+          "image": "/images/cyberReunion/partenaires/reunion-connectee.png",
+          "alt": {
+            "fr": "Réunion Connectée",
+            "en": "Réunion Connectée"
+          }
+        }
+      ]
     }
   },
-  "features": [
-    {
-      "key": "communityFeatures",
-      "enabled": true,
-      "rolloutPercentage": 100
-    },
-    {
-      "key": "lightMode",
-      "enabled": true,
-      "rolloutPercentage": 100
-    },
-    {
-      "key": "multiLanguage",
-      "enabled": true,
-      "rolloutPercentage": 100
-    }
-  ],
   "theme": {
-    "defaultMode": "dark",
+    "defaultMode": "light",
+    "colors": {
+      "light": {
+        "background": "#ffffff",
+        "foreground": "#0d1633",
+        "card": "#eef1f8",
+        "cardForeground": "#0d1633",
+        "popover": "#eef1f8",
+        "popoverForeground": "#0d1633",
+        "primary": "#000091",
+        "primaryForeground": "#ffffff",
+        "secondary": "#e7ecf7",
+        "secondaryForeground": "#0d1633",
+        "muted": "#e7ecf7",
+        "mutedForeground": "#4a5578",
+        "accent": "#f9bc06",
+        "accentForeground": "#0d1633",
+        "destructive": "#e0000f",
+        "destructiveForeground": "#ffffff",
+        "border": "#ccd6ec",
+        "input": "#ccd6ec",
+        "ring": "#000091",
+        "chart1": "#000091",
+        "chart2": "#f9bc06",
+        "chart3": "#e0000f",
+        "chart4": "#4a5578",
+        "chart5": "#7f8db3",
+        "sidebar": "#eef1f8",
+        "sidebarForeground": "#0d1633",
+        "sidebarPrimary": "#000091",
+        "sidebarPrimaryForeground": "#ffffff",
+        "sidebarAccent": "#e7ecf7",
+        "sidebarAccentForeground": "#0d1633",
+        "sidebarBorder": "#ccd6ec",
+        "sidebarRing": "#000091"
+      },
+      "dark": {
+        "background": "#080e21",
+        "foreground": "#eef2fb",
+        "card": "#1f2c47",
+        "cardForeground": "#eef2fb",
+        "popover": "#1f2c47",
+        "popoverForeground": "#eef2fb",
+        "primary": "#8585f6",
+        "primaryForeground": "#080e21",
+        "secondary": "#16203a",
+        "secondaryForeground": "#eef2fb",
+        "muted": "#16203a",
+        "mutedForeground": "#a3b4cd",
+        "accent": "#f9bc06",
+        "accentForeground": "#080e21",
+        "destructive": "#ee2b2b",
+        "destructiveForeground": "#ffffff",
+        "border": "#2b3a5c",
+        "input": "#2b3a5c",
+        "ring": "#8585f6",
+        "chart1": "#8585f6",
+        "chart2": "#f9bc06",
+        "chart3": "#ee2b2b",
+        "chart4": "#8896bd",
+        "chart5": "#b0bfd6",
+        "sidebar": "#1f2c47",
+        "sidebarForeground": "#eef2fb",
+        "sidebarPrimary": "#8585f6",
+        "sidebarPrimaryForeground": "#080e21",
+        "sidebarAccent": "#16203a",
+        "sidebarAccentForeground": "#eef2fb",
+        "sidebarBorder": "#2b3a5c",
+        "sidebarRing": "#8585f6"
+      }
+    },
     "typography": {
       "fontFamily": {
         "sans": [
-          "Inter"
+          "Archivo",
+          "sans-serif"
         ],
         "serif": [
-          "Roboto Slab"
+          "Bricolage Grotesque",
+          "sans-serif"
         ],
         "mono": [
-          "Roboto Mono"
+          "IBM Plex Mono",
+          "monospace"
         ]
       },
       "letterSpacing": "0em"
@@ -1219,8 +1246,8 @@
         "en": "Sign in"
       },
       "subtitle": {
-        "fr": "Accédez au réseau des passionné·es de la mer",
-        "en": "Access the network for ocean enthusiasts"
+        "fr": "Accédez à la cartographie de l'écosystème cyber de l'océan Indien",
+        "en": "Access the Indian Ocean cyber ecosystem map"
       }
     }
   },
@@ -1579,68 +1606,6 @@
                   "showCounts": true,
                   "showAddress": true,
                   "showOrganizer": true
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "id": "projects",
-          "label": {
-            "fr": "Projets",
-            "en": "Projects"
-          },
-          "sections": [
-            {
-              "type": "profile-tab-layout",
-              "leftSections": [
-                {
-                  "type": "profile-related",
-                  "relationType": "projects",
-                  "title": {
-                    "fr": "Projets",
-                    "en": "Projects"
-                  }
-                }
-              ],
-              "rightSections": [
-                {
-                  "type": "profile-info",
-                  "variant": "sidebar",
-                  "sticky": true,
-                  "showCounts": true,
-                  "showAddress": true
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "id": "events",
-          "label": {
-            "fr": "Événements",
-            "en": "Events"
-          },
-          "sections": [
-            {
-              "type": "profile-tab-layout",
-              "leftSections": [
-                {
-                  "type": "profile-related",
-                  "relationType": "events",
-                  "title": {
-                    "fr": "Événements",
-                    "en": "Events"
-                  }
-                }
-              ],
-              "rightSections": [
-                {
-                  "type": "profile-info",
-                  "variant": "sidebar",
-                  "sticky": true,
-                  "showCounts": true,
-                  "showAddress": true
                 }
               ]
             }
@@ -2159,5 +2124,534 @@
     "includeFavicon": true,
     "bgColor": "#ffffff",
     "fgColor": "#000000"
+  },
+  "costumForms": {
+    "cyber-reunion-organization": {
+      "id": "cyber-reunion-organization",
+      "entityType": "organizations",
+      "collection": "organizations",
+      "costumSlug": "cyberReunion",
+      "layout": {
+        "kind": "flat"
+      },
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        }
+      },
+      "sections": [
+        {
+          "id": "identite",
+          "label": {
+            "fr": "Identité",
+            "en": "Identity"
+          },
+          "fields": [
+            "name",
+            "profil_avatar",
+            "shortDescription",
+            "url"
+          ]
+        },
+        {
+          "id": "qualification",
+          "label": {
+            "fr": "Qualification",
+            "en": "Qualification"
+          },
+          "fields": [
+            "typologie",
+            "domains",
+            "specialties",
+            "offer",
+            "partners",
+            "siren"
+          ]
+        },
+        {
+          "id": "contact",
+          "label": {
+            "fr": "Contact et localisation",
+            "en": "Contact and location"
+          },
+          "fields": [
+            "email",
+            "telephone",
+            "address",
+            "addressCountry",
+            "addressLocality",
+            "postalCode",
+            "streetAddress",
+            "localityId",
+            "socialNetwork"
+          ]
+        }
+      ],
+      "fields": {
+        "name": {
+          "widget": "text",
+          "label": {
+            "fr": "Nom de l'organisation",
+            "en": "Organisation name"
+          },
+          "required": true
+        },
+        "profil_avatar": {
+          "widget": "image",
+          "label": {
+            "fr": "Logo",
+            "en": "Logo"
+          }
+        },
+        "shortDescription": {
+          "widget": "textarea",
+          "label": {
+            "fr": "Présentation courte",
+            "en": "Short description"
+          },
+          "placeholder": {
+            "fr": "Une à deux phrases (≈130 caractères)",
+            "en": "One or two sentences (~130 characters)"
+          }
+        },
+        "url": {
+          "widget": "text",
+          "label": {
+            "fr": "Site web",
+            "en": "Website"
+          },
+          "placeholder": {
+            "fr": "https://…",
+            "en": "https://…"
+          }
+        },
+        "typologie": {
+          "widget": "multiselect",
+          "label": {
+            "fr": "Type d'acteur",
+            "en": "Type of actor"
+          },
+          "enum": [
+            {
+              "value": "Entreprises(produits/solutions et services)",
+              "label": "Entreprises(produits/solutions et services)"
+            },
+            {
+              "value": "CERT/CSIRT",
+              "label": "CERT/CSIRT"
+            },
+            {
+              "value": "Organismes de formation",
+              "label": "Organismes de formation"
+            },
+            {
+              "value": "Laboratoires /recherche",
+              "label": "Laboratoires / recherche"
+            },
+            {
+              "value": "Structure d’accompagnement et financement",
+              "label": "Structure d’accompagnement et financement"
+            },
+            {
+              "value": "Réseaux/cluster",
+              "label": "Réseaux/cluster"
+            },
+            {
+              "value": "Services défense/intérieur",
+              "label": "Services défense/intérieur"
+            },
+            {
+              "value": "Association/ONG",
+              "label": "Association/ONG"
+            }
+          ],
+          "required": true,
+          "multiple": true
+        },
+        "domains": {
+          "widget": "multiselect",
+          "label": {
+            "fr": "Domaines / sous-domaines",
+            "en": "Domains / sub-domains"
+          },
+          "enum": [
+            {
+              "value": "Sécurité Réseau",
+              "label": "Sécurité Réseau"
+            },
+            {
+              "value": "Sécurité Cloud",
+              "label": "Sécurité Cloud"
+            },
+            {
+              "value": "Sécurité des postes",
+              "label": "Sécurité des postes"
+            },
+            {
+              "value": "Sécurité des Applications",
+              "label": "Sécurité des Applications"
+            },
+            {
+              "value": "Sécurité des Postes et Mobiles",
+              "label": "Sécurité des Postes et Mobiles"
+            },
+            {
+              "value": "Sécurité de l'IdO (IoT)",
+              "label": "Sécurité de l'IdO (IoT)"
+            },
+            {
+              "value": "Sécurité Opérationnelle et Gouvernance (SOC)",
+              "label": "Sécurité Opérationnelle et Gouvernance (SOC)"
+            },
+            {
+              "value": "Cryptographie/Cryptologie",
+              "label": "Cryptographie/Cryptologie"
+            },
+            {
+              "value": "Cybersécurité Offensive (Pentest)",
+              "label": "Cybersécurité Offensive (Pentest)"
+            },
+            {
+              "value": "Audit/Conseil et Conformité",
+              "label": "Audit/Conseil et Conformité"
+            }
+          ],
+          "multiple": true
+        },
+        "specialties": {
+          "widget": "multiselect",
+          "label": {
+            "fr": "Spécialités",
+            "en": "Specialities"
+          },
+          "enum": [
+            {
+              "value": "RSSI (CISO)",
+              "label": "RSSI (CISO)"
+            },
+            {
+              "value": "Consultant GRC",
+              "label": "Consultant GRC"
+            },
+            {
+              "value": "Auditeur de sécurité",
+              "label": "Auditeur de sécurité"
+            },
+            {
+              "value": "Analyste SOC",
+              "label": "Analyste SOC"
+            },
+            {
+              "value": "Incident Responder",
+              "label": "Incident Responder"
+            },
+            {
+              "value": "Analyste Threat Intelligence",
+              "label": "Analyste Threat Intelligence"
+            },
+            {
+              "value": "Pentester",
+              "label": "Pentester"
+            },
+            {
+              "value": "Red Teame",
+              "label": "Red Teame"
+            },
+            {
+              "value": "Architecte Sécurité",
+              "label": "Architecte Sécurité"
+            },
+            {
+              "value": "Ingénieur Sécurité Cloud",
+              "label": "Ingénieur Sécurité Cloud"
+            },
+            {
+              "value": "Développeur Sécurisé (DevSecOps)",
+              "label": "Développeur Sécurisé (DevSecOps)"
+            },
+            {
+              "value": "Cryptologue",
+              "label": "Cryptologue"
+            },
+            {
+              "value": "Analyste Forensic",
+              "label": "Analyste Forensic"
+            }
+          ],
+          "multiple": true
+        },
+        "offer": {
+          "widget": "text",
+          "label": {
+            "fr": "Offre (matériels / logiciels / services)",
+            "en": "Offering (hardware / software / services)"
+          }
+        },
+        "partners": {
+          "widget": "text",
+          "label": {
+            "fr": "Partenariats / affiliations",
+            "en": "Partnerships / affiliations"
+          }
+        },
+        "siren": {
+          "widget": "text",
+          "label": {
+            "fr": "SIREN",
+            "en": "SIREN"
+          }
+        },
+        "email": {
+          "widget": "email",
+          "label": {
+            "fr": "E-mail",
+            "en": "Email"
+          }
+        },
+        "telephone": {
+          "widget": "tel",
+          "label": {
+            "fr": "Téléphone",
+            "en": "Phone"
+          }
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Adresse",
+            "en": "Address"
+          }
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "socialNetwork": {
+          "widget": "editSocial",
+          "label": {
+            "fr": "Réseaux sociaux",
+            "en": "Social networks"
+          }
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Référencer une organisation",
+            "en": "List an organisation"
+          },
+          "edit": {
+            "fr": "Modifier la fiche",
+            "en": "Edit entry"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Envoyer pour validation",
+            "en": "Submit for review"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        }
+      },
+      "image": {
+        "field": "profil_avatar",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "mutation": {
+        "entityType": "organizations",
+        "inject": {
+          "extraFields": {
+            "type": "LocalBusiness",
+            "role": "admin",
+            "preferences": {
+              "toBeValidated": {
+                "cyberReunion": true
+              }
+            }
+          }
+        },
+        "successKey": {
+          "add": "toast.add.organizationSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.organizationError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_ORGANIZATION",
+          "edit": "EntityFormModal · UPDATE_ORGANIZATION"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard",
+          "params": {
+            "userList": "organizations"
+          }
+        }
+      }
+    }
+  },
+  "admin": {
+    "enabled": true,
+    "access": {
+      "min": "siteAdmin"
+    },
+    "tabs": [
+      {
+        "id": "dashboard",
+        "label": {
+          "fr": "Tableau de bord",
+          "en": "Dashboard"
+        },
+        "icon": "layout-dashboard",
+        "sections": [
+          {
+            "type": "dashboard"
+          }
+        ]
+      },
+      {
+        "id": "members",
+        "label": {
+          "fr": "Fiches à valider",
+          "en": "Entries to review"
+        },
+        "icon": "shield-check",
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "members",
+            "filters": [
+              "toBeValidated",
+              "isAdmin",
+              "isInviting",
+              "text"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "content",
+        "label": {
+          "fr": "Contenu",
+          "en": "Content"
+        },
+        "icon": "database",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "organizations",
+            "label": {
+              "fr": "Organisations",
+              "en": "Organisations"
+            },
+            "columns": [
+              "name",
+              {
+                "path": "typologie",
+                "label": {
+                  "fr": "Type d'acteur",
+                  "en": "Type of actor"
+                }
+              },
+              {
+                "path": "address.addressCountry",
+                "label": {
+                  "fr": "Pays",
+                  "en": "Country"
+                }
+              }
+            ],
+            "create": "inherit",
+            "edit": "inherit",
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate",
+              "reference"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "import-export",
+        "label": {
+          "fr": "Import / Export",
+          "en": "Import / Export"
+        },
+        "icon": "arrow-down-up",
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "import",
+            "entityTypes": [
+              "organizations"
+            ]
+          },
+          {
+            "type": "export",
+            "entityTypes": [
+              "organizations"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "reference",
+        "label": {
+          "fr": "Référencement",
+          "en": "Referencing"
+        },
+        "icon": "link-2",
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "reference",
+            "entityTypes": [
+              "organizations"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "floatingActionButton": {
+    "enabled": true,
+    "position": "bottom-left",
+    "label": {
+      "fr": "Référencer ma structure",
+      "en": "List my organisation"
+    },
+    "icon": "building-2",
+    "modal": "add-cyber-reunion-organization",
+    "condition": {
+      "auth": "required"
+    }
   }
 }

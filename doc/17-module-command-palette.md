@@ -85,15 +85,29 @@ champs**, tous optionnels :
 
 **`IconRuleSchema`** (symbole exporté par `schema.ts`) =
 `z.object({ when: PredicateJson, icon: z.string() })`. Pour chaque résultat, la
-**1re** règle de `iconRules[]` dont le prédicat `when` matche
-`{ ...serverData, collection }` gagne → `<DynamicIcon name={icon}/>` ; sinon repli
-sur `getEntityIcon(type)`. Le prédicat réutilise **exactement** `PredicateJson`
-de `requiredIf`/`visibleIf` (`{field, op, value}` + `and`/`or`/`not`). Imports :
-`register.tsx` importe `check` depuis `@/modules/formEngine/engine/conditional`,
-`Predicate`/`FormValues` depuis `@/modules/formEngine/types`, `DynamicIcon`/
-`IconName` depuis `lucide-react/dynamic` ; `schema.ts` importe `PredicateJson`
-depuis `@/modules/formEngine/config` et `ListConfSchema` depuis
-`@/modules/search/schema`.
+**1re** règle de `iconRules[]` dont le prédicat `when` matche gagne →
+`<DynamicIcon name={icon}/>` ; sinon repli sur `getEntityIcon(type)`. Le prédicat
+réutilise **exactement** `PredicateJson` de `requiredIf`/`visibleIf`
+(`{field, op, value}` + `and`/`or`/`not`).
+
+**Le mécanisme prédicat→règle n'est plus local à la palette** : il vit dans
+`src/lib/entityMatch.ts` et est partagé avec `list.itemRules` du module search
+(cf. [doc/03](03-architecture.md#entités-sdk) et
+[doc/07](07-module-search.md#rendu-par-item-des-listes-hétérogènes-listitemrules)).
+`register.tsx` se réduit à `firstMatching(cfg?.iconRules, entityMatchData(e), onWarn)?.icon` :
+
+- la vue matchable est `{ ...serverData, collection, sourceKey, sourceKeys }`
+  derrière un Proxy dot-path — une règle de palette peut donc aussi cibler la
+  source (`{field: "sourceKeys", op: "contains", value: "…"}`) ;
+- `collection` vaut `serverData.collection` (repli `getEntityType()`), garanti
+  sur tout résultat de recherche : le SDK écarte les documents sans `collection` ;
+- `firstMatching` porte la **garde** : une règle malformée (regex invalide sur
+  `op:"matches"`) est ignorée et signalée, au lieu de vider toute la source.
+
+Imports : `register.tsx` importe `entityMatchData`/`firstMatching` depuis
+`@/lib/entityMatch` et `DynamicIcon`/`IconName` depuis `lucide-react/dynamic` ;
+`schema.ts` importe `PredicateJson` depuis `@/modules/formEngine/config` et
+`ListConfSchema` depuis `@/modules/search/schema`.
 
 **`EntityItemActionSchema`** =
 `{ kind: "profil"|"preview", detailsMode?: "drawer"|"dialog", preview?: PreviewConf, list?: ListConf }`.

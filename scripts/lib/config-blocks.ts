@@ -209,6 +209,19 @@ function branches(node: JsonSchemaNode, root: JsonSchemaNode, seen = new Set<Jso
  * `*` (valeurs d'un record / additionalProperties). Retourne TOUS les nœuds
  * atteints (les unions font diverger le chemin).
  */
+/**
+ * Suit les `$ref` d'un nœud jusqu'à sa définition.
+ *
+ * `resolveJsonSchemaPath` rend volontairement le nœud RÉFÉRENÇANT sur son dernier segment (pour
+ * annoter sans polluer une définition partagée). Un appelant qui veut LIRE la forme — `properties`,
+ * `enum` — doit donc déréférencer : un schéma extrait pour être réutilisé (ex. `CardConfSchema`,
+ * partagé entre `list.card` et `list.itemRules[].card`) est émis en `$ref`, et le nœud référençant
+ * n'a alors aucune propriété.
+ */
+export function derefJsonSchemaNode(node: JsonSchemaNode, root: JsonSchemaNode): JsonSchemaNode {
+  return deref(node, root);
+}
+
 export function resolveJsonSchemaPath(root: JsonSchemaNode, dottedPath: string): JsonSchemaNode[] {
   let candidates = branches(root, root);
   const segments = dottedPath.split(".");

@@ -38,7 +38,7 @@ export function CardCountCTSection({ id, props }: CardCountCTSectionWrapperProps
   const { loaded } = useLoadNamespace("modules/search");
   const { entity } = useCocolight();
 
-  const { title, subtitle, cards, baseParams = {}, bg } = props;
+  const { title, subtitle, cards, baseParams = {}, bg, scope = "auto" } = props;
 
   const sectionBg = bg && bg !== "default" ? (BG_MAP[bg] || "") : "";
 
@@ -49,8 +49,18 @@ export function CardCountCTSection({ id, props }: CardCountCTSectionWrapperProps
   const localityId = entity?.serverData?.address?.localityId as string | undefined;
   const slug = entity?.serverData?.slug as string | undefined;
 
+  /**
+   * Le `$or` compté est une UNION : chaque clé qu'on y ajoute ÉLARGIT le
+   * périmètre. Élargir sans le dire fait mentir le compteur — mesuré, le
+   * chiffre d'institut-bleu passait de 49 à 530 organisations (tout ce qui est
+   * situé au Port s'y ajoutait), celui de cyber-réunion de 693 à 2588.
+   *
+   * `scope` rend donc l'élargissement EXPLICITE. Défaut `auto` = comportement
+   * historique, pour ne rien changer au seul consommateur du parc
+   * (commune-transparente, un site territorial où « chez moi OU de ma source »
+   * est bien l'intention voulue).
+   */
   const mergedBaseParams = useMemo(() => {
-    // Créer une copie complète de baseParams pour éviter de modifier les props
     const params = {
       ...baseParams,
       indexStepList: 10, // On ne veut pas de résultats, juste le count
@@ -59,23 +69,28 @@ export function CardCountCTSection({ id, props }: CardCountCTSectionWrapperProps
       } as Record<string, Record<string, string>>,
     };
 
-    // Initialiser ou mettre à jour l'objet $or
+    // `config` : les baseParams font foi, on n'ajoute rien. Le compteur
+    // concorde alors exactement avec la liste que la page affiche à côté.
+    if (scope === "config") return params;
+
+    const widenLocality = scope === "auto" || scope === "locality";
+    const widenCostum = scope === "auto" || scope === "costum";
+
     if (!params.defaultFilters["$or"]) {
       params.defaultFilters["$or"] = {};
     }
-
     const orFilters = params.defaultFilters["$or"] as Record<string, string>;
-    if (localityId) {
+
+    if (widenLocality && localityId) {
       orFilters["address.localityId"] = localityId;
     }
-
-    if (slug) {
+    if (widenCostum && slug) {
       orFilters["source.key"] = slug;
       orFilters["source.keys"] = slug;
     }
 
     return params;
-  }, [baseParams, localityId, slug]);
+  }, [baseParams, localityId, slug, scope]);
 
   const {
     data,

@@ -47,7 +47,7 @@ if (!archetype) {
 
 // ─── Garde-fous : jamais d'écrasement silencieux ──────────────────────────
 const sitesPath = path.join(ROOT, "sites.json");
-const sites = JSON.parse(fs.readFileSync(sitesPath, "utf-8")) as { slug: string; config: string; css: string }[];
+const sites = JSON.parse(fs.readFileSync(sitesPath, "utf-8")) as { slug: string; config: string; css: string; images?: string | string[] }[];
 if (sites.some((s) => s.slug === slug)) {
   console.error(`✗ le slug « ${slug} » est DÉJÀ dans sites.json — choisir un autre, ou éditer le site existant`);
   process.exit(1);
@@ -120,7 +120,7 @@ const config = {
 
 const plan = [
   `${configName}                      (squelette depuis ${archetype.config})`,
-  `sites.json                          + { slug: "${slug}", config: "${configName}", css: "${css}" }`,
+  `sites.json                          + { slug: "${slug}", config: "${configName}", css: "${css}", images: "${slug}" }`,
   `public/images/${slug}/               (dossier des assets du site)`,
 ];
 console.log(`Plan (${DRY ? "DRY-RUN" : "écriture"}) :`);
@@ -134,7 +134,11 @@ if (DRY) {
 }
 
 fs.writeFileSync(path.join(ROOT, configName), `${JSON.stringify(config, null, 2)}\n`);
-fs.writeFileSync(sitesPath, `${JSON.stringify([...sites, { slug, config: configName, css }], null, 2)}\n`);
+// `images` : nom du DOSSIER de public/images/, pas le slug — pour les sites
+// historiques les deux diffèrent (navigatorDesTierslieux → tiersLieux). Pour un
+// site créé ici, le dossier porte le slug, d'où `images: slug`. C'est la valeur
+// que `SITE_IMAGES` attend au build pour n'embarquer que ce dossier.
+fs.writeFileSync(sitesPath, `${JSON.stringify([...sites, { slug, config: configName, css, images: slug }], null, 2)}\n`);
 fs.mkdirSync(path.join(ROOT, "public/images", slug), { recursive: true });
 
 console.log(`\n✓ ${configName} créé, sites.json mis à jour, public/images/${slug}/ créé.`);

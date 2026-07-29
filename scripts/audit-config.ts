@@ -240,7 +240,11 @@ for (const cf of configs) {
     if (n && typeof n === "object" && !Array.isArray(n)) {
       const rec = n as Record<string, unknown>;
       const hasNavChildren = Array.isArray(rec.children) && rec.children.length > 0;
-      for (const key of ["path", "href", "link", "url"]) {
+      // `to`/`toById` = gabarits d'`itemAction` (kind "link", cf. ListItemActionSchema) : ce sont
+      // de VRAIES destinations de clic, donc soumises au même contrôle que href/path. Les
+      // placeholders `:slug`/`:id` ne gênent pas : seul le préfixe de route est vérifié
+      // (`/blog/:slug` → base `/blog`, présent dans KNOWN_ROUTE_PREFIXES).
+      for (const key of ["path", "href", "link", "url", "to", "toById"]) {
         const v = rec[key];
         if (typeof v !== "string") continue;
         // Lien inerte : `#` seul = placeholder sans destination (clic sans effet).

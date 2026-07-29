@@ -220,9 +220,17 @@ tel quel.
   *tous* les configs et via le runner — trop lent pour itérer.)
 - **`config-schema.mjs <sélecteur>`** — ex. `config-schema.mjs section:pricing`
   ou `header` → imprime le JSON Schema (`z.toJSONSchema`, `unrepresentable:
-  "any"`) du morceau demandé. Évite à la skill de relire les 2 030 lignes de
-  `site-schema.ts` pour connaître la forme exacte d'une section ; la sortie est
-  compacte et exhaustive (enums, champs requis, défauts).
+  "any"`, `reused: "ref"`) du morceau demandé. Évite à la skill de relire les
+  2 030 lignes de `site-schema.ts` pour connaître la forme exacte d'une section ;
+  la sortie est compacte et exhaustive (enums, champs requis, défauts).
+  ⚠️ **Un schéma partagé sort en `$ref`** : `CardConfSchema`, réutilisé par
+  `list.card` ET `list.itemRules[].card`, n'apparaît qu'une fois en `$defs`, et
+  le nœud qui le référence n'a **aucune** `properties`. Un lecteur de forme doit
+  donc déréférencer — `derefJsonSchemaNode(node, root)`
+  (`scripts/lib/config-blocks.ts`). Corollaire pour le registre de descriptions :
+  décrire `list.itemRules[].card.type` écraserait `list.card.type`, les deux
+  chemins désignant le même nœud ; on ne décrit que le dernier segment propre à
+  chaque emplacement (`list.itemRules[].card`).
 
 ### Le workflow encodé dans SKILL.md
 
@@ -279,7 +287,14 @@ argumentées, pas choisir en silence. Matière à encoder dans SKILL.md :
 | `rich` | newsletter + colonnes de liens + socials + copyright | `newsletter`, `columns[]`, `socials[]` |
 | `minimal-centered` | logo centré + nav horizontale + légal | `columns[0].links`, `legalLinks` |
 | `sidebar-columns` | sidebar (logo+description+socials) + grille de colonnes | `style: "plain"\|"card"`, `description` |
-| `contact-partners` | bloc contact (icônes) + grille de logos partenaires | `contactSection.items[]`, `partners.logos[]` |
+| `contact-partners` | bloc contact (icônes) + grille de logos partenaires | `contactSection.items[]`, `partners.logos[]`, `partners.title`, `partners.note` |
+
+`partners.note` porte la **mention de financement** sous les logos. Un
+cofinancement public s'accompagne d'une formulation imposée par le financeur
+(dispositif, opérateur, cadre) que les seuls logos ne portent pas ; sans ce
+champ elle finissait recopiée dans le `copyright`, où elle n'a rien à faire.
+Exemple en production : `config.prod.institut-bleu.json` (FIM/DGAMPA, Année de
+la mer, Région Réunion).
 
 **Archétypes** parmi les 17 configs réels : commune institutionnelle
 (`commune-transparente`, partagé par 8 communes, header `transparent-dark`),

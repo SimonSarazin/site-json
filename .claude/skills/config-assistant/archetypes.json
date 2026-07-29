@@ -9,6 +9,7 @@
         "theme complet : colors light+dark (~40 tokens), typography, borderRadius, shadows",
         "commandPalette enrichie : entitySearch multi-collections, iconRules, itemActionByType, itemActionBySubType",
         "presenters config-driven : list.resource (page /ressources) et list.testimonial (page /temoignages) avec preview.width, badge, facets",
+        "recherche globale HÉTÉROGÈNE (page /recherche) : filtre searchTargets + list.itemRules à prédicats (5 familles, presenter et action au clic par item, dont article → reader blog)",
         "section agenda (page /agenda)",
         "admin 6 onglets, blog, 4 costumForms, integrations.seo",
         "header transparent-scroll, footer contact-partners",
@@ -49,11 +50,12 @@
     {
       "slug": "eXtremeDefiAdeme",
       "config": "config.prod.eXtremeDefiAdeme.json",
-      "titre": "Vitrine + agenda (compacte et propre)",
+      "titre": "Vitrine éditoriale (référence de COMPOSITION, pas de données)",
       "demontre": [
-        "4 pages seulement mais 12 types de sections (forte densité) : hero-parallax, features-glass, timeline, action-tiles, stats, tabs, logoCloud…",
-        "section agenda (page /agenda)",
-        "theme complet — le bon point de départ pour un petit site"
+        "la home la plus dense du parc en éditorial : 8 sections d'affilée (hero-parallax, cta, stats, html, features-glass, timeline, action-tiles, logoCloud), argumentaire rédigé et bilingue",
+        "4 pages / 12 types de sections — le bon point de départ pour un petit site qui doit d'abord convaincre",
+        "theme complet, header transparent-scroll + footer contact-partners",
+        "⚠ ses 3 pages de données sont posées sur un costum quasi vide : config:probe donne 2 périmètres peuplés sur 4 (/communaute rend 0+0, /agenda n'a que 2 événements). Audit vert ≠ page peuplée — s'en inspirer pour la COMPOSITION éditoriale, jamais comme preuve qu'un bloc de recherche rend quelque chose"
       ],
       "knownFindings": []
     },
@@ -85,6 +87,34 @@
       ],
       "knownFindings": [],
       "wip": true
+    },
+    {
+      "slug": "institutBleu",
+      "config": "config.prod.institut-bleu.json",
+      "titre": "Annuaire de réseau adossé à un observatoire",
+      "demontre": [
+        "la seule home du parc qui enchaîne data-observatory (3 dimensions) puis agenda en teaser (limit 3 + customHeader) : les chiffres du réseau, puis ses prochaines dates",
+        "les DEUX voies de filtrage côte à côte sur le même jeu de données : /annuaire en searchHeader → gridLayout (panneau), /cartographie en searchHeader → searchProStatic (héro)",
+        "le seul costumForm à chrome.authPrompt : garde d'authentification des modales d'ajout, textes d'invite configurables",
+        "logoCloud ×3 sur une même page pour rendre 3 collèges de membres distincts (3 / 7 / 8 logos)",
+        "page de contenu long en title → markdown, sans passer par html",
+        "floatingQRCode + floatingActionButton, admin 6 onglets, commandPalette, header transparent-scroll + footer contact-partners",
+        "theme complet et customCSS VIDE : tout passe par les tokens — le contre-exemple d'equipements-Sportifs"
+      ],
+      "knownFindings": []
+    },
+    {
+      "slug": "cyberReunion",
+      "config": "config.prod.cyber-reunion.json",
+      "titre": "Annuaire compact complémentaire d'un site existant",
+      "demontre": [
+        "la seule section member du parc (page /membres, avec showRole/showManagement/showCard)",
+        "le seul costumForm au format `fields` à plat (3 sections sans groups) — l'AUTRE forme que sectionGroups() normalise, les 12 autres formulaires du parc sont en groups",
+        "home entièrement éditoriale, sans hero de section : html ×2 → features-glass → action-tiles → cta-card-grid → cta",
+        "4 pages / 12 sections : le plus petit gabarit d'annuaire complet du parc (annuaire + carte + membres)",
+        "header standard + footer contact-partners, admin 5 onglets, theme complet sans customCSS"
+      ],
+      "knownFindings": []
     }
   ]
 }
