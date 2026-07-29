@@ -2,91 +2,103 @@
   {
     "slug": "parent62",
     "config": "config.prod.parent62.json",
-    "css": "index-parent62"
+    "css": "index-parent62",
+    "images": "parent62"
   },
   {
     "slug": "cyberReunion",
     "config": "config.prod.cyber-reunion.json",
-    "css": "index-cyber-reunion"
+    "css": "index-cyber-reunion",
+    "images": "cyberReunion"
   },
   {
     "slug": "rezoLaMer",
     "config": "config.prod.rezo-la-mer.json",
-    "css": "index-rezo-la-mer"
+    "css": "index-rezo-la-mer",
+    "images": "rezoLaMer"
   },
   {
     "slug": "eXtremeDefiAdeme",
     "config": "config.prod.eXtremeDefiAdeme.json",
-    "css": "index-extreme-defi"
+    "css": "index-extreme-defi",
+    "images": "eXtremeDefiAdeme"
   },
   {
     "slug": "sportSanteBienetre",
     "config": "config.prod.sport-sante-bien-etre.json",
-    "css": "index-sport-sante-bien-etre"
+    "css": "index-sport-sante-bien-etre",
+    "images": "sportSanteBienetre"
   },
   {
     "slug": "institutBleu",
     "config": "config.prod.institut-bleu.json",
-    "css": "index-institut-bleu"
+    "css": "index-institut-bleu",
+    "images": "institutBleu"
   },
   {
     "slug": "navigatorDesTierslieux",
     "config": "config.prod.tiers-lieux.json",
-    "css": "index-tiers-lieux"
+    "css": "index-tiers-lieux",
+    "images": "tiersLieux"
   },
   {
     "slug": "juliePotVin",
     "config": "config.prod.julie-pot-vin.json",
-    "css": "index-julie-pot-vin"
-  },
-  {
-    "slug": "openAtlas",
-    "config": "config.prod.open-atlas-test.json",
-    "css": "index-rezo-la-mer"
+    "css": "index-julie-pot-vin",
+    "images": "juliePotVin"
   },
   {
     "slug": "nosCommunes",
     "config": "config.prod.nos-commune.json",
-    "css": "index-nos-communes"
+    "css": "index-nos-communes",
+    "images": "nosCommunes"
   },
   {
     "slug": "etangsale1",
     "config": "config.prod.commune-transparente.json",
-    "css": "index-commune-transparente"
+    "css": "index-commune-transparente",
+    "images": "communeTransparente"
   },
   {
     "slug": "tampon",
     "config": "config.prod.commune-transparente.json",
-    "css": "index-commune-transparente"
+    "css": "index-commune-transparente",
+    "images": "communeTransparente"
   },
   {
     "slug": "saintbenoit4",
     "config": "config.prod.commune-transparente.json",
-    "css": "index-commune-transparente"
+    "css": "index-commune-transparente",
+    "images": "communeTransparente"
   },
   {
     "slug": "saintemarie1",
     "config": "config.prod.commune-transparente.json",
-    "css": "index-commune-transparente"
+    "css": "index-commune-transparente",
+    "images": "communeTransparente"
   },
   {
     "slug": "saintpaul4",
     "config": "config.prod.commune-transparente.json",
-    "css": "index-commune-transparente"
+    "css": "index-commune-transparente",
+    "images": "communeTransparente"
   },
   {
     "slug": "saintJoseph",
     "config": "config.prod.commune-transparente.json",
-    "css": "index-commune-transparente"
+    "css": "index-commune-transparente",
+    "images": "communeTransparente"
   },
   {
     "slug": "equipementsSportifs974",
     "config": "config.prod.equipements-Sportifs.json",
-    "css": "index-equipements-sportifs"
+    "css": "index-equipements-sportifs",
+    "images": "equipementsSportifs974"
   },
   {
     "slug": "saintpaulSport1",
     "config": "config.prod.saint-paul-sport.json",
-    "css": "index-equipements-sportifs"
+    "css": "index-equipements-sportifs",
+    "images": "equipementsSportifs974"
   }
 ]

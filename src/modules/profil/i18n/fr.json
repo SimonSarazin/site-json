@@ -1302,7 +1302,9 @@
     },
     "datetime": {
       "invalid": "Format ISO 8601 requis"
-    }
+    },
+    "minItems": "Pas assez d’éléments sélectionnés",
+    "maxItems": "Trop d’éléments sélectionnés"
   },
   "ProfileTiersLieuxInfo": {
     "reserveOnline": "Réserver en ligne",
@@ -1384,5 +1386,9 @@
     "contactEmail": "Envoyer un email",
     "callPhone": "Appeler",
     "visitWebsite": "Visiter le site web"
+  },
+  "AuthRequired": {
+    "title": "Connectez-vous pour continuer",
+    "description": "La création d’une fiche est rattachée à votre compte : elle vous permettra de la modifier et de la compléter plus tard."
   }
 }

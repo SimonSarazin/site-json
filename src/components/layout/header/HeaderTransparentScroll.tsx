@@ -20,6 +20,7 @@ import CommandTriggerButton from "@/modules/commandPalette/components/CommandTri
 import { useScrollAware, useScrollToTopOnRouteChange, useNavItemActive, useHeaderOpaqueAtRest } from "./useHeaderBehavior";
 import { logoSquareClass, logoSizePx } from "./logoSize";
 import { useVisibilityList } from "@/lib/visibility/useVisibility";
+import PledgeHeaderButton from "@/modules/cagnotte/components/PledgeHeaderButton";
 
 interface HeaderTransparentScrollProps {
     header: Header;
@@ -163,6 +164,13 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
                             // (cf. PiggyBankHeaderButton:if (!me?.id) return null).
                             <ClientOnly>
                                 {() => <PiggyBankHeaderButton />}
+                            </ClientOnly>
+                        )}
+
+                        {header.utilities?.pledge && (
+                            // Bouton pour ouvrir la modale de paiement des promesses de financement
+                            <ClientOnly>
+                                {() => <PledgeHeaderButton />}
                             </ClientOnly>
                         )}
 

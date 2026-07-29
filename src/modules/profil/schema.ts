@@ -237,6 +237,38 @@ export const ProfileTagsSectionSchema = z.object({
   searchOnClick: z.boolean().optional().default(false),
 });
 
+/**
+ * Un champ affiché par `profile-fields` — MÊME contrat que `preview.facets` du
+ * module search (`{ field, label?, icon? }`), étendu d'un `format` de rendu.
+ * `field` accepte un dot-path `serverData` (ex. `address.postalCode`).
+ */
+export const ProfileFieldSchema = z.object({
+  field: z.string(),
+  label: LocalizedString.optional(),
+  /** Icône lucide (via `DynamicIcon`). Défaut : `tag`. */
+  icon: z.string().optional(),
+  /**
+   * Rendu de la valeur :
+   * - `text` (défaut) : tokens séparés par des virgules ;
+   * - `link` / `email` / `tel` : ancre cliquable ;
+   * - `socialLinks` : liste `[{ type, link }]` (champ `otherSociaNetworks` du legacy).
+   */
+  format: z.enum(["text", "link", "email", "tel", "socialLinks"]).optional(),
+});
+
+/**
+ * Section **générique** d'affichage de champs d'entité — l'équivalent profil de
+ * `preview.type: "facets"` côté recherche. Expose les champs costum (acronyme,
+ * SIRET, catégories…) SANS code par site. Les champs vides sont omis.
+ */
+export const ProfileFieldsSectionSchema = z.object({
+  type: z.literal("profile-fields"),
+  title: LocalizedString.optional(),
+  variant: z.enum(["card", "plain"]).optional().default("card"),
+  columns: z.union([z.literal(1), z.literal(2)]).optional().default(1),
+  fields: z.array(ProfileFieldSchema),
+});
+
 export const ProfileOpeningHoursSectionSchema = z.object({
   type: z.literal("profile-opening-hours"),
   title: LocalizedString.optional(),
@@ -272,6 +304,7 @@ export const ProfileOnlySectionSchema = z.discriminatedUnion("type", [
   ProfileEventDatesSectionSchema,
   ProfileBadgesSectionSchema,
   ProfileTagsSectionSchema,
+  ProfileFieldsSectionSchema,
   ProfileOpeningHoursSectionSchema,
   ProfileTabLayoutSectionSchema,
   ProfileTemplateDynamicSchema,
@@ -409,6 +442,8 @@ export type AddConfig = z.infer<typeof AddConfigSchema>;
 export type ProfileEventDatesSection = z.infer<typeof ProfileEventDatesSectionSchema>;
 export type ProfileBadgesSection = z.infer<typeof ProfileBadgesSectionSchema>;
 export type ProfileTagsSection = z.infer<typeof ProfileTagsSectionSchema>;
+export type ProfileField = z.infer<typeof ProfileFieldSchema>;
+export type ProfileFieldsSection = z.infer<typeof ProfileFieldsSectionSchema>;
 export type ProfileOpeningHoursSection = z.infer<typeof ProfileOpeningHoursSectionSchema>;
 export type ProfileTabLayoutSection = z.infer<typeof ProfileTabLayoutSectionSchema>;
 export type ProfileTiersLieuxAboutSection = z.infer<typeof ProfileTiersLieuxAboutSectionSchema>;

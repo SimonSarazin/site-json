@@ -95,6 +95,33 @@ const ITEM_RULES_NOTES: string[] = [
 ];
 
 export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
+  costumForm: {
+    id: "Identité du document — la modale s'ouvre par `add-<id>` / `edit-<id>`. Doit correspondre à la clé sous `config.costumForms`.",
+    entityType: "Collection SDK visée à la CRÉATION (organizations, projects, events, poi…).",
+    collection: "Collection réelle des documents, quand elle diffère de `entityType` (sous-type d'organisation, POI typé…).",
+    costumSlug: "Crée dans le scope costum EXPLICITE (`me.costum(slug)`) plutôt que sur `me`. À défaut, tout create hérite du costum AMBIANT du déploiement.",
+    icon: "Icône lucide (kebab-case) de l'en-tête de modale.",
+    deriveDefaults: "false = aucun `field.default` n'est dérivé du widget : le socle vient de `defaultsBase`. Défaut code : true.",
+    "layout.kind": "Gabarit de rendu du formulaire : tabs, wizard, flat… Décide comment `sections` est présenté.",
+    fields: "DÉCLARATION des champs, forme TERSE : seul `widget` est requis, `type`/`read`/`default` sont dérivés de WIDGET_DEFAULTS. Précédence : champ explicite > fieldPresets[widget] > widget.",
+    sections: "PLACEMENT des champs. ⚠ Le moteur rend en parcourant sections → groups → fields : un champ déclaré dans `fields` mais placé dans AUCUNE section n'est JAMAIS rendu (ni affiché, ni sérialisé).",
+    "sections[]": "Une section accepte DEUX formes : `groups: [{columns, fields}]` (multi-colonnes) OU `fields: []` à plat — `sectionGroups()` normalise l'une vers l'autre. Un outil qui ne lit que `groups` croit la section vide.",
+    serializeGroups: "N champs plats ↔ 1 objet serveur : décompose `serverData[serverKey]` à la lecture et le recompose à l'écriture (adresse, horaires…). `read`/`write` sont des clés de codec.",
+    fieldPresets: "Défauts PAR WIDGET, appliqués entre WIDGET_DEFAULTS et le champ lui-même (ex. placeholderSearch de tous les selects).",
+    chrome: "Textes de la modale. `title.add`/`title.edit` acceptent une clé i18n OU un LocalizedString inline.",
+    "chrome.authPrompt": "Textes de l'invite affichée à un visiteur NON connecté, à la place du formulaire (`title`, `description`). Absent = traductions `AuthRequired.*` du namespace modules/profil.",
+    slots: "UI React insérée ENTRE les champs, ancrée par une entrée `\"$slot:<id>\"` dans une section. Valeur = clé du registre `registerSlot`.",
+    "image.field": "Champ portant l'avatar. Idiome du projet : la valeur est posée dans le draft puis un seul `save()` — pas d'upload séparé.",
+    scope: "Contexte costum lu du carrier live (`useCocolight().entity`) — clé du registre `registerScopeFn`, pas une closure.",
+    defaultsBase: "Clé du registre `registerDefaultsFn` : état initial du formulaire en création. Employé surtout avec `deriveDefaults: false`.",
+    listsFromCarrier: "Alimente les selects depuis les listes du costum porteur (`serverData.lists`) plutôt que depuis une énumération figée.",
+    validateFn: "Clé de registre d'une validation CROSS-champ (ce qu'un schéma par champ ne peut pas exprimer).",
+    schemaFn: "Clé de registre d'un schéma Zod externe, quand la dérivation par widget ne suffit pas.",
+    cleanValues: "Hygiène des valeurs avant envoi. FnRef : une clé, ou `{fn, params}` pour une fonction générique paramétrée (ex. dropEmptyArrayItems + {fields}).",
+    afterSubmit: "Clé de registre d'un effet joué après enregistrement réussi.",
+    descriptorVariant: "Variante de descripteur à résoudre quand plusieurs rendus partagent le même document.",
+    "mutation.entityType": "Collection SDK réellement mutée — peut différer d'`entityType` quand la modale crée un sous-type.",
+  },
   page: {
     path: "Chemin de la page (`/`, `/agenda`). Unique dans le config, et cible possible d'un lien de nav — `audit:config` flague tout lien vers un chemin qui n'existe ni ici ni dans les routes de modules.",
     title: "Titre de la page. Sert de repli au titre SEO (`seo.title` prime) et s'affiche dans l'onglet du navigateur.",
@@ -167,6 +194,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     contactSection: "Bloc contact du design contact-partners : items {icon, label, lines|value, href}.",
     partners: "Logos partenaires (contact-partners) — images EXTERNES rendues en <img> brut (pas /img : domaine non allowlisté → 403).",
     logoIcon: "Icône de marque du footer : nom Lucide ou SVG inline.",
+    "partners.note": "Mention de financement sous les logos. Un cofinancement public impose une formulation (dispositif, opérateur, cadre) que les logos seuls ne portent pas ; sans ce champ elle finit dans le copyright.",
   },
 
   theme: {
@@ -270,6 +298,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.cards": "Cartes-compteurs (countKey du count globalautocomplete + label/icon/color/href) ; absent → auto-détection des types.",
     "props.baseParams": "Périmètre du count (sans sourceKey — entité costum courante).",
     "props.bg": "Fond : token sémantique OU classe Tailwind brute (ex. bg-cyan-500).",
+    "props.scope": "Périmètre compté. auto (défaut code) = comportement historique : le $or est élargi à la localité ET au slug du costum — mesuré à 530 au lieu de 49. costum = strictement le costum ; config = le $or écrit tel quel.",
   },
 
   "section:thematics": {
@@ -277,6 +306,12 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.emptyMessage": "Message affiché quand l'entité n'a pas de filières.",
   },
 
+  "section:data-observatory": {
+    "props.maxWidth": "Largeur du conteneur (défaut code : 8xl = 1440 px). À aligner sur les sections voisines dès que le tableau de bord partage sa page — deux largeurs différentes se voient immédiatement.",
+    "props.kpiLayout": "Rendu des KPI : cards (défaut code, trois grandes cartes) ou inline (ligne de chiffres tabulaires). Préférer inline pour un résumé posé en accueil, où des cartes écrasent le reste.",
+    "props.drilldown": "Opt-in : un clic sur une part ou une barre applique le filtre de la dimension, si elle est filtrable.",
+    "props.export": "Opt-in : bouton CSV du résultat filtré et trié (BOM Excel). `fields` = export COMPLET des données détail plutôt que des colonnes du tableau.",
+  },
   "section:agenda": {
     "props.customHeader": "En-tête teaser avec lien « voir tous » — même convention que searchProStatic.customHeader (home → /evenements).",
     "props.limit": "Limite d'events par bucket (teaser home) ; absent = tous + « charger plus » pour Passés.",
@@ -286,6 +321,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.enableMap": "Active la vue Carte (réutilise SearchMap du module search).",
     "props.mapView": "Rendu de la vue carte : map (plein écran) ou split (liste+carte synchronisées, desktop).",
     "props.map": "Config carte (marqueurs/popup/zoom) — MÊME schéma que searchProStatic.map.",
+    "props.maxWidth": "Largeur du conteneur. ABSENT = `container` historique (plafond 1536 px), pour une page agenda dédiée. À RENSEIGNER dès que l'agenda est un teaser parmi d'autres sections, sinon il déborde de ses voisines.",
     "props.tabs": "Onglets affichés parmi ongoing/upcoming/past (défaut code : upcoming, ongoing, past).",
     "props.defaultTab": "Onglet initial (défaut code : upcoming).",
     "props.upcomingWindowMonths": "Fenêtre (mois) du fetch calendrier now→futur (défaut code 12).",

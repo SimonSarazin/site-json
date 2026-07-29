@@ -117,7 +117,7 @@ export const CagnotteLayoutSectionSchema = z.object({
   id: z.string().optional(),
   props: z.object({
     leftSections: z.array(z.unknown()).optional().default([]),
-    rightSections: z.array(z.unknown()).optional().default([]),
+    rightSections: z.array(z.unknown()).optional().default([])
   }),
 });
 

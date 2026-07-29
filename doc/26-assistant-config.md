@@ -287,7 +287,14 @@ argumentées, pas choisir en silence. Matière à encoder dans SKILL.md :
 | `rich` | newsletter + colonnes de liens + socials + copyright | `newsletter`, `columns[]`, `socials[]` |
 | `minimal-centered` | logo centré + nav horizontale + légal | `columns[0].links`, `legalLinks` |
 | `sidebar-columns` | sidebar (logo+description+socials) + grille de colonnes | `style: "plain"\|"card"`, `description` |
-| `contact-partners` | bloc contact (icônes) + grille de logos partenaires | `contactSection.items[]`, `partners.logos[]` |
+| `contact-partners` | bloc contact (icônes) + grille de logos partenaires | `contactSection.items[]`, `partners.logos[]`, `partners.title`, `partners.note` |
+
+`partners.note` porte la **mention de financement** sous les logos. Un
+cofinancement public s'accompagne d'une formulation imposée par le financeur
+(dispositif, opérateur, cadre) que les seuls logos ne portent pas ; sans ce
+champ elle finissait recopiée dans le `copyright`, où elle n'a rien à faire.
+Exemple en production : `config.prod.institut-bleu.json` (FIM/DGAMPA, Année de
+la mer, Région Réunion).
 
 **Archétypes** parmi les 17 configs réels : commune institutionnelle
 (`commune-transparente`, partagé par 8 communes, header `transparent-dark`),

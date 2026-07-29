@@ -114,6 +114,40 @@ Activée par `enableMap`. Réutilise `SearchMapWrapper` (Leaflet, lazy/client-on
 
 ---
 
+## Teaser sur une page d'accueil
+
+L'agenda sert aussi de **bloc d'aperçu** parmi d'autres sections : vue figée,
+un seul bucket, quelques éléments et un lien vers la page complète.
+
+```jsonc
+{
+  "type": "agenda",
+  "props": {
+    "customHeader": { "title": {…}, "linkText": { "fr": "Tout l'agenda" },
+                      "linkHref": "/agenda", "linkIcon": "arrow-right" },
+    "showViewToggle": false,      // pas de bascule Liste/Calendrier
+    "showTabs": false,            // un seul bucket, pas d'onglets
+    "defaultTab": "upcoming",
+    "limit": 3,                   // plafonne le bucket (pas de « charger plus »)
+    "filters": { "type": false, "text": false, "tags": false },
+    "maxWidth": "5xl",            // ALIGNEMENT — cf. ci-dessous
+    "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 3 },
+    "baseParams": { "sourceKey": ["monCostum"], "indexStepList": 3 }
+  }
+}
+```
+
+**`maxWidth` (4xl…8xl, full)** — à renseigner **dès que l'agenda partage sa page**.
+Absent, la section retombe sur le `container` Tailwind, qui plafonne à **1536 px** :
+une largeur qui ne correspond à aucun des échelons `max-w-*` employés par les
+autres sections, si bien que le teaser déborde visiblement de ses voisines. Sur
+une page agenda dédiée, où la section occupe seule la page, laisser absent.
+Mêmes valeurs que `data-observatory.maxWidth`, même jeu de classes
+(`src/lib/sectionMaxWidth.ts`).
+
+Exemples en production : `config.prod.tiers-lieux.json` (`/` → `section-events`)
+et `config.prod.institut-bleu.json` (`/` → `actualites-du-reseau`).
+
 ## `baseParams`
 
 Même convention que `searchProStatic.baseParams`. Champs **repris** (= ceux que `searchEventsCostum` accepte) :

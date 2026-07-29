@@ -39,7 +39,9 @@ La configuration de SiteForge se fait principalement via :
 | -------- | ----------- | ----------------- |
 | `SITE_CONFIG_JSON` | JSON complet de la configuration du site (priorité maximale). Si présent, parsé directement sans lecture de fichier. | — |
 | `SITE_CONFIG_PATH` | Chemin vers un fichier JSON contenant la configuration du site (priorité 2). | — |
-| `VITE_SLUG` | Slug de site utilisé pour la résolution via `sites.json` (priorité 3, dev uniquement). | `default` |
+| `VITE_SLUG` | Slug de site utilisé pour la résolution via `sites.json` (priorité 4 en production, 3 en développement). En production, ne se déclenche que hors conteneur : l'image ne contient pas `sites.json`. | `default` |
+| `SITE_EMBED` | **Build uniquement.** À `true`, fige la config résolue dans `dist/site-config.json` (priorité 3 au démarrage). | — |
+| `SITE_IMAGES` | **Build uniquement.** Nom(s) de dossier de `public/images/` à embarquer, séparés par des virgules. Le nom se lit dans le champ `images` de `sites.json`. Absent : tous les dossiers. | — |
 | `NODE_ENV` | Mode d'exécution Node.js (`development` ou `production`). | Défini par Vite/npm |
 | `PORT` | Port d'écoute du serveur. | `5173` (dev), `3000` (prod) |
 | `VITE_BASE_URL_BACKEND` | URL de base pour les appels API depuis le client (`import.meta.env`). Injectée aussi dans `window.__ENV__` à l'exécution. | `http://localhost:3000` |
@@ -123,14 +125,19 @@ demo-site.ts  →  config de démonstration (chargée via vite.ssrLoadModule)
 ### En production (`prod-server.js`)
 
 ```
-SITE_CONFIG_JSON  →  parse direct
+SITE_CONFIG_JSON       →  parse direct
         ↓ (absent)
-SITE_CONFIG_PATH  →  lecture fichier
+SITE_CONFIG_PATH       →  lecture fichier
         ↓ (absent)
-Erreur de démarrage  →  arrêt immédiat avec message explicite
+dist/site-config.json  →  config figée au build par SITE_EMBED
+        ↓ (absent)
+VITE_SLUG + sites.json →  lookup (hors conteneur uniquement)
+        ↓ (absent)
+Erreur de démarrage  →  arrêt immédiat, message énumérant les quatre voies
 ```
 
-- La résolution via `VITE_SLUG` + `sites.json` **n'existe pas** en production : au moins `SITE_CONFIG_JSON` ou `SITE_CONFIG_PATH` est obligatoire.
+- Le niveau 3 n'existe que si l'image a été construite avec `SITE_EMBED=true` (voir [Déploiement Docker](16-deploiement-docker.md)). C'est une copie conforme du fichier source, lue et normalisée exactement comme au niveau 2.
+- Le niveau 4 ne peut pas se déclencher dans un conteneur : l'étape runner du Dockerfile ne copie ni `sites.json` ni les `config.prod.*.json`. Il sert au lancement depuis le dépôt (`npm start`) et donne la parité avec le serveur de développement.
 - La config est chargée **une seule fois** au démarrage, normalisée et mise en cache. Il n'y a pas de hot-reload en production.
 
 ---
@@ -152,7 +159,6 @@ Les fichiers `config.prod.*.json` présents à la racine du dépôt :
 | `config.prod.commune-transparente.json` | Commune Transparente (partagée par plusieurs slugs communes) |
 | `config.prod.julie-pot-vin.json` | Julie Pot Vin |
 | `config.prod.institut-bleu.json` | Institut Bleu |
-| `config.prod.open-atlas-test.json` | Open Atlas (test) |
 | `config.prod.equipements-Sportifs.json` | Équipements Sportifs 974 |
 | `config.prod.eXtremeDefiAdeme.json` | eXtrème Défi Ademe |
 | `config.dev.json` | Config de développement |
@@ -232,12 +238,11 @@ Entrées actuelles de `sites.json` :
 | `cyberReunion` | `config.prod.cyber-reunion.json` | `index-cyber-reunion` |
 | `cocolight` | `config.prod.cyber-reunion.json` | `index-cyber-reunion` |
 | `rezoLaMer` | `config.prod.rezo-la-mer.json` | `index-rezo-la-mer` |
-| `eXtremeDefiAdeme` | `config.prod.eXtremeDefiAdeme.json` | `index-rezo-la-mer` |
+| `eXtremeDefiAdeme` | `config.prod.eXtremeDefiAdeme.json` | `index-extreme-defi` |
 | `sportSanteBienetre` | `config.prod.sport-sante-bien-etre.json` | `index-sport-sante-bien-etre` |
 | `institutBleu` | `config.prod.institut-bleu.json` | `index-institut-bleu` |
 | `navigatorDesTierslieux` | `config.prod.tiers-lieux.json` | `index-tiers-lieux` |
 | `juliePotVin` | `config.prod.julie-pot-vin.json` | `index-julie-pot-vin` |
-| `openAtlas` | `config.prod.open-atlas-test.json` | `index-rezo-la-mer` |
 | `nosCommunes` | `config.prod.nos-commune.json` | `index-nos-communes` |
 | `etangsale1` | `config.prod.commune-transparente.json` | `index-commune-transparente` |
 | `tampon` | `config.prod.commune-transparente.json` | `index-commune-transparente` |
@@ -245,7 +250,7 @@ Entrées actuelles de `sites.json` :
 | `saintemarie1` | `config.prod.commune-transparente.json` | `index-commune-transparente` |
 | `saintpaul4` | `config.prod.commune-transparente.json` | `index-commune-transparente` |
 | `saintJoseph` | `config.prod.commune-transparente.json` | `index-commune-transparente` |
-| `equipementsSportifs974` | `config.prod.equipements-Sportifs.json` | `index-rezo-la-mer` |
+| `equipementsSportifs974` | `config.prod.equipements-Sportifs.json` | `index-equipements-sportifs` |
 
 > Plusieurs slugs peuvent pointer vers le même fichier de config ou de CSS (ex. les communes partagent toutes `config.prod.commune-transparente.json`).
 
@@ -294,7 +299,7 @@ Vite est configuré pour supporter :
   - `preloadPlugin()` (de `vite-preload`) : trace les imports lazy pour générer les balises `<link rel="modulepreload">` en SSR. Doit être **avant** `react()` pour tracer les lazy imports
   - `react()` : support React avec JSX automatique
   - `tailwindcss()` : compilation Tailwind CSS 4
-  - `visualizer()` (de `rollup-plugin-visualizer`) : génère `dist/stats.html` pour l'analyse de bundle (uniquement pour le build client, absent du build SSR)
+  - `visualizer()` (de `rollup-plugin-visualizer`) : génère `stats.html` à la racine du dépôt pour l'analyse de bundle (uniquement pour le build client, absent du build SSR). Volontairement **hors de `dist/`** : le Dockerfile copie `dist/` en entier dans l'image de production, où ce rapport de ~4 Mo n'a rien à faire. Fichier gitignoré.
 * **Définition d'environnements** :
 
   ```ts

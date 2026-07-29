@@ -1,174 +1,317 @@
 {
-  "$doc": "Recettes de COMPOSITION de page, extraites du parc réel (114 pages non vides mesurées le 2026-07-25). Chaque recette désigne une PAGE VIVANTE d'une config archétype : `npm run config:example -- --recipe <id>` imprime son JSON complet, prêt à adapter. Le gate tests/preflight/page-recipes.test.ts vérifie que la page existe toujours et que sa séquence de sections n'a pas changé — une recette ne peut donc pas mentir. Motifs dominants mesurés : searchHeader en 1re section (45 pages), title (24), html (18) ; bigramme le plus fréquent searchHeader→searchProStatic (32). Longueur MÉDIANE d'une page : 2 sections — une page n'a pas à être longue.",
-  "recipes": [
-    {
-      "id": "home-portail-services",
-      "titre": "Home de portail orienté services",
-      "quand": "Le visiteur vient CHERCHER quelque chose de précis (une aide, un contact, un service). Portail institutionnel ou territorial.",
-      "source": "config.prod.parent62.json",
-      "path": "/",
-      "sequence": [
-        "hero-quick-access",
-        "action-tiles",
-        "action-tiles",
-        "cta-card-grid",
-        "html",
-        "articleFeed",
-        "cta"
-      ],
-      "rythme": "Les accès rapides AVANT le discours : l'usager qui sait ce qu'il veut part en un clic. Puis deux rangées de tuiles d'action (les deux familles de services), les cartes CTA, un bloc éditorial libre, et seulement ensuite l'actualité — qui sert de preuve de vie. CTA final pour ceux qui ont tout lu."
-    },
-    {
-      "id": "home-vitrine-dense",
-      "titre": "Home de vitrine narrative",
-      "quand": "Le visiteur ne connaît pas encore le projet : il faut le convaincre. Site de campagne, de programme, d'association.",
-      "source": "config.prod.eXtremeDefiAdeme.json",
-      "path": "/",
-      "sequence": [
-        "hero-parallax",
-        "cta",
-        "stats",
-        "html",
-        "features-glass",
-        "timeline",
-        "action-tiles",
-        "logoCloud"
-      ],
-      "rythme": "Hero plein écran → appel à l'action immédiat (pour les convaincus d'avance) → chiffres qui crédibilisent → récit libre → trois preuves → frise du parcours → actions → logos partenaires en caution finale. L'alternance visuel/texte évite le mur."
-    },
-    {
-      "id": "home-cartographie",
-      "titre": "Home de cartographie (3 sections)",
-      "quand": "Le contenu du site EST la carte ou l'annuaire : la home n'est qu'un sas.",
-      "source": "config.prod.saint-paul-sport.json",
-      "path": "/",
-      "sequence": [
-        "hero-parallax",
-        "categories-grid",
-        "hero-quick-access"
-      ],
-      "rythme": "Trois sections, pas plus. Le hero pose l'identité, la grille de catégories est la vraie navigation, les accès rapides ramassent le reste. Tout le contenu vit dans les pages de recherche."
-    },
-    {
-      "id": "home-recherche",
-      "titre": "Home où la recherche est la page",
-      "quand": "Portail réseau à gros volume de données : le premier geste attendu est une recherche.",
-      "source": "config.prod.tiers-lieux.json",
-      "path": "/",
-      "sequence": [
-        "hero-search",
-        "searchProStatic",
-        "title",
-        "cards",
-        "agenda",
-        "content",
-        "html",
-        "content",
-        "content",
-        "content",
-        "content"
-      ],
-      "rythme": "`hero-search` PILOTE la liste qui le suit immédiatement (c'est son rôle : la barre de recherche du hero filtre le searchProStatic en dessous). Le reste de la page est de l'éditorial qui se lit en scrollant, une fois la recherche passée."
-    },
-    {
-      "id": "page-recherche",
-      "titre": "Page de recherche / annuaire",
-      "quand": "Le motif le plus fréquent du parc (32 occurrences). Toute liste d'entités filtrable.",
-      "source": "config.prod.saint-paul-sport.json",
-      "path": "/equipements-sportifs",
-      "sequence": [
-        "searchHeader",
-        "searchProStatic"
-      ],
-      "rythme": "DEUX sections suffisent. `searchHeader` porte le titre, le chapô ET les filtres ; `searchProStatic` porte la liste, la carte et les presenters. N'ajoute pas un `title` en plus : searchHeader le fait déjà."
-    },
-    {
-      "id": "page-recherche-globale",
-      "titre": "Recherche globale multi-collections",
-      "quand": "L'usager cherche « tout » sans savoir dans quelle famille : une seule liste sert articles, paroles, ressources, événements et structures. À distinguer de page-recherche, qui ne sert qu'UNE famille.",
-      "source": "config.prod.parent62.json",
-      "path": "/recherche",
-      "sequence": [
-        "searchHeader",
-        "gridLayout"
-      ],
-      "rythme": "`searchHeader` ne porte QUE le titre et le chapô (`showSearch: false`) : les filtres descendent dans la colonne de gauche du `gridLayout` (1 colonne de filtres / 3 de résultats). Le groupe `searchTargets` choisit QUOI chercher, `list.itemRules` choisit COMMENT le rendre — deux mécanismes distincts à ne pas confondre. Sans filtre coché la liste est hétérogène : chaque famille doit avoir sa règle, sinon tout retombe sur la carte par défaut."
-    },
-    {
-      "id": "page-annuaire-grille",
-      "titre": "Page thématique ou territoriale (grille)",
-      "quand": "Décliner un même annuaire par thème / territoire / catégorie, avec un contexte éditorial propre à chaque déclinaison.",
-      "source": "config.prod.parent62.json",
-      "path": "/territoire/familles-en-sol-mineur",
-      "sequence": [
-        "title",
-        "searchHeader",
-        "gridLayout"
-      ],
-      "rythme": "`title` porte le contexte éditorial spécifique à la déclinaison (ce que searchHeader ne sait pas faire), searchHeader filtre, gridLayout présente. parent62 décline ce motif sur ses territoires et thématiques — c'est un gabarit, pas une page unique. Certaines déclinaisons s'enrichissent ensuite (cf. /territoire/arrageois, passée à 8 sections) : le gabarit est un POINT DE DÉPART."
-    },
-    {
-      "id": "page-agenda",
-      "titre": "Page agenda",
-      "quand": "Événements d'un costum, avec vues liste / calendrier / carte.",
-      "source": "config.prod.eXtremeDefiAdeme.json",
-      "path": "/agenda",
-      "sequence": [
-        "searchHeader",
-        "agenda"
-      ],
-      "rythme": "Même économie que la page de recherche : searchHeader pour l'en-tête et les filtres, `agenda` pour tout le reste (il porte ses propres vues et son propre détail)."
-    },
-    {
-      "id": "page-blog",
-      "titre": "Page blog / actualités",
-      "quand": "Fil d'articles du module blog, filtrable. Exige `config.blog` et des POI de type article scopés costum.",
-      "source": "config.prod.parent62.json",
-      "path": "/blog",
-      "sequence": [
-        "searchHeader",
-        "articleFeed"
-      ],
-      "rythme": "searchHeader + articleFeed (10 occurrences dans le parc). Le lecteur d'article vit sur la route `/blog/:slug`, pas dans une page du config."
-    },
-    {
-      "id": "page-editoriale",
-      "titre": "Page éditoriale longue",
-      "quand": "Présenter une démarche, une charte, une équipe — du contenu qui se lit.",
-      "source": "config.prod.parent62.json",
-      "path": "/reseau",
-      "sequence": [
-        "title",
-        "timeline",
-        "content",
-        "features-glass",
-        "faq",
-        "cta"
-      ],
-      "rythme": "`title` ouvre, puis on ALTERNE les registres : frise (temps) → texte (fond) → cartes-icônes (synthèse) → FAQ (objections) → CTA. Trois `content` d'affilée fatiguent ; c'est l'alternation qui tient la page."
-    },
-    {
-      "id": "page-observatoire",
-      "titre": "Page observatoire de données",
-      "quand": "Tableau de bord déclaratif (KPI, graphiques, table) sur un périmètre de données.",
-      "source": "config.prod.saint-paul-sport.json",
-      "path": "/observatoire",
-      "sequence": [
-        "searchHeader",
-        "data-observatory"
-      ],
-      "rythme": "searchHeader donne le contexte et le périmètre lisible ; `data-observatory` porte dimensions, KPI, charts et table — tout est dans sa config, aucun code."
-    },
-    {
-      "id": "page-legale",
-      "titre": "Page légale",
-      "quand": "Mentions légales, confidentialité, CGU, accessibilité.",
-      "source": "config.prod.tiers-lieux.json",
-      "path": "/mentions-legales",
-      "sequence": [
-        "html"
-      ],
-      "rythme": "UNE section `html`. C'est le seul cas où le html brut est le bon outil : contenu long, figé, sans interaction. Prévois les 4 pages d'un coup — elles manquent dans la moitié des configs du parc."
-    }
-  ]
+ "$doc": "Recettes de COMPOSITION de page, extraites du parc réel (140 pages non vides mesurées le 2026-07-28). Chaque recette désigne une PAGE VIVANTE d'une config archétype : `npm run config:example -- --recipe <id>` imprime son JSON complet, prêt à adapter. Le gate tests/preflight/page-recipes.test.ts vérifie que la page existe toujours et que sa séquence de sections n'a pas changé — une recette ne peut donc pas mentir. Motifs dominants mesurés : searchHeader en 1re section (45 pages), title (24), html (18) ; bigramme le plus fréquent searchHeader→searchProStatic (32). Longueur MÉDIANE d'une page : 2 sections — une page n'a pas à être longue.",
+ "recipes": [
+  {
+   "id": "home-portail-services",
+   "titre": "Home de portail orienté services",
+   "quand": "Le visiteur vient CHERCHER quelque chose de précis (une aide, un contact, un service). Portail institutionnel ou territorial.",
+   "source": "config.prod.parent62.json",
+   "path": "/",
+   "sequence": [
+    "hero-quick-access",
+    "action-tiles",
+    "action-tiles",
+    "cta-card-grid",
+    "html",
+    "articleFeed",
+    "cta"
+   ],
+   "rythme": "Les accès rapides AVANT le discours : l'usager qui sait ce qu'il veut part en un clic. Puis deux rangées de tuiles d'action (les deux familles de services), les cartes CTA, un bloc éditorial libre, et seulement ensuite l'actualité — qui sert de preuve de vie. CTA final pour ceux qui ont tout lu."
+  },
+  {
+   "id": "home-vitrine-dense",
+   "titre": "Home de vitrine narrative",
+   "quand": "Le visiteur ne connaît pas encore le projet : il faut le convaincre. Site de campagne, de programme, d'association.",
+   "source": "config.prod.eXtremeDefiAdeme.json",
+   "path": "/",
+   "sequence": [
+    "hero-parallax",
+    "cta",
+    "stats",
+    "html",
+    "features-glass",
+    "timeline",
+    "action-tiles",
+    "logoCloud"
+   ],
+   "rythme": "Hero plein écran → appel à l'action immédiat (pour les convaincus d'avance) → chiffres qui crédibilisent → récit libre → trois preuves → frise du parcours → actions → logos partenaires en caution finale. L'alternance visuel/texte évite le mur."
+  },
+  {
+   "id": "home-cartographie",
+   "titre": "Home de cartographie (3 sections)",
+   "quand": "Le contenu du site EST la carte ou l'annuaire : la home n'est qu'un sas.",
+   "source": "config.prod.saint-paul-sport.json",
+   "path": "/",
+   "sequence": [
+    "hero-parallax",
+    "categories-grid",
+    "hero-quick-access"
+   ],
+   "rythme": "Trois sections, pas plus. Le hero pose l'identité, la grille de catégories est la vraie navigation, les accès rapides ramassent le reste. Tout le contenu vit dans les pages de recherche."
+  },
+  {
+   "id": "home-recherche",
+   "titre": "Home où la recherche est la page",
+   "quand": "Portail réseau à gros volume de données : le premier geste attendu est une recherche.",
+   "source": "config.prod.tiers-lieux.json",
+   "path": "/",
+   "sequence": [
+    "hero-search",
+    "searchProStatic",
+    "title",
+    "cards",
+    "agenda",
+    "content",
+    "html",
+    "content",
+    "content",
+    "content",
+    "content"
+   ],
+   "rythme": "`hero-search` PILOTE la liste qui le suit immédiatement (c'est son rôle : la barre de recherche du hero filtre le searchProStatic en dessous). Le reste de la page est de l'éditorial qui se lit en scrollant, une fois la recherche passée."
+  },
+  {
+   "id": "page-recherche",
+   "titre": "Page de recherche / annuaire",
+   "quand": "Le motif le plus fréquent du parc (32 occurrences). Toute liste d'entités filtrable.",
+   "source": "config.prod.saint-paul-sport.json",
+   "path": "/equipements-sportifs",
+   "sequence": [
+    "searchHeader",
+    "searchProStatic"
+   ],
+   "rythme": "DEUX sections suffisent. `searchHeader` porte le titre, le chapô ET les filtres ; `searchProStatic` porte la liste, la carte et les presenters. N'ajoute pas un `title` en plus : searchHeader le fait déjà."
+  },
+  {
+   "id": "page-recherche-globale",
+   "titre": "Recherche globale multi-collections",
+   "quand": "L'usager cherche « tout » sans savoir dans quelle famille : une seule liste sert articles, paroles, ressources, événements et structures. À distinguer de page-recherche, qui ne sert qu'UNE famille.",
+   "source": "config.prod.parent62.json",
+   "path": "/recherche",
+   "sequence": [
+    "searchHeader",
+    "gridLayout"
+   ],
+   "rythme": "`searchHeader` ne porte QUE le titre et le chapô (`showSearch: false`) : les filtres descendent dans la colonne de gauche du `gridLayout` (1 colonne de filtres / 3 de résultats). Le groupe `searchTargets` choisit QUOI chercher, `list.itemRules` choisit COMMENT le rendre — deux mécanismes distincts à ne pas confondre. Sans filtre coché la liste est hétérogène : chaque famille doit avoir sa règle, sinon tout retombe sur la carte par défaut."
+  },
+  {
+   "id": "page-annuaire-grille",
+   "titre": "Page thématique ou territoriale (grille)",
+   "quand": "Décliner un même annuaire par thème / territoire / catégorie, avec un contexte éditorial propre à chaque déclinaison.",
+   "source": "config.prod.parent62.json",
+   "path": "/territoire/familles-en-sol-mineur",
+   "sequence": [
+    "title",
+    "searchHeader",
+    "gridLayout"
+   ],
+   "rythme": "`title` porte le contexte éditorial spécifique à la déclinaison (ce que searchHeader ne sait pas faire), searchHeader filtre, gridLayout présente. parent62 décline ce motif sur ses territoires et thématiques — c'est un gabarit, pas une page unique. Certaines déclinaisons s'enrichissent ensuite (cf. /territoire/arrageois, passée à 8 sections) : le gabarit est un POINT DE DÉPART."
+  },
+  {
+   "id": "page-agenda",
+   "titre": "Page agenda",
+   "quand": "Événements d'un costum, avec vues liste / calendrier / carte.",
+   "source": "config.prod.institut-bleu.json",
+   "path": "/agenda",
+   "sequence": [
+    "searchHeader",
+    "agenda"
+   ],
+   "rythme": "Même économie que la page de recherche : `searchHeader` pour l'en-tête et les filtres, `agenda` pour tout le reste — il porte ses propres vues (liste, calendrier, carte, split) et son propre détail. Source choisie pour être branchée sur un périmètre RÉELLEMENT peuplé (21 événements sondés au 28/07) : une recette d'agenda copiée d'un site sans événements ne montre pas ce qu'elle prétend montrer."
+  },
+  {
+   "id": "page-blog",
+   "titre": "Page blog / actualités",
+   "quand": "Fil d'articles du module blog, filtrable. Exige `config.blog` et des POI de type article scopés costum.",
+   "source": "config.prod.parent62.json",
+   "path": "/blog",
+   "sequence": [
+    "searchHeader",
+    "articleFeed"
+   ],
+   "rythme": "searchHeader + articleFeed (10 occurrences dans le parc). Le lecteur d'article vit sur la route `/blog/:slug`, pas dans une page du config."
+  },
+  {
+   "id": "page-editoriale",
+   "titre": "Page éditoriale longue",
+   "quand": "Présenter une démarche, une charte, une équipe — du contenu qui se lit.",
+   "source": "config.prod.parent62.json",
+   "path": "/reseau",
+   "sequence": [
+    "title",
+    "timeline",
+    "content",
+    "features-glass",
+    "faq",
+    "cta"
+   ],
+   "rythme": "`title` ouvre, puis on ALTERNE les registres : frise (temps) → texte (fond) → cartes-icônes (synthèse) → FAQ (objections) → CTA. Trois `content` d'affilée fatiguent ; c'est l'alternation qui tient la page."
+  },
+  {
+   "id": "page-observatoire",
+   "titre": "Page observatoire de données",
+   "quand": "Tableau de bord déclaratif (KPI, graphiques, table) sur un périmètre de données.",
+   "source": "config.prod.saint-paul-sport.json",
+   "path": "/observatoire",
+   "sequence": [
+    "searchHeader",
+    "data-observatory"
+   ],
+   "rythme": "searchHeader donne le contexte et le périmètre lisible ; `data-observatory` porte dimensions, KPI, charts et table — tout est dans sa config, aucun code."
+  },
+  {
+   "id": "page-legale",
+   "titre": "Page légale",
+   "quand": "Mentions légales, confidentialité, CGU, accessibilité.",
+   "source": "config.prod.tiers-lieux.json",
+   "path": "/mentions-legales",
+   "sequence": [
+    "html"
+   ],
+   "rythme": "UNE section `html`. C'est le seul cas où le html brut est le bon outil : contenu long, figé, sans interaction. Prévois les 4 pages d'un coup — elles manquent dans la moitié des configs du parc."
+  },
+  {
+   "id": "page-thematique",
+   "titre": "Page thématique (fil éditorial filtré)",
+   "quand": "Décliner un thème transversal — santé, handicap, petite enfance — avec ses articles et rien d'autre.",
+   "source": "config.prod.parent62.json",
+   "path": "/theme/la-sante",
+   "sequence": [
+    "title",
+    "searchHeader",
+    "articleFeed"
+   ],
+   "rythme": "La composition la plus répétée du parc : 8 pages identiques sur parent62. Trois sections seulement — un titre qui nomme le thème, un searchHeader qui porte les filtres, un articleFeed qui occupe tout le reste. Dupliquer la page et ne changer que le titre et le filtre du feed."
+  },
+  {
+   "id": "page-territoire",
+   "titre": "Page de territoire (la plus composée du parc)",
+   "quand": "Donner à un territoire sa page complète : présentation, contacts, actualités, questions fréquentes, acteurs.",
+   "source": "config.prod.parent62.json",
+   "path": "/territoire/artois",
+   "sequence": [
+    "html",
+    "cards",
+    "searchHeader",
+    "articleFeed",
+    "accordion",
+    "searchProStatic",
+    "cta"
+   ],
+   "rythme": "Sept sections, répétées à l'identique sur 9 territoires — c'est le gabarit le plus dupliqué du parc. L'alternance est délibérée : deux blocs éditoriaux posent le contexte, puis deux blocs de données (articles, acteurs) encadrés par un accordéon de questions, et un CTA ferme. Le searchHeader sert les DEUX blocs de données qui le suivent."
+  },
+  {
+   "id": "page-liste-nue",
+   "titre": "Liste sans en-tête de recherche",
+   "quand": "Afficher un ensemble déjà cadré par la navigation, sans filtres ni champ de recherche à offrir.",
+   "source": "config.prod.tiers-lieux.json",
+   "path": "/communaute",
+   "sequence": [
+    "searchProStatic"
+   ],
+   "rythme": "Une seule section. `searchHeader` n'est PAS obligatoire : quand le périmètre est fixé par les baseParams et qu'aucun filtrage n'est proposé, un en-tête de recherche vide ajoute du bruit. Employé trois fois sur tiers-lieux (communauté, réseaux régionaux, réseaux thématiques)."
+  },
+  {
+   "id": "page-annuaire-panneau",
+   "titre": "Annuaire à panneau de filtres latéral",
+   "quand": "Filtrer un gros volume sur plusieurs axes simultanés — au-delà de ce qu'une barre d'en-tête peut porter.",
+   "source": "config.prod.tiers-lieux.json",
+   "path": "/lieux",
+   "sequence": [
+    "gridLayout"
+   ],
+   "rythme": "Une section unique qui contient tout : `gridLayout` compose une colonne `filters` et une colonne `searchProStatic`. C'est l'AUTRE voie de filtrage du moteur, celle du panneau — à ne jamais mélanger avec un `searchHeader` porteur de `showSearch`, sinon la page affiche deux champs de recherche (le panneau rend le sien sans condition)."
+  },
+  {
+   "id": "page-communaute-onglets",
+   "titre": "Communauté répartie en onglets",
+   "quand": "Présenter des populations de nature différente — personnes et structures — sans les mélanger dans une même liste.",
+   "source": "config.prod.parent62.json",
+   "path": "/communaute",
+   "sequence": [
+    "searchHeader",
+    "tabs"
+   ],
+   "rythme": "Deux sections : l'en-tête de recherche, puis `tabs` qui porte une liste par onglet, chacune avec ses propres baseParams. Préférer les onglets à une liste unique dès que les cartes attendues diffèrent — une carte de personne et une carte d'organisation n'ont pas le même contrat."
+  },
+  {
+   "id": "page-inscription",
+   "titre": "Page d'inscription",
+   "quand": "Offrir un parcours d'inscription à sa propre adresse, plutôt que par la seule modale du header.",
+   "source": "config.prod.saint-paul-sport.json",
+   "path": "/rejoindre",
+   "sequence": [
+    "registerForm"
+   ],
+   "rythme": "Une section, rien d'autre : `registerForm` est le formulaire du module auth posé en page. Utile quand un CTA doit pouvoir pointer une URL partageable — le module fournit déjà /register, cette page lui donne une adresse et un habillage propres au site."
+  },
+  {
+   "id": "home-observatoire-agenda",
+   "titre": "Home « chiffres puis dates »",
+   "quand": "Le site porte un réseau dont on veut d'abord montrer le poids (combien d'acteurs, où, dans quels domaines), puis la vie (les prochaines dates). Convient à une fédération, un observatoire, un pôle.",
+   "source": "config.prod.institut-bleu.json",
+   "path": "/",
+   "sequence": [
+    "hero-parallax",
+    "data-observatory",
+    "agenda",
+    "action-tiles"
+   ],
+   "rythme": "Quatre temps, du général au concret. `hero-parallax` pose l'image et la promesse ; `data-observatory` répond « combien, et de quoi » avec 3 dimensions lues sur la vraie base — pas des chiffres écrits à la main ; `agenda` en teaser (`limit: 3` + `customHeader`) prouve que le réseau est vivant sans dupliquer la page /agenda ; `action-tiles` referme sur les 3 ou 4 destinations réelles du site. C'est la seule home du parc qui enchaîne observatoire et agenda : à réserver aux sites qui ont VRAIMENT de la donnée et des événements, sinon les deux sections rendent du vide."
+  },
+  {
+   "id": "page-membres-colleges",
+   "titre": "Page membres par collèges de logos",
+   "quand": "Présenter des membres institutionnels groupés en collèges (financeurs, recherche, entreprises…) : leur identité est leur logo, pas une fiche.",
+   "source": "config.prod.institut-bleu.json",
+   "path": "/nos-membres",
+   "sequence": [
+    "searchHeader",
+    "logoCloud",
+    "logoCloud",
+    "logoCloud"
+   ],
+   "rythme": "`searchHeader` sert ici de simple bandeau de titre (ni champ de recherche ni filtre), puis un `logoCloud` PAR collège — un par section, chacun avec son propre `title` traduit. Le découpage porte l'information : trois blocs se lisent comme trois collèges, une grille unique de 18 logos ne dit rien. À préférer à une section `member` quand les membres sont des organisations connues par leur marque et qu'aucune donnée de la base n'est à afficher."
+  },
+  {
+   "id": "page-guide-markdown",
+   "titre": "Page de contenu long en Markdown",
+   "quand": "Publier un texte long et structuré (guide, méthode, marche à suivre) que le client doit pouvoir relire et corriger sans toucher à du HTML.",
+   "source": "config.prod.institut-bleu.json",
+   "path": "/guide-des-etapes",
+   "sequence": [
+    "title",
+    "markdown"
+   ],
+   "rythme": "Deux sections, et c'est tout : `title` pose le titre et le chapô, `markdown` porte le corps (ici 4 600 caractères). Face à `html`, le Markdown se relit et se corrige par un non-technicien, et hérite de la typographie du thème au lieu de la redéfinir inline. Réserver `html` aux pages qui ont réellement besoin de structure sur mesure (mentions légales à ancres, mise en page à colonnes)."
+  },
+  {
+   "id": "home-editoriale-blocs",
+   "titre": "Home éditoriale sans données",
+   "quand": "Le site est un complément d'un site institutionnel existant : la home doit expliquer et orienter, sans afficher de résultats de recherche.",
+   "source": "config.prod.cyber-reunion.json",
+   "path": "/",
+   "sequence": [
+    "html",
+    "html",
+    "features-glass",
+    "action-tiles",
+    "cta-card-grid",
+    "cta"
+   ],
+   "rythme": "Six blocs, aucun branché sur la base. Les deux `html` ouvrent (bandeau puis mission) car la mise en page y est sur mesure ; `features-glass` énonce ce que le site apporte ; `action-tiles` puis `cta-card-grid` proposent deux niveaux de destination (les rubriques, puis la communauté) ; `cta` referme sur l'unique action attendue — se référencer. Le gabarit à choisir quand la donnée n'est pas encore là, ou vit ailleurs : il ne promet rien qu'il ne tienne."
+  },
+  {
+   "id": "page-membres-annuaire",
+   "titre": "Page membres branchée sur l'organisation",
+   "quand": "Afficher les membres réels d'une organisation (ceux de la base, avec leurs rôles), pas une liste de logos écrite à la main.",
+   "source": "config.prod.cyber-reunion.json",
+   "path": "/membres",
+   "sequence": [
+    "searchHeader",
+    "member"
+   ],
+   "rythme": "`searchHeader` en bandeau de titre, puis `member` qui lit les liens `members` de l'organisation du costum. Les options portent tout le rendu : `showRole` (afficher la fonction), `showManagement` (les outils d'administration, visibles aux seuls gestionnaires), `showCard` et son bloc `card`. C'est la seule occurrence de `member` du parc — l'alternative « logos » est la recette page-membres-colleges, à choisir quand les membres ne sont pas dans la base."
+  }
+ ]
 }

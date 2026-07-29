@@ -906,6 +906,22 @@ export const CardCountCTSectionSchema = z.object({
   props: z.object({
     title: LocalizedString.optional(),
     subtitle: LocalizedString.optional(),
+    /**
+     * Périmètre compté — c'est la clé qui décide si le chiffre DIT VRAI.
+     *
+     * La section élargit le `$or` des `defaultFilters` avec la localité et le
+     * slug du costum courant. Sur un site TERRITORIAL c'est l'intention (« chez
+     * moi OU de ma source »), mais sur un site scopé costum c'est un mensonge :
+     * mesuré, le compteur d'institut-bleu passait de 49 à 530 organisations, et
+     * celui de cyber-réunion de 693 à 2588 — l'union ramassant tout ce qui est
+     * situé dans la commune du costum.
+     *
+     * `auto` (défaut) = comportement historique, aucune régression.
+     * `config` = seuls les `baseParams` font foi : le chiffre concorde alors
+     *            avec la liste que la page affiche à côté.
+     * `costum` / `locality` = n'élargir que sur l'un des deux axes.
+     */
+    scope: z.enum(["auto", "config", "costum", "locality"]).optional(),
     // Accepte tokens sémantiques (énumérés) OU classe Tailwind brute (string libre,
     // ex. `bg-cyan-500`). Cette flexibilité permet aux sites costum d'utiliser
     // des couleurs spécifiques non listées comme tokens globaux.

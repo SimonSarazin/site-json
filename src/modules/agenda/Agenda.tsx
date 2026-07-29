@@ -16,6 +16,7 @@ import { useHydrated } from "@/hooks/useHydrated";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
+import { sectionMaxWidthClass } from "@/lib/sectionMaxWidth";
 import { SwitchDetailsMode } from "@/modules/search/components/SwitchDetailsMode";
 import SearchListView from "@/modules/search/components/SearchListView";
 import { SearchPropsProvider } from "@/modules/search/contexts/SearchPropsProvider";
@@ -72,7 +73,13 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
     enableMap = false,
     mapView = "map",
     map: mapConf,
+    maxWidth,
   } = props;
+  // `maxWidth` absent → `container` historique (page agenda dédiée). Présent →
+  // échelon explicite, pour qu'un teaser s'aligne sur les sections voisines.
+  const containerClass = maxWidth
+    ? `mx-auto w-full ${sectionMaxWidthClass(maxWidth, "7xl")} px-4 sm:px-6 lg:px-8 py-8`
+    : "container mx-auto px-4 sm:px-6 lg:px-8 py-8";
   const isMobile = useIsMobile();
   const isSplit = mapView === "split" && !isMobile; // split = desktop only ; mobile → carte plein écran
 
@@ -290,7 +297,7 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
     ) : null;
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className={containerClass}>
       <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
         <div>
           {(customHeader?.title ?? title) && (

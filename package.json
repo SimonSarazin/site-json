@@ -34,7 +34,8 @@
     "config:fix": "tsx scripts/fix-config.ts",
     "config:init": "tsx scripts/config-init.ts",
     "config:probe": "tsx scripts/config-probe.ts",
-    "config:render": "tsx scripts/config-render.ts"
+    "config:render": "tsx scripts/config-render.ts",
+    "verify:build": "tsx scripts/verify-build.ts"
   },
   "resolutions": {
     "react": "19.2.1",

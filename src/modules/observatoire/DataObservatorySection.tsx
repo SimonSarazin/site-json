@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
+import { sectionMaxWidthClass } from "@/lib/sectionMaxWidth";
 import { useObservatoryItemsQuery } from "./hooks/useObservatoryItemsQuery";
 import { useObservatoryFilters } from "./hooks/useObservatoryFilters";
 import { buildLabelMaps } from "./dimensions";
@@ -124,7 +125,7 @@ export default function DataObservatorySection({
       className="w-full bg-background py-8"
       data-section="data-observatory"
     >
-      <div className="mx-auto w-full max-w-8xl px-4 sm:px-6 lg:px-8 space-y-6">
+      <div className={`mx-auto w-full ${sectionMaxWidthClass(props.maxWidth, "8xl")} px-4 sm:px-6 lg:px-8 space-y-6`}>
         {(headline || description) && (
           <header className="space-y-1">
             {headline && (
@@ -212,7 +213,13 @@ export default function DataObservatorySection({
             ) : (
               <>
                 {kpis.length > 0 && (
-                  <KpiCards data={filtered} dimensions={dimensions} kpis={kpis} labels={labels} />
+                  <KpiCards
+                    data={filtered}
+                    dimensions={dimensions}
+                    kpis={kpis}
+                    labels={labels}
+                    layout={props.kpiLayout}
+                  />
                 )}
 
                 {charts.length > 0 && (
