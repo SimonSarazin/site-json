@@ -92,13 +92,15 @@ export function HeroTintedOverlay({ id, props }: HeroTintedOverlayComponentProps
             {/*
               Indicateur de défilement — même visuel que HeroParallax:184 et
               HeroEntityBanner:133, la teinte suivant la présence d'image (cf. `ink`).
-              ⚠ `motion-safe:` : `animate-bounce`/`animate-pulse` sont des classes
-              Tailwind natives, que la garde `prefers-reduced-motion` de shared.css:94
-              ne couvre PAS (elle ne nomme que 5 classes maison). Les deux héros cités
-              ci-dessus ont donc aujourd'hui une animation non gardée — à traiter à part.
+
+              `prefers-reduced-motion` : le rebond est figé par le plancher global
+              (`shared.css`, qui nomme `.animate-bounce` depuis le 2026-07-29). Le point
+              pulsant, lui, est gardé ICI en `motion-safe:` — `animate-pulse` compte 27
+              emplois dans src/, en majorité des squelettes de chargement où l'animation
+              porte l'information : on ne pouvait donc pas la couper globalement.
             */}
             {props.showScrollIndicator && (
-                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 motion-safe:animate-bounce">
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 animate-bounce">
                     <div className={`w-6 h-10 border-2 rounded-full flex items-start justify-center p-2 ${hasImage ? "border-white/50" : "border-primary/50"}`}>
                         <div className={`w-1 h-3 rounded-full motion-safe:animate-pulse ${hasImage ? "bg-white/70" : "bg-primary"}`} />
                     </div>

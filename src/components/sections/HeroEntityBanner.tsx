@@ -132,7 +132,7 @@ export function HeroEntityBanner({ id, props }: HeroEntityBannerComponentProps) 
                 {props.showScrollIndicator && (
                     <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce animate-in fade-in slide-in-from-bottom-4 duration-600 delay-[550ms]">
                         <div className="w-6 h-10 border-2 border-white/50 rounded-full flex items-start justify-center pt-2">
-                            <div className="w-1 h-3 bg-white/70 rounded-full animate-pulse" />
+                            <div className="w-1 h-3 bg-white/70 rounded-full motion-safe:animate-pulse" />
                         </div>
                     </div>
                 )}

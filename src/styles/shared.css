@@ -104,9 +104,18 @@
     scroll-behavior: auto;
   }
 
+  /* `animate-bounce` est une classe NATIVE de Tailwind, pas une classe maison : elle
+     échappait donc à ce plancher. Ses 3 seuls emplois dans src/ sont les indicateurs
+     de défilement des héros (HeroParallax, HeroEntityBanner, HeroSection) — purement
+     décoratifs, rien ne se perd à les figer. Mesuré le 2026-07-29.
+     ⚠ On ne fait PAS de même pour `animate-pulse` : 27 emplois, en majorité des
+     squelettes de chargement, où l'animation PORTE l'information « ça charge ». Là où
+     ce pulse est décoratif (le point des indicateurs), il est gardé sur place en
+     `motion-safe:`. */
   .animate-float,
   .animate-pulse-glow,
-  .animate-marquee {
+  .animate-marquee,
+  .animate-bounce {
     animation: none;
   }
 
