@@ -34,7 +34,7 @@ interface HeroParallaxProps {
     props: SchemaHeroParallaxProps;
 }
 
-export function HeroParallax({ props }: HeroParallaxProps) {
+export function HeroParallax({ id, props }: HeroParallaxProps) {
     const { t } = useLocalization();
     const [scrollY, setScrollY] = useState(0);
     const variant = props.variant || "primary";
@@ -92,7 +92,7 @@ export function HeroParallax({ props }: HeroParallaxProps) {
     };
 
     return (
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
+        <section id={id} className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
             {props.backgroundImage && (
                 <div
                     className="absolute inset-0 z-0"
