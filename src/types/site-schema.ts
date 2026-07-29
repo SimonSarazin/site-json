@@ -330,14 +330,9 @@ export const HeroTintedOverlaySchema = z.object({
         })
       )
       .optional(),
-    badges: z
-      .array(
-        z.object({
-          label: LocalizedString,
-          icon: z.string().optional(),
-        })
-      )
-      .optional(),
+    // `badges` (pluriel) a été RETIRÉ le 2026-07-29 : déclaré ici mais jamais lu par
+    // HeroTintedOverlay, et zéro usage dans le parc. Le composant rend `badge`
+    // (singulier), juste au-dessus. Ne pas le réintroduire sans l'implémenter.
     showScrollIndicator: z.boolean().optional(),
   })
 });
@@ -353,7 +348,9 @@ export const HeroEntityBannerSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
-    logoIcon: LucideIconOrSvg.optional(),
+    // `logoIcon` a été RETIRÉ le 2026-07-29 : déclaré ici mais jamais lu par
+    // HeroEntityBanner (qui source son logo depuis l'entité Cocolight, via
+    // `bannerLogoUrl`), et zéro usage dans le parc.
     logoImage: z.string().optional(),
     backgroundImage: z.string().optional(),
     backgroundImageAlt: LocalizedString.optional(),

@@ -68,8 +68,16 @@
      thème pose `--header-bar` ; repli : primary. Génère `bg-header-bar`. */
   --color-header-bar: var(--header-bar, var(--primary));
   /* Voile teinté posé sur un hero plein écran (`hero-tinted-overlay`,
-     `hero-entity-banner`) — repli transparent. Génère `bg-hero-tint`. */
-  --color-hero-tint: var(--hero-tint, transparent);
+     `hero-entity-banner`) — chaque thème pose `--hero-tint`. Génère `bg-hero-tint`.
+
+     Repli : l'ancre du thème à 45 % (et NON `transparent`, comme jusqu'au
+     2026-07-29). Ces deux heros écrivent en blanc par-dessus la photo : sans voile,
+     le texte reposait nu sur l'image, illisible sur un cliché clair — défaut
+     silencieux, qu'aucun test ne voit. Même logique de repli que `--color-header-bar`
+     juste au-dessus. Sans effet sur les 3 configs qui consomment ces sections
+     aujourd'hui (nos-commune, commune-transparente, rezoSanteReunion) : toutes
+     définissent déjà `--hero-tint` et l'emportent donc sur ce repli. */
+  --color-hero-tint: var(--hero-tint, color-mix(in oklch, var(--foreground) 45%, transparent));
 }
 
 :root {
