@@ -100,5 +100,11 @@
     "config": "config.prod.saint-paul-sport.json",
     "css": "index-equipements-sportifs",
     "images": "equipementsSportifs974"
+  },
+  {
+    "slug": "rezoSanteReunion",
+    "config": "config.prod.rezo-sante-reunion.json",
+    "css": "index-parent62",
+    "images": "rezoSanteReunion"
   }
 ]
