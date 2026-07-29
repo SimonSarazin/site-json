@@ -37,7 +37,10 @@ interface Props {
 export default function GalleryUploadField({ value, onChange, label, hint, maxItems, accept = "image/*" }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const existing = value.existing ?? [];
-  const added = value.added ?? [];
+  // `value.added ?? []` fabriquait un tableau NEUF à chaque rendu quand le champ est
+  // vide : le useMemo de `previews` ne mémoïsait alors rien, et l'effet révoquait puis
+  // recréait les URL d'aperçu en boucle. On stabilise l'identité, pas la liste de deps.
+  const added = useMemo(() => value.added ?? [], [value.added]);
   const removed = value.removedDocIds ?? [];
   const visibleExisting = existing.filter((e) => !removed.includes(e.docId));
 
