@@ -48,13 +48,36 @@ describe("catalogue SECTION_META ⇄ code (anti-dérive)", () => {
 
   it("les comptes de sections cités dans la doc sont à jour", () => {
     const real = unionTypes().length;
-    const claudeMd = fs.readFileSync(path.join(ROOT, "CLAUDE.md"), "utf-8");
-    for (const m of claudeMd.matchAll(/\*\*(\d+) section types\*\*/g)) {
-      expect(Number(m[1]), "CLAUDE.md").toBe(real);
-    }
-    const doc26 = fs.readFileSync(path.join(ROOT, "doc/26-assistant-config.md"), "utf-8");
-    for (const m of doc26.matchAll(/\*\*(\d+) sections\*\*/g)) {
-      expect(Number(m[1]), "doc/26-assistant-config.md").toBe(real);
+
+    /**
+     * `CLAUDE.md` est GITIGNORÉ (.gitignore:32) : il est absent d'un clone frais et
+     * d'une CI. Un `readFileSync` inconditionnel y faisait échouer TOUT le préflight
+     * sur `ENOENT` — vérifié le 2026-07-29. On le contrôle donc s'il est présent,
+     * et on l'ignore sinon.
+     */
+    const optional = (rel: string): string | null => {
+      const p = path.join(ROOT, rel);
+      return fs.existsSync(p) ? fs.readFileSync(p, "utf-8") : null;
+    };
+
+    /** `**N section types**` (CLAUDE.md) / `**N sections**` (doc et skill). */
+    const sources: Array<[string, string | null, RegExp]> = [
+      ["CLAUDE.md", optional("CLAUDE.md"), /\*\*(\d+) section types\*\*/g],
+      ["doc/26-assistant-config.md", optional("doc/26-assistant-config.md"), /\*\*(\d+) sections\*\*/g],
+      // La skill écrit « **42 des 70 sections** » : la forme `**N sections**` ne
+      // matchait pas, la dérive y passait donc inaperçue. On lit les DEUX nombres.
+      [
+        ".claude/skills/config-assistant/SKILL.md",
+        optional(".claude/skills/config-assistant/SKILL.md"),
+        /\*\*\d+ des (\d+) sections\*\*/g,
+      ],
+    ];
+
+    for (const [label, content, re] of sources) {
+      if (content === null) continue;
+      for (const m of content.matchAll(re)) {
+        expect(Number(m[1]), label).toBe(real);
+      }
     }
   });
 
