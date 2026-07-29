@@ -1,12 +1,44 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useSyncExternalStore } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Quote } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Pause, Play, Quote } from 'lucide-react';
 import { T } from "@/components/ui/T";
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
 import { TestimonialsSectionProps } from '@/types/site-schema';
+
+const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
+
+/**
+ * `matchMedia` et `document.hidden` sont des sources EXTERNES : `useSyncExternalStore`
+ * est la primitive prévue pour s'y abonner. Elle évite le `setState` synchrone dans un
+ * effet — interdit ici par `react-hooks/set-state-in-effect`, en ERREUR dans ce dépôt —
+ * et fournit un instantané serveur explicite (3e argument) pour le SSR.
+ */
+function useReducedMotion() {
+  return useSyncExternalStore(
+    (onChange) => {
+      const mq = window.matchMedia?.(REDUCED_MOTION);
+      if (!mq) return () => {};
+      mq.addEventListener("change", onChange);
+      return () => mq.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia?.(REDUCED_MOTION).matches ?? false,
+    () => false,
+  );
+}
+
+function useDocumentHidden() {
+  return useSyncExternalStore(
+    (onChange) => {
+      document.addEventListener("visibilitychange", onChange);
+      return () => document.removeEventListener("visibilitychange", onChange);
+    },
+    () => document.hidden,
+    () => false,
+  );
+}
 
 function TestimonialCard({ item }: { item: TestimonialsSectionProps['items'][number] }) {
   const { t } = useLocalization();
@@ -41,16 +73,28 @@ function TestimonialCard({ item }: { item: TestimonialsSectionProps['items'][num
 export function TestimonialsSection({ id, props }: { id?: string; props: TestimonialsSectionProps }) {
   const { items, style = 'carousel', autoplay = true } = props;
   const [currentIndex, setCurrentIndex] = useState(0);
+  /** Survol ou focus clavier : suspension TRANSITOIRE, non mémorisée. */
+  const [hovered, setHovered] = useState(false);
+  /** Arrêt EXPLICITE par l'utilisateur (bouton). Distinct du précédent : il persiste. */
+  const [userPaused, setUserPaused] = useState(false);
+  /**
+   * La garde `prefers-reduced-motion` de `shared.css` ne cible que 5 classes d'animation
+   * maison — elle ne peut RIEN contre un `setInterval`. D'où cette garde JS.
+   */
+  const reducedMotion = useReducedMotion();
+  /** Onglet en arrière-plan : inutile de faire tourner ce que personne ne voit. */
+  const documentHidden = useDocumentHidden();
 
   // Auto-advance carousel
+  const canRotate = style === 'carousel' && autoplay && items.length > 1 && !reducedMotion;
+  const rotating = canRotate && !hovered && !userPaused && !documentHidden;
   useEffect(() => {
-    if (style === 'carousel' && autoplay && items.length > 1) {
-      const interval = setInterval(() => {
-        setCurrentIndex((prev) => (prev + 1) % items.length);
-      }, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [items.length, style, autoplay]);
+    if (!rotating) return;
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % items.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [rotating, items.length]);
 
   const nextTestimonial = () => {
     setCurrentIndex((prev) => (prev + 1) % items.length);
@@ -73,11 +117,32 @@ export function TestimonialsSection({ id, props }: { id?: string; props: Testimo
 
         {style === 'carousel' && (
           <div className="max-w-4xl mx-auto">
-            <div className="relative">
+            {/* WCAG 2.2.2 « Pause, Stop, Hide » : bouton d'arrêt explicite (premier dans
+                l'ordre de tabulation, comme l'exige l'APG), plus une suspension
+                transitoire au survol et au focus clavier. */}
+            <div
+              className="relative"
+              onMouseEnter={() => setHovered(true)}
+              onMouseLeave={() => setHovered(false)}
+              onFocusCapture={() => setHovered(true)}
+              onBlurCapture={() => setHovered(false)}
+            >
               <TestimonialCard item={items[currentIndex]} />
 
               {items.length > 1 && (
                 <div className="flex justify-center items-center gap-4 mt-8">
+                  {canRotate && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      aria-label={userPaused ? "Reprendre le défilement" : "Arrêter le défilement"}
+                      onClick={() => setUserPaused((v) => !v)}
+                      className="w-10 h-10 p-0"
+                    >
+                      {userPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
+                    </Button>
+                  )}
+
                   <Button
                     variant="outline"
                     size="sm"
@@ -92,7 +157,9 @@ export function TestimonialsSection({ id, props }: { id?: string; props: Testimo
                     {items.map((_, index) => (
                       <button
                         key={index}
-                        aria-label={`Témoignage ${index + 1}`}
+                        type="button"
+                        aria-label={`Témoignage ${index + 1} sur ${items.length}`}
+                        aria-current={index === currentIndex ? "true" : undefined}
                         onClick={() => setCurrentIndex(index)}
                         className={cn(
                           "w-2 h-2 rounded-full transition-colors",
