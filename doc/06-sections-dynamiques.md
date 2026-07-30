@@ -392,8 +392,13 @@ Pour créer une section sur mesure :
    `desc` (> 10 caractères), `image`, `family` prise dans `SECTION_FAMILIES`. Un test de préflight
    impose une **parité exacte** union ⇄ `SECTION_META` ⇄ table `lazy()`, dans les deux sens.
 
-6. **Mettre à jour les compteurs de sections** dans `CLAUDE.md` et `doc/26-assistant-config.md`, tous
-   deux gatés par une regex de `tests/preflight/section-meta.test.ts`.
+6. **Mettre à jour les compteurs de sections**, gatés par une regex de
+   `tests/preflight/section-meta.test.ts` sur **trois** fichiers :
+   - `doc/26-assistant-config.md` — forme `**N sections**` ;
+   - `.claude/skills/config-assistant/SKILL.md` — forme `**N des M sections**` (c'est le `M` qui
+     est contrôlé) ; ce fichier EST suivi en git (`.gitignore` ré-inclut `!.claude/skills/`) ;
+   - `CLAUDE.md` — forme `**N section types**`, **contrôlé seulement s'il est présent** : il est
+     gitignoré, donc absent d'un clone frais et d'une CI.
 
 7. **Si la section porte une image de fond pleine largeur et peut être PREMIÈRE d'une page** : ajouter
    son type à `RESPONSIVE_BG_SECTION_TYPES` (`src/lib/extractCriticalResources.ts`), sans quoi elle
@@ -406,7 +411,9 @@ Pour créer une section sur mesure :
 
 9. **Documenter les props** dans `scripts/lib/prop-descriptions.ts` (alimente `config:schema section:<type>`).
 
-10. **Mettre à jour les tables de la skill `config-assistant`** — rien ne les teste, la dérive y est silencieuse.
+10. **Mettre à jour les TABLES de la skill `config-assistant`** (headers, footers, presenters,
+    modules) — rien ne les teste, la dérive y est silencieuse. ⚠ À ne pas confondre avec le
+    COMPTEUR de sections du même fichier, lui gaté depuis l'étape 6.
 
 11. **Utiliser la section dans une config JSON** :
 

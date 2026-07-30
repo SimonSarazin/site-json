@@ -13,32 +13,31 @@ const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
 /**
  * `matchMedia` et `document.hidden` sont des sources EXTERNES : `useSyncExternalStore`
  * est la primitive prévue pour s'y abonner. Elle évite le `setState` synchrone dans un
- * effet — interdit ici par `react-hooks/set-state-in-effect`, en ERREUR dans ce dépôt —
- * et fournit un instantané serveur explicite (3e argument) pour le SSR.
+ * effet — interdit ici par `react-hooks/set-state-in-effect` — et fournit un instantané
+ * serveur explicite pour le SSR.
+ *
+ * ⚠ `subscribe` et `getSnapshot` sont au niveau MODULE, pas dans le corps du hook :
+ * React compare `subscribe` par IDENTITÉ et se désabonne/réabonne dès qu'elle change.
+ * Définies dans le composant, elles seraient neuves à chaque rendu — donc un
+ * removeEventListener + addEventListener toutes les 5 s pendant la rotation, ce qui est
+ * exactement ce que cette primitive existe pour éviter.
  */
-function useReducedMotion() {
-  return useSyncExternalStore(
-    (onChange) => {
-      const mq = window.matchMedia?.(REDUCED_MOTION);
-      if (!mq) return () => {};
-      mq.addEventListener("change", onChange);
-      return () => mq.removeEventListener("change", onChange);
-    },
-    () => window.matchMedia?.(REDUCED_MOTION).matches ?? false,
-    () => false,
-  );
-}
+const mediaQuery = () => (typeof window === "undefined" ? null : window.matchMedia?.(REDUCED_MOTION) ?? null);
 
-function useDocumentHidden() {
-  return useSyncExternalStore(
-    (onChange) => {
-      document.addEventListener("visibilitychange", onChange);
-      return () => document.removeEventListener("visibilitychange", onChange);
-    },
-    () => document.hidden,
-    () => false,
-  );
+function subscribeReducedMotion(onChange: () => void) {
+  const mq = mediaQuery();
+  if (!mq) return () => {};
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
 }
+const getReducedMotion = () => mediaQuery()?.matches ?? false;
+
+function subscribeVisibility(onChange: () => void) {
+  document.addEventListener("visibilitychange", onChange);
+  return () => document.removeEventListener("visibilitychange", onChange);
+}
+const getDocumentHidden = () => document.hidden;
+const getFalse = () => false;
 
 function TestimonialCard({ item }: { item: TestimonialsSectionProps['items'][number] }) {
   const { t } = useLocalization();
@@ -73,21 +72,26 @@ function TestimonialCard({ item }: { item: TestimonialsSectionProps['items'][num
 export function TestimonialsSection({ id, props }: { id?: string; props: TestimonialsSectionProps }) {
   const { items, style = 'carousel', autoplay = true } = props;
   const [currentIndex, setCurrentIndex] = useState(0);
-  /** Survol ou focus clavier : suspension TRANSITOIRE, non mémorisée. */
-  const [hovered, setHovered] = useState(false);
+  /**
+   * Suspension TRANSITOIRE, non mémorisée. Deux sources DISTINCTES : sinon sortir au
+   * clavier (`blur`) relancerait la rotation alors que le pointeur est encore sur la
+   * carte, et inversement.
+   */
+  const [pointerOver, setPointerOver] = useState(false);
+  const [focusWithin, setFocusWithin] = useState(false);
   /** Arrêt EXPLICITE par l'utilisateur (bouton). Distinct du précédent : il persiste. */
   const [userPaused, setUserPaused] = useState(false);
   /**
    * La garde `prefers-reduced-motion` de `shared.css` ne cible que 5 classes d'animation
    * maison — elle ne peut RIEN contre un `setInterval`. D'où cette garde JS.
    */
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useSyncExternalStore(subscribeReducedMotion, getReducedMotion, getFalse);
   /** Onglet en arrière-plan : inutile de faire tourner ce que personne ne voit. */
-  const documentHidden = useDocumentHidden();
+  const documentHidden = useSyncExternalStore(subscribeVisibility, getDocumentHidden, getFalse);
 
   // Auto-advance carousel
   const canRotate = style === 'carousel' && autoplay && items.length > 1 && !reducedMotion;
-  const rotating = canRotate && !hovered && !userPaused && !documentHidden;
+  const rotating = canRotate && !pointerOver && !focusWithin && !userPaused && !documentHidden;
   useEffect(() => {
     if (!rotating) return;
     const interval = setInterval(() => {
@@ -119,15 +123,21 @@ export function TestimonialsSection({ id, props }: { id?: string; props: Testimo
           <div className="max-w-4xl mx-auto">
             {/* WCAG 2.2.2 « Pause, Stop, Hide » : bouton d'arrêt explicite (premier dans
                 l'ordre de tabulation, comme l'exige l'APG), plus une suspension
-                transitoire au survol et au focus clavier. */}
-            <div
-              className="relative"
-              onMouseEnter={() => setHovered(true)}
-              onMouseLeave={() => setHovered(false)}
-              onFocusCapture={() => setHovered(true)}
-              onBlurCapture={() => setHovered(false)}
-            >
-              <TestimonialCard item={items[currentIndex]} />
+                transitoire au survol et au focus clavier.
+
+                ⚠ La suspension transitoire ne couvre QUE le contenu, pas la barre de
+                contrôles : englober le bouton d'arrêt rendait « Reprendre » inopérant —
+                le bouton gardant le focus, la rotation restait suspendue alors que le
+                libellé annonçait l'inverse. */}
+            <div className="relative">
+              <div
+                onMouseEnter={() => setPointerOver(true)}
+                onMouseLeave={() => setPointerOver(false)}
+                onFocusCapture={() => setFocusWithin(true)}
+                onBlurCapture={() => setFocusWithin(false)}
+              >
+                <TestimonialCard item={items[currentIndex]} />
+              </div>
 
               {items.length > 1 && (
                 <div className="flex justify-center items-center gap-4 mt-8">

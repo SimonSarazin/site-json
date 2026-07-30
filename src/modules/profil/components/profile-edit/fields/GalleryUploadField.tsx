@@ -38,8 +38,10 @@ export default function GalleryUploadField({ value, onChange, label, hint, maxIt
   const inputRef = useRef<HTMLInputElement>(null);
   const existing = value.existing ?? [];
   // `value.added ?? []` fabriquait un tableau NEUF à chaque rendu quand le champ est
-  // vide : le useMemo de `previews` ne mémoïsait alors rien, et l'effet révoquait puis
-  // recréait les URL d'aperçu en boucle. On stabilise l'identité, pas la liste de deps.
+  // VIDE, ce qui invalidait le useMemo de `previews` — lequel ne produisait alors qu'un
+  // tableau vide : aucune URL d'objet n'était créée ni révoquée en trop. On stabilise
+  // donc une identité, pas une fuite. Dès qu'un fichier existe, `value.added` est une
+  // référence stable et la mémoïsation fonctionnait déjà.
   const added = useMemo(() => value.added ?? [], [value.added]);
   const removed = value.removedDocIds ?? [];
   const visibleExisting = existing.filter((e) => !removed.includes(e.docId));

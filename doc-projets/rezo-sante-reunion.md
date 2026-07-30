@@ -443,9 +443,13 @@ marque. Palette finale, cinq teintes franchement distinctes, aucune ne heurtant 
 | Bien-être mental | `chart5` | turquoise `195` |
 
 **Visuels câblés** (lot 1d) : `mission-healthcare` en héro d'accueil (cercle intergénérationnel — la
-plus « réseau » des cinq), et les quatre `hero-*` sur leurs pages thématiques. Les 5 pages
-thématiques passent de `title` à `hero-tinted-overlay` — structure unifiée, `/theme/addictions`
-dégradant sur le voile teinté faute d'image.
+plus « réseau » des cinq), et les quatre `hero-*` sur leurs pages thématiques, qui passent de `title`
+à `hero-tinted-overlay`.
+
+⚠ **`/theme/addictions` reste en `title`** — 4 pages sur 5 ont donc le héro. Faute d'image, un
+`hero-tinted-overlay` y afficherait un bloc de 100 vh quasi vide : le composant ne rend NI l'image NI
+le voile sans `backgroundImage` (`HeroTintedOverlay.tsx:26`), il retombe seulement sur l'encre du
+thème. À unifier le jour où la thématique aura son visuel.
 
 ---
 
@@ -546,8 +550,8 @@ cf. §5.7). Gates : validate ✅, audit **0 constat**, préflight **328/328**, r
   françaises (`lien`, `video`, `document`, `compte-rendu`). Des catégories nommées autrement
   (« Outil », « Guide », « Protocole ») ne produiront **aucun bouton d'action principal**, et aucune
   clé de config ne corrige cela — seules les icônes sont surchargeables.
-- **Visuels : 5 fournis, 1 manquant.** `/theme/addictions` n'a **aucune image** — son héro dégrade
-  proprement sur le voile teinté, mais la planche des 5 thématiques est visuellement dépareillée.
+- **Visuels : 5 fournis, 1 manquant.** `/theme/addictions` n'a **aucune image**, et reste donc en
+  section `title` : la planche des 5 thématiques est visuellement dépareillée.
   Manque aussi l'image « communauté » (le `community-healthcare` de la maquette) qui porterait la
   section communauté de la home. Les visuels actuels sont **générés par IA** : à remplacer par de
   vraies photos du réseau avant mise en ligne (enjeu de crédibilité pour un annuaire d'acteurs).

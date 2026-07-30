@@ -100,7 +100,7 @@ export function HeroTintedOverlay({ id, props }: HeroTintedOverlayComponentProps
               porte l'information : on ne pouvait donc pas la couper globalement.
             */}
             {props.showScrollIndicator && (
-                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 animate-bounce">
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 animate-bounce pointer-events-none">
                     <div className={`w-6 h-10 border-2 rounded-full flex items-start justify-center p-2 ${hasImage ? "border-white/50" : "border-primary/50"}`}>
                         <div className={`w-1 h-3 rounded-full motion-safe:animate-pulse ${hasImage ? "bg-white/70" : "bg-primary"}`} />
                     </div>

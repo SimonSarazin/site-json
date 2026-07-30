@@ -164,7 +164,7 @@
         "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
       }
     },
-    "customCSS": "/* Voile des héros plein écran : sans --hero-tint, `bg-hero-tint` retombe sur\n   `transparent` (shared.css:72) et le texte blanc de hero-tinted-overlay se\n   pose nu sur des photos en lumière dorée. Assombrit sans teinter. */\n:root { --hero-tint: oklch(0.22 0.025 150 / 0.45); }\n.dark { --hero-tint: oklch(0.14 0.02 150 / 0.55); }\n"
+    "customCSS": "/* Voile des héros plein écran. Le repli générique de shared.css:86 est un noir à\n   45 % : correct, mais neutre. On pose ici la teinte VERTE du site, pour que le\n   voile appartienne à l'identité plutôt que d'être un simple assombrissement. */\n:root { --hero-tint: oklch(0.22 0.025 150 / 0.45); }\n.dark { --hero-tint: oklch(0.14 0.02 150 / 0.55); }\n"
   },
   "header": {
     "type": "transparent-scroll",
@@ -2604,7 +2604,6 @@
                 "style": "pin",
                 "color": "primary",
                 "borderColor": "background",
-                "iconAnchor": "bottom",
                 "colorBy": {
                   "path": "tags",
                   "mapping": {
@@ -3578,9 +3577,7 @@
                 "useItemImage": false,
                 "style": "pin",
                 "color": "primary",
-                "borderColor": "background",
-                "iconSize": 36,
-                "iconAnchor": "bottom"
+                "borderColor": "background"
               }
             },
             "columns": {
@@ -3598,7 +3595,10 @@
               "fediverse": false,
               "filters": {
                 "preferences.toBeValidated.rezoSanteReunion": {
-                  "$ne": true
+                  "$exists": false
+                },
+                "source.toBeValidated.rezoSanteReunion": {
+                  "$exists": false
                 }
               }
             }
@@ -5386,15 +5386,15 @@
       ],
       "limit": 8,
       "params": {
-        "notSourceKey": true,
+        "sourceKey": [
+          "rezoSanteReunion"
+        ],
         "filters": {
-          "$or": {
-            "source.key": "rezoSanteReunion",
-            "source.keys": "rezoSanteReunion",
-            "reference.costum": "rezoSanteReunion"
-          },
           "preferences.toBeValidated.rezoSanteReunion": {
-            "$ne": true
+            "$exists": false
+          },
+          "source.toBeValidated.rezoSanteReunion": {
+            "$exists": false
           }
         },
         "fields": [

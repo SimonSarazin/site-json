@@ -70,14 +70,20 @@
   /* Voile teinté posé sur un hero plein écran (`hero-tinted-overlay`,
      `hero-entity-banner`) — chaque thème pose `--hero-tint`. Génère `bg-hero-tint`.
 
-     Repli : l'ancre du thème à 45 % (et NON `transparent`, comme jusqu'au
+     Repli : un NOIR à 45 % (et NON `transparent`, comme jusqu'au
      2026-07-29). Ces deux heros écrivent en blanc par-dessus la photo : sans voile,
      le texte reposait nu sur l'image, illisible sur un cliché clair — défaut
      silencieux, qu'aucun test ne voit. Même logique de repli que `--color-header-bar`
      juste au-dessus. Sans effet sur les 3 configs qui consomment ces sections
      aujourd'hui (nos-commune, commune-transparente, rezoSanteReunion) : toutes
-     définissent déjà `--hero-tint` et l'emportent donc sur ce repli. */
-  --color-hero-tint: var(--hero-tint, color-mix(in oklch, var(--foreground) 45%, transparent));
+     définissent déjà `--hero-tint` et l'emportent donc sur ce repli.
+
+     ⚠ Noir INVARIANT, surtout pas `var(--foreground)` : ce token bascule avec le
+     thème, si bien qu'en mode sombre le voile serait devenu un aplat quasi BLANC —
+     sous un titre que `HeroTintedOverlay` force à `text-white` dès qu'il y a une
+     image. Le repli aurait alors été PIRE que `transparent`, et précisément dans
+     le cas qu'il existe pour couvrir. */
+  --color-hero-tint: var(--hero-tint, color-mix(in oklch, oklch(0 0 0) 45%, transparent));
 }
 
 :root {
@@ -105,9 +111,10 @@
   }
 
   /* `animate-bounce` est une classe NATIVE de Tailwind, pas une classe maison : elle
-     échappait donc à ce plancher. Ses 3 seuls emplois dans src/ sont les indicateurs
-     de défilement des héros (HeroParallax, HeroEntityBanner, HeroSection) — purement
-     décoratifs, rien ne se perd à les figer. Mesuré le 2026-07-29.
+     échappait donc à ce plancher. Ses seuls emplois dans src/ sont les indicateurs de
+     défilement des héros — HeroParallax, HeroEntityBanner, HeroSection, plus
+     HeroTintedOverlay depuis le 2026-07-29 — purement décoratifs, rien ne se perd à
+     les figer.
      ⚠ On ne fait PAS de même pour `animate-pulse` : 27 emplois, en majorité des
      squelettes de chargement, où l'animation PORTE l'information « ça charge ». Là où
      ce pulse est décoratif (le point des indicateurs), il est gardé sur place en
