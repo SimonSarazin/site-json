@@ -19,6 +19,7 @@ import type {
   ProfileFieldsSection,
   ProfileOpeningHoursSection,
   ProfileTabLayoutSection,
+  ProfileToolsSection,
   ProfileSection
 } from "@/modules/profil/schema";
 import type { Section } from "@/types/site-schema";
@@ -45,6 +46,7 @@ const ProfileTabLayout = lazy(() => import("./components/sections/ProfileTabLayo
 const ProfileTiersLieuxInfo = lazy(() => import("./components/sections/custom/ProfileTiersLieuxInfo"));
 const ProfileTiersLieuxAbout = lazy(() => import("./components/sections/custom/ProfilTiersLieuxAbout"));
 const ProfileSsbeAbout = lazy(() => import("./components/sections/custom/ProfileSsbeAbout"));
+const ProfileTools = lazy(() => import("./components/sections/custom/ProfileTools"));
 // Lazy load des templates
 const ProfileTemplateDynamic = lazy(() => import("./components/templates/ProfileTemplateDynamic"));
 
@@ -74,6 +76,7 @@ const PROFILE_SECTION_TYPES = [
   "profile-opening-hours",
   "profile-tab-layout",
   "profile-template-dynamic",
+  "profile-tools",
 ] as const;
 
 export function ProfileSectionRenderer({ section }: ProfileSectionRendererProps) {
@@ -159,6 +162,9 @@ export function ProfileSectionRenderer({ section }: ProfileSectionRendererProps)
 
     case "profile-template-dynamic":
       return <ProfileTemplateDynamic />;
+
+    case "profile-tools":
+      return <ProfileTools section={section as ProfileToolsSection} />;
 
     default: {
       const unknownSection = section as { type: string };

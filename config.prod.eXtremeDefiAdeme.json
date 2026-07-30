@@ -55,8 +55,8 @@
       },
       {
         "label": {
-          "fr": "Projets",
-          "en": "Projects"
+          "fr": "Action collective",
+          "en": "Collective action"
         },
         "path": "/projets"
       },
@@ -66,14 +66,8 @@
           "en": "Agenda"
         },
         "path": "/agenda"
-      },
-      {
-        "label": {
-          "fr": "Communauté",
-          "en": "Community"
-        },
-        "path": "/communaute"
       }
+     
     ],
     "sticky": true,
     "transparent": true,
@@ -1871,6 +1865,10 @@
                   "showOpeningDate": true,
                   "showDates": true,
                   "showOrganizer": true
+                },
+                {
+                  "type": "profile-tools",
+                  "sticky": true
                 }
               ]
             }
