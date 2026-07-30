@@ -8,121 +8,20 @@
    Parent62 — Réseau Parentalité du Pas-de-Calais
    Direction « La carte aux bulles » : papier grège chaud, indigo de marque
    #4054b2 en ancre, bulles-territoires (orange/rose/or/turquoise/olive/prune)
-   comme système d'accents (chart-1..5). Titres ronds Baloo 2 (écho du
-   lettrage du logo), corps Hanken Grotesk. Tokens réels injectés au runtime par config.theme
-   (SiteTheme.tsx) ; ce fichier = fallback :root/.dark + mapping @theme inline
-   + utilitaires bespoke (.access-card).
+   comme système d'accents (chart-1..5). Titres ronds Baloo 2 (écho du lettrage
+   du logo), corps Hanken Grotesk.
+
+   Ce fichier ne porte AUCUN token de thème : la palette, les polices, le rayon, les ombres
+   et l'espacement vivent dans `config.theme` (config.prod.parent62.json) et sont injectés
+   au runtime — SSR compris — par `SiteTheme`. Même modèle que index-tiers-lieux.css.
+   Il ne reste ici que le mapping `@theme inline` (ce qui CRÉE les utilitaires Tailwind),
+   les couleurs de MARQUE qui ne suivent pas le mode (territoires, `.p62-deep`) et les
+   utilitaires bespoke (`.access-card`, `.p62-*`, mini-prose, scrollbar).
+
+   Les deux blocs `:root`/`.dark` retirés dupliquaient les 32 tokens de la config ; leurs
+   ombres teintées indigo (hsl 265) étaient MORTES, la config injectant des ombres neutres
+   qui l'emportent. Les promouvoir dans `theme.shadows` reste à décider.
    ========================================== */
-
-:root {
-  /* Papier grège chaud (neutres chauds, marque froide : tension voulue) */
-  --background: oklch(0.9760 0.0070 85);
-  --foreground: oklch(0.2600 0.0350 270);
-  --card: oklch(1.0000 0 0);
-  --card-foreground: oklch(0.2600 0.0350 270);
-  --popover: oklch(1.0000 0 0);
-  --popover-foreground: oklch(0.2600 0.0350 270);
-
-  /* Primary : indigo de marque #4054b2 */
-  --primary: oklch(0.4800 0.1500 264);
-  --primary-foreground: oklch(0.9850 0.0100 255);
-
-  /* Secondary : voile indigo clair */
-  --secondary: oklch(0.9350 0.0280 265);
-  --secondary-foreground: oklch(0.3900 0.1100 265);
-
-  --muted: oklch(0.9530 0.0090 85);
-  --muted-foreground: oklch(0.5000 0.0250 275);
-
-  /* Accent : miel (chaleur dosée) */
-  --accent: oklch(0.7600 0.1300 78);
-  --accent-foreground: oklch(0.2800 0.0500 70);
-
-  --destructive: oklch(0.5800 0.1900 25);
-  --destructive-foreground: oklch(0.9850 0.0100 20);
-
-  --border: oklch(0.9060 0.0120 85);
-  --input: oklch(0.9060 0.0120 85);
-  --ring: oklch(0.4800 0.1500 264);
-
-  /* Bulles de la carte : indigo / rose poudré / orange / turquoise / olive */
-  --chart-1: oklch(0.5500 0.1400 264);
-  --chart-2: oklch(0.7100 0.1100 358);
-  --chart-3: oklch(0.7200 0.1300 45);
-  --chart-4: oklch(0.7000 0.1000 195);
-  --chart-5: oklch(0.7500 0.1100 125);
-
-  --sidebar: oklch(0.9850 0.0050 85);
-  --sidebar-foreground: oklch(0.2600 0.0350 270);
-  --sidebar-primary: oklch(0.4800 0.1500 264);
-  --sidebar-primary-foreground: oklch(0.9850 0.0100 255);
-  --sidebar-accent: oklch(0.9350 0.0280 265);
-  --sidebar-accent-foreground: oklch(0.3900 0.1100 265);
-  --sidebar-border: oklch(0.9060 0.0120 85);
-  --sidebar-ring: oklch(0.4800 0.1500 264);
-
-  --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Baloo 2", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Spline Sans Mono", ui-monospace, monospace;
-  /* Rondeur « bulle » assumée */
-  --radius: 1rem;
-
-  /* Ombres teintées indigo (jamais de gris sale) */
-  --shadow-2xs: 0px 1px 2px -1px hsl(265 45% 25% / 0.06);
-  --shadow-xs:  0px 1px 2px -1px hsl(265 45% 25% / 0.06);
-  --shadow-sm:  0px 2px 4px -1px hsl(265 45% 25% / 0.08), 0px 1px 2px -2px hsl(265 45% 25% / 0.06);
-  --shadow:     0px 4px 10px -3px hsl(265 45% 25% / 0.10), 0px 2px 4px -2px hsl(265 45% 25% / 0.06);
-  --shadow-md:  0px 6px 14px -4px hsl(265 45% 25% / 0.12), 0px 2px 4px -2px hsl(265 45% 25% / 0.06);
-  --shadow-lg:  0px 12px 28px -8px hsl(265 45% 25% / 0.16), 0px 4px 8px -4px hsl(265 45% 25% / 0.08);
-  --shadow-xl:  0px 20px 40px -12px hsl(265 45% 25% / 0.22), 0px 8px 12px -6px hsl(265 45% 25% / 0.10);
-  --shadow-2xl: 0px 28px 56px -18px hsl(265 45% 25% / 0.28);
-
-  --tracking-normal: 0em;
-  --spacing: 0.25rem;
-}
-
-.dark {
-  --background: oklch(0.2000 0.0300 265);
-  --foreground: oklch(0.9400 0.0080 250);
-  --card: oklch(0.2450 0.0320 265);
-  --card-foreground: oklch(0.9400 0.0080 250);
-  --popover: oklch(0.2300 0.0320 265);
-  --popover-foreground: oklch(0.9400 0.0080 250);
-
-  --primary: oklch(0.6400 0.1500 264);
-  --primary-foreground: oklch(0.1600 0.0300 265);
-
-  --secondary: oklch(0.3100 0.0400 264);
-  --secondary-foreground: oklch(0.8800 0.0300 260);
-
-  --muted: oklch(0.2900 0.0200 262);
-  --muted-foreground: oklch(0.7100 0.0200 258);
-
-  --accent: oklch(0.7900 0.1300 78);
-  --accent-foreground: oklch(0.2200 0.0400 70);
-
-  --destructive: oklch(0.6200 0.1800 25);
-  --destructive-foreground: oklch(0.9850 0.0100 20);
-
-  --border: oklch(0.3300 0.0200 262);
-  --input: oklch(0.3000 0.0200 262);
-  --ring: oklch(0.6400 0.1500 264);
-
-  --chart-1: oklch(0.6800 0.1400 264);
-  --chart-2: oklch(0.7600 0.1100 358);
-  --chart-3: oklch(0.7600 0.1300 45);
-  --chart-4: oklch(0.7500 0.1000 195);
-  --chart-5: oklch(0.7800 0.1100 125);
-
-  --sidebar: oklch(0.2200 0.0300 265);
-  --sidebar-foreground: oklch(0.9400 0.0080 250);
-  --sidebar-primary: oklch(0.6400 0.1500 264);
-  --sidebar-primary-foreground: oklch(0.1600 0.0300 265);
-  --sidebar-accent: oklch(0.3100 0.0400 264);
-  --sidebar-accent-foreground: oklch(0.8800 0.0300 260);
-  --sidebar-border: oklch(0.3300 0.0200 262);
-  --sidebar-ring: oklch(0.6400 0.1500 264);
-}
 
 @theme inline {
   --color-background: var(--background);
@@ -141,6 +40,20 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+
+  /* Statuts — extension maison du jeu shadcn, qui ne fournit que `destructive`.
+     Les VALEURS viennent de config.theme.colors.{light,dark} (SiteTheme les
+     injecte au runtime) ; ce mapping est ce qui CRÉE les utilitaires
+     correspondants et leurs modificateurs d'opacité.
+     Sans lui, la couleur est écrite pour rien. */
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -160,7 +73,7 @@
   --font-sans: var(--font-sans);
   --font-serif: var(--font-serif);
   --font-mono: var(--font-mono);
-  /* `font-display` (hero-quick-access…) → Bricolage Grotesque */
+  /* `font-display` (hero-quick-access…) : alias de la police de titre — Baloo 2 */
   --font-display: var(--font-serif);
   --radius: var(--radius);
 }
@@ -286,3 +199,83 @@ h1, h2 { letter-spacing: -0.015em; }
 #territoire-familles-en-sol-mineur-henin-carvin-titre { --territoire-bulle: #a2537e; }
 #territoire-familles-en-sol-mineur-lens-lievin-titre { --territoire-bulle: #97776b; }
 #territoire-ternois-bruaysis-titre { --territoire-bulle: #d492a9; }
+
+/* ---- Code couleur par TERRITOIRE (CDC : « une couleur correspond à chaque
+   territoire ») ------------------------------------------------------------
+   Teintes RÉELLES de la carte du site historique parent62.org — les mêmes que
+   les pastilles `--territoire-bulle` ci-dessus, exposées ici en variables
+   réutilisables. Consommées par : la bande « Votre territoire » de l'accueil et
+   les bandeaux des pages /territoire/… (config), `map.marker.colorBy` et
+   `card.tagColors` (moteur de recherche), et le référentiel
+   `src/data/territoires62.ts`. Valeurs identiques en clair et en sombre : ce
+   sont des couleurs de MARQUE, elles ne suivent pas le thème.
+   ⚠ Contraste : le texte blanc sur l'or de l'Audomarois et le vert-jaune de
+   l'Artois reste faible — c'est le parti pris du site historique. */
+:root,
+.dark {
+  --territoire-arrageois: #6d5da8;
+  --territoire-artois: #b7cb6b;
+  --territoire-audomarois: #e5af32;
+  --territoire-boulonnais: #c34a42;
+  --territoire-calaisis: #ed8a4c;
+  --territoire-entre-mer-et-terres: #3fb4be;
+  --territoire-familles-en-sol-mineur: #a2537e;
+  --territoire-fsm-henin-carvin: #a2537e;
+  --territoire-fsm-lens-lievin: #97776b;
+  --territoire-ternois-bruaysis: #d492a9;
+}
+
+/* Panneau sombre de la bande « Votre territoire » (charte parent62.org). */
+.p62-deep {
+  background: #1e3d51;
+}
+
+.p62-deep h2 {
+  color: #4fc3c3;
+  text-align: center;
+}
+
+/* Bulle territoire : cercle plein coloré (taille via --s), libellé centré. */
+.p62-bubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--s, 96px);
+  height: var(--s, 96px);
+  border-radius: 9999px;
+  padding: 0.5rem;
+  color: #fff !important;
+  font-weight: 700;
+  font-size: 0.72rem;
+  line-height: 1.15;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  box-shadow: 0 6px 14px rgb(0 0 0 / 0.25);
+  transition: transform 0.2s ease-in-out;
+}
+
+.p62-bubble:hover {
+  transform: scale(1.08);
+}
+
+/* Liste des communes d'un territoire (pages /territoire/<slug>) : colonnes CSS,
+   car les utilities Tailwind `columns-*` ne sont pas safelistées pour le HTML
+   venant de la config. */
+.p62-communes {
+  columns: 2;
+  column-gap: 2rem;
+  list-style: none;
+  padding: 0;
+}
+
+.p62-communes li {
+  padding: 0.15rem 0;
+  break-inside: avoid;
+}
+
+@media (min-width: 768px) {
+  .p62-communes {
+    columns: 3;
+  }
+}

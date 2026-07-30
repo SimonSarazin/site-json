@@ -1302,7 +1302,9 @@
     },
     "datetime": {
       "invalid": "ISO 8601 format required"
-    }
+    },
+    "minItems": "Not enough items selected",
+    "maxItems": "Too many items selected"
   },
   "ProfileTiersLieuxInfo": {
     "reserveOnline": "Book online",
@@ -1316,31 +1318,31 @@
     "reservationNote": "Book your space directly online",
     "contact": "Contact",
     "fax": "Fax",
-    "tools": "Our tools",
-    "editTools": "Edit",
-    "toolsEmpty": "No tools listed yet.",
+    "tools": "Signpost to resources",
+    "editTools": "Edit links",
+    "toolsEmpty": "No links added yet.",
     "toolsModal": {
-      "title": "Edit tools",
-      "description": "Add or edit your place's digital tools.",
-      "category": "Tool type",
+      "title": "Edit links to resources and tools",
+      "description": "Add or edit links to your place's main resources and tools. You can use this space as a signpost for your members.",
+      "category": "Resource type",
       "name": "Name",
       "namePlaceholder": "e.g. La Plume website",
       "url": "Link (optional)",
-      "addRow": "Add a tool",
-      "removeRow": "Remove this tool",
-      "empty": "No tools. Click “Add a tool”.",
+      "addRow": "Add a link",
+      "removeRow": "Remove this link",
+      "empty": "No links. Click “Add a link”.",
       "save": "Save",
       "cancel": "Cancel",
-      "saveSuccess": "Tools updated.",
-      "saveError": "Error while updating the tools."
+      "saveSuccess": "Links updated.",
+      "saveError": "Error while updating the links."
     },
     "socialNetworks": "Social networks",
     "keywords": "Keywords",
     "forms": "Forms",
-    "evaluation": "Place evaluation",
-    "evaluateButton": "Evaluate this place",
-    "evaluateNoData": "No evaluation for this place yet.",
-    "evaluateLoading": "Loading evaluations…",
+    "evaluation": "Collective self-diagnosis of the place",
+    "evaluateButton": "Start the collective self-diagnosis",
+    "evaluateNoData": "No self-diagnosis for this place yet.",
+    "evaluateLoading": "Loading self-diagnosis…",
     "noPois": "No spaces available"
   },
   "ProfilTiersLieuxAbout": {
@@ -1384,5 +1386,9 @@
     "contactEmail": "Send email",
     "callPhone": "Call",
     "visitWebsite": "Visit website"
+  },
+  "AuthRequired": {
+    "title": "Sign in to continue",
+    "description": "A new listing is tied to your account, so you can edit and complete it later."
   }
 }

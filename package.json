@@ -29,7 +29,13 @@
     "entity:slug": "tsx scripts/entity-slug.ts",
     "map:functions": "tsx scripts/map-functions.ts",
     "config:costum": "tsx scripts/gen-costum-config.ts",
-    "admin:scaffold": "tsx scripts/admin-scaffold.ts"
+    "admin:scaffold": "tsx scripts/admin-scaffold.ts",
+    "config:example": "tsx scripts/config-example.ts",
+    "config:fix": "tsx scripts/fix-config.ts",
+    "config:init": "tsx scripts/config-init.ts",
+    "config:probe": "tsx scripts/config-probe.ts",
+    "config:render": "tsx scripts/config-render.ts",
+    "verify:build": "tsx scripts/verify-build.ts"
   },
   "resolutions": {
     "react": "19.2.1",
@@ -49,7 +55,7 @@
     "@codemirror/lang-html": "^6.4.11",
     "@codemirror/lang-javascript": "^6.2.4",
     "@codemirror/theme-one-dark": "^6.1.3",
-    "@communecter/cocolight-api-client": "^1.0.168",
+    "@communecter/cocolight-api-client": "^1.0.169",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",

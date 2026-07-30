@@ -82,6 +82,16 @@ export const coerceDateISO = (value: unknown): string => (value ? new Date(value
 export const coerceDateYMDutc = (value: unknown): string =>
   value ? new Date(value as string).toISOString().split("T")[0] : "";
 
+/**
+ * booléen → **CHAÎNE** `"true"` / `"false"` (write). Pendant écriture de `coerce:bool` (lecture).
+ *
+ * Nécessaire pour les champs costum que le legacy stocke en chaîne : ses formulaires postent en
+ * `form-urlencoded`, donc PHP reçoit `"true"` et l'écrit tel quel (ex. `displayAuth` de l'Institut
+ * Bleu, dont l'annuaire filtre sur `displayAuth: "true"`). Écrire un booléen JSON à la place
+ * romprait la parité : la fiche ne serait plus trouvée par les requêtes existantes.
+ */
+export const coerceBoolString = (value: unknown): string => (coerceBool(value) ? "true" : "false");
+
 registerTransform("coerce:string", coerceString);
 registerTransform("coerce:number", coerceNumber);
 registerTransform("coerce:bool", coerceBool);
@@ -95,3 +105,4 @@ registerTransform("coerce:arrayOrEmpty", coerceArrayOrEmpty);
 registerTransform("coerce:boolLoose", coerceBoolLoose);
 registerTransform("coerce:dateISO", coerceDateISO);
 registerTransform("coerce:dateYMDutc", coerceDateYMDutc);
+registerTransform("coerce:boolString", coerceBoolString);

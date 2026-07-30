@@ -1,23 +1,68 @@
 version: "3.8"
 
 services:
+  # ---------------------------------------------------------------------------
+  # Mode historique : la config arrive au runtime (volume + SITE_CONFIG_PATH).
+  # Le build n'embarque que le CSS du slug ; les 13 dossiers de public/images/
+  # partent dans l'image.
+  # ---------------------------------------------------------------------------
   cocostum:
     build:
       context: .
       args:
-        VITE_SLUG: "franceTierslieux"
+        VITE_SLUG: "navigatorDesTierslieux"
     ports:
       - "3000:3000"
     environment:
       VITE_BASE_URL_BACKEND: "https://www.communecter.org"
       VITE_SERVER_URL: "https://www.communecter.org"
-      VITE_SLUG: "franceTierslieux"
+      VITE_SLUG: "navigatorDesTierslieux"
       SITE_CONFIG_PATH: "./config.prod.json"
       # Fond de carte MapTiler (optionnel) — valeur fournie par l'environnement
       # hôte / CI, jamais versionnée. Sans clé : repli tuiles libres OSM/Carto.
       VITE_MAPTILER_API_KEY: "${VITE_MAPTILER_API_KEY:-}"
     volumes:
       - ./config.prod.json:/app/config.prod.json
+      - image-cache:/app/.cache/images
+
+  # ---------------------------------------------------------------------------
+  # Mode mono-site : tout est figé au build. Ni volume de config, ni
+  # SITE_CONFIG_PATH au runtime — l'image se suffit à elle-même.
+  #
+  #   docker compose --profile embarque up --build
+  #
+  # Les trois valeurs de site se lisent dans sites.json : `css` pour
+  # SITE_CSS_PATH, `images` pour SITE_IMAGES, `config` pour SITE_CONFIG_PATH.
+  # Le champ `images` existe parce que le nom du dossier ne suit pas le slug.
+  #
+  # Les mêmes variables sont volontairement répétées en `environment` : c'est ce
+  # que fait Coolify, qui pousse un seul jeu au build et au run. SITE_CSS_PATH,
+  # SITE_IMAGES et SITE_EMBED y sont ignorées par prod-server ; SITE_CONFIG_PATH
+  # pointe un fichier absent de l'image et bascule sur dist/site-config.json en
+  # l'annonçant dans les logs.
+  # ---------------------------------------------------------------------------
+  cocostum-embarque:
+    profiles: ["embarque"]
+    build:
+      context: .
+      args:
+        VITE_SLUG: "institutBleu"
+        SITE_CSS_PATH: "./src/index-institut-bleu.css"
+        SITE_IMAGES: "institutBleu"
+        SITE_CONFIG_PATH: "./config.prod.institut-bleu.json"
+        SITE_EMBED: "true"
+    ports:
+      - "3001:3000"
+    environment:
+      VITE_BASE_URL_BACKEND: "https://www.communecter.org"
+      VITE_SERVER_URL: "https://www.communecter.org"
+      VITE_SLUG: "institutBleu"
+      VITE_MAPTILER_API_KEY: "${VITE_MAPTILER_API_KEY:-}"
+      SITE_CSS_PATH: "./src/index-institut-bleu.css"
+      SITE_IMAGES: "institutBleu"
+      SITE_CONFIG_PATH: "./config.prod.institut-bleu.json"
+      SITE_EMBED: "true"
+    volumes:
       - image-cache:/app/.cache/images
 
 volumes:

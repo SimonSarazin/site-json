@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useT } from "@/hooks/useT";
 import { SearchCardProps } from "../../schema";
 import useItem from "../../hooks/useItem";
+import { collectChipValues, decorateTags } from "../../lib/colorBy";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useMemo } from "react";
 import { shortenTag } from "@/helpers/shortenTag";
@@ -42,6 +43,25 @@ export default function CardDefault({
         .slice(0, 3),
     [name]
   );
+
+  // Chips préparées par `card.tagColors` (couleur territoire, masquage des
+  // tags techniques) — sans conf, identité (comportement historique).
+  // `tagColors.paths` ajoute les valeurs de champs serverData aux chips : la
+  // taxonomie de parent62 vit dans `territoires`/`publics`/`themes`, pas dans `tags`.
+  const displayTags = useMemo(
+    () =>
+      decorateTags(
+        collectChipValues(tags, item?.serverData, card.tagColors),
+        card.tagColors
+      ),
+    [tags, item?.serverData, card.tagColors]
+  );
+
+  // Borne unique : le défaut `{ tagLimit: 5 }` de la signature ne s'applique
+  // que si `card` est absent ; dès qu'un config fournit un `card` sans
+  // `tagLimit` (cas parent62), `card.tagLimit` est undefined → `slice(0,
+  // undefined)` afficherait TOUS les chips tout en gardant le badge « +N ».
+  const tagLimit = card.tagLimit ?? 5;
 
   return (
     <Card
@@ -82,22 +102,29 @@ export default function CardDefault({
               </span>
             </div>
 
-            {tags.length > 0 && (
+            {displayTags.length > 0 && (
               <div className="flex flex-wrap gap-1">
-                {tags.slice(0, card.tagLimit).map((tag, index) => (
+                {displayTags.slice(0, tagLimit).map(({ tag, label, cssColor }, index) => (
                   <Badge
                     key={index}
                     variant="secondary"
                     className="text-xs max-w-[8rem] overflow-hidden"
                     title={tag}
                   >
-                    {shortenTag(tag)}
+                    {cssColor && (
+                      <span
+                        aria-hidden
+                        className="mr-1 inline-block h-2 w-2 shrink-0 rounded-full"
+                        style={{ backgroundColor: cssColor }}
+                      />
+                    )}
+                    {shortenTag(label)}
                   </Badge>
                 ))}
 
-                {tags.length > (card?.tagLimit ?? 5) && (
+                {displayTags.length > tagLimit && (
                   <Badge variant="secondary" className="text-xs">
-                    +{tags.length - (card?.tagLimit ?? 5)}
+                    +{displayTags.length - tagLimit}
                   </Badge>
                 )}
               </div>

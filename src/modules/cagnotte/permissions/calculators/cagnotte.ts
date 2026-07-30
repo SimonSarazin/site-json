@@ -61,8 +61,8 @@ export function calculateCagnottePermissions(
 
   const isAdmin = safeIsAdmin(entity);
   const isContributor = safeIsContributor(entity);
-  const hasActiveMilestones = data?.hasActiveMilestones ?? false;
-  const projectId = data?.projectId ?? "";
+  const hasActiveItems = data?.hasActiveItems ?? false;
+  const resourceId = data?.resourceId ?? "";
 
   const isMilestoneEditable = (m: CagnotteMilestoneLike | null | undefined): boolean =>
     Boolean(m) && m!.status !== "close";
@@ -73,11 +73,11 @@ export function calculateCagnottePermissions(
   };
 
   return {
-    canContribute: Boolean(projectId) && hasActiveMilestones,
+    canContribute: Boolean(resourceId) && hasActiveItems,
     canContributeReason:
-      !projectId
+      !resourceId
         ? "No project selected"
-        : !hasActiveMilestones
+        : !hasActiveItems
           ? "No active milestones to fund"
           : undefined,
 

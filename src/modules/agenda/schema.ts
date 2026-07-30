@@ -72,6 +72,17 @@ export const AgendaSectionSchema = z.object({
     detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
     /** Colonnes de la grille de cartes (réutilise SearchListView). */
     columns: z.object({ sm: z.number(), md: z.number(), lg: z.number(), xl: z.number() }).partial().optional(),
+    /**
+     * Largeur du conteneur. ABSENT = `container` historique (plafond 1536 px aux
+     * grands écrans) : c'est le rendu d'une PAGE agenda dédiée, où la section
+     * occupe seule la page.
+     *
+     * À renseigner quand l'agenda est un TEASER posé parmi d'autres sections :
+     * `container` ne s'aligne sur aucun des échelons `max-w-*` employés
+     * ailleurs, et le teaser déborderait visiblement des sections voisines.
+     * Mêmes valeurs que `data-observatory.maxWidth`.
+     */
+    maxWidth: z.enum(["4xl", "5xl", "6xl", "7xl", "8xl", "full"]).optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
   }),
 });

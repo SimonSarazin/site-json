@@ -1,0 +1,67 @@
+{
+  "feature": "footer-contact-partners",
+  "titre": "Footer contact-partners",
+  "description": "Footer avec bloc contact + logos partenaires (les logos externes restent en <img> brut, cf. CLAUDE.md).",
+  "source": "config.prod.parent62.json",
+  "selector": "footer",
+  "snapshot": {
+    "type": "contact-partners",
+    "contactSection": {
+      "title": {
+        "fr": "Nos coordonnées",
+        "en": "Contact us"
+      },
+      "items": [
+        {
+          "icon": "mail",
+          "value": {
+            "fr": "contact@parent62.org",
+            "en": "contact@parent62.org"
+          },
+          "href": "mailto:contact@parent62.org"
+        },
+        {
+          "icon": "phone",
+          "value": {
+            "fr": "06 98 99 93 09",
+            "en": "06 98 99 93 09"
+          },
+          "href": "tel:+33698999309"
+        },
+        {
+          "icon": "map-pin",
+          "lines": [
+            {
+              "fr": "Réseau Parentalité 62",
+              "en": "Parenting Network 62"
+            },
+            {
+              "fr": "Pas-de-Calais",
+              "en": "Pas-de-Calais"
+            }
+          ]
+        }
+      ]
+    },
+    "legalLinks": [
+      {
+        "href": "/mentions-legales",
+        "label": {
+          "fr": "Mentions légales",
+          "en": "Legal notice"
+        }
+      },
+      {
+        "href": "/confidentialite",
+        "label": {
+          "fr": "Politique de confidentialité",
+          "en": "Privacy policy"
+        }
+      }
+    ],
+    "copyright": {
+      "fr": "© 2026 Parent62 — Réseau Parentalité du Pas-de-Calais. Tous droits réservés.",
+      "en": "© 2026 Parent62 — Parenting Network of Pas-de-Calais. All rights reserved."
+    }
+  }
+}

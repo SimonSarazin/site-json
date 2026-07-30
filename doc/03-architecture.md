@@ -1159,6 +1159,16 @@ Fonctions utilitaires internes disponibles dans `src/lib/` — référence rapid
 | `entityTransform.ts` | `restorePaginationFromJSON<T>(page, helper, parent)` | Restaure une page de pagination depuis le JSON SSR vers une instance `PaginatorPage<T>` avec méthodes `next`/`prev` |
 | `entityFormatting.ts` | `extractAuthorInfo(author)` | Normalise un auteur (entité SDK ou objet brut) vers `{ id, name, photo }` |
 | `entityFormatting.ts` | `isEntityInstance(obj)` | Vérifie si l'objet est une entité SDK (a `serverData`) |
+| `entityMatch.ts` | `entityMatchData(item)` | Vue « matchable » d'une entité : `serverData` + `collection`/`sourceKey`/`sourceKeys` synthétiques, derrière un Proxy qui résout les chemins pointés |
+| `entityMatch.ts` | `firstMatching(rules, data, onError?)` | 1ʳᵉ règle dont le prédicat `when` matche ; règle sans `when` = catch-all ; garde qui ignore et signale une règle malformée |
+| `entityMatch.ts` | `getSourceKey(item)` | Clé de source primaire (`serverData.source.key`) |
+| `entityMatch.ts` | `getSourceKeys(item)` | Toutes les clés de source, dédoublonnées — normalise `source.keys` en **tableau OU objet à trous** (byte-parité `unset` PHP) |
+
+**`entityMatch.ts`** est le socle des **règles config-driven à prédicat**, partagé par deux
+consommateurs : les `iconRules` de la palette (`modules/profil/commands/register.tsx`) et les
+`list.itemRules` du module search (`modules/search/lib/resolveListItemConf.ts`). La grammaire des
+prédicats est celle du formEngine (`PredicateJson` / `check`) — aucune seconde grammaire n'a été
+introduite.
 
 **`ENTITY_ICON_CONFIG`** (`entityIcons.tsx`) — source de vérité unique pour les icônes et couleurs par type d'entité :
 

@@ -47,6 +47,11 @@ export default function ArticlePage() {
     <>
       <BlogArticleSeo article={article} url={canonicalUrl} />
       <Suspense fallback={<ReaderSkeleton />}>
+        {/* eslint-disable-next-line react-hooks/static-components -- `Reader` vient d'un
+            REGISTRE, il n'est pas fabriqué ici : `makeVariantRegistry` referme un objet
+            construit au chargement du module et `get()` n'est qu'un `variants[key] ?? default`.
+            La même référence est donc renvoyée à chaque rendu — aucun état n'est remis à zéro.
+            Le type ne change que si le variant change, ce qui est le comportement voulu. */}
         <Reader article={article} />
       </Suspense>
       <RelatedArticles article={article} />

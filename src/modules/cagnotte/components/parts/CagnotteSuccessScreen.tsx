@@ -12,22 +12,22 @@ import { Badge } from "@/components/ui/badge";
 import { useT } from "@/hooks/useT";
 import { formatNumber } from "@/modules/cagnotte/utils/format";
 
-export interface MilestoneReached {
+export interface ObjectiveReached {
   target: number;
   label: string;
   description: string;
 }
 
 export interface CagnotteSuccessScreenProps {
-  milestoneReached: MilestoneReached | null;
+  objectiveReached: ObjectiveReached | null;
 }
 
-export function CagnotteSuccessScreen({ milestoneReached }: CagnotteSuccessScreenProps) {
+export function CagnotteSuccessScreen({ objectiveReached }: CagnotteSuccessScreenProps) {
   const t = useT("modules/cagnotte");
 
   return (
     <div className="py-12 text-center space-y-4 animate-fade-in">
-      {milestoneReached ? (
+      {objectiveReached ? (
         <>
           <div className="relative">
             <div className="w-24 h-24 mx-auto rounded-full bg-linear-to-br from-primary/30 to-accent/30 flex items-center justify-center animate-pulse">
@@ -43,11 +43,11 @@ export function CagnotteSuccessScreen({ milestoneReached }: CagnotteSuccessScree
             </Badge>
             <h3 className="text-2xl font-bold text-primary">
               {t("CagnotteDialog.milestoneCelebration.amountReached", undefined, {
-                amount: formatNumber(milestoneReached.target),
+                amount: formatNumber(objectiveReached.target),
               })}
             </h3>
             <p className="text-muted-foreground max-w-xs mx-auto">
-              {milestoneReached.description}
+              {objectiveReached.description}
             </p>
           </div>
           <p className="text-sm text-foreground/80">

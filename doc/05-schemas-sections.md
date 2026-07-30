@@ -43,6 +43,9 @@
   - [`member`](#member)
   - [`searchPro`](#searchpro)
     - [Details de `ListConfSchema`](#details-de-listconfschema)
+    - [Details de `CardConfSchema`](#details-de-cardconfschema-listcard)
+    - [Details de `ListItemRuleSchema`](#details-de-listitemruleschema-listitemrules)
+    - [Details de `ListItemActionSchema`](#details-de-listitemactionschema-listitemaction)
     - [Details de `PreviewConfSchema`](#details-de-previewconfschema)
     - [Details de `TestimonialConfSchema`](#details-de-testimonialconfschema)
     - [Details de `ResourceConfSchema`](#details-de-resourceconfschema)
@@ -1133,21 +1136,15 @@ export const ListConfSchema = z.object({
     sm: z.number().int().min(1).max(6).optional(),
     xl: z.number().int().min(1).max(6).optional(),
   }).partial().optional(),
-  card: z.object({
-    tagLimit:        z.number().int().min(1).max(50).optional(),
-    showDescription: z.boolean().optional(),
-    showAddress:     z.boolean().optional(),
-    shareButton:     z.boolean().optional(),
-    showStar:        z.boolean().optional(),
-    showFunding:     z.boolean().optional(),
-    detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
-    type: z.enum(["overlay", "default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer", "news", "testimonial", "resource"]).default("default"),
-    variant: z.enum(["default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer"]).optional(),
-  }).partial().optional(),
+  // Schéma NOMMÉ extrait de ListConfSchema pour être réutilisable par ListItemRuleSchema.
+  card: CardConfSchema.optional(),
   preview: PreviewConfSchema.optional(),
   testimonial: TestimonialConfSchema.optional(),
   resource: ResourceConfSchema.optional(),
   previewParam: z.string().optional(),
+  // Rendu PAR ITEM des listes hétérogènes (cf. doc/07 §Rendu PAR ITEM).
+  itemRules: z.array(ListItemRuleSchema).optional(),
+  itemAction: ListItemActionSchema.optional(),
 }).partial();
 ```
 
@@ -1162,6 +1159,73 @@ export const ListConfSchema = z.object({
 * **`testimonial`** : contrat générique config-driven du design `testimonial` (card + preview). Voir [Details de `TestimonialConfSchema`](#details-de-testimonialconfschema).
 * **`resource`** : contrat générique config-driven du design `resource` (card + preview). Voir [Details de `ResourceConfSchema`](#details-de-resourceconfschema).
 * **`previewParam`** : nom du paramètre URL synchronisant l'item ouvert en preview (défaut `preview`) — utile quand plusieurs listings coexistent sur une même page.
+* **`itemRules`** : règles de rendu PAR ITEM d'une liste hétérogène (la 1ʳᵉ dont `when` matche impose son presenter). Voir [Details de `ListItemRuleSchema`](#details-de-listitemruleschema-listitemrules).
+* **`itemAction`** : action au clic par défaut de la liste, surchargeable par règle. Voir [Details de `ListItemActionSchema`](#details-de-listitemactionschema-listitemaction).
+
+### Details de `CardConfSchema` (`list.card`)
+
+Bloc `card` **extrait** de `ListConfSchema` en schéma nommé — il est partagé avec `ListItemRuleSchema.card`, d'où son émission en `$ref` dans le dump JSON Schema (`config:schema`).
+
+```ts
+export const CardConfSchema = z.object({
+  tagLimit:        z.number().int().min(1).max(50).optional(),
+  tagColors:       TagColorsConfSchema.optional(),
+  showDescription: z.boolean().optional(),
+  showAddress:     z.boolean().optional(),
+  shareButton:     z.boolean().optional(),
+  showStar:        z.boolean().optional(),
+  showFunding:     z.boolean().optional(),
+  detailsMode:     z.enum(["drawer", "dialog"]).default("drawer"),
+  detailedMode:    z.enum(["default", "service-pricing"]).default("default"),
+  overlayStats:    z.enum(["service-pricing"]).optional(),
+  imageFit:        z.enum(["cover", "contain"]).optional(),
+  servicePricing:  z.object({ /* meeting / coworking / accommodation */ }).optional(),
+  installationFilter: InstallationFilterConfSchema.optional(),
+  type:    z.enum([...15 designs...]).default("default"),
+  variant: z.enum([...11 designs...]).optional(),
+}).partial();
+```
+
+### Details de `ListItemRuleSchema` (`list.itemRules`)
+
+Choix du presenter **par item**, pour les listes hétérogènes (recherche globale sans filtre de type). Mécanisme complet : [doc/07 §Rendu PAR ITEM](07-module-search.md#rendu-par-item-des-listes-hétérogènes-listitemrules).
+
+```ts
+export const ListItemRuleSchema = z.object({
+  id: z.string().optional(),
+  when: PredicateJson.optional(),
+  card: CardConfSchema.optional(),
+  preview: PreviewConfSchema.optional(),
+  testimonial: TestimonialConfSchema.optional(),
+  resource: ResourceConfSchema.optional(),
+  itemAction: ListItemActionSchema.optional(),
+});
+```
+
+* **`id`** : identifiant lisible (debug, tests, warning DEV). Aucun effet fonctionnel.
+* **`when`** : prédicat `PredicateJson` du formEngine (même grammaire que `visibleIf`), évalué contre `{...serverData, collection, sourceKey, sourceKeys}` avec chemins pointés résolus. **La 1ʳᵉ règle qui matche gagne** ; une règle **sans `when`** est un catch-all → à placer **en dernier**.
+* **`card`, `preview`** : **fusionnés** (shallow) sur `list.card` / `list.preview` — les clés posées au niveau page restent héritées.
+* **`testimonial`, `resource`, `itemAction`** : **remplacent** la valeur de la liste (un contrat de mapping est atomique).
+* ⚠ `serverData.type` a deux sémantiques (sous-type POI vs sous-type d'organisation) : ancrer toute règle sur `collection` avant `type`.
+* ⚠ Tout champ testé doit figurer dans `baseParams.defaultFields`, sinon la règle ne matche jamais — en silence. Gaté par `tests/preflight/list-item-rules.test.ts`.
+
+### Details de `ListItemActionSchema` (`list.itemAction`)
+
+```ts
+export const ListItemActionSchema = z.object({
+  kind: z.enum(["preview", "profil", "link"]).default("preview"),
+  to: z.string().optional(),
+  toById: z.string().optional(),
+  newTab: z.boolean().optional(),
+});
+```
+
+* **`kind`** : `preview` (défaut, ouvre le détail) · `profil` (`/profil/:slug`) · `link` (gabarit `to`).
+* **`to`** : gabarit d'URL, `:slug` substitué (ex. `/blog/:slug`). Sans placeholder = lien statique.
+* **`toById`** : gabarit de repli quand l'item n'a pas de slug, `:id` substitué (ex. `/blog/id/:id`).
+* **`newTab`** : ouvre dans un nouvel onglet.
+* Toute action inexploitable (ni slug ni id, `profil` sans slug) retombe sur l'ouverture du détail — jamais d'URL trouée.
+* ⚠ À ne pas confondre avec `map.itemAction` (bouton de popup carte) ni avec `commandPalette.entitySearch.itemAction` (clic dans la palette) : trois clés homonymes, trois schémas.
 
 ### Details de `PreviewConfSchema` (`list.preview`)
 
@@ -2032,7 +2096,7 @@ Section de filtres avec groupes depliables. Pilote `PageFiltersContext` consomme
 export const FilterGroupSchema = z.object({
   id: z.string(),
   label: LocalizedString,
-  type: z.enum(['scopeList', "filters", "entityList"]).default("filters"),
+  type: z.enum(['scopeList', "filters", "entityList", "searchTargets", "dateRange"]).default("filters"),
   field: z.string().optional(),
   options: z.array(z.object({
     id: z.string(),
@@ -2094,7 +2158,7 @@ export const FiltersSectionSchema = z.object({
 | ------------------ | --------- | ---------------------------------------- |
 | `title`            | `LocalizedString?` | Titre de la section filtres      |
 | `filterGroups`     | `FilterGroupSchema[]` | Groupes de filtres              |
-| `filterGroups[].type` | `"scopeList" \| "filters" \| "entityList"` | Type de filtre (`"entityList"` charge les options dynamiquement via `baseParams`) |
+| `filterGroups[].type` | `"scopeList" \| "filters" \| "entityList" \| "searchTargets" \| "dateRange"` | Type de filtre. `"entityList"` charge les options dynamiquement via `baseParams` ; `"searchTargets"` est un filtre « type d'information » à sélection UNIQUE dont chaque option porte sa cible `target: {defaultTypes?, defaultFilters?}` (elle REMPLACE les `defaultTypes` de la section et FUSIONNE ses `defaultFilters`) ; `"dateRange"` filtre par date (`filters[field].$gt`). ⚠ Une cible dit *quoi chercher*, pas *comment rendre* — le presenter se choisit par `list.itemRules`. |
 | `filterGroups[].field` | `string?` | Champ cible du filtre               |
 | `filterGroups[].config` | `object?` | Configuration du filtre (countryCode, level, etc.) |
 | `filterGroups[].baseParams` | `SearchBaseParamsSchema?` | Pour `entityList` : périmetre de la recherche backend |

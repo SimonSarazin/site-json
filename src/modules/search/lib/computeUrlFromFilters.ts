@@ -34,8 +34,30 @@ export function computeUrlFromFilters(
   else params.delete("search");
 
   for (const group of filterGroups) {
-    // entityList & scopeList : sélection en `searchByFields`, clé = nom d'option.
-    if (group.type === "entityList" || group.type === "scopeList") {
+    // dateRange : sélection en `searchByFields` sous la clé du GROUPE —
+    // miroir `?<group.id>=start[,end]` (ou `,end` pour une plage « fin seule »).
+    if (group.type === "dateRange") {
+      const entry = searchByFields[group.id];
+      const range = (entry?.value ?? {}) as { start?: string; end?: string };
+      const start = range.start ?? "";
+      const end = range.end ?? "";
+      // On CONSERVE la position de début vide (`,end`) : un `.filter(Boolean)`
+      // ferait glisser une borne de fin seule en position de début au round-trip
+      // (la borne « Jusqu'au » deviendrait « À partir du »).
+      const csv = end ? `${start},${end}` : start;
+      if (csv) params.set(group.id, csv);
+      else params.delete(group.id);
+      continue;
+    }
+    // entityList, scopeList, searchTargets & groupes « champ » (taxonomie en
+    // champs : parent62) : sélection en `searchByFields`, clé = nom d'option.
+    // (`dateRange` est traité au-dessus, il n'atteint jamais cette branche.)
+    if (
+      group.type === "entityList" ||
+      group.type === "scopeList" ||
+      group.type === "searchTargets" ||
+      group.field
+    ) {
       const optionNames = (group.options ?? []).map((o) => o.name || o.id);
       // Options pas encore chargées (query entités/zones en vol) : on ne touche
       // PAS au param — sinon un deep-link `?<group.id>=…` serait effacé avant que

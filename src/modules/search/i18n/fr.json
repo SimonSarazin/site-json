@@ -168,6 +168,8 @@
         "periodUntil": "Jusqu'au {{end}}"
     },
     "Filtres actifs :": "Filtres actifs :",
+    "À partir du": "À partir du",
+    "Jusqu'au": "Jusqu'au",
     "Description": "Description",
     "Tags": "Tags",
     "En savoir plus": "En savoir plus",

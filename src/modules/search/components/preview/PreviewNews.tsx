@@ -19,6 +19,8 @@ const NewsDetailPage = lazy(() => import("@/modules/news/components/NewsDetailPa
 interface PreviewNewsProps {
   item: News;
   preview?: ListConf["preview"];
+  /** Conf de liste complète, transmise à tous les variants par `Preview` — non lue ici. */
+  list?: ListConf;
   onClose?: () => void;
 }
 

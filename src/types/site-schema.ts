@@ -464,7 +464,20 @@ export const ActionTilesSchema = z.object({
         title: LocalizedString,
         subtitle: LocalizedString.optional(),
         href: z.string(),
-        color: z.enum(["primary", "turquoise", "amber", "cyan-bright", "teal", "accent", "eco", "chart-2"]).optional(),
+        /**
+         * Couleur de la tuile — TOKENS du thème. `ActionTiles` les résout via sa
+         * table `TILE_TOKEN`. `turquoise`/`cyan-bright`/`teal`/`amber`/`eco` sont
+         * des ALIAS HISTORIQUES conservés pour les 5 configs du parc qui les
+         * emploient : ils codaient des couleurs Tailwind en dur (les mêmes sur
+         * tous les sites) et pointent désormais sur `chart-2..4`, la palette
+         * catégorielle propre à chaque site.
+         */
+        color: z.enum([
+          "primary", "accent", "destructive",
+          "chart-1", "chart-2", "chart-3", "chart-4", "chart-5",
+          // alias historiques
+          "turquoise", "cyan-bright", "teal", "amber", "eco",
+        ]).optional(),
       })
     ),
   }),
@@ -1620,6 +1633,7 @@ export const Header = z.object({
     cart: z.boolean().default(false),
     notifications: z.boolean().default(false),
     piggyBank: z.boolean().default(false),
+    pledge: z.boolean().default(false)
   }),
   ctaButton: z.object({
     label: LocalizedString,
@@ -1676,6 +1690,11 @@ const FooterPartnerLogo = z.object({
 const FooterPartnersSection = z.object({
   title: LocalizedString.optional(),
   logos: z.array(FooterPartnerLogo),
+  // Mention de financement, sous les logos. Un cofinancement public s'accompagne
+  // d'une formulation IMPOSÉE par le financeur (dispositif, opérateur, cadre) que
+  // les seuls logos ne portent pas : sans ce champ, elle finissait recopiée dans
+  // le `copyright`, où elle n'a rien à faire.
+  note: LocalizedString.optional(),
 });
 
 export const Footer = z.object({
@@ -1909,6 +1928,16 @@ const PerformanceConfig = z.object({
   criticalCSS: z.boolean().default(true),
 });
 
+const CagnotteModuleConfig = z.object({
+    defaultType: z.enum(["standard", "aac"]).optional().default("standard"),
+    predefinedAmounts: z.array(z.number()).optional(),
+    context: z.string().optional(),
+});
+
+export type CagnotteModuleConfig = z.infer<typeof CagnotteModuleConfig>;
+
+
+
 /*───────────────────────────────────────────────────────────────*/
 /* 10. SiteConfig – racine                                        */
 /*───────────────────────────────────────────────────────────────*/
@@ -1998,6 +2027,7 @@ export const SiteConfig = z.object({
   // Page d'Administration (config-driven, jumeau du module profil). Onglets/sections/accès déclarés en
   // données. Absent → pas de page admin. cf. modules/admin + commentaire/plan-module-admin-generique.md
   admin: AdminConfigSchema.optional(),
+  cagnotteModuleConfig: CagnotteModuleConfig.optional(),
 });
 export type SiteConfig = z.infer<typeof SiteConfig>;
 
@@ -2030,7 +2060,8 @@ export function getDefaultSiteConfig(): Partial<SiteConfig> {
         auth: false,
         cart: false,
         notifications: false,
-        piggyBank: false
+        piggyBank: false,
+        pledge: false
       },
       sticky: false,
       transparent: false,
@@ -2077,7 +2108,8 @@ export const example: SiteConfig = {
       auth: false,
       cart: false,
       notifications: false,
-      piggyBank: false
+      piggyBank: false,
+      pledge: false
     }
   },
   pages: [

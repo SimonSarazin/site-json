@@ -20,6 +20,7 @@ import CommandTriggerButton from "@/modules/commandPalette/components/CommandTri
 import { useScrollAware, useScrollToTopOnRouteChange, useNavItemActive, useHeaderOpaqueAtRest } from "./useHeaderBehavior";
 import { logoSquareClass, logoSizePx } from "./logoSize";
 import { useVisibilityList } from "@/lib/visibility/useVisibility";
+import PledgeHeaderButton from "@/modules/cagnotte/components/PledgeHeaderButton";
 
 interface HeaderTransparentScrollProps {
     header: Header;
@@ -75,7 +76,10 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
 
     return (
         <>
-        <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${opaque ? 'bg-background/90 backdrop-blur-md shadow-deep' : 'bg-transparent'}`}>
+        {/* État transparent : léger scrim dégradé issu du thème (pas de blanc en dur)
+            — sans lui, le texte en tokens de contenu est posé directement sur le héros
+            et le contraste n'est jamais garanti (clair comme sombre). */}
+        <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${opaque ? 'bg-background/90 backdrop-blur-md shadow-deep' : 'bg-linear-to-b from-background/70 via-background/30 to-transparent'}`}>
             <div className="container mx-auto px-4">
                 <div className="flex items-center justify-between h-20">
                     {/* min-w-0 + truncate : le titre ne wrappe JAMAIS (un titre
@@ -96,7 +100,7 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
                                     <span className="truncate text-base font-bold text-foreground sm:text-lg">{t(header.logoTitle)}</span>
                                 )}
                                 {header.logoSubtitle && (
-                                    <span className="truncate text-xs font-medium text-muted-foreground">{t(header.logoSubtitle)}</span>
+                                    <span className={`truncate text-xs font-medium ${opaque ? 'text-muted-foreground' : 'text-foreground/80'}`}>{t(header.logoSubtitle)}</span>
                                 )}
                             </span>
                         )}
@@ -108,10 +112,13 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
                             const hasChildren = !!item.children?.length;
                             return (
                                 <div key={idx} className="relative group">
+                                    {/* `path ?? href` : parité avec `MobileNavItems.navTarget` — un item
+                                        de nav peut être un lien EXTERNE (`href` seul, ex. WordPress) ;
+                                        sans le repli, NavLink recevait undefined → <span> inerte. */}
                                     <NavLink
-                                        to={item.path}
+                                        to={item.path ?? item.href}
                                         ariaCurrent={isActive ? "page" : undefined}
-                                        className={`transition-colors font-medium relative group inline-flex items-center gap-1.5 ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                                        className={`transition-colors font-medium relative group inline-flex items-center gap-1.5 whitespace-nowrap ${isActive ? 'text-primary' : opaque ? 'text-muted-foreground hover:text-foreground' : 'text-foreground/90 hover:text-foreground'}`}
                                     >
                                         <NavIcon icon={item.icon} />
                                         {t(item.label)}
@@ -124,7 +131,7 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
                                             {item.children.length > 2 ? (
                                                 <div className="grid grid-cols-2 gap-6">
                                                     {item.children.map((sub, i) => (
-                                                        <NavLink key={i} to={sub.path} className="block">
+                                                        <NavLink key={i} to={sub.path ?? sub.href} className="block">
                                                             <h4 className="flex items-center gap-1.5 font-bold text-popover-foreground mb-2"><NavIcon icon={sub.icon} />{t(sub.label)}</h4>
                                                             <p className="text-muted-foreground text-xs leading-relaxed">
                                                                 {sub.description ? t(sub.description) : ""}
@@ -135,7 +142,7 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
                                             ) : (
                                                 <div className="space-y-4">
                                                     {item.children.map((sub, i) => (
-                                                        <NavLink key={i} to={sub.path} className="block">
+                                                        <NavLink key={i} to={sub.path ?? sub.href} className="block">
                                                             <h4 className="flex items-center gap-1.5 font-bold text-popover-foreground mb-2"><NavIcon icon={sub.icon} />{t(sub.label)}</h4>
                                                             <p className="text-muted-foreground text-xs leading-relaxed">
                                                                 {sub.description ? t(sub.description) : ""}
@@ -157,6 +164,13 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
                             // (cf. PiggyBankHeaderButton:if (!me?.id) return null).
                             <ClientOnly>
                                 {() => <PiggyBankHeaderButton />}
+                            </ClientOnly>
+                        )}
+
+                        {header.utilities?.pledge && (
+                            // Bouton pour ouvrir la modale de paiement des promesses de financement
+                            <ClientOnly>
+                                {() => <PledgeHeaderButton />}
                             </ClientOnly>
                         )}
 
@@ -185,7 +199,7 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
                         )}
 
                         {header.utilities?.langSwitch && (
-                            <LangSwitch triggerClassName="text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted" />
+                            <LangSwitch triggerClassName={`${opaque ? 'text-muted-foreground' : 'text-foreground/90'} hover:text-foreground hover:bg-muted dark:hover:bg-muted`} />
                         )}
                     </div>
 
@@ -214,7 +228,7 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
                         {navItemsToDisplay.length > 0 && (
                             <MobileMenuSheet
                                 breakpoint="xl"
-                                triggerClassName="text-muted-foreground hover:text-foreground"
+                                triggerClassName={`${opaque ? 'text-muted-foreground' : 'text-foreground/90'} hover:text-foreground`}
                                 brand={(close) => <MobileMenuBrand header={header} onNavigate={close} />}
                             >
                                 {(close) => (
