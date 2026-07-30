@@ -1,11 +1,15 @@
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { lazy } from "vite-preload";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import type { Poi } from "@communecter/cocolight-api-client";
 import getDateFnsLocale from "@/dateFns";
+import { toValidDate } from "@/helpers/formatDate";
+import { isTrue } from "@/modules/search/lib/poiAmenities";
 import ProfileMapLeaflet from "@/modules/profil/components/sections/ProfileMapLeaflet";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,6 +53,16 @@ import type { PreviewProps } from "../../schema";
 // qui lazy-charge la bonne modale — la vue détail (lecture) n'embarque donc plus
 // le formulaire d'édition (découplage + rupture du cycle search ↔ profil).
 import { DynamicEditModal } from "@/modules/profil/components/profile-edit/EditModalRegistry";
+
+// Section réservations : lazy — le chunk (accordion + grille hebdo + query)
+// n'est chargé que si le site configure `preview.reservations`.
+const PreviewReservations = lazy(() => import("./PreviewReservations"));
+
+// Modal dashboard installation : lazy (import dynamique → pas d'arête statique
+// search → observatoire ; tire recharts) — montée seulement à la 1ʳᵉ ouverture.
+const InstallationDashboardModal = lazy(
+  () => import("@/modules/observatoire/components/installation/InstallationDashboardModal"),
+);
 
 interface PoiAddress {
   streetAddress?: string;
@@ -110,26 +124,6 @@ interface PoiDetail {
   geo?: PoiGeo;
 }
 
-const isTrue = (value?: string) => {
-  if (!value) return false;
-  const normalized = value.trim().toLowerCase();
-  return normalized === "true" || normalized === "1" || normalized === "oui" || normalized === "yes";
-};
-
-/**
- * `serverData` expose les dates soit en `Date` (entités revifiées, normalisées
- * par la lib), soit en string ISO (après hydratation SSR où les `Date` JSON sont
- * sérialisées). On gère donc Date + string ISO — sans heuristique epoch.
- */
-function toDate(value: unknown): Date | null {
-  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
-  if (typeof value === "string" && value.trim().length > 0) {
-    const date = new Date(value.trim());
-    return Number.isNaN(date.getTime()) ? null : date;
-  }
-  return null;
-}
-
 const formatDateFr = (date: Date | null) =>
   date ? format(date, "d MMMM yyyy", { locale: getDateFnsLocale() }) : "—";
 
@@ -187,9 +181,9 @@ function toPoi(item: Poi): PoiDetail {
     enqueteStatut: str(sd.enqueteStatut),
     installation: str(sd.inst_nom),
     sportPratiquer: str(sd.aps_name),
-    dateCreation: toDate(sd.inst_date_creation),
-    dateEnquete: toDate(sd.inst_enqu_date),
-    lastUpdate: toDate(sd.equip_maj_date),
+    dateCreation: toValidDate(sd.inst_date_creation),
+    dateEnquete: toValidDate(sd.inst_enqu_date),
+    lastUpdate: toValidDate(sd.equip_maj_date),
     familleEquipement,
     nature: str(sd.equip_nature),
     sol: str(sd.equip_sol),
@@ -345,7 +339,7 @@ function Feature({
  * de détail (`detailsMode` drawer/dialog) — découplée de la carte et du site.
  * Le composant borne sa propre hauteur (en-tête figé + corps scrollable).
  */
-export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
+export default function PreviewPoiAmenities({ item, preview, onClose }: PreviewProps) {
   useLoadNamespace("modules/search");
   const t = useT("modules/search");
   const { canEditProfile } = useProfilPermissions(item ?? null);
@@ -353,6 +347,7 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [installationOpen, setInstallationOpen] = useState(false);
   const { toast } = useToast();
 
   const yesNo = (value?: string) =>
@@ -389,6 +384,19 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
   }, [poiEntity.id]);
 
   const poi = toPoi(poiEntity);
+
+  // Dashboard installation : cliquable uniquement si le site configure le bloc
+  // ET son bloc réservations (requis pour les créneaux) ET que l'entité porte
+  // la valeur de regroupement (`groupKey`). Sinon `inst_nom` reste du texte.
+  const dashboardConf = preview?.installationDashboard;
+  const reservationsConf = preview?.reservations;
+  const installationValue =
+    dashboardConf && typeof sd[dashboardConf.groupKey] === "string"
+      ? (sd[dashboardConf.groupKey] as string).trim()
+      : undefined;
+  const canOpenDashboard = Boolean(
+    dashboardConf && reservationsConf && installationValue,
+  );
 
   const imageUrl =
     sd.profilMediumImageUrl ||
@@ -496,7 +504,18 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
             <div className="flex flex-wrap items-center gap-4 text-sm text-primary-foreground/85">
               <div className="flex items-center gap-2">
                 <Building2 className="h-4 w-4" />
-                <span>{poi.installation || "—"}</span>
+                {canOpenDashboard && poi.installation ? (
+                  <button
+                    type="button"
+                    onClick={() => setInstallationOpen(true)}
+                    aria-label={t("PreviewPoiAmenities.installationDashboard.open")}
+                    className="cursor-pointer font-medium underline decoration-primary-foreground/30 underline-offset-2 transition-colors hover:decoration-primary-foreground hover:opacity-80"
+                  >
+                    {poi.installation}
+                  </button>
+                ) : (
+                  <span>{poi.installation || "—"}</span>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
@@ -556,7 +575,23 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
                     onClose={onClose}
                   />
                   <InfoRow label={t("PreviewPoiAmenities.fields.family")} value={poi.familleEquipement || "—"} />
-                  <InfoRow label={t("PreviewPoiAmenities.fields.installation")} value={poi.installation || "—"} />
+                  <InfoRow
+                    label={t("PreviewPoiAmenities.fields.installation")}
+                    value={
+                      canOpenDashboard && poi.installation ? (
+                        <button
+                          type="button"
+                          onClick={() => setInstallationOpen(true)}
+                          aria-label={t("PreviewPoiAmenities.installationDashboard.open")}
+                          className="cursor-pointer text-left font-medium text-primary underline decoration-primary/30 underline-offset-2 transition-colors hover:decoration-primary hover:text-primary/80"
+                        >
+                          {poi.installation}
+                        </button>
+                      ) : (
+                        poi.installation || "—"
+                      )
+                    }
+                  />
                   <div className="sm:col-span-2">
                     <InfoRow label={t("PreviewPoiAmenities.fields.sport")} value={poi.sportPratiquer || "—"} />
                   </div>
@@ -785,6 +820,19 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
                 </section>
               )}
             </aside>
+
+            {/* Réservations en pleine largeur : la grille hebdo 7 colonnes a
+                besoin de toute la largeur du dialog, pas de la colonne gauche. */}
+            {preview?.reservations && poiEntity.id && (
+              <div className="lg:col-span-2">
+                <Suspense fallback={<Skeleton className="h-40 w-full rounded-2xl" />}>
+                  <PreviewReservations
+                    resourceId={poiEntity.id}
+                    conf={preview.reservations}
+                  />
+                </Suspense>
+              </div>
+            )}
           </div>
           )}
         </div>
@@ -828,6 +876,20 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
             </AlertDialogContent>
           </AlertDialog>
         </>
+      )}
+
+      {/* Chunk chargé (et requêtes lancées) uniquement à la 1ʳᵉ ouverture. */}
+      {canOpenDashboard && installationOpen && (
+        <Suspense fallback={null}>
+          <InstallationDashboardModal
+            open={installationOpen}
+            onOpenChange={setInstallationOpen}
+            instValue={installationValue!}
+            instName={poi.installation}
+            reservations={reservationsConf!}
+            conf={dashboardConf!}
+          />
+        </Suspense>
       )}
     </>
   );

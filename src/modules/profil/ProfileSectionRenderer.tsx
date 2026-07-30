@@ -2,6 +2,7 @@ import { lazy } from "vite-preload";
 import type {
   ProfileAboutSection,
   ProfileGallerySection,
+  ProfileDocumentsSection,
   ProfileHeaderSection,
   ProfileInfoSection,
   ProfileTiersLieuxInfoSection,
@@ -15,6 +16,7 @@ import type {
   ProfileEventDatesSection,
   ProfileBadgesSection,
   ProfileTagsSection,
+  ProfileFieldsSection,
   ProfileOpeningHoursSection,
   ProfileTabLayoutSection,
   ProfileSection
@@ -31,11 +33,13 @@ const ProfileMap = lazy(() => import("./components/sections/ProfileMap"));
 const ProfileOrganizer = lazy(() => import("./components/sections/ProfileOrganizer"));
 const ProfileMembers = lazy(() => import("./components/sections/ProfileMembers"));
 const ProfileGallery = lazy(() => import("./components/sections/ProfileGallery"));
+const ProfileDocuments = lazy(() => import("./components/sections/ProfileDocuments"));
 const ProfileRelated = lazy(() => import("./components/sections/ProfileRelated"));
 const ProfileActions = lazy(() => import("./components/sections/ProfileActions"));
 const ProfileEventDates = lazy(() => import("./components/sections/ProfileEventDates"));
 const ProfileBadges = lazy(() => import("./components/sections/ProfileBadges"));
 const ProfileTags = lazy(() => import("./components/sections/ProfileTags"));
+const ProfileFields = lazy(() => import("./components/sections/ProfileFields"));
 const ProfileOpeningHours = lazy(() => import("./components/sections/ProfileOpeningHours"));
 const ProfileTabLayout = lazy(() => import("./components/sections/ProfileTabLayout"));
 const ProfileTiersLieuxInfo = lazy(() => import("./components/sections/custom/ProfileTiersLieuxInfo"));
@@ -60,11 +64,13 @@ const PROFILE_SECTION_TYPES = [
   "profile-organizer",
   "profile-members",
   "profile-gallery",
+  "profile-documents",
   "profile-related",
   "profile-actions",
   "profile-event-dates",
   "profile-badges",
   "profile-tags",
+  "profile-fields",
   "profile-opening-hours",
   "profile-tab-layout",
   "profile-template-dynamic",
@@ -124,6 +130,9 @@ export function ProfileSectionRenderer({ section }: ProfileSectionRendererProps)
     case "profile-gallery":
       return <ProfileGallery section={section as ProfileGallerySection} />;
 
+    case "profile-documents":
+      return <ProfileDocuments section={section as ProfileDocumentsSection} />;
+
     case "profile-related":
       return <ProfileRelated section={section as ProfileRelatedSection} />;
 
@@ -138,6 +147,9 @@ export function ProfileSectionRenderer({ section }: ProfileSectionRendererProps)
 
     case "profile-tags":
       return <ProfileTags section={section as ProfileTagsSection} />;
+
+    case "profile-fields":
+      return <ProfileFields section={section as ProfileFieldsSection} />;
 
     case "profile-opening-hours":
       return <ProfileOpeningHours section={section as ProfileOpeningHoursSection} />;

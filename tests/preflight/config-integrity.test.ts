@@ -24,9 +24,9 @@ import { SiteConfig } from "@/types/site-schema";
  * non bloquant) — voir `scripts/audit-config.mjs`.
  *
  * Itère sur la config par défaut (`config.prod.json`) + les configs déployées via
- * `sites.json`. Les configs prod ORPHELINES (sur disque mais hors `sites.json`,
- * ex. `config.prod.jardin-ocean.json` — souvent WIP/invalide) ne sont PAS testées
- * en strict ; elles sont signalées par `npm run audit:config`.
+ * `sites.json`. Les configs prod ORPHELINES (sur disque mais hors `sites.json`)
+ * ne sont PAS testées en strict ; elles sont signalées par `npm run audit:config`
+ * (aucune à ce jour — la dernière, jardin-ocean, a été supprimée).
  */
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const LOCALES = ["fr", "en", "es", "de"];

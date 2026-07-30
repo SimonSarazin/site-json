@@ -34,7 +34,7 @@ export function splitKey(key: string): { filterId: string; optionId: string } | 
 export function normalizeFilterValue(input: string): string {
   return input
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "") // diacritiques (marques combinantes)
+    .replace(/[\u0300-\u036f]/g, "") // diacritiques (marques combinantes)
     .toLowerCase()
     .replace(/[()]/g, "") // caractères de parenthèses seuls (garde le contenu)
     .replace(/[’ʼ‘`´]/g, "'") // variantes d'apostrophe → '

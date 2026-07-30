@@ -29,10 +29,31 @@ export function usePermissions<T extends Record<string, unknown>>(
   entity: EntityTypes | null,
   data?: Record<string, unknown>
 ): T {
-  const { me } = useCocolight();
+  const { me, entity: carrier } = useCocolight();
+  // Droit-parapluie costum, résolu UNE fois : le carrier est le HOST du costum du site ; `carrier.isAdmin`
+  // (sync, via me.links) = admin du host = isCostumAdmin (même signal que `siteAdmin` d'adminEntry). Un
+  // costum-admin peut ainsi éditer les éléments DU costum (source.keys ∋ costumSlug) hors /admin — parité legacy.
+  // `carrier.isAdmin()` SANS checkHierarchy = admin DIRECT du host — même définition que le siteAdmin canonique
+  // (adminEntry.resolveAdminAccessLevel) et que le backend isCostumAdmin (isElementAdmin du host, sans récursion).
+  const costumHost = carrier as { isAdmin?: () => boolean; slug?: string } | null;
+  const isCostumAdmin = costumHost?.isAdmin?.() ?? false;
+  const costumSlug = costumHost?.slug ?? undefined;
+
+  // Si l'utilisateur est admin du costum ET que l'entité affichée appartient à ce costum (source.keys ∋ slug),
+  // on pose le flag lib `setCostumAdminAuthorized` sur l'instance : les gardes client d'édition/suppression
+  // (_update/_deleteViaElement) laisseront passer un non-auteur, comme le legacy `canEditItem || isCostumAdmin`
+  // sur les fiches publiques. Idempotent ; le backend reste la source de vérité (canEditItem porte isCostumAdmin).
+  if (isCostumAdmin && costumSlug && entity) {
+    const src = (entity as { serverData?: { source?: { key?: unknown; keys?: unknown } } }).serverData?.source;
+    // `source.keys` peut être array OU objet à trous (byte-parité PHP `unset`) → normaliser.
+    const keys = src?.keys;
+    const keyList = Array.isArray(keys) ? keys : (keys && typeof keys === "object" ? Object.values(keys as Record<string, unknown>) : []);
+    const inCostum = !!src && typeof src === "object" && (src.key === costumSlug || keyList.includes(costumSlug));
+    if (inCostum) (entity as { setCostumAdminAuthorized?: (v?: boolean) => void }).setCostumAdminAuthorized?.();
+  }
 
   return useMemo(() => {
-    const context: PermissionContext = { entity, me, data };
+    const context: PermissionContext = { entity, me, isCostumAdmin, costumSlug, data };
     const result: Record<string, unknown> = {};
 
     for (const ns of namespaces) {
@@ -46,5 +67,5 @@ export function usePermissions<T extends Record<string, unknown>>(
     }
 
     return result as T;
-  }, [entity, me, data, namespaces]);
+  }, [entity, me, isCostumAdmin, costumSlug, data, namespaces]);
 }

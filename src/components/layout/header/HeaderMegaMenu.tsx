@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { ClientOnly } from "../ClientOnly";
 import { AuthMenu } from "@/modules/auth";
 import HeaderLogo from "./HeaderLogo";
+import type { LogoSize } from "./logoSize";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
@@ -21,6 +22,13 @@ interface HeaderMegaMenuProps {
     header: Header;
 }
 
+// `header.logoSize` — progression propre au mega-menu (logo LARGE plafonné
+// par max-w) ; "sm" = tailles historiques.
+const MEGA_LOGO_CLASS: Record<LogoSize, string> = {
+    sm: "h-6 xs:h-8 sm:h-9 max-w-28 xs:max-w-32 sm:max-w-40",
+    md: "h-7 xs:h-9 sm:h-10 max-w-32 xs:max-w-36 sm:max-w-44",
+    lg: "h-8 xs:h-10 sm:h-12 max-w-36 xs:max-w-40 sm:max-w-56",
+};
 export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
     useLoadNamespace("components/layout");
     const t = useT("components/layout");
@@ -36,7 +44,7 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
                                 header={header}
                                 imageHeight={48}
                                 imageWidth={207}
-                                imageClassName="h-6 xs:h-8 sm:h-9 w-auto max-w-28 xs:max-w-32 sm:max-w-40 object-contain"
+                                imageClassName={`${MEGA_LOGO_CLASS[header.logoSize ?? "sm"]} w-auto object-contain`}
                                 iconClassName="h-8 w-8"
                             />
                         </Link>

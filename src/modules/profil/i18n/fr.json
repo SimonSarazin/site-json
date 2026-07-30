@@ -26,7 +26,9 @@
     "untitled": "Sans titre",
     "cancel": "Annuler",
     "confirm": "Confirmer",
-    "searchPlaceholder": "Rechercher..."
+    "searchPlaceholder": "Rechercher...",
+    "next": "Suivant",
+    "previous": "Précédent"
   },
   "ProfilePage": {
     "error": {
@@ -774,6 +776,18 @@
       "eventError": "Impossible de créer l'événement",
       "poiSuccess": "Lieu créé avec succès",
       "poiError": "Impossible de créer le lieu"
+    },
+    "gallery": {
+      "addSuccess": "Image ajoutée à la galerie",
+      "addError": "Échec de l'ajout de l'image",
+      "deleteSuccess": "Image supprimée",
+      "deleteError": "Échec de la suppression"
+    },
+    "documents": {
+      "addSuccess": "Document ajouté",
+      "addError": "Échec de l'ajout du document",
+      "deleteSuccess": "Document supprimé",
+      "deleteError": "Échec de la suppression"
     }
   },
   "ProfileEdit": {
@@ -1246,7 +1260,9 @@
   "validation": {
     "required": "Ce champ est requis",
     "addressLocality": "Sélectionnez une ville dans la liste pour valider l'adresse",
-    "address": { "required": "Adresse complète obligatoire : ville, code postal et rue" },
+    "address": {
+      "required": "Adresse complète obligatoire : ville, code postal et rue"
+    },
     "minLength": "Valeur trop courte",
     "maxLength": "Valeur trop longue",
     "min": "Valeur trop petite",
@@ -1286,7 +1302,9 @@
     },
     "datetime": {
       "invalid": "Format ISO 8601 requis"
-    }
+    },
+    "minItems": "Pas assez d’éléments sélectionnés",
+    "maxItems": "Trop d’éléments sélectionnés"
   },
   "ProfileTiersLieuxInfo": {
     "reserveOnline": "Réserver en ligne",
@@ -1300,14 +1318,31 @@
     "reservationNote": "Réserver votre espace directement en ligne",
     "contact": "Contact",
     "fax": "Fax",
-    "tools": "Nos outils",
+    "tools": "Aiguillage vers les ressources",
+    "editTools": "Modifier les liens",
+    "toolsEmpty": "Aucun lien renseigné pour le moment.",
+    "toolsModal": {
+      "title": "Modifier les liens vers les ressources et outils",
+      "description": "Ajoutez ou modifiez les liens vers les ressources et outils principaux de votre lieu. Vous pouvez utiliser cet espace comme gare d'aiguillage pour vos membres.",
+      "category": "Type de ressource",
+      "name": "Nom",
+      "namePlaceholder": "Ex : Site de La Plume",
+      "url": "Lien (optionnel)",
+      "addRow": "Ajouter un lien",
+      "removeRow": "Supprimer ce lien",
+      "empty": "Aucun lien. Cliquez sur « Ajouter un lien ».",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "saveSuccess": "Liens mis à jour.",
+      "saveError": "Erreur lors de la mise à jour des liens."
+    },
     "socialNetworks": "Réseaux sociaux",
     "keywords": "Mots clés",
     "forms": "Formulaires",
-    "evaluation": "Évaluation du lieu",
-    "evaluateButton": "Évaluer le lieu",
-    "evaluateNoData": "Aucune évaluation pour ce lieu pour le moment.",
-    "evaluateLoading": "Chargement des évaluations…",
+    "evaluation": "Auto-diagnostic collectif du lieu",
+    "evaluateButton": "Auto-diagnostiquer le lieu",
+    "evaluateNoData": "Aucun diagnostic pour ce lieu pour le moment.",
+    "evaluateLoading": "Chargement des diagnostics…",
     "noPois": "Aucun espace disponible"
   },
   "ProfilTiersLieuxAbout": {
@@ -1351,5 +1386,9 @@
     "contactEmail": "Envoyer un email",
     "callPhone": "Appeler",
     "visitWebsite": "Visiter le site web"
+  },
+  "AuthRequired": {
+    "title": "Connectez-vous pour continuer",
+    "description": "La création d’une fiche est rattachée à votre compte : elle vous permettra de la modifier et de la compléter plus tard."
   }
 }

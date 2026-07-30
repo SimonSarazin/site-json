@@ -43,8 +43,8 @@ export function PiggyBankHeaderButton() {
   if (!me?.id) return null;
 
   // `selectedProject` est null si `projectModalId` est vide → fallback sur le
-  // 1er projet (cohérent avec l'auto-sélection de `CagnotteDialog`).
-  const targetProject = envelope?.selectedProject ?? envelope?.projects?.[0] ?? null;
+  // 1er projet ou answer (cohérent avec l'auto-sélection de `CagnotteDialog`).
+  const targetProject = envelope?.projects.find((project) => project.id === projectModalId || project.answerId === projectModalId) ?? envelope?.selectedProject ?? envelope?.projects?.[0] ?? null;
   const piggyAmount = targetProject?.totalFinancement ?? 0;
 
   const refresh = async () => { await refetch(); };
@@ -52,7 +52,7 @@ export function PiggyBankHeaderButton() {
   return (
     <CagnotteDialog
       totalAmount={piggyAmount}
-      defaultProjectId={projectModalId || targetProject?.id || undefined}
+      defaultResourceId={projectModalId || targetProject?.id || undefined}
       onRefresh={refresh}
     >
       <button

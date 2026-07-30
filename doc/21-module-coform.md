@@ -4,48 +4,50 @@
 
 **Sommaire**
 
-- [Vue d'ensemble](#vue-densemble)
-- [Architecture interne](#architecture-interne)
-- [Routes](#routes)
-- [Pages](#pages)
-  - [CoFormPage](#coformpage)
-- [Composants principaux](#composants-principaux)
-  - [SmartCoForm](#smartcoform)
-  - [DynamicCoForm](#dynamiccoform)
-  - [MultiStepCoForm](#multistepcoform)
-  - [CoFormModal](#coformmodal)
-  - [CoFormAccessGuard](#coformaccessguard)
-  - [CoFormReadOnly](#coformreadonly)
-  - [CoFormThankYou](#coformthankyou)
-  - [CoFormBanner](#coformbanner)
-- [Types de champs](#types-de-champs)
-  - [Champs standard](#champs-standard)
-  - [MultiRadioField](#multiradiofield)
-  - [MultiCheckboxPlusField](#multicheckboxplusfield)
-  - [EvaluationField](#evaluationfield)
-  - [FinderField](#finderfield)
-  - [SimpleTableField](#simpletablefield)
-  - [UploaderField](#uploaderfield)
-- [Hooks](#hooks)
-  - [useCoFormQuery](#usecoformquery)
-  - [useCoFormAnswerQuery](#usecoformanswerquery)
-  - [useCoForm / useCoFormNavigation / useCoFormStep / useCoFormSubmit](#usecoform--usecoformnavigation--usecoformstep--usecoformsubmit)
-  - [useConditionalFields](#useconditionalfields)
-  - [useCoFormPermissions](#usecoformpermissions)
-  - [useFinderSearchResults](#usefindersearchresults)
-- [Factory `createCoFormMutation`](#factory-createcoformmutation)
-- [Pipeline d'upload de fichiers](#pipeline-dupload-de-fichiers)
-- [Contrôle d'accès (CoFormAccessInfo)](#contrôle-daccès-coformaccessinfo)
-- [Permissions CoForm](#permissions-coform)
-- [CoFormProvider et contexte](#coformprovider-et-contexte)
-- [Utils : formParser](#utils--formparser)
-- [Utils : helpers, toFinderSearchResult, toRelativeImageUrl](#utils--helpers-tofindersearchresult-torelativeimageurl)
-- [Types principaux](#types-principaux)
-- [Constantes](#constantes)
-- [i18n](#i18n)
-- [Prefetch SSR](#prefetch-ssr)
-- [Intégration JSON (section)](#intégration-json-section)
-- [Voir aussi](#voir-aussi)
+- [Module CoForm](#module-coform)
+  - [Vue d'ensemble](#vue-densemble)
+  - [Architecture interne](#architecture-interne)
+  - [Routes](#routes)
+  - [Pages](#pages)
+    - [CoFormPage](#coformpage)
+  - [Composants principaux](#composants-principaux)
+    - [SmartCoForm](#smartcoform)
+    - [DynamicCoForm](#dynamiccoform)
+    - [MultiStepCoForm](#multistepcoform)
+    - [CoFormModal](#coformmodal)
+    - [CoFormAccessGuard](#coformaccessguard)
+    - [CoFormReadOnly](#coformreadonly)
+    - [CoFormThankYou](#coformthankyou)
+    - [CoFormBanner](#coformbanner)
+  - [Types de champs](#types-de-champs)
+    - [Champs standard](#champs-standard)
+    - [MultiRadioField](#multiradiofield)
+    - [MultiCheckboxPlusField](#multicheckboxplusfield)
+    - [EvaluationField](#evaluationfield)
+    - [FinderField](#finderfield)
+    - [SimpleTableField](#simpletablefield)
+    - [UploaderField](#uploaderfield)
+  - [Hooks](#hooks)
+    - [useCoFormQuery](#usecoformquery)
+    - [useCoFormAnswerQuery](#usecoformanswerquery)
+    - [useCoForm / useCoFormNavigation / useCoFormStep / useCoFormSubmit](#usecoform--usecoformnavigation--usecoformstep--usecoformsubmit)
+    - [useConditionalFields](#useconditionalfields)
+    - [useCoFormPermissions](#usecoformpermissions)
+    - [useFinderSearchResults](#usefindersearchresults)
+  - [Factory `createCoFormMutation`](#factory-createcoformmutation)
+  - [Pipeline d'upload de fichiers](#pipeline-dupload-de-fichiers)
+    - [Suppression de fichier : DIFFÉRÉE au save](#suppression-de-fichier--différée-au-save)
+  - [Contrôle d'accès (CoFormAccessInfo)](#contrôle-daccès-coformaccessinfo)
+  - [Permissions CoForm](#permissions-coform)
+  - [CoFormProvider et contexte](#coformprovider-et-contexte)
+  - [Utils : formParser](#utils--formparser)
+  - [Utils : helpers, toFinderSearchResult, toRelativeImageUrl](#utils--helpers-tofindersearchresult-torelativeimageurl)
+  - [Types principaux](#types-principaux)
+  - [Constantes](#constantes)
+  - [i18n](#i18n)
+  - [Prefetch SSR](#prefetch-ssr)
+  - [Intégration JSON (section)](#intégration-json-section)
+  - [Voir aussi](#voir-aussi)
 
 ---
 
@@ -89,7 +91,8 @@ src/modules/coform/
 │   ├── FinderSearchModal.tsx    # Modale de recherche du Finder
 │   ├── FormFields.tsx           # TextField, TextAreaField, RadioField, CheckboxField,
 │   │                            #   SectionTitleField, SectionDescriptionField, ProseContent, FieldError
-│   ├── MarkdownEditor.tsx       # Éditeur Markdown client-only (@uiw/react-md-editor)
+│   ├── MarkdownEditor.tsx       # Éditeur Markdown client-only (@uiw/react-md-editor) — thème global,
+│   │                            #   toolbar réduite, preview sanitisée (renderMarkdown), overflow={false}
 │   ├── MultiCheckboxPlusField.tsx # Checkbox + champ texte optionnel par option
 │   ├── MultiRadioField.tsx      # Radio à sélection unique avec options simples/complexes
 │   ├── MultiStepCoForm.tsx      # Wizard multi-étapes avec navigation
@@ -411,6 +414,16 @@ Définis dans `FormFields.tsx` :
 
 **`MarkdownEditor`** (`components/MarkdownEditor.tsx`) : wrapper client-only autour de `@uiw/react-md-editor`. Utilise `useClientModule` (et non `React.lazy`) pour éviter l'erreur SSR `ERR_UNKNOWN_FILE_EXTENSION` causée par le CSS interne de la lib.
 
+Props : `{ value, onChange?, height=200, preview="edit"|"live"|"preview" }`.
+
+**Thème dynamique.** La lib se thème via l'attribut `data-color-mode="light"|"dark"` sur le wrapper. Le wrapper est branché sur le thème **global** du site via `useTheme().resolvedTheme` (next-themes ; `resolvedTheme` résout aussi `"system"`) → `colorMode = resolvedTheme === "dark" ? "dark" : "light"`. L'éditeur suit donc le clair/sombre du site (avant : figé `"light"`).
+
+**`overflow={false}` (fuite `body.style.overflow`).** Le Toolbar de `@uiw/react-md-editor` gère le scroll du `<body>` pour son plein écran via un `useEffect` **SANS cleanup** au démontage (`document.body.style.overflow = 'hidden'/originalOverflow`). Dans une **modale** (`CoFormModal`), à la fermeture l'éditeur est démonté et laisse `<body style="overflow:hidden">` inline → **scroll de page perdu**. C'est la seule lib du repo qui touche `body.style.overflow` en assignation directe. `overflow={false}` désactive cette gestion (inutile dans une modale). Complémentaire du fix Dialog `e7db310` (animation de sortie → libère le compteur `react-remove-scroll`) : les **deux** sont nécessaires (compteur + overflow inline).
+
+**Toolbar réduite** (`commands` / `extraCommands`). La barre par défaut (~25 boutons) est ramenée à l'essentiel article : gras, italique, barré, titres, lien, citation, listes (à puces / numérotée / cochée), image, code, + bascule édition/aperçu (`codeEdit`/`codePreview`). Sont retirés table, code block, comment, et surtout **`fullscreen`** — volontairement, car c'est lui qui manipule `body.style.overflow` (cf. `overflow={false}`).
+
+**Preview sanitisée** (`components.preview`). L'aperçu est rendu via `helpers/renderMarkdown` (markdown-it + DOMPurify de `lib/sanitize`) dans un `<div className="wmde-markdown">` — **exactement le même pipeline** que le rendu public de l'article (`ArticleReader`). Remplace le rendu rehype par défaut de la lib (non assaini) → **anti-XSS** + WYSIWYG fidèle à la publication.
+
 ---
 
 ### MultiRadioField
@@ -476,6 +489,25 @@ Valeur stockée : `Record<string, FinderElement> | null` (clé = `element.id`).
 
 Types d'éléments recherchables (`FinderElementType`) : `organizations`, `citoyens`, `events`, `projects`, `news`, `cities`, `things`, `poi`, `classified`, `products`, `services`, `surveys`, `bookmarks`, `proposals`, `rooms`, `actions`, `networks`, `urls`, `circuits`, `risks`, `badges`.
 
+**Filtres d'inclusion + exclusion.** La config finder legacy porte deux listes
+`{attributeName, valueName}` : `filter` (inclusions, « Filtres appliqués ») et
+`filterExclude` (exclusions, « Filtres d'exclusion »), toutes deux réglées dans
+`finder.php` (module survey). Elles sont parsées en `FinderConfig.filters` /
+`FinderConfig.excludeFilters` puis converties en filtres Mongo par le **builder
+partagé** [`utils/finderFilters.ts`](../src/modules/coform/utils/finderFilters.ts)
+(`buildFinderMongoFilters(include, exclude)`), consommé à l'identique par les
+**deux chemins** de recherche : la liste collaborative (`PlacesListView` →
+`getEligiblePlaces`) **et** la modale (`useFinderSearchResults` → `searchCostum`).
+
+Sémantique (DSL legacy `SearchNew::searchFilters`, cf. [[search-filters-backend-dsl]]) :
+inclusions groupées → scalaire / `$in`, exclusions → `$nin`. Cas d'usage type :
+exclure les **réseaux** (orgs taguées `RéseauTiersLieux`) d'une liste de lieux.
+Quand un attribut porte **à la fois** inclusion et exclusion (ex. `tags`
+`TiersLieux` inclus + `RéseauTiersLieux` exclu), l'inclusion est relocalisée sous
+`$or`-objet + `tags:{$nin}` (le DSL ne combine pas `$in`+`$nin` sur une clé).
+⚠️ Hypothèse : **une seule collision** attendue (`$or` mono-niveau → ≥2 attributs
+en collision donneraient un OR). Sans exclusion, sortie identique à l'historique.
+
 ---
 
 ### SimpleTableField
@@ -485,6 +517,20 @@ Tableau 2D éditable. Colonnes de types : `"Text"`, `"Case à cocher"`, `"Nombre
 Valeur stockée : `(SimpleTableCell | SimpleTableCell[])[][]` où la première ligne est les en-têtes, les suivantes sont les données. Une cellule `Image` = URL string ou `ImageUploadValue`, une cellule `Images` = `SimpleTableCell[]`.
 
 Nouvelles lignes ajoutables si `config.activeNewLine: true`.
+
+**Édition en modal (`config.editInModal`).** Quand `true`, le tableau passe en
+**lecture seule** et chaque ligne devient cliquable → ouvre un **formulaire modal**
+(un champ par colonne). CRUD complet dans le modal (ajout via « Ajouter une ligne »,
+suppression via « Supprimer cette ligne »), **indépendant de `activeNewLine`**.
+Le mode `readOnly` (vue réponse) désactive toute interaction. Utile pour les
+tableaux larges (évite le scroll horizontal pénible à la saisie). **Le shape de
+valeur persisté est identique** au mode inline → aucune régression Zod. Mutations
+via helpers purs [`utils/simpleTable.ts`](../src/modules/coform/utils/simpleTable.ts)
+(`upsertSimpleTableRow` / `removeSimpleTableRow` / `buildSimpleTableHeaders` /
+`buildEmptySimpleTableRow` — sans mutation, sème les en-têtes si la valeur est
+vide, testés + parité Zod). Le flag est réglé **côté legacy** dans la config de
+l'input (`survey/.../cplx/simpleTable.php` → `params.simpleTable{champ}.editInModal`) ;
+**le legacy ne rend pas le modal**, seul le rendu React consomme le flag.
 
 ---
 
@@ -625,6 +671,7 @@ Hook React Query pour la recherche d'entités via `entity.searchCostum`. Caract�
 - Cache 30s
 - Transforme `SearchEntity → FinderSearchResult` via `toFinderSearchResult`
 - Le filtrage des éléments déjà sélectionnés se fait côté composant
+- Les `filters` envoyés sont construits par le builder partagé `buildFinderMongoFilters(config.filters, config.excludeFilters)` (DSL backend, inclusions + exclusions) — même sortie que la liste `getEligiblePlaces`
 
 ---
 
@@ -715,6 +762,25 @@ permet à un membre autorisé d'éditer une réponse partagée
 (`publicCanEditSharedAnswer` / `membersCanEditSharedAnswer`) de **gérer ses
 fichiers**. La **lecture** (`GetAnswerFilesAction`) utilise la même
 `canAdminAnswer` — sinon l'uploader serait cassé en édition partagée.
+
+**Couverture de test SDK (MR !4).** Les méthodes entité coform du SDK sont
+verrouillées par des tests d'intégration ajoutés (commit
+`1b0fb86`, `cocolight-api-client/tests/integration/`) :
+- `advanced/answer-delete-file.test.ts` — `deleteFile`/`deleteFiles` : préconditions
+  client (docId ≠ 24 chars → 400, draft sans id → 400, `deleteFiles([])` no-op),
+  round-trip upload→save→delete, **best-effort** (jamais de throw, même sur
+  échec/doublon). Tolère un **404 serveur** (route `deleteanswerfile` pas déployée
+  sur le backend de test) mais **jamais** le 404 client « Endpoint introuvable »
+  (qui trahirait un `endpoints.module.ts` non régénéré).
+- `advanced/coform-entity-methods.test.ts` — `getMultiEvalData` (radar) : verrouille
+  le contrat **client** post-MR4 (auth `none` → plus de garde `callIsConnected`,
+  l'appel atteint le serveur en anonyme ; toute erreur doit venir du serveur, pas
+  du verrou client). ⚠️ **Bug backend connu** : `GET_COFORM_MULTIEVAL_DATA` peut
+  répondre **500** — Notice PHP « Undefined index: name » dans
+  `Coform::getCompleteFormData` (`citizenToolKit/models/Coform.php:438` :
+  `$subFormVal["name"]` lu sans garde `isset` quand un subform n'a pas de `name`).
+  **À corriger côté PHP.** Le contrat serveur « radar public » peut aussi ne pas
+  être déployé sur le backend de test (répond alors `result:false`).
 
 ---
 
@@ -975,7 +1041,7 @@ Convertit une URL d'image absolue en chemin relatif (`pathname + search`) pour u
 | `FinderValue` | `Record<string, FinderElement> \| null` |
 | `FinderSearchResult` | `{ id, name, type, profilThumbImageUrl?, email?, address? }` |
 | `FinderLinksMap` | `Record<type, Record<id, { name, type }>>` — liens à injecter dans `answer.links` |
-| `SimpleTableConfig` | `{ tableName, columns, rows, activeNewLine, singleAnswerByLine }` |
+| `SimpleTableConfig` | `{ tableName, columns, rows, activeNewLine, singleAnswerByLine, editInModal }` |
 | `UploaderConfig` | `{ docType, itemLimit, sizeLimit, formats?, displayMode? }` |
 | `UploaderValue` | `Array<string \| ImageUploadValue \| ExistingUploadFile>` |
 | `MultiRadioValue` | `{ value: string; type?: "simple"\|"cplx"; textsup?: string }` |

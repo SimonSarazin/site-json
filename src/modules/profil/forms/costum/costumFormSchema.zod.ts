@@ -37,7 +37,13 @@ export const CostumFormSchemaZod = z.object({
   fieldPresets: z.record(z.string(), z.record(z.string(), z.unknown())).optional(),
   sections: z.array(z.object({ id: z.string() }).passthrough()),
   fields: z.record(z.string(), TerseFieldZod),
-  chrome: z.object({ title: z.object({ add: z.unknown(), edit: z.unknown() }) }).passthrough(),
+  chrome: z.object({
+    title: z.object({ add: z.unknown(), edit: z.unknown() }),
+    // Textes de l'invite de connexion affichée à la place du formulaire pour un
+    // visiteur non connecté (cf. `DynamicModal`). Chaque clé : clé i18n OU
+    // `LocalizedString` inline ; absente → traduction `AuthRequired.*` par défaut.
+    authPrompt: z.object({ title: z.unknown(), description: z.unknown() }).partial().optional(),
+  }).passthrough(),
   descriptorVariant: z.string().optional(),
   image: z.object({ field: z.string() }).passthrough().optional(),
   listsFromCarrier: z.boolean().optional(),

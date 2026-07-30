@@ -1,327 +1,443 @@
-import { useTheme } from "next-themes";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router";
-import { useIsMounted } from "@/hooks/useIsMounted";
+import "maplibre-gl/dist/maplibre-gl.css";
+import "@maptiler/sdk/dist/maptiler-sdk.css";
 
-import { renderMapPopup } from "./renderMapPopup";
-import { loadLeaflet } from "@/modules/search/hooks/loadLeaflet";
+import { useTheme } from "next-themes";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router";
+import Map, { NavigationControl, Popup, type MapLib, type MapProps, type MapRef } from "react-map-gl/maplibre";
+import * as maptilersdk from "@maptiler/sdk";
+import Supercluster from "supercluster";
+
 import { useT } from "@/hooks/useT";
-import { SearchMapProps } from "../schema";
-import type { SearchEntity } from "@communecter/cocolight-api-client";
-import { SwitchDetailsMode } from "./SwitchDetailsMode";
-import { useMapContainerClass } from "../hooks/useMapContainerClass";
-import { resolveMarkerVisual, pinSvg } from "../lib/markerVisual";
 import { useSite } from "@/hooks/useSite";
 import { getBaseUrl, getMaptilerApiKey } from "@/lib/constant/common";
-import { resolveTileLayers } from "../lib/mapTiles";
+import type { SearchEntity } from "@communecter/cocolight-api-client";
 
+import { SearchMapProps, type ListConf } from "../schema";
+import { resolveMapStyles } from "../lib/mapStyles";
+import { resolveListItemConf } from "../lib/resolveListItemConf";
+import { resolveItemClick } from "../lib/itemAction";
+import { useMapContainerClass } from "../hooks/useMapContainerClass";
+import { SwitchDetailsMode } from "./SwitchDetailsMode";
+import SearchMapPopup from "./SearchMapPopup";
+import { ClusterMarker, PointMarker } from "./SearchMapMarkers";
+import {
+  findEntryById,
+  getEntryCoords,
+  getEntryId,
+} from "../lib/searchMapSelection";
 
-function isValidGeoPoint(coords: unknown): coords is [number, number] {
-  if (!Array.isArray(coords) || coords.length !== 2) return false;
-  const [lng, lat] = coords;
-  return (
-    typeof lat === "number" &&
-    typeof lng === "number" &&
-    lat >= -90 &&
-    lat <= 90 &&
-    lng >= -180 &&
-    lng <= 180
-  );
+// Clé MapTiler résolue UNE fois au chargement du chunk (client-only — ce module
+// n'est importé que via SearchMapWrapper/useClientModule). Avec clé, on délègue
+// le rendu à `@maptiler/sdk` (mapLib du <Map>) qui expanse les IDs de style.
+const MAPTILER_KEY = getMaptilerApiKey();
+if (MAPTILER_KEY) {
+  maptilersdk.config.apiKey = MAPTILER_KEY;
 }
 
+// @maptiler/sdk ajoute par défaut SES propres contrôles (navigation + géoloc),
+// ce qui DOUBLE le <NavigationControl> qu'on rend nous-mêmes. On les désactive
+// pour ne garder qu'UN bloc de zoom (le nôtre, identique en mode MapTiler et en
+// repli raster). react-map-gl spread tous les props dans `new Map(options)` →
+// ces options atteignent le constructeur du SDK ; elles ne font pas partie de
+// MapProps (typage MapLibre standard), d'où le cast. Le logo MapTiler reste
+// (attribution requise). Sans clé (repli MapLibre), ces clés sont ignorées.
+const SDK_CONTROL_PROPS = {
+  navigationControl: false,
+  geolocateControl: false,
+} as unknown as Partial<MapProps>;
+
+/** Props d'un point supercluster : on transporte l'entité dans le feature. */
+type PointProps = { entry: SearchEntity };
+
 /**
- * Carte Leaflet du module search.
+ * Carte MapLibre GL (react-map-gl/maplibre) du module search.
  *
  * `results` GROSSIT au fil des pages (chargement progressif —
- * `useSearchAllResults`) : la carte est créée UNE fois (effet d'init), puis
- * les markers sont ajoutés INCRÉMENTALEMENT (`addLayers` du batch de la
- * nouvelle page — pas de reconstruction O(n²)), et `fitBounds` ne joue
- * qu'UNE fois par périmètre (1ʳᵉ page) — le viewport de l'utilisateur est
- * préservé pendant le chargement des pages suivantes.
+ * `useSearchAllResults`). L'index supercluster est reconstruit à chaque page
+ * (opération bon marché), et `fitBounds` ne joue qu'UNE fois par périmètre
+ * (1ʳᵉ page) — le viewport de l'utilisateur est préservé pendant le chargement
+ * des pages suivantes (carte non contrôlée : `initialViewState` + ref).
+ *
+ * Clustering : supercluster regroupe selon le bbox+zoom courant (recalcul au
+ * `onMoveEnd`) → on ne rend en DOM que les marqueurs réellement visibles. Les
+ * marqueurs et la popup sont des composants React (plus de `renderToString` ni
+ * de `window.dispatchEvent` : l'action de la popup est un handler React direct).
+ *
+ * Mode split (cf. SearchProStatic) : `focusedItemId` (liste→carte) recentre +
+ * ouvre la popup de l'item ; `onMarkerFocus` (carte→liste) remonte l'id au clic
+ * d'un marqueur ; `containerClass` laisse le parent dimensionner la colonne.
  */
-export default function SearchMap({ results, card, preview, map: mapConf, focusedItemId, onMarkerFocus, containerClass }: SearchMapProps) {
-  const mapRef = useRef<HTMLDivElement | null>(null);
-  const mapInstanceRef = useRef<import('leaflet').Map | null>(null);
-  const markersRef = useRef<import('leaflet').MarkerClusterGroup | null>(null);
-  const lightLayerRef = useRef<import('leaflet').TileLayer | null>(null);
-  const darkLayerRef = useRef<import('leaflet').TileLayer | null>(null);
-  const leafletRef = useRef<Awaited<ReturnType<typeof loadLeaflet>> | null>(null);
-  /** Nombre d'items déjà posés sur la carte + 1ᵉʳ id (détection de reset). */
-  const renderedCountRef = useRef(0);
-  const firstIdRef = useRef<string | undefined>(undefined);
-  /** Marqueurs indexés par serverData.id — pour le focus (flyTo/openPopup) du mode split. */
-  const markerByIdRef = useRef<Map<string, import('leaflet').Marker>>(new Map());
-  /** ResizeObserver : recale la carte quand le conteneur change de taille (ex.
-   *  mode split en colonne, où le fitBounds initial peut jouer avant que la
-   *  colonne ait sa hauteur → carte centrée sur le défaut au lieu des points). */
-  const roRef = useRef<ResizeObserver | null>(null);
-  const containerFittedRef = useRef(false);
-  /** Ref du callback de focus sortant — évite de l'ajouter aux deps de l'effet markers. */
+export default function SearchMap({ results, card, preview, list, map: mapConf, focusedItemId, onMarkerFocus, containerClass }: SearchMapProps) {
+  const mapRef = useRef<MapRef | null>(null);
+  /** Init carte jouée une seule fois (load OU idle, le 1ᵉʳ qui arrive). */
+  const readyRef = useRef(false);
+  /** 1ᵉʳ id du périmètre déjà recadré (fitBounds une fois par périmètre). */
+  const fittedFirstIdRef = useRef<string | undefined>(undefined);
+  /** Dernier `focusedItemId` réellement appliqué (easeTo + popup). Empêche que
+   *  la simple croissance de `results` (pages progressives) rejoue le focus et
+   *  ramène la carte / rouvre une popup que l'utilisateur venait de fermer. */
+  const appliedFocusRef = useRef<string | null>(null);
+  /** Ref du callback de focus sortant — évite de l'ajouter aux deps de handleSelect. */
   const onMarkerFocusRef = useRef(onMarkerFocus);
   useEffect(() => {
     onMarkerFocusRef.current = onMarkerFocus;
   }, [onMarkerFocus]);
-  const { resolvedTheme } = useTheme();
-  const mounted = useIsMounted();
-  const [mapReady, setMapReady] = useState(false);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  // bbox + zoom courants → entrées du clustering. Recalculés au load et au moveEnd.
+  const [viewport, setViewport] = useState<{ zoom: number; bbox: [number, number, number, number] } | null>(null);
+  // Item sélectionné (popup ouverte) + détail modal (SwitchDetailsMode).
+  const [selected, setSelected] = useState<{ entry: SearchEntity; lng: number; lat: number } | null>(null);
   const [openDetails, setOpenDetails] = useState(false);
-  const [item, setItem] = useState<SearchEntity | null>(null);
+  // L'item ouvert transporte SA conf de liste résolue (règles `list.itemRules`) — même contrat que
+  // SearchListView : le détail rend le presenter de la famille de l'item, pas celui de la section.
+  const [item, setItem] = useState<{ entry: SearchEntity; list?: ListConf } | null>(null);
+
+  const { resolvedTheme } = useTheme();
   const t = useT("modules/search");
   const { config } = useSite();
   const navigate = useNavigate();
+  const baseUrl = getBaseUrl();
   // Action au clic du bouton de popup — déclarée en config (map.itemAction) :
   // détail modal du module search (défaut) ou navigation /profil/:slug.
   const actionKind = mapConf?.itemAction?.kind ?? "preview";
 
-  // Fond de carte : MapTiler (clé env) avec styles configurables par site
-  // (`integrations.map`), sinon repli OSM/Carto — cf. lib/mapTiles.ts.
+  // Fond de carte : style.json vectoriel MapTiler (clé env, via @maptiler/sdk)
+  // avec styles par site (`integrations.map`), sinon repli raster — cf. lib/mapStyles.ts.
   const mapStyles = config.integrations?.map;
-  const tiles = useMemo(() => resolveTileLayers(getMaptilerApiKey(), mapStyles), [mapStyles]);
+  const styles = useMemo(() => resolveMapStyles(MAPTILER_KEY, mapStyles), [mapStyles]);
+  // mapLib = @maptiler/sdk uniquement quand on a une clé (sinon MapLibre standard
+  // affiche le style raster de repli). Stable sur la session (la clé est en env).
+  const mapLib = styles.provider === "maptiler" ? (maptilersdk as unknown as MapLib) : undefined;
+  // Bascule light/dark = changement de `mapStyle` ; react-map-gl restyle la carte
+  // sans toucher aux <Marker>/<Popup> React (qui ne font pas partie du style).
+  const mapStyle = resolvedTheme === "dark" ? styles.dark : styles.light;
 
-  /* ── Init (une fois) : carte + calques + cluster + listener détail ───── */
-  useEffect(() => {
-    if (!mounted) return;
-    let cancelled = false;
-    // Map stable (réf jamais réassignée) — capturée pour le cleanup (lint refs).
-    const markerById = markerByIdRef.current;
+  // Marqueur : config SITE (`integrations.map.marker`, défaut) surchargée champ
+  // par champ par la SECTION (`map.marker`) ; sinon repli sur le défaut intégré.
+  // Mémoïsé → référence stable passée aux PointMarker (préserve leur mémoïsation).
+  const markerConf = useMemo(
+    () => ({ ...mapStyles?.marker, ...mapConf?.marker }),
+    [mapStyles, mapConf],
+  );
 
-    const handleOpenDetails = (e: CustomEvent) => {
-      const data = e.detail as SearchEntity;
-      if (actionKind === "profil") {
-        const slug = (data as { slug?: string }).slug ?? data.serverData?.slug;
-        if (slug) {
-          navigate(`/profil/${slug}`);
-          return;
-        }
-        // sans slug, repli sur le détail modal
-      }
-      setItem(data);
-      setOpenDetails(true);
-    };
+  // GeoJSON points (entités géolocalisées valides) → index supercluster.
+  const points = useMemo<Supercluster.PointFeature<PointProps>[]>(
+    () =>
+      results.flatMap((entry) => {
+        const coords = getEntryCoords(entry);
+        if (!coords) return [];
+        return [
+          {
+            type: "Feature" as const,
+            properties: { entry },
+            geometry: { type: "Point" as const, coordinates: [coords[0], coords[1]] },
+          },
+        ];
+      }),
+    [results],
+  );
 
-    (async () => {
-      const L = await loadLeaflet();
-      if (cancelled || !mapRef.current || mapInstanceRef.current) return;
-      leafletRef.current = L;
+  const index = useMemo(() => {
+    // Clustering toujours actif (parité avec la carte Leaflet historique).
+    const sc = new Supercluster<PointProps>({ radius: 60, maxZoom: 16 });
+    sc.load(points);
+    return sc;
+  }, [points]);
 
-      const map = L.map(mapRef.current, {
-        center: [44.5, 4.5],
-        zoom: 7,
-        // REQUIS par markercluster : le cluster est ajouté AVANT le calque de
-        // tuiles (posé par l'effet « Thème ») — sans maxZoom sur la carte,
-        // L.markerClusterGroup jette « Map has no maxZoom specified ».
-        maxZoom: 19,
-        scrollWheelZoom: true,
-      });
-      mapInstanceRef.current = map;
+  const clusters = useMemo(
+    () => (viewport ? index.getClusters(viewport.bbox, Math.round(viewport.zoom)) : []),
+    [index, viewport],
+  );
 
-      // Aucun calque posé ici : l'effet « Thème » (déclenché par mapReady)
-      // ajoute le calque correspondant au thème courant.
-      lightLayerRef.current = L.tileLayer(tiles.light.url, tiles.light.options);
-      darkLayerRef.current = L.tileLayer(tiles.dark.url, tiles.dark.options);
-
-      // chunkedLoading : les addLayers par paquets de 500 (pages) ne gèlent
-      // pas l'UI — le clustering est calculé par tranches.
-      const markers = L.markerClusterGroup({ chunkedLoading: true });
-      markersRef.current = markers;
-      map.addLayer(markers);
-
-      map.whenReady(() => map.invalidateSize());
-
-      // Recale la carte si le conteneur se dimensionne APRÈS l'init (le cas du
-      // mode split : la colonne reçoit sa hauteur une fois le flex posé). Au 1ᵉʳ
-      // dimensionnement réel avec des marqueurs, on refait un fitBounds.
-      const ro = new ResizeObserver(() => {
-        const m = mapInstanceRef.current;
-        const mk = markersRef.current;
-        if (!m) return;
-        m.invalidateSize();
-        if (!containerFittedRef.current && mk && mk.getLayers().length > 0) {
-          const bounds = mk.getBounds();
-          if (bounds.isValid()) {
-            m.fitBounds(bounds, { padding: [30, 30] });
-            containerFittedRef.current = true;
-          }
-        }
-      });
-      if (mapRef.current) ro.observe(mapRef.current);
-      roRef.current = ro;
-
-      if (import.meta.env.DEV) {
-        // Poignée de debug (dev uniquement) : piloter la carte depuis la
-        // console / les tests navigateur sans dépendre du clustering.
-        (window as unknown as Record<string, unknown>).__searchMapDebug = { map, markers, mapConf };
-      }
-      setMapReady(true);
-    })();
-
-    window.addEventListener("openDetails", handleOpenDetails as EventListener);
-    return () => {
-      cancelled = true;
-      window.removeEventListener("openDetails", handleOpenDetails as EventListener);
-      roRef.current?.disconnect();
-      roRef.current = null;
-      containerFittedRef.current = false;
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
-      markersRef.current = null;
-      lightLayerRef.current = null;
-      darkLayerRef.current = null;
-      markerById.clear();
-      renderedCountRef.current = 0;
-      firstIdRef.current = undefined;
-      setMapReady(false);
-    };
-  }, [mounted, tiles, actionKind, navigate, mapConf]);
-
-  /* ── Thème : permutation des calques (sans toucher aux markers) ──────── */
-  useEffect(() => {
-    const map = mapInstanceRef.current;
+  // Lit le bbox+zoom courants depuis la carte (au load et après chaque mouvement).
+  const syncViewport = useCallback(() => {
+    const map = mapRef.current?.getMap();
     if (!map) return;
-    if (resolvedTheme === "dark") {
-      if (lightLayerRef.current) map.removeLayer(lightLayerRef.current);
-      if (darkLayerRef.current) darkLayerRef.current.addTo(map);
-    } else {
-      if (darkLayerRef.current) map.removeLayer(darkLayerRef.current);
-      if (lightLayerRef.current) lightLayerRef.current.addTo(map);
-    }
-  }, [resolvedTheme, mapReady]);
-
-  /* ── Markers : ajout INCRÉMENTAL des nouvelles pages ─────────────────── */
-  useEffect(() => {
-    const map = mapInstanceRef.current;
-    const markers = markersRef.current;
-    const L = leafletRef.current;
-    if (!mapReady || !map || !markers || !L) return;
-
-    const firstId = results?.[0]?.serverData?.id as string | undefined;
-    let from = renderedCountRef.current;
-    // Reset : périmètre changé (moins d'items qu'affichés, ou 1ᵉʳ id
-    // différent — nouveaux filtres avec le même nombre). Ceinture + bretelles :
-    // en pratique le composant est démonté entre deux périmètres (results
-    // repasse par [] pendant le chargement de la nouvelle queryKey).
-    if (results.length < from || (from > 0 && firstId !== firstIdRef.current)) {
-      markers.clearLayers();
-      markerByIdRef.current.clear();
-      containerFittedRef.current = false;
-      from = 0;
-    }
-    if (results.length === from) return;
-
-    const batch: import('leaflet').Marker[] = [];
-    for (const entry of results.slice(from)) {
-      const serverDataSafe = entry?.serverData;
-      const markerId = `popup-${serverDataSafe.id}`;
-
-      const coords = serverDataSafe.geoPosition?.coordinates;
-      if (!isValidGeoPoint(coords)) continue;
-      const [lng, lat] = coords;
-
-      // Apparence du marqueur — chaîne de repli déclarée en config
-      // (cf. lib/markerVisual.ts) : vignette item → pin SVG thème → pin Leaflet.
-      const visual = resolveMarkerVisual(
-        serverDataSafe as Record<string, unknown>,
-        mapConf?.marker,
-        getBaseUrl(),
-      );
-      let icon: import('leaflet').DivIcon | undefined;
-      if (visual.kind === "image") {
-        icon = L.divIcon({
-          className: "search-map-avatar-marker",
-          html: `<img src="${visual.src.replace(/"/g, "&quot;")}" alt="" loading="lazy" />`,
-          iconSize: [36, 36],
-          iconAnchor: [18, 18],
-          popupAnchor: [0, -20],
-        });
-      } else if (visual.kind === "pin") {
-        icon = L.divIcon({
-          className: "search-map-pin-marker",
-          html: pinSvg(visual.cssColor),
-          iconSize: [34, 34],
-          iconAnchor: [17, 33],
-          popupAnchor: [0, -30],
-        });
-      }
-      const marker = (icon ? L.marker([lat, lng], { icon }) : L.marker([lat, lng])) as import('leaflet').Marker & { _customData?: unknown };
-
-      const popupHtml = renderMapPopup({ item: entry, id: markerId, t, popup: mapConf?.popup, actionKind });
-      marker.bindPopup(popupHtml, {
-        maxWidth: 300,
-        className: "custom-leaflet-popup",
-      });
-      marker._customData = entry;
-      markerByIdRef.current.set(String(serverDataSafe.id), marker);
-      // Synchro carte→liste : clic marqueur → remonte l'id (en plus du popup natif).
-      marker.on("click", () => onMarkerFocusRef.current?.(String(serverDataSafe.id)));
-
-      marker.on("popupopen", () => {
-        const popupEl = document.getElementById(markerId);
-        if (!popupEl) return;
-        const button = popupEl.querySelector("button[data-id]");
-        if (button) {
-          button.addEventListener("click", () => {
-            window.dispatchEvent(
-              new CustomEvent("openDetails", { detail: marker._customData })
-            );
-          });
-        }
-      });
-
-      batch.push(marker);
-    }
-    markers.addLayers(batch);
-
-    // fitBounds UNE fois par périmètre (1ᵉʳ batch) — les pages suivantes ne
-    // déplacent pas le viewport de l'utilisateur.
-    if (from === 0) {
-      const bounds = markers.getBounds();
-      if (markers.getLayers().length > 0 && bounds.isValid()) {
-        map.fitBounds(bounds, { padding: [30, 30] });
-      } else {
-        map.setView([44.5, 4.5], 6);
-      }
-    }
-
-    renderedCountRef.current = results.length;
-    firstIdRef.current = firstId;
-  }, [mapReady, results, t, mapConf, actionKind]);
-
-  /* ── Focus (mode split) : liste→carte — flyTo + openPopup du marqueur ───── */
-  // Effet SÉPARÉ de l'init (surtout ne PAS recréer la carte). `results` en deps :
-  // si le marqueur focalisé arrive sur une page suivante, le focus se rejoue.
-  useEffect(() => {
-    const map = mapInstanceRef.current;
-    const markers = markersRef.current;
-    if (!mapReady || !map || !markers || !focusedItemId) return;
-    const marker = markerByIdRef.current.get(String(focusedItemId));
-    if (!marker) return; // item pas (encore) sur la carte, ou sans géolocalisation → no-op
-    // markercluster : `marker.openPopup()` SEUL échoue si le marqueur est agrégé
-    // dans un cluster → `zoomToShowLayer` dé-cluster/zoome PUIS exécute le callback.
-    markers.zoomToShowLayer(marker, () => {
-      map.setView(marker.getLatLng(), Math.max(map.getZoom(), 14), { animate: true });
-      marker.openPopup();
+    const b = map.getBounds();
+    setViewport({
+      zoom: map.getZoom(),
+      bbox: [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()],
     });
-  }, [mapReady, focusedItemId, results]);
+  }, []);
+
+  // Clic sur un marqueur point → ouvre la popup à ses coordonnées.
+  const handleSelect = useCallback((entry: SearchEntity) => {
+    const coords = getEntryCoords(entry);
+    if (!coords) return;
+    // Synchro carte→liste : clic marqueur → remonte l'id (highlight liste, mode split).
+    const id = getEntryId(entry);
+    if (id) onMarkerFocusRef.current?.(id);
+    setSelected({ entry, lng: coords[0], lat: coords[1] });
+  }, []);
+
+  // Clic sur un cluster → zoome jusqu'à l'éclatement (supercluster).
+  const expandCluster = useCallback(
+    (clusterId: number, lng: number, lat: number) => {
+      const zoom = Math.min(index.getClusterExpansionZoom(clusterId), 18);
+      mapRef.current?.getMap().easeTo({ center: [lng, lat], zoom, duration: 400 });
+    },
+    [index],
+  );
+
+  // Action EFFECTIVE au clic d'un item : l'`itemAction` de sa RÈGLE (`list.itemRules[]`) prime sur
+  // le `map.itemAction` de la section — elle seule connaît la famille de l'item (ex. un POI
+  // `type:"article"` doit partir vers le reader blog, pas ouvrir un détail générique).
+  const resolveAction = useCallback(
+    (entry: SearchEntity) => {
+      const itemList = resolveListItemConf(entry, list);
+      // Pas d'action de règle → on retombe sur le `map.itemAction` de la section, exprimé dans le
+      // même vocabulaire pour n'avoir qu'UNE cascade de décision (cf. resolveItemClick).
+      const action = itemList?.itemAction ?? (actionKind === "profil" ? { kind: "profil" as const } : undefined);
+      return { itemList, decision: resolveItemClick(entry, action) };
+    },
+    [list, actionKind],
+  );
+
+  // Action du bouton de la popup (handler React direct — plus de DOM event).
+  const handlePopupAction = useCallback(
+    (entry: SearchEntity) => {
+      const { itemList, decision } = resolveAction(entry);
+      if (decision.kind === "link") {
+        if (decision.newTab) window.open(decision.href, "_blank", "noopener");
+        else navigate(decision.href);
+        return;
+      }
+      if (decision.kind === "profil") {
+        navigate(decision.href);
+        return;
+      }
+      setItem({ entry, list: itemList });
+      setOpenDetails(true);
+      setSelected(null);
+    },
+    [resolveAction, navigate],
+  );
+
+  /* ── Init robuste : 'load' OU 'render' OU 'idle' (le 1ᵉʳ qui arrive) ──── */
+  // `mapLoaded` pilote fitBounds + le focus, `syncViewport` alimente le
+  // clustering. S'appuyer sur le SEUL `onLoad` était fragile : avec `reuseMaps`,
+  // @vis.gl/react-maplibre « simule » l'event 'load' au remontage via
+  // `map.once('style.load', …)` qui NE rejoue PAS si le style est déjà chargé
+  // (carte réutilisée / double-montage StrictMode, fenêtre élargie par un style
+  // MapTiler lent) → 'load' jamais émis → `mapLoaded` bloqué à false → fitBounds
+  // jamais appelé (constaté : `mapLoaded=false` avec 4284 points). On débloque
+  // via des PROPS (react-map-gl les attache à la carte elle-même → pas de course
+  // sur le ref) : `onRender` est le filet ULTIME — il survient au 1ᵉʳ rendu de
+  // la carte, INDÉPENDAMMENT du chargement des tuiles. C'est lui qui couvre le
+  // cas « fitBounds pas toujours » : si les tuiles MapTiler n'arrivent pas
+  // (clé restreinte au domaine, réseau), la carte ne passe jamais en 'idle' et
+  // 'load' peut manquer → seul 'render' (le canvas a peint une frame) reste
+  // fiable. `readyRef` borne l'init au 1ᵉʳ event ; les rendus suivants sont des
+  // no-op. `onMoveEnd` garde la synchro viewport pendant l'interaction.
+  const handleMapReady = useCallback(() => {
+    if (readyRef.current) return;
+    readyRef.current = true;
+    // Styles vectoriels MapTiler : certaines icônes (boucliers autoroutiers
+    // régionaux, ex. "IT-highway_6") ne sont pas dans le sprite → MapLibre loggue
+    // « Image … could not be loaded » à chaque tuile concernée. On enregistre un
+    // pixel transparent pour toute image manquante → plus de bruit console (l'icône
+    // était de toute façon absente ; le fond de carte et les marqueurs sont intacts).
+    const map = mapRef.current?.getMap();
+    map?.on("styleimagemissing", (e) => {
+      if (!map.hasImage(e.id)) {
+        map.addImage(e.id, { width: 1, height: 1, data: new Uint8Array(4) });
+      }
+    });
+    setMapLoaded(true);
+    syncViewport();
+  }, [syncViewport]);
+
+  /* ── fitBounds UNE fois par périmètre (1ʳᵉ page) ─────────────────────── */
+  useEffect(() => {
+    const map = mapRef.current?.getMap();
+    if (!map || !mapLoaded) return;
+    const coords = results
+      .map(getEntryCoords)
+      .filter((c): c is [number, number] => c !== null);
+    if (coords.length === 0) return; // pas (encore) de point géolocalisé
+    // Signature du périmètre = id du 1er résultat si dispo, SINON ses coords.
+    // Jamais `undefined` quand il y a des points : sinon la garde sautait à vie
+    // (`undefined === ref initial undefined`) et fitBounds ne jouait jamais —
+    // la carte restait sur la vue initiale (bug : données visibles seulement
+    // après dézoom manuel). Les pages suivantes gardent la même signature → pas
+    // de re-recadrage ; un nouveau périmètre (filtres) change la signature.
+    const signature = getEntryId(results[0]) ?? `${coords[0][0]},${coords[0][1]}`;
+    if (signature === fittedFirstIdRef.current) return;
+    fittedFirstIdRef.current = signature;
+    // La carte a pu peindre sa 1ʳᵉ frame (onRender) AVANT que sa colonne (split,
+    // `w-3/5` dans un flex) ait sa taille finale → le canvas garde une taille
+    // transitoire et fitBounds cadrerait sur une zone fausse (bug : « ne marche
+    // pas en split »). Cet effet tourne APRÈS le layout : on force la carte à
+    // relire la taille réelle de son conteneur avant de cadrer.
+    map.resize();
+    if (coords.length === 1) {
+      map.easeTo({ center: [coords[0][0], coords[0][1]], zoom: mapConf?.initialZoom ?? 12, duration: 400 });
+      return;
+    }
+    let west = Infinity;
+    let south = Infinity;
+    let east = -Infinity;
+    let north = -Infinity;
+    for (const [lng, lat] of coords) {
+      if (lng < west) west = lng;
+      if (lng > east) east = lng;
+      if (lat < south) south = lat;
+      if (lat > north) north = lat;
+    }
+    map.fitBounds(
+      [
+        [west, south],
+        [east, north],
+      ],
+      { padding: 40, maxZoom: 16, duration: 400 },
+    );
+  }, [results, mapLoaded, mapConf]);
+
+  /* ── Focus (mode split) : liste→carte — recentre + ouvre la popup ─────── */
+  // `results` en deps : si l'item focalisé arrive sur une page SUIVANTE, on
+  // réessaie jusqu'à le trouver. Mais une fois le focus APPLIQUÉ (appliedFocusRef),
+  // la seule croissance de `results` ne doit PLUS le rejouer — sinon, pendant le
+  // chargement progressif, la carte se recentre et rouvre la popup à chaque page,
+  // même après que l'utilisateur ait pané ailleurs / fermé la popup. La popup est
+  // ancrée aux coordonnées (indépendante du clustering) → pas besoin de dé-clusteriser.
+  useEffect(() => {
+    if (!mapLoaded || !focusedItemId) {
+      // Focus levé → un prochain focus (même id) pourra rejouer.
+      appliedFocusRef.current = null;
+      return;
+    }
+    if (appliedFocusRef.current === focusedItemId) return; // déjà appliqué pour cet id
+    const entry = findEntryById(results, focusedItemId);
+    if (!entry) return; // item pas (encore) sur la carte → réessai à l'arrivée de sa page
+    const coords = getEntryCoords(entry);
+    if (!coords) return; // sans géolocalisation → no-op
+    const map = mapRef.current?.getMap();
+    if (!map) return;
+    appliedFocusRef.current = focusedItemId; // marque appliqué : une seule fois par valeur de focus
+    map.easeTo({ center: [coords[0], coords[1]], zoom: Math.max(map.getZoom(), 14), duration: 400 });
+    // Synchronisation d'un prop EXTERNE (`focusedItemId` venu de la liste) : on
+    // déplace la carte (easeTo, impératif) ET on ouvre la popup. `selected` a
+    // plusieurs sources (clic marqueur, clic carte vide) → impossible à dériver ;
+    // ce setState est volontaire et borné (une fois par changement de focus).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSelected({ entry, lng: coords[0], lat: coords[1] });
+  }, [mapLoaded, focusedItemId, results]);
+
+  /* ── Poignée de debug (dev uniquement) ──────────────────────────────── */
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    (window as unknown as Record<string, unknown>).__searchMapDebug = {
+      map: mapRef.current?.getMap(),
+      index,
+      clusters,
+    };
+  }, [index, clusters]);
 
   // Dimensions du conteneur — logique PARTAGÉE avec MapSkeleton
   // (cf. useMapContainerClass : plein écran sans footer vs min-h-screen).
   // En mode split, le parent fournit `containerClass` (ex. "absolute inset-0")
   // pour que la carte remplisse sa colonne au lieu de `min-h-screen`.
-  const defaultContainerClass = useMapContainerClass("z-10 rounded shadow");
+  const defaultContainerClass = useMapContainerClass("z-10 rounded shadow overflow-hidden");
   const mapContainerClass = containerClass ?? defaultContainerClass;
-
-
-  if (!mounted) return <div>{t("Chargement de la carte…")}</div>;
 
   return (
     <>
       <div className="relative w-full h-full rounded shadow">
-        <div ref={mapRef} className={mapContainerClass} />
+        <div className={mapContainerClass}>
+          <Map
+            ref={mapRef}
+            mapLib={mapLib}
+            {...(mapLib ? SDK_CONTROL_PROPS : null)}
+            mapStyle={mapStyle}
+            initialViewState={{ longitude: 4.5, latitude: 44.5, zoom: mapConf?.initialZoom ?? 7 }}
+            reuseMaps
+            onLoad={handleMapReady}
+            onRender={handleMapReady}
+            onIdle={handleMapReady}
+            onMoveEnd={syncViewport}
+            onClick={() => setSelected(null)}
+            // Embarqué (split, `containerClass` fourni) → la carte remplit sa
+            // colonne (100% de la colonne `h-[78vh]` → le canvas MapLibre = la
+            // zone VISIBLE, donc fitBounds cadre juste). Sinon plein écran (100vh)
+            // comme la vue carte seule. Mettre 100vh en embarqué casserait le fit :
+            // le canvas serait plus grand que la colonne visible.
+            style={{ width: "100%", height: containerClass ? "100%" : "100vh" }}
+          >
+            <NavigationControl position="top-left" />
+
+            {clusters.map((feature) => {
+              const [lng, lat] = feature.geometry.coordinates;
+              const props = feature.properties;
+              if ("cluster" in props && props.cluster) {
+                return (
+                  <ClusterMarker
+                    key={`cluster-${props.cluster_id}`}
+                    longitude={lng}
+                    latitude={lat}
+                    clusterId={props.cluster_id}
+                    pointCount={props.point_count}
+                    totalPoints={points.length}
+                    ariaLabel={t("{{count}} résultats groupés", undefined, { count: props.point_count })}
+                    onExpand={expandCluster}
+                  />
+                );
+              }
+              const entry = (props as PointProps).entry;
+              const id = getEntryId(entry);
+              return (
+                <PointMarker
+                  key={`pt-${id ?? `${lng},${lat}`}`}
+                  longitude={lng}
+                  latitude={lat}
+                  entry={entry}
+                  markerConf={markerConf}
+                  baseUrl={baseUrl}
+                  isFocused={id != null && id === focusedItemId}
+                  onSelect={handleSelect}
+                />
+              );
+            })}
+
+            {selected && (
+              <Popup
+                longitude={selected.lng}
+                latitude={selected.lat}
+                anchor="bottom"
+                offset={30}
+                closeButton={false}
+                closeOnClick={false}
+                maxWidth="300px"
+                className="search-map-popup"
+                onClose={() => setSelected(null)}
+              >
+                <Suspense fallback={null}>
+                  <SearchMapPopup
+                    popup={mapConf?.popup}
+                    item={selected.entry}
+                    t={t}
+                    // Libellé aligné sur l'action EFFECTIVE de cet item : « Voir le profil » pour
+                    // `profil`, « En savoir plus » pour `preview` comme pour `link`.
+                    actionKind={resolveAction(selected.entry).decision.kind === "profil" ? "profil" : "preview"}
+                    onAction={() => handlePopupAction(selected.entry)}
+                  />
+                </Suspense>
+              </Popup>
+            )}
+          </Map>
+        </div>
       </div>
 
-      {item && <SwitchDetailsMode openDetails={openDetails} setOpenDetails={setOpenDetails} item={item} card={card} preview={preview} />}
+      {item && (
+        <SwitchDetailsMode
+          openDetails={openDetails}
+          setOpenDetails={setOpenDetails}
+          item={item.entry}
+          card={item.list?.card ?? card}
+          preview={item.list?.preview ?? preview}
+          list={item.list ?? list}
+        />
+      )}
     </>
   );
 }

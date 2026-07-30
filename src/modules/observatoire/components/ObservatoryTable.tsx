@@ -33,6 +33,9 @@ import {
   type SortDir,
 } from "../dashboard";
 
+/** Étiquettes affichées avant résumé, pour une dimension `list` rendue en `badge`. */
+const BADGE_LIST_MAX = 3;
+
 /** En-tête de colonne triable — composant STATIQUE (règle react-hooks/
  *  static-components). L'état de tri arrive par props. */
 function Th({
@@ -182,6 +185,37 @@ export function ObservatoryTable({ data, dimensions, table, exportCsv, entities,
         );
       case "badge": {
         const token = value !== undefined ? col.colors?.[String(value)] : undefined;
+        // Une dimension `kind: "list"` arrive ici JOINTE par `buildRow` (« a, b, c »).
+        // Rendue telle quelle dans un badge unique, une entité à 26 tags produisait
+        // une cellule de plus de 2 000 px et une table de 3 875 px dans un conteneur
+        // de 1 440 — mesuré sur institut-bleu. On rend donc une valeur par badge, en
+        // plafonnant : les suivantes sont résumées, et l'infobulle porte la liste
+        // complète pour que rien ne soit perdu.
+        const parts =
+          dimensions[col.dimension]?.kind === "list" && typeof value === "string"
+            ? value.split(", ").filter(Boolean)
+            : null;
+        if (parts && parts.length > 1) {
+          const shown = parts.slice(0, BADGE_LIST_MAX);
+          const rest = parts.length - shown.length;
+          return (
+            <TableCell key={col.dimension} className="px-4 py-3" title={value as string}>
+              <div className="flex flex-wrap items-center gap-1">
+                {shown.map((p) => (
+                  <Badge
+                    key={p}
+                    className={`rounded-full font-medium border-transparent ${TOKEN_TINT_CLASSES[token ?? "muted"]}`}
+                  >
+                    {p}
+                  </Badge>
+                ))}
+                {rest > 0 && (
+                  <span className="text-xs text-muted-foreground">+{rest}</span>
+                )}
+              </div>
+            </TableCell>
+          );
+        }
         return (
           <TableCell key={col.dimension} className="px-4 py-3">
             <Badge

@@ -50,7 +50,9 @@ function baseFieldToConfig(f: BaseFieldDescriptor): JsonFormFieldConfig {
   const widget = f.format ? FORMAT_WIDGET[f.format] : defaultWidgetForType(f.type as FieldType, f.multiple, hasEnum);
   return {
     type: f.type as FieldType,
-    widget,
+    // cast frontière : WidgetKind (types.ts, lib) → widget de JsonFormFieldConfig (zod enum schema.ts).
+    // Les valeurs (FORMAT_WIDGET / defaultWidgetForType) sont toutes des widgets de config valides.
+    widget: widget as JsonFormFieldConfig["widget"],
     label: fieldLabel(f.name, f.label),
     ...(f.multiple ? { multiple: true } : {}),
     ...(hasEnum ? { enum: f.enum!.map((v) => ({ value: String(v), label: String(v) })) } : {}),
@@ -76,7 +78,7 @@ export function descriptorToConfig(desc: CostumFormDescriptor, base?: EntityForm
     const hasEnum = Array.isArray(f.enum) && f.enum.length > 0;
     costumFields[f.name] = {
       type: f.type as FieldType,
-      widget: defaultWidgetForType(f.type as FieldType, f.multiple, hasEnum),
+      widget: defaultWidgetForType(f.type as FieldType, f.multiple, hasEnum) as JsonFormFieldConfig["widget"],
       label: fieldLabel(f.name),
       ...(f.path && f.path !== f.name ? { path: f.path } : {}),
       ...(f.multiple ? { multiple: true } : {}),
@@ -128,14 +130,15 @@ export function descriptorToConfig(desc: CostumFormDescriptor, base?: EntityForm
 }
 
 // ── Voie BUILD-TIME (voie A) : artefact costum-extensions.json → descripteur → config ───────────
-interface CostumFieldArtifact {
+// (types + artifactFieldType exportés : réutilisés par la voie « costumForm » — profil/forms/costum/costumToFormSchema)
+export interface CostumFieldArtifact {
   name: string;
   path?: string;
   schema?: { type?: string; format?: string; "x-format"?: string; oneOf?: unknown[] };
   enum?: string[];
   multiple?: boolean;
 }
-interface CostumCollectionArtifact {
+export interface CostumCollectionArtifact {
   fields?: CostumFieldArtifact[];
   presets?: Record<string, unknown>;
   hidden?: string[];
@@ -147,7 +150,7 @@ export interface CostumExtensionsArtifact {
 }
 
 /** Type logique d'un champ depuis son schema d'artefact (multiple → array ; x-format date → date). */
-function artifactFieldType(f: CostumFieldArtifact): FieldType {
+export function artifactFieldType(f: CostumFieldArtifact): FieldType {
   if (f.multiple) return "array";
   const s = f.schema ?? {};
   if (s.format === "date" || s["x-format"] === "date") return "date";

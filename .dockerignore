@@ -1,0 +1,39 @@
+# Contexte de build Docker.
+#
+# Sur Coolify le contexte est le clone git, donc la plupart de ces entrées y sont
+# déjà absentes (elles sont gitignorées). Ce fichier sert aux `docker build`
+# locaux : il évite d'envoyer ~1 Go de contexte, empêche le `COPY . .` d'écraser
+# le node_modules installé par `npm ci` dans l'image alpine par celui de l'hôte
+# (binaires natifs glibc vs musl), et garde .env hors des layers.
+
+node_modules
+.git
+.gitignore
+dist
+dist-ssr
+stats.html
+.cache
+
+# Variables d'environnement locales — SITE_CONFIG_PATH et VITE_SLUG y sont
+# définis et seraient lus par `loadEnv` pendant le build.
+.env
+.env.*
+
+# Artefacts de test
+playwright-report
+test-results
+coverage
+e2e-results
+
+# Outillage local non nécessaire au build
+.vscode
+.idea
+.claude
+.design-sync
+.ds-sync
+ds-bundle
+reference
+agent-os
+.audit
+commentaire
+doc-projets

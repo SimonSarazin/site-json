@@ -43,6 +43,12 @@
   - [`member`](#member)
   - [`searchPro`](#searchpro)
     - [Details de `ListConfSchema`](#details-de-listconfschema)
+    - [Details de `CardConfSchema`](#details-de-cardconfschema-listcard)
+    - [Details de `ListItemRuleSchema`](#details-de-listitemruleschema-listitemrules)
+    - [Details de `ListItemActionSchema`](#details-de-listitemactionschema-listitemaction)
+    - [Details de `PreviewConfSchema`](#details-de-previewconfschema)
+    - [Details de `TestimonialConfSchema`](#details-de-testimonialconfschema)
+    - [Details de `ResourceConfSchema`](#details-de-resourceconfschema)
     - [Details de `MapConfSchema`](#details-de-mapconfschema)
   - [`searchProStatic`](#searchprostatic)
   - [`hero-search`](#hero-search)
@@ -1123,36 +1129,189 @@ export const SearchProSectionSchema = z.object({
 ### Details de `ListConfSchema`
 
 ```ts
-const ListConfSchema = z.object({
+export const ListConfSchema = z.object({
   columns: z.object({
     lg: z.number().int().min(1).max(6).optional(),
     md: z.number().int().min(1).max(6).optional(),
     sm: z.number().int().min(1).max(6).optional(),
     xl: z.number().int().min(1).max(6).optional(),
   }).partial().optional(),
-  card: z.object({
-    tagLimit:        z.number().int().min(1).max(50).optional(),
-    showDescription: z.boolean().optional(),
-    showAddress:     z.boolean().optional(),
-    shareButton:     z.boolean().optional(),
-    showStar:        z.boolean().optional(),
-    showFunding:     z.boolean().optional(),
-    detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
-    type: z.enum(["overlay", "default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer"]).default("default"),
-    variant: z.enum(["default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer"]).optional(),
-  }).partial().optional(),
-  preview: z.object({
-    type: z.enum(["default"]).default("default"),
-  }).partial().optional(),
+  // Schéma NOMMÉ extrait de ListConfSchema pour être réutilisable par ListItemRuleSchema.
+  card: CardConfSchema.optional(),
+  preview: PreviewConfSchema.optional(),
+  testimonial: TestimonialConfSchema.optional(),
+  resource: ResourceConfSchema.optional(),
+  previewParam: z.string().optional(),
+  // Rendu PAR ITEM des listes hétérogènes (cf. doc/07 §Rendu PAR ITEM).
+  itemRules: z.array(ListItemRuleSchema).optional(),
+  itemAction: ListItemActionSchema.optional(),
 }).partial();
 ```
 
-* **`card.type`** : `overlay` (texte sur l'image), `default`, `image-cover`, `image-panel`, `event`, `event-featured`, `funding`, `resource-booking`, `poi-amenities`, `contact-card`, `profile`, `card-answer` (noms de DESIGN — cf. doc/07).
+* **`card.type`** : `overlay` (texte sur l'image), `default`, `image-cover`, `image-panel`, `event`, `event-featured`, `funding`, `resource-booking`, `poi-amenities`, `contact-card`, `profile`, `card-answer`, `news` (carte éditoriale actualité → `CardNews`), `testimonial` (carte témoignage bulle → `CardTestimonial`), `resource` (carte média-thèque → `CardResource`) (noms de DESIGN — cf. doc/07). Dispatch = `card.variant || card.type`.
 * **`card.variant`** : variante visuelle de la carte (memes valeurs que `card.type`, sauf `overlay`).
 * **`card.detailsMode`** : affichage des details dans un `drawer` ou un `dialog`.
 * **`card.showStar`** : afficher le bouton favori.
 * **`card.showFunding`** : afficher la barre de progression de financement (cagnotte) sur la carte ; declenche la query `useFundingEnvelope`. Actif par defaut uniquement pour le variant `rezo-la-mer` (retrocompat).
-* **`preview.type`** : type de previsualisation (actuellement `default`).
+* **`preview.type`** : contenu du détail rendu dans le conteneur `detailsMode` (axe indépendant de `card.type`) — `default`, `poi-amenities`, `coform-answer`, `event`, `facets`, `news` (→ `PreviewNews`), `testimonial` (→ `PreviewTestimonial`), `resource` (→ `PreviewResource`). Voir [Details de `PreviewConfSchema`](#details-de-previewconfschema).
+* **`preview.width`** : largeur MAX du conteneur de détail en mode `dialog` (échelle `sm`..`5xl`|`full`, défaut code `5xl`) — sans effet en mode `drawer`.
+* **`preview.showDetailLink`** : booléen (défaut : affiché) ; `false` masque le lien « Voir en page » (permalien) — lu par `PreviewNews`.
+* **`testimonial`** : contrat générique config-driven du design `testimonial` (card + preview). Voir [Details de `TestimonialConfSchema`](#details-de-testimonialconfschema).
+* **`resource`** : contrat générique config-driven du design `resource` (card + preview). Voir [Details de `ResourceConfSchema`](#details-de-resourceconfschema).
+* **`previewParam`** : nom du paramètre URL synchronisant l'item ouvert en preview (défaut `preview`) — utile quand plusieurs listings coexistent sur une même page.
+* **`itemRules`** : règles de rendu PAR ITEM d'une liste hétérogène (la 1ʳᵉ dont `when` matche impose son presenter). Voir [Details de `ListItemRuleSchema`](#details-de-listitemruleschema-listitemrules).
+* **`itemAction`** : action au clic par défaut de la liste, surchargeable par règle. Voir [Details de `ListItemActionSchema`](#details-de-listitemactionschema-listitemaction).
+
+### Details de `CardConfSchema` (`list.card`)
+
+Bloc `card` **extrait** de `ListConfSchema` en schéma nommé — il est partagé avec `ListItemRuleSchema.card`, d'où son émission en `$ref` dans le dump JSON Schema (`config:schema`).
+
+```ts
+export const CardConfSchema = z.object({
+  tagLimit:        z.number().int().min(1).max(50).optional(),
+  tagColors:       TagColorsConfSchema.optional(),
+  showDescription: z.boolean().optional(),
+  showAddress:     z.boolean().optional(),
+  shareButton:     z.boolean().optional(),
+  showStar:        z.boolean().optional(),
+  showFunding:     z.boolean().optional(),
+  detailsMode:     z.enum(["drawer", "dialog"]).default("drawer"),
+  detailedMode:    z.enum(["default", "service-pricing"]).default("default"),
+  overlayStats:    z.enum(["service-pricing"]).optional(),
+  imageFit:        z.enum(["cover", "contain"]).optional(),
+  servicePricing:  z.object({ /* meeting / coworking / accommodation */ }).optional(),
+  installationFilter: InstallationFilterConfSchema.optional(),
+  type:    z.enum([...15 designs...]).default("default"),
+  variant: z.enum([...11 designs...]).optional(),
+}).partial();
+```
+
+### Details de `ListItemRuleSchema` (`list.itemRules`)
+
+Choix du presenter **par item**, pour les listes hétérogènes (recherche globale sans filtre de type). Mécanisme complet : [doc/07 §Rendu PAR ITEM](07-module-search.md#rendu-par-item-des-listes-hétérogènes-listitemrules).
+
+```ts
+export const ListItemRuleSchema = z.object({
+  id: z.string().optional(),
+  when: PredicateJson.optional(),
+  card: CardConfSchema.optional(),
+  preview: PreviewConfSchema.optional(),
+  testimonial: TestimonialConfSchema.optional(),
+  resource: ResourceConfSchema.optional(),
+  itemAction: ListItemActionSchema.optional(),
+});
+```
+
+* **`id`** : identifiant lisible (debug, tests, warning DEV). Aucun effet fonctionnel.
+* **`when`** : prédicat `PredicateJson` du formEngine (même grammaire que `visibleIf`), évalué contre `{...serverData, collection, sourceKey, sourceKeys}` avec chemins pointés résolus. **La 1ʳᵉ règle qui matche gagne** ; une règle **sans `when`** est un catch-all → à placer **en dernier**.
+* **`card`, `preview`** : **fusionnés** (shallow) sur `list.card` / `list.preview` — les clés posées au niveau page restent héritées.
+* **`testimonial`, `resource`, `itemAction`** : **remplacent** la valeur de la liste (un contrat de mapping est atomique).
+* ⚠ `serverData.type` a deux sémantiques (sous-type POI vs sous-type d'organisation) : ancrer toute règle sur `collection` avant `type`.
+* ⚠ Tout champ testé doit figurer dans `baseParams.defaultFields`, sinon la règle ne matche jamais — en silence. Gaté par `tests/preflight/list-item-rules.test.ts`.
+
+### Details de `ListItemActionSchema` (`list.itemAction`)
+
+```ts
+export const ListItemActionSchema = z.object({
+  kind: z.enum(["preview", "profil", "link"]).default("preview"),
+  to: z.string().optional(),
+  toById: z.string().optional(),
+  newTab: z.boolean().optional(),
+});
+```
+
+* **`kind`** : `preview` (défaut, ouvre le détail) · `profil` (`/profil/:slug`) · `link` (gabarit `to`).
+* **`to`** : gabarit d'URL, `:slug` substitué (ex. `/blog/:slug`). Sans placeholder = lien statique.
+* **`toById`** : gabarit de repli quand l'item n'a pas de slug, `:id` substitué (ex. `/blog/id/:id`).
+* **`newTab`** : ouvre dans un nouvel onglet.
+* Toute action inexploitable (ni slug ni id, `profil` sans slug) retombe sur l'ouverture du détail — jamais d'URL trouée.
+* ⚠ À ne pas confondre avec `map.itemAction` (bouton de popup carte) ni avec `commandPalette.entitySearch.itemAction` (clic dans la palette) : trois clés homonymes, trois schémas.
+
+### Details de `PreviewConfSchema` (`list.preview`)
+
+Contenu du **détail** (rendu DANS le conteneur `detailsMode`), axe indépendant de la carte : `Preview.tsx` dispatche sur `preview.type`. Schéma partagé (exporté par `src/modules/search/schema.ts`), réutilisé aussi par le module observatoire (rowAction preview).
+
+```ts
+export const PreviewConfSchema = z.object({
+  type: z.enum(["default", "poi-amenities", "coform-answer", "event", "facets", "news", "testimonial", "resource"]).default("default"),
+  fields: z.record(z.string(), z.string()).optional(),
+  facets: z.array(PreviewFacetSchema).optional(),
+  showDetailLink: z.boolean().optional(),
+  width: z.enum(["sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "5xl", "full"]).optional(),
+}).partial();
+```
+
+* **`type`** : `default`, `poi-amenities`, `coform-answer`, `event`, `facets`, `news` (→ `PreviewNews`), `testimonial` (→ `PreviewTestimonial`), `resource` (→ `PreviewResource`).
+* **`fields`** : mapping `rôle → suffixe de champ CoForm` (pour `type: "coform-answer"`) — surcharge la table par défaut du composant, découple les IDs de champs.
+* **`facets`** : facettes data-driven du preview générique (`type: "facets"`). Chaque facette (`PreviewFacetSchema` : `field`, `label?`, `icon?`) affiche une valeur `serverData` (dot-path supporté) et, si indexée par un dropdownFilter, devient cliquable pour filtrer le listing.
+* **`showDetailLink`** : booléen (défaut : affiché, testé `!== false`) ; `false` masque le lien « Voir en page » (permalien vers le détail/profil) dans l'en-tête de la modal de détail — lu par `PreviewNews`.
+* **`width`** : largeur MAX du conteneur de détail en mode `dialog` (échelle Tailwind `max-w-*` : `sm`, `md`, `lg`, `xl`, `2xl`, `3xl`, `4xl`, `5xl`, `full` = `95vw`). **Défaut code : `5xl`** (fallback dans `DetailsModeDialog`, pas via Zod). Sans effet en mode `drawer`.
+
+### Details de `TestimonialConfSchema` (`list.testimonial`)
+
+Contrat « témoignage » **générique et config-driven** : découple la carte/le détail des noms de champs et couleurs d'un site. Un `design` sélectionne une paire cohérente `CardTestimonial{Design}` + `PreviewTestimonial{Design}`, toutes deux nourries par le même contrat via `useTestimonialData`. Consommé par `card.type`/`preview.type` = `testimonial`. Remplace l'ancienne carte « parole » de parent62 (`CardParole`/`PreviewParole`/`lib/parole.ts` supprimés).
+
+```ts
+export const TestimonialConfSchema = z.object({
+  design: z.enum(["bubble"]).default("bubble"),
+  quoteField: z.string(),
+  titleField: z.string().optional(),
+  dateField: z.string().optional(),
+  subtitleField: z.string().optional(),
+  audioField: z.string().optional(),
+  badge: z.object({ field: z.string(), colors: z.record(z.string(), z.string()).optional() }).optional(),
+  accent: z.object({ field: z.string(), colors: z.record(z.string(), z.string()).optional() }).optional(),
+  facets: z.array(PreviewFacetSchema).optional(),
+}).partial();
+```
+
+* **`design`** : `bubble` (repli code) — sélectionne la paire `CardTestimonial{Design}` + `PreviewTestimonial{Design}`.
+* **`quoteField`** : champ `serverData` de la citation (le héros). Repli code `description`.
+* **`titleField`** : champ du titre / attribution. Repli code `name`.
+* **`dateField`** : champ de la date. Repli code `created`.
+* **`subtitleField`** : champ secondaire affiché en pied de carte teaser (ex. thème) — optionnel.
+* **`audioField`** : champ du média audio (`[{type:"audio", url}]`). Repli code `medias`.
+* **`badge`** : `{ field, colors? }` — catégorie pilotant la teinte de la bulle + la pastille ; `colors` = map `valeur → couleur` (`var()` ou hex), matchée via `normalizeFilterValue`, sinon palette déterministe.
+* **`accent`** : `{ field, colors? }` — accent (ex. territoire) pilotant le point coloré ; même mécanisme `colors`.
+* **`facets`** : repères (taxonomies) data-driven, réutilise `PreviewFacetSchema` (aucun champ en dur).
+
+> Les replis de champs vivent dans `useTestimonialData` : la config JSON n'étant jamais parsée par Zod au runtime, les `.default()` du schéma n'agissent pas — écrire les clés explicitement dans le JSON.
+
+### Details de `ResourceConfSchema` (`list.resource`)
+
+Contrat « ressource » **générique et config-driven** (même esprit que `testimonial`), pour une média-thèque **image-first** : galerie/photo + liens externes + documents, avec catégorie (badge coloré + icône de type), ville et repères. Alimenté par `useResourceData` (item de recherche) et `useResourceEntity` (charge le **POI complet** : galerie `about.images`, fichiers `about.files` classés par extension → documents/audio/vidéo). Consommé par `card.type`/`preview.type` = `resource`.
+
+```ts
+export const ResourceConfSchema = z.object({
+  design: z.enum(["card"]).default("card"),
+  titleField: z.string().optional(),
+  descriptionField: z.string().optional(),
+  dateField: z.string().optional(),
+  imageField: z.string().optional(),
+  badge: z.object({
+    field: z.string(),
+    colors: z.record(z.string(), z.string()).optional(),
+    icons: z.record(z.string(), z.string()).optional(),
+  }).optional(),
+  cityField: z.string().optional(),
+  urlsField: z.string().optional(),
+  mediasField: z.string().optional(),
+  facets: z.array(PreviewFacetSchema).optional(),
+}).partial();
+```
+
+* **`design`** : `card` (repli code) — sélectionne `CardResource{Design}` + `PreviewResource{Design}`.
+* **`titleField`** : repli code `name`.
+* **`descriptionField`** : extrait card / markdown preview. Repli code `description`.
+* **`dateField`** : repli code `created`.
+* **`imageField`** : image de vignette. Repli code `profilMediumImageUrl` (puis `profilImageUrl`, puis 1re image de `medias`).
+* **`badge`** : `{ field, colors?, icons? }` — catégorie (repli code `field = "category"`) pilotant la pastille colorée + l'icône de type ; `icons` = map `valeur → nom d'icône lucide`. Map par défaut : `video→video`, `photo→images`, `compte-rendu→file-text`, `jeu→gamepad-2`, `document→file`, `lien→link` (sinon `file`).
+* **`cityField`** : ville affichée. Repli code `address.addressLocality`.
+* **`urlsField`** : liens externes (`string[]`). Repli code `urls`.
+* **`mediasField`** : médias (`[{type,url,name}]`) découpés par type → galerie (images), documents (fichiers), audio, vidéo. Repli code `medias`.
+* **`facets`** : repères (taxonomies) data-driven (`PreviewFacetSchema`).
+
+> Comme `testimonial`, les replis vivent dans `useResourceData` (config non parsée par Zod au runtime) — écrire les clés explicitement dans le JSON.
 
 ### Details de `MapConfSchema`
 
@@ -1864,6 +2023,8 @@ const TitleSectionSchema = z.object({
 | `size` | `"sm" \| "md" \| "lg" \| "xl"` | Taille du titre |
 | `className` | `string?` | Classes CSS additionnelles |
 
+> **Rendu du sous-titre** (`TitleSection.tsx:22-27`, `48-58`) : `subtitle` est rendu en `<p>` **subordonné** au titre — `text-muted-foreground`, `font-normal`, `leading-relaxed`, `max-w-3xl` (centré via `mx-auto` si `align === "center"`), et non plus en `<h3>` gras. Sa taille suit `subtitleSizeClasses[size]` (`sm→text-base`, `md→text-lg`, `lg→text-lg md:text-xl`, `xl→text-xl`), toujours plus petite que celle du titre quelle que soit la valeur de `size`.
+
 ---
 
 ## `content`
@@ -1909,9 +2070,18 @@ const ContentSectionSchema = z.object({
 | `tags` | `LocalizedString[]?` | Liste de tags |
 | `image` | `string?` | URL de l'image |
 | `imagePosition` | `"left" \| "right"` | Position de l'image |
-| `links` | `array?` | Liens vers d'autres pages |
-| `iconCard` | `object?` | Carte avec icone SVG |
-| `stats` | `array?` | Statistiques a afficher |
+| `links` | `array?` | Liens vers d'autres pages (label, href) |
+| `iconCard` | `object?` | Carte avec icone SVG (`{ svg }`) |
+| `infoText` | `LocalizedString?` | Ligne d'info avec icone (rendue en HTML brut) |
+| `decorativeElements` | `object?` | Element decoratif : `{ type: "corner-icon" \| "colored-squares" \| "none" }` |
+| `stats` | `array?` | Statistiques a afficher (`{ value: string, label: LocalizedString }`) |
+| `className` | `string?` | Classes CSS additionnelles |
+
+> **Rendu du bloc `stats`** (`ContentSection.tsx:55-65`) : rangee flex à retour à la ligne, chaque entree = `value` en `text-3xl font-bold text-primary` surmontant `label` en `text-sm text-muted-foreground`. Placé entre la description et les tags.
+>
+> **Colonne unique sans visuel** (`ContentSection.tsx:32`, `42`, `128`) : `hasVisual = image OU (decorativeElements.type !== "none")`. Quand il n'y a pas de visuel, la mise en page passe de la grille `lg:grid-cols-2` à une **colonne unique** `max-w-3xl` et la colonne image n'est pas rendue (au lieu d'une colonne de droite vide).
+>
+> **iconCard/links découplés** (`ContentSection.tsx:82-114`) : le bloc s'affiche dès que `iconCard` **ou** `links` est présent (auparavant les deux étaient requis). L'icone et la carte de liens sont rendues indépendamment.
 
 ---
 
@@ -1926,7 +2096,7 @@ Section de filtres avec groupes depliables. Pilote `PageFiltersContext` consomme
 export const FilterGroupSchema = z.object({
   id: z.string(),
   label: LocalizedString,
-  type: z.enum(['scopeList', "filters", "entityList"]).default("filters"),
+  type: z.enum(['scopeList', "filters", "entityList", "searchTargets", "dateRange"]).default("filters"),
   field: z.string().optional(),
   options: z.array(z.object({
     id: z.string(),
@@ -1988,7 +2158,7 @@ export const FiltersSectionSchema = z.object({
 | ------------------ | --------- | ---------------------------------------- |
 | `title`            | `LocalizedString?` | Titre de la section filtres      |
 | `filterGroups`     | `FilterGroupSchema[]` | Groupes de filtres              |
-| `filterGroups[].type` | `"scopeList" \| "filters" \| "entityList"` | Type de filtre (`"entityList"` charge les options dynamiquement via `baseParams`) |
+| `filterGroups[].type` | `"scopeList" \| "filters" \| "entityList" \| "searchTargets" \| "dateRange"` | Type de filtre. `"entityList"` charge les options dynamiquement via `baseParams` ; `"searchTargets"` est un filtre « type d'information » à sélection UNIQUE dont chaque option porte sa cible `target: {defaultTypes?, defaultFilters?}` (elle REMPLACE les `defaultTypes` de la section et FUSIONNE ses `defaultFilters`) ; `"dateRange"` filtre par date (`filters[field].$gt`). ⚠ Une cible dit *quoi chercher*, pas *comment rendre* — le presenter se choisit par `list.itemRules`. |
 | `filterGroups[].field` | `string?` | Champ cible du filtre               |
 | `filterGroups[].config` | `object?` | Configuration du filtre (countryCode, level, etc.) |
 | `filterGroups[].baseParams` | `SearchBaseParamsSchema?` | Pour `entityList` : périmetre de la recherche backend |

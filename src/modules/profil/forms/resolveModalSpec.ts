@@ -54,6 +54,67 @@ function resolveCostumSlug(scope: EntityModalSpec["scope"], ctx: EntityModalCtx)
   return undefined;
 }
 
+/** Clé de correspondance médias↔document : nom de fichier (dernier segment, sans query). Cf. useEntityMutation.mediaKey. */
+function mediaFileKey(url: unknown): string {
+  return typeof url === "string" ? (url.split("?")[0].split("/").pop() ?? "") : "";
+}
+
+/**
+ * Seed des champs GALERIE (widget "gallery") en ÉDITION : les `renderOnly` sont ignorés par le pipeline
+ * de defaults → on injecte `existing` depuis `entity.getGalleryImages(contentKey)` (champ `images` fusionné
+ * par about, chantier 2 backend). Valeur = GalleryValue, reconnue par le widget ET l'orchestration.
+ */
+function seedGalleryDefaults(defaults: FieldValues, jsonConfig: unknown, entity: unknown): void {
+  const fields = (jsonConfig as { fields?: Record<string, { widget?: string; widgetProps?: Record<string, unknown> }> }).fields;
+  if (!fields) return;
+  const ent = (entity ?? {}) as {
+    getGalleryImages?: (ck: string) => Array<Record<string, unknown>>;
+    data?: { files?: unknown };
+  };
+  for (const [name, cfg] of Object.entries(fields)) {
+    if (cfg?.widget === "gallery") {
+      const contentKey = (cfg.widgetProps?.contentKey as string) ?? "slider";
+      const docType = (cfg.widgetProps?.docType as string) ?? "image";
+      // CREATE (pas d'entité) → `existing` vide ; EDIT → depuis about.images. Dans TOUS les cas on pose la
+      // FORME complète {existing,added,removedDocIds,contentKey,docType} : sinon le default "" laisse le widget
+      // produire une valeur sans `contentKey`/`removedDocIds` (`{...""}` = `{}`) → `isGalleryFieldValue` faux
+      // → `processGalleryFields` saute le champ → AUCUN upload à la création.
+      const existing = (typeof ent.getGalleryImages === "function" ? (ent.getGalleryImages(contentKey) ?? []) : [])
+        .map((im) => ({ docId: String(im.id ?? ""), url: String(im.imagePath ?? im.imageMediumPath ?? "") }))
+        .filter((e) => e.docId);
+      (defaults as Record<string, unknown>)[name] = { existing, added: [], removedDocIds: [], contentKey, docType };
+    } else if (cfg?.widget === "file") {
+      // Widget FICHIER : `existing` lu SYNC depuis about.files (objet keyé _id, présent pour poi/
+      // classifieds/projects ; buildDefaults est sync donc pas de getGalleryFiles async ici). Pour les
+      // types sans about.files (org/citoyen/event), `existing` reste vide → ajout seul dans le form
+      // (l'affichage/suppression des fichiers existants passe par la section profil / la vue article).
+      const contentKey = (cfg.widgetProps?.contentKey as string) ?? "file";
+      const mediaTarget = cfg.widgetProps?.mediaTarget as { field: string; type: string } | undefined;
+      const filesObj = ent.data?.files;
+      const raw = filesObj && typeof filesObj === "object" && !Array.isArray(filesObj)
+        ? Object.values(filesObj as Record<string, Record<string, unknown>>)
+        : Array.isArray(filesObj) ? (filesObj as Array<Record<string, unknown>>) : [];
+      let existing = raw
+        .map((f) => {
+          const _id = f._id as { $id?: string } | string | undefined;
+          const docId = _id && typeof _id === "object" ? _id.$id : _id;
+          return { docId: String(docId ?? f.id ?? ""), url: String(f.docPath ?? ""), name: String(f.name ?? "") };
+        })
+        .filter((e) => e.docId);
+      // Champ AUDIO (mediaTarget) : ne montrer QUE les fichiers présents dans `medias[]` du bon type — sinon
+      // `about.files` renverrait TOUS les documents (l'audio a son contentKey réécrit en "presentation", donc
+      // on ne peut pas filtrer par contentKey ; on corrèle par NOM DE FICHIER avec `medias[].url`).
+      if (mediaTarget) {
+        const mediasRaw = (ent.data as Record<string, unknown> | undefined)?.[mediaTarget.field];
+        const medias = Array.isArray(mediasRaw) ? (mediasRaw as Array<Record<string, unknown>>) : [];
+        const keys = new Set(medias.filter((m) => m?.type === mediaTarget.type).map((m) => mediaFileKey(m.url)));
+        existing = existing.filter((e) => keys.has(mediaFileKey(e.url)));
+      }
+      (defaults as Record<string, unknown>)[name] = { existing, added: [], removedDocIds: [], contentKey, docType: "file", ...(mediaTarget ? { mediaTarget } : {}) };
+    }
+  }
+}
+
 export function specToConfig(spec: EntityModalSpec): EntityModalConfig {
   /** Descripteur résolu pour un ctx (variante runtime éventuelle, sinon ref registre ou config embarquée). */
   const resolveDescriptor = (ctx: EntityModalCtx): FormDescriptor => {
@@ -143,10 +204,17 @@ export function specToConfig(spec: EntityModalSpec): EntityModalConfig {
     getSchema: spec.schemaFn ? (ctx) => getSchemaFn(spec.schemaFn!)!(ctx) : undefined,
     buildDefaults: (ctx) => {
       const base = baseDefaults(ctx);
+      const jsonConfig = formDescriptorToConfig(resolveDescriptor(ctx));
       if (ctx.mode === "edit" && ctx.entity) {
-        const jsonConfig = formDescriptorToConfig(resolveDescriptor(ctx));
-        return buildPipelineDefaults(jsonConfig, ctx.entity as unknown as EntityLike, { baseDefaults: () => base }) as FieldValues;
+        const defaults = buildPipelineDefaults(jsonConfig, ctx.entity as unknown as EntityLike, { baseDefaults: () => base }) as FieldValues;
+        // Seed des champs GALERIE (widget "gallery", renderOnly → ignorés par le pipeline) : `existing`
+        // depuis entity.getGalleryImages(contentKey) (champ `images` fusionné par about, chantier 2 backend).
+        seedGalleryDefaults(defaults, jsonConfig, ctx.entity);
+        return defaults;
       }
+      // CREATE : seeder AUSSI la forme vide des champs galerie/fichier (sinon le default "" empêche le widget
+      // de produire une valeur `isGalleryFieldValue` → upload sauté à la création). `entity=null` → existing vide.
+      seedGalleryDefaults(base as FieldValues, jsonConfig, null);
       return base as FieldValues;
     },
     cleanValues: spec.cleanValues ? (v) => {

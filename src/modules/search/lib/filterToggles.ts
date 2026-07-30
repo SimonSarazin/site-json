@@ -77,3 +77,57 @@ export function toggleSearchByField(
   const valueToSet = Array.isArray(value) ? value : [value];
   return { ...prev, [filterName]: { field, value: valueToSet } };
 }
+
+/**
+ * Pose/retire le filtre par date d'un groupe `dateRange` dans
+ * `searchByFields[groupId]` (clé = id du GROUPE : une seule plage par groupe).
+ * `start`/`end` vides → entrée retirée. Shape produit :
+ * `{ field, type: "dateRange", value: { start?, end? } }`, consommé par
+ * `searchByFieldsToQuery` (→ `filters[field].$gt`, seul opérateur date
+ * converti par le backend — cf. schema.ts).
+ */
+export function setDateRange(
+  prev: PageFiltersState["searchByFields"],
+  groupId: string,
+  field: string,
+  range: { start?: string; end?: string },
+): PageFiltersState["searchByFields"] {
+  const start = range.start?.trim() ?? "";
+  const end = range.end?.trim() ?? "";
+  const { [groupId]: _removed, ...rest } = prev;
+  void _removed;
+  if (!start && !end) return rest;
+  return {
+    ...rest,
+    [groupId]: {
+      field,
+      type: "dateRange",
+      value: { ...(start ? { start } : {}), ...(end ? { end } : {}) },
+    } as unknown as SearchByFieldValue,
+  };
+}
+
+/**
+ * Toggle d'une option de groupe `searchTargets` (filtre « type d'info ») dans
+ * `searchByFields` — sémantique RADIO : sélectionner une option retire toutes
+ * les autres options du même groupe (une seule cible de recherche à la fois) ;
+ * re-cliquer l'option active revient à « Tout » (aucune entrée).
+ * Shape produit : `{ field: "searchTarget", type: "searchTarget", value: target }`,
+ * consommé par `searchByFieldsToQuery` (sortie `searchTarget`).
+ */
+export function toggleSearchTarget(
+  prev: PageFiltersState["searchByFields"],
+  groupOptionNames: string[],
+  filterName: string,
+  target: Record<string, unknown>,
+): PageFiltersState["searchByFields"] {
+  const wasActive = Object.prototype.hasOwnProperty.call(prev, filterName);
+  const rest = Object.fromEntries(
+    Object.entries(prev).filter(([key]) => !groupOptionNames.includes(key)),
+  );
+  if (wasActive) return rest;
+  return {
+    ...rest,
+    [filterName]: { field: "searchTarget", type: "searchTarget", value: target },
+  };
+}

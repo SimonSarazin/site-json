@@ -6,7 +6,7 @@
 // Validation : Zod 4.x – le schéma sert à la fois de typings, de runtime‑guard,
 //               et d'autocomplétion dans VS Code.
 // ------------------------------------------------------------
-import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema, FiltersSectionSchema, SearchVariantSchema, SearchBaseParamsSchema, FilterGroupsSchema, FiltersByAnswersSchema, SearchHeaderSectionSchema } from "@/modules/search/schema";
+import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema, FiltersSectionSchema, SearchVariantSchema, SearchBaseParamsSchema, FilterGroupsSchema, FiltersByAnswersSchema, SearchHeaderSectionSchema, MarkerConfSchema } from "@/modules/search/schema";
 import { DataObservatorySectionSchema } from "@/modules/observatoire/schema";
 import { NewsSectionSchema } from "@/modules/news/schema";
 import { NotificationsSectionSchema } from "@/modules/notification/schema";
@@ -15,10 +15,13 @@ import { ActionButtonSchema } from "./action-button-schema";
 import { z } from "zod";
 import { LocalizedString, LOCALES } from "./locale-schema";
 import { AgendaSectionSchema } from "@/modules/agenda/schema";
+import { ArticleFeedSectionSchema, ArticleReaderSectionSchema } from "@/modules/blog/schema";
 export { LocalizedString, LOCALES };
 import { ProfilesConfigSchema, MemberSectionSchema } from "../modules/profil/schema";
+import { AdminConfigSchema } from "../modules/admin/schema";
 import { AmpliConfigSchema } from "@/modules/ampli/schema";
 import { CommandPaletteConfigSchema } from "@/modules/commandPalette/schema";
+import { BlogConfigSchema } from "@/modules/blog/configSchema";
 import { VisibilityConditionSchema, type VisibilityCondition } from "@/lib/visibility/schema";
 
 /**
@@ -461,7 +464,20 @@ export const ActionTilesSchema = z.object({
         title: LocalizedString,
         subtitle: LocalizedString.optional(),
         href: z.string(),
-        color: z.enum(["primary", "turquoise", "amber", "cyan-bright", "teal", "accent", "eco", "chart-2"]).optional(),
+        /**
+         * Couleur de la tuile — TOKENS du thème. `ActionTiles` les résout via sa
+         * table `TILE_TOKEN`. `turquoise`/`cyan-bright`/`teal`/`amber`/`eco` sont
+         * des ALIAS HISTORIQUES conservés pour les 5 configs du parc qui les
+         * emploient : ils codaient des couleurs Tailwind en dur (les mêmes sur
+         * tous les sites) et pointent désormais sur `chart-2..4`, la palette
+         * catégorielle propre à chaque site.
+         */
+        color: z.enum([
+          "primary", "accent", "destructive",
+          "chart-1", "chart-2", "chart-3", "chart-4", "chart-5",
+          // alias historiques
+          "turquoise", "cyan-bright", "teal", "amber", "eco",
+        ]).optional(),
       })
     ),
   }),
@@ -1453,6 +1469,8 @@ export const Section = z.discriminatedUnion("type", [
   CoFormSectionSchema,
   DataObservatorySectionSchema,
   AgendaSectionSchema,
+  ArticleFeedSectionSchema,
+  ArticleReaderSectionSchema,
 ]);
 export type Section = z.infer<typeof Section>;
 
@@ -1576,6 +1594,11 @@ export const Header = z.object({
   // (ex. transparent-scroll = "primary"). "foreground" suit l'ink du thème →
   // marine en clair, clair en sombre, idéal pour une marque monochrome.
   logoIconTone: z.enum(["foreground", "primary", "white"]).optional(),
+  // Taille du logo dans la barre : "sm" = défaut historique de chaque header,
+  // "md" ≈ 40px, "lg" ≈ 48px sur desktop — toujours ramené plus compact sur
+  // mobile (classes responsive, cf. header/logoSize.ts). Honoré par les 6
+  // headers ; sur `standard`, "lg" suppose `height: "md"|"lg"` (barre sm = 48px).
+  logoSize: z.enum(["sm", "md", "lg"]).optional(),
   // Opt-in : remplace logo/titre par ceux de l'entité costum au runtime
   // (plateforme communecter `transparentCommune`). Désactivé par défaut → le
   // header ne dépend d'aucune logique de site sans cette option.
@@ -1612,6 +1635,7 @@ export const Header = z.object({
     cart: z.boolean().default(false),
     notifications: z.boolean().default(false),
     piggyBank: z.boolean().default(false),
+    pledge: z.boolean().default(false)
   }),
   ctaButton: z.object({
     label: LocalizedString,
@@ -1668,6 +1692,11 @@ const FooterPartnerLogo = z.object({
 const FooterPartnersSection = z.object({
   title: LocalizedString.optional(),
   logos: z.array(FooterPartnerLogo),
+  // Mention de financement, sous les logos. Un cofinancement public s'accompagne
+  // d'une formulation IMPOSÉE par le financeur (dispositif, opérateur, cadre) que
+  // les seuls logos ne portent pas : sans ce champ, elle finissait recopiée dans
+  // le `copyright`, où elle n'a rien à faire.
+  note: LocalizedString.optional(),
 });
 
 export const Footer = z.object({
@@ -1751,16 +1780,19 @@ const CRMIntegration = z.object({
 });
 
 /**
- * Fond de carte des cartes Leaflet (module search) — styles raster MapTiler
- * par thème. La CLÉ d'API vit en ENVIRONNEMENT (`VITE_MAPTILER_API_KEY`),
- * jamais dans le config versionné ; sans clé, repli sur les tuiles libres
- * (OSM / Carto) quel que soit ce bloc.
+ * Carte du module search (MapLibre GL) — réglages PAR SITE. Le fond utilise les
+ * styles vectoriels MapTiler par thème ; la CLÉ d'API vit en ENVIRONNEMENT
+ * (`VITE_MAPTILER_API_KEY`), jamais dans le config versionné — sans clé, repli
+ * sur un style raster libre (OSM / Carto) quel que soit ce bloc.
+ * NB : la carte du module profil reste sur Leaflet (mêmes ids de style raster).
  */
 const MapIntegration = z.object({
-  /** Id de style MapTiler en thème clair (ex. "streets-v2", "outdoor-v2", "dataviz"). */
-  styleLight: z.string().default("streets-v2"),
-  /** Id de style MapTiler en thème sombre (ex. "streets-v2-dark", "dataviz-dark"). */
-  styleDark: z.string().default("streets-v2-dark"),
+  /** Id de style MapTiler en thème clair (ex. "streets-v4", "outdoor-v4", "dataviz"). */
+  styleLight: z.string().default("streets-v4"),
+  /** Id de style MapTiler en thème sombre (ex. "streets-v4-dark", "dataviz-dark"). */
+  styleDark: z.string().default("streets-v4-dark"),
+  /** Marqueur PAR DÉFAUT du site (surchargé par `map.marker` de chaque section). */
+  marker: MarkerConfSchema.optional(),
 });
 
 export const Integrations = z.object({
@@ -1898,6 +1930,16 @@ const PerformanceConfig = z.object({
   criticalCSS: z.boolean().default(true),
 });
 
+const CagnotteModuleConfig = z.object({
+    defaultType: z.enum(["standard", "aac"]).optional().default("standard"),
+    predefinedAmounts: z.array(z.number()).optional(),
+    context: z.string().optional(),
+});
+
+export type CagnotteModuleConfig = z.infer<typeof CagnotteModuleConfig>;
+
+
+
 /*───────────────────────────────────────────────────────────────*/
 /* 10. SiteConfig – racine                                        */
 /*───────────────────────────────────────────────────────────────*/
@@ -1982,6 +2024,12 @@ export const SiteConfig = z.object({
   }).optional(),
   ampli: z.array(AmpliConfigSchema).optional(),
   commandPalette: CommandPaletteConfigSchema.optional(),
+  // Config site-level du blog : défauts des variants extensibles (card/reader/feedLayout). cf. modules/blog.
+  blog: BlogConfigSchema.optional(),
+  // Page d'Administration (config-driven, jumeau du module profil). Onglets/sections/accès déclarés en
+  // données. Absent → pas de page admin. cf. modules/admin + commentaire/plan-module-admin-generique.md
+  admin: AdminConfigSchema.optional(),
+  cagnotteModuleConfig: CagnotteModuleConfig.optional(),
 });
 export type SiteConfig = z.infer<typeof SiteConfig>;
 
@@ -2014,7 +2062,8 @@ export function getDefaultSiteConfig(): Partial<SiteConfig> {
         auth: false,
         cart: false,
         notifications: false,
-        piggyBank: false
+        piggyBank: false,
+        pledge: false
       },
       sticky: false,
       transparent: false,
@@ -2061,7 +2110,8 @@ export const example: SiteConfig = {
       auth: false,
       cart: false,
       notifications: false,
-      piggyBank: false
+      piggyBank: false,
+      pledge: false
     }
   },
   pages: [
