@@ -104,7 +104,7 @@
   {
     "slug": "rezoSanteReunion",
     "config": "config.prod.rezo-sante-reunion.json",
-    "css": "index-parent62",
+    "css": "index-rezo-sante-reunion",
     "images": "rezoSanteReunion"
   }
 ]
