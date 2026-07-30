@@ -8,7 +8,7 @@
    RéseauSanté — réseau réunionnais de la santé globale
    Direction « Lumière du matin » : fond papier chaud, vert végétal en ancre,
    accents pastel par thématique (nutrition/activité/sommeil/addictions/mental).
-   Titres ronds Baloo 2, corps Hanken Grotesk.
+   Titres Fraunces (serif douce, taille optique), corps Hanken Grotesk.
 
    Ce fichier ne porte AUCUN token de thème : la palette, les polices, le rayon,
    les ombres et l'espacement vivent dans `config.theme`
@@ -102,8 +102,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Titres : la police `serif` de la config — ici Baloo 2, ronde, en écho au ton
-   accueillant du réseau (aucune section n'applique `font-serif` elle-même). */
+/* Titres : la police `serif` de la config — ici Fraunces, serif douce à taille
+   optique : chaleureuse sans être puérile, et qui tient les pages sensibles
+   (addictions, santé mentale) comme la crédibilité face aux partenaires
+   institutionnels. Aucune section n'applique `font-serif` elle-même, tout passe
+   par cette règle et par l'alias `--font-display`. */
 h1, h2, h3, h4 { font-family: var(--font-serif); }
 h1, h2 { letter-spacing: -0.015em; }
 
