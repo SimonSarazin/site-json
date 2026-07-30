@@ -12,7 +12,7 @@
 > [Module Admin](../doc/30-module-admin.md) · [Module formEngine](../doc/28-module-formengine.md).
 > Mémoire : `[[project-rezo-sante-reunion]]`.
 
-Dernière mise à jour : **2026-07-29** (création de la config — lot 1 ; cadrage Thomas/Tibor intégré).
+Dernière mise à jour : **2026-07-30** (lot 2 — création du costum backend, §6bis).
 
 ---
 
@@ -55,7 +55,7 @@ Deux conséquences de conception, à ne pas perdre de vue :
 |---|---|
 | Slug de site | `rezoSanteReunion` |
 | Entité Cocolight | `rezoSanteReunion` — collection `organizations`, type `NGO`, « Rézo Santé Réunion » |
-| Costum backend | **INEXISTANT** (`serverData.costum` = `null` au 29/07) — cf. §6 |
+| Costum backend | **CRÉÉ le 30/07** — config minimale posée sur l'org porteuse (motif *costum-in-org*) : `costum = { slug: "costumize", language: "fr" }`. `slug` désigne le **moteur**, pas le site : le slug de site reste `rezoSanteReunion`, celui de l'org, déjà présent dans la collection `slugs`. Cf. §6bis |
 | Config | [`../config.prod.rezo-sante-reunion.json`](../config.prod.rezo-sante-reunion.json) |
 | CSS | [`../src/index-parent62.css`](../src/index-parent62.css) — **partagé** avec parent62 ; les couleurs divergent par `config.theme` |
 | Langues | `fr` (défaut) + `en` |
@@ -73,6 +73,7 @@ Deux conséquences de conception, à ne pas perdre de vue :
 | 2026-07-29 | Claude | Lot 1b — migration du périmètre vers le paramètre natif `sourceKey` + `costumSlug` (9 `baseParams`), suite à l'enquête §5.5-5.7. |
 | 2026-07-29 | Claude | Lot 1c — onglet « Validation » (section `moderation`), suite à l'annonce de formulaires costum. |
 | 2026-07-29 | Claude | Lot 1d — intégration des 5 visuels fournis, passage des 5 pages thématiques en `hero-tinted-overlay`, réharmonisation de `chart1..5`. |
+| 2026-07-30 | Claude | Lot 2 — **création du costum backend** : config minimale sur l'org porteuse. `getcostumjson` passe de HTTP 500 à 200 côté legacy, et la réponse est byte-identique au backend Node. Le périmètre reste vide (§6bis). |
 
 ---
 
@@ -400,6 +401,44 @@ doublon à traiter puisqu'il concerne le porteur lui-même.
 
 ---
 
+## 6bis. Le costum backend — ce qui a été posé, et ce qui manque encore
+
+**Posé le 30/07** sur l'org porteuse `Rézo Santé Réunion` (`6a4ccc3b9da32f33e85e4c43`, slug
+`rezoSanteReunion`) :
+
+```js
+costum: { slug: "costumize", language: "fr" }
+```
+
+Trois choses à comprendre sur ces deux clés :
+
+- **`slug` désigne le MOTEUR, pas le site.** C'est le motif *costum-in-org* : `costumize` est le
+  moteur générique partagé, et le slug du SITE est celui de l'org porteuse. Même structure que
+  `institutBleu`, `sportSanteBienetre` et `equipementsSportifs974`, qui portent tous
+  `costum.slug = "costumize"`. C'est bien `rezoSanteReunion` que la config envoie en `costumSlug` et
+  en `sourceKey`, et son entrée dans la collection `slugs` existait déjà.
+- **`language`** est défaussé à `"fr"` par les deux backends s'il manque ; l'écrire évite de dépendre
+  de ce défaut.
+- **Volontairement absents** : `host` — le domaine `rezoSanté.re` est *visé*, pas en service, et
+  l'inscrire activerait la résolution par hôte du legacy sur un domaine qui ne répond pas — ainsi que
+  `app` et `htmlConstruct`, qui relèvent de la construction d'UI legacy dont site-json n'a pas besoin
+  (il fait tout par config).
+
+**Ce que ça débloque.** Avant, `POST /co2/cms/getcostumjson?slug=rezoSanteReunion` rendait une
+**HTTP 500** sur le legacy : `GetCostumJsonAction.php:21` fait `$costum = $costum["costum"]` sans
+garde, et l'index manquant lève un E_NOTICE que Yii convertit en exception. Le backend Node, lui,
+tolérait et rendait `{language, id}` — c'est la sémantique de PROD (en `error_reporting(0)` PHP
+auto-vivifie). Après, **les deux rendent 200 et la réponse est byte-identique** :
+`{"result":true,"msg":"Success","data":{"slug":"costumize","language":"fr","id":"6a4ccc3b…"}}`.
+
+**Ce que ça ne débloque PAS — et c'est le vrai reste à faire.** Le périmètre est toujours **vide** :
+`sourceKey[]=rezoSanteReunion` renvoie **0 résultat** sur les deux serveurs, parce qu'aucune fiche ne
+porte encore ce slug dans `source.key`, `source.keys` ou `reference.costum`. Créer le costum le rend
+*résolvable* ; le peupler est un travail de donnée distinct — référencement à l'unité (§5.6, avec ses
+quatre limites) ou import.
+
+---
+
 ## 7. Choix techniques et justifications
 
 | Décision | Pourquoi |
@@ -509,7 +548,7 @@ cf. §5.7). Gates : validate ✅, audit **0 constat**, préflight **328/328**, r
 | `audit:config` | ✅ **0 constat** |
 | `test:preflight` | ✅ 328/328 |
 | `config:render` | ✅ 14/14 pages · **40/40 sections** avec contenu SSR |
-| `config:probe` | ⛔ **0/9 périmètres** — costum absent (§5) |
+| `config:probe` | ⛔ **0/9 périmètres** — le costum RÉSOUT désormais (lot 2), mais le périmètre est vide : aucune fiche ne porte encore `source.key`/`source.keys`/`reference.costum` = `rezoSanteReunion` (§6bis) |
 
 ---
 
