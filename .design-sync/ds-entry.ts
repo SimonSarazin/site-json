@@ -82,6 +82,7 @@ export { default as FeatureComparisonSection } from "@/components/sections/Featu
 export { default as FeaturesGlass } from "@/components/sections/FeaturesGlass";
 export { default as GallerySection } from "@/components/sections/GallerySection";
 export { default as HTMLSection } from "@/components/sections/HTMLSection";
+export { default as HeroCarousel } from "@/components/sections/HeroCarousel";
 export { default as HeroEntityBanner } from "@/components/sections/HeroEntityBanner";
 export { default as HeroParallax } from "@/components/sections/HeroParallax";
 export { default as HeroQuickAccess } from "@/components/sections/HeroQuickAccess";

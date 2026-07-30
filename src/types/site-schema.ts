@@ -341,6 +341,60 @@ export type HeroTintedOverlay = z.infer<typeof HeroTintedOverlaySchema>;
 
 export type HeroTintedOverlayProps = z.infer<typeof HeroTintedOverlaySchema>["props"];
 
+//──────────────── Hero à diapositives
+/**
+ * Une diapositive = un mini-héro. `backgroundImage` reste SCALAIRE ici, comme
+ * dans les 7 autres héros (`z.string().optional()`) : c'est la forme que
+ * `extractCriticalResources.ts:129` sait lire (`typeof bg === "string"`).
+ * Un `backgroundImage: z.array(...)` sur un héro existant aurait cassé cet
+ * invariant de famille ET fait échouer le garde du preload EN SILENCE.
+ *
+ * Pas de `backgroundImageMobile` par diapositive en v1, malgré le précédent de
+ * `hero-quick-access` : `generatePreloadTags.ts:24` appelle `buildResponsiveSrcSet`
+ * SANS largeurs et code `imagesizes="100vw"` en dur, et `CriticalImage` n'a aucun
+ * champ pour transporter des largeurs alternatives. L'art-direction mobile
+ * rouvrirait donc le double téléchargement que la chaîne de preload évite — trou
+ * PRÉEXISTANT (hero-quick-access l'a déjà), à traiter séparément.
+ */
+const HeroCarouselSlideSchema = z.object({
+  headline: LocalizedString,
+  subhead: LocalizedString.optional(),
+  backgroundImage: z.string().optional(),
+  backgroundImageAlt: LocalizedString.optional(),
+  /** Lien de la diapositive (rendu comme un CTA sous le sous-titre). */
+  ctaLabel: LocalizedString.optional(),
+  ctaPath: z.string().optional(),
+});
+
+const HeroCarouselSectionSchema = z.object({
+  type: z.literal("hero-carousel"),
+  id: z.string().optional(),
+  props: z.object({
+    slides: z.array(HeroCarouselSlideSchema),
+
+    // ── Chrome de SECTION, pas de diapositive ──
+    // Aucune des instances réelles de `hero-tinted-overlay` du parc ne porte de
+    // badge ni de CTA PAR écran : les mettre par diapositive fabriquerait du
+    // schéma mort. Ne PAS introduire `badges` au pluriel (cf. l'interdit écrit
+    // sur `hero-tinted-overlay` plus haut).
+    badge: LocalizedString.optional(),
+    showScrollIndicator: z.boolean().optional(),
+
+    // ── Spécifiques carrousel ──
+    // ⚠ La config n'est JAMAIS parsée par Zod à l'exécution : `.default()` ne
+    // tournerait pas. Les valeurs de repli vivent dans HeroCarousel.tsx
+    // (autoplay false, intervalle 6000 ms).
+    autoplay: z.boolean().optional(),
+    autoplayIntervalMs: z.number().optional(),
+    /** Nom accessible de la région — indispensable si deux carrousels coexistent. */
+    ariaLabel: LocalizedString.optional(),
+  }),
+});
+
+export type HeroCarouselSlide = z.infer<typeof HeroCarouselSlideSchema>;
+
+export type HeroCarouselProps = z.infer<typeof HeroCarouselSectionSchema>["props"];
+
 //──────────────── Commune Transparente Hero
 export const HeroEntityBannerSchema = z.object({
   type: z.literal("hero-entity-banner"),
@@ -1404,6 +1458,7 @@ export const Section = z.discriminatedUnion("type", [
   HeroParallaxSchema,
   HeroQuickAccessSchema,
   HeroTintedOverlaySchema,
+  HeroCarouselSectionSchema,
   HeroEntityBannerSchema,
   FeaturesGlassSchema,
   ActionTilesSchema,

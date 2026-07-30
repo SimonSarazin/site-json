@@ -57,6 +57,7 @@
     "FeaturesGlass": "src/components/sections/FeaturesGlass.tsx",
     "GallerySection": "src/components/sections/GallerySection.tsx",
     "HTMLSection": "src/components/sections/HTMLSection.tsx",
+    "HeroCarousel": "src/components/sections/HeroCarousel.tsx",
     "HeroEntityBanner": "src/components/sections/HeroEntityBanner.tsx",
     "HeroParallax": "src/components/sections/HeroParallax.tsx",
     "HeroQuickAccess": "src/components/sections/HeroQuickAccess.tsx",

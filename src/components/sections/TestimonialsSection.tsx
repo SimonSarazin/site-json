@@ -1,43 +1,13 @@
-import { useState, useEffect, useSyncExternalStore } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Pause, Play, Quote } from 'lucide-react';
 import { T } from "@/components/ui/T";
 import { useLocalization } from "@/hooks/useLocalization";
+import { useDocumentHidden, useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from '@/lib/utils';
 import { TestimonialsSectionProps } from '@/types/site-schema';
-
-const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
-
-/**
- * `matchMedia` et `document.hidden` sont des sources EXTERNES : `useSyncExternalStore`
- * est la primitive prévue pour s'y abonner. Elle évite le `setState` synchrone dans un
- * effet — interdit ici par `react-hooks/set-state-in-effect` — et fournit un instantané
- * serveur explicite pour le SSR.
- *
- * ⚠ `subscribe` et `getSnapshot` sont au niveau MODULE, pas dans le corps du hook :
- * React compare `subscribe` par IDENTITÉ et se désabonne/réabonne dès qu'elle change.
- * Définies dans le composant, elles seraient neuves à chaque rendu — donc un
- * removeEventListener + addEventListener toutes les 5 s pendant la rotation, ce qui est
- * exactement ce que cette primitive existe pour éviter.
- */
-const mediaQuery = () => (typeof window === "undefined" ? null : window.matchMedia?.(REDUCED_MOTION) ?? null);
-
-function subscribeReducedMotion(onChange: () => void) {
-  const mq = mediaQuery();
-  if (!mq) return () => {};
-  mq.addEventListener("change", onChange);
-  return () => mq.removeEventListener("change", onChange);
-}
-const getReducedMotion = () => mediaQuery()?.matches ?? false;
-
-function subscribeVisibility(onChange: () => void) {
-  document.addEventListener("visibilitychange", onChange);
-  return () => document.removeEventListener("visibilitychange", onChange);
-}
-const getDocumentHidden = () => document.hidden;
-const getFalse = () => false;
 
 function TestimonialCard({ item }: { item: TestimonialsSectionProps['items'][number] }) {
   const { t } = useLocalization();
@@ -82,12 +52,14 @@ export function TestimonialsSection({ id, props }: { id?: string; props: Testimo
   /** Arrêt EXPLICITE par l'utilisateur (bouton). Distinct du précédent : il persiste. */
   const [userPaused, setUserPaused] = useState(false);
   /**
-   * La garde `prefers-reduced-motion` de `shared.css` ne cible que 5 classes d'animation
-   * maison — elle ne peut RIEN contre un `setInterval`. D'où cette garde JS.
+   * Le plancher `prefers-reduced-motion` de `shared.css` ne nomme que des classes
+   * d'animation — il ne peut RIEN contre un `setInterval`. D'où ces gardes JS,
+   * extraites dans `hooks/useReducedMotion.ts` le 2026-07-30 quand `HeroCarousel` en a
+   * eu besoin à son tour (le patron est court mais porte deux pièges non évidents).
    */
-  const reducedMotion = useSyncExternalStore(subscribeReducedMotion, getReducedMotion, getFalse);
+  const reducedMotion = useReducedMotion();
   /** Onglet en arrière-plan : inutile de faire tourner ce que personne ne voit. */
-  const documentHidden = useSyncExternalStore(subscribeVisibility, getDocumentHidden, getFalse);
+  const documentHidden = useDocumentHidden();
 
   // Auto-advance carousel
   const canRotate = style === 'carousel' && autoplay && items.length > 1 && !reducedMotion;
