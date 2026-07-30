@@ -5592,12 +5592,6 @@
                 "legalStatus",
                 "siren"
               ]
-            },
-            {
-              "columns": 1,
-              "fields": [
-                "recepisseDeclaration"
-              ]
             }
           ]
         },
@@ -5960,13 +5954,6 @@
           "label": {
             "fr": "Statut juridique",
             "en": "Legal status"
-          }
-        },
-        "recepisseDeclaration": {
-          "widget": "text",
-          "label": {
-            "fr": "Récépissé de déclaration",
-            "en": "Declaration receipt"
           }
         },
         "autreDescription": {
