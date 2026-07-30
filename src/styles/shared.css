@@ -92,6 +92,52 @@
   --gradient-section: linear-gradient(135deg, var(--primary), var(--accent));
 }
 
+/* ── Plancher des cartes d'accès rapide (`HeroQuickAccess`) ──────────────────
+   `HeroQuickAccess.tsx:154` émet `access-card access-card-{public|pro}`. C'est
+   un composant de section GÉNÉRIQUE, mais la classe n'était définie que dans
+   DEUX thèmes (`index-parent62`, `index-sport-sante-bien-etre`). Les deux
+   autres sites qui emploient `hero-quick-access` — equipementsSportifs974 et
+   saintpaulSport1, tous deux sur `index-equipements-sportifs` — rendaient donc
+   des cartes SANS bordure, fond, rayon ni ombre : il ne restait que les
+   utilitaires `backdrop-blur-sm p-5` du composant. Panne silencieuse, exactement
+   celle que l'en-tête de ce fichier dit vouloir supprimer.
+
+   Traitement « verre » sobre et entièrement piloté par les tokens (donc juste
+   dans les deux modes et sur n'importe quelle palette) ; `--card`/`--border`
+   sont injectés au runtime depuis `config.theme.colors`.
+
+   ⚠ CASCADE — la couche est le mécanisme, pas un détail de style. Ce plancher
+   est dans `@layer components` pour se laisser battre par les thèmes qui ont un
+   parti pris :
+     • `index-parent62` définissait `.access-card` HORS couche → aurait gagné
+       de toute façon ; son bloc est retiré, ses déclarations étant devenues
+       identiques à ce plancher (une seule source).
+     • `index-sport-sante-bien-etre` la définit dans `@layer components` mais
+       APRÈS l'import de ce fichier (l. 3 contre l. 233) → même couche, règle
+       plus tardive, il garde ses cartes pleines en dégradé. Ne PAS déplacer ce
+       plancher hors couche : il écraserait ce parti pris.
+   ────────────────────────────────────────────────────────────────────────── */
+@layer components {
+  .access-card {
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) + 0.35rem);
+    background: color-mix(in oklab, var(--card) 82%, transparent);
+    box-shadow: var(--shadow-xs);
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  }
+  .access-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+  }
+  /* Le composant alterne les deux variantes par index (pair → public). */
+  .access-card-public:hover {
+    border-color: color-mix(in oklab, var(--primary) 45%, var(--border));
+  }
+  .access-card-pro:hover {
+    border-color: color-mix(in oklab, var(--accent) 60%, var(--border));
+  }
+}
+
 /* Respect de `prefers-reduced-motion` — plancher d'accessibilité, pour TOUS les
    thèmes puisque c'est ici que vivent les animations partagées.
 
@@ -130,6 +176,18 @@
   .animate-fade-in-up {
     animation-duration: 1ms;
     animation-delay: 0ms;
+  }
+
+  /* Lift au survol des cartes d'accès rapide (cf. le plancher plus haut).
+     Volontairement HORS `@layer components`, contrairement au plancher : une
+     règle sans couche bat toute règle en couche, si bien que cette garde
+     s'applique AUSSI au parti pris de `index-sport-sante-bien-etre`
+     (`translateY(-4px)`, en `@layer components`), qui sinon lui échapperait.
+     C'est le seul endroit du fichier où l'absence de couche est le mécanisme. */
+  .access-card,
+  .access-card:hover {
+    transform: none;
+    transition: none;
   }
 }
 
