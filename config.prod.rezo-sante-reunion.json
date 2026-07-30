@@ -974,6 +974,104 @@
       },
       "sections": [
         {
+          "type": "hero-carousel",
+          "id": "thematiques-carrousel",
+          "props": {
+            "badge": {
+              "fr": "Santé globale · La Réunion",
+              "en": "Global health · Reunion Island"
+            },
+            "slides": [
+              {
+                "headline": {
+                  "fr": "Nutrition",
+                  "en": "Nutrition"
+                },
+                "subhead": {
+                  "fr": "Jardins créoles, cuisine du quotidien, éducation au goût : celles et ceux qui rendent le bien-manger accessible, ici.",
+                  "en": "Creole gardens, everyday cooking, learning to taste: the people who make eating well reachable, here."
+                },
+                "backgroundImage": "/images/rezoSanteReunion/hero-nutrition-CcF3S5tU.jpg",
+                "backgroundImageAlt": {
+                  "fr": "Repas partagé autour de légumes frais",
+                  "en": "Shared meal around fresh vegetables"
+                },
+                "ctaLabel": {
+                  "fr": "Voir les acteurs",
+                  "en": "See the actors"
+                },
+                "ctaPath": "/theme/nutrition"
+              },
+              {
+                "headline": {
+                  "fr": "Activité physique",
+                  "en": "Physical activity"
+                },
+                "subhead": {
+                  "fr": "Marche, sport adapté, activité à l'école ou au travail : les acteurs qui remettent le mouvement dans la journée.",
+                  "en": "Walking, adapted sport, activity at school or at work: the people putting movement back into the day."
+                },
+                "backgroundImage": "/images/rezoSanteReunion/hero-activity-DW3pZEUC.jpg",
+                "backgroundImageAlt": {
+                  "fr": "Séance d'activité physique en plein air",
+                  "en": "Outdoor physical activity session"
+                },
+                "ctaLabel": {
+                  "fr": "Voir les acteurs",
+                  "en": "See the actors"
+                },
+                "ctaPath": "/theme/activite-physique"
+              },
+              {
+                "headline": {
+                  "fr": "Sommeil",
+                  "en": "Sleep"
+                },
+                "subhead": {
+                  "fr": "Rythmes, écrans, travail de nuit : celles et ceux qui prennent le sommeil au sérieux.",
+                  "en": "Rhythms, screens, night shifts: the people who take sleep seriously."
+                },
+                "backgroundImage": "/images/rezoSanteReunion/hero-sleep-kkgPAt-1.jpg",
+                "backgroundImageAlt": {
+                  "fr": "Chambre apaisée en lumière douce",
+                  "en": "Calm bedroom in soft light"
+                },
+                "ctaLabel": {
+                  "fr": "Voir les acteurs",
+                  "en": "See the actors"
+                },
+                "ctaPath": "/theme/sommeil"
+              },
+              {
+                "headline": {
+                  "fr": "Bien-être mental",
+                  "en": "Mental wellbeing"
+                },
+                "subhead": {
+                  "fr": "Écoute, entraide, lutte contre l'isolement : le réseau de celles et ceux qui prennent soin du moral.",
+                  "en": "Listening, mutual aid, fighting isolation: the network of people who look after morale."
+                },
+                "backgroundImage": "/images/rezoSanteReunion/hero-mental-DOOm2yVg.jpg",
+                "backgroundImageAlt": {
+                  "fr": "Cercle de méditation en extérieur, lumière dorée",
+                  "en": "Outdoor meditation circle in golden light"
+                },
+                "ctaLabel": {
+                  "fr": "Voir les acteurs",
+                  "en": "See the actors"
+                },
+                "ctaPath": "/theme/bien-etre-mental"
+              }
+            ],
+            "autoplay": false,
+            "ariaLabel": {
+              "fr": "Les thématiques du réseau",
+              "en": "Network topics"
+            },
+            "showScrollIndicator": true
+          }
+        },
+        {
           "type": "title",
           "id": "thematiques-titre",
           "props": {
