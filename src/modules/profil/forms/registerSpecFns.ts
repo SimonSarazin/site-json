@@ -8,3 +8,4 @@
 import "./costum/sharedRegistrations"; // clés GÉNÉRIQUES garanties (codecs/coercions/geo/validators/fns partagés) AVANT les costums
 import "./costum/equipements-sportifs/fns";
 import "./costum/tiers-lieux/fns";
+import "./costum/structure-ekilibre/fns";
