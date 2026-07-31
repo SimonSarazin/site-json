@@ -32,7 +32,10 @@
       "urlInvalid": "{{label}} doit être une URL valide",
       "simpleTableRequired": "{{label}} est requis (au moins une ligne de données)",
       "multiCheckboxPlusCplxRequired": "Tous les champs complémentaires doivent être remplis",
-      "noteRange": "La note doit être comprise entre 0 et 5"
+      "noteRange": "La note doit être comprise entre 0 et 5",
+      "timeSlotIncomplete": "Chaque créneau doit avoir un jour, une heure de début et une heure de fin",
+      "timeSlotOrder": "L'heure de fin doit être après l'heure de début",
+      "dynamicFieldsIncomplete": "Chaque ligne doit être complète et valide"
     },
     "fields": {
       "selectPlaceholder": "Sélectionner",
@@ -450,6 +453,27 @@
         "notAuthorized": "Vous n'êtes ni admin ni membre de ce lieu.",
         "pendingValidation": "Demande en attente — patientez la validation par un admin."
       }
+    },
+    "timeSlots": {
+      "day": "Jour",
+      "dayPlaceholder": "Choisir un jour",
+      "startTime": "Début",
+      "endTime": "Fin",
+      "addSlot": "Ajouter un créneau",
+      "removeSlot": "Supprimer ce créneau",
+      "days": {
+        "monday": "Lundi",
+        "tuesday": "Mardi",
+        "wednesday": "Mercredi",
+        "thursday": "Jeudi",
+        "friday": "Vendredi",
+        "saturday": "Samedi",
+        "sunday": "Dimanche"
+      }
+    },
+    "dynamicFields": {
+      "addRow": "Ajouter une ligne",
+      "removeRow": "Supprimer"
     }
   }
 }

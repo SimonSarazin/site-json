@@ -16,6 +16,8 @@ import { MultiEvalChartDialog } from "./MultiEvalChartDialog";
 import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { UploaderField } from "./UploaderField";
+import { TimeSlotsField } from "./TimeSlotsField";
+import { DynamicFieldsField } from "./DynamicFieldsField";
 import { CoFormBanner } from "./CoFormBanner";
 import { DraftRecoveryBanner } from "./DraftRecoveryBanner";
 import { ErrorSummary } from "./ErrorSummary";
@@ -570,6 +572,40 @@ export function DynamicCoForm({
                           formId={formData.id}
                           answerId={answerId}
                           subKey={`${subForm.subFormId}.${field.name}`}
+                        />
+                      )}
+                    />
+                  );
+
+                case "timeSlots":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={control}
+                      render={({ field: controllerField }) => (
+                        <TimeSlotsField
+                          field={field}
+                          errors={errors}
+                          value={controllerField.value}
+                          onChange={controllerField.onChange}
+                        />
+                      )}
+                    />
+                  );
+
+                case "dynamicFields":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={control}
+                      render={({ field: controllerField }) => (
+                        <DynamicFieldsField
+                          field={field}
+                          errors={errors}
+                          value={controllerField.value}
+                          onChange={controllerField.onChange}
                         />
                       )}
                     />
