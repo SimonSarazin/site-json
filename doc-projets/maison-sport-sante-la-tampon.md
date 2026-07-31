@@ -15,9 +15,18 @@
 > 06/07) · [`ENDPOINT.md`](../../ENDPOINT.md) (fiches d'endpoints SDK à créer). Mémoire :
 > `[[project-maison-sport-sante-la-tampon]]`.
 
-Dernière mise à jour : **2026-07-31** (création ; collecte git/config/gates ; revue « bonnes
-pratiques » + correctifs §9.2 bis ; inputs coform §9.2 ter ; **lots commités** : `20fc3529` +
-`2bf81496` + doc — restent push + MR).
+Dernière mise à jour : **2026-07-31** (session 2 : **auto-inscription structure**, en cours,
+**non commitée** — costumForm `structure-ekilibre` via le moteur `formEngine` ; gates repassés,
+régression `node_modules` détectée §9.4/§12 ; détails de configuration locale (`.env`) retirés du
+document à la demande de l'utilisateur).
+
+<details><summary>Historique des sessions précédentes (31/07, session 1)</summary>
+
+création ; collecte git/config/gates ; revue « bonnes pratiques » + correctifs §9.2 bis ; inputs
+coform §9.2 ter ; **lots commités** : `20fc3529` + `2bf81496` + doc `86a6f023` — **poussés sur
+`origin/ekilibre`** (vérifié : `ekilibre` = `origin/ekilibre`, 0 commit d'écart).
+
+</details>
 
 ---
 
@@ -36,9 +45,9 @@ structures = organizations SSBE), restreintes aux codes postaux **97430 / 97418*
 | **Costum / scope de données** | `sportSanteBienetre` — `source.key` des structures ; préfixe des clés de champs answers |
 | **CoForm « créneau »** | **`6928096adf5caf0d230e7f26`** — formKey `sportSanteBienetre2172025_854_0` ; **1 créneau = 1 answer** |
 | **Orga porteuse** | slug `associationEkilibre`, `_id 692817af564b0621d52ebbc6`, type `organizations` (résolu au boot via `GET_ELEMENTS_KEY`) |
-| **Backend (dev)** | `http://communecter74-dev` (`.env` : `VITE_SLUG=associationEkilibre`) ; backend de prod **à définir** |
-| **SDK** | `@communecter/cocolight-api-client` — lecture seule. Requis **`^1.0.169`** (merge du 30/07), installé **1.0.152** → `npm install` requis (§10.3) |
-| **Branche site-json** | **`ekilibre`** (suit `origin/ekilibre`) ; merge `main` → `ekilibre` le 30/07 (`6f4e83bf`). **Lots créneaux + inputs coform commités le 31/07** (`20fc3529`, `2bf81496`) — à pousser/MR |
+| **Backend (dev)** | environnement de dev local (configuration hors de ce document) ; backend de prod **à définir** |
+| **SDK** | `@communecter/cocolight-api-client` — lecture seule. Requis **`^1.0.169`** (merge du 30/07) ; installé **1.0.158** au 31/07 (session 2) → **`npm install` de nouveau requis** (régression, §9.4) |
+| **Branche site-json** | **`ekilibre`** (suit `origin/ekilibre`, **0 commit d'écart** — les 3 commits de la session 1 sont poussés). **Working tree modifié (non commité)** au 31/07 (session 2) : costumForm `structure-ekilibre` (§9.5) |
 | **Intervenants (git)** | Francki (init 02/07) · Nicolas (config 20/07 et 28/07) · Peterson (lot créneaux 06/07) ; chef de projet **à confirmer** |
 
 ### Historique des chantiers
@@ -62,6 +71,14 @@ structures = organizations SSBE), restreintes aux codes postaux **97430 / 97418*
   modules `blog`/`admin`, migration carte **Leaflet → MapLibre**, SDK requis `^1.0.169`, nouveaux
   scripts (`config:init/probe/render/fix`, `verify:build`, `admin:scaffold`), capacités search
   `itemRules`/`itemAction`/`colorBy`. ⚠️ **`npm install` non relancé** depuis (§10.3).
+- **31/07 (session 2, en cours, non commité) — auto-inscription structure** : bouton public
+  « Ajouter ma structure » sur `/structure` (`buttons` du `searchHeader`, contrat générique
+  `ActionButtonSchema` + `<ActionButtonGroup>`/`DynamicModalButton`, **modules/profil** — zéro
+  code nouveau pour le bouton) ouvrant le **premier costumForm du site** :
+  `costumForms["structure-ekilibre"]` (moteur **formEngine**, cf. [doc/28](../doc/28-module-formengine.md)),
+  wizard 5 étapes (structure · contact · légal · représentant · responsable). Seule clé de code
+  ajoutée : `src/modules/profil/forms/costum/structure-ekilibre/fns.ts` (transform pur
+  `thematic` → `tags`, cf. §9.5). Détail au §9.5.
 
 ---
 
@@ -75,7 +92,8 @@ structures = organizations SSBE), restreintes aux codes postaux **97430 / 97418*
 3. **La gestion des créneaux par les admins** : créer et modifier un créneau (= une answer du CoForm
    `6928096adf5caf0d230e7f26`) **sans quitter le site** (CoFormModal) — commité le 31/07.
 4. **L'annuaire des structures référentes** (`/structure`) : organizations SSBE du territoire,
-   filtres CP + domaine d'intervention.
+   filtres CP + domaine d'intervention. **+ auto-inscription** : toute structure peut se référencer
+   elle-même via un formulaire public (costumForm `structure-ekilibre`, en cours §9.5).
 5. **Le flux d'actualités** de l'association (home, lecture seule) + **auth** (espace pro → `/login`).
 6. **Un formulaire de contact** opérationnel (aujourd'hui cassé — endpoint inexistant, §12).
 
@@ -84,7 +102,7 @@ structures = organizations SSBE), restreintes aux codes postaux **97430 / 97418*
 ## 3. Architecture générale
 
 ```
-            Communecter (communecter74-dev) / costum sportSanteBienetre
+            Communecter (backend dev) / costum sportSanteBienetre
      answers du CoForm 6928096adf5caf0d230e7f26 (créneaux) · organizations (structures) · news
                   ▲ GLOBAL_AUTOCOMPLETE_COSTUM · GET_NEWS · SAVE_COFORM_ANSWER
                   │
@@ -94,16 +112,19 @@ structures = organizations SSBE), restreintes aux codes postaux **97430 / 97418*
    │     baseParams.defaultFilters = { form, CP $in, state:"Validé" }     │
    │     addButton.coform → CoFormModal (création)  [lot 06/07]           │
    │     preview.editButton → CoFormModal (édition) [lot 06/07]           │
-   │   /structure : searchProStatic organizations (source.key SSBE + CP)  │
+   │   /structure : searchProStatic organizations (source.key $in SSBE+  │
+   │     Ekilibre + CP) + bouton "Ajouter ma structure" → costumForm      │
+   │     structure-ekilibre [session 2, non commité]                     │
    │   / : news (entitySlug associationEkilibre)                          │
    └──────────────────────────────────────────────────────────────────────┘
-          dev : VITE_SLUG=associationEkilibre (.env) → :5173
+          dev : variables d'environnement locales (.env, non détaillées ici) → :5173
 ```
 
 **Deux voies de filtrage** (toutes config-driven, cf. [doc/07](../doc/07-module-search.md)) :
 - **figée** : `baseParams.defaultFilters` — sur `/creneaux` : `form`, `postalCode.$in
   [97430,97418]` (champ adresse de l'answer) et `state:"Validé"` ; sur `/structure` :
-  `source.key:"sportSanteBienetre"` + `postalCode.$in`.
+  `source.key.$in ["sportSanteBienetre", "associationEkilibre"]` (élargi le 31/07, §9.5) +
+  `postalCode.$in`.
 - **interactive** : `dropdownFilters[].field` (dot-path `answers.<formKey>.<fieldKey>`) →
   `searchByFieldsToQuery` → `{ field: { $in: [...] } }` fusionné dans `defaultFilters`.
 
@@ -151,8 +172,13 @@ config et des échanges (à faire valider). Budget/phasage : **à confirmer**.
   `answers.sportSanteBienetre2172025_854_0.<fieldKey>` ; le site n'affiche que
   `state="Validé"` **et** CP ∈ {97430, 97418} → un créneau saisi sans état validé ou hors zone est
   **invisible, sans erreur**.
-- **Structures** = organizations `source.key="sportSanteBienetre"` + CP ∈ {97430, 97418} ;
-  domaine d'intervention = valeurs libres de `tags` (11 options littérales dans la config).
+- **Structures** = organizations `source.key ∈ {"sportSanteBienetre", "associationEkilibre"}` + CP
+  ∈ {97430, 97418} ; domaine d'intervention = valeurs libres de `tags` (**11 options** littérales
+  dans la config, vérifiées le 31/07 contre `structure-ekilibre.fields.thematic` — cf. §9.5). Le
+  second `source.key` (`associationEkilibre`, entité porteuse d'Ekilib.re) a été **ajouté le 31/07**
+  (session 2) : une structure auto-inscrite via le formulaire (`scope.slugFrom: carrier`) porte ce
+  `source.key`, pas `sportSanteBienetre` — sans cet élargissement elle serait invisible sur la page
+  même qui l'a créée.
 - **Volumétrie** : nombre de créneaux/structures en base **à confirmer** (le SSR du 31/07 rend les
   pages 200 mais les listes en skeleton — prefetch non observé, cf. §10.3).
 
@@ -171,9 +197,10 @@ config et des échanges (à faire valider). Budget/phasage : **à confirmer**.
 | **Lot créneaux (06/07, commité le 31/07 — `2bf81496`)** | `src/modules/search/schema.ts` (`addButton.coform`, `preview.editButton`) · `SearchProStatic.tsx` (bouton + CoFormModal lazy + invalidation) · `components/preview/PreviewCoformAnswer.tsx` (bouton Modifier + re-fetch) · `components/Preview.tsx` (pass-through `preview`) · `lib/coformAnswer.ts` (`getAnswerRef`) + `lib/coformAnswer.test.ts` (nouveau) · `constants/queryKeys.ts` (préfixes partagés) · `i18n/fr.json`/`en.json` (`coformAnswer.edit`) · `modules/coform/components/CoFormModal.tsx` (export default) · `modules/coform/index.ts` (barrel `useCoFormAnswerQuery`) |
 | **Droits d'édition (31/07)** | `lib/coformAnswer.ts` (`canEditCoformAnswer`, `getAnswerStructureId`) + `lib/coformAnswer.test.ts` · réutilise `modules/admin/lib/adminEntry.ts` (`resolveAdminAccessLevel`, non modifié) |
 | **Rendu créneau (lecture)** | `components/card/CardAnswer.tsx` (intact — le remap de slug vit dans `parseCoformAnswer`) · `lib/coformAnswer.ts` (`DEFAULT_COFORM_FIELDS`, `parseCoformAnswer`) |
+| **Auto-inscription structure (31/07, session 2, non commité)** | `config.prod.maison-sport-sante-la-tampon.json` (`costumForms["structure-ekilibre"]`, `buttons` du `searchHeader` `/structure`, `defaultFilters.source.key.$in`) · `src/modules/profil/forms/costum/structure-ekilibre/fns.ts` (**seul fichier de code**, transform `structure:tagsFromThematic`) · `src/modules/profil/forms/registerSpecFns.ts` (barrel, +1 ligne) · `src/modules/profil/forms/costum/__fixtures__/configCostum.ts` (fixture test, +1 ligne) · `src/modules/profil/forms/structure-ekilibre.configDriven.test.ts` (nouveau, 37 tests) — moteur réutilisé tel quel : `formEngine` (doc/28), `ActionButtonSchema`/`<ActionButtonGroup>`/`DynamicModalButton` (modules/profil, préexistants) |
 | **Assets** | `public/images/maisonSportSanteLaTampon/` (hero, hero2/3, logo, logo-mss, pictogramme) |
 | **Docs workspace** | [`../../FONCTIONNALITES-EKILIBRE.md`](../../FONCTIONNALITES-EKILIBRE.md) · [`../../ENDPOINT.md`](../../ENDPOINT.md) |
-| **Déploiement** | `server/prod-server.js` · `.env` (`VITE_SLUG=associationEkilibre`, `VITE_BASE_URL_BACKEND`, `PORT`) — prod à définir |
+| **Déploiement** | `server/prod-server.js` · variables d'environnement (`.env` local, non détaillées ici) — prod à définir |
 
 ---
 
@@ -189,6 +216,9 @@ config et des échanges (à faire valider). Budget/phasage : **à confirmer**.
 | **Re-fetch frais avant édition** (`useCoFormAnswerQuery`) | le save coform renvoie le payload **complet** ; pré-remplir depuis l'item de recherche (potentiellement tronqué) effacerait des champs |
 | **Modération par champ `state="Validé"`** (filtre figé, 20/07) | pas de gate backend `toBeValidated` sur ce flux ; le champ état du form fait office de modération — simple mais **dépend de la saisie** (§12) |
 | **Filtre CP figé dans `defaultFilters`** | périmètre territorial garanti côté requête (pas seulement à l'affichage) |
+| **Auto-inscription = costumForm `formEngine` + `buttons` génériques** (aucun composant nouveau) | le contrat `ActionButtonSchema`/`<ActionButtonGroup>`/`DynamicModalButton` (modules/profil) et le moteur `formEngine` (doc/28) existaient déjà (merge du 30/07) ; Ekilibre n'ajoute que de la **config** + 1 transform pur (`thematic`→`tags`) |
+| **`requiresAdmin: false` sur le bouton « Ajouter ma structure »** | auto-inscription ouverte à tout visiteur (non connecté → redirigé login par `DynamicModalButton`) — la structure créée reste rattachée à son auteur (`role: admin` injecté au create) |
+| **`source.key` élargi en `$in` plutôt que remplacé** | ne pas faire disparaître les structures SSBE existantes ; les deux sources (costum régional + auto-inscription locale) coexistent sur `/structure` |
 
 ---
 
@@ -196,18 +226,17 @@ config et des échanges (à faire valider). Budget/phasage : **à confirmer**.
 
 1. **Config** : `config.prod.maison-sport-sante-la-tampon.json` + entrée `sites.json`
    (`associationEkilibre` → config + CSS SSBE). ✅
-2. **Dev** : `.env` avec `VITE_SLUG=associationEkilibre`, `VITE_BASE_URL_BACKEND=http://communecter74-dev`
-   (**sans guillemets** — une valeur quotée fait échouer le préflight `environment`), puis
-   `nvm use` + `npm run dev` → :5173. ⚠️ Prérequis poste : `fs.inotify.max_user_watches=524288`
-   (réglé le 06/07 sur le poste de Peterson).
+2. **Dev** : configurer les variables d'environnement locales (`.env`, non détaillées dans ce
+   document), puis `nvm use` + `npm run dev` → :5173. ⚠️ Prérequis poste :
+   `fs.inotify.max_user_watches=524288` (réglé le 06/07 sur le poste de Peterson).
 3. **Après le merge du 30/07** : `npm install` (MapLibre + SDK 1.0.169), puis re-passer les gates. ❌
 4. **Validation** (gates) : `npm run config:validate -- config.prod.maison-sport-sante-la-tampon.json`
    · `npm run audit:config -- --file …` · `npm run typecheck` · `npm run lint` · `npm run test:unit`
    · `npm run build` (+ `npm run verify:build` depuis le merge).
 5. **Commit / MR du lot créneaux** (working tree → branche → MR vers `main`). ❌
 6. **Déploiement** : backend de prod + DNS **à définir** ; build mono-slug
-   (`VITE_SLUG=associationEkilibre`, `SITE_CONFIG_PATH=./config.prod.maison-sport-sante-la-tampon.json`,
-   `SITE_PUBLIC_URL=<domaine>`). ❌
+   (`SITE_CONFIG_PATH=./config.prod.maison-sport-sante-la-tampon.json`, `SITE_PUBLIC_URL=<domaine>`,
+   + variables d'environnement non détaillées ici). ❌
 
 ---
 
@@ -234,8 +263,7 @@ helper pur `getAnswerRef` + **9 tests** ; fix pass-through `preview` dans `Previ
 **Gates au 06/07** (avant le merge du 30/07) : lint 0 erreur sur le lot · unit 1537 ✅ (dont les 9
 nouveaux) · `config:validate` ✅ · parité i18n ✅ · typecheck : uniquement les 2 erreurs
 pré-existantes SDK (`deleteFiles`, `inviteByEmail`) · intégration SSR : échecs **identiques sur
-arbre propre** (cause : le `.env` fait servir la config Ekilibre au serveur de test qui attend la
-démo — environnemental, prouvé par stash).
+arbre propre** (cause : configuration locale du serveur de test — environnemental, prouvé par stash).
 
 **Reste sur ce lot** : commit + MR ; recette navigateur connecté en admin (créer/modifier un vrai
 créneau) ; la **suppression de fichiers uploadés à l'édition** dépend de `Answer.deleteFiles`
@@ -310,19 +338,67 @@ comportement du lot créneaux (aucun conflit git constaté — les fichiers du l
 
 ### 9.4 Gates — mesurés le 31/07
 
-> ⚠️ Le tableau ci-dessous date d'**avant** le `npm install` post-merge. Celui-ci a été fait depuis
-> (SDK **1.0.169** + MapLibre installés) : `typecheck` est passé de **23 erreurs à 1** (variable
-> inutilisée dans `HeaderTransparentScroll`, hors lot) et **`Answer.deleteFiles` existe désormais**
-> dans le SDK (cf. §11, B.3). Les lignes carte/e2e/build restent à revalider.
+> ⚠️ **Revalidé le 31/07 en session 2** (poste courant) : la ligne « `npm install` fait le 31/07 »
+> ci-dessous **ne tient plus** — `node_modules` est de nouveau désynchronisé sur ce poste (SDK
+> **1.0.158** installé, ≠ `^1.0.169` requis ; **`maplibre-gl`, `react-map-gl`, `@maptiler/sdk`,
+> `supercluster` absents** de `node_modules` bien que présents dans `package.json`). Ce n'est **pas
+> une régression du code** — probablement un `node_modules` non réinstallé sur ce poste/session
+> depuis le dernier `npm install` documenté. **Voir tableau à jour ci-dessous** (remplace l'ancien).
 
-| Gate | Résultat |
+| Gate | Résultat (31/07, session 2) |
 |---|---|
 | `config:validate` | ✅ **11 pages, 44 sections** |
 | `audit:config` (fichier ciblé) | ✅ **RAS** (0 constat : trad/liens/assets/strip/prereq/theme) |
-| `typecheck` | ❌ **23 erreurs — toutes causées par `node_modules` désynchronisé** : deps MapLibre absentes (`maplibre-gl`, `react-map-gl`, `supercluster`, `@maptiler/sdk`) + SDK 1.0.152 vs `^1.0.169` (`deleteFiles`, `inviteByEmail`, `toCsv`, `previewImport`, `MeLike`). **0 causée par le lot créneaux** |
-| `lint` (périmètre lot) | ✅ 0 erreur (1 warning pré-existant `usePageFiltersUrlSync`) |
+| `typecheck` | ❌ **10 erreurs** — 9 causées par `node_modules` désynchronisé (modules MapLibre introuvables + `any` implicites dans `SearchMap.tsx`/`SearchMapMarkers.tsx`) + **1 pré-existante hors lot** (`HeaderTransparentScroll`, variable inutilisée). **0 causée par le lot auto-inscription** (§9.5) |
+| `lint` (projet entier) | ❌ **1 erreur** (`react-hooks/preserve-manual-memoization` dans un composant `formEngine` préexistant, hors lot Ekilibre) + 32 warnings pré-existants · **0 erreur** sur les 4 fichiers du lot §9.5 |
+| `test:unit` (suite complète) | 🟡 **2142 passés / 5 échecs / 6 skip** (166 fichiers) — tous les échecs sont **pré-existants et environnementaux**, aucun sur le périmètre Ekilibre : `environment.test.ts` (configuration locale de l'environnement — **corrigé depuis**, revérifié ✅ 9/9), `section-meta.test.ts` (`CLAUDE.md` introuvable à la racine de `site-json` — le fichier vit à la racine du workspace), `site-assets.test.ts`, `skill-integrity.test.ts` (pré-existants), `useEntityMutation.test.ts` (timeout 5s — contention du poste pendant l'exécution parallèle des gates, non reproduit en isolation : le fichier de test dédié au lot §9.5 passe **37/37** en ~9s) |
 | Serveur dev | ✅ boote malgré les deps manquantes ; `/`, `/creneaux`, `/structure` → **200** ; listes en skeleton au SSR (prefetch non observé — à revoir après `npm install`) |
-| `test:unit` / `build` / e2e | non relancés depuis le merge — **à passer après `npm install`** ; aucun spec e2e Ekilibre n'existe |
+| `build` / e2e | non relancés en session 2 — **à passer après `npm install`** ; aucun spec e2e Ekilibre n'existe |
+
+### 9.5 Auto-inscription structure — costumForm `structure-ekilibre` (31/07, session 2, **non commité**)
+
+**Working tree modifié**, aucun commit : `config.prod.maison-sport-sante-la-tampon.json` (M),
+`structure-ekilibre/fns.ts` (nouveau), `registerSpecFns.ts` + `configCostum.ts` (fixture test, M),
+`structure-ekilibre.configDriven.test.ts` (nouveau).
+
+**Fonctionnel** : bouton « Ajouter ma structure » (icône `plus`, variant `outline`, public —
+`requiresAdmin:false`) à côté du champ de recherche sur `/structure`, ouvre un wizard 5 étapes
+(`structure` → `contact` → `legal` → `representant` → `responsable`) : identité (SIREN/SIRET, nom,
+sigle, affiliation réseau, **domaines d'intervention** `thematic` en cases à cocher, logo), adresse
+(`widget: location`), coordonnées + réseaux sociaux, forme juridique (+ champs conditionnels
+`visibleIf` selon collectivité/entreprise — statuts, documents), représentant légal, personne en
+charge du dossier (recopie du représentant si `responsableSameAsRepresent = "Oui"`).
+
+**Code strictement minimal** (conforme à la règle « dériver, ne pas réciter ») : tout le formulaire
+vit en **données** dans `costumForms["structure-ekilibre"]` (moteur `formEngine`, doc/28 — 3 couches
+déjà génériques : scope/carrier, defaults, payload, codecs `address:*`/`social:*`/`geo:*`). **Une
+seule clé de code irréductible** : `fns.ts` → `registerTransform("structure:tagsFromThematic")`,
+qui projette `thematic` (libellés longs saisis) vers `tags` (libellés courts, déjà indexés côté
+backend et interrogés par le filtre « Domaine d'intervention » de `/structure`) — un transform de
+champ ne reçoit pas de `params`, la table de correspondance ne peut donc pas vivre dans le JSON.
+**Vérifié** : les 11 valeurs du filtre `domaine-structure` (config, ligne 1826) et les clés/valeurs
+de `THEMATIC_TO_TAG` sont alignées au caractère près (accents et graphie legacy inclus —
+`"Periscolaire 1er degré"` sans accent, `"2eme"` en toutes lettres, cf. commentaire du fichier).
+
+**Pattern costum stamp** (§25 bonnes-pratiques) : `mutation.inject.extraFields = {type:"NGO",
+role:"admin"}` posé **au create seulement** (`payloadEmitEmptyOnEdit: true` évite qu'une édition
+réémette/écrase ces champs) ; `dropEmptyEmail:true` supprime la clé si vide plutôt que d'envoyer
+une chaîne vide. Invalidation post-save générique (`invalidate:standard`, `searchKeys:
+["searchCostumStatic"]`) → la liste `/structure` se rafraîchit sans reload.
+
+**Gates mesurés le 31/07 (session 2, sur ce lot)** :
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` | ✅ 11 pages, 44 sections (inchangé — `costumForms` n'ajoute pas de page) |
+| `audit:config` | ✅ RAS (0 constat) |
+| `lint` (4 fichiers du lot) | ✅ 0 erreur |
+| `test:unit` (fichier dédié) | ✅ **37/37** — compilation config→descripteur, round-trip payload, oracle réel « NOUT' SPORT ADAPTÉ », pattern costum-stamp, parité `visibleIf` avec l'ancien formulaire jQuery |
+
+**Reste** : commit (aucun commit fait à ce stade — le lot est **entièrement dans le working
+tree**) ; recette navigateur (wizard complet, upload logo, soumission réelle) ; confirmer le
+libellé/l'ordre des étapes avec la MSS ; vérifier qu'aucun autre site ne consomme
+`ActionButtonSchema.buttons` avec un `modal` qui collisionnerait avec l'id `add-structure-ekilibre`.
 
 ---
 
@@ -339,6 +415,7 @@ comportement du lot créneaux (aucun conflit git constaté — les fichiers du l
 | A.5 | Auth / Espace Pro | ✅ | CTA header → `/espace-pro` → `/login` (module auth) |
 | A.6 | Chiffres clés de la home | 🟡 | **codés en dur** (24 créneaux, 8 activités…) — se désynchroniseront du réel |
 | A.7 | Formulaire de contact | ❌ | poste sur `/api/contact` **qui n'existe pas** (ni Express ni SDK) — fiche `CONTACT_SEND_URL` dans [`ENDPOINT.md`](../../ENDPOINT.md) |
+| A.8 | Auto-inscription structure (`/structure`, bouton public + wizard) | 🟡 | **fait, non commité** (session 2, 31/07) — costumForm `structure-ekilibre` (§9.5) ; 37 tests config-driven ✅ ; recette navigateur (upload logo, soumission réelle) à faire |
 
 ### Lot B — Gestion des créneaux (admins)
 
@@ -355,7 +432,7 @@ comportement du lot créneaux (aucun conflit git constaté — les fichiers du l
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| C.1 | `npm install` post-merge + gates verts | 🟡 | **fait le 31/07** (SDK 1.0.169 + MapLibre) → typecheck **1 erreur** résiduelle hors lot ; restent `build` et e2e à repasser |
+| C.1 | `npm install` post-merge + gates verts | 🟡 | fait une fois le 31/07 (session 1, SDK 1.0.169 + MapLibre) mais **`node_modules` de nouveau désynchronisé sur ce poste** en session 2 (SDK 1.0.158, MapLibre absent) → typecheck **10 erreurs** ; **à relancer `npm install`** avant tout build/e2e |
 | C.2 | Recette navigateur complète (dont carte MapLibre) | ❌ | jamais faite depuis le merge du 30/07 |
 | C.3 | Spec e2e Ekilibre | ❌ | aucun `e2e/*.spec.ts` pour ce site (modèle : `parent62.spec.ts`, lecture seule, ciblé) |
 | C.4 | Volumétrie réelle (créneaux/structures en base) | ❌ | à relever (navigateur ou base) — comptages SDK du 31/07 non concluants |
@@ -382,11 +459,21 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
 
 ## 12. Points d'attention / limitations
 
-- **Lots commités le 31/07 mais non poussés** : `ekilibre` est en avance de 3 commits sur
-  `origin/ekilibre` — pousser + ouvrir la MR vers `main` (précédent vécu : le pass-through
-  `preview` de `Preview.tsx` avait déjà été perdu une fois au merge du 30/07, §9.2 bis).
-- ~~**`node_modules` désynchronisé**~~ **résolu le 31/07** (`npm install` : SDK 1.0.169 + MapLibre) →
-  typecheck 23 → **1** erreur (hors lot). Restent la recette carte MapLibre, le `build` et l'e2e.
+- **Lot auto-inscription structure (§9.5) entièrement non commité** : working tree modifié
+  (`config.prod...json`, `registerSpecFns.ts`, `configCostum.ts`) + 2 fichiers nouveaux
+  (`fns.ts`, test). Rien n'est perdu tant que le working tree n'est pas touché, mais **aucune
+  sauvegarde git n'existe** de ce lot à ce stade — committer avant toute opération git destructive.
+- **`node_modules` désynchronisé — réapparu le 31/07 (session 2)**, malgré la résolution notée en
+  session 1 : SDK revenu à **1.0.158** (≠ `^1.0.169`), MapLibre (`maplibre-gl`, `react-map-gl`,
+  `@maptiler/sdk`, `supercluster`) absent. `npm install` avait bien été fait une fois (session 1),
+  mais l'état ne s'est pas maintenu sur ce poste/session → **relancer `npm install` avant de
+  considérer les gates verts** (typecheck retombé à 10 erreurs, cf. §9.4).
+- **Convention `.env` locale** : une valeur entre guillemets fait échouer le préflight
+  `environment` (piège déjà vécu le 06/07, corrigé depuis dans la configuration locale). Poste
+  dev : limite inotify relevée à 524 288 (06/07).
+- **Lots créneaux poussés** : `ekilibre` = `origin/ekilibre` (0 commit d'écart, vérifié 31/07
+  session 2) — les 3 commits de la session 1 (`20fc3529`, `2bf81496`, `86a6f023`) sont bien sur le
+  remote ; reste à ouvrir la **MR vers `main`**.
 - **Modération = champ `state`** : un créneau dont l'état n'est pas exactement `"Validé"` est
   invisible sur `/creneaux` — vérifier que le form pose bien ce champ (et qui a le droit de le
   changer). Idem **CP hors 97430/97418** ou answer sans adresse → invisible, sans erreur.
@@ -404,8 +491,6 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
   filtre pré-appliqué** (les dropdowns ne couvrent pas les pathologies).
 - **Le détail d'un créneau ne re-fetch pas** (parse l'item de la recherche) : si le backend tronque
   des champs dans `globalautocomplete`, le dialog est incomplet. L'**édition**, elle, re-fetch (lot 06/07).
-- **`.env`** : valeurs **sans guillemets** (une valeur quotée fait échouer le préflight
-  `environment` — vécu le 06/07). Poste dev : limite inotify relevée à 524 288 (06/07).
 - **Don HelloAsso** = lien externe (le endpoint serveur `/api/helloasso/checkout-intent` existe mais
   n'est pas branché pour ce site).
 - **CSS partagé avec SSBE** : un changement de thème SSBE impacte Ekilibre (et réciproquement).
@@ -416,8 +501,10 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
 
 | Évolution / question | Pour qui |
 |---|---|
-| **Committer le lot créneaux** (+ MR `ekilibre` → `main`) | Peterson |
-| **`npm install`** puis gates complets (typecheck/unit/build/`verify:build`) + recette carte MapLibre | Peterson |
+| **Ouvrir la MR `ekilibre` → `main`** (lot créneaux, déjà poussé) | Peterson |
+| **Committer le lot auto-inscription structure** (§9.5, actuellement en working tree uniquement) | à faire par la personne courante — à confirmer qui |
+| **`npm install`** (de nouveau requis, régression §9.4/§12) puis gates complets (typecheck/unit/build/`verify:build`) + recette carte MapLibre | Peterson |
+| **Recette du wizard auto-inscription** (upload logo, soumission réelle, libellés/ordre des étapes validés par la MSS) | Peterson / MSS |
 | **SDK 1.0.169 : contient-il `Answer.deleteFiles`** ? (sinon relancer la fiche `DELETE_COFORM_ANSWER_FILE`) | Peterson → Thomas |
 | **Formulaire de contact** : endpoint SDK (`CONTACT_SEND_URL`) ou route Express locale — trancher | Thomas / Peterson |
 | **Recette création/modification d'un créneau** en admin (navigateur, backend réel) | Peterson / MSS |
