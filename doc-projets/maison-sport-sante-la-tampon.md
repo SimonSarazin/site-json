@@ -15,7 +15,9 @@
 > 06/07) · [`ENDPOINT.md`](../../ENDPOINT.md) (fiches d'endpoints SDK à créer). Mémoire :
 > `[[project-maison-sport-sante-la-tampon]]`.
 
-Dernière mise à jour : **2026-07-31** (création du document ; collecte git/config/gates du 31/07).
+Dernière mise à jour : **2026-07-31** (création ; collecte git/config/gates ; revue « bonnes
+pratiques » + correctifs §9.2 bis ; inputs coform §9.2 ter ; **lots commités** : `20fc3529` +
+`2bf81496` + doc — restent push + MR).
 
 ---
 
@@ -36,7 +38,7 @@ structures = organizations SSBE), restreintes aux codes postaux **97430 / 97418*
 | **Orga porteuse** | slug `associationEkilibre`, `_id 692817af564b0621d52ebbc6`, type `organizations` (résolu au boot via `GET_ELEMENTS_KEY`) |
 | **Backend (dev)** | `http://communecter74-dev` (`.env` : `VITE_SLUG=associationEkilibre`) ; backend de prod **à définir** |
 | **SDK** | `@communecter/cocolight-api-client` — lecture seule. Requis **`^1.0.169`** (merge du 30/07), installé **1.0.152** → `npm install` requis (§10.3) |
-| **Branche site-json** | **`ekilibre`** (suit `origin/ekilibre`) ; merge `main` → `ekilibre` le 30/07 (`6f4e83bf`). **Lot créneaux en working tree, non commité** (§9.2) |
+| **Branche site-json** | **`ekilibre`** (suit `origin/ekilibre`) ; merge `main` → `ekilibre` le 30/07 (`6f4e83bf`). **Lots créneaux + inputs coform commités le 31/07** (`20fc3529`, `2bf81496`) — à pousser/MR |
 | **Intervenants (git)** | Francki (init 02/07) · Nicolas (config 20/07 et 28/07) · Peterson (lot créneaux 06/07) ; chef de projet **à confirmer** |
 
 ### Historique des chantiers
@@ -44,7 +46,7 @@ structures = organizations SSBE), restreintes aux codes postaux **97430 / 97418*
 - **02/07 — init** (`9ee0024a`, Francki) : `feat: init ekilib.re` — config 10 pages (accueil,
   `/creneaux`, s'informer, rejoindre/soutenir, partenaires, espace pro, contact, 3 pages légales),
   header `transparent-scroll`, footer `contact-partners`, thème teal/orange (oklch), fr/en.
-- **06/07 — analyse + lot « créneaux » (Peterson, non commité)** : analyse fonctionnelle complète
+- **06/07 — analyse + lot « créneaux » (Peterson ; commité le 31/07, `2bf81496`)** : analyse fonctionnelle complète
   ([`FONCTIONNALITES-EKILIBRE.md`](../../FONCTIONNALITES-EKILIBRE.md)) + inventaire endpoints ; puis
   implémentation **création/modification de créneau** : `addButton.coform` (bouton « Ajouter un
   créneau », admins) + `preview.editButton` (bouton « Modifier » sur le détail), `CoFormModal` lazy,
@@ -71,7 +73,7 @@ structures = organizations SSBE), restreintes aux codes postaux **97430 / 97418*
    bénéficiaires, type sport santé SSsO/SSpT, public), **vue carte**, détail en dialog — restreint
    aux créneaux **validés** des CP **97430/97418**.
 3. **La gestion des créneaux par les admins** : créer et modifier un créneau (= une answer du CoForm
-   `6928096adf5caf0d230e7f26`) **sans quitter le site** (CoFormModal) — lot du 06/07, à committer.
+   `6928096adf5caf0d230e7f26`) **sans quitter le site** (CoFormModal) — commité le 31/07.
 4. **L'annuaire des structures référentes** (`/structure`) : organizations SSBE du territoire,
    filtres CP + domaine d'intervention.
 5. **Le flux d'actualités** de l'association (home, lecture seule) + **auth** (espace pro → `/login`).
@@ -166,8 +168,9 @@ config et des échanges (à faire valider). Budget/phasage : **à confirmer**.
 | Domaine | Fichiers |
 |---|---|
 | **Config & CSS** | [`config.prod.maison-sport-sante-la-tampon.json`](../config.prod.maison-sport-sante-la-tampon.json) · `src/index-sport-sante-bien-etre.css` (partagé SSBE) · [`sites.json`](../sites.json) |
-| **Lot créneaux (06/07, non commité)** | `src/modules/search/schema.ts` (`addButton.coform`, `preview.editButton`) · `SearchProStatic.tsx` (bouton + CoFormModal lazy + invalidation) · `components/preview/PreviewCoformAnswer.tsx` (bouton Modifier + re-fetch) · `components/Preview.tsx` (pass-through `preview`) · `lib/coformAnswer.ts` (`getAnswerRef`) + `lib/coformAnswer.test.ts` (nouveau) · `constants/queryKeys.ts` (préfixes partagés) · `i18n/fr.json`/`en.json` (`coformAnswer.edit`) · `modules/coform/components/CoFormModal.tsx` (export default) · `modules/coform/index.ts` (barrel `useCoFormAnswerQuery`) |
-| **Rendu créneau (lecture)** | `components/card/CardAnswer.tsx` (⚠️ modif locale non commitée : slug `sportSanteBienetre` en dur) · `lib/coformAnswer.ts` (`DEFAULT_COFORM_FIELDS`, `parseCoformAnswer`) |
+| **Lot créneaux (06/07, commité le 31/07 — `2bf81496`)** | `src/modules/search/schema.ts` (`addButton.coform`, `preview.editButton`) · `SearchProStatic.tsx` (bouton + CoFormModal lazy + invalidation) · `components/preview/PreviewCoformAnswer.tsx` (bouton Modifier + re-fetch) · `components/Preview.tsx` (pass-through `preview`) · `lib/coformAnswer.ts` (`getAnswerRef`) + `lib/coformAnswer.test.ts` (nouveau) · `constants/queryKeys.ts` (préfixes partagés) · `i18n/fr.json`/`en.json` (`coformAnswer.edit`) · `modules/coform/components/CoFormModal.tsx` (export default) · `modules/coform/index.ts` (barrel `useCoFormAnswerQuery`) |
+| **Droits d'édition (31/07)** | `lib/coformAnswer.ts` (`canEditCoformAnswer`, `getAnswerStructureId`) + `lib/coformAnswer.test.ts` · réutilise `modules/admin/lib/adminEntry.ts` (`resolveAdminAccessLevel`, non modifié) |
+| **Rendu créneau (lecture)** | `components/card/CardAnswer.tsx` (intact — le remap de slug vit dans `parseCoformAnswer`) · `lib/coformAnswer.ts` (`DEFAULT_COFORM_FIELDS`, `parseCoformAnswer`) |
 | **Assets** | `public/images/maisonSportSanteLaTampon/` (hero, hero2/3, logo, logo-mss, pictogramme) |
 | **Docs workspace** | [`../../FONCTIONNALITES-EKILIBRE.md`](../../FONCTIONNALITES-EKILIBRE.md) · [`../../ENDPOINT.md`](../../ENDPOINT.md) |
 | **Déploiement** | `server/prod-server.js` · `.env` (`VITE_SLUG=associationEkilibre`, `VITE_BASE_URL_BACKEND`, `PORT`) — prod à définir |
@@ -216,7 +219,7 @@ config et des échanges (à faire valider). Budget/phasage : **à confirmer**.
 `/structure` + 2 dropdowns). Config à 11 pages / 44 sections, nav 5 entrées + CTA Espace Pro.
 Pages hors nav (liées depuis la home/footer) : `/rejoindre-soutenir`, `/espace-pro`, 3 légales.
 
-### 9.2 Lot « créneaux » (06/07, Peterson — **working tree, non commité**)
+### 9.2 Lot « créneaux » (06/07, Peterson — commité le 31/07, `2bf81496`)
 
 **Moteur** (opt-in, sans effet sans config) : `AddButtonConfigSchema.coform` (le bouton « Ajouter »
 existant — déjà gated `permissions.isAdmin` + login — ouvre un `CoFormModal` de création au lieu
@@ -238,6 +241,64 @@ démo — environnemental, prouvé par stash).
 créneau) ; la **suppression de fichiers uploadés à l'édition** dépend de `Answer.deleteFiles`
 (SDK ≥ 1.0.158, cf. §11).
 
+### 9.2 bis Revue « bonnes pratiques » du lot + correctifs (31/07, dans `2bf81496`)
+
+Revue du lot contre [`bonnes-pratiques-code.md`](../../bonnes-pratiques-code.md). Nécessité : 8 des
+11 fichiers justifiés tels quels, 2 discutables, 1 annulé. Corrections appliquées :
+
+| Constat | Correctif |
+|---|---|
+| **Fonctionnalité inerte** : `Preview.tsx` ne passait pas `preview` au variant `coform-answer` → `preview.editButton` (et `preview.fields`) toujours `undefined`, bouton « Modifier » jamais rendu. Le pass-through du 06/07 avait disparu au merge du 30/07 | pass-through rétabli. **Aucun effet sur SSBE** : son bloc est `{"type":"coform-answer"}` sans `fields` ni `editButton` |
+| **Perte de données possible** : sur erreur de fetch (ou answer vide), la modale s'ouvrait quand même avec `defaultValues` vide → le save (payload COMPLET) écrasait la réponse | garde `answerError`/`answerData` avant montage, alignée sur `CoFormAnswerPage` |
+| **Droits d'édition faux** : le gate reposait sur `permissions.isAdmin` du site, puis (1ʳᵉ correction) sur `answer.canEdit` du backend. Or `canEdit` est calculé sur la seule **propriété** de la réponse (`AnswerEditDeniedReason = not_logged_in \| not_owner \| form_inactive \| form_closed`) → **un super-admin ou un admin de costum est refusé** parce qu'il n'est pas l'auteur | règle métier explicite en helper pur `canEditCoformAnswer` : **super-admin plateforme** (`isSuperAdmin`/`isAdminPlatform`) **OU admin du costum** (entité porteuse, via `resolveAdminAccessLevel` du module admin — réutilisé, pas redupliqué) **OU admin validé de la structure organisatrice** (`me.links.memberOf[structureId].isAdmin`, hors pending/invitation). `canEdit` n'est plus un verrou. **8 tests** |
+| **§4** : `answerRef` recréé à chaque render → deps de `handleEdited` instables, `useCallback` inopérant | `useMemo(() => getAnswerRef(item), [item])` |
+| **Hors lot** : `CardAnswer.tsx` figeait le slug sur `sportSanteBienetre` (redondant — `parseCoformAnswer` fait déjà le remap) et cassait tout futur site en `card-answer`, plus 2 lignes commentées | **annulé** (`git checkout`) |
+| **Empreinte du lot** : la 1ʳᵉ passe de correctifs avait élargi la dédup des préfixes de queryKey à 4 fichiers hors périmètre (+ 1 helper + 1 test) — 18 fichiers au total | ramené à **11 fichiers (10 `M` + 1 test)**, soit **1 de moins qu'avant la revue**. La dédup hors périmètre est **annulée** et tracée en dette dans le JSDoc de `queryKeys.ts` ; le barrel `coform/index.ts` (export sans consommateur) est annulé lui aussi |
+
+Id de la structure porteuse : lu sur `serverData.structure._id`, **vérifié sur le payload SSR réel** de
+`/creneaux` (encodage `{_str}` ; le helper accepte aussi `$oid`/`$id`/string, les 3 autres encodages
+possibles selon le chemin de sérialisation).
+
+`CoFormModal|default` reste listé par knip : faux positif de classe connue (la baseline contient déjà
+`SmartCoForm|default`, les 6 `ProfileHeader…` — tous convertis pour `lazy()`).
+
+**Gates 31/07 après correctifs** (post-`npm install`, cf. §9.4) : `lint` ✅ 0 erreur ·
+`test:unit` search ✅ **318/318** (dont **17** sur `coformAnswer`) · `typecheck` ✅ **1 seule erreur,
+pré-existante et hors lot** (`HeaderTransparentScroll` : variable inutilisée) · `config:validate` ✅
+Ekilibre 11/44 **et** SSBE 19/61.
+
+### 9.2 ter Lot « inputs CoForm manquants » (31/07, commité — `20fc3529`)
+
+Le form créneau (`6928096adf5caf0d230e7f26`, **91 inputs** relus depuis le backend le 31/07) utilisait
+3 types **absents du moteur coform** de site-json — le formulaire d'édition affichait « type de champ
+inconnu » à leur place :
+
+| Type legacy | Occurrences dans le form | Portage |
+|---|---|---|
+| `date` (+ `time`, `datetime-local`) | 5 champs (naissance, validité ×2, validation…) | mappé sur `TextField` avec `inputType` natif — la valeur reste l'ISO stocké (`"1998-09-18"`, vérifié en base) |
+| `tpls.forms.cplx.timeSlots` | **1 champ = le cœur du créneau** (jour + plage horaire) | `TimeSlotsField` (répéteur) + logique pure `utils/timeSlots.ts` ; sauvegarde au format legacy vérifié `[{day:"Monday", startHour:"08", …}]` ; données 12h legacy (AmPm) lues et résolues en 24h |
+| `tpls.forms.cplx.dynamicFields` | 2 champs (lieu de pratique CP+adresse, partenaires) | `DynamicFieldsField` (répéteur de lignes piloté par `fieldsConfig` admin : text/select/textarea/date/…, min/maxRows, layout) ; format vérifié `[{postalCode:"97430", placeName:"…"}]` |
+
+Références : templates legacy `communecter-php74/modules/survey/views/tpls/forms/cplx/`
+(`timeSlots.php`, `dynamicFields.php` + leurs docs). Pipeline complet branché : mapping
+(`formParser`), configs `params` (coercion des nombres stockés en string par le PHP), schémas Zod
+(complétude + fin > début + required/min/maxLength des sous-champs), defaults, rendu édition
+(`DynamicCoForm`), rendu lecture (`CoFormReadOnly`), coercion anti-pollution `{}`↔`[]`, i18n fr/en.
+
+**Gates** : coform **323 tests** ✅ (dont 15 `timeSlots` purs, 10 composants, 6 zod) · lint 0 erreur ·
+typecheck 1 erreur pré-existante hors lot · parité i18n 46/46 ✅. **Reste** : recette navigateur
+connecté (création + édition d'un créneau réel de bout en bout).
+
+**Complément (31/07)** — bouton « Ajouter un créneau » rendu **public par config** : nouveau flag
+générique `addButton.adminOnly` (schéma search, défaut `true` = comportement historique réservé aux
+admins). Ekilibre pose `adminOnly: false` → le bouton s'affiche pour tous à côté du bouton Carte
+(un non-connecté qui clique passe par le login) ; la modération reste le filtre `state="Validé"` en
+aval. Seul site utilisateur d'`addButton` → aucun autre site impacté (vérifié sur les 12 configs).
+⚠️ Piège découvert (vérifié en SSR live) : `SearchProStatic` a DEUX headers exclusifs — le standard
+et le rendu `customHeader` ; `creneaux-list` étant en `customHeader: true`, le header standard (où
+vivait le bouton) ne se rend jamais. Le bouton est factorisé (`addButtonElement`) et rendu dans les
+deux, contre le bouton Carte.
+
 ### 9.3 Merge `main` → `ekilibre` (30/07, `6f4e83bf`)
 
 Rattrapage ~304 commits : modules `blog`/`admin`, **Leaflet → MapLibre** (la vue carte de
@@ -247,7 +308,12 @@ non configurées ici). **Régressions à revalider après `npm install`** : vue 
 (MapLibre + clé MapTiler ?), rendu des cartes `card-answer` dans le nouveau `SearchListView`,
 comportement du lot créneaux (aucun conflit git constaté — les fichiers du lot restent en `M`).
 
-### 9.4 Gates — mesurés le 31/07 (avant `npm install`)
+### 9.4 Gates — mesurés le 31/07
+
+> ⚠️ Le tableau ci-dessous date d'**avant** le `npm install` post-merge. Celui-ci a été fait depuis
+> (SDK **1.0.169** + MapLibre installés) : `typecheck` est passé de **23 erreurs à 1** (variable
+> inutilisée dans `HeaderTransparentScroll`, hors lot) et **`Answer.deleteFiles` existe désormais**
+> dans le SDK (cf. §11, B.3). Les lignes carte/e2e/build restent à revalider.
 
 | Gate | Résultat |
 |---|---|
@@ -278,17 +344,18 @@ comportement du lot créneaux (aucun conflit git constaté — les fichiers du l
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| B.1 | Bouton « Ajouter un créneau » (création, admins) | 🟡 | **code fait (06/07), non commité** ; CoFormModal + invalidation liste/carte ; recette navigateur connecté à faire |
-| B.2 | Bouton « Modifier » sur le détail (admins) | 🟡 | idem — re-fetch frais anti-perte de champs ; recette à faire |
-| B.3 | Suppression de fichiers à l'édition | ❌ SDK | `answer.deleteFiles` absent du SDK installé (1.0.152) — **vérifier si 1.0.169 l'apporte** après `npm install` ; sinon fiche `DELETE_COFORM_ANSWER_FILE` ([`ENDPOINT.md`](../../ENDPOINT.md)) |
+| B.1 | Bouton « Ajouter un créneau » (création) | 🟡 | **code fait, revu, commité (`2bf81496`)** ; **public depuis le 31/07** (`adminOnly: false`, à côté du bouton Carte) ; CoFormModal + invalidation liste **et** carte ; recette navigateur connecté à faire |
+| B.2 | Bouton « Modifier » sur le détail | 🟡 | droits = super-admin / admin costum / admin structure (`canEditCoformAnswer`, §9.2 bis) ; re-fetch frais anti-perte de champs ; recette à faire |
+| B.2b | Inputs CoForm `date` / `timeSlots` / `dynamicFields` | 🟡 | **portés le 31/07** (§9.2 ter) — le formulaire créneau est maintenant complet (91 inputs rendus) ; recette à faire |
+| B.3 | Suppression de fichiers à l'édition | ✅ SDK | **résolu** : le SDK **1.0.169** (installé le 31/07) expose `Answer.deleteFiles(docIds[])` — l'erreur typecheck `file.ts:167` a disparu. La fiche `DELETE_COFORM_ANSWER_FILE` ([`ENDPOINT.md`](../../ENDPOINT.md)) est **satisfaite** ; reste à recetter la suppression réelle |
 | B.4 | Suppression d'un créneau | ❌ | non câblé (SDK `Answer.delete()` existe ; hook front `useDeleteAnswer` à créer via `createCoFormMutation`) |
-| B.5 | Commit + MR du lot | ❌ | 11 fichiers `M` + 1 test nouveau en working tree sur `ekilibre` |
+| B.5 | Commit + MR du lot | 🟡 | **commité le 31/07** (`20fc3529` coform · `2bf81496` search+config · `e163b6d9` doc) ; reste **push + MR** vers `main` |
 
 ### Lot C — Industrialisation & mise en ligne
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| C.1 | `npm install` post-merge + gates verts | ❌ | 23 erreurs typecheck tant que MapLibre/SDK 1.0.169 ne sont pas installés |
+| C.1 | `npm install` post-merge + gates verts | 🟡 | **fait le 31/07** (SDK 1.0.169 + MapLibre) → typecheck **1 erreur** résiduelle hors lot ; restent `build` et e2e à repasser |
 | C.2 | Recette navigateur complète (dont carte MapLibre) | ❌ | jamais faite depuis le merge du 30/07 |
 | C.3 | Spec e2e Ekilibre | ❌ | aucun `e2e/*.spec.ts` pour ce site (modèle : `parent62.spec.ts`, lecture seule, ciblé) |
 | C.4 | Volumétrie réelle (créneaux/structures en base) | ❌ | à relever (navigateur ou base) — comptages SDK du 31/07 non concluants |
@@ -303,7 +370,7 @@ SDK en **lecture seule** — toute évolution passe par une fiche dans [`ENDPOIN
 
 | Demande | Sévérité | État au 31/07 |
 |---|---|---|
-| **`DELETE_COFORM_ANSWER_FILE`** + `Answer.deleteFiles(docIds[])` (suppression batch answer-side, auth save/upload) | 🔴 bloquant typecheck (`file.ts:167`) | SDK requis passé à `^1.0.169` au merge — **vérifier après `npm install`** si la méthode y est ; sinon la fiche reste due |
+| **`DELETE_COFORM_ANSWER_FILE`** + `Answer.deleteFiles(docIds[])` (suppression batch answer-side, auth save/upload) | ✅ **livré** | **SDK 1.0.169 installé le 31/07 : `Answer.deleteFiles(docIds: readonly string[])` est présent**, l'erreur `file.ts:167` a disparu. Fiche `ENDPOINT.md` à clore après recette |
 | **`CONTACT_SEND_URL`** (formulaire de contact) — ou route Express locale `/api/contact` | 🔴 fonctionnalité cassée | aucune évolution constatée |
 | Alias générique de `COFORM_ANSWERS_BY_FORMS` (hors controller `/costum/francetierslieux/*`) | 🟡 conditionnel | requis seulement si on liste/édite les créneaux **depuis la fiche d'une structure** (pattern tiers-lieux) |
 
@@ -315,10 +382,11 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
 
 ## 12. Points d'attention / limitations
 
-- **Lot créneaux non commité** : 11 fichiers modifiés + 1 test en working tree sur `ekilibre` —
-  fragile (un `git checkout`/`stash` mal placé le perd). À committer en priorité.
-- **`node_modules` désynchronisé** depuis le merge du 30/07 : typecheck rouge (23 erreurs), carte
-  MapLibre non testable, SDK 1.0.152. **`npm install` d'abord**, puis re-passer les gates.
+- **Lots commités le 31/07 mais non poussés** : `ekilibre` est en avance de 3 commits sur
+  `origin/ekilibre` — pousser + ouvrir la MR vers `main` (précédent vécu : le pass-through
+  `preview` de `Preview.tsx` avait déjà été perdu une fois au merge du 30/07, §9.2 bis).
+- ~~**`node_modules` désynchronisé**~~ **résolu le 31/07** (`npm install` : SDK 1.0.169 + MapLibre) →
+  typecheck 23 → **1** erreur (hors lot). Restent la recette carte MapLibre, le `build` et l'e2e.
 - **Modération = champ `state`** : un créneau dont l'état n'est pas exactement `"Validé"` est
   invisible sur `/creneaux` — vérifier que le form pose bien ce champ (et qui a le droit de le
   changer). Idem **CP hors 97430/97418** ou answer sans adresse → invisible, sans erreur.
@@ -327,9 +395,11 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
   compris) apparaissent dans les `dropdownFilters`, les `defaultFilters` **et**
   `DEFAULT_COFORM_FIELDS` — toute modification du CoForm SSBE casse silencieusement filtres et
   cartes. Même famille de piège sur `/structure` (valeurs de `tags`).
-- **`CardAnswer.tsx` : slug `sportSanteBienetre` en dur** (modif locale non commitée, antérieure au
-  lot créneaux) — contraire au config-driven ; à re-brancher sur `preview.fields`/slug d'entité ou à
-  assumer par commentaire.
+- **Droits d'édition : le front est volontairement plus large que le backend.** `answer.canEdit` est
+  calculé sur la seule propriété (`not_owner`), donc il refuse un super-admin ou un admin de costum.
+  Le front applique la règle métier (`canEditCoformAnswer`) ; **si le backend refuse le save pour la
+  même raison, la saisie est perdue** → à vérifier en recette avec un compte super-admin et un compte
+  admin de structure, et à arbitrer avec l'équipe backend si le `save` renvoie 403.
 - **Chiffres clés de la home en dur** ; les 8 cartes pathologies pointent vers `/creneaux` **sans
   filtre pré-appliqué** (les dropdowns ne couvrent pas les pathologies).
 - **Le détail d'un créneau ne re-fetch pas** (parse l'item de la recherche) : si le backend tronque
