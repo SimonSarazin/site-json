@@ -51,7 +51,9 @@
     "showLess": "See less",
     "moreSlots": "+{{count}} slots",
     "activitySheet": "Activity sheet",
-    "structureSheet": "Organization sheet"
+    "structureSheet": "Organization sheet",
+    "edit": "Edit",
+    "editError": "Unable to load this entry for editing."
   },
   "CardPoiAmenities": {
     "amenities": "Amenities",

@@ -693,6 +693,15 @@
             "showActiveFiltersTags": false,
             "disableInfiniteScroll": false,
             "defaultViewMode": "list",
+            "addButton": {
+              "show": true,
+              "adminOnly": false,
+              "coform": "6928096adf5caf0d230e7f26",
+              "label": {
+                "fr": "Ajouter un créneau",
+                "en": "Add a slot"
+              }
+            },
             "baseParams": {
               "defaultTypes": [
                 "answers"
@@ -721,7 +730,8 @@
                 "detailsMode": "dialog"
               },
               "preview": {
-                "type": "coform-answer"
+                "type": "coform-answer",
+                "editButton": true
               }
             },
             "map": {

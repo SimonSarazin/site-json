@@ -1,10 +1,30 @@
+import { Suspense, useCallback, useMemo, useState } from "react";
+import { lazy } from "vite-preload";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import { Accessibility, Calendar, Clock, Heart, Mail, MapPin, Phone, User, Users } from "lucide-react";
+import { Accessibility, Calendar, Clock, Heart, Loader2, Lock, Mail, MapPin, Pencil, Phone, User, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useCoFormAnswerQuery } from "@/modules/coform/hooks/useCoFormQuery";
+import { COFORM_QUERY_KEYS } from "@/modules/coform/constants";
 import type { PreviewProps } from "../../schema";
-import { parseCoformAnswer, getStatusStyle } from "../../lib/coformAnswer";
+import {
+  SEARCH_QUERY_KEYS,
+  SEARCH_STATIC_LIST_PREFIX,
+  SEARCH_STATIC_MAP_PREFIX,
+} from "../../constants/queryKeys";
+import {
+  parseCoformAnswer,
+  getStatusStyle,
+  getAnswerRef,
+  canEditCoformAnswer,
+} from "../../lib/coformAnswer";
+
+// Édition de l'answer (`preview.editButton`) : chunk coform chargé seulement au
+// clic sur « Modifier » — jamais pour les visiteurs du détail en lecture.
+const CoFormModal = lazy(() => import("@/modules/coform/components/CoFormModal"));
 
 function InfoCard({
   icon: Icon,
@@ -34,11 +54,54 @@ function InfoCard({
  * Lecture déléguée à `parseCoformAnswer` (partagé avec `CardAnswer`) ;
  * libellés via i18n (`coformAnswer.*` / `days.*`).
  */
-export default function PreviewCoformAnswer({ item, preview }: PreviewProps) {
+export default function PreviewCoformAnswer({ item, preview, onClose }: PreviewProps) {
   useLoadNamespace("modules/search");
   const t = useT("modules/search");
-  const { entity } = useCocolight();
+  const { entity, me } = useCocolight();
+  const queryClient = useQueryClient();
   const serverData = item?.serverData as Record<string, unknown> | undefined;
+
+  // Référence mémoïsée : recalculée à chaque render, elle ferait changer les
+  // deps de `handleEdited` en continu (useCallback inopérant).
+  const answerRef = useMemo(() => getAnswerRef(item), [item]);
+  // Opt-in config + règle de droits (super-admin / admin du costum / admin de la
+  // structure organisatrice) — cf. `canEditCoformAnswer`.
+  const canRequestEdit = Boolean(
+    preview?.editButton && answerRef && canEditCoformAnswer(serverData, { me, entity }),
+  );
+  const [editRequested, setEditRequested] = useState(false);
+  // Re-fetch FRAIS de l'answer avant édition : la recherche renvoie les champs
+  // à PLAT (`<costum><fieldId>`), le formulaire attend `answers` imbriqué par
+  // étape — et le save coform renvoie le payload COMPLET, donc un
+  // pré-remplissage partiel effacerait les champs absents.
+  const { answerData, isLoading: isAnswerLoading, error: answerError } = useCoFormAnswerQuery({
+    formId: answerRef?.formId ?? "",
+    answerId: answerRef?.answerId ?? "",
+    enabled: canRequestEdit && editRequested,
+  });
+
+  // Seule garde bloquante : pas d'answer chargée (erreur réseau, réponse vide).
+  // Ouvrir le formulaire sur du vide écraserait la réponse au save (payload
+  // COMPLET). On NE bloque PAS sur `answer.canEdit` : le backend le calcule sur
+  // la propriété seule, il refuse donc un admin de costum légitime.
+  const isEditResolved = editRequested && !isAnswerLoading;
+  const editBlockedKey = isEditResolved && (answerError || !answerData) ? "coformAnswer.editError" : null;
+
+  // Le contenu du dialog vient du cache search (jamais re-fetché) : après un
+  // save, on invalide les listes (liste ET carte — cache 30 min de
+  // `useSearchAllResults`) + le détail coform, puis on FERME le détail pour ne
+  // pas laisser l'ancien état affiché.
+  const handleEdited = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: SEARCH_QUERY_KEYS.RESULTS_PREFIX(SEARCH_STATIC_LIST_PREFIX) });
+    queryClient.invalidateQueries({ queryKey: SEARCH_QUERY_KEYS.RESULTS_PREFIX(SEARCH_STATIC_MAP_PREFIX) });
+    if (answerRef) {
+      queryClient.invalidateQueries({
+        queryKey: COFORM_QUERY_KEYS.FORM_ANSWER(answerRef.formId, answerRef.answerId, me?.id ?? null),
+      });
+    }
+    setEditRequested(false);
+    onClose?.();
+  }, [queryClient, answerRef, me?.id, onClose]);
 
   if (!serverData) {
     return null;
@@ -66,7 +129,34 @@ export default function PreviewCoformAnswer({ item, preview }: PreviewProps) {
             <Badge className={`rounded-full border-0 ${getStatusStyle(a.status)}`}>
               {a.stateRaw || t("coformAnswer.validated")}
             </Badge>
+            {canRequestEdit && (
+              <Button
+                variant="secondary"
+                size="sm"
+                className="ml-auto bg-white/20 text-primary-foreground hover:bg-white/30"
+                onClick={() => setEditRequested(true)}
+                disabled={editRequested && isAnswerLoading}
+              >
+                {editRequested && isAnswerLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Pencil className="h-4 w-4" />
+                )}
+                {t("coformAnswer.edit")}
+              </Button>
+            )}
           </div>
+          {/* Édition demandée mais impossible : on le DIT (role="alert"), sinon
+              le clic reste sans effet visible. */}
+          {editBlockedKey && (
+            <p
+              role="alert"
+              className="flex items-center gap-1.5 text-xs font-medium text-primary-foreground"
+            >
+              <Lock className="h-3.5 w-3.5 shrink-0" />
+              {t(editBlockedKey)}
+            </p>
+          )}
           <h2 className="text-2xl font-bold uppercase text-primary-foreground tracking-wide">
             {title}
           </h2>
@@ -170,6 +260,26 @@ export default function PreviewCoformAnswer({ item, preview }: PreviewProps) {
           </div>
         </div>
       </div>
+
+      {/* Monté seulement quand l'answer fraîche est chargée ET l'édition
+          autorisée par le backend (`editBlockedKey === null`) : ouvrir le
+          formulaire sur des données partielles effacerait des champs au save
+          (payload complet). Dialog empilé sur le détail (portals). */}
+      {answerRef && isEditResolved && !editBlockedKey && answerData && (
+        <Suspense fallback={null}>
+          <CoFormModal
+            formId={answerRef.formId}
+            answerId={answerRef.answerId}
+            defaultValues={answerData}
+            open
+            onOpenChange={(open) => {
+              if (!open) setEditRequested(false);
+            }}
+            title={String(t("coformAnswer.edit"))}
+            onAfterSubmit={handleEdited}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

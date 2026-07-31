@@ -51,7 +51,9 @@
         "showLess": "Voir moins",
         "moreSlots": "+{{count}} créneaux",
         "activitySheet": "Fiche d'activité",
-        "structureSheet": "Fiche structure"
+        "structureSheet": "Fiche structure",
+        "edit": "Modifier",
+        "editError": "Impossible de charger cette fiche pour la modifier."
     },
     "CardPoiAmenities": {
         "amenities": "Aménagement",

@@ -258,6 +258,10 @@ export const PreviewConfSchema = z.object({
   // Mapping rôle→suffixe de champ CoForm (pour `coform-answer`). Surcharge la
   // table par défaut du composant — découple les IDs de champs du code.
   fields: z.record(z.string(), z.string()).optional(),
+  // Bouton « Modifier » sur le détail `coform-answer` (admins de l'entité du
+  // site) : ouvre l'édition de l'answer en CoFormModal. Opt-in — sans ce flag,
+  // le preview reste strictement lecture seule (aucun changement des sites existants).
+  editButton: z.boolean().optional(),
   /** Facettes du preview générique (`type: "facets"`) — data-driven, sans code. */
   facets: z.array(PreviewFacetSchema).optional(),
   /** Section « réservations » du preview `poi-amenities` (absente = masquée). */
@@ -760,6 +764,15 @@ const AddButtonConfigSchema = z.object({
   label: LocalizedString.optional(),
   modal: z.string().optional(),
   formConfig: z.any().optional(),
+  // Cible CoForm : le bouton ouvre la CRÉATION d'une answer de ce form
+  // (CoFormModal) au lieu d'une modale d'entité — ex. « Ajouter un créneau »
+  // (1 créneau = 1 answer). Prioritaire sur modal/organization/project/poi.
+  coform: z.string().optional(),
+  // `false` → le bouton s'affiche dès que `show: true`, sans exiger le rôle
+  // admin du site (un non-connecté qui clique passe par le login). Cas d'usage :
+  // déclaration publique d'answer CoForm modérée en aval (filtre `state`).
+  // Défaut `true` = comportement historique (bouton réservé aux admins).
+  adminOnly: z.boolean().optional().default(true),
   organization: z.boolean().optional().default(true),
   project: z.boolean().optional().default(true),
   event: z.boolean().optional().default(true),

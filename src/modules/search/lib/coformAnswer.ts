@@ -1,4 +1,5 @@
 import { groupSchedules, type DaySchedule } from "./schedules";
+import { resolveAdminAccessLevel } from "@/modules/admin/lib/adminEntry";
 
 /**
  * Lecture/normalisation d'une réponse CoForm « activité » — factorisé depuis
@@ -113,6 +114,90 @@ export interface ParseCoformOptions {
   slug?: string | null;
   /** Surcharge du mapping `DEFAULT_COFORM_FIELDS` (ex. `preview.fields`). */
   fields?: Record<string, string>;
+}
+
+/** Référence d'édition d'une answer issue des résultats de recherche. */
+export interface AnswerRef {
+  answerId: string;
+  formId: string;
+}
+
+/**
+ * Extrait (answerId, formId) d'un item « answer » des résultats de recherche —
+ * le minimum pour ouvrir l'édition CoForm. `id` vient du getter de l'instance
+ * SDK avec repli sur l'EJSON brut (`serverData._id.$oid`) : les résultats
+ * revivifiés sont des instances, ceux issus du cache SSR peuvent rester du
+ * JSON. Renvoie `null` si l'un des deux manque → le bouton « Modifier » est
+ * masqué (pas d'édition à l'aveugle).
+ */
+export function getAnswerRef(
+  item: { id?: string | null; serverData?: unknown } | null | undefined,
+): AnswerRef | null {
+  const serverData = item?.serverData as Record<string, unknown> | undefined;
+  if (!serverData) return null;
+  const rawId = (serverData._id as { $oid?: string } | undefined)?.$oid;
+  const answerId = item?.id ?? rawId ?? null;
+  const formId = typeof serverData.form === "string" && serverData.form ? serverData.form : null;
+  return answerId && formId ? { answerId, formId } : null;
+}
+
+/** Lien `memberOf` d'un utilisateur vers une organisation (sous-ensemble consommé ici). */
+interface MemberOfLink {
+  isAdmin?: boolean;
+  isAdminPending?: boolean;
+  toBeValidated?: boolean;
+  isInviting?: boolean;
+}
+
+/** `me` vu par la règle d'édition — structurel : le `User` du SDK y est assignable. */
+export interface AnswerEditorMe {
+  isSuperAdmin?: () => boolean;
+  isAdminPlatform?: () => boolean;
+  serverData?: { links?: { memberOf?: Record<string, MemberOfLink> } };
+}
+
+/**
+ * Id (24 hex) de la structure porteuse d'une answer. L'organisation est jointe
+ * sous `structure._id`, dont l'encodage dépend du chemin de sérialisation
+ * (EJSON `$oid`, dump `_str`/`$id`, ou string déjà aplatie côté SDK) : on accepte
+ * les quatre plutôt que de parier sur celui d'un endpoint donné.
+ */
+export function getAnswerStructureId(serverData: Record<string, unknown> | undefined): string | null {
+  const structure = serverData?.structure as Record<string, unknown> | undefined;
+  const rawId = structure?._id;
+  if (typeof rawId === "string") return rawId || null;
+  const id = rawId as { $oid?: string; _str?: string; $id?: string } | undefined;
+  return id?.$oid ?? id?._str ?? id?.$id ?? null;
+}
+
+/**
+ * Admin VALIDÉ de cette organisation ? Mêmes exclusions que
+ * `useUserAdminOrganizations` : une invitation ou une demande d'admin en attente
+ * n'est pas un droit.
+ */
+function isValidatedAdminOf(me: AnswerEditorMe | null | undefined, organizationId: string): boolean {
+  const link = me?.serverData?.links?.memberOf?.[organizationId];
+  return Boolean(link?.isAdmin && !link.isAdminPending && !link.toBeValidated && !link.isInviting);
+}
+
+/**
+ * Qui peut modifier une answer (= un créneau) : **super-admin plateforme**,
+ * **admin du costum** porteur du site, ou **admin de la structure organisatrice**.
+ *
+ * ⚠️ Volontairement plus large que le `canEdit` renvoyé par le backend, calculé
+ * sur la seule PROPRIÉTÉ de la réponse (`editDeniedReason: "not_owner"`) : un
+ * admin de costum n'est pas l'auteur du créneau et serait refusé à tort. Le
+ * backend reste la source de vérité au moment du save.
+ */
+export function canEditCoformAnswer(
+  serverData: Record<string, unknown> | undefined,
+  actor: { me?: AnswerEditorMe | null; entity?: { isAdmin?: () => boolean } | null },
+): boolean {
+  // super-admin plateforme (`isSuperAdmin`/`isAdminPlatform`) OU admin de
+  // l'entité porteuse du costum — même résolution que le gate de la page /admin.
+  if (resolveAdminAccessLevel(actor.me, actor.entity)) return true;
+  const structureId = getAnswerStructureId(serverData);
+  return structureId ? isValidatedAdminOf(actor.me, structureId) : false;
 }
 
 /** Parse une réponse CoForm `serverData` en objet typé, consommé par la carte ET le détail. */
