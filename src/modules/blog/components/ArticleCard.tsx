@@ -9,8 +9,6 @@ import { useT } from "@/hooks/useT";
 import { estimateReadingTime } from "../lib/readingTime";
 import type { ArticleData } from "../hooks/useArticle";
 
-// Re-export (rétro-compat des imports existants : ArticleCardCompact, BlogArticleSeo).
-export { stripMarkdown } from "../lib/markdown";
 import { stripMarkdown } from "../lib/markdown";
 
 /** Date de l'article (created unix s) → libellé long, tolérant (number s / ms / string / absent). */

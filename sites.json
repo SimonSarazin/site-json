@@ -121,5 +121,11 @@
     "images": "equipementsSportifs974",
     "coolifyApp": "site-json-saint-paul-sport",
     "domain": "saint-paul-sport.00.re"
+  },
+  {
+    "slug": "rezoSanteReunion",
+    "config": "config.prod.rezo-sante-reunion.json",
+    "css": "index-rezo-sante-reunion",
+    "images": "rezoSanteReunion"
   }
 ]

@@ -56,5 +56,16 @@ export default tseslint.config(
         },
       ],
     },
+  },
+  {
+    // `react-refresh` ne parle que du rafraîchissement à chaud en développement.
+    // Les utilitaires de test ne sont jamais rechargés à chaud : la règle n'y a
+    // aucun sens, et elle ne sait de toute façon pas analyser un `export *`
+    // (tests/test-utils-ui.tsx est un barrel délibéré). Désactivée ICI plutôt
+    // qu'en `eslint-disable` local, qui laisserait croire à une dette.
+    files: ['tests/**/*.{ts,tsx}', 'e2e/**/*.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
   }
 );

@@ -50,6 +50,5 @@ export function usePageFiltersUrlSync({
     );
     setSelectedFilters(applySelected);
     setSearchByFields(applySearchFields);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, filterGroups, filterAnswerData, setSelectedFilters, setSearchByFields]);
 }

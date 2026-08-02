@@ -326,36 +326,44 @@ Chaque composant se trouve dans `src/components/sections/<Type>Section.tsx` ou d
 
 Pour créer une section sur mesure :
 
-1. **Définir le schéma Zod** dans `src/types/site-schema.ts`
+> ⚠️ **Ce n'est pas un changement en 3 étapes.** Les étapes 1 à 4 sont rattrapées par le compilateur,
+> les 5 et 6 par `npm run test:preflight` — que **ni hook ni CI ne déclenche** (`.husky/` ne contient
+> que `_`, il n'y a pas de `.github/workflows`) — et les étapes 7 à 10 échouent **en silence**.
+
+1. **Déclarer le schéma Zod** dans `src/types/site-schema.ts`, en `const` **non exporté** englobant
+   `type` + `id` + `props` (précédent : `HeroSectionSchema`). N'exporter que les types inférés.
 
    ```ts
-   // Dans src/types/site-schema.ts
-   export const MySectionProps = z.object({
-     title: LocalizedString,
-     items: z.array(z.string()),
+   const MySectionSchema = z.object({
+     type: z.literal("my-section"),
+     id: z.string().optional(),
+     props: z.object({
+       title: LocalizedString,
+       items: z.array(z.string()),
+     }),
    });
+   export type MySectionProps = z.infer<typeof MySectionSchema>["props"];
    ```
 
-   Ajouter le type dans `SectionPropsMap` :
+2. **L'inscrire dans l'union `Section`** (`export const Section = z.discriminatedUnion("type", [...])`).
 
-   ```ts
-   export const SectionPropsMap = {
-     // ...
-     mySection: MySectionProps,
-   };
-   ```
+   > ⚠️ **Ne jamais éditer `SectionPropsMap`** : c'est un type **dérivé** de l'union
+   > (`{ [K in Section['type']]: … }`), et il ne vit **pas** dans `src/types/site.ts`.
 
-2. **Créer le composant React** avec un `export default`
+3. **Créer le composant React** avec un `export default`, en **posant `id` sur l'élément racine** —
+   c'est le mécanisme d'ancrage de la section — et en passant tout texte localisé par `useT`/`t`,
+   jamais par `props.title.fr` (qui casse le changement de langue en silence).
 
    ```tsx
    // src/components/sections/MySectionSection.tsx
-   import type { z } from "zod";
+   import { useLocalization } from "@/hooks/useLocalization";
    import type { MySectionProps } from "@/types/site-schema";
 
-   function MySectionSection({ props }: { id?: string; props: z.infer<typeof MySectionProps> }) {
+   function MySectionSection({ id, props }: { id?: string; props: MySectionProps }) {
+     const { t } = useLocalization();
      return (
-       <section>
-         <h2>{props.title.fr}</h2>
+       <section id={id}>
+         <h2>{t(props.title)}</h2>
          <ul>
            {props.items.map((item, i) => <li key={i}>{item}</li>)}
          </ul>
@@ -366,31 +374,67 @@ Pour créer une section sur mesure :
    export default MySectionSection;
    ```
 
-3. **Enregistrer dans `SectionRenderer.tsx`**
-
-   Ajouter au mapping `LazySections` :
+4. **Enregistrer dans `SectionRenderer.tsx`**, clé et `lazy(` **sur la même ligne** (un test de
+   préflight lit cette table à la regex) :
 
    ```ts
    const LazySections = {
      // ...
-     mySection: lazy(() => import("./MySectionSection")),
+     "my-section": lazy(() => import("./MySectionSection")),
    };
    ```
 
-   > **Important** : utiliser `lazy()` de vite-preload (pas `lazyNamed`), et le composant doit avoir un `export default`.
+   > **Important** : `lazy()` vient de **vite-preload** (ni `React.lazy`, qui ne trace pas le chunk et
+   > prive la page de son `<link rel="modulepreload">`, ni `lazyNamed`), et le composant doit avoir un
+   > `export default`.
 
-4. **Mettre à jour la configuration JSON**
-   Dans `config.prod.json` (ou fichier `.env` via `SITE_CONFIG_JSON`), ajoutez une section :
+5. **Ajouter l'entrée dans `SECTION_META`** (`src/components/admin/section-meta.ts`) : `label`,
+   `desc` (> 10 caractères), `image`, `family` prise dans `SECTION_FAMILIES`. Un test de préflight
+   impose une **parité exacte** union ⇄ `SECTION_META` ⇄ table `lazy()`, dans les deux sens.
 
-   ```json
-   {
-     "type": "mySection",
-     "props": {
-       "title": { "fr": "Ma section perso", "en": "My custom section" },
-       "items": ["Item 1", "Item 2"]
-     }
-   }
-   ```
+6. **Mettre à jour les compteurs de sections**, gatés par une regex de
+   `tests/preflight/section-meta.test.ts` sur **trois** fichiers :
+   - `doc/26-assistant-config.md` — forme `**N sections**` ;
+   - `.claude/skills/config-assistant/SKILL.md` — forme `**N des M sections**` (c'est le `M` qui
+     est contrôlé) ; ce fichier EST suivi en git (`.gitignore` ré-inclut `!.claude/skills/`) ;
+   - `CLAUDE.md` — forme `**N section types**`, **contrôlé seulement s'il est présent** : il est
+     gitignoré, donc absent d'un clone frais et d'une CI.
+
+7. **Si la section porte une image de fond pleine largeur et peut être PREMIÈRE d'une page** : ajouter
+   son type à `RESPONSIVE_BG_SECTION_TYPES` (`src/lib/extractCriticalResources.ts`), sans quoi elle
+   n'émet **aucun `<link rel="preload">` LCP, en silence**. Rendre l'image via `HeroBackgroundImage`,
+   dont les `srcSet` correspondent exactement au preload (un `<img>` maison provoque un **double
+   téléchargement**).
+
+8. **Écrire une story de props réelles** dans `.design-sync/previews/`, et déclarer le composant dans
+   `.design-sync/config.json` (`componentSrcMap`) **et** `.design-sync/ds-entry.ts`.
+
+9. **Documenter les props** dans `scripts/lib/prop-descriptions.ts` (alimente `config:schema section:<type>`).
+
+10. **Mettre à jour les TABLES de la skill `config-assistant`** (headers, footers, presenters,
+    modules) — rien ne les teste, la dérive y est silencieuse. ⚠ À ne pas confondre avec le
+    COMPTEUR de sections du même fichier, lui gaté depuis l'étape 6.
+
+11. **Utiliser la section dans une config JSON** :
+
+    ```json
+    {
+      "type": "my-section",
+      "id": "ma-section",
+      "props": {
+        "title": { "fr": "Ma section perso", "en": "My custom section" },
+        "items": ["Item 1", "Item 2"]
+      }
+    }
+    ```
+
+    > ⚠️ La config n'est **jamais** parsée par Zod à l'exécution : les `.default()` du schéma ne
+    > s'appliquent pas. Écrire **chaque clé explicitement**, et placer les valeurs de repli dans le
+    > code du composant.
+
+**Portes, dans cet ordre** : `npm run lint` → `npm run typecheck` (toujours `tsc -b`) →
+`npm run test:preflight` → `npm run config:render` (une section qui rend `null` passe toutes les
+autres portes et sert quand même une page vide).
 
 ---
 

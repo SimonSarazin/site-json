@@ -99,28 +99,11 @@ body {
 h1, h2, h3, h4 { font-family: var(--font-serif); }
 h1, h2 { letter-spacing: -0.015em; }
 
-/* Cartes d'accès rapide du hero (hero-quick-access) — verre chaud, lift doux.
-   Le composant alterne access-card-public / access-card-pro. */
-.access-card {
-  border: 1px solid var(--border);
-  border-radius: calc(var(--radius) + 0.35rem);
-  background: color-mix(in oklab, var(--card) 82%, transparent);
-  box-shadow: var(--shadow-xs);
-  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
-}
-.access-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-lg);
-}
-.access-card-public:hover {
-  border-color: color-mix(in oklab, var(--primary) 45%, var(--border));
-}
-.access-card-pro:hover {
-  border-color: color-mix(in oklab, var(--accent) 60%, var(--border));
-}
-@media (prefers-reduced-motion: reduce) {
-  .access-card, .access-card:hover { transform: none; transition: none; }
-}
+/* Les cartes d'accès rapide du hero (`hero-quick-access`) — verre chaud, lift
+   doux — vivaient ICI, alors que `HeroQuickAccess` est un composant de section
+   générique : les deux autres sites qui l'emploient les rendaient sans style.
+   Déplacées telles quelles dans `styles/shared.css` (importé l. 3), avec leur
+   garde `prefers-reduced-motion`. Rien ne change pour parent62. */
 
 /* Mini-prose : les sections `html` (mentions légales, confidentialité) posent
    class="prose …" mais le plugin typography n'est pas chargé — on donne ici

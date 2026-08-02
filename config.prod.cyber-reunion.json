@@ -2185,7 +2185,7 @@
             "postalCode",
             "streetAddress",
             "localityId",
-            "socialNetwork"
+            "socialLinks"
           ]
         }
       ],
@@ -2444,11 +2444,73 @@
           "widget": "hidden",
           "group": "address"
         },
-        "socialNetwork": {
-          "widget": "editSocial",
+        "socialLinks": {
+          "widget": "fieldArray",
           "label": {
             "fr": "Réseaux sociaux",
             "en": "Social networks"
+          },
+          "read": "social:read",
+          "write": "social:write",
+          "path": "socialNetwork",
+          "clear": "",
+          "widgetProps": {
+            "addLabel": {
+              "fr": "Ajouter un réseau social",
+              "en": "Add a social network"
+            },
+            "itemFields": [
+              {
+                "name": "platform",
+                "kind": "select",
+                "label": {
+                  "fr": "Plateforme",
+                  "en": "Platform"
+                },
+                "options": [
+                  {
+                    "value": "facebook",
+                    "label": "Facebook"
+                  },
+                  {
+                    "value": "twitter",
+                    "label": "Twitter / X"
+                  },
+                  {
+                    "value": "instagram",
+                    "label": "Instagram"
+                  },
+                  {
+                    "value": "linkedin",
+                    "label": "LinkedIn"
+                  },
+                  {
+                    "value": "youtube",
+                    "label": "YouTube"
+                  },
+                  {
+                    "value": "mastodon",
+                    "label": "Mastodon"
+                  },
+                  {
+                    "value": "telegram",
+                    "label": "Telegram"
+                  },
+                  {
+                    "value": "discord",
+                    "label": "Discord"
+                  }
+                ]
+              },
+              {
+                "name": "url",
+                "kind": "text",
+                "placeholder": {
+                  "fr": "https://...",
+                  "en": "https://..."
+                }
+              }
+            ]
           }
         }
       },

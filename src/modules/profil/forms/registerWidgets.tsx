@@ -26,7 +26,7 @@ const EditEventDatesTab = lazy(() => import("../components/profile-edit/EditEven
 const EditSocialTab = lazy(() => import("../components/profile-edit/EditSocialTab").then((m) => ({ default: m.EditSocialTab })));
 const EditScheduleTab = lazy(() => import("../components/profile-edit/EditScheduleTab").then((m) => ({ default: m.EditScheduleTab })));
 
-const WidgetFallback = () => <div className="h-10 animate-pulse rounded-md bg-muted" />;
+import { WidgetFallback } from "@/modules/formEngine/widgets/WidgetFallback";
 type FinderSearchType = NonNullable<GlobalAutocompleteCostumData["searchType"]>[number];
 type FinderValue = Record<string, { type: string; name?: string }>;
 const control = (form: UseFormReturn<FieldValues>) => form.control as Control<FieldValues>;

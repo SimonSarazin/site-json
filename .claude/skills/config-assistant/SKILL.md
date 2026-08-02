@@ -20,7 +20,7 @@ Les faits volatils se LISENT à l'usage, ils ne sont pas écrits ici :
 | Liste des sections + description (groupée par famille) | `npm run config:schema sections` |
 | Archétypes de référence (quel site imiter, ce qu'il démontre) + liste des exemples | `npm run config:example` |
 | Exemple canonique d'un bloc réel (theme, command-palette, agenda, list-resource…) | `npm run config:example -- <feature>` |
-| **Composition de props réelle** d'une section / d'un header / d'un footer | `.design-sync/previews/<Composant>.tsx` (152 stories versionnées) — chemin exact imprimé en tête de `config:schema section:<type>`, et `◆` dans le catalogue `sections` |
+| **Composition de props réelle** d'une section / d'un header / d'un footer | `.design-sync/previews/<Composant>.tsx` (153 stories versionnées) — chemin exact imprimé en tête de `config:schema section:<type>`, et `◆` dans le catalogue `sections` |
 | **Recette de composition de PAGE** (gabarit = une page réelle d'archétype) | `npm run config:example -- --recipe <id>` — imprime la page complète, prête à adapter |
 | Forme exacte d'une section | `npm run config:schema section:<type>` (ex. `section:pricing`) |
 | Forme de `header`/`footer`/`theme`/`meta`/`auth`/`page`/`profiles`/`integrations`/`commandPalette` | `npm run config:schema <bloc>` |
@@ -365,9 +365,9 @@ l'ordre des règles et la présence des contrats. Exemple vivant :
 ## Design system (voir le rendu réel avant de choisir)
 
 - **`.design-sync/previews/` — la ressource la plus utile, et elle est dans git** :
-  152 stories portant des compositions de props RÉELLES (valeurs plausibles,
+  153 stories portant des compositions de props RÉELLES (valeurs plausibles,
   commentaire d'usage : « Usage réel : home de Rézo la mer »). Le JSON Schema
-  donne la FORME, la story donne la COMPOSITION — **42 des 70 sections** en ont
+  donne la FORME, la story donne la COMPOSITION — **43 des 71 sections** en ont
   une (les 28 sans sont data-driven : search\*, agenda, cagnotte, blog — une
   composition statique n'y montrerait rien), ainsi que **les 6 headers et les 4
   footers**. Copie la story, ne réinvente pas le remplissage.

@@ -1,7 +1,7 @@
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { useSite } from "@/hooks/useSite";
 import { useT } from "@/hooks/useT";
-import { stripMarkdown } from "./components/ArticleCard";
+import { stripMarkdown } from "./lib/markdown";
 import type { ArticleData } from "./hooks/useArticle";
 
 /** created/updated (unix s ou ms) → ISO, tolérant. */
