@@ -126,7 +126,12 @@ async function main(): Promise<void> {
     Api: new (a: null, b: unknown) => { organization: (q: { slug: string }) => Promise<unknown> };
     ApiClient: new (o: { baseURL: string }) => unknown;
   };
-  const api = new root.Api(null, new root.ApiClient({ baseURL: backend }));
+  // Même interrupteur que le site (`VITE_COSTUM_FORCE_LIVE`) : sans lui, la garde compare le
+  // formulaire à l'artefact costum BUNDLÉ de la lib — donc à un état figé. Tout costum absent du
+  // bundle, ou dont l'artefact est périmé, y apparaît alors en « fantômes » à tort.
+  const forceLive = process.env.VITE_COSTUM_FORCE_LIVE === "true";
+  const api = new root.Api(null, new root.ApiClient({ baseURL: backend, costumForceLive: forceLive }));
+  if (forceLive) console.log("  (force-live actif : résolution costum par getcostumjson, bundle ignoré)\n");
   const caller = await api.organization({ slug: "franceTierslieux" });
 
   type Scope = { create: (coll: string, data: Record<string, unknown>) => Promise<{ _allowedFieldsCache?: string[] }> };
