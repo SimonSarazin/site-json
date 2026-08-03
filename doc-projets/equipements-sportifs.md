@@ -11,7 +11,7 @@
 > [Module Admin](../doc/30-module-admin.md) · [Module CoForm](../doc/21-module-coform.md).
 > Mémoire : `[[project-equipements-sportifs]]`.
 
-Dernière mise à jour : **2026-07-28** (création du dossier — état des lieux).
+Dernière mise à jour : **2026-08-03** (création du dossier — état des lieux ; rafraîchi SDK 1.0.172, aucun commit projet depuis le 28/07).
 
 ---
 
@@ -36,7 +36,7 @@ C'est la config dont l'**observatoire est cité en exemple** dans la documentati
 | CSS | [`../src/index-equipements-sportifs.css`](../src/index-equipements-sportifs.css) — 72 variables, bloc `theme` complet |
 | Langues | `fr` (défaut) + `en` |
 | Header / Footer | `transparent-scroll` / `contact-partners` |
-| SDK | `@communecter/cocolight-api-client` **1.0.169** |
+| SDK | `@communecter/cocolight-api-client` **1.0.172** (publiée le 2026-08-03) |
 | Historique | **53 commits** · dernier `227f65b7` (25/07) |
 
 ### Historique des chantiers

@@ -26,8 +26,7 @@ import { getSlug } from "@/lib/constant/common";
  * existe, pas LEQUEL — la lib n'expose pas le slug courant, donc on repose le bon à chaque fois
  * (`setCostumScope` est synchrone : résolution registre/cache costum, pas de réseau).
  *
- * La lib (≥ 1.0.172 — testée ici en npm pack local, NON publiée au 2026-08-03 ; le
- * package.json affiche encore 1.0.171) prescrit désormais EXACTEMENT ce patron : `hasCostumScope()` « dit seulement
+ * La lib (1.0.172, publiée) prescrit désormais EXACTEMENT ce patron : `hasCostumScope()` « dit seulement
  * s'IL Y A un scope, pas LEQUEL », et `setCostumScope` épingle un `_adminScope` qui SURVIT aux
  * refresh/hydratations (`_setData` re-dérive `_costumCtx` du `source.key` sans y toucher) — « à
  * faire inconditionnellement (idempotent), pas derrière un `if (hasCostumScope())` »
