@@ -48,6 +48,7 @@ import {
 } from "./lib/coolify";
 import { analyserArgv } from "./lib/deploy-cli";
 import { buildDuSite, cibleDnsDuServeur, masquer, variablesAttendues } from "./lib/deploy-config";
+import { executerParSite } from "./lib/deploy-lot";
 import { impact } from "./lib/deploy-scope";
 import { atteintLaMemeCible, resoudre as resoudreDns } from "./lib/dns";
 import { chargerIdentifiants, creerCname, listerZones, OvhError, rafraichirZone, trouverCname } from "./lib/ovh";
@@ -87,6 +88,8 @@ Options :
   --context <nom>     instance Coolify (défaut : celle marquée par défaut)
   --ref <rev>         référence de comparaison (défaut : origin/main)
   --yes               applique sans confirmation (lock, push)
+  --fail-fast         lot : arrêt au premier échec (défaut : on continue,
+                      bilan final + commande de reprise pour les ratés)
   --no-wait           push : déclenche sans attendre la fin
   --timeout <s>       push : abandon de l'attente (défaut 1500)
   --server <nom>      create : serveur Coolify (sinon sites.json, sinon déduit)
@@ -315,21 +318,20 @@ async function lock(ctx: CoolifyContext): Promise<number> {
     return 0;
   }
 
-  let echecs = 0;
-  for (const { site, app } of aTraiter) {
-    try {
-      await patchApplication(ctx, app!.uuid, { is_auto_deploy_enabled: cible });
-      console.log(`  ✓ ${site.slug}`);
-    } catch (e) {
-      echecs++;
-      console.error(`  ✗ ${site.slug} : ${(e as Error).message}`);
-    }
-  }
-  console.log(
-    `\n${aTraiter.length - echecs}/${aTraiter.length} appliqué(s).` +
-      ` L'API 4.1.1 ne renvoie pas ce réglage : vérifier dans l'UI Coolify, onglet Advanced.`,
+  const apps = new Map(aTraiter.map((x) => [x.site.slug, x.app!]));
+  const bilan = await executerParSite(
+    aTraiter.map((x) => x.site.slug),
+    async (slug) => {
+      await patchApplication(ctx, apps.get(slug)!.uuid, { is_auto_deploy_enabled: cible });
+    },
+    {
+      failFast: cmd.bool("--fail-fast"),
+      // lock n'a pas de sélection par slug : la reprise est la commande entière (idempotente).
+      reprise: () => `npm run deploy:lock -- --yes${unlock ? " --unlock" : ""}`,
+    },
   );
-  return echecs === 0 ? 0 : 1;
+  console.log(`L'API 4.1.1 ne renvoie pas ce réglage : vérifier dans l'UI Coolify, onglet Advanced.`);
+  return bilan.code;
 }
 
 /* ── push ─────────────────────────────────────────────────────────────────── */
@@ -497,33 +499,49 @@ async function push(ctx: CoolifyContext): Promise<number> {
 
   const timeoutS = Number(opt("--timeout") ?? 1500);
   const attendreFin = !cmd.bool("--no-wait");
-  let i = 0;
-  for (const c of cibles) {
-    i++;
-    console.log(`\n[${i}/${cibles.length}] ${c.slug}`);
-    const dep = await deployApplication(ctx, c.uuid, true);
-    if (!dep) {
-      console.error(`  ✗ déclenchement refusé par Coolify`);
-      console.error(`\nInterrompu. Non déployés : ${cibles.slice(i - 1).map((x) => x.slug).join(", ")}`);
-      return 1;
-    }
-    console.log(`  ✓ déclenché — ${dep}`);
-    if (!attendreFin) continue;
-
-    const statut = await attendre(ctx, c.uuid, dep, timeoutS);
-    if (statut === "finished") {
-      console.log(`  ✓ ${statut}`);
-    } else {
-      console.error(`  ✗ ${statut} — ${ctx.fqdn}/project (voir les logs du déploiement ${dep})`);
-      const restants = cibles.slice(i).map((x) => x.slug);
-      if (restants.length) {
-        console.error(`\nInterrompu. Reprendre :  npm run deploy -- ${restants.join(" ")} --yes`);
-      }
-      return 1;
-    }
+  const uuids = new Map(cibles.map((c) => [c.slug, c.uuid]));
+  const bilan = await executerParSite(
+    cibles.map((c) => c.slug),
+    (slug) => deployerSite(ctx, uuids.get(slug)!, attendreFin, timeoutS),
+    {
+      failFast: cmd.bool("--fail-fast"),
+      reprise: (s) => `npm run deploy -- ${s.join(" ")} --yes`,
+    },
+  );
+  if (JSON_OUT) {
+    console.log(JSON.stringify({ resultats: bilan.resultats, reprise: bilan.reprise ?? null }, null, 2));
   }
-  console.log(`\n✓ ${cibles.length}/${cibles.length} déployé(s).`);
-  return 0;
+  return bilan.code;
+}
+
+/**
+ * Déclenche le déploiement d'une application et, sauf demande contraire,
+ * attend son verdict. Lève en échec — le moteur de lot rattrape par site.
+ */
+async function deployerSite(
+  ctx: CoolifyContext,
+  uuid: string,
+  attendreFin: boolean,
+  timeoutS: number,
+): Promise<void> {
+  const dep = await deployApplication(ctx, uuid, true);
+  if (!dep) throw new CoolifyError(`déclenchement refusé par Coolify`);
+  console.log(`  ✓ déclenché — ${dep}`);
+  if (!attendreFin) return;
+
+  const statut = await attendre(ctx, uuid, dep, timeoutS);
+  if (statut === "finished") {
+    console.log(`  ✓ ${statut}`);
+    return;
+  }
+  // Statut ni fini ni franchement raté (queued, in_progress, inconnu…) après
+  // l'attente : le build PEUT encore aboutir. Redéclencher aveuglément ferait
+  // un build en double — d'où la consigne de vérifier avant de reprendre.
+  const peutAboutir = statut !== "failed" && statut !== "cancelled";
+  throw new CoolifyError(
+    `${statut} — ${ctx.fqdn}/project (voir les logs du déploiement ${dep})` +
+      (peutAboutir ? ` ; le build peut encore aboutir — vérifier deploy:status avant de reprendre` : ""),
+  );
 }
 
 /* ── env ──────────────────────────────────────────────────────────────────── */
