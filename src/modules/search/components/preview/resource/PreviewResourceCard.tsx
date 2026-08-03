@@ -87,7 +87,14 @@ export default function PreviewResourceCard({ item, list, onClose }: PreviewProp
       {/* EN-TÊTE adaptatif : bannière image, sinon bande typée + grande icône */}
       {data.image ? (
         <>
-          <div className="relative aspect-[21/9] w-full shrink-0 overflow-hidden bg-muted">
+          {/* Bannière plafonnée à 30vh. Sans ce plafond, `aspect-[21/9]` dérive
+              sa hauteur de la LARGEUR du dialogue et `shrink-0` l'empêche de
+              céder : mesuré à 577px sur 813 de dialogue, soit 71 % de la place,
+              ne laissant que 98px à la zone de contenu pour 220px à afficher.
+              Le scroll existait bien (`overflow-y-auto` plus bas) mais dans une
+              fenêtre inutilisable. Le ratio est conservé tant qu'il tient sous
+              le plafond ; au-delà, `object-cover` recadre. */}
+          <div className="relative aspect-[21/9] max-h-[30vh] w-full shrink-0 overflow-hidden bg-muted">
             <OptimizedImage src={data.image} alt={data.title} width={840} className="h-full w-full object-cover" />
           </div>
           <div className="shrink-0 space-y-2 border-b border-border py-4 pl-5 pr-12">

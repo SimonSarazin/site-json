@@ -5123,69 +5123,42 @@
             "fr": "Choisir un type…",
             "en": "Choose a type…"
           },
-          "options": [
+          "enum": [
             {
               "value": "Evenement public",
-              "label": {
-                "fr": "Evenement public",
-                "en": "Evenement public"
-              }
+              "label": "Evenement public"
             },
             {
               "value": "Afterwork",
-              "label": {
-                "fr": "Afterwork",
-                "en": "Afterwork"
-              }
+              "label": "Afterwork"
             },
             {
               "value": "Salon professionnel",
-              "label": {
-                "fr": "Salon professionnel",
-                "en": "Salon professionnel"
-              }
+              "label": "Salon professionnel"
             },
             {
               "value": "Séminaire",
-              "label": {
-                "fr": "Séminaire",
-                "en": "Séminaire"
-              }
+              "label": "Séminaire"
             },
             {
               "value": "Salon",
-              "label": {
-                "fr": "Salon",
-                "en": "Salon"
-              }
+              "label": "Salon"
             },
             {
               "value": "Webinaire",
-              "label": {
-                "fr": "Webinaire",
-                "en": "Webinaire"
-              }
+              "label": "Webinaire"
             },
             {
               "value": "Manifestation",
-              "label": {
-                "fr": "Manifestation",
-                "en": "Manifestation"
-              }
+              "label": "Manifestation"
             },
             {
               "value": "Conférence",
-              "label": {
-                "fr": "Conférence",
-                "en": "Conférence"
-              }
+              "label": "Conférence"
             },
             {
               "value": "Autre",
-              "label": {
-                "fr": "Autre",
-                "en": "Autre"
-              }
+              "label": "Autre"
             }
           ]
         },
