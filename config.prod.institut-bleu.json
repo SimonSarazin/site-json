@@ -5875,10 +5875,6 @@
       "itemAction": {
         "kind": "profil"
       },
-      "placeholder": {
-        "fr": "Rechercher un acteur, un document, un financement, une page…",
-        "en": "Search an organisation, a document, a funding scheme, a page…"
-      },
       "itemActionBySubType": {
         "recoveryCenter": {
           "kind": "preview",
