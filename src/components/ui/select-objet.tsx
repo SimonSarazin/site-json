@@ -215,26 +215,7 @@ export function SelectObject({
               onValueChange={setSearch}
               className={inputClassName}
             />
-            {/* Molette rétablie à la main. Dans un Dialog, `react-remove-scroll`
-                (posé par Radix) bloque les `wheel` sur tout ce qu'il ne reconnaît
-                pas comme zone scrollable autorisée — or ce popover est PORTALISÉ
-                hors du dialogue (`[data-radix-popper-content-wrapper]`, frère du
-                body), donc hors de son périmètre. Mesuré : liste scrollable
-                (540/225), `scrollTop` programmatique OK, molette sans effet ;
-                seul le glissement de la barre fonctionnait, car ce n'est pas un
-                événement `wheel`. Hors Dialog il n'y a pas de verrou et la
-                molette marche déjà — ce handler est alors sans effet visible.
-                Passer le Popover en `modal` réglerait aussi le symptôme mais
-                rouvrirait le bug de compteur décrit plus haut (l. 140). */}
-            <CommandList
-              className={listClassName}
-              onWheel={(e) => {
-                const el = e.currentTarget;
-                if (el.scrollHeight <= el.clientHeight) return;
-                el.scrollTop += e.deltaY;
-                e.stopPropagation();
-              }}
-            >
+            <CommandList className={listClassName}>
               {isLoading ? (
                 <div className="flex justify-center p-2">{loadingIndicator}</div>
               ) : options.length > 0 ? (
