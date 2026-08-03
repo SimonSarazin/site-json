@@ -288,7 +288,7 @@ describe("calculatePoiPermissions", () => {
   it("canEditProfile false sinon", () => {
     const perms = calculatePoiPermissions(makePoi());
     expect(perms.canEditProfile).toBe(false);
-    expect(perms.editProfileReason).toBe("Must be author of POI");
+    expect(perms.editProfileReason).toBe("Must be author or admin of POI");
   });
 
   it("canFollow true si pas author", () => {

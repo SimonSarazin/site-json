@@ -31,6 +31,7 @@ const LazySections: {
   "cta-newsletter": lazy(() => import("./CtaNewsletter")),
   "expandable-actions": lazy(() => import("./ExpandableActions")),
   "hero-tinted-overlay": lazy(() => import("./HeroTintedOverlay")),
+  "hero-carousel": lazy(() => import("./HeroCarousel")),
   "hero-entity-banner": lazy(() => import("./HeroEntityBanner")),
   "categories-grid": lazy(() => import("./CategoriesGridSection")),
   markdown: lazy(() => import("./MarkdownSection")),
@@ -89,6 +90,8 @@ const LazySections: {
   "cagnotte-layout": lazy(() => import("@/modules/cagnotte/components/sections/CagnotteLayoutSection")),
   "data-observatory": lazy(() => import("@/modules/observatoire/DataObservatorySection")),
   agenda: lazy(() => import("@/modules/agenda/sections/AgendaSection")),
+  articleFeed: lazy(() => import("@/modules/blog/sections/ArticleFeed")),
+  articleReader: lazy(() => import("@/modules/blog/sections/ArticleReaderSection")),
 };
 
 // Fallback skeleton pour les sections en cours de chargement

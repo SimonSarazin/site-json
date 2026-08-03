@@ -46,6 +46,8 @@ export type FundingTransaction = {
   date: number;
   paymentStatus: FundingPaymentStatus;
   transactionId: string;
+  fundingType?: string;
+  fundingIndex?: number;
 };
 
 export type FundingAction = {
@@ -135,3 +137,95 @@ export type PendingDeleteActionContext = {
   milestoneId: string;
   action: FundingAction;
 };
+
+export type CagnotteType = "standard" | "aac" ;
+export const DEFAULT_CAGNOTTE_TYPE: CagnotteType = "standard";
+export type CagnotteTypeConfig = {
+  selectorType: "proposition" | "project",
+  financerTags: string[],
+  defaultPredefinedAmounts: number[],
+  context: string,
+  showInfoText: boolean,
+  allowPersonToFinance: boolean,
+  allowContributionWithoutPaiement: boolean,
+};
+
+export const CAGNOTTE_TYPE_CONFIGS: Record<CagnotteType, CagnotteTypeConfig> = {
+  standard: {
+    selectorType: "project",
+    financerTags: [],
+    defaultPredefinedAmounts: [10, 20, 30, 50],
+    context: '',
+    showInfoText: true,
+    allowPersonToFinance: true,
+    allowContributionWithoutPaiement: true,
+  },
+  aac: {
+    selectorType: "proposition",
+    financerTags: ["financeur"],
+    defaultPredefinedAmounts: [10, 20, 30, 50],
+    context: '',
+    showInfoText: false,
+    allowPersonToFinance: true,
+    allowContributionWithoutPaiement: true,
+  }
+};
+
+// Représente un projet ou une proposition
+export interface CagnotteResource {
+  fromType: "project" | "proposition";
+  id: string;
+  name: string;
+  image?: string;
+  answerId?: string;
+  projectId?: string;
+  resourceTotalAmount: number;
+  resourceFinancedAmount: number;
+  items: CagnotteFundableItem[];
+}
+
+// Représente un Milestone ou une dépense
+export interface CagnotteFundableItem {
+  fromType: "milestone" | "depense";
+  itemId: string;
+  milestoneId: string;
+  depenseIndex: number;
+  name: string;
+  description?: string;
+  price: number;
+  status: string;
+  actions: FundingAction[];
+  funding: FundingTransaction[];
+  currentFunding: number;
+  unpaidFunding: number;
+  userPledge: number;
+}
+
+export interface DepenseFunding {
+  itemId?: string;
+  depenseIndex: number;
+  amount: number;
+  name?: string;
+  price?: number;
+}
+
+export interface Pledge {
+  id: string,
+  financerId: string;
+  resourceId?: string,
+  resourceName: string,
+  depenseIndex: number,
+  depenseName: string,
+  fundingIndex?: number,
+  financerName?: string,
+  fundingAmount: number,
+  userPledge: number,
+  userfundingPledge:  FundingTransaction[];
+}
+
+export interface Objective {
+  target: number;
+  label: string;
+  description: string;
+  icon: React.ElementType;
+}

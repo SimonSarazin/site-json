@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "generated": "2026-04-01T07:56:51.814Z",
+  "generated": "2026-07-06T17:39:23.074Z",
   "meta": {
     "title": {
       "fr": "SiteForge - Générateur de Sites JSON",
@@ -123,7 +123,8 @@
       "search": false,
       "auth": true,
       "cart": false,
-      "notifications": false
+      "notifications": false,
+      "piggyBank": false
     }
   },
   "pages": [
@@ -2141,6 +2142,93 @@
       ]
     },
     {
+      "path": "/login",
+      "title": {
+        "fr": "Connexion - SiteForge",
+        "en": "Login - SiteForge"
+      },
+      "seo": {
+        "title": {
+          "fr": "Connexion - SiteForge",
+          "en": "Login - SiteForge"
+        },
+        "description": {
+          "fr": "Connectez-vous à votre compte SiteForge",
+          "en": "Login to your SiteForge account"
+        },
+        "noIndex": true
+      },
+      "layout": "default",
+      "middleware": [
+        "redirect-if-authenticated"
+      ],
+      "sections": [
+        {
+          "type": "loginForm",
+          "id": "login-form",
+          "props": {}
+        }
+      ]
+    },
+    {
+      "path": "/register",
+      "title": {
+        "fr": "Inscription - SiteForge",
+        "en": "Register - SiteForge"
+      },
+      "seo": {
+        "title": {
+          "fr": "Inscription - SiteForge",
+          "en": "Register - SiteForge"
+        },
+        "description": {
+          "fr": "Créez votre compte SiteForge gratuitement",
+          "en": "Create your free SiteForge account"
+        },
+        "noIndex": true
+      },
+      "layout": "default",
+      "middleware": [
+        "redirect-if-authenticated"
+      ],
+      "sections": [
+        {
+          "type": "registerForm",
+          "id": "register-form",
+          "props": {}
+        }
+      ]
+    },
+    {
+      "path": "/recover-password",
+      "title": {
+        "fr": "Récupération de mot de passe - SiteForge",
+        "en": "Password Recovery - SiteForge"
+      },
+      "seo": {
+        "title": {
+          "fr": "Récupération de mot de passe - SiteForge",
+          "en": "Password Recovery - SiteForge"
+        },
+        "description": {
+          "fr": "Récupérez l'accès à votre compte SiteForge",
+          "en": "Recover access to your SiteForge account"
+        },
+        "noIndex": true
+      },
+      "layout": "default",
+      "middleware": [
+        "redirect-if-authenticated"
+      ],
+      "sections": [
+        {
+          "type": "recoverPasswordForm",
+          "id": "recover-password-form",
+          "props": {}
+        }
+      ]
+    },
+    {
       "path": "/profile",
       "title": {
         "fr": "Profil - SiteForge",
@@ -2259,7 +2347,7 @@
                 "href": "/admin/settings"
               },
               {
-                "icon": "barChart",
+                "icon": "chart-column",
                 "title": {
                   "fr": "Statistiques",
                   "en": "Analytics"
@@ -2904,41 +2992,6 @@
     "copyright": {
       "fr": "© 2025 SiteForge. Tous droits réservés.",
       "en": "© 2025 SiteForge. All rights reserved."
-    }
-  },
-  "auth": {
-    "variant": "default",
-    "hideHeader": false,
-    "hideFooter": false,
-    "login": {
-      "title": {
-        "fr": "Se connecter",
-        "en": "Sign in"
-      },
-      "subtitle": {
-        "fr": "Accédez à votre compte SiteForge",
-        "en": "Access your SiteForge account"
-      }
-    },
-    "register": {
-      "title": {
-        "fr": "Créer un compte",
-        "en": "Create an account"
-      },
-      "subtitle": {
-        "fr": "Rejoignez SiteForge dès aujourd'hui",
-        "en": "Join SiteForge today"
-      }
-    },
-    "recover": {
-      "title": {
-        "fr": "Mot de passe oublié",
-        "en": "Forgot password"
-      },
-      "subtitle": {
-        "fr": "Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation",
-        "en": "Enter your email to receive a reset link"
-      }
     }
   },
   "integrations": {

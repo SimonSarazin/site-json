@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { z } from "zod";
 import { Header, Footer } from "@/types/site-schema";
+import { ListConfSchema, PreviewConfSchema } from "@/modules/search/schema";
 
 /**
  * Anti-dérive de la skill `config-assistant` (.claude/skills/config-assistant/
@@ -28,6 +29,18 @@ function enumOptions(schema: z.ZodType): string[] {
   throw new Error("enum introuvable");
 }
 
+/** Shape d'un ZodObject éventuellement enveloppé (ZodOptional/ZodDefault). */
+function innerShape(schema: z.ZodType): Record<string, z.ZodType> {
+  let cur: unknown = schema;
+  for (let i = 0; i < 4; i++) {
+    const rec = cur as { shape?: Record<string, z.ZodType>; def?: { innerType?: unknown } };
+    if (rec.shape) return rec.shape;
+    if (rec.def?.innerType) cur = rec.def.innerType;
+    else break;
+  }
+  throw new Error("shape introuvable");
+}
+
 /** Types backtickés en 1re colonne des lignes de table d'une section du SKILL. */
 function tableTypes(sectionHeading: string): string[] {
   const start = skill.indexOf(sectionHeading);
@@ -38,15 +51,30 @@ function tableTypes(sectionHeading: string): string[] {
 }
 
 describe("skill config-assistant ⇄ code (anti-dérive)", () => {
-  it("la table Headers couvre exactement l'enum header.type (hors 'default')", () => {
-    const real = enumOptions(Header.shape.type).filter((t) => t !== "default");
+  // `default` INCLUS : ce n'est pas un design (il délègue à HeaderStandard /
+  // FooterRich) mais il existe dans des configs réelles — un agent qui en
+  // rencontre un doit trouver la ligne qui l'explique.
+  it("la table Headers couvre exactement l'enum header.type", () => {
+    const real = enumOptions(Header.shape.type);
     const documented = tableTypes("### Headers");
     expect(documented.sort()).toEqual(real.sort());
   });
 
-  it("la table Footers couvre exactement l'enum footer.type (hors 'default')", () => {
-    const real = enumOptions(Footer.shape.type).filter((t) => t !== "default");
+  it("la table Footers couvre exactement l'enum footer.type", () => {
+    const real = enumOptions(Footer.shape.type);
     const documented = tableTypes("### Footers");
+    expect(documented.sort()).toEqual(real.sort());
+  });
+
+  it("la table Presenters — cartes couvre exactement l'enum card.type", () => {
+    const real = enumOptions(innerShape(ListConfSchema.shape.card).type);
+    const documented = tableTypes("### Presenters — cartes");
+    expect(documented.sort()).toEqual(real.sort());
+  });
+
+  it("la table Presenters — previews couvre exactement l'enum preview.type", () => {
+    const real = enumOptions(PreviewConfSchema.shape.type);
+    const documented = tableTypes("### Presenters — previews");
     expect(documented.sort()).toEqual(real.sort());
   });
 
@@ -63,11 +91,11 @@ describe("skill config-assistant ⇄ code (anti-dérive)", () => {
     const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf-8")) as {
       scripts: Record<string, string>;
     };
-    for (const alias of ["config:validate", "config:schema", "entity:slug", "audit:config", "test:preflight"]) {
+    for (const alias of ["config:validate", "config:schema", "entity:slug", "audit:config", "test:preflight", "config:costum", "admin:scaffold", "config:example", "config:init", "config:fix", "config:probe", "config:render"]) {
       expect(pkg.scripts[alias], `script npm "${alias}" référencé par la skill`).toBeDefined();
       expect(skill).toContain(alias);
     }
-    for (const file of ["scripts/validate-config.ts", "scripts/config-schema.ts", "scripts/entity-slug.ts", "src/styles/shared.css", "doc/26-assistant-config.md"]) {
+    for (const file of ["scripts/validate-config.ts", "scripts/config-schema.ts", "scripts/entity-slug.ts", "scripts/admin-scaffold.ts", "scripts/gen-costum-config.ts", "scripts/config-example.ts", "scripts/lib/archetypes.ts", "scripts/lib/config-blocks.ts", "scripts/lib/prop-descriptions.ts", ".claude/skills/config-assistant/archetypes.json", ".claude/skills/config-assistant/examples", ".claude/skills/config-assistant/references/formulaires-costum.md", ".claude/skills/config-assistant/references/admin.md", ".claude/skills/config-assistant/references/theme.md", ".claude/skills/config-assistant/page-recipes.json", "scripts/lib/design-previews.ts", "scripts/lib/presenter-options.ts", "scripts/lib/module-routes.ts", "scripts/lib/code-vocabulary.ts", "scripts/config-init.ts", "scripts/fix-config.ts", "scripts/config-probe.ts", "scripts/config-render.ts", ".design-sync/previews", ".claude/agents/siteforge-config-auditor.md", ".design-sync/config.json", ".design-sync/conventions.md", ".design-sync/NOTES.md", "src/modules/search/components/SearchCard.tsx", "src/modules/search/components/Preview.tsx", "src/styles/shared.css", "doc/26-assistant-config.md", "doc/30-module-admin.md"]) {
       expect(fs.existsSync(path.join(ROOT, file)), `fichier ${file}`).toBe(true);
     }
   });

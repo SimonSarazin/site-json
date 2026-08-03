@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
@@ -21,6 +21,7 @@ import {
     ExternalLink,
     Search,
     Info,
+    Clock,
 } from "lucide-react";
 import { showErrorToast, showSuccessToast } from "@/lib/toastUtils";
 import { useCocolight } from "@/hooks/useCocolight";
@@ -45,31 +46,33 @@ import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 import { useQueryClient } from "@tanstack/react-query";
 import { launchConfettiBurst } from "@/lib/confetti";
 import StripePaymentForm from "./StripePaymentForm";
-
-interface ProjectMilestone {
-    milestoneId: string;
-    name: string;
-    description?: string;
-    price: number;
-    currentFunding: number;
-}
+import {CagnotteFundableItem, DepenseFunding, CagnotteTypeConfig} from "@/modules/cagnotte/types.ts";
 
 interface PaymentConfigPageProps {
-    projectName: string;
-    projectId: string;
-    projectImage?: string;
+
+    resourceName: string;
+    resourceId: string;
+    resourceImage?: string;
     amount: number;
-    milestones: ProjectMilestone[];
-    activeMilestoneIds: Set<string>;
-    answerId?: string; //  ID de l'Answer associée au projet
+    items: CagnotteFundableItem[] | undefined;
+    activeItemsIds: Set<string>;
+    itemAnswerId?: string; //  ID de l'Answer associée
+    itemProjectId?: string; //  ID de du Projet associée
     onBack: () => void;
     onPaymentSuccess: (paymentData: Record<string, unknown>) => void;
     onContributionSaved?: () => void | Promise<void>;
     onClose: () => void;
     currentUser: EntityTypes | null;
+    context: string;
+    cagnotteConfig: CagnotteTypeConfig;
 }
 
-type PaymentMethod = "stripe" | "helloasso" | null;
+interface PaymentDataPayload extends Record<string, unknown> {
+    method?: string;
+    transactionId?: string;
+}
+
+type PaymentMethod = "stripe" | "helloasso" | "pledge" | null;
 type ContributorType = "citoyens" | "organizations";
 
 function normalizeFundingEnvelopeResponse(value: unknown): UnknownRecord {
@@ -93,24 +96,27 @@ function normalizeFundingContextType(type: string | undefined): string {
 }
 
 const PaymentConfigPage = ({
-    projectName,
-    projectId,
-    projectImage,
-    amount,
-    milestones,
-    activeMilestoneIds,
-    answerId, //  ID de l'Answer pour enregistrer les financements
-    onBack,
-    onPaymentSuccess,
-    onContributionSaved,
-    onClose,
-}: PaymentConfigPageProps) => {
+                               resourceName,
+                               resourceId,
+                               resourceImage,
+                               amount,
+                               items,
+                               activeItemsIds,
+                               itemAnswerId,
+                               itemProjectId,
+                               onBack,
+                               onPaymentSuccess,
+                               onContributionSaved,
+                               onClose,
+                               context,
+                               cagnotteConfig
+                           }: PaymentConfigPageProps) => {
     const navigate = useNavigate();
     const { entity, me, api, contextId, contextType } = useCocolight();
     const queryClient = useQueryClient();
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(null);
-    const [contributorType, setContributorType] = useState<ContributorType>("citoyens");
-    const [contributorId, setContributorId] = useState<string>(me?.serverData?.id || "");
+    const [contributorType, setContributorType] = useState<ContributorType>(cagnotteConfig.allowPersonToFinance ? "citoyens" : "organizations");
+    const [contributorId, setContributorId] = useState<string>(cagnotteConfig.allowPersonToFinance ? (me?.serverData?.id || "") : "");
     const [contributorName, setContributorName] = useState<string>(me?.serverData?.name || "");
     const [searchOrgQuery, setSearchOrgQuery] = useState("");
     const [isHelloAssoProcessing, setIsHelloAssoProcessing] = useState(false);
@@ -118,9 +124,10 @@ const PaymentConfigPage = ({
     const [helloAssoPaymentId, setHelloAssoPaymentId] = useState<string | null>(null);
     const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
     const [isWaitingHelloAssoCallback, setIsWaitingHelloAssoCallback] = useState(false);
+    const [acceptPledgeCondition, setAcceptPledgeCondition] = useState(false);
     useLoadNamespace("modules/cagnotte");
     const t = useT("modules/cagnotte");
-    const fundingEnvelopeQuery = useFundingEnvelope(projectId);
+    const fundingEnvelopeQuery = useFundingEnvelope(resourceId);
     const fundingPaymentMethods = fundingEnvelopeQuery.data?.paymentMethods ?? fundingEnvelopeQuery.data?.selectedProject?.paymentMethods ?? null;
 
     const stripePublicKey = fundingPaymentMethods?.stripePublicKey || getStripePublicKey();
@@ -128,6 +135,8 @@ const PaymentConfigPage = ({
         () => (stripePublicKey ? loadStripe(stripePublicKey) : null),
         [stripePublicKey]
     );
+
+    const acceptCondition = (e: { target: { checked: boolean | ((prevState: boolean) => boolean); }; }) => {setAcceptPledgeCondition(e.target.checked);};
 
     const stripeUnavailableReason = !stripePublicKey
         ? String(t("PaymentConfigPage.errors.stripeUnavailable"))
@@ -146,29 +155,41 @@ const PaymentConfigPage = ({
         ]);
     }, [queryClient, onContributionSaved]);
 
-    const activeMilestones = useMemo(
-        () => milestones.filter((m) => activeMilestoneIds.has(m.milestoneId)),
-        [milestones, activeMilestoneIds]
+    const activeItems = useMemo(
+        () => (items || []).filter((i) => activeItemsIds.has(i.itemId)),
+        [items, activeItemsIds]
     );
 
-    // Allouer le montant saisi du premier au dernier milestone actif
-    const milestoneFunding = useMemo(() => {
-        let remainingAmount = amount;
+    const maxAllocatable = useMemo(
+        () => activeItems.reduce((sum, item) => {
+            const currentFunding = Number(item.currentFunding || 0);
+            const targetAmount = Number(item.price || 0);
+            return sum + Math.max(targetAmount - currentFunding, 0);
+        }, 0),
+        [activeItems]
+    );
 
-        return activeMilestones.map((milestone) => {
-            const currentFunding = Number(milestone.currentFunding || 0);
-            const targetAmount = Number(milestone.price || 0);
+    const effectiveAmount = Math.min(amount, maxAllocatable);
+
+    // Allouer le montant saisi du premier au dernier depens actif
+    const depenseFunding = useMemo(() => {
+        let remainingAmount = effectiveAmount;
+        const result = activeItems.map((item) => {
+            const currentFunding = Number(item.currentFunding || 0);
+            const targetAmount = Number(item.price || 0);
             const remainingToTarget = Math.max(targetAmount - currentFunding, 0);
             const allocatedAmount = Math.max(Math.min(remainingAmount, remainingToTarget), 0);
 
             remainingAmount -= allocatedAmount;
 
             return {
-                milestoneId: milestone.milestoneId,
+                depenseIndex: item.depenseIndex,
                 amount: allocatedAmount,
             };
         });
-    }, [activeMilestones, amount]);
+
+        return result;
+    }, [activeItems, effectiveAmount]);
 
     const redirectToHome = useCallback((showToast = false) => {
         let didNavigate = false;
@@ -192,15 +213,15 @@ const PaymentConfigPage = ({
     }, [navigate, onClose, t]);
 
     const submitFundingEnvelopeAction = useCallback(async (
-        action: "stripePay" | "helloassoPay",
+        action: "stripePay" | "helloassoPay" | "pledge",
         payload: Record<string, unknown>
     ) => {
         if (!entity || typeof entity.fundingEnvelope !== "function") {
             throw new Error(String(t("PaymentConfigPage.errors.fundingEnvelopeUnavailable")));
         }
 
-        const effectiveContextId = contextId || entity.id || projectId;
-        const effectiveContextType = normalizeFundingContextType(contextType || entity.getEntityType?.()) || "projects";
+        const effectiveContextId = contextId || entity.id || itemProjectId;
+        const effectiveContextType = normalizeFundingContextType(contextType || entity.getEntityType?.()) || "projects" ;
 
         if (!effectiveContextId) {
             throw new Error(String(t("PaymentConfigPage.errors.noContextId")));
@@ -224,63 +245,68 @@ const PaymentConfigPage = ({
         }
 
         return response;
-    }, [entity, contextId, contextType, projectId]);
+    // `itemProjectId` est lu l.223 (repli de `effectiveContextId`) : sans lui, le
+    // callback capturait une valeur périmée. Sans risque de boucle — il n'est
+    // consommé que par des gestionnaires d'événements, jamais par un useEffect.
+    }, [entity, contextId, contextType, itemProjectId, t]);
+
+    // Garde-fou de ré-entrance : `completePayment` enregistre le financement via
+    // `answer.updateField(..., {arrayForm:true})` qui AJOUTE une entrée financer à
+    // chaque appel. Or le poll HelloAsso (setInterval 5s + fetch awaité) peut déclencher
+    // deux ticks concurrents. Sans garde, la contribution serait enregistrée en double.
+    // "running"/"done" bloquent tout second appel ; on repasse à "idle" sur erreur pour
+    // autoriser une nouvelle tentative.
+    const completionStateRef = useRef<"idle" | "running" | "done">("idle");
 
     // Envelopper completePayment dans useCallback pour éviter les dépendances changeantes
     const completePayment = useCallback(async (
-        paymentData: Record<string, unknown>,
-        fundingData: Array<{ milestoneId: string; amount: number }>
+        paymentData: PaymentDataPayload,
+        fundingData: DepenseFunding[],
     ) => {
+        if (completionStateRef.current !== "idle") return;
+        completionStateRef.current = "running";
         try {
             //  Enregistrer les financements dans Answer (si answerId disponible)
-            if (answerId && api) {
-                // Préparer les données structurées pour le hook
-                const milestoneFundingData = fundingData.map((f) => ({
-                    milestoneId: f.milestoneId,
-                    milestoneIndex: 0, // Sera calculé dans le hook
+            if (itemAnswerId && api) {
+                const itemFundingData = fundingData.map((f) => ({
+                    depenseIndex: f.depenseIndex,
                     amount: f.amount,
                 }));
 
                 // `saveContribution` accepte directement un id — il charge l'Answer
                 // via api.answer({id}) en interne et utilise `answer.updateField` pour
                 // la mutation atomique de chaque dépense.
+                // Si c'est un pledge, method et transactionId seront undefined ici
+                const { method, transactionId } = paymentData;
+
                 const saved = await saveContribution(
-                    answerId,
-                    milestoneFundingData,
+                    itemAnswerId,
+                    itemFundingData,
                     {
                         type: contributorType,
                         name: contributorName,
                         id: contributorId
-                    }
+                    },
+                    method,
+                    transactionId
                 );
 
-                if (!saved) {
-                    throw new Error(String(t("PaymentConfigPage.errors.saveFailed")));
-                }
-            } else {
-                console.warn('Pas d\'answerId ou api - skip sauvegarde BDD');
+                if (!saved) throw new Error(String(t("PaymentConfigPage.errors.saveFailed")));
             }
 
-            //  Continuer le flux normal
+            completionStateRef.current = "done";
             setPaymentSuccess(true);
             onPaymentSuccess(paymentData);
             launchConfettiBurst({ originY: 0.34, spread: 84, count: 40 });
-
-            // Fermer la modale et rediriger après affichage court de l'écran succès.
-            //scheduleRedirectToHome(3000, true);
-            await refreshAfterContributionSave();
         } catch (error) {
+            // Échec de l'enregistrement : on repasse à "idle" pour permettre une relance.
+            completionStateRef.current = "idle";
             console.error('Erreur completePayment:', error);
             showErrorToast(error, "PaymentConfigPage.toasts.paymentAcceptedIncomplete.title", t);
-
-            // Continuer malgré l'erreur pour ne pas bloquer l'utilisateur
-            setPaymentSuccess(true);
-            onPaymentSuccess(paymentData);
-
-            //scheduleRedirectToHome(3000, false);
+        } finally {
             await refreshAfterContributionSave();
         }
-    }, [answerId, api, contributorType, contributorName, contributorId, t, onPaymentSuccess, saveContribution, refreshAfterContributionSave]);
+    }, [itemAnswerId, api, contributorType, contributorName, contributorId, t, onPaymentSuccess, saveContribution, refreshAfterContributionSave]);
 
     // Récupérer les organisations où l'utilisateur courant est admin (recherche server-side)
     const currentUserEntity = (me && isUser(me) ? me : null) as User | null;
@@ -326,44 +352,54 @@ const PaymentConfigPage = ({
     useEffect(() => {
         if (!isVerifyingPayment || !helloAssoPaymentId) return;
 
+        // Empêche deux ticks de se chevaucher si une vérification dépasse 5 s
+        // (le fetch n'a pas de timeout) : sinon deux ticks pourraient tous deux
+        // voir isValid et appeler completePayment.
+        let polling = false;
+
         const verifyInterval = setInterval(async () => {
-            const verification = await verifyHelloAssoCheckoutStatus(helloAssoPaymentId);
+            if (polling) return;
+            polling = true;
+            try {
+                const verification = await verifyHelloAssoCheckoutStatus(helloAssoPaymentId);
 
-            if (verification.isValid) {
-                clearInterval(verifyInterval);
-                setIsVerifyingPayment(false);
-                setIsHelloAssoProcessing(false);
+                if (verification.isValid) {
+                    clearInterval(verifyInterval);
+                    setIsVerifyingPayment(false);
+                    setIsHelloAssoProcessing(false);
 
-                // Créer les données finales de paiement
-                const paymentData = buildHelloAssoPaymentData(
-                    {
-                        amount,
-                        projectName,
-                        projectId,
-                        milestoneIds: Array.from(activeMilestoneIds),
-                        contributorType: contributorType as "citoyens" | "organizations",
-                        organizationId: contributorId || undefined,
-                    },
-                    helloAssoPaymentId
-                );
-                completePayment(paymentData, milestoneFunding);
-            } else if (verification.status === "failed") {
-                console.error("Paiement HelloAsso échoué");
-                clearInterval(verifyInterval);
-                setIsVerifyingPayment(false);
-                setIsHelloAssoProcessing(false);
-                showErrorToast(
-                    new Error(verification.error || String(t("PaymentConfigPage.toasts.paymentFailed.fallbackDescription"))),
-                    "PaymentConfigPage.toasts.paymentFailed.title",
-                    t,
-                );
+                    // Créer les données finales de paiement
+                    const paymentData = buildHelloAssoPaymentData(
+                        {
+                            amount: effectiveAmount,
+                            resourceName,
+                            resourceId,
+                            itemsIds: Array.from(activeItemsIds),
+                            contributorType: contributorType as "citoyens" | "organizations",
+                            organizationId: contributorId || undefined,
+                        },
+                        helloAssoPaymentId
+                    );
+                    completePayment(paymentData, depenseFunding);
+                } else if (verification.status === "failed") {
+                    console.error("Paiement HelloAsso échoué");
+                    clearInterval(verifyInterval);
+                    setIsVerifyingPayment(false);
+                    setIsHelloAssoProcessing(false);
+                    showErrorToast(
+                        new Error(verification.error || String(t("PaymentConfigPage.toasts.paymentFailed.fallbackDescription"))),
+                        "PaymentConfigPage.toasts.paymentFailed.title",
+                        t,
+                    );
+                }
+                // Si status === "pending" ou "error", continuer à vérifier
+            } finally {
+                polling = false;
             }
-            // Si status === "pending" ou "error", continuer à vérifier
         }, 5000);
 
         return () => clearInterval(verifyInterval);
-    }, [isVerifyingPayment, helloAssoPaymentId, amount, projectName, projectId, activeMilestoneIds, contributorType, contributorId, t, completePayment, milestoneFunding]);
-
+    }, [isVerifyingPayment, helloAssoPaymentId, effectiveAmount, resourceName, resourceId, activeItemsIds, contributorType, contributorId, t, completePayment, depenseFunding]);
 
     const isFormComplete = Boolean(
         paymentMethod &&
@@ -371,16 +407,14 @@ const PaymentConfigPage = ({
         (contributorType === "citoyens" || (contributorType === "organizations" && contributorId))
     );
 
-    const buildPaymentData = (method: "stripe" | "helloasso", transactionId: string) => ({
-        transactionId,
-        method,
-        amount,
-        projectName,
-        milestones: activeMilestones.map((m) => {
-            const allocation = milestoneFunding.find((mf) => mf.milestoneId === m.milestoneId);
+    const buildContributionData = () => ({
+        amount: effectiveAmount,
+        resourceName,
+        items: activeItems.map((i) => {
+            const allocation = depenseFunding.find((df) => df.depenseIndex === i.depenseIndex);
             return {
-                id: m.milestoneId,
-                name: m.name,
+                id: i.itemId,
+                name: i.name,
                 amount: allocation?.amount || 0,
             };
         }),
@@ -398,14 +432,21 @@ const PaymentConfigPage = ({
                     stripeData.payment_method_id ||
                     ""
                 ),
-                amount,
+                amount: effectiveAmount,
             });
 
-            const paymentData = {
-                ...buildPaymentData("stripe", String(stripeData.transactionId || `stripe_${Date.now()}`)),
-                ...stripeData,
+            const contributionData = buildContributionData();
+
+            const finalPayload = {
+                ...contributionData,
+                method: "stripe",
+                transactionId: String(stripeData.transactionId || `stripe_${Date.now()}`)
             };
-            completePayment(paymentData, milestoneFunding);
+            const paymentData = {
+                ...finalPayload,
+                ...stripeData,
+            }
+            completePayment(paymentData, depenseFunding);
         } catch (error) {
             console.error("Erreur financement Stripe via fundingEnvelope:", error);
             showErrorToast(error, "PaymentConfigPage.toasts.stripeError.title", t);
@@ -422,10 +463,10 @@ const PaymentConfigPage = ({
         try {
             // Préparer la configuration HelloAsso
             const helloAssoConfig = {
-                amount,
-                projectName,
-                projectId,
-                milestoneIds: Array.from(activeMilestoneIds),
+                amount: effectiveAmount,
+                resourceName,
+                resourceId,
+                itemsIds: Array.from(activeItemsIds),
                 contributorType: contributorType as "citoyens" | "organizations",
                 organizationId: contributorId || undefined,
             };
@@ -440,7 +481,7 @@ const PaymentConfigPage = ({
             }
 
             const fundingEnvelopeResponse = await submitFundingEnvelopeAction("helloassoPay", {
-                amount,
+                amount: effectiveAmount,
                 email: me?.serverData?.email,
             });
 
@@ -483,6 +524,18 @@ const PaymentConfigPage = ({
             console.error("Erreur HelloAsso:", error);
             showErrorToast(error, "PaymentConfigPage.toasts.paymentError.title", t);
             setIsHelloAssoProcessing(false);
+        }
+    };
+
+    const saveContributionAsPromise = async ()  => {
+        if (!isFormComplete) return;
+        try {
+            const paymentData: PaymentDataPayload = {
+                ...buildContributionData(),
+            };
+            await completePayment(paymentData, depenseFunding);
+        } catch (error) {
+            showErrorToast(error, "PaymentConfigPage.toasts.paymentError.title", t);
         }
     };
 
@@ -536,29 +589,29 @@ const PaymentConfigPage = ({
 
             <div className="bg-linear-to-r from-primary/20 to-accent/20 rounded-xl p-6 space-y-4">
                 <div className="flex items-start gap-4">
-                    {projectImage && (
-                        <img src={projectImage} alt={projectName} className="w-20 h-20 rounded-lg object-cover" />
+                    {resourceImage && (
+                        <img src={resourceImage} alt={resourceName} className="w-20 h-20 rounded-lg object-cover" />
                     )}
                     <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-foreground">{projectName}</h3>
-                        <p className="text-3xl font-bold text-primary">{amount}€</p>
+                        <h3 className="text-lg font-semibold text-foreground">{resourceName}</h3>
+                        <p className="text-3xl font-bold text-primary">{effectiveAmount.toLocaleString("fr-FR")} €</p>
                         <p className="text-sm text-muted-foreground">
-                            {activeMilestones.length} milestone{activeMilestones.length > 1 ? "s" : ""} selectionne{activeMilestones.length > 1 ? "s" : ""}
+                            {activeItems.length} {String(t("PaymentConfigPage.pledge.selected", undefined, { count: activeItems.length }))}
                         </p>
                     </div>
                 </div>
 
-                {activeMilestones.length > 0 && (
+                {activeItems.length > 0 && (
                     <div className="space-y-2 border-t border-border/50 pt-4">
                         <p className="text-sm font-medium text-foreground">{t("PaymentConfigPage.milestonesLabel")}</p>
                         <div className="grid grid-cols-1 gap-2">
-                            {activeMilestones.map((m) => {
-                                const allocation = milestoneFunding.find(mf => mf.milestoneId === m.milestoneId);
+                            {activeItems.map((i) => {
+                                const allocation = depenseFunding.find(df => df.depenseIndex === i.depenseIndex);
                                 const allocatedAmount = allocation?.amount || 0;
                                 return (
-                                    <div key={m.milestoneId} className="bg-background/50 rounded-lg p-3">
+                                    <div key={i.depenseIndex} className="bg-background/50 rounded-lg p-3">
                                         <div className="flex items-center justify-between">
-                                            <span className="font-medium text-sm">{m.name}</span>
+                                            <span className="font-medium text-sm">{i.name}</span>
                                             <Badge variant="outline">{formatNumber(allocatedAmount)}€</Badge>
                                         </div>
                                     </div>
@@ -570,43 +623,46 @@ const PaymentConfigPage = ({
             </div>
 
             <div className="space-y-3">
-                <p className="text-sm font-medium text-foreground">{t("PaymentConfigPage.contributorTypeLabel")}</p>
-                <ToggleGroup
-                    type="single"
-                    value={contributorType}
-                    onValueChange={(value) => {
-                        if (!value) return;
-                        if (value === "citoyens") {
-                            setContributorType("citoyens");
-                            setContributorId(currentUserEntity?.serverData?.id || "");
-                            setContributorName(currentUserEntity?.serverData?.name || "");
-                        } else if (value === "organizations") {
-                            setContributorType("organizations");
-                        }
-                    }}
-                    className="grid grid-cols-1 sm:grid-cols-2 gap-3"
-                >
-                    <ToggleGroupItem
-                        value="citoyens"
-                        aria-label={String(t("PaymentConfigPage.contributorOptions.person"))}
-                        className="p-4 rounded-lg border-2 transition-all text-left h-auto justify-start data-[state=on]:bg-primary/20 data-[state=on]:border-primary bg-background border-border hover:border-primary/50"
+                <p className="text-sm font-medium text-foreground">{t( "PaymentConfigPage.contributorTypeLabel")}</p>
+                { cagnotteConfig.allowPersonToFinance && (
+                    <ToggleGroup
+                        type="single"
+                        value={contributorType}
+                        onValueChange={(value) => {
+                            if (!value) return;
+                            if (value === "citoyens") {
+                                setContributorType("citoyens");
+                                setContributorId(currentUserEntity?.serverData?.id || "");
+                                setContributorName(currentUserEntity?.serverData?.name || "");
+                            } else if (value === "organizations") {
+                                setContributorType("organizations");
+                            }
+                        }}
+                        className="grid grid-cols-1 sm:grid-cols-2 gap-3"
                     >
-                        <div className="flex items-center gap-2 text-sm font-semibold">
-                            <Users className="w-4 h-4" /> {t("PaymentConfigPage.contributorOptions.person")}
-                        </div>
-                    </ToggleGroupItem>
+                        <ToggleGroupItem
+                            value="citoyens"
+                            aria-label={String(t("PaymentConfigPage.contributorOptions.person"))}
+                            className="p-4 rounded-lg border-2 transition-all text-left h-auto justify-start data-[state=on]:bg-primary/20 data-[state=on]:border-primary bg-background border-border hover:border-primary/50"
+                        >
+                            <div className="flex items-center gap-2 text-sm font-semibold">
+                                <Users className="w-4 h-4" /> {t("PaymentConfigPage.contributorOptions.person")}
+                            </div>
+                        </ToggleGroupItem>
 
-                    <ToggleGroupItem
-                        value="organizations"
-                        aria-label={String(t("PaymentConfigPage.contributorOptions.organization"))}
-                        className="p-4 rounded-lg border-2 transition-all text-left h-auto justify-start data-[state=on]:bg-primary/20 data-[state=on]:border-primary bg-background border-border hover:border-primary/50"
-                    >
-                        <div className="flex items-center gap-2 text-sm font-semibold">
-                            <Users className="w-4 h-4" /> {t("PaymentConfigPage.contributorOptions.organization")}
-                        </div>
-                    </ToggleGroupItem>
-                </ToggleGroup>
+                        <ToggleGroupItem
+                            value="organizations"
+                            aria-label={String(t("PaymentConfigPage.contributorOptions.organization"))}
+                            className="p-4 rounded-lg border-2 transition-all text-left h-auto justify-start data-[state=on]:bg-primary/20 data-[state=on]:border-primary bg-background border-border hover:border-primary/50"
+                        >
+                            <div className="flex items-center gap-2 text-sm font-semibold">
+                                <Users className="w-4 h-4" /> {t("PaymentConfigPage.contributorOptions.organization")}
+                            </div>
+                        </ToggleGroupItem>
+                    </ToggleGroup>
+                )}
             </div>
+
 
             {contributorType === "organizations" && (
                 <div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-border/50">
@@ -680,6 +736,8 @@ const PaymentConfigPage = ({
                             setPaymentMethod("stripe");
                         } else if (value === "helloasso") {
                             setPaymentMethod("helloasso");
+                        } else if (value === "pledge") {
+                            setPaymentMethod("pledge");
                         }
                     }}
                     className="grid grid-cols-1 sm:grid-cols-2 gap-3"
@@ -719,6 +777,24 @@ const PaymentConfigPage = ({
                             </div>
                         </div>
                     </ToggleGroupItem>
+
+                    {cagnotteConfig.allowContributionWithoutPaiement && (
+                        <ToggleGroupItem
+                            value="pledge"
+                            aria-label={String(t("PaymentConfigPage.pledge.title"))}
+                            className="p-4 rounded-lg border-2 transition-all text-left h-auto justify-start data-[state=on]:bg-primary/20 data-[state=on]:border-primary bg-background border-border hover:border-primary/50"
+                        >
+                            <div className="flex items-start gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-success/20 flex items-center justify-center shrink-0">
+                                    <Clock className="w-5 h-5 text-success" />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="font-semibold text-sm">{t("PaymentConfigPage.pledge.title")}</p>
+                                    <p className="text-xs text-muted-foreground">{t("PaymentConfigPage.pledge.description")}</p>
+                                </div>
+                            </div>
+                        </ToggleGroupItem>
+                    )}
                 </ToggleGroup>
             </div>
 
@@ -733,7 +809,7 @@ const PaymentConfigPage = ({
                         ) : (
                             <Elements stripe={stripePromise}>
                                 <StripePaymentForm
-                                    amount={amount}
+                                    amount={effectiveAmount}
                                     onSuccess={handleStripePaymentSuccess}
                                     onError={() => undefined}
                                 />
@@ -752,8 +828,35 @@ const PaymentConfigPage = ({
                         <ExternalLink className="w-5 h-5 mr-2" />
                         {isHelloAssoProcessing
                             ? t("PaymentConfigPage.helloasso.buttonLoading")
-                            : t("PaymentConfigPage.helloasso.button", undefined, { amount })}
+                            : t("PaymentConfigPage.helloasso.button", undefined, { amount: formatNumber(effectiveAmount) })}
                     </Button>
+                )}
+
+                {paymentMethod === "pledge" && (
+                    <div className="rounded-xl border bg-[var(--color-surface)] p-4 space-y-4">
+                        <h3 className="text-sm font-medium">{String(t("PaymentConfigPage.pledge.pledge"))}</h3>
+                        <p className="text-sm text-muted-foreground">
+                            {String(t("PaymentConfigPage.pledge.confirm", undefined, { amount: effectiveAmount }))}
+                        </p>
+                        <label className="flex items-start gap-2 text-sm text-muted-foreground">
+                            <input type="checkbox" required className="mt-1 accent-[var(--color-primary)]" onChange={acceptCondition}  />
+                            <span>{String(t("PaymentConfigPage.pledge.checkbox"))}</span>
+                        </label>
+                        <Button
+                            onClick={saveContributionAsPromise}
+                            disabled={!isFormComplete || !acceptPledgeCondition}
+                            size="lg"
+                            className="w-full h-12 bg-success hover:bg-success/90 text-success-foreground"
+                        >
+                            {t("PaymentConfigPage.pledge.button", undefined,
+                                {
+                                    amount: effectiveAmount,
+                                    context: cagnotteConfig.selectorType+context
+                                }
+                            )}
+                        </Button>
+                    </div>
+
                 )}
 
                 {!paymentMethod && (
@@ -782,4 +885,3 @@ const PaymentConfigPage = ({
 };
 
 export default PaymentConfigPage;
-

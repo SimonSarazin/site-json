@@ -1,0 +1,528 @@
+[← Index des projets](README.md) · [← Doc technique](../doc/README.md)
+
+# Projet Parent62 — Réseau Parentalité du Pas-de-Calais
+
+> **Document de travail du projet de configuration.** Il intègre le cahier des charges, le
+> modèle de données réel, l'architecture, l'état d'avancement, les impacts et les dépendances.
+> Objectif : ne plus rejoindre le PDF du CDC ni re-explorer la base à chaque session, et offrir
+> une base partagée entre les intervenants (Peterson / Thomas). **À tenir à jour à chaque lot
+> livré**, selon le formalisme du skill [`doc-projet`](../.claude/skills/doc-projet/SKILL.md).
+>
+> Voir aussi : [Module Articles/Blog](../doc/32-module-articles-blog.md) ·
+> [Module Search](../doc/07-module-search.md) · [Module formEngine](../doc/28-module-formengine.md) ·
+> [Système de visibilité](../doc/19-visibility-system.md) · [Module Agenda](../doc/29-module-agenda.md) ·
+> [Composants média](../doc/33-media-components.md). Mémoire : `[[project-parent62]]` — slug corrigé
+> le 25/07 (`parents62` avec **s** est abandonné, cf. §1) ; le fichier `.claude/memory/` reste **à créer**.
+
+Dernière mise à jour : **2026-07-25** (rendu par item de la recherche globale).
+
+---
+
+## 1. Contexte du projet
+
+Le Réseau Parentalité 62 (REAAP 62) dispose d'un WordPress reconnu, `www.parent62.org` : bon
+référencement, production régulière d'articles, mais recherche faible, outils non reliés (WordPress,
+GoGoCarto, MyLudo…) et peu de capacité de contribution pour les partenaires. Le projet consiste à
+publier une plateforme complémentaire — **`reseau.parent62.org`** — bâtie sur SiteForge (site-json)
+et le réseau social Communecter, en **conservant le WordPress** pour les contenus éditoriaux.
+
+| | |
+|---|---|
+| **Site SiteForge** | slug `parent62` → [`config.prod.parent62.json`](../config.prod.parent62.json), CSS `index-parent62` ([`sites.json`](../sites.json)) |
+| **Costum / scope de données** | `parent62` — `source.key` de toutes les entités du réseau |
+| **Orga porteuse** | « Parent 62 », `_id 6a450f0ac34c7070327d2a64`, slug `parent62`, type `NGO` |
+| **Backend** | Communecter (`~/dev/communecter-php74`), base de travail locale = dump de prod `prod200726` |
+| **SDK** | `@communecter/cocolight-api-client` — **dépôt en lecture seule**, version **1.0.168** (via le merge du 24/07) |
+| **Branche site-json** | **MR #25 mergée dans `main` le 25/07** (`f599357a`). Lot en cours : `feat/search-item-rules` (3 commits, non poussée) |
+| **Chef de projet** | Thomas Craipeau (Aboire) — seul habilité à modifier le SDK et le costum backend |
+
+### Historique des chantiers
+
+- **Thomas (sur `main`)** : module blog (`src/modules/blog/**`), back-office `/admin`, widgets
+  `gallery`/`file`/`markdown`, import WordPress (`tools/wp-migration/`), **import des 6 434 articles**
+  (19/07). Puis (22-24/07) l'**approche générique config-driven** : contrats de design
+  `testimonial`/`resource`, page `/temoignages` (paroles) + `/ressources` + `/agenda`, formulaires
+  costum `parent62-affiche` (parole), `parent62-article`, `parent62-recovery-center`, `parent62-event`,
+  **pile audio mutualisée** (`src/components/media/*`), news (`/actualites`), et les ajouts SDK 1.0.168.
+- **Peterson (sur `parents62`, MR #25)** : couche filtres `searchTargets`/`dateRange` (« type d'info »
+  sans tag fantôme) + coloration `colorBy`/`tagColors`, recherche `/recherche`, pages audience
+  `/parents`/`/pro`, `/communaute`, pages réseau et **9 pages territoire** avec les 887 communes,
+  référentiel `src/data/territoires62.ts`, sitemap/robots, **fix header transparent**, **suite e2e**.
+- **20/07** : constat que le slug `parents62` (avec **s**) ne correspond à aucune donnée → tout
+  ramené sur `parent62`, une seule config, taxonomie par **champs**.
+- **23/07** : purge des restes `parents62` ; réalignement `pdev` = `master` (SDK **1.0.168**).
+- **24/07 — réconciliation MR ↔ main** (ce document) : Thomas n'ayant pas mergé le MR et ayant
+  développé parent62 en parallèle sur `main`, le merge `main` → `parents62` a produit une **union
+  redondante**. Décision **« main canonique »** : on retire les doublons du MR, on garde les apports
+  uniques. Détail au §9 (Impacts).
+- **25/07 — MR #25 mergée dans `main`** (`f599357a`), suivie de correctifs de revue :
+  `55288375` (3 bugs latents du filtrage search : `dateRange`, `field defaultChecked`, radio select),
+  `b3cf8f4f` (labels de date i18n, chips `tagLimit`, ligatures communes NFKC), `f3a58609` (4 noms
+  d'icônes hors catalogue lucide, qui rendaient `null` en silence), `994cba75` (4 `editModals`
+  orphelins — les boutons « Modifier » remarchent), `ced1417f` (5 références de modales mortes),
+  `b4584949` (couleurs de statut branchées).
+- **25/07 — rendu par item de la recherche globale** (lot en cours, branche `feat/search-item-rules`) :
+  la page `/recherche` rendait une carte générique pour toutes les collections et son filtre
+  « Paroles » ne renvoyait rien. Détail au §9.7.
+
+---
+
+## 2. Objectifs de la configuration
+
+Ce que la config `parent62` doit produire, concrètement :
+
+1. **Un site vitrine + réseau** calqué sur la navigation/graphisme du WP, sur le domaine
+   `reseau.parent62.org`, en complément (non remplacement) du WordPress éditorial.
+2. **Un moteur de recherche multi-type** (`/recherche`) filtrable par **type d'information**,
+   **public**, **thème**, **territoire coloré**, **dates**, avec **vue carte** en bascule.
+3. **Les contenus du réseau comme entités filtrables** : articles (POI `article`), **paroles de
+   parents** (POI `affiche`), **ressources** (POI `recoveryCenter`), **événements** (agenda).
+4. **La contribution des partenaires** via formulaires costum (config-driven, dynForm), avec
+   **modération a priori** (native `preferences.toBeValidated`, SDK 1.0.168).
+5. **La navigation territoriale** : 9 pages `/territoire/*` (contact coordo + 887 communes + fil
+   d'articles), et un code couleur par territoire réutilisé carte + chips.
+6. **Le référencement** préservé (SEO par page, JSON-LD, sitemap, robots, RSS).
+
+La taxonomie est portée par des **champs** de premier niveau (`territoires`/`publics`/`themes`),
+partagés par tous les types de contenu ; `tags` reste réservé aux mots-clés WordPress libres.
+
+---
+
+## 3. Architecture générale
+
+```
+ WordPress (parent62.org)          Communecter / cocolight-api-client (SDK 1.0.168)
+   contenus éditoriaux                 poi (article/affiche/recoveryCenter) · events · costum
+        │  import (6 434 articles)          ▲
+        ▼                                   │ searchCostum / ADD_POI / ADD_NEWS
+   ┌─────────────────────────── SiteForge (site-json) ───────────────────────────┐
+   │  config.prod.parent62.json  →  SiteRenderer  →  pages / sections             │
+   │    header.nav · pages[] · costumForms{} · theme                              │
+   │  searchProStatic / articleFeed / agenda  →  buildSearchPayload  →  backend   │
+   │  costumForms (dynForm) → registerCostumForm → EntityFormModal → ADD_POI      │
+   └──────────────────────────────────────────────────────────────────────────────┘
+        reseau.parent62.org (SSR : server/prod-server.js, VITE_SLUG=parent62)
+```
+
+**Comment les données arrivent à l'écran** — deux voies de filtrage, **toutes deux config-driven**,
+valables pour `articleFeed`, `searchProStatic` et `agenda` :
+
+| Voie | Écriture en config | Résultat backend |
+|---|---|---|
+| **Filtre figé** (page thématique / territoriale) | `props.filters` (articleFeed) ou `baseParams.defaultFilters` (searchProStatic) | `{ champ: { $in: [...] } }` |
+| **Filtre interactif** (dropdown, sidebar) | filtre portant un `field` (`dropdownFilters[].field`, groupe `filters`, `searchTargets`) | converti par `searchByFieldsToQuery`, fusionné dans `defaultFilters` |
+
+Un filtre **sans** `field` retombe sur les tags (`$all`) — ancienne convention, à ne plus utiliser.
+
+**Cible « type d'information »** : les groupes `searchTargets` (filtre radio « type d'info ») portent
+une cible par défaut appliquée à l'hydratation d'URL (`applyDefaultSearchTargets`) — sans injecter de
+tag fantôme (apport MR, [`computeFiltersFromUrl.ts`](../src/modules/search/lib/computeFiltersFromUrl.ts)).
+
+**Troisième voie : quel presenter pour quel item** (25/07). Les deux voies ci-dessus disent *quoi
+chercher* ; elles ne disent pas *comment rendre*. Sur `/recherche`, aucune cible cochée ⇒ la liste est
+**hétérogène** (articles, paroles, ressources, événements, structures mélangés) et le presenter ne
+peut donc pas venir du filtre : il se décide **sur la donnée de chaque item**, via
+`list.itemRules` — des règles à prédicat (`PredicateJson`, la grammaire de `visibleIf`) évaluées
+contre `{...serverData, collection, sourceKey, sourceKeys}`. La première règle qui matche impose sa
+carte, sa preview, son contrat de presenter et son action au clic. Voir
+[doc/07 §Rendu PAR ITEM](../doc/07-module-search.md#rendu-par-item-des-listes-hétérogènes-listitemrules).
+
+> ⚠️ **Deux pièges, tous deux silencieux.** (1) `serverData.type` a deux sémantiques — sous-type POI
+> (`article`/`affiche`/`recoveryCenter`) mais sous-type d'ORGANISATION (`NGO`/`Group`…) sur
+> `collection:"organizations"` : ancrer toute règle sur `collection` **avant** `type`. (2) Un champ
+> testé absent de `baseParams.defaultFields` vaut `undefined` ⇒ la règle ne matche **jamais**, sans
+> erreur. Les deux sont gatés par `tests/preflight/list-item-rules.test.ts`.
+
+**Code couleur par territoire** : `map.marker.colorBy` et `list.card.tagColors` acceptent un `path` —
+`{ path:"territoires", mapping:{ "Arrageois":"var(--territoire-arrageois)" } }`. `resolveColorBy` /
+`decorateTags` lisent n'importe quel chemin ([`lib/colorBy.ts`](../src/modules/search/lib/colorBy.ts),
+schémas `ColorByConfSchema`/`TagColorsConfSchema` dans [`schema.ts`](../src/modules/search/schema.ts)).
+
+> ⚠️ **`applyValidationGate`** ([`buildSearchPayload.ts`](../src/modules/search/lib/buildSearchPayload.ts)) :
+> dès qu'un `baseParams` porte un `costumSlug`, les entités en attente de validation
+> (`preferences.toBeValidated.<slug>`) sont **masquées**. Opt-out : `showUnvalidated:true`.
+
+---
+
+## 4. Cahier des charges (intégré)
+
+### 4.1 Constat et objectifs
+
+**Limites** : recherche peu efficace · gestion des contenus chronophage · outils non reliés
+(WordPress, GoGoCarto…) · faible capacité de contribution directe des acteurs.
+**Objectifs** : conserver les qualités actuelles · améliorer l'UX · ajouter des modules intégrés ·
+moteur de recherche performant · centraliser les ressources · faciliter la contribution ·
+**maintenir le référencement**.
+
+### 4.2 Exigences par domaine (proposition retenue au CDC)
+
+| Domaine | Exigence CDC | Proposition retenue |
+|---|---|---|
+| **Pages statiques** | Réseau, équipe & contact, **présentation de chaque territoire (contact + communes)**, champs d'action, charte | Recréées côté SiteForge (contenus extraits du WP) |
+| **Parcours** | Entrée **pro** et entrée **parents** | Pages `/parents` et `/pro` (accessibles depuis l'accueil) |
+| **Moteur de recherche** | types d'info · public (âge) · dates · territoire coloré · carte filtrable · thème | `/recherche` (searchProStatic), sur le modèle `tierslieux.00.re/lieux` |
+| **Paroles de parents** | audio + écrit, 3 types (Compliqué / Difficile / Ce qui est à changer), transcription, **ajout admin** | POI `affiche`, page `/temoignages`, form `parent62-affiche` + pile audio (approche Thomas) |
+| **Articles** | forte activité, filtrage + liens ressources | WordPress pour la rédaction, **une entrée réseau par article** (moteur de recherche) |
+| **Événements** | agenda par territoire · impression · récurrence · **ajout partenaires modéré** | `/agenda` + form `parent62-event` ; récurrence côté réseau social |
+| **Ressources** | vidéos/photos, PDF, jeux ; filtres fins par territoire/ville | `/ressources` + form `parent62-recovery-center` (POI `recoveryCenter`) |
+| **Annuaire partenaires** | référencement + cartographie | — (P2/P3) |
+| **Publication RS / Mailing** | — | **Non engagé** (conseil : n8n) |
+
+### 4.3 Déroulé et budget
+
+| Partie | Budget | Contenu | Durée |
+|---|---|---|---|
+| **Partie 1** | 3 000 € | lancement `reseau.parent62.org` · module Paroles (admin) · moteur V2 territorial | 3 sem. bêta |
+| **Partie 2** | 4 500 € | module événementiel · module actualités (interop WP) · recherche events+actus, accueils | 2 sem. bêta |
+| **Partie 3** | 2 000 € | module ressources · recherche ressources | — |
+| Autres | 2 500 € | hébergement + maintenance 1 an · retours/bugs · coordination | — |
+
+---
+
+## 5. Modèle de données réel
+
+> Constaté sur le dump de production restauré en local (base `prod200726`), **en lecture seule**,
+> le 20/07/2026. Chiffres du dump.
+
+### 5.1 Périmètre
+
+| Collection | Docs `source.key = "parent62"` | Types |
+|---|---|---|
+| `poi` | **6 434** | `article` uniquement |
+| `news` | 6 434 | `activityStream` (traces d'import) |
+| autres | 0 | — |
+
+**Aucun** POI `affiche` (paroles), aucune structure, aucun événement, aucune ressource au 20/07.
+La clé `parents62` (avec un **s**) n'existe sur **aucun** document — slug de dev abandonné.
+
+### 5.2 Les 4 champs transverses (convention du 20/07)
+
+La taxonomie vit dans des **champs de premier niveau**, mêmes noms sur tous les types :
+
+| Champ | Type | Source des valeurs |
+|---|---|---|
+| `territoires` | `string[]` | `costum.lists.territoires` (10 valeurs) |
+| `publics` | `string[]` | `costum.lists.publics` (7 valeurs) |
+| `themes` | `string[]` | `costum.lists.themes` (18 valeurs) |
+| `tags` | `string[]` | libre (mots-clés WordPress) |
+
+**Territoires** (nb d'articles) : Boulonnais 1 075 · Entre Mer et Terres 990 · Arrageois 761 ·
+Audomarois 680 · Calaisis 653 · Familles en sol mineur Lens Liévin 563 · Ternois Bruaysis 538 ·
+Artois 502 · Familles en sol mineur Hénin Carvin 306 · **Familles en sol mineur** (générique) 43
+← *10e valeur, arbitrage réseau en attente*.
+**Publics** : Parents 2 680 · Parents-enfants 1 467 · En famille 1 303 · Enfance 1 091 ·
+Professionnels 524 · Futurs parents 343 · Bénévoles 73.
+**Thèmes** (18) : Les activités supports à la relation 1 974 · La petite enfance 1 333 …
+Le deuil 6.
+
+> ⚠️ **Encodage.** Les libellés utilisent l'apostrophe typographique **U+2019** (`L’école`) et un
+> tiret demi-cadratin (`Les écrans – Le numérique`). Un filtre écrit avec une apostrophe droite
+> renvoie **0 résultat sans erreur**. Copier-coller depuis `costum.lists`, ne jamais retaper.
+
+### 5.3 Le costum backend
+
+Embarqué dans le document de l'orga (`organizations.costum`). Au 20/07, `typeObj` ne contenait que
+`article`. L'approche retenue (Thomas, main) déclare désormais les formulaires costum
+`parent62-affiche`/`-article`/`-recovery-center`/`-event` côté **config** (dynForm), adossés aux
+`typeObj` backend — dont le déploiement effectif en base reste à confirmer (cf. §11).
+
+---
+
+## 6. Fichiers concernés
+
+| Domaine | Fichiers |
+|---|---|
+| **Config & CSS** | [`config.prod.parent62.json`](../config.prod.parent62.json), `src/index-parent62.css`, [`sites.json`](../sites.json) |
+| **Recherche (apports MR conservés)** | `src/modules/search/schema.ts` (`FilterGroup.field`, `searchTargets`, `dateRange`, `ColorByConfSchema`, `TagColorsConfSchema`), `lib/colorBy.ts`, `lib/computeFiltersFromUrl.ts`, `lib/computeUrlFromFilters.ts`, `lib/filterToggles.ts`, `hooks/useFilterToggles.ts`, `components/card/CardDefault.tsx` |
+| **Parole / ressource / event (main canonique)** | `components/card/CardTestimonial.tsx`, `CardResource.tsx`, `preview/PreviewTestimonial.tsx`, `PreviewResource.tsx`, `lib/testimonial.ts`, `hooks/useResource*.ts`, `modules/agenda/*`, `components/media/*` (AudioPlayer/Recorder…) |
+| **Rendu par item / action au clic (25/07)** | `src/lib/entityMatch.ts` (+ `.test`), `src/modules/search/lib/resolveListItemConf.ts` (+ `.test`), `lib/itemAction.ts` (+ `.test`), `tests/preflight/list-item-rules.test.ts` ; modifs `schema.ts` (`CardConfSchema` extrait, `ListItemRuleSchema`, `ListItemActionSchema`), `components/SearchListView.tsx`, `SearchCard.tsx`, `Preview.tsx`, `SearchMap*.tsx` ; outillage `scripts/lib/prop-descriptions.ts`, `scripts/audit-config.ts`, `scripts/lib/config-blocks.ts` |
+| **Territoires** | `src/data/territoires62.ts` (+ `.test`), `scripts/import-communes-territoires62.ts` |
+| **Header** | `src/components/layout/header/HeaderTransparentScroll.tsx` (fix lisibilité) |
+| **Tests** | `e2e/parent62.spec.ts`, `src/modules/search/lib/colorBy.test.ts`, `src/modules/profil/forms/costum/__fixtures__/configCostum.ts` |
+| **Déploiement** | `server/prod-server.js`, `.env` (`VITE_SLUG`, `VITE_BASE_URL_BACKEND`, `SITE_CONFIG_PATH`, `SITE_PUBLIC_URL`) |
+
+---
+
+## 7. Choix techniques et leur pourquoi
+
+| Décision | Pourquoi |
+|---|---|
+| **`main` canonique pour parole/ressource/event/audio** | Thomas (chef de projet) a développé l'approche **générique et config-driven** sur `main` (contrats `testimonial`/`resource`, pile audio mutualisée) ; elle suit la philosophie moteur (« noms de design, jamais de site ») et sera maintenue |
+| **Slug unique `parent62`** | clé des 6 434 articles et de l'orga ; `parents62` ne référence aucune donnée |
+| **Taxonomie en champs, pas en tags** | 5 261 articles portent déjà `territoires[]` ; le moteur filtre par champ sans code |
+| **Toujours des tableaux** pour les 3 taxonomies | la base contient des multi-valeurs ; un select mono écraserait un tableau à l'édition |
+| **`searchTargets`/`dateRange` conservés (apport MR)** | absents de `main` ; portent la cible « type d'info » par défaut sans tag fantôme + le filtre par plage de dates |
+| **`colorBy`/`tagColors` conservés (apport MR)** | consommés par les chips `/recherche` (`CardDefault`) et la carte (`markerVisual`) — pas un doublon des badges `testimonial` |
+| **Pages territoire à paths littéraux** | `SiteRenderer` résout par égalité stricte — pas de route paramétrée |
+| **Référentiel territoires versionné front** | source unique libellés/couleurs (`var(--territoire-*)`)/887 communes ; jamais d'hex en dur |
+| **Une règle de rendu porte SA tranche complète** (carte + preview + contrat + action) | carte et détail sortent de la MÊME résolution → l'incohérence entre ce qu'on voit dans la grille et ce qu'on voit au clic devient impossible par construction |
+| **Faire varier la valeur de `list`, plutôt qu'ajouter une prop** | tout l'aval (`SearchCard`, `Preview`, `SwitchDetailsMode`, presenters typés) reste inchangé ; sans règles, `list` est renvoyé **par identité référentielle** → non-régression prouvable (`toBe(list)`) pour les ~13 autres sections search du site |
+| **Une actualité ouvre le reader blog, pas un drawer** | un POI `type:"article"` a déjà sa page canonique `/blog/:slug` (SSR + SEO) ; la rouvrir en drawer dupliquerait l'UX et perdrait le référencement |
+
+---
+
+## 8. Étapes de mise en place
+
+1. **Config** : `config.prod.parent62.json` + `src/index-parent62.css` référencés dans `sites.json`
+   (slug `parent62`).
+2. **Données** : import WordPress → 6 434 POI `article` (`source.key=parent62`) ; taxonomie mappée
+   sur `territoires`/`publics`/`themes` via `costum.import.mapping`.
+3. **Formulaires costum** : déclarés en config (`costumForms{}`), compilés par `registerCostumForm`
+   (voie unique runtime = test), fns génériques via `registerSpecFns`.
+4. **Validation** (gates, dans `site-json/`) :
+   `npm run config:validate` · `npm run audit:config` · `npm run typecheck` · `npm run lint` ·
+   `npm run test:unit` · `npm run build`. E2E ciblé : `npx playwright test e2e/parent62.spec.ts`
+   (jamais la suite e2e complète — specs d'autres devs).
+5. **Déploiement (1.10, à la main de Peterson)** :
+   - DNS `reseau.parent62.org` → serveur de prod.
+   - Build : `VITE_SLUG=parent62` + `VITE_BASE_URL_BACKEND=<backend prod>` **sans guillemets**
+     dans le `.env` (une valeur quotée fait échouer le préflight `environment` et se retrouve dans
+     le bundle).
+   - Serveur (`server/prod-server.js`) : `SITE_CONFIG_PATH=./config.prod.parent62.json`
+     (**obligatoire**) et `SITE_PUBLIC_URL=https://reseau.parent62.org`.
+
+---
+
+## 9. Impacts des modifications — réconciliation MR ↔ main (24/07)
+
+Le merge `main` → `parents62` (`347f853`) était propre côté git mais **redondant** : la config
+unionnait les deux approches. Décision **« main canonique »**. Réalisé :
+
+### 9.1 Réparation d'un conflit de merge (build cassé)
+
+`src/modules/search/schema.ts` référençait `ColorByConfSchema`/`TagColorsConfSchema` **sans leurs
+définitions** (perdues à la résolution du conflit) → `config:validate`/`build` en `ReferenceError`.
+Définitions **restaurées** (apport MR `b0e8062`) juste avant `ListConfSchema`.
+
+### 9.2 Doublons du MR retirés (au profit de la version de Thomas)
+
+| Retiré (MR) | Conservé (main, canonique) |
+|---|---|
+| Page `/paroles` (+ sections `type:"parole"`) | Page `/temoignages` |
+| Form `parent62-parole` + champ `paroleAudioUrl` + transforms `parent62:audioUrlRead/omit/mediasWrite` | Form `parent62-affiche` |
+| `PreviewParole.tsx` (+ `case "parole"` de `Preview.tsx`) | `PreviewTestimonial.tsx` |
+| Pile audio `ui/audio-player.tsx` + `lib/audioPlayerUtils.ts` (+ test) | `components/media/AudioPlayer`/`AudioRecorder` |
+| `costum/parent62/fns.ts` (+ import dans `registerSpecFns.ts`, entrée fixture `configCostum.ts`) | — (config-only) |
+| Entrée nav top-level « Paroles » → `/paroles` ; 2 CTA `/paroles` **repointés** → `/temoignages` | Entrée « Paroles de parents » → `/temoignages` (menu « Contenus ») |
+| **Page `/agenda` en double** (path dupliqué, `config:validate` exige des paths uniques) | Page `/agenda` de Thomas (module agenda + `parent62-event`) |
+
+### 9.3 Apports du MR conservés (absents de `main`)
+
+Couche `searchTargets`/`dateRange`, coloration `colorBy`/`tagColors`, **fix header transparent**,
+**suite e2e**, **territoires62** (data + import + 9 pages `/territoire/*`), pages `/recherche`,
+`/parents`, `/pro`, `/communaute`.
+
+### 9.4 Régressions à revalider (visuel, hérité du merge)
+
+Sous-titre `TitleSection` (`<h3>` gras → `<p>` muted), carte Leaflet → MapLibre
+(`streets-v2` → `streets-v4`), onglet Galerie de profil réellement rendu, droits d'édition élargis
+aux admins costum.
+
+### 9.5 Nav consolidée + audit fonctionnel (24/07)
+
+- **Nav** : doublon `/blog` résolu — « Actualités » (MR) remplacée par le dropdown « Thèmes »
+  canonique de Thomas. Nav = 5 entrées (cf. §12).
+- **Audit fonctionnel sur la stack** (dev server :5173 + backend `communecter74-dev` up) : les
+  35 pages rendent en **200 sans erreur SSR** ; **e2e 7/7 vert** (accueil nav 5 entrées,
+  `/recherche` ×2, `/temoignages`, `/territoire/arrageois`, `/blog`, mode sombre). Les statuts
+  P2/P3 ont été revus à cette occasion (§10) — plusieurs sont plus avancés que la config seule
+  ne le laissait penser (récurrence, recherche ressources, modération events câblées).
+
+### 9.6 Validation (gates)
+
+`config:validate` ✅ (35 pages, 153 sections) · `audit:config` ✅ (0 constat parent62) ·
+`typecheck` ✅ (0) · `build` ✅ (48 s) · **e2e 7/7 ✅**. `test:unit` : 1834 ✅, 2 échecs
+**pré-existants hors périmètre** (`bundle-size` 2,43 MB — bloat du merge ; `environment` `.env`
+quoté). `lint` : 4 erreurs **pré-existantes** identiques à `main` (`blog/ArticlePage`,
+`ArticleFeed`, `ArticleReaderSection`, `.design-sync/`) — code de Thomas, hors périmètre.
+
+---
+
+## 9bis. Impacts — rendu par item de la recherche globale (25/07)
+
+> Lot en cours sur `feat/search-item-rules` : `caa0a364` (moteur), `fd3d9a4c` (config parent62),
+> `7017dc77` (doc + skill). **Branche non poussée, non mergée.**
+
+### 9bis.1 Le constat
+
+Les pages **dédiées** par type fonctionnaient (`/blog`, `/temoignages`, `/ressources`, `/agenda`,
+`/communaute`). La seule défaillante était `/recherche`, pour trois raisons cumulées, toutes dans sa
+config :
+
+| Symptôme | Cause | Preuve |
+|---|---|---|
+| Filtre « Paroles » : **liste vide** | la cible portait `defaultFilters: {type:"affiche", **status:"validated"**}`, or `status` n'existe pas sur ces documents — la modération a priori avait été retirée (`17aea3e`) et le filtre était resté orphelin | `{type:"affiche"}` seul renvoie les paroles ; `+ status` en renvoie **0**, sans erreur |
+| Actualités : carte générique, clic vers un drawer | `list.card.type:"default"` valait pour les 4 collections ; aucun `preview`, aucun bloc de presenter | comparaison ligne à ligne avec `/blog`, `/temoignages`, `/ressources` |
+| Ordre arbitraire | ni `defaultSortBy` ni `defaultFields`, là où les trois pages dédiées déclarent les deux | idem |
+
+### 9bis.2 Ce qui a changé
+
+**Moteur** (`src/`) — le choix du presenter devient config-driven et **par item** : `list.itemRules`
+(règles à prédicat) + `list.itemAction` (`preview` / `profil` / `link`). Le trio *(vue matchable +
+première règle + garde)* est extrait en `src/lib/entityMatch.ts`, désormais partagé avec les
+`iconRules` de la palette (qui n'avaient aucun test et en héritent). La cascade de décision au clic
+est une fonction pure partagée par la liste et la popup de carte, qui l'appliquaient en double.
+
+**Config parent62** — `status` retiré de la cible « Paroles » ; cible « **Ressources** » ajoutée
+(elle manquait alors que `/ressources` existe) ; `defaultSortBy {created:-1}` + `defaultFields`
+(25 champs) ; **5 règles** : `poi-article` (presenter `resource` + clic vers `/blog/:slug`),
+`poi-parole` (testimonial en dialog), `poi-ressource`, `events`, `structures`.
+
+**Deux bugs préexistants corrigés au passage** :
+- `list` n'était pas transmis au détail ouvert **depuis la carte géographique** → les previews
+  config-driven (`resource`/`testimonial`) y retombaient sur les défauts génériques ;
+- l'identité d'item **divergeait** entre l'écriture de `?preview=` (`getEntryId`) et sa relecture
+  (`serverData.id ?? id`), or `serverData.id` n'est pas toujours peuplé → un deep-link pouvait ne
+  pas rouvrir son item. Unifié sur `getEntryId`.
+
+**Outillage** — `baseParams.defaultFields` enfin décrit dans le registre de props (c'est la clé dont
+dépend tout le matching, elle n'y était pas) ; ratchet de couverture remonté 45→60 et 57→72 ;
+`audit:config` contrôle désormais `itemAction.to`/`toById` ; nouveau préflight
+`tests/preflight/list-item-rules.test.ts` — **seul endroit où `ListItemRuleSchema` est réellement
+exécuté**, la config n'étant jamais parsée par Zod au runtime.
+
+### 9bis.3 Régressions à revalider
+
+- **`defaultFields` introduit là où il n'y en avait pas** : la projection devient restrictive sur
+  `/recherche`. Recette visuelle faite sur les 6 familles (liste hétérogène + chaque cible) — à
+  refaire si un champ est ajouté à un presenter.
+- **Chemin carte non vérifiable** : aucune famille de ce jeu de données n'est géolocalisée (la vue
+  carte affiche « Aucun résultat » pour les actualités comme pour les structures). L'action au clic
+  depuis la popup est donc couverte **par tests unitaires uniquement** — à revalider dès que des
+  données porteront des coordonnées.
+
+### 9bis.4 Validation (gates) — mesurés le 25/07
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` | ✅ 35 pages, 153 sections |
+| `audit:config` | ✅ parent62 **RAS** (0 constat) |
+| `typecheck` | ✅ |
+| `test:unit` | ✅ **1977** sur 155 fichiers — dont `bundle-size` et `environment`, les **2 échecs pré-existants du 24/07, désormais verts** |
+| `build` | ✅ client 33,7 s + SSR 15,5 s |
+| `e2e` | ✅ **7/7** (57,1 s) sur la stack réelle — `npx playwright test e2e/parent62.spec.ts` |
+| `lint` | 29 erreurs / 47 warnings, **0 sur les fichiers du lot** — pré-existantes et identiques à `main` (`blog/*`, `agenda`, `.design-sync/`, `ds-bundle/`, `admin/zod-auto-form`, `entityIcons`, `profil/forms`) |
+
+---
+
+## 10. Checklist d'avancement
+
+### Partie 1 (3 000 €)
+
+| # | Fonctionnalité | État | Détail |
+|---|---|---|---|
+| 1.1 | Site `reseau.parent62.org`, nav + graphisme proches du WP | ✅ côté code | config réconciliée (24/07) ; reste le déploiement → 1.10. ⚠️ **doublon nav** : deux dropdowns `/blog` (« Actualités » MR + « Contenus » Thomas) à trancher (§12) |
+| 1.2 | Pages statiques réseau / charte / équipe / champs d'action | ✅ | `/reseau` `/charte` `/champs-actions` `/equipe` ; arbitrage éditorial réseau ouvert (§13) |
+| 1.3 | Page par territoire : contact + **liste des communes** | ✅ | cards coordo + accordéon 887 communes + fil filtré + CTA |
+| 1.4 | Double entrée parents / pro | ✅ | `/parents` et `/pro`, accessibles depuis l'accueil |
+| 1.5 | Moteur de recherche : types d'info, public, âges, dates, territoire coloré, carte, thèmes | 🟡 | `/recherche` : types d'info (**searchTargets 6** depuis le 25/07 — « Ressources » ajoutée —, défaut « Actualités »), public, thèmes, territoire coloré, **carte** (`enableMap:true`), `dateRange` **borne début seule**. **25/07** : chaque famille a désormais sa carte et son action au clic (`list.itemRules`, §9bis) ; tri `created:-1` et projection explicite ajoutés. **Âges : livré sur `/temoignages` + form affiche, mais PAS encore dans le groupe de filtres `/recherche`** (à ajouter — `ages` est projeté, il ne manque que le groupe). Borne de fin des dates = demande backend `$lt/$lte` (§11) |
+| 1.6 | Paroles de parents (3 catégories, audio+écrit, transcription, ajout admin) | 🟡 | brique complète (Thomas) : `/temoignages`, form `parent62-affiche` (3 catégories, audio→`medias`, ages, consentement RGPD), pile audio `media/*`, card/preview `testimonial`. **Ajout admin-only ✅** (modération a priori retirée volontairement, commit `17aea3e`). **25/07** : la cible « Paroles » de `/recherche` renvoyait **0 résultat** (filtre `status:"validated"` sur un champ inexistant) — corrigé, et les paroles y rendent en bulles avec leur dialog (§9bis). **Données observées le 25/07** : `/temoignages` affiche « Toutes les paroles (**3**) » — la mention « 0 POI `affiche` » du 24/07 est caduque. **Manque** : **transcription/sous-titres NON implémentée** (`description` sert d'écrit) |
+| 1.7 | Navigation territoriale (recherche V2) | ✅ | 9 bulles → `/territoire/<slug>` + filtre territoire coloré dans `/recherche` |
+| 1.8 | Référencement (SEO, JSON-LD, sitemap, robots, RSS) | ✅ | sitemap/robots (MR) + JSON-LD `BlogPosting` et `/blog/feed.xml` (Thomas) |
+| 1.9 | Tests E2E (Playwright) | ✅ | `e2e/parent62.spec.ts` — **7/7 verts le 24/07 sur la stack réelle** (dev server + backend). Scénarios lecture seule : accueil (nav 5 entrées), `/recherche` ×2, `/temoignages`, `/territoire/arrageois`, `/blog`, mode sombre. Ciblé : `npx playwright test e2e/parent62.spec.ts` (jamais la suite complète) |
+| 1.10 | Déploiement | ❌ | à la main de Peterson — cf. §8.5 |
+
+### Partie 2 (4 500 €) — statuts revus par l'audit fonctionnel du 24/07
+
+| # | Fonctionnalité | État | Détail |
+|---|---|---|---|
+| 2.1 | Module actualités + interop WordPress | ✅ / 🟡 interop | 6 434 articles, `/blog`, `/actualites`, 9 `/theme/*`, admin, RSS, ⌘K. **Interop WP = import batch one-shot** (`tools/wp-migration/`), pas de sync live/webhook ; « ajout de post » = form `parent62-article` admin (le module `interop/` = Discourse/Mediawiki, pas WP) |
+| 2.2 | Actualités filtrables dans le moteur de recherche | ✅ *(était ✅ config, 🟡 UX)* | cible `searchTargets` « Actualités » (`type:article`) dans `/recherche` + filtres territoire/public/thème/dates. **25/07 — UX unifiée** : une actualité de `/recherche` rend une carte dédiée et son clic ouvre le **reader canonique** `/blog/:slug` (repli `/blog/id/:id`), plus un drawer générique |
+| 2.3 | Module événementiel (agenda) + affichage territoire | 🟡 | module agenda complet (calendrier + liste, filtre territoire) ; **0 donnée `events`** → vide ; pas de carte agenda (`enableMap:false`) |
+| 2.4 | Impression de l'agenda | ❌ | **aucun code print** (`@media print`/`window.print`) — à faire (CSS print ou export iCal/PDF) |
+| 2.5 | Événements récurrents | ✅ config+code *(était ❌)* | `parent62-event` : `recurrency` + `openingHours` + `eventDates` + codecs/validators + calendrier « récurrents dépliés ». Non observable (0 event) |
+| 2.6 | Ajout partenaires + **modération a priori** | 🟡 *(était ❌)* | bouton public `requiresAdmin:false`, form injecte `preferences.toBeValidated:true`, onglet admin Agenda `validate` + « Proposé le ». **À confirmer** : `searchEventsCostum` masque-t-il les events *pending* côté public ? (pas de gate client sur l'agenda — cf. §12) |
+| 2.7 | Annuaire partenaires (référencement + cartographie) | 🟡 *(était ❌)* | cible `searchTargets` « Structures & partenaires » (`organizations`) + carte + templates profils ; **25/07** : règle de rendu dédiée (`image-cover`, `imageFit:"contain"` pour des logos hétérogènes) ; **manque page `/annuaire` dédiée + données** (0 org) |
+
+### Partie 3 (2 000 €) — statuts revus par l'audit du 24/07
+
+| # | Fonctionnalité | État | Détail |
+|---|---|---|---|
+| 3.1 | Module ressources (POI `recoveryCenter`) | 🟡 | `/ressources` + form `parent62-recovery-center` (catégories Vidéo/Photo/Compte-rendu/Jeu/Doc/Lien, galerie/docs). **Données observées le 25/07** : `/ressources` affiche « Toutes les ressources (**4**) » — la mention « 0 donnée » du 24/07 est caduque. Création **admin-only** (pas de bouton public → le « formulaire simple partenaire » du CDC n'est pas exposé) |
+| 3.2 | Recherche dans les ressources (territoire/**ville**) | ✅ config *(était ❌)* | `/ressources` filtre `category` + `territoires` + **`commune`** (`address.addressLocality`) + public/thème + `searchBy:[name,description]`. **25/07** : les ressources sont aussi atteignables depuis `/recherche` (cible « Ressources » + règle de rendu dédiée) |
+| 3.3 | Votes « utile » / contributeurs | ❌ | pas de vote sur les ressources (`ADD_VOTE`/`links` à câbler + UI card) ; les votes n'existent que sur le fil news social |
+
+Hors périmètre engagé : publication RS, mailing, migration GoGoCarto, fiches de jeux.
+
+---
+
+## 11. Dépendances site-json ↔ cocolight-api-client
+
+Le SDK est en **lecture seule** : toute évolution passe par une spec `.md` transmise à Aboire
+(`spec-cocolight-api-parents62.md`). Le **SDK 1.0.168** (mergé le 24/07) apporte :
+
+| Apport SDK 1.0.168 | Effet parent62 |
+|---|---|
+| `ADD_POI.preferences` (`ee42227`) | modération a priori native (`preferences.toBeValidated.parent62`) |
+| `ADD_POI.medias` (`f6e330b`) | audio des paroles matérialisé en `medias:[{type:"audio",url}]` |
+| digest costum **variant-aware** (`6fab52d`) | un POI costum multi-type (article + affiche) expose chaque sous-type |
+| `news` dans `globalautocomplete` (`ceaff2a`) | débloque la page Actualités |
+
+**Restant côté Thomas / backend** : confirmer le **`typeObj.affiche` déployé en base** (le dump
+local du 20/07 ne contient que `article`) ; whitelist audio `Document.php` (demande 5) ; opérateurs
+`$gte`/`$lt`/`$lte` dans `SearchNew::getQueries` (demande 6, borne de fin des dates) ; liste `ages`
+attendue par le test parole ; périmètre `prepData`/`validategroup`.
+
+---
+
+## 12. Points d'attention / limitations
+
+- **Nav** : 5 entrées — Le Réseau · **Thèmes** · Territoires · Contenus · Rechercher. Le doublon
+  `/blog` (« Actualités »+thèmes du MR vs « Contenus » de Thomas) a été **résolu le 24/07** :
+  « Actualités » remplacée par le dropdown « Thèmes » canonique de Thomas (décision Peterson : quand
+  deux entrées ouvrent la même page, on garde celle de Thomas ; les thèmes restent navigables).
+- **Vue cartographique** : uniquement sur `/recherche` (`enableMap:true`, cluster + marker colorBy) ;
+  `/agenda`, `/ressources`, `/temoignages` ont `enableMap:false`.
+- **Modération a priori des events** (2.6) : le form pose `preferences.toBeValidated:true`, mais
+  l'agenda public (`searchEventsCostum`) **n'applique aucun gate côté client** (le gate
+  `applyValidationGate` ne couvre que le searchProStatic POI avec `costumSlug`) → le masquage des
+  events *en attente* dépend **entièrement du backend** — à vérifier avec Thomas.
+- **Collections quasi vides** : les briques P2/P3 reposaient sur des collections **vides** au dump du
+  20/07. **Relevé du 25/07 dans l'application** : 3 paroles, 4 ressources — les articles, eux, sont
+  massivement présents. Les events et organisations restent à confirmer (la vue carte de `/recherche`
+  ne renvoie rien, mais elle ne mesure que le **sous-ensemble géolocalisé**, pas le total).
+- **Aucune donnée géolocalisée** : la vue carte de `/recherche` affiche « Aucun résultat » pour
+  toutes les familles testées le 25/07 → le `map.marker.colorBy` par territoire et l'action au clic
+  depuis la popup ne sont **pas observables** en l'état.
+- **Une règle `itemRules` qui teste un champ hors `defaultFields` ne matche jamais**, en silence
+  (même famille de piège que l'encodage U+2019). Un `console.warn` DEV le signale, et le préflight
+  `list-item-rules` le gate ; l'ordre des règles (catch-all en dernier) est gaté aussi.
+- **Trois `itemAction` homonymes** de formes différentes coexistent (`list.itemAction`,
+  `map.itemAction`, `commandPalette.entitySearch.itemAction`) — source de confusion en config, cf.
+  l'encadré de [doc/07](../doc/07-module-search.md#rendu-par-item-des-listes-hétérogènes-listitemrules).
+- **Transcription des paroles** (1.6) : non implémentée — pas de champ dédié (`description` = écrit).
+- **URL parole** : on garde `/temoignages` (main canonique). Si le réseau préfère l'URL `/paroles`,
+  c'est un re-`path` de la page de Thomas — à confirmer avec lui.
+- **Lint** : 29 erreurs pré-existantes au 25/07 (blog, agenda, `.design-sync/`, `ds-bundle/`, admin,
+  `entityIcons`, `profil/forms`) — hors périmètre, identiques à `main`.
+- ~~**`.env` quoté**~~ : le préflight `environment` **passe au 25/07** (comme `bundle-size`) — les
+  deux échecs signalés le 24/07 sont résolus.
+- **Encodage des libellés** (U+2019, tiret demi-cadratin) — cf. §5.2.
+- **Articles sans taxonomie** : 1 173 sans territoire (18 %), 2 181 sans thème/public → invisibles
+  sur les pages filtrées. **Images d'articles** encore pointées sur `www.parent62.org/wp-content/…`.
+- **Coquilles de communes** dans les PDF officiels, conservées telles quelles — correction à
+  demander au réseau.
+
+---
+
+## 13. Évolutions à prévoir & questions en attente
+
+Priorisées par l'audit fonctionnel du 24/07, révisées le 25/07. Le **doublon nav `/blog` est
+résolu** (§9.5) ; l'**UX `/blog` ↔ `/recherche` est unifiée** (§9bis) ; les **paroles ne sont plus
+muettes** dans le moteur (§9bis.1).
+
+| Évolution / question | Pour qui |
+|---|---|
+| **Impression de l'agenda** (2.4) — non implémentée (CSS print ou export iCal/PDF) | Peterson |
+| **Âges dans `/recherche`** (1.5) — la liste `ages` existe (form + `/temoignages`), l'ajouter au groupe de filtres `/recherche` | Peterson |
+| **Votes « utile » + contributeurs** des ressources (3.3) — câbler `ADD_VOTE`/`links` + UI card | Peterson / Thomas |
+| **Transcription / sous-titres des paroles** (1.6) — champ dédié à ajouter au form + affichage | Peterson / réseau |
+| **Masquage public des events *pending*** (2.6) — `searchEventsCostum` applique-t-il un gate `toBeValidated` ? sinon à faire côté backend | Thomas |
+| **Page `/annuaire` dédiée** (2.7) — au-delà du filtre « Structures » de `/recherche` | Peterson / réseau |
+| **Données P2/P3** — relevé du 25/07 : 3 paroles, 4 ressources ; events et organisations à confirmer. Volumétrie réelle à créer/importer | réseau / Thomas |
+| **Géolocalisation** — aucune donnée ne porte de coordonnées : la vue carte de `/recherche` est vide et le `colorBy` par territoire est invérifiable | réseau / Thomas |
+| Borne de fin des dates (`$lt`/`$lte`) dans `SearchNew::getQueries` | Thomas / backend |
+| **URL parole** `/temoignages` vs `/paroles` | Thomas / réseau |
+| Harmoniser `/theme/*` avec `/recherche` (2.2 — le volet `/blog` est fait) | Peterson |
+| **Carte `CardEvent`** — hauteur figée `h-72`, aucun fond, ignore `card`/`list` : dans une liste hétérogène elle laisse un trou et laisse voir le fond de page. Correctif à recetter sur `/agenda` | Thomas |
+| Valeurs `category` ressources · 10e territoire « Familles en sol mineur » (43) · contenu des 4 pages statiques · couleurs `oklch` · coquilles de communes | réseau |

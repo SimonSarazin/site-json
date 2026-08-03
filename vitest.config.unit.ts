@@ -26,6 +26,7 @@ export default defineConfig({
       "src/**/*.test.tsx",
       "tests/preflight/**/*.test.ts",
       "server/**/*.test.ts",
+      "scripts/**/*.test.ts",
     ],
     coverage: {
       provider: "v8",

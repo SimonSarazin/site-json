@@ -22,6 +22,9 @@ import { generateImagePreloadTags, generateFontPreloadTags } from './lib/generat
 
 const STREAM_TIMEOUT_MS = 30_000;
 
+// Ré-export server-side (inclus dans le build SSR `dist/server` → chargé par prod-server pour /blog/feed.xml).
+export { renderBlogFeed } from '@/modules/blog/server/feed';
+
 /* --------------------------------------------------------- */
 /*  Fonction principale – aucune logique de substitution ici */
 /* --------------------------------------------------------- */

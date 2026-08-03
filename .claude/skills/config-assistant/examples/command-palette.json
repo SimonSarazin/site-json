@@ -1,0 +1,244 @@
+{
+  "feature": "command-palette",
+  "titre": "Palette ⌘K enrichie (iconRules, itemActionBySubType)",
+  "description": "entitySearch multi-collections + iconRules (1re règle qui matche gagne) + itemActionByType/BySubType (précédence BySubType → ByType → itemAction → /profil/:slug).",
+  "source": "config.prod.parent62.json",
+  "selector": "commandPalette",
+  "snapshot": {
+    "enabled": true,
+    "triggerVariant": "compact",
+    "placeholder": {
+      "fr": "Rechercher une page, une actualité, une structure...",
+      "en": "Search a page, an article, an organisation..."
+    },
+    "maxResultsPerGroup": 8,
+    "entitySearch": {
+      "enabled": true,
+      "searchType": [
+        "organizations",
+        "projects",
+        "events",
+        "poi"
+      ],
+      "excludeTypes": [
+        "article"
+      ],
+      "limit": 8,
+      "params": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "fields": [
+          "slug",
+          "collection",
+          "name",
+          "type",
+          "source",
+          "created",
+          "profilImageUrl",
+          "profilMediumImageUrl",
+          "profilThumbImageUrl",
+          "category",
+          "description",
+          "shortDescription",
+          "medias",
+          "urls",
+          "address",
+          "tags",
+          "territoires",
+          "publics",
+          "ages",
+          "themes",
+          "startDate",
+          "endDate"
+        ]
+      },
+      "itemActionByType": {
+        "events": {
+          "kind": "preview",
+          "detailsMode": "drawer",
+          "preview": {
+            "type": "event"
+          }
+        }
+      },
+      "itemActionBySubType": {
+        "recoveryCenter": {
+          "kind": "preview",
+          "list": {
+            "card": {
+              "type": "resource",
+              "detailsMode": "dialog"
+            },
+            "preview": {
+              "type": "resource",
+              "width": "2xl"
+            },
+            "resource": {
+              "design": "card",
+              "titleField": "name",
+              "descriptionField": "description",
+              "dateField": "created",
+              "imageField": "profilMediumImageUrl",
+              "cityField": "address.addressLocality",
+              "urlsField": "urls",
+              "badge": {
+                "field": "category",
+                "colors": {
+                  "Vidéo": "var(--chart-1)",
+                  "Photo": "var(--chart-2)",
+                  "Compte-rendu": "var(--chart-3)",
+                  "Jeu": "var(--chart-4)",
+                  "Document": "var(--chart-5)",
+                  "Lien": "var(--primary)"
+                }
+              },
+              "facets": [
+                {
+                  "field": "territoires",
+                  "label": {
+                    "fr": "Territoires",
+                    "en": "Territories"
+                  }
+                },
+                {
+                  "field": "publics",
+                  "label": {
+                    "fr": "Publics",
+                    "en": "Audiences"
+                  }
+                },
+                {
+                  "field": "themes",
+                  "label": {
+                    "fr": "Thèmes",
+                    "en": "Themes"
+                  }
+                },
+                {
+                  "field": "tags",
+                  "label": {
+                    "fr": "Mots-clés",
+                    "en": "Keywords"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "affiche": {
+          "kind": "preview",
+          "list": {
+            "card": {
+              "type": "testimonial",
+              "detailsMode": "dialog"
+            },
+            "preview": {
+              "type": "testimonial",
+              "width": "2xl"
+            },
+            "testimonial": {
+              "design": "bubble",
+              "quoteField": "description",
+              "titleField": "name",
+              "dateField": "created",
+              "audioField": "medias",
+              "subtitleField": "themes",
+              "badge": {
+                "field": "category",
+                "colors": {
+                  "Compliqué": "var(--chart-3)",
+                  "Difficile": "var(--chart-2)",
+                  "À changer": "var(--chart-4)"
+                }
+              },
+              "accent": {
+                "field": "territoires",
+                "colors": {
+                  "Arrageois": "#6d5da8",
+                  "Artois": "#b7cb6b",
+                  "Audomarois": "#e5af32",
+                  "Boulonnais": "#c34a42",
+                  "Calaisis": "#ed8a4c",
+                  "Entre Mer et Terres": "#3fb4be",
+                  "Familles en sol mineur": "#a2537e",
+                  "Familles en sol mineur Hénin Carvin": "#a2537e",
+                  "Familles en sol mineur Lens Liévin": "#97776b",
+                  "Ternois Bruaysis": "#d492a9"
+                }
+              },
+              "facets": [
+                {
+                  "field": "territoires",
+                  "label": {
+                    "fr": "Territoires",
+                    "en": "Territories"
+                  }
+                },
+                {
+                  "field": "publics",
+                  "label": {
+                    "fr": "Publics",
+                    "en": "Audiences"
+                  }
+                },
+                {
+                  "field": "ages",
+                  "label": {
+                    "fr": "Âges",
+                    "en": "Ages"
+                  }
+                },
+                {
+                  "field": "themes",
+                  "label": {
+                    "fr": "Thèmes",
+                    "en": "Themes"
+                  }
+                },
+                {
+                  "field": "tags",
+                  "label": {
+                    "fr": "Mots-clés",
+                    "en": "Keywords"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "iconRules": [
+        {
+          "when": {
+            "field": "type",
+            "op": "eq",
+            "value": "recoveryCenter"
+          },
+          "icon": "folder"
+        },
+        {
+          "when": {
+            "field": "type",
+            "op": "eq",
+            "value": "affiche"
+          },
+          "icon": "message-circle"
+        },
+        {
+          "when": {
+            "field": "collection",
+            "op": "eq",
+            "value": "events"
+          },
+          "icon": "calendar-days"
+        }
+      ]
+    },
+    "articleSearch": {
+      "enabled": true,
+      "costumSlug": "parent62",
+      "limit": 8
+    }
+  }
+}

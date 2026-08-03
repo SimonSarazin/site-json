@@ -80,4 +80,76 @@ describe("resolveMarkerVisual (chaîne de repli des marqueurs)", () => {
       kind: "default",
     });
   });
+
+  it("colorBy : pin coloré PAR VALEUR, prioritaire sur le token `color`", () => {
+    const colorBy = { mapping: { "territoire62:arrageois": "var(--territoire-arrageois)" } };
+    expect(
+      resolveMarkerVisual(
+        { tags: ["territoire62:arrageois"] },
+        { style: "pin", color: "chart-2", colorBy },
+        BASE,
+      ),
+    ).toEqual({
+      kind: "pin",
+      cssColor: "var(--territoire-arrageois)",
+      borderCssColor: "var(--background)",
+    });
+    // colorBy seul (sans style pin déclaré) : implique le pin
+    expect(
+      resolveMarkerVisual({ tags: ["territoire62:arrageois"] }, { colorBy }, BASE),
+    ).toEqual({
+      kind: "pin",
+      cssColor: "var(--territoire-arrageois)",
+      borderCssColor: "var(--background)",
+    });
+  });
+
+  it("colorBy respecte `style: circle` et le `borderColor` configuré", () => {
+    const colorBy = { mapping: { "territoire62:arrageois": "var(--territoire-arrageois)" } };
+    expect(
+      resolveMarkerVisual(
+        { tags: ["territoire62:arrageois"] },
+        { style: "circle", borderColor: "accent", colorBy },
+        BASE,
+      ),
+    ).toEqual({
+      kind: "circle",
+      cssColor: "var(--territoire-arrageois)",
+      borderCssColor: "var(--accent)",
+    });
+  });
+
+  it("colorBy sans valeur mappée → repli sur le token puis le pin Leaflet", () => {
+    const colorBy = { mapping: { "territoire62:arrageois": "var(--territoire-arrageois)" } };
+    expect(
+      resolveMarkerVisual({ tags: ["santé"] }, { style: "pin", color: "chart-2", colorBy }, BASE),
+    ).toEqual({
+      kind: "pin",
+      cssColor: "var(--chart-2)",
+      borderCssColor: "var(--background)",
+    });
+    expect(resolveMarkerVisual({ tags: ["santé"] }, { colorBy }, BASE)).toEqual({
+      kind: "default",
+    });
+  });
+
+  it("priorité : vignette d'item > colorBy > icône custom", () => {
+    const colorBy = { mapping: { "territoire62:arrageois": "var(--territoire-arrageois)" } };
+    // l'image de l'item reste prioritaire sur le code couleur
+    expect(
+      resolveMarkerVisual(
+        { profilThumbImageUrl: "/i.jpg", tags: ["territoire62:arrageois"] },
+        { useItemImage: true, colorBy },
+        BASE,
+      ),
+    ).toEqual({ kind: "image", src: "https://backend.example/i.jpg" });
+    // colorBy l'emporte sur une icône brandée (le code couleur porte l'info)
+    expect(
+      resolveMarkerVisual(
+        { tags: ["territoire62:arrageois"] },
+        { iconUrl: "/p.svg", colorBy },
+        BASE,
+      ).kind,
+    ).toBe("pin");
+  });
 });

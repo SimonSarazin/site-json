@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { computeUrlFromFilters } from "./computeUrlFromFilters";
-import { computeFiltersFromUrl, type FilterGroupLike } from "./computeFiltersFromUrl";
+import { applyDefaultSearchTargets, computeFiltersFromUrl, type FilterGroupLike } from "./computeFiltersFromUrl";
 import type { SearchByFieldValue } from "../contexts/pageFilters";
 
 const TYPO: FilterGroupLike = {
@@ -165,5 +165,273 @@ describe("computeUrlFromFilters", () => {
     // Idempotence : ré-écrire depuis l'état relu ne change pas l'URL.
     const url2 = computeUrlFromFilters(url, applySelected({}), applySearchFields({}), groups, "tiers");
     expect(url2.toString()).toBe(url.toString());
+  });
+});
+
+// ─── searchTargets (filtre « type d'info », CDC parents62) ──────────────────
+const TYPE_INFO: FilterGroupLike = {
+  id: "typeInfo",
+  type: "searchTargets",
+  options: [
+    { id: "typeinfo-actions", name: "typeinfo-actions", target: { defaultTypes: ["projects"] } },
+    {
+      id: "typeinfo-paroles",
+      name: "typeinfo-paroles",
+      target: { defaultTypes: ["poi"], defaultFilters: { type: "affiche" } },
+    },
+  ],
+};
+const targetEntry = (target: Record<string, unknown>) =>
+  ({ field: "searchTarget", type: "searchTarget", value: target }) as unknown as SearchByFieldValue;
+
+describe("searchTargets — miroir URL", () => {
+  it("écriture : option active dans searchByFields → ?typeInfo=<option>", () => {
+    const out = computeUrlFromFilters(
+      new URLSearchParams(),
+      {},
+      { "typeinfo-paroles": targetEntry({ defaultTypes: ["poi"] }) },
+      [TYPE_INFO],
+    );
+    expect(out.get("typeInfo")).toBe("typeinfo-paroles");
+  });
+
+  it("écriture : aucune option active → param retiré", () => {
+    const out = computeUrlFromFilters(
+      new URLSearchParams("typeInfo=typeinfo-paroles"),
+      {},
+      {},
+      [TYPE_INFO],
+    );
+    expect(out.get("typeInfo")).toBeNull();
+  });
+
+  it("lecture : deep-link ?typeInfo=… → entrée searchByFields avec la cible de l'option (radio : 1ʳᵉ valeur)", () => {
+    const { applySearchFields } = computeFiltersFromUrl(
+      new URLSearchParams("typeInfo=typeinfo-paroles,typeinfo-actions"),
+      [TYPE_INFO],
+      null,
+    );
+    expect(applySearchFields({})).toEqual({
+      "typeinfo-paroles": {
+        field: "searchTarget",
+        type: "searchTarget",
+        value: { defaultTypes: ["poi"], defaultFilters: { type: "affiche" } },
+      },
+    });
+  });
+
+  it("lecture : les clés d'options searchTargets sont reconstruites (pas préservées), les autres clés le sont", () => {
+    const { applySearchFields } = computeFiltersFromUrl(new URLSearchParams(), [TYPE_INFO], null);
+    const prev = {
+      "typeinfo-actions": targetEntry({ defaultTypes: ["projects"] }),
+      autre: { field: "tags", value: ["sport"] } as unknown as SearchByFieldValue,
+    };
+    expect(applySearchFields(prev)).toEqual({
+      autre: { field: "tags", value: ["sport"] },
+    });
+  });
+});
+
+// ─── dateRange (filtre par date, CDC parents62) ─────────────────────────────
+const DATES: FilterGroupLike = { id: "dates", type: "dateRange", field: "startDate" };
+const rangeEntry = (value: Record<string, unknown>) =>
+  ({ field: "startDate", type: "dateRange", value }) as unknown as SearchByFieldValue;
+
+describe("dateRange — miroir URL", () => {
+  it("écriture : plage active → ?dates=start[,end] ; vide → param retiré", () => {
+    const out = computeUrlFromFilters(
+      new URLSearchParams(),
+      {},
+      { dates: rangeEntry({ start: "2026-07-01", end: "2026-08-31" }) },
+      [DATES],
+    );
+    expect(out.get("dates")).toBe("2026-07-01,2026-08-31");
+
+    const cleared = computeUrlFromFilters(new URLSearchParams("dates=2026-07-01"), {}, {}, [DATES]);
+    expect(cleared.get("dates")).toBeNull();
+  });
+
+  it("lecture : deep-link ?dates=start,end → entrée searchByFields sous la clé du groupe", () => {
+    const { applySearchFields } = computeFiltersFromUrl(
+      new URLSearchParams("dates=2026-07-01,2026-08-31"),
+      [DATES],
+      null,
+    );
+    expect(applySearchFields({})).toEqual({
+      dates: { field: "startDate", type: "dateRange", value: { start: "2026-07-01", end: "2026-08-31" } },
+    });
+  });
+
+  it("plage « fin seule » : position de début vide conservée (`,end`) et relue en borne de fin", () => {
+    // écriture : la position de début vide est gardée → `?dates=,end`.
+    const written = computeUrlFromFilters(
+      new URLSearchParams(),
+      {},
+      { dates: rangeEntry({ end: "2026-08-31" }) },
+      [DATES],
+    );
+    expect(written.get("dates")).toBe(",2026-08-31");
+
+    // lecture : `,end` reste une borne de FIN (et ne glisse pas en début).
+    const { applySearchFields } = computeFiltersFromUrl(
+      new URLSearchParams("dates=,2026-08-31"),
+      [DATES],
+      null,
+    );
+    expect(applySearchFields({})).toEqual({
+      dates: { field: "startDate", type: "dateRange", value: { end: "2026-08-31" } },
+    });
+  });
+
+  it("plage « début seul » → ?dates=start (sans virgule) et relue en borne de début", () => {
+    const written = computeUrlFromFilters(
+      new URLSearchParams(),
+      {},
+      { dates: rangeEntry({ start: "2026-07-01" }) },
+      [DATES],
+    );
+    expect(written.get("dates")).toBe("2026-07-01");
+
+    const { applySearchFields } = computeFiltersFromUrl(
+      new URLSearchParams("dates=2026-07-01"),
+      [DATES],
+      null,
+    );
+    expect(applySearchFields({})).toEqual({
+      dates: { field: "startDate", type: "dateRange", value: { start: "2026-07-01" } },
+    });
+  });
+});
+
+// Groupe « champ » (taxonomie en CHAMPS, parent62) : `field` sur un groupe
+// `filters` → la sélection vit dans searchByFields, clé = nom d'option, et la
+// valeur envoyée au backend est le libellé EXACT stocké en base.
+const TERRITOIRES_CHAMP: FilterGroupLike = {
+  id: "territoire",
+  type: "filters",
+  field: "territoires",
+  options: [
+    { id: "arrageois", name: "Arrageois" },
+    { id: "entre-mer-et-terres", name: "Entre Mer et Terres" },
+  ],
+};
+
+describe("groupe « champ » (field sur un groupe filters)", () => {
+  it("écriture : options actives dans searchByFields → ?territoire=<valeurs>", () => {
+    const sbf: Record<string, SearchByFieldValue> = {
+      Arrageois: { field: "territoires", value: ["Arrageois"] },
+    };
+    const out = computeUrlFromFilters(new URLSearchParams(), {}, sbf, [TERRITOIRES_CHAMP]);
+    expect(out.get("territoire")).toBe("Arrageois");
+  });
+
+  it("lecture : deep-link par id OU par valeur → searchByFields sur le champ du groupe", () => {
+    const byValue = computeFiltersFromUrl(
+      new URLSearchParams("territoire=Arrageois"),
+      [TERRITOIRES_CHAMP],
+      null,
+    ).applySearchFields({});
+    expect(byValue).toEqual({ Arrageois: { field: "territoires", value: ["Arrageois"] } });
+
+    // La bulle territoire de l'accueil deep-linke par slug d'option.
+    const byId = computeFiltersFromUrl(
+      new URLSearchParams("territoire=entre-mer-et-terres"),
+      [TERRITOIRES_CHAMP],
+      null,
+    ).applySearchFields({});
+    expect(byId).toEqual({
+      "Entre Mer et Terres": { field: "territoires", value: ["Entre Mer et Terres"] },
+    });
+  });
+
+  it("round-trip : write(state) relu redonne le même state", () => {
+    const sbf: Record<string, SearchByFieldValue> = {
+      Arrageois: { field: "territoires", value: ["Arrageois"] },
+      "Entre Mer et Terres": { field: "territoires", value: ["Entre Mer et Terres"] },
+    };
+    const url = computeUrlFromFilters(new URLSearchParams(), {}, sbf, [TERRITOIRES_CHAMP]);
+    expect(computeFiltersFromUrl(url, [TERRITOIRES_CHAMP], null).applySearchFields({})).toEqual(sbf);
+  });
+
+  it("sans sélection → param retiré ; les clés du groupe sont reconstruites, pas préservées", () => {
+    const out = computeUrlFromFilters(
+      new URLSearchParams("territoire=Arrageois"),
+      {},
+      {},
+      [TERRITOIRES_CHAMP],
+    );
+    expect(out.has("territoire")).toBe(false);
+
+    const applied = computeFiltersFromUrl(new URLSearchParams(), [TERRITOIRES_CHAMP], null)
+      .applySearchFields({
+        Arrageois: { field: "territoires", value: ["Arrageois"] },
+        service1: { field: "_id", value: ["orga"] },
+      });
+    expect(applied).toEqual({ service1: { field: "_id", value: ["orga"] } });
+  });
+});
+
+// ─── défaut d'un groupe searchTargets (option defaultChecked) ────────────────
+// Régression parent62 : le défaut rangé en selectedFilters fuyait en tag `$all`
+// « typeinfo-… » inexistant → 0 résultat. Le défaut doit vivre en searchByFields.
+const TYPE_INFO_DEFAULT: FilterGroupLike = {
+  ...TYPE_INFO,
+  options: [
+    { ...TYPE_INFO.options![0], defaultChecked: true },
+    TYPE_INFO.options![1],
+  ],
+};
+
+describe("applyDefaultSearchTargets (défaut à l'hydratation)", () => {
+  it("URL vierge → la cible defaultChecked est posée en searchByFields", () => {
+    const out = applyDefaultSearchTargets({}, [TYPE_INFO_DEFAULT], new URLSearchParams());
+    expect(out).toEqual({
+      "typeinfo-actions": targetEntry({ defaultTypes: ["projects"] }),
+    });
+  });
+
+  it("l'URL prime : param du groupe présent → aucun défaut appliqué", () => {
+    const fromUrl = computeFiltersFromUrl(
+      new URLSearchParams("typeInfo=typeinfo-paroles"),
+      [TYPE_INFO_DEFAULT],
+      null,
+    ).applySearchFields({});
+    const out = applyDefaultSearchTargets(
+      fromUrl,
+      [TYPE_INFO_DEFAULT],
+      new URLSearchParams("typeInfo=typeinfo-paroles"),
+    );
+    expect(out).toEqual({
+      "typeinfo-paroles": targetEntry({ defaultTypes: ["poi"], defaultFilters: { type: "affiche" } }),
+    });
+  });
+
+  it("une option du groupe déjà sélectionnée → pas d'écrasement", () => {
+    const prev = { "typeinfo-paroles": targetEntry({ defaultTypes: ["poi"] }) };
+    expect(applyDefaultSearchTargets(prev, [TYPE_INFO_DEFAULT], new URLSearchParams())).toBe(prev);
+  });
+
+  it("groupe sans defaultChecked ou non-searchTargets → identité", () => {
+    expect(applyDefaultSearchTargets({}, [TYPE_INFO], new URLSearchParams())).toEqual({});
+    expect(applyDefaultSearchTargets({}, [TYPO], new URLSearchParams())).toEqual({});
+  });
+
+  // Régression : un defaultChecked sur un groupe « champ » doit lui aussi être
+  // posé en searchByFields (jamais selectedFilters, sinon tag `$all` fantôme).
+  it("groupe « champ » defaultChecked → posé en searchByFields (pas en tag)", () => {
+    const territoireDefault: FilterGroupLike = {
+      ...TERRITOIRES_CHAMP,
+      options: [
+        { ...TERRITOIRES_CHAMP.options![0], defaultChecked: true },
+        TERRITOIRES_CHAMP.options![1],
+      ],
+    };
+    const out = applyDefaultSearchTargets({}, [territoireDefault], new URLSearchParams());
+    expect(out).toEqual({ Arrageois: { field: "territoires", value: ["Arrageois"] } });
+
+    // L'URL prime : param présent → aucun défaut.
+    expect(
+      applyDefaultSearchTargets({}, [territoireDefault], new URLSearchParams("territoire=Entre Mer et Terres")),
+    ).toEqual({});
   });
 });

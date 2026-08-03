@@ -15,11 +15,14 @@ interface NewsContentProps {
  * Parse le texte pour remplacer les mentions @slug par des liens [@name](/profil/slug)
  */
 function parseMentionsToMarkdown(text: string, mentions?: NewsMention[]): string {
+  // `text` peut être absent (ex. news de fil d'activité "X a créé Y", sans corps) : le type
+  // le déclare `string` mais la donnée runtime peut être undefined → on sécurise.
+  const safeText = text ?? "";
   if (!mentions || mentions.length === 0) {
-    return text;
+    return safeText;
   }
 
-  let result = text;
+  let result = safeText;
   mentions.forEach((mention) => {
     // Remplacer @slug par [@name](/profil/slug)
     const mentionRegex = new RegExp(`@${mention.slug}\\b`, 'g');

@@ -1,0 +1,18 @@
+{
+  "feed": {
+    "empty": "No article yet.",
+    "loadMore": "Load more",
+    "loading": "Loading articles…",
+    "readMore": "Read article",
+    "error": "Unable to load articles.",
+    "retry": "Retry"
+  },
+  "article": {
+    "backToList": "Back to articles",
+    "publishedOn": "Published on",
+    "by": "by",
+    "readingTime": "{{count}} min read",
+    "notFound": "Article not found",
+    "related": "Related articles"
+  }
+}

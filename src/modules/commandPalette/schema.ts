@@ -1,6 +1,17 @@
 import { z } from "zod";
 import { LocalizedString } from "@/types/locale-schema";
-import { PreviewConfSchema } from "@/modules/search/schema";
+import { PreviewConfSchema, ListConfSchema } from "@/modules/search/schema";
+import { PredicateJson } from "@/modules/formEngine/config";
+
+/**
+ * Règle d'icône GÉNÉRIQUE d'un résultat d'entité : un prédicat (`when`) → un nom d'icône lucide.
+ * Réutilise EXACTEMENT le prédicat de `requiredIf`/`visibleIf` (`{field, op, value}` + and/or/not) évalué
+ * contre `{ ...serverData, collection }` — donc adaptable à N'IMPORTE QUELLE collection et n'importe quel
+ * champ, y compris IMBRIQUÉ via chemin pointé (`address.addressLocality`) — ex. `{field:"type", op:"eq",
+ * value:"recoveryCenter"}` → "folder" ; `{and:[{field:"collection",op:"eq",value:"poi"},{field:"category",op:"eq",value:"Vidéo"}]}`.
+ * 1re règle qui matche gagne ; sinon repli sur l'icône par type d'entité (`getEntityIcon`).
+ */
+export const IconRuleSchema = z.object({ when: PredicateJson, icon: z.string() });
 
 /**
  * Action au clic sur un résultat d'entité — même pattern déclaratif que le
@@ -13,6 +24,13 @@ export const EntityItemActionSchema = z.object({
   detailsMode: z.enum(["drawer", "dialog"]).optional(),
   /** kind "preview" : contenu du détail (ex. { "type": "poi-amenities" }). */
   preview: PreviewConfSchema.optional(),
+  /**
+   * kind "preview" : bloc `list` du module search (mappings de champs, couleurs, facettes) passé au
+   * détail. INDISPENSABLE pour les previews CONFIG-DRIVEN (`resource`/`testimonial`) — sans lui ils
+   * rendent en défauts génériques. Y embarquer le bloc de la page correspondante (ex. le `list` de
+   * /ressources pour recoveryCenter). PreviewEvent/PreviewDefault n'en ont pas besoin.
+   */
+  list: ListConfSchema.optional(),
 });
 export type EntityItemAction = z.infer<typeof EntityItemActionSchema>;
 
@@ -42,14 +60,47 @@ export const CommandPaletteConfigSchema = z.object({
       enabled: z.boolean().default(true),
       /** Types d'entités cherchés. Défaut : organizations / projects / events / poi / citoyens. */
       searchType: z.array(z.string()).optional(),
+      /**
+       * Valeurs de `serverData.type` (sous-type POI) à EXCLURE des résultats (post-filtre client). Ex.
+       * `["article"]` : les articles sont gérés par la source `blog:articles` (→ /blog), pas l'annuaire.
+       */
+      excludeTypes: z.array(z.string()).optional(),
       /** Nombre max de résultats (= `indexStep`). */
       limit: z.number().int().positive().default(8),
       /** Champs additionnels fusionnés dans le payload `searchCostum` (avancé : filters, scope…). */
       params: z.record(z.string(), z.unknown()).optional(),
+      /**
+       * Icône du résultat par RÈGLE générique (prédicat → icône lucide), évaluées dans l'ordre contre
+       * `{ ...serverData, collection }`. Adaptable à toute collection/champ (cf. `IconRuleSchema`). Sans
+       * règle qui matche → icône par défaut du type d'entité (`getEntityIcon`).
+       */
+      iconRules: z.array(IconRuleSchema).optional(),
       /** Action au clic sur un résultat (défaut : navigation `/profil/:slug`). */
       itemAction: EntityItemActionSchema.optional(),
-      /** Surcharge par type d'entité (clé = type de l'entité, ex. `"poi"`). */
+      /** Surcharge par TYPE d'entité (clé = `getEntityType()`, ex. `"poi"`, `"events"`). */
       itemActionByType: z.record(z.string(), EntityItemActionSchema).optional(),
+      /**
+       * Surcharge par SOUS-TYPE POI (clé = `serverData.type`, ex. `"recoveryCenter"`, `"affiche"`) —
+       * PLUS PRIORITAIRE que `itemActionByType`. Seul moyen de router des POI de sous-types différents
+       * vers des previews différents (une ressource `recoveryCenter` → preview `resource` ; une parole
+       * `affiche` → preview `testimonial`) alors qu'ils partagent le type d'entité `poi`.
+       */
+      itemActionBySubType: z.record(z.string(), EntityItemActionSchema).optional(),
+    })
+    .optional(),
+  /**
+   * Config de la source de recherche d'ARTICLES (POI `type:"article"` → `/blog/:slug`) — fournie par le
+   * module blog. Absente → source inactive. `costumSlug` requis (scope `source.key` des articles du blog).
+   */
+  articleSearch: z
+    .object({
+      enabled: z.boolean().default(true),
+      /** Slug du costum dont on cherche les articles (scope `source.key`). Requis pour activer la source. */
+      costumSlug: z.string(),
+      /** Nombre max de résultats (= `indexStep`). */
+      limit: z.number().int().positive().default(8),
+      /** Base de l'URL de détail (défaut `/blog`) — le reader vit à `<base>/:slug` (+ `<base>/id/:id`). */
+      detailBasePath: z.string().optional(),
     })
     .optional(),
 });

@@ -40,8 +40,14 @@ function hideLoader() {
   }
 }
 
+// Garde-fou : une stylesheet qui ne charge JAMAIS (ex. Google Fonts en 400 sur
+// un nom de famille invalide) laisse `link.sheet` à null pour toujours — sans
+// deadline, le loader masquerait le site indéfiniment.
+const STYLES_DEADLINE_MS = 8000;
+const stylesWaitStart = Date.now();
+
 function waitForStylesAndHideLoader() {
-  if (areStylesheetsLoaded()) {
+  if (areStylesheetsLoaded() || Date.now() - stylesWaitStart > STYLES_DEADLINE_MS) {
     requestAnimationFrame(() => {
       hideLoader();
     });

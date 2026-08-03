@@ -71,7 +71,7 @@ export interface CagnottePermissions {
  */
 export interface CagnottePermissionData {
   /** Existe-t-il au moins un milestone non-clôturé sur le projet sélectionné ? */
-  hasActiveMilestones?: boolean;
+  hasActiveItems?: boolean;
   /** ID du projet sélectionné (sert au canContribute) */
-  projectId?: string;
+  resourceId?: string;
 }

@@ -1,4 +1,7 @@
+import { headerStickyOffsetPx } from "@/components/layout/header/headerOffset";
+import { useSite } from "@/hooks/useSite";
 import { ProfileSectionRenderer } from "../../ProfileSectionRenderer";
+import { useOptionalProfileEntity } from "../../hooks/useProfileEntity";
 import type { ProfileTabLayoutSection, ProfileSection } from "../../schema";
 
 interface ProfileTabLayoutProps {
@@ -16,6 +19,25 @@ interface ProfileTabLayoutProps {
 export default function ProfileTabLayout({ section }: ProfileTabLayoutProps) {
   const { leftSections, rightSections } = section;
 
+  // Le sticky est porté par la PILE, pas par chaque carte : deux cartes
+  // `lg:sticky lg:top-4` sœurs se superposent une fois collées (même offset,
+  // la dernière de l'arbre peint par-dessus). Le `sticky` propre aux cartes
+  // devient alors inerte — la pile épouse leur hauteur, il n'y a plus de
+  // course à parcourir — ce qui laisse le rendu inchangé à une seule carte.
+  // Conditionné pour ne pas rendre collantes les sidebars qui ne le
+  // demandaient pas (`actions-summary`, `finance-summary`).
+  const stackIsSticky =
+    (rightSections as Array<{ sticky?: boolean }> | undefined)?.some((sec) => sec.sticky) ?? false;
+
+  // Offset du sticky = hauteur RÉELLEMENT occupée par le header (0 s'il défile
+  // avec la page, ou s'il est masqué sur ce profil) + la gouttière historique
+  // de 16px (`lg:top-4`). Sans ça la pile se colle à 16px du viewport et passe
+  // sous une barre fixe/collante de 80px.
+  const { config } = useSite();
+  const profile = useOptionalProfileEntity();
+  const stickyTopPx =
+    (profile?.config?.hideHeader ? 0 : headerStickyOffsetPx(config.header)) + 16;
+
   return (
     <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6 sm:gap-8">
       {/* Colonne gauche - Contenu principal */}
@@ -30,12 +52,22 @@ export default function ProfileTabLayout({ section }: ProfileTabLayoutProps) {
 
       {/* Colonne droite - Sidebar */}
       <div className="order-1 lg:order-2 lg:col-span-1">
-        {rightSections && (rightSections as ProfileSection[]).map((sec, index) => (
-          <ProfileSectionRenderer
-            key={`right-${sec.type}-${index}`}
-            section={sec}
-          />
-        ))}
+        {/* `space-y` fournit la gouttière, sans effet tant que `rightSections`
+            n'avait qu'un seul élément (c'était le cas de tout le parc). */}
+        <div
+          className={`space-y-6${stackIsSticky ? " lg:sticky" : ""}`}
+          // `top` inline plutôt qu'une classe `lg:top-[…]` : la valeur est
+          // calculée (Tailwind ne génère que des classes littérales), et elle
+          // reste INERTE hors `lg` puisque l'élément y est `position: static`.
+          style={stackIsSticky ? { top: stickyTopPx } : undefined}
+        >
+          {rightSections && (rightSections as ProfileSection[]).map((sec, index) => (
+            <ProfileSectionRenderer
+              key={`right-${sec.type}-${index}`}
+              section={sec}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

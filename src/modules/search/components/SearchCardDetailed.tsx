@@ -19,13 +19,14 @@ export default function SearchCardDetailed({
   item,
   onClick,
   card,
+  list,
 }: SearchCardProps) {
   // Switch sur le variant (prioritaire) ou le type de carte.
   const cardType = card?.detailedMode || card?.variant || card?.type;
   switch (cardType) {
     case "service-pricing":
-      return <CardDetailedServicePricing item={item} onClick={onClick} card={card} />;
+      return <CardDetailedServicePricing item={item} onClick={onClick} card={card} list={list} />;
     default:
-      return <CardDetailedDefault item={item} onClick={onClick} card={card} />;
+      return <CardDetailedDefault item={item} onClick={onClick} card={card} list={list} />;
   }
 }

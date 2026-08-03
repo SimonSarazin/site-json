@@ -318,7 +318,7 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
                 blanc total jusqu'à la 1ʳᵉ page. */}
             {mapAll.results.length > 0 ? (
               <ClientOnly fallback={<MapSkeleton label={t("Chargement de la carte…")} />}>
-                {() => <SearchMapWrapper results={mapAll.results} card={list?.card} preview={list?.preview} map={props.map} />}
+                {() => <SearchMapWrapper results={mapAll.results} card={list?.card} preview={list?.preview} list={list} map={props.map} />}
               </ClientOnly>
             ) : mapAll.isComplete ? (
               <div className="flex min-h-[40vh] items-center justify-center text-sm text-muted-foreground">
@@ -391,9 +391,7 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
 
             <SearchListView
               results={transformedResults}
-              columns={list?.columns}
-              card={list?.card}
-              preview={list?.preview}
+              list={list}
               isDetailedView={isDetailedView}
             />
 

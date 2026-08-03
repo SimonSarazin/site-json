@@ -5,9 +5,9 @@
 
 export interface HelloAssoPaymentConfig {
   amount: number;
-  projectName: string;
-  projectId: string;
-  milestoneIds: string[];
+  resourceName: string;
+  resourceId: string;
+  itemsIds: string[];
   contributorType: "citoyens" | "organizations";
   organizationId?: string;
   email?: string;
@@ -68,9 +68,9 @@ export const buildHelloAssoUrl = (config: HelloAssoPaymentConfig): URL => {
 
   // Ajouter les métadonnées personnalisées
   const metadata = {
-    project: config.projectName,
-    projectId: config.projectId,
-    milestoneIds: config.milestoneIds,
+    resource: config.resourceName,
+    resourceId: config.resourceId,
+    itemsIds: config.itemsIds,
     contributorType: config.contributorType,
     organizationId: config.organizationId || null,
     timestamp: new Date().toISOString(),
@@ -200,13 +200,13 @@ export const validateHelloAssoConfig = (
   if (!config.amount || config.amount <= 0) {
     errors.push("amountInvalid");
   }
-  if (!config.projectName) {
+  if (!config.resourceName) {
     errors.push("projectNameRequired");
   }
-  if (!config.projectId) {
+  if (!config.resourceId) {
     errors.push("projectIdRequired");
   }
-  if (!config.milestoneIds || config.milestoneIds.length === 0) {
+  if (!config.itemsIds || config.itemsIds.length === 0) {
     errors.push("milestoneRequired");
   }
   if (!config.contributorType) {
@@ -232,9 +232,9 @@ export const buildHelloAssoPaymentData = (
   transactionId,
   method: "helloasso" as const,
   amount: config.amount,
-  projectName: config.projectName,
-  projectId: config.projectId,
-  milestones: config.milestoneIds,
+  projectName: config.resourceName,
+  resourceId: config.resourceId,
+  items: config.itemsIds,
   contributorType: config.contributorType,
   organizationId: config.organizationId || null,
   timestamp: new Date().toISOString(),

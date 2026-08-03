@@ -34,18 +34,27 @@ interface OurToolsEditDialogProps {
   entity: EntityTypes;
   isOpen: boolean;
   onClose: () => void;
+  /**
+   * Namespace i18n du bloc `toolsModal` (fr.json/en.json), pour adapter le
+   * texte au contexte d'appel : `"ProfileTiersLieuxInfo"` (défaut, vocabulaire
+   * tiers-lieux) ou `"ProfileTools"` (générique, sans "lieu").
+   */
+  translationNamespace?: "ProfileTiersLieuxInfo" | "ProfileTools";
 }
 
 /**
- * Éditeur des outils numériques d'un lieu (`ourTools`). Réservé aux admins du
- * lieu (le call-site gate via `canEditProfile`). Sauvegarde via
+ * Éditeur des outils numériques d'une entité (`ourTools`). Réservé aux admins
+ * de l'entité (le call-site gate via `canEditProfile`). Sauvegarde via
  * `entity.updateField("ourTools", …)` puis `entity.refresh()` (met à jour le
  * `serverData` réactif → `useReactiveProperty` re-render la liste).
+ * Partagé entre `ProfileTiersLieuxInfo` (vocabulaire tiers-lieux) et
+ * `ProfileTools` (générique) — `translationNamespace` sélectionne les textes.
  *
  * Monté conditionnellement (`{isOpen && …}`) → état frais à chaque ouverture.
  */
-export function OurToolsEditDialog({ entity, isOpen, onClose }: OurToolsEditDialogProps) {
+export function OurToolsEditDialog({ entity, isOpen, onClose, translationNamespace = "ProfileTiersLieuxInfo" }: OurToolsEditDialogProps) {
   const t = useT("modules/profil");
+  const tm = (key: string) => t(`${translationNamespace}.toolsModal.${key}`);
   const fieldId = useId();
   const [rows, setRows] = useState<ToolRow[]>(() => parseRows(entity.serverData?.ourTools));
   // Prochain id de ligne : démarre après les lignes initiales (ids 0..n-1).
@@ -56,8 +65,8 @@ export function OurToolsEditDialog({ entity, isOpen, onClose }: OurToolsEditDial
     // Quand tout est vide, on envoie `null` = `$unset` explicite (wire-safe).
     mutationFn: (value) =>
       entity.updateField("ourTools", Object.keys(value).length > 0 ? value : null),
-    successKey: "ProfileTiersLieuxInfo.toolsModal.saveSuccess",
-    errorKey: "ProfileTiersLieuxInfo.toolsModal.saveError",
+    successKey: `${translationNamespace}.toolsModal.saveSuccess`,
+    errorKey: `${translationNamespace}.toolsModal.saveError`,
     namespace: "modules/profil",
     onSuccessCallback: async () => {
       // `refresh()` re-fetch l'entité et met à jour son `serverData` réactif →
@@ -84,16 +93,16 @@ export function OurToolsEditDialog({ entity, isOpen, onClose }: OurToolsEditDial
     <Dialog open onOpenChange={(o) => { if (!o && !mutation.isPending) onClose(); }}>
       <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{t("ProfileTiersLieuxInfo.toolsModal.title")}</DialogTitle>
+          <DialogTitle>{tm("title")}</DialogTitle>
           <DialogDescription>
-            {t("ProfileTiersLieuxInfo.toolsModal.description")}
+            {tm("description")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3 py-2 px-0.5">
           {rows.length === 0 && (
             <p className="text-sm text-muted-foreground italic">
-              {t("ProfileTiersLieuxInfo.toolsModal.empty")}
+              {tm("empty")}
             </p>
           )}
 
@@ -104,7 +113,7 @@ export function OurToolsEditDialog({ entity, isOpen, onClose }: OurToolsEditDial
             >
               <div className="space-y-1 sm:w-52">
                 <Label htmlFor={`${fieldId}-${row.id}-cat`} className="text-xs text-muted-foreground">
-                  {t("ProfileTiersLieuxInfo.toolsModal.category")}
+                  {tm("category")}
                 </Label>
                 <Select
                   value={row.category}
@@ -125,19 +134,19 @@ export function OurToolsEditDialog({ entity, isOpen, onClose }: OurToolsEditDial
 
               <div className="flex-1 space-y-1">
                 <Label htmlFor={`${fieldId}-${row.id}-name`} className="text-xs text-muted-foreground">
-                  {t("ProfileTiersLieuxInfo.toolsModal.name")}
+                  {tm("name")}
                 </Label>
                 <Input
                   id={`${fieldId}-${row.id}-name`}
                   value={row.name}
                   onChange={(e) => patchRow(row.id, { name: e.target.value })}
-                  placeholder={t("ProfileTiersLieuxInfo.toolsModal.namePlaceholder")}
+                  placeholder={tm("namePlaceholder")}
                 />
               </div>
 
               <div className="flex-1 space-y-1">
                 <Label htmlFor={`${fieldId}-${row.id}-url`} className="text-xs text-muted-foreground">
-                  {t("ProfileTiersLieuxInfo.toolsModal.url")}
+                  {tm("url")}
                 </Label>
                 <Input
                   id={`${fieldId}-${row.id}-url`}
@@ -154,7 +163,7 @@ export function OurToolsEditDialog({ entity, isOpen, onClose }: OurToolsEditDial
                 size="icon"
                 className="shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
                 onClick={() => removeRow(row.id)}
-                aria-label={t("ProfileTiersLieuxInfo.toolsModal.removeRow")}
+                aria-label={tm("removeRow")}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -163,16 +172,16 @@ export function OurToolsEditDialog({ entity, isOpen, onClose }: OurToolsEditDial
 
           <Button type="button" variant="outline" size="sm" className="gap-2" onClick={addRow}>
             <Plus className="h-4 w-4" />
-            {t("ProfileTiersLieuxInfo.toolsModal.addRow")}
+            {tm("addRow")}
           </Button>
         </div>
 
         <DialogFooter>
           <Button type="button" variant="outline" onClick={onClose} disabled={mutation.isPending}>
-            {t("ProfileTiersLieuxInfo.toolsModal.cancel")}
+            {tm("cancel")}
           </Button>
           <Button type="button" onClick={handleSave} disabled={mutation.isPending}>
-            {t("ProfileTiersLieuxInfo.toolsModal.save")}
+            {tm("save")}
           </Button>
         </DialogFooter>
       </DialogContent>

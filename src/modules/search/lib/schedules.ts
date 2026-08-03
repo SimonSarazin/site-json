@@ -32,7 +32,7 @@ export interface DaySchedule {
 }
 
 /** Normalise un nom de jour brut (`"Monday"`, `" monday "`…) → clé canonique ou `null`. */
-function normalizeDayKey(raw: unknown): DayKey | null {
+export function normalizeDayKey(raw: unknown): DayKey | null {
   if (typeof raw !== "string") return null;
   const key = raw.trim().toLowerCase();
   return (DAY_KEYS as readonly string[]).includes(key) ? (key as DayKey) : null;
