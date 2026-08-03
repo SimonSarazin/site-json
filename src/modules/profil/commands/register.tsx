@@ -19,10 +19,12 @@
  *   preview?}` (détail du module search, pattern rowAction observatoire) ;
  *   surchargeable par type d'entité (clé ex. `"poi"`).
  */
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { registerCommandSource } from "@/modules/commandPalette";
 import type { Command, CommandReadContext } from "@/modules/commandPalette";
 import { getEntityIcon } from "@/lib/entityIcons";
+import { entityMatchData, firstMatching } from "@/lib/entityMatch";
 
 const DEFAULT_ENTITY_TYPES = ["organizations", "projects", "events", "poi", "citoyens"];
 
@@ -73,15 +75,29 @@ registerCommandSource({
 
     return kept.slice(0, limit).map((e): Command => {
       const type = e.getEntityType?.() ?? "poi";
+      const subType = e.serverData?.type;
       const slug = e.slug ?? e.serverData?.slug;
       const name = e.serverData?.name ?? slug ?? "—";
-      // Action au clic : surcharge par type > défaut global > navigation profil.
-      const itemAction = cfg?.itemActionByType?.[type] ?? cfg?.itemAction;
+      // Action au clic : surcharge par SOUS-TYPE POI (`serverData.type`, ex. recoveryCenter/affiche) >
+      // par TYPE d'entité (`poi`/`events`) > défaut global > navigation profil.
+      const itemAction =
+        (subType ? cfg?.itemActionBySubType?.[subType] : undefined) ??
+        cfg?.itemActionByType?.[type] ??
+        cfg?.itemAction;
+      // Icône : 1re règle `iconRules` dont le prédicat matche → DynamicIcon ; sinon icône par défaut du type.
+      // `entityMatchData` construit la vue matchable (serverData + collection/sourceKey/sourceKeys, chemins
+      // pointés résolus) et `firstMatching` porte la GARDE : une règle malformée (ex. `op:"matches"` avec un
+      // regex invalide) est ignorée au lieu de faire renvoyer `[]` à toute la source (annuaire vidé).
+      const iconName = firstMatching(cfg?.iconRules, entityMatchData(e), (err) =>
+        console.warn("[commandPalette] iconRule invalide, ignorée :", err),
+      )?.icon;
       return {
         id: `profil:${e.id ?? slug ?? name}`,
         label: name,
         keywords: [query, type],
-        icon: getEntityIcon(type, { className: "h-5 w-5", withColor: true }),
+        icon: iconName
+          ? <DynamicIcon name={iconName as IconName} className="h-5 w-5" />
+          : getEntityIcon(type, { className: "h-5 w-5", withColor: true }),
         group: "profil:entities",
         perform: (run) => {
           if (itemAction?.kind === "preview" && run.openEntityPreview) {
@@ -91,6 +107,7 @@ registerCommandSource({
             run.openEntityPreview(e as unknown as SearchEntity, {
               detailsMode: itemAction.detailsMode,
               preview: itemAction.preview,
+              list: itemAction.list,
             });
             return;
           }

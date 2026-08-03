@@ -1,0 +1,102 @@
+/**
+ * Génération de robots.txt et sitemap.xml à partir des pages de la config du site.
+ *
+ * Logique pure (aucun accès fichier/réseau) → testée dans server/__tests__/sitemap.test.ts.
+ * Les routes Express sont branchées via registerSeoRoutes() dans dev-server.js et
+ * prod-server.js, AVANT le fallback SSR (sinon le SSR rendrait du HTML sur ces URLs).
+ */
+
+/** Retire les slashes finaux du baseUrl pour éviter les doubles slashes en concaténation. */
+function normalizeBaseUrl(baseUrl) {
+  return String(baseUrl || "").replace(/\/+$/, "");
+}
+
+/** Échappe les 5 entités XML — les paths de config peuvent contenir & ou des quotes. */
+function escapeXml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+/**
+ * Une page est référençable si :
+ *  - elle a un path interne (commence par "/" — exclut les liens externes éventuels) ;
+ *  - elle n'est pas paramétrée (`/profil/:slug`, wildcards) : une URL avec placeholder
+ *    n'est pas une URL réelle, Google la traiterait en 404 ;
+ *  - elle n'est pas marquée `seo.noIndex` (le sitemap ne doit lister que l'indexable,
+ *    sinon signaux contradictoires noindex ↔ sitemap pour les crawlers).
+ */
+function isIndexablePage(page) {
+  const path = page?.path;
+  if (typeof path !== "string" || !path.startsWith("/")) return false;
+  if (path.includes(":") || path.includes("*")) return false;
+  if (page?.seo?.noIndex === true) return false;
+  return true;
+}
+
+/**
+ * Construit le sitemap.xml (protocole sitemaps.org 0.9) des pages publiques.
+ * @param {Array<{path?: string, seo?: {noIndex?: boolean}}>} pages pages[] de la config
+ * @param {string} baseUrl origine publique du site (ex. https://parents62.org)
+ * @returns {string} document XML
+ */
+export function buildSitemapXml(pages, baseUrl) {
+  const base = normalizeBaseUrl(baseUrl);
+  // Set : une config peut théoriquement déclarer deux fois le même path → une seule <url>.
+  const seen = new Set();
+  const urls = [];
+  for (const page of Array.isArray(pages) ? pages : []) {
+    if (!isIndexablePage(page) || seen.has(page.path)) continue;
+    seen.add(page.path);
+    urls.push(`  <url><loc>${escapeXml(`${base}${page.path}`)}</loc></url>`);
+  }
+  return [
+    `<?xml version="1.0" encoding="UTF-8"?>`,
+    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`,
+    ...urls,
+    `</urlset>`,
+    ``,
+  ].join("\n");
+}
+
+/**
+ * Construit le robots.txt : tout autorisé + pointeur vers le sitemap
+ * (l'exclusion fine se fait page par page via la meta noindex, pas ici).
+ * @param {string} baseUrl origine publique du site
+ */
+export function buildRobotsTxt(baseUrl) {
+  const base = normalizeBaseUrl(baseUrl);
+  return `User-agent: *\nAllow: /\n\nSitemap: ${base}/sitemap.xml\n`;
+}
+
+/**
+ * Branche GET /robots.txt et GET /sitemap.xml sur l'app Express.
+ * Partagé entre dev-server et prod-server (déduplication).
+ *
+ * @param {import("express").Express} app
+ * @param {() => object} getConfig accesseur de la config COURANTE — en dev la config
+ *   est rechargée par un watcher, donc on ne fige pas une copie au moment du boot.
+ */
+export function registerSeoRoutes(app, getConfig) {
+  // Domaine public : SITE_PUBLIC_URL prioritaire, repli sur PUBLIC_BASE_URL (déjà
+  // utilisée par helloasso-checkout.js pour la même notion), sinon l'host de la
+  // requête — le domaine n'est pas présent dans la config du site.
+  const resolveBaseUrl = (req) =>
+    process.env.SITE_PUBLIC_URL ||
+    process.env.PUBLIC_BASE_URL ||
+    `${req.protocol}://${req.get("host")}`;
+
+  app.get("/robots.txt", (req, res) => {
+    res.type("text/plain; charset=utf-8").send(buildRobotsTxt(resolveBaseUrl(req)));
+  });
+
+  app.get("/sitemap.xml", (req, res) => {
+    const config = getConfig();
+    res
+      .type("application/xml; charset=utf-8")
+      .send(buildSitemapXml(config?.pages ?? [], resolveBaseUrl(req)));
+  });
+}

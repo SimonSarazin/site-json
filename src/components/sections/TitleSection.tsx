@@ -18,6 +18,14 @@ export function TitleSection({
     xl: "text-5xl",
   };
 
+  // Le sous-titre reste subordonné au titre quelle que soit la taille.
+  const subtitleSizeClasses = {
+    sm: "text-base",
+    md: "text-lg",
+    lg: "text-lg md:text-xl",
+    xl: "text-xl",
+  };
+
   const alignClasses = {
     left: "text-left",
     center: "text-center",
@@ -40,11 +48,12 @@ export function TitleSection({
         {subtitle && (
           <T
             k={subtitle}
-            as="h3"
+            as="p"
             className={cn(
-              sizeClasses[size],
+              subtitleSizeClasses[size],
               alignClasses[align],
-              "font-bold mb-12"
+              align === "center" && "mx-auto",
+              "max-w-3xl font-normal text-muted-foreground leading-relaxed"
             )}
           />
         )}

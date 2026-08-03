@@ -13,12 +13,7 @@ import { useT } from "@/hooks/useT";
 import { cn } from "@/lib/utils";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
-
-function shortenTag(tag: string, maxLength = 20): string {
-  if (tag.length <= maxLength) return tag;
-  const sliceLen = Math.floor((maxLength - 1) / 2);
-  return `${tag.slice(0, sliceLen)}…${tag.slice(-sliceLen)}`;
-}
+import { shortenTag } from "@/helpers/shortenTag";
 
 export default function CardDetailedDefault({
   item,
@@ -218,7 +213,7 @@ export default function CardDetailedDefault({
                       className="text-xs"
                       title={tag}
                     >
-                      {shortenTag(tag)}
+                      {shortenTag(tag, 20)}
                     </Badge>
                   ))}
                   {remainingTags > 0 && (

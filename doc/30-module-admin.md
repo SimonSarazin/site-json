@@ -120,11 +120,32 @@ ne sont **pas** lancées. `actions` gate le bouton « Inviter ».
 - `create`/`edit: "inherit"` : la création prend le form **costum** du site s'il en existe un pour
   ce type (`config.costumForms`), l'édition suit la résolution publique (`editModalMatch`,
   par-ligne). Clé forcée `add-<key>`/`edit-<key>` possible ; `false` = lecture seule.
+- **Édition = entité COMPLÈTE** : la ligne de liste (résultat `searchCostum`) est **allégée** — sans
+  les champs `images`/`files` fusionnés par `about`. `openEditEntity` **recharge l'entité full par id**
+  via `me.poi/organization/project/event({ id })` (mapping `EDIT_LOAD_METHOD` :
+  `poi→poi, organizations→organization, projects→project, events→event`) **avant** d'ouvrir le form ;
+  sinon le seed galerie (`getGalleryImages` / `data.files`) est vide → galerie/documents **existants**
+  invisibles à l'édition. Repli sur la ligne allégée si le chargement échoue (au moins le form s'ouvre).
+  Le flag costum-admin (`setCostumAdminAuthorized`) est reposé sur l'entité rechargée
+  (`grantCostumAdmin`). (`src/modules/admin/sections/AdminResourceTable.tsx`)
+- **Rendu des dates en cellule** (`formatCell`, `resourceHelpers.ts`) : une colonne pointant un
+  timestamp backend (`created`/`updated`) rend une date **longue fr, sans heure** (`formatDateLong`,
+  ex. « 14 juin 2026 »). Formats acceptés : `Date` (revivifié par la lib sur `serverData`),
+  MongoDate `{ sec }` (**secondes** epoch → `sec*1000`), `{ $date }` (nombre/chaîne), et
+  `{ $date: { $numberLong } }`.
 - Recherche plein-texte (300 ms), tri serveur par colonne (clavier + `aria-sort`), scroll infini
   par 10 avec compteur « X affichés sur Y ».
 - **Bulk** : sélection par lignes (l'en-tête sélectionne les lignes **chargées** ; la sélection se
   réinitialise quand recherche/filtre/tri changent), progression x/y pendant les boucles, et en cas
   d'échecs partiels les éléments en échec **restent sélectionnés** avec action « Réessayer ».
+- **Create/edit depuis l'admin — rester sur place + rafraîchir la liste** (côté *config* du form
+  costum, pas du schéma admin) : un form costum ouvert **depuis** l'admin (ex. articles parent62)
+  pose `mutation.navigateOnSuccess: false` → pas de redirection vers `/profil/{slug}` au succès, on
+  reste sur la page admin ; et `mutation.invalidateFn.params.searchKeys` inclut le **préfixe de la
+  table admin** `ADMIN_QUERY_KEYS.RESOURCE_PREFIX(entityType)` (ex. `"admin-poi"`, le `queryKeyPrefix`
+  du `useSearchQuery` de la table) → le nouvel élément apparaît **immédiatement** dans la liste (create
+  ET edit), en plus du fil concerné (ex. `blog:<slug>`). Sans ces deux réglages, le create rediligerait
+  hors admin et la table ne se rafraîchirait pas.
 - `status` : **contrat futur** — seule sa présence (booléen) active le mode admin aujourd'hui ;
   les sous-champs `field/mode/states/cascade/notifyEmail` ne sont pas encore câblés (voir la
   JSDoc du schéma avant d'écrire une valeur non-défaut).

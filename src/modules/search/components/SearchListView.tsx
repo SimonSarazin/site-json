@@ -1,28 +1,48 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { useSearchParams } from "react-router";
+import "@/modules/search/i18n"; // Required: registers i18n resources — la LISTE/cards est montée hors
+// section search (agenda, split map…) ; import explicite (indépendant de la chaîne SwitchDetailsMode).
+import { useState, useRef, useEffect, useCallback, useMemo, Suspense } from "react";
+import { useSearchParams, useNavigate } from "react-router";
 import SearchCard from "./SearchCard";
-import { SearchListViewProps } from "../schema";
+import SearchCardSkeleton from "./SearchCardSkeleton";
+import { SearchListViewProps, type ListConf } from "../schema";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { SwitchDetailsMode } from "./SwitchDetailsMode";
 import SearchCardDetailed from "./SearchCardDetailed";
 import { PreviewNavContext } from "../contexts/previewNav";
 import { cn } from "@/lib/utils";
 import { getEntryId } from "../lib/searchMapSelection";
+import { resolveListItemConf, resolveListItemConfs } from "../lib/resolveListItemConf";
+import { resolveItemClick } from "../lib/itemAction";
 
 export default function SearchListView({
   results,
-  columns,
-  card,
-  preview,
+  columns: columnsProp,
+  card: cardProp,
+  preview: previewProp,
+  list,
   isDetailedView = false,
   focusedItemId,
   onFocusItem,
-  previewParam = "preview",
+  previewParam: previewParamProp,
 }: SearchListViewProps) {
+  // Config EFFECTIVE : prop explicite (agenda/observatoire/profil… passent card/preview/columns
+  // sans objet `list`) OU dérivée de `list` (call-sites search, qui ne passent plus que `list`).
+  const columns = columnsProp ?? list?.columns;
+  const card = cardProp ?? list?.card;
+  const preview = previewProp ?? list?.preview;
+  const previewParam = previewParamProp ?? list?.previewParam ?? "preview";
   const [openDetails, setOpenDetails] = useState(false);
-  const [item, setItem] = useState<SearchEntity | null>(null);
+  // L'item ouvert transporte SA conf résolue : le `SwitchDetailsMode` est monté HORS de la boucle,
+  // il n'a donc aucun moyen de la recalculer. Même pattern que `EntityPreviewState` de la palette
+  // (`commandPalette/components/CommandPalette.tsx`).
+  const [selected, setSelected] = useState<{ item: SearchEntity; list?: ListConf } | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  // Conf de liste EFFECTIVE par item : sans `list.itemRules`, chaque entrée vaut `list` lui-même
+  // (identité référentielle → comportement mono-carte historique strictement inchangé).
+  const itemLists = useMemo(() => resolveListItemConfs(results, list), [results, list]);
   // Mémorise le dernier id traité pour éviter de rouvrir si l'URL ne change pas.
   const lastHandledPreviewId = useRef<string | null>(null);
 
@@ -44,21 +64,23 @@ export default function SearchListView({
       return;
     }
     if (previewId === lastHandledPreviewId.current) return;
-    const found = results.find(
-      (r) => String(r.serverData?.id ?? r.id) === previewId,
-    );
+    // `getEntryId` (id RACINE prioritaire) — MÊME formule qu'à l'écriture du param et que
+    // `data-item-id` : `serverData.id` n'est pas toujours peuplé sur un résultat de recherche
+    // (cf. searchMapSelection.ts), les deux formules divergeaient donc parfois.
+    const found = results.find((r) => getEntryId(r) === previewId);
     if (found) {
       lastHandledPreviewId.current = previewId;
-      setItem(found);
+      // Résolution PURE (pas un hook) → utilisable dans l'effet.
+      setSelected({ item: found, list: resolveListItemConf(found, list) });
       setOpenDetails(true);
     }
-  }, [results, searchParams, previewParam, openDetails]);
+  }, [results, searchParams, previewParam, openDetails, list]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  const handleOpenDetails = (it: SearchEntity) => {
-    const id = String(it.serverData?.id ?? it.id);
+  const handleOpenDetails = (it: SearchEntity, itemList?: ListConf) => {
+    const id = getEntryId(it) ?? "";
     lastHandledPreviewId.current = id;
-    setItem(it);
+    setSelected({ item: it, list: itemList });
     setOpenDetails(true);
     setSearchParams(
       (prev) => {
@@ -96,11 +118,25 @@ export default function SearchListView({
   const previewNavValue = useMemo(() => ({ previewParam, closeRaw }), [previewParam, closeRaw]);
 
   // Mode split (onFocusItem fourni) : un clic sur une carte FOCALISE la carte
-  // (flyTo + popup) au lieu d'ouvrir le détail ; sinon comportement historique.
-  const handleCardClick = (it: SearchEntity) => {
+  // (flyTo + popup) au lieu d'ouvrir le détail ; sinon `itemAction` de la conf résolue décide —
+  // absente, on retombe sur l'ouverture du détail (comportement historique).
+  const handleCardClick = (it: SearchEntity, itemList?: ListConf) => {
     const id = getEntryId(it);
-    if (onFocusItem && id) onFocusItem(id);
-    else handleOpenDetails(it);
+    if (onFocusItem && id) {
+      onFocusItem(id);
+      return;
+    }
+    const decision = resolveItemClick(it, itemList?.itemAction);
+    if (decision.kind === "link") {
+      if (decision.newTab) window.open(decision.href, "_blank", "noopener");
+      else navigate(decision.href);
+      return;
+    }
+    if (decision.kind === "profil") {
+      navigate(decision.href);
+      return;
+    }
+    handleOpenDetails(it, itemList);
   };
 
   // Synchro carte→liste : quand un marqueur est cliqué, amener sa carte dans la vue.
@@ -128,6 +164,10 @@ export default function SearchListView({
     .join(" ");
 
   // Enveloppe une carte : highlight (ring) quand focalisée + data-item-id (scroll).
+  // Suspense PAR CARTE : les variants sont `lazy()`, et la seule frontière au-dessus de la grille est
+  // celle de la SECTION (SectionRenderer) — sans ce Suspense, une liste hétérogène ferait clignoter
+  // toute la section (header + filtres compris) dès qu'une page d'infinite scroll amène un type dont
+  // le chunk n'est pas encore chargé.
   const wrap = (it: SearchEntity, child: React.ReactNode) => {
     const id = getEntryId(it);
     return (
@@ -141,7 +181,7 @@ export default function SearchListView({
             "ring-2 ring-primary ring-offset-2 ring-offset-background",
         )}
       >
-        {child}
+        <Suspense fallback={<SearchCardSkeleton />}>{child}</Suspense>
       </div>
     );
   };
@@ -150,17 +190,22 @@ export default function SearchListView({
     return (
       <>
         <div ref={containerRef} className="space-y-4">
-          {results.map((item) =>
+          {results.map((it, i) =>
             wrap(
-              item,
-              <SearchCardDetailed item={item} onClick={() => handleCardClick(item)} card={card} />,
+              it,
+              <SearchCardDetailed
+                item={it}
+                onClick={() => handleCardClick(it, itemLists[i])}
+                card={itemLists[i]?.card ?? card}
+                list={itemLists[i] ?? list}
+              />,
             ),
           )}
         </div>
 
-        {item && (
+        {selected && (
           <PreviewNavContext.Provider value={previewNavValue}>
-            <SwitchDetailsMode openDetails={openDetails} setOpenDetails={handleSetOpenDetails} item={item} card={card} preview={preview} />
+            <SwitchDetailsMode openDetails={openDetails} setOpenDetails={handleSetOpenDetails} item={selected.item} card={selected.list?.card ?? card} preview={selected.list?.preview ?? preview} list={selected.list ?? list} />
           </PreviewNavContext.Provider>
         )}
       </>
@@ -171,15 +216,15 @@ export default function SearchListView({
   return (
     <>
       <div ref={containerRef} className={gridClasses}>
-        {results.map((item) =>
-          wrap(item, <SearchCard item={item} onClick={() => handleCardClick(item)} card={card} />),
+        {results.map((it, i) =>
+          wrap(it, <SearchCard item={it} onClick={() => handleCardClick(it, itemLists[i])} card={itemLists[i]?.card ?? card} list={itemLists[i] ?? list} />),
         )}
       </div>
 
-      {/* faire switch sur card?.detailsMode */}
-      {item && (
+      {/* Conteneur (dialog/drawer) choisi par `card.detailsMode` de la conf RÉSOLUE de l'item ouvert. */}
+      {selected && (
         <PreviewNavContext.Provider value={previewNavValue}>
-          <SwitchDetailsMode openDetails={openDetails} setOpenDetails={handleSetOpenDetails} item={item} card={card} preview={preview} />
+          <SwitchDetailsMode openDetails={openDetails} setOpenDetails={handleSetOpenDetails} item={selected.item} card={selected.list?.card ?? card} preview={selected.list?.preview ?? preview} list={selected.list ?? list} />
         </PreviewNavContext.Provider>
       )}
     </>

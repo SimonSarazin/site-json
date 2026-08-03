@@ -1,0 +1,71 @@
+{
+  "extends": "../tsconfig.app.json",
+  "compilerOptions": {
+    "baseUrl": "..",
+    "paths": {
+      "@/modules/blog/i18n": [
+        "src/modules/blog/i18n.ts"
+      ],
+      "@/modules/search/i18n": [
+        "src/modules/search/i18n.ts"
+      ],
+      "@/modules/profil/i18n": [
+        "src/modules/profil/i18n.ts"
+      ],
+      "@/modules/news/i18n": [
+        "src/modules/news/i18n.ts"
+      ],
+      "@/modules/cagnotte/i18n": [
+        "src/modules/cagnotte/i18n.ts"
+      ],
+      "@/modules/ampli/i18n": [
+        "src/modules/ampli/i18n.ts"
+      ],
+      "@/modules/auth/i18n": [
+        "src/modules/auth/i18n.ts"
+      ],
+      "@/modules/commandPalette/i18n": [
+        "src/modules/commandPalette/i18n.ts"
+      ],
+      "@/modules/notification/i18n": [
+        "src/modules/notification/i18n.ts"
+      ],
+      "@/modules/agenda/i18n": [
+        "src/modules/agenda/i18n.ts"
+      ],
+      "@/modules/interop/i18n": [
+        "src/modules/interop/i18n.ts"
+      ],
+      "@/modules/admin/i18n": [
+        "src/modules/admin/i18n.ts"
+      ],
+      "@/modules/observatoire/i18n": [
+        "src/modules/observatoire/i18n.ts"
+      ],
+      "@/components/layout/i18n": [
+        "src/components/layout/i18n.ts"
+      ],
+      "@/modules/auth": [
+        "src/modules/auth/index.ts"
+      ],
+      "@/lib/permissions": [
+        "src/lib/permissions/index.ts"
+      ],
+      "@/lib/pageState": [
+        "src/lib/pageState/index.ts"
+      ],
+      "@/*": [
+        "src/*"
+      ],
+      "lucide-react/dynamic": [
+        "node_modules/lucide-react/dynamic.mjs"
+      ],
+      "vite-preload": [
+        ".design-sync/stubs/vite-preload.ts"
+      ],
+      "@communecter/cocolight-api-client": [
+        "node_modules/@communecter/cocolight-api-client/dist/cocolight-api-client.browser.js"
+      ]
+    }
+  }
+}

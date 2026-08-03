@@ -33,6 +33,7 @@ export function useRelatedArticles(article: ArticleData | null | undefined, limi
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
     queryFn: async () => {
+      if (!entity) return []; // narrowing (déjà garanti par `enabled`, mais TS ne le sait pas dans la queryFn)
       const payload = buildSearchPayload(
         {
           // Masquage des liés EN ATTENTE : posé automatiquement par applyValidationGate (costumSlug présent). Cf §16.
@@ -43,7 +44,7 @@ export function useRelatedArticles(article: ArticleData | null | undefined, limi
         } as never,
         { name: "", type: ["poi"], indexStep: limit + 4 },
       );
-      const page = (await entity!.searchCostum(
+      const page = (await entity.searchCostum(
         payload as unknown as Parameters<typeof entity.searchCostum>[0],
       )) as unknown as { results?: unknown[] };
       return page?.results ?? [];

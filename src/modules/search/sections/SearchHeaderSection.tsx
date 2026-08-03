@@ -339,7 +339,10 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
 
     return (
         <section id={id} className="relative pt-10 px-4 bg-[image:var(--gradient-section)] overflow-hidden">
-            <div className="inset-0 opacity-10">
+            {/* Bulles décoratives floutées — purement visuelles : `pointer-events-none`
+                sinon la bulle bas-droite (absolute) peint AU-DESSUS de la barre de
+                filtres statique et intercepte les clics du dernier dropdown. */}
+            <div className="pointer-events-none absolute inset-0 opacity-10">
                 <div className="absolute top-10 left-10 w-64 h-64 bg-primary rounded-full blur-3xl animate-float" />
                 <div
                     className="absolute bottom-10 right-10 w-96 h-96 bg-chart-2 rounded-full blur-3xl animate-float"
@@ -347,7 +350,15 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
                 />
             </div>
 
-            <div className="relative z-10 container mx-auto max-w-6xl text-center py-12 px-4">
+            {/* Padding hero : `py-12` par défaut ; `py-4` UNIQUEMENT si `props.compact` (opt-in explicite,
+                ex. pages territoire/thème dont le titre vient d'une section `title` au-dessus). L'auto-détection
+                « pas de headline → py-4 » cassait les pages dont le searchHeader nu EST le hero (ex.
+                sport-sante-bien-etre /blog) → on rend le compactage EXPLICITE. */}
+            <div
+                className={`relative z-10 container mx-auto max-w-6xl px-4 text-center ${
+                    props.compact ? "py-4" : "py-12"
+                }`}
+            >
                 {props.headline && (
                     <h1 className={`text-4xl md:text-6xl font-bold mb-6 ${props.headlineClassName ?? "text-foreground"} animate-fade-in`}>
                         {t(props.headline)}

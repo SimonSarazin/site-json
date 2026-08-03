@@ -31,6 +31,11 @@ function Inner({ props }: { props: ArticleReaderSectionProps }) {
   return (
     <Suspense fallback={<ReaderSkeleton />}>
       {/* Section EMBARQUÉE → pas de bouton retour + titre en h2 (évite un 2ᵉ h1 sur la page hôte). */}
+      {/* eslint-disable-next-line react-hooks/static-components -- `Reader` vient d'un
+          REGISTRE, il n'est pas fabriqué ici : `makeVariantRegistry` referme un objet
+          construit au chargement du module et `get()` n'est qu'un `variants[key] ?? default`.
+          La même référence est donc renvoyée à chaque rendu — aucun état n'est remis à zéro.
+          Le type ne change que si le variant change, ce qui est le comportement voulu. */}
       <Reader article={article} hideBack={!props.showBack} backTo={props.backTo} titleAs="h2" />
     </Suspense>
   );

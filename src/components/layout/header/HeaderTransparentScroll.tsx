@@ -18,13 +18,16 @@ import { PiggyBankHeaderButton } from "@/modules/cagnotte/components/PiggyBankHe
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
 import { useScrollAware, useScrollToTopOnRouteChange, useNavItemActive, useHeaderOpaqueAtRest } from "./useHeaderBehavior";
+import { logoSquareClass, logoSizePx } from "./logoSize";
 import { useVisibilityList } from "@/lib/visibility/useVisibility";
+import PledgeHeaderButton from "@/modules/cagnotte/components/PledgeHeaderButton";
 
 interface HeaderTransparentScrollProps {
     header: Header;
     /** La page courante débute-t-elle par un héro ? (fourni par SiteHeader). Pilote `transparentMode: "auto"`. */
     pageHasHero?: boolean;
 }
+
 
 type HeaderNavItem = Header['nav'][number];
 
@@ -73,8 +76,43 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
 
     return (
         <>
-        <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${opaque ? 'bg-background/90 backdrop-blur-md shadow-deep' : 'bg-transparent'}`}>
-            <div className="container mx-auto px-4">
+        {/* État transparent : scrim dégradé issu du thème (jamais un blanc en dur) — sans
+            lui, le texte en tokens de contenu est posé directement sur le héros et le
+            contraste n'est pas garanti, en clair comme en sombre.
+
+            ⚠ Le scrim DÉBORDE sous la barre (`h-32` contre `h-20`), et c'est le cœur du
+            réglage. Jusqu'au 2026-07-30 il était porté par le `<nav>` lui-même
+            (`from-background/70 via-background/30 to-transparent`) : le dégradé s'éteignait
+            donc DANS la barre, et le texte — centré verticalement, glyphes entre 22 et
+            44 px sur 80 — tombait exactement dans sa partie faible, entre 27 % et 48 %
+            d'opacité seulement.
+
+            Mesuré sur /theme/nutrition de RéseauSanté (photo claire et chargée, encre
+            `--foreground`) : contraste au PIRE de 2,41:1 sur le titre et 3,78:1 sur la
+            nav, quand WCAG AA demande 4,5:1 — et 3:1 même pour du grand texte. La moyenne
+            (5 à 7:1) expliquait que le défaut passe inaperçu : seuls les pixels les plus
+            clairs de la photo faisaient décrocher le texte.
+
+            En portant le scrim sur un calque de 96 px, le fondu s'achève SOUS la barre,
+            au-dessus du héros où aucun contraste n'est requis : les glyphes restent dans
+            la zone dense sans que la barre devienne un aplat.
+
+            Le profil est resserré à dessein. Une première version montait à 128 px et
+            laissait encore ~41 % d'opacité au bas de la barre : le voile clair « descendait
+            trop bas » sur la photo. En ramenant le calque à 96 px et en repoussant le point
+            médian à 55 %, on obtient ≈ 0,75 d'opacité en haut des glyphes et 0,61 en bas
+            (soit ~6:1 mesuré), pour ne plus que ~0,20 au bas de la barre et 0 seize pixels
+            plus loin. La densité est là où le texte se trouve, pas ailleurs.
+
+            `pointer-events-none` : purement décoratif, il ne doit pas capter le clic. */}
+        <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${opaque ? 'bg-background/90 backdrop-blur-md shadow-deep' : ''}`}>
+            {!opaque && (
+                <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-linear-to-b from-background/90 via-55% via-background/55 to-transparent"
+                />
+            )}
+            <div className="relative container mx-auto px-4">
                 <div className="flex items-center justify-between h-20">
                     {/* min-w-0 + truncate : le titre ne wrappe JAMAIS (un titre
                         long déborderait de la barre h-20 sur mobile et
@@ -84,8 +122,9 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
                             header={header}
                             isOverlay={!opaque}
                             iconTone="primary"
-                            imageClassName="h-8 w-8 shrink-0 object-contain group-hover:scale-110 transition-transform"
+                            imageClassName={`${logoSquareClass(header.logoSize)} shrink-0 object-contain group-hover:scale-110 transition-transform`}
                             iconClassName="w-8 h-8 shrink-0 group-hover:scale-110 transition-transform"
+                            imageHeight={logoSizePx(header.logoSize)}
                         />
                         {(header.logoTitle || header.logoSubtitle) && (
                             <span className="flex min-w-0 flex-col leading-tight">
@@ -93,7 +132,7 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
                                     <span className="truncate text-base font-bold text-foreground sm:text-lg">{t(header.logoTitle)}</span>
                                 )}
                                 {header.logoSubtitle && (
-                                    <span className="truncate text-xs font-medium text-muted-foreground">{t(header.logoSubtitle)}</span>
+                                    <span className={`truncate text-xs font-medium ${opaque ? 'text-muted-foreground' : 'text-foreground/80'}`}>{t(header.logoSubtitle)}</span>
                                 )}
                             </span>
                         )}
@@ -105,10 +144,13 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
                             const hasChildren = !!item.children?.length;
                             return (
                                 <div key={idx} className="relative group">
+                                    {/* `path ?? href` : parité avec `MobileNavItems.navTarget` — un item
+                                        de nav peut être un lien EXTERNE (`href` seul, ex. WordPress) ;
+                                        sans le repli, NavLink recevait undefined → <span> inerte. */}
                                     <NavLink
-                                        to={item.path}
+                                        to={item.path ?? item.href}
                                         ariaCurrent={isActive ? "page" : undefined}
-                                        className={`transition-colors font-medium relative group inline-flex items-center gap-1.5 ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                                        className={`transition-colors font-medium relative group inline-flex items-center gap-1.5 whitespace-nowrap ${isActive ? 'text-primary' : opaque ? 'text-muted-foreground hover:text-foreground' : 'text-foreground/90 hover:text-foreground'}`}
                                     >
                                         <NavIcon icon={item.icon} />
                                         {t(item.label)}
@@ -121,7 +163,7 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
                                             {item.children.length > 2 ? (
                                                 <div className="grid grid-cols-2 gap-6">
                                                     {item.children.map((sub, i) => (
-                                                        <NavLink key={i} to={sub.path} className="block">
+                                                        <NavLink key={i} to={sub.path ?? sub.href} className="block">
                                                             <h4 className="flex items-center gap-1.5 font-bold text-popover-foreground mb-2"><NavIcon icon={sub.icon} />{t(sub.label)}</h4>
                                                             <p className="text-muted-foreground text-xs leading-relaxed">
                                                                 {sub.description ? t(sub.description) : ""}
@@ -132,7 +174,7 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
                                             ) : (
                                                 <div className="space-y-4">
                                                     {item.children.map((sub, i) => (
-                                                        <NavLink key={i} to={sub.path} className="block">
+                                                        <NavLink key={i} to={sub.path ?? sub.href} className="block">
                                                             <h4 className="flex items-center gap-1.5 font-bold text-popover-foreground mb-2"><NavIcon icon={sub.icon} />{t(sub.label)}</h4>
                                                             <p className="text-muted-foreground text-xs leading-relaxed">
                                                                 {sub.description ? t(sub.description) : ""}
@@ -154,6 +196,13 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
                             // (cf. PiggyBankHeaderButton:if (!me?.id) return null).
                             <ClientOnly>
                                 {() => <PiggyBankHeaderButton />}
+                            </ClientOnly>
+                        )}
+
+                        {header.utilities?.pledge && (
+                            // Bouton pour ouvrir la modale de paiement des promesses de financement
+                            <ClientOnly>
+                                {() => <PledgeHeaderButton />}
                             </ClientOnly>
                         )}
 
@@ -182,7 +231,7 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
                         )}
 
                         {header.utilities?.langSwitch && (
-                            <LangSwitch triggerClassName="text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted" />
+                            <LangSwitch triggerClassName={`${opaque ? 'text-muted-foreground' : 'text-foreground/90'} hover:text-foreground hover:bg-muted dark:hover:bg-muted`} />
                         )}
                     </div>
 
@@ -211,7 +260,7 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
                         {navItemsToDisplay.length > 0 && (
                             <MobileMenuSheet
                                 breakpoint="xl"
-                                triggerClassName="text-muted-foreground hover:text-foreground"
+                                triggerClassName={`${opaque ? 'text-muted-foreground' : 'text-foreground/90'} hover:text-foreground`}
                                 brand={(close) => <MobileMenuBrand header={header} onNavigate={close} />}
                             >
                                 {(close) => (

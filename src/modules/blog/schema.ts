@@ -34,6 +34,12 @@ export const ArticleFeedSectionSchema = z.object({
     cardVariant: z.string().optional(),
     /** Layout du fil : `grid` (défaut, grille responsive) ou `list` (liste verticale, va bien avec `compact`). */
     feedLayout: z.enum(["grid", "list"]).optional(),
+    /**
+     * Élargit le fil à la pleine largeur (`max-w-[1536px]` + 4ᵉ colonne en xl), pour aligner une page
+     * `layout:"fullwidth"` sur searchProStatic/agenda. Défaut `false` → `max-w-6xl` (largeur lecture
+     * « magazine », comportement historique partagé par tous les costums).
+     */
+    fullWidth: z.boolean().optional(),
   }),
 });
 export type ArticleFeedSectionProps = z.infer<typeof ArticleFeedSectionSchema>["props"];

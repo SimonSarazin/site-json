@@ -7,7 +7,13 @@ import crypto from "crypto";
  * Creates an Express router for admin image uploads.
  *
  * Images are saved to `<staticRoot>/images/<slug>/` and the response
- * returns the public path (e.g. `/images/jardin/abc123.jpg`).
+ * returns the public path (e.g. `/images/institutBleu/abc123.jpg`).
+ *
+ * ⚠ Le dossier est nommé d'après `VITE_SLUG`, alors que les dossiers réels de
+ * `public/images/` ne suivent pas le slug pour 8 sites sur 17 (le champ `images`
+ * de `sites.json` fait foi — `navigatorDesTierslieux` écrit dans `tiersLieux`).
+ * Le `mkdirSync` ci-dessous a lieu au MONTAGE du middleware, pas à l'upload :
+ * lancer le serveur de dev avec un slug quelconque crée un dossier vide.
  *
  * @param {{ staticRoot: string }} options
  *   - `staticRoot`: absolute path to the directory served as static files

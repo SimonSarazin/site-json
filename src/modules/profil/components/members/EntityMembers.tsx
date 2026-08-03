@@ -29,6 +29,8 @@ export interface MemberCardConfig {
   type?: "default" | "profile";
   showDescription?: boolean;
   showAddress?: boolean;
+  /** Bloc de compteurs de `CardProfile`. Absent = affiché — cf. `MemberCardConfSchema.showStats`. */
+  showStats?: boolean;
   detailsMode?: "drawer" | "dialog" | "link";
 }
 
@@ -111,6 +113,7 @@ function ProfileCardList({
               card={{
                 showDescription: card?.showDescription,
                 showAddress: card?.showAddress,
+                showStats: card?.showStats,
                 detailsMode: detailsMode === "link" ? "link" : undefined,
               }}
               onClick={detailsMode !== "link" ? () => handleOpenDetails(member) : undefined}

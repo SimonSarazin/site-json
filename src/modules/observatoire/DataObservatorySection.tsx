@@ -1,7 +1,10 @@
 import "./i18n";
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
+import { lazy } from "vite-preload";
+import { useSearchParams } from "react-router";
 import { TriangleAlert } from "lucide-react";
 import { useT } from "@/hooks/useT";
+import { DEFAULT_INSTALLATION_PARAM } from "@/modules/search/schema";
 import type { DataObservatorySectionProps, FilterDef } from "./schema";
 import { KpiCards } from "./components/KpiCards";
 import { Filters } from "./components/Filters";
@@ -11,9 +14,16 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
+import { sectionMaxWidthClass } from "@/lib/sectionMaxWidth";
 import { useObservatoryItemsQuery } from "./hooks/useObservatoryItemsQuery";
 import { useObservatoryFilters } from "./hooks/useObservatoryFilters";
 import { buildLabelMaps } from "./dimensions";
+
+// Fiche installation ouverte par l'URL (lien partagé) — chunk tiré uniquement
+// sur un deep-link effectif.
+const InstallationUrlModal = lazy(
+  () => import("./components/installation/InstallationUrlModal"),
+);
 
 interface DataObservatorySectionComponentProps {
   id?: string;
@@ -51,6 +61,16 @@ export default function DataObservatorySection({
   const filterIds = useMemo(() => filterDefs.map((f) => f.dimension), [filterDefs]);
   const kpis = props.kpis ?? [];
   const charts = props.charts ?? [];
+
+  // Fiche installation partagée : montée seulement si le param est présent.
+  const [urlParams] = useSearchParams();
+  const previewConf = props.table?.rowAction?.preview;
+  const installationConf = previewConf?.installationDashboard;
+  const showInstallationUrlModal = Boolean(
+    installationConf &&
+      previewConf?.reservations &&
+      urlParams.get(installationConf.param ?? DEFAULT_INSTALLATION_PARAM),
+  );
 
   const { items, entities, error, stillLoading, progress, capped } = useObservatoryItemsQuery(
     props.baseParams,
@@ -105,7 +125,7 @@ export default function DataObservatorySection({
       className="w-full bg-background py-8"
       data-section="data-observatory"
     >
-      <div className="mx-auto w-full max-w-8xl px-4 sm:px-6 lg:px-8 space-y-6">
+      <div className={`mx-auto w-full ${sectionMaxWidthClass(props.maxWidth, "8xl")} px-4 sm:px-6 lg:px-8 space-y-6`}>
         {(headline || description) && (
           <header className="space-y-1">
             {headline && (
@@ -193,7 +213,13 @@ export default function DataObservatorySection({
             ) : (
               <>
                 {kpis.length > 0 && (
-                  <KpiCards data={filtered} dimensions={dimensions} kpis={kpis} labels={labels} />
+                  <KpiCards
+                    data={filtered}
+                    dimensions={dimensions}
+                    kpis={kpis}
+                    labels={labels}
+                    layout={props.kpiLayout}
+                  />
                 )}
 
                 {charts.length > 0 && (
@@ -222,6 +248,12 @@ export default function DataObservatorySection({
           </>
         )}
       </div>
+
+      {showInstallationUrlModal && (
+        <Suspense fallback={null}>
+          <InstallationUrlModal preview={previewConf!} />
+        </Suspense>
+      )}
     </section>
   );
 }

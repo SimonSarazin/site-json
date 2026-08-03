@@ -18,18 +18,11 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { cn } from "@/lib/utils";
+import { useInstallationFilter } from "../../hooks/useInstallationFilter";
+import { toValidDate } from "@/helpers/formatDate";
+import { isTrue } from "../../lib/poiAmenities";
 import { SearchCardProps } from "../../schema";
-
-/** Champ costum d'accessibilité stocké en `"1"`/`"oui"`/`true` → booléen. */
-const isTrue = (value: unknown): boolean => {
-	if (typeof value === "boolean") return value;
-	if (typeof value === "number") return value === 1;
-	if (typeof value === "string") {
-		const n = value.trim().toLowerCase();
-		return n === "true" || n === "1" || n === "oui" || n === "yes";
-	}
-	return false;
-};
 
 function Feature({
 	label,
@@ -54,20 +47,6 @@ function Feature({
 	);
 }
 
-/**
- * `serverData` expose les dates en `Date` (entités revifiées, normalisées par la
- * lib) ou en string ISO (après hydratation SSR où les `Date` JSON sont sérialisées).
- * On gère Date + string ISO — sans heuristique epoch.
- */
-function toDate(value: unknown): Date | null {
-	if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
-	if (typeof value === "string" && value.trim().length > 0) {
-		const date = new Date(value.trim());
-		return Number.isNaN(date.getTime()) ? null : date;
-	}
-	return null;
-}
-
 /** Placeholder déterministe (SSR-safe) : initiales sur fond coloré par hash. */
 function getPoiImage(seed: string) {
 	const text = (seed || "POI").trim().slice(0, 2).toUpperCase();
@@ -78,9 +57,10 @@ function getPoiImage(seed: string) {
 	return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
-export default function CardPoiAmenities({ item, onClick }: SearchCardProps) {
+export default function CardPoiAmenities({ item, onClick, card }: SearchCardProps) {
 	useLoadNamespace("modules/search");
 	const t = useT("modules/search");
+	const instFilter = useInstallationFilter(card?.installationFilter);
 
 	// La variante `poi-ssbe` n'est routée que pour des POI (registry `SearchCard`),
 	// mais le switch runtime passe un `SearchEntity` → on narrow vers `Poi`.
@@ -95,6 +75,14 @@ export default function CardPoiAmenities({ item, onClick }: SearchCardProps) {
 		(serverData.equip_type_famille as string | undefined) ||
 		"";
 	const installation = serverData.inst_nom as string | undefined;
+	// On AFFICHE le libellé mais on FILTRE sur l'identifiant stable (cf.
+	// `installationFilter.ts`). Absent en base sur quelques POI → texte simple.
+	const instValueRaw = card?.installationFilter
+		? serverData[card.installationFilter.groupKey ?? "inst_numero"]
+		: undefined;
+	const instValue =
+		typeof instValueRaw === "string" && instValueRaw.trim() ? instValueRaw.trim() : undefined;
+	const instClickable = instFilter.enabled && Boolean(instValue);
 
 	const imageSrc =
 		serverData.profilMediumImageUrl ||
@@ -109,7 +97,7 @@ export default function CardPoiAmenities({ item, onClick }: SearchCardProps) {
 		.filter(Boolean)
 		.join(" ");
 
-	const createdDate = toDate(serverData.inst_date_creation ?? serverData.created);
+	const createdDate = toValidDate(serverData.inst_date_creation ?? serverData.created);
 	const formattedDate = createdDate
 		? format(createdDate, "d MMMM yyyy", { locale: getDateFnsLocale() })
 		: null;
@@ -148,7 +136,28 @@ export default function CardPoiAmenities({ item, onClick }: SearchCardProps) {
 				{installation && (
 					<div className="flex items-center gap-1.5 text-xs text-muted-foreground">
 						<Building2 className="h-3.5 w-3.5 shrink-0" />
-						<span className="truncate">{installation}</span>
+						{instClickable ? (
+							// stopPropagation : la <Card> parente porte onClick (ouvre le détail).
+							<button
+								type="button"
+								onClick={(e) => {
+									e.stopPropagation();
+									instFilter.toggle(instValue!);
+								}}
+								aria-pressed={instFilter.isActive(instValue!)}
+								aria-label={t("CardPoiAmenities.filterByInstallation", undefined, {
+									name: installation,
+								})}
+								className={cn(
+									"truncate underline-offset-2 hover:underline focus-visible:underline",
+									instFilter.isActive(instValue!) && "font-medium text-primary",
+								)}
+							>
+								{installation}
+							</button>
+						) : (
+							<span className="truncate">{installation}</span>
+						)}
 					</div>
 				)}
 			</CardHeader>

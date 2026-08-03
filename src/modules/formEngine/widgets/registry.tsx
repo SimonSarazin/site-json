@@ -23,7 +23,7 @@ const OpeningHoursField = lazy(() => import("./OpeningHoursField"));
 const FieldArrayField = lazy(() => import("./FieldArrayField"));
 
 /** Placeholder le temps du chargement d'un widget lazy. */
-const WidgetFallback = () => <div className="h-10 animate-pulse rounded-md bg-muted" />;
+import { WidgetFallback } from "./WidgetFallback";
 
 export interface WidgetProps {
   field: FieldDescriptor;
@@ -80,8 +80,11 @@ const registry: Partial<Record<string, WidgetComponent>> = {
     placeholder={p.field.placeholder ? p.t(p.field.placeholder) : undefined}
     placeholderSearch={searchPh(p)} errorTranslate={p.t} />,
 
+  // `widgetProps.maxItems` plafonne la MULTI-sélection (pendant du `maximumSelectionLength` de select2
+  // côté legacy) ; la garde de validation reste `rules.max`, appliquée à la LONGUEUR du tableau.
   multiselect: (p) => <FormFieldSelectObject control={control(p.form)} name={fname(p.field.name)} label={lbl(p)}
     required={p.field.required} multiple options={p.options}
+    maxItems={p.field.widgetProps?.maxItems as number | undefined}
     placeholder={p.field.placeholder ? p.t(p.field.placeholder) : undefined}
     placeholderSearch={searchPh(p)} errorTranslate={p.t} />,
 

@@ -3,7 +3,8 @@
  * - type de base par champ (lenient : tout `.optional()`), validation fine en `superRefine` ;
  * - `required` STATIQUE ou CONDITIONNEL (`requiredIf`) ;
  * - **champ caché (`visibleIf` faux) = NON validé** (règle d'or) ;
- * - règles : url / min / max / minLength / maxLength / regex (appliquées si valeur non vide).
+ * - règles : url / min / max / minLength / maxLength / regex (appliquées si valeur non vide) ;
+ *   sur un TABLEAU, `min`/`max` portent sur le nombre d'éléments (`validation.minItems`/`maxItems`).
  * La validation d'appartenance enum / le contrôle métier fin restent au backend (gate atomique).
  */
 import { z } from "zod";
@@ -69,10 +70,19 @@ export function buildZodSchema(descriptor: FormDescriptor) {
         ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: m?.minLength ?? "validation.minLength" });
       if (r.maxLength != null && typeof value === "string" && value.length > r.maxLength)
         ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: m?.maxLength ?? "validation.maxLength" });
-      if (r.min != null && Number(value) < r.min)
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: m?.min ?? "validation.min" });
-      if (r.max != null && Number(value) > r.max)
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: m?.max ?? "validation.max" });
+      // `min`/`max` sur un TABLEAU portent sur le NOMBRE d'éléments (ex. « 2 catégories maximum »
+      // du select2 legacy `maximumSelectionLength`) — pas sur `Number(value)`, qui vaudrait NaN.
+      if (Array.isArray(value)) {
+        if (r.min != null && value.length < r.min)
+          ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: m?.min ?? "validation.minItems" });
+        if (r.max != null && value.length > r.max)
+          ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: m?.max ?? "validation.maxItems" });
+      } else {
+        if (r.min != null && Number(value) < r.min)
+          ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: m?.min ?? "validation.min" });
+        if (r.max != null && Number(value) > r.max)
+          ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: m?.max ?? "validation.max" });
+      }
       if (r.regex && typeof value === "string" && !new RegExp(r.regex).test(value))
         ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: m?.format ?? "validation.format" });
     }

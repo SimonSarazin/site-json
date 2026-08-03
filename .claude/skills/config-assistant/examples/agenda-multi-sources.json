@@ -1,0 +1,49 @@
+{
+  "feature": "agenda-multi-sources",
+  "titre": "Agenda multi-sources (baseParams.sourceKey multiple)",
+  "description": "Même section agenda mais agrégeant plusieurs costums via baseParams.sourceKey = [a, b, c].",
+  "source": "config.prod.tiers-lieux.json",
+  "selector": "pages[path=/evenements].sections[id=section-evenements]",
+  "snapshot": {
+    "type": "agenda",
+    "id": "section-evenements",
+    "props": {
+      "customHeader": {
+        "title": {
+          "fr": "Les événements autour de tiers-lieux.org",
+          "en": "events around tiers-lieux.org"
+        }
+      },
+      "filters": {
+        "type": true,
+        "text": true,
+        "tags": true
+      },
+      "detailsMode": "drawer",
+      "enableMap": false,
+      "mapView": "map",
+      "map": {
+        "marker": {
+          "useItemImage": true,
+          "style": "pin",
+          "color": "primary"
+        }
+      },
+      "columns": {
+        "sm": 1,
+        "md": 2,
+        "lg": 3,
+        "xl": 4
+      },
+      "baseParams": {
+        "sourceKey": [
+          "franceTierslieux",
+          "tierslieuxbelgique",
+          "navigatorDesTierslieux"
+        ],
+        "indexStepList": 20,
+        "fediverse": false
+      }
+    }
+  }
+}

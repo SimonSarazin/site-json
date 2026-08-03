@@ -137,7 +137,11 @@ export function SelectObject({
   
   return (
     <div className={className}>
-      <Popover modal open={open} onOpenChange={setOpen}>
+      {/* PAS de `modal` : dans un Dialog, un Popover `modal` pose un 2e scroll-lock react-remove-scroll sur
+          le même compteur → quand le Dialog se ferme après ouverture d'un select, le compteur se désynchronise
+          et `overflow:hidden` reste coincé sur <body> (scroll perdu). Le combobox n'a pas besoin de `modal`
+          (le Dialog gère la modalité ; hors Dialog un dropdown ne doit pas bloquer le scroll de page). */}
+      <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"

@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useMemo, useCallback, Suspense } from "react";
-import { lazy } from "vite-preload";
+import {useState, useEffect, useRef, useMemo, useCallback, Suspense} from "react";
+import {lazy} from "vite-preload";
 import {
     Dialog,
     DialogContent,
@@ -8,74 +8,71 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { PiggyBank, Heart, Anchor } from "lucide-react";
-import { showErrorToast, showSuccessToast } from "@/lib/toastUtils";
-import { useT } from "@/hooks/useT";
-import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import {PiggyBank, Heart, Anchor} from "lucide-react";
+import {showErrorToast, showSuccessToast} from "@/lib/toastUtils";
+import {useT} from "@/hooks/useT";
+import {useLoadNamespace} from "@/hooks/useLoadNamespace";
 import "@/modules/cagnotte/i18n";
-import { useOrganizationProjectsWithAnswers, type OrgProject } from "@/modules/cagnotte/hooks/useOrganizationProjectsWithAnswers";
-import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
-import { useCocolight } from "@/hooks/useCocolight";
-import { useQueryClient } from "@tanstack/react-query";
-import { ClientOnly } from "@/components/layout/ClientOnly";
+import {CAGNOTTE_QUERY_KEYS} from "@/modules/cagnotte/constants/queryKeys";
+import {useCocolight} from "@/hooks/useCocolight";
+import {useQueryClient} from "@tanstack/react-query";
+import {ClientOnly} from "@/components/layout/ClientOnly";
 // Lazy-load : `PaymentConfigPage` tire `@stripe/stripe-js` + `@stripe/react-stripe-js`
 // par chaîne d'imports statique. En lazy, Stripe loader n'est plus dans le bundle
 // initial — il est téléchargé uniquement quand l'utilisateur déclenche
 // `showPaymentConfig` (clic sur "Contribuer").
 const PaymentConfigPage = lazy(() => import("./PaymentConfigPage"));
-import { CagnotteSuccessScreen } from "./parts/CagnotteSuccessScreen";
-import { CagnotteAmountPicker } from "./parts/CagnotteAmountPicker";
-import { CagnotteProjectSelector } from "./parts/CagnotteProjectSelector";
-import { CagnotteMilestoneList } from "./parts/CagnotteMilestoneList";
-import { CagnotteProjectProgressCard } from "./parts/CagnotteProjectProgressCard";
-import { CagnotteContributeButton } from "./parts/CagnotteContributeButton";
-import { useFundingEnvelope } from "@/modules/cagnotte/hooks/useFundingEnvelope";
-import { useProjectModalPreference } from "@/modules/cagnotte/hooks/useProjectModalPreference";
-import { useCagnottePermissions } from "@/modules/cagnotte/hooks/useCagnottePermissions";
-import { useCagnotteContextSafe } from "@/modules/cagnotte/hooks/useCagnotteContext";
-import { formatNumber } from "@/modules/cagnotte/utils/format";
+import {CagnotteAmountPicker} from "./parts/CagnotteAmountPicker";
+import {CagnotteResourceSelector} from "./parts/CagnotteResourceSelector.tsx";
+import {PledgeFundingToast} from "./parts/PledgeFundingToast.tsx";
+import {CagnotteItemList} from "./parts/CagnotteItemList.tsx";
+import {CagnotteResourceProgressCard} from "./parts/CagnotteResourceProgressCard.tsx";
+import {CagnotteContributeButton} from "./parts/CagnotteContributeButton";
+import {useFundingEnvelope} from "@/modules/cagnotte/hooks/useFundingEnvelope";
+import {useResourceModalPreference} from "@/modules/cagnotte/hooks/useResourceModalPreference";
+import {useCagnottePermissions} from "@/modules/cagnotte/hooks/useCagnottePermissions";
+import {useCagnotteContextSafe} from "@/modules/cagnotte/hooks/useCagnotteContext";
+import {formatNumber} from "@/modules/cagnotte/utils/format";
 import {
     normalizeIdOrNull,
     readEntityPreferences,
     toSafeInt,
 } from "@/modules/cagnotte/utils/dataTransform";
+import {useCagnotteType} from "@/modules/cagnotte/hooks/useCagnotteType.ts";
+import {computePledgesFromResources, useCagnotteAdapter} from "@/modules/cagnotte/hooks/useCagnotteAdapter";
+import {useSite} from "@/hooks/useSite.tsx";
+import {CagnotteResource, CagnotteType, Pledge, Objective} from "@/modules/cagnotte/types.ts";
+import {useOrganizationProjectsWithAnswers} from "@/modules/cagnotte/hooks/useOrganizationProjectsWithAnswers.ts";
+import {useUserAdminOrganizations} from "@/modules/cagnotte/hooks/useUserAdminOrganizations.ts";
+// Chargement à la demande du modal de paiement des promesses.
+const PromessesDialog = lazy(() => import("./PromessesDialog"));
+import type { User } from "@communecter/cocolight-api-client";
+import { isUser } from "@/lib/getTypedEntity";
+import PaymentReceivedScreen from "@/modules/cagnotte/components/PaymentReceivedScreen.tsx";
+import PledgeConfirmedScreen from "@/modules/cagnotte/components/PledgeConfirmedScreen.tsx";
 
 /**
  * Palier financier déclenchant une célébration (toast + confetti à venir).
  * Pas exposé via les sections JSON — défini ici jusqu'à ce que la feature de paliers
  * UX soit activée (cf. tableau vide ci-dessous).
  */
-interface Milestone {
-    target: number;
-    label: string;
-    description: string;
-    icon: React.ElementType;
-}
 
-interface ProjectMilestone {
-    milestoneId: string;
-    name: string;
-    description?: string;
-    price: number | string;
-    currentFunding: number | string;
-    status?: string;
-}
-
-const milestones: Milestone[] = [
-    { target: 0, label: "", description: "", icon: Anchor }
+const objectives: Objective[] = [
+    {target: 0, label: "", description: "", icon: Anchor}
 ];
 
 interface CagnotteDialogProps {
     totalAmount: number;
     children: React.ReactNode;
-    defaultProjectId?: string;
+    defaultResourceId?: string;
     onRefresh?: () => void | Promise<void>;
     openContext?: {
-        projectId?: string;
-        milestoneId?: string;
-        hideProjectSelect?: boolean;
-        hideOtherMilestones?: boolean;
+        resourceId?: string;
+        itemId?: string;
+        hideResourceSelect?: boolean;
+        hideOtherItems?: boolean;
     };
+    cagnotteType?: CagnotteType;
 }
 
 /**
@@ -91,16 +88,45 @@ interface CagnotteDialogProps {
  * Le cache React Query (`queryClient`) survit au unmount, donc les réouvertures
  * rapides restent instantanées si la donnée est encore fresh (`staleTime`).
  */
-const CagnotteDialog = ({ children, ...props }: CagnotteDialogProps) => {
+const CagnotteDialog = ({children, ...props}: CagnotteDialogProps) => {
     const [open, setOpen] = useState(false);
+    const [openPromesses, setOpenPromesses] = useState(false);
+    const [pledges, setPledges] = useState<Pledge[]>([]);
 
     return (
         <ClientOnly fallback={<>{children}</>}>
             {() => (
-                <Dialog open={open} onOpenChange={setOpen}>
-                    <DialogTrigger asChild>{children}</DialogTrigger>
-                    {open && <CagnotteDialogContent open={open} setOpen={setOpen} {...props} />}
-                </Dialog>
+                <>
+                    <Dialog open={open} onOpenChange={setOpen}>
+                        <DialogTrigger asChild>{children}</DialogTrigger>
+                        {open && (
+                            <CagnotteDialogContent
+                                open={open}
+                                setOpen={setOpen}
+                                onOpenPromesses={() => {
+                                    setOpen(false);
+                                    setOpenPromesses(true);
+                                }}
+                                setPledges={setPledges}
+                                {...props}
+                            />
+                        )}
+                    </Dialog>
+
+                    {openPromesses && (
+                        <Suspense fallback={null}>
+                            <PromessesDialog
+                                open={openPromesses}
+                                onOpenChange={setOpenPromesses}
+                                pledges={pledges}
+                                onOpenCagnotte={() => {
+                                    setOpenPromesses(false); // Ferme les promesses
+                                    setOpen(true);           // Réouvre la cagnotte
+                                }}
+                            />
+                        </Suspense>
+                    )}
+                </>
             )}
         </ClientOnly>
     );
@@ -109,39 +135,51 @@ const CagnotteDialog = ({ children, ...props }: CagnotteDialogProps) => {
 interface CagnotteDialogContentProps extends Omit<CagnotteDialogProps, "children"> {
     open: boolean;
     setOpen: (open: boolean) => void;
+    onOpenPromesses: () => void;
+    setPledges: (pledges: Pledge[]) => void;
 }
 
-const CagnotteDialogContent = ({ totalAmount, defaultProjectId, onRefresh, openContext, setOpen }: CagnotteDialogContentProps) => {
+const CagnotteDialogContent = ({
+                                   totalAmount,
+                                   defaultResourceId,
+                                   onRefresh,
+                                   openContext,
+                                   cagnotteType: propsType,
+                                   setOpen,
+                                   onOpenPromesses,
+                                   setPledges
+                               }: CagnotteDialogContentProps) => {
+    type CompletedContribution = { type: "paid" | "pledged"; amount: number } | null;
+    const [completedContribution, setCompletedContribution] = useState<CompletedContribution>(null);
     const [customAmount, setCustomAmount] = useState("");
     const [selectedAmountType, setSelectedAmountType] = useState<"predefined" | "custom" | null>(null);
     const [selectedPredefinedAmount, setSelectedPredefinedAmount] = useState<number | null>(null);
     const [pendingContributionAmount, setPendingContributionAmount] = useState<number | null>(null);
-    const [milestoneReached, setMilestoneReached] = useState<Milestone | null>(null);
-    const [selectedProjectId, setSelectedProjectId] = useState<string>("");
+    const [objectiveReached, setObjectiveReached] = useState<Objective | null>(null);
+    const [selectedResourceId, setSelectedResourceId] = useState<string>("");
     const [showPaymentConfig, setShowPaymentConfig] = useState(false);
-    const [paymentSuccess] = useState(false);
     const [isProcessing] = useState(false);
-    const [optimisticProjectModalId, setOptimisticProjectModalId] = useState<string | null>(null);
+    const [optimisticResourceModalId, setOptimisticResourceModalId] = useState<string | null>(null);
     //  États pour les milestones activables
-    const [activeMilestones, setActiveMilestones] = useState<Set<string>>(new Set());
-    const [hasClickedFirstMilestone, setHasClickedFirstMilestone] = useState(false);
-    // Clé de synchro pour détecter quand re-initialiser activeMilestones
-    // (changement de project ou de forcedMilestoneId). Pattern "adjust state
+    const [activeItems, setActiveItems] = useState<Set<string>>(new Set());
+    const [hasClickedFirstItem, setHasClickedFirstItem] = useState(false);
+    // Clé de synchro pour détecter quand re-initialiser activeItems
+    // (changement de project/proposition ou de forcedItemId). Pattern "adjust state
     // during render" pour éviter setState-in-effect.
-    const [lastMilestoneSyncKey, setLastMilestoneSyncKey] = useState<string | null>(null);
+    const [lastItemSyncKey, setLastItemSyncKey] = useState<string | null>(null);
     const previousAmountRef = useRef(totalAmount);
     useLoadNamespace("modules/cagnotte");
     const t = useT("modules/cagnotte");
     const queryClient = useQueryClient();
 
-    const forcedProjectId = normalizeIdOrNull(openContext?.projectId);
-    const forcedMilestoneId = normalizeIdOrNull(openContext?.milestoneId);
-    const hideProjectSelect = !!openContext?.hideProjectSelect;
-    const hideOtherMilestones = !!openContext?.hideOtherMilestones;
-    const lockMilestoneSelection = hideOtherMilestones && !!forcedMilestoneId;
+    const forcedResourceId = normalizeIdOrNull(openContext?.resourceId);
+    const forcedItemId = normalizeIdOrNull(openContext?.itemId);
+    const hideResourceSelect = !!openContext?.hideResourceSelect;
+    const hideOtherItems = !!openContext?.hideOtherItems;
+    const lockItemSelection = hideOtherItems && !!forcedItemId;
 
     // Récupérer l'entité depuis le contexte
-    const { entity } = useCocolight();
+    const { entity, me } = useCocolight();
 
     // Récupérer TOUS les projets pour le SELECT.
     // Le content n'est monté qu'à l'ouverture du dialog → fetch démarre ici,
@@ -157,24 +195,41 @@ const CagnotteDialogContent = ({ totalAmount, defaultProjectId, onRefresh, openC
     // Un seul useFundingEnvelope() : il retourne `projects[]` complet ET
     // `selectedProject` ciblé (filtré par projectId côté normalize). Pas besoin
     // d'un 2e hook global — voir doc/refactor-useOrganizationProjectsWithAnswers-lazy.md §9.
-    const { data: fundingEnvelope } = useFundingEnvelope(selectedProjectId || undefined);
+    const {data: fundingEnvelope} = useFundingEnvelope(selectedResourceId || undefined);
+    const siteConfig = useSite();
 
-    const fundingByProjectId = useMemo(() => {
+    const {config: cagnotteConfig} = useCagnotteType({
+        propsOverride: propsType,
+        siteConfig: siteConfig?.config?.cagnotteModuleConfig?.defaultType,
+    });
+
+    //context => Pour personalisation des textes à afficher pour certain groupe d'organisation
+    const context = siteConfig?.config?.cagnotteModuleConfig?.context ?? "";
+
+    // Unifier les données venant de projet ou proposition/ depenses ou milestone
+    const {
+        resources,
+        savedSelectedResource
+    } = useCagnotteAdapter(fundingEnvelope, allProjects, cagnotteConfig, selectedResourceId);
+    const fundingByResourceId = useMemo(() => {
         const nextMap = new Map<string, { totalFunding: number; totalCost: number }>();
-        const projects = fundingEnvelope?.projects || [];
+        resources.forEach((resource) => {
+            const resourceId = String(resource?.id || "").trim();
+            if (!resourceId) return;
 
-        projects.forEach((project) => {
-            const projectId = String(project?.id || "").trim();
-            if (!projectId) return;
-
-            nextMap.set(projectId, {
-                totalFunding: toSafeInt(project?.totalFinancement),
-                totalCost: toSafeInt(project?.totalCouts),
+            nextMap.set(resourceId, {
+                totalFunding: toSafeInt(resource?.resourceFinancedAmount),
+                totalCost: toSafeInt(resource?.resourceTotalAmount),
             });
         });
 
         return nextMap;
-    }, [fundingEnvelope]);
+    }, [resources]);
+    const currentUserEntity = (me && isUser(me) ? me : null) as User | null;
+    const userAdminOrganizations = useUserAdminOrganizations(currentUserEntity, {});
+    const orgsIds =  userAdminOrganizations?.map(user => user.id);
+    //computedPledges : Promesses de financement non payé
+    const computedPledges = useMemo<Pledge[]>(() => computePledgesFromResources(resources, me?.serverData?.id, orgsIds) , [resources, me?.serverData?.id, orgsIds]);
 
     // Permissions cagnotte calculées sur l'ORGA (entity Cocolight), pas sur le
     // projet visité. La modale CagnotteDialog est rendue dans 2 contextes :
@@ -183,9 +238,9 @@ const CagnotteDialogContent = ({ totalAmount, defaultProjectId, onRefresh, openC
     //    ne dépend pas du statut admin, et le bouton 💾 "Cagnotte principale" agit
     //    sur `entity.preferences.projectModalId` de l'ORGA — donc admin orga requis.
     const cagnottePerms = useCagnottePermissions(entity, {
-        hasActiveMilestones:
-            (fundingEnvelope?.selectedProject?.milestones ?? []).some((m) => m.status !== "close"),
-        projectId: selectedProjectId,
+        hasActiveItems:
+            (savedSelectedResource?.items ?? []).some((r) => r.status !== "close"),
+        resourceId: selectedResourceId,
     });
 
     // Context cagnotte (null si CagnotteDialog est rendu hors d'un <CagnotteLayout>,
@@ -198,87 +253,49 @@ const CagnotteDialogContent = ({ totalAmount, defaultProjectId, onRefresh, openC
     // Pattern "adjust state during render" (React 19) au lieu d'un useEffect
     // pour éviter `react-hooks/set-state-in-effect` warning.
     // Cf. https://react.dev/reference/react/useState#storing-information-from-previous-renders
-    if (allProjects.length > 0) {
-        const allProjectIds = allProjects.map((p) => p.id).filter((id) => !!id);
-        const selectionIsValid = !!selectedProjectId && allProjectIds.includes(selectedProjectId);
+    if (resources.length > 0) {
+        const allResourcesIds = resources.map((p) => p.id).filter((id) => !!id);
+        const selectionIsValid = !!selectedResourceId && allResourcesIds.includes(selectedResourceId);
         if (!selectionIsValid) {
-            const preferred = forcedProjectId || defaultProjectId;
-            const next = preferred && allProjectIds.includes(preferred)
+            const preferred = forcedResourceId || defaultResourceId;
+            const next = preferred && allResourcesIds.includes(preferred)
                 ? preferred
-                : (allProjectIds[0] || "");
-            if (next !== selectedProjectId) {
-                setSelectedProjectId(next);
+                : (allResourcesIds[0] || "");
+            if (next !== selectedResourceId) {
+                setSelectedResourceId(next);
             }
         }
     }
 
-    // Récupérer les données du projet sélectionné (typé OrgProject — plus de casts)
-    const selectedProject: OrgProject | undefined = allProjects.find((p) => p.id === selectedProjectId);
+    // Récupérer les données du projet sélectionné (typé CagnotteResource — plus de casts)
+    const selectedResource: CagnotteResource | undefined = resources.find((p) => p.id === selectedResourceId);
 
-    const projectMilestones = useMemo(() => {
-        // Mapping FundingMilestone (typé) → ProjectMilestone (forme attendue par PaymentConfigPage).
-        const envelopeMilestones = (fundingEnvelope?.milestones || []).map((milestone) => {
-            const currentFunding = milestone.transactions.reduce(
-                (sum, transaction) => sum + toSafeInt(transaction.amount),
-                0,
-            );
-            return {
-                milestoneId: milestone.id,
-                name: milestone.title,
-                description: milestone.description || undefined,
-                price: toSafeInt(milestone.targetAmount),
-                currentFunding,
-                status: milestone.status,
-            } as ProjectMilestone;
-        }).filter((milestone) => milestone.milestoneId.length > 0);
-
-        if (envelopeMilestones.length > 0) {
-            return envelopeMilestones;
-        }
-
-        // Fallback : milestones du projet sélectionné (typés OrgProject.milestones)
-        return (selectedProject?.milestones ?? []).map((m): ProjectMilestone => ({
-            milestoneId: m.milestoneId,
-            name: m.name,
-            description: m.description,
-            price: m.price,
-            currentFunding: m.currentFunding,
-            status: m.status,
-        }));
-    }, [fundingEnvelope, selectedProject]);
-
-    const normalizedProjectMilestones = useMemo(
-        () =>
-            projectMilestones.map((milestone) => ({
-                ...milestone,
-                price: toSafeInt(milestone.price),
-                currentFunding: toSafeInt(milestone.currentFunding),
-            })),
-        [projectMilestones]
+    const activeResourceItems = useMemo(
+        () => selectedResource?.items.filter((item) => (item.status || 'open') !== 'close'),
+        [selectedResource]
     );
 
-    const activeProjectMilestones = useMemo(
-        () => normalizedProjectMilestones.filter((milestone) => (milestone.status || 'open') !== 'close'),
-        [normalizedProjectMilestones]
-    );
-
-    const visibleProjectMilestones = useMemo(() => {
-        if (!hideOtherMilestones || !forcedMilestoneId) {
-            return activeProjectMilestones;
+    const visibleResourceItems = useMemo(() => {
+        if (!hideOtherItems || !forcedItemId) {
+            return activeResourceItems;
         }
-        return activeProjectMilestones.filter((milestone) => milestone.milestoneId === forcedMilestoneId);
-    }, [activeProjectMilestones, hideOtherMilestones, forcedMilestoneId]);
+        return (activeResourceItems || []).filter((item) => item.itemId === forcedItemId);
+    }, [activeResourceItems, hideOtherItems, forcedItemId]);
 
-    const selectedProjectName =
-        fundingEnvelope?.selectedProject?.name
-        || (selectedProject?.name && selectedProject.name.length > 0 ? selectedProject.name : undefined)
-        || String(t("CagnotteDialog.fallbacks.untitled"));
-    const projectImage = selectedProject?.image;
+    const selectedResourceName =
+        savedSelectedResource?.name
+        || (selectedResource?.name && selectedResource.name.length > 0 ? selectedResource.name : undefined)
+        || String(t("CagnotteDialog.fallbacks.untitled", undefined, {context: cagnotteConfig.selectorType + context}));
+    const resourceImage = selectedResource?.image;
 
     //  Récupérer l'answerId depuis le projet sélectionné
-    const selectedProjectAnswerId =
-        fundingEnvelope?.selectedProject?.answerId
-        || selectedProject?.answerId;
+    const selectedResourceAnswerId =
+        savedSelectedResource?.answerId
+        || selectedResource?.answerId;
+
+    const selectedResourceProjectId =
+        savedSelectedResource?.projectId
+        || selectedResource?.projectId;
 
     // Note (refactor lazy-mount) : on ne refetch plus à l'ouverture.
     // Le composant n'est monté QUE si `open === true`, donc les hooks démarrent
@@ -288,63 +305,68 @@ const CagnotteDialogContent = ({ totalAmount, defaultProjectId, onRefresh, openC
 
     //  Activer les milestones au chargement/changement de projet.
     //  Pattern "adjust state during render" via clé de synchro :
-    //  - On calcule une key qui change UNIQUEMENT quand le project ou
+    //  - On calcule une key qui change UNIQUEMENT quand le project/proposition ou
     //    forcedMilestoneId change (pas à chaque render).
     //  - On compare avec la dernière key syncée ; si différente, on met à
-    //    jour activeMilestones + hasClickedFirstMilestone.
+    //    jour activeItems + hasClickedFirstItem.
     {
-        const milestoneIds = activeProjectMilestones.map((m) => m.milestoneId);
-        const milestoneSyncKey = `${milestoneIds.join("|")}::${forcedMilestoneId ?? ""}`;
-        if (milestoneSyncKey !== lastMilestoneSyncKey) {
-            const hasForcedMatch = !!forcedMilestoneId && milestoneIds.includes(forcedMilestoneId);
-            const targetIds = hasForcedMatch ? [forcedMilestoneId!] : milestoneIds;
-            setActiveMilestones(new Set(targetIds));
-            setHasClickedFirstMilestone(hasForcedMatch);
-            setLastMilestoneSyncKey(milestoneSyncKey);
+        const itemIds = (activeResourceItems || []).map((i) => i.itemId);
+        const itemSyncKey = `${itemIds.join("|")}::${forcedItemId ?? ""}`;
+        if (itemSyncKey !== lastItemSyncKey) {
+            const hasForcedMatch = !!forcedItemId && itemIds.includes(forcedItemId);
+            const targetIds = hasForcedMatch ? [forcedItemId!] : itemIds;
+            setActiveItems(new Set(targetIds));
+            setHasClickedFirstItem(hasForcedMatch);
+            setLastItemSyncKey(itemSyncKey);
         }
     }
 
     // Extraire les données de cagnotte du projet (montants convertis en int avant somme)
-    const projectCagnotteTotalAmount = useMemo(() => {
-        const milestonesTotal = activeProjectMilestones.reduce(
-            (sum, milestone) => sum + toSafeInt(milestone.currentFunding),
-            0
-        );
+    const resourceCagnotteTotalAmount = useMemo(() => {
+        const itemsFinancedTotal = (activeResourceItems || [])
+            .filter((item) => item?.status !== 'close')
+            .reduce(
+                (sum, item) => sum + toSafeInt(item.currentFunding),
+                0
+            );
 
-        if (activeProjectMilestones.length > 0) {
-            return milestonesTotal;
+        if ((activeResourceItems || []).length > 0) {
+            return itemsFinancedTotal;
         }
 
-        return toSafeInt(selectedProject?.cagnotteTotalAmount);
-    }, [activeProjectMilestones, selectedProject]);
+        return toSafeInt(selectedResource?.resourceFinancedAmount);
+    }, [activeResourceItems, selectedResource]);
 
-    const projectCagnotteTargetAmount = useMemo(() => {
-        const milestonesTarget = activeProjectMilestones.reduce(
-            (sum, milestone) => sum + toSafeInt(milestone.price),
-            0
-        );
+    const resourceCagnotteTargetAmount = useMemo(() => {
+        const milestonesTarget = (activeResourceItems || [])
+            .filter((item) => item?.status !== 'close')
+            .reduce(
+                (sum, item) => sum + toSafeInt(item.price),
+                0
+            );
 
-        if (activeProjectMilestones.length > 0) {
+        if ((activeResourceItems || []).length > 0) {
             return milestonesTarget;
         }
 
-        return toSafeInt(selectedProject?.cagnotteTargetAmount);
-    }, [activeProjectMilestones, selectedProject]);
-    // `projectProgressPercentage` est désormais calculé en interne par `CagnotteProjectProgressCard`.
-    const remainingToFinanceAmount = Math.max(projectCagnotteTargetAmount - projectCagnotteTotalAmount, 0);
+        return toSafeInt(selectedResource?.resourceTotalAmount);
+    }, [activeResourceItems, selectedResource]);
+
+    // `resourceProgressPercentage` est désormais calculé en interne par `CagnotteResourceProgressCard`.
+    const remainingToFinanceAmount = Math.max(resourceCagnotteTargetAmount - resourceCagnotteTotalAmount, 0);
     const maxContributionAmount = remainingToFinanceAmount;
 
-    // Vérifier si le projet sélectionné est déjà le projectModalId
+    // Vérifier si le resource(proposition ou projet) sélectionné est déjà le resourceModalId
     // Lecture: d'abord dans data.preferences (draft), puis dans _serverData.preferences (server)
     const draftPreferencesData = readEntityPreferences(entity, "data");
     const serverPreferencesData = readEntityPreferences(entity, "serverData");
 
-    const currentProjectModalId = optimisticProjectModalId
+    const currentResourceModalId = optimisticResourceModalId
         || normalizeIdOrNull(draftPreferencesData?.projectModalId)
         || normalizeIdOrNull(serverPreferencesData?.projectModalId);
-    const isCurrentProjectModalId = !!selectedProjectId && !!currentProjectModalId && selectedProjectId === currentProjectModalId;
+    const isCurrentResourceModalId = !!selectedResourceId && !!currentResourceModalId && selectedResourceId === currentResourceModalId;
 
-    const predefinedAmounts = [10, 20, 30, 50];
+    const predefinedAmounts = siteConfig?.config?.cagnotteModuleConfig?.predefinedAmounts || cagnotteConfig?.defaultPredefinedAmounts || [10, 20, 30, 50];
 
     // Fonction pour obtenir le montant sélectionné
     const getSelectedAmount = () => {
@@ -421,44 +443,45 @@ const CagnotteDialogContent = ({ totalAmount, defaultProjectId, onRefresh, openC
         const previousAmount = previousAmountRef.current;
 
         // Find if a milestone was crossed
-        const crossedMilestone = milestones.find(
-            m => previousAmount < m.target && totalAmount >= m.target
+        const crossedItem = objectives.find(
+            o => previousAmount < o.target && totalAmount >= o.target
         );
 
-        if (crossedMilestone) {
-            setMilestoneReached(crossedMilestone);
+        if (crossedItem) {
+            setObjectiveReached(crossedItem);
             //fireCelebration();
 
             // Special milestone toast
-            showSuccessToast("CagnotteDialog.toasts.milestoneReached.title", t, {
-                amount: formatNumber(crossedMilestone.target),
+            showSuccessToast("CagnotteDialog.toasts.itemReached.title", t, {
+                amount: formatNumber(crossedItem.target),
+                context: cagnotteConfig.selectorType + context
             });
 
             // Clear milestone celebration after delay
             setTimeout(() => {
-                setMilestoneReached(null);
+                setObjectiveReached(null);
             }, 5000);
         }
 
         previousAmountRef.current = totalAmount;
-    }, [totalAmount, t]);
+    }, [totalAmount, t, cagnotteConfig.selectorType, context]);
 
     const handleOpenPaymentConfig = () => {
         const amount = getSelectedAmount();
 
-        if (!selectedProjectId) {
+        if (!selectedResourceId) {
             showErrorToast(
-                new Error(String(t("CagnotteDialog.toasts.projectRequired.description"))),
-                "CagnotteDialog.toasts.projectRequired.title",
+                new Error(String(t("CagnotteDialog.toasts.resourceRequired.description", undefined, {context: cagnotteConfig.selectorType + context}))),
+                String(t("CagnotteDialog.toasts.resourceRequired.title", undefined, {context: cagnotteConfig.selectorType + context})),
                 t,
             );
             return;
         }
 
-        if (activeMilestones.size === 0) {
+        if (activeItems.size === 0) {
             showErrorToast(
-                new Error(String(t("CagnotteDialog.toasts.milestoneRequired.description"))),
-                "CagnotteDialog.toasts.milestoneRequired.title",
+                new Error(String(t("CagnotteDialog.toasts.itemRequired.description", undefined, {context: cagnotteConfig.selectorType + context}))),
+                String(t("CagnotteDialog.toasts.itemRequired.title", undefined, {context: cagnotteConfig.selectorType + context})),
                 t,
             );
             return;
@@ -466,8 +489,8 @@ const CagnotteDialogContent = ({ totalAmount, defaultProjectId, onRefresh, openC
 
         if (amount <= 0) {
             showErrorToast(
-                new Error(String(t("CagnotteDialog.toasts.invalidAmount.description"))),
-                "CagnotteDialog.toasts.invalidAmount.title",
+                new Error(String(t("CagnotteDialog.toasts.invalidAmount.description", undefined, {context: cagnotteConfig.selectorType + context}))),
+                String(t("CagnotteDialog.toasts.invalidAmount.title", undefined, {context: cagnotteConfig.selectorType + context})),
                 t,
             );
             return;
@@ -479,50 +502,44 @@ const CagnotteDialogContent = ({ totalAmount, defaultProjectId, onRefresh, openC
 
     const handleContributionSaved = useCallback(async () => {
         await Promise.allSettled([
-            queryClient.invalidateQueries({ queryKey: CAGNOTTE_QUERY_KEYS.FUNDING_ENVELOPE_PREFIX() }),
-            queryClient.invalidateQueries({ queryKey: CAGNOTTE_QUERY_KEYS.ORGANIZATION_PROJECTS_WITH_ANSWERS_PREFIX() }),
-            queryClient.invalidateQueries({ queryKey: CAGNOTTE_QUERY_KEYS.PROJECT_MODAL_CAGNOTTE_PREFIX() }),
+            queryClient.invalidateQueries({queryKey: CAGNOTTE_QUERY_KEYS.FUNDING_ENVELOPE_PREFIX()}),
+            queryClient.invalidateQueries({queryKey: CAGNOTTE_QUERY_KEYS.ORGANIZATION_PROJECTS_WITH_ANSWERS_PREFIX()}),
+            queryClient.invalidateQueries({queryKey: CAGNOTTE_QUERY_KEYS.PROJECT_MODAL_CAGNOTTE_PREFIX()}),
             Promise.resolve(onRefresh?.()),
         ]);
     }, [queryClient, onRefresh]);
 
-    const handlePaymentConfigSuccess = () => {
-        // Le flux de fermeture/redirection est géré dans PaymentConfigPage.
-        setShowPaymentConfig(false);
-        setPendingContributionAmount(null);
-    };
-
-    const isContributionEnabled = getSelectedAmount() > 0 && activeMilestones.size > 0 && !!selectedProjectId;
+    const isContributionEnabled = getSelectedAmount() > 0 && activeItems.size > 0 && !!selectedResourceId;
 
     // Hook qui encapsule la logique save (BDD + toasts via useMutationWithToast).
-    const { save: saveProjectModal, isSaving: isSavingProjectModal } = useProjectModalPreference(entity ?? null);
+    const {save: saveResourceModal, isSaving: isSavingResourceModal} = useResourceModalPreference(entity ?? null);
 
-    const handleSaveProjectModal = async () => {
-        const success = await saveProjectModal(selectedProjectId);
+    const handleSaveResourceModal = async () => {
+        const success = await saveResourceModal(selectedResourceId);
         if (success) {
-            setOptimisticProjectModalId(normalizeIdOrNull(selectedProjectId));
+            setOptimisticResourceModalId(normalizeIdOrNull(selectedResourceId));
         }
     };
 
     //  Gérer le click sur un milestone
-    const handleMilestoneClick = (milestoneId: string) => {
-        if (lockMilestoneSelection) {
+    const handleItemClick = (itemId: string) => {
+        if (lockItemSelection) {
             return;
         }
 
-        if (!hasClickedFirstMilestone) {
+        if (!hasClickedFirstItem) {
             // Premier click: désélectionner tous et activer seulement celui-ci
-            setActiveMilestones(new Set([milestoneId]));
-            setHasClickedFirstMilestone(true);
+            setActiveItems(new Set([itemId]));
+            setHasClickedFirstItem(true);
         } else {
             // Clicks suivants: toggle normal
-            const newActiveMilestones = new Set(activeMilestones);
-            if (newActiveMilestones.has(milestoneId)) {
-                newActiveMilestones.delete(milestoneId);
+            const newActiveItems = new Set(activeItems);
+            if (newActiveItems.has(itemId)) {
+                newActiveItems.delete(itemId);
             } else {
-                newActiveMilestones.add(milestoneId);
+                newActiveItems.add(itemId);
             }
-            setActiveMilestones(newActiveMilestones);
+            setActiveItems(newActiveItems);
         }
     };
 
@@ -565,118 +582,153 @@ const CagnotteDialogContent = ({ totalAmount, defaultProjectId, onRefresh, openC
 
     return (
         <DialogContent className="sm:max-w-xl bg-card border-border max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2 text-2xl">
-                                <PiggyBank className="w-6 h-6 text-primary" />
-                                {t("CagnotteDialog.title")}
-                            </DialogTitle>
-                            <DialogDescription>
-                                {t("CagnotteDialog.description")}
-                            </DialogDescription>
-                        </DialogHeader>
+            <DialogHeader className="border-b py-4">
+                <DialogTitle className="flex items-center gap-2 text-2xl">
+                    <PiggyBank className="w-6 h-6 text-primary"/>
+                    {t("CagnotteDialog.title", undefined, {context: cagnotteConfig.selectorType + context})}
+                </DialogTitle>
+                <DialogDescription>
+                    {t("CagnotteDialog.description", undefined, {context: cagnotteConfig.selectorType + context})}
+                </DialogDescription>
+            </DialogHeader>
 
-                        {paymentSuccess ? (
-                            <CagnotteSuccessScreen milestoneReached={milestoneReached} />
-                        ) : showPaymentConfig && pendingContributionAmount ? (
-                            <Suspense fallback={
-                                <div className="flex items-center justify-center py-12 text-muted-foreground">
-                                    {t("CagnotteDialog.loadingPayment", "Chargement du paiement…")}
-                                </div>
-                            }>
-                                <PaymentConfigPage
-                                    projectName={selectedProjectName}
-                                    projectId={selectedProjectId}
-                                    projectImage={typeof projectImage === "string" ? projectImage : undefined}
-                                    amount={pendingContributionAmount}
-                                    milestones={activeProjectMilestones}
-                                    activeMilestoneIds={activeMilestones}
-                                    answerId={selectedProjectAnswerId} //  Passer l'answerId pour enregistrer les financements
-                                    onBack={() => setShowPaymentConfig(false)}
-                                    onPaymentSuccess={handlePaymentConfigSuccess}
-                                    onContributionSaved={handleContributionSaved}
-                                    onClose={() => setOpen(false)} //  Fermer la modale après paiement réussi
-                                    currentUser={null}
-                                />
-                            </Suspense>
-                        ) : (
-                            <div className="space-y-6 py-4">
-                                {/* Sélection du projet */}
-                                <CagnotteProjectSelector
-                                    hasEntity={!!entity}
-                                    isLoading={allProjectsLoading}
-                                    projects={allProjects}
-                                    selectedProject={selectedProject}
-                                    selectedProjectId={selectedProjectId}
-                                    onSelectedProjectIdChange={setSelectedProjectId}
-                                    hideProjectSelect={hideProjectSelect}
-                                    fundingByProjectId={fundingByProjectId}
-                                    // Le bouton 💾 (cagnotte principale) est caché si le projet est déjà
-                                    // marqué comme principal, OU si l'utilisateur n'est pas admin de l'orga.
-                                    isCurrentProjectModalId={isCurrentProjectModalId || !cagnottePerms.isAdmin}
-                                    isSavingProjectModal={isSavingProjectModal}
-                                    onSaveProjectModal={handleSaveProjectModal}
-                                />
+            {completedContribution ? (
+                completedContribution.type === "paid" ? (
+                    <PaymentReceivedScreen
+                        amount={completedContribution.amount}
+                        objectiveReached={objectiveReached}
+                        onClose={() => setOpen(false)}
+                    />
+                ) : (
+                    <PledgeConfirmedScreen
+                        amount={completedContribution.amount}
+                        onClose={() => setOpen(false)}
+                    />
+                )
+            ) : showPaymentConfig && pendingContributionAmount ? (
+                <Suspense fallback={
+                    <div className="flex items-center justify-center py-12 text-muted-foreground">
+                        {t("CagnotteDialog.loadingPayment", "Chargement du paiement…")}
+                    </div>
+                }>
+                    <PaymentConfigPage
+                        resourceName={selectedResourceName}
+                        resourceId={selectedResourceId}
+                        resourceImage={typeof resourceImage === "string" ? resourceImage : undefined}
+                        amount={pendingContributionAmount}
+                        items={activeResourceItems}
+                        activeItemsIds={activeItems}
+                        itemAnswerId={selectedResourceAnswerId} //  Passer l'answerId pour enregistrer les financements
+                        itemProjectId={selectedResourceProjectId} //  Passer le projectId
+                        onBack={() => setShowPaymentConfig(false)}
+                        onPaymentSuccess={(payload) => {
+                            setShowPaymentConfig(false);
+                            // `method` présent ⇒ paiement réel (stripe/helloasso) ; absent ⇒ promesse.
+                            // `payload.amount` porte l'effectiveAmount réellement débité/enregistré
+                            // (potentiellement < montant saisi si un item a été désélectionné),
+                            // donc on l'affiche plutôt que `pendingContributionAmount` brut.
+                            setCompletedContribution({
+                                type: payload?.method ? "paid" : "pledged",
+                                amount: typeof payload?.amount === "number" ? payload.amount : (pendingContributionAmount ?? 0),
+                            });
+                            setPendingContributionAmount(null);
+                        }}
+                        onContributionSaved={handleContributionSaved}
+                        onClose={() => setOpen(false)} //  Fermer la modale après paiement réussi
+                        currentUser={null}
+                        context={context}
+                        cagnotteConfig={cagnotteConfig}
+                    />
+                </Suspense>
+            ) : (
+                <div className="space-y-6">
+                    {/* Bouton pour ouvrir le modal de paiement des promesses */}
+                    {computedPledges.length > 0 && (
+                        <PledgeFundingToast
+                            pending={computedPledges}
+                            onOpenPromesses={() => {
+                                setPledges(computedPledges);
+                                onOpenPromesses();
+                            }}
+                            cagnotteConfig={cagnotteConfig}
+                            context={context}
+                        />
+                    )}
+                    {/* Sélection du projet/proposition */}
+                    <CagnotteResourceSelector
+                        hasEntity={!!entity}
+                        isLoading={allProjectsLoading}
+                        resources={resources}
+                        selectedResource={selectedResource}
+                        selectedResourceId={selectedResourceId}
+                        onSelectedResourceIdChange={setSelectedResourceId}
+                        hideResourceSelect={hideResourceSelect}
+                        fundingByResourceId={fundingByResourceId}
+                        // Le bouton 💾 (cagnotte principale) est caché si le projet/proposition est déjà
+                        // marqué comme principal, OU si l'utilisateur n'est pas admin de l'orga.
+                        isCurrentResourceModalId={isCurrentResourceModalId || !cagnottePerms.isAdmin}
+                        isSavingResourceModal={isSavingResourceModal}
+                        onSaveResourceModal={handleSaveResourceModal}
+                        cagnotteConfig={cagnotteConfig}
+                        context={context}
+                    />
 
-                                {selectedProject ? (
-                                    <CagnotteProjectProgressCard
-                                        totalAmount={projectCagnotteTotalAmount}
-                                        targetAmount={projectCagnotteTargetAmount}
-                                    />
-                                ) : null}
+                    {selectedResource ? (
+                        <CagnotteResourceProgressCard
+                            totalAmount={resourceCagnotteTotalAmount}
+                            targetAmount={resourceCagnotteTargetAmount}
+                            cagnotteConfig={cagnotteConfig}
+                            context={context}
+                        />
+                    ) : null}
 
-                                {/* Milestones */}
-                                <CagnotteMilestoneList
-                                    milestones={visibleProjectMilestones.map((m) => ({
-                                        milestoneId: m.milestoneId,
-                                        name: m.name,
-                                        description: m.description,
-                                        price: typeof m.price === "number" ? m.price : Number(m.price) || 0,
-                                        currentFunding:
-                                            typeof m.currentFunding === "number"
-                                                ? m.currentFunding
-                                                : Number(m.currentFunding) || 0,
-                                        status: m.status,
-                                    }))}
-                                    activeMilestoneIds={activeMilestones}
-                                    onMilestoneClick={handleMilestoneClick}
-                                />
+                    {/* Milestones */}
+                    <CagnotteItemList
+                        items={visibleResourceItems}
+                        activeItemIds={activeItems}
+                        onItemClick={handleItemClick}
+                        cagnotteConfig={cagnotteConfig}
+                        context={context}
+                    />
 
-                                <div className="space-y-3 text-sm text-muted-foreground">
-                                    <div className="flex items-start gap-3">
-                                        <Heart className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                                        <p>{t("CagnotteDialog.labels.infoText1")}</p>
-                                    </div>
-                                    <div className="flex items-start gap-3">
-                                        <Heart className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                                        <p>{t("CagnotteDialog.labels.infoText2")}</p>
-                                    </div>
-                                </div>
-
-                                <CagnotteAmountPicker
-                                    predefinedAmounts={predefinedAmounts}
-                                    selectedAmountType={selectedAmountType}
-                                    selectedPredefinedAmount={selectedPredefinedAmount}
-                                    customAmount={customAmount}
-                                    maxContributionAmount={maxContributionAmount}
-                                    remainingToFinanceAmount={remainingToFinanceAmount}
-                                    isProcessing={isProcessing}
-                                    onPredefinedAmountClick={handlePredefinedAmountClick}
-                                    onCustomAmountChange={handleCustomAmountChange}
-                                />
-
-                                {/* `canContribute` = connecté + projet + au moins un milestone actif. */}
-                                {cagnottePerms.canContribute ? (
-                                    <CagnotteContributeButton
-                                        selectedAmountType={selectedAmountType}
-                                        selectedPredefinedAmount={selectedPredefinedAmount}
-                                        customAmount={customAmount}
-                                        isProcessing={isProcessing}
-                                        isContributionEnabled={isContributionEnabled}
-                                        onClick={handleOpenPaymentConfig}
-                                    />
-                                ) : null}
+                    {cagnotteConfig.showInfoText && (
+                        <div className="space-y-3 text-sm text-muted-foreground">
+                            <div className="flex items-start gap-3">
+                                <Heart className="w-5 h-5 text-primary mt-0.5 shrink-0"/>
+                                <p>{t("CagnotteDialog.labels.infoText1")}</p>
                             </div>
-                        )}
+                            <div className="flex items-start gap-3">
+                                <Heart className="w-5 h-5 text-primary mt-0.5 shrink-0"/>
+                                <p>{t("CagnotteDialog.labels.infoText2")}</p>
+                            </div>
+                        </div>
+                    )}
+
+                    <CagnotteAmountPicker
+                        predefinedAmounts={predefinedAmounts}
+                        selectedAmountType={selectedAmountType}
+                        selectedPredefinedAmount={selectedPredefinedAmount}
+                        customAmount={customAmount}
+                        maxContributionAmount={maxContributionAmount}
+                        remainingToFinanceAmount={remainingToFinanceAmount}
+                        isProcessing={isProcessing}
+                        onPredefinedAmountClick={handlePredefinedAmountClick}
+                        onCustomAmountChange={handleCustomAmountChange}
+                    />
+
+                    {/* `canContribute` = connecté + projet + au moins un milestone actif. */}
+                    {cagnottePerms.canContribute ? (
+                        <CagnotteContributeButton
+                            selectedAmountType={selectedAmountType}
+                            selectedPredefinedAmount={selectedPredefinedAmount}
+                            customAmount={customAmount}
+                            isProcessing={isProcessing}
+                            isContributionEnabled={isContributionEnabled}
+                            onClick={handleOpenPaymentConfig}
+                        />
+                    ) : null}
+                </div>
+            )}
         </DialogContent>
     );
 };

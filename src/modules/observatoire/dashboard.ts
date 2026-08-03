@@ -79,7 +79,7 @@ export function applyFilters(
 function normalizeText(s: string): string {
   return s
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
 }
 
@@ -177,8 +177,9 @@ export function computeKpiValue(
 
 // Palette catégorielle issue du THÈME du site (config.theme → --chart-1..5),
 // cyclée pour les séries longues — jamais d'hex : les couleurs suivent le
-// thème light/dark de chaque site.
-const CATEGORICAL_COLORS = [
+// thème light/dark de chaque site. Exportée : réutilisée par la modal
+// installation (donut activités).
+export const CATEGORICAL_COLORS = [
   "var(--chart-1)",
   "var(--chart-2)",
   "var(--chart-3)",
