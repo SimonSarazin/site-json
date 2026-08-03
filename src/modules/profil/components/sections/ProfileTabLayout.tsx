@@ -1,4 +1,7 @@
+import { headerStickyOffsetPx } from "@/components/layout/header/headerOffset";
+import { useSite } from "@/hooks/useSite";
 import { ProfileSectionRenderer } from "../../ProfileSectionRenderer";
+import { useOptionalProfileEntity } from "../../hooks/useProfileEntity";
 import type { ProfileTabLayoutSection, ProfileSection } from "../../schema";
 
 interface ProfileTabLayoutProps {
@@ -26,6 +29,15 @@ export default function ProfileTabLayout({ section }: ProfileTabLayoutProps) {
   const stackIsSticky =
     (rightSections as Array<{ sticky?: boolean }> | undefined)?.some((sec) => sec.sticky) ?? false;
 
+  // Offset du sticky = hauteur RÉELLEMENT occupée par le header (0 s'il défile
+  // avec la page, ou s'il est masqué sur ce profil) + la gouttière historique
+  // de 16px (`lg:top-4`). Sans ça la pile se colle à 16px du viewport et passe
+  // sous une barre fixe/collante de 80px.
+  const { config } = useSite();
+  const profile = useOptionalProfileEntity();
+  const stickyTopPx =
+    (profile?.config?.hideHeader ? 0 : headerStickyOffsetPx(config.header)) + 16;
+
   return (
     <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6 sm:gap-8">
       {/* Colonne gauche - Contenu principal */}
@@ -42,7 +54,13 @@ export default function ProfileTabLayout({ section }: ProfileTabLayoutProps) {
       <div className="order-1 lg:order-2 lg:col-span-1">
         {/* `space-y` fournit la gouttière, sans effet tant que `rightSections`
             n'avait qu'un seul élément (c'était le cas de tout le parc). */}
-        <div className={`space-y-6${stackIsSticky ? " lg:sticky lg:top-4" : ""}`}>
+        <div
+          className={`space-y-6${stackIsSticky ? " lg:sticky" : ""}`}
+          // `top` inline plutôt qu'une classe `lg:top-[…]` : la valeur est
+          // calculée (Tailwind ne génère que des classes littérales), et elle
+          // reste INERTE hors `lg` puisque l'élément y est `position: static`.
+          style={stackIsSticky ? { top: stickyTopPx } : undefined}
+        >
           {rightSections && (rightSections as ProfileSection[]).map((sec, index) => (
             <ProfileSectionRenderer
               key={`right-${sec.type}-${index}`}
