@@ -3931,7 +3931,10 @@
       "costumSlug": "institutBleu",
       "icon": "anchor",
       "layout": {
-        "kind": "tabs"
+        "kind": "wizard",
+        "stepper": "tabs",
+        "progress": "bar",
+        "header": "gradient"
       },
       "serializeGroups": {
         "address": {
@@ -4403,7 +4406,8 @@
             "fr": "La fiche de votre structure reste rattachée à votre compte : vous pourrez la compléter, la corriger et l’enrichir de documents à tout moment.",
             "en": "Your organisation’s listing stays tied to your account: you can complete it, correct it and add documents at any time."
           }
-        }
+        },
+        "dialogClassName": "sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden"
       },
       "image": {
         "field": "profil_avatar",
