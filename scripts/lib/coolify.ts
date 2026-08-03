@@ -245,7 +245,12 @@ export interface CoolifyDeployment {
 }
 
 /** Erreur d'outillage — l'appelant doit sortir en code 2, jamais 1. */
-export class CoolifyError extends Error {}
+export class CoolifyError extends Error {
+  /** Vrai si l'échec est plausiblement passager (réseau, 429, 502-504). */
+  constructor(message: string, public readonly transitoire: boolean = false) {
+    super(message);
+  }
+}
 
 const configPath = (): string =>
   process.platform === "win32"
@@ -286,7 +291,34 @@ export function loadContext(name?: string): CoolifyContext {
   return { name: found.name, fqdn: found.fqdn.replace(/\/+$/, ""), token: found.token };
 }
 
+const dormirMs = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** Statuts HTTP transitoires : rate-limit et passerelle — un 2e essai a un sens. */
+const STATUTS_TRANSITOIRES = new Set([429, 502, 503, 504]);
+
 async function api<T>(
+  ctx: CoolifyContext,
+  method: "GET" | "POST" | "PATCH" | "DELETE",
+  route: string,
+  body?: unknown,
+): Promise<T> {
+  // UNE retentative, sur GET seulement. Rejouer un POST après une réponse
+  // perdue déclencherait un second build (/deploy) ; rejouer un PATCH laisse
+  // planer un doute sur l'état — le coût du doute dépasse le gain. Un GET, lui,
+  // est sans effet de bord : erreur réseau ou statut transitoire → 2 s, retry.
+  const essais = method === "GET" ? 2 : 1;
+  for (let essai = 1; ; essai++) {
+    try {
+      return await appel<T>(ctx, method, route, body);
+    } catch (e) {
+      const transitoire = e instanceof CoolifyError && e.transitoire;
+      if (essai >= essais || !transitoire) throw e;
+      await dormirMs(2_000);
+    }
+  }
+}
+
+async function appel<T>(
   ctx: CoolifyContext,
   method: "GET" | "POST" | "PATCH" | "DELETE",
   route: string,
@@ -302,16 +334,22 @@ async function api<T>(
         ...(body === undefined ? {} : { "Content-Type": "application/json" }),
       },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+      // Sans borne, un socket suspendu (proxy, instance qui redémarre) bloque
+      // la commande — et donc tout un lot — indéfiniment.
+      signal: AbortSignal.timeout(30_000),
     });
   } catch (e) {
-    throw new CoolifyError(`${method} ${route} — instance injoignable : ${(e as Error).message}`);
+    throw new CoolifyError(`${method} ${route} — instance injoignable : ${(e as Error).message}`, true);
   }
 
   const texte = await res.text();
   if (!res.ok) {
     // Le message de l'API est bien plus parlant que le code seul (conflit de
     // domaine, champ non autorisé…) : on le remonte tel quel, tronqué.
-    throw new CoolifyError(`${method} ${route} → HTTP ${res.status} : ${texte.slice(0, 300)}`);
+    throw new CoolifyError(
+      `${method} ${route} → HTTP ${res.status} : ${texte.slice(0, 300)}`,
+      STATUTS_TRANSITOIRES.has(res.status),
+    );
   }
   if (!texte.trim()) return undefined as T;
   try {

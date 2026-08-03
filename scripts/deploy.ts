@@ -346,7 +346,15 @@ async function attendre(
   const debut = Date.now();
   let vuEnFile = false;
   while ((Date.now() - debut) / 1000 < timeoutS) {
-    const file = await runningDeployments(ctx);
+    // Un sondage raté (coupure passagère, 502 du proxy) ne condamne pas une
+    // attente de plusieurs minutes : on saute ce tour et on resondera.
+    let file: Awaited<ReturnType<typeof runningDeployments>>;
+    try {
+      file = await runningDeployments(ctx);
+    } catch {
+      await dormir(10_000);
+      continue;
+    }
     const present = file.some((d) => d.deployment_uuid === deploiement);
     if (present) vuEnFile = true;
     // Sortie de file : soit on l'y a vu puis il disparaît, soit il a été si
