@@ -159,7 +159,7 @@ export function variablesAttendues(
     sensible: false,
   }));
 
-  const surcharges = (site as SiteEntry & { env?: Record<string, string> }).env ?? {};
+  const surcharges = site.env ?? {};
   for (const [key, defaut] of Object.entries(CONSTANTES)) {
     variables.push({ key, value: surcharges[key] ?? defaut, origine: "constante", sensible: false });
   }
