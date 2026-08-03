@@ -3385,6 +3385,11 @@
             }
           ]
         }
+      ],
+      "editModals": [
+        {
+          "editModal": "edit-institut-bleu-acteur"
+        }
       ]
     },
     "projects": {
@@ -3746,6 +3751,11 @@
               ]
             }
           ]
+        }
+      ],
+      "editModals": [
+        {
+          "editModal": "edit-institut-bleu-event"
         }
       ]
     },
