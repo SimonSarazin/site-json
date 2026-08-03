@@ -67,10 +67,11 @@ function DynamicModalButton({
     if (requiresAdmin && !permissions.isAdmin) {
         return null;
     }
-
+    // Visiteur non connecté : `openLogin` reçoit un `onSuccess` qui enchaîne
+    // sur le modal d'ajout, plutôt que de laisser l'utilisateur re-cliquer.
     const handleClick = () => {
         if (!isConnected) {
-            openLogin();
+            openLogin({ onSuccess: () => setIsModalOpen(true) });
             return;
         }
         setIsModalOpen(true);

@@ -57,6 +57,19 @@ export interface SiteEntry {
    * sur une autre branche, ou repris d'un autre dépôt.
    */
   build?: Partial<{ depot: string; branche: string; buildPack: string; port: string }>;
+  /**
+   * Surcharge, pour CE site, d'une variable d'environnement déployée.
+   *
+   * ⚠ N'accepte que les clés déclarées dans `CONSTANTES` ou `SECRETES`
+   * (`deploy-config.ts`) : `variablesAttendues` ne consulte ce champ que pour
+   * celles-là. Une clé écrite ici sans y figurer est ignorée en silence — pour
+   * rendre une variable surchargeable par site, il faut d'abord l'ajouter à
+   * l'une des deux listes.
+   *
+   * Ex. allumer le drapeau de dépannage costum sur un seul site :
+   * `"env": { "VITE_COSTUM_FORCE_LIVE": "true" }`
+   */
+  env?: Record<string, string>;
 }
 
 /** Zone DNS d'amorce : la seule que l'outil ait le droit d'écrire. */

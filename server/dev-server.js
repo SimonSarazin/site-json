@@ -166,8 +166,11 @@ async function createServer() {
 
       const cfgScript = `<script>window.__CONFIG__=${serialize(config, { isJSON: true })}</script>`;
 
+      // Même passerelle qu'en prod (prod-server.js) : en dev `import.meta.env`
+      // suffirait, mais laisser les deux serveurs injecter des jeux de clés
+      // différents fait diverger dev et prod sur le même drapeau.
       const envSlug = slug || process.env.VITE_SLUG || "";
-      const envScript = envSlug ? `<script>window.__ENV__={VITE_SLUG:${JSON.stringify(envSlug)},VITE_BASE_URL_BACKEND:${JSON.stringify(process.env.VITE_BASE_URL_BACKEND || "")},VITE_SERVER_URL:${JSON.stringify(process.env.VITE_SERVER_URL || "")}}</script>` : "";
+      const envScript = envSlug ? `<script>window.__ENV__={VITE_SLUG:${JSON.stringify(envSlug)},VITE_BASE_URL_BACKEND:${JSON.stringify(process.env.VITE_BASE_URL_BACKEND || "")},VITE_SERVER_URL:${JSON.stringify(process.env.VITE_SERVER_URL || "")},VITE_MAPTILER_API_KEY:${JSON.stringify(process.env.VITE_MAPTILER_API_KEY || "")},VITE_COSTUM_FORCE_LIVE:${JSON.stringify(process.env.VITE_COSTUM_FORCE_LIVE || "")}}</script>` : "";
 
       const [headStart, rest] = template.split("<!--app-head-->");
       const [beforeBody, tail] = rest.split("<!--app-html-->");

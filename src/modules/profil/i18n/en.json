@@ -1345,6 +1345,26 @@
     "evaluateLoading": "Loading self-diagnosis…",
     "noPois": "No spaces available"
   },
+  "ProfileTools": {
+    "tools": "Our tools",
+    "editTools": "Edit tools",
+    "toolsEmpty": "No tools added yet.",
+    "toolsModal": {
+      "title": "Edit links to resources and tools",
+      "description": "Add or edit links to this page's main resources and tools. You can use this space as a signpost for your members.",
+      "category": "Resource type",
+      "name": "Name",
+      "namePlaceholder": "e.g. Official website",
+      "url": "Link (optional)",
+      "addRow": "Add a link",
+      "removeRow": "Remove this link",
+      "empty": "No links. Click “Add a link”.",
+      "save": "Save",
+      "cancel": "Cancel",
+      "saveSuccess": "Links updated.",
+      "saveError": "Error while updating the links."
+    }
+  },
   "ProfilTiersLieuxAbout": {
     "title": "About",
     "readMore": "Read more",

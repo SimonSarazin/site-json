@@ -93,13 +93,30 @@ export function cibleDnsDuServeur(serveur: string): string {
   return cible;
 }
 
-/** Valeurs communes à tout le parc, surchargeables par entrée. */
+/**
+ * Valeurs communes à tout le parc, surchargeables par entrée via le champ `env`
+ * de `sites.json`.
+ *
+ * ⚠ Cette liste ne sert pas qu'à porter des défauts : `variablesAttendues` ne
+ * consulte `site.env[clé]` que pour les clés présentes ICI ou dans `SECRETES`.
+ * Une variable absente des deux listes n'est donc PAS déployable par site —
+ * l'y déclarer est le seul moyen de la rendre surchargeable.
+ */
 export const CONSTANTES: Record<string, string> = {
   VITE_BASE_URL_BACKEND: "https://www.communecter.org",
   VITE_SERVER_URL: "https://www.communecter.org",
+  // Drapeau de dépannage costum : à passer à "true" par `sites.json` (champ
+  // `env`) quand l'artefact costum publié devient plus vieux que la base et
+  // masque des champs réels. Coûteux (démarrage à froid) — cf. la doc de
+  // `getCostumForceLive` dans src/lib/constant/common.ts.
+  VITE_COSTUM_FORCE_LIVE: "false",
 };
 
-/** Variables lues dans `.env`, jamais versionnées. */
+/**
+ * Variables lues dans `.env`, jamais versionnées.
+ * « Secrète » = non versionnée, PAS confidentielle : `VITE_MAPTILER_API_KEY`
+ * finit dans le bundle client, comme toute `VITE_*`.
+ */
 export const SECRETES = ["VITE_MAPTILER_API_KEY"] as const;
 
 /**
@@ -142,7 +159,7 @@ export function variablesAttendues(
     sensible: false,
   }));
 
-  const surcharges = (site as SiteEntry & { env?: Record<string, string> }).env ?? {};
+  const surcharges = site.env ?? {};
   for (const [key, defaut] of Object.entries(CONSTANTES)) {
     variables.push({ key, value: surcharges[key] ?? defaut, origine: "constante", sensible: false });
   }
