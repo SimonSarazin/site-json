@@ -9,9 +9,9 @@ import "@/modules/admin/i18n";
  * du costum courant (`reference.costum` / `source.keys`) via SET_SOURCE (SetSourceAction).
  */
 export interface ReferencingCarrier {
-  addReference: (type: string, id: string) => Promise<{ result: boolean }>;
-  removeReference: (type: string, id: string) => Promise<{ result: boolean }>;
-  removeFromSource: (type: string, id: string) => Promise<{ result: boolean }>;
+  addReference: (type: string, id: string) => Promise<{ result: boolean; msg?: string } | null>;
+  removeReference: (type: string, id: string) => Promise<{ result: boolean; msg?: string } | null>;
+  removeFromSource: (type: string, id: string) => Promise<{ result: boolean; msg?: string } | null>;
 }
 
 export type ReferenceOp = "reference" | "unreference" | "detach";
@@ -22,9 +22,15 @@ export function useReferenceElement(onDone?: () => void) {
   const t = useT("modules/admin");
   return useMutation({
     mutationFn: async ({ carrier, op, type, id }: { carrier: ReferencingCarrier; op: ReferenceOp; type: string; id: string }) => {
-      if (op === "reference") return carrier.addReference(type, id);
-      if (op === "unreference") return carrier.removeReference(type, id);
-      return carrier.removeFromSource(type, id);
+      const res =
+        op === "reference" ? await carrier.addReference(type, id)
+        : op === "unreference" ? await carrier.removeReference(type, id)
+        : await carrier.removeFromSource(type, id);
+      // Refus métier en HTTP 200 (`{result:false, msg}`, ex. SetSourceAction « You can't add existed
+      // element as sourceKey ») — sinon toast de succès sur une écriture qui n'a pas eu lieu.
+      // `null` = champ absent (parité legacy `Rest::json(null)`) : pas un échec.
+      if (res && res.result === false) throw new Error(res.msg || t("useReferenceElement.error"));
+      return res;
     },
     onSuccess: (_res, vars) => {
       const msg = t(vars.op === "reference" ? "useReferenceElement.referenced" : vars.op === "unreference" ? "useReferenceElement.unreferenced" : "useReferenceElement.detached");

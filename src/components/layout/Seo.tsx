@@ -4,7 +4,7 @@ import { useLocalization } from "@/hooks/useLocalization";
 import { LocalizedString } from "@/types/locale-schema";
 import { useSite } from "@/hooks/useSite";
 import { useCocolight } from "@/hooks/useCocolight";
-import { getServerUrl } from "@/lib/constant/common";
+import { getSitePublicUrl } from "@/lib/constant/common";
 import { buildFaviconUrl } from "@/lib/imageUtils";
 
 interface SeoProps {
@@ -76,7 +76,7 @@ export function Seo({ page }: SeoProps) {
    *  (les crawlers OG ignorent les URLs relatives). */
   const ogImageRaw = seo.ogImage ?? meta.ogImage;
   const ogImage = ogImageRaw?.startsWith("/")
-    ? getServerUrl().replace(/\/$/, "") + ogImageRaw
+    ? getSitePublicUrl().replace(/\/$/, "") + ogImageRaw
     : ogImageRaw;
   const twitterCard = seo.twitterCard ?? (ogImage ? "summary_large_image" : undefined);
 

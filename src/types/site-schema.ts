@@ -245,6 +245,19 @@ export const HeroParallaxSchema = z.object({
         })
       )
       .optional(),
+    /**
+     * Boutons d'ACTION — ouvrent une modale d'ajout (`modal`/`action`) au lieu
+     * de naviguer. Rendus par `<ActionButtonGroup>`, le même composant que
+     * `searchHeader` (SearchHeaderSection.tsx:373), donc même comportement :
+     * un visiteur non connecté obtient l'invite `chrome.authPrompt` du
+     * formulaire, et le formulaire la remplace dès la connexion.
+     *
+     * `ctaButtons` reste la voie des LIENS (`path`). Les deux cohabitent :
+     * `ActionButtonSchema` se dit d'ailleurs prévu pour « header de recherche,
+     * hero… » (action-button-schema.ts:6) — il n'était simplement branché que
+     * sur le premier.
+     */
+    buttons: z.array(ActionButtonSchema).optional(),
     showScrollIndicator: z.boolean().optional(),
     // Tonalité des décorations : token qui les teinte (primary par défaut).
     variant: z.enum(["primary", "accent"]).optional(),
