@@ -67,8 +67,8 @@ function DynamicModalButton({
     if (requiresAdmin && !permissions.isAdmin) {
         return null;
     }
-    /*  Quand un visiteur non connecté clique sur le bouton d'action (add-project/event/poi/organization, requiresAdmin:false).
-    openLogin() passe désormais un onSuccess callback qu ouvre le modal d'ajout directement après la connexion réussie */
+    // Visiteur non connecté : `openLogin` reçoit un `onSuccess` qui enchaîne
+    // sur le modal d'ajout, plutôt que de laisser l'utilisateur re-cliquer.
     const handleClick = () => {
         if (!isConnected) {
             openLogin({ onSuccess: () => setIsModalOpen(true) });
