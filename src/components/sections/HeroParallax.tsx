@@ -5,6 +5,7 @@ import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { HeroBackgroundImage } from "./HeroBackgroundImage";
+import { ActionButtonGroup } from "@/modules/profil/components/ActionButtonGroup";
 
 /**
  * Icône de badge : SVG inline OU nom d'icône lucide.
@@ -165,9 +166,10 @@ export function HeroParallax({ id, props }: HeroParallaxProps) {
                         </div>
                     )}
 
-                    {props.ctaButtons && props.ctaButtons.length > 0 && (
+                    {((props.ctaButtons && props.ctaButtons.length > 0) ||
+                      (props.buttons && props.buttons.length > 0)) && (
                         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
-                            {props.ctaButtons.map((btn, idx) => {
+                            {props.ctaButtons?.map((btn, idx) => {
                                 const { variant, className } = getButtonProps(btn.variant);
                                 return (
                                     <Button key={idx} asChild variant={variant} className={className}>
@@ -175,6 +177,14 @@ export function HeroParallax({ id, props }: HeroParallaxProps) {
                                     </Button>
                                 );
                             })}
+                            {/* Boutons d'ACTION (modale d'ajout) — même composant que
+                                `searchHeader` (SearchHeaderSection.tsx:373), donc même
+                                garde d'authentification : un visiteur non connecté voit
+                                l'invite `chrome.authPrompt` du formulaire au lieu d'une
+                                impasse. Séparé de `ctaButtons`, qui ne sait que naviguer. */}
+                            {props.buttons && props.buttons.length > 0 && (
+                                <ActionButtonGroup buttons={props.buttons} />
+                            )}
                         </div>
                     )}
                 </div>

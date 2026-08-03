@@ -59,42 +59,90 @@
           "fr": "Annuaire",
           "en": "Directory"
         },
-        "path": "/annuaire"
+        "path": "/annuaire",
+        "children": [
+          {
+            "label": {
+              "fr": "Annuaire des acteurs",
+              "en": "Directory of actors"
+            },
+            "path": "/annuaire",
+            "icon": "list",
+            "description": {
+              "fr": "Parcourir et filtrer tous les acteurs de l’économie bleue référencés.",
+              "en": "Browse and filter every listed actor of the blue economy."
+            }
+          },
+          {
+            "label": {
+              "fr": "Cartographie",
+              "en": "Map"
+            },
+            "path": "/cartographie",
+            "icon": "map",
+            "description": {
+              "fr": "Situer les acteurs sur le territoire réunionnais.",
+              "en": "Locate the actors across Réunion."
+            }
+          },
+          {
+            "label": {
+              "fr": "Nos membres",
+              "en": "Our members"
+            },
+            "path": "/nos-membres",
+            "icon": "users",
+            "description": {
+              "fr": "Les structures adhérentes de l’Institut Bleu.",
+              "en": "Organisations that are members of Institut Bleu."
+            }
+          }
+        ]
       },
       {
         "label": {
-          "fr": "Cartographie",
-          "en": "Map"
+          "fr": "Ressources",
+          "en": "Resources"
         },
-        "path": "/cartographie"
-      },
-      {
-        "label": {
-          "fr": "Nos membres",
-          "en": "Our members"
-        },
-        "path": "/nos-membres"
-      },
-      {
-        "label": {
-          "fr": "Observatoire",
-          "en": "Observatory"
-        },
-        "path": "/observatoire"
-      },
-      {
-        "label": {
-          "fr": "Bibliothèque",
-          "en": "Library"
-        },
-        "path": "/bibliotheque"
-      },
-      {
-        "label": {
-          "fr": "Financements",
-          "en": "Funding"
-        },
-        "path": "/financements"
+        "path": "/bibliotheque",
+        "children": [
+          {
+            "label": {
+              "fr": "Bibliothèque",
+              "en": "Library"
+            },
+            "path": "/bibliotheque",
+            "icon": "book-open",
+            "description": {
+              "fr": "Études, rapports et publications sur l’économie bleue.",
+              "en": "Studies, reports and publications on the blue economy."
+            }
+          },
+          {
+            "label": {
+              "fr": "Financements",
+              "en": "Funding"
+            },
+            "path": "/financements",
+            "icon": "banknote",
+            "description": {
+              "fr": "Appels à projets, subventions et dispositifs d’aide.",
+              "en": "Calls for projects, grants and support schemes."
+            }
+          },
+          {
+            "label": {
+              "fr": "Observatoire",
+              "en": "Observatory"
+            },
+            "path": "/observatoire",
+            "icon": "bar-chart-2",
+            "description": {
+              "fr": "Chiffres clés et indicateurs du secteur.",
+              "en": "Key figures and sector indicators."
+            }
+          }
+        ]
       },
       {
         "label": {
@@ -178,17 +226,21 @@
                 },
                 "path": "/annuaire",
                 "variant": "primary"
-              },
+              }
+            ],
+            "showScrollIndicator": true,
+            "buttons": [
               {
                 "label": {
                   "fr": "Référencer ma structure",
                   "en": "List my organisation"
                 },
-                "path": "/register",
-                "variant": "outline"
+                "icon": "anchor",
+                "modal": "add-institut-bleu-acteur",
+                "variant": "outline",
+                "requiresAdmin": false
               }
-            ],
-            "showScrollIndicator": true
+            ]
           }
         },
         {
@@ -453,7 +505,19 @@
             "subhead": {
               "fr": "Les acteurs socio-professionnels, institutionnels et scientifiques de l’économie bleue à La Réunion.",
               "en": "The socio-professional, institutional and scientific actors of the blue economy in Réunion."
-            }
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Référencer ma structure",
+                  "en": "List my organisation"
+                },
+                "icon": "anchor",
+                "modal": "add-institut-bleu-acteur",
+                "variant": "primary",
+                "requiresAdmin": false
+              }
+            ]
           }
         },
         {
@@ -1757,8 +1821,8 @@
           "id": "institut-bleu-content",
           "props": {
             "html": {
-              "fr": "<div class=\"prose prose-slate dark:prose-invert mx-auto max-w-3xl px-4 py-12\"><h1>L’Institut Bleu</h1><p>L’Institut Bleu est une association loi 1901, visant à soutenir, coordonner et fédérer les acteurs socio-professionnels, institutionnels et scientifiques de l’économie bleue durable sur le territoire de La Réunion. Pour cela, l’association assure la promotion, le développement, la recherche, l’innovation et le transfert aux acteurs professionnels de l’écosystème maritime. Ses actions partenariales se développent à l’échelle locale, mais également sur l’ensemble du territoire français, européen et international.</p><p>L’une des actions inscrites dans le programme d’action 2025 de l’Institut Bleu concerne la création d’un annuaire recensant de la manière la plus exhaustive possible les acteurs du secteur de l’économie bleue.</p><p>Cet outil sera consultable librement et gratuitement sur le site internet de l’Institut Bleu (<a href=\"https://institutbleu.re/\" target=\"_blank\" rel=\"noopener noreferrer\">www.institutbleu.re</a> ). Ce projet est financé par la Région Réunion dans le cadre du financement du plan d’action 2025 de l’Institut Bleu et par le Secrétariat d’Etat chargé de la Mer et de la Biodiversité dans le cadre du Fonds d’Intervention Maritime (FIM).</p></div>",
-              "en": "<div class=\"prose prose-slate dark:prose-invert mx-auto max-w-3xl px-4 py-12\"><h1>Institut Bleu</h1><p>Institut Bleu is a French non-profit association (<em>loi 1901</em>) whose purpose is to support, coordinate and bring together the socio-professional, institutional and scientific actors of the sustainable blue economy in Réunion. To that end, the association fosters promotion, development, research, innovation and knowledge transfer for the professionals of the maritime ecosystem. Its partnership work is carried out locally as well as across France, Europe and internationally.</p><p>One of the actions set out in the Institut Bleu 2025 programme is the creation of a directory listing the actors of the blue economy sector as exhaustively as possible.</p><p>The directory will be freely and openly available on the Institut Bleu website (<a href=\"https://institutbleu.re/\" target=\"_blank\" rel=\"noopener noreferrer\">www.institutbleu.re</a>). The project is funded by the Région Réunion as part of the Institut Bleu 2025 action plan, and by the French State Secretariat for the Sea and Biodiversity through the Maritime Intervention Fund (FIM).</p></div>"
+              "fr": "<div class=\"mx-auto max-w-3xl px-4 py-12\"><div class=\"prose prose-theme\"><h1>L’Institut Bleu</h1><p>L’Institut Bleu est une association loi 1901, visant à soutenir, coordonner et fédérer les acteurs socio-professionnels, institutionnels et scientifiques de l’économie bleue durable sur le territoire de La Réunion. Pour cela, l’association assure la promotion, le développement, la recherche, l’innovation et le transfert aux acteurs professionnels de l’écosystème maritime. Ses actions partenariales se développent à l’échelle locale, mais également sur l’ensemble du territoire français, européen et international.</p><p>L’une des actions inscrites dans le programme d’action 2025 de l’Institut Bleu concerne la création d’un annuaire recensant de la manière la plus exhaustive possible les acteurs du secteur de l’économie bleue.</p><p>Cet outil sera consultable librement et gratuitement sur le site internet de l’Institut Bleu (<a href=\"https://institutbleu.re/\" target=\"_blank\" rel=\"noopener noreferrer\">www.institutbleu.re</a> ). Ce projet est financé par la Région Réunion dans le cadre du financement du plan d’action 2025 de l’Institut Bleu et par le Secrétariat d’Etat chargé de la Mer et de la Biodiversité dans le cadre du Fonds d’Intervention Maritime (FIM).</p></div></div>",
+              "en": "<div class=\"mx-auto max-w-3xl px-4 py-12\"><div class=\"prose prose-theme\"><h1>Institut Bleu</h1><p>Institut Bleu is a French non-profit association (<em>loi 1901</em>) whose purpose is to support, coordinate and bring together the socio-professional, institutional and scientific actors of the sustainable blue economy in Réunion. To that end, the association fosters promotion, development, research, innovation and knowledge transfer for the professionals of the maritime ecosystem. Its partnership work is carried out locally as well as across France, Europe and internationally.</p><p>One of the actions set out in the Institut Bleu 2025 programme is the creation of a directory listing the actors of the blue economy sector as exhaustively as possible.</p><p>The directory will be freely and openly available on the Institut Bleu website (<a href=\"https://institutbleu.re/\" target=\"_blank\" rel=\"noopener noreferrer\">www.institutbleu.re</a>). The project is funded by the Région Réunion as part of the Institut Bleu 2025 action plan, and by the French State Secretariat for the Sea and Biodiversity through the Maritime Intervention Fund (FIM).</p></div></div>"
             }
           }
         }
@@ -5344,16 +5408,13 @@
   },
   "floatingActionButton": {
     "enabled": true,
-    "position": "bottom-right",
+    "position": "bottom-left",
     "label": {
       "fr": "Référencer ma structure",
       "en": "List my organisation"
     },
     "icon": "anchor",
-    "modal": "add-institut-bleu-acteur",
-    "condition": {
-      "auth": "required"
-    }
+    "modal": "add-institut-bleu-acteur"
   },
   "admin": {
     "enabled": true,
