@@ -83,7 +83,13 @@ export default function PreviewResourceCard({ item, list, onClose }: PreviewProp
     ) : null;
 
   return (
-    <div className="flex max-h-[85vh] flex-col">
+    /* `min-w-0` : sans lui, cette racine est un élément de grille à
+       `min-width: auto`, donc elle s'ÉLARGIT jusqu'à la largeur min-content de
+       son contenu au lieu de le comprimer. Mesuré sur une fiche à URL longue :
+       dialogue 672px, contenu 943px — 272px hors cadre à droite, titre et URL
+       coupés. Le `truncate` de l'URL (l. 212) ne pouvait pas opérer : il ne
+       tronque que dans une largeur bornée. */
+    <div className="flex max-h-[85vh] min-w-0 flex-col">
       {/* EN-TÊTE adaptatif : bannière image, sinon bande typée + grande icône */}
       {data.image ? (
         <>
