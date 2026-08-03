@@ -23,7 +23,7 @@ const OpeningHoursField = lazy(() => import("./OpeningHoursField"));
 const FieldArrayField = lazy(() => import("./FieldArrayField"));
 
 /** Placeholder le temps du chargement d'un widget lazy. */
-const WidgetFallback = () => <div className="h-10 animate-pulse rounded-md bg-muted" />;
+import { WidgetFallback } from "./WidgetFallback";
 
 export interface WidgetProps {
   field: FieldDescriptor;

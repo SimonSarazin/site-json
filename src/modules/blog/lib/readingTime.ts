@@ -1,4 +1,4 @@
-import { stripMarkdown } from "../components/ArticleCard";
+import { stripMarkdown } from "./markdown";
 
 /**
  * Estime le temps de lecture (en minutes) d'un corps markdown (~200 mots/min, minimum 1). Réutilise

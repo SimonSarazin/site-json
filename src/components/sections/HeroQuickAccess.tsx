@@ -88,7 +88,7 @@ export function HeroQuickAccess({ id, props }: HeroQuickAccessProps) {
       <div className="container relative w-full mx-auto px-4 sm:px-8 lg:px-16 py-16 lg:py-24">
         <div className={(props.quickAccessCards ? " grid lg:grid-cols-2" : " lg:grid-cols-1") + " gap-12 items-center"}>
           {/* Content */}
-          <div className={"space-y-8 animate-fade-up"+ (props.quickAccessCards ? " max-w-xl" : " max-w-4xl")}>
+          <div className={"space-y-8 animate-fade-in-up"+ (props.quickAccessCards ? " max-w-xl" : " max-w-4xl")}>
 
             {props.badges && props.badges.length > 0 && (
               <div className="gap-4 pt-8">

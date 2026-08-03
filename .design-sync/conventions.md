@@ -21,9 +21,10 @@ export default function App() {
 }
 ```
 
-## Trois familles de composants
+## Quatre familles de composants
 
 - **Sections** (groupe `sections`) : blocs de page pleine largeur. Signature unique : `<XSection props={{...}} />`. Tout texte visible est un objet localisé `{ fr: "…" }` — jamais une chaîne nue. Les props exacts sont dans `components/sections/<Name>/<Name>.d.ts`, des compositions réalistes dans `<Name>.prompt.md`.
+- **Chrome de page** (groupes `header`, `footer`, `layout`) : en-têtes et pieds de page prêts à l'emploi — n'en refabrique jamais un à la main. Signature `<HeaderStandard header={{...}} />` et `<FooterRich footer={{...}} />` (un seul objet, pas de `props={{…}}`). Les noms sont des **designs**, jamais des noms de site. Headers : `HeaderStandard`, `HeaderMegaMenu`, `HeaderTransparentScroll`, `HeaderMinimal`, `HeaderUnderlineNav`, `HeaderTransparentDark`. Footers : `FooterRich`, `FooterMinimalCentered`, `FooterSidebarColumns`, `FooterContactPartners`. Primitives partagées : `NavLink` (liens header ET footer, 4 comportements selon `to`), `LangSwitch` et `MobileMenuSheet` (groupe `header`), `SocialLinks` (groupe `footer`).
 - **Composants de modules** (groupes `module-blog`, `module-search`, `module-profil`, `module-news`, `module-cagnotte`, `module-ampli`) : pièces présentationnelles des fonctionnalités produit — cartes d'article, marqueurs de carte, cartes d'entité, jauges de financement… Props-driven : tu fournis les données (objets article/entité mockés ou réels) ; ils ne fetchent rien.
 - **Primitives** (groupe `general`, shadcn/Radix) : props/children React classiques (`<Button variant="outline">`, `<Card><CardHeader>…`). Tous les sous-composants (CardHeader, SelectTrigger, FormField…) sont des exports du bundle. Les notifications s'émettent via l'export `toast(...)` avec `<Toaster />` monté.
 

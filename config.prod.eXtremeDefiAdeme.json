@@ -55,8 +55,8 @@
       },
       {
         "label": {
-          "fr": "Projets",
-          "en": "Projects"
+          "fr": "Action collective",
+          "en": "Collective action"
         },
         "path": "/projets"
       },
@@ -66,13 +66,6 @@
           "en": "Agenda"
         },
         "path": "/agenda"
-      },
-      {
-        "label": {
-          "fr": "Communauté",
-          "en": "Community"
-        },
-        "path": "/communaute"
       }
     ],
     "sticky": true,
@@ -894,7 +887,8 @@
                 },
                 "icon": "plus",
                 "action": "add-project",
-                "variant": "primary"
+                "variant": "primary",
+                "requiresAdmin": false
               }
             ],
             "showSearch": true,
@@ -967,7 +961,8 @@
                 },
                 "icon": "calendar-plus",
                 "action": "add-event",
-                "variant": "primary"
+                "variant": "primary",
+                "requiresAdmin": false
               }
             ],
             "showSearch": false
@@ -1869,6 +1864,10 @@
                   "showOpeningDate": true,
                   "showDates": true,
                   "showOrganizer": true
+                },
+                {
+                  "type": "profile-tools",
+                  "sticky": true
                 }
               ]
             }
