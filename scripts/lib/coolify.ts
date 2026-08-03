@@ -401,12 +401,22 @@ export async function applicationDeployments(
   });
 }
 
-/** Le dernier déploiement mené à terme, ou `undefined` si l'app n'a jamais abouti. */
+/**
+ * Le dernier déploiement mené à terme, ou `undefined` si l'app n'a jamais abouti.
+ *
+ * Take PROGRESSIF : dans le cas courant, le déploiement le plus récent est
+ * `finished` — `take=1` suffit (~500 Ko transférés au lieu de 2,5 Mo, × N sites
+ * pour `status`/`affected`). S'il ne l'est pas (dernier build raté ou en
+ * cours), on re-demande `take=5` : `take=1` seul serait FAUX, un dernier
+ * déploiement raté masquerait le précédent réussi.
+ */
 export async function lastSuccessfulDeployment(
   ctx: CoolifyContext,
   uuid: string,
 ): Promise<CoolifyDeployment | undefined> {
-  return (await applicationDeployments(ctx, uuid)).find((d) => d.status === "finished");
+  const [recent] = await applicationDeployments(ctx, uuid, 1);
+  if (!recent || recent.status === "finished") return recent;
+  return (await applicationDeployments(ctx, uuid, 5)).find((d) => d.status === "finished");
 }
 
 /**
