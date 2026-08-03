@@ -1,6 +1,7 @@
 import { add, format, isBefore, isAfter, startOfDay, type Locale } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, X } from "lucide-react";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { useImperativeHandle, useRef, useState, useEffect, useMemo } from "react";
 import { DayPicker } from "react-day-picker";
 
@@ -194,10 +195,25 @@ function genYears(yearRange = 50): Array<{ value: number; label: string }> {
   }));
 }
 
-function clampDate(date: Date, min?: Date, max?: Date): Date {
-  if (min && isBefore(date, min)) return new Date(min);
-  if (max && isAfter(date, max)) return new Date(max);
-  return date;
+/** `Date` → `"HH:mm"` / `"HH:mm:ss"`, le format que l'input natif attend. */
+function formatTimeValue(date: Date | undefined, granularity?: string): string {
+  if (!date || isNaN(date.getTime())) return "";
+  const p = (n: number) => String(n).padStart(2, "0");
+  const base = `${p(date.getHours())}:${p(date.getMinutes())}`;
+  return granularity === "second" ? `${base}:${p(date.getSeconds())}` : base;
+}
+
+/**
+ * Applique `"HH:mm[:ss]"` à une date, en préservant son jour.
+ * Renvoie `undefined` sur une saisie vide ou partielle — l'input natif émet des
+ * valeurs intermédiaires pendant la frappe, qu'il ne faut pas écrire.
+ */
+function applyTimeValue(base: Date | undefined, value: string): Date | undefined {
+  const m = /^(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(value);
+  if (!m) return undefined;
+  const d = base && !isNaN(base.getTime()) ? new Date(base) : new Date();
+  d.setHours(Number(m[1]), Number(m[2]), m[3] ? Number(m[3]) : 0, 0);
+  return d;
 }
 
 // ---------- utils end ----------
@@ -458,8 +474,6 @@ interface TimePickerInputProps extends Omit<React.ComponentPropsWithoutRef<"inpu
   period?: Period;
   onLeftFocus?: () => void;
   onRightFocus?: () => void;
-  min?: Date;
-  max?: Date;
   inputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
@@ -477,8 +491,6 @@ function TimePickerInput({
   period,
   onLeftFocus,
   onRightFocus,
-  min,
-  max,
   inputRef,
   ...props
 }: TimePickerInputProps) {
@@ -508,14 +520,6 @@ function TimePickerInput({
     return !flag ? `0${key}` : calculatedValue.slice(1, 2) + key;
   };
 
-  const clampDatePartial = (date: Date): Date => {
-    if (!min && !max) return date;
-    const d = new Date(date);
-    //   if (min && d < min) return new Date(min);
-    //   if (max && d > max) return new Date(max);
-    return d;
-  };
-
   const handleBlur = () => {
     if (!date) return;
     const clampedDate = date;
@@ -536,7 +540,7 @@ function TimePickerInput({
       if (flag) setFlag(false);
       const tempDate = date ? new Date(date) : new Date();
       // Clamp uniquement si fin de saisie
-      const clamped = flag ? setDateByType(tempDate, newValue, picker, period) : clampDatePartial(setDateByType(tempDate, newValue, picker, period));
+      const clamped = flag ? setDateByType(tempDate, newValue, picker, period) : setDateByType(tempDate, newValue, picker, period);
       onDateChange?.(clamped);
     }
     if (e.key >= "0" && e.key <= "9") {
@@ -548,7 +552,7 @@ function TimePickerInput({
       const tempDate = date ? new Date(date) : new Date();
       // Pareil, clamp uniquement à la fin
       // console.log("flag", flag);
-      const clamped = !flag ? clampDatePartial(setDateByType(tempDate, newValue, picker, period)) : setDateByType(tempDate, newValue, picker, period);
+      const clamped = !flag ? setDateByType(tempDate, newValue, picker, period) : setDateByType(tempDate, newValue, picker, period);
       onDateChange?.(clamped);
     }
   };
@@ -585,8 +589,6 @@ interface TimePickerProps extends Omit<React.ComponentPropsWithoutRef<"div">, "o
   onChange?: (date: Date) => void;
   hourCycle?: 12 | 24;
   granularity?: "day" | "hour" | "minute" | "second";
-  min?: Date;
-  max?: Date;
   timePickerRef?: React.RefObject<TimePickerRef>;
 }
 
@@ -602,8 +604,6 @@ function TimePicker({
   onChange,
   hourCycle = 24,
   granularity = "second",
-  min,
-  max,
   timePickerRef,
   ...props
 }: TimePickerProps) {
@@ -652,8 +652,6 @@ function TimePicker({
         inputRef={hourRef}
         period={period}
         onRightFocus={() => minuteRef?.current?.focus()}
-        min={min}
-        max={max}
       />
       {(granularity === "minute" || granularity === "second") && (
         <>
@@ -665,8 +663,6 @@ function TimePicker({
             inputRef={minuteRef}
             onLeftFocus={() => hourRef?.current?.focus()}
             onRightFocus={() => secondRef?.current?.focus()}
-            min={min}
-            max={max}
           />
         </>
       )}
@@ -680,8 +676,6 @@ function TimePicker({
             inputRef={secondRef}
             onLeftFocus={() => minuteRef?.current?.focus()}
             onRightFocus={() => periodRef?.current?.focus()}
-            min={min}
-            max={max}
           />
         </>
       )}
@@ -776,14 +770,6 @@ function DateTimePicker({
     [displayDate]
   );
 
-  function clampDateLocal(date: Date): Date {
-    if (!min && !max) return date;
-    const d = new Date(date);
-    //   if (min && d < min) return new Date(min);
-    //   if (max && d > max) return new Date(max);
-    return d;
-  }
-
   const handleMonthChange = (newDay: Date) => {
     if (!newDay) {
       return;
@@ -794,7 +780,7 @@ function DateTimePicker({
         month.getMinutes(),
         month.getSeconds()
       );
-      const clamped = clampDateLocal(newDay);
+      const clamped = newDay;
       effectiveOnMonthChange?.(clamped);
       setMonth(clamped);
       return;
@@ -807,16 +793,15 @@ function DateTimePicker({
       month.getMinutes(),
       month.getSeconds()
     );
-    const clamped = clampDateLocal(newDateFull);
-    effectiveOnMonthChange?.(clamped);
-    setMonth(clamped);
+    effectiveOnMonthChange?.(newDateFull);
+    setMonth(newDateFull);
   };
 
   const onSelect = (newDay: Date) => {
     if (!newDay) {
       return;
     }
-    const clamped = clampDateLocal(newDay);
+    const clamped = newDay;
     onChange?.(clamped);
     setMonth(clamped);
     setDisplayDate(clamped);
@@ -892,21 +877,49 @@ function DateTimePicker({
           />
           {granularity !== "day" && (
             <div className="border-border border-t p-3">
-              <TimePicker
-                onChange={(value) => {
-                  const clampedValue = clampDate(value, min, max);
-                  onChange?.(clampedValue);
-                  setDisplayDate(clampedValue);
-                  if (clampedValue) {
-                    setMonth(clampedValue);
-                  }
-                }}
-                date={month}
-                hourCycle={hourCycle}
-                granularity={granularity}
-                min={min}
-                max={max}
-              />
+              {/* Saisie de l'heure par l'input NATIF, habillé au design system
+                  (`InputGroup` + icône horloge), plutôt que par les segments
+                  maison de `TimePicker`.
+
+                  Pourquoi : ces segments étaient inutilisables. Ils composaient
+                  la valeur en deux temps à partir de la valeur AFFICHÉE, or un
+                  `clampDate` posé ici même annulait la première frappe sans
+                  remettre leur état — taper « 15 » sur un champ à 14 donnait 23
+                  (le second chiffre se composait sur le « 4 » resté à l'écran,
+                  soit « 45 », écrêté). Le symptôme changeait avec la vitesse de
+                  frappe, un minuteur de 2s réarmant cet état. S'y ajoutait :
+                  aucune touche d'édition (tout `preventDefault` sauf Tab, donc
+                  ni effacement ni collage), un curseur masqué, des `id` en dur
+                  dupliqués dès deux instances, et rien de pilotable au doigt —
+                  un clavier tactile n'a pas de flèches.
+
+                  L'input natif règle tout cela par construction, et c'est le
+                  patron que shadcn et react-day-picker recommandent — le dépôt
+                  l'applique DÉJÀ pour le même besoin dans
+                  `formEngine/widgets/OpeningHoursField.tsx:41-47`.
+
+                  La borne « fin ≥ début » n'est plus appliquée ici : elle l'est
+                  déjà par `eventDatesValid` (`profil/forms/validators.ts:34-36`),
+                  avec un message explicite. Elle était posée deux fois, dont une
+                  en silence — et c'est ce silence qui cassait la saisie. */}
+              <InputGroup>
+                <InputGroupAddon>
+                  <Clock className="h-4 w-4" />
+                </InputGroupAddon>
+                <InputGroupInput
+                  type="time"
+                  step={granularity === "second" ? 1 : 60}
+                  aria-label={locale?.code?.startsWith("en") ? "Time" : "Heure"}
+                  value={formatTimeValue(month, granularity)}
+                  onChange={(e) => {
+                    const next = applyTimeValue(month, e.target.value);
+                    if (!next) return; // saisie incomplète : on n'écrit pas de date bancale
+                    onChange?.(next);
+                    setDisplayDate(next);
+                    setMonth(next);
+                  }}
+                />
+              </InputGroup>
             </div>
           )}
         </PopoverContent>
