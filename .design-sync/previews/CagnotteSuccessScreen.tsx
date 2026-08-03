@@ -1,12 +1,12 @@
 import { CagnotteSuccessScreen } from "site-forge";
 
-// Écran post-paiement de la cagnotte : célébration de palier atteint
-// (milestoneReached) ou simple remerciement (null).
+// Écran post-paiement de la cagnotte : célébration d'objectif atteint
+// (objectiveReached) ou simple remerciement (null).
 
 export const PalierAtteint = () => (
   <div style={{ maxWidth: 480, margin: "0 auto" }}>
     <CagnotteSuccessScreen
-      milestoneReached={{
+      objectiveReached={{
         target: 3000,
         label: "Palier 2 — mobilier et peinture",
         description:
@@ -18,6 +18,6 @@ export const PalierAtteint = () => (
 
 export const Remerciement = () => (
   <div style={{ maxWidth: 480, margin: "0 auto" }}>
-    <CagnotteSuccessScreen milestoneReached={null} />
+    <CagnotteSuccessScreen objectiveReached={null} />
   </div>
 );

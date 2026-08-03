@@ -42,14 +42,14 @@ const slotName = (f: string) => f.slice("$slot:".length);
 const COLS: Record<number, string> = { 1: "", 2: "sm:grid-cols-2", 3: "sm:grid-cols-3" };
 
 /** Normalise une section vers ses groupes (format plat = un unique groupe 1 colonne). */
-export function sectionGroups(section: SectionDescriptor | undefined): FieldGroup[] {
+function sectionGroups(section: SectionDescriptor | undefined): FieldGroup[] {
   if (!section) return []; // garde : section disparue (visibleIf) → pas de déréférencement
   if (section.groups && section.groups.length) return section.groups;
   return [{ columns: 1, fields: section.fields ?? [] }];
 }
 
 /** Tous les noms de champs (hors $slot) d'une section — groupes ou format plat. */
-export function sectionFieldNames(section: SectionDescriptor | undefined): string[] {
+function sectionFieldNames(section: SectionDescriptor | undefined): string[] {
   return sectionGroups(section).flatMap((g) => g.fields).filter((f) => !isSlot(f));
 }
 
@@ -72,7 +72,7 @@ export function renderSection(section: SectionDescriptor, p: LayoutProps, values
 }
 
 /** Une section a-t-elle une erreur (un de ses champs dans formState.errors) ? */
-export function sectionHasError(section: SectionDescriptor, errors: Record<string, unknown>): boolean {
+function sectionHasError(section: SectionDescriptor, errors: Record<string, unknown>): boolean {
   return sectionFieldNames(section).some((n) => hasErrorAt(errors, n));
 }
 

@@ -3,43 +3,60 @@
     "slug": "parent62",
     "config": "config.prod.parent62.json",
     "css": "index-parent62",
-    "images": "parent62"
+    "images": "parent62",
+    "coolifyApp": "site-json-parent62",
+    "domain": "parent62.00.re"
   },
   {
     "slug": "cyberReunion",
     "config": "config.prod.cyber-reunion.json",
     "css": "index-cyber-reunion",
-    "images": "cyberReunion"
+    "images": "cyberReunion",
+    "coolifyApp": "site-json-cyber-reunion",
+    "domain": "cyber-reunion.00.re"
   },
   {
     "slug": "rezoLaMer",
     "config": "config.prod.rezo-la-mer.json",
     "css": "index-rezo-la-mer",
-    "images": "rezoLaMer"
+    "images": "rezoLaMer",
+    "coolifyApp": "site-json-rezo-la-mer",
+    "domain": "rezo-la-mer.00.re"
   },
   {
     "slug": "eXtremeDefiAdeme",
     "config": "config.prod.eXtremeDefiAdeme.json",
     "css": "index-extreme-defi",
-    "images": "eXtremeDefiAdeme"
+    "images": "eXtremeDefiAdeme",
+    "coolifyApp": "site-json-extremedefi",
+    "domain": "extremedefi.00.re"
   },
   {
     "slug": "sportSanteBienetre",
     "config": "config.prod.sport-sante-bien-etre.json",
     "css": "index-sport-sante-bien-etre",
-    "images": "sportSanteBienetre"
+    "images": "sportSanteBienetre",
+    "coolifyApp": "site-json-ssbe",
+    "domain": "ssbe.00.re"
   },
   {
     "slug": "institutBleu",
     "config": "config.prod.institut-bleu.json",
     "css": "index-institut-bleu",
-    "images": "institutBleu"
+    "images": "institutBleu",
+    "coolifyApp": "site-json-institut-bleu",
+    "domain": "institut-bleu.00.re"
   },
   {
     "slug": "navigatorDesTierslieux",
     "config": "config.prod.tiers-lieux.json",
     "css": "index-tiers-lieux",
-    "images": "tiersLieux"
+    "images": "tiersLieux",
+    "coolifyApp": "site-json-tierslieux",
+    "domain": "tierslieux.00.re",
+    "aliases": [
+      "www.tiers-lieux.org"
+    ]
   },
   {
     "slug": "juliePotVin",
@@ -93,12 +110,22 @@
     "slug": "equipementsSportifs974",
     "config": "config.prod.equipements-Sportifs.json",
     "css": "index-equipements-sportifs",
-    "images": "equipementsSportifs974"
+    "images": "equipementsSportifs974",
+    "coolifyApp": "site-json-equipements-sportifs-974",
+    "domain": "equipements-sportifs-974.00.re"
   },
   {
     "slug": "saintpaulSport1",
     "config": "config.prod.saint-paul-sport.json",
     "css": "index-equipements-sportifs",
-    "images": "equipementsSportifs974"
+    "images": "equipementsSportifs974",
+    "coolifyApp": "site-json-saint-paul-sport",
+    "domain": "saint-paul-sport.00.re"
+  },
+  {
+    "slug": "rezoSanteReunion",
+    "config": "config.prod.rezo-sante-reunion.json",
+    "css": "index-rezo-sante-reunion",
+    "images": "rezoSanteReunion"
   }
 ]
