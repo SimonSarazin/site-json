@@ -460,12 +460,13 @@ describe("adresse SIG complète (level1..4/codeInsee)", () => {
     level4: "97416", level4Name: "Saint-Pierre",
   };
 
-  it("READ : seed les 14 champs depuis serverData.address (plus de strip)", () => {
+  it("READ : seed les 12 champs depuis serverData.address (level2 NON seedé)", () => {
     const result = mapEntityToTiersLieuxValues({ serverData: { address: fullAddress } });
     expect(result.codeInsee).toBe("97416");
     expect(result.level1).toBe("REU");
     expect(result.level1Name).toBe("La Réunion");
-    expect(result.level2).toBe("974");
+    // level2 (département) rejeté par le schéma AJV du SDK → non remonté du serveur (reste "").
+    expect(result.level2).toBe("");
     expect(result.level3Name).toBe("Arrondissement");
     expect(result.level4).toBe("97416");
   });
@@ -473,14 +474,14 @@ describe("adresse SIG complète (level1..4/codeInsee)", () => {
   it("round-trip : entity → form → payload reconstruit l'address SIG COMPLÈTE", () => {
     const form = mapEntityToTiersLieuxValues({ serverData: { address: fullAddress } });
     const payload = buildTiersLieuxPayload(form) as { address: Record<string, unknown> };
-    // toEqual STRICT (address SIG COMPLÈTE figée) : les 15 clés exactes du builder partagé, level2Name/level3Name inclus.
+    // toEqual STRICT (address SIG figée) : les 13 clés exactes du builder partagé.
+    // level2/level2Name EXCLUS : rejetés par le schéma AJV du SDK (département = level3).
     expect(payload.address).toEqual({
       "@type": "PostalAddress",
       addressCountry: "FR", addressLocality: "Saint-Pierre", localityId: "loc_974",
       postalCode: "97410", streetAddress: "12 Allée des Aubépines",
       codeInsee: "97416",
       level1: "REU", level1Name: "La Réunion",
-      level2: "974", level2Name: "La Réunion",
       level3: "9742", level3Name: "Arrondissement",
       level4: "97416", level4Name: "Saint-Pierre",
     });

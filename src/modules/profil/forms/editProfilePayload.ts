@@ -27,7 +27,9 @@ type Data = Record<string, unknown>;
 
 const ADDRESS_KEYS = [
   "addressCountry", "streetAddress", "postalCode", "addressLocality", "localityId",
-  "level1", "level1Name", "level2", "level2Name", "level3", "level3Name", "level4", "level4Name", "codeInsee",
+  // level2/level2Name exclus : rejetés par le schéma d'adresse AJV du SDK
+  // (additionalProperties:false ; level1/level3/level4 seulement — département = level3).
+  "level1", "level1Name", "level3", "level3Name", "level4", "level4Name", "codeInsee",
 ] as const;
 const SOCIAL_KEYS = ["github", "gitlab", "facebook", "twitter", "instagram", "diaspora", "mastodon", "telegram", "signal"] as const;
 

@@ -13,8 +13,9 @@ export interface AddressFormFields {
   codeInsee?: string;
   level1?: string;
   level1Name?: string;
-  level2?: string;
-  level2Name?: string;
+  // level2/level2Name volontairement ABSENTS : le schéma d'adresse des payloads
+  // du SDK (validé par AJV, additionalProperties:false) n'autorise que
+  // level1/level3/level4 — level2 y est rejeté (département = level3).
   level3?: string;
   level3Name?: string;
   level4?: string;
@@ -33,8 +34,7 @@ const ADDRESS_FIELDS = [
   "codeInsee",
   "level1",
   "level1Name",
-  "level2",
-  "level2Name",
+  // level2/level2Name exclus : rejetés par l'AJV du SDK (cf. AddressFormFields).
   "level3",
   "level3Name",
   "level4",

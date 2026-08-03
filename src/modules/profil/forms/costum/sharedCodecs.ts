@@ -13,11 +13,12 @@ import { coerceString } from "@/modules/formEngine/engine/coercions";
 import { buildAddressFromForm } from "../../hooks/mutationUtils";
 import { DAYS } from "@/constants/DAYS";
 
-/** Clés d'une adresse PostalAddress (objet serveur `address` ↔ champs plats du form), incl. les 9 SIG
- *  (level1..4/level*Name/codeInsee) requis pour le round-trip complet (parité buildEditDefaults). */
+/** Clés d'une adresse PostalAddress (objet serveur `address` ↔ champs plats du form).
+ *  level2/level2Name sont EXCLUS : le schéma d'adresse des payloads du SDK (validé par AJV,
+ *  additionalProperties:false) n'autorise que level1/level3/level4 (département = level3). */
 export const ADDRESS_KEYS = [
   "addressCountry", "addressLocality", "localityId", "postalCode", "streetAddress",
-  "level1", "level1Name", "level2", "level2Name", "level3", "level3Name", "level4", "level4Name", "codeInsee",
+  "level1", "level1Name", "level3", "level3Name", "level4", "level4Name", "codeInsee",
 ] as const;
 
 /**
