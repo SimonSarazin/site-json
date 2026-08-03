@@ -40,6 +40,7 @@
     "deploy:lock": "tsx scripts/deploy.ts lock",
     "deploy": "tsx scripts/deploy.ts push",
     "deploy:env": "tsx scripts/deploy.ts env",
+    "deploy:rollout": "tsx scripts/deploy.ts rollout",
     "deploy:affected": "tsx scripts/deploy.ts affected",
     "deploy:dns": "tsx scripts/deploy.ts dns",
     "deploy:alias": "tsx scripts/deploy.ts alias",
