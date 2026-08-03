@@ -46,6 +46,7 @@ import {
   type CoolifyContext,
   type CoolifyDeployment,
 } from "./lib/coolify";
+import { analyserArgv } from "./lib/deploy-cli";
 import { buildDuSite, cibleDnsDuServeur, masquer, variablesAttendues } from "./lib/deploy-config";
 import { impact } from "./lib/deploy-scope";
 import { atteintLaMemeCible, resoudre as resoudreDns } from "./lib/dns";
@@ -55,16 +56,13 @@ import {
   ROOT, ZONE_AMORCE, type SiteEntry,
 } from "./lib/sites";
 
-const argv = process.argv.slice(2);
+const cmd = analyserArgv(process.argv.slice(2));
 const COMMANDES = ["status", "lock", "push", "env", "affected", "dns", "alias", "create"] as const;
 type Commande = (typeof COMMANDES)[number];
 
-const commande = argv.find((a) => !a.startsWith("--")) as Commande | undefined;
-const JSON_OUT = argv.includes("--json");
-const opt = (nom: string): string | undefined => {
-  const i = argv.indexOf(nom);
-  return i >= 0 ? argv[i + 1] : undefined;
-};
+const commande = cmd.commande as Commande | undefined;
+const JSON_OUT = cmd.bool("--json");
+const opt = (nom: string): string | undefined => cmd.valeur(nom);
 
 function usage(): never {
   console.error(`Usage : npm run deploy:<commande> [-- options]
@@ -272,7 +270,7 @@ async function status(ctx: CoolifyContext): Promise<number> {
  * valeur pour confirmer. Le contrôle se fait dans l'UI, onglet Advanced.
  */
 async function lock(ctx: CoolifyContext): Promise<number> {
-  const unlock = argv.includes("--unlock");
+  const unlock = cmd.bool("--unlock");
   const cible = !unlock;
   const cibles = deployableSites();
   const index = await indexByName(ctx);
@@ -286,7 +284,7 @@ async function lock(ctx: CoolifyContext): Promise<number> {
   );
   for (const { site, app } of aTraiter) console.log(`  ${site.slug.padEnd(24)} ${app!.name}`);
 
-  if (!argv.includes("--yes")) {
+  if (!cmd.bool("--yes")) {
     console.log(`\nRelancer avec --yes pour appliquer. Rien n'a été modifié.`);
     return 0;
   }
@@ -345,7 +343,7 @@ async function attendre(
 }
 
 async function push(ctx: CoolifyContext): Promise<number> {
-  const slugs = argv.filter((a) => !a.startsWith("--")).slice(1);
+  const slugs = cmd.positionnels;
   if (slugs.length === 0) {
     console.error(
       `✗ Aucun site nommé. Cet outil ne déploie jamais « tout » implicitement.\n` +
@@ -379,13 +377,13 @@ async function push(ctx: CoolifyContext): Promise<number> {
     console.log(`⚠ ${enCours.length} déploiement(s) déjà en file sur l'instance (partagée avec d'autres projets).`);
   }
 
-  if (!argv.includes("--yes")) {
+  if (!cmd.bool("--yes")) {
     console.log(`\nRelancer avec --yes pour lancer. Rien n'a été déclenché.`);
     return 0;
   }
 
   const timeoutS = Number(opt("--timeout") ?? 1500);
-  const attendreFin = !argv.includes("--no-wait");
+  const attendreFin = !cmd.bool("--no-wait");
   let i = 0;
   for (const c of cibles) {
     i++;
@@ -437,7 +435,7 @@ async function resoudreSite(
  * attendu est signalée, pas retirée. Elle peut avoir été posée exprès.
  */
 async function env(ctx: CoolifyContext): Promise<number> {
-  const slug = argv.filter((a) => !a.startsWith("--"))[1];
+  const slug = cmd.positionnels[0];
   if (!slug) {
     console.error(`✗ Usage : npm run deploy:env -- <slug> [--write]`);
     return 2;
@@ -476,7 +474,7 @@ async function env(ctx: CoolifyContext): Promise<number> {
     console.log(`\n✓ aucun écart.`);
     return 0;
   }
-  if (!argv.includes("--write")) {
+  if (!cmd.bool("--write")) {
     console.log(`\n${aEcrire.length} écart(s). Relancer avec --write pour appliquer.`);
     return 1;
   }
@@ -566,7 +564,7 @@ async function affected(ctx: CoolifyContext): Promise<number> {
 
 /** Vérifie, et crée si besoin, le CNAME d'amorce d'un site dans la zone 00.re. */
 async function dns(): Promise<number> {
-  const slug = argv.filter((a) => !a.startsWith("--"))[1];
+  const slug = cmd.positionnels[0];
   if (!slug) {
     console.error(`✗ Usage : npm run deploy:dns -- <slug> [--write]`);
     return 2;
@@ -598,7 +596,7 @@ async function dns(): Promise<number> {
   }
 
   console.log(`${site.domain} ne résout pas. À créer : CNAME ${sous}.${ZONE_AMORCE} → ${cible}.`);
-  if (!argv.includes("--write")) {
+  if (!cmd.bool("--write")) {
     console.log(`Relancer avec --write pour créer l'enregistrement.`);
     return 1;
   }
@@ -630,7 +628,7 @@ async function dns(): Promise<number> {
  * vérification, Let's Encrypt échouerait sur cet hôte au déploiement suivant.
  */
 async function alias(ctx: CoolifyContext): Promise<number> {
-  const [, slug, domaine] = argv.filter((a) => !a.startsWith("--"));
+  const [slug, domaine] = cmd.positionnels;
   if (!slug || !domaine) {
     console.error(`✗ Usage : npm run deploy:alias -- <slug> <domaine> [--write]`);
     return 2;
@@ -664,7 +662,7 @@ async function alias(ctx: CoolifyContext): Promise<number> {
   }
 
   console.log(`Coolify : "${app.fqdn ?? "(aucun)"}" → "${fqdn}"`);
-  if (!argv.includes("--write")) {
+  if (!cmd.bool("--write")) {
     console.log(`Relancer avec --write pour appliquer.`);
     return 1;
   }
@@ -680,7 +678,7 @@ async function alias(ctx: CoolifyContext): Promise<number> {
 
 /** Crée l'application d'un site déclaré mais pas encore déployé. */
 async function create(ctx: CoolifyContext): Promise<number> {
-  const slug = argv.filter((a) => !a.startsWith("--"))[1];
+  const slug = cmd.positionnels[0];
   if (!slug) {
     console.error(`✗ Usage : npm run deploy:create -- <slug> [--write]`);
     return 2;
@@ -728,7 +726,7 @@ async function create(ctx: CoolifyContext): Promise<number> {
   console.log(`  variables    ${variables.length}${manquantes.length ? ` (${manquantes.join(", ")} absente(s) de .env)` : ""}`);
   console.log(`  DNS          ${site.domain}`);
 
-  if (!argv.includes("--write")) {
+  if (!cmd.bool("--write")) {
     console.log(`\nRelancer avec --write pour créer. Rien n'a été fait.`);
     return 1;
   }
@@ -769,6 +767,10 @@ async function create(ctx: CoolifyContext): Promise<number> {
 /* ── Entrée ───────────────────────────────────────────────────────────────── */
 
 async function main(): Promise<number> {
+  if (cmd.inconnues.length) {
+    console.error(`✗ Option(s) inconnue(s) : ${cmd.inconnues.join(", ")}`);
+    usage();
+  }
   if (!commande || !COMMANDES.includes(commande)) usage();
   const ctx = loadContext(opt("--context"));
   switch (commande) {
