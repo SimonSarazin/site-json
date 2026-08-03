@@ -75,6 +75,19 @@ RUN echo '{"type":"module"}' > package.json && \
     npm install express@5 compression serialize-javascript isomorphic-dompurify @communecter/cocolight-api-client sharp multer dotenv react react-dom && \
     npm cache clean --force
 
+# React et react-dom sont `external` du bundle SSR (vite.config.ts) et réinstallés
+# juste au-dessus : leur point d'entrée npm choisit sa variante AU CHARGEMENT,
+# `process.env.NODE_ENV === "production" ? react.production.js : react.development.js`.
+# Sans cette ligne c'est la variante DEV qui se charge à chaque démarrage (46 Ko au
+# lieu de 17 pour react, 419 au lieu de 271 pour react-dom/server), avec sa
+# machinerie de validation rejouée à chaque rendu SSR — et Express se croit en
+# `development` (traces verbeuses, pas de cache de vues).
+# Aucune autre voie ne la pose : ni node:22-alpine, ni Coolify (elle n'est pas dans
+# ses variables prédéfinies — c'est nixpacks qui la pose, build pack non utilisé ici).
+# Placée APRÈS le `npm install` ci-dessus, pour ne pas modifier sa résolution de
+# dépendances.
+ENV NODE_ENV=production
+
 # Volume pour le cache d'images optimisées (persiste entre les redémarrages)
 VOLUME /app/.cache/images
 

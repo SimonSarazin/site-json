@@ -198,8 +198,9 @@ Ces variables sont lues par `prod-server.js` au demarrage du conteneur. Elles so
 | `VITE_MAPTILER_API_KEY` | non | Cle des fonds de carte MapTiler, injectee dans `window.__ENV__`. Absente : repli sur des tuiles libres. Non versionnee (`SECRETES` de `deploy-config.ts`) mais **pas confidentielle** : comme toute `VITE_*`, elle est lisible dans la page. | `""` |
 | `VITE_COSTUM_FORCE_LIVE` | non | Drapeau de depannage costum, injecte dans `window.__ENV__`. A `"true"`, la lib ignore ses schemas costum bundles et ne resout que par `getcostumjson` — a activer quand l'artefact publie devient plus vieux que la base et masque des champs reels. Cout : plus de demarrage a froid. Se pose par site via le champ `env` de `sites.json`. | `"false"` |
 | `IMAGE_OPTIMIZER_ALLOWED_DOMAINS` | non | Domaines autorises pour le proxy d'images, separes par des virgules | localhost + hostname du backend |
-| `NODE_ENV` | non | Mode Node.js | `production` |
-| `PORT` | non | Port d'ecoute du serveur | `3000` |
+| `PORT` | non | Port d'ecoute du serveur. Sur Coolify, **pose automatiquement** (premier port expose) : la valeur par defaut du code ne s'applique qu'hors Coolify. | `3000` |
+
+`NODE_ENV` ne figure pas dans cette table : **aucun code du depot ne la lit**. Elle est posee par le `Dockerfile` (etape runner) parce que `react` et `react-dom`, `external` du bundle SSR et reinstalles dans l'image, choisissent leur variante production ou developpement d'apres elle **au chargement du module**. Ne pas la poser fait tourner les builds de developpement de React cote serveur. Aucune autre voie ne la fournit : ni l'image de base `node:22-alpine`, ni Coolify — elle n'est pas dans ses [variables predefinies](https://coolify.io/docs/knowledge-base/environment-variables) (`COOLIFY_FQDN`, `COOLIFY_URL`, `COOLIFY_BRANCH`, `COOLIFY_RESOURCE_UUID`, `COOLIFY_CONTAINER_NAME`, `SOURCE_COMMIT`, `PORT`, `HOST`). C'est **nixpacks** qui la pose pour les applications Node, build pack que ce projet n'utilise pas (`build_pack: dockerfile`).
 
 > \* L'un des deux (`SITE_CONFIG_PATH` ou `SITE_CONFIG_JSON`) est obligatoire **sauf** si l'image a ete construite avec `SITE_EMBED=true` : `dist/site-config.json` prend alors le relais. Sans aucune de ces sources, le serveur refuse de demarrer avec un message enumerant les quatre voies possibles.
 
