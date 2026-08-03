@@ -181,9 +181,22 @@ export function HeroParallax({ id, props }: HeroParallaxProps) {
                                 `searchHeader` (SearchHeaderSection.tsx:373), donc même
                                 garde d'authentification : un visiteur non connecté voit
                                 l'invite `chrome.authPrompt` du formulaire au lieu d'une
-                                impasse. Séparé de `ctaButtons`, qui ne sait que naviguer. */}
+                                impasse. Séparé de `ctaButtons`, qui ne sait que naviguer.
+
+                                `className="contents"` : sans ça le composant apporte son
+                                propre conteneur (`mt-8 flex …`), qui décalait le bouton de
+                                32px sous les `ctaButtons` et le sortait de leur rangée.
+                                `display: contents` efface le conteneur de la mise en page,
+                                les boutons deviennent enfants directs du flex du héro.
+                                Et `HERO_CTA_SIZE` leur donne la taille des `ctaButtons` —
+                                les défauts d'`ActionButtonGroup` sont calibrés pour
+                                `searchHeader` (40px de haut contre 72 ici). */}
                             {props.buttons && props.buttons.length > 0 && (
-                                <ActionButtonGroup buttons={props.buttons} />
+                                <ActionButtonGroup
+                                    buttons={props.buttons}
+                                    className="contents"
+                                    buttonClassName={HERO_CTA_SIZE}
+                                />
                             )}
                         </div>
                     )}
