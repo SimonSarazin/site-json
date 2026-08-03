@@ -195,7 +195,8 @@ Ces variables sont lues par `prod-server.js` au demarrage du conteneur. Elles so
 | `VITE_SLUG` | non | Slug du site. Injecte dans `window.__ENV__` et utilise cote client pour resoudre l'entite Cocolight. Sert aussi de dernier repli pour la config, mais **uniquement hors conteneur** : l'image ne contient pas `sites.json`. | `""` |
 | `VITE_BASE_URL_BACKEND` | non | URL du backend API, injectee dans `window.__ENV__` | `""` |
 | `VITE_SERVER_URL` | non | URL publique du serveur, injectee dans `window.__ENV__` | `""` |
-| `VITE_SLUG` | non | Slug du site, injecte dans `window.__ENV__` (utilise cote client) | `""` |
+| `VITE_MAPTILER_API_KEY` | non | Cle des fonds de carte MapTiler, injectee dans `window.__ENV__`. Absente : repli sur des tuiles libres. Non versionnee (`SECRETES` de `deploy-config.ts`) mais **pas confidentielle** : comme toute `VITE_*`, elle est lisible dans la page. | `""` |
+| `VITE_COSTUM_FORCE_LIVE` | non | Drapeau de depannage costum, injecte dans `window.__ENV__`. A `"true"`, la lib ignore ses schemas costum bundles et ne resout que par `getcostumjson` — a activer quand l'artefact publie devient plus vieux que la base et masque des champs reels. Cout : plus de demarrage a froid. Se pose par site via le champ `env` de `sites.json`. | `"false"` |
 | `IMAGE_OPTIMIZER_ALLOWED_DOMAINS` | non | Domaines autorises pour le proxy d'images, separes par des virgules | localhost + hostname du backend |
 | `NODE_ENV` | non | Mode Node.js | `production` |
 | `PORT` | non | Port d'ecoute du serveur | `3000` |
