@@ -5856,6 +5856,7 @@
             "type": "export",
             "entityTypes": [
               "organizations",
+              "poi",
               "events"
             ]
           }
