@@ -19,11 +19,11 @@ export interface ToolCategoryMeta {
 }
 
 /**
- * Catégories d'outils numériques d'un lieu, stockées dans la propriété
- * `ourTools` de l'organisation (`{ [catégorie]: [{ name, url? }] }`). Les clés
- * et labels sont alignés sur le legacy `co2/views/pod/yourTools.php`.
- * Partagé par l'affichage (`ProfileTiersLieuxInfo`) et l'éditeur
- * (`OurToolsEditDialog`).
+ * Catégories d'outils numériques d'une entité, stockées dans la propriété
+ * `ourTools` (`{ [catégorie]: [{ name, url? }] }`). Les clés et labels sont
+ * alignés sur le legacy `co2/views/pod/yourTools.php`.
+ * Partagé par l'affichage (`ProfileTiersLieuxInfo`, `ProfileTools`) et
+ * l'éditeur (`OurToolsEditDialog`).
  */
 export const TOOLS_MAP: Record<string, ToolCategoryMeta> = {
   site: { label: "Site", Icon: Globe },

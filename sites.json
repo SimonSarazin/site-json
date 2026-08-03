@@ -45,7 +45,10 @@
     "css": "index-institut-bleu",
     "images": "institutBleu",
     "coolifyApp": "site-json-institut-bleu",
-    "domain": "institut-bleu.00.re"
+    "domain": "institut-bleu.00.re",
+    "env": {
+      "VITE_COSTUM_FORCE_LIVE": "true"
+    }
   },
   {
     "slug": "navigatorDesTierslieux",
