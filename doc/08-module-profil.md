@@ -514,7 +514,7 @@ export const ProfilesConfigSchema = z.object({
 
 ## Sections de profil
 
-Le module profil propose **19 types de sections** configurables:
+Le module profil propose **21 types de sections** configurables:
 
 | Section                    | Type                         | Variantes/Options                              | Description                               |
 | -------------------------- | ---------------------------- | ---------------------------------------------- | ----------------------------------------- |
@@ -523,6 +523,7 @@ Le module profil propose **19 types de sections** configurables:
 | `profile-info-tl`          | ProfileTiersLieuxInfoSection | —                                              | Informations tiers-lieux (variante custom)|
 | `profile-about`            | ProfileAboutSection          | layout: column, grid                           | Description et à propos                   |
 | `profile-about-tl`         | ProfileTiersLieuxAboutSection| —                                              | À propos tiers-lieux (variante custom)    |
+| `profile-about-ssbe`       | ProfileSsbeAboutSection      | —                                              | À propos SSBE (variante custom)           |
 | `profile-map`              | ProfileMapSection            | height, zoom, showMarker                       | Carte de localisation (Leaflet)           |
 | `profile-organizer`        | ProfileOrganizerSection      | showLogo, showDescription, showLink            | Organisateur/Porteur de projet            |
 | `profile-members`          | ProfileMembersSection        | limit, showRole, showManagement                | Liste des membres                         |
@@ -537,6 +538,7 @@ Le module profil propose **19 types de sections** configurables:
 | `profile-opening-hours`    | ProfileOpeningHoursSectionSchema | format (table, list, compact), showCurrentStatus | Horaires d'ouverture          |
 | `profile-tab-layout`       | ProfileTabLayoutSectionSchema | leftSections, rightSections                   | Layout deux colonnes pour tabs            |
 | `profile-template-dynamic` | ProfileTemplateDynamicSchema | —                                              | Template dynamique basé sur config        |
+| `profile-tools`            | ProfileToolsSectionSchema    | title, sticky                                  | « Nos outils » générique (`ourTools`), éditable par les admins — équivalent sans vocabulaire tiers-lieux du bloc de `profile-info-tl` |
 
 ### `profile-fields` — champs d'entité config-driven
 
@@ -647,7 +649,7 @@ const PROFILE_SECTION_TYPES = [
   "profile-organizer", "profile-members", "profile-gallery",
   "profile-related", "profile-actions", "profile-event-dates",
   "profile-badges", "profile-tags", "profile-opening-hours",
-  "profile-tab-layout", "profile-template-dynamic",
+  "profile-tab-layout", "profile-template-dynamic", "profile-tools",
 ] as const;
 
 export function ProfileSectionRenderer({ section }: ProfileSectionRendererProps) {
