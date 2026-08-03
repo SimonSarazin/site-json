@@ -4,8 +4,8 @@
  * POURQUOI — les N sites de ce dépôt sont N applications Coolify qui pointent
  * toutes le MÊME dépôt et la MÊME branche. Coolify ne filtre les webhooks que
  * sur (dépôt, branche) : un push déclencherait donc les N. Cet outil prend le
- * contre-pied — aucune automatisation implicite, on nomme ce qu'on déploie, et
- * les déploiements s'enchaînent un par un.
+ * contre-pied — aucune automatisation implicite, on nomme ce qu'on déploie
+ * (« tout » se nomme --all), et les déploiements s'enchaînent un par un.
  *
  * La correspondance slug ↔ application ↔ domaine vit dans `sites.json`
  * (champs `coolifyApp` et `domain`). Le token, lui, reste dans le contexte du
@@ -16,6 +16,8 @@
  *   npm run deploy:lock -- --yes                coupe l'auto-deploy sur toutes les apps
  *   npm run deploy -- institutBleu --yes        déploie un site
  *   npm run deploy -- a b c --yes               déploie a, puis b, puis c
+ *   npm run deploy -- --all --yes               déploie tout le parc (nommé explicitement)
+ *   npm run deploy:rollout -- --all --yes       env en conformité PUIS déploiement, par site
  *
  * Options communes :
  *   --context <nom>   viser une instance Coolify précise

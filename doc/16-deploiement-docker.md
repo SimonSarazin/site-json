@@ -400,7 +400,7 @@ Ce que pese `dist/` selon les arguments, mesure sur `institutBleu` :
 
 ## Piloter les deploiements depuis le depot
 
-`scripts/deploy.ts` pilote les applications Coolify du parc. Il part d'un principe : **aucune automatisation implicite**. On nomme ce qu'on deploie, et les deploiements s'enchainent un par un.
+`scripts/deploy.ts` pilote les applications Coolify du parc. Il part d'un principe : **aucune automatisation implicite**. On nomme ce qu'on deploie — « tout » se nomme `--all`, les sites en retard se nomment `--affected` — et les deploiements s'enchainent un par un.
 
 ### Pourquoi ce parti pris
 
@@ -408,7 +408,7 @@ Coolify ne filtre les webhooks git que sur le couple **(depot, branche)**. Les N
 
 ### La source de verite
 
-`sites.json` porte, en plus des champs de build, jusqu'a six champs par site. Tous sont **optionnels** : une entree sans eux est un site pas encore deploye, ce qui est un etat valide.
+`sites.json` porte, en plus des champs de build, jusqu'a sept champs par site. Tous sont **optionnels** : une entree sans eux est un site pas encore deploye, ce qui est un etat valide.
 
 | Champ | Role |
 |-------|------|
@@ -418,8 +418,9 @@ Coolify ne filtre les webhooks git que sur le couple **(depot, branche)**. Les N
 | `coolifyServer` | nom du serveur ou poser le site, quand le parc n'est pas homogene. Absent, il est deduit — voir ci-dessous. |
 | `coolifyProject` | idem pour le projet. |
 | `build` | surcharge du depot, de la branche, du moteur ou du port pour ce site. Sert au site de recette sur une autre branche, ou repris d'un autre depot. |
+| `env` | surcharge, pour ce site, d'une variable deployee — uniquement les cles de `CONSTANTES`/`SECRETES` (`deploy-config.ts`), les autres sont ignorees en silence. Ex. `"env": { "VITE_COSTUM_FORCE_LIVE": "true" }`. |
 
-Les 5 variables de build ne sont stockees nulle part : elles sont **derivees** de la ligne. Les 2 URLs backend sont des constantes de `scripts/lib/deploy-config.ts`, surchargeables par entree. La cle MapTiler vient de `.env`. Le token Coolify reste dans `~/.config/coolify/config.json`, celui du CLI.
+Les 6 variables derivees (`VITE_SLUG`, `SITE_CONFIG_PATH`, `SITE_CSS_PATH`, `SITE_IMAGES`, `SITE_EMBED`, `VITE_SITE_PUBLIC_URL`) ne sont stockees nulle part : elles sont **derivees** de la ligne. Les 3 constantes (`VITE_BASE_URL_BACKEND`, `VITE_SERVER_URL`, `VITE_COSTUM_FORCE_LIVE`) vivent dans `scripts/lib/deploy-config.ts`, surchargeables par entree (champ `env`). La cle MapTiler vient de `.env`. Soit **10 variables** par application. Le token Coolify reste dans `~/.config/coolify/config.json`, celui du CLI.
 
 ### Ou un site est pose : declare, sinon deduit
 
@@ -452,22 +453,43 @@ L'IP n'est ecrite nulle part : la verification compare deux **resolutions** — 
 |----------|------|
 | `npm run deploy:status` | site ↔ application ↔ domaine ↔ commit deploye. `--json` disponible |
 | `npm run deploy:affected` | quels sites les commits non deployes concernent-ils |
-| `npm run deploy -- <slug>…` | deploie les sites **nommes**, un par un |
+| `npm run deploy -- <selection>` | deploie les sites selectionnes, un par un |
 | `npm run deploy:lock` | coupe le deploiement automatique (`--unlock` pour l'inverse) |
-| `npm run deploy:env -- <slug>` | compare les 8 variables du site (`--write` pour poser) |
+| `npm run deploy:env -- <selection>` | compare les 10 variables de chaque site (`--write` pour poser) |
+| `npm run deploy:rollout -- <selection>` | met l'env en conformite **puis** deploie, par site (`--yes`) |
 | `npm run deploy:dns -- <slug>` | verifie/cree le CNAME d'amorce chez OVH |
 | `npm run deploy:alias -- <slug> <domaine>` | attache un domaine propre, apres verification DNS |
 | `npm run deploy:create -- <slug>` | cree l'application d'un site declare |
 
-Rien n'ecrit sans `--yes` (lock, push) ou `--write` (env, dns, alias, create) : sans le drapeau, la commande imprime son plan. `deploy` sans argument **refuse** en code 2 — il ne deploie jamais « tout » implicitement.
+Rien n'ecrit sans `--yes` (lock, push, rollout) ou `--write` (env, dns, alias, create) : sans le drapeau, la commande imprime son plan — pour `rollout`, c'est un dry-run complet (diffs env + plan de deploiement, que des GET). `deploy` sans argument **refuse** en code 2 — il ne deploie jamais « tout » implicitement, `--all` est le nommage **explicite** de « tout ».
 
-Codes de sortie : `0` conforme, `1` le defaut cherche, `2` erreur d'usage ou d'outillage.
+**Selection** (push, env, rollout) : des slugs nommes, OU `--all` (tout le parc deployable), OU `--affected` (les sites que les commits non deployes concernent, meme calcul que la sous-commande `affected`) — exactement une des trois formes. Une selection `--affected` vide sort en 0.
+
+**Semantique de lot** (push, lock, rollout) : **tolerante par defaut** — un site en echec n'arrete pas les suivants ; le bilan final nomme les rates et imprime la commande de reprise reduite a eux. `--fail-fast` restaure l'arret au premier echec (la reprise couvre alors rates + non tentes). Apres un timeout d'attente, le build peut encore aboutir : verifier `deploy:status` avant de reprendre, un redeclenchement aveugle ferait un build en double. Les appels API ont un timeout de 30 s et une retentative sur GET seulement (jamais sur POST `/deploy` : le rejouer apres une reponse perdue declencherait deux builds).
+
+Codes de sortie : `0` conforme, `1` le defaut cherche, `2` erreur d'usage ou d'outillage. `push` et `rollout` rendent un bilan `--json` (`{resultats, reprise}`), `affected` aussi (`{ref, refSha, sites, aRedeployer}`).
 
 ### Deux pieges de l'API, traites
 
 `git_commit_sha` d'une application vaut **`"HEAD"`** : c'est la consigne de suivi de branche, pas le commit deploye. Le vrai commit ne se lit que dans `GET /deployments/applications/{uuid}` — dont chaque entree embarque ses logs, soit ~500 Ko. D'ou la pagination `?take=5`. Et l'attente d'un deploiement sonde `GET /deployments` (quelques octets) plutot que `GET /deployments/{uuid}` (un demi-megaoctet par sondage).
 
 La comparaison se fait contre **`origin/main`**, pas contre le HEAD local : Coolify batit la branche distante. L'ecart entre les deux est signale.
+
+### Tout redeployer (env comprise)
+
+```bash
+# dry-run : diffs env + plan, aucune ecriture
+npm run deploy:rollout -- --all
+# appliquer : pose les ecarts d'env PUIS deploie, site par site, avec attente
+npm run deploy:rollout -- --all --yes
+# variantes : seulement les sites en retard, ou une liste nommee
+npm run deploy:rollout -- --affected --yes
+npm run deploy:rollout -- parent62 institutBleu --yes
+```
+
+Par site : diff des 10 variables attendues → pose des ecarts → deploiement avec attente du verdict. Un echec de pose d'env rend le site rate **sans** deploiement (les variables sont buildtime — batir sans elles produirait le mauvais artefact). La reprise imprimee est la meme commande sur les rates : l'etape env est idempotente, son diff revient vide, puis on redeploie. `--no-wait` est refuse sur rollout ; pour redeployer **sans** toucher l'env : `npm run deploy -- --all --yes`.
+
+A ~6 minutes de build par site, un `--all --yes` sur 9 sites prend de l'ordre d'une heure — c'est sequentiel a dessein : la file Coolify est partagee avec d'autres projets.
 
 ### Ajouter un vrai domaine a un site existant
 
@@ -490,7 +512,7 @@ L'etape 2 **refuse** si le domaine ne resout pas encore vers le serveur : le dec
 # renseigner d'abord coolifyApp et domain dans sites.json —
 # ils ne sont derivables ni du slug ni de la config, il faut les choisir
 npm run deploy:dns    -- monSlug --write     # CNAME dans la zone 00.re
-npm run deploy:create -- monSlug --write     # application + 8 variables
+npm run deploy:create -- monSlug --write     # application + 10 variables
 npm run deploy        -- monSlug --yes       # premier deploiement
 ```
 
