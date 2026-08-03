@@ -82,6 +82,7 @@ export interface BuildVars {
   SITE_IMAGES: string;
   SITE_CONFIG_PATH: string;
   SITE_EMBED: string;
+  VITE_SITE_PUBLIC_URL: string;
 }
 
 export function loadSites(root: string = ROOT): SiteEntry[] {
@@ -115,6 +116,18 @@ export function buildVars(site: SiteEntry): BuildVars {
     SITE_IMAGES: asList(site.images).join(","),
     SITE_CONFIG_PATH: `./${site.config}`,
     SITE_EMBED: "true",
+    // URL PUBLIQUE du site (canonical, og:url/og:image, sitemap, RSS) — lue par
+    // `getSitePublicUrl()` et `server/lib/sitemap.js`. Le domaine PROPRE
+    // (`aliases[0]`) prime sur le sous-domaine d'amorce : c'est l'adresse que
+    // les visiteurs et les moteurs doivent retenir. Sans domaine declare, ""
+    // → repli runtime sur `getServerUrl()` (comportement historique).
+    // Ne PAS confondre avec VITE_SERVER_URL (= communecter : images /upload,
+    // embed co2, cagnotte), qui garde sa valeur parc.
+    VITE_SITE_PUBLIC_URL: site.aliases?.[0]
+      ? `https://${site.aliases[0]}`
+      : site.domain
+        ? `https://${site.domain}`
+        : "",
   };
 }
 
