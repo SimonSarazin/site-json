@@ -52,7 +52,7 @@ import { impact } from "./lib/deploy-scope";
 import { atteintLaMemeCible, resoudre as resoudreDns } from "./lib/dns";
 import { chargerIdentifiants, creerCname, listerZones, OvhError, rafraichirZone, trouverCname } from "./lib/ovh";
 import {
-  asList, coolifyDomains, deployableSites, loadSites, sousDomaineAmorce,
+  asList, coolifyDomains, loadSites, sousDomaineAmorce,
   ROOT, ZONE_AMORCE, type SiteEntry,
 } from "./lib/sites";
 
@@ -129,6 +129,26 @@ function retard(sha: string | null, refSha: string): number | null {
   return Number(git("rev-list", "--count", `${sha}..${refSha}`));
 }
 
+/* ── Caches process ───────────────────────────────────────────────────────── */
+
+/**
+ * Un processus = une commande = UN contexte Coolify : mettre en cache la
+ * lecture de sites.json et l'index des applications est sûr. `push` relisait
+ * sites.json à chaque slug et `resoudreSite` refaisait un GET /applications
+ * complet à chaque appel — en lot sur 9 sites, 9 allers-retours identiques.
+ * Le jour où une commande bouclerait sur PLUSIEURS contextes, `_index` devrait
+ * être keyé par contexte.
+ */
+let _sites: SiteEntry[] | undefined;
+const sitesDuDepot = (): SiteEntry[] => (_sites ??= loadSites());
+
+/** Même prédicat que `deployableSites()` (sites.ts), dérivé du cache. */
+const sitesDeployables = (): SiteEntry[] => sitesDuDepot().filter((s) => Boolean(s.coolifyApp));
+
+let _index: Promise<Map<string, CoolifyApp>> | undefined;
+const indexApplications = (ctx: CoolifyContext): Promise<Map<string, CoolifyApp>> =>
+  (_index ??= indexByName(ctx));
+
 /* ── status ───────────────────────────────────────────────────────────────── */
 
 interface Ligne {
@@ -188,9 +208,9 @@ const normaliserFqdn = (s: string): string =>
   s.split(",").map((x) => x.trim().replace(/\/+$/, "")).filter(Boolean).sort().join(",");
 
 async function status(ctx: CoolifyContext): Promise<number> {
-  const sites = loadSites();
-  const cibles = deployableSites();
-  const index = await indexByName(ctx);
+  const sites = sitesDuDepot();
+  const cibles = sitesDeployables();
+  const index = await indexApplications(ctx);
 
   const ref = reference();
   const lignes = await Promise.all(
@@ -272,8 +292,8 @@ async function status(ctx: CoolifyContext): Promise<number> {
 async function lock(ctx: CoolifyContext): Promise<number> {
   const unlock = cmd.bool("--unlock");
   const cible = !unlock;
-  const cibles = deployableSites();
-  const index = await indexByName(ctx);
+  const cibles = sitesDeployables();
+  const index = await indexApplications(ctx);
 
   const aTraiter = cibles
     .map((s) => ({ site: s, app: index.get(s.coolifyApp as string) }))
@@ -352,14 +372,9 @@ async function push(ctx: CoolifyContext): Promise<number> {
     return 2;
   }
 
-  const index = await indexByName(ctx);
   const cibles: Array<{ slug: string; nom: string; uuid: string }> = [];
   for (const slug of slugs) {
-    const site = loadSites().find((s) => s.slug === slug);
-    if (!site) throw new CoolifyError(`Slug "${slug}" absent de sites.json.`);
-    if (!site.coolifyApp) throw new CoolifyError(`"${slug}" n'a pas d'application déclarée (champ coolifyApp).`);
-    const app = index.get(site.coolifyApp);
-    if (!app) throw new CoolifyError(`Application "${site.coolifyApp}" introuvable sur l'instance.`);
+    const { app } = await resoudreSite(ctx, slug);
     cibles.push({ slug, nom: app.name, uuid: app.uuid });
   }
 
@@ -420,10 +435,10 @@ async function resoudreSite(
   ctx: CoolifyContext,
   slug: string,
 ): Promise<{ site: SiteEntry; app: CoolifyApp }> {
-  const site = loadSites().find((s) => s.slug === slug);
+  const site = sitesDuDepot().find((s) => s.slug === slug);
   if (!site) throw new CoolifyError(`Slug "${slug}" absent de sites.json.`);
   if (!site.coolifyApp) throw new CoolifyError(`"${slug}" n'a pas d'application déclarée (champ coolifyApp).`);
-  const app = (await indexByName(ctx)).get(site.coolifyApp);
+  const app = (await indexApplications(ctx)).get(site.coolifyApp);
   if (!app) throw new CoolifyError(`Application "${site.coolifyApp}" introuvable sur l'instance.`);
   return { site, app };
 }
@@ -505,9 +520,9 @@ async function env(ctx: CoolifyContext): Promise<number> {
  * qu'un site, au lieu de redéployer par précaution.
  */
 async function affected(ctx: CoolifyContext): Promise<number> {
-  const tous = loadSites();
-  const cibles = deployableSites();
-  const index = await indexByName(ctx);
+  const tous = sitesDuDepot();
+  const cibles = sitesDeployables();
+  const index = await indexApplications(ctx);
   const ref = reference();
 
   console.log(`Référence : ${ref.rev} @ ${ref.sha.slice(0, 8)}\n`);
@@ -569,7 +584,7 @@ async function dns(): Promise<number> {
     console.error(`✗ Usage : npm run deploy:dns -- <slug> [--write]`);
     return 2;
   }
-  const site = loadSites().find((s) => s.slug === slug);
+  const site = sitesDuDepot().find((s) => s.slug === slug);
   if (!site) throw new CoolifyError(`Slug "${slug}" absent de sites.json.`);
   const sous = sousDomaineAmorce(site);
   if (!sous || !site.domain) {
@@ -683,7 +698,7 @@ async function create(ctx: CoolifyContext): Promise<number> {
     console.error(`✗ Usage : npm run deploy:create -- <slug> [--write]`);
     return 2;
   }
-  const site = loadSites().find((s) => s.slug === slug);
+  const site = sitesDuDepot().find((s) => s.slug === slug);
   if (!site) throw new CoolifyError(`Slug "${slug}" absent de sites.json.`);
   if (!site.coolifyApp || !site.domain) {
     throw new CoolifyError(
@@ -691,7 +706,7 @@ async function create(ctx: CoolifyContext): Promise<number> {
         `dans sites.json — ils ne sont pas dérivables du slug, il faut les choisir.`,
     );
   }
-  const index = await indexByName(ctx);
+  const index = await indexApplications(ctx);
   if (index.has(site.coolifyApp)) {
     throw new CoolifyError(
       `L'application "${site.coolifyApp}" existe déjà. Pour la mettre à jour :\n` +
@@ -707,7 +722,7 @@ async function create(ctx: CoolifyContext): Promise<number> {
   // drapeaux, des champs de l'entrée, sinon du parc — et seulement si celui-ci
   // est homogène. Dès qu'un second serveur ou projet accueille des sites, la
   // déduction refuse plutôt que de choisir à ta place.
-  const parc = deployableSites()
+  const parc = sitesDeployables()
     .map((s) => index.get(s.coolifyApp as string))
     .filter((a): a is CoolifyApp => a !== undefined);
   const placement = await resoudrePlacement(ctx, parc, {
