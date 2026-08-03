@@ -12,7 +12,7 @@
  *   3 constantes ici           VITE_BASE_URL_BACKEND, VITE_SERVER_URL,
  *                              VITE_COSTUM_FORCE_LIVE
  *                              → identiques sur les 9 applications (vérifié).
- *                              Les répéter 17 fois dans sites.json serait du
+ *                              Les répéter dans chaque entrée de sites.json serait du
  *                              bruit ; une entrée peut malgré tout les surcharger
  *                              (champ `env`) pour le jour où un site vise la QA.
  *
@@ -36,8 +36,8 @@ export type { SiteEntry };
  *
  * Ces valeurs ne sont PAS déduites d'une application existante, et c'est
  * délibéré : il faut pouvoir créer un site sur un serveur où il n'y a encore
- * rien. Ce sont des faits sur le dépôt lui-même, identiques pour les 17 sites
- * par construction — les déclarer par site serait du bruit, les déduire d'un
+ * rien. Ce sont des faits sur le dépôt lui-même, identiques pour tous les
+ * sites par construction — les déclarer par site serait du bruit, les déduire d'un
  * voisin serait impossible le jour où il n'y a pas de voisin.
  *
  * `status` vérifie que les applications déployées s'y conforment encore : si

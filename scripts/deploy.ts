@@ -23,7 +23,7 @@
  *   --context <nom>   viser une instance Coolify précise
  *   --ref <rev>       référence de comparaison (défaut : origin/main, la branche
  *                     que Coolify bâtit — surtout pas le HEAD local)
- *   --json            sortie machine
+ *   --json            sortie machine (status, affected, push, rollout)
  *
  * Sorties / codes :
  *   0  tout est cohérent
@@ -90,15 +90,15 @@ Options :
   --affected          sélection : les sites impactés par les commits non déployés
   --context <nom>     instance Coolify (défaut : celle marquée par défaut)
   --ref <rev>         référence de comparaison (défaut : origin/main)
-  --yes               applique sans confirmation (lock, push)
-  --fail-fast         lot : arrêt au premier échec (défaut : on continue,
-                      bilan final + commande de reprise pour les ratés)
+  --yes               applique sans confirmation (lock, push, rollout)
+  --fail-fast         push, lock, rollout : arrêt au premier échec (défaut :
+                      on continue, bilan final + reprise pour les ratés)
   --no-wait           push : déclenche sans attendre la fin
-  --timeout <s>       push : abandon de l'attente (défaut 1500)
+  --timeout <s>       push, rollout : abandon de l'attente par site (défaut 1500)
   --server <nom>      create : serveur Coolify (sinon sites.json, sinon déduit)
   --project <nom>     create : projet Coolify (idem)
   --environment <nom> create : environnement (défaut production)
-  --json              sortie machine`);
+  --json              sortie machine (status, affected, push, rollout)`);
   process.exit(2);
 }
 
@@ -357,14 +357,19 @@ async function attendre(
   const debut = Date.now();
   let vuEnFile = false;
   while ((Date.now() - debut) / 1000 < timeoutS) {
-    // Un sondage raté (coupure passagère, 502 du proxy) ne condamne pas une
-    // attente de plusieurs minutes : on saute ce tour et on resondera.
+    // Un sondage raté sur du PASSAGER (coupure, 502 du proxy) ne condamne pas
+    // une attente de plusieurs minutes : on saute ce tour et on resondera.
+    // Une erreur définitive (401 token révoqué, 404…), elle, fait échouer le
+    // site tout de suite — pas après timeoutS de sondages muets.
     let file: Awaited<ReturnType<typeof runningDeployments>>;
     try {
       file = await runningDeployments(ctx);
-    } catch {
-      await dormir(10_000);
-      continue;
+    } catch (e) {
+      if (e instanceof CoolifyError && e.transitoire) {
+        await dormir(10_000);
+        continue;
+      }
+      throw e;
     }
     const present = file.some((d) => d.deployment_uuid === deploiement);
     if (present) vuEnFile = true;
@@ -454,6 +459,19 @@ async function resoudreSelection(ctx: CoolifyContext, usageLigne: string): Promi
   if (cmd.bool("--all")) return sitesDeployables();
   if (cmd.bool("--affected")) {
     const etats = await calculerAffected(ctx, reference().sha);
+    // Les états indéterminables ne sont PAS retenus — déployer un site jamais
+    // déployé ou inévaluable serait une décision implicite — mais ils ne
+    // doivent pas disparaître : sans ces lignes, l'opérateur lirait « aucun
+    // site à déployer » alors que l'outil n'a pas pu se prononcer.
+    for (const e of etats) {
+      if (e.etat === "jamais-deploye") {
+        console.error(`⚠ ${e.slug} : jamais déployé — hors sélection --affected (le nommer explicitement).`);
+      } else if (e.etat === "commit-inconnu") {
+        console.error(`⚠ ${e.slug} : commit déployé ${e.base?.slice(0, 8)} inconnu localement (« git fetch » ?) — inévaluable, hors sélection.`);
+      } else if (e.etat === "app-introuvable") {
+        console.error(`⚠ ${e.slug} : application introuvable sur l'instance — hors sélection.`);
+      }
+    }
     const retenus = new Set(etats.filter((e) => e.etat === "a-redeployer").map((e) => e.slug));
     return sitesDeployables().filter((s) => retenus.has(s.slug));
   }
@@ -474,6 +492,7 @@ async function push(ctx: CoolifyContext): Promise<number> {
     console.log(`✓ aucun site à déployer (sélection --affected vide).`);
     return 0;
   }
+  const timeoutS = timeoutSecondes(); // valider AVANT d'afficher un plan ou de déclencher
 
   const cibles: Array<{ slug: string; nom: string; uuid: string }> = [];
   for (const site of selection) {
@@ -500,7 +519,6 @@ async function push(ctx: CoolifyContext): Promise<number> {
     return 0;
   }
 
-  const timeoutS = Number(opt("--timeout") ?? 1500);
   const attendreFin = !cmd.bool("--no-wait");
   const uuids = new Map(cibles.map((c) => [c.slug, c.uuid]));
   const bilan = await executerParSite(
@@ -511,10 +529,40 @@ async function push(ctx: CoolifyContext): Promise<number> {
       reprise: (s) => `npm run deploy -- ${s.join(" ")} --yes`,
     },
   );
+  avertirBuildsEnVol(bilan.resultats);
   if (JSON_OUT) {
     console.log(JSON.stringify({ resultats: bilan.resultats, reprise: bilan.reprise ?? null }, null, 2));
   }
   return bilan.code;
+}
+
+/**
+ * Lit `--timeout` (secondes) en le VALIDANT. Une valeur erronée (NaN via une
+ * faute de frappe, négatif) rendrait la boucle d'attente fausse dès le premier
+ * tour : verdict lu immédiatement, build fraîchement déclenché jugé « raté »,
+ * et une reprise qui relancerait des builds en double. Refuser AVANT tout
+ * déclenchement (CoolifyError → code 2).
+ */
+function timeoutSecondes(): number {
+  const brut = opt("--timeout");
+  if (brut === undefined) return 1500;
+  const t = Number(brut);
+  if (!Number.isFinite(t) || t <= 0) {
+    throw new CoolifyError(`--timeout "${brut}" invalide : nombre de secondes strictement positif attendu.`);
+  }
+  return t;
+}
+
+/**
+ * Après le bilan d'un lot : si un site a échoué sur TIMEOUT d'attente, son
+ * build tourne peut-être encore — exécuter la reprise telle quelle ferait un
+ * build en double. Le rappel doit suivre la commande de reprise, pas seulement
+ * le message enfoui au moment de l'échec.
+ */
+function avertirBuildsEnVol(resultats: import("./lib/deploy-lot").ResultatSite[]): void {
+  if (resultats.some((r) => r.detail?.includes("peut encore aboutir"))) {
+    console.error(`⚠ Vérifier deploy:status avant d'exécuter la reprise : un build listé peut encore aboutir.`);
+  }
 }
 
 /**
@@ -632,12 +680,16 @@ async function env(ctx: CoolifyContext): Promise<number> {
     return 0;
   }
 
+  // Résoudre TOUTE la sélection avant la première écriture : un slug sans
+  // application au milieu du lot lèverait APRÈS avoir modifié les précédents.
+  const cibles: Array<{ site: SiteEntry; app: CoolifyApp }> = [];
+  for (const site of selection) cibles.push(await resoudreSite(ctx, site.slug));
+
   const write = cmd.bool("--write");
   let totalEcarts = 0;
   const modifies: string[] = [];
-  for (const [i, site] of selection.entries()) {
+  for (const [i, { site, app }] of cibles.entries()) {
     if (i > 0) console.log("");
-    const { app } = await resoudreSite(ctx, site.slug);
     const r = await envDuSite(ctx, site, app, write);
     totalEcarts += r.ecarts;
     if (r.appliques > 0) modifies.push(site.slug);
@@ -767,6 +819,7 @@ async function rollout(ctx: CoolifyContext): Promise<number> {
     console.log(`✓ aucun site à traiter (sélection --affected vide).`);
     return 0;
   }
+  const timeoutS = timeoutSecondes(); // valider AVANT d'afficher un plan ou de déclencher
 
   const ref = reference();
   const local = git("rev-parse", "HEAD");
@@ -802,7 +855,6 @@ async function rollout(ctx: CoolifyContext): Promise<number> {
     return 0;
   }
 
-  const timeoutS = Number(opt("--timeout") ?? 1500);
   const parSlug = new Map(cibles.map((c) => [c.site.slug, c]));
   const bilan = await executerParSite(
     cibles.map((c) => c.site.slug),
@@ -817,6 +869,7 @@ async function rollout(ctx: CoolifyContext): Promise<number> {
       reprise: (s) => `npm run deploy:rollout -- ${s.join(" ")} --yes`,
     },
   );
+  avertirBuildsEnVol(bilan.resultats);
   if (JSON_OUT) {
     console.log(JSON.stringify({ resultats: bilan.resultats, reprise: bilan.reprise ?? null }, null, 2));
   }
@@ -1030,8 +1083,9 @@ async function create(ctx: CoolifyContext): Promise<number> {
 /* ── Entrée ───────────────────────────────────────────────────────────────── */
 
 async function main(): Promise<number> {
-  if (cmd.inconnues.length) {
-    console.error(`✗ Option(s) inconnue(s) : ${cmd.inconnues.join(", ")}`);
+  if (cmd.inconnues.length || cmd.malformees.length) {
+    if (cmd.inconnues.length) console.error(`✗ Option(s) inconnue(s) : ${cmd.inconnues.join(", ")}`);
+    if (cmd.malformees.length) console.error(`✗ Option(s) sans valeur : ${cmd.malformees.join(", ")}`);
     usage();
   }
   if (!commande || !COMMANDES.includes(commande)) usage();

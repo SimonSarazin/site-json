@@ -43,10 +43,12 @@ describe("deploy-cli : analyserArgv", () => {
     expect(cmd.bool("--write")).toBe(true);
   });
 
-  test("option à valeur en fin de ligne ou suivie d'une option → valeur absente", () => {
-    expect(analyserArgv(["push", "--timeout"]).valeur("--timeout")).toBeUndefined();
-    const cmd = analyserArgv(["push", "--timeout", "--yes", "parent62"]);
-    expect(cmd.valeur("--timeout")).toBeUndefined();
+  test("option à valeur sans valeur : signalée malformée, jamais traitée comme absente", () => {
+    // `--context` avalé viserait en silence l'instance par défaut.
+    expect(analyserArgv(["push", "--timeout"]).malformees).toEqual(["--timeout"]);
+    const cmd = analyserArgv(["push", "--context", "--yes", "parent62"]);
+    expect(cmd.malformees).toEqual(["--context"]);
+    expect(cmd.valeur("--context")).toBeUndefined();
     expect(cmd.bool("--yes")).toBe(true);
     expect(cmd.positionnels).toEqual(["parent62"]);
   });
@@ -56,6 +58,7 @@ describe("deploy-cli : analyserArgv", () => {
     expect(cmd.commande).toBeUndefined();
     expect(cmd.positionnels).toEqual([]);
     expect(cmd.inconnues).toEqual([]);
+    expect(cmd.malformees).toEqual([]);
   });
 
   test("les deux jeux d'options sont disjoints", () => {

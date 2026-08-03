@@ -342,7 +342,16 @@ async function appel<T>(
     throw new CoolifyError(`${method} ${route} — instance injoignable : ${(e as Error).message}`, true);
   }
 
-  const texte = await res.text();
+  let texte: string;
+  try {
+    texte = await res.text();
+  } catch (e) {
+    // Le timeout peut aussi frapper PENDANT le téléchargement du corps (les
+    // historiques de déploiement pèsent plusieurs Mo) : même traitement que
+    // l'échec de connexion — contexte dans le message, et transitoire (un GET
+    // sera retenté) plutôt qu'un TimeoutError brut qui ne dit pas quelle route.
+    throw new CoolifyError(`${method} ${route} — corps de réponse interrompu : ${(e as Error).message}`, true);
+  }
   if (!res.ok) {
     // Le message de l'API est bien plus parlant que le code seul (conflit de
     // domaine, champ non autorisé…) : on le remonte tel quel, tronqué.

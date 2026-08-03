@@ -43,6 +43,13 @@ export interface LigneDeCommande {
   positionnels: string[];
   /** Options hors des deux jeux déclarés : l'appelant doit sortir en code 2. */
   inconnues: string[];
+  /**
+   * Options à valeur SANS valeur (fin de ligne, ou suivies d'une autre
+   * option) : usage erroné, l'appelant doit sortir en code 2. Les traiter
+   * comme absentes serait pire — `--context` avalé viserait en silence
+   * l'instance PAR DÉFAUT au lieu de celle demandée.
+   */
+  malformees: string[];
   bool(nom: string): boolean;
   valeur(nom: string): string | undefined;
 }
@@ -50,6 +57,7 @@ export interface LigneDeCommande {
 export function analyserArgv(argv: string[]): LigneDeCommande {
   const positionnels: string[] = [];
   const inconnues: string[] = [];
+  const malformees: string[] = [];
   const bools = new Set<string>();
   const valeurs = new Map<string, string>();
 
@@ -65,12 +73,11 @@ export function analyserArgv(argv: string[]): LigneDeCommande {
     }
     if (OPTIONS_A_VALEUR.has(a)) {
       const suivant = argv[i + 1];
-      // Option à valeur en fin de ligne ou suivie d'une autre option : on la
-      // traite comme absente (`valeur()` → undefined, les appelants ont tous
-      // un défaut) plutôt que de consommer un token qui n'est pas sa valeur.
       if (suivant !== undefined && !suivant.startsWith("--")) {
         valeurs.set(a, suivant);
         i++;
+      } else {
+        malformees.push(a);
       }
       continue;
     }
@@ -82,6 +89,7 @@ export function analyserArgv(argv: string[]): LigneDeCommande {
     commande,
     positionnels,
     inconnues,
+    malformees,
     bool: (nom) => bools.has(nom),
     valeur: (nom) => valeurs.get(nom),
   };

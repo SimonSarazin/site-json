@@ -467,7 +467,7 @@ Rien n'ecrit sans `--yes` (lock, push, rollout) ou `--write` (env, dns, alias, c
 
 **Semantique de lot** (push, lock, rollout) : **tolerante par defaut** — un site en echec n'arrete pas les suivants ; le bilan final nomme les rates et imprime la commande de reprise reduite a eux. `--fail-fast` restaure l'arret au premier echec (la reprise couvre alors rates + non tentes). Apres un timeout d'attente, le build peut encore aboutir : verifier `deploy:status` avant de reprendre, un redeclenchement aveugle ferait un build en double. Les appels API ont un timeout de 30 s et une retentative sur GET seulement (jamais sur POST `/deploy` : le rejouer apres une reponse perdue declencherait deux builds).
 
-Codes de sortie : `0` conforme, `1` le defaut cherche, `2` erreur d'usage ou d'outillage. `push` et `rollout` rendent un bilan `--json` (`{resultats, reprise}`), `affected` aussi (`{ref, refSha, sites, aRedeployer}`).
+Codes de sortie : `0` conforme, `1` le defaut cherche, `2` erreur d'usage ou d'outillage. Pendant un lot, une erreur API sur UN site compte comme l'echec de ce site (code `1`, reprise) — le code `2` reste reserve aux erreurs AVANT le debut du lot (usage, contexte, resolution des slugs). `push` et `rollout` rendent un bilan `--json` (`{resultats, reprise}`), `affected` aussi (`{ref, refSha, sites, aRedeployer}`).
 
 ### Deux pieges de l'API, traites
 
