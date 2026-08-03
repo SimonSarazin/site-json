@@ -1,4 +1,4 @@
-import { add, format, isBefore, isAfter, type Locale } from "date-fns";
+import { add, format, isBefore, isAfter, startOfDay, type Locale } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, X } from "lucide-react";
 import { useImperativeHandle, useRef, useState, useEffect, useMemo } from "react";
@@ -258,9 +258,22 @@ function Calendar({
     return false;
   };
 
-  // Désactive les jours hors plage min/max
+  // Désactive les jours hors plage min/max.
+  //
+  // La comparaison porte sur le JOUR, pas sur l'instant : DayPicker passe chaque
+  // jour à MINUIT, alors que `min` peut porter une heure. Sans `startOfDay`, un
+  // événement commençant le 10 à 14h rendait le 10 lui-même inaccessible comme
+  // date de fin (`isBefore(10 00:00, 10 14:00)` = vrai) — or un événement qui
+  // commence et finit dans la journée est le cas le plus courant.
+  //
+  // La borne à l'instant près reste appliquée : `clampDate` (l. 197) ramène la
+  // valeur choisie sur `min` si elle lui est antérieure, donc une fin ne peut
+  // toujours pas précéder son début.
+  //
+  // Côté `max`, aucun ajustement : un jour à minuit n'est jamais « après » un
+  // `max` situé plus tard le même jour, la borne haute était déjà juste.
   const disabledDays = (date: Date): boolean => {
-    if (min && isBefore(date, min)) return true;
+    if (min && isBefore(date, startOfDay(min))) return true;
     if (max && isAfter(date, max)) return true;
     return false;
   };

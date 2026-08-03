@@ -5122,7 +5122,9 @@
             {
               "columns": 1,
               "fields": [
-                "eventDates"
+                "eventDates",
+                "startDate",
+                "endDate"
               ]
             }
           ]
