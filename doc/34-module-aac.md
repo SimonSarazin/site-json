@@ -1,0 +1,475 @@
+[← Retour à la doc](README.md)
+
+# Module AAC — Appel à Communs
+
+> **État : SOCLE (fondations).** Le module pose l'ossature, le contrat de données et le
+> résolveur de configuration. **Aucune surface fonctionnelle n'est encore livrée** (dépôt,
+> listing, évaluation, financement). Ce document est le point d'entrée pour intégrer ces
+> besoins sans re-faire les erreurs du legacy.
+
+---
+
+## 1. Modèle mental (à lire en premier)
+
+- Un **commun** = **une réponse CoForm** (document `answers`). Ce n'est PAS une entité
+  indépendante : tout part d'une `Answer`.
+- La hiérarchie réelle est **AAC → Campagne → Commun**. Une **campagne isole** ses communs,
+  financements, paniers et stats. Sa référence est **portée par les données du commun**
+  (campagne « active implicite ») — **jamais** par un état d'UI.
+- Depuis un commun partent **deux branches PARALLÈLES** (pas séquentielles) :
+  **(A) Financement** et **(B) Projet** (`Dépense → Milestone → Action → Paiement`).
+- La **« validation » d'un commun est un simple toggle admin**, sans action métier.
+  ⚠️ **Ne jamais gater le financement ou la génération de projet sur « validé »** : un
+  commun `pending` est finançable ET convertible en projet.
+
+```
+AAC (form aap/aac) ──> Campagne ──> Commun (= Answer coform)
+                                      ├── (A) Financement : depense[].financer[] → panier → paiement → payé (immuable)
+                                      └── (B) Projet : génération (IRRÉVERSIBLE) → milestones → actions → paiement
+```
+
+---
+
+## 2. Le contrat de données
+
+Le SDK type `answers` en `Record<string, unknown>` : **le contrat AAP/oceco n'est typé nulle
+part côté SDK**. La source de vérité locale est **[`src/modules/aac/types.ts`](../src/modules/aac/types.ts)**.
+
+| Objet | Chemin / forme | À savoir |
+|---|---|---|
+| **Commun** | `answers.aapStep<N>.<key>` | `status` = **TABLEAU append-only** (verbes empilés), pas un scalaire. États : `créé / pending / validé`. |
+| **Dépense** | `answers.<depenseStepKey>.depense[]` | `{ poste, price, milestone: <milestoneId>, financer[] }`. ⚠️ **L'étape n'est PAS toujours `aapStep1`** (cf. §4). Les **logs vivent DANS la dépense** (`historique`). |
+| **Financer** | `depense.financer[]` | `{ amount, date, user, id, name, type, fundingType }` — **deux axes distincts** (cf. encadré). |
+| **Milestone** | `project.oceco.milestones[]` | Lien **1:1** avec la dépense via `depense.milestone === milestone.milestoneId`. Le montant reste porté par la **dépense** (jamais dupliqué). |
+| **Action** | `milestone.actions[]` | Contrainte **Σ(actions.montant) ≤ depense.montant**. |
+| **Campagne** | déclarée sur l'`aapConfig` (`campagne.<id>`) | `{ type: simple\|doublonnage, dates{début, fin, débutCofinancement, ouverturePaiement}, montantDisponibleDoublonnage, porteur, provider }`. |
+
+> ### ⚠️ `financer` : deux axes à NE PAS confondre
+> - **`type`** = nature de l'**entité** (`citoyen` \| `organisation`)
+> - **`fundingType`** = nature du **financement** (aujourd'hui `prepaid` en dur)
+>
+> Le **porteur / doublonnage est un `fundingType`**, PAS un type d'entité. Un doublonnage =
+> une **2ᵉ entrée `financer` SÉPARÉE** (500 € financeur + 100 € porteur = **600 €**, jamais
+> fusionnés).
+
+**Champs RÉSERVÉS** (déclarés dans `types.ts`, **absents des données actuelles** — à confirmer
+au GATE §9) : `financer.paymentStatus`, `financer.campaign`, `financer.finkey`,
+`depense.paiements[]`, `depense.historique[]`, et les entités net-new `Campagne`, `Panier`, `AacLog`.
+
+---
+
+## 3. Configuration (côté site)
+
+**Un seul AAC par site.** Le patron est celui de `config.ampli`, mais **singulier** (objet, pas
+tableau). Le site déclare simplement son formulaire :
+
+```jsonc
+// config.prod.<site>.json
+{
+  "aac": { "formId": "677e7e389058e31575550ac8" },   // ← source de vérité UNIQUE
+
+  "pages": [{
+    "path": "/",
+    "sections": [
+      { "type": "aac", "id": "aac", "props": { "title": { "fr": "Appel à Communs" } } }
+    ]
+  }]
+}
+```
+
+- **`config.aac.formId`** = le **form parent** (`type:aap`, `aapType:aac`). Déclaré dans
+  [`src/types/site-schema.ts`](../src/types/site-schema.ts) (juste après `ampli`).
+- La **section** `{type:"aac"}` ne porte **pas** de `formId` — seulement la présentation
+  (`title`, `className`). Elle lit `useSite().config.aac?.formId`.
+- La **route `/aac`** n'a **pas de paramètre** (un seul AAC par site) et lit la même clé.
+
+**Prérequis backend** : le form + son `aapConfig` doivent exister. Sans `config.aac.formId`,
+la section et la route affichent un message explicite (pas de crash).
+
+---
+
+## 4. Le résolveur `AacConfig` — le cœur du socle
+
+**[`lib/resolveAacConfig.ts`](../src/modules/aac/lib/resolveAacConfig.ts)** est une fonction
+**PURE** (testée, 9 tests) qui normalise `form.serverData` + le doc `aapConfig` en un objet
+unique. **Toute la logique legacy fragile est ici** — ne la ré-implémentez pas ailleurs.
+
+```ts
+resolveAacConfig(formId, formData, configData?) → AacResolvedConfig
+// via le hook : useAacConfig(formId) → { config, isLoading, error }   (0 nouvel endpoint)
+```
+
+Les règles qu'il reproduit — **chacune est un piège du legacy** :
+
+| Règle | Détail |
+|---|---|
+| **`subForms` a DEUX formes** | **TABLEAU** sur le form (ordre des étapes) vs **OBJET** sur l'aapConfig. Le form fait foi, et il peut être un **SOUS-ENSEMBLE** des steps du config. |
+| **Dispatch 4 vs 5 étapes** | 5 steps ⇒ éval/financement/suivi = index **2/3/4** ; 4 steps ⇒ **1/2/3**. Raffiné par **scan des clés/types d'input**. **Jamais de `aapStepN` en dur.** |
+| **`depenseStepKey` variable** | L'étape portant `depense[]` est **résolue**, pas supposée. ⚠️ Le code `cagnotte` réutilisé lit `answers.aapStep1.depense` **en dur** → il faut le **paramétrer**, pas le cloner. |
+| **Priorité des critères** | `formParent.evaluationCriteria` (si `activateLocalCriteria`) **>** `aapConfig…params.config.criterions`. Exposé via `criteriaSource`. |
+| **Coercions** | `coeff` string → number, rôles **CSV → array**, flags `"true"` → bool. |
+| **Config org-spécifique** | Deux configs CoForm coexistent (**template héritable** vs **org-spécifique**) → on lit **celle pointée par `form.config`**. |
+
+Sortie (`AacResolvedConfig`) : `steps[]`, `roles{depenseStepKey, evalStepKey, financementStepKey,
+suiviStepKey}`, `criteria[]`, `criteriaSource`, `gates`, `campaigns[]`.
+
+> **Nommage — ne pas confondre :**
+> - **`AacConfig`** (`schema.ts`) = le bloc **DÉCLARÉ** dans `config.aac` (juste `{ formId }`).
+> - **`AacResolvedConfig`** (`types.ts`) = la config **RÉSOLUE** (sortie du résolveur).
+
+---
+
+## 5. Architecture du module
+
+```
+src/modules/aac/
+  module.config.ts          # { name:"aac", type:"core", enabled:true } → auto-découvert
+  index.ts                  # side-effects i18n + permissions/register EN PREMIER, puis exports
+  routes.tsx                # /aac (pas de param — un seul AAC par site)
+  schema.ts                 # AacConfigSchema (bloc site) + AacSectionSchema (section)
+  types.ts                  # CONTRAT : Commun/Depense/Financer + Campagne/Panier/Log RÉSERVÉS
+  lib/resolveAacConfig.ts   # résolveur PUR (+ .test.ts)
+  hooks/useAacConfig.ts     # résolveur câblé (api.form ×2, 0 nouvel endpoint)
+  hooks/useAacPermissions.ts
+  permissions/              # types, defaults, calculators/aac.ts, register, index
+  constants/queryKeys.ts    # AAC_QUERY_KEYS
+  components/AacConfigStub.tsx  # section (export default, `import "../i18n"` en 1re ligne)
+  pages/AacPage.tsx         # page de la route
+  i18n.ts + i18n/{fr,en}.json
+```
+
+**Enregistrements hors module** (à connaître si vous ajoutez une section) :
+`src/types/site-schema.ts` (union + `config.aac`), `src/components/sections/SectionRenderer.tsx`
+(`LazySections`, `lazy` de **vite-preload**, cible en **export default**),
+`src/lib/queryKeys.ts` (barrel), `src/components/admin/section-meta.ts`,
+`scripts/audit-config.ts` (`/aac` dans `KNOWN_ROUTE_PREFIXES`),
+`.claude/skills/config-assistant/SKILL.md` (table Modules — **testée**).
+
+> ⚠️ **Le chrome du site n'est pas automatique sur une route de module.** Les routes de module
+> sont montées sous `RootLayout` (providers + `<Outlet/>`), **pas** sous `SiteRenderer` (qui rend
+> header/footer des pages JSON). Une page de module **doit rendre `<SiteHeader/>` + `<SiteFooter/>`
+> elle-même** (patron `AmpliPage`/`ProfilePage`/`CoFormPage`) — sinon **le menu disparaît**.
+
+---
+
+## 6. Permissions
+
+Namespace `"aac"` → `useAacPermissions(entity, data)`. **5 dimensions** (spec métier) :
+accès formulaire, lecture des réponses, modification, participation aux actions, contribution
+financière.
+
+- **Bypass admin-costum TOTAL** : résolu **centralement** par `usePermissions` (`isCostumAdmin`)
+  — le calculateur ne le ré-implémente pas.
+- **Gate MAÎTRE `coRemuneration`** : **OFF ⇒ aucun financement** (pas de financeur, pas d'objet
+  finançable, pas de paiement).
+- **Dépôt = 3 modes** (ouvert / membres / rôles) + **standalone**. Le dépôt n'est **jamais**
+  ouvert à tous par défaut.
+- **Standalone** : un answer peut avoir pour auteur un **compte temporaire (email seul, sans
+  `userId`)** → tout calcul ancré sur `userId` doit tolérer son absence.
+- **Manquant, à ajouter au moment du financement** : la **garde d'immuabilité `paid`**
+  (aucun garde en lecture seule n'existe aujourd'hui sur un financement payé).
+
+## 7. Query keys
+
+`AAC_QUERY_KEYS` ([`constants/queryKeys.ts`](../src/modules/aac/constants/queryKeys.ts)) suit la
+convention du repo, **plus une spécificité AAC** :
+
+- **`campaignId`** entre dans les clés des données scopées campagne (**isolation stricte**).
+- **`userId` en DERNIER segment** sur les données user-scopées (mes votes/éval/financements/« vu »),
+  et **absent** des données publiques (config, listing) pour préserver la mutualisation du cache.
+
+---
+
+## 8. Ce qu'on RÉUTILISE (ne rien réécrire)
+
+| Besoin | Réutiliser | Où |
+|---|---|---|
+| Rendu + persistance d'un commun | `SmartCoForm` → `answer.save()` / `processUploads()` | `modules/coform` |
+| Financement (`depense[].financer[]`) | `useFundingEnvelope`, `useSaveCagnotteContribution`, types `Funding*` (dont `FundingMilestone` qui porte déjà `answerDepenseIndex`/`projectMilestoneIndex`) | `modules/cagnotte` |
+| Dashboards | `dashboard.ts` + `dimensions.ts` (**array-aware**, lit `answers.<form>.serverData.answers.<section>.<field>`) | `modules/observatoire` |
+| Listing / filtres / cartes | `useSearchQuery` (`searchType:['answers']`), `CardAnswer`, `parseCoformAnswer`, `FiltersSection` | `modules/search` |
+| Évaluation | `useMultiEvalData` + `MultiEvalRadarTabs`/`Dialog` (radar **prêt**), `EvaluationField`/`EvaluationVoteCell` | `modules/coform` |
+| Parsing de données non typées | `utils/dataTransform.ts` (`asRecord`, `toArrayOrValues`, `getServerData`…) | `modules/cagnotte` |
+
+---
+
+## 9. ⚠️ Pièges à connaître AVANT de coder
+
+1. **`unknown` = perte de donnée SILENCIEUSE.** Un type d'input AAP non mappé rend une boîte rouge
+   **et droppe sa valeur au save**. **Ne déposez pas de vrai commun via un form non mappé.**
+   Types encore non mappés : `newDepenseList`, `aap.selection`, `chooseProposal`, `multiDecide`,
+   `suiviFromBudget`, `generateprojectbtn`, `tags`, `categorizedCheckbox`.
+   *(Déjà mappés : `finder`, `checkboxNew`, `radioNew`, `evaluation.evaluation`, et l'alias
+   `titleSeparator` → `sectionTitle`.)*
+2. **Pollution `{}` ↔ `[]` (MongoDB).** Un champ **array** (`depense[]`) **DOIT** déclarer
+   `getFieldShape = 'array'` **+ un default**, sinon un `[]` legacy arrive en `{}` et casse le
+   resolver Zod au submit.
+3. **Stockage legacy non uniforme.** `FIELD_PREFIX_MAP` préfixe certains champs
+   (`finder` → `finder{key}`, `commonTable` → `yesOrNo{key}`) et `ROOT_LEVEL_FIELDS` stocke
+   `evaluation`/`commonTable` **à la RACINE** de `answers` (pas sous `answers[subFormId]`).
+4. **Les options ne sont PAS sur l'input** : elles vivent dans `formData.params[<clé préfixée>]`
+   (`radioNew{key}`, `checkboxNew{key}`, `config{key}`/`criterias{key}`…). Tout champ config-lourd
+   doit parser `params` dans `parseCoFormFields`, sinon il rend vide.
+5. **Cloner `cagnotte` est dangereux** : il hardcode `answers.aapStep1.depense`, `fundingType:'prepaid'`,
+   et **`normalizePaymentStatus` défaute à `paid`** (⇒ toute contribution naît « payée »).
+   **Forker/paramétrer**, pas cloner.
+6. **Sur-financement conservé** : si une dépense est diminuée après financement, le financé **PEUT
+   dépasser** le montant (« 5500 € financés sur 5000 € »). **Ne jamais plafonner à 100 %**, ne pas
+   dériver le financé depuis `remaining`.
+7. **`mapping` de l'aapConfig potentiellement PÉRIMÉ** (constaté en base) → prévoir un fallback par
+   nom de champ. Et **jamais de clé littérale** `aapStep1lurze…` (les inputKeys sont générés).
+8. **Dérive de version SDK** : le repo `cocolight-api-client` peut être **en retard** sur le paquet
+   installé. **Coder contre `node_modules`**, pas contre les sources du repo.
+
+---
+
+## 10. 🚧 GATE — à confirmer sur données réelles
+
+Plusieurs mappings du résolveur sont **best-effort** et marqués `⚠️ GATE` dans le code. **À valider
+avant de construire le financement** (base `pixelhumain1` ; AAC de référence : form FTL
+`6438366673d20a0de1533c77`, 87 communs réels) :
+
+- la **clé de référence CAMPAGNE portée par l'answer** — **introuvable dans le code** ; sans elle
+  **tout le scope financement est indéfini** (bloquant) ;
+- la forme réelle de `depense[].financer[]` sur un **answer déjà financé** (présence de
+  `paymentStatus` / `campaign` / porteur) ;
+- les clés réelles des **9 domaines** de l'`aapConfig` + le flag **`coRemuneration`** ;
+- les gates `annuaire` / `standalone` ;
+- le lien `depense.milestone` ↔ `project.oceco.milestones[].milestoneId`.
+
+**Décisions ouvertes** : (a) de **nouveaux endpoints SDK** seront très probablement nécessaires pour
+le financement (panier, paiement, budget doublonnage : **rien n'existe** côté SDK) ; (b) la **sync
+dépense↔milestone** est « backend-only » selon la spec, alors que `cagnotte` fait déjà une **sync
+client** → à trancher pour éviter une double-sync divergente.
+
+---
+
+## 11. Roadmap — par où intégrer les besoins
+
+Ordre validé : **Dépôt → Consultation/listing → Évaluation/sélection → Financement ∥ Projet.**
+
+### Ajouter un type de champ CoForm (le besoin n°1 : `newDepenseList`)
+
+Patron canonique — précédent : `LocationField`. **5 à 6 touchpoints** :
+
+1. l'union `componentType` — `modules/coform/types.ts`
+2. le mapping `mapCoFormTypeToComponentType` — `modules/coform/utils/formParser.ts`
+3. le schéma Zod — `generateZodSchema` (même fichier)
+4. le `case` de rendu dans le `switch` de `DynamicCoForm` (+ import)
+5. le composant `components/XxxField.tsx` (+ util de (dé)normalisation du blob legacy,
+   modèle : `utils/coformLocality.ts`)
+6. **pour un array** (`depense[]`) : `generateDefaultValues` **+** `getFieldShape = 'array'`
+   — **obligatoire** (cf. piège n°2)
+
+### Autres jalons
+
+- **Listing** : conditionner par les flags `annuaire` / visibilité ; forker `parseCoformAnswer`
+  en `parseAacAnswer` (l'actuel est hardcodé sur un seul formulaire).
+- **Évaluation** : le **radar multi-éval est prêt** (`useMultiEvalData` + `MultiEvalRadarTabs`).
+  Le champ **selection 2D + admissibilité** est à construire. *(Signal donnée : la matrice jury
+  n'est peuplée sur AUCUN AAC réel — l'éval effective est `selection` + `admissibility`.)*
+- **Financement** : cf. pièges 5/6 + GATE §10 (campagne, panier, doublonnage, immuabilité `paid`).
+- **Projet** : réutiliser `FundingMilestone`/`FundingAction` ; génération **irréversible**.
+
+---
+
+## 12. Tests & vérification
+
+```bash
+npx vitest run --config vitest.config.unit.ts src/modules/aac   # résolveur (pur)
+npm run config:validate -- config.prod.<site>.json              # le bloc config.aac
+npm run audit:config -- --file config.prod.<site>.json          # `strip: 0` ⇒ config.aac bien lu
+npm run test:preflight                                          # parité i18n fr/en + union sections
+npx tsc -b --noEmit
+```
+
+**Filets automatiques** : le typage `SectionPropsMap ↔ LazySections` **casse le build** si l'union
+et le renderer désynchronisent ; `i18n-files.test.ts` casse sur toute divergence de clés fr↔en ;
+`skill-integrity.test.ts` casse si la table Modules du SKILL config-assistant dérive.
+
+---
+
+## 13. Annuaire des communs — endpoint `directoryproposal`
+
+> **L'annuaire des communs a déjà son endpoint métier dédié côté backend** — il est simplement
+> **absent du SDK** `@communecter/cocolight-api-client`. Cette section documente son contrat tel
+> qu'il est implémenté, pour pouvoir le déclarer sans le deviner.
+
+Chaîne PHP (module `citizenToolKit`) : `controllers/aap/DirectoryProposalAction.php` →
+`models/Aap.php :: globalAutocompleteProposal()` → constructeur de requête
+`globalAutocompleteProposalQuery()` → post-traitement `parsePropositionData()`. Route déclarée dans
+`co2/controllers/AapController.php` (clé `directoryproposal`).
+
+C'est le squelette du `globalAutocomplete` générique (`searchParams` → `SearchNew::addQuery` →
+`PHDB::findAndFieldsAndSortAndLimitAndIndex`), **plus une quinzaine de branches de filtres propres à
+l'AAP** et un enrichissement métier de chaque réponse.
+
+### 13.1 Route et modes
+
+```
+POST /co2/aap/directoryproposal/source/{source}/form/{form}
+```
+
+PathParams Yii en **paires clé/valeur, ordre libre** — `…/countonly/true/form/{form}` est valide.
+
+| PathParam | Requis | Effet |
+|---|---|---|
+| `form` | ✅ | id du **form parent** AAC |
+| `source` | — | slug du costum (des appels sans `source` existent en prod) |
+| `newcounter/true` | — | renvoie **uniquement** le nombre de communs **non vus** par l'utilisateur |
+| `countonly/true` | — | renvoie **uniquement** le compte, sans `results` |
+
+Les trois modes sont exclusifs et produisent **trois formes de réponse différentes** (§13.3).
+
+### 13.2 Paramètres de requête (corps POST)
+
+**a) Paramètres généraux**
+
+| Paramètre | Type | Défaut | Effet |
+|---|---|---|---|
+| `searchType` | `string[]` | — | `searchType[0]` = **collection interrogée** ; tous les `find`/`count` s'y appliquent |
+| `name` | `string` | — | recherche texte (`SearchNew::searchText`) |
+| `textPath` | `string` | — | chemin de la recherche texte ; sinon le défaut de `searchText` |
+| `searchTags` | `string[]` | — | tags (`SearchNew::searchTags`), opérateur `$in` |
+| `tagsPath` | `string` | `tags` | chemin des tags |
+| `userId` | `string` | — | restreint à `user = <userId>` |
+| `sortBy` | `object` \| `string[]` | `{ updated: -1 }` | map `{champ: 1\|-1}` (valeurs castées en `int`), ou liste de champs ⇒ `1` |
+| `fields` | `string[]` | `[]` | projection |
+| `indexMin` | `int` | `0` | offset |
+| `indexStep` | `int` \| `"all"` | `100` | taille de page ; `"all"` ⇒ `findAndSort` **sans limite** |
+| `count` | clé présente | — | si présente, ajoute `count.<searchType[0]>` à la réponse |
+| `filters` | `object` | — | cf. tableau **b** |
+
+**b) Clés de `filters` à traitement spécial** — toute clé non listée retombe dans
+`SearchNew::searchFilters` (pass-through). Les clés traitées sont **consommées** (retirées avant le
+pass-through).
+
+| Clé | Valeur | Traduction |
+|---|---|---|
+| `form` | `string` | `$or` **à trois voies** : `form`, `answers.aapStep2.choose.<elId>.value = "selected"`, `links.aacForm.<formId>` `$exists` |
+| `formStandalone` | `bool` | désactive le gate `onlyAdminCanSeeList` (§13.5) |
+| `address` | `string` | regex accent-insensible sur `<mapping.address>.postalCode` et `.name` |
+| `views` | `["seen"]` \| `["notSeen"]` | `views.<userId>` `$exists` `true`/`false` |
+| `vote` | truthy | `vote.<userId>` `$exists` |
+| `inproject` | `["inproject"]` \| `["inproposal"]` | `project.id` `$exists` `true`/`false` |
+| `admissibility` | `["admissible"]` \| `["inadmissible"]` | `$or` de `answers.aapStep2.admissibility.<membreId>` sur **toute la communauté** de l'entité porteuse |
+| `quartiers` | `string[]` | `answers.aapStep1.interventionArea` `$in` |
+| `<path>.choose.<…>` | `string[]` | `$in` ; la valeur `notselected` ajoute une branche `$exists: false` |
+| `answers.aapStep1.depense.financer.idAndName` | `"<id>-idAndName-<nom>"` | `$or` sur `…financer.name` et `…financer.id` |
+| `oneSubOrganization` | `string[]` (valeurs `a-b` éclatées sur `-`) | `form` `$in` — ⚠️ branche **conditionnée à `filters.form` non vide**, donc inatteignable dès que `form` est fourni (cf. encadré) |
+| `allSubOrganisation` | `string[]` | `form` `$in` — ⚠️ tente d'y ajouter `filters.form`, déjà consommé (cf. encadré) |
+| `status` | `string[]` | `unnotified` ⇒ `status` `$ne` `notified` **et** `$ne` `notificationSent`. La clé n'est retirée que si `unnotified` est **la seule** valeur ; sinon le tableau **entier** repart en pass-through |
+
+> ⚠️ **L'ordre de consommation compte.** La branche `form` s'exécute **en premier** et fait
+> `unset(filters.form)`. Les branches `oneSubOrganization` et `allSubOrganisation`, qui viennent
+> ensuite, relisent pourtant cette clé : la première est **conditionnée** à `filters.form` non vide
+> (⇒ jamais atteinte quand `form` est fourni, le cas normal), la seconde **ajoute la valeur absente**
+> à sa liste `$in`. Ne pas compter sur ces deux filtres pour scoper un multi-formulaires tant que le
+> backend n'a pas été corrigé.
+
+**Correspondance avec les filtres de la spec** (parcours financeur, « Découverte des communs ») :
+
+| Filtre spec | Paramètre |
+|---|---|
+| nom | `name` + `textPath` |
+| tag | `searchTags` + `tagsPath` |
+| besoin | `filters` (pass-through) |
+| déjà lu | `filters.views` |
+| sélectionné | `filters.vote`, ou `filters.<path>.choose.<…>` |
+| utilisable | candidat `filters.inproject` — **à confirmer** |
+
+> ⚠️ **`filters.views` et `filters.vote` sont résolus côté serveur contre l'utilisateur de session.**
+> Dès que l'un est actif, la réponse est **user-scopée** : la query key doit alors porter `userId`.
+> C'est une nuance à la règle du §7 (`userId` absent des clés publiques) — elle ne vaut que pour un
+> listing sans filtre user-scopé.
+
+### 13.3 Résultats attendus
+
+**Mode `newcounter`** — `{ "newCounter": int }`, et **rien d'autre** (`parsePropositionData` n'est pas
+appelé). Vaut `0` si l'utilisateur n'est pas connecté.
+
+**Mode `countonly`** — `{ "count": { "<searchType[0]>": int } }`, sans `results`. ⚠️ Les blocs latéraux
+ci-dessous sont **tout de même présents** (vides) : `parsePropositionData` est appelé dans ce mode aussi.
+
+**Mode normal** — `results`, `count` optionnel, et dix blocs latéraux batch-résolus :
+
+| Clé | Forme | Contenu |
+|---|---|---|
+| `results` | map `answerId → answer` | les communs (champs ajoutés ci-dessous) |
+| `count` | `{ "<searchType[0]>": int }` | présent si `count` était fourni |
+| `users` | map | auteurs + contributeurs — `name`, `slug`, `profilImageUrl` (défaut injecté si vide), `collection` |
+| `usersStatus` | map | auteurs des entrées `statusInfo` — `name`, `slug`, `collection` |
+| `sousOrga` | map | forms des réponses — `parent` |
+| `checkSeen` | map | documents de la collection `views` pour l'utilisateur courant |
+| `allActions` | map | actions liées par `parentId` (projet) ou `answerId`, `parentType = projects` |
+| `allImages` | map | documents `subKey = aapStep1.image`, extensions image |
+| `allDocuments` | map | documents hors image, `doctype`\|`docType` = `file` |
+| `elements` | map | entités de contexte — `name`, `slug`, `collection` |
+| `inputs` | map | `forms.inputs` des formulaires concernés — `step`, `inputs` |
+| `allNotSeenComments` | map `contextId → int` | nombre de commentaires non vus |
+
+**Champs ajoutés par `parsePropositionData` sur chaque entrée de `results`** :
+
+| Champ | Source | Note |
+|---|---|---|
+| `name` | `answers.aapStep1.titre` | `"(No title)"` si absent |
+| `descriptionStr` | `answers.aapStep1.description` | |
+| `tags` | `answers.aapStep1.tags` | ré-indexé (`array_values`) |
+| `image` | vignette résolue (`getPropositionThumbnail`) | |
+| `funds` | `answers.aapStep1.depense[]` | **agrégat de financement** : `{ price: int, financer: number[] }` — les dépenses `include === false` sont **exclues**, et `financer` est réduit aux seuls **montants** |
+| `user_count` | `links.contributors` | cardinal |
+| `interrest_count` | `vote` où `status === "love"` | cardinal |
+
+> `funds` couvre le besoin « demandé / financé » de l'annuaire **sans agrégation côté client** :
+> inutile de rapatrier les réponses entières pour sommer `depense[].financer[]`.
+
+### 13.4 Deux avertissements
+
+**a) Le pré-formatage suppose `aapStep1` / `aapStep2` en dur.** `parsePropositionData` part de
+`answers.aapStep1` ; l'image est cherchée sur `subKey: "aapStep1.image"` ; le constructeur de requête
+code de même `answers.aapStep2.choose`, `aapStep2.admissibility`, `aapStep1.interventionArea` et
+`aapStep1.depense.financer.*`. Le `mapping` du form est bien construit avec une entrée
+`answers.aapStep1.titre`, mais **elle n'est jamais lue** — `mappingData` ne sert qu'à l'adresse.
+
+> ⚠️ Cela entre en collision avec la règle du **§4** (`depenseStepKey` est **résolu**, jamais supposé —
+> « jamais de `aapStepN` en dur »). Sur un AAC dont la disposition diffère, `name` vaut `"(No title)"`
+> et `tags` / `descriptionStr` / `funds` sont **vides — silencieusement, sans erreur**. Traiter les
+> champs pré-formatés comme un **chemin rapide**, avec repli sur `answers.<stepKey résolue>.<clé>`.
+
+**b) `results` est une map, pas un tableau.** Le `_transformData` du SDK la convertit en tableau en
+injectant `id` — comportement désirable ici. En revanche **ne pas router la réponse dans
+`_linkEntities`** : les answers ne portent pas de champ `collection` et seraient **silencieusement
+jetées**.
+
+### 13.5 Gates déjà appliqués par le backend
+
+| Gate | Effet |
+|---|---|
+| `form.params.onlyAdminCanSeeList` | si actif et que l'utilisateur n'est ni admin (élément ou super-admin) ni porteur des rôles `aapStep2.canEdit` / `aapStep3.canEdit`, la requête est **restreinte à ses propres réponses** (`user = <userId>`) |
+| `filters.formStandalone` | bypass du gate ci-dessus |
+
+Rien à réimplémenter côté client pour ces deux-là.
+
+> ⚠️ **Constat pour le GATE §10** — la clé réelle du flag « Publier sur l'annuaire des appels à
+> communs » est **`isPublishedInAacOrg`**, portée par le **form**, en **opt-out** : `getAacElements()`
+> et `aacQuery()` matchent `isPublishedInAacOrg === true` **ou champ absent** ⇒ publié par défaut.
+> Elle gouverne l'annuaire **des AAC**, pas la lecture des communs — donc ni la clé
+> (`form.annuaire` / `params.annuaire`), ni le défaut, ni la portée de `gates.annuaire`
+> ([`lib/resolveAacConfig.ts`](../src/modules/aac/lib/resolveAacConfig.ts)) ne correspondent.
+> À reverser au GATE lors d'une prochaine passe.
+
+### 13.6 Routes sœurs
+
+Mêmes fondations, **hors périmètre du module** aujourd'hui :
+
+- `POST /co2/aap/aac/method/aac_directory` — annuaire **des AAC** (`Aap::aacQuery` + `parseAacData`)
+- `POST /co2/aap/aac/method/communs_directory` — communs **inter-AAC** (`Aap::communsQuery`)
+
+---
+
+## Voir aussi
+
+- [Module CoForm](21-module-coform.md) — le moteur sur lequel l'AAC est posé (un commun = une Answer)
+- [Module Cagnotte](18-module-cagnotte.md) — le contrat financier `depense[].financer[]`
+- [Module Observatoire](27-module-observatoire.md) — dashboards déclaratifs
+- [Permissions](10-permissions.md) · [i18n](13-i18n.md) · [Sections dynamiques](06-sections-dynamiques.md)
