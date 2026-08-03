@@ -70,14 +70,20 @@ function usage(): never {
 Commandes :
   status              état du parc : site ↔ application ↔ domaine ↔ commit déployé
   lock [--unlock]     coupe (ou rétablit) le déploiement automatique sur push
-  push <slug…>        déploie les sites nommés, un par un
-  env <slug> [--write]  compare (et pose) les 8 variables du site
+  push <sélection>    déploie les sites sélectionnés, un par un
+  env <sélection> [--write]  compare (et pose) les variables des sites
   affected            quels sites les commits non déployés concernent-ils
   dns <slug> [--write]         vérifie/crée le CNAME d'amorce dans la zone 00.re
   alias <slug> <dom> [--write] attache un domaine propre (DNS déjà pointé)
   create <slug> [--write]      crée l'application d'un site déclaré
 
+Sélection (push, env) : des slugs nommés, OU --all (tout le parc déployable),
+OU --affected (les sites que les commits non déployés concernent) —
+exactement une des trois formes.
+
 Options :
+  --all               sélection : tout le parc déployable
+  --affected          sélection : les sites impactés par les commits non déployés
   --context <nom>     instance Coolify (défaut : celle marquée par défaut)
   --ref <rev>         référence de comparaison (défaut : origin/main)
   --yes               applique sans confirmation (lock, push)
@@ -370,20 +376,104 @@ async function attendre(
   return trouve?.status ?? "inconnu";
 }
 
+/* ── Sélection de lot ─────────────────────────────────────────────────────── */
+
+/** État de déploiement d'un site vis-à-vis de la référence. */
+interface EtatSite {
+  slug: string;
+  etat: "a-jour" | "a-redeployer" | "jamais-deploye" | "commit-inconnu" | "app-introuvable";
+  /** Commit du dernier déploiement abouti (absent si jamais déployé / app introuvable). */
+  base?: string;
+  impact?: ReturnType<typeof impact>;
+}
+
+/**
+ * Pour chaque site déployable : les commits depuis son dernier déploiement le
+ * concernent-ils ? Base PAR SITE (le commit de son dernier déploiement abouti),
+ * cible commune (la référence). Calcul pur d'affichage : partagé entre la
+ * sous-commande `affected` et la sélection `--affected` de push/env/rollout.
+ */
+async function calculerAffected(ctx: CoolifyContext, refSha: string): Promise<EtatSite[]> {
+  const tous = sitesDuDepot();
+  const index = await indexApplications(ctx);
+  const etats: EtatSite[] = [];
+  for (const site of sitesDeployables()) {
+    const app = index.get(site.coolifyApp as string);
+    if (!app) {
+      etats.push({ slug: site.slug, etat: "app-introuvable" });
+      continue;
+    }
+    const dernier = await lastSuccessfulDeployment(ctx, app.uuid);
+    const base = dernier?.commit;
+    if (!base) {
+      etats.push({ slug: site.slug, etat: "jamais-deploye" });
+      continue;
+    }
+    if (!resoudre(base)) {
+      etats.push({ slug: site.slug, etat: "commit-inconnu", base });
+      continue;
+    }
+    const fichiers = git("diff", "--name-only", `${base}..${refSha}`).split("\n").filter(Boolean);
+    const r = impact(fichiers, site, tous);
+    etats.push({
+      slug: site.slug,
+      etat: fichiers.length > 0 && r.aRedeployer ? "a-redeployer" : "a-jour",
+      base,
+      impact: r,
+    });
+  }
+  return etats;
+}
+
+/**
+ * Sélection des sites d'une commande de lot : des slugs nommés, OU `--all`
+ * (tout le parc déployable), OU `--affected` (les sites que les commits non
+ * déployés concernent). Exactement UNE forme — mélanger « tout » et une liste
+ * nommée serait ambigu, et zéro sélection reste un refus : l'outil ne déploie
+ * jamais « tout » implicitement, `--all` est le nommage EXPLICITE de « tout ».
+ *
+ * Rend `null` sur une erreur d'usage (l'appelant sort en 2). Un tableau vide
+ * est légitime (`--affected` sans travail) : l'appelant sort en 0.
+ */
+async function resoudreSelection(ctx: CoolifyContext, usageLigne: string): Promise<SiteEntry[] | null> {
+  const formes = [cmd.positionnels.length > 0, cmd.bool("--all"), cmd.bool("--affected")]
+    .filter(Boolean).length;
+  if (formes > 1) {
+    console.error(`✗ Choisir UNE forme de sélection : des slugs, OU --all, OU --affected.`);
+    return null;
+  }
+  if (formes === 0) {
+    console.error(`✗ Aucun site nommé. Cet outil ne déploie jamais « tout » implicitement.\n  ${usageLigne}`);
+    return null;
+  }
+  if (cmd.bool("--all")) return sitesDeployables();
+  if (cmd.bool("--affected")) {
+    const etats = await calculerAffected(ctx, reference().sha);
+    const retenus = new Set(etats.filter((e) => e.etat === "a-redeployer").map((e) => e.slug));
+    return sitesDeployables().filter((s) => retenus.has(s.slug));
+  }
+  return cmd.positionnels.map((slug) => {
+    const site = sitesDuDepot().find((s) => s.slug === slug);
+    if (!site) throw new CoolifyError(`Slug "${slug}" absent de sites.json.`);
+    return site;
+  });
+}
+
 async function push(ctx: CoolifyContext): Promise<number> {
-  const slugs = cmd.positionnels;
-  if (slugs.length === 0) {
-    console.error(
-      `✗ Aucun site nommé. Cet outil ne déploie jamais « tout » implicitement.\n` +
-        `  Usage : npm run deploy -- <slug> [<slug>…]`,
-    );
-    return 2;
+  const selection = await resoudreSelection(
+    ctx,
+    `Usage : npm run deploy -- <slug…> | --all | --affected  [--yes]`,
+  );
+  if (!selection) return 2;
+  if (selection.length === 0) {
+    console.log(`✓ aucun site à déployer (sélection --affected vide).`);
+    return 0;
   }
 
   const cibles: Array<{ slug: string; nom: string; uuid: string }> = [];
-  for (const slug of slugs) {
-    const { app } = await resoudreSite(ctx, slug);
-    cibles.push({ slug, nom: app.name, uuid: app.uuid });
+  for (const site of selection) {
+    const { app } = await resoudreSite(ctx, site.slug);
+    cibles.push({ slug: site.slug, nom: app.name, uuid: app.uuid });
   }
 
   const ref = reference();
@@ -452,23 +542,23 @@ async function resoudreSite(
 }
 
 /**
- * Compare les variables attendues à celles posées sur l'application.
+ * Compare les variables attendues d'UN site à celles posées sur son
+ * application, et les pose si `write`.
  *
  * Ne supprime jamais : une variable présente côté Coolify mais hors du jeu
  * attendu est signalée, pas retirée. Elle peut avoir été posée exprès.
  */
-async function env(ctx: CoolifyContext): Promise<number> {
-  const slug = cmd.positionnels[0];
-  if (!slug) {
-    console.error(`✗ Usage : npm run deploy:env -- <slug> [--write]`);
-    return 2;
-  }
-  const { site, app } = await resoudreSite(ctx, slug);
+async function envDuSite(
+  ctx: CoolifyContext,
+  site: SiteEntry,
+  app: CoolifyApp,
+  write: boolean,
+): Promise<{ ecarts: number; appliques: number }> {
   const { variables, manquantes } = variablesAttendues(site);
   const posees = await listEnvs(ctx, app.uuid);
   const parCle = new Map(posees.map((e) => [e.key, e]));
 
-  console.log(`${slug} → ${app.name}\n`);
+  console.log(`${site.slug} → ${app.name}\n`);
   const aEcrire: typeof variables = [];
   for (const v of variables) {
     const actuelle = parCle.get(v.key);
@@ -493,13 +583,8 @@ async function env(ctx: CoolifyContext): Promise<number> {
   for (const k of enTrop) console.log(`  · ${k.padEnd(24)} présente côté Coolify, hors du jeu attendu (jamais retirée)`);
   for (const k of manquantes) console.log(`  · ${k.padEnd(24)} introuvable dans .env — non poussée`);
 
-  if (aEcrire.length === 0) {
-    console.log(`\n✓ aucun écart.`);
-    return 0;
-  }
-  if (!cmd.bool("--write")) {
-    console.log(`\n${aEcrire.length} écart(s). Relancer avec --write pour appliquer.`);
-    return 1;
+  if (aEcrire.length === 0 || !write) {
+    return { ecarts: aEcrire.length, appliques: 0 };
   }
 
   console.log("");
@@ -512,8 +597,41 @@ async function env(ctx: CoolifyContext): Promise<number> {
     );
     console.log(`  ✓ ${v.key} ${quoi}`);
   }
-  console.log(`\n✓ ${aEcrire.length} variable(s) appliquée(s). Un déploiement est nécessaire pour qu'elles prennent effet :`);
-  console.log(`  npm run deploy -- ${slug} --yes`);
+  return { ecarts: aEcrire.length, appliques: aEcrire.length };
+}
+
+async function env(ctx: CoolifyContext): Promise<number> {
+  const selection = await resoudreSelection(
+    ctx,
+    `Usage : npm run deploy:env -- <slug…> | --all | --affected  [--write]`,
+  );
+  if (!selection) return 2;
+  if (selection.length === 0) {
+    console.log(`✓ aucun site sélectionné (--affected vide).`);
+    return 0;
+  }
+
+  const write = cmd.bool("--write");
+  let totalEcarts = 0;
+  const modifies: string[] = [];
+  for (const [i, site] of selection.entries()) {
+    if (i > 0) console.log("");
+    const { app } = await resoudreSite(ctx, site.slug);
+    const r = await envDuSite(ctx, site, app, write);
+    totalEcarts += r.ecarts;
+    if (r.appliques > 0) modifies.push(site.slug);
+  }
+
+  if (totalEcarts === 0) {
+    console.log(`\n✓ aucun écart.`);
+    return 0;
+  }
+  if (!write) {
+    console.log(`\n${totalEcarts} écart(s). Relancer avec --write pour appliquer.`);
+    return 1;
+  }
+  console.log(`\n✓ variable(s) appliquée(s). Un déploiement est nécessaire pour qu'elles prennent effet :`);
+  console.log(`  npm run deploy -- ${modifies.join(" ")} --yes`);
   return 0;
 }
 
@@ -528,45 +646,59 @@ async function env(ctx: CoolifyContext): Promise<number> {
  * qu'un site, au lieu de redéployer par précaution.
  */
 async function affected(ctx: CoolifyContext): Promise<number> {
-  const tous = sitesDuDepot();
-  const cibles = sitesDeployables();
-  const index = await indexApplications(ctx);
   const ref = reference();
+  const etats = await calculerAffected(ctx, ref.sha);
+  const aRedeployer = etats.filter((e) => e.etat === "a-redeployer").map((e) => e.slug);
+
+  if (JSON_OUT) {
+    console.log(
+      JSON.stringify(
+        {
+          ref: ref.rev,
+          refSha: ref.sha,
+          sites: etats.map((e) => ({
+            slug: e.slug,
+            etat: e.etat,
+            base: e.base ?? null,
+            propre: e.impact?.propre ?? [],
+            partage: e.impact?.partage ?? [],
+            neutre: e.impact?.neutre ?? [],
+          })),
+          aRedeployer,
+        },
+        null,
+        2,
+      ),
+    );
+    return aRedeployer.length === 0 ? 0 : 1;
+  }
 
   console.log(`Référence : ${ref.rev} @ ${ref.sha.slice(0, 8)}\n`);
-
-  const aRedeployer: string[] = [];
-  for (const site of cibles) {
-    const app = index.get(site.coolifyApp as string);
-    if (!app) {
-      console.log(`${site.slug.padEnd(24)} ✗ application introuvable`);
-      continue;
+  for (const e of etats) {
+    const l = e.slug.padEnd(24);
+    switch (e.etat) {
+      case "app-introuvable":
+        console.log(`${l} ✗ application introuvable`);
+        break;
+      case "jamais-deploye":
+        console.log(`${l} · jamais déployé`);
+        break;
+      case "commit-inconnu":
+        console.log(`${l} ✗ commit ${e.base!.slice(0, 8)} inconnu localement — « git fetch » ?`);
+        break;
+      case "a-jour": {
+        const n = e.impact?.neutre.length ?? 0;
+        console.log(`${l} ✓ à jour${n > 0 ? ` (${n} fichier(s) sans effet sur l'image)` : ""}`);
+        break;
+      }
+      case "a-redeployer": {
+        console.log(`${l} ⟶ à redéployer, depuis ${e.base!.slice(0, 8)}`);
+        const r = e.impact!;
+        if (r.propre.length) console.log(`    propre au site   ${r.propre.slice(0, 4).join(", ")}${r.propre.length > 4 ? ` … +${r.propre.length - 4}` : ""}`);
+        if (r.partage.length) console.log(`    partagé          ${r.partage.slice(0, 4).join(", ")}${r.partage.length > 4 ? ` … +${r.partage.length - 4}` : ""}`);
+        break;
+      }
     }
-    const dernier = await lastSuccessfulDeployment(ctx, app.uuid);
-    const base = dernier?.commit;
-    if (!base) {
-      console.log(`${site.slug.padEnd(24)} · jamais déployé`);
-      continue;
-    }
-    if (!resoudre(base)) {
-      console.log(`${site.slug.padEnd(24)} ✗ commit ${base.slice(0, 8)} inconnu localement — « git fetch » ?`);
-      continue;
-    }
-
-    const fichiers = git("diff", "--name-only", `${base}..${ref.sha}`).split("\n").filter(Boolean);
-    if (fichiers.length === 0) {
-      console.log(`${site.slug.padEnd(24)} ✓ à jour`);
-      continue;
-    }
-    const r = impact(fichiers, site, tous);
-    if (!r.aRedeployer) {
-      console.log(`${site.slug.padEnd(24)} ✓ à jour (${r.neutre.length} fichier(s) sans effet sur l'image)`);
-      continue;
-    }
-    aRedeployer.push(site.slug);
-    console.log(`${site.slug.padEnd(24)} ⟶ à redéployer, depuis ${base.slice(0, 8)}`);
-    if (r.propre.length) console.log(`    propre au site   ${r.propre.slice(0, 4).join(", ")}${r.propre.length > 4 ? ` … +${r.propre.length - 4}` : ""}`);
-    if (r.partage.length) console.log(`    partagé          ${r.partage.slice(0, 4).join(", ")}${r.partage.length > 4 ? ` … +${r.partage.length - 4}` : ""}`);
   }
 
   const local = git("rev-parse", "HEAD");
