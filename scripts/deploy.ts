@@ -58,7 +58,7 @@ import {
 } from "./lib/sites";
 
 const cmd = analyserArgv(process.argv.slice(2));
-const COMMANDES = ["status", "lock", "push", "env", "affected", "dns", "alias", "create"] as const;
+const COMMANDES = ["status", "lock", "push", "env", "affected", "rollout", "dns", "alias", "create"] as const;
 type Commande = (typeof COMMANDES)[number];
 
 const commande = cmd.commande as Commande | undefined;
@@ -74,11 +74,12 @@ Commandes :
   push <sélection>    déploie les sites sélectionnés, un par un
   env <sélection> [--write]  compare (et pose) les variables des sites
   affected            quels sites les commits non déployés concernent-ils
+  rollout <sélection>  met l'env en conformité PUIS déploie, par site (gate --yes unique)
   dns <slug> [--write]         vérifie/crée le CNAME d'amorce dans la zone 00.re
   alias <slug> <dom> [--write] attache un domaine propre (DNS déjà pointé)
   create <slug> [--write]      crée l'application d'un site déclaré
 
-Sélection (push, env) : des slugs nommés, OU --all (tout le parc déployable),
+Sélection (push, env, rollout) : des slugs nommés, OU --all (tout le parc déployable),
 OU --affected (les sites que les commits non déployés concernent) —
 exactement une des trois formes.
 
@@ -733,6 +734,93 @@ async function affected(ctx: CoolifyContext): Promise<number> {
   return 1;
 }
 
+/* ── rollout ──────────────────────────────────────────────────────────────── */
+
+/**
+ * Met l'environnement en conformité PUIS déploie, par site : LA commande
+ * « tout redéployer » du parc. Un seul gate `--yes` couvre les deux écritures
+ * — sans lui, tout est dry-run : diffs env et plan de déploiement, aucune
+ * écriture (que des GET).
+ *
+ * Par site, séquentiellement : diff env → pose des écarts → déploiement avec
+ * attente du verdict. Les variables sont buildtime : un échec de pose rend le
+ * site raté SANS déploiement — bâtir sans ses variables produirait le mauvais
+ * artefact. L'étape env étant idempotente, la reprise est la même commande
+ * sur les ratés : le diff revient vide, puis on redéploie.
+ *
+ * `--no-wait` est refusé : le contrat de rollout est la convergence VÉRIFIÉE
+ * (env conforme + build abouti) ; sans attente, le bilan ne dirait rien.
+ */
+async function rollout(ctx: CoolifyContext): Promise<number> {
+  if (cmd.bool("--no-wait")) {
+    console.error(`✗ rollout attend toujours le verdict des builds (--no-wait est réservé à push).`);
+    return 2;
+  }
+  const selection = await resoudreSelection(
+    ctx,
+    `Usage : npm run deploy:rollout -- <slug…> | --all | --affected  [--yes]`,
+  );
+  if (!selection) return 2;
+  if (selection.length === 0) {
+    console.log(`✓ aucun site à traiter (sélection --affected vide).`);
+    return 0;
+  }
+
+  const ref = reference();
+  const local = git("rev-parse", "HEAD");
+  console.log(`Cible : ${ref.rev} @ ${ref.sha.slice(0, 8)}`);
+  if (local !== ref.sha) {
+    console.log(`⚠ HEAD local (${local.slice(0, 8)}) n'est pas ${ref.rev} : les commits non poussés ne partiront pas.`);
+  }
+  const cibles: Array<{ site: SiteEntry; app: CoolifyApp }> = [];
+  for (const s of selection) cibles.push(await resoudreSite(ctx, s.slug));
+  console.log(`À mettre en conformité puis déployer, dans l'ordre (${cibles.length}) :`);
+  for (const c of cibles) console.log(`  ${c.site.slug.padEnd(24)} ${c.app.name}`);
+
+  const enCours = await runningDeployments(ctx);
+  if (enCours.length > 0) {
+    console.log(`⚠ ${enCours.length} déploiement(s) déjà en file sur l'instance (partagée avec d'autres projets).`);
+  }
+
+  if (!cmd.bool("--yes")) {
+    console.log("");
+    let ecarts = 0;
+    for (const [i, c] of cibles.entries()) {
+      if (i > 0) console.log("");
+      ecarts += (await envDuSite(ctx, c.site, c.app, false)).ecarts;
+    }
+    const forme = cmd.bool("--all") ? "--all"
+      : cmd.bool("--affected") ? "--affected"
+      : cibles.map((c) => c.site.slug).join(" ");
+    console.log(
+      `\nDry-run : rien n'a été écrit ni déclenché — ` +
+        `${ecarts} écart(s) d'env à poser, ${cibles.length} déploiement(s) à lancer.`,
+    );
+    console.log(`Appliquer :  npm run deploy:rollout -- ${forme} --yes`);
+    return 0;
+  }
+
+  const timeoutS = Number(opt("--timeout") ?? 1500);
+  const parSlug = new Map(cibles.map((c) => [c.site.slug, c]));
+  const bilan = await executerParSite(
+    cibles.map((c) => c.site.slug),
+    async (slug) => {
+      const { site, app } = parSlug.get(slug)!;
+      await envDuSite(ctx, site, app, true);
+      console.log("");
+      await deployerSite(ctx, app.uuid, true, timeoutS);
+    },
+    {
+      failFast: cmd.bool("--fail-fast"),
+      reprise: (s) => `npm run deploy:rollout -- ${s.join(" ")} --yes`,
+    },
+  );
+  if (JSON_OUT) {
+    console.log(JSON.stringify({ resultats: bilan.resultats, reprise: bilan.reprise ?? null }, null, 2));
+  }
+  return bilan.code;
+}
+
 /* ── dns ──────────────────────────────────────────────────────────────────── */
 
 /** Vérifie, et crée si besoin, le CNAME d'amorce d'un site dans la zone 00.re. */
@@ -957,6 +1045,8 @@ async function main(): Promise<number> {
       return env(ctx);
     case "affected":
       return affected(ctx);
+    case "rollout":
+      return rollout(ctx);
     case "dns":
       return dns();
     case "alias":
