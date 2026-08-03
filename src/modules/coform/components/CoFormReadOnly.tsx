@@ -9,6 +9,7 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useCocolightOptional } from "@/hooks/useCocolight";
 import "../i18n/i18n";
 import { parseCoFormFields, normalizeAnswerData } from "../utils/formParser";
+import { parseStoredToEntries } from "../utils/coformLocality";
 import type { CoFormData, AllStepsData, SubFormFields, FormFieldMapping, FormFieldValue, MultiCheckboxPlusValue, MultiRadioValue, UploaderLegacyValue, SimpleTableValue, EvaluationValue, FinderValue } from "../types";
 import { ReadOnlyUploaderGallery } from "./ReadOnlyUploaderGallery";
 import { SimpleTableField } from "./SimpleTableField";
@@ -283,6 +284,35 @@ function ReadOnlyField({
         </dt>
         <dd>
           <FinderField field={field} errors={{}} value={value as FinderValue} readOnly hideLabel />
+        </dd>
+      </div>
+    );
+  }
+
+  if (field.componentType === "location") {
+    const entries = parseStoredToEntries(value);
+    return (
+      <div className={cn(widthClass, "space-y-1.5")}>
+        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          {field.label}
+        </dt>
+        <dd>
+          {entries.length === 0 ? (
+            <span className="text-muted-foreground">—</span>
+          ) : (
+            <ul className="space-y-1">
+              {entries.map((e, i) => {
+                const a = e.address;
+                const line = [a.streetAddress, a.postalCode, a.addressLocality, a.addressCountry].filter(Boolean).join(", ");
+                return (
+                  <li key={i} className="wrap-break-word">
+                    {line || a.addressLocality || "—"}
+                    {e.center && entries.length > 1 ? " (principale)" : ""}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </dd>
       </div>
     );

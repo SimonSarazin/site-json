@@ -187,10 +187,22 @@ export function mapCoFormTypeToComponentType(
     // `select` (builder dynamicFields), tantôt en chemin de template complet
     // `tpls.forms.select` (legacy `select.php`). Les deux → composant select.
     "tpls.forms.select": "select",
+    // Adresse géolocalisée (parité dynForm `formLocality`) → widget composite `location`
+    // qui capture address + geo + geoPosition + niveaux administratifs. Sans ce mapping,
+    // le champ retombait en `text` → saisie libre et PERTE totale de la donnée géo.
+    formLocality: "location",
+    location: "location",
+    address: "location",
+    "tpls.forms.cplx.addressInDynform": "location",
+    "tpls.forms.cplx.address": "location",
   };
 
   const direct = typeMapping[coFormType];
   if (direct) return direct;
+
+  // Fallback adresse : templates costum d'adresse (`tpls.forms.costum.<slug>.address`,
+  // `...formLocality`, etc.) → tout segment final adresse/localité → composant location.
+  if (/(?:^|\.)(addressindynform|formlocality|address|location)$/i.test(coFormType)) return "location";
 
   // Fallback finder : en legacy, chaque costum a parfois son propre template
   // (`tpls.forms.costum.<slug>.finder`, `tpls.forms.adhesion.adherentFinder`,
@@ -741,6 +753,24 @@ export function generateZodSchema(
             ? z.array(z.string()).min(1, t("coform.validation.requiredField", `${field.label} est requis`, { label: field.label }))
             : z.array(z.string()).optional();
           break;
+
+        case "location": {
+          // Adresse géolocalisée : objet composite { formLocality: FormLocalityEntry[], address, geo, geoPosition }.
+          // « Requis » = au moins une adresse avec un `localityId` réel (gate backend `addressValid`).
+          const hasLocality = (v: unknown) =>
+            !!v &&
+            typeof v === "object" &&
+            Array.isArray((v as { formLocality?: unknown[] }).formLocality) &&
+            (v as { formLocality: Array<{ address?: { localityId?: string } }> }).formLocality.some(
+              (e) => e?.address?.localityId
+            );
+          schemaShape[field.name] = field.isRequired
+            ? z.any().refine(hasLocality, {
+                message: t("coform.validation.requiredField", `${field.label} est requis`, { label: field.label }),
+              })
+            : z.any().optional();
+          break;
+        }
 
         case "multiRadio": {
           // Structure: { value: string, type?: "simple"|"cplx", textsup?: string }
