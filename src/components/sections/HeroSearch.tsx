@@ -270,7 +270,7 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
 
   if (!isFullStyle) {
     return (
-      <section className="relative min-h-112.5 md:min-h-125 flex flex-col -mt-10">
+      <section id={id} className="relative min-h-112.5 md:min-h-125 flex flex-col -mt-10">
         <div className="relative z-10 flex-1 flex items-center justify-center">
           <div className="container mx-auto px-4 sm:px-6">
             <div className="max-w-6xl mx-auto">
@@ -404,7 +404,7 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
   }
 
   return (
-    <section className="relative min-h-112.5 md:min-h-125 flex flex-col -mt-10">
+    <section id={id} className="relative min-h-112.5 md:min-h-125 flex flex-col -mt-10">
       <div className="relative z-10 flex-1 flex items-center justify-center">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="max-w-6xl mx-auto">

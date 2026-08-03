@@ -9,6 +9,7 @@ export interface RuntimeEnv {
   VITE_MON_API_KEY?:      string;
   VITE_MON_DOMAIN?:       string;
   VITE_MAPTILER_API_KEY?: string;
+  VITE_COSTUM_FORCE_LIVE?: string;
 }
 
 /** Déclare window.__ENV__ pour le compilateur */
@@ -49,5 +50,14 @@ export const getSlug      = () => readEnv("VITE_SLUG",              "default");
 export const getServerUrl = () => readEnv("VITE_SERVER_URL",        "http://localhost:3000");
 export const getMonApiKey = () => readEnv("VITE_MON_API_KEY",       "default-api-key");
 export const getMonDomain = () => readEnv("VITE_MON_DOMAIN",        "default-domain.com");
+/**
+ * FORCE-LIVE costum : la lib ignore ses schémas costum BUNDLÉS et ne résout que par `getcostumjson`.
+ * À activer quand la config costum évolue en base plus vite que les artefacts publiés — sans quoi un
+ * artefact périmé masque les champs réels (mesuré sur institutBleu : son artefact ne déclarait que
+ * `organizations` alors que le costum porte deux sous-types `poi`). Contrepartie : plus de démarrage
+ * à froid, le contexte costum reste nu tant que le préchargement n'a pas répondu.
+ */
+export const getCostumForceLive = () => readEnv("VITE_COSTUM_FORCE_LIVE", "") === "true";
+
 /** Clé MapTiler (fonds de carte) — "" si absente → repli tuiles libres. */
 export const getMaptilerApiKey = () => readEnv("VITE_MAPTILER_API_KEY", "");

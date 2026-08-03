@@ -37,7 +37,12 @@ interface Props {
 export default function GalleryUploadField({ value, onChange, label, hint, maxItems, accept = "image/*" }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const existing = value.existing ?? [];
-  const added = value.added ?? [];
+  // `value.added ?? []` fabriquait un tableau NEUF à chaque rendu quand le champ est
+  // VIDE, ce qui invalidait le useMemo de `previews` — lequel ne produisait alors qu'un
+  // tableau vide : aucune URL d'objet n'était créée ni révoquée en trop. On stabilise
+  // donc une identité, pas une fuite. Dès qu'un fichier existe, `value.added` est une
+  // référence stable et la mémoïsation fonctionnait déjà.
+  const added = useMemo(() => value.added ?? [], [value.added]);
   const removed = value.removedDocIds ?? [];
   const visibleExisting = existing.filter((e) => !removed.includes(e.docId));
 

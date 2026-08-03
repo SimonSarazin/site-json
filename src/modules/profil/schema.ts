@@ -286,6 +286,17 @@ export const ProfileTemplateDynamicSchema = z.object({
   type: z.literal("profile-template-dynamic"),
 });
 
+/**
+ * Section générique "Nos outils" — affiche/édite `serverData.ourTools`
+ * (regroupé par catégorie via `TOOLS_MAP`), sans vocabulaire tiers-lieux.
+ * Éditable par les admins de l'entité (`canEditProfile`) via `OurToolsEditDialog`.
+ */
+export const ProfileToolsSectionSchema = z.object({
+  type: z.literal("profile-tools"),
+  title: LocalizedString.optional(),
+  sticky: z.boolean().optional(),
+});
+
 // Profile-specific sections union
 export const ProfileOnlySectionSchema = z.discriminatedUnion("type", [
   ProfileHeaderSectionSchema,
@@ -308,6 +319,7 @@ export const ProfileOnlySectionSchema = z.discriminatedUnion("type", [
   ProfileOpeningHoursSectionSchema,
   ProfileTabLayoutSectionSchema,
   ProfileTemplateDynamicSchema,
+  ProfileToolsSectionSchema,
 ]);
 
 // Union of profile sections + any site section (to avoid circular dependency)
@@ -448,6 +460,7 @@ export type ProfileOpeningHoursSection = z.infer<typeof ProfileOpeningHoursSecti
 export type ProfileTabLayoutSection = z.infer<typeof ProfileTabLayoutSectionSchema>;
 export type ProfileTiersLieuxAboutSection = z.infer<typeof ProfileTiersLieuxAboutSectionSchema>;
 export type ProfileTiersLieuxInfoSection = z.infer<typeof ProfileTiersLieuxInfoSectionSchema>;
+export type ProfileToolsSection = z.infer<typeof ProfileToolsSectionSchema>;
 //──────────────── Section site `member`
 // Section JSON-driven (SectionRenderer) affichant les membres/contributeurs/
 // participants d'une entité. L'entité est résolue par `useSectionEntity`

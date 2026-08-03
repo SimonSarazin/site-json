@@ -74,17 +74,23 @@ Ces variables sont utilisées par `server/api/helloasso-checkout.js` pour le mod
 
 ### Variables injectées dans `window.__ENV__`
 
-À l'exécution, les serveurs (dev et prod) injectent un script `window.__ENV__` dans chaque réponse HTML. Les variables suivantes sont disponibles dans le navigateur via `window.__ENV__` (et lues par `readEnv()` dans `src/lib/constant/common.ts`) :
+À l'exécution, les serveurs injectent un script `window.__ENV__` dans chaque réponse HTML. C'est la **seule** voie de ces variables vers le navigateur : en conteneur, `import.meta.env` est vide pour elles, aucun `ARG` du `Dockerfile` ne les figeant au build.
 
-| Variable | Accesseurs côté client |
-| -------- | ---------------------- |
-| `VITE_BASE_URL_BACKEND` | `getBaseUrl()` |
-| `VITE_SERVER_URL` | `getServerUrl()` |
-| `VITE_SLUG` | `getSlug()` |
-| `VITE_MON_API_KEY` | `getMonApiKey()` — défaut `"default-api-key"` |
-| `VITE_MON_DOMAIN` | `getMonDomain()` — défaut `"default-domain.com"` |
+| Variable | Accesseur côté client | Injectée par les serveurs |
+| -------- | --------------------- | ------------------------- |
+| `VITE_BASE_URL_BACKEND` | `getBaseUrl()` | oui |
+| `VITE_SERVER_URL` | `getServerUrl()` | oui |
+| `VITE_SLUG` | `getSlug()` | oui |
+| `VITE_MAPTILER_API_KEY` | `getMaptilerApiKey()` — défaut `""`, repli tuiles libres | oui |
+| `VITE_COSTUM_FORCE_LIVE` | `getCostumForceLive()` — défaut `false` | oui |
+| `VITE_MON_API_KEY` | `getMonApiKey()` — défaut `"default-api-key"` | **non** |
+| `VITE_MON_DOMAIN` | `getMonDomain()` — défaut `"default-domain.com"` | **non** |
 
-> **Note** : `VITE_MON_API_KEY` et `VITE_MON_DOMAIN` ne sont pas injectées par les serveurs dans `window.__ENV__` ; elles sont lues uniquement depuis `import.meta.env` (build-time) ou `process.env` (SSR). Les valeurs par défaut sont codées dans `src/lib/constant/common.ts`.
+> **Note** : `VITE_MON_API_KEY` et `VITE_MON_DOMAIN` ne sont pas injectées — elles n'ont d'ailleurs aucun consommateur dans `src/`. Elles ne sont lisibles que depuis `import.meta.env` (build) ou `process.env` (SSR).
+
+> **Ajouter une variable destinée au navigateur** : la déclarer dans `RuntimeEnv` **et** l'ajouter à l'objet `window.__ENV__` de `server/prod-server.js` **et** à sa condition d'émission, **et** à `server/dev-server.js`. Omettre l'injection donne une variable visible du SSR (`process.env`) mais pas du client — asymétrie qu'aucun typage ne signale, et que le dev masque puisque `import.meta.env` y prend le relais. `tests/preflight/runtime-env.test.ts` verrouille les quatre maillons. Pour qu'elle soit en plus posable par site, l'ajouter à `CONSTANTES` ou `SECRETES` de `scripts/lib/deploy-config.ts` : le champ `env` de `sites.json` n'est consulté que pour les clés de ces deux listes.
+
+> **`VITE_COSTUM_FORCE_LIVE`** : drapeau de dépannage. À `"true"`, la lib ignore ses schémas costum bundlés et ne résout que par `getcostumjson` — utile quand l'artefact publié devient plus vieux que la base et masque des champs réels. Coûteux : plus de démarrage à froid, contexte costum nu tant que le préchargement n'a pas répondu. Se pose par site via le champ `env` de `sites.json`, sans reconstruire l'image.
 
 La fonction utilitaire `readEnv` centralise la lecture avec priorité `window.__ENV__` > `process.env` > `import.meta.env` :
 

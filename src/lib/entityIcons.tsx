@@ -6,7 +6,9 @@ import type { CollectionKey } from "@communecter/cocolight-api-client";
  * Configuration des icônes par type d'entité
  * Source de vérité unique
  */
-export const ENTITY_ICON_CONFIG = {
+// Non exportée à dessein : aucun importateur, et le plugin react-refresh prend une
+// const PascalCase suivie de `as const` pour un composant React (5 faux positifs).
+const ENTITY_ICON_CONFIG = {
   organizations: {
     icon: Building2,
     iconName: "building-2",
