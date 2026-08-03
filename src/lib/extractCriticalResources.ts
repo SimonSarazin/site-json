@@ -32,6 +32,28 @@ const RESPONSIVE_BG_SECTION_TYPES = new Set<string>([
   'hero',
   'hero-parallax',
   'hero-tinted-overlay',
+  'hero-carousel',
+]);
+
+/**
+ * Types de section dont l'image LCP vit dans `props.slides[0].backgroundImage` et NON
+ * dans `props.backgroundImage`. Sans cette seconde lecture, un type ajouté au Set
+ * ci-dessus n'émettrait toujours AUCUN preload — le garde `typeof bg === 'string'`
+ * (plus bas) coupant sur un `undefined`.
+ *
+ * ⚠ Le Set ci-dessus et celui-ci sont INDISSOCIABLES : ajouter un type à l'un sans
+ * l'autre ne produit rien, en silence. `tests/preflight/lcp-preload.test.ts` garde
+ * cette parité — écrit en même temps que `hero-carousel`, parce que RIEN dans `tests/`
+ * ni `e2e/` ne couvrait cette chaîne jusque-là.
+ *
+ * On ne précharge QUE la diapositive 0 : `addImage` dédoublonne mais n'agrège pas, donc
+ * n appels produiraient n balises `<link>` distinctes — ce qui viole le plafond de
+ * priorité (« setting a high priority on more than one or two images makes priority
+ * setting unhelpful »). Les diapositives suivantes portent `fetchpriority="low"` dans
+ * le composant.
+ */
+const SLIDES_BG_SECTION_TYPES = new Set<string>([
+  'hero-carousel',
 ]);
 
 /**
@@ -125,7 +147,15 @@ export function extractCriticalImages(
     // qu'on corrige). cf. <OptimizedImage> / <HeroBackgroundImage>.
     const firstSection = currentPage.sections?.[0];
     if (firstSection && RESPONSIVE_BG_SECTION_TYPES.has(firstSection.type)) {
-      const bg = (firstSection.props as { backgroundImage?: string } | undefined)?.backgroundImage;
+      const props = firstSection.props as
+        | { backgroundImage?: string; slides?: { backgroundImage?: string }[] }
+        | undefined;
+      // Un héro à diapositives porte son image LCP dans slides[0], pas à la racine des
+      // props : sans cette branche, le garde scalaire ci-dessous coupe sur `undefined`
+      // et la page perd son preload SANS le moindre signal.
+      const bg = SLIDES_BG_SECTION_TYPES.has(firstSection.type)
+        ? props?.slides?.[0]?.backgroundImage
+        : props?.backgroundImage;
       if (typeof bg === 'string') addImage(bg, 'high', true);
     }
   }
@@ -160,7 +190,8 @@ export interface CriticalFont {
  */
 function extractFontFamilies(families?: string[]): string[] {
   if (!families) return [];
-  const genericFonts = ['sans-serif', 'serif', 'monospace', 'system-ui', 'cursive', 'fantasy'];
+  const genericFonts = ['sans-serif', 'serif', 'monospace', 'system-ui', 'cursive', 'fantasy',
+    'ui-sans-serif', 'ui-serif', 'ui-monospace', 'ui-rounded'];
   return families
     .map(f => f.trim().replace(/['"]/g, '').split(',')[0].trim())
     .filter(f => f && !genericFonts.includes(f.toLowerCase()));

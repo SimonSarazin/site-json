@@ -52,7 +52,7 @@ L'idée est étonnamment peu coûteuse parce que **les quatre briques dures exis
 ### 1. Le schéma Zod est la source de vérité… et il est exportable en JSON Schema
 
 - `src/types/site-schema.ts` (~2 030 lignes) : `SiteConfig` racine, `Header`,
-  `Footer`, `Page`, et **68 sections** discriminées par
+  `Footer`, `Page`, et **71 sections** discriminées par
   `z.discriminatedUnion("type", […])` (L1325).
 - **zod 4.1.13 fournit `z.toJSONSchema()` natif** (vérifié sur place : il
   fonctionne sur nos schémas). On peut donc produire, à la volée ou au build,
@@ -146,15 +146,15 @@ scripts** comme backend de validation ; A n'a plus d'intérêt propre.
 
 ## Design de la boucle de génération (cœur du sujet)
 
-**Ne jamais générer tout le config d'un coup.** Le JSON Schema des 68 sections
-est volumineux et le contexte se dilue. Découper en étapes outillées :
+**Ne jamais générer tout le config d'un coup.** Le JSON Schema de toutes les
+sections réunies est volumineux et le contexte se dilue. Découper en étapes outillées :
 
 1. **Interview** (modèle conversationnel) : type de site, langues, pages
    souhaitées, ton/couleurs → produit un *plan* (liste de pages + sections
    pressenties, choix `header.type`/`footer.type` parmi les noms de DESIGN).
 2. **Génération par morceau** : `meta` + `theme` → `header`/`footer` → puis
    **page par page**, chaque page limitée aux schémas des sections retenues par
-   le plan (pas les 68). La forme exacte de chaque morceau vient de
+   le plan (pas l'intégralité du catalogue). La forme exacte de chaque morceau vient de
    `z.toJSONSchema(<sous-schéma>)` — consultée via `config-schema.mjs` dans
    l'architecture C (skill), ou fournie comme `input_schema` d'un tool dans
    l'architecture B (API).
@@ -220,9 +220,17 @@ tel quel.
   *tous* les configs et via le runner — trop lent pour itérer.)
 - **`config-schema.mjs <sélecteur>`** — ex. `config-schema.mjs section:pricing`
   ou `header` → imprime le JSON Schema (`z.toJSONSchema`, `unrepresentable:
-  "any"`) du morceau demandé. Évite à la skill de relire les 2 030 lignes de
-  `site-schema.ts` pour connaître la forme exacte d'une section ; la sortie est
-  compacte et exhaustive (enums, champs requis, défauts).
+  "any"`, `reused: "ref"`) du morceau demandé. Évite à la skill de relire les
+  2 030 lignes de `site-schema.ts` pour connaître la forme exacte d'une section ;
+  la sortie est compacte et exhaustive (enums, champs requis, défauts).
+  ⚠️ **Un schéma partagé sort en `$ref`** : `CardConfSchema`, réutilisé par
+  `list.card` ET `list.itemRules[].card`, n'apparaît qu'une fois en `$defs`, et
+  le nœud qui le référence n'a **aucune** `properties`. Un lecteur de forme doit
+  donc déréférencer — `derefJsonSchemaNode(node, root)`
+  (`scripts/lib/config-blocks.ts`). Corollaire pour le registre de descriptions :
+  décrire `list.itemRules[].card.type` écraserait `list.card.type`, les deux
+  chemins désignant le même nœud ; on ne décrit que le dernier segment propre à
+  chaque emplacement (`list.itemRules[].card`).
 
 ### Le workflow encodé dans SKILL.md
 
@@ -279,7 +287,14 @@ argumentées, pas choisir en silence. Matière à encoder dans SKILL.md :
 | `rich` | newsletter + colonnes de liens + socials + copyright | `newsletter`, `columns[]`, `socials[]` |
 | `minimal-centered` | logo centré + nav horizontale + légal | `columns[0].links`, `legalLinks` |
 | `sidebar-columns` | sidebar (logo+description+socials) + grille de colonnes | `style: "plain"\|"card"`, `description` |
-| `contact-partners` | bloc contact (icônes) + grille de logos partenaires | `contactSection.items[]`, `partners.logos[]` |
+| `contact-partners` | bloc contact (icônes) + grille de logos partenaires | `contactSection.items[]`, `partners.logos[]`, `partners.title`, `partners.note` |
+
+`partners.note` porte la **mention de financement** sous les logos. Un
+cofinancement public s'accompagne d'une formulation imposée par le financeur
+(dispositif, opérateur, cadre) que les seuls logos ne portent pas ; sans ce
+champ elle finissait recopiée dans le `copyright`, où elle n'a rien à faire.
+Exemple en production : `config.prod.institut-bleu.json` (FIM/DGAMPA, Année de
+la mer, Région Réunion).
 
 **Archétypes** parmi les 17 configs réels : commune institutionnelle
 (`commune-transparente`, partagé par 8 communes, header `transparent-dark`),
@@ -374,7 +389,7 @@ Conventions vérifiées sur les 17 configs + `public/` :
 - Chemins internes : doivent exister dans `pages[].path` ou les routes de
   modules (`/profil`, `/login`, `/coform`…) — pas de chemin inventé.
 - Images : pas d'URL inventée — assets existants du site, ou laisser vide.
-- Sections : choisir dans le catalogue réel (68 types, descriptions dans
+- Sections : choisir dans le catalogue réel (descriptions dans
   `src/components/admin/section-meta.ts`) ; en cas de doute sur les props,
   `config-schema.mjs section:<type>`.
 - Familles de configs : pour un site « commune », partir de
@@ -405,7 +420,7 @@ l'usage :
 | Connaissance | Source vivante (à l'invocation) |
 |---|---|
 | Types de header/footer/card/preview, enums | `config-schema.mjs` → `z.toJSONSchema` du schéma **courant** |
-| Liste + props des 68 sections | `config-schema.mjs sections` (membres de la discriminatedUnion) + `section-meta.ts` lu en direct |
+| Liste + props de toutes les sections | `config-schema.mjs sections` (membres de la discriminatedUnion) + `section-meta.ts` lu en direct |
 | Modules disponibles + leurs sections | `src/modules/*/` (découverte `import.meta.glob` — listable par script) |
 | Archétypes / configs existants | `sites.json` + `config.prod.*.json` lus en direct |
 | Slugs d'entité | `entity-slug.mjs` (backend interrogé en direct) |
@@ -490,7 +505,7 @@ réparation d'un config existant. Décisions prises :
 1. **Skill vs slash command** : une *skill* (`.claude/skills/`, auto-invocable
    quand le sujet s'y prête) ou une *commande* explicite (`/config-assistant`) ?
    Reco : skill avec description précise — l'invocation reste naturelle
-   (« ajoute une page contact au site jardin-ocean »).
+   (« ajoute une page contact au site rezo-la-mer »).
 2. **Granularité de `config-schema.mjs`** : sélecteurs à supporter
    (`section:<type>`, `header`, `footer`, `theme`, `meta`, `page`) — et faut-il
    un mode « liste des types de section + résumé une ligne » pour le plan ?

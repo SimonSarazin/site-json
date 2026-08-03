@@ -1,0 +1,122 @@
+{
+  "feature": "list-resource",
+  "titre": "Section liste de ressources (presenter resource)",
+  "description": "searchProStatic avec baseParams + list.card/preview type resource (badge, facets, preview.width) — le presenter lit sa tranche list.resource.",
+  "source": "config.prod.parent62.json",
+  "selector": "pages[path=/ressources].sections[id=ressources-list]",
+  "snapshot": {
+    "type": "searchProStatic",
+    "id": "ressources-list",
+    "props": {
+      "customHeader": {
+        "title": {
+          "fr": "Toutes les ressources",
+          "en": "All resources"
+        }
+      },
+      "useFilter": true,
+      "showMap": false,
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "type": "recoveryCenter"
+        },
+        "defaultFields": [
+          "name",
+          "category",
+          "description",
+          "urls",
+          "medias",
+          "territoires",
+          "publics",
+          "themes",
+          "tags",
+          "address",
+          "created",
+          "type",
+          "source",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "description"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        }
+      },
+      "list": {
+        "columns": {
+          "sm": 1,
+          "md": 2,
+          "lg": 3
+        },
+        "card": {
+          "type": "resource",
+          "detailsMode": "dialog"
+        },
+        "preview": {
+          "type": "resource",
+          "width": "2xl"
+        },
+        "resource": {
+          "design": "card",
+          "titleField": "name",
+          "descriptionField": "description",
+          "dateField": "created",
+          "imageField": "profilMediumImageUrl",
+          "cityField": "address.addressLocality",
+          "urlsField": "urls",
+          "badge": {
+            "field": "category",
+            "colors": {
+              "Vidéo": "var(--chart-1)",
+              "Photo": "var(--chart-2)",
+              "Compte-rendu": "var(--chart-3)",
+              "Jeu": "var(--chart-4)",
+              "Document": "var(--chart-5)",
+              "Lien": "var(--primary)"
+            }
+          },
+          "facets": [
+            {
+              "field": "territoires",
+              "label": {
+                "fr": "Territoires",
+                "en": "Territories"
+              }
+            },
+            {
+              "field": "publics",
+              "label": {
+                "fr": "Publics",
+                "en": "Audiences"
+              }
+            },
+            {
+              "field": "themes",
+              "label": {
+                "fr": "Thèmes",
+                "en": "Themes"
+              }
+            },
+            {
+              "field": "tags",
+              "label": {
+                "fr": "Mots-clés",
+                "en": "Keywords"
+              }
+            }
+          ]
+        }
+      },
+      "enableMap": false
+    }
+  }
+}

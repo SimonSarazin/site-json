@@ -1,4 +1,5 @@
 import type { AdminResourceSection } from "../schema";
+import { formatDateLong } from "@/helpers/formatDate";
 
 /** entityType (collection plurielle) → clé de modale d'ajout STANDARD (ModalRegistry). */
 const ADD_MODAL_BY_TYPE: Record<string, string> = {
@@ -72,10 +73,20 @@ export function getPath(obj: unknown, path: string): unknown {
   }, obj);
 }
 
-/** Rendu texte d'une valeur de cellule (les colonnes ciblent des champs plats). */
+/** Rendu texte d'une valeur de cellule (les colonnes ciblent des champs plats,
+ *  plus les deux sérialisations MongoDate du backend — `created`/`updated`). */
 export function formatCell(value: unknown): string {
   if (value == null) return "—";
   if (typeof value === "string" || typeof value === "number") return String(value);
   if (typeof value === "boolean") return value ? "✓" : "—";
+  if (typeof value === "object") {
+    // La lib revivifie les timestamps (`created`…) en Date sur serverData.
+    if (value instanceof Date) return Number.isNaN(value.getTime()) ? "—" : formatDateLong(value);
+    const { sec, $date } = value as { sec?: unknown; $date?: unknown };
+    if (typeof sec === "number") return formatDateLong(sec * 1000);
+    if (typeof $date === "number" || typeof $date === "string") return formatDateLong($date);
+    const long = ($date as { $numberLong?: unknown } | undefined)?.$numberLong;
+    if (typeof long === "string") return formatDateLong(Number(long));
+  }
   return "";
 }

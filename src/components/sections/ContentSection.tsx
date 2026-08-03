@@ -12,21 +12,24 @@ export function ContentSection({
   props: SectionPropsMap["content"] 
 }) {
   const { t } = useLocalization();
-  const { 
-    category, 
-    title, 
-    description, 
-    tags, 
-    image, 
+  const {
+    category,
+    title,
+    description,
+    tags,
+    image,
     imagePosition = "right",
     links,
     iconCard,
     infoText,
     decorativeElements,
-    className 
+    stats,
+    className
   } = props;
 
   const isImageLeft = imagePosition === "left";
+  // Sans visuel, la colonne de droite serait vide : on passe en colonne unique.
+  const hasVisual = Boolean(image) || Boolean(decorativeElements && decorativeElements.type !== "none");
 
   return (
     <section id={id} className={cn("py-16", className)}>
@@ -36,11 +39,11 @@ export function ContentSection({
         )}
         
         <div className={cn(
-          "grid lg:grid-cols-2 gap-16 items-center",
-          isImageLeft && "direction-rtl"
+          hasVisual ? "grid lg:grid-cols-2 gap-16 items-center" : "max-w-3xl",
+          hasVisual && isImageLeft && "direction-rtl"
         )}>
           {/* Content Column */}
-          <div className={cn(isImageLeft && "lg:order-2")}>
+          <div className={cn(hasVisual && isImageLeft && "lg:order-2")}>
             {category && isImageLeft && (
               <T k={category} as="p" className="text-muted-foreground text-sm font-medium mb-4" />
             )}
@@ -48,6 +51,18 @@ export function ContentSection({
             <T k={title} as="h2" className="text-4xl font-bold text-primary mb-6 leading-tight" />
 
             <T k={description} as="p" className="text-muted-foreground mb-8 leading-relaxed" />
+
+            {/* Stats */}
+            {stats && stats.length > 0 && (
+              <div className="flex flex-wrap gap-x-10 gap-y-6 mb-8">
+                {stats.map((stat, idx) => (
+                  <div key={idx}>
+                    <div className="text-3xl font-bold text-primary">{stat.value}</div>
+                    <T k={stat.label} as="div" className="text-sm text-muted-foreground mt-1" />
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Tags */}
             {tags && tags.length > 0 && (
@@ -64,15 +79,18 @@ export function ContentSection({
               </div>
             )}
 
-            {/* Icon Card with Links */}
-            {iconCard && links && links.length > 0 && (
+            {/* Icon Card and/or Links */}
+            {(iconCard || (links && links.length > 0)) && (
               <div className="flex items-start gap-4 mb-6">
                 {/* Icon */}
-                <div className="w-28 h-28 px-4 bg-card rounded-2xl border border-border flex items-center justify-center text-3xl shadow-lg flex-0">
-                  <div dangerouslySetInnerHTML={{ __html: iconCard.svg }} suppressHydrationWarning />
-                </div>
+                {iconCard && (
+                  <div className="w-28 h-28 px-4 bg-card rounded-2xl border border-border flex items-center justify-center text-3xl shadow-lg flex-0">
+                    <div dangerouslySetInnerHTML={{ __html: iconCard.svg }} suppressHydrationWarning />
+                  </div>
+                )}
 
                 {/* Links Card */}
+                {links && links.length > 0 && (
                 <div className="bg-card rounded-2xl shadow-lg p-6 border border-border flex-1">
                   <div className="space-y-4">
                     {links.map((link, idx) => (
@@ -91,6 +109,7 @@ export function ContentSection({
                     ))}
                   </div>
                 </div>
+                )}
               </div>
             )}
 
@@ -106,6 +125,7 @@ export function ContentSection({
           </div>
 
           {/* Image Column */}
+          {hasVisual && (
           <div className={cn("relative h-full", isImageLeft && "lg:order-1")}>
             <div className="h-full rounded-2xl overflow-hidden">
               {image && (
@@ -138,6 +158,7 @@ export function ContentSection({
               </div>
             )}
           </div>
+          )}
         </div>
       </div>
     </section>

@@ -523,6 +523,19 @@ html {
 /* Surcharges des tokens partagés (styles/shared.css) — valeurs historiques. */
 :root {
   --shadow-deep: var(--shadow-ocean);
-  --gradient-section: linear-gradient(135deg, var(--ocean-deep), var(--ocean-mid), var(--ocean-light));
   --text-shadow-glow: 0 0 20px oklch(0.8456 0.1546 194.769 / 0.5), 0 0 40px oklch(0.8456 0.1546 194.769 / 0.3);
+
+  /* Bande décorée des `searchHeader`/`cta-newsletter` — le texte posé dessus suit le MODE
+     (`--foreground`), le fond DOIT donc suivre le mode lui aussi. Une surcharge posée dans le seul
+     `:root` (ce qui était le cas ici, avec les trois bleus profonds de `.dark`) donne un titre
+     sombre sur un fond sombre en mode clair : le bandeau devenait illisible sur 4 pages sur 5.
+     On mélange donc les teintes marines au `--background` du mode courant, comme parent62. */
+  --gradient-section: linear-gradient(135deg,
+    color-mix(in oklab, var(--ocean-surface) 22%, var(--background)),
+    color-mix(in oklab, var(--ocean-foam) 32%, var(--background)));
+}
+
+.dark {
+  /* En sombre, le dégradé profond d'origine reprend tout son sens : le texte y est clair. */
+  --gradient-section: linear-gradient(135deg, var(--ocean-deep), var(--ocean-mid), var(--ocean-light));
 }

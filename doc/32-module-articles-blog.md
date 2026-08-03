@@ -18,6 +18,8 @@ Module **piloté par les données** : un article **est un POI `type:"article"`**
   - `/blog/:slug` — reader d'un article slugué (~18 % des articles) ;
   - `/blog/id/:id` — reader des ~82 % d'articles **sans slug** ;
   - la **liste** `/blog` n'est pas une route du module : c'est une **page de config** portant une section `articleFeed`.
+- **Trois voies mènent au reader** : la section `articleFeed`, la source de palette `blog:articles`, et — depuis une liste de recherche — une règle `list.itemRules` portant `itemAction: {kind: "link", to: "/blog/:slug", toById: "/blog/id/:id"}` (cf. [doc/07](07-module-search.md#rendu-par-item-des-listes-hétérogènes-listitemrules)). C'est ainsi qu'un POI `type:"article"` remonté par la recherche globale ouvre l'article au lieu d'un drawer générique.
+  ⚠️ Contrairement à `detailBasePath` (déprécié, gardé contre l'open-redirect), `itemAction.to` accepte **n'importe quel gabarit sans garde** : n'y placer aucune URL dérivée d'une donnée utilisateur. `audit:config` contrôle en revanche que la route ciblée existe.
 
 ## Arborescence
 
@@ -38,6 +40,8 @@ src/modules/blog/
 ├── components/
 │   ├── ArticleCard.tsx · ArticleCardCompact.tsx  # variants de carte
 │   ├── ArticleReader.tsx                         # variant de reader (default)
+│   ├── ArticleGallery.tsx                        # galerie d'images de l'article (about.images contentKey=slider → GalleryGrid + lightbox)
+│   ├── ArticleDocuments.tsx                      # documents/fichiers joints (about.files objet keyé _id → FilesList, téléchargement)
 │   └── RelatedArticles.tsx                        # bas du reader
 ├── variants/
 │   ├── registry.ts          # makeVariantRegistry (lazy vite-preload + .preload())
@@ -69,6 +73,35 @@ Champs utiles d'un POI `type:"article"` (cf. `hooks/useArticle.ts`) :
 | `slug` | slug (absent pour ~82 % → reader par id) |
 | `source.key` | **costum de rattachement** (scope du fil) |
 | `source.originUrl` | URL WordPress d'origine (migration) |
+
+## Édition : le costum form `parent62-article`
+
+Un article s'édite via un **costum form config-driven** déclaré dans `config.prod.parent62.json` sous
+`costumForms.parent62-article` (`entityType/collection:"poi"`, `costumSlug:"parent62"`, `layout.kind:"flat"`).
+Le POI est **typé à la création** par `mutation.inject.extraFields.type:"article"`. Exemple concret de
+**personnalisation d'un costum form** pour l'article (les widgets `gallery`/`file` + affichage sont déjà décrits
+côté composants — voir `ArticleGallery` / `ArticleDocuments`) :
+
+**Sections & champs.** Deux sections : `content` (`name`, `shortDescription`, `description` markdown,
+`profil_avatar`, `galerie`, `documents`, `tags`) et `taxo` (`territoires`, `publics`, `themes`).
+
+**Champs obligatoires** (`required:true`) : `name`, `description`, **et les 3 taxonomies** `territoires` /
+`publics` / `themes` (au moins un choix — `zodGen` traite `isEmpty([])` comme vide, donc un multiselect vide
+échoue la validation).
+
+**Territoire en choix UNIQUE.** `territoires` passe de `multiselect` (`string[]`) à **`widget:"select"`**
+(sans `multiple`) → valeur **`string`** (un seul territoire). `publics` / `themes` restent `multiselect`
+(`string[]`). Même `FormFieldSelectObject`, seul le flag `multiple` distingue les deux modes du form engine.
+
+**Widget adresse RETIRÉ.** Un article n'a pas d'adresse : suppression du champ `location` (`address`) + des
+5 champs cachés (`addressCountry`, `addressLocality`, `postalCode`, `streetAddress`, `localityId`) + de la
+section `location` + de `serializeGroups.address` (→ `serializeGroups:{}`).
+
+**CREATE reste sur l'admin.** Le form n'est ouvert que **depuis l'admin** (`admin.tabs[2].sections[0]`), donc
+`mutation.navigateOnSuccess:false` (plus de redirection vers `/profil/{slug}` au succès) + la table admin est
+**rafraîchie** : `mutation.invalidateFn.params.searchKeys` = `["blog:parent62", "admin-poi"]` — `admin-poi`
+invalide la requête de la table admin (`useSearchQuery` `queryKeyPrefix = ADMIN_QUERY_KEYS.RESOURCE_PREFIX('poi')`),
+donc le nouvel article apparaît immédiatement dans la liste (create **et** edit), en plus du fil blog.
 
 ## Sources de données
 
@@ -110,9 +143,16 @@ bespoke. Trois hooks :
   "filters": { "category": "actus" }, // filtre serveur additionnel (type:"article" toujours injecté)
   "featured": true,                    // article « à la une » (le plus récent) en tête
   "cardVariant": "compact",            // registre CARD_VARIANTS ; défaut config.blog.defaultCardVariant sinon "default"
-  "feedLayout": "list"                 // "grid" (défaut) | "list"
+  "feedLayout": "list",                // "grid" (défaut) | "list"
+  "fullWidth": true                    // élargit le fil : max-w-[1536px] + 4ᵉ colonne xl (xl:grid-cols-4) ; défaut false → max-w-6xl
 } }
 ```
+`fullWidth` (`z.boolean().optional()` sur `ArticleFeedSectionSchema.props`) élargit le conteneur externe de
+`max-w-6xl` à `max-w-[1536px]` (les **deux** layouts) et, en `feedLayout:"grid"` uniquement, ajoute une 4ᵉ colonne
+en xl (`xl:grid-cols-4`) — le layout `list` (`flex flex-col gap-4`) n'est pas affecté par ce changement de colonnes.
+But : aligner une page blog avec les pages `layout:"fullwidth"` de searchProStatic/agenda. Comme toute clé de config,
+`.optional()` n'a **pas** de défaut runtime (config jamais parsée par Zod) → il faut écrire explicitement `"fullWidth": true`.
+
 `detailBasePath` est **déprécié** (le reader est canonique `/blog/:slug` ; toute autre valeur est ignorée, warning dev).
 
 ### `articleReader`
@@ -133,8 +173,11 @@ bespoke. Trois hooks :
 (`PreloadableComponent`) : chunk code-splitté **tracé par le plugin** (→ `<link modulepreload>` en SSR,
 `preloadAll`) **et** méthode `.preload()` (préchauffe au survol). `get(key)` retombe **toujours** sur `default`.
 
-- `CARD_VARIANTS` — `default` (carte éditoriale 16/9) · `compact` (ligne).
-- `READER_VARIANTS` — `default` (reader éditorial). Extensible.
+- `CARD_VARIANTS` — `default` (carte éditoriale 16/9) · `compact` (ligne) · `poster` (`ArticleCardPoster` :
+  affiches/flyers, image **entière** `object-contain` sur fond flou tiré de la même URL, cadre portrait **3/4** en grille ;
+  vedette = écran scindé affiche | texte).
+- `READER_VARIANTS` — `default` (reader éditorial) · `poster` (`ArticleReaderPoster` : couverture **entière**
+  au ratio naturel, hauteur plafonnée `max-h-[85vh]`, pas de recadrage 16/9). Extensible.
 
 ⚠️ Déclarer les variants `lazy(() => import("chemin/statique"))` **directement** dans `cards.ts` / `readers.ts`
 (jamais via une indirection/variable, sinon `vite-preload` ne trace pas le chunk — même piège que `lazyNamed`).
@@ -149,6 +192,9 @@ bespoke. Trois hooks :
   "feedCostumSlug": "monCostum"     // costum du flux RSS /blog/feed.xml (sinon 400, sauf ?costum=)
 } }
 ```
+
+> `fullWidth` est une prop **par section** uniquement : il n'existe **pas** de `config.blog.defaultFullWidth`
+> — chaque section `articleFeed` la déclare individuellement.
 
 ## Visibilité / validation
 
@@ -193,5 +239,17 @@ Namespace `modules/blog` (`i18n/{fr,en}.json`), chargé en side-effect (`import 
 
 - **Search** : `buildSearchPayload` / `useSearchQuery` / `PageFilters` / `searchHeader` (fil + filtres).
 - **Agenda** : même patron d'**île client** config-driven + registre de variants + teaser.
-- **formEngine** : le costum form du POI `article` déclare les champs éditables (`name`,
-  `shortDescription`, `description` markdown, `profil_avatar`, `tags`).
+- **Search (preview `resource`)** : le nouveau preview config-driven `resource` du module search
+  (`useResourceEntity` dans `src/modules/search/hooks/`, `PreviewResourceCard`) est un **miroir fidèle** du
+  patron blog `useArticle` / `ArticleGallery` / `ArticleDocuments` — même extraction `about.images`
+  (`contentKey="slider"` → `GalleryGrid`) + `about.files` (→ `FilesList`, plus audio via `AudioPlayer` /
+  `<video>` natif) au-dessus des **mêmes primitives partagées** `src/components/media/{GalleryGrid,FilesList,AudioPlayer}`.
+  L'unité blog ↔ search reste ainsi explicite.
+- **formEngine** : le costum form `parent62-article` du POI `article` déclare les champs éditables (`name`,
+  `shortDescription`, `description` markdown, `profil_avatar`, `galerie`, `documents`, `tags`, taxonomies
+  `territoires`/`publics`/`themes`) — voir [Édition](#édition--le-costum-form-parent62-article). Il illustre
+  la personnalisation config-driven d'un costum : champs requis, `select` vs `multiselect`, sections retirées,
+  ciblage du `navigateOnSuccess` / `invalidateFn` selon le point d'ouverture (admin).
+
+> Config parent62 (hors module) : le CTA header « Contact » (`config.header.ctaButton`) a été supprimé
+> (824ad17) — sans rapport avec l'édition d'article, mais dans le même fichier de config.

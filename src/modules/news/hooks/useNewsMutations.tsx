@@ -198,6 +198,8 @@ export function useEditNews(entity: EntityTypes, options?: MutationOptions) {
 export function useAddNews(entity: EntityTypes) {
   const queryClient = useQueryClient();
   const t = useT("modules/news");
+  // `deploymentEntity` = entité du SITE (costum ambiant du déploiement) — cf. useEntityMutation.
+  const { me, entity: deploymentEntity } = useCocolight();
   const entityId = entity.id || "";
 
   return useMutation({
@@ -212,8 +214,15 @@ export function useAddNews(entity: EntityTypes) {
     }) => {
       if (!entity) throw new Error("User not connected");
 
-      // Créer l'objet News
-      const news = await entity.news(newsData);
+      // Créer la News SOUS le costum AMBIANT du déploiement → `source.key` = site (comme poi/org via
+      // useEntityMutation), sur le mur de `entity` (le target). Sans déploiement costum (site nu / me
+      // indispo) → fallback `entity.news()` historique (pas de source.key). Cf. CostumScope.news().
+      const costumOf = me as unknown as {
+        costum?: (arg: EntityTypes) => Promise<{ news: (target: EntityTypes, data: NewsData) => Promise<News> }>;
+      } | null;
+      const news = deploymentEntity && costumOf?.costum
+        ? await (await costumOf.costum(deploymentEntity as unknown as EntityTypes)).news(entity, newsData)
+        : await entity.news(newsData);
 
       // Ajouter les images si présentes
       if (images && images.length > 0) {

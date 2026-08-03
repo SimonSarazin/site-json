@@ -20,6 +20,19 @@ interface HeroBackgroundImageProps {
   style?: CSSProperties;
   /** Largeurs du srcSet mobile (défaut [480,768,1280]). */
   mobileWidths?: number[];
+  /**
+   * Déprioritise EXPLICITEMENT le téléchargement (`fetchpriority="low"`), sans toucher
+   * à `loading`. Pour les diapositives 2..n d'un héro à carrousel.
+   *
+   * Pourquoi pas simplement `loading="lazy"` : depuis Chrome 121, les images à
+   * défilement HORIZONTAL utilisent les mêmes seuils que le défilement vertical
+   * (1250 px en 4G). Sur un carrousel plein écran, les diapositives suivantes tombent
+   * dans ce seuil — `lazy` n'économise donc plus rien, et `fetchpriority="low"` est le
+   * seul levier qui agisse encore.
+   *
+   * Ignoré si `priority` est vrai (les deux seraient contradictoires).
+   */
+  lowPriority?: boolean;
 }
 
 /**
@@ -43,6 +56,7 @@ export function HeroBackgroundImage({
   className = "w-full h-full object-cover",
   style,
   mobileWidths = DEFAULT_MOBILE_WIDTHS,
+  lowPriority = false,
 }: HeroBackgroundImageProps) {
   if (!src) return null;
   return (
@@ -62,7 +76,7 @@ export function HeroBackgroundImage({
         className={className}
         style={{ objectPosition: position, ...style }}
         loading={priority ? "eager" : "lazy"}
-        fetchPriority={priority ? "high" : undefined}
+        fetchPriority={priority ? "high" : lowPriority ? "low" : undefined}
       />
     </picture>
   );

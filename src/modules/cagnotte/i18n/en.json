@@ -89,7 +89,7 @@
     "paymentMethodLabel": "Payment method",
     "stripe": {
       "title": "Stripe",
-      "description": "Enter card details directly in the dialog",
+      "description": "Enter card details directly",
       "missingConfig": "Missing configuration",
       "formLabel": "Card details (Stripe)"
     },
@@ -106,6 +106,18 @@
         "li4": "Close the popup after payment to return",
         "li5": "Funding is recorded only after actual payment confirmation"
       }
+    },
+    "pledge": {
+      "title": "Pay later",
+      "description": "Without immediate payment",
+      "button": "Confirm commitment ({{amount}}€)",
+      "confirm": "Your pledge of {{amount}}€ will be recorded. To pay, please access your current pledges.",
+      "checkbox": "By checking this box, I confirm my pledge.",
+      "pledge": "Pay later",
+      "selected": "selected",
+      "selected_plural": "selected",
+      "proposition": "proposal",
+      "project": "project"
     },
     "selectMethodPlaceholder": "Select a payment method",
     "successScreen": {
@@ -498,21 +510,29 @@
   },
   "CagnotteDialog": {
     "title": "Participatory Funding",
-    "description": "Support ocean projects and the community platform",
+    "description": "Support initiatives and the community platform",
+    "loadingPayment": "Loading payment…",
     "fallbacks": {
-      "untitled": "Untitled project"
+      "untitled": "Untitled project",
+      "untitled_proposition": "Untitled proposal"
     },
     "labels": {
-      "supportedProject": "Supported project",
-      "selectProject": "Select a project to support",
+      "supportedResource": "Supported project",
+      "supportedResource_proposition": "Supported proposal",
+      "selectResource": "Select a project to support",
+      "selectResource_proposition": "Select a proposal to support",
       "noOrganization": "No organization selected",
-      "loadingProjects": "Loading projects...",
-      "noProjects": "No project available for this organization",
-      "selectProjectPlaceholder": "Select a project...",
+      "loadingResources": "Loading projects...",
+      "loadingResources_proposition": "Loading proposals...",
+      "noResource": "No project available for this organization",
+      "noResource_proposition": "No proposal available for this organization",
+      "selectResourcePlaceholder": "Select a project...",
+      "selectResourcePlaceholder_proposition": "Select a proposal...",
       "setAsMainCagnotte": "Set as main cagnotte",
-      "projectCagnotte": "Project cagnotte",
+      "resourceCagnotte": "Project cagnotte",
+      "resourceCagnotte_proposition": "Proposal cagnotte",
       "targetSuffix": "of {{target}} € target",
-      "milestonesTitle": "Cagnotte goals",
+      "itemsTitle": "Cagnotte goals",
       "amountSection": "Choose an amount",
       "customAmountSection": "Or enter a custom amount",
       "customAmountPlaceholder": "Amount",
@@ -533,16 +553,19 @@
       "thankYou": "Thank you for your contribution!"
     },
     "toasts": {
-      "milestoneReached": {
-        "title": "Milestone reached: {{amount}} €!"
+      "itemReached": {
+        "title": "Objective reached: {{amount}} €!"
       },
-      "projectRequired": {
+      "resourceRequired": {
         "title": "Project required",
-        "description": "Please select a project."
+        "title_proposition": "Proposal required",
+        "description": "Please select a project.",
+        "description_proposition": "Please select a proposal."
       },
-      "milestoneRequired": {
+      "itemRequired": {
         "title": "Milestone required",
-        "description": "Please select at least one milestone."
+        "description": "Please select at least one milestone.",
+        "description_proposition": "Please select at least one goal."
       },
       "invalidAmount": {
         "title": "Invalid amount",
@@ -555,6 +578,26 @@
       "saveSuccess": {
         "title": "Success"
       }
+    },
+    "pledges": {
+        "toast": "You have {{count}} pledge totaling {{totalAmount}} € to pay!",
+        "toast_plural": "You have {{count}} pledges totaling {{totalAmount}} € to pay!",
+        "list": {
+          "title": "My funding pledges",
+          "triggerResource": "By resource",
+          "triggerFunder": "By funder",
+          "noPledges": "No pending pledges.",
+          "engagement": "pledge",
+          "engagements": "pledges",
+          "by": "By",
+          "for": "For",
+          "totalSelectedLabel": "Total selected",
+          "PaySelected": "Pay my selection",
+          "return": "Return to crowdfunding"
+        },
+        "payment": {
+          "title": "Pledge payment"
+        }
     }
   },
   "FinanceSection": {
@@ -727,5 +770,38 @@
   },
   "a11y": {
     "back": "Back"
+  },
+  "Pledges": {
+    "list": {
+      "title": "Pledge Payments",
+      "triggerProject": "By project",
+      "triggerFunder": "By funder",
+      "pledge": "pledge",
+      "pledge_plural": "pledges",
+      "For": "For",
+      "From": "From",
+      "totalSelectedLabel": "Total selected:",
+      "PaySelected": "Pay selected ",
+      "return": "Back to funding"
+    },
+    "payform": {
+      "selectedPledge": "selected pledge",
+      "selectedPledge_plural": "selected pledges"
+    }
+  },
+  "PaymentReceivedScreen": {
+    "title": "Payment received",
+    "subtitleSingle": "Your contribution of {{amount}} € has been successfully recorded.",
+    "subtitleMultiple": "Your {{count}} pledges ({{amount}} €) have been successfully paid.",
+    "objectiveReached": { "label": "Goal reached!" },
+    "closeButton": "Close",
+    "returnHomeButton": "Return to home"
+  },
+  "PledgeConfirmedScreen": {
+    "title": "Pledge recorded",
+    "subtitleSingle": "Your pledge of {{amount}} € has been successfully recorded.",
+    "subtitleMultiple": "Your {{count}} pledges ({{amount}} €) have been successfully recorded.",
+    "hint": "You can pay this amount at any time using the pledges button.",
+    "closeButton": "Close"
   }
 }

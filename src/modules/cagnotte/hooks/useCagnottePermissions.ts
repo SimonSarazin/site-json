@@ -10,7 +10,7 @@
  * @example
  *   const perms = useCagnottePermissions(entity, {
  *     hasActiveMilestones,
- *     projectId,
+ *     ressourceId,
  *   });
  *   if (perms.canCreateMilestone) { ... }
  *   if (perms.canEditAction(action)) { ... }
@@ -33,11 +33,11 @@ export function useCagnottePermissions(
   const stableData = useMemo<Record<string, unknown>>(
     () => ({
       cagnotte: {
-        hasActiveMilestones: data?.hasActiveMilestones ?? false,
-        projectId: data?.projectId ?? "",
+        hasActiveItems: data?.hasActiveItems ?? false,
+        resourceId: data?.resourceId ?? "",
       },
     }),
-    [data?.hasActiveMilestones, data?.projectId]
+    [data?.hasActiveItems, data?.resourceId]
   );
 
   const { cagnotte } = usePermissions<{ cagnotte: CagnottePermissions }>(

@@ -38,7 +38,17 @@ import { useValidateGroup, type ValidatableCarrier } from "../hooks/useValidateG
 import type { AdminResourceSection, AdminSection } from "../schema";
 import { downloadCsv } from "../lib/downloadCsv";
 import { ensureCostumScope } from "../lib/ensureCostumScope";
+import { AudioPlayer } from "@/components/media/AudioPlayer";
 import { formatCell, getPath, resolveCreateModal, resolveEditModal, type CostumFormDocLike } from "./resourceHelpers";
+
+/** Cellule audio : lecteur du 1er `medias[].url` de type audio de la ligne (ou d'une URL directe). */
+function AudioCell({ value }: { value: unknown }) {
+  const url = Array.isArray(value)
+    ? (value.find((m): m is { type?: string; url?: string } => !!m && typeof m === "object" && (m as { type?: string }).type === "audio")?.url)
+    : (typeof value === "string" ? value : undefined);
+  if (!url) return <span className="text-muted-foreground">—</span>;
+  return <AudioPlayer compact src={url} />;
+}
 
 import { toCsv } from "@communecter/cocolight-api-client";
 import { toast } from "sonner";
@@ -56,7 +66,7 @@ type StatusFilter = "all" | "pending" | "validated";
 
 export default function AdminResourceTable({ section }: { section: AdminSection }) {
   const resource = section as AdminResourceSection;
-  const { entity: carrier, contextId, contextType } = useCocolight();
+  const { entity: carrier, contextId, contextType, me } = useCocolight();
   // Droit-parapluie costum : dans /admin (gate `siteAdmin` = admin du host du costum), l'utilisateur peut
   // éditer/supprimer TOUS les éléments du costum. On pose le flag client `setCostumAdminAuthorized` sur
   // l'entité avant edit/delete pour que la garde lib (_update/_deleteViaElement) ne bloque pas un non-auteur ;
@@ -67,12 +77,30 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
     if (canCostumAdmin) (item as { setCostumAdminAuthorized?: (v?: boolean) => void })?.setCostumAdminAuthorized?.();
     return item;
   };
+  // Ouverture de l'édition : la ligne de liste (searchCostum) est ALLÉGÉE — sans les champs `images`/`files`
+  // fusionnés par `about`. On (re)charge l'entité COMPLÈTE par id avant d'ouvrir le form, sinon le seed galerie
+  // (`getGalleryImages` / `data.files`) est vide → les images/documents EXISTANTS ne s'affichent pas à l'édition.
+  // Repli sur la ligne allégée si le chargement échoue (au moins le form s'ouvre).
+  const EDIT_LOAD_METHOD: Record<string, "poi" | "organization" | "project" | "event"> = {
+    poi: "poi", organizations: "organization", projects: "project", events: "event",
+  };
+  const openEditEntity = async (item: unknown, realId: string | undefined): Promise<void> => {
+    const method = EDIT_LOAD_METHOD[resource.entityType];
+    const sdk = me as unknown as Record<string, ((a: { id: string }) => Promise<unknown>) | undefined> | null;
+    if (sdk && realId && method && typeof sdk[method] === "function") {
+      try {
+        const full = await sdk[method]!({ id: realId });
+        if (full) { setEditEntity(grantCostumAdmin(full) as unknown as EntityTypes); return; }
+      } catch { /* repli sur la ligne allégée */ }
+    }
+    setEditEntity(grantCostumAdmin(item) as unknown as EntityTypes);
+  };
   const t = useT();
   // Second hook nommé : `t` reste réservé aux LocalizedString de config, `tAdmin` au namespace du module.
   const tAdmin = useT("modules/admin");
   // Colonnes : `"path"` brut OU `{path, label}` (libellé localisé) — cf. AdminColumnSchema.
   const columns = (resource.columns ?? ["name"]).map((c) =>
-    typeof c === "string" ? { path: c, label: undefined } : c,
+    typeof c === "string" ? { path: c, label: undefined, type: undefined } : c,
   );
   const rowActions = resource.rowActions ?? ["edit", "delete"];
   const costumSlug = (carrier as { slug?: string } | null)?.slug ?? "";
@@ -426,8 +454,14 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                     </TableCell>
                   )}
                   {columns.map((col) => (
-                    <TableCell key={col.path} className="max-w-[14rem] truncate" title={formatCell(getPath(data, col.path))}>
-                      {formatCell(getPath(data, col.path))}
+                    <TableCell
+                      key={col.path}
+                      className={col.type === "audio" ? "min-w-[13rem]" : "max-w-[14rem] truncate"}
+                      title={col.type === "audio" ? undefined : formatCell(getPath(data, col.path))}
+                    >
+                      {col.type === "audio"
+                        ? <AudioCell value={getPath(data, col.path)} />
+                        : formatCell(getPath(data, col.path))}
                     </TableCell>
                   ))}
                   {adminMode && (
@@ -448,7 +482,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         {rowActions.includes("edit") && editModal.enabled && (
-                          <DropdownMenuItem onClick={() => setEditEntity(grantCostumAdmin(item) as unknown as EntityTypes)}>
+                          <DropdownMenuItem onClick={() => void openEditEntity(item, hasRealId ? id : undefined)}>
                             <Pencil className="mr-2 h-4 w-4" /> {tAdmin("AdminResourceTable.edit")}
                           </DropdownMenuItem>
                         )}

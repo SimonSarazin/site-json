@@ -3,7 +3,7 @@ import { useT } from "@/hooks/useT";
 import Preview from "../Preview";
 import { DetailsModeProps } from "../../schema";
 
-export default function DetailsModeDrawer({ openDetails, setOpenDetails, item, preview }: DetailsModeProps) {
+export default function DetailsModeDrawer({ openDetails, setOpenDetails, item, preview, list }: DetailsModeProps) {
     const t = useT("modules/search");
 
     return (
@@ -16,8 +16,8 @@ export default function DetailsModeDrawer({ openDetails, setOpenDetails, item, p
           link={item?.slug ? `/profil/${item.slug}` : undefined}
         >
           {item && (
-            <Preview item={item} preview={preview} onClose={() => setOpenDetails(false)} />
+            <Preview item={item} preview={preview} list={list} onClose={() => setOpenDetails(false)} />
           )}
         </CustomDrawer>
     );
-}   
+}

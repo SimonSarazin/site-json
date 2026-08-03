@@ -330,14 +330,9 @@ export const HeroTintedOverlaySchema = z.object({
         })
       )
       .optional(),
-    badges: z
-      .array(
-        z.object({
-          label: LocalizedString,
-          icon: z.string().optional(),
-        })
-      )
-      .optional(),
+    // `badges` (pluriel) a été RETIRÉ le 2026-07-29 : déclaré ici mais jamais lu par
+    // HeroTintedOverlay, et zéro usage dans le parc. Le composant rend `badge`
+    // (singulier), juste au-dessus. Ne pas le réintroduire sans l'implémenter.
     showScrollIndicator: z.boolean().optional(),
   })
 });
@@ -346,6 +341,60 @@ export type HeroTintedOverlay = z.infer<typeof HeroTintedOverlaySchema>;
 
 export type HeroTintedOverlayProps = z.infer<typeof HeroTintedOverlaySchema>["props"];
 
+//──────────────── Hero à diapositives
+/**
+ * Une diapositive = un mini-héro. `backgroundImage` reste SCALAIRE ici, comme
+ * dans les 7 autres héros (`z.string().optional()`) : c'est la forme que
+ * `extractCriticalResources.ts:129` sait lire (`typeof bg === "string"`).
+ * Un `backgroundImage: z.array(...)` sur un héro existant aurait cassé cet
+ * invariant de famille ET fait échouer le garde du preload EN SILENCE.
+ *
+ * Pas de `backgroundImageMobile` par diapositive en v1, malgré le précédent de
+ * `hero-quick-access` : `generatePreloadTags.ts:24` appelle `buildResponsiveSrcSet`
+ * SANS largeurs et code `imagesizes="100vw"` en dur, et `CriticalImage` n'a aucun
+ * champ pour transporter des largeurs alternatives. L'art-direction mobile
+ * rouvrirait donc le double téléchargement que la chaîne de preload évite — trou
+ * PRÉEXISTANT (hero-quick-access l'a déjà), à traiter séparément.
+ */
+const HeroCarouselSlideSchema = z.object({
+  headline: LocalizedString,
+  subhead: LocalizedString.optional(),
+  backgroundImage: z.string().optional(),
+  backgroundImageAlt: LocalizedString.optional(),
+  /** Lien de la diapositive (rendu comme un CTA sous le sous-titre). */
+  ctaLabel: LocalizedString.optional(),
+  ctaPath: z.string().optional(),
+});
+
+const HeroCarouselSectionSchema = z.object({
+  type: z.literal("hero-carousel"),
+  id: z.string().optional(),
+  props: z.object({
+    slides: z.array(HeroCarouselSlideSchema),
+
+    // ── Chrome de SECTION, pas de diapositive ──
+    // Aucune des instances réelles de `hero-tinted-overlay` du parc ne porte de
+    // badge ni de CTA PAR écran : les mettre par diapositive fabriquerait du
+    // schéma mort. Ne PAS introduire `badges` au pluriel (cf. l'interdit écrit
+    // sur `hero-tinted-overlay` plus haut).
+    badge: LocalizedString.optional(),
+    showScrollIndicator: z.boolean().optional(),
+
+    // ── Spécifiques carrousel ──
+    // ⚠ La config n'est JAMAIS parsée par Zod à l'exécution : `.default()` ne
+    // tournerait pas. Les valeurs de repli vivent dans HeroCarousel.tsx
+    // (autoplay false, intervalle 6000 ms).
+    autoplay: z.boolean().optional(),
+    autoplayIntervalMs: z.number().optional(),
+    /** Nom accessible de la région — indispensable si deux carrousels coexistent. */
+    ariaLabel: LocalizedString.optional(),
+  }),
+});
+
+export type HeroCarouselSlide = z.infer<typeof HeroCarouselSlideSchema>;
+
+export type HeroCarouselProps = z.infer<typeof HeroCarouselSectionSchema>["props"];
+
 //──────────────── Commune Transparente Hero
 export const HeroEntityBannerSchema = z.object({
   type: z.literal("hero-entity-banner"),
@@ -353,7 +402,9 @@ export const HeroEntityBannerSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
-    logoIcon: LucideIconOrSvg.optional(),
+    // `logoIcon` a été RETIRÉ le 2026-07-29 : déclaré ici mais jamais lu par
+    // HeroEntityBanner (qui source son logo depuis l'entité Cocolight, via
+    // `bannerLogoUrl`), et zéro usage dans le parc.
     logoImage: z.string().optional(),
     backgroundImage: z.string().optional(),
     backgroundImageAlt: LocalizedString.optional(),
@@ -464,7 +515,20 @@ export const ActionTilesSchema = z.object({
         title: LocalizedString,
         subtitle: LocalizedString.optional(),
         href: z.string(),
-        color: z.enum(["primary", "turquoise", "amber", "cyan-bright", "teal", "accent", "eco", "chart-2"]).optional(),
+        /**
+         * Couleur de la tuile — TOKENS du thème. `ActionTiles` les résout via sa
+         * table `TILE_TOKEN`. `turquoise`/`cyan-bright`/`teal`/`amber`/`eco` sont
+         * des ALIAS HISTORIQUES conservés pour les 5 configs du parc qui les
+         * emploient : ils codaient des couleurs Tailwind en dur (les mêmes sur
+         * tous les sites) et pointent désormais sur `chart-2..4`, la palette
+         * catégorielle propre à chaque site.
+         */
+        color: z.enum([
+          "primary", "accent", "destructive",
+          "chart-1", "chart-2", "chart-3", "chart-4", "chart-5",
+          // alias historiques
+          "turquoise", "cyan-bright", "teal", "amber", "eco",
+        ]).optional(),
       })
     ),
   }),
@@ -1394,6 +1458,7 @@ export const Section = z.discriminatedUnion("type", [
   HeroParallaxSchema,
   HeroQuickAccessSchema,
   HeroTintedOverlaySchema,
+  HeroCarouselSectionSchema,
   HeroEntityBannerSchema,
   FeaturesGlassSchema,
   ActionTilesSchema,
@@ -1579,6 +1644,11 @@ export const Header = z.object({
   // (ex. transparent-scroll = "primary"). "foreground" suit l'ink du thème →
   // marine en clair, clair en sombre, idéal pour une marque monochrome.
   logoIconTone: z.enum(["foreground", "primary", "white"]).optional(),
+  // Taille du logo dans la barre : "sm" = défaut historique de chaque header,
+  // "md" ≈ 40px, "lg" ≈ 48px sur desktop — toujours ramené plus compact sur
+  // mobile (classes responsive, cf. header/logoSize.ts). Honoré par les 6
+  // headers ; sur `standard`, "lg" suppose `height: "md"|"lg"` (barre sm = 48px).
+  logoSize: z.enum(["sm", "md", "lg"]).optional(),
   // Opt-in : remplace logo/titre par ceux de l'entité costum au runtime
   // (plateforme communecter `transparentCommune`). Désactivé par défaut → le
   // header ne dépend d'aucune logique de site sans cette option.
@@ -1615,6 +1685,7 @@ export const Header = z.object({
     cart: z.boolean().default(false),
     notifications: z.boolean().default(false),
     piggyBank: z.boolean().default(false),
+    pledge: z.boolean().default(false)
   }),
   ctaButton: z.object({
     label: LocalizedString,
@@ -1671,6 +1742,11 @@ const FooterPartnerLogo = z.object({
 const FooterPartnersSection = z.object({
   title: LocalizedString.optional(),
   logos: z.array(FooterPartnerLogo),
+  // Mention de financement, sous les logos. Un cofinancement public s'accompagne
+  // d'une formulation IMPOSÉE par le financeur (dispositif, opérateur, cadre) que
+  // les seuls logos ne portent pas : sans ce champ, elle finissait recopiée dans
+  // le `copyright`, où elle n'a rien à faire.
+  note: LocalizedString.optional(),
 });
 
 export const Footer = z.object({
@@ -1904,6 +1980,16 @@ const PerformanceConfig = z.object({
   criticalCSS: z.boolean().default(true),
 });
 
+const CagnotteModuleConfig = z.object({
+    defaultType: z.enum(["standard", "aac"]).optional().default("standard"),
+    predefinedAmounts: z.array(z.number()).optional(),
+    context: z.string().optional(),
+});
+
+export type CagnotteModuleConfig = z.infer<typeof CagnotteModuleConfig>;
+
+
+
 /*───────────────────────────────────────────────────────────────*/
 /* 10. SiteConfig – racine                                        */
 /*───────────────────────────────────────────────────────────────*/
@@ -1993,6 +2079,7 @@ export const SiteConfig = z.object({
   // Page d'Administration (config-driven, jumeau du module profil). Onglets/sections/accès déclarés en
   // données. Absent → pas de page admin. cf. modules/admin + commentaire/plan-module-admin-generique.md
   admin: AdminConfigSchema.optional(),
+  cagnotteModuleConfig: CagnotteModuleConfig.optional(),
 });
 export type SiteConfig = z.infer<typeof SiteConfig>;
 
@@ -2025,7 +2112,8 @@ export function getDefaultSiteConfig(): Partial<SiteConfig> {
         auth: false,
         cart: false,
         notifications: false,
-        piggyBank: false
+        piggyBank: false,
+        pledge: false
       },
       sticky: false,
       transparent: false,
@@ -2072,7 +2160,8 @@ export const example: SiteConfig = {
       auth: false,
       cart: false,
       notifications: false,
-      piggyBank: false
+      piggyBank: false,
+      pledge: false
     }
   },
   pages: [

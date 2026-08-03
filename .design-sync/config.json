@@ -1,0 +1,371 @@
+{
+  "projectId": "58feaa7c-779c-4b45-a7df-b787447d3fb8",
+  "shape": "package",
+  "pkg": "site-forge",
+  "globalName": "SiteForge",
+  "buildCmd": "SITE_CSS_PATH=$PWD/src/index.css npm run build:client && { echo '@import url(\"https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap\");'; echo '@import url(\"https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap\");'; cat $(ls -S dist/client/assets/*.css); } > .design-sync/.cache/ds-styles.css",
+  "tsconfig": "./.design-sync/tsconfig.json",
+  "cssEntry": "./.design-sync/.cache/ds-styles.css",
+  "runtimeFontPrefixes": [
+    "Quicksand",
+    "Playfair Display",
+    "Baloo 2",
+    "Hanken Grotesk",
+    "Spline Sans Mono",
+    "Bricolage Grotesque"
+  ],
+  "extraEntries": [
+    "./.design-sync/ds-provider.tsx"
+  ],
+  "provider": {
+    "component": "DsProvider"
+  },
+  "componentSrcMap": {
+    "HeaderStandard": "src/components/layout/header/HeaderStandard.tsx",
+    "HeaderMegaMenu": "src/components/layout/header/HeaderMegaMenu.tsx",
+    "HeaderTransparentScroll": "src/components/layout/header/HeaderTransparentScroll.tsx",
+    "HeaderMinimal": "src/components/layout/header/HeaderMinimal.tsx",
+    "HeaderUnderlineNav": "src/components/layout/header/HeaderUnderlineNav.tsx",
+    "HeaderTransparentDark": "src/components/layout/header/HeaderTransparentDark.tsx",
+    "FooterRich": "src/components/layout/footer/FooterRich.tsx",
+    "FooterMinimalCentered": "src/components/layout/footer/FooterMinimalCentered.tsx",
+    "FooterSidebarColumns": "src/components/layout/footer/FooterSidebarColumns.tsx",
+    "FooterContactPartners": "src/components/layout/footer/FooterContactPartners.tsx",
+    "NavLink": "src/components/layout/NavLink.tsx",
+    "LangSwitch": "src/components/layout/header/LangSwitch.tsx",
+    "MobileMenuSheet": "src/components/layout/header/MobileMenuSheet.tsx",
+    "SocialLinks": "src/components/layout/footer/SocialLinks.tsx",
+    "AccordionSection": "src/components/sections/AccordionSection.tsx",
+    "ActionTiles": "src/components/sections/ActionTiles.tsx",
+    "BannerSection": "src/components/sections/BannerSection.tsx",
+    "BlogListSection": "src/components/sections/BlogListSection.tsx",
+    "BlogPostSection": "src/components/sections/BlogPostSection.tsx",
+    "BreadcrumbSection": "src/components/sections/BreadcrumbSection.tsx",
+    "CTASection": "src/components/sections/CTASection.tsx",
+    "CardsSection": "src/components/sections/CardsSection.tsx",
+    "CategoriesGridSection": "src/components/sections/CategoriesGridSection.tsx",
+    "ChartSection": "src/components/sections/ChartSection.tsx",
+    "ComparisonSection": "src/components/sections/ComparisonSection.tsx",
+    "ContactFormSection": "src/components/sections/ContactFormSection.tsx",
+    "ContentSection": "src/components/sections/ContentSection.tsx",
+    "CookieConsentSection": "src/components/sections/CookieConsentSection.tsx",
+    "CtaCardGrid": "src/components/sections/CtaCardGrid.tsx",
+    "CtaNewsletter": "src/components/sections/CtaNewsletter.tsx",
+    "EventListSection": "src/components/sections/EventListSection.tsx",
+    "FAQSection": "src/components/sections/FAQSection.tsx",
+    "FeatureComparisonSection": "src/components/sections/FeatureComparisonSection.tsx",
+    "FeaturesGlass": "src/components/sections/FeaturesGlass.tsx",
+    "GallerySection": "src/components/sections/GallerySection.tsx",
+    "HTMLSection": "src/components/sections/HTMLSection.tsx",
+    "HeroCarousel": "src/components/sections/HeroCarousel.tsx",
+    "HeroEntityBanner": "src/components/sections/HeroEntityBanner.tsx",
+    "HeroParallax": "src/components/sections/HeroParallax.tsx",
+    "HeroQuickAccess": "src/components/sections/HeroQuickAccess.tsx",
+    "HeroSection": "src/components/sections/HeroSection.tsx",
+    "HeroTintedOverlay": "src/components/sections/HeroTintedOverlay.tsx",
+    "HeroWithIconSection": "src/components/sections/HeroWithIconSection.tsx",
+    "LogoCloudSection": "src/components/sections/LogoCloudSection.tsx",
+    "MapSection": "src/components/sections/MapSection.tsx",
+    "MarkdownSection": "src/components/sections/MarkdownSection.tsx",
+    "NewsletterSection": "src/components/sections/NewsletterSection.tsx",
+    "PricingSection": "src/components/sections/PricingSection.tsx",
+    "ProductShowcaseSection": "src/components/sections/ProductShowcaseSection.tsx",
+    "SocialFeedSection": "src/components/sections/SocialFeedSection.tsx",
+    "StatsSection": "src/components/sections/StatsSection.tsx",
+    "StepsSection": "src/components/sections/StepsSection.tsx",
+    "TableSection": "src/components/sections/TableSection.tsx",
+    "TeamSection": "src/components/sections/TeamSection.tsx",
+    "TestimonialsSection": "src/components/sections/TestimonialsSection.tsx",
+    "TimelineSection": "src/components/sections/TimelineSection.tsx",
+    "TitleSection": "src/components/sections/TitleSection.tsx",
+    "VideoSection": "src/components/sections/VideoSection.tsx",
+    "OptimizedImage": "src/components/ui/OptimizedImage.tsx",
+    "T": "src/components/ui/T.tsx",
+    "Accordion": "src/components/ui/accordion.tsx",
+    "AlertDialog": "src/components/ui/alert-dialog.tsx",
+    "Alert": "src/components/ui/alert.tsx",
+    "AspectRatio": "src/components/ui/aspect-ratio.tsx",
+    "Avatar": "src/components/ui/avatar.tsx",
+    "Badge": "src/components/ui/badge.tsx",
+    "Breadcrumb": "src/components/ui/breadcrumb.tsx",
+    "ButtonGroup": "src/components/ui/button-group.tsx",
+    "Button": "src/components/ui/button.tsx",
+    "Calendar": "src/components/ui/calendar.tsx",
+    "Card": "src/components/ui/card.tsx",
+    "Carousel": "src/components/ui/carousel.tsx",
+    "ChartContainer": "src/components/ui/chart.tsx",
+    "Checkbox": "src/components/ui/checkbox.tsx",
+    "Collapsible": "src/components/ui/collapsible.tsx",
+    "Command": "src/components/ui/command.tsx",
+    "ContextMenu": "src/components/ui/context-menu.tsx",
+    "DateTimePicker": "src/components/ui/datetime-picker.tsx",
+    "Dialog": "src/components/ui/dialog.tsx",
+    "Drawer": "src/components/ui/drawer.tsx",
+    "DropdownMenu": "src/components/ui/dropdown-menu.tsx",
+    "Form": "src/components/ui/form.tsx",
+    "HoverCard": "src/components/ui/hover-card.tsx",
+    "IconOrSvg": "src/components/ui/icon-or-svg.tsx",
+    "ImageViewer": "src/components/ui/image-viewer.tsx",
+    "InputGroup": "src/components/ui/input-group.tsx",
+    "InputOTP": "src/components/ui/input-otp.tsx",
+    "Input": "src/components/ui/input.tsx",
+    "Label": "src/components/ui/label.tsx",
+    "Menubar": "src/components/ui/menubar.tsx",
+    "Modal": "src/components/ui/modal.tsx",
+    "MultiCombobox": "src/components/ui/multi-combobox.tsx",
+    "NavigationMenu": "src/components/ui/navigation-menu.tsx",
+    "Pagination": "src/components/ui/pagination.tsx",
+    "Popover": "src/components/ui/popover.tsx",
+    "Progress": "src/components/ui/progress.tsx",
+    "RadioGroup": "src/components/ui/radio-group.tsx",
+    "ScrollArea": "src/components/ui/scroll-area.tsx",
+    "Select": "src/components/ui/select.tsx",
+    "Separator": "src/components/ui/separator.tsx",
+    "Sheet": "src/components/ui/sheet.tsx",
+    "Sidebar": "src/components/ui/sidebar.tsx",
+    "Skeleton": "src/components/ui/skeleton.tsx",
+    "Slider": "src/components/ui/slider.tsx",
+    "Toaster": "src/components/ui/sonner.tsx",
+    "Spinner": "src/components/ui/spinner.tsx",
+    "Switch": "src/components/ui/switch.tsx",
+    "Table": "src/components/ui/table.tsx",
+    "Tabs": "src/components/ui/tabs.tsx",
+    "Textarea": "src/components/ui/textarea.tsx",
+    "ToggleGroup": "src/components/ui/toggle-group.tsx",
+    "Toggle": "src/components/ui/toggle.tsx",
+    "Tooltip": "src/components/ui/tooltip.tsx",
+    "ResizablePanelGroup": "src/components/ui/resizable.tsx",
+    "SelectObject": "src/components/ui/select-objet.tsx",
+    "MultipleSelector": "src/components/ui/multiple-selector.tsx",
+    "AmpliHeader": "src/modules/ampli/components/sections/AmpliHeader.tsx",
+    "ArticleCard": "src/modules/blog/components/ArticleCard.tsx",
+    "ArticleCardCompact": "src/modules/blog/components/ArticleCardCompact.tsx",
+    "ArticleCardPoster": "src/modules/blog/components/ArticleCardPoster.tsx",
+    "ArticleReader": "src/modules/blog/components/ArticleReader.tsx",
+    "ArticleReaderPoster": "src/modules/blog/components/ArticleReaderPoster.tsx",
+    "CagnotteAmountPicker": "src/modules/cagnotte/components/parts/CagnotteAmountPicker.tsx",
+    "CagnotteItemList": "src/modules/cagnotte/components/parts/CagnotteItemList.tsx",
+    "CagnotteResourceProgressCard": "src/modules/cagnotte/components/parts/CagnotteResourceProgressCard.tsx",
+    "CagnotteSuccessScreen": "src/modules/cagnotte/components/parts/CagnotteSuccessScreen.tsx",
+    "CommentInput": "src/modules/news/components/comment/CommentInput.tsx",
+    "CountBadge": "src/modules/profil/components/shared/CountBadge.tsx",
+    "EmptyState": "src/modules/profil/components/shared/EmptyState.tsx",
+    "EntityCardDetailed": "src/modules/profil/components/shared/EntityCardDetailed.tsx",
+    "EntityEmptyState": "src/modules/profil/components/shared/EntityEmptyState.tsx",
+    "EntityGrid": "src/modules/profil/components/shared/EntityGrid.tsx",
+    "EntityGridView": "src/modules/profil/components/shared/EntityGridView.tsx",
+    "FileUploadProgress": "src/modules/news/components/forms/FileUploadProgress.tsx",
+    "FilterDropdown": "src/modules/search/components/FilterDropdown.tsx",
+    "LoadingState": "src/modules/profil/components/shared/LoadingState.tsx",
+    "MapMarkerAvatar": "src/modules/search/components/mapMarker/MapMarkerAvatar.tsx",
+    "MapMarkerCircle": "src/modules/search/components/mapMarker/MapMarkerCircle.tsx",
+    "MapMarkerIcon": "src/modules/search/components/mapMarker/MapMarkerIcon.tsx",
+    "MapMarkerPin": "src/modules/search/components/mapMarker/MapMarkerPin.tsx",
+    "MeeteemFilters": "src/modules/ampli/components/sections/parts/MeeteemFilters.tsx",
+    "MilestoneCard": "src/modules/cagnotte/components/sections/parts/MilestoneCard.tsx",
+    "NewsFileList": "src/modules/news/components/media/NewsFileList.tsx",
+    "NewsImageGrid": "src/modules/news/components/media/NewsImageGrid.tsx",
+    "NewsReactionPicker": "src/modules/news/components/interactions/NewsReactionPicker.tsx",
+    "SearchBubbleChart": "src/modules/search/components/SearchBubbleChart.tsx",
+    "SearchCardSkeleton": "src/modules/search/components/SearchCardSkeleton.tsx",
+    "SearchListSkeleton": "src/modules/search/components/SearchListSkeleton.tsx",
+    "SearchTextInput": "src/modules/search/components/SearchTextInput.tsx",
+    "SectionTitleTL": "src/modules/profil/components/sections/custom/SectionTitleTL.tsx",
+    "CardTestimonialBubble": "src/modules/search/components/card/testimonial/CardTestimonialBubble.tsx",
+    "CardResourceCard": "src/modules/search/components/card/resource/CardResourceCard.tsx",
+    "PreviewTestimonialBubble": "src/modules/search/components/preview/testimonial/PreviewTestimonialBubble.tsx",
+    "PreviewResourceCard": "src/modules/search/components/preview/resource/PreviewResourceCard.tsx"
+  },
+  "overrides": {
+    "BlogListSection": {
+      "cardMode": "column"
+    },
+    "BlogPostSection": {
+      "cardMode": "column"
+    },
+    "CardsSection": {
+      "cardMode": "column"
+    },
+    "ContentSection": {
+      "cardMode": "column"
+    },
+    "CtaCardGrid": {
+      "cardMode": "column"
+    },
+    "EventListSection": {
+      "cardMode": "column"
+    },
+    "FeaturesGlass": {
+      "cardMode": "column"
+    },
+    "CookieConsentSection": {
+      "cardMode": "single",
+      "primaryStory": "Bandeau"
+    },
+    "PricingSection": {
+      "cardMode": "column"
+    },
+    "ProductShowcaseSection": {
+      "cardMode": "column"
+    },
+    "SocialFeedSection": {
+      "cardMode": "column"
+    },
+    "StepsSection": {
+      "cardMode": "column"
+    },
+    "TableSection": {
+      "cardMode": "column"
+    },
+    "TeamSection": {
+      "cardMode": "column"
+    },
+    "TestimonialsSection": {
+      "cardMode": "column"
+    },
+    "TimelineSection": {
+      "cardMode": "column"
+    },
+    "Dialog": {
+      "cardMode": "single",
+      "primaryStory": "InvitationMembre"
+    },
+    "AlertDialog": {
+      "cardMode": "single",
+      "primaryStory": "SuppressionAtelier"
+    },
+    "Sheet": {
+      "cardMode": "single",
+      "primaryStory": "PanneauFiltres"
+    },
+    "Drawer": {
+      "cardMode": "single",
+      "primaryStory": "ActionsEvenement"
+    },
+    "Modal": {
+      "cardMode": "single",
+      "primaryStory": "SignalementContenu"
+    },
+    "Popover": {
+      "cardMode": "single",
+      "primaryStory": "PartagerLien"
+    },
+    "HoverCard": {
+      "cardMode": "single",
+      "primaryStory": "ApercuProfil"
+    },
+    "Tooltip": {
+      "cardMode": "single",
+      "primaryStory": "AideIcone"
+    },
+    "DropdownMenu": {
+      "cardMode": "single",
+      "primaryStory": "MenuProfil"
+    },
+    "ContextMenu": {
+      "cardMode": "single",
+      "primaryStory": "MenuFicheActeur"
+    },
+    "Menubar": {
+      "cardMode": "single",
+      "primaryStory": "BarreGestion"
+    },
+    "NavigationMenu": {
+      "cardMode": "single",
+      "primaryStory": "NavigationPrincipale"
+    },
+    "ChartContainer": {
+      "cardMode": "column"
+    },
+    "ImageViewer": {
+      "cardMode": "single",
+      "primaryStory": "Visionneuse"
+    },
+    "OptimizedImage": {
+      "cardMode": "column"
+    },
+    "Pagination": {
+      "cardMode": "column"
+    },
+    "Toaster": {
+      "cardMode": "single",
+      "primaryStory": "Notifications"
+    },
+    "ToggleGroup": {
+      "cardMode": "column"
+    },
+    "NewsReactionPicker": {
+      "cardMode": "column"
+    },
+    "CountBadge": {
+      "cardMode": "column"
+    },
+    "EntityGrid": {
+      "cardMode": "column"
+    },
+    "EntityGridView": {
+      "cardMode": "column"
+    },
+    "FilterDropdown": {
+      "cardMode": "single",
+      "primaryStory": "PanneauOuvert"
+    },
+    "HeaderStandard": {
+      "cardMode": "column"
+    },
+    "HeaderMegaMenu": {
+      "cardMode": "column",
+      "viewport": "1440x800"
+    },
+    "HeaderTransparentScroll": {
+      "cardMode": "single",
+      "primaryStory": "BarreOpaque",
+      "viewport": "1440x800"
+    },
+    "HeaderMinimal": {
+      "cardMode": "single",
+      "primaryStory": "Reseau"
+    },
+    "HeaderUnderlineNav": {
+      "cardMode": "single",
+      "primaryStory": "SurHero"
+    },
+    "HeaderTransparentDark": {
+      "cardMode": "single",
+      "primaryStory": "SurCouverture"
+    },
+    "FooterRich": {
+      "cardMode": "column"
+    },
+    "FooterMinimalCentered": {
+      "cardMode": "column"
+    },
+    "FooterSidebarColumns": {
+      "cardMode": "column"
+    },
+    "FooterContactPartners": {
+      "cardMode": "column"
+    },
+    "NavLink": {
+      "cardMode": "column"
+    },
+    "CardTestimonialBubble": {
+      "cardMode": "column"
+    },
+    "CardResourceCard": {
+      "cardMode": "column"
+    },
+    "PreviewTestimonialBubble": {
+      "cardMode": "single",
+      "primaryStory": "Temoignage"
+    },
+    "PreviewResourceCard": {
+      "cardMode": "single",
+      "primaryStory": "Ressource"
+    }
+  },
+  "readmeHeader": ".design-sync/conventions.md",
+  "libOverrides": {
+    "source-kit.mjs": "groupes module-<m> pour src/modules/* (dossiers parts/shared/custom muets)"
+  }
+}

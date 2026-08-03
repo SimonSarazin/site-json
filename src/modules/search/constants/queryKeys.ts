@@ -53,6 +53,16 @@ export const SEARCH_QUERY_KEYS = {
    * de filtres pour un préfixe donné).
    */
   RESULTS_PREFIX: (queryKeyPrefix: string) => [queryKeyPrefix] as const,
+  /**
+   * Réservations CoForm d'une ressource (section réservations du preview
+   * `poi-amenities`).
+   *
+   * Producteur : `useReservationsQuery`. Données PUBLIQUES (endpoint
+   * answerslist public → pas de dimension userId). Invalidation : aucune —
+   * staleTime + refetch au remontage suffisent.
+   */
+  RESERVATIONS: (formId: string, resourceId: string) =>
+    ["search-reservations", formId, resourceId] as const,
 } as const;
 
 export type SearchQueryKeyType = ReturnType<

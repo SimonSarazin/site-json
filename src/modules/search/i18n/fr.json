@@ -8,6 +8,20 @@
         "saturday": "Samedi",
         "sunday": "Dimanche"
     },
+    "testimonial": {
+        "listen": "Écouter",
+        "listenTitle": "Écouter le témoignage"
+    },
+    "resource": {
+        "open": "Ouvrir le lien",
+        "watch": "Regarder la vidéo",
+        "download": "Télécharger",
+        "gallery": "Galerie",
+        "documents": "Documents",
+        "audio": "Audio",
+        "video": "Vidéo",
+        "links": "Liens"
+    },
     "CardResourceBooking": {
         "price": "Prix d'usage:",
         "location": "Localisation:",
@@ -46,7 +60,8 @@
         "lighting": "Éclairage",
         "showers": "Douches",
         "freeAccess": "Libre accès",
-        "yearsAgo": "Il y a {{count}} ans"
+        "yearsAgo": "Il y a {{count}} ans",
+        "filterByInstallation": "Filtrer par l'installation {{name}}"
     },
     "PreviewPoiAmenities": {
         "edit": "Éditer",
@@ -133,9 +148,28 @@
         },
         "equipNumero": {
             "link": "Voir la fiche nationale"
+        },
+        "installationDashboard": {
+            "open": "Voir le tableau de bord de l'installation"
         }
     },
+    "PreviewReservations": {
+        "title": "Réservations",
+        "empty": "Aucune réservation enregistrée pour cet équipement.",
+        "error": "Impossible de charger les réservations.",
+        "unknownUser": "Usager non renseigné",
+        "slotCount_one": "{{count}} créneau",
+        "slotCount_other": "{{count}} créneaux",
+        "activityLabel": "Activité",
+        "bookingTypeLabel": "Type de réservation",
+        "periodLabel": "Période",
+        "period": "Du {{start}} au {{end}}",
+        "periodFrom": "À partir du {{start}}",
+        "periodUntil": "Jusqu'au {{end}}"
+    },
     "Filtres actifs :": "Filtres actifs :",
+    "À partir du": "À partir du",
+    "Jusqu'au": "Jusqu'au",
     "Description": "Description",
     "Tags": "Tags",
     "En savoir plus": "En savoir plus",
@@ -194,5 +228,17 @@
     "Adresse inconnue": "Adresse inconnue",
     "Tous": "Tous",
     "{{count}} sélectionnés": "{{count}} sélectionnés",
-    "{{count}} résultats groupés": "{{count}} résultats groupés"
+    "{{count}} résultats groupés": "{{count}} résultats groupés",
+    "a créé": "a créé",
+    "a partagé": "a partagé",
+    "a modifié": "a modifié",
+    "a publié": "a publié",
+    "sur": "sur",
+    "Quelqu'un": "Quelqu'un",
+    "Actualité": "Actualité",
+    "Voir en page": "Voir en page",
+    "Aperçu détaillé indisponible pour cette actualité.": "Aperçu détaillé indisponible pour cette actualité.",
+    "Lire": "Lire",
+    "Privé": "Privé",
+    "Réservé aux membres": "Réservé aux membres"
 }

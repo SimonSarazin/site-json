@@ -5,7 +5,7 @@ import { SearchMapWrapperProps } from "../schema";
 import MapSkeleton from "./MapSkeleton";
 
 
-export default function SearchMapWrapper({ results, card, preview, map, focusedItemId, onMarkerFocus, containerClass }: SearchMapWrapperProps) {
+export default function SearchMapWrapper({ results, card, preview, list, map, focusedItemId, onMarkerFocus, containerClass }: SearchMapWrapperProps) {
   const [mounted, MapModule] = useClientModule(() => import("./SearchMap"));
   const t = useT("modules/search");
 
@@ -21,6 +21,7 @@ export default function SearchMapWrapper({ results, card, preview, map, focusedI
       results={results}
       card={card}
       preview={preview}
+      list={list}
       map={map}
       focusedItemId={focusedItemId}
       onMarkerFocus={onMarkerFocus}

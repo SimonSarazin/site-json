@@ -69,9 +69,9 @@ src/modules/cagnotte/
 │   ├── parts/                          # Sous-composants de CagnotteDialog
 │   │   ├── CagnotteAmountPicker.tsx
 │   │   ├── CagnotteContributeButton.tsx
-│   │   ├── CagnotteMilestoneList.tsx
-│   │   ├── CagnotteProjectProgressCard.tsx
-│   │   ├── CagnotteProjectSelector.tsx
+│   │   ├── CagnotteItemList.tsx
+│   │   ├── CagnotteResourceProgressCard.tsx
+│   │   ├── CagnotteResourceSelector.tsx
 │   │   └── CagnotteSuccessScreen.tsx
 │   └── sections/
 │       ├── ActionsSection.tsx          # Section JSON `actions` (orchestrateur)
@@ -107,7 +107,7 @@ src/modules/cagnotte/
 │   ├── useActionGuards.ts              # requireConnected + requireApiContext
 │   ├── useOrganizationProjectsWithAnswers.ts  # Liste projets org + réponses CoForm
 │   ├── useProjectModalCagnotte.ts      # Query : projet par défaut d'une org
-│   ├── useProjectModalPreference.ts    # Mutation : persiste la préférence côté DB (entity.updateField)
+│   ├── useResourceModalPreference.ts    # Mutation : persiste la préférence côté DB (entity.updateField)
 │   ├── useSaveCagnotteContribution.ts  # Mutation contribution (atomique)
 │   └── useUserAdminOrganizations.ts    # Query : orgs admin du user (filtre MongoDB)
 │
@@ -309,7 +309,7 @@ Les **sections JSON** (`ActionsSection`, `FinanceSection`, etc.) ne sont **pas**
 | Hook | Rôle |
 |---|---|
 | `useSaveCagnotteContribution()` | Sauvegarde une contribution dans `answers.aapStep1.depense[N].financer[]`. Se branche au context (`useCocolight()` → `api` + `me`). Mutation atomique via `Answer.updateField` (R0-R9 auto côté lib 1.0.137+) |
-| `useProjectModalPreference(entity)` | Persiste le `projectModalId` côté DB via `entity.updateField("preferences", merged)` + appel non-bloquant `entity.get()` pour resynchroniser. Retourne `{ save(projectId): Promise<boolean>, isSaving }` |
+| `useResourceModalPreference(entity)` | Persiste le `projectModalId` côté DB via `entity.updateField("preferences", merged)` + appel non-bloquant `entity.get()` pour resynchroniser. Retourne `{ save(projectId): Promise<boolean>, isSaving }` |
 
 ### Context/Permissions/Guards
 
@@ -473,13 +473,13 @@ Composant header (`components/PiggyBankHeaderButton.tsx`) affiché dans les head
 - Consomme `useFundingEnvelope(projectModalId)` — partage le cache React Query avec `CagnotteDialog` (0 fetch supplémentaire à l'ouverture)
 - Affiche le montant `targetProject.totalFinancement` en temps réel (PiggyBank icon + montant en €)
 - Masqué si `me?.id` est nul (feature member-only, évite d'afficher "0 €" pour les anonymes)
-- Ouvre `<CagnotteDialog>` au clic avec `defaultProjectId` pré-sélectionné
+- Ouvre `<CagnotteDialog>` au clic avec `defaultResourceId` pré-sélectionné
 
 ### `CagnotteDialog` — parts supplémentaires
 
 En plus des 4 parts documentés, `components/parts/` contient :
 - `CagnotteContributeButton.tsx` — bouton "Contribuer" (standalone)
-- `CagnotteProjectProgressCard.tsx` — carte de progression d'un projet sélectionné
+- `CagnotteResourceProgressCard.tsx` — carte de progression d'un projet sélectionné
 
 ---
 
