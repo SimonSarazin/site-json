@@ -83,11 +83,24 @@ export default function PreviewResourceCard({ item, list, onClose }: PreviewProp
     ) : null;
 
   return (
-    <div className="flex max-h-[85vh] flex-col">
+    /* `min-w-0` : sans lui, cette racine est un élément de grille à
+       `min-width: auto`, donc elle s'ÉLARGIT jusqu'à la largeur min-content de
+       son contenu au lieu de le comprimer. Mesuré sur une fiche à URL longue :
+       dialogue 672px, contenu 943px — 272px hors cadre à droite, titre et URL
+       coupés. Le `truncate` de l'URL (l. 212) ne pouvait pas opérer : il ne
+       tronque que dans une largeur bornée. */
+    <div className="flex max-h-[85vh] min-w-0 flex-col">
       {/* EN-TÊTE adaptatif : bannière image, sinon bande typée + grande icône */}
       {data.image ? (
         <>
-          <div className="relative aspect-[21/9] w-full shrink-0 overflow-hidden bg-muted">
+          {/* Bannière plafonnée à 30vh. Sans ce plafond, `aspect-[21/9]` dérive
+              sa hauteur de la LARGEUR du dialogue et `shrink-0` l'empêche de
+              céder : mesuré à 577px sur 813 de dialogue, soit 71 % de la place,
+              ne laissant que 98px à la zone de contenu pour 220px à afficher.
+              Le scroll existait bien (`overflow-y-auto` plus bas) mais dans une
+              fenêtre inutilisable. Le ratio est conservé tant qu'il tient sous
+              le plafond ; au-delà, `object-cover` recadre. */}
+          <div className="relative aspect-[21/9] max-h-[30vh] w-full shrink-0 overflow-hidden bg-muted">
             <OptimizedImage src={data.image} alt={data.title} width={840} className="h-full w-full object-cover" />
           </div>
           <div className="shrink-0 space-y-2 border-b border-border py-4 pl-5 pr-12">

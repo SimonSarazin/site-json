@@ -13,6 +13,7 @@ import { useState } from "react";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -52,9 +53,12 @@ const getButtonClasses = (variant?: string) => {
 function DynamicModalButton({
     button,
     modalName,
+    buttonClassName,
 }: {
     button: ActionButton;
     modalName: string;
+    /** Surcharge d'habillage fournie par la section hôte (taille, typo). */
+    buttonClassName?: string;
 }) {
     const t = useT("modules/profil");
     const { me, entity } = useCocolight();
@@ -81,7 +85,7 @@ function DynamicModalButton({
         <>
             <Button
                 size="lg"
-                className={getButtonClasses(button.variant)}
+                className={cn(getButtonClasses(button.variant), buttonClassName)}
                 onClick={handleClick}
             >
                 {button.icon && (
@@ -262,14 +266,32 @@ const MODAL_ACTIONS = ["add-project", "add-event", "add-poi", "add-organization"
  * Rend une liste de boutons d'action config-driven dans un conteneur flex.
  * Retourne `null` si aucun bouton.
  */
-export function ActionButtonGroup({ buttons }: { buttons?: ActionButton[] }) {
+/**
+ * @param className        Remplace l'habillage du CONTENEUR. La valeur par défaut
+ *                         porte `mt-8` et sa propre rangée flex, ce qui décale et
+ *                         désaligne les boutons quand l'hôte a déjà la sienne
+ *                         (cas d'un héro) — `"contents"` fait alors disparaître le
+ *                         conteneur de la mise en page.
+ * @param buttonClassName  Habillage appliqué à CHAQUE bouton, pour que l'hôte
+ *                         impose sa taille et sa typo (les défauts d'ici sont
+ *                         calibrés pour `searchHeader`).
+ */
+export function ActionButtonGroup({
+    buttons,
+    className,
+    buttonClassName,
+}: {
+    buttons?: ActionButton[];
+    className?: string;
+    buttonClassName?: string;
+}) {
     useLoadNamespace("modules/profil");
     const t = useT("modules/profil");
 
     if (!buttons || buttons.length === 0) return null;
 
     return (
-        <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center animate-fade-in">
+        <div className={className ?? "mt-8 flex flex-col sm:flex-row gap-4 justify-center animate-fade-in"}>
             {buttons.map((button, index) => {
                 if (button.action === "join-dropdown") {
                     return <JoinDropdownButton key={index} button={button} />;
@@ -278,7 +300,7 @@ export function ActionButtonGroup({ buttons }: { buttons?: ActionButton[] }) {
                 // Modal explicite (`button.modal`) ou action d'ajout d'entité (`add-*`).
                 const modalName = button.modal ?? (MODAL_ACTIONS.includes(button.action as (typeof MODAL_ACTIONS)[number]) ? button.action : undefined);
                 if (modalName) {
-                    return <DynamicModalButton key={index} button={button} modalName={modalName} />;
+                    return <DynamicModalButton key={index} button={button} modalName={modalName} buttonClassName={buttonClassName} />;
                 }
 
                 const buttonElement = (

@@ -1,7 +1,7 @@
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { useSite } from "@/hooks/useSite";
 import { useLocalization } from "@/hooks/useLocalization";
-import { getServerUrl } from "@/lib/constant/common";
+import { getSitePublicUrl } from "@/lib/constant/common";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { useT } from "@/hooks/useT";
 import type { ProfileConfig } from "./schema";
@@ -102,10 +102,12 @@ export function ProfileSeo({ entity, isLoading, entityType, activeTab, profileCo
   // présentation CANONIQUE → cette vue profil canonicalise vers /blog/:slug (évite le contenu dupliqué SEO).
   const isArticle = entity.serverData?.type === "article";
 
-  // Construction de l'URL canonique avec le tab actif. `getServerUrl()` (env) fonctionne SSR + client
+  // Construction de l'URL canonique avec le tab actif. `getSitePublicUrl()` (env) fonctionne SSR + client
+  // — URL PUBLIQUE du site, PAS `getServerUrl()` (= communecter, images/backend) : lu en prod, le
+  // canonical pointait vers www.communecter.org/profil/… (cf. doc de getSitePublicUrl).
   // (contrairement à window.location.origin, vide au SSR → canonical/og:url absents du HTML serveur).
   const slug = entity.serverData?.slug || "";
-  const origin = getServerUrl().replace(/\/$/, "");
+  const origin = getSitePublicUrl().replace(/\/$/, "");
   const canonicalUrl = origin && slug
     ? isArticle
       ? `${origin}/blog/${slug}`
