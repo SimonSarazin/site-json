@@ -57,6 +57,15 @@ interface City {
   level3Name?: string;
   level4?: string;
   level4Name?: string;
+  level5?: string;
+  level5Name?: string;
+  /**
+   * Coordonnées de niveau VILLE (projection backend `geo` de la collection `cities`).
+   * Disponibles dès la sélection, même quand la ville n'a aucun code postal.
+   * `geoPosition` n'est pas toujours projeté → calculé depuis `geo` si absent.
+   */
+  geo?: { "@type"?: string; latitude: string | number; longitude: string | number };
+  geoPosition?: { type: string; coordinates: [number | string, number | string] };
 }
 
 interface Street {
@@ -280,24 +289,36 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
     }
   }, [localityId, streetAddress]);
 
+  // Purge la ville et TOUT ce qui en dépend (CP/INSEE/niveaux 1..5/rue/géo + états
+  // locaux). Utilisée au retrait de la ville, au changement de PAYS et par le reset
+  // global : la géo purgée est celle de la ville/du CP/de la rue retirées.
+  const clearCityAndBelow = () => {
+    form.setValue("addressLocality", "");
+    form.setValue("localityId", "");
+    form.setValue("postalCode", "");
+    form.setValue("codeInsee", "");
+    form.setValue("level1", "");
+    form.setValue("level1Name", "");
+    form.setValue("level2", "");
+    form.setValue("level2Name", "");
+    form.setValue("level3", "");
+    form.setValue("level3Name", "");
+    form.setValue("level4", "");
+    form.setValue("level4Name", "");
+    form.setValue("level5", "");
+    form.setValue("level5Name", "");
+    form.setValue("geo", undefined);
+    form.setValue("geoPosition", undefined);
+    setSelectedLocality(null);
+    setCities([]);
+    resetStreet();
+  };
+
   // Handle city selection
   const handleSelectCity = (value: unknown) => {
     const city = value as City | null;
     if (!city) {
-      form.setValue("addressLocality", "");
-      form.setValue("localityId", "");
-      form.setValue("postalCode", "");
-      form.setValue("level1", "");
-      form.setValue("level1Name", "");
-      form.setValue("level2", "");
-      form.setValue("level2Name", "");
-      form.setValue("level3", "");
-      form.setValue("level3Name", "");
-      form.setValue("level4", "");
-      form.setValue("level4Name", "");
-      form.setValue("codeInsee", "");
-      setSelectedLocality(null);
-      resetStreet();
+      clearCityAndBelow();
       return;
     }
 
@@ -306,25 +327,50 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
     form.setValue("localityId", city.id);
     form.setValue("codeInsee", city.insee || "");
 
-    if (city.level1) {
-      form.setValue("level1", city.level1);
-      form.setValue("level1Name", city.level1Name || "");
-    }
-    if (city.level2) {
-      form.setValue("level2", city.level2);
-      form.setValue("level2Name", city.level2Name || "");
-    }
-    if (city.level3) {
-      form.setValue("level3", city.level3);
-      form.setValue("level3Name", city.level3Name || "");
-    }
-    if (city.level4) {
-      form.setValue("level4", city.level4);
-      form.setValue("level4Name", city.level4Name || "");
+    // Pose TOUS les niveaux de la ville, vides inclus ("") : une ville sans level2
+    // (ex. FR) ne doit pas hériter du niveau d'une sélection précédente ; les vides
+    // sont omis du payload par buildAddressFromForm (parité legacy : niveaux épars).
+    form.setValue("level1", city.level1 || "");
+    form.setValue("level1Name", city.level1Name || "");
+    form.setValue("level2", city.level2 || "");
+    form.setValue("level2Name", city.level2Name || "");
+    form.setValue("level3", city.level3 || "");
+    form.setValue("level3Name", city.level3Name || "");
+    form.setValue("level4", city.level4 || "");
+    form.setValue("level4Name", city.level4Name || "");
+    form.setValue("level5", city.level5 || "");
+    form.setValue("level5Name", city.level5Name || "");
+
+    // Coordonnées de niveau VILLE : disponibles DÈS la sélection, indépendamment du
+    // code postal. C'est la donnée géo garantie (une ville sans code postal — ex.
+    // Antsirabe/MG — porte quand même un `geo`). Le code postal / la rue ne font
+    // qu'affiner ensuite. `geoPosition` est calculé depuis `geo` s'il n'est pas fourni.
+    if (city.geo && city.geo.latitude != null && city.geo.longitude != null) {
+      const lon = Number(city.geo.longitude);
+      const lat = Number(city.geo.latitude);
+      form.setValue("geo", {
+        "@type": "GeoCoordinates",
+        latitude: String(city.geo.latitude),
+        longitude: String(city.geo.longitude),
+      });
+      form.setValue(
+        "geoPosition",
+        city.geoPosition && Array.isArray(city.geoPosition.coordinates)
+          ? {
+              type: "Point",
+              coordinates: [Number(city.geoPosition.coordinates[0]), Number(city.geoPosition.coordinates[1])],
+            }
+          : { type: "Point", coordinates: [lon, lat] }
+      );
+    } else {
+      // Ville sans géo en base : ne pas conserver les coordonnées de la sélection
+      // précédente (le CP unique, s'il en porte une, la re-pose juste après).
+      form.setValue("geo", undefined);
+      form.setValue("geoPosition", undefined);
     }
 
-    // If only one postal code, select it automatically (+ coordonnées ville en fallback,
-    // affinées ensuite si l'utilisateur choisit une rue).
+    // Si un seul code postal, le sélectionner automatiquement et AFFINER les coordonnées
+    // (centroïde du code postal, plus précis que le centre-ville).
     if (city.postalCodes.length === 1) {
       const pc = city.postalCodes[0];
       form.setValue("postalCode", pc.postalCode);
@@ -337,11 +383,35 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
     resetStreet();
   };
 
+  // La rue retirée portait la géo la plus fine : on restaure le centroïde du CP
+  // choisi, sinon la géo de la ville. Sans état ville rechargé (selectedLocality
+  // null en édition si le refetch a échoué), on ne touche pas à la géo.
+  const restoreCityLevelGeo = () => {
+    if (!selectedLocality) return;
+    const pc = selectedLocality.postalCodes.find((p) => p.postalCode === postalCode);
+    if (pc?.geo) {
+      form.setValue("geo", pc.geo);
+      form.setValue("geoPosition", pc.geoPosition);
+      return;
+    }
+    const g = selectedLocality.geo;
+    if (g && g.latitude != null && g.longitude != null) {
+      form.setValue("geo", { "@type": "GeoCoordinates", latitude: String(g.latitude), longitude: String(g.longitude) });
+      form.setValue(
+        "geoPosition",
+        selectedLocality.geoPosition && Array.isArray(selectedLocality.geoPosition.coordinates)
+          ? { type: "Point", coordinates: [Number(selectedLocality.geoPosition.coordinates[0]), Number(selectedLocality.geoPosition.coordinates[1])] }
+          : { type: "Point", coordinates: [Number(g.longitude), Number(g.latitude)] }
+      );
+    }
+  };
+
   // Handle street selection
   const handleSelectStreet = (value: unknown) => {
     const street = value as Street | null;
     if (!street) {
       resetStreet();
+      restoreCityLevelGeo();
       return;
     }
 
@@ -373,37 +443,11 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
     setStreetOptions([]);
   };
 
-  // Reset all address fields
+  // Reset all address fields (pays inclus). La purge ville+dépendants (niveaux 1..5,
+  // rue, géo, états locaux) est partagée avec le retrait de ville et le changement de pays.
   const resetAllAddress = () => {
-    // Reset pays
     form.setValue("addressCountry", "");
-
-    // Reset ville et ses métadonnées
-    form.setValue("addressLocality", "");
-    form.setValue("localityId", "");
-    form.setValue("postalCode", "");
-    form.setValue("codeInsee", "");
-    form.setValue("level1", "");
-    form.setValue("level1Name", "");
-    form.setValue("level2", "");
-    form.setValue("level2Name", "");
-    form.setValue("level3", "");
-    form.setValue("level3Name", "");
-    form.setValue("level4", "");
-    form.setValue("level4Name", "");
-
-    // Reset rue
-    form.setValue("streetAddress", "");
-
-    // Reset coordonnées géo
-    form.setValue("geo", undefined);
-    form.setValue("geoPosition", undefined);
-
-    // Reset states locaux
-    setSelectedLocality(null);
-    setSelectedStreet(null);
-    setCities([]);
-    setStreetOptions([]);
+    clearCityAndBelow();
     initializedRef.current = false;
   };
 
@@ -481,7 +525,16 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
                           <CommandItem
                             key={c.code}
                             value={`${c.nameFr} ${c.code}`}
-                            onSelect={() => field.onChange(c.code)}
+                            onSelect={() => {
+                              // Re-sélection du même pays : rien à purger.
+                              if (c.code === field.value) return;
+                              field.onChange(c.code);
+                              // Le pays gouverne la ville : on purge ville/CP/rue/niveaux/géo.
+                              // Sans purge, l'adresse partait avec le localityId de l'ancien
+                              // pays → rejet addressValid serveur (cohérence pays↔ville) et,
+                              // le save étant atomique, échec de TOUTE la sauvegarde.
+                              clearCityAndBelow();
+                            }}
                           >
                             <Check
                               className={cn(
@@ -533,85 +586,107 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
         />
       )}
 
-      {/* Postal code (multiple choice if needed) */}
-      {selectedLocality && selectedLocality.postalCodes.length > 1 && (
-        <FormField
-          control={form.control}
-          name="postalCode"
-          render={({ field }) => {
-            // Group by unique postal code to avoid duplicates
-            const uniquePostalCodes = Array.from(
-              new Map(
-                selectedLocality.postalCodes.map(p => [p.postalCode, p])
-              ).values()
-            );
+      {/* Code postal : liste déroulante si la ville a plusieurs CP, sinon saisie libre
+          (villes à 0 ou 1 code postal — dont beaucoup hors-FR). Toujours disponible dès
+          qu'une ville est sélectionnée. */}
+      {addressLocality &&
+        (selectedLocality && selectedLocality.postalCodes.length > 1 ? (
+          <FormField
+            control={form.control}
+            name="postalCode"
+            render={({ field }) => {
+              // Group by unique postal code to avoid duplicates
+              const uniquePostalCodes = Array.from(
+                new Map(
+                  selectedLocality.postalCodes.map(p => [p.postalCode, p])
+                ).values()
+              );
 
-            return (
+              return (
+                <FormItem>
+                  <FormLabel>{t("ProfileEdit.fields.postalCode.label")}</FormLabel>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      // La rue choisie dépendait de l'ancien CP : on la resette (sinon elle
+                      // resterait affichée sous le nouveau CP, et sa géo — plus fine — serait
+                      // écrasée juste en dessous par le centroïde du CP sans que rien le dise).
+                      resetStreet();
+                      // Coordonnées du code postal choisi (affine le centre-ville).
+                      const pc = selectedLocality.postalCodes.find((p) => p.postalCode === value);
+                      if (pc) {
+                        form.setValue("geo", pc.geo);
+                        form.setValue("geoPosition", pc.geoPosition);
+                      }
+                    }}
+                    value={field.value || ""}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder={t("ProfileEdit.fields.postalCode.placeholder")} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {uniquePostalCodes.map((p) => (
+                        <SelectItem key={p.postalCode} value={p.postalCode}>
+                          {p.postalCode} - {p.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <TranslatedFormMessage />
+                </FormItem>
+              );
+            }}
+          />
+        ) : (
+          <FormField
+            control={form.control}
+            name="postalCode"
+            render={({ field }) => (
               <FormItem>
                 <FormLabel>{t("ProfileEdit.fields.postalCode.label")}</FormLabel>
-                <Select
-                  onValueChange={(value) => {
-                    field.onChange(value);
-                    // Coordonnées du code postal choisi (fallback ville).
-                    const pc = selectedLocality.postalCodes.find((p) => p.postalCode === value);
-                    if (pc) {
-                      form.setValue("geo", pc.geo);
-                      form.setValue("geoPosition", pc.geoPosition);
-                    }
-                  }}
-                  value={field.value || ""}
-                >
-                  <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder={t("ProfileEdit.fields.postalCode.placeholder")} />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {uniquePostalCodes.map((p) => (
-                      <SelectItem key={p.postalCode} value={p.postalCode}>
-                        {p.postalCode} - {p.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormControl>
+                  <Input {...field} value={field.value ?? ""} placeholder={t("ProfileEdit.fields.postalCode.placeholder")} />
+                </FormControl>
                 <TranslatedFormMessage />
               </FormItem>
-            );
-          }}
-        />
-      )}
+            )}
+          />
+        ))}
 
-      {/* Street - Autocomplete for FR, Input for others */}
-      {isFR && postalCode ? (
-        <FormField
-          control={form.control}
-          name="streetAddress"
-          render={() => (
-            <FormItem>
-              <FormLabel>{t("ProfileEdit.fields.streetAddress.label")}</FormLabel>
-              <FormControl>
-                <SelectObject
-                  value={normalizedStreet}
-                  onChange={handleSelectStreet}
-                  options={streetOptions}
-                  onSearch={fetchStreets}
-                  placeholder={t("ProfileEdit.fields.streetAddress.placeholder")}
-                  placeholderSearch={t("ProfileEdit.fields.streetAddress.searchPlaceholder")}
-                  loadingIndicator={
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      {t("ProfileEdit.loading")}
-                    </div>
-                  }
-                />
-              </FormControl>
-              <TranslatedFormMessage />
-            </FormItem>
-          )}
-        />
-      ) : (
-        !isFR &&
-        postalCode && (
+      {/* Adresse (rue) : toujours disponible dès qu'une ville est choisie.
+          Autocomplétion BAN pour la France (code postal OU code INSEE) ; sinon saisie
+          libre — y compris pour les villes sans code postal (ex. Antsirabe/MG). */}
+      {addressLocality &&
+        (isFR && (postalCode || codeInsee) ? (
+          <FormField
+            control={form.control}
+            name="streetAddress"
+            render={() => (
+              <FormItem>
+                <FormLabel>{t("ProfileEdit.fields.streetAddress.label")}</FormLabel>
+                <FormControl>
+                  <SelectObject
+                    value={normalizedStreet}
+                    onChange={handleSelectStreet}
+                    options={streetOptions}
+                    onSearch={fetchStreets}
+                    placeholder={t("ProfileEdit.fields.streetAddress.placeholder")}
+                    placeholderSearch={t("ProfileEdit.fields.streetAddress.searchPlaceholder")}
+                    loadingIndicator={
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        {t("ProfileEdit.loading")}
+                      </div>
+                    }
+                  />
+                </FormControl>
+                <TranslatedFormMessage />
+              </FormItem>
+            )}
+          />
+        ) : (
           <FormField
             control={form.control}
             name="streetAddress"
@@ -619,14 +694,13 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
               <FormItem>
                 <FormLabel>{t("ProfileEdit.fields.streetAddress.label")}</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder={t("ProfileEdit.fields.streetAddress.placeholder")} />
+                  <Input {...field} value={field.value ?? ""} placeholder={t("ProfileEdit.fields.streetAddress.placeholder")} />
                 </FormControl>
                 <TranslatedFormMessage />
               </FormItem>
             )}
           />
-        )
-      )}
+        ))}
     </div>
   );
 }

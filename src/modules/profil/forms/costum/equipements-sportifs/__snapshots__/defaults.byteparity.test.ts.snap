@@ -53,6 +53,8 @@ exports[`createEmptyDefaults — byte-parité (dérivation) > objet de defaults 
   "level3Name": "",
   "level4": "",
   "level4Name": "",
+  "level5": "",
+  "level5Name": "",
   "localityId": "",
   "name": "",
   "postalCode": "",
