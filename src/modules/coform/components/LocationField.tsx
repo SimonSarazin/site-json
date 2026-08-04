@@ -34,6 +34,16 @@ export function LocationField({ field, value, onChange, errors }: LocationFieldP
       )}
       {field.info && <HintText text={field.info} />}
 
+      {/* Ancienne réponse texte libre (champ historiquement rendu en `text`) : non convertible en
+          entrée géolocalisée (pas de localityId) mais elle SURVIT au resave tant qu'on ne touche pas
+          au widget (les defaults passent tels quels dans le form state). On l'affiche pour que
+          l'utilisateur sache ce qu'elle contenait avant de la remplacer par une vraie adresse. */}
+      {typeof value === "string" && value && (
+        <p className="text-xs text-muted-foreground">
+          Ancienne valeur (texte libre) : « {value} » — sélectionner une ville la remplacera par une adresse géolocalisée.
+        </p>
+      )}
+
       <AddressPicker value={entries} onChange={(next) => onChange(entriesToStored(next))} multiple />
 
       <FieldError name={field.name} message={errors[field.name]?.message as string | undefined} />

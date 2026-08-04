@@ -51,9 +51,10 @@ function syntheticCity(entry: FormLocalityEntry): City {
 
 /**
  * Éditeur d'adresse contrôlé (une adresse) — cœur partagé, parité dynForm `formLocality`.
- * Utilisé par le coform (`AddressPicker`, multi) et par les formulaires d'entités
- * (`EditLocationTab`, adaptateur champs-plats). Capture geo/geoPosition dès la sélection
- * de la ville (même sans code postal) ; Code postal et Adresse toujours saisissables.
+ * Utilisé par le coform (`AddressPicker`, multi). Cible : les formulaires d'entités
+ * (`EditLocationTab` duplique encore cette logique via un adaptateur champs-plats — non
+ * migré à ce jour). Capture geo/geoPosition dès la sélection de la ville (même sans code
+ * postal) ; Code postal et Adresse toujours saisissables.
  */
 export function AddressEditor({ value, onChange, countries }: AddressEditorProps) {
   const { entity } = useCocolight();
