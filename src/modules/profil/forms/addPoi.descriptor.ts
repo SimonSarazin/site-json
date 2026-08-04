@@ -22,7 +22,7 @@ const POI_TYPES: Array<{ value: string; label: string }> = [
 // Champ caché (write-only / membre de groupe adresse), non rendu.
 const hidden = (name: string, extra: Partial<FieldDescriptor> = {}): FieldDescriptor =>
   ({ name, type: "string", widget: "hidden", label: "", ...extra });
-// Membres plats du groupe `address` recomposés en objet serveur par `address:write` (level1..4/codeInsee
+// Membres plats du groupe `address` recomposés en objet serveur par `address:write` (level1..5/codeInsee
 // éventuels LUS par le codec depuis les valeurs, non déclarés). EditLocationTab (widget `location`) les pose.
 const ADDRESS_MEMBERS = ["addressCountry", "addressLocality", "postalCode", "streetAddress", "localityId"];
 

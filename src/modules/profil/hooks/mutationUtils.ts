@@ -11,15 +11,19 @@ export interface AddressFormFields {
   postalCode?: string;
   streetAddress?: string;
   codeInsee?: string;
+  // Niveaux SIG 1..5 COMPLETS (parité legacy createLocalityObj/Element::updateField ;
+  // contrat SDK ≥ 1.0.173) : level2 = niveau propre à certains pays (Wallonie/BE,
+  // provinces/MG), level5 = EPCI. En France level3=région, level4=département.
   level1?: string;
   level1Name?: string;
-  // level2/level2Name volontairement ABSENTS : le schéma d'adresse des payloads
-  // du SDK (validé par AJV, additionalProperties:false) n'autorise que
-  // level1/level3/level4 — level2 y est rejeté (département = level3).
+  level2?: string;
+  level2Name?: string;
   level3?: string;
   level3Name?: string;
   level4?: string;
   level4Name?: string;
+  level5?: string;
+  level5Name?: string;
 }
 
 /**
@@ -34,11 +38,14 @@ const ADDRESS_FIELDS = [
   "codeInsee",
   "level1",
   "level1Name",
-  // level2/level2Name exclus : rejetés par l'AJV du SDK (cf. AddressFormFields).
+  "level2",
+  "level2Name",
   "level3",
   "level3Name",
   "level4",
   "level4Name",
+  "level5",
+  "level5Name",
 ] as const;
 
 /**

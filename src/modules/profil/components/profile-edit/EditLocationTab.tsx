@@ -57,6 +57,8 @@ interface City {
   level3Name?: string;
   level4?: string;
   level4Name?: string;
+  level5?: string;
+  level5Name?: string;
   /**
    * Coordonnées de niveau VILLE (projection backend `geo` de la collection `cities`).
    * Disponibles dès la sélection, même quand la ville n'a aucun code postal.
@@ -302,6 +304,8 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
       form.setValue("level3Name", "");
       form.setValue("level4", "");
       form.setValue("level4Name", "");
+      form.setValue("level5", "");
+      form.setValue("level5Name", "");
       form.setValue("codeInsee", "");
       setSelectedLocality(null);
       resetStreet();
@@ -313,22 +317,19 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
     form.setValue("localityId", city.id);
     form.setValue("codeInsee", city.insee || "");
 
-    if (city.level1) {
-      form.setValue("level1", city.level1);
-      form.setValue("level1Name", city.level1Name || "");
-    }
-    if (city.level2) {
-      form.setValue("level2", city.level2);
-      form.setValue("level2Name", city.level2Name || "");
-    }
-    if (city.level3) {
-      form.setValue("level3", city.level3);
-      form.setValue("level3Name", city.level3Name || "");
-    }
-    if (city.level4) {
-      form.setValue("level4", city.level4);
-      form.setValue("level4Name", city.level4Name || "");
-    }
+    // Pose TOUS les niveaux de la ville, vides inclus ("") : une ville sans level2
+    // (ex. FR) ne doit pas hériter du niveau d'une sélection précédente ; les vides
+    // sont omis du payload par buildAddressFromForm (parité legacy : niveaux épars).
+    form.setValue("level1", city.level1 || "");
+    form.setValue("level1Name", city.level1Name || "");
+    form.setValue("level2", city.level2 || "");
+    form.setValue("level2Name", city.level2Name || "");
+    form.setValue("level3", city.level3 || "");
+    form.setValue("level3Name", city.level3Name || "");
+    form.setValue("level4", city.level4 || "");
+    form.setValue("level4Name", city.level4Name || "");
+    form.setValue("level5", city.level5 || "");
+    form.setValue("level5Name", city.level5Name || "");
 
     // Coordonnées de niveau VILLE : disponibles DÈS la sélection, indépendamment du
     // code postal. C'est la donnée géo garantie (une ville sans code postal — ex.
