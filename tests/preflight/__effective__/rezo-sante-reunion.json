@@ -1,6 +1,6 @@
 {
   "site": "rezo-sante-reunion",
-  "slug": null,
+  "slug": "rezoSanteReunion",
   "addMenus": {
     "organizations": {
       "builtins": {

@@ -1,6 +1,14 @@
 {
   "site": "commune-transparente",
   "slug": null,
+  "deploiements": [
+    "etangsale1",
+    "tampon",
+    "saintbenoit4",
+    "saintemarie1",
+    "saintpaul4",
+    "saintJoseph"
+  ],
   "addMenus": {},
   "editModals": {},
   "adminResources": {},

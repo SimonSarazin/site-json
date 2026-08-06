@@ -52,14 +52,38 @@ const SITES = readdirSync(ROOT)
     cfg: JSON.parse(readFileSync(join(ROOT, f), "utf8")) as Cfg,
   }));
 
-/** Slug du site, statiquement : le `costumSlug` MAJORITAIRE des costumForms (null sans forms) —
- *  même dérivation d'autorité que `formsDeCollection`/`costumCreateKey` au runtime. */
-function slugDuSite(cfg: Cfg): string | null {
+/** Registre de déploiement `sites.json` (racine) : la SOURCE D'AUTORITÉ du slug porteur — c'est le
+ *  costum sous lequel l'app déployée tourne, donc le slug que `useCocolight().entity.slug` verra au
+ *  runtime. Une config peut porter PLUSIEURS déploiements (commune-transparente : 6 slugs). */
+const DEPLOIEMENTS: Map<string, string[]> = (() => {
+  const m = new Map<string, string[]>();
+  const sites = JSON.parse(readFileSync(join(ROOT, "sites.json"), "utf8")) as Array<{
+    slug?: string;
+    config?: string;
+  }>;
+  for (const s of sites) {
+    if (!s.config || !s.slug) continue;
+    m.set(s.config, [...(m.get(s.config) ?? []), s.slug]);
+  }
+  return m;
+})();
+
+/**
+ * Slug du site, statiquement. Autorité : `sites.json` (le slug de déploiement = celui de l'entité
+ * porteuse au runtime). Config MULTI-déploiements → null : les projections dépendantes du slug
+ * varieraient par déploiement, on les laisse inertes et la fixture matérialise la liste
+ * (`deploiements`) pour que tout changement du registre reste visible. Repli si la config n'est
+ * pas au registre : `costumSlug` majoritaire des `costumForms`.
+ */
+function slugDuSite(site: string, cfg: Cfg): { slug: string | null; deploiements: string[] } {
+  const deploiements = DEPLOIEMENTS.get(`config.prod.${site}.json`) ?? [];
+  if (new Set(deploiements).size === 1) return { slug: deploiements[0], deploiements };
+  if (deploiements.length > 1) return { slug: null, deploiements };
   const compte = new Map<string, number>();
   for (const doc of Object.values(cfg.costumForms ?? {})) {
     if (doc?.costumSlug) compte.set(doc.costumSlug, (compte.get(doc.costumSlug) ?? 0) + 1);
   }
-  return [...compte.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+  return { slug: [...compte.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null, deploiements };
 }
 
 /** Pose `chemin.pointé` en profondeur (les probes des routes d'édition en ont besoin). */
@@ -96,7 +120,7 @@ function routesDe(profil: Record<string, unknown> | undefined): RouteDecl[] {
 }
 
 function projeter(site: string, cfg: Cfg) {
-  const slug = slugDuSite(cfg);
+  const { slug, deploiements } = slugDuSite(site, cfg);
   const forms = cfg.costumForms ?? {};
   const profils = cfg.profiles ?? {};
 
@@ -222,7 +246,18 @@ function projeter(site: string, cfg: Cfg) {
     }
   }
 
-  return { site, slug, addMenus, editModals, adminResources, pages, referencement, membership, profileRelated };
+  return {
+    site,
+    slug,
+    ...(deploiements.length > 1 ? { deploiements } : {}),
+    addMenus,
+    editModals,
+    adminResources,
+    pages,
+    referencement,
+    membership,
+    profileRelated,
+  };
 }
 
 describe("comportement résolu par site (garde d'impact inter-configs)", () => {
