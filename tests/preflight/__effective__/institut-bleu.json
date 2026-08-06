@@ -155,6 +155,232 @@
       }
     }
   },
+  "pages": {
+    "//data-observatory": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultFields": [
+          "name",
+          "shortDescription",
+          "description",
+          "slug",
+          "collection",
+          "type",
+          "email",
+          "telephone",
+          "mobile",
+          "link",
+          "tags",
+          "categoryThematic",
+          "legalStatus",
+          "acronym",
+          "siret",
+          "codeNaf",
+          "operatingLocation",
+          "otherSociaNetworks",
+          "address",
+          "geo",
+          "geoPosition",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "defaultFilters": {
+          "displayAuth": "true"
+        },
+        "indexStepList": 24
+      }
+    },
+    "//agenda": {
+      "baseParams": {
+        "sourceKey": [
+          "institutBleu"
+        ],
+        "indexStepList": 3
+      }
+    },
+    "/cartographie/searchProStatic": {
+      "baseParams": {
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "acronym",
+          "tags"
+        ],
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultFields": [
+          "name",
+          "shortDescription",
+          "description",
+          "slug",
+          "collection",
+          "type",
+          "email",
+          "telephone",
+          "mobile",
+          "link",
+          "tags",
+          "categoryThematic",
+          "legalStatus",
+          "acronym",
+          "siret",
+          "codeNaf",
+          "operatingLocation",
+          "otherSociaNetworks",
+          "address",
+          "geo",
+          "geoPosition",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "profilImageUrl",
+          "source",
+          "reference"
+        ],
+        "defaultFilters": {
+          "displayAuth": "true"
+        },
+        "indexStepList": 200
+      }
+    },
+    "/agenda/agenda": {
+      "baseParams": {
+        "sourceKey": [
+          "institutBleu"
+        ],
+        "indexStepList": 12
+      }
+    },
+    "/observatoire/data-observatory": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultFields": [
+          "name",
+          "shortDescription",
+          "description",
+          "slug",
+          "collection",
+          "type",
+          "email",
+          "telephone",
+          "mobile",
+          "link",
+          "tags",
+          "categoryThematic",
+          "legalStatus",
+          "acronym",
+          "siret",
+          "codeNaf",
+          "operatingLocation",
+          "otherSociaNetworks",
+          "address",
+          "geo",
+          "geoPosition",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "defaultFilters": {
+          "displayAuth": "true"
+        },
+        "indexStepList": 24
+      }
+    },
+    "/bibliotheque/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "institutBleu"
+        ],
+        "defaultFields": [
+          "name",
+          "shortDescription",
+          "typeDocument",
+          "auteurs",
+          "organisme",
+          "langue",
+          "date",
+          "coteDocument",
+          "territoires",
+          "urls",
+          "tags",
+          "type",
+          "source",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "auteurs",
+          "organisme",
+          "tags",
+          "territoires"
+        ],
+        "defaultSortBy": {
+          "date": -1
+        },
+        "defaultFilters": {
+          "$or": {
+            "type": "recoveryCenter",
+            "reference.costumTypes.institutBleu": "recoveryCenter"
+          }
+        }
+      }
+    },
+    "/financements/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "institutBleu"
+        ],
+        "defaultFields": [
+          "name",
+          "shortDescription",
+          "description",
+          "financementType",
+          "echelle",
+          "financementSource",
+          "date",
+          "urls",
+          "tags",
+          "type",
+          "source",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "financementSource"
+        ],
+        "defaultSortBy": {
+          "date": -1
+        },
+        "defaultFilters": {
+          "$or": {
+            "type": "financement",
+            "reference.costumTypes.institutBleu": "financement"
+          }
+        }
+      }
+    }
+  },
   "referencement": {
     "organizations": {
       "sousTypes": [],

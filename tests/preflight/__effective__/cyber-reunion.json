@@ -46,6 +46,26 @@
       }
     }
   },
+  "pages": {
+    "/mapping/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultFilters": {
+          "$or": {
+            "source.key": "cyberReunion",
+            "source.keys": "cyberReunion",
+            "costumId": "695b58ca8693fc2c121208e4"
+          },
+          "preferences.toBeValidated.cyberReunion": {
+            "$exists": false
+          }
+        },
+        "notSourceKey": true
+      }
+    }
+  },
   "referencement": {
     "organizations": {
       "sousTypes": [],

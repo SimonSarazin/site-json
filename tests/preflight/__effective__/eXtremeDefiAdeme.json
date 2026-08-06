@@ -26,6 +26,27 @@
   },
   "editModals": {},
   "adminResources": {},
+  "pages": {
+    "/projets/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects"
+        ],
+        "sourceKey": [
+          "eXtremeDefiAdeme"
+        ],
+        "indexStepList": 6
+      }
+    },
+    "/agenda/agenda": {
+      "baseParams": {
+        "sourceKey": [
+          "eXtremeDefiAdeme"
+        ],
+        "indexStepList": 12
+      }
+    }
+  },
   "referencement": {},
   "membership": {
     "citoyens/membership": {

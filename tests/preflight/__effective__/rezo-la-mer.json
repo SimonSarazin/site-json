@@ -26,6 +26,43 @@
   },
   "editModals": {},
   "adminResources": {},
+  "pages": {
+    "/projets/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects"
+        ],
+        "indexStepList": 5
+      }
+    },
+    "/evenements/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "events"
+        ],
+        "indexStepList": 3,
+        "defaultFilters": {
+          "isStarred": true
+        }
+      }
+    },
+    "/evenements/searchProStatic#1": {
+      "baseParams": {
+        "defaultTypes": [
+          "events"
+        ],
+        "indexStepList": 3
+      }
+    },
+    "/ressources/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "indexStepList": 3
+      }
+    }
+  },
   "referencement": {},
   "membership": {
     "citoyens/membership": {

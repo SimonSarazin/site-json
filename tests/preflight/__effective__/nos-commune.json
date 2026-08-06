@@ -4,6 +4,30 @@
   "addMenus": {},
   "editModals": {},
   "adminResources": {},
+  "pages": {
+    "/communes/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "notSourceKey": true,
+        "defaultFilters": {
+          "costum.transparentCommune": {
+            "$exists": true
+          }
+        }
+      }
+    },
+    "/cartographie/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "notSourceKey": true,
+        "defaultFilters": {}
+      }
+    }
+  },
   "referencement": {},
   "membership": {},
   "profileRelated": {}

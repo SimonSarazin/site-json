@@ -124,6 +124,252 @@
       }
     }
   },
+  "pages": {
+    "/temoignages/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "type": "affiche"
+        },
+        "defaultFields": [
+          "name",
+          "category",
+          "description",
+          "medias",
+          "territoires",
+          "publics",
+          "ages",
+          "themes",
+          "tags",
+          "created",
+          "type",
+          "source"
+        ],
+        "searchBy": [
+          "name",
+          "description"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        }
+      }
+    },
+    "/ressources/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "type": "recoveryCenter"
+        },
+        "defaultFields": [
+          "name",
+          "category",
+          "description",
+          "urls",
+          "medias",
+          "territoires",
+          "publics",
+          "themes",
+          "tags",
+          "address",
+          "created",
+          "type",
+          "source",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "description"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        }
+      }
+    },
+    "/agenda/agenda": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "indexStepList": 12,
+        "filters": {
+          "type": "others"
+        }
+      }
+    },
+    "/territoire/arrageois/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "territoires": {
+            "$in": [
+              "Arrageois"
+            ]
+          }
+        },
+        "indexStepList": 6
+      }
+    },
+    "/territoire/artois/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "territoires": {
+            "$in": [
+              "Artois"
+            ]
+          }
+        },
+        "indexStepList": 6
+      }
+    },
+    "/territoire/audomarois/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "territoires": {
+            "$in": [
+              "Audomarois"
+            ]
+          }
+        },
+        "indexStepList": 6
+      }
+    },
+    "/territoire/boulonnais/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "territoires": {
+            "$in": [
+              "Boulonnais"
+            ]
+          }
+        },
+        "indexStepList": 6
+      }
+    },
+    "/territoire/calaisis/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "territoires": {
+            "$in": [
+              "Calaisis"
+            ]
+          }
+        },
+        "indexStepList": 6
+      }
+    },
+    "/territoire/entre-mer-et-terres/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "territoires": {
+            "$in": [
+              "Entre Mer et Terres"
+            ]
+          }
+        },
+        "indexStepList": 6
+      }
+    },
+    "/territoire/familles-en-sol-mineur-henin-carvin/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "territoires": {
+            "$in": [
+              "Familles en sol mineur Hénin Carvin"
+            ]
+          }
+        },
+        "indexStepList": 6
+      }
+    },
+    "/territoire/familles-en-sol-mineur-lens-lievin/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "territoires": {
+            "$in": [
+              "Familles en sol mineur Lens Liévin"
+            ]
+          }
+        },
+        "indexStepList": 6
+      }
+    },
+    "/territoire/ternois-bruaysis/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "territoires": {
+            "$in": [
+              "Ternois Bruaysis"
+            ]
+          }
+        },
+        "indexStepList": 6
+      }
+    }
+  },
   "referencement": {},
   "membership": {
     "citoyens/membership": {

@@ -4,6 +4,112 @@
   "addMenus": {},
   "editModals": {},
   "adminResources": {},
+  "pages": {
+    "//cardCountCT": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations",
+          "projects",
+          "events",
+          "citoyens",
+          "poi"
+        ],
+        "notSourceKey": true,
+        "defaultFilters": {}
+      }
+    },
+    "/actualite/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "news"
+        ],
+        "notSourceKey": true,
+        "defaultFilters": {
+          "$or": {
+            "address.localityId": "54c0965cf6b95c141800a527",
+            "source.key": "etangsale1",
+            "source.keys": "etangsale1"
+          }
+        }
+      }
+    },
+    "/projets/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects"
+        ],
+        "notSourceKey": true,
+        "defaultFields": [
+          "name",
+          "shortDescription",
+          "siren",
+          "collection",
+          "email",
+          "profilImageUrl",
+          "profilMediumImageUrl",
+          "profilThumbImageUrl",
+          "slug",
+          "tags",
+          "partners",
+          "links",
+          "date",
+          "address"
+        ],
+        "defaultFilters": {}
+      }
+    },
+    "/citoyens/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "citoyens"
+        ],
+        "notSourceKey": true,
+        "defaultFields": [
+          "address"
+        ],
+        "defaultFilters": {}
+      }
+    },
+    "/ressources/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "notSourceKey": true,
+        "defaultFields": [
+          "address"
+        ],
+        "defaultFilters": {}
+      }
+    },
+    "/agenda/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "events"
+        ],
+        "notSourceKey": true,
+        "defaultFilters": {}
+      }
+    },
+    "/propositions/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "proposals"
+        ],
+        "notSourceKey": true
+      }
+    },
+    "/navigation/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations",
+          "projects",
+          "events"
+        ],
+        "notSourceKey": true
+      }
+    }
+  },
   "referencement": {},
   "membership": {},
   "profileRelated": {}

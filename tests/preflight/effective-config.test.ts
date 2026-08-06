@@ -100,6 +100,16 @@ function projeter(site: string, cfg: Cfg) {
   const forms = cfg.costumForms ?? {};
   const profils = cfg.profiles ?? {};
 
+  /** Clé unique dans une projection : suffixe `#n` dès la 2e occurrence — sans ça, deux sections
+   *  homonymes (sport-sante : 2 resources `organizations` dans le même tab) s'écrasent et la
+   *  fixture MENT (une section invisible de la garde — défaut trouvé en revue). */
+  const cleUnique = (bag: Record<string, unknown>, base: string): string => {
+    if (!(base in bag)) return base;
+    let n = 1;
+    while (`${base}#${n}` in bag) n += 1;
+    return `${base}#${n}`;
+  };
+
   // ── Menus d'ajout : par type de profil, la modale EFFECTIVE de chaque builtin activé + customs.
   const addMenus: Record<string, unknown> = {};
   for (const [type, profil] of Object.entries(profils)) {
@@ -114,7 +124,7 @@ function projeter(site: string, cfg: Cfg) {
       const customs = ((ac.custom as Array<{ modalKey?: string }> | undefined) ?? [])
         .map((c) => c.modalKey)
         .filter(Boolean);
-      addMenus[type] = { builtins, ...(customs.length ? { customs } : {}) };
+      addMenus[cleUnique(addMenus, type)] = { builtins, ...(customs.length ? { customs } : {}) };
     }
   }
 
@@ -148,7 +158,7 @@ function projeter(site: string, cfg: Cfg) {
     for (const section of (tab.sections as Array<Record<string, unknown>> | undefined) ?? []) {
       if (section.type !== "resource") continue;
       const s = section as unknown as AdminResourceSection;
-      adminResources[`${tab.id}/${s.entityType}`] = {
+      adminResources[cleUnique(adminResources, `${tab.id}/${s.entityType}`)] = {
         source: expandCostumSubType(
           structuredClone((section.source as Record<string, unknown> | undefined) ?? {}) as never,
           forms,
@@ -156,6 +166,20 @@ function projeter(site: string, cfg: Cfg) {
         ),
         create: resolveCreateModal(s, forms as never, slug ?? undefined),
         edit: resolveEditModal(s),
+      };
+    }
+  }
+
+  // ── Pages PUBLIQUES : tout `props.baseParams` porté par une section de page, APRÈS expansion —
+  //    c'est la surface de `/bibliotheque` et `/financements` (useSearchQuery/prefetch), que la
+  //    première version ne couvrait pas (défaut trouvé en revue : seul l'admin était projeté).
+  const pages: Record<string, unknown> = {};
+  for (const page of (cfg.pages as Array<Record<string, unknown>> | undefined) ?? []) {
+    for (const section of (page.sections as Array<Record<string, unknown>> | undefined) ?? []) {
+      const props = section.props as { baseParams?: Record<string, unknown> } | undefined;
+      if (!props?.baseParams) continue;
+      pages[cleUnique(pages, `${page.path}/${section.type}`)] = {
+        baseParams: expandCostumSubType(structuredClone(props.baseParams) as never, forms, slug),
       };
     }
   }
@@ -169,7 +193,7 @@ function projeter(site: string, cfg: Cfg) {
         const sousTypes = formsDeCollection(forms, et, slug)
           .filter((f): f is CostumFormSubTypeLike & { subType: string } => !!f.subType)
           .map((f) => f.subType);
-        referencement[et] = {
+        referencement[cleUnique(referencement, et)] = {
           sousTypes,
           annotation: sousTypes.length > 0 && slug ? cheminAnnotation(slug) : null,
         };
@@ -192,13 +216,13 @@ function projeter(site: string, cfg: Cfg) {
     }
     for (const section of (profil?.sections as Array<Record<string, unknown>> | undefined) ?? []) {
       if (section.type !== "profile-related") continue;
-      profileRelated[`${type}/${section.entityType ?? section.relationType ?? "?"}`] = {
+      profileRelated[cleUnique(profileRelated, `${type}/${section.entityType ?? section.relationType ?? "?"}`)] = {
         scope: (section.scope as string | undefined) ?? "network",
       };
     }
   }
 
-  return { site, slug, addMenus, editModals, adminResources, referencement, membership, profileRelated };
+  return { site, slug, addMenus, editModals, adminResources, pages, referencement, membership, profileRelated };
 }
 
 describe("comportement résolu par site (garde d'impact inter-configs)", () => {
