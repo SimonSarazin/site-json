@@ -71,8 +71,8 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
 
     await expect(page).toHaveTitle(/Parent62/);
 
-    // Le header stacked rend un <nav class="fixed …">, pas de <header>.
-    const headerNav = page.locator("nav.fixed").first();
+    // Le header stacked rend un bandeau <header> suivi d'un <nav class="sticky …">.
+    const headerNav = page.locator("nav.sticky").first();
     await expect(headerNav).toBeVisible();
 
     expect(config.header.nav, "la nav de la config doit rester à 5 entrées").toHaveLength(5);
@@ -195,18 +195,18 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     await expect(page.locator("html")).toHaveClass(/dark/);
 
     // Header stacked (remplace transparent-scroll depuis la refonte du 06/08) :
-    // <nav class="fixed …"> sur image de fond — pas de bascule bg-background/90.
-    // Au repos, le wordmark (section 1) est déployé et la nav est visible.
-    const headerNav = page.locator("nav.fixed").first();
-    const wordmark = headerNav.locator("div.overflow-hidden").first();
-    await expect(wordmark).not.toHaveClass(/(?:^|\s)h-0(?:\s|$)/);
+    // bandeau wordmark <header> dans le flux + <nav class="sticky …"> — pas de
+    // bascule bg-background/90. Au repos, le bandeau est à l'écran et la nav visible.
+    const bandeau = page.locator("header").first();
+    await expect(bandeau).toBeInViewport();
+    const headerNav = page.locator("nav.sticky").first();
     const firstNav = headerNav.locator("a", { hasText: config.header.nav[0].label.fr }).first();
     await expect(firstNav).toBeVisible();
 
-    // Scroll réel (window.scrollTo → event `scroll`) : la section wordmark
-    // collapse (h-0, barre compacte) et la nav reste visible.
+    // Scroll réel (window.scrollTo → event `scroll`) : le bandeau sort de
+    // l'écran, la barre sticky reste collée en haut avec la nav visible.
     await page.evaluate(() => window.scrollTo(0, 800));
-    await expect(wordmark).toHaveClass(/(?:^|\s)h-0(?:\s|$)/);
+    await expect(bandeau).not.toBeInViewport();
     await expect(firstNav).toBeVisible();
   });
 

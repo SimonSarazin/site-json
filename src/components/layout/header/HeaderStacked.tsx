@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { Header } from "@/types/site-schema";
@@ -15,7 +16,7 @@ import { AuthMenu } from "@/modules/auth";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
-import { useScrollAware, useScrollToTopOnRouteChange, useNavItemActive } from "./useHeaderBehavior";
+import { useScrollToTopOnRouteChange, useNavItemActive } from "./useHeaderBehavior";
 import { useVisibilityList } from "@/lib/visibility/useVisibility";
 import { cn } from "@/lib/utils";
 
@@ -30,15 +31,23 @@ interface HeaderStackedProps {
 const ICON_BTN_DARK = "dark:bg-muted dark:border-muted dark:text-white/90 dark:hover:text-white";
 
 /**
- * Header 2 sections sur fond image : section 1 = logo + titre/sous-titre,
- * plein écran (`50` moins la nav) et centrée horizontalement/verticalement ;
- * section 2 = nav. Au scroll, la section 1 collapse à 0 (transition de hauteur)
- * vers une barre compacte unique où le logo remonte à gauche de la nav et le
- * titre/sous-titre disparaissent (même mécanique que `HeaderTransparentScroll`,
- * cf. `useScrollAware`).
+ * Header 2 étages sur fond image : un bandeau wordmark (logo + titre/sous-titre)
+ * suivi d'une barre de nav. Le bandeau est une section NORMALE du flux ; seule la
+ * barre est `sticky` — en scrollant, le bandeau sort de l'écran naturellement et
+ * la barre se colle en haut, où le logo compact apparaît à gauche de la nav.
  *
- * Comportement identique sur TOUTES les pages (pas seulement l'accueil) :
- * `collapsed` ne dépend que du scroll (`useScrollAware`), jamais de la route.
+ * Pourquoi PAS un bloc `fixed` unique dont on anime la hauteur (mécanique
+ * d'origine, abandonnée) : elle imposait des hauteurs figées découplées du
+ * contenu — `h-[calc(50vh-5.5rem)]` + `overflow-hidden` CLIPPAIT logo et
+ * sous-titre sur les petits écrans (Nexus 5 : 232px pour ~280px de contenu),
+ * le spacer 50vh→h-14 non animé faisait bondir le contenu de ~370px, et l'image
+ * de fond recadrée en tranche de 56px laissait transparaître la page à travers
+ * ses zones semi-transparentes (canal alpha du watercolor). Ici : hauteur =
+ * max(min-h, contenu) — jamais de clipping —, pas de spacer, et la barre porte
+ * son propre fond opaque.
+ *
+ * Comportement identique sur TOUTES les pages : `stuck` ne dépend que de la
+ * position de la barre (sentinelle IntersectionObserver), jamais de la route.
  */
 export default function HeaderStacked({ header }: HeaderStackedProps) {
   useLoadNamespace("components/layout");
@@ -46,110 +55,117 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
   const isNavItemActive = useNavItemActive();
 
   useScrollToTopOnRouteChange();
-  const collapsed = useScrollAware();
+
+  // `stuck` = la barre est collée au bord haut (le bandeau est entièrement sorti
+  // de l'écran). Détecté par une sentinelle posée au BAS du bandeau plutôt qu'un
+  // seuil de scroll en px : aucun besoin de connaître la hauteur (variable) du
+  // bandeau, et pas de faux positif pendant qu'il est encore partiellement visible.
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const [stuck, setStuck] = useState(false);
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([entry]) => setStuck(!entry.isIntersecting));
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   const navVisibility = useVisibilityList(header.nav.map((item) => item.visibility));
   const navItemsToDisplay = header.nav.filter((_, idx) => navVisibility[idx]);
 
+  // Fond partagé bandeau/barre. `bg-neutral-800` SOUS l'image : l'image peut avoir
+  // un canal alpha partiellement transparent (cf. bug du texte fantôme) — les
+  // « trous » montrent un fond sombre neutre (texte blanc lisible) au lieu du
+  // contenu de la page. Sert aussi de repli quand `backgroundImage` est absent.
+  const bgStyle = {
+    ...(header.backgroundImage ? { backgroundImage: `url(${header.backgroundImage})` } : undefined),
+    // `header.textColor` ne pilote que le 1er segment du wordmark (logoTitle, cf.
+    // plus bas) : sous-titre/nav sont blancs fixes, IDENTIQUES quel que soit le
+    // mode clair/sombre (demande explicite — même couleur dans les deux modes,
+    // celle du mode sombre). Le token reste utile en repli noir pour le wordmark.
+    "--header-text": header.textColor || "#000000",
+  } as React.CSSProperties;
+
   return (
     <>
-      <nav
-        className="fixed top-0 left-0 right-0 z-50 transition-all duration-200 bg-cover bg-center shadow-deep"
-        style={{
-          ...(header.backgroundImage ? { backgroundImage: `url(${header.backgroundImage})` } : undefined),
-          // `header.textColor` ne pilote plus que le 1er segment du wordmark (logoTitle, cf.
-          // plus bas) : sous-titre/nav sont désormais blancs fixes, IDENTIQUES quel que soit le
-          // mode clair/sombre (demande explicite — même couleur dans les deux modes, celle du
-          // mode sombre). Le token reste utile en repli noir pour le wordmark uniquement.
-          "--header-text": header.textColor || "#000000",
-        } as React.CSSProperties}
-      >
-        {/* Voile sombre (mode sombre uniquement) : assombrit l'image de fond pour
-            que sous-titre/nav (blancs fixes) restent lisibles. `-z-10` : derrière
-            les enfants, mais AU-DESSUS du background du <nav> (ordre de peinture
-            d'un stacking context : fond de l'élément, puis enfants z<0). */}
-        <div aria-hidden className="absolute inset-0 -z-10 pointer-events-none dark:bg-black/55" />
-
-        {/* Section 1 : logo + titre/sous-titre côte à côte, plein écran (50
-            moins la nav, h-14 = 3.5rem) et centrés horizontalement/verticalement.
-            Toujours montée — le collapse au scroll transitionne la hauteur
-            (50 → 0) plutôt qu'un montage/démontage React, qui ne peut pas
-            être animé en CSS. */}
-        <div
-          className={cn(
-            "overflow-hidden transition-[height] duration-500 ease-in-out",
-            collapsed ? "h-0" : "h-[calc(50vh-5.5rem)]"
-          )}
-        >
-          <div
-            className={cn(
-              "flex h-full flex-col items-center justify-center px-4 transition-opacity duration-400",
-              collapsed ? "opacity-0" : "opacity-100 delay-200"
+      {/* Bandeau wordmark — dans le flux. `min-h` (PAS `h`) : l'ampleur ~50vh du
+          design desktop est garantie, mais le bandeau S'ÉTEND si son contenu est
+          plus grand (petit écran, sous-titre long) au lieu de le couper. */}
+      <header className="relative bg-neutral-800 bg-cover bg-center" style={bgStyle}>
+        <div aria-hidden className="absolute inset-0 pointer-events-none dark:bg-black/55" />
+        <div className="relative flex min-h-[calc(50vh-3.5rem)] flex-col items-center justify-center px-4 py-10">
+          <NavLink to={header.path || "/"} className="flex flex-col sm:flex-row items-center gap-4 sm:gap-10 lg:gap-20 text-center sm:text-left cursor-pointer group">
+            <HeaderLogo
+              header={header}
+              isOverlay
+              iconTone="white"
+              imageClassName="h-20 w-20 sm:h-35 sm:w-35 lg:h-60 lg:w-60 shrink-0 object-contain transition-transform group-hover:scale-110"
+              iconClassName="w-20 h-20 sm:w-35 sm:h-35 lg:w-60 lg:h-60 shrink-0 transition-transform group-hover:scale-110"
+              imageHeight={200}
+            />
+            {(header.logoTitle || header.logoSubtitle) && (
+              <span className="flex flex-col items-center sm:items-start leading-tight">
+                {header.logoTitle && (
+                  // Le saut à la taille desktop (9xl) attend `lg:` (1024px), pas `md:` (768px) :
+                  // sur les largeurs tablette, 9xl ferait déborder le wordmark de l'écran.
+                  <span className="font-display text-5xl sm:text-6xl lg:text-9xl font-serif mb-2 sm:mb-5">
+                    {header.logoTitleAccent ? (
+                      <>
+                        {/* Wordmark 2 segments, couleurs FIXES quel que soit le mode (contrairement
+                            au sous-titre/nav, adaptatifs) : `logoTitle` en `header.textColor`
+                            (repli noir) + contour blanc fixe (`-webkit-text-stroke`, non
+                            supporté nativement par Tailwind — d'où le style inline),
+                            `logoTitleAccent` en blanc fixe. */}
+                        <span
+                          className="text-(--header-text)"
+                          style={{ WebkitTextStroke: "2px white", paintOrder: "stroke fill" }}
+                        >
+                          {t(header.logoTitle)}
+                        </span>
+                        <span className="text-white">{t(header.logoTitleAccent)}</span>
+                      </>
+                    ) : (
+                      t(header.logoTitle)
+                    )}
+                  </span>
+                )}
+                {header.logoSubtitle && (
+                  <span className="whitespace-pre-line text-base sm:text-xl lg:text-5xl font-medium text-white mt-1 sm:mt-3">{t(header.logoSubtitle)}</span>
+                )}
+              </span>
             )}
-          >
-            <NavLink to={header.path || "/"} className="flex flex-col sm:flex-row items-center gap-4 sm:gap-10 lg:gap-20 text-center sm:text-left cursor-pointer group">
-              <HeaderLogo
-                header={header}
-                isOverlay
-                iconTone="white"
-                imageClassName="h-20 w-20 sm:h-35 sm:w-35 lg:h-60 lg:w-60 shrink-0 object-contain transition-transform group-hover:scale-110"
-                iconClassName="w-20 h-20 sm:w-35 sm:h-35 lg:w-60 lg:h-60 shrink-0 transition-transform group-hover:scale-110"
-                imageHeight={200}
-              />
-              {(header.logoTitle || header.logoSubtitle) && (
-                <span className="flex flex-col items-center sm:items-start leading-tight ">
-                  {header.logoTitle && (
-                    // Le saut à la taille desktop (9xl) attend `lg:` (1024px), pas `md:` (768px) :
-                    // la hauteur du header (`50vh`) ne grandit pas avec la largeur, un saut trop tôt
-                    // fait déborder/clipper le sous-titre sur les largeurs tablette (cf. bug remonté).
-                    <span className="font-display text-5xl sm:text-6xl lg:text-9xl font-serif mb-2 sm:mb-5">
-                      {header.logoTitleAccent ? (
-                        <>
-                          {/* Wordmark 2 segments, couleurs FIXES quel que soit le mode (contrairement
-                              au sous-titre/nav, adaptatifs) : `logoTitle` en `header.textColor`
-                              (repli noir) + contour blanc fixe (`-webkit-text-stroke`, non
-                              supporté nativement par Tailwind — d'où le style inline),
-                              `logoTitleAccent` en blanc fixe. */}
-                          <span
-                            className="text-(--header-text)"
-                            style={{ WebkitTextStroke: "2px white", paintOrder: "stroke fill" }}
-                          >
-                            {t(header.logoTitle)}
-                          </span>
-                          <span className="text-white">{t(header.logoTitleAccent)}</span>
-                        </>
-                      ) : (
-                        t(header.logoTitle)
-                      )}
-                    </span>
-                  )}
-                  {header.logoSubtitle && (
-                    <span className="whitespace-pre-line text-base sm:text-xl lg:text-5xl font-medium text-white mt-1 sm:mt-3">{t(header.logoSubtitle)}</span>
-                  )}
-                </span>
-              )}
-            </NavLink>
-          </div>
+          </NavLink>
         </div>
+        {/* Sentinelle : dernier pixel du bandeau. Sortie de l'écran par le haut
+            ⇔ la barre ci-dessous est collée (`stuck`). */}
+        <div ref={sentinelRef} aria-hidden className="absolute bottom-0 h-px w-px" />
+      </header>
 
-        {/* Section 2 : nav — logo compact à gauche une fois scrollé. Padding bas
-            généreux au repos (matché sur la maquette, cf. hauteur réservée par la
-            section 1 ci-dessus) ; retiré une fois compactée pour ne pas alourdir
-            la barre sticky. */}
-        <div className={cn("mx-auto max-w-[100rem] px-4 transition-[padding] duration-300", collapsed ? "pb-0" : "pb-8")}>
+      <nav className="sticky top-0 z-50 bg-neutral-800 bg-cover bg-center shadow-deep" style={bgStyle}>
+        {/* Scrim une fois collée : la tranche d'image visible sur 56px n'est pas
+            forcément une zone prévue pour du texte — un voile sombre garantit la
+            lisibilité de la nav blanche. Toujours monté (l'opacité se transitionne
+            au lieu de « sauter ») ; `pointer-events-none` : sans lui, cet
+            `absolute` intercepterait les clics des boutons de la barre. */}
+        <div
+          aria-hidden
+          className={cn(
+            "absolute inset-0 pointer-events-none bg-black/35 transition-opacity duration-200",
+            stuck ? "opacity-100" : "opacity-0"
+          )}
+        />
+        <div aria-hidden className="absolute inset-0 pointer-events-none dark:bg-black/55" />
+
+        <div className="relative mx-auto max-w-[100rem] px-4">
           <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4 h-14">
-            {/* Colonne logo : toujours montée, mais sa largeur (donc celle de la
-                piste "auto" qui la contient) transitionne de 0 → sa taille réelle.
-                Contrairement à un montage/démontage conditionnel (qui forçait un
-                saut discret du nombre de colonnes de la grille, non-animable en
-                CSS), la piste suit en douceur la largeur du logo — et reste à ~0
-                au repos, donc ne réserve quasiment aucun espace tant qu'on n'a
-                pas scrollé. */}
+            {/* Colonne logo : toujours montée, sa largeur transitionne 0 → taille
+                réelle quand la barre se colle (un montage/démontage conditionnel
+                ferait sauter le nombre de colonnes de la grille, non animable). */}
             <NavLink
               to={header.path || "/"}
               className={cn(
                 "relative flex items-center shrink-0 overflow-hidden justify-self-start group transition-all duration-300 ease-out",
-                collapsed ? "w-11 sm:w-13 opacity-100 scale-100" : "w-0 opacity-0 scale-75 pointer-events-none"
+                stuck ? "w-11 sm:w-13 opacity-100 scale-100" : "w-0 opacity-0 scale-75 pointer-events-none"
               )}
             >
               <HeaderLogo
@@ -172,7 +188,7 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
                       ariaCurrent={isActive ? "page" : undefined}
                       className={cn(
                         "font-display transition-all relative inline-flex items-center gap-1.5 whitespace-nowrap font-serif",
-                        collapsed ? "text-xl" : "text-2xl",
+                        stuck ? "text-xl" : "text-2xl",
                         isActive
                           ? "text-white"
                           : "text-white/90 hover:text-white"
@@ -274,15 +290,6 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
           </div>
         </div>
       </nav>
-      {/* Spacer : le header est `fixed`, il faut pousser le contenu sous lui.
-          Hauteur = section 1 + section 2 (repos) ou barre compacte seule (scrollé).
-          Au repos : section 1 = `calc(50vh - 5.5rem)`, section 2 = `h-14` (3.5rem) + `pb-8`
-          (2rem) = 5.5rem → total = 50vh pile. Un `h-120` (480px) fixe ne matchait ça QUE sur un
-          viewport de 960px de haut ; sur les autres hauteurs d'écran, l'espace réservé était trop
-          court (le header, fixed, chevauchait le haut du contenu) ou trop long (bande vide entre
-          le header et le contenu) — décalage dépendant de l'écran, cf. bug remonté. `h-[50vh]`
-          matche exactement la hauteur réelle du header quel que soit le viewport. */}
-      <div aria-hidden className={collapsed ? "h-14" : "h-[50vh]"} />
     </>
   );
 }
