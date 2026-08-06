@@ -14,7 +14,9 @@
 > [Composants média](../doc/33-media-components.md). Mémoire : `[[project-parent62]]` — slug corrigé
 > le 25/07 (`parents62` avec **s** est abandonné, cf. §1) ; le fichier `.claude/memory/` reste **à créer**.
 
-Dernière mise à jour : **2026-08-03** (hygiène CSS du thème, SDK 1.0.172 publié, `VITE_SITE_PUBLIC_URL`).
+Dernière mise à jour : **2026-08-06** (refonte accueil/header/footer + 11 nouvelles pages —
+**committé sur `parents62`**, cf. §9quater ; `test:unit` 2 227/2 229 (2 pré-existants hors
+périmètre) ;).
 
 ---
 
@@ -71,6 +73,12 @@ et le réseau social Communecter, en **conservant le WordPress** pour les conten
 - **03/08 — merge `fix/institut-bleu-ui` dans `main`** (`94251b7b`, 17 commits) : SDK **1.0.172**
   publié (`09e145a0`) et nouvelle variable **`VITE_SITE_PUBLIC_URL`** (`be7a320c`) — cf. §8.5 et
   §11. typecheck + préflight (22 fichiers / 412 tests) verts après merge, mesurés le 03/08.
+- **06/08 — refonte accueil/header/footer + 11 nouvelles pages** (committé sur `parents62` —
+  18 fichiers modifiés, 8 fichiers de code neufs) : accueil réduit à 3 sections data-driven
+  (`featured-carousel` + `map-bubbles` + `articleTeaser`, 3 types de section neufs), header
+  `type:"stacked"` (neuf), footer `type:"minimal-centered"` + image de fond (neuf), nav
+  restructurée (dropdown « Publics » ajouté, entrée top-level « Rechercher » retirée), 11 pages
+  ajoutées (35→46, 153→176 sections).
 
 ---
 
@@ -245,6 +253,7 @@ Embarqué dans le document de l'orga (`organizations.costum`). Au 20/07, `typeOb
 | **Rendu par item / action au clic (25/07)** | `src/lib/entityMatch.ts` (+ `.test`), `src/modules/search/lib/resolveListItemConf.ts` (+ `.test`), `lib/itemAction.ts` (+ `.test`), `tests/preflight/list-item-rules.test.ts` ; modifs `schema.ts` (`CardConfSchema` extrait, `ListItemRuleSchema`, `ListItemActionSchema`), `components/SearchListView.tsx`, `SearchCard.tsx`, `Preview.tsx`, `SearchMap*.tsx` ; outillage `scripts/lib/prop-descriptions.ts`, `scripts/audit-config.ts`, `scripts/lib/config-blocks.ts` |
 | **Territoires** | `src/data/territoires62.ts` (+ `.test`), `scripts/import-communes-territoires62.ts` |
 | **Header** | `src/components/layout/header/HeaderTransparentScroll.tsx` (fix lisibilité) |
+| **Refonte accueil/header/footer (06/08)** | `src/components/layout/header/HeaderStacked.tsx` (neuf), `src/components/layout/footer/FooterMinimalCentered.tsx`, `src/components/sections/MapBubbles.tsx` (neuf), `src/modules/search/sections/FeaturedCarouselSection.tsx`+`FeaturedCarouselSlide.tsx` (neufs), `src/modules/search/lib/featuredCarouselFilters.ts` (+`.test`, neufs), `src/modules/blog/sections/ArticleTeaser.tsx` (neuf), `src/modules/blog/lib/articleLink.ts` (+`.test`, neuf, extrait d'`ArticleFeed.tsx`) ; schémas `src/types/site-schema.ts` (`MapBubblesSchema`, `Header.backgroundImage/textColor/logoTitleAccent`, `Footer.backgroundImage`), `src/modules/search/schema.ts` (`FeaturedCarouselSectionSchema`), `src/modules/blog/schema.ts` (`ArticleTeaserSectionSchema`) ; câblage `src/components/layout/SiteHeader.tsx`, `src/components/sections/SectionRenderer.tsx`, `src/components/admin/section-meta.ts` ; `src/index-parent62.css` (breakpoint `xs`, `@layer base`, police) |
 | **Tests** | `e2e/parent62.spec.ts`, `src/modules/search/lib/colorBy.test.ts`, `src/modules/profil/forms/costum/__fixtures__/configCostum.ts` |
 | **Déploiement** | `server/prod-server.js`, `server/lib/sitemap.js`, `.env` (`VITE_SLUG`, `VITE_BASE_URL_BACKEND`, `SITE_CONFIG_PATH`, `VITE_SITE_PUBLIC_URL`) — dérivable via `npm run deploy:env` (`scripts/lib/sites.ts`) |
 
@@ -265,6 +274,10 @@ Embarqué dans le document de l'orga (`organizations.costum`). Au 20/07, `typeOb
 | **Une règle de rendu porte SA tranche complète** (carte + preview + contrat + action) | carte et détail sortent de la MÊME résolution → l'incohérence entre ce qu'on voit dans la grille et ce qu'on voit au clic devient impossible par construction |
 | **Faire varier la valeur de `list`, plutôt qu'ajouter une prop** | tout l'aval (`SearchCard`, `Preview`, `SwitchDetailsMode`, presenters typés) reste inchangé ; sans règles, `list` est renvoyé **par identité référentielle** → non-régression prouvable (`toBe(list)`) pour les ~13 autres sections search du site |
 | **Une actualité ouvre le reader blog, pas un drawer** | un POI `type:"article"` a déjà sa page canonique `/blog/:slug` (SSR + SEO) ; la rouvrir en drawer dupliquerait l'UX et perdrait le référencement |
+| **`/public/*` scope par le champ `publics` existant, pas un nouveau champ** (06/08) | les 7 valeurs de `publics` (§5.2) sont déjà portées par les articles ; une page par valeur (`filters:{publics:{$in:[...]}}` sur `articleFeed`) est purement config-driven, zéro donnée/costum neuf |
+| **`/appels-a-projets` et `/offres-emploi` filtrent par `tags`, pas par un champ dédié** (06/08) | même convention que les pages `/theme/*` existantes (mots-clés WordPress libres, cf. §2) ; pas de nouvelle taxonomie pour deux catégories de contenu ponctuelles |
+| **`background`/`accentColor` en couleur FIXE (hex), jamais `text-foreground`** (`featured-carousel`, `articleTeaser`, 06/08) | ces blocs posent un fond marine fixe pour rester de la même famille visuelle sur toute la home ; `text-foreground` s'inverserait en mode clair et deviendrait illisible sur un fond sombre qui, lui, ne s'inverse pas |
+| **Wordmark header en 2 segments (`logoTitle`+`logoTitleAccent`)** (`stacked`, 06/08) | rendre « parent » (contour) + « 62 » (plein) séparément, en couleurs fixes indépendantes du mode, sans dupliquer tout le champ `logoTitle` ni coder le découpage en dur dans le composant |
 
 ---
 
@@ -471,28 +484,116 @@ translucide) et palette indigo en clair **et** sombre (les tokens ne viennent pl
 
 ---
 
+## 9quater. Impacts — refonte accueil/header/footer + pages Publics (06/08)
+
+> **Chantier committé sur `parents62`** le 06/08 (18 fichiers modifiés + 8 fichiers de code
+> neufs + assets). Validation automatisée (gates) faite, cf. §9quater.3. **Validation fonctionnelle/visuelle
+> (recette) et auteur du design original (Peterson/Thomas ?) restent à confirmer avant fusion
+> dans `main`.**
+
+### 9quater.1 Ce qui a changé
+
+**Accueil (`/`)** — passe de 7 sections (`hero-quick-access`, 2×`action-tiles`,
+`cta-card-grid`, `html`, `articleFeed`, `cta`, `layout:"default"`) à **3 sections data-driven**
+(`layout:"fullwidth"`) :
+1. `featured-carousel` (id `home-featured-poi`) — carrousel plein écran des POI tagués
+   `"A la une"` (`sourceKey:["parent62"]`), CTA vers `/blog/:slug` ou `/blog/id/:id`, fond
+   `#2c3e50`/accent `#4ecdc4`, autoplay 6 s.
+2. `map-bubbles` (id `carte-territoires`) — carte illustrée (`carte-territoire-teal.png`) +
+   9 bulles-marqueurs cliquables (positions `x`/`y`/`size` en %, calibrées à la main sur la
+   maquette — **ne pas les retoucher sans re-regarder le rendu**) vers les 9 pages
+   `/territoire/*`, dégradé de fond `--p62-map-bg-from/to`.
+3. `articleTeaser` (id `zoom-reseau`) — aperçu figé des 6 derniers articles du costum
+   (sans pagination), CTA « voir tout » vers `/blog`.
+
+**Trois types de section neufs**, tous génériques (moteur, pas parent62-only) :
+
+| Type | Schéma | Composant | Doc |
+|---|---|---|---|
+| `featured-carousel` | `src/modules/search/schema.ts` (`FeaturedCarouselSectionSchema`) | `src/modules/search/sections/FeaturedCarouselSection.tsx` + `FeaturedCarouselSlide.tsx`, filtre `lib/featuredCarouselFilters.ts` (+ `.test.ts`, 10 tests ✅) | — (à ajouter à doc/07) |
+| `map-bubbles` | `src/types/site-schema.ts` (`MapBubblesSchema`) | `src/components/sections/MapBubbles.tsx` | — |
+| `articleTeaser` | `src/modules/blog/schema.ts` (`ArticleTeaserSectionSchema`) | `src/modules/blog/sections/ArticleTeaser.tsx` | `doc/32-module-articles-blog.md` (mis à jour) |
+
+`articleFeed` et `articleTeaser` partagent désormais `src/modules/blog/lib/articleLink.ts`
+(`normalizeArticleResult`/`articleHref`, extrait de `ArticleFeed.tsx` — 10 tests ✅ dans
+`articleLink.test.ts`) : même résolution `/blog/:slug` ou `/blog/id/:id`, une seule source.
+
+**`featured-carousel` et `articleTeaser` partagent le même mécanisme `background`/`accentColor`**
+(couleurs FIXES config-driven, indépendantes du mode clair/sombre — cf. commentaires des deux
+schémas) : volontaire, pour que les deux blocs restent visuellement de la même famille sur la home.
+
+**Header** — `type:"transparent-scroll"` → **`type:"stacked"`** (neuf, `HeaderStacked.tsx`,
+290 lignes, générique) : 2 sections empilées sur image de fond (`backgroundImage`, réutilise
+`bg-footer.png`) — logo + wordmark **bicolore 2 segments** (`logoTitle` "parent" en
+`textColor`/contour blanc + `logoTitleAccent` "62" en blanc fixe) plein écran (`50vh`), qui
+collapse en barre compacte au scroll (logo remonte à gauche de la nav, même mécanique que
+`HeaderTransparentScroll`/`useScrollAware`). Nouveaux champs `Header.backgroundImage`,
+`Header.textColor`, `Header.logoTitleAccent` dans `site-schema.ts` — génériques, ignorés par
+les autres variantes.
+
+**Footer** — `type:"contact-partners"` → **`type:"minimal-centered"`**, désormais avec image de
+fond (`Footer.backgroundImage`/`backgroundImageAlt`, neufs, génériques). `FooterMinimalCentered.tsx`
+bascule en mode « texte blanc sur fond image » quand `backgroundImage` est posé (nav/liens légaux/
+copyright), sinon rendu inchangé. Tailles de police de la nav/bas de page relevées d'un cran
+(`sm:text-sm`→`sm:text-base`, `sm:text-xs`→`sm:text-sm`) pour matcher le header.
+
+**Nav** — restructurée en **5 dropdowns** (tous avec enfants désormais) : « Le Réseau
+parentalité » (absorbe `/mois-parentalite`, `/contact`, `/communaute` comme enfants — ils
+n'étaient pas dans ce dropdown avant), « Territoires » (10, inchangé), « Thèmes » (8, inchangé),
+**« Publics » (neuf, 7 entrées)**, « Contenus » (4, inchangé). **L'entrée top-level
+« Rechercher » → `/recherche` est retirée** ; la page `/recherche` existe toujours
+(`config:validate` la compte) mais n'est plus liée depuis la nav — la recherche reste accessible
+via `header.utilities.search` (⌘K, `CommandTriggerButton`, inchangé).
+
+**11 pages ajoutées** (35→46 pages, 153→176 sections, `config:validate` ✅ le 06/08) :
+- **7 pages `/public/<slug>`** (`benevoles`, `en-famille`, `enfance`, `futurs-parents`,
+  `parents`, `parents-enfants`, `professionnels`) — une par valeur du champ `publics` déjà
+  présent en base (cf. §5.2, mêmes 7 valeurs). Chacune : `title` + `searchHeader` (filtres
+  thème/territoire) + `articleFeed` scopé `filters:{publics:{$in:["<Valeur>"]}}`. Purement
+  config-driven, **aucune donnée ni costum neuf**.
+- **2 pages de contenu tagué** : `/appels-a-projets` et `/offres-emploi` — même patron que les
+  pages `/theme/*` existantes : `articleFeed` filtré par **tag WordPress libre**
+  (`filters:{tags:"Appels à projets"}` / `"Offres d'emploi"`), pas un nouveau champ de taxonomie.
+  Zéro impact backend.
+- **2 pages légales/placeholder** : `/archives`, `/politique-cookies` — contenu statique
+  « en construction ».
+
+### 9quater.3 Validation (gates) — suite complète rejouée le 06/08, avant commit
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` parent62 | ✅ **46 pages, 176 sections** |
+| `audit:config` parent62 | ✅ RAS |
+| `typecheck` | ✅ 0 erreur |
+| `lint` | ✅ **0 erreur** / 18 warnings — **0 sur les fichiers du lot** (tous les warnings sont dans `EntityFormModal.tsx`, pré-existant hors périmètre) |
+| `test:unit` (suite complète, inclut `test:preflight`) | ✅ **2 227/2 229** — 2 échecs restants, **pré-existants et hors périmètre** (`bundle-size` : bundle principal **2,56 Mo** > 2 Mo ; `.claude/agents/siteforge-config-auditor.md` manquant — confirmés identiques sur `HEAD` via `git stash`) |
+| `test:integration` (SSR) | ❌ **2 échecs / 56 tests** dans `config-driven-ssr.test.ts` (title + footer copyright) — **pré-existants et sans rapport avec ce chantier** : le test lit ses valeurs attendues dans `config.prod.json` (générique, repli par défaut de `SITE_CONFIG_PATH`, non défini dans cet environnement) alors que le serveur SSR réel sert `config.prod.parent62.json` (`VITE_SLUG=parent62` dans `.env`) — mismatch d'environnement de test, **confirmé identique sur `HEAD`** via `git stash` (2/56 déjà rouges avant ce chantier) |
+| `e2e` ciblé (`npx playwright test e2e/parent62.spec.ts`) | ❌ **2 échecs / 8** (6 ✅) — `page.locator("nav.fixed")` se résout ; les 2 mêmes tests restent rouges pour des raisons **distinctes** (pas des bugs de composant) — « Professionnels » désormais dans le header (contredit la décision du 23/07) et assertion `bg-background/90` écrite pour l'ancien header `transparent-scroll`, pas pour la mécanique d'opacité de `stacked`. Le test « accueil : bandeau à la une » (nouveau du 06/08) passe |
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| 1.1 | Site `reseau.parent62.org`, nav + graphisme proches du WP | ✅ côté code | config réconciliée (24/07) ; doublon nav `/blog` **résolu** (§9.5 — nav 5 entrées, un seul dropdown « Contenus », revérifié dans la config le 03/08) ; reste le déploiement → 1.10 |
+| 1.1 | Site `reseau.parent62.org`, nav + graphisme proches du WP | 🟡 | config réconciliée (24/07) ; doublon nav `/blog` **résolu** (§9.5) ; **06/08 (committé sur `parents62`)** : accueil, header (`stacked`) et footer (`minimal-centered`) entièrement refondus, nav passée à 5 dropdowns dont un nouveau « Publics » (§9quater) ; reste `/parents`/`/pro` orphelines à trancher (1.4), la recette visuelle et le déploiement → 1.10 |
 | 1.2 | Pages statiques réseau / charte / équipe / champs d'action | ✅ | `/reseau` `/charte` `/champs-actions` `/equipe` ; arbitrage éditorial réseau ouvert (§13) |
-| 1.3 | Page par territoire : contact + **liste des communes** | ✅ | cards coordo + accordéon 887 communes + fil filtré + CTA |
-| 1.4 | Double entrée parents / pro | ✅ | `/parents` et `/pro`, accessibles depuis l'accueil |
+| 1.3 | Page par territoire : contact + **liste des communes** | ✅ | cards coordo + accordéon 887 communes + fil filtré + CTA ; navigation depuis l'accueil désormais via `map-bubbles` (carte à bulles, §9quater) au lieu des cartes d'accès rapide |
+| 1.4 | Double entrée parents / pro | 🟡 *(était ✅)* | **régression confirmée le 06/08** (config **et** e2e) : `/parents`/`/pro` existent mais ne sont plus liées nulle part (ni accueil, ni nav) depuis la refonte du 06/08 — un dropdown « Publics » (7 pages `/public/*`) semble les remplacer fonctionnellement, mais rien ne le confirme. **À trancher avant fusion dans `main`** (§13) |
 | 1.5 | Moteur de recherche : types d'info, public, âges, dates, territoire coloré, carte, thèmes | 🟡 | `/recherche` : types d'info (**searchTargets 6** depuis le 25/07 — « Ressources » ajoutée —, défaut « Actualités »), public, thèmes, territoire coloré, **carte** (`enableMap:true`), `dateRange` **borne début seule**. **25/07** : chaque famille a désormais sa carte et son action au clic (`list.itemRules`, §9bis) ; tri `created:-1` et projection explicite ajoutés. **Âges : livré sur `/temoignages` + form affiche, mais PAS encore dans le groupe de filtres `/recherche`** (à ajouter — `ages` est projeté, il ne manque que le groupe). Borne de fin des dates = demande backend `$lt/$lte` (§11) |
 | 1.6 | Paroles de parents (3 catégories, audio+écrit, transcription, ajout admin) | 🟡 | brique complète (Thomas) : `/temoignages`, form `parent62-affiche` (3 catégories, audio→`medias`, ages, consentement RGPD), pile audio `media/*`, card/preview `testimonial`. **Ajout admin-only ✅** (modération a priori retirée volontairement, commit `17aea3e`). **25/07** : la cible « Paroles » de `/recherche` renvoyait **0 résultat** (filtre `status:"validated"` sur un champ inexistant) — corrigé, et les paroles y rendent en bulles avec leur dialog (§9bis). **Données observées le 25/07** : `/temoignages` affiche « Toutes les paroles (**3**) » — la mention « 0 POI `affiche` » du 24/07 est caduque. **Manque** : **transcription/sous-titres NON implémentée** (`description` sert d'écrit) |
 | 1.7 | Navigation territoriale (recherche V2) | ✅ | 9 bulles → `/territoire/<slug>` + filtre territoire coloré dans `/recherche` |
 | 1.8 | Référencement (SEO, JSON-LD, sitemap, robots, RSS) | ✅ | sitemap/robots (MR) + JSON-LD `BlogPosting` et `/blog/feed.xml` (Thomas) |
-| 1.9 | Tests E2E (Playwright) | ✅ | `e2e/parent62.spec.ts` — **7/7 verts le 24/07 sur la stack réelle** (dev server + backend). Scénarios lecture seule : accueil (nav 5 entrées), `/recherche` ×2, `/temoignages`, `/territoire/arrageois`, `/blog`, mode sombre. Ciblé : `npx playwright test e2e/parent62.spec.ts` (jamais la suite complète) |
+| 1.9 | Tests E2E (Playwright) | 🟡 *(était ✅ 7/7 le 24/07)* | **06/08 : 6/8 verts** (2 nouveaux scénarios depuis le 24/07, dont 1 ajouté le 06/08 pour `featured-carousel`). Les 2 échecs restants sont des désaccords contenu/test **pré-existant vs nav du 06/08** (« Professionnels » dans le header, mécanique d'opacité différente de `transparent-scroll`), pas des bugs de composant — cf. §13. `npx playwright test e2e/parent62.spec.ts` (jamais la suite complète) |
 | 1.10 | Déploiement | ❌ | à la main de Peterson — cf. §8.5 |
 
 ### Partie 2 (4 500 €) — statuts revus par l'audit fonctionnel du 24/07
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| 2.1 | Module actualités + interop WordPress | ✅ / 🟡 interop | 6 434 articles, `/blog`, `/actualites`, 9 `/theme/*`, admin, RSS, ⌘K. **Interop WP = import batch one-shot** (`tools/wp-migration/`), pas de sync live/webhook ; « ajout de post » = form `parent62-article` admin (le module `interop/` = Discourse/Mediawiki, pas WP) |
+| 2.1 | Module actualités + interop WordPress | ✅ / 🟡 interop | 6 434 articles, `/blog`, `/actualites`, 9 `/theme/*`, admin, RSS, ⌘K. **Interop WP = import batch one-shot** (`tools/wp-migration/`), pas de sync live/webhook ; « ajout de post » = form `parent62-article` admin (le module `interop/` = Discourse/Mediawiki, pas WP). **06/08** : 2 pages de contenu tagué ajoutées sur le même patron, `/appels-a-projets` et `/offres-emploi` (`articleFeed` filtré par tag WordPress libre, zéro impact backend, §9quater) |
 | 2.2 | Actualités filtrables dans le moteur de recherche | ✅ *(était ✅ config, 🟡 UX)* | cible `searchTargets` « Actualités » (`type:article`) dans `/recherche` + filtres territoire/public/thème/dates. **25/07 — UX unifiée** : une actualité de `/recherche` rend une carte dédiée et son clic ouvre le **reader canonique** `/blog/:slug` (repli `/blog/id/:id`), plus un drawer générique |
 | 2.3 | Module événementiel (agenda) + affichage territoire | 🟡 | module agenda complet (calendrier + liste, filtre territoire) ; **0 donnée `events`** → vide ; pas de carte agenda (`enableMap:false`) |
 | 2.4 | Impression de l'agenda | ❌ | **aucun code print** (`@media print`/`window.print`) — à faire (CSS print ou export iCal/PDF) |
@@ -573,6 +674,9 @@ attendue par le test parole ; périmètre `prepData`/`validategroup`.
   sur les pages filtrées. **Images d'articles** encore pointées sur `www.parent62.org/wp-content/…`.
 - **Coquilles de communes** dans les PDF officiels, conservées telles quelles — correction à
   demander au réseau.
+- **Chantier accueil/header/footer du 06/08** (§9quater), committé sur `parents62` mais **pas
+  encore recetté visuellement ni fusionné dans `main`** : `/parents`/`/pro` **orphelines** (plus
+  aucun lien depuis la config).
 
 ---
 
@@ -598,3 +702,7 @@ les **paroles ne sont plus muettes** dans le moteur (§9bis.1).
 | Harmoniser `/theme/*` avec `/recherche` (2.2 — le volet `/blog` est fait) | Peterson |
 | **Carte `CardEvent`** — hauteur figée `h-72`, aucun fond, ignore `card`/`list` : dans une liste hétérogène elle laisse un trou et laisse voir le fond de page. Correctif à recetter sur `/agenda` | Thomas |
 | Valeurs `category` ressources · 10e territoire « Familles en sol mineur » (43) · contenu des 4 pages statiques · couleurs `oklch` · coquilles de communes | réseau |
+| **[06/08] `/parents`/`/pro` orphelines** — confirmé statiquement (config), et indirectement par e2e (le test dédié échoue avant d'atteindre l'assertion sur ces liens) ; le dropdown « Publics » (7 pages `/public/*`) les remplace-t-il volontairement, ou faut-il relier ces deux pages (nav ou accueil) ? | Peterson / Thomas |
+| **[06/08] « Professionnels » désormais dans le header** (dropdown « Publics ») — contredit la décision du 23/07 (« Parents / Professionnels hors menu ») ; si le nouveau nav est acté, l'assertion e2e correspondante est à réviser | Peterson / Thomas |
+| **[06/08] Assertion e2e d'opacité du header** (« mode sombre… », `bg-background/90`) écrite pour `transparent-scroll` — à réécrire pour la mécanique réelle de `stacked` (scrim interne, opacité jamais posée sur le `<nav>`) | Peterson |
+| **[06/08] `build`** jamais relancé depuis la refonte — à faire avant tout commit (`test:unit` — 2 227/2 229, seuls les 2 pré-existants restent —, `test:integration` et `e2e` ciblé ont été rejoués le 06/08, cf. §9quater.3) | Peterson |

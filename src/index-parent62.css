@@ -76,9 +76,20 @@
   /* `font-display` (hero-quick-access…) : alias de la police de titre — Baloo 2 */
   --font-display: var(--font-serif);
   --radius: var(--radius);
+
+  /* Custom breakpoint for extra small screens (même valeur que les autres sites qui l'utilisent :
+     tiers-lieux, jardin-ocean, extreme-defi…) — sans lui, les classes `xs:` ne génèrent rien. */
+  --breakpoint-xs: 475px;
 }
 
-*, *::before, *::after { box-sizing: border-box; border-color: var(--border); }
+/* Dans `@layer base` (et non hors couche) : une règle hors `@layer` passe devant
+   TOUTES les utilities Tailwind (couche `utilities`), quelle que soit leur spécificité —
+   ce qui rendait invisible toute classe `border-*` (ex. `border-white/30`) posée ailleurs
+   dans le site. `index-tiers-lieux.css` fait déjà ça correctement ; ce fichier ne le
+   faisait pas. */
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; border-color: var(--border); }
+}
 /* Réserve EN PERMANENCE la gouttière de scrollbar. Sans ça, l'ouverture d'une modale
    (Radix scroll-lock → `body{overflow:hidden}` retire la scrollbar de 8px) élargit le
    viewport de 8px : la compensation `margin-right` du body protège le flux normal, mais
@@ -96,7 +107,7 @@ body {
 }
 
 /* Titres : Bricolage Grotesque partout (aucune section n'applique font-serif) */
-h1, h2, h3, h4 { font-family: var(--font-serif); }
+h1, h2, h3, h4,.font-serif { font-family: var(--font-serif); }
 h1, h2 { letter-spacing: -0.015em; }
 
 /* Les cartes d'accès rapide du hero (`hero-quick-access`) — verre chaud, lift
@@ -104,6 +115,18 @@ h1, h2 { letter-spacing: -0.015em; }
    générique : les deux autres sites qui l'emploient les rendaient sans style.
    Déplacées telles quelles dans `styles/shared.css` (importé l. 3), avec leur
    garde `prefers-reduced-motion`. Rien ne change pour parent62. */
+/* Patrick Hand (var(--font-serif)/--font-display, Google Fonts) n'existe qu'en un seul poids
+   (400) : les `font-bold`/`font-semibold` posés par les sections (ex. HeroQuickAccess) ne font
+   que déclencher le faux-gras du navigateur, qui abîme le lettrage manuscrit. `!important`
+   nécessaire : ces classes Tailwind vivent dans la couche `utilities`, toujours prioritaire
+   sur nos règles ci-dessus (couche `base`), quelle que soit la spécificité du sélecteur. */
+h1, h2, h3, h4, .font-serif, .font-display { font-weight: normal !important; }
+
+/* Menu du footer (FooterMinimalCentered) — demande réseau : même police de titre Patrick Hand
+   (`var(--font-serif)`) que les h1-h4, pas seulement `--font-sans`. Sélecteur de balise plutôt
+   qu'une classe dédiée : `footer nav` ne cible QUE le menu de nav (les liens légaux du bas sont un
+   `<div>`, pas un `<nav>`) — sûr car ce fichier CSS n'est chargé que pour le site parent62. */
+footer nav { font-family: var(--font-serif); }
 
 /* Mini-prose : les sections `html` (mentions légales, confidentialité) posent
    class="prose …" mais le plugin typography n'est pas chargé — on donne ici
@@ -206,6 +229,11 @@ h1, h2 { letter-spacing: -0.015em; }
   --territoire-fsm-henin-carvin: #a2537e;
   --territoire-fsm-lens-lievin: #97776b;
   --territoire-ternois-bruaysis: #d492a9;
+
+  /* Dégradé de fond de la section « Carte à bulles » (accueil), échantillonné
+     sur la maquette source (HP Maquette v4). Couleur de MARQUE, ne suit pas le thème. */
+  --p62-map-bg-from: #1fae98;
+  --p62-map-bg-to: #87bf9a;
 }
 
 /* Panneau sombre de la bande « Votre territoire » (charte parent62.org). */

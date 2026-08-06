@@ -1087,12 +1087,16 @@ L'affichage du bouton de connexion / menu utilisateur connecté dans les headers
 
 Composant qui reçoit un objet `Section` (type + props + id) et rend le composant lazy correspondant.
 
-**Liste complète des 66 types de section enregistrés** (dans `LazySections`) :
+**Liste des types de section enregistrés** (dans `LazySections`) — cette liste manuelle a pris du
+retard sur le code : la vraie union `Section` compte **71** types (`tests/preflight/section-meta.test.ts`
+en garantit la parité avec `SECTION_META`), il lui manquait déjà `data-observatory`, `agenda`,
+`articleFeed`, `articleReader` avant ce changement. Seule la nouvelle entrée `featured-carousel` est
+ajoutée ci-dessous ; la resynchronisation complète du reste de la table est hors périmètre ici.
 
 | Groupe | Types |
 |---|---|
 | **Sections génériques** | `hero`, `cards`, `gallery`, `video`, `testimonials`, `pricing`, `faq`, `table`, `blogPost`, `blogList`, `team`, `stats`, `cta`, `logoCloud`, `chart`, `accordion`, `tabs`, `steps`, `timeline`, `banner`, `map`, `newsletter`, `contactForm`, `comparison`, `featureComparison`, `socialFeed`, `eventList`, `productShowcase`, `breadcrumb`, `cookieConsent`, `html`, `markdown`, `title`, `content`, `loginForm`, `registerForm`, `recoverPasswordForm`, `member`, `heroWithIcon`, `gridLayout` |
-| **Sections search** | `searchPro`, `searchProStatic`, `cardCountCT`, `thematics`, `filters` |
+| **Sections search** | `searchPro`, `searchProStatic`, `cardCountCT`, `thematics`, `filters`, `featured-carousel` |
 | **Sections news** | `news` |
 | **Sections notification** | `notifications` |
 | **Sections ampli** | `meeteem` |

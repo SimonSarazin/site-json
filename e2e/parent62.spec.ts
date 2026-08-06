@@ -180,7 +180,7 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     }
   });
 
-  test("mode sombre : scrim au repos sur le héro, opaque après scroll, nav visible", async ({
+  test("mode sombre : header opaque dès l'accueil (1ère section n'est plus un héro), nav visible", async ({
     page,
   }) => {
     // next-themes (attribute="class") lit localStorage.theme au démarrage.
@@ -192,13 +192,30 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
 
     await expect(page.locator("html")).toHaveClass(/dark/);
 
+    // Depuis l'ajout de "featured-carousel" en 1ère section de l'accueil (avant
+    // "home-hero"), pageHasHero est faux sur cette page → transparentMode:"auto"
+    // rend le header opaque DÈS LE REPOS (cf. useHeaderOpaqueAtRest), plus
+    // seulement après scroll comme avant ce changement.
     const headerNav = page.locator("nav.fixed").first();
-    await expect(headerNav).toHaveClass(/bg-linear-to-b/);
+    await expect(headerNav).toHaveClass(/bg-background\/90/);
     await expect(headerNav.locator("a", { hasText: "Rechercher" }).first()).toBeVisible();
 
-    // Scroll réel (window.scrollTo → event `scroll`) ; l'assertion auto-retry
-    // jusqu'à ce que le header bascule opaque.
     await page.evaluate(() => window.scrollTo(0, 800));
     await expect(headerNav).toHaveClass(/bg-background\/90/);
+  });
+
+  test("accueil : bandeau « à la une » (carrousel POI tagués) ne casse pas le rendu", async ({
+    page,
+  }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    // Le composant se masque entièrement tant qu'aucun POI n'est tagué "A la
+    // une" côté contenu (cf. doc-projets/parent62.md §5.1) : l'assertion ne
+    // porte donc que si la section a effectivement rendu quelque chose.
+    const section = page.locator('[data-section-type="featured-carousel"]');
+    if (backendUp && (await section.count()) > 0) {
+      await expect(section.getByRole("link").first()).toBeVisible();
+    }
   });
 });
