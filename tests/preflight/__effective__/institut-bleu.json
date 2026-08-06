@@ -1,0 +1,180 @@
+{
+  "site": "institut-bleu",
+  "slug": "institutBleu",
+  "addMenus": {
+    "citoyens": {
+      "builtins": {},
+      "customs": [
+        "add-institut-bleu-acteur"
+      ]
+    },
+    "organizations": {
+      "builtins": {
+        "event": "add-institut-bleu-event"
+      }
+    },
+    "projects": {
+      "builtins": {
+        "event": "add-institut-bleu-event"
+      }
+    }
+  },
+  "editModals": {
+    "organizations": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-institut-bleu-acteur",
+          "native": "edit-institut-bleu-acteur",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    },
+    "events": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-institut-bleu-event",
+          "native": "edit-institut-bleu-event",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    },
+    "poi": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-institut-bleu-financement",
+          "native": "edit-institut-bleu-financement",
+          "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-institut-bleu-financement",
+          "native": "edit-institut-bleu-financement",
+          "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-institut-bleu-document",
+          "native": "edit-institut-bleu-document",
+          "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-institut-bleu-document",
+          "native": "edit-institut-bleu-document",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    }
+  },
+  "adminResources": {
+    "acteurs/organizations": {
+      "source": {
+        "defaultSortBy": {
+          "created": -1
+        }
+      },
+      "create": "add-institut-bleu-acteur",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "bibliotheque/poi": {
+      "source": {
+        "defaultSortBy": {
+          "date": -1
+        },
+        "defaultFields": [
+          "name",
+          "type",
+          "collection",
+          "slug",
+          "source",
+          "created",
+          "updated",
+          "typeDocument",
+          "organisme",
+          "date",
+          "langue",
+          "coteDocument"
+        ],
+        "defaultFilters": {
+          "$or": {
+            "type": "recoveryCenter",
+            "reference.costumTypes.institutBleu": "recoveryCenter"
+          }
+        }
+      },
+      "create": "add-institut-bleu-document",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "financements/poi": {
+      "source": {
+        "defaultSortBy": {
+          "date": 1
+        },
+        "defaultFields": [
+          "name",
+          "type",
+          "collection",
+          "slug",
+          "source",
+          "created",
+          "updated",
+          "date",
+          "financementType",
+          "echelle",
+          "financementSource"
+        ],
+        "defaultFilters": {
+          "$or": {
+            "type": "financement",
+            "reference.costumTypes.institutBleu": "financement"
+          }
+        }
+      },
+      "create": "add-institut-bleu-financement",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "agenda/events": {
+      "source": {
+        "defaultSortBy": {
+          "created": -1
+        }
+      },
+      "create": "add-institut-bleu-event",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    }
+  },
+  "referencement": {
+    "organizations": {
+      "sousTypes": [],
+      "annotation": null
+    },
+    "poi": {
+      "sousTypes": [
+        "recoveryCenter",
+        "financement"
+      ],
+      "annotation": "reference.costumTypes.institutBleu"
+    }
+  },
+  "membership": {
+    "citoyens/membership": {
+      "types": [
+        "organizations"
+      ],
+      "scope": "costum"
+    }
+  },
+  "profileRelated": {}
+}

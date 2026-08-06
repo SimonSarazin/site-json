@@ -1,0 +1,56 @@
+{
+  "site": "tiers-lieux",
+  "slug": "navigatorDesTierslieux",
+  "addMenus": {
+    "citoyens": {
+      "builtins": {
+        "organization": "add-tiers-lieux",
+        "project": "add-project",
+        "event": "add-event",
+        "poi": "add-poi"
+      },
+      "customs": [
+        "add-tiers-lieux"
+      ]
+    },
+    "organizations": {
+      "builtins": {
+        "project": "add-project",
+        "event": "add-event",
+        "poi": "add-poi"
+      }
+    },
+    "projects": {
+      "builtins": {
+        "event": "add-event",
+        "poi": "add-poi"
+      }
+    }
+  },
+  "editModals": {
+    "organizations": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-tiers-lieux",
+          "native": "edit-tiers-lieux",
+          "horsPerimetre": "edit-tiers-lieux"
+        }
+      ]
+    }
+  },
+  "adminResources": {},
+  "referencement": {},
+  "membership": {
+    "citoyens/membership": {
+      "types": [
+        "organizations",
+        "projects",
+        "pois",
+        "events"
+      ],
+      "scope": "network"
+    }
+  },
+  "profileRelated": {}
+}

@@ -15,8 +15,10 @@ import { EntityGrid } from "../shared/EntityGrid";
 import { EntityEmptyState } from "../shared/EntityEmptyState";
 import { cn } from "@/lib/utils";
 
-/** Les quatre listes d'adhésion, dans l'ordre d'affichage. */
-const LISTES = ["organizations", "projects", "pois", "events"] as const;
+/** Les quatre listes d'adhésion, dans l'ordre d'affichage. Exporté : la garde d'impact
+ *  (tests/preflight/effective-config.test.ts) matérialise ce DÉFAUT dans les fixtures par site —
+ *  le changer fait différer les fixtures de tous les sites qui ne déclarent pas `types`. */
+export const LISTES = ["organizations", "projects", "pois", "events"] as const;
 
 /** Classes littérales : Tailwind ne génère jamais une classe concaténée au runtime. */
 const COLONNES: Record<number, string> = { 1: "grid-cols-1", 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4" };

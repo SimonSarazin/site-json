@@ -1,0 +1,140 @@
+{
+  "site": "parent62",
+  "slug": "parent62",
+  "addMenus": {
+    "citoyens": {
+      "builtins": {
+        "organization": "add-organization",
+        "project": "add-project",
+        "event": "add-parent62-event",
+        "poi": "add-poi"
+      }
+    },
+    "organizations": {
+      "builtins": {
+        "project": "add-project",
+        "event": "add-parent62-event",
+        "poi": "add-poi"
+      }
+    },
+    "projects": {
+      "builtins": {
+        "event": "add-parent62-event",
+        "poi": "add-poi"
+      }
+    }
+  },
+  "editModals": {
+    "poi": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-parent62-article",
+          "native": "edit-parent62-article",
+          "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-parent62-affiche",
+          "native": "edit-parent62-affiche",
+          "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-parent62-recovery-center",
+          "native": "edit-parent62-recovery-center",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    }
+  },
+  "adminResources": {
+    "actualites/poi": {
+      "source": {
+        "defaultFilters": {
+          "type": "article"
+        },
+        "defaultSortBy": {
+          "created": -1
+        },
+        "costumSlug": "parent62",
+        "sourceKey": [
+          "parent62"
+        ]
+      },
+      "create": "add-parent62-article",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "paroles/poi": {
+      "source": {
+        "defaultFilters": {
+          "type": "affiche"
+        },
+        "defaultSortBy": {
+          "created": -1
+        },
+        "costumSlug": "parent62",
+        "sourceKey": [
+          "parent62"
+        ]
+      },
+      "create": "add-parent62-affiche",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "ressources/poi": {
+      "source": {
+        "defaultFilters": {
+          "type": "recoveryCenter"
+        },
+        "defaultSortBy": {
+          "created": -1
+        },
+        "costumSlug": "parent62",
+        "sourceKey": [
+          "parent62"
+        ]
+      },
+      "create": "add-parent62-recovery-center",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "agenda/events": {
+      "source": {
+        "defaultFilters": {
+          "type": "others"
+        },
+        "defaultSortBy": {
+          "startDate": -1
+        },
+        "costumSlug": "parent62",
+        "sourceKey": [
+          "parent62"
+        ]
+      },
+      "create": "add-parent62-event",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    }
+  },
+  "referencement": {},
+  "membership": {
+    "citoyens/membership": {
+      "types": [
+        "organizations",
+        "projects",
+        "pois",
+        "events"
+      ],
+      "scope": "network"
+    }
+  },
+  "profileRelated": {}
+}

@@ -1,0 +1,69 @@
+{
+  "site": "equipements-Sportifs",
+  "slug": "equipementsSportifs974",
+  "addMenus": {
+    "citoyens": {
+      "builtins": {
+        "organization": "add-organization",
+        "project": "add-project",
+        "event": "add-event",
+        "poi": "add-equipements-sportifs"
+      }
+    },
+    "organizations": {
+      "builtins": {
+        "project": "add-project",
+        "event": "add-event",
+        "poi": "add-equipements-sportifs"
+      }
+    },
+    "projects": {
+      "builtins": {
+        "event": "add-event",
+        "poi": "add-equipements-sportifs"
+      }
+    }
+  },
+  "editModals": {
+    "poi": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-equipements-sportifs",
+          "native": "edit-equipements-sportifs",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    }
+  },
+  "adminResources": {
+    "content/poi": {
+      "source": {
+        "defaultFilters": {
+          "type": "recoveryCenter"
+        },
+        "defaultSortBy": {
+          "name": 1
+        }
+      },
+      "create": "add-equipements-sportifs",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    }
+  },
+  "referencement": {},
+  "membership": {
+    "citoyens/membership": {
+      "types": [
+        "organizations",
+        "projects",
+        "pois",
+        "events"
+      ],
+      "scope": "network"
+    }
+  },
+  "profileRelated": {}
+}

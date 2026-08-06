@@ -1,0 +1,154 @@
+{
+  "site": "sport-sante-bien-etre",
+  "slug": "sportSanteBienetre",
+  "addMenus": {
+    "citoyens": {
+      "builtins": {
+        "organization": "add-organization",
+        "project": "add-sport-sante-bienetre-formation",
+        "event": "add-sport-sante-bienetre-session-formation",
+        "poi": "add-poi"
+      }
+    },
+    "organizations": {
+      "builtins": {
+        "project": "add-sport-sante-bienetre-formation",
+        "event": "add-sport-sante-bienetre-session-formation",
+        "poi": "add-poi"
+      }
+    },
+    "projects": {
+      "builtins": {
+        "event": "add-sport-sante-bienetre-session-formation",
+        "poi": "add-poi"
+      }
+    }
+  },
+  "editModals": {
+    "organizations": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-sport-sante-bienetre-mss",
+          "native": "edit-sport-sante-bienetre-mss",
+          "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-sport-sante-bienetre-organizations",
+          "native": "edit-sport-sante-bienetre-organizations",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    },
+    "projects": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-sport-sante-bienetre-formation",
+          "native": "edit-sport-sante-bienetre-formation",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    },
+    "events": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-sport-sante-bienetre-session-formation",
+          "native": "edit-sport-sante-bienetre-session-formation",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    },
+    "poi": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-sport-sante-bienetre-article",
+          "native": "edit-sport-sante-bienetre-article",
+          "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-sport-sante-bienetre-recovery-center",
+          "native": "edit-sport-sante-bienetre-recovery-center",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    }
+  },
+  "adminResources": {
+    "organisations/organizations": {
+      "source": {
+        "defaultFilters": {
+          "type": "NGO"
+        },
+        "defaultSortBy": {
+          "name": 1
+        }
+      },
+      "create": "add-sport-sante-bienetre-mss",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "lieux/poi": {
+      "source": {
+        "defaultFilters": {
+          "type": "article"
+        },
+        "defaultSortBy": {
+          "name": 1
+        }
+      },
+      "create": "add-sport-sante-bienetre-article",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "formations/projects": {
+      "source": {
+        "defaultFilters": {
+          "category": "formation"
+        },
+        "defaultSortBy": {
+          "name": 1
+        }
+      },
+      "create": "add-sport-sante-bienetre-formation",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "formations/events": {
+      "source": {
+        "defaultFilters": {
+          "category": "sessionFormation"
+        },
+        "defaultSortBy": {
+          "name": 1
+        }
+      },
+      "create": "add-sport-sante-bienetre-session-formation",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    }
+  },
+  "referencement": {},
+  "membership": {
+    "citoyens/membership": {
+      "types": [
+        "organizations",
+        "projects",
+        "pois",
+        "events"
+      ],
+      "scope": "network"
+    }
+  },
+  "profileRelated": {}
+}

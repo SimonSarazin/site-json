@@ -1,0 +1,67 @@
+{
+  "site": "cyber-reunion",
+  "slug": "cyberReunion",
+  "addMenus": {
+    "citoyens": {
+      "builtins": {
+        "organization": "add-cyber-reunion-organization",
+        "project": "add-project",
+        "event": "add-event",
+        "poi": "add-poi"
+      }
+    },
+    "organizations": {
+      "builtins": {
+        "project": "add-project",
+        "event": "add-event",
+        "poi": "add-poi"
+      }
+    },
+    "projects": {
+      "builtins": {
+        "event": "add-event",
+        "poi": "add-poi"
+      }
+    }
+  },
+  "editModals": {
+    "organizations": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-cyber-reunion-organization",
+          "native": "edit-cyber-reunion-organization",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    }
+  },
+  "adminResources": {
+    "content/organizations": {
+      "source": {},
+      "create": "add-cyber-reunion-organization",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    }
+  },
+  "referencement": {
+    "organizations": {
+      "sousTypes": [],
+      "annotation": null
+    }
+  },
+  "membership": {
+    "citoyens/membership": {
+      "types": [
+        "organizations",
+        "projects",
+        "pois",
+        "events"
+      ],
+      "scope": "network"
+    }
+  },
+  "profileRelated": {}
+}
