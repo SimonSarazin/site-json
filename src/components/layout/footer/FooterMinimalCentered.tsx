@@ -21,7 +21,7 @@ export default function FooterMinimalCentered({ footer }: FooterMinimalCenteredP
           image) : voile sombre en mode sombre — sans lui, le footer restait
           clair sur une page sombre — et `bg-neutral-800` SOUS l'image pour ses
           éventuelles zones semi-transparentes (canal alpha). */}
-      {bg && <div aria-hidden className="absolute inset-0 pointer-events-none dark:bg-black/55" />}
+      {bg && <div aria-hidden className="absolute inset-0 pointer-events-none dark:bg-background/90" />}
       <div className="container mx-auto relative">
 
         <div className="flex justify-center mb-6 sm:mb-8">

@@ -103,7 +103,7 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
           design desktop est garantie, mais le bandeau S'ÉTEND si son contenu est
           plus grand (petit écran, sous-titre long) au lieu de le couper. */}
       <header className="relative bg-neutral-800 bg-cover bg-center" style={bgStyle}>
-        <div aria-hidden className="absolute inset-0 pointer-events-none dark:bg-black/55" />
+        <div aria-hidden className="absolute inset-0 pointer-events-none dark:bg-background/90" />
         {/* `pb-24` : réserve les 56px que la barre (en marge négative, cf. plus bas)
             superpose au bas du bandeau + 2.5rem de respiration — le wordmark ne
             passe jamais sous la barre. */}
@@ -125,13 +125,14 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
                   <span className="font-display text-5xl sm:text-6xl lg:text-9xl font-serif mb-2 sm:mb-5">
                     {header.logoTitleAccent ? (
                       <>
-                        {/* Wordmark 2 segments, couleurs FIXES quel que soit le mode (contrairement
-                            au sous-titre/nav, adaptatifs) : `logoTitle` en `header.textColor`
-                            (repli noir) + contour blanc fixe (`-webkit-text-stroke`, non
-                            supporté nativement par Tailwind — d'où le style inline),
-                            `logoTitleAccent` en blanc fixe. */}
+                        {/* Wordmark 2 segments : `logoTitle` en `header.textColor` (repli noir)
+                            + contour blanc fixe (`-webkit-text-stroke`, non supporté nativement
+                            par Tailwind — d'où le style inline), `logoTitleAccent` en blanc fixe.
+                            En SOMBRE, le remplissage passe sur `--accent` du thème : le voile du
+                            chrome est teinté par `--background`, un `textColor` de la même famille
+                            y devient invisible (lettres creuses, seul le contour dessinait). */}
                         <span
-                          className="text-(--header-text)"
+                          className="text-(--header-text) dark:text-accent"
                           style={{ WebkitTextStroke: "2px white", paintOrder: "stroke fill" }}
                         >
                           {t(header.logoTitle)}
@@ -176,7 +177,7 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
           <div className="absolute inset-0 bg-neutral-800 bg-cover bg-center shadow-deep" style={bgImageStyle} />
           {/* Voile de lisibilité : la tranche d'image visible sur 56px n'est pas
               forcément une zone prévue pour du texte blanc. */}
-          <div className="absolute inset-0 bg-black/35 dark:bg-black/55" />
+          <div className="absolute inset-0 bg-black/35 dark:bg-background/90" />
         </div>
 
         <div className="relative mx-auto max-w-[100rem] px-4">

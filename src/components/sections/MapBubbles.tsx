@@ -34,10 +34,15 @@ export function MapBubbles({ id, props }: MapBubblesSectionProps) {
             <div className="relative z-10 container mx-auto max-w-4xl">
                 <div className="relative w-full @container/map-bubbles">
                     {props.backgroundImage ? (
+                        // `dark:brightness-75` : l'illustration (carte + lavis, cuits dans
+                        // l'image) garde sa pleine luminosité de jour ; en sombre elle est
+                        // tamisée — sans ça, la section reste le bloc le plus lumineux d'une
+                        // page de nuit (assombrir le dégradé DERRIÈRE ne suffit pas, l'image
+                        // le recouvre presque entièrement).
                         <img
                             src={props.backgroundImage}
                             alt={props.backgroundImageAlt ? t(props.backgroundImageAlt) : ""}
-                            className="block w-full h-auto select-none"
+                            className="block w-full h-auto select-none dark:brightness-75"
                         />
                     ) : (
                         <div className="aspect-4/3" />

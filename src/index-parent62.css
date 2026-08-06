@@ -245,6 +245,16 @@ footer nav { font-family: var(--font-serif); }
   --p62-turquoise: #4ecdc4;
 }
 
+/* Mode sombre : le halo de la carte à bulles passe en « lueur douce » — les
+   valeurs plein-jour faisaient de la section le bloc le plus lumineux d'une
+   page de nuit (projecteur). La carte/illustration reste claire, seuls les
+   tokens du DÉGRADÉ s'assombrissent (~-40 % de luminosité, mêmes teintes).
+   Doit venir APRÈS le bloc `:root, .dark` ci-dessus pour l'emporter. */
+.dark {
+  --p62-map-bg-from: #146e60;
+  --p62-map-bg-to: #567a62;
+}
+
 /* Panneau sombre de la bande « Votre territoire » (charte parent62.org). */
 .p62-deep {
   background: #1e3d51;
