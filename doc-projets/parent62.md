@@ -15,8 +15,9 @@
 > le 25/07 (`parents62` avec **s** est abandonné, cf. §1) ; le fichier `.claude/memory/` reste **à créer**.
 
 Dernière mise à jour : **2026-08-06** (refonte accueil/header/footer + 11 nouvelles pages —
-**committé sur `parents62`**, cf. §9quater ; `test:unit` 2 227/2 229 (2 pré-existants hors
-périmètre) ;).
+**committé sur `parents62`**, cf. §9quater ; puis **corrections de review de la MR !32 sur
+`fix/parents62-review`** : gates du skill resynchronisées, e2e réaligné header stacked, fixes
+composants, images WebP — `test:unit` **2 229/2 229** ✅).
 
 ---
 
@@ -79,6 +80,16 @@ et le réseau social Communecter, en **conservant le WordPress** pour les conten
   `type:"stacked"` (neuf), footer `type:"minimal-centered"` + image de fond (neuf), nav
   restructurée (dropdown « Publics » ajouté, entrée top-level « Rechercher » retirée), 11 pages
   ajoutées (35→46, 153→176 sections).
+- **06/08 — review de la MR !32 → branche `fix/parents62-review`** (4 commits par-dessus
+  `parents62`) : gates du skill config-assistant resynchronisées (table Headers + `stacked`,
+  comptes 71→74, exemples `footer-contact-partners`/`header-transparent-scroll` re-pointés vers
+  eXtremeDefiAdeme, recette `home-a-la-une` remplace `home-portail-services`) ; e2e réaligné
+  (header stacked, dropdown « Publics ») ; fixes composants (`font-serif` égaré dans `rel`,
+  `relative` manquant sur les pastilles MapBubbles, scrim sans fond supprimé, conflits de classes
+  tranchés, variant `xs:` → `min-[475px]:`, boutons icône du header en prop `className`, autoplay
+  pausable + `prefers-reduced-motion`, `aria-label` du footer retiré) ; images converties en WebP
+  (**5,7 Mo → ~1,0 Mo**, `carte-territoire.png` jamais référencée supprimée) —
+  `test:unit` **2 229/2 229** ✅.
 
 ---
 
@@ -499,7 +510,7 @@ translucide) et palette indigo en clair **et** sombre (les tokens ne viennent pl
 1. `featured-carousel` (id `home-featured-poi`) — carrousel plein écran des POI tagués
    `"A la une"` (`sourceKey:["parent62"]`), CTA vers `/blog/:slug` ou `/blog/id/:id`, fond
    `#2c3e50`/accent `#4ecdc4`, autoplay 6 s.
-2. `map-bubbles` (id `carte-territoires`) — carte illustrée (`carte-territoire-teal.png`) +
+2. `map-bubbles` (id `carte-territoires`) — carte illustrée (`carte-territoire-teal.webp`) +
    9 bulles-marqueurs cliquables (positions `x`/`y`/`size` en %, calibrées à la main sur la
    maquette — **ne pas les retoucher sans re-regarder le rendu**) vers les 9 pages
    `/territoire/*`, dégradé de fond `--p62-map-bg-from/to`.
@@ -524,7 +535,7 @@ schémas) : volontaire, pour que les deux blocs restent visuellement de la même
 
 **Header** — `type:"transparent-scroll"` → **`type:"stacked"`** (neuf, `HeaderStacked.tsx`,
 290 lignes, générique) : 2 sections empilées sur image de fond (`backgroundImage`, réutilise
-`bg-footer.png`) — logo + wordmark **bicolore 2 segments** (`logoTitle` "parent" en
+`bg-footer.webp`) — logo + wordmark **bicolore 2 segments** (`logoTitle` "parent" en
 `textColor`/contour blanc + `logoTitleAccent` "62" en blanc fixe) plein écran (`50vh`), qui
 collapse en barre compacte au scroll (logo remonte à gauche de la nav, même mécanique que
 `HeaderTransparentScroll`/`useScrollAware`). Nouveaux champs `Header.backgroundImage`,
