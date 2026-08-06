@@ -156,8 +156,30 @@ describe("formatCell — rendu texte d'une cellule", () => {
     expect(formatCell(false)).toBe("—");
   });
 
-  it("tableau et objet → chaîne vide (colonnes plates uniquement)", () => {
-    expect(formatCell(["a", "b"])).toBe("");
+  it("objet quelconque → chaîne vide (une colonne ne rend pas une structure)", () => {
+    // Les TABLEAUX, eux, sont désormais rendus : ce sont des champs multivalués ordinaires,
+    // et les laisser vides masquait des données bien présentes (cf. bloc « champs MULTIVALUÉS »).
     expect(formatCell({ a: 1 })).toBe("");
+  });
+});
+
+describe("formatCell — champs MULTIVALUÉS", () => {
+  // Sans ce cas, la colonne « Organisme » de la bibliothèque restait VIDE alors que 610 des 686
+  // documents en portent un : la valeur est un tableau, qui tombait dans le repli `""`.
+  it("joint les valeurs d'un tableau de chaînes", () => {
+    expect(formatCell(["APMR", "IFREMER"])).toBe("APMR, IFREMER");
+  });
+
+  it("un seul élément s'affiche seul", () => {
+    expect(formatCell(["APMR"])).toBe("APMR");
+  });
+
+  it("tableau vide ou sans contenu utile → tiret, comme une valeur absente", () => {
+    expect(formatCell([])).toBe("—");
+    expect(formatCell([null, undefined])).toBe("—");
+  });
+
+  it("ignore les éléments non rendus plutôt que de laisser des séparateurs vides", () => {
+    expect(formatCell(["APMR", null, "IFREMER"])).toBe("APMR, IFREMER");
   });
 });
