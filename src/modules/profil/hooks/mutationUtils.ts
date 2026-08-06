@@ -11,6 +11,9 @@ export interface AddressFormFields {
   postalCode?: string;
   streetAddress?: string;
   codeInsee?: string;
+  // Niveaux SIG 1..5 COMPLETS (parité legacy createLocalityObj/Element::updateField ;
+  // contrat SDK ≥ 1.0.173) : level2 = niveau propre à certains pays (Wallonie/BE,
+  // provinces/MG), level5 = EPCI. En France level3=région, level4=département.
   level1?: string;
   level1Name?: string;
   level2?: string;
@@ -19,6 +22,8 @@ export interface AddressFormFields {
   level3Name?: string;
   level4?: string;
   level4Name?: string;
+  level5?: string;
+  level5Name?: string;
 }
 
 /**
@@ -39,6 +44,8 @@ const ADDRESS_FIELDS = [
   "level3Name",
   "level4",
   "level4Name",
+  "level5",
+  "level5Name",
 ] as const;
 
 /**

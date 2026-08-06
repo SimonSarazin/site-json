@@ -94,6 +94,14 @@ const WIDGET_DEFAULTS: Partial<Record<WidgetKind, Partial<FieldDescriptor>>> = {
   image: { type: "object", renderOnly: true },     // ancre UI composite (image hors element/save)
   file: { type: "object", renderOnly: true },      // documents : uploadés post-save (processGalleryFields), hors element/save
   location: { type: "object", renderOnly: true },  // ancre UI composite (adresse via serializeGroups)
+  // Les DEUX ancres qui manquaient ici, alors que mergeRenderPipeline les nomme dans la même phrase que
+  // `location` et `eventDates` : une ancre rend une UI composite et ne porte AUCUNE donnée propre, elle
+  // ne doit donc jamais être sérialisée. `editSocial` pilote les 9 clés facebook/twitter/… (EditSocialTab),
+  // `editSchedule` pilote `openingHours` (EditScheduleTab) — jamais la clé du champ qui les porte.
+  // Sans `renderOnly`, un formulaire costum utilisant ces widgets émettait la clé de l'ancre, vide. C'est
+  // exactement ce qui rendait muettes les sections « Réseaux sociaux » de 4 formulaires (2026-07-30).
+  editSocial: { type: "object", renderOnly: true },
+  editSchedule: { type: "object", renderOnly: true },
   fieldArray: { type: "array" },                    // liste répétée GÉNÉRIQUE → pas de codec par widget (le sens dépend du champ)
   openingHours: { type: "object", read: "openingHours:read", write: "openingHours:write" }, // codec livré par le widget (cf. sharedCodecs)
   eventDates: { renderOnly: true },                 // ancre UI composite (dates event) : gère startDate/endDate/recurrency/openingHours ; JAMAIS sérialisée elle-même

@@ -11,7 +11,7 @@
 > [Module Agenda](../doc/29-module-agenda.md) · [Schémas de sections](../doc/05-schemas-sections.md).
 > Mémoire : `[[project-extreme-defi-ademe]]`.
 
-Dernière mise à jour : **2026-07-28** (création du dossier — état des lieux).
+Dernière mise à jour : **2026-08-03** (MR !30 « profile-tools » + suites de revue, SDK 1.0.172, test de déploiement réussi).
 
 ---
 
@@ -38,8 +38,9 @@ le remplissage du costum. **0 constat, et pourtant deux pages sur quatre ne mont
 | CSS | [`../src/index-extreme-defi.css`](../src/index-extreme-defi.css) — propre au site |
 | Langues | `fr` (défaut) + `en` · bloc `theme` **complet** |
 | Header / Footer | `transparent-scroll` / `contact-partners` |
-| SDK | `@communecter/cocolight-api-client` **1.0.169** |
-| Historique | **62 commits** |
+| SDK | `@communecter/cocolight-api-client` **1.0.172** — publiée sur npm (`^1.0.172`) |
+| Déploiement | Coolify `site-json-extremedefi` · domaine `extremedefi.00.re` (cf. `sites.json`) |
+| Historique | **65 commits** (`git log --follow`, au 2026-08-03) |
 
 ### Historique des chantiers
 
@@ -47,6 +48,8 @@ le remplissage du costum. **0 constat, et pourtant deux pages sur quatre ne mont
 |---|---|---|
 | — → 29/06 | Thomas | Construction de la config ; dernier passage sur le fichier le 2026-06-29 |
 | 28/07 | Claude | État des lieux, création de ce dossier |
+| 30/07 | Mirana | MR !30 « profile-tools » : section profil `profile-tools` + modal d'ajout après connexion (`656a7c05`, `d6af3da3`) |
+| 03/08 | Thomas + Claude | Suites de revue MR !30 (`029da8cb`) ; SDK 1.0.172 ; **test de déploiement Coolify réussi** ; mise à jour de ce dossier |
 
 ---
 
@@ -74,6 +77,10 @@ le remplissage du costum. **0 constat, et pourtant deux pages sur quatre ne mont
                  └────────────────────────────────────────────┘
 ```
 
+Depuis le 30/07 (MR !30), la nav ne compte plus que 3 entrées (`/`, `/projets` — libellé
+« Action collective » —, `/agenda`) : `/communaute` est **hors nav mais pas hors site** — la page
+existe toujours et le CTA du header, un bouton du hero et une tuile « participer » y mènent encore.
+
 ---
 
 ## 4. Ce que la config met en œuvre
@@ -99,12 +106,18 @@ C'est une vitrine soignée : l'argumentaire des « 10× » est rédigé, chiffr�
 |---|---|---|
 | `/projets` | `searchHeader` + `searchProStatic` | **4 projets** — cf. §5 |
 | `/agenda` | `searchHeader` + `agenda` | **2 événements** — cf. §5 |
-| `/communaute` | `searchHeader` + `tabs` (citoyens / organisations) | **0** — les deux onglets sont vides |
+| `/communaute` | `searchHeader` + `tabs` (citoyens / organisations) | **0** — les deux onglets sont vides · **hors nav depuis le 30/07** (décision produit ; page conservée) |
 
 ### 4.3 Ce que la config n'a pas
 
 Ni `costumForms`, ni `admin`, ni `floatingActionButton`, ni `commandPalette` : **10 clés racine**
-seulement. Aucun moyen, depuis le site, d'ajouter un projet ou de rejoindre la communauté.
+seulement (dont `auth` et `profiles`).
+
+En revanche — correction du constat du 28/07 — `/projets` et `/agenda` portent bien des boutons
+d'ajout (`searchHeader.buttons`, `action: add-project` / `add-event`, présents depuis `2a16d07a`
+du 2026-04-28) : réservés aux admins par défaut (donc invisibles des visiteurs), ils sont **ouverts
+à tous depuis le 30/07** (`requiresAdmin: false`, `d6af3da3`) et enchaînent connexion → modal
+d'ajout. Rien en revanche pour « rejoindre la communauté » (aucun parcours d'inscription citoyen).
 
 Le pied de page `contact-partners` porte en revanche l'adresse de l'ADEME (Angers), 3 logos de
 soutien, et **délègue le socle légal au site institutionnel** `xd.ademe.fr` (cf. §12).
@@ -170,9 +183,73 @@ npm run audit:config    -- --file config.prod.eXtremeDefiAdeme.json
 npx tsx scripts/config-probe.ts config.prod.eXtremeDefiAdeme.json
 ```
 
+### Déploiement (Coolify)
+
+```bash
+npm run deploy -- eXtremeDefiAdeme   # POST /deploy force:true sur l'app site-json-extremedefi
+```
+
+**Testé avec succès le 2026-08-03** : rebuild ~6 min, `NODE_ENV=production` vérifié dans le
+conteneur. App Coolify `site-json-extremedefi`, domaine `extremedefi.00.re` (cf. `sites.json`).
+
+### Variables d'environnement notables
+
+| Variable | Rôle ici |
+|---|---|
+| `VITE_SITE_PUBLIC_URL` | **Nouvelle** (merge du 03/08, `be7a320c`) : URL publique du site-json lui-même — canonical, `og:url`/`og:image`, `sitemap.xml`, flux RSS. Lue par `getSitePublicUrl()` ([`../src/lib/constant/common.ts`](../src/lib/constant/common.ts)) et `server/lib/sitemap.js`. Dérivée par `deploy:env` depuis `sites.json` (`aliases[0]` prioritaire, sinon `domain`) — pas d'`aliases` pour ce site, donc `domain` = `extremedefi.00.re`. Repli `getServerUrl()` si absente (comportement historique) |
+| `VITE_SERVER_URL` | **À ne pas confondre** : serveur communecter (images `/upload`, embed co2, cagnotte) — garde sa valeur parc |
+
 ---
 
 ## 9. Impacts des modifications
+
+### 03/08 — Test de déploiement RÉUSSI
+
+`npm run deploy -- eXtremeDefiAdeme` → POST `/deploy` `force: true` sur Coolify
+(app `site-json-extremedefi`), rebuild ~6 min, `NODE_ENV=production` vérifié dans le conteneur.
+
+### 03/08 — Moteur : merge `fix/institut-bleu-ui` + SDK 1.0.172 (`94251b7b`, `09e145a0`)
+
+| Changement | Effet ici |
+|---|---|
+| SDK `1.0.172` **publiée sur npm** (fini le `npm pack` local) | Règle notamment la pose du scope costum côté admin (`setCostumScope`, cf. `../src/modules/admin/lib/ensureCostumScope.ts`) — **sans effet direct ici** : la config n'a pas de bloc `admin` |
+| `VITE_SITE_PUBLIC_URL` (`be7a320c`) | URL publique propre au site pour canonical / og / sitemap / RSS — cf. §8 ; repli `getServerUrl()` tant qu'elle n'est pas posée |
+
+Typecheck et preflight (22 fichiers / 412 tests) verts après le merge.
+
+### 03/08 — Suites de revue MR !30 (`029da8cb`)
+
+| Changement | Détail |
+|---|---|
+| `ProfileTabLayout` | Le `sticky` passe sur la **pile** de `rightSections`, plus sur chaque carte — deux cartes sticky sœurs se superposaient (cas inédit : les 218 `rightSections` du parc n'avaient qu'un élément) ; + gouttière `space-y-6` ; conditionné par `stackIsSticky` pour ne pas coller `actions-summary`/`finance-summary` |
+| Archétype `profiles` | Snapshot régénéré (`config:example -- profiles --write`) : `profile-tools` entre dans l'exemple canonique servi à `config-assistant` |
+| Config | Ligne à espaces (reliquat du retrait de l'entrée de nav) supprimée |
+| doc/08 | Compteur de sections profil 19 → 21 (+ `profile-about-ssbe`, `profile-tools`) |
+
+Non traité volontairement : le retrait de l'onglet de nav `/communaute` (décision produit) et les
+libellés français en dur de `TOOLS_MAP` (préexistant — cf. §12).
+
+### 30/07 — MR !30 « profile-tools » + modal d'ajout après connexion (`656a7c05`, `d6af3da3`)
+
+| Changement | Détail |
+|---|---|
+| Nouvelle section profil `profile-tools` | Bloc « Nos outils » extrait de `ProfileTiersLieuxInfo` en composant autonome sans vocabulaire tiers-lieux (`ProfileTools.tsx`, namespace i18n `ProfileTools` fr/en) ; posé ici sur `profiles.projects`, onglet « À propos », `rightSections` avec `sticky: true` |
+| Nav | « Projets » → « **Action collective** » ; onglet `/communaute` retiré. La page avait été supprimée par erreur puis **restaurée** (3 liens la référençaient encore : CTA header, hero, tuile « participer ») |
+| Boutons d'ajout ouverts à tous | `requiresAdmin: false` sur `add-project` (`/projets`) et `add-event` (`/agenda`) — jusque-là réservés aux admins (défaut du composant `ActionButtonGroup` : `requiresAdmin !== false` ; le schéma le déclare `optional()` sans default) |
+| Connexion → modal d'ajout | `ActionButtonGroup` : `openLogin({ onSuccess })` ouvre le modal d'ajout directement après la connexion réussie, au lieu de laisser le visiteur recliquer |
+
+À revalider : parcours visiteur non connecté « Proposer un projet / un événement » (login → modal),
+rendu de la carte outils sur un profil projet (sidebar à 2 cartes sticky — corrigée par `029da8cb`).
+
+### Gates au 03/08
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` | ✅ 4 pages / 14 sections (relancé le 03/08) |
+| `audit:config` | ✅ 0 constat (relancé le 03/08) |
+| `typecheck` + `test:preflight` | ✅ après le merge du 03/08 (22 fichiers / 412 tests) |
+| `config:probe` | 🟡 non resondé — dernier sondage le 28/07 (2 périmètres vides, cf. §5) |
+| Déploiement | ✅ testé le 03/08 (cf. ci-dessus) |
 
 ### 28/07 — aucun changement de config
 
@@ -204,17 +281,21 @@ Le site a bénéficié de correctifs du moteur livrés pour d'autres projets :
 | 3 | Page d'accueil éditoriale | ✅ | 8 sections, argumentaire chiffré, feuille de route, 47 logos vérifiés |
 | 4 | `/projets` | ❌ | 4 entités dont **3 saisies au clavier** |
 | 5 | `/agenda` | ❌ | 2 événements dont **1 saisie au clavier** |
-| 6 | `/communaute` | ❌ | **0 entité** sur les deux onglets |
-| 7 | Contribution depuis le site | ❌ | Ni formulaire costum, ni bouton d'ajout, ni back-office |
+| 6 | `/communaute` | ❌ | **0 entité** sur les deux onglets — retirée de la nav le 30/07 (page conservée, 3 liens y mènent encore) |
+| 7 | Contribution depuis le site | 🟡 | Boutons « Proposer un projet / un événement » **ouverts à tous depuis le 30/07** (`requiresAdmin: false`) + modal d'ajout enchaîné après connexion. Toujours ni `costumForms` ni back-office ; rien pour rejoindre la communauté |
 | 8 | Socle légal | 🟡 | **Délégué à l'ADEME** — accessibilité, données personnelles et cookies renvoient vers `xd.ademe.fr`. Seules les **mentions légales** ne sont liées nulle part |
 | 9 | Rendu navigateur | ❌ | Jamais vérifié |
 | 10 | Mode sombre | ❌ | Jamais vérifié |
+| 11 | Section profil `profile-tools` | ✅ | `profiles.projects` · onglet « À propos » · sidebar sticky (MR !30 + suites `029da8cb`) |
+| 12 | Déploiement Coolify | ✅ | Testé le 03/08 : `npm run deploy -- eXtremeDefiAdeme`, rebuild ~6 min, `NODE_ENV=production` vérifié |
 
 ---
 
 ## 11. Dépendances SDK ↔ `cocolight-api-client`
 
-Aucune demande en cours.
+Aucune demande propre à ce projet. SDK aligné parc : **1.0.172 publiée sur npm**
+(`package.json` → `^1.0.172`, commit `09e145a0` du 2026-08-03) — fini l'installation par
+`npm pack` local.
 
 ---
 
@@ -231,6 +312,12 @@ Aucune demande en cours.
   cadre juridique appartient à l'ADEME. **Seules les mentions légales ne sont liées nulle part** ;
   l'adresse de l'éditeur figure toutefois dans le bloc contact du pied de page (ADEME, 20 avenue du
   Grésillé, Angers).
+- ⚠️ **`/communaute` est hors nav mais pas hors site** (depuis le 30/07) : le CTA du header, un
+  bouton du hero et une tuile « participer » y mènent toujours (4 références dans la config). La
+  page vide reste donc atteignable en un clic depuis l'accueil.
+- Les libellés de `TOOLS_MAP` (carte « Nos outils » → section `profile-tools`) sont **en français
+  en dur** alors que le site est fr/en — préexistant, signalé en revue MR !30, non traité
+  volontairement (`029da8cb`).
 - Config JSON **jamais parsée par Zod au runtime** : toute clé doit être écrite explicitement.
 
 ---
@@ -242,5 +329,7 @@ Aucune demande en cours.
 | 1 | **Purger les 4 saisies au clavier** (« Qcsqcqsc », « hbrhnrhn », « qscqsc », « qscqscqscqsc ») : elles s'affichent en production sur `/projets` et `/agenda` | ADEME / Thomas |
 | 2 | **Le costum sera-t-il alimenté ?** Sans projets ni acteurs réels, les trois pages de données et les tuiles « participer » de l'accueil mènent au vide. À défaut, envisager de masquer ces pages et de garder la vitrine seule | Thomas |
 | 3 | **Mentions légales** : le pied de page délègue accessibilité, données personnelles et cookies à `xd.ademe.fr`, mais rien ne renvoie aux mentions légales. Ajouter un lien vers celles de l'ADEME, ou une page propre au site | ADEME |
-| 4 | Aucun moyen de contribuer depuis le site (ni formulaire, ni bouton d'ajout). Est-ce délibéré — vitrine institutionnelle — ou une étape non faite ? | Thomas |
+| 4 | Contribution : **résolue en partie le 30/07** (boutons « Proposer » ouverts à tous + modal après connexion). Reste : aucun parcours pour rejoindre la communauté | Thomas |
 | 5 | Rendu navigateur et mode sombre : jamais vérifiés | Thomas |
+| 6 | `/communaute` hors nav (décision produit, `029da8cb`) mais **3 liens y mènent encore** (CTA header, hero, tuile « participer ») : retirer les liens ou réintégrer l'onglet ? | Thomas / ADEME |
+| 7 | Traduire les libellés `TOOLS_MAP` (français en dur) pour la version anglaise du site | à confirmer |

@@ -13,11 +13,16 @@
 > [Module Admin](../doc/30-module-admin.md) · [Système de visibilité](../doc/19-visibility-system.md).
 > Mémoire : `[[project-institut-bleu]]` (à créer côté cocolight-backend).
 
-Dernière mise à jour : **2026-07-28** (lots 0→9 : annuaire · cartographie · agenda · fiche acteur ·
-formulaire acteur · pages éditoriales · back-office · auth & palette · hooks costum backend ·
-**design de la home, thème et finitions**).
-Restent : les essais UI connectés (formulaire acteur, back-office), le `npm run build` et le
-déploiement (lot 10), plus les reliquats de parité listés en §8.6.
+Dernière mise à jour : **2026-08-03** (merge de `fix/institut-bleu-ui` — 17 commits : wizard du
+formulaire acteur, boutons d'action des héros, correctifs dates/molette, passe SEO/i18n complète,
+`VITE_SITE_PUBLIC_URL`, SDK **1.0.172 publié** ; gates verts après merge — cf. §9).
+Mises à jour précédentes : **2026-07-31** (§14 : audit de dérive du costum et plan de reprise en 3
+`dynFormCostum` — livré dans la config le 02/08, commit `420c8ad2`) · **2026-07-28** (lots 0→9 :
+annuaire · cartographie · agenda · fiche acteur · formulaire acteur · pages éditoriales ·
+back-office · auth & palette · hooks costum backend · **design de la home, thème et finitions**).
+Restent : la pose des 2 variables d'env en production (`deploy:env`, cf. §8) + redéploiement,
+la suppression de l'événement test « qscqsc » dans l'admin, la création réelle d'un acteur en base,
+le `npm run build`, et les questions produit de §13.
 
 ---
 
@@ -34,14 +39,14 @@ plutôt que sur le PHP, sans perte de fonctionnalité pour les 51 acteurs déjà
 | | |
 |---|---|
 | **Site SiteForge** | slug `institutBleu` → [`config.prod.institut-bleu.json`](../config.prod.institut-bleu.json), CSS `index-institut-bleu` ([`sites.json`](../sites.json)) |
-| **État de la config** | 🟡 en cours (non commité) : socle IB posé (meta, header/nav, footer, thème, home) + **lot 2** (annuaire, cartographie, agenda) — 4 pages / 8 sections, `config:validate` ✅ |
+| **État de la config** | ✅ commitée sur `main` : **13 pages / 26 sections** (`config:validate` du 2026-08-03), 4 formulaires costum, admin 8 onglets, `audit:config` 0 constat |
 | **Costum / scope de données** | `source.key = "institutBleu"` sur toutes les entités du réseau |
 | **Porteur du costum** | org **« Institut Bleu »** `_id 66f2adcfba41c614b86c0af8`, slug `institutBleu`, type `LocalBusiness` — la config vit dans son champ `costum` (pattern *costum-in-org*, moteur `costum.slug = "costumize"`), host `annuaire.institutbleu.re` |
 | **Snapshot template** | `db.templates` `6914f0a0237b07198836c919` (`type: costum`, `name: "Institut Bleu"`, 15 Ko, créé le 2025-11-12) |
 | **Legacy (référence)** | `/home/djabatav/pixelhumain-docker-php7/code` — servi sur `http://127.0.0.1:5080` |
 | **Backend Node** | `cocolight-backend` — `http://127.0.0.1:5099` (base partagée `mongodb://127.0.0.1:5018/communecter`) |
-| **SDK** | `@communecter/cocolight-api-client` **1.0.169** (lecture seule ; modifs → Thomas) |
-| **Branche site-json** | `main` (dernier commit `ac8ee07d`) — branche de chantier à créer |
+| **SDK** | `@communecter/cocolight-api-client` **1.0.172** — **publiée sur npm** (fini le `npm pack` local ; `package.json` `^1.0.172`, commit `09e145a0` du 2026-08-03) |
+| **Branche site-json** | `main` — merge `94251b7b` de `fix/institut-bleu-ui` (17 commits) le 2026-08-03 ; typecheck + preflight (**412 tests / 22 fichiers**) verts après merge |
 | **Chef de projet** | Thomas Craipeau (Aboire) |
 
 ### Historique des chantiers
@@ -56,6 +61,13 @@ plutôt que sur le PHP, sans perte de fonctionnalité pour les 51 acteurs déjà
   `public/images/institutBleu/` (logo + favicon). Travail **non commité**.
 - **2026-07-27 (cette session)** : état des lieux complet (ce document) + **lot 2** — pages
   `/annuaire`, `/cartographie`, `/agenda` posées et vérifiées en SSR contre le backend Node.
+- **2026-08-02** : la reprise du modèle de données (§14) est **livrée dans la config** (commit
+  `420c8ad2`, squash) — pages `/bibliotheque` et `/financements` (11 → 13 pages), 3 costumForms
+  générés (`institut-bleu-document`/`-financement`/`-event`), refonte des `profiles` en onglets,
+  `VITE_COSTUM_FORCE_LIVE`, SDK 1.0.171.
+- **2026-08-03** : branche `fix/institut-bleu-ui` (17 commits) mergée dans `main` (`94251b7b`) —
+  finitions UI (wizard, dates, molette, héros à boutons d'action), passe SEO/i18n,
+  `VITE_SITE_PUBLIC_URL`, SDK 1.0.172 publié. Détail en §9.
 
 ---
 
@@ -230,7 +242,7 @@ polluée par une virgule**) · `Séminaire` 3 · `conference` 1. Dates 2025→20
 | Config du site | [`config.prod.institut-bleu.json`](../config.prod.institut-bleu.json), [`sites.json`](../sites.json) |
 | Thème | [`src/index-institut-bleu.css`](../src/index-institut-bleu.css) |
 | Formulaire acteur | `config.costumForms["institut-bleu-acteur"]` (JSON, **0 code**) + `floatingActionButton` ; garde `src/modules/profil/forms/institut-bleu-acteur.configDriven.test.ts` |
-| Back-office | `config.admin` (6 onglets) — module `src/modules/admin/`, aucun code ajouté |
+| Back-office | `config.admin` (8 onglets depuis `420c8ad2` — bibliothèque et financements ajoutés aux 6 d'origine) — module `src/modules/admin/`, aucun code ajouté |
 | Connexion & palette | `config.auth` (module `src/modules/auth/`) et `config.commandPalette` (module `src/modules/commandPalette/`) — aucun code ajouté ; le bouton ⌘K du header dépend de `header.utilities.search` |
 | Moteur (ajouts de ce chantier) | `src/modules/profil/{schema.ts, ProfileSectionRenderer.tsx, lib/profileFields.ts(+test), components/sections/ProfileFields.tsx}` · `src/modules/formEngine/engine/{coercions.ts(+test), zodGen.ts, validate.test.ts}` · `src/modules/formEngine/widgets/{registry.tsx, fields/genericFields.tsx}` · i18n `profil/i18n/{fr,en}.json` (`validation.minItems`/`maxItems`) · fixture `forms/costum/__fixtures__/configCostum.ts` |
 | Recherche/annuaire | modules `search` (`searchHeader`, `searchProStatic`, `PageFilters`) — aucun code attendu |
@@ -268,7 +280,7 @@ polluée par une virgule**) · `Séminaire` 3 · `conference` 1. Dates 2025→20
 | **6** | Pages éditoriales (institut-bleu, guide, charte, légal) | ✅ 27/07 — 5 pages reprises du CMS legacy |
 | **7** | **Back-office** `/admin` (modération, invitations, export) | ✅ 27/07 — 6 onglets, 0 code |
 | **8** | Parité backend : hooks costum, export CSV, statut mails | ✅ 27/07 pour les **effets d'écriture** (11/11) + « retirer de l'annuaire » ; reliquats en §8.6 |
-| **9** | Gates (typecheck/lint/tests/build) + déploiement (DNS, env, Docker) | 🟡 gates vertes au 27/07 (`tsc -b` 0 · `test:unit` **2012 tests / 158 fichiers** · `test:integration` **sur la config IB : 345 tests / 20 fichiers** · lint : 0 problème sur les fichiers du chantier, 29 erreurs **pré-existantes** ailleurs — blog/ds-bundle) ; `npm run build` et le déploiement restent à faire |
+| **9** | Gates (typecheck/lint/tests/build) + déploiement (DNS, env, Docker) | 🟡 gates re-mesurées au **03/08** après merge : `config:validate` **13 pages / 26 sections** · `audit:config` **0 constat** · `test:preflight` **412 tests / 22 fichiers** · `typecheck` vert · SSR réel vérifié (cf. §9). Restent : `npm run build`, **pose des variables d'env en prod** (tableau ci-dessous) + redéploiement |
 
 Commandes de vérification par lot :
 
@@ -283,6 +295,21 @@ PORT=5175 VITE_SLUG=institutBleu SITE_CONFIG_PATH=config.prod.institut-bleu.json
 npm run config:validate -- config.prod.institut-bleu.json
 npm run typecheck && npm run lint && npm run test:unit && npm run build
 ```
+
+### Variables d'environnement de production — à poser (état au 03/08)
+
+Deux variables sont attendues en production, dérivées de [`sites.json`](../sites.json) par
+`npm run deploy:env -- institutBleu --write`, suivi d'un **redéploiement** :
+
+| Variable | Valeur | Rôle |
+|---|---|---|
+| `VITE_SITE_PUBLIC_URL` | `https://institut-bleu.00.re` | URL publique du site-json **lui-même** : canonical, `og:url`/`og:image`, `sitemap.xml`, flux RSS. Lue par `getSitePublicUrl()` ([`src/lib/constant/common.ts:83`](../src/lib/constant/common.ts)) et `server/lib/sitemap.js` ; dérivée par `deploy:env` depuis `sites.json` (`aliases[0]` prioritaire, sinon `domain` — ici `domain`) ; **repli `getServerUrl()`** si absente = comportement historique. Commit `be7a320c` (2026-08-03) |
+| `VITE_COSTUM_FORCE_LIVE` | `true` | Résolution live du costum — déclarée dans `sites.json` → `env` pour ce site |
+
+⚠ **Ne pas confondre avec `VITE_SERVER_URL`** (= serveur communecter : images `/upload`, embed co2,
+cagnotte), qui **garde sa valeur parc**. Avant `be7a320c`, cette variable portait les deux
+sémantiques : mesuré en prod, le canonical de chaque fiche `/profil/:slug` pointait vers
+`www.communecter.org` — impossible à corriger par la valeur (les images auraient cassé).
 
 ---
 
@@ -682,6 +709,61 @@ repliait la carte et **démontait** le composant. Corrigé, avec un test validé
 
 ---
 
+### Reprise `poi` (§14) livrée dans la config (02/08, commit `420c8ad2`)
+
+Concrétisation du plan §14, dans un commit squash qui embarque aussi le bump SDK 1.0.171 et la
+nouvelle variable `VITE_COSTUM_FORCE_LIVE` (`scripts/costum-form-drift.ts`, `RootLayout`,
+`common.ts`) :
+
+- 2 pages nouvelles : `/bibliotheque` et `/financements` (11 → **13 pages**) ;
+- 3 costumForms générés en plus d'`institut-bleu-acteur` : `institut-bleu-document`,
+  `institut-bleu-financement`, `institut-bleu-event` ;
+- `profiles.poi.editModals` discriminés par `type` (`financement` / `recoveryCenter`) ;
+- refonte des `profiles` en onglets (`profile-tab-layout` + sections `profile-*`).
+
+### Merge `fix/institut-bleu-ui` — finitions UI + SEO/i18n (17 commits, mergé le 03/08, `94251b7b`)
+
+**Commits config** — 10 touchent `config.prod.institut-bleu.json` depuis `420c8ad2` :
+
+| Commit | Changement |
+|---|---|
+| `414e4bc5` | Retire `commandPalette.entitySearch.placeholder` — clé hors schéma, **sans aucun lecteur** dans le code (doublon de `commandPalette.placeholder`) ; c'était le seul échec restant du preflight (`archetypes.test.ts`) |
+| `08f10d44` | Champ `type` des events : la liste des 9 types était écrite sous `options`, clé que le moteur **ne lit pas** (liste blanche `formDescriptorToConfig.ts:32`) → select vide et formulaire insoumissible (champ `required`) ; renommée `enum`. + molette des selects en modale (`select-objet`, rustine locale) et bannière de preview plafonnée `max-h-[30vh]` |
+| `427b353d` | Les héros acceptent des boutons d'**ACTION** (`hero-parallax.buttons` → `ActionButtonGroup`, le composant du searchHeader) : le CTA « Référencer ma structure » ouvre la **modale** au lieu de `/register` ; même bouton ajouté sur `/annuaire`. `condition: {auth: "required"}` **retirée** du bouton flottant : le `chrome.authPrompt` s'affiche aux anonymes (la condition masquait le bouton à ceux-là mêmes que ce texte visait). Bouton flottant en `bottom-left` (il recouvrait le QR code) |
+| `804350d7` | Dates d'événement : même jour sélectionnable en fin (`startOfDay(min)` — un événement dans la journée était **impossible à saisir**) + l'onglet Dates signale ses erreurs (`startDate`/`endDate`, champs `hidden`, désormais placés dans la section) |
+| `383114ee` | L'édition admin ouvre les formulaires costum : `edit: "inherit"` résout via `profiles[type].editModals` (jamais `costumForms`), absents pour `events`/`organizations` → ajoutés (`edit-institut-bleu-event`/`-acteur`). Vaut aussi pour l'édition depuis les pages profil |
+| `89b74683` | Le formulaire « Référencer ma structure » passe en **wizard** (layout moteur `WizardLayout`, 4 sections → 4 étapes, `stepper: "tabs"`, `dialogClassName` 820px) — patron des 5 wizards de sport-sante-bien-etre, vérifié à l'écran |
+| `a22459dd` · `cd5c392a` | `/agenda` : barre de chips alignée sur la rangée de filtres (`filtersClassName` calqué sur equipements-Sportifs/saint-paul-sport) ; filtres sur **une ligne** en desktop (`lg:flex-row`) |
+| `2bbd13e8` | Export admin : `entityTypes` → `organizations · poi · events` — bibliothèque et financements (des `poi`) étaient **inexportables** ; IB était le seul site du parc à exclure `poi` |
+| `312ac278` | **Passe SEO/i18n** : 9 `seo.description` fr/en · `meta.ogImage` + `meta.author` · canonical accueil `https://institut-bleu.00.re/` + **JSON-LD `Organization`** · `noIndex` sur les 3 pages légales (`/charte`, `/mentions-legales`, `/confidentialite`) · **73 traductions EN** (52 labels de filtres + 21 enums costumForm, values inchangées) · 4 reliques Markdown corrigées (`/charte`, `/confidentialite`) · events dans `commandPalette.entitySearch.searchType` + iconRule calendar · `<html lang="fr">` (`index.html`) |
+
+**Commits moteur** de la même branche qui concernent ce projet :
+
+| Commit | Changement |
+|---|---|
+| `be7a320c` | `VITE_SITE_PUBLIC_URL` de bout en bout (cf. §8) — le canonical des fiches `/profil/:slug` ne pointe plus vers `www.communecter.org` |
+| `6df1049b` | Refonte datetime-picker : saisie de l'heure par l'input **natif** `type="time"` (+ 6 tests) — les segments maison + `clampDate` rendaient l'heure de fin insaisissable (« 15 » donnait 23, symptôme dépendant de la vitesse de frappe) |
+| `a39e17b7` | Molette des listes cmdk en modale : correctif **centralisé** dans `ui/command.tsx` (`CommandList`, gardé par `data-scroll-locked`) — couvre `select-objet`, `MultiCombobox` (Sheet mobile `/agenda`) et tout futur combobox ; la rustine locale de `08f10d44` est retirée |
+| `9e807e08` | `ensureCostumScope` **inconditionnel** (`setCostumScope`, +5 tests — `src/modules/admin/lib/ensureCostumScope.ts`), permis par SDK 1.0.172 : l'hôte IB porte `source.key: "meir"`, la lib auto-dérivait le scope de la provenance et la validation postait `toBeValidated.meir` au lieu de `.institutBleu`. + `useValidateGroup`/`useReferenceElement` **lèvent** sur refus métier HTTP 200 (`{result:false}` — fini le toast de succès sur écriture refusée) |
+| `b5f22e61` | Typographie `prose` branchée sur les jetons du thème (utilitaire `prose-theme`) — `@tailwindcss/typography` n'était pas installé, `MarkdownSection` rendait sans hiérarchie typographique sur tout le parc (h1 en 16px/400 mesuré) |
+| `33546c92` · `5a6f2ea0` | Boutons d'action alignés sur les CTA du hero (`className="contents"` + `buttonClassName`) ; la preview resource ne déborde plus à droite du dialogue (`min-w-0` racine) |
+
+**Gates mesurés le 2026-08-03** (après merge) :
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` | ✅ **13 pages / 26 sections** |
+| `audit:config` | ✅ **0 constat** |
+| `test:preflight` | ✅ **412 tests / 22 fichiers** |
+| `typecheck` | ✅ `tsc -b` propre |
+| Vérification SSR réelle | ✅ `og:image` absolutisée, canonical, meta description `/annuaire`, noindex `/mentions-legales`, `<html lang="fr">` servis |
+| `build` | ⬜ non relancé |
+
+> ⚠ Le **JSON-LD n'apparaît qu'APRÈS hydratation** — le script Helmet n'est pas injecté au SSR.
+> Choix assumé : Googlebot exécute le JS.
+
+---
+
 ## 10. Checklist d'avancement
 
 | # | Fonctionnalité | État | Détail |
@@ -692,10 +774,10 @@ repliait la carte et **démontait** le composant. Corrigé, avec un test validé
 | 4 | Annuaire filtrable | ✅ | `/annuaire` — 48 acteurs, 3 facettes, export CSV, carte activable |
 | 4b | Cartographie | ✅ | `/cartographie` — 45 acteurs géolocalisés |
 | 5 | Fiche acteur | ✅ | 7 champs costum exposés via `profile-fields` (section générique ajoutée au moteur) |
-| 6 | Formulaire acteur | 🟡 | Document posé + gardes vertes ; **ouverture de la modale et création réelle non encore essayées** (exige un compte + une écriture en base) |
+| 6 | Formulaire acteur | 🟡 | Passé en **wizard** 4 étapes (`89b74683`) ; ouvert depuis le hero, `/annuaire` et le bouton flottant (`427b353d`) ; navigation, marquage d'erreurs par étape et `authPrompt` **vérifiés à l'écran** le 03/08 — la **création réelle en base reste à essayer** |
 | 7 | Agenda | ✅ | `/agenda` (21 events) **vérifiée en navigateur** + teaser sur la home (3 événements, lien « Tout l'agenda ») |
 | 8 | Pages éditoriales | ✅ | 5 pages reprises ; les 5 pages legacy en brouillon (`forum`, `documentation`, `financement`, `bibliotheque`, `yuna-test`) restent hors périmètre |
-| 9 | Back-office | ✅ | 6 onglets (`config.admin`) ; **essai UI connecté à faire** |
+| 9 | Back-office | ✅ | 8 onglets (`config.admin` — bibliothèque et financements ajoutés le 02/08, `420c8ad2`) ; essais UI connectés faits le 03/08 : l'édition ouvre les formulaires costum events/organizations (`383114ee`, vérifié à l'écran), export élargi aux `poi` (`2bbd13e8`) |
 | 10 | Parité hooks backend | ✅ | 11 effets d'écriture portés + retrait de l'annuaire (`cocolight-backend`, e2e 5 cas) ; reliquats de lecture/export en §8.6 |
 | 11 | Connexion / inscription (`config.auth`) | ✅ | Textes IB, menu de compte ; `/login`, `/register`, `/recover-password` rendus |
 | 12 | Palette ⌘K (`config.commandPalette`) | ✅ | Recherche d'acteurs scopée **annuaire public** (`displayAuth` respecté) ; événements volontairement exclus |
@@ -704,7 +786,10 @@ repliait la carte et **démontait** le composant. Corrigé, avec un test validé
 | 15 | Observatoire | ✅ | `/observatoire` + résumé en home (`kpiLayout: "inline"`, `maxWidth`) ; graphe monochrome assumé — la longueur des barres encode déjà la valeur |
 | 16 | Pied de page — cofinancement | ✅ | 3 blocs-marques (État/Mer-Pêche · Année de la mer · Région Réunion) + mention légale FIM/DGAMPA complète, via `footer.partners.note` |
 | 17 | Mode sombre | 🟡 | Home, agenda et pied de page vérifiés en navigateur ; **les 7 autres pages restent à parcourir** |
-| 18 | Rendu mobile | ❌ | Jamais vérifié — `resize_window` ne change pas le viewport rendu dans l'outillage employé |
+| 18 | Rendu mobile | 🟡 | La Sheet de filtres mobile `/agenda` a été vérifiée en vue mobile le 03/08 (`a39e17b7`) ; le reste du site n'a pas été parcouru en mobile |
+| 19 | Bibliothèque & financements (`poi`) | ✅ | Pages `/bibliotheque` et `/financements` + costumForms `institut-bleu-document`/`-financement` + `editModals` discriminés par `type` (`420c8ad2` du 02/08) ; exportables depuis l'admin (`2bbd13e8`) |
+| 20 | SEO / i18n | ✅ | 9 descriptions fr/en, `ogImage`+`author`, canonical + JSON-LD accueil, `noIndex` pages légales, 73 traductions EN, `<html lang="fr">` (`312ac278` du 03/08) — ⚠ JSON-LD rendu **post-hydratation** seulement |
+| 21 | Variables d'env prod | ❌ | `VITE_SITE_PUBLIC_URL` + `VITE_COSTUM_FORCE_LIVE` à poser (`deploy:env`, cf. §8) puis redéployer |
 
 ---
 
@@ -714,8 +799,11 @@ repliait la carte et **démontait** le composant. Corrigé, avec un test validé
 |---|---|---|
 | Recherche scopée `source.key` | ✅ résolu | Le param natif `sourceKey` élargit trop (il matche aussi `reference.costum`/`costumId` : « Open Atlas », l'org porteuse…). **Substitut retenu** : `notSourceKey: true` + `defaultFilters.$or` explicite — comme cyber-reunion, et comme le legacy lui-même. Vérifié : 48 résultats |
 | Events scopés costum (`searchEventsCostum`) | ✅ | `sourceKey: ["institutBleu"]` → 21 events (vérifié sur `:5099` le 27/07) |
-| Form costum live (`getcostumjson`/`describeForm`) | disponible ≥ 1.0.164 | `src/modules/admin/hooks/useCostumFormLive.ts` |
+| Form costum live (`getcostumjson`/`describeForm`) | disponible ≥ 1.0.164 | `src/modules/admin/hooks/useCostumFormLive.ts` ; résolution live forcée par `VITE_COSTUM_FORCE_LIVE=true` (`sites.json` → `env`) |
 | Champs costum typés `institutBleu` | présent (transitoire) | `src/costum/schemas/institutBleu.ts` (17 champs) |
+| **Pose du scope costum côté admin** (`setCostumScope`) | ✅ résolu en **1.0.172** | La lib documente désormais l'appel **inconditionnel** (`hasCostumScope()` « dit seulement s'il y a un scope, pas lequel », `BaseEntity.d.ts`) ; appliqué dans `src/modules/admin/lib/ensureCostumScope.ts` (+5 tests, commit `9e807e08`). Sans quoi l'hôte IB (`source.key: "meir"`) faisait poster `toBeValidated.meir` — validation sans effet, toast de succès quand même |
+| SDK **publié sur npm** (fin du `npm pack` local) | ✅ 1.0.172 | `package.json` `^1.0.172` + `node_modules` 1.0.172, commit `09e145a0` du 2026-08-03 |
+| Refus métier en HTTP 200 (`{result:false, msg}`) | ✅ traité côté site-json | `useValidateGroup`/`useReferenceElement` lèvent au lieu d'afficher « Validé » (`9e807e08`) |
 
 ---
 
@@ -756,6 +844,17 @@ repliait la carte et **démontait** le composant. Corrigé, avec un test validé
 - **Les logos de financeurs publics ont une zone de protection imposée par leur charte** : le
   bloc-marque de l'État et celui de l'Année de la mer sont laissés tels que fournis, jamais détourés.
   Seul le logo Région, livré sur un carré à marges excessives, a été recadré.
+- **JSON-LD rendu côté client seulement** : le script Helmet n'est pas injecté au SSR — le JSON-LD
+  `Organization` de l'accueil n'apparaît qu'**après hydratation**. Choix assumé (Googlebot exécute
+  le JS), vérifié sur le SSR réel le 03/08 ; les autres balises SEO (canonical, og:image absolutisée,
+  meta description, noindex, `lang="fr"`) sont bien servies au SSR.
+- **Deux URLs, deux sémantiques** : `VITE_SITE_PUBLIC_URL` = URL publique du site-json (canonical,
+  og, sitemap, RSS) · `VITE_SERVER_URL` = serveur communecter (images `/upload`, embed co2,
+  cagnotte). Ne jamais « corriger » un canonical en changeant `VITE_SERVER_URL` — les images
+  casseraient (cf. `be7a320c`, §8).
+- **`edit: "inherit"` ne résout PAS comme `create: "inherit"`** (admin) : create cherche dans
+  `costumForms` par entityType, edit passe par `profiles[type].editModals` — qui ne regarde jamais
+  `costumForms`. Toute collection éditable doit déclarer ses `editModals` (cf. `383114ee`).
 
 ---
 
@@ -773,6 +872,348 @@ repliait la carte et **démontait** le composant. Corrigé, avec un test validé
 | 5 | Invitations sans compte (`acceptInvitationWithoutUser`) : reprises dans `/admin` ? | Thomas |
 | 9 | ~~Logos des financeurs~~ **Tranché 28/07** : les trois blocs-marques (État — Mer et Pêche, Année de la mer, Région Réunion) ont été relevés sur la page « Outils de communication » du site institutionnel et installés dans `public/images/institutBleu/` | — |
 | 10 | **Logo ARIPA manquant** parmi les membres de `/nos-membres` (17 des 18 collectés) | Institut Bleu |
-| 11 | **Rendu mobile jamais vérifié** — l'outillage de capture ne change pas le viewport rendu. À reprendre sur un vrai appareil ou un navigateur piloté autrement | Thomas |
+| 11 | **Rendu mobile presque pas vérifié** — seule la Sheet de filtres mobile de `/agenda` a été contrôlée (03/08, `a39e17b7`) ; le reste du site est à reprendre sur un vrai appareil ou un navigateur piloté autrement | Thomas |
 | 12 | **Mode sombre** vérifié sur la home, l'agenda et le pied de page seulement ; les 7 autres pages restent à parcourir. Le hero photo est le point exposé (son voile dérive de `--color-background`) | Thomas |
 | 13 | Le **Cluster Maritime de La Réunion** est cité comme partenaire du projet (et non comme financeur) dans la mention légale du pied de page. Faut-il aussi afficher son logo, dans un bloc distinct de « Avec le soutien de » ? | Institut Bleu |
+| 14 | **BUG-L-223 — route d'écriture non authentifiée** `/costum/institutbleu/updatevalue` : à vérifier **en production** et à supprimer (code mort côté client, porte ouverte côté serveur). Cf. §14.1 | Thomas |
+| 15 | Reprise de `financements` + `bibliomar` vers `poi` en sous-types `dynFormCostum` (§14) : à valider avant chantier, puis migration de 11 + 8 documents | Thomas |
+| 16 | ~~Les 678 `bibliomar` sans `source` sont-ils hors périmètre ?~~ **Tranché 31/07** : ils sont **tous** à l'Institut Bleu (contenu réunionnais, page CMS « Bibliomar » sous `source.key: institutBleu`, import en un lot le 2026-03-09) → les **686** sont dans le périmètre de la reprise | — |
+| 18 | **Nuage de tags filtrant** (§14.6) : composant site-json à écrire + endpoint d'agrégation PAR COSTUM à créer des deux côtés. `SEARCH_TAGS` existe et est bien porté, mais il est global et ne rend aucune fréquence. Poser d'abord un index sur `poi.source.keys` et `poi.tags` | Thomas |
+| 17 | ~~Retrait de `validated` / `externalOrganizer` du modèle cœur `Event` et de la branche `coeventTypeOptions` de `dynForm/event.js` ?~~ **Tranché 31/07 : on ne retire RIEN du legacy.** Les 3 modifications du cœur restent en place et sont assumées. `coeventTypeOptions` reste donc la source du formulaire natif — et `lists.eventTypes` est ajouté **en plus** (duplication vérifiée sans effet sur le client actuel, cf. §14.2) | — |
+| 19 | **Pose des variables d'env en prod** : `npm run deploy:env -- institutBleu --write` (`VITE_SITE_PUBLIC_URL=https://institut-bleu.00.re`, `VITE_COSTUM_FORCE_LIVE=true`), puis **redéploiement** (cf. §8) | Thomas |
+| 20 | **Événement test « qscqsc »** à supprimer dans l'admin (relevé le 03/08 — donnée en base, à confirmer avant suppression) | Thomas |
+| 21 | `/guide-des-etapes` en anglais : **bannière** « French only » (comme les 3 pages légales) ou **traduction complète** (captures d'écran à refaire, cf. question 8) ? | Institut Bleu |
+| 22 | **URLs réelles des réseaux sociaux** : la config n'en porte aucune au 03/08 (pas de bloc social au footer ; le `sameAs` du JSON-LD ne cite qu'`institutbleu.re`) — fournir les comptes officiels | Institut Bleu |
+| 23 | **Choix d'outil analytics** : seul `ga4` est implémenté (`IntegrationsLoader.tsx:12` — le schéma déclare aussi matomo/plausible/posthog/… mais sans code) ; choisir l'outil et fournir l'identifiant | Institut Bleu |
+| 24 | Page **`/accessibilite`** (déclaration d'accessibilité) : absente de la config au 03/08 | Institut Bleu |
+| 25 | **URLs localisées / hreflang** : le site est fr/en mais sert **une seule URL par page**, sans `hreflang` — la version EN est aujourd'hui **invisible des moteurs** | Thomas / Institut Bleu |
+
+---
+
+## 14. Reprise du modèle de données — 3 sous-types en `dynFormCostum`
+
+> **Ajouté le 2026-07-31**, à la suite de l'audit de dérive du costum. Objet : ramener
+> `financements`, `bibliomar` et les événements sur le patron générique de la plateforme
+> (**`costum.typeObj` + `dynFormCostum` + `preferences.toBeValidated`**), celui que
+> [parent62](parent62.md) fait tourner en production sur **6 434 entrées `poi`**.
+
+### 14.1 Ce que l'audit a établi
+
+| Constat | Preuve |
+|---|---|
+| **Faille — écriture non authentifiée** | `POST /costum/institutbleu/updatevalue` : `collection`, `id`, `path`, `value` viennent du client, sans auth ni droits ; `PHDB::update` reçoit le 3ᵉ argument sans `$set` → **remplacement du document**. Sondé sur 5080 : `{_id,name,email,roles}` → `{_id,name}`. Les 2 appels JS sont commentés (code mort, porte ouverte). Registre : **BUG-L-223**, critique |
+| **3 modifications du modèle cœur** | `Event.php:86` `validated` et `:87` `externalOrganizer` — institutBleu **et personne d'autre** (28 et 8 events) ; `dynForm/event.js:116` patché pour lire `costum.coeventTypeOptions` |
+| **`externalLinkRegistration` fait exception** | 5 costums, 108 events, et déjà entrée dynForm native (`event.js:136`) → **à conserver dans le cœur** |
+| **Le select ne contraint rien** | Events IB : `"Salon professionnel,"` (virgule) et `"conference"`, **absents** des 9 options déclarées. `bibliomar.type` : 15 valeurs pour ~8 concepts ; `langue` : 4 pour 2 (EN/ENG, FR/FRA) |
+| **`bibliomar` : 686 docs, tous IB, mais deux formes** | Les **678** créés le **2026-03-09** en un seul lot d'import n'ont ni `source`, ni `collection`, ni `created`, ni `creator` — ils appartiennent pourtant bien à l'Institut Bleu (contenu 100 % réunionnais, `departement: 974`, `region: "Océan Indien"`, page CMS « Bibliomar » sous `source.key: institutBleu`). Les **8** suivants (04-17 → 06-02) sont saisis par l'UI et estampillés |
+| **Le formulaire capture moins que l'import** | `resume`, `tags`, `departement` : 678/678 à l'import, **0/8** par l'UI. À l'inverse `thématique` : 0 à l'import, 5/8 par l'UI. Les deux voies décrivent des sous-ensembles différents du même objet |
+| **Clés hors convention** | `titre` au lieu de `name`, et `thématique` **avec un accent dans le nom de clé** → invisibles à la recherche, au slug, à l'autocomplete, aux cartes |
+| **`parent` ne porte aucune information** | `parent == costumId` sur **27/27**, toujours sous-ensemble de `organizer` ; or `Element.php:2876-2888` prend `parent` **en priorité** comme cible de notification → il masque l'organisateur réel |
+| **Trois conventions de date** | `financements.deadline` ISODate natif · `modified` `{sec,usec}` · `bibliomar.publicationDate` string |
+
+`organizer` racine == `links.organizer` sur 28/28 : cette duplication-là est la dénormalisation
+normale du legacy, **à ne pas toucher**.
+
+### 14.2 Listes à créer dans `costum.lists`
+
+`lists` n'est pas qu'une convention de rangement : `Costum::getAndConvertLists`
+(`Costum.php:527-542`) sait résoudre une liste **statique**, **dérivée des badges**, ou
+**calculée en base** (`PHDB::distinct(collection, champ, where)` / `PHDB::find`) ; et une liste
+y devient consommable en facette de recherche (`configSearchObj.js:911`). Le précédent existe
+déjà dans ce costum : `lists.categoryThematic` est une map clé→valeur.
+
+| Liste | Contenu | Remplace |
+|---|---|---|
+| `eventTypes` | les 9 types actuels, **recopiés** | `costum.coeventTypeOptions` reste en place EN PLUS (on ne touche pas au legacy). Vérifié : la duplication ne casse rien du client actuel — `event.js:116` continue de lire l'ancienne clé, `getAndConvertLists` laisse un tableau simple intact (aucune branche `type`/`collection`/`distinct`), et le JS d'institutBleu ne lit `lists` que par clé nommée, jamais en énumération. Coût = 9 valeurs en double jusqu'au jour où `event.js` lira `lists` |
+| `financementTypes` | Appel à Manifestation d'Intérêt · Appels à projets · Subventions | `financements.type` en texte libre |
+| `echelles` | Nationale · Régionale | `financements.echelle` |
+| ~~`financeurs`~~ | **pas de liste pour l'instant** — voir l'encadré ci-dessous | `financements.financementSource` reste en saisie libre |
+| `typesDocument` | ~8 valeurs après fusion des doublons | `bibliomar.type` (15 valeurs) |
+| `langues` | FR · EN | `bibliomar.langue` (4 valeurs) |
+
+> **Pourquoi pas de liste calculée pour les financeurs.** Une liste de `costum.lists` peut être
+> **figée** (`"echelles": ["Nationale","Régionale"]`) ou **calculée** : on déclare une requête,
+> `{"collection":"poi","distinct":"financementSource","where":{…}}`, et
+> `Costum::getAndConvertLists` (`Costum.php:527-542`) la remplace au chargement par le résultat de
+> `PHDB::distinct` — la liste se maintient alors toute seule.
+>
+> Mais elle **expose la base telle quelle, sans la nettoyer**. Or les 9 valeurs actuelles de
+> `financementSource` mélangent le *financeur* (`ADEME`, `Fondation de France`) et l'*intitulé de
+> l'appel* (`FEAMPA 01-2026 au titre de l'Objectif spécifique 2.1…`), et deux portent une espace
+> finale. Un `distinct` recopierait tout cela en options — le travers même du
+> `"Salon professionnel,"`. La liste calculée convient à un champ **ouvert et propre** ; ici le
+> champ doit d'abord être scindé (financeur ↔ appel) et nettoyé. À reconsidérer ensuite.
+>
+> Les 5 autres listes sont **figées** : leurs vocabulaires sont fermés et connus.
+
+### 14.3 Correspondance champ par champ
+
+**`financements` → `poi` (sous-type `financement`)** — natif sauf mention contraire.
+
+| Actuel | Cible | Note |
+|---|---|---|
+| `name` | `name` | — |
+| `type` | `financementType` | champ costum adossé à `lists.financementTypes` ; `type` racine devient `"financement"` via `presetValue` |
+| `echelle` | `echelle` | champ costum adossé à `lists.echelles` |
+| `financementSource` | `financementSource` | champ costum en **saisie libre** (`inputWithSelect`), pas de liste — cf. encadré §14.2 |
+| `deadline` | **`date`** | natif — en **string `YYYY-MM-DD`**, PAS en `{sec,usec}` : les 8 seuls `poi.date` de la base sont des strings, aucun backend ne re-type ce nom |
+| `url` | **`urls`** | natif, tableau |
+| `validated` | **rien à poser** | ces documents sont déjà validés. ⚠️ `typeObj.<sousType>.toBeValidated` n'est lu par AUCUN code (ni PHP ni Node) : le drapeau vient du FORMULAIRE (`element.routes.ts:261-262` ne convertit que si le client en envoie un) |
+| `recurrency`, `isStarred` | idem | champs costum (POI n'a pas d'équivalent ; `recurrency` vaut `false` partout aujourd'hui) |
+| — | `shortDescription`, `description`, `tags` | natifs, **absents aujourd'hui** : un appel à projets sans description n'est pas cherchable |
+
+**`bibliomar` → `poi` (sous-type `recoveryCenter`)** — la majorité tombe sur du natif.
+
+| Actuel | Cible | Note |
+|---|---|---|
+| `titre` | **`name`** | renommage indispensable |
+| `thématique` | **`thematique`** | natif POI — supprime l'accent. ⚠️ `thematic` (sans e) est déclaré au binding mais **0/15 943** en base ; `thematique` en compte 216 |
+| `publicationDate` | **`date`** | natif — reste une **string `YYYY-MM-DD`** (déjà le bon format) |
+| `link` | **`urls`** | natif |
+| `resume` | **`shortDescription`** | natif |
+| `tags` | **`tags`** | natif |
+| `numero` | `coteDocument` | champ costum. ⚠️ **PAS `reference`** : ce champ vaut `{"costum":[…]}` sur 28/28 et `element.routes.ts:294` l'écrase à chaque save |
+| `departement`, `region` | **`address` / `geo`** | natifs |
+| `type` | `typeDocument` | champ costum adossé à `lists.typesDocument` |
+| `langue` | `langue` | champ costum adossé à `lists.langues` |
+| `auteurs` | `auteurs` | champ costum (texte, séparateur `;`) |
+| `organisme` | `organisme` | champ costum, ou lien vers l'org si elle est à l'annuaire |
+| `validated` | **rien à poser** | ces documents sont déjà validés. ⚠️ `typeObj.<sousType>.toBeValidated` n'est lu par AUCUN code (ni PHP ni Node) : le drapeau vient du FORMULAIRE (`element.routes.ts:261-262` ne convertit que si le client en envoie un) |
+
+**Événements** — ils restent dans `events`, le patron élément y est déjà respecté.
+
+| Actuel | Cible |
+|---|---|
+| `costum.coeventTypeOptions` | **`costum.lists.eventTypes`** |
+| `validated` *(cœur)* | **`preferences.toBeValidated.institutBleu`** |
+| `externalOrganizer` *(cœur)* | champ costum du sous-type |
+| `parent` | **à retirer** — redondant avec `costumId`, et il masque `organizer` |
+| `externalLinkRegistration` | **inchangé** (natif justifié) |
+
+> **Choix des `type` — tranché le 31/07.** `recoveryCenter` pour la bibliothèque, `financement`
+> pour les appels à projets. Raisonnement : le `type` d'un poi n'est pas un identifiant global mais
+> une **étiquette interne au costum** — toutes les requêtes sont scopées par `sourceKey` (vérifié
+> sur les 3 points de parent62 qui interrogent le type : page, palette, admin). Chercher un
+> vocabulaire universel reviendrait à traiter comme global ce que la plateforme a conçu comme
+> local, ce qui explique que `Poi::$types` soit resté figé pendant qu'`article` (17 costums),
+> `faq` (19) et `affiche` (10) s'imposaient sans y figurer.
+> `recoveryCenter` est déjà employé en ce sens par parent62 et rezo-sante-reunion.
+>
+> **Aucune modification de la lib n'est nécessaire.** L'enum `ADD_POI` du contrat ne contient pas
+> `financement`, mais `BaseEntity.ts:2726-2731` pose un schéma permissif pour chaque clé forcée par
+> `presetValue`, qui écrase l'enum strict — c'est ce qui fait passer les 6 434 `article` de
+> parent62. Et le chemin d'import n'est pas concerné : les lignes voyagent dans une chaîne JSON,
+> l'AJV ne voit jamais les valeurs de `type`.
+
+### 14.4 Les 3 `dynFormCostum`
+
+Gabarit repris tel quel de `parent62.costum.typeObj.article` (`sameAs`/`formParent`/`formType`,
+`beforeBuild.properties`, `onload.actions`). `inputType` limité au vocabulaire réellement
+implémenté (`text`, `textarea`, `select`, `selectMultiple`, `tags`, `date`, `uploader`,
+`checkboxSimple`, `finder`, `formLocality`…).
+
+```json
+{
+  "financement": {
+    "name": "Financements",
+    "sameAs": "poi",
+    "formParent": "poi",
+    "formType": "financement",
+    "add": "onlyAdmin",
+    "createLabel": "Ajouter un financement",
+    "icon": "hand-holding-dollar",
+    "color": "#0a6ebd",
+    "dynFormCostum": {
+      "beforeBuild": {
+        "properties": {
+          "name":              { "label": "Intitulé du financement", "placeholder": "Nom de l'appel ou du dispositif", "order": 1 },
+          "shortDescription":  { "inputType": "textarea", "label": "Résumé", "order": 2 },
+          "description":       { "markdown": true, "label": "Description", "order": 3 },
+          "financementType":   { "inputType": "select", "label": "Type", "list": "financementTypes", "optionsValueAsKey": false, "order": 4 },
+          "echelle":           { "inputType": "select", "label": "Échelle", "list": "echelles", "optionsValueAsKey": false, "order": 5 },
+          "financementSource": { "inputType": "text", "label": "Financeur", "placeholder": "Organisme financeur (ADEME, Fondation de France…)", "order": 6 },
+          "date":              { "inputType": "date", "label": "Date limite de dépôt", "order": 7 },
+          "urls":              { "label": "Lien vers l'appel", "order": 8 },
+          "tags":              { "inputType": "tags", "label": "Mots-clés", "order": 9 }
+        }
+      },
+      "onload": {
+        "actions": {
+          "setTitle": "Ajouter un financement",
+          "presetValue": { "type": "financement" },
+          "hide": { "parentfinder": 1, "breadcrumbcustom": 1 }
+        }
+      }
+    }
+  },
+
+  "recoveryCenter": {
+    "name": "Bibliothèque",
+    "sameAs": "poi",
+    "formParent": "poi",
+    "formType": "recoveryCenter",
+    "add": "onlyAdmin",
+    "createLabel": "Ajouter un document",
+    "icon": "book-open",
+    "color": "#1e7a8c",
+    "dynFormCostum": {
+      "beforeBuild": {
+        "properties": {
+          "name":             { "label": "Titre du document", "order": 1 },
+          "auteurs":          { "inputType": "text", "label": "Auteur·rices", "placeholder": "Séparer par des points-virgules", "order": 2 },
+          "organisme":        { "inputType": "text", "label": "Organisme", "order": 3 },
+          "typeDocument":     { "inputType": "select", "label": "Type de document", "list": "typesDocument", "optionsValueAsKey": false, "order": 4 },
+          "thematique":       { "inputType": "selectMultiple", "label": "Thématiques", "list": "thematiquesDocument", "select2": { "multiple": true }, "optionsValueAsKey": false, "order": 5 },
+          "langue":           { "inputType": "select", "label": "Langue", "list": "langues", "optionsValueAsKey": false, "order": 6 },
+          "date":             { "inputType": "date", "label": "Date de publication", "order": 7 },
+          "coteDocument":     { "inputType": "text", "label": "Cote / numéro", "order": 8 },
+          "urls":             { "label": "Lien vers le document", "order": 9 },
+          "shortDescription": { "inputType": "textarea", "label": "Résumé", "order": 10 },
+          "tags":             { "inputType": "tags", "label": "Mots-clés", "order": 11 }
+        }
+      },
+      "onload": {
+        "actions": {
+          "setTitle": "Ajouter un document",
+          "presetValue": { "type": "recoveryCenter" },
+          "hide": { "parentfinder": 1, "breadcrumbcustom": 1 }
+        }
+      }
+    }
+  },
+
+  "event": {
+    "name": "Agenda",
+    "sameAs": "event",
+    "formParent": "event",
+    "formType": "event",
+    "add": "true",
+    "createLabel": "Proposer un événement",
+    "icon": "calendar-days",
+    "color": "#0a6ebd",
+    "dynFormCostum": {
+      "beforeBuild": {
+        "properties": {
+          "name":                     { "label": "Titre de l'événement", "order": 1 },
+          "description":              { "markdown": true, "label": "Description", "order": 3 },
+          "externalLinkRegistration": { "inputType": "text", "label": "Lien d'inscription externe", "order": 4 },
+          "externalOrganizer":        { "inputType": "array", "label": "Organisateurs externes", "order": 5 },
+          "tags":                     { "inputType": "tags", "label": "Mots-clés", "order": 6 }
+        }
+      },
+      "onload": {
+        "actions": {
+          "setTitle": "Proposer un événement",
+          "hide": { "parentfinder": 1, "breadcrumbcustom": 1 }
+        }
+      }
+    }
+  }
+}
+```
+
+> ⚠️ `presetValue` fige l'énumération du champ forcé : c'est le gap corrigé côté lib dans
+> `BaseEntity` create+update (mémoire `[[costum-envelope-preset-enum-relax]]`). Vérifier que la
+> version de la lib embarquée porte bien ce correctif avant de poser ces sous-types.
+
+### 14.5 Génération du `costumForm` — retouches à faire à la main
+
+La commande (vérifiée le 31/07, sur le Node 5099 qui sert la config à jour) :
+
+```bash
+CONFIG_LIVE_BACKEND=http://127.0.0.1:5099 CONFIG_LIVE_EMAIL=… CONFIG_LIVE_PWD=… \
+npx tsx scripts/gen-costum-config.ts institutBleu out.json --all --live
+```
+
+Elle produit **3 formulaires + le routage** — `institut-bleu-financement` (injecte `type:"financement"`),
+`institut-bleu-recovery-center` (`type:"recoveryCenter"`), `institut-bleu-organizations`, et la table
+`profiles.poi.editModals` qui discrimine sur `type`. Formulaire et données sortent donc de la même
+source, par construction.
+
+**L'aller-retour import ↔ widget est cohérent** pour `auteurs`/`organisme`/`zoneGeographique`/`tags`/`urls`
+(tableau ↔ `tags`), `thematique` (tableau ↔ `multiselect`), les `select` adossés aux listes, et
+`profilImageUrl` ↔ `image`.
+
+⚠️ **Piège rencontré** : redéclarer un champ de BASE dans les propriétés costum **sans `inputType`**
+le fait basculer de `baseTerseField` vers `costumTerseField`, qui lit un type logique résolu — absent,
+donc repli sur `text`. C'est ainsi que `urls` (pourtant `type=array, multiple=true` au descripteur)
+était sorti en champ texte, en désaccord avec le tableau que l'import écrit. Corrigé par
+`inputType: "tags"`. **Ne pas redéclarer un champ de base sans le typer.**
+
+Retouches restant à faire dans la config générée, aucune ne pouvant venir du costum :
+
+| champ | généré | à mettre | pourquoi |
+|---|---|---|---|
+| `shortDescription` | `text` | `textarea` | résumés de **627 car. de médiane, jusqu'à 5 000**, 558 documents au-dessus de 300. `costumTerseField` n'a aucun cas `textarea` — un champ costum ne peut pas naître en zone de texte |
+| bloc adresse (6 champs) | présent | à retirer | hérité du descripteur POI ; sans objet pour une étude ou un appel à projets. Le `hide` costum ne vaut que pour le formulaire **legacy** |
+| `date` | `date` | — | le widget réécrit en `DD/MM/YYYY` à l'édition alors que l'import pose de l'ISO. Sujet parqué (cf. §14.3) |
+
+### 14.6 À faire — nuage de tags filtrant (relevé du 2026-08-01)
+
+**Besoin** : une entrée par mot-clé, en complément des facettes à liste fermée. Les tags sont trop
+nombreux pour une facette (1 209 distincts après nettoyage, 39 % vus une seule fois) mais leur
+noyau est exploitable — 133 tags vus ≥ 20 fois, 40 vus ≥ 50 fois.
+
+**Côté site-json — à construire.** Deux briques existent déjà et couvrent une partie du besoin :
+- `tagSelector` (`src/modules/search/schema.ts:801-806`, rendu `SearchProStatic.tsx:507-527`) : un
+  menu déroulant à **liste choisie** `options: {valeur → libellé}`. Statique, pas de fréquences.
+- `TagsInput` + `TagSuggestions` (`src/components/form/`) : saisie libre avec autocomplétion, côté
+  FORMULAIRE. Ne sert pas au filtrage.
+
+Manque un composant « nuage » : les N tags les plus fréquents du périmètre courant, dimensionnés par
+fréquence, cliquables vers une recherche filtrée. Il lui faut des **fréquences calculées**, que rien
+ne fournit aujourd'hui.
+
+**Côté serveur — l'endpoint existe des deux côtés mais ne répond pas au besoin.**
+
+| | constat |
+|---|---|
+| endpoint existant | `SEARCH_TAGS` = `POST /api/tags/search?q={q}` (contrat, auth none) |
+| ce qu'il fait | `Tags::searchActiveTags` (`modules/citizenToolKit/models/Tags.php:57-86`) : agrégation sur la collection globale `tags` (21 975 entrées), `$match` sur un **regex NON ANCRÉ** `/q/i`, `$project` `$strLenCP`, tri par longueur, `$limit 50` |
+| ce qui manque | **aucun scope costum**, **aucune fréquence** — il rend des libellés, pas des comptes |
+| performance | balayage complet sans index utilisable ; le tri par longueur de chaîne interdit tout court-circuit |
+| portage Node | **PORTÉ, fidèlement** — `cocolight-backend/src/modules/advanced/advanced.routes.ts:29-44` (même agrégation, même regex, même tri par longueur, même limite 50, même écho synthétique). La route est enregistrée par son CHEMIN, pas par le nom de la constante : chercher `SEARCH_TAGS` dans `src/` ne rend rien |
+
+**Ce qu'il faudrait** : une agrégation `$match {source.keys}` → `$unwind tags` → `$group count` →
+`$sort` → `$limit`, exposée en endpoint et scopée au costum. Trivial sur nos 686 documents, mais
+⚠️ **`poi` n'a AUCUN index sur `source` ni `tags`** (mesuré ; `organizations` a un `source.$**`) —
+un balayage des 15 943 poi à chaque affichage. Poser l'index avant d'exposer l'endpoint.
+
+À noter aussi : le filtre `tags` du portage Node est **ancré** (`^tag$`, insensible aux accents,
+`src/shared/search.ts:293-299`) alors que la recherche de suggestions legacy ne l'est pas — deux
+sémantiques pour le même champ selon le chemin emprunté.
+
+### 14.7 Migration des données existantes
+
+Volumes : **11** financements, **686** bibliomar, **28** events. Seul `bibliomar` demande un vrai
+script (dont la pose de `source` sur les 678 issus de l'import).
+
+1. `financements` → `poi` avec `type: "financement"`, `source.key` conservé, `deadline` ISODate →
+   `date` `{sec,usec}`, `url` → `urls[]`, `validated` → `preferences.toBeValidated.institutBleu`.
+2. `bibliomar` : reprendre les **686** documents — ils sont tous à l'Institut Bleu. Poser
+   `source.key`/`source.keys` sur les 678 issus de l'import, qui ne l'ont pas. `titre` → `name`,
+   `thématique` → `thematique`, `publicationDate` reste une string `YYYY-MM-DD`. Le formulaire cible couvre
+   **l'union** des deux formes : il rétablit `resume`/`tags`/`reference` (que l'UI ne saisissait
+   pas) et conserve `thematic` (que l'import ne remplissait pas).
+3. `events` : retirer `parent`, normaliser les 2 valeurs de `type` polluées
+   (`"Salon professionnel,"`, `"conference"`), basculer `validated`.
+4. Poser `slug` sur les entrées reprises (aucune n'en a) — sans quoi elles restent hors du routage
+   par slug (cf. `[[profil-routing-slugless-poi]]`).
+
+### 14.8 Ce qui reste dans le legacy — décision du 31/07
+
+**On ne retire rien.** Les 3 modifications du cœur relevées en §14.1 sont assumées telles quelles :
+
+| Fichier | Ligne | Statut |
+|---|---|---|
+| `modules/citizenToolKit/models/Event.php` | `:85` `externalLinkRegistration` | **reste** — 5 costums, 108 events, besoin devenu général |
+| `modules/citizenToolKit/models/Event.php` | `:86` `validated`, `:87` `externalOrganizer` | **restent** — institutBleu seul, mais aucun retrait |
+| `modules/co2/assets/js/dynForm/event.js` | `:116` branche `costum.coeventTypeOptions` | **reste** — et redevient la source unique des 9 types (cf. §14.2) |
+| `modules/citizenToolKit/models/Element.php` | `:35` `financements`, `:38` `bibliomar` | **restent** enregistrées, même une fois les données reprises dans `poi` |
+
+Corollaire : la reprise vers `poi` est une **migration de données**, pas un démontage de code. Les deux
+collections d'origine peuvent rester en place (vides ou non) sans rien casser.
+
+⚠️ **Hors périmètre de cette décision** : `BUG-L-223` (route d'écriture non authentifiée
+`/costum/institutbleu/updatevalue`, cf. §14.1 et question 14 de §13). C'est une faille de sécurité,
+pas un choix de modélisation — elle reste à trancher séparément.

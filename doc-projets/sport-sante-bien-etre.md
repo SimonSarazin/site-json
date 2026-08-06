@@ -13,7 +13,8 @@
 > [Module Articles/Blog](../doc/32-module-articles-blog.md) ·
 > [Module Profil](../doc/08-module-profil.md). Mémoire : `[[project-sport-sante-bien-etre]]`.
 
-Dernière mise à jour : **2026-07-28** (création du dossier · levée de 12 des 16 constats d'audit).
+Dernière mise à jour : **2026-08-03** (réseaux sociaux au patron `fieldArray` · retrait de
+`recepisseDeclaration` · SDK 1.0.172 publiée · re-sondage des périmètres).
 **4 décisions de contenu sont en attente** — cf. §13.
 
 ---
@@ -36,9 +37,9 @@ C'est, par le volume, la **deuxième config du parc** après parent62 : 19 pages
 | Config | [`../config.prod.sport-sante-bien-etre.json`](../config.prod.sport-sante-bien-etre.json) |
 | CSS | [`../src/index-sport-sante-bien-etre.css`](../src/index-sport-sante-bien-etre.css) — 75 variables, bloc `theme` **complet** en config |
 | Langues | `fr` (défaut) + `en` |
-| SDK | `@communecter/cocolight-api-client` **1.0.169** |
-| Branche courante | `feat/institut-bleu-et-correctifs-parc` |
-| Historique | **73 commits** touchant la config |
+| SDK | `@communecter/cocolight-api-client` **1.0.172** (publiée sur npm — `package.json` `^1.0.172`, commit `09e145a0` du 03/08) |
+| Branche courante | `main` |
+| Historique | **76 commits** touchant la config (`git log --follow`, 03/08) |
 
 ### Historique des chantiers
 
@@ -47,6 +48,8 @@ C'est, par le volume, la **deuxième config du parc** après parent62 : 19 pages
 | — → 25/07 | Thomas | Construction de la config (19 pages), des 6 formulaires costum et du back-office ; travaux blog (fil, RSS, SEO, palette) partagés avec le moteur |
 | 25/07 | Thomas | `b1104947` — « rezo-la-mer, SSBE, équipements sportifs : 41 constats levés » |
 | 28/07 | Claude | Diagnostic complet, levée de 12 constats (cf. §9), création de ce dossier |
+| 30/07 | Claude | `5ae354d2` — réseaux sociaux au patron `fieldArray` (3 formulaires SSBE + 1 cyber-reunion) ; `59a4b6ee` — retrait de `recepisseDeclaration`, disparu du costum (cf. §9) |
+| 03/08 | Parc | Merge de `fix/institut-bleu-ui` (17 commits, `94251b7b`) dans `main` ; SDK **1.0.172 publiée** (`09e145a0`) — rien de spécifique SSBE, gates re-passés verts (cf. §9) |
 
 ---
 
@@ -108,22 +111,32 @@ Le socle légal **existe** — c'est ce qui distingue nettement cette config de 
 
 ### 4.2 Les 6 formulaires costum
 
+Comptages re-dérivés de la config le **2026-08-03** (`fields{}` déclarés vs référencés dans
+`sections[].fields[]` + `sections[].groups[].fields[]`) — **169 déclarés, 115 placés** :
+
 | Formulaire | Entité | Champs déclarés | dont **placés** |
 |---|---|---|---|
-| `sport-sante-bienetre-organizations` | organizations | 45 | 27 |
+| `sport-sante-bienetre-organizations` | organizations | 42 | 26 |
 | `sport-sante-bienetre-mss` | organizations | 35 | 25 |
 | `sport-sante-bienetre-recovery-center` | poi | 33 | 28 |
 | `sport-sante-bienetre-formation` | projects | 26 | 16 |
 | `sport-sante-bienetre-session-formation` | events | 22 | 14 |
 | `sport-sante-bienetre-article` | poi | 11 | 6 |
 
+`organizations` est passé de 45/27 à 42/26 le 30/07 : `facebook`/`instagram` retirés (peuplés par
+pure coïncidence de nommage avec l'ancien widget `editSocial` — cf. §9) et `recepisseDeclaration`
+retiré (disparu du costum, jamais porté par aucune donnée).
+
 > ⚠️ **L'écart « déclarés vs placés » n'est pas anodin.** Le moteur rend en parcourant
 > `sections → groups → fields[]` ([`shared.tsx:47`](../src/modules/formEngine/layouts/shared.tsx),
 > [`GenericForm.tsx:107`](../src/modules/formEngine/components/GenericForm.tsx)) : **un champ
 > déclaré mais placé dans aucune section n'est jamais rendu.** Une partie de l'écart est
 > légitime (sous-champs de widgets composites : `streetAddress`/`postalCode` sous `address`,
-> `facebook`/`instagram` sous `socialNetwork`, `mobile` sous `telephone`) ; le reste est du
-> vestige de conversion. 10 de ces vestiges ont été supprimés le 28/07 (cf. §9).
+> `mobile` sous `telephone`) ; le reste est du vestige de conversion. 10 vestiges ont été
+> supprimés le 28/07, puis `facebook`/`instagram` et `recepisseDeclaration` le 30/07 (cf. §9).
+> Vestiges encore visibles au 03/08 sur `organizations` : `youtube`, `linkedin` (hors des neuf
+> clés de l'ancien widget, jamais peuplés), `autreDescription`, `affiliate`/`affiliateTo`… —
+> cf. §13, question 4.
 
 ### 4.3 Back-office (`config.admin`, 7 onglets)
 
@@ -135,19 +148,20 @@ avant le 28/07.
 
 ---
 
-## 5. Modèle de données réel (sondé le 2026-07-28)
+## 5. Modèle de données réel (re-sondé le 2026-08-03)
 
-`config:probe` sur le costum `sportSanteBienetre` — **9 périmètres, 8 peuplés, 1 vide** :
+`config:probe` sur le costum `sportSanteBienetre` — **9 périmètres, 8 peuplés, 1 vide**
+(entre parenthèses : la mesure du 28/07 — la base vit, les chiffres montent) :
 
 | Page | Périmètre | Résultats |
 |---|---|---|
-| `/equipements-sportifs` | poi équipements | **3 052** |
-| `/creneaux` | créneaux | **263** |
-| `/structure` · `/mapping` | organisations du réseau | **171** (les deux) |
+| `/equipements-sportifs` | poi équipements | **3 061** (3 052) |
+| `/creneaux` | créneaux | **300** (263) |
+| `/structure` · `/mapping` | organisations du réseau | **180** (171) — les deux pages |
 | `/mss` | Maisons Sport-Santé | 13 |
 | `/formation` | formations | 4 |
 | `/listing-formations` · `/projets` | offres · projets | 2 · 2 |
-| `/communaute` → onglet « Organisations » | — | **0 ⛔** |
+| `/communaute` → onglet « Organisations » | — | **0 ⛔** (inchangé) |
 
 ### Le périmètre vide
 
@@ -206,6 +220,17 @@ npx tsx scripts/config-probe.ts config.prod.sport-sante-bien-etre.json
 npm run typecheck && npm run lint && npm run test:unit
 ```
 
+### Variables d'environnement de déploiement
+
+Depuis le merge de `fix/institut-bleu-ui` (03/08), le déploiement pose **`VITE_SITE_PUBLIC_URL`** :
+l'URL publique du site-json lui-même (canonical, `og:url`/`og:image`, `sitemap.xml`, flux RSS),
+lue par `getSitePublicUrl()` ([`../src/lib/constant/common.ts`](../src/lib/constant/common.ts)) et
+`server/lib/sitemap.js`. `npm run deploy:env` la dérive de `sites.json` (`aliases[0]` prioritaire,
+sinon `domain`) — pour SSBE, pas d'`aliases`, `domain: ssbe.00.re` → **`https://ssbe.00.re`**.
+Repli `getServerUrl()` si absente (comportement historique). **Ne pas confondre** avec
+`VITE_SERVER_URL` (= serveur communecter : images `/upload`, embed co2, cagnotte), qui garde sa
+valeur parc.
+
 ---
 
 ## 9. Impacts des modifications
@@ -251,6 +276,47 @@ Chaque retrait a été précédé d'une assertion vérifiant que le champ n'éta
 | `test:preflight` | ✅ 274 tests |
 | `typecheck` · `lint` | ✅ propre · 0 erreur |
 
+### Lot du 30/07 — hygiène des formulaires costum (2 commits)
+
+**1. Les réseaux sociaux passent au patron `fieldArray`** (`5ae354d2`). Trois formulaires SSBE
+(`organizations`, `mss`, `formation`) — plus `cyber-reunion-organization` — déclaraient
+`socialNetwork` avec le widget `editSocial`. C'est l'ancre du **profil citoyen** : ses neuf saisies
+écrivent sous `github`/`facebook`/`instagram`/… et jamais sous `socialNetwork` ; aucune de ces neuf
+clés n'étant déclarée dans les descripteurs, **l'utilisateur saisissait dans neuf champs reliés à
+rien**. Exception déroutante : `organizations` déclarait `facebook` et `instagram` (non placés) —
+deux réseaux sur neuf s'enregistraient par pure coïncidence de nommage. Patron adopté : celui de
+`tiers-lieux`, lu depuis sa config — `fieldArray` + `social:read`/`social:write` +
+`path: socialNetwork` ; le champ d'UI se nomme `socialLinks`, la clé serveur reste `socialNetwork`.
+`facebook`/`instagram` sont retirés (le `fieldArray` les couvre, même destination serveur).
+
+> ⚠️ Piège consigné dans le commit : les sections existent sous **deux formes**
+> (`sections[].fields[]` ET `sections[].groups[].fields[]`) — un renommage qui ne traite que l'une
+> laisse des références orphelines **qu'aucun gate ne détecte** (ni `config:validate`, ni le
+> préflight). Vérifié ici par un audit des 266 références de champ de toutes les configs.
+
+**2. `recepisseDeclaration` retiré** (`59a4b6ee`). Le champ était déclaré dans
+`…-organizations` alors que le costum ne le déclare **plus** (disparu de la base entre le 27 et le
+30/07, révélé par la régénération de l'artefact costum), et **aucun document** ne le porte dans
+aucune collection. Son groupe (`juridique.groups[1]`), qui ne contenait que lui, est supprimé aussi.
+Critère de recette : `config:costum-drift` à **0 fantôme** sur SSBE. Réserve du commit : si le
+retrait côté costum était accidentel, la bonne correction serait de le remettre **en base**.
+
+Gates du lot (30/07) : config:validate ✅, préflight 337/337 ✅, typecheck ✅, `config:costum-drift`
+0 fantôme SSBE ✅.
+
+### État au 03/08 (après merge de `fix/institut-bleu-ui` dans `main` + SDK 1.0.172)
+
+Aucun commit spécifique SSBE dans le merge ; gates re-passés ce jour :
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` | ✅ 19 pages / 61 sections |
+| `audit:config` | 🟡 **4 constats** (les 4 mêmes liens morts, §13) |
+| `config:probe` | 🟡 9 périmètres — **8 OK, 1 vide** (§5, re-sondé) |
+| `config:costum-drift` | ✅ **0 fantôme SSBE** (12 « non exposés » informatifs : 10 sur `organizations`, 2 sur `mss` — champs du costum backend volontairement non exposés en config) |
+| `test:preflight` | ✅ 412 tests / 22 fichiers |
+| `typecheck` | ✅ (`tsc -b`) |
+
 ---
 
 ## 10. Checklist d'avancement
@@ -260,7 +326,7 @@ Chaque retrait a été précédé d'une assertion vérifiant que le champ n'éta
 | 1 | Slug + CSS dans `sites.json` | ✅ | `sportSanteBienetre` → config + `index-sport-sante-bien-etre` |
 | 2 | Thème | ✅ | Bloc `theme` complet en config + 75 variables CSS |
 | 3 | Socle légal | ✅ | `/mentions-legales`, `/confidentialite`, `/accessibilite` existent |
-| 4 | Jeux de données du territoire | ✅ | Équipements (3 052), créneaux (263), structures (171), MSS (13) |
+| 4 | Jeux de données du territoire | ✅ | Équipements (3 061), créneaux (300), structures (180), MSS (13) — sondés le 03/08 |
 | 5 | Communauté | 🟡 | Onglet « Membres » OK ; onglet « Organisations » **vide** (id en dur, §5) |
 | 6 | Formulaires costum | 🟡 | 6 déclarés et exposés dans `/admin` ; **1 seul** ouvert côté public depuis le 28/07 |
 | 7 | Inscription d'une structure | ✅ | Modale branchée sur `/communaute`, gardée par l'authentification |
@@ -277,8 +343,13 @@ Chaque retrait a été précédé d'une assertion vérifiant que le champ n'éta
 
 ## 11. Dépendances SDK ↔ `cocolight-api-client`
 
-Aucune demande en cours. La config n'emploie que des méthodes publiques déjà disponibles en
-**1.0.169** (`searchCostum`, `coformAnswersSearch`).
+Aucune demande en cours. La config n'emploie que des méthodes publiques déjà disponibles
+(`searchCostum`, `coformAnswersSearch`).
+
+Version installée : **1.0.172, publiée sur npm** (`package.json` `^1.0.172`, commit `09e145a0` du
+03/08 — fini le `npm pack` local). La 1.0.172 fiabilise notamment la pose du scope costum côté
+admin (`setCostumScope`, cf. [`../src/modules/admin/lib/ensureCostumScope.ts`](../src/modules/admin/lib/ensureCostumScope.ts)) —
+pertinent ici : SSBE a un back-office `/admin` à 7 onglets (§4.3).
 
 ---
 
@@ -286,6 +357,10 @@ Aucune demande en cours. La config n'emploie que des méthodes publiques déjà 
 
 - **Écart « champs déclarés vs placés »** dans les 6 formulaires (cf. §4.2). Avant de traduire ou de
   renommer un champ, vérifier qu'il est **placé dans une section** — sinon il n'existe pas à l'écran.
+- **Les sections de formulaire ont deux formes** — `sections[].fields[]` ET
+  `sections[].groups[].fields[]` (piège rencontré le 30/07, `5ae354d2`) : un renommage/retrait de
+  champ doit traiter **les deux**, et aucun gate ne détecte une référence de section orpheline
+  (ni `config:validate`, ni le préflight).
 - **Id d'organisation codé en dur** dans le filtre de `/communaute` (§5). Le même piège que le
   `localityId` figé de commune-transparente : une valeur d'instance dans une config.
 - Config JSON **jamais parsée par Zod au runtime** : toute clé doit être écrite explicitement, et une
@@ -304,6 +379,6 @@ Aucune demande en cours. La config n'emploie que des méthodes publiques déjà 
 | 1 | **Grille « Le réseau Sport Santé »** (`/espace-professionnels`, `features-glass`, 6 tuiles) : 3 tuiles mènent à des pages inexistantes — « Aide à la prescription » (`/prescription`), « Stratégie régionale Sport Santé » (`/strategie`), « Rapports & Publications » (`/ressources`). **Créer les 3 pages, repointer, ou retirer les tuiles ?** Rapprochements possibles mais non équivalents : `/presentation` pour la stratégie, `/blog` pour les publications | Thomas |
 | 2 | **Hero de `/public`** : le CTA « Sport et santé pour tous » pointe vers `/rejoindre` (inexistant), et le second, « Sport et santé sur ordonnance », vers `/` — un lien vers l'accueil depuis une sous-page. Les deux libellés sont des **slogans, pas des actions** : le hero est à repenser plutôt qu'à rafistoler | Thomas |
 | 3 | Les 5 autres formulaires costum (`mss`, `formation`, `session-formation`, `recovery-center`, `article`) doivent-ils être ouverts au public comme l'a été `organizations`, ou rester réservés au back-office ? | Thomas |
-| 4 | Les 6 formulaires déclarent 172 champs dont **116 placés**. Faut-il purger les vestiges restants, ou certains sont-ils attendus par le backend en écriture ? | Thomas |
+| 4 | Les 6 formulaires déclarent **169 champs dont 115 placés** (re-dérivé le 03/08 ; trois vestiges purgés le 30/07 : `facebook`, `instagram`, `recepisseDeclaration`). Faut-il purger les vestiges restants — dont `youtube`/`linkedin`/`autreDescription` sur `organizations` —, ou certains sont-ils attendus par le backend en écriture ? | Thomas |
 | 5 | `/communaute` → onglet « Organisations » : l'id `682b2ac5e05a1d45844340e7` est-il périmé, ou aucune organisation n'a-t-elle jamais été rattachée ? | Thomas |
 | 6 | Rendu navigateur et mode sombre : à parcourir sur les 19 pages | Thomas |

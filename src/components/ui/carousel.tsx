@@ -117,11 +117,19 @@ function Carousel({
         canScrollNext,
       }}
     >
+      {/*
+        `role="region"` n'est exposé aux technologies d'assistance QUE s'il porte un
+        nom accessible : sans `aria-label`, le balisage ARIA ci-dessous est décoratif.
+        On pose donc un défaut — en français, langue de repli du dépôt (`fallbackLng`) —
+        que le consommateur écrase en passant `aria-label` (le spread `{...props}`
+        vient après). Idem pour les libellés des boutons et des diapositives.
+      */}
       <div
         onKeyDownCapture={handleKeyDown}
         className={cn("relative", className)}
         role="region"
         aria-roledescription="carousel"
+        aria-label="Carrousel"
         data-slot="carousel"
         {...props}
       >
@@ -159,6 +167,7 @@ function CarouselItem({ className, ...props }: React.ComponentProps<"div">) {
     <div
       role="group"
       aria-roledescription="slide"
+      aria-label="Diapositive"
       data-slot="carousel-item"
       className={cn(
         "min-w-0 shrink-0 grow-0 basis-full",
@@ -174,8 +183,9 @@ function CarouselPrevious({
   className,
   variant = "outline",
   size = "icon",
+  label = "Diapositive précédente",
   ...props
-}: React.ComponentProps<typeof Button>) {
+}: React.ComponentProps<typeof Button> & { label?: string }) {
   const { orientation, scrollPrev, canScrollPrev } = useCarousel()
 
   return (
@@ -195,7 +205,7 @@ function CarouselPrevious({
       {...props}
     >
       <ArrowLeftIcon />
-      <span className="sr-only">Previous slide</span>
+      <span className="sr-only">{label}</span>
     </Button>
   )
 }
@@ -204,8 +214,9 @@ function CarouselNext({
   className,
   variant = "outline",
   size = "icon",
+  label = "Diapositive suivante",
   ...props
-}: React.ComponentProps<typeof Button>) {
+}: React.ComponentProps<typeof Button> & { label?: string }) {
   const { orientation, scrollNext, canScrollNext } = useCarousel()
 
   return (
@@ -225,7 +236,7 @@ function CarouselNext({
       {...props}
     >
       <ArrowRightIcon />
-      <span className="sr-only">Next slide</span>
+      <span className="sr-only">{label}</span>
     </Button>
   )
 }

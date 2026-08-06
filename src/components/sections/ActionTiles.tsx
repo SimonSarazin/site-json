@@ -151,7 +151,10 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
                         <Link key={index} to={action.href}>
                             <Button
                                 size="lg"
-                                className={`h-auto w-full py-6 flex flex-col items-center gap-3 text-foreground border transition-all ${getButtonClasses(action.color)}`}
+                                // `whitespace-normal` : la base du Button pose `whitespace-nowrap`,
+                                // qui empêche titre et sous-titre de passer à la ligne — sur mobile,
+                                // un sous-titre plus large que l'écran débordait de la tuile.
+                                className={`h-auto w-full py-6 flex flex-col items-center gap-3 text-foreground border transition-all whitespace-normal text-center ${getButtonClasses(action.color)}`}
                             >
                                 {renderIcon(action.icon, getIconColorClass(action.color))}
                                 <span className="font-semibold">{t(action.title)}</span>

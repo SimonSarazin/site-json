@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Quote } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Pause, Play, Quote } from 'lucide-react';
 import { T } from "@/components/ui/T";
 import { useLocalization } from "@/hooks/useLocalization";
+import { useDocumentHidden, useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from '@/lib/utils';
 import { TestimonialsSectionProps } from '@/types/site-schema';
 
@@ -41,16 +42,35 @@ function TestimonialCard({ item }: { item: TestimonialsSectionProps['items'][num
 export function TestimonialsSection({ id, props }: { id?: string; props: TestimonialsSectionProps }) {
   const { items, style = 'carousel', autoplay = true } = props;
   const [currentIndex, setCurrentIndex] = useState(0);
+  /**
+   * Suspension TRANSITOIRE, non mémorisée. Deux sources DISTINCTES : sinon sortir au
+   * clavier (`blur`) relancerait la rotation alors que le pointeur est encore sur la
+   * carte, et inversement.
+   */
+  const [pointerOver, setPointerOver] = useState(false);
+  const [focusWithin, setFocusWithin] = useState(false);
+  /** Arrêt EXPLICITE par l'utilisateur (bouton). Distinct du précédent : il persiste. */
+  const [userPaused, setUserPaused] = useState(false);
+  /**
+   * Le plancher `prefers-reduced-motion` de `shared.css` ne nomme que des classes
+   * d'animation — il ne peut RIEN contre un `setInterval`. D'où ces gardes JS,
+   * extraites dans `hooks/useReducedMotion.ts` le 2026-07-30 quand `HeroCarousel` en a
+   * eu besoin à son tour (le patron est court mais porte deux pièges non évidents).
+   */
+  const reducedMotion = useReducedMotion();
+  /** Onglet en arrière-plan : inutile de faire tourner ce que personne ne voit. */
+  const documentHidden = useDocumentHidden();
 
   // Auto-advance carousel
+  const canRotate = style === 'carousel' && autoplay && items.length > 1 && !reducedMotion;
+  const rotating = canRotate && !pointerOver && !focusWithin && !userPaused && !documentHidden;
   useEffect(() => {
-    if (style === 'carousel' && autoplay && items.length > 1) {
-      const interval = setInterval(() => {
-        setCurrentIndex((prev) => (prev + 1) % items.length);
-      }, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [items.length, style, autoplay]);
+    if (!rotating) return;
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % items.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [rotating, items.length]);
 
   const nextTestimonial = () => {
     setCurrentIndex((prev) => (prev + 1) % items.length);
@@ -73,11 +93,38 @@ export function TestimonialsSection({ id, props }: { id?: string; props: Testimo
 
         {style === 'carousel' && (
           <div className="max-w-4xl mx-auto">
+            {/* WCAG 2.2.2 « Pause, Stop, Hide » : bouton d'arrêt explicite (premier dans
+                l'ordre de tabulation, comme l'exige l'APG), plus une suspension
+                transitoire au survol et au focus clavier.
+
+                ⚠ La suspension transitoire ne couvre QUE le contenu, pas la barre de
+                contrôles : englober le bouton d'arrêt rendait « Reprendre » inopérant —
+                le bouton gardant le focus, la rotation restait suspendue alors que le
+                libellé annonçait l'inverse. */}
             <div className="relative">
-              <TestimonialCard item={items[currentIndex]} />
+              <div
+                onMouseEnter={() => setPointerOver(true)}
+                onMouseLeave={() => setPointerOver(false)}
+                onFocusCapture={() => setFocusWithin(true)}
+                onBlurCapture={() => setFocusWithin(false)}
+              >
+                <TestimonialCard item={items[currentIndex]} />
+              </div>
 
               {items.length > 1 && (
                 <div className="flex justify-center items-center gap-4 mt-8">
+                  {canRotate && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      aria-label={userPaused ? "Reprendre le défilement" : "Arrêter le défilement"}
+                      onClick={() => setUserPaused((v) => !v)}
+                      className="w-10 h-10 p-0"
+                    >
+                      {userPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
+                    </Button>
+                  )}
+
                   <Button
                     variant="outline"
                     size="sm"
@@ -92,7 +139,9 @@ export function TestimonialsSection({ id, props }: { id?: string; props: Testimo
                     {items.map((_, index) => (
                       <button
                         key={index}
-                        aria-label={`Témoignage ${index + 1}`}
+                        type="button"
+                        aria-label={`Témoignage ${index + 1} sur ${items.length}`}
+                        aria-current={index === currentIndex ? "true" : undefined}
                         onClick={() => setCurrentIndex(index)}
                         className={cn(
                           "w-2 h-2 rounded-full transition-colors",

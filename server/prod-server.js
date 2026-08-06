@@ -207,14 +207,30 @@ app.use(['/{*all}'], async (req, res) => {
 
     let injectEnvScript = "";
 
-    if (process.env.VITE_BASE_URL_BACKEND || process.env.VITE_SERVER_URL || process.env.VITE_SLUG || process.env.VITE_MAPTILER_API_KEY) {
+    // Passerelle des `VITE_*` vers le CLIENT. En conteneur, `import.meta.env` est
+    // vide pour ces clés (aucun ARG côté Dockerfile, et `.env` est exclu du
+    // contexte de build) : `window.__ENV__` est donc leur SEULE voie, lue en
+    // premier par `readEnv` (src/lib/constant/common.ts). Toute clé de
+    // `RuntimeEnv` destinée au navigateur doit figurer ici, sans quoi elle reste
+    // visible du SSR (`process.env`) mais pas du client — asymétrie silencieuse.
+    // Verrouillé par tests/preflight/runtime-env.test.ts.
+    if (
+      process.env.VITE_BASE_URL_BACKEND ||
+      process.env.VITE_SERVER_URL ||
+      process.env.VITE_SLUG ||
+      process.env.VITE_MAPTILER_API_KEY ||
+      process.env.VITE_COSTUM_FORCE_LIVE ||
+      process.env.VITE_SITE_PUBLIC_URL
+    ) {
       injectEnvScript =
         `<script>
           window.__ENV__ = {
             VITE_BASE_URL_BACKEND: ${JSON.stringify(process.env.VITE_BASE_URL_BACKEND || "")},
             VITE_SERVER_URL: ${JSON.stringify(process.env.VITE_SERVER_URL || "")},
             VITE_SLUG: ${JSON.stringify(process.env.VITE_SLUG || "")},
-            VITE_MAPTILER_API_KEY: ${JSON.stringify(process.env.VITE_MAPTILER_API_KEY || "")}
+            VITE_MAPTILER_API_KEY: ${JSON.stringify(process.env.VITE_MAPTILER_API_KEY || "")},
+            VITE_COSTUM_FORCE_LIVE: ${JSON.stringify(process.env.VITE_COSTUM_FORCE_LIVE || "")},
+            VITE_SITE_PUBLIC_URL: ${JSON.stringify(process.env.VITE_SITE_PUBLIC_URL || "")}
           };
         </script>
       `;

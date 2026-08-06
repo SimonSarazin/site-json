@@ -15,6 +15,7 @@ import { CommonTableField } from "./CommonTableField";
 import { MultiEvalChartDialog } from "./MultiEvalChartDialog";
 import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
+import { LocationField } from "./LocationField";
 import { UploaderField } from "./UploaderField";
 import { TimeSlotsField } from "./TimeSlotsField";
 import { DynamicFieldsField } from "./DynamicFieldsField";
@@ -423,6 +424,23 @@ export function DynamicCoForm({
                       control={control}
                       render={({ field: controllerField }) => (
                         <CheckboxField
+                          field={field}
+                          errors={errors}
+                          value={controllerField.value}
+                          onChange={controllerField.onChange}
+                        />
+                      )}
+                    />
+                  );
+
+                case "location":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={control}
+                      render={({ field: controllerField }) => (
+                        <LocationField
                           field={field}
                           errors={errors}
                           value={controllerField.value}

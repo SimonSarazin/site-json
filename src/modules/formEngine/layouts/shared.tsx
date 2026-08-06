@@ -42,14 +42,14 @@ const slotName = (f: string) => f.slice("$slot:".length);
 const COLS: Record<number, string> = { 1: "", 2: "sm:grid-cols-2", 3: "sm:grid-cols-3" };
 
 /** Normalise une section vers ses groupes (format plat = un unique groupe 1 colonne). */
-export function sectionGroups(section: SectionDescriptor | undefined): FieldGroup[] {
+function sectionGroups(section: SectionDescriptor | undefined): FieldGroup[] {
   if (!section) return []; // garde : section disparue (visibleIf) → pas de déréférencement
   if (section.groups && section.groups.length) return section.groups;
   return [{ columns: 1, fields: section.fields ?? [] }];
 }
 
 /** Tous les noms de champs (hors $slot) d'une section — groupes ou format plat. */
-export function sectionFieldNames(section: SectionDescriptor | undefined): string[] {
+function sectionFieldNames(section: SectionDescriptor | undefined): string[] {
   return sectionGroups(section).flatMap((g) => g.fields).filter((f) => !isSlot(f));
 }
 
@@ -62,17 +62,23 @@ export function renderSection(section: SectionDescriptor, p: LayoutProps, values
   return sectionGroups(section).map((g, gi) => {
     if (!check(g.visibleIf, values)) return null; // bloc conditionnel : titre + champs masqués
     const cols = COLS[g.columns ?? 1] ?? "";
+    // Les champs `hidden` sont PLACÉS dans une section pour que le marqueur
+    // d'erreur de l'onglet les voie (`sectionHasError` ne teste que les champs
+    // placés), mais ils ne doivent rien occuper : leur widget rend `null`
+    // (registry.tsx:50) et `renderEntry` les envelopperait quand même dans un
+    // `<div>` — soit une cellule vide par champ dans une grille `gap-4`.
+    const visibles = g.fields.filter((f) => isSlot(f) || p.descriptor.fields[f]?.widget !== "hidden");
     return (
       <div key={gi} className={`space-y-3${g.divider ? " border-t pt-6" : ""}`}>
         {g.label && <div className={g.titleClassName ?? "text-sm font-medium"}>{p.t(g.label)}{g.required && " *"}</div>}
-        <div className={`grid gap-4 ${cols}`}>{g.fields.map((f) => renderEntry(f, p))}</div>
+        <div className={`grid gap-4 ${cols}`}>{visibles.map((f) => renderEntry(f, p))}</div>
       </div>
     );
   });
 }
 
 /** Une section a-t-elle une erreur (un de ses champs dans formState.errors) ? */
-export function sectionHasError(section: SectionDescriptor, errors: Record<string, unknown>): boolean {
+function sectionHasError(section: SectionDescriptor, errors: Record<string, unknown>): boolean {
   return sectionFieldNames(section).some((n) => hasErrorAt(errors, n));
 }
 
