@@ -171,6 +171,7 @@
     "detached": "Item detached",
     "error": "Referencing action failed",
     "referencedUnclassified": "Referenced, but unclassified — use “Classify” in the referenced list",
-    "classified": "Sub-type saved"
+    "classified": "Sub-type saved",
+    "referencedUnmoderated": "Referenced, but moderation could not be applied"
   }
 }

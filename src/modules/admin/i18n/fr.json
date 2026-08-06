@@ -171,6 +171,7 @@
     "detached": "Élément détaché",
     "error": "Action de référencement impossible",
     "referencedUnclassified": "Référencé, mais non classé — utilisez « Classer » dans la liste des référencés",
-    "classified": "Sous-type enregistré"
+    "classified": "Sous-type enregistré",
+    "referencedUnmoderated": "Référencé, mais la modération n'a pas pu être posée"
   }
 }

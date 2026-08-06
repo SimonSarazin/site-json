@@ -7,13 +7,15 @@ import "@/modules/admin/i18n";
 
 /**
  * Carrier costum exposant le référencement (BaseEntity, lib ≥ 1.0.160) : rattache/détache un élément
- * du costum courant (`reference.costum` / `source.keys`) via SET_SOURCE (SetSourceAction).
+ * du costum courant (`reference.costum` / `source.keys`) via SET_SOURCE (SetSourceAction), et la
+ * modération scopée via VALIDATE_GROUP (ValidateGroupAction).
  */
 export interface ReferencingCarrier {
   slug?: string;
   addReference: (type: string, id: string) => Promise<{ result: boolean; msg?: string } | null>;
   removeReference: (type: string, id: string) => Promise<{ result: boolean; msg?: string } | null>;
   removeFromSource: (type: string, id: string) => Promise<{ result: boolean; msg?: string } | null>;
+  validateGroup: (type: string, id: string, valid: boolean) => Promise<unknown>;
 }
 
 /** `classify` : (re)pose la seule ANNOTATION de sous-type, sans toucher au référencement. */
@@ -92,11 +94,15 @@ export function useReferenceElement(onDone?: () => void) {
         }
         if (moderate) {
           try {
-            // Chemin SCOPÉ — jamais le boolean global, qui masquerait l'entité chez les autres sites.
-            // Échoue si l'entité porte déjà un `preferences.toBeValidated` scalaire (chemin sous
-            // scalaire) : toléré, documenté.
-            await ecrire(cible, `preferences.toBeValidated.${slug}`, true);
-          } catch { /* non bloquant */ }
+            // MODÉRATION SCOPÉE via VALIDATE_GROUP (dévalider = poser `preferences.toBeValidated.<slug>`),
+            // PAS via updateField : sur une entité ÉTRANGÈRE, l'admin costum n'a pas les droits
+            // d'édition de l'élément — le Node durci refuserait un updatepathvalue hors allowance
+            // (401), là où validategroup est le canal d'AUTORITÉ costum-admin des DEUX backends
+            // (cascade legacy incluse). Jamais le boolean global, qui masquerait l'entité ailleurs.
+            await carrier.validateGroup(type, id, false);
+          } catch {
+            toast.warning(t("useReferenceElement.referencedUnmoderated"));
+          }
         }
       }
       // Dé-référencement : nettoyage best-effort de l'annotation (une orpheline serait de toute
