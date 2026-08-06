@@ -81,6 +81,13 @@ export const SEARCH_QUERY_KEYS = {
    */
   RESERVATIONS: (formId: string, resourceId: string) =>
     ["search-reservations", formId, resourceId] as const,
+  /**
+   * Documents (fichiers non-image) d'une structure, pour le preview `structure`.
+   *
+   * Producteur : `PreviewStructure` (via `item.getGalleryFiles()`). Données
+   * PUBLIQUES au même titre que la fiche — pas d'invalidation, staleTime suffit.
+   */
+  DOCUMENTS: (id: string | null) => ["search-structure-documents", id] as const,
 } as const;
 
 export type SearchQueryKeyType = ReturnType<

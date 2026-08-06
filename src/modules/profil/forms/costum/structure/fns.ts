@@ -1,7 +1,7 @@
 /**
  * Module du costum « structure » (Ekilib.re — Maison Sport Santé du Tampon) : la SEULE clé de code
  * irréductible du formulaire d'ajout de structure, tout le reste vivant en DONNÉES dans
- * `config.prod.maison-sport-sante-la-tampon.json` → `costumForms["structure-ekilibre"]`.
+ * `config.prod.maison-sport-sante-la-tampon.json` → `costumForms["structure"]`.
  *
  * Pourquoi une clé de code ici : le champ serveur `tags` (celui qu'interroge le filtre « Domaine
  * d'intervention » de la page /structure) porte des libellés COURTS, alors que `thematic` porte les
@@ -52,4 +52,33 @@ export function thematicToTags(thematic: unknown): string[] {
 registerTransform("structure:tagsFromThematic", (_v, all) => {
   const tags = thematicToTags((all as Record<string, unknown>)?.thematic);
   return tags.length > 0 ? tags : undefined;
+});
+
+/**
+ * CONTOURNEMENT — chaîne saisie → NOMBRE, en tolérant les séparateurs de saisie.
+ *
+ * Le costum `sportSanteBienetre` déclare `siren`, `representativeTelephone` et
+ * `personInChargeTelephone` en `number`. Ce typage est un artefact d'inférence (`costum-fields.mjs`
+ * a déduit le type des valeurs stockées, qui ne contenaient que des chiffres) : la déclaration réelle
+ * du costum les donne en `inputType: "text"`, et les données en base sont des CHAÎNES. Tant que
+ * l'artefact n'est pas corrigé, AJV rejette la création avec « must be number ».
+ * cf. doc-projets/todo-costum-schema-structures-ssbe.md §2.
+ *
+ * On envoie donc un nombre — mais SANS `coerce:number`, qui rend `undefined` (donc PERD le champ en
+ * silence) dès qu'il y a un espace ou un indicatif : `"+261 34 25 363 35"` et `"123 456 789 00012"`
+ * y passeraient tous les deux à la trappe. Ici on ne garde que les chiffres, ce qui préserve la
+ * valeur dans tous les formats de saisie courants.
+ *
+ * ⚠ PERTES ASSUMÉES, inhérentes au type `number` (elles disparaîtront avec le correctif d'artefact) :
+ *  - le `+` d'un indicatif international : `"+261 34…"` → `261 34…` (le préfixe `00` serait conservé) ;
+ *  - un zéro initial : `"0692001122"` → `692001122` (forme déjà observée en base : `"692211490"`).
+ * Vide → `undefined` → clé OMISE (jamais `""`, que le type `number` refuserait).
+ */
+registerTransform("number:fromDigits", (v) => {
+  if (typeof v === "number") return Number.isFinite(v) ? v : undefined;
+  const digits = String(v ?? "").replace(/\D/g, "");
+  if (!digits) return undefined;
+  const n = Number(digits);
+  // Au-delà de 2^53 un entier n'est plus représentable fidèlement → on préfère omettre que corrompre.
+  return Number.isSafeInteger(n) ? n : undefined;
 });

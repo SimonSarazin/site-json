@@ -1,6 +1,6 @@
 /**
  * Costum « structure » (Ekilib.re) — formulaire d'ajout d'organisation 100 % config-driven, chargé depuis
- * `config.prod.maison-sport-sante-la-tampon.json` → `costumForms["structure-ekilibre"]` par la VOIE UNIQUE
+ * `config.prod.maison-sport-sante-la-tampon.json` → `costumForms["structure"]` par la VOIE UNIQUE
  * `registerCostumForm` (celle du runtime : zod → compilation → garde des clés).
  *
  * On prouve que le document JSON :
@@ -22,9 +22,9 @@ import { ISO_COUNTRIES_FR } from "@/constants/CountryList";
 import { loadCostumForm } from "./costum/__fixtures__/configCostum";
 import { specToConfig } from "./resolveModalSpec";
 import type { EntityModalCtx } from "./entityModalSpec";
-import { thematicToTags } from "./costum/structure-ekilibre/fns";
+import { thematicToTags } from "./costum/structure/fns";
 
-const { descriptor, spec } = loadCostumForm("structure-ekilibre");
+const { descriptor, spec } = loadCostumForm("structure");
 
 const tLoc = (l: import("@/types/locale-schema").LocalizedString) => l; // préserve le LocalizedString inline
 const norm = <T,>(v: T): T => JSON.parse(JSON.stringify(v));
@@ -62,7 +62,7 @@ const FILLED = {
   representativeFirstName: "Jérémy",
   representativeEmail: "jeremy.enseignant.apa@gmail.com",
   representativeTelephone: "692211490",
-  responsableSameAsRepresent: "Non",
+  responsableSameAsRepresent: false,
   personInChargeTitle: "Chef.fe d'entreprise",
   personInChargeCivility: "M.",
   personInChargeName: "BAUER",
@@ -73,7 +73,7 @@ const FILLED = {
 
 describe("costum structure Ekilib.re — document de config", () => {
   it("1. compile depuis la config par la voie unique (toutes les clés citées sont enregistrées)", () => {
-    expect(descriptor.id).toBe("structure-ekilibre");
+    expect(descriptor.id).toBe("structure");
     expect(descriptor.collection).toBe("organizations");
     expect(spec.mutation.entityType).toBe("organizations");
     // `validate:addressComplete` + les codecs partagés sont résolus par la garde de registerCostumForm.
@@ -129,7 +129,7 @@ describe("costum structure Ekilib.re — WRITE (création)", () => {
       representativeName: "BAUER",
       representativeFirstName: "Jérémy",
       personInChargeName: "BAUER",
-      personInChargeTelephone: "692211490",
+      personInChargeTelephone: 692211490, // NOMBRE (type costum) — cf. test 9bis
     });
     expect(payload.thematic).toEqual(FILLED.thematic);
   });
@@ -186,6 +186,42 @@ describe("costum structure Ekilib.re — WRITE (création)", () => {
     expect(wp("statusFile").maxItems).toBe(1);
   });
 
+  it("9bis. envoie siren/téléphones en NOMBRE (type imposé par le costum sportSanteBienetre)", () => {
+    // Le costum déclare ces 3 champs `number` — artefact d'inférence, cf. doc-projets/
+    // todo-costum-schema-structures-ssbe.md §2. Depuis que le scope est `sportSanteBienetre`, ses
+    // `properties` sont fusionnées dans le schéma AJV → envoyer une chaîne = 400.
+    const p = buildPayload(formSpec, {
+      ...FILLED, siren: "123 456 789 00012", representativeTelephone: "+261 34 25 363 35",
+      personInChargeTelephone: "06 92 00 11 22",
+    }) as Record<string, unknown>;
+    // `coerce:number` aurait rendu `undefined` sur les TROIS (espaces / indicatif) → champs perdus.
+    expect(p.siren).toBe(12345678900012);
+    expect(p.representativeTelephone).toBe(261342536335);
+    expect(p.personInChargeTelephone).toBe(692001122);
+    for (const k of ["siren", "representativeTelephone", "personInChargeTelephone"]) {
+      expect(typeof p[k]).toBe("number");
+    }
+    // `mobile` reste une STRING (le costum le déclare ainsi) — ne pas l'aligner sur les autres.
+    expect(typeof p.mobile).toBe("string");
+  });
+
+  it("9ter. omet les champs numériques VIDES au lieu d'envoyer \"\" (cause du 400 constaté)", () => {
+    // Le payload réel qui a échoué portait representativeTelephone:"" et personInChargeTelephone:"".
+    const p = buildPayload(formSpec, {
+      ...FILLED, siren: "", representativeTelephone: "", personInChargeTelephone: "",
+    }) as Record<string, unknown>;
+    for (const k of ["siren", "representativeTelephone", "personInChargeTelephone"]) {
+      expect(p).not.toHaveProperty(k);
+    }
+  });
+
+  it("9quater. ÉDITION : un champ numérique vidé sort en `null` (retiré par le SDK), jamais \"\"", () => {
+    // payloadEmitEmptyOnEdit:true → un vide devient `clearValue(field)`. Sans `clear: null` ce serait
+    // `""`, refusé par le type `number`. `stripNullsInPlace` retire ensuite la clé côté SDK.
+    const e = buildEditPayload(formSpec, { ...FILLED, siren: "" }) as Record<string, unknown>;
+    expect(e.siren).toBeNull();
+  });
+
   it("10. omet `email`/`url` vides (le schéma backend impose un format sur ces champs)", () => {
     const p = buildPayload(formSpec, { ...FILLED, email: "", url: "" }) as Record<string, unknown>;
     expect(p).not.toHaveProperty("email");
@@ -199,14 +235,20 @@ describe("costum structure Ekilib.re — spec de mutation", () => {
     ({ mode, entity, parent: null, scope: undefined, me: null, carrier, costum: undefined }) as unknown as EntityModalCtx;
   const config = specToConfig(spec);
 
-  it("11. CREATE : scope costum pris sur le carrier + stamp type/role (§25)", () => {
+  it("11. CREATE : scope costum + stamp type/role (§25)", () => {
     const m = config.buildSpec(ctx("add"));
     expect(m.entityType).toBe("organizations");
-    expect(m.costumSlug).toBe("associationEkilibre"); // → source.key estampillé par me.costum(slug)
+    // Slug CONSTANT, PAS le carrier : `associationEkilibre` n'est pas un costum enregistré → contexte NU
+    // → `_extractWritableFields` ne retient AUCUN champ métier (retirés du draft à la construction de
+    // l'entité, sans erreur ni log). `sportSanteBienetre` porte leur déclaration.
+    expect(m.costumSlug).toBe("sportSanteBienetre");
     // `statusActor` : toute nouvelle structure entre en file de validation ("En cours"), jamais publiée
     // directement. C'est un STAMP create-only — une fois l'entrée validée par un admin, l'édition ne
     // remet pas le statut à zéro (cf. test suivant : la clé est absente du payload d'édition).
-    expect(m.inject?.extraFields).toEqual({ type: "NGO", role: "admin", statusActor: "En cours" });
+    // `type` sélectionne la VARIANTE costum (pickCostumOverlay : discriminator === data.type) :
+    // "Cooperative" = structure adhérente (16/17 champs déclarés) ; "NGO"/mss est le formulaire des
+    // Maisons Sport Santé et n'en déclare que 8 → il amputerait la saisie.
+    expect(m.inject?.extraFields).toEqual({ type: "Cooperative", role: "admin", statusActor: "En cours" });
     expect(m.inject?.dropEmptyEmail).toBe(true);
     expect(m.imageField).toBe("_imageFile");
   });
@@ -270,10 +312,10 @@ describe("costum structure Ekilib.re — READ + visibleIf (parité avec l'ancien
     ["affiliateTo", { affiliate: "Non" }, false],
     ["otherRepresentativeTitle", { representativeTitle: "Autre..." }, true],
     ["otherRepresentativeTitle", { representativeTitle: "Président" }, false],
-    ["personInChargeName", { responsableSameAsRepresent: "Non" }, true],
-    ["personInChargeName", { responsableSameAsRepresent: "Oui" }, false],
-    ["otherPersonInChargeTitle", { responsableSameAsRepresent: "Non", personInChargeTitle: "Autre..." }, true],
-    ["otherPersonInChargeTitle", { responsableSameAsRepresent: "Oui", personInChargeTitle: "Autre..." }, false],
+    ["personInChargeName", { responsableSameAsRepresent: false }, true],
+    ["personInChargeName", { responsableSameAsRepresent: true }, false],
+    ["otherPersonInChargeTitle", { responsableSameAsRepresent: false, personInChargeTitle: "Autre..." }, true],
+    ["otherPersonInChargeTitle", { responsableSameAsRepresent: true, personInChargeTitle: "Autre..." }, false],
   ])("14. %s visible=%o → %s", (field, values, expected) => {
     expect(check(descriptor.fields[field].visibleIf, values)).toBe(expected);
   });

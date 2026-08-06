@@ -254,7 +254,7 @@ export type InstallationDashboardConf = z.infer<typeof InstallationDashboardConf
 export const DEFAULT_INSTALLATION_PARAM = "installation";
 
 export const PreviewConfSchema = z.object({
-  type: z.enum(["default", "poi-amenities", "coform-answer", "event", "facets", "news", "testimonial", "resource"]).default("default"),
+  type: z.enum(["default", "poi-amenities", "coform-answer", "event", "facets", "news", "testimonial", "resource", "structure"]).default("default"),
   // Mapping rôle→suffixe de champ CoForm (pour `coform-answer`). Surcharge la
   // table par défaut du composant — découple les IDs de champs du code.
   fields: z.record(z.string(), z.string()).optional(),
