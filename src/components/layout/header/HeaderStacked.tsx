@@ -77,8 +77,14 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
   // un canal alpha partiellement transparent (cf. bug du texte fantôme) — les
   // « trous » montrent un fond sombre neutre (texte blanc lisible) au lieu du
   // contenu de la page. Sert aussi de repli quand `backgroundImage` est absent.
+  // Fond de la barre une fois collée (image seule — `--header-text` ne sert
+  // qu'au wordmark du bandeau).
+  const bgImageStyle = header.backgroundImage
+    ? { backgroundImage: `url(${header.backgroundImage})` }
+    : undefined;
+
   const bgStyle = {
-    ...(header.backgroundImage ? { backgroundImage: `url(${header.backgroundImage})` } : undefined),
+    ...bgImageStyle,
     // `header.textColor` ne pilote que le 1er segment du wordmark (logoTitle, cf.
     // plus bas) : sous-titre/nav sont blancs fixes, IDENTIQUES quel que soit le
     // mode clair/sombre (demande explicite — même couleur dans les deux modes,
@@ -93,7 +99,10 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
           plus grand (petit écran, sous-titre long) au lieu de le couper. */}
       <header className="relative bg-neutral-800 bg-cover bg-center" style={bgStyle}>
         <div aria-hidden className="absolute inset-0 pointer-events-none dark:bg-black/55" />
-        <div className="relative flex min-h-[calc(50vh-3.5rem)] flex-col items-center justify-center px-4 py-10">
+        {/* `pb-24` : réserve les 56px que la barre (en marge négative, cf. plus bas)
+            superpose au bas du bandeau + 2.5rem de respiration — le wordmark ne
+            passe jamais sous la barre. */}
+        <div className="relative flex min-h-[50vh] flex-col items-center justify-center px-4 pt-10 pb-24">
           <NavLink to={header.path || "/"} className="flex flex-col sm:flex-row items-center gap-4 sm:gap-10 lg:gap-20 text-center sm:text-left cursor-pointer group">
             <HeaderLogo
               header={header}
@@ -136,25 +145,34 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
             )}
           </NavLink>
         </div>
-        {/* Sentinelle : dernier pixel du bandeau. Sortie de l'écran par le haut
-            ⇔ la barre ci-dessous est collée (`stuck`). */}
-        <div ref={sentinelRef} aria-hidden className="absolute bottom-0 h-px w-px" />
+        {/* Sentinelle à `bottom-14` (= la position naturelle du HAUT de la barre,
+            qui chevauche les 56 derniers px du bandeau via sa marge négative) :
+            elle sort de l'écran par le haut exactement quand la barre se colle. */}
+        <div ref={sentinelRef} aria-hidden className="absolute bottom-14 h-px w-px" />
       </header>
 
-      <nav className="sticky top-0 z-50 bg-neutral-800 bg-cover bg-center shadow-deep" style={bgStyle}>
-        {/* Scrim une fois collée : la tranche d'image visible sur 56px n'est pas
-            forcément une zone prévue pour du texte — un voile sombre garantit la
-            lisibilité de la nav blanche. Toujours monté (l'opacité se transitionne
-            au lieu de « sauter ») ; `pointer-events-none` : sans lui, cet
-            `absolute` intercepterait les clics des boutons de la barre. */}
+      {/* `-mt-14` : au repos, la barre SE SUPERPOSE aux 56 derniers px du bandeau,
+          en transparence — l'image de fond est donc UN SEUL crop continu (celui du
+          bandeau). Lui donner son propre `bg-cover` en permanence recadrait l'image
+          une 2e fois pour sa boîte de 56px → « couture » visible à la jonction
+          (même fond appliqué deux fois, cf. retour de recette). Son fond propre
+          n'apparaît (fondu 200ms) que quand elle est collée en haut, où le bandeau
+          n'est plus derrière elle. */}
+      <nav className="sticky top-0 z-50 -mt-14">
         <div
           aria-hidden
           className={cn(
-            "absolute inset-0 pointer-events-none bg-black/35 transition-opacity duration-200",
+            "absolute inset-0 pointer-events-none transition-opacity duration-200",
             stuck ? "opacity-100" : "opacity-0"
           )}
-        />
-        <div aria-hidden className="absolute inset-0 pointer-events-none dark:bg-black/55" />
+        >
+          {/* `bg-neutral-800` SOUS l'image : ses zones semi-transparentes (canal
+              alpha) montrent un fond sombre neutre, jamais le contenu de la page. */}
+          <div className="absolute inset-0 bg-neutral-800 bg-cover bg-center shadow-deep" style={bgImageStyle} />
+          {/* Voile de lisibilité : la tranche d'image visible sur 56px n'est pas
+              forcément une zone prévue pour du texte blanc. */}
+          <div className="absolute inset-0 bg-black/35 dark:bg-black/55" />
+        </div>
 
         <div className="relative mx-auto max-w-[100rem] px-4">
           <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4 h-14">
