@@ -13,7 +13,7 @@
 > [Module Ampli](../doc/22-module-ampli.md) · [Module formEngine](../doc/28-module-formengine.md) ·
 > [Module CoForm](../doc/21-module-coform.md). Mémoire : `[[project-tiers-lieux]]`.
 
-Dernière mise à jour : **2026-07-28** (création du dossier — état des lieux, aucun chantier en cours).
+Dernière mise à jour : **2026-08-03** (création du dossier — état des lieux, aucun chantier en cours ; rafraîchi SDK 1.0.172, aucun commit projet depuis le 28/07).
 
 ---
 
@@ -39,7 +39,7 @@ lieux**, pas un plan de rattrapage.
 | Header / Footer | **`mega-menu`** (le seul du parc à s'en servir vraiment) / `minimal-centered` |
 | Variant SDK | **`navigator-tl`** — endpoint dédié ⚠ cf. §12 |
 | Marqueurs costum | `mainTag: "TiersLieux"` · `compagnon: "Compagnon France Tiers-Lieux"` |
-| SDK | `@communecter/cocolight-api-client` **1.0.169** |
+| SDK | `@communecter/cocolight-api-client` **1.0.172** (publiée le 2026-08-03) |
 | Historique | **76 commits** — la config la plus travaillée du parc |
 
 ### Historique des chantiers

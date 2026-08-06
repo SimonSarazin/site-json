@@ -14,7 +14,7 @@
 > [Composants média](../doc/33-media-components.md). Mémoire : `[[project-parent62]]` — slug corrigé
 > le 25/07 (`parents62` avec **s** est abandonné, cf. §1) ; le fichier `.claude/memory/` reste **à créer**.
 
-Dernière mise à jour : **2026-07-25** (rendu par item de la recherche globale).
+Dernière mise à jour : **2026-08-03** (hygiène CSS du thème, SDK 1.0.172 publié, `VITE_SITE_PUBLIC_URL`).
 
 ---
 
@@ -32,8 +32,8 @@ et le réseau social Communecter, en **conservant le WordPress** pour les conten
 | **Costum / scope de données** | `parent62` — `source.key` de toutes les entités du réseau |
 | **Orga porteuse** | « Parent 62 », `_id 6a450f0ac34c7070327d2a64`, slug `parent62`, type `NGO` |
 | **Backend** | Communecter (`~/dev/communecter-php74`), base de travail locale = dump de prod `prod200726` |
-| **SDK** | `@communecter/cocolight-api-client` — **dépôt en lecture seule**, version **1.0.168** (via le merge du 24/07) |
-| **Branche site-json** | **MR #25 mergée dans `main` le 25/07** (`f599357a`). Lot en cours : `feat/search-item-rules` (3 commits, non poussée) |
+| **SDK** | `@communecter/cocolight-api-client` — **dépôt en lecture seule**, version **1.0.172 publiée sur npm** (`^1.0.172`, commit `09e145a0` du 03/08, résolue depuis `registry.npmjs.org` — fini le tarball `npm pack` local) |
+| **Branche site-json** | `main` — MR #25 mergée le 25/07 (`f599357a`) ; lot `feat/search-item-rules` **intégré à `main`** (les 3 commits sont dans son historique first-parent) ; dernier merge `fix/institut-bleu-ui` le 03/08 (`94251b7b`, 17 commits) |
 | **Chef de projet** | Thomas Craipeau (Aboire) — seul habilité à modifier le SDK et le costum backend |
 
 ### Historique des chantiers
@@ -61,9 +61,16 @@ et le réseau social Communecter, en **conservant le WordPress** pour les conten
   d'icônes hors catalogue lucide, qui rendaient `null` en silence), `994cba75` (4 `editModals`
   orphelins — les boutons « Modifier » remarchent), `ced1417f` (5 références de modales mortes),
   `b4584949` (couleurs de statut branchées).
-- **25/07 — rendu par item de la recherche globale** (lot en cours, branche `feat/search-item-rules`) :
-  la page `/recherche` rendait une carte générique pour toutes les collections et son filtre
-  « Paroles » ne renvoyait rien. Détail au §9.7.
+- **25/07 — rendu par item de la recherche globale** (`feat/search-item-rules`, depuis **intégré à
+  `main`**) : la page `/recherche` rendait une carte générique pour toutes les collections et son
+  filtre « Paroles » ne renvoyait rien. Détail au §9bis.
+- **27-30/07 — hygiène CSS du thème (Thomas, `main`)** : `79dc4637` (palette dupliquée retirée
+  d'`index-parent62.css` — déjà injectée au runtime par `config.theme`) et `53f28ca1` (`.access-card`
+  promue en **plancher partagé** dans `styles/shared.css`, le traitement parent62 devient le défaut
+  du parc). Seuls commits du projet depuis le 25/07. Détail au §9ter.
+- **03/08 — merge `fix/institut-bleu-ui` dans `main`** (`94251b7b`, 17 commits) : SDK **1.0.172**
+  publié (`09e145a0`) et nouvelle variable **`VITE_SITE_PUBLIC_URL`** (`be7a320c`) — cf. §8.5 et
+  §11. typecheck + préflight (22 fichiers / 412 tests) verts après merge, mesurés le 03/08.
 
 ---
 
@@ -78,7 +85,7 @@ Ce que la config `parent62` doit produire, concrètement :
 3. **Les contenus du réseau comme entités filtrables** : articles (POI `article`), **paroles de
    parents** (POI `affiche`), **ressources** (POI `recoveryCenter`), **événements** (agenda).
 4. **La contribution des partenaires** via formulaires costum (config-driven, dynForm), avec
-   **modération a priori** (native `preferences.toBeValidated`, SDK 1.0.168).
+   **modération a priori** (native `preferences.toBeValidated`, SDK ≥ 1.0.168).
 5. **La navigation territoriale** : 9 pages `/territoire/*` (contact coordo + 887 communes + fil
    d'articles), et un code couleur par territoire réutilisé carte + chips.
 6. **Le référencement** préservé (SEO par page, JSON-LD, sitemap, robots, RSS).
@@ -91,7 +98,7 @@ partagés par tous les types de contenu ; `tags` reste réservé aux mots-clés 
 ## 3. Architecture générale
 
 ```
- WordPress (parent62.org)          Communecter / cocolight-api-client (SDK 1.0.168)
+ WordPress (parent62.org)          Communecter / cocolight-api-client (SDK 1.0.172)
    contenus éditoriaux                 poi (article/affiche/recoveryCenter) · events · costum
         │  import (6 434 articles)          ▲
         ▼                                   │ searchCostum / ADD_POI / ADD_NEWS
@@ -239,7 +246,7 @@ Embarqué dans le document de l'orga (`organizations.costum`). Au 20/07, `typeOb
 | **Territoires** | `src/data/territoires62.ts` (+ `.test`), `scripts/import-communes-territoires62.ts` |
 | **Header** | `src/components/layout/header/HeaderTransparentScroll.tsx` (fix lisibilité) |
 | **Tests** | `e2e/parent62.spec.ts`, `src/modules/search/lib/colorBy.test.ts`, `src/modules/profil/forms/costum/__fixtures__/configCostum.ts` |
-| **Déploiement** | `server/prod-server.js`, `.env` (`VITE_SLUG`, `VITE_BASE_URL_BACKEND`, `SITE_CONFIG_PATH`, `SITE_PUBLIC_URL`) |
+| **Déploiement** | `server/prod-server.js`, `server/lib/sitemap.js`, `.env` (`VITE_SLUG`, `VITE_BASE_URL_BACKEND`, `SITE_CONFIG_PATH`, `VITE_SITE_PUBLIC_URL`) — dérivable via `npm run deploy:env` (`scripts/lib/sites.ts`) |
 
 ---
 
@@ -279,7 +286,18 @@ Embarqué dans le document de l'orga (`organizations.costum`). Au 20/07, `typeOb
      dans le `.env` (une valeur quotée fait échouer le préflight `environment` et se retrouve dans
      le bundle).
    - Serveur (`server/prod-server.js`) : `SITE_CONFIG_PATH=./config.prod.parent62.json`
-     (**obligatoire**) et `SITE_PUBLIC_URL=https://reseau.parent62.org`.
+     (**obligatoire**) et `VITE_SITE_PUBLIC_URL=https://reseau.parent62.org` (nouvelle variable,
+     merge du 03/08, `be7a320c`) — **l'URL publique du site-json lui-même** : canonical,
+     `og:url`/`og:image`, `sitemap.xml`, flux RSS. Lue par `getSitePublicUrl()`
+     ([`src/lib/constant/common.ts`](../src/lib/constant/common.ts)) et
+     [`server/lib/sitemap.js`](../server/lib/sitemap.js) ; repli `getServerUrl()` si absente
+     (comportement historique) ; l'ancien nom `SITE_PUBLIC_URL` n'est plus accepté qu'en repli
+     legacy par `sitemap.js`. **Ne PAS confondre avec `VITE_SERVER_URL`** (= serveur communecter :
+     images `/upload`, embed co2, cagnotte), qui garde sa valeur parc.
+   - ⚠️ `npm run deploy:env` dérive `VITE_SITE_PUBLIC_URL` de `sites.json` (`aliases[0]`
+     prioritaire, sinon `domain`) — or l'entrée `parent62` n'a **pas d'`aliases`** et déclare
+     `domain: parent62.00.re` : la dérivation donnerait `https://parent62.00.re`. Pour
+     `reseau.parent62.org`, déclarer l'alias dans `sites.json` ou poser la variable à la main (§13).
 
 ---
 
@@ -340,8 +358,9 @@ quoté). `lint` : 4 erreurs **pré-existantes** identiques à `main` (`blog/Arti
 
 ## 9bis. Impacts — rendu par item de la recherche globale (25/07)
 
-> Lot en cours sur `feat/search-item-rules` : `caa0a364` (moteur), `fd3d9a4c` (config parent62),
-> `7017dc77` (doc + skill). **Branche non poussée, non mergée.**
+> Lot `feat/search-item-rules` : `caa0a364` (moteur), `fd3d9a4c` (config parent62),
+> `7017dc77` (doc + skill). **Intégré à `main`** depuis — les 3 commits figurent dans
+> l'historique first-parent de `main` (constaté le 03/08).
 
 ### 9bis.1 Le constat
 
@@ -405,13 +424,60 @@ exécuté**, la config n'étant jamais parsée par Zod au runtime.
 
 ---
 
+## 9ter. Impacts — hygiène CSS du thème (27-30/07) et état au 03/08
+
+Deux correctifs de Thomas sur `main` — les **seuls commits touchant les fichiers du projet depuis
+le 25/07** (`git log 4e6e0f3c..HEAD -- config.prod.parent62.json src/index-parent62.css …`). La
+config `config.prod.parent62.json` est **inchangée** : 35 pages / 153 sections, 4 `costumForms`
+(revérifié le 03/08).
+
+### 9ter.1 `79dc4637` (27/07) — palette dupliquée retirée du CSS
+
+`src/index-parent62.css` redéclarait en `:root`/`.dark` les 46 + 32 tokens que `config.theme`
+injecte déjà au runtime via `SiteTheme` (−115/+14 lignes) — même palette écrite deux fois, risque
+de divergence silencieuse. Vérifié avant coupe : les 46 variables retirées ont toutes un équivalent
+parmi les 54 injectées (diff d'ensembles contre le `<style id="site-theme">` réellement servi).
+Piège relevé : `--radius` vient de `theme.borderRadius.base`, pas d'un `theme.radius`. Les ombres
+teintées indigo supprimées étaient **mortes** (les ombres neutres de la config l'emportaient) —
+les promouvoir dans `theme.shadows` reste une décision de design, consignée en commentaire.
+Rendu comparé avant/après sur `/temoignages`, clair et sombre : **identique**.
+
+### 9ter.2 `53f28ca1` (30/07) — `.access-card` devient un plancher partagé
+
+`HeroQuickAccess` émet `access-card access-card-{public|pro}`, mais la classe n'était définie que
+dans 2 feuilles de thème (parent62, sport-santé) sur 5 configs utilisatrices → cartes « nues »
+ailleurs, panne silencieuse qu'aucun test ne voit. Le traitement **parent62** (verre translucide,
+lift doux) est déplacé tel quel dans `src/styles/shared.css` (`@layer components`), entièrement
+piloté par les tokens injectés au runtime (`--card`/`--border`) ; le bloc local
+d'`index-parent62.css` est retiré, devenu identique. **parent62 vérifié inchangé** en navigateur
+(le commit corrige saint-paul-sport, pas parent62).
+
+### 9ter.3 Régressions à revalider
+
+Aucune spécifique parent62 : les deux commits annoncent un rendu comparé identique. À garder à
+l'œil lors de la prochaine recette visuelle : cartes d'accès rapide de l'accueil (verre
+translucide) et palette indigo en clair **et** sombre (les tokens ne viennent plus que de
+`config.theme`).
+
+### 9ter.4 Validation (gates)
+
+| Gate | 30/07 (commit `53f28ca1`) | 03/08 (post-merge `fix/institut-bleu-ui`, mesuré ce jour) |
+|---|---|---|
+| `lint` | ✅ 0 erreur | ✅ **0 erreur** / 18 warnings |
+| `typecheck` (`tsc -b`) | ✅ | ✅ |
+| `test:preflight` | ✅ 331 tests | ✅ **412 tests / 22 fichiers** (4,4 s) |
+| `test:unit` | ✅ 2090 tests | non relancé le 03/08 |
+| `config:render` parent62 | ✅ 153/153 sections | — (config inchangée) |
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| 1.1 | Site `reseau.parent62.org`, nav + graphisme proches du WP | ✅ côté code | config réconciliée (24/07) ; reste le déploiement → 1.10. ⚠️ **doublon nav** : deux dropdowns `/blog` (« Actualités » MR + « Contenus » Thomas) à trancher (§12) |
+| 1.1 | Site `reseau.parent62.org`, nav + graphisme proches du WP | ✅ côté code | config réconciliée (24/07) ; doublon nav `/blog` **résolu** (§9.5 — nav 5 entrées, un seul dropdown « Contenus », revérifié dans la config le 03/08) ; reste le déploiement → 1.10 |
 | 1.2 | Pages statiques réseau / charte / équipe / champs d'action | ✅ | `/reseau` `/charte` `/champs-actions` `/equipe` ; arbitrage éditorial réseau ouvert (§13) |
 | 1.3 | Page par territoire : contact + **liste des communes** | ✅ | cards coordo + accordéon 887 communes + fil filtré + CTA |
 | 1.4 | Double entrée parents / pro | ✅ | `/parents` et `/pro`, accessibles depuis l'accueil |
@@ -449,7 +515,12 @@ Hors périmètre engagé : publication RS, mailing, migration GoGoCarto, fiches 
 ## 11. Dépendances site-json ↔ cocolight-api-client
 
 Le SDK est en **lecture seule** : toute évolution passe par une spec `.md` transmise à Aboire
-(`spec-cocolight-api-parents62.md`). Le **SDK 1.0.168** (mergé le 24/07) apporte :
+(`spec-cocolight-api-parents62.md`). Version courante : **1.0.172, publiée sur npm** (`^1.0.172`,
+commit `09e145a0` du 03/08, résolue depuis `registry.npmjs.org` dans le lockfile — fini le tarball
+`npm pack` local). La 1.0.172 règle notamment la **pose du scope costum côté back-office**
+(`setCostumScope`, présent dans le dist installé, consommé par
+[`src/modules/admin/lib/ensureCostumScope.ts`](../src/modules/admin/lib/ensureCostumScope.ts) —
+le `/admin` du blog parent62 en dépend). Le **1.0.168** (mergé le 24/07) avait apporté :
 
 | Apport SDK 1.0.168 | Effet parent62 |
 |---|---|
@@ -493,8 +564,8 @@ attendue par le test parole ; périmètre `prepData`/`validategroup`.
 - **Transcription des paroles** (1.6) : non implémentée — pas de champ dédié (`description` = écrit).
 - **URL parole** : on garde `/temoignages` (main canonique). Si le réseau préfère l'URL `/paroles`,
   c'est un re-`path` de la page de Thomas — à confirmer avec lui.
-- **Lint** : 29 erreurs pré-existantes au 25/07 (blog, agenda, `.design-sync/`, `ds-bundle/`, admin,
-  `entityIcons`, `profil/forms`) — hors périmètre, identiques à `main`.
+- ~~**Lint** : 29 erreurs pré-existantes au 25/07~~ : dette résorbée entre-temps — **0 erreur /
+  18 warnings** au 03/08 (`npm run lint` sur `main` ; déjà 0 erreur au commit `53f28ca1` du 30/07).
 - ~~**`.env` quoté**~~ : le préflight `environment` **passe au 25/07** (comme `bundle-size`) — les
   deux échecs signalés le 24/07 sont résolus.
 - **Encodage des libellés** (U+2019, tiret demi-cadratin) — cf. §5.2.
@@ -507,13 +578,14 @@ attendue par le test parole ; périmètre `prepData`/`validategroup`.
 
 ## 13. Évolutions à prévoir & questions en attente
 
-Priorisées par l'audit fonctionnel du 24/07, révisées le 25/07. Le **doublon nav `/blog` est
-résolu** (§9.5) ; l'**UX `/blog` ↔ `/recherche` est unifiée** (§9bis) ; les **paroles ne sont plus
-muettes** dans le moteur (§9bis.1).
+Priorisées par l'audit fonctionnel du 24/07, révisées le 25/07, complétées le 03/08 (déploiement).
+Le **doublon nav `/blog` est résolu** (§9.5) ; l'**UX `/blog` ↔ `/recherche` est unifiée** (§9bis) ;
+les **paroles ne sont plus muettes** dans le moteur (§9bis.1).
 
 | Évolution / question | Pour qui |
 |---|---|
 | **Impression de l'agenda** (2.4) — non implémentée (CSS print ou export iCal/PDF) | Peterson |
+| **Alias `reseau.parent62.org` dans `sites.json`** (champ `aliases`) pour que `deploy:env` dérive `VITE_SITE_PUBLIC_URL` correctement — aujourd'hui l'entrée `parent62` n'a que `domain: parent62.00.re` (§8.5) | Peterson / Thomas |
 | **Âges dans `/recherche`** (1.5) — la liste `ages` existe (form + `/temoignages`), l'ajouter au groupe de filtres `/recherche` | Peterson |
 | **Votes « utile » + contributeurs** des ressources (3.3) — câbler `ADD_VOTE`/`links` + UI card | Peterson / Thomas |
 | **Transcription / sous-titres des paroles** (1.6) — champ dédié à ajouter au form + affichage | Peterson / réseau |

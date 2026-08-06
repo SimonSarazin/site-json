@@ -12,7 +12,7 @@
 > [Module Admin](../doc/30-module-admin.md) · [Module formEngine](../doc/28-module-formengine.md).
 > Mémoire : `[[project-rezo-sante-reunion]]`.
 
-Dernière mise à jour : **2026-07-30** (lot 2 — création du costum backend, §6bis).
+Dernière mise à jour : **2026-08-03** (lot 3 §9 — feuille CSS propre, Fraunces, essai carrousel ; synchronisation SDK 1.0.172 + `VITE_SITE_PUBLIC_URL`).
 
 ---
 
@@ -57,12 +57,12 @@ Deux conséquences de conception, à ne pas perdre de vue :
 | Entité Cocolight | `rezoSanteReunion` — collection `organizations`, type `NGO`, « Rézo Santé Réunion » |
 | Costum backend | **CRÉÉ le 30/07** — config minimale posée sur l'org porteuse (motif *costum-in-org*) : `costum = { slug: "costumize", language: "fr" }`. `slug` désigne le **moteur**, pas le site : le slug de site reste `rezoSanteReunion`, celui de l'org, déjà présent dans la collection `slugs`. Cf. §6bis |
 | Config | [`../config.prod.rezo-sante-reunion.json`](../config.prod.rezo-sante-reunion.json) |
-| CSS | [`../src/index-parent62.css`](../src/index-parent62.css) — **partagé** avec parent62 ; les couleurs divergent par `config.theme` |
+| CSS | [`../src/index-rezo-sante-reunion.css`](../src/index-rezo-sante-reunion.css) — **feuille propre** depuis le 30/07 (commit `82669e97`, fin de l'héritage d'`index-parent62.css`) ; couleurs et typographie vivent dans `config.theme` |
 | Langues | `fr` (défaut) + `en` |
 | Header / Footer | `transparent-scroll` / `contact-partners` |
 | Archétype de départ | `parent62` (portail complet) |
 | Backend de référence | `https://www.communecter.org` (le backend local `:5080` était éteint) |
-| SDK | `@communecter/cocolight-api-client` **1.0.169** |
+| SDK | `@communecter/cocolight-api-client` **1.0.172 publiée** (`package.json` `^1.0.172`, commit `09e145a0` du 03/08 — fini le `npm pack` local) |
 | Branche | `main` |
 
 ### Historique des chantiers
@@ -74,6 +74,8 @@ Deux conséquences de conception, à ne pas perdre de vue :
 | 2026-07-29 | Claude | Lot 1c — onglet « Validation » (section `moderation`), suite à l'annonce de formulaires costum. |
 | 2026-07-29 | Claude | Lot 1d — intégration des 5 visuels fournis, passage des 5 pages thématiques en `hero-tinted-overlay`, réharmonisation de `chart1..5`. |
 | 2026-07-30 | Claude | Lot 2 — **création du costum backend** : config minimale sur l'org porteuse. `getcostumjson` passe de HTTP 500 à 200 côté legacy, et la réponse est byte-identique au backend Node. Le périmètre reste vide (§6bis). |
+| 2026-07-30 | Claude | Lot 3 — identité propre : feuille de style dédiée `index-rezo-sante-reunion.css` (fin de l'héritage parent62, `82669e97`), **Fraunces** en titres à la place du Baloo 2 hérité (`306380c8`), et `hero-carousel` en tête de `/thematiques` — **placement d'ESSAI** (`f0e0893f`). Mergé dans `main` le **02/08** via `36430caa`. |
+| 2026-08-03 | Claude | Synchronisation transverse : merge `fix/institut-bleu-ui` (`94251b7b`) → SDK **1.0.172 publiée**, `VITE_SITE_PUBLIC_URL` (§8). Gates rejoués : typecheck ✅, préflight **412/412 (22 fichiers)** ✅. Mise à jour de ce dossier. |
 
 ---
 
@@ -97,9 +99,9 @@ Deux conséquences de conception, à ne pas perdre de vue :
 Communecter (backend)                    SiteForge (ce dépôt)
 ─────────────────────                    ────────────────────
 entité  rezoSanteReunion  ──── slug ───▶ sites.json → config.prod.rezo-sante-reunion.json
-  └─ costum  ⚠ ABSENT                       ├─ theme  « Lumière du matin » (light + dark)
+  └─ costum  ✔ posé (30/07, §6bis)          ├─ theme  « Lumière du matin » (light + dark)
                                             ├─ header transparent-scroll · footer contact-partners
-données scopées par                         ├─ 14 pages / 40 sections / 14 types
+données scopées par                         ├─ 14 pages / 41 sections / 16 types (03/08)
   source.key      ┐                         ├─ profiles (6 types)
   source.keys     ├─ sourceKey[] ───────▶   ├─ commandPalette (⌘K)
   reference.costum┘   (union native)        └─ admin (9 onglets : validation, import/export, référencement…)
@@ -217,9 +219,10 @@ Sondé le **29/07** sur `https://www.communecter.org`.
 | Tags portés par l'entité | `Santé` · `Ecran` · `Addiction` · `Alimentation` · `Activité physique` · `Competences psycho social` · `Sommeil` · `sédentarité` · `Santé Sexuelle` |
 | Périmètres sondés | **9 · tous VIDES** (`config:probe`) |
 
-**Conséquence directe** : le site rend parfaitement (14/14 pages, 40/40 sections) mais **toutes ses
-pages de recherche seront désertes en production** tant que le costum n'existe pas et qu'aucune fiche
-n'y est rattachée. Ce n'est pas un défaut de configuration : c'est l'état de la donnée.
+**Conséquence directe** : le site rend parfaitement (14/14 pages, 40/40 sections au sondage — 41
+depuis le 30/07) mais **toutes ses pages de recherche seront désertes en production** tant qu'aucune
+fiche n'est rattachée au costum (créé depuis, le 30/07 — §6bis). Ce n'est pas un défaut de
+configuration : c'est l'état de la donnée.
 
 **Piège évité** — le vocabulaire de thématiques donné à l'oral ne correspond pas aux tags réels :
 
@@ -395,8 +398,8 @@ doublon à traiter puisqu'il concerne le porteur lui-même.
 | Domaine | Fichiers |
 |---|---|
 | Config | [`../config.prod.rezo-sante-reunion.json`](../config.prod.rezo-sante-reunion.json) |
-| Déclaration du site | [`../sites.json`](../sites.json) — `{slug, config, css}` (pas de clé `images`, cf. §11) |
-| Thème | `config.theme` (couleurs) + [`../src/index-parent62.css`](../src/index-parent62.css) (mapping partagé) |
+| Déclaration du site | [`../sites.json`](../sites.json) — `{slug, config, css, images}` (vérifié 03/08 ; **ni `domain` ni `coolifyApp`** : la cible de déploiement n'est pas déclarée, cf. §8) |
+| Thème | `config.theme` (couleurs + typographie : `sans` Hanken Grotesk, `serif` **Fraunces**, `mono` Spline Sans Mono) + [`../src/index-rezo-sante-reunion.css`](../src/index-rezo-sante-reunion.css) (feuille propre depuis le 30/07) |
 | Assets | **5 visuels** dans `public/images/rezoSanteReunion/` (fournis le 29/07, générés via Lovable) ; clé `images` déclarée dans `sites.json` |
 
 ---
@@ -445,7 +448,8 @@ quatre limites) ou import.
 |---|---|
 | Archétype `parent62` | seul du parc à tenir **annuaire + ressources + projets** ensemble, et ses 8 pages `/theme/*` sont un gabarit directement transposable |
 | Périmètre par **costum**, pas par tag `#santé` | le tag impose `notSourceKey` sans garde → publication immédiate sans modération, et référencement admin inopérant. Le costum est de toute façon requis par l'import |
-| CSS **partagé** `index-parent62` | modèle prescrit par la recette thème : plusieurs sites partagent un CSS et divergent par `config.theme`. Vérifié avant : les **40 tokens sont mappés**, y compris `warning/success/info/error` |
+| CSS **propre** `index-rezo-sante-reunion` (30/07 — revient sur le partage initial d'`index-parent62`) | la feuille parent62 embarquait ~60 lignes d'identité locale (10 couleurs de territoire `#territoire-*`, `.p62-*`) dont **aucun sélecteur ne pouvait correspondre ici** (vérifié : 0 occurrence dans la config). La nouvelle feuille (165 lignes à sa création, 168 depuis les commentaires Fraunces de `306380c8`) ne garde que le générique : mapping `@theme inline`, réglages document, mini-prose légale, scrollbar, `--gradient-section`. Rien ne change à l'écran — tokens et polices viennent de `config.theme`. Le partage reste légitime **à design identique** (communes, sites sport) ; ce n'en était pas un cas (`82669e97`) |
+| Titres **Fraunces** (serif douce à taille optique), à la place du Baloo 2 hérité (30/07) | Baloo 2 venait de `config:init --from parent62`, pas d'un choix : le rond-jovial travaille contre les pages addictions / santé mentale et l'audience institutionnelle (ARS, CPTS, Thésis). Corps inchangé (Hanken Grotesk), mono conservée (Spline Sans Mono) ; repli passé de `sans-serif` à `serif`. Vérifié : Fraunces porte réellement les 4 graisses `400;500;600;700` que `buildGoogleFontURL` demande toujours — sinon le navigateur synthétise de faux gras (`306380c8`) |
 | Thème « Lumière du matin » (vert feuille `oklch(0.52 0.13 145)` + or `oklch(0.78 0.13 80)`) | le parc est saturé de bleus (7 configs) ; les visuels de référence du client sont en lumière dorée et verts naturels ; le corail glissait vers le registre « urgence », inadapté à la prévention |
 | 5 thématiques en `chart1..5` | une thématique = une teinte, réutilisée par les graphiques et l'observatoire si un jour il est activé |
 | Header `transparent-scroll` **sans** `piggyBank` ni `urgenceButton` | standard de fait du parc (10/14) ; les deux autres champs auraient été du décor (pas de cagnotte, pas d'urgence) |
@@ -490,21 +494,43 @@ plus « réseau » des cinq), et les quatre `hero-*` sur leurs pages thématique
 le voile sans `backgroundImage` (`HeroTintedOverlay.tsx:26`), il retombe seulement sur l'encre du
 thème. À unifier le jour où la thématique aura son visuel.
 
+**Essai en cours (30/07, `f0e0893f`) — carrousel des héros.** Un `hero-carousel` de 4 diapositives,
+**dérivées** des héros existants des pages `/theme/*` (titre, sous-titre, image, alt repris tels
+quels + CTA vers la page), a été branché **en tête de `/thematiques`** (`sections[0]`,
+`autoplay: false`). **C'est un placement d'ESSAI, pas une décision actée** — le message de commit le
+dit. Le carrousel en home, comme sur la maquette Lovable, reste à arbitrer : il coûterait 4 sections,
+4 ancres et 4 URL partageables ; `/theme/addictions` sans image donnerait une diapositive trouée ; et
+la photo de home est en 16:9 quand les thématiques sont en 3:2 — le candidat LCP basculerait. Se
+retire en enlevant un bloc. Cf. §13.
+
 ---
 
 ## 8. Étapes de mise en place
 
-1. ☐ **Créer le costum `rezoSanteReunion`** côté Communecter (slug + costumId + costumType) — **bloquant** pour tout le reste.
+1. ☑ ~~**Créer le costum `rezoSanteReunion`** côté Communecter~~ — **fait le 30/07** (lot 2 :
+   config minimale *costum-in-org* posée sur l'org porteuse, §6bis). Le costum **résout** ; il reste à le **peupler**.
 2. ☐ **Amorcer depuis `#santé`** : extraire les **1 088** fiches taguées, les trier/nettoyer avec PSR
-   (à commencer par le doublon PSR lui-même, §5.4), puis les **référencer** sous
+   (à commencer par le doublon PSR lui-même, §5.8), puis les **référencer** sous
    `reference.costum: "rezoSanteReunion"`.
 3. ☐ **Arrêter le vocabulaire des « sujets pratiqués »** avec PSR, et le renseigner pendant le
    nettoyage — sans quoi les 5 pages thématiques restent inexploitables (§5.2).
 4. ☐ Rejouer `npm run config:probe -- config.prod.rezo-sante-reunion.json` → viser 9/9 périmètres non vides.
-4. ☑ ~~Déposer les visuels~~ — fait le 29/07 (5 fichiers, clé `images` restaurée). ☐ Reste : une image pour `/theme/addictions`, une pour la section communauté, et le **remplacement des visuels IA par de vraies photos**.
-5. ☐ Compléter les marqueurs « à compléter » du socle légal (§11).
-6. ☐ Prévisualiser : `VITE_SLUG=rezoSanteReunion npm run dev`.
-7. ☐ Build / déploiement (DNS `rezoSanté.re`).
+5. ☑ ~~Déposer les visuels~~ — fait le 29/07 (5 fichiers, clé `images` restaurée). ☐ Reste : une image pour `/theme/addictions`, une pour la section communauté, et le **remplacement des visuels IA par de vraies photos**.
+6. ☐ Compléter les marqueurs « à compléter » du socle légal (§11).
+7. ☐ **Trancher l'essai `hero-carousel`** (§7.1) : le garder en tête de `/thematiques`, le porter en
+   home, ou le retirer (un bloc à enlever).
+8. ☐ Prévisualiser : `VITE_SLUG=rezoSanteReunion npm run dev`.
+9. ☐ Build / déploiement (DNS `rezoSanté.re`). **Variables d'env à connaître depuis le 03/08**
+   (merge `fix/institut-bleu-ui`) :
+   - **`VITE_SITE_PUBLIC_URL`** — URL publique du site-json **lui-même** (canonical, `og:url`/`og:image`,
+     `sitemap.xml`, flux RSS) ; lue par `getSitePublicUrl()`
+     ([`../src/lib/constant/common.ts`](../src/lib/constant/common.ts)) et
+     [`../server/lib/sitemap.js`](../server/lib/sitemap.js) ; dérivée par `deploy:env` depuis
+     `sites.json` (`aliases[0]` prioritaire, sinon `domain`). ⚠ L'entrée `rezoSanteReunion` de
+     `sites.json` ne déclare **ni `domain` ni `coolifyApp`** (vérifié 03/08) → repli `getServerUrl()`
+     (comportement historique) tant que la cible de déploiement n'est pas déclarée.
+   - **`VITE_SERVER_URL`** — à ne PAS confondre : c'est le serveur **communecter** (images `/upload`,
+     embed co2, cagnotte), qui garde sa valeur parc.
 
 ---
 
@@ -541,13 +567,37 @@ cf. §5.7). Gates : validate ✅, audit **0 constat**, préflight **328/328**, r
 > n'est ni déclaré ni supprimé. Sans conséquence : **git ne suit pas les dossiers vides**, donc rien
 > n'atteint un commit ni la CI. Un `rmdir` suffit, et le problème disparaîtra dès que de vrais
 > visuels seront déposés et la clé `images` restaurée dans `sites.json`.
+> **Résolu depuis** : visuels déposés et clé `images` restaurée le 29/07 (lot 1d).
+
+**Lot 3 — 30/07 — identité propre + essai carrousel.** Trois commits, mergés dans `main` le 02/08
+via `36430caa` (branche `feat/rezo-sante-et-correctifs-heros`). Aucun impact sur les autres sites — le
+premier commit **retire** même le couplage à parent62 :
+
+| Commit | Changement | Gates au commit |
+|---|---|---|
+| `82669e97` | **Feuille de style propre** `src/index-rezo-sante-reunion.css` (165 lignes) + repointage de `sites.json`. Fin de l'héritage d'`index-parent62.css` et de ses ~60 lignes d'identité parent62 sans sélecteur correspondant ici (§7). Rien ne change à l'écran. | préflight 331 · audit RAS · rendu 14 pages / 40 sections |
+| `306380c8` | **Fraunces** en `serif` de `theme.typography`, à la place du Baloo 2 hérité ; repli `sans-serif` → `serif` ; corps (Hanken Grotesk) et mono (Spline Sans Mono) inchangés (§7). | audit RAS · préflight 331 · rendu 14 pages / 40 sections |
+| `f0e0893f` | **`hero-carousel` en tête de `/thematiques`** — 4 diapositives dérivées des héros `/theme/*`, `autoplay: false`. **PLACEMENT D'ESSAI, à confirmer** — pas une décision de design actée (§7.1, §13). Les 4 pages thématiques restent en place (ancres et URL intactes). | audit RAS · rendu 14 pages / **41/41 sections** · preload LCP émis sur `/thematiques` pour la seule diapositive 0, `imagesrcset` identique au rendu |
+
+**État au 03/08 — synchronisation transverse (merge `fix/institut-bleu-ui`, `94251b7b`).** Rien de
+spécifique à ce site dans les 17 commits mergés, mais deux faits l'atteignent :
+
+- **SDK 1.0.172 publiée** (commit `09e145a0` du 03/08) — fini le `npm pack` local. Règle notamment la
+  pose du scope costum côté admin (`setCostumScope`,
+  [`../src/modules/admin/lib/ensureCostumScope.ts`](../src/modules/admin/lib/ensureCostumScope.ts)) —
+  concerne directement les 9 onglets du back-office de ce site.
+- **`VITE_SITE_PUBLIC_URL`** au déploiement (§8) — sans effet tant que `sites.json` ne déclare pas de
+  `domain` pour ce site (repli `getServerUrl()`).
+
+Gates rejoués le 03/08 après merge : typecheck ✅ · préflight **412/412 (22 fichiers)** ✅ ·
+`config:validate` ✅ 14 pages · 41 sections.
 
 | Gate | Résultat |
 |---|---|
-| `config:validate` | ✅ 14 pages · 40 sections |
-| `audit:config` | ✅ **0 constat** |
-| `test:preflight` | ✅ 328/328 |
-| `config:render` | ✅ 14/14 pages · **40/40 sections** avec contenu SSR |
+| `config:validate` | ✅ 14 pages · **41 sections** (rejoué le 03/08) |
+| `audit:config` | ✅ RAS (dernière mesure : 30/07, commit `f0e0893f`) |
+| `test:preflight` | ✅ **412/412 (22 fichiers)** (rejoué le 03/08, après merge `fix/institut-bleu-ui`) |
+| `config:render` | ✅ 14/14 pages · **41/41 sections** avec contenu SSR (30/07, commit `f0e0893f`) |
 | `config:probe` | ⛔ **0/9 périmètres** — le costum RÉSOUT désormais (lot 2), mais le périmètre est vide : aucune fiche ne porte encore `source.key`/`source.keys`/`reference.costum` = `rezoSanteReunion` (§6bis) |
 
 ---
@@ -556,17 +606,17 @@ cf. §5.7). Gates : validate ✅, audit **0 constat**, préflight **328/328**, r
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| 1 | Thème & identité | ✅ | light + dark en parité (40 tokens), 5 thématiques en `chart1..5` |
+| 1 | Thème & identité | ✅ | light + dark en parité (40 tokens), 5 thématiques en `chart1..5` ; depuis le 30/07 : feuille propre `index-rezo-sante-reunion.css` + titres **Fraunces** (lot 3) |
 | 2 | Chrome (header/footer) | 🟡 | nav regroupée en 4 entrées ; **coordonnées de contact « à compléter »**, aucun logo partenaire |
 | 3 | Home | ✅ | 6 sections |
-| 4 | Thématiques (hub + 5) | ❌ | rendent, mais **le vocabulaire de classification n'existe pas** : les tags mesurés donnent 1 à 13 fiches, ou 1 348 hors sujet (§5.2). En attente des « sujets pratiqués » |
+| 4 | Thématiques (hub + 5) | ❌ | rendent, mais **le vocabulaire de classification n'existe pas** : les tags mesurés donnent 1 à 13 fiches, ou 1 348 hors sujet (§5.2). En attente des « sujets pratiqués ». Hub : `hero-carousel` en tête depuis le 30/07 — **essai à confirmer** (§7.1) |
 | 5 | Annuaire | 🟡 | rend ; périmètre vide |
 | 6 | Projets | 🟡 | rend ; périmètre vide |
 | 7 | Ressources | 🟡 | rend ; **convention de sous-type à arrêter** (§11) |
 | 8 | Agenda | 🟡 | rend ; périmètre vide |
 | 9 | À propos | ✅ | 6 sections, alternance des registres |
 | 10 | Socle légal | 🟡 | 2 pages ; marqueurs « à compléter » à renseigner |
-| 11 | Back-office + import | 🟡 | 8 onglets dont `import-export` ; **exige le costum** |
+| 11 | Back-office + import | 🟡 | **9 onglets** (mesuré 03/08 : dashboard, membres, annuaire, projets, agenda, ressources, validation, import-export, référencement) ; le costum résout depuis le 30/07, le périmètre reste à peupler |
 | 12 | Création de fiches | 🟡 | **prévue** : formulaires costum annoncés. Porte de validation armée et file « Validation » posée — il reste à écrire les `costumForms` et le `floatingActionButton` |
 | 13 | Actions d'engagement | ❌ | **hors config** — chiffrage §4.3 |
 | 14 | Partenariat inter-orga | ❌ | **hors config** — chiffrage §4.3 |
@@ -575,8 +625,10 @@ cf. §5.7). Gates : validate ✅, audit **0 constat**, préflight **328/328**, r
 
 ## 11. Points d'attention / limitations
 
-- **Le costum n'existe pas** (`costum: null`). Tant qu'il n'est pas créé, les 9 périmètres restent
-  vides et le back-office d'import ne peut pas fonctionner. C'est le blocage n°1.
+- **Le costum est créé (30/07, §6bis) mais son périmètre est VIDE.** `sourceKey[]=rezoSanteReunion`
+  renvoie 0 résultat sur les deux backends : aucune fiche ne porte encore
+  `source.key`/`source.keys`/`reference.costum` = `rezoSanteReunion`. Le blocage n°1 est désormais le
+  **peuplement** (référencement à l'unité §5.6, ou import).
 - **Création de fiches : prévue, pas encore activée.** Des formulaires costum liés à `rezoSanteReunion` sont annoncés (29/07) ; le socle est prêt (porte de validation armée, file « Validation »). Reste le blocage de forme : le bouton flottant n'accepte **qu'un seul**
   `modal` : on ne peut pas proposer « créer un acteur » *et* « créer un projet » par ce biais. Et
   surtout, un `modal: "add-X"` sans document `costumForms.X` correspondant produit un bouton qui
@@ -606,6 +658,9 @@ cf. §5.7). Gates : validate ✅, audit **0 constat**, préflight **328/328**, r
 
 ## 12. Dépendances SDK ↔ cocolight-api-client
 
+SDK installé : **1.0.172 publiée** (`package.json` `^1.0.172`, commit `09e145a0` du 03/08 — fini le
+`npm pack` local).
+
 | Demande | État | Preuve / substitut |
 |---|---|---|
 | Verbes d'engagement typés (`like`, `partenaire`, `soutien`, `intéressé`, `réutilise`) | ❌ absent | `ENTITY_ACTION_CONFIG` fermé ; `vote()` limité à `news`/`comments` |
@@ -613,6 +668,7 @@ cf. §5.7). Gates : validate ✅, audit **0 constat**, préflight **328/328**, r
 | Lien orga↔orga symétrique | ❌ absent | `_buildLinkFilters` : `linkType ∈ memberOf \| projects \| events` |
 | Compteur d'engagement sur une entité | ❌ absent | `voteCount` n'existe que sur `news`/`comments` |
 | Import de masse | ✅ présent | `entity.previewImport` (géocodage + warnings) puis `entity.importElements` (chunké) |
+| Pose du scope costum côté admin (référencement, validation…) | ✅ réglé en **1.0.172** | `setCostumScope` — [`../src/modules/admin/lib/ensureCostumScope.ts`](../src/modules/admin/lib/ensureCostumScope.ts) ; concerne les 9 onglets du back-office de ce site |
 
 ---
 
@@ -620,7 +676,8 @@ cf. §5.7). Gates : validate ✅, audit **0 constat**, préflight **328/328**, r
 
 | Question | Responsable |
 |---|---|
-| Créer le costum `rezoSanteReunion` — **bloquant** | Client / admin Communecter |
+| ~~Créer le costum `rezoSanteReunion`~~ **fait le 30/07 (§6bis)** → reste le **peuplement** : qui référence/importe les premières fiches, et quand ? | PSR / admin Communecter |
+| **Essai `hero-carousel`** (30/07) : confirmer ou non son maintien en tête de `/thematiques`, et arbitrer le portage en home voulu par la maquette Lovable (coûts mesurés : diapositive addictions sans image, ratio 16:9 vs 3:2 → bascule du candidat LCP) | Client + Thomas |
 | **Vocabulaire des « sujets pratiqués »** : quelle liste, saisie où, renseignée quand ? Sans elle, les 5 pages thématiques n'ont rien à filtrer | Tibor + PSR (@Pierre, @duvardfrancois, @SebastienPSR) |
 | Reprise des **1 088 fiches `#santé`** : qui trie, selon quels critères d'inclusion ? | PSR |
 | **Doublon PSR** (`PromotionSanteLaReunion` / `promotionSanteLaReunion`) : lequel fait foi ? | PSR |

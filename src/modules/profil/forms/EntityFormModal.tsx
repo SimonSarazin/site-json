@@ -98,7 +98,12 @@ export function EntityFormModal({ config: configProp, spec, open, onOpenChange, 
 
   const rawDescriptor = typeof config.descriptor === "function" ? config.descriptor(ctx) : config.descriptor;
   const descriptor = useMemo(() => configToDescriptor(formDescriptorToConfig(rawDescriptor), { tLoc: PRESERVE_LABELS }), [rawDescriptor]);
-  const defaultValues = useMemo(() => config.buildDefaults(ctx), [config, effMode, entity, scope]); // eslint-disable-line react-hooks/exhaustive-deps
+  // `open` dans les deps : le seed doit être RELU à chaque ouverture. L'entité peut être une
+  // instance STABLE dont le serverData est muté en place — cas du profil de l'utilisateur
+  // connecté : useEntityBySlugQuery renvoie `me` (jamais re-instancié, l'invalidation react-query
+  // re-renvoie la même référence). Sans ce dep, le seed du PREMIER rendu restait figé et la
+  // modale ré-ouvrait sur l'ANCIENNE adresse après un save pourtant réussi (save() → refresh()).
+  const defaultValues = useMemo(() => config.buildDefaults(ctx), [config, effMode, entity, scope, open]); // eslint-disable-line react-hooks/exhaustive-deps
   const schema = useMemo(() => config.getSchema?.(ctx), [config, effMode, entity]); // eslint-disable-line react-hooks/exhaustive-deps
   const listsOptions = config.listsFromCarrier ? ((carrier?.serverData?.lists as Record<string, string[]> | undefined) ?? {}) : undefined;
   const fieldProps = useMemo(() => {

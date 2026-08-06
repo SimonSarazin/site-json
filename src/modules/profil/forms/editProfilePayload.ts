@@ -27,7 +27,11 @@ type Data = Record<string, unknown>;
 
 const ADDRESS_KEYS = [
   "addressCountry", "streetAddress", "postalCode", "addressLocality", "localityId",
-  "level1", "level1Name", "level2", "level2Name", "level3", "level3Name", "level4", "level4Name", "codeInsee",
+  // Niveaux 1..5 COMPLETS (contrat SDK ≥ 1.0.173, parité legacy) : level2 = niveau
+  // d'autres pays (Wallonie/BE, provinces/MG), level5 = EPCI. Sans eux, le round-trip
+  // d'édition détruisait ces clés (le serveur remplace l'objet address ENTIER).
+  "level1", "level1Name", "level2", "level2Name", "level3", "level3Name",
+  "level4", "level4Name", "level5", "level5Name", "codeInsee",
 ] as const;
 const SOCIAL_KEYS = ["github", "gitlab", "facebook", "twitter", "instagram", "diaspora", "mastodon", "telegram", "signal"] as const;
 
@@ -75,7 +79,7 @@ registerTransform("pf:addressWrite", (_v, all) =>
   buildAddressFromForm((all ?? {}) as Parameters<typeof buildAddressFromForm>[0], { gate: "countryLocality" }) ?? "");
 
 // ── Transformers READ ────────────────────────────────────────────────────────
-// Adresse (objet serveur → 14 champs plats) + social (objet socialNetwork → 9 champs plats), via les groupes.
+// Adresse (objet serveur → 16 champs plats) + social (objet socialNetwork → 9 champs plats), via les groupes.
 registerTransform("pf:addressRead", (v) => {
   const a = (v ?? {}) as Data;
   return Object.fromEntries(ADDRESS_KEYS.map((k) => [k, a[k] || ""]));

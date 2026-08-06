@@ -9,7 +9,7 @@ import "@/modules/admin/i18n";
  * costum courant (unset/set preferences.toBeValidated[slug]) avec cascade côté serveur (ValidateGroupAction).
  */
 export interface ValidatableCarrier {
-  validateGroup: (type: string, id: string, valid: boolean) => Promise<{ result: boolean }>;
+  validateGroup: (type: string, id: string, valid: boolean) => Promise<{ result: boolean; msg?: string }>;
 }
 
 /** Mutation de (dé)validation d'un élément sous le costum du carrier (P4). Toast + refetch de la liste. */
@@ -18,7 +18,12 @@ export function useValidateGroup(onDone?: () => void) {
   const t = useT("modules/admin");
   return useMutation({
     mutationFn: async ({ carrier, type, id, valid }: { carrier: ValidatableCarrier; type: string; id: string; valid: boolean }) => {
-      return carrier.validateGroup(type, id, valid);
+      const res = await carrier.validateGroup(type, id, valid);
+      // Un REFUS métier arrive en HTTP 200 avec `{result:false, msg}` (backend Node : garde
+      // `isCostumAdmin` sur le costum ciblé, admin.routes.ts) — sans ce test `onSuccess` affichait
+      // « Validé » alors que RIEN n'avait été écrit, et le refetch reposait la ligne en attente.
+      if (res && res.result === false) throw new Error(res.msg || t("useValidateGroup.error"));
+      return res;
     },
     onSuccess: (_res, vars) => {
       toast.success(t(vars.valid ? "useValidateGroup.validated" : "useValidateGroup.invalidated"));
