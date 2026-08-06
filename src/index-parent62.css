@@ -234,6 +234,15 @@ footer nav { font-family: var(--font-serif); }
      sur la maquette source (HP Maquette v4). Couleur de MARQUE, ne suit pas le thème. */
   --p62-map-bg-from: #1fae98;
   --p62-map-bg-to: #87bf9a;
+
+  /* Couleurs de MARQUE de la home refaite (maquette v4) : bandeaux marine
+     (featured-carousel, articleTeaser, wordmark du header) et accent turquoise
+     des CTA/badges. Consommées par la config (`background`/`accentColor`/
+     `header.textColor` en var()) ET reprises par le THÈME (config.theme :
+     primary clair ≈ marine, accent ≈ turquoise) — cf.
+     commentaire/parent62-unite-couleurs-home.md. Fixes clair/sombre. */
+  --p62-marine: #2c3e50;
+  --p62-turquoise: #4ecdc4;
 }
 
 /* Panneau sombre de la bande « Votre territoire » (charte parent62.org). */

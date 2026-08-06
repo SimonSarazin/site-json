@@ -32,7 +32,7 @@
     "type": "stacked",
     "path": "/",
     "logo": "/images/parent62/logo.png",
-    "textColor": "#2c3e50",
+    "textColor": "var(--p62-marine)",
     "logoAlt": {
       "fr": "Parent62 — Réseau Parentalité 62",
       "en": "Parent62 — Parenting Network 62"
@@ -493,8 +493,8 @@
               "to": "/blog/:slug",
               "toById": "/blog/id/:id"
             },
-            "background": "#2c3e50",
-            "accentColor": "#4ecdc4",
+            "background": "var(--p62-marine)",
+            "accentColor": "var(--p62-turquoise)",
             "autoplay": true,
             "autoplayIntervalMs": 6000
           }
@@ -607,8 +607,8 @@
             "costumSlug": "parent62",
             "limit": 6,
             "viewAllHref": "/blog",
-            "background": "#2c3e50",
-            "accentColor": "#4ecdc4"
+            "background": "var(--p62-marine)",
+            "accentColor": "var(--p62-turquoise)"
           }
         }
       ]
@@ -3604,16 +3604,16 @@
                 "accent": {
                   "field": "territoires",
                   "colors": {
-                    "Arrageois": "#6d5da8",
-                    "Artois": "#b7cb6b",
-                    "Audomarois": "#e5af32",
-                    "Boulonnais": "#c34a42",
-                    "Calaisis": "#ed8a4c",
-                    "Entre Mer et Terres": "#3fb4be",
-                    "Familles en sol mineur": "#a2537e",
-                    "Familles en sol mineur Hénin Carvin": "#a2537e",
-                    "Familles en sol mineur Lens Liévin": "#97776b",
-                    "Ternois Bruaysis": "#d492a9"
+                    "Arrageois": "var(--territoire-arrageois)",
+                    "Artois": "var(--territoire-artois)",
+                    "Audomarois": "var(--territoire-audomarois)",
+                    "Boulonnais": "var(--territoire-boulonnais)",
+                    "Calaisis": "var(--territoire-calaisis)",
+                    "Entre Mer et Terres": "var(--territoire-entre-mer-et-terres)",
+                    "Familles en sol mineur": "var(--territoire-familles-en-sol-mineur)",
+                    "Familles en sol mineur Hénin Carvin": "var(--territoire-fsm-henin-carvin)",
+                    "Familles en sol mineur Lens Liévin": "var(--territoire-fsm-lens-lievin)",
+                    "Ternois Bruaysis": "var(--territoire-ternois-bruaysis)"
                   }
                 },
                 "facets": [
@@ -14047,16 +14047,16 @@
                         "accent": {
                           "field": "territoires",
                           "colors": {
-                            "Arrageois": "#6d5da8",
-                            "Artois": "#b7cb6b",
-                            "Audomarois": "#e5af32",
-                            "Boulonnais": "#c34a42",
-                            "Calaisis": "#ed8a4c",
-                            "Entre Mer et Terres": "#3fb4be",
-                            "Familles en sol mineur": "#a2537e",
-                            "Familles en sol mineur Hénin Carvin": "#a2537e",
-                            "Familles en sol mineur Lens Liévin": "#97776b",
-                            "Ternois Bruaysis": "#d492a9"
+                            "Arrageois": "var(--territoire-arrageois)",
+                            "Artois": "var(--territoire-artois)",
+                            "Audomarois": "var(--territoire-audomarois)",
+                            "Boulonnais": "var(--territoire-boulonnais)",
+                            "Calaisis": "var(--territoire-calaisis)",
+                            "Entre Mer et Terres": "var(--territoire-entre-mer-et-terres)",
+                            "Familles en sol mineur": "var(--territoire-familles-en-sol-mineur)",
+                            "Familles en sol mineur Hénin Carvin": "var(--territoire-fsm-henin-carvin)",
+                            "Familles en sol mineur Lens Liévin": "var(--territoire-fsm-lens-lievin)",
+                            "Ternois Bruaysis": "var(--territoire-ternois-bruaysis)"
                           }
                         },
                         "facets": [
@@ -14685,19 +14685,19 @@
         "cardForeground": "oklch(0.26 0.035 270)",
         "popover": "oklch(1 0 0)",
         "popoverForeground": "oklch(0.26 0.035 270)",
-        "primary": "oklch(0.48 0.15 264)",
+        "primary": "oklch(0.35 0.04 250)",
         "primaryForeground": "oklch(0.985 0.01 255)",
-        "secondary": "oklch(0.935 0.028 265)",
-        "secondaryForeground": "oklch(0.39 0.11 265)",
+        "secondary": "oklch(0.94 0.035 183)",
+        "secondaryForeground": "oklch(0.40 0.08 183)",
         "muted": "oklch(0.953 0.009 85)",
         "mutedForeground": "oklch(0.50 0.025 275)",
-        "accent": "oklch(0.76 0.13 78)",
-        "accentForeground": "oklch(0.28 0.05 70)",
+        "accent": "oklch(0.79 0.10 185)",
+        "accentForeground": "oklch(0.28 0.04 250)",
         "destructive": "oklch(0.58 0.19 25)",
         "destructiveForeground": "oklch(0.985 0.01 20)",
         "border": "oklch(0.906 0.012 85)",
         "input": "oklch(0.906 0.012 85)",
-        "ring": "oklch(0.48 0.15 264)",
+        "ring": "oklch(0.35 0.04 250)",
         "warning": "oklch(0.80 0.14 65)",
         "warningForeground": "oklch(0.28 0.05 60)",
         "success": "oklch(0.62 0.12 155)",
@@ -14706,19 +14706,19 @@
         "infoForeground": "oklch(0.180 0.06 235)",
         "error": "oklch(0.58 0.19 25)",
         "errorForeground": "oklch(0.985 0.01 20)",
-        "chart1": "oklch(0.55 0.14 264)",
+        "chart1": "oklch(0.60 0.11 180)",
         "chart2": "oklch(0.71 0.11 358)",
         "chart3": "oklch(0.72 0.13 45)",
         "chart4": "oklch(0.70 0.10 195)",
         "chart5": "oklch(0.75 0.11 125)",
         "sidebar": "oklch(0.985 0.005 85)",
         "sidebarForeground": "oklch(0.26 0.035 270)",
-        "sidebarPrimary": "oklch(0.48 0.15 264)",
+        "sidebarPrimary": "oklch(0.35 0.04 250)",
         "sidebarPrimaryForeground": "oklch(0.985 0.01 255)",
-        "sidebarAccent": "oklch(0.935 0.028 265)",
-        "sidebarAccentForeground": "oklch(0.39 0.11 265)",
+        "sidebarAccent": "oklch(0.94 0.035 183)",
+        "sidebarAccentForeground": "oklch(0.40 0.08 183)",
         "sidebarBorder": "oklch(0.906 0.012 85)",
-        "sidebarRing": "oklch(0.48 0.15 264)"
+        "sidebarRing": "oklch(0.35 0.04 250)"
       },
       "dark": {
         "background": "oklch(0.20 0.03 265)",
@@ -14727,19 +14727,19 @@
         "cardForeground": "oklch(0.94 0.008 250)",
         "popover": "oklch(0.23 0.032 265)",
         "popoverForeground": "oklch(0.94 0.008 250)",
-        "primary": "oklch(0.64 0.15 264)",
+        "primary": "oklch(0.75 0.10 183)",
         "primaryForeground": "oklch(0.16 0.03 265)",
-        "secondary": "oklch(0.31 0.04 264)",
-        "secondaryForeground": "oklch(0.88 0.03 260)",
+        "secondary": "oklch(0.32 0.045 190)",
+        "secondaryForeground": "oklch(0.88 0.05 183)",
         "muted": "oklch(0.29 0.02 262)",
         "mutedForeground": "oklch(0.71 0.02 258)",
-        "accent": "oklch(0.79 0.13 78)",
-        "accentForeground": "oklch(0.22 0.04 70)",
+        "accent": "oklch(0.72 0.11 180)",
+        "accentForeground": "oklch(0.18 0.03 250)",
         "destructive": "oklch(0.62 0.18 25)",
         "destructiveForeground": "oklch(0.985 0.01 20)",
         "border": "oklch(0.33 0.02 262)",
         "input": "oklch(0.30 0.02 262)",
-        "ring": "oklch(0.64 0.15 264)",
+        "ring": "oklch(0.75 0.10 183)",
         "warning": "oklch(0.80 0.13 65)",
         "warningForeground": "oklch(0.22 0.04 60)",
         "success": "oklch(0.68 0.11 155)",
@@ -14748,19 +14748,19 @@
         "infoForeground": "oklch(0.16 0.02 235)",
         "error": "oklch(0.62 0.18 25)",
         "errorForeground": "oklch(0.985 0.01 20)",
-        "chart1": "oklch(0.68 0.14 264)",
+        "chart1": "oklch(0.70 0.11 180)",
         "chart2": "oklch(0.76 0.11 358)",
         "chart3": "oklch(0.76 0.13 45)",
         "chart4": "oklch(0.75 0.10 195)",
         "chart5": "oklch(0.78 0.11 125)",
         "sidebar": "oklch(0.22 0.03 265)",
         "sidebarForeground": "oklch(0.94 0.008 250)",
-        "sidebarPrimary": "oklch(0.64 0.15 264)",
+        "sidebarPrimary": "oklch(0.75 0.10 183)",
         "sidebarPrimaryForeground": "oklch(0.16 0.03 265)",
-        "sidebarAccent": "oklch(0.31 0.04 264)",
-        "sidebarAccentForeground": "oklch(0.88 0.03 260)",
+        "sidebarAccent": "oklch(0.32 0.045 190)",
+        "sidebarAccentForeground": "oklch(0.88 0.05 183)",
         "sidebarBorder": "oklch(0.33 0.02 262)",
-        "sidebarRing": "oklch(0.64 0.15 264)"
+        "sidebarRing": "oklch(0.75 0.10 183)"
       }
     },
     "typography": {
@@ -14978,16 +14978,16 @@
               "accent": {
                 "field": "territoires",
                 "colors": {
-                  "Arrageois": "#6d5da8",
-                  "Artois": "#b7cb6b",
-                  "Audomarois": "#e5af32",
-                  "Boulonnais": "#c34a42",
-                  "Calaisis": "#ed8a4c",
-                  "Entre Mer et Terres": "#3fb4be",
-                  "Familles en sol mineur": "#a2537e",
-                  "Familles en sol mineur Hénin Carvin": "#a2537e",
-                  "Familles en sol mineur Lens Liévin": "#97776b",
-                  "Ternois Bruaysis": "#d492a9"
+                  "Arrageois": "var(--territoire-arrageois)",
+                  "Artois": "var(--territoire-artois)",
+                  "Audomarois": "var(--territoire-audomarois)",
+                  "Boulonnais": "var(--territoire-boulonnais)",
+                  "Calaisis": "var(--territoire-calaisis)",
+                  "Entre Mer et Terres": "var(--territoire-entre-mer-et-terres)",
+                  "Familles en sol mineur": "var(--territoire-familles-en-sol-mineur)",
+                  "Familles en sol mineur Hénin Carvin": "var(--territoire-fsm-henin-carvin)",
+                  "Familles en sol mineur Lens Liévin": "var(--territoire-fsm-lens-lievin)",
+                  "Ternois Bruaysis": "var(--territoire-ternois-bruaysis)"
                 }
               },
               "facets": [

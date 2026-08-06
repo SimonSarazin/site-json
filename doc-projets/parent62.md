@@ -97,6 +97,16 @@ et le réseau social Communecter, en **conservant le WordPress** pour les conten
   pausable + `prefers-reduced-motion`, `aria-label` du footer retiré) ; images converties en WebP
   (**5,7 Mo → ~1,0 Mo**, `carte-territoire.png` jamais référencée supprimée) —
   `test:unit` **2 229/2 229** ✅.
+- **06/08 — unification des couleurs du thème sur l'identité de la home** (stratégie A du
+  rapport `commentaire/parent62-unite-couleurs-home.md`, local) : le thème passe
+  d'indigo/or à **marine/turquoise/teal** (~12 tokens clair+sombre — `primary`→marine
+  #2c3e50, `accent`→turquoise #4ecdc4, `secondary`→menthe, `chart1`→teal) ; les 35
+  bandeaux `searchHeader` (`--gradient-section` dérivé de primary/accent), CTA, badges
+  et liens suivent d'un coup. Tokens de marque `--p62-marine`/`--p62-turquoise` déclarés
+  dans `index-parent62.css` et consommés par la config home (`background`/`accentColor`/
+  `header.textColor` en `var()` — une seule source de vérité) ; hex territoires dupliqués
+  de `/recherche` + `/temoignages` → `var(--territoire-*)` ; 7 snapshots du skill
+  resynchronisés (`config:example --write`). Home visuellement inchangée (vérifié).
 
 ---
 
