@@ -98,28 +98,28 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
     <section
       id={id}
       style={sectionStyle}
-      className={cn("relative overflow-hidden py-30 md:py-24", sectionClassName)}
+      className={cn("relative overflow-hidden py-16 md:py-24", sectionClassName)}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
     >
-      {/* Badge rendu UNE SEULE fois, en position absolue : contrairement au titre/description/CTA
-          (dans `FeaturedCarouselSlide`, qui défilent avec le carrousel), il ne doit pas bouger
-          d'une diapositive à l'autre. `container mx-auto px-4 sm:px-8 md:px-24` reproduit
-          l'alignement gauche du `Carousel` juste en dessous (même padding responsive), pour que le
-          badge tombe pile au-dessus du texte à chaque taille d'écran. */}
+      {/* Badge rendu UNE SEULE fois (hors des diapositives : il ne bouge pas d'une
+          slide à l'autre), DANS LE FLUX au-dessus du carrousel — même `container`/
+          padding que lui, donc même alignement gauche que le texte des diapositives.
+          En position absolue (version précédente), il chevauchait le titre dès que
+          celui-ci était long, ou que l'image manquait (la colonne texte, centrée
+          verticalement, remontait dessous) : en flux, sa place est réservée par
+          construction quelle que soit la hauteur du contenu. */}
       {badgeLabel && (
-        <div className="pointer-events-none absolute inset-x-0 top-20 sm:top-10 md:top-16 z-20">
-          <div className="container mx-auto px-4 sm:px-8 md:px-24">
-            <Badge
-              variant={accentColor ? undefined : "secondary"}
-              style={accentStyle}
-              className="-rotate-4 rounded-none border-none px-3 py-1 sm:px-4 sm:py-1.5 text-2xl sm:text-2xl md:text-5xl font-serif"
-            >
-              {t(badgeLabel)}
-            </Badge>
-          </div>
+        <div className="container mx-auto px-4 sm:px-8 md:px-24 mb-6 md:mb-10">
+          <Badge
+            variant={accentColor ? undefined : "secondary"}
+            style={accentStyle}
+            className="-rotate-4 rounded-none border-none px-3 py-1 sm:px-4 sm:py-1.5 text-2xl sm:text-2xl md:text-5xl font-serif"
+          >
+            {t(badgeLabel)}
+          </Badge>
         </div>
       )}
       <Carousel opts={{ loop: renderable.length > 1 }} setApi={setApi} className="container mx-auto px-4 sm:px-8 md:px-24">

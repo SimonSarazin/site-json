@@ -34,12 +34,11 @@ export default function FeaturedCarouselSlide({ item, ctaLabel, resource, itemAc
 
   return (
     <div className="grid items-center gap-8 sm:gap-12 md:gap-20 md:grid-cols-2">
-      {/* `pt-16 sm:pt-20 md:pt-0` : réserve la place du badge (rendu à part, en position absolue
-          par `FeaturedCarouselSection`) — sans image à côté pour pousser le titre vers le bas
-          (colonne unique en dessous de `md:`), il chevaucherait sinon le badge. À partir de `md:`,
-          les 2 colonnes + le centrage vertical du grid donnent déjà assez de dégagement. */}
-      <div className="flex flex-col items-start gap-3 sm:gap-5 pt-16 sm:pt-20 md:pt-0">
-        <h2 className="text-2xl font-bold md:text-4xl ml-4">{data.title}</h2>
+      <div className="flex flex-col items-start gap-3 sm:gap-5">
+        {/* `line-clamp-3` : un titre long ne doit pas étirer la diapositive (la
+            hauteur du carrousel suit la slide la plus haute) ni repousser le CTA —
+            le texte complet reste lisible au survol (`title`) et via le CTA. */}
+        <h2 className="line-clamp-3 text-2xl font-bold md:text-4xl ml-4" title={data.title}>{data.title}</h2>
         {data.description && <p className="line-clamp-3 text-base opacity-90 md:text-lg ml-4 sm:text-sm">{data.description}</p>}
         {click.kind !== "details" && (
           // Échelle simple lg → 2xl → 3xl. L'ancien `xs:text-xs` ne s'appliquait que sur les
@@ -59,15 +58,12 @@ export default function FeaturedCarouselSlide({ item, ctaLabel, resource, itemAc
       </div>
       {data.image && (
         // `w-11/12 mx-auto sm:w-full` : image légèrement réduite en xs uniquement (demande directe).
-        // `mb-16 sm:mb-20 md:mb-0` : symétrique du `pt-16 sm:pt-20 md:pt-0` de la colonne texte
-        // ci-dessus (réservé pour le badge) — sans lui, l'espace en bas de section (juste `py-16` du
-        // wrapper) était deux fois plus petit que l'espace en haut (`py-16` + `pt-16`).
         <OptimizedImage
           src={data.image}
           alt={data.title}
           width={640}
           priority={priority}
-          className="aspect-[4/3] w-11/12 mx-auto sm:w-full mb-16 sm:mb-0 md:mb-0 rounded-[0px_100px_0_100px] object-cover"
+          className="aspect-[4/3] w-11/12 mx-auto sm:w-full rounded-[0px_100px_0_100px] object-cover"
         />
       )}
     </div>
