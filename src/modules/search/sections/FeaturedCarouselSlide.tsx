@@ -42,11 +42,11 @@ export default function FeaturedCarouselSlide({ item, ctaLabel, resource, itemAc
         <h2 className="text-2xl font-bold md:text-4xl ml-4">{data.title}</h2>
         {data.description && <p className="line-clamp-3 text-base opacity-90 md:text-lg ml-4 sm:text-sm">{data.description}</p>}
         {click.kind !== "details" && (
-          // `min-[475px]:` plutôt que `xs:` : le variant `xs` n'existe que sur les sites dont le
-          // CSS définit `--breakpoint-xs` (parent62, tiers-lieux…) — sur les autres il ne génère
-          // RIEN. Le variant arbitraire, lui, marche partout et rend l'échelle déterministe :
-          // texte réduit sous 475px, puis lg → 2xl → 3xl.
-          <Button asChild size="lg" style={accentStyle} className="rounded-full px-6 py-3 sm:px-8 sm:py-4 font-bold w-full text-xs min-[475px]:text-lg sm:text-2xl md:text-3xl">
+          // Échelle simple lg → 2xl → 3xl. L'ancien `xs:text-xs` ne s'appliquait que sur les
+          // sites dont le CSS définit `--breakpoint-xs` (parent62, tiers-lieux…) et seulement
+          // dans la fenêtre 475-640px (texte minuscule entre deux tailles larges — incohérent,
+          // vérifié au rendu) : retiré, le mobile <475px garde le `text-lg` qu'il avait déjà.
+          <Button asChild size="lg" style={accentStyle} className="rounded-full px-6 py-3 sm:px-8 sm:py-4 font-bold w-full text-lg sm:text-2xl md:text-3xl">
             {newTab ? (
               <a href={click.href} target="_blank" rel="noopener noreferrer">
                 {ctaText}
