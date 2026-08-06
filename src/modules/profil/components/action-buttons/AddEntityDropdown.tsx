@@ -3,6 +3,8 @@ import { Plus, Building2, Briefcase, Calendar, MapPin } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useProfilPermissions } from "../../hooks/useProfilPermissions";
+import { useSite } from "@/hooks/useSite";
+import { useCocolight } from "@/hooks/useCocolight";
 import { useT } from "@/hooks/useT";
 import { Button, buttonVariants } from "@/components/ui/button";
 import type { VariantProps } from "class-variance-authority";
@@ -33,6 +35,41 @@ interface AddOption {
   type: AddEntityType;
   label: string;
   icon: typeof Building2;
+  /** Modale ouverte par l'entrée : celle du type, ou le form COSTUM du site (cf. `costumCreateKey`). */
+  modalKey: string;
+}
+
+/** Type d'ajout → collection, sous laquelle `costumForms` déclare son `entityType`. */
+const COLLECTION_BY_ADD: Record<AddEntityType, string> = {
+  organization: "organizations",
+  project: "projects",
+  event: "events",
+  poi: "poi",
+};
+
+/**
+ * Form COSTUM du site pour ce type d'entité, s'il y en a UN SEUL — même règle que la création
+ * `inherit` de l'admin (`resolveCreateModal`, modules/admin/sections/resourceHelpers.ts) : un site qui
+ * déclare un formulaire pour ses événements ne veut pas du formulaire standard, ni dans son admin ni
+ * depuis un profil. Sans cette résolution, « Ajouter un événement » depuis une organisation ouvrait le
+ * form générique, et l'événement naissait sans les champs du costum.
+ *
+ * DEUX formulaires ou plus pour le même type (institutBleu déclare `document` ET `financement` sur
+ * `poi`) : on ne choisit pas à la place du site — la modale standard est conservée, et le site déclare
+ * l'entrée qu'il veut via `addConfig.custom`.
+ */
+export function costumCreateKey(
+  type: AddEntityType,
+  costumForms: Record<string, { id?: string; entityType?: string; costumSlug?: string } | undefined> | undefined,
+  siteSlug: string | undefined,
+): string | null {
+  const collection = COLLECTION_BY_ADD[type];
+  const docs = Object.entries(costumForms ?? {}).filter(([, d]) => d?.entityType === collection);
+  const duSite = docs.filter(([, d]) => siteSlug && d?.costumSlug === siteSlug);
+  const retenus = duSite.length > 0 ? duSite : docs;
+  if (retenus.length !== 1) return null;
+  const [cle, doc] = retenus[0];
+  return `add-${doc?.id ?? cle}`;
 }
 
 /**
@@ -50,6 +87,9 @@ interface AddOption {
 export function AddEntityDropdown({ entity, config, label, variant = "outline", size, className }: AddEntityDropdownProps) {
   const permissions = useProfilPermissions(entity);
   const t = useT("modules/profil");
+  const { config: siteConfig } = useSite();
+  const costumForms = (siteConfig as { costumForms?: Record<string, { id?: string; entityType?: string; costumSlug?: string }> } | undefined)?.costumForms;
+  const siteSlug = (useCocolight().entity as { slug?: string } | null)?.slug;
 
   // État du modal ouvert
   const [openModal, setOpenModal] = useState<AddOpenState>(null);
@@ -73,25 +113,27 @@ export function AddEntityDropdown({ entity, config, label, variant = "outline", 
     [customItems, customVisibilities]
   );
 
-  // Calcule les options "builtins" disponibles (orga/projet/event/poi)
+  // Calcule les options "builtins" disponibles (orga/projet/event/poi). Les GARDES de permission sont
+  // inchangées — seule la modale ouverte peut être celle du costum du site.
   const availableOptions = useMemo(() => {
     const options: AddOption[] = [];
+    const modal = (type: AddEntityType) => costumCreateKey(type, costumForms, siteSlug) ?? `add-${type}`;
 
     if (config?.organization !== false && permissions.canAddOrganization) {
-      options.push({ type: "organization", label: t("AddEntity.organization"), icon: Building2 });
+      options.push({ type: "organization", label: t("AddEntity.organization"), icon: Building2, modalKey: modal("organization") });
     }
     if (config?.project !== false && permissions.canAddProject) {
-      options.push({ type: "project", label: t("AddEntity.project"), icon: Briefcase });
+      options.push({ type: "project", label: t("AddEntity.project"), icon: Briefcase, modalKey: modal("project") });
     }
     if (config?.event !== false && permissions.canAddEvent) {
-      options.push({ type: "event", label: t("AddEntity.event"), icon: Calendar });
+      options.push({ type: "event", label: t("AddEntity.event"), icon: Calendar, modalKey: modal("event") });
     }
     if (config?.poi !== false && permissions.canAddPoi) {
-      options.push({ type: "poi", label: t("AddEntity.poi"), icon: MapPin });
+      options.push({ type: "poi", label: t("AddEntity.poi"), icon: MapPin, modalKey: modal("poi") });
     }
 
     return options;
-  }, [permissions, config, t]);
+  }, [permissions, config, t, costumForms, siteSlug]);
 
   // Ne rien afficher si aucune option n'est visible (ni builtin, ni custom).
   if (availableOptions.length === 0 && visibleCustomItems.length === 0) {
@@ -139,7 +181,7 @@ export function AddEntityDropdown({ entity, config, label, variant = "outline", 
       {/* Modals builtins — via ModalRegistry (add-organization/project/event/poi = modals génériques formEngine). */}
       {typeof openModal === "string" && (
         <DynamicModal
-          modalName={`add-${openModal}`}
+          modalName={availableOptions.find((o) => o.type === openModal)?.modalKey ?? `add-${openModal}`}
           open
           onOpenChange={(open) => !open && handleCloseModal()}
           parent={entity}
