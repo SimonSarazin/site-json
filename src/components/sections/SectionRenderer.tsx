@@ -83,6 +83,7 @@ const LazySections: {
   heroWithIcon: lazy(() => import("./HeroWithIconSection")),
   meeteem: lazy(() => import("@/modules/ampli/components/sections/MeeteemSection")),
   coform: lazy(() => import("@/modules/coform/components/CoFormSection")),
+  toolsCatalog: lazy(() => import("@/modules/toolsCatalog/sections/ToolsCatalogSection")),
   actions: lazy(() => import("@/modules/cagnotte/components/sections/ActionsSection")),
   finance: lazy(() => import("@/modules/cagnotte/components/sections/FinanceSection")),
   "actions-summary": lazy(() => import("@/modules/cagnotte/components/sections/ActionsSummarySection")),

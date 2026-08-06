@@ -24,6 +24,13 @@ interface PlaceFormViewProps {
   access: CoFormAccessInfo | null;
   formId: string;
   placeId: string;
+  /**
+   * Retour à la liste des lieux. Par défaut on NAVIGUE vers `/coform/:formId/place`
+   * (usage page) ; un appelant qui monte cette vue en MODALE fournit ce callback
+   * pour revenir à l'étape précédente sans quitter la page. La garde « formulaire
+   * modifié » (confirmation avant abandon) s'applique dans les deux cas.
+   */
+  onBackToList?: () => void;
 }
 
 /**
@@ -31,7 +38,7 @@ interface PlaceFormViewProps {
  * verrouille ce champ, et délègue l'édition / readonly à `SmartCoForm` selon le
  * `canAnswer` calculé par le backend.
  */
-export function PlaceFormView({ formData, access, formId, placeId }: PlaceFormViewProps) {
+export function PlaceFormView({ formData, access, formId, placeId, onBackToList }: PlaceFormViewProps) {
   const t = useT("modules/coform");
   const navigate = useNavigate();
 
@@ -75,8 +82,12 @@ export function PlaceFormView({ formData, access, formId, placeId }: PlaceFormVi
   const [confirmLeaveOpen, setConfirmLeaveOpen] = useState(false);
 
   const performBackToList = useCallback(() => {
+    if (onBackToList) {
+      onBackToList();
+      return;
+    }
     navigate(`/coform/${formId}/place`);
-  }, [navigate, formId]);
+  }, [onBackToList, navigate, formId]);
 
   const handleBackToList = useCallback(() => {
     if (isFormDirty) {
