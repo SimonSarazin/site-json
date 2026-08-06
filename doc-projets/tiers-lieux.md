@@ -239,8 +239,24 @@ d'autres projets, tous vérifiés non régressifs à son égard :
 
 ## 11. Dépendances SDK ↔ `cocolight-api-client`
 
-Aucune demande en cours. La config dépend en revanche du variant **`navigator-tl`** : toute
-évolution de cet endpoint la touche en premier.
+SDK installé : **`^1.0.171`**. Le module `toolsCatalog` (page `/usages`, livré le 06/08) consomme
+**cinq endpoints déployés côté backend mais absents du SDK** — contrat détaillé dans
+[`doc/35-sdk-tools-catalog.md`](../doc/35-sdk-tools-catalog.md).
+
+> ⚠️ Tant qu'ils ne sont pas publiés, **site-json ne compile que via un lien local vers le SDK** :
+> un `npm install` propre casse le `tsc` (la 1.0.171 npm ne contient ni les méthodes ni les types).
+
+| Demande | État | Preuve / substitut |
+|---|---|---|
+| `Form.toolsCatalog()` — liste paginée du catalogue (`COSTUM_TOOLS_CATALOG`) | ❌ absent du SDK | Action `ToolsCatalogListAction.php` déployée (costum `15c5a91af`). ⚠️ Ne PAS router via `_createPaginatorEngine` : `_linkEntities` jette les DTO sans `collection` |
+| `Form.getToolUsers()` — lieux utilisateurs d'un outil (`COSTUM_TOOL_USERS`) | ❌ absent du SDK | `ToolUsersAction.php` déployée ; recherche par `criteriaIds`, jamais par regex sur le nom |
+| `Answer.getCommunInfo()` — fiche du commun rattaché (`COSTUM_COMMUN_INFO`) | ❌ absent du SDK | `CommunInfoAction.php` déployée ; `formId` obligatoire = verrou anti-IDOR (endpoint `auth: none`) |
+| `BaseEntity.saveToolEnrichment()` — édition d'un outil (`COSTUM_SAVE_TOOL_ENRICHMENT`, bearer) | ❌ absent du SDK | `SaveCriteriaAction.php` durcie (elle écrivait sans aucun contrôle d'accès). ⚠️ Sur `BaseEntity`, pas `Organization` — cf. §12 |
+| `BaseEntity.getCommunList()` — options du select de rattachement (`COSTUM_COMMUN_LIST`, bearer) | ❌ absent du SDK | `CommunListAction.php` déployée ; remplace un appel legacy qui ramenait ~300 réponses AAP entières |
+| Upload de l'image d'un outil | ✅ présent | `entity.uploadDocument(file, {contentKey: "icons", docType: "image"})` — même `contentKey` que le legacy |
+
+La config dépend par ailleurs du variant **`navigator-tl`** : toute évolution de cet endpoint la
+touche en premier.
 
 ---
 
@@ -249,7 +265,10 @@ Aucune demande en cours. La config dépend en revanche du variant **`navigator-t
 - ⚠️ **Le costum vit dans la collection `projects`, pas `organizations`.** Sondé le 28/07 sur les
   12 costums du parc : seuls **`navigatorDesTierslieux` et `eXtremeDefiAdeme`** sont dans ce cas,
   les 9 autres résolus sont en `organizations`. Tout script qui suppose `organizations` en résolvant
-  l'entité costum se trompera ici.
+  l'entité costum se trompera ici. **Cas vécu le 06/08** : deux méthodes SDK posées sur
+  `Organization` au lieu de `BaseEntity` → `is not a function` **au runtime**, avec un `tsc` vert
+  des deux côtés (le `entity as Organization` côté consommateur est un cast sans effet à
+  l'exécution). Toute méthode passant par `_withCostumContext` va sur `BaseEntity`.
 - ⚠️ **Variant `navigator-tl`** : une requête émise sans ce variant frappe un autre endpoint et
   renvoie d'autres chiffres. C'est le piège que `config-probe` documente explicitement.
 - **Volume** : 4 303 entités. Tout réglage de pagination, de plafond (`maxResults`) ou de rendu de
