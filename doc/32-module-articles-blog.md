@@ -12,7 +12,10 @@ Module **piloté par les données** : un article **est un POI `type:"article"`**
 
 - **Sections config-driven** (posables sur n'importe quelle page) :
   - `articleFeed` — fil paginé (scroll infini), trié par date, **île client** (fetch après hydratation, comme agenda) ;
-  - `articleReader` — affiche **un** article précis (par `slug` ou `id`) au sein d'une page.
+  - `articleReader` — affiche **un** article précis (par `slug` ou `id`) au sein d'une page ;
+  - `articleTeaser` — aperçu **figé** des N derniers articles (défaut 6, pas de pagination), titre en badge
+    incliné, grille de cartes à bouton, CTA « voir tout » en pied — patron **teaser** (cf. agenda), pensé pour
+    être posé entre deux autres sections plutôt que comme page `/blog` à part entière.
   - ⚠️ À distinguer des sections **statiques** `blogList` / `blogPost` (contenu figé en config, sans backend).
 - **Routes reader** (SSR + SEO) :
   - `/blog/:slug` — reader d'un article slugué (~18 % des articles) ;
@@ -32,7 +35,8 @@ src/modules/blog/
 ├── pages/ArticlePage.tsx   # reader (route) : variant + canonical + SEO + articles liés
 ├── sections/
 │   ├── ArticleFeed.tsx           # section `articleFeed`
-│   └── ArticleReaderSection.tsx  # section `articleReader`
+│   ├── ArticleReaderSection.tsx  # section `articleReader`
+│   └── ArticleTeaser.tsx         # section `articleTeaser` (aperçu figé N derniers, sans pagination)
 ├── hooks/
 │   ├── useArticleFeed.ts    # fil (useSearchQuery → searchCostum), lit les PageFilters
 │   ├── useArticle.ts        # 1 article : par slug (entityBySlug) OU id (api.poi)
@@ -49,7 +53,8 @@ src/modules/blog/
 │   └── readers.ts           # READER_VARIANTS { default }
 ├── lib/
 │   ├── markdown.ts          # stripMarkdown
-│   └── readingTime.ts       # estimateReadingTime (≈200 mots/min)
+│   ├── readingTime.ts       # estimateReadingTime (≈200 mots/min)
+│   └── articleLink.ts       # normalizeArticleResult / articleHref (résolution /blog/:slug ou /blog/id/:id) — partagé articleFeed + articleTeaser
 ├── server/feed.ts           # renderBlogFeed → flux RSS 2.0 (/blog/feed.xml)
 ├── commands/register.tsx    # source palette Cmd+K « Articles » (blog:articles)
 ├── prefetch/prefetchArticle.ts  # prefetch SSR par slug / id
@@ -154,6 +159,32 @@ But : aligner une page blog avec les pages `layout:"fullwidth"` de searchProStat
 `.optional()` n'a **pas** de défaut runtime (config jamais parsée par Zod) → il faut écrire explicitement `"fullWidth": true`.
 
 `detailBasePath` est **déprécié** (le reader est canonique `/blog/:slug` ; toute autre valeur est ignorée, warning dev).
+
+### `articleTeaser`
+
+```json
+{ "type": "articleTeaser", "props": {
+  "costumSlug": "monCostum",              // REQUIS (scope source.key)
+  "headline": { "fr": "Zoom sur le réseau" }, // REQUIS — titre en badge incliné
+  "limit": 6,                              // nb d'articles affichés, défaut 6, PAS de pagination
+  "filters": { "category": "actus" },      // filtre serveur additionnel (type:"article" toujours injecté)
+  "viewAllHref": "/blog",                  // cible du CTA « voir tout » en pied de grille (défaut /blog)
+  "viewAllLabel": { "fr": "En voir plus" }, // défaut i18n teaser.viewAll
+  "itemCtaLabel": { "fr": "En savoir plus" }, // défaut i18n teaser.cta, bouton par carte
+  "background": "#2c3e50",                 // fond FIXE (hex), défaut : repli bg-foreground/text-background (thème)
+  "accentColor": "#4ecdc4"                 // accent FIXE (hex) badge + boutons, défaut : repli primary (thème)
+} }
+```
+Aperçu **figé** (pas de scroll infini/« charger plus ») des `limit` derniers articles d'un costum, triés
+`created` décroissant (réutilise `useArticleFeed`, tronqué côté client). Pensé pour être posé **entre deux
+sections** d'une page existante (ex. juste sous `map-bubbles`), contrairement à `articleFeed` qui sert
+typiquement de section unique d'une page `/blog` dédiée. Chaque carte pointe vers son article
+(`/blog/:slug` ou `/blog/id/:id`, même résolution que `articleFeed` via `lib/articleLink.ts`) ; le bouton du
+bas pointe vers `viewAllHref`. Carte propre à cette section (pas dans le registre `CARD_VARIANTS` : contrat
+de props différent — pas de `featured`/`lastRef` de pagination). `background`/`accentColor` reprennent
+**exactement** le mécanisme de `featured-carousel` (`modules/search/schema.ts` — cf. « carrousel à la une »,
+posé juste au-dessus sur la home parent62) : couleurs FIXES config-driven, indépendantes du mode clair/sombre
+du site, pour que les deux blocs restent visuellement de la même famille.
 
 ### `articleReader`
 

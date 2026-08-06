@@ -1076,6 +1076,45 @@ export const SearchHeaderSectionSchema = z.object({
 export type SearchHeaderSection = z.infer<typeof SearchHeaderSectionSchema>;
 export type SearchHeaderSectionProps = z.infer<typeof SearchHeaderSectionSchema>["props"];
 
+/**
+ * Carrousel plein écran d'entités (typiquement des POI) filtrées par tag — une diapositive à la
+ * fois : badge, titre, description, CTA et image. Réutilise `SearchBaseParamsSchema` (fetch/filtre,
+ * `defaultTags` porte le tag ex. "A la une"), `ResourceConfSchema` (mapping titre/description/image,
+ * défauts déjà adaptés à un POI) et `ListItemActionSchema` (résolution du lien du CTA) — aucun champ
+ * dupliqué. Générique par construction (`defaultTypes` n'est pas limité à "poi") : pas de `list`/
+ * `columns` (pas une grille) ni de filtres UI (le tag est statique, porté par la config).
+ */
+export const FeaturedCarouselSectionSchema = z.object({
+  type: z.literal("featured-carousel"),
+  id: z.string().optional(),
+  props: z.object({
+    /** Badge affiché au-dessus du titre de chaque diapositive, ex. "À la une :". */
+    badgeLabel: LocalizedString.optional(),
+    /** Libellé du bouton CTA. Repli : traduction "En savoir plus". */
+    ctaLabel: LocalizedString.optional(),
+    /** Fetch/filtre — `defaultTypes`/`defaultTags`/`sourceKey`/`defaultFields` etc. */
+    baseParams: SearchBaseParamsSchema,
+    /** Mapping titre/description/image. Défauts déjà adaptés à un POI (name/description/profilMediumImageUrl). */
+    resource: ResourceConfSchema.optional(),
+    /** Action au clic du CTA. Défaut : `kind:"profil"` → `/profil/:slug`. */
+    itemAction: ListItemActionSchema.optional(),
+    autoplay: z.boolean().default(true),
+    autoplayIntervalMs: z.number().int().min(2000).max(30000).default(6000),
+    /** Fond de la section — couleur CSS libre (hex, oklch, `var(--token)`…). Section volontairement
+     *  à fond FIXE (identique quel que soit le mode clair/sombre du site, comme un footer) : le
+     *  titre/texte reste donc en blanc fixe plutôt qu'en `text-foreground` (qui s'inverserait en
+     *  mode clair et deviendrait illisible sur ce fond). Repli code : encre du thème (`--foreground`). */
+    background: z.string().optional(),
+    /** Couleur du badge et du bouton CTA — CSS libre, même logique que `background`. Repli : `--primary`. */
+    accentColor: z.string().optional(),
+    /** Puces de pagination sous le carrousel, entre les flèches précédent/suivant (celles-ci
+     *  restent toujours affichées). Défaut masquées — à activer explicitement si besoin. */
+    showControls: z.boolean().default(false),
+  }),
+});
+export type FeaturedCarouselSection = z.infer<typeof FeaturedCarouselSectionSchema>;
+export type FeaturedCarouselSectionProps = z.infer<typeof FeaturedCarouselSectionSchema>["props"];
+
 
 export interface SearchListViewProps<T extends SearchListEntity = SearchEntity> {
   results: T[];
