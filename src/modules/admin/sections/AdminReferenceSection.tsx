@@ -22,7 +22,7 @@ import { ScrollableTabsList } from "../components/ScrollableTabsList";
 import type { SearchType } from "@/modules/search/schema";
 
 import { ADMIN_QUERY_KEYS } from "../constants/queryKeys";
-import { useReferenceElement, type ReferencingCarrier } from "../hooks/useReferenceElement";
+import { useReferenceElement, type AnnotableEntity, type ReferencingCarrier } from "../hooks/useReferenceElement";
 import { ensureCostumScope } from "../lib/ensureCostumScope";
 import type { AdminReferenceSection as AdminReferenceSectionConfig, AdminSection } from "../schema";
 import { formatCell, getPath } from "./resourceHelpers";
@@ -133,7 +133,13 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
     void referenced.refetch();
   });
 
-  const runMutation = (op: "reference" | "unreference" | "classify", itemType: string, id: string, subTypeCible?: string) => {
+  const runMutation = (
+    op: "reference" | "unreference" | "classify",
+    itemType: string,
+    id: string,
+    cible: AnnotableEntity,
+    subTypeCible?: string,
+  ) => {
     // ctx costum requis par addReference/removeReference (les éléments externes n'ont pas de source.key).
     ensureCostumScope(carrier, { contextId, contextType });
     mutation.mutate({
@@ -141,6 +147,9 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
       op,
       type: itemType,
       id,
+      // L'ENTITÉ de la ligne : les écritures d'annotation passent par SA méthode `updateField`
+      // (voie haut-niveau BaseEntity — validations + normalisation), pas par un endpointApi brut.
+      cible,
       // Au référencement : le sous-type courant (choisi ou unique) ; au reclassement : la cible.
       subType: op === "classify" ? subTypeCible : sousType,
       moderate: cfg.moderateReferenced,
@@ -170,7 +179,7 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
                   l'écriture a raté au référencement, ET l'outil de rattrapage de l'existant. */}
               <Select
                 value={annote ?? ""}
-                onValueChange={(v) => runMutation("classify", itemType, id, v)}
+                onValueChange={(v) => runMutation("classify", itemType, id, item as AnnotableEntity, v)}
                 disabled={mutation.isPending}
               >
                 <SelectTrigger size="sm" className="w-40" aria-label={tAdmin("AdminReferenceSection.colSubType")}>
@@ -185,7 +194,7 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
             </TableCell>
           )}
           <TableCell className="text-right">
-            <Button size="sm" variant="outline" disabled={mutation.isPending} onClick={() => runMutation(action.op, itemType, id)}>
+            <Button size="sm" variant="outline" disabled={mutation.isPending} onClick={() => runMutation(action.op, itemType, id, item as AnnotableEntity)}>
               {action.icon}
               {action.label}
             </Button>

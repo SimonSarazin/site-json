@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { useT } from "@/hooks/useT";
-import { useCocolight } from "@/hooks/useCocolight";
 import { cheminAnnotation } from "@/modules/search/lib/costumSubType";
 import "@/modules/admin/i18n";
 
@@ -20,11 +19,24 @@ export interface ReferencingCarrier {
 /** `classify` : (re)pose la seule ANNOTATION de sous-type, sans toucher au référencement. */
 export type ReferenceOp = "reference" | "unreference" | "detach" | "classify";
 
+/**
+ * Cible des écritures d'annotation : une ENTITÉ lib (les lignes des tableaux admin en sont — les
+ * résultats de recherche sont des instances). `updateField` est la voie HAUT-NIVEAU de BaseEntity
+ * vers `updatepathvalue` (validations + normalisation du payload) — jamais d'appel `endpointApi`
+ * brut ici.
+ */
+export interface AnnotableEntity {
+  updateField: (path: string, value: unknown) => Promise<unknown>;
+}
+
 interface ReferenceVars {
   carrier: ReferencingCarrier;
   op: ReferenceOp;
   type: string;
   id: string;
+  /** L'entité CIBLE (ligne du tableau) — porte les écritures d'annotation via `updateField`.
+   *  Requise pour `classify`, et pour l'annotation/modération au référencement. */
+  cible?: AnnotableEntity;
   /**
    * Sous-type de rattachement (clé `subType` d'un form de `costumForms`) — écrit dans
    * `reference.costumTypes.<slug>` : c'est l'annotation qui classe une entité RÉFÉRENCÉE sans jamais
@@ -39,26 +51,22 @@ interface ReferenceVars {
 /** Mutation de (dé)référencement d'un élément sous le costum du carrier (P5). Toast + refetch. */
 export function useReferenceElement(onDone?: () => void) {
   const queryClient = useQueryClient();
-  const { api } = useCocolight();
   const t = useT("modules/admin");
 
-  /** Écrit un chemin sur l'entité CIBLE via updatepathvalue (`value: ""` → $unset côté backend). */
-  const ecrire = async (collection: string, id: string, path: string, value: unknown) => {
-    const client = api as unknown as {
-      endpointApi: { updatePathValue: (d: Record<string, unknown>) => Promise<unknown> };
-    } | null;
-    if (!client) throw new Error("api indisponible");
-    await client.endpointApi.updatePathValue({ id, collection, path, value });
+  /** Écrit un chemin sur l'entité cible (`value: ""` → $unset, des deux côtés L et B). */
+  const ecrire = async (cible: AnnotableEntity | undefined, path: string, value: unknown) => {
+    if (!cible) throw new Error("cible manquante pour l'écriture d'annotation");
+    await cible.updateField(path, value);
   };
 
   return useMutation({
-    mutationFn: async ({ carrier, op, type, id, subType, moderate }: ReferenceVars) => {
+    mutationFn: async ({ carrier, op, type, id, cible, subType, moderate }: ReferenceVars) => {
       const slug = carrier.slug ?? "";
 
       if (op === "classify") {
         // Reclassement / rattrapage d'un « référencé non classé » : l'annotation seule.
         if (!slug || !subType) throw new Error(t("useReferenceElement.error"));
-        await ecrire(type, id, cheminAnnotation(slug), subType);
+        await ecrire(cible, cheminAnnotation(slug), subType);
         return { result: true } as { result: boolean; msg?: string };
       }
 
@@ -77,7 +85,7 @@ export function useReferenceElement(onDone?: () => void) {
       if (op === "reference" && slug) {
         if (subType) {
           try {
-            await ecrire(type, id, cheminAnnotation(slug), subType);
+            await ecrire(cible, cheminAnnotation(slug), subType);
           } catch {
             toast.warning(t("useReferenceElement.referencedUnclassified"));
           }
@@ -87,7 +95,7 @@ export function useReferenceElement(onDone?: () => void) {
             // Chemin SCOPÉ — jamais le boolean global, qui masquerait l'entité chez les autres sites.
             // Échoue si l'entité porte déjà un `preferences.toBeValidated` scalaire (chemin sous
             // scalaire) : toléré, documenté.
-            await ecrire(type, id, `preferences.toBeValidated.${slug}`, true);
+            await ecrire(cible, `preferences.toBeValidated.${slug}`, true);
           } catch { /* non bloquant */ }
         }
       }
@@ -95,7 +103,7 @@ export function useReferenceElement(onDone?: () => void) {
       // façon inerte — le scope costum s'applique en $and au-dessus de tout filtre).
       if (op === "unreference" && slug) {
         try {
-          await ecrire(type, id, cheminAnnotation(slug), "");
+          await ecrire(cible, cheminAnnotation(slug), "");
         } catch { /* best-effort */ }
       }
       return res;
