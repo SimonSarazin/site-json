@@ -14,10 +14,15 @@ export default function FooterMinimalCentered({ footer }: FooterMinimalCenteredP
 
   return (
     <footer
-      className={`pt-8 sm:pt-12 pb-4 sm:pb-6 border-t ${bg ? "border-white/30 bg-cover bg-center text-white" : "border-border bg-background"}`}
+      className={`relative pt-8 sm:pt-12 pb-4 sm:pb-6 border-t ${bg ? "border-white/30 bg-neutral-800 bg-cover bg-center text-white" : "border-border bg-background"}`}
       style={bg ? { backgroundImage: `url(${bg.startsWith("/") ? bg : `/${bg}`})` } : undefined}
     >
-      <div className="container mx-auto">
+      {/* Même traitement que le header stacked (qui partage typiquement la même
+          image) : voile sombre en mode sombre — sans lui, le footer restait
+          clair sur une page sombre — et `bg-neutral-800` SOUS l'image pour ses
+          éventuelles zones semi-transparentes (canal alpha). */}
+      {bg && <div aria-hidden className="absolute inset-0 pointer-events-none dark:bg-black/55" />}
+      <div className="container mx-auto relative">
 
         <div className="flex justify-center mb-6 sm:mb-8">
           {footer.logo && (
