@@ -125,6 +125,30 @@
     }
   },
   "pages": {
+    "//featured-carousel": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "defaultTags": [
+          "A la une"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFields": [
+          "name",
+          "description",
+          "shortDescription",
+          "medias",
+          "profilMediumImageUrl",
+          "profilImageUrl",
+          "slug",
+          "tags"
+        ],
+        "indexStepList": 8
+      }
+    },
     "/temoignages/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
