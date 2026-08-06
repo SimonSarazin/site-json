@@ -63,7 +63,7 @@ async function waitForHydration(page: Page) {
 }
 
 test.describe("Parent62 — Partie 1 (lecture seule)", () => {
-  test("accueil : titre, nav à 5 entrées, double entrée parents/pro, 9 bulles territoire", async ({
+  test("accueil : titre, nav à 5 entrées, dropdown Publics, 9 bulles territoire", async ({
     page,
   }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
@@ -71,7 +71,7 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
 
     await expect(page).toHaveTitle(/Parent62/);
 
-    // Le header transparent-scroll rend un <nav class="fixed …">, pas de <header>.
+    // Le header stacked rend un <nav class="fixed …">, pas de <header>.
     const headerNav = page.locator("nav.fixed").first();
     await expect(headerNav).toBeVisible();
 
@@ -82,11 +82,13 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
         item.label.fr,
       );
     }
-    // Décision du 23/07 : Parents / Professionnels hors menu, accessibles depuis l'accueil.
-    expect(headerText).not.toContain("Professionnels");
+    // Refonte du 06/08 : le dropdown « Publics » (7 entrées) REMPLACE la décision
+    // du 23/07 (Parents/Professionnels hors menu, liés depuis l'accueil) — les
+    // pages par public sont désormais navigables depuis le header, et la home
+    // data-driven n'a plus de tuiles /parents et /pro.
+    expect(headerText).toContain("Professionnels");
 
-    await expect(page.locator('main a[href="/parents"]').first()).toBeVisible();
-    await expect(page.locator('main a[href="/pro"]').first()).toBeVisible();
+    // Home data-driven : les 9 bulles de la carte pointent vers /territoire/*.
     expect(await page.locator('main a[href^="/territoire/"]').count()).toBeGreaterThanOrEqual(9);
   });
 
@@ -180,7 +182,7 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     }
   });
 
-  test("mode sombre : header opaque dès l'accueil (1ère section n'est plus un héro), nav visible", async ({
+  test("mode sombre : header stacked — nav lisible, wordmark collapse au scroll", async ({
     page,
   }) => {
     // next-themes (attribute="class") lit localStorage.theme au démarrage.
@@ -192,16 +194,20 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
 
     await expect(page.locator("html")).toHaveClass(/dark/);
 
-    // Depuis l'ajout de "featured-carousel" en 1ère section de l'accueil (avant
-    // "home-hero"), pageHasHero est faux sur cette page → transparentMode:"auto"
-    // rend le header opaque DÈS LE REPOS (cf. useHeaderOpaqueAtRest), plus
-    // seulement après scroll comme avant ce changement.
+    // Header stacked (remplace transparent-scroll depuis la refonte du 06/08) :
+    // <nav class="fixed …"> sur image de fond — pas de bascule bg-background/90.
+    // Au repos, le wordmark (section 1) est déployé et la nav est visible.
     const headerNav = page.locator("nav.fixed").first();
-    await expect(headerNav).toHaveClass(/bg-background\/90/);
-    await expect(headerNav.locator("a", { hasText: "Rechercher" }).first()).toBeVisible();
+    const wordmark = headerNav.locator("div.overflow-hidden").first();
+    await expect(wordmark).not.toHaveClass(/(?:^|\s)h-0(?:\s|$)/);
+    const firstNav = headerNav.locator("a", { hasText: config.header.nav[0].label.fr }).first();
+    await expect(firstNav).toBeVisible();
 
+    // Scroll réel (window.scrollTo → event `scroll`) : la section wordmark
+    // collapse (h-0, barre compacte) et la nav reste visible.
     await page.evaluate(() => window.scrollTo(0, 800));
-    await expect(headerNav).toHaveClass(/bg-background\/90/);
+    await expect(wordmark).toHaveClass(/(?:^|\s)h-0(?:\s|$)/);
+    await expect(firstNav).toBeVisible();
   });
 
   test("accueil : bandeau « à la une » (carrousel POI tagués) ne casse pas le rendu", async ({
