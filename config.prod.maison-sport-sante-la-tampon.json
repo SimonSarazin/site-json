@@ -1818,12 +1818,26 @@
                 "field": "address.postalCode",
                 "multiple": true,
                 "options": [
-                  { "id": "97430", "label": { "fr": "97430 – Le Tampon", "en": "97430 – Le Tampon" }, "value": "97430" },
-                  { "id": "97418", "label": { "fr": "97418 – Saint-Joseph", "en": "97418 – Saint-Joseph" }, "value": "97418" }
+                  {
+                    "id": "97430",
+                    "label": {
+                      "fr": "97430 – Le Tampon",
+                      "en": "97430 – Le Tampon"
+                    },
+                    "value": "97430"
+                  },
+                  {
+                    "id": "97418",
+                    "label": {
+                      "fr": "97418 – Saint-Joseph",
+                      "en": "97418 – Saint-Joseph"
+                    },
+                    "value": "97418"
+                  }
                 ]
               },
               {
-                "id":"domaine-structure",
+                "id": "domaine-structure",
                 "label": {
                   "fr": "Domaine d'intervention",
                   "en": "Intervention domain"
@@ -1831,17 +1845,94 @@
                 "field": "tags",
                 "multiple": true,
                 "options": [
-                  { "id": "sport", "label": { "fr": "Sport", "en": "Sport" }, "value": "Sport" },
-                  { "id": "sante-prevention", "label": { "fr": "Santé/prévention", "en": "Health/Prevention" }, "value": "Santé/prévention" },
-                  { "id": "social", "label": { "fr": "Social", "en": "Social" }, "value": "Social" },
-                  { "id": "insertion", "label": { "fr": "Insertion", "en": "Insertion" }, "value": "Insertion" },
-                  { "id": "scolaire-1er-degre", "label": { "fr": "Scolaire 1er degré", "en": "Primary school" }, "value": "Scolaire 1er degré" },
-                  { "id": "scolaire-2nd-degre", "label": { "fr": "Scolaire 2nd degré", "en": "Secondary school" }, "value": "Scolaire 2nd degré" },
-                  { "id": "periscolaire-1er-degre", "label": { "fr": "Periscolaire 1er degré", "en": "After-school (primary)" }, "value": "Periscolaire 1er degré" },
-                  { "id": "periscolaire-2eme-degre", "label": { "fr": "Periscolaire 2eme degré", "en": "After-school (secondary)" }, "value": "Periscolaire 2eme degré" },
-                  { "id": "culture", "label": { "fr": "Culture", "en": "Culture" }, "value": "Culture" },
-                  { "id": "handicap", "label": { "fr": "Handicap", "en": "Disability" }, "value": "Handicap" },
-                  { "id": "tourisme", "label": { "fr": "Tourisme", "en": "Tourism" }, "value": "Tourisme" }
+                  {
+                    "id": "sport",
+                    "label": {
+                      "fr": "Sport",
+                      "en": "Sport"
+                    },
+                    "value": "Sport"
+                  },
+                  {
+                    "id": "sante-prevention",
+                    "label": {
+                      "fr": "Santé/prévention",
+                      "en": "Health/Prevention"
+                    },
+                    "value": "Santé/prévention"
+                  },
+                  {
+                    "id": "social",
+                    "label": {
+                      "fr": "Social",
+                      "en": "Social"
+                    },
+                    "value": "Social"
+                  },
+                  {
+                    "id": "insertion",
+                    "label": {
+                      "fr": "Insertion",
+                      "en": "Insertion"
+                    },
+                    "value": "Insertion"
+                  },
+                  {
+                    "id": "scolaire-1er-degre",
+                    "label": {
+                      "fr": "Scolaire 1er degré",
+                      "en": "Primary school"
+                    },
+                    "value": "Scolaire 1er degré"
+                  },
+                  {
+                    "id": "scolaire-2nd-degre",
+                    "label": {
+                      "fr": "Scolaire 2nd degré",
+                      "en": "Secondary school"
+                    },
+                    "value": "Scolaire 2nd degré"
+                  },
+                  {
+                    "id": "periscolaire-1er-degre",
+                    "label": {
+                      "fr": "Periscolaire 1er degré",
+                      "en": "After-school (primary)"
+                    },
+                    "value": "Periscolaire 1er degré"
+                  },
+                  {
+                    "id": "periscolaire-2eme-degre",
+                    "label": {
+                      "fr": "Periscolaire 2eme degré",
+                      "en": "After-school (secondary)"
+                    },
+                    "value": "Periscolaire 2eme degré"
+                  },
+                  {
+                    "id": "culture",
+                    "label": {
+                      "fr": "Culture",
+                      "en": "Culture"
+                    },
+                    "value": "Culture"
+                  },
+                  {
+                    "id": "handicap",
+                    "label": {
+                      "fr": "Handicap",
+                      "en": "Disability"
+                    },
+                    "value": "Handicap"
+                  },
+                  {
+                    "id": "tourisme",
+                    "label": {
+                      "fr": "Tourisme",
+                      "en": "Tourism"
+                    },
+                    "value": "Tourisme"
+                  }
                 ]
               }
             ]
@@ -1905,13 +1996,29 @@
               ]
             },
             "list": {
-              "columns": { "sm": 1, "md": 1, "lg": 1, "xl": 1 },
-              "card": { "type": "contact-card", "detailsMode": "dialog"},
-              "preview": { "type": "structure" }
+              "columns": {
+                "sm": 1,
+                "md": 1,
+                "lg": 1,
+                "xl": 1
+              },
+              "card": {
+                "type": "contact-card",
+                "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "structure"
+              }
             },
             "map": {
-              "marker": { "useItemImage": true, "style": "pin", "color": "primary" },
-              "itemAction": { "kind": "preview" }
+              "marker": {
+                "useItemImage": true,
+                "style": "pin",
+                "color": "primary"
+              },
+              "itemAction": {
+                "kind": "preview"
+              }
             }
           }
         }
@@ -2390,7 +2497,7 @@
         "sidebarRing": "oklch(0.72 0.10 185)"
       }
     },
-     "customCSS": ".ssso-card .header-gradient {\n  background: linear-gradient(135deg, var(--accent), var(--warning))!important;\n}\n\n .sspt-card .header-gradient {\n background: linear-gradient(135deg, var(--primary), var(--muted-foreground))!important;\n} \n\n .ssso-card .border-card-border-left {\n border-color: var(--accent)!important;}"
+    "customCSS": ".ssso-card .header-gradient {\n  background: linear-gradient(135deg, var(--accent), var(--warning))!important;\n}\n\n .sspt-card .header-gradient {\n background: linear-gradient(135deg, var(--primary), var(--muted-foreground))!important;\n} \n\n .ssso-card .border-card-border-left {\n border-color: var(--accent)!important;}"
   },
   "auth": {
     "login": {
@@ -2403,6 +2510,116 @@
         "en": "Access the Ekilib.re professional area"
       }
     }
+  },
+  "admin": {
+    "enabled": true,
+    "title": {
+      "fr": "Administration Ekilib.re",
+      "en": "Ekilib.re administration"
+    },
+    "access": {
+      "min": "siteAdmin"
+    },
+    "tabs": [
+      {
+        "id": "dashboard",
+        "label": {
+          "fr": "Tableau de bord",
+          "en": "Dashboard"
+        },
+        "icon": "layout-dashboard",
+        "sections": [
+          {
+            "type": "dashboard",
+            "kpis": [
+              {
+                "type": "searchCount",
+                "label": {
+                  "fr": "Créneaux actifs",
+                  "en": "Active slots"
+                },
+                "hint": {
+                  "fr": "Créneaux publiés (état Validé)",
+                  "en": "Published slots (Validated)"
+                },
+                "icon": "calendar-check",
+                "linkTo": "/creneaux",
+                "entityType": "answers",
+                "source": {
+                  "defaultTypes": [
+                    "answers"
+                  ],
+                  "notSourceKey": true,
+                  "defaultFilters": {
+                    "form": "6928096adf5caf0d230e7f26",
+                    "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdr0xcsmmpnr6ez17q.address.postalCode": {
+                      "$in": [
+                        "97430",
+                        "97418"
+                      ]
+                    },
+                    "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdn1jcq445i0mb9bap7": "Validé"
+                  }
+                },
+                "trend": "monthly"
+              },
+              {
+                "type": "analyticsVisitors",
+                "label": {
+                  "fr": "Usagers actifs",
+                  "en": "Active users"
+                },
+                "hint": {
+                  "fr": "Visites uniques mensuelles — mesure d'audience RGPD à raccorder",
+                  "en": "Monthly unique visits — GDPR analytics to be connected"
+                },
+                "icon": "chart-line"
+              },
+              {
+                "type": "membersPending",
+                "label": {
+                  "fr": "Pros inscrits",
+                  "en": "Registered professionals"
+                },
+                "hint": {
+                  "fr": "Professionnels de santé en attente de validation",
+                  "en": "Health professionals awaiting validation"
+                },
+                "icon": "stethoscope",
+                "linkTo": "/admin/membres"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "membres",
+        "label": {
+          "fr": "Membres",
+          "en": "Members"
+        },
+        "icon": "users",
+        "sections": [
+          {
+            "type": "members"
+          }
+        ]
+      },
+      {
+        "id": "moderation",
+        "label": {
+          "fr": "Modération",
+          "en": "Moderation"
+        },
+        "icon": "shield-alert",
+        "access": "superAdmin",
+        "sections": [
+          {
+            "type": "moderation"
+          }
+        ]
+      }
+    ]
   },
   "commandPalette": {
     "enabled": true,

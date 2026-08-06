@@ -56,11 +56,47 @@ export const AdminColumnsSchema = z.array(z.union([
 /** Accès minimum d'une SECTION (surcharge l'accès page/onglet — cf. AdminConfig.access). */
 const sectionAccess = { access: AdminAccessLevelSchema.optional() };
 
+/** Champs communs des KPIs opt-in du dashboard. `linkTo` = raccourci de la tuile (path site
+ *  ou onglet admin) ; `icon` = nom lucide (DynamicIcon), défaut par type. */
+const kpiBase = {
+  label: LocalizedString,
+  /** Sous-titre descriptif de la tuile (ex. « Créneaux publiés (état Validé) »). */
+  hint: LocalizedString.optional(),
+  linkTo: z.string().optional(),
+  icon: z.string().optional(),
+};
+
+/** KPIs déclarés du dashboard — OPT-IN (sans `kpis`, le dashboard reste 100 % dérivé) :
+ *  - `searchCount` : compteur d'un périmètre de recherche (même contrat `source` que les
+ *    resources / `baseParams` de searchProStatic). `trend: "monthly"` charge le périmètre
+ *    complet (useSearchAllResults) et dérive l'évolution mensuelle des dates `created` —
+ *    les suppressions ne sont pas historisées, cf. computeMonthlyTrend ;
+ *  - `membersPending` : membres du carrier en attente de validation (même source que
+ *    l'onglet members) ;
+ *  - `analyticsVisitors` : visites uniques mensuelles. AUCUNE intégration analytics en
+ *    LECTURE n'existe dans le moteur (IntegrationsLoader ne fait que du tracking) : la
+ *    tuile affiche un état « à raccorder » explicite plutôt qu'un chiffre inventé. */
+export const AdminDashboardKpiSchema = z.discriminatedUnion("type", [
+  z.object({
+    ...kpiBase,
+    type: z.literal("searchCount"),
+    entityType: z.string(), // answers | organizations | poi | …
+    source: SearchBaseParamsSchema.partial().optional(),
+    trend: z.enum(["monthly"]).optional(),
+  }),
+  z.object({ ...kpiBase, type: z.literal("membersPending") }),
+  z.object({ ...kpiBase, type: z.literal("analyticsVisitors") }),
+]);
+export type AdminDashboardKpi = z.infer<typeof AdminDashboardKpiSchema>;
+
 const AdminDashboardSectionSchema = z.object({
   ...sectionAccess,
   type: z.literal("dashboard"),
   title: LocalizedString.optional(),
+  /** Tuiles KPI déclarées, rendues AVANT les tuiles dérivées (resources/modération). */
+  kpis: z.array(AdminDashboardKpiSchema).optional(),
 });
+export type AdminDashboardSection = z.infer<typeof AdminDashboardSectionSchema>;
 
 const AdminMembersSectionSchema = z.object({
   ...sectionAccess,

@@ -167,5 +167,10 @@
     "unreferenced": "Référence retirée",
     "detached": "Élément détaché",
     "error": "Action de référencement impossible"
+  },
+  "DashboardKpis": {
+    "trendMonthly": "+{{added}} ce mois-ci · {{delta}} vs mois précédent",
+    "membersPending": "en attente de validation",
+    "analyticsPending": "Mesure d'audience à raccorder (outil RGPD à venir)"
   }
 }

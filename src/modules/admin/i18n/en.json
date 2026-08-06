@@ -167,5 +167,10 @@
     "unreferenced": "Reference removed",
     "detached": "Item detached",
     "error": "Referencing action failed"
+  },
+  "DashboardKpis": {
+    "trendMonthly": "+{{added}} this month · {{delta}} vs last month",
+    "membersPending": "awaiting validation",
+    "analyticsPending": "Audience analytics to be connected (GDPR-compliant tool pending)"
   }
 }
