@@ -71,6 +71,8 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
           className={cn("absolute inset-0 pointer-events-none transition-opacity duration-200", collapsed ? "opacity-100" : "opacity-0")}
         />
 
+        <div aria-hidden className="absolute inset-0 -z-10 pointer-events-none dark:bg-black/55" />
+
         {/* Section 1 : logo + titre/sous-titre côte à côte, plein écran (50
             moins la nav, h-14 = 3.5rem) et centrés horizontalement/verticalement.
             Toujours montée — le collapse au scroll transitionne la hauteur
@@ -208,10 +210,18 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
             <div className="flex items-center justify-end gap-2 justify-self-end">
             <div className="hidden xl:flex items-center gap-2">
               {header.utilities?.notifications && <NotificationBell />}
-              {header.utilities?.search && <CommandTriggerButton />}
+              {header.utilities?.search && (
+                <span className="header-stacked-icon-btn contents">
+                  <CommandTriggerButton />
+                </span>
+              )}
               {header.utilities?.themeSwitch !== false && (
                 <ClientOnly fallback={<div className="w-10 h-10" />}>
-                  {() => <ToggleButtonTheme />}
+                  {() => (
+                    <span className="header-stacked-icon-btn contents">
+                      <ToggleButtonTheme />
+                    </span>
+                  )}
                 </ClientOnly>
               )}
               {header.utilities?.langSwitch && (
@@ -232,10 +242,18 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
 
             <div className="xl:hidden flex items-center gap-2">
               {header.utilities?.notifications && <NotificationBell />}
-              {header.utilities?.search && <CommandTriggerButton />}
+              {header.utilities?.search && (
+                <span className="header-stacked-icon-btn contents">
+                  <CommandTriggerButton />
+                </span>
+              )}
               {header.utilities?.themeSwitch !== false && (
                 <ClientOnly fallback={<div className="w-8 h-8" />}>
-                  {() => <ToggleButtonTheme />}
+                  {() => (
+                    <span className="header-stacked-icon-btn contents">
+                      <ToggleButtonTheme />
+                    </span>
+                  )}
                 </ClientOnly>
               )}
               {navItemsToDisplay.length > 0 && (
