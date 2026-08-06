@@ -130,5 +130,13 @@
     "config": "config.prod.rezo-sante-reunion.json",
     "css": "index-rezo-sante-reunion",
     "images": "rezoSanteReunion"
+  },
+  {
+    "slug": "ESS974",
+    "config": "config.prod.equipements-Sportifs-Scolaire.json",
+    "css": "index-equipements-sportifs",
+    "images": "equipementsSportifs974",
+    "coolifyApp": "site-json-equipements-sportifs-scolaires",
+    "domain": "equipements-sportifs-scolaires.00.re"
   }
 ]
