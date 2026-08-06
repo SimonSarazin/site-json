@@ -1201,10 +1201,21 @@ d'abord le registry statique, puis `costumEditThunk` en repli. Mécanique détai
 
 **`resolveEditModalName(entity, config)`** — détermine le nom à monter, **config-driven** :
 1. `kind = entity.getEntityType()` (déjà au pluriel : `organizations`, `projects`, …) ;
-2. lit `config.profiles[kind].editModal` ; absent → `"edit-profile"` (générique) ;
-3. si `profiles[kind].editModalMatch` est défini → la modale custom ne s'applique que si `serverData` satisfait
-   la condition — objet `{clé: valeur}`, AND implicite sur toutes les clés ; `.includes(valeur)` si
-   `serverData[clé]` est un array, sinon `===`. Sinon → `"edit-profile"`.
+2. table `profiles[kind].editModals[]` : la PREMIÈRE route dont la condition matche gagne ;
+3. repli `profiles[kind].editModal` + sa condition (format historique, une seule route) ;
+4. rien ne matche → `"edit-profile"` (générique).
+
+Conditions d'une route, toutes optionnelles et **cumulatives** :
+- `editModalMatch` — objet `{clé: valeur}`, AND implicite ; `.includes(valeur)` si la valeur courante est un
+  array, sinon `===` ;
+- `when` — prédicat complet (`and`/`or`/`not`, ops `eq`/`ne`/`contains`/`in`…), même grammaire que
+  `list.itemRules`.
+
+Les deux sont évalués sur la vue `entityMatchData(entity)` (`src/lib/entityMatch.ts`), **pas** sur
+`serverData` brut : les chemins pointés (`reference.costum`) y sont résolus et les champs synthétiques
+`sourceKey`/`sourceKeys` disponibles (ces derniers normalisent la forme « objet à trous » que `source.keys`
+prend après un `unset` PHP). Un prédicat malformé fait échouer la route — au pire l'utilisateur obtient le
+formulaire générique, jamais un formulaire costum sur une entité qui n'en relève pas.
 
 ```jsonc
 { "profiles": { "organizations": {
@@ -1212,6 +1223,30 @@ d'abord le registry statique, puis `costumEditThunk` en repli. Mécanique détai
   "editModalMatch": { "tags": "TiersLieux" }   // orga taggée TiersLieux → modale costum ; sinon édition générique
 } } }
 ```
+
+⚠ **Une route SANS condition est un catch-all** : elle s'applique à TOUTES les entités du type — y compris
+celles étrangères au costum — et court-circuite les routes suivantes. Un formulaire costum doit donc être
+borné à son périmètre, et aucun champ *plat* ne le porte : la provenance vit dans `source.key`/`source.keys`,
+le rattachement secondaire dans `reference.costum` (posé par l'`afterSave` legacy quand la provenance diffère
+du costum). D'où le patron :
+
+```jsonc
+{ "profiles": { "organizations": { "editModals": [{
+  "editModal": "edit-mon-costum",
+  "when": { "or": [
+    { "field": "sourceKeys",       "op": "contains", "value": "monCostum" },
+    { "field": "reference.costum", "op": "contains", "value": "monCostum" }
+  ]}
+}] } } }
+```
+
+Le schéma des routes est un `strictObject` : une faute de frappe (`wen`) fait échouer la validation au lieu
+d'être silencieusement supprimée — sans quoi la route redeviendrait un catch-all sans le moindre signal.
+Deux pièges à connaître. Un prédicat portant sur un champ **non projeté** ne matchera jamais, en silence :
+`element/about` (fiche profil) renvoie bien `source`, `reference`, `links` et `costum`, mais une entité issue
+d'une RECHERCHE est limitée à `baseParams.defaultFields` quand cette liste est renseignée. Et `reference.costum`
+est lu **brut** (contrairement à `sourceKeys`) : sa forme « objet à trous », rare mais réelle (16 organisations
+en base), échapperait à `contains`.
 
 **`DynamicEditModal`** — wrapper monté par les headers de profil / `ProfileActions` : appelle
 `resolveEditModalName`, `ensureLazyEditModal`, puis rend la modale en `Suspense`. Cache `lazyComponents` pour

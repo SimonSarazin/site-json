@@ -4929,12 +4929,25 @@
       "editModals": [
         {
           "editModal": "edit-sport-sante-bienetre-mss",
+          "_comment": "Périmètre du costum : 180 organisations, 2 projets, 1 event et 64 POI portent source.keys=sportSanteBienetre. Sans cette clause les routes sont des catch-all — le formulaire s'ouvrait sur toutes les entités du type (jusqu'à 29 236 organisations atteignables). Le terme reference.costum couvre les entités RATTACHÉES sans provenance (route legacy générique Admin::addSourceInElement) : aucune aujourd'hui, mécanisme néanmoins actif.",
           "editModalMatch": {
             "type": "NGO"
+          },
+          "when": {
+            "or": [
+              { "field": "sourceKeys", "op": "contains", "value": "sportSanteBienetre" },
+              { "field": "reference.costum", "op": "contains", "value": "sportSanteBienetre" }
+            ]
           }
         },
         {
-          "editModal": "edit-sport-sante-bienetre-organizations"
+          "editModal": "edit-sport-sante-bienetre-organizations",
+          "when": {
+            "or": [
+              { "field": "sourceKeys", "op": "contains", "value": "sportSanteBienetre" },
+              { "field": "reference.costum", "op": "contains", "value": "sportSanteBienetre" }
+            ]
+          }
         }
       ]
     },
@@ -5122,7 +5135,13 @@
       ],
       "editModals": [
         {
-          "editModal": "edit-sport-sante-bienetre-formation"
+          "editModal": "edit-sport-sante-bienetre-formation",
+          "when": {
+            "or": [
+              { "field": "sourceKeys", "op": "contains", "value": "sportSanteBienetre" },
+              { "field": "reference.costum", "op": "contains", "value": "sportSanteBienetre" }
+            ]
+          }
         }
       ]
     },
@@ -5309,6 +5328,12 @@
           "editModal": "edit-sport-sante-bienetre-session-formation",
           "editModalMatch": {
             "type": "course"
+          },
+          "when": {
+            "or": [
+              { "field": "sourceKeys", "op": "contains", "value": "sportSanteBienetre" },
+              { "field": "reference.costum", "op": "contains", "value": "sportSanteBienetre" }
+            ]
           }
         }
       ]
@@ -5317,10 +5342,6 @@
       "layout": "default",
       "hideHeader": false,
       "hideFooter": false,
-      "editModal": "edit-equipements-sportifs",
-      "editModalMatch": {
-        "type": "recoveryCenter"
-      },
       "sections": [
         {
           "type": "profile-header",
@@ -5460,12 +5481,24 @@
           "editModal": "edit-sport-sante-bienetre-article",
           "editModalMatch": {
             "type": "article"
+          },
+          "when": {
+            "or": [
+              { "field": "sourceKeys", "op": "contains", "value": "sportSanteBienetre" },
+              { "field": "reference.costum", "op": "contains", "value": "sportSanteBienetre" }
+            ]
           }
         },
         {
           "editModal": "edit-sport-sante-bienetre-recovery-center",
           "editModalMatch": {
             "type": "recoveryCenter"
+          },
+          "when": {
+            "or": [
+              { "field": "sourceKeys", "op": "contains", "value": "sportSanteBienetre" },
+              { "field": "reference.costum", "op": "contains", "value": "sportSanteBienetre" }
+            ]
           }
         }
       ]

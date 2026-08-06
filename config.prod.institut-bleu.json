@@ -293,16 +293,8 @@
               "defaultSortBy": {
                 "name": 1
               },
-              "notSourceKey": true,
               "defaultFilters": {
-                "$or": {
-                  "source.key": "institutBleu",
-                  "source.keys": "institutBleu"
-                },
-                "displayAuth": "true",
-                "preferences.toBeValidated.institutBleu": {
-                  "$exists": false
-                }
+                "displayAuth": "true"
               },
               "indexStepList": 24
             },
@@ -642,206 +634,16 @@
                     ]
                   },
                   {
-                    "id": "activite",
+                    "id": "motscles",
                     "label": {
-                      "fr": "Activité",
-                      "en": "Activity"
+                      "fr": "Mots-clés",
+                      "en": "Keywords"
                     },
                     "field": "tags",
-                    "options": [
-                      {
-                        "id": "tourisme-et-loisirs",
-                        "label": {
-                          "fr": "Tourisme et loisirs",
-                          "en": "Tourism and leisure"
-                        },
-                        "name": "Tourisme et loisirs"
-                      },
-                      {
-                        "id": "sensibilisation",
-                        "label": {
-                          "fr": "Sensibilisation",
-                          "en": "Awareness-raising"
-                        },
-                        "name": "Sensibilisation"
-                      },
-                      {
-                        "id": "protection-de-lenvironnement",
-                        "label": {
-                          "fr": "Protection de l’environnement",
-                          "en": "Environmental protection"
-                        },
-                        "name": "Protection de l’environnement"
-                      },
-                      {
-                        "id": "formation",
-                        "label": {
-                          "fr": "Formation",
-                          "en": "Training"
-                        },
-                        "name": "Formation"
-                      },
-                      {
-                        "id": "conseil-et-accompagnement",
-                        "label": {
-                          "fr": "Conseil et accompagnement",
-                          "en": "Consulting and support"
-                        },
-                        "name": "Conseil et accompagnement"
-                      },
-                      {
-                        "id": "recherche-et-innovation",
-                        "label": {
-                          "fr": "Recherche et innovation",
-                          "en": "Research and innovation"
-                        },
-                        "name": "Recherche et innovation"
-                      },
-                      {
-                        "id": "peche-professionnelle",
-                        "label": {
-                          "fr": "Pêche professionnelle",
-                          "en": "Commercial fishing"
-                        },
-                        "name": "Pêche professionnelle"
-                      },
-                      {
-                        "id": "administrations-publiques-et-actions-de-l-etat-en-mer",
-                        "label": {
-                          "fr": "Administrations publiques et actions de l'Etat en mer",
-                          "en": "Public administrations and State action at sea"
-                        },
-                        "name": "Administrations publiques et actions de l'Etat en mer"
-                      },
-                      {
-                        "id": "bureau-d-etude-et-expertise",
-                        "label": {
-                          "fr": "Bureau d'étude et expertise",
-                          "en": "Engineering and consultancy"
-                        },
-                        "name": "Bureau d'étude et expertise"
-                      },
-                      {
-                        "id": "exposition-et-valorisation",
-                        "label": {
-                          "fr": "Exposition et valorisation",
-                          "en": "Exhibitions and outreach"
-                        },
-                        "name": "Exposition et valorisation"
-                      },
-                      {
-                        "id": "construction-industrie-et-maintenance-navale",
-                        "label": {
-                          "fr": "Construction & industrie et maintenance navale",
-                          "en": "Shipbuilding, marine industry and maintenance"
-                        },
-                        "name": "Construction & industrie et maintenance navale"
-                      },
-                      {
-                        "id": "activites-portuaires",
-                        "label": {
-                          "fr": "Activités portuaires",
-                          "en": "Port activities"
-                        },
-                        "name": "Activités portuaires"
-                      },
-                      {
-                        "id": "transport-de-passagers",
-                        "label": {
-                          "fr": "Transport de passagers",
-                          "en": "Passenger transport"
-                        },
-                        "name": "Transport de passagers"
-                      },
-                      {
-                        "id": "peche-de-loisir",
-                        "label": {
-                          "fr": "Pêche de loisir",
-                          "en": "Recreational fishing"
-                        },
-                        "name": "Pêche de loisir"
-                      },
-                      {
-                        "id": "vente-de-materiels",
-                        "label": {
-                          "fr": "Vente de matériels",
-                          "en": "Equipment sales"
-                        },
-                        "name": "Vente de matériels"
-                      },
-                      {
-                        "id": "manutention-portuaire",
-                        "label": {
-                          "fr": "Manutention portuaire",
-                          "en": "Port cargo handling"
-                        },
-                        "name": "Manutention portuaire"
-                      },
-                      {
-                        "id": "transformation-de-produits-de-la-mer",
-                        "label": {
-                          "fr": "Transformation de produits de la mer",
-                          "en": "Seafood processing"
-                        },
-                        "name": "Transformation de produits de la mer"
-                      },
-                      {
-                        "id": "aquaculture",
-                        "label": {
-                          "fr": "Aquaculture",
-                          "en": "Aquaculture"
-                        },
-                        "name": "Aquaculture"
-                      },
-                      {
-                        "id": "vente-de-produits-de-la-mer",
-                        "label": {
-                          "fr": "Vente de produits de la mer",
-                          "en": "Seafood sales"
-                        },
-                        "name": "Vente de produits de la mer"
-                      },
-                      {
-                        "id": "travaux-maritime",
-                        "label": {
-                          "fr": "Travaux maritime",
-                          "en": "Marine works"
-                        },
-                        "name": "Travaux maritime"
-                      },
-                      {
-                        "id": "reparation-et-maintenance",
-                        "label": {
-                          "fr": "Réparation et maintenance",
-                          "en": "Repair and maintenance"
-                        },
-                        "name": "Réparation et maintenance"
-                      },
-                      {
-                        "id": "affaire-personnelle-commercant",
-                        "label": {
-                          "fr": "Affaire personnelle commerçant",
-                          "en": "Sole trader business"
-                        },
-                        "name": "Affaire personnelle commerçant"
-                      },
-                      {
-                        "id": "consultant",
-                        "label": {
-                          "fr": "Consultant",
-                          "en": "Consultant"
-                        },
-                        "name": "Consultant"
-                      },
-                      {
-                        "id": "veterinaire",
-                        "label": {
-                          "fr": "Vétérinaire",
-                          "en": "Veterinarian"
-                        },
-                        "name": "Vétérinaire"
-                      }
-                    ]
+                    "options": [],
+                    "optionsFrom": {
+                      "list": "tags"
+                    }
                   },
                   {
                     "id": "statut",
@@ -1034,6 +836,12 @@
                   ]
                 },
                 "baseParams": {
+                  "searchBy": [
+                    "name",
+                    "shortDescription",
+                    "acronym",
+                    "tags"
+                  ],
                   "defaultTypes": [
                     "organizations"
                   ],
@@ -1061,21 +869,15 @@
                     "geoPosition",
                     "profilThumbImageUrl",
                     "profilMediumImageUrl",
-                    "profilImageUrl"
+                    "profilImageUrl",
+                    "source",
+                    "reference"
                   ],
                   "defaultSortBy": {
                     "name": 1
                   },
-                  "notSourceKey": true,
                   "defaultFilters": {
-                    "$or": {
-                      "source.key": "institutBleu",
-                      "source.keys": "institutBleu"
-                    },
-                    "displayAuth": "true",
-                    "preferences.toBeValidated.institutBleu": {
-                      "$exists": false
-                    }
+                    "displayAuth": "true"
                   },
                   "indexStepList": 24
                 },
@@ -1092,7 +894,77 @@
                     "showStats": false,
                     "showDescription": true,
                     "showAddress": true,
-                    "detailsMode": "drawer"
+                    "detailsMode": "dialog"
+                  },
+                  "preview": {
+                    "type": "facets",
+                    "width": "3xl",
+                    "facets": [
+                      {
+                        "field": "categoryThematic",
+                        "label": {
+                          "fr": "Catégorie",
+                          "en": "Category"
+                        },
+                        "icon": "layers"
+                      },
+                      {
+                        "field": "legalStatus",
+                        "label": {
+                          "fr": "Forme juridique",
+                          "en": "Legal status"
+                        },
+                        "icon": "scale"
+                      },
+                      {
+                        "field": "operatingLocation",
+                        "label": {
+                          "fr": "Zone d'activité",
+                          "en": "Operating area"
+                        },
+                        "icon": "map"
+                      },
+                      {
+                        "field": "acronym",
+                        "label": {
+                          "fr": "Sigle",
+                          "en": "Acronym"
+                        },
+                        "icon": "type"
+                      },
+                      {
+                        "field": "email",
+                        "label": {
+                          "fr": "Contact",
+                          "en": "Contact"
+                        },
+                        "icon": "at-sign"
+                      },
+                      {
+                        "field": "link",
+                        "label": {
+                          "fr": "Site web",
+                          "en": "Website"
+                        },
+                        "icon": "globe"
+                      },
+                      {
+                        "field": "siret",
+                        "label": {
+                          "fr": "SIRET",
+                          "en": "SIRET"
+                        },
+                        "icon": "hash"
+                      },
+                      {
+                        "field": "codeNaf",
+                        "label": {
+                          "fr": "Code NAF",
+                          "en": "NAF code"
+                        },
+                        "icon": "briefcase"
+                      }
+                    ]
                   }
                 }
               }
@@ -1151,6 +1023,12 @@
             "showActiveFiltersTypes": false,
             "showActiveFiltersTags": false,
             "baseParams": {
+              "searchBy": [
+                "name",
+                "shortDescription",
+                "acronym",
+                "tags"
+              ],
               "defaultTypes": [
                 "organizations"
               ],
@@ -1178,18 +1056,12 @@
                 "geoPosition",
                 "profilThumbImageUrl",
                 "profilMediumImageUrl",
-                "profilImageUrl"
+                "profilImageUrl",
+                "source",
+                "reference"
               ],
-              "notSourceKey": true,
               "defaultFilters": {
-                "$or": {
-                  "source.key": "institutBleu",
-                  "source.keys": "institutBleu"
-                },
-                "displayAuth": "true",
-                "preferences.toBeValidated.institutBleu": {
-                  "$exists": false
-                }
+                "displayAuth": "true"
               },
               "indexStepList": 200
             },
@@ -1206,7 +1078,77 @@
                 "showStats": false,
                 "showDescription": true,
                 "showAddress": true,
-                "detailsMode": "drawer"
+                "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "facets",
+                "width": "3xl",
+                "facets": [
+                  {
+                    "field": "categoryThematic",
+                    "label": {
+                      "fr": "Catégorie",
+                      "en": "Category"
+                    },
+                    "icon": "layers"
+                  },
+                  {
+                    "field": "legalStatus",
+                    "label": {
+                      "fr": "Forme juridique",
+                      "en": "Legal status"
+                    },
+                    "icon": "scale"
+                  },
+                  {
+                    "field": "operatingLocation",
+                    "label": {
+                      "fr": "Zone d'activité",
+                      "en": "Operating area"
+                    },
+                    "icon": "map"
+                  },
+                  {
+                    "field": "acronym",
+                    "label": {
+                      "fr": "Sigle",
+                      "en": "Acronym"
+                    },
+                    "icon": "type"
+                  },
+                  {
+                    "field": "email",
+                    "label": {
+                      "fr": "Contact",
+                      "en": "Contact"
+                    },
+                    "icon": "at-sign"
+                  },
+                  {
+                    "field": "link",
+                    "label": {
+                      "fr": "Site web",
+                      "en": "Website"
+                    },
+                    "icon": "globe"
+                  },
+                  {
+                    "field": "siret",
+                    "label": {
+                      "fr": "SIRET",
+                      "en": "SIRET"
+                    },
+                    "icon": "hash"
+                  },
+                  {
+                    "field": "codeNaf",
+                    "label": {
+                      "fr": "Code NAF",
+                      "en": "NAF code"
+                    },
+                    "icon": "briefcase"
+                  }
+                ]
               }
             },
             "enableGraph": true,
@@ -1657,16 +1599,8 @@
               "defaultSortBy": {
                 "name": 1
               },
-              "notSourceKey": true,
               "defaultFilters": {
-                "$or": {
-                  "source.key": "institutBleu",
-                  "source.keys": "institutBleu"
-                },
-                "displayAuth": "true",
-                "preferences.toBeValidated.institutBleu": {
-                  "$exists": false
-                }
+                "displayAuth": "true"
               },
               "indexStepList": 24
             },
@@ -2141,6 +2075,9 @@
               },
               {
                 "id": "territoire",
+            "optionsFrom": {
+              "list": "territoires"
+            },
                 "label": {
                   "fr": "Territoire",
                   "en": "Territory"
@@ -2251,6 +2188,40 @@
                 ]
               },
               {
+                "id": "auteur",
+                "label": {
+                  "fr": "Auteur",
+                  "en": "Author"
+                },
+                "field": "auteurs",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les auteurs",
+                  "en": "All authors"
+                },
+                "options": [],
+                "optionsFrom": {
+                  "list": "auteurs"
+                }
+              },
+              {
+                "id": "motscles",
+                "label": {
+                  "fr": "Mots-clés",
+                  "en": "Keywords"
+                },
+                "field": "tags",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les mots-clés",
+                  "en": "All keywords"
+                },
+                "options": [],
+                "optionsFrom": {
+                  "list": "tagsDocument"
+                }
+              },
+              {
                 "id": "langue",
                 "label": {
                   "fr": "Langue",
@@ -2328,7 +2299,9 @@
                 "name",
                 "shortDescription",
                 "auteurs",
-                "organisme"
+                "organisme",
+                "tags",
+                "territoires"
               ],
               "defaultSortBy": {
                 "date": -1
@@ -3116,10 +3089,24 @@
           "variant": "complete",
           "showAddDropdown": true,
           "addConfig": {
-            "organization": true,
-            "project": true,
-            "event": true,
-            "poi": true
+            "organization": false,
+            "project": false,
+            "event": false,
+            "poi": false,
+            "custom": [
+              {
+                "modalKey": "add-institut-bleu-acteur",
+                "label": {
+                  "fr": "Référencer ma structure",
+                  "en": "List my organisation"
+                },
+                "icon": "anchor",
+                "condition": {
+                  "auth": "required",
+                  "userContext": "own"
+                }
+              }
+            ]
           }
         },
         {
@@ -3216,8 +3203,8 @@
         {
           "id": "membership",
           "label": {
-            "fr": "Communautés",
-            "en": "Communities"
+            "fr": "Mes structures",
+            "en": "My organisations"
           },
           "condition": {
             "entityTypes": [
@@ -3225,7 +3212,13 @@
             ],
             "userContext": "own"
           },
-          "component": "MembershipTab"
+          "component": "MembershipTab",
+          "props": {
+            "types": [
+              "organizations"
+            ],
+            "scope": "costum"
+          }
         }
       ]
     },
@@ -3240,9 +3233,9 @@
           "showAddDropdown": true,
           "addConfig": {
             "organization": false,
-            "project": true,
+            "project": false,
             "event": true,
-            "poi": true
+            "poi": false
           }
         },
         {
@@ -3428,6 +3421,7 @@
               "leftSections": [
                 {
                   "type": "profile-related",
+              "scope": "costum",
                   "relationType": "projects",
                   "title": {
                     "fr": "Projets",
@@ -3459,6 +3453,7 @@
               "leftSections": [
                 {
                   "type": "profile-related",
+              "scope": "costum",
                   "relationType": "events",
                   "title": {
                     "fr": "Événements",
@@ -3481,7 +3476,19 @@
       ],
       "editModals": [
         {
-          "editModal": "edit-institut-bleu-acteur"
+          "editModal": "edit-institut-bleu-acteur",
+          "_comment": "Sans cette clause la route est un catch-all : le formulaire s'ouvrait sur les ~29 400 organisations du site. La clause slug exclut la porteuse du costum (73 des 74).",
+          "when": {
+            "and": [
+              {
+                "or": [
+                  { "field": "sourceKeys", "op": "contains", "value": "institutBleu" },
+                  { "field": "reference.costum", "op": "contains", "value": "institutBleu" }
+                ]
+              },
+              { "field": "slug", "op": "ne", "value": "institutBleu" }
+            ]
+          }
         }
       ]
     },
@@ -3498,7 +3505,7 @@
             "organization": false,
             "project": false,
             "event": true,
-            "poi": true
+            "poi": false
           }
         },
         {
@@ -3616,6 +3623,7 @@
               "leftSections": [
                 {
                   "type": "profile-related",
+              "scope": "costum",
                   "relationType": "projects",
                   "title": {
                     "fr": "Structures partenaires",
@@ -3647,6 +3655,7 @@
               "leftSections": [
                 {
                   "type": "profile-related",
+              "scope": "costum",
                   "relationType": "events",
                   "title": {
                     "fr": "Événements",
@@ -3800,6 +3809,7 @@
                 },
                 {
                   "type": "profile-related",
+              "scope": "costum",
                   "relationType": "events",
                   "title": {
                     "fr": "Autres événements",
@@ -3848,7 +3858,14 @@
       ],
       "editModals": [
         {
-          "editModal": "edit-institut-bleu-event"
+          "editModal": "edit-institut-bleu-event",
+          "_comment": "Sans clause de périmètre, catch-all sur tous les events du site. `reference.costum` est conservé bien qu'inutilisé ici : le rattachement legacy est générique.",
+          "when": {
+            "or": [
+              { "field": "sourceKeys", "op": "contains", "value": "institutBleu" },
+              { "field": "reference.costum", "op": "contains", "value": "institutBleu" }
+            ]
+          }
         }
       ]
     },
@@ -3993,14 +4010,28 @@
       "editModals": [
         {
           "editModal": "edit-institut-bleu-financement",
+          "_comment": "Le sous-type suffirait aujourd'hui (11 POI, tous du costum) ; on borne quand même, rien ne garantit qu'un autre costum n'utilisera pas ce type.",
           "editModalMatch": {
             "type": "financement"
+          },
+          "when": {
+            "or": [
+              { "field": "sourceKeys", "op": "contains", "value": "institutBleu" },
+              { "field": "reference.costum", "op": "contains", "value": "institutBleu" }
+            ]
           }
         },
         {
           "editModal": "edit-institut-bleu-document",
+          "_comment": "Le sous-type NE discrimine pas : 3 765 POI recoveryCenter en base dont 3 079 étrangers au costum. Sans la clause, même catch-all que celui corrigé sur organizations.",
           "editModalMatch": {
             "type": "recoveryCenter"
+          },
+          "when": {
+            "or": [
+              { "field": "sourceKeys", "op": "contains", "value": "institutBleu" },
+              { "field": "reference.costum", "op": "contains", "value": "institutBleu" }
+            ]
           }
         }
       ]
@@ -4147,6 +4178,10 @@
         },
         "name": {
           "widget": "text",
+          "placeholder": {
+            "fr": "Nom complet de la structure",
+            "en": "Full name of the organisation"
+          },
           "label": {
             "fr": "Nom de la structure",
             "en": "Organisation name"
@@ -4155,6 +4190,10 @@
         },
         "acronym": {
           "widget": "text",
+          "placeholder": {
+            "fr": "Sigle ou acronyme usuel",
+            "en": "Common acronym"
+          },
           "label": {
             "fr": "Acronyme",
             "en": "Acronym"
@@ -4270,7 +4309,7 @@
             "en": "Describe your activity in more detail — you may create your own keywords (5 maximum)."
           },
           "widgetProps": {
-            "searchable": true,
+            "list": "tags",
             "maxTags": 5
           },
           "rules": {
@@ -4393,6 +4432,10 @@
         },
         "codeNaf": {
           "widget": "text",
+          "placeholder": {
+            "fr": "Code APE / NAF (ex. 7112B)",
+            "en": "APE / NAF code (e.g. 7112B)"
+          },
           "label": {
             "fr": "Code NAF",
             "en": "NAF code"
@@ -4400,6 +4443,10 @@
         },
         "siret": {
           "widget": "text",
+          "placeholder": {
+            "fr": "14 chiffres",
+            "en": "14 digits"
+          },
           "label": {
             "fr": "SIRET",
             "en": "SIRET"
@@ -4419,6 +4466,10 @@
         },
         "mobile": {
           "widget": "tel",
+          "placeholder": {
+            "fr": "Numéro de contact",
+            "en": "Contact number"
+          },
           "label": {
             "fr": "Téléphone",
             "en": "Phone"
@@ -4440,6 +4491,7 @@
         },
         "otherSociaNetworks": {
           "widget": "fieldArray",
+          "write": "coerce:filledEntries",
           "label": {
             "fr": "Réseaux sociaux",
             "en": "Social networks"
@@ -4457,6 +4509,12 @@
                   "fr": "Nom du réseau social",
                   "en": "Network name"
                 },
+                "placeholders": [
+                  "Lien vers le profil LinkedIn",
+                  "Lien vers le profil Facebook",
+                  "Lien vers le profil Instagram",
+                  "Lien vers le profil Youtube"
+                ],
                 "className": "sm:col-span-5"
               },
               {
@@ -4471,22 +4529,10 @@
             ]
           },
           "default": [
-            {
-              "type": "Lien vers le profil LinkedIn",
-              "link": ""
-            },
-            {
-              "type": "Lien vers le profil Facebook",
-              "link": ""
-            },
-            {
-              "type": "Lien vers le profil Instagram",
-              "link": ""
-            },
-            {
-              "type": "Lien vers le profil Twitter",
-              "link": ""
-            }
+            { "type": "", "link": "" },
+            { "type": "", "link": "" },
+            { "type": "", "link": "" },
+            { "type": "", "link": "" }
           ]
         },
         "address": {
@@ -4580,7 +4626,10 @@
         "inject": {
           "extraFields": {
             "type": "LocalBusiness",
-            "role": "admin"
+            "role": "admin",
+            "preferences": {
+              "toBeValidated": true
+            }
           }
         },
         "successKey": {
@@ -4608,6 +4657,7 @@
       "entityType": "poi",
       "collection": "poi",
       "costumSlug": "institutBleu",
+      "listsFromCarrier": true,
       "icon": "book-open",
       "layout": {
         "kind": "tabs"
@@ -4723,6 +4773,10 @@
       "fields": {
         "name": {
           "widget": "text",
+          "placeholder": {
+            "fr": "Titre complet du document",
+            "en": "Full document title"
+          },
           "label": {
             "fr": "Titre du document",
             "en": "Document title"
@@ -4730,7 +4784,11 @@
           "required": true
         },
         "auteurs": {
-          "widget": "tags",
+          "widget": "valueSelect",
+          "placeholder": {
+            "fr": "Rechercher ou saisir un nom…",
+            "en": "Search or type a name…"
+          },
           "label": {
             "fr": "Auteur·rices",
             "en": "Authors"
@@ -4738,10 +4796,20 @@
           "info": {
             "fr": "Un nom par entrée.",
             "en": "One name per entry."
+          },
+          "widgetProps": {
+            "list": "auteurs"
           }
         },
         "organisme": {
-          "widget": "tags",
+          "widget": "valueSelect",
+          "widgetProps": {
+            "list": "organismes"
+          },
+          "placeholder": {
+            "fr": "Rechercher ou saisir un organisme…",
+            "en": "Search or type an organisation…"
+          },
           "label": {
             "fr": "Organisme(s)",
             "en": "Organisation(s)"
@@ -4756,6 +4824,10 @@
         },
         "coteDocument": {
           "widget": "text",
+          "placeholder": {
+            "fr": "Référence interne (ex. ISEMAR n°282)",
+            "en": "Internal reference (e.g. ISEMAR no. 282)"
+          },
           "label": {
             "fr": "Cote / numéro",
             "en": "Reference number"
@@ -4763,6 +4835,7 @@
         },
         "typeDocument": {
           "widget": "select",
+          "optionsKey": "typesDocument",
           "label": {
             "fr": "Type de document",
             "en": "Document type"
@@ -4770,6 +4843,7 @@
         },
         "langue": {
           "widget": "select",
+          "optionsKey": "langues",
           "label": {
             "fr": "Langue",
             "en": "Language"
@@ -4777,14 +4851,26 @@
         },
         "thematique": {
           "widget": "multiselect",
+          "placeholder": {
+            "fr": "Sélectionner une ou plusieurs thématiques",
+            "en": "Select one or more themes"
+          },
           "multiple": true,
+          "optionsKey": "thematiquesDocument",
           "label": {
             "fr": "Thématique(s)",
             "en": "Theme(s)"
           }
         },
         "territoires": {
-          "widget": "tags",
+          "widget": "valueSelect",
+          "placeholder": {
+            "fr": "Rechercher ou saisir un territoire…",
+            "en": "Search or type a territory…"
+          },
+          "widgetProps": {
+            "list": "territoires"
+          },
           "label": {
             "fr": "Territoire(s)",
             "en": "Territories"
@@ -4803,10 +4889,17 @@
           "info": {
             "fr": "Vocabulaire libre — les mots déjà employés vous sont proposés.",
             "en": "Free vocabulary — existing keywords are suggested."
+          },
+          "widgetProps": {
+            "list": "tagsDocument"
           }
         },
         "shortDescription": {
           "widget": "textarea",
+          "placeholder": {
+            "fr": "Résumé en quelques lignes",
+            "en": "A few lines of summary"
+          },
           "label": {
             "fr": "Résumé",
             "en": "Abstract"
@@ -4964,6 +5057,7 @@
       "entityType": "poi",
       "collection": "poi",
       "costumSlug": "institutBleu",
+      "listsFromCarrier": true,
       "icon": "hand-coins",
       "layout": {
         "kind": "tabs"
@@ -5051,6 +5145,10 @@
       "fields": {
         "name": {
           "widget": "text",
+          "placeholder": {
+            "fr": "Intitulé du dispositif de financement",
+            "en": "Name of the funding scheme"
+          },
           "label": {
             "fr": "Intitulé de l'appel",
             "en": "Call title"
@@ -5059,6 +5157,7 @@
         },
         "financementType": {
           "widget": "select",
+          "optionsKey": "financementTypes",
           "label": {
             "fr": "Type",
             "en": "Type"
@@ -5066,13 +5165,18 @@
         },
         "echelle": {
           "widget": "select",
+          "optionsKey": "echelles",
           "label": {
             "fr": "Échelle",
             "en": "Scale"
           }
         },
         "financementSource": {
-          "widget": "text",
+          "widget": "valueSelect",
+          "widgetProps": {
+            "list": "financeurs",
+            "multiple": false
+          },
           "label": {
             "fr": "Financeur",
             "en": "Funder"
@@ -5091,6 +5195,10 @@
         },
         "shortDescription": {
           "widget": "textarea",
+          "placeholder": {
+            "fr": "Résumé en quelques lignes",
+            "en": "A few lines of summary"
+          },
           "label": {
             "fr": "Résumé",
             "en": "Summary"
@@ -5348,6 +5456,10 @@
         },
         "name": {
           "widget": "text",
+          "placeholder": {
+            "fr": "Titre de l’événement",
+            "en": "Event title"
+          },
           "required": true,
           "label": {
             "fr": "Titre de l'événement",
@@ -5433,6 +5545,10 @@
         },
         "shortDescription": {
           "widget": "textarea",
+          "placeholder": {
+            "fr": "Résumé en quelques lignes",
+            "en": "A few lines of summary"
+          },
           "label": {
             "fr": "Résumé",
             "en": "Summary"
@@ -5456,6 +5572,10 @@
         },
         "url": {
           "widget": "text",
+          "placeholder": {
+            "fr": "https://…",
+            "en": "https://…"
+          },
           "label": {
             "fr": "Lien (site, inscription…)",
             "en": "Link (website, registration…)"
@@ -5468,7 +5588,7 @@
             "en": "Tags"
           },
           "widgetProps": {
-            "searchable": true
+            "list": "tagsEvent"
           }
         },
         "address": {
@@ -5664,13 +5784,6 @@
               "en": "Actors to moderate"
             },
             "source": {
-              "notSourceKey": true,
-              "defaultFilters": {
-                "$or": {
-                  "source.key": "institutBleu",
-                  "source.keys": "institutBleu"
-                }
-              },
               "defaultSortBy": {
                 "created": -1
               }
@@ -5744,12 +5857,7 @@
               "en": "Collection"
             },
             "source": {
-              "notSourceKey": true,
               "defaultFilters": {
-                "$or": {
-                  "source.key": "institutBleu",
-                  "source.keys": "institutBleu"
-                },
                 "type": "recoveryCenter"
               },
               "defaultSortBy": {
@@ -5843,12 +5951,7 @@
               "en": "Funding schemes"
             },
             "source": {
-              "notSourceKey": true,
               "defaultFilters": {
-                "$or": {
-                  "source.key": "institutBleu",
-                  "source.keys": "institutBleu"
-                },
                 "type": "financement"
               },
               "defaultSortBy": {
@@ -5934,13 +6037,6 @@
               "en": "Events"
             },
             "source": {
-              "notSourceKey": true,
-              "defaultFilters": {
-                "$or": {
-                  "source.key": "institutBleu",
-                  "source.keys": "institutBleu"
-                }
-              },
               "defaultSortBy": {
                 "created": -1
               }
@@ -6070,16 +6166,9 @@
       ],
       "limit": 8,
       "params": {
-        "notSourceKey": true,
-        "filters": {
-          "$or": {
-            "source.key": "institutBleu",
-            "source.keys": "institutBleu"
-          },
-          "preferences.toBeValidated.institutBleu": {
-            "$exists": false
-          }
-        },
+        "sourceKey": [
+          "institutBleu"
+        ],
         "fields": [
           "name",
           "slug",
