@@ -80,9 +80,14 @@ et le réseau social Communecter, en **conservant le WordPress** pour les conten
   `type:"stacked"` (neuf), footer `type:"minimal-centered"` + image de fond (neuf), nav
   restructurée (dropdown « Publics » ajouté, entrée top-level « Rechercher » retirée), 11 pages
   ajoutées (35→46, 153→176 sections).
-- **06/08 — review de la MR !32 → branche `fix/parents62-review`** (5 commits par-dessus
+- **06/08 — review de la MR !32 → branche `fix/parents62-review`** (7 commits par-dessus
   `parents62`, dont préflight : l'agent local gitignoré `siteforge-config-auditor.md` n'est
-  plus exigé par skill-integrity) : gates du skill config-assistant resynchronisées (table
+  plus exigé par skill-integrity ; et **refactor `HeaderStacked` → bandeau dans le flux +
+  barre sticky** : l'ancien bloc fixed à hauteur animée + spacer clippait logo/sous-titre
+  sur petits écrans (Nexus 5), laissait transparaître la page dans la barre compactée
+  (alpha de l'image) et faisait sauter le contenu de ~370px — recette navigateur
+  desktop + mobile des deux mécaniques, rendu au repos et barre compacte conservés) :
+  gates du skill config-assistant resynchronisées (table
   Headers + `stacked`,
   comptes 71→74, exemples `footer-contact-partners`/`header-transparent-scroll` re-pointés vers
   eXtremeDefiAdeme, recette `home-a-la-une` remplace `home-portail-services`) ; e2e réaligné
