@@ -669,6 +669,16 @@ export const SearchBaseParamsSchema = z.object({
   defaultSortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
   // Champs sur lesquels le texte de recherche est matché (cf. SearchBySchema).
   searchBy: SearchBySchema.optional(),
+  /**
+   * SOUS-TYPE de costum ciblé (clé `subType` d'un form de `costumForms`). EXPANSÉE par le client
+   * (`buildSearchPayload`) en la disjonction canonique :
+   *   `$or [ { …identity du form, "source.keys": <slug du site> },      // les NATIFS
+   *          { "reference.costumTypes.<slug>": <subType> } ]`           // les RÉFÉRENCÉS classés
+   * Le discriminant (`identity`) vit UNE fois, dans la déclaration du form — pas dupliqué ici, et le
+   * slug vient du scope du site, pas de la config. Écrire le `$or` à la main dans `defaultFilters`
+   * reste possible ; cette clé est le chemin recommandé.
+   */
+  costumSubType: z.string().optional(),
   // Accepte `boolean` (ne pas sourcer par clé) ou `number` (limite custom).
   // Certaines configs historiques utilisent un nombre — schéma assoupli pour compat.
   notSourceKey: z.union([z.boolean(), z.number()]).optional(),

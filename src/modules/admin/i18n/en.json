@@ -127,7 +127,10 @@
     "emptySearch": "No items to reference.",
     "emptyReferenced": "No referenced items.",
     "colType": "Type",
-    "colAction": "Action"
+    "colAction": "Action",
+    "attachAs": "Attach as",
+    "colSubType": "Sub-type",
+    "unclassified": "Unclassified"
   },
   "AdminModerationSection": {
     "title": "Moderation",
@@ -166,6 +169,8 @@
     "referenced": "Item referenced",
     "unreferenced": "Reference removed",
     "detached": "Item detached",
-    "error": "Referencing action failed"
+    "error": "Referencing action failed",
+    "referencedUnclassified": "Referenced, but unclassified — use “Classify” in the referenced list",
+    "classified": "Sub-type saved"
   }
 }

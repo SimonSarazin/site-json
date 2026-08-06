@@ -2075,9 +2075,9 @@
               },
               {
                 "id": "territoire",
-            "optionsFrom": {
-              "list": "territoires"
-            },
+                "optionsFrom": {
+                  "list": "territoires"
+                },
                 "label": {
                   "fr": "Territoire",
                   "en": "Territory"
@@ -2275,9 +2275,7 @@
               "sourceKey": [
                 "institutBleu"
               ],
-              "defaultFilters": {
-                "type": "recoveryCenter"
-              },
+              "costumSubType": "recoveryCenter",
               "defaultFields": [
                 "name",
                 "shortDescription",
@@ -2549,9 +2547,7 @@
               "sourceKey": [
                 "institutBleu"
               ],
-              "defaultFilters": {
-                "type": "financement"
-              },
+              "costumSubType": "financement",
               "defaultFields": [
                 "name",
                 "shortDescription",
@@ -3421,7 +3417,7 @@
               "leftSections": [
                 {
                   "type": "profile-related",
-              "scope": "costum",
+                  "scope": "costum",
                   "relationType": "projects",
                   "title": {
                     "fr": "Projets",
@@ -3453,7 +3449,7 @@
               "leftSections": [
                 {
                   "type": "profile-related",
-              "scope": "costum",
+                  "scope": "costum",
                   "relationType": "events",
                   "title": {
                     "fr": "Événements",
@@ -3482,11 +3478,23 @@
             "and": [
               {
                 "or": [
-                  { "field": "sourceKeys", "op": "contains", "value": "institutBleu" },
-                  { "field": "reference.costum", "op": "contains", "value": "institutBleu" }
+                  {
+                    "field": "sourceKeys",
+                    "op": "contains",
+                    "value": "institutBleu"
+                  },
+                  {
+                    "field": "reference.costum",
+                    "op": "contains",
+                    "value": "institutBleu"
+                  }
                 ]
               },
-              { "field": "slug", "op": "ne", "value": "institutBleu" }
+              {
+                "field": "slug",
+                "op": "ne",
+                "value": "institutBleu"
+              }
             ]
           }
         }
@@ -3623,7 +3631,7 @@
               "leftSections": [
                 {
                   "type": "profile-related",
-              "scope": "costum",
+                  "scope": "costum",
                   "relationType": "projects",
                   "title": {
                     "fr": "Structures partenaires",
@@ -3655,7 +3663,7 @@
               "leftSections": [
                 {
                   "type": "profile-related",
-              "scope": "costum",
+                  "scope": "costum",
                   "relationType": "events",
                   "title": {
                     "fr": "Événements",
@@ -3809,7 +3817,7 @@
                 },
                 {
                   "type": "profile-related",
-              "scope": "costum",
+                  "scope": "costum",
                   "relationType": "events",
                   "title": {
                     "fr": "Autres événements",
@@ -3862,8 +3870,16 @@
           "_comment": "Sans clause de périmètre, catch-all sur tous les events du site. `reference.costum` est conservé bien qu'inutilisé ici : le rattachement legacy est générique.",
           "when": {
             "or": [
-              { "field": "sourceKeys", "op": "contains", "value": "institutBleu" },
-              { "field": "reference.costum", "op": "contains", "value": "institutBleu" }
+              {
+                "field": "sourceKeys",
+                "op": "contains",
+                "value": "institutBleu"
+              },
+              {
+                "field": "reference.costum",
+                "op": "contains",
+                "value": "institutBleu"
+              }
             ]
           }
         }
@@ -4010,28 +4026,48 @@
       "editModals": [
         {
           "editModal": "edit-institut-bleu-financement",
-          "_comment": "Le sous-type suffirait aujourd'hui (11 POI, tous du costum) ; on borne quand même, rien ne garantit qu'un autre costum n'utilisera pas ce type.",
+          "_comment": "NATIFS : le preset type + l'appartenance source. Un référencé au type coïncident ne matche plus ici — il passe par la route annotation.",
           "editModalMatch": {
             "type": "financement"
           },
           "when": {
-            "or": [
-              { "field": "sourceKeys", "op": "contains", "value": "institutBleu" },
-              { "field": "reference.costum", "op": "contains", "value": "institutBleu" }
-            ]
+            "field": "sourceKeys",
+            "op": "contains",
+            "value": "institutBleu"
+          }
+        },
+        {
+          "editModal": "edit-institut-bleu-financement",
+          "_comment": "RÉFÉRENCÉS classés : l'annotation posée au référencement (admin), jamais le champ cœur.",
+          "editModalMatch": {
+            "reference.costumTypes.institutBleu": "financement"
+          },
+          "when": {
+            "field": "reference.costum",
+            "op": "contains",
+            "value": "institutBleu"
           }
         },
         {
           "editModal": "edit-institut-bleu-document",
-          "_comment": "Le sous-type NE discrimine pas : 3 765 POI recoveryCenter en base dont 3 079 étrangers au costum. Sans la clause, même catch-all que celui corrigé sur organizations.",
           "editModalMatch": {
             "type": "recoveryCenter"
           },
           "when": {
-            "or": [
-              { "field": "sourceKeys", "op": "contains", "value": "institutBleu" },
-              { "field": "reference.costum", "op": "contains", "value": "institutBleu" }
-            ]
+            "field": "sourceKeys",
+            "op": "contains",
+            "value": "institutBleu"
+          }
+        },
+        {
+          "editModal": "edit-institut-bleu-document",
+          "editModalMatch": {
+            "reference.costumTypes.institutBleu": "recoveryCenter"
+          },
+          "when": {
+            "field": "reference.costum",
+            "op": "contains",
+            "value": "institutBleu"
           }
         }
       ]
@@ -4529,10 +4565,22 @@
             ]
           },
           "default": [
-            { "type": "", "link": "" },
-            { "type": "", "link": "" },
-            { "type": "", "link": "" },
-            { "type": "", "link": "" }
+            {
+              "type": "",
+              "link": ""
+            },
+            {
+              "type": "",
+              "link": ""
+            },
+            {
+              "type": "",
+              "link": ""
+            },
+            {
+              "type": "",
+              "link": ""
+            }
           ]
         },
         "address": {
@@ -4655,6 +4703,14 @@
     "institut-bleu-document": {
       "id": "institut-bleu-document",
       "entityType": "poi",
+      "subType": "recoveryCenter",
+      "subTypeLabel": {
+        "fr": "Document",
+        "en": "Document"
+      },
+      "identity": {
+        "type": "recoveryCenter"
+      },
       "collection": "poi",
       "costumSlug": "institutBleu",
       "listsFromCarrier": true,
@@ -5055,6 +5111,14 @@
     "institut-bleu-financement": {
       "id": "institut-bleu-financement",
       "entityType": "poi",
+      "subType": "financement",
+      "subTypeLabel": {
+        "fr": "Financement",
+        "en": "Funding"
+      },
+      "identity": {
+        "type": "financement"
+      },
       "collection": "poi",
       "costumSlug": "institutBleu",
       "listsFromCarrier": true,
@@ -5857,9 +5921,7 @@
               "en": "Collection"
             },
             "source": {
-              "defaultFilters": {
-                "type": "recoveryCenter"
-              },
+              "costumSubType": "recoveryCenter",
               "defaultSortBy": {
                 "date": -1
               },
@@ -5951,9 +6013,7 @@
               "en": "Funding schemes"
             },
             "source": {
-              "defaultFilters": {
-                "type": "financement"
-              },
+              "costumSubType": "financement",
               "defaultSortBy": {
                 "date": 1
               },
@@ -6097,7 +6157,8 @@
           {
             "type": "reference",
             "entityTypes": [
-              "organizations"
+              "organizations",
+              "poi"
             ],
             "columns": [
               "name"
