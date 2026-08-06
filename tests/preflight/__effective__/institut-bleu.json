@@ -381,6 +381,19 @@
       }
     }
   },
+  "stamps": {
+    "institut-bleu-acteur": [
+      {
+        "field": "dateSign",
+        "value": {
+          "$now": "j/M/aaaa"
+        },
+        "op": "fillIfEmpty",
+        "on": "add",
+        "channel": "pathValue"
+      }
+    ]
+  },
   "referencement": {
     "organizations": {
       "sousTypes": [],

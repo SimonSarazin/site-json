@@ -4680,6 +4680,17 @@
             }
           }
         },
+        "stamps": [
+          {
+            "field": "dateSign",
+            "value": {
+              "$now": "j/M/aaaa"
+            },
+            "op": "fillIfEmpty",
+            "channel": "pathValue",
+            "_comment": "Date de signature, posée à la CRÉATION (patron du afterSave legacy institutBleu_index.js:614-625, format SANS zéro de tête — 73/73 en base). Canal pathValue : dateSign n'est pas au schéma d'écriture (jamais un input dynform). Contre le backend legacy (prod) personne d'autre ne la pose ; contre Node le hook serveur l'a déjà posée (fillIfEmpty s'abstient)."
+          }
+        ],
         "successKey": {
           "add": "toast.add.organizationSuccess",
           "edit": "toast.profile.updateSuccess"

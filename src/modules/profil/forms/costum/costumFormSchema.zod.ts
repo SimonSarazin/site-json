@@ -71,5 +71,20 @@ export const CostumFormSchemaZod = z.object({
   schemaFn: z.string().optional(),
   cleanValues: FnRefZod.optional(),
   afterSubmit: z.string().optional(),
-  mutation: z.object({ entityType: z.string() }).passthrough(),
+  mutation: z.object({
+    entityType: z.string(),
+    /**
+     * STAMPS déclaratifs (cf. `SpecStamp`, entityModalSpec.ts) : valeurs calculées posées par la
+     * mutation. Validé ici pour échouer avec un message clair sur une grammaire malformée (le
+     * passthrough du bloc laisserait passer n'importe quoi jusqu'au runtime).
+     */
+    stamps: z.array(z.object({
+      field: z.string().min(1),
+      value: z.unknown(),
+      op: z.enum(["set", "fillIfEmpty", "append"]).optional(),
+      on: z.enum(["add", "edit", "both"]).optional(),
+      channel: z.enum(["payload", "pathValue"]).optional(),
+      _comment: z.string().optional(),
+    }).strict()).optional(),
+  }).passthrough(),
 }).passthrough();

@@ -1,11 +1,14 @@
 /**
  * Garde du RÉSOLVEUR sur la spec tiers-lieu : `specToConfig(tiersLieuxSpec)` doit reproduire EXACTEMENT
- * l'ex-`tiersLieuxSpec` (defaults/payload/EntityMutationSpec, add ET edit). Le payload tiers-lieu a un
- * merge de tags costum (payloadFn `tl:payload`) → on vérifie l'égalité avec buildTiersLieuxPayload.
+ * l'ex-`tiersLieuxSpec` (defaults/payload/EntityMutationSpec, add ET edit). Depuis le chantier stamps,
+ * le payload = PIPELINE générique et le merge tags costum est DÉCLARATIF (`mutation.stamps`, append
+ * `$costum`) — `buildTiersLieuxPayload` reste l'ORACLE : pipeline + applyPayloadStamps doivent lui être
+ * byte-identiques (add : {costum} ; edit : {existingTags, addTags:[mainTag], complete}).
  */
 import { describe, it, expect } from "vitest";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { specToConfig } from "../../resolveModalSpec";
+import { applyPayloadStamps } from "../../stamps";
 import {
   getDefaultTiersLieuxValues,
   buildTiersLieuxPayload as buildTiersLieuxPayloadRaw,
@@ -54,9 +57,17 @@ describe("résolveur — spec tiers-lieu (parité avec l'ex-config)", () => {
     expect(config.buildDefaults(ctx)).toEqual(getDefaultTiersLieuxValues());
     // STAMP costum : type "NGO" + preferences posés au CREATE via inject.extraFields (plus dans submit.extraData).
     expect(mut.inject?.extraFields).toEqual({ type: "NGO", preferences: { isOpenData: true, isOpenEdition: true } });
-    // payload pipeline+tags (le stamp est appliqué APRÈS par runEntityMutation, pas dans buildPayload).
+    // Stamps résolus EAGER : mainTag (add+edit), compagnon (add seul — parité tl:payload edit) ;
+    // le fixture costum n'a pas de compagnon → valeur undefined, stamp inerte à l'application.
+    expect(mut.stamps).toEqual([
+      { field: "tags", value: "TiersLieux", op: "append", on: "both" },
+      { field: "tags", value: undefined, op: "append" },
+    ]);
+    // payload = PIPELINE seul (sans tags) ; pipeline + stamps ≡ l'ancien tl:payload (l'oracle).
     const form = { ...getDefaultTiersLieuxValues(), name: "Mon TL", shortDescription: "desc", managementType: "public", email: "a@b.fr" } as Record<string, unknown>;
-    expect(mut.buildPayload(form)).toEqual(buildTiersLieuxPayload(form as never, { costum }));
+    expect(mut.buildPayload(form)).toEqual(buildTiersLieuxPayload(form as never));
+    expect(applyPayloadStamps(mut.buildPayload(form), mut.stamps, { mode: "add" }))
+      .toEqual(buildTiersLieuxPayload(form as never, { costum }));
   });
 
   it("EDIT : target=entité, pas de costumSlug, defaults===map, payload complet+merge tags", () => {
@@ -71,6 +82,10 @@ describe("résolveur — spec tiers-lieu (parité avec l'ex-config)", () => {
     expect(mut.costumSlug).toBeUndefined();
     expect(config.buildDefaults(ctx)).toEqual(mapEntityToTiersLieuxValues(entity as never));
     const form = { ...getDefaultTiersLieuxValues(), name: "TL X" } as Record<string, unknown>;
-    expect(mut.buildPayload(form)).toEqual(buildTiersLieuxPayload(form as never, { existingTags: ["déjà"], addTags: ["TiersLieux"], complete: true }));
+    // payload = pipeline complet (vides typés) SANS tags ; pipeline + stamps (mainTag seul en edit,
+    // fusion des tags SERVEUR existants) ≡ l'ancien tl:payload edit — l'oracle.
+    expect(mut.buildPayload(form)).toEqual(buildTiersLieuxPayload(form as never, { complete: true }));
+    expect(applyPayloadStamps(mut.buildPayload(form), mut.stamps, { mode: "edit", targetServerData: { tags: ["déjà"] } }))
+      .toEqual(buildTiersLieuxPayload(form as never, { existingTags: ["déjà"], addTags: ["TiersLieux"], complete: true }));
   });
 });

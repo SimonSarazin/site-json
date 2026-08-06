@@ -57,6 +57,44 @@ export interface SpecInject {
   extraFieldsFromScope?: Record<string, string>;
 }
 
+/**
+ * Valeur d'un stamp — littéral (≡ $const), ou UNE source calculée :
+ *  - `{"$now": "j/M/aaaa"}` : horodatage à la SOUMISSION, jetons `j jj M MM aaaa` SANS padding par
+ *    défaut (byte-parité avec le stamp legacy `${getDate()}/${getMonth()+1}/${getFullYear()}`) ;
+ *  - `{"$from": "<champ>"}` : la valeur d'un autre champ du PAYLOAD (après pipeline — un stamp
+ *    précédent de la liste est visible du suivant) ;
+ *  - `{"$scope": "<clé>"}` : la valeur du scope résolu (scopeFn) — résolue EAGER dans `buildSpec`,
+ *    même mécanique que `inject.extraFieldsFromScope` ;
+ *  - `{"$costum": "<clé>"}` : la valeur du bloc `config.costum` du site (mainTag/compagnon…,
+ *    par DÉPLOIEMENT) — résolue EAGER elle aussi.
+ */
+export type StampValue = unknown | { $now: string } | { $from: string } | { $scope: string } | { $costum: string };
+
+/**
+ * Un STAMP : valeur calculée posée déclarativement par la mutation — le remplaçant configurable
+ * des effets codés en dur (merge tags de tl:payload, extraFieldsFromScope, afterSave legacy…).
+ *
+ * ⚠ Canal `payload` : le champ doit appartenir au SCHÉMA D'ÉCRITURE de la lib (contrat de base ou
+ * schéma costum), sinon la couche `_extractWritableFields` le DROPPE en silence — c'est précisément
+ * pour ces champs-là que le canal `pathValue` existe (écriture post-save via `entity.updateField`,
+ * le patron du afterSave legacy). `pathValue` est réservé à l'entité PROPRE (créée/éditée par
+ * l'utilisateur) — jamais une écriture d'autorité sur entité étrangère (cf. useReferenceElement :
+ * setsource/validategroup/allowance).
+ */
+export interface SpecStamp {
+  /** Champ cible (canal payload : clé du payload ; canal pathValue : chemin Mongo pointé). */
+  field: string;
+  value: StampValue;
+  /** `set` (défaut, écrase) | `fillIfEmpty` (seulement si vide : undefined/null/""/[]) |
+   *  `append` (union dédupliquée sur tableau ; en EDIT fusionne aussi la valeur serveur existante). */
+  op?: "set" | "fillIfEmpty" | "append";
+  /** Phase : `add` (défaut) | `edit` | `both`. */
+  on?: "add" | "edit" | "both";
+  /** `payload` (défaut : fusion dans le payload d'envoi) | `pathValue` (post-save, échec NON
+   *  bloquant — la fragilité du patron legacy afterSave est assumée et loggée). */
+  channel?: "payload" | "pathValue";
+}
+
 /** Bloc WRITE : DONNÉES + clé `payloadFn` (défaut = pipeline) + clé `invalidateFn`. */
 export interface SpecMutation {
   entityType: EntityKind;
@@ -65,6 +103,9 @@ export interface SpecMutation {
   /** édition via pipeline : émettre les vides typés (`buildEditPayload`). Défaut false (création). */
   payloadEmitEmptyOnEdit?: boolean;
   inject?: SpecInject;
+  /** Stamps déclaratifs (valeurs calculées, add ET/OU edit) — cf. {@link SpecStamp}. Évalués dans
+   *  l'ordre de la liste. Champ PROPRE (pas sous `inject`, qui est strippé en édition). */
+  stamps?: SpecStamp[];
   navigateOnSuccess?: boolean;
   successKey: ByMode<string>;
   errorKey: ByMode<string>;

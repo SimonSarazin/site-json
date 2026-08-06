@@ -225,6 +225,21 @@ function projeter(site: string, cfg: Cfg) {
     }
   }
 
+  // ── Stamps de mutation : par form, la liste NORMALISÉE (défauts matérialisés : op/on/channel) —
+  //    un changement des défauts du moteur (stamps.ts) diffe les fixtures des sites déclarants.
+  const stamps: Record<string, unknown> = {};
+  for (const [formId, doc] of Object.entries(forms)) {
+    const liste = ((doc as { mutation?: { stamps?: Array<Record<string, unknown>> } } | undefined)?.mutation?.stamps) ?? [];
+    if (liste.length === 0) continue;
+    stamps[formId] = liste.map((s) => ({
+      field: s.field,
+      value: s.value,
+      op: s.op ?? "set",
+      on: s.on ?? "add",
+      channel: s.channel ?? "payload",
+    }));
+  }
+
   // ── Adhésions & relations : listes + périmètre EFFECTIFS (défauts matérialisés — un changement
   //    de défaut du code diffe la fixture de tous les sites qui ne déclarent rien).
   const membership: Record<string, unknown> = {};
@@ -254,6 +269,7 @@ function projeter(site: string, cfg: Cfg) {
     editModals,
     adminResources,
     pages,
+    ...(Object.keys(stamps).length ? { stamps } : {}),
     referencement,
     membership,
     profileRelated,

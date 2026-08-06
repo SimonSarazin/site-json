@@ -538,6 +538,7 @@ Usage : avant de modifier la sémantique d'une clé ou son consommateur,
 | `slots` | 2 | equipements-Sportifs, saint-paul-sport |
 | `slugFrom` | 2 | equipements-Sportifs, tiers-lieux |
 | `slugKey` | 2 | equipements-Sportifs, tiers-lieux |
+| `stamps` | 2 | institut-bleu, tiers-lieux |
 | `startHour` | 2 | equipements-Sportifs, saint-paul-sport |
 | `svg` | 2 | parent62, tiers-lieux |
 | `tagColors` | 2 | parent62, rezo-sante-reunion |
@@ -556,7 +557,9 @@ Usage : avant de modifier la sémantique d'une clé ou son consommateur,
 | `_logoFile` | 1 | tiers-lieux |
 | `@context` | 1 | institut-bleu |
 | `@type` | 1 | institut-bleu |
+| `$costum` | 1 | tiers-lieux |
 | `$nin` | 1 | tiers-lieux |
+| `$now` | 1 | institut-bleu |
 | `636cd563e2439b7fc12cd680` | 1 | tiers-lieux |
 | `63e0a8abeac0741b506fb4f7` | 1 | tiers-lieux |
 | `645b300b6d70bb35426fc0e3` | 1 | tiers-lieux |
@@ -627,6 +630,7 @@ Usage : avant de modifier la sémantique d'une clé ou son consommateur,
 | `certificationsAwards` | 1 | sport-sante-bien-etre |
 | `certificationTraining` | 1 | sport-sante-bien-etre |
 | `CH` | 1 | tiers-lieux |
+| `channel` | 1 | institut-bleu |
 | `cleanValues` | 1 | equipements-Sportifs |
 | `codeNaf` | 1 | institut-bleu |
 | `coform` | 1 | tiers-lieux |
@@ -860,6 +864,7 @@ Usage : avant de modifier la sémantique d'une clé ou son consommateur,
 | `Nutrition` | 1 | rezo-sante-reunion |
 | `offer` | 1 | cyber-reunion |
 | `ofKey` | 1 | tiers-lieux |
+| `on` | 1 | tiers-lieux |
 | `openingDate` | 1 | tiers-lieux |
 | `openingMonth` | 1 | tiers-lieux |
 | `openingYear` | 1 | tiers-lieux |
@@ -889,7 +894,6 @@ Usage : avant de modifier la sémantique d'une clé ou son consommateur,
 | `paroleConsentement` | 1 | parent62 |
 | `partenariat` | 1 | sport-sante-bien-etre |
 | `partner` | 1 | sport-sante-bien-etre |
-| `payloadFn` | 1 | tiers-lieux |
 | `pays` | 1 | tiers-lieux |
 | `permissions` | 1 | tiers-lieux |
 | `personInChargeCivility` | 1 | sport-sante-bien-etre |

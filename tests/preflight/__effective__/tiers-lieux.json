@@ -293,6 +293,28 @@
       }
     }
   },
+  "stamps": {
+    "tiers-lieux": [
+      {
+        "field": "tags",
+        "value": {
+          "$costum": "mainTag"
+        },
+        "op": "append",
+        "on": "both",
+        "channel": "payload"
+      },
+      {
+        "field": "tags",
+        "value": {
+          "$costum": "compagnon"
+        },
+        "op": "append",
+        "on": "add",
+        "channel": "payload"
+      }
+    ]
+  },
   "referencement": {},
   "membership": {
     "citoyens/membership": {
