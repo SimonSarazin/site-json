@@ -107,6 +107,23 @@ et le réseau social Communecter, en **conservant le WordPress** pour les conten
   `header.textColor` en `var()` — une seule source de vérité) ; hex territoires dupliqués
   de `/recherche` + `/temoignages` → `var(--territoire-*)` ; 7 snapshots du skill
   resynchronisés (`config:example --write`). Home visuellement inchangée (vérifié).
+- **06/08 — mode sombre « de marque »** : 9 tokens de fond sombre re-basés famille marine
+  (teinte 250, fini l'indigo-nuit hérité), chrome header/footer voilé par
+  `dark:bg-background/90` (teinté par le thème, générique, ~10 % de texture aquarelle),
+  wordmark `dark:text-accent` (les lettres creuses marine-sur-marine), carte des
+  territoires tamisée en sombre (dégradé `.dark` assombri + `dark:brightness-75` sur
+  l'illustration — le « projecteur » devient lueur douce). Clair strictement inchangé.
+- **06/08 — lisibilité bandeaux territoires** : 5 des 9 bandeaux HTML (`Artois`,
+  `Audomarois`, `Calaisis`, `Entre Mer et Terres`, `Ternois Bruaysis`) passent en encre
+  marine (`var(--p62-marine)`) — le blanc y était à 1,8–2,5:1 (mesure WCAG), le marine
+  monte à 4,4–6,2:1. Les 4 fonds foncés gardent le blanc. ⚠ tranche le « parti pris du
+  site historique » documenté dans le CSS — à confirmer avec Sylvany/Peterson.
+- **06/08 — unification de l'idiome titre des pages de liste** : les 15 pages `/theme/*`
+  + `/public/*` passent de « section `title` + `searchHeader compact` » (patron
+  historique, propagé par copie dans la MR) à l'idiome de `/blog` : `headline`/`subhead`
+  DANS le `searchHeader` (le bandeau EST le hero) — 176→161 sections, recette
+  `page-thematique` mise à jour (2 sections, couvre thèmes + publics). Les pages
+  territoire gardent leur bandeau coloré (idiome à part, assumé).
 
 ---
 

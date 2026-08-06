@@ -4712,25 +4712,17 @@
       },
       "sections": [
         {
-          "type": "title",
-          "id": "theme-la-petite-enfance-titre",
-          "props": {
-            "title": {
-              "fr": "La petite enfance",
-              "en": "Early childhood"
-            },
-            "subtitle": {
-              "fr": "Ressources et actions petite enfance (0-6 ans).",
-              "en": "Early-childhood resources and actions."
-            },
-            "align": "center",
-            "size": "xl"
-          }
-        },
-        {
           "type": "searchHeader",
           "id": "/theme/la-petite-enfance-search",
           "props": {
+            "headline": {
+              "fr": "La petite enfance",
+              "en": "Early childhood"
+            },
+            "subhead": {
+              "fr": "Ressources et actions petite enfance (0-6 ans).",
+              "en": "Early-childhood resources and actions."
+            },
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -4904,8 +4896,7 @@
                   }
                 ]
               }
-            ],
-            "compact": true
+            ]
           }
         },
         {
@@ -4949,25 +4940,17 @@
       },
       "sections": [
         {
-          "type": "title",
-          "id": "theme-ladolescence-titre",
-          "props": {
-            "title": {
-              "fr": "L’adolescence",
-              "en": "Adolescence"
-            },
-            "subtitle": {
-              "fr": "Accompagner la parentalité à l'adolescence.",
-              "en": "Supporting parenting through adolescence."
-            },
-            "align": "center",
-            "size": "xl"
-          }
-        },
-        {
           "type": "searchHeader",
           "id": "/theme/ladolescence-search",
           "props": {
+            "headline": {
+              "fr": "L’adolescence",
+              "en": "Adolescence"
+            },
+            "subhead": {
+              "fr": "Accompagner la parentalité à l'adolescence.",
+              "en": "Supporting parenting through adolescence."
+            },
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -5141,8 +5124,7 @@
                   }
                 ]
               }
-            ],
-            "compact": true
+            ]
           }
         },
         {
@@ -5186,25 +5168,17 @@
       },
       "sections": [
         {
-          "type": "title",
-          "id": "theme-la-sante-titre",
-          "props": {
-            "title": {
-              "fr": "La santé",
-              "en": "Health"
-            },
-            "subtitle": {
-              "fr": "Santé de l'enfant et de la famille.",
-              "en": "Child and family health."
-            },
-            "align": "center",
-            "size": "xl"
-          }
-        },
-        {
           "type": "searchHeader",
           "id": "/theme/la-sante-search",
           "props": {
+            "headline": {
+              "fr": "La santé",
+              "en": "Health"
+            },
+            "subhead": {
+              "fr": "Santé de l'enfant et de la famille.",
+              "en": "Child and family health."
+            },
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -5378,8 +5352,7 @@
                   }
                 ]
               }
-            ],
-            "compact": true
+            ]
           }
         },
         {
@@ -5423,25 +5396,17 @@
       },
       "sections": [
         {
-          "type": "title",
-          "id": "theme-le-handicap-titre",
-          "props": {
-            "title": {
-              "fr": "Le handicap",
-              "en": "Disability"
-            },
-            "subtitle": {
-              "fr": "Parentalité et handicap.",
-              "en": "Parenting and disability."
-            },
-            "align": "center",
-            "size": "xl"
-          }
-        },
-        {
           "type": "searchHeader",
           "id": "/theme/le-handicap-search",
           "props": {
+            "headline": {
+              "fr": "Le handicap",
+              "en": "Disability"
+            },
+            "subhead": {
+              "fr": "Parentalité et handicap.",
+              "en": "Parenting and disability."
+            },
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -5615,8 +5580,7 @@
                   }
                 ]
               }
-            ],
-            "compact": true
+            ]
           }
         },
         {
@@ -5660,25 +5624,17 @@
       },
       "sections": [
         {
-          "type": "title",
-          "id": "theme-les-jeux-titre",
-          "props": {
-            "title": {
-              "fr": "Les jeux",
-              "en": "Games"
-            },
-            "subtitle": {
-              "fr": "Le jeu comme support de la relation parent-enfant.",
-              "en": "Play as a support for the parent-child bond."
-            },
-            "align": "center",
-            "size": "xl"
-          }
-        },
-        {
           "type": "searchHeader",
           "id": "/theme/les-jeux-search",
           "props": {
+            "headline": {
+              "fr": "Les jeux",
+              "en": "Games"
+            },
+            "subhead": {
+              "fr": "Le jeu comme support de la relation parent-enfant.",
+              "en": "Play as a support for the parent-child bond."
+            },
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -5852,8 +5808,7 @@
                   }
                 ]
               }
-            ],
-            "compact": true
+            ]
           }
         },
         {
@@ -5897,25 +5852,17 @@
       },
       "sections": [
         {
-          "type": "title",
-          "id": "theme-leducation-titre",
-          "props": {
-            "title": {
-              "fr": "L’éducation",
-              "en": "Education"
-            },
-            "subtitle": {
-              "fr": "Éduquer, poser un cadre, accompagner.",
-              "en": "Educating, setting a framework, supporting."
-            },
-            "align": "center",
-            "size": "xl"
-          }
-        },
-        {
           "type": "searchHeader",
           "id": "/theme/leducation-search",
           "props": {
+            "headline": {
+              "fr": "L’éducation",
+              "en": "Education"
+            },
+            "subhead": {
+              "fr": "Éduquer, poser un cadre, accompagner.",
+              "en": "Educating, setting a framework, supporting."
+            },
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -6089,8 +6036,7 @@
                   }
                 ]
               }
-            ],
-            "compact": true
+            ]
           }
         },
         {
@@ -6134,25 +6080,17 @@
       },
       "sections": [
         {
-          "type": "title",
-          "id": "theme-la-communication-titre",
-          "props": {
-            "title": {
-              "fr": "La communication",
-              "en": "Communication"
-            },
-            "subtitle": {
-              "fr": "Communiquer en famille, écouter, dialoguer.",
-              "en": "Communicating within the family."
-            },
-            "align": "center",
-            "size": "xl"
-          }
-        },
-        {
           "type": "searchHeader",
           "id": "/theme/la-communication-search",
           "props": {
+            "headline": {
+              "fr": "La communication",
+              "en": "Communication"
+            },
+            "subhead": {
+              "fr": "Communiquer en famille, écouter, dialoguer.",
+              "en": "Communicating within the family."
+            },
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -6326,8 +6264,7 @@
                   }
                 ]
               }
-            ],
-            "compact": true
+            ]
           }
         },
         {
@@ -6371,25 +6308,17 @@
       },
       "sections": [
         {
-          "type": "title",
-          "id": "theme-les-ecrans-le-numerique-titre",
-          "props": {
-            "title": {
-              "fr": "Les écrans – Le numérique",
-              "en": "Screens & digital"
-            },
-            "subtitle": {
-              "fr": "Écrans, numérique et vie de famille.",
-              "en": "Screens, digital life and family."
-            },
-            "align": "center",
-            "size": "xl"
-          }
-        },
-        {
           "type": "searchHeader",
           "id": "/theme/les-ecrans-le-numerique-search",
           "props": {
+            "headline": {
+              "fr": "Les écrans – Le numérique",
+              "en": "Screens & digital"
+            },
+            "subhead": {
+              "fr": "Écrans, numérique et vie de famille.",
+              "en": "Screens, digital life and family."
+            },
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -6563,8 +6492,7 @@
                   }
                 ]
               }
-            ],
-            "compact": true
+            ]
           }
         },
         {
@@ -6608,25 +6536,17 @@
       },
       "sections": [
         {
-          "type": "title",
-          "id": "public-benevoles-titre",
-          "props": {
-            "title": {
-              "fr": "Bénévoles",
-              "en": "Volunteers"
-            },
-            "subtitle": {
-              "fr": "Ressources et actions pour les bénévoles du réseau.",
-              "en": "Resources and actions for network volunteers."
-            },
-            "align": "center",
-            "size": "xl"
-          }
-        },
-        {
           "type": "searchHeader",
           "id": "/public/benevoles-search",
           "props": {
+            "headline": {
+              "fr": "Bénévoles",
+              "en": "Volunteers"
+            },
+            "subhead": {
+              "fr": "Ressources et actions pour les bénévoles du réseau.",
+              "en": "Resources and actions for network volunteers."
+            },
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -6888,8 +6808,7 @@
                   }
                 ]
               }
-            ],
-            "compact": true
+            ]
           }
         },
         {
@@ -6933,25 +6852,17 @@
       },
       "sections": [
         {
-          "type": "title",
-          "id": "public-en-famille-titre",
-          "props": {
-            "title": {
-              "fr": "En famille",
-              "en": "As a family"
-            },
-            "subtitle": {
-              "fr": "Ressources et actions à vivre en famille.",
-              "en": "Resources and actions to enjoy as a family."
-            },
-            "align": "center",
-            "size": "xl"
-          }
-        },
-        {
           "type": "searchHeader",
           "id": "/public/en-famille-search",
           "props": {
+            "headline": {
+              "fr": "En famille",
+              "en": "As a family"
+            },
+            "subhead": {
+              "fr": "Ressources et actions à vivre en famille.",
+              "en": "Resources and actions to enjoy as a family."
+            },
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -7213,8 +7124,7 @@
                   }
                 ]
               }
-            ],
-            "compact": true
+            ]
           }
         },
         {
@@ -7258,25 +7168,17 @@
       },
       "sections": [
         {
-          "type": "title",
-          "id": "public-enfance-titre",
-          "props": {
-            "title": {
-              "fr": "Enfance",
-              "en": "Childhood"
-            },
-            "subtitle": {
-              "fr": "Ressources et actions dédiées à l'enfance.",
-              "en": "Resources and actions dedicated to childhood."
-            },
-            "align": "center",
-            "size": "xl"
-          }
-        },
-        {
           "type": "searchHeader",
           "id": "/public/enfance-search",
           "props": {
+            "headline": {
+              "fr": "Enfance",
+              "en": "Childhood"
+            },
+            "subhead": {
+              "fr": "Ressources et actions dédiées à l'enfance.",
+              "en": "Resources and actions dedicated to childhood."
+            },
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -7538,8 +7440,7 @@
                   }
                 ]
               }
-            ],
-            "compact": true
+            ]
           }
         },
         {
@@ -7583,25 +7484,17 @@
       },
       "sections": [
         {
-          "type": "title",
-          "id": "public-futurs-parents-titre",
-          "props": {
-            "title": {
-              "fr": "Futurs parents",
-              "en": "Parents-to-be"
-            },
-            "subtitle": {
-              "fr": "Ressources et actions pour préparer l'arrivée d'un enfant.",
-              "en": "Resources and actions to prepare for a new child."
-            },
-            "align": "center",
-            "size": "xl"
-          }
-        },
-        {
           "type": "searchHeader",
           "id": "/public/futurs-parents-search",
           "props": {
+            "headline": {
+              "fr": "Futurs parents",
+              "en": "Parents-to-be"
+            },
+            "subhead": {
+              "fr": "Ressources et actions pour préparer l'arrivée d'un enfant.",
+              "en": "Resources and actions to prepare for a new child."
+            },
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -7863,8 +7756,7 @@
                   }
                 ]
               }
-            ],
-            "compact": true
+            ]
           }
         },
         {
@@ -7908,25 +7800,17 @@
       },
       "sections": [
         {
-          "type": "title",
-          "id": "public-parents-titre",
-          "props": {
-            "title": {
-              "fr": "Parents",
-              "en": "Parents"
-            },
-            "subtitle": {
-              "fr": "Ressources et actions dédiées aux parents.",
-              "en": "Resources and actions dedicated to parents."
-            },
-            "align": "center",
-            "size": "xl"
-          }
-        },
-        {
           "type": "searchHeader",
           "id": "/public/parents-search",
           "props": {
+            "headline": {
+              "fr": "Parents",
+              "en": "Parents"
+            },
+            "subhead": {
+              "fr": "Ressources et actions dédiées aux parents.",
+              "en": "Resources and actions dedicated to parents."
+            },
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -8188,8 +8072,7 @@
                   }
                 ]
               }
-            ],
-            "compact": true
+            ]
           }
         },
         {
@@ -8233,25 +8116,17 @@
       },
       "sections": [
         {
-          "type": "title",
-          "id": "public-parents-enfants-titre",
-          "props": {
-            "title": {
-              "fr": "Parents-enfants",
-              "en": "Parents & children"
-            },
-            "subtitle": {
-              "fr": "Ressources et actions à partager entre parents et enfants.",
-              "en": "Resources and actions to share between parents and children."
-            },
-            "align": "center",
-            "size": "xl"
-          }
-        },
-        {
           "type": "searchHeader",
           "id": "/public/parents-enfants-search",
           "props": {
+            "headline": {
+              "fr": "Parents-enfants",
+              "en": "Parents & children"
+            },
+            "subhead": {
+              "fr": "Ressources et actions à partager entre parents et enfants.",
+              "en": "Resources and actions to share between parents and children."
+            },
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -8513,8 +8388,7 @@
                   }
                 ]
               }
-            ],
-            "compact": true
+            ]
           }
         },
         {
@@ -8558,25 +8432,17 @@
       },
       "sections": [
         {
-          "type": "title",
-          "id": "public-professionnels-titre",
-          "props": {
-            "title": {
-              "fr": "Professionnels",
-              "en": "Professionals"
-            },
-            "subtitle": {
-              "fr": "Ressources et actions dédiées aux professionnels de la parentalité.",
-              "en": "Resources and actions dedicated to parenting professionals."
-            },
-            "align": "center",
-            "size": "xl"
-          }
-        },
-        {
           "type": "searchHeader",
           "id": "/public/professionnels-search",
           "props": {
+            "headline": {
+              "fr": "Professionnels",
+              "en": "Professionals"
+            },
+            "subhead": {
+              "fr": "Ressources et actions dédiées aux professionnels de la parentalité.",
+              "en": "Resources and actions dedicated to parenting professionals."
+            },
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -8838,8 +8704,7 @@
                   }
                 ]
               }
-            ],
-            "compact": true
+            ]
           }
         },
         {
@@ -9326,7 +9191,7 @@
         {
           "type": "html",
           "props": {
-            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-artois)\"><div class=\"container mx-auto max-w-4xl text-center text-white\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Artois</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Artois est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
+            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-artois)\"><div class=\"container mx-auto max-w-4xl text-center\" style=\"color:var(--p62-marine)\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Artois</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Artois est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
           }
         },
         {
@@ -9761,7 +9626,7 @@
         {
           "type": "html",
           "props": {
-            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-audomarois)\"><div class=\"container mx-auto max-w-4xl text-center text-white\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Audomarois</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Audomarois est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
+            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-audomarois)\"><div class=\"container mx-auto max-w-4xl text-center\" style=\"color:var(--p62-marine)\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Audomarois</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Audomarois est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
           }
         },
         {
@@ -10643,7 +10508,7 @@
         {
           "type": "html",
           "props": {
-            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-calaisis)\"><div class=\"container mx-auto max-w-4xl text-center text-white\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Calaisis</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Calaisis est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
+            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-calaisis)\"><div class=\"container mx-auto max-w-4xl text-center\" style=\"color:var(--p62-marine)\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Calaisis</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Calaisis est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
           }
         },
         {
@@ -11084,7 +10949,7 @@
         {
           "type": "html",
           "props": {
-            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-entre-mer-et-terres)\"><div class=\"container mx-auto max-w-4xl text-center text-white\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Entre Mer et Terres</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Entre Mer et Terres est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
+            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-entre-mer-et-terres)\"><div class=\"container mx-auto max-w-4xl text-center\" style=\"color:var(--p62-marine)\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Entre Mer et Terres</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Entre Mer et Terres est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
           }
         },
         {
@@ -12755,7 +12620,7 @@
         {
           "type": "html",
           "props": {
-            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-ternois-bruaysis)\"><div class=\"container mx-auto max-w-4xl text-center text-white\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Ternois Bruaysis</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Ternois Bruaysis est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
+            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-ternois-bruaysis)\"><div class=\"container mx-auto max-w-4xl text-center\" style=\"color:var(--p62-marine)\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Ternois Bruaysis</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Ternois Bruaysis est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
           }
         },
         {

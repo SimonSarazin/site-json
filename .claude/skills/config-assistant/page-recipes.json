@@ -169,15 +169,14 @@
   {
    "id": "page-thematique",
    "titre": "Page thématique (fil éditorial filtré)",
-   "quand": "Décliner un thème transversal — santé, handicap, petite enfance — avec ses articles et rien d'autre.",
+   "quand": "Décliner un thème transversal — santé, handicap, petite enfance — ou un public, avec ses articles et rien d'autre.",
    "source": "config.prod.parent62.json",
    "path": "/theme/la-sante",
    "sequence": [
-    "title",
     "searchHeader",
     "articleFeed"
    ],
-   "rythme": "La composition la plus répétée du parc : 8 pages identiques sur parent62. Trois sections seulement — un titre qui nomme le thème, un searchHeader qui porte les filtres, un articleFeed qui occupe tout le reste. Dupliquer la page et ne changer que le titre et le filtre du feed."
+   "rythme": "La composition la plus répétée du parc : 15 pages identiques sur parent62 (8 thèmes + 7 publics). Deux sections seulement — un searchHeader qui EST le hero (headline/subhead nomment le thème ; barre, filtres et titre vivent dans le même bandeau, jamais de section title séparée au-dessus), un articleFeed qui occupe tout le reste. Dupliquer la page et ne changer que headline/subhead et le filtre du feed."
   },
   {
    "id": "page-territoire",
