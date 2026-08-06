@@ -24,11 +24,16 @@ interface HeaderStackedProps {
   header: Header;
 }
 
-// Boutons icône (recherche, thème) lisibles en mode sombre sur l'image de fond.
-// Passé en prop `className` aux deux boutons — remplace l'ancienne règle
-// `.header-stacked-icon-btn` d'index-parent62.css, qui ne s'appliquait qu'à
-// parent62 alors que ce header est générique.
-const ICON_BTN_DARK = "dark:bg-muted dark:border-muted dark:text-white/90 dark:hover:text-white";
+// La barre de ce header est TOUJOURS sombre (image + voile), quel que soit le
+// mode clair/sombre du site : tout son chrome est donc en blanc fixe (nav,
+// LangSwitch…). Ces classes alignent les boutons icône sur cette règle — leur
+// style par défaut (`text-muted-foreground`, pensé pour des headers clairs)
+// les rendait invisibles en mode CLAIR sur le fond sombre.
+// Thème : icône seule → blanc fixe dans les deux modes (même teinte que LangSwitch).
+const THEME_BTN = "text-white/90 hover:text-white hover:bg-white/10 dark:hover:bg-white/10";
+// Recherche : seul l'état icône seule (<md) est concerné — au-delà, le champ
+// « Ctrl+K » garde son propre fond clair et reste lisible tel quel.
+const SEARCH_BTN = "max-md:text-white/90 max-md:hover:text-white";
 
 /**
  * Header 2 étages sur fond image : un bandeau wordmark (logo + titre/sous-titre)
@@ -240,10 +245,10 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
             <div className="flex items-center justify-end gap-2 justify-self-end">
             <div className="hidden xl:flex items-center gap-2">
               {header.utilities?.notifications && <NotificationBell />}
-              {header.utilities?.search && <CommandTriggerButton className={ICON_BTN_DARK} />}
+              {header.utilities?.search && <CommandTriggerButton className={SEARCH_BTN} />}
               {header.utilities?.themeSwitch !== false && (
                 <ClientOnly fallback={<div className="w-10 h-10" />}>
-                  {() => <ToggleButtonTheme className={ICON_BTN_DARK} />}
+                  {() => <ToggleButtonTheme className={THEME_BTN} />}
                 </ClientOnly>
               )}
               {header.utilities?.langSwitch && (
@@ -264,10 +269,10 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
 
             <div className="xl:hidden flex items-center gap-2">
               {header.utilities?.notifications && <NotificationBell />}
-              {header.utilities?.search && <CommandTriggerButton className={ICON_BTN_DARK} />}
+              {header.utilities?.search && <CommandTriggerButton className={SEARCH_BTN} />}
               {header.utilities?.themeSwitch !== false && (
                 <ClientOnly fallback={<div className="w-8 h-8" />}>
-                  {() => <ToggleButtonTheme className={ICON_BTN_DARK} />}
+                  {() => <ToggleButtonTheme className={THEME_BTN} />}
                 </ClientOnly>
               )}
               {navItemsToDisplay.length > 0 && (
