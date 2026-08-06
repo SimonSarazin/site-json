@@ -112,7 +112,10 @@ ne sont **pas** lancées. `actions` gate le bouton « Inviter ».
   "bulkActions": ["validate", "export", "delete"] }
 ```
 
-- `source` = mêmes `baseParams` que `searchProStatic` (`SearchBaseParamsSchema`).
+- `source` = mêmes `baseParams` que `searchProStatic` (`SearchBaseParamsSchema`) — y compris la clé
+  sucre **`costumSubType`** (sous-type de costum : natifs + référencés annotés, cf.
+  [07-module-search](07-module-search.md)) qui remplace un `defaultFilters.type` quand la
+  collection est multi-forms.
 - **Mode admin** (dès que `validate` ∈ rowActions ou `status` présent) : la recherche passe par
   l'endpoint admin (`globalautocompleteadmin`, documents **complets**, `preferences` lisible) →
   badge/filtre « En attente / Validé », actions de validation contextuelle. `defaultFields` y est
@@ -176,13 +179,33 @@ Export CSV du costum (`exportElements` + `toCsv`), filtre par statut de validati
 ### `reference`
 
 ```jsonc
-{ "type": "reference", "entityTypes": ["poi", "organizations"], "columns": ["name"] }
+{ "type": "reference", "entityTypes": ["poi", "organizations"], "columns": ["name"],
+  "moderateReferenced": false }   // opt-in : les référencés arrivent "à modérer"
 ```
 
 Deux sous-onglets : « Rechercher & référencer » (recherche **globale hors costum**, garde-fous
 legacy : `preferences.isOpenData` + exclusion du déjà rattaché/référencé) et « Référencés »
 (+ retrait). Pose/retire `reference.costum` (endpoint `setsource`). `columns` = colonnes de
 données (défaut Nom/Commune) ; Type (badge) et Action restent fixes.
+
+**Sous-types de costum** (quand la collection porte ≥ 1 form costum déclarant `subType`, cf.
+[28-module-formengine](28-module-formengine.md)) : le référencement pose EN PLUS l'**annotation**
+`reference.costumTypes.<slug> = <subType>` — jamais les champs cœur (`type`, `tags`) de l'entité,
+qui portent la sémantique d'un autre site. Multi-form (institut-bleu : `document` + `financement`
+sur `poi`) → sélecteur « Rattacher comme » au référencement ; l'onglet Référencés gagne une colonne
+**Sous-type** avec un sélecteur par ligne (« Classer/Reclasser » — filet quand l'annotation a raté,
+et rattrapage de l'existant). Le retrait nettoie l'annotation (best-effort ; une orpheline est
+inerte, le périmètre costum s'applique en `$and` au-dessus). Les écritures passent par
+`entity.updateField` (voie haut-niveau BaseEntity — jamais `endpointApi` brut) ; la valeur écrite
+est la clé **canonique** `subType` (clé typeObj), jamais l'id du form ni le libellé. Les pages et
+onglets consomment ensuite la clé sucre `costumSubType` (cf. [07-module-search](07-module-search.md)).
+
+`moderateReferenced: true` pose `preferences.toBeValidated.<slug>` (SCOPÉ, jamais le booléen
+global) via **`carrier.validateGroup(type, id, false)`** — l'endpoint d'autorité costum-admin des
+deux backends, PAS `updatepathvalue` (sur une entité étrangère, l'admin costum n'a pas les droits
+d'élément : le Node durci refuserait). Échec visible (toast `referencedUnmoderated`).
+(`src/modules/admin/sections/AdminReferenceSection.tsx`, `hooks/useReferenceElement.ts`,
+`src/modules/search/lib/costumSubType.ts`)
 
 ### `moderation`
 
