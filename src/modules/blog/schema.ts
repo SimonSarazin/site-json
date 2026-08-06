@@ -67,3 +67,40 @@ export const ArticleReaderSectionSchema = z.object({
   }).refine((p) => Boolean(p.slug || p.id), { message: "articleReader : `slug` ou `id` requis" }),
 });
 export type ArticleReaderSectionProps = z.infer<typeof ArticleReaderSectionSchema>["props"];
+
+/**
+ * Section `articleTeaser` (config-driven, data-backed) : aperçu FIGÉ des N derniers articles d'un costum
+ * (POI `type:"article"`, scope `source.key`) — titre en badge incliné, grille de cartes à bouton, CTA
+ * « voir tout » en pied. Même patron d'île client que `articleFeed` (réutilise `useArticleFeed`), mais SANS
+ * pagination — pensé pour être posé entre deux autres sections (ex. sous `map-bubbles`), pas comme page
+ * `/blog` à part entière (→ `articleFeed`). Fond/accent `background`/`accentColor` : MÊME mécanisme que
+ * `featured-carousel` (`search/schema.ts`) — couleurs FIXES config-driven, indépendantes du mode clair/sombre
+ * (cf. `FeaturedCarouselSection` : « fond fixe → texte blanc fixe, jamais `text-foreground` qui s'inverserait
+ * en mode clair »), pour que ce bloc et le carrousel « à la une » restent visuellement de la même famille.
+ * cf. doc/32-module-articles-blog.md.
+ */
+export const ArticleTeaserSectionSchema = z.object({
+  type: z.literal("articleTeaser"),
+  id: z.string().optional(),
+  props: z.object({
+    /** Titre affiché en badge incliné (ex. « Zoom sur le réseau »). */
+    headline: LocalizedString,
+    /** Slug du costum dont on liste les articles (scope `source.key`). Requis pour scoper le fil. */
+    costumSlug: z.string(),
+    /** Nombre d'articles affichés (défaut 6, pas de pagination). */
+    limit: z.number().int().positive().optional(),
+    /** Filtre serveur additionnel (ex. `{ category: "actus" }`). `type:"article"` est toujours injecté. */
+    filters: z.record(z.string(), z.unknown()).optional(),
+    /** Cible du bouton « voir tout » en pied de grille (défaut `/blog`). */
+    viewAllHref: z.string().optional(),
+    /** Libellé du bouton « voir tout » (défaut i18n `teaser.viewAll`). */
+    viewAllLabel: LocalizedString.optional(),
+    /** Libellé du bouton par carte (défaut i18n `teaser.cta`). */
+    itemCtaLabel: LocalizedString.optional(),
+    /** Couleur de fond FIXE (hex), ex. `#2c3e50` — sans valeur, repli sur `bg-foreground`/`text-background` (thème). */
+    background: z.string().optional(),
+    /** Couleur d'accent FIXE (hex) du badge/boutons, ex. `#4ecdc4` — sans valeur, repli sur `primary` (thème). */
+    accentColor: z.string().optional(),
+  }),
+});
+export type ArticleTeaserSectionProps = z.infer<typeof ArticleTeaserSectionSchema>["props"];

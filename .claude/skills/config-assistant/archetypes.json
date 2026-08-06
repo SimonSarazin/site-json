@@ -12,7 +12,8 @@
         "recherche globale HÉTÉROGÈNE (page /recherche) : filtre searchTargets + list.itemRules à prédicats (5 familles, presenter et action au clic par item, dont article → reader blog)",
         "section agenda (page /agenda)",
         "admin 6 onglets, blog, 4 costumForms, integrations.seo",
-        "header transparent-scroll, footer contact-partners",
+        "header stacked (le seul du parc : wordmark plein écran sur image, collapse au scroll), footer minimal-centered avec image de fond",
+        "home 100% data-driven (3 sections, zéro éditorial statique) : featured-carousel (POI tagués « A la une »), map-bubbles (carte illustrée cliquable), articleTeaser",
         "baseParams avec sourceKey + filters (recherche périmétrée réseau)"
       ],
       "knownFindings": []

@@ -160,6 +160,7 @@ export { default as HeaderTransparentScroll } from "@/components/layout/header/H
 export { default as HeaderMinimal } from "@/components/layout/header/HeaderMinimal";
 export { default as HeaderUnderlineNav } from "@/components/layout/header/HeaderUnderlineNav";
 export { default as HeaderTransparentDark } from "@/components/layout/header/HeaderTransparentDark";
+export { default as HeaderStacked } from "@/components/layout/header/HeaderStacked";
 export { default as FooterRich } from "@/components/layout/footer/FooterRich";
 export { default as FooterMinimalCentered } from "@/components/layout/footer/FooterMinimalCentered";
 export { default as FooterSidebarColumns } from "@/components/layout/footer/FooterSidebarColumns";
