@@ -1836,8 +1836,9 @@ export const Footer = z.object({
   logoAlt: LocalizedString.optional(),
   description: LocalizedString.optional(),
   // Image de fond plein-cadre (ex. `minimal-centered`). Optionnel, tous types de footer.
+  // Purement décorative (CSS background) : pas d'alternative textuelle — un
+  // `aria-label` sur le <footer> renommerait le landmark contentinfo.
   backgroundImage: z.string().optional(),
-  backgroundImageAlt: LocalizedString.optional(),
   legalLinks: z.array(z.object({
     href: z.string(),
     label: LocalizedString,

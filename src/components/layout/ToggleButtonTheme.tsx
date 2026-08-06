@@ -3,12 +3,13 @@
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useIsMounted } from "@/hooks/useIsMounted";
 import "@/components/layout/i18n";
 
-export default function ToggleButtonTheme() {
+export default function ToggleButtonTheme({ className }: { className?: string } = {}) {
   const mounted = useIsMounted();
   const { theme, setTheme } = useTheme();
   useLoadNamespace("components/layout");
@@ -22,7 +23,7 @@ export default function ToggleButtonTheme() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-muted"
+                className={cn("text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-muted", className)}
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               >
                 <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />

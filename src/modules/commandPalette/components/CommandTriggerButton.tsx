@@ -17,7 +17,7 @@ import "../i18n";
  * `full` (icône + libellé + raccourci) · `compact` (icône + raccourci) ·
  * `icon` (icône seule, le plus étroit).
  */
-export function CommandTriggerButton() {
+export function CommandTriggerButton({ className }: { className?: string } = {}) {
   const { config } = useSite();
   const palette = useCommandPaletteOptional();
   useLoadNamespace("modules/commandPalette");
@@ -47,6 +47,7 @@ export function CommandTriggerButton() {
         // justifie qu'avec le libellé/raccourci visibles (≥ md).
         "max-md:border-0 max-md:bg-transparent max-md:shadow-none dark:max-md:bg-transparent",
         !iconOnly && "gap-2",
+        className,
       )}
       aria-label={t("triggerLabel")}
       title={t("triggerLabel")}

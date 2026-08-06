@@ -56,11 +56,16 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
     };
   }, [api]);
 
+  // Autoplay suspendu au survol/focus (le temps de lire ou de cliquer) et
+  // désactivé si l'utilisateur demande moins d'animations (prefers-reduced-motion).
+  const [paused, setPaused] = useState(false);
+
   useEffect(() => {
-    if (!api || !autoplay || renderable.length <= 1) return;
+    if (!api || !autoplay || paused || renderable.length <= 1) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const interval = setInterval(() => api.scrollNext(), autoplayIntervalMs);
     return () => clearInterval(interval);
-  }, [api, autoplay, autoplayIntervalMs, renderable.length]);
+  }, [api, autoplay, paused, autoplayIntervalMs, renderable.length]);
 
   // Fond FIXE (config-driven, identique clair/sombre) → texte blanc fixe, jamais `text-foreground`
   // (qui s'inverserait en mode clair et deviendrait illisible sur ce fond sombre). Sans `background`
@@ -90,7 +95,15 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
   if (renderable.length === 0) return null;
 
   return (
-    <section id={id} style={sectionStyle} className={cn("relative overflow-hidden py-16 md:py-24 py-30 ", sectionClassName)}>
+    <section
+      id={id}
+      style={sectionStyle}
+      className={cn("relative overflow-hidden py-30 md:py-24", sectionClassName)}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
+    >
       {/* Badge rendu UNE SEULE fois, en position absolue : contrairement au titre/description/CTA
           (dans `FeaturedCarouselSlide`, qui défilent avec le carrousel), il ne doit pas bouger
           d'une diapositive à l'autre. `container mx-auto px-4 sm:px-8 md:px-24` reproduit
@@ -132,7 +145,7 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
               size="icon"
               aria-label="Diapositive précédente"
               onClick={() => api?.scrollPrev()}
-              className="absolute top-1/2 left-2 -translate-y-1/2 rounded-none border-none bg-transparent text-current  md:left-4"
+              className="absolute top-1/2 left-2 -translate-y-1/2 rounded-none border-none bg-transparent text-current hover:bg-current/10 md:left-4"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>

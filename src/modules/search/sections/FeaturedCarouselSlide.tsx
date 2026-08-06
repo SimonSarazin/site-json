@@ -39,12 +39,16 @@ export default function FeaturedCarouselSlide({ item, ctaLabel, resource, itemAc
           (colonne unique en dessous de `md:`), il chevaucherait sinon le badge. À partir de `md:`,
           les 2 colonnes + le centrage vertical du grid donnent déjà assez de dégagement. */}
       <div className="flex flex-col items-start gap-3 sm:gap-5 pt-16 sm:pt-20 md:pt-0">
-        <h2 className="text-2xl font-bold md:text-4xl sm:text-2xl  ml-4 ">{data.title}</h2>
-        {data.description && <p className="line-clamp-3 text-base opacity-90 md:text-lg text-md ml-4 sm:text-sm">{data.description}</p>}
+        <h2 className="text-2xl font-bold md:text-4xl ml-4">{data.title}</h2>
+        {data.description && <p className="line-clamp-3 text-base opacity-90 md:text-lg ml-4 sm:text-sm">{data.description}</p>}
         {click.kind !== "details" && (
-          <Button asChild size="lg" style={accentStyle} className="rounded-full px-6 py-3 sm:px-8 sm:py-4 font-bold w-full text-lg sm:text-2xl md:text-3xl xs:text-xs">
+          // `min-[475px]:` plutôt que `xs:` : le variant `xs` n'existe que sur les sites dont le
+          // CSS définit `--breakpoint-xs` (parent62, tiers-lieux…) — sur les autres il ne génère
+          // RIEN. Le variant arbitraire, lui, marche partout et rend l'échelle déterministe :
+          // texte réduit sous 475px, puis lg → 2xl → 3xl.
+          <Button asChild size="lg" style={accentStyle} className="rounded-full px-6 py-3 sm:px-8 sm:py-4 font-bold w-full text-xs min-[475px]:text-lg sm:text-2xl md:text-3xl">
             {newTab ? (
-              <a href={click.href} target="_blank" rel="noopener noreferrer font-serif">
+              <a href={click.href} target="_blank" rel="noopener noreferrer">
                 {ctaText}
               </a>
             ) : (

@@ -29,7 +29,7 @@ function TeaserSkeleton() {
             <Skeleton className="h-4 w-4/5" />
             <Skeleton className="h-4 w-3/5" />
           </div>
-          <Skeleton className="absolute -bottom-2 left-24 z-0 h-7 w-24 rounded-full" />
+          <Skeleton className="absolute bottom-2 left-24 z-0 h-7 w-24 rounded-full" />
         </div>
       ))}
     </div>
@@ -90,7 +90,7 @@ function Teaser({ props }: { props: ArticleTeaserSectionProps }) {
     costumSlug: props.costumSlug, pageSize: limit, filters: props.filters,
   });
   const items = ((transformedResults as unknown[]) ?? []).map(normalizeArticleResult).slice(0, limit);
-  const ctaLabel = props.itemCtaLabel ? t(props.itemCtaLabel as never) : t("teaser.cta");
+  const ctaLabel = props.itemCtaLabel ? t(props.itemCtaLabel) : t("teaser.cta");
 
   if (isLoading) return <TeaserSkeleton />;
   if (error && !items.length) {
@@ -124,7 +124,7 @@ export default function ArticleTeaser({ id, props }: { id?: string; props: Artic
   const sectionClassName = background ? "text-white" : "bg-foreground text-background";
   const accentStyle = accentColor ? { backgroundColor: accentColor, color: "#fff" } : undefined;
   const viewAllHref = props.viewAllHref ?? BASE;
-  const viewAllLabel = props.viewAllLabel ? t(props.viewAllLabel as never) : t("teaser.viewAll");
+  const viewAllLabel = props.viewAllLabel ? t(props.viewAllLabel) : t("teaser.viewAll");
 
   return (
     <section id={id} style={sectionStyle} className={cn("py-16 px-4", sectionClassName)}>
@@ -135,7 +135,7 @@ export default function ArticleTeaser({ id, props }: { id?: string; props: Artic
             style={accentStyle}
             className="rounded-none border-none -rotate-4 px-4 py-1.5 shadow-md text-2xl md:text-3xl font-serif"
           >
-            {t(props.headline as never)}
+            {t(props.headline)}
           </Badge>
         </h2>
 

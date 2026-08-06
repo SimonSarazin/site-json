@@ -16,7 +16,6 @@ export default function FooterMinimalCentered({ footer }: FooterMinimalCenteredP
     <footer
       className={`pt-8 sm:pt-12 pb-4 sm:pb-6 border-t ${bg ? "border-white/30 bg-cover bg-center text-white" : "border-border bg-background"}`}
       style={bg ? { backgroundImage: `url(${bg.startsWith("/") ? bg : `/${bg}`})` } : undefined}
-      aria-label={bg && footer.backgroundImageAlt ? t(footer.backgroundImageAlt) : undefined}
     >
       <div className="container mx-auto">
 

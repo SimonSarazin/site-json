@@ -23,6 +23,12 @@ interface HeaderStackedProps {
   header: Header;
 }
 
+// Boutons icône (recherche, thème) lisibles en mode sombre sur l'image de fond.
+// Passé en prop `className` aux deux boutons — remplace l'ancienne règle
+// `.header-stacked-icon-btn` d'index-parent62.css, qui ne s'appliquait qu'à
+// parent62 alors que ce header est générique.
+const ICON_BTN_DARK = "dark:bg-muted dark:border-muted dark:text-white/90 dark:hover:text-white";
+
 /**
  * Header 2 sections sur fond image : section 1 = logo + titre/sous-titre,
  * plein écran (`50` moins la nav) et centrée horizontalement/verticalement ;
@@ -58,19 +64,10 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
           "--header-text": header.textColor || "#000000",
         } as React.CSSProperties}
       >
-        {/* Scrim additionnel une fois compacté : le nav reste lisible même si la
-            zone visible de l'image de fond n'est pas celle prévue pour du texte.
-            Toujours monté (jamais démonté) pour que l'opacité se transitionne au
-            lieu de « sauter » à l'apparition/disparition. `pointer-events-none` :
-            purement décoratif (`aria-hidden`), mais un `absolute` sans z-index
-            passe quand même AU-DESSUS des enfants `position: static` de section 2
-            dans l'ordre d'empilement CSS (indépendamment du DOM et de l'opacité)
-            — sans ça, il interceptait tous les clics des boutons de la nav. */}
-        <div
-          aria-hidden
-          className={cn("absolute inset-0 pointer-events-none transition-opacity duration-200", collapsed ? "opacity-100" : "opacity-0")}
-        />
-
+        {/* Voile sombre (mode sombre uniquement) : assombrit l'image de fond pour
+            que sous-titre/nav (blancs fixes) restent lisibles. `-z-10` : derrière
+            les enfants, mais AU-DESSUS du background du <nav> (ordre de peinture
+            d'un stacking context : fond de l'élément, puis enfants z<0). */}
         <div aria-hidden className="absolute inset-0 -z-10 pointer-events-none dark:bg-black/55" />
 
         {/* Section 1 : logo + titre/sous-titre côte à côte, plein écran (50
@@ -155,7 +152,6 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
                 collapsed ? "w-11 sm:w-13 opacity-100 scale-100" : "w-0 opacity-0 scale-75 pointer-events-none"
               )}
             >
-              <span aria-hidden className="absolute inset-0 -m-1.5 rounded-full bg-transparent" />
               <HeaderLogo
                 header={header}
                 iconTone="white"
@@ -210,18 +206,10 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
             <div className="flex items-center justify-end gap-2 justify-self-end">
             <div className="hidden xl:flex items-center gap-2">
               {header.utilities?.notifications && <NotificationBell />}
-              {header.utilities?.search && (
-                <span className="header-stacked-icon-btn contents">
-                  <CommandTriggerButton />
-                </span>
-              )}
+              {header.utilities?.search && <CommandTriggerButton className={ICON_BTN_DARK} />}
               {header.utilities?.themeSwitch !== false && (
                 <ClientOnly fallback={<div className="w-10 h-10" />}>
-                  {() => (
-                    <span className="header-stacked-icon-btn contents">
-                      <ToggleButtonTheme />
-                    </span>
-                  )}
+                  {() => <ToggleButtonTheme className={ICON_BTN_DARK} />}
                 </ClientOnly>
               )}
               {header.utilities?.langSwitch && (
@@ -242,18 +230,10 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
 
             <div className="xl:hidden flex items-center gap-2">
               {header.utilities?.notifications && <NotificationBell />}
-              {header.utilities?.search && (
-                <span className="header-stacked-icon-btn contents">
-                  <CommandTriggerButton />
-                </span>
-              )}
+              {header.utilities?.search && <CommandTriggerButton className={ICON_BTN_DARK} />}
               {header.utilities?.themeSwitch !== false && (
                 <ClientOnly fallback={<div className="w-8 h-8" />}>
-                  {() => (
-                    <span className="header-stacked-icon-btn contents">
-                      <ToggleButtonTheme />
-                    </span>
-                  )}
+                  {() => <ToggleButtonTheme className={ICON_BTN_DARK} />}
                 </ClientOnly>
               )}
               {navItemsToDisplay.length > 0 && (

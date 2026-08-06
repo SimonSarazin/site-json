@@ -128,16 +128,6 @@ h1, h2, h3, h4, .font-serif, .font-display { font-weight: normal !important; }
    `<div>`, pas un `<nav>`) — sûr car ce fichier CSS n'est chargé que pour le site parent62. */
 footer nav { font-family: var(--font-serif); }
 
- 
-.dark .header-stacked-icon-btn button {
-  background-color: var(--muted);
-  border-color: var(--muted);
-  color: rgb(255 255 255 / 0.9) !important;
-}
-.dark .header-stacked-icon-btn button:hover { 
-  color: #fff !important;
-}
-
 /* Mini-prose : les sections `html` (mentions légales, confidentialité) posent
    class="prose …" mais le plugin typography n'est pas chargé — on donne ici
    la hiérarchie minimale. */
