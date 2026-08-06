@@ -19,6 +19,8 @@ import type { EntityTypes } from "@communecter/cocolight-api-client";
 import type { QueryKey } from "@tanstack/react-query";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { useCocolight } from "@/hooks/useCocolight";
+import { COSTUM_QUERY_KEYS } from "@/constants/queryKeys";
+import { costumSlugOf } from "@/lib/costumLists";
 import { useNavigate } from "react-router";
 import { buildParentReference, buildOrganizerReference, logCocolightError } from "./mutationUtils";
 import { submitEntityEdit, type EditableEntity } from "./submitEntityEdit";
@@ -248,12 +250,22 @@ export async function runEntityMutation(
 export function useEntityMutation(spec: EntityMutationSpec) {
   const { me, entity } = useCocolight();
   const navigate = useNavigate();
+  const costumSlug = costumSlugOf(entity as { serverData?: Record<string, unknown> } | null);
   return useMutationWithToast<{ entity: EntityTypes }, Data>({
     mutationFn: (values) => runEntityMutation(spec, values, { me: me as MeLike, contextEntity: entity as EntityTypes | null }),
     namespace: "modules/profil",
     successKey: spec.successKey,
     errorKey: spec.errorKey,
-    invalidateQueries: spec.invalidateQueries ?? [],
+    // Les listes DYNAMIQUES du costum sont des `distinct` sur les données : toute écriture d'entité
+    // peut en faire naître une valeur, et c'est précisément le point du widget à saisie libre — ce
+    // qu'un premier a saisi doit être proposé aux suivants. On invalide par PRÉFIXE (toutes les
+    // listes du costum) : le muteur n'a pas les déclarations, il ne sait donc pas quel champ nourrit
+    // quelle liste, et refetcher quelques kilooctets coûte moins que de lui faire porter ce savoir.
+    // Sans effet sur les listes statiques : elles ne passent par aucune query.
+    invalidateQueries: [
+      ...(spec.invalidateQueries ?? []),
+      ...(costumSlug ? [COSTUM_QUERY_KEYS.LIST_VALUES_PREFIX(costumSlug)] : []),
+    ],
     onSuccessCallback: ({ entity }) => {
       if (spec.mode === "add" && (spec.navigateOnSuccess ?? true) && entity?.slug) {
         navigate(`/profil/${entity.slug}`);

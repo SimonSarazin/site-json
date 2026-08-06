@@ -68,7 +68,16 @@ export const FilterGroupSchema = z.object({
     /** Cible de recherche (groupes `searchTargets`) — forward-ref car
      *  SearchTargetSchema dépend de SearchTypeSchema, défini plus bas. */
     target: z.lazy(() => SearchTargetSchema).optional(),
+    /** Graphies regroupées derrière la valeur affichée — POSÉ AU RUNTIME par `useDynamicFilterOptions`
+     *  (jamais écrit en config). Le filtre doit interroger tout le groupe : n'envoyer que « Le Port »
+     *  laisserait de côté les fiches portant « LE PORT » ou « Le port ». Déclaré ici pour que les
+     *  consommateurs le lisent sans cast. */
+    variants: z.array(z.string()).optional(),
   })).optional(),
+  /** Source DYNAMIQUE des options (cf. `OptionsFromSchema` du searchHeader) : les valeurs viennent
+   *  d'une liste `costum.lists` et REMPLACENT les `options` déclarées. Sur un groupe à `field`, chaque
+   *  option reçoit `name` = la valeur stockée, donc le filtrage par champ fonctionne tel quel. */
+  optionsFrom: z.object({ list: z.string(), costumSlug: z.string().optional() }).optional(),
   config: z.object({
     countryCode: z.array(z.string()).optional(),
     level: z.array(z.string()).optional(),
@@ -260,6 +269,12 @@ export const PreviewConfSchema = z.object({
   fields: z.record(z.string(), z.string()).optional(),
   /** Facettes du preview générique (`type: "facets"`) — data-driven, sans code. */
   facets: z.array(PreviewFacetSchema).optional(),
+  /**
+   * Affiche le résumé sous le titre du preview générique (`type: "facets"`). Défaut : affiché — une
+   * fiche réduite à ses facettes perdrait sa présentation. `false` quand les facettes se suffisent.
+   * Lu par `PreviewFacets`.
+   */
+  showDescription: z.boolean().optional(),
   /** Section « réservations » du preview `poi-amenities` (absente = masquée). */
   reservations: ReservationsConfSchema.optional(),
   /** Modal tableau de bord installation (requiert `reservations`). */
@@ -1022,6 +1037,24 @@ const TitleWithFiltersDropdownOptionSchema = z.object({
   icon: z.string().optional(),
 });
 
+/**
+ * Source DYNAMIQUE d'options : les valeurs viennent d'une liste déclarée du costum
+ * (`costum.lists.<nom>`, forme `{collection, distinct, where}`), résolue par `costum/co/listvalues`.
+ *
+ * REMPLACE les `options` écrites à la main quand elle est déclarée — pas de fusion. Les valeurs
+ * dynamiques n'ont donc PAS de libellé traduit : elles s'affichent telles qu'elles sont stockées.
+ * C'est le prix assumé pour que le filtre suive la donnée : sur institutBleu, la config gelait
+ * 12 territoires quand la base en compte 64, soit 52 valeurs injoignables au filtre.
+ *
+ * Sans `optionsFrom`, rien ne change : les options déclarées font foi, comme aujourd'hui.
+ */
+const OptionsFromSchema = z.object({
+  /** Nom de la liste dans `costum.lists`. */
+  list: z.string(),
+  /** Costum porteur ; par défaut celui du site. */
+  costumSlug: z.string().optional(),
+});
+
 const TitleWithFiltersDropdownSchema = z.object({
   id: z.string(),
   label: LocalizedString,
@@ -1029,6 +1062,7 @@ const TitleWithFiltersDropdownSchema = z.object({
   multiple: z.boolean().optional(),
   allLabel: LocalizedString.optional(),
   options: z.array(TitleWithFiltersDropdownOptionSchema).default([]),
+  optionsFrom: OptionsFromSchema.optional(),
 });
 
 // Props partagées entre le type canonique `searchHeader` et son alias.

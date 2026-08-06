@@ -6,6 +6,7 @@ import "@/modules/search/i18n";
 import { cn } from "@/lib/utils";
 import type { FiltersSectionProps } from "../schema";
 import { useState, useEffect, useMemo, useRef, type ReactElement, type ReactNode } from "react";
+import { useDynamicFilterOptions } from "@/modules/search/hooks/useDynamicFilterOptions";
 import { Check, ChevronDown, Search, SlidersHorizontal } from "lucide-react";
 import { useFilterToggles } from "../hooks/useFilterToggles";
 import { useFiltersByAnswersQuery } from "../hooks/useFiltersByAnswers";
@@ -15,6 +16,7 @@ import { useFiltersByPathQuery } from "../hooks/useFiltersByPath";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useSearchParams } from "react-router";
 import { applyDefaultSearchTargets, computeFiltersFromUrl } from "../lib/computeFiltersFromUrl";
+import { normalizeFilterValue } from "../lib/dropdownFilters";
 import { computeUrlFromFilters } from "../lib/computeUrlFromFilters";
 import { SelectField, MultiCheckboxField, MultiField } from "../components/filterFields";
 import { pickFilterField } from "../lib/pickFilterField";
@@ -163,7 +165,20 @@ export function FiltersSection({
     const v = (s ?? "").trim();
     return v ? v.charAt(0).toUpperCase() + v.slice(1) : v;
   };
-  const { title, filterGroups: propsFiltersGroups, defaultOpenGroups = [], filtersByAnswers, filtersByPath, className } = props;
+  const { title, filterGroups: propsFiltersGroupsBruts, defaultOpenGroups = [], filtersByAnswers, filtersByPath, className } = props;
+  // Options DYNAMIQUES résolues AVANT l'enrichissement : l'effet ci-dessous dépend de cette liste, il se
+  // rejoue donc quand les valeurs arrivent, `setFilterGroups` suit, et la synchro URL — déjà continue
+  // ici — restaure le deep-link. Un groupe sans `optionsFrom` traverse inchangé, sans aucune requête.
+  // Recherche PAR GROUPE dans la liste d'options (barre latérale). Une liste dynamique suit les données :
+  // institutBleu compte 1 209 tags de documents et 565 auteurs — un accordéon de 1 209 cases n'est pas
+  // parcourable, et les monter tous coûte au rendu. Au-delà des seuils : champ de recherche + plafond.
+  //
+  // Le même terme sert DEUX fois : il filtre localement ce qu'on tient, et — pour une liste que le
+  // serveur a coupée — il repart en `q` pour chercher au-delà de la coupe. Le debounce ne vaut que pour
+  // le second usage ; le filtrage local, lui, reste à la frappe.
+  const [rechercheGroupe, setRechercheGroupe] = useState<Record<string, string>>({});
+  const rechercheGroupeDebounce = useDebounce(rechercheGroupe, 300);
+  const propsFiltersGroups = useDynamicFilterOptions(propsFiltersGroupsBruts, rechercheGroupeDebounce);
   const [filterGroups, setFilterGroups] = useState<FiltersSectionProps["filterGroups"]>([]);
   const [openGroups, setOpenGroups] = useState<string[]>(defaultOpenGroups);
 
@@ -358,7 +373,17 @@ export function FiltersSection({
 
   // URL → état. Continu (deep-link, liens d'accueil, back/forward) mais on saute
   // nos propres écritures (écho) repérées via `lastSyncedSearch`.
+  // Un groupe à source dynamique dont les valeurs n'ont pas répondu bloque l'hydratation. Sans ça, la
+  // première lecture ne reconnaît aucune valeur, `urlHydrated` passe quand même à vrai, et l'effet
+  // d'écriture ci-dessous EFFACE le paramètre de l'URL avant que les valeurs n'arrivent — le deep-link
+  // est détruit au lieu d'être simplement retardé.
+  const optionsEnAttente = (filterGroups ?? []).some(
+    (g) => (g as { optionsFrom?: unknown; optionsReady?: boolean }).optionsFrom
+      && !(g as { optionsReady?: boolean }).optionsReady,
+  );
+
   useEffect(() => {
+    if (optionsEnAttente) return;
     if (filterGroups.length === 0 && !filterAnswerData) return;
     if (searchParams.toString() === lastSyncedSearch.current) {
       if (!urlHydrated) setUrlHydrated(true);
@@ -380,7 +405,7 @@ export function FiltersSection({
     });
     if (!urlHydrated) setUrlHydrated(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, filterGroups, filterAnswerData]);
+  }, [searchParams, filterGroups, filterAnswerData, optionsEnAttente]);
 
   // état → URL. Miroir des filtres (texte `search`, category, entityList,
   // scopeList — cf. computeUrlFromFilters). Démarre seulement après l'hydratation
@@ -458,6 +483,9 @@ export function FiltersSection({
             options={fieldOptions}
             allLabel={t("Tous")}
             selectedCountLabel={(n) => t("{{count}} sélectionnés", undefined, { count: n })}
+            searchPlaceholder={t("Rechercher…")}
+            noResult={t("Aucun résultat")}
+            moreLabel={(n) => t("+{{count}} autres — précisez la recherche", undefined, { count: n })}
           />
         )}
         {(kind === "multi" || kind === "multi-single") && (
@@ -518,6 +546,54 @@ export function FiltersSection({
         <Spinner className="size-4 text-muted-foreground" />
       </div>
     );
+
+  /* Liste d'options d'un groupe accordéon, avec RECHERCHE et PLAFOND de rendu au-delà des seuils.
+     Motif : une liste `optionsFrom` suit les données et n'est plus bornée par la config — 1 209 tags de
+     documents et 565 auteurs sur institutBleu. En deçà du seuil, le rendu est exactement l'ancien (aucun
+     champ ajouté sur les 8 catégories d'un annuaire).
+     Les options SÉLECTIONNÉES passent en tête : sans cela, cocher une valeur puis la voir sortir du
+     plafond la rendrait impossible à décocher autrement que par la barre des filtres actifs. */
+  const SEUIL_RECHERCHE_GROUPE = 12;
+  const MAX_OPTIONS_RENDUES = 60;
+  const renderOptionsCherchables = (
+    groupId: string,
+    options: FilterGroupOption[],
+    render: (o: FilterGroupOption) => ReactNode,
+    estSelectionnee: (o: FilterGroupOption) => boolean,
+  ): ReactNode => {
+    if (options.length <= SEUIL_RECHERCHE_GROUPE) return options.map(render);
+    const q = rechercheGroupe[groupId] ?? "";
+    const qn = normalizeFilterValue(q);
+    const filtrees = qn
+      ? options.filter((o) => normalizeFilterValue(t(o.label)).includes(qn))
+      : options;
+    const ordonnees = [...filtrees].sort((a, b) => Number(estSelectionnee(b)) - Number(estSelectionnee(a)));
+    const rendues = ordonnees.slice(0, MAX_OPTIONS_RENDUES);
+    const reste = ordonnees.length - rendues.length;
+    return (
+      <>
+        <div className="relative pb-1">
+          <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            type="text"
+            value={q}
+            onChange={(e) => setRechercheGroupe((prev) => ({ ...prev, [groupId]: e.target.value }))}
+            placeholder={t("Rechercher…")}
+            className="h-8 pl-7 text-sm"
+          />
+        </div>
+        {rendues.map(render)}
+        {ordonnees.length === 0 && (
+          <p className="px-1 py-1 text-xs text-muted-foreground">{t("Aucun résultat")}</p>
+        )}
+        {reste > 0 && (
+          <p className="px-1 pt-1 text-xs text-muted-foreground">
+            {t("+{{count}} autres — précisez la recherche", undefined, { count: reste })}
+          </p>
+        )}
+      </>
+    );
+  };
 
   /* Ordre d'affichage UNIFIÉ : un groupe d'une famille (statique/scope/entity)
      peut s'intercaler parmi les groupes « par réponses » (et inversement) via
@@ -650,7 +726,11 @@ export function FiltersSection({
                     // parent62 `territoires`/`publics`/`themes`) → searchByFields
                     // → `{ champ: { $in: [...] } }` (cf. searchByFieldsToQuery).
                     // Sans `field`, le groupe filtre par TAG (comportement historique).
-                    toggleFilter(group.id, filterName, group.field, filterName);
+                    // `variants` : une option issue d'une source dynamique porte toutes les graphies
+                    // regroupées derrière son libellé. Filtrer sur la seule graphie affichée laisserait
+                    // de côté les fiches écrites autrement (« LE PORT » / « Le port » pour « Le Port »).
+                    toggleFilter(group.id, filterName, group.field,
+                      option.variants?.length ? option.variants : filterName);
                   } else {
                     toggleFilter(group.id, filterName);
                   }
@@ -709,7 +789,8 @@ export function FiltersSection({
                   const fType = group.filterType ?? "sourceKey";
                   toggleFilter(group.id, name, fType, name, null, fType);
                 } else if (group.field) {
-                  toggleFilter(group.id, name, group.field, name);
+                  toggleFilter(group.id, name, group.field,
+                    option?.variants?.length ? option.variants : name);
                 } else {
                   toggleFilter(group.id, name);
                 }
@@ -742,7 +823,12 @@ export function FiltersSection({
                 );
               })
             ) : (
-              [...(group.options ?? [])].sort((a, b) => byLabel(t(a.label), t(b.label))).map(renderOption)
+              renderOptionsCherchables(
+                group.id,
+                [...(group.options ?? [])].sort((a, b) => byLabel(t(a.label), t(b.label))),
+                renderOption,
+                (o) => isFilterSelected(group.id, o.name || o.id),
+              )
             ),
           );
         }),
