@@ -1345,6 +1345,26 @@
     "evaluateLoading": "Chargement des diagnostics…",
     "noPois": "Aucun espace disponible"
   },
+  "ProfileTools": {
+    "tools": "Nos outils",
+    "editTools": "Modifier les outils",
+    "toolsEmpty": "Aucun outil renseigné pour le moment.",
+    "toolsModal": {
+      "title": "Modifier les liens vers les ressources et outils",
+      "description": "Ajoutez ou modifiez les liens vers les ressources et outils principaux de cette page. Vous pouvez utiliser cet espace comme gare d'aiguillage pour vos membres.",
+      "category": "Type de ressource",
+      "name": "Nom",
+      "namePlaceholder": "Ex : Site officiel",
+      "url": "Lien (optionnel)",
+      "addRow": "Ajouter un lien",
+      "removeRow": "Supprimer ce lien",
+      "empty": "Aucun lien. Cliquez sur « Ajouter un lien ».",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "saveSuccess": "Liens mis à jour.",
+      "saveError": "Erreur lors de la mise à jour des liens."
+    }
+  },
   "ProfilTiersLieuxAbout": {
     "title": "À propos",
     "readMore": "Lire la suite",

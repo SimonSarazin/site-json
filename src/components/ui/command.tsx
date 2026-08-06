@@ -84,6 +84,7 @@ function CommandInput({
 
 function CommandList({
   className,
+  onWheel,
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.List>) {
   return (
@@ -93,6 +94,26 @@ function CommandList({
         "max-h-[300px] scroll-py-1 overflow-x-hidden overflow-y-auto",
         className
       )}
+      // Molette rétablie à la main dans les MODALES. Quand un Dialog/Sheet Radix
+      // pose son verrou de scroll (`data-scroll-locked` sur <body>), la molette
+      // ne fait plus défiler les listes cmdk PORTALISÉES hors du conteneur
+      // verrouillé (popover d'un SelectObject ou d'un MultiCombobox ouvert dans
+      // une modale) — la barre de défilement, elle, marche : glisser une
+      // scrollbar n'émet pas de `wheel`. Mesuré : liste scrollable, `scrollTop`
+      // programmatique OK, molette sans effet, `defaultPrevented` à false (le
+      // mécanisme exact du blocage reste non élucidé).
+      // La GARDE sur le verrou évite le défilement à double vitesse hors modale,
+      // où le comportement natif fonctionne déjà. Correctif posé ICI, une fois,
+      // plutôt que dans chaque combobox : select-objet et multi-combobox
+      // partagent ce composant.
+      onWheel={(e) => {
+        onWheel?.(e);
+        if (!document.body.hasAttribute("data-scroll-locked")) return;
+        const el = e.currentTarget;
+        if (el.scrollHeight <= el.clientHeight) return;
+        el.scrollTop += e.deltaY;
+        e.stopPropagation();
+      }}
       {...props}
     />
   )

@@ -10,7 +10,7 @@ import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
 import { Suspense } from "react";
 import { lazy } from "vite-preload";
 import { CocolightProvider } from "@/contexts/CocolightProvider";
-import { getBaseUrl } from "@/lib/constant/common";
+import { getBaseUrl, getCostumForceLive } from "@/lib/constant/common";
 import { GoogleFontsLoader } from "@/components/layout/GoogleFontsLoader";
 import { SiteProvider } from "@/contexts/SiteProvider";
 import { useSite } from "@/hooks/useSite";
@@ -91,7 +91,7 @@ function RootLayout({ config }: Props) {
   return (
     <ErrorBoundary fallback={<p>Une erreur est survenue 😢.</p>}>
       <Suspense fallback={<p>loading</p>}>
-        <CocolightProvider clientOptions={{ baseURL: getBaseUrl() }}>
+        <CocolightProvider clientOptions={{ baseURL: getBaseUrl(), costumForceLive: getCostumForceLive() }}>
           <ThemeProvider attribute="class" defaultTheme={defaultTheme} enableSystem>
             <SiteProvider config={config}>
               <SiteShell />

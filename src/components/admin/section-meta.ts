@@ -41,6 +41,7 @@ const SECTION_META: Record<string, SectionMeta> = {
   "hero-parallax": { label: "Hero parallaxe", desc: "Hero plein écran à fond parallaxe, glow et badges", image: "https://placehold.co/300x180/0984e3/eee?text=Hero+Parallax", family: "hero" },
   "hero-quick-access": { label: "Hero accès rapide", desc: "Hero scindé avec pile de cartes d'accès rapide (portail)", image: "https://placehold.co/300x180/00b894/eee?text=Quick+Access", family: "hero" },
   "hero-tinted-overlay": { label: "Hero voile teinté", desc: "Hero plein écran à voile teinté et double slogan", image: "https://placehold.co/300x180/00cec9/eee?text=Tinted+Overlay", family: "hero" },
+  "hero-carousel": { label: "Hero carrousel", desc: "Hero plein écran à diapositives, socle scroll-snap, puces et auto-avance optionnelle", image: "https://placehold.co/300x180/00cec9/eee?text=Hero+Carousel", family: "hero" },
   "hero-entity-banner": { label: "Hero bannière entité", desc: "Bannière/logo/titre sourcés depuis l'entité Cocolight", image: "https://placehold.co/300x180/6c5ce7/eee?text=Entity+Banner", family: "hero" },
 
   // contenu

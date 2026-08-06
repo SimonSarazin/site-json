@@ -23,10 +23,13 @@ import { COFORM_QUERY_KEYS } from "../constants";
 import type { CoFormData, CoFormAccessInfo, CoFormAnswer, SubFormData, AllStepsData } from "../types";
 
 // Re-export du hook de soumission finale (compat ascendante).
-export {
-  useCoFormFinalMutation,
-  type UseCoFormFinalMutationOptions,
-  type CoFormFinalMutationData,
+export { useCoFormFinalMutation } from "../actions/mutations/file";
+// Instruction SÉPARÉE et type-only : le plugin react-refresh ignore `export type {…}`
+// mais pas les specifiers `type` d'un export mixte, où il prend les noms PascalCase
+// pour des composants (4 faux positifs).
+export type {
+  UseCoFormFinalMutationOptions,
+  CoFormFinalMutationData,
 } from "../actions/mutations/file";
 
 // ============================================================================

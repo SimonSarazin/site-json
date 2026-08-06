@@ -245,7 +245,10 @@ const PaymentConfigPage = ({
         }
 
         return response;
-    }, [entity, contextId, contextType, t]);
+    // `itemProjectId` est lu l.223 (repli de `effectiveContextId`) : sans lui, le
+    // callback capturait une valeur périmée. Sans risque de boucle — il n'est
+    // consommé que par des gestionnaires d'événements, jamais par un useEffect.
+    }, [entity, contextId, contextType, itemProjectId, t]);
 
     // Garde-fou de ré-entrance : `completePayment` enregistre le financement via
     // `answer.updateField(..., {arrayForm:true})` qui AJOUTE une entrée financer à
