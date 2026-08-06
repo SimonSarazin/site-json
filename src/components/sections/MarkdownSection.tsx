@@ -37,7 +37,12 @@ export function MarkdownSection({
       data-animation={animation}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto prose prose-gray dark:prose-invert">
+        {/* `prose-theme` (styles/shared.css) branche les `--tw-prose-*` sur les
+            jetons du thème, injectés au runtime par `SiteTheme`. Remplace
+            `prose-gray dark:prose-invert`, dont les gris sont codés en dur dans
+            le plugin et juraient avec l'identité des sites ; le mode sombre est
+            porté par les jetons eux-mêmes, qui basculent déjà via `.dark`. */}
+        <div className="max-w-4xl mx-auto prose prose-theme">
           <div dangerouslySetInnerHTML={{ __html: safeHtml }} suppressHydrationWarning />
         </div>
       </div>

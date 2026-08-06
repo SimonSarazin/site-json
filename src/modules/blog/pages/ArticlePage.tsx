@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router";
 import "../i18n";
 import { useT } from "@/hooks/useT";
 import { useSite } from "@/hooks/useSite";
-import { getServerUrl } from "@/lib/constant/common";
+import { getSitePublicUrl } from "@/lib/constant/common";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useArticle } from "../hooks/useArticle";
 import { READER_VARIANTS } from "../variants/readers";
@@ -36,10 +36,11 @@ export default function ArticlePage() {
       </div>
     );
   }
-  // Canonical/og:url. `getServerUrl()` (env) marche SSR + client → les balises sont dans le HTML serveur
+  // Canonical/og:url. `getSitePublicUrl()` (URL PUBLIQUE du site, pas le serveur communecter) marche
+  // SSR + client → les balises sont dans le HTML serveur
   // (window.location.origin serait vide au SSR). Priorité au slug → un article slugué ouvert via
   // /blog/id/:id canonicalise vers /blog/:slug (évite le duplicate content).
-  const origin = getServerUrl().replace(/\/$/, "");
+  const origin = getSitePublicUrl().replace(/\/$/, "");
   const path = article.slug ? `/blog/${article.slug}` : id ? `/blog/id/${id}` : slug ? `/blog/${slug}` : "";
   const canonicalUrl = origin && path ? origin + path : undefined;
 

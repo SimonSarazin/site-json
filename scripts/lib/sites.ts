@@ -3,9 +3,9 @@
  *
  * POURQUOI — `sites.json` est la seule source de vérité du parc : quel fichier
  * de config, quel CSS, quel dossier d'images, et depuis le chantier déploiement,
- * quel domaine et quelle application Coolify. Les cinq variables que le build
+ * quel domaine et quelle application Coolify. Les six variables que le build
  * attend (`VITE_SLUG`, `SITE_CSS_PATH`, `SITE_IMAGES`, `SITE_CONFIG_PATH`,
- * `SITE_EMBED`) s'en DÉDUISENT entièrement — les recopier à la main quelque part
+ * `SITE_EMBED`, `VITE_SITE_PUBLIC_URL`) s'en DÉDUISENT entièrement — les recopier à la main quelque part
  * serait une seconde source, donc une divergence en puissance.
  *
  * Ce module est partagé par `scripts/deploy.ts` et par le préflight
@@ -75,13 +75,14 @@ export interface SiteEntry {
 /** Zone DNS d'amorce : la seule que l'outil ait le droit d'écrire. */
 export const ZONE_AMORCE = "00.re";
 
-/** Les cinq variables que le build attend, dérivées d'une entrée. */
+/** Les six variables que le build attend, dérivées d'une entrée. */
 export interface BuildVars {
   VITE_SLUG: string;
   SITE_CSS_PATH: string;
   SITE_IMAGES: string;
   SITE_CONFIG_PATH: string;
   SITE_EMBED: string;
+  VITE_SITE_PUBLIC_URL: string;
 }
 
 export function loadSites(root: string = ROOT): SiteEntry[] {
@@ -115,6 +116,18 @@ export function buildVars(site: SiteEntry): BuildVars {
     SITE_IMAGES: asList(site.images).join(","),
     SITE_CONFIG_PATH: `./${site.config}`,
     SITE_EMBED: "true",
+    // URL PUBLIQUE du site (canonical, og:url/og:image, sitemap, RSS) — lue par
+    // `getSitePublicUrl()` et `server/lib/sitemap.js`. Le domaine PROPRE
+    // (`aliases[0]`) prime sur le sous-domaine d'amorce : c'est l'adresse que
+    // les visiteurs et les moteurs doivent retenir. Sans domaine declare, ""
+    // → repli runtime sur `getServerUrl()` (comportement historique).
+    // Ne PAS confondre avec VITE_SERVER_URL (= communecter : images /upload,
+    // embed co2, cagnotte), qui garde sa valeur parc.
+    VITE_SITE_PUBLIC_URL: site.aliases?.[0]
+      ? `https://${site.aliases[0]}`
+      : site.domain
+        ? `https://${site.domain}`
+        : "",
   };
 }
 

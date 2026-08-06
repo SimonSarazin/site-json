@@ -11,9 +11,11 @@ const ADDRESS = {
   addressCountry: "FR", addressLocality: "Paris", localityId: "c1", postalCode: "75001", streetAddress: "1 rue X",
   level1: "11", level1Name: "IDF", codeInsee: "75056",
 };
-const ADDR_14 = {
+// 16 clés d'adresse : niveaux 1..5 COMPLETS (contrat SDK ≥ 1.0.173 — level2 = autres pays, level5 = EPCI).
+const ADDR_16 = {
   addressCountry: "FR", streetAddress: "1 rue X", postalCode: "75001", addressLocality: "Paris", localityId: "c1",
-  level1: "11", level1Name: "IDF", level2: "", level2Name: "", level3: "", level3Name: "", level4: "", level4Name: "", codeInsee: "75056",
+  level1: "11", level1Name: "IDF", level2: "", level2Name: "", level3: "", level3Name: "",
+  level4: "", level4Name: "", level5: "", level5Name: "", codeInsee: "75056",
 };
 const SOCIAL_9 = {
   github: "https://gh", gitlab: "", facebook: "https://fb", twitter: "", instagram: "",
@@ -21,7 +23,7 @@ const SOCIAL_9 = {
 };
 
 describe("seedProfileFormValues (READ via pipeline)", () => {
-  it("citoyens : objet complet (10 champs + 14 adresse + 9 social)", () => {
+  it("citoyens : objet complet (10 champs + 16 adresse + 9 social)", () => {
     const out = seedProfileFormValues("citoyens", { serverData: {
       name: "Jean", shortDescription: "court", description: "long", email: "a@b.fr", url: "https://x.fr",
       tags: ["t1"], slug: "jean", mobile: "06", fixe: "01", birthDate: "1990-01-01",
@@ -30,7 +32,7 @@ describe("seedProfileFormValues (READ via pipeline)", () => {
     expect(out).toEqual({
       name: "Jean", slug: "jean", shortDescription: "court", description: "long", url: "https://x.fr", email: "a@b.fr",
       mobile: "06", fixe: "01", birthDate: "1990-01-01", tags: ["t1"],
-      ...ADDR_14, ...SOCIAL_9,
+      ...ADDR_16, ...SOCIAL_9,
     });
   });
 
