@@ -83,10 +83,34 @@ NB : l'export a un plancher **backend** `superAdmin` non contournable par config
 
 ### `dashboard`
 
-`{ "type": "dashboard", "title": { … } }` — aucune autre config : les tuiles sont **dérivées**
+`{ "type": "dashboard", "title": { … } }` — sans autre config, les tuiles sont **dérivées**
 des sections `resource` des onglets **visibles** (compteur total + badge « à valider » si la
 resource gère la validation, via `searchCostum` variant admin, count serveur) + une tuile
 Modération (taille de la file) si l'onglet existe. Chaque tuile est un vrai lien `/admin/<tab>`.
+
+**KPIs déclarés (opt-in)** — `kpis: []` ajoute des tuiles AVANT les dérivées (même anatomie de
+Card ; champs communs `label` / `hint` / `icon` (nom lucide, DynamicIcon) / `linkTo`) :
+
+```jsonc
+"kpis": [
+  { "type": "searchCount",            // compteur d'un périmètre de recherche
+    "label": { "fr": "Créneaux actifs" }, "entityType": "answers",
+    "source": { /* mêmes baseParams que searchProStatic */ },
+    "trend": "monthly" },             // + évolution : créations mois courant vs précédent
+  { "type": "membersPending", "label": { "fr": "Pros inscrits" } },  // carrier toBeValidated
+  { "type": "analyticsVisitors", "label": { "fr": "Usagers actifs" } } // état « à raccorder »
+]
+```
+
+- `searchCount` : count de la 1ʳᵉ page seul ; avec `trend: "monthly"`, charge le périmètre complet
+  (`useSearchAllResults`, clé `ADMIN_QUERY_KEYS.KPI_SEARCH_PREFIX`) et dérive la tendance des
+  `created` (`lib/kpiTrend.ts`, pur + testé). Limite : les **suppressions ne sont pas historisées**
+  → on compare les créations, pas les totaux historiques ; tendance rendue seulement sur périmètre
+  complet.
+- `membersPending` : membres du carrier en attente de validation (même source que la section `members`).
+- `analyticsVisitors` : tuile **placeholder explicite** — le moteur n'a aucune API de LECTURE
+  d'audience (`IntegrationsLoader` = tracking sortant uniquement) ; brancher un jour un outil RGPD
+  (Matomo…) transformera ce type en vraie source.
 
 ### `members`
 

@@ -15,16 +15,19 @@
 > 06/07) · [`ENDPOINT.md`](../../ENDPOINT.md) (fiches d'endpoints SDK à créer). Mémoire :
 > `[[project-maison-sport-sante-la-tampon]]`.
 
-Dernière mise à jour : **2026-07-31** (session 2 : **auto-inscription structure**, en cours,
-**non commitée** — costumForm `structure-ekilibre` via le moteur `formEngine` ; gates repassés,
-régression `node_modules` détectée §9.4/§12 ; détails de configuration locale (`.env`) retirés du
-document à la demande de l'utilisateur).
+Dernière mise à jour : **2026-07-31** (session 3 : **back-office `/admin` activé + tableau de bord
+KPIs** (CDC §4.2) — §9.6 ; merge `main` → `ekilibre` résolu (`348237e5`, input coform `location` ⊕
+`timeSlots`/`dynamicFields`), SDK **1.0.173** installé, typecheck **0 erreur**).
 
-<details><summary>Historique des sessions précédentes (31/07, session 1)</summary>
+<details><summary>Historique des sessions précédentes (31/07, sessions 1–2)</summary>
 
-création ; collecte git/config/gates ; revue « bonnes pratiques » + correctifs §9.2 bis ; inputs
-coform §9.2 ter ; **lots commités** : `20fc3529` + `2bf81496` + doc `86a6f023` — **poussés sur
-`origin/ekilibre`** (vérifié : `ekilibre` = `origin/ekilibre`, 0 commit d'écart).
+Session 1 : création ; collecte git/config/gates ; revue « bonnes pratiques » + correctifs §9.2 bis ;
+inputs coform §9.2 ter ; **lots commités** : `20fc3529` + `2bf81496` + doc `86a6f023` — **poussés sur
+`origin/ekilibre`**.
+
+Session 2 : auto-inscription structure — costumForm `structure-ekilibre` (§9.5), depuis **commitée
+par cael** (`9fbe7c02` add structure with step · `253dec37` preview and add structure, arrivées via
+`origin/ekilibre`, merge `849a4f07`).
 
 </details>
 
@@ -157,6 +160,7 @@ config et des échanges (à faire valider). Budget/phasage : **à confirmer**.
 | Pros de santé | ressources, prescription, PandaLab, connexion | `/espace-pro` (CTA header) + auth |
 | Contact | formulaire 7 champs (RGPD) | `/contact` — **non opérationnel** (§12) |
 | Légal | mentions, confidentialité, accessibilité | 3 pages `html` |
+| Pilotage (CDC **4.2**) | tableau de bord admin : créneaux actifs (+ évolution mensuelle), usagers actifs (analytics RGPD), signalements en attente, pros inscrits en attente de validation | back-office `/admin` (§9.6, 31/07) — 2 KPIs branchés sur données réelles, 1 dérivé (modération), 1 **à raccorder** (analytics) |
 
 ---
 
@@ -355,7 +359,7 @@ comportement du lot créneaux (aucun conflit git constaté — les fichiers du l
 | Serveur dev | ✅ boote malgré les deps manquantes ; `/`, `/creneaux`, `/structure` → **200** ; listes en skeleton au SSR (prefetch non observé — à revoir après `npm install`) |
 | `build` / e2e | non relancés en session 2 — **à passer après `npm install`** ; aucun spec e2e Ekilibre n'existe |
 
-### 9.5 Auto-inscription structure — costumForm `structure-ekilibre` (31/07, session 2, **non commité**)
+### 9.5 Auto-inscription structure — costumForm `structure-ekilibre` (31/07, session 2 — **commité depuis** : `9fbe7c02` + `253dec37`, via `origin/ekilibre`)
 
 **Working tree modifié**, aucun commit : `config.prod.maison-sport-sante-la-tampon.json` (M),
 `structure-ekilibre/fns.ts` (nouveau), `registerSpecFns.ts` + `configCostum.ts` (fixture test, M),
@@ -402,6 +406,42 @@ libellé/l'ordre des étapes avec la MSS ; vérifier qu'aucun autre site ne cons
 
 ---
 
+### 9.6 Back-office `/admin` + tableau de bord KPIs — CDC §4.2 (31/07, session 3, Peterson)
+
+**Demande** : activer le back-office admin et afficher les 4 KPIs du CDC §4.2. **Réalisation** :
+bloc `config.admin` ajouté (onglets `dashboard` / `membres` / `moderation`) + extension **opt-in**
+du moteur : `AdminDashboardKpiSchema` (`section.kpis[]`) — sans `kpis`, le dashboard reste 100 %
+dérivé, **aucun impact sur les autres sites**.
+
+| KPI (CDC §4.2) | Implémentation | Source de données | État |
+|---|---|---|---|
+| **Créneaux actifs** (+ évolution vs mois précédent) | `kpis[0]` `searchCount` + `trend:"monthly"` | mêmes `baseParams` que `/creneaux` (form + CP + `state="Validé"`) via `useSearchAllResults` ; tendance dérivée des `created` (`computeMonthlyTrend`, 6 tests) | ✅ réel |
+| **Usagers actifs** (visites uniques mensuelles) | `kpis[1]` `analyticsVisitors` | **AUCUNE** — le moteur ne fait que du *tracking* sortant (`IntegrationsLoader`), aucune API de lecture d'audience. Tuile en état « à raccorder » explicite (jamais un chiffre inventé) | 🟡 à raccorder (§13) |
+| **Signalements en attente** | tuile **dérivée** modération du dashboard (existant) via l'onglet `moderation` | `me.getModerationQueue()` (news + commentaires signalés) — **superAdmin** (plancher backend) | ✅ (visible superAdmin) |
+| **Pros inscrits** (en attente de validation) | `kpis[2]` `membersPending` | `useEntityMembers(carrier, {toBeValidated: true})` — même source que l'onglet Membres | ✅ réel (définition « pro » = membre en attente, **à confirmer** §13) |
+
+**Fichiers moteur** : `admin/schema.ts` (KPI schema + type), `admin/sections/DashboardKpis.tsx`
+(tuiles, même anatomie Card que les tuiles dérivées), `admin/sections/DashboardSection.tsx`
+(branchement + type guard), `admin/lib/kpiTrend.ts` (+ `.test.ts`, logique pure), `admin/constants/queryKeys.ts`
+(`KPI_SEARCH_PREFIX`), i18n admin fr/en (`DashboardKpis.*`). **Config** : bloc `admin` inséré après
+`auth` ; le KPI créneaux **réutilise par lecture** les `baseParams` de la page `/creneaux` (copie
+générée depuis la config elle-même — à re-synchroniser si les filtres de la page changent, §12).
+
+**Limites assumées** : la tendance mensuelle compare les **créations** (mois courant vs précédent) —
+les suppressions ne sont pas historisées côté backend, un « total fin de mois dernier » exact est
+impossible ; tendance calculée uniquement sur périmètre complet chargé. La tuile analytics reste
+un état vide tant qu'aucun outil RGPD n'est raccordé (décision §13).
+
+**Gates (31/07, session 3)** : `config:validate` ✅ 11 pages/44 sections · `audit:config` ✅ RAS
+(strip 0 : le bloc admin est intégralement reconnu) · `typecheck` ✅ 0 erreur · lint ✅ (18 warnings
+hérités de `main`) · `kpiTrend` 6/6 ✅ · préflight : reste **1 échec pré-existant** `skill-integrity`
+(fichier `.claude/agents/siteforge-config-auditor.md` référencé par le skill mais jamais versionné —
+échoue sur tout clone frais, **à remonter au mainteneur**). Au passage : ligne `structure` ajoutée à
+la table Presenters du skill `config-assistant` (gate anti-dérive, suite aux commits `253dec37`) et
+dossier d'images `maisonSportSanteLaTampon` déclaré dans `sites.json` (gate `site-assets` de main).
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Lot A — Vitrine & annuaires (config)
@@ -415,7 +455,7 @@ libellé/l'ordre des étapes avec la MSS ; vérifier qu'aucun autre site ne cons
 | A.5 | Auth / Espace Pro | ✅ | CTA header → `/espace-pro` → `/login` (module auth) |
 | A.6 | Chiffres clés de la home | 🟡 | **codés en dur** (24 créneaux, 8 activités…) — se désynchroniseront du réel |
 | A.7 | Formulaire de contact | ❌ | poste sur `/api/contact` **qui n'existe pas** (ni Express ni SDK) — fiche `CONTACT_SEND_URL` dans [`ENDPOINT.md`](../../ENDPOINT.md) |
-| A.8 | Auto-inscription structure (`/structure`, bouton public + wizard) | 🟡 | **fait, non commité** (session 2, 31/07) — costumForm `structure-ekilibre` (§9.5) ; 37 tests config-driven ✅ ; recette navigateur (upload logo, soumission réelle) à faire |
+| A.8 | Auto-inscription structure (`/structure`, bouton public + wizard) | 🟡 | **commité** (`9fbe7c02` + `253dec37`, session 2 → cael) — costumForm `structure-ekilibre` (§9.5) + preview `structure` ; 37 tests config-driven ✅ ; recette navigateur (upload logo, soumission réelle) à faire |
 
 ### Lot B — Gestion des créneaux (admins)
 
@@ -428,11 +468,22 @@ libellé/l'ordre des étapes avec la MSS ; vérifier qu'aucun autre site ne cons
 | B.4 | Suppression d'un créneau | ❌ | non câblé (SDK `Answer.delete()` existe ; hook front `useDeleteAnswer` à créer via `createCoFormMutation`) |
 | B.5 | Commit + MR du lot | 🟡 | **commité le 31/07** (`20fc3529` coform · `2bf81496` search+config · `e163b6d9` doc) ; reste **push + MR** vers `main` |
 
+### Lot D — Back-office & pilotage (CDC §4.2)
+
+| # | Fonctionnalité | État | Détail |
+|---|---|---|---|
+| D.1 | Back-office `/admin` activé (`config.admin`, accès `siteAdmin`) | ✅ config | onglets dashboard / membres / modération (§9.6) ; **recette navigateur connectée à faire** |
+| D.2 | KPI « Créneaux actifs » + évolution mensuelle | ✅ | données réelles (mêmes filtres que `/creneaux`) ; tendance = créations, suppressions non historisées |
+| D.3 | KPI « Usagers actifs » (visites uniques) | 🟡 | tuile « à raccorder » — **choix d'un analytics RGPD en attente** (§13) |
+| D.4 | KPI « Signalements en attente » | ✅ | tuile modération dérivée — visible **superAdmin** seulement (plancher backend) |
+| D.5 | KPI « Pros inscrits » (attente de validation) | ✅ | = membres du carrier `toBeValidated` ; **définition à confirmer** (§13) |
+| D.6 | Recette du back-office (siteAdmin réel, uploads AdminPanel) | ❌ | à faire ; l'upload AdminPanel écrira dans `public/images/associationEkilibre/` (déclarer ce dossier dans `sites.json` **dès le premier fichier**, cf. §12) |
+
 ### Lot C — Industrialisation & mise en ligne
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| C.1 | `npm install` post-merge + gates verts | 🟡 | fait une fois le 31/07 (session 1, SDK 1.0.169 + MapLibre) mais **`node_modules` de nouveau désynchronisé sur ce poste** en session 2 (SDK 1.0.158, MapLibre absent) → typecheck **10 erreurs** ; **à relancer `npm install`** avant tout build/e2e |
+| C.1 | `npm install` post-merge + gates verts | ✅ | refait le 31/07 (session 3) après le merge `main` (`348237e5`) : SDK **1.0.173**, typecheck **0 erreur** (la variable morte `HeaderTransparentScroll` purgée au merge) |
 | C.2 | Recette navigateur complète (dont carte MapLibre) | ❌ | jamais faite depuis le merge du 30/07 |
 | C.3 | Spec e2e Ekilibre | ❌ | aucun `e2e/*.spec.ts` pour ce site (modèle : `parent62.spec.ts`, lecture seule, ciblé) |
 | C.4 | Volumétrie réelle (créneaux/structures en base) | ❌ | à relever (navigateur ou base) — comptages SDK du 31/07 non concluants |
@@ -459,15 +510,19 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
 
 ## 12. Points d'attention / limitations
 
-- **Lot auto-inscription structure (§9.5) entièrement non commité** : working tree modifié
-  (`config.prod...json`, `registerSpecFns.ts`, `configCostum.ts`) + 2 fichiers nouveaux
-  (`fns.ts`, test). Rien n'est perdu tant que le working tree n'est pas touché, mais **aucune
-  sauvegarde git n'existe** de ce lot à ce stade — committer avant toute opération git destructive.
-- **`node_modules` désynchronisé — réapparu le 31/07 (session 2)**, malgré la résolution notée en
-  session 1 : SDK revenu à **1.0.158** (≠ `^1.0.169`), MapLibre (`maplibre-gl`, `react-map-gl`,
-  `@maptiler/sdk`, `supercluster`) absent. `npm install` avait bien été fait une fois (session 1),
-  mais l'état ne s'est pas maintenu sur ce poste/session → **relancer `npm install` avant de
-  considérer les gates verts** (typecheck retombé à 10 erreurs, cf. §9.4).
+- ~~Lot auto-inscription structure non commité~~ **résolu** : commité par cael (`9fbe7c02` +
+  `253dec37`) et mergé (`849a4f07`). ~~`node_modules` désynchronisé~~ **résolu session 3** :
+  `npm install` refait après le merge `main` → SDK **1.0.173**, typecheck **0 erreur**. (Le piège
+  reste réel : re-vérifier la version SDK installée à chaque début de session.)
+- **Dossier d'uploads `public/images/associationEkilibre/`** : créé **vide** à chaque boot du dev
+  server (`imageUpload.js` le crée au montage pour le `VITE_SLUG`) → le gate `site-assets` (venu de
+  `main`) le signale comme orphelin ; **vide, il ne doit PAS être déclaré** dans `sites.json` (un
+  dossier déclaré vide fait échouer l'autre assert). Le supprimer avant commit ; **dès le premier
+  upload réel AdminPanel, le déclarer** (`images: ["maisonSportSanteLaTampon", "associationEkilibre"]`).
+- **Filtres du KPI « Créneaux actifs » = copie des `baseParams` de `/creneaux`** (générée depuis la
+  config elle-même à l'insertion, mais **statique ensuite**) : si les filtres de la page changent
+  (CP, état, form), re-synchroniser le bloc `admin.tabs[0]…kpis[0].source` — sinon le KPI compte un
+  autre périmètre que la page, sans erreur.
 - **Convention `.env` locale** : une valeur entre guillemets fait échouer le préflight
   `environment` (piège déjà vécu le 06/07, corrigé depuis dans la configuration locale). Poste
   dev : limite inotify relevée à 524 288 (06/07).
@@ -501,11 +556,14 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
 
 | Évolution / question | Pour qui |
 |---|---|
-| **Ouvrir la MR `ekilibre` → `main`** (lot créneaux, déjà poussé) | Peterson |
-| **Committer le lot auto-inscription structure** (§9.5, actuellement en working tree uniquement) | à faire par la personne courante — à confirmer qui |
-| **`npm install`** (de nouveau requis, régression §9.4/§12) puis gates complets (typecheck/unit/build/`verify:build`) + recette carte MapLibre | Peterson |
+| **Ouvrir la MR `ekilibre` → `main`** (lots créneaux + structure + admin ; le merge `main` du 31/07 est déjà intégré) | Peterson |
+| **Choisir l'outil de mesure d'audience RGPD** pour le KPI « Usagers actifs » (Matomo auto-hébergé recommandé — le moteur n'a AUCUNE lecture d'audience aujourd'hui, `IntegrationsLoader` ne fait que du tracking ; il faudra une API de lecture + probablement une route Express proxy) | Thomas / MSS |
+| **Définition « Pros inscrits »** : le KPI compte les **membres du carrier en attente de validation** — est-ce la bonne maille (vs un tag/rôle « professionnel de santé ») ? | MSS / Peterson |
+| **Tuile « Signalements » visible superAdmin seulement** (plancher backend de `getModerationQueue`) : acceptable, ou faut-il un endpoint siteAdmin ? (fiche `ENDPOINT.md` si besoin) | Thomas |
+| **Versionner `.claude/agents/siteforge-config-auditor.md`** (référencé par le skill `config-assistant`, jamais commité → gate `skill-integrity` rouge sur tout clone frais) | mainteneur (aboire ?) |
+| **Recette back-office `/admin`** (compte siteAdmin réel : KPIs, membres, modération) | Peterson / MSS |
 | **Recette du wizard auto-inscription** (upload logo, soumission réelle, libellés/ordre des étapes validés par la MSS) | Peterson / MSS |
-| **SDK 1.0.169 : contient-il `Answer.deleteFiles`** ? (sinon relancer la fiche `DELETE_COFORM_ANSWER_FILE`) | Peterson → Thomas |
+| ~~SDK : `Answer.deleteFiles` ?~~ **résolu** — livré (présent depuis 1.0.169, SDK installé : **1.0.173**) ; reste la recette de suppression réelle | — |
 | **Formulaire de contact** : endpoint SDK (`CONTACT_SEND_URL`) ou route Express locale — trancher | Thomas / Peterson |
 | **Recette création/modification d'un créneau** en admin (navigateur, backend réel) | Peterson / MSS |
 | **Volumétrie réelle** : combien de créneaux validés CP 97430/97418 ? de structures ? | MSS / réseau SSBE |

@@ -285,6 +285,7 @@ Dispatch : `src/modules/search/components/Preview.tsx` ; conteneur = `card.detai
 | `news` | détail actualité | `preview.showDetailLink` |
 | `testimonial` | détail témoignage (leaf `PreviewTestimonialBubble`) | bloc `list.testimonial` |
 | `resource` | détail ressource (leaf `PreviewResourceCard`) | bloc `list.resource` |
+| `structure` | fiche détail organisation (coordonnées, carte, docs, bouton Éditer) | annuaires de structures |
 
 ⚠ **Une option de `card`/`preview` n'a d'effet que sur CERTAINS types** — posée
 ailleurs, elle est ignorée en silence. `config:schema section:searchPro` imprime
