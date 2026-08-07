@@ -47,5 +47,6 @@
   "Cliquez pour confirmer la validation de votre compte.": "Click to confirm your account activation.",
   "Valider mon compte": "Activate my account",
   "Validation...": "Activating...",
-  "Impossible de se connecter pour le moment": "Unable to connect right now"
+  "Impossible de se connecter pour le moment": "Unable to connect right now",
+  "Un compte est déjà connecté dans ce navigateur. Déconnectez-vous pour valider ce compte.": "Another account is signed in on this browser. Sign out to activate this account."
 }
