@@ -63,3 +63,92 @@ describe("resolveEditModalName — routage table (multi sous-types) + rétro-com
     expect(resolveEditModalName(ent("poi", { type: "x" }), config)).toBe("edit-ssb-fallback"); // sinon fallback unique (sans match → always)
   });
 });
+
+/**
+ * Périmètre costum : une route sans condition s'applique à TOUTES les entités du type (catch-all),
+ * y compris étrangères au costum. Le borner exige une condition DISJONCTIVE — provenance OU
+ * rattachement secondaire — donc le prédicat `when`, hors de portée d'`editModalMatch` (AND plat).
+ */
+describe("resolveEditModalName — prédicat `when` (périmètre costum)", () => {
+  const IB = "institutBleu";
+  const scoped = cfg({
+    organizations: {
+      editModals: [{
+        editModal: "edit-institut-bleu-acteur",
+        when: {
+          and: [
+            { or: [
+              { field: "sourceKeys", op: "contains", value: IB },
+              { field: "reference.costum", op: "contains", value: IB },
+            ] },
+            { field: "slug", op: "ne", value: IB },
+          ],
+        },
+      }],
+    },
+  });
+
+  it("provenance source.keys → form costum", () => {
+    const e = ent("organizations", { slug: "acteur1", source: { key: IB, keys: [IB] } });
+    expect(resolveEditModalName(e, scoped)).toBe("edit-institut-bleu-acteur");
+  });
+
+  it("source.key SEUL (sans keys) suffit : `sourceKeys` synthétise les deux", () => {
+    const e = ent("organizations", { slug: "acteur2", source: { key: IB } });
+    expect(resolveEditModalName(e, scoped)).toBe("edit-institut-bleu-acteur");
+  });
+
+  it("`source.keys` en OBJET À TROUS (byte-parité d'un unset PHP) reste matché", () => {
+    const e = ent("organizations", { slug: "acteur3", source: { keys: { "0": "autre", "2": IB } } });
+    expect(resolveEditModalName(e, scoped)).toBe("edit-institut-bleu-acteur");
+  });
+
+  it("rattachement secondaire (reference.costum, chemin POINTÉ) → form costum", () => {
+    // 21 des 74 acteurs institutBleu sont dans ce cas : rattachés sans provenance.
+    const e = ent("organizations", { slug: "lyceeX", reference: { costum: [IB] } });
+    expect(resolveEditModalName(e, scoped)).toBe("edit-institut-bleu-acteur");
+  });
+
+  it("organisation ÉTRANGÈRE au costum → form générique (le bug corrigé)", () => {
+    const e = ent("organizations", { slug: "libertalia", source: { key: "autreCostum", keys: ["autreCostum"] } });
+    expect(resolveEditModalName(e, scoped)).toBe("edit-profile");
+  });
+
+  it("organisation sans aucune provenance → form générique", () => {
+    expect(resolveEditModalName(ent("organizations", { slug: "nue" }), scoped)).toBe("edit-profile");
+  });
+
+  it("l'organisation PORTEUSE est exclue par la clause slug, malgré son rattachement", () => {
+    // Cas réel : la porteuse a source.key="meir" mais reference.costum=["institutBleu"].
+    const holder = ent("organizations", { slug: IB, source: { key: "meir", keys: ["meir"] }, reference: { costum: [IB] } });
+    expect(resolveEditModalName(holder, scoped)).toBe("edit-profile");
+  });
+
+  it("un acteur portant SON PROPRE costum n'est PAS confondu avec la porteuse", () => {
+    // Open Atlas : acteur légitime qui a aussi son site — d'où une clause sur le slug, pas sur `costum`.
+    const e = ent("organizations", { slug: "openAtlas", costum: { slug: "OpenAtlas" }, source: { key: IB, keys: [IB] } });
+    expect(resolveEditModalName(e, scoped)).toBe("edit-institut-bleu-acteur");
+  });
+
+  it("`when` et `editModalMatch` sont CUMULATIFS (AND)", () => {
+    const config = cfg({
+      poi: {
+        editModals: [{
+          editModal: "edit-x",
+          editModalMatch: { type: "recoveryCenter" },
+          when: { field: "sourceKeys", op: "contains", value: IB },
+        }],
+      },
+    });
+    expect(resolveEditModalName(ent("poi", { type: "recoveryCenter", source: { key: IB } }), config)).toBe("edit-x");
+    expect(resolveEditModalName(ent("poi", { type: "recoveryCenter", source: { key: "autre" } }), config)).toBe("edit-profile");
+    expect(resolveEditModalName(ent("poi", { type: "article", source: { key: IB } }), config)).toBe("edit-profile");
+  });
+
+  it("prédicat MALFORMÉ → route ignorée (générique), pas de crash", () => {
+    const config = cfg({
+      organizations: { editModals: [{ editModal: "edit-boom", when: { field: "slug", op: "matches", value: "([" } }] },
+    });
+    expect(resolveEditModalName(ent("organizations", { slug: "x" }), config)).toBe("edit-profile");
+  });
+});

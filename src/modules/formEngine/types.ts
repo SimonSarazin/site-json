@@ -20,7 +20,7 @@ export type WidgetKind =
   | "text" | "email" | "tel" | "textarea" | "markdown" | "number"
   | "switch" | "checkbox" | "checkboxGroup"
   | "select" | "multiselect" | "selectFromLists"
-  | "tags" | "date" | "datetime" | "time"
+  | "tags" | "valueSelect" | "date" | "datetime" | "time"
   | "urlList" | "image" | "gallery" | "file" | "location" | "openingHours"
   | "finder" | "eventDates" | "fieldArray" | "custom"
   // Composites edit-profil réutilisés tels quels (réseaux sociaux 9-grille, horaires d'ouverture org)

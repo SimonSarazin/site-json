@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { LocalizedString } from "../../types/locale-schema";
 import { VisibilityConditionSchema } from "@/lib/visibility/schema";
+import { PredicateJson } from "@/modules/formEngine/config";
 
 // Types d'entités supportés
 export const ProfileTypeSchema = z.enum([
@@ -198,6 +199,12 @@ export const ProfileRelatedSectionSchema = z.object({
   title: LocalizedString.optional(),
   relationType: z.enum(["organizations", "projects", "events", "poi"]).optional(),
   limit: z.number().optional().default(4),
+  /**
+   * `costum` borne la liste au périmètre du site porteur (côté SERVEUR : `source.keys` OU
+   * `reference.costum`) ; `network` — le défaut — laisse le réseau entier, comme avant. Sur un site
+   * costum, les onglets « Projets »/« Événements » d'une organisation listaient tout Communecter.
+   */
+  scope: z.enum(["costum", "network"]).optional(),
 });
 
 export const ProfileActionsSectionSchema = z.object({
@@ -368,6 +375,14 @@ export const ProfileTabSchema = z.object({
   // Option 2 : Utiliser un composant dédié
   component: z.enum(["SocialTab", "MembershipTab", "NewsTab"]).optional(),
 
+  /**
+   * Options passées au composant du mode `component`. Un onglet à `sections` configure chacune de ses
+   * sections par ses `props` ; un onglet à `component` n'avait aucun équivalent et rendait donc
+   * toujours la même chose. Cf. `MembershipTabProps` (`types`, `scope`) ; les autres composants
+   * ignorent la clé.
+   */
+  props: z.record(z.string(), z.unknown()).optional(),
+
   // Sous-routes pour les pages de détail (ex: news/:newsId)
   subRoutes: z.array(ProfileTabSubRouteSchema).optional(),
 
@@ -400,23 +415,52 @@ export const ProfileConfigSchema = z.object({
   /**
    * Condition optionnelle pour cibler quelles entités ouvrent `editModal`.
    * Objet plain `{ key: value }` — AND implicite sur toutes les clés.
-   * Pour chaque clé : strict equality si `serverData[key]` est primitif,
+   * Pour chaque clé : strict equality si la valeur courante est primitive,
    * ou `.includes(value)` si c'est un array.
    *
+   * Évaluée sur la vue `entityMatchData` : les chemins pointés (`reference.costum`) et les champs
+   * synthétiques (`sourceKey`/`sourceKeys`) y sont résolus. Pour une condition composée (OU, NON),
+   * préférer `when` ci-dessous.
+   *
    * @example { tags: "TiersLieux" }     // tags est un array → tags.includes("TiersLieux")
-   * @example { costumSlug: "tl" }       // strict equality sur la string
+   * @example { type: "recoveryCenter" } // strict equality sur la string
    * @example { tags: "TL", type: "Lab" } // les deux conditions doivent matcher
    */
   editModalMatch: z.record(z.string(), z.unknown()).optional(),
   /**
-   * Table de routage MULTI sous-types (optionnelle) : plusieurs `editModal` conditionnels pour un même kind
-   * (ex. poi → `recoveryCenter` vs `article` selon `serverData.type`). Le PREMIER dont `editModalMatch`
-   * satisfait `serverData` gagne ; sinon fallback sur `editModal`/`editModalMatch` ci-dessus, puis
-   * `"edit-profile"`. Émise par l'assistant costum pour les costums à plusieurs formulaires par collection.
+   * Condition RICHE (prédicat `PredicateJson` du formEngine : `and`/`or`/`not`, ops `eq`/`ne`/
+   * `contains`/`in`/…), cumulative avec `editModalMatch` si les deux sont présents. Même grammaire
+   * que `list.itemRules` et les règles d'icônes de la palette.
+   *
+   * Sert notamment à borner un formulaire costum à SON périmètre — condition impossible à écrire en
+   * `editModalMatch` car elle est disjonctive : provenance (`sourceKeys`) OU rattachement secondaire
+   * (`reference.costum`, posé par l'`afterSave` legacy quand la provenance diffère du costum).
+   *
+   * @example { or: [ { field: "sourceKeys", op: "contains", value: "monCostum" },
+   *                  { field: "reference.costum", op: "contains", value: "monCostum" } ] }
    */
-  editModals: z.array(z.object({
+  when: PredicateJson.optional(),
+  /**
+   * Table de routage MULTI sous-types (optionnelle) : plusieurs `editModal` conditionnels pour un même kind
+   * (ex. poi → `recoveryCenter` vs `article` selon `serverData.type`). Le PREMIER dont la condition
+   * (`editModalMatch` et/ou `when`) est satisfaite gagne ; sinon fallback sur `editModal`/`editModalMatch`
+   * ci-dessus, puis `"edit-profile"`. Émise par l'assistant costum pour les costums à plusieurs
+   * formulaires par collection.
+   *
+   * ⚠ Une route SANS condition est un CATCH-ALL : elle s'applique à toutes les entités du type — y
+   * compris celles étrangères au costum — et masque les routes suivantes. À placer en dernier, et à
+   * n'utiliser que si le formulaire vaut pour toute la collection (cf. `when` pour borner au costum).
+   *
+   * `strictObject` VOLONTAIRE : sans lui, une faute de frappe (`wen` au lieu de `when`) serait
+   * silencieusement supprimée par Zod et la route redeviendrait un catch-all — soit exactement le
+   * bug que `when` corrige, sans le moindre signal. Ici la clé inconnue fait échouer la validation.
+   */
+  editModals: z.array(z.strictObject({
     editModal: z.string(),
     editModalMatch: z.record(z.string(), z.unknown()).optional(),
+    when: PredicateJson.optional(),
+    /** Commentaire libre (JSON n'en a pas) : justifier une condition de périmètre non évidente. */
+    _comment: z.string().optional(),
   })).optional(),
   seo: z.object({
     titleTemplate: z.string().optional(),

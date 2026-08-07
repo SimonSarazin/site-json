@@ -118,6 +118,28 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   // Filtre statut (serveur : preferences.toBeValidated.<slug> $exists) — admin uniquement.
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
+  // `events` est le SEUL type que le legacy RÉDUIT quand la requête ne demande aucun champ :
+  // `SearchNew::getResults` (citizenToolKit/models/SearchNew.php:432) repasse alors chaque event par
+  // `Event::getSimpleEventById` (Event.php:211), qui RECONSTRUIT un document blanc-listé — sans `type`,
+  // sans `created`/`updated`, sans `source`/`reference`. D'où, sur /admin/agenda, des colonnes « Type » et
+  // « Ajouté le » vides alors que les fiches portent bien ces champs, un badge de validation toujours
+  // « Validé » (le flag vit dans preferences/source) et un `editModalMatch` aveugle (il lit serverData.type).
+  // Demander une projection EXPLICITE court-circuite la réduction : le legacy ne simplifie QUE sur `fields`
+  // vide. Sans risque pour l'édition — `openEditEntity` recharge de toute façon l'entité COMPLÈTE par id.
+  const champsAdmin = useMemo(() => {
+    if (resource.entityType !== "events") return undefined;
+    return [...new Set([
+      "name", "type", "collection", "slug", "source", "reference", "preferences", "links", "creator",
+      "created", "updated", "startDate", "endDate", "recurrency", "openingHours", "timeZone",
+      "shortDescription", "description", "tags", "address", "addresses", "geo", "geoPosition",
+      "profilImageUrl", "profilThumbImageUrl", "profilMediumImageUrl",
+      // Les colonnes déclarées en config peuvent viser un champ hors du socle (racine du chemin pointé :
+      // le legacy projette par champ de premier niveau).
+      ...columns.map((c) => c.path.split(".")[0]),
+    ])];
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- colonnes dérivées de la config (stables)
+  }, [resource.entityType, columns.map((c) => c.path).join(",")]);
+
   const src = (resource.source ?? {}) as { defaultFields?: string[]; defaultFilters?: Record<string, unknown> } & Record<string, unknown>;
   const baseParams = useMemo(() => {
     const filters: Record<string, unknown> = { ...(src.defaultFilters ?? {}) };
@@ -131,17 +153,18 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
     //    (`editModalMatch`, ex. {type:"recoveryCenter"}) lit serverData.type, et le form costum
     //    d'édition doit être PRÉREMPLI (champs equip_*) — une projection partielle ouvrait le form
     //    générique et/ou des champs vides. Coût maîtrisé : pagination par 10.
+    //  - SAUF `events` : cf. CHAMPS_ADMIN_EVENTS.
     //  - mode public : `source` FORCÉ (M3, absent du jeu legacy par défaut) → le toggle
     //    Référencer/Détacher reflète l'appartenance réelle à source.keys.
     return {
       defaultTypes: [resource.entityType] as SearchType[],
       ...src,
-      ...(adminMode ? { defaultFields: undefined } : { defaultFields: [...new Set(["source", "reference", ...(src.defaultFields ?? [])])] }),
+      ...(adminMode ? { defaultFields: champsAdmin } : { defaultFields: [...new Set(["source", "reference", ...(src.defaultFields ?? [])])] }),
       ...(Object.keys(filters).length > 0 ? { defaultFilters: filters } : {}),
       ...(sort ? { defaultSortBy: { [sort.col]: sort.dir } } : {}),
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- src dérivé de la config (stable par rendu)
-  }, [adminMode, statusFilter, costumSlug, sort, resource.entityType, JSON.stringify(src)]);
+  }, [adminMode, statusFilter, costumSlug, sort, resource.entityType, champsAdmin, JSON.stringify(src)]);
 
   const { transformedResults, totalCount, isLoading, lastItemRef, refetch, error: searchError } = useSearchQuery({
     queryKeyPrefix: ADMIN_QUERY_KEYS.RESOURCE_PREFIX(resource.entityType),

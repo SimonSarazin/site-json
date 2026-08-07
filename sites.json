@@ -129,6 +129,8 @@
     "slug": "rezoSanteReunion",
     "config": "config.prod.rezo-sante-reunion.json",
     "css": "index-rezo-sante-reunion",
-    "images": "rezoSanteReunion"
+    "images": "rezoSanteReunion",
+    "coolifyApp": "site-json-rezo-sante-reunion",
+    "domain": "rezo-sante-reunion.00.re"
   }
 ]

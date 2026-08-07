@@ -79,6 +79,13 @@ export function formatCell(value: unknown): string {
   if (value == null) return "—";
   if (typeof value === "string" || typeof value === "number") return String(value);
   if (typeof value === "boolean") return value ? "✓" : "—";
+  // Un champ MULTIVALUÉ est un tableau : sans ce cas il tombait dans le `return ""` final, et la colonne
+  // restait VIDE alors que la donnée était là (mesuré : 610 des 686 documents d'institutBleu portent un
+  // `organisme`, tous en tableau de chaînes). Vaut aussi pour `auteurs`, `territoires`, `tags`…
+  if (Array.isArray(value)) {
+    const rendus = value.map((v) => formatCell(v)).filter((x) => x !== "" && x !== "—");
+    return rendus.length ? rendus.join(", ") : "—";
+  }
   if (typeof value === "object") {
     // La lib revivifie les timestamps (`created`…) en Date sur serverData.
     if (value instanceof Date) return Number.isNaN(value.getTime()) ? "—" : formatDateLong(value);

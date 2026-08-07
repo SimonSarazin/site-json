@@ -127,7 +127,10 @@
     "emptySearch": "Aucun élément à référencer.",
     "emptyReferenced": "Aucun élément référencé.",
     "colType": "Type",
-    "colAction": "Action"
+    "colAction": "Action",
+    "attachAs": "Rattacher comme",
+    "colSubType": "Sous-type",
+    "unclassified": "Non classé"
   },
   "AdminModerationSection": {
     "title": "Modération",
@@ -166,6 +169,9 @@
     "referenced": "Élément référencé",
     "unreferenced": "Référence retirée",
     "detached": "Élément détaché",
-    "error": "Action de référencement impossible"
+    "error": "Action de référencement impossible",
+    "referencedUnclassified": "Référencé, mais non classé — utilisez « Classer » dans la liste des référencés",
+    "classified": "Sous-type enregistré",
+    "referencedUnmoderated": "Référencé, mais la modération n'a pas pu être posée"
   }
 }
