@@ -38,5 +38,14 @@
   "Envoi en cours...": "Sending...",
   "Envoyer le lien de récupération": "Send recovery link",
   "Retour à la connexion": "Back to login",
-  "Vérifiez votre boîte de réception et suivez les instructions pour réinitialiser votre mot de passe.": "Check your inbox and follow the instructions to reset your password."
+  "Vérifiez votre boîte de réception et suivez les instructions pour réinitialiser votre mot de passe.": "Check your inbox and follow the instructions to reset your password.",
+  "Compte validé": "Account activated",
+  "Vous pouvez maintenant vous connecter.": "You can now sign in.",
+  "Votre compte est validé.": "Your account is activated.",
+  "Le lien de validation est invalide ou a expiré.": "This activation link is invalid or has expired.",
+  "Ce lien de validation est incomplet. Ouvrez-le depuis l'e-mail reçu.": "This activation link is incomplete. Please open it from the email you received.",
+  "Cliquez pour confirmer la validation de votre compte.": "Click to confirm your account activation.",
+  "Valider mon compte": "Activate my account",
+  "Validation...": "Activating...",
+  "Impossible de se connecter pour le moment": "Unable to connect right now"
 }
