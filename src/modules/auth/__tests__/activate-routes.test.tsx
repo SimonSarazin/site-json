@@ -64,6 +64,15 @@ describe("routes de validation de compte (liens d'e-mails)", () => {
     expect(m![m!.length - 1]!.params).toMatchObject({ user: ID, code: CODE });
   });
 
+  it("lien d'invitation partageable : /co2/link/connect/ref/:ref (docs/25)", () => {
+    // La même URL que le legacy PHP — les liens costum.invitationLink déjà diffusés doivent
+    // résoudre quand le domaine du costum pointe sur site-json.
+    const REF = "cde83b0497b173e09fe30f8f";
+    const m = matcher(`/co2/link/connect/ref/${REF}`);
+    expect(m).not.toBeNull();
+    expect(m![m!.length - 1]!.params).toMatchObject({ ref: REF });
+  });
+
   it("les routes auth historiques restent servies (dont /recover-password, distinct de /recover/…)", () => {
     for (const p of ["/login", "/register", "/recover-password"]) {
       expect(matcher(p), p).not.toBeNull();

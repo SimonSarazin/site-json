@@ -56,5 +56,13 @@
   "Le mot de passe doit contenir au moins 8 caractères": "The password must be at least 8 characters long",
   "Nouveau mot de passe": "New password",
   "Changer mon mot de passe": "Change my password",
-  "Enregistrement...": "Saving..."
+  "Enregistrement...": "Saving...",
+  "JoinByLink.badLink": "This invitation link is incomplete.",
+  "JoinByLink.signInFirst": "Sign in or create an account to join this community.",
+  "JoinByLink.confirm": "Join this community?",
+  "JoinByLink.join": "Join",
+  "JoinByLink.joining": "Joining…",
+  "JoinByLink.joined": "You have joined the community.",
+  "JoinByLink.continue": "Continue",
+  "JoinByLink.failed": "This invitation link is invalid or expired."
 }
