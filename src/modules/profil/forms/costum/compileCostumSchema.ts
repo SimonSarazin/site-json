@@ -85,10 +85,17 @@ const WIDGET_DEFAULTS: Partial<Record<WidgetKind, Partial<FieldDescriptor>>> = {
   selectFromLists: { type: "string", read: "coerce:string", default: "" },
   switch: { type: "boolean", read: "coerce:bool", default: false },
   checkbox: { type: "boolean", read: "coerce:bool", default: false },
+  // Pas de `write` d'omission : une date VIDÉE doit être ENVOYÉE en chaîne vide, car c'est ainsi que
+  // le serveur efface un champ (`prepElementData` accumule les valeurs vides dans `unset`, port du
+  // `prepData` legacy). Omettre la clé rendrait la date ineffaçable à l'édition. C'est le SCHÉMA
+  // qui devait céder : cf. `liveDigest`, où un champ date accepte désormais "" en plus d'une date.
   date: { type: "date", read: "coerce:dateYMDlocale", default: "" },
   number: { type: "number", read: "coerce:number" }, // pas de default (→ undefined)
   checkboxGroup: { type: "array", read: "coerce:stringArray", default: [] },
   tags: { type: "array", read: "coerce:stringArray", default: [] },
+  // `valueSelect` est multi PAR DÉFAUT, d'où le même type que `tags` ; en mono
+  // (`widgetProps.multiple:false`) la valeur est une chaîne — cf. le widget, qui convertit.
+  valueSelect: { type: "array", read: "coerce:stringArray", default: [] },
   multiselect: { type: "array", read: "coerce:stringArray", default: [] },
   urlList: { type: "array", read: "coerce:stringArray", default: [] },
   image: { type: "object", renderOnly: true },     // ancre UI composite (image hors element/save)
@@ -115,6 +122,14 @@ const cloneDefault = (v: unknown): unknown => (Array.isArray(v) ? [...v] : v);
 function buildField(name: string, terse: TerseField, presets: CostumFormSchema["fieldPresets"], deriveDefaults: boolean): FieldDescriptor {
   const widget = terse.widget;
   const base = { ...(WIDGET_DEFAULTS[widget] ?? {}) };
+  // `valueSelect` est multi par défaut, mais en MONO (`widgetProps.multiple:false`) il stocke une
+  // CHAÎNE — c'est ce qu'attendent les champs scalaires du legacy (`financementSource`, déclaré
+  // `maximumSelectionLength:1` côté select2). Sans cet ajustement le schéma exigeait un tableau et la
+  // validation refusait au submit une valeur pourtant juste : « expected array, received string ».
+  if (widget === "valueSelect"
+      && (terse.widgetProps as { multiple?: boolean } | undefined)?.multiple === false) {
+    base.type = "string"; base.read = "coerce:string"; base.default = "";
+  }
   const preset = { ...(presets?.[widget] ?? {}) };
   // Membre d'un GROUPE de sérialisation : lu/écrit PAR le groupe (cf. serializeGroups) → aucun read/write/
   // default INDIVIDUEL dérivé (un read/write EXPLICITE du champ reste appliqué via `terse`).

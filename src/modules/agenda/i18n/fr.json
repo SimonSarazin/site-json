@@ -10,7 +10,10 @@
     "allTags": "Tous les tags",
     "title": "Filtres",
     "reset": "Réinitialiser",
-    "apply": "Voir les résultats"
+    "apply": "Voir les résultats",
+    "searchValue": "Rechercher…",
+    "noResult": "Aucun résultat",
+    "more": "+{{count}} autres — précisez la recherche"
   },
   "tab": { "ongoing": "En cours", "upcoming": "À venir", "past": "Passés" },
   "empty": "Aucun événement",

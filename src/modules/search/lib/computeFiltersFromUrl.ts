@@ -116,7 +116,12 @@ export function computeFiltersFromUrl(
   });
 
   searchParams.forEach((rawValue, groupId) => {
-    const values = rawValue.split(",").map((v) => v.trim()).filter(Boolean);
+    // Décodage par segment, pendant de l'encodage à l'écriture : une valeur issue d'une source
+    // dynamique peut contenir une virgule, qui couperait sinon la liste en deux.
+    const values = rawValue
+      .split(",")
+      .map((v) => { const t = v.trim(); try { return decodeURIComponent(t); } catch { return t; } })
+      .filter(Boolean);
     if (values.length === 0) return;
 
     const group = filterGroups.find((g) => g.id === groupId);
@@ -188,7 +193,10 @@ export function computeFiltersFromUrl(
           const opt = (group.options ?? []).find((o) => (o.name || o.id) === v || o.id === v);
           if (!opt) return;
           const key = opt.name || opt.id;
-          nextSearchFields[key] = { field, value: [key] };
+          // Comme pour les dropdowns : une option issue d'une source dynamique porte ses `variants`,
+          // et le filtre doit interroger TOUTES les graphies du groupe, pas seulement celle affichée.
+          const variantes = (opt as { variants?: string[] }).variants;
+          nextSearchFields[key] = { field, value: variantes?.length ? variantes : [key] };
         });
         return;
       }

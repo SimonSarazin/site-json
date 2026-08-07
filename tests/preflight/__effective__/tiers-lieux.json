@@ -1,0 +1,331 @@
+{
+  "site": "tiers-lieux",
+  "slug": "navigatorDesTierslieux",
+  "addMenus": {
+    "citoyens": {
+      "builtins": {
+        "organization": "add-tiers-lieux",
+        "project": "add-project",
+        "event": "add-event",
+        "poi": "add-poi"
+      },
+      "customs": [
+        "add-tiers-lieux"
+      ]
+    },
+    "organizations": {
+      "builtins": {
+        "project": "add-project",
+        "event": "add-event",
+        "poi": "add-poi"
+      }
+    },
+    "projects": {
+      "builtins": {
+        "event": "add-event",
+        "poi": "add-poi"
+      }
+    }
+  },
+  "editModals": {
+    "organizations": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-tiers-lieux",
+          "native": "edit-tiers-lieux",
+          "horsPerimetre": "edit-tiers-lieux"
+        }
+      ]
+    }
+  },
+  "adminResources": {},
+  "pages": {
+    "//hero-search": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "indexStepList": 5,
+        "defaultFilters": {
+          "$or": {
+            "tags": {
+              "$in": [
+                "TiersLieux"
+              ]
+            }
+          },
+          "tags": {
+            "$nin": [
+              "RéseauTiersLieux"
+            ]
+          },
+          "address.addressCountry": {
+            "$in": [
+              "BE",
+              "FR",
+              "GP",
+              "GF",
+              "IT",
+              "RE",
+              "MQ",
+              "YT",
+              "NC",
+              "CH"
+            ]
+          }
+        },
+        "defaultSortBy": {
+          "updated": -1
+        },
+        "searchBy": [
+          "name",
+          "address.addressLocality",
+          "address.level4Name",
+          "address.level3Name",
+          "address.level2Name",
+          "address.level1Name",
+          "address.postalCode"
+        ],
+        "notSourceKey": true
+      }
+    },
+    "//searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "indexStepList": 5,
+        "defaultFilters": {
+          "$or": {
+            "tags": {
+              "$in": [
+                "TiersLieux"
+              ]
+            }
+          },
+          "tags": {
+            "$nin": [
+              "RéseauTiersLieux"
+            ]
+          },
+          "address.addressCountry": {
+            "$in": [
+              "BE",
+              "FR",
+              "GP",
+              "GF",
+              "IT",
+              "RE",
+              "MQ",
+              "YT",
+              "NC",
+              "CH"
+            ]
+          }
+        },
+        "defaultSortBy": {
+          "updated": -1
+        },
+        "searchBy": [
+          "name",
+          "address.addressLocality",
+          "address.level4Name",
+          "address.level3Name",
+          "address.level2Name",
+          "address.level1Name",
+          "address.postalCode"
+        ],
+        "notSourceKey": true
+      }
+    },
+    "//agenda": {
+      "baseParams": {
+        "sourceKey": [
+          "franceTierslieux",
+          "tierslieuxbelgique",
+          "navigatorDesTierslieux"
+        ],
+        "indexStepList": 4
+      }
+    },
+    "/observatoire/data-observatory": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultFilters": {
+          "tags": [
+            "TiersLieux"
+          ],
+          "address.addressCountry": {
+            "$in": [
+              "BE",
+              "FR",
+              "GP",
+              "GF",
+              "IT",
+              "RE",
+              "MQ",
+              "YT",
+              "NC",
+              "CH"
+            ]
+          }
+        },
+        "notSourceKey": true,
+        "maxResults": 6000,
+        "variant": "navigator-tl"
+      }
+    },
+    "/reseaux-regionaux/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "indexStepList": 25,
+        "notSourceKey": true,
+        "defaultFilters": {
+          "tags": [
+            "RéseauTiersLieux"
+          ]
+        },
+        "defaultSortBy": {
+          "updated": -1
+        },
+        "fediverse": false,
+        "contextId": "649ed498f93ee7202e6c8b12",
+        "contextType": "projects",
+        "costumSlug": "navigatorDesTierslieux",
+        "costumEditMode": false,
+        "defaultFields": [
+          "name",
+          "profilMediumImageUrl",
+          "profilThumbImageUrl",
+          "slug",
+          "address",
+          "geo",
+          "tags"
+        ]
+      }
+    },
+    "/reseaux-thematiques/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "indexStepList": 25,
+        "notSourceKey": true,
+        "defaultFilters": {
+          "tags": [
+            "RéseauTiersLieux"
+          ]
+        },
+        "defaultSortBy": {
+          "updated": -1
+        },
+        "fediverse": false,
+        "contextId": "649ed498f93ee7202e6c8b12",
+        "contextType": "projects",
+        "costumSlug": "navigatorDesTierslieux",
+        "costumEditMode": false,
+        "defaultFields": [
+          "name",
+          "profilMediumImageUrl",
+          "profilThumbImageUrl",
+          "slug",
+          "address",
+          "geo",
+          "tags"
+        ]
+      }
+    },
+    "/communaute/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "citoyens",
+          "NGO",
+          "LocalBusiness",
+          "Group",
+          "GovernmentOrganization",
+          "Cooperative"
+        ],
+        "indexStepList": 30,
+        "notSourceKey": true,
+        "fediverse": false,
+        "contextId": "649ed498f93ee7202e6c8b12",
+        "contextType": "projects",
+        "costumSlug": "navigatorDesTierslieux",
+        "costumEditMode": false,
+        "defaultFilters": {
+          "$or": {
+            "links.projects.649ed498f93ee7202e6c8b12": {
+              "$exists": true
+            },
+            "links.memberOf.649ed498f93ee7202e6c8b12": {
+              "$exists": true
+            }
+          }
+        },
+        "defaultSortBy": {
+          "updated": -1
+        },
+        "defaultFields": [
+          "name",
+          "profilMediumImageUrl",
+          "profilThumbImageUrl",
+          "slug",
+          "address",
+          "shortDescription",
+          "tags"
+        ]
+      }
+    },
+    "/evenements/agenda": {
+      "baseParams": {
+        "sourceKey": [
+          "franceTierslieux",
+          "tierslieuxbelgique",
+          "navigatorDesTierslieux"
+        ],
+        "indexStepList": 20,
+        "fediverse": false
+      }
+    }
+  },
+  "stamps": {
+    "tiers-lieux": [
+      {
+        "field": "tags",
+        "value": {
+          "$costum": "mainTag"
+        },
+        "op": "append",
+        "on": "both",
+        "channel": "payload"
+      },
+      {
+        "field": "tags",
+        "value": {
+          "$costum": "compagnon"
+        },
+        "op": "append",
+        "on": "add",
+        "channel": "payload"
+      }
+    ]
+  },
+  "referencement": {},
+  "membership": {
+    "citoyens/membership": {
+      "types": [
+        "organizations",
+        "projects",
+        "pois",
+        "events"
+      ],
+      "scope": "network"
+    }
+  },
+  "profileRelated": {}
+}

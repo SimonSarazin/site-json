@@ -1,5 +1,5 @@
 import { initApi } from "@/lib/apiClient";
-import { getBaseUrl, getServerUrl } from "@/lib/constant/common";
+import { getBaseUrl, getSitePublicUrl } from "@/lib/constant/common";
 import { buildSearchPayload } from "@/modules/search/lib/buildSearchPayload";
 import { stripMarkdown } from "../lib/markdown";
 
@@ -47,7 +47,7 @@ export async function renderBlogFeed(opts: {
   )) as unknown as { results?: unknown[] };
   const articles = (page?.results ?? []).map(norm).filter((a) => a.id || a.slug);
 
-  const origin = getServerUrl().replace(/\/$/, "");
+  const origin = getSitePublicUrl().replace(/\/$/, "");
   const feedUrl = `${origin}/blog/feed.xml`;
   const homeUrl = `${origin}/blog`;
 

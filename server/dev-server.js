@@ -170,7 +170,7 @@ async function createServer() {
       // suffirait, mais laisser les deux serveurs injecter des jeux de clés
       // différents fait diverger dev et prod sur le même drapeau.
       const envSlug = slug || process.env.VITE_SLUG || "";
-      const envScript = envSlug ? `<script>window.__ENV__={VITE_SLUG:${JSON.stringify(envSlug)},VITE_BASE_URL_BACKEND:${JSON.stringify(process.env.VITE_BASE_URL_BACKEND || "")},VITE_SERVER_URL:${JSON.stringify(process.env.VITE_SERVER_URL || "")},VITE_MAPTILER_API_KEY:${JSON.stringify(process.env.VITE_MAPTILER_API_KEY || "")},VITE_COSTUM_FORCE_LIVE:${JSON.stringify(process.env.VITE_COSTUM_FORCE_LIVE || "")}}</script>` : "";
+      const envScript = envSlug ? `<script>window.__ENV__={VITE_SLUG:${JSON.stringify(envSlug)},VITE_BASE_URL_BACKEND:${JSON.stringify(process.env.VITE_BASE_URL_BACKEND || "")},VITE_SERVER_URL:${JSON.stringify(process.env.VITE_SERVER_URL || "")},VITE_MAPTILER_API_KEY:${JSON.stringify(process.env.VITE_MAPTILER_API_KEY || "")},VITE_COSTUM_FORCE_LIVE:${JSON.stringify(process.env.VITE_COSTUM_FORCE_LIVE || "")},VITE_SITE_PUBLIC_URL:${JSON.stringify(process.env.VITE_SITE_PUBLIC_URL || "")}}</script>` : "";
 
       const [headStart, rest] = template.split("<!--app-head-->");
       const [beforeBody, tail] = rest.split("<!--app-html-->");
@@ -240,6 +240,10 @@ async function createServer() {
   }
 
   const port = process.env.PORT || 5173;
+  // URL publique du site en dev : defaut localhost. Consommee par le sitemap
+  // (server/lib/sitemap.js), le flux RSS et `getSitePublicUrl()` cote client
+  // (via l'injection __ENV__ ci-dessus) — zero configuration en local.
+  if (!process.env.VITE_SITE_PUBLIC_URL) process.env.VITE_SITE_PUBLIC_URL = `http://localhost:${port}`;
   app.listen(port, () => {
     console.log(`SSR Dev server running at http://localhost:${port}`);
   });

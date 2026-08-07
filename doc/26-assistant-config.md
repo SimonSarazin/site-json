@@ -52,7 +52,7 @@ L'idée est étonnamment peu coûteuse parce que **les quatre briques dures exis
 ### 1. Le schéma Zod est la source de vérité… et il est exportable en JSON Schema
 
 - `src/types/site-schema.ts` (~2 030 lignes) : `SiteConfig` racine, `Header`,
-  `Footer`, `Page`, et **72 sections** discriminées par
+  `Footer`, `Page`, et **75 sections** discriminées par
   `z.discriminatedUnion("type", […])` (L1325).
 - **zod 4.1.13 fournit `z.toJSONSchema()` natif** (vérifié sur place : il
   fonctionne sur nos schémas). On peut donc produire, à la volée ou au build,

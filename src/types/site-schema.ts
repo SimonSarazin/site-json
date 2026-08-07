@@ -6,7 +6,7 @@
 // Validation : Zod 4.x – le schéma sert à la fois de typings, de runtime‑guard,
 //               et d'autocomplétion dans VS Code.
 // ------------------------------------------------------------
-import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema, FiltersSectionSchema, SearchVariantSchema, SearchBaseParamsSchema, FilterGroupsSchema, FiltersByAnswersSchema, SearchHeaderSectionSchema, MarkerConfSchema } from "@/modules/search/schema";
+import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema, FiltersSectionSchema, SearchVariantSchema, SearchBaseParamsSchema, FilterGroupsSchema, FiltersByAnswersSchema, SearchHeaderSectionSchema, MarkerConfSchema, FeaturedCarouselSectionSchema } from "@/modules/search/schema";
 import { DataObservatorySectionSchema } from "@/modules/observatoire/schema";
 import { NewsSectionSchema } from "@/modules/news/schema";
 import { NotificationsSectionSchema } from "@/modules/notification/schema";
@@ -15,7 +15,7 @@ import { ActionButtonSchema } from "./action-button-schema";
 import { z } from "zod";
 import { LocalizedString, LOCALES } from "./locale-schema";
 import { AgendaSectionSchema } from "@/modules/agenda/schema";
-import { ArticleFeedSectionSchema, ArticleReaderSectionSchema } from "@/modules/blog/schema";
+import { ArticleFeedSectionSchema, ArticleReaderSectionSchema, ArticleTeaserSectionSchema } from "@/modules/blog/schema";
 export { LocalizedString, LOCALES };
 import { ProfilesConfigSchema, MemberSectionSchema } from "../modules/profil/schema";
 import { AdminConfigSchema } from "../modules/admin/schema";
@@ -245,6 +245,19 @@ export const HeroParallaxSchema = z.object({
         })
       )
       .optional(),
+    /**
+     * Boutons d'ACTION — ouvrent une modale d'ajout (`modal`/`action`) au lieu
+     * de naviguer. Rendus par `<ActionButtonGroup>`, le même composant que
+     * `searchHeader` (SearchHeaderSection.tsx:373), donc même comportement :
+     * un visiteur non connecté obtient l'invite `chrome.authPrompt` du
+     * formulaire, et le formulaire la remplace dès la connexion.
+     *
+     * `ctaButtons` reste la voie des LIENS (`path`). Les deux cohabitent :
+     * `ActionButtonSchema` se dit d'ailleurs prévu pour « header de recherche,
+     * hero… » (action-button-schema.ts:6) — il n'était simplement branché que
+     * sur le premier.
+     */
+    buttons: z.array(ActionButtonSchema).optional(),
     showScrollIndicator: z.boolean().optional(),
     // Tonalité des décorations : token qui les teinte (primary par défaut).
     variant: z.enum(["primary", "accent"]).optional(),
@@ -1268,6 +1281,43 @@ export type MapSection = z.infer<typeof MapSectionSchema>;
 
 export type MapSectionProps = z.infer<typeof MapSectionSchema>["props"];
 
+//──────────────── Carte à bulles (illustration + marqueurs-bulles cliquables positionnés en %)
+export const MapBubblesSchema = z.object({
+  type: z.literal("map-bubbles"),
+  id: z.string().optional(),
+  props: z.object({
+    // Rendu à la fois comme le <h2> sémantique et le badge-pastille incliné — pas de titre séparé.
+    headline: LocalizedString,
+    subhead: LocalizedString.optional(),
+    backgroundImage: z.string().optional(),
+    backgroundImageAlt: LocalizedString.optional(),
+    bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
+    // Dégradé décoratif optionnel derrière l'illustration. Couleurs CSS arbitraires
+    // (typiquement des var() de thème du site) : le composant ne code aucune couleur en dur.
+    backgroundOverlay: z
+      .object({
+        from: z.string(),
+        to: z.string(),
+        angle: z.number().optional(), // degrés, défaut 90 (gauche → droite)
+      })
+      .optional(),
+    items: z.array(
+      z.object({
+        label: LocalizedString,
+        href: z.string(),
+        image: z.string(),
+        size: z.number().min(0).max(100), // % de la largeur du conteneur
+        x: z.number().min(0).max(100),
+        y: z.number().min(0).max(100),
+      })
+    ),
+  }),
+});
+
+export type MapBubbles = z.infer<typeof MapBubblesSchema>;
+
+export type MapBubblesProps = z.infer<typeof MapBubblesSchema>["props"];
+
 //──────────────── Alert / Banner
 const BannerSectionSchema = z.object({
   type: z.literal("banner"),
@@ -1480,6 +1530,7 @@ export const Section = z.discriminatedUnion("type", [
   ChartSectionSchema,
   TimelineSectionSchema,
   MapSectionSchema,
+  MapBubblesSchema,
   BannerSectionSchema,
   NewsletterSectionSchema,
   LoginFormSectionSchema,
@@ -1510,6 +1561,7 @@ export const Section = z.discriminatedUnion("type", [
   MeeteemSectionSchema,
   CardCountCTSectionSchema,
   ThematicsSectionSchema,
+  FeaturedCarouselSectionSchema,
   GridLayoutSectionSchema,
   NewsSectionSchema,
   NotificationsSectionSchema,
@@ -1525,6 +1577,7 @@ export const Section = z.discriminatedUnion("type", [
   AgendaSectionSchema,
   ArticleFeedSectionSchema,
   ArticleReaderSectionSchema,
+  ArticleTeaserSectionSchema,
 ]);
 export type Section = z.infer<typeof Section>;
 
@@ -1626,11 +1679,25 @@ export const Header = z.object({
   // Variante de DESIGN (jamais un nom de site) — résolue par `SiteHeader`.
   // standard = horizontal sticky · mega-menu = méga-menu hover · transparent-scroll =
   // fixed transparent→opaque · minimal = compact · underline-nav = nav soulignée ·
-  // transparent-dark = transparent sombre.
-  type: z.enum(["standard", "mega-menu", "transparent-scroll", "minimal", "underline-nav", "transparent-dark", "default"]).default("default"),
+  // transparent-dark = transparent sombre · stacked = 2 lignes (logo+titre/sous-titre
+  // puis nav) sur fond image, qui collapse en barre compacte au scroll.
+  type: z.enum(["standard", "mega-menu", "transparent-scroll", "minimal", "underline-nav", "transparent-dark", "stacked", "default"]).default("default"),
   logo: z.string().optional(),
+  // Image de fond plein-cadre du header `type: "stacked"` (les deux sections
+  // reposent dessus). Ignorée par les autres variantes.
+  backgroundImage: z.string().optional(),
+  // Couleur (hex) du wordmark (fixe, 2 segments, quel que soit le mode) ET du
+  // sous-titre/nav en mode CLAIR uniquement, du header `type: "stacked"` — repli
+  // noir. En mode sombre, sous-titre/nav sont blancs (fixe, non piloté par ce
+  // champ). Ignorée par les autres variantes de header.
+  textColor: z.string().optional(),
   logoAlt: LocalizedString.optional(),
   logoTitle: LocalizedString.optional(),
+  // Segment optionnel accolé à la suite de `logoTitle`, dans un ton distinct
+  // (ex. "parent" en fond plein contour clair + "62" en ton plein uni) —
+  // wordmark bicolore en 2 segments. Ignoré si absent : `logoTitle` seul
+  // garde son rendu habituel.
+  logoTitleAccent: LocalizedString.optional(),
   // Sous-titre optionnel affiché sous le titre du logo (plus petit, muted).
   // Permet un logo "marque sur 2 lignes" (titre + localité/baseline).
   logoSubtitle: LocalizedString.optional(),
@@ -1770,6 +1837,10 @@ export const Footer = z.object({
   logoTitle: LocalizedString.optional(),
   logoAlt: LocalizedString.optional(),
   description: LocalizedString.optional(),
+  // Image de fond plein-cadre (ex. `minimal-centered`). Optionnel, tous types de footer.
+  // Purement décorative (CSS background) : pas d'alternative textuelle — un
+  // `aria-label` sur le <footer> renommerait le landmark contentinfo.
+  backgroundImage: z.string().optional(),
   legalLinks: z.array(z.object({
     href: z.string(),
     label: LocalizedString,

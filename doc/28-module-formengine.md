@@ -368,6 +368,52 @@ Pour les 2 costums actuels, l'irréductible-TS se réduit à : slots React (`poi
 > `seedGalleryDefaults` tolérant à `entity=null` (`ent = (entity ?? {})` ; boucle indépendante de
 > `getGalleryImages`), (c) ajouté l'appel au create. Garde : `gallery-create-seed.test.ts` (parent62-article).
 
+## `mutation.stamps` — valeurs calculées déclaratives (2 canaux, add/edit)
+
+Le remplaçant configurable des effets codés en dur (`inject.extraFields` statique add-only,
+`extraFieldsFromScope`, merge tags de l'ex-`tl:payload`, patron afterSave legacy). Moteur pur :
+`src/modules/profil/forms/stamps.ts` ; types `SpecStamp`/`StampValue` (`entityModalSpec.ts`).
+
+```jsonc
+"mutation": {
+  "stamps": [
+    { "field": "dateSign", "value": { "$now": "j/M/aaaa" }, "op": "fillIfEmpty", "channel": "pathValue" },
+    { "field": "tags", "value": { "$costum": "mainTag" }, "op": "append", "on": "both" },
+    { "field": "shortDescription", "value": { "$from": "description" }, "op": "fillIfEmpty" },
+    { "field": "type", "value": { "$scope": "poiType" } }
+  ]
+}
+```
+
+**4 axes orthogonaux** (défauts : `op:"set"`, `on:"add"`, `channel:"payload"`) :
+
+| Axe | Valeurs | Sémantique |
+|---|---|---|
+| `value` | littéral · `{$now:"<format>"}` · `{$from:"<champ>"}` · `{$scope:"<clé>"}` · `{$costum:"<clé>"}` | `$now` : jetons `j jj M MM aaaa` SANS padding par défaut (byte-parité stamp legacy → « 6/8/2026 ») ; `$from` lit le PAYLOAD après pipeline (liste ordonnée, un stamp voit les précédents) ; `$scope`/`$costum` résolus **EAGER** dans `buildSpec` — clé absente ⇒ stamp inerte |
+| `op` | `set` · `fillIfEmpty` · `append` | `set` écrase (sémantique d'`extraFields`) ; `fillIfEmpty` : seulement si vide (undefined/null/`""`/`[]`) ; `append` : union dédupliquée sur tableau — en EDIT fusionne AUSSI `target.serverData[field]` (le merge tags tiers-lieux) |
+| `on` | `add` · `edit` · `both` | champ PROPRE de `SpecMutation` — jamais sous `inject`, strippé en édition |
+| `channel` | `payload` · `pathValue` | `payload` : fusion dans le payload, point commun add+edit (après `buildPayload`) ; `pathValue` : écriture POST-SAVE via **`entity.updateField`** (voie haut-niveau BaseEntity — jamais `endpointApi` brut), aux points jumeaux de `processGalleryFields` |
+
+**Quel canal ?** `payload` exige un champ du **schéma d'écriture** lib (contrat de base ou schéma
+costum) — sinon `_extractWritableFields` le droppe EN SILENCE. `pathValue` est fait pour les
+champs hors schéma (ex. `dateSign`, jamais un input dynform → jamais dans le digest live) ;
+réservé à l'entité PROPRE (une écriture d'autorité costum-admin sur entité étrangère passe par
+setsource/validategroup, cf. [30-module-admin](30-module-admin.md)) ; échec NON bloquant (warn —
+fragilité du patron legacy assumée) ; `fillIfEmpty` tranché contre le serverData retourné par le
+save (un hook serveur a posé la valeur → on s'abstient) ; `append` non supporté (v1).
+
+**Cas d'école** : `dateSign` institut-bleu — site-json tourne contre le backend LEGACY, où ni le
+JS afterSave legacy (jamais chargé par site-json) ni le hook Node ne tournent → le stamp client
+comble le trou, byte-fidèle (73/73 en base sans padding). Et le merge tags tiers-lieux :
+`tl:payload` supprimé, remplacé par 2 stamps `append $costum` (⚠ mainTag `on:"both"`, compagnon
+add SEUL — sémantique de l'ex-fn) ; `buildTiersLieuxPayload` reste l'ORACLE des tests de parité.
+
+**Gardes** : préflight `tests/preflight/stamps.test.ts` — `on:edit|both` + `op:set` sur un champ
+présent dans `fields` du form = INTERDIT (`fillIfEmpty`/`append` permis), jetons `$now` inconnus
+refusés, `append`+`pathValue` refusé, grammaire stricte (zod `costumFormSchema.zod.ts`),
+sentinelle d'inventaire du parc. Projection `stamps` dans la garde d'impact
+(`tests/preflight/effective-config.test.ts`).
+
 ## Poser un costum dans la CONFIG GLOBALE (le loader)
 
 C'est la finalité : déclarer un costum **en données** dans `config.costumForms` (par déploiement).

@@ -237,6 +237,7 @@ Pour corriger/améliorer un config existant :
 | `minimal` | barre compacte, typo uppercase espacée | petite vitrine épurée — ex. julie-pot-vin | `logoTitle`, `logoIcon` |
 | `underline-nav` | nav soulignée animée, fond marqué | identité marquée, communes/collectivités — ex. nos-commune | `piggyBank`, `urgenceButton`, `ctaButton` |
 | `transparent-dark` | barre sombre fixe (teinte : token `--header-bar`) | site à dominante sombre — ex. commune-transparente | `logoTitle`, `entityLogoOverride` |
+| `stacked` | 2 bandeaux sur image de fond : wordmark plein écran (~50vh) puis nav, collapse en barre compacte au scroll | identité "marque-territoire" forte, home sans section hero (le header EST le hero) — ex. parent62 | `backgroundImage`, `textColor`, `logoTitleAccent`, `logoSubtitle` |
 | `default` | **alias, pas un design** : rend `HeaderStandard` | héritage — n'en produis JAMAIS pour un site neuf, écris `standard` | ceux de `standard` |
 
 ### Footers (`footer.type`)
@@ -368,7 +369,7 @@ l'ordre des règles et la présence des contrats. Exemple vivant :
 - **`.design-sync/previews/` — la ressource la plus utile, et elle est dans git** :
   153 stories portant des compositions de props RÉELLES (valeurs plausibles,
   commentaire d'usage : « Usage réel : home de Rézo la mer »). Le JSON Schema
-  donne la FORME, la story donne la COMPOSITION — **43 des 72 sections** en ont
+  donne la FORME, la story donne la COMPOSITION — **43 des 75 sections** en ont
   une (les 28 sans sont data-driven : search\*, agenda, cagnotte, blog — une
   composition statique n'y montrerait rien), ainsi que **les 6 headers et les 4
   footers**. Copie la story, ne réinvente pas le remplissage.
