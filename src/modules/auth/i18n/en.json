@@ -48,5 +48,13 @@
   "Valider mon compte": "Activate my account",
   "Validation...": "Activating...",
   "Impossible de se connecter pour le moment": "Unable to connect right now",
-  "Un compte est déjà connecté dans ce navigateur. Déconnectez-vous pour valider ce compte.": "Another account is signed in on this browser. Sign out to activate this account."
+  "Un compte est déjà connecté dans ce navigateur. Déconnectez-vous pour valider ce compte.": "Another account is signed in on this browser. Sign out to activate this account.",
+  "Mot de passe modifié": "Password changed",
+  "Votre mot de passe a été modifié.": "Your password has been changed.",
+  "Le lien de récupération est invalide ou a expiré.": "This recovery link is invalid or has expired.",
+  "Ce lien de récupération est incomplet. Ouvrez-le depuis l'e-mail reçu.": "This recovery link is incomplete. Please open it from the email you received.",
+  "Le mot de passe doit contenir au moins 8 caractères": "The password must be at least 8 characters long",
+  "Nouveau mot de passe": "New password",
+  "Changer mon mot de passe": "Change my password",
+  "Enregistrement...": "Saving..."
 }

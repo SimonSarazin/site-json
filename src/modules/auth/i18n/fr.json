@@ -48,5 +48,13 @@
   "Valider mon compte": "Valider mon compte",
   "Validation...": "Validation...",
   "Impossible de se connecter pour le moment": "Impossible de se connecter pour le moment",
-  "Un compte est déjà connecté dans ce navigateur. Déconnectez-vous pour valider ce compte.": "Un compte est déjà connecté dans ce navigateur. Déconnectez-vous pour valider ce compte."
+  "Un compte est déjà connecté dans ce navigateur. Déconnectez-vous pour valider ce compte.": "Un compte est déjà connecté dans ce navigateur. Déconnectez-vous pour valider ce compte.",
+  "Mot de passe modifié": "Mot de passe modifié",
+  "Votre mot de passe a été modifié.": "Votre mot de passe a été modifié.",
+  "Le lien de récupération est invalide ou a expiré.": "Le lien de récupération est invalide ou a expiré.",
+  "Ce lien de récupération est incomplet. Ouvrez-le depuis l'e-mail reçu.": "Ce lien de récupération est incomplet. Ouvrez-le depuis l'e-mail reçu.",
+  "Le mot de passe doit contenir au moins 8 caractères": "Le mot de passe doit contenir au moins 8 caractères",
+  "Nouveau mot de passe": "Nouveau mot de passe",
+  "Changer mon mot de passe": "Changer mon mot de passe",
+  "Enregistrement...": "Enregistrement..."
 }

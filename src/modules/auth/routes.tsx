@@ -4,6 +4,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import RecoverPasswordPage from "./pages/RecoverPasswordPage";
 import ActivateAccountPage from "./pages/ActivateAccountPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 /**
  * Routes du module auth, injectées dans le router via la découverte de modules
@@ -13,6 +14,7 @@ import ActivateAccountPage from "./pages/ActivateAccountPage";
  * - /login
  * - /register
  * - /recover-password
+ * - /recover/:user/:code                 (lien de récupération de mot de passe)
  * - /validate/:user/:validationKey        (liens du backend Node)
  * - /co2/person/activate/user/:user/validationKey/:validationKey/*  (liens LEGACY)
  *
@@ -27,6 +29,7 @@ export const routes: ModuleRouteFactory = (): RouteObject[] => [
   { path: "register", element: <RegisterPage /> },
   { path: "recover-password", element: <RecoverPasswordPage /> },
   { path: "validate/:user/:validationKey?", element: <ActivateAccountPage /> },
+  { path: "recover/:user/:code", element: <ResetPasswordPage /> },
   {
     path: "co2/person/activate/user/:user/validationKey/:validationKey/*",
     element: <ActivateAccountPage />,

@@ -57,9 +57,19 @@ describe("routes de validation de compte (liens d'e-mails)", () => {
     expect(m![m!.length - 1]!.params).toMatchObject({ user: ID, validationKey: KEY });
   });
 
-  it("les routes auth historiques restent servies", () => {
+  it("lien de récupération de mot de passe : /recover/:user/:code", () => {
+    const CODE = "d7c8c34ef2ef88bb3b2bd3c5f419d8383bfb6d1262dc0463";
+    const m = matcher(`/recover/${ID}/${CODE}`);
+    expect(m).not.toBeNull();
+    expect(m![m!.length - 1]!.params).toMatchObject({ user: ID, code: CODE });
+  });
+
+  it("les routes auth historiques restent servies (dont /recover-password, distinct de /recover/…)", () => {
     for (const p of ["/login", "/register", "/recover-password"]) {
       expect(matcher(p), p).not.toBeNull();
     }
+    // garde-fou : /recover-password ne doit PAS être capturé par /recover/:user/:code
+    const m = matcher("/recover-password");
+    expect(m![m!.length - 1]!.params).toEqual({});
   });
 });
