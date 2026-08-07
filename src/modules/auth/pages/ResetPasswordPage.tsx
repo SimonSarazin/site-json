@@ -19,13 +19,13 @@ import { useAuthModal } from "../hooks/useAuthModal";
  *
  * Le code est à USAGE UNIQUE et expire au bout de 24 h : c'est le backend qui
  * le vérifie et applique le mot de passe dans une seule écriture conditionnelle
- * (`PERSON_RECOVER_PASSWORD`). Aucun message ne distingue « code faux » de
+ * (`PASSWORD_RESET`). Aucun message ne distingue « code faux » de
  * « code expiré » (anti-énumération) — on affiche donc le `msg` du serveur.
  *
  * ⚠️ L'appel passe par `callEndpoint` avec la constante en clair car
- * `PERSON_RECOVER_PASSWORD` est un endpoint NEUF : il n'existe pas encore dans
+ * `PASSWORD_RESET` est un endpoint NEUF : il n'existe pas encore dans
  * la version publiée de la lib (`@communecter/cocolight-api-client@1.0.179`).
- * À basculer sur la méthode typée `endpointApi.personRecoverPassword` dès la
+ * À basculer sur la méthode typée `endpointApi.passwordReset` dès la
  * prochaine publication (cf. cocolight-backend/docs/23, étage C).
  */
 export default function ResetPasswordPage() {
@@ -58,7 +58,7 @@ export default function ResetPasswordPage() {
     }
     setEtat("encours");
     try {
-      const reponse = await apiClient.callEndpoint("PERSON_RECOVER_PASSWORD", {
+      const reponse = await apiClient.callEndpoint("PASSWORD_RESET", {
         user,
         code,
         newPassword: motDePasse,
