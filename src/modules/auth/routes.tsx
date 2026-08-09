@@ -15,7 +15,7 @@ import JoinByLinkPage from "./pages/JoinByLinkPage";
  * - /login
  * - /register
  * - /recover-password
- * - /recover/:user/:code                 (lien de récupération de mot de passe)
+ * - /recover/:user/:code                 (lien de récupération de mot de passe — mode Node SEULEMENT)
  * - /validate/:user/:validationKey        (liens du backend Node)
  * - /co2/person/activate/user/:user/validationKey/:validationKey/*  (liens LEGACY)
  * - /co2/link/connect/ref/:ref            (lien d'invitation partageable, cf. docs/25)
@@ -27,12 +27,18 @@ import JoinByLinkPage from "./pages/JoinByLinkPage";
  * `/toredirect/…`. La route connect/ref sert les liens partageables DÉJÀ diffusés
  * (costum.invitationLink, 341 costums) sur les domaines pointant sur site-json.
  */
-export const routes: ModuleRouteFactory = (): RouteObject[] => [
+export const routes: ModuleRouteFactory = (_queryClient, config): RouteObject[] => [
   { path: "login", element: <LoginPage /> },
   { path: "register", element: <RegisterPage /> },
   { path: "recover-password", element: <RecoverPasswordPage /> },
   { path: "validate/:user/:validationKey?", element: <ActivateAccountPage /> },
-  { path: "recover/:user/:code", element: <ResetPasswordPage /> },
+  // Page de saisie d'un nouveau mot de passe via code — flux Node UNIQUEMENT (opt-in
+  // `config.auth.recover.mode = "node"`). En défaut legacy, le backend n'émet aucun lien
+  // /recover/:user/:code (il régénère+envoie le mdp) : la route n'existe donc pas, pour ne pas
+  // exposer une page morte contre le backend legacy. Précédent : profil/routes.tsx gate `profiles`.
+  ...(config?.auth?.recover?.mode === "node"
+    ? [{ path: "recover/:user/:code", element: <ResetPasswordPage /> }]
+    : []),
   {
     path: "co2/person/activate/user/:user/validationKey/:validationKey/*",
     element: <ActivateAccountPage />,

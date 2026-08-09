@@ -21,7 +21,10 @@ import { routes } from "../routes";
 const ID = "6a756553a27baaaea9912ea7";
 const KEY = "098554de06f8db5bdb4fca253de3eb0d7196c472e3da6b7071c0d7ec36f154cc";
 
-const matcher = (url: string) => matchRoutes(routes({} as never) ?? [], url);
+// config optionnelle : le flux de reset par CODE (/recover/:user/:code) n'est servi qu'en mode Node.
+const matcher = (url: string, config?: unknown) =>
+  matchRoutes(routes(undefined as never, config as never) ?? [], url);
+const NODE_CFG = { auth: { recover: { mode: "node" } } };
 
 describe("routes de validation de compte (liens d'e-mails)", () => {
   it("forme backend Node : /validate/:user/:validationKey", () => {
@@ -57,11 +60,19 @@ describe("routes de validation de compte (liens d'e-mails)", () => {
     expect(m![m!.length - 1]!.params).toMatchObject({ user: ID, validationKey: KEY });
   });
 
-  it("lien de récupération de mot de passe : /recover/:user/:code", () => {
+  it("récupération par CODE (mode Node opt-in) : /recover/:user/:code est servie", () => {
     const CODE = "d7c8c34ef2ef88bb3b2bd3c5f419d8383bfb6d1262dc0463";
-    const m = matcher(`/recover/${ID}/${CODE}`);
+    const m = matcher(`/recover/${ID}/${CODE}`, NODE_CFG);
     expect(m).not.toBeNull();
     expect(m![m!.length - 1]!.params).toMatchObject({ user: ID, code: CODE });
+  });
+
+  it("défaut LEGACY : /recover/:user/:code n'est PAS servie (le legacy régénère le mdp, aucun lien à code)", () => {
+    const CODE = "d7c8c34ef2ef88bb3b2bd3c5f419d8383bfb6d1262dc0463";
+    // sans config (défaut legacy), la route de saisie du nouveau mdp n'existe pas → aucune capture.
+    expect(matcher(`/recover/${ID}/${CODE}`)).toBeNull();
+    // …mais la DEMANDE (/recover-password) reste servie dans les deux modes.
+    expect(matcher("/recover-password")).not.toBeNull();
   });
 
   it("lien d'invitation partageable : /co2/link/connect/ref/:ref (docs/25)", () => {
