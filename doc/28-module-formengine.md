@@ -389,7 +389,7 @@ Le remplaçant configurable des effets codés en dur (`inject.extraFields` stati
 
 | Axe | Valeurs | Sémantique |
 |---|---|---|
-| `value` | littéral · `{$now:"<format>"}` · `{$from:"<champ>"}` · `{$scope:"<clé>"}` · `{$costum:"<clé>"}` | `$now` : jetons `j jj M MM aaaa` SANS padding par défaut (byte-parité stamp legacy → « 6/8/2026 ») ; `$from` lit le PAYLOAD après pipeline (liste ordonnée, un stamp voit les précédents) ; `$scope`/`$costum` résolus **EAGER** dans `buildSpec` — clé absente ⇒ stamp inerte |
+| `value` | littéral · `{$now:"<format>"}` · `{$from:"<champ>"}` · `{$scope:"<clé>"}` · `{$costum:"<clé>"}` · `{$mapLabels:{from,map,sep?}}` · `{$bucket:{from,buckets}}` | `$now` : jetons `j jj M MM aaaa` SANS padding par défaut (byte-parité stamp legacy → « 6/8/2026 ») ; `$from` lit le PAYLOAD après pipeline (liste ordonnée, un stamp voit les précédents) ; `$scope`/`$costum` résolus **EAGER** dans `buildSpec` — clé absente ⇒ stamp inerte ; `$mapLabels` : slugs du champ `from` (chaîne découpée par `sep`+trim, ou tableau) → LIBELLÉS via `map` (slugs absents ignorés ; vide ⇒ inerte) ; `$bucket` : nombre `from` → `label` du 1er bucket dont `lt` non dépassé (sans `lt` = défaut) |
 | `op` | `set` · `fillIfEmpty` · `append` | `set` écrase (sémantique d'`extraFields`) ; `fillIfEmpty` : seulement si vide (undefined/null/`""`/`[]`) ; `append` : union dédupliquée sur tableau — en EDIT fusionne AUSSI `target.serverData[field]` (le merge tags tiers-lieux) |
 | `on` | `add` · `edit` · `both` | champ PROPRE de `SpecMutation` — jamais sous `inject`, strippé en édition |
 | `channel` | `payload` · `pathValue` | `payload` : fusion dans le payload, point commun add+edit (après `buildPayload`) ; `pathValue` : écriture POST-SAVE via **`entity.updateField`** (voie haut-niveau BaseEntity — jamais `endpointApi` brut), aux points jumeaux de `processGalleryFields` |
@@ -407,6 +407,16 @@ JS afterSave legacy (jamais chargé par site-json) ni le hook Node ne tournent �
 comble le trou, byte-fidèle (73/73 en base sans padding). Et le merge tags tiers-lieux :
 `tl:payload` supprimé, remplacé par 2 stamps `append $costum` (⚠ mainTag `on:"both"`, compagnon
 add SEUL — sémantique de l'ex-fn) ; `buildTiersLieuxPayload` reste l'ORACLE des tests de parité.
+
+**Propagation tags tiers-lieux** (le patron `$mapLabels`/`$bucket`) : les facettes du search
+filtrent `tags` sur des **libellés**, mais le form stocke `typePlace`/`manageModel`/`surfaceBuilt`
+en **slugs** structurés. Le legacy recopie côté CLIENT (hook `formData`), PAS par hook serveur → 3
+stamps `append tags` `on:"both"` le portent : typologie `$mapLabels(typePlace, sep:",")`, portage
+`$mapLabels(manageModel)`, m² `$bucket(buildingSurfaceArea, <60/≤200/>200)` (⚠ `from` = le serverKey
+lu dans le PAYLOAD, pas le champ form — `surfaceBuilt` sérialise vers `buildingSurfaceArea` ; port client du bucket serveur
+`ReseauTierslieux::elementAfterSave`, gelé par le garde ACTIVATION). Maps = options des
+`filterGroups` (source de vérité des libellés de facette). `append` union-dédup diverge (voulu) de la
+non-idempotence legacy (doublons).
 
 **Gardes** : préflight `tests/preflight/stamps.test.ts` — `on:edit|both` + `op:set` sur un champ
 présent dans `fields` du form = INTERDIT (`fillIfEmpty`/`append` permis), jetons `$now` inconnus

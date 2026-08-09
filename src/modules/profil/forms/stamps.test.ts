@@ -130,6 +130,41 @@ describe("applyPayloadStamps", () => {
     expect(applyPayloadStamps(payload, [{ field: "d", value: "v", channel: "pathValue" }], { mode: "add", now })).toBe(payload);
     expect(applyPayloadStamps(payload, [], { mode: "add", now })).toBe(payload);
   });
+
+  // $mapLabels : slugs d'un champ → libellés dans tags (patron tiers-lieux typePlace/manageModel).
+  const TYPO = { coworking: "Bureaux partagés / Coworking", fablab: "Fablab / Makerspace" };
+  it("$mapLabels : CSV de slugs → libellés, appendés à tags (slug inconnu ignoré)", () => {
+    const out = applyPayloadStamps(
+      { typePlace: "coworking, fablab, inexistant", tags: ["TiersLieux"] },
+      [{ field: "tags", op: "append", on: "both", value: { $mapLabels: { from: "typePlace", sep: ", ", map: TYPO } } }],
+      { mode: "add", now },
+    );
+    expect(out.tags).toEqual(["TiersLieux", "Bureaux partagés / Coworking", "Fablab / Makerspace"]);
+  });
+
+  it("$mapLabels : valeur unique (sans sep) ; champ absent → stamp inerte", () => {
+    const map = { association: "Association" };
+    expect(applyPayloadStamps({ manageModel: "association", tags: [] },
+      [{ field: "tags", op: "append", value: { $mapLabels: { from: "manageModel", map } } }], { mode: "add", now }).tags)
+      .toEqual(["Association"]);
+    expect(applyPayloadStamps({ tags: ["x"] },
+      [{ field: "tags", op: "append", value: { $mapLabels: { from: "manageModel", map } } }], { mode: "add", now }).tags)
+      .toEqual(["x"]); // champ absent → aucun libellé → stamp ignoré
+  });
+
+  // $bucket : m² dérivé d'un numérique (port client de ReseauTierslieux::elementAfterSave).
+  const BUCKETS = [{ lt: 60, label: "Moins de 60m²" }, { lt: 201, label: "Entre 60 et 200m²" }, { label: "Plus de 200m²" }];
+  it("$bucket : tranche m² depuis surfaceBuilt (seuils legacy <60 / <=200 / >200)", () => {
+    const run = (v: unknown) => applyPayloadStamps({ surfaceBuilt: v, tags: [] },
+      [{ field: "tags", op: "append", value: { $bucket: { from: "surfaceBuilt", buckets: BUCKETS } } }], { mode: "add", now }).tags;
+    expect(run(45)).toEqual(["Moins de 60m²"]);
+    expect(run(60)).toEqual(["Entre 60 et 200m²"]);
+    expect(run(200)).toEqual(["Entre 60 et 200m²"]);
+    expect(run(201)).toEqual(["Plus de 200m²"]);
+    expect(run("90")).toEqual(["Entre 60 et 200m²"]); // string numérique tolérée (form-urlencoded)
+    expect(run("")).toEqual([]);                        // pas de surface → pas de tag
+    expect(run(undefined)).toEqual([]);
+  });
 });
 
 describe("preparePathValueStamps", () => {
