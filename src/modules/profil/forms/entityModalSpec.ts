@@ -68,7 +68,25 @@ export interface SpecInject {
  *  - `{"$costum": "<clé>"}` : la valeur du bloc `config.costum` du site (mainTag/compagnon…,
  *    par DÉPLOIEMENT) — résolue EAGER elle aussi.
  */
-export type StampValue = unknown | { $now: string } | { $from: string } | { $scope: string } | { $costum: string };
+/**
+ *  - `{"$mapLabels": {from, map, sep?}}` : lit le champ `from` du payload (chaîne ou tableau de
+ *    slugs ; si chaîne et `sep` fourni, découpe), mappe chaque slug via `map` (slug→libellé),
+ *    ignore les slugs absents du map → tableau de LIBELLÉS. Sert le patron tiers-lieux : les
+ *    facettes du search filtrent `tags` sur les libellés, mais le form stocke des slugs (typePlace/
+ *    manageModel) — on recopie donc les libellés dans `tags` (op:append).
+ *  - `{"$bucket": {from, buckets}}` : lit le NOMBRE `from` du payload et rend le `label` du premier
+ *    bucket dont `lt` n'est pas dépassé (bucket sans `lt` = défaut/dernier). Sert la tranche m²
+ *    dérivée de `buildingSurfaceArea` (port CLIENT du `ReseauTierslieux::elementAfterSave` legacy).
+ */
+export type StampBucket = { lt?: number; label: string };
+export type StampValue =
+  | unknown
+  | { $now: string }
+  | { $from: string }
+  | { $scope: string }
+  | { $costum: string }
+  | { $mapLabels: { from: string; map: Record<string, string>; sep?: string } }
+  | { $bucket: { from: string; buckets: StampBucket[] } };
 
 /**
  * Un STAMP : valeur calculée posée déclarativement par la mutation — le remplaçant configurable

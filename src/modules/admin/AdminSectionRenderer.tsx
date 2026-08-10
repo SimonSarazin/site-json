@@ -8,9 +8,14 @@ import AdminResourceTable from "./sections/AdminResourceTable";
 import DashboardSection from "./sections/DashboardSection";
 import MembersSection from "./sections/MembersSection";
 import PlaceholderSection from "./sections/PlaceholderSection";
-import { getAdminSection } from "./sections/registry";
+import AdminInvitationSection from "./sections/AdminInvitationSection";
+import { getAdminSection, registerAdminSection } from "./sections/registry";
 import { useAdminAccess } from "./hooks/useAdminAccess";
 import type { AdminAccessLevel, AdminSection } from "./schema";
+
+// Section « campagne d'invitation » (générique, activable par tout costum via `{type:"invitation"}`).
+// Enregistrée en side-effect au chargement du module admin (core, eager).
+registerAdminSection("invitation", AdminInvitationSection);
 
 /**
  * Mappe `section.type` → composant (jumeau de `ProfileSectionRenderer`).

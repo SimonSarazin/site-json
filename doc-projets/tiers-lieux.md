@@ -13,7 +13,7 @@
 > [Module Ampli](../doc/22-module-ampli.md) · [Module formEngine](../doc/28-module-formengine.md) ·
 > [Module CoForm](../doc/21-module-coform.md). Mémoire : `[[project-tiers-lieux]]`.
 
-Dernière mise à jour : **2026-08-03** (création du dossier — état des lieux, aucun chantier en cours ; rafraîchi SDK 1.0.172, aucun commit projet depuis le 28/07).
+Dernière mise à jour : **2026-08-09** (chantier propagation des tags via `mutation.stamps` — voir §9 ; SDK rafraîchi 1.0.180).
 
 ---
 
@@ -39,7 +39,7 @@ lieux**, pas un plan de rattrapage.
 | Header / Footer | **`mega-menu`** (le seul du parc à s'en servir vraiment) / `minimal-centered` |
 | Variant SDK | **`navigator-tl`** — endpoint dédié ⚠ cf. §12 |
 | Marqueurs costum | `mainTag: "TiersLieux"` · `compagnon: "Compagnon France Tiers-Lieux"` |
-| SDK | `@communecter/cocolight-api-client` **1.0.172** (publiée le 2026-08-03) |
+| SDK | `@communecter/cocolight-api-client` **1.0.180** (`package.json` : `^1.0.180`) |
 | Historique | **76 commits** — la config la plus travaillée du parc |
 
 ### Historique des chantiers
@@ -48,6 +48,7 @@ lieux**, pas un plan de rattrapage.
 |---|---|---|
 | — → 25/07 | Thomas | Construction complète ; dernier passage `fb1d6a09` (merge `origin/main` dans `feat/refonte-assistant-config`) |
 | 28/07 | Claude | État des lieux et création de ce dossier |
+| 09/08 | Claude | Propagation des tags typologie/portage/surface via `mutation.stamps` (`$mapLabels`/`$bucket`) — cf. §9 ; test d'intégration (a révélé le bug serverKey `buildingSurfaceArea`) ; fix middleware `imageUpload` (dossier ← champ `images`). Working-tree, non commité |
 
 ---
 
@@ -194,6 +195,58 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 
 ## 9. Impacts des modifications
 
+### 09/08 — propagation des tags depuis le formulaire (typologie / portage / surface)
+
+**Constat** (workflow d'analyse 3 facettes `wf_35da462c`) : les facettes du search — typologie,
+portage, surface — filtrent le champ `tags` sur des **libellés** (« Bureaux partagés / Coworking »,
+« SCIC », « Plus de 200m² »), mais le formulaire costum écrit `typePlace` / `manageModel` /
+`surfaceBuilt` dans des **champs structurés en slugs** et n'ajoutait à `tags` que `mainTag` +
+`compagnon`. Conséquence : un lieu **créé via site-json apparaissait dans la liste de base et sous la
+facette Compagnon, mais dans AUCUNE facette typologie / portage / surface**. Ce n'est pas une
+régression du chantier `stamps` — l'ex-`buildTiersLieuxPayload` ne mergeait déjà que mainTag +
+compagnon. Le legacy comble ce trou côté **CLIENT** (hook JS `formData`, `delete data[e]`), **pas**
+par un hook serveur (le serveur ne dérive que la tranche m² + un renfort `TiersLieux`). Mongo
+confirme le modèle « tout dans `tags` » : sur 4 319 orgs `TiersLieux`, seules 44 portent un champ
+`typePlace`, 47 `manageModel`.
+
+**Correctif** (Option B + m² côté client) — 3 stamps `append tags` `on:"both"` ajoutés à
+`costumForms["tiers-lieux"].mutation.stamps` (aucun champ ni endpoint nouveau) :
+
+| Stamp | Source | Effet |
+|---|---|---|
+| typologie | `$mapLabels(typePlace, sep:",")` | slugs → libellés (facette typologie) |
+| portage | `$mapLabels(manageModel)` | slug → libellé (facette portage) |
+| surface m² | `$bucket(buildingSurfaceArea, <60/≤200/>200)` | nombre → tranche (dimension observatoire surface) — **port CLIENT** du bucket serveur `ReseauTierslieux::elementAfterSave`, gelé par le garde ACTIVATION |
+
+Les maps slug→libellé sont **dérivées des options des `filterGroups`** (source de vérité des
+libellés cherchés). Le moteur `stamps.ts` a gagné 2 sources de valeur (`$mapLabels`, `$bucket`) —
+cf. [Module formEngine §mutation.stamps](../doc/28-module-formengine.md). Divergence assumée : le
+legacy pousse **sans idempotence** (doublons dans `tags`) ; notre `append` union-dédup est plus
+propre. En review, `sep` du stamp typePlace passé `", "` → `","` (découplé du séparateur du
+sérialiseur `multiCsv:write` — `tokens()` trim, tolérant aux deux).
+
+**Bug attrapé par le test d'intégration** : les stamps lisent le PAYLOAD **post-pipeline** (serveurs
+keys), pas les champs du form. Le `$bucket` visait `surfaceBuilt` (nom de champ) alors que le champ
+sérialise vers `path: "buildingSurfaceArea"` → la tranche m² n'était JAMAIS produite (ni en test ni
+en prod). Corrigé `from: "buildingSurfaceArea"`. `typePlace`/`manageModel` coïncident (champ =
+serverKey), d'où le piège masqué. Le test `tags-propagation.test.ts` (vraie chaîne
+`buildPayload`+stamps) l'a révélé là où une simulation à payload forgé l'avait manqué.
+
+**Preuve e2e** (moteur + config réels) : `typePlace="coworking, fablab" | manageModel="scic" |
+surfaceBuilt=350` → `tags = [TiersLieux, Compagnon…, Bureaux partagés / Coworking, Fablab…, SCIC,
+Plus de 200m²]`.
+
+| Gate (09/08) | Résultat |
+|---|---|
+| `tsc -b --noEmit` | ✅ 0 |
+| tests stamps / tiers-lieux / préflights | ✅ dont `tags-propagation.test.ts` (vraie chaîne `buildPayload`+stamps → chaque tag ∈ vocabulaire de facette/observatoire) et `server/__tests__/sites.test.ts` (fix middleware) |
+| fixtures régénérées | `__effective__/tiers-lieux.json` (garde d'impact) + `compiled.byteparity` — diff = 3 stamps + `sep` |
+| `config:validate` | ✅ 11 pages / 21 sections |
+
+⚠ **Non commité** (working-tree) : `config.prod.tiers-lieux.json`, `stamps.ts`, `entityModalSpec.ts`
++ tests. **Non porté** (non bloquant) : le renfort `TiersLieux` de la voie UPDATE côté Node
+(`elementAfterUpdate` déféré) — le stamp mainTag le pose déjà.
+
 ### 28/07 — aucun changement de config
 
 Ce site n'a pas été modifié. Il a en revanche **bénéficié de correctifs du moteur** livrés pour
@@ -234,6 +287,8 @@ d'autres projets, tous vérifiés non régressifs à son égard :
 | 11 | API et données ouvertes | ✅ | Page `/api-donnees` |
 | 12 | Rendu navigateur | ❌ | **Jamais vérifié** dans le cadre de ce dossier |
 | 13 | Mode sombre | ❌ | Jamais vérifié |
+| 14 | Propagation des tags depuis le form (typologie/portage/surface) | 🟡 | 3 stamps `$mapLabels`/`$bucket` + test d'intégration vraie chaîne (6/6) — gates verts, **non commité** ; reste l'e2e navigateur live (créer un lieu → facettes) |
+| 15 | Middleware `imageUpload` : dossier ← champ `images` de `sites.json` | ✅ | `imageFolderForSlug` + test 7/7 ; tue le dossier fantôme + l'upload dans un dossier non servi. **Non commité** |
 
 ---
 
@@ -279,6 +334,23 @@ touche en premier.
 - Config JSON **jamais parsée par Zod au runtime** : toute clé doit être écrite explicitement.
 - L'observatoire porte sur 4 322 entités là où les pages de recherche en voient 4 303 : les deux
   périmètres diffèrent légèrement. Écart non expliqué à ce jour.
+- ⚠️ **Couplage création ↔ search par `tags` (libellés).** Les facettes typologie/portage/surface
+  filtrent `tags` sur des LIBELLÉS ; c'est `mutation.stamps` (`$mapLabels`/`$bucket`, §9) qui les y
+  recopie depuis les slugs du form. Le contrat implicite : **les libellés poussés doivent rester
+  ceux des options des `filterGroups`**. Modifier une option de facette (renommer un libellé) sans
+  ajuster la map du stamp — ou l'inverse — recrée l'invisibilité au search. Les deux sont dérivés de
+  la même source dans la config, mais aucune garde ne le verrouille encore.
+- ⚠️ **Dossier `public/images/navigatorDesTierslieux/` fantôme.** Le vrai dossier d'images du site
+  est `public/images/tiersLieux/` (déclaré par `sites.json` → `images: "tiersLieux"`, découplé du
+  slug). Le middleware `server/middleware/imageUpload.js` crée `public/images/<VITE_SLUG>/` **au
+  montage** du dev-server (keyé sur `VITE_SLUG`, pas sur le champ `images`) → lancer le dev sous
+  `VITE_SLUG=navigatorDesTierslieux` fabrique un dossier VIDE que le préflight `site-assets` refuse.
+  Corollaire plus grave : un upload AdminPanel sous ce slug atterrirait dans un dossier **qu'aucun
+  site ne sert** (accident `jardin`/`jardinCommuns`, 19 Mo). **Corrigé le 09/08** : le middleware
+  résout son dossier via `imageFolderForSlug` (champ `images` de `sites.json`, fallback slug ;
+  `server/utils/sites.js` + test `server/__tests__/sites.test.ts`) → upload dans le dossier servi,
+  plus de dossier fantôme. `sites.json` absent (Docker) → fallback slug, aucune régression. Cf.
+  [[site-json-images-folder-vite-slug]].
 
 ---
 
@@ -290,3 +362,5 @@ touche en premier.
 | 2 | Rendu navigateur et mode sombre : jamais vérifiés dans le cadre de ce dossier | Thomas |
 | 3 | Les 8 champs non placés du formulaire costum sont-ils tous des sous-champs de widgets composites, ou reste-t-il des vestiges à purger ? | Thomas |
 | 4 | Le module `ampli` n'est employé que par ce site. Sa campagne « amplifions » est-elle le patron à reprendre pour rezo-la-mer (`amplifions-le-sens-océanique`) ? | Thomas |
+| 5 | ✅ Fait (09/08) — `imageUpload` résout le dossier via le champ `images` de `sites.json` (cf. §12). | Claude |
+| 6 | Commiter les 2 chantiers working-tree (propagation des tags §9 + fix middleware) + e2e navigateur live (créer un lieu → facettes) ? | Thomas |

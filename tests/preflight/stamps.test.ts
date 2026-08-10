@@ -93,6 +93,6 @@ describe("préflight mutation.stamps", () => {
 
   it("les stamps du parc sont bien là où on les attend (sentinelle d'inventaire)", () => {
     const parc = SITES.flatMap(({ site, cfg }) => stampsDe(cfg).map(({ formId, stamps }) => `${site.replace("config.prod.", "").replace(".json", "")}/${formId}:${stamps.length}`));
-    expect(parc).toEqual(["institut-bleu/institut-bleu-acteur:1", "tiers-lieux/tiers-lieux:2"]);
+    expect(parc).toEqual(["institut-bleu/institut-bleu-acteur:2", "tiers-lieux/tiers-lieux:5"]);
   });
 });
