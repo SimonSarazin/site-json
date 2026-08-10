@@ -13,7 +13,7 @@
 > [Module Ampli](../doc/22-module-ampli.md) · [Module formEngine](../doc/28-module-formengine.md) ·
 > [Module CoForm](../doc/21-module-coform.md). Mémoire : `[[project-tiers-lieux]]`.
 
-Dernière mise à jour : **2026-08-09** (chantier propagation des tags via `mutation.stamps` — voir §9 ; SDK rafraîchi 1.0.180).
+Dernière mise à jour : **2026-08-10** (review MR#33 du module `toolsCatalog` : 15 constats corrigés + évolution SDK `communInfo` — voir §9 ; SDK `1.0.183` publié npm).
 
 ---
 
@@ -39,7 +39,7 @@ lieux**, pas un plan de rattrapage.
 | Header / Footer | **`mega-menu`** (le seul du parc à s'en servir vraiment) / `minimal-centered` |
 | Variant SDK | **`navigator-tl`** — endpoint dédié ⚠ cf. §12 |
 | Marqueurs costum | `mainTag: "TiersLieux"` · `compagnon: "Compagnon France Tiers-Lieux"` |
-| SDK | `@communecter/cocolight-api-client` **1.0.180** (`package.json` : `^1.0.180`) |
+| SDK | `@communecter/cocolight-api-client` **1.0.183** (`package.json` : `^1.0.183`, bump non commité ; résolu depuis npm, plus de lien local — cf. §11) |
 | Historique | **76 commits** — la config la plus travaillée du parc |
 
 ### Historique des chantiers
@@ -48,7 +48,8 @@ lieux**, pas un plan de rattrapage.
 |---|---|---|
 | — → 25/07 | Thomas | Construction complète ; dernier passage `fb1d6a09` (merge `origin/main` dans `feat/refonte-assistant-config`) |
 | 28/07 | Claude | État des lieux et création de ce dossier |
-| 09/08 | Claude | Propagation des tags typologie/portage/surface via `mutation.stamps` (`$mapLabels`/`$bucket`) — cf. §9 ; test d'intégration (a révélé le bug serverKey `buildingSurfaceArea`) ; fix middleware `imageUpload` (dossier ← champ `images`). Working-tree, non commité |
+| 09/08 | Claude | Propagation des tags typologie/portage/surface via `mutation.stamps` (`$mapLabels`/`$bucket`) — cf. §9 ; test d'intégration (a révélé le bug serverKey `buildingSurfaceArea`) ; fix middleware `imageUpload` (dossier ← champ `images`). Commité (`9bbd7a4d`, `4831f146`) |
+| 10/08 | Thomas + Claude | Review MR#33 du module `toolsCatalog` (branche `mr33-review`) : 15 constats vérifiés, tous corrigés — dont l'évolution SDK `1.0.183` (`communInfo` déplacée `Answer` → `Form`, fuite `financer[]` éliminée) et le fix `commonTable` en lecture seule (`[object Object]`). Cf. §9. Commits `36b4a7dd` · `252b50e8` · `914dcec0` |
 
 ---
 
@@ -67,10 +68,11 @@ lieux**, pas un plan de rattrapage.
 ```
                  ┌──────────────────────────────────────────────┐
    Visiteur ───► │  SiteForge (site-json)                       │
-                 │   11 pages · 21 sections                     │
+                 │   12 pages · 22 sections                     │
                  │   header MEGA-MENU (4 groupes à enfants)     │
                  │   /lieux : panneau de filtres + résultats    │
                  │   /observatoire : 10 dimensions              │
+                 │   /usages : catalogue d'outils (toolsCatalog)│
                  └──────────────┬───────────────────────────────┘
                                 │ searchCostum — variant `navigator-tl`
                  ┌──────────────▼───────────────────────────────┐
@@ -88,7 +90,7 @@ de hero sur une page à panneau, cela produit deux champs de recherche.
 
 ## 4. Ce que la config met en œuvre
 
-### 4.1 Les 11 pages
+### 4.1 Les 12 pages
 
 | Page | Sections | Rôle |
 |---|---|---|
@@ -98,6 +100,7 @@ de hero sur une page à panneau, cela produit deux champs de recherche.
 | `/reseaux-regionaux` · `/reseaux-thematiques` | 1 chacune | même périmètre, **deux angles** (cf. §4.2) |
 | `/communaute` | 1 | `searchProStatic` |
 | `/evenements` | 1 | `agenda` |
+| `/usages` | 1 | `toolsCatalog` — catalogue d'outils d'usage (livré 06/08, review 10/08 — cf. §9) |
 | `/api-donnees` | 1 | `html` — API et données ouvertes |
 | `/mentions-legales` · `/confidentialite` · `/cgu` | 1 chacune | socle légal **présent et fourni** (≈ 3,5 k · 11 k · 12 k caractères) |
 
@@ -195,6 +198,40 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 
 ## 9. Impacts des modifications
 
+### 10/08 — review MR#33 : module `toolsCatalog` (page `/usages`)
+
+Review multi-agents du diff `mr33-review` vs `main` (46 candidats → 44 confirmés par vérification
+adverse → 15 constats retenus), puis application des correctifs, eux-mêmes contre-vérifiés par une
+seconde passe adverse (6 réserves mineures, 5 corrigées — la 6ᵉ, garde dirty désarmée entre étapes
+d'un form multi-step, est un comportement hérité de tout le module coform, hors périmètre).
+**Les 15 constats sont corrigés.** Trois thèmes dominants :
+
+| Thème | Correctifs (commit `252b50e8`) |
+|---|---|
+| Perte de données dans les dialogs | Garde « modifications non enregistrées » sur Échap/overlay/Annuler (2 modales, pattern `CoFormModal`) ; vraie prop `disabled` sur `SelectObject` (le `pointer-events-none` laissait passer le clavier → no-op silencieux) ; blob URL d'aperçu en handler + révoquée au démontage ; upload d'image réutilisé entre tentatives (plus d'orphelin par retry) |
+| Couche React Query | Soumission du questionnaire → invalidation du catalogue ; instance `Form` partagée (`ensureQueryData(FORM_INSTANCE)`, un seul téléchargement au lieu d'un par page/détail/commun) ; config invalide → état vide + warn DEV (plus de squelette perpétuel) ; erreur `useCommunList` affichée |
+| Erreurs & divers | Une erreur ne remplace jamais les pages chargées (retry inline) — `isFetchNextPageError`/`isFetching` exposés par `useInfiniteQueryScroll` ; bouton « Répondre » visible déconnecté → `openLogin({onSuccess})` (règle 11) ; image d'outil sur hôte tiers en `<img>` brut (hostname, contrat de l'allowlist `/img`) ; `hidePageChrome` sur les vues coform en modale (Helmet/h1) ; 2 liens legacy de la config → `/usages` ; liens `ContentSection` via `NavLink` (SPA) |
+
+**Évolution SDK obtenue** (constat n°9, inapplicable côté site) : `communInfo` déplacée
+`Answer` → `Form` en **`1.0.183` publiée sur npm** (commit `36b4a7dd`) — `api.answer({id})`
+déclenchait un `get()` téléchargeant le doc AAP complet (`financer[]` nominatif) dans le navigateur,
+à l'encontre de la projection minimale `auth: none` de l'endpoint. Cf. §11.
+
+**Fix connexe coform** (commit `914dcec0`, trouvé au test navigateur par Thomas) : les champs
+`commonTable` en lecture seule rendaient `[object Object]` par catégorie d'usage — branche dédiée
+réutilisant `CommonTableField` en `readOnly`/`hideLabel` + `formId` (parité badges contributeurs).
+
+| Gate (10/08) | Résultat |
+|---|---|
+| `npx eslint` (fichiers touchés) | ✅ 0 |
+| `tsc -b --noEmit` | ✅ 0 |
+| `test:unit` (unit + préflights) | ✅ 191 fichiers / 2 346 tests |
+| `config:validate` | ✅ **12 pages / 22 sections** |
+
+Commits : `36b4a7dd` (deps SDK 1.0.183) · `252b50e8` (15 correctifs) · `914dcec0` (readonly
+commonTable). Reste non couvert : e2e navigateur du parcours catalogue complet (scroll infini,
+modales, enrichissement).
+
 ### 09/08 — propagation des tags depuis le formulaire (typologie / portage / surface)
 
 **Constat** (workflow d'analyse 3 facettes `wf_35da462c`) : les facettes du search — typologie,
@@ -243,9 +280,9 @@ Plus de 200m²]`.
 | fixtures régénérées | `__effective__/tiers-lieux.json` (garde d'impact) + `compiled.byteparity` — diff = 3 stamps + `sep` |
 | `config:validate` | ✅ 11 pages / 21 sections |
 
-⚠ **Non commité** (working-tree) : `config.prod.tiers-lieux.json`, `stamps.ts`, `entityModalSpec.ts`
-+ tests. **Non porté** (non bloquant) : le renfort `TiersLieux` de la voie UPDATE côté Node
-(`elementAfterUpdate` déféré) — le stamp mainTag le pose déjà.
+**Commité depuis** (arrivé sur `mr33-review` via le merge de `main`) : `9bbd7a4d` (stamps) et
+`4831f146` (middleware `imageUpload`). **Non porté** (non bloquant) : le renfort `TiersLieux` de la
+voie UPDATE côté Node (`elementAfterUpdate` déféré) — le stamp mainTag le pose déjà.
 
 ### 28/07 — aucun changement de config
 
@@ -287,27 +324,27 @@ d'autres projets, tous vérifiés non régressifs à son égard :
 | 11 | API et données ouvertes | ✅ | Page `/api-donnees` |
 | 12 | Rendu navigateur | ❌ | **Jamais vérifié** dans le cadre de ce dossier |
 | 13 | Mode sombre | ❌ | Jamais vérifié |
-| 14 | Propagation des tags depuis le form (typologie/portage/surface) | 🟡 | 3 stamps `$mapLabels`/`$bucket` + test d'intégration vraie chaîne (6/6) — gates verts, **non commité** ; reste l'e2e navigateur live (créer un lieu → facettes) |
-| 15 | Middleware `imageUpload` : dossier ← champ `images` de `sites.json` | ✅ | `imageFolderForSlug` + test 7/7 ; tue le dossier fantôme + l'upload dans un dossier non servi. **Non commité** |
+| 14 | Propagation des tags depuis le form (typologie/portage/surface) | 🟡 | 3 stamps `$mapLabels`/`$bucket` + test d'intégration vraie chaîne (6/6) — commité (`9bbd7a4d`) ; reste l'e2e navigateur live (créer un lieu → facettes) |
+| 15 | Middleware `imageUpload` : dossier ← champ `images` de `sites.json` | ✅ | `imageFolderForSlug` + test 7/7 ; tue le dossier fantôme + l'upload dans un dossier non servi. Commité (`4831f146`) |
+| 16 | Catalogue d'outils `/usages` (module `toolsCatalog`) | 🟡 | Livré 06/08 (`85520742`, corrections `2a1803ea`) ; review MR#33 le 10/08 : **15 constats corrigés** (`252b50e8`), SDK `1.0.183` (`36b4a7dd`), fix readonly `commonTable` (`914dcec0`) — gates verts. Reste : e2e navigateur du parcours complet |
 
 ---
 
 ## 11. Dépendances SDK ↔ `cocolight-api-client`
 
-SDK installé : **`^1.0.171`**. Le module `toolsCatalog` (page `/usages`, livré le 06/08) consomme
-**cinq endpoints déployés côté backend mais absents du SDK** — contrat détaillé dans
-[`doc/35-sdk-tools-catalog.md`](../doc/35-sdk-tools-catalog.md).
-
-> ⚠️ Tant qu'ils ne sont pas publiés, **site-json ne compile que via un lien local vers le SDK** :
-> un `npm install` propre casse le `tsc` (la 1.0.171 npm ne contient ni les méthodes ni les types).
+SDK installé : **`^1.0.183`**. Le module `toolsCatalog` (page `/usages`, livré le 06/08) consomme
+cinq endpoints déployés côté backend, **tous couverts par le SDK `1.0.183` publié sur npm**
+(résolu depuis le registre, vérifié le 10/08) : un `npm install` propre compile, le lien local
+n'est plus nécessaire. Contrat détaillé dans `commentaire/sdk-tools-catalog.md` (notes locales,
+hors dépôt).
 
 | Demande | État | Preuve / substitut |
 |---|---|---|
-| `Form.toolsCatalog()` — liste paginée du catalogue (`COSTUM_TOOLS_CATALOG`) | ❌ absent du SDK | Action `ToolsCatalogListAction.php` déployée (costum `15c5a91af`). ⚠️ Ne PAS router via `_createPaginatorEngine` : `_linkEntities` jette les DTO sans `collection` |
-| `Form.getToolUsers()` — lieux utilisateurs d'un outil (`COSTUM_TOOL_USERS`) | ❌ absent du SDK | `ToolUsersAction.php` déployée ; recherche par `criteriaIds`, jamais par regex sur le nom |
-| `Answer.getCommunInfo()` — fiche du commun rattaché (`COSTUM_COMMUN_INFO`) | ❌ absent du SDK | `CommunInfoAction.php` déployée ; `formId` obligatoire = verrou anti-IDOR (endpoint `auth: none`) |
-| `BaseEntity.saveToolEnrichment()` — édition d'un outil (`COSTUM_SAVE_TOOL_ENRICHMENT`, bearer) | ❌ absent du SDK | `SaveCriteriaAction.php` durcie (elle écrivait sans aucun contrôle d'accès). ⚠️ Sur `BaseEntity`, pas `Organization` — cf. §12 |
-| `BaseEntity.getCommunList()` — options du select de rattachement (`COSTUM_COMMUN_LIST`, bearer) | ❌ absent du SDK | `CommunListAction.php` déployée ; remplace un appel legacy qui ramenait ~300 réponses AAP entières |
+| `Form.toolsCatalog()` — liste paginée du catalogue (`COSTUM_TOOLS_CATALOG`) | ✅ `1.0.183` | Action `ToolsCatalogListAction.php` déployée (costum `15c5a91af`). ⚠️ Ne PAS router via `_createPaginatorEngine` : `_linkEntities` jette les DTO sans `collection` |
+| `Form.getToolUsers()` — lieux utilisateurs d'un outil (`COSTUM_TOOL_USERS`) | ✅ `1.0.183` | `ToolUsersAction.php` déployée ; recherche par `criteriaIds`, jamais par regex sur le nom |
+| `Form.communInfo()` — fiche du commun rattaché (`COSTUM_COMMUN_INFO`) | ✅ `1.0.183` | Déplacée d'`Answer` vers `Form` en `1.0.183` : `api.answer({id})` fetchait le doc AAP complet (fuite `financer[]` nominatif), `api.form({id})` ne charge que la définition publique. `formId` = verrou anti-IDOR (endpoint `auth: none`) |
+| `BaseEntity.saveToolEnrichment()` — édition d'un outil (`COSTUM_SAVE_TOOL_ENRICHMENT`, bearer) | ✅ `1.0.183` | `SaveCriteriaAction.php` durcie (elle écrivait sans aucun contrôle d'accès). ⚠️ Sur `BaseEntity`, pas `Organization` — cf. §12 |
+| `BaseEntity.getCommunList()` — options du select de rattachement (`COSTUM_COMMUN_LIST`, bearer) | ✅ `1.0.183` | `CommunListAction.php` déployée ; remplace un appel legacy qui ramenait ~300 réponses AAP entières |
 | Upload de l'image d'un outil | ✅ présent | `entity.uploadDocument(file, {contentKey: "icons", docType: "image"})` — même `contentKey` que le legacy |
 
 La config dépend par ailleurs du variant **`navigator-tl`** : toute évolution de cet endpoint la
@@ -363,4 +400,5 @@ touche en premier.
 | 3 | Les 8 champs non placés du formulaire costum sont-ils tous des sous-champs de widgets composites, ou reste-t-il des vestiges à purger ? | Thomas |
 | 4 | Le module `ampli` n'est employé que par ce site. Sa campagne « amplifions » est-elle le patron à reprendre pour rezo-la-mer (`amplifions-le-sens-océanique`) ? | Thomas |
 | 5 | ✅ Fait (09/08) — `imageUpload` résout le dossier via le champ `images` de `sites.json` (cf. §12). | Claude |
-| 6 | Commiter les 2 chantiers working-tree (propagation des tags §9 + fix middleware) + e2e navigateur live (créer un lieu → facettes) ? | Thomas |
+| 6 | ✅ Fait (10/08) — les chantiers du 09/08 sont arrivés via le merge de `main` (`9bbd7a4d`, `4831f146`) ; la review MR#33 est commitée (`36b4a7dd`, `252b50e8`, `914dcec0`). Reste les e2e navigateur live : créer un lieu → facettes, et parcours catalogue `/usages` complet | Thomas |
+| 7 | La garde « modifications non enregistrées » des coforms multi-step se désarme à chaque changement d'étape (reset du form) — trou commun à `CoFormModal`, `PlaceFormView` et `ToolsAnswerDialog`, atténué par le brouillon localStorage. Chantier coform à ouvrir ? | Thomas |
