@@ -3871,7 +3871,12 @@
                     "name": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0mieg4k7yxrito5j9e6",
                     "bedPrice": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0minaceqtibwcyy3khtm",
                     "roomPrice": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0miq84do7c678u3c8xuq",
-                    "linkPath": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0miq83c8getjt3lcz64f"
+                    "linkPath": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0miq83c8getjt3lcz64f",
+                    "area": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0mieg4k7zslc8awrql2",
+                    "equipments": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0mieg8j24m89gm99t5mi",
+                    "services": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0miq86g5vaw1kavrapkb",
+                    "roomType": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0mix3hskq78wglr6m61x",
+                    "moreInfo": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0miq88plgleoln5tmc7b"
                   },
                   "coworkingPath": {
                     "id": "6925e2b05dd63b02ca70d6d9",
@@ -3881,8 +3886,10 @@
                     "extra": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0mieg8j24m89gm99t5mi",
                     "linkPath": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0miq8118cmkh16zjwmt",
                     "hourly": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0minag948nw1ltatx78o",
-                    "halfDay": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0minagtkflgfepmrq32l",
-                    "fullDay": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0minah6jdpwjpzymuxm"
+                    "halfday": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0minagtkflgfepmrq32l",
+                    "fullday": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0minah6jdpwjpzymuxm",
+                    "equipments": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0mieg8j24m89gm99t5mi",
+                    "moreInfo": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0miq8auz2wess00qdkpe"
                   },
                   "roomPath": {
                     "id": "6925869ad76aaf6c5a2b2f8a",
@@ -3892,12 +3899,19 @@
                     "input": "navigatorDesTierslieux25112025_1436_0miokvr9ezvu0064fk",
                     "linkPath": "navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0miq81uh4gat3vgbtgkj",
                     "name": 0,
+                    "area": 1,
                     "minPers": 2,
                     "maxPers": 3,
                     "hourly": 4,
                     "halfday": 5,
                     "fullday": 6,
-                    "images": 8
+                    "solidarity": 7,
+                    "images": 8,
+                    "equipments": "navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0miok91fh1gta2sneeu5",
+                    "catering": "navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0mieg8j24m89gm99t5mi",
+                    "moreInfo": "navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0miq8a6oceswkv6i75jp",
+                    "about": "navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0miolbscdcrucb5a8uuq",
+                    "tip": "navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0miol2ccdl9a86x4f3yc"
                   },
                   "forms": {
                     "646498a5f2b3d6423d74b7f6": {
