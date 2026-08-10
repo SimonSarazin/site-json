@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import type { ToolsCatalogPage, ToolsCatalogFacets } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useInfiniteQueryScroll } from "@/hooks/useInfiniteQueryScroll";
@@ -32,7 +33,24 @@ export function useToolsCatalog({
   enabled = true,
 }: UseToolsCatalogOptions) {
   const { api, loading } = useCocolight();
-  const isReady = !loading && !!api && !!formId && !!step && !!finderPath;
+  const queryClient = useQueryClient();
+  // `configReady` (statique, ne dépend que du JSON de la section) est séparé de
+  // `isReady` (runtime, api en cours d'init) : la config n'étant jamais validée par
+  // Zod au runtime, un `formId`/`step`/`finderPath` manquant laisserait la query
+  // désactivée en `pending` pour toujours → squelette perpétuel. On rend donc
+  // `isPending && configReady` (état vide au lieu du squelette), tout en gardant le
+  // squelette pendant l'init de l'api (configReady vrai, query pas encore lancée).
+  const configReady = !!formId && !!step && !!finderPath;
+  const isReady = !loading && !!api && configReady;
+
+  useEffect(() => {
+    if (import.meta.env.DEV && !configReady) {
+      console.warn(
+        "[toolsCatalog] Config de section incomplète : formId, step et finderPath sont requis.",
+        { formId, step, finderPath },
+      );
+    }
+  }, [configReady, formId, step, finderPath]);
 
   const payload = useMemo(() => buildToolsPayload(query, indexStep), [query, indexStep]);
 
@@ -41,6 +59,8 @@ export function useToolsCatalog({
     error,
     fetchNextPage,
     hasNextPage,
+    isFetchNextPageError,
+    isFetching,
     isFetchingNextPage,
     isLoading,
     isPending,
@@ -58,7 +78,14 @@ export function useToolsCatalog({
       if (!api || !formId || !step || !finderPath) {
         throw new Error("Paramètres du catalogue d'outils incomplets");
       }
-      const form = await api.form({ id: formId });
+      // `api.form({id})` télécharge le document Form complet : instance mise en
+      // cache (staleTime Infinity) et partagée entre les pages du scroll — un seul
+      // téléchargement au lieu d'un par page/filtre.
+      const form = await queryClient.ensureQueryData({
+        queryKey: TOOLS_CATALOG_QUERY_KEYS.FORM_INSTANCE(formId),
+        queryFn: () => api.form({ id: formId }),
+        staleTime: Infinity,
+      });
       return form.toolsCatalog({
         step,
         finderPath,
@@ -99,9 +126,11 @@ export function useToolsCatalog({
     error: (error ?? null) as Error | null,
     fetchNextPage,
     hasNextPage,
+    isFetchNextPageError,
+    isFetching,
     isFetchingNextPage,
     isLoading,
-    isPending,
+    isPending: isPending && configReady,
     refetch,
     lastItemRef,
   };

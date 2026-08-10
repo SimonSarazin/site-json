@@ -54,6 +54,14 @@ export const TOOLS_CATALOG_QUERY_KEYS = {
    * Producteur : `useCommunList`. Quasi statique → `staleTime` long.
    */
   COMMUN_LIST: (formId: string | null) => ["toolsCatalog", "communList", formId] as const,
+
+  /**
+   * Instance SDK `Form` partagée par les queryFn du module (`ensureQueryData`) :
+   * `api.form({id})` télécharge le document Form COMPLET, on ne le fait qu'une
+   * fois au lieu d'une fois par page de scroll / ouverture de détail. Instance
+   * vivante (non sérialisable) — précédent : module notification.
+   */
+  FORM_INSTANCE: (formId: string | null) => ["toolsCatalog", "formInstance", formId] as const,
 } as const;
 
 export type ToolsCatalogQueryKey =

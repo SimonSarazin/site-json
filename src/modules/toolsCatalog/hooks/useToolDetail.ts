@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ToolUser } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
 import { TOOLS_CATALOG_QUERY_KEYS } from "../constants/queryKeys";
@@ -28,6 +28,7 @@ export function useToolDetail({
   enabled = true,
 }: UseToolDetailOptions) {
   const { api, loading } = useCocolight();
+  const queryClient = useQueryClient();
   const isReady = !loading && !!api && !!formId && !!step && !!finderPath && criteriaIds.length > 0;
 
   const { data, isPending, error } = useQuery({
@@ -42,7 +43,13 @@ export function useToolDetail({
       if (!api || !formId || !step || !finderPath) {
         throw new Error("Paramètres du détail d'outil incomplets");
       }
-      const form = await api.form({ id: formId });
+      // Instance `Form` partagée avec `useToolsCatalog` (cf. FORM_INSTANCE) : évite
+      // de re-télécharger le document complet à chaque ouverture de détail.
+      const form = await queryClient.ensureQueryData({
+        queryKey: TOOLS_CATALOG_QUERY_KEYS.FORM_INSTANCE(formId),
+        queryFn: () => api.form({ id: formId }),
+        staleTime: Infinity,
+      });
       return form.getToolUsers({ step, finderPath, criteriaIds, inputKeys });
     },
     enabled: enabled && isReady,

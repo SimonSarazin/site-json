@@ -9,8 +9,8 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useAuthModal } from "@/modules/auth";
 import SectionEmptyState from "@/components/sections/SectionEmptyState";
-import { ClientOnly } from "@/components/layout/ClientOnly";
 import type { ToolsCatalogSectionProps } from "../schema";
 import { useToolsCatalog } from "../hooks/useToolsCatalog";
 import { ToolCard } from "./ToolCard";
@@ -48,6 +48,7 @@ export function ToolsCatalog({ props }: { props: ToolsCatalogSectionProps }) {
   useLoadNamespace("modules/toolsCatalog");
   const t = useT("modules/toolsCatalog");
   const { me } = useCocolight();
+  const { openLogin } = useAuthModal();
 
   const [searchInput, setSearchInput] = useState("");
   const search = useDebounce(searchInput, 500);
@@ -74,6 +75,9 @@ export function ToolsCatalog({ props }: { props: ToolsCatalogSectionProps }) {
     totalCount,
     facets,
     error,
+    fetchNextPage,
+    isFetchNextPageError,
+    isFetching,
     isFetchingNextPage,
     isLoading,
     isPending,
@@ -96,6 +100,14 @@ export function ToolsCatalog({ props }: { props: ToolsCatalogSectionProps }) {
   const wantsSidebar = showCategory || showUsage;
   const hasFacets = facets.categories.length > 0 || facets.usages.length > 0;
   const loadingContent = isPending || isLoading;
+  // Une erreur ne remplace JAMAIS des pages déjà chargées : panneau bloquant
+  // seulement quand on n'a RIEN à afficher, sinon retry inline sous la liste.
+  // Le partage se fait sur `tools.length` (et non `isFetchNextPageError` seul) car
+  // un refetch complet — refocus d'onglet, remontage — remet `fetchMeta` à null
+  // pendant que `error` persiste : baser le panneau sur le seul type d'erreur
+  // ferait disparaître la liste à ce moment-là.
+  const blockingError = !!error && tools.length === 0;
+  const inlineError = !!error && tools.length > 0;
   // Sidebar réservée dès le chargement (layout stable) : placeholder tant que les
   // facettes ne sont pas là, filtres réels ensuite (les facettes persistent au refetch).
   const showSidebar = wantsSidebar && (loadingContent || hasFacets);
@@ -120,21 +132,23 @@ export function ToolsCatalog({ props }: { props: ToolsCatalogSectionProps }) {
 
           {/* Répondre au formulaire d'usage — occupe la place de la bascule de vue,
               descendue dans la barre de contrôle avec les autres réglages d'affichage.
-              Affiché aux seuls utilisateurs connectés (parité du `if (session.userId)`
-              legacy) et ouvert EN MODALE : le parcours « Mes lieux » se déroule sans
-              quitter le catalogue. */}
-          {/* `ClientOnly` : `me` est toujours null au SSR, donc le bouton apparaîtrait
-              après hydratation en décalant l'en-tête. */}
-          <ClientOnly>
-            {() =>
-              props.showAnswerButton && me ? (
-                <Button type="button" size="lg" className="rounded-full" onClick={() => setAnswering(true)}>
-                  <PenLine className="mr-2 h-4 w-4" />
-                  {props.answerButtonLabel ? t(props.answerButtonLabel) : t("answerButton")}
-                </Button>
-              ) : null
-            }
-          </ClientOnly>
+              Ouvert EN MODALE : le parcours « Mes lieux » se déroule sans quitter le
+              catalogue. Visible AUSSI déconnecté : l'action passe alors par le modal
+              de connexion global (règle 11 de CLAUDE.md — pas d'impasse masquée),
+              et la visibilité ne dépendant plus de `me`, le bouton est stable au SSR. */}
+          {props.showAnswerButton && (
+            <Button
+              type="button"
+              size="lg"
+              className="rounded-full"
+              onClick={() =>
+                me ? setAnswering(true) : openLogin({ onSuccess: () => setAnswering(true) })
+              }
+            >
+              <PenLine className="mr-2 h-4 w-4" />
+              {props.answerButtonLabel ? t(props.answerButtonLabel) : t("answerButton")}
+            </Button>
+          )}
         </div>
         {description && <p className="text-muted-foreground">{description}</p>}
       </div>
@@ -229,7 +243,7 @@ export function ToolsCatalog({ props }: { props: ToolsCatalogSectionProps }) {
                 </div>
               </div>
             </div>
-            {props.showResultCount !== false && !isPending && !error && (
+            {props.showResultCount !== false && !isPending && !blockingError && (
               <p className="text-sm text-muted-foreground">
                 {t("resultCount", undefined, { count: totalCount })}
               </p>
@@ -239,7 +253,7 @@ export function ToolsCatalog({ props }: { props: ToolsCatalogSectionProps }) {
           {/* Contenu */}
           {loadingContent ? (
             <ToolsCatalogSkeleton gridClass={gridClass} />
-          ) : error ? (
+          ) : blockingError ? (
             <div className="flex flex-col items-center gap-3 rounded-md border border-destructive/30 bg-destructive/5 p-8 text-center text-destructive">
               <AlertCircle className="h-6 w-6" />
               <span className="text-sm">{t("error")}</span>
@@ -263,17 +277,36 @@ export function ToolsCatalog({ props }: { props: ToolsCatalogSectionProps }) {
             </div>
           )}
 
-          {/* Sentinelle défilement infini */}
-          {!isLoading && !error && tools.length > 0 && (
-            <>
-              <div ref={lastItemRef} className="h-8" />
-              {isFetchingNextPage && (
-                <div className="flex items-center justify-center gap-2 py-4 text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-sm">{t("loadingMore")}</span>
-                </div>
-              )}
-            </>
+          {/* Sentinelle défilement infini — remplacée par un retry inline en cas
+              d'erreur avec des pages déjà chargées (elles restent affichées).
+              Bouton désactivé + spinner pendant la tentative : re-cliquer pendant
+              le fetch l'annulerait et le redémarrerait (`cancelRefetch` par défaut). */}
+          {!isLoading && tools.length > 0 && (
+            inlineError ? (
+              <div className="flex items-center justify-center gap-3 py-4">
+                {isFetching && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                <span className="text-sm text-destructive">{t("loadMoreError")}</span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isFetching}
+                  onClick={() => (isFetchNextPageError ? fetchNextPage() : refetch())}
+                >
+                  {t("retry")}
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div ref={lastItemRef} className="h-8" />
+                {isFetchingNextPage && (
+                  <div className="flex items-center justify-center gap-2 py-4 text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm">{t("loadingMore")}</span>
+                  </div>
+                )}
+              </>
+            )
           )}
         </div>
       </div>

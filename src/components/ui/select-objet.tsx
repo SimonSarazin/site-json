@@ -39,6 +39,8 @@ interface SelectObjectProps {
   placeholder?: string;
   placeholderSearch?: string;
   multiple?: boolean;
+  /** Désactive le combobox (bouton natif `disabled` : souris ET clavier). */
+  disabled?: boolean;
   /** Autorise une valeur ABSENTE de la liste : la saisie devient une proposition à ajouter. */
   creatable?: boolean;
   /** Libellé de la proposition d'ajout (défaut : `Ajouter « X »`). */
@@ -77,6 +79,7 @@ export function SelectObject({
   placeholder,
   placeholderSearch = "Search...",
   multiple = false,
+  disabled = false,
   creatable = false,
   createLabel = (q: string) => `Ajouter « ${q} »`,
   loadingIndicator = <Loader2Icon className="animate-spin" />,
@@ -164,6 +167,7 @@ export function SelectObject({
             aria-expanded={open}
             id={id}
             className={buttonClassName}
+            disabled={disabled}
           >
             <div className={pillContainerClassName}>
               {multiple ? (

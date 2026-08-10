@@ -19,6 +19,7 @@
   "error": "Unable to load the tools catalog.",
   "retry": "Retry",
   "loadingMore": "Loading…",
+  "loadMoreError": "Failed to load more results.",
   "openSourceBadge": "Open source",
   "usagesCount_one": "{{count}} usage",
   "usagesCount_other": "{{count}} usages",
@@ -78,6 +79,7 @@
     "communPlaceholder": "Search a commons…",
     "communNone": "No commons",
     "communLoading": "Loading commons…",
+    "communError": "Unable to load the commons list.",
     "communUnavailable": "Attachment unavailable: this tool has no reusable common link and no URL template is configured for this site.",
     "descriptionLabel": "Description",
     "descriptionHint": "Markdown supported (**bold**, lists, links).",
@@ -86,6 +88,12 @@
     "cancel": "Cancel",
     "save": "Save",
     "error": "Saving failed.",
-    "success": "Tool updated."
+    "success": "Tool updated.",
+    "confirmClose": {
+      "title": "Unsaved changes",
+      "description": "If you close now, your changes will be lost.",
+      "stay": "Keep editing",
+      "discard": "Close without saving"
+    }
   }
 }

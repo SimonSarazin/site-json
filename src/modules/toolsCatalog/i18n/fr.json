@@ -19,6 +19,7 @@
   "error": "Impossible de charger le catalogue d'outils.",
   "retry": "Réessayer",
   "loadingMore": "Chargement…",
+  "loadMoreError": "Le chargement de la suite a échoué.",
   "openSourceBadge": "Open source",
   "usagesCount_one": "{{count}} usage",
   "usagesCount_other": "{{count}} usages",
@@ -78,6 +79,7 @@
     "communPlaceholder": "Rechercher un commun…",
     "communNone": "Aucun commun",
     "communLoading": "Chargement des communs…",
+    "communError": "Impossible de charger la liste des communs.",
     "communUnavailable": "Rattachement indisponible : cet outil n'a pas de lien de commun réutilisable et aucun gabarit d'URL n'est configuré pour ce site.",
     "descriptionLabel": "Description",
     "descriptionHint": "Markdown accepté (**gras**, listes, liens).",
@@ -86,6 +88,12 @@
     "cancel": "Annuler",
     "save": "Enregistrer",
     "error": "L'enregistrement a échoué.",
-    "success": "Outil mis à jour."
+    "success": "Outil mis à jour.",
+    "confirmClose": {
+      "title": "Modifications non enregistrées",
+      "description": "Si vous fermez maintenant, vos modifications seront perdues.",
+      "stay": "Continuer la modification",
+      "discard": "Fermer sans enregistrer"
+    }
   }
 }

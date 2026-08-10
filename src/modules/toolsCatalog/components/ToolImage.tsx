@@ -44,6 +44,33 @@ export function ToolImage({
     return <Wrench className={iconClassName} />;
   }
 
+  // URL absolue sur un hôte AUTRE que le backend : le proxy `/img` la refuserait
+  // en 403 (allowlist de domaines) → `<img>` brut, comme les logos partenaires
+  // externes du footer. Comparaison par HOSTNAME (pas origin) : l'allowlist du
+  // proxy raisonne en hostnames, un scheme/port différent (legacy http…) reste
+  // donc optimisable. Les chemins backend passent, eux, par l'optimiseur.
+  const isForeignHost = (() => {
+    if (!/^(https?:)?\/\//.test(src)) return false;
+    try {
+      return new URL(src, getBaseUrl()).hostname !== new URL(getBaseUrl()).hostname;
+    } catch {
+      return true;
+    }
+  })();
+
+  if (isForeignHost) {
+    return (
+      <img
+        src={src}
+        alt={alt}
+        width={width}
+        className={className}
+        loading="lazy"
+        onError={() => setFailedSrc(src)}
+      />
+    );
+  }
+
   const absolute = /^(https?:)?\/\//.test(src) || src.startsWith("data:")
     ? src
     : `${getBaseUrl()}${src.startsWith("/") ? "" : "/"}${src}`;

@@ -1011,7 +1011,7 @@
                   "fr": "Les logiciels et leurs usages",
                   "en": "Software and their uses"
                 },
-                "href": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=list-tools#list-tools"
+                "href": "/usages"
               }
             ]
           }
@@ -2401,7 +2401,7 @@
             }
           },
           {
-            "href": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=list-tools#list-tools",
+            "href": "/usages",
             "label": {
               "fr": "Outils et ressources",
               "en": "Tools & resources"

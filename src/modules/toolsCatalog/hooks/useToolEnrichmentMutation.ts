@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import type { ToolEnrichmentInput, ToolEnrichmentResult } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
@@ -26,6 +27,11 @@ export interface ToolEnrichmentSubmit extends ToolEnrichmentInput {
  */
 export function useToolEnrichmentMutation() {
   const { entity: carrier } = useCocolight();
+  // Upload en 2 temps sans rollback possible côté backend : si `saveToolEnrichment`
+  // échoue APRÈS l'upload, on retient le résultat pour le réutiliser au retry du
+  // MÊME fichier — sinon chaque tentative uploaderait une copie orpheline de plus
+  // sur l'élément porteur.
+  const uploadedRef = useRef<{ file: File; docId: string; docPath: string } | null>(null);
 
   return useMutationWithToast<ToolEnrichmentResult, ToolEnrichmentSubmit>({
     mutationFn: async ({ imageFile, ...input }: ToolEnrichmentSubmit) => {
@@ -33,11 +39,16 @@ export function useToolEnrichmentMutation() {
 
       let payload: ToolEnrichmentInput = input;
       if (imageFile) {
-        const { docId, docPath } = await carrier.uploadDocument(imageFile, {
-          contentKey: "icons",
-          docType: "image",
-        });
-        payload = { ...payload, imageTool: docPath, imageToolId: docId };
+        let uploaded = uploadedRef.current;
+        if (!uploaded || uploaded.file !== imageFile) {
+          const { docId, docPath } = await carrier.uploadDocument(imageFile, {
+            contentKey: "icons",
+            docType: "image",
+          });
+          uploaded = { file: imageFile, docId, docPath };
+          uploadedRef.current = uploaded;
+        }
+        payload = { ...payload, imageTool: uploaded.docPath, imageToolId: uploaded.docId };
       }
 
       const res = await carrier.saveToolEnrichment(payload);

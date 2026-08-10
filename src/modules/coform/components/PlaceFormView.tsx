@@ -31,6 +31,19 @@ interface PlaceFormViewProps {
    * modifié » (confirmation avant abandon) s'applique dans les deux cas.
    */
   onBackToList?: () => void;
+  /**
+   * Remonte l'état « modifié » du form à l'hôte. Indispensable en MODALE : la garde
+   * interne ne couvre que le bouton retour, l'hôte doit pouvoir intercepter SES
+   * voies de fermeture (Échap, clic overlay) tant que le form est dirty.
+   */
+  onDirtyChange?: (dirty: boolean) => void;
+  /** Appelé après une soumission réussie (ex. invalidation de caches côté hôte). */
+  onAfterSubmit?: () => void;
+  /**
+   * Supprime le chrome de PAGE (Helmet `<title>`) quand la vue est montée dans un
+   * Dialog : le `<title>` de la page hôte ne doit pas être écrasé par la modale.
+   */
+  hidePageChrome?: boolean;
 }
 
 /**
@@ -38,7 +51,16 @@ interface PlaceFormViewProps {
  * verrouille ce champ, et délègue l'édition / readonly à `SmartCoForm` selon le
  * `canAnswer` calculé par le backend.
  */
-export function PlaceFormView({ formData, access, formId, placeId, onBackToList }: PlaceFormViewProps) {
+export function PlaceFormView({
+  formData,
+  access,
+  formId,
+  placeId,
+  onBackToList,
+  onDirtyChange,
+  onAfterSubmit,
+  hidePageChrome = false,
+}: PlaceFormViewProps) {
   const t = useT("modules/coform");
   const navigate = useNavigate();
 
@@ -81,6 +103,15 @@ export function PlaceFormView({ formData, access, formId, placeId, onBackToList 
   const [isFormDirty, setIsFormDirty] = useState(false);
   const [confirmLeaveOpen, setConfirmLeaveOpen] = useState(false);
 
+  // Relaye chaque transition dirty à l'hôte (modale) en plus de l'état local.
+  const handleDirtyChange = useCallback(
+    (dirty: boolean) => {
+      setIsFormDirty(dirty);
+      onDirtyChange?.(dirty);
+    },
+    [onDirtyChange],
+  );
+
   const performBackToList = useCallback(() => {
     if (onBackToList) {
       onBackToList();
@@ -101,8 +132,10 @@ export function PlaceFormView({ formData, access, formId, placeId, onBackToList 
   // naviguer sans confirmation — bypass du flow dirty.
   const handleAfterSubmit = useCallback(() => {
     setIsFormDirty(false);
+    onDirtyChange?.(false);
+    onAfterSubmit?.();
     performBackToList();
-  }, [performBackToList]);
+  }, [performBackToList, onDirtyChange, onAfterSubmit]);
 
   // Pas de finder partagé → form mal configuré pour la vue par lieu.
   if (!sharedFinderInfo) {
@@ -154,7 +187,7 @@ export function PlaceFormView({ formData, access, formId, placeId, onBackToList 
 
   return (
     <div className="space-y-4 max-w-5xl mx-auto p-6">
-      {documentTitle && (
+      {documentTitle && !hidePageChrome && (
         <Helmet>
           <title>{documentTitle}</title>
         </Helmet>
@@ -173,7 +206,7 @@ export function PlaceFormView({ formData, access, formId, placeId, onBackToList 
         lockedFields={[sharedFinderInfo.fieldName]}
         readOnly={readOnly}
         existingAnswerMeta={access?.existingAnswerMeta ?? null}
-        onDirtyChange={setIsFormDirty}
+        onDirtyChange={handleDirtyChange}
         onAfterSubmit={handleAfterSubmit}
       />
 
