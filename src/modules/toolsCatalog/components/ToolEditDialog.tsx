@@ -107,6 +107,18 @@ export function ToolEditDialog({
     return communUrlTemplate ? communUrlTemplate.replace("{communId}", communId) : undefined;
   }, [communId, initialCommunId, tool.urlTool, communUrlTemplate]);
 
+  /**
+   * Rattacher un commun n'a d'effet que si on peut construire un `urlTool` : soit l'outil porte
+   * déjà une ancre réutilisable (le bon domaine du costum), soit un `communUrlTemplate` est
+   * configuré. Sans l'un ni l'autre, changer le select serait un NO-OP SILENCIEUX (`urlToolChange`
+   * reste `undefined`) → on désactive le select et on l'explique plutôt que de laisser l'admin
+   * enregistrer sans effet.
+   */
+  const canAttachCommun = useMemo(
+    () => (!!tool.urlTool && COMMUN_ANCHOR.test(tool.urlTool)) || !!communUrlTemplate,
+    [tool.urlTool, communUrlTemplate],
+  );
+
   const canSubmit = !mutation.isPending && !!tool.title;
 
   const handleSubmit = () => {
@@ -152,7 +164,11 @@ export function ToolEditDialog({
               {/* `id` + `aria-labelledby` et non `htmlFor` : SelectObject rend un
                   bouton dont l'id est interne, le label ne pourrait pas le viser. */}
               <Label id="tool-commun-label">{t("edit.communLabel")}</Label>
-              <div role="group" aria-labelledby="tool-commun-label">
+              <div
+                role="group"
+                aria-labelledby="tool-commun-label"
+                className={!canAttachCommun ? "pointer-events-none opacity-50" : undefined}
+              >
                 {/* Combobox recherchable et non `Select` : ~300 communs, comme le select2 legacy. */}
                 <SelectObject
                   value={communId || null}
@@ -167,6 +183,11 @@ export function ToolEditDialog({
               </div>
               {communsPending && (
                 <p className="text-xs text-muted-foreground">{t("edit.communLoading")}</p>
+              )}
+              {!canAttachCommun && (
+                <p className="text-xs text-amber-600 dark:text-amber-500">
+                  {t("edit.communUnavailable")}
+                </p>
               )}
             </div>
           )}

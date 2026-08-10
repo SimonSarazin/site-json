@@ -78,6 +78,7 @@
     "communPlaceholder": "Search a commons…",
     "communNone": "No commons",
     "communLoading": "Loading commons…",
+    "communUnavailable": "Attachment unavailable: this tool has no reusable common link and no URL template is configured for this site.",
     "descriptionLabel": "Description",
     "descriptionHint": "Markdown supported (**bold**, lists, links).",
     "openSourceLabel": "Open source tool",

@@ -42,7 +42,11 @@ export function useToolEnrichmentMutation() {
 
       const res = await carrier.saveToolEnrichment(payload);
       if (!res.results) {
-        throw new Error(res.msg || "Enregistrement refusé");
+        // Le `msg` serveur est du FR PHP hors i18n → NE PAS le mettre dans `Error.message`
+        // (`showErrorToast` le rendrait en description du toast). Message vide → description
+        // vide, l'utilisateur ne voit que le titre i18n `edit.error` ; le `msg` reste en
+        // `cause` pour le diagnostic (console / error tracking).
+        throw Object.assign(new Error(""), { cause: res.msg });
       }
       return res;
     },

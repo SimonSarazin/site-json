@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
 import { Loader2, AlertCircle, ExternalLink, MapPin, Pencil } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import type { ToolCatalogItem, ToolUser } from "@communecter/cocolight-api-client";
 import {
   Dialog,
@@ -199,7 +201,23 @@ export function ToolDetailDialog({
             <div>
               <p className="text-sm font-semibold">{t("detail.descriptionLabel")}</p>
               <div className="border-l-2 border-primary pl-3 text-sm text-muted-foreground">
-                {tool.description || t("detail.noDescription")}
+                {tool.description ? (
+                  // Description admin en markdown (l'éditeur le promet, cf. `edit.descriptionHint`),
+                  // même rendu que `CommunInfoSection` — `@tailwindcss/typography` non installé, styles
+                  // de balises explicites ; react-markdown v10 neutralise `javascript:` par défaut.
+                  <div className="[&_a]:text-primary [&_a]:underline [&_li]:mb-0.5 [&_ol]:mb-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-2 [&_strong]:font-semibold [&_strong]:text-foreground [&_ul]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&>*:last-child]:mb-0">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        a: ({ ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" />,
+                      }}
+                    >
+                      {tool.description}
+                    </ReactMarkdown>
+                  </div>
+                ) : (
+                  t("detail.noDescription")
+                )}
               </div>
             </div>
 

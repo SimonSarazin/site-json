@@ -78,6 +78,7 @@
     "communPlaceholder": "Rechercher un commun…",
     "communNone": "Aucun commun",
     "communLoading": "Chargement des communs…",
+    "communUnavailable": "Rattachement indisponible : cet outil n'a pas de lien de commun réutilisable et aucun gabarit d'URL n'est configuré pour ce site.",
     "descriptionLabel": "Description",
     "descriptionHint": "Markdown accepté (**gras**, listes, liens).",
     "openSourceLabel": "Outil open source",
