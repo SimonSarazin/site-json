@@ -32,6 +32,9 @@ import HeaderLogo from "./HeaderLogo";
 import { logoHeightClass, logoSizePx } from "./logoSize";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
+import {ClientOnly} from "@/components/layout/ClientOnly.tsx";
+import PledgeHeaderButton from "@/modules/cagnotte/components/PledgeHeaderButton.tsx";
+import PiggyBankHeaderButton from "@/modules/cagnotte/components/PiggyBankHeaderButton.tsx";
 
 interface NavItemProps {
   item: EnhancedNavItemType;
@@ -202,6 +205,21 @@ export function HeaderStandard({ header }: HeaderStandardProps) {
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-1">
             {header.nav.map((item, idx) => (<NavItem key={idx} item={item} />))}
+            {header.utilities?.piggyBank && (
+                // ClientOnly : la cagnotte est member-only (le composant lit `me`
+                // pour décider de rendre ou pas). Sans ClientOnly, SSR rend le bouton
+                // (me=null → null), client le rend après auth → hydration mismatch
+                // (cf. PiggyBankHeaderButton:if (!me?.id) return null).
+                <ClientOnly>
+                  {() => <PiggyBankHeaderButton />}
+                </ClientOnly>
+            )}
+
+            {header.utilities?.pledge && (
+                <ClientOnly>
+                  {() => <PledgeHeaderButton />}
+                </ClientOnly>
+            )}
           </nav>
 
           {/* Utilities & Mobile Trigger */}

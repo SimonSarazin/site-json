@@ -227,5 +227,8 @@ export function resolveAacConfig(
     criteriaSource,
     gates,
     campaigns,
+    // Pas encore resolu depuis la config (cf. CommunFinancingCard.tsx qui retombe
+    // sur "tiersLieux" via `?? "tiersLieux"` tant que ce champ reste null).
+    typeCoFinancer: null,
   };
 }

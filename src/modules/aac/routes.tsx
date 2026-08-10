@@ -1,6 +1,7 @@
 import type { RouteObject } from "react-router";
 import type { ModuleRouteFactory } from "@/lib/modules";
 import AacPage from "./pages/AacPage";
+import AacCommunDetailPage from "./pages/AacCommunDetailPage";
 
 /**
  * Routes du module AAC (injectées dans le router principal via `discoverModules`).
@@ -13,5 +14,9 @@ export const routes: ModuleRouteFactory = (): RouteObject[] => [
   {
     path: "aac",
     element: <AacPage />,
+  },
+  {
+    path: "commun/:answerId",
+    element: <AacCommunDetailPage />,
   },
 ];

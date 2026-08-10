@@ -12,7 +12,7 @@ import {
     Pledge
 } from "../types";
 import { OrgProject } from "@/modules/cagnotte/hooks/useOrganizationProjectsWithAnswers.ts";
-import {useUserAdminOrganizations} from "@/modules/cagnotte/hooks/useUserAdminOrganizations";
+import { useUserAdminOrganizations } from "@/modules/cagnotte/hooks/useUserAdminOrganizations";
 import { isUser } from "@/lib/getTypedEntity";
 import type { User } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
@@ -29,6 +29,13 @@ interface RawDepense {
     financer?: Array<FundingTransaction & { method?: string }>;
 }
 
+interface RawAction {
+    id?: string;
+    milestone?: { milestoneId?: string } | null;
+    links?: { contributors?: Record<string, unknown> };
+    [key: string]: unknown;
+}
+
 interface RawProposition {
     id: string;
     projectId?: string;
@@ -36,7 +43,19 @@ interface RawProposition {
     totalFinancement?: number | string;
     totalCouts?: number | string;
     depenses?: RawDepense[];
+    actions?: RawAction[];
 }
+
+export const findMetadataById = (id?: string, links?: any) => {
+    if (!links || !id) return null;
+    
+    for (const typeKey in links) {
+        if (links[typeKey] && links[typeKey][id]) {
+            return links[typeKey][id];
+        }
+    }
+    return null;
+};
 
 export const calculateFundingStatus = (
     transactions: FundingTransaction[],
@@ -61,6 +80,34 @@ export const calculateFundingStatus = (
         acc.currentFunding += amount;
         return acc;
     }, { currentFunding: 0, unpaidFunding: 0, userPledge: 0});
+}
+
+function enrichActionContributors(action: any, globalLinks: any) {
+    const contributorsLinks = action.links?.contributors || {};
+
+    const contributorsRecord = Object.fromEntries(
+        Object.entries(contributorsLinks).map(([contribId, contribData]: [string, any]) => {
+            const collectionType = contribData.type;
+            const metadata = globalLinks?.[collectionType]?.[contribId] ?? null;
+
+            return [
+                contribId,
+                {
+                    profilThumbImageUrl: metadata?.profilThumbImageUrl || "",
+                    name: metadata?.name || "",
+                    ...contribData
+                }
+            ];
+        })
+    );
+
+    return {
+        ...action,
+        links: {
+            ...action.links,
+            contributors: contributorsRecord
+        }
+    };
 }
 
 export const getUserFunding = (
@@ -90,9 +137,11 @@ export function useCagnotteAdapter(
     const userAdminOrganizations = useUserAdminOrganizations(currentUserEntity, {});
 
     return useMemo(() => {
-        const rawEnvelopeTypeAssertion = fundingEnvelope?.rawEnvelope as { projects?: RawProposition[] } | undefined;
+        const rawEnvelopeTypeAssertion = fundingEnvelope?.rawEnvelope as { projects?: RawProposition[], links?: any } | undefined;
         const rawProjects = rawEnvelopeTypeAssertion?.projects || [];
-        const orgsIds =  userAdminOrganizations?.map(user => user.id);
+        const globalLinks = rawEnvelopeTypeAssertion?.links || {}; 
+
+        const orgsIds = userAdminOrganizations?.map(user => user.id);
 
         let resources: CagnotteResource[] = [];
 
@@ -115,8 +164,18 @@ export function useCagnotteAdapter(
                 const items = (projet?.milestones || []).map(m => {
                     const milestoneIdStr = String(m.milestoneId);
                     const matchedDepense = depensesByMilestone[milestoneIdStr];
+                    
+                    const rawFinancers = (matchedDepense?.depense?.financer || []) as Array<FundingTransaction & { method?: string }>;
+                    const enrichedFinancers = rawFinancers.map(fund => ({
+                        ...fund,
+                        metadata: findMetadataById(fund.id, globalLinks)
+                    }));
+
+                    const rawActions = matchedDepense?.depense?.actions ?? [];
+                    const enrichedActions = rawActions.map((action: any) => enrichActionContributors(action, globalLinks));
+
                     const { currentFunding, unpaidFunding, userPledge } = calculateFundingStatus(
-                        (matchedDepense?.depense?.financer || []) as Array<FundingTransaction & { method?: string }>,
+                        enrichedFinancers,
                         typeof m.currentFunding === "number" ? m.currentFunding : 0,
                         orgsIds,
                         me?.serverData?.id
@@ -131,11 +190,12 @@ export function useCagnotteAdapter(
                         description: m.description ?? "",
                         price: Number(m.price) || 0,
                         status: m?.status ?? "open",
-                        actions: matchedDepense?.depense?.actions ?? [],
+                        actions: enrichedActions,
                         currentFunding,
                         unpaidFunding,
                         userPledge,
-                        funding: getUserFunding((matchedDepense?.depense?.financer || []),orgsIds,me?.serverData?.id)
+                        funding: getUserFunding(enrichedFinancers, orgsIds, me?.serverData?.id),
+                        allFunding: enrichedFinancers
                     };
                 });
 
@@ -155,13 +215,25 @@ export function useCagnotteAdapter(
             resources = rawProjects.map((proposition: RawProposition) => {
                 const items = (proposition?.depenses || []).map((d: RawDepense, index: number) => {
 
+                    const rawFinancers = (d.financer || []) as Array<FundingTransaction & { method?: string }>;
+                    const enrichedFinancers = rawFinancers.map(fund => ({
+                        ...fund,
+                        metadata: findMetadataById(fund.id, globalLinks)
+                    }));
+
                     const { currentFunding, unpaidFunding, userPledge  } = calculateFundingStatus(
-                        d.financer as Array<FundingTransaction & { method?: string }> | [],
+                        enrichedFinancers,
                         0,
                         orgsIds,
                         me?.serverData?.id
                     );
 
+                    const filteredActions = proposition.projectId && typeof d?.milestone === "string" && d?.milestone !== ""
+                        ? (proposition.actions || []).filter(action => action?.milestone?.milestoneId === d.milestone )
+                        : [];
+
+                    const enrichedActions = filteredActions.map((action: any) => enrichActionContributors(action, globalLinks));
+                    
                     return {
                         fromType: "depense" as const,
                         itemId: d.id ? String(d.id) : String(index),
@@ -171,11 +243,12 @@ export function useCagnotteAdapter(
                         description: d.description ?? "",
                         price: Number(d.priceInt) || 0,
                         status: d.include !== false ? "open" : "close",
-                        actions: d.actions ?? [],
+                        actions: enrichedActions,
                         currentFunding,
                         unpaidFunding,
                         userPledge,
-                        funding: getUserFunding((d?.financer || []),orgsIds,me?.serverData?.id)
+                        funding: getUserFunding(enrichedFinancers, orgsIds, me?.serverData?.id),
+                        allFunding: enrichedFinancers
                     };
                 });
 

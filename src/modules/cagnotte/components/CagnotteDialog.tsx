@@ -34,6 +34,7 @@ import {useCagnottePermissions} from "@/modules/cagnotte/hooks/useCagnottePermis
 import {useCagnotteContextSafe} from "@/modules/cagnotte/hooks/useCagnotteContext";
 import {formatNumber} from "@/modules/cagnotte/utils/format";
 import {
+    getEntityId,
     normalizeIdOrNull,
     readEntityPreferences,
     toSafeInt,
@@ -249,26 +250,52 @@ const CagnotteDialogContent = ({
     const cagnotteCtx = useCagnotteContextSafe();
     void cagnotteCtx; // unused pour l'instant — placeholder pour usage futur
 
+    // Ids de toutes les ressources (mémoïsé — évite de re-parcourir `resources` à
+    // chaque render, cf. getEntityId dans dataTransform.ts pour les formes d'id gérées).
+    const allResourcesIds = useMemo(
+        () =>
+            resources
+                .flatMap((p) => [
+                    getEntityId(p.id),
+                    getEntityId(p.projectId),
+                    getEntityId(p.answerId),
+                    getEntityId((p as any)._id)
+                ])
+                .filter(Boolean),
+        [resources]
+    );
+
+    const isValidResourceId = useCallback(
+        (id: any) => {
+            const cleaned = getEntityId(id);
+            return !!cleaned && allResourcesIds.includes(cleaned);
+        },
+        [allResourcesIds]
+    );
+
     // Sélectionner le projet avec priorité au contexte d'ouverture.
     // Pattern "adjust state during render" (React 19) au lieu d'un useEffect
     // pour éviter `react-hooks/set-state-in-effect` warning.
     // Cf. https://react.dev/reference/react/useState#storing-information-from-previous-renders
     if (resources.length > 0) {
-        const allResourcesIds = resources.map((p) => p.id).filter((id) => !!id);
-        const selectionIsValid = !!selectedResourceId && allResourcesIds.includes(selectedResourceId);
-        if (!selectionIsValid) {
-            const preferred = forcedResourceId || defaultResourceId;
-            const next = preferred && allResourcesIds.includes(preferred)
-                ? preferred
-                : (allResourcesIds[0] || "");
-            if (next !== selectedResourceId) {
-                setSelectedResourceId(next);
-            }
+        const targetId = isValidResourceId(forcedResourceId) ? getEntityId(forcedResourceId)
+                       : isValidResourceId(selectedResourceId) ? getEntityId(selectedResourceId)
+                       : isValidResourceId(defaultResourceId) ? getEntityId(defaultResourceId)
+                       : (allResourcesIds[0] || "");
+
+        if (targetId !== getEntityId(selectedResourceId)) {
+            setSelectedResourceId(targetId);
         }
     }
 
-    // Récupérer les données du projet sélectionné (typé CagnotteResource — plus de casts)
-    const selectedResource: CagnotteResource | undefined = resources.find((p) => p.id === selectedResourceId);
+    const selectedResource: CagnotteResource | undefined = useMemo(() => {
+        const cleanedSelected = getEntityId(selectedResourceId);
+        return resources.find((p) =>
+            getEntityId(p.id) === cleanedSelected ||
+            getEntityId(p.projectId) === cleanedSelected ||
+            getEntityId(p.answerId) === cleanedSelected
+        );
+    }, [resources, selectedResourceId]);
 
     const activeResourceItems = useMemo(
         () => selectedResource?.items.filter((item) => (item.status || 'open') !== 'close'),
@@ -323,6 +350,9 @@ const CagnotteDialogContent = ({
 
     // Extraire les données de cagnotte du projet (montants convertis en int avant somme)
     const resourceCagnotteTotalAmount = useMemo(() => {
+        if (selectedResource?.resourceFinancedAmount) {
+            return toSafeInt(selectedResource.resourceFinancedAmount);
+        }
         const itemsFinancedTotal = (activeResourceItems || [])
             .filter((item) => item?.status !== 'close')
             .reduce(

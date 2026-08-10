@@ -1,0 +1,317 @@
+import { useState } from "react";
+import { ChevronDown, Plus, Pencil, Trash2, UserPlus, Loader2 } from "lucide-react";
+import type { CoFormData, CoFormAnswer } from "@/modules/coform/types";
+import type { AacResolvedConfig } from "../../types";
+import { useT } from "@/hooks/useT";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { Button } from "@/components/ui/button";
+import type {
+  FundingMilestone as Milestone,
+  FundingAction as ProjectAction,
+} from "@/modules/cagnotte/types";
+import { formatCurrency } from "@/modules/cagnotte/utils/format";
+import { ContributorsAvatars } from "@/modules/cagnotte/components/sections/parts/badges";
+import { ActionCreateDialog } from "@/modules/cagnotte/components/sections/parts/ActionCreateDialog";
+import { ActionEditDialog } from "@/modules/cagnotte/components/sections/parts/ActionEditDialog";
+import { MilestoneManageActions } from "@/modules/cagnotte/components/sections/MilestoneManageActions";
+import { toSafeInt } from "@/modules/cagnotte/utils/dataTransform";
+import { useCommunObjectivesController } from "@/modules/aac/hooks/useCommunObjectivesController";
+import {
+  normalizeActionForEdit,
+  resolveActionEntityId,
+  type MilestoneCardPermissions,
+} from "@/modules/aac/lib/objectiveHelpers";
+
+interface CommunActionsSectionProps {
+    formData: CoFormData;
+    answerQuery: CoFormAnswer | null;
+    aacConfig: AacResolvedConfig | null;
+    funding?: any;
+}
+
+function ActionsMilestoneCard({
+    index,
+    item,
+    openEditMilestoneModal,
+    onActionCreate,
+    onActionEdit,
+    onActionDelete,
+    onActionCandidate,
+    onActionDone,
+    onMilestoneClose,
+    onMilestoneDelete,
+    permissions,
+    loadingIds,
+}: {
+    index: number;
+    item: any;
+    openEditMilestoneModal: (milestone: Milestone) => void;
+    onActionCreate: (milestoneId: string, milestoneTitle: string) => void;
+    onActionEdit: (milestoneId: string, milestoneTitle: string, action: ProjectAction) => void;
+    onActionDelete: (milestoneId: string, action: ProjectAction) => void;
+    onActionCandidate: (milestoneId: string, action: ProjectAction) => void;
+    onActionDone: (milestoneId: string, action: ProjectAction) => void;
+    onMilestoneClose: (milestone: Milestone) => void;
+    onMilestoneDelete: (milestone: Milestone) => void;
+    permissions: MilestoneCardPermissions;
+    loadingIds: {
+        candidateActionId: string;
+        doneActionId: string;
+        deletingActionId: string;
+        deletingMilestoneId: string;
+        closingMilestoneId: string;
+    };
+}) {
+    const [open, setOpen] = useState(index === 0);
+    const panelId = `palier-actions-${index}-panel`;
+
+    useLoadNamespace("modules/aac");
+    const c = useT("modules/aac");
+
+    const canDeleteThisMilestone = permissions.canDeleteMilestone({
+        status: item.status,
+        hasTransactions: toSafeInt(item.currentFunding) > 0,
+    });
+
+    const tasksDone = (item?.actions ?? []).filter((action: any) => action.status === "done").length;
+
+    return (
+        <div className="bg-surface border border-border rounded-lg overflow-hidden">
+            <button
+                type="button"
+                onClick={() => setOpen((o) => !o)}
+                aria-expanded={open}
+                aria-controls={panelId}
+                className="w-full text-left p-5 sm:p-6 flex items-center gap-4 sm:gap-8 hover:bg-surface-2/40 transition-colors cursor-pointer"
+            >
+                <div className="min-w-0 flex-1">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 flex items-center gap-2">
+                        {String(c("detail.objectives.milestone", undefined, { number: index + 1 }))}
+                        <span className="text-muted-foreground/70 normal-case tracking-normal font-medium">
+                            · {tasksDone}/{item.actions.length} {String(c("detail.objectives.tasksLabel"))}
+                        </span>
+                    </div>
+                    <h4 className="font-display font-bold truncate">{item.name}</h4>
+                </div>
+
+                <ChevronDown
+                    className={`size-5 shrink-0 text-muted-foreground transition-transform ml-auto ${
+                        open ? "rotate-180" : ""
+                    }`}
+                />
+            </button>
+
+            {open && (
+                <div id={panelId} className="p-5 sm:p-6 pt-4 bg-background/30 border-t border-border">
+                    {permissions.canCreateAction({ status: item.status }) ? (
+                        <Button
+                            size="sm"
+                            className="h-7 text-[11px] gap-1 px-2 bg-primary hover:bg-primary/90 mb-2"
+                            onClick={() => onActionCreate(item.milestoneId, item.name)}
+                        >
+                            <Plus className="h-3 w-3" /> {String(c("detail.addAction"))}
+                        </Button>
+                    ) : null}
+
+                    <ul className="grid gap-2">
+                        {item.actions.map((c: any, i: number) => {
+                            const action = normalizeActionForEdit(c);
+                            const isDone = action.status === "done";
+                            const actionLike = {
+                                status: action.status,
+                                contributorIds: action.contributors.map((contributor) => contributor.id),
+                            };
+                            const showCandidate = permissions.canCandidateAction(actionLike);
+                            const showMarkDone = permissions.canMarkActionDone(actionLike);
+                            const showEdit = permissions.canEditAction(actionLike);
+                            const showDelete = permissions.canDeleteAction(actionLike);
+                            const contributors = action.contributors;
+                            return (
+                                <li
+                                    key={i}
+                                    className={`flex items-start gap-2.5 p-3 rounded-md border text-sm ${
+                                        isDone
+                                            ? "border-success/30 bg-success/5 text-foreground"
+                                            : "border-border bg-surface/50 text-muted-foreground"
+                                    }`}
+                                >
+                                    <span className="w-[25%]">
+                                        <input
+                                            type="checkbox"
+                                            checked={isDone}
+                                            onChange={() => {
+                                                if (showMarkDone) onActionDone(item.milestoneId, action);
+                                            }}
+                                            className="h-4 w-4 rounded border-input text-primary focus:ring-primary accent-primary cursor-pointer"
+                                            disabled={loadingIds.doneActionId === action.id || !showMarkDone}
+                                        />
+                                        <span className="font-semibold text-sm text-foreground ml-1">
+                                            {action.name}
+                                        </span>
+                                    </span>
+                                    <span className="w-[15%]">{formatCurrency(toSafeInt(action.credits))}</span>
+                                    <span className="w-[15%]">
+                                        {action.tags.map((tag: string) => (
+                                            <span
+                                                key={tag}
+                                                className="inline-flex items-center gap-1.5 px-1 py-0.5 rounded-full text-xs font-medium text-primary border border-primary shadow-sm"
+                                            >
+                                                {tag}
+                                            </span>
+                                        ))}
+                                    </span>
+                                    <span className="w-[15%]">
+                                        {contributors && contributors.length > 0 && (
+                                            <ContributorsAvatars contributors={contributors || []} t={c} showLabel={false} />
+                                        )}
+                                    </span>
+                                    <span className="w-[15%]">{c?.created ? new Date(c.created as string | number).toLocaleDateString("fr-FR") : ""}</span>
+                                    <span className={isDone ? "w-[15%] text-success flex justify-center" : "w-[15%] flex justify-center"}>
+                                        {isDone ? String(c("detail.objectives.done")) : String(c("detail.objectives.inProgress"))}
+                                    </span>
+                                    <span className="w-[15%] justify-end flex gap-1">
+                                        {showCandidate ? (
+                                            <Button
+                                                size="sm"
+                                                className="h-7 text-[11px] gap-1 px-2 bg-transparent hover:bg-primary/10"
+                                                onClick={() => onActionCandidate(item.milestoneId, action)}
+                                                disabled={loadingIds.candidateActionId === action.id}
+                                            >
+                                                {loadingIds.candidateActionId === action.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <UserPlus className="h-3 w-3" />}
+                                            </Button>
+                                        ) : null}
+                                        {showEdit ? (
+                                            <Button
+                                                size="sm"
+                                                className="h-7 text-[11px] gap-1 px-2 bg-transparent hover:bg-primary/10"
+                                                onClick={() => onActionEdit(item.milestoneId, item.name, action)}
+                                            >
+                                                <Pencil className="h-3 w-3" />
+                                            </Button>
+                                        ) : null}
+                                        {showDelete ? (
+                                            <Button
+                                                size="sm"
+                                                className="h-7 text-[11px] gap-1 px-2 bg-transparent hover:bg-destructive/10"
+                                                onClick={() => onActionDelete(item.milestoneId, action)}
+                                                disabled={loadingIds.deletingActionId === action.id}
+                                            >
+                                                {loadingIds.deletingActionId === action.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+                                            </Button>
+                                        ) : null}
+                                    </span>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </div>
+            )}
+
+            {permissions.canEditMilestone({ status: item.status }) || canDeleteThisMilestone ? (
+                <div className="grid grid-rows-[0fr] opacity-0 group-hover:grid-rows-[1fr] group-hover:opacity-100 focus-within:grid-rows-[1fr] focus-within:opacity-100 transition-all duration-300 ease-in-out">
+                    <div className="overflow-hidden">
+                        <div className="mb-2">
+                            <MilestoneManageActions
+                                onEdit={() => openEditMilestoneModal({
+                                    id: item.milestoneId,
+                                    title: item.name,
+                                    description: item.description ?? "",
+                                    status: item.status ?? "open",
+                                    date_start: undefined,
+                                    date_end: undefined,
+                                    targetAmount: Number(item.price ?? 0),
+                                    transactions: [],
+                                    actions: item.actions ?? [],
+                                } as Milestone)}
+                                onClose={() => onMilestoneClose({
+                                    id: item.milestoneId,
+                                    title: item.name,
+                                } as Milestone)}
+                                onDelete={() => onMilestoneDelete({
+                                    id: item.milestoneId,
+                                    title: item.name,
+                                } as Milestone)}
+                                isDeleting={loadingIds.deletingMilestoneId === item.milestoneId}
+                                isClosing={loadingIds.closingMilestoneId === item.milestoneId}
+                                closeDisabled={
+                                    item.status === "close" ||
+                                    !(item.actions ?? []).every((action: any) => action.status === "done")
+                                }
+                                canEdit={permissions.canEditMilestone({ status: item.status })}
+                                canClose={permissions.canCloseMilestone({ status: item.status })}
+                                canDelete={canDeleteThisMilestone}
+                            />
+                        </div>
+                    </div>
+                </div>
+            ) : null}
+        </div>
+    );
+}
+
+export function CommunActionsSection({ answerQuery, funding }: CommunActionsSectionProps) {
+    useLoadNamespace("modules/aac");
+    const ctrl = useCommunObjectivesController({ answerQuery, funding });
+
+    // Les actions n'existent pas côté answer-only (proposition non promue en projet) —
+    // pas de bloc à rendre tant qu'il n'y a pas de projectId.
+    if (!ctrl.canManageActions) {
+        return null;
+    }
+
+    return (
+        <div className="grid gap-4">
+            {funding?.items?.map((o: any, i: number) => (
+                <ActionsMilestoneCard
+                    key={i}
+                    index={i}
+                    item={o}
+                    openEditMilestoneModal={ctrl.openEditMilestoneModal}
+                    onActionCreate={ctrl.handleCreateAction}
+                    onActionEdit={ctrl.handleActionEdit}
+                    onActionDelete={ctrl.handleActionDelete}
+                    onActionCandidate={ctrl.handleActionCandidate}
+                    onActionDone={ctrl.handleActionDone}
+                    onMilestoneClose={ctrl.handleCloseMilestone}
+                    onMilestoneDelete={ctrl.handleDeleteMilestone}
+                    permissions={ctrl.cagnottePerms as unknown as MilestoneCardPermissions}
+                    loadingIds={ctrl.loadingIds}
+                />
+            ))}
+            <ActionCreateDialog
+                open={ctrl.isCreateActionOpen}
+                onOpenChange={ctrl.setIsCreateActionOpen}
+                actionCtx={ctrl.actionCtx}
+                milestoneId={ctrl.selectedMilestoneId}
+                milestoneTitle={ctrl.selectedMilestoneTitle}
+                projectEntity={ctrl.projectEntity}
+                onSuccess={async () => {
+                    await ctrl.refetchFundingEnvelope();
+                }}
+            />
+            <ActionEditDialog
+                open={ctrl.isEditActionOpen}
+                onOpenChange={ctrl.setIsEditActionOpen}
+                actionCtx={ctrl.actionCtx}
+                editingAction={{
+                    milestoneId: ctrl.selectedMilestoneId,
+                    actionEntityId: resolveActionEntityId(ctrl.selectedAction as { id?: string; _id?: string; entityId?: string } | null | undefined),
+                    action: {
+                        name: ctrl.selectedAction?.name ?? "",
+                        credits: Number(ctrl.selectedAction?.credits ?? 0),
+                        status: (ctrl.selectedAction?.status as "todo" | "done") ?? "todo",
+                        tags: ctrl.selectedAction?.tags ?? [],
+                        contributors: ctrl.selectedAction?.contributors ?? [],
+                        date_start: ctrl.selectedAction?.date_start,
+                        date_end: ctrl.selectedAction?.date_end,
+                    },
+                }}
+                milestoneTitle={ctrl.selectedMilestoneTitle}
+                projectEntity={ctrl.projectEntity}
+                onSuccess={async () => {
+                    await ctrl.refetchFundingEnvelope();
+                }}
+            />
+        </div>
+    );
+}

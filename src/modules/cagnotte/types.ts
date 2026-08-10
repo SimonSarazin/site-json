@@ -199,6 +199,7 @@ export interface CagnotteFundableItem {
   currentFunding: number;
   unpaidFunding: number;
   userPledge: number;
+  allFunding: Array<FundingTransaction & { method?: string; metadata?: unknown }>;
 }
 
 export interface DepenseFunding {

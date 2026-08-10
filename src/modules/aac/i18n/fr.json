@@ -1,6 +1,21 @@
 {
   "page": {
-    "backHome": "Retour à l'accueil"
+    "backHome": "Retour à l'accueil",
+    "backToAac": "Retour à l'AAC",
+    "communDetail": "Détail du commun",
+    "communDetailDescription": "Consultez l'ensemble des réponses et informations associées à ce commun.",
+    "loading": "Chargement…",
+    "error": "Impossible de charger ce commun.",
+    "errorMessage": "Une erreur est survenue pendant le chargement du commun.",
+    "notFound": "Commun introuvable",
+    "notFoundMessage": "Le commun demandé n'a pas été trouvé.",
+    "missingAnswer": "Aucun identifiant de réponse n'a été fourni.",
+    "communTitle": "Communes",
+    "communCount": "{{count}} commun{{count}}",
+    "communLabel": "Commune #{{number}}",
+    "communNoName": "(Commun sans nom)",
+    "noCommunAvailable": "Aucun commun disponible.",
+    "updated": "Modifié le"
   },
   "section": {
     "stubTitle": "Configuration de l'Appel à Communs",
@@ -20,5 +35,76 @@
     "gates": "Accès & options",
     "campaigns": "Campagnes déclarées",
     "none": "—"
+  },
+  "detail": {
+    "noname": "(Sans nom)",
+    "nodesc": "(Sans description)",
+    "noShortDesc": "(Sans résumé)",
+    "showLess": "Voir moins",
+    "showMore": "Voir plus",
+    "contributors": "Contributeur·rices",
+    "votes": "Intéressé·es",
+    "tls": "Utilisateur·rices",
+    "contribute": "Je contribue",
+    "alreadyContributor": "Déjà contributeur·rice",
+    "vote": "Ça m'intéresse",
+    "alreadyInterested": "Déjà intéressé·e",
+    "use": "J'utilise",
+    "addAction": "Ajouter une action",
+    "financing": {
+      "title": "Financement participatif",
+      "outOf": "sur {{amount}}",
+      "collected": "Collecté",
+      "cofinancers": "Cofinanceurs",
+      "remaining": "Restant à financer",
+      "cta": "Financer ce commun",
+      "goalReached": "Objectif atteint",
+      "selectOrganization": "Sélectionnez une organisation",
+      "noOrganizationFound": "Aucune organisation trouvée."
+    },
+    "objectives": {
+      "milestone": "Palier {{number}}",
+      "tasksLabel": "tâches",
+      "tabFunding": "Financement",
+      "tabTasks": "Tâches",
+      "collectedPercent": "{{percent}}% collecté",
+      "paid": "Payé",
+      "pledged": "Promesse",
+      "done": "Terminée",
+      "inProgress": "En cours",
+      "addMilestone": "Ajouter un palier"
+    },
+    "cofinancers": {
+      "unknownContributor": "Contributeur inconnu",
+      "organizations": "Organisations",
+      "empty": "Aucun partenaire n'a encore contribué à ce commun.",
+      "partner": "Partenaire",
+      "type": "Type",
+      "contribution": "Contribution"
+    },
+    "prose": {
+      "empty": "Aucun renseignement disponible."
+    },
+    "toc": {
+      "navigation": "Navigation"
+    },
+    "gallery": {
+      "editions": "Éditions",
+      "workshop": "Atelier",
+      "printing": "Impression",
+      "editionsAlt": "Cartes imprimées do·doc",
+      "workshopAlt": "Atelier de documentation",
+      "printingAlt": "Impression A3"
+    }
+  },
+  "toasts": {
+    "errors": {
+      "noApiClient": "Client API indisponible.",
+      "noReactor": "Aucun·e utilisateur·rice identifié·e.",
+      "noAnswerId": "Identifiant de réponse manquant."
+    },
+    "reactionFailed": {
+      "title": "Impossible d'enregistrer votre réaction"
+    }
   }
 }

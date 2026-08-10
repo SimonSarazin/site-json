@@ -206,4 +206,5 @@ export interface AacResolvedConfig {
   gates: AacGates;
   /** Campagnes déclarées sur l'aapConfig (isolent communs/financements/paniers). */
   campaigns: Campagne[];
+  typeCoFinancer: string | null;
 }

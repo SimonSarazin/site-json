@@ -1,6 +1,21 @@
 {
   "page": {
-    "backHome": "Back to home"
+    "backHome": "Back to home",
+    "backToAac": "Back to AAC",
+    "communDetail": "Commun details",
+    "communDetailDescription": "View all answers and related information for this commun.",
+    "loading": "Loading…",
+    "error": "Unable to load this commun.",
+    "errorMessage": "An error occurred while loading the commun.",
+    "notFound": "Commun not found",
+    "notFoundMessage": "The requested commun could not be found.",
+    "missingAnswer": "No answer identifier was provided.",
+    "communTitle": "Commons",
+    "communCount": "{{count}} commun{{count}}",
+    "communLabel": "Commun #{{number}}",
+    "communNoName": "(Unnamed commun)",
+    "noCommunAvailable": "No commons available.",
+    "updated": "Updated on"
   },
   "section": {
     "stubTitle": "Call for Commons configuration",
@@ -20,5 +35,76 @@
     "gates": "Access & options",
     "campaigns": "Declared campaigns",
     "none": "—"
+  },
+  "detail": {
+    "noname": "(Unnamed)",
+    "nodesc": "(No description)",
+    "noShortDesc": "(No summary)",
+    "showLess": "Show less",
+    "showMore": "Show more",
+    "contributors": "Contributors",
+    "votes": "Interested",
+    "tls": "Users",
+    "contribute": "I contribute",
+    "alreadyContributor": "Already a contributor",
+    "vote": "I'm interested",
+    "alreadyInterested": "Already interested",
+    "use": "I use it",
+    "addAction": "Add an action",
+    "financing": {
+      "title": "Community funding",
+      "outOf": "of {{amount}}",
+      "collected": "Collected",
+      "cofinancers": "Co-funders",
+      "remaining": "Remaining to fund",
+      "cta": "Fund this commun",
+      "goalReached": "Goal reached",
+      "selectOrganization": "Select an organization",
+      "noOrganizationFound": "No organization found."
+    },
+    "objectives": {
+      "milestone": "Milestone {{number}}",
+      "tasksLabel": "tasks",
+      "tabFunding": "Funding",
+      "tabTasks": "Tasks",
+      "collectedPercent": "{{percent}}% collected",
+      "paid": "Paid",
+      "pledged": "Pledged",
+      "done": "Done",
+      "inProgress": "In progress",
+      "addMilestone": "Add a milestone"
+    },
+    "cofinancers": {
+      "unknownContributor": "Unknown contributor",
+      "organizations": "Organizations",
+      "empty": "No partner has contributed to this commun yet.",
+      "partner": "Partner",
+      "type": "Type",
+      "contribution": "Contribution"
+    },
+    "prose": {
+      "empty": "No information available."
+    },
+    "toc": {
+      "navigation": "Navigation"
+    },
+    "gallery": {
+      "editions": "Editions",
+      "workshop": "Workshop",
+      "printing": "Printing",
+      "editionsAlt": "do·doc printed cards",
+      "workshopAlt": "Documentation workshop",
+      "printingAlt": "A3 printing"
+    }
+  },
+  "toasts": {
+    "errors": {
+      "noApiClient": "API client unavailable.",
+      "noReactor": "No identified user.",
+      "noAnswerId": "Missing answer identifier."
+    },
+    "reactionFailed": {
+      "title": "Unable to save your reaction"
+    }
   }
 }

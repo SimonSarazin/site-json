@@ -21,6 +21,7 @@ import type { FundingMilestoneStatus } from "@/modules/cagnotte/types";
 import {
   appendAnswerDepense,
   appendProjectMilestone,
+  deleteAnswerDepenseAtIndex,
 } from "@/modules/cagnotte/lib/actionMilestonePathUpdates";
 import {
   closeMilestoneWithSync,
@@ -28,6 +29,7 @@ import {
   editMilestoneWithSync,
   restoreMilestoneWithSync,
 } from "@/modules/cagnotte/lib/milestoneMutationHandlers";
+import { getFormIdFromAnswerData } from "@/modules/cagnotte/hooks/useSaveCagnotteContribution";
 
 /**
  * Contexte commun à toutes les mutations milestone.
@@ -297,3 +299,201 @@ export const useCreateMilestone = createMilestoneMutation<CreateMilestoneParams>
 });
 
 export { MilestoneContextError };
+
+// =====================================================================
+// Mutations "answer-only" — commun pas encore en phase projet (projectId absent)
+// =====================================================================
+//
+// resolveContextOrThrow (ci-dessus) exige projectId pour TOUTES les mutations —
+// donc useCreateMilestone/useEditMilestone/useDeleteMilestone échouent
+// systématiquement avec `projectIdMissing` tant que le commun n'a pas encore
+// été promu en projet. Les trois hooks ci-dessous couvrent le même besoin
+// (créer/éditer/supprimer un palier) mais ne touchent QUE
+// `answer.answers.aapStep1.depense[]` — jamais `project.milestones[]`
+// les actions (qui n'existent pas côté answer). Même pattern que
+// useSaveCagnotteContribution.ts : Answer.updateField en premier, repli sur un
+// clone + save complet.
+
+export interface AnswerOnlyMilestoneMutationContext {
+  api: Api | null;
+  answerId: string;
+}
+
+interface ResolvedAnswerOnlyContext {
+  api: Api;
+  answerId: string;
+}
+
+function resolveAnswerOnlyContextOrThrow(
+  ctx: AnswerOnlyMilestoneMutationContext,
+): ResolvedAnswerOnlyContext {
+  if (!ctx.api) {
+    throw new MilestoneContextError("milestone.errors.apiClientUnavailable");
+  }
+  if (!ctx.answerId) {
+    throw new MilestoneContextError("milestone.errors.answerIdMissing");
+  }
+  return { api: ctx.api, answerId: ctx.answerId };
+}
+
+/** Localise l'index d'une dépense par son `milestone` (id stable), pour cibler un update/delete. */
+function findDepenseIndexByMilestoneId(answerData: any, milestoneId: string): number {
+  const depenses = answerData?.answers?.aapStep1?.depense;
+  const list = Array.isArray(depenses) ? depenses : depenses ? [depenses] : [];
+  return list.findIndex((d: any) => String(d?.milestone ?? "") === milestoneId);
+}
+
+interface AnswerOnlyMilestoneMutationConfig<TParams> {
+  action: (ctx: ResolvedAnswerOnlyContext, params: TParams) => Promise<void>;
+  i18n: { successKey: string; errorKey: string };
+  getSuccessParams?: (params: TParams) => Record<string, string>;
+}
+
+function createAnswerOnlyMilestoneMutation<TParams>(config: AnswerOnlyMilestoneMutationConfig<TParams>) {
+  return function useAnswerOnlyMilestoneMutation(ctx: AnswerOnlyMilestoneMutationContext) {
+    return useMutationWithToast<void, TParams>({
+      mutationFn: async (params) => {
+        const resolved = resolveAnswerOnlyContextOrThrow(ctx);
+        await config.action(resolved, params);
+      },
+      namespace: "modules/cagnotte",
+      successKey: config.i18n.successKey,
+      errorKey: config.i18n.errorKey,
+      getSuccessParams: config.getSuccessParams
+        ? (_data, variables) => config.getSuccessParams!(variables)
+        : undefined,
+      invalidateQueries: [CAGNOTTE_QUERY_KEYS.FUNDING_ENVELOPE_PREFIX()],
+    });
+  };
+}
+
+/**
+ * Hook : crée un palier côté answer uniquement (pas de projet à ce stade).
+ * Réutilise directement appendAnswerDepense — c'est déjà answer-only par nature,
+ * useCreateMilestone ne fait qu'ajouter appendProjectMilestone à côté.
+ */
+export const useCreateMilestoneAnswerOnly = createAnswerOnlyMilestoneMutation<CreateMilestoneParams>({
+  action: async (ctx, params) => {
+    const answer = await ctx.api.answer({ id: ctx.answerId });
+
+    // Garde d'idempotence : un double-clic ou un retry réseau rejoue le mutate()
+    // avec le même milestoneId — on refuse plutôt que d'ajouter un doublon de palier.
+    if (findDepenseIndexByMilestoneId(answer.serverData, params.milestoneId) !== -1) {
+      throw new MilestoneContextError("milestone.errors.milestoneAlreadyExists");
+    }
+
+    await appendAnswerDepense({
+      answer,
+      depense: {
+        poste: params.name,
+        price: params.targetAmount,
+        date: new Date().toISOString(),
+        user: params.userId,
+        milestone: params.milestoneId,
+        financer: [],
+      },
+    });
+  },
+  i18n: {
+    successKey: "CreateMilestoneDialog.toasts.added.title",
+    errorKey: "CreateMilestoneDialog.toasts.addFailed.title",
+  },
+  getSuccessParams: (params) => ({ name: params.name }),
+});
+
+export interface EditMilestoneAnswerOnlyParams {
+  milestoneId: string;
+  name: string;
+  description: string;
+  status: FundingMilestoneStatus;
+  targetAmount: number;
+}
+
+export const useEditMilestoneAnswerOnly = createAnswerOnlyMilestoneMutation<EditMilestoneAnswerOnlyParams>({
+  action: async (ctx, params) => {
+    const answer = await ctx.api.answer({ id: ctx.answerId });
+    const depenseIndex = findDepenseIndexByMilestoneId(answer.serverData, params.milestoneId);
+    if (depenseIndex === -1) {
+      throw new MilestoneContextError("milestone.errors.milestoneNotFound");
+    }
+
+    const patch = {
+      poste: params.name,
+      description: params.description,
+      priceInt: params.targetAmount,
+      // Pas de champ `status` côté answer (cf. useCagnotteAdapter.ts : status dérivé de
+      // `include`) — "close" retire l'item de l'affichage, tout le reste = ouvert.
+      include: params.status !== "close",
+    };
+
+    try {
+      await answer.updateField(`answers.aapStep1.depense.${depenseIndex}`, patch, { updatePartial: true });
+      return;
+    } catch (pathError) {
+      console.warn("updateField échoué pour l'édition answer-only du palier, repli sur save() complet...", pathError);
+    }
+
+    const currentAnswerData = answer.serverData;
+    const cloned = structuredClone
+      ? structuredClone(currentAnswerData)
+      : JSON.parse(JSON.stringify(currentAnswerData ?? {}));
+    const depenses = cloned?.answers?.aapStep1?.depense;
+    const list = Array.isArray(depenses) ? depenses : depenses ? [depenses] : [];
+    if (!list[depenseIndex]) {
+      throw new MilestoneContextError("milestone.errors.milestoneNotFound");
+    }
+    list[depenseIndex] = { ...list[depenseIndex], ...patch };
+    cloned.answers.aapStep1.depense = list;
+
+    const formId = getFormIdFromAnswerData(currentAnswerData);
+    if (ctx.api && formId) {
+      await ctx.api.endpointApi.saveCoformAnswer({
+        formId,
+        answerId: answer.id ?? undefined,
+        answers: JSON.stringify(cloned.answers ?? {}),
+        links: JSON.stringify(cloned.links ?? currentAnswerData.links ?? {}),
+      });
+      return;
+    }
+    await answer.save();
+  },
+  i18n: {
+    successKey: "FinanceSection.toasts.updated.title",
+    errorKey: "FinanceSection.toasts.updateFailed.title",
+  },
+  getSuccessParams: (params) => ({ name: params.name }),
+});
+
+/**
+ * Supprime un palier answer-only. Refuse si des financements existent déjà sur ce
+ * poste (même garde que deleteMilestoneWithSync, "ne supprime pas si financé") —
+ * évite de faire disparaître silencieusement des promesses/paiements déjà enregistrés.
+ */
+export const useDeleteMilestoneAnswerOnly = createAnswerOnlyMilestoneMutation<SimpleMilestoneParams>({
+  action: async (ctx, params) => {
+    const answer = await ctx.api.answer({ id: ctx.answerId });
+    const currentAnswerData = answer.serverData;
+    const depenseIndex = findDepenseIndexByMilestoneId(currentAnswerData, params.milestoneId);
+    if (depenseIndex === -1) {
+      throw new MilestoneContextError("milestone.errors.milestoneNotFound");
+    }
+
+    const depenses = (currentAnswerData as any)?.answers?.aapStep1?.depense;
+    const list = Array.isArray(depenses) ? depenses : depenses ? [depenses] : [];
+    const target = list[depenseIndex];
+    const hasFunding = Array.isArray(target?.financer) && target.financer.length > 0;
+    if (hasFunding) {
+      throw new MilestoneContextError("milestone.errors.cannotDeleteFunded");
+    }
+
+    // Suppression atomique via $pull (même helper que deleteMilestoneWithSync) —
+    // évite le clone + save complet, qui peut écraser une écriture concurrente
+    // survenue entre la lecture de currentAnswerData et le save().
+    await deleteAnswerDepenseAtIndex({ answer, index: depenseIndex });
+  },
+  i18n: {
+    successKey: "FinanceSection.toasts.deleted.title",
+    errorKey: "FinanceSection.toasts.deleteFailed.title",
+  },
+  getSuccessParams: (params) => ({ name: params.name ?? "" }),
+});

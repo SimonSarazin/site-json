@@ -7,6 +7,8 @@ import { useT } from "@/hooks/useT";
 import { useAacConfig } from "../hooks/useAacConfig";
 import type { AacGates } from "../types";
 import type { AacSectionProps } from "../schema";
+import {AacCommunList} from "@/modules/aac/components/AacCommunList.tsx";
+import {useFundingEnvelope} from "@/modules/cagnotte";
 
 interface AacConfigStubProps {
   id?: string;
@@ -40,7 +42,15 @@ export default function AacConfigStub({ props }: AacConfigStubProps) {
   const { config: siteConfig } = useSite();
   const formId = siteConfig.aac?.formId ?? null;
   const { config, isLoading, error } = useAacConfig(formId);
+  const { data: fundingData} = useFundingEnvelope();
 
+  // `rawEnvelope` est typé `unknown` (payload brut) — cast minimal le temps que ce
+  // stub reste provisoire (cf. AacCommunList.tsx pour la même forme de données).
+  const rawProjects = (fundingData?.rawEnvelope as { projects?: Array<{ id?: string; titre?: string | null; projectId?: string | null; actions?: unknown[] }> } | undefined)?.projects ?? [];
+  const communs = rawProjects.filter(
+    (project): project is { id: string; titre?: string | null; projectId?: string | null; actions?: unknown[] } =>
+      typeof project.id !== "undefined" && project.titre !== null,
+  );
   if (!formId) {
     return (
       <div className="rounded-md border p-4 text-sm text-muted-foreground">
@@ -56,6 +66,15 @@ export default function AacConfigStub({ props }: AacConfigStubProps) {
 
       {isLoading && <p className="text-sm text-muted-foreground">{t("section.loading")}</p>}
       {error && <p className="text-sm text-destructive">{t("section.error")}</p>}
+
+      {communs && (
+          <div className="container mx-auto px-6 py-8 space-y-12">
+            <AacCommunList
+                communs={communs}
+                isLoading={isLoading}
+            />
+          </div>
+      )}
 
       {config && (
         <dl className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">

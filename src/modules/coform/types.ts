@@ -766,6 +766,8 @@ export interface CoFormAnswer {
   canEdit?: boolean;
   /** Raison du refus d'édition (not_logged_in, not_owner, form_inactive, form_closed) */
   editDeniedReason?: string | null;
+  vote?: VotesRecord;
+  links?: LinksRecord;
 }
 
 // ============================================================================
@@ -991,4 +993,25 @@ export interface FinderSearchResult {
     postalCode?: string;
     addressLocality?: string;
   };
+}
+
+type VoteStatus = 'love' | 'like' | 'dislike';
+
+interface VoteDetail {
+  status: VoteStatus;
+  date: Date;
+}
+
+type VotesRecord = Record<string, VoteDetail>;
+
+interface MetaDetails {
+  [key: string]: any;
+}
+
+interface LinksRecord {
+  answered: string[];
+  canEdit: Record<string, MetaDetails>;
+  contributors: Record<string, MetaDetails>;
+  organizations: Record<string, MetaDetails>;
+  tls: Record<string, MetaDetails>;
 }
