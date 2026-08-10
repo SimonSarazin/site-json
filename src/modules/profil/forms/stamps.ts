@@ -65,11 +65,34 @@ export function stampsPourMode(stamps: SpecStamp[] | undefined, mode: "add" | "e
   return (stamps ?? []).filter((s) => (s.on ?? "add") === "both" || (s.on ?? "add") === mode);
 }
 
-/** Évalue la VALEUR d'un stamp au moment de la soumission ($now/$from/littéral — $scope déjà résolu). */
+/** Découpe une valeur de champ en tokens (tableau tel quel, ou chaîne découpée par `sep`). */
+function tokens(v: unknown, sep?: string): string[] {
+  if (Array.isArray(v)) return v.map(String);
+  if (typeof v === "string") return (sep ? v.split(sep) : [v]).map((s) => s.trim()).filter(Boolean);
+  return [];
+}
+
+/** Évalue la VALEUR d'un stamp à la soumission ($now/$from/$mapLabels/$bucket/littéral — $scope déjà résolu). */
 function evaluer(value: unknown, payload: Record<string, unknown>, maintenant: Date): unknown {
   if (isSourceObj(value)) {
     if ("$now" in value) return formatNow(String((value as { $now: unknown }).$now), maintenant);
     if ("$from" in value) return payload[String((value as { $from: unknown }).$from)];
+    // $mapLabels : slugs du champ `from` → libellés via `map` (les slugs absents du map sont ignorés).
+    if ("$mapLabels" in value) {
+      const cfg = (value as { $mapLabels: { from: string; map: Record<string, string>; sep?: string } }).$mapLabels;
+      const labels = tokens(payload[cfg.from], cfg.sep)
+        .map((s) => cfg.map[s])
+        .filter((l): l is string => typeof l === "string" && l !== "");
+      return labels.length ? labels : undefined; // rien à ajouter → stamp inerte (jamais d'écriture d'undefined)
+    }
+    // $bucket : nombre du champ `from` → libellé du 1er bucket dont `lt` n'est pas dépassé (bucket sans `lt` = défaut).
+    if ("$bucket" in value) {
+      const cfg = (value as { $bucket: { from: string; buckets: { lt?: number; label: string }[] } }).$bucket;
+      const raw = payload[cfg.from];
+      const n = typeof raw === "number" ? raw : (typeof raw === "string" && raw.trim() !== "" ? Number(raw) : NaN);
+      if (!Number.isFinite(n)) return undefined; // pas de surface renseignée → pas de tag
+      return cfg.buckets.find((x) => x.lt === undefined || n < x.lt)?.label;
+    }
   }
   return value;
 }
