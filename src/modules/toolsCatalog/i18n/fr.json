@@ -63,11 +63,11 @@
     }
   },
   "happiness": {
-    "love": "J'adore",
-    "happySmile": "Content",
+    "love": "Très satisfait",
+    "happySmile": "Satisfait",
     "neutral": "Neutre",
-    "sad": "Déçu",
-    "cry": "Très déçu",
+    "sad": "Insatisfait",
+    "cry": "Très insatisfait",
     "none": "Non évalué"
   },
   "edit": {
