@@ -1,4 +1,4 @@
-import { useState, KeyboardEvent, useRef, useEffect } from "react";
+import { useState, KeyboardEvent, useRef } from "react";
 import { Tag, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
@@ -12,6 +12,9 @@ interface TagsInputProps {
   /** Active l'autocomplétion sur les tags existants (`TagSuggestions`/`useSearchTags`).
    *  `false` → saisie libre uniquement (pour des valeurs qui ne sont PAS des tags). */
   searchable?: boolean;
+  /** Suggestions LOCALES (ex. valeurs d'une liste de costum, déjà chargées) : filtrage en mémoire, popover
+   *  ouvert dès le focus, sans seuil de caractères. Prend le pas sur la recherche serveur de tags. */
+  suggestions?: string[];
   /** Textes pour l'internationalisation */
   texts?: {
     placeholder?: string;
@@ -36,8 +39,11 @@ export function TagsInput({
   onTagsChange,
   maxTags = 10,
   searchable = true,
+  suggestions,
   texts,
 }: TagsInputProps) {
+  // Liste locale fournie → propositions immédiates (pas de requête, pas de seuil de 2 caractères).
+  const hasLocal = Array.isArray(suggestions) && suggestions.length > 0;
   const t = { ...defaultTexts, ...texts };
   const [inputValue, setInputValue] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -48,7 +54,9 @@ export function TagsInput({
     setInputValue(value);
     // Suggestions (recherche de tags via `useSearchTags`) : uniquement si `searchable`.
     // Sinon saisie libre seule (Entrée / virgule pour valider).
-    if (searchable && value.trim().length >= 2) {
+    if (hasLocal) {
+      setShowSuggestions(true);
+    } else if (searchable && value.trim().length >= 2) {
       setShowSuggestions(true);
     } else {
       setShowSuggestions(false);
@@ -102,24 +110,15 @@ export function TagsInput({
     onTagsChange(tags.filter((_, i) => i !== index));
   };
 
-  // Fermer les suggestions si on clique en dehors
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (!target.closest("[data-radix-popper-content-wrapper]")) {
-        setShowSuggestions(false);
-      }
-    };
-
-    if (showSuggestions) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () =>
-        document.removeEventListener("mousedown", handleClickOutside);
-    }
-  }, [showSuggestions]);
+  // NB : pas de fermeture manuelle au clic extérieur — le `DismissableLayer` de Radix (PopoverContent)
+  // s'en charge déjà. En avoir deux les faisait se contredire, l'un rouvrant ce que l'autre fermait.
 
   return (
     <div className="space-y-2">
+      {/* Rangée des pastilles rendue SEULEMENT s'il y en a : vide, elle occupait quand même l'espacement
+          du `space-y-2` parent et décalait le champ de 8 px vers le bas — d'où un désalignement visible
+          dès qu'un champ tags voisine un select sur la même ligne (mesuré : 520 px contre 528). */}
+      {tags.length > 0 && (
       <div className="flex flex-wrap gap-2">
         {tags.map((tag, index) => (
           <span
@@ -138,6 +137,7 @@ export function TagsInput({
           </span>
         ))}
       </div>
+      )}
 
       <div className="relative">
         <Popover open={showSuggestions} onOpenChange={setShowSuggestions}>
@@ -148,6 +148,8 @@ export function TagsInput({
               value={inputValue}
               onChange={(e) => handleInputChange(e.target.value)}
               onKeyDown={handleKeyDown}
+              // Liste locale : on montre les propositions dès le focus (rien à charger, rien à taper).
+              onFocus={() => { if (hasLocal) setShowSuggestions(true); }}
               onBlur={() => {
                 // Delay pour permettre au clic sur suggestion de fonctionner
                 setTimeout(() => {
@@ -171,11 +173,19 @@ export function TagsInput({
             className="w-80 p-0"
             side="bottom"
             align="start"
+            // Le focus RESTE dans le champ (on tape pendant que la liste est ouverte). Mais l'input est
+            // l'ANCHOR, pas le TRIGGER : Radix n'exempte que le trigger de sa fermeture automatique, et
+            // voyait donc ce focus comme « en dehors » — la liste s'ouvrait puis se refermait aussitôt,
+            // et il fallait taper pour la faire revenir. On neutralise les deux dismissals qui visent le
+            // champ lui-même ; un clic ailleurs referme toujours.
             onOpenAutoFocus={(e) => e.preventDefault()}
+            onFocusOutside={(e) => { if (inputRef.current?.contains(e.target as Node)) e.preventDefault(); }}
+            onInteractOutside={(e) => { if (inputRef.current?.contains(e.target as Node)) e.preventDefault(); }}
           >
             <TagSuggestions
               query={inputValue}
               onSelect={selectTag}
+              items={hasLocal ? suggestions : undefined}
               texts={{
                 searching: t.searching,
                 noResults: t.noResults,

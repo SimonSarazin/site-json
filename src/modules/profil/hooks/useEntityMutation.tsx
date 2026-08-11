@@ -19,9 +19,13 @@ import type { EntityTypes } from "@communecter/cocolight-api-client";
 import type { QueryKey } from "@tanstack/react-query";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { useCocolight } from "@/hooks/useCocolight";
+import { COSTUM_QUERY_KEYS } from "@/constants/queryKeys";
+import { costumSlugOf } from "@/lib/costumLists";
 import { useNavigate } from "react-router";
 import { buildParentReference, buildOrganizerReference, logCocolightError } from "./mutationUtils";
 import { submitEntityEdit, type EditableEntity } from "./submitEntityEdit";
+import { applyPayloadStamps, preparePathValueStamps, estVide } from "../forms/stamps";
+import type { SpecStamp } from "../forms/entityModalSpec";
 
 export type EntityKind = "organizations" | "projects" | "events" | "poi" | "citoyens";
 type SdkMethod = "organization" | "project" | "event" | "poi";
@@ -32,8 +36,14 @@ const SDK_METHOD: Record<EntityKind, SdkMethod> = {
 };
 
 type Data = Record<string, unknown>;
-/** Instance créée par le SDK : sauvegardable + slug pour la navigation. */
-type CreatedEntity = { save: () => Promise<unknown>; slug?: string };
+/** Instance créée par le SDK : sauvegardable + slug pour la navigation + `updateField` (canal
+ *  pathValue des stamps) et `serverData` (fillIfEmpty post-save). Typage structurel volontaire. */
+type CreatedEntity = {
+  save: () => Promise<unknown>;
+  slug?: string;
+  updateField?: (path: string, value: unknown) => Promise<unknown>;
+  serverData?: Data | null;
+};
 /** Cible SDK de création : `me`, parent, ou scope costum (`me.costum(slug)`). */
 type SdkTarget = Record<SdkMethod, (payload: Data) => Promise<CreatedEntity>>;
 /** `me` (utilisateur connecté). Le slug costum réel est typé `KnownCostumSlug` côté lib → cast au call. */
@@ -66,6 +76,9 @@ export interface EntityMutationSpec {
     /** valeurs fixes ajoutées au payload (preset costum). */
     extraFields?: Data;
   };
+  /** Stamps déclaratifs ($scope DÉJÀ résolus par buildSpec) — canal payload appliqué après
+   *  buildPayload (add+edit), canal pathValue après le save (entité PROPRE, échec non bloquant). */
+  stamps?: SpecStamp[];
   /** create : naviguer vers /profil/{slug} au succès (défaut true). */
   navigateOnSuccess?: boolean;
   successKey: string;
@@ -164,7 +177,42 @@ export async function runEntityMutation(
   // Champs GALERIE (widget "gallery") : hors payload `element/save` → uploadés APRÈS via processGalleryFields.
   for (const k of Object.keys(formData)) if (isGalleryFieldValue(formData[k])) delete formData[k];
 
-  const payload = spec.buildPayload(formData);
+  // Stamps canal PAYLOAD — point commun add+edit, APRÈS le pipeline (un stamp écrase délibérément,
+  // même sémantique qu'extraFields) et AVANT le branchement (en édition, soumis au diff de save()).
+  const payload = applyPayloadStamps(spec.buildPayload(formData), spec.stamps, {
+    mode: spec.mode,
+    targetServerData: (spec.target as { serverData?: Data | null } | null)?.serverData ?? null,
+  });
+
+  /**
+   * Stamps canal PATHVALUE — patron du afterSave legacy : écritures POST-SAVE sur l'entité PROPRE
+   * (elle a un id, les droits sont ceux du créateur/éditeur), via `entity.updateField` (voie
+   * haut-niveau BaseEntity — jamais endpointApi brut). `fillIfEmpty` est tranché CONTRE l'entité
+   * retournée par le save : si le serveur a déjà posé la valeur (hook Node, ex. dateSign), on
+   * s'abstient. Échec NON bloquant + warn — la fragilité de la 2e requête legacy est assumée
+   * (une org legacy peut exister sans dateSign pour la même raison).
+   */
+  const runPathValueStamps = async (entity: CreatedEntity | EntityTypes) => {
+    const writes = preparePathValueStamps(payload, spec.stamps, { mode: spec.mode });
+    if (writes.length === 0) return;
+    const e = entity as CreatedEntity;
+    for (const w of writes) {
+      try {
+        if (w.fillIfEmpty) {
+          // Lecture pointée dans le serverData post-save (dateSign est racine ; chemins pointés OK).
+          const courant = w.field.split(".").reduce<unknown>(
+            (acc, k) => (typeof acc === "object" && acc !== null ? (acc as Data)[k] : undefined),
+            e.serverData ?? undefined,
+          );
+          if (!estVide(courant)) continue;
+        }
+        if (!e.updateField) continue;
+        await e.updateField(w.field, w.value);
+      } catch (err) {
+        console.warn(`[stamps] échec pathValue « ${w.field} » (non bloquant)`, err);
+      }
+    }
+  };
 
   // ── ÉDITION ─────────────────────────────────────────────────────────────────
   if (spec.mode === "edit") {
@@ -176,6 +224,7 @@ export async function runEntityMutation(
       throw err;
     }
     await processGalleryFields(spec.target, values); // galerie : upload/suppression après le save (entité a un id)
+    await runPathValueStamps(spec.target); // stamps post-save (jumeau du point création)
     return { entity: spec.target };
   }
 
@@ -241,6 +290,7 @@ export async function runEntityMutation(
     throw err;
   }
   await processGalleryFields(entity, values); // galerie : upload après création (l'entité a désormais un id)
+  await runPathValueStamps(entity); // stamps post-save (le save a réussi, l'entité a un id)
   return { entity: entity as unknown as EntityTypes };
 }
 
@@ -248,12 +298,22 @@ export async function runEntityMutation(
 export function useEntityMutation(spec: EntityMutationSpec) {
   const { me, entity } = useCocolight();
   const navigate = useNavigate();
+  const costumSlug = costumSlugOf(entity as { serverData?: Record<string, unknown> } | null);
   return useMutationWithToast<{ entity: EntityTypes }, Data>({
     mutationFn: (values) => runEntityMutation(spec, values, { me: me as MeLike, contextEntity: entity as EntityTypes | null }),
     namespace: "modules/profil",
     successKey: spec.successKey,
     errorKey: spec.errorKey,
-    invalidateQueries: spec.invalidateQueries ?? [],
+    // Les listes DYNAMIQUES du costum sont des `distinct` sur les données : toute écriture d'entité
+    // peut en faire naître une valeur, et c'est précisément le point du widget à saisie libre — ce
+    // qu'un premier a saisi doit être proposé aux suivants. On invalide par PRÉFIXE (toutes les
+    // listes du costum) : le muteur n'a pas les déclarations, il ne sait donc pas quel champ nourrit
+    // quelle liste, et refetcher quelques kilooctets coûte moins que de lui faire porter ce savoir.
+    // Sans effet sur les listes statiques : elles ne passent par aucune query.
+    invalidateQueries: [
+      ...(spec.invalidateQueries ?? []),
+      ...(costumSlug ? [COSTUM_QUERY_KEYS.LIST_VALUES_PREFIX(costumSlug)] : []),
+    ],
     onSuccessCallback: ({ entity }) => {
       if (spec.mode === "add" && (spec.navigateOnSuccess ?? true) && entity?.slug) {
         navigate(`/profil/${entity.slug}`);

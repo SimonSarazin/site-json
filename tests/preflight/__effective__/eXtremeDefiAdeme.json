@@ -1,0 +1,63 @@
+{
+  "site": "eXtremeDefiAdeme",
+  "slug": "eXtremeDefiAdeme",
+  "addMenus": {
+    "citoyens": {
+      "builtins": {
+        "organization": "add-organization",
+        "project": "add-project",
+        "event": "add-event",
+        "poi": "add-poi"
+      }
+    },
+    "organizations": {
+      "builtins": {
+        "project": "add-project",
+        "event": "add-event",
+        "poi": "add-poi"
+      }
+    },
+    "projects": {
+      "builtins": {
+        "event": "add-event",
+        "poi": "add-poi"
+      }
+    }
+  },
+  "editModals": {},
+  "adminResources": {},
+  "pages": {
+    "/projets/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects"
+        ],
+        "sourceKey": [
+          "eXtremeDefiAdeme"
+        ],
+        "indexStepList": 6
+      }
+    },
+    "/agenda/agenda": {
+      "baseParams": {
+        "sourceKey": [
+          "eXtremeDefiAdeme"
+        ],
+        "indexStepList": 12
+      }
+    }
+  },
+  "referencement": {},
+  "membership": {
+    "citoyens/membership": {
+      "types": [
+        "organizations",
+        "projects",
+        "pois",
+        "events"
+      ],
+      "scope": "network"
+    }
+  },
+  "profileRelated": {}
+}

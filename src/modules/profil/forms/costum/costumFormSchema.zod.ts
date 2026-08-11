@@ -30,6 +30,24 @@ export const CostumFormSchemaZod = z.object({
   collection: z.string().optional(),
   icon: z.string().optional(),
   costumSlug: z.string().optional(),
+  /**
+   * SOUS-TYPE canonique de ce form DANS son costum — la clé du `typeObj` quand le costum en a un
+   * (`financement`, `recoveryCenter`…), jamais l'`id` du form (nom local de config, renommable,
+   * inconnu du legacy). C'est la valeur écrite dans `reference.costumTypes.<slug>` au référencement
+   * d'une entité, et la clé que `costumSubType` (baseParams) et les routes `editModals` consomment.
+   */
+  subType: z.string().optional(),
+  /** Libellé du sous-type dans le sélecteur de référencement (LocalizedString ou clé i18n). */
+  subTypeLabel: z.unknown().optional(),
+  /**
+   * Comment un NATIF de ce form se reconnaît en base — même grammaire qu'`editModalMatch` (égalité
+   * plate champ→valeur, `contains` implicite sur tableau, chemins pointés). Le discriminant n'est
+   * PAS câblé sur `type` : `{"category": …}`, `{"mainTag": …}` ou un champ costum conviennent.
+   * ABSENT = form par défaut de sa collection (précédent : le form organizations « générique » de
+   * sport-sante, sans inject). Sert à l'expansion de `costumSubType` (branche native) et à la
+   * pré-sélection du sélecteur de référencement — jamais à ÉCRIRE ces champs.
+   */
+  identity: z.record(z.string(), z.unknown()).optional(),
   deriveDefaults: z.boolean().optional(),
   layout: z.object({ kind: z.string() }).passthrough(),
   serializeGroups: z.record(z.string(), SerializeGroupZod).optional(),
@@ -53,5 +71,20 @@ export const CostumFormSchemaZod = z.object({
   schemaFn: z.string().optional(),
   cleanValues: FnRefZod.optional(),
   afterSubmit: z.string().optional(),
-  mutation: z.object({ entityType: z.string() }).passthrough(),
+  mutation: z.object({
+    entityType: z.string(),
+    /**
+     * STAMPS déclaratifs (cf. `SpecStamp`, entityModalSpec.ts) : valeurs calculées posées par la
+     * mutation. Validé ici pour échouer avec un message clair sur une grammaire malformée (le
+     * passthrough du bloc laisserait passer n'importe quoi jusqu'au runtime).
+     */
+    stamps: z.array(z.object({
+      field: z.string().min(1),
+      value: z.unknown(),
+      op: z.enum(["set", "fillIfEmpty", "append"]).optional(),
+      on: z.enum(["add", "edit", "both"]).optional(),
+      channel: z.enum(["payload", "pathValue"]).optional(),
+      _comment: z.string().optional(),
+    }).strict()).optional(),
+  }).passthrough(),
 }).passthrough();

@@ -12,6 +12,13 @@ import { useDebounce } from "@/hooks/useDebounce";
 interface TagSuggestionsProps {
   query: string;
   onSelect: (tag: string) => void;
+  /**
+   * Suggestions LOCALES (liste déjà chargée). Fournies → filtrage en mémoire, sans requête ni debounce ;
+   * absentes → recherche serveur sur le référentiel global de tags (`useSearchTags`).
+   * Sert les listes de costum, dont l'intégralité tient en quelques kilooctets : les charger une fois et
+   * filtrer dans le navigateur est plus rapide qu'une recherche préfixe serveur (mesuré).
+   */
+  items?: string[];
   /** Textes pour l'internationalisation */
   texts?: {
     searching?: string;
@@ -26,10 +33,18 @@ const defaultTexts = {
   typeToSearch: "Tapez au moins 2 caractères",
 };
 
-export function TagSuggestions({ query, onSelect, texts }: TagSuggestionsProps) {
+export function TagSuggestions({ query, onSelect, items, texts }: TagSuggestionsProps) {
   const t = { ...defaultTexts, ...texts };
+  const local = items !== undefined;
   const debouncedQuery = useDebounce(query, 300);
-  const { data: tags = [], isLoading } = useSearchTags(debouncedQuery, debouncedQuery.length >= 2);
+  // Mode local : aucune requête (`enabled: false`), on filtre la liste déjà en mémoire. Le hook reste appelé
+  // inconditionnellement — règle des hooks.
+  const { data: remote = [], isLoading: remoteLoading } = useSearchTags(debouncedQuery, !local && debouncedQuery.length >= 2);
+  const q = query.trim().toLocaleLowerCase();
+  const tags = local
+    ? (q ? items.filter((v) => v.toLocaleLowerCase().includes(q)) : items).slice(0, 50)
+    : remote;
+  const isLoading = local ? false : remoteLoading;
 
   return (
     <Command className="rounded-lg border shadow-md" shouldFilter={false}>
@@ -49,7 +64,7 @@ export function TagSuggestions({ query, onSelect, texts }: TagSuggestionsProps) 
         {!isLoading && tags.length === 0 && (
           <CommandEmpty>
             <p className="text-sm text-muted-foreground">
-              {query.length < 2 ? t.typeToSearch : t.noResults}
+              {!local && query.length < 2 ? t.typeToSearch : t.noResults}
             </p>
           </CommandEmpty>
         )}
@@ -63,7 +78,7 @@ export function TagSuggestions({ query, onSelect, texts }: TagSuggestionsProps) 
                 onSelect={() => onSelect(tag)}
                 className="flex items-center gap-2 px-3 py-2 cursor-pointer"
               >
-                <span className="text-sm font-medium">#{tag}</span>
+                <span className="text-sm font-medium">{local ? tag : `#${tag}`}</span>
               </CommandItem>
             ))}
           </CommandGroup>
