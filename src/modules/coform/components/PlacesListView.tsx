@@ -40,6 +40,12 @@ interface PlacesListViewProps {
    * pour rester dans la modale au lieu de quitter la page.
    */
   onOpenPlace?: (placeId: string) => void;
+  /**
+   * Supprime le chrome de PAGE (Helmet `<title>` + en-tête h1/description) quand la
+   * vue est montée dans un Dialog : le titre de l'hôte ne doit pas être écrasé et le
+   * `DialogTitle` remplace le h1.
+   */
+  hidePageChrome?: boolean;
 }
 
 // ─── Sub-component : ligne d'un lieu (Admin / Membre) ──────────────────────
@@ -247,7 +253,12 @@ function JoinConfirmDialog({ org, onClose, onSuccess }: JoinConfirmDialogProps) 
 
 // ─── Composant principal ────────────────────────────────────────────────────
 
-export function PlacesListView({ formData, formId, onOpenPlace }: PlacesListViewProps) {
+export function PlacesListView({
+  formData,
+  formId,
+  onOpenPlace,
+  hidePageChrome = false,
+}: PlacesListViewProps) {
   const t = useT("modules/coform");
   const navigate = useNavigate();
   const { me, api } = useCocolight();
@@ -399,7 +410,7 @@ export function PlacesListView({ formData, formId, onOpenPlace }: PlacesListView
   if (!sharedFinderInfo) {
     return (
       <div className="space-y-4 max-w-3xl mx-auto p-6">
-        <h1 className="text-2xl font-bold">{formData.name}</h1>
+        {!hidePageChrome && <h1 className="text-2xl font-bold">{formData.name}</h1>}
         <p className="text-sm text-muted-foreground">
           {t("coform.placeView.empty.notApplicable")}
         </p>
@@ -439,15 +450,19 @@ export function PlacesListView({ formData, formId, onOpenPlace }: PlacesListView
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto p-6">
-      <Helmet>
-        <title>{documentTitle}</title>
-      </Helmet>
+      {!hidePageChrome && (
+        <Helmet>
+          <title>{documentTitle}</title>
+        </Helmet>
+      )}
 
-      {/* Header */}
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold">{documentTitle}</h1>
-        <p className="text-sm text-muted-foreground">{t("coform.placeView.description")}</p>
-      </div>
+      {/* Header — masqué en modale : le DialogTitle de l'hôte tient lieu de titre. */}
+      {!hidePageChrome && (
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold">{documentTitle}</h1>
+          <p className="text-sm text-muted-foreground">{t("coform.placeView.description")}</p>
+        </div>
+      )}
 
       {/* Mes lieux */}
       <section className="space-y-2">

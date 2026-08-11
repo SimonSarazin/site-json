@@ -173,5 +173,23 @@
     "referencedUnclassified": "Référencé, mais non classé — utilisez « Classer » dans la liste des référencés",
     "classified": "Sous-type enregistré",
     "referencedUnmoderated": "Référencé, mais la modération n'a pas pu être posée"
+  },
+  "AdminInvitation": {
+    "error": "Erreur",
+    "noContext": "Aucun élément à administrer.",
+    "loading": "Chargement…",
+    "shareLinks": "Liens d'invitation partageables",
+    "shareLinksHint": "Diffusez une de ces URL : toute personne connectée qui l'ouvre rejoint immédiatement — en membre ou en administrateur.",
+    "copyMemberLink": "Copier le lien membre",
+    "copyAdminLink": "Copier le lien administrateur",
+    "linkCopied": "Lien copié dans le presse-papier",
+    "linkReady": "Lien généré",
+    "linkFailed": "Impossible de générer le lien.",
+    "pendingTitle": "Invitations en attente",
+    "pendingEmpty": "Aucune invitation en attente.",
+    "invite": "Inviter",
+    "relaunch": "Relancer",
+    "relaunchSent": "L'invitation a été renvoyée.",
+    "relaunchFailed": "Impossible de relancer l'invitation."
   }
 }

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AlertCircle, Loader2, Upload } from "lucide-react";
 import type { ToolCatalogItem } from "@communecter/cocolight-api-client";
 import {
@@ -9,6 +9,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -59,7 +69,11 @@ export function ToolEditDialog({
   communUrlTemplate,
 }: ToolEditDialogProps) {
   const t = useT("modules/toolsCatalog");
-  const { communs, isPending: communsPending } = useCommunList({ communFormId, enabled: open });
+  const {
+    communs,
+    isPending: communsPending,
+    error: communsError,
+  } = useCommunList({ communFormId, enabled: open });
   const mutation = useToolEnrichmentMutation();
 
   // `urlOwn` et NON `url` : ce dernier est une fusion d'affichage (`url ?: urlTool`)
@@ -71,6 +85,25 @@ export function ToolEditDialog({
   const [communId, setCommunId] = useState(tool.communId || "");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [confirmClose, setConfirmClose] = useState(false);
+
+  // Blob URL créée/révoquée dans le HANDLER (jamais dans un updater setState :
+  // React exige des updaters purs et peut les rejouer/jeter). La ref porte l'URL
+  // courante pour la révoquer au remplacement ET au démontage du dialog.
+  const previewUrlRef = useRef<string | null>(null);
+  const handleFile = (file: File | null) => {
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    const next = file ? URL.createObjectURL(file) : null;
+    previewUrlRef.current = next;
+    setImageFile(file);
+    setPreview(next);
+  };
+  useEffect(
+    () => () => {
+      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    },
+    [],
+  );
 
   const initialCommunId = tool.communId || "";
 
@@ -79,14 +112,6 @@ export function ToolEditDialog({
     () => communs.map((c) => ({ id: c.id, label: c.title, value: c.id })),
     [communs],
   );
-
-  const handleFile = (file: File | null) => {
-    setImageFile(file);
-    setPreview((old) => {
-      if (old) URL.revokeObjectURL(old);
-      return file ? URL.createObjectURL(file) : null;
-    });
-  };
 
   /**
    * `urlTool` n'est envoyé QUE si le rattachement a changé — sinon on laisserait
@@ -107,7 +132,42 @@ export function ToolEditDialog({
     return communUrlTemplate ? communUrlTemplate.replace("{communId}", communId) : undefined;
   }, [communId, initialCommunId, tool.urlTool, communUrlTemplate]);
 
+  /**
+   * Rattacher un commun n'a d'effet que si on peut construire un `urlTool` : soit l'outil porte
+   * déjà une ancre réutilisable (le bon domaine du costum), soit un `communUrlTemplate` est
+   * configuré. Sans l'un ni l'autre, changer le select serait un NO-OP SILENCIEUX (`urlToolChange`
+   * reste `undefined`) → on désactive le select et on l'explique plutôt que de laisser l'admin
+   * enregistrer sans effet.
+   */
+  const canAttachCommun = useMemo(
+    () => (!!tool.urlTool && COMMUN_ANCHOR.test(tool.urlTool)) || !!communUrlTemplate,
+    [tool.urlTool, communUrlTemplate],
+  );
+
   const canSubmit = !mutation.isPending && !!tool.title;
+
+  // Garde « modifications non enregistrées » sur TOUTES les voies de fermeture
+  // (Échap, clic overlay, Annuler) — même pattern que CoFormModal. La fermeture
+  // post-enregistrement (onSuccess) appelle `onOpenChange` directement : pas de
+  // confirmation après un save réussi.
+  const isDirty =
+    url !== (tool.urlOwn ?? "") ||
+    description !== (tool.description ?? "") ||
+    isOpenSource !== !!tool.isOpenSource ||
+    communId !== initialCommunId ||
+    imageFile !== null;
+
+  const handleOpenChange = (next: boolean) => {
+    // Pas d'exemption pendant `mutation.isPending` : fermer en plein enregistrement
+    // démonte l'observer (React Query n'appelle plus les callbacks de `mutate`) et
+    // sauterait `onSaved` — la confirmation couvre donc aussi cette fenêtre. Le
+    // chemin post-save passe par `onOpenChange` directement (aucune confirmation).
+    if (!next && isDirty) {
+      setConfirmClose(true);
+      return;
+    }
+    onOpenChange(next);
+  };
 
   const handleSubmit = () => {
     mutation.mutate(
@@ -129,7 +189,29 @@ export function ToolEditDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+      <AlertDialog open={confirmClose} onOpenChange={setConfirmClose}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("edit.confirmClose.title")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("edit.confirmClose.description")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("edit.confirmClose.stay")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setConfirmClose(false);
+                onOpenChange(false);
+              }}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {t("edit.confirmClose.discard")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{t("edit.title", undefined, { tool: tool.title })}</DialogTitle>
@@ -153,11 +235,15 @@ export function ToolEditDialog({
                   bouton dont l'id est interne, le label ne pourrait pas le viser. */}
               <Label id="tool-commun-label">{t("edit.communLabel")}</Label>
               <div role="group" aria-labelledby="tool-commun-label">
-                {/* Combobox recherchable et non `Select` : ~300 communs, comme le select2 legacy. */}
+                {/* Combobox recherchable et non `Select` : ~300 communs, comme le select2 legacy.
+                    `disabled` NATIF (bouton) et non `pointer-events-none` : le CSS ne bloque
+                    pas le clavier, un utilisateur au tab pourrait rattacher un commun que
+                    `urlToolChange` ignorerait ensuite en silence. */}
                 <SelectObject
                   value={communId || null}
                   onChange={(v) => setCommunId(v ? String(v) : "")}
                   options={communOptions}
+                  disabled={!canAttachCommun}
                   placeholder={t("edit.communNone")}
                   placeholderSearch={t("edit.communPlaceholder")}
                   // Défaut de SelectObject + `scrollbar-thin` : la piste `--muted`
@@ -167,6 +253,14 @@ export function ToolEditDialog({
               </div>
               {communsPending && (
                 <p className="text-xs text-muted-foreground">{t("edit.communLoading")}</p>
+              )}
+              {!communsPending && communsError && (
+                <p className="text-xs text-destructive">{t("edit.communError")}</p>
+              )}
+              {!canAttachCommun && (
+                <p className="text-xs text-amber-600 dark:text-amber-500">
+                  {t("edit.communUnavailable")}
+                </p>
               )}
             </div>
           )}
@@ -220,7 +314,7 @@ export function ToolEditDialog({
         </div>
 
         <DialogFooter>
-          <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+          <Button type="button" variant="ghost" onClick={() => handleOpenChange(false)}>
             {t("edit.cancel")}
           </Button>
           <Button type="button" onClick={handleSubmit} disabled={!canSubmit}>
@@ -233,6 +327,7 @@ export function ToolEditDialog({
           </Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog>
+      </Dialog>
+    </>
   );
 }

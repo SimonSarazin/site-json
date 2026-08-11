@@ -28,7 +28,6 @@
 | Module auth (connexion/inscription/SSO) | [Module Auth](23-module-auth.md) |
 | Module notification (cloche + section) | [Module Notification](25-module-notification.md) |
 | Composants média (audio/galerie/fichiers) | [Media Components](33-media-components.md) |
-| Module toolsCatalog — SDK attendu (5 endpoints à déclarer) | [SDK — Catalogue d'outils](35-sdk-tools-catalog.md) |
 | Module observatoire (dashboard déclaratif) | [Module Observatoire](27-module-observatoire.md) |
 | Module admin (back-office /admin config-driven) | [Module Admin](30-module-admin.md) |
 | Panneau d'administration (live edit) | [Admin Panel](24-admin-panel.md) |

@@ -59,10 +59,14 @@ describe("résolveur — spec tiers-lieu (parité avec l'ex-config)", () => {
     expect(mut.inject?.extraFields).toEqual({ type: "NGO", preferences: { isOpenData: true, isOpenEdition: true } });
     // Stamps résolus EAGER : mainTag (add+edit), compagnon (add seul — parité tl:payload edit) ;
     // le fixture costum n'a pas de compagnon → valeur undefined, stamp inerte à l'application.
-    expect(mut.stamps).toEqual([
+    // + 3 stamps de propagation tags (patron search) : typologie/portage via $mapLabels, m² via $bucket.
+    expect(mut.stamps?.slice(0, 2)).toEqual([
       { field: "tags", value: "TiersLieux", op: "append", on: "both" },
       { field: "tags", value: undefined, op: "append" },
     ]);
+    const src = (s: { value: unknown }) => (s.value && typeof s.value === "object" ? Object.keys(s.value as object)[0] : typeof s.value);
+    expect(mut.stamps?.slice(2).map(src)).toEqual(["$mapLabels", "$mapLabels", "$bucket"]);
+    expect(mut.stamps?.slice(2).every((s) => s.field === "tags" && s.op === "append" && s.on === "both")).toBe(true);
     // payload = PIPELINE seul (sans tags) ; pipeline + stamps ≡ l'ancien tl:payload (l'oracle).
     const form = { ...getDefaultTiersLieuxValues(), name: "Mon TL", shortDescription: "desc", managementType: "public", email: "a@b.fr" } as Record<string, unknown>;
     expect(mut.buildPayload(form)).toEqual(buildTiersLieuxPayload(form as never));

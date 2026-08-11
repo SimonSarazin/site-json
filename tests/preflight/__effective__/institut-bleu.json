@@ -391,6 +391,15 @@
         "op": "fillIfEmpty",
         "on": "add",
         "channel": "pathValue"
+      },
+      {
+        "field": "tags",
+        "value": {
+          "$from": "categoryThematic"
+        },
+        "op": "append",
+        "on": "both",
+        "channel": "payload"
       }
     ]
   },

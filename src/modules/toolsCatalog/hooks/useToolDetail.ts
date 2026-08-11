@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ToolUser } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
 import { TOOLS_CATALOG_QUERY_KEYS } from "../constants/queryKeys";
@@ -11,6 +11,13 @@ interface UseToolDetailOptions {
   criteriaIds: string[];
   /** Suffixes yesOrNo où l'outil apparaît (restreint la projection). */
   inputKeys?: string[];
+  /**
+   * Nom normalisé de l'outil (`ToolCatalogItem.normalizedName`). À TOUJOURS transmettre :
+   * un `criteriaId` désigne une ligne du catalogue de BESOINS partagée par toutes les
+   * réponses (« site vitrine »…), pas la saisie d'un lieu. Sans lui, le serveur remonte
+   * aussi les lieux ayant répondu au même besoin avec un TOUT AUTRE outil.
+   */
+  normalizedName?: string;
   /** Fetch paresseux : true quand la modale est ouverte. */
   enabled?: boolean;
 }
@@ -25,9 +32,11 @@ export function useToolDetail({
   finderPath,
   criteriaIds,
   inputKeys,
+  normalizedName,
   enabled = true,
 }: UseToolDetailOptions) {
   const { api, loading } = useCocolight();
+  const queryClient = useQueryClient();
   const isReady = !loading && !!api && !!formId && !!step && !!finderPath && criteriaIds.length > 0;
 
   const { data, isPending, error } = useQuery({
@@ -37,13 +46,20 @@ export function useToolDetail({
       finderPath ?? null,
       criteriaIds,
       inputKeys ?? [],
+      normalizedName ?? null,
     ),
     queryFn: async () => {
       if (!api || !formId || !step || !finderPath) {
         throw new Error("Paramètres du détail d'outil incomplets");
       }
-      const form = await api.form({ id: formId });
-      return form.getToolUsers({ step, finderPath, criteriaIds, inputKeys });
+      // Instance `Form` partagée avec `useToolsCatalog` (cf. FORM_INSTANCE) : évite
+      // de re-télécharger le document complet à chaque ouverture de détail.
+      const form = await queryClient.ensureQueryData({
+        queryKey: TOOLS_CATALOG_QUERY_KEYS.FORM_INSTANCE(formId),
+        queryFn: () => api.form({ id: formId }),
+        staleTime: Infinity,
+      });
+      return form.getToolUsers({ step, finderPath, criteriaIds, inputKeys, normalizedName });
     },
     enabled: enabled && isReady,
     staleTime: 30 * 1000,

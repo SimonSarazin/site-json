@@ -1011,7 +1011,7 @@
                   "fr": "Les logiciels et leurs usages",
                   "en": "Software and their uses"
                 },
-                "href": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=list-tools#list-tools"
+                "href": "/usages"
               }
             ]
           }
@@ -2401,7 +2401,7 @@
             }
           },
           {
-            "href": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=list-tools#list-tools",
+            "href": "/usages",
             "label": {
               "fr": "Outils et ressources",
               "en": "Tools & resources"
@@ -3533,6 +3533,71 @@
               "$costum": "compagnon"
             },
             "op": "append"
+          },
+          {
+            "field": "tags",
+            "op": "append",
+            "on": "both",
+            "value": {
+              "$mapLabels": {
+                "from": "typePlace",
+                "sep": ",",
+                "map": {
+                  "ateliers-artisanaux": "Ateliers artisanaux partagés",
+                  "coworking": "Bureaux partagés / Coworking",
+                  "foodlab": "Cuisine partagée / Foodlab",
+                  "fablab": "Fablab / Makerspace / Hackerspace (Espaces du Faire)",
+                  "livinglab": "LivingLab / Laboratoire d'innovation sociale",
+                  "nourricier": "Tiers-lieu nourricier",
+                  "culturel": "Tiers-lieu culturel / Lieux intermédiaires et indépendants",
+                  "autre": "Autre famille de tiers-lieux"
+                }
+              }
+            }
+          },
+          {
+            "field": "tags",
+            "op": "append",
+            "on": "both",
+            "value": {
+              "$mapLabels": {
+                "from": "manageModel",
+                "map": {
+                  "association": "Association",
+                  "collectif-citoyen": "Collectif citoyen",
+                  "universites": "Universités / Écoles d'ingénieurs ou de commerce / EPST",
+                  "etablissements-scolaires": "Établissements scolaires (Lycée, Collège, Ecole)",
+                  "collectivites": "Collectivités (Département, Intercommunalité, Région, etc)",
+                  "sarl-sa-sas": "SARL-SA-SAS",
+                  "scic": "SCIC",
+                  "scop": "SCOP",
+                  "autre-gestion": "Autre mode de gestion"
+                }
+              }
+            }
+          },
+          {
+            "field": "tags",
+            "op": "append",
+            "on": "both",
+            "value": {
+              "$bucket": {
+                "from": "buildingSurfaceArea",
+                "buckets": [
+                  {
+                    "lt": 60,
+                    "label": "Moins de 60m²"
+                  },
+                  {
+                    "lt": 201,
+                    "label": "Entre 60 et 200m²"
+                  },
+                  {
+                    "label": "Plus de 200m²"
+                  }
+                ]
+              }
+            }
           }
         ],
         "successKey": {

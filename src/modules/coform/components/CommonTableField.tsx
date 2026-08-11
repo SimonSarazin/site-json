@@ -757,7 +757,11 @@ const CommonTableRow = memo(function CommonTableRow({
               labels={i18n.happinessLabels}
             />
           ) : (
-            <span className="text-xs text-muted-foreground italic">{i18n.selectFirst}</span>
+            // En lecture seule, « Ajoutez une solution… » inviterait à une action
+            // impossible : on retombe sur le tiret des valeurs vides.
+            <span className="text-xs text-muted-foreground italic">
+              {readOnly ? "—" : i18n.selectFirst}
+            </span>
           )}
         </td>
       )}
