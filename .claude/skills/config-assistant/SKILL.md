@@ -147,6 +147,9 @@ site à confirmer avec l'utilisateur — ne PAS l'imposer à une petite vitrine 
    `list.testimonial`/`list.resource` renseignés pour les presenters typés.
    Liste **hétérogène** (plusieurs familles dans la même grille) ⇒ `list.itemRules`
    + `baseParams.defaultFields` couvrant tous les champs testés par les `when`.
+   Disposition : `list.layout: "timeline"` (frise verticale à bulles-dates, carte
+   dédiée événement) remplace la grille — à coupler à `defaultSortBy {"startDate": -1}` ;
+   défaut CÔTÉ CODE = grille.
 5. **Sections raisonnées** : 8-18 types dont des « premium » (`data-observatory`,
    `agenda`, `hero-*`, `features-glass`) — pas 5 sections génériques.
 6. **Visibilité conditionnelle** (`condition`/`visibleIf`/`role`) là où le

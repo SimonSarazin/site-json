@@ -26,6 +26,7 @@ const prefix = (p: string, descs: Record<string, string>): Record<string, string
  * searchPro et searchProStatic ; monté sous `props.list.` dans chaque section.
  */
 const LIST: Record<string, string> = {
+  layout: "Disposition : grid (défaut CÔTÉ CODE) ou timeline (frise verticale — bulle-date sur ligne pointillée, cartes alternées) ; à coupler à defaultSortBy {startDate:-1} ; ignorée en vue détaillée et en mode split.",
   columns: "Colonnes de la grille par breakpoint (sm/md/lg/xl, 1-6).",
   "card.type": "Presenter de carte (voir table SKILL) ; ⚠ défaut CÔTÉ CODE : overlay — le schéma dit default mais n'est jamais appliqué.",
   "card.variant": "Surcharge card.type pour le SEUL dispatch visuel (sous-ensemble sans overlay/news/testimonial/resource).",

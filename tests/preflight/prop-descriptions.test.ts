@@ -70,8 +70,8 @@ describe("registre prop-descriptions ⇄ schéma (garde-fou)", () => {
     "section:filters": 10,
     "section:hero-carousel": 11,
     "section:searchHeader": 10,
-    "section:searchPro": 60,
-    "section:searchProStatic": 72,
+    "section:searchPro": 61,
+    "section:searchProStatic": 73,
     "section:thematics": 2,
     theme: 11,
   };

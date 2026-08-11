@@ -63,6 +63,14 @@
         "icon": "calendar"
       },
       {
+        "label":{
+          "fr": "Actualités",
+          "en": "News"
+        },
+        "path": "/actualites",
+        "icon": "newspaper"
+      },
+      {
         "label": {
           "fr": "Equipements",
           "en": "Facilities"
@@ -3737,8 +3745,8 @@
     {
       "path": "/actualites",
       "title": {
-        "fr": "Actualités - Saint-Paul Sport",
-        "en": "News - Saint-Paul Sport"
+        "fr": "Actus & Événements - Saint-Paul Sport",
+        "en": "News & Events - Saint-Paul Sport"
       },
       "layout": "fullwidth",
       "sections": [
@@ -3751,62 +3759,195 @@
               "en": "News"
             },
             "subhead": {
-              "fr": "Toutes les actualités du sport à Saint-Paul",
-              "en": "All sports news in Saint-Paul"
+              "fr": "Les actus et les événements du sport à Saint-Paul",
+              "en": "Sports news and events in Saint-Paul"
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher une actu ou un événement...",
+              "en": "Search for news or an event..."
             },
             "headlineClassName": "text-white dark:text-foreground",
             "subheadClassName": "text-white dark:text-foreground"
           }
         },
         {
-          "type": "searchProStatic",
-          "id": "actualites-list",
+          "type": "tabs",
+          "id": "actualites-tabs",
           "props": {
-            "useFilter": true,
-            "showMap": false,
-            "enableMap": false,
-            "showActiveFiltersTypes": true,
-            "showActiveFiltersTags": true,
-            "disableInfiniteScroll": false,
-            "baseParams": {
-              "defaultTypes": [
-                "news"
-              ],
-              "notSourceKey": true,
-              "defaultSortBy": {
-                "created": -1
+            "defaultTab": "actus",
+            "orientation": "horizontal",
+            "tabs": [
+              {
+                "id": "actus",
+                "label": {
+                  "fr": "Actus",
+                  "en": "News"
+                },
+                "icon": "newspaper",
+                "content": [
+                  {
+                    "type": "searchProStatic",
+                    "id": "actualites-articles-list",
+                    "props": {
+                      "useFilter": true,
+                      "showMap": false,
+                      "enableMap": false,
+                      "showActiveFiltersTypes": true,
+                      "showActiveFiltersTags": true,
+                      "disableInfiniteScroll": false,
+                      "baseParams": {
+                        "defaultTypes": [
+                          "poi"
+                        ],
+                        "notSourceKey": true,
+                        "defaultSortBy": {
+                          "created": -1
+                        },
+                        "defaultFilters": {
+                          "type": "article",
+                          "$or": {
+                            "address.localityId": "54c0965cf6b95c141800a518",
+                            "source.key": "saintpaulSport1",
+                            "source.keys": "saintpaulSport1"
+                          }
+                        },
+                        "defaultFields": [
+                          "name",
+                          "slug",
+                          "collection",
+                          "type",
+                          "source",
+                          "shortDescription",
+                          "description",
+                          "profilImageUrl",
+                          "profilMediumImageUrl",
+                          "profilThumbImageUrl",
+                          "medias",
+                          "urls",
+                          "tags",
+                          "created"
+                        ]
+                      },
+                      "list": {
+                        "columns": {
+                          "sm": 1,
+                          "md": 2,
+                          "lg": 3,
+                          "xl": 3
+                        },
+                        "previewParam": "preview-actus",
+                        "card": {
+                          "type": "resource",
+                          "detailsMode": "drawer"
+                        },
+                        "preview": {
+                          "type": "resource"
+                        },
+                        "resource": {
+                          "design": "card",
+                          "titleField": "name",
+                          "descriptionField": "description",
+                          "dateField": "created",
+                          "imageField": "profilMediumImageUrl",
+                          "facets": [
+                            {
+                              "field": "tags",
+                              "label": {
+                                "fr": "Mots-clés",
+                                "en": "Tags"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ]
               },
-              "defaultFilters": {
-                "$or": {
-                  "address.localityId": "54c0965cf6b95c141800a518",
-                  "source.key": "saintpaulSport1",
-                  "source.keys": "saintpaulSport1"
-                }
+              {
+                "id": "evenements",
+                "label": {
+                  "fr": "Événements",
+                  "en": "Events"
+                },
+                "icon": "calendar",
+                "content": [
+                  {
+                    "type": "searchProStatic",
+                    "id": "actualites-events-list",
+                    "props": {
+                      "useFilter": true,
+                      "showMap": false,
+                      "enableMap": false,
+                      "showActiveFiltersTypes": true,
+                      "showActiveFiltersTags": true,
+                      "disableInfiniteScroll": false,
+                      "baseParams": {
+                        "defaultTypes": [
+                          "events"
+                        ],
+                        "notSourceKey": true,
+                        "defaultSortBy": {
+                          "startDate": -1
+                        },
+                        "defaultFilters": {
+                          "$or": {
+                            "source.key": "saintpaulSport1",
+                            "source.keys": "saintpaulSport1"
+                          }
+                        },
+                        "defaultFields": [
+                          "name",
+                          "slug",
+                          "collection",
+                          "type",
+                          "source",
+                          "shortDescription",
+                          "description",
+                          "profilImageUrl",
+                          "profilMediumImageUrl",
+                          "profilThumbImageUrl",
+                          "medias",
+                          "urls",
+                          "address",
+                          "tags",
+                          "created",
+                          "startDate",
+                          "endDate",
+                          "organizer"
+                        ]
+                      },
+                      "list": {
+                        "layout": "timeline",
+                        "columns": {
+                          "sm": 1,
+                          "md": 2,
+                          "lg": 3,
+                          "xl": 4
+                        },
+                        "previewParam": "preview-events",
+                        "card": {
+                          "type": "event",
+                          "detailsMode": "drawer",
+                          "tagLimit": 1
+                        },
+                        "preview": {
+                          "type": "event"
+                        }
+                      }
+                    }
+                  }
+                ]
               }
-            },
-            "list": {
-              "columns": {
-                "sm": 1,
-                "md": 2,
-                "lg": 3,
-                "xl": 3
-              },
-              "card": {
-                "type": "news",
-                "detailsMode": "dialog"
-              },
-              "preview": {
-                "type": "news",
-                "showDetailLink": true
-              }
-            }
+            ]
           }
         }
       ],
       "seo": {
         "description": {
-          "fr": "Les actualités des équipements et du sport à Saint-Paul.",
-          "en": "News about sports and facilities in Saint-Paul."
+          "fr": "Les actualités et les événements des équipements et du sport à Saint-Paul.",
+          "en": "News and events about sports and facilities in Saint-Paul."
         }
       }
     },

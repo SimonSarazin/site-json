@@ -2,8 +2,10 @@ import "@/modules/search/i18n"; // Required: registers i18n resources — la LIS
 // section search (agenda, split map…) ; import explicite (indépendant de la chaîne SwitchDetailsMode).
 import { useState, useRef, useEffect, useCallback, useMemo, Suspense } from "react";
 import { useSearchParams, useNavigate } from "react-router";
+import { lazy } from "vite-preload";
 import SearchCard from "./SearchCard";
 import SearchCardSkeleton from "./SearchCardSkeleton";
+import SearchListSkeleton from "./SearchListSkeleton";
 import { SearchListViewProps, type ListConf } from "../schema";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { SwitchDetailsMode } from "./SwitchDetailsMode";
@@ -13,6 +15,10 @@ import { cn } from "@/lib/utils";
 import { getEntryId } from "../lib/searchMapSelection";
 import { resolveListItemConf, resolveListItemConfs } from "../lib/resolveListItemConf";
 import { resolveItemClick } from "../lib/itemAction";
+
+// Vue timeline en `lazy()` (même convention que les variants de SearchCard) : le chunk
+// n'est téléchargé que par les pages qui posent `list.layout: "timeline"`.
+const TimelineListView = lazy(() => import("./TimelineListView"));
 
 export default function SearchListView({
   results,
@@ -203,6 +209,34 @@ export default function SearchListView({
           )}
         </div>
 
+        {selected && (
+          <PreviewNavContext.Provider value={previewNavValue}>
+            <SwitchDetailsMode openDetails={openDetails} setOpenDetails={handleSetOpenDetails} item={selected.item} card={selected.list?.card ?? card} preview={selected.list?.preview ?? preview} list={selected.list ?? list} />
+          </PreviewNavContext.Provider>
+        )}
+      </>
+    );
+  }
+
+  // Vue timeline (`list.layout: "timeline"`) — la vue détaillée (ci-dessus) reste prioritaire,
+  // et le mode split (`onFocusItem`) garde la grille : l'alternance gauche/droite n'a pas de
+  // sens dans une colonne de liste étroite. Défaut CÔTÉ CODE = grille (la config n'est jamais
+  // parsée par Zod au runtime → pas de `.default()` applicable).
+  if (list?.layout === "timeline" && !onFocusItem) {
+    return (
+      <>
+        <Suspense fallback={<SearchListSkeleton />}>
+          <TimelineListView
+            results={results}
+            itemLists={itemLists}
+            list={list}
+            onItemClick={handleCardClick}
+            focusedItemId={focusedItemId}
+            containerRef={containerRef}
+          />
+        </Suspense>
+
+        {/* Conteneur (dialog/drawer) choisi par `card.detailsMode` de la conf RÉSOLUE de l'item ouvert. */}
         {selected && (
           <PreviewNavContext.Provider value={previewNavValue}>
             <SwitchDetailsMode openDetails={openDetails} setOpenDetails={handleSetOpenDetails} item={selected.item} card={selected.list?.card ?? card} preview={selected.list?.preview ?? preview} list={selected.list ?? list} />
