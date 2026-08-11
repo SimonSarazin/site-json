@@ -41,9 +41,10 @@
       "config": "config.prod.saint-paul-sport.json",
       "titre": "Cartographie / observatoire de données",
       "demontre": [
-        "presenters poi-amenities et news (card + preview)",
+        "presenters poi-amenities et resource (card + preview)",
         "2 sections data-observatory (pages /observatoire et /data)",
-        "baseParams sur une source externe (sourceKey = equipementsSportifs974)",
+        "modèle RÉSEAU : data centrée sur le slug du site (aucun sourceKey ni notSourceKey écrit — le SDK auto-scope au porteur) + reference.costum vers le costum régional, posé à la création par mutation.stamps",
+        "costumForms + bloc admin (5 onglets) : le site possède, administre et modère sa data",
         "theme complet + customCSS"
       ],
       "knownFindings": []
