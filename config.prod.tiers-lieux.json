@@ -234,7 +234,7 @@
               "fr": "Le recensement des communs et outils utilisés dans les tiers-lieux, pour faciliter les pratiques de mutualisation",
               "en": "A catalogue of the uses and tools found in third places, to ease resource-sharing practices"
             },
-            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=list-tools#list-tools"
+            "path": "/usages"
           },
           {
             "label": {
@@ -1011,7 +1011,7 @@
                   "fr": "Les logiciels et leurs usages",
                   "en": "Software and their uses"
                 },
-                "href": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=list-tools#list-tools"
+                "href": "/usages"
               }
             ]
           }
@@ -2334,6 +2334,49 @@
           }
         }
       ]
+    },
+    {
+      "path": "/usages",
+      "title": {
+        "fr": "Usages et outils - Le réseau social des tiers-lieux",
+        "en": "Uses and tools - The third places social network"
+      },
+      "seo": {
+        "description": {
+          "fr": "Le recensement des communs et outils utilisés dans les tiers-lieux, pour faciliter les pratiques de mutualisation.",
+          "en": "A catalogue of the uses and tools found in third places, to ease resource-sharing practices."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "toolsCatalog",
+          "id": "section-usages-outils",
+          "props": {
+            "formId": "636cd563e2439b7fc12cd680",
+            "step": "lesCommunsDesTierslieux10112022_1423_0",
+            "finderPath": "answers.lesCommunsDesTierslieux10112022_1423_0.finderlesCommunsDesTierslieux10112022_1423_0lmbmy4z4ze9v982h4fh",
+            "title": {
+              "fr": "Les logiciels et leurs usages",
+              "en": "Software and their uses"
+            },
+            "description": {
+              "fr": "Le recensement des communs et outils utilisés dans les tiers-lieux, pour faciliter les pratiques de mutualisation.",
+              "en": "A catalogue of the uses and tools found in third places, to ease resource-sharing practices."
+            },
+            "showOpenSourceToggle": true,
+            "showUsageFilter": true,
+            "showCommunInfo": true,
+            "communFormId": "6438366673d20a0de1533c77",
+            "showAnswerButton": true,
+            "enableEnrichmentEditing": true,
+            "communUrlTemplate": "https://lescommuns.tiers-lieux.org/#detail-un-commun.communId.{communId}",
+            "width": "container"
+          }
+        }
+      ]
     }
   ],
   "footer": {
@@ -2358,7 +2401,7 @@
             }
           },
           {
-            "href": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=list-tools#list-tools",
+            "href": "/usages",
             "label": {
               "fr": "Outils et ressources",
               "en": "Tools & resources"
