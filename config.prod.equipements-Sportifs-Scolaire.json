@@ -16,7 +16,7 @@
       "en"
     ],
     "favicon": "/images/equipementsSportifs974/favicon.svg",
-    "themeColor": "#007f5a",
+    "themeColor": "#112740",
     "keywords": [
       "équipements sportifs scolaires",
       "La Réunion",
@@ -154,71 +154,7 @@
                 "variant": "secondary"
               }
             ],
-            "showScrollIndicator": true
-          }
-        },
-        {
-          "type": "categories-grid",
-          "id": "piliers",
-          "props": {
-            "headline": {
-              "fr": "Quatre piliers au service du sport scolaire",
-              "en": "Four pillars serving school sport"
-            },
-            "subhead": {
-              "fr": "ESS974 réunit les données, le terrain et les établissements pour piloter l'offre sportive scolaire de l'île.",
-              "en": "ESS974 brings together data, fieldwork and schools to steer the island's school sports offering."
-            },
-            "columns": 2,
-            "cards": [
-              {
-                "icon": "database",
-                "title": {
-                  "fr": "Interopérabilité des données",
-                  "en": "Data interoperability"
-                },
-                "subtitle": {
-                  "fr": "Imports et flux standardisés. Les équipements scolaires connectés au Recensement des équipements sportifs (RES).",
-                  "en": "Standardized imports and flows. School facilities connected to the national sports facilities census (RES)."
-                },
-                "link": "/data"
-              },
-              {
-                "icon": "map-pin",
-                "title": {
-                  "fr": "Annuaire des équipements",
-                  "en": "Equipment Directory"
-                },
-                "subtitle": {
-                  "fr": "Tous les équipements sportifs scolaires de l'île, filtrables par commune, type et accessibilité, avec géolocalisation.",
-                  "en": "All school sports facilities on the island, filterable by municipality, type and accessibility, with geolocation."
-                },
-                "link": "/equipements-sportifs"
-              },
-              {
-                "icon": "bar-chart-2",
-                "title": {
-                  "fr": "Observatoire du sport scolaire",
-                  "en": "School sport observatory"
-                },
-                "subtitle": {
-                  "fr": "Chiffres clés par commune, type d'équipement et accessibilité. Une lecture analytique du parc scolaire.",
-                  "en": "Key figures by municipality, facility type and accessibility. An analytical view of the school estate."
-                },
-                "link": "/observatoire"
-              },
-              {
-                "icon": "users",
-                "title": {
-                  "fr": "Communauté éducative",
-                  "en": "Educational community"
-                },
-                "subtitle": {
-                  "fr": "Établissements, collectivités et enseignants partagent une même vue du parc sportif scolaire.",
-                  "en": "Schools, local authorities and teachers share a single view of the school sports estate."
-                }
-              }
-            ]
+            "showScrollIndicator": false
           }
         },
         {
@@ -3301,25 +3237,25 @@
     "defaultMode": "light",
     "colors": {
       "light": {
-        "background": "oklch(0.990 0.006 160)",
-        "foreground": "oklch(0.240 0.025 175)",
+        "background": "oklch(0.985 0.004 247)",
+        "foreground": "oklch(0.270 0.055 253)",
         "card": "oklch(1.000 0 0)",
-        "cardForeground": "oklch(0.240 0.025 175)",
+        "cardForeground": "oklch(0.270 0.055 253)",
         "popover": "oklch(1.000 0 0)",
-        "popoverForeground": "oklch(0.240 0.025 175)",
-        "primary": "oklch(0.520 0.118 166)",
-        "primaryForeground": "oklch(1.000 0 0)",
-        "secondary": "oklch(0.955 0.018 168)",
-        "secondaryForeground": "oklch(0.330 0.045 170)",
-        "muted": "oklch(0.965 0.008 168)",
-        "mutedForeground": "oklch(0.490 0.030 172)",
-        "accent": "oklch(0.640 0.180 34)",
-        "accentForeground": "oklch(0.215 0.060 40)",
-        "destructive": "oklch(0.6368 0.2078 25.3313)",
-        "destructiveForeground": "oklch(1.0000 0 0)",
-        "border": "oklch(0.910 0.012 168)",
-        "input": "oklch(0.910 0.012 168)",
-        "ring": "oklch(0.520 0.118 166)",
+        "popoverForeground": "oklch(0.270 0.055 253)",
+        "primary": "oklch(0.270 0.055 253)",
+        "primaryForeground": "oklch(0.985 0.004 247)",
+        "secondary": "oklch(0.940 0.018 236)",
+        "secondaryForeground": "oklch(0.270 0.055 253)",
+        "muted": "oklch(0.950 0.006 247)",
+        "mutedForeground": "oklch(0.520 0.035 253)",
+        "accent": "oklch(0.790 0.145 85)",
+        "accentForeground": "oklch(0.270 0.055 253)",
+        "destructive": "oklch(0.580 0.220 28)",
+        "destructiveForeground": "oklch(0.985 0.004 247)",
+        "border": "oklch(0.870 0.018 247)",
+        "input": "oklch(0.870 0.018 247)",
+        "ring": "oklch(0.510 0.105 247)",
         "warning": "oklch(0.950 0.160 85)",
         "warningForeground": "oklch(0.200 0.060 85)",
         "success": "oklch(0.830 0.180 135)",
@@ -3328,40 +3264,40 @@
         "infoForeground": "oklch(0.200 0.030 260)",
         "error": "oklch(0.680 0.250 30)",
         "errorForeground": "oklch(1 0 0)",
-        "chart1": "oklch(0.520 0.118 166)",
-        "chart2": "oklch(0.640 0.180 34)",
-        "chart3": "oklch(0.580 0.100 200)",
-        "chart4": "oklch(0.650 0.130 145)",
-        "chart5": "oklch(0.450 0.090 175)",
-        "sidebar": "oklch(0.965 0.008 168)",
-        "sidebarForeground": "oklch(0.240 0.025 175)",
-        "sidebarPrimary": "oklch(0.520 0.118 166)",
-        "sidebarPrimaryForeground": "oklch(1.000 0 0)",
-        "sidebarAccent": "oklch(0.640 0.180 34)",
-        "sidebarAccentForeground": "oklch(0.215 0.060 40)",
-        "sidebarBorder": "oklch(0.910 0.012 168)",
-        "sidebarRing": "oklch(0.520 0.118 166)"
+        "chart1": "oklch(0.510 0.105 247)",
+        "chart2": "oklch(0.790 0.145 85)",
+        "chart3": "oklch(0.620 0.090 210)",
+        "chart4": "oklch(0.550 0.130 300)",
+        "chart5": "oklch(0.400 0.045 253)",
+        "sidebar": "oklch(0.950 0.006 247)",
+        "sidebarForeground": "oklch(0.270 0.055 253)",
+        "sidebarPrimary": "oklch(0.270 0.055 253)",
+        "sidebarPrimaryForeground": "oklch(0.985 0.004 247)",
+        "sidebarAccent": "oklch(0.790 0.145 85)",
+        "sidebarAccentForeground": "oklch(0.270 0.055 253)",
+        "sidebarBorder": "oklch(0.870 0.018 247)",
+        "sidebarRing": "oklch(0.510 0.105 247)"
       },
       "dark": {
-        "background": "oklch(0.205 0.012 170)",
-        "foreground": "oklch(0.945 0.010 170)",
-        "card": "oklch(0.245 0.014 170)",
-        "cardForeground": "oklch(0.945 0.010 170)",
-        "popover": "oklch(0.230 0.013 170)",
-        "popoverForeground": "oklch(0.945 0.010 170)",
-        "primary": "oklch(0.760 0.150 168)",
-        "primaryForeground": "oklch(0.180 0.040 170)",
-        "secondary": "oklch(0.330 0.030 170)",
-        "secondaryForeground": "oklch(0.945 0.010 170)",
-        "muted": "oklch(0.300 0.020 170)",
-        "mutedForeground": "oklch(0.760 0.020 172)",
-        "accent": "oklch(0.730 0.150 40)",
-        "accentForeground": "oklch(0.180 0.050 40)",
-        "destructive": "oklch(0.6368 0.2078 25.3313)",
-        "destructiveForeground": "oklch(1.0000 0 0)",
-        "border": "oklch(0.370 0.022 170)",
-        "input": "oklch(0.330 0.020 170)",
-        "ring": "oklch(0.760 0.150 168)",
+        "background": "oklch(0.205 0.030 253)",
+        "foreground": "oklch(0.945 0.008 247)",
+        "card": "oklch(0.245 0.032 253)",
+        "cardForeground": "oklch(0.945 0.008 247)",
+        "popover": "oklch(0.230 0.031 253)",
+        "popoverForeground": "oklch(0.945 0.008 247)",
+        "primary": "oklch(0.720 0.105 247)",
+        "primaryForeground": "oklch(0.185 0.035 253)",
+        "secondary": "oklch(0.330 0.038 250)",
+        "secondaryForeground": "oklch(0.945 0.008 247)",
+        "muted": "oklch(0.300 0.028 251)",
+        "mutedForeground": "oklch(0.760 0.022 250)",
+        "accent": "oklch(0.820 0.145 85)",
+        "accentForeground": "oklch(0.200 0.045 85)",
+        "destructive": "oklch(0.650 0.200 28)",
+        "destructiveForeground": "oklch(0.985 0.004 247)",
+        "border": "oklch(0.370 0.030 250)",
+        "input": "oklch(0.330 0.028 250)",
+        "ring": "oklch(0.620 0.105 247)",
         "warning": "oklch(0.750 0.180 85)",
         "warningForeground": "oklch(0.950 0.040 85)",
         "success": "oklch(0.600 0.180 135)",
@@ -3370,19 +3306,19 @@
         "infoForeground": "oklch(0.950 0.040 260)",
         "error": "oklch(0.680 0.250 30)",
         "errorForeground": "oklch(0.990 0.030 100)",
-        "chart1": "oklch(0.760 0.150 168)",
-        "chart2": "oklch(0.730 0.150 40)",
-        "chart3": "oklch(0.700 0.110 200)",
-        "chart4": "oklch(0.720 0.130 145)",
-        "chart5": "oklch(0.600 0.110 175)",
-        "sidebar": "oklch(0.185 0.011 170)",
-        "sidebarForeground": "oklch(0.945 0.010 170)",
-        "sidebarPrimary": "oklch(0.760 0.150 168)",
-        "sidebarPrimaryForeground": "oklch(0.180 0.040 170)",
-        "sidebarAccent": "oklch(0.730 0.150 40)",
-        "sidebarAccentForeground": "oklch(0.180 0.050 40)",
-        "sidebarBorder": "oklch(0.370 0.022 170)",
-        "sidebarRing": "oklch(0.760 0.150 168)"
+        "chart1": "oklch(0.700 0.105 247)",
+        "chart2": "oklch(0.830 0.145 85)",
+        "chart3": "oklch(0.740 0.090 210)",
+        "chart4": "oklch(0.680 0.130 300)",
+        "chart5": "oklch(0.620 0.040 253)",
+        "sidebar": "oklch(0.185 0.028 253)",
+        "sidebarForeground": "oklch(0.945 0.008 247)",
+        "sidebarPrimary": "oklch(0.720 0.105 247)",
+        "sidebarPrimaryForeground": "oklch(0.185 0.035 253)",
+        "sidebarAccent": "oklch(0.820 0.145 85)",
+        "sidebarAccentForeground": "oklch(0.200 0.045 85)",
+        "sidebarBorder": "oklch(0.370 0.030 250)",
+        "sidebarRing": "oklch(0.620 0.105 247)"
       }
     },
     "typography": {
@@ -3427,7 +3363,7 @@
         "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
       }
     },
-    "customCSS": "\n .access-card {\n border: 1px solid var(--primary);\n border-radius: var(--radius-2xl); \n background-color: color-mix(in oklab, var(--card) 30%, transparent);}"
+    "customCSS": "\n .access-card {\n border: 1px solid var(--primary);\n border-radius: var(--radius-2xl); \n background-color: color-mix(in oklab, var(--card) 30%, transparent);}\n\n /* Cartes des piliers en chevauchement sur le hero : aucune section n'expose\n    d'offset negatif, c'est le seul levier sans toucher au moteur. */\n #piliers { margin-top: -4.5rem; position: relative; z-index: 20; }\n @media (max-width: 1023px) { #piliers { margin-top: -2rem; } }\n\n /* Bande des searchHeader : suivre le theme du site plutot que le turquoise\n    code en dur dans src/index-equipements-sportifs.css, feuille PARTAGEE avec\n    equipementsSportifs974 et saintpaulSport1 — donc intouchable ici.\n    `:root:root` passe devant elle quel que soit l'ordre d'injection. */\n :root:root { --gradient-section: linear-gradient(135deg, var(--primary), var(--ring)); }\n\n /* Bande « Ressources de pilotage ». Elle doit rester SOMBRE dans les deux\n    modes : en dark `--primary` s'eclaircit et la bande virait au bleu vif.\n    D'ou deux variables locales, seules a changer d'un mode a l'autre. */\n #ressources { --band-bg: var(--primary); --band-fg: var(--primary-foreground); }\n .dark #ressources { --band-bg: var(--sidebar); --band-fg: var(--foreground); }\n #ressources { background-color: var(--band-bg); }\n\n /* Les sections imbriquees posent `text-primary` (content) et `text-foreground`\n    (action-tiles), invisibles sur ce fond ; un selecteur d'ID passe devant. */\n #ressources h2, #ressources h3, #ressources p, #ressources span, #ressources a {\n   color: var(--band-fg); }\n #ressources .text-muted-foreground {\n   color: color-mix(in oklab, var(--band-fg) 75%, transparent); }\n\n /* Tuiles d'acces : `bg-accent/20` (jaune) sur ce fond bleu vire au kaki.\n    Voile clair a la place, l'icone restant en accent. */\n #ressources a > button {\n   background-color: color-mix(in oklab, var(--band-fg) 10%, transparent);\n   border-color: color-mix(in oklab, var(--band-fg) 28%, transparent); }\n #ressources a > button:hover {\n   background-color: color-mix(in oklab, var(--band-fg) 18%, transparent); }\n"
   },
   "auth": {
     "login": {

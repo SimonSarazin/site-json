@@ -35,8 +35,8 @@ scoping automatique — là où Saint-Paul devait filtrer explicitement (cf. §7
 |---|---|
 | Slug | `ESS974` |
 | Entité backend | `projects` · `6a69e64c7f77a86acc6c9e38` · « ESS974 Equipepement Sportif Scolaire Réunion » |
-| Config | [`../config.prod.equipements-Sportifs-Scolaire.json`](../config.prod.equipements-Sportifs-Scolaire.json) — 155 Ko, 8 pages, 13 sections |
-| CSS | [`../src/index-equipements-sportifs.css`](../src/index-equipements-sportifs.css) — **partagé** avec le site parent et Saint-Paul Sport |
+| Config | [`../config.prod.equipements-Sportifs-Scolaire.json`](../config.prod.equipements-Sportifs-Scolaire.json) — 164 Ko, 8 pages, 15 sections |
+| CSS | [`../src/index-equipements-sportifs.css`](../src/index-equipements-sportifs.css) — **partagé** avec le site parent et Saint-Paul Sport (jamais modifié : la palette vit dans `theme`, propre au site) |
 | Images | `public/images/equipementsSportifs974/` — **mutualisées** avec le site parent |
 | Langues | `fr` (défaut) + `en` |
 | Header / Footer | `transparent-scroll` / `contact-partners` |
@@ -50,6 +50,7 @@ scoping automatique — là où Saint-Paul devait filtrer explicitement (cf. §7
 |---|---|---|
 | 06/08 | Peterson | Création de l'entrée `sites.json` et du fichier de config (vide) |
 | 06/08 | Claude | Sondage du périmètre, lot 1 (config complète en consultation), demande backend |
+| 06/08 | Claude | Lot « design » : refonte de la page d'accueil et du footer sur la maquette `campus-sports-kit`, nouvelle palette (§4.4) |
 
 ---
 
@@ -94,7 +95,7 @@ le scoping vient du contexte costum de l'entité résolue par `VITE_SLUG` au boo
 
 | Page | Sections | Rôle |
 |---|---|---|
-| `/` | 3 | `hero-parallax` · `categories-grid` · `hero-quick-access` |
+| `/` | 5 | `hero-parallax` · `categories-grid` · `searchProStatic` · `hero-quick-access` · `gridLayout` — cf. §4.4 |
 | `/equipements-sportifs` | 2 | `searchHeader` + `searchProStatic` — la recherche |
 | `/observatoire` | 2 | `searchHeader` + `data-observatory` — le tableau de bord |
 | `/data` | 2 | `searchHeader` + `data-observatory` — la table brute |
