@@ -643,6 +643,35 @@ export function canonicalSearchProStaticBaseParams(
 ): Record<string, unknown>
 ```
 
+### expandCostumSubType — sous-types de costum (clé sucre `costumSubType`)
+
+`src/modules/search/lib/costumSubType.ts` — une entité appartient au sous-type S du costum C si
+elle est **native** (créée par le form : elle matche son `identity`) OU **annotée**
+(`reference.costumTypes.C == S`, posée au référencement admin, cf.
+[30-module-admin](30-module-admin.md)). Pour ne pas dupliquer ce `$or` dans les configs, les
+`baseParams` (pages ET sections admin `resource`) acceptent la clé sucre :
+
+```jsonc
+"baseParams": { "costumSubType": "financement", … }
+```
+
+expansée côté client en `defaultFilters.$or` **forme OBJET mono-champ** (la seule que le legacy
+accepte — `SearchNew::searchFilters` construit `array($champ => $valeur)` par entrée) :
+
+```jsonc
+{ "$or": { "type": "financement", "reference.costumTypes.institutBleu": "financement" } }
+```
+
+- Le discriminant (`identity`) et la clé canonique (`subType`) vivent UNE fois, dans la
+  déclaration du form (`costumForms.<id>`, cf. [28-module-formengine](28-module-formengine.md)) ;
+- l'expansion est branchée dans `useSearchQuery` (queryKey + payload) ET `prefetchSearchResults`
+  (SSR miroir) ; sans la clé, les baseParams ressortent à l'identique (même référence — aucune
+  queryKey existante ne bouge) ;
+- pas de fuite hors costum : le périmètre (`source.keys` OU `reference.costum`) est déjà appliqué
+  en `$and` au-dessus par le serveur (`buildSourceKey`) ;
+- `formsDeCollection`/`formDeSousType` (même fichier) résolvent les forms candidats d'une
+  collection (costum du site prioritaire — même règle que `costumCreateKey`).
+
 ### schedules — regroupement des créneaux CoForm
 
 `src/modules/search/lib/schedules.ts` (commits e293338 / 5d24b6b) — **factorisé** depuis `CardAnswer` et `PreviewCoformAnswer` (logique dupliquée).
@@ -1073,6 +1102,32 @@ Source unique, sans React, testée (`dropdownFilters.test.ts`) :
 ```
 
 Chaque facette : `{ field, label?, icon? }` (`PreviewFacetSchema`). `field` supporte le dot-path ; les valeurs multiples (`coerce:stringArray` ou `"a, b"`) sont splittées en tokens. L'axe **bespoke** reste disponible (un `preview.type` dédié comme `poi-amenities` compose la même primitive) — cf. le dispatch `Preview.tsx` (générique `default`/`facets` ↔ variantes sur-mesure).
+
+Options : `width` (largeur de la modale, ex. `"3xl"`) et `showDescription` (défaut `true` — la
+description de l'entité sous le titre ; hauteur bornée `max-h-[85vh]`, valable tiroir ET modale).
+Usage type : `/annuaire` institut-bleu — `card.detailsMode: "dialog"` + `preview.type: "facets"`
+(aperçu métier sans navigation vers le profil). ⚠ une facette sur un champ indexé par un
+`dropdownFilter` d'une AUTRE page devient cliquable **vers cette page** (`findFilterByField` scanne
+toute la config) — ne déclarer que des champs neutres, ou assumer la navigation.
+
+#### Options DYNAMIQUES d'un filtre — `optionsFrom` (listes déclarées du costum)
+
+Un filtre (dropdown ou `filterGroups`) peut tirer ses options d'une **liste déclarée du costum**
+(`costum.lists.<nom>` : `{collection, distinct, where}`) au lieu d'options figées :
+
+```jsonc
+{ "field": "tags", "optionsFrom": { "list": "tagsDocument" } }   // costumSlug optionnel (défaut : site)
+```
+
+`useDynamicFilterOptions` interroge l'endpoint `costum/co/listvalues` (existe côté legacy ET Node,
+byte-vérifié) qui résout la liste **hors du cache costum** (valeurs fraîches — une valeur saisie
+librement apparaît aux suivants). Garde-fou serveur : le client demande une liste par son NOM, la
+déclaration en base porte collection/champ/filtre — une liste non déclarée n'est pas résolvable.
+Pagination : plafond client 300 (couvre 7 des 8 listes du parc) ; au-delà, la réponse porte
+`total`/`truncated` et la **recherche re-interroge le serveur** (`q`, forme canonique sans
+accents/casse, `limit` ≤ 5000) — mesuré : « Zooplancton », rang 1208/1209, trouvé via la saisie.
+Sans `optionsFrom`, rien ne change (les options déclarées font foi). Les libellés sont capitalisés
+à l'AFFICHAGE seul (la valeur filtrée reste byte-fidèle).
 
 ### Cartes news dans la recherche (CardNews et PreviewNews)
 

@@ -35,8 +35,26 @@ export default function RecoverPasswordForm({ onSwitchToLogin }: RecoverPassword
   const t                            = useT("modules/auth");
   const { config }                   = useSite();
 
+  // Mécanisme : défaut "legacy" (le backend régénère un mdp et l'envoie par e-mail — pas de lien) ;
+  // "node" (opt-in config) = flux à lien /recover/:user/:code. Pilote toute la formulation ci-dessous.
+  const isNodeReset = config.auth?.recover?.mode === "node";
+
   const recoverTitle = config.auth?.recover?.title || { fr: "Mot de passe oublié", en: "Forgot password" };
-  const recoverSubtitle = config.auth?.recover?.subtitle || { fr: "Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation", en: "Enter your email to receive a reset link" };
+  const recoverSubtitle =
+    config.auth?.recover?.subtitle ||
+    (isNodeReset
+      ? { fr: "Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation", en: "Enter your email to receive a reset link" }
+      : { fr: "Saisissez votre adresse e-mail : un nouveau mot de passe vous sera envoyé", en: "Enter your email: a new password will be sent to you" });
+
+  // Clés i18n de confirmation/bouton selon le mécanisme (legacy = mdp régénéré ; node = lien de reset).
+  const sentTitle = isNodeReset ? "E-mail envoyé" : "Nouveau mot de passe envoyé";
+  const sentDescription = isNodeReset
+    ? "Un e-mail de récupération a été envoyé à votre adresse."
+    : "Un nouveau mot de passe a été envoyé à votre adresse.";
+  const sentInstruction = isNodeReset
+    ? "Vérifiez votre boîte de réception et suivez les instructions pour réinitialiser votre mot de passe."
+    : "Connectez-vous avec ce nouveau mot de passe, puis modifiez-le depuis vos réglages.";
+  const submitLabel = isNodeReset ? "Envoyer le lien de récupération" : "Réinitialiser mon mot de passe";
 
   /* Redirige si l’utilisateur est déjà connecté ------------------------ */
   useEffect(() => {
@@ -75,10 +93,8 @@ export default function RecoverPasswordForm({ onSwitchToLogin }: RecoverPassword
 
       if (response.result) {
         setEmailSent(true);
-        toast.success(t("E-mail envoyé"), {
-          description: t(
-            "Un e-mail de récupération a été envoyé à votre adresse."
-          ),
+        toast.success(t(sentTitle), {
+          description: t(sentDescription),
         });
       } else if (response.errId === "UNKNOWN_ACCOUNT_ID") {
         toast.error(t("Compte introuvable"), {
@@ -123,14 +139,13 @@ export default function RecoverPasswordForm({ onSwitchToLogin }: RecoverPassword
             <CheckCircle className="w-8 h-8 text-success" />
           </div>
           <h2 className="text-3xl font-bold text-foreground mb-2">
-            {t("E-mail envoyé")}
+            {t(sentTitle)}
           </h2>
           <p className="text-muted-foreground mb-4">
-            {t("Un e-mail de récupération a été envoyé à votre adresse.")}
-            <strong>{email}</strong>
+            {t(sentDescription)} <strong>{email}</strong>
           </p>
           <p className="text-sm text-muted-foreground">
-            {t("Vérifiez votre boîte de réception et suivez les instructions pour réinitialiser votre mot de passe.")}
+            {t(sentInstruction)}
           </p>
         </div>
 
@@ -198,7 +213,7 @@ export default function RecoverPasswordForm({ onSwitchToLogin }: RecoverPassword
         >
           {loadingRecover
             ? t("Envoi en cours...")
-            : t("Envoyer le lien de récupération")}
+            : t(submitLabel)}
         </Button>
 
         <div className="text-center space-y-2">

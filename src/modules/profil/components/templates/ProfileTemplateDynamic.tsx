@@ -12,6 +12,7 @@ import { TabDetailRenderer } from "../TabDetailRenderer";
 // à la fois. Les autres ne sont téléchargés qu'au clic.
 const SocialTab = lazy(() => import("../tabs/SocialTab"));
 const MembershipTab = lazy(() => import("../tabs/MembershipTab"));
+import type { MembershipTabProps } from "../tabs/MembershipTab";
 const NewsTab = lazy(() => import("../tabs/NewsTab"));
 import { useLocalization } from "@/hooks/useLocalization";
 import type { ProfileType } from "../../schema";
@@ -110,13 +111,14 @@ export default function ProfileTemplateDynamic() {
     }
   };
 
-  // Fonction pour rendre un composant tab dédié
-  const renderTabComponent = (componentName: string) => {
+  // Fonction pour rendre un composant tab dédié. `props` vient de la config de l'onglet — c'est
+  // l'équivalent, pour le mode `component`, des `props` que porte chaque section du mode `sections`.
+  const renderTabComponent = (componentName: string, props?: Record<string, unknown>) => {
     switch (componentName) {
       case "SocialTab":
         return <SocialTab />;
       case "MembershipTab":
-        return <MembershipTab />;
+        return <MembershipTab {...(props as MembershipTabProps | undefined)} />;
       case "NewsTab":
         return <NewsTab />;
       default:
@@ -176,7 +178,7 @@ export default function ProfileTemplateDynamic() {
                 ) : (
                   <>
                     {/* Mode component : rendu direct du composant */}
-                    {tab.component && renderTabComponent(tab.component)}
+                    {tab.component && renderTabComponent(tab.component, tab.props)}
 
                     {/* Mode sections : rendu via ProfileSectionRenderer */}
                     {tab.sections && tab.sections.map((section, index) => (

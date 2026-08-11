@@ -36,3 +36,17 @@ export function findSiteBySlug(slug, root = process.cwd()) {
 export function knownSlugs(root = process.cwd()) {
   return loadSitesJson(root).map((s) => s.slug);
 }
+
+/**
+ * Le DOSSIER de `public/images/` d'un slug : le champ `images` de `sites.json` (le 1er si tableau),
+ * sinon le slug lui-même. Le dossier d'images est DÉCOUPLÉ du slug (8 sites sur 17 diffèrent —
+ * ex. `navigatorDesTierslieux` → `tiersLieux`) : le préflight `site-assets` lit ce champ, pas le
+ * slug. Utilisé par le middleware d'upload pour écrire dans le dossier réellement servi (et non un
+ * dossier fantôme `public/images/<slug>/`). `sites.json` absent (image Docker) → fallback slug =
+ * comportement historique, aucune régression.
+ */
+export function imageFolderForSlug(slug, root = process.cwd()) {
+  const images = findSiteBySlug(slug, root)?.images;
+  const folder = Array.isArray(images) ? images[0] : images;
+  return typeof folder === "string" && folder.trim() ? folder.trim() : slug || "default";
+}

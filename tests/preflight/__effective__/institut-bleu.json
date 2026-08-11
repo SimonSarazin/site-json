@@ -1,0 +1,419 @@
+{
+  "site": "institut-bleu",
+  "slug": "institutBleu",
+  "addMenus": {
+    "citoyens": {
+      "builtins": {},
+      "customs": [
+        "add-institut-bleu-acteur"
+      ]
+    },
+    "organizations": {
+      "builtins": {
+        "event": "add-institut-bleu-event"
+      }
+    },
+    "projects": {
+      "builtins": {
+        "event": "add-institut-bleu-event"
+      }
+    }
+  },
+  "editModals": {
+    "organizations": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-institut-bleu-acteur",
+          "native": "edit-institut-bleu-acteur",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    },
+    "events": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-institut-bleu-event",
+          "native": "edit-institut-bleu-event",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    },
+    "poi": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-institut-bleu-financement",
+          "native": "edit-institut-bleu-financement",
+          "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-institut-bleu-financement",
+          "native": "edit-institut-bleu-financement",
+          "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-institut-bleu-document",
+          "native": "edit-institut-bleu-document",
+          "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-institut-bleu-document",
+          "native": "edit-institut-bleu-document",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    }
+  },
+  "adminResources": {
+    "acteurs/organizations": {
+      "source": {
+        "defaultSortBy": {
+          "created": -1
+        }
+      },
+      "create": "add-institut-bleu-acteur",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "bibliotheque/poi": {
+      "source": {
+        "defaultSortBy": {
+          "date": -1
+        },
+        "defaultFields": [
+          "name",
+          "type",
+          "collection",
+          "slug",
+          "source",
+          "created",
+          "updated",
+          "typeDocument",
+          "organisme",
+          "date",
+          "langue",
+          "coteDocument"
+        ],
+        "defaultFilters": {
+          "$or": {
+            "type": "recoveryCenter",
+            "reference.costumTypes.institutBleu": "recoveryCenter"
+          }
+        }
+      },
+      "create": "add-institut-bleu-document",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "financements/poi": {
+      "source": {
+        "defaultSortBy": {
+          "date": 1
+        },
+        "defaultFields": [
+          "name",
+          "type",
+          "collection",
+          "slug",
+          "source",
+          "created",
+          "updated",
+          "date",
+          "financementType",
+          "echelle",
+          "financementSource"
+        ],
+        "defaultFilters": {
+          "$or": {
+            "type": "financement",
+            "reference.costumTypes.institutBleu": "financement"
+          }
+        }
+      },
+      "create": "add-institut-bleu-financement",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "agenda/events": {
+      "source": {
+        "defaultSortBy": {
+          "created": -1
+        }
+      },
+      "create": "add-institut-bleu-event",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    }
+  },
+  "pages": {
+    "//data-observatory": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultFields": [
+          "name",
+          "shortDescription",
+          "description",
+          "slug",
+          "collection",
+          "type",
+          "email",
+          "telephone",
+          "mobile",
+          "link",
+          "tags",
+          "categoryThematic",
+          "legalStatus",
+          "acronym",
+          "siret",
+          "codeNaf",
+          "operatingLocation",
+          "otherSociaNetworks",
+          "address",
+          "geo",
+          "geoPosition",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "defaultFilters": {
+          "displayAuth": "true"
+        },
+        "indexStepList": 24
+      }
+    },
+    "//agenda": {
+      "baseParams": {
+        "sourceKey": [
+          "institutBleu"
+        ],
+        "indexStepList": 3
+      }
+    },
+    "/cartographie/searchProStatic": {
+      "baseParams": {
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "acronym",
+          "tags"
+        ],
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultFields": [
+          "name",
+          "shortDescription",
+          "description",
+          "slug",
+          "collection",
+          "type",
+          "email",
+          "telephone",
+          "mobile",
+          "link",
+          "tags",
+          "categoryThematic",
+          "legalStatus",
+          "acronym",
+          "siret",
+          "codeNaf",
+          "operatingLocation",
+          "otherSociaNetworks",
+          "address",
+          "geo",
+          "geoPosition",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "profilImageUrl",
+          "source",
+          "reference"
+        ],
+        "defaultFilters": {
+          "displayAuth": "true"
+        },
+        "indexStepList": 200
+      }
+    },
+    "/agenda/agenda": {
+      "baseParams": {
+        "sourceKey": [
+          "institutBleu"
+        ],
+        "indexStepList": 12
+      }
+    },
+    "/observatoire/data-observatory": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultFields": [
+          "name",
+          "shortDescription",
+          "description",
+          "slug",
+          "collection",
+          "type",
+          "email",
+          "telephone",
+          "mobile",
+          "link",
+          "tags",
+          "categoryThematic",
+          "legalStatus",
+          "acronym",
+          "siret",
+          "codeNaf",
+          "operatingLocation",
+          "otherSociaNetworks",
+          "address",
+          "geo",
+          "geoPosition",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "defaultFilters": {
+          "displayAuth": "true"
+        },
+        "indexStepList": 24
+      }
+    },
+    "/bibliotheque/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "institutBleu"
+        ],
+        "defaultFields": [
+          "name",
+          "shortDescription",
+          "typeDocument",
+          "auteurs",
+          "organisme",
+          "langue",
+          "date",
+          "coteDocument",
+          "territoires",
+          "urls",
+          "tags",
+          "type",
+          "source",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "auteurs",
+          "organisme",
+          "tags",
+          "territoires"
+        ],
+        "defaultSortBy": {
+          "date": -1
+        },
+        "defaultFilters": {
+          "$or": {
+            "type": "recoveryCenter",
+            "reference.costumTypes.institutBleu": "recoveryCenter"
+          }
+        }
+      }
+    },
+    "/financements/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "institutBleu"
+        ],
+        "defaultFields": [
+          "name",
+          "shortDescription",
+          "description",
+          "financementType",
+          "echelle",
+          "financementSource",
+          "date",
+          "urls",
+          "tags",
+          "type",
+          "source",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "financementSource"
+        ],
+        "defaultSortBy": {
+          "date": -1
+        },
+        "defaultFilters": {
+          "$or": {
+            "type": "financement",
+            "reference.costumTypes.institutBleu": "financement"
+          }
+        }
+      }
+    }
+  },
+  "stamps": {
+    "institut-bleu-acteur": [
+      {
+        "field": "dateSign",
+        "value": {
+          "$now": "j/M/aaaa"
+        },
+        "op": "fillIfEmpty",
+        "on": "add",
+        "channel": "pathValue"
+      }
+    ]
+  },
+  "referencement": {
+    "organizations": {
+      "sousTypes": [],
+      "annotation": null
+    },
+    "poi": {
+      "sousTypes": [
+        "recoveryCenter",
+        "financement"
+      ],
+      "annotation": "reference.costumTypes.institutBleu"
+    }
+  },
+  "membership": {
+    "citoyens/membership": {
+      "types": [
+        "organizations"
+      ],
+      "scope": "costum"
+    }
+  },
+  "profileRelated": {}
+}

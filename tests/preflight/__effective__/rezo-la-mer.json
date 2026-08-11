@@ -1,0 +1,79 @@
+{
+  "site": "rezo-la-mer",
+  "slug": "rezoLaMer",
+  "addMenus": {
+    "citoyens": {
+      "builtins": {
+        "organization": "add-organization",
+        "project": "add-project",
+        "event": "add-event",
+        "poi": "add-poi"
+      }
+    },
+    "organizations": {
+      "builtins": {
+        "project": "add-project",
+        "event": "add-event",
+        "poi": "add-poi"
+      }
+    },
+    "projects": {
+      "builtins": {
+        "event": "add-event",
+        "poi": "add-poi"
+      }
+    }
+  },
+  "editModals": {},
+  "adminResources": {},
+  "pages": {
+    "/projets/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects"
+        ],
+        "indexStepList": 5
+      }
+    },
+    "/evenements/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "events"
+        ],
+        "indexStepList": 3,
+        "defaultFilters": {
+          "isStarred": true
+        }
+      }
+    },
+    "/evenements/searchProStatic#1": {
+      "baseParams": {
+        "defaultTypes": [
+          "events"
+        ],
+        "indexStepList": 3
+      }
+    },
+    "/ressources/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "indexStepList": 3
+      }
+    }
+  },
+  "referencement": {},
+  "membership": {
+    "citoyens/membership": {
+      "types": [
+        "organizations",
+        "projects",
+        "pois",
+        "events"
+      ],
+      "scope": "network"
+    }
+  },
+  "profileRelated": {}
+}

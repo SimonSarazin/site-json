@@ -3,6 +3,7 @@ import { useLocation } from "react-router";
 import { useHydrated } from "@/hooks/useHydrated";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useUserPermissions, type UserPermissions } from "@/hooks/useUserPermissions";
+import { useOptionalProfileEntity } from "@/modules/profil/hooks/useProfileEntity";
 import type { User } from "@communecter/cocolight-api-client";
 import type { VisibilityCondition } from "./schema";
 
@@ -28,6 +29,8 @@ interface EvalContext {
   pathname: string;
   hydrated: boolean;
   permissions: UserPermissions;
+  /** Slug du profil affiché, quand on est sur une page de profil (cf. `userContext`). */
+  profilSlug?: string | null;
 }
 
 /**
@@ -41,12 +44,21 @@ function evaluateCondition(condition: VisibilityCondition, ctx: EvalContext): bo
 
   const dependsOnUser =
     (condition.auth && condition.auth !== "any") ||
+    (condition.userContext && condition.userContext !== "any") ||
     (condition.permissions && condition.permissions.length > 0);
 
   if (dependsOnUser && !ctx.hydrated) return false;
 
   if (condition.auth === "required" && !ctx.me?.id) return false;
   if (condition.auth === "anonymous" && ctx.me?.id) return false;
+
+  // Mêmes règles que la condition d'un ONGLET (`ProfileTemplateDynamic`) : comparaison par slug.
+  // Hors page de profil, `profilSlug` est absent et la clé n'a pas d'objet — on ne masque rien.
+  if (condition.userContext && condition.userContext !== "any" && ctx.profilSlug != null) {
+    const surSonProfil = !!ctx.me?.slug && ctx.me.slug === ctx.profilSlug;
+    if (condition.userContext === "own" && !surSonProfil) return false;
+    if (condition.userContext === "other" && surSonProfil) return false;
+  }
 
   if (condition.permissions?.length) {
     for (const key of condition.permissions) {
@@ -75,10 +87,13 @@ export function useVisibility(condition?: VisibilityCondition): boolean {
   // renvoient les permissions "globales" de l'utilisateur (canAddOrganization,
   // etc.). Avec `null`, tout serait à `false`.
   const permissions = useUserPermissions(me);
+  // Le profil AFFICHÉ, quand on en est sur un — `useOptionalProfileEntity` renvoie `null` ailleurs, donc
+  // la clé `userContext` reste sans objet hors profil (aucune condition n'est durcie par accident).
+  const profilSlug = (useOptionalProfileEntity()?.entity as { slug?: string } | undefined)?.slug ?? null;
 
   return useMemo(
-    () => evaluateCondition(condition, { me, pathname, hydrated, permissions }),
-    [condition, me, pathname, hydrated, permissions]
+    () => evaluateCondition(condition, { me, pathname, hydrated, permissions, profilSlug }),
+    [condition, me, pathname, hydrated, permissions, profilSlug]
   );
 }
 
@@ -93,9 +108,12 @@ export function useVisibilityList(conditions: (VisibilityCondition | undefined)[
   const { pathname } = useLocation();
   const hydrated = useHydrated();
   const permissions = useUserPermissions(me);
+  // Le profil AFFICHÉ, quand on en est sur un — `useOptionalProfileEntity` renvoie `null` ailleurs, donc
+  // la clé `userContext` reste sans objet hors profil (aucune condition n'est durcie par accident).
+  const profilSlug = (useOptionalProfileEntity()?.entity as { slug?: string } | undefined)?.slug ?? null;
 
   return useMemo(
-    () => conditions.map((c) => evaluateCondition(c, { me, pathname, hydrated, permissions })),
-    [conditions, me, pathname, hydrated, permissions]
+    () => conditions.map((c) => evaluateCondition(c, { me, pathname, hydrated, permissions, profilSlug })),
+    [conditions, me, pathname, hydrated, permissions, profilSlug]
   );
 }

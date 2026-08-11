@@ -17,6 +17,11 @@
  * - JSDoc obligatoire : Producteur + Consommateurs invalidants
  */
 
+// Clés TRANSVERSES (hors module) : leur donnée est consommée par plusieurs
+// modules, et l'invalidation doit les atteindre tous.
+export { COSTUM_QUERY_KEYS } from "@/constants/queryKeys";
+export type { CostumQueryKeyType } from "@/constants/queryKeys";
+
 // Re-export des query keys des 7 modules (ampli, cagnotte, coform, interop,
 // news, profil, search — ordre alphabétique).
 export { AMPLI_QUERY_KEYS } from "@/modules/ampli/constants/queryKeys";

@@ -582,6 +582,42 @@ D'autres tests CoForm couvrent : `formParser.test.ts` (parsing schéma de form),
 
 ### Preflight tests (`tests/preflight/`)
 
+#### Garde d'impact inter-configs (`effective-config.test.ts` + `npm run config:surface`)
+
+Le problème couvert : modifier du code partagé (résolveur, schéma, défaut) change le comportement
+de sites dont on ne touche PAS la config, sans signal (cas mesuré : `costumCreateKey` a rerouté
+les boutons « Créer » de 5 sites). Deux étages :
+
+- **Étage 1 — exposition** : `npm run config:surface -- --key <nom>` = qui consomme cette clé, à
+  quels chemins (index inverse des 13 configs) ; `--write`/`--check` entretiennent
+  `docs/CONFIG-SURFACE.md` (généré, committé). LE réflexe avant de toucher une surface.
+- **Étage 2 — comportement résolu par site** : `effective-config.test.ts` matérialise pour chaque
+  site une projection calculée par les MÊMES fonctions pures que l'app (menus d'ajout effectifs
+  via `costumCreateKey`, résolution RÉELLE des routes d'édition sur des sondes
+  native/hors-périmètre, baseParams admin ET pages APRÈS expansion `costumSubType`, sous-types de
+  référencement, défauts membership matérialisés, stamps normalisés), snapshotée dans
+  `__effective__/<site>.json`. Tout changement de code partagé qui altère le comportement d'UN
+  site = diff de SA fixture ; accepter (`vitest -u`) = l'acte explicite « impact voulu », site par
+  site, visible en revue. Slug d'autorité : `sites.json` (registre de déploiement ;
+  multi-déploiements → slug null + liste matérialisée).
+
+**Charte** : tout nouveau comportement est OFF par défaut, activé par clé de config (patron
+`costumSubType`) ; un défaut qui DOIT bouger embarque l'exposition (étage 1) + les diffs de
+fixtures acceptés (étage 2) ; toute nouvelle sémantique s'ajoute comme PROJECTION du test, pas
+comme garde ad hoc. Limite assumée : la résolution pure, pas le rendu (labels/CSS).
+
+#### Préflight des stamps (`stamps.test.ts`)
+
+Vérifie les `mutation.stamps` de TOUTES les configs (cf. [28-module-formengine](28-module-formengine.md)) :
+`on: edit|both` + `op: set` sur un champ visible du form interdit ; jetons `$now` inconnus ;
+`append` + canal `pathValue` refusé ; grammaire (clés/enums) ; sentinelle d'inventaire du parc.
+
+#### Périmètre des routes d'édition (`edit-modal-scope.test.ts`)
+
+Toute route `editModals` par champ identitaire (`type`…) doit être bornée par une clause `when`
+de périmètre costum (`sourceKeys` OU `reference.costum`) — sans elle, le form costum s'ouvre sur
+les entités homonymes d'autres sites.
+
 #### Validation configs multi-sites (`tests/preflight/sites-configs.test.ts`)
 
 Valide automatiquement **toutes** les configs référencées dans `sites.json` (66 tests) :

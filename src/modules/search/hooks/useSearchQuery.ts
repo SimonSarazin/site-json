@@ -6,6 +6,9 @@ import type { SearchEntity } from "@communecter/cocolight-api-client";
 import type { PaginatorPage } from "@communecter/cocolight-api-client";
 import { SEARCH_QUERY_KEYS } from "../constants/queryKeys";
 import { buildSearchPayload } from "../lib/buildSearchPayload";
+import { expandCostumSubType } from "../lib/costumSubType";
+import { useContext } from "react";
+import { SiteContext } from "@/contexts/SiteContext";
 
 export interface UseSearchQueryParams {
   queryKeyPrefix: string;
@@ -36,6 +39,9 @@ export interface UseSearchQueryParams {
     // Cf. `SearchBySchema` — "ALL" | CSV | string[]. Propagé au payload SDK
     // dès qu'il est défini ; sinon le backend applique son comportement par défaut.
     searchBy?: string | string[];
+    // Sous-type de costum (clé `subType` d'un form) — expansé ICI en $or identity/annotation
+    // (cf. `expandCostumSubType`), avant que le payload parte au SDK.
+    costumSubType?: string;
     // Accepte `boolean` (ne pas sourcer) ou `number` (limite custom) — cf.
     // schema search.ts (config historique avec valeur numérique).
     notSourceKey?: boolean | number;
@@ -67,6 +73,21 @@ export function useSearchQuery({
   cache,
 }: UseSearchQueryParams) {
   const { entity, helper } = useCocolight();
+  // Contexte site OPTIONNEL (les tests du hook et certains outils montent sans SiteProvider) :
+  // sans lui, pas de costumForms → l'expansion est inerte et le hook se comporte comme avant.
+  const siteConfig = useContext(SiteContext)?.config;
+
+  // `costumSubType` → $or identity/annotation, résolu depuis la DÉCLARATION du form (costumForms)
+  // et le slug du porteur : le discriminant vit une fois en config, jamais dupliqué dans les pages.
+  // Sans la clé, les baseParams ressortent par la MÊME référence — aucune queryKey existante ne bouge.
+  const baseParamsExpanses = useMemo(
+    () => expandCostumSubType(
+      baseParams,
+      (siteConfig as { costumForms?: Record<string, never> } | undefined)?.costumForms,
+      (entity as { slug?: string } | null)?.slug,
+    ) ?? {},
+    [baseParams, siteConfig, entity],
+  );
 
   // Query key centralisée (single source of truth)
   const queryKey = SEARCH_QUERY_KEYS.RESULTS({
@@ -76,7 +97,7 @@ export function useSearchQuery({
     searchType,
     mapUsed,
     graphUsed,
-    baseParams,
+    baseParams: baseParamsExpanses,
     variant,
   });
 
@@ -107,7 +128,7 @@ export function useSearchQuery({
       const tags = Object.values(searchTags).flat() as string[];
       const page = pageParam as PaginatorPage<SearchEntity> | undefined;
 
-      const param = buildSearchPayload(baseParams, {
+      const param = buildSearchPayload(baseParamsExpanses, {
         name: searchText,
         tags,
         type,

@@ -92,6 +92,27 @@ export const coerceDateYMDutc = (value: unknown): string =>
  */
 export const coerceBoolString = (value: unknown): string => (coerceBool(value) ? "true" : "false");
 
+/**
+ * Tableau d'entrées structurées → seules les lignes RENSEIGNÉES (write).
+ *
+ * Un `fieldArray` pré-rempli propose des lignes toutes faites (ex. les 4 réseaux sociaux de l'Institut
+ * Bleu) ; celles que l'utilisateur ne complète pas n'ont aucune raison d'être écrites. Sans ce filtre le
+ * formulaire FABRIQUE du vide : mesuré sur institutBleu, 142 des 246 entrées `otherSociaNetworks`
+ * stockées n'ont pas de lien, et 21 organisations sur 73 n'en ont AUCUNE de renseignée.
+ *
+ * Une ligne est gardée dès qu'au moins un de ses champs porte autre chose que du blanc — on ne présume
+ * donc pas quel champ fait foi.
+ */
+export const coerceFilledEntries = (value: unknown): unknown[] => {
+  if (!Array.isArray(value)) return [];
+  const rempli = (v: unknown): boolean =>
+    typeof v === "string" ? v.trim() !== "" : v !== null && v !== undefined && v !== "";
+  return value.filter((ligne) => {
+    if (ligne === null || typeof ligne !== "object" || Array.isArray(ligne)) return rempli(ligne);
+    return Object.values(ligne as Record<string, unknown>).some(rempli);
+  });
+};
+
 registerTransform("coerce:string", coerceString);
 registerTransform("coerce:number", coerceNumber);
 registerTransform("coerce:bool", coerceBool);
@@ -106,3 +127,4 @@ registerTransform("coerce:boolLoose", coerceBoolLoose);
 registerTransform("coerce:dateISO", coerceDateISO);
 registerTransform("coerce:dateYMDutc", coerceDateYMDutc);
 registerTransform("coerce:boolString", coerceBoolString);
+registerTransform("coerce:filledEntries", coerceFilledEntries);

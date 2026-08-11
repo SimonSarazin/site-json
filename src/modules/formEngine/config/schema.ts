@@ -15,7 +15,7 @@ const WidgetKind = z.enum([
   "hidden", "text", "email", "tel", "textarea", "number",
   "switch", "checkbox", "checkboxGroup",
   "select", "multiselect", "selectFromLists",
-  "tags", "date", "datetime", "time",
+  "tags", "valueSelect", "date", "datetime", "time",
   "urlList", "image", "gallery", "file", "location", "openingHours",
   "finder", "eventDates", "fieldArray", "custom",
   "editSocial", "editSchedule",
