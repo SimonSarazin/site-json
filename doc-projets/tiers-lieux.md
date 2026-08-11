@@ -13,7 +13,7 @@
 > [Module Ampli](../doc/22-module-ampli.md) · [Module formEngine](../doc/28-module-formengine.md) ·
 > [Module CoForm](../doc/21-module-coform.md). Mémoire : `[[project-tiers-lieux]]`.
 
-Dernière mise à jour : **2026-08-10** (review MR#33 du module `toolsCatalog` : 15 constats corrigés + évolution SDK `communInfo` — voir §9 ; SDK `1.0.183` publié npm).
+Dernière mise à jour : **2026-08-10** (review MR#33 du module `toolsCatalog` : 15 constats corrigés + évolution SDK `communInfo` ; puis correction du **bug de données du détail d'un outil** — 61 % des lieux listés étaient faux, cf. §9 10/08bis — avec une demande SDK ouverte, cf. §11.1. SDK `1.0.183` publié npm).
 
 ---
 
@@ -50,6 +50,7 @@ lieux**, pas un plan de rattrapage.
 | 28/07 | Claude | État des lieux et création de ce dossier |
 | 09/08 | Claude | Propagation des tags typologie/portage/surface via `mutation.stamps` (`$mapLabels`/`$bucket`) — cf. §9 ; test d'intégration (a révélé le bug serverKey `buildingSurfaceArea`) ; fix middleware `imageUpload` (dossier ← champ `images`). Commité (`9bbd7a4d`, `4831f146`) |
 | 10/08 | Thomas + Claude | Review MR#33 du module `toolsCatalog` (branche `mr33-review`) : 15 constats vérifiés, tous corrigés — dont l'évolution SDK `1.0.183` (`communInfo` déplacée `Answer` → `Form`, fuite `financer[]` éliminée) et le fix `commonTable` en lecture seule (`[object Object]`). Cf. §9. Commits `36b4a7dd` · `252b50e8` · `914dcec0` |
+| 10/08bis | Schumann + Claude | Bug de données du détail d'un outil : sélection sur le seul `criteriaId` → 61 % des lieux listés attribuaient un outil qu'ils n'avaient jamais saisi. Fix backend + front `normalizedName`, libellés de satisfaction alignés sur l'input `commonTable`. Cf. §9 10/08bis ; **demande SDK ouverte** §11.1 |
 
 ---
 
@@ -198,6 +199,48 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 
 ## 9. Impacts des modifications
 
+### 10/08bis — détail d'un outil : les lieux listés n'étaient pas les bons
+
+**Constat** (test navigateur, comparaison détail d'outil ⇄ formulaire de réponse du lieu) : la
+modale de détail affichait des lieux qui n'avaient **jamais saisi l'outil**. Exemple relevé : un
+tiers-lieu présenté comme utilisant *Dokos* pour son site vitrine, alors que sa réponse dit
+*YesWiki*.
+
+**Cause** — `ToolUsersAction` sélectionnait les entrées sur le seul `criteriaId`. Or un `criteriaId`
+identifie une **ligne du catalogue de besoins** (« site vitrine », « facturation », « CRM »)
+**partagée par toutes les réponses du formulaire**, et non la saisie d'un lieu : des dizaines de
+lieux portent le même `criteriaId` avec des outils différents. Le `criteriaIds` sert à **restreindre
+le scan**, jamais à **identifier** l'outil.
+
+**Mesure** (curl sur la base de dev, outil *Dokos*, `formId` de la config) :
+
+| Requête | Lignes | Outils distincts |
+|---|---|---|
+| `criteriaIds` seuls, sans `inputKeys` | 69 | 27 |
+| **ce que le front recevait** (`criteriaIds` + `inputKeys`) | **62** | **22** — Dolibarr, Paheko, Tibillet, odoo, Wordpress, Louty… |
+| avec `normalizedName=dokos` | **24** | **1** |
+
+**61 % des lignes affichées** attribuaient à un lieu un outil d'un autre lieu. Preuve de parité la
+plus nette : la liste annonce `totalOccurrences = 24` pour Dokos — exactement le nombre de lignes
+après filtre, là où le détail en montrait 62. Liste et détail sont désormais d'accord.
+
+**Correctifs** :
+
+| Couche | Changement |
+|---|---|
+| costum (`master`) | `ToolUsersAction.php` : paramètre `normalizedName` optionnel + re-filtrage sur `entry.criteria`, via une **réplique exacte** de `ToolsCatalogListAction::normalizeToolName` (la liste groupe avec, le détail filtre avec — une divergence viderait le détail d'un outil pourtant compté) |
+| SDK | `normalizedName` sur `COSTUM_TOOL_USERS` / `ToolUsersParams` / `Form.getToolUsers` — **demande ouverte**, cf. §11.1 |
+| site-json | `useToolDetail` transmet le paramètre et l'intègre à la clé React Query ; `ToolDetailDialog` passe `tool.normalizedName` |
+
+**Correctif d'affichage connexe** : les libellés de satisfaction du détail d'un outil ne suivaient
+pas ceux de l'input `commonTable` qui les produit (« Content » vs « Satisfait », « J'adore » vs
+« Très satisfait »). Alignés au mot près sur `modules/coform/i18n` (fr **et** en) — la référence est
+l'input de saisie, pas le vocabulaire legacy (« Bien / Excellent / Décevant »), qui reste un
+troisième vocabulaire encore en place côté PHP. Complément au fix `914dcec0` : en lecture seule,
+« Ajoutez une solution pour évaluer » invitait à une action impossible → tiret des valeurs vides.
+
+---
+
 ### 10/08 — review MR#33 : module `toolsCatalog` (page `/usages`)
 
 Review multi-agents du diff `mr33-review` vs `main` (46 candidats → 44 confirmés par vérification
@@ -342,6 +385,7 @@ hors dépôt).
 |---|---|---|
 | `Form.toolsCatalog()` — liste paginée du catalogue (`COSTUM_TOOLS_CATALOG`) | ✅ `1.0.183` | Action `ToolsCatalogListAction.php` déployée (costum `15c5a91af`). ⚠️ Ne PAS router via `_createPaginatorEngine` : `_linkEntities` jette les DTO sans `collection` |
 | `Form.getToolUsers()` — lieux utilisateurs d'un outil (`COSTUM_TOOL_USERS`) | ✅ `1.0.183` | `ToolUsersAction.php` déployée ; recherche par `criteriaIds`, jamais par regex sur le nom |
+| ⏳ `Form.getToolUsers()` — **paramètre `normalizedName`** | **demandé** (bloque le fix du §9 10/08bis) | Backend déjà déployé et rétrocompatible ; sans lui `tsc` refuse l'appel (`TS2353`). Spec ci-dessous |
 | `Form.communInfo()` — fiche du commun rattaché (`COSTUM_COMMUN_INFO`) | ✅ `1.0.183` | Déplacée d'`Answer` vers `Form` en `1.0.183` : `api.answer({id})` fetchait le doc AAP complet (fuite `financer[]` nominatif), `api.form({id})` ne charge que la définition publique. `formId` = verrou anti-IDOR (endpoint `auth: none`) |
 | `BaseEntity.saveToolEnrichment()` — édition d'un outil (`COSTUM_SAVE_TOOL_ENRICHMENT`, bearer) | ✅ `1.0.183` | `SaveCriteriaAction.php` durcie (elle écrivait sans aucun contrôle d'accès). ⚠️ Sur `BaseEntity`, pas `Organization` — cf. §12 |
 | `BaseEntity.getCommunList()` — options du select de rattachement (`COSTUM_COMMUN_LIST`, bearer) | ✅ `1.0.183` | `CommunListAction.php` déployée ; remplace un appel legacy qui ramenait ~300 réponses AAP entières |
@@ -349,6 +393,46 @@ hors dépôt).
 
 La config dépend par ailleurs du variant **`navigator-tl`** : toute évolution de cet endpoint la
 touche en premier.
+
+### 11.1 Demande ouverte — `normalizedName` sur `COSTUM_TOOL_USERS`
+
+**Pourquoi** : correction d'un bug de données majeur du détail d'un outil (§9, 10/08bis). Un
+`criteriaId` identifie une **ligne du catalogue de besoins** partagée par toutes les réponses
+(« site vitrine », « facturation »…), **pas** la saisie d'un lieu — sélectionner dessus seul mêle
+les outils de lieux différents. Le paramètre est **optionnel au contrat** (aucun appelant existant
+ne casse) mais doit être envoyé par tout consommateur.
+
+**Backend** : déjà déployé et rétrocompatible (costum `ToolUsersAction.php`, absent ⇒ comportement
+inchangé). Le serveur renormalise la valeur reçue avec `normalizeToolName`, la **même** fonction que
+`ToolsCatalogListAction` utilise pour grouper — les deux implémentations doivent rester identiques.
+
+**Trois points d'entrée** (implémentation locale vérifiée, `tsc` SDK vert) :
+
+1. `endpoints-copie.json` → `COSTUM_TOOL_USERS.request.properties`, après `inputKeys` :
+
+   ```json
+   "normalizedName": { "type": "string", "description": "Nom normalise de l'outil — filtre INDISPENSABLE en pratique…" }
+   ```
+
+   (hors `required`), puis `generate:module:publish` + `generate:methodeapi`.
+
+2. `src/api/serverDataType/ToolsCatalog.ts` → `ToolUsersParams` : `normalizedName?: string;`
+
+3. `src/api/Form.ts` → `getToolUsers`, dans le littéral `data` :
+
+   ```ts
+   ...(params.normalizedName !== undefined ? { normalizedName: params.normalizedName } : {}),
+   ```
+
+   Le passage conditionnel (et non `normalizedName: params.normalizedName`) préserve la sémantique
+   **clé-absente ≠ chaîne-vide** : une chaîne vide côté serveur désactive le filtre, mais l'envoyer
+   systématiquement ajouterait une clé vide à un fil `urlencoded`.
+
+**Côté site-json** : `useToolDetail` transmet le paramètre et l'intègre à la clé React Query
+(`TOOL_USERS`) — deux outils d'un même besoin partageraient sinon le cache. Le bump `^1.0.184`
+reste à poser dans `package.json` à la publication ; d'ici là `tsc` échoue
+(`TS2353: 'normalizedName' does not exist in type 'ToolUsersParams'`) — c'est **le seul** point
+bloquant de la branche.
 
 ---
 
