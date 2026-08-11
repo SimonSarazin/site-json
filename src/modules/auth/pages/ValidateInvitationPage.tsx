@@ -50,13 +50,16 @@ export default function ValidateInvitationPage() {
   const [info, setInfo] = useState<InvitationInfo>({});
 
   const lienIncomplet = !user || !validationKey;
+  // Dérivé AU RENDU et non posé par l'effet : un lien tronqué est une erreur connue
+  // dès le premier rendu (aucun aller-retour serveur à attendre), et un `setEtat`
+  // synchrone dans l'effet déclencherait un rendu en cascade — la règle
+  // `react-hooks/set-state-in-effect` le refuse. Bénéfice au passage : plus de flash
+  // « Vérification de votre invitation… » sur un lien qu'on sait déjà invalide.
+  const etatAffiche = lienIncomplet ? "erreur" : etat;
 
   useEffect(() => {
     if (!userApi) return; // en attente de l'init de l'API
-    if (lienIncomplet) {
-      setEtat("erreur");
-      return;
-    }
+    if (lienIncomplet) return; // rien à valider : l'erreur est déjà dérivée au rendu
     let annule = false;
     void (async () => {
       try {
@@ -88,12 +91,12 @@ export default function ValidateInvitationPage() {
         en: "Complete your registration to join the space.",
       }}
     >
-      {etat === "encours" ? (
+      {etatAffiche === "encours" ? (
         <div className="flex flex-col items-center gap-4 py-4 text-center">
           <Loader2 className="h-10 w-10 animate-spin text-primary" aria-hidden />
           <p className="text-muted-foreground">{t("Vérification de votre invitation...")}</p>
         </div>
-      ) : etat === "register" ? (
+      ) : etatAffiche === "register" ? (
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-primary">
             <MailCheck className="h-5 w-5 shrink-0" aria-hidden />
@@ -101,7 +104,7 @@ export default function ValidateInvitationPage() {
           </div>
           <RegisterForm prefill={{ email: info.email, name: info.name }} onSwitchToLogin={seConnecter} />
         </div>
-      ) : etat === "login" ? (
+      ) : etatAffiche === "login" ? (
         <div className="flex flex-col items-center gap-6 text-center">
           <LogIn className="h-12 w-12 text-primary" aria-hidden />
           <p className="text-muted-foreground">
