@@ -85,12 +85,15 @@ export function useReferenceElement(onDone?: () => void) {
       // le référencement a eu lieu, l'entité est dans le périmètre ; un raté ici la laisse « non
       // classée », rattrapable par l'action Classer. Ne jamais faire échouer la mutation pour ça.
       if (op === "reference" && slug) {
-        if (subType) {
-          try {
-            await ecrire(cible, cheminAnnotation(slug), subType);
-          } catch {
-            toast.warning(t("useReferenceElement.referencedUnclassified"));
-          }
+        // L'annotation est TOUJOURS réglée, même sans sous-type choisi (`""` → $unset). Sans cela,
+        // une valeur laissée par un désréférencement passé HORS de cette UI (interface legacy, appel
+        // direct, nettoyage best-effort raté) survivrait et reclasserait l'entité en silence avec
+        // l'ancien sous-type — et elle serait de nouveau DANS le périmètre, donc consultée. Le
+        // référencement devient ainsi auto-réparant, indépendamment du backend en face.
+        try {
+          await ecrire(cible, cheminAnnotation(slug), subType ?? "");
+        } catch {
+          if (subType) toast.warning(t("useReferenceElement.referencedUnclassified"));
         }
         if (moderate) {
           try {
