@@ -4929,7 +4929,6 @@
       "editModals": [
         {
           "editModal": "edit-sport-sante-bienetre-mss",
-          "_comment": "Périmètre du costum : 180 organisations, 2 projets, 1 event et 64 POI portent source.keys=sportSanteBienetre. Sans cette clause les routes sont des catch-all — le formulaire s'ouvrait sur toutes les entités du type (jusqu'à 29 236 organisations atteignables). Le terme reference.costum couvre les entités RATTACHÉES sans provenance (route legacy générique Admin::addSourceInElement) : aucune aujourd'hui, mécanisme néanmoins actif.",
           "editModalMatch": {
             "type": "NGO"
           },

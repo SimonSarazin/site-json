@@ -4112,7 +4112,6 @@
       "hideHeader": false,
       "hideFooter": false,
       "editModal": "edit-equipements-sportifs",
-      "_comment": "Périmètre du costum : 3 062 POI portent source.keys=equipementsSportifs974. Le sous-type ne borne PAS : 704 POI recoveryCenter lui sont étrangers, dont 686 d'institutBleu. Le terme reference.costum couvre les entités rattachées sans provenance (mécanisme legacy générique).",
       "editModalMatch": {
         "type": "recoveryCenter"
       },

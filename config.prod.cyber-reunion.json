@@ -1499,7 +1499,6 @@
       "editModals": [
         {
           "editModal": "edit-cyber-reunion-organization",
-          "_comment": "Édition branchée le 2026-08-04 : le formulaire costum n'était routé qu'en CRÉATION (floatingActionButton add-cyber-reunion-organization) — l'édition retombait sur le formulaire générique, donc les champs costum n'étaient pas modifiables. Périmètre : 685 organisations portent source.keys=cyberReunion, et les listes du site filtrent déjà sur cette provenance. Le terme reference.costum couvre les entités rattachées sans provenance (mécanisme legacy générique).",
           "when": {
             "or": [
               { "field": "sourceKeys", "op": "contains", "value": "cyberReunion" },
