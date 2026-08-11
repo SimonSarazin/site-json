@@ -11,6 +11,13 @@ interface UseToolDetailOptions {
   criteriaIds: string[];
   /** Suffixes yesOrNo où l'outil apparaît (restreint la projection). */
   inputKeys?: string[];
+  /**
+   * Nom normalisé de l'outil (`ToolCatalogItem.normalizedName`). À TOUJOURS transmettre :
+   * un `criteriaId` désigne une ligne du catalogue de BESOINS partagée par toutes les
+   * réponses (« site vitrine »…), pas la saisie d'un lieu. Sans lui, le serveur remonte
+   * aussi les lieux ayant répondu au même besoin avec un TOUT AUTRE outil.
+   */
+  normalizedName?: string;
   /** Fetch paresseux : true quand la modale est ouverte. */
   enabled?: boolean;
 }
@@ -25,6 +32,7 @@ export function useToolDetail({
   finderPath,
   criteriaIds,
   inputKeys,
+  normalizedName,
   enabled = true,
 }: UseToolDetailOptions) {
   const { api, loading } = useCocolight();
@@ -38,6 +46,7 @@ export function useToolDetail({
       finderPath ?? null,
       criteriaIds,
       inputKeys ?? [],
+      normalizedName ?? null,
     ),
     queryFn: async () => {
       if (!api || !formId || !step || !finderPath) {
@@ -50,7 +59,7 @@ export function useToolDetail({
         queryFn: () => api.form({ id: formId }),
         staleTime: Infinity,
       });
-      return form.getToolUsers({ step, finderPath, criteriaIds, inputKeys });
+      return form.getToolUsers({ step, finderPath, criteriaIds, inputKeys, normalizedName });
     },
     enabled: enabled && isReady,
     staleTime: 30 * 1000,

@@ -113,6 +113,9 @@ export function ToolDetailDialog({
     finderPath,
     criteriaIds: tool.criteriaIds,
     inputKeys: tool.inputKeys,
+    // Sans ce filtre, la liste mêle les lieux ayant répondu au même BESOIN avec
+    // d'autres outils : les `criteriaId` sont partagés entre toutes les réponses.
+    normalizedName: tool.normalizedName,
     enabled: true,
   });
 
