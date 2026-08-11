@@ -13,7 +13,7 @@
 > [Module Ampli](../doc/22-module-ampli.md) · [Module formEngine](../doc/28-module-formengine.md) ·
 > [Module CoForm](../doc/21-module-coform.md). Mémoire : `[[project-tiers-lieux]]`.
 
-Dernière mise à jour : **2026-08-10** (review MR#33 du module `toolsCatalog` : 15 constats corrigés + évolution SDK `communInfo` ; puis correction du **bug de données du détail d'un outil** — 61 % des lieux listés étaient faux, cf. §9 10/08bis — avec une demande SDK ouverte, cf. §11.1. SDK `1.0.183` publié npm).
+Dernière mise à jour : **2026-08-11** (SDK **`1.0.184`** publié et réinstallé : la demande `normalizedName` est **livrée**, cf. §11.1 — le fix du bug de données du détail d'un outil, 61 % de lieux faux, n'a plus de dépendance ouverte. Historique : review MR#33 et §9 10/08bis).
 
 ---
 
@@ -39,7 +39,7 @@ lieux**, pas un plan de rattrapage.
 | Header / Footer | **`mega-menu`** (le seul du parc à s'en servir vraiment) / `minimal-centered` |
 | Variant SDK | **`navigator-tl`** — endpoint dédié ⚠ cf. §12 |
 | Marqueurs costum | `mainTag: "TiersLieux"` · `compagnon: "Compagnon France Tiers-Lieux"` |
-| SDK | `@communecter/cocolight-api-client` **1.0.183** (`package.json` : `^1.0.183`, bump non commité ; résolu depuis npm, plus de lien local — cf. §11) |
+| SDK | `@communecter/cocolight-api-client` **1.0.184** (`package.json` : `^1.0.184`, commité `c12f2e43` ; résolu depuis npm, plus de lien local — cf. §11) |
 | Historique | **76 commits** — la config la plus travaillée du parc |
 
 ### Historique des chantiers
@@ -50,7 +50,8 @@ lieux**, pas un plan de rattrapage.
 | 28/07 | Claude | État des lieux et création de ce dossier |
 | 09/08 | Claude | Propagation des tags typologie/portage/surface via `mutation.stamps` (`$mapLabels`/`$bucket`) — cf. §9 ; test d'intégration (a révélé le bug serverKey `buildingSurfaceArea`) ; fix middleware `imageUpload` (dossier ← champ `images`). Commité (`9bbd7a4d`, `4831f146`) |
 | 10/08 | Thomas + Claude | Review MR#33 du module `toolsCatalog` (branche `mr33-review`) : 15 constats vérifiés, tous corrigés — dont l'évolution SDK `1.0.183` (`communInfo` déplacée `Answer` → `Form`, fuite `financer[]` éliminée) et le fix `commonTable` en lecture seule (`[object Object]`). Cf. §9. Commits `36b4a7dd` · `252b50e8` · `914dcec0` |
-| 10/08bis | Schumann + Claude | Bug de données du détail d'un outil : sélection sur le seul `criteriaId` → 61 % des lieux listés attribuaient un outil qu'ils n'avaient jamais saisi. Fix backend + front `normalizedName`, libellés de satisfaction alignés sur l'input `commonTable`. Cf. §9 10/08bis ; **demande SDK ouverte** §11.1 |
+| 10/08bis | Schumann + Claude | Bug de données du détail d'un outil : sélection sur le seul `criteriaId` → 61 % des lieux listés attribuaient un outil qu'ils n'avaient jamais saisi. Fix backend + front `normalizedName`, libellés de satisfaction alignés sur l'input `commonTable`. Cf. §9 10/08bis |
+| 11/08 | Thomas + Claude | Demande SDK **livrée** : `normalizedName` sur `COSTUM_TOOL_USERS` (lib `d93c7c3`, npm `1.0.184`) + endpoints d'invitation (lib `ca7d65e`, même version). Réinstallation propre (`npm ci`), contenu du tarball vérifié, gates verts. Bump commité `c12f2e43` ; §11/§11.1 mises à jour |
 
 ---
 
@@ -229,7 +230,7 @@ après filtre, là où le détail en montrait 62. Liste et détail sont désorma
 | Couche | Changement |
 |---|---|
 | costum (`master`) | `ToolUsersAction.php` : paramètre `normalizedName` optionnel + re-filtrage sur `entry.criteria`, via une **réplique exacte** de `ToolsCatalogListAction::normalizeToolName` (la liste groupe avec, le détail filtre avec — une divergence viderait le détail d'un outil pourtant compté) |
-| SDK | `normalizedName` sur `COSTUM_TOOL_USERS` / `ToolUsersParams` / `Form.getToolUsers` — **demande ouverte**, cf. §11.1 |
+| SDK | `normalizedName` sur `COSTUM_TOOL_USERS` / `ToolUsersParams` / `Form.getToolUsers` — **livré le 11/08** (lib `d93c7c3`, npm `1.0.184`), cf. §11.1 |
 | site-json | `useToolDetail` transmet le paramètre et l'intègre à la clé React Query ; `ToolDetailDialog` passe `tool.normalizedName` |
 
 **Correctif d'affichage connexe** : les libellés de satisfaction du détail d'un outil ne suivaient
@@ -238,6 +239,21 @@ pas ceux de l'input `commonTable` qui les produit (« Content » vs « Satisfait
 l'input de saisie, pas le vocabulaire legacy (« Bien / Excellent / Décevant »), qui reste un
 troisième vocabulaire encore en place côté PHP. Complément au fix `914dcec0` : en lecture seule,
 « Ajoutez une solution pour évaluer » invitait à une action impossible → tiret des valeurs vides.
+
+**Commits** : `b69071c3` (fix du détail) · `20a28d9c` (libellés) · `e3cb6a6a` (lecture seule) ·
+`d98b6a79` (doc) · `c12f2e43` (SDK `^1.0.184`).
+
+| Gate (11/08, après `npm ci`) | Résultat |
+|---|---|
+| `tsc -b --noEmit` | ✅ 0 |
+| `npx eslint src/modules/toolsCatalog src/modules/coform` | ✅ 0 |
+| `test:unit` (unit + préflights) | ✅ 2 346 / 2 346 — dont la parité i18n (`i18n-files`) |
+| Contenu du tarball SDK | ✅ `normalizedName` présent dans `types/` **et** `dist/` ; integrity du lock = integrity du registre |
+
+⚠️ **Ce lot n'a aucun test de non-régression** : ni le passage de `normalizedName` à `getToolUsers`,
+ni sa présence dans la clé React Query ne sont couverts. Retirer le paramètre laisse `lint`,
+`tsc` et les 2 346 tests **verts** (vérifié le 11/08) alors que la liste redevient fausse — le mode
+de défaillance est totalement silencieux. Cf. §13 q.8.
 
 ---
 
@@ -369,23 +385,23 @@ d'autres projets, tous vérifiés non régressifs à son égard :
 | 13 | Mode sombre | ❌ | Jamais vérifié |
 | 14 | Propagation des tags depuis le form (typologie/portage/surface) | 🟡 | 3 stamps `$mapLabels`/`$bucket` + test d'intégration vraie chaîne (6/6) — commité (`9bbd7a4d`) ; reste l'e2e navigateur live (créer un lieu → facettes) |
 | 15 | Middleware `imageUpload` : dossier ← champ `images` de `sites.json` | ✅ | `imageFolderForSlug` + test 7/7 ; tue le dossier fantôme + l'upload dans un dossier non servi. Commité (`4831f146`) |
-| 16 | Catalogue d'outils `/usages` (module `toolsCatalog`) | 🟡 | Livré 06/08 (`85520742`, corrections `2a1803ea`) ; review MR#33 le 10/08 : **15 constats corrigés** (`252b50e8`), SDK `1.0.183` (`36b4a7dd`), fix readonly `commonTable` (`914dcec0`) — gates verts. Reste : e2e navigateur du parcours complet |
+| 16 | Catalogue d'outils `/usages` (module `toolsCatalog`) | 🟡 | Livré 06/08 (`85520742`, corrections `2a1803ea`) ; review MR#33 le 10/08 : **15 constats corrigés** (`252b50e8`), SDK `1.0.183` (`36b4a7dd`), fix readonly `commonTable` (`914dcec0`) — gates verts. Puis 10/08bis : **bug de données du détail corrigé** (`b69071c3`, `20a28d9c`, `e3cb6a6a`, `d98b6a79`) avec SDK `1.0.184` (`c12f2e43`). Reste : **aucun test de non-régression sur `normalizedName`** (cf. §9 10/08bis) et l'e2e navigateur du parcours complet |
 
 ---
 
 ## 11. Dépendances SDK ↔ `cocolight-api-client`
 
-SDK installé : **`^1.0.183`**. Le module `toolsCatalog` (page `/usages`, livré le 06/08) consomme
-cinq endpoints déployés côté backend, **tous couverts par le SDK `1.0.183` publié sur npm**
-(résolu depuis le registre, vérifié le 10/08) : un `npm install` propre compile, le lien local
-n'est plus nécessaire. Contrat détaillé dans `commentaire/sdk-tools-catalog.md` (notes locales,
-hors dépôt).
+SDK installé : **`^1.0.184`**. Le module `toolsCatalog` (page `/usages`, livré le 06/08) consomme
+cinq endpoints déployés côté backend, **tous couverts par le SDK publié sur npm** (résolu depuis le
+registre, réinstallation propre `npm ci` vérifiée le 11/08 : integrity du lock = integrity du
+registre) : un `npm install` propre compile, le lien local n'est plus nécessaire. Contrat détaillé
+dans `commentaire/sdk-tools-catalog.md` (notes locales, hors dépôt).
 
 | Demande | État | Preuve / substitut |
 |---|---|---|
 | `Form.toolsCatalog()` — liste paginée du catalogue (`COSTUM_TOOLS_CATALOG`) | ✅ `1.0.183` | Action `ToolsCatalogListAction.php` déployée (costum `15c5a91af`). ⚠️ Ne PAS router via `_createPaginatorEngine` : `_linkEntities` jette les DTO sans `collection` |
 | `Form.getToolUsers()` — lieux utilisateurs d'un outil (`COSTUM_TOOL_USERS`) | ✅ `1.0.183` | `ToolUsersAction.php` déployée ; recherche par `criteriaIds`, jamais par regex sur le nom |
-| ⏳ `Form.getToolUsers()` — **paramètre `normalizedName`** | **demandé** (bloque le fix du §9 10/08bis) | Backend déjà déployé et rétrocompatible ; sans lui `tsc` refuse l'appel (`TS2353`). Spec ci-dessous |
+| `Form.getToolUsers()` — **paramètre `normalizedName`** | ✅ `1.0.184` | Livré le 11/08 (lib `d93c7c3`), débloque le fix du §9 10/08bis. Optionnel au contrat (hors `required`) et transmis **conditionnellement** par le SDK : clé-absente ≠ chaîne-vide. Cf. §11.1 |
 | `Form.communInfo()` — fiche du commun rattaché (`COSTUM_COMMUN_INFO`) | ✅ `1.0.183` | Déplacée d'`Answer` vers `Form` en `1.0.183` : `api.answer({id})` fetchait le doc AAP complet (fuite `financer[]` nominatif), `api.form({id})` ne charge que la définition publique. `formId` = verrou anti-IDOR (endpoint `auth: none`) |
 | `BaseEntity.saveToolEnrichment()` — édition d'un outil (`COSTUM_SAVE_TOOL_ENRICHMENT`, bearer) | ✅ `1.0.183` | `SaveCriteriaAction.php` durcie (elle écrivait sans aucun contrôle d'accès). ⚠️ Sur `BaseEntity`, pas `Organization` — cf. §12 |
 | `BaseEntity.getCommunList()` — options du select de rattachement (`COSTUM_COMMUN_LIST`, bearer) | ✅ `1.0.183` | `CommunListAction.php` déployée ; remplace un appel legacy qui ramenait ~300 réponses AAP entières |
@@ -394,7 +410,18 @@ hors dépôt).
 La config dépend par ailleurs du variant **`navigator-tl`** : toute évolution de cet endpoint la
 touche en premier.
 
-### 11.1 Demande ouverte — `normalizedName` sur `COSTUM_TOOL_USERS`
+### 11.1 ✅ Livrée le 11/08 — `normalizedName` sur `COSTUM_TOOL_USERS`
+
+> **Statut** : demande **satisfaite** dans la lib (`cocolight-api-endpoint`, commit `d93c7c3`),
+> publiée sur npm en **`1.0.184`** et consommée ici (`c12f2e43`). `tsc -b` vert, plus aucun point
+> bloquant sur la branche. La spec ci-dessous est conservée comme trace de la demande et du contrat
+> effectivement implémenté.
+>
+> ⚠️ Piège de publication à connaître : dans la lib, le bump de version (`ca7d65e`, endpoints
+> d'invitation) **précède** l'ajout de `normalizedName` (`d93c7c3`) — les deux ajouts, additifs et
+> indépendants, sont livrés dans la **même** `1.0.184`. Vérifier le CONTENU du tarball et non le seul
+> numéro de version (fait le 11/08 : `normalizedName` et `validateInvitation*` sont bien présents
+> dans `types/` et le `dist/` installés).
 
 **Pourquoi** : correction d'un bug de données majeur du détail d'un outil (§9, 10/08bis). Un
 `criteriaId` identifie une **ligne du catalogue de besoins** partagée par toutes les réponses
@@ -429,10 +456,9 @@ inchangé). Le serveur renormalise la valeur reçue avec `normalizeToolName`, la
    systématiquement ajouterait une clé vide à un fil `urlencoded`.
 
 **Côté site-json** : `useToolDetail` transmet le paramètre et l'intègre à la clé React Query
-(`TOOL_USERS`) — deux outils d'un même besoin partageraient sinon le cache. Le bump `^1.0.184`
-reste à poser dans `package.json` à la publication ; d'ici là `tsc` échoue
-(`TS2353: 'normalizedName' does not exist in type 'ToolUsersParams'`) — c'est **le seul** point
-bloquant de la branche.
+(`TOOL_USERS`) — deux outils d'un même besoin partageraient sinon le cache. Le bump `^1.0.184` est
+posé (`c12f2e43`) et `ToolDetailDialog` alimente le hook depuis `tool.normalizedName` du DTO de
+liste : le câblage est complet de bout en bout.
 
 ---
 
@@ -486,3 +512,6 @@ bloquant de la branche.
 | 5 | ✅ Fait (09/08) — `imageUpload` résout le dossier via le champ `images` de `sites.json` (cf. §12). | Claude |
 | 6 | ✅ Fait (10/08) — les chantiers du 09/08 sont arrivés via le merge de `main` (`9bbd7a4d`, `4831f146`) ; la review MR#33 est commitée (`36b4a7dd`, `252b50e8`, `914dcec0`). Reste les e2e navigateur live : créer un lieu → facettes, et parcours catalogue `/usages` complet | Thomas |
 | 7 | La garde « modifications non enregistrées » des coforms multi-step se désarme à chaque changement d'étape (reset du form) — trou commun à `CoFormModal`, `PlaceFormView` et `ToolsAnswerDialog`, atténué par le brouillon localStorage. Chantier coform à ouvrir ? | Thomas |
+| 8 | Verrouiller le fix `normalizedName` : le rendre **requis** dans `UseToolDetailOptions` (le champ est requis sur `ToolCatalogItem`, donc `tsc` reste vert — vérifié) et ajouter un test de non-régression (passage à `getToolUsers` + présence dans la clé React Query). Sans cela, un futur appelant qui l'oublie rétablit les 61 % d'attributions fausses **sans qu'aucun gate ne bronche** | Thomas |
+| 9 | Review du 11/08 : deux bugs **préexistants** de `CommonTableField` mis au jour (hors périmètre des 5 commits, mais l'un est aggravé par `e3cb6a6a`) — regroupement des scores sur `usageKey` **brut** sans `groupKeyResolver` (une réponse legacy sans `usageKey` n'apparaît jamais sur sa ligne, et affiche désormais « — » = « non répondu », faux) et `handleActivate` indexé sur la clé brute (clic sans effet sur une ligne ré-ancrée). Chantier coform à planifier | Thomas |
+| 10 | La branche `feat/invitations-email` consomme `UserApi.validateInvitation*` (livrés en SDK `1.0.184`) mais son `package.json` est resté en `^1.0.181` : son `tsc` échouera tant que le bump n'est pas posé | Thomas |
