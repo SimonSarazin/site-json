@@ -1375,10 +1375,6 @@
             },
             "filters": [
               {
-                "dimension": "region",
-                "multiple": true
-              },
-              {
                 "dimension": "typologie",
                 "multiple": true
               },
@@ -1388,10 +1384,6 @@
               },
               {
                 "dimension": "surface",
-                "multiple": true
-              },
-              {
-                "dimension": "pays",
                 "multiple": true
               },
               {
@@ -1426,10 +1418,10 @@
               },
               {
                 "kind": "distinct",
-                "dimension": "region",
+                "dimension": "departement",
                 "label": {
-                  "fr": "Régions",
-                  "en": "Regions"
+                  "fr": "Départements",
+                  "en": "Departments"
                 },
                 "icon": "map",
                 "accent": "chart-2"
@@ -1467,11 +1459,11 @@
             ],
             "charts": [
               {
-                "kind": "bars",
-                "dimension": "region",
+                "kind": "barsHorizontal",
+                "dimension": "departement",
                 "label": {
-                  "fr": "Répartition par région",
-                  "en": "By region"
+                  "fr": "Répartition par département",
+                  "en": "By department"
                 },
                 "layout": "full"
               },
@@ -1499,25 +1491,6 @@
                 "label": {
                   "fr": "Par portage / statut juridique",
                   "en": "By legal status"
-                },
-                "layout": "half"
-              },
-              {
-                "kind": "donut",
-                "dimension": "pays",
-                "label": {
-                  "fr": "Par pays",
-                  "en": "By country"
-                },
-                "layout": "half"
-              },
-              {
-                "kind": "barsHorizontal",
-                "dimension": "equipements",
-                "top": 10,
-                "label": {
-                  "fr": "Équipements déclarés (PoC réponses CoForm)",
-                  "en": "Declared equipment (CoForm PoC)"
                 },
                 "layout": "half"
               }
@@ -1558,19 +1531,11 @@
                   }
                 },
                 {
-                  "dimension": "region",
+                  "dimension": "departement",
                   "kind": "badge",
                   "label": {
-                    "fr": "Région",
-                    "en": "Region"
-                  }
-                },
-                {
-                  "dimension": "pays",
-                  "kind": "text",
-                  "label": {
-                    "fr": "Pays",
-                    "en": "Country"
+                    "fr": "Département",
+                    "en": "Department"
                   }
                 },
                 {
