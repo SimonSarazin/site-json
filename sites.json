@@ -62,6 +62,12 @@
     ]
   },
   {
+    "slug": "relief",
+    "config": "config.prod.relief.json",
+    "css": "index-relief",
+    "images": "relief"
+  },
+  {
     "slug": "juliePotVin",
     "config": "config.prod.julie-pot-vin.json",
     "css": "index-julie-pot-vin",
