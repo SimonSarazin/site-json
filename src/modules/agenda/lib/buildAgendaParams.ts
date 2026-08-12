@@ -8,6 +8,8 @@
  * `defaultSortBy` (tri par occurrence interne) et `defaultTypes` (forcé à `["events"]`).
  */
 
+import { applyValidationGate } from "@/modules/search/lib/validationGate";
+
 /** Filtres backend communs aux deux modes (scalaires, comme l'attend le SDK). */
 export interface AgendaParamsInput {
   /** Type d'event (mono-select côté SDK). */
@@ -20,6 +22,19 @@ export interface AgendaParamsInput {
 export interface AgendaBaseParams {
   /** Scope multi-sources (filtre `source.keys`). Vide → costum courant (auto SDK). */
   sourceKey?: string[];
+  /**
+   * Slug du costum pour la PORTE DE VALIDATION : à `"monSite"`, les événements EN ATTENTE
+   * (`preferences.toBeValidated.monSite` / `source.toBeValidated.monSite`) sont masqués — même
+   * sémantique que `baseParams.costumSlug` d'un `searchProStatic`.
+   *
+   * ⚠ N'est PAS émis dans le payload : le SDK injecte déjà son propre `costumSlug` via
+   * `_withCostumContext`. La clé ne sert QUE de source au filtre client — comme dans `searchCostum`,
+   * où le backend Node est stateless et le legacy non déterministe.
+   *
+   * Sans elle, aucune porte : un événement proposé par un formulaire costum injectant
+   * `preferences.toBeValidated` s'affiche publiquement dès sa création (défaut mesuré, commit e3f1a060).
+   */
+  costumSlug?: string;
   /** Pas de pagination de la vue LISTE (aligne `indexStepList` de search). */
   indexStepList?: number;
   /** Inclure les sources fédiverse. */
@@ -35,10 +50,13 @@ export const AGENDA_DEFAULT_INDEX_STEP = 20;
 /** Champs de scope/filtre issus de baseParams, communs aux deux modes. */
 function fromBaseParams(bp?: AgendaBaseParams): Record<string, unknown> {
   if (!bp) return {};
+  // `searchEventsCostum` ne passe PAS par `buildSearchPayload` : la porte doit être appelée ici,
+  // sinon elle n'existe pas pour l'agenda. `types` est constant — l'agenda ne cherche que des events.
+  const filters = applyValidationGate(bp.filters, { costumSlug: bp.costumSlug, types: ["events"] });
   return {
     ...(bp.sourceKey && bp.sourceKey.length ? { sourceKey: bp.sourceKey } : {}),
     ...(bp.fediverse !== undefined ? { fediverse: bp.fediverse } : {}),
-    ...(bp.filters ? { filters: bp.filters } : {}),
+    ...(filters && Object.keys(filters).length > 0 ? { filters } : {}),
     ...(bp.locality ? { locality: bp.locality } : {}),
   };
 }
@@ -96,5 +114,7 @@ function sortKeys(o: unknown): unknown {
 /** Signature stable de baseParams pour la queryKey (scope/filtres affectant les résultats). Canonique. */
 export function agendaBaseSig(bp?: AgendaBaseParams): string {
   if (!bp) return "";
-  return JSON.stringify(sortKeys({ s: bp.sourceKey ?? null, f: bp.fediverse ?? null, fl: bp.filters ?? null, l: bp.locality ?? null }));
+  // `cs` est indispensable : la porte de validation dérive de `costumSlug` et modifie les `filters`
+  // ÉMIS sans toucher à `bp.filters` — sans lui, deux périmètres distincts partageraient un cache.
+  return JSON.stringify(sortKeys({ s: bp.sourceKey ?? null, cs: bp.costumSlug ?? null, f: bp.fediverse ?? null, fl: bp.filters ?? null, l: bp.locality ?? null }));
 }

@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import { useT } from "@/hooks/useT";
 import { cheminAnnotation } from "@/modules/search/lib/costumSubType";
 import "@/modules/admin/i18n";
+import { publicSurfaceKeys } from "@/lib/queryKeys";
+import { useCocolight } from "@/hooks/useCocolight";
 
 /**
  * Carrier costum exposant le référencement (BaseEntity, lib ≥ 1.0.160) : rattache/détache un élément
@@ -29,16 +31,31 @@ export type ReferenceOp = "reference" | "unreference" | "detach" | "classify";
  */
 export interface AnnotableEntity {
   updateField: (path: string, value: unknown) => Promise<unknown>;
+  /** Document de la ligne. Les tableaux admin tournent en `variant: "admin"`, qui renvoie le
+   *  document COMPLET : l'annotation courante est donc lisible sans requête supplémentaire. */
+  serverData?: Record<string, unknown>;
 }
 
-interface ReferenceVars {
+/**
+ * Y a-t-il une annotation `reference.costumTypes.<slug>` À EFFACER sur la cible ?
+ *
+ * Répond `true` par DÉFAUT quand le document n'est pas lisible (`serverData` absent, ou `reference`
+ * hors projection) : on ne saute une écriture que lorsqu'on peut PROUVER qu'elle est inutile.
+ * L'inverse — présumer « rien à nettoyer » sur une donnée qu'on n'a pas vue — rejouerait le défaut
+ * qu'on vient de corriger, en sautant silencieusement un nettoyage nécessaire.
+ */
+function peutPorterUneAnnotation(cible: AnnotableEntity | undefined, slug: string): boolean {
+  const sd = cible?.serverData;
+  if (!sd || !("reference" in sd)) return true; // non lisible → on écrit, comme avant
+  const ref = sd.reference as { costumTypes?: Record<string, unknown> } | undefined;
+  const valeur = ref?.costumTypes?.[slug];
+  return valeur !== undefined && valeur !== "";
+}
+
+interface ReferenceVarsBase {
   carrier: ReferencingCarrier;
-  op: ReferenceOp;
   type: string;
   id: string;
-  /** L'entité CIBLE (ligne du tableau) — porte les écritures d'annotation via `updateField`.
-   *  Requise pour `classify`, et pour l'annotation/modération au référencement. */
-  cible?: AnnotableEntity;
   /**
    * Sous-type de rattachement (clé `subType` d'un form de `costumForms`) — écrit dans
    * `reference.costumTypes.<slug>` : c'est l'annotation qui classe une entité RÉFÉRENCÉE sans jamais
@@ -50,9 +67,35 @@ interface ReferenceVars {
   moderate?: boolean;
 }
 
+/**
+ * Les variables sont une UNION DISCRIMINÉE sur `op`, et non un objet à `cible` optionnelle : les
+ * trois ops qui écrivent l'annotation l'EXIGENT au type, `detach` (qui n'y touche pas) l'interdit.
+ *
+ * POURQUOI le type et pas une garde à l'exécution : un `cible?:` uniforme laisse un appelant
+ * l'oublier en silence. C'est arrivé — `f59739ff` a introduit `cible` et mis à jour un appelant
+ * sur deux ; `AdminResourceTable` a continué de compiler, et pendant un mois son retrait de
+ * référence a laissé l'annotation en place sur les six sites qui exposent l'action (`ecrire()`
+ * lève « cible manquante » AVANT tout appel réseau, dans un `catch` best-effort). Le compilateur
+ * refuse désormais ce qu'une revue avait laissé passer.
+ */
+type ReferenceVars =
+  | (ReferenceVarsBase & {
+      op: Exclude<ReferenceOp, "detach">;
+      /** L'entité CIBLE (ligne du tableau) — porte les écritures d'annotation via `updateField`. */
+      cible: AnnotableEntity;
+    })
+  | (ReferenceVarsBase & {
+      /** Retrait du RATTACHEMENT (`source.keys`) : ne touche à aucune annotation. */
+      op: "detach";
+      cible?: never;
+    });
+
 /** Mutation de (dé)référencement d'un élément sous le costum du carrier (P5). Toast + refetch. */
 export function useReferenceElement(onDone?: () => void) {
   const queryClient = useQueryClient();
+  // Slug du costum PORTEUR — scope le fil blog dans `publicSurfaceKeys` (le slug de la
+  // fiche touchée n'aurait aucun sens ici).
+  const { entity: porteur } = useCocolight();
   const t = useT("modules/admin");
 
   /** Écrit un chemin sur l'entité cible (`value: ""` → $unset, des deux côtés L et B). */
@@ -85,15 +128,25 @@ export function useReferenceElement(onDone?: () => void) {
       // le référencement a eu lieu, l'entité est dans le périmètre ; un raté ici la laisse « non
       // classée », rattrapable par l'action Classer. Ne jamais faire échouer la mutation pour ça.
       if (op === "reference" && slug) {
-        // L'annotation est TOUJOURS réglée, même sans sous-type choisi (`""` → $unset). Sans cela,
-        // une valeur laissée par un désréférencement passé HORS de cette UI (interface legacy, appel
-        // direct, nettoyage best-effort raté) survivrait et reclasserait l'entité en silence avec
-        // l'ancien sous-type — et elle serait de nouveau DANS le périmètre, donc consultée. Le
-        // référencement devient ainsi auto-réparant, indépendamment du backend en face.
-        try {
-          await ecrire(cible, cheminAnnotation(slug), subType ?? "");
-        } catch {
-          if (subType) toast.warning(t("useReferenceElement.referencedUnclassified"));
+        // Le référencement est AUTO-RÉPARANT : il ne se contente pas de poser le sous-type demandé,
+        // il efface aussi (`""` → $unset) une annotation périmée laissée par un désréférencement
+        // passé HORS de cette UI (interface legacy, appel direct, nettoyage raté). Sans ça, la
+        // valeur survivrait et reclasserait l'entité en silence avec l'ANCIEN sous-type — et elle
+        // serait de nouveau DANS le périmètre, donc consultée.
+        //
+        // La condition ne restreint que les cas où il n'y a RIEN à faire, et jamais par supposition :
+        // `peutPorterUneAnnotation` répond `true` dès que le document n'est pas lisible. Sur les
+        // 4 sites (des 6 qui exposent l'action) dont aucun form ne déclare de `subType`, on évite
+        // ainsi un `$unset` d'un champ jamais posé à chaque clic.
+        if (subType || peutPorterUneAnnotation(cible, slug)) {
+          try {
+            await ecrire(cible, cheminAnnotation(slug), subType ?? "");
+          } catch (err) {
+            // Un throw client (cible manquante) et un 401 du Node durci doivent être distinguables
+            // d'un succès : `onSuccess` affiche « Référencé » quoi qu'il arrive ici.
+            console.warn(`[reference] annotation « ${cheminAnnotation(slug)} » non écrite (non bloquant)`, err);
+            if (subType) toast.warning(t("useReferenceElement.referencedUnclassified"));
+          }
         }
         if (moderate) {
           try {
@@ -103,7 +156,8 @@ export function useReferenceElement(onDone?: () => void) {
             // (401), là où validategroup est le canal d'AUTORITÉ costum-admin des DEUX backends
             // (cascade legacy incluse). Jamais le boolean global, qui masquerait l'entité ailleurs.
             await carrier.validateGroup(type, id, false);
-          } catch {
+          } catch (err) {
+            console.warn(`[reference] modération scopée non appliquée sur ${type}/${id} (non bloquant)`, err);
             toast.warning(t("useReferenceElement.referencedUnmoderated"));
           }
         }
@@ -111,9 +165,16 @@ export function useReferenceElement(onDone?: () => void) {
       // Dé-référencement : nettoyage best-effort de l'annotation (une orpheline serait de toute
       // façon inerte — le scope costum s'applique en $and au-dessus de tout filtre).
       if (op === "unreference" && slug) {
-        try {
-          await ecrire(cible, cheminAnnotation(slug), "");
-        } catch { /* best-effort */ }
+        if (peutPorterUneAnnotation(cible, slug)) {
+          try {
+            await ecrire(cible, cheminAnnotation(slug), "");
+          } catch (err) {
+            // Muet pour l'utilisateur (l'orpheline est inerte : le scope costum s'applique en $and
+            // au-dessus de tout filtre) mais PAS pour le développeur — c'est ce silence total qui a
+            // laissé le défaut de `cible` manquante vivre un mois sur six sites.
+            console.warn(`[reference] annotation « ${cheminAnnotation(slug)} » non nettoyée au retrait (non bloquant)`, err);
+          }
+        }
       }
       return res;
     },
@@ -127,6 +188,11 @@ export function useReferenceElement(onDone?: () => void) {
       // REVIEW M5 : invalide TOUTES les requêtes admin (autres filtres statut, Contenu vs
       // Référencement, tuiles dashboard) — le refetch() du composant ne couvre que la clé active.
       void queryClient.invalidateQueries({ predicate: (q) => String(q.queryKey[0] ?? "").startsWith("admin-") });
+      // …et les surfaces PUBLIQUES : ce geste change la VISIBILITÉ d'une fiche, or les listes du site
+      // vivent dans des espaces de clés disjoints de `admin-*` (search, agenda, fil blog). Sans ça,
+      // la page publique reste sur son cache jusqu'au rechargement — alors que le chemin FORMULAIRE,
+      // lui, les rafraîchit déjà via l'`invalidateFn` du costumForm.
+      for (const key of publicSurfaceKeys(porteur?.slug ?? undefined)) void queryClient.invalidateQueries({ queryKey: key });
       onDone?.();
     },
     onError: (error: unknown) => {

@@ -59,6 +59,11 @@ export const AgendaSectionSchema = z.object({
     baseParams: z
       .object({
         sourceKey: z.array(z.string()).optional(),
+        // Porte de VALIDATION : masque les événements en attente
+        // (`preferences.toBeValidated.<slug>` / `source.toBeValidated.<slug>`). Même sémantique que
+        // `searchProStatic.baseParams.costumSlug`. Sans elle, un événement proposé par un formulaire
+        // costum injectant `toBeValidated` s'affiche publiquement dès sa création.
+        costumSlug: z.string().optional(),
         indexStepList: z.number().int().positive().optional(),
         fediverse: z.boolean().optional(),
         filters: z.record(z.string(), z.unknown()).optional(),
