@@ -92,7 +92,16 @@
     }
   },
   "aac": {
-    "formId": "677e7e389058e31575550ac8"
+    "formId": "677e7e389058e31575550ac8",
+    "directory": {
+      "fields": {
+        "description": "answers.aapStep1.aapStep1lzi62x3etw49gyc424d",
+        "tags": "answers.aapStep1.aapStep1m03ot9qymmfgashp7l",
+        "maturity": "answers.aapStep1.aapStep1m2ucu54mopm33osqxpd",
+        "users": "links.cae",
+        "choose": "answers.aapStep2.choose"
+      }
+    }
   },
   "header": {
     "type": "standard",
@@ -136,13 +145,15 @@
           }
         },
         {
-          "type": "aac",
+          "type": "aac-directory",
           "id": "aac",
           "props": {
             "title": {
-              "fr": "Appel à Communs de la Fédération des CAE"
+              "fr": "Les communs identifiés"
             },
-            "className": "max-w-5xl mx-auto px-6 pb-20"
+            "columns": 3,
+            "pageSize": 12,
+            "className": "max-w-7xl mx-auto px-6 pb-20"
           }
         }
       ]
