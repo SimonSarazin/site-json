@@ -19,16 +19,46 @@ export { default as moduleConfig } from "./module.config";
 export { AAC_QUERY_KEYS } from "./constants/queryKeys";
 export type { AacQueryKeyType } from "./constants/queryKeys";
 
-// Schémas : bloc de config site (`config.aac`, singulier) + section
-export { AacConfigSchema, AacSectionSchema } from "./schema";
-export type { AacConfig, AacSection, AacSectionProps } from "./schema";
+// Schémas : bloc de config site (`config.aac`, singulier) + sections
+export {
+  AacConfigSchema,
+  AacSectionSchema,
+  AacDirectorySectionSchema,
+  AacDirectoryFieldsSchema,
+} from "./schema";
+export type {
+  AacConfig,
+  AacSection,
+  AacSectionProps,
+  AacDirectorySection,
+  AacDirectorySectionProps,
+  AacDirectoryFieldsConfig,
+} from "./schema";
 
 // Hooks publics
 export { useAacConfig } from "./hooks/useAacConfig";
 export { useAacPermissions } from "./hooks/useAacPermissions";
+export { useAacFormMeta, useAacContextId } from "./hooks/useAacFormMeta";
+export { useAacCommuns } from "./hooks/useAacCommuns";
 
-// Résolveur pur (tests / usage avancé)
+// Fonctions pures (tests / usage avancé)
 export { resolveAacConfig } from "./lib/resolveAacConfig";
+export { buildAacFormMeta, readOptionList } from "./lib/formMeta";
+export { resolveAacCardFields } from "./lib/resolveAacCardFields";
+export { parseAacAnswer } from "./lib/parseAacAnswer";
+export { filterCommuns, foldForSearch } from "./lib/filterCommuns";
+export { aacFiltersKey, hasActiveFilters, EMPTY_AAC_FILTERS } from "./lib/filtersKey";
+
+export type { AacFormMeta, AacQuestionMeta, AacOption } from "./lib/formMeta";
+export type {
+  AacCardFields,
+  AacCardFieldRef,
+  AacCardFieldRole,
+  AacCardFieldSource,
+} from "./lib/resolveAacCardFields";
+export type { AacCommunCard, AacFund } from "./lib/parseAacAnswer";
+export type { AacDirectoryFiltersState } from "./lib/filtersKey";
+export type { AacCommunsQuery, AacCommunsPage } from "./lib/communsTransport";
 
 // Permissions (le register est déjà chargé en side-effect ci-dessus)
 export {

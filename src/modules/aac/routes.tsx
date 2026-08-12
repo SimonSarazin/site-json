@@ -12,11 +12,11 @@ import AacCommunDetailPage from "./pages/AacCommunDetailPage";
  */
 export const routes: ModuleRouteFactory = (): RouteObject[] => [
   {
-    path: "aac",
+    path: "/aac",
     element: <AacPage />,
   },
   {
-    path: "commun/:answerId",
+    path: "/aac/commun/:answerId",
     element: <AacCommunDetailPage />,
   },
 ];

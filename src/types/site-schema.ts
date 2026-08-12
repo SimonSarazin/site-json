@@ -1404,7 +1404,11 @@ import {
   CagnotteLayoutSectionSchema,
 } from "@/modules/cagnotte/schema";
 import { CoFormSectionSchema } from "@/modules/coform/schema";
-import { AacConfigSchema, AacSectionSchema } from "@/modules/aac/schema";
+import {
+  AacConfigSchema,
+  AacSectionSchema,
+  AacDirectorySectionSchema,
+} from "@/modules/aac/schema";
 import {
   LoginFormSectionSchema,
   RegisterFormSectionSchema,
@@ -1521,6 +1525,7 @@ export const Section = z.discriminatedUnion("type", [
   CagnotteLayoutSectionSchema,
   CoFormSectionSchema,
   AacSectionSchema,
+  AacDirectorySectionSchema,
   DataObservatorySectionSchema,
   AgendaSectionSchema,
   ArticleFeedSectionSchema,

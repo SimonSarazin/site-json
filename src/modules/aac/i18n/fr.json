@@ -36,6 +36,48 @@
     "campaigns": "Campagnes déclarées",
     "none": "—"
   },
+  "directory": {
+    "count_one": "résultat",
+    "count_other": "résultats",
+    "empty": "Aucun commun ne correspond à votre recherche.",
+    "error": "Impossible de charger les communs.",
+    "loading": "Chargement…",
+    "search": {
+      "label": "Rechercher un commun par son nom",
+      "placeholder": "Recherche par nom"
+    },
+    "filters": {
+      "all": "Tous",
+      "title": "Filtres",
+      "usage": "Filtrer par besoins",
+      "usageCategory": "Catégorie d'usage",
+      "usageSubCategory": "Sous catégorie d'usage",
+      "tags": "Filtrer par tag",
+      "maturity": "Utilisable",
+      "sort": "Trier par",
+      "reset": "Effacer"
+    },
+    "card": {
+      "untitled": "Commun sans titre",
+      "noDescription": "(Pas de description)",
+      "pending": "En attente",
+      "collected": "Collecté sur les cofinancements en cours",
+      "noFunding": "Pas de demande de cofinancement en cours",
+      "user": "utilisateur",
+      "users": "utilisateurs",
+      "interested_one": "intéressé",
+      "interested_other": "intéressés"
+    },
+    "sort": {
+      "alpha": "Ordre alphabétique",
+      "interest_desc": "Nombre d'intéressés (décroissant)",
+      "interest_asc": "Nombre d'intéressés (croissant)",
+      "created_asc": "Date de création (croissant)",
+      "created_desc": "Date de création (décroissant)",
+      "updated_asc": "Date de mise à jour (croissant)",
+      "updated_desc": "Date de mise à jour (décroissant)"
+    }
+  },
   "detail": {
     "noname": "(Sans nom)",
     "nodesc": "(Sans description)",

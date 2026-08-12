@@ -37,7 +37,7 @@ function Row({ label, value }: { label: string; value: string }) {
  * Le `formId` vient de `config.aac.formId` (UN SEUL AAC par site, patron
  * `config.ampli` mais singulier) — pas des props de section.
  */
-export default function AacConfigStub({ props }: AacConfigStubProps) {
+export default function AacConfigStub({ id, props }: AacConfigStubProps) {
   const t = useT("modules/aac");
   const { config: siteConfig } = useSite();
   const formId = siteConfig.aac?.formId ?? null;
@@ -53,14 +53,16 @@ export default function AacConfigStub({ props }: AacConfigStubProps) {
   );
   if (!formId) {
     return (
-      <div className="rounded-md border p-4 text-sm text-muted-foreground">
+      <div id={id} className="rounded-md border p-4 text-sm text-muted-foreground">
         {t("section.noForm")}
       </div>
     );
   }
 
   return (
-    <section className={props.className}>
+    // `id` doit atterrir dans le DOM : c'est la cible des ancres `#<id>` que les
+    // navigations de config utilisent (il était jeté jusqu'ici).
+    <section id={id} className={props.className}>
       <h2 className="text-lg font-semibold">{t("section.stubTitle")}</h2>
       <p className="mb-3 text-sm text-muted-foreground">{t("section.stubHint")}</p>
 
