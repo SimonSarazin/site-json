@@ -20,6 +20,13 @@ export interface AgendaParamsInput {
 export interface AgendaBaseParams {
   /** Scope multi-sources (filtre `source.keys`). Vide → costum courant (auto SDK). */
   sourceKey?: string[];
+  /**
+   * Désactive le périmètre costum, comme `searchProStatic.baseParams.notSourceKey` (la garde
+   * serveur est un `empty()` : PRÉSENTE, quelle que soit sa valeur, la clé désactive le filtrage).
+   * Nécessaire quand les events du réseau lui sont rattachés par LIEN et non par provenance :
+   * le scope costum, intersecté avec un filtre sur `links.*`, donne sinon un ensemble vide.
+   */
+  notSourceKey?: boolean;
   /** Pas de pagination de la vue LISTE (aligne `indexStepList` de search). */
   indexStepList?: number;
   /** Inclure les sources fédiverse. */
@@ -37,6 +44,7 @@ function fromBaseParams(bp?: AgendaBaseParams): Record<string, unknown> {
   if (!bp) return {};
   return {
     ...(bp.sourceKey && bp.sourceKey.length ? { sourceKey: bp.sourceKey } : {}),
+    ...(bp.notSourceKey ? { notSourceKey: true } : {}),
     ...(bp.fediverse !== undefined ? { fediverse: bp.fediverse } : {}),
     ...(bp.filters ? { filters: bp.filters } : {}),
     ...(bp.locality ? { locality: bp.locality } : {}),

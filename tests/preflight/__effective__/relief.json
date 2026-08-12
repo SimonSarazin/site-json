@@ -101,10 +101,13 @@
     },
     "//agenda": {
       "baseParams": {
-        "sourceKey": [
-          "relief"
-        ],
-        "indexStepList": 4
+        "indexStepList": 4,
+        "notSourceKey": true,
+        "filters": {
+          "links.organizer.6146059c9348791eac133dd1": {
+            "$exists": true
+          }
+        }
       }
     },
     "/observatoire/data-observatory": {
@@ -162,11 +165,14 @@
     },
     "/evenements/agenda": {
       "baseParams": {
-        "sourceKey": [
-          "relief"
-        ],
         "indexStepList": 20,
-        "fediverse": false
+        "fediverse": false,
+        "notSourceKey": true,
+        "filters": {
+          "links.organizer.6146059c9348791eac133dd1": {
+            "$exists": true
+          }
+        }
       }
     }
   },
