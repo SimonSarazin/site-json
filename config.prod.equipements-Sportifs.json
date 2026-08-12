@@ -1834,6 +1834,7 @@
               "defaultTypes": [
                 "poi"
               ],
+              "costumSlug": "equipementsSportifs974",
               "defaultFields": [
                 "name",
                 "equip_type_name",
@@ -1975,6 +1976,7 @@
               "defaultTypes": [
                 "poi"
               ],
+              "costumSlug": "equipementsSportifs974",
               "defaultFields": [
                 "name", "equip_type_name", "equip_type_famille", "categorie",
                 "equip_nature", "equip_sol", "equip_surf", "equip_larg", "equip_long",
@@ -2493,6 +2495,7 @@
               "defaultTypes": [
                 "poi"
               ],
+              "costumSlug": "equipementsSportifs974",
               "defaultFields": [
                 "name", "equip_type_name", "equip_type_famille", "categorie",
                 "equip_nature", "equip_sol", "equip_surf", "equip_larg", "equip_long",
@@ -4121,6 +4124,18 @@
           { "field": "reference.costum", "op": "contains", "value": "equipementsSportifs974" }
         ]
       },
+      "editModals": [
+        {
+          "editModal": "edit-equipements-sportifs",
+          "editModalMatch": { "type": "recoveryCenter" },
+          "when": { "field": "sourceKeys", "op": "contains", "value": "equipementsSportifs974" }
+        },
+        {
+          "editModal": "edit-equipements-sportifs",
+          "editModalMatch": { "reference.costumTypes.equipementsSportifs974": "recoveryCenter" },
+          "when": { "field": "reference.costum", "op": "contains", "value": "equipementsSportifs974" }
+        }
+      ],
       "sections": [
         {
           "type": "profile-header",
@@ -4262,6 +4277,9 @@
       "id": "equipements-sportifs",
       "entityType": "poi",
       "costumSlug": "equipementsSportifs974",
+      "subType": "recoveryCenter",
+      "subTypeLabel": { "fr": "Équipement sportif", "en": "Sports facility" },
+      "identity": { "type": "recoveryCenter" },
       "layout": {
         "kind": "wizard",
         "validatePerStep": true
@@ -5049,8 +5067,7 @@
             "rowActions": [
               "edit",
               "delete",
-              "validate",
-              "reference"
+              "validate"
             ],
             "bulkActions": [
               "validate",
@@ -5085,12 +5102,20 @@
         "id": "reference",
         "label": {
           "fr": "Référencement",
-          "en": "SEO"
+          "en": "Referencing"
         },
         "access": "siteAdmin",
         "sections": [
           {
-            "type": "reference"
+            "type": "reference",
+            "title": { "fr": "Référencer des équipements", "en": "Reference facilities" },
+            "entityTypes": ["poi", "events"],
+            "columns": [
+              { "path": "name", "label": { "fr": "Nom", "en": "Name" } },
+              { "path": "type", "label": { "fr": "Type natif", "en": "Native type" } },
+              { "path": "address.addressLocality", "label": { "fr": "Commune", "en": "Municipality" } },
+              { "path": "source.key", "label": { "fr": "Provenance", "en": "Source" } }
+            ]
           }
         ]
       }

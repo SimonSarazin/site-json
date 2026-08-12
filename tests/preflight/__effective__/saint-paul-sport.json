@@ -312,46 +312,14 @@
         ]
       }
     },
-    "/agenda/searchProStatic": {
+    "/agenda/agenda": {
       "baseParams": {
-        "defaultTypes": [
-          "events"
-        ],
-        "costumSlug": "saintpaulSport1"
+        "costumSlug": "saintpaulSport1",
+        "indexStepList": 12,
+        "fediverse": false
       }
     },
     "/actualites/searchProStatic": {
-      "baseParams": {
-        "defaultTypes": [
-          "poi"
-        ],
-        "costumSlug": "saintpaulSport1",
-        "defaultSortBy": {
-          "created": -1
-        },
-        "defaultFilters": {
-          "type": "article"
-        },
-        "defaultFields": [
-          "name",
-          "slug",
-          "collection",
-          "type",
-          "source",
-          "shortDescription",
-          "description",
-          "profilImageUrl",
-          "profilMediumImageUrl",
-          "profilThumbImageUrl",
-          "medias",
-          "urls",
-          "tags",
-          "created",
-          "reference"
-        ]
-      }
-    },
-    "/actualites/searchProStatic#1": {
       "baseParams": {
         "defaultTypes": [
           "events"

@@ -3668,43 +3668,30 @@
                 "variant": "primary"
               }
             ],
-            "showSearch": true,
-            "searchPlaceholder": {
-              "fr": "Rechercher un événement...",
-              "en": "Search for an event..."
-            },
+            "showSearch": false,
+            "showActiveFiltersTags": false,
             "headlineClassName": "text-white dark:text-foreground",
             "subheadClassName": "text-white dark:text-foreground"
           }
         },
         {
-          "type": "searchProStatic",
-          "id": "agenda-list",
+          "type": "agenda",
+          "id": "agenda-saint-paul",
           "props": {
-            "useFilter": true,
-            "showMap": false,
+            "showViewToggle": true,
+            "showTabs": true,
+            "defaultMode": "list",
+            "tabs": ["upcoming", "ongoing", "past"],
+            "defaultTab": "upcoming",
+            "upcomingWindowMonths": 12,
+            "filters": { "type": true, "text": true, "tags": true },
+            "detailsMode": "drawer",
             "enableMap": false,
-            "showActiveFiltersTypes": true,
-            "showActiveFiltersTags": true,
-            "disableInfiniteScroll": false,
+            "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 4 },
             "baseParams": {
-              "defaultTypes": [
-                "events"
-              ],
-              "costumSlug": "saintpaulSport1"
-            },
-            "list": {
-              "columns": {
-                "sm": 1,
-                "md": 2,
-                "lg": 3,
-                "xl": 4
-              },
-              "card": {
-                "type": "profile",
-                "variant": "profile",
-                "detailsMode": "drawer"
-              }
+              "costumSlug": "saintpaulSport1",
+              "indexStepList": 12,
+              "fediverse": false
             }
           }
         }
@@ -3781,76 +3768,15 @@
                 "icon": "newspaper",
                 "content": [
                   {
-                    "type": "searchProStatic",
-                    "id": "actualites-articles-list",
+                    "type": "articleFeed",
+                    "id": "actualites-articles-feed",
                     "props": {
-                      "useFilter": true,
-                      "showMap": false,
-                      "enableMap": false,
-                      "showActiveFiltersTypes": true,
-                      "showActiveFiltersTags": true,
-                      "disableInfiniteScroll": false,
-                      "baseParams": {
-                        "defaultTypes": [
-                          "poi"
-                        ],
-                        "costumSlug": "saintpaulSport1",
-                        "defaultSortBy": {
-                          "created": -1
-                        },
-                        "defaultFilters": {
-                          "type": "article"
-                        },
-                        "defaultFields": [
-                          "name",
-                          "slug",
-                          "collection",
-                          "type",
-                          "source",
-                          "shortDescription",
-                          "description",
-                          "profilImageUrl",
-                          "profilMediumImageUrl",
-                          "profilThumbImageUrl",
-                          "medias",
-                          "urls",
-                          "tags",
-                          "created",
-                          "reference"
-                        ]
-                      },
-                      "list": {
-                        "columns": {
-                          "sm": 1,
-                          "md": 2,
-                          "lg": 3,
-                          "xl": 3
-                        },
-                        "previewParam": "preview-actus",
-                        "card": {
-                          "type": "resource",
-                          "detailsMode": "drawer"
-                        },
-                        "preview": {
-                          "type": "resource"
-                        },
-                        "resource": {
-                          "design": "card",
-                          "titleField": "name",
-                          "descriptionField": "description",
-                          "dateField": "created",
-                          "imageField": "profilMediumImageUrl",
-                          "facets": [
-                            {
-                              "field": "tags",
-                              "label": {
-                                "fr": "Mots-clés",
-                                "en": "Tags"
-                              }
-                            }
-                          ]
-                        }
-                      }
+                      "costumSlug": "saintpaulSport1",
+                      "pageSize": 12,
+                      "featured": true,
+                      "cardVariant": "default",
+                      "feedLayout": "grid",
+                      "fullWidth": true
                     }
                   }
                 ]
@@ -3933,6 +3859,32 @@
         "description": {
           "fr": "Les actualités et les événements des équipements et du sport à Saint-Paul.",
           "en": "News and events about sports and facilities in Saint-Paul."
+        }
+      }
+    },
+    {
+      "path": "/blog",
+      "title": {
+        "fr": "Actualités - Saint-Paul Sport",
+        "en": "News - Saint-Paul Sport"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "articleFeed",
+          "id": "blog-feed",
+          "props": {
+            "costumSlug": "saintpaulSport1",
+            "pageSize": 12,
+            "featured": true,
+            "fullWidth": true
+          }
+        }
+      ],
+      "seo": {
+        "description": {
+          "fr": "Toutes les actualités du sport à Saint-Paul.",
+          "en": "All sports news in Saint-Paul."
         }
       }
     },
@@ -4074,6 +4026,7 @@
     }
   },
   "commandPalette": {
+    "articleSearch": { "enabled": true, "costumSlug": "saintpaulSport1", "limit": 8 },
     "enabled": true,
     "triggerVariant": "compact",
     "placeholder": {
@@ -4128,6 +4081,12 @@
         }
       }
     }
+  },
+  "blog": {
+    "feedCostumSlug": "saintpaulSport1",
+    "readerVariant": "default",
+    "defaultCardVariant": "default",
+    "defaultFeedLayout": "grid"
   },
   "features": [
     {
