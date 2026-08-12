@@ -299,7 +299,8 @@
       "auth": true,
       "cart": false,
       "notifications": true
-    }
+    },
+    "logoDark": "images/relief/logo-relief-dark.png"
   },
   "pages": [
     {
