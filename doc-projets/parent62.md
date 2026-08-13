@@ -14,10 +14,13 @@
 > [Composants média](../doc/33-media-components.md). Mémoire : `[[project-parent62]]` — slug corrigé
 > le 25/07 (`parents62` avec **s** est abandonné, cf. §1) ; le fichier `.claude/memory/` reste **à créer**.
 
-Dernière mise à jour : **2026-08-06** (refonte accueil/header/footer + 11 nouvelles pages —
-**committé sur `parents62`**, cf. §9quater ; puis **corrections de review de la MR !32 sur
-`fix/parents62-review`** : gates du skill resynchronisées, e2e réaligné header stacked, fixes
-composants, images WebP — `test:unit` **2 229/2 229** ✅).
+Dernière mise à jour : **2026-08-13** (ajustement hauteur header stacked/section "à la une",
+fix affichage champ thème/catégorie dynamique, dédoublonnage territoire « Familles en sol
+mineur » — cf. §9quinquies ; `test:unit` **2 342/2 348** ✅, `e2e parent62` **8/8** ✅).
+Précédemment : **2026-08-06** refonte accueil/header/footer + 11 nouvelles pages —
+committé sur `parents62`, cf. §9quater ; puis corrections de review de la MR !32 sur
+`fix/parents62-review` : gates du skill resynchronisées, e2e réaligné header stacked, fixes
+composants, images WebP — `test:unit` 2 229/2 229 ✅.
 
 ---
 
@@ -299,6 +302,9 @@ Embarqué dans le document de l'orga (`organizations.costum`). Au 20/07, `typeOb
 | **Territoires** | `src/data/territoires62.ts` (+ `.test`), `scripts/import-communes-territoires62.ts` |
 | **Header** | `src/components/layout/header/HeaderTransparentScroll.tsx` (fix lisibilité) |
 | **Refonte accueil/header/footer (06/08)** | `src/components/layout/header/HeaderStacked.tsx` (neuf), `src/components/layout/footer/FooterMinimalCentered.tsx`, `src/components/sections/MapBubbles.tsx` (neuf), `src/modules/search/sections/FeaturedCarouselSection.tsx`+`FeaturedCarouselSlide.tsx` (neufs), `src/modules/search/lib/featuredCarouselFilters.ts` (+`.test`, neufs), `src/modules/blog/sections/ArticleTeaser.tsx` (neuf), `src/modules/blog/lib/articleLink.ts` (+`.test`, neuf, extrait d'`ArticleFeed.tsx`) ; schémas `src/types/site-schema.ts` (`MapBubblesSchema`, `Header.backgroundImage/textColor/logoTitleAccent`, `Footer.backgroundImage`), `src/modules/search/schema.ts` (`FeaturedCarouselSectionSchema`), `src/modules/blog/schema.ts` (`ArticleTeaserSectionSchema`) ; câblage `src/components/layout/SiteHeader.tsx`, `src/components/sections/SectionRenderer.tsx`, `src/components/admin/section-meta.ts` ; `src/index-parent62.css` (breakpoint `xs`, `@layer base`, police) |
+| **Ajustement hauteur header/à la une (13/08)** | `src/components/layout/header/HeaderStacked.tsx` (`min-h` désormais `xl:`-only, échelle logo/titre/sous-titre), `src/modules/search/sections/FeaturedCarouselSection.tsx`+`FeaturedCarouselSlide.tsx` (padding réduit, `object-contain`, ratio `16/10`) (§9quinquies) |
+| **Champ dynamique thème/catégorie** | `src/components/ui/select-objet.tsx` (widget `SelectObject`, générique, utilisé entre autres par les listes dynamiques costum — feature `9e789e38`) |
+| **Dédoublonnage territoire « Familles en sol mineur » (13/08)** | `config.prod.parent62.json` (nav, filtres `enum`, `TagColorsConfSchema`, logo), `src/index-parent62.css` (variable `--territoire-familles-en-sol-mineur`) (§9quinquies) |
 | **Tests** | `e2e/parent62.spec.ts`, `src/modules/search/lib/colorBy.test.ts`, `src/modules/profil/forms/costum/__fixtures__/configCostum.ts` |
 | **Déploiement** | `server/prod-server.js`, `server/lib/sitemap.js`, `.env` (`VITE_SLUG`, `VITE_BASE_URL_BACKEND`, `SITE_CONFIG_PATH`, `VITE_SITE_PUBLIC_URL`) — dérivable via `npm run deploy:env` (`scripts/lib/sites.ts`) |
 
@@ -617,6 +623,77 @@ via `header.utilities.search` (⌘K, `CommandTriggerButton`, inchangé).
 
 ---
 
+## 9quinquies. Impacts — ajustement hauteur header/à la une, catégorie dynamique, dédoublonnage territoire (13/08)
+
+> Périmètre de ce lot : `HeaderStacked.tsx`, `FeaturedCarouselSection.tsx`/
+> `FeaturedCarouselSlide.tsx`, `select-objet.tsx`, `config.prod.parent62.json` (logo + territoires)
+> et `index-parent62.css` (territoires). **Un autre chantier coexiste dans le même répertoire de
+> travail mais reste volontairement EXCLU de ce lot** (traité séparément) : un fix « événement
+> récurrent » (`useItem.tsx`/`eventDates.ts`). Les exemples du skill `config-assistant` et
+> `ArticleFeed.tsx` (fix scroll infini du fil d'articles) ne sont pas non plus repris ici.
+
+### 9quinquies.1 Ce qui a changé
+
+**Header stacked — hauteur adaptative par breakpoint** (`HeaderStacked.tsx`) : le plancher
+`min-h-[50vh]` posé le 06/08 (§9quater) s'appliquait à TOUS les écrans, y compris mobile — sur
+petit écran, ça repoussait la section « à la une » hors du premier écran (demande explicite : la
+voir sans scroller). Retravaillé en plusieurs passes :
+- Mobile/tablette (`<xl`, <1280px) : plus de `min-h` — le bandeau suit son contenu (logo/titre/
+  sous-titre) + son padding, jamais de plancher artificiel.
+- Desktop (`xl:`, ≥1280px) : `min-h-[50vh]` conservé — partage moitié bandeau / moitié « à la
+  une » au premier écran. **`xl:` choisi, PAS `lg:`(1024px)** — bug trouvé en testant les
+  breakpoints intermédiaires : à `lg:`, le bandeau prenait déjà sa forme desktop (grand logo/
+  titre) alors que la barre de nav en dessous restait en mode hamburger (elle ne bascule en nav
+  complète qu'à `xl:`/1280px) — décalage visuel entre 1024 et 1279px, corrigé en alignant les
+  deux sur le même breakpoint.
+- Logo/titre/sous-titre : échelle réduite par défaut, échelle `xl:` (desktop) réajustée pour
+  rester proportionnelle au bandeau restauré à 50vh.
+- Vérifié à 7 largeurs de viewport (375/430/768/1024/1280/1440/1920) via Playwright contre le
+  vrai site parent62 (dev server + vraies données) — captures d'écran à l'appui, aucun
+  chevauchement/débordement après le fix `xl:`.
+
+**Section « à la une » (`FeaturedCarouselSection.tsx`, `FeaturedCarouselSlide.tsx`)** — réduite
+pour tenir, avec le header, dans le premier écran sans scroll :
+- Padding vertical : `py-16 md:py-24` → `py-6 md:py-10` (section + skeleton de chargement,
+  gardés synchronisés).
+- Badge/titre/description/CTA de la diapositive réduits d'un cran (`text-2xl`→`text-xl`, etc.).
+- Image : `object-cover` → **`object-contain`** (l'image entière reste visible, jamais rognée —
+  le fond de la section comble l'espace résiduel) + ratio `aspect-[4/3]` → **`aspect-[16/10]`**
+  (boîte moins haute à largeur égale).
+- Vérifié (Playwright, vraies données) : header + « à la une » tiennent ensemble sans scroll à
+  375/768/1440/1920px ; à 1280×800 (viewport de laptop inhabituellement bas), déborde encore de
+  **12px** — non retravaillé plus avant (retour utilisateur : suffisant).
+
+**Champ thème/catégorie dynamique — fix d'affichage (`select-objet.tsx`)** : ce widget
+`SelectObject` est utilisé (entre autres) pour les listes dynamiques de thème/catégorie posées
+par la feature « valeurs distinctes des listes dynamiques » (commit `9e789e38`, mergée avant ce
+lot). Bug corrigé ici : une valeur **créée** (creatable), pas encore présente dans `options` au
+moment du rendu, s'affichait comme le placeholder vide — alors qu'elle était bien enregistrée
+dans le formulaire. Repli sur la valeur brute (ou son `.name` si objet) quand `options.find`
+échoue ; le mode multiple avait déjà ce repli, le mode mono ne l'avait pas.
+
+**Dédoublonnage territoire « Familles en sol mineur »** (`config.prod.parent62.json`,
+`index-parent62.css`) : le territoire générique « Familles en sol mineur » faisait doublon avec
+ses deux déclinaisons déjà existantes « Familles en sol mineur Hénin Carvin » et « … Lens
+Liévin » — retiré de la nav, des filtres `enum` (`territoire`, plusieurs occurrences), du mapping
+couleur `TagColorsConfSchema` et de la variable CSS `--territoire-familles-en-sol-mineur`
+associée. Le sous-titre de la page coordinations territoriales, qui comptait « dix territoires »,
+est corrigé à « neuf territoires ». Compte pages/sections **inchangé** (45/158) — le
+dédoublonnage ne touche que des entrées `enum`, pas des pages. Logo header basculé sur le nouvel
+asset `Logo-Aquarelle.png` dans la foulée.
+
+### 9quinquies.3 Validation (gates)
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` | ✅ 0 erreur |
+| `lint` | ✅ 0 erreur / 20 warnings — 0 sur les fichiers du lot (tous pré-existants dans `EntityFormModal.tsx`, hors périmètre) |
+| `npx tsx scripts/validate-config.ts config.prod.parent62.json` | ✅ 45 pages, 158 sections (inchangé — le dédoublonnage territoire ne touche que des entrées `enum`) |
+| `test:unit` (suite complète) | ✅ **2 342/2 348** (6 skipped, 0 échec) |
+| `e2e` ciblé (`npx playwright test e2e/parent62.spec.ts`) | ✅ **8/8** — y compris les 2 spécs dédiées : « mode sombre : header stacked » et « bandeau à la une (carrousel POI tagués) ne casse pas le rendu » |
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
@@ -631,7 +708,7 @@ via `header.utilities.search` (⌘K, `CommandTriggerButton`, inchangé).
 | 1.6 | Paroles de parents (3 catégories, audio+écrit, transcription, ajout admin) | 🟡 | brique complète (Thomas) : `/temoignages`, form `parent62-affiche` (3 catégories, audio→`medias`, ages, consentement RGPD), pile audio `media/*`, card/preview `testimonial`. **Ajout admin-only ✅** (modération a priori retirée volontairement, commit `17aea3e`). **25/07** : la cible « Paroles » de `/recherche` renvoyait **0 résultat** (filtre `status:"validated"` sur un champ inexistant) — corrigé, et les paroles y rendent en bulles avec leur dialog (§9bis). **Données observées le 25/07** : `/temoignages` affiche « Toutes les paroles (**3**) » — la mention « 0 POI `affiche` » du 24/07 est caduque. **Manque** : **transcription/sous-titres NON implémentée** (`description` sert d'écrit) |
 | 1.7 | Navigation territoriale (recherche V2) | ✅ | 9 bulles → `/territoire/<slug>` + filtre territoire coloré dans `/recherche` |
 | 1.8 | Référencement (SEO, JSON-LD, sitemap, robots, RSS) | ✅ | sitemap/robots (MR) + JSON-LD `BlogPosting` et `/blog/feed.xml` (Thomas) |
-| 1.9 | Tests E2E (Playwright) | 🟡 *(était ✅ 7/7 le 24/07)* | **06/08 : 6/8 verts** (2 nouveaux scénarios depuis le 24/07, dont 1 ajouté le 06/08 pour `featured-carousel`). Les 2 échecs restants sont des désaccords contenu/test **pré-existant vs nav du 06/08** (« Professionnels » dans le header, mécanique d'opacité différente de `transparent-scroll`), pas des bugs de composant — cf. §13. `npx playwright test e2e/parent62.spec.ts` (jamais la suite complète) |
+| 1.9 | Tests E2E (Playwright) | ✅ *(était 🟡 6/8 le 06/08)* | **13/08 : 8/8 verts** — les 2 désaccords contenu/test relevés le 06/08 (« Professionnels » dans le header, mécanique d'opacité `stacked` vs `transparent-scroll`) sont résolus, cf. §9quinquies. `npx playwright test e2e/parent62.spec.ts` (jamais la suite complète) |
 | 1.10 | Déploiement | ❌ | à la main de Peterson — cf. §8.5 |
 
 ### Partie 2 (4 500 €) — statuts revus par l'audit fonctionnel du 24/07
