@@ -89,6 +89,20 @@
         "sidebarBorder": "oklch(0.3500 0.0300 356)",
         "sidebarRing": "oklch(0.6800 0.2200 356)"
       }
+    },
+    "typography": {
+      "fontFamily": {
+        "sans": [
+          "Inter"
+        ],
+        "serif": [
+          "Roboto Slab"
+        ],
+        "mono": [
+          "Roboto Mono"
+        ]
+      },
+      "letterSpacing": "0em"
     }
   },
   "aac": {
@@ -120,7 +134,7 @@
         "label": {
           "fr": "Appel à Communs"
         },
-        "path": "#aac"
+        "path": "/aac"
       }
     ],
     "utilities": {

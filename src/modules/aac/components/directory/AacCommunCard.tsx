@@ -1,22 +1,17 @@
 import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/useT";
 import type { AacCommunCard as CommunCard } from "../../lib/parseAacAnswer";
+import {
+  AAC_VISIBLE_TAGS,
+  formatAacAmount,
+  progressBarWidth,
+} from "../../lib/aacDisplay";
 import { Link } from "react-router";
 
 interface AacCommunCardProps {
   commun: CommunCard;
   className?: string;
 }
-
-/**
- * Le legacy formate par `toLocaleString("fr-FR")` puis colle une icône `fa-eur`.
- * D'où un formateur DÉCIMAL suivi d'un « € » — et non `style:"currency"`, qui
- * insère une espace insécable étroite et ne rendrait pas la même chose.
- */
-const amount = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
-
-/** Tags affichés avant le repli dans la pastille « … » (`nbTagToShow` du legacy). */
-const VISIBLE_TAGS = 2;
 
 /**
  * Carte d'un commun dans l'annuaire.
@@ -40,10 +35,8 @@ const VISIBLE_TAGS = 2;
 export function AacCommunCard({ commun, className }: AacCommunCardProps) {
   const t = useT("modules/aac");
 
-  const hiddenTags = commun.tags.slice(VISIBLE_TAGS);
-  // La barre est bornée VISUELLEMENT à 100 % alors que le pourcentage affiché ne
-  // l'est pas : un commun sur-financé doit se lire « 110 % » sans déborder.
-  const barWidth = Math.min(100, Math.max(0, commun.progressPercent));
+  const hiddenTags = commun.tags.slice(AAC_VISIBLE_TAGS);
+  const barWidth = progressBarWidth(commun.progressPercent);
   const isPending = commun.isSelected === false;
 
   return (
@@ -103,7 +96,7 @@ export function AacCommunCard({ commun, className }: AacCommunCardProps) {
         {/* Zone de tags TOUJOURS rendue, même sans tag (le legacy y pose un
             `&nbsp;`) : c'est une gouttière de hauteur fixe, pas un bloc optionnel. */}
         <div className="h-14.5 overflow-hidden">
-          {commun.tags.slice(0, VISIBLE_TAGS).map((tag) => (
+          {commun.tags.slice(0, AAC_VISIBLE_TAGS).map((tag) => (
             <span
               key={tag}
               className="mr-1.25 mb-1.25 inline-block min-w-23 rounded-lg border border-accent bg-accent px-0.5 py-px text-center text-xs whitespace-nowrap text-accent-foreground"
@@ -124,7 +117,7 @@ export function AacCommunCard({ commun, className }: AacCommunCardProps) {
         <div className="pb-1.25 text-center">
           {commun.hasFundingRequest ? (
             <span className="block truncate text-[31px] font-semibold">
-              {amount.format(commun.totalFunded)}
+              {formatAacAmount(commun.totalFunded)}
               <span aria-hidden="true">€</span>
             </span>
           ) : (

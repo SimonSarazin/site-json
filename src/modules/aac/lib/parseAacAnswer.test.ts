@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import { parseAacAnswer } from "./parseAacAnswer";
 import { buildAacFormMeta } from "./formMeta";
 import { resolveAacCardFields } from "./resolveAacCardFields";
-import listingCapture from "../mocks/directoryResponse.listing.json";
 import { EMPTY_AAC_CARD_FIELDS, type AacCardFields } from "./resolveAacCardFields";
 
 /** Champs résolus sur un formulaire aux clés EXOTIQUES (rien en dur). */
@@ -34,18 +33,97 @@ const FIELDS: AacCardFields = resolveAacCardFields(
 const parse = (raw: unknown, opts: Partial<Parameters<typeof parseAacAnswer>[1]> = {}) =>
   parseAacAnswer(raw, { fields: FIELDS, ...opts });
 
+/**
+ * Lignes de `results` telles que `directoryproposal` les renvoie.
+ *
+ * TRANSCRITES d'une réponse serveur réelle, pas inventées : mêmes clés, mêmes
+ * types, mêmes formes limites. Trois points comptent et sont reproduits tels
+ * quels :
+ *
+ *  - les étapes sont `aapStep1`/`aapStep2`, alors que `FIELDS` ci-dessus résout
+ *    des étapes EXOTIQUES (`etapeA`) — les lectures par question tombent donc à
+ *    côté, et le parseur doit retomber sur les champs PRÉ-CALCULÉS. C'est le
+ *    chemin le plus emprunté en production ;
+ *  - `name` vaut `"(No title)"` quand la question titre est vide : c'est le
+ *    backend qui pose ce littéral, et il ne doit jamais atteindre l'écran ;
+ *  - `user_count` recopie `links.contributors`, alors que l'appartenance
+ *    plateforme vit dans `links.cae`. Les deux divergent — c'est le motif qui
+ *    justifie le rôle `fields.users`.
+ */
+const LISTING_ROWS: Record<string, Record<string, unknown>> = {
+  "65b3dc1d87518f12c723dc75": {
+    _id: { $id: "65b3dc1d87518f12c723dc75" },
+    collection: "answers",
+    user: "55f053fbe41d75cd64558518",
+    links: {
+      contributors: { "55f053fbe41d75cd64558518": { type: "citoyens" } },
+      cae: { a1: {}, a2: {}, a3: {} },
+    },
+    created: 1782484377,
+    updated: 1785573150,
+    form: "677e7e389058e31575550ac8",
+    answers: {
+      aapStep1: { titre: "Comparateur de statuts", tags: ["open source"] },
+      aapStep2: { choose: { "677e7e13bd08b2478f5f5314": { value: "selected" } } },
+    },
+    allVoteCount: { love: 3 },
+    name: "Comparateur de statuts",
+    image: "/upload/communecter/answers/65b3dc1d87518f12c723dc75/restricted/a.png",
+    descriptionStr: "Comparateur de statuts et simulateur de revenus pour les CAEs",
+    tags: ["open source", "outils"],
+    funds: [{ price: 8400, financer: [4400] }],
+    user_count: 1,
+    interrest_count: 3,
+  },
+  "6718d2ad6489667d210cbfa7": {
+    _id: { $id: "6718d2ad6489667d210cbfa7" },
+    collection: "answers",
+    links: {},
+    created: 1770000000,
+    updated: 1771000000,
+    form: "677e7e389058e31575550ac8",
+    answers: { aapStep1: { titre: "Yeswiki" } },
+    // Aucun budget : `funds` revient en tableau VIDE, jamais absent.
+    name: "Yeswiki",
+    image: "/upload/communecter/answers/6718d2ad6489667d210cbfa7/restricted/b.png",
+    descriptionStr: "",
+    tags: ["Commun"],
+    funds: [],
+    user_count: 0,
+    interrest_count: 2,
+  },
+  "6865055dd4b0841b621b014e": {
+    _id: { $id: "6865055dd4b0841b621b014e" },
+    collection: "answers",
+    links: {},
+    created: 1760000000,
+    updated: 1761000000,
+    form: "677e7e389058e31575550ac8",
+    answers: { aapStep1: {} },
+    // Titre absent ⇒ le backend pose son littéral.
+    name: "(No title)",
+    image: "",
+    descriptionStr: "",
+    tags: [],
+    funds: [],
+    user_count: 0,
+    interrest_count: 0,
+  },
+};
+
+const LISTING_COUNT = { answers: Object.keys(LISTING_ROWS).length };
+
+
 // ─────────────────────────────────────────────────────────────────────────────
-// D'ABORD la donnée réelle : la capture de LISTING, documents entiers.
+// D'ABORD les formes du SERVEUR, transcrites (cf. `LISTING_ROWS`).
 //
-// Aucune assertion ne code en dur un compte ni un id : la fixture est destinée à
-// être remplacée. Ce qui est verrouillé, ce sont les invariants du parseur.
+// Aucune assertion ne code en dur un compte ni un id : ce qui est verrouillé,
+// ce sont les invariants du parseur face à la donnée telle qu'elle arrive.
 // ─────────────────────────────────────────────────────────────────────────────
-describe("parseAacAnswer — capture réelle (listing)", () => {
-  const capture = listingCapture as unknown as {
-    results: Record<string, unknown>;
-    count?: { answers?: number };
-  };
+describe("parseAacAnswer — formes du listing", () => {
+  const capture = { results: LISTING_ROWS, count: LISTING_COUNT };
   const communs = Object.values(capture.results);
+
 
   it("`count.answers` concorde avec le nombre de communs livrés", () => {
     // La page tient dans un seul `indexStep` : le compteur du serveur et la
@@ -74,7 +152,7 @@ describe("parseAacAnswer — capture réelle (listing)", () => {
   });
 
   it("`user_count` ne dit PAS les membres d'une plateforme — d'où `fields.users`", () => {
-    // Le motif qui justifie le rôle : sur la capture, `user_count` recopie la
+    // Le motif qui justifie le rôle : `user_count` recopie la
     // taille de `links.contributors`, tandis que l'appartenance plateforme vit
     // dans `links.cae` / `links.tls`. Assertion RELATIONNELLE (aucun compte en
     // dur) : il existe au moins un commun où les deux divergent.
@@ -106,18 +184,19 @@ describe("parseAacAnswer — capture réelle (listing)", () => {
     }
   });
 
-  it("au moins un commun porte un budget — sinon la fixture est dégénérée", () => {
-    // Garde-fou : c'est exactement ce qui distinguait la capture de comptage,
-    // dont la projection vidait `funds` partout.
+  it("au moins un commun porte un budget — sinon le jeu ne prouve rien", () => {
+    // Garde-fou : une projection étroite vide `funds` PARTOUT sans lever
+    // d'erreur. Si ce test tombe, les assertions de montant ci-dessus ne
+    // testent plus que du zéro.
     expect(communs.map((c) => parse(c)).some((card) => card.totalRequested > 0)).toBe(true);
   });
 
-  it("les tags réels sont remontés", () => {
+  it("les tags sont remontés", () => {
     const withTags = communs.map((c) => parse(c)).filter((card) => card.tags.length > 0);
     expect(withTags.length).toBeGreaterThan(0);
   });
 
-  it("les images réelles sont absolutisées", () => {
+  it("les images sont absolutisées", () => {
     const withImage = communs
       .map((c) => parse(c, { baseUrl: "https://ex.org" }))
       .filter((card) => card.imageUrl);
@@ -362,10 +441,8 @@ describe("parseAacAnswer — sans aucun champ résolu (formulaire indisponible)"
     expect(card.interestCount).toBe(7);
   });
 
-  it("la capture réelle passe aussi sans champs résolus", () => {
-    const communs = Object.values(
-      (listingCapture as unknown as { results: Record<string, unknown> }).results
-    );
+  it("les formes du listing passent aussi sans champs résolus", () => {
+    const communs = Object.values(LISTING_ROWS);
     expect(() => communs.map(bare)).not.toThrow();
     // Les champs pré-calculés suffisent : c'est ce qui permet à la grille de
     // s'afficher avant que le formulaire ne soit chargé.

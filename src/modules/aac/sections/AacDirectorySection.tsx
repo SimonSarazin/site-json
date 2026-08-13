@@ -3,7 +3,9 @@
 import "../i18n";
 
 import { useMemo, useState } from "react";
+import { LayoutGrid, List } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useSite } from "@/hooks/useSite";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useT } from "@/hooks/useT";
@@ -27,8 +29,8 @@ import {
 } from "../lib/resolveAacCardFields";
 import { EMPTY_AAC_FILTERS, type AacDirectoryFiltersState } from "../lib/filtersKey";
 import { AacDirectoryFilters } from "../components/directory/AacDirectoryFilters";
-import { AacDirectoryGrid } from "../components/directory/AacDirectoryGrid";
-import type { AacDirectorySectionProps } from "../schema";
+import { AacDirectoryResults } from "../components/directory/AacDirectoryResults";
+import type { AacDirectorySectionProps, AacDisplayMode } from "../schema";
 
 interface Props {
   id?: string;
@@ -44,8 +46,13 @@ const SEARCH_DEBOUNCE_MS = 350;
  * Le `formId` vient de `config.aac.formId` (UN SEUL AAC par site) — jamais des
  * props de section, pour garder une source de vérité unique.
  *
- * Les OPTIONS des filtres viennent du vrai formulaire (`useAacFormMeta`) ; seuls
- * les communs sont aujourd'hui servis par une fixture (cf. `communsTransport`).
+ * Les OPTIONS des filtres viennent du vrai formulaire (`useAacFormMeta`) ; les
+ * communs, de l'endpoint `directoryproposal` (cf. `communsTransport`).
+ *
+ * Deux dispositions, un seul jeu de données : la grille de cartes pour découvrir,
+ * la liste pour comparer. La bascule est ici — donc à côté du compteur, où elle
+ * commente ce qu'elle affecte — et non dans les composants de résultats, qui
+ * n'ont pas à connaître l'existence de l'autre mode.
  */
 export default function AacDirectorySection({ id, props }: Props) {
   const t = useT("modules/aac");
@@ -58,6 +65,7 @@ export default function AacDirectorySection({ id, props }: Props) {
     title,
     description,
     className,
+    display: initialDisplay = "grid",
     columns = 3,
     pageSize = 12,
     filters: enabledFilters = {
@@ -72,6 +80,11 @@ export default function AacDirectorySection({ id, props }: Props) {
 
   const [filters, setFilters] = useState<AacDirectoryFiltersState>(EMPTY_AAC_FILTERS);
   const debouncedQuery = useDebounce(filters.q, SEARCH_DEBOUNCE_MS);
+
+  // La config ne fixe que le point de DÉPART : le mode reste un choix de
+  // lecture, pas un réglage de site. Volontairement pas persisté (ni URL, ni
+  // stockage local) — un état lu au montage divergerait du HTML SSR.
+  const [display, setDisplay] = useState<AacDisplayMode>(initialDisplay);
 
   const { config } = useAacConfig(formId);
   const { meta, isLoading: isFormLoading } = useAacFormMeta(formId);
@@ -171,13 +184,39 @@ export default function AacDirectorySection({ id, props }: Props) {
         />
 
         <div className="space-y-4">
-          <p className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
-            {totalCount}{" "}
-            {String(t(totalCount > 1 ? "directory.count_other" : "directory.count_one"))}
-          </p>
+          {/* Compteur à gauche, bascule d'affichage à droite — la disposition du
+              legacy, où le sélecteur de vue borde la ligne de décompte. */}
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
+              {totalCount}{" "}
+              {String(t(totalCount > 1 ? "directory.count_other" : "directory.count_one"))}
+            </p>
 
-          <AacDirectoryGrid
+            <ToggleGroup
+              type="single"
+              variant="outline"
+              size="sm"
+              value={display}
+              // Radix autorise la désélection sur un groupe `single` : sans cette
+              // garde, un second clic sur le mode actif rendrait `""` et
+              // l'annuaire n'aurait plus d'affichage du tout.
+              onValueChange={(value) => {
+                if (value) setDisplay(value as AacDisplayMode);
+              }}
+              aria-label={String(t("directory.display.label"))}
+            >
+              <ToggleGroupItem value="grid" aria-label={String(t("directory.display.grid"))}>
+                <LayoutGrid className="h-4 w-4" aria-hidden="true" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="list" aria-label={String(t("directory.display.list"))}>
+                <List className="h-4 w-4" aria-hidden="true" />
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+
+          <AacDirectoryResults
             communs={communs}
+            display={display}
             columns={columns}
             isLoading={isLoading}
             isFetchingNextPage={isFetchingNextPage}

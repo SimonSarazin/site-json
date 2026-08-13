@@ -42,6 +42,11 @@
     "empty": "Aucun commun ne correspond à votre recherche.",
     "error": "Impossible de charger les communs.",
     "loading": "Chargement…",
+    "display": {
+      "label": "Affichage",
+      "grid": "Afficher en grille",
+      "list": "Afficher en liste"
+    },
     "search": {
       "label": "Rechercher un commun par son nom",
       "placeholder": "Recherche par nom"

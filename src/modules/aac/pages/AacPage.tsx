@@ -69,6 +69,7 @@ export default function AacPage() {
           <AacDirectorySection
             id="annuaire"
             props={{
+              display: "grid",
               columns: 3,
               pageSize: 12,
               filters: {

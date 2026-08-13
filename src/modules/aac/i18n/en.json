@@ -42,6 +42,11 @@
     "empty": "No commons match your search.",
     "error": "Unable to load the commons.",
     "loading": "Loading…",
+    "display": {
+      "label": "Display",
+      "grid": "Show as grid",
+      "list": "Show as list"
+    },
     "search": {
       "label": "Search a commons by name",
       "placeholder": "Search by name"

@@ -6,10 +6,58 @@ import {
   buildUsageTree,
   countTagFacets,
 } from "./aacUsage";
-import listingCapture from "../mocks/directoryResponse.listing.json";
 
-const capture = listingCapture as unknown as { results: Record<string, unknown> };
-const communs = Object.values(capture.results) as { answers?: Record<string, unknown> }[];
+/**
+ * Réponses d'usage TRANSCRITES d'une réponse serveur réelle.
+ *
+ * Le détail qui compte, et qu'on ne devinerait pas : `2_site-vitrine` et
+ * `10_site-vitrine` coexistent sous DEUX catégories différentes. Un identifiant
+ * de sous-catégorie n'est donc unique que dans sa catégorie — indexer les
+ * enfants globalement les confondrait.
+ */
+const LISTING_USAGES: { answers?: Record<string, unknown> }[] = [
+  {
+    answers: {
+      aapStep1: {
+        titre: "Comparateur de statuts",
+        q_usage: {
+          list: ["15_autres-metiers", "1_communication-externe"],
+          sublist: { "1_communication-externe": ["2_site-vitrine"] },
+        },
+      },
+    },
+  },
+  {
+    answers: {
+      aapStep1: {
+        titre: "Yeswiki",
+        q_usage: {
+          list: ["2_cooperation-et-communication-interne", "13_metiers-du-numerique"],
+          sublist: {
+            "2_cooperation-et-communication-interne": ["4_documentation-interne"],
+            "13_metiers-du-numerique": ["2_cartographie"],
+          },
+        },
+      },
+    },
+  },
+  {
+    answers: {
+      aapStep1: {
+        titre: "Une instance peertube des CAE",
+        q_usage: {
+          list: ["10_metiers-de-la-formation"],
+          // Homonyme de `2_site-vitrine` ci-dessus, sous une AUTRE catégorie.
+          sublist: { "10_metiers-de-la-formation": ["10_site-vitrine"] },
+        },
+      },
+    },
+  },
+  {
+    // Catégorie sans sous-catégorie : le cas le plus courant.
+    answers: { aapStep1: { titre: "KPA-Cité", q_usage: { list: ["14_metiers-de-l-inclusion"] } } },
+  },
+];
 
 describe("readUsageAnswer", () => {
   it("repère la question par sa FORME, sans connaître son identifiant", () => {
@@ -139,8 +187,8 @@ describe("countTagFacets", () => {
   });
 });
 
-describe("sur la capture réelle", () => {
-  const usages = communs.map((c) => readUsageAnswer(c.answers?.aapStep1));
+describe("sur les formes du listing", () => {
+  const usages = LISTING_USAGES.map((c) => readUsageAnswer(c.answers?.aapStep1));
 
   it("lit un usage sur chacun des communs", () => {
     expect(usages.every((u) => u.categories.length > 0 || u.subs.length > 0)).toBe(true);

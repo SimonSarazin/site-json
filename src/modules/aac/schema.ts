@@ -105,7 +105,18 @@ export const AacDirectorySectionSchema = z.object({
     title: LocalizedString.optional(),
     description: LocalizedString.optional(),
     className: z.string().optional(),
-    /** Colonnes de la grille sur grand écran. */
+    /**
+     * Mode d'affichage INITIAL. Le visiteur peut basculer à tout moment via le
+     * sélecteur posé à côté du compteur de résultats ; cette valeur ne fait que
+     * choisir le point de départ.
+     *
+     *  - `grid` — la carte de commun, riche : image, description, tags, budget,
+     *    barre de collecte. C'est la vue de découverte ;
+     *  - `list` — une ligne par commun : vignette, titre, usages. C'est la vue
+     *    de comparaison, celle qui tient une trentaine de communs à l'écran.
+     */
+    display: z.enum(["grid", "list"]).default("grid"),
+    /** Colonnes de la grille sur grand écran. Sans effet en mode `list`. */
     columns: z.number().int().min(1).max(4).default(3),
     /** Communs par page. Entre dans la clé de cache. */
     pageSize: z.number().int().min(1).max(100).default(12),
@@ -132,3 +143,6 @@ export const AacDirectorySectionSchema = z.object({
 
 export type AacDirectorySection = z.infer<typeof AacDirectorySectionSchema>;
 export type AacDirectorySectionProps = AacDirectorySection["props"];
+
+/** Grille de cartes ou liste de lignes — dérivé du schéma, jamais redéclaré. */
+export type AacDisplayMode = AacDirectorySectionProps["display"];
