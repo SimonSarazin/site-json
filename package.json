@@ -46,7 +46,10 @@
     "deploy:dns": "tsx scripts/deploy.ts dns",
     "deploy:alias": "tsx scripts/deploy.ts alias",
     "deploy:create": "tsx scripts/deploy.ts create",
-    "config:costum-drift": "tsx scripts/costum-form-drift.ts"
+    "config:costum-drift": "tsx scripts/costum-form-drift.ts",
+    "contract:snapshot": "node scripts/contract-snapshot.mjs",
+    "contract:snapshot:live": "node scripts/contract-snapshot-live.mjs",
+    "test:costum-forms": "vitest run -c vitest.config.integration.ts tests/integration/costum-forms.e2e.test.ts"
   },
   "resolutions": {
     "react": "19.2.1",
@@ -177,6 +180,7 @@
     "globals": "^16.5.0",
     "jsdom": "^29.1.1",
     "knip": "^6.16.1",
+    "mongodb": "~6.12.0",
     "postcss": "^8.4.47",
     "rimraf": "^6.0.1",
     "rollup-plugin-visualizer": "^6.0.5",
