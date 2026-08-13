@@ -36,6 +36,48 @@
     "campaigns": "Declared campaigns",
     "none": "—"
   },
+  "directory": {
+    "count_one": "result",
+    "count_other": "results",
+    "empty": "No commons match your search.",
+    "error": "Unable to load the commons.",
+    "loading": "Loading…",
+    "search": {
+      "label": "Search a commons by name",
+      "placeholder": "Search by name"
+    },
+    "filters": {
+      "all": "All",
+      "title": "Filters",
+      "usage": "Filter by needs",
+      "usageCategory": "Usage category",
+      "usageSubCategory": "Usage sub-category",
+      "tags": "Filter by tag",
+      "maturity": "Usable",
+      "sort": "Sort by",
+      "reset": "Clear"
+    },
+    "card": {
+      "untitled": "Untitled commons",
+      "noDescription": "(No description)",
+      "pending": "Pending",
+      "collected": "Collected on ongoing co-funding",
+      "noFunding": "No co-funding request currently pending",
+      "user": "user",
+      "users": "users",
+      "interested_one": "interested",
+      "interested_other": "interested"
+    },
+    "sort": {
+      "alpha": "Alphabetical order",
+      "interest_desc": "Interested count (descending)",
+      "interest_asc": "Interested count (ascending)",
+      "created_asc": "Creation date (ascending)",
+      "created_desc": "Creation date (descending)",
+      "updated_asc": "Update date (ascending)",
+      "updated_desc": "Update date (descending)"
+    }
+  },
   "detail": {
     "noname": "(Unnamed)",
     "nodesc": "(No description)",

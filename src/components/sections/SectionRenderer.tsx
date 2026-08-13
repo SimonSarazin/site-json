@@ -84,6 +84,7 @@ const LazySections: {
   meeteem: lazy(() => import("@/modules/ampli/components/sections/MeeteemSection")),
   coform: lazy(() => import("@/modules/coform/components/CoFormSection")),
   aac: lazy(() => import("@/modules/aac/components/AacConfigStub")),
+  "aac-directory": lazy(() => import("@/modules/aac/sections/AacDirectorySection")),
   actions: lazy(() => import("@/modules/cagnotte/components/sections/ActionsSection")),
   finance: lazy(() => import("@/modules/cagnotte/components/sections/FinanceSection")),
   "actions-summary": lazy(() => import("@/modules/cagnotte/components/sections/ActionsSummarySection")),

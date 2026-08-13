@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useSite } from "@/hooks/useSite";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import AacConfigStub from "../components/AacConfigStub";
+import AacDirectorySection from "../sections/AacDirectorySection";
 
 /**
  * Les routes de module sont montées sous `RootLayout` (providers + `<Outlet/>`),
@@ -49,9 +49,12 @@ function AacNotFound() {
 }
 
 /**
- * Page AAC — SOCLE (stub). Route `/aac` (UN SEUL AAC par site : le formulaire
- * vient de `config.aac.formId`). Deviendra le listing / la fiche d'un commun
- * aux phases suivantes.
+ * Page AAC — route `/aac` (UN SEUL AAC par site : le formulaire vient de
+ * `config.aac.formId`, jamais d'un paramètre d'URL).
+ *
+ * Elle n'est qu'une ENVELOPPE : le contenu est la section `aac-directory`, la
+ * même que celle qu'un site peut poser sur n'importe quelle page de sa config.
+ * Une seule implémentation, deux surfaces.
  */
 export default function AacPage() {
   const { config: siteConfig } = useSite();
@@ -62,8 +65,21 @@ export default function AacPage() {
     <div className="min-h-screen flex flex-col">
       <SiteHeader />
       <main className="flex-1">
-        <div className="container mx-auto px-6 py-8">
-          <AacConfigStub props={{}} />
+        <div className="container mx-auto px-6">
+          <AacDirectorySection
+            id="annuaire"
+            props={{
+              columns: 3,
+              pageSize: 12,
+              filters: {
+                search: true,
+                usage: true,
+                tags: true,
+                maturity: true,
+                sort: true,
+              },
+            }}
+          />
         </div>
       </main>
       <SiteFooter />

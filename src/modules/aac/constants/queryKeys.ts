@@ -18,14 +18,36 @@ export const AAC_QUERY_KEYS = {
   CONFIG: (formId: string | null) => ["aac-config", formId] as const,
   CONFIG_PREFIX: () => ["aac-config"] as const,
 
-  // Listing des communs d'un AAC, ISOLÉ PAR CAMPAGNE. PUBLIC → pas de userId.
-  // Producteur : (à venir) useAacCommuns
+  // Listing des communs d'un AAC, ISOLÉ PAR CAMPAGNE.
+  //
+  // ⚠️ USER-SCOPÉ depuis la bascule sur `directoryproposal` : un visiteur non
+  // administrateur ne reçoit que les communs SÉLECTIONNÉS plus les siens
+  // (filtre `$or` posé par `splitAacFilters`). Deux visiteurs différents n'ont
+  // donc pas la même liste — d'où `userId` en DERNIER segment, faute de quoi le
+  // cache d'un admin serait servi à un anonyme.
+  // Producteur : useAacCommuns
   COMMUNS: (
     formId: string | null,
     campaignId: string | null = null,
-    filtersKey: string | null = null
-  ) => ["aac-communs", formId, campaignId, filtersKey] as const,
+    filtersKey: string | null = null,
+    userId: string | null = null
+  ) => ["aac-communs", formId, campaignId, filtersKey, userId] as const,
   COMMUNS_PREFIX: () => ["aac-communs"] as const,
+
+  // Options ET décomptes des facettes de l'annuaire (usage, tags). PUBLIC.
+  // Volontairement DISTINCT de COMMUNS : les facettes se calculent sur le jeu
+  // NON filtré, sinon cocher une option ferait disparaître les autres. Côté
+  // legacy c'est une seconde requête (`setThemesCounts`, `indexStep: "0"`) ;
+  // la séparation ici prépare cette bascule.
+  // Producteur : useAacFacets
+  // `userId` en dernier segment pour la même raison que COMMUNS : les décomptes
+  // portent sur la population VISIBLE, qui dépend du visiteur.
+  FACETS: (
+    formId: string | null,
+    campaignId: string | null = null,
+    userId: string | null = null
+  ) => ["aac-facets", formId, campaignId, userId] as const,
+  FACETS_PREFIX: () => ["aac-facets"] as const,
 
   // Un commun (Answer). PUBLIC.
   // Producteur : (à venir) useAacCommun

@@ -86,6 +86,107 @@ tableau). Le site déclare simplement son formulaire :
 **Prérequis backend** : le form + son `aapConfig` doivent exister. Sans `config.aac.formId`,
 la section et la route affichent un message explicite (pas de crash).
 
+### 3.1 `directory.fields` — quel CHAMP porte quel RÔLE
+
+Facultatif, et **seulement quand l'heuristique se trompe** : l'annuaire sait déjà déduire ses
+champs (§ chaîne ci-dessous). Le bloc sert d'échappatoire déterministe.
+
+```jsonc
+"aac": {
+  "formId": "677e7e389058e31575550ac8",
+  "directory": {
+    "fields": {
+      // une RÉPONSE : chemin complet, l'étape en fait partie
+      "description": "answers.aapStep1.aapStep1lzi62x3etw49gyc424d",
+      "maturity":    "answers.aapStep1.aapStep1m2ucu54mopm33osqxpd",
+      // un chemin à la RACINE du document : pas d'étape, profondeur libre
+      "title":       "name",
+      "users":       "links.cae"
+    }
+  }
+}
+```
+
+**Deux formes, lues par `parseFieldPath`** :
+
+- **`answers.<étape>.<idQuestion>`** — une réponse au formulaire. L'étape fait partie du
+  chemin : un form AAP en compte 4 ou 5, l'id seul n'en désigne aucune, et la seule devinette
+  disponible serait l'étape du RÔLE (`depenseStepKey`, ou `evalStepKey` pour `choose`) — juste
+  dans le cas canonique, fausse dès qu'une question sort de son étape attendue, et
+  indisponible quand la dérivation échoue. C'est aussi la forme de `form.mapping` en base et
+  celle de la lecture réelle (`answers[étape][id]`).
+- **tout le reste** — un chemin à la **racine** du document, de profondeur libre : soit un
+  champ que le backend pré-calcule (`name`, `descriptionStr`, `tags`, `image`, `funds`,
+  `user_count`, `interrest_count`), soit une branche métier (`links.cae`, `links.tls`,
+  `allVoteCount.love`). Rien n'y est contraint : cette arborescence n'est pas la nôtre.
+  Seul le monde `answers` impose sa profondeur — un `answers.<x>` d'une autre forme est une
+  faute, et non une lecture racine.
+
+⚠️ **Un champ racine est en lecture seule côté carte** : `parsePropositionData` le calcule
+**après** la requête, il n'est stocké dans aucun document. `aacQueryParams.serverPath` refuse
+donc de l'envoyer comme chemin Mongo — recherche, facette tags et tri alpha repassent côté
+client (balayage), et le garde-brouillons `$exists` n'est pas posé. Sans cette garde, un
+`{name: {$exists: true}}` viderait l'annuaire entier.
+
+Le schéma ([`modules/aac/schema.ts`](../src/modules/aac/schema.ts)) ne contraint donc **pas**
+la forme de la valeur : une regex assez étroite pour les questions refuserait les champs
+racine.
+
+Les 8 rôles, et ce que chacun pilote **au-delà de la carte** :
+
+| rôle | carte | ailleurs |
+|---|---|---|
+| `title` | titre | `textPath` de la recherche, tri alphabétique, **et** le filtre anti-brouillons `{path:{$exists:true}}` |
+| `description` | texte | — |
+| `tags` | chips | `tagsPath` envoyé au serveur quand une facette tag est cochée |
+| `maturity` | — | filtre « maturité » (ses OPTIONS viennent de la question) ; **aucun repli backend** : non résolu ⇒ `null` et filtre masqué |
+| `image` | visuel | — |
+| `depense` | jauge de financement | repli quand `funds` n'est pas pré-calculé |
+| `choose` | badge « en attente » | lu sur l'étape d'ÉVALUATION, pas celle de dépôt |
+| `users` | nombre de membres | **le seul rôle qui ne parle pas du formulaire** — cf. ci-dessous |
+
+**`users` : le vivier dépend de la PLATEFORME, pas du form.** Un même commun peut être porté
+par deux AAC, avec des membres différents de part et d'autre : `links.cae` sur la fédération
+des CAE, `links.tls` sur les communs des tiers-lieux. Le chemin est donc libre — rien n'oblige
+à passer par `links`. La valeur pointée peut être une map d'utilisateurs, un tableau d'ids ou
+`null` (les trois existent en base) : on compte ses entrées.
+
+Non renseigné ⇒ repli sur `user_count`, qui **n'est pas** le nombre de membres : le backend y
+met la taille de `links.contributors`. Renseigné ⇒ **aucun repli** — « 0 membre sur cette
+plateforme » est une réponse juste, alors que `user_count` afficherait le chiffre d'un autre
+ensemble.
+
+**Chaîne de résolution**, du plus explicite au plus devinatoire
+([`lib/resolveAacCardFields.ts`](../src/modules/aac/lib/resolveAacCardFields.ts)) :
+
+`config` → `form.mapping` → scan (type/libellé) → défaut canonique
+(`titre`/`description`/`tags`/`image`/`depense`/`choose` ; ni `maturity` ni `users` n'en ont
+un) → `null`.
+
+Le résultat porte un champ **`source`** (`"config" | "mapping" | "scan" | "default" | "none"`)
+qui dit lequel a répondu : c'est par lui qu'on diagnostique une carte vide.
+
+⚠️ Deux échecs **silencieux** à connaître :
+
+- un chemin désignant une question ABSENTE du formulaire est quand même honoré (référence
+  « nue », `options: []`) — rien ne casse, mais le filtre correspondant ne ramène rien. Rien
+  ne vérifie l'existence des ids : c'est à la charge de l'auteur du config ;
+- une valeur de forme intermédiaire (`aapStep1.q_x`, `answers.q_x`, chemin à 4 segments) n'est
+  **pas** appliquée : `parseFieldPath` rend `null` et la chaîne continue sur le scan. Comme la
+  config n'est jamais parsée par Zod au runtime, la faute ne se voit qu'en lisant `source`.
+
+**Trouver l'id d'une question** (aucun outil livré) — le document du form se lit sans auth :
+
+```bash
+curl -s -X POST "$VITE_BASE_URL_BACKEND/survey/coform/getformbyid" \
+     -d "parentFormId=<formId>"
+```
+
+`data.subForms` donne l'ordre des étapes, `data.inputs.<étape>.inputs` la table
+`id → {label, type, position}`, et `data.params` les listes d'options (clé nue, ou préfixée
+`radioNew<id>` / `checkboxNew<id>` / `categorizedCheckbox<id>`…). On repère la question par son
+**libellé**, et on écrit `answers.<étape>.<id>`.
+
 ---
 
 ## 4. Le résolveur `AacConfig` — le cœur du socle
