@@ -19,11 +19,33 @@ introspectable (règle d'or « dériver ») : `npm run config:schema costumForm`
    = pipeline générique (read/write/defaults dérivés des widgets).
 2. **Déclencher l'ajout** : `floatingActionButton.modal = "add-<id>"` (ou un bouton de section `modal:"add-<id>"`).
 3. **Déclencher l'édition** : `profiles.<entityTypePluriel>.editModal = "edit-<id>"`, + `editModalMatch`
-   (`{champ_serverData: valeur}`) pour UN sous-type conditionnel. Si PLUSIEURS sous-types partagent le même
+   (`{champ: valeur}`) pour UN sous-type conditionnel. Si PLUSIEURS sous-types partagent le même
    `entityType` (ex. `poi` = `recoveryCenter` + `article`), utiliser la **TABLE** `profiles.<pluriel>.editModals`
-   = `[{editModal, editModalMatch:{type:…}}, …]` (**1er match gagne** ; le catch-all sans `editModalMatch` doit
+   = `[{editModal, editModalMatch:{type:…}}, …]` (**1er match gagne** ; le catch-all sans condition doit
    être **EN DERNIER**, sinon il masque les sous-types). La résolution `add-/edit-<id>` → table runtime est
    **automatique** (aucune entrée hardcodée à ajouter).
+
+   ⚠ **BORNER AU PÉRIMÈTRE DU COSTUM — obligatoire.** Une route sans condition s'applique à TOUTES les
+   entités du type, y compris étrangères au costum : sur une page profil publique, n'importe quelle
+   organisation du site ouvrirait ton formulaire (bug constaté sur institutBleu — ~29 400 organisations
+   concernées). **Le sous-type ne suffit pas** : `type: recoveryCenter` compte 3 765 POI en base dont
+   3 079 étrangers. Et aucun champ PLAT ne porte l'appartenance : la provenance vit dans `source.key`/
+   `source.keys`, le rattachement secondaire dans `reference.costum`. Ajouter donc sur CHAQUE route un
+   prédicat `when` (grammaire `and`/`or`/`not`, celle de `list.itemRules`), cumulatif avec `editModalMatch` :
+
+   ```jsonc
+   { "editModal": "edit-<id>", "editModalMatch": { "type": "<sousType>" },
+     "when": { "or": [
+       { "field": "sourceKeys",       "op": "contains", "value": "<slugCostum>" },
+       { "field": "reference.costum", "op": "contains", "value": "<slugCostum>" }
+     ]}}
+   ```
+
+   `sourceKeys` est un champ synthétique normalisé (fusionne `source.key` + `source.keys`, y compris la
+   forme « objet à trous » d'un `unset` PHP) ; `reference.costum` est un chemin pointé, résolu lui aussi.
+   Le générateur `--all` **n'émet PAS ce `when`** : à ajouter à la main après fusion, sinon le bug se
+   rejoue. Vérifier aussi que les champs testés sont PROJETÉS là où la modale est montée (`element/about`
+   les renvoie ; une entité issue d'une recherche est limitée à `defaultFields`).
 4. **Valider** : un test qui appelle `registerCostumForm(doc)` (cf. `costumFormRegistry.test.ts`) joue
    `CostumFormSchemaZod` (structure) **puis** `assertCostumKeysRegistered` (existence des clés). Une clé citée
    (`read`/`write`/`enumFrom`/`scope.derive`/`payloadFn`/`validateFn`/`slots`…) non enregistrée **lève une erreur

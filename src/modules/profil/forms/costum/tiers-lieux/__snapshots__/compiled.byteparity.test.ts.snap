@@ -894,7 +894,88 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > spec fig
       },
     },
     "payloadEmitEmptyOnEdit": true,
-    "payloadFn": "tl:payload",
+    "stamps": [
+      {
+        "field": "tags",
+        "on": "both",
+        "op": "append",
+        "value": {
+          "$costum": "mainTag",
+        },
+      },
+      {
+        "field": "tags",
+        "op": "append",
+        "value": {
+          "$costum": "compagnon",
+        },
+      },
+      {
+        "field": "tags",
+        "on": "both",
+        "op": "append",
+        "value": {
+          "$mapLabels": {
+            "from": "typePlace",
+            "map": {
+              "ateliers-artisanaux": "Ateliers artisanaux partagés",
+              "autre": "Autre famille de tiers-lieux",
+              "coworking": "Bureaux partagés / Coworking",
+              "culturel": "Tiers-lieu culturel / Lieux intermédiaires et indépendants",
+              "fablab": "Fablab / Makerspace / Hackerspace (Espaces du Faire)",
+              "foodlab": "Cuisine partagée / Foodlab",
+              "livinglab": "LivingLab / Laboratoire d'innovation sociale",
+              "nourricier": "Tiers-lieu nourricier",
+            },
+            "sep": ",",
+          },
+        },
+      },
+      {
+        "field": "tags",
+        "on": "both",
+        "op": "append",
+        "value": {
+          "$mapLabels": {
+            "from": "manageModel",
+            "map": {
+              "association": "Association",
+              "autre-gestion": "Autre mode de gestion",
+              "collectif-citoyen": "Collectif citoyen",
+              "collectivites": "Collectivités (Département, Intercommunalité, Région, etc)",
+              "etablissements-scolaires": "Établissements scolaires (Lycée, Collège, Ecole)",
+              "sarl-sa-sas": "SARL-SA-SAS",
+              "scic": "SCIC",
+              "scop": "SCOP",
+              "universites": "Universités / Écoles d'ingénieurs ou de commerce / EPST",
+            },
+          },
+        },
+      },
+      {
+        "field": "tags",
+        "on": "both",
+        "op": "append",
+        "value": {
+          "$bucket": {
+            "buckets": [
+              {
+                "label": "Moins de 60m²",
+                "lt": 60,
+              },
+              {
+                "label": "Entre 60 et 200m²",
+                "lt": 201,
+              },
+              {
+                "label": "Plus de 200m²",
+              },
+            ],
+            "from": "buildingSurfaceArea",
+          },
+        },
+      },
+    ],
     "successKey": {
       "add": "AddTiersLieux.toast.success",
       "edit": "EditTiersLieux.toast.success",

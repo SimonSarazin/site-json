@@ -3,6 +3,7 @@ import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from "@/lib/utils";
 import type { SectionPropsMap } from "@/types/site";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import NavLink from "@/components/layout/NavLink";
 
 export function ContentSection({ 
   id, 
@@ -98,13 +99,16 @@ export function ContentSection({
                         <svg className="w-3 h-3 text-foreground" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
                         </svg>
-                        <a
-                          href={link.href}
+                        {/* NavLink : href interne → navigation SPA (react-router),
+                            http(s) → nouvel onglet — un `<a>` brut rechargeait
+                            toute la page pour un chemin interne. */}
+                        <NavLink
+                          to={link.href}
                           className="font-semibold text-foreground hover:text-primary transition"
                           suppressHydrationWarning
                         >
                           {t(link.label)}
-                        </a>
+                        </NavLink>
                       </div>
                     ))}
                   </div>

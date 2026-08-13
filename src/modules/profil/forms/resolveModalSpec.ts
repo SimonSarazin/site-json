@@ -15,6 +15,7 @@ import { configToDescriptor, formDescriptorToConfig, type FormDescriptor, type E
 import { buildConfigDefaults, buildPipelineDefaults, buildPipelinePayload } from "./jsonFormSubmit";
 import type { EntityModalConfig } from "./EntityFormModal";
 import type { ByMode, EntityModalCtx, EntityModalSpec } from "./entityModalSpec";
+import { resolveEagerStamps } from "./stamps";
 import type { EntityMutationSpec } from "../hooks/useEntityMutation";
 import {
   getDescriptor, getDescriptorVariantFn, getDefaultsFn, getPayloadFn, getScopeFn, getSlotFn,
@@ -161,6 +162,10 @@ export function specToConfig(spec: EntityModalSpec): EntityModalConfig {
             parent: m.inject?.parent ? (ctx.parent ?? null) : null,
             organizerFallback: m.inject?.organizerFallback ? (ctx.parent ?? null) : undefined,
           },
+      // Stamps : champ PROPRE (jamais sous inject, strippé ci-dessus) — actifs add ET edit selon
+      // leur `on`. `$scope`/`$costum` sont résolus ICI (eager — ils n'existent plus à la mutation),
+      // $now/$from le seront à la soumission par runEntityMutation.
+      stamps: resolveEagerStamps(m.stamps, { scope: ctx.scope, costum: ctx.costum }),
       navigateOnSuccess: m.navigateOnSuccess,
       successKey: pickMode(m.successKey, ctx.mode),
       errorKey: pickMode(m.errorKey, ctx.mode),

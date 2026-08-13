@@ -79,7 +79,18 @@ if (all) {
     process.exit(2);
   }
   const costumForms: Record<string, unknown> = {};
-  const profiles: Record<string, { editModals: Array<{ editModal: string; editModalMatch?: Record<string, unknown> }> }> = {};
+  const profiles: Record<string, { editModals: Array<{ editModal: string; editModalMatch?: Record<string, unknown>; when?: unknown }> }> = {};
+  // Clause de PÉRIMÈTRE, posée sur CHAQUE route. Sans elle la route est un catch-all : le formulaire
+  // s'ouvre sur toutes les entités du type, y compris étrangères au costum (le sous-type ne borne rien —
+  // `recoveryCenter` compte 3 765 POI dont 3 079 hors costum). L'appartenance n'est portée par aucun champ
+  // plat : provenance dans `source.key`/`source.keys` (fusionnés dans le synthétique `sourceKeys`),
+  // rattachement secondaire dans `reference.costum` (posé par l'`afterSave` legacy quand la provenance diffère).
+  const scopeWhen = {
+    or: [
+      { field: "sourceKeys", op: "contains", value: slug },
+      { field: "reference.costum", op: "contains", value: slug },
+    ],
+  };
   for (const desc of descriptors) {
     const schema = descriptorToFormSchema(desc, describeEntityForm(desc.collection));
     if (!schema) continue;
@@ -95,6 +106,7 @@ if (all) {
     (profiles[desc.collection] ??= { editModals: [] }).editModals.push({
       editModal: `edit-${id}`,
       ...(desc.discriminator ? { editModalMatch: { type: desc.discriminator } } : {}),
+      when: scopeWhen,
     });
   }
   // Les sous-types AVEC `editModalMatch` doivent passer AVANT les catch-alls (form de base sans match) —
@@ -107,6 +119,7 @@ if (all) {
   if (out) {
     writeFileSync(out, jsonAll, "utf-8");
     console.error(`✅ ${Object.keys(costumForms).length} form(s) + routage profiles générés → ${out} (fusionner dans config.costumForms + config.profiles, puis éditer).`);
+    console.error(`   ℹ️  Chaque route porte un \`when\` bornant au périmètre "${slug}" (sourceKeys OU reference.costum) : le RETIRER rouvrirait le formulaire à toutes les entités du type, costum ou non.`);
   } else {
     process.stdout.write(jsonAll + "\n");
   }

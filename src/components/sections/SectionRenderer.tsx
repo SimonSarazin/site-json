@@ -55,6 +55,7 @@ const LazySections: {
   timeline: lazy(() => import("./TimelineSection")),
   banner: lazy(() => import("./BannerSection")),
   map: lazy(() => import("./MapSection")),
+  "map-bubbles": lazy(() => import("./MapBubbles")),
   newsletter: lazy(() => import("./NewsletterSection")),
   contactForm: lazy(() => import("./ContactFormSection")),
   comparison: lazy(() => import("./ComparisonSection")),
@@ -76,6 +77,7 @@ const LazySections: {
   thematics: lazy(() => import("@/modules/search/sections/ThematicsSection")),
   filters: lazy(() => import("@/modules/search/sections/FiltersSection")),
   searchHeader: lazy(() => import("@/modules/search/sections/SearchHeaderSection")),
+  "featured-carousel": lazy(() => import("@/modules/search/sections/FeaturedCarouselSection")),
   gridLayout: lazy(() => import("./GridLayoutSection")),
   news: lazy(() => import("@/modules/news/components/sections/NewsSection")),
   notifications: lazy(() => import("@/modules/notification/components/sections/NotificationsSection")),
@@ -83,6 +85,7 @@ const LazySections: {
   heroWithIcon: lazy(() => import("./HeroWithIconSection")),
   meeteem: lazy(() => import("@/modules/ampli/components/sections/MeeteemSection")),
   coform: lazy(() => import("@/modules/coform/components/CoFormSection")),
+  toolsCatalog: lazy(() => import("@/modules/toolsCatalog/sections/ToolsCatalogSection")),
   aac: lazy(() => import("@/modules/aac/components/AacConfigStub")),
   "aac-directory": lazy(() => import("@/modules/aac/sections/AacDirectorySection")),
   actions: lazy(() => import("@/modules/cagnotte/components/sections/ActionsSection")),
@@ -94,6 +97,7 @@ const LazySections: {
   agenda: lazy(() => import("@/modules/agenda/sections/AgendaSection")),
   articleFeed: lazy(() => import("@/modules/blog/sections/ArticleFeed")),
   articleReader: lazy(() => import("@/modules/blog/sections/ArticleReaderSection")),
+  articleTeaser: lazy(() => import("@/modules/blog/sections/ArticleTeaser")),
 };
 
 // Fallback skeleton pour les sections en cours de chargement

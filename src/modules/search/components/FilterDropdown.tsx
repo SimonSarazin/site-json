@@ -58,6 +58,11 @@ export default function FilterDropdown({
         id: value,
         label: `${tr(label)}${count?.[value] ? ` (${count[value]})` : ""}`,
       }))}
+      // Une liste DYNAMIQUE (`optionsFrom`) suit les données : 64 territoires là où la config en
+      // déclare 12, 1 209 tags côté documents. Recherche et plafond de rendu s'activent d'eux-mêmes.
+      searchPlaceholder={t("Rechercher…")}
+      noResultLabel={t("Aucun résultat")}
+      moreLabel={(n) => t("+{{count}} autres — précisez la recherche", undefined, { count: n })}
       selected={selected}
       onToggle={(value) => {
         const next = selected.includes(value)

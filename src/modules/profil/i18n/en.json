@@ -16,6 +16,8 @@
     "searchPlaceholder": "Search..."
   },
   "common": {
+    "add": "Add",
+    "remove": "Remove",
     "organizedBy": "Organized by",
     "viewProfile": "View profile",
     "preview": "Preview",

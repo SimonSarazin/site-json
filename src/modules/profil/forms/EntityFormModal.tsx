@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { useT } from "@/hooks/useT";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useSite } from "@/hooks/useSite";
+import { costumListsOf, staticListValues } from "@/lib/costumLists";
 
 import { GenericForm, configToDescriptor, formDescriptorToConfig, type FormDescriptor, type I18n } from "@/modules/formEngine";
 import "./registerWidgets"; // side-effect : enregistre les widgets DOMAINE (location/finder/tags/image/…) AVANT le 1er rendu
@@ -98,9 +99,26 @@ export function EntityFormModal({ config: configProp, spec, open, onOpenChange, 
 
   const rawDescriptor = typeof config.descriptor === "function" ? config.descriptor(ctx) : config.descriptor;
   const descriptor = useMemo(() => configToDescriptor(formDescriptorToConfig(rawDescriptor), { tLoc: PRESERVE_LABELS }), [rawDescriptor]);
-  const defaultValues = useMemo(() => config.buildDefaults(ctx), [config, effMode, entity, scope]); // eslint-disable-line react-hooks/exhaustive-deps
+  // `open` dans les deps : le seed doit être RELU à chaque ouverture. L'entité peut être une
+  // instance STABLE dont le serverData est muté en place — cas du profil de l'utilisateur
+  // connecté : useEntityBySlugQuery renvoie `me` (jamais re-instancié, l'invalidation react-query
+  // re-renvoie la même référence). Sans ce dep, le seed du PREMIER rendu restait figé et la
+  // modale ré-ouvrait sur l'ANCIENNE adresse après un save pourtant réussi (save() → refresh()).
+  const defaultValues = useMemo(() => config.buildDefaults(ctx), [config, effMode, entity, scope, open]); // eslint-disable-line react-hooks/exhaustive-deps
   const schema = useMemo(() => config.getSchema?.(ctx), [config, effMode, entity]); // eslint-disable-line react-hooks/exhaustive-deps
-  const listsOptions = config.listsFromCarrier ? ((carrier?.serverData?.lists as Record<string, string[]> | undefined) ?? {}) : undefined;
+  // Listes de valeurs du costum PORTEUR (cf. `costumListsOf` pour les deux emplacements et leur
+  // histoire). Ne sont exploitables comme options QUE les listes STATIQUES : une déclaration
+  // dynamique ne porte pas ses valeurs, elle se résout par requête — c'est le rôle du widget
+  // `valueSelect` / `tags` via `useCostumListValues`, pas celui d'un `options` figé au rendu.
+  const listsOptions = useMemo(() => {
+    if (!config.listsFromCarrier) return undefined;
+    const out: Record<string, string[]> = {};
+    for (const [nom, spec] of Object.entries(costumListsOf(carrier))) {
+      const valeurs = staticListValues(spec);
+      if (valeurs) out[nom] = valeurs;
+    }
+    return out;
+  }, [config.listsFromCarrier, carrier]);
   const fieldProps = useMemo(() => {
     const fromConfig = config.buildFieldProps?.(ctx);
     let image: Record<string, Record<string, unknown>> | undefined;

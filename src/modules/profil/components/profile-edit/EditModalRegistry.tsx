@@ -2,6 +2,9 @@ import { lazy, Suspense, type ComponentType } from "react";
 import { Loader2 } from "lucide-react";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useSite } from "@/hooks/useSite";
+import { entityMatchData } from "@/lib/entityMatch";
+import { check } from "@/modules/formEngine/engine/conditional";
+import type { FormValues, Predicate } from "@/modules/formEngine/types";
 
 export interface EditModalProps {
   open: boolean;
@@ -51,68 +54,123 @@ function ensureLazyEditModal(modalName: string): void {
   }
 }
 
+/** Une route de la table `editModals` (ou la paire historique `editModal`/`editModalMatch`). */
+interface EditModalRoute {
+  editModal?: string;
+  editModalMatch?: Record<string, unknown>;
+  when?: Predicate;
+}
+
 /**
- * Vérifie si une condition `editModalMatch` est satisfaite par `serverData`.
+ * Vérifie si une condition `editModalMatch` est satisfaite par la vue matchable de l'entité.
  *
- * Objet plain `{ key: value }` — AND implicite sur toutes les clés.
+ * Objet plain `{ clé: valeur }` — AND implicite sur toutes les clés.
  * Pour chaque paire :
- *  - Si `serverData[key]` est un array → `.includes(expectedValue)`
- *  - Sinon → strict equality (`===`)
+ *  - Si la valeur courante est un array → `.includes(valeurAttendue)`
+ *  - Sinon → égalité stricte (`===`)
  *
- * Si `match` est absent/undefined → renvoie `true` (pas de filtre = match always).
+ * `match` absent/undefined → `true` (pas de filtre = match universel).
+ *
+ * ⚠ `data` est la vue {@link entityMatchData} (Proxy), PAS `serverData` brut : les clés pointées
+ * (`reference.costum`) et les champs synthétiques (`sourceKey`/`sourceKeys`) y sont donc résolus.
+ * Avant ce branchement le lookup était plat, ce qui rendait toute condition de provenance
+ * inexprimable — une clé `"source.key"` valait silencieusement `undefined`.
  */
 function matchesEditModalCondition(
-  serverData: Record<string, unknown>,
+  data: FormValues,
   match: Record<string, unknown> | undefined
 ): boolean {
   if (!match) return true;
   return Object.entries(match).every(([key, expected]) => {
-    const actual = serverData[key];
+    const actual = (data as Record<string, unknown>)[key];
     if (Array.isArray(actual)) return actual.includes(expected);
     return actual === expected;
   });
 }
 
 /**
+ * Une route matche-t-elle l'entité ? `editModalMatch` (forme plate) ET `when` (prédicat) doivent
+ * être satisfaits — les deux sont optionnels, une route sans ni l'un ni l'autre est un catch-all.
+ *
+ * GARDE : un prédicat malformé (ex. `op:"matches"` avec un regex invalide) fait échouer la route
+ * au lieu de casser tout le rendu — même politique que `firstMatching` (cf. `lib/entityMatch`).
+ * Échouer plutôt que matcher est le choix SÛR : au pire l'utilisateur obtient le formulaire
+ * générique, jamais un formulaire costum sur une entité qui n'en relève pas.
+ */
+function routeMatches(data: FormValues, route: EditModalRoute): boolean {
+  if (!matchesEditModalCondition(data, route.editModalMatch)) return false;
+  try {
+    return check(route.when, data);
+  } catch (err) {
+    console.warn(`[EditModalRegistry] prédicat "when" invalide sur ${route.editModal} — route ignorée`, err);
+    return false;
+  }
+}
+
+/**
  * Résout le nom du modal d'édition à utiliser pour une entité donnée.
  *
  * Règle :
- *  1. Lit `profiles[kind+'s'].editModal` de la config (kind = "organization", "project", ...).
- *  2. Si absent → `"edit-profile"` (générique).
- *  3. Si présent + pas de `editModalMatch` → utilise le custom pour TOUTES les entités du kind.
- *  4. Si présent + `editModalMatch` défini → utilise le custom uniquement si `serverData`
- *     satisfait la condition (cf. `matchesEditModalCondition`). Sinon → générique.
+ *  1. Lit `profiles[<type>]` de la config (`getEntityType()` renvoie DÉJÀ le pluriel :
+ *     "organizations", "projects", … — ne pas re-pluraliser).
+ *  2. Table `editModals[]` : le PREMIER élément dont la condition matche gagne.
+ *  3. Repli `editModal` + `editModalMatch` (format historique, une seule route).
+ *  4. Rien ne matche → `"edit-profile"` (générique).
  *
- * Cette fonction est exportée pour permettre aux composants de pré-décider sans
- * monter le DynamicEditModal (ex. afficher/masquer un bouton).
+ * Conditions d'une route (toutes optionnelles, cumulatives) :
+ *  - `editModalMatch` — forme plate `{clé: valeur}`, cf. {@link matchesEditModalCondition} ;
+ *  - `when` — prédicat complet (`and`/`or`/`not`, ops `eq`/`contains`/`ne`/…), même grammaire que
+ *    `list.itemRules` et les règles d'icônes de la palette.
+ * Une route SANS condition est un **catch-all** : elle s'applique à TOUTES les entités du type,
+ * y compris celles étrangères au costum, et court-circuite les routes suivantes → la placer en
+ * dernier, et n'y recourir que si le formulaire vaut vraiment pour toute la collection.
+ *
+ * ⚠ **Périmètre costum.** Ni cette fonction ni le formulaire costum ne vérifient d'eux-mêmes
+ * qu'une entité relève du costum : c'est à la config de le dire. Aucun champ PLAT ne le porte —
+ * la provenance vit dans `source.key`/`source.keys` (exposés en `sourceKey`/`sourceKeys`) et le
+ * rattachement secondaire dans `reference.costum` (l'`afterSave` legacy pose ce marqueur quand la
+ * provenance diffère du costum). Le patron est donc :
+ *
+ * ```json
+ * "when": { "or": [
+ *   { "field": "sourceKeys",       "op": "contains", "value": "<costumSlug>" },
+ *   { "field": "reference.costum", "op": "contains", "value": "<costumSlug>" }
+ * ]}
+ * ```
+ *
+ * ⚠ **Champ non projeté = règle morte, en silence.** Un prédicat portant sur un champ absent de la
+ * réponse serveur ne matchera jamais sans lever d'erreur. `element/about` (fiche profil) projette
+ * bien `source`, `reference`, `links` et `costum` ; en revanche les résultats de RECHERCHE sont
+ * limités à `baseParams.defaultFields` — vérifier la projection avant de router sur un champ.
+ *
+ * Exportée pour permettre à un composant de pré-décider sans monter `DynamicEditModal`
+ * (ex. afficher/masquer un bouton) — usage prévu mais pas encore en place.
  */
 export function resolveEditModalName(
   entity: EntityTypes,
   config: ReturnType<typeof useSite>["config"]
 ): string {
-  // `getEntityType()` retourne déjà le pluriel ("organizations", "projects", "events", ...).
-  // Pas besoin de pluraliser à nouveau.
   const profileKey = typeof entity.getEntityType === "function" ? entity.getEntityType() : null;
   const profiles = config.profiles as
-    | Record<string, {
-        editModal?: string;
-        editModalMatch?: Record<string, unknown>;
-        editModals?: Array<{ editModal: string; editModalMatch?: Record<string, unknown> }>;
-      } | undefined>
+    | Record<string, ({ editModals?: EditModalRoute[] } & EditModalRoute) | undefined>
     | undefined;
   const profileConfig = profileKey ? profiles?.[profileKey] : undefined;
-  const serverData = (entity.serverData ?? {}) as Record<string, unknown>;
+  if (!profileConfig) return "edit-profile";
+
+  // Vue matchable (serverData + `sourceKey`/`sourceKeys` synthétiques + chemins pointés résolus),
+  // calculée UNE fois pour toutes les routes du type.
+  const data = entityMatchData(entity);
 
   // 1. Table de routage multi sous-types (costum à plusieurs forms / collection) : PREMIER match gagne.
   //    (ex. poi → edit-<slug>-recoveryCenter si type==="recoveryCenter", edit-<slug>-article si "article", …)
-  if (Array.isArray(profileConfig?.editModals)) {
+  if (Array.isArray(profileConfig.editModals)) {
     for (const route of profileConfig.editModals) {
-      if (route.editModal && matchesEditModalCondition(serverData, route.editModalMatch)) return route.editModal;
+      if (route.editModal && routeMatches(data, route)) return route.editModal;
     }
   }
 
   // 2. Rétro-compat : editModal unique conditionnel (comportement historique).
-  if (profileConfig?.editModal && matchesEditModalCondition(serverData, profileConfig.editModalMatch)) {
+  if (profileConfig.editModal && routeMatches(data, profileConfig)) {
     return profileConfig.editModal;
   }
 

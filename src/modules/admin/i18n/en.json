@@ -127,7 +127,10 @@
     "emptySearch": "No items to reference.",
     "emptyReferenced": "No referenced items.",
     "colType": "Type",
-    "colAction": "Action"
+    "colAction": "Action",
+    "attachAs": "Attach as",
+    "colSubType": "Sub-type",
+    "unclassified": "Unclassified"
   },
   "AdminModerationSection": {
     "title": "Moderation",
@@ -166,6 +169,27 @@
     "referenced": "Item referenced",
     "unreferenced": "Reference removed",
     "detached": "Item detached",
-    "error": "Referencing action failed"
+    "error": "Referencing action failed",
+    "referencedUnclassified": "Referenced, but unclassified — use “Classify” in the referenced list",
+    "classified": "Sub-type saved",
+    "referencedUnmoderated": "Referenced, but moderation could not be applied"
+  },
+  "AdminInvitation": {
+    "error": "Error",
+    "noContext": "No element to administer.",
+    "loading": "Loading…",
+    "shareLinks": "Shareable invitation links",
+    "shareLinksHint": "Share one of these URLs: any signed-in person who opens it joins immediately — as a member or an administrator.",
+    "copyMemberLink": "Copy member link",
+    "copyAdminLink": "Copy admin link",
+    "linkCopied": "Link copied to clipboard",
+    "linkReady": "Link generated",
+    "linkFailed": "Could not generate the link.",
+    "pendingTitle": "Pending invitations",
+    "pendingEmpty": "No pending invitation.",
+    "invite": "Invite",
+    "relaunch": "Resend",
+    "relaunchSent": "The invitation has been sent again.",
+    "relaunchFailed": "Could not resend the invitation."
   }
 }

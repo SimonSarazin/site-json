@@ -512,6 +512,75 @@ export const ProfilesConfigSchema = z.object({
 }).optional();
 ```
 
+### Onglets paramétrables — `tab.props` (MembershipTab)
+
+Un tab en mode `component` accepte `props` (record libre, validé par le composant). Pour
+`MembershipTab` :
+
+```jsonc
+{ "id": "membership", "component": "MembershipTab",
+  "condition": { "entityTypes": ["citoyens"], "userContext": "own" },
+  "props": { "types": ["organizations"], "scope": "costum" } }
+```
+
+- `types` : listes affichées parmi `organizations|projects|pois|events` (défaut : les quatre,
+  comportement historique) — seules les listes déclarées interrogent le réseau ;
+- `scope: "costum"` borne les listes au périmètre du site porteur, **côté serveur**
+  (`sourceKey: [slug du porteur]` → `source.keys` OU `reference.costum`, lib ≥ 1.0.179) ;
+  `"network"` (défaut) = réseau entier, comme avant. Ne JAMAIS émuler avec un `filters` maison sur
+  `source.keys` : on perdrait les fiches rattachées par `reference.costum` seul.
+
+Même commutateur `scope` sur les sections `profile-related` (onglets Projets/Événements d'une
+organisation, via `useRelatedEntities`).
+
+### Routage d'ÉDITION — `editModals[]` + clauses `when`
+
+`profiles.<type>` accepte une **table de routage** vers les forms costum d'édition (multi
+sous-types) — premier match gagne, repli `edit-profile` :
+
+```jsonc
+"poi": {
+  "editModals": [
+    { "editModal": "edit-institut-bleu-financement",
+      "editModalMatch": { "type": "financement" },
+      "when": { "or": [ { "field": "sourceKeys", "op": "contains", "value": "institutBleu" },
+                        { "field": "reference.costum", "op": "contains", "value": "institutBleu" } ] } },
+    { "editModal": "edit-institut-bleu-financement",
+      "editModalMatch": { "reference.costumTypes.institutBleu": "financement" },
+      "when": { /* périmètre */ } }
+  ]
+}
+```
+
+- `editModalMatch` : égalité plate champ→valeur (`contains` implicite sur tableau), évaluée sur la
+  vue `entityMatchData` (chemins **pointés** résolus + champs synthétiques `sourceKey`/`sourceKeys`) ;
+- `when` : prédicat complet (grammaire formEngine) — **toujours borner par le périmètre du costum**
+  (`sourceKeys` OU `reference.costum`) : sans clause, une route par `type` matche les entités
+  homonymes d'AUTRES sites (3 765 `recoveryCenter` en base, la plupart étrangers). Le préflight
+  `tests/preflight/edit-modal-scope.test.ts` le vérifie sur toutes les configs ;
+- la paire historique `editModal`/`editModalMatch` à plat reste supportée (rétro-compat) ;
+- ⚠ un champ non PROJETÉ par `baseParams.defaultFields` vaut `undefined` dans les résultats de
+  recherche → la règle ne matche jamais, en silence.
+
+### Menus d'ajout — `addConfig` (builtins costum-aware + items custom)
+
+Sur la section `profile-header` : `addConfig` gouverne le menu « Créer ». Un builtin
+(`organization|project|event|poi`) non désactivé ouvre le **form costum du site** quand il en
+existe exactement UN pour ce type (`costumCreateKey` — même règle que `create: "inherit"` de
+l'admin) ; ≥ 2 forms → modale standard conservée, le site déclare l'entrée voulue via
+`addConfig.custom` :
+
+```jsonc
+"addConfig": { "organization": false, "project": false, "event": false, "poi": false,
+  "custom": [ { "modalKey": "add-institut-bleu-acteur",
+                "label": { "fr": "Référencer ma structure" }, "icon": "anchor",
+                "condition": { "auth": "required", "userContext": "own" } } ] }
+```
+
+`condition.userContext` (`own|other|any`) est évalué contre le PROFIL VISITÉ (visibilité) — sans
+lui, un item custom apparaît aussi sur le profil d'autrui (les builtins, eux, sont gardés par les
+permissions).
+
 ## Sections de profil
 
 Le module profil propose **21 types de sections** configurables:
@@ -1201,10 +1270,21 @@ d'abord le registry statique, puis `costumEditThunk` en repli. Mécanique détai
 
 **`resolveEditModalName(entity, config)`** — détermine le nom à monter, **config-driven** :
 1. `kind = entity.getEntityType()` (déjà au pluriel : `organizations`, `projects`, …) ;
-2. lit `config.profiles[kind].editModal` ; absent → `"edit-profile"` (générique) ;
-3. si `profiles[kind].editModalMatch` est défini → la modale custom ne s'applique que si `serverData` satisfait
-   la condition — objet `{clé: valeur}`, AND implicite sur toutes les clés ; `.includes(valeur)` si
-   `serverData[clé]` est un array, sinon `===`. Sinon → `"edit-profile"`.
+2. table `profiles[kind].editModals[]` : la PREMIÈRE route dont la condition matche gagne ;
+3. repli `profiles[kind].editModal` + sa condition (format historique, une seule route) ;
+4. rien ne matche → `"edit-profile"` (générique).
+
+Conditions d'une route, toutes optionnelles et **cumulatives** :
+- `editModalMatch` — objet `{clé: valeur}`, AND implicite ; `.includes(valeur)` si la valeur courante est un
+  array, sinon `===` ;
+- `when` — prédicat complet (`and`/`or`/`not`, ops `eq`/`ne`/`contains`/`in`…), même grammaire que
+  `list.itemRules`.
+
+Les deux sont évalués sur la vue `entityMatchData(entity)` (`src/lib/entityMatch.ts`), **pas** sur
+`serverData` brut : les chemins pointés (`reference.costum`) y sont résolus et les champs synthétiques
+`sourceKey`/`sourceKeys` disponibles (ces derniers normalisent la forme « objet à trous » que `source.keys`
+prend après un `unset` PHP). Un prédicat malformé fait échouer la route — au pire l'utilisateur obtient le
+formulaire générique, jamais un formulaire costum sur une entité qui n'en relève pas.
 
 ```jsonc
 { "profiles": { "organizations": {
@@ -1212,6 +1292,30 @@ d'abord le registry statique, puis `costumEditThunk` en repli. Mécanique détai
   "editModalMatch": { "tags": "TiersLieux" }   // orga taggée TiersLieux → modale costum ; sinon édition générique
 } } }
 ```
+
+⚠ **Une route SANS condition est un catch-all** : elle s'applique à TOUTES les entités du type — y compris
+celles étrangères au costum — et court-circuite les routes suivantes. Un formulaire costum doit donc être
+borné à son périmètre, et aucun champ *plat* ne le porte : la provenance vit dans `source.key`/`source.keys`,
+le rattachement secondaire dans `reference.costum` (posé par l'`afterSave` legacy quand la provenance diffère
+du costum). D'où le patron :
+
+```jsonc
+{ "profiles": { "organizations": { "editModals": [{
+  "editModal": "edit-mon-costum",
+  "when": { "or": [
+    { "field": "sourceKeys",       "op": "contains", "value": "monCostum" },
+    { "field": "reference.costum", "op": "contains", "value": "monCostum" }
+  ]}
+}] } } }
+```
+
+Le schéma des routes est un `strictObject` : une faute de frappe (`wen`) fait échouer la validation au lieu
+d'être silencieusement supprimée — sans quoi la route redeviendrait un catch-all sans le moindre signal.
+Deux pièges à connaître. Un prédicat portant sur un champ **non projeté** ne matchera jamais, en silence :
+`element/about` (fiche profil) renvoie bien `source`, `reference`, `links` et `costum`, mais une entité issue
+d'une RECHERCHE est limitée à `baseParams.defaultFields` quand cette liste est renseignée. Et `reference.costum`
+est lu **brut** (contrairement à `sourceKeys`) : sa forme « objet à trous », rare mais réelle (16 organisations
+en base), échapperait à `contains`.
 
 **`DynamicEditModal`** — wrapper monté par les headers de profil / `ProfileActions` : appelle
 `resolveEditModalName`, `ensureLazyEditModal`, puis rend la modale en `Suspense`. Cache `lazyComponents` pour

@@ -27,7 +27,12 @@
       "océanographie",
       "protection de l’environnement",
       "Institut Bleu"
-    ]
+    ],
+    "ogImage": "/images/institutBleu/hero-trait-de-cote.jpg",
+    "author": {
+      "fr": "Institut Bleu",
+      "en": "Institut Bleu"
+    }
   },
   "header": {
     "type": "transparent-scroll",
@@ -59,42 +64,90 @@
           "fr": "Annuaire",
           "en": "Directory"
         },
-        "path": "/annuaire"
+        "path": "/annuaire",
+        "children": [
+          {
+            "label": {
+              "fr": "Annuaire des acteurs",
+              "en": "Directory of actors"
+            },
+            "path": "/annuaire",
+            "icon": "list",
+            "description": {
+              "fr": "Parcourir et filtrer tous les acteurs de l’économie bleue référencés.",
+              "en": "Browse and filter every listed actor of the blue economy."
+            }
+          },
+          {
+            "label": {
+              "fr": "Cartographie",
+              "en": "Map"
+            },
+            "path": "/cartographie",
+            "icon": "map",
+            "description": {
+              "fr": "Situer les acteurs sur le territoire réunionnais.",
+              "en": "Locate the actors across Réunion."
+            }
+          },
+          {
+            "label": {
+              "fr": "Nos membres",
+              "en": "Our members"
+            },
+            "path": "/nos-membres",
+            "icon": "users",
+            "description": {
+              "fr": "Les structures adhérentes de l’Institut Bleu.",
+              "en": "Organisations that are members of Institut Bleu."
+            }
+          }
+        ]
       },
       {
         "label": {
-          "fr": "Cartographie",
-          "en": "Map"
+          "fr": "Ressources",
+          "en": "Resources"
         },
-        "path": "/cartographie"
-      },
-      {
-        "label": {
-          "fr": "Nos membres",
-          "en": "Our members"
-        },
-        "path": "/nos-membres"
-      },
-      {
-        "label": {
-          "fr": "Observatoire",
-          "en": "Observatory"
-        },
-        "path": "/observatoire"
-      },
-      {
-        "label": {
-          "fr": "Bibliothèque",
-          "en": "Library"
-        },
-        "path": "/bibliotheque"
-      },
-      {
-        "label": {
-          "fr": "Financements",
-          "en": "Funding"
-        },
-        "path": "/financements"
+        "path": "/bibliotheque",
+        "children": [
+          {
+            "label": {
+              "fr": "Bibliothèque",
+              "en": "Library"
+            },
+            "path": "/bibliotheque",
+            "icon": "book-open",
+            "description": {
+              "fr": "Études, rapports et publications sur l’économie bleue.",
+              "en": "Studies, reports and publications on the blue economy."
+            }
+          },
+          {
+            "label": {
+              "fr": "Financements",
+              "en": "Funding"
+            },
+            "path": "/financements",
+            "icon": "banknote",
+            "description": {
+              "fr": "Appels à projets, subventions et dispositifs d’aide.",
+              "en": "Calls for projects, grants and support schemes."
+            }
+          },
+          {
+            "label": {
+              "fr": "Observatoire",
+              "en": "Observatory"
+            },
+            "path": "/observatoire",
+            "icon": "bar-chart-2",
+            "description": {
+              "fr": "Chiffres clés et indicateurs du secteur.",
+              "en": "Key figures and sector indicators."
+            }
+          }
+        ]
       },
       {
         "label": {
@@ -178,17 +231,21 @@
                 },
                 "path": "/annuaire",
                 "variant": "primary"
-              },
+              }
+            ],
+            "showScrollIndicator": true,
+            "buttons": [
               {
                 "label": {
                   "fr": "Référencer ma structure",
                   "en": "List my organisation"
                 },
-                "path": "/register",
-                "variant": "outline"
+                "icon": "anchor",
+                "modal": "add-institut-bleu-acteur",
+                "variant": "outline",
+                "requiresAdmin": false
               }
-            ],
-            "showScrollIndicator": true
+            ]
           }
         },
         {
@@ -236,16 +293,8 @@
               "defaultSortBy": {
                 "name": 1
               },
-              "notSourceKey": true,
               "defaultFilters": {
-                "$or": {
-                  "source.key": "institutBleu",
-                  "source.keys": "institutBleu"
-                },
-                "displayAuth": "true",
-                "preferences.toBeValidated.institutBleu": {
-                  "$exists": false
-                }
+                "displayAuth": "true"
               },
               "indexStepList": 24
             },
@@ -432,7 +481,31 @@
             ]
           }
         }
-      ]
+      ],
+      "seo": {
+        "canonical": "https://institut-bleu.00.re/",
+        "structuredData": {
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "name": "Institut Bleu",
+          "url": "https://institut-bleu.00.re",
+          "logo": "https://institut-bleu.00.re/images/institutBleu/logo-institut-bleu.png",
+          "email": "contact@institutbleu.re",
+          "telephone": "+262693778887",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Magasin n°10, Port Ouest",
+            "postalCode": "97420",
+            "addressLocality": "Le Port",
+            "addressRegion": "La Réunion",
+            "addressCountry": "FR"
+          },
+          "areaServed": "La Réunion",
+          "sameAs": [
+            "https://www.institutbleu.re"
+          ]
+        }
+      }
     },
     {
       "layout": "fullwidth",
@@ -453,7 +526,19 @@
             "subhead": {
               "fr": "Les acteurs socio-professionnels, institutionnels et scientifiques de l’économie bleue à La Réunion.",
               "en": "The socio-professional, institutional and scientific actors of the blue economy in Réunion."
-            }
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Référencer ma structure",
+                  "en": "List my organisation"
+                },
+                "icon": "anchor",
+                "modal": "add-institut-bleu-acteur",
+                "variant": "primary",
+                "requiresAdmin": false
+              }
+            ]
           }
         },
         {
@@ -549,206 +634,16 @@
                     ]
                   },
                   {
-                    "id": "activite",
+                    "id": "motscles",
                     "label": {
-                      "fr": "Activité",
-                      "en": "Activity"
+                      "fr": "Mots-clés",
+                      "en": "Keywords"
                     },
                     "field": "tags",
-                    "options": [
-                      {
-                        "id": "tourisme-et-loisirs",
-                        "label": {
-                          "fr": "Tourisme et loisirs",
-                          "en": "Tourisme et loisirs"
-                        },
-                        "name": "Tourisme et loisirs"
-                      },
-                      {
-                        "id": "sensibilisation",
-                        "label": {
-                          "fr": "Sensibilisation",
-                          "en": "Sensibilisation"
-                        },
-                        "name": "Sensibilisation"
-                      },
-                      {
-                        "id": "protection-de-lenvironnement",
-                        "label": {
-                          "fr": "Protection de l’environnement",
-                          "en": "Protection de l’environnement"
-                        },
-                        "name": "Protection de l’environnement"
-                      },
-                      {
-                        "id": "formation",
-                        "label": {
-                          "fr": "Formation",
-                          "en": "Formation"
-                        },
-                        "name": "Formation"
-                      },
-                      {
-                        "id": "conseil-et-accompagnement",
-                        "label": {
-                          "fr": "Conseil et accompagnement",
-                          "en": "Conseil et accompagnement"
-                        },
-                        "name": "Conseil et accompagnement"
-                      },
-                      {
-                        "id": "recherche-et-innovation",
-                        "label": {
-                          "fr": "Recherche et innovation",
-                          "en": "Recherche et innovation"
-                        },
-                        "name": "Recherche et innovation"
-                      },
-                      {
-                        "id": "peche-professionnelle",
-                        "label": {
-                          "fr": "Pêche professionnelle",
-                          "en": "Pêche professionnelle"
-                        },
-                        "name": "Pêche professionnelle"
-                      },
-                      {
-                        "id": "administrations-publiques-et-actions-de-l-etat-en-mer",
-                        "label": {
-                          "fr": "Administrations publiques et actions de l'Etat en mer",
-                          "en": "Administrations publiques et actions de l'Etat en mer"
-                        },
-                        "name": "Administrations publiques et actions de l'Etat en mer"
-                      },
-                      {
-                        "id": "bureau-d-etude-et-expertise",
-                        "label": {
-                          "fr": "Bureau d'étude et expertise",
-                          "en": "Bureau d'étude et expertise"
-                        },
-                        "name": "Bureau d'étude et expertise"
-                      },
-                      {
-                        "id": "exposition-et-valorisation",
-                        "label": {
-                          "fr": "Exposition et valorisation",
-                          "en": "Exposition et valorisation"
-                        },
-                        "name": "Exposition et valorisation"
-                      },
-                      {
-                        "id": "construction-industrie-et-maintenance-navale",
-                        "label": {
-                          "fr": "Construction & industrie et maintenance navale",
-                          "en": "Construction & industrie et maintenance navale"
-                        },
-                        "name": "Construction & industrie et maintenance navale"
-                      },
-                      {
-                        "id": "activites-portuaires",
-                        "label": {
-                          "fr": "Activités portuaires",
-                          "en": "Activités portuaires"
-                        },
-                        "name": "Activités portuaires"
-                      },
-                      {
-                        "id": "transport-de-passagers",
-                        "label": {
-                          "fr": "Transport de passagers",
-                          "en": "Transport de passagers"
-                        },
-                        "name": "Transport de passagers"
-                      },
-                      {
-                        "id": "peche-de-loisir",
-                        "label": {
-                          "fr": "Pêche de loisir",
-                          "en": "Pêche de loisir"
-                        },
-                        "name": "Pêche de loisir"
-                      },
-                      {
-                        "id": "vente-de-materiels",
-                        "label": {
-                          "fr": "Vente de matériels",
-                          "en": "Vente de matériels"
-                        },
-                        "name": "Vente de matériels"
-                      },
-                      {
-                        "id": "manutention-portuaire",
-                        "label": {
-                          "fr": "Manutention portuaire",
-                          "en": "Manutention portuaire"
-                        },
-                        "name": "Manutention portuaire"
-                      },
-                      {
-                        "id": "transformation-de-produits-de-la-mer",
-                        "label": {
-                          "fr": "Transformation de produits de la mer",
-                          "en": "Transformation de produits de la mer"
-                        },
-                        "name": "Transformation de produits de la mer"
-                      },
-                      {
-                        "id": "aquaculture",
-                        "label": {
-                          "fr": "Aquaculture",
-                          "en": "Aquaculture"
-                        },
-                        "name": "Aquaculture"
-                      },
-                      {
-                        "id": "vente-de-produits-de-la-mer",
-                        "label": {
-                          "fr": "Vente de produits de la mer",
-                          "en": "Vente de produits de la mer"
-                        },
-                        "name": "Vente de produits de la mer"
-                      },
-                      {
-                        "id": "travaux-maritime",
-                        "label": {
-                          "fr": "Travaux maritime",
-                          "en": "Travaux maritime"
-                        },
-                        "name": "Travaux maritime"
-                      },
-                      {
-                        "id": "reparation-et-maintenance",
-                        "label": {
-                          "fr": "Réparation et maintenance",
-                          "en": "Réparation et maintenance"
-                        },
-                        "name": "Réparation et maintenance"
-                      },
-                      {
-                        "id": "affaire-personnelle-commercant",
-                        "label": {
-                          "fr": "Affaire personnelle commerçant",
-                          "en": "Affaire personnelle commerçant"
-                        },
-                        "name": "Affaire personnelle commerçant"
-                      },
-                      {
-                        "id": "consultant",
-                        "label": {
-                          "fr": "Consultant",
-                          "en": "Consultant"
-                        },
-                        "name": "Consultant"
-                      },
-                      {
-                        "id": "veterinaire",
-                        "label": {
-                          "fr": "Vétérinaire",
-                          "en": "Vétérinaire"
-                        },
-                        "name": "Vétérinaire"
-                      }
-                    ]
+                    "options": [],
+                    "optionsFrom": {
+                      "list": "tags"
+                    }
                   },
                   {
                     "id": "statut",
@@ -762,7 +657,7 @@
                         "id": "association-loi-1901",
                         "label": {
                           "fr": "Association Loi 1901",
-                          "en": "Association Loi 1901"
+                          "en": "Non-profit association (loi 1901)"
                         },
                         "name": "Association Loi 1901"
                       },
@@ -770,7 +665,7 @@
                         "id": "entreprise-individuelle-ei",
                         "label": {
                           "fr": "Entreprise Individuelle (EI)",
-                          "en": "Entreprise Individuelle (EI)"
+                          "en": "Sole proprietorship (EI)"
                         },
                         "name": "Entreprise Individuelle (EI)"
                       },
@@ -778,7 +673,7 @@
                         "id": "societe-anonyme-a-responsabilite-limitee-sarl",
                         "label": {
                           "fr": "Société Anonyme à Responsabilité Limitée (SARL)",
-                          "en": "Société Anonyme à Responsabilité Limitée (SARL)"
+                          "en": "Limited liability company (SARL)"
                         },
                         "name": "Société Anonyme à Responsabilité Limitée (SARL)"
                       },
@@ -786,7 +681,7 @@
                         "id": "societe-par-actions-simplifiee-sas",
                         "label": {
                           "fr": "Société par Actions Simplifiée (SAS)",
-                          "en": "Société par Actions Simplifiée (SAS)"
+                          "en": "Simplified joint-stock company (SAS)"
                         },
                         "name": "Société par Actions Simplifiée (SAS)"
                       },
@@ -794,7 +689,7 @@
                         "id": "service-d-etat",
                         "label": {
                           "fr": "Service d'Etat",
-                          "en": "Service d'Etat"
+                          "en": "State service"
                         },
                         "name": "Service d'Etat"
                       },
@@ -802,7 +697,7 @@
                         "id": "etablissement-public-de-l-etat",
                         "label": {
                           "fr": "Etablissement public de l'Etat",
-                          "en": "Etablissement public de l'Etat"
+                          "en": "National public institution"
                         },
                         "name": "Etablissement public de l'Etat"
                       },
@@ -810,7 +705,7 @@
                         "id": "etablissement-public-de-cooperation-environnementale",
                         "label": {
                           "fr": "Etablissement Public de Coopération Environnementale",
-                          "en": "Etablissement Public de Coopération Environnementale"
+                          "en": "Public environmental cooperation institution (EPCE)"
                         },
                         "name": "Etablissement Public de Coopération Environnementale"
                       },
@@ -818,7 +713,7 @@
                         "id": "collectivite-territoriale",
                         "label": {
                           "fr": "Collectivité Territoriale",
-                          "en": "Collectivité Territoriale"
+                          "en": "Local authority"
                         },
                         "name": "Collectivité Territoriale"
                       },
@@ -826,7 +721,7 @@
                         "id": "societe-anonyme-sa",
                         "label": {
                           "fr": "Société Anonyme (SA)",
-                          "en": "Société Anonyme (SA)"
+                          "en": "Public limited company (SA)"
                         },
                         "name": "Société Anonyme (SA)"
                       },
@@ -834,7 +729,7 @@
                         "id": "societe-par-actions-simplifiee-unipersonnelle-sasu",
                         "label": {
                           "fr": "Société par Actions Simplifiée Unipersonnelle (SASU)",
-                          "en": "Société par Actions Simplifiée Unipersonnelle (SASU)"
+                          "en": "Single-shareholder SAS (SASU)"
                         },
                         "name": "Société par Actions Simplifiée Unipersonnelle (SASU)"
                       },
@@ -842,7 +737,7 @@
                         "id": "entreprise-unipersonnelle-a-responsabilite-limitee-eurl",
                         "label": {
                           "fr": "Entreprise Unipersonnelle à Responsabilité Limitée (EURL)",
-                          "en": "Entreprise Unipersonnelle à Responsabilité Limitée (EURL)"
+                          "en": "Single-member limited company (EURL)"
                         },
                         "name": "Entreprise Unipersonnelle à Responsabilité Limitée (EURL)"
                       },
@@ -858,7 +753,7 @@
                         "id": "syndicat-professionnel",
                         "label": {
                           "fr": "syndicat professionnel",
-                          "en": "syndicat professionnel"
+                          "en": "Professional union"
                         },
                         "name": "syndicat professionnel"
                       }
@@ -941,6 +836,12 @@
                   ]
                 },
                 "baseParams": {
+                  "searchBy": [
+                    "name",
+                    "shortDescription",
+                    "acronym",
+                    "tags"
+                  ],
                   "defaultTypes": [
                     "organizations"
                   ],
@@ -968,21 +869,15 @@
                     "geoPosition",
                     "profilThumbImageUrl",
                     "profilMediumImageUrl",
-                    "profilImageUrl"
+                    "profilImageUrl",
+                    "source",
+                    "reference"
                   ],
                   "defaultSortBy": {
                     "name": 1
                   },
-                  "notSourceKey": true,
                   "defaultFilters": {
-                    "$or": {
-                      "source.key": "institutBleu",
-                      "source.keys": "institutBleu"
-                    },
-                    "displayAuth": "true",
-                    "preferences.toBeValidated.institutBleu": {
-                      "$exists": false
-                    }
+                    "displayAuth": "true"
                   },
                   "indexStepList": 24
                 },
@@ -999,14 +894,90 @@
                     "showStats": false,
                     "showDescription": true,
                     "showAddress": true,
-                    "detailsMode": "drawer"
+                    "detailsMode": "dialog"
+                  },
+                  "preview": {
+                    "type": "facets",
+                    "width": "3xl",
+                    "facets": [
+                      {
+                        "field": "categoryThematic",
+                        "label": {
+                          "fr": "Catégorie",
+                          "en": "Category"
+                        },
+                        "icon": "layers"
+                      },
+                      {
+                        "field": "legalStatus",
+                        "label": {
+                          "fr": "Forme juridique",
+                          "en": "Legal status"
+                        },
+                        "icon": "scale"
+                      },
+                      {
+                        "field": "operatingLocation",
+                        "label": {
+                          "fr": "Zone d'activité",
+                          "en": "Operating area"
+                        },
+                        "icon": "map"
+                      },
+                      {
+                        "field": "acronym",
+                        "label": {
+                          "fr": "Sigle",
+                          "en": "Acronym"
+                        },
+                        "icon": "type"
+                      },
+                      {
+                        "field": "email",
+                        "label": {
+                          "fr": "Contact",
+                          "en": "Contact"
+                        },
+                        "icon": "at-sign"
+                      },
+                      {
+                        "field": "link",
+                        "label": {
+                          "fr": "Site web",
+                          "en": "Website"
+                        },
+                        "icon": "globe"
+                      },
+                      {
+                        "field": "siret",
+                        "label": {
+                          "fr": "SIRET",
+                          "en": "SIRET"
+                        },
+                        "icon": "hash"
+                      },
+                      {
+                        "field": "codeNaf",
+                        "label": {
+                          "fr": "Code NAF",
+                          "en": "NAF code"
+                        },
+                        "icon": "briefcase"
+                      }
+                    ]
                   }
                 }
               }
             }
           }
         }
-      ]
+      ],
+      "seo": {
+        "description": {
+          "fr": "Trouvez les entreprises, associations, institutions et laboratoires de l'économie bleue à La Réunion : filtres par thématique, activité et statut juridique.",
+          "en": "Find the companies, non-profits, institutions and research labs of Réunion's blue economy, filtered by theme, activity and legal status."
+        }
+      }
     },
     {
       "layout": "fullwidth",
@@ -1052,6 +1023,12 @@
             "showActiveFiltersTypes": false,
             "showActiveFiltersTags": false,
             "baseParams": {
+              "searchBy": [
+                "name",
+                "shortDescription",
+                "acronym",
+                "tags"
+              ],
               "defaultTypes": [
                 "organizations"
               ],
@@ -1079,18 +1056,12 @@
                 "geoPosition",
                 "profilThumbImageUrl",
                 "profilMediumImageUrl",
-                "profilImageUrl"
+                "profilImageUrl",
+                "source",
+                "reference"
               ],
-              "notSourceKey": true,
               "defaultFilters": {
-                "$or": {
-                  "source.key": "institutBleu",
-                  "source.keys": "institutBleu"
-                },
-                "displayAuth": "true",
-                "preferences.toBeValidated.institutBleu": {
-                  "$exists": false
-                }
+                "displayAuth": "true"
               },
               "indexStepList": 200
             },
@@ -1107,7 +1078,77 @@
                 "showStats": false,
                 "showDescription": true,
                 "showAddress": true,
-                "detailsMode": "drawer"
+                "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "facets",
+                "width": "3xl",
+                "facets": [
+                  {
+                    "field": "categoryThematic",
+                    "label": {
+                      "fr": "Catégorie",
+                      "en": "Category"
+                    },
+                    "icon": "layers"
+                  },
+                  {
+                    "field": "legalStatus",
+                    "label": {
+                      "fr": "Forme juridique",
+                      "en": "Legal status"
+                    },
+                    "icon": "scale"
+                  },
+                  {
+                    "field": "operatingLocation",
+                    "label": {
+                      "fr": "Zone d'activité",
+                      "en": "Operating area"
+                    },
+                    "icon": "map"
+                  },
+                  {
+                    "field": "acronym",
+                    "label": {
+                      "fr": "Sigle",
+                      "en": "Acronym"
+                    },
+                    "icon": "type"
+                  },
+                  {
+                    "field": "email",
+                    "label": {
+                      "fr": "Contact",
+                      "en": "Contact"
+                    },
+                    "icon": "at-sign"
+                  },
+                  {
+                    "field": "link",
+                    "label": {
+                      "fr": "Site web",
+                      "en": "Website"
+                    },
+                    "icon": "globe"
+                  },
+                  {
+                    "field": "siret",
+                    "label": {
+                      "fr": "SIRET",
+                      "en": "SIRET"
+                    },
+                    "icon": "hash"
+                  },
+                  {
+                    "field": "codeNaf",
+                    "label": {
+                      "fr": "Code NAF",
+                      "en": "NAF code"
+                    },
+                    "icon": "briefcase"
+                  }
+                ]
               }
             },
             "enableGraph": true,
@@ -1131,7 +1172,13 @@
             "graphEnableCountryGrouping": false
           }
         }
-      ]
+      ],
+      "seo": {
+        "description": {
+          "fr": "La carte des acteurs de l'économie bleue réunionnaise : localisez ports, entreprises maritimes, associations et acteurs scientifiques de l'île.",
+          "en": "The map of Réunion's blue economy: locate ports, maritime companies, non-profits and scientific actors across the island."
+        }
+      }
     },
     {
       "layout": "fullwidth",
@@ -1178,7 +1225,7 @@
                     "value": "Evenement public",
                     "label": {
                       "fr": "Evenement public",
-                      "en": "Evenement public"
+                      "en": "Public event"
                     }
                   },
                   {
@@ -1194,7 +1241,7 @@
                     "value": "Salon professionnel",
                     "label": {
                       "fr": "Salon professionnel",
-                      "en": "Salon professionnel"
+                      "en": "Trade fair"
                     }
                   },
                   {
@@ -1202,7 +1249,7 @@
                     "value": "Séminaire",
                     "label": {
                       "fr": "Séminaire",
-                      "en": "Séminaire"
+                      "en": "Seminar"
                     }
                   },
                   {
@@ -1210,7 +1257,7 @@
                     "value": "Salon",
                     "label": {
                       "fr": "Salon",
-                      "en": "Salon"
+                      "en": "Fair"
                     }
                   },
                   {
@@ -1218,7 +1265,7 @@
                     "value": "Webinaire",
                     "label": {
                       "fr": "Webinaire",
-                      "en": "Webinaire"
+                      "en": "Webinar"
                     }
                   },
                   {
@@ -1226,7 +1273,7 @@
                     "value": "Manifestation",
                     "label": {
                       "fr": "Manifestation",
-                      "en": "Manifestation"
+                      "en": "Public gathering"
                     }
                   },
                   {
@@ -1234,7 +1281,7 @@
                     "value": "Conférence",
                     "label": {
                       "fr": "Conférence",
-                      "en": "Conférence"
+                      "en": "Conference"
                     }
                   },
                   {
@@ -1242,12 +1289,13 @@
                     "value": "Autre",
                     "label": {
                       "fr": "Autre",
-                      "en": "Autre"
+                      "en": "Other"
                     }
                   }
                 ]
               }
-            ]
+            ],
+            "filtersClassName": "mx-auto flex w-full max-w-4xl flex-col gap-3 lg:flex-row lg:items-center rounded-2xl border border-border/60 bg-card/95 p-3 shadow-2xl backdrop-blur-md"
           }
         },
         {
@@ -1283,7 +1331,13 @@
             }
           }
         }
-      ]
+      ],
+      "seo": {
+        "description": {
+          "fr": "Les événements de l'économie bleue à La Réunion : rencontres, ateliers, salons et rendez-vous des acteurs de la mer.",
+          "en": "Blue economy events in Réunion: meetups, workshops and trade events from the island's maritime community."
+        }
+      }
     },
     {
       "layout": "fullwidth",
@@ -1477,7 +1531,13 @@
             ]
           }
         }
-      ]
+      ],
+      "seo": {
+        "description": {
+          "fr": "Les membres de l'Institut Bleu : institutions, acteurs scientifiques et socio-professionnels engagés pour une économie bleue durable à La Réunion.",
+          "en": "Institut Bleu's members: institutions, scientific and professional actors committed to a sustainable blue economy in Réunion."
+        }
+      }
     },
     {
       "layout": "fullwidth",
@@ -1539,16 +1599,8 @@
               "defaultSortBy": {
                 "name": 1
               },
-              "notSourceKey": true,
               "defaultFilters": {
-                "$or": {
-                  "source.key": "institutBleu",
-                  "source.keys": "institutBleu"
-                },
-                "displayAuth": "true",
-                "preferences.toBeValidated.institutBleu": {
-                  "$exists": false
-                }
+                "displayAuth": "true"
               },
               "indexStepList": 24
             },
@@ -1742,7 +1794,13 @@
             "drilldown": true
           }
         }
-      ]
+      ],
+      "seo": {
+        "description": {
+          "fr": "L'observatoire de l'économie bleue réunionnaise : chiffres clés et répartition des acteurs par filière, mis à jour depuis l'annuaire.",
+          "en": "The observatory of Réunion's blue economy: key figures and actor breakdown by sector, updated from the directory."
+        }
+      }
     },
     {
       "layout": "fullwidth",
@@ -1757,12 +1815,18 @@
           "id": "institut-bleu-content",
           "props": {
             "html": {
-              "fr": "<div class=\"prose prose-slate dark:prose-invert mx-auto max-w-3xl px-4 py-12\"><h1>L’Institut Bleu</h1><p>L’Institut Bleu est une association loi 1901, visant à soutenir, coordonner et fédérer les acteurs socio-professionnels, institutionnels et scientifiques de l’économie bleue durable sur le territoire de La Réunion. Pour cela, l’association assure la promotion, le développement, la recherche, l’innovation et le transfert aux acteurs professionnels de l’écosystème maritime. Ses actions partenariales se développent à l’échelle locale, mais également sur l’ensemble du territoire français, européen et international.</p><p>L’une des actions inscrites dans le programme d’action 2025 de l’Institut Bleu concerne la création d’un annuaire recensant de la manière la plus exhaustive possible les acteurs du secteur de l’économie bleue.</p><p>Cet outil sera consultable librement et gratuitement sur le site internet de l’Institut Bleu (<a href=\"https://institutbleu.re/\" target=\"_blank\" rel=\"noopener noreferrer\">www.institutbleu.re</a> ). Ce projet est financé par la Région Réunion dans le cadre du financement du plan d’action 2025 de l’Institut Bleu et par le Secrétariat d’Etat chargé de la Mer et de la Biodiversité dans le cadre du Fonds d’Intervention Maritime (FIM).</p></div>",
-              "en": "<div class=\"prose prose-slate dark:prose-invert mx-auto max-w-3xl px-4 py-12\"><h1>Institut Bleu</h1><p>Institut Bleu is a French non-profit association (<em>loi 1901</em>) whose purpose is to support, coordinate and bring together the socio-professional, institutional and scientific actors of the sustainable blue economy in Réunion. To that end, the association fosters promotion, development, research, innovation and knowledge transfer for the professionals of the maritime ecosystem. Its partnership work is carried out locally as well as across France, Europe and internationally.</p><p>One of the actions set out in the Institut Bleu 2025 programme is the creation of a directory listing the actors of the blue economy sector as exhaustively as possible.</p><p>The directory will be freely and openly available on the Institut Bleu website (<a href=\"https://institutbleu.re/\" target=\"_blank\" rel=\"noopener noreferrer\">www.institutbleu.re</a>). The project is funded by the Région Réunion as part of the Institut Bleu 2025 action plan, and by the French State Secretariat for the Sea and Biodiversity through the Maritime Intervention Fund (FIM).</p></div>"
+              "fr": "<div class=\"mx-auto max-w-3xl px-4 py-12\"><div class=\"prose prose-theme\"><h1>L’Institut Bleu</h1><p>L’Institut Bleu est une association loi 1901, visant à soutenir, coordonner et fédérer les acteurs socio-professionnels, institutionnels et scientifiques de l’économie bleue durable sur le territoire de La Réunion. Pour cela, l’association assure la promotion, le développement, la recherche, l’innovation et le transfert aux acteurs professionnels de l’écosystème maritime. Ses actions partenariales se développent à l’échelle locale, mais également sur l’ensemble du territoire français, européen et international.</p><p>L’une des actions inscrites dans le programme d’action 2025 de l’Institut Bleu concerne la création d’un annuaire recensant de la manière la plus exhaustive possible les acteurs du secteur de l’économie bleue.</p><p>Cet outil sera consultable librement et gratuitement sur le site internet de l’Institut Bleu (<a href=\"https://institutbleu.re/\" target=\"_blank\" rel=\"noopener noreferrer\">www.institutbleu.re</a> ). Ce projet est financé par la Région Réunion dans le cadre du financement du plan d’action 2025 de l’Institut Bleu et par le Secrétariat d’Etat chargé de la Mer et de la Biodiversité dans le cadre du Fonds d’Intervention Maritime (FIM).</p></div></div>",
+              "en": "<div class=\"mx-auto max-w-3xl px-4 py-12\"><div class=\"prose prose-theme\"><h1>Institut Bleu</h1><p>Institut Bleu is a French non-profit association (<em>loi 1901</em>) whose purpose is to support, coordinate and bring together the socio-professional, institutional and scientific actors of the sustainable blue economy in Réunion. To that end, the association fosters promotion, development, research, innovation and knowledge transfer for the professionals of the maritime ecosystem. Its partnership work is carried out locally as well as across France, Europe and internationally.</p><p>One of the actions set out in the Institut Bleu 2025 programme is the creation of a directory listing the actors of the blue economy sector as exhaustively as possible.</p><p>The directory will be freely and openly available on the Institut Bleu website (<a href=\"https://institutbleu.re/\" target=\"_blank\" rel=\"noopener noreferrer\">www.institutbleu.re</a>). The project is funded by the Région Réunion as part of the Institut Bleu 2025 action plan, and by the French State Secretariat for the Sea and Biodiversity through the Maritime Intervention Fund (FIM).</p></div></div>"
             }
           }
         }
-      ]
+      ],
+      "seo": {
+        "description": {
+          "fr": "L'Institut Bleu, association loi 1901 : missions, gouvernance et actions pour fédérer les acteurs de l'économie bleue durable à La Réunion.",
+          "en": "About Institut Bleu, a non-profit association: missions, governance and actions to unite Réunion's sustainable blue economy actors."
+        }
+      }
     },
     {
       "layout": "fullwidth",
@@ -1794,7 +1858,13 @@
             "sourceType": "inline"
           }
         }
-      ]
+      ],
+      "seo": {
+        "description": {
+          "fr": "Comment rejoindre l'annuaire de l'Institut Bleu : les étapes pour créer votre compte, référencer votre structure et compléter votre fiche.",
+          "en": "How to join the Institut Bleu directory: steps to create your account, register your organisation and complete your profile."
+        }
+      }
     },
     {
       "layout": "fullwidth",
@@ -1809,12 +1879,15 @@
           "id": "charte-content",
           "props": {
             "html": {
-              "fr": "<div class=\"prose prose-slate dark:prose-invert mx-auto max-w-3xl px-4 py-12\"><h1>Charte d'Utilisation du Site Institut Bleu</h1><h2>Bienvenue sur Institut Bleu</h2><p>Le site Institut Bleu, accessible via <a href=\"https://annuaire.institutbleu.re\" target=\"_blank\" rel=\"noopener noreferrer\">https://annuaire.institutbleu.re</a>, est une plateforme dédiée à soutenir et promouvoir l’économie bleue réunionnaise.</p><p>En naviguant sur notre site, vous acceptez de vous conformer à la présente charte d'utilisation qui vise à garantir une expérience positive pour tous les utilisateurs.</p><h2>Conditions d'Utilisation</h2><h3>Accès et Utilisation</h3><ul><li>Le site est accessible gratuitement à tout utilisateur disposant d'un accès à internet.</li><li>Les frais d'accès au site (frais de connexion internet, d'équipement informatique, etc.) sont à la charge de l'utilisateur.</li><li>L'accès à certains services peut nécessiter la création d'un compte utilisateur. Il est de la responsabilité de l'utilisateur de maintenir la confidentialité de ses identifiants.</li></ul><h3>Comportement des Utilisateurs</h3><ul><li>Les utilisateurs s'engagent à utiliser le site de manière respectueuse et à ne pas porter atteinte aux droits d'autres utilisateurs ou tiers.</li><li>Il est interdit de publier du contenu illégal, offensant, diffamatoire, discriminatoire ou qui viole la propriété intellectuelle d'autrui.</li><li>Les tentatives de piratage, de phishing, ou toute autre action visant à compromettre la sécurité du site et de ses utilisateurs sont strictement interdites.</li></ul><h3>Propriété Intellectuelle</h3><p>Le contenu publié sur le site par ses administrateurs, tels que les textes, graphiques, logos et images, est protégé par le droit de la propriété intellectuelle.</p><p>Les utilisateurs s'engagent à ne pas reproduire, vendre ou exploiter ce contenu sans autorisation préalable.</p><h2>Modifications de la Charte</h2><p>L'Institut Bleu se réserve le droit de modifier à tout moment la présente charte d'utilisation. Les utilisateurs seront informés de ces modifications par tout moyen jugé approprié par l'Institut Bleu.</p><h2>Contact</h2><p>Pour toute question ou demande d'information concernant la charte d'utilisation, veuillez nous contacter à [contact@institutbleu.re](mailto:contact@institutbleu.re) .Nous vous remercions de votre visite et espérons que votre expérience sur le site Institut Bleu sera enrichissante et agréable.</p></div>",
-              "en": "<div class=\"prose prose-slate dark:prose-invert mx-auto max-w-3xl px-4 py-12\"><p><em>This page is only available in French. The French text is the legally binding version.</em></p><h1>Charte d'Utilisation du Site Institut Bleu</h1><h2>Bienvenue sur Institut Bleu</h2><p>Le site Institut Bleu, accessible via <a href=\"https://annuaire.institutbleu.re\" target=\"_blank\" rel=\"noopener noreferrer\">https://annuaire.institutbleu.re</a>, est une plateforme dédiée à soutenir et promouvoir l’économie bleue réunionnaise.</p><p>En naviguant sur notre site, vous acceptez de vous conformer à la présente charte d'utilisation qui vise à garantir une expérience positive pour tous les utilisateurs.</p><h2>Conditions d'Utilisation</h2><h3>Accès et Utilisation</h3><ul><li>Le site est accessible gratuitement à tout utilisateur disposant d'un accès à internet.</li><li>Les frais d'accès au site (frais de connexion internet, d'équipement informatique, etc.) sont à la charge de l'utilisateur.</li><li>L'accès à certains services peut nécessiter la création d'un compte utilisateur. Il est de la responsabilité de l'utilisateur de maintenir la confidentialité de ses identifiants.</li></ul><h3>Comportement des Utilisateurs</h3><ul><li>Les utilisateurs s'engagent à utiliser le site de manière respectueuse et à ne pas porter atteinte aux droits d'autres utilisateurs ou tiers.</li><li>Il est interdit de publier du contenu illégal, offensant, diffamatoire, discriminatoire ou qui viole la propriété intellectuelle d'autrui.</li><li>Les tentatives de piratage, de phishing, ou toute autre action visant à compromettre la sécurité du site et de ses utilisateurs sont strictement interdites.</li></ul><h3>Propriété Intellectuelle</h3><p>Le contenu publié sur le site par ses administrateurs, tels que les textes, graphiques, logos et images, est protégé par le droit de la propriété intellectuelle.</p><p>Les utilisateurs s'engagent à ne pas reproduire, vendre ou exploiter ce contenu sans autorisation préalable.</p><h2>Modifications de la Charte</h2><p>L'Institut Bleu se réserve le droit de modifier à tout moment la présente charte d'utilisation. Les utilisateurs seront informés de ces modifications par tout moyen jugé approprié par l'Institut Bleu.</p><h2>Contact</h2><p>Pour toute question ou demande d'information concernant la charte d'utilisation, veuillez nous contacter à [contact@institutbleu.re](mailto:contact@institutbleu.re) .Nous vous remercions de votre visite et espérons que votre expérience sur le site Institut Bleu sera enrichissante et agréable.</p></div>"
+              "fr": "<div class=\"prose prose-slate dark:prose-invert mx-auto max-w-3xl px-4 py-12\"><h1>Charte d'Utilisation du Site Institut Bleu</h1><h2>Bienvenue sur Institut Bleu</h2><p>Le site Institut Bleu, accessible via <a href=\"https://annuaire.institutbleu.re\" target=\"_blank\" rel=\"noopener noreferrer\">https://annuaire.institutbleu.re</a>, est une plateforme dédiée à soutenir et promouvoir l’économie bleue réunionnaise.</p><p>En naviguant sur notre site, vous acceptez de vous conformer à la présente charte d'utilisation qui vise à garantir une expérience positive pour tous les utilisateurs.</p><h2>Conditions d'Utilisation</h2><h3>Accès et Utilisation</h3><ul><li>Le site est accessible gratuitement à tout utilisateur disposant d'un accès à internet.</li><li>Les frais d'accès au site (frais de connexion internet, d'équipement informatique, etc.) sont à la charge de l'utilisateur.</li><li>L'accès à certains services peut nécessiter la création d'un compte utilisateur. Il est de la responsabilité de l'utilisateur de maintenir la confidentialité de ses identifiants.</li></ul><h3>Comportement des Utilisateurs</h3><ul><li>Les utilisateurs s'engagent à utiliser le site de manière respectueuse et à ne pas porter atteinte aux droits d'autres utilisateurs ou tiers.</li><li>Il est interdit de publier du contenu illégal, offensant, diffamatoire, discriminatoire ou qui viole la propriété intellectuelle d'autrui.</li><li>Les tentatives de piratage, de phishing, ou toute autre action visant à compromettre la sécurité du site et de ses utilisateurs sont strictement interdites.</li></ul><h3>Propriété Intellectuelle</h3><p>Le contenu publié sur le site par ses administrateurs, tels que les textes, graphiques, logos et images, est protégé par le droit de la propriété intellectuelle.</p><p>Les utilisateurs s'engagent à ne pas reproduire, vendre ou exploiter ce contenu sans autorisation préalable.</p><h2>Modifications de la Charte</h2><p>L'Institut Bleu se réserve le droit de modifier à tout moment la présente charte d'utilisation. Les utilisateurs seront informés de ces modifications par tout moyen jugé approprié par l'Institut Bleu.</p><h2>Contact</h2><p>Pour toute question ou demande d'information concernant la charte d'utilisation, veuillez nous contacter à <a href=\"mailto:contact@institutbleu.re\">contact@institutbleu.re</a>.Nous vous remercions de votre visite et espérons que votre expérience sur le site Institut Bleu sera enrichissante et agréable.</p></div>",
+              "en": "<div class=\"prose prose-slate dark:prose-invert mx-auto max-w-3xl px-4 py-12\"><p><em>This page is only available in French. The French text is the legally binding version.</em></p><h1>Charte d'Utilisation du Site Institut Bleu</h1><h2>Bienvenue sur Institut Bleu</h2><p>Le site Institut Bleu, accessible via <a href=\"https://annuaire.institutbleu.re\" target=\"_blank\" rel=\"noopener noreferrer\">https://annuaire.institutbleu.re</a>, est une plateforme dédiée à soutenir et promouvoir l’économie bleue réunionnaise.</p><p>En naviguant sur notre site, vous acceptez de vous conformer à la présente charte d'utilisation qui vise à garantir une expérience positive pour tous les utilisateurs.</p><h2>Conditions d'Utilisation</h2><h3>Accès et Utilisation</h3><ul><li>Le site est accessible gratuitement à tout utilisateur disposant d'un accès à internet.</li><li>Les frais d'accès au site (frais de connexion internet, d'équipement informatique, etc.) sont à la charge de l'utilisateur.</li><li>L'accès à certains services peut nécessiter la création d'un compte utilisateur. Il est de la responsabilité de l'utilisateur de maintenir la confidentialité de ses identifiants.</li></ul><h3>Comportement des Utilisateurs</h3><ul><li>Les utilisateurs s'engagent à utiliser le site de manière respectueuse et à ne pas porter atteinte aux droits d'autres utilisateurs ou tiers.</li><li>Il est interdit de publier du contenu illégal, offensant, diffamatoire, discriminatoire ou qui viole la propriété intellectuelle d'autrui.</li><li>Les tentatives de piratage, de phishing, ou toute autre action visant à compromettre la sécurité du site et de ses utilisateurs sont strictement interdites.</li></ul><h3>Propriété Intellectuelle</h3><p>Le contenu publié sur le site par ses administrateurs, tels que les textes, graphiques, logos et images, est protégé par le droit de la propriété intellectuelle.</p><p>Les utilisateurs s'engagent à ne pas reproduire, vendre ou exploiter ce contenu sans autorisation préalable.</p><h2>Modifications de la Charte</h2><p>L'Institut Bleu se réserve le droit de modifier à tout moment la présente charte d'utilisation. Les utilisateurs seront informés de ces modifications par tout moyen jugé approprié par l'Institut Bleu.</p><h2>Contact</h2><p>Pour toute question ou demande d'information concernant la charte d'utilisation, veuillez nous contacter à <a href=\"mailto:contact@institutbleu.re\">contact@institutbleu.re</a>.Nous vous remercions de votre visite et espérons que votre expérience sur le site Institut Bleu sera enrichissante et agréable.</p></div>"
             }
           }
         }
-      ]
+      ],
+      "seo": {
+        "noIndex": true
+      }
     },
     {
       "layout": "fullwidth",
@@ -1834,7 +1907,10 @@
             }
           }
         }
-      ]
+      ],
+      "seo": {
+        "noIndex": true
+      }
     },
     {
       "layout": "fullwidth",
@@ -1849,12 +1925,15 @@
           "id": "confidentialityrules-content",
           "props": {
             "html": {
-              "fr": "<div class=\"prose prose-slate dark:prose-invert mx-auto max-w-3xl px-4 py-12\"><h1>Politique de confidentialité d'Institut Bleu</h1><h3>1.</h3><h2>Objectif de notre politique de confidentialité</h2><p>Au sens de la présente politique de confidentialité, les termes ci-dessous au singulier ou au pluriel commençant pas une lettre majuscule auront la définition suivante :</p><p>Données : données à caractère personnel, c’est-à-dire toute information se rapportant à une personne physique identifiée ou qui peut être identifiée indirectement par référence à un identifiant, tel qu’un nom, un numéro d’identification, adresse IP, photographie, parcours professionnel, etc.</p><p>Entité</p><p>: Institut Bleu</p><p>Responsable de Traitement</p><p>: Entité qui seul détermine les finalités et les moyens du Traitement.</p><p>Sites</p><p>: site web dont l’entité est l’éditrice : <a href=\"https://annuaire.institutbleu.re\" target=\"_blank\" rel=\"noopener noreferrer\">https://annuaire.institutbleu.re</a></p><p>Traitement</p><p>: opération ou ensemble d’opérations effectuées ou non à l’aide de procédés automatisés, appliquées aux Données, telles que la collecte, l’enregistrement, l’organisation, la structuration, la conservation, l’adaptation ou la modification, l’extraction, la consultation, l’utilisation, la communication par transmission, la diffusion ou toute autre forme de mise à disposition, le rapprochement ou l’interconnexion, la limitation, l’effacement ou la destruction.</p><h3>2.</h3><h2>Généralités</h2><p>L'Institut Bleu a la volonté de contribuer à la protection de vos Données via la mise en place d’une politique transparente de confidentialité et de sécurité de vos Données.</p><p>Elle s’engage à ce que la collecte et le traitement de données à caractère personnel soient effectués conformément au Règlement UE n°2016/679 du Parlement Européen et du Conseil du 27 avril 2016 relatif à la Protection des Personnes Physique à l’égard du traitement des données à caractère personnel et à la libre circulation de ces données (RGPD) et à l’ensemble de la réglementation française applicable en la matière notamment la loi n° 78-17 du 6 janvier 1978 relative à l’informatique, aux fichiers et aux libertés modifiée.</p><p>Cette politique a pour objectif de vous informer des Traitements réalisés par l'Institut Bleu ainsi que des mesures techniques et organisationnelles qu’elle met en place pour protéger vos Données et vos droits</p><h3>3.</h3><h2>Responsable du traitement et contact</h2><p>Le Responsable du Traitement de vos Données sur le Site est l' Institut Bleu:</p><p>Magasin n°10, Port Ouest, 97420 LE PORT</p><p>Email : contact@institutbleu.re</p><h3>4.</h3><h2>Les données que l'Institut Bleu sont susceptibles de collecter</h2><p>L'Institut Bleu peut collecter les Données de leurs clients et adhérents, leurs partenaires, les entreprises incubées, les contacts professionnels nécessaires pour répondre aux missions de l'Institut Bleu, les candidats à leurs offres d’emploi ou de stages et les utilisateurs du Site.</p><p>Seules les Données nécessaires aux finalités visées par le Traitement concerné font l’objet d’un Traitement.</p><p>Certaines Données sont transmises à des tiers ou subissent un traitement particulier au titre d’une obligation légale, contractuelle ou nécessaire à l’exécution d’une mission d’intérêt public, ou relevant de l’exercice de l’autorité publique.</p><p>Certaines Données sont collectées directement auprès de vous, d’autres indirectement et d’autres automatiquement.</p><h3>A) Données collectées directement auprès de vous</h3><p>Le consentement au Traitement de vos Données est recueilli directement et explicitement auprès de vous. Vous pouvez à tout moment exercer vos droits tels que décrits à l’article 9 ci-après.</p><p>En utilisant le Site ou en souscrivant aux services de l'Institut Bleu, vous pouvez être amenés à transmettre à ces derniers certaines de vos Données telles que précisées ci-dessous</p><ul><li>votre identité : nom, prénom, votre âge</li><li>vos coordonnées : adresses,adresse mail, numéros de téléphone, identifiant sur les réseaux sociaux (Twitter, Linkedin, Facebook, …)</li><li>Domaine(s) d'activité(s)</li><li>Forme juridique</li><li>Description de la structure et de ses activités</li><li>votre image</li></ul><p>Vos Données font l’objet d’un Traitement notamment lorsque :</p><ul><li>Vous naviguez sur le site : <a href=\"https://annuaire.institutbleu.re\" target=\"_blank\" rel=\"noopener noreferrer\">https://annuaire.institutbleu.re</a></li><li>Vous remplissez les formulaires d’inscription aux événements que l'Institut Bleu organise ou co-organise avec des partenaires notamment ;</li><li>Vous acceptez de recevoir les newsletters, emailing de l'Institut Bleu ;</li><li>Vous transmettez vos cartes de visites lors de réunions, rendez-vous, rencontres, salons, ou autres évènements ;</li><li>Vous souscrivez à l’une des offres que l'Institut Bleu met en place et exécute les contrats de prestations (clients et fournisseurs) ;</li><li>Vous contactez l'Institut Bleu par téléphone, email ou tout autre moyen de communication ;</li><li>Vous signalez un problème relatif aux Sites ou aux services de l'Institut Bleu;</li><li>Vous exercez vos droits tels que décrits à l’article 9</li></ul><h3>B) Données collectées indirectement</h3><p>Certaines Données peuvent-être transmises à l'Institut Bleu directement par votre employeur ou via des sources publiques. l'Institut Bleu s’engage à respecter les dispositions de l’article 14 du RGPD relatif à la collecte indirecte.</p><h3>C) Données collectées automatiquement</h3><p>L'Institut Bleu est susceptible de collecter automatiquement les Données relatives à votre connexion pour tout utilisateur du Site. Notamment :</p><ul><li>Adresse IP</li><li>Données de trafic type logs</li></ul><h2>5. Finalités du traitement de vos données</h2><p>L'Institut Bleu utilise les Données qui leur sont transmises conformément à la règlementation relative à la protection des données personnelles (article 6 du RGPD).</p><p>L'Institut Bleu collecte et utilise vos données personnelles conformément à leur mission d’intérêt général (intérêts légitimes) dans le cadre du développement économique de la Région Réunion par l’innovation ; dans certains cas, les missions sont exécutées dans le cadre d’un contrat tel que le contrat d’adhésion ou encore le contrat de partenariat.</p><p>Enfin, certains traitements sont fondés sur le consentement préalable lorsque les Données sont déposées par la personne concernée sur les Sites.</p><p>Ainsi, le Traitement de vos Données est notamment nécessaire à l'Institut Bleu collecte pour :</p><ul><li>Réaliser les opérations relatives à la gestion de la relation client ;</li><li>Exécuter les contrats et prestations conclus avec l'Institut Bleu collecte ;</li><li>Gérer les fournisseurs et sous-traitants ;</li><li>Adresser des newsletters mensuelles</li><li>Adresser des invitations aux événements organisés par l'Institut Bleu collecte (Matinales, Afterwork, Business Meeting, Matchmaking, Congrès, Concours, …)</li><li>Adresser des offres de prestation ou d’appel d’offres, de consultations….</li><li>Figurer sur l’annuaire en ligne de l'Institut Bleu</li><li>Optimiser votre navigation sur les Sites</li><li>Répondre à vos demandes d’informations et vous apporter des conseils</li><li>Candidater à une offre d’emploi ou de stage auprès de l''Institut Bleu collecte</li><li>Minimiser un risque identifié pour les Données</li><li>Protéger contre d’éventuelles actions frauduleuses</li><li>Evaluer l’activité de l'Institut Bleu collecte</li><li>Figurer sur le mapping dynamique de l'Institut</li></ul><h2>6. Les destinataires des données</h2><p>Les Données collectées sur les Sites sont destinées à l'Institut Bleu. Elles peuvent être transmises aux sociétés sous-traitantes auxquelles ils peuvent faire appel dans le cadre de l’exécution des services et dans la limite nécessaire à l’accomplissement des tâches qui leurs sont confiées.</p><p>L'Institut Bleu veille au respect par leur personnel et sous-traitants de la règlementation en vigueur, relative aux données personnelles ainsi qu’à la présente politique de confidentialité. L'Institut Bleu exige de leurs sous-traitants et de leur personnel qu’ils accordent une attention particulière à la confidentialité et à la sécurité des Données.</p><p>L'Institut Bleu est également susceptible de transférer les Données aux Ministères et aux financeurs publics.</p><p>Des tiers peuvent exceptionnellement avoir accès à vos Données notamment les autorités administratives et judiciaires. Sauf interdiction légale, l'Institut Bleu vous en informera dans les meilleurs délais.</p><p>Ainsi, sauf ordre ou accord préalable de votre part ou obligation légale ou contractuelle incombant à l'Institut Bleu, ces derniers ne transmettent jamais vos Données à des tiers.</p><h2>7. Durée de conservation des données personnelles</h2><p>En principe, les Données sont conservées 3 ans à compter du dernier contact entre la personne concernée et l'Institut Bleu.</p><p>Dans le cadre d’un contrat, les Données sont conservées toute la durée contractuelle.</p><p>Compte tenu des obligations légales/contractuelles vis-à-vis du ministère ou des financeurs publics, l'Institut Bleu, les DCP peuvent être conservées 15 ans à compter de la date de la collecte ou à compter du terme du contrat conclu avec l'Institut Bleu.</p><p>Toutefois, les données collectées via les cookies sont conservées pour une durée maximum de 13 mois à compter de la collecte.</p><p>Également, l'Institut Bleu à mis en place une suppression automatique des données collectées sur leurs sites web, selon la source de collecte et aux durées définies comme ce qui suit :</p><p>Source de collecte des données Durée de conservation</p><p>Inscription à un événement 6 mois</p><p>Formulaire de contact 1 an</p><p>Inscription à la newsletter 1 an</p><p>Formulaire d’adhésion 1 an</p><p>Formulaire (porteur de projet) 2 ans</p><p>Mapping de l’'Institut Bleu 2 ans</p><h2>8. La sécurité et le stockage des données</h2><p>L'Institut Bleu est attentive à l’importance de vos Données et met tout en œuvre pour les conserver en sécurité.</p><p>L'Institut Bleu accorde la plus haute importance à la sécurité et à l’intégrité des Données faisant l’objet d’un Traitement sur le Site. Aussi l'Institut Bleu a pour objectif de toujours conserver vos Données de la manière la plus sécurisée et uniquement pendant la durée nécessaire à la réalisation de la finalité poursuivie par le Traitement.</p><p>Conformément à la règlementation applicable en matière de données à caractère personnel, l'Institut Bleu s’engage à mettre en œuvre tant au moment de la détermination des moyens du Traitement qu’au moment du Traitement, les mesures techniques et organisationnelles appropriées afin de garantir un niveau de sécurité adapté au risque.</p><p>L'Institut Bleu met en place des moyens permettant de garantir la confidentialité, l’intégrité, la disponibilité et la résilience constantes des systèmes et des services de Traitement.</p><p>En cas d’incident technique ou physique relatif aux Données, l'Institut Bleu veillera à rétablir dans la mesure du possible la disponibilité et l’accès des Données dans des délais appropriés.</p><p>L'Institut Bleu teste régulièrement ses/leurs process autant en cas d’incident technique que physique afin de vous garantir et de maintenir un niveau de réactivité et d’efficacité optimum.</p><p>Toutefois au vu de la structure d’Internet et des réseaux, ils ne peuvent s’engager au titre d’une obligation de sécurité de résultat. En cas de détection d’une faille de sécurité susceptible d’engendrer un risque élevé pour vos droits et libertés, l'Institut Bleu s’engage à vous informer dans les meilleurs délais et à prendre dans la mesure du possible, les meilleurs moyens pour neutraliser l’intrusion et en minimiser les impacts.</p><p>Vos données sont hébergées sur des serveurs sécurisés. L'Institut Bleu ne procède à aucun transfert en dehors de l’Union européenne.</p><h2>9. Pour exercer vos droits</h2><p>Conformément à la réglementation applicable en matière de protection des données personnelles, vous pouvez, à tout moment, exercer vos droits d’accès, de rectification, de suppression des Données vous concernant ainsi que vos droits de limitation et d’opposition au traitement et à la portabilité de vos Données.</p><p>Vous pouvez exercer vos droits en envoyant un message :</p><p>Par courrier à l’adresse suivante : Magasin n°10, Port Ouest, 97420 LE PORT</p><p>Par email à : contact@institutbleu.re</p><p>Dans ce cadre, vous accompagnerez votre demande des éléments nécessaires à votre identification (nom, prénom, e-mail) ainsi que toute autre information nécessaire à la confirmation de votre identité. En cas de doute, l'Institut Bleu pourra vous demander la copie de votre carte d’identité conformément aux dispositions de la règlementation applicable en matière de données à caractère personnel.</p><p>Le DPO s’engage à considérer l’exercice de vos droits dans les meilleurs délais – et dans le délai maximum de 30 jours à compter de la date de réception de votre demande ou de la date de réception de la preuve de votre identité.</p><p>En ce qui concerne votre droit de demande de suppression, le DPO fera droit à votre demande sauf dans le cas où la loi ou un motif légitime leur impose de conserver certaines de vos Données.</p><p>En cas de réponse insatisfaisante, vous pouvez introduire une réclamation auprès de la Commission nationale de l’informatique et des libertés (CNIL) : <a href=\"https://www.cnil.fr/fr/plaintes\" target=\"_blank\" rel=\"noopener noreferrer\">https://www.cnil.fr/fr/plaintes</a> ou par voie postale à l’adresse : Commission nationale de l’informatique et des libertés (CNIL) – 3 place de Fontenoy, TSA 80715 – 75334 PARIS CEDEX 07.</p><h2>10. Modification de notre Politique de Confidentialité</h2><p>L'Institut Bleu se réserve le droit de faire évoluer la présente politique de confidentialité à tout moment, notamment en application des lois et règlements en vigueur. En cas de modification substantielle de ladite politique, l'Institut Bleu veillera à vous communiquer l’information dans les meilleurs délais.</p><h2>11. Informations et contact</h2><p>Pour toutes demandes d’informations, vous pouvez envoyer un email à : contact@institutbleu.re</p><p>D’autres informations sont disponibles dans [les mentions légales du site](#mentions) .</p></div>",
-              "en": "<div class=\"prose prose-slate dark:prose-invert mx-auto max-w-3xl px-4 py-12\"><p><em>This page is only available in French. The French text is the legally binding version.</em></p><h1>Politique de confidentialité d'Institut Bleu</h1><h3>1.</h3><h2>Objectif de notre politique de confidentialité</h2><p>Au sens de la présente politique de confidentialité, les termes ci-dessous au singulier ou au pluriel commençant pas une lettre majuscule auront la définition suivante :</p><p>Données : données à caractère personnel, c’est-à-dire toute information se rapportant à une personne physique identifiée ou qui peut être identifiée indirectement par référence à un identifiant, tel qu’un nom, un numéro d’identification, adresse IP, photographie, parcours professionnel, etc.</p><p>Entité</p><p>: Institut Bleu</p><p>Responsable de Traitement</p><p>: Entité qui seul détermine les finalités et les moyens du Traitement.</p><p>Sites</p><p>: site web dont l’entité est l’éditrice : <a href=\"https://annuaire.institutbleu.re\" target=\"_blank\" rel=\"noopener noreferrer\">https://annuaire.institutbleu.re</a></p><p>Traitement</p><p>: opération ou ensemble d’opérations effectuées ou non à l’aide de procédés automatisés, appliquées aux Données, telles que la collecte, l’enregistrement, l’organisation, la structuration, la conservation, l’adaptation ou la modification, l’extraction, la consultation, l’utilisation, la communication par transmission, la diffusion ou toute autre forme de mise à disposition, le rapprochement ou l’interconnexion, la limitation, l’effacement ou la destruction.</p><h3>2.</h3><h2>Généralités</h2><p>L'Institut Bleu a la volonté de contribuer à la protection de vos Données via la mise en place d’une politique transparente de confidentialité et de sécurité de vos Données.</p><p>Elle s’engage à ce que la collecte et le traitement de données à caractère personnel soient effectués conformément au Règlement UE n°2016/679 du Parlement Européen et du Conseil du 27 avril 2016 relatif à la Protection des Personnes Physique à l’égard du traitement des données à caractère personnel et à la libre circulation de ces données (RGPD) et à l’ensemble de la réglementation française applicable en la matière notamment la loi n° 78-17 du 6 janvier 1978 relative à l’informatique, aux fichiers et aux libertés modifiée.</p><p>Cette politique a pour objectif de vous informer des Traitements réalisés par l'Institut Bleu ainsi que des mesures techniques et organisationnelles qu’elle met en place pour protéger vos Données et vos droits</p><h3>3.</h3><h2>Responsable du traitement et contact</h2><p>Le Responsable du Traitement de vos Données sur le Site est l' Institut Bleu:</p><p>Magasin n°10, Port Ouest, 97420 LE PORT</p><p>Email : contact@institutbleu.re</p><h3>4.</h3><h2>Les données que l'Institut Bleu sont susceptibles de collecter</h2><p>L'Institut Bleu peut collecter les Données de leurs clients et adhérents, leurs partenaires, les entreprises incubées, les contacts professionnels nécessaires pour répondre aux missions de l'Institut Bleu, les candidats à leurs offres d’emploi ou de stages et les utilisateurs du Site.</p><p>Seules les Données nécessaires aux finalités visées par le Traitement concerné font l’objet d’un Traitement.</p><p>Certaines Données sont transmises à des tiers ou subissent un traitement particulier au titre d’une obligation légale, contractuelle ou nécessaire à l’exécution d’une mission d’intérêt public, ou relevant de l’exercice de l’autorité publique.</p><p>Certaines Données sont collectées directement auprès de vous, d’autres indirectement et d’autres automatiquement.</p><h3>A) Données collectées directement auprès de vous</h3><p>Le consentement au Traitement de vos Données est recueilli directement et explicitement auprès de vous. Vous pouvez à tout moment exercer vos droits tels que décrits à l’article 9 ci-après.</p><p>En utilisant le Site ou en souscrivant aux services de l'Institut Bleu, vous pouvez être amenés à transmettre à ces derniers certaines de vos Données telles que précisées ci-dessous</p><ul><li>votre identité : nom, prénom, votre âge</li><li>vos coordonnées : adresses,adresse mail, numéros de téléphone, identifiant sur les réseaux sociaux (Twitter, Linkedin, Facebook, …)</li><li>Domaine(s) d'activité(s)</li><li>Forme juridique</li><li>Description de la structure et de ses activités</li><li>votre image</li></ul><p>Vos Données font l’objet d’un Traitement notamment lorsque :</p><ul><li>Vous naviguez sur le site : <a href=\"https://annuaire.institutbleu.re\" target=\"_blank\" rel=\"noopener noreferrer\">https://annuaire.institutbleu.re</a></li><li>Vous remplissez les formulaires d’inscription aux événements que l'Institut Bleu organise ou co-organise avec des partenaires notamment ;</li><li>Vous acceptez de recevoir les newsletters, emailing de l'Institut Bleu ;</li><li>Vous transmettez vos cartes de visites lors de réunions, rendez-vous, rencontres, salons, ou autres évènements ;</li><li>Vous souscrivez à l’une des offres que l'Institut Bleu met en place et exécute les contrats de prestations (clients et fournisseurs) ;</li><li>Vous contactez l'Institut Bleu par téléphone, email ou tout autre moyen de communication ;</li><li>Vous signalez un problème relatif aux Sites ou aux services de l'Institut Bleu;</li><li>Vous exercez vos droits tels que décrits à l’article 9</li></ul><h3>B) Données collectées indirectement</h3><p>Certaines Données peuvent-être transmises à l'Institut Bleu directement par votre employeur ou via des sources publiques. l'Institut Bleu s’engage à respecter les dispositions de l’article 14 du RGPD relatif à la collecte indirecte.</p><h3>C) Données collectées automatiquement</h3><p>L'Institut Bleu est susceptible de collecter automatiquement les Données relatives à votre connexion pour tout utilisateur du Site. Notamment :</p><ul><li>Adresse IP</li><li>Données de trafic type logs</li></ul><h2>5. Finalités du traitement de vos données</h2><p>L'Institut Bleu utilise les Données qui leur sont transmises conformément à la règlementation relative à la protection des données personnelles (article 6 du RGPD).</p><p>L'Institut Bleu collecte et utilise vos données personnelles conformément à leur mission d’intérêt général (intérêts légitimes) dans le cadre du développement économique de la Région Réunion par l’innovation ; dans certains cas, les missions sont exécutées dans le cadre d’un contrat tel que le contrat d’adhésion ou encore le contrat de partenariat.</p><p>Enfin, certains traitements sont fondés sur le consentement préalable lorsque les Données sont déposées par la personne concernée sur les Sites.</p><p>Ainsi, le Traitement de vos Données est notamment nécessaire à l'Institut Bleu collecte pour :</p><ul><li>Réaliser les opérations relatives à la gestion de la relation client ;</li><li>Exécuter les contrats et prestations conclus avec l'Institut Bleu collecte ;</li><li>Gérer les fournisseurs et sous-traitants ;</li><li>Adresser des newsletters mensuelles</li><li>Adresser des invitations aux événements organisés par l'Institut Bleu collecte (Matinales, Afterwork, Business Meeting, Matchmaking, Congrès, Concours, …)</li><li>Adresser des offres de prestation ou d’appel d’offres, de consultations….</li><li>Figurer sur l’annuaire en ligne de l'Institut Bleu</li><li>Optimiser votre navigation sur les Sites</li><li>Répondre à vos demandes d’informations et vous apporter des conseils</li><li>Candidater à une offre d’emploi ou de stage auprès de l''Institut Bleu collecte</li><li>Minimiser un risque identifié pour les Données</li><li>Protéger contre d’éventuelles actions frauduleuses</li><li>Evaluer l’activité de l'Institut Bleu collecte</li><li>Figurer sur le mapping dynamique de l'Institut</li></ul><h2>6. Les destinataires des données</h2><p>Les Données collectées sur les Sites sont destinées à l'Institut Bleu. Elles peuvent être transmises aux sociétés sous-traitantes auxquelles ils peuvent faire appel dans le cadre de l’exécution des services et dans la limite nécessaire à l’accomplissement des tâches qui leurs sont confiées.</p><p>L'Institut Bleu veille au respect par leur personnel et sous-traitants de la règlementation en vigueur, relative aux données personnelles ainsi qu’à la présente politique de confidentialité. L'Institut Bleu exige de leurs sous-traitants et de leur personnel qu’ils accordent une attention particulière à la confidentialité et à la sécurité des Données.</p><p>L'Institut Bleu est également susceptible de transférer les Données aux Ministères et aux financeurs publics.</p><p>Des tiers peuvent exceptionnellement avoir accès à vos Données notamment les autorités administratives et judiciaires. Sauf interdiction légale, l'Institut Bleu vous en informera dans les meilleurs délais.</p><p>Ainsi, sauf ordre ou accord préalable de votre part ou obligation légale ou contractuelle incombant à l'Institut Bleu, ces derniers ne transmettent jamais vos Données à des tiers.</p><h2>7. Durée de conservation des données personnelles</h2><p>En principe, les Données sont conservées 3 ans à compter du dernier contact entre la personne concernée et l'Institut Bleu.</p><p>Dans le cadre d’un contrat, les Données sont conservées toute la durée contractuelle.</p><p>Compte tenu des obligations légales/contractuelles vis-à-vis du ministère ou des financeurs publics, l'Institut Bleu, les DCP peuvent être conservées 15 ans à compter de la date de la collecte ou à compter du terme du contrat conclu avec l'Institut Bleu.</p><p>Toutefois, les données collectées via les cookies sont conservées pour une durée maximum de 13 mois à compter de la collecte.</p><p>Également, l'Institut Bleu à mis en place une suppression automatique des données collectées sur leurs sites web, selon la source de collecte et aux durées définies comme ce qui suit :</p><p>Source de collecte des données Durée de conservation</p><p>Inscription à un événement 6 mois</p><p>Formulaire de contact 1 an</p><p>Inscription à la newsletter 1 an</p><p>Formulaire d’adhésion 1 an</p><p>Formulaire (porteur de projet) 2 ans</p><p>Mapping de l’'Institut Bleu 2 ans</p><h2>8. La sécurité et le stockage des données</h2><p>L'Institut Bleu est attentive à l’importance de vos Données et met tout en œuvre pour les conserver en sécurité.</p><p>L'Institut Bleu accorde la plus haute importance à la sécurité et à l’intégrité des Données faisant l’objet d’un Traitement sur le Site. Aussi l'Institut Bleu a pour objectif de toujours conserver vos Données de la manière la plus sécurisée et uniquement pendant la durée nécessaire à la réalisation de la finalité poursuivie par le Traitement.</p><p>Conformément à la règlementation applicable en matière de données à caractère personnel, l'Institut Bleu s’engage à mettre en œuvre tant au moment de la détermination des moyens du Traitement qu’au moment du Traitement, les mesures techniques et organisationnelles appropriées afin de garantir un niveau de sécurité adapté au risque.</p><p>L'Institut Bleu met en place des moyens permettant de garantir la confidentialité, l’intégrité, la disponibilité et la résilience constantes des systèmes et des services de Traitement.</p><p>En cas d’incident technique ou physique relatif aux Données, l'Institut Bleu veillera à rétablir dans la mesure du possible la disponibilité et l’accès des Données dans des délais appropriés.</p><p>L'Institut Bleu teste régulièrement ses/leurs process autant en cas d’incident technique que physique afin de vous garantir et de maintenir un niveau de réactivité et d’efficacité optimum.</p><p>Toutefois au vu de la structure d’Internet et des réseaux, ils ne peuvent s’engager au titre d’une obligation de sécurité de résultat. En cas de détection d’une faille de sécurité susceptible d’engendrer un risque élevé pour vos droits et libertés, l'Institut Bleu s’engage à vous informer dans les meilleurs délais et à prendre dans la mesure du possible, les meilleurs moyens pour neutraliser l’intrusion et en minimiser les impacts.</p><p>Vos données sont hébergées sur des serveurs sécurisés. L'Institut Bleu ne procède à aucun transfert en dehors de l’Union européenne.</p><h2>9. Pour exercer vos droits</h2><p>Conformément à la réglementation applicable en matière de protection des données personnelles, vous pouvez, à tout moment, exercer vos droits d’accès, de rectification, de suppression des Données vous concernant ainsi que vos droits de limitation et d’opposition au traitement et à la portabilité de vos Données.</p><p>Vous pouvez exercer vos droits en envoyant un message :</p><p>Par courrier à l’adresse suivante : Magasin n°10, Port Ouest, 97420 LE PORT</p><p>Par email à : contact@institutbleu.re</p><p>Dans ce cadre, vous accompagnerez votre demande des éléments nécessaires à votre identification (nom, prénom, e-mail) ainsi que toute autre information nécessaire à la confirmation de votre identité. En cas de doute, l'Institut Bleu pourra vous demander la copie de votre carte d’identité conformément aux dispositions de la règlementation applicable en matière de données à caractère personnel.</p><p>Le DPO s’engage à considérer l’exercice de vos droits dans les meilleurs délais – et dans le délai maximum de 30 jours à compter de la date de réception de votre demande ou de la date de réception de la preuve de votre identité.</p><p>En ce qui concerne votre droit de demande de suppression, le DPO fera droit à votre demande sauf dans le cas où la loi ou un motif légitime leur impose de conserver certaines de vos Données.</p><p>En cas de réponse insatisfaisante, vous pouvez introduire une réclamation auprès de la Commission nationale de l’informatique et des libertés (CNIL) : <a href=\"https://www.cnil.fr/fr/plaintes\" target=\"_blank\" rel=\"noopener noreferrer\">https://www.cnil.fr/fr/plaintes</a> ou par voie postale à l’adresse : Commission nationale de l’informatique et des libertés (CNIL) – 3 place de Fontenoy, TSA 80715 – 75334 PARIS CEDEX 07.</p><h2>10. Modification de notre Politique de Confidentialité</h2><p>L'Institut Bleu se réserve le droit de faire évoluer la présente politique de confidentialité à tout moment, notamment en application des lois et règlements en vigueur. En cas de modification substantielle de ladite politique, l'Institut Bleu veillera à vous communiquer l’information dans les meilleurs délais.</p><h2>11. Informations et contact</h2><p>Pour toutes demandes d’informations, vous pouvez envoyer un email à : contact@institutbleu.re</p><p>D’autres informations sont disponibles dans [les mentions légales du site](#mentions) .</p></div>"
+              "fr": "<div class=\"prose prose-slate dark:prose-invert mx-auto max-w-3xl px-4 py-12\"><h1>Politique de confidentialité d'Institut Bleu</h1><h3>1.</h3><h2>Objectif de notre politique de confidentialité</h2><p>Au sens de la présente politique de confidentialité, les termes ci-dessous au singulier ou au pluriel commençant pas une lettre majuscule auront la définition suivante :</p><p>Données : données à caractère personnel, c’est-à-dire toute information se rapportant à une personne physique identifiée ou qui peut être identifiée indirectement par référence à un identifiant, tel qu’un nom, un numéro d’identification, adresse IP, photographie, parcours professionnel, etc.</p><p>Entité</p><p>: Institut Bleu</p><p>Responsable de Traitement</p><p>: Entité qui seul détermine les finalités et les moyens du Traitement.</p><p>Sites</p><p>: site web dont l’entité est l’éditrice : <a href=\"https://annuaire.institutbleu.re\" target=\"_blank\" rel=\"noopener noreferrer\">https://annuaire.institutbleu.re</a></p><p>Traitement</p><p>: opération ou ensemble d’opérations effectuées ou non à l’aide de procédés automatisés, appliquées aux Données, telles que la collecte, l’enregistrement, l’organisation, la structuration, la conservation, l’adaptation ou la modification, l’extraction, la consultation, l’utilisation, la communication par transmission, la diffusion ou toute autre forme de mise à disposition, le rapprochement ou l’interconnexion, la limitation, l’effacement ou la destruction.</p><h3>2.</h3><h2>Généralités</h2><p>L'Institut Bleu a la volonté de contribuer à la protection de vos Données via la mise en place d’une politique transparente de confidentialité et de sécurité de vos Données.</p><p>Elle s’engage à ce que la collecte et le traitement de données à caractère personnel soient effectués conformément au Règlement UE n°2016/679 du Parlement Européen et du Conseil du 27 avril 2016 relatif à la Protection des Personnes Physique à l’égard du traitement des données à caractère personnel et à la libre circulation de ces données (RGPD) et à l’ensemble de la réglementation française applicable en la matière notamment la loi n° 78-17 du 6 janvier 1978 relative à l’informatique, aux fichiers et aux libertés modifiée.</p><p>Cette politique a pour objectif de vous informer des Traitements réalisés par l'Institut Bleu ainsi que des mesures techniques et organisationnelles qu’elle met en place pour protéger vos Données et vos droits</p><h3>3.</h3><h2>Responsable du traitement et contact</h2><p>Le Responsable du Traitement de vos Données sur le Site est l' Institut Bleu:</p><p>Magasin n°10, Port Ouest, 97420 LE PORT</p><p>Email : contact@institutbleu.re</p><h3>4.</h3><h2>Les données que l'Institut Bleu sont susceptibles de collecter</h2><p>L'Institut Bleu peut collecter les Données de leurs clients et adhérents, leurs partenaires, les entreprises incubées, les contacts professionnels nécessaires pour répondre aux missions de l'Institut Bleu, les candidats à leurs offres d’emploi ou de stages et les utilisateurs du Site.</p><p>Seules les Données nécessaires aux finalités visées par le Traitement concerné font l’objet d’un Traitement.</p><p>Certaines Données sont transmises à des tiers ou subissent un traitement particulier au titre d’une obligation légale, contractuelle ou nécessaire à l’exécution d’une mission d’intérêt public, ou relevant de l’exercice de l’autorité publique.</p><p>Certaines Données sont collectées directement auprès de vous, d’autres indirectement et d’autres automatiquement.</p><h3>A) Données collectées directement auprès de vous</h3><p>Le consentement au Traitement de vos Données est recueilli directement et explicitement auprès de vous. Vous pouvez à tout moment exercer vos droits tels que décrits à l’article 9 ci-après.</p><p>En utilisant le Site ou en souscrivant aux services de l'Institut Bleu, vous pouvez être amenés à transmettre à ces derniers certaines de vos Données telles que précisées ci-dessous</p><ul><li>votre identité : nom, prénom, votre âge</li><li>vos coordonnées : adresses,adresse mail, numéros de téléphone, identifiant sur les réseaux sociaux (Twitter, Linkedin, Facebook, …)</li><li>Domaine(s) d'activité(s)</li><li>Forme juridique</li><li>Description de la structure et de ses activités</li><li>votre image</li></ul><p>Vos Données font l’objet d’un Traitement notamment lorsque :</p><ul><li>Vous naviguez sur le site : <a href=\"https://annuaire.institutbleu.re\" target=\"_blank\" rel=\"noopener noreferrer\">https://annuaire.institutbleu.re</a></li><li>Vous remplissez les formulaires d’inscription aux événements que l'Institut Bleu organise ou co-organise avec des partenaires notamment ;</li><li>Vous acceptez de recevoir les newsletters, emailing de l'Institut Bleu ;</li><li>Vous transmettez vos cartes de visites lors de réunions, rendez-vous, rencontres, salons, ou autres évènements ;</li><li>Vous souscrivez à l’une des offres que l'Institut Bleu met en place et exécute les contrats de prestations (clients et fournisseurs) ;</li><li>Vous contactez l'Institut Bleu par téléphone, email ou tout autre moyen de communication ;</li><li>Vous signalez un problème relatif aux Sites ou aux services de l'Institut Bleu;</li><li>Vous exercez vos droits tels que décrits à l’article 9</li></ul><h3>B) Données collectées indirectement</h3><p>Certaines Données peuvent-être transmises à l'Institut Bleu directement par votre employeur ou via des sources publiques. l'Institut Bleu s’engage à respecter les dispositions de l’article 14 du RGPD relatif à la collecte indirecte.</p><h3>C) Données collectées automatiquement</h3><p>L'Institut Bleu est susceptible de collecter automatiquement les Données relatives à votre connexion pour tout utilisateur du Site. Notamment :</p><ul><li>Adresse IP</li><li>Données de trafic type logs</li></ul><h2>5. Finalités du traitement de vos données</h2><p>L'Institut Bleu utilise les Données qui leur sont transmises conformément à la règlementation relative à la protection des données personnelles (article 6 du RGPD).</p><p>L'Institut Bleu collecte et utilise vos données personnelles conformément à leur mission d’intérêt général (intérêts légitimes) dans le cadre du développement économique de la Région Réunion par l’innovation ; dans certains cas, les missions sont exécutées dans le cadre d’un contrat tel que le contrat d’adhésion ou encore le contrat de partenariat.</p><p>Enfin, certains traitements sont fondés sur le consentement préalable lorsque les Données sont déposées par la personne concernée sur les Sites.</p><p>Ainsi, le Traitement de vos Données est notamment nécessaire à l'Institut Bleu collecte pour :</p><ul><li>Réaliser les opérations relatives à la gestion de la relation client ;</li><li>Exécuter les contrats et prestations conclus avec l'Institut Bleu collecte ;</li><li>Gérer les fournisseurs et sous-traitants ;</li><li>Adresser des newsletters mensuelles</li><li>Adresser des invitations aux événements organisés par l'Institut Bleu collecte (Matinales, Afterwork, Business Meeting, Matchmaking, Congrès, Concours, …)</li><li>Adresser des offres de prestation ou d’appel d’offres, de consultations….</li><li>Figurer sur l’annuaire en ligne de l'Institut Bleu</li><li>Optimiser votre navigation sur les Sites</li><li>Répondre à vos demandes d’informations et vous apporter des conseils</li><li>Candidater à une offre d’emploi ou de stage auprès de l''Institut Bleu collecte</li><li>Minimiser un risque identifié pour les Données</li><li>Protéger contre d’éventuelles actions frauduleuses</li><li>Evaluer l’activité de l'Institut Bleu collecte</li><li>Figurer sur le mapping dynamique de l'Institut</li></ul><h2>6. Les destinataires des données</h2><p>Les Données collectées sur les Sites sont destinées à l'Institut Bleu. Elles peuvent être transmises aux sociétés sous-traitantes auxquelles ils peuvent faire appel dans le cadre de l’exécution des services et dans la limite nécessaire à l’accomplissement des tâches qui leurs sont confiées.</p><p>L'Institut Bleu veille au respect par leur personnel et sous-traitants de la règlementation en vigueur, relative aux données personnelles ainsi qu’à la présente politique de confidentialité. L'Institut Bleu exige de leurs sous-traitants et de leur personnel qu’ils accordent une attention particulière à la confidentialité et à la sécurité des Données.</p><p>L'Institut Bleu est également susceptible de transférer les Données aux Ministères et aux financeurs publics.</p><p>Des tiers peuvent exceptionnellement avoir accès à vos Données notamment les autorités administratives et judiciaires. Sauf interdiction légale, l'Institut Bleu vous en informera dans les meilleurs délais.</p><p>Ainsi, sauf ordre ou accord préalable de votre part ou obligation légale ou contractuelle incombant à l'Institut Bleu, ces derniers ne transmettent jamais vos Données à des tiers.</p><h2>7. Durée de conservation des données personnelles</h2><p>En principe, les Données sont conservées 3 ans à compter du dernier contact entre la personne concernée et l'Institut Bleu.</p><p>Dans le cadre d’un contrat, les Données sont conservées toute la durée contractuelle.</p><p>Compte tenu des obligations légales/contractuelles vis-à-vis du ministère ou des financeurs publics, l'Institut Bleu, les DCP peuvent être conservées 15 ans à compter de la date de la collecte ou à compter du terme du contrat conclu avec l'Institut Bleu.</p><p>Toutefois, les données collectées via les cookies sont conservées pour une durée maximum de 13 mois à compter de la collecte.</p><p>Également, l'Institut Bleu à mis en place une suppression automatique des données collectées sur leurs sites web, selon la source de collecte et aux durées définies comme ce qui suit :</p><p>Source de collecte des données Durée de conservation</p><p>Inscription à un événement 6 mois</p><p>Formulaire de contact 1 an</p><p>Inscription à la newsletter 1 an</p><p>Formulaire d’adhésion 1 an</p><p>Formulaire (porteur de projet) 2 ans</p><p>Mapping de l’'Institut Bleu 2 ans</p><h2>8. La sécurité et le stockage des données</h2><p>L'Institut Bleu est attentive à l’importance de vos Données et met tout en œuvre pour les conserver en sécurité.</p><p>L'Institut Bleu accorde la plus haute importance à la sécurité et à l’intégrité des Données faisant l’objet d’un Traitement sur le Site. Aussi l'Institut Bleu a pour objectif de toujours conserver vos Données de la manière la plus sécurisée et uniquement pendant la durée nécessaire à la réalisation de la finalité poursuivie par le Traitement.</p><p>Conformément à la règlementation applicable en matière de données à caractère personnel, l'Institut Bleu s’engage à mettre en œuvre tant au moment de la détermination des moyens du Traitement qu’au moment du Traitement, les mesures techniques et organisationnelles appropriées afin de garantir un niveau de sécurité adapté au risque.</p><p>L'Institut Bleu met en place des moyens permettant de garantir la confidentialité, l’intégrité, la disponibilité et la résilience constantes des systèmes et des services de Traitement.</p><p>En cas d’incident technique ou physique relatif aux Données, l'Institut Bleu veillera à rétablir dans la mesure du possible la disponibilité et l’accès des Données dans des délais appropriés.</p><p>L'Institut Bleu teste régulièrement ses/leurs process autant en cas d’incident technique que physique afin de vous garantir et de maintenir un niveau de réactivité et d’efficacité optimum.</p><p>Toutefois au vu de la structure d’Internet et des réseaux, ils ne peuvent s’engager au titre d’une obligation de sécurité de résultat. En cas de détection d’une faille de sécurité susceptible d’engendrer un risque élevé pour vos droits et libertés, l'Institut Bleu s’engage à vous informer dans les meilleurs délais et à prendre dans la mesure du possible, les meilleurs moyens pour neutraliser l’intrusion et en minimiser les impacts.</p><p>Vos données sont hébergées sur des serveurs sécurisés. L'Institut Bleu ne procède à aucun transfert en dehors de l’Union européenne.</p><h2>9. Pour exercer vos droits</h2><p>Conformément à la réglementation applicable en matière de protection des données personnelles, vous pouvez, à tout moment, exercer vos droits d’accès, de rectification, de suppression des Données vous concernant ainsi que vos droits de limitation et d’opposition au traitement et à la portabilité de vos Données.</p><p>Vous pouvez exercer vos droits en envoyant un message :</p><p>Par courrier à l’adresse suivante : Magasin n°10, Port Ouest, 97420 LE PORT</p><p>Par email à : contact@institutbleu.re</p><p>Dans ce cadre, vous accompagnerez votre demande des éléments nécessaires à votre identification (nom, prénom, e-mail) ainsi que toute autre information nécessaire à la confirmation de votre identité. En cas de doute, l'Institut Bleu pourra vous demander la copie de votre carte d’identité conformément aux dispositions de la règlementation applicable en matière de données à caractère personnel.</p><p>Le DPO s’engage à considérer l’exercice de vos droits dans les meilleurs délais – et dans le délai maximum de 30 jours à compter de la date de réception de votre demande ou de la date de réception de la preuve de votre identité.</p><p>En ce qui concerne votre droit de demande de suppression, le DPO fera droit à votre demande sauf dans le cas où la loi ou un motif légitime leur impose de conserver certaines de vos Données.</p><p>En cas de réponse insatisfaisante, vous pouvez introduire une réclamation auprès de la Commission nationale de l’informatique et des libertés (CNIL) : <a href=\"https://www.cnil.fr/fr/plaintes\" target=\"_blank\" rel=\"noopener noreferrer\">https://www.cnil.fr/fr/plaintes</a> ou par voie postale à l’adresse : Commission nationale de l’informatique et des libertés (CNIL) – 3 place de Fontenoy, TSA 80715 – 75334 PARIS CEDEX 07.</p><h2>10. Modification de notre Politique de Confidentialité</h2><p>L'Institut Bleu se réserve le droit de faire évoluer la présente politique de confidentialité à tout moment, notamment en application des lois et règlements en vigueur. En cas de modification substantielle de ladite politique, l'Institut Bleu veillera à vous communiquer l’information dans les meilleurs délais.</p><h2>11. Informations et contact</h2><p>Pour toutes demandes d’informations, vous pouvez envoyer un email à : contact@institutbleu.re</p><p>D’autres informations sont disponibles dans <a href=\"/mentions-legales\">les mentions légales du site</a>.</p></div>",
+              "en": "<div class=\"prose prose-slate dark:prose-invert mx-auto max-w-3xl px-4 py-12\"><p><em>This page is only available in French. The French text is the legally binding version.</em></p><h1>Politique de confidentialité d'Institut Bleu</h1><h3>1.</h3><h2>Objectif de notre politique de confidentialité</h2><p>Au sens de la présente politique de confidentialité, les termes ci-dessous au singulier ou au pluriel commençant pas une lettre majuscule auront la définition suivante :</p><p>Données : données à caractère personnel, c’est-à-dire toute information se rapportant à une personne physique identifiée ou qui peut être identifiée indirectement par référence à un identifiant, tel qu’un nom, un numéro d’identification, adresse IP, photographie, parcours professionnel, etc.</p><p>Entité</p><p>: Institut Bleu</p><p>Responsable de Traitement</p><p>: Entité qui seul détermine les finalités et les moyens du Traitement.</p><p>Sites</p><p>: site web dont l’entité est l’éditrice : <a href=\"https://annuaire.institutbleu.re\" target=\"_blank\" rel=\"noopener noreferrer\">https://annuaire.institutbleu.re</a></p><p>Traitement</p><p>: opération ou ensemble d’opérations effectuées ou non à l’aide de procédés automatisés, appliquées aux Données, telles que la collecte, l’enregistrement, l’organisation, la structuration, la conservation, l’adaptation ou la modification, l’extraction, la consultation, l’utilisation, la communication par transmission, la diffusion ou toute autre forme de mise à disposition, le rapprochement ou l’interconnexion, la limitation, l’effacement ou la destruction.</p><h3>2.</h3><h2>Généralités</h2><p>L'Institut Bleu a la volonté de contribuer à la protection de vos Données via la mise en place d’une politique transparente de confidentialité et de sécurité de vos Données.</p><p>Elle s’engage à ce que la collecte et le traitement de données à caractère personnel soient effectués conformément au Règlement UE n°2016/679 du Parlement Européen et du Conseil du 27 avril 2016 relatif à la Protection des Personnes Physique à l’égard du traitement des données à caractère personnel et à la libre circulation de ces données (RGPD) et à l’ensemble de la réglementation française applicable en la matière notamment la loi n° 78-17 du 6 janvier 1978 relative à l’informatique, aux fichiers et aux libertés modifiée.</p><p>Cette politique a pour objectif de vous informer des Traitements réalisés par l'Institut Bleu ainsi que des mesures techniques et organisationnelles qu’elle met en place pour protéger vos Données et vos droits</p><h3>3.</h3><h2>Responsable du traitement et contact</h2><p>Le Responsable du Traitement de vos Données sur le Site est l' Institut Bleu:</p><p>Magasin n°10, Port Ouest, 97420 LE PORT</p><p>Email : contact@institutbleu.re</p><h3>4.</h3><h2>Les données que l'Institut Bleu sont susceptibles de collecter</h2><p>L'Institut Bleu peut collecter les Données de leurs clients et adhérents, leurs partenaires, les entreprises incubées, les contacts professionnels nécessaires pour répondre aux missions de l'Institut Bleu, les candidats à leurs offres d’emploi ou de stages et les utilisateurs du Site.</p><p>Seules les Données nécessaires aux finalités visées par le Traitement concerné font l’objet d’un Traitement.</p><p>Certaines Données sont transmises à des tiers ou subissent un traitement particulier au titre d’une obligation légale, contractuelle ou nécessaire à l’exécution d’une mission d’intérêt public, ou relevant de l’exercice de l’autorité publique.</p><p>Certaines Données sont collectées directement auprès de vous, d’autres indirectement et d’autres automatiquement.</p><h3>A) Données collectées directement auprès de vous</h3><p>Le consentement au Traitement de vos Données est recueilli directement et explicitement auprès de vous. Vous pouvez à tout moment exercer vos droits tels que décrits à l’article 9 ci-après.</p><p>En utilisant le Site ou en souscrivant aux services de l'Institut Bleu, vous pouvez être amenés à transmettre à ces derniers certaines de vos Données telles que précisées ci-dessous</p><ul><li>votre identité : nom, prénom, votre âge</li><li>vos coordonnées : adresses,adresse mail, numéros de téléphone, identifiant sur les réseaux sociaux (Twitter, Linkedin, Facebook, …)</li><li>Domaine(s) d'activité(s)</li><li>Forme juridique</li><li>Description de la structure et de ses activités</li><li>votre image</li></ul><p>Vos Données font l’objet d’un Traitement notamment lorsque :</p><ul><li>Vous naviguez sur le site : <a href=\"https://annuaire.institutbleu.re\" target=\"_blank\" rel=\"noopener noreferrer\">https://annuaire.institutbleu.re</a></li><li>Vous remplissez les formulaires d’inscription aux événements que l'Institut Bleu organise ou co-organise avec des partenaires notamment ;</li><li>Vous acceptez de recevoir les newsletters, emailing de l'Institut Bleu ;</li><li>Vous transmettez vos cartes de visites lors de réunions, rendez-vous, rencontres, salons, ou autres évènements ;</li><li>Vous souscrivez à l’une des offres que l'Institut Bleu met en place et exécute les contrats de prestations (clients et fournisseurs) ;</li><li>Vous contactez l'Institut Bleu par téléphone, email ou tout autre moyen de communication ;</li><li>Vous signalez un problème relatif aux Sites ou aux services de l'Institut Bleu;</li><li>Vous exercez vos droits tels que décrits à l’article 9</li></ul><h3>B) Données collectées indirectement</h3><p>Certaines Données peuvent-être transmises à l'Institut Bleu directement par votre employeur ou via des sources publiques. l'Institut Bleu s’engage à respecter les dispositions de l’article 14 du RGPD relatif à la collecte indirecte.</p><h3>C) Données collectées automatiquement</h3><p>L'Institut Bleu est susceptible de collecter automatiquement les Données relatives à votre connexion pour tout utilisateur du Site. Notamment :</p><ul><li>Adresse IP</li><li>Données de trafic type logs</li></ul><h2>5. Finalités du traitement de vos données</h2><p>L'Institut Bleu utilise les Données qui leur sont transmises conformément à la règlementation relative à la protection des données personnelles (article 6 du RGPD).</p><p>L'Institut Bleu collecte et utilise vos données personnelles conformément à leur mission d’intérêt général (intérêts légitimes) dans le cadre du développement économique de la Région Réunion par l’innovation ; dans certains cas, les missions sont exécutées dans le cadre d’un contrat tel que le contrat d’adhésion ou encore le contrat de partenariat.</p><p>Enfin, certains traitements sont fondés sur le consentement préalable lorsque les Données sont déposées par la personne concernée sur les Sites.</p><p>Ainsi, le Traitement de vos Données est notamment nécessaire à l'Institut Bleu collecte pour :</p><ul><li>Réaliser les opérations relatives à la gestion de la relation client ;</li><li>Exécuter les contrats et prestations conclus avec l'Institut Bleu collecte ;</li><li>Gérer les fournisseurs et sous-traitants ;</li><li>Adresser des newsletters mensuelles</li><li>Adresser des invitations aux événements organisés par l'Institut Bleu collecte (Matinales, Afterwork, Business Meeting, Matchmaking, Congrès, Concours, …)</li><li>Adresser des offres de prestation ou d’appel d’offres, de consultations….</li><li>Figurer sur l’annuaire en ligne de l'Institut Bleu</li><li>Optimiser votre navigation sur les Sites</li><li>Répondre à vos demandes d’informations et vous apporter des conseils</li><li>Candidater à une offre d’emploi ou de stage auprès de l''Institut Bleu collecte</li><li>Minimiser un risque identifié pour les Données</li><li>Protéger contre d’éventuelles actions frauduleuses</li><li>Evaluer l’activité de l'Institut Bleu collecte</li><li>Figurer sur le mapping dynamique de l'Institut</li></ul><h2>6. Les destinataires des données</h2><p>Les Données collectées sur les Sites sont destinées à l'Institut Bleu. Elles peuvent être transmises aux sociétés sous-traitantes auxquelles ils peuvent faire appel dans le cadre de l’exécution des services et dans la limite nécessaire à l’accomplissement des tâches qui leurs sont confiées.</p><p>L'Institut Bleu veille au respect par leur personnel et sous-traitants de la règlementation en vigueur, relative aux données personnelles ainsi qu’à la présente politique de confidentialité. L'Institut Bleu exige de leurs sous-traitants et de leur personnel qu’ils accordent une attention particulière à la confidentialité et à la sécurité des Données.</p><p>L'Institut Bleu est également susceptible de transférer les Données aux Ministères et aux financeurs publics.</p><p>Des tiers peuvent exceptionnellement avoir accès à vos Données notamment les autorités administratives et judiciaires. Sauf interdiction légale, l'Institut Bleu vous en informera dans les meilleurs délais.</p><p>Ainsi, sauf ordre ou accord préalable de votre part ou obligation légale ou contractuelle incombant à l'Institut Bleu, ces derniers ne transmettent jamais vos Données à des tiers.</p><h2>7. Durée de conservation des données personnelles</h2><p>En principe, les Données sont conservées 3 ans à compter du dernier contact entre la personne concernée et l'Institut Bleu.</p><p>Dans le cadre d’un contrat, les Données sont conservées toute la durée contractuelle.</p><p>Compte tenu des obligations légales/contractuelles vis-à-vis du ministère ou des financeurs publics, l'Institut Bleu, les DCP peuvent être conservées 15 ans à compter de la date de la collecte ou à compter du terme du contrat conclu avec l'Institut Bleu.</p><p>Toutefois, les données collectées via les cookies sont conservées pour une durée maximum de 13 mois à compter de la collecte.</p><p>Également, l'Institut Bleu à mis en place une suppression automatique des données collectées sur leurs sites web, selon la source de collecte et aux durées définies comme ce qui suit :</p><p>Source de collecte des données Durée de conservation</p><p>Inscription à un événement 6 mois</p><p>Formulaire de contact 1 an</p><p>Inscription à la newsletter 1 an</p><p>Formulaire d’adhésion 1 an</p><p>Formulaire (porteur de projet) 2 ans</p><p>Mapping de l’'Institut Bleu 2 ans</p><h2>8. La sécurité et le stockage des données</h2><p>L'Institut Bleu est attentive à l’importance de vos Données et met tout en œuvre pour les conserver en sécurité.</p><p>L'Institut Bleu accorde la plus haute importance à la sécurité et à l’intégrité des Données faisant l’objet d’un Traitement sur le Site. Aussi l'Institut Bleu a pour objectif de toujours conserver vos Données de la manière la plus sécurisée et uniquement pendant la durée nécessaire à la réalisation de la finalité poursuivie par le Traitement.</p><p>Conformément à la règlementation applicable en matière de données à caractère personnel, l'Institut Bleu s’engage à mettre en œuvre tant au moment de la détermination des moyens du Traitement qu’au moment du Traitement, les mesures techniques et organisationnelles appropriées afin de garantir un niveau de sécurité adapté au risque.</p><p>L'Institut Bleu met en place des moyens permettant de garantir la confidentialité, l’intégrité, la disponibilité et la résilience constantes des systèmes et des services de Traitement.</p><p>En cas d’incident technique ou physique relatif aux Données, l'Institut Bleu veillera à rétablir dans la mesure du possible la disponibilité et l’accès des Données dans des délais appropriés.</p><p>L'Institut Bleu teste régulièrement ses/leurs process autant en cas d’incident technique que physique afin de vous garantir et de maintenir un niveau de réactivité et d’efficacité optimum.</p><p>Toutefois au vu de la structure d’Internet et des réseaux, ils ne peuvent s’engager au titre d’une obligation de sécurité de résultat. En cas de détection d’une faille de sécurité susceptible d’engendrer un risque élevé pour vos droits et libertés, l'Institut Bleu s’engage à vous informer dans les meilleurs délais et à prendre dans la mesure du possible, les meilleurs moyens pour neutraliser l’intrusion et en minimiser les impacts.</p><p>Vos données sont hébergées sur des serveurs sécurisés. L'Institut Bleu ne procède à aucun transfert en dehors de l’Union européenne.</p><h2>9. Pour exercer vos droits</h2><p>Conformément à la réglementation applicable en matière de protection des données personnelles, vous pouvez, à tout moment, exercer vos droits d’accès, de rectification, de suppression des Données vous concernant ainsi que vos droits de limitation et d’opposition au traitement et à la portabilité de vos Données.</p><p>Vous pouvez exercer vos droits en envoyant un message :</p><p>Par courrier à l’adresse suivante : Magasin n°10, Port Ouest, 97420 LE PORT</p><p>Par email à : contact@institutbleu.re</p><p>Dans ce cadre, vous accompagnerez votre demande des éléments nécessaires à votre identification (nom, prénom, e-mail) ainsi que toute autre information nécessaire à la confirmation de votre identité. En cas de doute, l'Institut Bleu pourra vous demander la copie de votre carte d’identité conformément aux dispositions de la règlementation applicable en matière de données à caractère personnel.</p><p>Le DPO s’engage à considérer l’exercice de vos droits dans les meilleurs délais – et dans le délai maximum de 30 jours à compter de la date de réception de votre demande ou de la date de réception de la preuve de votre identité.</p><p>En ce qui concerne votre droit de demande de suppression, le DPO fera droit à votre demande sauf dans le cas où la loi ou un motif légitime leur impose de conserver certaines de vos Données.</p><p>En cas de réponse insatisfaisante, vous pouvez introduire une réclamation auprès de la Commission nationale de l’informatique et des libertés (CNIL) : <a href=\"https://www.cnil.fr/fr/plaintes\" target=\"_blank\" rel=\"noopener noreferrer\">https://www.cnil.fr/fr/plaintes</a> ou par voie postale à l’adresse : Commission nationale de l’informatique et des libertés (CNIL) – 3 place de Fontenoy, TSA 80715 – 75334 PARIS CEDEX 07.</p><h2>10. Modification de notre Politique de Confidentialité</h2><p>L'Institut Bleu se réserve le droit de faire évoluer la présente politique de confidentialité à tout moment, notamment en application des lois et règlements en vigueur. En cas de modification substantielle de ladite politique, l'Institut Bleu veillera à vous communiquer l’information dans les meilleurs délais.</p><h2>11. Informations et contact</h2><p>Pour toutes demandes d’informations, vous pouvez envoyer un email à : contact@institutbleu.re</p><p>D’autres informations sont disponibles dans <a href=\"/mentions-legales\">les mentions légales du site</a>.</p></div>"
             }
           }
         }
-      ]
+      ],
+      "seo": {
+        "noIndex": true
+      }
     },
     {
       "path": "/bibliotheque",
@@ -1996,6 +2075,9 @@
               },
               {
                 "id": "territoire",
+                "optionsFrom": {
+                  "list": "territoires"
+                },
                 "label": {
                   "fr": "Territoire",
                   "en": "Territory"
@@ -2106,6 +2188,40 @@
                 ]
               },
               {
+                "id": "auteur",
+                "label": {
+                  "fr": "Auteur",
+                  "en": "Author"
+                },
+                "field": "auteurs",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les auteurs",
+                  "en": "All authors"
+                },
+                "options": [],
+                "optionsFrom": {
+                  "list": "auteurs"
+                }
+              },
+              {
+                "id": "motscles",
+                "label": {
+                  "fr": "Mots-clés",
+                  "en": "Keywords"
+                },
+                "field": "tags",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les mots-clés",
+                  "en": "All keywords"
+                },
+                "options": [],
+                "optionsFrom": {
+                  "list": "tagsDocument"
+                }
+              },
+              {
                 "id": "langue",
                 "label": {
                   "fr": "Langue",
@@ -2159,9 +2275,7 @@
               "sourceKey": [
                 "institutBleu"
               ],
-              "defaultFilters": {
-                "type": "recoveryCenter"
-              },
+              "costumSubType": "recoveryCenter",
               "defaultFields": [
                 "name",
                 "shortDescription",
@@ -2183,7 +2297,9 @@
                 "name",
                 "shortDescription",
                 "auteurs",
-                "organisme"
+                "organisme",
+                "tags",
+                "territoires"
               ],
               "defaultSortBy": {
                 "date": -1
@@ -2255,7 +2371,13 @@
             }
           }
         }
-      ]
+      ],
+      "seo": {
+        "description": {
+          "fr": "Rapports, études, articles scientifiques et notes de synthèse sur l'économie bleue à La Réunion et dans l'océan Indien, en accès libre.",
+          "en": "Reports, studies, scientific articles and briefing notes on the blue economy in Réunion and the Indian Ocean, freely accessible."
+        }
+      }
     },
     {
       "path": "/financements",
@@ -2302,7 +2424,7 @@
                     "value": "Appels à projets",
                     "label": {
                       "fr": "Appels à projets",
-                      "en": "Appels à projets"
+                      "en": "Calls for projects"
                     }
                   },
                   {
@@ -2310,7 +2432,7 @@
                     "value": "Appel à Manifestation d'Intérêt",
                     "label": {
                       "fr": "Appel à Manifestation d'Intérêt",
-                      "en": "Appel à Manifestation d'Intérêt"
+                      "en": "Call for expressions of interest"
                     }
                   },
                   {
@@ -2318,7 +2440,7 @@
                     "value": "Marché public",
                     "label": {
                       "fr": "Marché public",
-                      "en": "Marché public"
+                      "en": "Public procurement"
                     }
                   },
                   {
@@ -2326,7 +2448,7 @@
                     "value": "Subventions",
                     "label": {
                       "fr": "Subventions",
-                      "en": "Subventions"
+                      "en": "Grants"
                     }
                   },
                   {
@@ -2334,7 +2456,7 @@
                     "value": "Autre",
                     "label": {
                       "fr": "Autre",
-                      "en": "Autre"
+                      "en": "Other"
                     }
                   }
                 ]
@@ -2357,7 +2479,7 @@
                     "value": "Locale",
                     "label": {
                       "fr": "Locale",
-                      "en": "Locale"
+                      "en": "Local"
                     }
                   },
                   {
@@ -2365,7 +2487,7 @@
                     "value": "Nationale",
                     "label": {
                       "fr": "Nationale",
-                      "en": "Nationale"
+                      "en": "National"
                     }
                   },
                   {
@@ -2373,7 +2495,7 @@
                     "value": "Régionale",
                     "label": {
                       "fr": "Régionale",
-                      "en": "Régionale"
+                      "en": "Regional"
                     }
                   },
                   {
@@ -2381,7 +2503,7 @@
                     "value": "Européen",
                     "label": {
                       "fr": "Européen",
-                      "en": "Européen"
+                      "en": "European"
                     }
                   },
                   {
@@ -2397,7 +2519,7 @@
                     "value": "Autre",
                     "label": {
                       "fr": "Autre",
-                      "en": "Autre"
+                      "en": "Other"
                     }
                   }
                 ]
@@ -2425,9 +2547,7 @@
               "sourceKey": [
                 "institutBleu"
               ],
-              "defaultFilters": {
-                "type": "financement"
-              },
+              "costumSubType": "financement",
               "defaultFields": [
                 "name",
                 "shortDescription",
@@ -2510,7 +2630,13 @@
             }
           }
         }
-      ]
+      ],
+      "seo": {
+        "description": {
+          "fr": "Appels à projets, appels à manifestation d'intérêt et dispositifs de financement pour les porteurs de projets de l'économie bleue à La Réunion.",
+          "en": "Calls for projects, expressions of interest and funding schemes for blue economy project leaders in Réunion."
+        }
+      }
     }
   ],
   "footer": {
@@ -2959,10 +3085,24 @@
           "variant": "complete",
           "showAddDropdown": true,
           "addConfig": {
-            "organization": true,
-            "project": true,
-            "event": true,
-            "poi": true
+            "organization": false,
+            "project": false,
+            "event": false,
+            "poi": false,
+            "custom": [
+              {
+                "modalKey": "add-institut-bleu-acteur",
+                "label": {
+                  "fr": "Référencer ma structure",
+                  "en": "List my organisation"
+                },
+                "icon": "anchor",
+                "condition": {
+                  "auth": "required",
+                  "userContext": "own"
+                }
+              }
+            ]
           }
         },
         {
@@ -3059,8 +3199,8 @@
         {
           "id": "membership",
           "label": {
-            "fr": "Communautés",
-            "en": "Communities"
+            "fr": "Mes structures",
+            "en": "My organisations"
           },
           "condition": {
             "entityTypes": [
@@ -3068,7 +3208,13 @@
             ],
             "userContext": "own"
           },
-          "component": "MembershipTab"
+          "component": "MembershipTab",
+          "props": {
+            "types": [
+              "organizations"
+            ],
+            "scope": "costum"
+          }
         }
       ]
     },
@@ -3083,9 +3229,9 @@
           "showAddDropdown": true,
           "addConfig": {
             "organization": false,
-            "project": true,
+            "project": false,
             "event": true,
-            "poi": true
+            "poi": false
           }
         },
         {
@@ -3271,6 +3417,7 @@
               "leftSections": [
                 {
                   "type": "profile-related",
+                  "scope": "costum",
                   "relationType": "projects",
                   "title": {
                     "fr": "Projets",
@@ -3302,6 +3449,7 @@
               "leftSections": [
                 {
                   "type": "profile-related",
+                  "scope": "costum",
                   "relationType": "events",
                   "title": {
                     "fr": "Événements",
@@ -3321,6 +3469,35 @@
             }
           ]
         }
+      ],
+      "editModals": [
+        {
+          "editModal": "edit-institut-bleu-acteur",
+          "_comment": "Sans cette clause la route est un catch-all : le formulaire s'ouvrait sur les ~29 400 organisations du site. La clause slug exclut la porteuse du costum (73 des 74).",
+          "when": {
+            "and": [
+              {
+                "or": [
+                  {
+                    "field": "sourceKeys",
+                    "op": "contains",
+                    "value": "institutBleu"
+                  },
+                  {
+                    "field": "reference.costum",
+                    "op": "contains",
+                    "value": "institutBleu"
+                  }
+                ]
+              },
+              {
+                "field": "slug",
+                "op": "ne",
+                "value": "institutBleu"
+              }
+            ]
+          }
+        }
       ]
     },
     "projects": {
@@ -3336,7 +3513,7 @@
             "organization": false,
             "project": false,
             "event": true,
-            "poi": true
+            "poi": false
           }
         },
         {
@@ -3454,6 +3631,7 @@
               "leftSections": [
                 {
                   "type": "profile-related",
+                  "scope": "costum",
                   "relationType": "projects",
                   "title": {
                     "fr": "Structures partenaires",
@@ -3485,6 +3663,7 @@
               "leftSections": [
                 {
                   "type": "profile-related",
+                  "scope": "costum",
                   "relationType": "events",
                   "title": {
                     "fr": "Événements",
@@ -3638,6 +3817,7 @@
                 },
                 {
                   "type": "profile-related",
+                  "scope": "costum",
                   "relationType": "events",
                   "title": {
                     "fr": "Autres événements",
@@ -3682,6 +3862,26 @@
               ]
             }
           ]
+        }
+      ],
+      "editModals": [
+        {
+          "editModal": "edit-institut-bleu-event",
+          "_comment": "Sans clause de périmètre, catch-all sur tous les events du site. `reference.costum` est conservé bien qu'inutilisé ici : le rattachement legacy est générique.",
+          "when": {
+            "or": [
+              {
+                "field": "sourceKeys",
+                "op": "contains",
+                "value": "institutBleu"
+              },
+              {
+                "field": "reference.costum",
+                "op": "contains",
+                "value": "institutBleu"
+              }
+            ]
+          }
         }
       ]
     },
@@ -3826,14 +4026,48 @@
       "editModals": [
         {
           "editModal": "edit-institut-bleu-financement",
+          "_comment": "NATIFS : le preset type + l'appartenance source. Un référencé au type coïncident ne matche plus ici — il passe par la route annotation.",
           "editModalMatch": {
             "type": "financement"
+          },
+          "when": {
+            "field": "sourceKeys",
+            "op": "contains",
+            "value": "institutBleu"
+          }
+        },
+        {
+          "editModal": "edit-institut-bleu-financement",
+          "_comment": "RÉFÉRENCÉS classés : l'annotation posée au référencement (admin), jamais le champ cœur.",
+          "editModalMatch": {
+            "reference.costumTypes.institutBleu": "financement"
+          },
+          "when": {
+            "field": "reference.costum",
+            "op": "contains",
+            "value": "institutBleu"
           }
         },
         {
           "editModal": "edit-institut-bleu-document",
           "editModalMatch": {
             "type": "recoveryCenter"
+          },
+          "when": {
+            "field": "sourceKeys",
+            "op": "contains",
+            "value": "institutBleu"
+          }
+        },
+        {
+          "editModal": "edit-institut-bleu-document",
+          "editModalMatch": {
+            "reference.costumTypes.institutBleu": "recoveryCenter"
+          },
+          "when": {
+            "field": "reference.costum",
+            "op": "contains",
+            "value": "institutBleu"
           }
         }
       ]
@@ -3857,7 +4091,10 @@
       "costumSlug": "institutBleu",
       "icon": "anchor",
       "layout": {
-        "kind": "tabs"
+        "kind": "wizard",
+        "stepper": "tabs",
+        "progress": "bar",
+        "header": "gradient"
       },
       "serializeGroups": {
         "address": {
@@ -3977,6 +4214,10 @@
         },
         "name": {
           "widget": "text",
+          "placeholder": {
+            "fr": "Nom complet de la structure",
+            "en": "Full name of the organisation"
+          },
           "label": {
             "fr": "Nom de la structure",
             "en": "Organisation name"
@@ -3985,6 +4226,10 @@
         },
         "acronym": {
           "widget": "text",
+          "placeholder": {
+            "fr": "Sigle ou acronyme usuel",
+            "en": "Common acronym"
+          },
           "label": {
             "fr": "Acronyme",
             "en": "Acronym"
@@ -4027,35 +4272,59 @@
           "enum": [
             {
               "value": "Action de l'Etat en mer",
-              "label": "Action de l'Etat en mer"
+              "label": {
+                "fr": "Action de l'Etat en mer",
+                "en": "Action de l'Etat en mer"
+              }
             },
             {
               "value": "Appui & soutien et accompagnement",
-              "label": "Appui & soutien et accompagnement"
+              "label": {
+                "fr": "Appui & soutien et accompagnement",
+                "en": "Appui & soutien et accompagnement"
+              }
             },
             {
               "value": "Energies Marines Renouvelables",
-              "label": "Energies Marines Renouvelables"
+              "label": {
+                "fr": "Energies Marines Renouvelables",
+                "en": "Energies Marines Renouvelables"
+              }
             },
             {
               "value": "Environnement & Recherche et Innovation",
-              "label": "Environnement & Recherche et Innovation"
+              "label": {
+                "fr": "Environnement & Recherche et Innovation",
+                "en": "Environnement & Recherche et Innovation"
+              }
             },
             {
               "value": "Industrie et maintenance navale",
-              "label": "Industrie et maintenance navale"
+              "label": {
+                "fr": "Industrie et maintenance navale",
+                "en": "Industrie et maintenance navale"
+              }
             },
             {
               "value": "Pêche et produits de la mer",
-              "label": "Pêche et produits de la mer"
+              "label": {
+                "fr": "Pêche et produits de la mer",
+                "en": "Pêche et produits de la mer"
+              }
             },
             {
               "value": "Tourisme bleu et activités nautiques",
-              "label": "Tourisme bleu et activités nautiques"
+              "label": {
+                "fr": "Tourisme bleu et activités nautiques",
+                "en": "Tourisme bleu et activités nautiques"
+              }
             },
             {
               "value": "Transport maritime & infrastructures portuaires",
-              "label": "Transport maritime & infrastructures portuaires"
+              "label": {
+                "fr": "Transport maritime & infrastructures portuaires",
+                "en": "Transport maritime & infrastructures portuaires"
+              }
             }
           ],
           "widgetProps": {
@@ -4076,7 +4345,7 @@
             "en": "Describe your activity in more detail — you may create your own keywords (5 maximum)."
           },
           "widgetProps": {
-            "searchable": true,
+            "list": "tags",
             "maxTags": 5
           },
           "rules": {
@@ -4092,68 +4361,117 @@
           "enum": [
             {
               "value": "Association Loi 1901",
-              "label": "Association Loi 1901"
+              "label": {
+                "fr": "Association Loi 1901",
+                "en": "Non-profit association (loi 1901)"
+              }
             },
             {
               "value": "Collectivité Territoriale",
-              "label": "Collectivité Territoriale"
+              "label": {
+                "fr": "Collectivité Territoriale",
+                "en": "Local authority"
+              }
             },
             {
               "value": "Entreprise Individuelle (EI)",
-              "label": "Entreprise Individuelle (EI)"
+              "label": {
+                "fr": "Entreprise Individuelle (EI)",
+                "en": "Sole proprietorship (EI)"
+              }
             },
             {
               "value": "Entreprise Individuelle à Responsabilité Limitée (EIRL)",
-              "label": "Entreprise Individuelle à Responsabilité Limitée (EIRL)"
+              "label": {
+                "fr": "Entreprise Individuelle à Responsabilité Limitée (EIRL)",
+                "en": "Sole proprietorship with limited liability (EIRL)"
+              }
             },
             {
               "value": "Entreprise Unipersonnelle à Responsabilité Limitée (EURL)",
-              "label": "Entreprise Unipersonnelle à Responsabilité Limitée (EURL)"
+              "label": {
+                "fr": "Entreprise Unipersonnelle à Responsabilité Limitée (EURL)",
+                "en": "Single-member limited company (EURL)"
+              }
             },
             {
               "value": "Etablissement Public de Coopération Environnementale",
-              "label": "Etablissement Public de Coopération Environnementale"
+              "label": {
+                "fr": "Etablissement Public de Coopération Environnementale",
+                "en": "Etablissement Public de Coopération Environnementale"
+              }
             },
             {
               "value": "Etablissement public de l'Etat",
-              "label": "Etablissement public de l'Etat"
+              "label": {
+                "fr": "Etablissement public de l'Etat",
+                "en": "National public institution"
+              }
             },
             {
               "value": "GIE",
-              "label": "GIE"
+              "label": {
+                "fr": "GIE",
+                "en": "GIE"
+              }
             },
             {
               "value": "Service d'Etat",
-              "label": "Service d'Etat"
+              "label": {
+                "fr": "Service d'Etat",
+                "en": "State service"
+              }
             },
             {
               "value": "Société Anonyme (SA)",
-              "label": "Société Anonyme (SA)"
+              "label": {
+                "fr": "Société Anonyme (SA)",
+                "en": "Public limited company (SA)"
+              }
             },
             {
               "value": "Société Anonyme à Responsabilité Limitée (SARL)",
-              "label": "Société Anonyme à Responsabilité Limitée (SARL)"
+              "label": {
+                "fr": "Société Anonyme à Responsabilité Limitée (SARL)",
+                "en": "Limited liability company (SARL)"
+              }
             },
             {
               "value": "Société en Nom Collectif (SNC)",
-              "label": "Société en Nom Collectif (SNC)"
+              "label": {
+                "fr": "Société en Nom Collectif (SNC)",
+                "en": "General partnership (SNC)"
+              }
             },
             {
               "value": "Société par Actions Simplifiée (SAS)",
-              "label": "Société par Actions Simplifiée (SAS)"
+              "label": {
+                "fr": "Société par Actions Simplifiée (SAS)",
+                "en": "Simplified joint-stock company (SAS)"
+              }
             },
             {
               "value": "Société par Actions Simplifiée Unipersonnelle (SASU)",
-              "label": "Société par Actions Simplifiée Unipersonnelle (SASU)"
+              "label": {
+                "fr": "Société par Actions Simplifiée Unipersonnelle (SASU)",
+                "en": "Single-shareholder SAS (SASU)"
+              }
             },
             {
               "value": "syndicat professionnel",
-              "label": "syndicat professionnel"
+              "label": {
+                "fr": "syndicat professionnel",
+                "en": "Professional union"
+              }
             }
           ]
         },
         "codeNaf": {
           "widget": "text",
+          "placeholder": {
+            "fr": "Code APE / NAF (ex. 7112B)",
+            "en": "APE / NAF code (e.g. 7112B)"
+          },
           "label": {
             "fr": "Code NAF",
             "en": "NAF code"
@@ -4161,6 +4479,10 @@
         },
         "siret": {
           "widget": "text",
+          "placeholder": {
+            "fr": "14 chiffres",
+            "en": "14 digits"
+          },
           "label": {
             "fr": "SIRET",
             "en": "SIRET"
@@ -4180,6 +4502,10 @@
         },
         "mobile": {
           "widget": "tel",
+          "placeholder": {
+            "fr": "Numéro de contact",
+            "en": "Contact number"
+          },
           "label": {
             "fr": "Téléphone",
             "en": "Phone"
@@ -4201,6 +4527,7 @@
         },
         "otherSociaNetworks": {
           "widget": "fieldArray",
+          "write": "coerce:filledEntries",
           "label": {
             "fr": "Réseaux sociaux",
             "en": "Social networks"
@@ -4218,6 +4545,12 @@
                   "fr": "Nom du réseau social",
                   "en": "Network name"
                 },
+                "placeholders": [
+                  "Lien vers le profil LinkedIn",
+                  "Lien vers le profil Facebook",
+                  "Lien vers le profil Instagram",
+                  "Lien vers le profil Youtube"
+                ],
                 "className": "sm:col-span-5"
               },
               {
@@ -4233,19 +4566,19 @@
           },
           "default": [
             {
-              "type": "Lien vers le profil LinkedIn",
+              "type": "",
               "link": ""
             },
             {
-              "type": "Lien vers le profil Facebook",
+              "type": "",
               "link": ""
             },
             {
-              "type": "Lien vers le profil Instagram",
+              "type": "",
               "link": ""
             },
             {
-              "type": "Lien vers le profil Twitter",
+              "type": "",
               "link": ""
             }
           ]
@@ -4329,7 +4662,8 @@
             "fr": "La fiche de votre structure reste rattachée à votre compte : vous pourrez la compléter, la corriger et l’enrichir de documents à tout moment.",
             "en": "Your organisation’s listing stays tied to your account: you can complete it, correct it and add documents at any time."
           }
-        }
+        },
+        "dialogClassName": "sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden"
       },
       "image": {
         "field": "profil_avatar",
@@ -4340,9 +4674,32 @@
         "inject": {
           "extraFields": {
             "type": "LocalBusiness",
-            "role": "admin"
+            "role": "admin",
+            "preferences": {
+              "toBeValidated": true
+            }
           }
         },
+        "stamps": [
+          {
+            "field": "dateSign",
+            "value": {
+              "$now": "j/M/aaaa"
+            },
+            "op": "fillIfEmpty",
+            "channel": "pathValue",
+            "_comment": "Date de signature, posée à la CRÉATION (patron du afterSave legacy institutBleu_index.js:614-625, format SANS zéro de tête — 73/73 en base). Canal pathValue : dateSign n'est pas au schéma d'écriture (jamais un input dynform). Contre le backend legacy (prod) personne d'autre ne la pose ; contre Node le hook serveur l'a déjà posée (fillIfEmpty s'abstient)."
+          },
+          {
+            "field": "tags",
+            "value": {
+              "$from": "categoryThematic"
+            },
+            "op": "append",
+            "on": "both",
+            "_comment": "Parité legacy (institutBleu_index.js:694-707) : recopie les catégories (libellés) dans tags. Le legacy filtre la thématique sur tags ; categoryThematic est déjà des libellés → simple append (pas de $mapLabels). Le champ structuré est conservé (facette `categorie` le filtre)."
+          }
+        ],
         "successKey": {
           "add": "toast.add.organizationSuccess",
           "edit": "toast.profile.updateSuccess"
@@ -4366,8 +4723,17 @@
     "institut-bleu-document": {
       "id": "institut-bleu-document",
       "entityType": "poi",
+      "subType": "recoveryCenter",
+      "subTypeLabel": {
+        "fr": "Document",
+        "en": "Document"
+      },
+      "identity": {
+        "type": "recoveryCenter"
+      },
       "collection": "poi",
       "costumSlug": "institutBleu",
+      "listsFromCarrier": true,
       "icon": "book-open",
       "layout": {
         "kind": "tabs"
@@ -4483,6 +4849,10 @@
       "fields": {
         "name": {
           "widget": "text",
+          "placeholder": {
+            "fr": "Titre complet du document",
+            "en": "Full document title"
+          },
           "label": {
             "fr": "Titre du document",
             "en": "Document title"
@@ -4490,7 +4860,11 @@
           "required": true
         },
         "auteurs": {
-          "widget": "tags",
+          "widget": "valueSelect",
+          "placeholder": {
+            "fr": "Rechercher ou saisir un nom…",
+            "en": "Search or type a name…"
+          },
           "label": {
             "fr": "Auteur·rices",
             "en": "Authors"
@@ -4498,10 +4872,20 @@
           "info": {
             "fr": "Un nom par entrée.",
             "en": "One name per entry."
+          },
+          "widgetProps": {
+            "list": "auteurs"
           }
         },
         "organisme": {
-          "widget": "tags",
+          "widget": "valueSelect",
+          "widgetProps": {
+            "list": "organismes"
+          },
+          "placeholder": {
+            "fr": "Rechercher ou saisir un organisme…",
+            "en": "Search or type an organisation…"
+          },
           "label": {
             "fr": "Organisme(s)",
             "en": "Organisation(s)"
@@ -4516,6 +4900,10 @@
         },
         "coteDocument": {
           "widget": "text",
+          "placeholder": {
+            "fr": "Référence interne (ex. ISEMAR n°282)",
+            "en": "Internal reference (e.g. ISEMAR no. 282)"
+          },
           "label": {
             "fr": "Cote / numéro",
             "en": "Reference number"
@@ -4523,6 +4911,7 @@
         },
         "typeDocument": {
           "widget": "select",
+          "optionsKey": "typesDocument",
           "label": {
             "fr": "Type de document",
             "en": "Document type"
@@ -4530,6 +4919,7 @@
         },
         "langue": {
           "widget": "select",
+          "optionsKey": "langues",
           "label": {
             "fr": "Langue",
             "en": "Language"
@@ -4537,14 +4927,26 @@
         },
         "thematique": {
           "widget": "multiselect",
+          "placeholder": {
+            "fr": "Sélectionner une ou plusieurs thématiques",
+            "en": "Select one or more themes"
+          },
           "multiple": true,
+          "optionsKey": "thematiquesDocument",
           "label": {
             "fr": "Thématique(s)",
             "en": "Theme(s)"
           }
         },
         "territoires": {
-          "widget": "tags",
+          "widget": "valueSelect",
+          "placeholder": {
+            "fr": "Rechercher ou saisir un territoire…",
+            "en": "Search or type a territory…"
+          },
+          "widgetProps": {
+            "list": "territoires"
+          },
           "label": {
             "fr": "Territoire(s)",
             "en": "Territories"
@@ -4563,10 +4965,17 @@
           "info": {
             "fr": "Vocabulaire libre — les mots déjà employés vous sont proposés.",
             "en": "Free vocabulary — existing keywords are suggested."
+          },
+          "widgetProps": {
+            "list": "tagsDocument"
           }
         },
         "shortDescription": {
           "widget": "textarea",
+          "placeholder": {
+            "fr": "Résumé en quelques lignes",
+            "en": "A few lines of summary"
+          },
           "label": {
             "fr": "Résumé",
             "en": "Abstract"
@@ -4722,8 +5131,17 @@
     "institut-bleu-financement": {
       "id": "institut-bleu-financement",
       "entityType": "poi",
+      "subType": "financement",
+      "subTypeLabel": {
+        "fr": "Financement",
+        "en": "Funding"
+      },
+      "identity": {
+        "type": "financement"
+      },
       "collection": "poi",
       "costumSlug": "institutBleu",
+      "listsFromCarrier": true,
       "icon": "hand-coins",
       "layout": {
         "kind": "tabs"
@@ -4811,6 +5229,10 @@
       "fields": {
         "name": {
           "widget": "text",
+          "placeholder": {
+            "fr": "Intitulé du dispositif de financement",
+            "en": "Name of the funding scheme"
+          },
           "label": {
             "fr": "Intitulé de l'appel",
             "en": "Call title"
@@ -4819,6 +5241,7 @@
         },
         "financementType": {
           "widget": "select",
+          "optionsKey": "financementTypes",
           "label": {
             "fr": "Type",
             "en": "Type"
@@ -4826,13 +5249,18 @@
         },
         "echelle": {
           "widget": "select",
+          "optionsKey": "echelles",
           "label": {
             "fr": "Échelle",
             "en": "Scale"
           }
         },
         "financementSource": {
-          "widget": "text",
+          "widget": "valueSelect",
+          "widgetProps": {
+            "list": "financeurs",
+            "multiple": false
+          },
           "label": {
             "fr": "Financeur",
             "en": "Funder"
@@ -4851,6 +5279,10 @@
         },
         "shortDescription": {
           "widget": "textarea",
+          "placeholder": {
+            "fr": "Résumé en quelques lignes",
+            "en": "A few lines of summary"
+          },
           "label": {
             "fr": "Résumé",
             "en": "Summary"
@@ -5058,7 +5490,9 @@
             {
               "columns": 1,
               "fields": [
-                "eventDates"
+                "eventDates",
+                "startDate",
+                "endDate"
               ]
             }
           ]
@@ -5106,6 +5540,10 @@
         },
         "name": {
           "widget": "text",
+          "placeholder": {
+            "fr": "Titre de l’événement",
+            "en": "Event title"
+          },
           "required": true,
           "label": {
             "fr": "Titre de l'événement",
@@ -5123,12 +5561,12 @@
             "fr": "Choisir un type…",
             "en": "Choose a type…"
           },
-          "options": [
+          "enum": [
             {
               "value": "Evenement public",
               "label": {
                 "fr": "Evenement public",
-                "en": "Evenement public"
+                "en": "Public event"
               }
             },
             {
@@ -5142,55 +5580,59 @@
               "value": "Salon professionnel",
               "label": {
                 "fr": "Salon professionnel",
-                "en": "Salon professionnel"
+                "en": "Trade fair"
               }
             },
             {
               "value": "Séminaire",
               "label": {
                 "fr": "Séminaire",
-                "en": "Séminaire"
+                "en": "Seminar"
               }
             },
             {
               "value": "Salon",
               "label": {
                 "fr": "Salon",
-                "en": "Salon"
+                "en": "Fair"
               }
             },
             {
               "value": "Webinaire",
               "label": {
                 "fr": "Webinaire",
-                "en": "Webinaire"
+                "en": "Webinar"
               }
             },
             {
               "value": "Manifestation",
               "label": {
                 "fr": "Manifestation",
-                "en": "Manifestation"
+                "en": "Public gathering"
               }
             },
             {
               "value": "Conférence",
               "label": {
                 "fr": "Conférence",
-                "en": "Conférence"
+                "en": "Conference"
               }
             },
             {
               "value": "Autre",
               "label": {
                 "fr": "Autre",
-                "en": "Autre"
+                "en": "Other"
               }
             }
           ]
         },
         "shortDescription": {
           "widget": "textarea",
+          "placeholder": {
+            "fr": "Résumé en quelques lignes",
+            "en": "A few lines of summary"
+          },
           "label": {
             "fr": "Résumé",
             "en": "Summary"
@@ -5214,6 +5656,10 @@
         },
         "url": {
           "widget": "text",
+          "placeholder": {
+            "fr": "https://…",
+            "en": "https://…"
+          },
           "label": {
             "fr": "Lien (site, inscription…)",
             "en": "Link (website, registration…)"
@@ -5226,7 +5672,7 @@
             "en": "Tags"
           },
           "widgetProps": {
-            "searchable": true
+            "list": "tagsEvent"
           }
         },
         "address": {
@@ -5371,16 +5817,13 @@
   },
   "floatingActionButton": {
     "enabled": true,
-    "position": "bottom-right",
+    "position": "bottom-left",
     "label": {
       "fr": "Référencer ma structure",
       "en": "List my organisation"
     },
     "icon": "anchor",
-    "modal": "add-institut-bleu-acteur",
-    "condition": {
-      "auth": "required"
-    }
+    "modal": "add-institut-bleu-acteur"
   },
   "admin": {
     "enabled": true,
@@ -5425,13 +5868,6 @@
               "en": "Actors to moderate"
             },
             "source": {
-              "notSourceKey": true,
-              "defaultFilters": {
-                "$or": {
-                  "source.key": "institutBleu",
-                  "source.keys": "institutBleu"
-                }
-              },
               "defaultSortBy": {
                 "created": -1
               }
@@ -5505,14 +5941,7 @@
               "en": "Collection"
             },
             "source": {
-              "notSourceKey": true,
-              "defaultFilters": {
-                "$or": {
-                  "source.key": "institutBleu",
-                  "source.keys": "institutBleu"
-                },
-                "type": "recoveryCenter"
-              },
+              "costumSubType": "recoveryCenter",
               "defaultSortBy": {
                 "date": -1
               },
@@ -5604,14 +6033,7 @@
               "en": "Funding schemes"
             },
             "source": {
-              "notSourceKey": true,
-              "defaultFilters": {
-                "$or": {
-                  "source.key": "institutBleu",
-                  "source.keys": "institutBleu"
-                },
-                "type": "financement"
-              },
+              "costumSubType": "financement",
               "defaultSortBy": {
                 "date": 1
               },
@@ -5695,13 +6117,6 @@
               "en": "Events"
             },
             "source": {
-              "notSourceKey": true,
-              "defaultFilters": {
-                "$or": {
-                  "source.key": "institutBleu",
-                  "source.keys": "institutBleu"
-                }
-              },
               "defaultSortBy": {
                 "created": -1
               }
@@ -5762,7 +6177,8 @@
           {
             "type": "reference",
             "entityTypes": [
-              "organizations"
+              "organizations",
+              "poi"
             ],
             "columns": [
               "name"
@@ -5805,6 +6221,7 @@
             "type": "export",
             "entityTypes": [
               "organizations",
+              "poi",
               "events"
             ]
           }
@@ -5825,20 +6242,14 @@
       "enabled": true,
       "searchType": [
         "organizations",
-        "poi"
+        "poi",
+        "events"
       ],
       "limit": 8,
       "params": {
-        "notSourceKey": true,
-        "filters": {
-          "$or": {
-            "source.key": "institutBleu",
-            "source.keys": "institutBleu"
-          },
-          "preferences.toBeValidated.institutBleu": {
-            "$exists": false
-          }
-        },
+        "sourceKey": [
+          "institutBleu"
+        ],
         "fields": [
           "name",
           "slug",
@@ -6027,6 +6438,14 @@
             "value": "organizations"
           },
           "icon": "building-2"
+        },
+        {
+          "when": {
+            "field": "collection",
+            "op": "eq",
+            "value": "events"
+          },
+          "icon": "calendar"
         }
       ]
     }

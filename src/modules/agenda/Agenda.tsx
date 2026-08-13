@@ -278,6 +278,10 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
         onToggle={toggleTag}
         allLabel={t("filters.allTags")}
         onClear={() => setSelectedTags([])}
+        // Les tags viennent des événements chargés : leur nombre suit les données, pas une config.
+        searchPlaceholder={t("filters.searchValue")}
+        noResultLabel={t("filters.noResult")}
+        moreLabel={(n) => t("filters.more", undefined, { count: n })}
         contentClassName="w-72"
       >
         <Button

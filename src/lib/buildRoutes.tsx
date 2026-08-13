@@ -199,6 +199,9 @@ async function buildRoutesAsync(
             mapUsed: params.map,
             baseParams: ssrBaseParams,
             variant: searchVariant,
+          }, {
+            // Nécessaire à l'expansion de `costumSubType` côté SSR (cf. prefetchSearchResults).
+            costumForms: (cfg as { costumForms?: Record<string, never> }).costumForms,
           });
         })
       );

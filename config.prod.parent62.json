@@ -29,20 +29,26 @@
     ]
   },
   "header": {
-    "type": "transparent-scroll",
+    "type": "stacked",
     "path": "/",
-    "logo": "/images/parent62/logo-emblem.png",
+    "logo": "/images/parent62/logo.png",
+    "textColor": "var(--p62-marine)",
     "logoAlt": {
       "fr": "Parent62 — Réseau Parentalité 62",
       "en": "Parent62 — Parenting Network 62"
     },
     "logoTitle": {
-      "fr": "Parent62",
-      "en": "Parent62"
+      "fr": "parent",
+      "en": "parent"
+    },
+    "backgroundImage": "/images/parent62/bg-footer.webp",
+    "logoTitleAccent": {
+      "fr": "62",
+      "en": "62"
     },
     "logoSubtitle": {
-      "fr": "Réseau Parentalité 62",
-      "en": "Parenting Network 62"
+      "fr": "Une mise en synergie\ndes acteurs sur le territoire\ndu Pas-de-Calais",
+      "en": "Creating synergy\namong stakeholders in the\nPas-de-Calais region"
     },
     "sticky": true,
     "transparent": true,
@@ -59,11 +65,10 @@
     "nav": [
       {
         "label": {
-          "fr": "Le Réseau",
-          "en": "The Network"
+          "fr": "Le Réseau parentalité",
+          "en": "The Parenting Network"
         },
-        "path": "/reseau",
-        "icon": "users",
+        "path": "/reseau", 
         "children": [
           {
             "label": {
@@ -153,85 +158,10 @@
       },
       {
         "label": {
-          "fr": "Thèmes",
-          "en": "Topics"
-        },
-        "path": "/theme/la-petite-enfance",
-        "icon": "shapes",
-        "children": [
-          {
-            "label": {
-              "fr": "La petite enfance",
-              "en": "Early childhood"
-            },
-            "path": "/theme/la-petite-enfance",
-            "icon": "baby"
-          },
-          {
-            "label": {
-              "fr": "L’adolescence",
-              "en": "Adolescence"
-            },
-            "path": "/theme/ladolescence",
-            "icon": "users"
-          },
-          {
-            "label": {
-              "fr": "La santé",
-              "en": "Health"
-            },
-            "path": "/theme/la-sante",
-            "icon": "heart-pulse"
-          },
-          {
-            "label": {
-              "fr": "Le handicap",
-              "en": "Disability"
-            },
-            "path": "/theme/le-handicap",
-            "icon": "accessibility"
-          },
-          {
-            "label": {
-              "fr": "Les jeux",
-              "en": "Games"
-            },
-            "path": "/theme/les-jeux",
-            "icon": "puzzle"
-          },
-          {
-            "label": {
-              "fr": "L’éducation",
-              "en": "Education"
-            },
-            "path": "/theme/leducation",
-            "icon": "graduation-cap"
-          },
-          {
-            "label": {
-              "fr": "La communication",
-              "en": "Communication"
-            },
-            "path": "/theme/la-communication",
-            "icon": "message-circle"
-          },
-          {
-            "label": {
-              "fr": "Les écrans – Le numérique",
-              "en": "Screens & digital"
-            },
-            "path": "/theme/les-ecrans-le-numerique",
-            "icon": "smartphone"
-          }
-        ]
-      },
-      {
-        "label": {
           "fr": "Territoires",
           "en": "Territories"
         },
         "path": "/territoire/arrageois",
-        "icon": "map",
         "children": [
           {
             "label": {
@@ -317,11 +247,148 @@
       },
       {
         "label": {
+          "fr": "Thèmes",
+          "en": "Topics"
+        },
+        "path": "/theme/la-petite-enfance",
+        "children": [
+          {
+            "label": {
+              "fr": "La petite enfance",
+              "en": "Early childhood"
+            },
+            "path": "/theme/la-petite-enfance",
+            "icon": "baby"
+          },
+          {
+            "label": {
+              "fr": "L’adolescence",
+              "en": "Adolescence"
+            },
+            "path": "/theme/ladolescence",
+            "icon": "users"
+          },
+          {
+            "label": {
+              "fr": "La santé",
+              "en": "Health"
+            },
+            "path": "/theme/la-sante",
+            "icon": "heart-pulse"
+          },
+          {
+            "label": {
+              "fr": "Le handicap",
+              "en": "Disability"
+            },
+            "path": "/theme/le-handicap",
+            "icon": "accessibility"
+          },
+          {
+            "label": {
+              "fr": "Les jeux",
+              "en": "Games"
+            },
+            "path": "/theme/les-jeux",
+            "icon": "puzzle"
+          },
+          {
+            "label": {
+              "fr": "L’éducation",
+              "en": "Education"
+            },
+            "path": "/theme/leducation",
+            "icon": "graduation-cap"
+          },
+          {
+            "label": {
+              "fr": "La communication",
+              "en": "Communication"
+            },
+            "path": "/theme/la-communication",
+            "icon": "message-circle"
+          },
+          {
+            "label": {
+              "fr": "Les écrans – Le numérique",
+              "en": "Screens & digital"
+            },
+            "path": "/theme/les-ecrans-le-numerique",
+            "icon": "smartphone"
+          }
+        ]
+      },
+      {
+        "label": {
+          "fr": "Publics",
+          "en": "Audiences"
+        },
+        "path": "/public/benevoles",
+        "children": [
+          {
+            "label": {
+              "fr": "Bénévoles",
+              "en": "Volunteers"
+            },
+            "path": "/public/benevoles",
+            "icon": "hand-heart"
+          },
+          {
+            "label": {
+              "fr": "En famille",
+              "en": "As a family"
+            },
+            "path": "/public/en-famille",
+            "icon": "home"
+          },
+          {
+            "label": {
+              "fr": "Enfance",
+              "en": "Childhood"
+            },
+            "path": "/public/enfance",
+            "icon": "baby"
+          },
+          {
+            "label": {
+              "fr": "Futurs parents",
+              "en": "Parents-to-be"
+            },
+            "path": "/public/futurs-parents",
+            "icon": "heart"
+          },
+          {
+            "label": {
+              "fr": "Parents",
+              "en": "Parents"
+            },
+            "path": "/public/parents",
+            "icon": "user"
+          },
+          {
+            "label": {
+              "fr": "Parents-enfants",
+              "en": "Parents & children"
+            },
+            "path": "/public/parents-enfants",
+            "icon": "users"
+          },
+          {
+            "label": {
+              "fr": "Professionnels",
+              "en": "Professionals"
+            },
+            "path": "/public/professionnels",
+            "icon": "briefcase"
+          }
+        ]
+      },
+      {
+        "label": {
           "fr": "Contenus",
           "en": "Content"
         },
         "path": "/blog",
-        "icon": "layout-grid",
         "children": [
           {
             "label": {
@@ -372,14 +439,6 @@
             }
           }
         ]
-      },
-      {
-        "label": {
-          "fr": "Rechercher",
-          "en": "Search"
-        },
-        "path": "/recherche",
-        "icon": "search"
       }
     ],
     "logoSize": "lg"
@@ -391,7 +450,7 @@
         "fr": "Accueil — Parent62",
         "en": "Home — Parent62"
       },
-      "layout": "default",
+      "layout": "fullwidth",
       "seo": {
         "title": {
           "fr": "Parent62 — Réseau Parentalité du Pas-de-Calais",
@@ -414,443 +473,142 @@
       },
       "sections": [
         {
-          "type": "hero-quick-access",
-          "id": "home-hero",
+          "type": "featured-carousel",
+          "id": "home-featured-poi",
+          "props": {
+            "badgeLabel": { "fr": "À la une :", "en": "Featured:" },
+            "ctaLabel": { "fr": "En savoir +", "en": "Learn more" },
+            "baseParams": {
+              "defaultTypes": ["poi"],
+              "defaultTags": ["A la une"],
+              "sourceKey": ["parent62"],
+              "defaultFields": ["name", "description", "shortDescription", "medias", "profilMediumImageUrl", "profilImageUrl", "slug", "tags"],
+              "indexStepList": 8
+            },
+            "resource": {
+              "descriptionField": "shortDescription"
+            },
+            "itemAction": {
+              "kind": "link",
+              "to": "/blog/:slug",
+              "toById": "/blog/id/:id"
+            },
+            "background": "var(--p62-marine)",
+            "accentColor": "var(--p62-turquoise)",
+            "autoplay": true,
+            "autoplayIntervalMs": 6000
+          }
+        },
+        {
+          "type": "map-bubbles",
+          "id": "carte-territoires",
           "props": {
             "headline": {
-              "fr": "Le réseau qui accompagne les parents du Pas-de-Calais",
-              "en": "The network supporting parents across Pas-de-Calais"
+              "fr": "Territoires",
+              "en": "Territories"
             },
             "subhead": {
-              "fr": "Issu du REAAP, le Réseau Parentalité 62 relie parents, professionnels et bénévoles : écoute, entraide et actions près de chez vous, sur les dix territoires du département.",
-              "en": "Born from the REAAP, the Parenting Network 62 connects parents, professionals and volunteers: support, mutual aid and local actions across the department's ten territories."
+              "fr": "Cliquez sur votre territoire pour en découvrir les actus !",
+              "en": "Click your territory to discover its news!"
             },
-            "backgroundImage": "/images/parent62/hero-carte.png",
+            "backgroundImage": "/images/parent62/carte-territoire-teal.webp",
             "backgroundImageAlt": {
-              "fr": "Carte du Pas-de-Calais, ses territoires en bulles colorées",
-              "en": "Map of Pas-de-Calais with its territories as colored bubbles"
+              "fr": "Carte du Pas-de-Calais et ses territoires",
+              "en": "Map of Pas-de-Calais and its territories"
             },
-            "backgroundPosition": "right center",
-            "overlayOpacity": "62%",
-            "badges": [
-              {
-                "label": {
-                  "fr": "Piloté par la CAF du Pas-de-Calais · depuis 1999",
-                  "en": "Led by the CAF of Pas-de-Calais · since 1999"
-                }
-              }
-            ],
-            "ctaButtons": [
-              {
-                "label": {
-                  "fr": "Découvrir le réseau",
-                  "en": "Discover the network"
-                },
-                "path": "/reseau",
-                "variant": "default"
-              },
-              {
-                "label": {
-                  "fr": "Trouver ma coordination",
-                  "en": "Find my coordinator"
-                },
-                "path": "/equipe",
-                "variant": "secondary"
-              }
-            ],
-            "quickAccessTitle": {
-              "fr": "Accès rapide",
-              "en": "Quick access"
+            "backgroundOverlay": {
+              "from": "var(--p62-map-bg-from)",
+              "to": "var(--p62-map-bg-to)"
             },
-            "quickAccessCards": [
+            "items": [
               {
-                "path": "/blog",
-                "label": {
-                  "fr": "Près de chez vous",
-                  "en": "Near you"
-                },
-                "title": {
-                  "fr": "Les actualités",
-                  "en": "News"
-                },
-                "description": {
-                  "fr": "Ateliers, rencontres et rendez-vous des territoires.",
-                  "en": "Workshops, meet-ups and local events."
-                },
-                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2\"/><path d=\"M18 14h-8\"/><path d=\"M15 18h-5\"/><path d=\"M10 6h8v4h-8V6Z\"/></svg>"
+                "label": { "fr": "Calaisis", "en": "Calaisis" },
+                "href": "/territoire/calaisis",
+                "image": "/images/parent62/territoires/rond-orange.webp",
+                "x": 33,
+                "y": 15,
+                "size": 15
               },
               {
-                "path": "/charte",
-                "label": {
-                  "fr": "Nos valeurs",
-                  "en": "Our values"
-                },
-                "title": {
-                  "fr": "La charte",
-                  "en": "The charter"
-                },
-                "description": {
-                  "fr": "Les 8 valeurs partagées par 74 acteurs du département.",
-                  "en": "The 8 values shared by 74 local stakeholders."
-                },
-                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M15 12h-5\"/><path d=\"M15 8h-5\"/><path d=\"M19 17V5a2 2 0 0 0-2-2H4\"/><path d=\"M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3\"/></svg>"
+                "label": { "fr": "Boulonnais", "en": "Boulonnais" },
+                "href": "/territoire/boulonnais",
+                "image": "/images/parent62/territoires/rond-rouge.webp",
+                "x": 6,
+                "y": 32,
+                "size": 13
               },
               {
-                "path": "/mois-parentalite",
-                "label": {
-                  "fr": "L'événement",
-                  "en": "The event"
-                },
-                "title": {
-                  "fr": "Le Mois de la Parentalité",
-                  "en": "Parenting Month"
-                },
-                "description": {
-                  "fr": "Chaque année, un mois d'actions partout dans le 62.",
-                  "en": "A month of actions across the 62, every year."
-                },
-                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 10h18V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h7\"/><path d=\"M8 2v4\"/><path d=\"M16 2v4\"/><path d=\"M21.29 14.7a2.43 2.43 0 0 0-2.65-.52c-.3.12-.57.3-.8.53l-.34.34-.35-.34a2.43 2.43 0 0 0-2.65-.53c-.3.12-.56.3-.79.53-.95.94-1 2.53.2 3.74L17.5 22l3.6-3.55c1.2-1.21 1.14-2.8.19-3.74Z\"/></svg>"
+                "label": { "fr": "Audomarois", "en": "Audomarois" },
+                "href": "/territoire/audomarois",
+                "image": "/images/parent62/territoires/rond-jaune.webp",
+                "x": 44,
+                "y": 41,
+                "size": 13.5
+              },
+              {
+                "label": { "fr": "Entre Mer et Terres", "en": "Entre Mer et Terres" },
+                "href": "/territoire/entre-mer-et-terres",
+                "image": "/images/parent62/territoires/rond-bleu.webp",
+                "x": 14,
+                "y": 61,
+                "size": 13
+              },
+              {
+                "label": { "fr": "Ternois Bruaysis", "en": "Ternois Bruaysis" },
+                "href": "/territoire/ternois-bruaysis",
+                "image": "/images/parent62/territoires/rond-rose.webp",
+                "x": 41,
+                "y": 67,
+                "size": 14.5
+              },
+              {
+                "label": { "fr": "Artois", "en": "Artois" },
+                "href": "/territoire/artois",
+                "image": "/images/parent62/territoires/rond-vert-jaune.webp",
+                "x": 63,
+                "y": 43,
+                "size": 15.5
+              },
+              {
+                "label": { "fr": "FSM Lens-Liévin", "en": "FSM Lens-Liévin" },
+                "href": "/territoire/familles-en-sol-mineur-lens-lievin",
+                "image": "/images/parent62/territoires/rond-marron.webp",
+                "x": 67,
+                "y": 63,
+                "size": 13
+              },
+              {
+                "label": { "fr": "FSM Hénin-Carvin", "en": "FSM Hénin-Carvin" },
+                "href": "/territoire/familles-en-sol-mineur-henin-carvin",
+                "image": "/images/parent62/territoires/rond-rose-vif.webp",
+                "x": 85,
+                "y": 68,
+                "size": 13
+              },
+              {
+                "label": { "fr": "Arrageois", "en": "Arrageois" },
+                "href": "/territoire/arrageois",
+                "image": "/images/parent62/territoires/rond-violet.webp",
+                "x": 80,
+                "y": 82,
+                "size": 13
               }
             ]
           }
         },
         {
-          "type": "action-tiles",
-          "id": "home-double-entree",
+          "type": "articleTeaser",
+          "id": "zoom-reseau",
           "props": {
             "headline": {
-              "fr": "Vous êtes…",
-              "en": "You are…"
-            },
-            "columns": {
-              "lg": 2
-            },
-            "actions": [
-              {
-                "icon": "heart-handshake",
-                "title": {
-                  "fr": "Parent",
-                  "en": "A parent"
-                },
-                "subtitle": {
-                  "fr": "Trouver du soutien, des activités et des paroles de parents près de chez vous",
-                  "en": "Find support, activities and parents' voices near you"
-                },
-                "href": "/parents",
-                "color": "primary"
-              },
-              {
-                "icon": "briefcase",
-                "title": {
-                  "fr": "Professionnel·le ou bénévole",
-                  "en": "A professional or volunteer"
-                },
-                "subtitle": {
-                  "fr": "Référencer vos actions, rejoindre le réseau et suivre l'agenda pro",
-                  "en": "List your activities, join the network and follow the professional agenda"
-                },
-                "href": "/pro",
-                "color": "accent"
-              }
-            ]
-          }
-        },
-        {
-          "type": "action-tiles",
-          "id": "home-themes",
-          "props": {
-            "headline": {
-              "fr": "Explorer par thème",
-              "en": "Explore by topic"
-            },
-            "subhead": {
-              "fr": "Des ressources et des actions pour chaque étape de la vie de parent.",
-              "en": "Resources and actions for every stage of parenting."
-            },
-            "bg": "default",
-            "columns": {
-              "sm": 2,
-              "lg": 4
-            },
-            "actions": [
-              {
-                "icon": "baby",
-                "title": {
-                  "fr": "La petite enfance",
-                  "en": "Early childhood"
-                },
-                "subtitle": {
-                  "fr": "0-6 ans",
-                  "en": "Ages 0-6"
-                },
-                "href": "/theme/la-petite-enfance",
-                "color": "primary"
-              },
-              {
-                "icon": "users",
-                "title": {
-                  "fr": "L'adolescence",
-                  "en": "Adolescence"
-                },
-                "subtitle": {
-                  "fr": "Grandir ensemble",
-                  "en": "Growing together"
-                },
-                "href": "/theme/ladolescence",
-                "color": "teal"
-              },
-              {
-                "icon": "heart-pulse",
-                "title": {
-                  "fr": "La santé",
-                  "en": "Health"
-                },
-                "subtitle": {
-                  "fr": "Bien-être des familles",
-                  "en": "Family wellbeing"
-                },
-                "href": "/theme/la-sante",
-                "color": "chart-2"
-              },
-              {
-                "icon": "accessibility",
-                "title": {
-                  "fr": "Le handicap",
-                  "en": "Disability"
-                },
-                "subtitle": {
-                  "fr": "Accueillir chacun",
-                  "en": "Welcoming everyone"
-                },
-                "href": "/theme/le-handicap",
-                "color": "amber"
-              },
-              {
-                "icon": "puzzle",
-                "title": {
-                  "fr": "Les jeux",
-                  "en": "Play & games"
-                },
-                "subtitle": {
-                  "fr": "Jouer pour grandir",
-                  "en": "Play to grow"
-                },
-                "href": "/theme/les-jeux",
-                "color": "eco"
-              },
-              {
-                "icon": "graduation-cap",
-                "title": {
-                  "fr": "L'éducation",
-                  "en": "Education"
-                },
-                "subtitle": {
-                  "fr": "École et savoirs",
-                  "en": "School & learning"
-                },
-                "href": "/theme/leducation",
-                "color": "accent"
-              },
-              {
-                "icon": "message-circle",
-                "title": {
-                  "fr": "La communication",
-                  "en": "Communication"
-                },
-                "subtitle": {
-                  "fr": "Se parler, s'écouter",
-                  "en": "Talking & listening"
-                },
-                "href": "/theme/la-communication",
-                "color": "teal"
-              },
-              {
-                "icon": "smartphone",
-                "title": {
-                  "fr": "Les écrans & le numérique",
-                  "en": "Screens & digital"
-                },
-                "subtitle": {
-                  "fr": "Usages apaisés",
-                  "en": "Balanced habits"
-                },
-                "href": "/theme/les-ecrans-le-numerique",
-                "color": "primary"
-              }
-            ]
-          }
-        },
-        {
-          "type": "cta-card-grid",
-          "id": "home-territoires",
-          "props": {
-            "headline": {
-              "fr": "Un réseau, dix territoires",
-              "en": "One network, ten territories"
-            },
-            "subhead": {
-              "fr": "Des coordonnatrices et coordonnateurs animent le réseau au plus près des familles, de l'Arrageois au Calaisis.",
-              "en": "Coordinators bring the network to life close to families, from Arrageois to Calaisis."
-            },
-            "bg": "muted",
-            "actions": [
-              {
-                "icon": "map-pin",
-                "title": {
-                  "fr": "Trouver ma coordination",
-                  "en": "Find my coordinator"
-                },
-                "description": {
-                  "fr": "Une équipe à votre écoute sur chaque territoire du département.",
-                  "en": "A team at your side in every territory."
-                },
-                "ctaLabel": {
-                  "fr": "Contacter l'équipe",
-                  "en": "Contact the team"
-                },
-                "href": "/equipe"
-              },
-              {
-                "icon": "landmark",
-                "title": {
-                  "fr": "Le réseau et son histoire",
-                  "en": "The network's story"
-                },
-                "description": {
-                  "fr": "De la circulaire REAAP de 1999 au Réseau Parentalité 62.",
-                  "en": "From the 1999 REAAP circular to today's network."
-                },
-                "ctaLabel": {
-                  "fr": "Découvrir le réseau",
-                  "en": "Discover the network"
-                },
-                "href": "/reseau"
-              },
-              {
-                "icon": "hand-heart",
-                "title": {
-                  "fr": "Nos champs d'actions",
-                  "en": "Our fields of action"
-                },
-                "description": {
-                  "fr": "REAAP, CLAS, LAEP : les dispositifs qui soutiennent les familles.",
-                  "en": "REAAP, CLAS, LAEP: the schemes supporting families."
-                },
-                "ctaLabel": {
-                  "fr": "Voir les dispositifs",
-                  "en": "See the schemes"
-                },
-                "href": "/champs-actions"
-              },
-              {
-                "icon": "scroll-text",
-                "title": {
-                  "fr": "Adhérer à la charte",
-                  "en": "Join the charter"
-                },
-                "description": {
-                  "fr": "Collectivités, associations, écoles : rejoignez les 74 signataires.",
-                  "en": "Local authorities, associations, schools: join the 74 signatories."
-                },
-                "ctaLabel": {
-                  "fr": "Rejoindre la charte",
-                  "en": "Join the charter"
-                },
-                "href": "/charte"
-              }
-            ],
-            "stats": [
-              {
-                "value": "1999",
-                "label": {
-                  "fr": "département pionnier du REAAP",
-                  "en": "REAAP pioneer department"
-                },
-                "color": "primary"
-              },
-              {
-                "value": "10",
-                "label": {
-                  "fr": "territoires animés",
-                  "en": "active territories"
-                },
-                "color": "teal"
-              },
-              {
-                "value": "74",
-                "label": {
-                  "fr": "signataires de la charte",
-                  "en": "charter signatories"
-                },
-                "color": "chart-2"
-              },
-              {
-                "value": "8",
-                "label": {
-                  "fr": "valeurs partagées",
-                  "en": "shared values"
-                },
-                "color": "accent"
-              }
-            ]
-          }
-        },
-        {
-          "type": "html",
-          "id": "votre-territoire",
-          "props": {
-            "html": "<section class=\"p62-deep py-16 px-4\"><div class=\"container mx-auto max-w-5xl text-center space-y-6\"><h2>Votre territoire</h2><p class=\"text-white/80\">Chaque territoire du Pas-de-Calais a sa couleur : cliquez sur le vôtre pour découvrir les actions, événements et paroles près de chez vous.</p><div class=\"flex flex-wrap items-center justify-center gap-4\"><a href=\"/territoire/arrageois\" class=\"p62-bubble\" style=\"--s:104px;background:var(--territoire-arrageois)\">Arrageois</a><a href=\"/territoire/artois\" class=\"p62-bubble\" style=\"--s:104px;background:var(--territoire-artois)\">Artois</a><a href=\"/territoire/audomarois\" class=\"p62-bubble\" style=\"--s:104px;background:var(--territoire-audomarois)\">Audomarois</a><a href=\"/territoire/boulonnais\" class=\"p62-bubble\" style=\"--s:104px;background:var(--territoire-boulonnais)\">Boulonnais</a><a href=\"/territoire/calaisis\" class=\"p62-bubble\" style=\"--s:104px;background:var(--territoire-calaisis)\">Calaisis</a><a href=\"/territoire/entre-mer-et-terres\" class=\"p62-bubble\" style=\"--s:104px;background:var(--territoire-entre-mer-et-terres)\">Entre Mer et Terres</a><a href=\"/territoire/familles-en-sol-mineur-henin-carvin\" class=\"p62-bubble\" style=\"--s:104px;background:var(--territoire-fsm-henin-carvin)\">FSM Hénin-Carvin</a><a href=\"/territoire/familles-en-sol-mineur-lens-lievin\" class=\"p62-bubble\" style=\"--s:104px;background:var(--territoire-fsm-lens-lievin)\">FSM Lens-Liévin</a><a href=\"/territoire/ternois-bruaysis\" class=\"p62-bubble\" style=\"--s:104px;background:var(--territoire-ternois-bruaysis)\">Ternois Bruaysis</a></div></div></section>"
-          }
-        },
-        {
-          "type": "articleFeed",
-          "id": "home-actus",
-          "props": {
-            "title": {
-              "fr": "À la une du réseau",
-              "en": "Network highlights"
-            },
-            "description": {
-              "fr": "Ateliers, rencontres, appels à projets : la vie du réseau en direct.",
-              "en": "Workshops, meet-ups, calls for projects: the network live."
+              "fr": "Zoom sur le réseau",
+              "en": "Network spotlight"
             },
             "costumSlug": "parent62",
-            "pageSize": 6,
-            "featured": true
-          }
-        },
-        {
-          "type": "cta",
-          "id": "home-cta",
-          "props": {
-            "headline": {
-              "fr": "Une question, un projet, une initiative ?",
-              "en": "A question, a project, an initiative?"
-            },
-            "subhead": {
-              "fr": "L'équipe du réseau vous répond et vous accompagne, où que vous soyez dans le Pas-de-Calais.",
-              "en": "The network team is here for you, wherever you are in Pas-de-Calais."
-            },
-            "backgroundColor": "color-mix(in oklab, var(--primary) 8%, var(--background))",
-            "buttons": [
-              {
-                "label": {
-                  "fr": "Écrire au réseau",
-                  "en": "Write to the network"
-                },
-                "href": "/contact",
-                "variant": "default"
-              },
-              {
-                "label": {
-                  "fr": "Rejoindre la charte",
-                  "en": "Join the charter"
-                },
-                "href": "/charte",
-                "variant": "outline"
-              }
-            ],
-            "align": "center"
+            "limit": 6,
+            "viewAllHref": "/blog",
+            "background": "var(--p62-marine)",
+            "accentColor": "var(--p62-turquoise)"
           }
         }
       ]
@@ -861,7 +619,7 @@
         "fr": "Du REAAP au Réseau Parentalité",
         "en": "From REAAP to the Parenting Network"
       },
-      "layout": "default",
+      "layout": "fullwidth",
       "seo": {
         "title": {
           "fr": "Du REAAP au Réseau Parentalité",
@@ -1196,7 +954,7 @@
         "fr": "La Charte du REAAP 62",
         "en": "The REAAP 62 Charter"
       },
-      "layout": "default",
+      "layout": "fullwidth",
       "seo": {
         "title": {
           "fr": "La Charte du REAAP 62",
@@ -1504,7 +1262,7 @@
         "fr": "Nos champs d'actions",
         "en": "Our fields of action"
       },
-      "layout": "default",
+      "layout": "fullwidth",
       "seo": {
         "title": {
           "fr": "Nos champs d'actions",
@@ -1700,7 +1458,7 @@
         "fr": "Notre équipe & contact",
         "en": "Our team & contact"
       },
-      "layout": "default",
+      "layout": "fullwidth",
       "seo": {
         "title": {
           "fr": "Notre équipe & contact",
@@ -2070,7 +1828,7 @@
         "fr": "Le Mois de la Parentalité",
         "en": "Parenting Month"
       },
-      "layout": "default",
+      "layout": "fullwidth",
       "seo": {
         "title": {
           "fr": "Le Mois de la Parentalité",
@@ -2562,6 +2320,772 @@
             "pageSize": 12,
             "featured": true,
             "fullWidth": true
+          }
+        }
+      ]
+    },
+    {
+      "path": "/appels-a-projets",
+      "title": {
+        "fr": "Appels à projets",
+        "en": "Calls for projects"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Appels à projets — Parent62",
+          "en": "Calls for projects — Parent62"
+        },
+        "description": {
+          "fr": "Tous les appels à projets du Réseau Parentalité 62 : filtrez par thème, public et territoire.",
+          "en": "All calls for projects from the Parenting Network 62: filter by topic, audience and territory."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image",
+        "ogImage": "/images/parent62/hero-carte.png"
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "appels-a-projets-search",
+          "props": {
+            "headline": {
+              "fr": "Les appels à projets",
+              "en": "Calls for projects"
+            },
+            "subhead": {
+              "fr": "Filtrez par thème, public ou territoire.",
+              "en": "Filter by topic, audience or territory."
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher un appel à projets…",
+              "en": "Search calls for projects…"
+            },
+            "showActiveFiltersTags": true,
+            "dropdownFilters": [
+              {
+                "id": "theme",
+                "label": {
+                  "fr": "Thèmes",
+                  "en": "Topics"
+                },
+                "field": "themes",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les thèmes",
+                  "en": "All topics"
+                },
+                "options": [
+                  {
+                    "id": "la-citoyennete",
+                    "value": "La citoyenneté",
+                    "label": {
+                      "fr": "La citoyenneté",
+                      "en": "La citoyenneté"
+                    }
+                  },
+                  {
+                    "id": "la-communication",
+                    "value": "La communication",
+                    "label": {
+                      "fr": "La communication",
+                      "en": "La communication"
+                    }
+                  },
+                  {
+                    "id": "la-culture",
+                    "value": "La culture",
+                    "label": {
+                      "fr": "La culture",
+                      "en": "La culture"
+                    }
+                  },
+                  {
+                    "id": "la-petite-enfance",
+                    "value": "La petite enfance",
+                    "label": {
+                      "fr": "La petite enfance",
+                      "en": "La petite enfance"
+                    }
+                  },
+                  {
+                    "id": "la-sante",
+                    "value": "La santé",
+                    "label": {
+                      "fr": "La santé",
+                      "en": "La santé"
+                    }
+                  },
+                  {
+                    "id": "ladolescence",
+                    "value": "L’adolescence",
+                    "label": {
+                      "fr": "L’adolescence",
+                      "en": "L’adolescence"
+                    }
+                  },
+                  {
+                    "id": "larrivee-dun-enfant",
+                    "value": "L’arrivée d’un enfant",
+                    "label": {
+                      "fr": "L’arrivée d’un enfant",
+                      "en": "L’arrivée d’un enfant"
+                    }
+                  },
+                  {
+                    "id": "le-deuil",
+                    "value": "Le deuil",
+                    "label": {
+                      "fr": "Le deuil",
+                      "en": "Le deuil"
+                    }
+                  },
+                  {
+                    "id": "le-handicap",
+                    "value": "Le handicap",
+                    "label": {
+                      "fr": "Le handicap",
+                      "en": "Le handicap"
+                    }
+                  },
+                  {
+                    "id": "le-repit",
+                    "value": "Le répit",
+                    "label": {
+                      "fr": "Le répit",
+                      "en": "Le répit"
+                    }
+                  },
+                  {
+                    "id": "lecole",
+                    "value": "L’école",
+                    "label": {
+                      "fr": "L’école",
+                      "en": "L’école"
+                    }
+                  },
+                  {
+                    "id": "leducation",
+                    "value": "L’éducation",
+                    "label": {
+                      "fr": "L’éducation",
+                      "en": "L’éducation"
+                    }
+                  },
+                  {
+                    "id": "les-activites-supports-a-la-relation",
+                    "value": "Les activités supports à la relation",
+                    "label": {
+                      "fr": "Les activités supports à la relation",
+                      "en": "Les activités supports à la relation"
+                    }
+                  },
+                  {
+                    "id": "les-ecrans-le-numerique",
+                    "value": "Les écrans – Le numérique",
+                    "label": {
+                      "fr": "Les écrans – Le numérique",
+                      "en": "Les écrans – Le numérique"
+                    }
+                  },
+                  {
+                    "id": "les-emotions",
+                    "value": "Les émotions",
+                    "label": {
+                      "fr": "Les émotions",
+                      "en": "Les émotions"
+                    }
+                  },
+                  {
+                    "id": "les-jeux",
+                    "value": "Les jeux",
+                    "label": {
+                      "fr": "Les jeux",
+                      "en": "Les jeux"
+                    }
+                  },
+                  {
+                    "id": "les-situations-de-separation",
+                    "value": "Les situations de séparation",
+                    "label": {
+                      "fr": "Les situations de séparation",
+                      "en": "Les situations de séparation"
+                    }
+                  },
+                  {
+                    "id": "les-violences",
+                    "value": "Les violences",
+                    "label": {
+                      "fr": "Les violences",
+                      "en": "Les violences"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "public",
+                "label": {
+                  "fr": "Publics",
+                  "en": "Audiences"
+                },
+                "field": "publics",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les publics",
+                  "en": "All audiences"
+                },
+                "options": [
+                  {
+                    "id": "benevoles",
+                    "value": "Bénévoles",
+                    "label": {
+                      "fr": "Bénévoles",
+                      "en": "Bénévoles"
+                    }
+                  },
+                  {
+                    "id": "en-famille",
+                    "value": "En famille",
+                    "label": {
+                      "fr": "En famille",
+                      "en": "En famille"
+                    }
+                  },
+                  {
+                    "id": "enfance",
+                    "value": "Enfance",
+                    "label": {
+                      "fr": "Enfance",
+                      "en": "Enfance"
+                    }
+                  },
+                  {
+                    "id": "futurs-parents",
+                    "value": "Futurs parents",
+                    "label": {
+                      "fr": "Futurs parents",
+                      "en": "Futurs parents"
+                    }
+                  },
+                  {
+                    "id": "parents",
+                    "value": "Parents",
+                    "label": {
+                      "fr": "Parents",
+                      "en": "Parents"
+                    }
+                  },
+                  {
+                    "id": "parents-enfants",
+                    "value": "Parents-enfants",
+                    "label": {
+                      "fr": "Parents-enfants",
+                      "en": "Parents-enfants"
+                    }
+                  },
+                  {
+                    "id": "professionnels",
+                    "value": "Professionnels",
+                    "label": {
+                      "fr": "Professionnels",
+                      "en": "Professionnels"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "territoire",
+                "label": {
+                  "fr": "Territoires",
+                  "en": "Territories"
+                },
+                "field": "territoires",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les territoires",
+                  "en": "All territories"
+                },
+                "options": [
+                  {
+                    "id": "arrageois",
+                    "value": "Arrageois",
+                    "label": {
+                      "fr": "Arrageois",
+                      "en": "Arrageois"
+                    }
+                  },
+                  {
+                    "id": "artois",
+                    "value": "Artois",
+                    "label": {
+                      "fr": "Artois",
+                      "en": "Artois"
+                    }
+                  },
+                  {
+                    "id": "audomarois",
+                    "value": "Audomarois",
+                    "label": {
+                      "fr": "Audomarois",
+                      "en": "Audomarois"
+                    }
+                  },
+                  {
+                    "id": "boulonnais",
+                    "value": "Boulonnais",
+                    "label": {
+                      "fr": "Boulonnais",
+                      "en": "Boulonnais"
+                    }
+                  },
+                  {
+                    "id": "calaisis",
+                    "value": "Calaisis",
+                    "label": {
+                      "fr": "Calaisis",
+                      "en": "Calaisis"
+                    }
+                  },
+                  {
+                    "id": "entre-mer-et-terres",
+                    "value": "Entre Mer et Terres",
+                    "label": {
+                      "fr": "Entre Mer et Terres",
+                      "en": "Entre Mer et Terres"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur",
+                    "value": "Familles en sol mineur",
+                    "label": {
+                      "fr": "Familles en sol mineur",
+                      "en": "Familles en sol mineur"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur-henin-carvin",
+                    "value": "Familles en sol mineur Hénin Carvin",
+                    "label": {
+                      "fr": "Familles en sol mineur Hénin Carvin",
+                      "en": "Familles en sol mineur Hénin Carvin"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur-lens-lievin",
+                    "value": "Familles en sol mineur Lens Liévin",
+                    "label": {
+                      "fr": "Familles en sol mineur Lens Liévin",
+                      "en": "Familles en sol mineur Lens Liévin"
+                    }
+                  },
+                  {
+                    "id": "ternois-bruaysis",
+                    "value": "Ternois Bruaysis",
+                    "label": {
+                      "fr": "Ternois Bruaysis",
+                      "en": "Ternois Bruaysis"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "articleFeed",
+          "id": "appels-a-projets-feed",
+          "props": {
+            "costumSlug": "parent62",
+            "pageSize": 12,
+            "featured": true,
+            "fullWidth": true,
+            "filters": {
+              "tags": "Appels à projets"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/offres-emploi",
+      "title": {
+        "fr": "Offres d'emploi",
+        "en": "Job offers"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Offres d'emploi — Parent62",
+          "en": "Job offers — Parent62"
+        },
+        "description": {
+          "fr": "Les offres d'emploi du Réseau Parentalité 62 : filtrez par thème, public et territoire.",
+          "en": "Job offers from the Parenting Network 62: filter by topic, audience and territory."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image",
+        "ogImage": "/images/parent62/hero-carte.png"
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "offres-emploi-search",
+          "props": {
+            "headline": {
+              "fr": "Les offres d'emploi",
+              "en": "Job offers"
+            },
+            "subhead": {
+              "fr": "Filtrez par thème, public ou territoire.",
+              "en": "Filter by topic, audience or territory."
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher une offre d'emploi…",
+              "en": "Search job offers…"
+            },
+            "showActiveFiltersTags": true,
+            "dropdownFilters": [
+              {
+                "id": "theme",
+                "label": {
+                  "fr": "Thèmes",
+                  "en": "Topics"
+                },
+                "field": "themes",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les thèmes",
+                  "en": "All topics"
+                },
+                "options": [
+                  {
+                    "id": "la-citoyennete",
+                    "value": "La citoyenneté",
+                    "label": {
+                      "fr": "La citoyenneté",
+                      "en": "La citoyenneté"
+                    }
+                  },
+                  {
+                    "id": "la-communication",
+                    "value": "La communication",
+                    "label": {
+                      "fr": "La communication",
+                      "en": "La communication"
+                    }
+                  },
+                  {
+                    "id": "la-culture",
+                    "value": "La culture",
+                    "label": {
+                      "fr": "La culture",
+                      "en": "La culture"
+                    }
+                  },
+                  {
+                    "id": "la-petite-enfance",
+                    "value": "La petite enfance",
+                    "label": {
+                      "fr": "La petite enfance",
+                      "en": "La petite enfance"
+                    }
+                  },
+                  {
+                    "id": "la-sante",
+                    "value": "La santé",
+                    "label": {
+                      "fr": "La santé",
+                      "en": "La santé"
+                    }
+                  },
+                  {
+                    "id": "ladolescence",
+                    "value": "L’adolescence",
+                    "label": {
+                      "fr": "L’adolescence",
+                      "en": "L’adolescence"
+                    }
+                  },
+                  {
+                    "id": "larrivee-dun-enfant",
+                    "value": "L’arrivée d’un enfant",
+                    "label": {
+                      "fr": "L’arrivée d’un enfant",
+                      "en": "L’arrivée d’un enfant"
+                    }
+                  },
+                  {
+                    "id": "le-deuil",
+                    "value": "Le deuil",
+                    "label": {
+                      "fr": "Le deuil",
+                      "en": "Le deuil"
+                    }
+                  },
+                  {
+                    "id": "le-handicap",
+                    "value": "Le handicap",
+                    "label": {
+                      "fr": "Le handicap",
+                      "en": "Le handicap"
+                    }
+                  },
+                  {
+                    "id": "le-repit",
+                    "value": "Le répit",
+                    "label": {
+                      "fr": "Le répit",
+                      "en": "Le répit"
+                    }
+                  },
+                  {
+                    "id": "lecole",
+                    "value": "L’école",
+                    "label": {
+                      "fr": "L’école",
+                      "en": "L’école"
+                    }
+                  },
+                  {
+                    "id": "leducation",
+                    "value": "L’éducation",
+                    "label": {
+                      "fr": "L’éducation",
+                      "en": "L’éducation"
+                    }
+                  },
+                  {
+                    "id": "les-activites-supports-a-la-relation",
+                    "value": "Les activités supports à la relation",
+                    "label": {
+                      "fr": "Les activités supports à la relation",
+                      "en": "Les activités supports à la relation"
+                    }
+                  },
+                  {
+                    "id": "les-ecrans-le-numerique",
+                    "value": "Les écrans – Le numérique",
+                    "label": {
+                      "fr": "Les écrans – Le numérique",
+                      "en": "Les écrans – Le numérique"
+                    }
+                  },
+                  {
+                    "id": "les-emotions",
+                    "value": "Les émotions",
+                    "label": {
+                      "fr": "Les émotions",
+                      "en": "Les émotions"
+                    }
+                  },
+                  {
+                    "id": "les-jeux",
+                    "value": "Les jeux",
+                    "label": {
+                      "fr": "Les jeux",
+                      "en": "Les jeux"
+                    }
+                  },
+                  {
+                    "id": "les-situations-de-separation",
+                    "value": "Les situations de séparation",
+                    "label": {
+                      "fr": "Les situations de séparation",
+                      "en": "Les situations de séparation"
+                    }
+                  },
+                  {
+                    "id": "les-violences",
+                    "value": "Les violences",
+                    "label": {
+                      "fr": "Les violences",
+                      "en": "Les violences"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "public",
+                "label": {
+                  "fr": "Publics",
+                  "en": "Audiences"
+                },
+                "field": "publics",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les publics",
+                  "en": "All audiences"
+                },
+                "options": [
+                  {
+                    "id": "benevoles",
+                    "value": "Bénévoles",
+                    "label": {
+                      "fr": "Bénévoles",
+                      "en": "Bénévoles"
+                    }
+                  },
+                  {
+                    "id": "en-famille",
+                    "value": "En famille",
+                    "label": {
+                      "fr": "En famille",
+                      "en": "En famille"
+                    }
+                  },
+                  {
+                    "id": "enfance",
+                    "value": "Enfance",
+                    "label": {
+                      "fr": "Enfance",
+                      "en": "Enfance"
+                    }
+                  },
+                  {
+                    "id": "futurs-parents",
+                    "value": "Futurs parents",
+                    "label": {
+                      "fr": "Futurs parents",
+                      "en": "Futurs parents"
+                    }
+                  },
+                  {
+                    "id": "parents",
+                    "value": "Parents",
+                    "label": {
+                      "fr": "Parents",
+                      "en": "Parents"
+                    }
+                  },
+                  {
+                    "id": "parents-enfants",
+                    "value": "Parents-enfants",
+                    "label": {
+                      "fr": "Parents-enfants",
+                      "en": "Parents-enfants"
+                    }
+                  },
+                  {
+                    "id": "professionnels",
+                    "value": "Professionnels",
+                    "label": {
+                      "fr": "Professionnels",
+                      "en": "Professionnels"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "territoire",
+                "label": {
+                  "fr": "Territoires",
+                  "en": "Territories"
+                },
+                "field": "territoires",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les territoires",
+                  "en": "All territories"
+                },
+                "options": [
+                  {
+                    "id": "arrageois",
+                    "value": "Arrageois",
+                    "label": {
+                      "fr": "Arrageois",
+                      "en": "Arrageois"
+                    }
+                  },
+                  {
+                    "id": "artois",
+                    "value": "Artois",
+                    "label": {
+                      "fr": "Artois",
+                      "en": "Artois"
+                    }
+                  },
+                  {
+                    "id": "audomarois",
+                    "value": "Audomarois",
+                    "label": {
+                      "fr": "Audomarois",
+                      "en": "Audomarois"
+                    }
+                  },
+                  {
+                    "id": "boulonnais",
+                    "value": "Boulonnais",
+                    "label": {
+                      "fr": "Boulonnais",
+                      "en": "Boulonnais"
+                    }
+                  },
+                  {
+                    "id": "calaisis",
+                    "value": "Calaisis",
+                    "label": {
+                      "fr": "Calaisis",
+                      "en": "Calaisis"
+                    }
+                  },
+                  {
+                    "id": "entre-mer-et-terres",
+                    "value": "Entre Mer et Terres",
+                    "label": {
+                      "fr": "Entre Mer et Terres",
+                      "en": "Entre Mer et Terres"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur",
+                    "value": "Familles en sol mineur",
+                    "label": {
+                      "fr": "Familles en sol mineur",
+                      "en": "Familles en sol mineur"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur-henin-carvin",
+                    "value": "Familles en sol mineur Hénin Carvin",
+                    "label": {
+                      "fr": "Familles en sol mineur Hénin Carvin",
+                      "en": "Familles en sol mineur Hénin Carvin"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur-lens-lievin",
+                    "value": "Familles en sol mineur Lens Liévin",
+                    "label": {
+                      "fr": "Familles en sol mineur Lens Liévin",
+                      "en": "Familles en sol mineur Lens Liévin"
+                    }
+                  },
+                  {
+                    "id": "ternois-bruaysis",
+                    "value": "Ternois Bruaysis",
+                    "label": {
+                      "fr": "Ternois Bruaysis",
+                      "en": "Ternois Bruaysis"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "articleFeed",
+          "id": "offres-emploi-feed",
+          "props": {
+            "costumSlug": "parent62",
+            "pageSize": 12,
+            "featured": true,
+            "fullWidth": true,
+            "filters": {
+              "tags": "Offres d'emploi"
+            }
           }
         }
       ]
@@ -3080,16 +3604,16 @@
                 "accent": {
                   "field": "territoires",
                   "colors": {
-                    "Arrageois": "#6d5da8",
-                    "Artois": "#b7cb6b",
-                    "Audomarois": "#e5af32",
-                    "Boulonnais": "#c34a42",
-                    "Calaisis": "#ed8a4c",
-                    "Entre Mer et Terres": "#3fb4be",
-                    "Familles en sol mineur": "#a2537e",
-                    "Familles en sol mineur Hénin Carvin": "#a2537e",
-                    "Familles en sol mineur Lens Liévin": "#97776b",
-                    "Ternois Bruaysis": "#d492a9"
+                    "Arrageois": "var(--territoire-arrageois)",
+                    "Artois": "var(--territoire-artois)",
+                    "Audomarois": "var(--territoire-audomarois)",
+                    "Boulonnais": "var(--territoire-boulonnais)",
+                    "Calaisis": "var(--territoire-calaisis)",
+                    "Entre Mer et Terres": "var(--territoire-entre-mer-et-terres)",
+                    "Familles en sol mineur": "var(--territoire-familles-en-sol-mineur)",
+                    "Familles en sol mineur Hénin Carvin": "var(--territoire-fsm-henin-carvin)",
+                    "Familles en sol mineur Lens Liévin": "var(--territoire-fsm-lens-lievin)",
+                    "Ternois Bruaysis": "var(--territoire-ternois-bruaysis)"
                   }
                 },
                 "facets": [
@@ -4188,25 +4712,17 @@
       },
       "sections": [
         {
-          "type": "title",
-          "id": "theme-la-petite-enfance-titre",
-          "props": {
-            "title": {
-              "fr": "La petite enfance",
-              "en": "Early childhood"
-            },
-            "subtitle": {
-              "fr": "Ressources et actions petite enfance (0-6 ans).",
-              "en": "Early-childhood resources and actions."
-            },
-            "align": "center",
-            "size": "xl"
-          }
-        },
-        {
           "type": "searchHeader",
           "id": "/theme/la-petite-enfance-search",
           "props": {
+            "headline": {
+              "fr": "La petite enfance",
+              "en": "Early childhood"
+            },
+            "subhead": {
+              "fr": "Ressources et actions petite enfance (0-6 ans).",
+              "en": "Early-childhood resources and actions."
+            },
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -4380,8 +4896,7 @@
                   }
                 ]
               }
-            ],
-            "compact": true
+            ]
           }
         },
         {
@@ -4425,25 +4940,17 @@
       },
       "sections": [
         {
-          "type": "title",
-          "id": "theme-ladolescence-titre",
-          "props": {
-            "title": {
-              "fr": "L’adolescence",
-              "en": "Adolescence"
-            },
-            "subtitle": {
-              "fr": "Accompagner la parentalité à l'adolescence.",
-              "en": "Supporting parenting through adolescence."
-            },
-            "align": "center",
-            "size": "xl"
-          }
-        },
-        {
           "type": "searchHeader",
           "id": "/theme/ladolescence-search",
           "props": {
+            "headline": {
+              "fr": "L’adolescence",
+              "en": "Adolescence"
+            },
+            "subhead": {
+              "fr": "Accompagner la parentalité à l'adolescence.",
+              "en": "Supporting parenting through adolescence."
+            },
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -4617,8 +5124,7 @@
                   }
                 ]
               }
-            ],
-            "compact": true
+            ]
           }
         },
         {
@@ -4662,25 +5168,17 @@
       },
       "sections": [
         {
-          "type": "title",
-          "id": "theme-la-sante-titre",
-          "props": {
-            "title": {
-              "fr": "La santé",
-              "en": "Health"
-            },
-            "subtitle": {
-              "fr": "Santé de l'enfant et de la famille.",
-              "en": "Child and family health."
-            },
-            "align": "center",
-            "size": "xl"
-          }
-        },
-        {
           "type": "searchHeader",
           "id": "/theme/la-sante-search",
           "props": {
+            "headline": {
+              "fr": "La santé",
+              "en": "Health"
+            },
+            "subhead": {
+              "fr": "Santé de l'enfant et de la famille.",
+              "en": "Child and family health."
+            },
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -4854,8 +5352,7 @@
                   }
                 ]
               }
-            ],
-            "compact": true
+            ]
           }
         },
         {
@@ -4899,25 +5396,17 @@
       },
       "sections": [
         {
-          "type": "title",
-          "id": "theme-le-handicap-titre",
-          "props": {
-            "title": {
-              "fr": "Le handicap",
-              "en": "Disability"
-            },
-            "subtitle": {
-              "fr": "Parentalité et handicap.",
-              "en": "Parenting and disability."
-            },
-            "align": "center",
-            "size": "xl"
-          }
-        },
-        {
           "type": "searchHeader",
           "id": "/theme/le-handicap-search",
           "props": {
+            "headline": {
+              "fr": "Le handicap",
+              "en": "Disability"
+            },
+            "subhead": {
+              "fr": "Parentalité et handicap.",
+              "en": "Parenting and disability."
+            },
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -5091,8 +5580,7 @@
                   }
                 ]
               }
-            ],
-            "compact": true
+            ]
           }
         },
         {
@@ -5136,25 +5624,17 @@
       },
       "sections": [
         {
-          "type": "title",
-          "id": "theme-les-jeux-titre",
-          "props": {
-            "title": {
-              "fr": "Les jeux",
-              "en": "Games"
-            },
-            "subtitle": {
-              "fr": "Le jeu comme support de la relation parent-enfant.",
-              "en": "Play as a support for the parent-child bond."
-            },
-            "align": "center",
-            "size": "xl"
-          }
-        },
-        {
           "type": "searchHeader",
           "id": "/theme/les-jeux-search",
           "props": {
+            "headline": {
+              "fr": "Les jeux",
+              "en": "Games"
+            },
+            "subhead": {
+              "fr": "Le jeu comme support de la relation parent-enfant.",
+              "en": "Play as a support for the parent-child bond."
+            },
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -5328,8 +5808,7 @@
                   }
                 ]
               }
-            ],
-            "compact": true
+            ]
           }
         },
         {
@@ -5373,25 +5852,17 @@
       },
       "sections": [
         {
-          "type": "title",
-          "id": "theme-leducation-titre",
-          "props": {
-            "title": {
-              "fr": "L’éducation",
-              "en": "Education"
-            },
-            "subtitle": {
-              "fr": "Éduquer, poser un cadre, accompagner.",
-              "en": "Educating, setting a framework, supporting."
-            },
-            "align": "center",
-            "size": "xl"
-          }
-        },
-        {
           "type": "searchHeader",
           "id": "/theme/leducation-search",
           "props": {
+            "headline": {
+              "fr": "L’éducation",
+              "en": "Education"
+            },
+            "subhead": {
+              "fr": "Éduquer, poser un cadre, accompagner.",
+              "en": "Educating, setting a framework, supporting."
+            },
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -5565,8 +6036,7 @@
                   }
                 ]
               }
-            ],
-            "compact": true
+            ]
           }
         },
         {
@@ -5610,25 +6080,17 @@
       },
       "sections": [
         {
-          "type": "title",
-          "id": "theme-la-communication-titre",
-          "props": {
-            "title": {
-              "fr": "La communication",
-              "en": "Communication"
-            },
-            "subtitle": {
-              "fr": "Communiquer en famille, écouter, dialoguer.",
-              "en": "Communicating within the family."
-            },
-            "align": "center",
-            "size": "xl"
-          }
-        },
-        {
           "type": "searchHeader",
           "id": "/theme/la-communication-search",
           "props": {
+            "headline": {
+              "fr": "La communication",
+              "en": "Communication"
+            },
+            "subhead": {
+              "fr": "Communiquer en famille, écouter, dialoguer.",
+              "en": "Communicating within the family."
+            },
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -5802,8 +6264,7 @@
                   }
                 ]
               }
-            ],
-            "compact": true
+            ]
           }
         },
         {
@@ -5847,25 +6308,17 @@
       },
       "sections": [
         {
-          "type": "title",
-          "id": "theme-les-ecrans-le-numerique-titre",
-          "props": {
-            "title": {
-              "fr": "Les écrans – Le numérique",
-              "en": "Screens & digital"
-            },
-            "subtitle": {
-              "fr": "Écrans, numérique et vie de famille.",
-              "en": "Screens, digital life and family."
-            },
-            "align": "center",
-            "size": "xl"
-          }
-        },
-        {
           "type": "searchHeader",
           "id": "/theme/les-ecrans-le-numerique-search",
           "props": {
+            "headline": {
+              "fr": "Les écrans – Le numérique",
+              "en": "Screens & digital"
+            },
+            "subhead": {
+              "fr": "Écrans, numérique et vie de famille.",
+              "en": "Screens, digital life and family."
+            },
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher…",
@@ -6039,8 +6492,7 @@
                   }
                 ]
               }
-            ],
-            "compact": true
+            ]
           }
         },
         {
@@ -6054,6 +6506,2218 @@
               "themes": {
                 "$in": [
                   "Les écrans – Le numérique"
+                ]
+              }
+            },
+            "fullWidth": true
+          }
+        }
+      ]
+    },
+    {
+      "path": "/public/benevoles",
+      "title": {
+        "fr": "Bénévoles",
+        "en": "Volunteers"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Bénévoles — Parent62",
+          "en": "Volunteers — Parent62"
+        },
+        "description": {
+          "fr": "Ressources et actions pour les bénévoles du réseau.",
+          "en": "Resources and actions for network volunteers."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image",
+        "ogImage": "/images/parent62/hero-carte.png"
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "/public/benevoles-search",
+          "props": {
+            "headline": {
+              "fr": "Bénévoles",
+              "en": "Volunteers"
+            },
+            "subhead": {
+              "fr": "Ressources et actions pour les bénévoles du réseau.",
+              "en": "Resources and actions for network volunteers."
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher…",
+              "en": "Search…"
+            },
+            "showActiveFiltersTags": true,
+            "dropdownFilters": [
+              {
+                "id": "theme",
+                "label": {
+                  "fr": "Thèmes",
+                  "en": "Topics"
+                },
+                "field": "themes",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les thèmes",
+                  "en": "All topics"
+                },
+                "options": [
+                  {
+                    "id": "la-citoyennete",
+                    "value": "La citoyenneté",
+                    "label": {
+                      "fr": "La citoyenneté",
+                      "en": "La citoyenneté"
+                    }
+                  },
+                  {
+                    "id": "la-communication",
+                    "value": "La communication",
+                    "label": {
+                      "fr": "La communication",
+                      "en": "La communication"
+                    }
+                  },
+                  {
+                    "id": "la-culture",
+                    "value": "La culture",
+                    "label": {
+                      "fr": "La culture",
+                      "en": "La culture"
+                    }
+                  },
+                  {
+                    "id": "la-petite-enfance",
+                    "value": "La petite enfance",
+                    "label": {
+                      "fr": "La petite enfance",
+                      "en": "La petite enfance"
+                    }
+                  },
+                  {
+                    "id": "la-sante",
+                    "value": "La santé",
+                    "label": {
+                      "fr": "La santé",
+                      "en": "La santé"
+                    }
+                  },
+                  {
+                    "id": "ladolescence",
+                    "value": "L’adolescence",
+                    "label": {
+                      "fr": "L’adolescence",
+                      "en": "L’adolescence"
+                    }
+                  },
+                  {
+                    "id": "larrivee-dun-enfant",
+                    "value": "L’arrivée d’un enfant",
+                    "label": {
+                      "fr": "L’arrivée d’un enfant",
+                      "en": "L’arrivée d’un enfant"
+                    }
+                  },
+                  {
+                    "id": "le-deuil",
+                    "value": "Le deuil",
+                    "label": {
+                      "fr": "Le deuil",
+                      "en": "Le deuil"
+                    }
+                  },
+                  {
+                    "id": "le-handicap",
+                    "value": "Le handicap",
+                    "label": {
+                      "fr": "Le handicap",
+                      "en": "Le handicap"
+                    }
+                  },
+                  {
+                    "id": "le-repit",
+                    "value": "Le répit",
+                    "label": {
+                      "fr": "Le répit",
+                      "en": "Le répit"
+                    }
+                  },
+                  {
+                    "id": "lecole",
+                    "value": "L’école",
+                    "label": {
+                      "fr": "L’école",
+                      "en": "L’école"
+                    }
+                  },
+                  {
+                    "id": "leducation",
+                    "value": "L’éducation",
+                    "label": {
+                      "fr": "L’éducation",
+                      "en": "L’éducation"
+                    }
+                  },
+                  {
+                    "id": "les-activites-supports-a-la-relation",
+                    "value": "Les activités supports à la relation",
+                    "label": {
+                      "fr": "Les activités supports à la relation",
+                      "en": "Les activités supports à la relation"
+                    }
+                  },
+                  {
+                    "id": "les-ecrans-le-numerique",
+                    "value": "Les écrans – Le numérique",
+                    "label": {
+                      "fr": "Les écrans – Le numérique",
+                      "en": "Les écrans – Le numérique"
+                    }
+                  },
+                  {
+                    "id": "les-emotions",
+                    "value": "Les émotions",
+                    "label": {
+                      "fr": "Les émotions",
+                      "en": "Les émotions"
+                    }
+                  },
+                  {
+                    "id": "les-jeux",
+                    "value": "Les jeux",
+                    "label": {
+                      "fr": "Les jeux",
+                      "en": "Les jeux"
+                    }
+                  },
+                  {
+                    "id": "les-situations-de-separation",
+                    "value": "Les situations de séparation",
+                    "label": {
+                      "fr": "Les situations de séparation",
+                      "en": "Les situations de séparation"
+                    }
+                  },
+                  {
+                    "id": "les-violences",
+                    "value": "Les violences",
+                    "label": {
+                      "fr": "Les violences",
+                      "en": "Les violences"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "territoire",
+                "label": {
+                  "fr": "Territoires",
+                  "en": "Territories"
+                },
+                "field": "territoires",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les territoires",
+                  "en": "All territories"
+                },
+                "options": [
+                  {
+                    "id": "arrageois",
+                    "value": "Arrageois",
+                    "label": {
+                      "fr": "Arrageois",
+                      "en": "Arrageois"
+                    }
+                  },
+                  {
+                    "id": "artois",
+                    "value": "Artois",
+                    "label": {
+                      "fr": "Artois",
+                      "en": "Artois"
+                    }
+                  },
+                  {
+                    "id": "audomarois",
+                    "value": "Audomarois",
+                    "label": {
+                      "fr": "Audomarois",
+                      "en": "Audomarois"
+                    }
+                  },
+                  {
+                    "id": "boulonnais",
+                    "value": "Boulonnais",
+                    "label": {
+                      "fr": "Boulonnais",
+                      "en": "Boulonnais"
+                    }
+                  },
+                  {
+                    "id": "calaisis",
+                    "value": "Calaisis",
+                    "label": {
+                      "fr": "Calaisis",
+                      "en": "Calaisis"
+                    }
+                  },
+                  {
+                    "id": "entre-mer-et-terres",
+                    "value": "Entre Mer et Terres",
+                    "label": {
+                      "fr": "Entre Mer et Terres",
+                      "en": "Entre Mer et Terres"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur",
+                    "value": "Familles en sol mineur",
+                    "label": {
+                      "fr": "Familles en sol mineur",
+                      "en": "Familles en sol mineur"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur-henin-carvin",
+                    "value": "Familles en sol mineur Hénin Carvin",
+                    "label": {
+                      "fr": "Familles en sol mineur Hénin Carvin",
+                      "en": "Familles en sol mineur Hénin Carvin"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur-lens-lievin",
+                    "value": "Familles en sol mineur Lens Liévin",
+                    "label": {
+                      "fr": "Familles en sol mineur Lens Liévin",
+                      "en": "Familles en sol mineur Lens Liévin"
+                    }
+                  },
+                  {
+                    "id": "ternois-bruaysis",
+                    "value": "Ternois Bruaysis",
+                    "label": {
+                      "fr": "Ternois Bruaysis",
+                      "en": "Ternois Bruaysis"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "articleFeed",
+          "id": "/public/benevoles-feed",
+          "props": {
+            "costumSlug": "parent62",
+            "pageSize": 12,
+            "featured": false,
+            "filters": {
+              "publics": {
+                "$in": [
+                  "Bénévoles"
+                ]
+              }
+            },
+            "fullWidth": true
+          }
+        }
+      ]
+    },
+    {
+      "path": "/public/en-famille",
+      "title": {
+        "fr": "En famille",
+        "en": "As a family"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "En famille — Parent62",
+          "en": "As a family — Parent62"
+        },
+        "description": {
+          "fr": "Ressources et actions à vivre en famille.",
+          "en": "Resources and actions to enjoy as a family."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image",
+        "ogImage": "/images/parent62/hero-carte.png"
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "/public/en-famille-search",
+          "props": {
+            "headline": {
+              "fr": "En famille",
+              "en": "As a family"
+            },
+            "subhead": {
+              "fr": "Ressources et actions à vivre en famille.",
+              "en": "Resources and actions to enjoy as a family."
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher…",
+              "en": "Search…"
+            },
+            "showActiveFiltersTags": true,
+            "dropdownFilters": [
+              {
+                "id": "theme",
+                "label": {
+                  "fr": "Thèmes",
+                  "en": "Topics"
+                },
+                "field": "themes",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les thèmes",
+                  "en": "All topics"
+                },
+                "options": [
+                  {
+                    "id": "la-citoyennete",
+                    "value": "La citoyenneté",
+                    "label": {
+                      "fr": "La citoyenneté",
+                      "en": "La citoyenneté"
+                    }
+                  },
+                  {
+                    "id": "la-communication",
+                    "value": "La communication",
+                    "label": {
+                      "fr": "La communication",
+                      "en": "La communication"
+                    }
+                  },
+                  {
+                    "id": "la-culture",
+                    "value": "La culture",
+                    "label": {
+                      "fr": "La culture",
+                      "en": "La culture"
+                    }
+                  },
+                  {
+                    "id": "la-petite-enfance",
+                    "value": "La petite enfance",
+                    "label": {
+                      "fr": "La petite enfance",
+                      "en": "La petite enfance"
+                    }
+                  },
+                  {
+                    "id": "la-sante",
+                    "value": "La santé",
+                    "label": {
+                      "fr": "La santé",
+                      "en": "La santé"
+                    }
+                  },
+                  {
+                    "id": "ladolescence",
+                    "value": "L’adolescence",
+                    "label": {
+                      "fr": "L’adolescence",
+                      "en": "L’adolescence"
+                    }
+                  },
+                  {
+                    "id": "larrivee-dun-enfant",
+                    "value": "L’arrivée d’un enfant",
+                    "label": {
+                      "fr": "L’arrivée d’un enfant",
+                      "en": "L’arrivée d’un enfant"
+                    }
+                  },
+                  {
+                    "id": "le-deuil",
+                    "value": "Le deuil",
+                    "label": {
+                      "fr": "Le deuil",
+                      "en": "Le deuil"
+                    }
+                  },
+                  {
+                    "id": "le-handicap",
+                    "value": "Le handicap",
+                    "label": {
+                      "fr": "Le handicap",
+                      "en": "Le handicap"
+                    }
+                  },
+                  {
+                    "id": "le-repit",
+                    "value": "Le répit",
+                    "label": {
+                      "fr": "Le répit",
+                      "en": "Le répit"
+                    }
+                  },
+                  {
+                    "id": "lecole",
+                    "value": "L’école",
+                    "label": {
+                      "fr": "L’école",
+                      "en": "L’école"
+                    }
+                  },
+                  {
+                    "id": "leducation",
+                    "value": "L’éducation",
+                    "label": {
+                      "fr": "L’éducation",
+                      "en": "L’éducation"
+                    }
+                  },
+                  {
+                    "id": "les-activites-supports-a-la-relation",
+                    "value": "Les activités supports à la relation",
+                    "label": {
+                      "fr": "Les activités supports à la relation",
+                      "en": "Les activités supports à la relation"
+                    }
+                  },
+                  {
+                    "id": "les-ecrans-le-numerique",
+                    "value": "Les écrans – Le numérique",
+                    "label": {
+                      "fr": "Les écrans – Le numérique",
+                      "en": "Les écrans – Le numérique"
+                    }
+                  },
+                  {
+                    "id": "les-emotions",
+                    "value": "Les émotions",
+                    "label": {
+                      "fr": "Les émotions",
+                      "en": "Les émotions"
+                    }
+                  },
+                  {
+                    "id": "les-jeux",
+                    "value": "Les jeux",
+                    "label": {
+                      "fr": "Les jeux",
+                      "en": "Les jeux"
+                    }
+                  },
+                  {
+                    "id": "les-situations-de-separation",
+                    "value": "Les situations de séparation",
+                    "label": {
+                      "fr": "Les situations de séparation",
+                      "en": "Les situations de séparation"
+                    }
+                  },
+                  {
+                    "id": "les-violences",
+                    "value": "Les violences",
+                    "label": {
+                      "fr": "Les violences",
+                      "en": "Les violences"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "territoire",
+                "label": {
+                  "fr": "Territoires",
+                  "en": "Territories"
+                },
+                "field": "territoires",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les territoires",
+                  "en": "All territories"
+                },
+                "options": [
+                  {
+                    "id": "arrageois",
+                    "value": "Arrageois",
+                    "label": {
+                      "fr": "Arrageois",
+                      "en": "Arrageois"
+                    }
+                  },
+                  {
+                    "id": "artois",
+                    "value": "Artois",
+                    "label": {
+                      "fr": "Artois",
+                      "en": "Artois"
+                    }
+                  },
+                  {
+                    "id": "audomarois",
+                    "value": "Audomarois",
+                    "label": {
+                      "fr": "Audomarois",
+                      "en": "Audomarois"
+                    }
+                  },
+                  {
+                    "id": "boulonnais",
+                    "value": "Boulonnais",
+                    "label": {
+                      "fr": "Boulonnais",
+                      "en": "Boulonnais"
+                    }
+                  },
+                  {
+                    "id": "calaisis",
+                    "value": "Calaisis",
+                    "label": {
+                      "fr": "Calaisis",
+                      "en": "Calaisis"
+                    }
+                  },
+                  {
+                    "id": "entre-mer-et-terres",
+                    "value": "Entre Mer et Terres",
+                    "label": {
+                      "fr": "Entre Mer et Terres",
+                      "en": "Entre Mer et Terres"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur",
+                    "value": "Familles en sol mineur",
+                    "label": {
+                      "fr": "Familles en sol mineur",
+                      "en": "Familles en sol mineur"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur-henin-carvin",
+                    "value": "Familles en sol mineur Hénin Carvin",
+                    "label": {
+                      "fr": "Familles en sol mineur Hénin Carvin",
+                      "en": "Familles en sol mineur Hénin Carvin"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur-lens-lievin",
+                    "value": "Familles en sol mineur Lens Liévin",
+                    "label": {
+                      "fr": "Familles en sol mineur Lens Liévin",
+                      "en": "Familles en sol mineur Lens Liévin"
+                    }
+                  },
+                  {
+                    "id": "ternois-bruaysis",
+                    "value": "Ternois Bruaysis",
+                    "label": {
+                      "fr": "Ternois Bruaysis",
+                      "en": "Ternois Bruaysis"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "articleFeed",
+          "id": "/public/en-famille-feed",
+          "props": {
+            "costumSlug": "parent62",
+            "pageSize": 12,
+            "featured": false,
+            "filters": {
+              "publics": {
+                "$in": [
+                  "En famille"
+                ]
+              }
+            },
+            "fullWidth": true
+          }
+        }
+      ]
+    },
+    {
+      "path": "/public/enfance",
+      "title": {
+        "fr": "Enfance",
+        "en": "Childhood"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Enfance — Parent62",
+          "en": "Childhood — Parent62"
+        },
+        "description": {
+          "fr": "Ressources et actions dédiées à l'enfance.",
+          "en": "Resources and actions dedicated to childhood."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image",
+        "ogImage": "/images/parent62/hero-carte.png"
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "/public/enfance-search",
+          "props": {
+            "headline": {
+              "fr": "Enfance",
+              "en": "Childhood"
+            },
+            "subhead": {
+              "fr": "Ressources et actions dédiées à l'enfance.",
+              "en": "Resources and actions dedicated to childhood."
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher…",
+              "en": "Search…"
+            },
+            "showActiveFiltersTags": true,
+            "dropdownFilters": [
+              {
+                "id": "theme",
+                "label": {
+                  "fr": "Thèmes",
+                  "en": "Topics"
+                },
+                "field": "themes",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les thèmes",
+                  "en": "All topics"
+                },
+                "options": [
+                  {
+                    "id": "la-citoyennete",
+                    "value": "La citoyenneté",
+                    "label": {
+                      "fr": "La citoyenneté",
+                      "en": "La citoyenneté"
+                    }
+                  },
+                  {
+                    "id": "la-communication",
+                    "value": "La communication",
+                    "label": {
+                      "fr": "La communication",
+                      "en": "La communication"
+                    }
+                  },
+                  {
+                    "id": "la-culture",
+                    "value": "La culture",
+                    "label": {
+                      "fr": "La culture",
+                      "en": "La culture"
+                    }
+                  },
+                  {
+                    "id": "la-petite-enfance",
+                    "value": "La petite enfance",
+                    "label": {
+                      "fr": "La petite enfance",
+                      "en": "La petite enfance"
+                    }
+                  },
+                  {
+                    "id": "la-sante",
+                    "value": "La santé",
+                    "label": {
+                      "fr": "La santé",
+                      "en": "La santé"
+                    }
+                  },
+                  {
+                    "id": "ladolescence",
+                    "value": "L’adolescence",
+                    "label": {
+                      "fr": "L’adolescence",
+                      "en": "L’adolescence"
+                    }
+                  },
+                  {
+                    "id": "larrivee-dun-enfant",
+                    "value": "L’arrivée d’un enfant",
+                    "label": {
+                      "fr": "L’arrivée d’un enfant",
+                      "en": "L’arrivée d’un enfant"
+                    }
+                  },
+                  {
+                    "id": "le-deuil",
+                    "value": "Le deuil",
+                    "label": {
+                      "fr": "Le deuil",
+                      "en": "Le deuil"
+                    }
+                  },
+                  {
+                    "id": "le-handicap",
+                    "value": "Le handicap",
+                    "label": {
+                      "fr": "Le handicap",
+                      "en": "Le handicap"
+                    }
+                  },
+                  {
+                    "id": "le-repit",
+                    "value": "Le répit",
+                    "label": {
+                      "fr": "Le répit",
+                      "en": "Le répit"
+                    }
+                  },
+                  {
+                    "id": "lecole",
+                    "value": "L’école",
+                    "label": {
+                      "fr": "L’école",
+                      "en": "L’école"
+                    }
+                  },
+                  {
+                    "id": "leducation",
+                    "value": "L’éducation",
+                    "label": {
+                      "fr": "L’éducation",
+                      "en": "L’éducation"
+                    }
+                  },
+                  {
+                    "id": "les-activites-supports-a-la-relation",
+                    "value": "Les activités supports à la relation",
+                    "label": {
+                      "fr": "Les activités supports à la relation",
+                      "en": "Les activités supports à la relation"
+                    }
+                  },
+                  {
+                    "id": "les-ecrans-le-numerique",
+                    "value": "Les écrans – Le numérique",
+                    "label": {
+                      "fr": "Les écrans – Le numérique",
+                      "en": "Les écrans – Le numérique"
+                    }
+                  },
+                  {
+                    "id": "les-emotions",
+                    "value": "Les émotions",
+                    "label": {
+                      "fr": "Les émotions",
+                      "en": "Les émotions"
+                    }
+                  },
+                  {
+                    "id": "les-jeux",
+                    "value": "Les jeux",
+                    "label": {
+                      "fr": "Les jeux",
+                      "en": "Les jeux"
+                    }
+                  },
+                  {
+                    "id": "les-situations-de-separation",
+                    "value": "Les situations de séparation",
+                    "label": {
+                      "fr": "Les situations de séparation",
+                      "en": "Les situations de séparation"
+                    }
+                  },
+                  {
+                    "id": "les-violences",
+                    "value": "Les violences",
+                    "label": {
+                      "fr": "Les violences",
+                      "en": "Les violences"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "territoire",
+                "label": {
+                  "fr": "Territoires",
+                  "en": "Territories"
+                },
+                "field": "territoires",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les territoires",
+                  "en": "All territories"
+                },
+                "options": [
+                  {
+                    "id": "arrageois",
+                    "value": "Arrageois",
+                    "label": {
+                      "fr": "Arrageois",
+                      "en": "Arrageois"
+                    }
+                  },
+                  {
+                    "id": "artois",
+                    "value": "Artois",
+                    "label": {
+                      "fr": "Artois",
+                      "en": "Artois"
+                    }
+                  },
+                  {
+                    "id": "audomarois",
+                    "value": "Audomarois",
+                    "label": {
+                      "fr": "Audomarois",
+                      "en": "Audomarois"
+                    }
+                  },
+                  {
+                    "id": "boulonnais",
+                    "value": "Boulonnais",
+                    "label": {
+                      "fr": "Boulonnais",
+                      "en": "Boulonnais"
+                    }
+                  },
+                  {
+                    "id": "calaisis",
+                    "value": "Calaisis",
+                    "label": {
+                      "fr": "Calaisis",
+                      "en": "Calaisis"
+                    }
+                  },
+                  {
+                    "id": "entre-mer-et-terres",
+                    "value": "Entre Mer et Terres",
+                    "label": {
+                      "fr": "Entre Mer et Terres",
+                      "en": "Entre Mer et Terres"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur",
+                    "value": "Familles en sol mineur",
+                    "label": {
+                      "fr": "Familles en sol mineur",
+                      "en": "Familles en sol mineur"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur-henin-carvin",
+                    "value": "Familles en sol mineur Hénin Carvin",
+                    "label": {
+                      "fr": "Familles en sol mineur Hénin Carvin",
+                      "en": "Familles en sol mineur Hénin Carvin"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur-lens-lievin",
+                    "value": "Familles en sol mineur Lens Liévin",
+                    "label": {
+                      "fr": "Familles en sol mineur Lens Liévin",
+                      "en": "Familles en sol mineur Lens Liévin"
+                    }
+                  },
+                  {
+                    "id": "ternois-bruaysis",
+                    "value": "Ternois Bruaysis",
+                    "label": {
+                      "fr": "Ternois Bruaysis",
+                      "en": "Ternois Bruaysis"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "articleFeed",
+          "id": "/public/enfance-feed",
+          "props": {
+            "costumSlug": "parent62",
+            "pageSize": 12,
+            "featured": false,
+            "filters": {
+              "publics": {
+                "$in": [
+                  "Enfance"
+                ]
+              }
+            },
+            "fullWidth": true
+          }
+        }
+      ]
+    },
+    {
+      "path": "/public/futurs-parents",
+      "title": {
+        "fr": "Futurs parents",
+        "en": "Parents-to-be"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Futurs parents — Parent62",
+          "en": "Parents-to-be — Parent62"
+        },
+        "description": {
+          "fr": "Ressources et actions pour préparer l'arrivée d'un enfant.",
+          "en": "Resources and actions to prepare for a new child."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image",
+        "ogImage": "/images/parent62/hero-carte.png"
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "/public/futurs-parents-search",
+          "props": {
+            "headline": {
+              "fr": "Futurs parents",
+              "en": "Parents-to-be"
+            },
+            "subhead": {
+              "fr": "Ressources et actions pour préparer l'arrivée d'un enfant.",
+              "en": "Resources and actions to prepare for a new child."
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher…",
+              "en": "Search…"
+            },
+            "showActiveFiltersTags": true,
+            "dropdownFilters": [
+              {
+                "id": "theme",
+                "label": {
+                  "fr": "Thèmes",
+                  "en": "Topics"
+                },
+                "field": "themes",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les thèmes",
+                  "en": "All topics"
+                },
+                "options": [
+                  {
+                    "id": "la-citoyennete",
+                    "value": "La citoyenneté",
+                    "label": {
+                      "fr": "La citoyenneté",
+                      "en": "La citoyenneté"
+                    }
+                  },
+                  {
+                    "id": "la-communication",
+                    "value": "La communication",
+                    "label": {
+                      "fr": "La communication",
+                      "en": "La communication"
+                    }
+                  },
+                  {
+                    "id": "la-culture",
+                    "value": "La culture",
+                    "label": {
+                      "fr": "La culture",
+                      "en": "La culture"
+                    }
+                  },
+                  {
+                    "id": "la-petite-enfance",
+                    "value": "La petite enfance",
+                    "label": {
+                      "fr": "La petite enfance",
+                      "en": "La petite enfance"
+                    }
+                  },
+                  {
+                    "id": "la-sante",
+                    "value": "La santé",
+                    "label": {
+                      "fr": "La santé",
+                      "en": "La santé"
+                    }
+                  },
+                  {
+                    "id": "ladolescence",
+                    "value": "L’adolescence",
+                    "label": {
+                      "fr": "L’adolescence",
+                      "en": "L’adolescence"
+                    }
+                  },
+                  {
+                    "id": "larrivee-dun-enfant",
+                    "value": "L’arrivée d’un enfant",
+                    "label": {
+                      "fr": "L’arrivée d’un enfant",
+                      "en": "L’arrivée d’un enfant"
+                    }
+                  },
+                  {
+                    "id": "le-deuil",
+                    "value": "Le deuil",
+                    "label": {
+                      "fr": "Le deuil",
+                      "en": "Le deuil"
+                    }
+                  },
+                  {
+                    "id": "le-handicap",
+                    "value": "Le handicap",
+                    "label": {
+                      "fr": "Le handicap",
+                      "en": "Le handicap"
+                    }
+                  },
+                  {
+                    "id": "le-repit",
+                    "value": "Le répit",
+                    "label": {
+                      "fr": "Le répit",
+                      "en": "Le répit"
+                    }
+                  },
+                  {
+                    "id": "lecole",
+                    "value": "L’école",
+                    "label": {
+                      "fr": "L’école",
+                      "en": "L’école"
+                    }
+                  },
+                  {
+                    "id": "leducation",
+                    "value": "L’éducation",
+                    "label": {
+                      "fr": "L’éducation",
+                      "en": "L’éducation"
+                    }
+                  },
+                  {
+                    "id": "les-activites-supports-a-la-relation",
+                    "value": "Les activités supports à la relation",
+                    "label": {
+                      "fr": "Les activités supports à la relation",
+                      "en": "Les activités supports à la relation"
+                    }
+                  },
+                  {
+                    "id": "les-ecrans-le-numerique",
+                    "value": "Les écrans – Le numérique",
+                    "label": {
+                      "fr": "Les écrans – Le numérique",
+                      "en": "Les écrans – Le numérique"
+                    }
+                  },
+                  {
+                    "id": "les-emotions",
+                    "value": "Les émotions",
+                    "label": {
+                      "fr": "Les émotions",
+                      "en": "Les émotions"
+                    }
+                  },
+                  {
+                    "id": "les-jeux",
+                    "value": "Les jeux",
+                    "label": {
+                      "fr": "Les jeux",
+                      "en": "Les jeux"
+                    }
+                  },
+                  {
+                    "id": "les-situations-de-separation",
+                    "value": "Les situations de séparation",
+                    "label": {
+                      "fr": "Les situations de séparation",
+                      "en": "Les situations de séparation"
+                    }
+                  },
+                  {
+                    "id": "les-violences",
+                    "value": "Les violences",
+                    "label": {
+                      "fr": "Les violences",
+                      "en": "Les violences"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "territoire",
+                "label": {
+                  "fr": "Territoires",
+                  "en": "Territories"
+                },
+                "field": "territoires",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les territoires",
+                  "en": "All territories"
+                },
+                "options": [
+                  {
+                    "id": "arrageois",
+                    "value": "Arrageois",
+                    "label": {
+                      "fr": "Arrageois",
+                      "en": "Arrageois"
+                    }
+                  },
+                  {
+                    "id": "artois",
+                    "value": "Artois",
+                    "label": {
+                      "fr": "Artois",
+                      "en": "Artois"
+                    }
+                  },
+                  {
+                    "id": "audomarois",
+                    "value": "Audomarois",
+                    "label": {
+                      "fr": "Audomarois",
+                      "en": "Audomarois"
+                    }
+                  },
+                  {
+                    "id": "boulonnais",
+                    "value": "Boulonnais",
+                    "label": {
+                      "fr": "Boulonnais",
+                      "en": "Boulonnais"
+                    }
+                  },
+                  {
+                    "id": "calaisis",
+                    "value": "Calaisis",
+                    "label": {
+                      "fr": "Calaisis",
+                      "en": "Calaisis"
+                    }
+                  },
+                  {
+                    "id": "entre-mer-et-terres",
+                    "value": "Entre Mer et Terres",
+                    "label": {
+                      "fr": "Entre Mer et Terres",
+                      "en": "Entre Mer et Terres"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur",
+                    "value": "Familles en sol mineur",
+                    "label": {
+                      "fr": "Familles en sol mineur",
+                      "en": "Familles en sol mineur"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur-henin-carvin",
+                    "value": "Familles en sol mineur Hénin Carvin",
+                    "label": {
+                      "fr": "Familles en sol mineur Hénin Carvin",
+                      "en": "Familles en sol mineur Hénin Carvin"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur-lens-lievin",
+                    "value": "Familles en sol mineur Lens Liévin",
+                    "label": {
+                      "fr": "Familles en sol mineur Lens Liévin",
+                      "en": "Familles en sol mineur Lens Liévin"
+                    }
+                  },
+                  {
+                    "id": "ternois-bruaysis",
+                    "value": "Ternois Bruaysis",
+                    "label": {
+                      "fr": "Ternois Bruaysis",
+                      "en": "Ternois Bruaysis"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "articleFeed",
+          "id": "/public/futurs-parents-feed",
+          "props": {
+            "costumSlug": "parent62",
+            "pageSize": 12,
+            "featured": false,
+            "filters": {
+              "publics": {
+                "$in": [
+                  "Futurs parents"
+                ]
+              }
+            },
+            "fullWidth": true
+          }
+        }
+      ]
+    },
+    {
+      "path": "/public/parents",
+      "title": {
+        "fr": "Parents",
+        "en": "Parents"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Parents — Parent62",
+          "en": "Parents — Parent62"
+        },
+        "description": {
+          "fr": "Ressources et actions dédiées aux parents.",
+          "en": "Resources and actions dedicated to parents."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image",
+        "ogImage": "/images/parent62/hero-carte.png"
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "/public/parents-search",
+          "props": {
+            "headline": {
+              "fr": "Parents",
+              "en": "Parents"
+            },
+            "subhead": {
+              "fr": "Ressources et actions dédiées aux parents.",
+              "en": "Resources and actions dedicated to parents."
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher…",
+              "en": "Search…"
+            },
+            "showActiveFiltersTags": true,
+            "dropdownFilters": [
+              {
+                "id": "theme",
+                "label": {
+                  "fr": "Thèmes",
+                  "en": "Topics"
+                },
+                "field": "themes",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les thèmes",
+                  "en": "All topics"
+                },
+                "options": [
+                  {
+                    "id": "la-citoyennete",
+                    "value": "La citoyenneté",
+                    "label": {
+                      "fr": "La citoyenneté",
+                      "en": "La citoyenneté"
+                    }
+                  },
+                  {
+                    "id": "la-communication",
+                    "value": "La communication",
+                    "label": {
+                      "fr": "La communication",
+                      "en": "La communication"
+                    }
+                  },
+                  {
+                    "id": "la-culture",
+                    "value": "La culture",
+                    "label": {
+                      "fr": "La culture",
+                      "en": "La culture"
+                    }
+                  },
+                  {
+                    "id": "la-petite-enfance",
+                    "value": "La petite enfance",
+                    "label": {
+                      "fr": "La petite enfance",
+                      "en": "La petite enfance"
+                    }
+                  },
+                  {
+                    "id": "la-sante",
+                    "value": "La santé",
+                    "label": {
+                      "fr": "La santé",
+                      "en": "La santé"
+                    }
+                  },
+                  {
+                    "id": "ladolescence",
+                    "value": "L’adolescence",
+                    "label": {
+                      "fr": "L’adolescence",
+                      "en": "L’adolescence"
+                    }
+                  },
+                  {
+                    "id": "larrivee-dun-enfant",
+                    "value": "L’arrivée d’un enfant",
+                    "label": {
+                      "fr": "L’arrivée d’un enfant",
+                      "en": "L’arrivée d’un enfant"
+                    }
+                  },
+                  {
+                    "id": "le-deuil",
+                    "value": "Le deuil",
+                    "label": {
+                      "fr": "Le deuil",
+                      "en": "Le deuil"
+                    }
+                  },
+                  {
+                    "id": "le-handicap",
+                    "value": "Le handicap",
+                    "label": {
+                      "fr": "Le handicap",
+                      "en": "Le handicap"
+                    }
+                  },
+                  {
+                    "id": "le-repit",
+                    "value": "Le répit",
+                    "label": {
+                      "fr": "Le répit",
+                      "en": "Le répit"
+                    }
+                  },
+                  {
+                    "id": "lecole",
+                    "value": "L’école",
+                    "label": {
+                      "fr": "L’école",
+                      "en": "L’école"
+                    }
+                  },
+                  {
+                    "id": "leducation",
+                    "value": "L’éducation",
+                    "label": {
+                      "fr": "L’éducation",
+                      "en": "L’éducation"
+                    }
+                  },
+                  {
+                    "id": "les-activites-supports-a-la-relation",
+                    "value": "Les activités supports à la relation",
+                    "label": {
+                      "fr": "Les activités supports à la relation",
+                      "en": "Les activités supports à la relation"
+                    }
+                  },
+                  {
+                    "id": "les-ecrans-le-numerique",
+                    "value": "Les écrans – Le numérique",
+                    "label": {
+                      "fr": "Les écrans – Le numérique",
+                      "en": "Les écrans – Le numérique"
+                    }
+                  },
+                  {
+                    "id": "les-emotions",
+                    "value": "Les émotions",
+                    "label": {
+                      "fr": "Les émotions",
+                      "en": "Les émotions"
+                    }
+                  },
+                  {
+                    "id": "les-jeux",
+                    "value": "Les jeux",
+                    "label": {
+                      "fr": "Les jeux",
+                      "en": "Les jeux"
+                    }
+                  },
+                  {
+                    "id": "les-situations-de-separation",
+                    "value": "Les situations de séparation",
+                    "label": {
+                      "fr": "Les situations de séparation",
+                      "en": "Les situations de séparation"
+                    }
+                  },
+                  {
+                    "id": "les-violences",
+                    "value": "Les violences",
+                    "label": {
+                      "fr": "Les violences",
+                      "en": "Les violences"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "territoire",
+                "label": {
+                  "fr": "Territoires",
+                  "en": "Territories"
+                },
+                "field": "territoires",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les territoires",
+                  "en": "All territories"
+                },
+                "options": [
+                  {
+                    "id": "arrageois",
+                    "value": "Arrageois",
+                    "label": {
+                      "fr": "Arrageois",
+                      "en": "Arrageois"
+                    }
+                  },
+                  {
+                    "id": "artois",
+                    "value": "Artois",
+                    "label": {
+                      "fr": "Artois",
+                      "en": "Artois"
+                    }
+                  },
+                  {
+                    "id": "audomarois",
+                    "value": "Audomarois",
+                    "label": {
+                      "fr": "Audomarois",
+                      "en": "Audomarois"
+                    }
+                  },
+                  {
+                    "id": "boulonnais",
+                    "value": "Boulonnais",
+                    "label": {
+                      "fr": "Boulonnais",
+                      "en": "Boulonnais"
+                    }
+                  },
+                  {
+                    "id": "calaisis",
+                    "value": "Calaisis",
+                    "label": {
+                      "fr": "Calaisis",
+                      "en": "Calaisis"
+                    }
+                  },
+                  {
+                    "id": "entre-mer-et-terres",
+                    "value": "Entre Mer et Terres",
+                    "label": {
+                      "fr": "Entre Mer et Terres",
+                      "en": "Entre Mer et Terres"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur",
+                    "value": "Familles en sol mineur",
+                    "label": {
+                      "fr": "Familles en sol mineur",
+                      "en": "Familles en sol mineur"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur-henin-carvin",
+                    "value": "Familles en sol mineur Hénin Carvin",
+                    "label": {
+                      "fr": "Familles en sol mineur Hénin Carvin",
+                      "en": "Familles en sol mineur Hénin Carvin"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur-lens-lievin",
+                    "value": "Familles en sol mineur Lens Liévin",
+                    "label": {
+                      "fr": "Familles en sol mineur Lens Liévin",
+                      "en": "Familles en sol mineur Lens Liévin"
+                    }
+                  },
+                  {
+                    "id": "ternois-bruaysis",
+                    "value": "Ternois Bruaysis",
+                    "label": {
+                      "fr": "Ternois Bruaysis",
+                      "en": "Ternois Bruaysis"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "articleFeed",
+          "id": "/public/parents-feed",
+          "props": {
+            "costumSlug": "parent62",
+            "pageSize": 12,
+            "featured": false,
+            "filters": {
+              "publics": {
+                "$in": [
+                  "Parents"
+                ]
+              }
+            },
+            "fullWidth": true
+          }
+        }
+      ]
+    },
+    {
+      "path": "/public/parents-enfants",
+      "title": {
+        "fr": "Parents-enfants",
+        "en": "Parents & children"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Parents-enfants — Parent62",
+          "en": "Parents & children — Parent62"
+        },
+        "description": {
+          "fr": "Ressources et actions à partager entre parents et enfants.",
+          "en": "Resources and actions to share between parents and children."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image",
+        "ogImage": "/images/parent62/hero-carte.png"
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "/public/parents-enfants-search",
+          "props": {
+            "headline": {
+              "fr": "Parents-enfants",
+              "en": "Parents & children"
+            },
+            "subhead": {
+              "fr": "Ressources et actions à partager entre parents et enfants.",
+              "en": "Resources and actions to share between parents and children."
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher…",
+              "en": "Search…"
+            },
+            "showActiveFiltersTags": true,
+            "dropdownFilters": [
+              {
+                "id": "theme",
+                "label": {
+                  "fr": "Thèmes",
+                  "en": "Topics"
+                },
+                "field": "themes",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les thèmes",
+                  "en": "All topics"
+                },
+                "options": [
+                  {
+                    "id": "la-citoyennete",
+                    "value": "La citoyenneté",
+                    "label": {
+                      "fr": "La citoyenneté",
+                      "en": "La citoyenneté"
+                    }
+                  },
+                  {
+                    "id": "la-communication",
+                    "value": "La communication",
+                    "label": {
+                      "fr": "La communication",
+                      "en": "La communication"
+                    }
+                  },
+                  {
+                    "id": "la-culture",
+                    "value": "La culture",
+                    "label": {
+                      "fr": "La culture",
+                      "en": "La culture"
+                    }
+                  },
+                  {
+                    "id": "la-petite-enfance",
+                    "value": "La petite enfance",
+                    "label": {
+                      "fr": "La petite enfance",
+                      "en": "La petite enfance"
+                    }
+                  },
+                  {
+                    "id": "la-sante",
+                    "value": "La santé",
+                    "label": {
+                      "fr": "La santé",
+                      "en": "La santé"
+                    }
+                  },
+                  {
+                    "id": "ladolescence",
+                    "value": "L’adolescence",
+                    "label": {
+                      "fr": "L’adolescence",
+                      "en": "L’adolescence"
+                    }
+                  },
+                  {
+                    "id": "larrivee-dun-enfant",
+                    "value": "L’arrivée d’un enfant",
+                    "label": {
+                      "fr": "L’arrivée d’un enfant",
+                      "en": "L’arrivée d’un enfant"
+                    }
+                  },
+                  {
+                    "id": "le-deuil",
+                    "value": "Le deuil",
+                    "label": {
+                      "fr": "Le deuil",
+                      "en": "Le deuil"
+                    }
+                  },
+                  {
+                    "id": "le-handicap",
+                    "value": "Le handicap",
+                    "label": {
+                      "fr": "Le handicap",
+                      "en": "Le handicap"
+                    }
+                  },
+                  {
+                    "id": "le-repit",
+                    "value": "Le répit",
+                    "label": {
+                      "fr": "Le répit",
+                      "en": "Le répit"
+                    }
+                  },
+                  {
+                    "id": "lecole",
+                    "value": "L’école",
+                    "label": {
+                      "fr": "L’école",
+                      "en": "L’école"
+                    }
+                  },
+                  {
+                    "id": "leducation",
+                    "value": "L’éducation",
+                    "label": {
+                      "fr": "L’éducation",
+                      "en": "L’éducation"
+                    }
+                  },
+                  {
+                    "id": "les-activites-supports-a-la-relation",
+                    "value": "Les activités supports à la relation",
+                    "label": {
+                      "fr": "Les activités supports à la relation",
+                      "en": "Les activités supports à la relation"
+                    }
+                  },
+                  {
+                    "id": "les-ecrans-le-numerique",
+                    "value": "Les écrans – Le numérique",
+                    "label": {
+                      "fr": "Les écrans – Le numérique",
+                      "en": "Les écrans – Le numérique"
+                    }
+                  },
+                  {
+                    "id": "les-emotions",
+                    "value": "Les émotions",
+                    "label": {
+                      "fr": "Les émotions",
+                      "en": "Les émotions"
+                    }
+                  },
+                  {
+                    "id": "les-jeux",
+                    "value": "Les jeux",
+                    "label": {
+                      "fr": "Les jeux",
+                      "en": "Les jeux"
+                    }
+                  },
+                  {
+                    "id": "les-situations-de-separation",
+                    "value": "Les situations de séparation",
+                    "label": {
+                      "fr": "Les situations de séparation",
+                      "en": "Les situations de séparation"
+                    }
+                  },
+                  {
+                    "id": "les-violences",
+                    "value": "Les violences",
+                    "label": {
+                      "fr": "Les violences",
+                      "en": "Les violences"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "territoire",
+                "label": {
+                  "fr": "Territoires",
+                  "en": "Territories"
+                },
+                "field": "territoires",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les territoires",
+                  "en": "All territories"
+                },
+                "options": [
+                  {
+                    "id": "arrageois",
+                    "value": "Arrageois",
+                    "label": {
+                      "fr": "Arrageois",
+                      "en": "Arrageois"
+                    }
+                  },
+                  {
+                    "id": "artois",
+                    "value": "Artois",
+                    "label": {
+                      "fr": "Artois",
+                      "en": "Artois"
+                    }
+                  },
+                  {
+                    "id": "audomarois",
+                    "value": "Audomarois",
+                    "label": {
+                      "fr": "Audomarois",
+                      "en": "Audomarois"
+                    }
+                  },
+                  {
+                    "id": "boulonnais",
+                    "value": "Boulonnais",
+                    "label": {
+                      "fr": "Boulonnais",
+                      "en": "Boulonnais"
+                    }
+                  },
+                  {
+                    "id": "calaisis",
+                    "value": "Calaisis",
+                    "label": {
+                      "fr": "Calaisis",
+                      "en": "Calaisis"
+                    }
+                  },
+                  {
+                    "id": "entre-mer-et-terres",
+                    "value": "Entre Mer et Terres",
+                    "label": {
+                      "fr": "Entre Mer et Terres",
+                      "en": "Entre Mer et Terres"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur",
+                    "value": "Familles en sol mineur",
+                    "label": {
+                      "fr": "Familles en sol mineur",
+                      "en": "Familles en sol mineur"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur-henin-carvin",
+                    "value": "Familles en sol mineur Hénin Carvin",
+                    "label": {
+                      "fr": "Familles en sol mineur Hénin Carvin",
+                      "en": "Familles en sol mineur Hénin Carvin"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur-lens-lievin",
+                    "value": "Familles en sol mineur Lens Liévin",
+                    "label": {
+                      "fr": "Familles en sol mineur Lens Liévin",
+                      "en": "Familles en sol mineur Lens Liévin"
+                    }
+                  },
+                  {
+                    "id": "ternois-bruaysis",
+                    "value": "Ternois Bruaysis",
+                    "label": {
+                      "fr": "Ternois Bruaysis",
+                      "en": "Ternois Bruaysis"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "articleFeed",
+          "id": "/public/parents-enfants-feed",
+          "props": {
+            "costumSlug": "parent62",
+            "pageSize": 12,
+            "featured": false,
+            "filters": {
+              "publics": {
+                "$in": [
+                  "Parents-enfants"
+                ]
+              }
+            },
+            "fullWidth": true
+          }
+        }
+      ]
+    },
+    {
+      "path": "/public/professionnels",
+      "title": {
+        "fr": "Professionnels",
+        "en": "Professionals"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Professionnels — Parent62",
+          "en": "Professionals — Parent62"
+        },
+        "description": {
+          "fr": "Ressources et actions dédiées aux professionnels de la parentalité.",
+          "en": "Resources and actions dedicated to parenting professionals."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image",
+        "ogImage": "/images/parent62/hero-carte.png"
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "/public/professionnels-search",
+          "props": {
+            "headline": {
+              "fr": "Professionnels",
+              "en": "Professionals"
+            },
+            "subhead": {
+              "fr": "Ressources et actions dédiées aux professionnels de la parentalité.",
+              "en": "Resources and actions dedicated to parenting professionals."
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher…",
+              "en": "Search…"
+            },
+            "showActiveFiltersTags": true,
+            "dropdownFilters": [
+              {
+                "id": "theme",
+                "label": {
+                  "fr": "Thèmes",
+                  "en": "Topics"
+                },
+                "field": "themes",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les thèmes",
+                  "en": "All topics"
+                },
+                "options": [
+                  {
+                    "id": "la-citoyennete",
+                    "value": "La citoyenneté",
+                    "label": {
+                      "fr": "La citoyenneté",
+                      "en": "La citoyenneté"
+                    }
+                  },
+                  {
+                    "id": "la-communication",
+                    "value": "La communication",
+                    "label": {
+                      "fr": "La communication",
+                      "en": "La communication"
+                    }
+                  },
+                  {
+                    "id": "la-culture",
+                    "value": "La culture",
+                    "label": {
+                      "fr": "La culture",
+                      "en": "La culture"
+                    }
+                  },
+                  {
+                    "id": "la-petite-enfance",
+                    "value": "La petite enfance",
+                    "label": {
+                      "fr": "La petite enfance",
+                      "en": "La petite enfance"
+                    }
+                  },
+                  {
+                    "id": "la-sante",
+                    "value": "La santé",
+                    "label": {
+                      "fr": "La santé",
+                      "en": "La santé"
+                    }
+                  },
+                  {
+                    "id": "ladolescence",
+                    "value": "L’adolescence",
+                    "label": {
+                      "fr": "L’adolescence",
+                      "en": "L’adolescence"
+                    }
+                  },
+                  {
+                    "id": "larrivee-dun-enfant",
+                    "value": "L’arrivée d’un enfant",
+                    "label": {
+                      "fr": "L’arrivée d’un enfant",
+                      "en": "L’arrivée d’un enfant"
+                    }
+                  },
+                  {
+                    "id": "le-deuil",
+                    "value": "Le deuil",
+                    "label": {
+                      "fr": "Le deuil",
+                      "en": "Le deuil"
+                    }
+                  },
+                  {
+                    "id": "le-handicap",
+                    "value": "Le handicap",
+                    "label": {
+                      "fr": "Le handicap",
+                      "en": "Le handicap"
+                    }
+                  },
+                  {
+                    "id": "le-repit",
+                    "value": "Le répit",
+                    "label": {
+                      "fr": "Le répit",
+                      "en": "Le répit"
+                    }
+                  },
+                  {
+                    "id": "lecole",
+                    "value": "L’école",
+                    "label": {
+                      "fr": "L’école",
+                      "en": "L’école"
+                    }
+                  },
+                  {
+                    "id": "leducation",
+                    "value": "L’éducation",
+                    "label": {
+                      "fr": "L’éducation",
+                      "en": "L’éducation"
+                    }
+                  },
+                  {
+                    "id": "les-activites-supports-a-la-relation",
+                    "value": "Les activités supports à la relation",
+                    "label": {
+                      "fr": "Les activités supports à la relation",
+                      "en": "Les activités supports à la relation"
+                    }
+                  },
+                  {
+                    "id": "les-ecrans-le-numerique",
+                    "value": "Les écrans – Le numérique",
+                    "label": {
+                      "fr": "Les écrans – Le numérique",
+                      "en": "Les écrans – Le numérique"
+                    }
+                  },
+                  {
+                    "id": "les-emotions",
+                    "value": "Les émotions",
+                    "label": {
+                      "fr": "Les émotions",
+                      "en": "Les émotions"
+                    }
+                  },
+                  {
+                    "id": "les-jeux",
+                    "value": "Les jeux",
+                    "label": {
+                      "fr": "Les jeux",
+                      "en": "Les jeux"
+                    }
+                  },
+                  {
+                    "id": "les-situations-de-separation",
+                    "value": "Les situations de séparation",
+                    "label": {
+                      "fr": "Les situations de séparation",
+                      "en": "Les situations de séparation"
+                    }
+                  },
+                  {
+                    "id": "les-violences",
+                    "value": "Les violences",
+                    "label": {
+                      "fr": "Les violences",
+                      "en": "Les violences"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "territoire",
+                "label": {
+                  "fr": "Territoires",
+                  "en": "Territories"
+                },
+                "field": "territoires",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Tous les territoires",
+                  "en": "All territories"
+                },
+                "options": [
+                  {
+                    "id": "arrageois",
+                    "value": "Arrageois",
+                    "label": {
+                      "fr": "Arrageois",
+                      "en": "Arrageois"
+                    }
+                  },
+                  {
+                    "id": "artois",
+                    "value": "Artois",
+                    "label": {
+                      "fr": "Artois",
+                      "en": "Artois"
+                    }
+                  },
+                  {
+                    "id": "audomarois",
+                    "value": "Audomarois",
+                    "label": {
+                      "fr": "Audomarois",
+                      "en": "Audomarois"
+                    }
+                  },
+                  {
+                    "id": "boulonnais",
+                    "value": "Boulonnais",
+                    "label": {
+                      "fr": "Boulonnais",
+                      "en": "Boulonnais"
+                    }
+                  },
+                  {
+                    "id": "calaisis",
+                    "value": "Calaisis",
+                    "label": {
+                      "fr": "Calaisis",
+                      "en": "Calaisis"
+                    }
+                  },
+                  {
+                    "id": "entre-mer-et-terres",
+                    "value": "Entre Mer et Terres",
+                    "label": {
+                      "fr": "Entre Mer et Terres",
+                      "en": "Entre Mer et Terres"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur",
+                    "value": "Familles en sol mineur",
+                    "label": {
+                      "fr": "Familles en sol mineur",
+                      "en": "Familles en sol mineur"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur-henin-carvin",
+                    "value": "Familles en sol mineur Hénin Carvin",
+                    "label": {
+                      "fr": "Familles en sol mineur Hénin Carvin",
+                      "en": "Familles en sol mineur Hénin Carvin"
+                    }
+                  },
+                  {
+                    "id": "familles-en-sol-mineur-lens-lievin",
+                    "value": "Familles en sol mineur Lens Liévin",
+                    "label": {
+                      "fr": "Familles en sol mineur Lens Liévin",
+                      "en": "Familles en sol mineur Lens Liévin"
+                    }
+                  },
+                  {
+                    "id": "ternois-bruaysis",
+                    "value": "Ternois Bruaysis",
+                    "label": {
+                      "fr": "Ternois Bruaysis",
+                      "en": "Ternois Bruaysis"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "articleFeed",
+          "id": "/public/professionnels-feed",
+          "props": {
+            "costumSlug": "parent62",
+            "pageSize": 12,
+            "featured": false,
+            "filters": {
+              "publics": {
+                "$in": [
+                  "Professionnels"
                 ]
               }
             },
@@ -6527,7 +9191,7 @@
         {
           "type": "html",
           "props": {
-            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-artois)\"><div class=\"container mx-auto max-w-4xl text-center text-white\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Artois</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Artois est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
+            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-artois)\"><div class=\"container mx-auto max-w-4xl text-center\" style=\"color:var(--p62-marine)\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Artois</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Artois est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
           }
         },
         {
@@ -6962,7 +9626,7 @@
         {
           "type": "html",
           "props": {
-            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-audomarois)\"><div class=\"container mx-auto max-w-4xl text-center text-white\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Audomarois</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Audomarois est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
+            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-audomarois)\"><div class=\"container mx-auto max-w-4xl text-center\" style=\"color:var(--p62-marine)\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Audomarois</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Audomarois est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
           }
         },
         {
@@ -7844,7 +10508,7 @@
         {
           "type": "html",
           "props": {
-            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-calaisis)\"><div class=\"container mx-auto max-w-4xl text-center text-white\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Calaisis</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Calaisis est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
+            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-calaisis)\"><div class=\"container mx-auto max-w-4xl text-center\" style=\"color:var(--p62-marine)\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Calaisis</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Calaisis est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
           }
         },
         {
@@ -8285,7 +10949,7 @@
         {
           "type": "html",
           "props": {
-            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-entre-mer-et-terres)\"><div class=\"container mx-auto max-w-4xl text-center text-white\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Entre Mer et Terres</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Entre Mer et Terres est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
+            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-entre-mer-et-terres)\"><div class=\"container mx-auto max-w-4xl text-center\" style=\"color:var(--p62-marine)\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Entre Mer et Terres</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Entre Mer et Terres est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
           }
         },
         {
@@ -9956,7 +12620,7 @@
         {
           "type": "html",
           "props": {
-            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-ternois-bruaysis)\"><div class=\"container mx-auto max-w-4xl text-center text-white\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Ternois Bruaysis</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Ternois Bruaysis est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
+            "html": "<section class=\"py-14 px-4\" style=\"background:var(--territoire-ternois-bruaysis)\"><div class=\"container mx-auto max-w-4xl text-center\" style=\"color:var(--p62-marine)\"><h1 class=\"text-3xl md:text-4xl font-extrabold mb-3\">Ternois Bruaysis</h1><p class=\"text-lg opacity-95\">Le Comité Local Parentalité Ternois Bruaysis est l'un des 9 comités locaux qui composent le Réseau Parentalité 62.</p></div></section>"
           }
         },
         {
@@ -11154,253 +13818,253 @@
                       ]
                     }
                   },
-                "itemRules": [
-                  {
-                    "id": "poi-article",
-                    "when": {
-                      "and": [
-                        {
-                          "field": "collection",
-                          "op": "eq",
-                          "value": "poi"
-                        },
-                        {
-                          "field": "type",
-                          "op": "eq",
-                          "value": "article"
-                        }
-                      ]
-                    },
-                    "card": {
-                      "type": "resource"
-                    },
-                    "resource": {
-                      "design": "card",
-                      "titleField": "name",
-                      "descriptionField": "shortDescription",
-                      "dateField": "created",
-                      "imageField": "profilMediumImageUrl",
-                      "badge": {
-                        "field": "themes"
+                  "itemRules": [
+                    {
+                      "id": "poi-article",
+                      "when": {
+                        "and": [
+                          {
+                            "field": "collection",
+                            "op": "eq",
+                            "value": "poi"
+                          },
+                          {
+                            "field": "type",
+                            "op": "eq",
+                            "value": "article"
+                          }
+                        ]
                       },
-                      "facets": [
-                        {
+                      "card": {
+                        "type": "resource"
+                      },
+                      "resource": {
+                        "design": "card",
+                        "titleField": "name",
+                        "descriptionField": "shortDescription",
+                        "dateField": "created",
+                        "imageField": "profilMediumImageUrl",
+                        "badge": {
+                          "field": "themes"
+                        },
+                        "facets": [
+                          {
+                            "field": "territoires",
+                            "label": {
+                              "fr": "Territoires",
+                              "en": "Territories"
+                            }
+                          },
+                          {
+                            "field": "themes",
+                            "label": {
+                              "fr": "Thèmes",
+                              "en": "Themes"
+                            }
+                          }
+                        ]
+                      },
+                      "itemAction": {
+                        "kind": "link",
+                        "to": "/blog/:slug",
+                        "toById": "/blog/id/:id"
+                      }
+                    },
+                    {
+                      "id": "poi-parole",
+                      "when": {
+                        "and": [
+                          {
+                            "field": "collection",
+                            "op": "eq",
+                            "value": "poi"
+                          },
+                          {
+                            "field": "type",
+                            "op": "eq",
+                            "value": "affiche"
+                          }
+                        ]
+                      },
+                      "card": {
+                        "type": "testimonial",
+                        "detailsMode": "dialog"
+                      },
+                      "preview": {
+                        "type": "testimonial",
+                        "width": "2xl"
+                      },
+                      "testimonial": {
+                        "design": "bubble",
+                        "quoteField": "description",
+                        "titleField": "name",
+                        "dateField": "created",
+                        "audioField": "medias",
+                        "subtitleField": "themes",
+                        "badge": {
+                          "field": "category",
+                          "colors": {
+                            "Compliqué": "var(--chart-3)",
+                            "Difficile": "var(--chart-2)",
+                            "À changer": "var(--chart-4)"
+                          }
+                        },
+                        "accent": {
                           "field": "territoires",
-                          "label": {
-                            "fr": "Territoires",
-                            "en": "Territories"
+                          "colors": {
+                            "Arrageois": "var(--territoire-arrageois)",
+                            "Artois": "var(--territoire-artois)",
+                            "Audomarois": "var(--territoire-audomarois)",
+                            "Boulonnais": "var(--territoire-boulonnais)",
+                            "Calaisis": "var(--territoire-calaisis)",
+                            "Entre Mer et Terres": "var(--territoire-entre-mer-et-terres)",
+                            "Familles en sol mineur": "var(--territoire-familles-en-sol-mineur)",
+                            "Familles en sol mineur Hénin Carvin": "var(--territoire-fsm-henin-carvin)",
+                            "Familles en sol mineur Lens Liévin": "var(--territoire-fsm-lens-lievin)",
+                            "Ternois Bruaysis": "var(--territoire-ternois-bruaysis)"
                           }
                         },
-                        {
-                          "field": "themes",
-                          "label": {
-                            "fr": "Thèmes",
-                            "en": "Themes"
+                        "facets": [
+                          {
+                            "field": "territoires",
+                            "label": {
+                              "fr": "Territoires",
+                              "en": "Territories"
+                            }
+                          },
+                          {
+                            "field": "publics",
+                            "label": {
+                              "fr": "Publics",
+                              "en": "Audiences"
+                            }
+                          },
+                          {
+                            "field": "ages",
+                            "label": {
+                              "fr": "Âges",
+                              "en": "Ages"
+                            }
+                          },
+                          {
+                            "field": "themes",
+                            "label": {
+                              "fr": "Thèmes",
+                              "en": "Themes"
+                            }
+                          },
+                          {
+                            "field": "tags",
+                            "label": {
+                              "fr": "Mots-clés",
+                              "en": "Keywords"
+                            }
                           }
-                        }
-                      ]
+                        ]
+                      }
                     },
-                    "itemAction": {
-                      "kind": "link",
-                      "to": "/blog/:slug",
-                      "toById": "/blog/id/:id"
-                    }
-                  },
-                  {
-                    "id": "poi-parole",
-                    "when": {
-                      "and": [
-                        {
-                          "field": "collection",
-                          "op": "eq",
-                          "value": "poi"
-                        },
-                        {
-                          "field": "type",
-                          "op": "eq",
-                          "value": "affiche"
-                        }
-                      ]
-                    },
-                    "card": {
-                      "type": "testimonial",
-                      "detailsMode": "dialog"
-                    },
-                    "preview": {
-                      "type": "testimonial",
-                      "width": "2xl"
-                    },
-                    "testimonial": {
-                      "design": "bubble",
-                      "quoteField": "description",
-                      "titleField": "name",
-                      "dateField": "created",
-                      "audioField": "medias",
-                      "subtitleField": "themes",
-                      "badge": {
-                        "field": "category",
-                        "colors": {
-                          "Compliqué": "var(--chart-3)",
-                          "Difficile": "var(--chart-2)",
-                          "À changer": "var(--chart-4)"
-                        }
+                    {
+                      "id": "poi-ressource",
+                      "when": {
+                        "and": [
+                          {
+                            "field": "collection",
+                            "op": "eq",
+                            "value": "poi"
+                          },
+                          {
+                            "field": "type",
+                            "op": "eq",
+                            "value": "recoveryCenter"
+                          }
+                        ]
                       },
-                      "accent": {
-                        "field": "territoires",
-                        "colors": {
-                          "Arrageois": "#6d5da8",
-                          "Artois": "#b7cb6b",
-                          "Audomarois": "#e5af32",
-                          "Boulonnais": "#c34a42",
-                          "Calaisis": "#ed8a4c",
-                          "Entre Mer et Terres": "#3fb4be",
-                          "Familles en sol mineur": "#a2537e",
-                          "Familles en sol mineur Hénin Carvin": "#a2537e",
-                          "Familles en sol mineur Lens Liévin": "#97776b",
-                          "Ternois Bruaysis": "#d492a9"
-                        }
+                      "card": {
+                        "type": "resource",
+                        "detailsMode": "dialog"
                       },
-                      "facets": [
-                        {
-                          "field": "territoires",
-                          "label": {
-                            "fr": "Territoires",
-                            "en": "Territories"
-                          }
-                        },
-                        {
-                          "field": "publics",
-                          "label": {
-                            "fr": "Publics",
-                            "en": "Audiences"
-                          }
-                        },
-                        {
-                          "field": "ages",
-                          "label": {
-                            "fr": "Âges",
-                            "en": "Ages"
-                          }
-                        },
-                        {
-                          "field": "themes",
-                          "label": {
-                            "fr": "Thèmes",
-                            "en": "Themes"
-                          }
-                        },
-                        {
-                          "field": "tags",
-                          "label": {
-                            "fr": "Mots-clés",
-                            "en": "Keywords"
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "id": "poi-ressource",
-                    "when": {
-                      "and": [
-                        {
-                          "field": "collection",
-                          "op": "eq",
-                          "value": "poi"
-                        },
-                        {
-                          "field": "type",
-                          "op": "eq",
-                          "value": "recoveryCenter"
-                        }
-                      ]
-                    },
-                    "card": {
-                      "type": "resource",
-                      "detailsMode": "dialog"
-                    },
-                    "preview": {
-                      "type": "resource",
-                      "width": "2xl"
-                    },
-                    "resource": {
-                      "design": "card",
-                      "titleField": "name",
-                      "descriptionField": "description",
-                      "dateField": "created",
-                      "imageField": "profilMediumImageUrl",
-                      "cityField": "address.addressLocality",
-                      "urlsField": "urls",
-                      "badge": {
-                        "field": "category",
-                        "colors": {
-                          "Vidéo": "var(--chart-1)",
-                          "Photo": "var(--chart-2)",
-                          "Compte-rendu": "var(--chart-3)",
-                          "Jeu": "var(--chart-4)",
-                          "Document": "var(--chart-5)",
-                          "Lien": "var(--primary)"
-                        }
+                      "preview": {
+                        "type": "resource",
+                        "width": "2xl"
                       },
-                      "facets": [
-                        {
-                          "field": "territoires",
-                          "label": {
-                            "fr": "Territoires",
-                            "en": "Territories"
+                      "resource": {
+                        "design": "card",
+                        "titleField": "name",
+                        "descriptionField": "description",
+                        "dateField": "created",
+                        "imageField": "profilMediumImageUrl",
+                        "cityField": "address.addressLocality",
+                        "urlsField": "urls",
+                        "badge": {
+                          "field": "category",
+                          "colors": {
+                            "Vidéo": "var(--chart-1)",
+                            "Photo": "var(--chart-2)",
+                            "Compte-rendu": "var(--chart-3)",
+                            "Jeu": "var(--chart-4)",
+                            "Document": "var(--chart-5)",
+                            "Lien": "var(--primary)"
                           }
                         },
-                        {
-                          "field": "publics",
-                          "label": {
-                            "fr": "Publics",
-                            "en": "Audiences"
+                        "facets": [
+                          {
+                            "field": "territoires",
+                            "label": {
+                              "fr": "Territoires",
+                              "en": "Territories"
+                            }
+                          },
+                          {
+                            "field": "publics",
+                            "label": {
+                              "fr": "Publics",
+                              "en": "Audiences"
+                            }
+                          },
+                          {
+                            "field": "themes",
+                            "label": {
+                              "fr": "Thèmes",
+                              "en": "Themes"
+                            }
+                          },
+                          {
+                            "field": "tags",
+                            "label": {
+                              "fr": "Mots-clés",
+                              "en": "Keywords"
+                            }
                           }
-                        },
-                        {
-                          "field": "themes",
-                          "label": {
-                            "fr": "Thèmes",
-                            "en": "Themes"
-                          }
-                        },
-                        {
-                          "field": "tags",
-                          "label": {
-                            "fr": "Mots-clés",
-                            "en": "Keywords"
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "id": "events",
-                    "when": {
-                      "field": "collection",
-                      "op": "eq",
-                      "value": "events"
+                        ]
+                      }
                     },
-                    "card": {
-                      "type": "event"
+                    {
+                      "id": "events",
+                      "when": {
+                        "field": "collection",
+                        "op": "eq",
+                        "value": "events"
+                      },
+                      "card": {
+                        "type": "event"
+                      },
+                      "preview": {
+                        "type": "event"
+                      }
                     },
-                    "preview": {
-                      "type": "event"
+                    {
+                      "id": "structures",
+                      "when": {
+                        "field": "collection",
+                        "op": "eq",
+                        "value": "organizations"
+                      },
+                      "card": {
+                        "type": "image-cover",
+                        "imageFit": "contain"
+                      }
                     }
-                  },
-                  {
-                    "id": "structures",
-                    "when": {
-                      "field": "collection",
-                      "op": "eq",
-                      "value": "organizations"
-                    },
-                    "card": {
-                      "type": "image-cover",
-                      "imageFit": "contain"
-                    }
-                  }
-                ]
+                  ]
                 }
               }
             }
@@ -11540,7 +14204,7 @@
         "fr": "Contact",
         "en": "Contact"
       },
-      "layout": "default",
+      "layout": "fullwidth",
       "seo": {
         "title": {
           "fr": "Contact — Parent62",
@@ -11659,7 +14323,7 @@
         "fr": "Mentions légales",
         "en": "Legal notice"
       },
-      "layout": "default",
+      "layout": "fullwidth",
       "seo": {
         "title": {
           "fr": "Mentions légales — Parent62",
@@ -11683,10 +14347,10 @@
     {
       "path": "/confidentialite",
       "title": {
-        "fr": "Politique de confidentialité",
-        "en": "Privacy policy"
+        "fr": "Politique de confidentialité(UE)",
+        "en": "Privacy policy(UE)"
       },
-      "layout": "default",
+      "layout": "fullwidth",
       "seo": {
         "title": {
           "fr": "Confidentialité — Parent62",
@@ -11706,48 +14370,139 @@
           }
         }
       ]
-    }
-  ],
-  "footer": {
-    "type": "contact-partners",
-    "contactSection": {
+    },
+    {
+      "path": "/archives",
       "title": {
-        "fr": "Nos coordonnées",
-        "en": "Contact us"
+        "fr": "Archives",
+        "en": "Archives"
       },
-      "items": [
-        {
-          "icon": "mail",
-          "value": {
-            "fr": "contact@parent62.org",
-            "en": "contact@parent62.org"
-          },
-          "href": "mailto:contact@parent62.org"
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Archives — Parent62",
+          "en": "Archives — Parent62"
         },
+        "description": {
+          "fr": "Les archives du Réseau Parentalité 62.",
+          "en": "The Parenting Network 62 archives."
+        }
+      },
+      "sections": [
         {
-          "icon": "phone",
-          "value": {
-            "fr": "06 98 99 93 09",
-            "en": "06 98 99 93 09"
-          },
-          "href": "tel:+33698999309"
-        },
-        {
-          "icon": "map-pin",
-          "lines": [
-            {
-              "fr": "Réseau Parentalité 62",
-              "en": "Parenting Network 62"
+          "type": "content",
+          "id": "archives-placeholder",
+          "props": {
+            "title": {
+              "fr": "Archives",
+              "en": "Archives"
             },
-            {
-              "fr": "Pas-de-Calais",
-              "en": "Pas-de-Calais"
-            }
-          ]
+            "description": {
+              "fr": "Cette page est en construction. Les archives du réseau seront bientôt disponibles ici.",
+              "en": "This page is under construction. The network archives will be available here soon."
+            },
+            "imagePosition": "right"
+          }
         }
       ]
     },
-    "legalLinks": [
+    {
+      "path": "/politique-cookies",
+      "title": {
+        "fr": "Politique de cookies",
+        "en": "Cookie policy"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Politique de cookies — Parent62",
+          "en": "Cookie policy — Parent62"
+        },
+        "description": {
+          "fr": "La politique de cookies du Réseau Parentalité 62.",
+          "en": "The Parenting Network 62 cookie policy."
+        }
+      },
+      "sections": [
+        {
+          "type": "content",
+          "id": "politique-cookies-placeholder",
+          "props": {
+            "title": {
+              "fr": "Politique de cookies",
+              "en": "Cookie policy"
+            },
+            "description": {
+              "fr": "Cette page est en construction.",
+              "en": "This page is under construction."
+            },
+            "imagePosition": "right"
+          }
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "type": "minimal-centered",
+    "logo": "images/parent62/logo.png",
+    "logoAlt": {
+      "fr": "Réseau Parentalité 62",
+      "en": "Parenting Network 62"
+    },
+    "backgroundImage": "images/parent62/bg-footer.webp",
+    "columns": [
+      {
+        "title": {
+          "fr": "Navigation",
+          "en": "Navigation"
+        },
+        "links": [
+          {
+            "href": "/appels-a-projets",
+            "label": {
+              "fr": "Appels à projets",
+              "en": "Calls for projects"
+            }
+          },
+          {
+            "href": "/offres-emploi",
+            "label": {
+              "fr": "Offres d'emploi",
+              "en": "Job offers"
+            }
+          },
+          {
+            "href": "/archives",
+            "label": {
+              "fr": "Archives",
+              "en": "Archives"
+            }
+          },
+          {
+            "href": "/contact",
+            "label": {
+              "fr": "Contact",
+              "en": "Contact"
+            }
+          },
+          {
+            "href": "/recherche",
+            "label": {
+              "fr": "Recherche",
+              "en": "Search"
+            }
+          },
+          {
+            "href": "/politique-cookies",
+            "label": {
+              "fr": "Politique de cookies",
+              "en": "Cookie policy"
+            }
+          }
+        ]
+      }
+    ],
+    "bottomLinks": [
       {
         "href": "/mentions-legales",
         "label": {
@@ -11795,19 +14550,19 @@
         "cardForeground": "oklch(0.26 0.035 270)",
         "popover": "oklch(1 0 0)",
         "popoverForeground": "oklch(0.26 0.035 270)",
-        "primary": "oklch(0.48 0.15 264)",
+        "primary": "oklch(0.35 0.04 250)",
         "primaryForeground": "oklch(0.985 0.01 255)",
-        "secondary": "oklch(0.935 0.028 265)",
-        "secondaryForeground": "oklch(0.39 0.11 265)",
+        "secondary": "oklch(0.94 0.035 183)",
+        "secondaryForeground": "oklch(0.40 0.08 183)",
         "muted": "oklch(0.953 0.009 85)",
         "mutedForeground": "oklch(0.50 0.025 275)",
-        "accent": "oklch(0.76 0.13 78)",
-        "accentForeground": "oklch(0.28 0.05 70)",
+        "accent": "oklch(0.79 0.10 185)",
+        "accentForeground": "oklch(0.28 0.04 250)",
         "destructive": "oklch(0.58 0.19 25)",
         "destructiveForeground": "oklch(0.985 0.01 20)",
         "border": "oklch(0.906 0.012 85)",
         "input": "oklch(0.906 0.012 85)",
-        "ring": "oklch(0.48 0.15 264)",
+        "ring": "oklch(0.35 0.04 250)",
         "warning": "oklch(0.80 0.14 65)",
         "warningForeground": "oklch(0.28 0.05 60)",
         "success": "oklch(0.62 0.12 155)",
@@ -11816,40 +14571,40 @@
         "infoForeground": "oklch(0.180 0.06 235)",
         "error": "oklch(0.58 0.19 25)",
         "errorForeground": "oklch(0.985 0.01 20)",
-        "chart1": "oklch(0.55 0.14 264)",
+        "chart1": "oklch(0.60 0.11 180)",
         "chart2": "oklch(0.71 0.11 358)",
         "chart3": "oklch(0.72 0.13 45)",
         "chart4": "oklch(0.70 0.10 195)",
         "chart5": "oklch(0.75 0.11 125)",
         "sidebar": "oklch(0.985 0.005 85)",
         "sidebarForeground": "oklch(0.26 0.035 270)",
-        "sidebarPrimary": "oklch(0.48 0.15 264)",
+        "sidebarPrimary": "oklch(0.35 0.04 250)",
         "sidebarPrimaryForeground": "oklch(0.985 0.01 255)",
-        "sidebarAccent": "oklch(0.935 0.028 265)",
-        "sidebarAccentForeground": "oklch(0.39 0.11 265)",
+        "sidebarAccent": "oklch(0.94 0.035 183)",
+        "sidebarAccentForeground": "oklch(0.40 0.08 183)",
         "sidebarBorder": "oklch(0.906 0.012 85)",
-        "sidebarRing": "oklch(0.48 0.15 264)"
+        "sidebarRing": "oklch(0.35 0.04 250)"
       },
       "dark": {
-        "background": "oklch(0.20 0.03 265)",
+        "background": "oklch(0.22 0.035 250)",
         "foreground": "oklch(0.94 0.008 250)",
-        "card": "oklch(0.245 0.032 265)",
+        "card": "oklch(0.27 0.04 250)",
         "cardForeground": "oklch(0.94 0.008 250)",
-        "popover": "oklch(0.23 0.032 265)",
+        "popover": "oklch(0.25 0.038 250)",
         "popoverForeground": "oklch(0.94 0.008 250)",
-        "primary": "oklch(0.64 0.15 264)",
-        "primaryForeground": "oklch(0.16 0.03 265)",
-        "secondary": "oklch(0.31 0.04 264)",
-        "secondaryForeground": "oklch(0.88 0.03 260)",
-        "muted": "oklch(0.29 0.02 262)",
-        "mutedForeground": "oklch(0.71 0.02 258)",
-        "accent": "oklch(0.79 0.13 78)",
-        "accentForeground": "oklch(0.22 0.04 70)",
+        "primary": "oklch(0.75 0.10 183)",
+        "primaryForeground": "oklch(0.17 0.03 250)",
+        "secondary": "oklch(0.32 0.045 190)",
+        "secondaryForeground": "oklch(0.88 0.05 183)",
+        "muted": "oklch(0.31 0.035 250)",
+        "mutedForeground": "oklch(0.72 0.03 250)",
+        "accent": "oklch(0.72 0.11 180)",
+        "accentForeground": "oklch(0.18 0.03 250)",
         "destructive": "oklch(0.62 0.18 25)",
         "destructiveForeground": "oklch(0.985 0.01 20)",
-        "border": "oklch(0.33 0.02 262)",
-        "input": "oklch(0.30 0.02 262)",
-        "ring": "oklch(0.64 0.15 264)",
+        "border": "oklch(0.35 0.03 250)",
+        "input": "oklch(0.32 0.03 250)",
+        "ring": "oklch(0.75 0.10 183)",
         "warning": "oklch(0.80 0.13 65)",
         "warningForeground": "oklch(0.22 0.04 60)",
         "success": "oklch(0.68 0.11 155)",
@@ -11858,19 +14613,19 @@
         "infoForeground": "oklch(0.16 0.02 235)",
         "error": "oklch(0.62 0.18 25)",
         "errorForeground": "oklch(0.985 0.01 20)",
-        "chart1": "oklch(0.68 0.14 264)",
+        "chart1": "oklch(0.70 0.11 180)",
         "chart2": "oklch(0.76 0.11 358)",
         "chart3": "oklch(0.76 0.13 45)",
         "chart4": "oklch(0.75 0.10 195)",
         "chart5": "oklch(0.78 0.11 125)",
-        "sidebar": "oklch(0.22 0.03 265)",
+        "sidebar": "oklch(0.24 0.035 250)",
         "sidebarForeground": "oklch(0.94 0.008 250)",
-        "sidebarPrimary": "oklch(0.64 0.15 264)",
-        "sidebarPrimaryForeground": "oklch(0.16 0.03 265)",
-        "sidebarAccent": "oklch(0.31 0.04 264)",
-        "sidebarAccentForeground": "oklch(0.88 0.03 260)",
-        "sidebarBorder": "oklch(0.33 0.02 262)",
-        "sidebarRing": "oklch(0.64 0.15 264)"
+        "sidebarPrimary": "oklch(0.75 0.10 183)",
+        "sidebarPrimaryForeground": "oklch(0.17 0.03 250)",
+        "sidebarAccent": "oklch(0.32 0.045 190)",
+        "sidebarAccentForeground": "oklch(0.88 0.05 183)",
+        "sidebarBorder": "oklch(0.35 0.03 250)",
+        "sidebarRing": "oklch(0.75 0.10 183)"
       }
     },
     "typography": {
@@ -11880,7 +14635,7 @@
           "sans-serif"
         ],
         "serif": [
-          "'Baloo 2'",
+          "Patrick Hand",
           "sans-serif"
         ],
         "mono": [
@@ -12088,16 +14843,16 @@
               "accent": {
                 "field": "territoires",
                 "colors": {
-                  "Arrageois": "#6d5da8",
-                  "Artois": "#b7cb6b",
-                  "Audomarois": "#e5af32",
-                  "Boulonnais": "#c34a42",
-                  "Calaisis": "#ed8a4c",
-                  "Entre Mer et Terres": "#3fb4be",
-                  "Familles en sol mineur": "#a2537e",
-                  "Familles en sol mineur Hénin Carvin": "#a2537e",
-                  "Familles en sol mineur Lens Liévin": "#97776b",
-                  "Ternois Bruaysis": "#d492a9"
+                  "Arrageois": "var(--territoire-arrageois)",
+                  "Artois": "var(--territoire-artois)",
+                  "Audomarois": "var(--territoire-audomarois)",
+                  "Boulonnais": "var(--territoire-boulonnais)",
+                  "Calaisis": "var(--territoire-calaisis)",
+                  "Entre Mer et Terres": "var(--territoire-entre-mer-et-terres)",
+                  "Familles en sol mineur": "var(--territoire-familles-en-sol-mineur)",
+                  "Familles en sol mineur Hénin Carvin": "var(--territoire-fsm-henin-carvin)",
+                  "Familles en sol mineur Lens Liévin": "var(--territoire-fsm-lens-lievin)",
+                  "Ternois Bruaysis": "var(--territoire-ternois-bruaysis)"
                 }
               },
               "facets": [
@@ -13130,20 +15885,39 @@
       "editModals": [
         {
           "editModal": "edit-parent62-article",
+          "_comment": "Périmètre du costum : 6 434 POI portent source.keys=parent62. Le sous-type ne borne PAS (3 765 POI recoveryCenter en base, en majorité d'autres costums). Le terme reference.costum couvre les entités RATTACHÉES au costum sans en avoir la provenance (route legacy Admin::addSourceInElement) : aucune aujourd'hui, mais le mécanisme est générique.",
           "editModalMatch": {
             "type": "article"
+          },
+          "when": {
+            "or": [
+              { "field": "sourceKeys", "op": "contains", "value": "parent62" },
+              { "field": "reference.costum", "op": "contains", "value": "parent62" }
+            ]
           }
         },
         {
           "editModal": "edit-parent62-affiche",
           "editModalMatch": {
             "type": "affiche"
+          },
+          "when": {
+            "or": [
+              { "field": "sourceKeys", "op": "contains", "value": "parent62" },
+              { "field": "reference.costum", "op": "contains", "value": "parent62" }
+            ]
           }
         },
         {
           "editModal": "edit-parent62-recovery-center",
           "editModalMatch": {
             "type": "recoveryCenter"
+          },
+          "when": {
+            "or": [
+              { "field": "sourceKeys", "op": "contains", "value": "parent62" },
+              { "field": "reference.costum", "op": "contains", "value": "parent62" }
+            ]
           }
         }
       ]

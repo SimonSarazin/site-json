@@ -11,8 +11,7 @@ import { buildPayload, buildEditPayload, type FormSpec } from "@/modules/formEng
 import type { FormValues, FormDescriptor } from "@/modules/formEngine";
 import { getSlug } from "@/lib/constant/common";
 import { carrierSlug } from "../carrier";
-import type { EntityModalCtx } from "../../entityModalSpec";
-import { registerDefaultsFn, registerPayloadFn, registerScopeFn, getDescriptor } from "../../specRegistries";
+import { registerDefaultsFn, registerScopeFn } from "../../specRegistries";
 import "../sharedFns"; // side-effect : enregistre la clé commune image:profilUrl
 
 /** Lien social (fieldArray). */
@@ -34,7 +33,7 @@ export interface TiersLieuxFormData {
   familyOther?: string;
   surfaceBuilt?: string;
   surfaceOutdoor?: string;
-  // Adresse : 14 champs SIG (level1..4/codeInsee posés par EditLocationTab).
+  // Adresse : 16 champs SIG (level1..5/codeInsee posés par EditLocationTab).
   addressCountry?: string;
   streetAddress?: string;
   postalCode?: string;
@@ -44,6 +43,7 @@ export interface TiersLieuxFormData {
   level2?: string; level2Name?: string;
   level3?: string; level3Name?: string;
   level4?: string; level4Name?: string;
+  level5?: string; level5Name?: string;
   codeInsee?: string;
   geo?: { latitude: string | number; longitude: string | number };
   geoPosition?: { type: "Point"; coordinates: number[] };
@@ -68,7 +68,8 @@ export function getDefaultTiersLieuxValues(): TiersLieuxFormData {
     name: "", openingMonth: "", openingYear: "", shortDescription: "", managementType: "",
     family: [], addressCountry: "", addressLocality: "", postalCode: "", streetAddress: "", localityId: "",
     level1: "", level1Name: "", level2: "", level2Name: "",
-    level3: "", level3Name: "", level4: "", level4Name: "", codeInsee: "",
+    level3: "", level3Name: "", level4: "", level4Name: "",
+    level5: "", level5Name: "", codeInsee: "",
     logo: "", photos: [], socialLinks: [],
     hours: emptyOpeningHours(), // socle 7 jours décochés 08:00–18:00 (codec commun openingHours)
     email: "",
@@ -113,7 +114,7 @@ registerTransform("tl:video0", (v) => pickString(Array.isArray(v) ? v[0] : undef
 // tl:socialRead/tl:socialWrite SUPPRIMÉS → codec commun `social:read`/`social:write` (sharedCodecs).
 // tl:hoursRead SUPPRIMÉ → codec du widget `openingHours:read` (sharedCodecs), hérité via WIDGET_DEFAULTS.
 // tl:openingDateRead/manageModelRead/typePlaceRead SUPPRIMÉS → codecs paramétrés monthYear/enumOrOther/multiCsv (read).
-// Lit les 14 champs SIG (parité profil `pf:addressRead`) → round-trip COMPLET des niveaux (level1..4/
+// Lit les 16 champs SIG (parité profil `pf:addressRead`) → round-trip COMPLET des niveaux (level1..5/
 // codeInsee). Sans eux, une édition sans toucher l'adresse reconstruisait un objet partiel ; et le schéma
 // stripait les niveaux posés par EditLocationTab. cf. doc/refactor-field-treatment.md (asymétrie adresse).
 // READ adresse : codec COMMUN `address:read` (cf. ../sharedCodecs, omit-empty — le socle getDefaultTiersLieuxValues
@@ -221,18 +222,10 @@ registerOptions("tl:years", () => {
 registerDefaultsFn("tl:emptyDefaults", () => getDefaultTiersLieuxValues() as unknown as Record<string, unknown>);
 // Scope = slug du costum porteur (VITE_SLUG), fallback getSlug() — exposé via {slug} (slugKey "slug").
 registerScopeFn("tl:scope", (carrier) => ({ slug: carrierSlug(carrier) || getSlug() }));
-// Payload mode-aware : create scopé costum (merge presets extraData + tags) ; edit complet (vides typés) + merge tags existants.
-// Descripteur résolu au RUNTIME depuis le registre (registerCostumForm — TS ou config) → plus de descripteur figé.
-registerPayloadFn("tl:payload", (form, ctx: EntityModalCtx) => {
-  const descriptor = getDescriptor("tiers-lieux");
-  if (!descriptor) throw new Error("[tiers-lieux] descripteur non enregistré (registerCostumForm)");
-  const co = ctx.costum as CostumConfig | undefined;
-  if (ctx.mode === "edit") {
-    const existingTags = (ctx.entity?.serverData?.tags as string[] | undefined) ?? [];
-    const addTags = co?.mainTag ? [co.mainTag] : [];
-    return buildTiersLieuxPayload(form as unknown as TiersLieuxFormData, descriptor, { existingTags, addTags, complete: true });
-  }
-  return buildTiersLieuxPayload(form as unknown as TiersLieuxFormData, descriptor, co ? { costum: co } : undefined);
-});
+// tl:payload SUPPRIMÉ (chantier stamps) : le payload passe au PIPELINE générique, et le merge tags
+// — son unique irréductible — est devenu DÉCLARATIF dans la config (`mutation.stamps` : append
+// `$costum.mainTag` on:both + `$costum.compagnon` add seul, sémantique exacte de l'ex-fn).
+// `buildTiersLieuxPayload` ci-dessus RESTE : c'est l'ORACLE de parité des tests (spec.test.ts
+// compare pipeline+stamps à l'ancien assemblage).
 // tl:invalidate SUPPRIMÉ → clé générique `invalidate:standard` (sharedFns) + params {userList:"organizations"} dans le schéma.
 // image:profilUrl : clé COMMUNE enregistrée dans ../sharedFns (importé en side-effect en tête de fichier).

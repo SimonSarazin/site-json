@@ -13,7 +13,7 @@
 > [Module Cagnotte](../doc/18-module-cagnotte.md) · [Module Auth](../doc/23-module-auth.md).
 > Mémoire : `[[project-rezo-la-mer]]`.
 
-Dernière mise à jour : **2026-07-28** (création du dossier · 5 pages légales posées · analyse du contenu réel des données).
+Dernière mise à jour : **2026-08-03** (widget promesses de cagnotte activé dans le header · SDK 1.0.172 publiée · `VITE_SITE_PUBLIC_URL`).
 **Le chantier principal reste à cadrer** — cf. §13.
 
 ---
@@ -39,8 +39,8 @@ site d'origine, pas celui qui existe.
 | CSS | [`../src/index-rezo-la-mer.css`](../src/index-rezo-la-mer.css) — propre au site |
 | Langues | `fr` (défaut) + `en` · bloc `theme` **complet** |
 | Header / Footer | `transparent-scroll` / `sidebar-columns` |
-| SDK | `@communecter/cocolight-api-client` **1.0.169** |
-| Historique | **54 commits** touchant la config |
+| SDK | `@communecter/cocolight-api-client` **1.0.172** — version **publiée** sur npm (`package.json` `^1.0.172`, commit `09e145a0` du 03/08 ; fini le `npm pack` local) |
+| Historique | **55 commits** touchant la config (`git log --follow`, relevé le 03/08) |
 
 ### Historique des chantiers
 
@@ -48,6 +48,8 @@ site d'origine, pas celui qui existe.
 |---|---|---|
 | — → 25/07 | Thomas | Construction des 5 pages de contenu, thème, `b1104947` « 41 constats levés » |
 | 28/07 | Claude | Diagnostic, création des 5 pages légales, relevé du legacy non porté, création de ce dossier |
+| 28/07 | Anatole | Refonte cagnotte (`b436e662`, mergé par `e89adef9`) — part rezo-la-mer : `header.utilities.pledge: true` |
+| 03/08 | — (parc) | Merge `fix/institut-bleu-ui` dans `main` (`94251b7b`, 17 commits) : SDK **1.0.172 publiée**, `VITE_SITE_PUBLIC_URL` — rien ne touche la config du site |
 
 ---
 
@@ -238,6 +240,15 @@ npm run audit:config    -- --file config.prod.rezo-la-mer.json
 npx tsx scripts/config-probe.ts config.prod.rezo-la-mer.json
 ```
 
+### Variables d'environnement de déploiement
+
+| Variable | Valeur pour ce site | Rôle |
+|---|---|---|
+| `VITE_SITE_PUBLIC_URL` | `https://rezo-la-mer.00.re` — dérivée par `deploy:env` depuis `sites.json` (`aliases[0]` prioritaire ; le site n'en déclare aucun → `domain`) | URL publique du **site-json lui-même** : canonical, `og:url`/`og:image`, `sitemap.xml`, flux RSS. Lue par `getSitePublicUrl()` (`src/lib/constant/common.ts`) et `server/lib/sitemap.js` ; repli `getServerUrl()` si absente (comportement historique) |
+| `VITE_SERVER_URL` | valeur parc (serveur communecter) | À **ne pas confondre** avec la précédente : images `/upload`, embed co2, cagnotte |
+
+Variable introduite par `be7a320c` (branche `fix/institut-bleu-ui`, mergée dans `main` le 03/08).
+
 ---
 
 ## 9. Impacts des modifications
@@ -267,6 +278,33 @@ personnelle et un mobile — **n'ont pas été publiées**.
 
 Vérifié : 0 couleur littérale, 0 lien interne mort dans les pages ajoutées, préflight 274 tests.
 
+### Lot du 28/07 — refonte cagnotte (Anatole) : widget promesses activé dans le header
+
+`b436e662` (mergé par `e89adef9` le 28/07) refond le module cagnotte — flux financiers, UI, i18n :
+20 fichiers, essentiellement `src/modules/cagnotte/`. **Part rezo-la-mer : une seule ligne** —
+`header.utilities.pledge: true`.
+
+- Le drapeau n'est consommé que par `HeaderTransparentScroll` (`src/components/layout/header/HeaderTransparentScroll.tsx`)
+  — précisément le header de ce site : il monte `PledgeHeaderButton` (module cagnotte).
+- Le bouton rend `null` pour un visiteur non connecté ou sans promesse (`totalPledgesAmount === 0`) :
+  **invisible pour l'anonyme**, aucun risque d'UI cassée côté public.
+- La config ne porte **aucune clé `cagnotteModuleConfig`** : le type de cagnotte est le
+  `DEFAULT_CAGNOTTE_TYPE` du code (`src/modules/cagnotte/types.ts`) — cohérent avec « defaults Zod
+  jamais appliqués au runtime ».
+- À revalider : rendu navigateur en étant connecté avec des promesses — jamais fait (cf. §10 #14).
+
+### Transverse du 03/08 — merge `fix/institut-bleu-ui` (`94251b7b`) : SDK 1.0.172 + `VITE_SITE_PUBLIC_URL`
+
+17 commits mergés dans `main` le 03/08 ; **rien ne touche `config.prod.rezo-la-mer.json`**, mais deux
+faits de parc concernent ce projet :
+
+- **SDK `1.0.172` publiée sur npm** (`09e145a0`, `package.json` → `^1.0.172`) — fini le `npm pack`
+  local. Règle notamment la pose du scope costum côté admin (`setCostumScope`,
+  cf. `src/modules/admin/lib/ensureCostumScope.ts`).
+- **`VITE_SITE_PUBLIC_URL`** (`be7a320c`) — voir §8.
+
+Gates revérifiées le 03/08 sur `main` : `typecheck` ✅ · préflight ✅ **22 fichiers / 412 tests**.
+
 ---
 
 ## 10. Checklist d'avancement
@@ -286,18 +324,25 @@ Vérifié : 0 couleur littérale, 0 lien interne mort dans les pages ajoutées, 
 | 11 | Module AAP | ❌ | 21 pages legacy — **chantier non cadré** |
 | 12 | Back-office | — | Aucun au legacy, aucun besoin identifié |
 | 13 | Rendu navigateur | ❌ | **Jamais vérifié** |
+| 14 | Widget promesses (cagnotte) | 🟡 | `header.utilities.pledge: true` depuis le 28/07 (`b436e662`) — visible uniquement connecté avec promesses ; jamais vérifié en navigateur ; le lien `/cagnotte` du footer reste mort |
 
 ---
 
 ## 11. Dépendances SDK ↔ `cocolight-api-client`
 
-Aucune demande en cours. Un portage AAP en ferait probablement naître.
+Aucune demande spécifique au projet. La version parc est passée à **1.0.172, publiée sur npm**, le
+03/08 (`09e145a0` — fini le `npm pack` local) ; elle règle notamment la pose du scope costum côté
+admin (`setCostumScope`, utilisée par `src/modules/admin/lib/ensureCostumScope.ts`). Un portage AAP
+ferait probablement naître des demandes.
 
 ---
 
 ## 12. Points d'attention / limitations
 
-- **14 liens morts subsistent** (voir §13). Le pied de page décrit le site legacy.
+- **14 liens morts subsistent** (voir §13 — recomptés le 03/08 : liens et multiplicités inchangés).
+  Le pied de page décrit le site legacy.
+- `header.utilities.pledge` est actif depuis le 28/07 (`b436e662`), mais le lien `/cagnotte` du pied
+  de page reste **mort** : le widget de promesses du header n'est pas une page cagnotte.
 - L'ancre **`#donnees`** du pied de page ne correspond à aucun `id` de section — les ids déclarés
   sur `/` sont `hero-rezo-la-mer`, `mission`, `features`, `actions`, `community`, `cta`.
 - Config JSON **jamais parsée par Zod au runtime** : toute clé doit être écrite explicitement.

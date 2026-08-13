@@ -34,6 +34,17 @@ export const VisibilityConditionSchema = z.object({
    * `true` pour que l'élément soit visible. Ex: `["canAddOrganization"]`.
    */
   permissions: z.array(z.string()).optional(),
+
+  /**
+   * Sur une page de PROFIL : `own` = seulement le profil de l'utilisateur connecté, `other` = seulement
+   * celui d'un tiers, `any` (ou absent) = les deux. Sans effet hors profil.
+   *
+   * Comble un écart de sémantique : `auth` et `permissions` sont évalués contre `me`, jamais contre le
+   * profil consulté — une entrée « Référencer ma structure » conditionnée `auth:"required"` s'affichait
+   * donc sur le profil de n'importe quel citoyen. Les ONGLETS savaient déjà l'exprimer
+   * (`ProfileTabConditionSchema.userContext`) ; c'est la même clé, mêmes valeurs.
+   */
+  userContext: z.enum(["own", "other", "any"]).optional(),
 }).optional();
 
 export type VisibilityCondition = z.infer<typeof VisibilityConditionSchema>;
