@@ -72,7 +72,21 @@
       "pledged": "Pledged",
       "done": "Done",
       "inProgress": "In progress",
-      "addMilestone": "Add a milestone"
+      "addMilestone": "Add a milestone",
+      "deleteMilestoneConfirm": {
+        "title": "Delete this milestone?",
+        "description": "The milestone \"{{name}}\" will be permanently deleted.",
+        "confirm": "Yes, delete",
+        "cancel": "Cancel"
+      },
+      "deleteActionConfirm": {
+        "title": "Delete this action?",
+        "description": "The action \"{{name}}\" will be permanently deleted.",
+        "confirm": "Yes, delete",
+        "cancel": "Cancel"
+      },
+      "noFundingYet": "No partner has contributed to this commun yet.",
+      "noTasksYet": "No task has been added to this commun yet."
     },
     "cofinancers": {
       "unknownContributor": "Unknown contributor",

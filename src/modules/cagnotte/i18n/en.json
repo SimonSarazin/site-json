@@ -64,6 +64,10 @@
         "missingProjectSide": "Cannot restore: this milestone is missing from projects.oceco.milestones (project side).",
         "missingAnswerSide": "Cannot restore: no linked expense for this milestone in answers.aapStep1.depense (answer side)."
       },
+      "incompleteForDelete": {
+        "missingProjectSide": "Cannot delete: this milestone is missing from projects.oceco.milestones (project side).",
+        "missingAnswerSide": "Cannot delete: no linked expense for this milestone in answers.aapStep1.depense (answer side)."
+      },
       "cannotCloseWithOpenActions": "Cannot close: all actions must be completed first.",
       "cannotDeleteIfFunded": "Cannot delete: this milestone is already funded.",
       "noIndexForDelete": "No valid index found to delete this milestone.",

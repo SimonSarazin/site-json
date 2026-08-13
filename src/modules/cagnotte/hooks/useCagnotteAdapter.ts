@@ -2,7 +2,8 @@
  * Hook d'abstraction qui transforme les données sources (projets/milestones ou propositions/dépenses)
  * en un modèle de données agnostique et unifié.
  */
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
     CagnotteResource,
     CagnotteTypeConfig,
@@ -16,7 +17,10 @@ import { useUserAdminOrganizations } from "@/modules/cagnotte/hooks/useUserAdmin
 import { isUser } from "@/lib/getTypedEntity";
 import type { User } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
-import { toNumber } from "@/modules/cagnotte/utils/dataTransform.ts";
+import { asRecord, getServerData, toArray, toNumber } from "@/modules/cagnotte/utils/dataTransform.ts";
+import { generateMilestoneId } from "@/modules/cagnotte/utils/idGeneration";
+import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
+import { appendProjectMilestone, updateAnswerDepenseFields } from "@/modules/cagnotte/lib/actionMilestonePathUpdates";
 
 interface RawDepense {
     id?: string | number;
@@ -140,17 +144,69 @@ export const getUserFunding = (
     }).filter(fund => orgsId.indexOf(fund.id) > -1 || fund.id === userId) as FundingTransaction[];
 };
 
+function buildDepenseFundingData(
+    depense: RawDepense | undefined,
+    globalLinks: any,
+    fallbackCurrentFunding: number,
+    orgsIds: string[],
+    userId?: string
+) {
+    const rawFinancers = (depense?.financer || []) as Array<FundingTransaction & { method?: string }>;
+    const enrichedFinancers = rawFinancers.map(fund => ({
+        ...fund,
+        metadata: findMetadataById(fund.id, globalLinks)
+    }));
+
+    const rawActions = depense?.actions ?? [];
+    const enrichedActions = rawActions.map((action: any) => enrichActionContributors(action, globalLinks));
+
+    const { currentFunding, unpaidFunding, userPledge } = calculateFundingStatus(
+        enrichedFinancers,
+        fallbackCurrentFunding,
+        orgsIds,
+        userId
+    );
+
+    return { enrichedFinancers, enrichedActions, currentFunding, unpaidFunding, userPledge };
+}
+
+/** Dépense côté projet sans milestone rattaché */
+interface PendingMilestoneRepair {
+    projectId: string;
+    answerId: string;
+    milestoneId: string;
+    name: string;
+    description: string;
+    depenseIndex: number;
+}
+
+const inFlightMilestoneRepairs = new Set<string>();
+
+function resolveOrGenerateMilestoneId(
+    milestoneIdStr: string,
+    projectMilestoneIds: Set<string>,
+    generatedMilestoneIds: string[]
+): { isOrphan: boolean; resolvedId: string } {
+    if (milestoneIdStr && projectMilestoneIds.has(milestoneIdStr)) {
+        return { isOrphan: false, resolvedId: milestoneIdStr };
+    }
+    const resolvedId = milestoneIdStr || generateMilestoneId([...projectMilestoneIds, ...generatedMilestoneIds]);
+    generatedMilestoneIds.push(resolvedId);
+    return { isOrphan: true, resolvedId };
+}
+
 export function useCagnotteAdapter(
     fundingEnvelope: FundingEnvelopeNormalizedData | null | undefined,
     allProjects: OrgProject[],
     config: CagnotteTypeConfig,
     selectedId: string,
 ) {
-    const {me} = useCocolight();
+    const {me, api} = useCocolight();
     const currentUserEntity = (me && isUser(me) ? me : null) as User | null;
     const userAdminOrganizations = useUserAdminOrganizations(currentUserEntity, {});
+    const queryClient = useQueryClient();
 
-    return useMemo(() => {
+    const {resources, savedSelectedResource, pendingMilestoneRepairs} = useMemo(() => {
         const rawEnvelopeTypeAssertion = fundingEnvelope?.rawEnvelope as { projects?: RawProposition[], links?: any } | undefined;
         const rawProjects = rawEnvelopeTypeAssertion?.projects || [];
         const globalLinks = rawEnvelopeTypeAssertion?.links || {};
@@ -158,6 +214,7 @@ export function useCagnotteAdapter(
         const orgsIds = userAdminOrganizations?.map(user => user.id);
 
         let resources: CagnotteResource[] = [];
+        const pendingMilestoneRepairs: PendingMilestoneRepair[] = [];
 
         if (config.selectorType === "project") {
             const rawProjectsMap = rawProjects.reduce<Record<string, RawProposition>>((acc, p) => {
@@ -179,17 +236,9 @@ export function useCagnotteAdapter(
                     const milestoneIdStr = String(m.milestoneId);
                     const matchedDepense = depensesByMilestone[milestoneIdStr];
 
-                    const rawFinancers = (matchedDepense?.depense?.financer || []) as Array<FundingTransaction & { method?: string }>;
-                    const enrichedFinancers = rawFinancers.map(fund => ({
-                        ...fund,
-                        metadata: findMetadataById(fund.id, globalLinks)
-                    }));
-
-                    const rawActions = matchedDepense?.depense?.actions ?? [];
-                    const enrichedActions = rawActions.map((action: any) => enrichActionContributors(action, globalLinks));
-
-                    const { currentFunding, unpaidFunding, userPledge } = calculateFundingStatus(
-                        enrichedFinancers,
+                    const { enrichedFinancers, enrichedActions, currentFunding, unpaidFunding, userPledge } = buildDepenseFundingData(
+                        matchedDepense?.depense,
+                        globalLinks,
                         typeof m.currentFunding === "number" ? m.currentFunding : 0,
                         orgsIds,
                         me?.serverData?.id
@@ -213,6 +262,57 @@ export function useCagnotteAdapter(
                     };
                 });
 
+                const projectMilestoneIds = new Set((projet?.milestones || []).map(m => String(m.milestoneId)));
+                const generatedMilestoneIds: string[] = [];
+
+                const orphanItems = depenses.reduce<typeof items>((acc, d, idx) => {
+                    const milestoneIdStr = d.milestone ? String(d.milestone) : "";
+                    const { isOrphan, resolvedId: generatedMilestoneId } = resolveOrGenerateMilestoneId(
+                        milestoneIdStr,
+                        projectMilestoneIds,
+                        generatedMilestoneIds
+                    );
+                    if (!isOrphan) return acc;
+
+                    const { enrichedFinancers, enrichedActions, currentFunding, unpaidFunding, userPledge } = buildDepenseFundingData(
+                        d,
+                        globalLinks,
+                        0,
+                        orgsIds,
+                        me?.serverData?.id
+                    );
+
+                    acc.push({
+                        fromType: "milestone" as const,
+                        itemId: generatedMilestoneId,
+                        milestoneId: generatedMilestoneId,
+                        depenseIndex: idx,
+                        name: d.poste ?? "",
+                        description: d.description ?? "",
+                        price: Number(d.priceInt) || 0,
+                        status: d.include !== false ? "open" : "close",
+                        actions: enrichedActions,
+                        currentFunding,
+                        unpaidFunding,
+                        userPledge,
+                        funding: getUserFunding(enrichedFinancers, orgsIds, me?.serverData?.id),
+                        allFunding: enrichedFinancers
+                    });
+
+                    if (projet.answerId) {
+                        pendingMilestoneRepairs.push({
+                            projectId: projectIdStr,
+                            answerId: projet.answerId,
+                            milestoneId: generatedMilestoneId,
+                            name: d.poste ?? "",
+                            description: d.description ?? "",
+                            depenseIndex: idx,
+                        });
+                    }
+
+                    return acc;
+                }, []);
+
                 return {
                     fromType: config.selectorType,
                     id: projectIdStr,
@@ -221,12 +321,21 @@ export function useCagnotteAdapter(
                     answerId: projet.answerId ?? "",
                     resourceTotalAmount: Number(projet.cagnotteTargetAmount) || 0,
                     resourceFinancedAmount: Number(projet.cagnotteTotalAmount) || 0,
-                    items,
+                    items: [...items, ...orphanItems],
                 };
             });
         }
         else if (config.selectorType === "proposition") {
             resources = rawProjects.map((proposition: RawProposition) => {
+                const projectData = getServerData(proposition);
+                const projectRecord = getServerData(projectData.project);
+                const hasLinkedProject = Object.keys(projectRecord).length > 0;
+                const projectMilestonesRaw = toArray<{ milestoneId?: string }>(asRecord(projectRecord.oceco).milestones);
+                const projectMilestoneIds = new Set(
+                    projectMilestonesRaw.map(m => String(m.milestoneId ?? "")).filter(id => id !== "")
+                );
+                const generatedMilestoneIds: string[] = [];
+
                 const items = (proposition?.depenses || []).map((d: RawDepense, index: number) => {
 
                     const rawFinancers = (d.financer || []) as Array<FundingTransaction & { method?: string }>;
@@ -248,10 +357,32 @@ export function useCagnotteAdapter(
 
                     const enrichedActions = filteredActions.map((action: any) => enrichActionContributors(action, globalLinks));
 
+                    let resolvedMilestoneId = d.milestone ?? "";
+                    if (proposition.projectId && hasLinkedProject) {
+                        const milestoneIdStr = d.milestone ? String(d.milestone) : "";
+                        const { isOrphan, resolvedId } = resolveOrGenerateMilestoneId(
+                            milestoneIdStr,
+                            projectMilestoneIds,
+                            generatedMilestoneIds
+                        );
+                        resolvedMilestoneId = resolvedId;
+
+                        if (isOrphan) {
+                            pendingMilestoneRepairs.push({
+                                projectId: proposition.projectId,
+                                answerId: String(proposition.id),
+                                milestoneId: resolvedId,
+                                name: d.poste ?? "",
+                                description: d.description ?? "",
+                                depenseIndex: index,
+                            });
+                        }
+                    }
+
                     return {
                         fromType: "depense" as const,
                         itemId: d.id ? String(d.id) : String(index),
-                        milestoneId: d.milestone ?? "",
+                        milestoneId: resolvedMilestoneId,
                         depenseIndex: index,
                         name: d.poste ?? "",
                         description: d.description ?? "",
@@ -281,8 +412,49 @@ export function useCagnotteAdapter(
 
         const savedSelectedResource = resources.find(t => t.id === selectedId);
         resources = resources.filter(re => re.name !== "");
-        return { resources, savedSelectedResource };
+        return { resources, savedSelectedResource, pendingMilestoneRepairs };
     }, [fundingEnvelope, allProjects, config.selectorType, selectedId, me?.serverData?.id, userAdminOrganizations]);
+
+    useEffect(() => {
+        if (!api || pendingMilestoneRepairs.length === 0) return;
+
+        pendingMilestoneRepairs.forEach((repair) => {
+            const repairKey = `${repair.answerId}:${repair.depenseIndex}:${repair.milestoneId}`;
+            if (inFlightMilestoneRepairs.has(repairKey)) return;
+            inFlightMilestoneRepairs.add(repairKey);
+
+            (async () => {
+                try {
+                    const [project, answer] = await Promise.all([
+                        api.project({id: repair.projectId}),
+                        api.answer({id: repair.answerId}),
+                    ]);
+
+                    await appendProjectMilestone({
+                        project,
+                        milestone: {
+                            milestoneId: repair.milestoneId,
+                            name: repair.name,
+                            description: repair.description,
+                            status: "open",
+                        },
+                    });
+                    await updateAnswerDepenseFields({
+                        answer,
+                        index: repair.depenseIndex,
+                        fields: {milestone: repair.milestoneId},
+                    });
+
+                    void queryClient.invalidateQueries({queryKey: CAGNOTTE_QUERY_KEYS.FUNDING_ENVELOPE_PREFIX()});
+                } catch (error) {
+                    inFlightMilestoneRepairs.delete(repairKey);
+                    console.error("useCagnotteAdapter: échec de la génération auto du milestone projet pour une dépense orpheline", error);
+                }
+            })();
+        });
+    }, [pendingMilestoneRepairs, api, queryClient]);
+
+    return {resources, savedSelectedResource};
 }
 
 export function computePledgesFromResources(resources: CagnotteResource[], userId?: string, orgsIds: string[] = []): Pledge[] {

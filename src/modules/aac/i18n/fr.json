@@ -72,7 +72,21 @@
       "pledged": "Promesse",
       "done": "Terminée",
       "inProgress": "En cours",
-      "addMilestone": "Ajouter un palier"
+      "addMilestone": "Ajouter un palier",
+      "deleteMilestoneConfirm": {
+        "title": "Supprimer ce palier ?",
+        "description": "Le palier « {{name}} » sera supprimé définitivement.",
+        "confirm": "Oui, supprimer",
+        "cancel": "Annuler"
+      },
+      "deleteActionConfirm": {
+        "title": "Supprimer cette action ?",
+        "description": "L'action « {{name}} » sera supprimée définitivement.",
+        "confirm": "Oui, supprimer",
+        "cancel": "Annuler"
+      },
+      "noFundingYet": "Aucun partenaire n'a encore contribué à ce commun.",
+      "noTasksYet": "Aucune tâche n'a encore été ajoutée à ce commun."
     },
     "cofinancers": {
       "unknownContributor": "Contributeur inconnu",

@@ -17,11 +17,7 @@ import type {
   FundingAction as ProjectAction,
 } from "@/modules/cagnotte/types";
 import { useCandidateAction, useDeleteAction, useMarkActionDone } from "@/modules/cagnotte/actions/mutations";
-import { useDeleteMilestone, useEditMilestone, useCloseMilestone } from "@/modules/cagnotte/actions/mutations";
-import {
-  useEditMilestoneAnswerOnly,
-  useDeleteMilestoneAnswerOnly,
-} from "@/modules/cagnotte/actions/mutations/milestone";
+import { useDeleteMilestone, useEditMilestone, useCloseMilestone, useRestoreMilestone } from "@/modules/cagnotte/actions/mutations";
 import { useFundingEnvelope } from "@/modules/cagnotte/hooks/useFundingEnvelope";
 import { getEntityId } from "@/modules/cagnotte/utils/dataTransform";
 import { useCocolight } from "@/hooks/useCocolight";
@@ -52,17 +48,17 @@ export function useCommunObjectivesController({
   const [selectedMilestoneTitle, setSelectedMilestoneTitle] = useState<string>("");
   const [selectedAction, setSelectedAction] = useState<ProjectAction | null>(null);
   const [selectedMilestone, setSelectedMilestone] = useState<Milestone | null>(null);
+  const [pendingDeleteMilestone, setPendingDeleteMilestone] = useState<{ itemId: string; milestone: Milestone } | null>(null);
+  const [pendingDeleteAction, setPendingDeleteAction] = useState<{ milestoneId: string; action: ProjectAction } | null>(null);
   const [loadingIds, setLoadingIds] = useState({
     candidateActionId: "",
     doneActionId: "",
     deletingActionId: "",
-    deletingMilestoneId: "",
-    closingMilestoneId: "",
+    deletingItemId: "",
+    closingItemId: "",
+    restoringItemId: "",
   });
 
-  // getEntityId() gère les deux formes possibles de CoFormAnswer._id (string brute
-  // ou { $id }) — String(answerQuery?._id) produirait "[object Object]" dans le
-  // second cas.
   const answerEntityId = answerQuery ? getEntityId(answerQuery) : "";
   const { data: fundingEnvelopeData, refetch: refetchFundingEnvelope } = useFundingEnvelope(answerEntityId);
   const cagnottePerms = useCagnottePermissions(entity, {
@@ -75,7 +71,7 @@ export function useCommunObjectivesController({
   const canManageActions = canManageObjectiveActions(resolvedProjectId);
   const isConnected = cagnottePerms.isConnected;
   const currentUserId = me?.serverData?.id ?? cagnottePerms.currentUserId;
-  const { requireConnected, requireApiContext } = useActionGuards({
+  const { requireConnected, requireApiAacContext } = useActionGuards({
     isConnected,
     apiClient,
     projectId: resolvedProjectId,
@@ -84,46 +80,59 @@ export function useCommunObjectivesController({
 
   const actionCtx = useMemo(() => ({ api, projectId: resolvedProjectId, project: projectEntity }), [api, resolvedProjectId, projectEntity]);
   const milestoneCtx = useMemo(() => ({ api, rawEnvelope: fundingEnvelopeData?.rawEnvelope ?? null, projectId: resolvedProjectId, answerId: resolvedAnswerId }), [api, fundingEnvelopeData?.rawEnvelope, resolvedProjectId, resolvedAnswerId]);
-  const answerOnlyCtx = useMemo(() => ({ api, answerId: resolvedAnswerId }), [api, resolvedAnswerId]);
 
   const candidateActionMutation = useCandidateAction(actionCtx);
   const markActionDoneMutation = useMarkActionDone(actionCtx);
   const deleteActionMutation = useDeleteAction(actionCtx);
 
-  // Deux jeux de mutations milestone, toujours instanciés (les hooks ne peuvent pas être
-  // conditionnels) : celles qui synchronisent projet + answer, et celles answer-only. On
-  // sélectionne laquelle utiliser à l'appel, selon canManageActions (= projectId présent).
-  const editMilestoneMutation = useEditMilestone(milestoneCtx);
-  const editMilestoneAnswerOnlyMutation = useEditMilestoneAnswerOnly(answerOnlyCtx);
-  const activeEditMilestoneMutation = canManageActions ? editMilestoneMutation : editMilestoneAnswerOnlyMutation;
-
+  const activeEditMilestoneMutation = useEditMilestone(milestoneCtx);
   const closeMilestoneMutation = useCloseMilestone(milestoneCtx);
-
   const deleteMilestoneMutation = useDeleteMilestone(milestoneCtx);
-  const deleteMilestoneAnswerOnlyMutation = useDeleteMilestoneAnswerOnly(answerOnlyCtx);
-  const activeDeleteMilestoneMutation = canManageActions ? deleteMilestoneMutation : deleteMilestoneAnswerOnlyMutation;
+  const restoreMilestoneMutation = useRestoreMilestone(milestoneCtx);
 
-  const handleCloseMilestone = (milestone: Milestone) => {
-    // Pas de fermeture answer-only : ni demandé, ni de sémantique "close" définie
-    // côté answer pour l'instant (include:false existe pour l'edit, mais fermer un
-    // palier est un concept différent d'un simple statut).
-    if (!canManageActions) return;
+  const handleCloseMilestone = (itemId: string, milestone: Milestone) => {
     if (!requireConnected("closeMilestone")) return;
-    if (!requireApiContext("closeMilestone")) return;
-    setLoadingIds((prev) => ({ ...prev, closingMilestoneId: milestone.id }));
-    closeMilestoneMutation.mutate({ milestoneId: milestone.id, name: milestone.title }, {
+    if (!requireApiAacContext("closeMilestone")) return;
+    setLoadingIds((prev) => ({ ...prev, closingItemId: itemId }));
+    closeMilestoneMutation.mutate({ milestoneId: milestone.id, name: milestone.title, answerDepenseIndex: typeof milestone.answerDepenseIndex === "number" ? milestone.answerDepenseIndex : undefined }, {
       onSuccess: async () => { await refetchFundingEnvelope(); },
-      onSettled: () => setLoadingIds((prev) => ({ ...prev, closingMilestoneId: "" })),
+      onSettled: () => setLoadingIds((prev) => ({ ...prev, closingItemId: "" })),
     });
   };
 
-  const handleDeleteMilestone = (milestone: Milestone) => {
+  const requestDeleteMilestone = (itemId: string, milestone: Milestone) => {
     if (!requireConnected("deleteMilestone")) return;
-    if (!requireApiContext("deleteMilestone")) return;
-    setLoadingIds((prev) => ({ ...prev, deletingMilestoneId: milestone.id }));
-    activeDeleteMilestoneMutation.mutate({ milestoneId: milestone.id, name: milestone.title }, {
+    if (!requireApiAacContext("deleteMilestone")) return;
+    setPendingDeleteMilestone({ itemId, milestone });
+  };
+
+  const handleRestoreMilestone = (itemId: string, milestone: Milestone) => {
+    if (!requireConnected("restoreMilestone")) return;
+    if (!requireApiAacContext("restoreMilestone")) return;
+    setLoadingIds((prev) => ({ ...prev, restoringItemId: itemId }));
+    restoreMilestoneMutation.mutate(
+      { milestoneId: milestone.id, name: milestone.title, answerDepenseIndex: typeof milestone.answerDepenseIndex === "number" ? milestone.answerDepenseIndex : undefined },
+      {
+        onSuccess: async () => { await refetchFundingEnvelope(); },
+        onSettled: () => {
+          setLoadingIds((prev) => ({ ...prev, restoringItemId: "" }));
+        },
+      },
+    );
+  };
+
+  const cancelDeleteMilestone = () => setPendingDeleteMilestone(null);
+
+  const confirmDeleteMilestone = () => {
+    if (!pendingDeleteMilestone) return;
+    const { itemId, milestone } = pendingDeleteMilestone;
+    setLoadingIds((prev) => ({ ...prev, deletingItemId: itemId }));
+    deleteMilestoneMutation.mutate({ milestoneId: milestone.id, name: milestone.title, answerDepenseIndex: typeof milestone.answerDepenseIndex === "number" ? milestone.answerDepenseIndex : undefined }, {
       onSuccess: async () => { await refetchFundingEnvelope(); },
-      onSettled: () => setLoadingIds((prev) => ({ ...prev, deletingMilestoneId: "" })),
+      onSettled: () => {
+        setLoadingIds((prev) => ({ ...prev, deletingItemId: "" }));
+        setPendingDeleteMilestone(null);
+      },
     });
   };
 
@@ -146,16 +155,6 @@ export function useCommunObjectivesController({
     }
 
     try {
-      // me.project(...) plutôt que api.project(...) : le constructeur du SDK
-      // parente la nouvelle entité Project par son 1er argument, et userContext
-      // n'est posé à l'utilisateur connecté que si ce parent est un User.
-      // api.project() parente par l'ApiClient brut -> userContext reste null ->
-      // project.isAdmin() (utilisé par project.action() pour créer une action)
-      // renvoie toujours false, même pour un admin réel du projet — c'est la
-      // cause du "Vous n'avez pas les droits pour créer une action dans ce
-      // projet" observé ici alors que ActionsSection (qui récupère son
-      // projectEntity via le profil déjà chargé, donc déjà correctement
-      // parenté) fonctionne.
       const fetchedProjectEntity = (me
         ? await me.project({ id: effectiveProjectId })
         : await api!.project({ id: effectiveProjectId })) as Project;
@@ -170,7 +169,7 @@ export function useCommunObjectivesController({
   const openCreateActionModal = async (milestoneId: string, milestoneTitle: string) => {
     if (!canManageActions) return;
     if (!requireConnected("openCreateAction")) return;
-    if (!requireApiContext("openCreateAction")) return;
+    if (!requireApiAacContext("openCreateAction")) return;
 
     const resolvedEntity = await resolveProjectEntityForModal(resolvedProjectId);
     if (!resolvedEntity && resolvedProjectId) return;
@@ -182,17 +181,13 @@ export function useCommunObjectivesController({
 
   const openCreateMilestoneModal = () => {
     if (!requireConnected("createMilestone")) return;
-    if (!requireApiContext("createMilestone")) return;
+    if (!requireApiAacContext("createMilestone")) return;
     setIsCreateMilestoneOpen(true);
   };
 
   const openEditMilestoneModal = (milestone: Milestone) => {
     if (!requireConnected("editMilestone")) return;
-    // requireApiContext a été construit avec resolvedProjectId — à vérifier qu'il ne
-    // bloque pas aussi le cas answer-only (projectId vide) ; je n'ai pas useActionGuards
-    // pour le confirmer. S'il bloque, il faut soit un requireApiContext plus permissif
-    // ici, soit ne pas l'appeler du tout quand !canManageActions.
-    if (!requireApiContext("editMilestone")) return;
+    if (!requireApiAacContext("editMilestone")) return;
     setSelectedMilestone(milestone);
     setIsEditMilestoneOpen(true);
   };
@@ -203,7 +198,7 @@ export function useCommunObjectivesController({
 
   const handleActionCandidate = (_milestoneId: string, action: ProjectAction) => {
     if (!requireConnected("candidate")) return;
-    if (!requireApiContext("candidate")) return;
+    if (!requireApiAacContext("candidate")) return;
     setLoadingIds((prev) => ({ ...prev, candidateActionId: action.id }));
     candidateActionMutation.mutate({ actionId: action.id }, {
       onSuccess: async () => {
@@ -215,7 +210,7 @@ export function useCommunObjectivesController({
 
   const handleActionDone = (_milestoneId: string, action: ProjectAction) => {
     if (!requireConnected("complete")) return;
-    if (!requireApiContext("complete")) return;
+    if (!requireApiAacContext("complete")) return;
     setLoadingIds((prev) => ({ ...prev, doneActionId: action.id }));
     markActionDoneMutation.mutate({ actionId: action.id, name: action.name }, {
       onSuccess: async () => {
@@ -225,22 +220,33 @@ export function useCommunObjectivesController({
     });
   };
 
-  const handleActionDelete = (_milestoneId: string, action: ProjectAction) => {
+  const requestDeleteAction = (milestoneId: string, action: ProjectAction) => {
     if (!requireConnected("delete")) return;
-    if (!requireApiContext("delete")) return;
+    if (!requireApiAacContext("delete")) return;
+    setPendingDeleteAction({ milestoneId, action });
+  };
+
+  const cancelDeleteAction = () => setPendingDeleteAction(null);
+
+  const confirmDeleteAction = () => {
+    if (!pendingDeleteAction) return;
+    const { action } = pendingDeleteAction;
     setLoadingIds((prev) => ({ ...prev, deletingActionId: action.id }));
     deleteActionMutation.mutate({ actionId: action.id, name: action.name }, {
       onSuccess: async () => {
         await refetchFundingEnvelope();
       },
-      onSettled: () => setLoadingIds((prev) => ({ ...prev, deletingActionId: "" })),
+      onSettled: () => {
+        setLoadingIds((prev) => ({ ...prev, deletingActionId: "" }));
+        setPendingDeleteAction(null);
+      },
     });
   };
 
   const handleActionEdit = async (milestoneId: string, milestoneTitle: string, action: ProjectAction) => {
     if (!canManageActions) return;
     if (!requireConnected("editAction")) return;
-    if (!requireApiContext("editAction")) return;
+    if (!requireApiAacContext("editAction")) return;
 
     const resolvedEntity = await resolveProjectEntityForModal(resolvedProjectId);
     if (!resolvedEntity && resolvedProjectId) return;
@@ -299,18 +305,27 @@ export function useCommunObjectivesController({
     existingMilestoneIds,
     activeEditMilestoneMutation,
 
+    // Confirmation de suppression (palier / action) en attente
+    pendingDeleteMilestone,
+    cancelDeleteMilestone,
+    confirmDeleteMilestone,
+    pendingDeleteAction,
+    cancelDeleteAction,
+    confirmDeleteAction,
+
     // Handlers paliers
     openCreateMilestoneModal,
     openEditMilestoneModal,
     handleCloseMilestone,
-    handleDeleteMilestone,
+    handleDeleteMilestone: requestDeleteMilestone,
     handleMilestoneEditSuccess,
+    handleRestoreMilestone,
 
     // Handlers actions
     handleCreateAction,
     handleActionCandidate,
     handleActionDone,
-    handleActionDelete,
+    handleActionDelete: requestDeleteAction,
     handleActionEdit,
 
     // Divers

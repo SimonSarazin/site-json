@@ -81,12 +81,11 @@ export default function CreateMilestoneDialog({
     // Validations contextuelles non exprimables en Zod statique (dépendent de props).
     if (!isConnected) return setRootError('CreateMilestoneDialog.errors.notConnected');
     if (!api) return setRootError('CreateMilestoneDialog.errors.noApiClient');
-    if (!selectedProjectId) return setRootError('CreateMilestoneDialog.errors.noProject');
     if (!answerId) return setRootError('CreateMilestoneDialog.errors.noAnswer');
     if (!currentUserId) return setRootError('CreateMilestoneDialog.errors.noUser');
 
     form.clearErrors('root');
-    const milestoneId = generateMilestoneId(existingMilestoneIds);
+    const milestoneId = selectedProjectId ? generateMilestoneId(existingMilestoneIds) : '';
 
     createMilestoneMutation.mutate(
       {

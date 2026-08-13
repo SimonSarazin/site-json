@@ -26,6 +26,7 @@ type MilestoneMutationBaseParams = {
   projectId: string;
   answerId: string;
   milestoneId: string;
+  answerDepenseIndex?: number;
 };
 
 type EditMilestoneParams = MilestoneMutationBaseParams & {
@@ -33,6 +34,11 @@ type EditMilestoneParams = MilestoneMutationBaseParams & {
   description: string;
   status: FundingMilestoneStatus;
   targetAmount: number;
+  /**
+   * Index direct dans `answer.answers.aapStep1.depense[]`, utilisé pour cibler la
+   * dépense quand `milestoneId` est vide
+   */
+  answerDepenseIndex?: number;
 };
 
 type CloseMilestoneParams = MilestoneMutationBaseParams;
@@ -74,7 +80,17 @@ function resolveSyncContextOrThrow(params: MilestoneMutationBaseParams) {
   return syncContext;
 }
 
-function getMilestoneConstraints(params: MilestoneMutationBaseParams): MilestoneConstraints {
+function resolveAnswerDepenseIndex(
+  params: MilestoneMutationBaseParams,
+  syncContext: { answerDepenseIndex: number | null },
+): number | null {
+  return typeof params.answerDepenseIndex === 'number' ? params.answerDepenseIndex : syncContext.answerDepenseIndex;
+}
+
+function getMilestoneConstraints(
+  params: MilestoneMutationBaseParams,
+  answerDepenseIndex: number | null,
+): MilestoneConstraints {
   const projects = getEnvelopeProjects(params.rawEnvelope);
 
   for (const projectRow of projects) {
@@ -116,9 +132,9 @@ function getMilestoneConstraints(params: MilestoneMutationBaseParams): Milestone
 
     const canClose = actionsForMilestone.length === 0 || allActionsDone;
 
-    const depensesForMilestone = depenses.filter(
-      (rawDepense) => String(asRecord(rawDepense).milestone ?? '').trim() === params.milestoneId
-    );
+    const depensesForMilestone = params.milestoneId
+      ? depenses.filter((rawDepense) => String(asRecord(rawDepense).milestone ?? '').trim() === params.milestoneId)
+      : (answerDepenseIndex !== null && depenses[answerDepenseIndex] ? [depenses[answerDepenseIndex]] : []);
 
     const hasFunding = depensesForMilestone.some((rawDepense) => {
       const financerList = Array.isArray(asRecord(rawDepense).financer) ? (asRecord(rawDepense).financer as unknown[]) : [];
@@ -134,71 +150,87 @@ function getMilestoneConstraints(params: MilestoneMutationBaseParams): Milestone
 export async function editMilestoneWithSync(params: EditMilestoneParams): Promise<void> {
   const api = requireSource(params.source);
   const syncContext = resolveSyncContextOrThrow(params);
+  const hasProject = Boolean(params.projectId);
 
-  if (syncContext.projectMilestoneIndex === null) {
-    throw new Error(t("milestone.errors.incompleteForEdit.missingProjectSide"));
-  }
-  if (syncContext.answerDepenseIndex === null) {
+  const answerDepenseIndex = resolveAnswerDepenseIndex(params, syncContext);
+
+  if (answerDepenseIndex === null || !params.answerId) {
     throw new Error(t("milestone.errors.incompleteForEdit.missingAnswerSide"));
+  }
+  if (hasProject && syncContext.projectMilestoneIndex === null) {
+    throw new Error(t("milestone.errors.incompleteForEdit.missingProjectSide"));
   }
 
   const [project, answer] = await Promise.all([
-    api.project({ id: params.projectId }),
+    hasProject ? api.project({ id: params.projectId }) : null,
     api.answer({ id: params.answerId }),
   ]);
 
-  await updateProjectMilestoneFields({
-    project,
-    index: syncContext.projectMilestoneIndex,
-    fields: {
-      name: params.name,
-      description: params.description,
-      status: params.status,
-    },
-  });
+  const writes: Promise<unknown>[] = [
+    updateAnswerDepenseFields({
+      answer,
+      index: answerDepenseIndex,
+      fields: {
+        poste: params.name,
+        price: params.targetAmount,
+      },
+    }),
+  ];
 
-  await updateAnswerDepenseFields({
-    answer,
-    index: syncContext.answerDepenseIndex,
-    fields: {
-      poste: params.name,
-      price: params.targetAmount,
-    },
-  });
+  if (hasProject) {
+    writes.push(
+      updateProjectMilestoneFields({
+        project: project!,
+        index: syncContext.projectMilestoneIndex as number,
+        fields: {
+          name: params.name,
+          description: params.description,
+          status: params.status,
+        },
+      }),
+    );
+  }
+
+  await Promise.all(writes);
 }
 
 export async function closeMilestoneWithSync(params: CloseMilestoneParams): Promise<void> {
   const api = requireSource(params.source);
   const syncContext = resolveSyncContextOrThrow(params);
-  const constraints = getMilestoneConstraints(params);
+  const answerDepenseIndex = resolveAnswerDepenseIndex(params, syncContext);
+  const constraints = getMilestoneConstraints(params, answerDepenseIndex);
 
-  if (syncContext.projectMilestoneIndex === null) {
+  const hasProject = Boolean(params.projectId);
+
+  if (hasProject && syncContext.projectMilestoneIndex === null) {
     throw new Error(t("milestone.errors.incompleteForClose.missingProjectSide"));
   }
-  if (syncContext.answerDepenseIndex === null) {
+  if (answerDepenseIndex === null || !params.answerId) {
     throw new Error(t("milestone.errors.incompleteForClose.missingAnswerSide"));
   }
 
-  if (!constraints.canClose) {
+  if (hasProject && !constraints.canClose) {
     throw new Error(t("milestone.errors.cannotCloseWithOpenActions"));
   }
 
   const [project, answer] = await Promise.all([
-    api.project({ id: params.projectId }),
+    hasProject ? api.project({ id: params.projectId }) : Promise.resolve(null),
     api.answer({ id: params.answerId }),
   ]);
 
-  await updateProjectMilestoneFields({
-    project,
-    index: syncContext.projectMilestoneIndex,
-    fields: {
-      status: 'close',
-    },
-  });
+  if (hasProject) {
+    await updateProjectMilestoneFields({
+      project: project!,
+      index: syncContext.projectMilestoneIndex as number,
+      fields: {
+        status: 'close',
+      },
+    });
+  }
 
   await updateAnswerDepenseFields({
     answer,
-    index: syncContext.answerDepenseIndex,
+    index: answerDepenseIndex,
     fields: {
       include: false,
     },
@@ -208,30 +240,40 @@ export async function closeMilestoneWithSync(params: CloseMilestoneParams): Prom
 export async function restoreMilestoneWithSync(params: RestoreMilestoneParams): Promise<void> {
   const api = requireSource(params.source);
   const syncContext = resolveSyncContextOrThrow(params);
+  const answerDepenseIndex = resolveAnswerDepenseIndex(params, syncContext);
+  const constraints = getMilestoneConstraints(params, answerDepenseIndex);
 
-  if (syncContext.projectMilestoneIndex === null) {
+  const hasProject = Boolean(params.projectId);
+
+  if (hasProject && syncContext.projectMilestoneIndex === null) {
     throw new Error(t("milestone.errors.incompleteForRestore.missingProjectSide"));
   }
-  if (syncContext.answerDepenseIndex === null) {
+  if (answerDepenseIndex === null || !params.answerId) {
     throw new Error(t("milestone.errors.incompleteForRestore.missingAnswerSide"));
   }
 
+  if (hasProject && !constraints.canClose) {
+    throw new Error(t("milestone.errors.cannotCloseWithOpenActions"));
+  }
+
   const [project, answer] = await Promise.all([
-    api.project({ id: params.projectId }),
+    hasProject ? api.project({ id: params.projectId }) : Promise.resolve(null),
     api.answer({ id: params.answerId }),
   ]);
 
-  await updateProjectMilestoneFields({
-    project,
-    index: syncContext.projectMilestoneIndex,
-    fields: {
-      status: 'open',
-    },
-  });
+  if (hasProject) {
+    await updateProjectMilestoneFields({
+      project: project!,
+      index: syncContext.projectMilestoneIndex as number,
+      fields: {
+        status: 'open',
+      },
+    });
+  }
 
   await updateAnswerDepenseFields({
     answer,
-    index: syncContext.answerDepenseIndex,
+    index: answerDepenseIndex,
     fields: {
       include: true,
     },
@@ -241,44 +283,46 @@ export async function restoreMilestoneWithSync(params: RestoreMilestoneParams): 
 export async function deleteMilestoneWithSync(params: MilestoneMutationBaseParams): Promise<void> {
   const api = requireSource(params.source);
   const syncContext = resolveSyncContextOrThrow(params);
-  const constraints = getMilestoneConstraints(params);
-
+  const answerDepenseIndex = resolveAnswerDepenseIndex(params, syncContext);
+  const constraints = getMilestoneConstraints(params, answerDepenseIndex);
   if (constraints.hasFunding) {
     throw new Error(t("milestone.errors.cannotDeleteIfFunded"));
   }
 
-  // Charge le project (utilisé pour résoudre les actions et pull la milestone).
-  const project = await api.project({ id: params.projectId });
+  const hasProject = Boolean(params.projectId);
 
-  for (const actionId of constraints.actionIds) {
-    const action = await project.action({ id: actionId });
-    await deleteActionById({ action });
+  if (hasProject && typeof syncContext.projectMilestoneIndex !== 'number') {
+    throw new Error(t("milestone.errors.incompleteForDelete.missingProjectSide"));
+  }
+  if (answerDepenseIndex === null || !params.answerId) {
+    throw new Error(t("milestone.errors.incompleteForDelete.missingAnswerSide"));
   }
 
   const deletions: Promise<unknown>[] = [];
-  if (typeof syncContext.projectMilestoneIndex === 'number') {
+
+  if (hasProject) {
+    const project = await api.project({ id: params.projectId });
+
+    for (const actionId of constraints.actionIds) {
+      const action = await project.action({ id: actionId });
+      await deleteActionById({ action });
+    }
+
     deletions.push(
       deleteProjectMilestoneAtIndex({
         project,
-        index: syncContext.projectMilestoneIndex,
+        index: syncContext.projectMilestoneIndex as number,
       })
     );
   }
 
-  if (typeof syncContext.answerDepenseIndex === 'number' && params.answerId) {
-    // Charge l'answer en parallèle uniquement si on a une dépense à pull.
-    const answer = await api.answer({ id: params.answerId });
-    deletions.push(
-      deleteAnswerDepenseAtIndex({
-        answer,
-        index: syncContext.answerDepenseIndex,
-      })
-    );
-  }
-
-  if (deletions.length === 0) {
-    throw new Error(t("milestone.errors.noIndexForDelete"));
-  }
+  const answer = await api.answer({ id: params.answerId });
+  deletions.push(
+    deleteAnswerDepenseAtIndex({
+      answer,
+      index: answerDepenseIndex,
+    })
+  );
 
   await Promise.all(deletions);
 }

@@ -64,6 +64,10 @@
         "missingProjectSide": "Restauration impossible : ce jalon est absent de projects.oceco.milestones (côté projet).",
         "missingAnswerSide": "Restauration impossible : aucune dépense liée à ce jalon dans answers.aapStep1.depense (côté answer)."
       },
+      "incompleteForDelete": {
+        "missingProjectSide": "Suppression impossible : ce jalon est absent de projects.oceco.milestones (côté projet).",
+        "missingAnswerSide": "Suppression impossible : aucune dépense liée à ce jalon dans answers.aapStep1.depense (côté answer)."
+      },
       "cannotCloseWithOpenActions": "Clôture impossible : toutes les actions doivent être terminées.",
       "cannotDeleteIfFunded": "Suppression impossible : ce jalon est déjà financé.",
       "noIndexForDelete": "Aucun index valide trouvé pour supprimer ce jalon.",

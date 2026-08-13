@@ -14,6 +14,13 @@ export function resolveActionEntityId(actionLike: { id?: string; _id?: string; e
   return String(actionLike?.id ?? actionLike?._id ?? actionLike?.entityId ?? "").trim();
 }
 
+export function getAnswerOwnerId(answerLike: { user?: string | { _id?: string; [key: string]: unknown } } | null | undefined): string {
+  const user = answerLike?.user;
+  if (typeof user === "string") return user;
+  if (user && typeof user === "object") return String(user._id ?? "");
+  return "";
+}
+
 export function normalizeActionForEdit(actionLike: Record<string, unknown>): ProjectAction {
   const rawContributors = Array.isArray(actionLike.contributors)
     ? actionLike.contributors

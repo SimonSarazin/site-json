@@ -43,6 +43,11 @@ interface MilestoneEditDialogProps {
   initialValues: MilestoneEditFormData;
   /** Identifiant du milestone à éditer (envoyé à la mutation). */
   milestoneId: string;
+  /**
+   * Index de la dépense dans `answer.answers.aapStep1.depense[]`, requis quand
+   * `milestoneId` est vide
+   */
+  answerDepenseIndex?: number;
   /** Mutation pré-construite par le parent avec son contexte (apiClient, rawEnvelope, ids). */
   mutation: UseMutationResult<void, Error, EditMilestoneParams>;
   /** Clé i18n du message d'erreur générique si l'API ne renvoie rien d'utilisable. */
@@ -56,6 +61,7 @@ export function MilestoneEditDialog({
   onOpenChange,
   initialValues,
   milestoneId,
+  answerDepenseIndex,
   mutation,
   apiErrorFallbackKey,
   onSuccess,
@@ -76,7 +82,7 @@ export function MilestoneEditDialog({
   const isPending = mutation.isPending;
 
   const onValid = (data: MilestoneEditFormData) => {
-    if (!milestoneId) {
+    if (!milestoneId && typeof answerDepenseIndex !== "number") {
       form.setError("root", {
         type: "manual",
         message: String(t("ActionsSection.errors.milestoneContextInvalid")),
@@ -91,6 +97,7 @@ export function MilestoneEditDialog({
         description: data.description,
         status: data.status,
         targetAmount: data.targetAmount,
+        answerDepenseIndex,
       },
       {
         onSuccess: () => {

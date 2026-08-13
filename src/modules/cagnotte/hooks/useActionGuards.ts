@@ -41,6 +41,13 @@ export interface ActionGuards {
    * @returns `true` si le contexte est complet, `false` sinon (toast affiché).
    */
   requireApiContext: (toastNamespace: string) => boolean;
+  /**
+   * Vérifie que `apiClient` et `answerId` sont tous présents.
+   * @param toastNamespace — namespace de la clé i18n `{toastNamespace}.title` et
+   *   `{toastNamespace}.description` (ex. `"deleteImpossible"`, `"editImpossible"`).
+   * @returns `true` si le contexte est complet, `false` sinon (toast affiché).
+    */
+  requireApiAacContext: (toastNamespace: string) => boolean;
 }
 
 export function useActionGuards(ctx: ActionGuardContext): ActionGuards {
@@ -66,5 +73,15 @@ export function useActionGuards(ctx: ActionGuardContext): ActionGuards {
     return false;
   };
 
-  return { requireConnected, requireApiContext };
+  const requireApiAacContext: ActionGuards["requireApiContext"] = (toastNamespace) => {
+    if (ctx.apiClient && ctx.answerId) return true;
+    showErrorToast(
+      new Error(String(t(`ActionsSection.toasts.${toastNamespace}.description`))),
+      `ActionsSection.toasts.${toastNamespace}.title`,
+      t,
+    );
+    return false;
+  };
+
+  return { requireConnected, requireApiContext, requireApiAacContext };
 }

@@ -6,6 +6,7 @@ import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import type { FundingMilestone as Milestone } from "@/modules/cagnotte/types";
 import { formatCurrency } from "@/modules/cagnotte/utils/format";
 import { MilestoneManageActions } from "@/modules/cagnotte/components/sections/MilestoneManageActions";
@@ -27,19 +28,19 @@ function FinancingMilestoneCard({
     item,
     openEditMilestoneModal,
     onMilestoneClose,
+    onMilestoneRestore,
     onMilestoneDelete,
     permissions,
     loadingIds,
-    canManageActions,
 }: {
     index: number;
     item: any;
     openEditMilestoneModal: (milestone: Milestone) => void;
-    onMilestoneClose: (milestone: Milestone) => void;
-    onMilestoneDelete: (milestone: Milestone) => void;
+    onMilestoneClose: (itemId: string, milestone: Milestone) => void;
+    onMilestoneRestore: (itemId: string, milestone: Milestone) => void;
+    onMilestoneDelete: (itemId: string, milestone: Milestone) => void;
     permissions: MilestoneCardPermissions;
-    loadingIds: { deletingMilestoneId: string; closingMilestoneId: string };
-    canManageActions: boolean;
+    loadingIds: { deletingItemId: string; closingItemId: string; restoringItemId: string };
 }) {
     const [open, setOpen] = useState(false);
     const panelId = `palier-financement-${index}-panel`;
@@ -118,6 +119,11 @@ function FinancingMilestoneCard({
                     </div>
 
                     <ul className="grid gap-2">
+                        {item?.allFunding?.length === 0 && (
+                            <li className="text-sm text-muted-foreground">
+                                {String(c("detail.objectives.noFundingYet"))}
+                            </li>
+                        )}
                         {(item?.allFunding || []).map((fund: any, i: number) => (
                             <li key={i} className="flex p-3 rounded-md border text-sm">
                                 <span className="w-[35%]">{fund.financerName}</span>
@@ -147,24 +153,34 @@ function FinancingMilestoneCard({
                                     targetAmount: Number(item.price ?? 0),
                                     transactions: [],
                                     actions: item.actions ?? [],
+                                    answerDepenseIndex: typeof item.depenseIndex === "number" ? item.depenseIndex : undefined,
                                 } as Milestone)}
-                                onClose={() => onMilestoneClose({
+                                onClose={() => onMilestoneClose(item.itemId, {
                                     id: item.milestoneId,
                                     title: item.name,
+                                    answerDepenseIndex: typeof item.depenseIndex === "number" ? item.depenseIndex : undefined,
                                 } as Milestone)}
-                                onDelete={() => onMilestoneDelete({
+                                onDelete={() => onMilestoneDelete(item.itemId, {
                                     id: item.milestoneId,
                                     title: item.name,
+                                    answerDepenseIndex: typeof item.depenseIndex === "number" ? item.depenseIndex : undefined,
                                 } as Milestone)}
-                                isDeleting={loadingIds.deletingMilestoneId === item.milestoneId}
-                                isClosing={loadingIds.closingMilestoneId === item.milestoneId}
+                                isDeleting={loadingIds.deletingItemId === item.itemId}
+                                isClosing={loadingIds.closingItemId === item.itemId}
                                 closeDisabled={
                                     item.status === "close" ||
                                     !(item.actions ?? []).every((action: any) => action.status === "done")
                                 }
                                 canEdit={permissions.canEditMilestone({ status: item.status })}
-                                canClose={canManageActions && permissions.canCloseMilestone({ status: item.status })}
+                                canClose={permissions.canEditMilestone({ status: item.status }) && permissions.canCloseMilestone({ status: item.status })}
                                 canDelete={canDeleteThisMilestone}
+                                isClosed={item.status === "close"}
+                                onRestore={() => onMilestoneRestore(item.itemId, {
+                                    id: item.milestoneId,
+                                    title: item.name,
+                                    answerDepenseIndex: typeof item.depenseIndex === "number" ? item.depenseIndex : undefined,
+                                } as Milestone)}
+                                isRestoring={loadingIds.restoringItemId === item.itemId}
                             />
                         </div>
                     </div>
@@ -178,9 +194,28 @@ export function CommunFinancingSection({ answerQuery, funding }: CommunFinancing
     useLoadNamespace("modules/aac");
     const t = useT("modules/aac");
     const ctrl = useCommunObjectivesController({ answerQuery, funding });
-
     return (
         <div className="grid gap-4">
+            <ConfirmDialog
+                open={!!ctrl.pendingDeleteMilestone}
+                onOpenChange={(open) => {
+                    if (!open) ctrl.cancelDeleteMilestone();
+                }}
+                title={String(t("detail.objectives.deleteMilestoneConfirm.title"))}
+                description={
+                    ctrl.pendingDeleteMilestone
+                        ? String(t("detail.objectives.deleteMilestoneConfirm.description", undefined, { name: ctrl.pendingDeleteMilestone.milestone.title }))
+                        : ""
+                }
+                confirmLabel={String(t("detail.objectives.deleteMilestoneConfirm.confirm"))}
+                cancelLabel={String(t("detail.objectives.deleteMilestoneConfirm.cancel"))}
+                isDestructive
+                isPending={
+                    !!ctrl.pendingDeleteMilestone &&
+                    ctrl.loadingIds.deletingItemId === ctrl.pendingDeleteMilestone.itemId
+                }
+                onConfirm={ctrl.confirmDeleteMilestone}
+            />
             {ctrl.cagnottePerms.canCreateMilestone ? (
                 <div className="flex justify-end">
                     <Button size="sm" className="h-7 text-[11px] gap-1 px-2 bg-primary hover:bg-primary/90" onClick={ctrl.openCreateMilestoneModal}>
@@ -195,10 +230,10 @@ export function CommunFinancingSection({ answerQuery, funding }: CommunFinancing
                     item={o}
                     openEditMilestoneModal={ctrl.openEditMilestoneModal}
                     onMilestoneClose={ctrl.handleCloseMilestone}
+                    onMilestoneRestore={ctrl.handleRestoreMilestone}
                     onMilestoneDelete={ctrl.handleDeleteMilestone}
                     permissions={ctrl.cagnottePerms as unknown as MilestoneCardPermissions}
                     loadingIds={ctrl.loadingIds}
-                    canManageActions={ctrl.canManageActions}
                 />
             ))}
             {ctrl.selectedMilestone && ctrl.milestoneEditInitialValues ? (
@@ -210,6 +245,7 @@ export function CommunFinancingSection({ answerQuery, funding }: CommunFinancing
                     }}
                     initialValues={ctrl.milestoneEditInitialValues}
                     milestoneId={ctrl.selectedMilestone.id}
+                    answerDepenseIndex={ctrl.selectedMilestone.answerDepenseIndex}
                     mutation={ctrl.activeEditMilestoneMutation as unknown as import("@tanstack/react-query").UseMutationResult<void, Error, import("@/modules/cagnotte/actions/mutations/milestone").EditMilestoneParams>}
                     apiErrorFallbackKey="ActionsSection.errors.milestoneEditFailed"
                     onSuccess={ctrl.handleMilestoneEditSuccess}
