@@ -57,6 +57,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "required": true,
       "type": "array",
       "widget": "multiselect",
+      "write": "coerce:csv",
     },
     "categorie": {
       "default": "",
@@ -87,6 +88,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "read": "coerce:bool",
       "type": "boolean",
       "widget": "switch",
+      "write": "coerce:boolUpper",
     },
     "equip_douche": {
       "default": false,
@@ -98,6 +100,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "read": "coerce:bool",
       "type": "boolean",
       "widget": "switch",
+      "write": "coerce:boolUpper",
     },
     "equip_eclair": {
       "default": false,
@@ -109,6 +112,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "read": "coerce:bool",
       "type": "boolean",
       "widget": "switch",
+      "write": "coerce:boolUpper",
     },
     "equip_gest_type": {
       "default": "",
@@ -130,6 +134,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "read": "coerce:number",
       "type": "number",
       "widget": "number",
+      "write": "coerce:numString",
     },
     "equip_loc_type": {
       "default": [],
@@ -141,6 +146,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "read": "coerce:stringArray",
       "type": "array",
       "widget": "checkboxGroup",
+      "write": "coerce:csv",
     },
     "equip_long": {
       "label": {
@@ -151,6 +157,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "read": "coerce:number",
       "type": "number",
       "widget": "number",
+      "write": "coerce:numString",
     },
     "equip_maj_date": {
       "default": "",
@@ -192,6 +199,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "read": "coerce:bool",
       "type": "boolean",
       "widget": "switch",
+      "write": "coerce:boolUpper",
     },
     "equip_pmr_chem": {
       "default": false,
@@ -203,6 +211,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "read": "coerce:bool",
       "type": "boolean",
       "widget": "switch",
+      "write": "coerce:boolUpper",
     },
     "equip_pmr_douche": {
       "default": false,
@@ -214,6 +223,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "read": "coerce:bool",
       "type": "boolean",
       "widget": "switch",
+      "write": "coerce:boolUpper",
     },
     "equip_pmr_sanit": {
       "default": false,
@@ -225,6 +235,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "read": "coerce:bool",
       "type": "boolean",
       "widget": "switch",
+      "write": "coerce:boolUpper",
     },
     "equip_pmr_trib": {
       "default": false,
@@ -236,6 +247,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "read": "coerce:bool",
       "type": "boolean",
       "widget": "switch",
+      "write": "coerce:boolUpper",
     },
     "equip_pmr_vest": {
       "default": false,
@@ -247,6 +259,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "read": "coerce:bool",
       "type": "boolean",
       "widget": "switch",
+      "write": "coerce:boolUpper",
     },
     "equip_prop_nom": {
       "default": "",
@@ -288,6 +301,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "read": "coerce:bool",
       "type": "boolean",
       "widget": "switch",
+      "write": "coerce:boolUpper",
     },
     "equip_pshs_chem": {
       "default": false,
@@ -299,6 +313,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "read": "coerce:bool",
       "type": "boolean",
       "widget": "switch",
+      "write": "coerce:boolUpper",
     },
     "equip_pshs_sanit": {
       "default": false,
@@ -310,6 +325,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "read": "coerce:bool",
       "type": "boolean",
       "widget": "switch",
+      "write": "coerce:boolUpper",
     },
     "equip_pshs_sign": {
       "default": false,
@@ -321,6 +337,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "read": "coerce:bool",
       "type": "boolean",
       "widget": "switch",
+      "write": "coerce:boolUpper",
     },
     "equip_pshs_trib": {
       "default": false,
@@ -332,6 +349,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "read": "coerce:bool",
       "type": "boolean",
       "widget": "switch",
+      "write": "coerce:boolUpper",
     },
     "equip_pshs_vest": {
       "default": false,
@@ -343,6 +361,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "read": "coerce:bool",
       "type": "boolean",
       "widget": "switch",
+      "write": "coerce:boolUpper",
     },
     "equip_sol": {
       "default": "",
@@ -379,6 +398,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "read": "coerce:number",
       "type": "number",
       "widget": "number",
+      "write": "coerce:numString",
     },
     "equip_type_famille": {
       "default": "",
@@ -429,6 +449,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "read": "coerce:stringArray",
       "type": "array",
       "widget": "checkboxGroup",
+      "write": "coerce:csv",
     },
     "geo": {
       "label": "geo",
@@ -456,6 +477,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "read": "coerce:bool",
       "type": "boolean",
       "widget": "switch",
+      "write": "coerce:boolUpper",
     },
     "inst_acc_handi_type": {
       "default": "",
@@ -511,6 +533,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "read": "coerce:bool",
       "type": "boolean",
       "widget": "switch",
+      "write": "coerce:boolUpper",
     },
     "inst_part_type": {
       "default": [],
@@ -529,6 +552,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "widgetProps": {
         "searchable": false,
       },
+      "write": "coerce:csv",
     },
     "inst_trans_bool": {
       "default": false,
@@ -540,6 +564,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > des
       "read": "coerce:bool",
       "type": "boolean",
       "widget": "switch",
+      "write": "coerce:boolUpper",
     },
     "inst_trans_type": {
       "default": "",

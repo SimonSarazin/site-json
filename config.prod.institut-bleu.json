@@ -5015,19 +5015,24 @@
           }
         },
         "addressCountry": {
-          "widget": "hidden"
+          "widget": "hidden",
+          "group": "address"
         },
         "addressLocality": {
-          "widget": "hidden"
+          "widget": "hidden",
+          "group": "address"
         },
         "postalCode": {
-          "widget": "hidden"
+          "widget": "hidden",
+          "group": "address"
         },
         "streetAddress": {
-          "widget": "hidden"
+          "widget": "hidden",
+          "group": "address"
         },
         "localityId": {
-          "widget": "hidden"
+          "widget": "hidden",
+          "group": "address"
         },
         "geo": {
           "widget": "hidden"
@@ -5329,19 +5334,24 @@
           }
         },
         "addressCountry": {
-          "widget": "hidden"
+          "widget": "hidden",
+          "group": "address"
         },
         "addressLocality": {
-          "widget": "hidden"
+          "widget": "hidden",
+          "group": "address"
         },
         "postalCode": {
-          "widget": "hidden"
+          "widget": "hidden",
+          "group": "address"
         },
         "streetAddress": {
-          "widget": "hidden"
+          "widget": "hidden",
+          "group": "address"
         },
         "localityId": {
-          "widget": "hidden"
+          "widget": "hidden",
+          "group": "address"
         },
         "geo": {
           "widget": "hidden"

@@ -5534,6 +5534,7 @@
         },
         "inst_part_bool": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Partenariat disponible",
             "en": "Partnership available"
@@ -5541,6 +5542,7 @@
         },
         "inst_part_type": {
           "widget": "tags",
+          "write": "coerce:csv",
           "label": {
             "fr": "Type de partenariat",
             "en": "Partnership type"
@@ -5569,6 +5571,7 @@
         },
         "equip_long": {
           "widget": "number",
+          "write": "coerce:numString",
           "label": {
             "fr": "Longueur",
             "en": "Length"
@@ -5576,6 +5579,7 @@
         },
         "equip_larg": {
           "widget": "number",
+          "write": "coerce:numString",
           "label": {
             "fr": "Largeur",
             "en": "Width"
@@ -5583,6 +5587,7 @@
         },
         "equip_surf": {
           "widget": "number",
+          "write": "coerce:numString",
           "label": {
             "fr": "Surface (calculée)",
             "en": "Area (computed)"
@@ -5611,6 +5616,7 @@
         },
         "inst_acc_handi_bool": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Accessible aux personnes en situation de handicap",
             "en": "Accessible to people with disabilities"
@@ -5618,6 +5624,7 @@
         },
         "inst_trans_bool": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Accessible en transport en commun",
             "en": "Accessible by public transport"
@@ -5625,6 +5632,7 @@
         },
         "equip_eclair": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Éclairage de l'aire",
             "en": "Area lighting"
@@ -5632,6 +5640,7 @@
         },
         "equip_douche": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Douche accessible",
             "en": "Accessible shower"
@@ -5639,6 +5648,7 @@
         },
         "equip_pmr_acc": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Accès PMR disponible",
             "en": "PRM access available"
@@ -5646,6 +5656,7 @@
         },
         "equip_pmr_chem": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Cheminement PMR adapté",
             "en": "PRM-adapted pathway"
@@ -5653,6 +5664,7 @@
         },
         "equip_pmr_douche": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Douches accessibles PMR",
             "en": "PRM-accessible showers"
@@ -5660,6 +5672,7 @@
         },
         "equip_pmr_trib": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Tribunes accessibles PMR",
             "en": "PRM-accessible stands"
@@ -5667,6 +5680,7 @@
         },
         "equip_pmr_vest": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Vestiaires accessibles PMR",
             "en": "PRM-accessible changing rooms"
@@ -5674,6 +5688,7 @@
         },
         "equip_pmr_sanit": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Sanitaires accessibles PMR",
             "en": "PRM-accessible toilets"
@@ -5681,6 +5696,7 @@
         },
         "equip_loc_type": {
           "widget": "checkboxGroup",
+          "write": "coerce:csv",
           "label": {
             "fr": "Locaux complémentaires",
             "en": "Additional premises"
@@ -5688,6 +5704,7 @@
         },
         "equip_pshs_aire": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Aire de jeu",
             "en": "Play area"
@@ -5695,6 +5712,7 @@
         },
         "equip_pshs_sanit": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Sanitaires",
             "en": "Toilets"
@@ -5702,6 +5720,7 @@
         },
         "equip_pshs_trib": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Tribunes",
             "en": "Stands"
@@ -5709,6 +5728,7 @@
         },
         "equip_pshs_sign": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Accueil / Signalétique",
             "en": "Reception / Signage"
@@ -5716,6 +5736,7 @@
         },
         "equip_pshs_vest": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Vestiaires",
             "en": "Changing rooms"
@@ -5723,6 +5744,7 @@
         },
         "equip_pshs_chem": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Cheminements",
             "en": "Pathways"
@@ -5747,6 +5769,7 @@
         },
         "equip_utilisateur": {
           "widget": "checkboxGroup",
+          "write": "coerce:csv",
           "label": {
             "fr": "Types d'utilisateurs",
             "en": "User types"
@@ -5754,6 +5777,7 @@
         },
         "equip_acc_libre": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Accès libre",
             "en": "Free access"
@@ -5761,6 +5785,7 @@
         },
         "aps_name": {
           "widget": "multiselect",
+          "write": "coerce:csv",
           "required": true,
           "label": {
             "fr": "Sports pratiqués",
