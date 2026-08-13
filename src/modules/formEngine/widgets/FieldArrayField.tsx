@@ -15,6 +15,12 @@ export interface FieldArrayItem {
   kind: "text" | "select";
   label?: string;          // déjà traduit
   placeholder?: string;    // déjà traduit
+  /**
+   * Indice PAR LIGNE (index du tableau), pour un champ dont les lignes pré-créées ont chacune leur
+   * sens — ex. quatre réseaux sociaux proposés d'avance. Le mettre en placeholder plutôt qu'en
+   * `default` évite que la simple ouverture du formulaire n'écrive ces libellés en base.
+   */
+  placeholders?: string[];
   options?: Array<{ value: string; label: string }>; // pour kind="select"
 }
 
@@ -41,7 +47,7 @@ export function FieldArrayField({ form, name, label, addLabel, itemFields }: Fie
             if (sub.kind === "select") {
               return (
                 <Select key={sub.name} value={value} onValueChange={(v) => form.setValue(path(i, sub.name), v)}>
-                  <SelectTrigger className="w-40"><SelectValue placeholder={sub.placeholder ?? sub.label} /></SelectTrigger>
+                  <SelectTrigger className="w-40"><SelectValue placeholder={sub.placeholders?.[i] ?? sub.placeholder ?? sub.label} /></SelectTrigger>
                   <SelectContent>
                     {(sub.options ?? []).map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
                   </SelectContent>
@@ -49,7 +55,7 @@ export function FieldArrayField({ form, name, label, addLabel, itemFields }: Fie
               );
             }
             return (
-              <Input key={sub.name} className="flex-1" placeholder={sub.placeholder ?? sub.label}
+              <Input key={sub.name} className="flex-1" placeholder={sub.placeholders?.[i] ?? sub.placeholder ?? sub.label}
                 value={value} onChange={(e) => form.setValue(path(i, sub.name), e.target.value)} />
             );
           })}

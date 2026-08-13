@@ -1,0 +1,99 @@
+{
+  "title": "Tools catalog",
+  "answerButton": "Answer the questionnaire",
+  "answerDialogDescription": "Pick a place, then answer the usage questionnaire without leaving the catalogue.",
+  "searchPlaceholder": "Search a tool…",
+  "resultCount_one": "{{count}} tool",
+  "resultCount_other": "{{count}} tools",
+  "filter": {
+    "categoryTitle": "Usage category",
+    "subCategoryTitle": "Usage sub-category",
+    "all": "All",
+    "openSource": "Open source only"
+  },
+  "view": {
+    "grid": "Grid",
+    "list": "List"
+  },
+  "empty": "No tool matches your search.",
+  "error": "Unable to load the tools catalog.",
+  "retry": "Retry",
+  "loadingMore": "Loading…",
+  "loadMoreError": "Failed to load more results.",
+  "openSourceBadge": "Open source",
+  "usagesCount_one": "{{count}} usage",
+  "usagesCount_other": "{{count}} usages",
+  "openLink": "Open website",
+  "detail": {
+    "title": "About {{tool}}",
+    "description": "Places that reported this tool, with their satisfaction.",
+    "infoTitle": "Information",
+    "toolLink": "Tool link",
+    "noLink": "No link",
+    "openSourceYes": "This tool is open source",
+    "openSourceNo": "This tool is not open source",
+    "descriptionLabel": "Description",
+    "noDescription": "No description",
+    "filterTitle": "Filter places by usage context",
+    "placesShown_one": "{{count}} place shown",
+    "placesShown_other": "{{count}} places shown",
+    "placesTitle": "Places that use it",
+    "satisfactionLabel": "Functional satisfaction",
+    "seeAnswer": "View the answer",
+    "empty": "No place has reported this tool yet.",
+    "loading": "Loading places…",
+    "error": "Unable to load places.",
+    "noteLabel": "Need for an ethical alternative"
+  },
+  "commun": {
+    "title": "Related commons information",
+    "channel": "Discussion channel",
+    "website": "Commons website",
+    "fundingTitle": "Funding needs",
+    "fundingUnnamed": "Untitled item"
+  },
+  "note": {
+    "level": {
+      "0": "No level",
+      "1": "Acceptable",
+      "2": "Tolerable",
+      "3": "Moderate",
+      "4": "Urgent",
+      "5": "Critical"
+    }
+  },
+  "happiness": {
+    "love": "Very satisfied",
+    "happySmile": "Satisfied",
+    "neutral": "Neutral",
+    "sad": "Unsatisfied",
+    "cry": "Very unsatisfied",
+    "none": "Not rated"
+  },
+  "edit": {
+    "open": "Edit",
+    "title": "Edit {{tool}}",
+    "subtitle": "These details are shared with the legacy catalogue page.",
+    "urlLabel": "Tool link",
+    "communLabel": "Linked commons",
+    "communPlaceholder": "Search a commons…",
+    "communNone": "No commons",
+    "communLoading": "Loading commons…",
+    "communError": "Unable to load the commons list.",
+    "communUnavailable": "Attachment unavailable: this tool has no reusable common link and no URL template is configured for this site.",
+    "descriptionLabel": "Description",
+    "descriptionHint": "Markdown supported (**bold**, lists, links).",
+    "openSourceLabel": "Open source tool",
+    "imageLabel": "Tool image",
+    "cancel": "Cancel",
+    "save": "Save",
+    "error": "Saving failed.",
+    "success": "Tool updated.",
+    "confirmClose": {
+      "title": "Unsaved changes",
+      "description": "If you close now, your changes will be lost.",
+      "stay": "Keep editing",
+      "discard": "Close without saving"
+    }
+  }
+}

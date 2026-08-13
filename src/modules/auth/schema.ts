@@ -34,6 +34,17 @@ const AuthPageTextSchema = z.object({
   subtitle: LocalizedString.optional(),
 });
 
+// Bloc « mot de passe oublié » : textes + MÉCANISME. Le défaut (mode absent) est "legacy" — le
+// comportement de la PROD actuelle : le backend legacy régénère un mot de passe aléatoire et
+// l'envoie par e-mail (SendEmailAction, en clair), SANS lien ni page de saisie. L'opt-in
+// `mode:"node"` bascule sur le flux à CODE du backend Node : e-mail d'un lien /recover/:user/:code
+// → page ResetPasswordPage → endpoint PASSWORD_RESET (Node uniquement, cf. cocolight-backend/docs/23
+// étage C). À n'activer que sur un déploiement servi par le backend Node.
+const AuthRecoverConfigSchema = AuthPageTextSchema.extend({
+  mode: z.enum(["legacy", "node"]).optional(),
+});
+export type AuthRecoverConfig = z.infer<typeof AuthRecoverConfigSchema>;
+
 // Présentation du widget de compte dans les headers (`AuthMenu`). Pilote la
 // densité « selon les besoins » côté config ; le `tone`/variant restent couplés
 // au design du header (props), pas ici.
@@ -58,6 +69,7 @@ export const AuthConfigSchema = z.object({
   // description SEO (cf. AuthSeo).
   login: AuthPageTextSchema.optional(),
   register: AuthPageTextSchema.optional(),
-  recover: AuthPageTextSchema.optional(),
+  // textes + `mode` du flux « mot de passe oublié » (défaut legacy, cf. AuthRecoverConfigSchema).
+  recover: AuthRecoverConfigSchema.optional(),
 });
 export type AuthConfig = z.infer<typeof AuthConfigSchema>;

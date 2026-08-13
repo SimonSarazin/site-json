@@ -162,6 +162,12 @@ const AdminReferenceSectionSchema = z.object({
   /** Colonnes de DONNÉES des deux tables (défaut name + address.addressLocality). Les colonnes
    *  structurelles Type (badge collection) et Action restent fixes. */
   columns: AdminColumnsSchema.optional(),
+  /**
+   * Pose `preferences.toBeValidated.<slug>` (SCOPÉ — jamais le boolean global, qui masquerait
+   * l'entité chez les autres sites) au référencement : un référencé passe alors par la modération
+   * a priori du site comme un natif, au lieu d'être publié d'office. Échec-tolérant.
+   */
+  moderateReferenced: z.boolean().optional(),
 });
 export type AdminReferenceSection = z.infer<typeof AdminReferenceSectionSchema>;
 const AdminModerationSectionSchema = z.object({ ...sectionAccess, type: z.literal("moderation"), title: LocalizedString.optional() });

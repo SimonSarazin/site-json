@@ -8,6 +8,7 @@
  */
 import "@/modules/search/i18n";
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useDynamicFilterOptions } from "@/modules/search/hooks/useDynamicFilterOptions";
 import { useSearchParams } from "react-router";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -65,7 +66,16 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
         () => pageFilters?.searchByFields ?? {},
         [pageFilters?.searchByFields],
     );
-    const hasDropdownFilters = (props.dropdownFilters?.length ?? 0) > 0;
+    // Options RÉSOLUES : un filtre à `optionsFrom` reçoit les valeurs réelles de la donnée ; les autres
+    // sont renvoyés tels quels, sans aucune requête. Toutes les lectures ci-dessous passent par cette
+    // liste et non par `props.dropdownFilters`, sinon l'hydratation et les étiquettes travailleraient
+    // sur des options périmées.
+    // Le terme tapé dans un dropdown sert deux fois : filtrage local immédiat (dans le combobox), et —
+    // pour une liste que le serveur a coupée — recherche SERVEUR au-delà de la coupe.
+    const [rechercheFiltre, setRechercheFiltre] = useState<Record<string, string>>({});
+    const rechercheFiltreDebounce = useDebounce(rechercheFiltre, 300);
+    const dropdownFilters = useDynamicFilterOptions(props.dropdownFilters, rechercheFiltreDebounce);
+    const hasDropdownFilters = (dropdownFilters?.length ?? 0) > 0;
 
     const activeType = selectedFilters['type']?.[0] ?? "all";
 
@@ -223,13 +233,13 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
 
     // Compteur = nombre total de VALEURS sélectionnées (= nombre de chips), pas le
     // nombre de catégories de filtre → cohérent avec les pastilles affichées.
-    const activeFilterCount = (props.dropdownFilters ?? []).reduce(
+    const activeFilterCount = (dropdownFilters ?? []).reduce(
         (sum, filter) => sum + getDropdownSelectedValues(filter).length,
         0
     );
 
     const resetAllDropdownFilters = () => {
-        const filters = props.dropdownFilters ?? [];
+        const filters = dropdownFilters ?? [];
         // Une seule mutation : plusieurs setSearchParams dans le même cycle voient le même `prev` (React Router).
         writeParams((params) => {
             filters.forEach((filter) => params.delete(filter.id));
@@ -256,22 +266,32 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
     // par filtre, joints par virgule) → contexte. One-time (ref garde) — ensuite
     // le contexte est la source et l'URL son miroir. Permet aux liens d'accueil
     // d'ouvrir la page avec des filtres pré-activés.
-    const hydratedRef = useRef(false);
+    // Garde PAR FILTRE, et non un drapeau global : avec une source dynamique les options arrivent APRÈS
+    // le montage, si bien qu'une hydratation « une fois pour toutes » ne trouvait aucune option connue,
+    // écartait tous les identifiants de l'URL et interdisait tout rattrapage — le deep-link disparaissait
+    // en silence. `FiltersSection` a depuis toujours le bon patron (effet rejoué quand ses groupes
+    // changent) ; on s'aligne dessus. Sur une config statique les options ne bougent pas : l'effet ne
+    // s'exécute qu'une fois, comportement inchangé.
+    const hydratesRef = useRef<Set<string>>(new Set());
     useEffect(() => {
-        if (hydratedRef.current) return;
-        hydratedRef.current = true;
-        (props.dropdownFilters ?? []).forEach((filter) => {
+        (dropdownFilters ?? []).forEach((filter) => {
+            if (hydratesRef.current.has(filter.id)) return;
             const raw = searchParams.get(filter.id);
             if (!raw) return;
+            // Un filtre à source dynamique n'est hydratable qu'une fois ses valeurs ARRIVÉES. On ne peut
+            // pas se fier à `options.length` : les options déclarées servent de repli pendant le
+            // chargement, donc le filtre paraîtrait prêt et rejetterait la valeur de l'URL.
+            if (!filter.optionsReady) return;
+            hydratesRef.current.add(filter.id);
             const ids = raw
                 .split(",")
-                .map((s) => s.trim())
+                // Pendant de l'encodage à l'écriture : une valeur peut contenir une virgule.
+                .map((s) => { try { return decodeURIComponent(s.trim()); } catch { return s.trim(); } })
                 .filter((id) => filter.options.some((o) => o.id === id));
             if (ids.length) setDropdownSelection(filter, ids);
         });
-        // Montage uniquement — restauration initiale depuis l'URL.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [dropdownFilters]);
 
     // Tags des filtres actifs (supprimables individuellement). Couvre les DEUX
     // formes de dropdown : à `field` (sélection dans `searchByFields`, clés
@@ -285,20 +305,25 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
             if (colonIdx < 0) continue;
             const filterId = key.slice(0, colonIdx);
             const optionId = key.slice(colonIdx + 1);
-            const filter = props.dropdownFilters?.find((f) => f.id === filterId);
-            const option = filter?.options.find((o) => o.id === optionId);
-            if (option) result.push({ filterId, optionId, label: t(option.label) });
+            const filter = dropdownFilters?.find((f) => f.id === filterId);
+            if (!filter) continue;
+            const option = filter.options.find((o) => o.id === optionId);
+            // Valeur ACTIVE mais absente des options : on l'affiche avec son libellé brut plutôt que de
+            // la taire. Sur une source dynamique elle peut être parfaitement légitime et simplement rare ;
+            // l'escamoter laissait un filtre actif sans étiquette pour le retirer. Un filtre statique n'est
+            // pas concerné — ses options sont toutes connues.
+            result.push({ filterId, optionId, label: option ? t(option.label) : optionId });
         }
         // Filtres sans `field` → selectedFilters[filterId] (ids d'option).
-        for (const filter of props.dropdownFilters ?? []) {
+        for (const filter of dropdownFilters ?? []) {
             if (filter.field) continue;
             for (const optionId of selectedFilters[filter.id] ?? []) {
                 const option = filter.options.find((o) => o.id === optionId);
-                if (option) result.push({ filterId: filter.id, optionId, label: t(option.label) });
+                result.push({ filterId: filter.id, optionId, label: option ? t(option.label) : optionId });
             }
         }
         return result;
-    }, [searchByFields, selectedFilters, props.dropdownFilters, t]);
+    }, [searchByFields, selectedFilters, dropdownFilters, t]);
 
     // Rendu d'un dropdown de filtre, réutilisé en barre desktop (inline) ET dans
     // la Sheet mobile. `w-full` par défaut (Sheet) → `lg:w-auto` en barre desktop.
@@ -319,11 +344,19 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
                             {t(option.label)}
                         </>
                     ),
+                    // Le libellé est un fragment (icône + texte) : la recherche a besoin du texte seul.
+                    searchText: t(option.label),
                 }))}
                 selected={selectedValues}
                 onToggle={(id) => toggleDropdownOption(filter, id)}
                 allLabel={filter.allLabel ? t(filter.allLabel) : t("Tous")}
                 onClear={() => setDropdownSelection(filter, [])}
+                // Options DYNAMIQUES (`optionsFrom`) : la liste suit les données, sa taille n'est plus
+                // bornée par la config → recherche et plafond de rendu au-delà des seuils du combobox.
+                onSearchChange={(terme) => setRechercheFiltre((p) => ({ ...p, [filter.id]: terme }))}
+                searchPlaceholder={t("Rechercher…")}
+                noResultLabel={t("Aucun résultat")}
+                moreLabel={(n) => t("+{{count}} autres — précisez la recherche", undefined, { count: n })}
                 contentClassName="w-72"
             >
                 <Button
@@ -399,7 +432,7 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
                             <>
                                 {/* Desktop : filtres inline, regroupés dans la barre */}
                                 <div className="hidden w-full flex-wrap items-center justify-center gap-3 lg:flex">
-                                    {props.dropdownFilters?.map(renderDropdownFilter)}
+                                    {dropdownFilters?.map(renderDropdownFilter)}
                                     {activeFilterCount > 0 && (
                                         <>
                                             <Badge className="rounded-full px-2">{activeFilterCount}</Badge>
@@ -444,7 +477,7 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
                                                 </SheetTitle>
                                             </SheetHeader>
                                             <div className="flex flex-col gap-3 overflow-y-auto p-4">
-                                                {props.dropdownFilters?.map(renderDropdownFilter)}
+                                                {dropdownFilters?.map(renderDropdownFilter)}
                                             </div>
                                             <SheetFooter className="flex-row gap-2 border-t border-border">
                                                 {activeFilterCount > 0 && (
@@ -486,7 +519,7 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
                                     <button
                                         type="button"
                                         onClick={() => {
-                                            const filter = props.dropdownFilters?.find((f) => f.id === filterId);
+                                            const filter = dropdownFilters?.find((f) => f.id === filterId);
                                             if (!filter) return;
                                             const current = getDropdownSelectedValues(filter);
                                             setDropdownSelection(filter, current.filter((v) => v !== optionId));

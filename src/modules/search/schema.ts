@@ -68,7 +68,16 @@ export const FilterGroupSchema = z.object({
     /** Cible de recherche (groupes `searchTargets`) — forward-ref car
      *  SearchTargetSchema dépend de SearchTypeSchema, défini plus bas. */
     target: z.lazy(() => SearchTargetSchema).optional(),
+    /** Graphies regroupées derrière la valeur affichée — POSÉ AU RUNTIME par `useDynamicFilterOptions`
+     *  (jamais écrit en config). Le filtre doit interroger tout le groupe : n'envoyer que « Le Port »
+     *  laisserait de côté les fiches portant « LE PORT » ou « Le port ». Déclaré ici pour que les
+     *  consommateurs le lisent sans cast. */
+    variants: z.array(z.string()).optional(),
   })).optional(),
+  /** Source DYNAMIQUE des options (cf. `OptionsFromSchema` du searchHeader) : les valeurs viennent
+   *  d'une liste `costum.lists` et REMPLACENT les `options` déclarées. Sur un groupe à `field`, chaque
+   *  option reçoit `name` = la valeur stockée, donc le filtrage par champ fonctionne tel quel. */
+  optionsFrom: z.object({ list: z.string(), costumSlug: z.string().optional() }).optional(),
   config: z.object({
     countryCode: z.array(z.string()).optional(),
     level: z.array(z.string()).optional(),
@@ -264,6 +273,12 @@ export const PreviewConfSchema = z.object({
   editButton: z.boolean().optional(),
   /** Facettes du preview générique (`type: "facets"`) — data-driven, sans code. */
   facets: z.array(PreviewFacetSchema).optional(),
+  /**
+   * Affiche le résumé sous le titre du preview générique (`type: "facets"`). Défaut : affiché — une
+   * fiche réduite à ses facettes perdrait sa présentation. `false` quand les facettes se suffisent.
+   * Lu par `PreviewFacets`.
+   */
+  showDescription: z.boolean().optional(),
   /** Section « réservations » du preview `poi-amenities` (absente = masquée). */
   reservations: ReservationsConfSchema.optional(),
   /** Modal tableau de bord installation (requiert `reservations`). */
@@ -658,6 +673,16 @@ export const SearchBaseParamsSchema = z.object({
   defaultSortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
   // Champs sur lesquels le texte de recherche est matché (cf. SearchBySchema).
   searchBy: SearchBySchema.optional(),
+  /**
+   * SOUS-TYPE de costum ciblé (clé `subType` d'un form de `costumForms`). EXPANSÉE par le client
+   * (`buildSearchPayload`) en la disjonction canonique :
+   *   `$or [ { …identity du form, "source.keys": <slug du site> },      // les NATIFS
+   *          { "reference.costumTypes.<slug>": <subType> } ]`           // les RÉFÉRENCÉS classés
+   * Le discriminant (`identity`) vit UNE fois, dans la déclaration du form — pas dupliqué ici, et le
+   * slug vient du scope du site, pas de la config. Écrire le `$or` à la main dans `defaultFilters`
+   * reste possible ; cette clé est le chemin recommandé.
+   */
+  costumSubType: z.string().optional(),
   // Accepte `boolean` (ne pas sourcer par clé) ou `number` (limite custom).
   // Certaines configs historiques utilisent un nombre — schéma assoupli pour compat.
   notSourceKey: z.union([z.boolean(), z.number()]).optional(),
@@ -1035,6 +1060,24 @@ const TitleWithFiltersDropdownOptionSchema = z.object({
   icon: z.string().optional(),
 });
 
+/**
+ * Source DYNAMIQUE d'options : les valeurs viennent d'une liste déclarée du costum
+ * (`costum.lists.<nom>`, forme `{collection, distinct, where}`), résolue par `costum/co/listvalues`.
+ *
+ * REMPLACE les `options` écrites à la main quand elle est déclarée — pas de fusion. Les valeurs
+ * dynamiques n'ont donc PAS de libellé traduit : elles s'affichent telles qu'elles sont stockées.
+ * C'est le prix assumé pour que le filtre suive la donnée : sur institutBleu, la config gelait
+ * 12 territoires quand la base en compte 64, soit 52 valeurs injoignables au filtre.
+ *
+ * Sans `optionsFrom`, rien ne change : les options déclarées font foi, comme aujourd'hui.
+ */
+const OptionsFromSchema = z.object({
+  /** Nom de la liste dans `costum.lists`. */
+  list: z.string(),
+  /** Costum porteur ; par défaut celui du site. */
+  costumSlug: z.string().optional(),
+});
+
 const TitleWithFiltersDropdownSchema = z.object({
   id: z.string(),
   label: LocalizedString,
@@ -1042,6 +1085,7 @@ const TitleWithFiltersDropdownSchema = z.object({
   multiple: z.boolean().optional(),
   allLabel: LocalizedString.optional(),
   options: z.array(TitleWithFiltersDropdownOptionSchema).default([]),
+  optionsFrom: OptionsFromSchema.optional(),
 });
 
 // Props partagées entre le type canonique `searchHeader` et son alias.
@@ -1088,6 +1132,45 @@ export const SearchHeaderSectionSchema = z.object({
 
 export type SearchHeaderSection = z.infer<typeof SearchHeaderSectionSchema>;
 export type SearchHeaderSectionProps = z.infer<typeof SearchHeaderSectionSchema>["props"];
+
+/**
+ * Carrousel plein écran d'entités (typiquement des POI) filtrées par tag — une diapositive à la
+ * fois : badge, titre, description, CTA et image. Réutilise `SearchBaseParamsSchema` (fetch/filtre,
+ * `defaultTags` porte le tag ex. "A la une"), `ResourceConfSchema` (mapping titre/description/image,
+ * défauts déjà adaptés à un POI) et `ListItemActionSchema` (résolution du lien du CTA) — aucun champ
+ * dupliqué. Générique par construction (`defaultTypes` n'est pas limité à "poi") : pas de `list`/
+ * `columns` (pas une grille) ni de filtres UI (le tag est statique, porté par la config).
+ */
+export const FeaturedCarouselSectionSchema = z.object({
+  type: z.literal("featured-carousel"),
+  id: z.string().optional(),
+  props: z.object({
+    /** Badge affiché au-dessus du titre de chaque diapositive, ex. "À la une :". */
+    badgeLabel: LocalizedString.optional(),
+    /** Libellé du bouton CTA. Repli : traduction "En savoir plus". */
+    ctaLabel: LocalizedString.optional(),
+    /** Fetch/filtre — `defaultTypes`/`defaultTags`/`sourceKey`/`defaultFields` etc. */
+    baseParams: SearchBaseParamsSchema,
+    /** Mapping titre/description/image. Défauts déjà adaptés à un POI (name/description/profilMediumImageUrl). */
+    resource: ResourceConfSchema.optional(),
+    /** Action au clic du CTA. Défaut : `kind:"profil"` → `/profil/:slug`. */
+    itemAction: ListItemActionSchema.optional(),
+    autoplay: z.boolean().default(true),
+    autoplayIntervalMs: z.number().int().min(2000).max(30000).default(6000),
+    /** Fond de la section — couleur CSS libre (hex, oklch, `var(--token)`…). Section volontairement
+     *  à fond FIXE (identique quel que soit le mode clair/sombre du site, comme un footer) : le
+     *  titre/texte reste donc en blanc fixe plutôt qu'en `text-foreground` (qui s'inverserait en
+     *  mode clair et deviendrait illisible sur ce fond). Repli code : encre du thème (`--foreground`). */
+    background: z.string().optional(),
+    /** Couleur du badge et du bouton CTA — CSS libre, même logique que `background`. Repli : `--primary`. */
+    accentColor: z.string().optional(),
+    /** Puces de pagination sous le carrousel, entre les flèches précédent/suivant (celles-ci
+     *  restent toujours affichées). Défaut masquées — à activer explicitement si besoin. */
+    showControls: z.boolean().default(false),
+  }),
+});
+export type FeaturedCarouselSection = z.infer<typeof FeaturedCarouselSectionSchema>;
+export type FeaturedCarouselSectionProps = z.infer<typeof FeaturedCarouselSectionSchema>["props"];
 
 
 export interface SearchListViewProps<T extends SearchListEntity = SearchEntity> {
