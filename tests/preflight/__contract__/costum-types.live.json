@@ -880,6 +880,23 @@
         "description": {
           "type": "string"
         }
+      },
+      "events": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "shortDescription": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
       }
     },
     "sportSanteBienetre": {

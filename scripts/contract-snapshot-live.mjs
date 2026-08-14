@@ -20,8 +20,14 @@ const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i > -1 
 const BACKEND = arg("backend", process.env.VITE_BASE_URL_BACKEND ?? "http://127.0.0.1:5080");
 
 /**
- * `describeCostumForms` n'a besoin du `user` que pour deux appels d'endpoint. On fournit donc le strict
+ * `describeCostumForms` n'a besoin du `user` que pour UN appel d'endpoint. On fournit donc le strict
  * nécessaire plutôt qu'un vrai BaseEntity : la chaîne d'inférence exécutée reste celle de la lib.
+ *
+ * ⚠️ Ce stub est COUPLÉ à la liste des endpoints que la lib appelle : le jour où elle en appelle un autre,
+ * le script échoue sur « … is not a function ». C'est arrivé au passage à `costumResolved` — les 7 costums
+ * sont tombés d'un coup. Le compteur d'échecs plus bas est ce qui rend la panne visible, ne pas le retirer.
+ * En cas de doute, préférer un vrai `api.organization({slug})` comme `costum-form-drift.ts`, qui n'a pas
+ * ce couplage.
  */
 const post = async (url, body) => {
   const r = await fetch(url, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: body ?? "" });
@@ -29,6 +35,11 @@ const post = async (url, body) => {
 };
 const stubUser = {
   endpointApi: {
+    // Le costum RÉSOLU (moteur ⊕ overlay) — ce que `describeCostumForms` consomme désormais. Il porte aussi
+    // contextType/contextId, d'où la disparition de l'appel préalable à `getElementsKey`.
+    costumResolved: async ({ slug }) => post(`${BACKEND}/costum/co/resolved`, `slug=${encodeURIComponent(slug)}`),
+    // Conservés : `getcostumjson` reste la source de l'overlay BRUT pour qui en a besoin, et
+    // `getElementsKey` sert d'autres chemins de la lib.
     getCostumJson: async ({ pathParams }) => post(`${BACKEND}/co2/cms/getcostumjson?slug=${encodeURIComponent(pathParams.slug)}`),
     getElementsKey: async ({ pathParams }) => post(`${BACKEND}/co2/slug/getinfo/key/${encodeURIComponent(pathParams.slug)}`),
   },
