@@ -65,7 +65,12 @@
     "slug": "relief",
     "config": "config.prod.relief.json",
     "css": "index-relief",
-    "images": "relief"
+    "images": "relief",
+    "coolifyApp": "site-json-relief",
+    "domain": "aura.00.re",
+    "env": {
+      "VITE_COSTUM_FORCE_LIVE": "true"
+    }
   },
   {
     "slug": "juliePotVin",
