@@ -370,7 +370,6 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "default.editModals": "Table de routage multi sous-types : le PREMIER élément dont la condition matche gagne → placer le catch-all (sans condition) EN DERNIER ; sinon repli editModal, puis edit-profile.",
     "default.editModals[].editModalMatch": "Absente = match universel (catch-all qui court-circuite les routes suivantes) ; même sémantique AND/includes que editModalMatch.",
     "default.editModals[].when": "Prédicat de la route. DANGER si absent sur un form costum : la route devient catch-all, le formulaire s'ouvre sur toutes les entités du type. Patron : sourceKeys contains <slug> OU reference.costum contains <slug>.",
-    "default.editModals[]._comment": "Commentaire libre (JSON n'a pas de commentaires) : justifier une condition de périmètre non évidente. Ignoré au runtime, déclaré sur editModals[] uniquement.",
     "default.layout": "Gabarit de largeur de la page profil ; défauts code : default ≈ max-w-7xl, modern 6xl, compact 3xl, full-width pleine largeur.",
     "default.hideHeader": "Masque le header global du site sur la page profil (défaut code : affiché) — profil plein écran.",
     "default.hideFooter": "Masque le footer global du site sur la page profil (défaut code : affiché).",
