@@ -54,6 +54,22 @@ describe("buildAgendaParams — porte de validation", () => {
     expect("filters" in buildAgendaListParams(20, {})).toBe(false);
   });
 
+  /**
+   * TROU CRÉÉ PAR LA FUSION, pas par l'une des deux branches : `main` a ajouté `notSourceKey` à
+   * l'agenda (RELIEF rattache ses events par LIEN, pas par provenance) pendant que cette branche y
+   * ajoutait la porte. Réunis sans précaution, un agenda portant les deux clés armait la porte alors
+   * que son périmètre costum est désactivé — divergence avec `buildSearchPayload`, où `notSourceKey`
+   * la désarme. Sans costum de scope, il n'y a aucun slug sous lequel indexer `toBeValidated`.
+   */
+  it("notSourceKey DÉSARME la porte, même avec costumSlug — comme dans buildSearchPayload", () => {
+    const p = buildAgendaListParams(20, {}, { costumSlug: "monSite", notSourceKey: true });
+    expect("filters" in p).toBe(false);
+    expect(p.notSourceKey).toBe(true);
+    // …et un filtre de config traverse intact, sans clause de porte greffée.
+    const q = buildAgendaListParams(20, {}, { costumSlug: "monSite", notSourceKey: true, filters: { "links.organizer.abc": { $exists: true } } });
+    expect(q.filters).toEqual({ "links.organizer.abc": { $exists: true } });
+  });
+
   it("la signature de queryKey intègre costumSlug — sinon deux périmètres partagent un cache", () => {
     expect(agendaBaseSig({ costumSlug: "a" })).not.toBe(agendaBaseSig({ costumSlug: "b" }));
     expect(agendaBaseSig({ costumSlug: "a" })).not.toBe(agendaBaseSig({}));

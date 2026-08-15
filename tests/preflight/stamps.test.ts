@@ -96,6 +96,8 @@ describe("préflight mutation.stamps", () => {
     const parc = SITES.flatMap(({ site, cfg }) => stampsDe(cfg).map(({ formId, stamps }) => `${site.replace("config.prod.", "").replace(".json", "")}/${formId}:${stamps.length}`));
     expect(parc).toEqual([
       "institut-bleu/institut-bleu-acteur:2",
+      // RELIEF dérive de la config tiers-lieux, dont il reprend le form et ses 5 stamps.
+      "relief/tiers-lieux:5",
       // Référencement régional posé à la création : la fiche appartient au costum COMMUNAL
       // (`source.key`) et est RÉFÉRENCÉE par `equipementsSportifs974`, qui la voit via la
       // traduction serveur `sourceKey` → `$or[source.keys, reference.costum]`.
