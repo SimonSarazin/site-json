@@ -116,6 +116,7 @@ runner(`forms costum — add + edit e2e (mode ${MODE})`, () => {
   let comparaisons = 0;
   let modificationsTestees = 0;
   let vidagesTestes = 0;
+  let stampsVerifies = 0;
   const bundle: Doc = JSON.parse(readFileSync(resolve(RACINE, "tests/preflight/__contract__/costum-types.json"), "utf8")).costums;
 
   beforeAll(async () => {
@@ -200,6 +201,10 @@ runner(`forms costum — add + edit e2e (mode ${MODE})`, () => {
     // plancher, un sélecteur qui ne trouve aucun candidat ferait passer la suite en ne prouvant rien.
     expect(modificationsTestees, "aucune MODIFICATION réelle exercée par la phase d'édition").toBeGreaterThanOrEqual(10);
     expect(vidagesTestes, "aucun EFFACEMENT de champ optionnel exercé par la phase d'édition").toBeGreaterThanOrEqual(8);
+    // Les 6 stamps littéraux du parc sont ceux de saint-paul-sport (3 forms × rattachement régional
+    // + annotation de sous-type) ; les autres sont dynamiques et hors de portée d'une assertion ici.
+    // Sans ce plancher, retirer ces stamps des configs rendrait la boucle vide — et muette.
+    expect(stampsVerifies, `aucun stamp à valeur littérale vérifié — le rattachement régional n'est plus prouvé`).toBeGreaterThanOrEqual(6);
   }, 120_000);
 
   for (const { site, id, doc } of tousLesForms()) {
@@ -255,6 +260,47 @@ runner(`forms costum — add + edit e2e (mode ${MODE})`, () => {
       const cree = await base.collection(coll).findOne({ name: nom });
       expect(cree, `entité non trouvée en base après création (mode ${bundleConnu ? MODE : "live — costum non bundlé"})`).toBeTruthy();
       crees.push({ coll, id: cree!._id });
+
+      /**
+       * ── STAMPS : ce que la mutation POSE en plus de ce que l'utilisateur saisit.
+       *
+       * La boucle de forme ci-dessous parcourt `doc.fields` — les champs DÉCLARÉS. Un stamp n'en est
+       * pas un : il traversait donc ce test sans qu'une seule assertion le regarde, alors même que la
+       * chaîne l'exécutait. C'est précisément le trou qui comptait ici : `reference.costum` passe par
+       * le canal `pathValue`, dont l'échec est NON BLOQUANT par conception (`console.warn` et on
+       * continue) — la création réussissait, le rattachement pouvait manquer, et rien ne le disait.
+       *
+       * Ce que ça vaut à l'échelle du parc : c'est le champ qui rattache une fiche d'un site COMMUNAL
+       * au costum RÉGIONAL. La commune possède sa donnée (`source.key`), le régional l'affiche
+       * (`reference.costum`). Jusqu'ici la seule preuve que le rattachement se posait à la CRÉATION
+       * venait des fiches d'une MIGRATION — un lot importé, pas une création observée.
+       *
+       * Seuls les stamps à valeur LITTÉRALE sont vérifiables ici : `$now`/`$from`/`$costum`/
+       * `$mapLabels`/`$bucket` dépendent de la saisie ou de l'instant. Le compteur global les distingue
+       * d'un test qui ne prouverait rien.
+       */
+      const litteral = (v: unknown) => !(v && typeof v === "object" && !Array.isArray(v)
+        && Object.keys(v).some((k) => k.startsWith("$")));
+      const lirePointe = (o: unknown, p: string): unknown =>
+        p.split(".").reduce<unknown>((a, k) => (a && typeof a === "object" ? (a as Doc)[k] : undefined), o);
+      const contient = (stocke: unknown, attendu: unknown): boolean =>
+        Array.isArray(attendu)
+          ? attendu.every((x) => (Array.isArray(stocke) ? stocke.includes(x) : stocke === x))
+          : Array.isArray(stocke) ? stocke.includes(attendu) : stocke === attendu;
+
+      for (const st of ((doc.mutation as Doc | undefined)?.stamps as Doc[] | undefined) ?? []) {
+        const on = String(st.on ?? "both");
+        if (on !== "add" && on !== "both") continue;
+        if (st.op === "fillIfEmpty" || !litteral(st.value)) continue; // valeur non déterministe ici
+        stampsVerifies++;
+        const stocke = lirePointe(cree, String(st.field));
+        expect(
+          contient(stocke, st.value),
+          `stamp « ${st.field} » ABSENT du document créé (${site}/${id}) : attendu ${JSON.stringify(st.value)}, ` +
+            `base ${JSON.stringify(stocke)}. Canal ${String(st.channel ?? "payload")} — si pathValue, l'échec est ` +
+            `silencieux par conception : chercher le warn « [stamps] » dans la sortie.`,
+        ).toBe(true);
+      }
 
       // ── FORME STOCKÉE : comparée à la forme DOMINANTE de la colonne dans le costum
       const ecarts: string[] = [];
