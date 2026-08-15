@@ -1,0 +1,6294 @@
+{
+  "_source": "costum-extensions.json de @communecter/cocolight-api-client — instantané du CONTRAT costum bundlé. Rafraîchir : npm run contract:snapshot. Un diff ici = le plancher des formulaires a bougé.",
+  "_generatedFrom": "2026-08-13T07-31-56-768Z",
+  "costums": {
+    "alfph": {
+      "projects": {
+        "formLocality": {
+          "type": "string"
+        },
+        "theme": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      },
+      "ressources": {
+        "formLocality": {
+          "type": "string"
+        }
+      }
+    },
+    "assoKosasa": {
+      "poi": {
+        "image": {
+          "type": "string"
+        }
+      }
+    },
+    "campagne": {
+      "proposal": {
+        "devis": {
+          "type": "string"
+        },
+        "estimationTime": {
+          "type": "string"
+        }
+      }
+    },
+    "CercleTravailleursSociauxLiberauxLaPlumeSociale": {
+      "organizations": {
+        "companyDescription": {
+          "type": "string"
+        },
+        "companyInterventionMethods": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "companyLocationsFaceTofacesessions": {
+          "type": "string"
+        },
+        "companyLocationsRemoteInterventions": {
+          "type": "string"
+        },
+        "companyPublicCible": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "documentsBrochure": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "documentsBusinessCard": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "documentsLogoCompany": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "formLocality": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "info": {
+          "type": "string"
+        },
+        "linkedin": {
+          "type": "string"
+        },
+        "mobile": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "otherSociaNetworks": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "qualificationsOtherCompetences": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "qualificationsOtherQualifications": {
+          "type": "string"
+        },
+        "qualificationsStateDiplomas": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "userDate": {
+          "type": "string"
+        },
+        "userFirstName": {
+          "type": "string"
+        },
+        "userSelfEmployed": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "userSurname": {
+          "type": "string"
+        }
+      }
+    },
+    "chtitube": {
+      "events": {
+        "description": {
+          "type": "string"
+        }
+      },
+      "poi": {
+        "sectionBtn": {
+          "type": "string"
+        }
+      }
+    },
+    "circuitCourt": {
+      "organizations": {
+        "badges": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "phone": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        }
+      }
+    },
+    "cmcasHauteBretagne": {
+      "events": {
+        "phone": {
+          "type": "string"
+        },
+        "thematique": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      },
+      "poi": {
+        "image": {
+          "type": "string"
+        }
+      }
+    },
+    "coeurNumerique": {
+      "badges": {
+        "category": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "info": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "organizations": {
+        "category": {
+          "type": "string"
+        }
+      }
+    },
+    "coFinancementTierslieux": {
+      "crowdfunding": {
+        "donationLink": {
+          "type": "string"
+        },
+        "invoiceAddress": {
+          "type": "string"
+        },
+        "invoiceName": {
+          "type": "string"
+        },
+        "invoiceSiret": {
+          "type": "string"
+        },
+        "linkToCommon": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "orgaName": {
+          "type": "string"
+        },
+        "priority": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "similarLink": {
+          "type": "string"
+        }
+      },
+      "organizations": {
+        "iban": {
+          "type": "string"
+        }
+      }
+    },
+    "communLundi": {
+      "events": {
+        "animator": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "common": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "description": {
+          "type": "string"
+        },
+        "documentation": {
+          "type": "string"
+        },
+        "pattern": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "template": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        }
+      }
+    },
+    "cressReunion": {
+      "events": {
+        "amount": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "expectedAttendees": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "format": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "isPaying": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "lowMobilityAccess": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "mailReminder": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "monthEss": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "registrationRequired": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "tergetPublic": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "thematicWeek": {
+          "type": "string"
+        },
+        "theme": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      },
+      "organizations": {
+        "ambassadeurFirstName": {
+          "type": "string"
+        },
+        "ambassadeurFonction": {
+          "type": "string"
+        },
+        "ambassadeurMail": {
+          "type": "string"
+        },
+        "ambassadeurName": {
+          "type": "string"
+        },
+        "ambassadeurTel": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "apet700": {
+          "type": "string"
+        },
+        "arrondissement": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "category": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "famille": {
+          "type": "string"
+        },
+        "interco": {
+          "type": "string"
+        },
+        "secteurEntreprise": {
+          "type": "string"
+        },
+        "secteurEtablissement": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "sigle": {
+          "type": "string"
+        },
+        "siren": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "siret": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "typeEtablissement": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "waldec": {
+          "type": "string"
+        }
+      },
+      "projects": {
+        "domain": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "ifPaye": {
+          "type": "string"
+        },
+        "paye": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "publicCible": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "referentName": {
+          "type": "string"
+        },
+        "referentPhone": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "yourAction": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "zoneActivity": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "cressReunionNetwork": {
+      "events": {
+        "format": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "monthEss": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "theme": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      },
+      "organizations": {
+        "ambassadeurFirstName": {
+          "type": "string"
+        },
+        "ambassadeurFonction": {
+          "type": "string"
+        },
+        "ambassadeurMail": {
+          "type": "string"
+        },
+        "ambassadeurName": {
+          "type": "string"
+        },
+        "ambassadeurTel": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "apet700": {
+          "type": "string"
+        },
+        "arrondissement": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "category": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "famille": {
+          "type": "string"
+        },
+        "interco": {
+          "type": "string"
+        },
+        "secteurEntreprise": {
+          "type": "string"
+        },
+        "secteurEtablissement": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "sigle": {
+          "type": "string"
+        },
+        "siren": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "siret": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "typeEtablissement": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "waldec": {
+          "type": "string"
+        }
+      },
+      "projects": {
+        "domain": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "ifPaye": {
+          "type": "string"
+        },
+        "paye": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "publicCible": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "referentName": {
+          "type": "string"
+        },
+        "referentPhone": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "yourAction": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "zoneActivity": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "ctenat": {
+      "addPhoto": {
+        "info": {
+          "type": "string"
+        }
+      },
+      "badges": {
+        "category": {
+          "type": "string"
+        },
+        "info": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "poi": {
+        "category": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "definition": {
+          "type": "string"
+        },
+        "domainAction": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "echelleApplication": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "methodeCalcul": {
+          "type": "string"
+        },
+        "moyenne_nationale": {
+          "type": "string"
+        },
+        "obj_environnemental": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "obj_operationnel_national": {
+          "type": "string"
+        },
+        "obj_strategique": {
+          "type": "string"
+        },
+        "objectifDD": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "originIndicator": {
+          "type": "string"
+        },
+        "pol_pub": {
+          "type": "string"
+        },
+        "sourceData1": {
+          "type": "string"
+        },
+        "structags": {
+          "type": "string"
+        },
+        "typectenat": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "unity1": {
+          "type": "string"
+        }
+      },
+      "projects": {
+        "dispositif": {
+          "type": "string"
+        },
+        "dispositifId": {
+          "type": "string"
+        },
+        "filRouge": {
+          "type": "string"
+        },
+        "formLocality": {
+          "type": "string"
+        },
+        "nbHabitant": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "session": {
+          "type": "string"
+        },
+        "why": {
+          "type": "string"
+        }
+      }
+    },
+    "cyberReunion": {
+      "organizations": {
+        "contact": {
+          "type": "string"
+        },
+        "domains": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "formLocality": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "offer": {
+          "type": "string"
+        },
+        "partners": {
+          "type": "string"
+        },
+        "siren": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "specialties": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "typologie": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "ekisphere": {
+      "events": {
+        "place": {
+          "type": "string"
+        }
+      },
+      "organizations": {
+        "activity": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "adminFirstname": {
+          "type": "string"
+        },
+        "adminFunction": {
+          "type": "string"
+        },
+        "adminLastname": {
+          "type": "string"
+        },
+        "adminMail": {
+          "type": "string"
+        },
+        "adminPhone": {
+          "type": "string"
+        },
+        "dateAdhesion": {
+          "type": "string"
+        },
+        "formLocality": {
+          "type": "string"
+        },
+        "image": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "location": {
+          "type": "string"
+        },
+        "nombreETP": {
+          "type": "string"
+        },
+        "similarLink": {
+          "type": "string"
+        },
+        "siren": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "structure": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      },
+      "poi": {
+        "access": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "adminEmail": {
+          "type": "string"
+        },
+        "adminFirstName": {
+          "type": "string"
+        },
+        "classification": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "contentProtectionType": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "contentReusability": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "descriptionSection": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "ethicCharte": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "image": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "info": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "infoGeneral": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "isEthicCharte": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "mainThematic": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "propIntelectuel": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "protectionLicenceLink": {
+          "type": "string"
+        },
+        "toolLevel": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "toolType": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "equipementsSportifs974": {
+      "poi": {
+        "aps_name": {
+          "type": "string"
+        },
+        "categorie": {
+          "type": "string"
+        },
+        "equip_acc_libre": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_douche": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_eclair": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_gest_type": {
+          "type": "string"
+        },
+        "equip_larg": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "equip_loc_type": {
+          "type": "string"
+        },
+        "equip_long": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "equip_maj_date": {
+          "type": "string"
+        },
+        "equip_nature": {
+          "type": "string"
+        },
+        "equip_pmr_acc": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_pmr_chem": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_pmr_douche": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_pmr_sanit": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_pmr_trib": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_pmr_vest": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_prop_nom": {
+          "type": "string"
+        },
+        "equip_prop_type": {
+          "type": "string"
+        },
+        "equip_pshs_aire": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_pshs_chem": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_pshs_sanit": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_pshs_sign": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_pshs_trib": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_pshs_vest": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_sol": {
+          "type": "string"
+        },
+        "equip_surf": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "equip_type_famille": {
+          "type": "string"
+        },
+        "equip_type_name": {
+          "type": "string"
+        },
+        "equip_utilisateur": {
+          "type": "string"
+        },
+        "inst_acc_handi_bool": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "inst_acc_handi_type": {
+          "type": "string"
+        },
+        "inst_date_creation": {
+          "type": "string"
+        },
+        "inst_enqu_date": {
+          "type": "string"
+        },
+        "inst_nom": {
+          "type": "string"
+        },
+        "inst_part_bool": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "inst_part_type": {
+          "type": "string"
+        },
+        "inst_trans_bool": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "inst_trans_type": {
+          "type": "string"
+        }
+      }
+    },
+    "FabEn": {
+      "organizations": {
+        "group": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "theme": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "federationDesCae": {
+      "organizations": {
+        "extraManageModel": {
+          "type": "string"
+        },
+        "formLocality": {
+          "type": "string"
+        },
+        "holderOrganization": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "manageModel": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "openingDate": {
+          "type": "string"
+        },
+        "photo": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "similarLink": {
+          "type": "string"
+        }
+      }
+    },
+    "fianarantsoaAlimentation": {
+      "organizations": {
+        "category": {
+          "type": "string"
+        }
+      }
+    },
+    "formationGenerique": {
+      "events": {
+        "description": {
+          "type": "string"
+        },
+        "duration": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "gatheringDates": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "image": {
+          "type": "string"
+        },
+        "module": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "reportLink": {
+          "type": "string"
+        },
+        "trainer": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "visioDate": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "organizations": {
+        "trainingQualification": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      },
+      "person": {
+        "documentation": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "formLocality": {
+          "type": "string"
+        }
+      },
+      "projects": {
+        "certificationTraining": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "certificationsAwards": {
+          "type": "string"
+        },
+        "competence": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "documentation": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "email": {
+          "type": "string"
+        },
+        "evaluation": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "partner": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "publicCible": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "rate": {
+          "type": "string"
+        },
+        "teachingMethods": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "thematic": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "trainer": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "urlsDoc": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "franceTierslieux": {
+      "organizations": {
+        "buildingSurfaceArea": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "compagnon": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "extraManageModel": {
+          "type": "string"
+        },
+        "extraTypePlace": {
+          "type": "string"
+        },
+        "formLocality": {
+          "type": "string"
+        },
+        "holderOrganization": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "manageModel": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "openingDate": {
+          "type": "string"
+        },
+        "photo": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "similarLink": {
+          "type": "string"
+        },
+        "siteSurfaceArea": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "typePlace": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "hinaura": {
+      "organizations": {
+        "typePlace": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      },
+      "projects": {
+        "accessibilite": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "beneficiaire": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "categ": {
+          "type": "string"
+        },
+        "coeffone": {
+          "type": "string"
+        },
+        "coeffthree": {
+          "type": "string"
+        },
+        "coefftwo": {
+          "type": "string"
+        },
+        "subcateg": {
+          "type": "string"
+        },
+        "subsubcateg": {
+          "type": "string"
+        }
+      }
+    },
+    "hubmayotte": {
+      "organizations": {
+        "services": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "typePlace": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "hubnouvellecaledonie": {
+      "organizations": {
+        "services": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "typePlace": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "hubpolynesiefrancaise": {
+      "organizations": {
+        "services": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "typePlace": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "hubreunion": {
+      "organizations": {
+        "services": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "typePlace": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "hubterritoires": {
+      "organizations": {
+        "services": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "typePlace": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "hubwallisetfutuna": {
+      "organizations": {
+        "services": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "typePlace": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "hva": {
+      "events": {
+        "preferences[isOpenEdition]": {
+          "type": "string"
+        }
+      },
+      "organizations": {
+        "preferences[isOpenEdition]": {
+          "type": "string"
+        }
+      }
+    },
+    "ibv2": {
+      "organizations": {
+        "acronym": {
+          "type": "string"
+        },
+        "categoryThematic": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "codeNaf": {
+          "type": "string"
+        },
+        "displayAuth": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "formLocality": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "infoGeneral": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "legalStatus": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "link": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "mobile": {
+          "type": "string"
+        },
+        "operatingLocation": {
+          "type": "string"
+        },
+        "otherSociaNetworks": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "sextionInfo": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "similarLink": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "siret": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        }
+      }
+    },
+    "institutBleu": {
+      "events": {
+        "description": {
+          "type": "string"
+        }
+      },
+      "organizations": {
+        "acronym": {
+          "type": "string"
+        },
+        "categoryThematic": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "codeNaf": {
+          "type": "string"
+        },
+        "displayAuth": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "formLocality": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "infoGeneral": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "legalStatus": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "link": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "mobile": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "operatingLocation": {
+          "type": "string"
+        },
+        "otherSociaNetworks": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "sextionInfo": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "similarLink": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "siret": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "poi": {
+        "auteurs": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "coteDocument": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "date": {
+          "type": "string",
+          "x-format": "date"
+        },
+        "echelle": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "financementSource": {
+          "type": "string"
+        },
+        "financementType": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "langue": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "organisme": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "territoires": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "thematique": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "typeDocument": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "journalInsoumisChambery": {
+      "events": {
+        "allDay": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "location": {
+          "type": "string"
+        }
+      },
+      "poi": {
+        "documentation": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "image": {
+          "type": "string"
+        },
+        "rank": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        }
+      }
+    },
+    "kpacite": {
+      "organizations": {
+        "formLocality": {
+          "type": "string"
+        },
+        "historique": {
+          "type": "string"
+        },
+        "manageModel": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "mobile": {
+          "type": "string"
+        },
+        "socialNetworks": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "state": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "labEnCommuns": {
+      "projects": {
+        "avancement": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "commons": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "endDate": {
+          "type": "string",
+          "x-format": "date"
+        },
+        "formLocality": {
+          "type": "string"
+        },
+        "startDate": {
+          "type": "string",
+          "x-format": "date"
+        }
+      }
+    },
+    "laCompagnieDesTierslieux": {
+      "events": {
+        "description": {
+          "type": "string"
+        },
+        "duration": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "image": {
+          "type": "string"
+        },
+        "trainer": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "organizations": {
+        "territorialCercle": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      },
+      "person": {
+        "actionContributor": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "addressCie": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "adherent": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "attendedTraining": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "emailCie": {
+          "type": "string"
+        },
+        "expertise": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "falicitationDevice": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "formLocality": {
+          "type": "string"
+        },
+        "functionOtherStructure": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "functionThirdPlace": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "geoCie": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "geoPositionCie": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "heldAction": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "keyMoment": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "linkedEvent": {
+          "type": "string"
+        },
+        "linkedThirdPlace": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "mentor": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "monitoringColdInfo": {
+          "type": "string"
+        },
+        "monitoringLatestExchange": {
+          "type": "string"
+        },
+        "monitoringSupportingDocumentation": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "monitoringWarmInfo": {
+          "type": "string"
+        },
+        "networkContributor": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "newsletterSubscription": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "otherLinkedStructure": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "otherThemeLinkedStructure": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "otherTypeLinkedStructure": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "referentTerritorialCercle": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "reportingMember": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "shortDescriptionCie": {
+          "type": "string"
+        },
+        "supportCercle": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "supportedStructures": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "tagsCie": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "telephoneCie": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "territorialCercle": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      },
+      "projects": {
+        "competence": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "email": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "partner": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "rate": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "urlsDoc": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "lakou": {
+      "organizations": {
+        "adminFirstname": {
+          "type": "string"
+        },
+        "adminFunction": {
+          "type": "string"
+        },
+        "adminLastname": {
+          "type": "string"
+        },
+        "adminMail": {
+          "type": "string"
+        },
+        "adminPhone": {
+          "type": "string"
+        },
+        "buildingSurfaceArea": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "category": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "extraManageModel": {
+          "type": "string"
+        },
+        "extraTypePlace": {
+          "type": "string"
+        },
+        "formLocality": {
+          "type": "string"
+        },
+        "holderOrganization": {
+          "type": "string"
+        },
+        "image": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "location": {
+          "type": "string"
+        },
+        "manageModel": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "nombreETP": {
+          "type": "string"
+        },
+        "openingDate": {
+          "type": "string",
+          "x-format": "date"
+        },
+        "similarLink": {
+          "type": "string"
+        },
+        "siren": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "siteSurfaceArea": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "structure": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "typePlace": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      },
+      "poi": {
+        "access": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "adminEmail": {
+          "type": "string"
+        },
+        "adminFirstName": {
+          "type": "string"
+        },
+        "classification": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "descriptionSection": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "image": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "info": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "infoGeneral": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "toolLevel": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "toolType": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      },
+      "projects": {
+        "category": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "laMaisonDesFaiseurs": {
+      "organizations": {
+        "acronym": {
+          "type": "string"
+        },
+        "categoryThematic": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "codeNaf": {
+          "type": "string"
+        },
+        "displayAuth": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "formLocality": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "infoGeneral": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "legalStatus": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "link": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "mobile": {
+          "type": "string"
+        },
+        "operatingLocation": {
+          "type": "string"
+        },
+        "otherSociaNetworks": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "sextionInfo": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "similarLink": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "siret": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        }
+      }
+    },
+    "lapossession": {
+      "organizations": {
+        "category": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "laReunionPourUnNumeriqueInclusif": {
+      "organizations": {
+        "services": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "typePlace": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "laSemaineDesTierslieux": {
+      "events": {
+        "description": {
+          "type": "string"
+        },
+        "formLocality": {
+          "type": "string"
+        },
+        "maximumAttendees": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "organizerName": {
+          "type": "string"
+        }
+      }
+    },
+    "lesCommunsDesTierslieux": {
+      "organizations": {
+        "buildingSurfaceArea": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "compagnon": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "extraManageModel": {
+          "type": "string"
+        },
+        "extraTypePlace": {
+          "type": "string"
+        },
+        "formLocality": {
+          "type": "string"
+        },
+        "holderOrganization": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "manageModel": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "openingDate": {
+          "type": "string"
+        },
+        "photo": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "similarLink": {
+          "type": "string"
+        },
+        "siteSurfaceArea": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "typePlace": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "LivingLabInnovationSocialeBraspanon": {
+      "organizations": {
+        "category": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "group": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "theme": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "mayottePourUnNumeriqueInclusif": {
+      "organizations": {
+        "services": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "typePlace": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "meir": {
+      "organizations": {
+        "areaOfIntervention": {
+          "type": "string"
+        },
+        "financialPartners": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "formLocality": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "jobFamily": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "legalStatus": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "link": {
+          "type": "string"
+        },
+        "linkFinancialDevice": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "linkWithInnovation": {
+          "type": "string"
+        },
+        "maximumAmount": {
+          "type": "string"
+        },
+        "mobile": {
+          "type": "string"
+        },
+        "modality": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "namesStartupers": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "objective": {
+          "type": "string"
+        },
+        "objectiveOdd": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "otherLocality": {
+          "type": "string"
+        },
+        "publicCible": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "responsable": {
+          "type": "string"
+        },
+        "serviceOffers": {
+          "type": "string"
+        },
+        "serviceOffersInnovativeCompanies": {
+          "type": "string"
+        },
+        "statusActor": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "typeFinancing": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "yearEntryInpri": {
+          "type": "string"
+        }
+      },
+      "projects": {
+        "email": {
+          "type": "string"
+        },
+        "financialHelp": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "formLocality": {
+          "type": "string"
+        },
+        "innovativeProject": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "nameStructure": {
+          "type": "string"
+        },
+        "prototype": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "siret": {
+          "type": "string"
+        }
+      }
+    },
+    "navigatorDesTierslieux": {
+      "organizations": {
+        "buildingSurfaceArea": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "extraManageModel": {
+          "type": "string"
+        },
+        "extraTypePlace": {
+          "type": "string"
+        },
+        "formLocality": {
+          "type": "string"
+        },
+        "holderOrganization": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "manageModel": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "openingDate": {
+          "type": "string"
+        },
+        "photo": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "similarLink": {
+          "type": "string"
+        },
+        "siteSurfaceArea": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "typePlace": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "notragora": {
+      "badges": {
+        "producors": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "supports": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "poi": {
+        "carousel": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "tags1": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "tags2": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "year": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        }
+      }
+    },
+    "nouvellecaledoniePourUnNumeriqueInclusif": {
+      "organizations": {
+        "services": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "typePlace": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "openAtlas": {
+      "crowdfunding": {
+        "associate": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "invoiceAddress": {
+          "type": "string"
+        },
+        "invoiceName": {
+          "type": "string"
+        },
+        "invoiceSiret": {
+          "type": "string"
+        },
+        "orgaName": {
+          "type": "string"
+        },
+        "similarLink": {
+          "type": "string"
+        }
+      },
+      "organizations": {
+        "category": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "parent62": {
+      "events": {
+        "description": {
+          "type": "string"
+        },
+        "publics": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "territoires": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "themes": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      },
+      "poi": {
+        "ages": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "category": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "paroleConsentement": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "publics": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "territoires": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "themes": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "polynesieFrancaisePourUnNumeriqueInclusif": {
+      "organizations": {
+        "services": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "typePlace": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "prdr": {
+      "badges": {
+        "info": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "organizations": {
+        "category": {
+          "type": "string"
+        }
+      }
+    },
+    "relief": {
+      "organizations": {
+        "category": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "reseauTierslieux": {
+      "organizations": {
+        "buildingSurfaceArea": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "compagnon": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "extraManageModel": {
+          "type": "string"
+        },
+        "extraTags": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "extraTypePlace": {
+          "type": "string"
+        },
+        "formLocality": {
+          "type": "string"
+        },
+        "holderOrganization": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "manageModel": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "openingDate": {
+          "type": "string",
+          "x-format": "date"
+        },
+        "photo": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "similarLink": {
+          "type": "string"
+        },
+        "siteSurfaceArea": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "typePlace": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "rfflabs": {
+      "organizations": {
+        "allNetwork": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "formLocality": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "manageModel": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "mobile": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "state": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "ries": {
+      "organizations": {
+        "category": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "group": {
+          "type": "string"
+        },
+        "theme": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "saintpaulSport1": {
+      "events": {
+        "description": {
+          "type": "string"
+        }
+      },
+      "poi": {
+        "aps_name": {
+          "type": "string"
+        },
+        "categorie": {
+          "type": "string"
+        },
+        "equip_acc_libre": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_douche": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_eclair": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_gest_type": {
+          "type": "string"
+        },
+        "equip_larg": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "equip_loc_type": {
+          "type": "string"
+        },
+        "equip_long": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "equip_maj_date": {
+          "type": "string"
+        },
+        "equip_nature": {
+          "type": "string"
+        },
+        "equip_pmr_acc": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_pmr_chem": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_pmr_douche": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_pmr_sanit": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_pmr_trib": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_pmr_vest": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_prop_nom": {
+          "type": "string"
+        },
+        "equip_prop_type": {
+          "type": "string"
+        },
+        "equip_pshs_aire": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_pshs_chem": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_pshs_sanit": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_pshs_sign": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_pshs_trib": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_pshs_vest": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "equip_sol": {
+          "type": "string"
+        },
+        "equip_surf": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "equip_type_famille": {
+          "type": "string"
+        },
+        "equip_type_name": {
+          "type": "string"
+        },
+        "equip_utilisateur": {
+          "type": "string"
+        },
+        "inst_acc_handi_bool": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "inst_acc_handi_type": {
+          "type": "string"
+        },
+        "inst_date_creation": {
+          "type": "string"
+        },
+        "inst_enqu_date": {
+          "type": "string"
+        },
+        "inst_nom": {
+          "type": "string"
+        },
+        "inst_part_bool": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "inst_part_type": {
+          "type": "string"
+        },
+        "inst_trans_bool": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "inst_trans_type": {
+          "type": "string"
+        }
+      }
+    },
+    "Santeentransition": {
+      "organizations": {
+        "category": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "siteDuPactePourLaTransition": {
+      "organizations": {
+        "info": {
+          "type": "string"
+        },
+        "localMembers": {
+          "type": "string"
+        },
+        "nextEvents": {
+          "type": "string"
+        },
+        "publicMail": {
+          "type": "string"
+        },
+        "referentMail": {
+          "type": "string"
+        }
+      },
+      "poi": {
+        "category": {
+          "type": "string"
+        },
+        "commentEngagement": {
+          "type": "string"
+        },
+        "compteRendu": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "contractPdf": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "documentation": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "info": {
+          "type": "string"
+        },
+        "localMeasures": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "measures": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "rank": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "signedOn": {
+          "type": "string",
+          "x-format": "date"
+        }
+      }
+    },
+    "sportSanteBienetre": {
+      "events": {
+        "description": {
+          "type": "string"
+        },
+        "duration": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "gatheringDates": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "image": {
+          "type": "string"
+        },
+        "module": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "trainer": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "visioDate": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "organizations": {
+        "affiliate": {
+          "type": "string"
+        },
+        "affiliateTo": {
+          "type": "string"
+        },
+        "autreDescription": {
+          "type": "string"
+        },
+        "formLocality": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "infoGeneral": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "legalStatus": {
+          "type": "string"
+        },
+        "link": {
+          "type": "string"
+        },
+        "linkedin": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "mobile": {
+          "type": "string"
+        },
+        "personInChargeCivility": {
+          "type": "string"
+        },
+        "personInChargeEmail": {
+          "type": "string"
+        },
+        "personInChargeFirstName": {
+          "type": "string"
+        },
+        "personInChargeName": {
+          "type": "string"
+        },
+        "personInChargeTelephone": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "personInChargeTitle": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "representativeCivility": {
+          "type": "string"
+        },
+        "representativeEmail": {
+          "type": "string"
+        },
+        "representativeFirstName": {
+          "type": "string"
+        },
+        "representativeName": {
+          "type": "string"
+        },
+        "representativeTelephone": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "representativeTitle": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "responsableCivilePro": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "responsableSameAsRepresent": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "sextionInfo": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "sextionInfoRepresentant": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "sextionInfoResponsable": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "sigle": {
+          "type": "string"
+        },
+        "similarLink": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "siren": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "statusCommunale": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "statusFile": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "statusPrimaire": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "statusSecondaire": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "youtube": {
+          "type": "string"
+        }
+      },
+      "poi": {
+        "category": {
+          "type": "string"
+        },
+        "dateCreation": {
+          "type": "string",
+          "x-format": "date"
+        },
+        "eclairage": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "entrepriseFonciere": {
+          "type": "string"
+        },
+        "familleEquipement": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "gardiennage": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "handicap": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "hebergement": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "installation": {
+          "type": "string"
+        },
+        "libreAccess": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "nature": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "partenariat": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "restaurant": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "sole": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "sportPratiquer": {
+          "type": "string"
+        },
+        "subCategory": {
+          "type": "string"
+        },
+        "surface": {
+          "type": "string"
+        },
+        "transportCommun": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "typeAccessiblHandicap": {
+          "type": "string"
+        },
+        "typePartenariat": {
+          "type": "string"
+        },
+        "typeTransportCommun": {
+          "type": "string"
+        }
+      },
+      "projects": {
+        "certificationTraining": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "certificationsAwards": {
+          "type": "string"
+        },
+        "competence": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "documentation": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "email": {
+          "type": "string"
+        },
+        "evaluation": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "partner": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "publicCible": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "rate": {
+          "type": "string"
+        },
+        "teachingMethods": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "thematic": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "trainer": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "urlsDoc": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "suppa": {
+      "classifieds": {
+        "info": {
+          "type": "string"
+        }
+      }
+    },
+    "terramies": {
+      "organizations": {
+        "category": {
+          "type": "string"
+        }
+      },
+      "poi": {
+        "documentation": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "testeTplFormation": {
+      "events": {
+        "description": {
+          "type": "string"
+        },
+        "duration": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "gatheringDates": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "image": {
+          "type": "string"
+        },
+        "module": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "reportLink": {
+          "type": "string"
+        },
+        "trainer": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "visioDate": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "organizations": {
+        "trainingQualification": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      },
+      "person": {
+        "documentation": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "formLocality": {
+          "type": "string"
+        }
+      },
+      "projects": {
+        "certificationTraining": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "certificationsAwards": {
+          "type": "string"
+        },
+        "competence": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "documentation": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "email": {
+          "type": "string"
+        },
+        "evaluation": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "partner": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "publicCible": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "rate": {
+          "type": "string"
+        },
+        "teachingMethods": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "thematic": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "trainer": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "urlsDoc": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "tierslieuxbelgique": {
+      "organizations": {
+        "accessibiliteSection": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "accessibiliteTitle": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "anniversaryDate": {
+          "type": "string"
+        },
+        "buildingSurfaceArea": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "caracteristicSection": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "commonTransportsAccess": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "enjeux": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "formLocality": {
+          "type": "string"
+        },
+        "image": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "infoCostum": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "infoGeneral": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "landController": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "logoAndPhotosSection": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "mainPartners": {
+          "type": "string"
+        },
+        "manageModel": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "manageModelHow": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "networks": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "otherAccess": {
+          "type": "string"
+        },
+        "personnesAccessPMR": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "phone": {
+          "type": "string"
+        },
+        "photo": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "plan": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "raisonAndTagLine": {
+          "type": "string"
+        },
+        "referentEmail": {
+          "type": "string"
+        },
+        "referentPersonFirstName": {
+          "type": "string"
+        },
+        "referentPersonName": {
+          "type": "string"
+        },
+        "referentPorterName": {
+          "type": "string"
+        },
+        "referentSection": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "referentTelephone": {
+          "type": "string"
+        },
+        "siteEnvironment": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "siteSurfaceArea": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "typePlace": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "vehiculesAccess": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "tiersLieuxGenerique": {
+      "badges": {
+        "thematic": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      },
+      "events": {
+        "thematic": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      },
+      "projects": {
+        "thematic": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "tierslieuxorg1": {
+      "events": {
+        "description": {
+          "type": "string"
+        },
+        "duration": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "gatheringDates": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "image": {
+          "type": "string"
+        },
+        "module": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "reportLink": {
+          "type": "string"
+        },
+        "trainer": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "visioDate": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "organizations": {
+        "trainingQualification": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      },
+      "person": {
+        "documentation": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "formLocality": {
+          "type": "string"
+        }
+      },
+      "projects": {
+        "certificationTraining": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "certificationsAwards": {
+          "type": "string"
+        },
+        "competence": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "documentation": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "email": {
+          "type": "string"
+        },
+        "evaluation": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "partner": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "publicCible": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "rate": {
+          "type": "string"
+        },
+        "teachingMethods": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "thematic": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "trainer": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "urlsDoc": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "transiter": {
+      "events": {
+        "description": {
+          "type": "string"
+        },
+        "duration": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "gatheringDates": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "image": {
+          "type": "string"
+        },
+        "module": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "reportLink": {
+          "type": "string"
+        },
+        "trainer": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "visioDate": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "organizations": {
+        "activityPlace": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "challenge": {
+          "type": "string"
+        },
+        "contribute": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "newsletter": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "placeAndCome": {
+          "type": "string"
+        },
+        "trainingQualification": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      },
+      "person": {
+        "documentation": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "formLocality": {
+          "type": "string"
+        }
+      },
+      "projects": {
+        "beneficiaries": {
+          "type": "string"
+        },
+        "certificationTraining": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "certificationsAwards": {
+          "type": "string"
+        },
+        "competence": {
+          "type": "string"
+        },
+        "contribute": {
+          "type": "string"
+        },
+        "documentation": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "email": {
+          "type": "string"
+        },
+        "endDate": {
+          "type": "string",
+          "x-format": "date"
+        },
+        "evaluation": {
+          "type": "string"
+        },
+        "formLocality": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "inspired": {
+          "type": "string"
+        },
+        "location": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "newsletter": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "objectives": {
+          "type": "string"
+        },
+        "partner": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "practicalInformation": {
+          "type": "string"
+        },
+        "publicCible": {
+          "type": "string"
+        },
+        "rate": {
+          "type": "string"
+        },
+        "relatedPersons": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "similarLink": {
+          "type": "string"
+        },
+        "startDate": {
+          "type": "string",
+          "x-format": "date"
+        },
+        "teachingMethods": {
+          "type": "string"
+        },
+        "thematic": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "trainer": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "transitionDomain": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "urlsDoc": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "vhelioPeiTour2025": {
+      "organizations": {
+        "acronym": {
+          "type": "string"
+        },
+        "displayAuth": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "formLocality": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "infoGeneral": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "legalStatus": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "link": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "mobile": {
+          "type": "string"
+        },
+        "operatingLocation": {
+          "type": "string"
+        },
+        "otherSociaNetworks": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "sextionInfo": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "similarLink": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "wallisetfutunaPourUnNumeriqueInclusif": {
+      "organizations": {
+        "services": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "typePlace": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

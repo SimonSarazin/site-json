@@ -14,6 +14,7 @@ import {
   cheminAnnotation,
   type CostumFormSubTypeLike,
 } from "@/modules/search/lib/costumSubType";
+import { walkSections, type SectionLike } from "@/lib/sectionContainers";
 
 /**
  * GARDE D'IMPACT INTER-CONFIGS — étage 2 : le « comportement résolu par site ».
@@ -197,9 +198,13 @@ function projeter(site: string, cfg: Cfg) {
   // ── Pages PUBLIQUES : tout `props.baseParams` porté par une section de page, APRÈS expansion —
   //    c'est la surface de `/bibliotheque` et `/financements` (useSearchQuery/prefetch), que la
   //    première version ne couvrait pas (défaut trouvé en revue : seul l'admin était projeté).
+  //    Le parcours passe par `walkSections` (registre partagé avec le prefetch SSR) : une section
+  //    imbriquée dans un `tabs`/`gridLayout` interroge le backend comme les autres, et une boucle
+  //    À PLAT la rate en silence — 11 sections du parc étaient hors garde (revue MR !35).
   const pages: Record<string, unknown> = {};
   for (const page of (cfg.pages as Array<Record<string, unknown>> | undefined) ?? []) {
-    for (const section of (page.sections as Array<Record<string, unknown>> | undefined) ?? []) {
+    const sections = (page.sections as SectionLike[] | undefined) ?? [];
+    for (const section of walkSections(sections)) {
       const props = section.props as { baseParams?: Record<string, unknown> } | undefined;
       if (!props?.baseParams) continue;
       pages[cleUnique(pages, `${page.path}/${section.type}`)] = {

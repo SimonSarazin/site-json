@@ -26,6 +26,7 @@ const prefix = (p: string, descs: Record<string, string>): Record<string, string
  * searchPro et searchProStatic ; monté sous `props.list.` dans chaque section.
  */
 const LIST: Record<string, string> = {
+  layout: "Disposition : grid (défaut CÔTÉ CODE) ou timeline (frise verticale — bulle-date sur ligne pointillée, cartes alternées) ; à coupler à defaultSortBy {startDate:-1} ; ignorée en vue détaillée et en mode split.",
   columns: "Colonnes de la grille par breakpoint (sm/md/lg/xl, 1-6).",
   "card.type": "Presenter de carte (voir table SKILL) ; ⚠ défaut CÔTÉ CODE : overlay — le schéma dit default mais n'est jamais appliqué.",
   "card.variant": "Surcharge card.type pour le SEUL dispatch visuel (sous-ensemble sans overlay/news/testimonial/resource).",
@@ -369,7 +370,6 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "default.editModals": "Table de routage multi sous-types : le PREMIER élément dont la condition matche gagne → placer le catch-all (sans condition) EN DERNIER ; sinon repli editModal, puis edit-profile.",
     "default.editModals[].editModalMatch": "Absente = match universel (catch-all qui court-circuite les routes suivantes) ; même sémantique AND/includes que editModalMatch.",
     "default.editModals[].when": "Prédicat de la route. DANGER si absent sur un form costum : la route devient catch-all, le formulaire s'ouvre sur toutes les entités du type. Patron : sourceKeys contains <slug> OU reference.costum contains <slug>.",
-    "default.editModals[]._comment": "Commentaire libre (JSON n'a pas de commentaires) : justifier une condition de périmètre non évidente. Ignoré au runtime, déclaré sur editModals[] uniquement.",
     "default.layout": "Gabarit de largeur de la page profil ; défauts code : default ≈ max-w-7xl, modern 6xl, compact 3xl, full-width pleine largeur.",
     "default.hideHeader": "Masque le header global du site sur la page profil (défaut code : affiché) — profil plein écran.",
     "default.hideFooter": "Masque le footer global du site sur la page profil (défaut code : affiché).",

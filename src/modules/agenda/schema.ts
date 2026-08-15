@@ -52,8 +52,8 @@ export const AgendaSectionSchema = z.object({
     /**
      * Scope & filtres backend de `searchEventsCostum` — MÊME convention que `searchProStatic.baseParams`
      * (page /evenements). Champs repris : `sourceKey` (multi-sources ; vide → costum courant),
-     * `notSourceKey` (désactive le périmètre costum), `indexStepList` (pagination liste),
-     * `fediverse`, `filters`, `locality`. Les autres clés (ex.
+     * `notSourceKey` (désactive le périmètre costum), `costumSlug` (porte de validation),
+     * `indexStepList` (pagination liste), `fediverse`, `filters`, `locality`. Les autres clés (ex.
      * `defaultFields`/`defaultSortBy`/`defaultTypes`) sont tolérées (passthrough) mais ignorées :
      * searchEventsCostum force `searchType=["events"]` et trie par occurrence.
      */
@@ -61,6 +61,14 @@ export const AgendaSectionSchema = z.object({
       .object({
         sourceKey: z.array(z.string()).optional(),
         notSourceKey: z.boolean().optional(),
+        // Porte de VALIDATION : masque les événements en attente
+        // (`preferences.toBeValidated.<slug>` / `source.toBeValidated.<slug>`). Même sémantique que
+        // `searchProStatic.baseParams.costumSlug`. Sans elle, un événement proposé par un formulaire
+        // costum injectant `toBeValidated` s'affiche publiquement dès sa création.
+        // ⚠ `notSourceKey` la DÉSARME (pas de costum de scope → pas de slug à indexer) : les deux
+        // clés ensemble n'ont donc de sens que si l'on veut la porte, et il faut alors renoncer à
+        // `notSourceKey`. Cf. `applyValidationGate`.
+        costumSlug: z.string().optional(),
         indexStepList: z.number().int().positive().optional(),
         fediverse: z.boolean().optional(),
         filters: z.record(z.string(), z.unknown()).optional(),

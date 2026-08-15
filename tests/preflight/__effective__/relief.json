@@ -110,6 +110,35 @@
         }
       }
     },
+    "/lieux/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultFilters": {
+          "$or": {
+            "tags": {
+              "$in": [
+                "TiersLieux"
+              ]
+            }
+          }
+        },
+        "defaultSortBy": {
+          "updated": -1
+        },
+        "searchBy": [
+          "name",
+          "address.addressLocality",
+          "address.level4Name",
+          "address.level3Name",
+          "address.level2Name",
+          "address.level1Name",
+          "address.postalCode"
+        ],
+        "indexStepList": 20
+      }
+    },
     "/observatoire/data-observatory": {
       "baseParams": {
         "defaultTypes": [

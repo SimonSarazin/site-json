@@ -132,9 +132,12 @@
     "slug": "saintpaulSport1",
     "config": "config.prod.saint-paul-sport.json",
     "css": "index-equipements-sportifs",
-    "images": "equipementsSportifs974",
+    "images": "saintpaulSport1",
     "coolifyApp": "site-json-saint-paul-sport",
-    "domain": "saint-paul-sport.00.re"
+    "domain": "saint-paul-sport.00.re",
+    "env": {
+      "VITE_COSTUM_FORCE_LIVE": "true"
+    }
   },
   {
     "slug": "rezoSanteReunion",

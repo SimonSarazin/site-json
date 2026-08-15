@@ -186,6 +186,15 @@ const ObservatoryBaseParamsSchema = z
       .record(z.string(), z.union([z.literal(1), z.literal(-1)]))
       .optional(),
     notSourceKey: z.boolean().optional(),
+    // Périmètre costum EXPLICITE. OMIS dans le cas courant : le SDK auto-scope alors au
+    // porteur du site, que le serveur traduit en `$or[source.keys ∈, reference.costum ∈]`
+    // — donc la data possédée ET la data seulement référencée. À renseigner uniquement pour
+    // viser un AUTRE costum que le site courant. Sans effet si `notSourceKey` est présent.
+    sourceKey: z.array(z.string()).optional(),
+    // Arme le filtre de VALIDATION côté client (`applyValidationGate`, buildSearchPayload.ts:100-103).
+    // Sans lui, un observatoire COMPTE les fiches en attente de validation là où les sections
+    // search du même site les masquent : deux pages, deux totaux, aucun signal.
+    costumSlug: z.string().optional(),
     // Variant SDK de `searchCostum` (ex. "navigator-tl") — DOIT correspondre à
     // celui des sections search du même costum, sinon l'observatoire interroge
     // un endpoint/projection différents. Inclus dans la queryKey (isole le
