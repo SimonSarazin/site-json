@@ -73,6 +73,9 @@ describe("buildAgendaParams — porte de validation", () => {
   it("la signature de queryKey intègre costumSlug — sinon deux périmètres partagent un cache", () => {
     expect(agendaBaseSig({ costumSlug: "a" })).not.toBe(agendaBaseSig({ costumSlug: "b" }));
     expect(agendaBaseSig({ costumSlug: "a" })).not.toBe(agendaBaseSig({}));
+    // …et notSourceKey : périmètre costum vs réseau entier, deux ensembles disjoints.
+    expect(agendaBaseSig({ notSourceKey: true })).not.toBe(agendaBaseSig({}));
+    expect(agendaBaseSig({ filters: { x: 1 }, notSourceKey: true })).not.toBe(agendaBaseSig({ filters: { x: 1 } }));
     // …et reste canonique : même contenu, ordre d'insertion différent ⇒ même signature.
     expect(agendaBaseSig({ costumSlug: "a", sourceKey: ["x"] })).toBe(
       agendaBaseSig({ sourceKey: ["x"], costumSlug: "a" }),

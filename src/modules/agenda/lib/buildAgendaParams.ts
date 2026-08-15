@@ -125,7 +125,10 @@ function sortKeys(o: unknown): unknown {
 /** Signature stable de baseParams pour la queryKey (scope/filtres affectant les résultats). Canonique. */
 export function agendaBaseSig(bp?: AgendaBaseParams): string {
   if (!bp) return "";
-  // `cs` est indispensable : la porte de validation dérive de `costumSlug` et modifie les `filters`
-  // ÉMIS sans toucher à `bp.filters` — sans lui, deux périmètres distincts partageraient un cache.
-  return JSON.stringify(sortKeys({ s: bp.sourceKey ?? null, cs: bp.costumSlug ?? null, f: bp.fediverse ?? null, fl: bp.filters ?? null, l: bp.locality ?? null }));
+  // RÈGLE : toute clé de `baseParams` qui change le payload ÉMIS doit figurer ici.
+  //  · `cs` — la porte de validation dérive de `costumSlug` et modifie les `filters` émis sans
+  //    toucher à `bp.filters` ; sans lui, deux périmètres distincts partagent un cache.
+  //  · `n`  — `notSourceKey` est émis tel quel ET désarme la porte : deux agendas ne différant que
+  //    par lui interrogent des ensembles disjoints (périmètre costum vs réseau entier).
+  return JSON.stringify(sortKeys({ s: bp.sourceKey ?? null, n: bp.notSourceKey ?? null, cs: bp.costumSlug ?? null, f: bp.fediverse ?? null, fl: bp.filters ?? null, l: bp.locality ?? null }));
 }
