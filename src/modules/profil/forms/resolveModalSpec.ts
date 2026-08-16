@@ -152,6 +152,10 @@ export function specToConfig(spec: EntityModalSpec): EntityModalConfig {
       target: isEdit ? (ctx.entity ?? null) : (ctx.parent ?? null),
       buildPayload,
       costumSlug: isEdit ? undefined : resolveCostumSlug(spec.scope, ctx),
+      // Édition : le costum qui DÉFINIT ce formulaire, épinglé sur l'entité pour ouvrir ses champs
+      // à l'écriture. Pris sur le DESCRIPTEUR (et non sur `spec.scope`, qui décrit la cible de
+      // CRÉATION) : c'est le formulaire rendu qui dit de quels champs costum on parle.
+      schemaCostumSlug: isEdit ? resolveDescriptor(ctx).costumSlug : undefined,
       imageField: spec.image?.field,
       inject: isEdit
         ? undefined
