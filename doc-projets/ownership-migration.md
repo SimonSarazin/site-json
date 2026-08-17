@@ -94,9 +94,11 @@ section un dialog réutilisable + étendre l'enum d'actions du schéma resource.
 
 ## Pièges connus
 
-- **Ré-imports RES via le legacy** : BUG-L-236 (le `$set` de `reference` à l'update d'import
-  REMPLACE le sous-document → perte des références et annotations posées par la migration). Tant
-  que le fix legacy n'est pas déployé : ré-importer les datasets migrés UNIQUEMENT via le backend Node.
+- **Ré-imports RES** : BUG-L-236 (le `$set` de `reference` à l'update d'import REMPLAÇAIT le
+  sous-document → perte des références et annotations posées par la migration — des DEUX côtés,
+  le Node détruisant même sans clé nouvelle). **CORRIGÉ en miroir L+B le 2026-08-17**
+  (fusion avec l'existant, rien d'écrit sans clé nouvelle, byte-identique). Déployer le fix
+  legacy AVANT tout rafraîchissement RES d'un dataset migré.
 - **Auto-référencement récurrent** : chaque ré-import communal repousse le slug du site dans son
   propre `reference.costum` ; l'apply le nettoie (`cleanSelfReference`) mais le flux le recrée.
 - L'**export du cédant** ré-exporte les fiches migrées (il les référence) — voulu, cadrer par
