@@ -98,6 +98,11 @@
     "alreadyInterested": "Déjà intéressé·e",
     "use": "J'utilise",
     "addAction": "Ajouter une action",
+    "edit": {
+      "cta": "Modifier",
+      "title": "Modifier ce commun",
+      "successToast": "Les modifications ont été enregistrées."
+    },
     "financing": {
       "title": "Financement participatif",
       "outOf": "sur {{amount}}",
@@ -133,7 +138,14 @@
         "cancel": "Annuler"
       },
       "noFundingYet": "Aucun partenaire n'a encore contribué à ce commun.",
-      "noTasksYet": "Aucune tâche n'a encore été ajoutée à ce commun."
+      "noTasksYet": "Aucune tâche n'a encore été ajoutée à ce commun.",
+      "milestoneField": {
+        "saveFirst": "Enregistrez d'abord ce commun pour ajouter et gérer ses paliers.",
+        "history": "Historique des montants",
+        "historyEmpty": "Aucune modification de montant enregistrée.",
+        "deleteWithActionsWarning": "Le palier « {{name}} » et ses {{count}} action(s) associée(s) seront supprimés définitivement."
+      },
+      "archivedMilestones": "{{count}} palier(s) archivé(s)"
     },
     "cofinancers": {
       "unknownContributor": "Contributeur inconnu",

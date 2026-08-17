@@ -67,7 +67,7 @@ export function useCommunObjectivesController({
   });
 
   const resolvedProjectId = funding?.projectId || "";
-  const resolvedAnswerId = funding?.answerId || "";
+  const resolvedAnswerId = funding?.answerId || answerEntityId || "";
   const canManageActions = canManageObjectiveActions(resolvedProjectId);
   const isConnected = cagnottePerms.isConnected;
   const currentUserId = me?.serverData?.id ?? cagnottePerms.currentUserId;

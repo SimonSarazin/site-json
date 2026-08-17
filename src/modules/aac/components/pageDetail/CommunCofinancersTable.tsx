@@ -2,8 +2,9 @@ import type { CoFormData, CoFormAnswer } from "@/modules/coform/types";
 import type { AacResolvedConfig } from "../../types";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import { toSafeInt } from "@/modules/cagnotte/utils/dataTransform";
+import { toSafeInt, buildItemsFromRawDepenses, getEntityId } from "@/modules/cagnotte/utils/dataTransform";
 import { useCocolight } from "@/hooks/useCocolight";
+import { useCommunRawDepenses } from "@/modules/aac/hooks/useCommunRawDepenses";
 
 interface CommunCofinancersTableProps {
     formData: CoFormData;
@@ -12,16 +13,20 @@ interface CommunCofinancersTableProps {
     funding?: any;
 }
 
-export function CommunCofinancersTable({formData: _formData, aacConfig: _aacConfig, funding}: CommunCofinancersTableProps) {
+export function CommunCofinancersTable({formData: _formData, answerQuery, aacConfig: _aacConfig, funding}: CommunCofinancersTableProps) {
     useLoadNamespace("modules/aac");
     const t = useT("modules/aac");
     const { entity } = useCocolight();
     const porteurId = entity?.id;
 
-    const cofinancers: any[] = funding?.items
-        .filter((item: any) => item?.status !== "close")
-        .flatMap((item: any) => item?.allFunding ?? []) ?? [];
-        
+    const answerId = answerQuery ? getEntityId(answerQuery) : undefined;
+    const { data: depenses } = useCommunRawDepenses(answerId);
+    const items = buildItemsFromRawDepenses(depenses ?? [], funding?.items ?? []);
+
+    const cofinancers: any[] = items
+        .filter((item) => item?.status !== "close")
+        .flatMap((item) => item?.allFunding ?? []);
+
     const amountsPerCofinancer = cofinancers.reduce((acc: Record<string, { name: string, type: string, totalAmount: number }>, current: any) => {
         const financerId = current?.financerId;
         

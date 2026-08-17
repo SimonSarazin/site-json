@@ -392,6 +392,10 @@
         "completeAction": "Vous devez être connecté pour terminer une action.",
         "candidate": "Vous devez être connecté pour candidater."
       },
+      "createMilestone": {
+        "title": "Création impossible",
+        "description": "Contexte API incomplet (projet/answer)."
+      },
       "restoreImpossible": {
         "title": "Restauration impossible",
         "description": "Contexte API incomplet (projet/answer)."

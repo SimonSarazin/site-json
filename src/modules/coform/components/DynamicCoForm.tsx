@@ -17,6 +17,7 @@ import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { LocationField } from "./LocationField";
 import { UploaderField } from "./UploaderField";
+import { MilestoneListField } from "./MilestoneListField";
 import { CoFormBanner } from "./CoFormBanner";
 import { DraftRecoveryBanner } from "./DraftRecoveryBanner";
 import { ErrorSummary } from "./ErrorSummary";
@@ -598,6 +599,16 @@ export function DynamicCoForm({
 
                 case "sectionDescription":
                   return <SectionDescriptionField key={field.name} field={field} />;
+
+                case "milestoneList":
+                  return (
+                    <MilestoneListField
+                      key={field.name}
+                      field={field}
+                      answerId={answerId}
+                      readOnly={isLocked}
+                    />
+                  );
 
                 default:
                   return (

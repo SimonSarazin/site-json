@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Plus } from "lucide-react";
 import type { CoFormData, CoFormAnswer } from "@/modules/coform/types";
 import type { AacResolvedConfig } from "../../types";
@@ -12,8 +12,9 @@ import { formatCurrency } from "@/modules/cagnotte/utils/format";
 import { MilestoneManageActions } from "@/modules/cagnotte/components/sections/MilestoneManageActions";
 import { MilestoneEditDialog } from "@/modules/cagnotte/components/sections/parts/MilestoneEditDialog";
 import CreateMilestoneDialog from "@/modules/cagnotte/components/sections/CreateMilestoneDialog";
-import { toSafeInt } from "@/modules/cagnotte/utils/dataTransform";
+import { toSafeInt, buildItemsFromRawDepenses } from "@/modules/cagnotte/utils/dataTransform";
 import { useCommunObjectivesController } from "@/modules/aac/hooks/useCommunObjectivesController";
+import { useCommunRawDepenses } from "@/modules/aac/hooks/useCommunRawDepenses";
 import type { MilestoneCardPermissions } from "@/modules/aac/lib/objectiveHelpers";
 
 interface CommunFinancingSectionProps {
@@ -194,6 +195,22 @@ export function CommunFinancingSection({ answerQuery, funding }: CommunFinancing
     useLoadNamespace("modules/aac");
     const t = useT("modules/aac");
     const ctrl = useCommunObjectivesController({ answerQuery, funding });
+
+    const { data: depenses, refetch: refetchDepenses } = useCommunRawDepenses(ctrl.resolvedAnswerId);
+
+    const prevLoadingIdsRef = useRef(ctrl.loadingIds);
+    useEffect(() => {
+        const prev = prevLoadingIdsRef.current;
+        const justSettled =
+            (prev.closingItemId && !ctrl.loadingIds.closingItemId) ||
+            (prev.deletingItemId && !ctrl.loadingIds.deletingItemId) ||
+            (prev.restoringItemId && !ctrl.loadingIds.restoringItemId);
+        prevLoadingIdsRef.current = ctrl.loadingIds;
+        if (justSettled) refetchDepenses();
+    }, [ctrl.loadingIds, refetchDepenses]);
+
+    const items = buildItemsFromRawDepenses(depenses ?? [], funding?.items ?? []);
+
     return (
         <div className="grid gap-4">
             <ConfirmDialog
@@ -223,7 +240,7 @@ export function CommunFinancingSection({ answerQuery, funding }: CommunFinancing
                     </Button>
                 </div>
             ) : null}
-            {funding?.items?.map((o: any, i: number) => (
+            {items.map((o: any, i: number) => (
                 <FinancingMilestoneCard
                     key={i}
                     index={i}
@@ -248,7 +265,10 @@ export function CommunFinancingSection({ answerQuery, funding }: CommunFinancing
                     answerDepenseIndex={ctrl.selectedMilestone.answerDepenseIndex}
                     mutation={ctrl.activeEditMilestoneMutation as unknown as import("@tanstack/react-query").UseMutationResult<void, Error, import("@/modules/cagnotte/actions/mutations/milestone").EditMilestoneParams>}
                     apiErrorFallbackKey="ActionsSection.errors.milestoneEditFailed"
-                    onSuccess={ctrl.handleMilestoneEditSuccess}
+                    onSuccess={async () => {
+                        await ctrl.handleMilestoneEditSuccess();
+                        await refetchDepenses();
+                    }}
                 />
             ) : null}
             <CreateMilestoneDialog
@@ -265,6 +285,7 @@ export function CommunFinancingSection({ answerQuery, funding }: CommunFinancing
                 }}
                 onRefetch={async () => {
                     await ctrl.refetchFundingEnvelope();
+                    await refetchDepenses();
                 }}
             />
         </div>

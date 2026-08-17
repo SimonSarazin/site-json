@@ -125,7 +125,13 @@ export function MilestoneEditDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={form.handleSubmit(onValid)} className="contents">
+        <form
+          onSubmit={(e) => {
+            e.stopPropagation();
+            form.handleSubmit(onValid)(e);
+          }}
+          className="contents"
+        >
           <div className="space-y-4 px-6 py-5">
             <div className="space-y-2">
               <Label htmlFor="edit-milestone-name">

@@ -1,30 +1,29 @@
-import { ElementType, ReactNode, useEffect, useMemo, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router";
-import { AlertCircle, Home, Sparkles, ListChecks, Handshake, Layers, UsersRound, Scale, HandHeart, FileText, Users, UserCheck, ImageIcon } from "lucide-react";
+import { AlertCircle, Home, Sparkles, ListChecks, Handshake, Layers, UsersRound, Scale, HandHeart, FileText, Users, UserCheck, Pencil } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import type { CoFormAnswer, CoFormData } from "@/modules/coform/types";
+import { CoFormModal } from "@/modules/coform/components/CoFormModal";
 import { useAacConfig } from "../hooks/useAacConfig";
+import { useAacPermissions } from "../hooks/useAacPermissions";
 
 import { CommunHero } from "../components/pageDetail/CommunHero.tsx";
 import { CommunFinancingCard } from "../components/pageDetail/CommunFinancingCard.tsx";
-import { CommunTocNav } from "../components/pageDetail/CommunTocNav.tsx";
+import { CommunTocNav, type TocSection } from "../components/pageDetail/CommunTocNav.tsx";
 import { CommunFinancingSection } from "../components/pageDetail/CommunFinancingSection.tsx";
 import { CommunActionsSection } from "../components/pageDetail/CommunActionsSection.tsx";
 import { CommunCofinancersTable } from "../components/pageDetail/CommunCofinancersTable.tsx";
 import { CommunProse } from "../components/pageDetail/CommunProse.tsx";
-import { GallerySection } from "../components/pageDetail/CommunContentSections.tsx";
-import { useFundingEnvelope } from "@/modules/cagnotte/hooks/useFundingEnvelope.ts";
-import { useSite } from "@/hooks/useSite.tsx";
-import { useCagnotteType } from "@/modules/cagnotte/hooks/useCagnotteType.ts";
-import { useOrganizationProjectsWithAnswers } from "@/modules/cagnotte/hooks/useOrganizationProjectsWithAnswers.ts";
-import { useCagnotteAdapter } from "@/modules/cagnotte/hooks/useCagnotteAdapter";
+import { useAacFundingResource } from "../hooks/useAacFundingResource";
 import { canManageObjectiveActions } from "@/modules/aac/lib/objectiveHelpers";
 
 export interface Task {
@@ -39,11 +38,15 @@ export interface Objective {
     tasks: Task[];
 }
 
-export interface TocSection {
-    id: string;
-    label: string;
-    icon: ElementType;
-}
+const AAP_STEP1_FIELD_KEYS = {
+    modeleEconomique: "aapStep1lpvinn7ld70wbk7w339",
+    gouvernance: "aapStep1lpvioouzejcnjy7ffw",
+    cadreJuridique: "aapStep1lpvip7f9pa6et762ysa",
+    partenariats: "aapStep1lpvipvzp13vf2jypqgxq",
+    modalitesContribution: "aapStep1lqb428ajrbhwdbmg6qi",
+    casUsages: "aapStep1lusoklfzokkn4svl1ei",
+    equipeCommunaute: "aapStep1m0w49vpl5jm001xwvsv",
+} as const;
 
 const STATIC_SECTIONS: TocSection[] = [
     { id: "cofinanceurs", label: "Cofinanceurs", icon: Handshake },
@@ -54,7 +57,6 @@ const STATIC_SECTIONS: TocSection[] = [
     { id: "contribution", label: "Contribution", icon: FileText },
     { id: "usages", label: "Cas d'usages", icon: Users },
     { id: "equipe", label: "Équipe & communauté", icon: UserCheck },
-    { id: "galerie", label: "Galerie", icon: ImageIcon },
 ];
 
 export default function AacCommunDetailPage() {
@@ -62,32 +64,9 @@ export default function AacCommunDetailPage() {
     const t = useT("modules/aac");
     const { answerId } = useParams();
     const { api, loading, entity } = useCocolight();
+    const perms = useAacPermissions(entity);
 
-    const { data: fundingData } = useFundingEnvelope(answerId);
-    const selectedProjectContextId = String(answerId || '').trim();
-
-    // Configuration et transformation via useCagnotteAdapter
-    const siteConfig = useSite();
-
-    const { config: cagnotteConfig } = useCagnotteType({
-        siteConfig: siteConfig?.config?.cagnotteModuleConfig?.defaultType,
-    });
-
-    const {
-        projects: allProjects,
-    } = useOrganizationProjectsWithAnswers({
-        entity: entity || null,
-        enabled: !!entity,
-    });
-
-    const { resources, savedSelectedResource } = useCagnotteAdapter(
-        fundingData,
-        allProjects,
-        cagnotteConfig,
-        selectedProjectContextId
-    );
-
-    const targetResource = savedSelectedResource || resources[0];
+    const { targetResource } = useAacFundingResource(answerId);
 
     // Le bloc "Objectifs" n'existe que côté projet — une proposition pas
     // encore promue en projet n'a pas d'actions.
@@ -101,6 +80,8 @@ export default function AacCommunDetailPage() {
 
     // État de la section active
     const [activeSection, setActiveSection] = useState("besoins-financiers");
+    // Édition de la réponse CoForm à l'intérieur de la page (pas de navigation).
+    const [isEditOpen, setIsEditOpen] = useState(false);
     const isReady = !loading && !!api;
 
     // Requête CoForm
@@ -130,7 +111,13 @@ export default function AacCommunDetailPage() {
     });
 
     // Requête Configuration Aac
-    const { config } = useAacConfig(formId ?? null);
+    const { config, error: configError } = useAacConfig(formId ?? null);
+
+    useEffect(() => {
+        if (configError) {
+            console.error("[AacCommunDetailPage] échec de chargement de la configuration AAC", configError);
+        }
+    }, [configError]);
 
     const pageTitle = useMemo(() => {
         return formQuery.data?.name || String(t("page.communDetail"));
@@ -171,23 +158,46 @@ export default function AacCommunDetailPage() {
     }, [isDataLoaded, SECTIONS]);
 
     if (!answerId) return <PageShell><ErrorCard title={String(t("page.communDetail"))} description={String(t("page.missingAnswer"))} /></PageShell>;
-    if (answerQuery.isLoading || formQuery.isLoading) return <PageShell>loading</PageShell>;
+    if (answerQuery.isLoading || formQuery.isLoading) return <PageShell><LoadingCard label={String(t("page.loading"))} /></PageShell>;
     if (answerQuery.error || formQuery.error) return <PageShell><ErrorCard title={String(t("page.error"))} description="Une erreur est survenue." /></PageShell>;
     if (!answerQuery.data || !formQuery.data) return <PageShell><ErrorCard title={String(t("page.notFound"))} description={String(t("page.notFoundMessage"))} /></PageShell>;
 
     const answer = answerQuery.data;
     const formData = formQuery.data;
 
-    const modeleEco = [String(answer?.answers?.aapStep1?.aapStep1lpvinn7ld70wbk7w339 ?? "")];
-    const gouvernance = [String(answer?.answers?.aapStep1?.aapStep1lpvioouzejcnjy7ffw ?? "")];
-    const juridique = [String(answer?.answers?.aapStep1?.aapStep1lpvip7f9pa6et762ysa ?? "")];
-    const partenariats = [String(answer?.answers?.aapStep1?.aapStep1lpvipvzp13vf2jypqgxq ?? "")];
-    const modalites = [String(answer?.answers?.aapStep1?.aapStep1lqb428ajrbhwdbmg6qi ?? "")];
-    const usages = [String(answer?.answers?.aapStep1?.aapStep1lusoklfzokkn4svl1ei ?? "")];
-    const equipe = [String(answer?.answers?.aapStep1?.aapStep1m0w49vpl5jm001xwvsv ?? "")];
+    // Auteur OU admin peut modifier le commun
+    const authorId = typeof answer.user === "string" ? answer.user : answer.user?._id;
+    const canEditThisCommun = perms.canEditCommun({ authorId });
+
+    const handleEditSubmit = async () => {
+        await answerQuery.refetch();
+        toast.success(String(t("detail.edit.successToast")));
+    };
+
+    const modeleEco = [String(answer?.answers?.aapStep1?.[AAP_STEP1_FIELD_KEYS.modeleEconomique] ?? "")];
+    const gouvernance = [String(answer?.answers?.aapStep1?.[AAP_STEP1_FIELD_KEYS.gouvernance] ?? "")];
+    const juridique = [String(answer?.answers?.aapStep1?.[AAP_STEP1_FIELD_KEYS.cadreJuridique] ?? "")];
+    const partenariats = [String(answer?.answers?.aapStep1?.[AAP_STEP1_FIELD_KEYS.partenariats] ?? "")];
+    const modalites = [String(answer?.answers?.aapStep1?.[AAP_STEP1_FIELD_KEYS.modalitesContribution] ?? "")];
+    const usages = [String(answer?.answers?.aapStep1?.[AAP_STEP1_FIELD_KEYS.casUsages] ?? "")];
+    const equipe = [String(answer?.answers?.aapStep1?.[AAP_STEP1_FIELD_KEYS.equipeCommunaute] ?? "")];
     return (
         <PageShell>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-24">
+                {canEditThisCommun && formId && (
+                    <div className="flex justify-start mb-4">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2"
+                            onClick={() => setIsEditOpen(true)}
+                        >
+                            <Pencil className="size-3.5" />
+                            {String(t("detail.edit.cta"))}
+                        </Button>
+                    </div>
+                )}
+
                 {/* Top Banner */}
                 <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 mb-14">
                     <CommunHero 
@@ -282,18 +292,25 @@ export default function AacCommunDetailPage() {
 
                         {/* Équipe & communauté */}
                         <Section id="equipe" title="Équipe & communauté">
-                            <CommunProse 
+                            <CommunProse
                                 paragraphs={equipe}
                             />
-                        </Section>
-
-                        {/* Galerie */}
-                        <Section id="galerie" title="Galerie du projet">
-                            <GallerySection />
                         </Section>
                     </div>
                 </div>
             </div>
+
+            {canEditThisCommun && formId && (
+                <CoFormModal
+                    formId={formId}
+                    open={isEditOpen}
+                    onOpenChange={setIsEditOpen}
+                    title={String(t("detail.edit.title"))}
+                    answerId={answerId}
+                    defaultValues={answer.answers}
+                    onAfterSubmit={handleEditSubmit}
+                />
+            )}
         </PageShell>
     );
 }
@@ -306,6 +323,17 @@ function PageShell({ children }: { children: ReactNode }) {
                 <div className="container mx-auto">{children}</div>
             </main>
             <SiteFooter />
+        </div>
+    );
+}
+
+function LoadingCard({ label }: { label: string }) {
+    return (
+        <div className="mx-auto flex min-h-[50vh] max-w-md flex-col items-center justify-center text-center">
+            <div className="mb-6 rounded-full bg-muted/50 p-6 ring-1 ring-border shadow-sm">
+                <Spinner className="h-12 w-12 text-primary" label={label} />
+            </div>
+            <p className="text-sm leading-6 text-muted-foreground" aria-hidden="true">{label}</p>
         </div>
     );
 }

@@ -1,15 +1,7 @@
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 
-export function ContentCard({ title, body, small }: { title: string; body: string; small?: boolean }) {
-    return (
-        <div className="p-5 rounded-lg border border-border bg-surface/60 hover:bg-surface transition-colors">
-            <h4 className={`font-display font-bold mb-2 ${small ? "text-base" : "text-lg"}`}>{title}</h4>
-            <p className="text-sm text-muted-foreground leading-relaxed">{body}</p>
-        </div>
-    );
-}
-
+//En attente de fix gallerie d'image
 export function GallerySection() {
     useLoadNamespace("modules/aac");
     const t = useT("modules/aac");

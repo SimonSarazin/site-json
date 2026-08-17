@@ -392,6 +392,10 @@
         "completeAction": "You must be logged in to complete an action.",
         "candidate": "You must be logged in to apply."
       },
+      "createMilestone": {
+        "title": "Creation impossible",
+        "description": "Incomplete API context (project/answer)."
+      },
       "restoreImpossible": {
         "title": "Restoration impossible",
         "description": "Incomplete API context (project/answer)."

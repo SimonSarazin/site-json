@@ -98,6 +98,11 @@
     "alreadyInterested": "Already interested",
     "use": "I use it",
     "addAction": "Add an action",
+    "edit": {
+      "cta": "Edit",
+      "title": "Edit this commun",
+      "successToast": "Your changes have been saved."
+    },
     "financing": {
       "title": "Community funding",
       "outOf": "of {{amount}}",
@@ -133,7 +138,14 @@
         "cancel": "Cancel"
       },
       "noFundingYet": "No partner has contributed to this commun yet.",
-      "noTasksYet": "No task has been added to this commun yet."
+      "noTasksYet": "No task has been added to this commun yet.",
+      "archivedMilestones": "{{count}} archived milestone(s)",
+      "milestoneField": {
+        "saveFirst": "Save this commun first to add and manage its milestones.",
+        "history": "Amount history",
+        "historyEmpty": "No amount change recorded.",
+        "deleteWithActionsWarning": "The milestone \"{{name}}\" and its {{count}} associated action(s) will be permanently deleted."
+      }
     },
     "cofinancers": {
       "unknownContributor": "Unknown contributor",

@@ -21,7 +21,7 @@ import { toSafeInt } from "@/modules/cagnotte/utils/dataTransform";
 import { useCommunObjectivesController } from "@/modules/aac/hooks/useCommunObjectivesController";
 import {
   normalizeActionForEdit,
-  resolveActionEntityId,
+  resolveAacActionEntityId,
   type MilestoneCardPermissions,
 } from "@/modules/aac/lib/objectiveHelpers";
 
@@ -400,7 +400,7 @@ export function CommunActionsSection({ answerQuery, funding }: CommunActionsSect
                 actionCtx={ctrl.actionCtx}
                 editingAction={{
                     milestoneId: ctrl.selectedMilestoneId,
-                    actionEntityId: resolveActionEntityId(ctrl.selectedAction as { id?: string; _id?: string; entityId?: string } | null | undefined),
+                    actionEntityId: resolveAacActionEntityId(ctrl.selectedAction as { id?: string; _id?: string; entityId?: string } | null | undefined),
                     action: {
                         name: ctrl.selectedAction?.name ?? "",
                         credits: Number(ctrl.selectedAction?.credits ?? 0),

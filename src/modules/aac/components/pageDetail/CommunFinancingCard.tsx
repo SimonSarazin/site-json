@@ -8,14 +8,14 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { ClientOnly } from "@/components/layout/ClientOnly";
 import { Progress } from "@/components/ui/progress";
 import CagnotteDialog from "@/modules/cagnotte/components/CagnotteDialog";
-import { toSafeInt } from "@/modules/cagnotte/utils/dataTransform";
+import { toSafeInt, buildItemsFromRawDepenses, getEntityId } from "@/modules/cagnotte/utils/dataTransform";
 import { formatCurrency } from "@/modules/cagnotte/utils/format";
 import {
     useCommunReactions,
     getCommunReactionState,
     type CommunReactionType,
 } from "@/modules/aac/hooks/useCommunReactions";
-import { getEntityId } from "@/modules/cagnotte/utils/dataTransform";
+import { useCommunRawDepenses } from "@/modules/aac/hooks/useCommunRawDepenses";
 
 interface StatProps {
     value: string | number;
@@ -217,14 +217,16 @@ export function CommunFinancingCard({
         executeToggle("interesse", { id: orgId, name: org?.name || "" }, !isAlreadyInterested);
     };
 
-    const resourceFinancedAmount = toSafeInt(funding?.resourceFinancedAmount);
-    const resourceTotalAmount = toSafeInt(funding?.resourceTotalAmount);
+    const { data: depenses } = useCommunRawDepenses(answerId);
+    const items = buildItemsFromRawDepenses(depenses ?? [], funding?.items ?? []);
+    const openItems = items.filter((item) => item?.status !== "close");
+
+    const resourceFinancedAmount = toSafeInt(funding?.resourceFinancedAmount) || openItems.reduce((sum, item) => sum + toSafeInt(item.currentFunding), 0);
+    const resourceTotalAmount = toSafeInt(funding?.resourceTotalAmount) || openItems.reduce((sum, item) => sum + toSafeInt(item.price), 0);
     const resourceRemainingAmount = Math.max(resourceTotalAmount - resourceFinancedAmount, 0);
     const resourceAmountPerc = resourceTotalAmount > 0 ? Math.min(toSafeInt((resourceFinancedAmount / resourceTotalAmount) * 100), 100) : 0;
 
-    const cofinancers = funding?.items
-        .filter((item: any) => item?.status !== "close")
-        .flatMap((item: any) => item?.allFunding ?? []) ?? [];
+    const cofinancers = openItems.flatMap((item) => item?.allFunding ?? []);
     const cofinancerCount = new Set(cofinancers.map((cont: any) => cont?.financerId)).size;
 
     return (

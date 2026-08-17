@@ -10,7 +10,7 @@ import type {
 } from "@/modules/cagnotte/types";
 import { getEntityId } from "@/modules/cagnotte/utils/dataTransform";
 
-export function resolveActionEntityId(actionLike: { id?: string; _id?: string; entityId?: string } | null | undefined): string {
+export function resolveAacActionEntityId(actionLike: { id?: string; _id?: string; entityId?: string } | null | undefined): string {
   return String(actionLike?.id ?? actionLike?._id ?? actionLike?.entityId ?? "").trim();
 }
 
@@ -57,7 +57,7 @@ export function normalizeActionForEdit(actionLike: Record<string, unknown>): Pro
   );
 
   return {
-    id: resolveActionEntityId(actionLike as { id?: string; _id?: string; entityId?: string }),
+    id: resolveAacActionEntityId(actionLike as { id?: string; _id?: string; entityId?: string }),
     name: String(actionLike.name ?? ""),
     credits: Number(actionLike.credits ?? 0),
     status: (String(actionLike.status ?? "todo") as ProjectAction["status"]),

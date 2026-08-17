@@ -26,6 +26,7 @@ import { AnswerActivityDialog } from "./AnswerActivityDialog";
 import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { UploaderField } from "./UploaderField";
+import { MilestoneListField } from "./MilestoneListField";
 import { CoFormBanner } from "./CoFormBanner";
 import { useConditionalFields } from "../hooks/useConditionalFields";
 import { useUnsavedChangesWarning } from "../hooks/useUnsavedChangesWarning";
@@ -597,6 +598,16 @@ function MultiStepCoFormContent({
 
                 case "sectionDescription":
                   return <SectionDescriptionField key={field.name} field={field} />;
+
+                case "milestoneList":
+                  return (
+                    <MilestoneListField
+                      key={field.name}
+                      field={field}
+                      answerId={coform.answerId}
+                      readOnly={isLocked}
+                    />
+                  );
 
                 default:
                   return (

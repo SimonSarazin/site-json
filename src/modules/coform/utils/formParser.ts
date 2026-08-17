@@ -179,6 +179,10 @@ export function mapCoFormTypeToComponentType(
     "tpls.forms.emailUser": "text",
     "tpls.forms.cplx.simpleTable": "simpleTable",
     "tpls.forms.uploader": "uploader",
+    // Liste de paliers/dépenses AAC (`answers.aapStep1.depense[]`) — géré
+    // en synchronisation serveur immédiate, pas de
+    // schéma Zod structurant (le composant ne dépend pas de la valeur RHF).
+    "tpls.forms.ocecoform.newDepenseList": "milestoneList",
     sectionTitle: "sectionTitle",
     "tpls.forms.sectionTitle": "sectionTitle",
     // Alias AAP legacy : `titleSeparator` = séparateur/titre de section.
@@ -959,6 +963,12 @@ export function generateZodSchema(
           break;
         }
 
+        case "milestoneList":
+          // Persisté immédiatement côté serveur par le composant (mutations
+          // cagnotte), pas via la soumission du form — schéma permissif.
+          schemaShape[field.name] = z.array(z.any()).optional();
+          break;
+
         case "uploader": {
           const uploaderSchema = z.union([
             z.array(z.any()),
@@ -1050,6 +1060,7 @@ export function generateDefaultValues(subFormsFields: SubFormFields[]): Record<s
         }
 
         case "uploader":
+        case "milestoneList":
           defaultValues[field.name] = [];
           break;
 

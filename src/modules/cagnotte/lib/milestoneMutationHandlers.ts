@@ -177,6 +177,26 @@ export async function editMilestoneWithSync(params: EditMilestoneParams): Promis
     }),
   ];
 
+  // Log des modifications de montant (`depense.historique[]`) — source
+  // observatoire, cf. `AacLog`. Comparé à la valeur AVANT écriture ; pas de
+  // log si le montant est inchangé (seuls poste/description ont changé).
+  const previousDepenseList = asRecord(asRecord(answer.serverData).answers).aapStep1;
+  const previousDepenses = Array.isArray(asRecord(previousDepenseList).depense)
+    ? (asRecord(previousDepenseList).depense as unknown[])
+    : [];
+  const previousPrice = Number(asRecord(previousDepenses[answerDepenseIndex]).price ?? 0);
+  const nextPrice = Number(params.targetAmount ?? 0);
+
+  if (previousPrice !== nextPrice) {
+    writes.push(
+      answer.updateField(
+        `answers.aapStep1.depense.${answerDepenseIndex}.historique`,
+        { champ: "price", avant: previousPrice, apres: nextPrice, quand: new Date().toISOString() },
+        { arrayForm: true },
+      ),
+    );
+  }
+
   if (hasProject) {
     writes.push(
       updateProjectMilestoneFields({

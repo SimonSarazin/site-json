@@ -73,7 +73,7 @@ export function useActionGuards(ctx: ActionGuardContext): ActionGuards {
     return false;
   };
 
-  const requireApiAacContext: ActionGuards["requireApiContext"] = (toastNamespace) => {
+  const requireApiAacContext: ActionGuards["requireApiAacContext"] = (toastNamespace) => {
     if (ctx.apiClient && ctx.answerId) return true;
     showErrorToast(
       new Error(String(t(`ActionsSection.toasts.${toastNamespace}.description`))),

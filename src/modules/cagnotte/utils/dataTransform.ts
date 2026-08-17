@@ -8,6 +8,7 @@
  *
  * Toutes les fonctions sont pures (aucun side-effect) — adaptées à `utils/` plutôt qu'à `lib/`.
  */
+import type { CagnotteFundableItem } from "../types";
 
 export type UnknownRecord = Record<string, unknown>;
 
@@ -166,4 +167,78 @@ export function readEntityPreferences(
   if (!root || typeof root !== "object") return undefined;
   const prefs = (root as UnknownRecord).preferences;
   return prefs && typeof prefs === "object" ? (prefs as UnknownRecord) : undefined;
+}
+
+/**
+ * Coerce une date brute (Date, timestamp, string ISO) en timestamp ms. Repli
+ * sur `Date.now()` si la valeur est absente/illisible — seul l'ordre relatif
+ * des transactions compte à l'affichage, pas leur précision temporelle exacte
+ * dans ce chemin de repli.
+ */
+function toTimestampOrNow(value: unknown): number {
+  if (value instanceof Date) return value.getTime();
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string") {
+    const parsed = Date.parse(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return Date.now();
+}
+
+/**
+ * Reconstruit `currentFunding`/`allFunding` à partir des financeurs BRUTS
+ * (`depense.financer[]`) — utilisé par `buildItemsFromRawDepenses` quand
+ * aucune entrée `targetResource.items` ne peut enrichir la dépense
+ */
+function buildFallbackFundingFromRawFinancers(rawFinancer: unknown): {
+  currentFunding: number;
+  allFunding: CagnotteFundableItem["allFunding"];
+} {
+  const financers = toArray<unknown>(rawFinancer).map(asRecord);
+  const allFunding = financers.map((f, index) => ({
+    id: toString(f.id) || `financer-${index}`,
+    financerName: toString(f.name) || toString(f.financerName) || "",
+    financerId: toString(f.id) || toString(f.financerId) || undefined,
+    financerType: toString(f.type) || toString(f.financerType) || undefined,
+    amount: toNumber(f.amount),
+    date: toTimestampOrNow(f.date),
+    paymentStatus: "paid" as const,
+    transactionId: toString(f.transactionId) || toString(f.id) || `TX-${index}`,
+    fundingType: toString(f.fundingType) || undefined,
+    fundingIndex: index,
+  }));
+  const currentFunding = financers.reduce((sum, f) => sum + toNumber(f.amount), 0);
+  return { currentFunding, allFunding };
+}
+
+export function buildItemsFromRawDepenses(
+  rawDepenses: UnknownRecord[],
+  enrichedItems: CagnotteFundableItem[],
+): CagnotteFundableItem[] {
+  return rawDepenses.map((d, index) => {
+    const milestoneId = toString(d.milestone);
+    const enriched = enrichedItems.find(
+      (it) => it.depenseIndex === index || (milestoneId !== "" && it.milestoneId === milestoneId),
+    );
+    if (enriched) return enriched;
+
+    const { currentFunding, allFunding } = buildFallbackFundingFromRawFinancers(d.financer);
+
+    return {
+      fromType: "depense",
+      itemId: String(index),
+      milestoneId,
+      depenseIndex: index,
+      name: toString(d.poste),
+      description: "",
+      price: toSafeInt(d.priceInt ?? d.price),
+      status: d.include !== false ? "open" : "close",
+      actions: [],
+      funding: [],
+      currentFunding,
+      unpaidFunding: 0,
+      userPledge: 0,
+      allFunding,
+    };
+  });
 }
