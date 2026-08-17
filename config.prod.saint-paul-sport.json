@@ -6945,6 +6945,37 @@
             "type": "reference"
           }
         ]
+      },
+      {
+        "id": "migration",
+        "label": {
+          "fr": "Migration",
+          "en": "Migration"
+        },
+        "icon": "arrow-left-right",
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "ownershipMigration",
+            "access": "siteAdmin",
+            "props": {
+              "from": "equipementsSportifs974",
+              "collections": ["poi"],
+              "selectors": [
+                {
+                  "field": "address.codeInsee",
+                  "value": "97415",
+                  "label": {
+                    "fr": "Fiches de la commune de Saint-Paul (Insee 97415)",
+                    "en": "Saint-Paul municipal records (Insee 97415)"
+                  }
+                }
+              ],
+              "subType": "auto",
+              "keepReference": true
+            }
+          }
+        ]
       }
     ]
   }

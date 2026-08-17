@@ -2921,6 +2921,7 @@
         "inject": {
           "extraFields": {
             "type": "NGO",
+            "role": "admin",
             "preferences": {
               "isOpenData": true,
               "isOpenEdition": true
