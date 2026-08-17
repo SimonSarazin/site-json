@@ -132,9 +132,9 @@
       },
       {
         "label": {
-          "fr": "Appel à Communs"
+          "fr": "Les communs"
         },
-        "path": "/aac"
+        "path": "/aac/communs"
       }
     ],
     "utilities": {
@@ -147,17 +147,111 @@
     {
       "path": "/",
       "title": {
-        "fr": "Appel à Communs — Fédération des CAE"
+        "fr": "Appel à Communs"
       },
-      "layout": "fullwidth",
       "sections": [
         {
-          "type": "html",
+          "type": "hero",
           "id": "intro",
           "props": {
-            "html": "<div class=\"max-w-5xl mx-auto px-6 pt-16 pb-8 text-center animate-in fade-in slide-in-from-bottom-6 duration-1000\"><img src=\"images/federationDesCae/logo.png\" alt=\"les SCOP — Fédération des coopératives d'activité et d'emploi\" class=\"mx-auto h-24 mb-8\"><h1 class=\"text-4xl md:text-5xl font-bold mb-4\">Appel à Communs</h1><p class=\"text-lg text-muted-foreground max-w-2xl mx-auto\">La Fédération des coopératives d'activité et d'emploi recueille, présente, finance et suit les <strong class=\"text-primary\">communs</strong> de son réseau.</p></div>"
+            "headline": {
+              "fr": "Soutenir les communs des CAEs et favoriser la mutualisation"
+            },
+            "subhead": {
+              "fr": "La Fédération des CAE aide à la mutualisation autour des ressources et communs utiles aux CAEs : identifier les besoins et les solutions utiles aux coopératives, et favoriser l'investissement collectif dans les communs qui y répondent."
+            },
+            "align": "center",
+            "cta": [
+              {
+                "label": {
+                  "fr": "Découvrir les communs"
+                },
+                "href": "/aac/communs",
+                "variant": "default"
+              }
+            ]
           }
         },
+        {
+          "type": "aac-highlight",
+          "id": "contribuer",
+          "props": {
+            "title": {
+              "fr": "Contributeurs aux communs"
+            },
+            "description": {
+              "fr": "Vous cherchez une ressource ouverte et partagée pour répondre à vos besoins ? Vous avez envie de contribuer aux communs des CAEs afin de mutualiser les efforts ?"
+            },
+            "tone": "primary",
+            "cta": {
+              "label": {
+                "fr": "Contribuez aux communs"
+              },
+              "href": "/aac/communs"
+            },
+            "count": {
+              "source": "communs",
+              "label": {
+                "fr": "Communs déposés"
+              }
+            }
+          }
+        },
+        {
+          "type": "aac-directory",
+          "id": "apercu",
+          "props": {
+            "title": {
+              "fr": "Découvrez les communs"
+            },
+            "variant": "preview",
+            "columns": 3,
+            "pageSize": 6,
+            "showDepositButton": false,
+            "moreLink": {
+              "href": "/aac/communs",
+              "label": {
+                "fr": "Voir tous les communs"
+              }
+            },
+            "className": "max-w-7xl mx-auto px-6"
+          }
+        },
+        {
+          "type": "aac-highlight",
+          "id": "deposer",
+          "props": {
+            "title": {
+              "fr": "Vous portez un commun ?"
+            },
+            "description": {
+              "fr": "Décrivez votre commun, ses cas d'usage, sa communauté et ses besoins de financement. Il rejoindra l'annuaire et sera soumis aux CAEs du réseau."
+            },
+            "tone": "muted",
+            "cta": {
+              "label": {
+                "fr": "Déposer un commun"
+              },
+              "href": "/aac/communs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/aac/communs",
+      "title": {
+        "fr": "Les communs identifiés"
+      },
+      "seo": {
+        "title": {
+          "fr": "Les communs identifiés — Fédération des CAE"
+        },
+        "description": {
+          "fr": "L'annuaire des communs de la Fédération des coopératives d'activité et d'emploi : recherche, filtres par besoin, tag et maturité."
+        }
+      },
+      "sections": [
         {
           "type": "aac-directory",
           "id": "aac",
@@ -167,7 +261,8 @@
             },
             "columns": 3,
             "pageSize": 12,
-            "className": "max-w-7xl mx-auto px-6 pb-20"
+            "className": "max-w-7xl mx-auto px-6 pb-20",
+            "variant": "full"
           }
         }
       ]

@@ -51,6 +51,11 @@
       "label": "Search a commons by name",
       "placeholder": "Search by name"
     },
+    "deposit": {
+      "cta": "Submit a common",
+      "modalTitle": "Submit a common",
+      "closed": "This call for commons is closed: submissions are no longer accepted."
+    },
     "filters": {
       "all": "All",
       "title": "Filters",
@@ -81,7 +86,8 @@
       "created_desc": "Creation date (descending)",
       "updated_asc": "Update date (ascending)",
       "updated_desc": "Update date (descending)"
-    }
+    },
+    "more": "See all commons"
   },
   "detail": {
     "noname": "(Unnamed)",
@@ -179,5 +185,8 @@
     "reactionFailed": {
       "title": "Unable to save your reaction"
     }
+  },
+  "highlight": {
+    "communs": "Commons submitted"
   }
 }

@@ -58,7 +58,8 @@
         "jumpTo": "Aller au champ",
         "serverError": "Erreur lors de la soumission",
         "toast": "Le formulaire comporte des erreurs"
-      }
+      },
+      "unsupportedFieldPlaceholder": "Ce champ n'est pas encore disponible ici — il reste renseignable depuis l'ancienne interface."
     },
     "banner": {
       "alt": "Bannière du formulaire"

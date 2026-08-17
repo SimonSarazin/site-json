@@ -27,6 +27,7 @@ import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { UploaderField } from "./UploaderField";
 import { MilestoneListField } from "./MilestoneListField";
+import { UnsupportedField } from "./UnsupportedField";
 import { CoFormBanner } from "./CoFormBanner";
 import { useConditionalFields } from "../hooks/useConditionalFields";
 import { useUnsavedChangesWarning } from "../hooks/useUnsavedChangesWarning";
@@ -78,6 +79,11 @@ interface MultiStepCoFormProps {
    * ouvre la modale AnswerActivityDialog avec l'historique des modifs.
    */
   existingAnswerMeta?: ExistingAnswerMeta | null;
+  /**
+   * Comment rendre un champ dont le type n'a pas de composant. Défaut :
+   * `"error"`. Cf. `UnsupportedField`.
+   */
+  unknownFieldVariant?: "error" | "placeholder";
 }
 
 /**
@@ -107,6 +113,7 @@ export function MultiStepCoForm({
   baseUpdatedAt,
   enableDraft = true,
   existingAnswerMeta,
+  unknownFieldVariant = "error",
 }: MultiStepCoFormProps) {
   return (
     <CoFormProvider
@@ -133,6 +140,7 @@ export function MultiStepCoForm({
         restrictedFields={restrictedFields}
         className={className}
         existingAnswerMeta={existingAnswerMeta}
+        unknownFieldVariant={unknownFieldVariant}
       />
     </CoFormProvider>
   );
@@ -152,6 +160,7 @@ function MultiStepCoFormContent({
   restrictedFields,
   className,
   existingAnswerMeta,
+  unknownFieldVariant,
 }: {
   variant: CoFormVariant;
   showProgress: boolean;
@@ -163,6 +172,7 @@ function MultiStepCoFormContent({
   restrictedFields?: string[];
   className?: string;
   existingAnswerMeta?: ExistingAnswerMeta | null;
+  unknownFieldVariant: "error" | "placeholder";
 }) {
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
@@ -611,10 +621,12 @@ function MultiStepCoFormContent({
 
                 default:
                   return (
-                    <div key={field.name} role="alert" className="col-span-12 flex flex-col gap-1 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                      <p className="font-semibold">{field.label}</p>
-                      <p>{t("coform.errors.unknownFieldType", undefined, { type: field.type })}</p>
-                    </div>
+                    <UnsupportedField
+                      key={field.name}
+                      label={field.label}
+                      type={field.type}
+                      variant={unknownFieldVariant}
+                    />
                   );
               } })();
 

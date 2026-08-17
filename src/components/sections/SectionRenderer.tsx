@@ -88,6 +88,7 @@ const LazySections: {
   toolsCatalog: lazy(() => import("@/modules/toolsCatalog/sections/ToolsCatalogSection")),
   aac: lazy(() => import("@/modules/aac/components/AacConfigStub")),
   "aac-directory": lazy(() => import("@/modules/aac/sections/AacDirectorySection")),
+  "aac-highlight": lazy(() => import("@/modules/aac/sections/AacHighlightSection")),
   actions: lazy(() => import("@/modules/cagnotte/components/sections/ActionsSection")),
   finance: lazy(() => import("@/modules/cagnotte/components/sections/FinanceSection")),
   "actions-summary": lazy(() => import("@/modules/cagnotte/components/sections/ActionsSummarySection")),

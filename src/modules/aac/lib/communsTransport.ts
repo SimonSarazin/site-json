@@ -56,7 +56,7 @@ import {
   type AacVisibility,
 } from "./aacQueryParams";
 import type { AacCardFields } from "./resolveAacCardFields";
-import type { AacDirectoryFiltersState } from "./filtersKey";
+import { EMPTY_AAC_FILTERS, type AacDirectoryFiltersState } from "./filtersKey";
 
 /** Ce que l'appelant demande — aucun opérateur Mongo, aucun nom de champ SDK. */
 export interface AacCommunsQuery {
@@ -137,6 +137,37 @@ async function fetchCards(
   const cards = rows.map((raw) => parseAacAnswer(raw, { fields, contextId, baseUrl }));
 
   return { cards, total: page.count?.answers ?? cards.length };
+}
+
+/**
+ * Combien de communs, sans en rapatrier un seul.
+ *
+ * Le mode `countonly` de l'endpoint est fait pour ça : il rend `count` et
+ * **pas** `results`. Compter en lisant une page reviendrait à télécharger des
+ * documents pour n'en garder que le cardinal.
+ *
+ * ⚠️ Volontairement SANS filtres utilisateur : ce décompte est celui de la
+ * population VISIBLE — restriction de visibilité et exclusion des brouillons
+ * comprises, puisqu'elles viennent du même `splitAacFilters` que le listing.
+ * C'est ce qui garantit qu'un médaillon « N communs » et l'annuaire parlent du
+ * même ensemble. Un décompte filtré demanderait le chemin balayage (les filtres
+ * `usage`/`maturité` ne sont pas exprimables côté serveur), donc justement les
+ * documents que ce mode évite de charger.
+ */
+export async function fetchAacCommunsCount(query: {
+  form: Form;
+  fields: AacCardFields;
+  visibility?: AacVisibility;
+}): Promise<number> {
+  const { form, fields, visibility = PUBLIC_AAC_VISIBILITY } = query;
+  const { server } = splitAacFilters(EMPTY_AAC_FILTERS, fields, visibility);
+
+  const page = (await form.countProposals({
+    ...(server as unknown as Record<string, unknown>),
+    count: true,
+  })) as { count?: Record<string, number> };
+
+  return page.count?.answers ?? 0;
 }
 
 export async function fetchAacCommunsPage(

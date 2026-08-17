@@ -87,6 +87,12 @@ interface SmartCoFormProps {
   elementId?: string;
   /** Type de l'élément (collection MongoDB). Requis si `elementId` fourni. */
   elementType?: "organizations" | "projects" | "events" | "poi" | "citoyens";
+  /**
+   * Comment rendre un champ dont le type n'a pas de composant. Défaut :
+   * `"error"`. Cf. `UnsupportedField` — `"placeholder"` est réservé aux
+   * formulaires de CRÉATION ouverts au public.
+   */
+  unknownFieldVariant?: "error" | "placeholder";
 }
 
 interface LoadingStateProps {
@@ -188,6 +194,7 @@ export function SmartCoForm({
   existingAnswerMeta,
   elementId,
   elementType,
+  unknownFieldVariant,
 }: SmartCoFormProps) {
   // Charger les données depuis l'API si formId est fourni
   const {
@@ -455,6 +462,7 @@ export function SmartCoForm({
       baseUpdatedAt={baseUpdatedAt}
       enableDraft={enableDraft}
       existingAnswerMeta={existingAnswerMeta}
+      unknownFieldVariant={unknownFieldVariant}
       onSubmit={async (data, addedOptions) => {
         try {
           // Dénormaliser pour le format PHP (champs root-level à la racine)

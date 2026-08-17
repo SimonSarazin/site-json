@@ -34,6 +34,19 @@ export const AAC_QUERY_KEYS = {
   ) => ["aac-communs", formId, campaignId, filtersKey, userId] as const,
   COMMUNS_PREFIX: () => ["aac-communs"] as const,
 
+  // Cardinal de la population VISIBLE d'un AAC (mode `countonly`), ISOLÉ PAR
+  // CAMPAGNE. User-scopé pour la même raison que COMMUNS : deux visiteurs ne
+  // voient pas le même ensemble, donc ne comptent pas le même nombre.
+  // Volontairement DISTINCT de COMMUNS : le décompte ignore les filtres de
+  // l'annuaire, et il doit survivre à leur changement sans être refetché.
+  // Producteur : useAacCommunsCount
+  COUNT: (
+    formId: string | null,
+    campaignId: string | null = null,
+    userId: string | null = null
+  ) => ["aac-count", formId, campaignId, userId] as const,
+  COUNT_PREFIX: () => ["aac-count"] as const,
+
   // Options ET décomptes des facettes de l'annuaire (usage, tags). PUBLIC.
   // Volontairement DISTINCT de COMMUNS : les facettes se calculent sur le jeu
   // NON filtré, sinon cocher une option ferait disparaître les autres. Côté

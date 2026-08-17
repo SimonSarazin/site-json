@@ -24,6 +24,7 @@ export {
   AacConfigSchema,
   AacSectionSchema,
   AacDirectorySectionSchema,
+  AacHighlightSectionSchema,
   AacDirectoryFieldsSchema,
 } from "./schema";
 export type {
@@ -32,6 +33,8 @@ export type {
   AacSectionProps,
   AacDirectorySection,
   AacDirectorySectionProps,
+  AacHighlightSection,
+  AacHighlightSectionProps,
   AacDirectoryFieldsConfig,
 } from "./schema";
 

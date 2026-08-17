@@ -2,34 +2,23 @@
 // chunk de la section (le point d'entrée section n'importe pas index.ts).
 import "../i18n";
 
-import { useMemo, useState } from "react";
-import { LayoutGrid, List } from "lucide-react";
+import { useState } from "react";
+import { Link } from "react-router";
+import { ArrowRight, LayoutGrid, List } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useSite } from "@/hooks/useSite";
-import { useCocolight } from "@/hooks/useCocolight";
 import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import { useDebounce } from "@/hooks/useDebounce";
-import { getBaseUrl } from "@/lib/constant/common";
-import { useAacConfig } from "../hooks/useAacConfig";
-import {
-  useAacFormMeta,
-  useAacContextId,
-  useAacFormParams,
-  useAacFormEntity,
-} from "../hooks/useAacFormMeta";
+import { useAacDirectoryContext } from "../hooks/useAacDirectoryContext";
 import { useAacCommuns } from "../hooks/useAacCommuns";
 import { useAacFacets } from "../hooks/useAacFacets";
-import { useAacPermissions } from "../hooks/useAacPermissions";
-import type { AacVisibility } from "../lib/aacQueryParams";
-import {
-  resolveAacCardFields,
-  EMPTY_AAC_CARD_FIELDS,
-} from "../lib/resolveAacCardFields";
 import { EMPTY_AAC_FILTERS, type AacDirectoryFiltersState } from "../lib/filtersKey";
+import { resolveAacDepositStepKey } from "../lib/depositStep";
 import { AacDirectoryFilters } from "../components/directory/AacDirectoryFilters";
 import { AacDirectoryResults } from "../components/directory/AacDirectoryResults";
+import { AacDepositButton } from "../components/directory/AacDepositButton";
 import type { AacDirectorySectionProps, AacDisplayMode } from "../schema";
 
 interface Props {
@@ -39,6 +28,9 @@ interface Props {
 
 /** Le texte saisi n'entre dans la query key qu'après cette pause. */
 const SEARCH_DEBOUNCE_MS = 350;
+
+/** Sentinelle inerte : l'aperçu ne défile pas, mais la prop reste requise. */
+const NOOP_REF = () => {};
 
 /**
  * Annuaire des communs d'un AAC.
@@ -57,10 +49,7 @@ const SEARCH_DEBOUNCE_MS = 350;
 export default function AacDirectorySection({ id, props }: Props) {
   const t = useT("modules/aac");
   const { t: localize } = useLocalization();
-  const { config: siteConfig } = useSite();
-  const { entity } = useCocolight();
 
-  const formId = siteConfig.aac?.formId ?? null;
   const {
     title,
     description,
@@ -76,7 +65,13 @@ export default function AacDirectorySection({ id, props }: Props) {
       sort: true,
     },
     emptyText,
+    showDepositButton = true,
+    depositButtonLabel,
+    variant = "full",
+    moreLink,
   } = props;
+
+  const isPreview = variant === "preview";
 
   const [filters, setFilters] = useState<AacDirectoryFiltersState>(EMPTY_AAC_FILTERS);
   const debouncedQuery = useDebounce(filters.q, SEARCH_DEBOUNCE_MS);
@@ -86,49 +81,35 @@ export default function AacDirectorySection({ id, props }: Props) {
   // stockage local) — un état lu au montage divergerait du HTML SSR.
   const [display, setDisplay] = useState<AacDisplayMode>(initialDisplay);
 
-  const { config } = useAacConfig(formId);
-  const { meta, isLoading: isFormLoading } = useAacFormMeta(formId);
-  const contextId = useAacContextId(formId);
-  const formParams = useAacFormParams(formId);
-  // L'instance `Form` RATTACHÉE à l'entité costum : son parent porte le slug qui
-  // devient le pathParam `{source}` de l'endpoint.
-  const form = useAacFormEntity(formId);
+  const {
+    formId,
+    config,
+    form,
+    fields: cardFields,
+    resolved,
+    contextId,
+    formParams,
+    visibility,
+    baseUrl,
+    isFormLoading,
+  } = useAacDirectoryContext();
 
-  // Quelles questions portent titre / description / tags / maturité / dépense.
-  // L'override de config prime, sinon heuristique — jamais d'id en dur ici.
-  const resolved = useMemo(
-    () =>
-      meta && config
-        ? resolveAacCardFields(meta, config.roles, siteConfig.aac?.directory?.fields)
-        : null,
-    [meta, config, siteConfig.aac?.directory?.fields]
-  );
-
-  const cardFields = resolved?.fields ?? EMPTY_AAC_CARD_FIELDS;
-
-  // Qui regarde. Un visiteur NON ADMINISTRATEUR ne voit que les communs
-  // sélectionnés, plus les siens — parité avec le filtre `applyFor: "forUser"`
-  // du bloc legacy. Entre dans la query key : la liste dépend du visiteur.
-  const perms = useAacPermissions(entity);
-  const visibility = useMemo<AacVisibility>(
-    () => ({
-      isAdmin: perms.isAdmin,
-      currentUserId: perms.currentUserId,
-      contextId,
-    }),
-    [perms.isAdmin, perms.currentUserId, contextId]
-  );
+  // L'étape de DÉPÔT — celle qui porte le titre, sinon la première déclarée.
+  // Les suivantes (évaluation, financement, suivi) sont réservées à des rôles.
+  const depositStepKey = resolveAacDepositStepKey(resolved?.fields, config);
 
   // Facettes calculées sur le jeu NON filtré : cocher une option ne doit pas
-  // faire disparaître les autres (cf. `useAacFacets`).
+  // faire disparaître les autres (cf. `useAacFacets`). Un aperçu n'a pas de
+  // facettes : les calculer coûterait un balayage de 300 communs pour rien.
   const { usageTree, tagOptions, isLoading: isFacetsLoading } = useAacFacets({
     formId,
     form,
     fields: cardFields,
     formParams,
     contextId,
-    baseUrl: getBaseUrl(),
+    baseUrl,
     visibility,
+    enabled: !isPreview,
   });
 
   const { communs, totalCount, isLoading, isFetchingNextPage, hasNextPage, lastItemRef, error } =
@@ -144,7 +125,7 @@ export default function AacDirectorySection({ id, props }: Props) {
       filters: { ...filters, q: debouncedQuery },
       pageSize,
       contextId,
-      baseUrl: getBaseUrl(),
+      baseUrl,
       visibility,
     });
 
@@ -158,75 +139,119 @@ export default function AacDirectorySection({ id, props }: Props) {
 
   return (
     <section id={id} className={cn("space-y-8 py-12", className)}>
-      {(title || description) && (
-        <header className="space-y-2">
-          {title && (
-            <h2 className="text-3xl font-bold tracking-tight">{localize(title)}</h2>
-          )}
-          {description && (
-            <p className="text-muted-foreground">{localize(description)}</p>
+      {/* Le CTA borde la ligne de TITRE — la place qu'il occupe dans le legacy.
+          Le titre passe donc dans son propre bloc, et l'en-tête est rendu dès
+          que l'un des trois est là (le bouton peut être seul). */}
+      {(title || description || showDepositButton) && (
+        <header className="flex flex-wrap items-start justify-between gap-4">
+          <div className="space-y-2">
+            {title && (
+              <h2 className="text-3xl font-bold tracking-tight">{localize(title)}</h2>
+            )}
+            {description && (
+              <p className="text-muted-foreground">{localize(description)}</p>
+            )}
+          </div>
+
+          {showDepositButton && (
+            <AacDepositButton
+              formId={formId}
+              stepKey={depositStepKey}
+              label={depositButtonLabel ? localize(depositButtonLabel) : undefined}
+            />
           )}
         </header>
       )}
 
-      {/* Les filtres sont une COLONNE, pas une barre : c'est ce qui permet aux
-          facettes de s'ouvrir en accordéon sans repousser la grille. Elle passe
-          au-dessus en pile sous `lg`. */}
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,17rem)_minmax(0,1fr)] lg:items-start">
-        <AacDirectoryFilters
-          filters={filters}
-          onChange={setFilters}
-          usageTree={usageTree}
-          tagOptions={tagOptions}
-          maturityField={resolved?.fields.maturity ?? null}
-          enabled={enabledFilters}
-          isLoading={isFormLoading || isFacetsLoading}
-        />
-
-        <div className="space-y-4">
-          {/* Compteur à gauche, bascule d'affichage à droite — la disposition du
-              legacy, où le sélecteur de vue borde la ligne de décompte. */}
-          <div className="flex items-center justify-between gap-4">
-            <p className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
-              {totalCount}{" "}
-              {String(t(totalCount > 1 ? "directory.count_other" : "directory.count_one"))}
-            </p>
-
-            <ToggleGroup
-              type="single"
-              variant="outline"
-              size="sm"
-              value={display}
-              // Radix autorise la désélection sur un groupe `single` : sans cette
-              // garde, un second clic sur le mode actif rendrait `""` et
-              // l'annuaire n'aurait plus d'affichage du tout.
-              onValueChange={(value) => {
-                if (value) setDisplay(value as AacDisplayMode);
-              }}
-              aria-label={String(t("directory.display.label"))}
-            >
-              <ToggleGroupItem value="grid" aria-label={String(t("directory.display.grid"))}>
-                <LayoutGrid className="h-4 w-4" aria-hidden="true" />
-              </ToggleGroupItem>
-              <ToggleGroupItem value="list" aria-label={String(t("directory.display.list"))}>
-                <List className="h-4 w-4" aria-hidden="true" />
-              </ToggleGroupItem>
-            </ToggleGroup>
-          </div>
-
+      {/* Un APERÇU n'est qu'une grille suivie de son lien : ni colonne de
+          filtres, ni compteur, ni bascule d'affichage, ni sentinelle de
+          défilement — sur une page d'accueil, ces commandes promettent une
+          exploration que la page ne tient pas. */}
+      {isPreview ? (
+        <div className="space-y-8">
           <AacDirectoryResults
             communs={communs}
             display={display}
             columns={columns}
             isLoading={isLoading}
-            isFetchingNextPage={isFetchingNextPage}
-            hasNextPage={hasNextPage}
+            isFetchingNextPage={false}
+            hasNextPage={false}
             error={error}
-            lastItemRef={lastItemRef}
+            lastItemRef={NOOP_REF}
             emptyText={emptyText ? localize(emptyText) : undefined}
           />
+
+          {moreLink && (
+            <div className="flex justify-center">
+              <Button asChild size="lg" variant="outline" className="rounded-full">
+                <Link to={moreLink.href}>
+                  {moreLink.label ? localize(moreLink.label) : String(t("directory.more"))}
+                  <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
+                </Link>
+              </Button>
+            </div>
+          )}
         </div>
-      </div>
+      ) : (
+        /* Les filtres sont une COLONNE, pas une barre : c'est ce qui permet aux
+           facettes de s'ouvrir en accordéon sans repousser la grille. Elle passe
+           au-dessus en pile sous `lg`. */
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,17rem)_minmax(0,1fr)] lg:items-start">
+          <AacDirectoryFilters
+            filters={filters}
+            onChange={setFilters}
+            usageTree={usageTree}
+            tagOptions={tagOptions}
+            maturityField={resolved?.fields.maturity ?? null}
+            enabled={enabledFilters}
+            isLoading={isFormLoading || isFacetsLoading}
+          />
+
+          <div className="space-y-4">
+            {/* Compteur à gauche, bascule d'affichage à droite — la disposition
+                du legacy, où le sélecteur de vue borde la ligne de décompte. */}
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
+                {totalCount}{" "}
+                {String(t(totalCount > 1 ? "directory.count_other" : "directory.count_one"))}
+              </p>
+
+              <ToggleGroup
+                type="single"
+                variant="outline"
+                size="sm"
+                value={display}
+                // Radix autorise la désélection sur un groupe `single` : sans
+                // cette garde, un second clic sur le mode actif rendrait `""` et
+                // l'annuaire n'aurait plus d'affichage du tout.
+                onValueChange={(value) => {
+                  if (value) setDisplay(value as AacDisplayMode);
+                }}
+                aria-label={String(t("directory.display.label"))}
+              >
+                <ToggleGroupItem value="grid" aria-label={String(t("directory.display.grid"))}>
+                  <LayoutGrid className="h-4 w-4" aria-hidden="true" />
+                </ToggleGroupItem>
+                <ToggleGroupItem value="list" aria-label={String(t("directory.display.list"))}>
+                  <List className="h-4 w-4" aria-hidden="true" />
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+
+            <AacDirectoryResults
+              communs={communs}
+              display={display}
+              columns={columns}
+              isLoading={isLoading}
+              isFetchingNextPage={isFetchingNextPage}
+              hasNextPage={hasNextPage}
+              error={error}
+              lastItemRef={lastItemRef}
+              emptyText={emptyText ? localize(emptyText) : undefined}
+            />
+          </div>
+        </div>
+      )}
     </section>
   );
 }

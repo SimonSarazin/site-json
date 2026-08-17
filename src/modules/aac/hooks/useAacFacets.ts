@@ -51,6 +51,12 @@ export interface UseAacFacetsParams {
    * doit pas voir des facettes alimentées par des communs non sélectionnés.
    */
   visibility?: AacVisibility;
+  /**
+   * Fausse ⇒ aucun balayage. Une surface sans colonne de filtres (l'aperçu de
+   * la page d'accueil) n'a rien à faire des facettes : les calculer coûterait
+   * une requête de 300 communs pour des options que personne ne verra.
+   */
+  enabled?: boolean;
 }
 
 export interface UseAacFacetsResult {
@@ -74,6 +80,7 @@ export function useAacFacets({
   contextId = null,
   baseUrl = "",
   visibility = PUBLIC_AAC_VISIBILITY,
+  enabled = true,
 }: UseAacFacetsParams): UseAacFacetsResult {
   const { data, isLoading, error } = useQuery({
     queryKey: AAC_QUERY_KEYS.FACETS(formId, campaignId, visibility.currentUserId),
@@ -91,7 +98,7 @@ export function useAacFacets({
         visibility,
       });
     },
-    enabled: !!formId && !!form && !!fields,
+    enabled: enabled && !!formId && !!form && !!fields,
     staleTime: 5 * 60 * 1000,
   });
 
