@@ -58,7 +58,8 @@
         "jumpTo": "Jump to field",
         "serverError": "Submission error",
         "toast": "The form contains errors"
-      }
+      },
+      "unsupportedFieldPlaceholder": "This field is not available here yet — it can still be filled in from the legacy interface."
     },
     "banner": {
       "alt": "Form banner"

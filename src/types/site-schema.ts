@@ -1459,6 +1459,7 @@ import {
   AacConfigSchema,
   AacSectionSchema,
   AacDirectorySectionSchema,
+  AacHighlightSectionSchema,
 } from "@/modules/aac/schema";
 import {
   LoginFormSectionSchema,
@@ -1580,6 +1581,7 @@ export const Section = z.discriminatedUnion("type", [
   ToolsCatalogSectionSchema,
   AacSectionSchema,
   AacDirectorySectionSchema,
+  AacHighlightSectionSchema,
   DataObservatorySectionSchema,
   AgendaSectionSchema,
   ArticleFeedSectionSchema,

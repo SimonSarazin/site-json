@@ -79,6 +79,8 @@ export default function AacPage() {
                 maturity: true,
                 sort: true,
               },
+              showDepositButton: true,
+              variant: "full",
             }}
           />
         </div>

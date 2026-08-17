@@ -51,6 +51,11 @@
       "label": "Rechercher un commun par son nom",
       "placeholder": "Recherche par nom"
     },
+    "deposit": {
+      "cta": "Je dépose un commun",
+      "modalTitle": "Déposer un commun",
+      "closed": "L'appel à communs est fermé : le dépôt n'est plus possible."
+    },
     "filters": {
       "all": "Tous",
       "title": "Filtres",
@@ -81,7 +86,8 @@
       "created_desc": "Date de création (décroissant)",
       "updated_asc": "Date de mise à jour (croissant)",
       "updated_desc": "Date de mise à jour (décroissant)"
-    }
+    },
+    "more": "Voir tous les communs"
   },
   "detail": {
     "noname": "(Sans nom)",
@@ -167,5 +173,8 @@
     "reactionFailed": {
       "title": "Impossible d'enregistrer votre réaction"
     }
+  },
+  "highlight": {
+    "communs": "Communs déposés"
   }
 }

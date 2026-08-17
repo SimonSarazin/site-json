@@ -57,6 +57,12 @@ export interface CoFormModalProps {
   elementId?: string;
   /** Type de l'élément (collection MongoDB). Requis si `elementId` fourni. */
   elementType?: "organizations" | "projects" | "events" | "poi" | "citoyens";
+  /**
+   * Comment rendre un champ dont le type n'a pas de composant. Défaut :
+   * `"error"`. Cf. `UnsupportedField` — `"placeholder"` est réservé aux
+   * formulaires de CRÉATION ouverts au public.
+   */
+  unknownFieldVariant?: "error" | "placeholder";
 }
 
 /**
@@ -79,6 +85,7 @@ export function CoFormModal({
   lockedFields,
   elementId,
   elementType,
+  unknownFieldVariant,
 }: CoFormModalProps) {
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
@@ -177,6 +184,7 @@ export function CoFormModal({
               lockedFields={lockedFields}
               elementId={elementId}
               elementType={elementType}
+              unknownFieldVariant={unknownFieldVariant}
               inModal
             />
           </div>
@@ -185,3 +193,5 @@ export function CoFormModal({
     </>
   );
 }
+
+export default CoFormModal;

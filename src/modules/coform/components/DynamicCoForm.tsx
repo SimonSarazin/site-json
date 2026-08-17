@@ -17,6 +17,7 @@ import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { LocationField } from "./LocationField";
 import { UploaderField } from "./UploaderField";
+import { UnsupportedField } from "./UnsupportedField";
 import { CoFormBanner } from "./CoFormBanner";
 import { DraftRecoveryBanner } from "./DraftRecoveryBanner";
 import { ErrorSummary } from "./ErrorSummary";
@@ -77,6 +78,13 @@ interface DynamicCoFormProps {
    * Quand fournies, propagées par SmartCoForm depuis la query.
    */
   existingAnswerMeta?: ExistingAnswerMeta | null;
+  /**
+   * Comment rendre un champ dont le type n'a pas de composant. Défaut :
+   * `"error"` — un encadré rouge, parce qu'un type non mappé est un défaut de
+   * couverture qu'il ne faut pas taire. `"placeholder"` (bloc neutre) est
+   * réservé aux formulaires ouverts au public, cf. `UnsupportedField`.
+   */
+  unknownFieldVariant?: "error" | "placeholder";
 }
 
 /**
@@ -103,6 +111,7 @@ export function DynamicCoForm({
   baseUpdatedAt,
   enableDraft = true,
   existingAnswerMeta,
+  unknownFieldVariant = "error",
 }: DynamicCoFormProps) {
   const t = useT("modules/coform");
   useLoadNamespace("modules/coform");
@@ -601,10 +610,12 @@ export function DynamicCoForm({
 
                 default:
                   return (
-                    <div key={field.name} role="alert" className="col-span-12 flex flex-col gap-1 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                      <p className="font-semibold">{field.label}</p>
-                      <p>{t("coform.errors.unknownFieldType", undefined, { type: field.type })}</p>
-                    </div>
+                    <UnsupportedField
+                      key={field.name}
+                      label={field.label}
+                      type={field.type}
+                      variant={unknownFieldVariant}
+                    />
                   );
               } })();
 

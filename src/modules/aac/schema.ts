@@ -138,6 +138,39 @@ export const AacDirectorySectionSchema = z.object({
       .default({ search: true, usage: true, tags: true, maturity: true, sort: true }),
     /** Message quand aucun commun ne correspond. Défaut : i18n `directory.empty`. */
     emptyText: LocalizedString.optional(),
+    /**
+     * CTA « Je dépose un commun », sur la ligne de titre.
+     *
+     * Le formulaire ouvert est celui de `config.aac.formId` — comme le reste de
+     * la section, aucun `formId` ne transite par les props. Seule l'ÉTAPE de
+     * dépôt est résolue (cf. `resolveAacDepositStepKey`) : les suivantes sont
+     * l'évaluation, le financement et le suivi, réservées à des rôles.
+     */
+    showDepositButton: z.boolean().default(true),
+    /** Libellé du CTA. Défaut : i18n `directory.deposit.cta`. */
+    depositButtonLabel: LocalizedString.optional(),
+    /**
+     * `full` — l'annuaire complet : colonne de filtres, compteur de résultats,
+     * bascule grille/liste, défilement infini. C'est la page dédiée.
+     *
+     * `preview` — un APERÇU pour une page d'accueil : les mêmes cartes, bornées
+     * à `pageSize`, sans filtres ni compteur ni défilement, et suivies d'un
+     * lien vers l'annuaire. Volontairement une variante de CETTE section et non
+     * une section sœur : la carte, la résolution des champs et la restriction de
+     * visibilité doivent rester les mêmes des deux côtés.
+     */
+    variant: z.enum(["full", "preview"]).default("full"),
+    /**
+     * Le lien « voir tout » de la variante `preview` — sans lui, l'aperçu est
+     * un cul-de-sac. Ignoré en `full`.
+     */
+    moreLink: z
+      .object({
+        href: z.string().min(1),
+        /** Défaut : i18n `directory.more`. */
+        label: LocalizedString.optional(),
+      })
+      .optional(),
   }),
 });
 
@@ -146,3 +179,54 @@ export type AacDirectorySectionProps = AacDirectorySection["props"];
 
 /** Grille de cartes ou liste de lignes — dérivé du schéma, jamais redéclaré. */
 export type AacDisplayMode = AacDirectorySectionProps["display"];
+/** Annuaire complet ou aperçu — dérivé du schéma, jamais redéclaré. */
+export type AacDirectoryVariant = AacDirectorySectionProps["variant"];
+
+/**
+ * Schéma Zod de la section `aac-highlight` — une bande d'appel à l'action,
+ * avec son chiffre.
+ *
+ * C'est le bloc récurrent de la page d'accueil d'un AAC : un titre, un texte,
+ * un bouton, et un médaillon qui dit combien de communs ont été déposés. Le
+ * chiffre est COMPTÉ (mode `countonly` de l'endpoint), pas écrit dans la
+ * config : un nombre saisi à la main est faux dès le lendemain.
+ */
+export const AacHighlightSectionSchema = z.object({
+  type: z.literal("aac-highlight"),
+  id: z.string().optional(),
+  props: z.object({
+    title: LocalizedString,
+    description: LocalizedString.optional(),
+    className: z.string().optional(),
+    /**
+     * `primary` — bande pleine couleur, celle qui rythme la page ;
+     * `muted` — fond discret, pour deux bandes qui se suivent.
+     */
+    tone: z.enum(["primary", "muted"]).default("primary"),
+    /** Le bouton de la bande. Omis ⇒ bande purement informative. */
+    cta: z
+      .object({
+        label: LocalizedString,
+        href: z.string().min(1),
+      })
+      .optional(),
+    /**
+     * Le médaillon chiffré. Omis ⇒ pas de médaillon.
+     *
+     * `source` n'a qu'une valeur aujourd'hui : `communs`, le cardinal de la
+     * population visible de `config.aac.formId`. C'est une énumération et non un
+     * booléen pour que d'autres compteurs (réponses à un autre formulaire,
+     * financements) s'y ajoutent sans changer la forme de la config.
+     */
+    count: z
+      .object({
+        source: z.literal("communs"),
+        /** Légende sous le chiffre. Défaut : i18n `highlight.communs`. */
+        label: LocalizedString.optional(),
+      })
+      .optional(),
+  }),
+});
+
+export type AacHighlightSection = z.infer<typeof AacHighlightSectionSchema>;
+export type AacHighlightSectionProps = AacHighlightSection["props"];

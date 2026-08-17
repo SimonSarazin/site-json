@@ -86,7 +86,6 @@ export function aacConfigQueryOptions(
     staleTime: 5 * 60 * 1000,
     queryFn: async (): Promise<AacConfigBundle> => {
       if (!api || !entity || !formId) throw new Error("API non initialisée");
-
       const form = await entity.form({ id: formId });
       const formData = form.serverData as unknown;
 
