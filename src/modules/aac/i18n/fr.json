@@ -103,6 +103,9 @@
     "vote": "Ça m'intéresse",
     "alreadyInterested": "Déjà intéressé·e",
     "use": "J'utilise",
+    "namesLoading": "Chargement…",
+    "namesUnavailable": "Noms indisponibles",
+    "actionsStat": "Actions",
     "addAction": "Ajouter une action",
     "edit": {
       "cta": "Modifier",

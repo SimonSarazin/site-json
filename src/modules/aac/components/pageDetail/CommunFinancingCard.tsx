@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Heart, ArrowRight, Check, X, Loader2 } from "lucide-react";
 import type { CoFormData, CoFormAnswer } from "@/modules/coform/types";
 import type { AacResolvedConfig } from "../../types";
@@ -7,6 +7,7 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useCocolight } from "@/hooks/useCocolight";
 import { ClientOnly } from "@/components/layout/ClientOnly";
 import { Progress } from "@/components/ui/progress";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import CagnotteDialog from "@/modules/cagnotte/components/CagnotteDialog";
 import { toSafeInt, buildItemsFromRawDepenses, getEntityId } from "@/modules/cagnotte/utils/dataTransform";
 import { formatCurrency } from "@/modules/cagnotte/utils/format";
@@ -16,41 +17,101 @@ import {
     type CommunReactionType,
 } from "@/modules/aac/hooks/useCommunReactions";
 import { useCommunRawDepenses } from "@/modules/aac/hooks/useCommunRawDepenses";
+import { useReactorNames } from "@/modules/aac/hooks/useReactorNames";
+import { canManageObjectiveActions } from "@/modules/aac/lib/objectiveHelpers";
 
 interface StatProps {
     value: string | number;
     label: string;
-    cta: string;
+    cta?: string;
     activeLabel?: string;
-    active: boolean;
-    pending: boolean;
-    onToggle: () => void;
+    active?: boolean;
+    pending?: boolean;
+    onToggle?: () => void;
+    /** Défile jusqu'à une autre section quand on clique sur la valeur (pas le CTA). */
+    onValueClick?: () => void;
+    /** Contenu du tooltip affiché au survol de la valeur — absent = pas de tooltip. */
+    namesTooltip?: ReactNode;
+    /** Déclenché à l'ouverture du tooltip — sert à ne fetcher les noms qu'au survol. */
+    onTooltipOpen?: () => void;
 }
 
-function Stat({ value, label, cta, activeLabel, active, pending, onToggle }: StatProps) {
-    return (
-        <div className="min-w-0">
+function Stat({ value, label, cta, activeLabel, active, pending, onToggle, onValueClick, namesTooltip, onTooltipOpen }: StatProps) {
+    const valueBlock = (
+        <div
+            className={onValueClick ? "-m-1 cursor-pointer rounded-md p-1 transition-colors hover:bg-surface-2/50" : undefined}
+            onClick={onValueClick}
+            role={onValueClick ? "button" : undefined}
+            tabIndex={onValueClick ? 0 : undefined}
+            onKeyDown={
+                onValueClick
+                    ? (e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              onValueClick();
+                          }
+                      }
+                    : undefined
+            }
+        >
             <div className="text-2xl font-display font-bold tabular-nums sm:text-3xl">
                 {value}
             </div>
             <div className="mt-0.5 truncate text-[11px] uppercase tracking-wider text-muted-foreground">
                 {label}
             </div>
-            <ClientOnly>
-                {() => (
-                    <button
-                        type="button"
-                        disabled={pending}
-                        onClick={onToggle}
-                        className="mt-2 inline-flex cursor-pointer items-center gap-1 text-xs font-medium text-primary hover:underline disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        {active && activeLabel ? activeLabel : cta}
-                        <ArrowRight className="size-3" />
-                    </button>
-                )}
-            </ClientOnly>
         </div>
     );
+
+    return (
+        <div className="min-w-0">
+            {namesTooltip ? (
+                <Tooltip onOpenChange={(open) => { if (open) onTooltipOpen?.(); }}>
+                    <TooltipTrigger asChild>{valueBlock}</TooltipTrigger>
+                    <TooltipContent side="bottom" className="max-w-[240px]">
+                        {namesTooltip}
+                    </TooltipContent>
+                </Tooltip>
+            ) : (
+                valueBlock
+            )}
+            {cta && onToggle && (
+                <ClientOnly>
+                    {() => (
+                        <button
+                            type="button"
+                            disabled={pending}
+                            onClick={onToggle}
+                            className="mt-2 inline-flex cursor-pointer items-center gap-1 text-xs font-medium text-primary hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            {active && activeLabel ? activeLabel : cta}
+                            <ArrowRight className="size-3" />
+                        </button>
+                    )}
+                </ClientOnly>
+            )}
+        </div>
+    );
+}
+
+/** Liste (plafonnée) des noms de réacteurs affichée dans le tooltip d'une stat. */
+function namesTooltipContent(names: string[], isLoading: boolean, loadingLabel: string, emptyLabel: string): ReactNode {
+    if (names.length === 0 && isLoading) return <span>{loadingLabel}</span>;
+    if (names.length === 0) return <span>{emptyLabel}</span>;
+    const visible = names.slice(0, 8);
+    const overflow = names.length - visible.length;
+    return (
+        <div className="space-y-0.5">
+            {visible.map((name, i) => (
+                <div key={`${name}-${i}`}>{name}</div>
+            ))}
+            {overflow > 0 && <div className="opacity-70">+{overflow}</div>}
+        </div>
+    );
+}
+
+function scrollToSection(id: string) {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 interface CommunFinancingCardProps {
@@ -217,6 +278,54 @@ export function CommunFinancingCard({
         executeToggle("interesse", { id: orgId, name: org?.name || "" }, !isAlreadyInterested);
     };
 
+    // Réacteurs (par stat) — ne servent qu'au tooltip affiché au survol des stats.
+    // Pour "utilise"/"love", la réaction ne porte pas de nom (cf. useReactorNames),
+    // donc on ne le résout qu'au survol effectif (`hoveredStat`), pas au montage.
+    const [hoveredStat, setHoveredStat] = useState<CommunReactionType | null>(null);
+    // `answerQuery` ne se met pas à jour après un toggle (pas de refetch, cf.
+    // `interestedOrgIds` plus haut) — on recale la présence du réacteur courant
+    // sur `reactions`, déjà optimiste, pour éviter un tooltip "indisponible"
+    // juste après avoir réagi.
+    const myReactorId = me?.serverData?.id || me?.id;
+    const contributorIds = useMemo(() => {
+        const ids = new Set(Object.keys(answerQuery?.links?.contributors || {}));
+        if (myReactorId) {
+            if (reactions.utilise) ids.add(myReactorId);
+            else ids.delete(myReactorId);
+        }
+        return Array.from(ids);
+    }, [answerQuery, reactions.utilise, myReactorId]);
+    const voteIds = useMemo(() => {
+        const ids = new Set(Object.keys(answerQuery?.vote || {}));
+        if (myReactorId) {
+            if (reactions.love) ids.add(myReactorId);
+            else ids.delete(myReactorId);
+        }
+        return Array.from(ids);
+    }, [answerQuery, reactions.love, myReactorId]);
+    // Même souci pour "interesse", mais le nom n'a pas besoin d'être fetché : il
+    // vient de `answerQuery.links.tls` (déjà stale) ou, à défaut, de la liste
+    // d'organisations chargée pour le modal — `interestedOrgIds` fait déjà foi.
+    const tlsNames = useMemo(() => {
+        const answerTls = (answerQuery?.links?.tls || {}) as Record<string, { name?: string }>;
+        return Array.from(interestedOrgIds)
+            .map((id) => {
+                const name = answerTls[id]?.name;
+                if (typeof name === "string" && name.trim() !== "") return name;
+                const org = orgs.find((o) => (o?._id?.$id || o?.id) === id);
+                return typeof org?.name === "string" ? org.name : undefined;
+            })
+            .filter((name): name is string => typeof name === "string" && name.trim() !== "");
+    }, [answerQuery, interestedOrgIds, orgs]);
+    const { names: contributorNames, isLoading: contributorNamesLoading } = useReactorNames(
+        contributorIds,
+        hoveredStat === "utilise",
+    );
+    const { names: voteNames, isLoading: voteNamesLoading } = useReactorNames(voteIds, hoveredStat === "love");
+
+    const namesLoadingLabel = String(t("detail.namesLoading"));
+    const namesUnavailableLabel = String(t("detail.namesUnavailable"));
+
     const { data: depenses } = useCommunRawDepenses(answerId);
     const items = buildItemsFromRawDepenses(depenses ?? [], funding?.items ?? []);
     const openItems = items.filter((item) => item?.status !== "close");
@@ -228,6 +337,14 @@ export function CommunFinancingCard({
 
     const cofinancers = openItems.flatMap((item) => item?.allFunding ?? []);
     const cofinancerCount = new Set(cofinancers.map((cont: any) => cont?.financerId)).size;
+
+    // Stats d'actions — seulement pertinent une fois la proposition promue en
+    // projet (cf. `canManageObjectiveActions`, même règle que CommunActionsSection).
+    const isProjectPhase = canManageObjectiveActions(funding?.projectId);
+    const allActions = items.flatMap((item) => item?.actions ?? []);
+    const doneActionsCount = allActions.filter((action) => action?.status === "done").length;
+    const totalActionsCount = allActions.length;
+    const actionsPerc = totalActionsCount > 0 ? Math.round((doneActionsCount / totalActionsCount) * 100) : 0;
 
     return (
         <div className="lg:col-span-5 relative">
@@ -241,6 +358,13 @@ export function CommunFinancingCard({
                         active={reactions.utilise}
                         pending={pending === "utilise"}
                         onToggle={() => handleToggleClick("utilise")}
+                        onValueClick={() => scrollToSection("cofinanceurs")}
+                        onTooltipOpen={() => setHoveredStat("utilise")}
+                        namesTooltip={
+                            localStats.utilise > 0
+                                ? namesTooltipContent(contributorNames, contributorNamesLoading, namesLoadingLabel, namesUnavailableLabel)
+                                : undefined
+                        }
                     />
                     <Stat
                         value={localStats.love}
@@ -250,6 +374,12 @@ export function CommunFinancingCard({
                         active={reactions.love}
                         pending={pending === "love"}
                         onToggle={() => handleToggleClick("love")}
+                        onTooltipOpen={() => setHoveredStat("love")}
+                        namesTooltip={
+                            localStats.love > 0
+                                ? namesTooltipContent(voteNames, voteNamesLoading, namesLoadingLabel, namesUnavailableLabel)
+                                : undefined
+                        }
                     />
                     <Stat
                         value={localStats.interesse}
@@ -258,6 +388,11 @@ export function CommunFinancingCard({
                         active={reactions.interesse}
                         pending={pending === "interesse"}
                         onToggle={() => handleToggleClick("interesse")}
+                        namesTooltip={
+                            localStats.interesse > 0
+                                ? namesTooltipContent(tlsNames, false, namesLoadingLabel, namesUnavailableLabel)
+                                : undefined
+                        }
                     />
                 </div>
             </div>
@@ -268,7 +403,18 @@ export function CommunFinancingCard({
                 </div>
 
                 <div className="space-y-6">
-                    <div className="flex items-end justify-between gap-4">
+                    <div
+                        className="-m-1 flex cursor-pointer items-end justify-between gap-4 rounded-md p-1 transition-colors hover:bg-surface-2/50"
+                        onClick={() => scrollToSection("besoins-financiers")}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                scrollToSection("besoins-financiers");
+                            }
+                        }}
+                    >
                         <div className="min-w-0">
                             <div className="text-3xl sm:text-4xl font-display font-bold tabular-nums">
                                 {formatCurrency(resourceFinancedAmount)}
@@ -290,7 +436,18 @@ export function CommunFinancingCard({
                     <Progress value={resourceAmountPerc} className="h-2 bg-background border border-border" />
 
                     <div className="grid grid-cols-2 gap-3 text-xs text-muted-foreground">
-                        <div className="p-3 rounded-md bg-background/50 border border-border">
+                        <div
+                            className="cursor-pointer rounded-md border border-border bg-background/50 p-3 transition-colors hover:border-primary/40 hover:bg-surface-2/50"
+                            onClick={() => scrollToSection("cofinanceurs")}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                    e.preventDefault();
+                                    scrollToSection("cofinanceurs");
+                                }
+                            }}
+                        >
                             <div className="font-display font-bold text-foreground text-base">{cofinancerCount}</div>
                             {String(t("detail.financing.cofinancers"))}
                         </div>
@@ -301,6 +458,37 @@ export function CommunFinancingCard({
                             {String(t("detail.financing.remaining"))}
                         </div>
                     </div>
+
+                    {isProjectPhase && (
+                        <div
+                            className="group p-3 rounded-md bg-background/50 border border-border cursor-pointer transition-colors hover:border-primary/40 hover:bg-surface-2/50"
+                            onClick={() => scrollToSection("objectifs")}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                    e.preventDefault();
+                                    scrollToSection("objectifs");
+                                }
+                            }}
+                        >
+                            <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-baseline gap-1.5 min-w-0">
+                                    <span className="font-display font-bold text-foreground text-base tabular-nums">
+                                        {doneActionsCount}
+                                    </span>
+                                    <span className="truncate text-xs text-muted-foreground">
+                                        / {totalActionsCount} {String(t("detail.actionsStat"))}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-1 shrink-0 text-primary">
+                                    <span className="text-xs font-display font-bold tabular-nums">{actionsPerc}%</span>
+                                    <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+                                </div>
+                            </div>
+                            <Progress value={actionsPerc} className="mt-2 h-1.5 bg-background border border-border" />
+                        </div>
+                    )}
 
                     <CagnotteDialog
                         totalAmount={resourceFinancedAmount}

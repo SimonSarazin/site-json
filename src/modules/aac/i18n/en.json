@@ -103,6 +103,9 @@
     "vote": "I'm interested",
     "alreadyInterested": "Already interested",
     "use": "I use it",
+    "namesLoading": "Loading…",
+    "namesUnavailable": "Names unavailable",
+    "actionsStat": "Actions",
     "addAction": "Add an action",
     "edit": {
       "cta": "Edit",
