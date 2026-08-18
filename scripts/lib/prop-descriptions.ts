@@ -411,6 +411,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "menu.showName": "Affiche le nom à côté de l'avatar connecté (masqué sous le breakpoint sm) ; surcharge le choix du header ; repli code : oui si la density résolue est normal.",
     "menu.showDropdownHeader": "Ajoute un en-tête nom + email en tête du dropdown du compte ; surcharge le choix du header (activé d'office sur mega-menu et transparent-scroll, masqué ailleurs).",
     "menu.loginLabel": "Libellé du bouton de connexion (déconnecté) — ⚠ précédence INVERSE : la prop du header (souvent header.ctaButton.label) gagne sur la config ; défaut i18n « Se connecter ».",
+    "menu.kanban": "Opt-in : entrée « Kanban » du menu avatar — nouvel onglet vers la vue actions de la plateforme ; admins du costum seulement (gate isKanbanEntryVisible), indépendante de config.admin, aucune entrée sans slug résolu.",
     hideHeader: "Masque le SiteHeader sur les pages auth (/login, /register, /recover-password) — mode page uniquement, sans effet sur le modal global ; défaut code : affiché.",
     hideFooter: "Masque le SiteFooter sur les pages auth — même logique que hideHeader (mode page seulement) ; défaut code : affiché.",
     login: "Textes de l'écran de connexion (titre/sous-titre) — utilisés par le formulaire en mode page /login ET dans le modal global (même composant lazy).",

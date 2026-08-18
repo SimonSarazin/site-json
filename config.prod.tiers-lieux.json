@@ -2620,6 +2620,9 @@
   },
   "auth": {
     "variant": "default",
+    "menu": {
+      "kanban": true
+    },
     "hideHeader": false,
     "hideFooter": false,
     "login": {
@@ -4801,6 +4804,5 @@
     "condition": {
       "auth": "required"
     }
-  },
-  "kanban": true
+  }
 }
