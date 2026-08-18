@@ -8358,6 +8358,7 @@
       }
     }
   },
+  "kanban": true,
   "admin": {
     "enabled": true,
     "access": {

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router";
-import { ChevronDown, User, LogOut, ShieldCheck } from "lucide-react";
+import { ChevronDown, ExternalLink, User, LogOut, ShieldCheck, SquareKanban } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,8 +13,10 @@ import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { cn } from "@/lib/utils";
 import type { LocalizedString } from "@/types/site-schema";
+import { getServerUrl } from "@/lib/constant/common";
 import { useCocolight } from "@/hooks/useCocolight";
-import { isAdminEntryVisible } from "@/modules/admin/lib/adminEntry";
+import { isAdminEntryVisible, levelSatisfies, resolveAdminAccessLevel } from "@/modules/admin/lib/adminEntry";
+import { platformKanbanUrl } from "@/modules/admin/lib/platformKanbanUrl";
 import { useAuthActions } from "../hooks/useAuthActions";
 import { CurrentUserAvatar } from "./CurrentUserAvatar";
 import { LoginButton } from "./LoginButton";
@@ -79,6 +81,15 @@ export function AuthMenu({
   // Rendu sous ClientOnly (les droits ne sont connus qu'hydraté) → pas de flash SSR.
   const { me, entity } = useCocolight();
   const showAdmin = isAdminEntryVisible(config, me, entity);
+  // Entrée « Kanban » (opt-in `config.kanban`, niveau RACINE) : ouvre la vue actions de la plateforme
+  // dans un nouvel onglet. INDÉPENDANT de `admin` — le back-office peut rester désactivé — mais visible
+  // des seuls admins du costum (siteAdmin, superAdmin compris) : c'est un outil d'admin, pas un lien
+  // public. Sans slug de carrier résolu → pas de lien cassé.
+  const costumSlug = (entity as { slug?: string } | null)?.slug ?? "";
+  const kanbanUrl =
+    config.kanban && costumSlug && levelSatisfies(resolveAdminAccessLevel(me, entity), "siteAdmin")
+      ? platformKanbanUrl(getServerUrl(), costumSlug)
+      : null;
 
   // Précédence : config (bascule tous les headers) > prop (défaut du header) > défaut.
   const menuCfg = config.auth?.menu;
@@ -141,6 +152,15 @@ export function AuthMenu({
                 >
                   <ShieldCheck className="mr-2 h-4 w-4" />
                   {t("Administration")}
+                </Button>
+              )}
+              {kanbanUrl && (
+                <Button asChild variant="ghost" className="w-full justify-start" onClick={onAction}>
+                  <a href={kanbanUrl} target="_blank" rel="noopener noreferrer">
+                    <SquareKanban className="mr-2 h-4 w-4" />
+                    {t("Kanban")}
+                    <ExternalLink className="ml-auto size-3 opacity-60" aria-hidden="true" />
+                  </a>
                 </Button>
               )}
               <Button
@@ -220,6 +240,15 @@ export function AuthMenu({
                 <DropdownMenuItem onClick={() => navigate("/admin")}>
                   <ShieldCheck className="mr-2 h-4 w-4" />
                   {t("Administration")}
+                </DropdownMenuItem>
+              )}
+              {kanbanUrl && (
+                <DropdownMenuItem asChild>
+                  <a href={kanbanUrl} target="_blank" rel="noopener noreferrer">
+                    <SquareKanban className="mr-2 h-4 w-4" />
+                    {t("Kanban")}
+                    <ExternalLink className="ml-auto size-3 opacity-60" aria-hidden="true" />
+                  </a>
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem onClick={logout}>

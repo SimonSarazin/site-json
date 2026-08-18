@@ -2152,6 +2152,11 @@ export const SiteConfig = z.object({
   // Page d'Administration (config-driven, jumeau du module profil). Onglets/sections/accès déclarés en
   // données. Absent → pas de page admin. cf. modules/admin + commentaire/plan-module-admin-generique.md
   admin: AdminConfigSchema.optional(),
+  // Entrée « Kanban » du menu avatar : lien vers la vue actions de la plateforme
+  // (`<serverUrl>/#@<costumSlug>.view.actions`, cf. platformKanbanUrl). Au niveau RACINE, pas dans
+  // `admin` : activer le kanban n'oblige pas à activer le back-office. Visible des seuls admins du
+  // costum (resolveAdminAccessLevel >= siteAdmin). Opt-in : absent/false → rien ne change.
+  kanban: z.boolean().optional(),
   cagnotteModuleConfig: CagnotteModuleConfig.optional(),
 });
 export type SiteConfig = z.infer<typeof SiteConfig>;
