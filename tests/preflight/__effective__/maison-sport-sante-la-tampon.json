@@ -1,0 +1,155 @@
+{
+  "site": "maison-sport-sante-la-tampon",
+  "slug": "associationEkilibre",
+  "addMenus": {
+    "citoyens": {
+      "builtins": {
+        "organization": "add-structure",
+        "project": "add-project",
+        "event": "add-event",
+        "poi": "add-poi"
+      }
+    },
+    "organizations": {
+      "builtins": {
+        "project": "add-project",
+        "event": "add-event",
+        "poi": "add-poi"
+      }
+    },
+    "projects": {
+      "builtins": {
+        "event": "add-event",
+        "poi": "add-poi"
+      }
+    }
+  },
+  "editModals": {
+    "organizations": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-structure",
+          "native": "edit-structure",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    },
+    "poi": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-equipements-sportifs",
+          "native": "edit-equipements-sportifs",
+          "horsPerimetre": "edit-equipements-sportifs"
+        }
+      ]
+    }
+  },
+  "adminResources": {
+    "moderation/answers": {
+      "source": {
+        "notSourceKey": true,
+        "defaultFilters": {
+          "form": "6928096adf5caf0d230e7f26",
+          "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdr0xcsmmpnr6ez17q.address.postalCode": {
+            "$in": [
+              "97430",
+              "97418"
+            ]
+          }
+        },
+        "defaultSortBy": {
+          "created": -1
+        }
+      },
+      "create": null,
+      "edit": {
+        "enabled": false,
+        "modalName": null
+      }
+    }
+  },
+  "pages": {
+    "/creneaux/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "answers"
+        ],
+        "notSourceKey": true,
+        "defaultFilters": {
+          "form": "6928096adf5caf0d230e7f26",
+          "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdr0xcsmmpnr6ez17q.address.postalCode": {
+            "$in": [
+              "97430",
+              "97418"
+            ]
+          },
+          "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdn1jcq445i0mb9bap7": "Validé"
+        }
+      }
+    },
+    "/structure/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "notSourceKey": true,
+        "defaultFilters": {
+          "source.key": {
+            "$in": [
+              "sportSanteBienetre",
+              "associationEkilibre"
+            ]
+          },
+          "address.postalCode": {
+            "$in": [
+              "97430",
+              "97418"
+            ]
+          }
+        },
+        "defaultFields": [
+          "email",
+          "link",
+          "socialNetwork",
+          "youtube",
+          "telephone",
+          "statusActor",
+          "legalStatus",
+          "affiliate",
+          "affiliateTo",
+          "siren",
+          "sigle",
+          "thematic",
+          "mobile",
+          "representativeTitle",
+          "representativeCivility",
+          "representativeName",
+          "representativeFirstName",
+          "representativeEmail",
+          "representativeTelephone",
+          "personInChargeTitle",
+          "personInChargeCivility",
+          "personInChargeName",
+          "personInChargeFirstName",
+          "personInChargeEmail",
+          "personInChargeTelephone"
+        ]
+      }
+    }
+  },
+  "referencement": {},
+  "membership": {
+    "citoyens/membership": {
+      "types": [
+        "organizations",
+        "projects",
+        "pois",
+        "events"
+      ],
+      "scope": "network"
+    }
+  },
+  "profileRelated": {}
+}

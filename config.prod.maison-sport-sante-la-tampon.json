@@ -2612,10 +2612,102 @@
           "en": "Moderation"
         },
         "icon": "shield-alert",
-        "access": "superAdmin",
+        "access": "siteAdmin",
         "sections": [
           {
-            "type": "moderation"
+            "type": "resource",
+            "entityType": "answers",
+            "label": {
+              "fr": "Créneaux — modération",
+              "en": "Slots — moderation"
+            },
+            "source": {
+              "notSourceKey": true,
+              "defaultFilters": {
+                "form": "6928096adf5caf0d230e7f26",
+                "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdr0xcsmmpnr6ez17q.address.postalCode": {
+                  "$in": [
+                    "97430",
+                    "97418"
+                  ]
+                }
+              },
+              "defaultSortBy": {
+                "created": -1
+              }
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Activité",
+                  "en": "Activity"
+                }
+              },
+              {
+                "path": "structure.name",
+                "label": {
+                  "fr": "Structure",
+                  "en": "Organization"
+                }
+              },
+              {
+                "path": "sportSanteBienetre2172025_854_0mdn1cs8on3yru1p80lq",
+                "label": {
+                  "fr": "Type",
+                  "en": "Type"
+                }
+              },
+              {
+                "path": "address.postalCode",
+                "label": {
+                  "fr": "Code postal",
+                  "en": "Postal code"
+                }
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Déclaré le",
+                  "en": "Declared on"
+                }
+              }
+            ],
+            "rowActions": [
+              "validate"
+            ],
+            "create": false,
+            "edit": false,
+            "status": {
+              "mode": "statusField",
+              "field": "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdn1jcq445i0mb9bap7",
+              "states": [
+                {
+                  "value": "En attente",
+                  "tone": "pending"
+                },
+                {
+                  "value": "En cours",
+                  "tone": "progress"
+                },
+                {
+                  "value": "Validé",
+                  "tone": "positive"
+                },
+                {
+                  "value": "Réfusé",
+                  "label": {
+                    "fr": "Refusé",
+                    "en": "Refused"
+                  },
+                  "tone": "negative"
+                }
+              ]
+            }
+          },
+          {
+            "type": "moderation",
+            "access": "superAdmin"
           }
         ]
       }
@@ -4126,6 +4218,25 @@
       "editModal": "edit-structure",
       "editModalMatch": {
         "type": "NGO"
+      },
+      "when": {
+        "or": [
+          {
+            "field": "sourceKeys",
+            "op": "contains",
+            "value": "sportSanteBienetre"
+          },
+          {
+            "field": "sourceKeys",
+            "op": "contains",
+            "value": "associationEkilibre"
+          },
+          {
+            "field": "reference.costum",
+            "op": "contains",
+            "value": "sportSanteBienetre"
+          }
+        ]
       },
       "sections": [
         {

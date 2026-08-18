@@ -64,7 +64,11 @@
     "deleteTitle": "Delete “{{label}}”?",
     "selectAll": "Select all (loaded rows)",
     "selectRow": "Select {{label}}",
-    "rowActions": "Actions for {{label}}"
+    "rowActions": "Actions for {{label}}",
+    "setStatus": "Mark as: {{state}}",
+    "statusUnset": "Not set",
+    "statusSuccess": "Status updated: {{state}}",
+    "statusError": "Status update failed"
   },
   "AdminExportSection": {
     "title": "CSV export",

@@ -24,22 +24,33 @@ export type AdminAccessLevel = z.infer<typeof AdminAccessLevelSchema>;
  *  addConfig / profiles.<type>.editModal) · `"add-<key>"`/`"edit-<key>"` (clé forcée, standard ou costum). */
 export const AdminFormRefSchema = z.union([z.literal(false), z.literal("inherit"), z.string()]);
 
-/** Workflow de statut d'une resource (validation pending→validated). `costumFlag` =
- *  `preferences.toBeValidated[slug]` (legacy ValidateGroupAction) ; `statusField` = champ métier.
- *
- *  ⚠ CONTRAT FUTUR — aujourd'hui `status` n'est lu qu'en BOOLÉEN (présence = active le mode admin,
- *  au même titre que rowActions:["validate"]) : les sous-champs ne sont PAS ENCORE câblés.
- *  Décision 2026-07-07 : à l'implémentation (prévue avec SSBE), `mode`/`field`/`states` seront
- *  câblés (filtre Select des states + badge + UPDATE_PATH_VALUE) ; `cascade` et `notifyEmail`
- *  seront RETIRÉS — la cascade legacy est intrinsèque (pas un paramètre de requête, à re-vérifier
- *  dans ValidateGroupAction) et l'email de statut est un hook costum BACKEND (chantier
- *  costum-hooks), pas un levier du front. Ne PAS écrire de valeur non-défaut d'ici là. */
+/** Un état métier du mode `statusField` : `value` = valeur brute écrite/lue en base (VERBATIM,
+ *  orthographes legacy comprises — ex. « Réfusé » du CoForm SSBE) ; `label` = affichage (permet de
+ *  corriger l'orthographe sans toucher la donnée) ; `tone` = ton visuel du badge (mêmes tokens
+ *  `bg-badge-*` que les badges des cartes publiques). Forme courte : la string seule. */
+export const AdminStatusStateSchema = z.union([
+  z.string(),
+  z.object({
+    value: z.string(),
+    label: LocalizedString.optional(),
+    tone: z.enum(["positive", "pending", "progress", "negative"]).optional(),
+  }),
+]);
+export type AdminStatusState = z.infer<typeof AdminStatusStateSchema>;
+
+/** Workflow de statut d'une resource :
+ *  - `costumFlag` (défaut) = `preferences.toBeValidated[slug]` (legacy ValidateGroupAction), lu en
+ *    booléen — présence de `status` = mode admin, au même titre que rowActions:["validate"].
+ *  - `statusField` (câblé le 31/07, décision 2026-07-07) = le statut est un CHAMP MÉTIER de
+ *    `serverData` (`field`, chemin pointé, ex. le select « Administration » d'une answer CoForm) à
+ *    valeurs dans `states` : colonne badge toné, filtre serveur par état, actions « Marquer … »
+ *    par-ligne via `entity.updateField` (UPDATE_PATH_VALUE — un $set ciblé, pas un save complet).
+ *    `cascade`/`notifyEmail` du contrat initial sont RETIRÉS comme acté (cascade legacy
+ *    intrinsèque ; email de statut = hook costum backend, pas un levier du front). */
 export const AdminStatusConfigSchema = z.object({
   field: z.string().default("preferences.toBeValidated"),
   mode: z.enum(["costumFlag", "statusField"]).default("costumFlag"),
-  states: z.array(z.string()).optional(),
-  cascade: z.boolean().default(true),
-  notifyEmail: z.boolean().default(false),
+  states: z.array(AdminStatusStateSchema).optional(),
 });
 
 /** Colonnes de table : chemin pointé brut (`"address.addressLocality"`) OU `{path, label, type}` (libellé localisé). */

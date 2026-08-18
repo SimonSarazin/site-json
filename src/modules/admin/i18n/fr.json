@@ -64,7 +64,11 @@
     "deleteTitle": "Supprimer « {{label}} » ?",
     "selectAll": "Tout sélectionner (lignes chargées)",
     "selectRow": "Sélectionner {{label}}",
-    "rowActions": "Actions pour {{label}}"
+    "rowActions": "Actions pour {{label}}",
+    "setStatus": "Marquer : {{state}}",
+    "statusUnset": "Non renseigné",
+    "statusSuccess": "Statut mis à jour : {{state}}",
+    "statusError": "Échec de la mise à jour du statut"
   },
   "AdminExportSection": {
     "title": "Export CSV",

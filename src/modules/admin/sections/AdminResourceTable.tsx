@@ -1,4 +1,4 @@
-import { BadgeCheck, BadgeX, ChevronDown, ChevronUp, Link2, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
+import { BadgeCheck, BadgeX, ChevronDown, ChevronUp, CircleCheck, CircleDashed, CircleDot, CirclePlay, CircleX, Link2, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
@@ -19,6 +19,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { SEARCH_QUERY_KEYS, SEARCH_STATIC_LIST_PREFIX, SEARCH_STATIC_MAP_PREFIX } from "@/modules/search/constants/queryKeys";
 import { useSite } from "@/hooks/useSite";
 import { useT } from "@/hooks/useT";
 import "@/modules/admin/i18n";
@@ -39,7 +41,7 @@ import type { AdminResourceSection, AdminSection } from "../schema";
 import { downloadCsv } from "../lib/downloadCsv";
 import { ensureCostumScope } from "../lib/ensureCostumScope";
 import { AudioPlayer } from "@/components/media/AudioPlayer";
-import { formatCell, getPath, resolveCreateModal, resolveEditModal, type CostumFormDocLike } from "./resourceHelpers";
+import { formatCell, getPath, readStatusValue, resolveCreateModal, resolveEditModal, type CostumFormDocLike } from "./resourceHelpers";
 
 /** Cellule audio : lecteur du 1er `medias[].url` de type audio de la ligne (ou d'une URL directe). */
 function AudioCell({ value }: { value: unknown }) {
@@ -63,6 +65,24 @@ import type { EntityTypes } from "@communecter/cocolight-api-client";
  */
 /** Statut de validation costum, par filtre serveur : Tous / À valider / Validés. */
 type StatusFilter = "all" | "pending" | "validated";
+
+/** Tons du badge en mode `statusField` — MÊMES tokens `bg-badge-*` que les badges des cartes
+ *  publiques (`getStatusStyle`, search/lib/coformAnswer) : la modération et l'annuaire racontent
+ *  le même statut avec les mêmes couleurs. */
+const STATUS_TONE_CLASS: Record<string, string> = {
+  positive: "bg-badge-valid text-primary-foreground",
+  pending: "bg-badge-waiting text-primary-foreground",
+  progress: "bg-badge-in-progress text-primary-foreground",
+  negative: "bg-badge-refused text-primary-foreground",
+};
+
+/** Icône d'une action « Marquer <état> » selon le ton (repère visuel, jamais seule : le libellé porte l'état). */
+const STATUS_TONE_ICON: Record<string, typeof CircleDot> = {
+  positive: CircleCheck,
+  pending: CircleDashed,
+  progress: CirclePlay,
+  negative: CircleX,
+};
 
 export default function AdminResourceTable({ section }: { section: AdminSection }) {
   const resource = section as AdminResourceSection;
@@ -104,11 +124,16 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   );
   const rowActions = resource.rowActions ?? ["edit", "delete"];
   const costumSlug = (carrier as { slug?: string } | null)?.slug ?? "";
+  // Mode `statusField` (status.mode) : le statut est un CHAMP MÉTIER de serverData (states config),
+  // PAS le flag costum toBeValidated — la machinerie costumFlag (variant admin, filtre pending)
+  // ne s'applique pas. Les rows restent sur l'endpoint public (les answers n'y sont pas strippées).
+  const statusStates = (resource.status?.states ?? []).map((s) => (typeof s === "string" ? { value: s } : s));
+  const fieldStatus = resource.status?.mode === "statusField" && statusStates.length > 0 ? resource.status : null;
   // Mode ADMIN (variant SDK `admin` → globalautocompleteadmin, SDK ≥ 1.0.161) dès que la table gère la
   // validation : la projection admin renvoie `preferences` (strippé byte-legacy sur l'endpoint public)
   // → badge « En attente / Validé » + filtre statut + action contextuelle. Gate : la page /admin est déjà
   // réservée aux admins de l'hôte — même population que la gate serveur (canEditItem sur l'hôte).
-  const adminMode = rowActions.includes("validate") || !!resource.status;
+  const adminMode = !fieldStatus && (rowActions.includes("validate") || !!resource.status);
 
   // Recherche plein-texte débouncée (300ms comme MembersSection) — searchText est dans la queryKey → refetch auto.
   const [q, setQ] = useState("");
@@ -117,6 +142,8 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   const [sort, setSort] = useState<{ col: string; dir: 1 | -1 } | null>(null);
   // Filtre statut (serveur : preferences.toBeValidated.<slug> $exists) — admin uniquement.
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  // Filtre par état métier (mode statusField) : "all" ou une `value` de states — match serveur exact.
+  const [fieldFilter, setFieldFilter] = useState<string>("all");
 
   // `events` est le SEUL type que le legacy RÉDUIT quand la requête ne demande aucun champ :
   // `SearchNew::getResults` (citizenToolKit/models/SearchNew.php:432) repasse alors chaque event par
@@ -147,6 +174,10 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
       // Double flag (preferences + source), cf. validationStatusFilter / SearchNew::getQueries:783-818.
       Object.assign(filters, validationStatusFilter(costumSlug, statusFilter));
     }
+    if (fieldStatus && fieldFilter !== "all") {
+      // Match EXACT de la valeur brute (les rows sans le champ ne sortent que sur « Tous »).
+      filters[fieldStatus.field] = fieldFilter;
+    }
     // Projection :
     //  - mode ADMIN : AUCUN `fields` → la route admin renvoie les DOCUMENTS COMPLETS (sémantique
     //    legacy searchAdmin, moins pwd). Indispensable au-delà du badge : la résolution d'édition
@@ -159,12 +190,19 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
     return {
       defaultTypes: [resource.entityType] as SearchType[],
       ...src,
-      ...(adminMode ? { defaultFields: champsAdmin } : { defaultFields: [...new Set(["source", "reference", ...(src.defaultFields ?? [])])] }),
+      // adminMode → projection admin (`champsAdmin` : liste events, sinon undefined = docs complets).
+      // fieldStatus : documents COMPLETS aussi (badge + colonnes lisent des champs métier profonds),
+      // mais SANS variant admin — la projection forcée ["source","reference"] les strip­perait.
+      ...(adminMode
+        ? { defaultFields: champsAdmin }
+        : fieldStatus
+          ? { defaultFields: undefined }
+          : { defaultFields: [...new Set(["source", "reference", ...(src.defaultFields ?? [])])] }),
       ...(Object.keys(filters).length > 0 ? { defaultFilters: filters } : {}),
       ...(sort ? { defaultSortBy: { [sort.col]: sort.dir } } : {}),
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- src dérivé de la config (stable par rendu)
-  }, [adminMode, statusFilter, costumSlug, sort, resource.entityType, champsAdmin, JSON.stringify(src)]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- src/fieldStatus dérivés de la config (stables par rendu)
+  }, [adminMode, statusFilter, fieldFilter, costumSlug, sort, resource.entityType, champsAdmin, JSON.stringify(src)]);
 
   const { transformedResults, totalCount, isLoading, lastItemRef, refetch, error: searchError } = useSearchQuery({
     queryKeyPrefix: ADMIN_QUERY_KEYS.RESOURCE_PREFIX(resource.entityType),
@@ -187,7 +225,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   // La sélection est liée à la VUE : recherche/filtre/tri changent → reset (sinon on peut agir
   // sur des éléments sortis de l'écran — audit robustesse). Pattern adjust-during-render (repo).
   const [selected, setSelected] = useState<Map<string, unknown>>(new Map());
-  const selectionScopeKey = `${searchText}|${statusFilter}|${sort ? `${sort.col}:${sort.dir}` : ""}`;
+  const selectionScopeKey = `${searchText}|${statusFilter}|${fieldFilter}|${sort ? `${sort.col}:${sort.dir}` : ""}`;
   const [lastScopeKey, setLastScopeKey] = useState(selectionScopeKey);
   if (selectionScopeKey !== lastScopeKey) {
     setLastScopeKey(selectionScopeKey);
@@ -298,6 +336,27 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   });
   const validate = useValidateGroup(() => {});
   const reference = useReferenceElement(() => {});
+  /** Mode statusField : écrit le champ métier via `entity.updateField` (UPDATE_PATH_VALUE — un $set
+   *  ciblé ; PAS le save d'answer complet, qui exigerait un re-fetch pour ne rien effacer). Les rows
+   *  sont des entités revivifiées (`helper.fromEntityJSON`) — garde défensive sinon. Invalidation :
+   *  tables/tuiles admin ET listes publiques (liste + carte lisent le même champ, ex. /creneaux). */
+  const setStatus = useMutationWithToast<void, { item: unknown; value: string; display: string }>({
+    mutationFn: async ({ item, value }) => {
+      if (!fieldStatus) return;
+      const target = grantCostumAdmin(item) as { updateField?: (path: string, v: string) => Promise<unknown> };
+      if (typeof target.updateField !== "function") throw new Error("updateField indisponible sur cette ligne");
+      await target.updateField(fieldStatus.field, value);
+    },
+    successKey: "AdminResourceTable.statusSuccess",
+    errorKey: "AdminResourceTable.statusError",
+    getSuccessParams: (_, v) => ({ state: v.display }),
+    namespace: "modules/admin",
+    onSuccessCallback: () => {
+      void invalidateAdmin();
+      queryClient.invalidateQueries({ queryKey: SEARCH_QUERY_KEYS.RESULTS_PREFIX(SEARCH_STATIC_LIST_PREFIX) });
+      queryClient.invalidateQueries({ queryKey: SEARCH_QUERY_KEYS.RESULTS_PREFIX(SEARCH_STATIC_MAP_PREFIX) });
+    },
+  });
   // Choix costum/standard par CONFIG (`create`/`edit`) — cf. resourceHelpers. En `inherit`, la
   // création prend le form COSTUM du site s'il en existe un pour ce type (config.costumForms,
   // même form que le bouton public), et l'édition suit la résolution publique (editModal/Match).
@@ -345,6 +404,19 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                 <SelectItem value="all">{tAdmin("AdminResourceTable.statusAll")}</SelectItem>
                 <SelectItem value="pending">{tAdmin("AdminResourceTable.statusPending")}</SelectItem>
                 <SelectItem value="validated">{tAdmin("AdminResourceTable.statusValidated")}</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+          {fieldStatus && (
+            <Select value={fieldFilter} onValueChange={setFieldFilter}>
+              <SelectTrigger className="w-44">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{tAdmin("AdminResourceTable.statusAll")}</SelectItem>
+                {statusStates.map((s) => (
+                  <SelectItem key={s.value} value={s.value}>{s.label ? t(s.label) : s.value}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           )}
@@ -432,7 +504,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                   </Button>
                 </TableHead>
               ))}
-              {adminMode && <TableHead>{tAdmin("AdminResourceTable.statusColumn")}</TableHead>}
+              {(adminMode || fieldStatus) && <TableHead>{tAdmin("AdminResourceTable.statusColumn")}</TableHead>}
               <TableHead className="sticky right-0 z-10 w-12 bg-background" />
             </TableRow>
           </TableHeader>
@@ -487,6 +559,24 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                         : formatCell(getPath(data, col.path))}
                     </TableCell>
                   ))}
+                  {fieldStatus && (
+                    <TableCell>
+                      {(() => {
+                        const raw = readStatusValue(data, fieldStatus.field);
+                        const current = statusStates.find((s) => s.value === raw);
+                        if (!current) {
+                          // Champ absent (answer jamais statuée) ou valeur hors config : neutre, valeur brute visible.
+                          return <Badge variant="outline">{typeof raw === "string" && raw ? raw : tAdmin("AdminResourceTable.statusUnset")}</Badge>;
+                        }
+                        const tone = current.tone ? STATUS_TONE_CLASS[current.tone] : undefined;
+                        return (
+                          <Badge variant={tone ? undefined : "secondary"} className={tone}>
+                            {current.label ? t(current.label) : current.value}
+                          </Badge>
+                        );
+                      })()}
+                    </TableCell>
+                  )}
                   {adminMode && (
                     <TableCell>
                       {isPending ? (
@@ -509,7 +599,26 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                             <Pencil className="mr-2 h-4 w-4" /> {tAdmin("AdminResourceTable.edit")}
                           </DropdownMenuItem>
                         )}
-                        {rowActions.includes("validate") && carrier && hasRealId && (
+                        {fieldStatus && rowActions.includes("validate") && hasRealId && (() => {
+                          // Une action par ÉTAT CIBLE (l'état courant est omis) — le libellé porte
+                          // l'état, l'icône (ton) n'est qu'un repère. Écrit la valeur brute config.
+                          const raw = readStatusValue(data, fieldStatus.field);
+                          return statusStates.filter((s) => s.value !== raw).map((s) => {
+                            const Icon = (s.tone && STATUS_TONE_ICON[s.tone]) || CircleDot;
+                            const display = s.label ? t(s.label) : s.value;
+                            return (
+                              <DropdownMenuItem
+                                key={s.value}
+                                disabled={setStatus.isPending}
+                                onClick={() => setStatus.mutate({ item, value: s.value, display })}
+                              >
+                                <Icon className="mr-2 h-4 w-4" />
+                                {tAdmin("AdminResourceTable.setStatus", undefined, { state: display })}
+                              </DropdownMenuItem>
+                            );
+                          });
+                        })()}
+                        {!fieldStatus && rowActions.includes("validate") && carrier && hasRealId && (
                           // Le statut est LISIBLE en mode admin (variant admin → preferences projeté) : on
                           // n'affiche que l'action PERTINENTE (« Valider » un en-attente, « Dévalider » un validé).
                           // ⚠ On appelle sur `item` (l'entité de la ligne) et NON `carrier` : validateGroup/addReference
