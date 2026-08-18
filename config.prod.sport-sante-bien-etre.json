@@ -4451,6 +4451,9 @@
     "customCSS": ""
   },
   "auth": {
+    "menu": {
+      "kanban": true
+    },
     "login": {
       "title": {
         "fr": "Se connecter",
