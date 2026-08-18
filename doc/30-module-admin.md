@@ -40,6 +40,7 @@ par `isAdminEntryVisible` (`lib/adminEntry.ts`) — jamais de lien vers une page
 ## Activation et accès
 
 ```jsonc
+"kanban": true,                          // RACINE (sibling d'admin) : entrée « Kanban » du menu avatar (voir ci-dessous)
 "admin": {
   "enabled": true,                       // défaut true ; false = page désactivée
   "title": { "fr": "Administration" },   // h1 (optionnel)
@@ -47,6 +48,17 @@ par `isAdminEntryVisible` (`lib/adminEntry.ts`) — jamais de lien vers une page
   "tabs": [ /* voir ci-dessous */ ]
 }
 ```
+
+**`kanban`** (opt-in, défaut absent — clé **racine** de la config, PAS dans `admin` : activer le kanban
+n'oblige pas à activer le back-office) : ajoute dans le **menu avatar** (`AuthMenu`, au même niveau que
+Profil / Administration, layouts desktop et mobile) une entrée « Kanban » qui ouvre **dans un nouvel
+onglet** la vue kanban des actions de la plateforme :
+`<serverUrl>/#@<costumSlug>.view.actions` (ex. `https://www.communecter.org/#@sportSanteBienetre.view.actions`).
+Visibilité = **admins du costum uniquement** (`resolveAdminAccessLevel ≥ siteAdmin`, superAdmin compris) —
+indépendante de `admin.enabled`/`access.min`. Le slug est celui du **carrier costum actif** (même source que
+le scoping d'`AdminResourceTable` — pas le slug du site : un sous-site territorial porte le costum parent),
+la base est `getServerUrl()` (`VITE_SERVER_URL`, `www.communecter.org` sur tout le parc). Composition
+testée : `lib/platformKanbanUrl.ts`. Sans slug de carrier résolu, l'entrée n'apparaît pas (pas de lien cassé).
 
 Trois niveaux (`AdminAccessLevelSchema`, du plus fort au plus faible) :
 
