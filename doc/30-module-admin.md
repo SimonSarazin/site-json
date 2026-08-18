@@ -173,9 +173,38 @@ ne sont **pas** lancées. `actions` gate le bouton « Inviter ».
   du `useSearchQuery` de la table) → le nouvel élément apparaît **immédiatement** dans la liste (create
   ET edit), en plus du fil concerné (ex. `blog:<slug>`). Sans ces deux réglages, le create rediligerait
   hors admin et la table ne se rafraîchirait pas.
-- `status` : **contrat futur** — seule sa présence (booléen) active le mode admin aujourd'hui ;
-  les sous-champs `field/mode/states/cascade/notifyEmail` ne sont pas encore câblés (voir la
-  JSDoc du schéma avant d'écrire une valeur non-défaut).
+- `status` — deux modes (`status.mode`) :
+  - `costumFlag` (défaut) : présence = mode admin (flag `preferences.toBeValidated[slug]`,
+    comportement historique ci-dessus) ;
+  - `statusField` (câblé le 31/07/2026, décision 2026-07-07) : le statut est un **champ métier**
+    de `serverData` (`field`, chemin pointé) à valeurs dans `states` — colonne **badge toné**
+    (tokens `bg-badge-*`, mêmes couleurs que les cartes publiques), **filtre serveur** par état
+    (match exact ; les rows sans le champ ne sortent que sur « Tous »), actions par-ligne
+    « Marquer : <état> » (gate `rowActions:["validate"]`) via `entity.updateField`
+    (UPDATE_PATH_VALUE — un `$set` ciblé, pas un save d'answer complet). La recherche reste sur
+    l'endpoint **public** en documents complets (pas de variant admin) ; l'invalidation post-mutation
+    couvre `admin-*` **et** les listes publiques (`SEARCH_STATIC_LIST/MAP_PREFIX`).
+
+    ```jsonc
+    "status": { "mode": "statusField",
+      "field": "answers.<formKey>.<suffixe>",           // ex. select « Administration » d'une answer
+      "states": [ "En attente",                          // forme courte
+        { "value": "Réfusé",                             // valeur brute VERBATIM (legacy accentué)
+          "label": { "fr": "Refusé" },                   // affichage corrigé
+          "tone": "negative" } ] }                       // positive | pending | progress | negative
+    ```
+    `cascade`/`notifyEmail` du contrat initial sont **retirés** (cascade legacy intrinsèque ;
+    email de statut = hook costum backend). Premier consommateur : modération des créneaux
+    Ekilib.re (answers CoForm, cf. `doc-projets/maison-sport-sante-la-tampon.md` §9.7).
+
+    ⚠ **Lecture ≠ écriture pour les answers** : `field` est le chemin **Mongo imbriqué**
+    (`answers.<formKey>.<clé>`) — c'est lui que consomment le filtre serveur et l'écriture
+    `UPDATE_PATH_VALUE`. Mais les **hooks costum de recherche aplatissent** les champs d'answer au
+    top-level de la ligne en supprimant `answers.*` (ex. `SportSanteBienetre::searchAnswers` pose
+    aussi `name`/`structure`/`address` à la racine). La lecture (badge, action courante) passe donc
+    par `readStatusValue` (resourceHelpers) : chemin complet d'abord, **repli sur la clé feuille à
+    plat**. Les `columns` d'une resource answers doivent viser la **shape aplatie** (`name`,
+    `structure.name`, `<formKey+clé>` à plat…), pas les chemins imbriqués.
 
 ### `import`
 
@@ -261,10 +290,11 @@ silencieusement dans la section custom. Champs stricts notables : `import.entity
 
 ## Limites connues / backlog
 
-- `status.*` : déclaré au schéma, **non câblé**. Décision 2026-07-07 : `mode`/`field`/`states`
-  seront implémentés à l'arrivée de SSBE (workflows multi-états, via `UPDATE_PATH_VALUE`) ;
-  `cascade` et `notifyEmail` seront **retirés** (cascade legacy intrinsèque, email = hook costum
-  backend — mauvaise couche pour un flag de config front).
+- ~~`status.*` non câblé~~ **fait le 31/07/2026** : `mode: "statusField"` implémenté (badge toné +
+  filtre serveur + « Marquer » via `entity.updateField`), `cascade`/`notifyEmail` retirés comme
+  acté — cf. la section `resource` ci-dessus. Reste ouvert : l'**autorisation backend** d'un
+  `updatepathvalue` sur une answer par un admin de costum non-auteur (à vérifier en recette —
+  même famille de risque que le save d'answer par un non-propriétaire).
 - Dérivation automatique des `tabs` : ne sera **pas** implémentée en runtime — les tabs se
   génèrent explicitement (assistant config / commande à venir), la config reste inspectable.
 - `me.isCostumAdmin(slug)` : pas exposé par la lib, et **0/65 costums** de la base n'a

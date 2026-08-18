@@ -15,15 +15,22 @@
 > 06/07) · [`ENDPOINT.md`](../../ENDPOINT.md) (fiches d'endpoints SDK à créer). Mémoire :
 > `[[project-maison-sport-sante-la-tampon]]`.
 
-Dernière mise à jour : **2026-08-06** (session 3, deux intervenants — **date corrigée** : la
-précédente version de ce document datait par erreur toute la session 3 du 31/07 ; les commits
-`348237e5`→`a524cf33` ci-dessous sont réellement du **06/08**). Au programme de la session : merge
-`main` → `ekilibre` résolu (`348237e5`, Cael, 12:41) ; **renommage du costumForm `structure-ekilibre`
-→ `structure`** + fiche détail dédiée `PreviewStructure` (`253dec37`, Nicolas, 13:07 — §9.5 bis) ;
-**back-office `/admin` + tableau de bord KPIs** CDC §4.2 (`2bf0007d`/`a524cf33`, Cael, 14:42 — §9.6) ;
-SDK **1.0.173** requis par `package.json` committé, mais **1.0.171 réinstallé sur ce poste** en fin
-de session (§12) ; **nouveau chantier annoncé** (non codé) : remplacement du flux **News** de la home
-par un **CRUD d'actualités porté en POI** (§2, §4, §10 Lot E, §13).
+Dernière mise à jour : **2026-08-18** (session 4 : **modération des créneaux par statut**
+(`statusField`) — §9.7, avec correctif « colonnes vides » (shape aplatie par le hook costum) ;
+**pull `origin/ekilibre` intégré** (merge `main` `b8045fc6` : SDK **1.0.184**, `formatCell`
+multivalué, fixes coform commonTable)).
+
+<details><summary>Session 3 (06/08, deux intervenants — dates corrigées)</summary>
+
+La précédente version de ce document datait par erreur toute la session 3 du 31/07 ; les commits
+`348237e5`→`a524cf33` sont réellement du **06/08** : merge `main` → `ekilibre` résolu (`348237e5`,
+Cael, 12:41) ; **renommage du costumForm `structure-ekilibre` → `structure`** + fiche détail dédiée
+`PreviewStructure` (`253dec37`, Nicolas, 13:07 — §9.5 bis) ; **back-office `/admin` + tableau de
+bord KPIs** CDC §4.2 (`2bf0007d`/`a524cf33`, Cael, 14:42 — §9.6) ; **nouveau chantier annoncé**
+(non codé) : remplacement du flux **News** de la home par un **CRUD d'actualités porté en POI**
+(§2, §4, §10 Lot E, §13).
+
+</details>
 
 <details><summary>Historique des sessions précédentes (31/07, sessions 1–2)</summary>
 
@@ -572,6 +579,47 @@ Revalidé indépendamment ce même jour (Nicolas, cf. §9.5 bis) : `config:valid
 
 ---
 
+### 9.7 Modération des créneaux dans l'admin — `status.mode: "statusField"` (18/08, session 4, Peterson)
+
+**Demande** : lister les créneaux dans l'onglet Modération avec leur statut, et permettre aux
+admins de les passer en Validé / Refusé / En attente (le statut du CoForm). **Réalisation** : câblage
+du **contrat `statusField`** prévu de longue date dans le schéma admin (décision 2026-07-07 —
+c'était un « contrat futur » jamais implémenté) + une section `resource` answers dans l'onglet
+`moderation` de la config.
+
+- **Vérité terrain** (form live) : le statut est le select **« Administration »** (`isAdminOnly`),
+  options exactes `["En attente", "En cours", "Validé", "Réfusé"]` — l'orthographe legacy
+  **« Réfusé »** est écrite VERBATIM en base ; la config l'écrit telle quelle et l'affiche « Refusé »
+  (`states[].label`).
+- **Moteur** (générique, tout site) : colonne badge toné (mêmes tokens `bg-badge-*` que les cartes
+  `/creneaux`), filtre serveur par état, actions « Marquer : … » par-ligne → `entity.updateField`
+  (UPDATE_PATH_VALUE, un `$set` ciblé — pas le save d'answer complet qui exigerait un re-fetch
+  anti-effacement). Invalidation : tables/tuiles `admin-*` **et** listes publiques liste+carte
+  (un créneau validé apparaît sur `/creneaux` sans F5). `cascade`/`notifyEmail` retirés du schéma
+  comme acté.
+- **Config** : onglet `moderation` passé **siteAdmin** (la modération des créneaux est le quotidien
+  de la MSS) ; la section signalements news/commentaires reste **superAdmin** (plancher backend).
+  Périmètre = celui de `/creneaux` **sans** le filtre d'état (on modère tout le territoire), tri
+  `created` desc, colonnes Activité / Type / CP / Déclaré le. `create`/`edit: false` (l'édition
+  de contenu se fait sur `/creneaux` via le bouton Modifier).
+- **Correctif « colonnes vides » (même session)** : les premières colonnes visaient les chemins
+  Mongo imbriqués (`answers.<formKey>.<clé>`) — or côté costum SSBE, le hook de recherche
+  (`SportSanteBienetre::…`, legacy) **aplatit** les champs d'answer au top-level et **supprime
+  `answers.*`**, en posant en bonus `name` (= titre), `structure` {name…} et `address` à la racine
+  (vérifié par curl avec `costumSlug` : 48 clés plates). Correctif : colonnes réécrites sur la
+  **shape aplatie** (`name` / `structure.name` / type à plat / `address.postalCode` / `created`) et
+  lecture du statut via **`readStatusValue`** (resourceHelpers, 3 tests) — chemin complet d'abord,
+  repli clé feuille à plat ; le chemin imbriqué reste LE bon pour le filtre serveur et l'écriture
+  `UPDATE_PATH_VALUE`. Autre découverte du hook : **`Validé` est forcé pour les non-admins de
+  costum** → un admin voit bien tous les états dans la modération, le public non (cohérent).
+- **Gates** : typecheck ✅ 0 erreur · lint ✅ · `config:validate` ✅ · `audit:config` ✅ strip 0 ·
+  unit **2324** ✅ (reste le pré-existant `skill-integrity`).
+- **⚠ À recetter en priorité** : l'autorisation BACKEND d'`updatepathvalue` sur une answer par un
+  admin de costum **non-auteur** — même famille de risque que le save d'answer (§12 droits) ; si le
+  backend refuse, prévoir une fiche `ENDPOINT.md` (endpoint de modération dédié).
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Lot A — Vitrine & annuaires (config)
@@ -608,6 +656,7 @@ Revalidé indépendamment ce même jour (Nicolas, cf. §9.5 bis) : `config:valid
 | D.4 | KPI « Signalements en attente » | ✅ | tuile modération dérivée — visible **superAdmin** seulement (plancher backend) |
 | D.5 | KPI « Pros inscrits » (attente de validation) | ✅ | = membres du carrier `toBeValidated` ; **définition à confirmer** (§13) |
 | D.6 | Recette du back-office (siteAdmin réel, uploads AdminPanel) | ❌ | à faire ; l'upload AdminPanel écrira dans `public/images/associationEkilibre/` (déclarer ce dossier dans `sites.json` **dès le premier fichier**, cf. §12) |
+| D.7 | Modération des créneaux (liste + statuts Validé/Refusé/En attente/En cours) | ✅ code | §9.7 — `status.mode: "statusField"` câblé (moteur) + resource answers dans l'onglet moderation (siteAdmin) ; **recette backend à faire** (updatepathvalue par admin non-auteur) |
 
 ### Lot E — Actualités (CDC, remplace le flux News)
 
@@ -668,6 +717,12 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
   config elle-même à l'insertion, mais **statique ensuite**) : si les filtres de la page changent
   (CP, état, form), re-synchroniser le bloc `admin.tabs[0]…kpis[0].source` — sinon le KPI compte un
   autre périmètre que la page, sans erreur.
+- **Answers : chemins imbriqués pour FILTRER/ÉCRIRE, shape APLATIE pour LIRE.** Le hook costum SSBE
+  de recherche aplatit les champs d'answer à la racine des lignes (supprime `answers.*`, pose
+  `name`/`structure`/`address`) → des `columns` en `answers.<formKey>.<clé>` affichent des colonnes
+  **vides sans erreur** (piège vécu §9.7). Filtres serveur (`defaultFilters`, filtre d'état) et
+  `UPDATE_PATH_VALUE` gardent, eux, le chemin Mongo imbriqué. Le badge statut est protégé par le
+  repli `readStatusValue` ; les colonnes, non — viser la shape aplatie.
 - **Convention `.env` locale** : une valeur entre guillemets fait échouer le préflight
   `environment` (piège déjà vécu le 06/07, corrigé depuis dans la configuration locale). Poste
   dev : limite inotify relevée à 524 288 (06/07).
@@ -712,12 +767,13 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
 | **Tuile « Signalements » visible superAdmin seulement** (plancher backend de `getModerationQueue`) : acceptable, ou faut-il un endpoint siteAdmin ? (fiche `ENDPOINT.md` si besoin) | Thomas |
 | **Versionner `.claude/agents/siteforge-config-auditor.md`** (référencé par le skill `config-assistant`, jamais commité → gate `skill-integrity` rouge sur tout clone frais) | mainteneur (aboire ?) |
 | **Recette back-office `/admin`** (compte siteAdmin réel : KPIs, membres, modération) | Peterson / MSS |
+| **Recette modération créneaux** : `updatepathvalue` sur une answer par un admin **non-auteur** — le backend l'autorise-t-il ? (sinon fiche `ENDPOINT.md` endpoint de modération dédié) | Peterson → Thomas |
 | **Recette du wizard auto-inscription** (upload logo, soumission réelle, libellés/ordre des étapes validés par la MSS) | Peterson / MSS |
 | ~~SDK : `Answer.deleteFiles` ?~~ **résolu** — livré (présent depuis 1.0.169, SDK installé : **1.0.173**) ; reste la recette de suppression réelle | — |
 | **Formulaire de contact** : endpoint SDK (`CONTACT_SEND_URL`) ou route Express locale — trancher | Thomas / Peterson |
 | **Recette création/modification d'un créneau** en admin (navigateur, backend réel) | Peterson / MSS |
 | **Volumétrie réelle** : combien de créneaux validés CP 97430/97418 ? de structures ? | MSS / réseau SSBE |
-| **Qui valide les créneaux** (passage `state` → `"Validé"`) et où — process de modération à documenter | MSS / réseau SSBE |
+| **Qui valide les créneaux** : le process est désormais **outillé** (onglet Modération de `/admin`, §9.7) — reste à désigner qui l'opère à la MSS | MSS / réseau SSBE |
 | **`useDeleteAnswer`** (suppression de créneau) — si le besoin est confirmé | Peterson |
 | **Spec e2e Ekilibre** (lecture seule, modèle parent62) | Peterson |
 | **Chiffres clés dynamiques** sur la home (compter les answers au lieu du dur) | Peterson / MSS |
