@@ -166,13 +166,24 @@
           {
             "label": {
               "fr": "Fichier",
-              "en": "Fichier"
+              "en": "File"
             },
             "description": {
               "fr": "Un drive avec outils collaboratifs en ligne (word, excel, ppt, etc)",
               "en": "A cloud storage solution with online collaborative tools (word, excel, ppt, etc)"
             },
             "path": "https://fichier.tiers-lieux.org/"
+          },
+          {
+            "label": {
+              "fr": "Grist - tableur collaboratif",
+              "en": "Grist - collaborative spreadsheet"
+            },
+            "description": {
+              "fr": "Accédez à Grist pour collaborer sur des tableaux partagés",
+              "en": "Access Grist to collaborate on shared spreadsheets"
+            },
+            "path": "https://grist.tiers-lieux.org/"
           },
           {
             "label": {
