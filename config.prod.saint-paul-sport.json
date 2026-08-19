@@ -6971,8 +6971,9 @@
                   }
                 }
               ],
-              "subType": "auto",
-              "keepReference": true
+              "subType": "recoveryCenter",
+              "keepReference": true,
+              "keysPolicy": "replace"
             }
           }
         ]

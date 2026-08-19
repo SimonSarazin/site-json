@@ -51,6 +51,9 @@ const PropsSchema = z.object({
   subType: z.string().optional(),
   /** false = transfert sec (pas de référencement du cédant). Défaut true. */
   keepReference: z.boolean().optional(),
+  /** "replace" : from→to DANS source.keys en préservant les clés secondaires (ex. marqueur ESS974).
+   *  Défaut serveur : "strict" (keys = [to]), bloqué par multipleSourceKeys si une clé serait perdue. */
+  keysPolicy: z.enum(["strict", "replace"]).optional(),
 });
 
 const CONTROL_ORDER_HINT = "AdminOwnershipMigration.controls.";
@@ -87,6 +90,7 @@ export default function AdminOwnershipMigrationSection({ section }: { section: A
     options: {
       ...(props.subType !== undefined ? { subType: props.subType } : {}),
       ...(props.keepReference !== undefined ? { keepReference: props.keepReference } : {}),
+      ...(props.keysPolicy !== undefined ? { keysPolicy: props.keysPolicy } : {}),
     },
   };
 
