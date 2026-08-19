@@ -50,10 +50,11 @@ export function normalizeTypeLabel(rawType: string): string {
  *
  * Une clé réelle = `<section><id>` (ex. `sportSanteBienetre2172025_854_0` +
  * `mdegc9sgox76p87n27`). La section change à CHAQUE duplication du formulaire
- * (migration créneaux : SSBE partagé → `maisonSportSanteLeTampon12082026_2004_0`,
- * form 6a7cd1d72e263e7c033ad1ea), mais les ids d'inputs SURVIVENT à la duplication
- * (vérifié en base sur les deux forms) : résoudre par suffixe rend cartes/détail
- * indépendants du form actif — plus aucun préfixe de slug à remapper côté code.
+ * (migration créneaux : SSBE partagé → form dédié Ekilib.re
+ * `associationEkilibre19082026_1327_0`, form 6a85af345d898a57cb49f029), mais les
+ * ids d'inputs SURVIVENT à la duplication (vérifié en base sur les deux forms) :
+ * résoudre par suffixe rend cartes/détail indépendants du form actif — plus aucun
+ * préfixe de slug à remapper côté code.
  */
 export const DEFAULT_COFORM_FIELDS: Record<string, string> = {
   title: "mdegc9sgox76p87n27",

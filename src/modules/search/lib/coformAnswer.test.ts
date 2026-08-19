@@ -134,11 +134,11 @@ describe("normalizeTypeLabel", () => {
 });
 
 describe("parseCoformAnswer — résolution des clés par SUFFIXE stable (inter-forms)", () => {
-  // Les deux sections réelles : le form SSBE historique et le form dédié Tampon
-  // (6a7cd1d72e263e7c033ad1ea). Mêmes ids d'inputs, sections différentes — le
+  // Les deux sections réelles : le form SSBE historique et le form dédié Ekilib.re
+  // (6a85af345d898a57cb49f029). Mêmes ids d'inputs, sections différentes — le
   // mapping DEFAULT_COFORM_FIELDS doit résoudre les deux sans configuration.
   const SSBE = "sportSanteBienetre2172025_854_0";
-  const TAMPON = "maisonSportSanteLeTampon12082026_2004_0";
+  const EKILIBRE = "associationEkilibre19082026_1327_0";
 
   const flatRow = (section: string) => ({
     name: "Basket",
@@ -158,8 +158,8 @@ describe("parseCoformAnswer — résolution des clés par SUFFIXE stable (inter-
     expect(a.installations).toEqual([{ id: "abc", name: "Gymnase du Tampon" }]);
   });
 
-  it("résout les clés du form dédié Tampon avec le MÊME mapping par défaut", () => {
-    const a = parseCoformAnswer(flatRow(TAMPON));
+  it("résout les clés du form dédié Ekilib.re avec le MÊME mapping par défaut", () => {
+    const a = parseCoformAnswer(flatRow(EKILIBRE));
     expect(a.title).toBe("Basket");
     expect(a.typeLabel).toBe("SSsO");
     expect(a.status).toBe("En attente");
