@@ -562,7 +562,7 @@ dérivé, **aucun impact sur les autres sites**.
 |---|---|---|---|
 | **Créneaux actifs** (+ évolution vs mois précédent) | `kpis[0]` `searchCount` + `trend:"monthly"` | mêmes `baseParams` que `/creneaux` (form + CP + `state="Validé"`) via `useSearchAllResults` ; tendance dérivée des `created` (`computeMonthlyTrend`, 6 tests) | ✅ réel |
 | **Usagers actifs** (visites uniques mensuelles) | `kpis[1]` `analyticsVisitors` | **AUCUNE** — le moteur ne fait que du *tracking* sortant (`IntegrationsLoader`), aucune API de lecture d'audience. Tuile en état « à raccorder » explicite (jamais un chiffre inventé) | 🟡 à raccorder (§13) |
-| **Signalements en attente** | tuile **dérivée** modération du dashboard (existant) via l'onglet `moderation` | `me.getModerationQueue()` (news + commentaires signalés) — **superAdmin** (plancher backend) | ✅ (visible superAdmin) |
+| **Signalements en attente** | tuile **dérivée** modération du dashboard (existant) via une section `moderation` | `me.getModerationQueue()` (news + commentaires signalés) — **superAdmin** (plancher backend) | ❌ **retirée le 19/08** : l'API répond 500 sur cette base — section supprimée de l'onglet (la tuile dérivée disparaît avec, `DashboardSection` désactive la query sans section) ; à re-poser quand le backend répondra |
 | **Pros inscrits** (en attente de validation) | `kpis[2]` `membersPending` | `useEntityMembers(carrier, {toBeValidated: true})` — même source que l'onglet Membres | ✅ réel (définition « pro » = membre en attente, **à confirmer** §13) |
 
 **Fichiers moteur** : `admin/schema.ts` (KPI schema + type), `admin/sections/DashboardKpis.tsx`
@@ -608,7 +608,8 @@ c'était un « contrat futur » jamais implémenté) + une section `resource` an
   (un créneau validé apparaît sur `/creneaux` sans F5). `cascade`/`notifyEmail` retirés du schéma
   comme acté.
 - **Config** : onglet `moderation` passé **siteAdmin** (la modération des créneaux est le quotidien
-  de la MSS) ; la section signalements news/commentaires reste **superAdmin** (plancher backend).
+  de la MSS) ; la section signalements news/commentaires (superAdmin) a été **retirée le 19/08**
+  (API `getModerationQueue` en 500 sur cette base — à re-poser quand le backend répondra).
   Périmètre = celui de `/creneaux` **sans** le filtre d'état (on modère tout le territoire), tri
   `created` desc, colonnes Activité / Type / CP / Déclaré le. `create`/`edit: false` (l'édition
   de contenu se fait sur `/creneaux` via le bouton Modifier).
@@ -727,7 +728,7 @@ options du select « Administration » sont identiques (« Réfusé » verbatim 
 | D.1 | Back-office `/admin` activé (`config.admin`, accès `siteAdmin`) | ✅ config | onglets dashboard / membres / modération (§9.6) ; **recette navigateur connectée à faire** |
 | D.2 | KPI « Créneaux actifs » + évolution mensuelle | ✅ | données réelles (mêmes filtres que `/creneaux`) ; tendance = créations, suppressions non historisées |
 | D.3 | KPI « Usagers actifs » (visites uniques) | 🟡 | tuile « à raccorder » — **choix d'un analytics RGPD en attente** (§13) |
-| D.4 | KPI « Signalements en attente » | ✅ | tuile modération dérivée — visible **superAdmin** seulement (plancher backend) |
+| D.4 | KPI « Signalements en attente » | ❌ | section `moderation` (et sa tuile dérivée) **retirée le 19/08** — `getModerationQueue` répond 500 ; à re-poser quand l'API sera réparée |
 | D.5 | KPI « Pros inscrits » (attente de validation) | ✅ | = membres du carrier `toBeValidated` ; **définition à confirmer** (§13) |
 | D.6 | Recette du back-office (siteAdmin réel, uploads AdminPanel) | ❌ | à faire ; l'upload AdminPanel écrira dans `public/images/associationEkilibre/` (déclarer ce dossier dans `sites.json` **dès le premier fichier**, cf. §12) |
 | D.7 | Modération des créneaux (liste + statuts Validé/Refusé/En attente/En cours) | ✅ code | §9.7 — `status.mode: "statusField"` câblé (moteur) + resource answers dans l'onglet moderation (siteAdmin) ; **recette backend à faire** (updatepathvalue par admin non-auteur) |
