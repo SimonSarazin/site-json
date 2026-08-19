@@ -64,7 +64,8 @@
     "deleteTitle": "Delete “{{label}}”?",
     "selectAll": "Select all (loaded rows)",
     "selectRow": "Select {{label}}",
-    "rowActions": "Actions for {{label}}"
+    "rowActions": "Actions for {{label}}",
+    "bulkTransfer": "Transfer ownership"
   },
   "AdminExportSection": {
     "title": "CSV export",
@@ -248,6 +249,14 @@
       "alreadyReferenced": "Pre-existing references (completed, never overwritten)",
       "pendingModeration": "Records pending moderation",
       "selfReference": "Parasitic self-reference (cleaned on apply)"
-    }
+    },
+    "optionSubType": "Sub-type (annotation)",
+    "optionSubTypeHint": "“auto” = derived from type when uniform · empty = no annotation",
+    "optionKeysPolicy": "source.keys policy",
+    "keysPolicyStrict": "strict — the record will belong to this site only",
+    "keysPolicyReplace": "replace — keeps secondary keys (e.g. ESS974)",
+    "optionsChanged": "Options changed: run the analysis again before applying.",
+    "selectionIds": "{{count}} selected record(s)",
+    "subTypeSuggestions": "Types found in the selection:"
   }
 }
