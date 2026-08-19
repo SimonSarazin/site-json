@@ -15,10 +15,17 @@
 > 06/07) · [`ENDPOINT.md`](../../ENDPOINT.md) (fiches d'endpoints SDK à créer). Mémoire :
 > `[[project-maison-sport-sante-la-tampon]]`.
 
-Dernière mise à jour : **2026-08-18** (session 4 : **modération des créneaux par statut**
-(`statusField`) — §9.7, avec correctif « colonnes vides » (shape aplatie par le hook costum) ;
-**pull `origin/ekilibre` intégré** (merge `main` `b8045fc6` : SDK **1.0.184**, `formatCell`
-multivalué, fixes coform commonTable)).
+Dernière mise à jour : **2026-08-19** (session 5 : **migration du form créneaux vers le form dédié
+Tampon** `6a7cd1d72e263e7c033ad1ea` — §9.8 : plus AUCUN lien form/créneaux avec SSBE, section
+`maisonSportSanteLeTampon12082026_2004_0`, filtres CP retirés (le form dédié EST le périmètre),
+résolution front des champs par **ids d'inputs stables** (suffixes — préservés par la duplication),
+et **modèle costum backend DÉDIÉ `MaisonSportSanteLeTampon.php`** — `SportSanteBienetre.php` intact,
+`AssociationEkilibre.php` réécrit en relais (costumSlug front INCHANGÉ).
+⚠ Reste UNE commande mongo à exécuter à la main : costum embarqué + `class.function` sur l'orga carrier).
+
+Session 4 (18/08) : **modération des créneaux par statut** (`statusField`) — §9.7, avec correctif
+« colonnes vides » (shape aplatie par le hook costum) ; **pull `origin/ekilibre` intégré** (merge
+`main` `b8045fc6` : SDK **1.0.184**, `formatCell` multivalué, fixes coform commonTable).
 
 <details><summary>Session 3 (06/08, deux intervenants — dates corrigées)</summary>
 
@@ -52,14 +59,16 @@ La **Maison Sport Santé du Tampon (Ekilib.re)** oriente les habitants du Tampon
 (La Réunion) vers des **créneaux d'activité physique adaptée** labellisés sport santé. Le projet
 publie un site vitrine + annuaire de créneaux sur SiteForge, adossé au **costum régional
 `sportSanteBienetre`** (réseau Sport Santé Bien-être de La Réunion) : Ekilib.re est un **sous-site
-territorial** de ce costum — il en consomme les données (créneaux = answers d'un CoForm SSBE,
-structures = organizations SSBE), restreintes aux codes postaux **97430 / 97418**.
+territorial** de ce costum. Depuis le **19/08 (§9.8)** : les **créneaux** vivent dans le **form
+dédié Tampon** `6a7cd1d72e263e7c033ad1ea` (plus aucun lien avec le form SSBE — le form est le
+périmètre, plus de filtre CP) ; les **structures** restent des organizations SSBE partagées,
+restreintes aux codes postaux **97430 / 97418**.
 
 | | |
 |---|---|
 | **Site SiteForge** | slug `associationEkilibre` → [`config.prod.maison-sport-sante-la-tampon.json`](../config.prod.maison-sport-sante-la-tampon.json), CSS `index-sport-sante-bien-etre` (**partagé** avec le site SSBE, cf. [`sites.json`](../sites.json)) |
 | **Costum / scope de données** | `sportSanteBienetre` — `source.key` des structures ; préfixe des clés de champs answers |
-| **CoForm « créneau »** | **`6928096adf5caf0d230e7f26`** — formKey `sportSanteBienetre2172025_854_0` ; **1 créneau = 1 answer** |
+| **CoForm « créneau »** | **`6a7cd1d72e263e7c033ad1ea`** « Créneau - tampon » (dédié, §9.8) — section `maisonSportSanteLeTampon12082026_2004_0` ; **1 créneau = 1 answer** ; ex-form SSBE partagé `6928096adf5caf0d230e7f26` jusqu'au 19/08 |
 | **Orga porteuse** | slug `associationEkilibre`, `_id 692817af564b0621d52ebbc6`, type `organizations` (résolu au boot via `GET_ELEMENTS_KEY`) |
 | **Backend (dev)** | environnement de dev local (configuration hors de ce document) ; backend de prod **à définir** |
 | **SDK** | `@communecter/cocolight-api-client` — lecture seule. `package.json` committé requiert **`^1.0.173`** (merge `main` du 06/08, `348237e5`) ; **1.0.171 installé sur ce poste** en fin de session 3 (≠ committé, `npm install` recommandé — sans impact observé, typecheck **0 erreur**, §12) |
@@ -125,9 +134,9 @@ structures = organizations SSBE), restreintes aux codes postaux **97430 / 97418*
    CTA « Espace Pro ») présentant la MSS, le parcours sport santé et ses partenaires.
 2. **L'annuaire des créneaux** (`/creneaux`) : recherche texte + 4 filtres (type d'activité,
    bénéficiaires, type sport santé SSsO/SSpT, public), **vue carte**, détail en dialog — restreint
-   aux créneaux **validés** des CP **97430/97418**.
+   aux créneaux **validés** du form dédié Tampon (plus de filtre CP depuis §9.8).
 3. **La gestion des créneaux par les admins** : créer et modifier un créneau (= une answer du CoForm
-   `6928096adf5caf0d230e7f26`) **sans quitter le site** (CoFormModal) — commité le 31/07.
+   dédié `6a7cd1d72e263e7c033ad1ea` depuis §9.8) **sans quitter le site** (CoFormModal) — commité le 31/07.
 4. **L'annuaire des structures référentes** (`/structure`) : organizations SSBE du territoire,
    filtres CP + domaine d'intervention, **fiche détail dédiée** (`PreviewStructure`). **+
    auto-inscription** : toute structure peut se référencer elle-même via un formulaire public
@@ -147,7 +156,7 @@ structures = organizations SSBE), restreintes aux codes postaux **97430 / 97418*
 
 ```
             Communecter (backend dev) / costum sportSanteBienetre
-     answers du CoForm 6928096adf5caf0d230e7f26 (créneaux) · organizations (structures) · news
+     answers du CoForm 6a7cd1d72e263e7c033ad1ea (créneaux, dédié Tampon) · organizations (structures) · news
                   ▲ GLOBAL_AUTOCOMPLETE_COSTUM · GET_NEWS · SAVE_COFORM_ANSWER
                   │
    ┌────────────── SiteForge (site-json, branche ekilibre) ───────────────┐
@@ -167,8 +176,8 @@ structures = organizations SSBE), restreintes aux codes postaux **97430 / 97418*
 ```
 
 **Deux voies de filtrage** (toutes config-driven, cf. [doc/07](../doc/07-module-search.md)) :
-- **figée** : `baseParams.defaultFilters` — sur `/creneaux` : `form`, `postalCode.$in
-  [97430,97418]` (champ adresse de l'answer) et `state:"Validé"` ; sur `/structure` :
+- **figée** : `baseParams.defaultFilters` — sur `/creneaux` : `form` (dédié Tampon) et
+  `state:"Validé"` (plus de filtre CP, §9.8) ; sur `/structure` :
   `source.key.$in ["sportSanteBienetre", "associationEkilibre"]` (élargi le 31/07, §9.5) +
   `postalCode.$in`.
 - **interactive** : `dropdownFilters[].field` (dot-path `answers.<formKey>.<fieldKey>`) →
@@ -243,10 +252,10 @@ site pour porter un contenu structuré sans code nouveau.
 
 - **Entité porteuse** : slug `associationEkilibre` → `{contextId: 692817af564b0621d52ebbc6,
   contextType: organizations}` (répondu par `/co2/slug/getinfo` le 31/07) — le boot du site marche.
-- **Créneaux** = answers du CoForm `6928096adf5caf0d230e7f26`, champs sous
-  `answers.sportSanteBienetre2172025_854_0.<fieldKey>` ; le site n'affiche que
-  `state="Validé"` **et** CP ∈ {97430, 97418} → un créneau saisi sans état validé ou hors zone est
-  **invisible, sans erreur**.
+- **Créneaux** = answers du CoForm dédié `6a7cd1d72e263e7c033ad1ea` (§9.8), champs sous
+  `answers.maisonSportSanteLeTampon12082026_2004_0.<fieldKey>` ; le site n'affiche que
+  `state="Validé"` → un créneau non validé est **invisible, sans erreur** (plus de condition CP :
+  le form dédié est le périmètre).
 - **Structures** = organizations `source.key ∈ {"sportSanteBienetre", "associationEkilibre"}` + CP
   ∈ {97430, 97418} ; domaine d'intervention = valeurs libres de `tags` (**11 options** littérales
   dans la config, vérifiées le 31/07 contre `structure.fields.thematic`, costumForm **renommé** le
@@ -290,9 +299,9 @@ site pour porter un contenu structuré sans code nouveau.
 
 | Décision | Pourquoi |
 |---|---|
-| **Sous-site du costum `sportSanteBienetre`** (pas un costum dédié) | les créneaux/structures existent déjà dans SSBE ; Ekilibre est une **vue territoriale** (CP 97430/97418) — zéro duplication de données |
+| **Sous-site du costum `sportSanteBienetre`** (pas un costum dédié) | les structures existent déjà dans SSBE (vue territoriale CP 97430/97418). Évolution 19/08 (§9.8) : les **créneaux** sont sortis du form partagé → form dédié Tampon (le contexte costum reste SSBE : hooks backend communs) |
 | **CSS partagé `index-sport-sante-bien-etre`** | même identité visuelle que le site régional ; un thème dédié serait à créer si la DA diverge |
-| **1 créneau = 1 answer CoForm** (pas un POI/event) | le form SSBE `…854_0` porte déjà tous les champs métier (horaires, bénéficiaires, adresse) ; le moteur search sait lister des answers (`defaultTypes:["answers"]` + `filters.form`) |
+| **1 créneau = 1 answer CoForm** (pas un POI/event) | le form créneau (SSBE puis Tampon `…2004_0`, mêmes 91 inputs) porte tous les champs métier (horaires, bénéficiaires, adresse) ; le moteur search sait lister des answers (`defaultTypes:["answers"]` + `filters.form`) |
 | **`addButton.coform` / `preview.editButton` = opt-in config** | 2 autres sites utilisent `card-answer`/`coform-answer` (SSBE) — sans ces flags, **comportement strictement inchangé** ailleurs |
 | **CoFormModal (pas la route `/coform/:formId`)** | l'admin reste sur `/creneaux`, et le save invalide la liste immédiatement (la route perdrait l'état des filtres) |
 | **Re-fetch frais avant édition** (`useCoFormAnswerQuery`) | le save coform renvoie le payload **complet** ; pré-remplir depuis l'item de recherche (potentiellement tronqué) effacerait des champs |
@@ -618,6 +627,79 @@ c'était un « contrat futur » jamais implémenté) + une section `resource` an
   admin de costum **non-auteur** — même famille de risque que le save d'answer (§12 droits) ; si le
   backend refuse, prévoir une fiche `ENDPOINT.md` (endpoint de modération dédié).
 
+### 9.8 Migration : form créneaux dédié Tampon (19/08, session 5, Peterson)
+
+Décision Peterson (annoncée le 18/08, exécutée le 19/08) : **plus aucun lien form/créneaux avec
+SSBE**. Les créneaux du Tampon vivent dans le form dédié **« Créneau - tampon »**
+`6a7cd1d72e263e7c033ad1ea` (id humain `maisonSportSanteLeTampon1`, parent = orga
+`6a463dd52d396945ff52e854`), **dupliqué du form SSBE le 12/08/2026**. Fait décisif vérifié en base
+(getformbyid + answer de test `6a858ed219f28569b6456ff2`) : la duplication **préserve les ids
+d'inputs** (queues aléatoires `mdegc9sgox76p87n27`…) — seuls changent l'id du form et le préfixe de
+section (`sportSanteBienetre2172025_854_0` → `maisonSportSanteLeTampon12082026_2004_0`). Les
+options du select « Administration » sont identiques (« Réfusé » verbatim compris) → le bloc
+`states` de la modération reste valable tel quel.
+
+- **Config** : swap intégral form id (4×) + préfixe de section (11×) — `/creneaux` (baseParams +
+  4 filtres de page), `addButton.coform`, KPI « Créneaux actifs », resource modération (source,
+  colonne type à plat, champ statut). **Filtres CP 97430/97418 RETIRÉS** des 3 sources answers
+  (`/creneaux`, KPI, modération) : ils découpaient le form *partagé* par territoire — le form
+  dédié EST le périmètre. (Le filtre CP de l'annuaire **structures** est conservé : les orgas
+  restent des données SSBE partagées.)
+- **Front — résolution par ids stables** (`coformAnswer.ts`) : `DEFAULT_COFORM_FIELDS` ne porte
+  plus que les **queues aléatoires** et `parseCoformAnswer` résout par `endsWith` sur les lignes
+  aplaties — le remap `associationEkilibre → sportSanteBienetre` (piège historique) **disparaît**,
+  cartes/détail marchent pour les DEUX forms sans configuration ; un override `preview.fields`
+  portant une clé complète historique reste valide (match par suffixe). +4 tests (SSBE, Tampon,
+  override legacy, données sans champs).
+- **Backend — modèle costum DÉDIÉ** (demande Peterson : « sans passer par SSBE ») :
+  **`modules/costum/models/MaisonSportSanteLeTampon.php`** (dépôt communecter74, classe =
+  `ucfirst(slug)` du costum `maisonSportSanteLeTampon` — costum EMBARQUÉ de l'orga
+  `6a463dd52d396945ff52e854`, template costumize ; le loader pose `slug` = slug de l'élément et
+  `assetsSlug` = costumize, et `Costumize` ne définit ni `searchAnswers` ni `canEditAnswer` → la
+  résolution retombe bien sur cette classe). Même **processus** que SSBE, section Tampon SEULE :
+  `searchAnswers` (strip géo, `Validé` forcé pour les non-admins du costum, tri/pagination,
+  aplatissement + `name` + sous-clés adresse + jointure `structure`), `canEditAnswer` (admin de la
+  structure porteuse via le finder), `getAnswerByStructure` (sans rendu html : aucune vue Tampon,
+  la vue SSBE appartient à SSBE), `getFormCrenaux` (résolution par id humain
+  `maisonSportSanteLeTampon1`, repli `_id` connu). **`SportSanteBienetre.php` restauré à
+  l'original** (la généralisation 2-forms de la veille est retirée) ; `AssociationEkilibre.php`
+  (copie SSBE pré-existante, clés PÉRIMÉES, sans gate Validé) devient sans objet pour ce flux.
+- **Câblage SANS toucher au costumSlug** (contrainte Peterson 19/08 pm) : le front continue
+  d'envoyer `costumSlug=associationEkilibre` (slug d'entité, `_withCostumContext` SDK) — **aucun
+  changement front**. Côté backend : **`AssociationEkilibre.php` réécrit en RELAIS** (la copie
+  SSBE stale est remplacée) qui délègue `searchAnswers` / `canEditAnswer` /
+  `getAnswerByStructure` / `getFormCrenaux` à `MaisonSportSanteLeTampon` — un seul modèle de
+  référence. Résolution vérifiée dans le loader (`Costum::init`) : slug d'élément →
+  `element.costum.slug` comme template → fusion → `slug = associationEkilibre` →
+  `ucfirst(slug)` = la classe relais.
+- **⚠ DERNIÈRE ÉTAPE (write mongo refusé 2× par les permissions de session — à exécuter à la
+  main)** : l'orga carrier `associationEkilibre` (`6a7b4ba00f51f56995200928` dans CE dump) n'a
+  **aucun costum embarqué** → rien ne se déclenche sans lui. Poser le costum minimal + la
+  déclaration des hooks :
+  `docker exec mongo42 mongo prod190826 --eval 'printjson(db.organizations.updateOne({_id: ObjectId("6a7b4ba00f51f56995200928"), costum: {$exists: false}}, {$set: {costum: {slug: "costumize", class: {function: ["searchAnswers", "canEditAnswer"]}}}}))'`
+  (garde `$exists:false` = purement additif). Effet de bord assumé : l'orga devient « costumisée »
+  côté plateforme legacy (template costumize), comme l'orga MSS. Vérification ensuite :
+  la même recherche anonyme doit passer de « 1 réponse brute imbriquée » à **0** (gate Validé —
+  « Basket » est En attente) ; après validation dans la modération → 1 ligne APLATIE.
+- **Preuves live (anonyme)** : `costumSlug=associationEkilibre` + nouveau form + `notSourceKey` →
+  aujourd'hui **1 réponse brute imbriquée SANS gate** (une réponse En attente est publiquement
+  visible via l'API : la déclaration ferme aussi cette fuite) ; sans `notSourceKey` → 0 (scoping
+  `source.keys`, l'answer de test n'a pas de `source` ; la config front pose bien `notSourceKey`).
+  Base vivante : `prod190826` (conteneur `mongo42`) — l'ancienne orga carrier `692817af…` n'existe
+  PLUS dans ce dump (« Unknown (deleted) ») ; l'orga `associationEkilibre` y a l'_id
+  `6a7b4ba00f51f56995200928`.
+- **Alternative écartée** (gardée pour mémoire) : basculer le site sur le slug
+  `maisonSportSanteLeTampon` (VITE_SLUG + sites.json + entitySlug news + URL kanban) — plus
+  invasif, contraire à la contrainte « on ne touche pas au costumSlug » ; la déclaration
+  `class.function` sur l'orga MSS `6a463dd52d396945ff52e854` ne servirait que dans ce scénario.
+- **Gates** : typecheck ✅ · lint ✅ · `config:validate` ✅ 11 p/44 s · préflight + search + admin
+  **853 tests** ✅ · snapshot effective-config régénéré (diff = exactement la migration) ·
+  `php -l` ✅ (`MaisonSportSanteLeTampon.php`).
+- **⚠ Recette navigateur** (compte admin costum) : modération de « Basket » (En attente → Marquer
+  Validé → apparition sur `/creneaux`), création d'un créneau via `addButton.coform` (nouveau
+  form), édition. Les créneaux ANCIENS (form SSBE) ne sont **plus** listés sur le site Tampon —
+  voulu (« pas de lien avec SSBE ») ; les re-saisir dans le nouveau form s'ils doivent y figurer.
+
 ---
 
 ## 10. Checklist d'avancement
@@ -627,7 +709,7 @@ c'était un « contrat futur » jamais implémenté) + une section `resource` an
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
 | A.1 | Site vitrine (home, s'informer, rejoindre, partenaires, espace pro, légal) | ✅ | 11 pages validées ; audit 0 constat |
-| A.2 | Annuaire des créneaux `/creneaux` (4 filtres + carte + détail dialog) | ✅ config | filtres figés CP + `state="Validé"` ; **vue carte à recetter** post-merge MapLibre (`npm install` requis) |
+| A.2 | Annuaire des créneaux `/creneaux` (4 filtres + carte + détail dialog) | ✅ config | **form dédié Tampon** `6a7cd1d72e263e7c033ad1ea` (§9.8) + `state="Validé"` — plus de filtre CP ; **vue carte à recetter** post-merge MapLibre (`npm install` requis) |
 | A.3 | Annuaire structures `/structure` (CP + domaine d'intervention) | ✅ config | 28/07 (Nicolas) ; volumétrie des orgas **à confirmer** |
 | A.4 | Flux d'actualités (home, lecture seule) | ✅ | `entitySlug associationEkilibre` → `GET_NEWS` |
 | A.5 | Auth / Espace Pro | ✅ | CTA header → `/espace-pro` → `/login` (module auth) |
@@ -731,11 +813,12 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
   remote ; reste à ouvrir la **MR vers `main`**.
 - **Modération = champ `state`** : un créneau dont l'état n'est pas exactement `"Validé"` est
   invisible sur `/creneaux` — vérifier que le form pose bien ce champ (et qui a le droit de le
-  changer). Idem **CP hors 97430/97418** ou answer sans adresse → invisible, sans erreur.
-- **Clés et valeurs dupliquées config ↔ form** : les suffixes de champs
-  (`sportSanteBienetre2172025_854_0…`) et les valeurs d'options (littéraux exacts, accents
-  compris) apparaissent dans les `dropdownFilters`, les `defaultFilters` **et**
-  `DEFAULT_COFORM_FIELDS` — toute modification du CoForm SSBE casse silencieusement filtres et
+  changer). (Le piège « CP hors zone → invisible » a disparu avec le form dédié, §9.8.)
+- **Clés et valeurs dupliquées config ↔ form** : les clés de champs
+  (`maisonSportSanteLeTampon12082026_2004_0…`) et les valeurs d'options (littéraux exacts, accents
+  compris) apparaissent dans les `dropdownFilters` et les `defaultFilters` ; côté code,
+  `DEFAULT_COFORM_FIELDS` ne porte plus que les **ids stables** d'inputs (§9.8 — insensibles à la
+  duplication de form) — mais toute modification du CoForm casse silencieusement filtres et
   cartes. Même famille de piège sur `/structure` (valeurs de `tags`).
 - **Droits d'édition : le front est volontairement plus large que le backend.** `answer.canEdit` est
   calculé sur la seule propriété (`not_owner`), donc il refuse un super-admin ou un admin de costum.
@@ -772,7 +855,7 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
 | ~~SDK : `Answer.deleteFiles` ?~~ **résolu** — livré (présent depuis 1.0.169, SDK installé : **1.0.173**) ; reste la recette de suppression réelle | — |
 | **Formulaire de contact** : endpoint SDK (`CONTACT_SEND_URL`) ou route Express locale — trancher | Thomas / Peterson |
 | **Recette création/modification d'un créneau** en admin (navigateur, backend réel) | Peterson / MSS |
-| **Volumétrie réelle** : combien de créneaux validés CP 97430/97418 ? de structures ? | MSS / réseau SSBE |
+| **Volumétrie réelle** : combien de créneaux à saisir dans le form dédié Tampon (les anciens créneaux SSBE ne sont plus listés, §9.8) ? de structures ? | MSS / réseau SSBE |
 | **Qui valide les créneaux** : le process est désormais **outillé** (onglet Modération de `/admin`, §9.7) — reste à désigner qui l'opère à la MSS | MSS / réseau SSBE |
 | **`useDeleteAnswer`** (suppression de créneau) — si le besoin est confirmé | Peterson |
 | **Spec e2e Ekilibre** (lecture seule, modèle parent62) | Peterson |
