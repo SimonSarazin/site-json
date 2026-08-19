@@ -498,7 +498,7 @@ export function CommunFinancingCard({
                     >
                         <button
                             type="button"
-                            disabled={resourceRemainingAmount <= 0}
+                            disabled={resourceRemainingAmount <= 0 || !me?.isConnected}
                             className="w-full py-3.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-md transition-all shadow-[0_0_30px_-8px] shadow-primary/60 flex items-center justify-center gap-2 group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                         >
                             <Heart className="size-4" />

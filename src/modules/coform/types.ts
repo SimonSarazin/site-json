@@ -740,6 +740,24 @@ export interface SubFormDataWithMeta {
 export type AllStepsData = Record<string, SubFormData>;
 
 /**
+ * Fichier de la collection `documents`, tel que renvoyé (map keyée par `_id`) dans
+ * `answer.documents`. `subKey` porte le chemin `<subFormId>.<field.name>` du champ
+ * uploader qui l'a créé — c'est le seul moyen fiable de rattacher un document à
+ * SON champ (plusieurs uploaders peuvent coexister dans la même réponse).
+ */
+export interface AnswerDocumentFile {
+  id?: string;
+  name: string;
+  /** Chemin relatif sous `/upload/<moduleId>/` (ex: `answers/<formId>/restricted`) */
+  folder: string;
+  moduleId?: string;
+  subKey?: string;
+  doctype?: string;
+  size?: number;
+  [key: string]: unknown;
+}
+
+/**
  * Données d'une réponse CoForm retournée par l'API (findanswered)
  */
 export interface CoFormAnswer {
@@ -758,8 +776,8 @@ export interface CoFormAnswer {
   draft?: boolean;
   /** Terminé ? */
   finished?: boolean;
-  /** Documents joints */
-  documents?: unknown[];
+  /** Documents joints — Mongo rend indifféremment une map keyée `_id` ou un tableau */
+  documents?: Record<string, AnswerDocumentFile> | AnswerDocumentFile[];
   /** Commentaires */
   comments?: unknown[];
   /** L'utilisateur courant peut-il éditer cette réponse ? (calculé côté serveur) */

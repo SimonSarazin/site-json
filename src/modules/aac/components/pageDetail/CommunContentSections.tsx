@@ -1,22 +1,34 @@
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 
-//En attente de fix gallerie d'image
-export function GallerySection() {
+export interface GalleryImage {
+    src: string;
+    alt: string;
+}
+
+interface GallerySectionProps {
+    images: GalleryImage[];
+}
+
+export function GallerySection({ images }: GallerySectionProps) {
     useLoadNamespace("modules/aac");
     const t = useT("modules/aac");
 
-    const images = [
-        { src: undefined, alt: String(t("detail.gallery.editionsAlt")), label: String(t("detail.gallery.editions")) },
-        { src: undefined, alt: String(t("detail.gallery.workshopAlt")), label: String(t("detail.gallery.workshop")) },
-        { src: undefined, alt: String(t("detail.gallery.printingAlt")), label: String(t("detail.gallery.printing")) },
-    ];
+    if (images.length === 0) {
+        return (
+            <div className="p-5 rounded-lg border border-border bg-surface/60">
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                    {String(t("detail.gallery.empty"))}
+                </p>
+            </div>
+        );
+    }
 
     return (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-            {images.map((g) => (
+            {images.map((g, i) => (
                 <figure
-                    key={g.label}
+                    key={`${g.src}-${i}`}
                     className="relative aspect-[4/3] overflow-hidden rounded-lg border border-border bg-surface group"
                 >
                     <img
@@ -27,9 +39,6 @@ export function GallerySection() {
                         height={768}
                         className="size-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
                     />
-                    <figcaption className="absolute bottom-2 left-2 text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded bg-background/85 text-foreground backdrop-blur">
-                        {g.label}
-                    </figcaption>
                 </figure>
             ))}
         </div>

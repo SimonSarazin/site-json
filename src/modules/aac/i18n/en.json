@@ -171,12 +171,8 @@
       "navigation": "Navigation"
     },
     "gallery": {
-      "editions": "Editions",
-      "workshop": "Workshop",
-      "printing": "Printing",
-      "editionsAlt": "do·doc printed cards",
-      "workshopAlt": "Documentation workshop",
-      "printingAlt": "A3 printing"
+      "empty": "No images available.",
+      "imageAlt": "Image {{index}}"
     }
   },
   "toasts": {

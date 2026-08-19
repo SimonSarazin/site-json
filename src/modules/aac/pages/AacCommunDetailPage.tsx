@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router";
-import { AlertCircle, Home, Sparkles, ListChecks, Handshake, Layers, UsersRound, Scale, HandHeart, FileText, Users, UserCheck, Pencil } from "lucide-react";
+import { AlertCircle, Home, Sparkles, ListChecks, Handshake, Layers, UsersRound, Scale, HandHeart, FileText, Users, UserCheck, Pencil, Image as ImageIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -11,7 +11,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
-import type { CoFormAnswer, CoFormData } from "@/modules/coform/types";
+import { getBaseUrl } from "@/lib/constant/common";
+import type { CoFormAnswer, CoFormData, AnswerDocumentFile } from "@/modules/coform/types";
 import { CoFormModal } from "@/modules/coform/components/CoFormModal";
 import { useAacConfig } from "../hooks/useAacConfig";
 import { useAacPermissions } from "../hooks/useAacPermissions";
@@ -23,6 +24,7 @@ import { CommunFinancingSection } from "../components/pageDetail/CommunFinancing
 import { CommunActionsSection } from "../components/pageDetail/CommunActionsSection.tsx";
 import { CommunCofinancersTable } from "../components/pageDetail/CommunCofinancersTable.tsx";
 import { CommunProse } from "../components/pageDetail/CommunProse.tsx";
+import { GallerySection, type GalleryImage } from "../components/pageDetail/CommunContentSections.tsx";
 import { useAacFundingResource } from "../hooks/useAacFundingResource";
 import { canManageObjectiveActions } from "@/modules/aac/lib/objectiveHelpers";
 
@@ -48,6 +50,26 @@ const AAP_STEP1_FIELD_KEYS = {
     equipeCommunaute: "aapStep1m0w49vpl5jm001xwvsv",
 } as const;
 
+const GALLERY_IMAGE_SUBKEY = "aapStep1.image";
+
+function extractGalleryImages(
+    documents: CoFormAnswer["documents"],
+    baseUrl: string
+): GalleryImage[] {
+    const list: AnswerDocumentFile[] = Array.isArray(documents)
+        ? documents
+        : documents
+            ? Object.values(documents)
+            : [];
+
+    return list
+        .filter((doc) => doc?.subKey === GALLERY_IMAGE_SUBKEY && doc?.name)
+        .map((doc) => ({
+            src: `${baseUrl}/upload/${doc.moduleId}/${doc.folder}/${doc.name}`,
+            alt: doc.name,
+        }));
+}
+
 const STATIC_SECTIONS: TocSection[] = [
     { id: "cofinanceurs", label: "Cofinanceurs", icon: Handshake },
     { id: "modele", label: "Modèle économique", icon: Layers },
@@ -57,6 +79,7 @@ const STATIC_SECTIONS: TocSection[] = [
     { id: "contribution", label: "Contribution", icon: FileText },
     { id: "usages", label: "Cas d'usages", icon: Users },
     { id: "equipe", label: "Équipe & communauté", icon: UserCheck },
+    { id: "galerie", label: "Galerie", icon: ImageIcon },
 ];
 
 export default function AacCommunDetailPage() {
@@ -173,6 +196,8 @@ export default function AacCommunDetailPage() {
         await answerQuery.refetch();
         toast.success(String(t("detail.edit.successToast")));
     };
+
+    const galleryImages = extractGalleryImages(answer.documents, getBaseUrl());
 
     const modeleEco = [String(answer?.answers?.aapStep1?.[AAP_STEP1_FIELD_KEYS.modeleEconomique] ?? "")];
     const gouvernance = [String(answer?.answers?.aapStep1?.[AAP_STEP1_FIELD_KEYS.gouvernance] ?? "")];
@@ -295,6 +320,10 @@ export default function AacCommunDetailPage() {
                             <CommunProse
                                 paragraphs={equipe}
                             />
+                        </Section>
+
+                        <Section id="galerie" title="Galerie" kicker="Photos">
+                            <GallerySection images={galleryImages} />
                         </Section>
                     </div>
                 </div>
