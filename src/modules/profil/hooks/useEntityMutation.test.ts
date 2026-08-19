@@ -4,9 +4,10 @@
  * EXACTEMENT chaque chemin : create standard (org/projet/event), create costum (poi/tiers-lieu),
  * edit (submitEntityEdit), avec extras (role/parent/organizer/email/image) et scope (me vs me.costum).
  */
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { runEntityMutation, type EntityMutationSpec } from "./useEntityMutation";
+import type { SpecStamp } from "../forms/entityModalSpec";
 import { buildParentReference, buildOrganizerReference } from "./mutationUtils";
 // side-effect : enregistre pf:* / poi:* / tl:* + fournit les builders de référence.
 import { buildProfileUpdateData } from "../forms/editProfilePayload";
@@ -24,16 +25,34 @@ const { descriptor: tiersLieuxDescriptor } = loadCostumForm("tiers-lieux");
 // Payload poi standard = pipeline générique direct sur addPoiDescriptor (plus de buildAddPoiPayload).
 const buildAddPoiPayload = (d: Data) => buildPayload({ descriptor: addPoiDescriptor }, d) as Data;
 
-/** Faux SDK : capture chaque appel {scope, method, payload} et compte les save(). */
-function makeSdk() {
+/**
+ * Faux SDK : capture chaque appel {scope, method, payload} et compte les save().
+ *
+ * L'entité rendue porte `updateField` et `serverData` comme toute instance `BaseEntity` réelle.
+ * Sans eux, `runPathValueStamps` sortait sur son garde `if (!e.updateField)` : les 13 tests de
+ * parité ci-dessous traversaient la création sans JAMAIS exercer le canal `pathValue` — celui par
+ * lequel passe `reference.costum`, le champ qui rattache une fiche communale au costum régional.
+ *
+ * `serverData` est nécessaire au-delà de la présence : `fillIfEmpty` s'arbitre CONTRE l'entité
+ * retournée par le save.
+ */
+function makeSdk(opts: { sansUpdateField?: boolean; serverData?: Data } = {}) {
   const calls: Array<{ scope: string; method: string; payload: Data }> = [];
+  const updates: Array<{ field: string; value: unknown }> = [];
   let saves = 0;
   const target = (scope: string) => {
     const t: Record<string, unknown> = {};
     for (const m of ["organization", "project", "event", "poi"]) {
       t[m] = async (payload: Data) => {
         calls.push({ scope, method: m, payload });
-        return { save: async () => { saves += 1; }, slug: "new-slug" };
+        return {
+          save: async () => { saves += 1; },
+          slug: "new-slug",
+          serverData: opts.serverData ?? {},
+          ...(opts.sansUpdateField
+            ? {}
+            : { updateField: async (field: string, value: unknown) => { updates.push({ field, value }); } }),
+        };
       };
     }
     return t;
@@ -41,15 +60,17 @@ function makeSdk() {
   // costum : fidèle à l'overload lib (string slug OU entité chargée → son serverData.slug).
   const me = { ...target("me"), id: "meId", serverData: { name: "Moi" },
     costum: async (arg: unknown) => target(`costum:${typeof arg === "string" ? arg : (arg as { serverData?: { slug?: string } })?.serverData?.slug ?? "entity"}`) };
-  return { me: me as unknown as EntityTypes, calls, getSaves: () => saves };
+  return { me: me as unknown as EntityTypes, calls, updates, getSaves: () => saves };
 }
 
 /** Faux draft éditable (submitEntityEdit) : data + save + removeProfilImage comptés. */
-function makeEditable() {
+function makeEditable(serverData: Data = { name: "X" }) {
   const e = {
-    data: {} as Data, saves: 0, removes: 0, slug: "edited", serverData: { name: "X" },
+    data: {} as Data, saves: 0, removes: 0, slug: "edited", serverData,
+    updates: [] as Array<{ field: string; value: unknown }>,
     save: async () => { e.saves += 1; },
     removeProfilImage: async () => { e.removes += 1; },
+    updateField: async (field: string, value: unknown) => { e.updates.push({ field, value }); },
   };
   return e;
 }
@@ -314,5 +335,95 @@ describe("runEntityMutation — parité avec les hooks bespoke", () => {
     await runEntityMutation(spec, { name: "X", _imageDeleted: true }, { me: null });
     expect(editable.saves).toBe(1);
     expect(editable.removes).toBe(1);
+  });
+});
+
+/**
+ * Canal PATHVALUE — les écritures post-save, jusqu'ici couvertes par rien.
+ *
+ * L'enjeu dépasse le mécanisme : `reference.costum` passe par ce canal. C'est le champ qui rattache
+ * une fiche créée sur un site COMMUNAL au costum RÉGIONAL, et donc tout le modèle réseau (la commune
+ * possède sa donnée via `source.key`, le régional l'affiche via `reference.costum`). Tant que le
+ * faux SDK n'exposait pas `updateField`, `runEntityMutation` sortait sur son garde et la seule
+ * preuve que le rattachement se posait venait d'une MIGRATION — pas d'une création observée.
+ *
+ * `preparePathValueStamps` (choix du mode, évaluation des valeurs) est testée à part dans
+ * `forms/stamps.test.ts` ; ici on teste le CÂBLAGE : ce qui atteint réellement l'entité.
+ */
+describe("runEntityMutation — canal pathValue (stamps post-save)", () => {
+  const REF: SpecStamp[] = [
+    { field: "reference.costum", value: ["equipementsSportifs974"], op: "set", on: "add", channel: "pathValue" },
+    { field: "reference.costumTypes.equipementsSportifs974", value: "recoveryCenter", op: "set", on: "add", channel: "pathValue" },
+  ];
+  const specPoi = (over: Partial<EntityMutationSpec> = {}): EntityMutationSpec => ({
+    ...base, mode: "add", entityType: "poi", buildPayload: (d) => d, stamps: REF, ...over,
+  });
+
+  it("CRÉATION : le rattachement régional atteint l'entité, chemin et valeur intacts", async () => {
+    const sdk = makeSdk();
+    await runEntityMutation(specPoi(), { name: "Stade" }, { me: sdk.me });
+    expect(sdk.updates).toEqual([
+      { field: "reference.costum", value: ["equipementsSportifs974"] },
+      { field: "reference.costumTypes.equipementsSportifs974", value: "recoveryCenter" },
+    ]);
+  });
+
+  it("le stamp n'entre PAS dans le payload de création — c'est une écriture d'après", async () => {
+    const sdk = makeSdk();
+    await runEntityMutation(specPoi(), { name: "Stade" }, { me: sdk.me });
+    expect(sdk.calls[0].payload).toEqual({ name: "Stade" });
+  });
+
+  it("`on: \"add\"` ne rejoue pas à l'édition", async () => {
+    const editable = makeEditable();
+    await runEntityMutation(
+      specPoi({ mode: "edit", target: editable as unknown as EntityTypes }),
+      { name: "Stade" },
+      { me: null },
+    );
+    expect(editable.updates).toEqual([]);
+  });
+
+  it("`on: \"both\"` rejoue à l'édition, sur l'entité éditée", async () => {
+    const editable = makeEditable();
+    await runEntityMutation(
+      specPoi({ mode: "edit", target: editable as unknown as EntityTypes,
+        stamps: [{ field: "reference.costum", value: ["eq974"], op: "set", on: "both", channel: "pathValue" }] }),
+      { name: "Stade" },
+      { me: null },
+    );
+    expect(editable.updates).toEqual([{ field: "reference.costum", value: ["eq974"] }]);
+  });
+
+  it("fillIfEmpty s'arbitre contre le serverData POST-SAVE : le serveur a déjà posé → on s'abstient", async () => {
+    const stamps: SpecStamp[] = [{ field: "dateSign", value: "2026-01-01", op: "fillIfEmpty", on: "add", channel: "pathValue" }];
+    const dejaPose = makeSdk({ serverData: { dateSign: "2025-06-30" } });
+    await runEntityMutation(specPoi({ stamps }), { name: "X" }, { me: dejaPose.me });
+    expect(dejaPose.updates).toEqual([]);
+
+    const vide = makeSdk({ serverData: {} });
+    await runEntityMutation(specPoi({ stamps }), { name: "X" }, { me: vide.me });
+    expect(vide.updates).toEqual([{ field: "dateSign", value: "2026-01-01" }]);
+  });
+
+  it("un échec d'écriture ne fait PAS échouer la mutation (canal non bloquant), mais se voit", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const sdk = makeSdk();
+    const casse = { ...sdk.me } as unknown as Record<string, unknown>;
+    casse.poi = async () => ({ save: async () => {}, slug: "s", serverData: {},
+      updateField: async () => { throw new Error("legacy 500"); } });
+    const { entity } = await runEntityMutation(specPoi(), { name: "X" }, { me: casse as unknown as EntityTypes });
+    expect((entity as { slug?: string }).slug).toBe("s"); // la création, elle, a réussi
+    expect(warn).toHaveBeenCalledTimes(2); // un warn par stamp perdu
+    warn.mockRestore();
+  });
+
+  it("une entité SANS updateField ne perd plus le stamp en silence", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const sdk = makeSdk({ sansUpdateField: true });
+    await runEntityMutation(specPoi(), { name: "X" }, { me: sdk.me });
+    expect(warn).toHaveBeenCalledTimes(2);
+    expect(String(warn.mock.calls[0][0])).toContain("reference.costum");
+    warn.mockRestore();
   });
 });

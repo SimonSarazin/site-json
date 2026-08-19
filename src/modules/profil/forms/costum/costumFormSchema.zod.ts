@@ -84,7 +84,6 @@ export const CostumFormSchemaZod = z.object({
       op: z.enum(["set", "fillIfEmpty", "append"]).optional(),
       on: z.enum(["add", "edit", "both"]).optional(),
       channel: z.enum(["payload", "pathValue"]).optional(),
-      _comment: z.string().optional(),
     }).strict()).optional(),
   }).passthrough(),
 }).passthrough();

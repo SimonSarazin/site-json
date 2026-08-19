@@ -25,6 +25,7 @@ import { registerCommandSource } from "@/modules/commandPalette";
 import type { Command, CommandReadContext } from "@/modules/commandPalette";
 import { getEntityIcon } from "@/lib/entityIcons";
 import { entityMatchData, firstMatching } from "@/lib/entityMatch";
+import { applyValidationGate } from "@/modules/search/lib/validationGate";
 
 const DEFAULT_ENTITY_TYPES = ["organizations", "projects", "events", "poi", "citoyens"];
 
@@ -51,12 +52,23 @@ registerCommandSource({
 
     let results: SearchResultEntity[] = [];
     try {
+      const params = (cfg?.params ?? {}) as Record<string, unknown>;
+      // La palette appelle `searchCostum` EN DIRECT, hors `buildSearchPayload` : sans cet appel la
+      // porte de validation n'existe pas ici, et une fiche en attente reste atteignable au ⌘K sur
+      // toutes les pages alors qu'elle n'apparaît dans aucune liste (défaut mesuré, commit e3f1a060).
+      // Le slug vient de `params.costumSlug` s'il est écrit, sinon du costum porteur du site.
+      const filters = applyValidationGate(params.filters as Record<string, unknown> | undefined, {
+        costumSlug: params.costumSlug ?? entity.slug,
+        notSourceKey: params.notSourceKey,
+        types: searchType as string[],
+      });
       const payload = {
         searchType,
         name: query,
         indexMin: 0,
         indexStep: limit,
-        ...(cfg?.params ?? {}),
+        ...params,
+        ...(filters && Object.keys(filters).length > 0 ? { filters } : {}),
       };
       const page = (await entity.searchCostum(
         payload as unknown as Parameters<typeof entity.searchCostum>[0]

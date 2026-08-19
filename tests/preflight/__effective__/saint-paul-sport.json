@@ -6,32 +6,129 @@
       "builtins": {
         "organization": "add-organization",
         "project": "add-project",
-        "event": "add-event",
-        "poi": "add-poi"
-      }
+        "event": "add-saintpaul-event"
+      },
+      "customs": [
+        "add-equipements-sportifs"
+      ]
     },
     "organizations": {
       "builtins": {
         "project": "add-project",
-        "event": "add-event",
-        "poi": "add-poi"
-      }
+        "event": "add-saintpaul-event"
+      },
+      "customs": [
+        "add-equipements-sportifs"
+      ]
     },
     "projects": {
       "builtins": {
-        "event": "add-event",
-        "poi": "add-poi"
+        "event": "add-saintpaul-event"
+      },
+      "customs": [
+        "add-equipements-sportifs"
+      ]
+    }
+  },
+  "editModals": {
+    "events": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-saintpaul-event",
+          "native": "edit-saintpaul-event",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    },
+    "poi": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-equipements-sportifs",
+          "native": "edit-equipements-sportifs",
+          "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-equipements-sportifs",
+          "native": "edit-equipements-sportifs",
+          "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-saintpaul-article",
+          "native": "edit-saintpaul-article",
+          "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-saintpaul-article",
+          "native": "edit-saintpaul-article",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    }
+  },
+  "adminResources": {
+    "content/poi": {
+      "source": {
+        "defaultFilters": {
+          "type": "recoveryCenter"
+        },
+        "defaultSortBy": {
+          "name": 1
+        }
+      },
+      "create": "add-equipements-sportifs",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "actualites/poi": {
+      "source": {
+        "defaultFilters": {
+          "type": "article"
+        },
+        "defaultSortBy": {
+          "created": -1
+        },
+        "costumSlug": "saintpaulSport1",
+        "sourceKey": [
+          "saintpaulSport1"
+        ]
+      },
+      "create": "add-saintpaul-article",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "agenda/events": {
+      "source": {
+        "defaultSortBy": {
+          "startDate": -1
+        },
+        "costumSlug": "saintpaulSport1",
+        "sourceKey": [
+          "saintpaulSport1"
+        ]
+      },
+      "create": "add-saintpaul-event",
+      "edit": {
+        "enabled": true,
+        "modalName": null
       }
     }
   },
-  "editModals": {},
-  "adminResources": {},
   "pages": {
     "/equipements-sportifs/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
           "poi"
         ],
+        "costumSlug": "saintpaulSport1",
+        "defaultFilters": {
+          "type": "recoveryCenter"
+        },
         "defaultFields": [
           "name",
           "equip_type_name",
@@ -77,15 +174,10 @@
           "address",
           "geo",
           "geoPosition",
-          "parent"
+          "parent",
+          "source",
+          "reference"
         ],
-        "sourceKey": [
-          "equipementsSportifs974"
-        ],
-        "defaultFilters": {
-          "type": "recoveryCenter",
-          "address.localityId": "54c0965cf6b95c141800a518"
-        },
         "searchBy": [
           "name",
           "inst_nom",
@@ -99,6 +191,10 @@
         "defaultTypes": [
           "poi"
         ],
+        "costumSlug": "saintpaulSport1",
+        "defaultFilters": {
+          "type": "recoveryCenter"
+        },
         "defaultFields": [
           "name",
           "equip_type_name",
@@ -147,14 +243,10 @@
           "address",
           "geo",
           "geoPosition",
-          "parent"
-        ],
-        "notSourceKey": true,
-        "defaultFilters": {
-          "type": "recoveryCenter",
-          "source.key": "equipementsSportifs974",
-          "address.localityId": "54c0965cf6b95c141800a518"
-        }
+          "parent",
+          "source",
+          "reference"
+        ]
       }
     },
     "/data/data-observatory": {
@@ -162,6 +254,10 @@
         "defaultTypes": [
           "poi"
         ],
+        "costumSlug": "saintpaulSport1",
+        "defaultFilters": {
+          "type": "recoveryCenter"
+        },
         "defaultFields": [
           "name",
           "equip_type_name",
@@ -210,49 +306,107 @@
           "address",
           "geo",
           "geoPosition",
-          "parent"
-        ],
-        "notSourceKey": true,
-        "defaultFilters": {
-          "type": "recoveryCenter",
-          "source.key": "equipementsSportifs974",
-          "address.localityId": "54c0965cf6b95c141800a518"
-        }
+          "parent",
+          "source",
+          "reference"
+        ]
       }
     },
-    "/agenda/searchProStatic": {
+    "/agenda/agenda": {
       "baseParams": {
-        "defaultTypes": [
-          "events"
-        ],
-        "notSourceKey": true,
-        "defaultFilters": {
-          "$or": {
-            "address.localityId": "54c0965cf6b95c141800a518",
-            "source.key": "saintpaulSport1",
-            "source.keys": "saintpaulSport1"
-          }
-        }
+        "costumSlug": "saintpaulSport1",
+        "indexStepList": 12,
+        "fediverse": false
       }
     },
     "/actualites/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
-          "news"
+          "events"
         ],
-        "notSourceKey": true,
+        "costumSlug": "saintpaulSport1",
         "defaultSortBy": {
-          "created": -1
+          "startDate": -1
         },
-        "defaultFilters": {
-          "$or": {
-            "address.localityId": "54c0965cf6b95c141800a518",
-            "source.key": "saintpaulSport1",
-            "source.keys": "saintpaulSport1"
-          }
-        }
+        "defaultFields": [
+          "name",
+          "slug",
+          "collection",
+          "type",
+          "source",
+          "shortDescription",
+          "description",
+          "profilImageUrl",
+          "profilMediumImageUrl",
+          "profilThumbImageUrl",
+          "medias",
+          "urls",
+          "address",
+          "tags",
+          "created",
+          "startDate",
+          "endDate",
+          "organizer",
+          "reference"
+        ]
       }
     }
+  },
+  "stamps": {
+    "equipements-sportifs": [
+      {
+        "field": "reference.costum",
+        "value": [
+          "equipementsSportifs974"
+        ],
+        "op": "set",
+        "on": "add",
+        "channel": "pathValue"
+      },
+      {
+        "field": "reference.costumTypes.equipementsSportifs974",
+        "value": "recoveryCenter",
+        "op": "set",
+        "on": "add",
+        "channel": "pathValue"
+      }
+    ],
+    "saintpaul-article": [
+      {
+        "field": "reference.costum",
+        "value": [
+          "equipementsSportifs974"
+        ],
+        "op": "set",
+        "on": "add",
+        "channel": "pathValue"
+      },
+      {
+        "field": "reference.costumTypes.equipementsSportifs974",
+        "value": "article",
+        "op": "set",
+        "on": "add",
+        "channel": "pathValue"
+      }
+    ],
+    "saintpaul-event": [
+      {
+        "field": "reference.costum",
+        "value": [
+          "equipementsSportifs974"
+        ],
+        "op": "set",
+        "on": "add",
+        "channel": "pathValue"
+      },
+      {
+        "field": "reference.costumTypes.equipementsSportifs974",
+        "value": "event",
+        "op": "set",
+        "on": "add",
+        "channel": "pathValue"
+      }
+    ]
   },
   "referencement": {},
   "membership": {

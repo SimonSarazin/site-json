@@ -83,6 +83,14 @@ const WIDGET_DEFAULTS: Partial<Record<WidgetKind, Partial<FieldDescriptor>>> = {
   tel: { type: "string", read: "coerce:string", default: "" },
   select: { type: "string", read: "coerce:string", default: "" },
   selectFromLists: { type: "string", read: "coerce:string", default: "" },
+  // PAS de `write` par défaut ici, et c'est délibéré : `WIDGET_DEFAULTS` s'applique au widget, pas au
+  // champ, donc un `write` posé là sérialiserait aussi les champs CŒUR (le `tags` natif, typé TABLEAU
+  // au contrat) et les booléens cœur. La sérialisation vers la forme stockée par le legacy est une
+  // propriété du CHAMP COSTUM, pas du widget : elle se déclare par champ
+  // (`write: "coerce:csv" | "coerce:boolUpper" | "coerce:boolOuiNon" | "coerce:boolString"`).
+  // La garde `tests/preflight/costum-form-contract.test.ts` signale tout champ costum dont le widget
+  // produit une valeur incompatible avec le type déclaré au contrat — c'est elle qui rappelle d'ajouter
+  // le `write`, plutôt qu'un défaut global qui déborderait sur le cœur.
   switch: { type: "boolean", read: "coerce:bool", default: false },
   checkbox: { type: "boolean", read: "coerce:bool", default: false },
   // Pas de `write` d'omission : une date VIDÉE doit être ENVOYÉE en chaîne vide, car c'est ainsi que
@@ -91,6 +99,9 @@ const WIDGET_DEFAULTS: Partial<Record<WidgetKind, Partial<FieldDescriptor>>> = {
   // qui devait céder : cf. `liveDigest`, où un champ date accepte désormais "" en plus d'une date.
   date: { type: "date", read: "coerce:dateYMDlocale", default: "" },
   number: { type: "number", read: "coerce:number" }, // pas de default (→ undefined)
+  // Idem : `coerce:stringArray` en lecture, mais AUCUN `write` par défaut — `coerce:csv` (son inverse
+  // exact) se déclare par champ, là où le contrat costum dit `string`. Le `tags` NATIF est typé tableau
+  // au contrat : un `write` global le sérialiserait en CSV et casserait tous les forms du parc.
   checkboxGroup: { type: "array", read: "coerce:stringArray", default: [] },
   tags: { type: "array", read: "coerce:stringArray", default: [] },
   // `valueSelect` est multi PAR DÉFAUT, d'où le même type que `tags` ; en mono

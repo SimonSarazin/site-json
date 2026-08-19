@@ -33,7 +33,7 @@ import type { SearchType } from "@/modules/search/schema";
 import { ADMIN_QUERY_KEYS } from "../constants/queryKeys";
 import { useAdminAccess } from "../hooks/useAdminAccess";
 import { useDeleteEntity, type DeletableEntity } from "../hooks/useDeleteEntity";
-import { useReferenceElement, type ReferencingCarrier } from "../hooks/useReferenceElement";
+import { useReferenceElement, type AnnotableEntity, type ReferencingCarrier } from "../hooks/useReferenceElement";
 import { useValidateGroup, type ValidatableCarrier } from "../hooks/useValidateGroup";
 import type { AdminResourceSection, AdminSection } from "../schema";
 import { downloadCsv } from "../lib/downloadCsv";
@@ -533,6 +533,12 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                                 op: isReferenced ? "unreference" : "reference",
                                 type: resource.entityType,
                                 id,
+                                // L'ENTITÉ de la ligne — porte les écritures d'annotation
+                                // (`reference.costumTypes.<slug>`) via SA méthode `updateField`, comme
+                                // AdminReferenceSection. Sans elle, `ecrire()` lève « cible manquante »
+                                // AVANT tout appel réseau : au retrait, l'annotation survit au
+                                // désréférencement et reclasse l'entité si elle est re-référencée plus tard.
+                                cible: item as AnnotableEntity,
                               });
                             }}
                           >

@@ -204,6 +204,54 @@
         "indexStepList": 3
       }
     },
+    "/annuaire/searchProStatic": {
+      "baseParams": {
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "acronym",
+          "tags"
+        ],
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultFields": [
+          "name",
+          "shortDescription",
+          "description",
+          "slug",
+          "collection",
+          "type",
+          "email",
+          "telephone",
+          "mobile",
+          "link",
+          "tags",
+          "categoryThematic",
+          "legalStatus",
+          "acronym",
+          "siret",
+          "codeNaf",
+          "operatingLocation",
+          "otherSociaNetworks",
+          "address",
+          "geo",
+          "geoPosition",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "profilImageUrl",
+          "source",
+          "reference"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "defaultFilters": {
+          "displayAuth": "true"
+        },
+        "indexStepList": 24
+      }
+    },
     "/cartographie/searchProStatic": {
       "baseParams": {
         "searchBy": [

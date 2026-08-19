@@ -28,14 +28,22 @@ interface RegisterFormState {
 interface RegisterFormProps {
   // Mode modal : bascule vers le login interne au lieu de naviguer vers /login.
   onSwitchToLogin?: () => void;
+  /**
+   * Valeurs pré-remplies (flux d'invitation) : l'invité arrive avec son `email` (celui de son compte
+   * `pending`) et son `name`. L'`email` est rendu `readOnly` — CONFORT UX (éviter une faute de frappe
+   * qui créerait un compte neuf), PAS une frontière de sécurité : le backend finalise le compte pending
+   * PAR EMAIL seul (`getPendingUserByEmail` → `updateMinimalData`, parité legacy, sans validationKey).
+   * Le durcissement (lier la finalisation à la clé) est une décision de mode clean — cf. BUG-L-228.
+   */
+  prefill?: { email?: string; name?: string };
 }
 
-export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps = {}): React.ReactNode {
+export default function RegisterForm({ onSwitchToLogin, prefill }: RegisterFormProps = {}): React.ReactNode {
   /* ------------------------------------------------------------------- */
   const [formData, setFormData] = useState<RegisterFormState>({
-    name: "",
+    name: prefill?.name ?? "",
     username: "",
-    email: "",
+    email: prefill?.email ?? "",
     pwd: "",
     confirmPassword: "",
   });
@@ -222,6 +230,8 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps = {}
             handleInputChange("email", e.target.value)
           }
           className="h-12"
+          readOnly={!!prefill?.email}
+          aria-readonly={!!prefill?.email}
         />
 
         <PasswordToggleTextInput

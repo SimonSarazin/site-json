@@ -149,6 +149,55 @@
         "indexStepList": 4
       }
     },
+    "/lieux/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultFilters": {
+          "$or": {
+            "tags": {
+              "$in": [
+                "TiersLieux"
+              ]
+            }
+          },
+          "tags": {
+            "$nin": [
+              "RéseauTiersLieux"
+            ]
+          },
+          "address.addressCountry": {
+            "$in": [
+              "BE",
+              "FR",
+              "GP",
+              "GF",
+              "IT",
+              "RE",
+              "MQ",
+              "YT",
+              "NC",
+              "CH"
+            ]
+          }
+        },
+        "defaultSortBy": {
+          "updated": -1
+        },
+        "searchBy": [
+          "name",
+          "address.addressLocality",
+          "address.level4Name",
+          "address.level3Name",
+          "address.level2Name",
+          "address.level1Name",
+          "address.postalCode"
+        ],
+        "indexStepList": 20,
+        "notSourceKey": true
+      }
+    },
     "/observatoire/data-observatory": {
       "baseParams": {
         "defaultTypes": [

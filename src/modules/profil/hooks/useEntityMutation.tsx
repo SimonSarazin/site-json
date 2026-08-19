@@ -241,7 +241,14 @@ export async function runEntityMutation(
           );
           if (!estVide(courant)) continue;
         }
-        if (!e.updateField) continue;
+        if (!e.updateField) {
+          // Une entité SDK sans `updateField` n'existe pas (BaseEntity le porte pour toutes les
+          // sous-classes) : si on arrive ici, c'est un faux SDK de test ou un contrat rompu. Le
+          // `continue` muet d'avant faisait DISPARAÎTRE le stamp sans laisser de trace — c'est ainsi
+          // que les 13 tests de ce cœur ont pu couvrir la création sans jamais exercer ce canal.
+          console.warn(`[stamps] « ${w.field} » ignoré : l'entité créée n'expose pas updateField`);
+          continue;
+        }
         await e.updateField(w.field, w.value);
       } catch (err) {
         console.warn(`[stamps] échec pathValue « ${w.field} » (non bloquant)`, err);

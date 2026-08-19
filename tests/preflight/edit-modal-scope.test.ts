@@ -1,5 +1,13 @@
 /**
- * Préflight du PÉRIMÈTRE des modales d'édition costum (`profiles.<type>.editModals[]`).
+ * Préflight du PÉRIMÈTRE des modales costum — QUEL formulaire s'ouvre, et SUR QUOI.
+ *
+ * Deux volets, deux dangers symétriques :
+ *  · ÉDITION (`profiles.<type>.editModals[]`) — une route trop LARGE ouvre un formulaire costum sur
+ *    des entités étrangères ;
+ *  · CRÉATION (`admin.tabs[].sections[].create`) — un `inherit` AMBIGU (plusieurs forms costum du
+ *    même `entityType`) laisse le choix à un départage qui doit rester déterministe.
+ *
+ * ── volet ÉDITION ──
  *
  * Le danger : une route SANS condition est un catch-all — le formulaire costum s'ouvre sur TOUTES
  * les entités du type, y compris étrangères au costum. Constaté le 03/08 sur institutBleu, où le
@@ -15,9 +23,11 @@
  * Ce test échoue sur toute NOUVELLE route costum non bornée. Les cas connus non traités sont dans
  * `DETTE_CONNUE` : les y laisser est un choix explicite, les corriger n'exige que de retirer la ligne.
  */
-import { describe, test, expect } from "vitest";
+import { describe, test, expect, vi } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
+import { resolveCreateModal, type CostumFormDocLike } from "@/modules/admin/sections/resourceHelpers";
+import type { AdminResourceSection } from "@/modules/admin/schema";
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const sites: { slug: string; config: string }[] = JSON.parse(
@@ -116,4 +126,55 @@ describe("Préflight — périmètre des modales d'édition costum", () => {
     const perimees = Object.keys(DETTE_CONNUE).filter((cle) => !vivantes.has(cle));
     expect(perimees, "Entrée(s) de DETTE_CONNUE sans route correspondante : à supprimer.").toEqual([]);
   });
+});
+
+/**
+ * Volet CRÉATION. Un site polymorphe déclare légitimement plusieurs forms pour un même
+ * `entityType` (Saint-Paul : `poi` porte les équipements ET les actualités). `create: "inherit"`
+ * doit alors trancher sur le DISCRIMINANT (`identity` du form contre les `defaultFilters` de la
+ * resource), jamais sur l'ordre d'écriture des clés dans le JSON — un reformatage de `costumForms`
+ * changerait sinon le formulaire d'ajout de l'admin, en silence et sans qu'aucun test ne bronche.
+ *
+ * Le test appelle la VRAIE `resolveCreateModal` : il ne peut pas diverger de l'implémentation. Le
+ * pas 3 de la fonction (ambiguïté irréductible → modale standard + `console.warn`) est un
+ * comportement de repli sûr, pas une cible : aucune config du parc ne doit l'atteindre.
+ */
+describe("Préflight — création costum : aucun `inherit` ambigu dans le parc", () => {
+  for (const site of sites) {
+    const configPath = path.join(PROJECT_ROOT, site.config);
+    if (!fs.existsSync(configPath)) continue;
+    const config = JSON.parse(fs.readFileSync(configPath, "utf-8")) as {
+      costumForms?: Record<string, CostumFormDocLike>;
+      admin?: { tabs?: { id?: string; sections?: unknown[] }[] };
+    };
+    const resources = (config.admin?.tabs ?? []).flatMap((tab) =>
+      (tab.sections ?? [])
+        .filter((s): s is AdminResourceSection => (s as { type?: string })?.type === "resource")
+        .map((s) => ({ tab: tab.id ?? "?", section: s })),
+    );
+    if (!resources.length) continue;
+
+    test(site.config, () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const ambigues = resources
+        .map(({ tab, section }) => {
+          warn.mockClear();
+          const modale = resolveCreateModal(section, config.costumForms, site.slug);
+          return warn.mock.calls.length
+            ? `${site.config} · admin.${tab} (${section.entityType}) → ${modale ?? "null"} ; ${String(warn.mock.calls[0][0])}`
+            : null;
+        })
+        .filter((x): x is string => x !== null);
+      warn.mockRestore();
+
+      expect(
+        ambigues,
+        `Resource(s) dont le « create: inherit » ne se départage pas. Deux sorties :\n` +
+          `  · poser un « create": "add-<id>" » explicite sur la section ;\n` +
+          `  · ou donner à chaque form candidat une « identity » distincte, compatible avec les\n` +
+          `    « source.defaultFilters » de sa resource (ex. {"type":"article"}).\n` +
+          `Sans cela le formulaire ouvert dépend de l'ordre des clés dans costumForms.`,
+      ).toEqual([]);
+    });
+  }
 });
