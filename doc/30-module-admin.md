@@ -48,6 +48,18 @@ par `isAdminEntryVisible` (`lib/adminEntry.ts`) — jamais de lien vers une page
 }
 ```
 
+**Entrée « Kanban » du menu avatar** (opt-in `auth.menu.kanban` — cf. [doc/23-module-auth.md](23-module-auth.md),
+section `config.auth.menu` ; PAS dans `admin` : activer le kanban n'oblige pas à activer le back-office) :
+ajoute dans le **menu avatar** (`AuthMenu`, au même niveau que Profil / Administration, layouts desktop et
+mobile) une entrée « Kanban » qui ouvre **dans un nouvel onglet** la vue kanban des actions de la plateforme :
+`<serverUrl>/#@<costumSlug>.view.actions` (ex. `https://www.communecter.org/#@sportSanteBienetre.view.actions`).
+Visibilité = **admins du costum uniquement**, via le gate `isKanbanEntryVisible` (`lib/adminEntry.ts`, testé
+dans `adminEntry.test.ts` : `resolveAdminAccessLevel ≥ siteAdmin`, superAdmin compris) — indépendante de
+`admin.enabled`/`access.min`. Le slug est celui du **costum actif** (`useCocolight().entity.slug`, résolu
+depuis le `VITE_SLUG` du déploiement — même source que le scoping d'`AdminResourceTable`), la base est
+`getServerUrl()` (`VITE_SERVER_URL`, `www.communecter.org` sur tout le parc). Composition testée :
+`lib/platformKanbanUrl.ts`. Sans slug de carrier résolu, l'entrée n'apparaît pas (pas de lien cassé).
+
 Trois niveaux (`AdminAccessLevelSchema`, du plus fort au plus faible) :
 
 | Niveau | Qui | Résolution (`resolveAdminAccessLevel`) |

@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import type { AdminResourceSection } from "../schema";
 import { resolveCreateModal, resolveEditModal, getPath, formatCell, readStatusValue } from "./resourceHelpers";
 
@@ -59,14 +59,61 @@ describe("resolveCreateModal — choix costum/standard piloté par la config", (
     );
   });
 
-  it("aucun form ne matche le siteSlug → premier doc du type", () => {
-    const costumForms = {
-      a: { id: "form-a", entityType: "poi", costumSlug: "autreSite" },
-      b: { id: "form-b", entityType: "poi", costumSlug: "encoreUnAutre" },
-    };
-    expect(resolveCreateModal(section({ entityType: "poi" }), costumForms, "monSite")).toBe(
-      "add-form-a",
-    );
+  /**
+   * NON-RÉGRESSION DE L'ORDRE DES CLÉS. Ces trois cas tenaient auparavant sur un `docs[0]` : le
+   * formulaire ouvert par l'admin dépendait de l'ordre d'écriture dans le JSON, qu'aucun test ne
+   * surveille et qu'un simple reformatage suffit à changer. Le départage est désormais explicite,
+   * et l'ambiguïté irréductible rend la main au lieu de deviner.
+   */
+  describe("inherit — plusieurs forms du même type", () => {
+    const deuxPoi = (over: Record<string, unknown> = {}) => ({
+      equipements: { id: "equipements", entityType: "poi", costumSlug: "monSite", identity: { type: "recoveryCenter" }, ...over },
+      articles: { id: "articles", entityType: "poi", costumSlug: "monSite", identity: { type: "article" } },
+    });
+
+    it("l'identity départage contre les defaultFilters de la resource", () => {
+      const forms = deuxPoi();
+      const equip = section({ entityType: "poi", source: { defaultFilters: { type: "recoveryCenter" } } });
+      const artic = section({ entityType: "poi", source: { defaultFilters: { type: "article" } } });
+      expect(resolveCreateModal(equip, forms, "monSite")).toBe("add-equipements");
+      expect(resolveCreateModal(artic, forms, "monSite")).toBe("add-articles");
+    });
+
+    it("le résultat NE dépend PAS de l'ordre des clés JSON", () => {
+      const { equipements, articles } = deuxPoi();
+      const sec = section({ entityType: "poi", source: { defaultFilters: { type: "article" } } });
+      expect(resolveCreateModal(sec, { equipements, articles }, "monSite")).toBe("add-articles");
+      expect(resolveCreateModal(sec, { articles, equipements }, "monSite")).toBe("add-articles");
+    });
+
+    it("filtre en $in ou en tableau : l'identity matche aussi", () => {
+      const forms = deuxPoi();
+      const parIn = section({ entityType: "poi", source: { defaultFilters: { type: { $in: ["article", "autre"] } } } });
+      expect(resolveCreateModal(parIn, forms, "monSite")).toBe("add-articles");
+      const parTableau = section({ entityType: "poi", source: { defaultFilters: { type: ["article"] } } });
+      expect(resolveCreateModal(parTableau, forms, "monSite")).toBe("add-articles");
+    });
+
+    it("ambiguïté irréductible → modale STANDARD et avertissement, jamais un choix arbitraire", () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      // aucun defaultFilters : rien pour départager deux forms du site.
+      expect(resolveCreateModal(section({ entityType: "poi" }), deuxPoi(), "monSite")).toBe("add-poi");
+      // …et deux forms d'AUTRES costums : le siteSlug ne restreint rien non plus.
+      const etrangers = {
+        a: { id: "form-a", entityType: "poi", costumSlug: "autreSite" },
+        b: { id: "form-b", entityType: "poi", costumSlug: "encoreUnAutre" },
+      };
+      expect(resolveCreateModal(section({ entityType: "poi" }), etrangers, "monSite")).toBe("add-poi");
+      expect(warn).toHaveBeenCalledTimes(2);
+      warn.mockRestore();
+    });
+
+    it("un filtre que le départage ne sait pas lire ($regex) rend la main plutôt que de deviner", () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const sec = section({ entityType: "poi", source: { defaultFilters: { type: { $regex: "^article" } } } });
+      expect(resolveCreateModal(sec, deuxPoi(), "monSite")).toBe("add-poi");
+      warn.mockRestore();
+    });
   });
 
   it("doc sans id → retombe sur la clé du record", () => {

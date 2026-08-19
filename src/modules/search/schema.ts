@@ -520,6 +520,15 @@ export const ListItemRuleSchema = z.object({
 export type ListItemRule = z.infer<typeof ListItemRuleSchema>;
 
 export const ListConfSchema = z.object({
+  /**
+   * Disposition de la liste. `"grid"` (défaut CÔTÉ CODE — la config n'est jamais parsée par
+   * Zod au runtime, `SearchListView` retombe lui-même sur la grille quand la clé est absente)
+   * ou `"timeline"` : frise verticale — ligne pointillée centrale, bulle-date (jour/mois/année)
+   * posée sur la ligne, cartes alternées gauche/droite en desktop, colonne unique avec ligne à
+   * gauche en mobile. Pensée pour des événements triés par `baseParams.defaultSortBy:
+   * {"startDate": -1}`. Ignorée en vue détaillée (`isDetailedView`) et en mode split (`onFocusItem`).
+   */
+  layout: z.enum(["grid", "timeline"]).optional(),
   columns: z.object({
     lg: z.number().int().min(1).max(6).optional(),
     md: z.number().int().min(1).max(6).optional(),

@@ -3473,7 +3473,6 @@
       "editModals": [
         {
           "editModal": "edit-institut-bleu-acteur",
-          "_comment": "Sans cette clause la route est un catch-all : le formulaire s'ouvrait sur les ~29 400 organisations du site. La clause slug exclut la porteuse du costum (73 des 74).",
           "when": {
             "and": [
               {
@@ -3867,7 +3866,6 @@
       "editModals": [
         {
           "editModal": "edit-institut-bleu-event",
-          "_comment": "Sans clause de périmètre, catch-all sur tous les events du site. `reference.costum` est conservé bien qu'inutilisé ici : le rattachement legacy est générique.",
           "when": {
             "or": [
               {
@@ -4026,7 +4024,6 @@
       "editModals": [
         {
           "editModal": "edit-institut-bleu-financement",
-          "_comment": "NATIFS : le preset type + l'appartenance source. Un référencé au type coïncident ne matche plus ici — il passe par la route annotation.",
           "editModalMatch": {
             "type": "financement"
           },
@@ -4038,7 +4035,6 @@
         },
         {
           "editModal": "edit-institut-bleu-financement",
-          "_comment": "RÉFÉRENCÉS classés : l'annotation posée au référencement (admin), jamais le champ cœur.",
           "editModalMatch": {
             "reference.costumTypes.institutBleu": "financement"
           },
@@ -4687,8 +4683,7 @@
               "$now": "j/M/aaaa"
             },
             "op": "fillIfEmpty",
-            "channel": "pathValue",
-            "_comment": "Date de signature, posée à la CRÉATION (patron du afterSave legacy institutBleu_index.js:614-625, format SANS zéro de tête — 73/73 en base). Canal pathValue : dateSign n'est pas au schéma d'écriture (jamais un input dynform). Contre le backend legacy (prod) personne d'autre ne la pose ; contre Node le hook serveur l'a déjà posée (fillIfEmpty s'abstient)."
+            "channel": "pathValue"
           },
           {
             "field": "tags",
@@ -4696,8 +4691,7 @@
               "$from": "categoryThematic"
             },
             "op": "append",
-            "on": "both",
-            "_comment": "Parité legacy (institutBleu_index.js:694-707) : recopie les catégories (libellés) dans tags. Le legacy filtre la thématique sur tags ; categoryThematic est déjà des libellés → simple append (pas de $mapLabels). Le champ structuré est conservé (facette `categorie` le filtre)."
+            "on": "both"
           }
         ],
         "successKey": {
@@ -5021,19 +5015,24 @@
           }
         },
         "addressCountry": {
-          "widget": "hidden"
+          "widget": "hidden",
+          "group": "address"
         },
         "addressLocality": {
-          "widget": "hidden"
+          "widget": "hidden",
+          "group": "address"
         },
         "postalCode": {
-          "widget": "hidden"
+          "widget": "hidden",
+          "group": "address"
         },
         "streetAddress": {
-          "widget": "hidden"
+          "widget": "hidden",
+          "group": "address"
         },
         "localityId": {
-          "widget": "hidden"
+          "widget": "hidden",
+          "group": "address"
         },
         "geo": {
           "widget": "hidden"
@@ -5335,19 +5334,24 @@
           }
         },
         "addressCountry": {
-          "widget": "hidden"
+          "widget": "hidden",
+          "group": "address"
         },
         "addressLocality": {
-          "widget": "hidden"
+          "widget": "hidden",
+          "group": "address"
         },
         "postalCode": {
-          "widget": "hidden"
+          "widget": "hidden",
+          "group": "address"
         },
         "streetAddress": {
-          "widget": "hidden"
+          "widget": "hidden",
+          "group": "address"
         },
         "localityId": {
-          "widget": "hidden"
+          "widget": "hidden",
+          "group": "address"
         },
         "geo": {
           "widget": "hidden"

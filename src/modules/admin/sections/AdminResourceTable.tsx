@@ -1,4 +1,4 @@
-import { BadgeCheck, BadgeX, ChevronDown, ChevronUp, CircleCheck, CircleDashed, CircleDot, CirclePlay, CircleX, Link2, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
+import { ArrowLeftRight, BadgeCheck, BadgeX, ChevronDown, ChevronUp, CircleCheck, CircleDashed, CircleDot, CirclePlay, CircleX, Link2, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
@@ -33,9 +33,10 @@ import { validationStatusFilter } from "@/modules/admin/lib/validationFilter";
 import type { SearchType } from "@/modules/search/schema";
 
 import { ADMIN_QUERY_KEYS } from "../constants/queryKeys";
+import { OwnershipMigrationDialog } from "../components/OwnershipMigrationDialog";
 import { useAdminAccess } from "../hooks/useAdminAccess";
 import { useDeleteEntity, type DeletableEntity } from "../hooks/useDeleteEntity";
-import { useReferenceElement, type ReferencingCarrier } from "../hooks/useReferenceElement";
+import { useReferenceElement, type AnnotableEntity, type ReferencingCarrier } from "../hooks/useReferenceElement";
 import { useValidateGroup, type ValidatableCarrier } from "../hooks/useValidateGroup";
 import type { AdminResourceSection, AdminSection } from "../schema";
 import { downloadCsv } from "../lib/downloadCsv";
@@ -241,6 +242,12 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   const queryClient = useQueryClient();
   const [bulkBusy, setBulkBusy] = useState(false);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  // bulkAction `transfer` : migration d'appropriation en mode ids[] sur la sélection cochée —
+  // même dialog que la section ownershipMigration (contrôles + gate re-déroulés serveur).
+  // Le cédant vient de la CONFIG (`transferFrom`) : les lignes de searchCostum ne projettent pas
+  // toujours `source`, on ne peut pas le dériver des fiches de façon fiable.
+  const [bulkTransferOpen, setBulkTransferOpen] = useState(false);
+  const canBulkTransfer = bulkActions.includes("transfer") && !!resource.transferFrom;
   const invalidateAdmin = () =>
     queryClient.invalidateQueries({ predicate: (q) => String(q.queryKey[0] ?? "").startsWith("admin-") });
   const toggleSelect = (id: string, item: unknown) =>
@@ -439,6 +446,11 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
             {bulkActions.includes("export") && (
               <Button size="sm" variant="outline" disabled={bulkBusy} onClick={bulkExport}>
                 {tAdmin("AdminResourceTable.bulkExport")}
+              </Button>
+            )}
+            {canBulkTransfer && (
+              <Button size="sm" variant="outline" disabled={bulkBusy} onClick={() => setBulkTransferOpen(true)}>
+                <ArrowLeftRight className="mr-1.5 h-3.5 w-3.5" /> {tAdmin("AdminResourceTable.bulkTransfer")}
               </Button>
             )}
             {bulkActions.includes("delete") && (
@@ -642,6 +654,12 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                                 op: isReferenced ? "unreference" : "reference",
                                 type: resource.entityType,
                                 id,
+                                // L'ENTITÉ de la ligne — porte les écritures d'annotation
+                                // (`reference.costumTypes.<slug>`) via SA méthode `updateField`, comme
+                                // AdminReferenceSection. Sans elle, `ecrire()` lève « cible manquante »
+                                // AVANT tout appel réseau : au retrait, l'annotation survit au
+                                // désréférencement et reclasse l'entité si elle est re-référencée plus tard.
+                                cible: item as AnnotableEntity,
                               });
                             }}
                           >
@@ -757,6 +775,23 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
         isDestructive
         isPending={del.isPending}
       />
+
+      {/* bulkAction `transfer` : le dialog partagé de migration d'appropriation, en mode ids[] sur
+          la sélection. `open &&` remonte la sélection au moment de l'ouverture (le dialog relance
+          son analyse à chaque ouverture) ; apply/rollback réussi → invalidation + désélection. */}
+      {canBulkTransfer && bulkTransferOpen && (
+        <OwnershipMigrationDialog
+          open={bulkTransferOpen}
+          onOpenChange={setBulkTransferOpen}
+          from={resource.transferFrom!}
+          collection={resource.entityType}
+          selection={{ ids: [...selected.keys()] }}
+          onApplied={() => {
+            setSelected(new Map());
+            void invalidateAdmin();
+          }}
+        />
+      )}
     </Card>
   );
 }

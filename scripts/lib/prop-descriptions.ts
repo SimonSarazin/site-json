@@ -26,6 +26,7 @@ const prefix = (p: string, descs: Record<string, string>): Record<string, string
  * searchPro et searchProStatic ; monté sous `props.list.` dans chaque section.
  */
 const LIST: Record<string, string> = {
+  layout: "Disposition : grid (défaut CÔTÉ CODE) ou timeline (frise verticale — bulle-date sur ligne pointillée, cartes alternées) ; à coupler à defaultSortBy {startDate:-1} ; ignorée en vue détaillée et en mode split.",
   columns: "Colonnes de la grille par breakpoint (sm/md/lg/xl, 1-6).",
   "card.type": "Presenter de carte (voir table SKILL) ; ⚠ défaut CÔTÉ CODE : overlay — le schéma dit default mais n'est jamais appliqué.",
   "card.variant": "Surcharge card.type pour le SEUL dispatch visuel (sous-ensemble sans overlay/news/testimonial/resource).",
@@ -369,7 +370,6 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "default.editModals": "Table de routage multi sous-types : le PREMIER élément dont la condition matche gagne → placer le catch-all (sans condition) EN DERNIER ; sinon repli editModal, puis edit-profile.",
     "default.editModals[].editModalMatch": "Absente = match universel (catch-all qui court-circuite les routes suivantes) ; même sémantique AND/includes que editModalMatch.",
     "default.editModals[].when": "Prédicat de la route. DANGER si absent sur un form costum : la route devient catch-all, le formulaire s'ouvre sur toutes les entités du type. Patron : sourceKeys contains <slug> OU reference.costum contains <slug>.",
-    "default.editModals[]._comment": "Commentaire libre (JSON n'a pas de commentaires) : justifier une condition de périmètre non évidente. Ignoré au runtime, déclaré sur editModals[] uniquement.",
     "default.layout": "Gabarit de largeur de la page profil ; défauts code : default ≈ max-w-7xl, modern 6xl, compact 3xl, full-width pleine largeur.",
     "default.hideHeader": "Masque le header global du site sur la page profil (défaut code : affiché) — profil plein écran.",
     "default.hideFooter": "Masque le footer global du site sur la page profil (défaut code : affiché).",
@@ -411,6 +411,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "menu.showName": "Affiche le nom à côté de l'avatar connecté (masqué sous le breakpoint sm) ; surcharge le choix du header ; repli code : oui si la density résolue est normal.",
     "menu.showDropdownHeader": "Ajoute un en-tête nom + email en tête du dropdown du compte ; surcharge le choix du header (activé d'office sur mega-menu et transparent-scroll, masqué ailleurs).",
     "menu.loginLabel": "Libellé du bouton de connexion (déconnecté) — ⚠ précédence INVERSE : la prop du header (souvent header.ctaButton.label) gagne sur la config ; défaut i18n « Se connecter ».",
+    "menu.kanban": "Opt-in : entrée « Kanban » du menu avatar — nouvel onglet vers la vue actions de la plateforme ; admins du costum seulement (gate isKanbanEntryVisible), indépendante de config.admin, aucune entrée sans slug résolu.",
     hideHeader: "Masque le SiteHeader sur les pages auth (/login, /register, /recover-password) — mode page uniquement, sans effet sur le modal global ; défaut code : affiché.",
     hideFooter: "Masque le SiteFooter sur les pages auth — même logique que hideHeader (mode page seulement) ; défaut code : affiché.",
     login: "Textes de l'écran de connexion (titre/sous-titre) — utilisés par le formulaire en mode page /login ET dans le modal global (même composant lazy).",

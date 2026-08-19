@@ -84,6 +84,27 @@ describe("routes de validation de compte (liens d'e-mails)", () => {
     expect(m![m!.length - 1]!.params).toMatchObject({ ref: REF });
   });
 
+  it("lien d'INVITATION (passerelle) : /co2/person/validateinvitation/user/:user/validationKey/:validationKey (+ /invitation/1, /costum/true)", () => {
+    for (const suffix of ["", "/invitation/1", "/invitation/1/costum/true"]) {
+      const m = matcher(`/co2/person/validateinvitation/user/${ID}/validationKey/${KEY}${suffix}`);
+      expect(m, suffix).not.toBeNull();
+      expect(m![m!.length - 1]!.params).toMatchObject({ user: ID, validationKey: KEY });
+    }
+  });
+
+  it("réponse Accepter/Refuser d'invitation : /co2/link/validateinvitationbymail/userId/:userId/…/answer/:answer (+ suffixes Yii)", () => {
+    const TID = "5f8d0a1b2c3d4e5f60718293";
+    for (const answer of ["true", "false"]) {
+      for (const suffix of ["", "/costum/true", "/redirect/.costum.co.index.slug.ctenat"]) {
+        const m = matcher(
+          `/co2/link/validateinvitationbymail/userId/${ID}/targetType/organizations/targetId/${TID}/answer/${answer}${suffix}`,
+        );
+        expect(m, `${answer}${suffix}`).not.toBeNull();
+        expect(m![m!.length - 1]!.params).toMatchObject({ userId: ID, targetType: "organizations", targetId: TID, answer });
+      }
+    }
+  });
+
   it("les routes auth historiques restent servies (dont /recover-password, distinct de /recover/…)", () => {
     for (const p of ["/login", "/register", "/recover-password"]) {
       expect(matcher(p), p).not.toBeNull();

@@ -139,7 +139,11 @@ const AdminResourceSectionSchema = z.object({
   create: AdminFormRefSchema.default("inherit"),
   edit: AdminFormRefSchema.default("inherit"),
   rowActions: z.array(z.enum(["edit", "delete", "validate", "reference"])).optional(),
-  bulkActions: z.array(z.enum(["export", "validate", "delete"])).optional(),
+  /** `transfer` requiert `transferFrom` (le bouton reste caché sans lui) — ouvre le dialog de
+   *  migration d'appropriation en mode ids[] sur la sélection (mêmes contrôles/gate serveur). */
+  bulkActions: z.array(z.enum(["export", "validate", "delete", "transfer"])).optional(),
+  /** Slug du costum CÉDANT pour la bulkAction `transfer` (les fiches cochées lui appartiennent). */
+  transferFrom: z.string().min(1).optional(),
   status: AdminStatusConfigSchema.optional(),
 });
 export type AdminResourceSection = z.infer<typeof AdminResourceSectionSchema>;
