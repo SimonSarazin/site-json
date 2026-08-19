@@ -54,6 +54,47 @@
         "indexStepList": 3
       }
     },
+    "/communaute/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "citoyens",
+          "NGO",
+          "LocalBusiness",
+          "Group",
+          "GovernmentOrganization",
+          "Cooperative"
+        ],
+        "defaultFilters": {
+          "preferences.toBeValidated.rezoLaMer": {
+            "$exists": false
+          },
+          "links.memberOf.5a8d040040bb4eba04d62bdf": {
+            "$exists": true
+          }
+        },
+        "notSourceKey": 30
+      }
+    },
+    "/communaute/searchProStatic#1": {
+      "baseParams": {
+        "defaultTypes": [
+          "NGO",
+          "LocalBusiness",
+          "Group",
+          "GovernmentOrganization",
+          "Cooperative"
+        ],
+        "defaultFilters": {
+          "preferences.toBeValidated.rezoLaMer": {
+            "$exists": false
+          },
+          "links.members.5a8d040040bb4eba04d62bdf": {
+            "$exists": true
+          }
+        },
+        "notSourceKey": true
+      }
+    },
     "/ressources/searchProStatic": {
       "baseParams": {
         "defaultTypes": [

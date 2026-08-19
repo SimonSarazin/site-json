@@ -15,7 +15,7 @@
       "fr",
       "en"
     ],
-    "favicon": "/images/equipementsSportifs974/favicon.svg",
+    "favicon": "/images/saintpaulSport1/favicon.svg",
     "themeColor": "#007f5a",
     "keywords": [
       "sports facilities",
@@ -24,7 +24,7 @@
       "recreation",
       "community resources"
     ],
-    "ogImage": "/images/equipementsSportifs974/hero.jpg"
+    "ogImage": "/images/saintpaulSport1/hero.jpg"
   },
   "header": {
     "type": "transparent-scroll",
@@ -61,6 +61,14 @@
         },
         "path": "/agenda",
         "icon": "calendar"
+      },
+      {
+        "label": {
+          "fr": "Actualités",
+          "en": "News"
+        },
+        "path": "/actualites",
+        "icon": "newspaper"
       },
       {
         "label": {
@@ -122,7 +130,7 @@
               "en": "Equipping and connecting the network of sports enthusiasts to build a dynamic and resilient community together"
             },
             "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-20 h-20\"><path d=\"M12 22c4.5-4.5 7-7.6 7-11a7 7 0 1 0-14 0c0 3.4 2.5 6.5 7 11Z\"></path><path d=\"M8 10h1.7l1-2.6 2 5.2 1-2.6H16\"></path></svg>",
-            "backgroundImage": "images/equipementsSportifs974/hero2.jpg",
+            "backgroundImage": "images/saintpaulSport1/hero2.jpg",
             "backgroundImageAlt": {
               "fr": "Vue panoramique d'un terrain de sport vibrant avec des joueurs en action",
               "en": "Panoramic view of a vibrant sports field with players in action"
@@ -240,7 +248,7 @@
               "fr": "Recherchez, filtrez et localisez chaque équipement sportif de la commune de Saint-Paul. Ajoutez vos sites en quelques clics.",
               "en": "Search, filter, and locate every sports facility in the municipality of Saint-Paul. Add your sites in a few clicks."
             },
-            "backgroundImage": "/images/equipementsSportifs974/hero.jpg",
+            "backgroundImage": "/images/saintpaulSport1/hero.jpg",
             "backgroundImageAlt": {
               "fr": "Équipements sportifs Saint-Paul",
               "en": "Sports facilities Saint-Paul"
@@ -414,6 +422,7 @@
                   "en": "Add sports facility"
                 },
                 "action": "add-poi",
+                "modal": "add-equipements-sportifs",
                 "variant": "outline"
               }
             ],
@@ -1715,6 +1724,10 @@
               "defaultTypes": [
                 "poi"
               ],
+              "costumSlug": "saintpaulSport1",
+              "defaultFilters": {
+                "type": "recoveryCenter"
+              },
               "defaultFields": [
                 "name",
                 "equip_type_name",
@@ -1760,15 +1773,10 @@
                 "address",
                 "geo",
                 "geoPosition",
-                "parent"
+                "parent",
+                "source",
+                "reference"
               ],
-              "sourceKey": [
-                "equipementsSportifs974"
-              ],
-              "defaultFilters": {
-                "type": "recoveryCenter",
-                "address.localityId": "54c0965cf6b95c141800a518"
-              },
               "searchBy": [
                 "name",
                 "inst_nom",
@@ -1814,7 +1822,7 @@
                     "days": 7
                   },
                   "sourceKey": [
-                    "equipementsSportifs974"
+                    "saintpaulSport1"
                   ],
                   "poiFilters": {
                     "type": "recoveryCenter"
@@ -1866,6 +1874,10 @@
               "defaultTypes": [
                 "poi"
               ],
+              "costumSlug": "saintpaulSport1",
+              "defaultFilters": {
+                "type": "recoveryCenter"
+              },
               "defaultFields": [
                 "name",
                 "equip_type_name",
@@ -1914,14 +1926,10 @@
                 "address",
                 "geo",
                 "geoPosition",
-                "parent"
-              ],
-              "notSourceKey": true,
-              "defaultFilters": {
-                "type": "recoveryCenter",
-                "source.key": "equipementsSportifs974",
-                "address.localityId": "54c0965cf6b95c141800a518"
-              }
+                "parent",
+                "source",
+                "reference"
+              ]
             },
             "dimensions": {
               "name": {
@@ -2780,7 +2788,7 @@
                       "days": 7
                     },
                     "sourceKey": [
-                      "equipementsSportifs974"
+                      "saintpaulSport1"
                     ],
                     "poiFilters": {
                       "type": "recoveryCenter"
@@ -2827,6 +2835,10 @@
               "defaultTypes": [
                 "poi"
               ],
+              "costumSlug": "saintpaulSport1",
+              "defaultFilters": {
+                "type": "recoveryCenter"
+              },
               "defaultFields": [
                 "name",
                 "equip_type_name",
@@ -2875,14 +2887,10 @@
                 "address",
                 "geo",
                 "geoPosition",
-                "parent"
-              ],
-              "notSourceKey": true,
-              "defaultFilters": {
-                "type": "recoveryCenter",
-                "source.key": "equipementsSportifs974",
-                "address.localityId": "54c0965cf6b95c141800a518"
-              }
+                "parent",
+                "source",
+                "reference"
+              ]
             },
             "dimensions": {
               "name": {
@@ -3176,7 +3184,7 @@
                       "days": 7
                     },
                     "sourceKey": [
-                      "equipementsSportifs974"
+                      "saintpaulSport1"
                     ],
                     "poiFilters": {
                       "type": "recoveryCenter"
@@ -3656,53 +3664,34 @@
                 },
                 "icon": "plus",
                 "action": "add-event",
+                "modal": "add-saintpaul-event",
                 "variant": "primary"
               }
             ],
-            "showSearch": true,
-            "searchPlaceholder": {
-              "fr": "Rechercher un événement...",
-              "en": "Search for an event..."
-            },
+            "showSearch": false,
+            "showActiveFiltersTags": false,
             "headlineClassName": "text-white dark:text-foreground",
             "subheadClassName": "text-white dark:text-foreground"
           }
         },
         {
-          "type": "searchProStatic",
-          "id": "agenda-list",
+          "type": "agenda",
+          "id": "agenda-saint-paul",
           "props": {
-            "useFilter": true,
-            "showMap": false,
+            "showViewToggle": true,
+            "showTabs": true,
+            "defaultMode": "list",
+            "tabs": ["upcoming", "ongoing", "past"],
+            "defaultTab": "upcoming",
+            "upcomingWindowMonths": 12,
+            "filters": { "type": true, "text": true, "tags": true },
+            "detailsMode": "drawer",
             "enableMap": false,
-            "showActiveFiltersTypes": true,
-            "showActiveFiltersTags": true,
-            "disableInfiniteScroll": false,
+            "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 4 },
             "baseParams": {
-              "defaultTypes": [
-                "events"
-              ],
-              "notSourceKey": true,
-              "defaultFilters": {
-                "$or": {
-                  "address.localityId": "54c0965cf6b95c141800a518",
-                  "source.key": "saintpaulSport1",
-                  "source.keys": "saintpaulSport1"
-                }
-              }
-            },
-            "list": {
-              "columns": {
-                "sm": 1,
-                "md": 2,
-                "lg": 3,
-                "xl": 4
-              },
-              "card": {
-                "type": "profile",
-                "variant": "profile",
-                "detailsMode": "drawer"
-              }
+              "costumSlug": "saintpaulSport1",
+              "indexStepList": 12,
+              "fediverse": false
             }
           }
         }
@@ -3737,8 +3726,8 @@
     {
       "path": "/actualites",
       "title": {
-        "fr": "Actualités - Saint-Paul Sport",
-        "en": "News - Saint-Paul Sport"
+        "fr": "Actus & Événements - Saint-Paul Sport",
+        "en": "News & Events - Saint-Paul Sport"
       },
       "layout": "fullwidth",
       "sections": [
@@ -3751,62 +3740,151 @@
               "en": "News"
             },
             "subhead": {
-              "fr": "Toutes les actualités du sport à Saint-Paul",
-              "en": "All sports news in Saint-Paul"
+              "fr": "Les actus et les événements du sport à Saint-Paul",
+              "en": "Sports news and events in Saint-Paul"
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher une actu ou un événement...",
+              "en": "Search for news or an event..."
             },
             "headlineClassName": "text-white dark:text-foreground",
             "subheadClassName": "text-white dark:text-foreground"
           }
         },
         {
-          "type": "searchProStatic",
-          "id": "actualites-list",
+          "type": "tabs",
+          "id": "actualites-tabs",
           "props": {
-            "useFilter": true,
-            "showMap": false,
-            "enableMap": false,
-            "showActiveFiltersTypes": true,
-            "showActiveFiltersTags": true,
-            "disableInfiniteScroll": false,
-            "baseParams": {
-              "defaultTypes": [
-                "news"
-              ],
-              "notSourceKey": true,
-              "defaultSortBy": {
-                "created": -1
+            "defaultTab": "actus",
+            "orientation": "horizontal",
+            "tabs": [
+              {
+                "id": "actus",
+                "label": {
+                  "fr": "Actus",
+                  "en": "News"
+                },
+                "icon": "newspaper",
+                "content": [
+                  {
+                    "type": "articleFeed",
+                    "id": "actualites-articles-feed",
+                    "props": {
+                      "costumSlug": "saintpaulSport1",
+                      "pageSize": 12,
+                      "featured": true,
+                      "cardVariant": "default",
+                      "feedLayout": "grid",
+                      "fullWidth": true
+                    }
+                  }
+                ]
               },
-              "defaultFilters": {
-                "$or": {
-                  "address.localityId": "54c0965cf6b95c141800a518",
-                  "source.key": "saintpaulSport1",
-                  "source.keys": "saintpaulSport1"
-                }
+              {
+                "id": "evenements",
+                "label": {
+                  "fr": "Événements",
+                  "en": "Events"
+                },
+                "icon": "calendar",
+                "content": [
+                  {
+                    "type": "searchProStatic",
+                    "id": "actualites-events-list",
+                    "props": {
+                      "useFilter": true,
+                      "showMap": false,
+                      "enableMap": false,
+                      "showActiveFiltersTypes": true,
+                      "showActiveFiltersTags": true,
+                      "disableInfiniteScroll": false,
+                      "baseParams": {
+                        "defaultTypes": [
+                          "events"
+                        ],
+                        "costumSlug": "saintpaulSport1",
+                        "defaultSortBy": {
+                          "startDate": -1
+                        },
+                        "defaultFields": [
+                          "name",
+                          "slug",
+                          "collection",
+                          "type",
+                          "source",
+                          "shortDescription",
+                          "description",
+                          "profilImageUrl",
+                          "profilMediumImageUrl",
+                          "profilThumbImageUrl",
+                          "medias",
+                          "urls",
+                          "address",
+                          "tags",
+                          "created",
+                          "startDate",
+                          "endDate",
+                          "organizer",
+                          "reference"
+                        ]
+                      },
+                      "list": {
+                        "layout": "timeline",
+                        "columns": {
+                          "sm": 1,
+                          "md": 2,
+                          "lg": 3,
+                          "xl": 4
+                        },
+                        "previewParam": "preview-events",
+                        "card": {
+                          "type": "event",
+                          "detailsMode": "drawer",
+                          "tagLimit": 1
+                        },
+                        "preview": {
+                          "type": "event"
+                        }
+                      }
+                    }
+                  }
+                ]
               }
-            },
-            "list": {
-              "columns": {
-                "sm": 1,
-                "md": 2,
-                "lg": 3,
-                "xl": 3
-              },
-              "card": {
-                "type": "news",
-                "detailsMode": "dialog"
-              },
-              "preview": {
-                "type": "news",
-                "showDetailLink": true
-              }
-            }
+            ]
           }
         }
       ],
       "seo": {
         "description": {
-          "fr": "Les actualités des équipements et du sport à Saint-Paul.",
-          "en": "News about sports and facilities in Saint-Paul."
+          "fr": "Les actualités et les événements des équipements et du sport à Saint-Paul.",
+          "en": "News and events about sports and facilities in Saint-Paul."
+        }
+      }
+    },
+    {
+      "path": "/blog",
+      "title": {
+        "fr": "Actualités - Saint-Paul Sport",
+        "en": "News - Saint-Paul Sport"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "articleFeed",
+          "id": "blog-feed",
+          "props": {
+            "costumSlug": "saintpaulSport1",
+            "pageSize": 12,
+            "featured": true,
+            "fullWidth": true
+          }
+        }
+      ],
+      "seo": {
+        "description": {
+          "fr": "Toutes les actualités du sport à Saint-Paul.",
+          "en": "All sports news in Saint-Paul."
         }
       }
     },
@@ -3910,7 +3988,7 @@
     "partners": {
       "logos": [
         {
-          "image": "images/equipementsSportifs974/partners/ac-reunion.png",
+          "image": "images/saintpaulSport1/partners/ac-reunion.png",
           "alt": {
             "fr": "Jeunesse, Engagement et Sports",
             "en": "Youth, Engagement and Sports"
@@ -3948,6 +4026,7 @@
     }
   },
   "commandPalette": {
+    "articleSearch": { "enabled": true, "costumSlug": "saintpaulSport1", "limit": 8 },
     "enabled": true,
     "triggerVariant": "compact",
     "placeholder": {
@@ -3961,12 +4040,8 @@
       ],
       "limit": 8,
       "params": {
-        "sourceKey": [
-          "equipementsSportifs974"
-        ],
         "filters": {
-          "type": "recoveryCenter",
-          "address.localityId": "54c0965cf6b95c141800a518"
+          "type": "recoveryCenter"
         }
       },
       "itemAction": {
@@ -3996,7 +4071,7 @@
               "days": 7
             },
             "sourceKey": [
-              "equipementsSportifs974"
+              "saintpaulSport1"
             ],
             "poiFilters": {
               "type": "recoveryCenter"
@@ -4006,6 +4081,12 @@
         }
       }
     }
+  },
+  "blog": {
+    "feedCostumSlug": "saintpaulSport1",
+    "readerVariant": "default",
+    "defaultCardVariant": "default",
+    "defaultFeedLayout": "grid"
   },
   "features": [
     {
@@ -4305,7 +4386,17 @@
             "organization": true,
             "project": true,
             "event": true,
-            "poi": true
+            "poi": false,
+            "custom": [
+              {
+                "modalKey": "add-equipements-sportifs",
+                "label": {
+                  "fr": "Ajouter un équipement",
+                  "en": "Add a facility"
+                },
+                "icon": "dumbbell"
+              }
+            ]
           }
         },
         {
@@ -4428,7 +4519,17 @@
             "organization": false,
             "project": true,
             "event": true,
-            "poi": true
+            "poi": false,
+            "custom": [
+              {
+                "modalKey": "add-equipements-sportifs",
+                "label": {
+                  "fr": "Ajouter un équipement",
+                  "en": "Add a facility"
+                },
+                "icon": "dumbbell"
+              }
+            ]
           }
         },
         {
@@ -4611,7 +4712,17 @@
             "organization": false,
             "project": false,
             "event": true,
-            "poi": true
+            "poi": false,
+            "custom": [
+              {
+                "modalKey": "add-equipements-sportifs",
+                "label": {
+                  "fr": "Ajouter un équipement",
+                  "en": "Add a facility"
+                },
+                "icon": "dumbbell"
+              }
+            ]
           }
         },
         {
@@ -5048,15 +5159,31 @@
             }
           ]
         }
+      ],
+      "editModals": [
+        {
+          "editModal": "edit-saintpaul-event",
+          "when": {
+            "or": [
+              {
+                "field": "sourceKeys",
+                "op": "contains",
+                "value": "saintpaulSport1"
+              },
+              {
+                "field": "reference.costum",
+                "op": "contains",
+                "value": "saintpaulSport1"
+              }
+            ]
+          }
+        }
       ]
     },
     "poi": {
       "layout": "default",
       "hideHeader": false,
       "hideFooter": false,
-      "editModalMatch": {
-        "type": "recoveryCenter"
-      },
       "sections": [
         {
           "type": "profile-header",
@@ -5190,7 +5317,1666 @@
             }
           ]
         }
+      ],
+      "editModals": [
+        {
+          "editModal": "edit-equipements-sportifs",
+          "editModalMatch": {
+            "type": "recoveryCenter"
+          },
+          "when": {
+            "field": "sourceKeys",
+            "op": "contains",
+            "value": "saintpaulSport1"
+          }
+        },
+        {
+          "editModal": "edit-equipements-sportifs",
+          "editModalMatch": {
+            "reference.costumTypes.saintpaulSport1": "recoveryCenter"
+          },
+          "when": {
+            "field": "reference.costum",
+            "op": "contains",
+            "value": "saintpaulSport1"
+          }
+        },
+        {
+          "editModal": "edit-saintpaul-article",
+          "editModalMatch": {
+            "type": "article"
+          },
+          "when": {
+            "field": "sourceKeys",
+            "op": "contains",
+            "value": "saintpaulSport1"
+          }
+        },
+        {
+          "editModal": "edit-saintpaul-article",
+          "editModalMatch": {
+            "reference.costumTypes.saintpaulSport1": "article"
+          },
+          "when": {
+            "field": "reference.costum",
+            "op": "contains",
+            "value": "saintpaulSport1"
+          }
+        }
       ]
     }
+  },
+  "costumForms": {
+    "equipements-sportifs": {
+      "id": "equipements-sportifs",
+      "entityType": "poi",
+      "costumSlug": "saintpaulSport1",
+      "layout": {
+        "kind": "wizard",
+        "validatePerStep": true
+      },
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        }
+      },
+      "fieldPresets": {
+        "selectFromLists": {
+          "placeholderSearch": {
+            "fr": "Rechercher…",
+            "en": "Search…"
+          }
+        }
+      },
+      "fields": {
+        "addressCountry": {
+          "widget": "hidden",
+          "required": true,
+          "group": "address"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "required": true,
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "required": true,
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "required": true,
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "description": {
+          "widget": "hidden",
+          "read": "coerce:string",
+          "default": ""
+        },
+        "tags": {
+          "widget": "hidden",
+          "type": "array",
+          "read": "coerce:stringArray",
+          "default": []
+        },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
+        },
+        "name": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Nom",
+            "en": "Name"
+          },
+          "info": {
+            "fr": "Le nom qui sera affiché publiquement",
+            "en": "The name that will be publicly displayed"
+          }
+        },
+        "equip_type_name": {
+          "widget": "selectFromLists",
+          "required": true,
+          "label": {
+            "fr": "Type de l'équipement",
+            "en": "Facility type"
+          }
+        },
+        "equip_type_famille": {
+          "widget": "selectFromLists",
+          "label": {
+            "fr": "Famille d'équipement",
+            "en": "Facility family"
+          }
+        },
+        "_imageFile": {
+          "widget": "image",
+          "label": "image"
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Adresse",
+            "en": "Address"
+          }
+        },
+        "equip_prop_nom": {
+          "widget": "text",
+          "label": {
+            "fr": "Nom du propriétaire",
+            "en": "Owner name"
+          }
+        },
+        "equip_prop_type": {
+          "widget": "selectFromLists",
+          "label": {
+            "fr": "Type de propriétaire",
+            "en": "Owner type"
+          }
+        },
+        "inst_date_creation": {
+          "widget": "date",
+          "label": {
+            "fr": "Date de création",
+            "en": "Creation date"
+          }
+        },
+        "inst_enqu_date": {
+          "widget": "date",
+          "label": {
+            "fr": "Date d'enquête",
+            "en": "Survey date"
+          }
+        },
+        "equip_maj_date": {
+          "widget": "date",
+          "label": {
+            "fr": "Date de mise à jour",
+            "en": "Update date"
+          }
+        },
+        "inst_nom": {
+          "widget": "text",
+          "label": {
+            "fr": "Nom de l'institution",
+            "en": "Institution name"
+          }
+        },
+        "categorie": {
+          "widget": "text",
+          "label": {
+            "fr": "Catégorie",
+            "en": "Category"
+          }
+        },
+        "equip_gest_type": {
+          "widget": "text",
+          "label": {
+            "fr": "Type de gestionnaire",
+            "en": "Manager type"
+          }
+        },
+        "inst_part_bool": {
+          "widget": "switch",
+          "write": "coerce:boolUpper",
+          "label": {
+            "fr": "Partenariat disponible",
+            "en": "Partnership available"
+          }
+        },
+        "inst_part_type": {
+          "widget": "tags",
+          "write": "coerce:csv",
+          "label": {
+            "fr": "Type de partenariat",
+            "en": "Partnership type"
+          },
+          "widgetProps": {
+            "searchable": false
+          },
+          "visibleIf": {
+            "field": "inst_part_bool",
+            "op": "truthy"
+          }
+        },
+        "equip_nature": {
+          "widget": "selectFromLists",
+          "label": {
+            "fr": "Nature de l'équipement",
+            "en": "Facility nature"
+          }
+        },
+        "equip_sol": {
+          "widget": "selectFromLists",
+          "label": {
+            "fr": "Type de sol",
+            "en": "Floor type"
+          }
+        },
+        "equip_long": {
+          "widget": "number",
+          "write": "coerce:numString",
+          "label": {
+            "fr": "Longueur",
+            "en": "Length"
+          }
+        },
+        "equip_larg": {
+          "widget": "number",
+          "write": "coerce:numString",
+          "label": {
+            "fr": "Largeur",
+            "en": "Width"
+          }
+        },
+        "equip_surf": {
+          "widget": "number",
+          "write": "coerce:numString",
+          "label": {
+            "fr": "Surface (calculée)",
+            "en": "Area (computed)"
+          },
+          "computedFrom": {
+            "deps": [
+              "equip_long",
+              "equip_larg"
+            ],
+            "fn": "compute:multiply"
+          }
+        },
+        "inst_acc_handi_type": {
+          "widget": "text",
+          "label": {
+            "fr": "Type de handicap pris en charge",
+            "en": "Type of disability supported"
+          }
+        },
+        "inst_trans_type": {
+          "widget": "text",
+          "label": {
+            "fr": "Moyen de transport disponible",
+            "en": "Available means of transport"
+          }
+        },
+        "inst_acc_handi_bool": {
+          "widget": "switch",
+          "write": "coerce:boolUpper",
+          "label": {
+            "fr": "Accessible aux personnes en situation de handicap",
+            "en": "Accessible to people with disabilities"
+          }
+        },
+        "inst_trans_bool": {
+          "widget": "switch",
+          "write": "coerce:boolUpper",
+          "label": {
+            "fr": "Accessible en transport en commun",
+            "en": "Accessible by public transport"
+          }
+        },
+        "equip_eclair": {
+          "widget": "switch",
+          "write": "coerce:boolUpper",
+          "label": {
+            "fr": "Éclairage de l'aire",
+            "en": "Area lighting"
+          }
+        },
+        "equip_douche": {
+          "widget": "switch",
+          "write": "coerce:boolUpper",
+          "label": {
+            "fr": "Douche accessible",
+            "en": "Accessible shower"
+          }
+        },
+        "equip_pmr_acc": {
+          "widget": "switch",
+          "write": "coerce:boolUpper",
+          "label": {
+            "fr": "Accès PMR disponible",
+            "en": "PRM access available"
+          }
+        },
+        "equip_pmr_chem": {
+          "widget": "switch",
+          "write": "coerce:boolUpper",
+          "label": {
+            "fr": "Cheminement PMR adapté",
+            "en": "PRM-adapted pathway"
+          }
+        },
+        "equip_pmr_douche": {
+          "widget": "switch",
+          "write": "coerce:boolUpper",
+          "label": {
+            "fr": "Douches accessibles PMR",
+            "en": "PRM-accessible showers"
+          }
+        },
+        "equip_pmr_trib": {
+          "widget": "switch",
+          "write": "coerce:boolUpper",
+          "label": {
+            "fr": "Tribunes accessibles PMR",
+            "en": "PRM-accessible stands"
+          }
+        },
+        "equip_pmr_vest": {
+          "widget": "switch",
+          "write": "coerce:boolUpper",
+          "label": {
+            "fr": "Vestiaires accessibles PMR",
+            "en": "PRM-accessible changing rooms"
+          }
+        },
+        "equip_pmr_sanit": {
+          "widget": "switch",
+          "write": "coerce:boolUpper",
+          "label": {
+            "fr": "Sanitaires accessibles PMR",
+            "en": "PRM-accessible toilets"
+          }
+        },
+        "equip_loc_type": {
+          "widget": "checkboxGroup",
+          "write": "coerce:csv",
+          "label": {
+            "fr": "Locaux complémentaires",
+            "en": "Additional premises"
+          }
+        },
+        "equip_pshs_aire": {
+          "widget": "switch",
+          "write": "coerce:boolUpper",
+          "label": {
+            "fr": "Aire de jeu",
+            "en": "Play area"
+          }
+        },
+        "equip_pshs_sanit": {
+          "widget": "switch",
+          "write": "coerce:boolUpper",
+          "label": {
+            "fr": "Sanitaires",
+            "en": "Toilets"
+          }
+        },
+        "equip_pshs_trib": {
+          "widget": "switch",
+          "write": "coerce:boolUpper",
+          "label": {
+            "fr": "Tribunes",
+            "en": "Stands"
+          }
+        },
+        "equip_pshs_sign": {
+          "widget": "switch",
+          "write": "coerce:boolUpper",
+          "label": {
+            "fr": "Accueil / Signalétique",
+            "en": "Reception / Signage"
+          }
+        },
+        "equip_pshs_vest": {
+          "widget": "switch",
+          "write": "coerce:boolUpper",
+          "label": {
+            "fr": "Vestiaires",
+            "en": "Changing rooms"
+          }
+        },
+        "equip_pshs_chem": {
+          "widget": "switch",
+          "write": "coerce:boolUpper",
+          "label": {
+            "fr": "Cheminements",
+            "en": "Pathways"
+          }
+        },
+        "urls": {
+          "widget": "urlList",
+          "label": {
+            "fr": "Site internet",
+            "en": "Website"
+          },
+          "widgetProps": {
+            "addLabel": {
+              "fr": "Ajouter une URL",
+              "en": "Add a URL"
+            },
+            "removeLabel": {
+              "fr": "Retirer l'URL",
+              "en": "Remove URL"
+            }
+          }
+        },
+        "equip_utilisateur": {
+          "widget": "checkboxGroup",
+          "write": "coerce:csv",
+          "label": {
+            "fr": "Types d'utilisateurs",
+            "en": "User types"
+          }
+        },
+        "equip_acc_libre": {
+          "widget": "switch",
+          "write": "coerce:boolUpper",
+          "label": {
+            "fr": "Accès libre",
+            "en": "Free access"
+          }
+        },
+        "aps_name": {
+          "widget": "multiselect",
+          "write": "coerce:csv",
+          "required": true,
+          "label": {
+            "fr": "Sports pratiqués",
+            "en": "Sports practised"
+          },
+          "placeholder": {
+            "fr": "Sélectionner un sport",
+            "en": "Select a sport"
+          },
+          "placeholderSearch": {
+            "fr": "Rechercher un sport",
+            "en": "Search a sport"
+          }
+        }
+      },
+      "sections": [
+        {
+          "id": "general",
+          "label": {
+            "fr": "Informations générales",
+            "en": "General information"
+          },
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "$slot:parentInfo",
+                "name"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "equip_type_name",
+                "equip_type_famille"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "_imageFile"
+              ]
+            },
+            {
+              "columns": 1,
+              "label": {
+                "fr": "Adresse",
+                "en": "Address"
+              },
+              "required": true,
+              "fields": [
+                "address",
+                "addressCountry",
+                "addressLocality",
+                "postalCode",
+                "streetAddress"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "$slot:doublons"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "legal",
+          "label": {
+            "fr": "Caractéristiques juridiques",
+            "en": "Legal characteristics"
+          },
+          "groups": [
+            {
+              "columns": 2,
+              "fields": [
+                "equip_prop_nom",
+                "equip_prop_type"
+              ]
+            },
+            {
+              "columns": 3,
+              "fields": [
+                "inst_date_creation",
+                "inst_enqu_date",
+                "equip_maj_date"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "inst_nom",
+                "categorie",
+                "equip_gest_type"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "inst_part_bool",
+                "inst_part_type"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "structure",
+          "label": {
+            "fr": "Caractéristiques structurantes",
+            "en": "Structural characteristics"
+          },
+          "groups": [
+            {
+              "columns": 2,
+              "fields": [
+                "equip_nature",
+                "equip_sol"
+              ]
+            },
+            {
+              "columns": 3,
+              "fields": [
+                "equip_long",
+                "equip_larg",
+                "equip_surf"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "inst_acc_handi_type",
+                "inst_trans_type"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "inst_acc_handi_bool",
+                "inst_trans_bool",
+                "equip_eclair",
+                "equip_douche"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "equip_pmr_acc"
+              ]
+            },
+            {
+              "columns": 2,
+              "label": {
+                "fr": "Accessibilité PMR",
+                "en": "PRM accessibility"
+              },
+              "visibleIf": {
+                "field": "equip_pmr_acc",
+                "op": "truthy"
+              },
+              "fields": [
+                "equip_pmr_chem",
+                "equip_pmr_douche",
+                "equip_pmr_trib",
+                "equip_pmr_vest",
+                "equip_pmr_sanit"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "equip_loc_type"
+              ]
+            },
+            {
+              "columns": 2,
+              "label": {
+                "fr": "Accessibilité PSHS",
+                "en": "PSHS accessibility"
+              },
+              "fields": [
+                "equip_pshs_aire",
+                "equip_pshs_sanit",
+                "equip_pshs_trib",
+                "equip_pshs_sign",
+                "equip_pshs_vest",
+                "equip_pshs_chem"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "usage",
+          "label": {
+            "fr": "Caractéristiques d'usages",
+            "en": "Usage characteristics"
+          },
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "urls"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "equip_utilisateur"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "equip_acc_libre"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "aps_name"
+              ]
+            }
+          ]
+        }
+      ],
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter un équipement",
+            "en": "Add a facility"
+          },
+          "edit": {
+            "fr": "Éditer un équipement",
+            "en": "Edit a facility"
+          }
+        },
+        "description": {
+          "add": {
+            "fr": "Compléter les informations de l'équipement.",
+            "en": "Fill in the facility information."
+          },
+          "edit": {
+            "fr": "Mettre à jour les informations de l'équipement.",
+            "en": "Update the facility information."
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Créer",
+            "en": "Create"
+          },
+          "edit": {
+            "fr": "Sauvegarder",
+            "en": "Save"
+          }
+        },
+        "dialogClassName": "sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden",
+        "validationFailedKey": {
+          "fr": "Veuillez corriger les champs en erreur.",
+          "en": "Please fix the highlighted fields."
+        },
+        "navText": {
+          "next": {
+            "fr": "Suivant",
+            "en": "Next"
+          },
+          "previous": {
+            "fr": "Précédent",
+            "en": "Previous"
+          },
+          "cancel": {
+            "fr": "Annuler",
+            "en": "Cancel"
+          },
+          "stepLabelKey": "AddPoiEquipement.stepIndicator"
+        }
+      },
+      "image": {
+        "field": "_imageFile",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "listsFromCarrier": true,
+      "scope": {
+        "derive": "poi:scope",
+        "slugFrom": "derived",
+        "slugKey": "sourceKey",
+        "defaults": {
+          "poiType": "recoveryCenter",
+          "addressCountry": "RE"
+        }
+      },
+      "defaultsBase": "poi:emptyDefaults",
+      "slots": {
+        "parentInfo": "slot:parentInfo",
+        "doublons": "slot:poiDoublons"
+      },
+      "cleanValues": {
+        "fn": "cleanValues:dropEmptyArrayItems",
+        "params": {
+          "fields": [
+            "urls"
+          ]
+        }
+      },
+      "mutation": {
+        "entityType": "poi",
+        "payloadEmitEmptyOnEdit": true,
+        "inject": {
+          "parent": true,
+          "extraFieldsFromScope": {
+            "type": "poiType"
+          }
+        },
+        "navigateOnSuccess": false,
+        "successKey": {
+          "add": "toast.add.poiSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.poiError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_POI",
+          "edit": "EntityFormModal · UPDATE_POI"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard",
+          "params": {
+            "userList": "pois",
+            "parentAboutOnAdd": true,
+            "searchKeys": [
+              "searchCostumStatic",
+              "poi-equipement-matches"
+            ]
+          }
+        },
+        "stamps": [
+          {
+            "field": "reference.costum",
+            "value": [
+              "equipementsSportifs974"
+            ],
+            "op": "set",
+            "on": "add",
+            "channel": "pathValue"
+          },
+          {
+            "field": "reference.costumTypes.equipementsSportifs974",
+            "value": "recoveryCenter",
+            "op": "set",
+            "on": "add",
+            "channel": "pathValue"
+          }
+        ]
+      },
+      "subType": "recoveryCenter",
+      "identity": {
+        "type": "recoveryCenter"
+      }
+    },
+    "saintpaul-article": {
+      "id": "saintpaul-article",
+      "entityType": "poi",
+      "collection": "poi",
+      "costumSlug": "saintpaulSport1",
+      "subType": "article",
+      "identity": {
+        "type": "article"
+      },
+      "layout": {
+        "kind": "flat"
+      },
+      "serializeGroups": {},
+      "sections": [
+        {
+          "id": "content",
+          "label": {
+            "fr": "Contenu",
+            "en": "Content"
+          },
+          "icon": "newspaper",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "name",
+                "shortDescription",
+                "description",
+                "profil_avatar",
+                "galerie",
+                "documents",
+                "tags"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "name": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Titre",
+            "en": "Title"
+          }
+        },
+        "shortDescription": {
+          "widget": "textarea",
+          "label": {
+            "fr": "Chapô / extrait",
+            "en": "Excerpt"
+          },
+          "info": {
+            "fr": "Résumé court (~1-2 phrases) affiché en tête d'article et sur les cartes.",
+            "en": "Short summary (~1-2 sentences) shown at the top of the article and on cards."
+          }
+        },
+        "description": {
+          "widget": "markdown",
+          "required": true,
+          "label": {
+            "fr": "Contenu",
+            "en": "Content"
+          },
+          "widgetProps": {
+            "height": 320,
+            "preview": "edit"
+          }
+        },
+        "profil_avatar": {
+          "widget": "image",
+          "label": {
+            "fr": "Image",
+            "en": "Image"
+          }
+        },
+        "galerie": {
+          "widget": "gallery",
+          "label": {
+            "fr": "Galerie d'images",
+            "en": "Image gallery"
+          },
+          "info": {
+            "fr": "Images additionnelles affichées avec l'article (jusqu'à 12).",
+            "en": "Additional images shown with the article (up to 12)."
+          },
+          "widgetProps": {
+            "contentKey": "slider",
+            "maxItems": 12
+          },
+          "renderOnly": true
+        },
+        "documents": {
+          "widget": "file",
+          "label": {
+            "fr": "Documents",
+            "en": "Documents"
+          },
+          "info": {
+            "fr": "Fichiers joints à l'article (PDF, bureautique…, jusqu'à 8).",
+            "en": "Files attached to the article (PDF, office…, up to 8)."
+          },
+          "widgetProps": {
+            "contentKey": "file",
+            "maxItems": 8
+          },
+          "renderOnly": true
+        },
+        "tags": {
+          "widget": "tags",
+          "label": {
+            "fr": "Mots-clés",
+            "en": "Tags"
+          },
+          "widgetProps": {
+            "searchable": true
+          }
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter une actualité",
+            "en": "Add an article"
+          },
+          "edit": {
+            "fr": "Modifier l'actualité",
+            "en": "Edit article"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Créer l'actualité",
+            "en": "Create article"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        }
+      },
+      "image": {
+        "field": "profil_avatar",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "mutation": {
+        "entityType": "poi",
+        "inject": {
+          "extraFields": {
+            "type": "article"
+          }
+        },
+        "navigateOnSuccess": false,
+        "successKey": {
+          "add": "toast.add.poiSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.poiError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_POI",
+          "edit": "EntityFormModal · UPDATE_POI"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:blog",
+          "params": {
+            "userList": "pois",
+            "searchKeys": [
+              "blog:saintpaulSport1",
+              "admin-poi"
+            ]
+          }
+        },
+        "stamps": [
+          {
+            "field": "reference.costum",
+            "value": [
+              "equipementsSportifs974"
+            ],
+            "op": "set",
+            "on": "add",
+            "channel": "pathValue"
+          },
+          {
+            "field": "reference.costumTypes.equipementsSportifs974",
+            "value": "article",
+            "op": "set",
+            "on": "add",
+            "channel": "pathValue"
+          }
+        ]
+      }
+    },
+    "saintpaul-event": {
+      "id": "saintpaul-event",
+      "entityType": "events",
+      "collection": "events",
+      "costumSlug": "saintpaulSport1",
+      "layout": {
+        "kind": "tabs"
+      },
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        }
+      },
+      "sections": [
+        {
+          "id": "infos",
+          "label": {
+            "fr": "Informations",
+            "en": "Details"
+          },
+          "icon": "info",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "name",
+                "type",
+                "shortDescription",
+                "description",
+                "url",
+                "profil_avatar"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "dates",
+          "label": {
+            "fr": "Dates",
+            "en": "Dates"
+          },
+          "icon": "calendar-days",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "eventDates",
+                "startDate",
+                "endDate"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "lieu",
+          "label": {
+            "fr": "Lieu",
+            "en": "Location"
+          },
+          "icon": "map-pin",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "address"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "taxo",
+          "label": {
+            "fr": "Mots-clés",
+            "en": "Keywords"
+          },
+          "icon": "tags",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "tags"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "profil_avatar": {
+          "widget": "image",
+          "label": {
+            "fr": "Visuel",
+            "en": "Image"
+          }
+        },
+        "name": {
+          "widget": "text",
+          "required": true,
+          "placeholder": {
+            "fr": "Titre de l'événement",
+            "en": "Event title"
+          },
+          "label": {
+            "fr": "Titre de l'événement",
+            "en": "Event title"
+          }
+        },
+        "type": {
+          "widget": "select",
+          "required": true,
+          "label": {
+            "fr": "Type d'événement",
+            "en": "Event type"
+          },
+          "placeholder": {
+            "fr": "Choisir un type…",
+            "en": "Choose a type…"
+          },
+          "enum": [
+            { "value": "workshop", "label": { "fr": "Atelier", "en": "Workshop" } },
+            { "value": "competition", "label": { "fr": "Compétition", "en": "Competition" } },
+            { "value": "concert", "label": { "fr": "Concert", "en": "Concert" } },
+            { "value": "contest", "label": { "fr": "Concours", "en": "Contest" } },
+            { "value": "conference", "label": { "fr": "Conférence", "en": "Conference" } },
+            { "value": "debate", "label": { "fr": "Débat", "en": "Debate" } },
+            { "value": "exhibition", "label": { "fr": "Exposition", "en": "Exhibition" } },
+            { "value": "festival", "label": { "fr": "Festival", "en": "Festival" } },
+            { "value": "crowdfunding", "label": { "fr": "Financement participatif", "en": "Crowdfunding" } },
+            { "value": "fair", "label": { "fr": "Foire", "en": "Fair" } },
+            { "value": "course", "label": { "fr": "Formation", "en": "Course" } },
+            { "value": "protest", "label": { "fr": "Manifestation", "en": "Protest" } },
+            { "value": "market", "label": { "fr": "Marché", "en": "Market" } },
+            { "value": "film", "label": { "fr": "Projection", "en": "Film screening" } },
+            { "value": "getTogether", "label": { "fr": "Rencontre", "en": "Get together" } },
+            { "value": "meeting", "label": { "fr": "Réunion", "en": "Meeting" } },
+            { "value": "spectacle", "label": { "fr": "Spectacle", "en": "Show" } },
+            { "value": "internship", "label": { "fr": "Stage", "en": "Internship" } },
+            { "value": "stand", "label": { "fr": "Stand", "en": "Stand" } },
+            { "value": "others", "label": { "fr": "Autre", "en": "Other" } }
+          ]
+        },
+        "shortDescription": {
+          "widget": "textarea",
+          "placeholder": {
+            "fr": "Résumé en quelques lignes",
+            "en": "A few lines of summary"
+          },
+          "label": {
+            "fr": "Résumé",
+            "en": "Summary"
+          },
+          "help": {
+            "fr": "Une ou deux phrases, affichées sur la carte de l'agenda.",
+            "en": "One or two sentences, shown on the agenda card."
+          }
+        },
+        "description": {
+          "widget": "markdown",
+          "required": true,
+          "label": {
+            "fr": "Description",
+            "en": "Description"
+          },
+          "widgetProps": {
+            "height": 320,
+            "preview": "edit"
+          }
+        },
+        "url": {
+          "widget": "text",
+          "placeholder": {
+            "fr": "https://…",
+            "en": "https://…"
+          },
+          "label": {
+            "fr": "Lien (site, inscription…)",
+            "en": "Link (website, registration…)"
+          }
+        },
+        "tags": {
+          "widget": "tags",
+          "label": {
+            "fr": "Mots-clés",
+            "en": "Tags"
+          },
+          "widgetProps": {
+            "searchable": true
+          }
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Lieu",
+            "en": "Location"
+          }
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
+        },
+        "eventDates": {
+          "widget": "eventDates",
+          "label": {
+            "fr": "Dates",
+            "en": "Dates"
+          }
+        },
+        "startDate": {
+          "widget": "hidden",
+          "type": "string",
+          "requiredIf": {
+            "field": "recurrency",
+            "op": "falsy"
+          },
+          "write": "eventDate:write"
+        },
+        "endDate": {
+          "widget": "hidden",
+          "type": "string",
+          "requiredIf": {
+            "field": "recurrency",
+            "op": "falsy"
+          },
+          "write": "eventDate:write"
+        },
+        "recurrency": {
+          "widget": "hidden",
+          "type": "boolean",
+          "default": false
+        },
+        "openingHours": {
+          "widget": "hidden",
+          "type": "array",
+          "write": "eventOpeningHours:write"
+        },
+        "timeZone": {
+          "widget": "hidden",
+          "type": "string",
+          "write": "eventTimeZone:write"
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Proposer un événement",
+            "en": "Submit an event"
+          },
+          "edit": {
+            "fr": "Modifier l'événement",
+            "en": "Edit event"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Envoyer",
+            "en": "Submit"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        }
+      },
+      "image": {
+        "field": "profil_avatar",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "mutation": {
+        "entityType": "events",
+        "navigateOnSuccess": false,
+        "inject": {
+          "extraFields": {
+            "preferences": {
+              "toBeValidated": true
+            }
+          }
+        },
+        "successKey": {
+          "add": "toast.add.eventSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.eventError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_EVENT",
+          "edit": "EntityFormModal · UPDATE_EVENT"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:event",
+          "params": {
+            "userList": "events",
+            "searchKeys": [
+              "admin-events"
+            ]
+          }
+        },
+        "stamps": [
+          {
+            "field": "reference.costum",
+            "value": [
+              "equipementsSportifs974"
+            ],
+            "op": "set",
+            "on": "add",
+            "channel": "pathValue"
+          },
+          {
+            "field": "reference.costumTypes.equipementsSportifs974",
+            "value": "event",
+            "op": "set",
+            "on": "add",
+            "channel": "pathValue"
+          }
+        ]
+      }
+    }
+  },
+  "admin": {
+    "enabled": true,
+    "access": {
+      "min": "siteAdmin"
+    },
+    "tabs": [
+      {
+        "id": "dashboard",
+        "label": {
+          "fr": "Tableau de bord",
+          "en": "Dashboard"
+        },
+        "sections": [
+          {
+            "type": "dashboard"
+          }
+        ]
+      },
+      {
+        "id": "members",
+        "label": {
+          "fr": "Membres",
+          "en": "Members"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "members",
+            "filters": [
+              "toBeValidated",
+              "isAdmin",
+              "isInviting",
+              "text"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "content",
+        "label": {
+          "fr": "Contenu",
+          "en": "Content"
+        },
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "poi",
+            "label": {
+              "fr": "Équipements",
+              "en": "Facilities"
+            },
+            "source": {
+              "defaultFilters": {
+                "type": "recoveryCenter"
+              },
+              "defaultSortBy": {
+                "name": 1
+              }
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Nom",
+                  "en": "Name"
+                }
+              },
+              {
+                "path": "address.addressLocality",
+                "label": {
+                  "fr": "Commune",
+                  "en": "Municipality"
+                }
+              },
+              {
+                "path": "address.postalCode",
+                "label": {
+                  "fr": "Code postal",
+                  "en": "Postal code"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate",
+              "reference"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ],
+            "create": "inherit",
+            "edit": "inherit"
+          }
+        ]
+      },
+      {
+        "id": "actualites",
+        "label": {
+          "fr": "Actualités",
+          "en": "News"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "poi",
+            "label": {
+              "fr": "Actualités",
+              "en": "News"
+            },
+            "source": {
+              "defaultFilters": {
+                "type": "article"
+              },
+              "defaultSortBy": {
+                "created": -1
+              },
+              "costumSlug": "saintpaulSport1",
+              "sourceKey": [
+                "saintpaulSport1"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Titre",
+                  "en": "Title"
+                }
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Date",
+                  "en": "Date"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ],
+            "create": "add-saintpaul-article",
+            "edit": "inherit"
+          }
+        ]
+      },
+      {
+        "id": "agenda",
+        "label": {
+          "fr": "Agenda",
+          "en": "Events"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "events",
+            "label": {
+              "fr": "Événements",
+              "en": "Events"
+            },
+            "source": {
+              "defaultSortBy": {
+                "startDate": -1
+              },
+              "costumSlug": "saintpaulSport1",
+              "sourceKey": [
+                "saintpaulSport1"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Titre",
+                  "en": "Title"
+                }
+              },
+              {
+                "path": "type",
+                "label": {
+                  "fr": "Type",
+                  "en": "Type"
+                }
+              },
+              {
+                "path": "startDate",
+                "label": {
+                  "fr": "Début",
+                  "en": "Start"
+                }
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Proposé le",
+                  "en": "Submitted"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ],
+            "create": "add-saintpaul-event",
+            "edit": "inherit"
+          }
+        ]
+      },
+      {
+        "id": "import-export",
+        "label": {
+          "fr": "Import / Export",
+          "en": "Import / Export"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "import",
+            "entityTypes": [
+              "poi"
+            ]
+          },
+          {
+            "type": "export"
+          }
+        ]
+      },
+      {
+        "id": "reference",
+        "label": {
+          "fr": "Référencement",
+          "en": "Referencing"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "reference"
+          }
+        ]
+      },
+      {
+        "id": "migration",
+        "label": {
+          "fr": "Migration",
+          "en": "Migration"
+        },
+        "icon": "arrow-left-right",
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "ownershipMigration",
+            "access": "siteAdmin",
+            "props": {
+              "from": "equipementsSportifs974",
+              "collections": ["poi"],
+              "selectors": [
+                {
+                  "field": "address.codeInsee",
+                  "value": "97415",
+                  "label": {
+                    "fr": "Fiches de la commune de Saint-Paul (Insee 97415)",
+                    "en": "Saint-Paul municipal records (Insee 97415)"
+                  }
+                }
+              ],
+              "subType": "auto",
+              "keepReference": true
+            }
+          }
+        ]
+      }
+    ]
   }
 }

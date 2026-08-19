@@ -289,6 +289,7 @@ restent utilisées comme défaut si le bloc `menu` est absent.
 | `showName` | `boolean` | Afficher le nom de l'utilisateur à côté de l'avatar |
 | `showDropdownHeader` | `boolean` | Afficher un en-tête nom + email dans le dropdown |
 | `loginLabel` | `LocalizedString` | Libellé du bouton « Se connecter » — surchargé par la prop `loginLabel` du header |
+| `kanban` | `boolean` | Opt-in : entrée « Kanban » (nouvel onglet vers la vue actions de la plateforme), réservée aux admins du costum — gate `isKanbanEntryVisible` (modules/admin), détails dans [doc/30-module-admin.md](30-module-admin.md) |
 
 Le `tone` (défaut / onColor) et le `loginVariant` (ghost / solid / outline)
 restent couplés au design du header (props du composant), pas à `config.auth.menu`.

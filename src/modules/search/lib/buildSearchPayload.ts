@@ -1,5 +1,7 @@
 import type { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
 import type { SearchType } from "../schema";
+// Porte de validation : module PARTAGÉ (agenda et palette l'appellent aussi — cf. son en-tête).
+import { applyValidationGate } from "./validationGate";
 
 /**
  * Forme des `baseParams` acceptés par {@link buildSearchPayload}. Identique au
@@ -57,55 +59,6 @@ export interface BuildSearchPayloadOverrides {
    * ne s'applique JAMAIS en mode admin (l'admin doit voir les éléments en attente).
    */
   variant?: string;
-}
-
-/**
- * Collections « élément » où le flag de validation costum (`toBeValidated`) a un sens. Les news
- * (`scope`/`target`), `answers`/`proposals` (survey) ont un modèle de visibilité distinct → jamais gatées.
- * Inclut les sous-types d'organisation (NGO/LocalBusiness/…), qui sont des éléments à part entière.
- */
-const VALIDATABLE_TYPES = new Set<string>([
-  "poi", "organizations", "projects", "events", "citoyens",
-  "NGO", "LocalBusiness", "Group", "GovernmentOrganization", "Cooperative",
-]);
-
-/** PHP-truthy sur `notSourceKey` (peut valoir 0/1, "0"/"1", ou bool). */
-function isTruthy(v: unknown): boolean {
-  return !!v && v !== "0" && v !== 0;
-}
-
-/**
- * Porte côté client le filtre de VALIDATION du legacy (SearchNew::getQueries:783-818), pour les
- * searches PUBLIQUES scopées costum : masque les éléments EN ATTENTE de validation via le **double
- * flag** `preferences.toBeValidated.<slug>` ET `source.toBeValidated.<slug>` (les deux voies legacy).
- *
- * Pourquoi côté client : le backend Node `buildQuery` est STATELESS (ne pose jamais `toBeValidated`),
- * et le legacy 5080 ne le pose que si le cache costum est chaud (non déterministe). Un filtre client
- * explicite rend le comportement déterministe sur les deux backends.
- *
- * ACTIF PAR DÉFAUT dès qu'un scope costum est présent ; NON appliqué si :
- *  - `showUnvalidated` (opt-out, miroir du `showTobevaledated` legacy),
- *  - `variant === 'admin'` (l'admin gère la validation par son `statusFilter`),
- *  - `notSourceKey` (réseau-wide : pas de costum de scope → pas de slug à indexer),
- *  - types explicitement hors collections « élément » (news/answers : visibilité par `scope`, route dédiée).
- *
- * Divergence ASSUMÉE vs legacy : PAS de branche `author-sees-own` (creator==me). Le client est
- * stateless (comme le backend Node) → un fil public montre les validés uniquement. Cf doc/19-visibility-system.md (Visibilité des données).
- */
-function applyValidationGate(
-  filters: Record<string, unknown> | undefined,
-  opts: { costumSlug?: unknown; notSourceKey?: unknown; types?: string[]; showUnvalidated?: boolean; variant?: string },
-): Record<string, unknown> | undefined {
-  const { costumSlug, notSourceKey, types, showUnvalidated, variant } = opts;
-  if (showUnvalidated || variant === "admin") return filters;
-  if (typeof costumSlug !== "string" || !costumSlug) return filters;
-  if (isTruthy(notSourceKey)) return filters;
-  if (types && types.length > 0 && !types.every((t) => VALIDATABLE_TYPES.has(t))) return filters;
-  return {
-    ...(filters ?? {}),
-    [`preferences.toBeValidated.${costumSlug}`]: { $exists: false },
-    [`source.toBeValidated.${costumSlug}`]: { $exists: false },
-  };
 }
 
 /**
