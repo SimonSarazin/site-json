@@ -11,13 +11,17 @@
 > Voir aussi : [Module Articles/Blog](../doc/32-module-articles-blog.md) ·
 > [Module Search](../doc/07-module-search.md) · [Module formEngine](../doc/28-module-formengine.md) ·
 > [Système de visibilité](../doc/19-visibility-system.md) · [Module Agenda](../doc/29-module-agenda.md) ·
-> [Composants média](../doc/33-media-components.md). Mémoire : `[[project-parent62]]` — slug corrigé
-> le 25/07 (`parents62` avec **s** est abandonné, cf. §1) ; le fichier `.claude/memory/` reste **à créer**.
+> [Composants média](../doc/33-media-components.md). Mémoire : `[[project-parent62]]`
+> (`.claude/memory/project-parent62.md`) — slug corrigé le 25/07 (`parents62` avec **s** est abandonné, cf. §1).
 
-Dernière mise à jour : **2026-08-13** (ajustement hauteur header stacked/section "à la une",
+Dernière mise à jour : **2026-08-19** (diagnostic + correctifs événements récurrents de l'agenda,
+testés avec des données de test locales — 3 bugs backend corrigés ; réponse au §2.6/§12 (le filtre de
+modération `toBeValidated` fonctionne) — cf. §9sexies ; `test:unit` ciblé **899/899** ✅, suite
+complète 2 499/2 508, 3 échecs pré-existants sans rapport).
+Précédemment : **2026-08-13** ajustement hauteur header stacked/section "à la une",
 fix affichage champ thème/catégorie dynamique, dédoublonnage territoire « Familles en sol
-mineur » — cf. §9quinquies ; `test:unit` **2 342/2 348** ✅, `e2e parent62` **8/8** ✅).
-Précédemment : **2026-08-06** refonte accueil/header/footer + 11 nouvelles pages —
+mineur » — cf. §9quinquies ; `test:unit` **2 342/2 348** ✅, `e2e parent62` **8/8** ✅.
+**2026-08-06** refonte accueil/header/footer + 11 nouvelles pages —
 committé sur `parents62`, cf. §9quater ; puis corrections de review de la MR !32 sur
 `fix/parents62-review` : gates du skill resynchronisées, e2e réaligné header stacked, fixes
 composants, images WebP — `test:unit` 2 229/2 229 ✅.
@@ -694,6 +698,81 @@ asset `Logo-Aquarelle.png` dans la foulée.
 
 ---
 
+## 9sexies. Impacts — événements récurrents de l'agenda (14-19/08)
+
+> Périmètre : diagnostic + correctifs autour des événements récurrents du module `agenda` (page
+> `/agenda`), déclenché par l'ajout d'**événements de test** sur parent62 — voir note importante
+> ci-dessous — qui a enfin permis d'observer ce qui restait « non observable (0 event) » depuis le
+> 24/07 (§10, checklist 2.3/2.5).
+
+**⚠️ Donnée de test locale, pas de la production.** Les événements utilisés pour ce diagnostic
+(`teste`, `teste recurrent`, `test event`, `teste non reccurent`, `mos de la parentalié`,
+`event reccur`, `aganda rec`, `recurren `, `teste `) ont été créés spécifiquement pour déboguer
+cette fonctionnalité, sur le backend de **dev local** (`communecter-dev`). Ce ne sont **pas** des
+données de production réelles du réseau parentalité — le volume réel d'événements en production
+reste **à confirmer**, comme les autres lignes « 0 donnée » de ce document (§12).
+
+### 9sexies.1 Bugs backend trouvés (`AgendaAction.php`, hors monorepo — pas d'accès direct, documentés en handoff)
+
+1. **Matching récurrent par jour de semaine (mode CALENDRIER)** : `searchEventsCostum` (avec
+   `startDateUTC`/`endDateUTC`) ne comparait que le jour de semaine de `startDateUTC` **lui-même** à
+   `openingHours`, sans balayer toute la plage demandée — un événement récurrent n'apparaissait que
+   les jours où « aujourd'hui » tombait pile sur son jour configuré. Documenté dans `Document de
+   spécification — Agenda événements récurrents invisibles (AgendaAction.php).md` (racine du
+   monorepo, 14/08). **Corrigé** (vérifié : 418 occurrences hebdomadaires correctement dépliées sur
+   une fenêtre de 12 mois après le fix).
+2. **Mode LISTE excluant les récurrents** : `searchEventsCostum` sans dates (flux paginé) ne
+   renvoyait que les événements ponctuels. Évolution proposée puis **implémentée** : le mode LISTE
+   inclut désormais les récurrents, une ligne chacun (leur prochaine occurrence,
+   `startDateSort`/`startDateSortFormat`). Documenté dans `Document de spécification — Pagination
+   des événements récurrents dans l'agenda (AgendaAction.php).md` (racine du monorepo, 19/08).
+3. **« Prochaine occurrence » sautant le créneau du jour en cours** : la première version de
+   l'évolution ci-dessus calculait toujours le prochain **futur** début, jamais « aujourd'hui, déjà
+   commencé » — un récurrent activement dans son créneau ne remontait jamais daté du jour même, donc
+   ne pouvait jamais atterrir dans l'onglet « En cours ». **Corrigé le 19/08** — revérifié : un
+   récurrent interrogé pendant son créneau actif remonte daté du jour même, et apparaît bien dans
+   « En cours » sur la vraie page.
+
+**Répond à la question ouverte du §2.6/§12** (« `searchEventsCostum` masque-t-il les events *pending*
+côté public ? ») : **oui, confirmé le 19/08.** `costumSlug` (toujours injecté par le SDK en usage
+réel) déclenche le filtre de modération — les événements avec
+`preferences.toBeValidated.parent62:true` sont exclus. Vérifié sur les 10 événements de test :
+corrélation exacte (les 3 qui restent sont les 3 sans `toBeValidated`). Pas un bug.
+
+### 9sexies.2 Ce qui a changé côté `site-json` (testé, fonctionnel, non commité à ce stade)
+
+- Nouveau helper partagé `resolveEventStartDate()` (`src/helpers/formatDate.ts`) — repli `startDate`
+  → `startDateSort` → `startDateSortFormat` (un événement récurrent n'a pas de `startDate`). Réutilisé
+  dans le module `agenda` (`eventDates.ts`), `search` (`useItem.tsx`, cartes), `admin`
+  (`resourceHelpers.ts`, colonne « Début »), `profil` (`ProfileEventDates.tsx`, corrige un affichage
+  « Invalid Date »).
+- Nouveau `formatRecurrenceLabel()` (`src/modules/search/lib/openingHoursDays.ts`) — affiche « Chaque
+  vendredi » à la place d'une date isolée (trompeuse : elle change chaque semaine) pour un
+  événement récurrent, sur la carte de recherche (`CardEvent`), la page profil d'un événement et la
+  table admin.
+- Refonte de `Agenda.tsx` : un seul fetch `useAgendaList` (mode LISTE) sert désormais les 3 onglets
+  (En cours / À venir / Passés) au lieu d'un fetch CALENDRIER séparé et large (12 mois) pour « À
+  venir » — élimine le sur-fetch (auparavant jusqu'à ~150 lignes reçues pour quelques événements
+  distincts) et ajoute une vraie pagination « charger plus » partagée entre les 3 onglets. La grille
+  Calendrier (`gridFetch`) est inchangée.
+- Un helper de dédoublonnage client (`dedupeByEvent`) a été ajouté puis **retiré** : une fois le mode
+  LISTE corrigé, le backend dédoublonne déjà (une ligne par événement récurrent) — le rendait
+  redondant.
+- Documentation technique moteur mise à jour : `../doc/29-module-agenda.md` (architecture, pièges,
+  écarts backend connus, référence aux deux documents de spec).
+
+### 9sexies.3 Validation (gates)
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` | ✅ 0 erreur |
+| `lint` | ✅ 0 erreur (2 warnings pré-existants, sans rapport, sur `Agenda.tsx` ligne 93) |
+| `npx tsx scripts/validate-config.ts config.prod.parent62.json` | ✅ 46 pages, 160 sections (inchangé — ce lot ne touche aucun config) |
+| `test:unit` ciblé (`agenda`+`search`+`admin`+`profil`+`helpers`) | ✅ **899/899** |
+| `test:unit` (suite complète) | 2 499/2 508 — **3 échecs pré-existants et sans rapport** (config parent62 modifiée en parallèle sur un autre chantier : ajout page `/annuaire`, dédoublonnage territoire « Familles en sol mineur ») |
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
@@ -717,10 +796,10 @@ asset `Logo-Aquarelle.png` dans la foulée.
 |---|---|---|---|
 | 2.1 | Module actualités + interop WordPress | ✅ / 🟡 interop | 6 434 articles, `/blog`, `/actualites`, 9 `/theme/*`, admin, RSS, ⌘K. **Interop WP = import batch one-shot** (`tools/wp-migration/`), pas de sync live/webhook ; « ajout de post » = form `parent62-article` admin (le module `interop/` = Discourse/Mediawiki, pas WP). **06/08** : 2 pages de contenu tagué ajoutées sur le même patron, `/appels-a-projets` et `/offres-emploi` (`articleFeed` filtré par tag WordPress libre, zéro impact backend, §9quater) |
 | 2.2 | Actualités filtrables dans le moteur de recherche | ✅ *(était ✅ config, 🟡 UX)* | cible `searchTargets` « Actualités » (`type:article`) dans `/recherche` + filtres territoire/public/thème/dates. **25/07 — UX unifiée** : une actualité de `/recherche` rend une carte dédiée et son clic ouvre le **reader canonique** `/blog/:slug` (repli `/blog/id/:id`), plus un drawer générique |
-| 2.3 | Module événementiel (agenda) + affichage territoire | 🟡 | module agenda complet (calendrier + liste, filtre territoire) ; **0 donnée `events`** → vide ; pas de carte agenda (`enableMap:false`) |
+| 2.3 | Module événementiel (agenda) + affichage territoire | 🟡 *(diagnostiqué le 14-19/08)* | module agenda complet (calendrier + liste, filtre territoire) ; testé avec des **événements de test locaux** (dev, pas de la production — cf. §9sexies), a révélé 3 bugs backend, **tous corrigés** (§9sexies.1) ; **0 donnée `events` en production, toujours à confirmer** ; pas de carte agenda (`enableMap:false`) |
 | 2.4 | Impression de l'agenda | ❌ | **aucun code print** (`@media print`/`window.print`) — à faire (CSS print ou export iCal/PDF) |
-| 2.5 | Événements récurrents | ✅ config+code *(était ❌)* | `parent62-event` : `recurrency` + `openingHours` + `eventDates` + codecs/validators + calendrier « récurrents dépliés ». Non observable (0 event) |
-| 2.6 | Ajout partenaires + **modération a priori** | 🟡 *(était ❌)* | bouton public `requiresAdmin:false`, form injecte `preferences.toBeValidated:true`, onglet admin Agenda `validate` + « Proposé le ». **À confirmer** : `searchEventsCostum` masque-t-il les events *pending* côté public ? (pas de gate client sur l'agenda — cf. §12) |
+| 2.5 | Événements récurrents | ✅ *(était « config+code, non observable » le 24/07)* | `parent62-event` : `recurrency` + `openingHours` + `eventDates` + codecs/validators + calendrier « récurrents dépliés ». **Testé le 14-19/08 avec des événements de test locaux (dev, pas la production)** — a révélé 3 bugs backend dans `AgendaAction.php`, **tous corrigés** : matching par jour de semaine, mode LISTE excluant les récurrents, occurrence du jour en cours jamais renvoyée / onglet « En cours ». Front `site-json` entièrement corrigé et testé (899/899) — cf. §9sexies et les 2 documents de spécification à la racine du monorepo |
+| 2.6 | Ajout partenaires + **modération a priori** | ✅ *(était ❌, confirmé le 19/08)* | bouton public `requiresAdmin:false`, form injecte `preferences.toBeValidated:true`, onglet admin Agenda `validate` + « Proposé le ». `searchEventsCostum` masque bien les events *pending* côté public — confirmé (cf. §9sexies, §12) |
 | 2.7 | Annuaire partenaires (référencement + cartographie) | 🟡 *(était ❌)* | cible `searchTargets` « Structures & partenaires » (`organizations`) + carte + templates profils ; **25/07** : règle de rendu dédiée (`image-cover`, `imageFit:"contain"` pour des logos hétérogènes) ; **manque page `/annuaire` dédiée + données** (0 org) |
 
 ### Partie 3 (2 000 €) — statuts revus par l'audit du 24/07
@@ -767,10 +846,10 @@ attendue par le test parole ; périmètre `prepData`/`validategroup`.
   deux entrées ouvrent la même page, on garde celle de Thomas ; les thèmes restent navigables).
 - **Vue cartographique** : uniquement sur `/recherche` (`enableMap:true`, cluster + marker colorBy) ;
   `/agenda`, `/ressources`, `/temoignages` ont `enableMap:false`.
-- **Modération a priori des events** (2.6) : le form pose `preferences.toBeValidated:true`, mais
-  l'agenda public (`searchEventsCostum`) **n'applique aucun gate côté client** (le gate
-  `applyValidationGate` ne couvre que le searchProStatic POI avec `costumSlug`) → le masquage des
-  events *en attente* dépend **entièrement du backend** — à vérifier avec Thomas.
+- **Modération a priori des events** (2.6) : le form pose `preferences.toBeValidated:true` ; l'agenda
+  public (`searchEventsCostum`) n'applique aucun gate côté client, mais le masquage des events *en
+  attente* est **confirmé fonctionnel côté backend** (19/08, cf. §9sexies) — déclenché par
+  `costumSlug`, toujours injecté par le SDK en usage réel.
 - **Collections quasi vides** : les briques P2/P3 reposaient sur des collections **vides** au dump du
   20/07. **Relevé du 25/07 dans l'application** : 3 paroles, 4 ressources — les articles, eux, sont
   massivement présents. Les events et organisations restent à confirmer (la vue carte de `/recherche`

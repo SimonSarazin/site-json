@@ -208,6 +208,8 @@
   "toast.card.starError": "Could not update favorites",
   "toast.card.activateFundingSuccess": "Funding activated",
   "toast.card.activateFundingError": "Could not activate funding",
+  "card.event.recurring": "Every {{days}}",
+  "card.event.recurringAnd": "and",
   "card.detailed.seeMore": "See more",
   "card.detailed.addFavorite": "Add to favorites",
   "card.detailed.removeFavorite": "Remove from favorites",

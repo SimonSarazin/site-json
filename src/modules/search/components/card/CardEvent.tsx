@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { SearchCardProps } from "../../schema";
 import { cn } from "@/lib/utils";
@@ -6,8 +6,10 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import getDateFnsLocale from "@/dateFns";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import useItem from "../../hooks/useItem";
+import { useT } from "@/hooks/useT";
 import { getEntityColorClasses, getEntityIconName } from "@/lib/entityIcons";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { formatRecurrenceLabel } from "../../lib/openingHoursDays";
 
 // Map des tags vers des icônes spécifiques aux événements
 const TAG_ICON_MAP: Record<string, string> = {
@@ -31,6 +33,8 @@ interface EventCardPlainProps {
   name: string | null;
   eventDate: string | null;
   startDate: Date | null;
+  /** « Chaque vendredi » — événement récurrent : préféré à la date d'occurrence, qui change chaque semaine. */
+  recurrenceLabel: string | null;
   organizerName: string | null;
   location: string | null;
   avatarIcon: string;
@@ -55,6 +59,7 @@ function EventCardPlain({
   name,
   eventDate,
   startDate,
+  recurrenceLabel,
   organizerName,
   location,
   avatarIcon,
@@ -67,7 +72,9 @@ function EventCardPlain({
       className="h-full w-full cursor-pointer gap-4 py-5 shadow-lg transition-shadow hover:shadow-xl"
     >
       <CardContent className="px-5">
-        {startDate ? (
+        {recurrenceLabel ? (
+          <div className="text-sm font-semibold text-primary">{recurrenceLabel}</div>
+        ) : startDate ? (
           <div className="flex items-baseline gap-2 text-primary">
             <span className="text-4xl font-bold leading-none tabular-nums">
               {format(startDate, "d", { locale })}
@@ -110,6 +117,7 @@ export default function CardEvent({
   onClick,
 }: SearchCardProps) {
   const data = useItem(item);
+  const t = useT("modules/search");
   const [imageFailed, setImageFailed] = useState(false);
 
   const {
@@ -125,6 +133,13 @@ export default function CardEvent({
   const location = address?.addressLocality || null;
   const avatarIcon = getEventAvatarIcon(tags);
   const avatarColorClasses = getEntityColorClasses("events");
+
+  // Récurrent (`openingHours`) : la date d'une occurrence isolée est trompeuse (elle change chaque
+  // semaine) — on préfère un libellé de récurrence stable, ex. « Chaque vendredi ».
+  const recurrenceLabel = useMemo(() => {
+    const raw = item?.serverData as Record<string, unknown> | undefined;
+    return formatRecurrenceLabel(raw?.recurrency, raw?.openingHours, t);
+  }, [item, t]);
 
   // Sans image, la carte-affiche perdait son fond : les deux panneaux de verre
   // flottaient sur 288 px de vide. Or beaucoup d'événements relayés (appels à
@@ -144,6 +159,7 @@ export default function CardEvent({
         name={name}
         eventDate={eventDate}
         startDate={startDate}
+        recurrenceLabel={recurrenceLabel}
         organizerName={organizerName}
         location={location}
         avatarIcon={avatarIcon}
@@ -176,12 +192,12 @@ export default function CardEvent({
         border-b border-border/40
         flex flex-col items-center gap-2
       ">
-        {eventDate && (
+        {(recurrenceLabel || eventDate) && (
           <div className="bg-card w-auto px-3 py-1 rounded-md text-xs font-semibold shadow text-foreground flex items-center gap-1">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            {eventDate}
+            {recurrenceLabel || eventDate}
           </div>
         )}
         {name && (

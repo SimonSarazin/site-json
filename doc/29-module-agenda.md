@@ -39,8 +39,8 @@ src/modules/agenda/
 │       ├── MonthView.tsx       # grille mois
 │       └── TimeGridView.tsx    # grille horaire semaine/jour (packing chevauchements + ligne « maintenant »)
 ├── hooks/
-│   ├── useAgendaCalendar.ts    # mode CALENDRIER (plage de dates → 1 page, récurrents dépliés)
-│   ├── useAgendaList.ts        # mode LISTE (sans dates → paginé, scroll infini)
+│   ├── useAgendaCalendar.ts    # mode CALENDRIER (plage de dates → 1 page, récurrents dépliés) — grille SEULEMENT
+│   ├── useAgendaList.ts        # mode LISTE (sans dates → paginé, scroll infini) — sert les 3 onglets Liste
 │   └── useAgendaClock.ts       # horloge STABLE (now + bornes) — anti-boucle de refetch
 ├── constants/
 │   ├── queryKeys.ts            # AGENDA_QUERY_KEYS (CLOCK/CALENDAR/LIST)
@@ -49,11 +49,15 @@ src/modules/agenda/
     ├── buildAgendaParams.ts    # SOURCE UNIQUE des params searchEventsCostum (+ baseParams)
     ├── agendaClock.ts          # computeAgendaClock (pur) — now + bornes À venir
     ├── calendarLayout.ts       # toDayEvents / eventsOnDay / layoutDay (packing horaire)
-    ├── eventDates.ts           # eventOccurrence (startDate | startDateSort → {start,end})
+    ├── eventDates.ts           # eventOccurrence — start via resolveEventStartDate (@/helpers/formatDate,
+    │                           #   partagé avec search/admin/profil) ; end = endDate, sinon (récurrent)
+    │                           #   heure de fermeture du jour dans openingHours
     ├── eventTags.ts (+test)    # distinctTags / filterByTags (OR)
     ├── partitionByTime.ts (+test) # eventTimeBucket / partitionByTime (ongoing/upcoming/past)
     └── agendaUrlParams.ts (+test) # read/write filtres ↔ URL (vue/tab/q/type/tags) ; writeAgendaUrl(sp,s,d,manageText=true) — manageText=false saute l'écriture de `q` (délégué au searchHeader) ; Agenda.tsx passe `showText`
 ```
+
+Libellé de récurrence (« Chaque vendredi », `search/lib/openingHoursDays.ts::formatRecurrenceLabel`) : affiché à la place d'une date isolée sur `CardEvent` (search), la page profil d'un event (`ProfileEventDates`) et la colonne « Début » de l'admin — un événement récurrent n'a pas une date fixe, une occurrence datée est trompeuse (change chaque semaine).
 
 Câblage standard (comme tout module) :
 1. `src/types/site-schema.ts` → import `AgendaSectionSchema` + ajout à la `discriminatedUnion("type")`.
@@ -67,14 +71,17 @@ Câblage standard (comme tout module) :
 
 | Mode | Déclencheur | Contenu | Tri | Pagination | Hook |
 |---|---|---|---|---|---|
-| **CALENDRIER** | `startDateUTC`/`endDateUTC` | ponctuels **+ récurrents DÉPLIÉS** par occurrence | par occurrence | **non** (1 page) | `useAgendaCalendar` |
-| **LISTE** | **sans** dates | ponctuels uniquement | `startDate` DESC | **oui** (`next()`) | `useAgendaList` |
+| **CALENDRIER** | `startDateUTC`/`endDateUTC` | ponctuels **+ récurrents DÉPLIÉS** par occurrence | par occurrence | **non** (1 page) | `useAgendaCalendar` — grille uniquement |
+| **LISTE** | **sans** dates | ponctuels **+ récurrents** (une ligne chacun, leur **prochaine occurrence**) | `startDate`/occurrence DESC | **oui** (`next()`) | `useAgendaList` — les 3 onglets Liste |
 
-**Mapping des onglets temporels** :
-- **À venir + En cours** = mode CALENDRIER `now → now+fenêtre` + partition client (`partitionByTime`).
-- **Passés** = mode LISTE paginé, filtré aux occurrences passées.
+**Mapping des onglets temporels** — un seul flux `useAgendaList` (`listFetch`), partitionné **côté client** (`partitionByTime`) en `ongoing`/`upcoming`/`past` :
+- **À venir** = bucket `upcoming`, borné à `upcomingWindowMonths` (filtre client sur l'occurrence), **remis en ordre croissant** (le flux brut est trié décroissant, adapté à « Passés »).
+- **En cours** = bucket `ongoing` — nécessite un `end` résolu (cf. `eventDates.ts` : `endDate` pour un ponctuel multi-jours, sinon l'heure de fermeture du jour dans `openingHours` pour un récurrent).
+- **Passés** = bucket `past`, non borné (pagine via « charger plus », partagé avec les 2 autres onglets — un seul curseur pour toute la vue Liste).
 
-Pièges lib : ne **jamais** envoyer `recurrency:true` (interdit AJV) ; `type` est **scalaire** (mono-select) ; mode calendrier = single page.
+La grille **Calendrier** (`gridFetch`, `useAgendaCalendar`) reste **inchangée** — mode CALENDRIER sur le mois/la semaine affiché(e), toujours nécessaire pour une case par occurrence.
+
+Pièges lib : ne **jamais** envoyer `recurrency:true` (interdit AJV) ; `type` est **scalaire** (mono-select) ; mode calendrier = single page. En mode LISTE, la présence de `costumSlug` (toujours injecté par le SDK en usage réel) filtre les événements en attente de modération (`preferences.toBeValidated`) — confirmé le 19/08, ce n'est pas un bug.
 
 ### `buildAgendaParams` — source unique des arguments
 
@@ -91,7 +98,7 @@ Onglets `En cours / À venir / Passés` (Radix `Tabs`) + `SearchListView` par bu
 Grille **maison** (Tailwind + date-fns + tokens shadcn), sélecteur **Mois / Semaine / Jour**, navigation `Aujourd'hui / ‹ / ›`. La plage visible est reportée via `onRangeChange` → le parent refetch (mode CALENDRIER). Thème **natif** (clair/sombre par costum). Semaine/Jour = grille horaire avec **packing des chevauchements** (`layoutDay`, col/cols façon Google Agenda) + **ligne « maintenant »** + scroll auto vers ~7h. Pastilles couleur par type (`eventTypeColor`). Lazy/client-only.
 
 ### Carte (`SearchMapWrapper` de search)
-Activée par `enableMap`. Réutilise `SearchMapWrapper` (Leaflet, lazy/client-only) à l'identique de `searchProStatic`. Agrège upcoming + past (events géolocalisés, dédupliqués, filtrés tags). Clic marqueur → même détail. ⚠ La branche carte DOIT être enveloppée dans `SearchPropsProvider` (cf. [§ pièges](#pièges-et-leçons)).
+Activée par `enableMap`. Réutilise `SearchMapWrapper` (Leaflet, lazy/client-only) à l'identique de `searchProStatic`. Même flux `listFetch` que la vue Liste (events géolocalisés uniquement, filtrés tags ; futurs bornés à `upcomingWindowMonths` comme le bucket « À venir », passés non bornés) — le mode LISTE ne renvoyant déjà qu'une ligne par récurrent, pas de dédoublonnage client nécessaire. Clic marqueur → même détail. ⚠ La branche carte DOIT être enveloppée dans `SearchPropsProvider` (cf. [§ pièges](#pièges-et-leçons)).
 
 ### Liste + carte (split)
 `mapView: "split"` (défaut `"map"`) = variante **desktop** : liste (gauche) + carte (droite) **synchronisées** via `focusedItemId` — clic carte → `flyTo` marqueur, clic marqueur → highlight carte. Layout repris de `searchProStatic` (`SearchListView onFocusItem` + `SearchMapWrapper onMarkerFocus`). Mobile → carte plein écran (`useIsMobile`).
@@ -165,7 +172,7 @@ Même convention que `searchProStatic.baseParams`. Champs **repris** (= ceux que
 
 ### `effectiveBaseParams` — fusion des facettes de page (runtime)
 
-Avant de passer `baseParams` aux trois hooks de fetch (`upcomingFetch`/`pastFetch`/`gridFetch`), `Agenda.tsx` y fusionne les **facettes de page** issues du store partagé `PageFilters` (écrites par un `searchHeader`/`filters` sœur de la même page). `searchByFieldsToQuery(pageFilters?.searchByFields)` renvoie `{ filters, locality, sourceKeys }` :
+Avant de passer `baseParams` aux deux hooks de fetch (`listFetch`/`gridFetch`), `Agenda.tsx` y fusionne les **facettes de page** issues du store partagé `PageFilters` (écrites par un `searchHeader`/`filters` sœur de la même page). `searchByFieldsToQuery(pageFilters?.searchByFields)` renvoie `{ filters, locality, sourceKeys }` :
 
 - les facettes `filters` (mongo brut `{ <field>: { $in:[…] } }`) sont **shallow-merged par-dessus** `baseParams.filters` ;
 - la facette `locality` est shallow-merged par-dessus `baseParams.locality` ;
@@ -184,7 +191,7 @@ Le résultat (`effectiveBaseParams`) est appliqué **côté serveur** par `searc
 | `defaultMode` | `"list" \| "calendar"` | `"list"` | vue initiale |
 | `tabs` | `("upcoming"\|"ongoing"\|"past")[]` | `["upcoming","ongoing","past"]` | onglets affichés |
 | `defaultTab` | idem | `"upcoming"` | onglet initial |
-| `upcomingWindowMonths` | number | `12` | fenêtre du fetch CALENDRIER now→futur |
+| `upcomingWindowMonths` | number | `12` | borne haute (filtre client, now→futur) du bucket « À venir » — plus un fetch CALENDRIER dédié, le flux LISTE partagé est simplement filtré à cette fenêtre |
 | `showViewToggle` | boolean | `true` | afficher le toggle Liste/Calendrier(/Carte) |
 | `showTabs` | boolean | `true` | afficher les onglets (false = teaser : bucket unique) |
 | `limit` | number | — | plafond d'events/bucket (teaser) |
@@ -243,6 +250,10 @@ Namespace **`modules/agenda`** (`i18n/{fr,en}.json`), chargé en side-effect par
 - **`useAgendaClock`** : `now`/bornes dérivées d'un `new Date()` ms-précis dans une queryKey → nouvelle requête à chaque render (double-invoke StrictMode) → spinner perpétuel. L'horloge react-query (`staleTime: Infinity`) fige la valeur.
 - <a id="type-core"></a>**module `type: "core"`** : un module `optional` SANS `routes.tsx` (cas de l'agenda) suffit à rendre `hasOptional` vrai → bascule TOUTE la construction de routes client en async → header/sections dupliqués + navigation cassée. L'agenda est section-only → **`core`**.
 - **Île client / pas de prefetch SSR** : la query datée « À venir » (`startDateUTC=now…`) n'est pas déterministe serveur↔client → mismatch d'hydratation. L'agenda gate fetch+contenu après hydratation (`useHydrated`) → serveur = 1ᵉʳ render client = même squelette.
+- **`startDateSort` (récurrents) n'est PAS parsable directement** : c'est un objet PHP brut (`{date,timezone_type,timezone}`), jamais normalisé en `Date` par le SDK — seul `startDateSortFormat` (string ISO) l'est. `eventOccurrence`/`resolveEventStartDate` (`@/helpers/formatDate`, partagé avec `search`/`admin`/`profil`) tentent `startDate` → `startDateSort` (au cas où) → `startDateSortFormat`.
+- **Mode LISTE côté admin (`/admin/agenda`, `AdminResourceTable`)** : utilise `searchCostum` (générique), **pas** `searchEventsCostum` — `searchCostum` ne calcule **jamais** `startDateSort`/`startDateSortFormat`, quels que soient les champs demandés (c'est une enrichissement propre à l'endpoint agenda). La colonne « Début » d'un récurrent n'a donc **aucune date exploitable** ; repli sur le libellé de récurrence (`formatColumnCell` dans `modules/admin/sections/resourceHelpers.ts`).
+- **i18n cross-module** : le libellé de récurrence (`formatRecurrenceLabel`) utilise les clés `days.*`/`card.event.recurring*` du namespace `modules/search`, enregistrées en side-effect par `import "@/modules/search/i18n"`. Un composant hors de l'arbre `search` qui l'utilise (page profil, table admin) doit importer ce fichier explicitement, sinon les clés s'affichent brutes (non traduites).
+- **Bugs backend connus (`AgendaAction.php`, hors monorepo)** : voir `Document de spécification — Agenda événements récurrents invisibles (AgendaAction.php).md` (matching par jour de semaine en mode CALENDRIER, corrigé) et `Document de spécification — Pagination des événements récurrents dans l'agenda (AgendaAction.php).md` (mode LISTE incluant les récurrents, implémenté ; « occurrence du jour en cours », corrigé le 19/08) à la racine du monorepo.
 
 ---
 

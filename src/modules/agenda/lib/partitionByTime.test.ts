@@ -34,4 +34,17 @@ describe("partitionByTime", () => {
     const { upcoming } = partitionByTime([recurring], NOW);
     expect(upcoming).toHaveLength(1);
   });
+
+  it("récurrent SANS endDate, dans son créneau (openingHours) au moment de now → ongoing (pas ignoré)", () => {
+    // NOW = 2026-06-15T12:00:00Z, un lundi. Sans dérivation de `end` depuis `openingHours`
+    // (cf. eventDates.ts), cet event resterait sans bucket "ongoing" atteignable (end == start < now).
+    const recurring = ({
+      serverData: {
+        startDateSortFormat: "2026-06-15T08:00:00Z",
+        openingHours: [{ dayOfWeek: "Mo", hours: [{ opens: "08:00", closes: "19:00" }] }],
+      },
+    } as unknown as Event);
+    const { ongoing } = partitionByTime([recurring], NOW);
+    expect(ongoing).toHaveLength(1);
+  });
 });

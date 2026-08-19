@@ -1,5 +1,6 @@
 import type { AdminResourceSection } from "../schema";
-import { formatDateLong } from "@/helpers/formatDate";
+import { formatDateLong, resolveEventStartDate } from "@/helpers/formatDate";
+import { formatRecurrenceLabel, type Translate } from "@/modules/search/lib/openingHoursDays";
 
 /** entityType (collection plurielle) → clé de modale d'ajout STANDARD (ModalRegistry). */
 const ADD_MODAL_BY_TYPE: Record<string, string> = {
@@ -129,6 +130,21 @@ export function getPath(obj: unknown, path: string): unknown {
   }, obj);
 }
 
+/**
+ * Valeur d'une colonne, pour une ligne de la table. Cas général : `getPath` brut. Colonne `startDate` :
+ * repli sur `resolveEventStartDate` (`startDateSort`/`startDateSortFormat`) pour un événement ponctuel
+ * SANS `startDate` propre — ignoré pour les autres types d'entités (n'ont ni l'un ni l'autre champ).
+ * Un récurrent, lui, n'a JAMAIS ces deux champs ici : l'admin liste via `searchCostum` (endpoint
+ * générique), qui ne calcule ces occurrences que côté `searchEventsCostum`/l'agenda — cf.
+ * `formatColumnCell`, qui prend le relais pour ce cas précis.
+ */
+export function getColumnValue(obj: unknown, path: string): unknown {
+  if (path === "startDate" && obj && typeof obj === "object") {
+    return resolveEventStartDate(obj as Record<string, unknown>);
+  }
+  return getPath(obj, path);
+}
+
 /** Rendu texte d'une valeur de cellule (les colonnes ciblent des champs plats,
  *  plus les deux sérialisations MongoDate du backend — `created`/`updated`). */
 export function formatCell(value: unknown): string {
@@ -152,4 +168,21 @@ export function formatCell(value: unknown): string {
     if (typeof long === "string") return formatDateLong(Number(long));
   }
   return "";
+}
+
+/**
+ * Cellule complète (valeur + formatage) d'une ligne. Colonne `startDate`, event RÉCURRENT (aucune
+ * date résolue par `getColumnValue` — cf. sa doc) : repli sur le libellé de récurrence (« Chaque
+ * vendredi », `formatRecurrenceLabel`) à partir de `recurrency`/`openingHours` — CES champs-là sont
+ * bien projetés par l'admin (`champsAdmin` dans `AdminResourceTable.tsx`), contrairement à une
+ * occurrence calculée. `t` : `useT("modules/search")` (namespace des clés `days.*`/`card.event.*`).
+ */
+export function formatColumnCell(data: unknown, path: string, t: Translate): string {
+  const value = getColumnValue(data, path);
+  if (path === "startDate" && value == null && data && typeof data === "object") {
+    const sd = data as Record<string, unknown>;
+    const label = formatRecurrenceLabel(sd.recurrency, sd.openingHours, t);
+    if (label) return label;
+  }
+  return formatCell(value);
 }
