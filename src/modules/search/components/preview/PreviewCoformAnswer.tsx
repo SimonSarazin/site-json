@@ -108,7 +108,6 @@ export default function PreviewCoformAnswer({ item, preview, onClose }: PreviewP
   }
 
   const a = parseCoformAnswer(serverData, {
-    slug: entity?.serverData?.slug,
     fields: preview?.fields,
   });
   const title = a.title ?? t("coformAnswer.noTitle");

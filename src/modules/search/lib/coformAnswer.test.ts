@@ -5,6 +5,7 @@ import {
   getAnswerStructureId,
   normalizeStatus,
   normalizeTypeLabel,
+  parseCoformAnswer,
 } from "./coformAnswer";
 
 describe("getAnswerRef", () => {
@@ -129,5 +130,53 @@ describe("normalizeTypeLabel", () => {
     expect(normalizeTypeLabel("Sport santé sur ordonnance - SSsO")).toBe("SSsO");
     expect(normalizeTypeLabel("Sport santé pour tous - SSpT")).toBe("SSpT");
     expect(normalizeTypeLabel("Autre")).toBe("Autre");
+  });
+});
+
+describe("parseCoformAnswer — résolution des clés par SUFFIXE stable (inter-forms)", () => {
+  // Les deux sections réelles : le form SSBE historique et le form dédié Tampon
+  // (6a7cd1d72e263e7c033ad1ea). Mêmes ids d'inputs, sections différentes — le
+  // mapping DEFAULT_COFORM_FIELDS doit résoudre les deux sans configuration.
+  const SSBE = "sportSanteBienetre2172025_854_0";
+  const TAMPON = "maisonSportSanteLeTampon12082026_2004_0";
+
+  const flatRow = (section: string) => ({
+    name: "Basket",
+    [`${section}mdegc9sgox76p87n27`]: "Basket",
+    [`${section}mdn1cs8on3yru1p80lq`]: "Sport santé sur ordonnance - SSsO",
+    [`${section}mdn1jcq445i0mb9bap7`]: "En attente",
+    [`${section}mdeggo91owe8t9ovl4p`]: "Séance douce",
+    [`finder${section}mocno9muqzznoo0gyx`]: { abc: { id: "abc", name: "Gymnase du Tampon" } },
+  });
+
+  it("résout les clés préfixées SSBE (comportement historique)", () => {
+    const a = parseCoformAnswer(flatRow(SSBE));
+    expect(a.title).toBe("Basket");
+    expect(a.typeLabel).toBe("SSsO");
+    expect(a.status).toBe("En attente");
+    expect(a.description).toBe("Séance douce");
+    expect(a.installations).toEqual([{ id: "abc", name: "Gymnase du Tampon" }]);
+  });
+
+  it("résout les clés du form dédié Tampon avec le MÊME mapping par défaut", () => {
+    const a = parseCoformAnswer(flatRow(TAMPON));
+    expect(a.title).toBe("Basket");
+    expect(a.typeLabel).toBe("SSsO");
+    expect(a.status).toBe("En attente");
+  });
+
+  it("un override `fields` historique portant la clé complète reste valide (match par suffixe)", () => {
+    const a = parseCoformAnswer(flatRow(SSBE), {
+      fields: { title: `${SSBE}mdegc9sgox76p87n27` },
+    });
+    expect(a.title).toBe("Basket");
+  });
+
+  it("champ absent des données → replis habituels (pas de crash)", () => {
+    const a = parseCoformAnswer({ name: "Sans champs coform" });
+    expect(a.title).toBe("Sans champs coform");
+    expect(a.status).toBe("Valide");
+    expect(a.installations).toEqual([]);
+    expect(a.schedules).toEqual([]);
   });
 });

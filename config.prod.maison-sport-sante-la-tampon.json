@@ -483,7 +483,7 @@
                   "fr": "Type d'activité",
                   "en": "Activity type"
                 },
-                "field": "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdegdo93f77wi3y186s",
+                "field": "answers.maisonSportSanteLeTampon12082026_2004_0.maisonSportSanteLeTampon12082026_2004_0mdegdo93f77wi3y186s",
                 "multiple": false,
                 "options": [
                   {
@@ -566,7 +566,7 @@
                   "fr": "Bénéficiaires",
                   "en": "Beneficiaries"
                 },
-                "field": "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdmyf2gky9capf1vcfl",
+                "field": "answers.maisonSportSanteLeTampon12082026_2004_0.maisonSportSanteLeTampon12082026_2004_0mdmyf2gky9capf1vcfl",
                 "multiple": true,
                 "options": [
                   {
@@ -625,7 +625,7 @@
                   "fr": "Type de Sport Santé",
                   "en": "Sport-health type"
                 },
-                "field": "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdn1cs8on3yru1p80lq",
+                "field": "answers.maisonSportSanteLeTampon12082026_2004_0.maisonSportSanteLeTampon12082026_2004_0mdn1cs8on3yru1p80lq",
                 "multiple": false,
                 "options": [
                   {
@@ -652,7 +652,7 @@
                   "fr": "Type de publique",
                   "en": "Audience type"
                 },
-                "field": "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdmya4gmezjilnyjj5f",
+                "field": "answers.maisonSportSanteLeTampon12082026_2004_0.maisonSportSanteLeTampon12082026_2004_0mdmya4gmezjilnyjj5f",
                 "multiple": true,
                 "options": [
                   {
@@ -696,7 +696,7 @@
             "addButton": {
               "show": true,
               "adminOnly": false,
-              "coform": "6928096adf5caf0d230e7f26",
+              "coform": "6a7cd1d72e263e7c033ad1ea",
               "label": {
                 "fr": "Ajouter un créneau",
                 "en": "Add a slot"
@@ -708,14 +708,8 @@
               ],
               "notSourceKey": true,
               "defaultFilters": {
-                "form": "6928096adf5caf0d230e7f26",
-                "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdr0xcsmmpnr6ez17q.address.postalCode": {
-                  "$in": [
-                    "97430",
-                    "97418"
-                  ]
-                },
-                "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdn1jcq445i0mb9bap7": "Validé"
+                "form": "6a7cd1d72e263e7c033ad1ea",
+                "answers.maisonSportSanteLeTampon12082026_2004_0.maisonSportSanteLeTampon12082026_2004_0mdn1jcq445i0mb9bap7": "Validé"
               }
             },
             "list": {
@@ -2551,14 +2545,8 @@
                   ],
                   "notSourceKey": true,
                   "defaultFilters": {
-                    "form": "6928096adf5caf0d230e7f26",
-                    "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdr0xcsmmpnr6ez17q.address.postalCode": {
-                      "$in": [
-                        "97430",
-                        "97418"
-                      ]
-                    },
-                    "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdn1jcq445i0mb9bap7": "Validé"
+                    "form": "6a7cd1d72e263e7c033ad1ea",
+                    "answers.maisonSportSanteLeTampon12082026_2004_0.maisonSportSanteLeTampon12082026_2004_0mdn1jcq445i0mb9bap7": "Validé"
                   }
                 },
                 "trend": "monthly"
@@ -2624,13 +2612,7 @@
             "source": {
               "notSourceKey": true,
               "defaultFilters": {
-                "form": "6928096adf5caf0d230e7f26",
-                "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdr0xcsmmpnr6ez17q.address.postalCode": {
-                  "$in": [
-                    "97430",
-                    "97418"
-                  ]
-                }
+                "form": "6a7cd1d72e263e7c033ad1ea"
               },
               "defaultSortBy": {
                 "created": -1
@@ -2652,7 +2634,7 @@
                 }
               },
               {
-                "path": "sportSanteBienetre2172025_854_0mdn1cs8on3yru1p80lq",
+                "path": "maisonSportSanteLeTampon12082026_2004_0mdn1cs8on3yru1p80lq",
                 "label": {
                   "fr": "Type",
                   "en": "Type"
@@ -2680,7 +2662,7 @@
             "edit": false,
             "status": {
               "mode": "statusField",
-              "field": "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdn1jcq445i0mb9bap7",
+              "field": "answers.maisonSportSanteLeTampon12082026_2004_0.maisonSportSanteLeTampon12082026_2004_0mdn1jcq445i0mb9bap7",
               "states": [
                 {
                   "value": "En attente",

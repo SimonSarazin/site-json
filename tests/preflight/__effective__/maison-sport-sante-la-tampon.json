@@ -51,13 +51,7 @@
       "source": {
         "notSourceKey": true,
         "defaultFilters": {
-          "form": "6928096adf5caf0d230e7f26",
-          "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdr0xcsmmpnr6ez17q.address.postalCode": {
-            "$in": [
-              "97430",
-              "97418"
-            ]
-          }
+          "form": "6a7cd1d72e263e7c033ad1ea"
         },
         "defaultSortBy": {
           "created": -1
@@ -78,14 +72,8 @@
         ],
         "notSourceKey": true,
         "defaultFilters": {
-          "form": "6928096adf5caf0d230e7f26",
-          "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdr0xcsmmpnr6ez17q.address.postalCode": {
-            "$in": [
-              "97430",
-              "97418"
-            ]
-          },
-          "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdn1jcq445i0mb9bap7": "Validé"
+          "form": "6a7cd1d72e263e7c033ad1ea",
+          "answers.maisonSportSanteLeTampon12082026_2004_0.maisonSportSanteLeTampon12082026_2004_0mdn1jcq445i0mb9bap7": "Validé"
         }
       }
     },

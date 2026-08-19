@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Building2, Calendar, ChevronDown, ChevronUp, FileText, Mail, MapPin, User } from "lucide-react";
 import { SearchCardProps } from "../../schema";
-import { useCocolight } from "@/hooks/useCocolight";
 import { useNavigate } from "react-router";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -15,10 +14,9 @@ export default function CardAnswer({ item, onClick }: SearchCardProps) {
 	const t = useT("modules/search");
 	const [showAllSchedules, setShowAllSchedules] = useState(false);
 	const navigate = useNavigate();
-	const { entity } = useCocolight();
 	const serverData = item?.serverData as Record<string, unknown> | undefined;
 
-	const a = parseCoformAnswer(serverData ?? {}, { slug: entity?.serverData?.slug });
+	const a = parseCoformAnswer(serverData ?? {});
 
 	const handleOpenActivityDetails = (event: MouseEvent<HTMLButtonElement>) => {
 		event.stopPropagation();

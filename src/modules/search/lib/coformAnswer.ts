@@ -45,23 +45,32 @@ export function normalizeTypeLabel(rawType: string): string {
   }
 }
 
-/** Mapping rôle → suffixe de champ CoForm (par défaut : formulaire activité SSBE). */
+/**
+ * Mapping rôle → identifiant STABLE d'input CoForm (la queue aléatoire de la clé).
+ *
+ * Une clé réelle = `<section><id>` (ex. `sportSanteBienetre2172025_854_0` +
+ * `mdegc9sgox76p87n27`). La section change à CHAQUE duplication du formulaire
+ * (migration créneaux : SSBE partagé → `maisonSportSanteLeTampon12082026_2004_0`,
+ * form 6a7cd1d72e263e7c033ad1ea), mais les ids d'inputs SURVIVENT à la duplication
+ * (vérifié en base sur les deux forms) : résoudre par suffixe rend cartes/détail
+ * indépendants du form actif — plus aucun préfixe de slug à remapper côté code.
+ */
 export const DEFAULT_COFORM_FIELDS: Record<string, string> = {
-  title: "2172025_854_0mdegc9sgox76p87n27",
-  description: "2172025_854_0mdeggo91owe8t9ovl4p",
-  type: "2172025_854_0mdn1cs8on3yru1p80lq",
-  state: "2172025_854_0mdn1jcq445i0mb9bap7",
-  instructorFirstName: "2172025_854_0mdmz5fbxxtvelsircg9",
-  instructorLastName: "2172025_854_0mdmz4qoaelvlcpten8w",
-  typeActivity: "2172025_854_0mdegdo93f77wi3y186s",
-  typeGender: "2172025_854_0mdmya4gmezjilnyjj5f",
-  beneficiaries: "2172025_854_0mdmyf2gky9capf1vcfl",
-  mobilityReduced: "2172025_854_0mdmy67hlexyn92fh98s",
-  landmark: "2172025_854_0mdmxv88txy6f5z6svg",
-  address: "2172025_854_0mdr0xcsmmpnr6ez17q",
-  places: "2172025_854_0mdmxe3qhkjb9qu74wli",
-  schedule: "2172025_854_0mdefmehl5baa207uud6",
-  installationFinder: "2172025_854_0mocno9muqzznoo0gyx",
+  title: "mdegc9sgox76p87n27",
+  description: "mdeggo91owe8t9ovl4p",
+  type: "mdn1cs8on3yru1p80lq",
+  state: "mdn1jcq445i0mb9bap7",
+  instructorFirstName: "mdmz5fbxxtvelsircg9",
+  instructorLastName: "mdmz4qoaelvlcpten8w",
+  typeActivity: "mdegdo93f77wi3y186s",
+  typeGender: "mdmya4gmezjilnyjj5f",
+  beneficiaries: "mdmyf2gky9capf1vcfl",
+  mobilityReduced: "mdmy67hlexyn92fh98s",
+  landmark: "mdmxv88txy6f5z6svg",
+  address: "mdr0xcsmmpnr6ez17q",
+  places: "mdmxe3qhkjb9qu74wli",
+  schedule: "mdefmehl5baa207uud6",
+  installationFinder: "mocno9muqzznoo0gyx",
 };
 
 export interface CoformStructure {
@@ -111,8 +120,9 @@ function normalizeText(value: unknown): string | undefined {
 }
 
 export interface ParseCoformOptions {
-  slug?: string | null;
-  /** Surcharge du mapping `DEFAULT_COFORM_FIELDS` (ex. `preview.fields`). */
+  /** Surcharge du mapping `DEFAULT_COFORM_FIELDS` (ex. `preview.fields`). Les valeurs
+   *  sont matchées par SUFFIXE : un override historique portant la clé complète
+   *  (`sportSanteBienetre2172025_854_0…`) reste donc valide tel quel. */
   fields?: Record<string, string>;
 }
 
@@ -203,14 +213,19 @@ export function canEditCoformAnswer(
 /** Parse une réponse CoForm `serverData` en objet typé, consommé par la carte ET le détail. */
 export function parseCoformAnswer(
   serverData: Record<string, unknown>,
-  { slug, fields: override }: ParseCoformOptions = {},
+  { fields: override }: ParseCoformOptions = {},
 ): CoformAnswer {
   const fields = { ...DEFAULT_COFORM_FIELDS, ...(override ?? {}) };
-  // "associationEkilibre" est le slug d'entité, mais les champs CoForm sont
-  // préfixés "sportSanteBienetre" (form partagé) : remap nécessaire ici pour
-  // que CardAnswer et PreviewCoformAnswer restent alignés.
-  const keyPrefix = !slug || slug === "associationEkilibre" ? "sportSanteBienetre" : slug;
-  const get = (role: string) => serverData[`${keyPrefix}${fields[role]}`];
+  // Résolution par SUFFIXE sur les lignes APLATIES par le hook costum : la clé complète est
+  // `<section><id>` et seul l'id est stable inter-forms (cf. DEFAULT_COFORM_FIELDS). Les ids
+  // (~18 car. aléatoires) ne peuvent pas se terminer l'un par l'autre → premier match fiable.
+  const keys = Object.keys(serverData);
+  const get = (role: string) => {
+    const suffix = fields[role];
+    if (!suffix) return undefined;
+    const key = keys.find((k) => k.endsWith(suffix));
+    return key ? serverData[key] : undefined;
+  };
 
   const typeRaw = (get("type") as string | undefined) ?? "";
   const stateRaw = (get("state") as string | undefined) ?? "";
@@ -253,8 +268,9 @@ export function parseCoformAnswer(
     slug: structureRaw?.slug as string | undefined,
   };
 
-  // Installations (clé préfixée `finder…`).
-  const installationsRaw = serverData[`finder${keyPrefix}${fields.installationFinder}`];
+  // Installations : la clé stockée est préfixée `finder<section>` — le match par
+  // suffixe la retrouve sans connaître la section.
+  const installationsRaw = get("installationFinder");
   const installations = (
     Array.isArray(installationsRaw)
       ? installationsRaw
