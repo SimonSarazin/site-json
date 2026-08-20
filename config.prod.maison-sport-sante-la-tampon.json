@@ -2718,6 +2718,7 @@
       "id": "structure",
       "entityType": "organizations",
       "collection": "organizations",
+      "costumSlug": "sportSanteBienetre",
       "icon": "building-2",
       "layout": {
         "kind": "wizard",

@@ -59,6 +59,20 @@
       `recoveryCenter`, ni les listes `category`/`familleEquipement`/`nature`/`sol`/
       `legalStatus`/`titleResponsable`.
 - [ ] Script au patron `backfill-type.mjs` : dry-run + rollback ; dev PUIS prod (miroir).
+- [ ] **Preuve byte-diff LIVE L(5080)↔B(5099) du save structure** (patron des probes de
+      mutation `tools/parity` du backend, comme les autres chantiers) : créer PUIS éditer une
+      fiche par `element/save` sous costum `associationEkilibre`, et diff de la RÉPONSE + du
+      DOCUMENT stocké. Pièges connus à respecter : `costumSlug` au **BODY** (le legacy résout
+      le costum par le body, pas le host) ; **form-urlencoded** (JSON → `$_POST` vide côté
+      legacy = faux négatifs) ; token PAR serveur (clés JWT différentes) ; vérifier que les
+      3 props amendées (`other*Title`, `statusActor`) passent des DEUX côtés ; nettoyage
+      0 résidu, jamais l'utilisateur de test `55ed9107…`. Rejoué aux jalons B (scope basculé)
+      et C (inject statusActor).
+- [ ] E2E site-json des forms (`tests/integration/costum-forms.e2e.test.ts`, découvre le parc
+      automatiquement) : le form MSS était le SEUL sans `costumSlug` → non jouable (et
+      l'édition privée du pin de schéma, `resolveModalSpec.ts:158`). Clé ajoutée
+      (`sportSanteBienetre`, basculera avec le scope à B) ; jouer la suite en modes `bundle`
+      ET `live` sur `maison-sport-sante-la-tampon/structure` aux mêmes jalons.
 - [ ] Après copie : régénérer artefact + lib (`costum-fields:check` verra le nouveau costum à
       champs) — **à batcher** avec le drift META `host` ssbe déjà en attente.
 
