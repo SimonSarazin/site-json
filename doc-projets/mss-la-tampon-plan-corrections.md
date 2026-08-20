@@ -188,12 +188,17 @@ REFUSE déjà `updatepathvalue`/save/delete sur une entité étrangère pour un 
 droits d'élément (401, cf. `useReferenceElement.ts:151-158`) → l'UX propose des actions qui
 échoueraient au clic.
 
-- [ ] Conditionner `edit`/`delete`/`validate`/dropdown statusField à **`isAttached`**
-      (la ligne référencée ne garde que : lecture + action `reference`).
-- [ ] Modalité à trancher à l'exécution : comportement PAR DÉFAUT de la table (reco — l'UX
-      cesse de mentir sur tous les sites) vs opt-in de section (`restrictActionsToOwned`).
-      Attention au cas superAdmin (qui, lui, PEUT éditer une étrangère) : gating d'affichage
-      ≠ vérité des droits ; v1 simple = appartenance, raffinement droits réels plus tard.
+- [x] **FAIT 2026-08-20** — `edit`/`delete`/`validate`/dropdown statusField conditionnés à
+      `actionnable = !restrictActionsToOwned || isAttached` (la ligne référencée ne garde que
+      lecture + action `reference`).
+- [x] Modalité TRANCHÉE à l'exécution : **opt-in de section** `restrictActionsToOwned`
+      (schema.ts) — pas de changement des sites qui modèrent du référencé (`moderateReferenced`),
+      pas de gêne superAdmin ailleurs ; flip en défaut possible plus tard. v1 par appartenance
+      (gating d'affichage ≠ vérité des droits), raffinement droits réels différé.
+- [x] Section admin « Structures » MSS créée (tab `structures`, resource organizations,
+      territoire 2 CP + les 2 provenances, `restrictActionsToOwned: true`, rowActions
+      edit/reference/delete, colonnes nom/CP/statut/provenance) — c'est l'OUTIL de curation
+      du chantier F : les lignes ssbe n'offrent que « Référencer ».
 
 ## Ordre d'exécution
 

@@ -139,6 +139,17 @@ const AdminResourceSectionSchema = z.object({
   create: AdminFormRefSchema.default("inherit"),
   edit: AdminFormRefSchema.default("inherit"),
   rowActions: z.array(z.enum(["edit", "delete", "validate", "reference"])).optional(),
+  /**
+   * Gating par APPARTENANCE (opt-in) : sur une ligne NON possédée (`source.keys` ∌ slug du site —
+   * référencée ou étrangère), seules la lecture et l'action `reference` restent ; `edit`/`delete`/
+   * `validate`/statusField sont masqués. Modèle « la propriété porte les fonctionnalités, la
+   * référence ne porte que la visibilité » : le Node durci refuse déjà ces écritures sur une
+   * entité étrangère (401, cf. useReferenceElement) — sans ce gate, l'UX proposait des actions
+   * vouées à l'échec. Gating d'AFFICHAGE ≠ vérité des droits (un superAdmin peut éditer une
+   * étrangère) : v1 par appartenance, opt-in par section pour ne pas changer les sites qui
+   * modèrent du référencé (`moderateReferenced`).
+   */
+  restrictActionsToOwned: z.boolean().optional(),
   /** `transfer` requiert `transferFrom` (le bouton reste caché sans lui) — ouvre le dialog de
    *  migration d'appropriation en mode ids[] sur la sélection (mêmes contrôles/gate serveur). */
   bulkActions: z.array(z.enum(["export", "validate", "delete", "transfer"])).optional(),

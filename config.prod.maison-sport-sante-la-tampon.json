@@ -2595,6 +2595,81 @@
         ]
       },
       {
+        "id": "structures",
+        "label": {
+          "fr": "Structures",
+          "en": "Structures"
+        },
+        "icon": "building-2",
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "organizations",
+            "label": {
+              "fr": "Structures du territoire",
+              "en": "Territory structures"
+            },
+            "restrictActionsToOwned": true,
+            "rowActions": [
+              "edit",
+              "reference",
+              "delete"
+            ],
+            "source": {
+              "notSourceKey": true,
+              "defaultFilters": {
+                "source.key": {
+                  "$in": [
+                    "sportSanteBienetre",
+                    "associationEkilibre"
+                  ]
+                },
+                "address.postalCode": {
+                  "$in": [
+                    "97430",
+                    "97418"
+                  ]
+                }
+              },
+              "defaultSortBy": {
+                "name": 1
+              }
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Nom",
+                  "en": "Name"
+                }
+              },
+              {
+                "path": "address.postalCode",
+                "label": {
+                  "fr": "Code postal",
+                  "en": "Postal code"
+                }
+              },
+              {
+                "path": "statusActor",
+                "label": {
+                  "fr": "Statut",
+                  "en": "Status"
+                }
+              },
+              {
+                "path": "source.key",
+                "label": {
+                  "fr": "Provenance",
+                  "en": "Source"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
         "id": "moderation",
         "label": {
           "fr": "Modération",

@@ -42,6 +42,33 @@
     }
   },
   "adminResources": {
+    "structures/organizations": {
+      "source": {
+        "notSourceKey": true,
+        "defaultFilters": {
+          "source.key": {
+            "$in": [
+              "sportSanteBienetre",
+              "associationEkilibre"
+            ]
+          },
+          "address.postalCode": {
+            "$in": [
+              "97430",
+              "97418"
+            ]
+          }
+        },
+        "defaultSortBy": {
+          "name": 1
+        }
+      },
+      "create": "add-structure",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
     "moderation/answers": {
       "source": {
         "notSourceKey": true,
