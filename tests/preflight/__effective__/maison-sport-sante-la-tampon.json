@@ -32,16 +32,11 @@
           "declare": "edit-structure",
           "native": "edit-structure",
           "horsPerimetre": "edit-profile"
-        }
-      ]
-    },
-    "poi": {
-      "vierge": "edit-profile",
-      "routes": [
+        },
         {
-          "declare": "edit-equipements-sportifs",
-          "native": "edit-equipements-sportifs",
-          "horsPerimetre": "edit-equipements-sportifs"
+          "declare": "edit-structure",
+          "native": "edit-structure",
+          "horsPerimetre": "edit-profile"
         }
       ]
     }
@@ -90,10 +85,12 @@
               "associationEkilibre"
             ]
           },
+          "statusActor": "Validé",
           "address.postalCode": {
             "$in": [
               "97430",
-              "97418"
+              "97418",
+              "97480"
             ]
           }
         },
@@ -126,6 +123,17 @@
         ]
       }
     }
+  },
+  "stamps": {
+    "structure": [
+      {
+        "field": "statusActor",
+        "value": "En cours",
+        "op": "set",
+        "on": "add",
+        "channel": "pathValue"
+      }
+    ]
   },
   "referencement": {},
   "membership": {

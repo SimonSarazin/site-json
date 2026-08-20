@@ -1114,7 +1114,14 @@ export function generateZodSchema(
         case "timeSlots": {
           // Structure: [{ day, startHour, startMinute, endHour, endMinute }]
           // (clés AmPm tolérées en lecture de données legacy 12h).
-          const slotSchema = z.object({
+          // ⚠ `looseObject` OBLIGATOIRE : les slots réels portent des clés de PAYLOAD hors form —
+          // `duree` sur 123/124 slots equipementsSportifs974, `prix` — écrites par l'import legacy
+          // (Costumize.php:1061-1066) et que le legacy PRÉSERVE (« identité d'un créneau = jour +
+          // horaires, duree/prix exclus »). Un `z.object` nu les strippait, et le form soumettant
+          // la sortie zod-parsée, SOUMETTRE SANS TOUCHER aux créneaux détruisait la donnée en base
+          // (le backend remplace le tableau en bloc) — même mécanisme que `sublist` (cf.
+          // categorizedCheckbox plus bas).
+          const slotSchema = z.looseObject({
             day: z.string(),
             startHour: z.string(),
             startMinute: z.string(),
@@ -1142,13 +1149,21 @@ export function generateZodSchema(
         case "dynamicFields": {
           // Structure: [{ cléSousChamp: valeur }] — les règles par sous-champ
           // (required/minLength/maxLength) viennent de la config admin.
+          // ⚠ Une ligne ENTIÈREMENT vide est EXEMPTÉE des règles (et strippée à la soumission,
+          // via .transform) : le composant sème `minRows` lignes vides NON supprimables — sans
+          // l'exemption, un dynamicFields NON requis à sous-champs required rendait le form
+          // INSOUMISSIBLE (cas réel : les 2 blocs du « Formulaire de créneau » SSBE, dont 40 %
+          // des answers existantes n'ont pas le bloc partenaires). Le legacy saute les lignes
+          // vides de la même façon.
           const subFields = field.dynamicFieldsConfig?.fieldsConfig ?? [];
+          const isEmptyRow = (row: Record<string, string>) =>
+            Object.values(row).every((v) => (v ?? "").trim() === "");
           const rowsSchema = z
             .array(z.record(z.string(), z.string()))
             .refine(
               (rows) =>
                 rows.every((row) =>
-                  subFields.every((sub) => {
+                  isEmptyRow(row) || subFields.every((sub) => {
                     const value = (row[sub.key] ?? "").trim();
                     if (sub.required && value === "") return false;
                     if (value === "") return true;
@@ -1158,7 +1173,8 @@ export function generateZodSchema(
                   }),
                 ),
               { message: t("coform.validation.dynamicFieldsIncomplete", "Chaque ligne doit être complète et valide") },
-            );
+            )
+            .transform((rows) => rows.filter((row) => !isEmptyRow(row)));
           const minRows = field.dynamicFieldsConfig?.minRows ?? 1;
           schemaShape[field.name] = field.isRequired
             ? rowsSchema.refine((rows) => rows.length >= Math.max(1, minRows), {

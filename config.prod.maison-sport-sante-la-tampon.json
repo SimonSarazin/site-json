@@ -32,7 +32,7 @@
   "header": {
     "type": "transparent-scroll",
     "path": "/",
-    "logo": "images/maisonSportSanteLaTampon/logo.svg",
+    "logo": "/images/maisonSportSanteLaTampon/logo.svg",
     "logoClass": "h-[60px] w-auto shrink-0 object-contain group-hover:scale-110 transition-transform",
     "logoAlt": {
       "fr": "Ekilib.re – Maison Sport Santé du Tampon",
@@ -1823,10 +1823,18 @@
                   {
                     "id": "97418",
                     "label": {
-                      "fr": "97418 – Saint-Joseph",
-                      "en": "97418 – Saint-Joseph"
+                      "fr": "97418 – La Plaine des Cafres (Le Tampon)",
+                      "en": "97418 – La Plaine des Cafres (Le Tampon)"
                     },
                     "value": "97418"
+                  },
+                  {
+                    "id": "97480",
+                    "label": {
+                      "fr": "97480 – Saint-Joseph",
+                      "en": "97480 – Saint-Joseph"
+                    },
+                    "value": "97480"
                   }
                 ]
               },
@@ -1954,10 +1962,12 @@
                     "associationEkilibre"
                   ]
                 },
+                "statusActor": "Validé",
                 "address.postalCode": {
                   "$in": [
                     "97430",
-                    "97418"
+                    "97418",
+                    "97480"
                   ]
                 }
               },
@@ -2736,8 +2746,6 @@
       "fields": {
         "siren": {
           "widget": "text",
-          "write": "number:fromDigits",
-          "clear": null,
           "label": {
             "fr": "Siren / Siret",
             "en": "Siren / Siret"
@@ -2745,7 +2753,8 @@
           "placeholder": {
             "fr": "123 456 789 00012",
             "en": "123 456 789 00012"
-          }
+          },
+          "write": "coerce:orUndef"
         },
         "name": {
           "widget": "text",
@@ -2924,7 +2933,6 @@
         "tags": {
           "widget": "hidden",
           "type": "array",
-          "writeOnly": true,
           "write": "structure:tagsFromThematic"
         },
         "mobile": {
@@ -3454,8 +3462,6 @@
         },
         "representativeTelephone": {
           "widget": "text",
-          "write": "number:fromDigits",
-          "clear": null,
           "label": {
             "fr": "Téléphone",
             "en": "Phone"
@@ -3466,7 +3472,8 @@
           },
           "widgetProps": {
             "inputType": "tel"
-          }
+          },
+          "write": "coerce:orUndef"
         },
         "responsableSameAsRepresent": {
           "widget": "switch",
@@ -3635,8 +3642,6 @@
         },
         "personInChargeTelephone": {
           "widget": "text",
-          "write": "number:fromDigits",
-          "clear": null,
           "label": {
             "fr": "Téléphone",
             "en": "Phone"
@@ -3648,6 +3653,7 @@
           "widgetProps": {
             "inputType": "tel"
           },
+          "write": "coerce:orUndef",
           "visibleIf": {
             "field": "responsableSameAsRepresent",
             "op": "falsy"
@@ -3920,10 +3926,18 @@
           "dropEmptyEmail": true,
           "extraFields": {
             "type": "Cooperative",
-            "role": "admin",
-            "statusActor": "En cours"
+            "role": "admin"
           }
         },
+        "stamps": [
+          {
+            "field": "statusActor",
+            "value": "En cours",
+            "op": "set",
+            "on": "add",
+            "channel": "pathValue"
+          }
+        ],
         "successKey": {
           "add": "toast.add.organizationSuccess",
           "edit": "toast.profile.updateSuccess"
@@ -4193,29 +4207,58 @@
       "layout": "default",
       "hideHeader": false,
       "hideFooter": false,
-      "editModal": "edit-structure",
-      "editModalMatch": {
-        "type": "NGO"
-      },
-      "when": {
-        "or": [
-          {
-            "field": "sourceKeys",
-            "op": "contains",
-            "value": "sportSanteBienetre"
+      "editModals": [
+        {
+          "editModal": "edit-structure",
+          "editModalMatch": {
+            "type": "NGO"
           },
-          {
-            "field": "sourceKeys",
-            "op": "contains",
-            "value": "associationEkilibre"
-          },
-          {
-            "field": "reference.costum",
-            "op": "contains",
-            "value": "sportSanteBienetre"
+          "when": {
+            "or": [
+              {
+                "field": "sourceKeys",
+                "op": "contains",
+                "value": "sportSanteBienetre"
+              },
+              {
+                "field": "sourceKeys",
+                "op": "contains",
+                "value": "associationEkilibre"
+              },
+              {
+                "field": "reference.costum",
+                "op": "contains",
+                "value": "sportSanteBienetre"
+              }
+            ]
           }
-        ]
-      },
+        },
+        {
+          "editModal": "edit-structure",
+          "editModalMatch": {
+            "type": "Cooperative"
+          },
+          "when": {
+            "or": [
+              {
+                "field": "sourceKeys",
+                "op": "contains",
+                "value": "sportSanteBienetre"
+              },
+              {
+                "field": "sourceKeys",
+                "op": "contains",
+                "value": "associationEkilibre"
+              },
+              {
+                "field": "reference.costum",
+                "op": "contains",
+                "value": "sportSanteBienetre"
+              }
+            ]
+          }
+        }
+      ],
       "sections": [
         {
           "type": "profile-header",
@@ -4761,10 +4804,6 @@
       "layout": "default",
       "hideHeader": false,
       "hideFooter": false,
-      "editModal": "edit-equipements-sportifs",
-      "editModalMatch": {
-        "type": "recoveryCenter"
-      },
       "sections": [
         {
           "type": "profile-header",

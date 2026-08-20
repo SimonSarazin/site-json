@@ -183,9 +183,12 @@ app.use(
 
 // 404 pour requêtes de fichiers statiques inexistants
 app.use((req, res, next) => {
-  // Exclure les routes API
+  // Route /api/* INCONNUE (toutes les vraies routes API sont montées AVANT ce middleware) :
+  // 404 franc au lieu de tomber dans le catch-all SSR, qui répondait 200 avec la page HTML —
+  // un client testant `response.ok` (ex. formulaire de contact posté sur un endpoint inexistant)
+  // affichait alors un TOAST DE SUCCÈS pendant que le message partait au néant.
   if (req.url.startsWith("/api/")) {
-    return next();
+    return res.status(404).json({ error: "Unknown API route" });
   }
 
   if (req.url.match(/\.(png|jpg|jpeg|gif|svg|css|js|json|ico|webp|mp4|woff2|woff)$/)) {

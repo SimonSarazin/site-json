@@ -84,6 +84,10 @@ async function createServer() {
   app.get("/api/helloasso/checkout-status/:checkoutIntentId", helloassoCheckoutStatusHandler);
   app.get("/api/helloasso/orgs", helloassoDiagnosticHandler);
 
+  // Route /api/* INCONNUE : 404 franc (même garde que prod-server) — sinon le catch-all SSR
+  // répond 200 avec la page HTML et un client testant `response.ok` croit à un succès.
+  app.use("/api", (_req, res) => res.status(404).json({ error: "Unknown API route" }));
+
   // Flux RSS des articles blog (SEO/distribution). costumSlug : ?costum= > config.blog.feedCostumSlug > env.
   app.get("/blog/feed.xml", async (req, res) => {
     try {

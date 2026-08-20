@@ -94,7 +94,10 @@ describe("costum structure Ekilib.re — document de config", () => {
     expect(d2.fields._imageFile).toMatchObject({ widget: "image", renderOnly: true });
     expect(d2.fields.postalCode).toMatchObject({ group: "address" });
     expect(d2.fields.geo).toMatchObject({ writeOnly: true, write: "geo:write" });
-    expect(d2.fields.tags).toMatchObject({ writeOnly: true, write: "structure:tagsFromThematic" });
+    // tags n'est plus writeOnly : sa valeur courante est seedée pour que le write MERGE (préservation
+    // des tags étrangers — « mss ») au lieu de remplacer. cf. fns.ts structure:tagsFromThematic.
+    expect(d2.fields.tags).toMatchObject({ write: "structure:tagsFromThematic" });
+    expect(d2.fields.tags.writeOnly).toBeUndefined();
     expect(d2.fields.socialLinks).toMatchObject({ path: "socialNetwork", read: "social:read", write: "social:write" });
   });
 });
@@ -129,7 +132,7 @@ describe("costum structure Ekilib.re — WRITE (création)", () => {
       representativeName: "BAUER",
       representativeFirstName: "Jérémy",
       personInChargeName: "BAUER",
-      personInChargeTelephone: 692211490, // NOMBRE (type costum) — cf. test 9bis
+      personInChargeTelephone: "692211490", // CHAÎNE byte-fidèle — cf. test 9bis
     });
     expect(payload.thematic).toEqual(FILLED.thematic);
   });
@@ -186,27 +189,22 @@ describe("costum structure Ekilib.re — WRITE (création)", () => {
     expect(wp("statusFile").maxItems).toBe(1);
   });
 
-  it("9bis. envoie siren/téléphones en NOMBRE (type imposé par le costum sportSanteBienetre)", () => {
-    // Le costum déclare ces 3 champs `number` — artefact d'inférence, cf. doc-projets/
-    // todo-costum-schema-structures-ssbe.md §2. Depuis que le scope est `sportSanteBienetre`, ses
-    // `properties` sont fusionnées dans le schéma AJV → envoyer une chaîne = 400.
+  it("9bis. envoie siren/téléphones en CHAÎNE BYTE-FIDÈLE (le + et les espaces préservés)", () => {
+    // L'ancien contournement `number:fromDigits` coerçait ces 3 champs en NOMBRE tronqué (perte du
+    // 0 initial et du « + ») sur une prémisse FAUSSE : l'artefact costum livré les déclare en
+    // `oneOf string|number` — les chaînes passent l'AJV telles quelles, et la base est 100 % strings
+    // (« 0692 88 33 19 » observé). Politique du repo : stockage string byte-fidèle.
     const p = buildPayload(formSpec, {
       ...FILLED, siren: "123 456 789 00012", representativeTelephone: "+261 34 25 363 35",
       personInChargeTelephone: "06 92 00 11 22",
     }) as Record<string, unknown>;
-    // `coerce:number` aurait rendu `undefined` sur les TROIS (espaces / indicatif) → champs perdus.
-    expect(p.siren).toBe(12345678900012);
-    expect(p.representativeTelephone).toBe(261342536335);
-    expect(p.personInChargeTelephone).toBe(692001122);
-    for (const k of ["siren", "representativeTelephone", "personInChargeTelephone"]) {
-      expect(typeof p[k]).toBe("number");
-    }
-    // `mobile` reste une STRING (le costum le déclare ainsi) — ne pas l'aligner sur les autres.
+    expect(p.siren).toBe("123 456 789 00012");
+    expect(p.representativeTelephone).toBe("+261 34 25 363 35");
+    expect(p.personInChargeTelephone).toBe("06 92 00 11 22");
     expect(typeof p.mobile).toBe("string");
   });
 
-  it("9ter. omet les champs numériques VIDES au lieu d'envoyer \"\" (cause du 400 constaté)", () => {
-    // Le payload réel qui a échoué portait representativeTelephone:"" et personInChargeTelephone:"".
+  it("9ter. omet les champs VIDES à la création (coerce:orUndef, patron email/url)", () => {
     const p = buildPayload(formSpec, {
       ...FILLED, siren: "", representativeTelephone: "", personInChargeTelephone: "",
     }) as Record<string, unknown>;
@@ -215,11 +213,11 @@ describe("costum structure Ekilib.re — WRITE (création)", () => {
     }
   });
 
-  it("9quater. ÉDITION : un champ numérique vidé sort en `null` (retiré par le SDK), jamais \"\"", () => {
-    // payloadEmitEmptyOnEdit:true → un vide devient `clearValue(field)`. Sans `clear: null` ce serait
-    // `""`, refusé par le type `number`. `stripNullsInPlace` retire ensuite la clé côté SDK.
+  it("9quater. ÉDITION : un champ vidé sort en \"\" (clear texte standard → $unset backend, EFFAÇABLE)", () => {
+    // L'ancien `clear: null` rendait la valeur INEFFAÇABLE : `stripNullsInPlace` retirait la clé
+    // avant l'envoi → jamais d'$unset, la valeur réapparaissait à la réouverture.
     const e = buildEditPayload(formSpec, { ...FILLED, siren: "" }) as Record<string, unknown>;
-    expect(e.siren).toBeNull();
+    expect(e.siren).toBe("");
   });
 
   it("10. omet `email`/`url` vides (le schéma backend impose un format sur ces champs)", () => {
@@ -248,8 +246,15 @@ describe("costum structure Ekilib.re — spec de mutation", () => {
     // `type` sélectionne la VARIANTE costum (pickCostumOverlay : discriminator === data.type) :
     // "Cooperative" = structure adhérente (16/17 champs déclarés) ; "NGO"/mss est le formulaire des
     // Maisons Sport Santé et n'en déclare que 8 → il amputerait la saisie.
-    expect(m.inject?.extraFields).toEqual({ type: "Cooperative", role: "admin", statusActor: "En cours" });
+    // `statusActor` n'est PLUS dans extraFields (canal payload) : ce champ n'est déclaré ni au
+    // contrat ni à l'artefact costum → la whitelist de la lib le FILTRAIT en silence et les
+    // structures naissaient sans statut (file de validation inopérante). Il est posé par un STAMP
+    // canal `pathValue` (updateField post-save, hors whitelist) — patron saint-paul.
+    expect(m.inject?.extraFields).toEqual({ type: "Cooperative", role: "admin" });
     expect(m.inject?.dropEmptyEmail).toBe(true);
+    expect(m.stamps).toEqual([
+      { field: "statusActor", value: "En cours", op: "set", on: "add", channel: "pathValue" },
+    ]);
     expect(m.imageField).toBe("_imageFile");
   });
 

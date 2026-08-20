@@ -64,7 +64,6 @@
     "deleteTitle": "Delete “{{label}}”?",
     "selectAll": "Select all (loaded rows)",
     "selectRow": "Select {{label}}",
-    "bulkTransfer": "Transfer ownership",
     "rowActions": "Actions for {{label}}",
     "setStatus": "Mark as: {{state}}",
     "statusUnset": "Not set",
