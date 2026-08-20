@@ -54,23 +54,15 @@
   "adminResources": {
     "actualites/poi": {
       "source": {
-        "defaultFilters": {
-          "type": "article",
-          "source.key": "associationEkilibre"
-        },
-        "defaultSortBy": {
-          "publicationDate": -1
-        },
-        "costumSlug": "associationEkilibre",
         "sourceKey": [
           "associationEkilibre"
         ],
-        "defaultFields": [
-          "category",
-          "publicationDate",
-          "publicationStatus",
-          "featured"
-        ]
+        "defaultFilters": {
+          "type": "article"
+        },
+        "defaultSortBy": {
+          "publicationDate": -1
+        }
       },
       "create": "add-actualite",
       "edit": {

@@ -2758,23 +2758,15 @@
             "type": "resource",
             "entityType": "poi",
             "source": {
-              "defaultFilters": {
-                "type": "article",
-                "source.key": "associationEkilibre"
-              },
-              "defaultSortBy": {
-                "publicationDate": -1
-              },
-              "costumSlug": "associationEkilibre",
               "sourceKey": [
                 "associationEkilibre"
               ],
-              "defaultFields": [
-                "category",
-                "publicationDate",
-                "publicationStatus",
-                "featured"
-              ]
+              "defaultFilters": {
+                "type": "article"
+              },
+              "defaultSortBy": {
+                "publicationDate": -1
+              }
             },
             "columns": [
               {
@@ -2815,12 +2807,31 @@
             ],
             "rowActions": [
               "edit",
+              "validate",
               "delete",
               "setFeatured"
             ],
             "exclusiveField": "featured",
             "create": "add-actualite",
-            "edit": "inherit"
+            "edit": "inherit",
+            "status": {
+              "mode": "statusField",
+              "field": "publicationStatus",
+              "states": [
+                {
+                  "value": "Brouillon",
+                  "tone": "pending"
+                },
+                {
+                  "value": "Publié",
+                  "tone": "positive"
+                },
+                {
+                  "value": "Archivé",
+                  "tone": "negative"
+                }
+              ]
+            }
           }
         ]
       },
@@ -4584,7 +4595,9 @@
                 "en": "Archived"
               }
             }
-          ]
+          ],
+          "required": true,
+          "default": "Brouillon"
         },
         "featured": {
           "widget": "switch",
