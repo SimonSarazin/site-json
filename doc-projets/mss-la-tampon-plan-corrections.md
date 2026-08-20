@@ -311,3 +311,21 @@ chemin legacy est touché, vérification navigateur sur données réelles.
   engagé, champs whitelistés ; il échouait ADD_POI 400 avant).
   ⚠️ MIROIR PROD désormais en TROIS temps, dans l'ordre : copy-costum-decl.mjs (organizations)
   → add-article-node.mjs (article) → reference-stock.mjs (les 14) — tous dry-run puis --apply.
+
+- **2026-08-21 — Corrections MR 44 (option B) EXÉCUTÉES, 6/6** (branche mr44-review) :
+  (1) chaîne costumSlug updateField — contrat + lib 6f81284 (injection _costumCtx, mécanisme
+  _costumUploadFields) + backend 24fa5ec + probe discriminante 602a190 (protocole retrait
+  temporaire superAdmin : 401 sans / 200 avec, restauration vérifiée) ; (2) articleFeed
+  featured:"flag" d41ddf67 (épinglage éditorial, micro-requête serveur, repli plus récent,
+  une seule liste — rien ne peut disparaître) + prop sortBy ; (3) publicationStatus au patron
+  statusField 03c0b115 (Brouillon défaut + required, section admin assainie : costumSlug retiré
+  de la source — polarité du gate — et scope dédoublonné) ; (4) pages publiques refondées sur
+  le MODULE BLOG db13d738 (home articleFeed flag pageSize 7, espace-pro, page /blog sans
+  plafond, reader SSR+SEO+RSS, config.blog racine, tri publicationDate) ; (5) setFeatured
+  robuste 95b3b1df (runExclusiveFlag pure : cible d'abord, périmètre serveur fetchFlagged,
+  best-effort compté, invalidation blog + en erreur, 4 tests) ; (6) petits 7fa328b1 (chapô
+  shortDescription, identity article, payloadEmitEmptyOnEdit, GARDE préflight costum-form-slug,
+  docs réalignées Saint-Joseph/« opérationnel »).
+  Validation finale : e2e costum-forms 23/23 · suite unitaire 2 672/2 672.
+  DIFFÉRÉ consigné : garde costum-form-contract inerte pour les costums live-only (fixture de
+  snapshot live à concevoir) ; commentaire GitLab MR 44 à rédiger depuis cette synthèse.
