@@ -278,3 +278,15 @@ chemin legacy est touché, vérification navigateur sur données réelles.
   14 sans la garde. Défaut inchangé pour les 6 sections existantes du parc. Aucun changement
   legacy requis (le filtre est un paramètre de requête client ; `$nin` déjà accepté des deux
   moteurs — le referenceTable legacy en envoie lui-même). Suggestion upstream possible.
+
+- **2026-08-20 — fix lib « inférence live » FAIT** (branche lib `fix/livedigest-scalar-oneof`,
+  commit 3cad2a4 — à merger/publier) : le dernier scalaire STRICT de `fieldSchema` (fallback
+  `string`) devient `oneOf [string, number]`, même remède que la campagne de tolérance du
+  6-8 août (inputType décrit le widget, pas le stockage ; le legacy ne valide rien → la
+  tolérance EST la référence). Pourquoi le trou avait survécu : course de la même semaine —
+  campagne lib 06-08/08, champs surface tiers-lieux 09/08, relief 12/08, création de l'e2e
+  13/08 — puis plus aucun run live parc-entier avant le jalon d'hier. Verrous : test unitaire
+  lib (rejoué à chaque vitest lib) + e2e modes bundle ET live aux jalons. Preuve : 22/22 live
+  ET bundle avec la lib corrigée (pack + install --no-save, puis npm ci → 1.0.187 publiée
+  restaurée ; le live parc-entier re-montrera l'échec relief jusqu'à la release lib incluant
+  le fix — attendu).
