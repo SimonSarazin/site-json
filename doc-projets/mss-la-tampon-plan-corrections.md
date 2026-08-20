@@ -329,3 +329,22 @@ chemin legacy est touché, vérification navigateur sur données réelles.
   Validation finale : e2e costum-forms 23/23 · suite unitaire 2 672/2 672.
   DIFFÉRÉ consigné : garde costum-form-contract inerte pour les costums live-only (fixture de
   snapshot live à concevoir) ; commentaire GitLab MR 44 à rédiger depuis cette synthèse.
+
+- **2026-08-21 — RUNBOOK prod complété (preuve navigateur)** : après `add-article-node.mjs`
+  (comme après toute écriture de `costum.*` en base), **PURGER le cache costum legacy**
+  (`pixelhumain/ph/protected/runtime/cache/*.bin`) — il ne s'invalide jamais seul ; sans purge,
+  le DataValidator legacy valide contre le typeObj PÉRIMÉ et rejette les champs du nœud article
+  (« Contenu Invalide featured : Poi », observé en dev le 21/08 via le site pointé sur 5080).
+
+- **2026-08-21 — Les 2 fixes de la review navigateur, prouvés** :
+  (1) **chapô** : cause = contrat ADD_POI sous-déclaré (champ CŒUR `shortDescription` absent,
+  additionalProperties:false → rabotage whitelist lib silencieux ; parent62 n'y échappait que
+  par import WordPress + artefact). Fix AU BON ÉTAGE : le contrat (lib 140e173), PAS le dynForm
+  costum. Preuves : e2e actualite PASS (Node) + édition form-urlencodée directe sur legacy 5080
+  → chapô persisté en base.
+  (2) **featured** : le save form-urlencodé stringifie les booléens ("false" chaîne mesurée) et
+  le switch au form était le 2e chemin non exclusif → featured RETIRÉ du form (85c0edb9),
+  setFeatured/updateField = écrivain unique (booléens garantis, prouvé : true posé par l'action
+  admin en navigateur). Test 7 de la MR retourné en verrou inverse.
+  L'article de test « Test review navigateur — épinglage » reste en base dev (chapô + une posés)
+  pour la review visuelle de l'utilisateur — suppression via le menu admin quand fini.
