@@ -297,3 +297,17 @@ chemin legacy est touché, vérification navigateur sur données réelles.
   laissé vivre la divergence relief une semaine. État : bundle 22/22 · live 21/22 (relief =
   le bug connu, fix sur la branche lib `fix/livedigest-scalar-oneof`) — la commande passera
   toute verte à la release lib, et c'est voulu qu'elle soit rouge d'ici là.
+
+- **2026-08-20 — Chantier A2 (MR 44) : nœud `typeObj.article` posé chez eki (dev) et PROUVÉ.**
+  Analyse des DEUX sources (décision utilisateur) : le typeObj.article ssbe est quasi vide côté
+  champs (name/description, du cœur) — sa pièce porteuse est `presetValue: {type: "article"}`
+  (le relax d'enum) + le nœud de type (sameAs poi, add onlyAdmin, createLabel) ; le costumForm
+  article de la config ssbe n'utilise QUE des champs cœur. Le form actualite (MR 44) a besoin
+  de 5 champs costum en plus → script local `tools/mss-la-tampon/add-article-node.mjs`
+  (patron copy-costum-decl : 11 contrôles, rollback avant update, UN chemin écrit) : copie
+  verbatim du nœud ssbe + amendement de category (5 options), publicationDate (date),
+  publicationStatus (Brouillon/Publié/Archivé), featured (checkboxSimple), link (text).
+  Preuve : e2e costum-forms **23/23** (le form actualite passe la vraie chaîne — relax
+  engagé, champs whitelistés ; il échouait ADD_POI 400 avant).
+  ⚠️ MIROIR PROD désormais en TROIS temps, dans l'ordre : copy-costum-decl.mjs (organizations)
+  → add-article-node.mjs (article) → reference-stock.mjs (les 14) — tous dry-run puis --apply.
