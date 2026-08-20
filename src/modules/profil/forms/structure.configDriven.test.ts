@@ -125,7 +125,9 @@ describe("costum structure Ekilib.re — WRITE (création)", () => {
       name: "NOUT' SPORT ADAPTÉ",
       affiliate: "Oui",
       email: "jeremy.enseignant.apa@gmail.com",
-      mobile: "692211490",
+      // `mobile` part désormais par le GROUPE telephone → objet legacy {mobile:[…]} (128/138 orgs
+      // réelles) — plus de clé racine plate.
+      telephone: { mobile: ["692211490"] },
       legalStatus: "Entreprise, Auto-entrepreneur, Sisa",
       representativeTitle: "Chef.fe d'entreprise",
       representativeCivility: "M.",
@@ -201,7 +203,9 @@ describe("costum structure Ekilib.re — WRITE (création)", () => {
     expect(p.siren).toBe("123 456 789 00012");
     expect(p.representativeTelephone).toBe("+261 34 25 363 35");
     expect(p.personInChargeTelephone).toBe("06 92 00 11 22");
-    expect(typeof p.mobile).toBe("string");
+    // `mobile` (groupe telephone) sort en objet serveur, jamais en clé plate.
+    expect(p.telephone).toEqual({ mobile: ["692211490"] });
+    expect(p).not.toHaveProperty("mobile");
   });
 
   it("9ter. omet les champs VIDES à la création (coerce:orUndef, patron email/url)", () => {

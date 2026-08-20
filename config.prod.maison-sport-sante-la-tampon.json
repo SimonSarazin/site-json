@@ -2741,6 +2741,11 @@
           "serverKey": "address",
           "read": "address:read",
           "write": "address:write"
+        },
+        "telephone": {
+          "serverKey": "telephone",
+          "read": "telephone:read",
+          "write": "telephone:write"
         }
       },
       "fields": {
@@ -2937,6 +2942,7 @@
         },
         "mobile": {
           "widget": "text",
+          "group": "telephone",
           "label": {
             "fr": "Téléphone",
             "en": "Phone"
@@ -2948,6 +2954,11 @@
           "widgetProps": {
             "inputType": "tel"
           }
+        },
+        "telephoneFixe": {
+          "widget": "hidden",
+          "type": "array",
+          "group": "telephone"
         },
         "address": {
           "widget": "location",
