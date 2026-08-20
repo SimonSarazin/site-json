@@ -2716,7 +2716,19 @@
                   "en": "Source"
                 }
               }
-            ]
+            ],
+            "search": {
+              "openData": "optOut",
+              "defaultFilters": {
+                "source.keys": "sportSanteBienetre",
+                "address.postalCode": {
+                  "$in": [
+                    "97430",
+                    "97418"
+                  ]
+                }
+              }
+            }
           }
         ]
       },

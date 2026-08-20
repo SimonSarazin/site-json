@@ -265,3 +265,16 @@ chemin legacy est touché, vérification navigateur sur données réelles.
   gardée legacy (`isOpenData`, exclusion du déjà-rattaché) + liste des référencés avec retrait.
   NB : la recherche de candidats est GLOBALE (pas territoriale) et exige
   `preferences.isOpenData` — sémantique legacy assumée.
+
+- **2026-08-20 — recherche de candidates configurable (section `reference`).** Décision après
+  vérification legacy : le garde-fou `isOpenData: true` date du refactor searchNew (c097823fc,
+  2021, Bouboule — pas une décision de consentement documentée) et rendait la vue vide sur nos
+  viviers (fiches costum/import sans preferences) alors que le refus explicite EXISTE
+  (2 241 orgs + 1 741 events). Nouveau bloc `search` : `openData` optIn(défaut legacy)/optOut/off
+  + ciblage `defaultFilters` (commun) et `defaultFiltersByType` (par collection — une section
+  multi-collections ne fait pas fuiter un filtre d'orgs vers les events) ; gardes `$nin`
+  non-configurables fusionnées MÊME-CLÉ. MSS : optOut + vivier `source.keys: sportSanteBienetre`
+  territoire. Prédicat prouvé live : 0 candidate (les 14 référencées exclues par la garde),
+  14 sans la garde. Défaut inchangé pour les 6 sections existantes du parc. Aucun changement
+  legacy requis (le filtre est un paramètre de requête client ; `$nin` déjà accepté des deux
+  moteurs — le referenceTable legacy en envoie lui-même). Suggestion upstream possible.
