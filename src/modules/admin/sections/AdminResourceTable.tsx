@@ -18,6 +18,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useCocolight } from "@/hooks/useCocolight";
+import { buildSearchPayload } from "@/modules/search/lib/buildSearchPayload";
+import { expandCostumSubType } from "@/modules/search/lib/costumSubType";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { SEARCH_QUERY_KEYS, SEARCH_STATIC_LIST_PREFIX, SEARCH_STATIC_MAP_PREFIX } from "@/modules/search/constants/queryKeys";
@@ -366,6 +368,26 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
     },
   });
   const setExclusiveFlag = useSetExclusiveFlag(() => {});
+  // Périmètre SERVEUR de l'exclusivité (review MR 44) : les fiches `exclusiveField:true` de la
+  // resource, cherchées par une requête dédiée — MIROIR du queryFn de la table (mêmes baseParams
+  // + expansion costumSubType, indexStepList 50, sans variant admin en mode statusField) — et
+  // JAMAIS les lignes chargées : l'ex-« une » peut vivre hors de la fenêtre de l'infinite scroll.
+  const fetchFlagged = async (): Promise<ExclusiveFlagEntity[]> => {
+    if (!carrier || !resource.exclusiveField) return [];
+    const params = expandCostumSubType(
+      {
+        ...baseParams,
+        indexStepList: 50,
+        defaultFilters: { ...((baseParams as { defaultFilters?: Record<string, unknown> }).defaultFilters ?? {}), [resource.exclusiveField]: true },
+      },
+      (config as { costumForms?: Record<string, never> } | undefined)?.costumForms,
+      (carrier as { slug?: string } | null)?.slug,
+    ) ?? {};
+    const param = buildSearchPayload(params, { name: "", tags: [], type: [resource.entityType], mapUsed: false });
+    if (!param.searchType) return [];
+    const res = await (carrier as unknown as { searchCostum: (p: unknown) => Promise<{ results?: unknown[] }> }).searchCostum(param);
+    return (res.results ?? []) as ExclusiveFlagEntity[];
+  };
   // Choix costum/standard par CONFIG (`create`/`edit`) — cf. resourceHelpers. En `inherit`, la
   // création prend le form COSTUM du site s'il en existe un pour ce type (config.costumForms,
   // même form que le bouton public), et l'édition suit la résolution publique (editModal/Match).
@@ -686,7 +708,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                                 field: resource.exclusiveField!,
                                 value: !isFeatured,
                                 target: grantCostumAdmin(item) as unknown as ExclusiveFlagEntity,
-                                rows: rows as unknown as ExclusiveFlagEntity[],
+                                fetchFlagged,
                               })
                             }
                           >

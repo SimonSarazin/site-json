@@ -184,7 +184,8 @@
   "useSetExclusiveFlag": {
     "featured": "Featured",
     "unfeatured": "Removed from featured",
-    "error": "Action failed"
+    "error": "Action failed",
+    "partialUnset": "Featured set, but {count} previous featured item(s) could not be cleared — check the table."
   },
   "AdminInvitation": {
     "error": "Error",
