@@ -85,10 +85,10 @@
       cette config suppose la copie A jouée sur la base CIBLE — jouer
       `tools/mss-la-tampon/copy-costum-decl.mjs` (dry-run puis --apply) en PROD **AVANT** tout
       déploiement de la branche, sinon whitelist costum VIDE (champs métier rabotés au save).
-- [ ] `/structure` : remplacer le filtre brut `defaultFilters["source.key"].$in` **et**
-      `notSourceKey` par `sourceKey: "associationEkilibre"` — la traduction serveur
-      (`search.ts:302-305`) ramène possédées + référencées. ⚠️ `notSourceKey` non-vide fait
-      SAUTER `sourceKey` (`search.ts:389-390`) : le retirer est obligatoire, pas cosmétique.
+- [x] **FAIT 2026-08-20** — `/structure` basculé : `notSourceKey` et le filtre brut RETIRÉS,
+      `sourceKey: ["associationEkilibre"]` posé (le schéma exige un TABLEAU). Équivalence
+      PROUVÉE avant bascule : ancien prédicat vs traduction serveur `$or[source.keys,
+      reference.costum]` → mêmes 14 ids sur la base.
       Le filtre postal `{97430, 97418}` RESTE : territoire produit = **Le Tampon seul**
       (bourg + Plaine des Cafres), décision utilisateur 2026-08-20 — orthogonal à la
       provenance, il borne aussi les futures fiches possédées. Historique : la MR étiquetait
@@ -168,10 +168,12 @@ toggle 3 états par ligne (possédée → Détacher / référencée → Retirer 
 `AdminResourceTable.tsx:534-540`) ; opt-in `moderateReferenced` (modération scopée
 `validateGroup`) — qu'on N'ACTIVE PAS pour MSS : référencer EST l'acte de curation.
 
-- [ ] Périmètre initial mesuré : **14 fiches** ssbe dans les 2 CP du Tampon (97430 : 11,
-      97418 : 3), toutes `Validé` — PAS les 138 (Saint-Joseph exclu sur décision 2026-08-20).
-      Lot assez petit pour être référencé À LA MAIN via l'admin (rowAction `reference` sur la
-      section structures) une fois câblé ; script one-shot en repli seulement.
+- [x] **FAIT 2026-08-20 (dev)** — les 14 fiches du territoire (97430 : 11, 97418 : 3, toutes
+      Validé, l'org porteuse EKILIB.RE incluse) référencées **14/14** via le CANAL de l'action
+      admin (`setsource action/add/set/reference` sur B, gate isCostumAdmin) — script local
+      `tools/mss-la-tampon/reference-stock.mjs` (dry-run/apply/rollback), fichier de rollback
+      conservé. En PROD : rejouer (même script BACKEND_URL prod, ou à la main via le tab
+      Structures).
 - [ ] PAS de `reference.costumTypes` : orgs typées nativement, rien à classer.
 - Nouvelles fiches : nées `source.key=associationEkilibre`, aucune écriture vers ssbe.
 - Note (rétrécie par le modèle) : chaque site n'écrit `statusActor` que sur SES fiches —
@@ -241,3 +243,12 @@ chemin legacy est touché, vérification navigateur sur données réelles.
   sans perte, multiples, slot d'origine). Mode live : 21/22 — seul échec `relief/tiers-lieux`,
   PRÉEXISTANT et hors périmètre (asymétrie bundle/live : l'inférence live type `string` là où
   l'artefact déclare `oneOf string|number` → candidate à un fix lib, à batcher).
+
+- **2026-08-20 (nuit) — F FAIT + /structure mono-slug.** Décision en séance : la régen
+  artefact/lib est ABANDONNÉE (cible live-only — on n'ajoute pas de nouveau schéma costum en
+  dur dans la lib ; eki résout live, prouvé). La garde `costum-fields` signalera le drift
+  `associationEkilibre` : assumé et documenté ici. Référencement des 14 exécuté par script
+  rejouant le canal admin (`reference-stock.mjs`, 14/14, rollback conservé) ; `/structure`
+  basculé sur `sourceKey: ["associationEkilibre"]` après preuve d'équivalence (14 = 14 ids
+  identiques). L'état mixte de la config est CLOS côté listing public ; restent mixtes à
+  dessein : la section admin Structures (outil de curation) et les `when` des editModals.

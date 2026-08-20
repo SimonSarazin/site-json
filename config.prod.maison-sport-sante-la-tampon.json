@@ -1943,17 +1943,13 @@
             "showActiveFiltersTypes": true,
             "showActiveFiltersTags": true,
             "baseParams": {
+              "sourceKey": [
+                "associationEkilibre"
+              ],
               "defaultTypes": [
                 "organizations"
               ],
-              "notSourceKey": true,
               "defaultFilters": {
-                "source.key": {
-                  "$in": [
-                    "sportSanteBienetre",
-                    "associationEkilibre"
-                  ]
-                },
                 "statusActor": "Validé",
                 "address.postalCode": {
                   "$in": [
