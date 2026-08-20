@@ -290,3 +290,10 @@ chemin legacy est touché, vérification navigateur sur données réelles.
   ET bundle avec la lib corrigée (pack + install --no-save, puis npm ci → 1.0.187 publiée
   restaurée ; le live parc-entier re-montrera l'échec relief jusqu'à la release lib incluant
   le fix — attendu).
+
+- **2026-08-20 — `npm run test:costum-forms` joue LES DEUX modes** (bundle puis live, enchaînés —
+  séquentiel par construction : le mode est un singleton par processus, et deux suites de
+  mutation concurrentes sur la même base seraient un risque). Décision : le live opt-in seul a
+  laissé vivre la divergence relief une semaine. État : bundle 22/22 · live 21/22 (relief =
+  le bug connu, fix sur la branche lib `fix/livedigest-scalar-oneof`) — la commande passera
+  toute verte à la release lib, et c'est voulu qu'elle soit rouge d'ici là.
