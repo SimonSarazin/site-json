@@ -138,13 +138,22 @@ const AdminResourceSectionSchema = z.object({
   columns: AdminColumnsSchema.optional(),
   create: AdminFormRefSchema.default("inherit"),
   edit: AdminFormRefSchema.default("inherit"),
-  rowActions: z.array(z.enum(["edit", "delete", "validate", "reference"])).optional(),
+  rowActions: z.array(z.enum(["edit", "delete", "validate", "reference", "setFeatured"])).optional(),
   /** `transfer` requiert `transferFrom` (le bouton reste caché sans lui) — ouvre le dialog de
    *  migration d'appropriation en mode ids[] sur la sélection (mêmes contrôles/gate serveur). */
   bulkActions: z.array(z.enum(["export", "validate", "delete", "transfer"])).optional(),
   /** Slug du costum CÉDANT pour la bulkAction `transfer` (les fiches cochées lui appartiennent). */
   transferFrom: z.string().min(1).optional(),
   status: AdminStatusConfigSchema.optional(),
+  /**
+   * Champ booléen à EXCLUSIVITÉ (un seul document du périmètre `source` à `true` à la fois, ex.
+   * `featured`/« à la une »). OPT-IN strict : n'a d'effet que combiné à `rowActions:["setFeatured"]`
+   * — sans lui, l'action « Mettre à la une » ne s'affiche pas, zéro impact sur les sections
+   * `resource` existantes. Portée de l'exclusivité : les lignes actuellement CHARGÉES dans le
+   * tableau (pas une recherche dédiée sur tout le périmètre) — suffisant pour une volumétrie admin
+   * usuelle, cf. `useSetExclusiveFlag`.
+   */
+  exclusiveField: z.string().optional(),
 });
 export type AdminResourceSection = z.infer<typeof AdminResourceSectionSchema>;
 

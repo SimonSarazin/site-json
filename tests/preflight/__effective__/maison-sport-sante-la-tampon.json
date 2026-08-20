@@ -7,20 +7,20 @@
         "organization": "add-structure",
         "project": "add-project",
         "event": "add-event",
-        "poi": "add-poi"
+        "poi": "add-actualite"
       }
     },
     "organizations": {
       "builtins": {
         "project": "add-project",
         "event": "add-event",
-        "poi": "add-poi"
+        "poi": "add-actualite"
       }
     },
     "projects": {
       "builtins": {
         "event": "add-event",
-        "poi": "add-poi"
+        "poi": "add-actualite"
       }
     }
   },
@@ -42,11 +42,42 @@
           "declare": "edit-equipements-sportifs",
           "native": "edit-equipements-sportifs",
           "horsPerimetre": "edit-equipements-sportifs"
+        },
+        {
+          "declare": "edit-actualite",
+          "native": "edit-actualite",
+          "horsPerimetre": "edit-profile"
         }
       ]
     }
   },
   "adminResources": {
+    "actualites/poi": {
+      "source": {
+        "defaultFilters": {
+          "type": "article",
+          "source.key": "associationEkilibre"
+        },
+        "defaultSortBy": {
+          "publicationDate": -1
+        },
+        "costumSlug": "associationEkilibre",
+        "sourceKey": [
+          "associationEkilibre"
+        ],
+        "defaultFields": [
+          "category",
+          "publicationDate",
+          "publicationStatus",
+          "featured"
+        ]
+      },
+      "create": "add-actualite",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
     "moderation/answers": {
       "source": {
         "notSourceKey": true,
@@ -65,6 +96,44 @@
     }
   },
   "pages": {
+    "//searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "notSourceKey": true,
+        "indexStepList": 1,
+        "defaultFilters": {
+          "type": "article",
+          "source.key": "associationEkilibre",
+          "publicationStatus": "Publié",
+          "featured": true
+        },
+        "defaultSortBy": {
+          "publicationDate": -1
+        }
+      }
+    },
+    "//searchProStatic#1": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "notSourceKey": true,
+        "indexStepList": 6,
+        "defaultFilters": {
+          "type": "article",
+          "source.key": "associationEkilibre",
+          "publicationStatus": "Publié",
+          "featured": {
+            "$ne": true
+          }
+        },
+        "defaultSortBy": {
+          "publicationDate": -1
+        }
+      }
+    },
     "/creneaux/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
@@ -74,6 +143,22 @@
         "defaultFilters": {
           "form": "6a85af345d898a57cb49f029",
           "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdn1jcq445i0mb9bap7": "Validé"
+        }
+      }
+    },
+    "/espace-pro/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "notSourceKey": true,
+        "defaultSortBy": {
+          "publicationDate": -1
+        },
+        "defaultFilters": {
+          "type": "article",
+          "source.key": "associationEkilibre",
+          "publicationStatus": "Publié"
         }
       }
     },

@@ -1,4 +1,4 @@
-import { ArrowLeftRight, BadgeCheck, BadgeX, ChevronDown, ChevronUp, CircleCheck, CircleDashed, CircleDot, CirclePlay, CircleX, Link2, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
+import { ArrowLeftRight, BadgeCheck, BadgeX, ChevronDown, ChevronUp, CircleCheck, CircleDashed, CircleDot, CirclePlay, CircleX, Link2, MoreHorizontal, Pencil, Plus, Trash2, Star } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
@@ -37,6 +37,7 @@ import { OwnershipMigrationDialog } from "../components/OwnershipMigrationDialog
 import { useAdminAccess } from "../hooks/useAdminAccess";
 import { useDeleteEntity, type DeletableEntity } from "../hooks/useDeleteEntity";
 import { useReferenceElement, type AnnotableEntity, type ReferencingCarrier } from "../hooks/useReferenceElement";
+import { useSetExclusiveFlag, type ExclusiveFlagEntity } from "../hooks/useSetExclusiveFlag";
 import { useValidateGroup, type ValidatableCarrier } from "../hooks/useValidateGroup";
 import type { AdminResourceSection, AdminSection } from "../schema";
 import { downloadCsv } from "../lib/downloadCsv";
@@ -364,6 +365,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
       queryClient.invalidateQueries({ queryKey: SEARCH_QUERY_KEYS.RESULTS_PREFIX(SEARCH_STATIC_MAP_PREFIX) });
     },
   });
+  const setExclusiveFlag = useSetExclusiveFlag(() => {});
   // Choix costum/standard par CONFIG (`create`/`edit`) — cf. resourceHelpers. En `inherit`, la
   // création prend le form COSTUM du site s'il en existe un pour ce type (config.costumForms,
   // même form que le bouton public), et l'édition suit la résolution publique (editModal/Match).
@@ -548,6 +550,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                 (!!prefTbv && typeof prefTbv === "object" && prefTbv[costumSlug] === true) ||
                 (!!srcTbv && typeof srcTbv === "object" && srcTbv[costumSlug] === true)
               );
+              const isFeatured = !!resource.exclusiveField && getPath(data, resource.exclusiveField) === true;
               return (
                 <TableRow key={id} ref={isLast ? lastItemRef : undefined}>
                   {bulkActions.length > 0 && (
@@ -667,6 +670,25 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                             {tAdmin(isAttached ? "AdminResourceTable.detach" : isReferenced ? "AdminResourceTable.unreference" : "AdminResourceTable.reference")}
                           </DropdownMenuItem>
                         )}
+                        {rowActions.includes("setFeatured") && resource.exclusiveField && hasRealId && (
+                          // Exclusivité gérée DEPUIS CE TABLEAU (décision produit) : mettre en avant
+                          // repasse d'abord les autres lignes CHARGÉES à `false` (cf. useSetExclusiveFlag) —
+                          // retirer ne touche que cette ligne.
+                          <DropdownMenuItem
+                            disabled={setExclusiveFlag.isPending}
+                            onClick={() =>
+                              setExclusiveFlag.mutate({
+                                field: resource.exclusiveField!,
+                                value: !isFeatured,
+                                target: grantCostumAdmin(item) as unknown as ExclusiveFlagEntity,
+                                rows: rows as unknown as ExclusiveFlagEntity[],
+                              })
+                            }
+                          >
+                            <Star className={isFeatured ? "mr-2 h-4 w-4 fill-current" : "mr-2 h-4 w-4"} />
+                            {tAdmin(isFeatured ? "AdminResourceTable.unfeature" : "AdminResourceTable.feature")}
+                          </DropdownMenuItem>
+                        )}
                         {rowActions.includes("delete") && hasRealId && (
                           <DropdownMenuItem
                             className="text-destructive"
@@ -715,7 +737,9 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
         <DynamicEditModal
           open
           onOpenChange={(o) => {
-            if (!o) setEditEntity(null);
+            // Même patron que la modale de création (REVIEW M4) : sans ça, une modification
+            // restait invisible dans le tableau tant qu'on ne rechargeait pas la page.
+            if (!o) { setEditEntity(null); void refetch(); }
           }}
           entity={editEntity}
           {...(editModal.modalName ? { modalName: editModal.modalName } : {})}

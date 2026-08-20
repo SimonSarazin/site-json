@@ -37,6 +37,8 @@
     "reference": "Reference",
     "detach": "Detach",
     "unreference": "Remove reference",
+    "feature": "Feature",
+    "unfeature": "Remove from featured",
     "delete": "Delete",
     "empty": "No items.",
     "searchFailed": "Search failed: {{message}}.",
@@ -179,6 +181,11 @@
     "referencedUnclassified": "Referenced, but unclassified — use “Classify” in the referenced list",
     "classified": "Sub-type saved",
     "referencedUnmoderated": "Referenced, but moderation could not be applied"
+  },
+  "useSetExclusiveFlag": {
+    "featured": "Featured",
+    "unfeatured": "Removed from featured",
+    "error": "Action failed"
   },
   "AdminInvitation": {
     "error": "Error",

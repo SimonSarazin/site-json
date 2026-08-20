@@ -23,6 +23,7 @@ const CONFIG_FILE: Record<string, string> = {
   "tiers-lieux": "config.prod.tiers-lieux.json",
   "institut-bleu-acteur": "config.prod.institut-bleu.json",
   "structure": "config.prod.maison-sport-sante-la-tampon.json",
+  "actualite": "config.prod.maison-sport-sante-la-tampon.json",
 };
 
 /** Document costum BRUT (JSON config), tel que servi au runtime via `window.__CONFIG__.costumForms`. */

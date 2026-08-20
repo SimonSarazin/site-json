@@ -357,19 +357,83 @@
           }
         },
         {
-          "type": "news",
-          "id": "actualites",
+          "type": "searchProStatic",
+          "id": "actualites-featured",
           "props": {
-            "title": {
-              "fr": "Actualités",
-              "en": "News"
+            "customHeader": {
+              "title": {
+                "fr": "Actualités",
+                "en": "News"
+              }
             },
-            "entitySlug": "associationEkilibre",
-            "maxItems": 6,
-            "showAddButton": false,
-            "showFilters": false,
-            "showComments": false,
-            "showReactions": false
+            "useFilter": false,
+            "showMap": false,
+            "enableMap": false,
+            "disableInfiniteScroll": true,
+            "baseParams": {
+              "defaultTypes": ["poi"],
+              "notSourceKey": true,
+              "indexStepList": 1,
+              "defaultFilters": {
+                "type": "article",
+                "source.key": "associationEkilibre",
+                "publicationStatus": "Publié",
+                "featured": true
+              },
+              "defaultSortBy": {
+                "publicationDate": -1
+              }
+            },
+            "list": {
+              "columns": { "sm": 1, "md": 1, "lg": 1, "xl": 1 },
+              "card": { "type": "resource", "detailsMode": "dialog" },
+              "preview": { "type": "resource" },
+              "resource": {
+                "titleField": "name",
+                "descriptionField": "description",
+                "dateField": "publicationDate",
+                "imageField": "profilMediumImageUrl",
+                "urlsField": "link",
+                "badge": { "field": "category" }
+              }
+            }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "actualites-grid",
+          "props": {
+            "useFilter": false,
+            "showMap": false,
+            "enableMap": false,
+            "disableInfiniteScroll": true,
+            "baseParams": {
+              "defaultTypes": ["poi"],
+              "notSourceKey": true,
+              "indexStepList": 6,
+              "defaultFilters": {
+                "type": "article",
+                "source.key": "associationEkilibre",
+                "publicationStatus": "Publié",
+                "featured": { "$ne": true }
+              },
+              "defaultSortBy": {
+                "publicationDate": -1
+              }
+            },
+            "list": {
+              "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 3 },
+              "card": { "type": "resource", "detailsMode": "dialog" },
+              "preview": { "type": "resource" },
+              "resource": {
+                "titleField": "name",
+                "descriptionField": "description",
+                "dateField": "publicationDate",
+                "imageField": "profilMediumImageUrl",
+                "urlsField": "link",
+                "badge": { "field": "category" }
+              }
+            }
           }
         },
         {
@@ -1762,6 +1826,66 @@
             ],
             "align": "center"
           }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "actualites-articles-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": {
+              "defaultTypes": [
+                "poi"
+              ],
+              "notSourceKey": true,
+              "defaultSortBy": {
+                "publicationDate": -1
+              },
+              "defaultFilters": {
+                "type": "article",
+                "source.key": "associationEkilibre",
+                "publicationStatus": "Publié"
+              }
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 3,
+                "lg": 3,
+                "xl": 3
+              },
+              "previewParam": "preview-actus",
+              "card": {
+                "type": "resource",
+                "detailsMode": "drawer"
+              },
+              "preview": {
+                "type": "resource"
+              },
+              "resource": {
+                "design": "card",
+                "titleField": "name",
+                "descriptionField": "description",
+                "dateField": "publicationDate",
+                "imageField": "profilMediumImageUrl",
+                "urlsField": "link",
+                "badge": { "field": "category" },
+                "facets": [
+                  {
+                    "field": "tags",
+                    "label": {
+                      "fr": "Mots-clés",
+                      "en": "Tags"
+                    }
+                  }
+                ]
+              }
+            }
+          }
         }
       ]
     },
@@ -2590,6 +2714,50 @@
         "sections": [
           {
             "type": "members"
+          }
+        ]
+      },
+      {
+        "id": "actualites",
+        "label": {
+          "fr": "Actualités",
+          "en": "News"
+        },
+        "icon": "newspaper",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "poi",
+            "source": {
+              "defaultFilters": {
+                "type": "article",
+                "source.key": "associationEkilibre"
+              },
+              "defaultSortBy": {
+                "publicationDate": -1
+              },
+              "costumSlug": "associationEkilibre",
+              "sourceKey": [
+                "associationEkilibre"
+              ],
+              "defaultFields": [
+                "category",
+                "publicationDate",
+                "publicationStatus",
+                "featured"
+              ]
+            },
+            "columns": [
+              { "path": "name", "label": { "fr": "Titre", "en": "Title" } },
+              { "path": "category", "label": { "fr": "Catégorie", "en": "Category" } },
+              { "path": "publicationDate", "label": { "fr": "Date de publication", "en": "Publication date" } },
+              { "path": "publicationStatus", "label": { "fr": "Statut", "en": "Status" } },
+              { "path": "featured", "label": { "fr": "À la une", "en": "Featured" } }
+            ],
+            "rowActions": ["edit", "delete", "setFeatured"],
+            "exclusiveField": "featured",
+            "create": "add-actualite",
+            "edit": "inherit"
           }
         ]
       },
@@ -3946,6 +4114,305 @@
           }
         }
       }
+    },
+    "actualite": {
+      "id": "actualite",
+      "entityType": "poi",
+      "collection": "poi",
+      "icon": "newspaper",
+      "layout": {
+        "kind": "flat"
+      },
+      "image": {
+        "field": "_imageFile",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter une actualité",
+            "en": "Add a news item"
+          },
+          "edit": {
+            "fr": "Modifier l'actualité",
+            "en": "Edit the news item"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Créer l'actualité",
+            "en": "Create the news item"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        }
+      },
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        }
+      },
+      "sections": [
+        {
+          "id": "content",
+          "label": {
+            "fr": "Actualité",
+            "en": "News item"
+          },
+          "icon": "newspaper",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "name",
+                "_imageFile",
+                "category",
+                "publicationDate",
+                "address",
+                "description",
+                "tags",
+                "link",
+                "publicationStatus",
+                "featured"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "name": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Titre",
+            "en": "Title"
+          }
+        },
+        "_imageFile": {
+          "widget": "image",
+          "label": {
+            "fr": "Photo",
+            "en": "Photo"
+          },
+          "info": {
+            "fr": "Illustration affichée dans la liste des actualités.",
+            "en": "Illustration shown in the news list."
+          }
+        },
+        "category": {
+          "widget": "select",
+          "required": true,
+          "label": {
+            "fr": "Catégorie",
+            "en": "Category"
+          },
+          "placeholder": {
+            "fr": "Choisir une catégorie",
+            "en": "Choose a category"
+          },
+          "enum": [
+            {
+              "value": "Nouveau créneau",
+              "label": {
+                "fr": "Nouveau créneau",
+                "en": "New slot"
+              }
+            },
+            {
+              "value": "Évènement",
+              "label": {
+                "fr": "Évènement",
+                "en": "Event"
+              }
+            },
+            {
+              "value": "Information santé",
+              "label": {
+                "fr": "Information santé",
+                "en": "Health information"
+              }
+            },
+            {
+              "value": "Fermeture/modification",
+              "label": {
+                "fr": "Fermeture/modification",
+                "en": "Closure/change"
+              }
+            },
+            {
+              "value": "Autre",
+              "label": {
+                "fr": "Autre",
+                "en": "Other"
+              }
+            }
+          ]
+        },
+        "publicationDate": {
+          "widget": "date",
+          "required": true,
+          "label": {
+            "fr": "Date de publication",
+            "en": "Publication date"
+          }
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Lieu associé (facultatif)",
+            "en": "Related place (optional)"
+          },
+          "info": {
+            "fr": "Renseignez un lieu si l'actualité s'y rattache (ex. un nouveau créneau). Laissez vide sinon.",
+            "en": "Fill in a place if the news item relates to one (e.g. a new time slot). Leave empty otherwise."
+          }
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "group": "address",
+          "default": "RE"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
+        },
+        "description": {
+          "widget": "markdown",
+          "required": true,
+          "label": {
+            "fr": "Contenu",
+            "en": "Content"
+          },
+          "widgetProps": {
+            "height": 320,
+            "preview": "edit"
+          }
+        },
+        "tags": {
+          "widget": "tags",
+          "label": {
+            "fr": "Mots-clés",
+            "en": "Keywords"
+          },
+          "info": {
+            "fr": "Vocabulaire libre — les mots déjà employés vous sont proposés.",
+            "en": "Free vocabulary — existing keywords are suggested."
+          }
+        },
+        "link": {
+          "widget": "text",
+          "label": {
+            "fr": "Lien associé",
+            "en": "Related link"
+          },
+          "placeholder": {
+            "fr": "https://…",
+            "en": "https://…"
+          }
+        },
+        "publicationStatus": {
+          "widget": "select",
+          "label": {
+            "fr": "Statut",
+            "en": "Status"
+          },
+          "enum": [
+            {
+              "value": "Brouillon",
+              "label": {
+                "fr": "Brouillon",
+                "en": "Draft"
+              }
+            },
+            {
+              "value": "Publié",
+              "label": {
+                "fr": "Publié",
+                "en": "Published"
+              }
+            },
+            {
+              "value": "Archivé",
+              "label": {
+                "fr": "Archivé",
+                "en": "Archived"
+              }
+            }
+          ]
+        },
+        "featured": {
+          "widget": "switch",
+          "label": {
+            "fr": "À la une",
+            "en": "Featured"
+          },
+          "info": {
+            "fr": "Modifiable ici pour RETIRER la une. Pour la mettre en avant, utilisez le bouton dédié dans le tableau du back-office (garantit qu'une seule actualité est mise en avant à la fois).",
+            "en": "Editable here to REMOVE the featured flag. To feature a news item, use the dedicated button in the back-office table (guarantees a single featured item at a time)."
+          }
+        }
+      },
+      "scope": {
+        "slugFrom": "carrier"
+      },
+      "mutation": {
+        "entityType": "poi",
+        "inject": {
+          "extraFields": {
+            "type": "article"
+          },
+          "parentFromCarrier": true
+        },
+        "successKey": {
+          "add": "toast.add.poiSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.poiError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_ACTUALITE",
+          "edit": "EntityFormModal · EDIT_ACTUALITE"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard",
+          "params": {
+            "userList": "poi",
+            "searchKeys": [
+              "searchCostumStatic"
+            ]
+          }
+        }
+      }
     }
   },
   "profiles": {
@@ -4761,10 +5228,14 @@
       "layout": "default",
       "hideHeader": false,
       "hideFooter": false,
-      "editModal": "edit-equipements-sportifs",
-      "editModalMatch": {
-        "type": "recoveryCenter"
-      },
+      "editModals": [
+        { "editModal": "edit-equipements-sportifs", "editModalMatch": { "type": "recoveryCenter" } },
+        { "editModal": "edit-actualite", "editModalMatch": { "type": "article" },
+          "when": { "or": [
+            { "field": "sourceKeys", "op": "contains", "value": "associationEkilibre" },
+            { "field": "reference.costum", "op": "contains", "value": "associationEkilibre" }
+          ] } }
+      ],
       "sections": [
         {
           "type": "profile-header",

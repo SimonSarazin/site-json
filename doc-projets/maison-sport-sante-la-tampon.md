@@ -15,18 +15,33 @@
 > 06/07) · [`ENDPOINT.md`](../../ENDPOINT.md) (fiches d'endpoints SDK à créer). Mémoire :
 > `[[project-maison-sport-sante-la-tampon]]`.
 
-Dernière mise à jour : **2026-08-19** (session 5, dernier état : **le form créneaux dédié est porté
-par l'orga `associationEkilibre` elle-même** — « Formulaire de créneau du Tampon »
-`6a85af345d898a57cb49f029`, id humain `associationEkilibre1`, section
-`associationEkilibre19082026_1327_0`. Plus AUCUN lien form/créneaux avec SSBE, filtres CP retirés,
-résolution front par **ids d'inputs stables**, et **modèle costum unique `AssociationEkilibre.php`**
-(l'étape intermédiaire MaisonSportSanteLeTampon + relais est SUPPRIMÉE — « pas obligé de passer par
-MSS Tampon »). Déclaration `class.function` posée en base par Peterson : **pipeline PROUVÉ de bout
-en bout** (recherche anonyme → « Basket collectif » Validé aplati + structure jointe).
+Dernière mise à jour : **2026-08-19**. Deux chantiers en parallèle cette session :
 
-Session 4 (18/08) : **modération des créneaux par statut** (`statusField`) — §9.7, avec correctif
-« colonnes vides » (shape aplatie par le hook costum) ; **pull `origin/ekilibre` intégré** (merge
-`main` `b8045fc6` : SDK **1.0.184**, `formatCell` multivalué, fixes coform commonTable).
+**Peterson** — le form créneaux dédié est désormais porté par l'orga `associationEkilibre`
+elle-même** — « Formulaire de créneau du Tampon » `6a85af345d898a57cb49f029`, id humain
+`associationEkilibre1`, section `associationEkilibre19082026_1327_0`. Plus AUCUN lien form/créneaux
+avec SSBE, filtres CP retirés, résolution front par **ids d'inputs stables**, et **modèle costum
+unique `AssociationEkilibre.php`** (l'étape intermédiaire MaisonSportSanteLeTampon + relais est
+SUPPRIMÉE — « pas obligé de passer par MSS Tampon »). Déclaration `class.function` posée en base par
+Peterson : **pipeline PROUVÉ de bout en bout** (recherche anonyme → « Basket collectif » Validé
+aplati + structure jointe). Détail §9.8. Le 18/08 : **modération des créneaux par statut**
+(`statusField`) — §9.6 bis, avec correctif « colonnes vides » (shape aplatie par le hook costum) ;
+**pull `origin/ekilibre` intégré** (merge `main` `b8045fc6` : SDK **1.0.184**, `formatCell`
+multivalué, fixes coform commonTable).
+
+**Nicolas (session 5, 18-19/08)** — le chantier « Actualités » (costumForm `actualite` POI, onglet
+admin CRUD, sections home « à la une + grille », fiche `/espace-pro`, mise en avant exclusive depuis
+le tableau admin — §9.7) est **✅ fonctionnel de bout en bout, création réelle confirmée en base,
+photo comprise** (§9.7 ter). Après un réalignement sur la config réelle du costum backend (§9.7 bis),
+le blocage de création venait de l'organisation porteuse `associationEkilibre` : pas de `costum.slug`
+sur son propre document — sans lui, le backend ne résout jamais son costum et rejette toute création
+avec un message trompeur. Diagnostiqué avec accès direct au backend PHP (`communecter-php74`),
+corrigé en base par l'utilisateur (§9.7 ter, hors `site-json`). Deux écarts mineurs restants corrigés
+dans la foulée : `link` ajouté côté backend, bloc `image` ajouté côté costumForm `actualite` (photo).
+**Piste ouverte, non vérifiée** : le même oubli pourrait aussi expliquer la perte de champs de
+`structure` en édition (§11/§12) — à retester. **2 constats de gates pré-existants, sans lien avec ce
+lot**, toujours d'actualité (§12) : une route d'édition `structure` non bornée par costum, et le
+dossier `public/images/associationEkilibre/` non déclaré dans `sites.json`.
 
 <details><summary>Session 3 (06/08, deux intervenants — dates corrigées)</summary>
 
@@ -36,7 +51,8 @@ Cael, 12:41) ; **renommage du costumForm `structure-ekilibre` → `structure`** 
 `PreviewStructure` (`253dec37`, Nicolas, 13:07 — §9.5 bis) ; **back-office `/admin` + tableau de
 bord KPIs** CDC §4.2 (`2bf0007d`/`a524cf33`, Cael, 14:42 — §9.6) ; **nouveau chantier annoncé**
 (non codé) : remplacement du flux **News** de la home par un **CRUD d'actualités porté en POI**
-(§2, §4, §10 Lot E, §13).
+(§2, §4, §10 Lot E, §13). SDK **1.0.173** requis par `package.json` committé, mais **1.0.171
+réinstallé sur ce poste** en fin de session (§12).
 
 </details>
 
@@ -142,11 +158,11 @@ restreintes aux codes postaux **97430 / 97418**.
    filtres CP + domaine d'intervention, **fiche détail dédiée** (`PreviewStructure`). **+
    auto-inscription** : toute structure peut se référencer elle-même via un formulaire public
    (costumForm `structure`, commité — §9.5/§9.5 bis).
-5. ~~Le flux d'actualités de l'association (home, lecture seule)~~ **à remplacer** : le CDC demande
-   une section « Actualités » (une actualité à la une + grille) pilotée en CRUD complet par
-   l'admin (catégorie, date de publication planifiable, contenu riche, lien, statut, mise en avant
-   unique) — porté en **POI** plutôt qu'en **News**, chantier annoncé le 06/08, **non codé** (§4, §10
-   Lot E, §13).
+5. ~~Le flux d'actualités de l'association (home, lecture seule)~~ **remplacé** : section « Actualités »
+   (une actualité à la une + grille, + fiche `/espace-pro`) pilotée en CRUD complet par l'admin
+   (catégorie, date de publication, contenu riche, lien, statut, mise en avant unique) — porté en
+   **POI** plutôt qu'en **News**, costumForm `actualite`, **codé le 10/08** (§9.7), **recette
+   bloquée** tant que le costum backend `associationEkilibre` n'existe pas (§11).
 6. **L'accès pro** (espace pro → `/login`) + **le pilotage admin** : back-office `/admin` (dashboard,
    membres, modération) et 4 KPIs du CDC §4.2 (§9.6).
 7. **Un formulaire de contact** opérationnel (aujourd'hui cassé — endpoint inexistant, §12).
@@ -169,9 +185,11 @@ restreintes aux codes postaux **97430 / 97418**.
    │   /structure : searchProStatic organizations (source.key $in SSBE+  │
    │     Ekilibre + CP) + preview "structure" (fiche détail) + bouton     │
    │     "Ajouter ma structure" → costumForm structure [commité 06/08]    │
-   │   /admin : dashboard KPIs + membres + modération [commité 06/08]     │
-   │   / : news (entitySlug associationEkilibre) — À REMPLACER par un     │
-   │     costumForm POI "actualité" (chantier annoncé, non codé)          │
+   │   /admin : dashboard KPIs + membres + modération + actualités        │
+   │     (CRUD, mise en avant exclusive) [codé 10/08]                     │
+   │   / et /espace-pro : searchProStatic poi type:"article" (une +       │
+   │     grille), carte/preview "resource" → costumForm actualite         │
+   │     [codé 10/08, réaligné 18/08, opérationnel 19/08 (§9.7 ter)]        │
    └──────────────────────────────────────────────────────────────────────┘
           dev : variables d'environnement locales (.env, non détaillées ici) → :5173
 ```
@@ -214,7 +232,7 @@ config et des échanges (à faire valider). Budget/phasage : **à confirmer**.
 | Contact | formulaire 7 champs (RGPD) | `/contact` — **non opérationnel** (§12) |
 | Légal | mentions, confidentialité, accessibilité | 3 pages `html` |
 | Pilotage (CDC **4.2**) | tableau de bord admin : créneaux actifs (+ évolution mensuelle), usagers actifs (analytics RGPD), signalements en attente, pros inscrits en attente de validation | back-office `/admin` (§9.6, 06/08) — 2 KPIs branchés sur données réelles, 1 dérivé (modération), 1 **à raccorder** (analytics) |
-| Actualités (CDC, cité ci-dessous) | home : 1 actualité à la une + grille secondaire ; back-office : CRUD complet | ❌ **à faire** — décision du 06/08 : porté en **POI** (costumForm dédié), pas en module News (§10 Lot E) |
+| Actualités (CDC, cité ci-dessous) | home : 1 actualité à la une + grille secondaire ; back-office : CRUD complet | ✅ **codé le 10/08, opérationnel le 19/08** — costumForm `actualite` (POI), onglet admin, home + `/espace-pro` (§9.7) ; création réelle confirmée en base, photo comprise (§9.7 ter) |
 
 **Détail CDC — Actualités** (retranscrit tel que fourni par l'utilisateur le 06/08, à faire valider
 avec la MSS) :
@@ -289,7 +307,7 @@ site pour porter un contenu structuré sans code nouveau.
 | **Auto-inscription structure (31/07 → 06/08, commité `9fbe7c02` + `253dec37`)** | `config.prod.maison-sport-sante-la-tampon.json` (`costumForms["structure"]`, `buttons` du `searchHeader` `/structure`, `defaultFilters.source.key.$in`, `defaultFields`) · `src/modules/profil/forms/costum/structure/fns.ts` (**seul fichier de code du formulaire**, transforms `structure:tagsFromThematic` + `number:fromDigits`) · `src/modules/profil/forms/registerSpecFns.ts` (barrel, +1 ligne) · `src/modules/profil/forms/costum/__fixtures__/configCostum.ts` (fixture test, +1 ligne) · `src/modules/profil/forms/structure.configDriven.test.ts` (renommé, 40 tests) — moteur réutilisé tel quel : `formEngine` (doc/28), `ActionButtonSchema`/`<ActionButtonGroup>`/`DynamicModalButton` (modules/profil, préexistants) |
 | **Fiche détail structure (06/08, `253dec37`)** | `src/modules/search/components/preview/PreviewStructure.tsx` (nouveau, ~540 lignes) · `src/modules/search/components/Preview.tsx` (dispatch `preview.type: "structure"`) · `src/modules/search/components/card/CardContact.tsx` (fix téléphone objet `{mobile,fixe}`) · `src/modules/search/constants/queryKeys.ts` (`DOCUMENTS`) · `src/modules/search/schema.ts` (enum `PreviewConfSchema.type` + `"structure"`) · `src/modules/search/i18n/{fr,en}.json` (clés `PreviewStructure.*`) |
 | **Back-office `/admin` + KPIs (06/08, `2bf0007d`)** | `config.prod.maison-sport-sante-la-tampon.json` (bloc `admin`) · `src/modules/admin/schema.ts` (`AdminDashboardKpiSchema`) · `src/modules/admin/sections/DashboardKpis.tsx` (nouveau) · `src/modules/admin/sections/DashboardSection.tsx` · `src/modules/admin/lib/kpiTrend.ts` + `.test.ts` (nouveaux) · `src/modules/admin/constants/queryKeys.ts` (`KPI_SEARCH_PREFIX`) · `src/modules/admin/i18n/{fr,en}.json` — détail §9.6 |
-| **Actualités (chantier annoncé, non codé)** | à définir : probable `costumForms["actualite"]` (POI) sur le modèle de `structure/fns.ts`, section home « à la une + grille » (variante de `list`/`preview` existante ou nouvelle) — **aucun fichier créé à ce stade** |
+| **Actualités (10/08, codé — §9.7)** | `config.prod.maison-sport-sante-la-tampon.json` (`costumForms["actualite"]`, onglet admin, sections home + `/espace-pro`) · `src/modules/admin/schema.ts` (`rowActions:"setFeatured"`, `exclusiveField`) · `src/modules/admin/lib/exclusiveFlag.ts` (+ `.test.ts`, nouveau) · `src/modules/admin/hooks/useSetExclusiveFlag.ts` (nouveau) · `src/modules/admin/sections/AdminResourceTable.tsx` (bouton « Mettre à la une ») · `src/modules/admin/i18n/{fr,en}.json` · `src/modules/profil/forms/actualite.configDriven.test.ts` (nouveau, 8 tests) · `src/modules/profil/forms/costum/__fixtures__/configCostum.ts` (+1 ligne) — **2 correctifs moteur** : `src/modules/formEngine/config/schema.ts` (`WidgetKind` + `"markdown"`), `src/modules/profil/forms/costum/compileCostumSchema.ts` (`WIDGET_DEFAULTS` + `"markdown"`) — aucun nouveau composant de carte (réutilise `card.type/preview.type:"resource"`, existant) |
 | **Assets** | `public/images/maisonSportSanteLaTampon/` (hero, hero2/3, logo, logo-mss, pictogramme) |
 | **Docs workspace** | [`../../FONCTIONNALITES-EKILIBRE.md`](../../FONCTIONNALITES-EKILIBRE.md) · [`../../ENDPOINT.md`](../../ENDPOINT.md) |
 | **Déploiement** | `server/prod-server.js` · variables d'environnement (`.env` local, non détaillées ici) — prod à définir |
@@ -589,7 +607,7 @@ Revalidé indépendamment ce même jour (Nicolas, cf. §9.5 bis) : `config:valid
 
 ---
 
-### 9.7 Modération des créneaux dans l'admin — `status.mode: "statusField"` (18/08, session 4, Peterson)
+### 9.6 bis Modération des créneaux dans l'admin — `status.mode: "statusField"` (18/08, Peterson)
 
 **Demande** : lister les créneaux dans l'onglet Modération avec leur statut, et permettre aux
 admins de les passer en Validé / Refusé / En attente (le statut du CoForm). **Réalisation** : câblage
@@ -695,6 +713,147 @@ options du select « Administration » sont identiques (« Réfusé » verbatim 
 
 ---
 
+### 9.7 Actualités — costumForm `actualite` (POI) + admin + home/espace-pro (10/08, session 4, Nicolas)
+
+**Opérationnel de bout en bout depuis le 19/08** (§9.7 ter). Suit le patron `structure` : costumForm POI (formEngine)
++ rendu via le module `search` générique, **sans nouveau composant de carte/preview** — réutilise le
+variant existant `card.type`/`preview.type: "resource"` (`ResourceConfSchema`, déjà pensé pour un POI
+éditorial, badge catégorie inclus), repéré en veille le 10/08.
+
+**Config** (`config.prod.maison-sport-sante-la-tampon.json`) :
+- `costumForms["actualite"]` — `entityType`/`collection: "poi"`, `scope: {slugFrom:"carrier"}` (résout
+  `associationEkilibre`, **pas** `sportSanteBienetre` — les actualités sont un contenu éditorial
+  propre au site, pas une donnée régionale SSBE). Champs : `name`, `category` (select, 5 valeurs
+  CDC), `publicationDate` (date), `description` (markdown), `link` (text), `publicationStatus`
+  (select, Brouillon/Publié/Archivé), `featured` (switch). Costum-stamp
+  `mutation.inject.extraFields.type:"article"`, create-only.
+  **Réaligné le 18/08** (§9.7 bis) sur le costum backend réel `associationEkilibre` — `category`
+  s'appelait `actualiteCategory` et le stamp `"actualite"` jusqu'au 10/08 (renommage prudentiel,
+  motivé par une collision supposée avec le `category` équipements de `sportSanteBienetre.poi` ; sans
+  objet, chaque costum a son propre registre de champs).
+- Onglet admin `"actualites"` (entre `membres` et `moderation`) : section `resource` sur `poi`,
+  colonnes titre/catégorie/date/statut/à la une, `rowActions:["edit","delete","setFeatured"]`,
+  `exclusiveField:"featured"` (nouveau, §schéma admin ci-dessous), `create:"add-actualite"`.
+- Home (`pages[path="/"]`) : la section `news` (id `actualites`) **remplacée** par deux blocs
+  `searchProStatic` sans filtre/carte — `actualites-featured` (1 item, `featured:true`) et
+  `actualites-grid` (grille, `featured:{"$ne":true}` — **non prouvé empiriquement**, aucun autre usage
+  de `$ne` dans les configs actuelles ; repli si non supporté : la une réapparaît aussi dans la grille,
+  limitation mineure acceptée).
+- `/espace-pro` : la section préexistante `actualites-articles-list` (résidu de merge déjà signalé le
+  10/08 — filtrait `type:"article"` + `source.key` tantôt `saintpaulSport1` tantôt déjà corrigé en
+  `associationEkilibre` par une édition manuelle entre-temps) **adaptée** plutôt que dupliquée :
+  `publicationStatus:"Publié"`, tri par `publicationDate`, mapping `resource` aligné (plus de
+  `defaultFields`/`$or` obsolètes). Le filtre `type` était passé à `"actualite"` le 10/08 (pour
+  matcher le costum-stamp de l'époque), puis **ramené à `"article"` le 18/08** (§9.7 bis) — ce qui le
+  fait coïncider, par coïncidence et non par oubli, avec le résidu de merge d'origine.
+
+**Mise en avant exclusive depuis le tableau admin** (décision utilisateur du 06/08, seule vraie
+feature moteur du lot — pas juste de la config) :
+- `src/modules/admin/schema.ts` : `rowActions` enum +`"setFeatured"` ; nouveau champ optionnel
+  `exclusiveField?: string` sur `AdminResourceSectionSchema` — **opt-in strict**, zéro impact sur les
+  sections `resource` existantes qui ne le déclarent pas.
+- `src/modules/admin/lib/exclusiveFlag.ts` (nouveau, pur, testé 8/8) : `itemsToUnset(rows, field,
+  targetId)` — sélectionne, parmi les lignes **chargées** dans le tableau (pas une recherche dédiée
+  sur tout le périmètre — limitation documentée, volumétrie admin usuelle), celles à `true` hors la
+  cible.
+- `src/modules/admin/hooks/useSetExclusiveFlag.ts` (nouveau) : au clic sur « Mettre à la une »,
+  repasse d'abord les autres lignes chargées à `false` (`item.updateField(field, false)` — patron
+  `CardEventFeatured`/`CardDetailedDefault` pour leur toggle `isStarred`, simple PATCH `UPDATE_PATH_VALUE`,
+  pas de `.save()`), puis la cible à `true` ; invalide `admin-*` **et** `searchCostumStatic` (rafraîchit
+  home/espace-pro sans reload). Best-effort séquentiel (pas de transaction) — même limitation déjà
+  acceptée que `bulkValidate`/`bulkDelete`.
+- `src/modules/admin/sections/AdminResourceTable.tsx` : bouton étoile (rempli si déjà « à la une »)
+  rendu quand `rowActions` contient `"setFeatured"` **et** `resource.exclusiveField` est renseigné.
+
+**2 correctifs moteur découverts et posés en cours de route** (le costumForm `actualite` est le
+premier de ce site à utiliser `widget:"markdown"` sur un champ dépourvu de `type` explicite en JSON —
+`structure` n'en avait pas besoin) :
+- `src/modules/formEngine/config/schema.ts` — `WidgetKind` (validation Zod `JsonFormConfigSchema`)
+  omettait `"markdown"` alors que le moteur (`formEngine/types.ts`) le supporte et que 3 costumForms
+  d'autres sites l'utilisent déjà (`parent62-article`, `institut-bleu-document`,
+  `sport-sante-bienetre-financement`) — écart déjà repéré en veille le 10/08. Ajouté.
+- `src/modules/profil/forms/costum/compileCostumSchema.ts` — `WIDGET_DEFAULTS` (table widget→`{type,
+  read, default}` à la compilation du costumForm) omettait aussi `"markdown"` : sans ce correctif,
+  tout champ `markdown` sans `type` JSON explicite compile avec un `type` **absent** du descripteur
+  (`{type:"string", read:"coerce:string", default:""}` ajouté, même traitement que `textarea`) —
+  **bug latent pré-existant, probablement présent depuis l'ajout du widget markdown**, affectant
+  potentiellement aussi les 3 costumForms cités ci-dessus (non vérifié pour eux, hors périmètre de ce
+  lot). Élargit strictement le validé (aucune régression possible sur l'existant).
+
+**Tests** : `actualite.configDriven.test.ts` (8/8 — compile, round-trip, `scope`, costum-stamp, enums
+catégorie/statut alignés au CDC, `featured` bien un switch) ; `exclusiveFlag.test.ts` (8/8, logique
+pure). `structure.configDriven.test.ts` + toute la suite `formEngine`/`costum` revérifiées après les
+2 correctifs moteur : **205/205** ✅ (zéro régression).
+
+**Gates (10/08, revérifiées 18/08 après réalignement)** : `config:validate` ✅ 11 pages/46 sections ·
+`audit:config` ✅ RAS · `typecheck` ✅ 0 erreur sur le lot (les erreurs `toolsCatalog` restantes sont le
+désync `node_modules` déjà connu, sans lien) · `lint` ✅ 0 erreur/warning sur les fichiers du lot (20
+warnings `react-hooks/preserve-manual-memoization` pré-existants ailleurs, stables) ·
+`npm run test:unit` complet : **2467/2475** ✅ (snapshot `tests/preflight/__effective__/
+maison-sport-sante-la-tampon.json` régénérée le 18/08 pour refléter `type:"article"`/`category`), **2
+échecs pré-existants sans lien avec ce lot** (détail §12) : `edit-modal-scope.test.ts` (route
+`structure` non bornée) et `site-assets.test.ts` (dossier `associationEkilibre` non déclaré).
+
+**Reste** : recette navigateur — **✅ réussie le 19/08** (§9.7 ter), tous les champs custom
+persistent ; vérifier empiriquement `featured:{"$ne":true}` ; recette visuelle du design
+« médiathèque à bulles » (`resource`) sur un contenu éditorial pur.
+
+---
+
+### 9.7 bis Réalignement sur le costum backend réel (18/08, session 5, Nicolas)
+
+La config réelle du costum `associationEkilibre` telle qu'elle existe en
+base (`costum.typeObj.article`, mécanisme legacy `dynFormCostum` du back-office historique —
+vraisemblablement ce que scanne `tools/parity/scripts/costum-fields.mjs` côté backend). Elle
+confirme que `associationEkilibre` **est bien déclaré côté `poi`** (`sameAs`/`formParent: "poi"`),
+contrairement à ce que l'artefact SDK vendoré laissait penser au 10/08 (probablement pas encore
+régénéré depuis) — mais sous un contrat différent de ce qui avait été codé :
+
+| | Codé le 10/08 | Déclaré par le backend (`typeObj.article`) |
+|---|---|---|
+| Stamp `type` | `"actualite"` | `"article"` (`presetValue.type`) |
+| Champ catégorie | `actualiteCategory` | `category` |
+| Champ `link` (URL, CDC) | présent | **absent** du `typeObj.article` |
+| `publicationDate`/`description`/`publicationStatus`/`featured` | — | noms identiques ✅ |
+
+Le renommage `category` → `actualiteCategory` du 06/08 était **prudentiel** (collision supposée avec
+le `category` équipements de `sportSanteBienetre.poi`) — sans objet une fois le contrat réel connu :
+chaque costum a son propre registre de champs, `associationEkilibre` et `sportSanteBienetre` ne se
+mélangent pas. **Renommé le 18/08** : `mutation.inject.extraFields.type` → `"article"`,
+`actualiteCategory` → `category`, répercuté dans le costumForm, les colonnes/filtres admin, les 2
+sections home et `/espace-pro` — 7 + 5 occurrences, aucune collision avec un `"article"`/`"category"`
+préexistant dans la config (vérifié). `link` reste tel quel côté formulaire (le CDC le demande) mais
+n'étant pas déclaré côté backend pour ce type, il sera probablement perdu à la sauvegarde tant que le
+backend ne l'ajoute pas à `typeObj.article.dynFormCostum.beforeBuild.properties` — **à signaler côté
+backend**, même canal que la déclaration `organizations` toujours en attente.
+
+Comme `VITE_COSTUM_FORCE_LIVE=true` est actif sur ce poste (résolution costum en direct, `getcostumjson`,
+sans passer par l'artefact SDK vendoré — cf. §11), la recette (création réelle d'une actualité +
+relecture des champs custom) est **testable sans attendre de republication SDK** — recette menée et
+réussie le 19/08, cause du blocage initial et correctif détaillés en §9.7 ter. `structure`/
+`organizations`, en revanche, n'a montré aucun signe équivalent dans ce que l'utilisateur a partagé :
+ce costum reste non déclaré pour cette collection, le blocage déjà documenté pour `structure` en
+édition (§11/§12) est inchangé.
+
+`actualite.configDriven.test.ts` mis à jour en conséquence (8/8 verts) ; snapshot preflight
+régénérée ; `config:validate`/`audit:config`/`typecheck`/`lint` revérifiés verts (détail ci-dessus).
+
+---
+
+### 9.7 ter ✅ Recette — actualité créée avec succès (19/08, Nicolas)
+
+**Résultat** : création réelle d'une actualité confirmée en base (`_id 6a84df8be2bdf37fd592f438`),
+tous les champs présents et corrects (`type:"article"`, `category`, `publicationDate`,
+`publicationStatus`, `featured` — stocké en chaîne `"true"`, cohérent avec le stockage legacy des
+toggles, pas un bug —, `link`, `parent` pointant l'organisation porteuse, `source.key`), **photo
+comprise** après le rechargement navigateur. Gates revérifiés après le dernier changement (`image`) :
+`typecheck` ✅ · `lint` ✅ 0 erreur (20 warnings `react-hooks/preserve-manual-memoization`
+pré-existants, sans lien) · `config:validate` ✅ 11 pages/46 sections · `audit:config` ✅ RAS ·
+`actualite.configDriven.test.ts` 9/9 · `test:unit` complet **2468/2476**, mêmes 2 échecs
+pré-existants sans lien (`edit-modal-scope`, `site-assets`).
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Lot A — Vitrine & annuaires (config)
@@ -731,17 +890,18 @@ options du select « Administration » sont identiques (« Réfusé » verbatim 
 | D.4 | KPI « Signalements en attente » | ❌ | section `moderation` (et sa tuile dérivée) **retirée le 19/08** — `getModerationQueue` répond 500 ; à re-poser quand l'API sera réparée |
 | D.5 | KPI « Pros inscrits » (attente de validation) | ✅ | = membres du carrier `toBeValidated` ; **définition à confirmer** (§13) |
 | D.6 | Recette du back-office (siteAdmin réel, uploads AdminPanel) | ❌ | à faire ; l'upload AdminPanel écrira dans `public/images/associationEkilibre/` (déclarer ce dossier dans `sites.json` **dès le premier fichier**, cf. §12) |
-| D.7 | Modération des créneaux (liste + statuts Validé/Refusé/En attente/En cours) | ✅ code | §9.7 — `status.mode: "statusField"` câblé (moteur) + resource answers dans l'onglet moderation (siteAdmin) ; **recette backend à faire** (updatepathvalue par admin non-auteur) |
+| D.7 | Modération des créneaux (liste + statuts Validé/Refusé/En attente/En cours) | ✅ code | §9.6 bis — `status.mode: "statusField"` câblé (moteur) + resource answers dans l'onglet moderation (siteAdmin) ; **recette backend à faire** (updatepathvalue par admin non-auteur) |
 
 ### Lot E — Actualités (CDC, remplace le flux News)
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
 | E.1 | Décision d'architecture (POI vs News) | ✅ | tranché le 06/08 par Nicolas : porté en **POI** (costumForm dédié) — §4, §7 |
-| E.2 | costumForm « actualité » (POI) : titre, catégorie, date de publication (+ planification), contenu riche, lien, statut, mise en avant | ❌ | à faire — modèle : `costumForms["structure"]` (§9.5 bis) |
-| E.3 | Home — section Actualités (1 à la une + grille secondaire) | ❌ | à faire ; page `/` utilise aujourd'hui `news` (module News, lecture seule) — à remplacer |
-| E.4 | Back-office — CRUD actualités par l'admin (dont statut Publié/Brouillon/Archivé et toggle « à la une » unique) | ❌ | à faire ; back-office `/admin` déjà activé (Lot D) — onglet à ajouter |
-| E.5 | Éditeur de contenu riche (WYSIWYG, cf. CDC « en production ») | ❌ | composant/lib à identifier dans le moteur (aucun repéré à ce stade pour `costumForms`) |
+| E.2 | costumForm « actualité » (POI) : titre, catégorie, date de publication, contenu riche, lien, statut, mise en avant | ✅ | **codé le 10/08, opérationnel le 19/08** (§9.7/§9.7 bis/§9.7 ter) — `scope: carrier` (associationEkilibre), `type:"article"`/`category` ; création réelle confirmée en base (photo comprise) |
+| E.3 | Home — section Actualités (1 à la une + grille secondaire) | 🟡 | **codé le 10/08** — 2 blocs `searchProStatic` + carte `resource` (§9.7) ; recette visuelle et `featured:{"$ne":true}` à vérifier |
+| E.4 | Back-office — CRUD actualités par l'admin (dont statut Publié/Brouillon/Archivé et mise en avant exclusive) | ✅ | **codé le 10/08, opérationnel le 19/08** — onglet `resource` + bouton « Mettre à la une » dédié (exclusivité gérée depuis le tableau, décision utilisateur, §9.7) ; création confirmée en base (§9.7 ter) — reste la recette du bouton « Mettre à la une » lui-même en navigateur |
+| E.5 | Éditeur de contenu riche (WYSIWYG, cf. CDC « en production ») | 🟡 | **substitué par décision utilisateur (06/08)** : widget `markdown` existant, pas de nouvelle dépendance — hors périmètre explicite, cf. §9.7/§13 |
+| E.6 | Fiche Actualités sur `/espace-pro` | ✅ config | section préexistante (résidu de merge) adaptée le 10/08 plutôt que dupliquée — §9.7 |
 
 ### Lot C — Industrialisation & mise en ligne
 
@@ -788,6 +948,22 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
   `main`) le signale comme orphelin ; **vide, il ne doit PAS être déclaré** dans `sites.json` (un
   dossier déclaré vide fait échouer l'autre assert). Le supprimer avant commit ; **dès le premier
   upload réel AdminPanel, le déclarer** (`images: ["maisonSportSanteLaTampon", "associationEkilibre"]`).
+  **Confirmé actif le 10/08** : `tests/preflight/site-assets.test.ts` échoue bien sur ce dossier en
+  repassant la suite complète — pré-existant, sans lien avec le lot actualités du jour.
+- **Route d'édition `structure` non bornée par costum (constat du 10/08, pré-existant)** :
+  `profiles.organizations.editModal = "edit-structure"` n'a pas de clause `when` — le préflight
+  `tests/preflight/edit-modal-scope.test.ts` (nouveau, mergé depuis `main` le 06/08, jamais fait
+  tourner sur ce site avant le 10/08) le signale : sans `when`, le formulaire `structure` pourrait en
+  théorie s'ouvrir sur **toute** organisation du type, pas seulement celles de `sportSanteBienetre`/
+  `associationEkilibre`. Correctif attendu (non fait, hors périmètre du lot actualités) :
+  ```json
+  "when": { "or": [
+    { "field": "sourceKeys", "op": "contains", "value": "sportSanteBienetre" },
+    { "field": "reference.costum", "op": "contains", "value": "sportSanteBienetre" }
+  ] }
+  ```
+  sur `profiles.organizations` — à poser (ou à inscrire en `DETTE_CONNUE` du test avec justification
+  si l'ouverture large est en fait voulue, à confirmer avec l'équipe).
 - **Filtres du KPI « Créneaux actifs » = copie des `baseParams` de `/creneaux`** (générée depuis la
   config elle-même à l'insertion, mais **statique ensuite**) : si les filtres de la page changent
   (CP, état, form), re-synchroniser le bloc `admin.tabs[0]…kpis[0].source` — sinon le KPI compte un
@@ -795,7 +971,7 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
 - **Answers : chemins imbriqués pour FILTRER/ÉCRIRE, shape APLATIE pour LIRE.** Le hook costum SSBE
   de recherche aplatit les champs d'answer à la racine des lignes (supprime `answers.*`, pose
   `name`/`structure`/`address`) → des `columns` en `answers.<formKey>.<clé>` affichent des colonnes
-  **vides sans erreur** (piège vécu §9.7). Filtres serveur (`defaultFilters`, filtre d'état) et
+  **vides sans erreur** (piège vécu §9.6 bis). Filtres serveur (`defaultFilters`, filtre d'état) et
   `UPDATE_PATH_VALUE` gardent, eux, le chemin Mongo imbriqué. Le badge statut est protégé par le
   repli `readStatusValue` ; les colonnes, non — viser la shape aplatie.
 - **Convention `.env` locale** : une valeur entre guillemets fait échouer le préflight
@@ -825,9 +1001,21 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
 - **Don HelloAsso** = lien externe (le endpoint serveur `/api/helloasso/checkout-intent` existe mais
   n'est pas branché pour ce site).
 - **CSS partagé avec SSBE** : un changement de thème SSBE impacte Ekilibre (et réciproquement).
-- **Chantier Actualités** : décision d'architecture prise (POI, §4/§7) mais **rien n'est codé** — le
-  flux `news` actuel reste actif sur la home tant que le nouveau costumForm n'est pas livré, pour
-  éviter toute régression d'affichage entre-temps.
+- **Chantier Actualités** : **codé le 10/08, opérationnel le 19/08** (§9.7/§9.7 bis/§9.7 ter) —
+  création réelle confirmée en base (photo comprise). Cause racine du blocage qui a occupé la majeure
+  partie de la session : l'organisation porteuse `associationEkilibre` n'avait pas de `costum.slug`
+  sur son propre document, empêchant le backend de résoudre son costum lors de la sauvegarde — corrigé
+  en base (hors `site-json`). Le flux `news` a été **remplacé** sur la home et `/espace-pro` (pas de
+  double affichage).
+- **Cache serveur costum (`CFileCache`, backend PHP) ne s'invalide pas automatiquement** après une
+  édition du document costum en base — constaté plusieurs fois pendant le diagnostic du 19/08 (un
+  champ ajouté au `typeObj` n'apparaissait pas côté validation tant que le cache n'était pas vidé
+  manuellement). À garder en tête pour toute future édition du costum `associationEkilibre` côté
+  backend : sans invalidation (mécanisme métier dédié si un déclencheur existe, sinon vidage manuel du
+  fichier de cache concerné), les changements ne sont pas pris en compte immédiatement.
+- **`mutation.payloadEmitEmptyOnEdit` absent du costumForm `actualite`** (contrairement à
+  `structure`) : décision volontaire — aucun champ dérivé/composite à protéger d'un écrasement vide
+  ici (pas d'équivalent `tags`/`geo`) ; à revoir seulement si un champ de ce type est ajouté plus tard.
 
 ---
 
@@ -835,9 +1023,12 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
 
 | Évolution / question | Pour qui |
 |---|---|
-| **Ouvrir la MR `ekilibre` → `main`** (lots créneaux + structure + admin ; les merges `main` du 30/07 et du 06/08 sont déjà intégrés) | Peterson |
-| **Cadrer et coder le costumForm « actualité » (POI)** : champs titre/catégorie/date de publication (+ planification)/contenu riche/lien/statut/mise en avant, section home « à la une + grille », onglet CRUD back-office (§4, §10 Lot E) — remplace le flux `news` actuel | Nicolas / MSS |
-| **`node_modules` désynchronisé une 3ᵉ fois** (SDK 1.0.171 installé vs `^1.0.173` committé, §12) — relancer `npm install` avant la prochaine session | Peterson |
+| **Ouvrir la MR `ekilibre` → `main`** (lots créneaux + structure + admin + actualités ; les merges `main` du 30/07, 06/08 et 10/08 sont déjà intégrés) | Peterson |
+| ~~Ajouter le champ `link` au `typeObj.article` backend~~ + ~~`costum.slug` sur l'organisation `associationEkilibre`~~ **résolus le 19/08** (§9.7 ter) | — |
+| **Retester `structure` en édition** maintenant que `costum.slug` est posé sur `associationEkilibre` (§9.7 ter) — la même cause racine pourrait expliquer la perte de champs déjà constatée (§11/§12), à confirmer avant de rouvrir une demande backend séparée | Nicolas / Peterson |
+| **Recette navigateur complémentaire du lot actualités** : bouton « Mettre à la une », rendu visuel de la carte `resource` sur un contenu éditorial, `featured:{"$ne":true}` (home), statut Brouillon bien invisible côté public | Peterson / MSS |
+| **Borner la route d'édition `structure`** par un `when` costum (`profiles.organizations`, §12, constat du 10/08) — ou l'inscrire en dette connue si l'ouverture large est voulue | Nicolas / Peterson |
+| **`node_modules` désynchronisé une 4ᵉ fois** (SDK requis `^1.0.184` depuis le merge du 10/08, `1.0.171` encore installé sur ce poste au moment d'écrire) — relancer `npm install` avant la prochaine session | Peterson |
 | **Choisir l'outil de mesure d'audience RGPD** pour le KPI « Usagers actifs » (Matomo auto-hébergé recommandé — le moteur n'a AUCUNE lecture d'audience aujourd'hui, `IntegrationsLoader` ne fait que du tracking ; il faudra une API de lecture + probablement une route Express proxy) | Thomas / MSS |
 | **Définition « Pros inscrits »** : le KPI compte les **membres du carrier en attente de validation** — est-ce la bonne maille (vs un tag/rôle « professionnel de santé ») ? | MSS / Peterson |
 | **Tuile « Signalements » visible superAdmin seulement** (plancher backend de `getModerationQueue`) : acceptable, ou faut-il un endpoint siteAdmin ? (fiche `ENDPOINT.md` si besoin) | Thomas |
@@ -849,7 +1040,7 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
 | **Formulaire de contact** : endpoint SDK (`CONTACT_SEND_URL`) ou route Express locale — trancher | Thomas / Peterson |
 | **Recette création/modification d'un créneau** en admin (navigateur, backend réel) | Peterson / MSS |
 | **Volumétrie réelle** : combien de créneaux à saisir dans le form dédié Tampon (les anciens créneaux SSBE ne sont plus listés, §9.8) ? de structures ? | MSS / réseau SSBE |
-| **Qui valide les créneaux** : le process est désormais **outillé** (onglet Modération de `/admin`, §9.7) — reste à désigner qui l'opère à la MSS | MSS / réseau SSBE |
+| **Qui valide les créneaux** : le process est désormais **outillé** (onglet Modération de `/admin`, §9.6 bis) — reste à désigner qui l'opère à la MSS | MSS / réseau SSBE |
 | **`useDeleteAnswer`** (suppression de créneau) — si le besoin est confirmé | Peterson |
 | **Spec e2e Ekilibre** (lecture seule, modèle parent62) | Peterson |
 | **Chiffres clés dynamiques** sur la home (compter les answers au lieu du dur) | Peterson / MSS |

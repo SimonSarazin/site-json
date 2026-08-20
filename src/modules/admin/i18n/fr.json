@@ -37,6 +37,8 @@
     "reference": "Référencer",
     "detach": "Détacher",
     "unreference": "Retirer la référence",
+    "feature": "Mettre à la une",
+    "unfeature": "Retirer de la une",
     "delete": "Supprimer",
     "empty": "Aucun élément.",
     "searchFailed": "La recherche a échoué : {{message}}.",
@@ -178,6 +180,11 @@
     "referencedUnclassified": "Référencé, mais non classé — utilisez « Classer » dans la liste des référencés",
     "classified": "Sous-type enregistré",
     "referencedUnmoderated": "Référencé, mais la modération n'a pas pu être posée"
+  },
+  "useSetExclusiveFlag": {
+    "featured": "Mis à la une",
+    "unfeatured": "Retiré de la une",
+    "error": "Action impossible"
   },
   "AdminInvitation": {
     "error": "Erreur",
