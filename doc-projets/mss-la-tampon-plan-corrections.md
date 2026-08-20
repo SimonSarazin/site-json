@@ -50,16 +50,16 @@
 
 ## Chantier A — copie Mongo ssbe → associationEkilibre (minimale, amendée)
 
-- [ ] Copier `costum.typeObj.organizations` (43 props) **+ amender à la copie** : ajouter les
+- [x] **FAIT (dev, 2026-08-20)** — copier `costum.typeObj.organizations` (43 props) **+ amender à la copie** : ajouter les
       props `otherRepresentativeTitle`, `otherPersonInChargeTitle` **et `statusActor`**
       (la déclaration rejoint la réalité des données ; vérifier par un save de test que le
       rabotage disparaît sur les trois).
-- [ ] Copier `costum.lists.thematic` + `costum.lists.titleRepresentative`.
+- [x] **FAIT (dev)** — copier `costum.lists.thematic` + `costum.lists.titleRepresentative`.
 - [ ] NE PAS copier : `Cooperative`, `mss`, `article`, `formation`, `sessionFormation`,
       `recoveryCenter`, ni les listes `category`/`familleEquipement`/`nature`/`sol`/
       `legalStatus`/`titleResponsable`.
-- [ ] Script au patron `backfill-type.mjs` : dry-run + rollback ; dev PUIS prod (miroir).
-- [ ] **Preuve byte-diff LIVE L(5080)↔B(5099) du save structure** (patron des probes de
+- [x] Script `tools/mss-la-tampon/copy-costum-decl.mjs` (13 contrôles, rollback avant update) — appliqué DEV (modified=1, vérif 46 props + 2 lists, rollback conservé) ; **PROD RESTE À JOUER** (même script, MONGO_URI prod).
+- [x] **PROUVÉ 2026-08-20** — byte-diff LIVE L(5080)↔B(5099) du save structure (patron des probes de
       mutation `tools/parity` du backend, comme les autres chantiers) : créer PUIS éditer une
       fiche par `element/save` sous costum `associationEkilibre`, et diff de la RÉPONSE + du
       DOCUMENT stocké. Pièges connus à respecter : `costumSlug` au **BODY** (le legacy résout
@@ -151,8 +151,8 @@ l'héritage, pas une contrainte de design :
   (`thematic` → `list: "thematic"`). Dérive silencieuse si la liste bouge.
 - Le mécanisme `optionsFrom: {list, costumSlug}` existe côté **filtres search**
   (`useDynamicFilterOptions` + primitives `src/lib/costumLists.ts`) mais pas côté moteur de form.
-- [ ] Reco : étendre `optionsFrom` au moteur de form (petit, cohérent avec search) ; sinon,
-      garde préflight anti-dérive config↔live. **À arbitrer.**
+- **DIFFÉRÉ** (décision 2026-08-20) : on y réfléchira APRÈS l'exécution de A→D/F/G.
+  Reco en attente : étendre `optionsFrom` au moteur de form ; sinon garde préflight anti-dérive.
 
 ## Chantier F — référencement CURATÉ du stock (DÉCIDÉ : pas de transfert, pas d'automatisme)
 
@@ -212,3 +212,17 @@ chemin legacy est touché, vérification navigateur sur données réelles.
   sur timeSlots/dynamicFields.
 - Régen artefact lib (drift META host ssbe) — batché avec A.
 - Push citizenToolKit (BUG-L-236) ; commentaires GitLab MR 42 / MR 43.
+
+## Journal d'exécution
+
+- **2026-08-20 — Jalon A (dev) PROUVÉ.** Copie appliquée (script `tools/mss-la-tampon/copy-costum-decl.mjs`,
+  13 contrôles verts, rollback conservé dans le dossier du script). Preuves : `getcostumjson`
+  L=B **identiques à l'octet** (typeObj.organizations 46 props dont les 3 amendées + 2 lists,
+  après purge du cache costum legacy) ; probe de mutation
+  `cocolight-backend/tools/parity/mutation/save-structure-eki.mjs` **PASS intégral** (create+edit,
+  réponses et documents byte-identiques, props amendées persistées L=B, 0 résidu).
+  Deux divergences découvertes et REGISTRÉES côté backend : **BUG-L-238** (legacy persiste
+  costumId/costumType dans le document — divergence volontaire T1, tolérée nommément par la
+  probe) et **BUG-N-339** (save slug-seul sous costum-élément : source non stampé côté B —
+  à trancher ; le triplet nominal du client n'est pas affecté).
+  Restent pour clore A : miroir PROD de la copie + régen artefact/lib (batch drift host).
