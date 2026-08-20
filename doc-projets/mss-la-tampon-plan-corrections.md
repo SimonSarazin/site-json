@@ -97,10 +97,14 @@
       (l.59 « du Tampon et de Saint-Joseph », l.209 « Tampon/St-Joseph ») contredit désormais
       la config : à corriger, et à signaler à l'auteur dans le commentaire de review MR.
 - [x] commandPalette `sourceKey` += `associationEkilibre` (2026-08-20) ; → eki seul après F.
-- [ ] editModals `when` : RESTENT doubles — la clé `sourceKeys` calculée par la lib ne
-      contient PAS `reference.costum` (précédent institutBleu), un match eki-seul raterait le
-      stock référencé. Alternative à trancher à l'exécution : étendre le matcher
-      (`entityMatch`) à `reference.costum`.
+- [x] **FAIT 2026-08-20 (correction du plan)** — editModals `when` RECENTRÉS eki : le matcher
+      sait déjà tester `reference.costum` directement (la MR l'utilisait), donc
+      `or[sourceKeys ∋ eki, reference.costum ∋ eki]` = « mes fiches + celles que j'ai
+      référencées », auto-entretenu, sans nommer ssbe. La branche MR `reference.costum ∋ ssbe`
+      (fiches référencées PAR ssbe) n'avait pas de sens ici — retirée. Une fiche ssbe NON
+      référencée retombe sur le form standard (correct : pas une fiche du site). Seule reste
+      mixte À DESSEIN la section admin Structures : c'est l'outil de CURATION, il doit voir le
+      vivier ssbe du territoire pas-encore-référencé (un sourceKey eki ne le montrerait pas).
 
 ## Chantier C — modération multi-états `statusActor` au patron `statusField` (DÉCIDÉ, révisé)
 

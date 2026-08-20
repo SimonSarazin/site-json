@@ -4311,17 +4311,12 @@
               {
                 "field": "sourceKeys",
                 "op": "contains",
-                "value": "sportSanteBienetre"
-              },
-              {
-                "field": "sourceKeys",
-                "op": "contains",
                 "value": "associationEkilibre"
               },
               {
                 "field": "reference.costum",
                 "op": "contains",
-                "value": "sportSanteBienetre"
+                "value": "associationEkilibre"
               }
             ]
           }
@@ -4336,17 +4331,12 @@
               {
                 "field": "sourceKeys",
                 "op": "contains",
-                "value": "sportSanteBienetre"
-              },
-              {
-                "field": "sourceKeys",
-                "op": "contains",
                 "value": "associationEkilibre"
               },
               {
                 "field": "reference.costum",
                 "op": "contains",
-                "value": "sportSanteBienetre"
+                "value": "associationEkilibre"
               }
             ]
           }
