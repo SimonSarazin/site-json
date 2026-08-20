@@ -64,3 +64,33 @@ export function useArticleFeed({ costumSlug, pageSize = 12, filters }: UseArticl
     } as never,
   });
 }
+
+/**
+ * L'article ÉPINGLÉ du scope (mode `featured:"flag"`) : micro-requête serveur `{featured:true}`,
+ * 1 résultat, même tri que le fil (la plus récente des épinglées si un double-flag résiduel
+ * traîne — rien ne disparaît, le fil liste tout). `enabled` : ne fetch qu'en mode flag.
+ * Requête SERVEUR délibérément (pas un scan de la fenêtre chargée) : l'épinglée peut être
+ * ancienne et vivre hors des pages chargées — la leçon du finding review MR 44.
+ */
+export function usePinnedArticle({ costumSlug, filters, enabled }: {
+  costumSlug: string;
+  filters?: Record<string, unknown>;
+  enabled: boolean;
+}) {
+  return useSearchQuery({
+    queryKeyPrefix: BLOG_QUERY_KEYS.PINNED_PREFIX(costumSlug),
+    searchText: "",
+    searchTags: {},
+    searchType: { type: ["poi"] },
+    mapUsed: false,
+    enabled,
+    baseParams: {
+      indexStepList: 1,
+      // `featured` puis `type` en DERNIER : un filtre de config ne peut écraser ni l'un ni l'autre.
+      defaultFilters: { ...(filters ?? {}), featured: true, type: "article" },
+      defaultSortBy: { created: -1 },
+      costumSlug,
+      sourceKey: [costumSlug],
+    } as never,
+  });
+}

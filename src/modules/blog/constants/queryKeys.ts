@@ -10,6 +10,9 @@ export const BLOG_QUERY_KEYS = {
    * En config (searchKeys d'invalidation), utiliser le littéral équivalent `blog:<costumSlug>`.
    */
   FEED_PREFIX: (costumSlug: string): string => `blog:${costumSlug}`,
+  /** Préfixe de la micro-requête ÉPINGLÉE (`featured:"flag"` — la fiche featured:true du scope).
+   *  Invalidé par le même littéral d'invalidation que le fil (préfixe commun `blog:<slug>`). */
+  PINNED_PREFIX: (costumSlug: string): string => `blog:${costumSlug}:pinned`,
   /** Détail d'un article chargé par id (branche `byId` de `useArticle` + `prefetchArticleById`). */
   ARTICLE_BY_ID: (id: string) => ["blog:article:id", id] as const,
   /** Préfixe de TOUTES les queries « article par id » (invalidation large). */
