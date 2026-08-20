@@ -69,16 +69,21 @@
       0 résidu, jamais l'utilisateur de test `55ed9107…`. Rejoué aux jalons B (scope basculé)
       et C (inject statusActor).
 - [ ] E2E site-json des forms (`tests/integration/costum-forms.e2e.test.ts`, découvre le parc
-      automatiquement) : le form MSS était le SEUL sans `costumSlug` → non jouable (et
-      l'édition privée du pin de schéma, `resolveModalSpec.ts:158`). Clé ajoutée
-      (`sportSanteBienetre`, basculera avec le scope à B) ; jouer la suite en modes `bundle`
-      ET `live` sur `maison-sport-sante-la-tampon/structure` aux mêmes jalons.
+      automatiquement) : le form MSS est le SEUL sans `costumSlug` → non jouable, et l'édition
+      privée du pin de schéma (`resolveModalSpec.ts:158`). Décision 2026-08-20 : la clé n'est
+      PAS posée avant la copie — elle est ajoutée avec **`associationEkilibre`** DÈS la copie
+      A faite, en même temps que la bascule du scope (chantier B). D'ici là ces deux trous
+      restent ouverts (assumé). Jouer ensuite la suite en modes `bundle` ET `live` sur
+      `maison-sport-sante-la-tampon/structure` aux jalons B et C.
 - [ ] Après copie : régénérer artefact + lib (`costum-fields:check` verra le nouveau costum à
       champs) — **à batcher** avec le drift META `host` ssbe déjà en attente.
 
 ## Chantier B — recible la config sur associationEkilibre (mono-slug après F)
 
-- [ ] `costumForms.structure.scope.constant` → `"associationEkilibre"` (après A).
+- [ ] `costumForms.structure.scope.constant` → `"associationEkilibre"` (après A), **et poser
+      en même temps `costumForms.structure.costumSlug: "associationEkilibre"`** (clé absente
+      aujourd'hui, sur décision : jamais de valeur ssbe transitoire) — les deux doivent rester
+      alignés (whitelist d'écriture + pin de schéma en édition + e2e des forms).
 - [ ] `/structure` : remplacer le filtre brut `defaultFilters["source.key"].$in` **et**
       `notSourceKey` par `sourceKey: "associationEkilibre"` — la traduction serveur
       (`search.ts:302-305`) ramène possédées + référencées. ⚠️ `notSourceKey` non-vide fait
