@@ -1827,14 +1827,6 @@
                       "en": "97418 – La Plaine des Cafres (Le Tampon)"
                     },
                     "value": "97418"
-                  },
-                  {
-                    "id": "97480",
-                    "label": {
-                      "fr": "97480 – Saint-Joseph",
-                      "en": "97480 – Saint-Joseph"
-                    },
-                    "value": "97480"
                   }
                 ]
               },
@@ -1966,8 +1958,7 @@
                 "address.postalCode": {
                   "$in": [
                     "97430",
-                    "97418",
-                    "97480"
+                    "97418"
                   ]
                 }
               },
