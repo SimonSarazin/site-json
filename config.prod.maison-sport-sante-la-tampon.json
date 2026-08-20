@@ -371,7 +371,9 @@
             "enableMap": false,
             "disableInfiniteScroll": true,
             "baseParams": {
-              "defaultTypes": ["poi"],
+              "defaultTypes": [
+                "poi"
+              ],
               "notSourceKey": true,
               "indexStepList": 1,
               "defaultFilters": {
@@ -385,16 +387,28 @@
               }
             },
             "list": {
-              "columns": { "sm": 1, "md": 1, "lg": 1, "xl": 1 },
-              "card": { "type": "resource", "detailsMode": "dialog" },
-              "preview": { "type": "resource" },
+              "columns": {
+                "sm": 1,
+                "md": 1,
+                "lg": 1,
+                "xl": 1
+              },
+              "card": {
+                "type": "resource",
+                "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "resource"
+              },
               "resource": {
                 "titleField": "name",
                 "descriptionField": "description",
                 "dateField": "publicationDate",
                 "imageField": "profilMediumImageUrl",
                 "urlsField": "link",
-                "badge": { "field": "category" }
+                "badge": {
+                  "field": "category"
+                }
               }
             }
           }
@@ -408,30 +422,46 @@
             "enableMap": false,
             "disableInfiniteScroll": true,
             "baseParams": {
-              "defaultTypes": ["poi"],
+              "defaultTypes": [
+                "poi"
+              ],
               "notSourceKey": true,
               "indexStepList": 6,
               "defaultFilters": {
                 "type": "article",
                 "source.key": "associationEkilibre",
                 "publicationStatus": "Publié",
-                "featured": { "$ne": true }
+                "featured": {
+                  "$ne": true
+                }
               },
               "defaultSortBy": {
                 "publicationDate": -1
               }
             },
             "list": {
-              "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 3 },
-              "card": { "type": "resource", "detailsMode": "dialog" },
-              "preview": { "type": "resource" },
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3,
+                "xl": 3
+              },
+              "card": {
+                "type": "resource",
+                "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "resource"
+              },
               "resource": {
                 "titleField": "name",
                 "descriptionField": "description",
                 "dateField": "publicationDate",
                 "imageField": "profilMediumImageUrl",
                 "urlsField": "link",
-                "badge": { "field": "category" }
+                "badge": {
+                  "field": "category"
+                }
               }
             }
           }
@@ -1873,7 +1903,9 @@
                 "dateField": "publicationDate",
                 "imageField": "profilMediumImageUrl",
                 "urlsField": "link",
-                "badge": { "field": "category" },
+                "badge": {
+                  "field": "category"
+                },
                 "facets": [
                   {
                     "field": "tags",
@@ -2745,13 +2777,47 @@
               ]
             },
             "columns": [
-              { "path": "name", "label": { "fr": "Titre", "en": "Title" } },
-              { "path": "category", "label": { "fr": "Catégorie", "en": "Category" } },
-              { "path": "publicationDate", "label": { "fr": "Date de publication", "en": "Publication date" } },
-              { "path": "publicationStatus", "label": { "fr": "Statut", "en": "Status" } },
-              { "path": "featured", "label": { "fr": "À la une", "en": "Featured" } }
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Titre",
+                  "en": "Title"
+                }
+              },
+              {
+                "path": "category",
+                "label": {
+                  "fr": "Catégorie",
+                  "en": "Category"
+                }
+              },
+              {
+                "path": "publicationDate",
+                "label": {
+                  "fr": "Date de publication",
+                  "en": "Publication date"
+                }
+              },
+              {
+                "path": "publicationStatus",
+                "label": {
+                  "fr": "Statut",
+                  "en": "Status"
+                }
+              },
+              {
+                "path": "featured",
+                "label": {
+                  "fr": "À la une",
+                  "en": "Featured"
+                }
+              }
             ],
-            "rowActions": ["edit", "delete", "setFeatured"],
+            "rowActions": [
+              "edit",
+              "delete",
+              "setFeatured"
+            ],
             "exclusiveField": "featured",
             "create": "add-actualite",
             "edit": "inherit"
@@ -4269,6 +4335,7 @@
     "actualite": {
       "id": "actualite",
       "entityType": "poi",
+      "costumSlug": "associationEkilibre",
       "collection": "poi",
       "icon": "newspaper",
       "layout": {
@@ -5399,11 +5466,26 @@
       "hideHeader": false,
       "hideFooter": false,
       "editModals": [
-        { "editModal": "edit-actualite", "editModalMatch": { "type": "article" },
-          "when": { "or": [
-            { "field": "sourceKeys", "op": "contains", "value": "associationEkilibre" },
-            { "field": "reference.costum", "op": "contains", "value": "associationEkilibre" }
-          ] } }
+        {
+          "editModal": "edit-actualite",
+          "editModalMatch": {
+            "type": "article"
+          },
+          "when": {
+            "or": [
+              {
+                "field": "sourceKeys",
+                "op": "contains",
+                "value": "associationEkilibre"
+              },
+              {
+                "field": "reference.costum",
+                "op": "contains",
+                "value": "associationEkilibre"
+              }
+            ]
+          }
+        }
       ],
       "sections": [
         {
