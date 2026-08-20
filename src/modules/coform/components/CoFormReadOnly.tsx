@@ -10,12 +10,13 @@ import { useCocolightOptional } from "@/hooks/useCocolight";
 import "../i18n/i18n";
 import { parseCoFormFields, normalizeAnswerData } from "../utils/formParser";
 import { parseStoredToEntries } from "../utils/coformLocality";
-import type { CoFormData, AllStepsData, SubFormFields, FormFieldMapping, FormFieldValue, MultiCheckboxPlusValue, MultiRadioValue, UploaderLegacyValue, SimpleTableValue, EvaluationValue, FinderValue, CommonTableValue } from "../types";
+import type { CoFormData, AllStepsData, SubFormFields, FormFieldMapping, FormFieldValue, MultiCheckboxPlusValue, MultiRadioValue, UploaderLegacyValue, SimpleTableValue, EvaluationValue, FinderValue, CommonTableValue, CategorizedCheckboxValue } from "../types";
 import { ReadOnlyUploaderGallery } from "./ReadOnlyUploaderGallery";
 import { SimpleTableField } from "./SimpleTableField";
 import { EvaluationField } from "./EvaluationField";
 import { FinderField } from "./FinderField";
 import { CommonTableField } from "./CommonTableField";
+import { CategorizedCheckboxField } from "./CategorizedCheckboxField";
 
 interface CoFormReadOnlyProps {
   formData: CoFormData;
@@ -302,6 +303,27 @@ function ReadOnlyField({
           {/* `formId` : parité avec le mode édition (DynamicCoForm) — sans lui, les
               badges de contributeurs s'affichent mais ne sont pas cliquables. */}
           <CommonTableField field={field} errors={{}} value={value as unknown as CommonTableValue} readOnly hideLabel formId={formId} />
+        </dd>
+      </div>
+    );
+  }
+
+  // categorizedCheckbox : même raison que commonTable ci-dessus — la valeur est composite
+  // (`{list, sublist}`), donc sans ce cas elle sort en `[object Object]`.
+  if (field.componentType === "categorizedCheckbox") {
+    return (
+      <div className={cn(widthClass, "space-y-1.5")}>
+        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          {field.label}
+        </dt>
+        <dd>
+          <CategorizedCheckboxField
+            field={field}
+            errors={{}}
+            value={value as unknown as CategorizedCheckboxValue}
+            readOnly
+            hideLabel
+          />
         </dd>
       </div>
     );

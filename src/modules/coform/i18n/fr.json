@@ -450,6 +450,13 @@
         "notAuthorized": "Vous n'êtes ni admin ni membre de ce lieu.",
         "pendingValidation": "Demande en attente — patientez la validation par un admin."
       }
+    },
+    "categorizedCheckbox": {
+      "expand": "Déplier",
+      "collapse": "Replier",
+      "loadError": "Impossible de charger les options.",
+      "notConfigured": "Ce champ n'est pas encore configuré.",
+      "orphans": "Réponses enregistrées ne correspondant plus à une option proposée :"
     }
   }
 }
