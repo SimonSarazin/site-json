@@ -32,7 +32,7 @@
   "header": {
     "type": "transparent-scroll",
     "path": "/",
-    "logo": "images/maisonSportSanteLaTampon/logo.svg",
+    "logo": "/images/maisonSportSanteLaTampon/logo.svg",
     "logoClass": "h-[60px] w-auto shrink-0 object-contain group-hover:scale-110 transition-transform",
     "logoAlt": {
       "fr": "Ekilib.re – Maison Sport Santé du Tampon",
@@ -1947,8 +1947,8 @@
                   {
                     "id": "97418",
                     "label": {
-                      "fr": "97418 – Saint-Joseph",
-                      "en": "97418 – Saint-Joseph"
+                      "fr": "97418 – La Plaine des Cafres (Le Tampon)",
+                      "en": "97418 – La Plaine des Cafres (Le Tampon)"
                     },
                     "value": "97418"
                   }
@@ -2067,17 +2067,14 @@
             "showActiveFiltersTypes": true,
             "showActiveFiltersTags": true,
             "baseParams": {
+              "sourceKey": [
+                "associationEkilibre"
+              ],
               "defaultTypes": [
                 "organizations"
               ],
-              "notSourceKey": true,
               "defaultFilters": {
-                "source.key": {
-                  "$in": [
-                    "sportSanteBienetre",
-                    "associationEkilibre"
-                  ]
-                },
+                "statusActor": "Validé",
                 "address.postalCode": {
                   "$in": [
                     "97430",
@@ -2762,6 +2759,148 @@
         ]
       },
       {
+        "id": "structures",
+        "label": {
+          "fr": "Structures",
+          "en": "Structures"
+        },
+        "icon": "building-2",
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "organizations",
+            "label": {
+              "fr": "Structures du site",
+              "en": "Site structures"
+            },
+            "restrictActionsToOwned": true,
+            "rowActions": [
+              "edit",
+              "validate",
+              "reference",
+              "delete"
+            ],
+            "source": {
+              "sourceKey": [
+                "associationEkilibre"
+              ],
+              "defaultSortBy": {
+                "name": 1
+              }
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Nom",
+                  "en": "Name"
+                }
+              },
+              {
+                "path": "address.postalCode",
+                "label": {
+                  "fr": "Code postal",
+                  "en": "Postal code"
+                }
+              },
+              {
+                "path": "statusActor",
+                "label": {
+                  "fr": "Statut",
+                  "en": "Status"
+                }
+              },
+              {
+                "path": "source.key",
+                "label": {
+                  "fr": "Provenance",
+                  "en": "Source"
+                }
+              }
+            ],
+            "status": {
+              "mode": "statusField",
+              "field": "statusActor",
+              "states": [
+                {
+                  "value": "En attente",
+                  "tone": "pending"
+                },
+                {
+                  "value": "En cours",
+                  "tone": "progress"
+                },
+                {
+                  "value": "Validé",
+                  "tone": "positive"
+                },
+                {
+                  "value": "Refusé",
+                  "tone": "negative"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "referencement",
+        "label": {
+          "fr": "Référencement",
+          "en": "Referencing"
+        },
+        "icon": "link-2",
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "reference",
+            "title": {
+              "fr": "Référencer une structure existante",
+              "en": "Reference an existing organization"
+            },
+            "entityTypes": [
+              "organizations"
+            ],
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Nom",
+                  "en": "Name"
+                }
+              },
+              {
+                "path": "address.postalCode",
+                "label": {
+                  "fr": "Code postal",
+                  "en": "Postal code"
+                }
+              },
+              {
+                "path": "source.key",
+                "label": {
+                  "fr": "Provenance",
+                  "en": "Source"
+                }
+              }
+            ],
+            "search": {
+              "openData": "optOut",
+              "defaultFilters": {
+                "source.keys": "sportSanteBienetre",
+                "address.postalCode": {
+                  "$in": [
+                    "97430",
+                    "97418"
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
         "id": "moderation",
         "label": {
           "fr": "Modération",
@@ -2875,7 +3014,8 @@
       "limit": 8,
       "params": {
         "sourceKey": [
-          "sportSanteBienetre"
+          "sportSanteBienetre",
+          "associationEkilibre"
         ]
       }
     }
@@ -2885,6 +3025,7 @@
       "id": "structure",
       "entityType": "organizations",
       "collection": "organizations",
+      "costumSlug": "associationEkilibre",
       "icon": "building-2",
       "layout": {
         "kind": "wizard",
@@ -2899,13 +3040,16 @@
           "serverKey": "address",
           "read": "address:read",
           "write": "address:write"
+        },
+        "telephone": {
+          "serverKey": "telephone",
+          "read": "telephone:read",
+          "write": "telephone:write"
         }
       },
       "fields": {
         "siren": {
           "widget": "text",
-          "write": "number:fromDigits",
-          "clear": null,
           "label": {
             "fr": "Siren / Siret",
             "en": "Siren / Siret"
@@ -2913,7 +3057,8 @@
           "placeholder": {
             "fr": "123 456 789 00012",
             "en": "123 456 789 00012"
-          }
+          },
+          "write": "coerce:orUndef"
         },
         "name": {
           "widget": "text",
@@ -3092,11 +3237,11 @@
         "tags": {
           "widget": "hidden",
           "type": "array",
-          "writeOnly": true,
           "write": "structure:tagsFromThematic"
         },
-        "mobile": {
-          "widget": "text",
+        "telephone": {
+          "widget": "tel",
+          "group": "telephone",
           "label": {
             "fr": "Téléphone",
             "en": "Phone"
@@ -3104,10 +3249,15 @@
           "placeholder": {
             "fr": "0692001122",
             "en": "0692001122"
-          },
-          "widgetProps": {
-            "inputType": "tel"
           }
+        },
+        "_telSlot": {
+          "widget": "hidden",
+          "group": "telephone"
+        },
+        "_telRest": {
+          "widget": "hidden",
+          "group": "telephone"
         },
         "address": {
           "widget": "location",
@@ -3622,8 +3772,6 @@
         },
         "representativeTelephone": {
           "widget": "text",
-          "write": "number:fromDigits",
-          "clear": null,
           "label": {
             "fr": "Téléphone",
             "en": "Phone"
@@ -3634,7 +3782,8 @@
           },
           "widgetProps": {
             "inputType": "tel"
-          }
+          },
+          "write": "coerce:orUndef"
         },
         "responsableSameAsRepresent": {
           "widget": "switch",
@@ -3803,8 +3952,6 @@
         },
         "personInChargeTelephone": {
           "widget": "text",
-          "write": "number:fromDigits",
-          "clear": null,
           "label": {
             "fr": "Téléphone",
             "en": "Phone"
@@ -3816,6 +3963,7 @@
           "widgetProps": {
             "inputType": "tel"
           },
+          "write": "coerce:orUndef",
           "visibleIf": {
             "field": "responsableSameAsRepresent",
             "op": "falsy"
@@ -3884,7 +4032,7 @@
             {
               "columns": 2,
               "fields": [
-                "mobile",
+                "telephone",
                 "email"
               ]
             },
@@ -4079,7 +4227,7 @@
       },
       "scope": {
         "slugFrom": "constant",
-        "constant": "sportSanteBienetre"
+        "constant": "associationEkilibre"
       },
       "mutation": {
         "entityType": "organizations",
@@ -4113,6 +4261,9 @@
             ]
           }
         }
+      },
+      "identity": {
+        "type": "Cooperative"
       }
     },
     "actualite": {
@@ -4660,29 +4811,48 @@
       "layout": "default",
       "hideHeader": false,
       "hideFooter": false,
-      "editModal": "edit-structure",
-      "editModalMatch": {
-        "type": "NGO"
-      },
-      "when": {
-        "or": [
-          {
-            "field": "sourceKeys",
-            "op": "contains",
-            "value": "sportSanteBienetre"
+      "editModals": [
+        {
+          "editModal": "edit-structure",
+          "editModalMatch": {
+            "type": "NGO"
           },
-          {
-            "field": "sourceKeys",
-            "op": "contains",
-            "value": "associationEkilibre"
-          },
-          {
-            "field": "reference.costum",
-            "op": "contains",
-            "value": "sportSanteBienetre"
+          "when": {
+            "or": [
+              {
+                "field": "sourceKeys",
+                "op": "contains",
+                "value": "associationEkilibre"
+              },
+              {
+                "field": "reference.costum",
+                "op": "contains",
+                "value": "associationEkilibre"
+              }
+            ]
           }
-        ]
-      },
+        },
+        {
+          "editModal": "edit-structure",
+          "editModalMatch": {
+            "type": "Cooperative"
+          },
+          "when": {
+            "or": [
+              {
+                "field": "sourceKeys",
+                "op": "contains",
+                "value": "associationEkilibre"
+              },
+              {
+                "field": "reference.costum",
+                "op": "contains",
+                "value": "associationEkilibre"
+              }
+            ]
+          }
+        }
+      ],
       "sections": [
         {
           "type": "profile-header",
@@ -5229,7 +5399,6 @@
       "hideHeader": false,
       "hideFooter": false,
       "editModals": [
-        { "editModal": "edit-equipements-sportifs", "editModalMatch": { "type": "recoveryCenter" } },
         { "editModal": "edit-actualite", "editModalMatch": { "type": "article" },
           "when": { "or": [
             { "field": "sourceKeys", "op": "contains", "value": "associationEkilibre" },

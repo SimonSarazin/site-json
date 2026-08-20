@@ -551,6 +551,11 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                 (!!srcTbv && typeof srcTbv === "object" && srcTbv[costumSlug] === true)
               );
               const isFeatured = !!resource.exclusiveField && getPath(data, resource.exclusiveField) === true;
+              // Gating par APPARTENANCE (opt-in `restrictActionsToOwned`, cf. schema.ts) : une ligne
+              // non possédée ne garde que lecture + (dé)référencement — les écritures d'élément
+              // (edit/delete/validate/statusField) seraient de toute façon refusées par le Node
+              // durci sur une entité étrangère.
+              const actionnable = !resource.restrictActionsToOwned || isAttached;
               return (
                 <TableRow key={id} ref={isLast ? lastItemRef : undefined}>
                   {bulkActions.length > 0 && (
@@ -609,12 +614,12 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        {rowActions.includes("edit") && editModal.enabled && (
+                        {actionnable && rowActions.includes("edit") && editModal.enabled && (
                           <DropdownMenuItem onClick={() => void openEditEntity(item, hasRealId ? id : undefined)}>
                             <Pencil className="mr-2 h-4 w-4" /> {tAdmin("AdminResourceTable.edit")}
                           </DropdownMenuItem>
                         )}
-                        {fieldStatus && rowActions.includes("validate") && hasRealId && (() => {
+                        {actionnable && fieldStatus && rowActions.includes("validate") && hasRealId && (() => {
                           // Une action par ÉTAT CIBLE (l'état courant est omis) — le libellé porte
                           // l'état, l'icône (ton) n'est qu'un repère. Écrit la valeur brute config.
                           const raw = readStatusValue(data, fieldStatus.field);
@@ -633,7 +638,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                             );
                           });
                         })()}
-                        {!fieldStatus && rowActions.includes("validate") && carrier && hasRealId && (
+                        {actionnable && !fieldStatus && rowActions.includes("validate") && carrier && hasRealId && (
                           // Le statut est LISIBLE en mode admin (variant admin → preferences projeté) : on
                           // n'affiche que l'action PERTINENTE (« Valider » un en-attente, « Dévalider » un validé).
                           // ⚠ On appelle sur `item` (l'entité de la ligne) et NON `carrier` : validateGroup/addReference
@@ -670,7 +675,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                             {tAdmin(isAttached ? "AdminResourceTable.detach" : isReferenced ? "AdminResourceTable.unreference" : "AdminResourceTable.reference")}
                           </DropdownMenuItem>
                         )}
-                        {rowActions.includes("setFeatured") && resource.exclusiveField && hasRealId && (
+                        {actionnable && rowActions.includes("setFeatured") && resource.exclusiveField && hasRealId && (
                           // Exclusivité gérée DEPUIS CE TABLEAU (décision produit) : mettre en avant
                           // repasse d'abord les autres lignes CHARGÉES à `false` (cf. useSetExclusiveFlag) —
                           // retirer ne touche que cette ligne.
@@ -689,7 +694,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                             {tAdmin(isFeatured ? "AdminResourceTable.unfeature" : "AdminResourceTable.feature")}
                           </DropdownMenuItem>
                         )}
-                        {rowActions.includes("delete") && hasRealId && (
+                        {actionnable && rowActions.includes("delete") && hasRealId && (
                           <DropdownMenuItem
                             className="text-destructive"
                             onClick={() => setToDelete({ entity: grantCostumAdmin(item) as unknown as DeletableEntity, label })}

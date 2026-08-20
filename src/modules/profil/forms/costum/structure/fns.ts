@@ -44,41 +44,35 @@ export function thematicToTags(thematic: unknown): string[] {
 }
 
 /**
- * WRITE du champ `tags` : ignore sa propre valeur (le champ est `writeOnly`, jamais seedé ni rendu) et
- * dérive depuis `thematic` — même mécanisme que `geo`/`geoPosition`, qui se calculent depuis les champs
- * d'adresse voisins. Renvoie `undefined` quand aucune thématique n'est cochée → la clé est OMISE du
- * payload, donc `Object.assign` en édition ne peut jamais VIDER les tags existants par accident.
+ * Le DOMAINE des tags dérivables de `thematic` : les formes courtes de la table + les valeurs
+ * identité (mêmes libellés des deux côtés, cf. commentaire de THEMATIC_TO_TAG). C'est le périmètre
+ * que l'édition a le droit de réécrire — tout tag HORS domaine (ex. le marqueur « mss » des
+ * Maisons Sport-Santé, porté par 20/180 orgs réelles du costum) est un tag ÉTRANGER à préserver.
  */
-registerTransform("structure:tagsFromThematic", (_v, all) => {
-  const tags = thematicToTags((all as Record<string, unknown>)?.thematic);
-  return tags.length > 0 ? tags : undefined;
-});
+const TAG_DOMAIN = new Set<string>([
+  ...Object.values(THEMATIC_TO_TAG),
+  "Sport", "Santé/prévention", "Social", "Insertion", "Culture", "Tourisme", "Handicap",
+]);
 
 /**
- * CONTOURNEMENT — chaîne saisie → NOMBRE, en tolérant les séparateurs de saisie.
- *
- * Le costum `sportSanteBienetre` déclare `siren`, `representativeTelephone` et
- * `personInChargeTelephone` en `number`. Ce typage est un artefact d'inférence (`costum-fields.mjs`
- * a déduit le type des valeurs stockées, qui ne contenaient que des chiffres) : la déclaration réelle
- * du costum les donne en `inputType: "text"`, et les données en base sont des CHAÎNES. Tant que
- * l'artefact n'est pas corrigé, AJV rejette la création avec « must be number ».
- * cf. doc-projets/todo-costum-schema-structures-ssbe.md §2.
- *
- * On envoie donc un nombre — mais SANS `coerce:number`, qui rend `undefined` (donc PERD le champ en
- * silence) dès qu'il y a un espace ou un indicatif : `"+261 34 25 363 35"` et `"123 456 789 00012"`
- * y passeraient tous les deux à la trappe. Ici on ne garde que les chiffres, ce qui préserve la
- * valeur dans tous les formats de saisie courants.
- *
- * ⚠ PERTES ASSUMÉES, inhérentes au type `number` (elles disparaîtront avec le correctif d'artefact) :
- *  - le `+` d'un indicatif international : `"+261 34…"` → `261 34…` (le préfixe `00` serait conservé) ;
- *  - un zéro initial : `"0692001122"` → `692001122` (forme déjà observée en base : `"692211490"`).
- * Vide → `undefined` → clé OMISE (jamais `""`, que le type `number` refuserait).
+ * WRITE du champ `tags` : MERGE fidèle au legacy — `sportSanteBienetre_index.js:118-190` ne retire
+ * que les valeurs du domaine décochées et ne touche JAMAIS les tags étrangers. L'ancienne version
+ * REMPLAÇAIT `tags` par la seule projection de `thematic` : un simple ouvrir-sauver effaçait
+ * « mss » et tout tag hors domaine. Le champ n'est plus `writeOnly` : sa valeur COURANTE est
+ * seedée depuis l'entité (`v`), la fusion = (courants ∖ DOMAINE) ∪ projection(thematic), ordre
+ * préservé, dédoublonnée. `undefined` (clé omise) seulement quand il n'y a NI courant NI
+ * projection ; sinon un résultat vide est émis tel quel — décocher toutes les thématiques retire
+ * bien les tags du domaine, sans jamais toucher aux étrangers.
  */
-registerTransform("number:fromDigits", (v) => {
-  if (typeof v === "number") return Number.isFinite(v) ? v : undefined;
-  const digits = String(v ?? "").replace(/\D/g, "");
-  if (!digits) return undefined;
-  const n = Number(digits);
-  // Au-delà de 2^53 un entier n'est plus représentable fidèlement → on préfère omettre que corrompre.
-  return Number.isSafeInteger(n) ? n : undefined;
+registerTransform("structure:tagsFromThematic", (v, all) => {
+  const current = Array.isArray(v) ? v.filter((t): t is string => typeof t === "string") : [];
+  const projected = thematicToTags((all as Record<string, unknown>)?.thematic);
+  if (current.length === 0 && projected.length === 0) return undefined;
+  return [...new Set([...current.filter((t) => !TAG_DOMAIN.has(t)), ...projected])];
 });
+
+// NB : le contournement `number:fromDigits` (siren/téléphones coercés en NOMBRE tronqué — perte du
+// 0 initial et du « + ») a été SUPPRIMÉ : sa prémisse était fausse. L'artefact costum livré déclare
+// ces trois champs en `oneOf string|number` (vérifié dans la lib publiée) — les CHAÎNES passent
+// l'AJV telles quelles, et la politique du repo est le stockage string byte-fidèle (la base est
+// 100 % chaînes, ex. « 0692 88 33 19 »). Les champs redeviennent du texte brut.

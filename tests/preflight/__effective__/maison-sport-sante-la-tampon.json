@@ -32,17 +32,17 @@
           "declare": "edit-structure",
           "native": "edit-structure",
           "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-structure",
+          "native": "edit-structure",
+          "horsPerimetre": "edit-profile"
         }
       ]
     },
     "poi": {
       "vierge": "edit-profile",
       "routes": [
-        {
-          "declare": "edit-equipements-sportifs",
-          "native": "edit-equipements-sportifs",
-          "horsPerimetre": "edit-equipements-sportifs"
-        },
         {
           "declare": "edit-actualite",
           "native": "edit-actualite",
@@ -73,6 +73,21 @@
         ]
       },
       "create": "add-actualite",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "structures/organizations": {
+      "source": {
+        "sourceKey": [
+          "associationEkilibre"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        }
+      },
+      "create": "add-structure",
       "edit": {
         "enabled": true,
         "modalName": null
@@ -164,17 +179,14 @@
     },
     "/structure/searchProStatic": {
       "baseParams": {
+        "sourceKey": [
+          "associationEkilibre"
+        ],
         "defaultTypes": [
           "organizations"
         ],
-        "notSourceKey": true,
         "defaultFilters": {
-          "source.key": {
-            "$in": [
-              "sportSanteBienetre",
-              "associationEkilibre"
-            ]
-          },
+          "statusActor": "Validé",
           "address.postalCode": {
             "$in": [
               "97430",
@@ -212,7 +224,12 @@
       }
     }
   },
-  "referencement": {},
+  "referencement": {
+    "organizations": {
+      "sousTypes": [],
+      "annotation": null
+    }
+  },
   "membership": {
     "citoyens/membership": {
       "types": [

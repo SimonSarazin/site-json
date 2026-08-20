@@ -20,6 +20,8 @@ import { MultiRadioField } from "./MultiRadioField";
 import { EvaluationField } from "./EvaluationField";
 import { CommonTableField } from "./CommonTableField";
 import { CategorizedCheckboxField } from "./CategorizedCheckboxField";
+import { TimeSlotsField } from "./TimeSlotsField";
+import { DynamicFieldsField } from "./DynamicFieldsField";
 import { MultiEvalChartDialog } from "./MultiEvalChartDialog";
 import { DraftRecoveryBanner } from "./DraftRecoveryBanner";
 import { ErrorSummary } from "./ErrorSummary";
@@ -550,6 +552,44 @@ function MultiStepCoFormContent({
                           value={controllerField.value as CategorizedCheckboxValue}
                           onChange={controllerField.onChange}
                           readOnly={isLocked}
+                        />
+                      )}
+                    />
+                  );
+
+                case "timeSlots":
+                  // Câblage identique à DynamicCoForm — le trou multi-step rendait « type de champ
+                  // inconnu » sur un form multi-étapes portant ces inputs (cas réel : form 13
+                  // étapes, dynamicFields à l'étape 9). NB : ces 2 composants n'ont pas (encore)
+                  // de prop readOnly — même limite que côté DynamicCoForm.
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={form.control}
+                      render={({ field: controllerField }) => (
+                        <TimeSlotsField
+                          field={field}
+                          errors={form.formState.errors}
+                          value={controllerField.value}
+                          onChange={controllerField.onChange}
+                        />
+                      )}
+                    />
+                  );
+
+                case "dynamicFields":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={form.control}
+                      render={({ field: controllerField }) => (
+                        <DynamicFieldsField
+                          field={field}
+                          errors={form.formState.errors}
+                          value={controllerField.value}
+                          onChange={controllerField.onChange}
                         />
                       )}
                     />
