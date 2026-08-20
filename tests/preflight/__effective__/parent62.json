@@ -25,6 +25,16 @@
     }
   },
   "editModals": {
+    "events": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-parent62-event",
+          "native": "edit-parent62-event",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    },
     "poi": {
       "vierge": "edit-profile",
       "routes": [

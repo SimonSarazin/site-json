@@ -15201,6 +15201,17 @@
             }
           ]
         }
+      ],
+      "editModals": [
+        {
+          "editModal": "edit-parent62-event",
+          "when": {
+            "or": [
+              { "field": "sourceKeys", "op": "contains", "value": "parent62" },
+              { "field": "reference.costum", "op": "contains", "value": "parent62" }
+            ]
+          }
+        }
       ]
     },
     "poi": {
