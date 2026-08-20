@@ -4289,8 +4289,7 @@
                 "description",
                 "tags",
                 "link",
-                "publicationStatus",
-                "featured"
+                "publicationStatus"
               ]
             }
           ]
@@ -4493,17 +4492,6 @@
           ],
           "required": true,
           "default": "Brouillon"
-        },
-        "featured": {
-          "widget": "switch",
-          "label": {
-            "fr": "À la une",
-            "en": "Featured"
-          },
-          "info": {
-            "fr": "Modifiable ici pour RETIRER la une. Pour la mettre en avant, utilisez le bouton dédié dans le tableau du back-office (garantit qu'une seule actualité est mise en avant à la fois).",
-            "en": "Editable here to REMOVE the featured flag. To feature a news item, use the dedicated button in the back-office table (guarantees a single featured item at a time)."
-          }
         }
       },
       "scope": {

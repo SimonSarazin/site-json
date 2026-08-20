@@ -100,7 +100,11 @@ describe("costum actualite Ekilib.re — WRITE (création)", () => {
     expect(enumValues).toEqual(["Brouillon", "Publié", "Archivé"]);
   });
 
-  it("7. le champ `featured` est un switch (booléen), jamais une saisie libre", () => {
-    expect(descriptor.fields.featured).toMatchObject({ widget: "switch" });
+  it("7. `featured` est ABSENT du form — l'action admin setFeatured est l'UNIQUE écrivain", () => {
+    // Deux raisons mesurées (review navigateur 2026-08-21) : le save form-urlencodé STRINGIFIE le
+    // booléen ("false" stocké en chaîne → filtres {featured:true}/$ne fragiles) ; et un switch au
+    // form était un 2e chemin d'écriture NON exclusif (posait une 2e une sans dé-marquer l'autre).
+    // updateField (setFeatured/runExclusiveFlag) écrit des booléens garantis dans les deux sens.
+    expect(descriptor.fields.featured).toBeUndefined();
   });
 });
