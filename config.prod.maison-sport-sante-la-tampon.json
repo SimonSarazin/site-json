@@ -2603,8 +2603,8 @@
             "type": "resource",
             "entityType": "organizations",
             "label": {
-              "fr": "Structures du territoire",
-              "en": "Territory structures"
+              "fr": "Structures du site",
+              "en": "Site structures"
             },
             "restrictActionsToOwned": true,
             "rowActions": [
@@ -2614,21 +2614,9 @@
               "delete"
             ],
             "source": {
-              "notSourceKey": true,
-              "defaultFilters": {
-                "source.key": {
-                  "$in": [
-                    "sportSanteBienetre",
-                    "associationEkilibre"
-                  ]
-                },
-                "address.postalCode": {
-                  "$in": [
-                    "97430",
-                    "97418"
-                  ]
-                }
-              },
+              "sourceKey": [
+                "associationEkilibre"
+              ],
               "defaultSortBy": {
                 "name": 1
               }
@@ -2685,6 +2673,50 @@
                 }
               ]
             }
+          }
+        ]
+      },
+      {
+        "id": "referencement",
+        "label": {
+          "fr": "Référencement",
+          "en": "Referencing"
+        },
+        "icon": "link-2",
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "reference",
+            "title": {
+              "fr": "Référencer une structure existante",
+              "en": "Reference an existing organization"
+            },
+            "entityTypes": [
+              "organizations"
+            ],
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Nom",
+                  "en": "Name"
+                }
+              },
+              {
+                "path": "address.postalCode",
+                "label": {
+                  "fr": "Code postal",
+                  "en": "Postal code"
+                }
+              },
+              {
+                "path": "source.key",
+                "label": {
+                  "fr": "Provenance",
+                  "en": "Source"
+                }
+              }
+            ]
           }
         ]
       },

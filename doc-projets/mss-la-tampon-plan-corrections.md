@@ -256,3 +256,12 @@ chemin legacy est touché, vérification navigateur sur données réelles.
   basculé sur `sourceKey: ["associationEkilibre"]` après preuve d'équivalence (14 = 14 ids
   identiques). L'état mixte de la config est CLOS côté listing public ; restent mixtes à
   dessein : la section admin Structures (outil de curation) et les `when` des editModals.
+
+- **2026-08-20 (correction sur interpellation) — l'admin séparé en DEUX vues** (le mélange
+  initial « une section mixte » était une erreur de design) : tab **Structures** = les fiches
+  DU site (`sourceKey: ["associationEkilibre"]` → possédées + référencées, comme le /structure
+  public ; statusField pour l'état ; gate d'appartenance par ligne) ; tab **Référencement** =
+  la section dédiée du parc (`type: "reference"`, 6 sites l'utilisent) : recherche globale
+  gardée legacy (`isOpenData`, exclusion du déjà-rattaché) + liste des référencés avec retrait.
+  NB : la recherche de candidats est GLOBALE (pas territoriale) et exige
+  `preferences.isOpenData` — sémantique legacy assumée.
