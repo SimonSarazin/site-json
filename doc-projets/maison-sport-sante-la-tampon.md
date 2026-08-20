@@ -31,7 +31,10 @@ multivalué, fixes coform commonTable).
 
 **Nicolas (session 5, 18-19/08)** — le chantier « Actualités » (costumForm `actualite` POI, onglet
 admin CRUD, sections home « à la une + grille », fiche `/espace-pro`, mise en avant exclusive depuis
-le tableau admin — §9.7) est **✅ fonctionnel de bout en bout, création réelle confirmée en base,
+le tableau admin — §9.7) : REFONDÉ post-review MR 44 (2026-08-21) sur le **module Articles/Blog**
+(articleFeed `featured:"flag"` + reader `/blog/:slug` + RSS) — le montage searchProStatic décrit
+plus bas est PÉRIMÉ. La création exige le nœud `typeObj.article` du costum eki (posé en dev,
+script `add-article-node.mjs` ; À REJOUER EN PROD avant déploiement). État antérieur revendiqué (**
 photo comprise** (§9.7 ter). Après un réalignement sur la config réelle du costum backend (§9.7 bis),
 le blocage de création venait de l'organisation porteuse `associationEkilibre` : pas de `costum.slug`
 sur son propre document — sans lui, le backend ne résout jamais son costum et rejette toute création
@@ -72,7 +75,9 @@ document, rédigée avant ce commit, le décrivait à tort comme resté en worki
 
 ## 1. Contexte du projet
 
-La **Maison Sport Santé du Tampon (Ekilib.re)** oriente les habitants du Tampon et de Saint-Joseph
+La **Maison Sport Santé du Tampon (Ekilib.re)** oriente les habitants du Tampon (bourg + Plaine
+des Cafres) — territoire = **Le Tampon seul** (décision produit 2026-08-20 : Saint-Joseph retiré,
+CP 97430/97418)
 (La Réunion) vers des **créneaux d'activité physique adaptée** labellisés sport santé. Le projet
 publie un site vitrine + annuaire de créneaux sur SiteForge, adossé au **costum régional
 `sportSanteBienetre`** (réseau Sport Santé Bien-être de La Réunion) : Ekilib.re est un **sous-site
@@ -224,7 +229,7 @@ config et des échanges (à faire valider). Budget/phasage : **à confirmer**.
 | Domaine | Exigence (reconstituée) | Réalisation |
 |---|---|---|
 | Vitrine | présentation MSS, parcours d'inscription, idées reçues, bénéfices APA | pages `/`, `/s-informer` (statiques) |
-| Créneaux | annuaire filtrable + carte, réservé au territoire (Tampon/St-Joseph), créneaux validés seulement | `/creneaux` (searchProStatic answers) |
+| Créneaux | annuaire filtrable + carte, réservé au territoire (Le Tampon), créneaux validés seulement | `/creneaux` (searchProStatic answers) |
 | Gestion créneaux | ajout + modification par les admins, depuis le site | lot 06/07 (`addButton.coform`, `editButton`) |
 | Structures | annuaire des structures référentes + domaines d'intervention | `/structure` (28/07) |
 | Engagement | bénévolat, comité des usagers, don (HelloAsso en lien externe) | `/rejoindre-soutenir` (hors nav, liée depuis la home) |

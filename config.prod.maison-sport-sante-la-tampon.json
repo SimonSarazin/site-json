@@ -4284,6 +4284,7 @@
                 "_imageFile",
                 "category",
                 "publicationDate",
+                "shortDescription",
                 "address",
                 "description",
                 "tags",
@@ -4370,6 +4371,17 @@
           "label": {
             "fr": "Date de publication",
             "en": "Publication date"
+          }
+        },
+        "shortDescription": {
+          "widget": "textarea",
+          "label": {
+            "fr": "Résumé (chapô)",
+            "en": "Summary (standfirst)"
+          },
+          "info": {
+            "fr": "Affiché sur les cartes du fil et en tête de l'article.",
+            "en": "Shown on feed cards and at the top of the article."
           }
         },
         "address": {
@@ -4525,7 +4537,11 @@
               "searchCostumStatic"
             ]
           }
-        }
+        },
+        "payloadEmitEmptyOnEdit": true
+      },
+      "identity": {
+        "type": "article"
       }
     }
   },
