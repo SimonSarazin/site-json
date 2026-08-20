@@ -12,6 +12,7 @@ import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
 import { MultiRadioField } from "./MultiRadioField";
 import { EvaluationField } from "./EvaluationField";
 import { CommonTableField } from "./CommonTableField";
+import { CategorizedCheckboxField } from "./CategorizedCheckboxField";
 import { MultiEvalChartDialog } from "./MultiEvalChartDialog";
 import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
@@ -23,7 +24,7 @@ import { CoFormBanner } from "./CoFormBanner";
 import { DraftRecoveryBanner } from "./DraftRecoveryBanner";
 import { ErrorSummary } from "./ErrorSummary";
 import { AnswerActivityDialog } from "./AnswerActivityDialog";
-import type { CoFormData, SubFormData, AddedOptionsMap, EvaluationValue, CommonTableValue, FinderValue, SimpleTableValue, MultiRadioValue, ExistingAnswerMeta } from "../types";
+import type { CoFormData, SubFormData, AddedOptionsMap, EvaluationValue, CommonTableValue, CategorizedCheckboxValue, FinderValue, SimpleTableValue, MultiRadioValue, ExistingAnswerMeta } from "../types";
 import { parseCoFormFields, generateZodSchema, generateDefaultValues, getStepHasMultiEval, getOriginalFieldKey } from "../utils/formParser";
 import { scrollToFieldByName } from "../utils/helpers";
 import { cn } from "@/lib/utils";
@@ -534,6 +535,24 @@ export function DynamicCoForm({
                           onChange={controllerField.onChange}
                           readOnly={isLocked}
                           formId={formData.id}
+                        />
+                      )}
+                    />
+                  );
+
+                case "categorizedCheckbox":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={control}
+                      render={({ field: controllerField }) => (
+                        <CategorizedCheckboxField
+                          field={field}
+                          errors={errors}
+                          value={controllerField.value as CategorizedCheckboxValue}
+                          onChange={controllerField.onChange}
+                          readOnly={isLocked}
                         />
                       )}
                     />

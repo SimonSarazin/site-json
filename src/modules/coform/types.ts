@@ -319,6 +319,58 @@ export interface CommonTableValue {
   myCatalog: CommonTableMyCatalog;
 }
 
+// ============================================================================
+// categorizedCheckbox — cases à cocher à deux niveaux
+// ============================================================================
+
+/**
+ * Valeur d'un champ `categorizedCheckbox` — forme legacy conservée telle quelle.
+ * `list` porte les catégories cochées, `sublist` les sous-options cochées par catégorie.
+ * Les identifiants sont des clés `<index>_<slug>` (cf. `utils/slugify.ts`).
+ */
+export interface CategorizedCheckboxValue {
+  list: string[];
+  sublist: Record<string /* clé de catégorie */, string[]>;
+}
+
+/** D'où proviennent les options : liste saisie à la main, questions commonTable distantes, ou les deux. */
+export type CategorizedCheckboxSource = "manual" | "distanceOnly" | "both";
+
+/**
+ * Config admin lue dans `params.categorizedCheckbox{fieldKey}` (réglée côté legacy — cf. le
+ * précédent `simpleTable` : la config reste PHP, seul le rendu passe en React).
+ */
+export interface CategorizedCheckboxConfig {
+  /** Défaut serveur `"both"` quand la clé est absente (cf. `categorizedCheckbox.php:17`). */
+  dataSourceToUse: CategorizedCheckboxSource;
+  /** Catégories saisies à la main, dans l'ordre — l'index EST une partie de la clé persistée. */
+  list: string[];
+  /** Sous-options manuelles, par clé de catégorie. */
+  sublist: Record<string, string[]>;
+  /** Formulaires sources (finder legacy) : seules les CLÉS (ids) nous intéressent. */
+  formParamsSource: string[];
+  /** Questions sources, au format `<formId>-<stepId>-<inputKey>`. */
+  questionsParamsSource: string[];
+}
+
+/** Une sous-option (niveau 2) de l'arbre rendu. */
+export interface CategorizedCheckboxChild {
+  /** Clé persistée `<index>_<slug>`, index pris AVANT déduplication. */
+  key: string;
+  label: string;
+  /** Nombre de répondants ayant renseigné cet usage (source commonTable seulement). */
+  count?: number;
+}
+
+/** Une catégorie (niveau 1) de l'arbre rendu. */
+export interface CategorizedCheckboxOption {
+  key: string;
+  label: string;
+  children: CategorizedCheckboxChild[];
+  /** `true` si la catégorie vient d'une question commonTable distante. */
+  fromSource: boolean;
+}
+
 /**
  * Entrée du catalogue collaboratif d'un input commonTable.
  * Représente une criteria (solution) déclarée par n'importe quel répondant
@@ -542,7 +594,7 @@ export interface FormFieldMapping {
   name: string; // Nom du champ pour react-hook-form
   label: string;
   type: string; // Type CoForm (text, textarea, tpls.forms.cplx.radioNew, etc.)
-  componentType: "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "multiRadio" | "evaluation" | "commonTable" | "finder" | "simpleTable" | "uploader" | "timeSlots" | "dynamicFields" | "location" | "sectionTitle" | "sectionDescription" | "unknown";
+  componentType: "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "multiRadio" | "evaluation" | "commonTable" | "categorizedCheckbox" | "finder" | "simpleTable" | "uploader" | "timeSlots" | "dynamicFields" | "location" | "sectionTitle" | "sectionDescription" | "unknown";
   inputType?: string; // Type HTML pour l'input (url, email, tel, etc.) - utilisé quand componentType est "text"
   placeholder?: string;
   info?: string;
@@ -621,6 +673,8 @@ export interface FormFieldMapping {
   conditionalDisplay?: ConditionalDisplay;
   // Spécifique commonTable
   commonTableConfig?: CommonTableConfig;
+  // Spécifique categorizedCheckbox
+  categorizedCheckboxConfig?: CategorizedCheckboxConfig;
   /**
    * Si `true`, l'input radio active le mode "évaluation multiple" : la valeur
    * de chaque user est stockée séparément dans `_multiEval.{userId}` au lieu

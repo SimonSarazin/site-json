@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { CoFormData, FormFieldMapping, SubFormFields, MultiCheckboxPlusOptionType, EvaluationConfig, FinderConfig, FinderFilter, SimpleTableConfig, SimpleTableColumn, SimpleTableRow, UploaderConfig, ConditionalDisplay, CommonTableConfig, CommonTableValue, TimeSlotsConfig, DynamicFieldsConfig } from "../types";
+import type { CoFormData, FormFieldMapping, SubFormFields, MultiCheckboxPlusOptionType, EvaluationConfig, FinderConfig, FinderFilter, SimpleTableConfig, SimpleTableColumn, SimpleTableRow, UploaderConfig, ConditionalDisplay, CommonTableConfig, CommonTableValue, CategorizedCheckboxConfig, CategorizedCheckboxSource, TimeSlotsConfig, DynamicFieldsConfig } from "../types";
 import { isSlotComplete, isSlotOrdered } from "./timeSlots";
 
 // ─── Configuration des préfixes de champs ────────────────────────
@@ -168,6 +168,7 @@ export function mapCoFormTypeToComponentType(
     "tpls.forms.cplx.multiRadio": "multiRadio",
     "tpls.forms.cplx.checkboxNew": "checkbox",
     "tpls.forms.cplx.multiCheckboxPlus": "multiCheckboxPlus",
+    "tpls.forms.cplx.categorizedCheckbox": "categorizedCheckbox",
     "tpls.forms.cplx.evaluation": "evaluation",
     "tpls.forms.evaluation.evaluation": "evaluation",
     "tpls.forms.evaluation.commonTableV2": "commonTable",
@@ -429,6 +430,44 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         }
 
         commonTableConfig = { showColumns, labels, usages };
+      }
+
+      // Config spécifique pour categorizedCheckbox (cases à cocher à deux niveaux).
+      // Bloc unique `params.categorizedCheckbox{fieldKey}` (patron multiCheckboxPlus).
+      let categorizedCheckboxConfig: CategorizedCheckboxConfig | undefined;
+      if (componentType === "categorizedCheckbox") {
+        const paramData = (formData.params?.[`categorizedCheckbox${fieldKey}`] ?? {}) as Record<string, unknown>;
+
+        // `formParamsSource` est la sortie d'un finder legacy : une MAP id → {name, type…}.
+        // Seules les clés (les ids de formulaire) nous servent.
+        const sourceRaw = paramData.formParamsSource;
+        const formParamsSource =
+          sourceRaw && typeof sourceRaw === "object" && !Array.isArray(sourceRaw)
+            ? Object.keys(sourceRaw as Record<string, unknown>)
+            : [];
+
+        // Défaut "both" quand la clé est absente — cf. `categorizedCheckbox.php:17`.
+        const rawMode = paramData.dataSourceToUse;
+        const dataSourceToUse: CategorizedCheckboxSource =
+          rawMode === "manual" || rawMode === "distanceOnly" || rawMode === "both" ? rawMode : "both";
+
+        const rawSublist = paramData.sublist;
+        const sublist: Record<string, string[]> = {};
+        if (rawSublist && typeof rawSublist === "object") {
+          for (const [k, v] of Object.entries(rawSublist as Record<string, unknown>)) {
+            if (Array.isArray(v)) sublist[k] = v.map(String);
+          }
+        }
+
+        categorizedCheckboxConfig = {
+          dataSourceToUse,
+          list: Array.isArray(paramData.list) ? (paramData.list as unknown[]).map(String) : [],
+          sublist,
+          formParamsSource,
+          questionsParamsSource: Array.isArray(paramData.questionsParamsSource)
+            ? (paramData.questionsParamsSource as unknown[]).map(String)
+            : [],
+        };
       }
 
       // Config spécifique pour evaluation
@@ -727,6 +766,7 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         multiRadioConfig,
         evaluationConfig,
         commonTableConfig,
+        categorizedCheckboxConfig,
         finderConfig,
         simpleTableConfig,
         uploaderConfig,
@@ -981,6 +1021,26 @@ export function generateZodSchema(
             );
           } else {
             schemaShape[field.name] = commonTableSchema.optional();
+          }
+          break;
+        }
+
+        case "categorizedCheckbox": {
+          // Valeur composite `{ list, sublist }` — les DEUX clés doivent figurer ici : `z.object`
+          // strip tout ce qui n'est pas déclaré, et le formulaire mono-étape soumet la sortie
+          // zod-parsée. Une `sublist` non déclarée serait effacée à la soumission, en silence.
+          const categorizedSchema = z.object({
+            list: z.array(z.string()),
+            sublist: z.record(z.string(), z.array(z.string())),
+          });
+
+          if (field.isRequired) {
+            schemaShape[field.name] = categorizedSchema.refine(
+              (v) => v.list.length > 0,
+              { message: t("coform.validation.requiredField", `${field.label} est requis`, { label: field.label }) }
+            );
+          } else {
+            schemaShape[field.name] = categorizedSchema.optional();
           }
           break;
         }

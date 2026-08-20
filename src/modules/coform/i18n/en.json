@@ -474,6 +474,13 @@
     "dynamicFields": {
       "addRow": "Add a row",
       "removeRow": "Remove"
+    },
+    "categorizedCheckbox": {
+      "expand": "Expand",
+      "collapse": "Collapse",
+      "loadError": "Options could not be loaded.",
+      "notConfigured": "This field has not been configured yet.",
+      "orphans": "Saved answers no longer matching an available option:"
     }
   }
 }

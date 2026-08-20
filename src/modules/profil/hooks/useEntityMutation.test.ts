@@ -75,6 +75,34 @@ function makeEditable(serverData: Data = { name: "X" }) {
   return e;
 }
 
+/**
+ * Faux draft éditable dont le proxy REJETTE les champs hors liste blanche — réplique du
+ * `[DraftProxy]` de la lib, dont la liste est celle du costum de PROVENANCE (`source.key`) et
+ * non celle du site. `setCostumScope(slug, {pinSchema:true})` ouvre les champs de `slug`.
+ */
+function makeEditableAvecListeBlanche(autorises: string[], champsCostum: Record<string, string[]>) {
+  const scopes: Array<{ slug: string; opts?: { pinSchema?: boolean } }> = [];
+  let permis = new Set(autorises);
+  const e = {
+    saves: 0, slug: "edited", serverData: { name: "X" }, scopes,
+    data: new Proxy({} as Data, {
+      set: (cible, prop, valeur) => {
+        if (typeof prop !== "string") return false;
+        if (!permis.has(prop)) throw new Error(`[DraftProxy] Le champ "${prop}" n'est pas autorisé.`);
+        cible[prop] = valeur;
+        return true;
+      },
+    }),
+    setCostumScope: (slug: string, opts?: { pinSchema?: boolean }) => {
+      scopes.push({ slug, opts });
+      // Sans `pinSchema`, la lib ne pose que le scope d'ADMINISTRATION : le schéma ne bouge pas.
+      if (opts?.pinSchema) permis = new Set([...permis, ...(champsCostum[slug] ?? [])]);
+    },
+    save: async () => { e.saves += 1; },
+  };
+  return e;
+}
+
 const fakeRef = { id: "p1", getEntityType: () => "organizations", serverData: { name: "Parent" } } as unknown as EntityTypes;
 const fakeFile = { name: "img.png" } as unknown as File;
 const base = { successKey: "s", errorKey: "e", errorContext: "test" };
@@ -253,6 +281,48 @@ describe("runEntityMutation — parité avec les hooks bespoke", () => {
     expect(editable.saves).toBe(1);
     expect(editable.data).toEqual(prebuilt);
     expect(editable.removes).toBe(0);
+  });
+
+  /**
+   * Régression : éditer un lieu LISTÉ par un costum annuaire mais venu d'ailleurs. La liste blanche
+   * du draft est celle de sa PROVENANCE (`source.key` = `franceTierslieux`, un costum hors registre,
+   * ou rien) — elle ne contient pas les champs du formulaire du site, donc l'écriture était rejetée
+   * (`[DraftProxy] Le champ "holderOrganization" n'est pas autorisé.`) alors que la CRÉATION, elle,
+   * passait par `me.costum(slug)`. Retirer `schemaCostumSlug` (ou son `pinSchema`) refait échouer ces
+   * tests — c'est tout leur objet.
+   */
+  describe("EDIT costum : épingle du schéma du formulaire (schemaCostumSlug)", () => {
+    const CHAMPS_COSTUM = { navigatorDesTierslieux: ["holderOrganization", "typePlace", "manageModel"] };
+    const specEdit = (target: unknown, schemaCostumSlug?: string): EntityMutationSpec => ({
+      ...base, mode: "edit", entityType: "organizations",
+      target: target as EntityTypes, buildPayload: (d) => d, schemaCostumSlug,
+    });
+
+    it("épingle le costum du formulaire AVANT l'écriture → les champs costum passent", async () => {
+      const editable = makeEditableAvecListeBlanche(["name"], CHAMPS_COSTUM);
+      await runEntityMutation(
+        specEdit(editable, "navigatorDesTierslieux"),
+        { name: "Le lieu", holderOrganization: "SCIC Machin" },
+        { me: null },
+      );
+      expect(editable.scopes).toEqual([{ slug: "navigatorDesTierslieux", opts: { pinSchema: true } }]);
+      expect(editable.data).toMatchObject({ name: "Le lieu", holderOrganization: "SCIC Machin" });
+      expect(editable.saves).toBe(1);
+    });
+
+    it("sans schemaCostumSlug : aucun scope posé et le champ costum est refusé", async () => {
+      const editable = makeEditableAvecListeBlanche(["name"], CHAMPS_COSTUM);
+      await expect(
+        runEntityMutation(specEdit(editable), { name: "Le lieu", holderOrganization: "SCIC Machin" }, { me: null }),
+      ).rejects.toThrow(/n'est pas autorisé/);
+      expect(editable.scopes).toEqual([]);
+    });
+
+    it("entité sans setCostumScope (ancienne instance / faux SDK) : pas d'appel, pas de crash", async () => {
+      const editable = makeEditable();
+      await runEntityMutation(specEdit(editable, "navigatorDesTierslieux"), { name: "Le lieu" }, { me: null });
+      expect(editable.saves).toBe(1);
+    });
   });
 
   it("EDIT : imageDeleted sans nouveau fichier → removeProfilImage()", async () => {

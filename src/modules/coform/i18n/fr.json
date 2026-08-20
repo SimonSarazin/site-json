@@ -474,6 +474,13 @@
     "dynamicFields": {
       "addRow": "Ajouter une ligne",
       "removeRow": "Supprimer"
+    },
+    "categorizedCheckbox": {
+      "expand": "Déplier",
+      "collapse": "Replier",
+      "loadError": "Impossible de charger les options.",
+      "notConfigured": "Ce champ n'est pas encore configuré.",
+      "orphans": "Réponses enregistrées ne correspondant plus à une option proposée :"
     }
   }
 }
