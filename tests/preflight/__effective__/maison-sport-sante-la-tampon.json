@@ -103,44 +103,6 @@
     }
   },
   "pages": {
-    "//searchProStatic": {
-      "baseParams": {
-        "defaultTypes": [
-          "poi"
-        ],
-        "notSourceKey": true,
-        "indexStepList": 1,
-        "defaultFilters": {
-          "type": "article",
-          "source.key": "associationEkilibre",
-          "publicationStatus": "Publié",
-          "featured": true
-        },
-        "defaultSortBy": {
-          "publicationDate": -1
-        }
-      }
-    },
-    "//searchProStatic#1": {
-      "baseParams": {
-        "defaultTypes": [
-          "poi"
-        ],
-        "notSourceKey": true,
-        "indexStepList": 6,
-        "defaultFilters": {
-          "type": "article",
-          "source.key": "associationEkilibre",
-          "publicationStatus": "Publié",
-          "featured": {
-            "$ne": true
-          }
-        },
-        "defaultSortBy": {
-          "publicationDate": -1
-        }
-      }
-    },
     "/creneaux/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
@@ -150,22 +112,6 @@
         "defaultFilters": {
           "form": "6a85af345d898a57cb49f029",
           "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdn1jcq445i0mb9bap7": "Validé"
-        }
-      }
-    },
-    "/espace-pro/searchProStatic": {
-      "baseParams": {
-        "defaultTypes": [
-          "poi"
-        ],
-        "notSourceKey": true,
-        "defaultSortBy": {
-          "publicationDate": -1
-        },
-        "defaultFilters": {
-          "type": "article",
-          "source.key": "associationEkilibre",
-          "publicationStatus": "Publié"
         }
       }
     },

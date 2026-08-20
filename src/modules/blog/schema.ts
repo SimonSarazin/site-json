@@ -17,6 +17,12 @@ export const ArticleFeedSectionSchema = z.object({
     costumSlug: z.string(),
     /** Nombre d'articles par page (défaut 12). */
     pageSize: z.number().int().positive().optional(),
+    /**
+     * Tri serveur du fil ET de l'épinglée (défaut `{created:-1}`, historique). Ex. actualités
+     * éditoriales : `{"publicationDate":-1}` — la date de PUBLICATION prime sur la date de
+     * saisie (review MR 44, refonte option B).
+     */
+    sortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
     /** Filtre serveur additionnel (ex. `{ category: "actus" }`). `type:"article"` est toujours injecté. */
     filters: z.record(z.string(), z.unknown()).optional(),
     /**

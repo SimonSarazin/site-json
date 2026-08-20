@@ -21,9 +21,11 @@ export interface UseArticleFeedParams {
   costumSlug: string;
   pageSize?: number;
   filters?: Record<string, unknown>;
+  /** Tri serveur (défaut `{created:-1}`). Doit être IDENTIQUE entre fil et épinglée. */
+  sortBy?: Record<string, 1 | -1>;
 }
 
-export function useArticleFeed({ costumSlug, pageSize = 12, filters }: UseArticleFeedParams) {
+export function useArticleFeed({ costumSlug, pageSize = 12, filters, sortBy }: UseArticleFeedParams) {
   const cf = usePageFiltersOptional();
   const searchText = cf?.searchQuery ?? "";
   const filterNames = cf?.filterNames;
@@ -57,7 +59,7 @@ export function useArticleFeed({ costumSlug, pageSize = 12, filters }: UseArticl
       // Cf doc/19-visibility-system.md (Visibilité des données) + doc/32-module-articles-blog.md.
       // `type: "article"` en DERNIER = garantie d'immuabilité (un filtre field:"type" ne peut pas l'écraser).
       defaultFilters: { ...(filters ?? {}), ...fieldFilters, type: "article" },
-      defaultSortBy: { created: -1 },
+      defaultSortBy: sortBy ?? { created: -1 },
       // scope costum : lus par buildSearchPayload via cast (présents en config, hors type strict).
       costumSlug,
       sourceKey: [costumSlug],
@@ -72,9 +74,10 @@ export function useArticleFeed({ costumSlug, pageSize = 12, filters }: UseArticl
  * Requête SERVEUR délibérément (pas un scan de la fenêtre chargée) : l'épinglée peut être
  * ancienne et vivre hors des pages chargées — la leçon du finding review MR 44.
  */
-export function usePinnedArticle({ costumSlug, filters, enabled }: {
+export function usePinnedArticle({ costumSlug, filters, sortBy, enabled }: {
   costumSlug: string;
   filters?: Record<string, unknown>;
+  sortBy?: Record<string, 1 | -1>;
   enabled: boolean;
 }) {
   return useSearchQuery({
@@ -88,7 +91,7 @@ export function usePinnedArticle({ costumSlug, filters, enabled }: {
       indexStepList: 1,
       // `featured` puis `type` en DERNIER : un filtre de config ne peut écraser ni l'un ni l'autre.
       defaultFilters: { ...(filters ?? {}), featured: true, type: "article" },
-      defaultSortBy: { created: -1 },
+      defaultSortBy: sortBy ?? { created: -1 },
       costumSlug,
       sourceKey: [costumSlug],
     } as never,

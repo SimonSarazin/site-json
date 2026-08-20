@@ -30,13 +30,13 @@ function Feed({ props, base, cardVariant, feedLayout }: {
 }) {
   const t = useT("modules/blog");
   const { transformedResults, lastItemRef, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, error, refetch } = useArticleFeed({
-    costumSlug: props.costumSlug, pageSize: props.pageSize, filters: props.filters,
+    costumSlug: props.costumSlug, pageSize: props.pageSize, filters: props.filters, sortBy: props.sortBy,
   });
   const items = ((transformedResults as unknown[]) ?? []).map(normalizeArticleResult);
   // Mode `featured:"flag"` : l'épinglée est cherchée par une MICRO-REQUÊTE serveur dédiée
   // (`{featured:true}`, 1 résultat) — jamais dans la fenêtre chargée (leçon review MR 44).
   const flagMode = props.featured === "flag";
-  const pinnedQuery = usePinnedArticle({ costumSlug: props.costumSlug, filters: props.filters, enabled: flagMode });
+  const pinnedQuery = usePinnedArticle({ costumSlug: props.costumSlug, filters: props.filters, sortBy: props.sortBy, enabled: flagMode });
   const pinned = flagMode
     ? (((pinnedQuery.transformedResults as unknown[]) ?? []).map(normalizeArticleResult))[0]
     : undefined;

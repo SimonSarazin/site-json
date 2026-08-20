@@ -357,113 +357,21 @@
           }
         },
         {
-          "type": "searchProStatic",
-          "id": "actualites-featured",
+          "type": "articleFeed",
           "props": {
-            "customHeader": {
-              "title": {
-                "fr": "Actualités",
-                "en": "News"
-              }
+            "costumSlug": "associationEkilibre",
+            "filters": {
+              "publicationStatus": "Publié"
             },
-            "useFilter": false,
-            "showMap": false,
-            "enableMap": false,
-            "disableInfiniteScroll": true,
-            "baseParams": {
-              "defaultTypes": [
-                "poi"
-              ],
-              "notSourceKey": true,
-              "indexStepList": 1,
-              "defaultFilters": {
-                "type": "article",
-                "source.key": "associationEkilibre",
-                "publicationStatus": "Publié",
-                "featured": true
-              },
-              "defaultSortBy": {
-                "publicationDate": -1
-              }
+            "sortBy": {
+              "publicationDate": -1
             },
-            "list": {
-              "columns": {
-                "sm": 1,
-                "md": 1,
-                "lg": 1,
-                "xl": 1
-              },
-              "card": {
-                "type": "resource",
-                "detailsMode": "dialog"
-              },
-              "preview": {
-                "type": "resource"
-              },
-              "resource": {
-                "titleField": "name",
-                "descriptionField": "description",
-                "dateField": "publicationDate",
-                "imageField": "profilMediumImageUrl",
-                "urlsField": "link",
-                "badge": {
-                  "field": "category"
-                }
-              }
-            }
-          }
-        },
-        {
-          "type": "searchProStatic",
-          "id": "actualites-grid",
-          "props": {
-            "useFilter": false,
-            "showMap": false,
-            "enableMap": false,
-            "disableInfiniteScroll": true,
-            "baseParams": {
-              "defaultTypes": [
-                "poi"
-              ],
-              "notSourceKey": true,
-              "indexStepList": 6,
-              "defaultFilters": {
-                "type": "article",
-                "source.key": "associationEkilibre",
-                "publicationStatus": "Publié",
-                "featured": {
-                  "$ne": true
-                }
-              },
-              "defaultSortBy": {
-                "publicationDate": -1
-              }
+            "title": {
+              "fr": "Actualités",
+              "en": "News"
             },
-            "list": {
-              "columns": {
-                "sm": 1,
-                "md": 2,
-                "lg": 3,
-                "xl": 3
-              },
-              "card": {
-                "type": "resource",
-                "detailsMode": "dialog"
-              },
-              "preview": {
-                "type": "resource"
-              },
-              "resource": {
-                "titleField": "name",
-                "descriptionField": "description",
-                "dateField": "publicationDate",
-                "imageField": "profilMediumImageUrl",
-                "urlsField": "link",
-                "badge": {
-                  "field": "category"
-                }
-              }
-            }
+            "featured": "flag",
+            "pageSize": 7
           }
         },
         {
@@ -1858,65 +1766,16 @@
           }
         },
         {
-          "type": "searchProStatic",
-          "id": "actualites-articles-list",
+          "type": "articleFeed",
           "props": {
-            "useFilter": true,
-            "showMap": false,
-            "enableMap": false,
-            "showActiveFiltersTypes": true,
-            "showActiveFiltersTags": true,
-            "disableInfiniteScroll": false,
-            "baseParams": {
-              "defaultTypes": [
-                "poi"
-              ],
-              "notSourceKey": true,
-              "defaultSortBy": {
-                "publicationDate": -1
-              },
-              "defaultFilters": {
-                "type": "article",
-                "source.key": "associationEkilibre",
-                "publicationStatus": "Publié"
-              }
+            "costumSlug": "associationEkilibre",
+            "filters": {
+              "publicationStatus": "Publié"
             },
-            "list": {
-              "columns": {
-                "sm": 1,
-                "md": 3,
-                "lg": 3,
-                "xl": 3
-              },
-              "previewParam": "preview-actus",
-              "card": {
-                "type": "resource",
-                "detailsMode": "drawer"
-              },
-              "preview": {
-                "type": "resource"
-              },
-              "resource": {
-                "design": "card",
-                "titleField": "name",
-                "descriptionField": "description",
-                "dateField": "publicationDate",
-                "imageField": "profilMediumImageUrl",
-                "urlsField": "link",
-                "badge": {
-                  "field": "category"
-                },
-                "facets": [
-                  {
-                    "field": "tags",
-                    "label": {
-                      "fr": "Mots-clés",
-                      "en": "Tags"
-                    }
-                  }
-                ]
-              }
-            }
+            "sortBy": {
+              "publicationDate": -1
+            },
+            "pageSize": 12
           }
         }
       ]
@@ -2425,6 +2284,30 @@
           "id": "accessibilite-content",
           "props": {
             "html": "<section class=\"py-16 px-4\"><div class=\"container mx-auto max-w-3xl space-y-8\"><h1 class=\"text-3xl md:text-4xl font-bold text-foreground\">Accessibilité</h1><div class=\"space-y-4 text-muted-foreground leading-relaxed\"><p>L'association Ekilib.re s'engage à rendre son site accessible au plus grand nombre, conformément aux recommandations <strong class=\"text-foreground\">WCAG 2.1 niveau AA</strong> et au référentiel <strong class=\"text-foreground\">RGAA</strong>.</p><h2 class=\"text-xl font-bold text-foreground\">Mesures mises en œuvre</h2><p>Navigation au clavier sur tous les éléments interactifs, attributs ARIA sur les boutons et liens iconiques, contrastes de couleurs conformes, textes alternatifs sur les images, mode sombre disponible.</p><h2 class=\"text-xl font-bold text-foreground\">Signaler un problème</h2><p>Si vous rencontrez un défaut d'accessibilité, contactez-nous à contact@ekilib.re ou au 06 93 51 42 24 : nous nous efforcerons de le corriger rapidement.</p></div></div></section>"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/blog",
+      "title": {
+        "fr": "Actualités",
+        "en": "News"
+      },
+      "sections": [
+        {
+          "type": "articleFeed",
+          "props": {
+            "costumSlug": "associationEkilibre",
+            "filters": {
+              "publicationStatus": "Publié"
+            },
+            "sortBy": {
+              "publicationDate": -1
+            },
+            "featured": "flag",
+            "pageSize": 12,
+            "fullWidth": true
           }
         }
       ]
@@ -5635,5 +5518,10 @@
         }
       ]
     }
+  },
+  "blog": {
+    "feedCostumSlug": "associationEkilibre",
+    "readerVariant": "default",
+    "defaultCardVariant": "default"
   }
 }
