@@ -80,10 +80,11 @@
 
 ## Chantier B — recible la config sur associationEkilibre (mono-slug après F)
 
-- [ ] `costumForms.structure.scope.constant` → `"associationEkilibre"` (après A), **et poser
-      en même temps `costumForms.structure.costumSlug: "associationEkilibre"`** (clé absente
-      aujourd'hui, sur décision : jamais de valeur ssbe transitoire) — les deux doivent rester
-      alignés (whitelist d'écriture + pin de schéma en édition + e2e des forms).
+- [x] **FAIT 2026-08-20** — `scope.constant` ET `costumSlug` basculés ensemble sur
+      `"associationEkilibre"` (jamais de valeur ssbe transitoire). ⚠️ **GATE DE DÉPLOIEMENT** :
+      cette config suppose la copie A jouée sur la base CIBLE — jouer
+      `tools/mss-la-tampon/copy-costum-decl.mjs` (dry-run puis --apply) en PROD **AVANT** tout
+      déploiement de la branche, sinon whitelist costum VIDE (champs métier rabotés au save).
 - [ ] `/structure` : remplacer le filtre brut `defaultFilters["source.key"].$in` **et**
       `notSourceKey` par `sourceKey: "associationEkilibre"` — la traduction serveur
       (`search.ts:302-305`) ramène possédées + référencées. ⚠️ `notSourceKey` non-vide fait
@@ -95,8 +96,7 @@
       (Saint-Joseph) en suivant le doc-projet — ajout REVERTÉ sur décision. ⚠️ Le doc-projet
       (l.59 « du Tampon et de Saint-Joseph », l.209 « Tampon/St-Joseph ») contredit désormais
       la config : à corriger, et à signaler à l'auteur dans le commentaire de review MR.
-- [ ] commandPalette `entitySearch.params.sourceKey` → `["associationEkilibre"]` seul
-      (après F ; en attendant, += eki reste le fix immédiat).
+- [x] commandPalette `sourceKey` += `associationEkilibre` (2026-08-20) ; → eki seul après F.
 - [ ] editModals `when` : RESTENT doubles — la clé `sourceKeys` calculée par la lib ne
       contient PAS `reference.costum` (précédent institutBleu), un match eki-seul raterait le
       stock référencé. Alternative à trancher à l'exécution : étendre le matcher
@@ -114,21 +114,18 @@ l'héritage, pas une contrainte de design :
   absent (valeurs présentes dans le stock, `costumize/sportSanteBienetre/admin.js:290-298`) ;
 - **affichage public** : filtre `statusActor = "Validé"`.
 
-- [ ] Prérequis : `statusActor` déclaré dans le dynForm copié (chantier A) → la whitelist passe.
-- [ ] Création : revenir à l'`inject.extraFields.statusActor = "En cours"` de la MR d'origine
-      (canal payload, valide une fois déclaré) et **retirer** le stamp `pathValue` du
-      2026-08-19 ; remettre à jour la sentinelle `tests/preflight/stamps.test.ts` (l'entrée
-      MSS disparaît) et les tests configDriven concernés.
+- [x] Prérequis FAIT : `statusActor` déclaré dans le dynForm copié (chantier A, dev).
+- [x] **FAIT 2026-08-20** — inject payload `statusActor: "En cours"` restauré, stamp
+      `pathValue` retiré ; sentinelle stamps et test configDriven 11 mis à jour (même gate de
+      déploiement que B : déclaration requise sur la base cible).
 - [ ] Lecture : le defaultFilter `statusActor: "Validé"` sur `/structure` posé le 2026-08-19
       **RESTE** (même sémantique que le site régional). Pas de gate `toBeValidated`, donc pas
       de `costumSlug` à ajouter pour ça. Assumé : pas de « l'auteur voit ses propres
       en-attente » — parité UX avec le régional.
-- [ ] Admin : section resource `organizations` de modération en mode
-      `status.mode: "statusField"`, `states` = les 4 valeurs ci-dessus (VERBATIM, avec
-      accents), gabarit = la section créneaux du tab `moderation` existant.
-      **Scopée aux fiches POSSÉDÉES** (`source.key = associationEkilibre` en filtre brut,
-      PAS le param `sourceKey` qui ramènerait les référencées) — cohérent avec le modèle F/G :
-      MSS ne modère jamais le stock ssbe référencé.
+- [x] **FAIT 2026-08-20** — bloc `status` statusField (statusActor, 4 états tonés) posé sur la
+      section « Structures » du tab admin + rowAction `validate`. Le scoping aux POSSÉDÉES est
+      assuré par le gate G (`restrictActionsToOwned` : le dropdown de statut n'apparaît que sur
+      les lignes possédées) — pas besoin d'une section séparée.
 - [ ] Backfill : **AUCUN**. Les 33 non-Validé gardent leur statut tel quel ; la fiche sans
       `statusActor` est cachée par le filtre public et l'admin l'affiche « En attente ».
 - [ ] `toBeValidated` : ne sert PAS pour les structures MSS.
@@ -142,8 +139,9 @@ l'héritage, pas une contrainte de design :
 
 ## Chantier D — identity du form
 
-- [ ] Poser `costumForms.structure.identity` (name/type) — le type `NGO`/`Cooperative` déclaré
-      au patron au lieu d'un inject.
+- [x] **FAIT 2026-08-20** — `identity: {type: "Cooperative"}` posé. Nuance d'exécution :
+      `identity` est DÉCLARATIF (discriminant `costumSubType` côté recherche) — l'inject reste
+      l'ÉCRIVAIN du type à la création ; les deux couches coexistent, chacune son rôle.
 
 ## Chantier E — enums depuis le costum (fin de la duplication à la main)
 

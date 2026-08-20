@@ -96,12 +96,9 @@ describe("préflight mutation.stamps", () => {
     const parc = SITES.flatMap(({ site, cfg }) => stampsDe(cfg).map(({ formId, stamps }) => `${site.replace("config.prod.", "").replace(".json", "")}/${formId}:${stamps.length}`));
     expect(parc).toEqual([
       "institut-bleu/institut-bleu-acteur:2",
-      // Statut de la file de validation posé à la CRÉATION d'une structure, en canal `pathValue`
-      // (updateField post-save) : `statusActor` n'est déclaré ni au contrat ni à l'artefact costum
-      // — via `inject.extraFields` (canal payload) il était silencieusement FILTRÉ par la
-      // whitelist de la lib et les structures naissaient SANS statut, court-circuitant la
-      // modération. Patron identique aux stamps de saint-paul.
-      "maison-sport-sante-la-tampon/structure:1",
+      // MSS structure n'a PLUS de stamp : `statusActor` est déclaré au dynForm du costum
+      // `associationEkilibre` depuis la copie du chantier A (plan mss-la-tampon) — l'inject
+      // payload « En cours » passe la whitelist, le stamp pathValue de contournement a été retiré.
       // RELIEF dérive de la config tiers-lieux, dont il reprend le form et ses 5 stamps.
       "relief/tiers-lieux:5",
       // Référencement régional posé à la création : la fiche appartient au costum COMMUNAL

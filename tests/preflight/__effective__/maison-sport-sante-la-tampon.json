@@ -150,17 +150,6 @@
       }
     }
   },
-  "stamps": {
-    "structure": [
-      {
-        "field": "statusActor",
-        "value": "En cours",
-        "op": "set",
-        "on": "add",
-        "channel": "pathValue"
-      }
-    ]
-  },
   "referencement": {},
   "membership": {
     "citoyens/membership": {

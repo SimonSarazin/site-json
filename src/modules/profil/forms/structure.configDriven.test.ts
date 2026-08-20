@@ -240,25 +240,20 @@ describe("costum structure Ekilib.re — spec de mutation", () => {
   it("11. CREATE : scope costum + stamp type/role (§25)", () => {
     const m = config.buildSpec(ctx("add"));
     expect(m.entityType).toBe("organizations");
-    // Slug CONSTANT, PAS le carrier : `associationEkilibre` n'est pas un costum enregistré → contexte NU
-    // → `_extractWritableFields` ne retient AUCUN champ métier (retirés du draft à la construction de
-    // l'entité, sans erreur ni log). `sportSanteBienetre` porte leur déclaration.
-    expect(m.costumSlug).toBe("sportSanteBienetre");
-    // `statusActor` : toute nouvelle structure entre en file de validation ("En cours"), jamais publiée
-    // directement. C'est un STAMP create-only — une fois l'entrée validée par un admin, l'édition ne
-    // remet pas le statut à zéro (cf. test suivant : la clé est absente du payload d'édition).
+    // Slug CONSTANT = `associationEkilibre` : depuis la copie du chantier A (plan mss-la-tampon),
+    // le costum du site porte SES propres déclarations (typeObj.organizations 43 props + 3 amendées
+    // dont `statusActor`) — le site n'écrit plus sous le costum régional ssbe.
+    expect(m.costumSlug).toBe("associationEkilibre");
+    // `statusActor` : toute nouvelle structure entre en file de validation ("En cours"), jamais
+    // publiée directement — create-only, l'édition ne réémet pas la clé (cf. test suivant).
+    // REVENU au canal payload (inject) : déclaré au dynForm copié, il passe la whitelist — le
+    // stamp pathValue de contournement est retiré (byte-diff L=B prouvé, probe save-structure-eki).
     // `type` sélectionne la VARIANTE costum (pickCostumOverlay : discriminator === data.type) :
-    // "Cooperative" = structure adhérente (16/17 champs déclarés) ; "NGO"/mss est le formulaire des
-    // Maisons Sport Santé et n'en déclare que 8 → il amputerait la saisie.
-    // `statusActor` n'est PLUS dans extraFields (canal payload) : ce champ n'est déclaré ni au
-    // contrat ni à l'artefact costum → la whitelist de la lib le FILTRAIT en silence et les
-    // structures naissaient sans statut (file de validation inopérante). Il est posé par un STAMP
-    // canal `pathValue` (updateField post-save, hors whitelist) — patron saint-paul.
-    expect(m.inject?.extraFields).toEqual({ type: "Cooperative", role: "admin" });
+    // "Cooperative" = structure adhérente ; déclaré AUSSI en `identity` (2e couche de la triple
+    // déclaration — discriminant costumSubType), l'inject restant l'écrivain.
+    expect(m.inject?.extraFields).toEqual({ type: "Cooperative", role: "admin", statusActor: "En cours" });
     expect(m.inject?.dropEmptyEmail).toBe(true);
-    expect(m.stamps).toEqual([
-      { field: "statusActor", value: "En cours", op: "set", on: "add", channel: "pathValue" },
-    ]);
+    expect(m.stamps).toBeUndefined();
     expect(m.imageField).toBe("_imageFile");
   });
 

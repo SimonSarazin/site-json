@@ -2613,6 +2613,7 @@
             "restrictActionsToOwned": true,
             "rowActions": [
               "edit",
+              "validate",
               "reference",
               "delete"
             ],
@@ -2665,7 +2666,29 @@
                   "en": "Source"
                 }
               }
-            ]
+            ],
+            "status": {
+              "mode": "statusField",
+              "field": "statusActor",
+              "states": [
+                {
+                  "value": "En attente",
+                  "tone": "pending"
+                },
+                {
+                  "value": "En cours",
+                  "tone": "progress"
+                },
+                {
+                  "value": "Validé",
+                  "tone": "positive"
+                },
+                {
+                  "value": "Refusé",
+                  "tone": "negative"
+                }
+              ]
+            }
           }
         ]
       },
@@ -2783,7 +2806,8 @@
       "limit": 8,
       "params": {
         "sourceKey": [
-          "sportSanteBienetre"
+          "sportSanteBienetre",
+          "associationEkilibre"
         ]
       }
     }
@@ -2793,6 +2817,7 @@
       "id": "structure",
       "entityType": "organizations",
       "collection": "organizations",
+      "costumSlug": "associationEkilibre",
       "icon": "building-2",
       "layout": {
         "kind": "wizard",
@@ -3994,7 +4019,7 @@
       },
       "scope": {
         "slugFrom": "constant",
-        "constant": "sportSanteBienetre"
+        "constant": "associationEkilibre"
       },
       "mutation": {
         "entityType": "organizations",
@@ -4003,18 +4028,10 @@
           "dropEmptyEmail": true,
           "extraFields": {
             "type": "Cooperative",
-            "role": "admin"
+            "role": "admin",
+            "statusActor": "En cours"
           }
         },
-        "stamps": [
-          {
-            "field": "statusActor",
-            "value": "En cours",
-            "op": "set",
-            "on": "add",
-            "channel": "pathValue"
-          }
-        ],
         "successKey": {
           "add": "toast.add.organizationSuccess",
           "edit": "toast.profile.updateSuccess"
@@ -4036,6 +4053,9 @@
             ]
           }
         }
+      },
+      "identity": {
+        "type": "Cooperative"
       }
     }
   },
