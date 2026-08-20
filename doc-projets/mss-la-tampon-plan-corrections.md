@@ -229,3 +229,15 @@ chemin legacy est touché, vérification navigateur sur données réelles.
   probe) et **BUG-N-339** (save slug-seul sous costum-élément : source non stampé côté B —
   à trancher ; le triplet nominal du client n'est pas affecté).
   Restent pour clore A : miroir PROD de la copie + régen artefact/lib (batch drift host).
+
+- **2026-08-20 (soir) — Jalons B/C prouvés par l'e2e du parc + régression telephone attrapée
+  et corrigée.** L'e2e `costum-forms` (chaîne client réelle, add+edit+forme stockée) : **22/22
+  PASS en mode bundle**, MSS `structure` inclus — jouable depuis la pose de `costumSlug`.
+  En chemin, l'e2e a attrapé une régression de la branche : les codecs `telephone:read/write`
+  ajoutés le 2026-08-19 pour MSS DOUBLONNAIENT des codecs partagés existants (même nom,
+  sémantique différente — dernier enregistré gagne) et écrasaient le codec LOSSLESS du parc
+  (ssbe/cyber-reunion : champ `telephone` + porteurs `_telSlot`/`_telRest`). Correction : doublons
+  SUPPRIMÉS, form MSS ALIGNÉ sur le patron du parc (le codec partagé est meilleur : round-trip
+  sans perte, multiples, slot d'origine). Mode live : 21/22 — seul échec `relief/tiers-lieux`,
+  PRÉEXISTANT et hors périmètre (asymétrie bundle/live : l'inférence live type `string` là où
+  l'artefact déclare `oneOf string|number` → candidate à un fix lib, à batcher).

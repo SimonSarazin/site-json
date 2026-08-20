@@ -273,29 +273,3 @@ registerTransform("multiCsv:write", (_v, all, p) => {
   return parts.length > 0 ? parts.join(sep) : undefined;
 });
 
-// ── Codec du GROUPE `telephone` (clés `telephone:read`/`telephone:write`) ──────────────────────────
-// Modèle serveur legacy : objet `{mobile:[…], fixe:[…]}` (mesuré : 128/138 orgs SSBE, 133/133 au
-// contrat) — un champ de form PLAT `mobile` écrivait une clé racine `mobile` que le parc ne porte
-// presque pas (4/138) : téléphone VIDE à l'édition des structures existantes et jamais affiché par
-// les previews (qui lisent `telephone.*`). Le membre CACHÉ `telephoneFixe` transporte `fixe` à
-// travers les valeurs de form pour que le write recompose l'objet SANS perdre les fixes existants
-// (le write de groupe ne reçoit pas serverData — le read est le seul passage).
-registerTransform("telephone:read", (tel, serverData) => {
-  const t = (tel ?? {}) as Record<string, unknown>;
-  const sd = (serverData ?? {}) as Record<string, unknown>;
-  const first = (v: unknown): string =>
-    Array.isArray(v) ? pickStr(v[0]) : typeof v === "string" ? v : "";
-  const out: Record<string, unknown> = {};
-  // repli sur le `mobile` PLAT historique (4 orgs du parc) quand l'objet telephone ne le porte pas
-  const mobile = first(t.mobile) || pickStr(sd.mobile);
-  if (mobile) out.mobile = mobile;
-  if (Array.isArray(t.fixe) && t.fixe.length > 0) out.telephoneFixe = t.fixe;
-  return out;
-});
-registerTransform("telephone:write", (all) => {
-  const v = (all ?? {}) as Record<string, unknown>;
-  const m = pickStr(v.mobile).trim();
-  const fixe = Array.isArray(v.telephoneFixe) && v.telephoneFixe.length > 0 ? v.telephoneFixe : undefined;
-  if (!m && !fixe) return undefined; // rien à écrire → clé omise (jamais un objet vide)
-  return { ...(m ? { mobile: [m] } : {}), ...(fixe ? { fixe } : {}) };
-});

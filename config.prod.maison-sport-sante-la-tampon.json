@@ -3031,8 +3031,8 @@
           "type": "array",
           "write": "structure:tagsFromThematic"
         },
-        "mobile": {
-          "widget": "text",
+        "telephone": {
+          "widget": "tel",
           "group": "telephone",
           "label": {
             "fr": "Téléphone",
@@ -3041,14 +3041,14 @@
           "placeholder": {
             "fr": "0692001122",
             "en": "0692001122"
-          },
-          "widgetProps": {
-            "inputType": "tel"
           }
         },
-        "telephoneFixe": {
+        "_telSlot": {
           "widget": "hidden",
-          "type": "array",
+          "group": "telephone"
+        },
+        "_telRest": {
+          "widget": "hidden",
           "group": "telephone"
         },
         "address": {
@@ -3824,7 +3824,7 @@
             {
               "columns": 2,
               "fields": [
-                "mobile",
+                "telephone",
                 "email"
               ]
             },

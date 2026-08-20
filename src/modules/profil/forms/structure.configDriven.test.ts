@@ -54,7 +54,7 @@ const FILLED = {
   streetAddress: "79 A, chemin Philomar",
   localityId: "54c0965cf6b95c141800a51e",
   email: "jeremy.enseignant.apa@gmail.com",
-  mobile: "692211490",
+  telephone: "692211490",
   legalStatus: "Entreprise, Auto-entrepreneur, Sisa",
   representativeTitle: "Chef.fe d'entreprise",
   representativeCivility: "M.",
@@ -125,7 +125,8 @@ describe("costum structure Ekilib.re — WRITE (création)", () => {
       name: "NOUT' SPORT ADAPTÉ",
       affiliate: "Oui",
       email: "jeremy.enseignant.apa@gmail.com",
-      // `mobile` part désormais par le GROUPE telephone → objet legacy {mobile:[…]} (128/138 orgs
+      // saisie `telephone` (codec de groupe LOSSLESS partagé du parc, _telSlot par défaut mobile)
+      // → objet legacy {mobile:[…]} (128/138 orgs
       // réelles) — plus de clé racine plate.
       telephone: { mobile: ["692211490"] },
       legalStatus: "Entreprise, Auto-entrepreneur, Sisa",
@@ -203,7 +204,7 @@ describe("costum structure Ekilib.re — WRITE (création)", () => {
     expect(p.siren).toBe("123 456 789 00012");
     expect(p.representativeTelephone).toBe("+261 34 25 363 35");
     expect(p.personInChargeTelephone).toBe("06 92 00 11 22");
-    // `mobile` (groupe telephone) sort en objet serveur, jamais en clé plate.
+    // la saisie `telephone` (groupe) sort en objet serveur — jamais de clé plate `mobile`.
     expect(p.telephone).toEqual({ mobile: ["692211490"] });
     expect(p).not.toHaveProperty("mobile");
   });
