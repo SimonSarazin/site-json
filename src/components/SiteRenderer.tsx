@@ -9,6 +9,10 @@ import { Seo } from "./layout/Seo";
 import { usePageGuards } from "@/hooks/usePageGuards";
 import { PageProvider } from "@/contexts/PageProvider";
 import { discoverModules, getPageProviders } from "@/lib/modules";
+import { isGatedPage } from "@/lib/pageAccess";
+import { useCocolight } from "@/hooks/useCocolight";
+import { useHydrated } from "@/hooks/useHydrated";
+import { useT } from "@/hooks/useT";
 
 /**
  * Compose la liste des `PageProvider` des modules autour de `children`.
@@ -27,11 +31,31 @@ function PageProvidersComposer({ children }: { children: ReactNode }) {
 export function SiteRenderer() {
   const { config } = useSite();
   const { pathname } = useLocation();
+  const { me } = useCocolight();
+  const hydrated = useHydrated();
+  const t = useT();
 
   const currentPage =
     config.pages.find((p) => p.path === pathname) || config.pages[0];
 
   usePageGuards(currentPage);
+
+  /**
+   * Une page GARDÉE ne sert ses sections qu'une fois l'accès établi CÔTÉ CLIENT.
+   *
+   * `usePageGuards` vit dans un `useEffect` : il ne s'exécute jamais au rendu serveur. Sans ce
+   * verrou, le HTML complet d'une page réservée partait en HTTP 200 à un visiteur anonyme
+   * (mesuré : 165 ko, 5 sections, ~1 s de contenu privé à l'écran avant la redirection), lisible
+   * en `view-source` et par tout client qui n'exécute pas JS.
+   *
+   * Ce n'est PAS une garde serveur — elle est aujourd'hui impossible (`initApi()` n'est pas
+   * appelé avec les cookies de la requête, et le stockage de jeton au SSR est `"memory"` : `me`
+   * vaut toujours `null` au rendu). C'est un verrou de RENDU : le contenu ne quitte plus le
+   * serveur. Le sitemap et la balise `robots` appliquent la même règle via `isGatedPage`.
+   */
+  const gated = isGatedPage(currentPage);
+  const accesEtabli = hydrated && Boolean(me?.isConnected);
+  const sectionsMasquees = gated && !accesEtabli;
 
   if (!currentPage) {
     return (
@@ -72,9 +96,17 @@ function getLayoutClasses(layout: string) {
               même page ne remonte pas. */}
           <PageProvidersComposer key={pathname}>
             <PageProvider page={currentPage}>
-              {currentPage.sections.map((s, i) => (
-                <SectionRenderer key={s.id ?? `section-${i}`} section={s} index={i} />
-              ))}
+              {sectionsMasquees ? (
+                <div className="flex min-h-[50vh] items-center justify-center px-4">
+                  <p className="text-center text-muted-foreground">
+                    {t("Contenu réservé — vérification de votre accès…")}
+                  </p>
+                </div>
+              ) : (
+                currentPage.sections.map((s, i) => (
+                  <SectionRenderer key={s.id ?? `section-${i}`} section={s} index={i} />
+                ))
+              )}
             </PageProvider>
           </PageProvidersComposer>
         </main>
