@@ -1966,7 +1966,7 @@
             "useFilter": true,
             "showMap": true,
             "enableMap": true,
-            "defaultViewMode": "list",
+            "defaultViewMode": "split",
             "showActiveFiltersTypes": true,
             "showActiveFiltersTags": true,
             "baseParams": {
@@ -2072,8 +2072,7 @@
               },
               "itemAction": {
                 "kind": "preview"
-              },
-              "layout": "split"
+              }
             }
           }
         }
