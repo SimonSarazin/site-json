@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 
 import { pickFeatured } from "./pickFeatured";
 
-import type { ArticleData } from "./articleLink";
+import type { ArticleData } from "../hooks/useArticle";
 
 const a = (id: string) => ({ id, name: id }) as unknown as ArticleData;
 const ITEMS = [a("recent"), a("milieu"), a("ancien")];

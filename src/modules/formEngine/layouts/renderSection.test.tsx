@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * `renderSection` — règle du TITRE ORPHELIN : un groupe dont tous les champs visuels sont
  * masqués (widget `hidden` OU `visibleIf` faux) disparaît ENTIÈREMENT, titre compris.

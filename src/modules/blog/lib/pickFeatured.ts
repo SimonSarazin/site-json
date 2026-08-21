@@ -1,4 +1,4 @@
-import type { ArticleData } from "./articleLink";
+import type { ArticleData } from "../hooks/useArticle";
 
 /**
  * Sélection de la une + du fil selon le mode `featured` d'`articleFeed` (pure, testée) :
