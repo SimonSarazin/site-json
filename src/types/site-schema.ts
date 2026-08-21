@@ -1608,7 +1608,21 @@ export const Page = z.object({
   title: LocalizedString,
   seo: PageMeta.optional(),
   layout: z.enum(["default", "fullwidth", "sidebar-left", "sidebar-right", "landing"]).default("default"),
-  auth: z.object({ required: z.boolean().default(false), roles: z.array(z.string()).optional() }).optional(),
+  auth: z
+    .object({
+      required: z.boolean().default(false),
+      roles: z.array(z.string()).optional(),
+      /**
+       * Ce qui se passe quand l'accès est refusé. Défaut (codé en dur côté moteur, cf.
+       * `src/lib/pageAccess.ts` — la config n'est pas parsée par Zod au runtime) : `prompt`.
+       *  - `prompt`   : on reste sur la page, la modale de connexion s'ouvre par-dessus ;
+       *  - `redirect` : navigation vers `/login`, destination mémorisée ;
+       *  - `hide`     : rien n'est rendu, un refus est affiché.
+       * Dans les TROIS cas les sections ne sont jamais sérialisées au SSR.
+       */
+      mode: z.enum(["prompt", "redirect", "hide"]).optional(),
+    })
+    .optional(),
   middleware: z.array(z.string()).optional(), // Custom middleware functions
   sections: z.array(Section),
   hideHeader: z.boolean().optional(),

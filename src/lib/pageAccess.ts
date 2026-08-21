@@ -1,5 +1,3 @@
-import type { Page } from "@/types/site-schema";
-
 /**
  * Une page est-elle GARDÉE (accès conditionné à une session ou à un rôle) ?
  *
@@ -23,7 +21,12 @@ import type { Page } from "@/types/site-schema";
  * d'accord par `server/__tests__/sitemap.test.ts`, qui les confronte sur la même matrice de cas.
  * Toute évolution de la règle doit toucher les DEUX.
  */
-export function isGatedPage(page: Pick<Page, "auth" | "middleware"> | null | undefined): boolean {
+export interface GatedPageLike {
+  auth?: { required?: boolean; roles?: string[]; mode?: string } | null;
+  middleware?: string[] | null;
+}
+
+export function isGatedPage(page: GatedPageLike | null | undefined): boolean {
   if (!page) return false;
   if (page.auth?.required === true) return true;
   if (Array.isArray(page.auth?.roles) && page.auth.roles.length > 0) return true;
@@ -32,4 +35,68 @@ export function isGatedPage(page: Pick<Page, "auth" | "middleware"> | null | und
   // (il éloigne un connecté d'une page publique) et ne rend donc pas la page gardée.
   const mw = page.middleware;
   return Array.isArray(mw) && (mw.includes("auth-required") || mw.includes("admin-only"));
+}
+
+/**
+ * Comportement d'une page gardée quand l'accès n'est pas accordé.
+ *  - `prompt`   : on RESTE sur la page ; les sections cèdent la place à une invitation à se
+ *                 connecter et la modale s'ouvre par-dessus. Rien n'est perdu (ni la destination,
+ *                 ni l'historique) puisqu'on ne navigue pas. C'est la convention déjà appliquée
+ *                 aux ACTIONS du produit (news, profil, search, CoForm : `openLogin()`), enfin
+ *                 étendue aux pages.
+ *  - `redirect` : navigation vers `/login`, avec la destination mémorisée (cf. authRedirect).
+ *  - `hide`     : rien n'est rendu, un refus est affiché. Le patron de `/admin` (AdminPage.tsx),
+ *                 le seul endroit du dépôt qui le faisait correctement.
+ */
+export type PageGateMode = "prompt" | "redirect" | "hide";
+
+/** Défaut CODÉ EN DUR : la config n'est jamais parsée par Zod au runtime, un `.default()` n'y tourne pas. */
+export const DEFAULT_GATE_MODE: PageGateMode = "prompt";
+
+export function gateMode(page: GatedPageLike | null | undefined): PageGateMode {
+  const m = page?.auth?.mode;
+  return m === "redirect" || m === "hide" || m === "prompt" ? m : DEFAULT_GATE_MODE;
+}
+
+/** Pourquoi l'accès est refusé — détermine ce qu'on montre. */
+export type GateReason = "anonymous" | "role";
+
+export interface PageAccess {
+  /** La page est-elle soumise à une garde ? */
+  gated: boolean;
+  mode: PageGateMode;
+  /** L'accès est-il accordé ? (toujours `true` sur une page publique) */
+  granted: boolean;
+  /** Renseigné seulement si `granted` est faux. */
+  reason: GateReason | null;
+}
+
+interface MeLike {
+  isConnected?: boolean;
+  serverData?: { roles?: Record<string, unknown> } | null;
+}
+
+/**
+ * Décision d'accès — PURE et testable hors React, partagée par `usePageGuards` (qui décide de
+ * naviguer ou non) et `SiteRenderer` (qui décide de rendre ou non les sections). Les deux
+ * répondaient à la question séparément ; elles ne peuvent plus diverger.
+ *
+ * ⚠️ Le test de rôle reproduit l'existant (`roles[r] === true`). Il est probablement inopérant —
+ * le SDK ne connaît que `superAdmin`/`adminPlatform` — mais c'est le sujet d'un autre lot : le
+ * corriger ici mélangerait deux changements de comportement.
+ */
+export function evaluatePageAccess(
+  page: GatedPageLike | null | undefined,
+  me: MeLike | null | undefined,
+): PageAccess {
+  const mode = gateMode(page);
+  if (!isGatedPage(page)) return { gated: false, mode, granted: true, reason: null };
+  if (!me?.isConnected) return { gated: true, mode, granted: false, reason: "anonymous" };
+
+  const roles = page?.auth?.roles;
+  if (Array.isArray(roles) && roles.length > 0) {
+    const ok = roles.some((r) => me?.serverData?.roles?.[r] === true);
+    if (!ok) return { gated: true, mode, granted: false, reason: "role" };
+  }
+  return { gated: true, mode, granted: true, reason: null };
 }

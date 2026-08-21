@@ -9,10 +9,10 @@ import { Seo } from "./layout/Seo";
 import { usePageGuards } from "@/hooks/usePageGuards";
 import { PageProvider } from "@/contexts/PageProvider";
 import { discoverModules, getPageProviders } from "@/lib/modules";
-import { isGatedPage } from "@/lib/pageAccess";
+import { evaluatePageAccess } from "@/lib/pageAccess";
+import { GatedPageNotice } from "@/modules/auth/components/GatedPageNotice";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useHydrated } from "@/hooks/useHydrated";
-import { useT } from "@/hooks/useT";
 
 /**
  * Compose la liste des `PageProvider` des modules autour de `children`.
@@ -33,7 +33,6 @@ export function SiteRenderer() {
   const { pathname } = useLocation();
   const { me } = useCocolight();
   const hydrated = useHydrated();
-  const t = useT();
 
   const currentPage =
     config.pages.find((p) => p.path === pathname) || config.pages[0];
@@ -53,9 +52,11 @@ export function SiteRenderer() {
    * vaut toujours `null` au rendu). C'est un verrou de RENDU : le contenu ne quitte plus le
    * serveur. Le sitemap et la balise `robots` appliquent la même règle via `isGatedPage`.
    */
-  const gated = isGatedPage(currentPage);
-  const accesEtabli = hydrated && Boolean(me?.isConnected);
-  const sectionsMasquees = gated && !accesEtabli;
+  const acces = evaluatePageAccess(currentPage, me);
+  // `hydrated` est décisif : au SSR `me` vaut TOUJOURS `null` (aucun cookie transmis à
+  // `initApi`), donc `granted` y serait faux même pour un utilisateur connecté. On ne rend les
+  // sections qu'une fois la décision réellement prise côté client.
+  const sectionsMasquees = acces.gated && !(hydrated && acces.granted);
 
   if (!currentPage) {
     return (
@@ -97,11 +98,11 @@ function getLayoutClasses(layout: string) {
           <PageProvidersComposer key={pathname}>
             <PageProvider page={currentPage}>
               {sectionsMasquees ? (
-                <div className="flex min-h-[50vh] items-center justify-center px-4">
-                  <p className="text-center text-muted-foreground">
-                    {t("Contenu réservé — vérification de votre accès…")}
-                  </p>
-                </div>
+                <GatedPageNotice
+                  mode={acces.mode}
+                  reason={acces.reason ?? "anonymous"}
+                  resolved={hydrated}
+                />
               ) : (
                 currentPage.sections.map((s, i) => (
                   <SectionRenderer key={s.id ?? `section-${i}`} section={s} index={i} />
