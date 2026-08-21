@@ -461,7 +461,6 @@
               "fr": "Explorez les créneaux sport santé labellisés de la commune du Tampon et trouvez l'activité adaptée à votre situation.",
               "en": "Explore the labeled sport health slots in Le Tampon and find the activity that suits your situation."
             },
-            "filtersClassName": "mx-auto flex w-full max-w-4xl flex-col gap-3 rounded-2xl border border-border/60 bg-card/95 p-3 shadow-2xl backdrop-blur-md",
             "buttons": [
               {
                 "label": {
@@ -479,275 +478,306 @@
                 "href": "/structure",
                 "variant": "outline"
               }
-            ],
-            "showSearch": true,
-            "searchPlaceholder": {
-              "fr": "Rechercher une activité, un lieu…",
-              "en": "Search for an activity, a place…"
-            },
-            "dropdownFilters": [
-              {
-                "id": "activityType",
-                "label": {
-                  "fr": "Type d'activité",
-                  "en": "Activity type"
-                },
-                "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdegdo93f77wi3y186s",
-                "multiple": false,
-                "options": [
-                  {
-                    "id": "sports-collectif",
-                    "value": "Sports collectifs",
-                    "label": {
-                      "fr": "Sports collectifs",
-                      "en": "Team sports"
-                    }
-                  },
-                  {
-                    "id": "activites-aquatiques",
-                    "value": "Activités aquatiques",
-                    "label": {
-                      "fr": "Activités aquatiques",
-                      "en": "Aquatic activities"
-                    }
-                  },
-                  {
-                    "id": "activites-athletiques",
-                    "value": "Activités athlétiques",
-                    "label": {
-                      "fr": "Activités athlétiques",
-                      "en": "Athletic activities"
-                    }
-                  },
-                  {
-                    "id": "activites-de-pleine-nature",
-                    "value": "Activités de pleine nature",
-                    "label": {
-                      "fr": "Activités de pleine nature",
-                      "en": "Outdoor activities"
-                    }
-                  },
-                  {
-                    "id": "activites-gymniques",
-                    "value": "Activités gymniques/expression/forme et force",
-                    "label": {
-                      "fr": "Activités",
-                      "en": "Gymnastic"
-                    }
-                  },
-                  {
-                    "id": "sports-de-raquettes",
-                    "value": "Sports de raquettes",
-                    "label": {
-                      "fr": "Sports de raquettes",
-                      "en": "Racket sports"
-                    }
-                  },
-                  {
-                    "id": "sports-urbains",
-                    "value": "Sports urbains",
-                    "label": {
-                      "fr": "Sports urbains",
-                      "en": "Urban sports"
-                    }
-                  },
-                  {
-                    "id": "arts-martiaux-combats",
-                    "value": "Arts martiaux et combats",
-                    "label": {
-                      "fr": "Arts martiaux et combats",
-                      "en": "Martial arts and combat"
-                    }
-                  },
-                  {
-                    "id": "autres-sports",
-                    "value": "Autres sports",
-                    "label": {
-                      "fr": "Autres sports",
-                      "en": "Other sports"
-                    }
-                  }
-                ]
-              },
-              {
-                "id": "beneficiaries",
-                "label": {
-                  "fr": "Bénéficiaires",
-                  "en": "Beneficiaries"
-                },
-                "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdmyf2gky9capf1vcfl",
-                "multiple": true,
-                "options": [
-                  {
-                    "id": "enfants",
-                    "value": "Enfants (2-9 ans)",
-                    "label": {
-                      "fr": "Enfants (2-9 ans)",
-                      "en": "Children (2-9 years)"
-                    }
-                  },
-                  {
-                    "id": "adolescents",
-                    "value": "Pré-adolescents/Adolescents (10-17 ans)",
-                    "label": {
-                      "fr": "Pré-adolescents/Adolescents (10-17 ans)",
-                      "en": "Teens (10-17 years)"
-                    }
-                  },
-                  {
-                    "id": "adultes",
-                    "value": "Personnes en perte d'autonomie",
-                    "label": {
-                      "fr": "Personnes en perte d'autonomie",
-                      "en": "Adults with loss of autonomy"
-                    }
-                  },
-                  {
-                    "id": "femmes-enceintes",
-                    "value": "Femmes enceintes",
-                    "label": {
-                      "fr": "Femmes enceintes",
-                      "en": "Pregnant women"
-                    }
-                  },
-                  {
-                    "id": "personnes-situation-handicap",
-                    "value": "Personnes en situation de handicap",
-                    "label": {
-                      "fr": "Personnes en situation de handicap",
-                      "en": "People with disabilities"
-                    }
-                  },
-                  {
-                    "id": "personnes-plus-55-ans",
-                    "value": "Personnes de plus de 55 ans",
-                    "label": {
-                      "fr": "Personnes de plus de 55 ans",
-                      "en": "People over 55 years old"
-                    }
-                  }
-                ]
-              },
-              {
-                "id": "sportHealthType",
-                "label": {
-                  "fr": "Type de Sport Santé",
-                  "en": "Sport-health type"
-                },
-                "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdn1cs8on3yru1p80lq",
-                "multiple": false,
-                "options": [
-                  {
-                    "id": "ssso",
-                    "value": "Sport santé sur ordonnance - SSsO",
-                    "label": {
-                      "fr": "Sport santé sur ordonnance",
-                      "en": "Sport health on prescription"
-                    }
-                  },
-                  {
-                    "id": "sspt",
-                    "value": "Sport santé pour tous - SSpT",
-                    "label": {
-                      "fr": "Sport santé pour tous",
-                      "en": "Sport health for all"
-                    }
-                  }
-                ]
-              },
-              {
-                "id": "publicType",
-                "label": {
-                  "fr": "Type de publique",
-                  "en": "Audience type"
-                },
-                "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdmya4gmezjilnyjj5f",
-                "multiple": true,
-                "options": [
-                  {
-                    "id": "mixte",
-                    "value": "mixte",
-                    "label": {
-                      "fr": "Mixte",
-                      "en": "Mixed"
-                    }
-                  },
-                  {
-                    "id": "femmes",
-                    "value": "femmes",
-                    "label": {
-                      "fr": "Femmes",
-                      "en": "Women"
-                    }
-                  }
-                ]
-              }
             ]
           }
         },
         {
-          "type": "searchProStatic",
-          "id": "creneaux-list",
+          "type": "gridLayout",
+          "id": "creneaux-grid",
           "props": {
-            "customHeader": {
-              "title": {
-                "fr": "Toutes les créneaux",
-                "en": "All slots"
+            "leftColumns": 1,
+            "rightColumns": 3,
+            "gap": 4,
+            "leftSection": {
+              "type": "filters",
+              "id": "creneaux-filtres",
+              "props": {
+                "title": {
+                  "fr": "Affiner votre recherche",
+                  "en": "Refine your search"
+                },
+                "defaultOpenGroups": [
+                  "activityType",
+                  "beneficiaries"
+                ],
+                "filterGroups": [
+                  {
+                    "id": "activityType",
+                    "label": {
+                      "fr": "Type d'activité",
+                      "en": "Activity type"
+                    },
+                    "type": "filters",
+                    "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdegdo93f77wi3y186s",
+                    "optionStyle": "check",
+                    "order": 1,
+                    "options": [
+                      {
+                        "id": "sports-collectif",
+                        "label": {
+                          "fr": "Sports collectifs",
+                          "en": "Team sports"
+                        },
+                        "name": "Sports collectifs"
+                      },
+                      {
+                        "id": "activites-aquatiques",
+                        "label": {
+                          "fr": "Activités aquatiques",
+                          "en": "Aquatic activities"
+                        },
+                        "name": "Activités aquatiques"
+                      },
+                      {
+                        "id": "activites-athletiques",
+                        "label": {
+                          "fr": "Activités athlétiques",
+                          "en": "Athletic activities"
+                        },
+                        "name": "Activités athlétiques"
+                      },
+                      {
+                        "id": "activites-de-pleine-nature",
+                        "label": {
+                          "fr": "Activités de pleine nature",
+                          "en": "Outdoor activities"
+                        },
+                        "name": "Activités de pleine nature"
+                      },
+                      {
+                        "id": "activites-gymniques",
+                        "label": {
+                          "fr": "Activités gymniques, expression, forme et force",
+                          "en": "Gymnastics, expression, fitness and strength"
+                        },
+                        "name": "Activités gymniques/expression/forme et force"
+                      },
+                      {
+                        "id": "sports-de-raquettes",
+                        "label": {
+                          "fr": "Sports de raquettes",
+                          "en": "Racket sports"
+                        },
+                        "name": "Sports de raquettes"
+                      },
+                      {
+                        "id": "sports-urbains",
+                        "label": {
+                          "fr": "Sports urbains",
+                          "en": "Urban sports"
+                        },
+                        "name": "Sports urbains"
+                      },
+                      {
+                        "id": "arts-martiaux-combats",
+                        "label": {
+                          "fr": "Arts martiaux et combats",
+                          "en": "Martial arts and combat"
+                        },
+                        "name": "Arts martiaux et combats"
+                      },
+                      {
+                        "id": "autres-sports",
+                        "label": {
+                          "fr": "Autres sports",
+                          "en": "Other sports"
+                        },
+                        "name": "Autres sports"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "sportHealthType",
+                    "label": {
+                      "fr": "Type de Sport Santé",
+                      "en": "Sport-health type"
+                    },
+                    "type": "filters",
+                    "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdn1cs8on3yru1p80lq",
+                    "optionStyle": "check",
+                    "order": 2,
+                    "options": [
+                      {
+                        "id": "ssso",
+                        "label": {
+                          "fr": "Sport santé sur ordonnance",
+                          "en": "Sport health on prescription"
+                        },
+                        "name": "Sport santé sur ordonnance - SSsO"
+                      },
+                      {
+                        "id": "sspt",
+                        "label": {
+                          "fr": "Sport santé pour tous",
+                          "en": "Sport health for all"
+                        },
+                        "name": "Sport santé pour tous - SSpT"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "publicType",
+                    "label": {
+                      "fr": "Type de publique",
+                      "en": "Audience type"
+                    },
+                    "type": "filters",
+                    "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdmya4gmezjilnyjj5f",
+                    "optionStyle": "check",
+                    "order": 3,
+                    "options": [
+                      {
+                        "id": "mixte",
+                        "label": {
+                          "fr": "Mixte",
+                          "en": "Mixed"
+                        },
+                        "name": "mixte"
+                      },
+                      {
+                        "id": "femmes",
+                        "label": {
+                          "fr": "Femmes",
+                          "en": "Women"
+                        },
+                        "name": "femmes"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "beneficiaries",
+                    "label": {
+                      "fr": "Bénéficiaires",
+                      "en": "Beneficiaries"
+                    },
+                    "type": "filters",
+                    "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdmyf2gky9capf1vcfl",
+                    "optionStyle": "check",
+                    "order": 4,
+                    "options": [
+                      {
+                        "id": "enfants",
+                        "label": {
+                          "fr": "Enfants (2-9 ans)",
+                          "en": "Children (2-9)"
+                        },
+                        "name": "Enfants (2-9 ans)"
+                      },
+                      {
+                        "id": "adolescents",
+                        "label": {
+                          "fr": "Pré-adolescents/Adolescents (10-17 ans)",
+                          "en": "Teens (10-17)"
+                        },
+                        "name": "Pré-adolescents/Adolescents (10-17 ans)"
+                      },
+                      {
+                        "id": "adultes",
+                        "label": {
+                          "fr": "Adultes (18-55 ans)",
+                          "en": "Adults (18-55)"
+                        },
+                        "name": "Adultes (18-55 ans)"
+                      },
+                      {
+                        "id": "seniors",
+                        "label": {
+                          "fr": "Séniors (plus de 55 ans)",
+                          "en": "Seniors (55+)"
+                        },
+                        "name": "Séniors (plus de 55 ans)"
+                      },
+                      {
+                        "id": "personnes-agees",
+                        "label": {
+                          "fr": "Personnes âgées  (plus de 65 ans)",
+                          "en": "Older people (65+)"
+                        },
+                        "name": "Personnes âgées  (plus de 65 ans)"
+                      },
+                      {
+                        "id": "handicap",
+                        "label": {
+                          "fr": "Personnes en situation de handicap",
+                          "en": "People with disabilities"
+                        },
+                        "name": "Personnes en situation de handicap"
+                      },
+                      {
+                        "id": "femmes-enceintes",
+                        "label": {
+                          "fr": "Femmes enceintes",
+                          "en": "Pregnant women"
+                        },
+                        "name": "Femmes enceintes"
+                      }
+                    ]
+                  }
+                ]
               }
             },
-            "useFilter": true,
-            "showMap": true,
-            "enableMap": true,
-            "showActiveFiltersTypes": true,
-            "showActiveFiltersTags": false,
-            "disableInfiniteScroll": false,
-            "defaultViewMode": "list",
-            "addButton": {
-              "show": true,
-              "adminOnly": false,
-              "coform": "6a85af345d898a57cb49f029",
-              "label": {
-                "fr": "Ajouter un créneau",
-                "en": "Add a slot"
-              }
-            },
-            "baseParams": {
-              "sourceKey": [
-                "associationEkilibre"
-              ],
-              "defaultTypes": [
-                "answers"
-              ],
-              "defaultFilters": {
-                "form": "6a85af345d898a57cb49f029",
-                "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdn1jcq445i0mb9bap7": "Validé"
-              },
-              "searchBy": [
-                "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdegc9sgox76p87n27",
-                "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdeggo91owe8t9ovl4p",
-                "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdmxv88txy6f5z6svg"
-              ]
-            },
-            "list": {
-              "columns": {
-                "sm": 2,
-                "md": 3,
-                "lg": 3,
-                "xl": 3
-              },
-              "card": {
-                "type": "card-answer",
-                "detailsMode": "dialog"
-              },
-              "preview": {
-                "type": "coform-answer",
-                "editButton": true
-              }
-            },
-            "map": {
-              "marker": {
-                "style": "pin",
-                "color": "primary"
+            "rightSection": {
+              "type": "searchProStatic",
+              "id": "creneaux-list",
+              "props": {
+                "customHeader": {
+                  "title": {
+                    "fr": "Tous les créneaux",
+                    "en": "All slots"
+                  }
+                },
+                "showMap": true,
+                "enableMap": true,
+                "disableInfiniteScroll": false,
+                "defaultViewMode": "list",
+                "addButton": {
+                  "show": true,
+                  "adminOnly": false,
+                  "coform": "6a85af345d898a57cb49f029",
+                  "label": {
+                    "fr": "Ajouter un créneau",
+                    "en": "Add a slot"
+                  }
+                },
+                "baseParams": {
+                  "sourceKey": [
+                    "associationEkilibre"
+                  ],
+                  "defaultTypes": [
+                    "answers"
+                  ],
+                  "defaultFilters": {
+                    "form": "6a85af345d898a57cb49f029",
+                    "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdn1jcq445i0mb9bap7": "Validé"
+                  },
+                  "searchBy": [
+                    "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdegc9sgox76p87n27",
+                    "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdeggo91owe8t9ovl4p",
+                    "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdmxv88txy6f5z6svg"
+                  ]
+                },
+                "list": {
+                  "columns": {
+                    "sm": 2,
+                    "md": 3,
+                    "lg": 3,
+                    "xl": 3
+                  },
+                  "card": {
+                    "type": "card-answer",
+                    "detailsMode": "dialog"
+                  },
+                  "preview": {
+                    "type": "coform-answer",
+                    "editButton": true
+                  }
+                },
+                "map": {
+                  "marker": {
+                    "style": "pin",
+                    "color": "primary"
+                  }
+                }
               }
             }
           }
