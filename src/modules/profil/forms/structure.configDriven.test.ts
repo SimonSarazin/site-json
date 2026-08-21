@@ -324,4 +324,48 @@ describe("costum structure Ekilib.re — READ + visibleIf (parité avec l'ancien
   ])("14. %s visible=%o → %s", (field, values, expected) => {
     expect(check(descriptor.fields[field].visibleIf, values)).toBe(expected);
   });
+  /**
+   * 15. Groupes `enumOrOther` sur les deux titres : le serveur stocke le titre RÉEL dans la clé que
+   * lit la fiche publique (PreviewStructure ne lit QUE `representativeTitle`/`personInChargeTitle`,
+   * jamais les `other*`). Avant ce codec, une présidente qui choisissait « Autre... » et saisissait
+   * « Coordinatrice » voyait sa fiche afficher « Autre... ».
+   */
+  describe("15. titres « Autre... » — codec de groupe enumOrOther", () => {
+    it("écrit le texte libre DANS la clé lue par la fiche", () => {
+      const payload = buildEditPayload(formSpec, {
+        ...FILLED,
+        representativeTitle: "Autre...",
+        otherRepresentativeTitle: "Coordinatrice",
+        responsableSameAsRepresent: false,
+        personInChargeTitle: "Autre...",
+        otherPersonInChargeTitle: "Éducatrice APA",
+      }) as Record<string, unknown>;
+      expect(payload.representativeTitle).toBe("Coordinatrice");
+      expect(payload.personInChargeTitle).toBe("Éducatrice APA");
+      // Les porteurs de saisie ne partent PLUS comme clés serveur séparées (le groupe recompose).
+      expect(payload).not.toHaveProperty("otherRepresentativeTitle");
+      expect(payload).not.toHaveProperty("otherPersonInChargeTitle");
+    });
+
+    it("laisse passer une valeur connue sans la déplacer", () => {
+      const payload = buildEditPayload(formSpec, {
+        ...FILLED,
+        representativeTitle: "Président",
+        otherRepresentativeTitle: "",
+      }) as Record<string, unknown>;
+      expect(payload.representativeTitle).toBe("Président");
+    });
+
+    it("relit un titre libre stocké en base vers le couple select + texte", () => {
+      const values = seedEntity(formSpec, orgLike({ representativeTitle: "Coordinatrice" })) as Record<string, unknown>;
+      expect(values.representativeTitle).toBe("Autre...");
+      expect(values.otherRepresentativeTitle).toBe("Coordinatrice");
+    });
+
+    it("relit une valeur connue telle quelle, sans texte libre", () => {
+      const values = seedEntity(formSpec, orgLike({ personInChargeTitle: "Maire.sse" })) as Record<string, unknown>;
+      expect(values.personInChargeTitle).toBe("Maire.sse");
+      expect(values.otherPersonInChargeTitle).toBe("");
+    });
+  });
 });

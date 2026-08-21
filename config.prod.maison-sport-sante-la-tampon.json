@@ -1961,7 +1961,7 @@
             "useFilter": true,
             "showMap": true,
             "enableMap": true,
-            "defaultViewMode": "split",
+            "defaultViewMode": "list",
             "showActiveFiltersTypes": true,
             "showActiveFiltersTags": true,
             "baseParams": {
@@ -2061,7 +2061,8 @@
               },
               "itemAction": {
                 "kind": "preview"
-              }
+              },
+              "layout": "split"
             }
           }
         }
@@ -3156,6 +3157,40 @@
           "serverKey": "telephone",
           "read": "telephone:read",
           "write": "telephone:write"
+        },
+        "representativeTitle": {
+          "serverKey": "representativeTitle",
+          "read": "enumOrOther:read",
+          "write": "enumOrOther:write",
+          "params": {
+            "valueField": "representativeTitle",
+            "otherField": "otherRepresentativeTitle",
+            "known": [
+              "Président",
+              "Maire.sse",
+              "Chef.fe d'entreprise",
+              "Chef.fe d'établissement",
+              "Autre..."
+            ],
+            "other": "Autre..."
+          }
+        },
+        "personInChargeTitle": {
+          "serverKey": "personInChargeTitle",
+          "read": "enumOrOther:read",
+          "write": "enumOrOther:write",
+          "params": {
+            "valueField": "personInChargeTitle",
+            "otherField": "otherPersonInChargeTitle",
+            "known": [
+              "Président",
+              "Maire.sse",
+              "Chef.fe d'entreprise",
+              "Chef.fe d'établissement",
+              "Autre..."
+            ],
+            "other": "Autre..."
+          }
         }
       },
       "fields": {
@@ -3802,7 +3837,8 @@
                 "en": "Other..."
               }
             }
-          ]
+          ],
+          "group": "representativeTitle"
         },
         "otherRepresentativeTitle": {
           "widget": "text",
@@ -3814,7 +3850,8 @@
             "field": "representativeTitle",
             "op": "eq",
             "value": "Autre..."
-          }
+          },
+          "group": "representativeTitle"
         },
         "representativeCivility": {
           "widget": "select",
@@ -3958,7 +3995,8 @@
                 "en": "Other..."
               }
             }
-          ]
+          ],
+          "group": "personInChargeTitle"
         },
         "otherPersonInChargeTitle": {
           "widget": "text",
@@ -3978,7 +4016,8 @@
                 "value": "Autre..."
               }
             ]
-          }
+          },
+          "group": "personInChargeTitle"
         },
         "personInChargeCivility": {
           "widget": "select",
@@ -4364,7 +4403,9 @@
           "params": {
             "userList": "organizations",
             "searchKeys": [
-              "searchCostumStatic"
+              "searchCostumStatic",
+              "searchCostumStaticMapAll",
+              "admin-organizations"
             ]
           }
         }
@@ -4622,7 +4663,8 @@
             ]
           }
         },
-        "payloadEmitEmptyOnEdit": true
+        "payloadEmitEmptyOnEdit": true,
+        "navigateOnSuccess": false
       },
       "identity": {
         "type": "article"
