@@ -32,14 +32,20 @@ export async function renderBlogFeed(opts: {
   limit?: number;
   title?: string;
   description?: string;
+  /**
+   * `config.blog.publicFilters` — filtres serveur du périmètre PUBLIC (ex. `{publicationStatus:"Publié"}`),
+   * passés par dev-server/prod-server depuis la config chargée. Sans eux, le flux distribue les brouillons
+   * et les archives que les sections `articleFeed` excluent. `type:"article"` reste non surchargeable.
+   */
+  publicFilters?: Record<string, unknown>;
 }): Promise<string> {
-  const { costumSlug, limit = 30, title = "Articles", description } = opts;
+  const { costumSlug, limit = 30, title = "Articles", description, publicFilters = {} } = opts;
   const { entity } = await initApi({ baseURL: getBaseUrl() });
   if (!entity) throw new Error("API non initialisée (feed)");
 
   const payload = buildSearchPayload(
     // Le flux public ne distribue pas les articles EN ATTENTE : applyValidationGate le pose (costumSlug présent). §16.
-    { defaultFilters: { type: "article" }, defaultSortBy: { created: -1 }, costumSlug, sourceKey: [costumSlug] } as never,
+    { defaultFilters: { ...publicFilters, type: "article" }, defaultSortBy: { created: -1 }, costumSlug, sourceKey: [costumSlug] } as never,
     { name: "", type: ["poi"], indexStep: limit },
   );
   const page = (await entity.searchCostum(

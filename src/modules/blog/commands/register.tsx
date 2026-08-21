@@ -5,6 +5,7 @@
  * l'ouverture + requête ≥ 2 caractères). Dégradation propre : `[]` sans backend, sans config, ou sur erreur.
  *
  * Config via `commandPalette.articleSearch` : `{ enabled?, costumSlug (requis), limit?, detailBasePath? }`.
+ * Périmètre public borné par `config.blog.publicFilters` (partagé avec le flux RSS et les articles liés).
  */
 import { Newspaper } from "lucide-react";
 import { registerCommandSource } from "@/modules/commandPalette";
@@ -28,6 +29,8 @@ registerCommandSource({
     if (!cfg || cfg.enabled === false || !cfg.costumSlug) return [];
     if (!entity || query.trim().length < 2) return [];
 
+    const publicFilters = ctx.config.blog?.publicFilters ?? {};
+
     const limit = cfg.limit ?? 8;
     // Reader CANONIQUE unique = /blog (cf. items 2+3, detailBasePath déprécié). Forcé pour éviter tout
     // open-redirect : un base configurable vide + slug `//host` produirait une URL protocol-relative.
@@ -37,8 +40,11 @@ registerCommandSource({
     try {
       // Payload canonique (filters type=article + scope costum + name + tri date DESC), comme le fil.
       // Les articles EN ATTENTE ne sont pas proposés : applyValidationGate le pose (costumSlug présent). §16.
+      // `config.blog.publicFilters` (ex. `{publicationStatus:"Publié"}`) borne la surface PUBLIQUE de la
+      // même façon que `articleFeed.props.filters` borne le fil — sans lui la palette proposerait les
+      // brouillons et les archives. `type:"article"` est posé APRÈS et reste non surchargeable.
       const payload = buildSearchPayload(
-        { defaultFilters: { type: "article" }, defaultSortBy: { created: -1 }, costumSlug: cfg.costumSlug, sourceKey: [cfg.costumSlug] } as never,
+        { defaultFilters: { ...publicFilters, type: "article" }, defaultSortBy: { created: -1 }, costumSlug: cfg.costumSlug, sourceKey: [cfg.costumSlug] } as never,
         { name: query, type: ["poi"], indexStep: limit },
       );
       const page = (await entity.searchCostum(

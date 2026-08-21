@@ -14,5 +14,14 @@ export const BlogConfigSchema = z.object({
   defaultFeedLayout: z.enum(["grid", "list"]).optional(),
   /** Costum du flux RSS `/blog/feed.xml` (scope `source.key`). Sans lui, le flux répond 400 (sauf `?costum=`). */
   feedCostumSlug: z.string().optional(),
+  /**
+   * Filtres serveur appliqués à TOUTE surface PUBLIQUE du module qui n'a pas de `filters` propre :
+   * palette ⌘K (`blog:articles`), flux RSS `/blog/feed.xml` et bloc « Articles liés » du reader.
+   * Typiquement `{ "publicationStatus": "Publié" }` — sans quoi ces trois canaux distribuent les
+   * brouillons et les archives que les sections `articleFeed` excluent via `props.filters`.
+   * `type: "article"` reste posé par le module et n'est jamais surchargeable.
+   * ⚠️ La config n'est jamais parsée par Zod au runtime : la clé doit être écrite EXPLICITEMENT.
+   */
+  publicFilters: z.record(z.string(), z.unknown()).optional(),
 });
 export type BlogConfig = z.infer<typeof BlogConfigSchema>;
