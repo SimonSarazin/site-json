@@ -348,3 +348,24 @@ chemin legacy est touché, vérification navigateur sur données réelles.
   admin en navigateur). Test 7 de la MR retourné en verrou inverse.
   L'article de test « Test review navigateur — épinglage » reste en base dev (chapô + une posés)
   pour la review visuelle de l'utilisateur — suppression via le menu admin quand fini.
+
+- **2026-08-21 — Review finale (moteur + config holistique) : 23 findings confirmés, corrections
+  arbitrées et appliquées.** Quitus notables : chaîne flag prouvée live, TRIPLE DÉCLARATION VERTE
+  (plus aucun rabotage), préflights 521/521. Arbitrages utilisateur : (1) filtres /creneaux
+  morts (publicType, beneficiaries — values ≠ options coform, vérifié live) **DIFFÉRÉ, ne pas
+  traiter pour le moment** ; (2) création d'actualités RÉSERVÉE À L'ADMIN → addConfig.poi:false
+  sur les 3 profils (le nœud Mongo disait add:"onlyAdmin" — gate d'UI legacy jamais porté, la
+  config ouvrait l'entrée à tout connecté) ; (3) editModals organizations → UNE route sans
+  editModalMatch (les matches type NGO/Cooperative excluaient les 14 référencées, toutes sans
+  type ; la route NGO ne matchait rien). Fixes moteur : fetchFlagged reconstruit depuis la
+  CONFIG de la resource (les filtres UI transitoires de baseParams rétrécissaient le périmètre
+  → double-flag PERSISTANT possible) + variant admin en adminMode + projection explicite de la
+  racine du champ (whitelist events) ; itemsToUnset PHP-truthy ("true" chaîne legacy) ;
+  invalidateFn actualite → invalidate:blog (patron parent62 ; l'ancien montage n'invalidait NI
+  fil NI reader, et userList "poi" était une clé morte) ; épinglée sous FEED_PREFIX
+  (PINNED_PREFIX était INATTEIGNABLE — React Query matche par élément, pas startsWith) ; toast
+  partialUnset interpolé {{count}} ; nav « Actualités » → /blog + commandPalette.articleSearch
+  (patron du parc — /blog était orpheline) ; docstrings réalignées ; test PHP-truthy. Restent en
+  lows non traités : layout /blog vs fullWidth, ctaButton espace-pro, 4 coquilles labels,
+  publicationDate non validée serveur, tests usePinnedArticle/fetchFlagged/invalidation, docs
+  modules 30/32, pages légales monolingues.

@@ -81,7 +81,7 @@ export function usePinnedArticle({ costumSlug, filters, sortBy, enabled }: {
   enabled: boolean;
 }) {
   return useSearchQuery({
-    queryKeyPrefix: BLOG_QUERY_KEYS.PINNED_PREFIX(costumSlug),
+    queryKeyPrefix: BLOG_QUERY_KEYS.FEED_PREFIX(costumSlug),
     searchText: "",
     searchTags: {},
     searchType: { type: ["poi"] },

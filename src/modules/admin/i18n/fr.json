@@ -185,7 +185,7 @@
     "featured": "Mis à la une",
     "unfeatured": "Retiré de la une",
     "error": "Action impossible",
-    "partialUnset": "La une est posée, mais {count} ancienne(s) mise(s) en avant n'ont pas pu être retirées — vérifier le tableau."
+    "partialUnset": "La une est posée, mais {{count}} ancienne(s) mise(s) en avant n'ont pas pu être retirées — vérifier le tableau."
   },
   "AdminInvitation": {
     "error": "Erreur",

@@ -368,24 +368,36 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
     },
   });
   const setExclusiveFlag = useSetExclusiveFlag(() => {});
-  // Périmètre SERVEUR de l'exclusivité (review MR 44) : les fiches `exclusiveField:true` de la
-  // resource, cherchées par une requête dédiée — MIROIR du queryFn de la table (mêmes baseParams
-  // + expansion costumSubType, indexStepList 50, sans variant admin en mode statusField) — et
-  // JAMAIS les lignes chargées : l'ex-« une » peut vivre hors de la fenêtre de l'infinite scroll.
+  // Périmètre SERVEUR de l'exclusivité (review MR 44, resserré par la review finale) : les fiches
+  // `exclusiveField:true` du périmètre déclaré par la CONFIG de la resource — jamais les lignes
+  // chargées (l'ex-« une » peut vivre hors de la fenêtre de l'infinite scroll), et jamais
+  // `baseParams` : il porte les filtres UI TRANSITOIRES (état métier, filtre de validation, tri)
+  // qui rétréciraient le périmètre au filtre courant de l'admin — un « Brouillon » filtré mettrait
+  // à la une sans jamais dé-marquer la « Publié » (double-flag PERSISTANT, mesuré par la review).
+  // Miroir du canal de LECTURE de la table : variant admin quand adminMode (docs complets),
+  // sinon projection EXPLICITE portant la racine du champ exclusif (la route publique sans
+  // `fields` peut la raboter — ex. whitelist events).
   const fetchFlagged = async (): Promise<ExclusiveFlagEntity[]> => {
     if (!carrier || !resource.exclusiveField) return [];
+    const champ = resource.exclusiveField;
     const params = expandCostumSubType(
       {
-        ...baseParams,
+        ...src,
         indexStepList: 50,
-        defaultFilters: { ...((baseParams as { defaultFilters?: Record<string, unknown> }).defaultFilters ?? {}), [resource.exclusiveField]: true },
+        defaultSortBy: undefined,
+        defaultFields: adminMode ? champsAdmin : [...new Set([champ.split(".")[0]!, "source", "reference"])],
+        defaultFilters: { ...(src.defaultFilters ?? {}), [champ]: true },
       },
       (config as { costumForms?: Record<string, never> } | undefined)?.costumForms,
       (carrier as { slug?: string } | null)?.slug,
     ) ?? {};
-    const param = buildSearchPayload(params, { name: "", tags: [], type: [resource.entityType], mapUsed: false });
+    const param = buildSearchPayload(params, {
+      name: "", tags: [], type: [resource.entityType], mapUsed: false,
+      ...(adminMode ? { variant: "admin" as const } : {}),
+    });
     if (!param.searchType) return [];
-    const res = await (carrier as unknown as { searchCostum: (p: unknown) => Promise<{ results?: unknown[] }> }).searchCostum(param);
+    const sdk = carrier as unknown as { searchCostum: (p: unknown, o?: unknown) => Promise<{ results?: unknown[] }> };
+    const res = adminMode ? await sdk.searchCostum(param, { variant: "admin" }) : await sdk.searchCostum(param);
     return (res.results ?? []) as ExclusiveFlagEntity[];
   };
   // Choix costum/standard par CONFIG (`create`/`edit`) — cf. resourceHelpers. En `inherit`, la
@@ -699,8 +711,9 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                         )}
                         {actionnable && rowActions.includes("setFeatured") && resource.exclusiveField && hasRealId && (
                           // Exclusivité gérée DEPUIS CE TABLEAU (décision produit) : mettre en avant
-                          // repasse d'abord les autres lignes CHARGÉES à `false` (cf. useSetExclusiveFlag) —
-                          // retirer ne touche que cette ligne.
+                          // pose d'abord la CIBLE puis dé-marque les fiches flaggées du PÉRIMÈTRE
+                          // SERVEUR (fetchFlagged — jamais les lignes chargées) ; retirer ne touche
+                          // que cette ligne. Cf. runExclusiveFlag.
                           <DropdownMenuItem
                             disabled={setExclusiveFlag.isPending}
                             onClick={() =>

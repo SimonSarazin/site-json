@@ -64,6 +64,13 @@
       },
       {
         "label": {
+          "fr": "Actualités",
+          "en": "News"
+        },
+        "path": "/blog"
+      },
+      {
+        "label": {
           "fr": "Structure référentes",
           "en": "Reference structures"
         },
@@ -2978,6 +2985,11 @@
           "associationEkilibre"
         ]
       }
+    },
+    "articleSearch": {
+      "enabled": true,
+      "costumSlug": "associationEkilibre",
+      "limit": 8
     }
   },
   "costumForms": {
@@ -4518,11 +4530,12 @@
           "edit": "EntityFormModal · EDIT_ACTUALITE"
         },
         "invalidateFn": {
-          "fn": "invalidate:standard",
+          "fn": "invalidate:blog",
           "params": {
-            "userList": "poi",
+            "userList": "pois",
             "searchKeys": [
-              "searchCostumStatic"
+              "blog:associationEkilibre",
+              "admin-poi"
             ]
           }
         },
@@ -4664,7 +4677,7 @@
             "organization": true,
             "project": true,
             "event": true,
-            "poi": true
+            "poi": false
           }
         },
         {
@@ -4781,29 +4794,6 @@
       "editModals": [
         {
           "editModal": "edit-structure",
-          "editModalMatch": {
-            "type": "NGO"
-          },
-          "when": {
-            "or": [
-              {
-                "field": "sourceKeys",
-                "op": "contains",
-                "value": "associationEkilibre"
-              },
-              {
-                "field": "reference.costum",
-                "op": "contains",
-                "value": "associationEkilibre"
-              }
-            ]
-          }
-        },
-        {
-          "editModal": "edit-structure",
-          "editModalMatch": {
-            "type": "Cooperative"
-          },
           "when": {
             "or": [
               {
@@ -4829,7 +4819,7 @@
             "organization": false,
             "project": true,
             "event": true,
-            "poi": true
+            "poi": false
           }
         },
         {
@@ -5012,7 +5002,7 @@
             "organization": false,
             "project": false,
             "event": true,
-            "poi": true
+            "poi": false
           }
         },
         {

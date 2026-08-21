@@ -6,21 +6,18 @@
       "builtins": {
         "organization": "add-structure",
         "project": "add-project",
-        "event": "add-event",
-        "poi": "add-actualite"
+        "event": "add-event"
       }
     },
     "organizations": {
       "builtins": {
         "project": "add-project",
-        "event": "add-event",
-        "poi": "add-actualite"
+        "event": "add-event"
       }
     },
     "projects": {
       "builtins": {
-        "event": "add-event",
-        "poi": "add-actualite"
+        "event": "add-event"
       }
     }
   },
@@ -28,11 +25,6 @@
     "organizations": {
       "vierge": "edit-profile",
       "routes": [
-        {
-          "declare": "edit-structure",
-          "native": "edit-structure",
-          "horsPerimetre": "edit-profile"
-        },
         {
           "declare": "edit-structure",
           "native": "edit-structure",

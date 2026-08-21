@@ -23,7 +23,11 @@ export function itemsToUnset(rows: ExclusiveFlagRow[], field: string, targetId: 
   return rows.filter((row) => {
     const id = exclusiveRowId(row);
     if (id != null && targetId != null && id === targetId) return false;
-    return getPath(row.serverData, field) === true;
+    // PHP-truthy : le save form-urlencodé legacy a pu stocker la CHAÎNE "true" (mesuré sur
+    // `featured`) — le filtre serveur {field:true} les rate mais un résidu chaîne relu par un
+    // autre canal ne doit pas passer entre les mailles du dé-marquage.
+    const v = getPath(row.serverData, field);
+    return v === true || v === "true";
   });
 }
 

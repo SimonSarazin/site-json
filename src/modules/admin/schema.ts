@@ -160,9 +160,9 @@ const AdminResourceSectionSchema = z.object({
    * Champ booléen à EXCLUSIVITÉ (un seul document du périmètre `source` à `true` à la fois, ex.
    * `featured`/« à la une »). OPT-IN strict : n'a d'effet que combiné à `rowActions:["setFeatured"]`
    * — sans lui, l'action « Mettre à la une » ne s'affiche pas, zéro impact sur les sections
-   * `resource` existantes. Portée de l'exclusivité : les lignes actuellement CHARGÉES dans le
-   * tableau (pas une recherche dédiée sur tout le périmètre) — suffisant pour une volumétrie admin
-   * usuelle, cf. `useSetExclusiveFlag`.
+   * `resource` existantes. Portée de l'exclusivité (depuis la review MR 44) : une RECHERCHE
+   * SERVEUR dédiée sur le périmètre déclaré par `source` (`fetchFlagged` — jamais les lignes
+   * chargées de l'infinite scroll, jamais les filtres UI transitoires), cf. `runExclusiveFlag`.
    */
   exclusiveField: z.string().optional(),
 });

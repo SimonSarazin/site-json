@@ -52,6 +52,17 @@ describe("itemsToUnset", () => {
   });
 });
 
+describe("itemsToUnset — PHP-truthy (review finale)", () => {
+  it('une fiche flaggée en CHAÎNE "true" (résidu save form-urlencodé legacy) est dé-marquée aussi', () => {
+    const rows = [
+      { id: "chaine", serverData: { id: "chaine", featured: "true" } },
+      { id: "bool", serverData: { id: "bool", featured: true } },
+      { id: "faux", serverData: { id: "faux", featured: "false" } },
+    ];
+    expect(itemsToUnset(rows, "featured", null).map((r) => r.id)).toEqual(["chaine", "bool"]);
+  });
+});
+
 describe("runExclusiveFlag (orchestration — review MR 44)", () => {
   const writable = (id: string, flagged: boolean, journal: string[], fail = false): ExclusiveWritable => ({
     id,
