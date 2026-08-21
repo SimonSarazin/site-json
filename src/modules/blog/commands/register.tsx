@@ -11,6 +11,7 @@ import { Newspaper } from "lucide-react";
 import { registerCommandSource } from "@/modules/commandPalette";
 import type { Command, CommandReadContext } from "@/modules/commandPalette";
 import { buildSearchPayload } from "@/modules/search/lib/buildSearchPayload";
+import { articleFields } from "../constants/fields";
 
 interface ArticleResult {
   id?: string;
@@ -30,6 +31,7 @@ registerCommandSource({
     if (!entity || query.trim().length < 2) return [];
 
     const publicFilters = ctx.config.blog?.publicFilters ?? {};
+    const publicSortBy = ctx.config.blog?.publicSortBy;
 
     const limit = cfg.limit ?? 8;
     // Reader CANONIQUE unique = /blog (cf. items 2+3, detailBasePath déprécié). Forcé pour éviter tout
@@ -44,7 +46,7 @@ registerCommandSource({
       // même façon que `articleFeed.props.filters` borne le fil — sans lui la palette proposerait les
       // brouillons et les archives. `type:"article"` est posé APRÈS et reste non surchargeable.
       const payload = buildSearchPayload(
-        { defaultFilters: { ...publicFilters, type: "article" }, defaultSortBy: { created: -1 }, costumSlug: cfg.costumSlug, sourceKey: [cfg.costumSlug] } as never,
+        { defaultFilters: { ...publicFilters, type: "article" }, defaultSortBy: publicSortBy ?? { created: -1 }, defaultFields: articleFields(), costumSlug: cfg.costumSlug, sourceKey: [cfg.costumSlug] } as never,
         { name: query, type: ["poi"], indexStep: limit },
       );
       const page = (await entity.searchCostum(

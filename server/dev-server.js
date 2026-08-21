@@ -95,7 +95,7 @@ async function createServer() {
       if (!slug) { res.status(400).type("application/xml").send('<?xml version="1.0"?><error>costumSlug manquant (?costum=slug ou config.blog.feedCostumSlug)</error>'); return; }
       const { renderBlogFeed } = await vite.ssrLoadModule("/src/modules/blog/server/feed.ts");
       const title = cachedConfig?.meta?.title?.fr || cachedConfig?.meta?.title || "Articles";
-      const xml = await renderBlogFeed({ costumSlug: String(slug), title, publicFilters: cachedConfig?.blog?.publicFilters });
+      const xml = await renderBlogFeed({ costumSlug: String(slug), title, publicFilters: cachedConfig?.blog?.publicFilters, publicSortBy: cachedConfig?.blog?.publicSortBy });
       res.type("application/rss+xml").send(xml);
     } catch (e) {
       console.error("[blog-feed]", e);

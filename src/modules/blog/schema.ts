@@ -26,6 +26,13 @@ export const ArticleFeedSectionSchema = z.object({
     /** Filtre serveur additionnel (ex. `{ category: "actus" }`). `type:"article"` est toujours injecté. */
     filters: z.record(z.string(), z.unknown()).optional(),
     /**
+     * Champs projetés EN PLUS du contrat d'article du module (`ARTICLE_FIELDS`,
+     * constants/fields.ts — qui couvre déjà name/slug/description/tags/images/created/
+     * publicationDate/publicationStatus/category/featured). À poser seulement pour un champ
+     * costum propre au site qu'un variant de carte lirait.
+     */
+    defaultFields: z.array(z.string()).optional(),
+    /**
      * ⚠️ DÉPRÉCIÉ (items 2+3). Le reader d'article est CANONIQUE et unique : `/blog/:slug` (+ `/blog/id/:id`).
      * Un `articleFeed` peut être posé sur N pages mais pointe TOUJOURS vers ce reader (le retour est dynamique,
      * `navigate(-1)` — cf. ArticleReader). Toute autre valeur est ignorée (la section force `/blog`, warning dev).

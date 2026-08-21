@@ -5659,6 +5659,9 @@
     "defaultCardVariant": "default",
     "publicFilters": {
       "publicationStatus": "Publié"
+    },
+    "publicSortBy": {
+      "publicationDate": -1
     }
   }
 }

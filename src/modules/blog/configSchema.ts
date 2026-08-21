@@ -23,5 +23,12 @@ export const BlogConfigSchema = z.object({
    * ⚠️ La config n'est jamais parsée par Zod au runtime : la clé doit être écrite EXPLICITEMENT.
    */
   publicFilters: z.record(z.string(), z.unknown()).optional(),
+  /**
+   * Chronologie des surfaces PUBLIQUES sans `sortBy` propre (palette ⌘K, flux RSS, articles liés).
+   * Les sections `articleFeed` gardent leur `props.sortBy`. Typiquement `{ "publicationDate": -1 }`
+   * pour que le flux et la palette racontent la même chronologie que le fil du site — sinon ces
+   * surfaces trient par date de SAISIE (`created`) pendant que le site trie par date éditoriale.
+   */
+  publicSortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
 });
 export type BlogConfig = z.infer<typeof BlogConfigSchema>;

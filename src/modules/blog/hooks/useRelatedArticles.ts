@@ -4,6 +4,7 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { useSite } from "@/hooks/useSite";
 import { buildSearchPayload } from "@/modules/search/lib/buildSearchPayload";
 import { BLOG_QUERY_KEYS } from "../constants/queryKeys";
+import { articleFields } from "../constants/fields";
 import type { ArticleData } from "./useArticle";
 
 /** Résultat searchCostum → ArticleData (serverData sinon racine, repli id racine). */
@@ -27,6 +28,7 @@ export function useRelatedArticles(article: ArticleData | null | undefined, limi
   // (ex. `{publicationStatus:"Publié"}`) ce bloc remonte les brouillons et les archives.
   const { config } = useSite();
   const publicFilters = config.blog?.publicFilters ?? {};
+  const publicSortBy = config.blog?.publicSortBy;
   const tags = Array.isArray(article?.tags) ? article!.tags!.filter(Boolean) : [];
   const costumSlug = article?.source?.key ?? "";
   const currentId = article?.id ?? "";
@@ -43,7 +45,8 @@ export function useRelatedArticles(article: ArticleData | null | undefined, limi
         {
           // Masquage des liés EN ATTENTE : posé automatiquement par applyValidationGate (costumSlug présent). Cf §16.
           defaultFilters: { ...publicFilters, type: "article", tags: { $in: tags } },
-          defaultSortBy: { created: -1 },
+          defaultSortBy: publicSortBy ?? { created: -1 },
+          defaultFields: articleFields(),
           costumSlug,
           sourceKey: [costumSlug],
         } as never,

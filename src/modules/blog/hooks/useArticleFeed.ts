@@ -3,6 +3,7 @@ import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
 import { usePageFiltersOptional } from "@/modules/search/contexts/pageFilters";
 import { searchByFieldsToQuery } from "@/modules/search/lib/searchByFieldsToQuery";
 import { BLOG_QUERY_KEYS } from "../constants/queryKeys";
+import { articleFields } from "../constants/fields";
 
 /**
  * Fil d'articles d'un costum (POI type=article, scope source.key) — paginé, trié par date décroissante.
@@ -23,9 +24,11 @@ export interface UseArticleFeedParams {
   filters?: Record<string, unknown>;
   /** Tri serveur (défaut `{created:-1}`). Doit être IDENTIQUE entre fil et épinglée. */
   sortBy?: Record<string, 1 | -1>;
+  /** Champs projetés EN PLUS du contrat d'article du module (cf. ARTICLE_FIELDS). */
+  defaultFields?: readonly string[];
 }
 
-export function useArticleFeed({ costumSlug, pageSize = 12, filters, sortBy }: UseArticleFeedParams) {
+export function useArticleFeed({ costumSlug, pageSize = 12, filters, sortBy, defaultFields }: UseArticleFeedParams) {
   const cf = usePageFiltersOptional();
   const searchText = cf?.searchQuery ?? "";
   const filterNames = cf?.filterNames;
@@ -60,6 +63,9 @@ export function useArticleFeed({ costumSlug, pageSize = 12, filters, sortBy }: U
       // `type: "article"` en DERNIER = garantie d'immuabilité (un filtre field:"type" ne peut pas l'écraser).
       defaultFilters: { ...(filters ?? {}), ...fieldFilters, type: "article" },
       defaultSortBy: sortBy ?? { created: -1 },
+      // Projection EXPLICITE : sans elle le legacy réduit le POI et retire `publicationDate`
+      // (la date éditoriale affichée par les cartes) et `category`. Cf. constants/fields.ts.
+      defaultFields: articleFields(defaultFields),
       // scope costum : lus par buildSearchPayload via cast (présents en config, hors type strict).
       costumSlug,
       sourceKey: [costumSlug],
@@ -74,10 +80,11 @@ export function useArticleFeed({ costumSlug, pageSize = 12, filters, sortBy }: U
  * Requête SERVEUR délibérément (pas un scan de la fenêtre chargée) : l'épinglée peut être
  * ancienne et vivre hors des pages chargées — la leçon du finding review MR 44.
  */
-export function usePinnedArticle({ costumSlug, filters, sortBy, enabled }: {
+export function usePinnedArticle({ costumSlug, filters, sortBy, defaultFields, enabled }: {
   costumSlug: string;
   filters?: Record<string, unknown>;
   sortBy?: Record<string, 1 | -1>;
+  defaultFields?: readonly string[];
   enabled: boolean;
 }) {
   return useSearchQuery({
@@ -92,6 +99,7 @@ export function usePinnedArticle({ costumSlug, filters, sortBy, enabled }: {
       // `featured` puis `type` en DERNIER : un filtre de config ne peut écraser ni l'un ni l'autre.
       defaultFilters: { ...(filters ?? {}), featured: true, type: "article" },
       defaultSortBy: sortBy ?? { created: -1 },
+      defaultFields: articleFields(defaultFields),
       costumSlug,
       sourceKey: [costumSlug],
     } as never,
