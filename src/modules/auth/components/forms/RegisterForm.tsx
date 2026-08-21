@@ -15,7 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { isValidEmail } from "@/helpers/isValidEmail";
 import { toast } from "sonner";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
+import { returnToOrHome } from "@/lib/authRedirect";
 
 interface RegisterFormState {
   name: string;
@@ -51,6 +52,10 @@ export default function RegisterForm({ onSwitchToLogin, prefill }: RegisterFormP
   const [loadingRegister, setLoading] = useState<boolean>(false);
 
   const navigate                     = useNavigate();
+  const location                     = useLocation();
+  // Destination transmise depuis LoginForm quand l'utilisateur bascule « créer un compte »
+  // (elle-même posée par la garde de page). Repli sur l'accueil.
+  const returnTo                     = returnToOrHome(location.state);
   const { userApi, loading, me, entity, contextId, contextType } = useCocolight();
   const { loaded }                   = useLoadNamespace("modules/auth");
   const t                            = useT("modules/auth");
@@ -63,8 +68,8 @@ export default function RegisterForm({ onSwitchToLogin, prefill }: RegisterFormP
 
   /* Redirige l’utilisateur déjà connecté ------------------------------- */
   useEffect(() => {
-    if (!loading && me?.isConnected) navigate("/");
-  }, [loading, me, navigate]);
+    if (!loading && me?.isConnected) navigate(returnTo);
+  }, [loading, me, navigate, returnTo]);
 
   /* ------------------------------------------------------------------- */
   const handleInputChange = (
@@ -152,7 +157,7 @@ export default function RegisterForm({ onSwitchToLogin, prefill }: RegisterFormP
           ),
         });
         if (onSwitchToLogin) onSwitchToLogin();
-        else navigate("/login");
+        else navigate("/login", { state: location.state });
       } else {
         toast.error(t("Erreur"), {
           description:
@@ -268,7 +273,7 @@ export default function RegisterForm({ onSwitchToLogin, prefill }: RegisterFormP
           <Button
             type="button"
             variant="ghost"
-            onClick={() => (onSwitchToLogin ? onSwitchToLogin() : navigate("/login"))}
+            onClick={() => (onSwitchToLogin ? onSwitchToLogin() : navigate("/login", { state: location.state }))}
             className="text-sm text-muted-foreground hover:text-foreground"
           >
             {t("Déjà un compte ? Se connecter")}
