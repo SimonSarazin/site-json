@@ -1981,31 +1981,61 @@
                 }
               },
               "defaultFields": [
-                "email",
-                "link",
-                "socialNetwork",
-                "youtube",
-                "telephone",
-                "statusActor",
-                "legalStatus",
-                "affiliate",
-                "affiliateTo",
+                "name",
+                "type",
+                "collection",
+                "slug",
+                "source",
+                "reference",
+                "links",
+                "creator",
+                "created",
+                "updated",
+                "shortDescription",
+                "description",
+                "tags",
+                "address",
+                "geo",
+                "geoPosition",
+                "counts",
+                "profilImageUrl",
+                "profilThumbImageUrl",
+                "profilMediumImageUrl",
                 "siren",
                 "sigle",
+                "affiliate",
+                "affiliateTo",
                 "thematic",
-                "mobile",
+                "telephone",
+                "email",
+                "url",
+                "socialNetwork",
+                "legalStatus",
+                "statusFile",
+                "responsableCivilePro",
+                "statusPrimaire",
+                "statusSecondaire",
+                "statusCommunale",
+                "autreDescription",
                 "representativeTitle",
+                "otherRepresentativeTitle",
                 "representativeCivility",
                 "representativeName",
                 "representativeFirstName",
                 "representativeEmail",
                 "representativeTelephone",
+                "responsableSameAsRepresent",
                 "personInChargeTitle",
+                "otherPersonInChargeTitle",
                 "personInChargeCivility",
                 "personInChargeName",
                 "personInChargeFirstName",
                 "personInChargeEmail",
-                "personInChargeTelephone"
+                "personInChargeTelephone",
+                "statusActor",
+                "link",
+                "mobile",
+                "youtube"
               ]
             },
             "list": {
@@ -2532,6 +2562,34 @@
         "sidebarAccentForeground": "oklch(0.86 0.05 184)",
         "sidebarBorder": "oklch(0.29 0.022 205)",
         "sidebarRing": "oklch(0.72 0.10 185)"
+      }
+    },
+    "spacing": {
+      "base": "0.25rem"
+    },
+    "borderRadius": {
+      "base": "0.5rem"
+    },
+    "shadows": {
+      "light": {
+        "shadow2xs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowXs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowSm": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowMd": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 2px 4px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowLg": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 4px 6px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowXl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
+      },
+      "dark": {
+        "shadow2xs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowXs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowSm": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowMd": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 2px 4px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowLg": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 4px 6px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowXl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
       }
     },
     "customCSS": ".ssso-card .header-gradient {\n  background: linear-gradient(135deg, var(--accent), var(--warning))!important;\n}\n\n .sspt-card .header-gradient {\n background: linear-gradient(135deg, var(--primary), var(--muted-foreground))!important;\n} \n\n .ssso-card .border-card-border-left {\n border-color: var(--accent)!important;}"
