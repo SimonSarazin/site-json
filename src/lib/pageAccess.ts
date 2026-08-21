@@ -22,13 +22,14 @@
  * Toute évolution de la règle doit toucher les DEUX.
  */
 export interface GatedPageLike {
-  auth?: { required?: boolean; roles?: string[]; mode?: string } | null;
+  auth?: { required?: boolean; roles?: string[]; mode?: string; access?: string } | null;
   middleware?: string[] | null;
 }
 
 export function isGatedPage(page: GatedPageLike | null | undefined): boolean {
   if (!page) return false;
   if (page.auth?.required === true) return true;
+  if (typeof page.auth?.access === "string" && page.auth.access.length > 0) return true;
   if (Array.isArray(page.auth?.roles) && page.auth.roles.length > 0) return true;
   // `middleware` est un tableau de NOMS libres résolus contre le registre d'`usePageGuards`.
   // Seuls ces deux-là conditionnent l'accès ; `redirect-if-authenticated` fait l'inverse
@@ -61,6 +62,14 @@ export function gateMode(page: GatedPageLike | null | undefined): PageGateMode {
 /** Pourquoi l'accès est refusé — détermine ce qu'on montre. */
 export type GateReason = "anonymous" | "role";
 
+/**
+ * Niveaux d'accès admin des PAGES — repris à l'identique du module admin
+ * (`AdminAccessLevelSchema`) : un seul vocabulaire dans tout le produit.
+ * `entityAdmin` est exclu : il se résout PAR LIGNE dans les tables, il n'a pas de sens pour une page.
+ */
+export const PAGE_ACCESS_LEVELS = ["siteAdmin", "superAdmin"] as const;
+export type PageAccessLevel = (typeof PAGE_ACCESS_LEVELS)[number];
+
 export interface PageAccess {
   /** La page est-elle soumise à une garde ? */
   gated: boolean;
@@ -74,6 +83,13 @@ export interface PageAccess {
 interface MeLike {
   isConnected?: boolean;
   serverData?: { roles?: Record<string, unknown> } | null;
+  isSuperAdmin?: () => boolean;
+  isAdminPlatform?: () => boolean;
+}
+
+/** Entité carrier du costum — son `isAdmin()` définit le `siteAdmin`. */
+interface CarrierLike {
+  isAdmin?: () => boolean;
 }
 
 /**
@@ -88,11 +104,25 @@ interface MeLike {
 export function evaluatePageAccess(
   page: GatedPageLike | null | undefined,
   me: MeLike | null | undefined,
+  carrier?: CarrierLike | null,
 ): PageAccess {
   const mode = gateMode(page);
   if (!isGatedPage(page)) return { gated: false, mode, granted: true, reason: null };
   if (!me?.isConnected) return { gated: true, mode, granted: false, reason: "anonymous" };
 
+  // `access` : le modèle du module admin, appliqué aux pages (superAdmin > siteAdmin).
+  const access = page?.auth?.access;
+  if (typeof access === "string" && access.length > 0) {
+    const estSuperAdmin = Boolean(me?.isSuperAdmin?.() || me?.isAdminPlatform?.());
+    const estSiteAdmin = estSuperAdmin || Boolean(carrier?.isAdmin?.());
+    const ok = access === "superAdmin" ? estSuperAdmin : estSiteAdmin;
+    if (!ok) return { gated: true, mode, granted: false, reason: "role" };
+  }
+
+  // `roles` : forme HISTORIQUE, conservée pour ne casser aucune config existante. Elle teste des
+  // clés brutes de `serverData.roles` — dont le SDK ne connaît que `superAdmin` et `adminPlatform`.
+  // Une garde préflight refuse tout autre nom : `roles: ["admin"]` fermait la page à TOUT LE MONDE,
+  // superAdmin compris, en silence. Préférer `access`.
   const roles = page?.auth?.roles;
   if (Array.isArray(roles) && roles.length > 0) {
     const ok = roles.some((r) => me?.serverData?.roles?.[r] === true);

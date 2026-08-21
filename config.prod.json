@@ -2249,9 +2249,6 @@
       "auth": {
         "required": true
       },
-      "middleware": [
-        "auth-required"
-      ],
       "sections": [
         {
           "type": "hero",
@@ -2292,14 +2289,8 @@
       "layout": "sidebar-left",
       "auth": {
         "required": true,
-        "roles": [
-          "admin"
-        ]
+        "access": "superAdmin"
       },
-      "middleware": [
-        "auth-required",
-        "admin-only"
-      ],
       "sections": [
         {
           "type": "hero",

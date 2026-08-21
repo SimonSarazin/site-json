@@ -1611,6 +1611,19 @@ export const Page = z.object({
   auth: z
     .object({
       required: z.boolean().default(false),
+      /**
+       * Niveau d'ADMINISTRATION requis, même vocabulaire que `admin.access.min`
+       * (`AdminAccessLevelSchema`) : `siteAdmin` = admin du costum porteur, `superAdmin` = admin
+       * plateforme. Résolu par les vraies méthodes du SDK (`isSuperAdmin`/`isAdminPlatform`/
+       * `entity.isAdmin`) — c'est la forme à utiliser.
+       */
+      access: z.enum(["siteAdmin", "superAdmin"]).optional(),
+      /**
+       * ⚠️ DÉPRÉCIÉ — préférer `access`. Teste des clés BRUTES de `me.serverData.roles`, dont le
+       * SDK ne connaît que `superAdmin` et `adminPlatform` : tout autre nom (ex. `"admin"`) ferme
+       * la page à TOUT LE MONDE, superAdmin compris, sans le moindre signal. Une garde préflight
+       * (tests/preflight/page-guards.test.ts) refuse désormais les noms hors de ce jeu.
+       */
       roles: z.array(z.string()).optional(),
       /**
        * Ce qui se passe quand l'accès est refusé. Défaut (codé en dur côté moteur, cf.
@@ -1623,7 +1636,13 @@ export const Page = z.object({
       mode: z.enum(["prompt", "redirect", "hide"]).optional(),
     })
     .optional(),
-  middleware: z.array(z.string()).optional(), // Custom middleware functions
+  /**
+   * ⚠️ DÉPRÉCIÉ — préférer `auth`. Noms résolus contre le registre d'`usePageGuards` :
+   * `auth-required` (doublon exact d'`auth.required`), `admin-only`, `redirect-if-authenticated`.
+   * Un nom hors registre est un NO-OP SILENCIEUX (`registry[mw]?.()`) : la page se croit gardée et
+   * ne l'est pas. Une garde préflight refuse les noms inconnus, et le moteur avertit en dev.
+   */
+  middleware: z.array(z.string()).optional(),
   sections: z.array(Section),
   hideHeader: z.boolean().optional(),
   hideFooter: z.boolean().optional(),

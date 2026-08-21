@@ -31,7 +31,7 @@ function PageProvidersComposer({ children }: { children: ReactNode }) {
 export function SiteRenderer() {
   const { config } = useSite();
   const { pathname } = useLocation();
-  const { me } = useCocolight();
+  const { me, entity } = useCocolight();
   const hydrated = useHydrated();
 
   const currentPage =
@@ -52,7 +52,7 @@ export function SiteRenderer() {
    * vaut toujours `null` au rendu). C'est un verrou de RENDU : le contenu ne quitte plus le
    * serveur. Le sitemap et la balise `robots` appliquent la même règle via `isGatedPage`.
    */
-  const acces = evaluatePageAccess(currentPage, me);
+  const acces = evaluatePageAccess(currentPage, me, entity);
   // `hydrated` est décisif : au SSR `me` vaut TOUJOURS `null` (aucun cookie transmis à
   // `initApi`), donc `granted` y serait faux même pour un utilisateur connecté. On ne rend les
   // sections qu'une fois la décision réellement prise côté client.

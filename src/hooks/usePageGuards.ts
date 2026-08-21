@@ -32,7 +32,7 @@ const registry: Record<
 };
 
 export function usePageGuards(page: Page) {
-  const { me, loading } = useCocolight();
+  const { me, loading, entity } = useCocolight();
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
 
@@ -46,7 +46,7 @@ export function usePageGuards(page: Page) {
     // Seul le mode `redirect` NAVIGUE. En `prompt` et en `hide`, la page reste à l'écran et
     // c'est `SiteRenderer` qui décide de ce qu'elle montre (`GatedPageNotice`) — même décision
     // d'accès pour les deux, via `evaluatePageAccess`, elles ne peuvent pas diverger.
-    const acces = evaluatePageAccess(page, me);
+    const acces = evaluatePageAccess(page, me, entity);
     if (acces.gated) {
       if (acces.granted || acces.mode !== "redirect") return;
       if (acces.reason === "anonymous") go(LOGIN_PATH, { state: { from: returnTo } });
@@ -55,7 +55,20 @@ export function usePageGuards(page: Page) {
     }
 
     page.middleware?.forEach((mw) => {
-      registry[mw]?.({ me, navigate: go, returnTo });
+      const garde = registry[mw];
+      if (!garde) {
+        // Sans ce garde-fou, un nom mal orthographié est un no-op TOTALEMENT silencieux : la page
+        // se croit protégée et ne l'est pas. (La doc d'outillage annonçait `admin-required`, qui
+        // n'a jamais existé — le nom réel est `admin-only`.)
+        if (import.meta.env.DEV) {
+          console.warn(
+            `[usePageGuards] middleware inconnu « ${mw} » sur ${page.path} — ignoré. ` +
+              `Attendus : ${Object.keys(registry).join(", ")}. Préférer \`auth\`, \`middleware\` est déprécié.`,
+          );
+        }
+        return;
+      }
+      garde({ me, navigate: go, returnTo });
     });
-  }, [page, me, loading, navigate, pathname, search]);
+  }, [page, me, entity, loading, navigate, pathname, search]);
 }
