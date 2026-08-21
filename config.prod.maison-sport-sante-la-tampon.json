@@ -2331,7 +2331,98 @@
         "fr": "Actualités",
         "en": "News"
       },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Actualités — Ekilib.re, Maison Sport Santé du Tampon",
+          "en": "News — Ekilib.re, Sport Health House of Le Tampon"
+        },
+        "description": {
+          "fr": "Toutes les actualités d'Ekilib.re : nouveaux créneaux sport santé au Tampon, fermetures, évènements et informations santé.",
+          "en": "All Ekilib.re news: new sport-health slots in Le Tampon, closures, events and health information."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image",
+        "ogImage": "/images/maisonSportSanteLaTampon/hero2.jpg"
+      },
       "sections": [
+        {
+          "type": "searchHeader",
+          "id": "blog-search",
+          "props": {
+            "headline": {
+              "fr": "Les actualités d'Ekilib.re",
+              "en": "Ekilib.re news"
+            },
+            "subhead": {
+              "fr": "Nouveaux créneaux, fermetures, informations santé : cherchez par mot-clé ou filtrez par catégorie.",
+              "en": "New slots, closures, health information: search by keyword or filter by category."
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher une actualité…",
+              "en": "Search the news…"
+            },
+            "showActiveFiltersTags": true,
+            "dropdownFilters": [
+              {
+                "id": "categorie",
+                "label": {
+                  "fr": "Catégorie",
+                  "en": "Category"
+                },
+                "field": "category",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Toutes les catégories",
+                  "en": "All categories"
+                },
+                "options": [
+                  {
+                    "id": "nouveau-creneau",
+                    "value": "Nouveau créneau",
+                    "label": {
+                      "fr": "Nouveau créneau",
+                      "en": "New slot"
+                    }
+                  },
+                  {
+                    "id": "evenement",
+                    "value": "Évènement",
+                    "label": {
+                      "fr": "Évènement",
+                      "en": "Event"
+                    }
+                  },
+                  {
+                    "id": "information-sante",
+                    "value": "Information santé",
+                    "label": {
+                      "fr": "Information santé",
+                      "en": "Health information"
+                    }
+                  },
+                  {
+                    "id": "fermeture-modification",
+                    "value": "Fermeture/modification",
+                    "label": {
+                      "fr": "Fermeture/modification",
+                      "en": "Closure/change"
+                    }
+                  },
+                  {
+                    "id": "autre",
+                    "value": "Autre",
+                    "label": {
+                      "fr": "Autre",
+                      "en": "Other"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
         {
           "type": "articleFeed",
           "props": {
@@ -5508,6 +5599,9 @@
   "blog": {
     "feedCostumSlug": "associationEkilibre",
     "readerVariant": "default",
-    "defaultCardVariant": "default"
+    "defaultCardVariant": "default",
+    "publicFilters": {
+      "publicationStatus": "Publié"
+    }
   }
 }
