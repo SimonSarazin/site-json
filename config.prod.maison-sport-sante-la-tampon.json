@@ -719,7 +719,12 @@
               "defaultFilters": {
                 "form": "6a85af345d898a57cb49f029",
                 "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdn1jcq445i0mb9bap7": "Validé"
-              }
+              },
+              "searchBy": [
+                "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdegc9sgox76p87n27",
+                "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdeggo91owe8t9ovl4p",
+                "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdmxv88txy6f5z6svg"
+              ]
             },
             "list": {
               "columns": {
@@ -2036,6 +2041,12 @@
                 "link",
                 "mobile",
                 "youtube"
+              ],
+              "searchBy": [
+                "name",
+                "shortDescription",
+                "description",
+                "tags"
               ]
             },
             "list": {
@@ -3030,7 +3041,12 @@
               },
               "defaultSortBy": {
                 "created": -1
-              }
+              },
+              "searchBy": [
+                "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdegc9sgox76p87n27",
+                "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdeggo91owe8t9ovl4p",
+                "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdmxv88txy6f5z6svg"
+              ]
             },
             "columns": [
               {
