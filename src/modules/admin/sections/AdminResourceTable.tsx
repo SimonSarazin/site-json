@@ -149,27 +149,36 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   // Filtre par état métier (mode statusField) : "all" ou une `value` de states — match serveur exact.
   const [fieldFilter, setFieldFilter] = useState<string>("all");
 
-  // `events` est le SEUL type que le legacy RÉDUIT quand la requête ne demande aucun champ :
-  // `SearchNew::getResults` (citizenToolKit/models/SearchNew.php:432) repasse alors chaque event par
-  // `Event::getSimpleEventById` (Event.php:211), qui RECONSTRUIT un document blanc-listé — sans `type`,
-  // sans `created`/`updated`, sans `source`/`reference`. D'où, sur /admin/agenda, des colonnes « Type » et
-  // « Ajouté le » vides alors que les fiches portent bien ces champs, un badge de validation toujours
-  // « Validé » (le flag vit dans preferences/source) et un `editModalMatch` aveugle (il lit serverData.type).
-  // Demander une projection EXPLICITE court-circuite la réduction : le legacy ne simplifie QUE sur `fields`
-  // vide. Sans risque pour l'édition — `openEditEntity` recharge de toute façon l'entité COMPLÈTE par id.
-  const champsAdmin = useMemo(() => {
-    if (resource.entityType !== "events") return undefined;
+  // Le legacy RÉDUIT les documents quand la requête ne demande aucun champ. Sur la route ADMIN, seul
+  // `events` est réduit : `SearchNew::getResults` (citizenToolKit/models/SearchNew.php:432) repasse
+  // chaque event par `Event::getSimpleEventById` (Event.php:211) — document blanc-listé sans `type`,
+  // `created`/`updated`, `source`/`reference`. Sur la route PUBLIQUE (celle du mode statusField), la
+  // réduction frappe TOUS les types testés (organizations : 11 clés sans `source`/`reference` ni champs
+  // costum ; poi : sans `publicationDate`/`publicationStatus`/`featured` ; answers : 5 clés SANS le champ
+  // `answers`) — d'où colonnes vides, toggle Référencer aveugle (isAttached/isReferenced faux) et gating
+  // `restrictActionsToOwned` qui bloquait tout. Demander une projection EXPLICITE court-circuite la
+  // réduction : le legacy ne simplifie QUE sur `fields` vide (et ajoute d'office son socle name/address/
+  // geo/links). Sans risque pour l'édition — `openEditEntity` recharge l'entité COMPLÈTE par id.
+  // ⚠️ JAMAIS "preferences" dans cette liste : champ interdit du legacy (SearchNew::checkFields), retiré
+  // par unset() — le trou d'index rend le tableau PHP non-séquentiel et CASSE toute la projection Mongo
+  // (documents réduits à _id) dès que "preferences" n'est pas en DERNIÈRE position du POST. Il est de
+  // toute façon strippé sur la route publique ; le badge toBeValidated ne vit qu'en adminMode (route admin).
+  const champsProjetes = useMemo(() => {
     return [...new Set([
-      "name", "type", "collection", "slug", "source", "reference", "preferences", "links", "creator",
+      "name", "type", "collection", "slug", "source", "reference", "links", "creator",
       "created", "updated", "startDate", "endDate", "recurrency", "openingHours", "timeZone",
       "shortDescription", "description", "tags", "address", "addresses", "geo", "geoPosition",
       "profilImageUrl", "profilThumbImageUrl", "profilMediumImageUrl",
       // Les colonnes déclarées en config peuvent viser un champ hors du socle (racine du chemin pointé :
-      // le legacy projette par champ de premier niveau).
+      // le legacy projette par champ de premier niveau), tout comme le champ d'état (mode statusField),
+      // le champ d'exclusivité (setFeatured) et les defaultFields de la source.
       ...columns.map((c) => c.path.split(".")[0]),
+      ...(resource.status?.field ? [resource.status.field.split(".")[0]] : []),
+      ...(resource.exclusiveField ? [resource.exclusiveField.split(".")[0]] : []),
+      ...((resource.source as { defaultFields?: string[] } | undefined)?.defaultFields ?? []).map((f) => f.split(".")[0]),
     ])];
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- colonnes dérivées de la config (stables)
-  }, [resource.entityType, columns.map((c) => c.path).join(",")]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- colonnes/champs dérivés de la config (stables)
+  }, [columns.map((c) => c.path).join(","), resource.status?.field, resource.exclusiveField]);
 
   const src = (resource.source ?? {}) as { defaultFields?: string[]; defaultFilters?: Record<string, unknown> } & Record<string, unknown>;
   const baseParams = useMemo(() => {
@@ -188,25 +197,27 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
     //    (`editModalMatch`, ex. {type:"recoveryCenter"}) lit serverData.type, et le form costum
     //    d'édition doit être PRÉREMPLI (champs equip_*) — une projection partielle ouvrait le form
     //    générique et/ou des champs vides. Coût maîtrisé : pagination par 10.
-    //  - SAUF `events` : cf. CHAMPS_ADMIN_EVENTS.
+    //  - SAUF `events` : réduits même sur la route admin → `champsProjetes`.
+    //  - mode statusField (`fieldStatus`) : route PUBLIQUE, documents RÉDUITS sur `fields` vide
+    //    (cf. champsProjetes) → projection explicite OBLIGATOIRE, sinon colonnes vides et
+    //    rattachement (source/reference) invisible.
     //  - mode public : `source` FORCÉ (M3, absent du jeu legacy par défaut) → le toggle
     //    Référencer/Détacher reflète l'appartenance réelle à source.keys.
     return {
       defaultTypes: [resource.entityType] as SearchType[],
       ...src,
-      // adminMode → projection admin (`champsAdmin` : liste events, sinon undefined = docs complets).
-      // fieldStatus : documents COMPLETS aussi (badge + colonnes lisent des champs métier profonds),
-      // mais SANS variant admin — la projection forcée ["source","reference"] les strip­perait.
       ...(adminMode
-        ? { defaultFields: champsAdmin }
+        // Route ADMIN : pas de checkFields → "preferences" passe (badge toBeValidated), et le bug
+        // du trou d'index ne s'applique pas.
+        ? { defaultFields: resource.entityType === "events" ? [...champsProjetes, "preferences"] : undefined }
         : fieldStatus
-          ? { defaultFields: undefined }
+          ? { defaultFields: champsProjetes }
           : { defaultFields: [...new Set(["source", "reference", ...(src.defaultFields ?? [])])] }),
       ...(Object.keys(filters).length > 0 ? { defaultFilters: filters } : {}),
       ...(sort ? { defaultSortBy: { [sort.col]: sort.dir } } : {}),
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- src/fieldStatus dérivés de la config (stables par rendu)
-  }, [adminMode, statusFilter, fieldFilter, costumSlug, sort, resource.entityType, champsAdmin, JSON.stringify(src)]);
+  }, [adminMode, statusFilter, fieldFilter, costumSlug, sort, resource.entityType, champsProjetes, JSON.stringify(src)]);
 
   const { transformedResults, totalCount, isLoading, lastItemRef, refetch, error: searchError } = useSearchQuery({
     queryKeyPrefix: ADMIN_QUERY_KEYS.RESOURCE_PREFIX(resource.entityType),
@@ -385,7 +396,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
         ...src,
         indexStepList: 50,
         defaultSortBy: undefined,
-        defaultFields: adminMode ? champsAdmin : [...new Set([champ.split(".")[0]!, "source", "reference"])],
+        defaultFields: adminMode ? champsProjetes : [...new Set([champ.split(".")[0]!, "source", "reference"])],
         defaultFilters: { ...(src.defaultFilters ?? {}), [champ]: true },
       },
       (config as { costumForms?: Record<string, never> } | undefined)?.costumForms,

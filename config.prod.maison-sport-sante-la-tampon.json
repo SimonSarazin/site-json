@@ -2647,6 +2647,10 @@
           {
             "type": "resource",
             "entityType": "poi",
+            "label": {
+              "fr": "Actualités",
+              "en": "News"
+            },
             "source": {
               "sourceKey": [
                 "associationEkilibre"
@@ -2678,13 +2682,6 @@
                 "label": {
                   "fr": "Date de publication",
                   "en": "Publication date"
-                }
-              },
-              {
-                "path": "publicationStatus",
-                "label": {
-                  "fr": "Statut",
-                  "en": "Status"
                 }
               },
               {
@@ -2769,13 +2766,6 @@
                 "label": {
                   "fr": "Code postal",
                   "en": "Postal code"
-                }
-              },
-              {
-                "path": "statusActor",
-                "label": {
-                  "fr": "Statut",
-                  "en": "Status"
                 }
               },
               {
@@ -3367,6 +3357,7 @@
         },
         "legalStatus": {
           "widget": "select",
+          "required": true,
           "label": {
             "fr": "Forme juridique",
             "en": "Legal form"
@@ -3988,11 +3979,6 @@
           "groups": [
             {
               "columns": 1,
-              "label": {
-                "fr": "Adresse du siège",
-                "en": "Head office address"
-              },
-              "required": true,
               "fields": [
                 "address",
                 "addressCountry",
@@ -4273,13 +4259,6 @@
           }
         }
       },
-      "serializeGroups": {
-        "address": {
-          "serverKey": "address",
-          "read": "address:read",
-          "write": "address:write"
-        }
-      },
       "sections": [
         {
           "id": "content",
@@ -4297,7 +4276,6 @@
                 "category",
                 "publicationDate",
                 "shortDescription",
-                "address",
                 "description",
                 "tags",
                 "link",
@@ -4394,50 +4372,6 @@
             "fr": "Affiché sur les cartes du fil et en tête de l'article.",
             "en": "Shown on feed cards and at the top of the article."
           }
-        },
-        "address": {
-          "widget": "location",
-          "label": {
-            "fr": "Lieu associé (facultatif)",
-            "en": "Related place (optional)"
-          },
-          "info": {
-            "fr": "Renseignez un lieu si l'actualité s'y rattache (ex. un nouveau créneau). Laissez vide sinon.",
-            "en": "Fill in a place if the news item relates to one (e.g. a new time slot). Leave empty otherwise."
-          }
-        },
-        "addressCountry": {
-          "widget": "hidden",
-          "group": "address",
-          "default": "RE"
-        },
-        "addressLocality": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "postalCode": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "streetAddress": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "localityId": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "geo": {
-          "widget": "hidden",
-          "type": "object",
-          "writeOnly": true,
-          "write": "geo:write"
-        },
-        "geoPosition": {
-          "widget": "hidden",
-          "type": "object",
-          "writeOnly": true,
-          "write": "geoPosition:write"
         },
         "description": {
           "widget": "markdown",
