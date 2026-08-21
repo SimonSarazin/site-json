@@ -203,13 +203,16 @@ Les mêmes formulaires servent dans deux contextes :
 | Contexte | Mécanisme recommandé |
 |---|---|
 | Déclenchement en cours de navigation (header, CTA, action utilisateur) | `openLogin()` → modal global |
-| Redirection forcée depuis un guard (`auth-required`, `usePageGuards`) | route `/login` (deep-link) |
+| Page gardée, mode `prompt` (défaut) | `openLogin()` → modal global, sans quitter la page |
+| Page gardée, mode `redirect` | route `/login` (deep-link), page visée mémorisée |
 | Lien direct (e-mail, QR code) | route `/login` |
 | Intégration dans un CoForm ou une section custom | `openLogin({ onSuccess })` → modal global |
 
-La route `/login` reste disponible et fonctionnelle ; `usePageGuards` avec le
-middleware `auth-required` continue de rediriger vers `/login` (navigation, pas
-modal) pour les pages protégées (voir `src/hooks/usePageGuards.ts:11`).
+La route `/login` reste disponible et fonctionnelle. Depuis l'introduction de
+`page.auth.mode`, une page gardée ouvre par DÉFAUT la modale sans naviguer
+(`prompt`) ; elle ne redirige vers `/login` que si le site pose
+`"mode": "redirect"` — auquel cas la page visée est mémorisée et l'utilisateur y
+revient après connexion. Voir [Gardes de page](34-gardes-de-page.md).
 
 Chaque formulaire redirige vers `/` s'il détecte un utilisateur déjà connecté
 (`!loading && me?.isConnected` dans un `useEffect`), ce qui remplace l'ancien

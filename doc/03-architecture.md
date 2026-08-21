@@ -782,10 +782,19 @@ return <SearchMap {...props} />;
 usePageGuards(page); // dans le composant de page
 ```
 
-Évalue les règles `page.auth` et `page.middleware` et redirige si besoin :
-- `page.auth.required: true` → redirige vers `/login` si non connecté
-- `page.auth.roles: ["admin"]` → vérifie `me.serverData.roles`
-- `page.middleware: ["redirect-if-authenticated"]` → redirige vers `/` si déjà connecté
+Évalue `page.auth` et décide de l'accès. Le comportement quand il est refusé est
+donné par `page.auth.mode` : `prompt` (défaut — on reste sur la page, la modale
+de connexion s'ouvre par-dessus), `redirect` (vers `/login`, page visée
+mémorisée) ou `hide` (refus affiché). Dans les trois cas, `SiteRenderer` ne
+sérialise pas les sections tant que l'accès n'est pas accordé.
+
+- `page.auth.required: true` → exige une session
+- `page.auth.access: "siteAdmin" | "superAdmin"` → exige un niveau d'admin
+  (même vocabulaire que `admin.access.min`)
+- `page.auth.roles` et `page.middleware` → **dépréciés** (pièges silencieux)
+
+⚠️ Ce n'est **pas** une garde serveur : il n'y a pas de session au SSR. Détail
+complet, limites comprises → [Gardes de page](34-gardes-de-page.md).
 
 ### Permissions
 
@@ -1001,7 +1010,7 @@ Composant rendu pour chaque route de la config JSON et comme fallback `path="*"`
 
 **`PageProvidersComposer`** : compose les `PageProvider` de tous les modules (depuis `getPageProviders(discoverModules())`) en utilisant `reduceRight` pour respecter l'ordre d'imbrication.
 
-**`usePageGuards(page)`** : évalue les règles `page.auth` (required/roles) et redirige si besoin.
+**`usePageGuards(page)`** : évalue `page.auth` et applique le mode de garde (`prompt`/`redirect`/`hide`) — cf. [Gardes de page](34-gardes-de-page.md).
 
 ---
 
