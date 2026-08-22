@@ -225,7 +225,7 @@
                   "fr": "Des activités douces pour le cœur.",
                   "en": "Gentle activities for the heart."
                 },
-                "link": "/creneaux"
+                "link": "/creneaux?ald=Insuffisance%2520cardiaque%2520grave%252C%2520troubles%2520du%2520rythme%2520graves%252C%2520cardiopathies%2520valvulaires%2520graves%252C%2520cardiopathies%2520cong%25C3%25A9nitales%2520graves,Maladie%2520coronaire%2520%253A%2520infarctus%2520du%2520myocarde,Art%25C3%25A9riopathies%2520chroniques%2520,Accident%2520vasculaire%2520c%25C3%25A9r%25C3%25A9bral%2520invalidant"
               },
               {
                 "icon": "droplets",
@@ -237,7 +237,7 @@
                   "fr": "Mieux contrôler sa glycémie.",
                   "en": "Better blood sugar control."
                 },
-                "link": "/creneaux"
+                "link": "/creneaux?ald=Diab%25C3%25A8te%2520de%2520type%25201%2520et%2520diab%25C3%25A8te%2520de%2520type%25202%2520de%2520l%2527adulte%2520ou%2520de%2520l%2527enfant"
               },
               {
                 "icon": "weight",
@@ -249,7 +249,7 @@
                   "fr": "Un programme progressif et bienveillant.",
                   "en": "A progressive and supportive program."
                 },
-                "link": "/creneaux"
+                "link": "/creneaux?maladies=Ob%25C3%25A9sit%25C3%25A9"
               },
               {
                 "icon": "bone",
@@ -261,7 +261,7 @@
                   "fr": "Bouger sans se faire mal.",
                   "en": "Move without hurting yourself."
                 },
-                "link": "/creneaux"
+                "link": "/creneaux?maladies=Douleurs%2520chroniques"
               },
               {
                 "icon": "ribbon",
@@ -273,7 +273,7 @@
                   "fr": "Pendant et après les traitements.",
                   "en": "During and after treatment."
                 },
-                "link": "/creneaux"
+                "link": "/creneaux?ald=Cancer%2520colorectal,Cancer%2520de%2520la%2520prostate,Cancer%2520du%2520sein,Cancer%2520du%2520col%2520de%2520l%25E2%2580%2599ut%25C3%25A9rus"
               },
               {
                 "icon": "wind",
@@ -285,7 +285,7 @@
                   "fr": "Renforcer son souffle et son endurance.",
                   "en": "Strengthen your breath and endurance."
                 },
-                "link": "/creneaux"
+                "link": "/creneaux?ald=Insuffisance%2520respiratoire%2520chronique%2520grave%2520%253A%2520BPCO%252C%2520asthme%2520grave"
               },
               {
                 "icon": "brain",
@@ -297,7 +297,7 @@
                   "fr": "Yoga, relaxation, bien-être.",
                   "en": "Yoga, relaxation, well-being."
                 },
-                "link": "/creneaux"
+                "link": "/creneaux?ald=Affections%2520psychiatriques%2520de%2520longue%2520dur%25C3%25A9e%2520dont%2520d%25C3%25A9pression%2520r%25C3%25A9currente%252C%2520troubles%2520bipolaires&maladies=D%25C3%25A9pression,Trouble%2520du%2520sommeil"
               },
               {
                 "icon": "person-standing",
@@ -309,7 +309,7 @@
                   "fr": "Garder son autonomie et son équilibre.",
                   "en": "Maintain autonomy and balance."
                 },
-                "link": "/creneaux"
+                "link": "/creneaux?beneficiaries=seniors,personnes-agees"
               }
             ]
           }
