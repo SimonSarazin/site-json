@@ -435,3 +435,49 @@ describe("applyDefaultSearchTargets (défaut à l'hydratation)", () => {
     ).toEqual({});
   });
 });
+
+/**
+ * VERROU D'ALLER-RETOUR — une valeur d'option contenant une VIRGULE.
+ *
+ * La lecture fait `split(",")` puis `decodeURIComponent` par fragment. Tant que l'écriture
+ * joignait sans encoder, une telle valeur était redécoupée en morceaux qui ne correspondaient à
+ * aucune option et le paramètre disparaissait de l'URL — en liste mixte, la perte était PARTIELLE
+ * et silencieuse. 4 valeurs du parc étaient dans ce cas (groupe `portage` de relief et
+ * tiers-lieux). Ces tests interdisent la régression dans les deux sens.
+ */
+describe("aller-retour d'une valeur à virgule", () => {
+  const PORTAGE: FilterGroupLike = {
+    id: "portage",
+    type: "tag",
+    options: [
+      { id: "assoc", name: "Association" },
+      { id: "collectivites", name: "Collectivités (Département, Intercommunalité, Région, etc)" },
+    ],
+  };
+  const AVEC_VIRGULE = "Collectivités (Département, Intercommunalité, Région, etc)";
+
+  it("une valeur à virgule survit à écriture → lecture", () => {
+    const url = computeUrlFromFilters(new URLSearchParams(), { portage: [AVEC_VIRGULE] }, {}, [PORTAGE], "");
+    const { applySelected } = computeFiltersFromUrl(new URLSearchParams(url.toString()), [PORTAGE], null);
+    expect(applySelected({})).toEqual({ portage: [AVEC_VIRGULE] });
+  });
+
+  it("en liste MIXTE, la valeur sans virgule ne masque plus la perte de l'autre", () => {
+    const sel = { portage: ["Association", AVEC_VIRGULE] };
+    const url = computeUrlFromFilters(new URLSearchParams(), sel, {}, [PORTAGE], "");
+    const { applySelected } = computeFiltersFromUrl(new URLSearchParams(url.toString()), [PORTAGE], null);
+    expect(applySelected({}).portage).toHaveLength(2);
+    expect(applySelected({}).portage).toContain(AVEC_VIRGULE);
+  });
+
+  it("l'encodage est l'IDENTITÉ sur une valeur URL-safe (rétrocompatibilité du wire)", () => {
+    const url = computeUrlFromFilters(new URLSearchParams(), { portage: ["Association"] }, {}, [PORTAGE], "");
+    expect(url.get("portage")).toBe("Association");
+  });
+
+  it("une URL héritée, écrite SANS encodage, reste lisible", () => {
+    // La lecture décodait déjà : les liens déjà partagés ne cessent pas de fonctionner.
+    const { applySelected } = computeFiltersFromUrl(new URLSearchParams("portage=Association"), [PORTAGE], null);
+    expect(applySelected({})).toEqual({ portage: ["Association"] });
+  });
+});

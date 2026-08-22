@@ -183,8 +183,12 @@ export const HeroSearchSchema = z.object({
           label: LocalizedString,
           variant: z.enum(["default", "secondary", "accent", "primary", "outline"]).optional(),
           // Filtres posés par ce bouton (multi-params, multi-valeurs).
-          // NB : les valeurs ne doivent pas contenir de virgule (format URL
-          // partagé avec /lieux — `split(",")`).
+          // Les valeurs peuvent contenir une virgule : l'écriture les ENCODE avant de joindre
+          // (`computeUrlFromFilters.encodeValues`) et la lecture décode chaque fragment
+          // (`computeFiltersFromUrl`). ⚠️ Vaut pour les params écrits par la section `filters` ;
+          // `HeroSearch` compare encore les siens SANS décoder (HeroSearch.tsx:64-72) — tant
+          // qu'aucune page ne porte à la fois un `hero-search` et une section `filters`, les deux
+          // espaces de noms ne se croisent pas.
           filters: z
             .array(
               z.object({
