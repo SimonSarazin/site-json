@@ -427,6 +427,17 @@ export const CardConfSchema = z.object({
     // déclenche la query useFundingEnvelope. Découple la feature funding du style
     // de carte. Défaut : actif uniquement pour le variant "rezo-la-mer" (rétrocompat).
     showFunding:     z.boolean().optional(),
+    /**
+     * Carte `card-answer` : ce que fait le bouton « Fiche structure ».
+     *  - `profil`  (DÉFAUT côté code) — navigue vers `/profil/:slug`, comportement historique ;
+     *  - `preview` — ouvre la fiche EN MODALE (même `preview.type: "structure"` que les cartes de
+     *    l'annuaire), sans quitter la liste.
+     * Sur une page où l'usager COMPARE des créneaux, la navigation lui fait perdre sa liste, ses
+     * filtres et sa position de défilement pour une information qu'il ne veut que consulter au
+     * passage — d'où l'option. Absent = navigation, pour ne rien changer aux sites existants.
+     * Même forme que `MapConf.itemAction`, à dessein : un seul vocabulaire d'action dans le module.
+     */
+    structureAction: z.object({ kind: z.enum(["profil", "preview"]) }).optional(),
     detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
     detailedMode: z.enum(["default", "service-pricing"]).default("default"),
     // Coin haut-droit des cartes à image (`image-cover`) : par défaut les

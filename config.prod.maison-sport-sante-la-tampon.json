@@ -789,7 +789,10 @@
                   },
                   "card": {
                     "type": "card-answer",
-                    "detailsMode": "dialog"
+                    "detailsMode": "dialog",
+                    "structureAction": {
+                      "kind": "preview"
+                    }
                   },
                   "preview": {
                     "type": "coform-answer",
