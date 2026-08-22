@@ -4,19 +4,37 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Building2, Calendar, ChevronDown, ChevronUp, FileText, Mail, MapPin, User } from "lucide-react";
 import { SearchCardProps } from "../../schema";
-import { useNavigate } from "react-router";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { parseCoformAnswer, getStatusStyle } from "../../lib/coformAnswer";
+import { useEntityBySlugQuery } from "@/hooks/useEntityBySlugQuery";
+import { SwitchDetailsMode } from "../SwitchDetailsMode";
 
 export default function CardAnswer({ item, onClick }: SearchCardProps) {
 	useLoadNamespace("modules/search");
 	const t = useT("modules/search");
 	const [showAllSchedules, setShowAllSchedules] = useState(false);
-	const navigate = useNavigate();
 	const serverData = item?.serverData as Record<string, unknown> | undefined;
 
+
 	const a = parseCoformAnswer(serverData ?? {});
+
+	/**
+	 * « Fiche structure » ouvre la fiche EN MODALE, au lieu de quitter la page pour `/profil/:slug`.
+	 *
+	 * L'usager est en train de comparer des créneaux : l'envoyer sur une page de profil lui fait
+	 * perdre sa liste, ses filtres et sa position de défilement, pour une information qu'il veut
+	 * seulement consulter au passage. C'est exactement le geste que `/structure` offre déjà sur ses
+	 * propres cartes (`preview.type: "structure"` en `dialog`) — on le rend disponible ici.
+	 *
+	 * La carte ne porte qu'un SOUS-DOCUMENT de la structure (nom, e-mail, image) : la fiche a besoin
+	 * de l'entité complète. Elle n'est donc chargée QU'AU CLIC (`enabled` piloté par l'ouverture) —
+	 * une liste de 12 créneaux ne déclenche aucune requête tant que personne ne demande.
+	 */
+	const [ficheOuverte, setFicheOuverte] = useState(false);
+	const { data: structure, isLoading: structureEnCours } = useEntityBySlugQuery({
+		slug: ficheOuverte ? a.structure.slug : undefined,
+	});
 
 	const handleOpenActivityDetails = (event: MouseEvent<HTMLButtonElement>) => {
 		event.stopPropagation();
@@ -170,11 +188,10 @@ export default function CardAnswer({ item, onClick }: SearchCardProps) {
 					<Button
 						variant="secondary"
 						className="inline-flex items-center gap-1.5 rounded-md bg-btn-structure px-4 py-2 text-xs font-semibold text-primary-foreground transition-colors hover:text-foreground"
+						disabled={!a.structure.slug || structureEnCours}
 						onClick={(event) => {
 							event.stopPropagation();
-							if (a.structure.slug) {
-								navigate(`/profil/${a.structure.slug}`);
-							}
+							if (a.structure.slug) setFicheOuverte(true);
 						}}
 					>
 						<Building2 className="w-3.5 h-3.5" />
@@ -182,6 +199,18 @@ export default function CardAnswer({ item, onClick }: SearchCardProps) {
 					</Button>
 				</div>
 			</div>
+
+			{/* Fiche structure en modale — même preview que les cartes de /structure. Montée
+			    seulement une fois l'entité chargée : `SwitchDetailsMode` attend un item réel. */}
+			{ficheOuverte && structure && (
+				<SwitchDetailsMode
+					openDetails={ficheOuverte}
+					setOpenDetails={setFicheOuverte}
+					item={structure as never}
+					card={{ detailsMode: "dialog" }}
+					preview={{ type: "structure" }}
+				/>
+			)}
 		</article>
 	);
 }
