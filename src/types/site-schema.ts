@@ -847,10 +847,24 @@ const ContactFormSectionSchema = z.object({
       placeholder: LocalizedString.optional(),
       options: z.array(LocalizedString).optional(),
       validation: z.string().optional(), // regex ou mot‑clé (email, tel…)
+      /**
+       * Rôle du champ dans le message envoyé (cf. `lib/contactPayload.ts`). Facultatif : à défaut,
+       * le rôle est déduit du `name` par convention (`name`/`email`/`phone`/`subject`/`message`).
+       * Un champ sans rôle est un consentement d'interface (rgpd, newsletter) : validé localement,
+       * jamais envoyé.
+       */
+      role: z.enum(["senderName", "senderEmail", "phone", "subject", "message", "extra"]).optional(),
     })),
     submitLabel: LocalizedString,
-    action: z.string(),
-    method: z.enum(["GET", "POST"]).default("POST"),
+    /**
+     * @deprecated IGNORÉ. Le message part par la lib (`CONTACT_SEND` →
+     * `/co2/mailmanagement/createandsend`), qui résout le destinataire côté serveur depuis
+     * `costum.admin.email`. Conservé optionnel pour ne pas invalider une config existante ;
+     * `tests/preflight/contact-form.test.ts` refuse qu'on en déclare une nouvelle.
+     */
+    action: z.string().optional(),
+    /** @deprecated IGNORÉ — cf. `action`. */
+    method: z.enum(["GET", "POST"]).optional(),
     successMessage: LocalizedString.optional(),
     errorMessage: LocalizedString.optional(),
   }),
