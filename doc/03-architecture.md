@@ -1073,7 +1073,7 @@ Plusieurs primitives présentationnelles factorisent des patterns auparavant rec
 
 | Primitive | Fichier | Rôle |
 |---|---|---|
-| `NavLink` | `src/components/layout/NavLink.tsx` | Lien de navigation partagé **header + footer**. Tranche 4 cas selon `to` : vide ou `"#"` → `<span>` inerte (placeholder) ; `mailto:`/`tel:`/`sms:` → `<a href>` simple (pas de `target`) ; externe (`http(s)://`, ou prop `external`) → `<a target="_blank" rel="noopener noreferrer">` ; sinon → `<Link>` React Router (SPA). `forwardRef` + props résiduelles → composable en `asChild` d'un primitive Radix (ex. `DropdownMenuItem asChild`). **Présentationnel** : l'état actif (couleurs, `<span>` souligné) reste calculé par l'appelant, qui passe la className résolue + un `ariaCurrent`. |
+| `NavLink` | `src/components/layout/NavLink.tsx` | Lien de navigation partagé **header + footer**. Le tranchage n'est plus interne : il est délégué à `classifyHref` (`src/lib/linkKind.ts`, cf. [Utilitaires `src/lib/`](#utilitaires-srclib-référence)), **partagé avec `CTASection` et `CardsSection`** ; `categories-grid` hérite du même contrat en passant par `NavLink` (`CategoriesGridSection.tsx:4`). Rendu selon le verdict : vide ou `"#"` → `<span>` inerte (placeholder) ; `mailto:`/`tel:`/`sms:` → `<a href>` simple (pas de `target`) ; externe (`http(s)://`, ou prop `external`) → `<a target="_blank" rel="noopener noreferrer">` ; sinon → `<Link>` React Router (SPA). `forwardRef` + props résiduelles → composable en `asChild` d'un primitive Radix (ex. `DropdownMenuItem asChild`). **Présentationnel** : l'état actif (couleurs, `<span>` souligné) reste calculé par l'appelant, qui passe la className résolue + un `ariaCurrent`. |
 | `LangSwitch` | `header/LangSwitch.tsx` | Sélecteur de langue (`DropdownMenu` Globe + locales). Self-contained (lit `useLocalization`), rend `null` s'il n'y a qu'une locale. Menu déroulant **normalisé** (locale active = `font-semibold bg-accent`) ; trigger piloté par `tone` (`default`/`onColor`) + `triggerClassName`. |
 | `MobileMenuSheet` | `header/MobileMenuSheet.tsx` | Conteneur de menu mobile — enveloppe le `Sheet` shadcn (Radix Dialog) → focus-trap, verrou de scroll, overlay, fermeture par Échap gratuits. Render-prop `children(close)` pour le contenu par-header ; props `breakpoint` (défaut `md`, `xl` pour le méga-menu), `side`, `tone`, `triggerClassName`. |
 | `SocialLinks` | `footer/SocialLinks.tsx` | Rangée de liens sociaux (footers). Map plateforme→icône lucide **consolidée** (une seule source) ; rend un `NavLink` externe par réseau ; style piloté par `itemClassName`/`iconClassName`. |
@@ -1096,22 +1096,25 @@ L'affichage du bouton de connexion / menu utilisateur connecté dans les headers
 
 Composant qui reçoit un objet `Section` (type + props + id) et rend le composant lazy correspondant.
 
-**Liste des types de section enregistrés** (dans `LazySections`) — cette liste manuelle a pris du
-retard sur le code : la vraie union `Section` compte **71** types (`tests/preflight/section-meta.test.ts`
-en garantit la parité avec `SECTION_META`), il lui manquait déjà `data-observatory`, `agenda`,
-`articleFeed`, `articleReader` avant ce changement. Seule la nouvelle entrée `featured-carousel` est
-ajoutée ci-dessous ; la resynchronisation complète du reste de la table est hors périmètre ici.
+**Liste des types de section enregistrés** (dans `LazySections`) — l'union `Section` compte **75**
+types, autant que la table `lazy()` de `SectionRenderer.tsx` et que `SECTION_META`
+(`tests/preflight/section-meta.test.ts` garantit la parité **entre ces trois-là**, dans les deux
+sens). ⚠️ La table ci-dessous est recopiée à la main et **rien ne la teste** : sa dérive est
+silencieuse, la recompter à chaque ajout de section.
 
 | Groupe | Types |
 |---|---|
 | **Sections génériques** | `hero`, `cards`, `gallery`, `video`, `testimonials`, `pricing`, `faq`, `table`, `blogPost`, `blogList`, `team`, `stats`, `cta`, `logoCloud`, `chart`, `accordion`, `tabs`, `steps`, `timeline`, `banner`, `map`, `newsletter`, `contactForm`, `comparison`, `featureComparison`, `socialFeed`, `eventList`, `productShowcase`, `breadcrumb`, `cookieConsent`, `html`, `markdown`, `title`, `content`, `loginForm`, `registerForm`, `recoverPasswordForm`, `member`, `heroWithIcon`, `gridLayout` |
-| **Sections search** | `searchPro`, `searchProStatic`, `cardCountCT`, `thematics`, `filters`, `featured-carousel` |
+| **Sections search** | `searchPro`, `searchProStatic`, `cardCountCT`, `thematics`, `filters`, `featured-carousel`, `toolsCatalog` |
 | **Sections news** | `news` |
 | **Sections notification** | `notifications` |
 | **Sections ampli** | `meeteem` |
 | **Sections coform** | `coform` |
 | **Sections cagnotte** | `actions`, `finance`, `actions-summary`, `finance-summary`, `cagnotte-layout` |
-| **Sections site-spécifiques** | `hero-search`, `hero-parallax`, `hero-quick-access`, `features-glass`, `action-tiles`, `cta-card-grid`, `cta-newsletter`, `searchHeader`, `expandable-actions`, `hero-tinted-overlay`, `hero-entity-banner`, `categories-grid` |
+| **Sections blog** | `articleFeed`, `articleReader`, `articleTeaser` |
+| **Sections agenda** | `agenda` |
+| **Sections observatoire** | `data-observatory` |
+| **Sections site-spécifiques** | `hero-search`, `hero-parallax`, `hero-quick-access`, `hero-carousel`, `features-glass`, `action-tiles`, `cta-card-grid`, `cta-newsletter`, `searchHeader`, `expandable-actions`, `hero-tinted-overlay`, `hero-entity-banner`, `categories-grid`, `map-bubbles` |
 
 **Sections project-aware** : `actions`, `finance`, `actions-summary`, `finance-summary` reçoivent un `idProjet` injecté par `SectionRenderer` depuis `contextId` ou les props.
 
@@ -1204,6 +1207,8 @@ introduite.
 
 | Fichier | Fichier source | Description |
 |---|---|---|
+| `linkKind.ts` | `src/lib/linkKind.ts` | `classifyHref(href)` → `inert` (`#` ou vide) \| `anchor` (`#ancre`) \| `protocol` (`mailto:`/`tel:`/`sms:`) \| `external` (`http(s)://` ou `//`) \| `internal` (SPA). **Point de vérité unique du contrat de lien du parc**, partagé par `NavLink`, `CTASection` et `CardsSection` ; `isProtocolHref` en est le raccourci. Fonction PURE et SSR-safe (inspection de la chaîne, aucun hook, aucun `window`) |
+| `contactPayload.ts` | `src/lib/contactPayload.ts` | `fieldRole` / `missingContactRoles` / `buildContactPayload` : traduit les champs LIBRES de la section `contactForm` vers les clés FIXES de `CONTACT_SEND`. Rôle explicite (`field.role`) ou déduit du `name` par convention ; sans les 4 rôles requis, le payload vaut `null` et **rien n'est envoyé** (cf. [Schémas sections](05-schemas-sections.md#contactform)) |
 | `queryKeys.ts` | `src/lib/queryKeys.ts` | Constantes des clés React Query partagées entre modules |
 | `toastUtils.ts` | `src/lib/toastUtils.ts` | Helpers pour les notifications sonner |
 | `confetti.ts` | `src/lib/confetti.ts` | Lance une animation confetti (module cagnotte) |

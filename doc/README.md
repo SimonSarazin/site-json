@@ -44,3 +44,10 @@
 | Palette Cmd+K (implémentée) | [Command Palette](17-module-command-palette.md) — module implémenté ; les sections 1-11 du doc restent l'annexe RFC/justification d'architecture |
 | 🚧 RFC : assistant config × costums | [Assistant config costum (RFC)](31-rfc-assistant-config-costum.md) — formulaires costum générés, config admin, cycle de vie sans re-publication |
 
+## Documents annexes (non numérotés)
+
+| Pour... | Lire... |
+|---------|---------|
+| Nommage & inventaire du système de formulaires (avant un refactor) | [Cartographie & formalisme des formulaires](cartographie-forms-formalisme.md) |
+| Doublons, mutualisation, code mort | [Cartographie des fonctions](cartographie-fonctions/RAPPORT.md) — artefact **généré** par `npm run map:functions` (+ `cartographie-fonctions/functions.json`) |
+

@@ -97,17 +97,32 @@ tout nom hors de ces deux-là.
 
 ### Pourquoi `middleware` est déprécié
 
-Trois noms seulement sont résolus, contre le registre d'`usePageGuards` :
+Trois noms seulement figurent au registre d'`usePageGuards` — et **un seul y arrive
+encore**. Le hook évalue d'abord `evaluatePageAccess` et sort par un `return`
+inconditionnel dès que la page est gardée (`if (acces.gated) { … return; }`,
+`src/hooks/usePageGuards.ts:50-57`), **avant** la boucle `page.middleware?.forEach`.
+Or `isGatedPage` classe `auth-required` et `admin-only` comme gardants : leurs
+entrées de registre sont devenues du code mort.
 
-| nom | équivalent moderne |
-|---|---|
-| `auth-required` | `auth.required` (doublon exact) |
-| `admin-only` | `auth.access` |
-| `redirect-if-authenticated` | aucun — seul cas encore utile |
+| nom | atteint le registre ? | équivalent moderne |
+|---|---|---|
+| `auth-required` | non — absorbé par `evaluatePageAccess` | `auth.required` (doublon exact) |
+| `admin-only` | non — absorbé par `evaluatePageAccess` | `auth.access` |
+| `redirect-if-authenticated` | oui — il ne rend pas la page gardée | aucun — seul cas encore utile |
 
-`registry[mw]?.(…)` : l'optional chaining fait qu'un nom **inconnu ne déclenche
-rien**. Une page se croit gardée et ne l'est pas. Le moteur avertit désormais en
-dev, et la garde préflight refuse les noms hors registre.
+> ⚠️ **Panne silencieuse** : `evaluatePageAccess` ne tire de `middleware` **aucune
+> exigence de rôle**. Il ne le lit que via `isGatedPage` (`pageAccess.ts:37-38`), pour
+> savoir si la page est gardée ; le niveau requis, lui, ne vient que de `auth.access`
+> ou `auth.roles`. Une page portant le seul `middleware: ["admin-only"]` est donc bien
+> gardée, mais en **session** seulement : tout utilisateur connecté, admin ou non,
+> obtient l'accès — sans le moindre signal. Écrire `"auth": { "access": "siteAdmin" }`.
+
+`const garde = registry[mw]; if (!garde) return;` (`src/hooks/usePageGuards.ts:58-70`) :
+un nom **inconnu ne déclenche rien**. Une page se croit gardée et ne l'est pas. Le moteur
+avertit désormais en dev (`console.warn` sous `import.meta.env.DEV`) — mais cet
+avertissement vit lui aussi après le `return`, il ne se déclenche donc jamais sur une
+page gardée par ailleurs. La garde préflight
+(`tests/preflight/page-guards.test.ts`) refuse les noms hors registre.
 
 ## Ce que la garde fait vraiment
 
@@ -152,7 +167,7 @@ la charger par requête (comme le font les sections data-backed : `articleFeed`,
 | fichier | rôle |
 |---|---|
 | `src/lib/pageAccess.ts` | `isGatedPage`, `gateMode`, `evaluatePageAccess` — décision pure, testée hors React |
-| `src/hooks/usePageGuards.ts` | applique la décision : ne navigue qu'en mode `redirect` |
+| `src/hooks/usePageGuards.ts` | applique la décision : ne navigue qu'en mode `redirect`, et sort avant la boucle `middleware` (cf. plus haut) |
 | `src/components/SiteRenderer.tsx` | applique la décision : rend ou non les sections |
 | `src/modules/auth/components/GatedPageNotice.tsx` | ce qui s'affiche à la place des sections |
 | `src/lib/authRedirect.ts` | destination de retour et sa validation (refus des URL externes et protocole-relatives) |
