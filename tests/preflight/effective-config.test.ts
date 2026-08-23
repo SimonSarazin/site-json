@@ -15,6 +15,8 @@ import {
   type CostumFormSubTypeLike,
 } from "@/modules/search/lib/costumSubType";
 import { walkSections, type SectionLike } from "@/lib/sectionContainers";
+import { answerToggleArgs, type AnswerGroupConf } from "@/modules/search/lib/answerFilterClause";
+import { searchByFieldsToQuery } from "@/modules/search/lib/searchByFieldsToQuery";
 
 /**
  * GARDE D'IMPACT INTER-CONFIGS — étage 2 : le « comportement résolu par site ».
@@ -213,6 +215,41 @@ function projeter(site: string, cfg: Cfg) {
     }
   }
 
+  // ── Facettes « par réponses » : pour chaque groupe `filtersByAnswers`/`filtersByPath`, le
+  //    filtre Mongo RÉELLEMENT émis au clic sur une valeur — calculé par les fonctions pures de
+  //    l'app (`answerToggleArgs` + `searchByFieldsToQuery`), sur une valeur témoin.
+  //    Sans cette projection la garde était AVEUGLE à ce chemin : aucune fixture ne portait de
+  //    `filtersByAnswers`, alors que 3 configs du parc en déclarent 11 groupes — et le bug des
+  //    facettes mortes de `/creneaux` (filtre par `_id` d'organisation sur une liste d'answers)
+  //    serait passé en revue sans laisser la moindre trace.
+  const answerFacets: Record<string, unknown> = {};
+  const VALEUR_TEMOIN = "Valeur";
+  const ORGA_TEMOIN = "000000000000000000000000";
+  for (const page of (cfg.pages as Array<Record<string, unknown>> | undefined) ?? []) {
+    const sections = (page.sections as SectionLike[] | undefined) ?? [];
+    for (const section of walkSections(sections)) {
+      const props = section.props as
+        | {
+            filtersByAnswers?: Record<string, AnswerGroupConf>;
+            filtersByPath?: Record<string, AnswerGroupConf>;
+          }
+        | undefined;
+      const groupes = { ...(props?.filtersByAnswers ?? {}), ...(props?.filtersByPath ?? {}) };
+      for (const [groupId, conf] of Object.entries(groupes)) {
+        const { field, value, fieldType } = answerToggleArgs(conf, VALEUR_TEMOIN, {
+          name: VALEUR_TEMOIN,
+          orgaNameArray: [ORGA_TEMOIN],
+        });
+        const entry = fieldType ? { field, type: fieldType, value } : { field, value };
+        answerFacets[cleUnique(answerFacets, `${page.path}/${groupId}`)] = {
+          target: conf.filterTarget ?? "linkedElements",
+          searchByField: entry,
+          filters: searchByFieldsToQuery({ [VALEUR_TEMOIN]: entry }).filters,
+        };
+      }
+    }
+  }
+
   // ── Référencement : sous-types candidats par collection (= annotation posée ou non).
   const referencement: Record<string, unknown> = {};
   for (const tab of cfg.admin?.tabs ?? []) {
@@ -275,6 +312,7 @@ function projeter(site: string, cfg: Cfg) {
     adminResources,
     pages,
     ...(Object.keys(stamps).length ? { stamps } : {}),
+    ...(Object.keys(answerFacets).length ? { answerFacets } : {}),
     referencement,
     membership,
     profileRelated,

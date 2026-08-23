@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
 import { usePageFiltersOptional } from "@/modules/search/contexts/pageFilters";
 import { searchByFieldsToQuery } from "@/modules/search/lib/searchByFieldsToQuery";
+import { mergeMongoFilters } from "@/modules/search/lib/mongoFilters";
 import { BLOG_QUERY_KEYS } from "../constants/queryKeys";
 import { articleFields } from "../constants/fields";
 
@@ -61,7 +62,7 @@ export function useArticleFeed({ costumSlug, pageSize = 12, filters, sortBy, def
       // AUTOMATIQUEMENT par buildSearchPayload (applyValidationGate) dès qu'un costumSlug est présent.
       // Cf doc/19-visibility-system.md (Visibilité des données) + doc/32-module-articles-blog.md.
       // `type: "article"` en DERNIER = garantie d'immuabilité (un filtre field:"type" ne peut pas l'écraser).
-      defaultFilters: { ...(filters ?? {}), ...fieldFilters, type: "article" },
+      defaultFilters: { ...mergeMongoFilters(filters ?? {}, fieldFilters), type: "article" },
       defaultSortBy: sortBy ?? { created: -1 },
       // Projection EXPLICITE : sans elle le legacy réduit le POI et retire `publicationDate`
       // (la date éditoriale affichée par les cartes) et `category`. Cf. constants/fields.ts.

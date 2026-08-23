@@ -113,6 +113,16 @@ export const FiltersByAnswersSchema = z.record(z.string(), z.object({
   path: z.string().optional(),
   forms: z.string().optional(),
   finderPath: z.string().optional(),
+  /**
+   * Quel document la sélection filtre-t-elle ?
+   *  - `linkedElements` (défaut, comportement historique) : la liste porte les
+   *    éléments LIÉS aux réponses (organisations de `/lieux`) → `_id: {$in: orgaNameArray}` ;
+   *  - `answers` : la liste porte les RÉPONSES elles-mêmes (`defaultTypes: ["answers"]`,
+   *    ex. `/creneaux`) → prédicat sur le chemin de la réponse (cf. `answerFilterClause`).
+   * Sans ce réglage, une facette posée sur une liste d'answers filtre par id
+   * d'organisation et ne rend jamais rien.
+   */
+  filterTarget: z.enum(["answers", "linkedElements"]).optional(),
   /** Widget compact (cf. {@link FilterSelectConfigSchema}). Absent → accordéon. */
   select: FilterSelectConfigSchema.optional(),
   /** Style des lignes en accordéon (cf. {@link FilterOptionStyleSchema}). */
@@ -127,7 +137,8 @@ export const FiltersByAnswersSchema = z.record(z.string(), z.object({
 
 // Filtres par thématique CoForm via `coformFilterByPath` (un appel par entrée).
 // Même structure de sortie que filtersByAnswers (sélection → filters._id.$in =
-// orgaNameArray) mais appel backend différent.
+// orgaNameArray, ou prédicat de chemin si `filterTarget: "answers"`) mais appel
+// backend différent.
 export const FiltersByPathSchema = z.record(z.string(), z.object({
   id: z.string().optional(),
   label: LocalizedString,
@@ -135,6 +146,16 @@ export const FiltersByPathSchema = z.record(z.string(), z.object({
   finderPath: z.string().optional(),
   // notSourceKey: true → cherche dans tout le réseau (cf. coformFilterByPath).
   notSourceKey: z.boolean().optional(),
+  /**
+   * Quel document la sélection filtre-t-elle ?
+   *  - `linkedElements` (défaut, comportement historique) : la liste porte les
+   *    éléments LIÉS aux réponses (organisations de `/lieux`) → `_id: {$in: orgaNameArray}` ;
+   *  - `answers` : la liste porte les RÉPONSES elles-mêmes (`defaultTypes: ["answers"]`,
+   *    ex. `/creneaux`) → prédicat sur le chemin de la réponse (cf. `answerFilterClause`).
+   * Sans ce réglage, une facette posée sur une liste d'answers filtre par id
+   * d'organisation et ne rend jamais rien.
+   */
+  filterTarget: z.enum(["answers", "linkedElements"]).optional(),
   /** Widget compact (cf. {@link FilterSelectConfigSchema}). Absent → accordéon. */
   select: FilterSelectConfigSchema.optional(),
   /** Style des lignes en accordéon (cf. {@link FilterOptionStyleSchema}). */

@@ -49,7 +49,8 @@
     "config:costum-drift": "tsx scripts/costum-form-drift.ts",
     "contract:snapshot": "node scripts/contract-snapshot.mjs",
     "contract:snapshot:live": "node scripts/contract-snapshot-live.mjs",
-    "test:costum-forms": "vitest run -c vitest.config.integration.ts tests/integration/costum-forms.e2e.test.ts && E2E_MODE=live vitest run -c vitest.config.integration.ts tests/integration/costum-forms.e2e.test.ts"
+    "test:costum-forms": "vitest run -c vitest.config.integration.ts tests/integration/costum-forms.e2e.test.ts && E2E_MODE=live vitest run -c vitest.config.integration.ts tests/integration/costum-forms.e2e.test.ts",
+    "config:answer-labels": "node scripts/answer-facet-labels.mjs"
   },
   "resolutions": {
     "react": "19.2.1",

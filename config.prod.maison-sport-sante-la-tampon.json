@@ -724,7 +724,8 @@
                     "path": "associationEkilibre19082026_1327_0.multiCheckboxPlusassociationEkilibre19082026_1327_0mdmyjntfqs0ascyzqf",
                     "finderPath": "answers.associationEkilibre19082026_1327_0.finderassociationEkilibre19082026_1327_0mdn1fzoewyjg66n85p",
                     "optionStyle": "check",
-                    "order": 5
+                    "order": 5,
+                    "filterTarget": "answers"
                   },
                   "maladies": {
                     "label": {
@@ -735,7 +736,8 @@
                     "path": "associationEkilibre19082026_1327_0.multiCheckboxPlusassociationEkilibre19082026_1327_0mp587j82dmr9ulaffcq",
                     "finderPath": "answers.associationEkilibre19082026_1327_0.finderassociationEkilibre19082026_1327_0mdn1fzoewyjg66n85p",
                     "optionStyle": "check",
-                    "order": 6
+                    "order": 6,
+                    "filterTarget": "answers"
                   }
                 }
               }

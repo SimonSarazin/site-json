@@ -204,6 +204,58 @@
       }
     }
   },
+  "answerFacets": {
+    "/creneaux/ald": {
+      "target": "answers",
+      "searchByField": {
+        "field": "answers.associationEkilibre19082026_1327_0.multiCheckboxPlusassociationEkilibre19082026_1327_0mdmyjntfqs0ascyzqf",
+        "type": "answerPath",
+        "value": [
+          "Valeur"
+        ]
+      },
+      "filters": {
+        "$or": {
+          "$and": [
+            {
+              "$or": [
+                {
+                  "answers.associationEkilibre19082026_1327_0.multiCheckboxPlusassociationEkilibre19082026_1327_0mdmyjntfqs0ascyzqf.Valeur": {
+                    "$exists": true
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "/creneaux/maladies": {
+      "target": "answers",
+      "searchByField": {
+        "field": "answers.associationEkilibre19082026_1327_0.multiCheckboxPlusassociationEkilibre19082026_1327_0mp587j82dmr9ulaffcq",
+        "type": "answerPath",
+        "value": [
+          "Valeur"
+        ]
+      },
+      "filters": {
+        "$or": {
+          "$and": [
+            {
+              "$or": [
+                {
+                  "answers.associationEkilibre19082026_1327_0.multiCheckboxPlusassociationEkilibre19082026_1327_0mp587j82dmr9ulaffcq.Valeur": {
+                    "$exists": true
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
   "referencement": {
     "organizations": {
       "sousTypes": [],
