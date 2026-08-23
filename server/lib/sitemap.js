@@ -28,8 +28,8 @@ function escapeXml(value) {
  *    n'est pas une URL réelle, Google la traiterait en 404 ;
  *  - elle n'est pas marquée `seo.noIndex` (le sitemap ne doit lister que l'indexable,
  *    sinon signaux contradictoires noindex ↔ sitemap pour les crawlers) ;
- *  - elle n'est pas GARDÉE (`auth.required`, `auth.roles`, middleware `auth-required`/
- *    `admin-only`). Une page dont l'accès est conditionné n'a rien à faire dans un sitemap :
+ *  - elle n'est pas GARDÉE (`auth.required`, `auth.access`, `auth.roles`, middleware
+ *    `auth-required`/`admin-only`). Une page dont l'accès est conditionné n'a rien à faire dans un sitemap :
  *    on invitait activement les crawlers sur une page réservée, servie en 200 avec tout son
  *    contenu (la garde `usePageGuards` vit dans un `useEffect`, jamais exécuté au SSR).
  */
@@ -43,6 +43,7 @@ function escapeXml(value) {
 function isGatedPage(page) {
   if (!page) return false;
   if (page?.auth?.required === true) return true;
+  if (typeof page?.auth?.access === "string" && page.auth.access.length > 0) return true;
   if (Array.isArray(page?.auth?.roles) && page.auth.roles.length > 0) return true;
   const mw = page?.middleware;
   return Array.isArray(mw) && (mw.includes("auth-required") || mw.includes("admin-only"));

@@ -102,13 +102,17 @@ describe("pages gardées", () => {
         { path: "/" },
         { path: "/espace-pro", auth: { required: true } },
         { path: "/back", auth: { roles: ["superAdmin"] } },
+        // Gardée par le SEUL `auth.access` (sans `auth.required`) : c'est la forme
+        // recommandée depuis le lot 4, et celle que le miroir JS ignorait.
+        { path: "/curation", auth: { access: "siteAdmin" } },
+        { path: "/root", auth: { access: "superAdmin" } },
         { path: "/mw", middleware: ["auth-required"] },
         { path: "/mw2", middleware: ["admin-only"] },
       ],
       BASE,
     );
     expect(xml).toContain(`<loc>${BASE}/</loc>`);
-    for (const p of ["/espace-pro", "/back", "/mw", "/mw2"]) {
+    for (const p of ["/espace-pro", "/back", "/curation", "/root", "/mw", "/mw2"]) {
       expect(xml).not.toContain(`<loc>${BASE}${p}</loc>`);
     }
   });
@@ -120,16 +124,22 @@ describe("pages gardées", () => {
         { path: "/b", auth: { roles: [] } },
         { path: "/c", middleware: ["redirect-if-authenticated"] },
         { path: "/d", middleware: ["admin-required"] }, // nom hors registre : n'garde rien
+        { path: "/e", auth: { access: "" } }, // chaîne vide : ne garde rien
       ],
       BASE,
     );
-    for (const p of ["/a", "/b", "/c", "/d"]) expect(xml).toContain(`<loc>${BASE}${p}</loc>`);
+    for (const p of ["/a", "/b", "/c", "/d", "/e"]) expect(xml).toContain(`<loc>${BASE}${p}</loc>`);
   });
 
   /**
    * VERROU DE MIROIR : `server/lib/sitemap.js` réimplémente `isGatedPage` en JS pur (il est
    * chargé directement par node, sans transformation TypeScript). Ce test confronte les deux
    * implémentations sur la même matrice — si l'une évolue sans l'autre, il casse.
+   *
+   * ⚠️ Un verrou ne vaut que sa matrice. `auth.access` est arrivé au lot 4 dans la source TS
+   * SANS être ajouté ici : le miroir JS l'a ignoré pendant toute cette période et ce test
+   * restait vert. Toute clé ajoutée au prédicat DOIT gagner une ligne ci-dessous, présente
+   * ET absente ET vide — sinon on ne verrouille que ce qu'on avait déjà pensé à écrire.
    */
   it("le miroir JS et la source TS répondent la même chose", () => {
     const matrice: unknown[] = [
@@ -138,6 +148,10 @@ describe("pages gardées", () => {
       {},
       { auth: { required: true } },
       { auth: { required: false } },
+      { auth: { access: "siteAdmin" } },
+      { auth: { access: "superAdmin" } },
+      { auth: { access: "" } },
+      { auth: { required: false, access: "siteAdmin" } },
       { auth: { roles: ["superAdmin"] } },
       { auth: { roles: [] } },
       { middleware: ["auth-required"] },
@@ -146,6 +160,7 @@ describe("pages gardées", () => {
       { middleware: ["admin-required"] },
       { middleware: [] },
       { auth: { required: true }, middleware: ["admin-only"] },
+      { auth: { access: "siteAdmin" }, middleware: ["redirect-if-authenticated"] },
     ];
     for (const cas of matrice) {
       expect(
