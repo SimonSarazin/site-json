@@ -859,7 +859,8 @@ const ContactFormSectionSchema = z.object({
     /**
      * @deprecated IGNORÉ. Le message part par la lib (`CONTACT_SEND` →
      * `/co2/mailmanagement/createandsend`), qui résout le destinataire côté serveur depuis
-     * `costum.admin.email`. Conservé optionnel pour ne pas invalider une config existante ;
+     * `costum.contactMail` — `costum.admin.email` n'est qu'un REPLI. Conservé optionnel pour ne pas
+     * invalider une config existante ;
      * `tests/preflight/contact-form.test.ts` refuse qu'on en déclare une nouvelle.
      */
     action: z.string().optional(),

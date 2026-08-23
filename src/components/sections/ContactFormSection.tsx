@@ -92,8 +92,11 @@ export function ContactFormSection({ id, props }: { id?: string; props: ContactF
       return;
     }
 
-    // Destinataire : JAMAIS choisi par le client. Le serveur le résout depuis `costum.admin.email`
-    // du costum porteur — d'où `costumSlug` comme seul paramètre d'adressage (cf. CONTACT_SEND).
+    // Destinataire : JAMAIS choisi par le client. Le serveur le résout depuis le costum porteur,
+    // dans CET ordre : `costum.contactMail` d'abord, `costum.admin.email` seulement en REPLI
+    // (parité du bloc CMS legacy `contactMail || admin.email`). Plusieurs adresses — tableau ou
+    // chaîne à virgules — donnent un mail PAR destinataire. D'où `costumSlug` comme seul
+    // paramètre d'adressage (cf. CONTACT_SEND).
     const payload = buildContactPayload(fields, formData, getSlug());
     if (!payload || !api) {
       toast.error("Erreur", {
