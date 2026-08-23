@@ -27,6 +27,9 @@ export const ADMIN_QUERY_KEYS = {
   // ── Préfixes useSearchQuery (le module search compose le reste de la clé) ─────────────
   /** Table de contenu d'une resource. */
   RESOURCE_PREFIX: (entityType: string) => `admin-${entityType}`,
+  /** Périmètre d'un KPI `searchCount` du dashboard (l'index de config disambiguïse deux KPIs
+   *  sur le même entityType avec des filtres différents). */
+  KPI_SEARCH_PREFIX: (index: number, entityType: string) => `admin-kpi-${index}-${entityType}`,
   /** Référencement : recherche globale « à référencer ». */
   REFERENCE_SEARCH_PREFIX: (entityType: string) => `admin-ref-search-${entityType}`,
   /** Référencement : liste des référencés. */

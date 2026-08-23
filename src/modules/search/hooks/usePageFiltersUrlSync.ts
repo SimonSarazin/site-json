@@ -1,8 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router";
 import { usePageFiltersOptional } from "../contexts/pageFilters";
 import { useFiltersByAnswersQuery } from "./useFiltersByAnswers";
 import { computeFiltersFromUrl, type FilterGroupLike } from "../lib/computeFiltersFromUrl";
+import type { AnswerGroupConf } from "../lib/answerFilterClause";
 
 export interface UsePageFiltersUrlSyncOptions {
   id?: string;
@@ -40,6 +41,15 @@ export function usePageFiltersUrlSync({
   );
   const filterAnswerData = filtersByAnswers ? answerResult.data : null;
 
+  // Même config que celle lue par `FiltersSection` : sans elle, l'applicateur
+  // headless du hero poserait un filtre par `_id` là où la sidebar pose un prédicat
+  // de chemin (cf. `filterTarget`). Mémo stable : la prop est un littéral de config.
+  const answerGroupConfs = useMemo(
+    () => (filtersByAnswers ?? null) as Record<string, AnswerGroupConf> | null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [JSON.stringify(filtersByAnswers ?? null)],
+  );
+
   useEffect(() => {
     if (!setSelectedFilters || !setSearchByFields) return;
     if (filterGroups.length === 0 && !filterAnswerData) return;
@@ -47,8 +57,9 @@ export function usePageFiltersUrlSync({
       searchParams,
       filterGroups,
       filterAnswerData,
+      answerGroupConfs,
     );
     setSelectedFilters(applySelected);
     setSearchByFields(applySearchFields);
-  }, [searchParams, filterGroups, filterAnswerData, setSelectedFilters, setSearchByFields]);
+  }, [searchParams, filterGroups, filterAnswerData, answerGroupConfs, setSelectedFilters, setSearchByFields]);
 }

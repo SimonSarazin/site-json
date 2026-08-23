@@ -51,7 +51,9 @@
     "showLess": "See less",
     "moreSlots": "+{{count}} slots",
     "activitySheet": "Activity sheet",
-    "structureSheet": "Organization sheet"
+    "structureSheet": "Organization sheet",
+    "edit": "Edit",
+    "editError": "Unable to load this entry for editing."
   },
   "CardPoiAmenities": {
     "amenities": "Amenities",
@@ -153,6 +155,25 @@
       "open": "Open the facility dashboard"
     }
   },
+  "PreviewStructure": {
+    "edit": "Edit",
+    "validated": "Validated profile",
+    "website": "Website",
+    "affiliation": "Federal affiliation",
+    "affiliated": "Affiliated",
+    "location": "Location",
+    "representative": "Legal representative",
+    "personInCharge": "Person in charge",
+    "repAndPic": "Legal representative & person in charge",
+    "information": "Information",
+    "identifier": "Identifier",
+    "category": "Category",
+    "memberOf": "Member of",
+    "memberOfCount_one": "{{count}} organization",
+    "memberOfCount_other": "{{count}} organizations",
+    "createdOn": "Created on",
+    "documents": "Documents"
+  },
   "PreviewReservations": {
     "title": "Bookings",
     "empty": "No bookings recorded for this facility.",
@@ -190,6 +211,8 @@
   "Voir les résultats": "See results",
   "Effacer": "Clear",
   "Rechercher par nom...": "Search by name...",
+  "Rechercher…": "Search…",
+  "+{{count}} autres — précisez la recherche": "+{{count}} more — refine your search",
   "Carte": "Map",
   "Voir en liste": "See in list",
   "type.NGO": "NGO",
@@ -224,6 +247,7 @@
   "Chargement des points… {{loaded}} / {{total}}": "Loading points… {{loaded}} / {{total}}",
   "Carte limitée aux {{loaded}} premiers résultats": "Map limited to the first {{loaded}} results",
   "Aucun résultat": "No results",
+  "Modifier": "Edit",
   "Voir le profil": "View profile",
   "Adresse inconnue": "Address unknown",
   "Tous": "All",

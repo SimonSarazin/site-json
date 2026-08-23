@@ -1,0 +1,121 @@
+{
+  "site": "cyber-reunion",
+  "slug": "cyberReunion",
+  "addMenus": {
+    "citoyens": {
+      "builtins": {
+        "organization": "add-cyber-reunion-organization",
+        "project": "add-project",
+        "event": "add-event",
+        "poi": "add-poi"
+      }
+    },
+    "organizations": {
+      "builtins": {
+        "project": "add-project",
+        "event": "add-event",
+        "poi": "add-poi"
+      }
+    },
+    "projects": {
+      "builtins": {
+        "event": "add-event",
+        "poi": "add-poi"
+      }
+    }
+  },
+  "editModals": {
+    "organizations": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-cyber-reunion-organization",
+          "native": "edit-cyber-reunion-organization",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    }
+  },
+  "adminResources": {
+    "content/organizations": {
+      "source": {},
+      "create": "add-cyber-reunion-organization",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    }
+  },
+  "pages": {
+    "/annuaire/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultFields": [
+          "name",
+          "shortDescription",
+          "siren",
+          "collection",
+          "email",
+          "typologie",
+          "domains",
+          "specialties",
+          "offer",
+          "contact",
+          "partners",
+          "link",
+          "date",
+          "address"
+        ],
+        "notSourceKey": true,
+        "defaultFilters": {
+          "$or": {
+            "source.key": "cyberReunion",
+            "source.keys": "cyberReunion",
+            "costumId": "695b58ca8693fc2c121208e4"
+          },
+          "preferences.toBeValidated.cyberReunion": {
+            "$exists": false
+          }
+        }
+      }
+    },
+    "/mapping/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultFilters": {
+          "$or": {
+            "source.key": "cyberReunion",
+            "source.keys": "cyberReunion",
+            "costumId": "695b58ca8693fc2c121208e4"
+          },
+          "preferences.toBeValidated.cyberReunion": {
+            "$exists": false
+          }
+        },
+        "notSourceKey": true
+      }
+    }
+  },
+  "referencement": {
+    "organizations": {
+      "sousTypes": [],
+      "annotation": null
+    }
+  },
+  "membership": {
+    "citoyens/membership": {
+      "types": [
+        "organizations",
+        "projects",
+        "pois",
+        "events"
+      ],
+      "scope": "network"
+    }
+  },
+  "profileRelated": {}
+}

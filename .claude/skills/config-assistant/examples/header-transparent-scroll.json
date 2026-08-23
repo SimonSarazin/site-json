@@ -2,362 +2,67 @@
   "feature": "header-transparent-scroll",
   "titre": "Header transparent-scroll",
   "description": "Header transparent au-dessus du hero, opaque au scroll (transparentMode, overlayOnPaths).",
-  "source": "config.prod.parent62.json",
+  "source": "config.prod.eXtremeDefiAdeme.json",
   "selector": "header",
   "snapshot": {
     "type": "transparent-scroll",
     "path": "/",
-    "logo": "/images/parent62/logo-emblem.png",
+    "logo": "images/eXtremeDefiAdeme/icon-xd.png",
+    "logoDark": "images/eXtremeDefiAdeme/icon-xd-blue.png",
     "logoAlt": {
-      "fr": "Parent62 — Réseau Parentalité 62",
-      "en": "Parent62 — Parenting Network 62"
+      "fr": "eXtrême Défi — ADEME Mobilité",
+      "en": "eXtreme Challenge — ADEME Mobility"
     },
     "logoTitle": {
-      "fr": "Parent62",
-      "en": "Parent62"
+      "fr": "eXtrême Défi",
+      "en": "eXtreme Challenge"
     },
     "logoSubtitle": {
-      "fr": "Réseau Parentalité 62",
-      "en": "Parenting Network 62"
-    },
-    "sticky": true,
-    "transparent": true,
-    "transparentMode": "auto",
-    "height": "lg",
-    "utilities": {
-      "themeSwitch": true,
-      "langSwitch": true,
-      "search": true,
-      "auth": true,
-      "cart": false,
-      "notifications": false
+      "fr": "ADEME Mobilité",
+      "en": "ADEME Mobility"
     },
     "nav": [
       {
         "label": {
-          "fr": "Le Réseau",
-          "en": "The Network"
+          "fr": "Accueil",
+          "en": "Home"
         },
-        "path": "/reseau",
-        "icon": "users",
-        "children": [
-          {
-            "label": {
-              "fr": "Du REAAP au Réseau Parentalité",
-              "en": "From REAAP to the Network"
-            },
-            "path": "/reseau",
-            "icon": "history",
-            "description": {
-              "fr": "Notre histoire, notre équipe, nos valeurs.",
-              "en": "Our history, team and values."
-            }
-          },
-          {
-            "label": {
-              "fr": "La Charte du REAAP 62",
-              "en": "The REAAP 62 Charter"
-            },
-            "path": "/charte",
-            "icon": "scroll-text",
-            "description": {
-              "fr": "Les 8 valeurs partagées.",
-              "en": "The 8 shared values."
-            }
-          },
-          {
-            "label": {
-              "fr": "Nos champs d'actions",
-              "en": "Our fields of action"
-            },
-            "path": "/champs-actions",
-            "icon": "hand-heart",
-            "description": {
-              "fr": "REAAP, CLAS, LAEP.",
-              "en": "REAAP, CLAS, LAEP."
-            }
-          },
-          {
-            "label": {
-              "fr": "Notre équipe & contact",
-              "en": "Our team & contact"
-            },
-            "path": "/equipe",
-            "icon": "contact",
-            "description": {
-              "fr": "Les coordonnateurs territoriaux.",
-              "en": "Territorial coordinators."
-            }
-          },
-          {
-            "label": {
-              "fr": "Le Mois de la Parentalité",
-              "en": "Parenting Month"
-            },
-            "path": "/mois-parentalite",
-            "icon": "calendar-heart",
-            "description": {
-              "fr": "Les archives des éditions.",
-              "en": "Archive of past editions."
-            }
-          },
-          {
-            "label": {
-              "fr": "Contact",
-              "en": "Contact"
-            },
-            "path": "/contact",
-            "icon": "mail",
-            "description": {
-              "fr": "Écrire au réseau.",
-              "en": "Write to the network."
-            }
-          },
-          {
-            "label": {
-              "fr": "La communauté",
-              "en": "The community"
-            },
-            "path": "/communaute",
-            "icon": "users-round",
-            "description": {
-              "fr": "Les membres et structures du réseau.",
-              "en": "Members and organisations of the network."
-            }
-          }
-        ]
+        "path": "/"
       },
       {
         "label": {
-          "fr": "Thèmes",
-          "en": "Topics"
+          "fr": "Action collective",
+          "en": "Collective action"
         },
-        "path": "/theme/la-petite-enfance",
-        "icon": "shapes",
-        "children": [
-          {
-            "label": {
-              "fr": "La petite enfance",
-              "en": "Early childhood"
-            },
-            "path": "/theme/la-petite-enfance",
-            "icon": "baby"
-          },
-          {
-            "label": {
-              "fr": "L’adolescence",
-              "en": "Adolescence"
-            },
-            "path": "/theme/ladolescence",
-            "icon": "users"
-          },
-          {
-            "label": {
-              "fr": "La santé",
-              "en": "Health"
-            },
-            "path": "/theme/la-sante",
-            "icon": "heart-pulse"
-          },
-          {
-            "label": {
-              "fr": "Le handicap",
-              "en": "Disability"
-            },
-            "path": "/theme/le-handicap",
-            "icon": "accessibility"
-          },
-          {
-            "label": {
-              "fr": "Les jeux",
-              "en": "Games"
-            },
-            "path": "/theme/les-jeux",
-            "icon": "puzzle"
-          },
-          {
-            "label": {
-              "fr": "L’éducation",
-              "en": "Education"
-            },
-            "path": "/theme/leducation",
-            "icon": "graduation-cap"
-          },
-          {
-            "label": {
-              "fr": "La communication",
-              "en": "Communication"
-            },
-            "path": "/theme/la-communication",
-            "icon": "message-circle"
-          },
-          {
-            "label": {
-              "fr": "Les écrans – Le numérique",
-              "en": "Screens & digital"
-            },
-            "path": "/theme/les-ecrans-le-numerique",
-            "icon": "smartphone"
-          }
-        ]
+        "path": "/projets"
       },
       {
         "label": {
-          "fr": "Territoires",
-          "en": "Territories"
+          "fr": "Agenda",
+          "en": "Agenda"
         },
-        "path": "/territoire/arrageois",
-        "icon": "map",
-        "children": [
-          {
-            "label": {
-              "fr": "Arrageois",
-              "en": "Arrageois"
-            },
-            "path": "/territoire/arrageois",
-            "icon": "map-pin"
-          },
-          {
-            "label": {
-              "fr": "Artois",
-              "en": "Artois"
-            },
-            "path": "/territoire/artois",
-            "icon": "map-pin"
-          },
-          {
-            "label": {
-              "fr": "Audomarois",
-              "en": "Audomarois"
-            },
-            "path": "/territoire/audomarois",
-            "icon": "map-pin"
-          },
-          {
-            "label": {
-              "fr": "Boulonnais",
-              "en": "Boulonnais"
-            },
-            "path": "/territoire/boulonnais",
-            "icon": "map-pin"
-          },
-          {
-            "label": {
-              "fr": "Calaisis",
-              "en": "Calaisis"
-            },
-            "path": "/territoire/calaisis",
-            "icon": "map-pin"
-          },
-          {
-            "label": {
-              "fr": "Entre Mer et Terres",
-              "en": "Entre Mer et Terres"
-            },
-            "path": "/territoire/entre-mer-et-terres",
-            "icon": "map-pin"
-          },
-          {
-            "label": {
-              "fr": "Familles en sol mineur",
-              "en": "Familles en sol mineur"
-            },
-            "path": "/territoire/familles-en-sol-mineur",
-            "icon": "map-pin"
-          },
-          {
-            "label": {
-              "fr": "Familles en sol mineur Hénin Carvin",
-              "en": "Familles en sol mineur Hénin Carvin"
-            },
-            "path": "/territoire/familles-en-sol-mineur-henin-carvin",
-            "icon": "map-pin"
-          },
-          {
-            "label": {
-              "fr": "Familles en sol mineur Lens Liévin",
-              "en": "Familles en sol mineur Lens Liévin"
-            },
-            "path": "/territoire/familles-en-sol-mineur-lens-lievin",
-            "icon": "map-pin"
-          },
-          {
-            "label": {
-              "fr": "Ternois Bruaysis",
-              "en": "Ternois Bruaysis"
-            },
-            "path": "/territoire/ternois-bruaysis",
-            "icon": "map-pin"
-          }
-        ]
-      },
-      {
-        "label": {
-          "fr": "Contenus",
-          "en": "Content"
-        },
-        "path": "/blog",
-        "icon": "layout-grid",
-        "children": [
-          {
-            "label": {
-              "fr": "Actualités",
-              "en": "News"
-            },
-            "path": "/blog",
-            "icon": "newspaper",
-            "description": {
-              "fr": "Les actualités du réseau",
-              "en": "Network news"
-            }
-          },
-          {
-            "label": {
-              "fr": "Paroles de parents",
-              "en": "Testimonies"
-            },
-            "path": "/temoignages",
-            "icon": "message-circle",
-            "description": {
-              "fr": "Témoignages de parents",
-              "en": "Parents' testimonies"
-            }
-          },
-          {
-            "label": {
-              "fr": "Ressources",
-              "en": "Resources"
-            },
-            "path": "/ressources",
-            "icon": "folder",
-            "description": {
-              "fr": "Vidéos, jeux, comptes-rendus…",
-              "en": "Videos, games, reports…"
-            }
-          },
-          {
-            "label": {
-              "fr": "Agenda",
-              "en": "Agenda"
-            },
-            "path": "/agenda",
-            "icon": "calendar-days",
-            "description": {
-              "fr": "Ateliers, rencontres et rendez-vous",
-              "en": "Workshops and meetups"
-            }
-          }
-        ]
-      },
-      {
-        "label": {
-          "fr": "Rechercher",
-          "en": "Search"
-        },
-        "path": "/recherche",
-        "icon": "search"
+        "path": "/agenda"
       }
     ],
-    "logoSize": "lg"
+    "sticky": true,
+    "transparent": true,
+    "transparentMode": "auto",
+    "height": "lg",
+    "ctaButton": {
+      "label": {
+        "fr": "Participer",
+        "en": "Get involved"
+      },
+      "path": "/communaute"
+    },
+    "utilities": {
+      "piggyBank": false,
+      "themeSwitch": true,
+      "langSwitch": true,
+      "search": false,
+      "auth": true,
+      "cart": false,
+      "notifications": true
+    }
   }
 }

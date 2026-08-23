@@ -1,7 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { levelSatisfies, resolveAdminAccessLevel, isAdminEntryVisible } from "./adminEntry";
+import {
+  levelSatisfies,
+  resolveAdminAccessLevel,
+  isAdminEntryVisible,
+  isKanbanEntryVisible,
+} from "./adminEntry";
 
 type Config = Parameters<typeof isAdminEntryVisible>[0];
+type KanbanConfig = Parameters<typeof isKanbanEntryVisible>[0];
 
 /** Config minimale — cast : enabled/access sont posés par les défauts zod à la validation. */
 function cfg(admin: Record<string, unknown> | undefined): Config {
@@ -99,5 +105,37 @@ describe("isAdminEntryVisible — même gate que la page /admin", () => {
   it("min entityAdmin : siteAdmin suffit (hiérarchie)", () => {
     const config = cfg({ enabled: true, access: { min: "entityAdmin" } });
     expect(isAdminEntryVisible(config, lambda, carrierAdmin)).toBe(true);
+  });
+});
+
+/** Config kanban minimale — typée telle quelle (tous les champs d'AuthConfig sont optionnels). */
+function kanbanCfg(kanban?: boolean): KanbanConfig {
+  return { auth: { menu: { kanban } } };
+}
+
+describe("isKanbanEntryVisible — opt-in auth.menu.kanban, admins du costum, jamais sans slug", () => {
+  it("opt-in absent ou false → invisible même pour un superAdmin", () => {
+    expect(isKanbanEntryVisible(kanbanCfg(undefined), superAdmin, carrierAdmin, "tiersLieux")).toBe(false);
+    expect(isKanbanEntryVisible(kanbanCfg(false), superAdmin, carrierAdmin, "tiersLieux")).toBe(false);
+    expect(isKanbanEntryVisible({}, superAdmin, carrierAdmin, "tiersLieux")).toBe(false);
+    expect(isKanbanEntryVisible(null, superAdmin, carrierAdmin, "tiersLieux")).toBe(false);
+  });
+
+  it("indépendant du back-office : visible sans aucun bloc `admin` en config", () => {
+    expect(isKanbanEntryVisible(kanbanCfg(true), lambda, carrierAdmin, "tiersLieux")).toBe(true);
+  });
+
+  it("sans slug de carrier résolu → invisible (jamais de lien cassé)", () => {
+    expect(isKanbanEntryVisible(kanbanCfg(true), superAdmin, carrierAdmin, "")).toBe(false);
+    expect(isKanbanEntryVisible(kanbanCfg(true), superAdmin, carrierAdmin, null)).toBe(false);
+    expect(isKanbanEntryVisible(kanbanCfg(true), superAdmin, carrierAdmin, undefined)).toBe(false);
+  });
+
+  it("niveau requis siteAdmin : admin du carrier et superAdmin visibles, lambda non", () => {
+    expect(isKanbanEntryVisible(kanbanCfg(true), lambda, carrierAdmin, "s")).toBe(true);
+    expect(isKanbanEntryVisible(kanbanCfg(true), superAdmin, null, "s")).toBe(true);
+    expect(isKanbanEntryVisible(kanbanCfg(true), adminPlatform, null, "s")).toBe(true);
+    expect(isKanbanEntryVisible(kanbanCfg(true), lambda, carrierNotAdmin, "s")).toBe(false);
+    expect(isKanbanEntryVisible(kanbanCfg(true), null, null, "s")).toBe(false);
   });
 });

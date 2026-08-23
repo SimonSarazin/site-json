@@ -41,6 +41,7 @@ export function useRelatedEntities(
         name: params?.search,
         indexMin: 0,
         indexStep: params?.indexStep || 20,
+        ...(params?.sourceKey?.length ? { sourceKey: params.sourceKey } : {}),
       };
 
       let result: PaginatorPage<Organization | Project | Event | Poi>
@@ -103,7 +104,14 @@ export function useRelatedEntities(
               indexStep: params?.indexStep || 20,
               count: true,
               countType: ["organizations"],
-              notSourceKey: true,
+              // `_withCostumContext` injecte `sourceKey:[serverData.slug]` — le slug de l'entité sur
+              // laquelle on appelle, donc l'organisation AFFICHÉE, et non le porteur du site. Retirer
+              // `notSourceKey` sans plus scoperait sur ce slug-là : aucune fiche ne l'a en `source.key`,
+              // la liste tomberait à zéro. On passe donc le périmètre EXPLICITEMENT — un `sourceKey`
+              // fourni est respecté tel quel par l'injection.
+              ...(params?.sourceKey?.length
+                ? { sourceKey: params.sourceKey }
+                : { notSourceKey: true }),
               name: params?.search,
             };
             result = (await entity.searchCostum(

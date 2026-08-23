@@ -3,6 +3,7 @@ import { useSite } from "@/hooks/useSite";
 import { useT } from "@/hooks/useT";
 import { stripMarkdown } from "./lib/markdown";
 import type { ArticleData } from "./hooks/useArticle";
+import { articleDateValue } from "./lib/articleDate";
 
 /** created/updated (unix s ou ms) → ISO, tolérant. */
 function toIso(v: unknown): string | undefined {
@@ -20,7 +21,9 @@ export function BlogArticleSeo({ article, url }: { article: ArticleData; url?: s
   const bodyText = typeof article.description === "string" ? stripMarkdown(article.description) : "";
   const desc = article.shortDescription || (bodyText ? bodyText.slice(0, 160) : "");
   const image = article.profilImageUrl || article.profilMediumImageUrl;
-  const created = toIso(article.created);
+  // `datePublished` = la date ÉDITORIALE (publicationDate sinon created) — la même que celle
+  // affichée sur la carte et le lecteur : le JSON-LD ne doit pas raconter une autre chronologie.
+  const created = toIso(articleDateValue(article));
   const modified = toIso(article.updated);
   const author = article.parent && typeof article.parent === "object"
     ? (Object.values(article.parent)[0]?.name as string | undefined)

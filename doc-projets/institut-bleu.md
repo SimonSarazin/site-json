@@ -222,6 +222,62 @@ accompagnement 18 · Environnement & Recherche et Innovation 18 · Pêche et pro
 Industrie et maintenance navale 6 · Transport maritime & infrastructures portuaires 6 ·
 Action de l'Etat en mer 3.
 
+### Périmètre du costum — deux marqueurs, pas un (mesuré le 2026-08-04)
+
+**L'appartenance à institutBleu ne se lit PAS sur la seule provenance.** Le legacy
+(`InstitutBleu::isElementMember`) la définit par `displayAuth == "true"` ET l'un de :
+`parent.<contextId>`, `links.memberOf.<contextId>`, `parentId`, `source.keys`, `reference.costum`.
+Le second marqueur est posé par l'`afterSave` du formulaire costum
+(`institutBleu_index.js`) : quand la provenance d'un élément diffère du costum, il l'**adopte** en
+lui écrivant `reference.costum = ["institutBleu"]`.
+
+| Marqueur (organizations) | Volume |
+|---|---|
+| `source.keys: "institutBleu"` | 53 |
+| `reference.costum: "institutBleu"` | 73 |
+| `links.memberOf.<porteuse>` | 73 |
+| **union** | **74** |
+| dont n'ayant QUE `reference.costum` | **21** |
+
+Les 21 sont de vrais acteurs (21/21 portent les champs du formulaire acteur, 21/21 sont membres de
+la porteuse) : Aquarium de la Réunion, Sapmer, clubs nautiques, Lycée Léon de Lépervanche… Router le
+formulaire sur la seule provenance en priverait donc **30 % de l'annuaire**.
+
+Sur `events` et `poi` en revanche, `reference.costum` est absent (0/29 et 0/697) : la provenance
+(`sourceKeys`) suffit à borner ces deux collections.
+
+⚠ **Le sous-type ne borne PAS le périmètre.** `type: recoveryCenter` compte **3 765** POI en base
+dont **3 079 étrangers** au costum (3 061 viennent d'`equipementsSportifs974`, et 3 061 ont un slug
+donc une page profil atteignable). Seul `financement` est de fait exclusif (11/11, aujourd'hui). Les
+deux routes `poi` portent donc elles aussi la clause de périmètre, en plus de leur `editModalMatch`
+sur le sous-type.
+
+⚠ **Les champs « signature » ne sont pas un marqueur d'appartenance** : `displayAuth`,
+`categoryThematic`, `dateSign`, `acronym`, `operatingLocation`, `otherSociaNetworks` viennent d'un
+patron partagé (`templateCommunaute`, cloné aussi en `eclaenr` et `ibv2` — tous deux à 0 acteur).
+Quatre organisations les portent hors de tout marqueur institutBleu (meteolamer, GLOBICE, Centre
+Technique CRT, « Teste de structure ») : fiches de charte signée orphelines, à trier un jour.
+
+**L'organisation porteuse est un cas limite** : `Institut Bleu` (slug `institutBleu`) a
+`source.key: "meir"` mais `reference.costum: ["institutBleu"]`, sa fiche acteur est remplie et
+signée (`dateSign` 6/6/2025), et elle est membre de son propre annuaire. Elle relève donc du
+périmètre au sens strict, mais la config l'exclut du formulaire acteur — décision de ce site,
+révocable en retirant une ligne (cf. §7). Le prédicat matche donc **73** des 74. Attention :
+l'exclure du formulaire ne la sort PAS de l'annuaire (c'est `displayAuth` + `memberOf` qui l'y
+mettent).
+
+Écarts assumés avec la définition legacy `isElementMember`, tous mesurés et bénins : le prédicat
+n'exige pas `displayAuth == "true"` (1 organisation du périmètre ne l'a pas et resterait éditable),
+ignore `parent`/`memberOf`/`parentId` (0 entité en base n'est couverte par eux seuls), et accepte
+`source.key` seul là où le legacy ne teste que `source.keys` (0 cas en base). Un event du périmètre
+échappe au prédicat — « Institut bleu » (slug `institutBleu1`), rattaché par `organizer` sans bloc
+`source` : il est déjà invisible de l'agenda public et du back-office, dont les filtres portent eux
+aussi sur `source.key`/`source.keys`.
+
+> **Note de mesure** — les volumes du §5 « Modèle de données réel » datent du 27/07 (51 organisations,
+> 21 events) ; ceux de cette section ont été re-mesurés le **04/08** (53 organisations, 29 events) et
+> font foi. L'écart est de la croissance réelle, pas une divergence de filtre.
+
 ### Événements
 
 5 types : `Evenement public` 9 · `Salon professionnel` 7 (+1 `"Salon professionnel,"` — **valeur
@@ -242,6 +298,7 @@ polluée par une virgule**) · `Séminaire` 3 · `conference` 1. Dates 2025→20
 | Config du site | [`config.prod.institut-bleu.json`](../config.prod.institut-bleu.json), [`sites.json`](../sites.json) |
 | Thème | [`src/index-institut-bleu.css`](../src/index-institut-bleu.css) |
 | Formulaire acteur | `config.costumForms["institut-bleu-acteur"]` (JSON, **0 code**) + `floatingActionButton` ; garde `src/modules/profil/forms/institut-bleu-acteur.configDriven.test.ts` |
+| Routage des formulaires d'édition (moteur) | [`src/modules/profil/components/profile-edit/EditModalRegistry.tsx`](../src/modules/profil/components/profile-edit/EditModalRegistry.tsx) (résolution + prédicat `when`), [`src/modules/profil/schema.ts`](../src/modules/profil/schema.ts) (schéma `strictObject` des routes), [`scripts/lib/prop-descriptions.ts`](../scripts/lib/prop-descriptions.ts) (doc des clés), [`scripts/gen-costum-config.ts`](../scripts/gen-costum-config.ts) (émission du `when`) ; gardes `tests/preflight/edit-modal-scope.test.ts` et `EditModalRegistry.test.ts` |
 | Back-office | `config.admin` (8 onglets depuis `420c8ad2` — bibliothèque et financements ajoutés aux 6 d'origine) — module `src/modules/admin/`, aucun code ajouté |
 | Connexion & palette | `config.auth` (module `src/modules/auth/`) et `config.commandPalette` (module `src/modules/commandPalette/`) — aucun code ajouté ; le bouton ⌘K du header dépend de `header.utilities.search` |
 | Moteur (ajouts de ce chantier) | `src/modules/profil/{schema.ts, ProfileSectionRenderer.tsx, lib/profileFields.ts(+test), components/sections/ProfileFields.tsx}` · `src/modules/formEngine/engine/{coercions.ts(+test), zodGen.ts, validate.test.ts}` · `src/modules/formEngine/widgets/{registry.tsx, fields/genericFields.tsx}` · i18n `profil/i18n/{fr,en}.json` (`validation.minItems`/`maxItems`) · fixture `forms/costum/__fixtures__/configCostum.ts` |
@@ -259,6 +316,13 @@ polluée par une virgule**) · `Séminaire` 3 · `conference` 1. Dates 2025→20
 | Décision | Pourquoi |
 |---|---|
 | Scope par **`source.key`** (pas `costum.slug` sur les items) | 92,6 % des costums fonctionnent ainsi ; les 51 acteurs portent `source.keys: ["institutBleu"]`, aucun ne porte de champ `costum` |
+| **Routage du formulaire d'édition borné au périmètre**, via un prédicat `when` (cf. §5) | Une route `editModals` sans condition est un CATCH-ALL : le formulaire acteur s'ouvrait sur les ~29 400 organisations du site (bug du 03/08, cf. plus bas). La condition doit être disjonctive (`sourceKeys` OU `reference.costum`), donc hors de portée d'`editModalMatch` qui est un AND plat sans chemins pointés |
+| **Clause en dur `slug ≠ institutBleu`** plutôt qu'un champ synthétique `isCostumHolder` | Option la plus légère : zéro code au-delà du branchement, explicite et auditable. ⚠ **Deux modes de panne connus, tous deux SILENCIEUX** : (1) si le slug de l'organisation porteuse est renommé, la clause devient inopérante et la porteuse récupère le formulaire ; (2) le slug n'est pas unique en base — une seconde organisation porte déjà `institutBleu` (« Réunion Économie bleu », `683947da5562a572f81dc50c`, hors périmètre aujourd'hui) : si elle y entrait, elle serait exclue à tort. Si l'un de ces risques se concrétise, migrer vers un champ synthétique dérivé de `costumForms[].costumSlug` — remplacement de clause, sans changement de comportement |
+| Exclure la porteuse **du formulaire**, pas de l'annuaire | Sa présence dans l'annuaire tient à `displayAuth` + `links.memberOf` ; le formulaire n'est pas le bon levier pour l'en sortir. Décision propre à ce site : retirer la clause `slug` la lui rend |
+| **Palette de commandes scopée par `sourceKey`**, et non par `notSourceKey` + filtre maison | Le legacy (`institutBleu/filters.php:602`) utilisait `notSourceKey:true` pour **élargir** le périmètre (`links.memberOf`/`contributors`/`parentId` + `source.keys`, union = 74). Le portage avait gardé le contournement en le **rétrécissant** : son `$or` sur `source.key`/`source.keys` ne ramenait que 53 organisations, perdant les 21 acteurs rattachés. Le scope natif (`SearchNew::searchSourceKey`, ligne 1148) génère exactement `source.keys OU reference.costum` → **71 résultats live contre 50** (l'écart de 3 avec la base = privées / bannies / en attente, filtrées par le legacy). POI et events **inchangés** (697 et 29 : aucun `reference.costum` sur ces collections). Le `preferences.toBeValidated` manuel est retiré : le backend pose le sien, à double drapeau (`preferences` + `source`) et laisse l'auteur connecté voir ses propres en-attente — là où le manuel était inconditionnel, alors que le legacy lui-même l'omet pour un `isInterfaceAdmin` |
+| ⚠ **Aucune clé hors payload dans `commandPalette.entitySearch.params`** | `params` est fusionné TEL QUEL dans l'appel `searchCostum`, dont le schéma AJV du SDK est en `additionalProperties:false` : une clé étrangère (un `_comment`, par exemple) fait échouer la requête en `ApiValidationError` et rend la palette **muette**. Constaté en conditions réelles via la lib pointée sur le legacy. Les justifications de configuration vont donc dans cette table, pas dans `params`. NB : `institut-bleu` sert d'**archétype** à l'assistant de config (`tests/preflight/archetypes.test.ts`, égalité stricte des constats d'audit) — toute clé non déclarée au schéma y casse le préflight |
+| **Listes déroulantes servies par `costum.lists`** (`listsFromCarrier` + `optionsKey`) | Les 5 champs `typeDocument`/`langue`/`thematique`/`financementType`/`echelle` étaient des `select` SANS aucune source d'options : ils s'ouvraient **vides** depuis l'écriture de la config, alors que les listes existaient dans le costum servi. Branchés le 04/08 sur `costum.lists` (12/2/10/5/6 valeurs). L'`optionsKey` est obligatoire ici car le nom du champ diffère de celui de la liste (`typeDocument` → `typesDocument`…) ; sans lui le pont cherche `listsOptions[<nom du champ>]` et ne trouve rien |
+| **NE PAS brancher `legalStatus`** sur `costum.lists.legalStatus` | Son `enum` de config est un SUR-ENSEMBLE : 15 valeurs contre 11 dans la liste. Les 4 en trop (Établissement Public de Coopération Environnementale, Établissement public de l'État, GIE, syndicat professionnel) ont été ajoutées à la main parce que des acteurs réels les utilisent — les brancher les supprimerait. Même prudence pour `categoryThematic`, dont la liste costum est une **MAP** (clé→libellé) : `GenericForm` ne sait lire qu'un tableau (`Array.isArray`) et rendrait des options VIDES en silence. `event.type` est, lui, identique à `eventTypes` : branchable sans gain, donc laissé sur son enum |
 | Formulaire acteur en **`config.costumForms` (JSON)** | Recette « 0 code » du formEngine ; les widgets nécessaires (text/multiselect/tags/markdown/image/location/fieldArray) existent tous |
 | **Ne pas** ajouter de schéma costum en dur dans la lib | Les bundles costum sont transitoires ; la cible est live-only (`getcostumjson`/`describeForm`) |
 | Annuaire = `searchProStatic` + `PageFilters` | Patron config-driven éprouvé (parent62, cyber-reunion) ; les facettes se déclarent par champ |
@@ -328,6 +392,7 @@ sémantiques : mesuré en prod, le canonical de chaque fiche `/profil/:slug` poi
 
 | 2026-07-27 | 4bis | **Limite dure de multi-sélection** (moteur) : `widgetProps.maxItems` sur le widget `multiselect` (bloque la saisie) + `rules.min/max` appliqués à la **longueur** d'un tableau (bloque la validation, messages `validation.minItems`/`maxItems`, fr+en) ; posés sur `categoryThematic` (2) et `tags` (5) | `rules.max` n'était utilisé sur AUCUN champ tableau du repo (`Number([…])` = NaN → règle jamais déclenchée) : extension sans régression, prouvée par un test de non-régression sur les nombres | `validate.test.ts` + form IB + préflight : **57 tests** ✅ |
 | 2026-07-27 | 7 | **Back-office `/admin`** : `config.admin` — 6 onglets (tableau de bord · acteurs · agenda · référencement · communauté · export), **0 code** | — | `config:validate` ✅ (la clé `admin` est bien couverte par `SiteConfig` — vérifié par un test négatif : `rowActions: ["edite"]` est rejeté) ; SSR `/admin` → 200 |
+| 2026-08-04 | fix | **Périmètre des formulaires d'édition** : les routes `profiles.{organizations,events,poi}.editModals` ouvraient le formulaire costum sur TOUTES les entités du type (bug introduit le 03/08 par `383114ee`, qui les avait posées sans condition). Ajout d'un prédicat `when` (provenance `sourceKeys` OU rattachement `reference.costum`, porteuse exclue par `slug`) ; côté moteur, `editModalMatch` est désormais évalué sur `entityMatchData` (chemins pointés + champs synthétiques) et une route accepte un `when`. Schéma des routes passé en `strictObject` (une faute de frappe `wen` redonnait un catch-all silencieux). Générateur `gen-costum-config.ts --all` : émet le `when` de périmètre. | Les 5 autres sites : **1 639 résolutions comparées ancien/nouveau sur des entités réelles, 0 divergence hors institut-bleu**. Aucun dégât en base (0 organisation et 0 POI modifiés depuis le 03/08 ; 1 event, déjà du périmètre, par l'utilisateur de test) | `tsc -b` ✅ · `vitest src/modules/profil` **317 tests** ✅ (dont 10 nouveaux sur le périmètre) · `preflight` **431 tests**, seul échec = `site-assets` (préexistant, dossier `navigatorDesTierslieux`) · les 13 `config.prod.*` valident · simulation sur la base : **73/73 organisations** (74 moins la porteuse) et **29/29 events**, 0 faux positif / 0 faux négatif |
 
 | 2026-07-27 | 10 | **`config.auth`** (variant, menu de compte, textes login/register/recover) + **`config.commandPalette`** (⌘K, recherche d'acteurs scopée annuaire) + `header.utilities.search: true` (le bouton de la palette est gaté par ce flag) | Les textes d'auth hérités du modèle « Sport Santé Bien-être » sont remplacés — **0 trace du modèle** dans la config désormais | `config:validate` ✅ ; SSR 200 sur `/login`, `/register`, `/recover-password` (textes IB rendus) et bouton de palette présent sur la home |
 | 2026-07-27 | 8 | **Analyse détaillée du lot 8** (backend / lib / site-json) — voir la section dédiée | — | Analyse seule, aucun code |

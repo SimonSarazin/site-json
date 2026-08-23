@@ -4,21 +4,49 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Building2, Calendar, ChevronDown, ChevronUp, FileText, Mail, MapPin, User } from "lucide-react";
 import { SearchCardProps } from "../../schema";
-import { useCocolight } from "@/hooks/useCocolight";
-import { useNavigate } from "react-router";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { parseCoformAnswer, getStatusStyle } from "../../lib/coformAnswer";
+import { useNavigate } from "react-router";
+import { useEntityBySlugQuery } from "@/hooks/useEntityBySlugQuery";
+import { SwitchDetailsMode } from "../SwitchDetailsMode";
 
-export default function CardAnswer({ item, onClick }: SearchCardProps) {
+export default function CardAnswer({ item, onClick, card }: SearchCardProps) {
 	useLoadNamespace("modules/search");
 	const t = useT("modules/search");
 	const [showAllSchedules, setShowAllSchedules] = useState(false);
-	const navigate = useNavigate();
-	const { entity } = useCocolight();
 	const serverData = item?.serverData as Record<string, unknown> | undefined;
 
-	const a = parseCoformAnswer(serverData ?? {}, { slug: entity?.serverData?.slug });
+
+	const a = parseCoformAnswer(serverData ?? {});
+
+	/**
+	 * « Fiche structure » : navigation vers `/profil/:slug` (DÉFAUT, comportement historique) ou
+	 * ouverture EN MODALE — au choix du site, via `card.structureAction.kind`.
+	 *
+	 * L'usager est en train de comparer des créneaux : l'envoyer sur une page de profil lui fait
+	 * perdre sa liste, ses filtres et sa position de défilement, pour une information qu'il veut
+	 * seulement consulter au passage. C'est exactement le geste que `/structure` offre déjà sur ses
+	 * propres cartes (`preview.type: "structure"` en `dialog`) — on le rend DISPONIBLE ici, sans
+	 * l'imposer : un site qui ne pose pas la clé garde exactement son comportement.
+	 *
+	 * La carte ne porte qu'un SOUS-DOCUMENT de la structure (nom, e-mail, image) : la fiche a besoin
+	 * de l'entité complète. Elle n'est donc chargée QU'AU CLIC, et seulement en mode modale —
+	 * une liste de 12 créneaux ne déclenche aucune requête tant que personne ne demande.
+	 */
+	const navigate = useNavigate();
+	const enModale = card?.structureAction?.kind === "preview";
+	const [ficheOuverte, setFicheOuverte] = useState(false);
+	const { data: structure, isLoading: structureEnCours } = useEntityBySlugQuery({
+		slug: enModale && ficheOuverte ? a.structure.slug : undefined,
+	});
+
+	const ouvrirFicheStructure = (event: MouseEvent<HTMLButtonElement>) => {
+		event.stopPropagation();
+		if (!a.structure.slug) return;
+		if (enModale) setFicheOuverte(true);
+		else navigate(`/profil/${a.structure.slug}`);
+	};
 
 	const handleOpenActivityDetails = (event: MouseEvent<HTMLButtonElement>) => {
 		event.stopPropagation();
@@ -39,10 +67,10 @@ export default function CardAnswer({ item, onClick }: SearchCardProps) {
 	return (
 		<article
 			onClick={onClick}
-			className="rounded-xl bg-card shadow-md border border-border overflow-hidden transition-shadow hover:shadow-lg cursor-pointer"
+			className={`rounded-xl bg-card shadow-md border border-border overflow-hidden transition-shadow hover:shadow-lg cursor-pointer ${a.typeLabel.toLowerCase()}-card`}
 		>
 			<div
-				className="px-5 py-4 flex items-center justify-between gap-3"
+				className="px-5 py-4 flex items-center justify-between gap-3 header-gradient"
 				style={{ background: "var(--card-header-gradient)" }}
 			>
 				<h2 className="text-sm font-bold tracking-wide uppercase text-primary-foreground line-clamp-2">
@@ -172,18 +200,26 @@ export default function CardAnswer({ item, onClick }: SearchCardProps) {
 					<Button
 						variant="secondary"
 						className="inline-flex items-center gap-1.5 rounded-md bg-btn-structure px-4 py-2 text-xs font-semibold text-primary-foreground transition-colors hover:text-foreground"
-						onClick={(event) => {
-							event.stopPropagation();
-							if (a.structure.slug) {
-								navigate(`/profil/${a.structure.slug}`);
-							}
-						}}
+						disabled={!a.structure.slug || structureEnCours}
+						onClick={ouvrirFicheStructure}
 					>
 						<Building2 className="w-3.5 h-3.5" />
 						{t("coformAnswer.structureSheet")}
 					</Button>
 				</div>
 			</div>
+
+			{/* Fiche structure en modale — même preview que les cartes de /structure. Montée
+			    seulement une fois l'entité chargée : `SwitchDetailsMode` attend un item réel. */}
+			{enModale && ficheOuverte && structure && (
+				<SwitchDetailsMode
+					openDetails={ficheOuverte}
+					setOpenDetails={setFicheOuverte}
+					item={structure as never}
+					card={{ detailsMode: "dialog" }}
+					preview={{ type: "structure" }}
+				/>
+			)}
 		</article>
 	);
 }

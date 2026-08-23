@@ -79,16 +79,35 @@ const ENTITY_TO_COLLECTION: Record<string, FormCollection> = {
 const WIDGET_DEFAULTS: Partial<Record<WidgetKind, Partial<FieldDescriptor>>> = {
   text: { type: "string", read: "coerce:string", default: "" },
   textarea: { type: "string", read: "coerce:string", default: "" },
+  markdown: { type: "string", read: "coerce:string", default: "" },
   email: { type: "string", read: "coerce:string", default: "" },
   tel: { type: "string", read: "coerce:string", default: "" },
   select: { type: "string", read: "coerce:string", default: "" },
   selectFromLists: { type: "string", read: "coerce:string", default: "" },
+  // PAS de `write` par défaut ici, et c'est délibéré : `WIDGET_DEFAULTS` s'applique au widget, pas au
+  // champ, donc un `write` posé là sérialiserait aussi les champs CŒUR (le `tags` natif, typé TABLEAU
+  // au contrat) et les booléens cœur. La sérialisation vers la forme stockée par le legacy est une
+  // propriété du CHAMP COSTUM, pas du widget : elle se déclare par champ
+  // (`write: "coerce:csv" | "coerce:boolUpper" | "coerce:boolOuiNon" | "coerce:boolString"`).
+  // La garde `tests/preflight/costum-form-contract.test.ts` signale tout champ costum dont le widget
+  // produit une valeur incompatible avec le type déclaré au contrat — c'est elle qui rappelle d'ajouter
+  // le `write`, plutôt qu'un défaut global qui déborderait sur le cœur.
   switch: { type: "boolean", read: "coerce:bool", default: false },
   checkbox: { type: "boolean", read: "coerce:bool", default: false },
+  // Pas de `write` d'omission : une date VIDÉE doit être ENVOYÉE en chaîne vide, car c'est ainsi que
+  // le serveur efface un champ (`prepElementData` accumule les valeurs vides dans `unset`, port du
+  // `prepData` legacy). Omettre la clé rendrait la date ineffaçable à l'édition. C'est le SCHÉMA
+  // qui devait céder : cf. `liveDigest`, où un champ date accepte désormais "" en plus d'une date.
   date: { type: "date", read: "coerce:dateYMDlocale", default: "" },
   number: { type: "number", read: "coerce:number" }, // pas de default (→ undefined)
+  // Idem : `coerce:stringArray` en lecture, mais AUCUN `write` par défaut — `coerce:csv` (son inverse
+  // exact) se déclare par champ, là où le contrat costum dit `string`. Le `tags` NATIF est typé tableau
+  // au contrat : un `write` global le sérialiserait en CSV et casserait tous les forms du parc.
   checkboxGroup: { type: "array", read: "coerce:stringArray", default: [] },
   tags: { type: "array", read: "coerce:stringArray", default: [] },
+  // `valueSelect` est multi PAR DÉFAUT, d'où le même type que `tags` ; en mono
+  // (`widgetProps.multiple:false`) la valeur est une chaîne — cf. le widget, qui convertit.
+  valueSelect: { type: "array", read: "coerce:stringArray", default: [] },
   multiselect: { type: "array", read: "coerce:stringArray", default: [] },
   urlList: { type: "array", read: "coerce:stringArray", default: [] },
   image: { type: "object", renderOnly: true },     // ancre UI composite (image hors element/save)
@@ -115,6 +134,14 @@ const cloneDefault = (v: unknown): unknown => (Array.isArray(v) ? [...v] : v);
 function buildField(name: string, terse: TerseField, presets: CostumFormSchema["fieldPresets"], deriveDefaults: boolean): FieldDescriptor {
   const widget = terse.widget;
   const base = { ...(WIDGET_DEFAULTS[widget] ?? {}) };
+  // `valueSelect` est multi par défaut, mais en MONO (`widgetProps.multiple:false`) il stocke une
+  // CHAÎNE — c'est ce qu'attendent les champs scalaires du legacy (`financementSource`, déclaré
+  // `maximumSelectionLength:1` côté select2). Sans cet ajustement le schéma exigeait un tableau et la
+  // validation refusait au submit une valeur pourtant juste : « expected array, received string ».
+  if (widget === "valueSelect"
+      && (terse.widgetProps as { multiple?: boolean } | undefined)?.multiple === false) {
+    base.type = "string"; base.read = "coerce:string"; base.default = "";
+  }
   const preset = { ...(presets?.[widget] ?? {}) };
   // Membre d'un GROUPE de sérialisation : lu/écrit PAR le groupe (cf. serializeGroups) → aucun read/write/
   // default INDIVIDUEL dérivé (un read/write EXPLICITE du champ reste appliqué via `terse`).

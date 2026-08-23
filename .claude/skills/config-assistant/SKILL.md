@@ -147,6 +147,9 @@ site à confirmer avec l'utilisateur — ne PAS l'imposer à une petite vitrine 
    `list.testimonial`/`list.resource` renseignés pour les presenters typés.
    Liste **hétérogène** (plusieurs familles dans la même grille) ⇒ `list.itemRules`
    + `baseParams.defaultFields` couvrant tous les champs testés par les `when`.
+   Disposition : `list.layout: "timeline"` (frise verticale à bulles-dates, carte
+   dédiée événement) remplace la grille — à coupler à `defaultSortBy {"startDate": -1}` ;
+   défaut CÔTÉ CODE = grille.
 5. **Sections raisonnées** : 8-18 types dont des « premium » (`data-observatory`,
    `agenda`, `hero-*`, `features-glass`) — pas 5 sections génériques.
 6. **Visibilité conditionnelle** (`condition`/`visibleIf`/`role`) là où le
@@ -237,6 +240,7 @@ Pour corriger/améliorer un config existant :
 | `minimal` | barre compacte, typo uppercase espacée | petite vitrine épurée — ex. julie-pot-vin | `logoTitle`, `logoIcon` |
 | `underline-nav` | nav soulignée animée, fond marqué | identité marquée, communes/collectivités — ex. nos-commune | `piggyBank`, `urgenceButton`, `ctaButton` |
 | `transparent-dark` | barre sombre fixe (teinte : token `--header-bar`) | site à dominante sombre — ex. commune-transparente | `logoTitle`, `entityLogoOverride` |
+| `stacked` | 2 bandeaux sur image de fond : wordmark plein écran (~50vh) puis nav, collapse en barre compacte au scroll | identité "marque-territoire" forte, home sans section hero (le header EST le hero) — ex. parent62 | `backgroundImage`, `textColor`, `logoTitleAccent`, `logoSubtitle` |
 | `default` | **alias, pas un design** : rend `HeaderStandard` | héritage — n'en produis JAMAIS pour un site neuf, écris `standard` | ceux de `standard` |
 
 ### Footers (`footer.type`)
@@ -285,6 +289,7 @@ Dispatch : `src/modules/search/components/Preview.tsx` ; conteneur = `card.detai
 | `news` | détail actualité | `preview.showDetailLink` |
 | `testimonial` | détail témoignage (leaf `PreviewTestimonialBubble`) | bloc `list.testimonial` |
 | `resource` | détail ressource (leaf `PreviewResourceCard`) | bloc `list.resource` |
+| `structure` | fiche détail organisation (coordonnées, carte, docs, bouton Éditer) | annuaires de structures |
 
 ⚠ **Une option de `card`/`preview` n'a d'effet que sur CERTAINS types** — posée
 ailleurs, elle est ignorée en silence. `config:schema section:searchPro` imprime
@@ -348,9 +353,10 @@ l'ordre des règles et la présence des contrats. Exemple vivant :
 | `news` | section `news` | `props.entitySlug`, `maxItems` | fil d'actus de l'entité |
 | `blog` | routes `/blog/:slug` (+ `/blog/id/:id`) + sections `articleFeed`/`articleReader` | `config.blog` (`feedCostumSlug`, variants card/reader), `costumForms.<article>`, `commandPalette.articleSearch` | POI `type:"article"` scopés costum (`source.key`) |
 | `coform` | routes `/coform/:formId` (+ `/answer/:answerId`, `/place`) | réf. de formulaire | CoForm défini côté backend |
+| `toolsCatalog` | section `toolsCatalog` (catalogue d'outils d'usage : recherche/filtres/pagination CÔTÉ SERVEUR + modale détail des lieux, bloc commun, bouton de réponse, édition d'enrichissement réservée aux admins du costum) | `formId`/`step`/`finderPath` (+ options : `showOpenSourceToggle`, `showUsageFilter`, `defaultView`, `showCommunInfo`+`communFormId`, `showAnswerButton`, `enableEnrichmentEditing`…) | réponses coform (commonTable) + collection `navigatorcriteria` (enrichissement) |
 | `cagnotte` | sections `actions`/`finance`/`*-summary` | `idProjet` | projet + Stripe/HelloAsso |
 | `profil` | `/profil/:slug`, section `member` | `config.profiles` (tabs, editModal) | types d'entités |
-| `auth` | `loginForm`/`registerForm`/`recoverPasswordForm`, `<AuthMenu>` | `config.auth`, `header.utilities.auth` | comptes/SSO Communecter |
+| `auth` | `loginForm`/`registerForm`/`recoverPasswordForm`, `<AuthMenu>` (dont entrée « Kanban » plateforme via `auth.menu.kanban`, admins du costum) | `config.auth`, `header.utilities.auth` | comptes/SSO Communecter |
 | `notification` | cloche header, section `notifications` | `header.utilities.notifications` | notifications backend |
 | `commandPalette` | palette ⌘K | `config.commandPalette`, `header.utilities.search` | — |
 | `ampli` | routes ampli | `config.ampli` | campagne ampli |
@@ -367,7 +373,7 @@ l'ordre des règles et la présence des contrats. Exemple vivant :
 - **`.design-sync/previews/` — la ressource la plus utile, et elle est dans git** :
   153 stories portant des compositions de props RÉELLES (valeurs plausibles,
   commentaire d'usage : « Usage réel : home de Rézo la mer »). Le JSON Schema
-  donne la FORME, la story donne la COMPOSITION — **43 des 71 sections** en ont
+  donne la FORME, la story donne la COMPOSITION — **43 des 75 sections** en ont
   une (les 28 sans sont data-driven : search\*, agenda, cagnotte, blog — une
   composition statique n'y montrerait rien), ainsi que **les 6 headers et les 4
   footers**. Copie la story, ne réinvente pas le remplissage.

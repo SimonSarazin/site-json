@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 110" role="img" aria-label="Ekilib.re – Sport Santé Nutrition">
+  <!-- Placeholder reconstitué du logo Ekilib.re : à remplacer par le fichier officiel (SVG/PNG HD) -->
+  <g transform="translate(48 50)">
+    <!-- coup de pinceau doré sous l'étoile -->
+    <path d="M -40 26 Q -6 52 48 14" fill="none" stroke="#f2a93b" stroke-width="8" stroke-linecap="round" opacity="0.9"/>
+    <!-- étoile de mer turquoise -->
+    <g transform="rotate(-18)">
+      <path d="M 0 -34
+               Q 6 -12 20 -8 Q 34 -6 32 4
+               Q 14 6 12 18 Q 12 32 2 30
+               Q -4 16 -16 18 Q -30 22 -30 12
+               Q -18 2 -22 -10 Q -26 -22 -16 -22
+               Q -6 -16 0 -34 Z"
+            fill="#2ab3ab" stroke="#2ab3ab" stroke-width="9" stroke-linejoin="round"/>
+      <circle cx="-4" cy="-2" r="2.2" fill="#ffffff" opacity="0.85"/>
+      <circle cx="4" cy="6" r="1.8" fill="#ffffff" opacity="0.85"/>
+      <circle cx="-10" cy="8" r="1.6" fill="#ffffff" opacity="0.85"/>
+      <circle cx="2" cy="-12" r="1.6" fill="#ffffff" opacity="0.85"/>
+    </g>
+  </g>
+  <text x="108" y="62" font-family="Poppins, 'DM Sans', sans-serif" font-size="46" font-weight="800" fill="#2aa9a1">Ekilib<tspan fill="#8fd3ce">.re</tspan></text>
+  <text x="110" y="92" font-family="Poppins, 'DM Sans', sans-serif" font-size="16" font-weight="600" letter-spacing="1.5" fill="#2aa9a1">Sport <tspan fill="#f2a93b">–</tspan> Santé <tspan fill="#f2a93b">–</tspan> Nutrition</text>
+</svg>

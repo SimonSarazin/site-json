@@ -10,6 +10,8 @@
  * queryKey sérialisant `JSON.stringify(baseParams)`, la moindre différence
  * de clés casse le cache hit post-hydratation et provoque un refetch.
  */
+import { mergeMongoFilters } from "./mongoFilters";
+
 export interface CanonicalBaseParamsInput {
   defaultFilters?: Record<string, unknown>;
   [key: string]: unknown;
@@ -22,10 +24,10 @@ export function canonicalSearchProStaticBaseParams(
 ): Record<string, unknown> {
   return {
     ...raw,
-    defaultFilters: {
-      ...(raw.defaultFilters ?? {}),
-      ...filters,
-    },
+    // Fusion et non spread : `$or` est une clé unique revendiquée à la fois par le
+    // périmètre déclaré en config et par les facettes sur answers — un spread ferait
+    // gagner le dernier et détruirait l'autre en silence (cf. mongoFilters.ts).
+    defaultFilters: mergeMongoFilters(raw.defaultFilters ?? {}, filters),
     locality,
   };
 }

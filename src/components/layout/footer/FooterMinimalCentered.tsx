@@ -10,9 +10,19 @@ interface FooterMinimalCenteredProps {
 export default function FooterMinimalCentered({ footer }: FooterMinimalCenteredProps) {
   const { t } = useLocalization();
 
+  const bg = footer.backgroundImage;
+
   return (
-    <footer className="bg-background pt-8 sm:pt-12 pb-4 sm:pb-6 border-t border-border">
-      <div className="container mx-auto">
+    <footer
+      className={`relative pt-8 sm:pt-12 pb-4 sm:pb-6 border-t ${bg ? "border-white/30 bg-neutral-800 bg-cover bg-center text-white" : "border-border bg-background"}`}
+      style={bg ? { backgroundImage: `url(${bg.startsWith("/") ? bg : `/${bg}`})` } : undefined}
+    >
+      {/* Même traitement que le header stacked (qui partage typiquement la même
+          image) : voile sombre en mode sombre — sans lui, le footer restait
+          clair sur une page sombre — et `bg-neutral-800` SOUS l'image pour ses
+          éventuelles zones semi-transparentes (canal alpha). */}
+      {bg && <div aria-hidden className="absolute inset-0 pointer-events-none dark:bg-background/90" />}
+      <div className="container mx-auto relative">
 
         <div className="flex justify-center mb-6 sm:mb-8">
           {footer.logo && (
@@ -31,19 +41,23 @@ export default function FooterMinimalCentered({ footer }: FooterMinimalCenteredP
           )}
         </div>
 
-        <nav className="flex flex-wrap justify-center gap-x-4 sm:gap-x-8 gap-y-2 sm:gap-y-4 text-xs sm:text-sm text-foreground mb-8 sm:mb-12">
+        {/* `sm:text-base` (au lieu de `sm:text-sm`) : même cran d'agrandissement que le header en
+            dehors de `xs` — la base (`text-xs`, < 475px) ne bouge pas. */}
+        <nav className={`flex flex-wrap justify-center gap-x-4 sm:gap-x-8 gap-y-2 sm:gap-y-4 text-xs sm:text-base mb-8 sm:mb-12 ${bg ? "text-white" : "text-foreground"}`}>
           {footer.columns?.[0]?.links?.map((link, idx: number) => (
-            <NavLink key={idx} to={link.href} className="text-muted-foreground hover:text-primary transition-colors">
+            <NavLink key={idx} to={link.href} className={bg ? "hover:opacity-80 transition-opacity" : "text-muted-foreground hover:text-primary transition-colors"}>
               {t(link.label)}
             </NavLink>
           ))}
         </nav>
 
-        <div className="flex flex-col sm:flex-row flex-wrap justify-between items-center gap-4 text-[10px] sm:text-xs text-muted-foreground border-t border-border pt-6 sm:pt-8">
-          <p className="text-muted-foreground text-center sm:text-left">{t(footer.copyright)}</p>
+        {/* `sm:text-sm` (au lieu de `sm:text-xs`) : même logique que la nav ci-dessus, base `text-[10px]`
+            inchangée en xs. */}
+        <div className={`flex flex-col sm:flex-row flex-wrap justify-between items-center gap-4 text-[10px] sm:text-sm pt-6 sm:pt-8 ${bg ? "border-white/30" : "text-muted-foreground border-border"} border-t`}>
+          <p className={`text-center sm:text-left ${bg ? "" : "text-muted-foreground"}`}>{t(footer.copyright)}</p>
           <div className="flex gap-4 sm:gap-6 flex-wrap justify-center">
             {(footer.legalLinks ?? footer.bottomLinks)?.map((link, idx: number) => (
-              <NavLink key={idx} to={link.href} className="text-muted-foreground hover:text-primary transition-colors">
+              <NavLink key={idx} to={link.href} className={bg ? "hover:opacity-80 transition-opacity" : "text-muted-foreground hover:text-primary transition-colors"}>
                 {t(link.label)}
               </NavLink>
             ))}

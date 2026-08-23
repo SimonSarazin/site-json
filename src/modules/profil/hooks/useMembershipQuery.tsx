@@ -10,6 +10,20 @@ export interface MembershipQueryParams {
   indexStep?: number;
   search?: string;
   filters?: Record<string, unknown>;
+  /**
+   * PÉRIMÈTRE costum : les résultats sont bornés aux entités rattachées à ces slugs, côté SERVEUR
+   * (`$or[source.keys ∈, reference.costum ∈]` — les DEUX voies de rattachement comptent, 21 des 71
+   * organisations d'institutBleu ne sont là que par la seconde). Absent = réseau entier, le
+   * comportement historique.
+   *
+   * On ne pose JAMAIS `notSourceKey` en regard : la garde serveur est un `empty()` et le transport est
+   * `x-www-form-urlencoded`, donc un `false` partirait en chaîne `"false"` — non vide — et désactiverait
+   * le périmètre exactement comme `true` (mesuré : 74 résultats sans la clé, 29 139 avec `false`).
+   * La lib (`BaseEntity._applyRelationScope`) se charge de l'omettre.
+   */
+  sourceKey?: string[];
+  /** Skip le fetch si false (en plus du `user && isUser(user)` requis). */
+  enabled?: boolean;
 }
 
 export interface EligiblePlacesQueryParams extends MembershipQueryParams {
@@ -24,8 +38,6 @@ export interface EligiblePlacesQueryParams extends MembershipQueryParams {
    * SearchNew.php). Configurable selon la config du finder du formulaire.
    */
   notSourceKey?: boolean;
-  /** Skip le fetch si false (en plus du `user && isUser(user)` requis). */
-  enabled?: boolean;
 }
 
 /**
@@ -58,6 +70,7 @@ export function useUserOrganizations(user: EntityTypes | null, params?: Membersh
         indexMin: 0,
         indexStep: params?.indexStep || 20,
         ...(params?.filters ? { filters: params.filters } : {}),
+        ...(params?.sourceKey?.length ? { sourceKey: params.sourceKey } : {}),
       });
 
       if (
@@ -73,7 +86,7 @@ export function useUserOrganizations(user: EntityTypes | null, params?: Membersh
       return result;
     },
     options: {
-      enabled: !!(user && isUser(user)),
+      enabled: !!(user && isUser(user)) && (params?.enabled ?? true),
       staleTime: 5 * 60 * 1000,
       initialPageParam: undefined
     },
@@ -141,6 +154,7 @@ export function useUserEligiblePlaces(
         indexStep: params?.indexStep || 20,
         filters: params?.filters,
         notSourceKey: params?.notSourceKey,
+        ...(params?.sourceKey?.length ? { sourceKey: params.sourceKey } : {}),
       });
 
       if (
@@ -209,7 +223,8 @@ export function useUserProjects(user: EntityTypes | null, params?: MembershipQue
       const result = await user.getProjects({
         name: params?.search,
         indexMin: 0,
-        indexStep: params?.indexStep || 20
+        indexStep: params?.indexStep || 20,
+        ...(params?.sourceKey?.length ? { sourceKey: params.sourceKey } : {}),
       });
 
       if (
@@ -225,7 +240,7 @@ export function useUserProjects(user: EntityTypes | null, params?: MembershipQue
       return result;
     },
     options: {
-      enabled: !!(user && isUser(user)),
+      enabled: !!(user && isUser(user)) && (params?.enabled ?? true),
       staleTime: 5 * 60 * 1000,
       initialPageParam: undefined
     },
@@ -277,7 +292,8 @@ export function useUserPois(user: EntityTypes | null, params?: MembershipQueryPa
       const result = await user.getPois({
         name: params?.search,
         indexMin: 0,
-        indexStep: params?.indexStep || 20
+        indexStep: params?.indexStep || 20,
+        ...(params?.sourceKey?.length ? { sourceKey: params.sourceKey } : {}),
       });
 
       if (
@@ -293,7 +309,7 @@ export function useUserPois(user: EntityTypes | null, params?: MembershipQueryPa
       return result;
     },
     options: {
-      enabled: !!(user && isUser(user)),
+      enabled: !!(user && isUser(user)) && (params?.enabled ?? true),
       staleTime: 5 * 60 * 1000,
       initialPageParam: undefined
     },
@@ -345,7 +361,8 @@ export function useUserEvents(user: EntityTypes | null, params?: MembershipQuery
       const result = await user.getEvents({
         name: params?.search,
         indexMin: 0,
-        indexStep: params?.indexStep || 20
+        indexStep: params?.indexStep || 20,
+        ...(params?.sourceKey?.length ? { sourceKey: params.sourceKey } : {}),
       });
 
       if (
@@ -361,7 +378,7 @@ export function useUserEvents(user: EntityTypes | null, params?: MembershipQuery
       return result;
     },
     options: {
-      enabled: !!(user && isUser(user)),
+      enabled: !!(user && isUser(user)) && (params?.enabled ?? true),
       staleTime: 5 * 60 * 1000,
       initialPageParam: undefined
     },

@@ -33,12 +33,14 @@ describe("costumForm institut-bleu-acteur — identité du document", () => {
     ]);
   });
 
-  it("injecte les presets du formulaire legacy (type LocalBusiness, role admin) — et RIEN de plus", () => {
+  it("injecte les presets du formulaire legacy + la modération a priori", () => {
     const extra = modalSpec.mutation.inject?.extraFields as Record<string, unknown>;
     expect(extra).toMatchObject({ type: "LocalBusiness", role: "admin" });
-    // `preferences` (modération a priori + ouverture des données) est posé par le hook costum
-    // `InstitutBleu.elementAfterSave` du backend depuis le lot 8 : une seule source de vérité.
-    expect(extra.preferences).toBeUndefined();
+    // `toBeValidated` voyage dans le PAYLOAD, comme pour `institut-bleu-event`. Le hook backend
+    // `InstitutBleu.elementAfterSave` pose le même drapeau, mais APRÈS l'enregistrement : sans celui-ci,
+    // l'entité existe un instant sans être modérée. Les deux écritures sont idempotentes — le serveur
+    // rekeye `true` sur le costum actif (element.routes.ts:261), donc jamais un slug tiers.
+    expect(extra.preferences).toEqual({ toBeValidated: true });
   });
 });
 

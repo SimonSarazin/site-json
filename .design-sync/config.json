@@ -27,6 +27,7 @@
     "HeaderMinimal": "src/components/layout/header/HeaderMinimal.tsx",
     "HeaderUnderlineNav": "src/components/layout/header/HeaderUnderlineNav.tsx",
     "HeaderTransparentDark": "src/components/layout/header/HeaderTransparentDark.tsx",
+    "HeaderStacked": "src/components/layout/header/HeaderStacked.tsx",
     "FooterRich": "src/components/layout/footer/FooterRich.tsx",
     "FooterMinimalCentered": "src/components/layout/footer/FooterMinimalCentered.tsx",
     "FooterSidebarColumns": "src/components/layout/footer/FooterSidebarColumns.tsx",
@@ -333,6 +334,11 @@
     "HeaderTransparentDark": {
       "cardMode": "single",
       "primaryStory": "SurCouverture"
+    },
+    "HeaderStacked": {
+      "cardMode": "single",
+      "primaryStory": "SurImage",
+      "viewport": "1440x900"
     },
     "FooterRich": {
       "cardMode": "column"

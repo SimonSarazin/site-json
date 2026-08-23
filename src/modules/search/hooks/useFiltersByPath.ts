@@ -15,6 +15,9 @@ export interface FiltersByPathOptions {
     thematicPath: string;
     finderPath?: string;
     notSourceKey?: boolean;
+    /** Cf. `FiltersByAnswersSchema.filterTarget` — `answers` = la liste porte les
+     *  réponses elles-mêmes (prédicat de chemin) ; défaut = éléments liés (`_id`). */
+    filterTarget?: "answers" | "linkedElements";
   };
 }
 

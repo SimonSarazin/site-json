@@ -63,7 +63,7 @@ async function waitForHydration(page: Page) {
 }
 
 test.describe("Parent62 — Partie 1 (lecture seule)", () => {
-  test("accueil : titre, nav à 5 entrées, double entrée parents/pro, 9 bulles territoire", async ({
+  test("accueil : titre, nav à 5 entrées, dropdown Publics, 9 bulles territoire", async ({
     page,
   }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
@@ -71,8 +71,8 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
 
     await expect(page).toHaveTitle(/Parent62/);
 
-    // Le header transparent-scroll rend un <nav class="fixed …">, pas de <header>.
-    const headerNav = page.locator("nav.fixed").first();
+    // Le header stacked rend un bandeau <header> suivi d'un <nav class="sticky …">.
+    const headerNav = page.locator("nav.sticky").first();
     await expect(headerNav).toBeVisible();
 
     expect(config.header.nav, "la nav de la config doit rester à 5 entrées").toHaveLength(5);
@@ -82,11 +82,13 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
         item.label.fr,
       );
     }
-    // Décision du 23/07 : Parents / Professionnels hors menu, accessibles depuis l'accueil.
-    expect(headerText).not.toContain("Professionnels");
+    // Refonte du 06/08 : le dropdown « Publics » (7 entrées) REMPLACE la décision
+    // du 23/07 (Parents/Professionnels hors menu, liés depuis l'accueil) — les
+    // pages par public sont désormais navigables depuis le header, et la home
+    // data-driven n'a plus de tuiles /parents et /pro.
+    expect(headerText).toContain("Professionnels");
 
-    await expect(page.locator('main a[href="/parents"]').first()).toBeVisible();
-    await expect(page.locator('main a[href="/pro"]').first()).toBeVisible();
+    // Home data-driven : les 9 bulles de la carte pointent vers /territoire/*.
     expect(await page.locator('main a[href^="/territoire/"]').count()).toBeGreaterThanOrEqual(9);
   });
 
@@ -180,7 +182,7 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     }
   });
 
-  test("mode sombre : scrim au repos sur le héro, opaque après scroll, nav visible", async ({
+  test("mode sombre : header stacked — nav lisible, wordmark collapse au scroll", async ({
     page,
   }) => {
     // next-themes (attribute="class") lit localStorage.theme au démarrage.
@@ -192,13 +194,34 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
 
     await expect(page.locator("html")).toHaveClass(/dark/);
 
-    const headerNav = page.locator("nav.fixed").first();
-    await expect(headerNav).toHaveClass(/bg-linear-to-b/);
-    await expect(headerNav.locator("a", { hasText: "Rechercher" }).first()).toBeVisible();
+    // Header stacked (remplace transparent-scroll depuis la refonte du 06/08) :
+    // bandeau wordmark <header> dans le flux + <nav class="sticky …"> — pas de
+    // bascule bg-background/90. Au repos, le bandeau est à l'écran et la nav visible.
+    const bandeau = page.locator("header").first();
+    await expect(bandeau).toBeInViewport();
+    const headerNav = page.locator("nav.sticky").first();
+    const firstNav = headerNav.locator("a", { hasText: config.header.nav[0].label.fr }).first();
+    await expect(firstNav).toBeVisible();
 
-    // Scroll réel (window.scrollTo → event `scroll`) ; l'assertion auto-retry
-    // jusqu'à ce que le header bascule opaque.
+    // Scroll réel (window.scrollTo → event `scroll`) : le bandeau sort de
+    // l'écran, la barre sticky reste collée en haut avec la nav visible.
     await page.evaluate(() => window.scrollTo(0, 800));
-    await expect(headerNav).toHaveClass(/bg-background\/90/);
+    await expect(bandeau).not.toBeInViewport();
+    await expect(firstNav).toBeVisible();
+  });
+
+  test("accueil : bandeau « à la une » (carrousel POI tagués) ne casse pas le rendu", async ({
+    page,
+  }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForHydration(page);
+
+    // Le composant se masque entièrement tant qu'aucun POI n'est tagué "A la
+    // une" côté contenu (cf. doc-projets/parent62.md §5.1) : l'assertion ne
+    // porte donc que si la section a effectivement rendu quelque chose.
+    const section = page.locator('[data-section-type="featured-carousel"]');
+    if (backendUp && (await section.count()) > 0) {
+      await expect(section.getByRole("link").first()).toBeVisible();
+    }
   });
 });

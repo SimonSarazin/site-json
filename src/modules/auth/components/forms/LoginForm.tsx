@@ -18,9 +18,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { isValidEmail } from "@/helpers/isValidEmail";
 import { toast } from "sonner";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import SSOLoginButton from "./SSOLoginButton";
 import { useSSOAuth } from "../../hooks/useSSOAuth";
+import { returnToOrHome } from "@/lib/authRedirect";
 
 type RadixCheckboxState = boolean | "indeterminate";
 
@@ -40,6 +41,10 @@ export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchT
   const [loadingLogin, setLoading]  = useState<boolean>(false);
 
   const navigate                     = useNavigate();
+  const location                     = useLocation();
+  // Page visée mémorisée par la garde (usePageGuards) — repli sur l'accueil, comportement
+  // historique. `returnToOrHome` refuse toute destination externe (cf. lib/authRedirect).
+  const returnTo                     = returnToOrHome(location.state);
   const { userApi, loading, me, entity }     = useCocolight();
   const { config }                   = useSite();
   const { loaded }                   = useLoadNamespace("modules/auth");
@@ -87,8 +92,8 @@ export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchT
     if (loading) return;
     if (!me?.isConnected) return;
     onSuccess?.();
-    if (!hideBackButton) navigate("/");
-  }, [loading, me, navigate, onSuccess, hideBackButton]);
+    if (!hideBackButton) navigate(returnTo);
+  }, [loading, me, navigate, onSuccess, hideBackButton, returnTo]);
 
   useEffect(() => {
     if (!loaded || loading) return;
@@ -151,7 +156,7 @@ export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchT
       await userApi.login(email, password);     // ← optionnel
       if (userApi.isConnected) {
         onSuccess?.();
-        if (!hideBackButton) navigate("/");
+        if (!hideBackButton) navigate(returnTo);
       }
     } catch (err: unknown) {
       /* On extrait le status si présent, sinon on retombe sur le message  */
@@ -270,7 +275,7 @@ export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchT
                   provider={provider}
                   onSuccess={() => {
                     onSuccess?.();
-                    if (!hideBackButton) navigate("/");
+                    if (!hideBackButton) navigate(returnTo);
                   }}
                 />
               ))
@@ -284,7 +289,7 @@ export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchT
               <Button
                 type="button"
                 variant="ghost"
-                onClick={() => (onSwitchToRecover ? onSwitchToRecover() : navigate("/recover-password"))}
+                onClick={() => (onSwitchToRecover ? onSwitchToRecover() : navigate("/recover-password", { state: location.state }))}
                 className="text-sm text-primary hover:text-primary/80"
               >
                 {t("Mot de passe oublié ?")}
@@ -295,7 +300,7 @@ export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchT
                 <Button
                   type="button"
                   variant="ghost"
-                  onClick={() => (onSwitchToRegister ? onSwitchToRegister() : navigate("/register"))}
+                  onClick={() => (onSwitchToRegister ? onSwitchToRegister() : navigate("/register", { state: location.state }))}
                   className="text-primary hover:text-primary/80 p-0 h-auto font-normal"
                 >
                   {t("S'inscrire")}

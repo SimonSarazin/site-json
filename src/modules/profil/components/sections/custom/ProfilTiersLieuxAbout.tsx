@@ -33,6 +33,7 @@ import { getServerUrl } from "@/lib/constant/common";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
 import { type Answer } from "@communecter/cocolight-api-client";
 import { CoFormModal } from "@/modules/coform/components/CoFormModal";
+import { ProseContent } from "@/modules/coform/components/FormFields";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import type { AllStepsData } from "@/modules/coform/types";
@@ -95,12 +96,82 @@ interface ModalItem {
   minPers?: number;
   maxPers?: number;
   capacity?: number;
+  /** Surface en m² — saisie en texte libre côté formulaire, gardée telle quelle. */
+  area?: string;
   hourly?: number;
   halfday?: number;
   fullday?: number;
   bed?: number;
   room?: number;
+  /** Tarif solidaire possible (case à cocher du tableau des salles). */
+  solidarity?: boolean;
+  /** Équipements, restauration, services… — champs `checkboxNew`, donc des listes. */
+  tags?: { label: string; values: string[] }[];
+  /** Textes libres du formulaire (« Autres informations », « le petit truc en + »…). */
+  notes?: { label: string; value: string }[];
   reserveUrl?: string | null;
+}
+
+/**
+ * Lit une valeur `checkboxNew` : le formulaire stocke un tableau de libellés, mais une
+ * saisie ancienne peut avoir laissé une chaîne unique.
+ */
+function readTagList(value: unknown): string[] {
+  if (Array.isArray(value)) return value.map(String).map((s) => s.trim()).filter(Boolean);
+  if (typeof value === "string" && value.trim()) return [value.trim()];
+  return [];
+}
+
+/** Lit un champ texte/textarea en écartant les valeurs vides ou blanches. */
+function readText(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+/**
+ * Case à cocher d'un tableau : le moteur coform y écrit un marqueur libre — les données
+ * en base portent `"x"` pour coché et `""` sinon. On accepte donc toute valeur non vide,
+ * sauf les négations explicites qu'un autre formulaire pourrait produire.
+ */
+const UNCHECKED = new Set(["", "0", "false", "non", "no", "off"]);
+function isChecked(value: unknown): boolean {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value !== 0;
+  if (typeof value !== "string") return false;
+  return !UNCHECKED.has(value.trim().toLowerCase());
+}
+
+/**
+ * Construit les blocs « listes » et « textes » d'un item à partir des chemins déclarés
+ * dans la config (`equipments`, `catering`, `services`, `roomType`, puis `moreInfo`,
+ * `about`, `tip`).
+ *
+ * Ces champs sont saisis au niveau du LIEU et non de chaque salle : ils sont donc repris
+ * à l'identique dans le détail de chacune, là où l'information sert à choisir.
+ */
+function buildSharedDetails(
+  answers: Record<string, unknown>,
+  paths: Record<string, string | number> | undefined,
+  read: (obj: Record<string, unknown>, path: string) => unknown,
+  label: (key: string) => string,
+): Pick<ModalItem, "tags" | "notes"> {
+  if (!paths) return {};
+  const pick = (key: string): unknown => {
+    const p = paths[key];
+    return typeof p === "string" && p ? read(answers, p) : undefined;
+  };
+
+  const tags = (["equipments", "catering", "services", "roomType"] as const)
+    .map((key) => ({ label: label(key), values: readTagList(pick(key)) }))
+    .filter((entry) => entry.values.length > 0);
+
+  const notes = (["moreInfo", "about", "tip"] as const)
+    .map((key) => ({ label: label(key), value: readText(pick(key)) }))
+    .filter((entry) => entry.value !== "");
+
+  return {
+    ...(tags.length ? { tags } : {}),
+    ...(notes.length ? { notes } : {}),
+  };
 }
 
 
@@ -125,6 +196,9 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
       if (current === null || typeof current !== "object") return undefined;
       return (current as Record<string, unknown>)[key];
     }, obj);
+
+  /** Libellé d'un bloc partagé (équipements, restauration, textes libres…). */
+  const detailLabel = (key: string) => t(`ProfilTiersLieuxAbout.detail.${key}`) as string;
 
   const { data: _answersByForms, isLoading: _isAnswersByFormsLoading, error: _answersError } = useGetAnswersByFormsQuery({
     entity,
@@ -691,6 +765,14 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                   const linkPath = section.roomPath?.linkPath;
                   const linkValue = linkPath ? getNestedValue(sd.answers as Record<string, unknown>, linkPath) as string | null : null;
                   const roomPath = section.roomPath?.place ?? section.roomPath?.roomPath;
+                  // Champs saisis au niveau du LIEU (équipements, restauration, textes) :
+                  // calculés une fois par réponse, repris dans le détail de chaque salle.
+                  const sharedRoomDetails = buildSharedDetails(
+                    sd.answers as Record<string, unknown>,
+                    section.roomPath,
+                    getNestedValue,
+                    detailLabel,
+                  );
                   if (type === "array") {
                     if (!roomPath) {
                       return null;
@@ -712,16 +794,23 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                       const halfday: number = section.roomPath?.halfday ? row[section.roomPath.halfday] as number : 0;
                       const fullday: number = section.roomPath?.fullday ? row[section.roomPath.fullday] as number : 0;
                       const images: string[] = section.roomPath?.images ? row[section.roomPath.images] as Array<string> : [];
+                      const area: string = section.roomPath?.area !== undefined ? readText(row[section.roomPath.area]) : "";
+                      const solidarity = section.roomPath?.solidarity !== undefined
+                        ? row[section.roomPath.solidarity]
+                        : undefined;
                       // Détail de la salle cliquée — même payload que le bouton "En savoir plus".
                       const modalData: ModalItem = {
                         name: String(name ?? ""),
                         minPers: Number(minPers) || 0,
                         maxPers: Number(maxPers) || 0,
+                        ...(area ? { area } : {}),
                         hourly: Number(hourly) || 0,
                         halfday: Number(halfday) || 0,
                         fullday: Number(fullday) || 0,
+                        ...(isChecked(solidarity) ? { solidarity: true } : {}),
                         images: (typeof images === "string" ? [] : (images as string[]).map(src => `${getServerUrl()}${src}`)),
                         reserveUrl: linkValue ?? externalLink ?? null,
+                        ...sharedRoomDetails,
                       };
                       return (
                         <div
@@ -842,6 +931,12 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                   const linkPath = section.coworkingPath?.linkPath;
                   const linkValue = linkPath ? getNestedValue(sd.answers as Record<string, unknown>, linkPath) as string | null : null;
                   const coworkingPath = section.coworkingPath?.place ?? section.coworkingPath?.coworkingPath;
+                  const sharedCoworkingDetails = buildSharedDetails(
+                    sd.answers as Record<string, unknown>,
+                    section.coworkingPath,
+                    getNestedValue,
+                    detailLabel,
+                  );
                   if (type === "array") {
                     if (!coworkingPath) {
                       return null;
@@ -863,15 +958,18 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                       const halfday: number = section.coworkingPath?.halfday ? row[section.coworkingPath.halfday] as number : 0;
                       const fullday: number = section.coworkingPath?.fullday ? row[section.coworkingPath.fullday] as number : 0;
                       const images: string[] = section.coworkingPath?.images ? row[section.coworkingPath.images] as Array<string> : [];
+                      const area: string = section.coworkingPath?.area !== undefined ? readText(row[section.coworkingPath.area]) : "";
                       const modalData: ModalItem = {
                         name: String(name ?? ""),
                         minPers: Number(minPers) || 0,
                         maxPers: Number(maxPers) || 0,
+                        ...(area ? { area } : {}),
                         hourly: Number(hourly) || 0,
                         halfday: Number(halfday) || 0,
                         fullday: Number(fullday) || 0,
                         images: (images as string[]).map(src => `${getServerUrl()}${src}`),
                         reserveUrl: linkValue ?? externalLink ?? null,
+                        ...sharedCoworkingDetails,
                       };
                       return (
                         <div
@@ -972,9 +1070,13 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                     const hourly = (section.coworkingPath?.hourly ? getNestedValue(sd.answers as Record<string, unknown>, section.coworkingPath.hourly) : 0) as number;
                     const halfday = (section.coworkingPath?.halfday ? getNestedValue(sd.answers as Record<string, unknown>, section.coworkingPath.halfday) : 0) as number;
                     const fullday = (section.coworkingPath?.fullday ? getNestedValue(sd.answers as Record<string, unknown>, section.coworkingPath.fullday) : 0) as number;
+                    const area = section.coworkingPath?.area
+                      ? readText(getNestedValue(sd.answers as Record<string, unknown>, section.coworkingPath.area))
+                      : "";
                     const modalData: ModalItem = {
                       name: String(name ?? ""),
                       capacity: Number(capacity) || 0,
+                      ...(area ? { area } : {}),
                       hourly: Number(hourly) || 0,
                       halfday: Number(halfday) || 0,
                       fullday: Number(fullday) || 0,
@@ -983,6 +1085,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                         return `${getServerUrl()}${p}`;
                       }),
                       reserveUrl: linkValue ?? externalLink ?? null,
+                      ...sharedCoworkingDetails,
                     };
                     return (
                       <div
@@ -1113,6 +1216,12 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                   const linkPath = section.bedRoomPath?.linkPath;
                   const linkValue = linkPath ? getNestedValue(sd.answers as Record<string, unknown>, linkPath) as string | null : null;
                   const accommodationPath = section.bedRoomPath?.place ?? section.bedRoomPath?.accommodationPath;
+                  const sharedAccommodationDetails = buildSharedDetails(
+                    sd.answers as Record<string, unknown>,
+                    section.bedRoomPath,
+                    getNestedValue,
+                    detailLabel,
+                  );
                   if (type === "array") {
                     if (!accommodationPath) {
                       return null;
@@ -1134,15 +1243,23 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                       const halfday : number = section.bedRoomPath?.halfday ? row[section.bedRoomPath.halfday] as number : 0;
                       const fullday : number = section.bedRoomPath?.fullday ? row[section.bedRoomPath.fullday] as number : 0;
                       const images : string[] = section.bedRoomPath?.images ? row[section.bedRoomPath.images] as Array<string> : [];
+                      const area: string = section.bedRoomPath?.area !== undefined ? readText(row[section.bedRoomPath.area]) : "";
+                      // Tarifs propres à l'hébergement — absents jusqu'ici de cette branche.
+                      const bed: number = section.bedRoomPath?.bedPrice !== undefined ? Number(row[section.bedRoomPath.bedPrice]) : 0;
+                      const room: number = section.bedRoomPath?.roomPrice !== undefined ? Number(row[section.bedRoomPath.roomPrice]) : 0;
                       const modalData: ModalItem = {
                         name: String(name ?? ""),
                         minPers: Number(minPers) || 0,
                         maxPers: Number(maxPers) || 0,
+                        ...(area ? { area } : {}),
                         hourly: Number(hourly) || 0,
                         halfday: Number(halfday) || 0,
                         fullday: Number(fullday) || 0,
+                        bed: bed || 0,
+                        room: room || 0,
                         images: (images as string[]).map(src => `${getServerUrl()}${src}`),
                         reserveUrl: linkValue ?? externalLink ?? null,
+                        ...sharedAccommodationDetails,
                       };
                       return (
                         <div
@@ -1242,9 +1359,13 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                     const capacity = (section.bedRoomPath?.place && getNestedValue(sd.answers as Record<string, unknown>, section.bedRoomPath.place)) as number | undefined;
                     const bed = (section.bedRoomPath?.bedPrice ? getNestedValue(sd.answers as Record<string, unknown>, section.bedRoomPath.bedPrice) : 0) as number;
                     const room = (section.bedRoomPath?.roomPrice ? getNestedValue(sd.answers as Record<string, unknown>, section.bedRoomPath.roomPrice) : 0) as number;
+                    const area = section.bedRoomPath?.area
+                      ? readText(getNestedValue(sd.answers as Record<string, unknown>, section.bedRoomPath.area))
+                      : "";
                     const modalData: ModalItem = {
                       name: String(name ?? ""),
                       capacity: Number(capacity) || 0,
+                      ...(area ? { area } : {}),
                       bed: Number(bed) || 0,
                       room: Number(room) || 0,
                       images: (images as DocumentItem[]).map(src => {
@@ -1252,6 +1373,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                         return `${getServerUrl()}${p}`;
                       }),
                       reserveUrl: linkValue ?? externalLink ?? null,
+                      ...sharedAccommodationDetails,
                     };
                     return (
                       <div
@@ -1349,7 +1471,10 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
       )}
       {/* ── Modal détail ─────────────────────────────────────── */}
       <Dialog open={!!modalItem} onOpenChange={(open) => !open && setModalItem(null)}>
-        <DialogContent className="max-w-lg p-0 overflow-hidden">
+        {/* `max-h`+`overflow-y-auto` sur le corps : le détail porte désormais des textes
+            libres de longueur quelconque, que le `overflow-hidden` du conteneur couperait.
+            L'image reste fixe en tête, seul le contenu défile. */}
+        <DialogContent className="sm:max-w-2xl p-0 overflow-hidden max-h-[90vh] grid-rows-[auto_auto_minmax(0,1fr)]">
           <DialogHeader className="sr-only">
             <DialogTitle>{modalItem?.name ?? ""}</DialogTitle>
           </DialogHeader>
@@ -1388,7 +1513,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
             )}
           </div>
           {/* Contenu */}
-          <div className="p-5 space-y-4">
+          <div className="p-5 space-y-4 overflow-y-auto scrollbar-thin">
             <h3 className="text-lg font-semibold text-foreground">{modalItem?.name}</h3>
             {/* Prix */}
             {((modalItem?.hourly ?? 0) > 0 || (modalItem?.halfday ?? 0) > 0 || (modalItem?.fullday ?? 0) > 0 ||
@@ -1419,8 +1544,47 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                       {modalItem!.room}€ <span className="font-normal text-muted-foreground">{t("ProfilTiersLieuxAbout.nightly")}</span>
                     </span>
                   )}
+                  {modalItem?.solidarity && (
+                    <span className="inline-flex items-center gap-1 text-sm bg-secondary/15 text-foreground rounded-md px-3 py-1 font-medium">
+                      {t("ProfilTiersLieuxAbout.detail.solidarity")}
+                    </span>
+                  )}
                 </div>
               )}
+
+            {/* Surface */}
+            {modalItem?.area && (
+              <p className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">{t("ProfilTiersLieuxAbout.detail.area")}</span>{" "}
+                {modalItem.area} m²
+              </p>
+            )}
+
+            {/* Équipements, restauration, services — listes du formulaire */}
+            {modalItem?.tags?.map((group) => (
+              <div key={group.label} className="space-y-1.5">
+                <p className="text-sm font-medium text-foreground">{group.label}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {group.values.map((v) => (
+                    <span key={v} className="text-xs bg-muted text-muted-foreground rounded-md px-2 py-1">
+                      {v}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            {/* Textes libres — rendus via `ProseContent`, le même rendu que les inputs
+                coform : markdown ou HTML auto-détecté, puis sanitisé avant injection. */}
+            {modalItem?.notes?.map((note) => (
+              <div key={note.label} className="space-y-1">
+                <p className="text-sm font-medium text-foreground">{note.label}</p>
+                <ProseContent
+                  text={note.value}
+                  className="text-sm text-muted-foreground prose prose-sm dark:prose-invert max-w-none"
+                />
+              </div>
+            ))}
             {/* Bouton réserver */}
             {modalItem?.reserveUrl && (
               <Button

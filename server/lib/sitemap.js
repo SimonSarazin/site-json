@@ -27,13 +27,34 @@ function escapeXml(value) {
  *  - elle n'est pas paramétrée (`/profil/:slug`, wildcards) : une URL avec placeholder
  *    n'est pas une URL réelle, Google la traiterait en 404 ;
  *  - elle n'est pas marquée `seo.noIndex` (le sitemap ne doit lister que l'indexable,
- *    sinon signaux contradictoires noindex ↔ sitemap pour les crawlers).
+ *    sinon signaux contradictoires noindex ↔ sitemap pour les crawlers) ;
+ *  - elle n'est pas GARDÉE (`auth.required`, `auth.access`, `auth.roles`, middleware
+ *    `auth-required`/`admin-only`). Une page dont l'accès est conditionné n'a rien à faire dans un sitemap :
+ *    on invitait activement les crawlers sur une page réservée, servie en 200 avec tout son
+ *    contenu (la garde `usePageGuards` vit dans un `useEffect`, jamais exécuté au SSR).
  */
+
+/**
+ * MIROIR JS de `isGatedPage` (src/lib/pageAccess.ts) — ce fichier est chargé directement par
+ * node (prod-server), sans transformation TypeScript, donc il ne peut pas importer le module TS.
+ * Les deux implémentations sont confrontées sur la même matrice par server/__tests__/sitemap.test.ts :
+ * toute évolution de la règle doit toucher les DEUX.
+ */
+function isGatedPage(page) {
+  if (!page) return false;
+  if (page?.auth?.required === true) return true;
+  if (typeof page?.auth?.access === "string" && page.auth.access.length > 0) return true;
+  if (Array.isArray(page?.auth?.roles) && page.auth.roles.length > 0) return true;
+  const mw = page?.middleware;
+  return Array.isArray(mw) && (mw.includes("auth-required") || mw.includes("admin-only"));
+}
+
 function isIndexablePage(page) {
   const path = page?.path;
   if (typeof path !== "string" || !path.startsWith("/")) return false;
   if (path.includes(":") || path.includes("*")) return false;
   if (page?.seo?.noIndex === true) return false;
+  if (isGatedPage(page)) return false;
   return true;
 }
 
@@ -43,6 +64,8 @@ function isIndexablePage(page) {
  * @param {string} baseUrl origine publique du site (ex. https://parents62.org)
  * @returns {string} document XML
  */
+export { isGatedPage };
+
 export function buildSitemapXml(pages, baseUrl) {
   const base = normalizeBaseUrl(baseUrl);
   // Set : une config peut théoriquement déclarer deux fois le même path → une seule <url>.

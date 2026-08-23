@@ -10,6 +10,9 @@ export interface FiltersByAnswersOptions {
     forms?: string;
     path?: string;
     finderPath?: string;
+    /** Cf. `FiltersByAnswersSchema.filterTarget` — `answers` = la liste porte les
+     *  réponses elles-mêmes (prédicat de chemin) ; défaut = éléments liés (`_id`). */
+    filterTarget?: "answers" | "linkedElements";
     value?: {
       [key: string]: {
         id: string;

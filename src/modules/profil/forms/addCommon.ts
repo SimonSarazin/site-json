@@ -27,7 +27,7 @@ export const urlField: FieldDescriptor = {
 };
 
 export const tagsField: FieldDescriptor = {
-  name: "tags", type: "array", widget: "tags", label: PE("tags.label"), widgetProps: { extendedTexts: true },
+  name: "tags", type: "array", widget: "tags", label: PE("tags.label"),
 };
 
 /** Bloc adresse complet (EditLocationTab via le widget `location`). Ancre UI PURE : `renderOnly` (jamais émise

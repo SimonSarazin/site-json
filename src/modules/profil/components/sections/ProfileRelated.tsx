@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
+import { useCocolight } from "@/hooks/useCocolight";
 import { useRelatedEntities, type RelationType } from "../../hooks/useRelatedEntities";
 import { EntityCard } from "../shared/EntityCard";
 import { getEntityIcon } from "@/lib/entityIcons";
@@ -23,11 +24,14 @@ function mapRelationType(type: string | undefined): RelationType {
 
 export default function ProfileRelated({ section }: ProfileRelatedProps) {
   const { entity } = useProfileEntity();
+  const { entity: porteur } = useCocolight();
   const t = useT("modules/profil");
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 300);
 
-  const { limit = 20, title } = section;
+  const { limit = 20, title, scope } = section;
+  // Le périmètre est celui du PORTEUR du site (comparé côté serveur à `source.keys` / `reference.costum`).
+  const slugPorteur = (porteur as { slug?: string } | null)?.slug;
 
   const relationType = mapRelationType(section.relationType);
 
@@ -41,6 +45,9 @@ export default function ProfileRelated({ section }: ProfileRelatedProps) {
   } = useRelatedEntities(entity, relationType, {
     search: debouncedSearch,
     indexStep: limit,
+    // `scope: "costum"` borne la liste au périmètre du site porteur : sur un site costum, les onglets
+    // « Projets »/« Événements » d'une organisation montraient tout le réseau Communecter.
+    ...(scope === "costum" && slugPorteur ? { sourceKey: [slugPorteur] } : {}),
   });
 
   const getEmptyTitle = () => {

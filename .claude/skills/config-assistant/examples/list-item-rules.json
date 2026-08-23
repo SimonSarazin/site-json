@@ -206,16 +206,16 @@
               "accent": {
                 "field": "territoires",
                 "colors": {
-                  "Arrageois": "#6d5da8",
-                  "Artois": "#b7cb6b",
-                  "Audomarois": "#e5af32",
-                  "Boulonnais": "#c34a42",
-                  "Calaisis": "#ed8a4c",
-                  "Entre Mer et Terres": "#3fb4be",
-                  "Familles en sol mineur": "#a2537e",
-                  "Familles en sol mineur Hénin Carvin": "#a2537e",
-                  "Familles en sol mineur Lens Liévin": "#97776b",
-                  "Ternois Bruaysis": "#d492a9"
+                  "Arrageois": "var(--territoire-arrageois)",
+                  "Artois": "var(--territoire-artois)",
+                  "Audomarois": "var(--territoire-audomarois)",
+                  "Boulonnais": "var(--territoire-boulonnais)",
+                  "Calaisis": "var(--territoire-calaisis)",
+                  "Entre Mer et Terres": "var(--territoire-entre-mer-et-terres)",
+                  "Familles en sol mineur": "var(--territoire-familles-en-sol-mineur)",
+                  "Familles en sol mineur Hénin Carvin": "var(--territoire-fsm-henin-carvin)",
+                  "Familles en sol mineur Lens Liévin": "var(--territoire-fsm-lens-lievin)",
+                  "Ternois Bruaysis": "var(--territoire-ternois-bruaysis)"
                 }
               },
               "facets": [

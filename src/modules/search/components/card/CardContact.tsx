@@ -10,7 +10,17 @@ export default function CardContact({ item, onClick }: SearchCardProps) {
   const title = serverData?.name ?? "—";
   const sd = serverData as Record<string, unknown> | undefined;
   const email = sd?.email as string | undefined;
-  const phone = (sd?.telephone ?? sd?.phone) as string | undefined;
+  // `telephone` est une chaîne pour la plupart des entités, mais un objet structuré
+  // `{mobile: string[], fixe: string[]}` pour les organisations de certains costums (SSBE) —
+  // on ne peut pas le rendre tel quel (React refuse un objet comme enfant).
+  const rawPhone = sd?.telephone ?? sd?.phone;
+  const phone =
+    typeof rawPhone === "string"
+      ? rawPhone
+      : rawPhone && typeof rawPhone === "object"
+        ? ((rawPhone as { mobile?: string[]; fixe?: string[] }).mobile?.[0] ??
+          (rawPhone as { mobile?: string[]; fixe?: string[] }).fixe?.[0])
+        : undefined;
 
   const addr = serverData?.address as Record<string, unknown> | undefined;
   const addressStr = [addr?.streetAddress, addr?.postalCode, addr?.addressLocality]

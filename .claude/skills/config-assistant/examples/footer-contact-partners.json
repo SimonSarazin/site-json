@@ -2,66 +2,101 @@
   "feature": "footer-contact-partners",
   "titre": "Footer contact-partners",
   "description": "Footer avec bloc contact + logos partenaires (les logos externes restent en <img> brut, cf. CLAUDE.md).",
-  "source": "config.prod.parent62.json",
+  "source": "config.prod.eXtremeDefiAdeme.json",
   "selector": "footer",
   "snapshot": {
     "type": "contact-partners",
     "contactSection": {
       "title": {
-        "fr": "Nos coordonnées",
-        "en": "Contact us"
+        "fr": "L'eXtrême Défi",
+        "en": "The eXtreme Challenge"
       },
       "items": [
-        {
-          "icon": "mail",
-          "value": {
-            "fr": "contact@parent62.org",
-            "en": "contact@parent62.org"
-          },
-          "href": "mailto:contact@parent62.org"
-        },
-        {
-          "icon": "phone",
-          "value": {
-            "fr": "06 98 99 93 09",
-            "en": "06 98 99 93 09"
-          },
-          "href": "tel:+33698999309"
-        },
         {
           "icon": "map-pin",
           "lines": [
             {
-              "fr": "Réseau Parentalité 62",
-              "en": "Parenting Network 62"
+              "fr": "ADEME — 20 avenue du Grésillé, BP 90406",
+              "en": "ADEME — 20 avenue du Grésillé, BP 90406"
             },
             {
-              "fr": "Pas-de-Calais",
-              "en": "Pas-de-Calais"
+              "fr": "49004 Angers Cedex 01",
+              "en": "49004 Angers Cedex 01, France"
             }
           ]
+        },
+        {
+          "icon": "globe",
+          "value": {
+            "fr": "xd.ademe.fr",
+            "en": "xd.ademe.fr"
+          },
+          "href": "https://xd.ademe.fr"
+        },
+        {
+          "icon": "film",
+          "value": {
+            "fr": "Découvrir le film",
+            "en": "Watch the film"
+          },
+          "href": "https://xd.ademe.fr/le-film"
+        }
+      ]
+    },
+    "partners": {
+      "logos": [
+        {
+          "image": "images/eXtremeDefiAdeme/soutiens/rf.png",
+          "alt": {
+            "fr": "République Française",
+            "en": "French Republic"
+          },
+          "href": "https://www.gouvernement.fr"
+        },
+        {
+          "image": "images/eXtremeDefiAdeme/soutiens/ademe.png",
+          "alt": {
+            "fr": "ADEME — Agence de la transition écologique",
+            "en": "ADEME — French Agency for Ecological Transition"
+          },
+          "href": "https://www.ademe.fr"
+        },
+        {
+          "image": "images/eXtremeDefiAdeme/soutiens/france2030.png",
+          "alt": {
+            "fr": "France 2030",
+            "en": "France 2030"
+          },
+          "href": "https://www.gouvernement.fr/france-2030"
         }
       ]
     },
     "legalLinks": [
       {
-        "href": "/mentions-legales",
+        "href": "https://xd.ademe.fr/accessibilite",
         "label": {
-          "fr": "Mentions légales",
-          "en": "Legal notice"
+          "fr": "Accessibilité",
+          "en": "Accessibility"
         }
       },
       {
-        "href": "/confidentialite",
+        "href": "https://xd.ademe.fr/politique-de-protection-des-donnees",
         "label": {
-          "fr": "Politique de confidentialité",
-          "en": "Privacy policy"
+          "fr": "Données personnelles",
+          "en": "Data protection"
+        }
+      },
+      {
+        "href": "https://xd.ademe.fr/politique-des-cookies",
+        "label": {
+          "fr": "Cookies",
+          "en": "Cookies"
         }
       }
     ],
     "copyright": {
-      "fr": "© 2026 Parent62 — Réseau Parentalité du Pas-de-Calais. Tous droits réservés.",
-      "en": "© 2026 Parent62 — Parenting Network of Pas-de-Calais. All rights reserved."
+      "fr": "© 2026 ADEME — eXtrême Défi Mobilité. Avec le soutien de France 2030.",
+      "en": "© 2026 ADEME — eXtreme Challenge Mobility. With the support of France 2030."
     }
   }
 }

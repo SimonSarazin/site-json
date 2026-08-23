@@ -16,6 +16,7 @@ const HeaderUnderlineNav = lazy(() => import("./header/HeaderUnderlineNav"));
 const HeaderTransparentDark = lazy(() => import("./header/HeaderTransparentDark"));
 const HeaderTransparentScroll = lazy(() => import("./header/HeaderTransparentScroll"));
 const HeaderMinimal = lazy(() => import("./header/HeaderMinimal"));
+const HeaderStacked = lazy(() => import("./header/HeaderStacked"));
 
 export function SiteHeader() {
   const { config } = useSite();
@@ -40,6 +41,8 @@ export function SiteHeader() {
       return <HeaderTransparentDark header={header} />;
     case "standard":
       return <HeaderStandard header={header} />;
+    case "stacked":
+      return <HeaderStacked header={header} />;
     case "default":
     default:
       return <DefaultHeader header={header} />;

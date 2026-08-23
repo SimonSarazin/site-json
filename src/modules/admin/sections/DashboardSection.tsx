@@ -16,7 +16,14 @@ import { useAdminAccess } from "../hooks/useAdminAccess";
 
 import { ADMIN_QUERY_KEYS } from "../constants/queryKeys";
 import { validationStatusFilter } from "../lib/validationFilter";
-import type { AdminConfig, AdminResourceSection, AdminSection } from "../schema";
+import type { AdminConfig, AdminDashboardSection, AdminResourceSection, AdminSection } from "../schema";
+
+import { DashboardKpis } from "./DashboardKpis";
+
+/** Narrowing sûr : AdminSection contient un membre custom en `type: string`, l'égalité seule ne suffit pas à TS. */
+function isDashboardSection(s: AdminSection): s is AdminDashboardSection {
+  return s.type === "dashboard";
+}
 
 /**
  * Section `dashboard` — vue d'ensemble DÉRIVÉE de la config (aucun champ à déclarer) :
@@ -115,10 +122,13 @@ export default function DashboardSection({ section }: { section: AdminSection })
     },
   });
 
+  const kpis = isDashboardSection(section) ? section.kpis : undefined;
+
   return (
     <div className="space-y-3">
     {title && <h2 className="text-lg font-semibold">{t(title)}</h2>}
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {kpis && kpis.length > 0 && <DashboardKpis kpis={kpis} />}
       {stats.isLoading &&
         resources.map(({ tabId, resource }) => (
           <Card key={`${tabId}-${resource.entityType}`}>
@@ -175,7 +185,7 @@ export default function DashboardSection({ section }: { section: AdminSection })
         </Card>
         </Link>
       )}
-      {!stats.isLoading && resources.length === 0 && !moderationTab && (
+      {!stats.isLoading && resources.length === 0 && !moderationTab && !(kpis && kpis.length > 0) && (
         <Card className="sm:col-span-2 lg:col-span-3">
           <CardContent className="py-8 text-center text-sm text-muted-foreground">
             {tAdmin("DashboardSection.noResourceBefore")} <code>resource</code> {tAdmin("DashboardSection.noResourceBetween")} <code>config.admin.tabs</code>.

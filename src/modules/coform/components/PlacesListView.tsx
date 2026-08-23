@@ -34,6 +34,18 @@ import type { Organization } from "@communecter/cocolight-api-client";
 interface PlacesListViewProps {
   formData: CoFormData;
   formId: string;
+  /**
+   * Ouverture d'un lieu. Par défaut on NAVIGUE vers `/coform/:formId/place/:placeId`
+   * (usage page). Un appelant qui affiche cette vue en MODALE fournit ce callback
+   * pour rester dans la modale au lieu de quitter la page.
+   */
+  onOpenPlace?: (placeId: string) => void;
+  /**
+   * Supprime le chrome de PAGE (Helmet `<title>` + en-tête h1/description) quand la
+   * vue est montée dans un Dialog : le titre de l'hôte ne doit pas être écrasé et le
+   * `DialogTitle` remplace le h1.
+   */
+  hidePageChrome?: boolean;
 }
 
 // ─── Sub-component : ligne d'un lieu (Admin / Membre) ──────────────────────
@@ -241,10 +253,27 @@ function JoinConfirmDialog({ org, onClose, onSuccess }: JoinConfirmDialogProps) 
 
 // ─── Composant principal ────────────────────────────────────────────────────
 
-export function PlacesListView({ formData, formId }: PlacesListViewProps) {
+export function PlacesListView({
+  formData,
+  formId,
+  onOpenPlace,
+  hidePageChrome = false,
+}: PlacesListViewProps) {
   const t = useT("modules/coform");
   const navigate = useNavigate();
   const { me, api } = useCocolight();
+
+  /** Ouvre un lieu : callback de l'appelant (mode modale) sinon navigation (mode page). */
+  const goToPlace = useCallback(
+    (placeId: string) => {
+      if (onOpenPlace) {
+        onOpenPlace(placeId);
+        return;
+      }
+      navigate(`/coform/${formId}/place/${placeId}`);
+    },
+    [onOpenPlace, navigate, formId]
+  );
 
   const sharedFinderInfo = useMemo(() => getSharedFinderInfo(formData), [formData]);
 
@@ -320,9 +349,9 @@ export function PlacesListView({ formData, formId }: PlacesListViewProps) {
         (org as unknown as { serverData?: { id?: string } }).serverData?.id ||
         (org as unknown as { id?: string }).id;
       if (!orgId) return;
-      navigate(`/coform/${formId}/place/${orgId}`);
+      goToPlace(orgId);
     },
-    [navigate, formId]
+    [goToPlace]
   );
 
   // ── Section "Rejoindre un lieu" ───────────────────────────────────────────
@@ -340,7 +369,7 @@ export function PlacesListView({ formData, formId }: PlacesListViewProps) {
       // navigue directement vers la vue détail. Le serveur tranchera via
       // `canAnswer` si jamais le user n'est pas autorisé pour une autre raison.
       if (formData.publicCanEditSharedAnswer) {
-        navigate(`/coform/${formId}/place/${picked.id}`);
+        goToPlace(picked.id);
         return;
       }
 
@@ -353,7 +382,7 @@ export function PlacesListView({ formData, formId }: PlacesListViewProps) {
         const perms = calculateOrganizationPermissions(alreadyOwned);
         if (perms.isAdmin || perms.isMember) {
           toast.info(t("coform.placeView.join.alreadyMember"));
-          navigate(`/coform/${formId}/place/${picked.id}`);
+          goToPlace(picked.id);
           return;
         }
         if (perms.isToBeValidated) {
@@ -374,14 +403,14 @@ export function PlacesListView({ formData, formId }: PlacesListViewProps) {
         console.warn("[PlacesListView] organization fetch failed", err);
       }
     },
-    [api, organizations, navigate, formId, t, formData.publicCanEditSharedAnswer]
+    [api, organizations, goToPlace, t, formData.publicCanEditSharedAnswer]
   );
 
   // Si pas de finder partagé, on ne peut pas filtrer / pré-remplir → message.
   if (!sharedFinderInfo) {
     return (
       <div className="space-y-4 max-w-3xl mx-auto p-6">
-        <h1 className="text-2xl font-bold">{formData.name}</h1>
+        {!hidePageChrome && <h1 className="text-2xl font-bold">{formData.name}</h1>}
         <p className="text-sm text-muted-foreground">
           {t("coform.placeView.empty.notApplicable")}
         </p>
@@ -421,15 +450,19 @@ export function PlacesListView({ formData, formId }: PlacesListViewProps) {
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto p-6">
-      <Helmet>
-        <title>{documentTitle}</title>
-      </Helmet>
+      {!hidePageChrome && (
+        <Helmet>
+          <title>{documentTitle}</title>
+        </Helmet>
+      )}
 
-      {/* Header */}
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold">{documentTitle}</h1>
-        <p className="text-sm text-muted-foreground">{t("coform.placeView.description")}</p>
-      </div>
+      {/* Header — masqué en modale : le DialogTitle de l'hôte tient lieu de titre. */}
+      {!hidePageChrome && (
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold">{documentTitle}</h1>
+          <p className="text-sm text-muted-foreground">{t("coform.placeView.description")}</p>
+        </div>
+      )}
 
       {/* Mes lieux */}
       <section className="space-y-2">

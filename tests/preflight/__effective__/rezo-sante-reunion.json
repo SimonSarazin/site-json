@@ -1,0 +1,520 @@
+{
+  "site": "rezo-sante-reunion",
+  "slug": "rezoSanteReunion",
+  "addMenus": {
+    "organizations": {
+      "builtins": {
+        "project": "add-project",
+        "event": "add-event",
+        "poi": "add-poi"
+      }
+    },
+    "projects": {
+      "builtins": {
+        "event": "add-event",
+        "poi": "add-poi"
+      }
+    },
+    "citoyens": {
+      "builtins": {
+        "organization": "add-organization",
+        "project": "add-project",
+        "event": "add-event",
+        "poi": "add-poi"
+      }
+    }
+  },
+  "editModals": {},
+  "adminResources": {
+    "annuaire/organizations": {
+      "source": {
+        "notSourceKey": true,
+        "defaultFilters": {
+          "$or": {
+            "source.key": "rezoSanteReunion",
+            "source.keys": "rezoSanteReunion",
+            "reference.costum": "rezoSanteReunion"
+          }
+        },
+        "defaultSortBy": {
+          "updated": -1
+        }
+      },
+      "create": "add-organization",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "projets/projects": {
+      "source": {
+        "notSourceKey": true,
+        "defaultFilters": {
+          "$or": {
+            "source.key": "rezoSanteReunion",
+            "source.keys": "rezoSanteReunion",
+            "reference.costum": "rezoSanteReunion"
+          }
+        },
+        "defaultSortBy": {
+          "updated": -1
+        }
+      },
+      "create": "add-project",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "agenda/events": {
+      "source": {
+        "notSourceKey": true,
+        "defaultFilters": {
+          "$or": {
+            "source.key": "rezoSanteReunion",
+            "source.keys": "rezoSanteReunion",
+            "reference.costum": "rezoSanteReunion"
+          }
+        },
+        "defaultSortBy": {
+          "startDate": -1
+        }
+      },
+      "create": "add-event",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "ressources/poi": {
+      "source": {
+        "notSourceKey": true,
+        "defaultFilters": {
+          "$or": {
+            "source.key": "rezoSanteReunion",
+            "source.keys": "rezoSanteReunion",
+            "reference.costum": "rezoSanteReunion"
+          }
+        },
+        "defaultSortBy": {
+          "created": -1
+        }
+      },
+      "create": "add-poi",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    }
+  },
+  "pages": {
+    "/theme/nutrition/searchProStatic": {
+      "baseParams": {
+        "sourceKey": [
+          "rezoSanteReunion"
+        ],
+        "costumSlug": "rezoSanteReunion",
+        "defaultTypes": [
+          "organizations",
+          "projects"
+        ],
+        "defaultFilters": {
+          "tags": {
+            "$in": [
+              "Alimentation",
+              "Nutrition",
+              "alimentation",
+              "nutrition"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "collection",
+          "type",
+          "shortDescription",
+          "description",
+          "tags",
+          "address",
+          "geo",
+          "geoPosition",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "profilImageUrl",
+          "links",
+          "created"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "description",
+          "tags"
+        ],
+        "indexStepList": 24
+      }
+    },
+    "/theme/activite-physique/searchProStatic": {
+      "baseParams": {
+        "sourceKey": [
+          "rezoSanteReunion"
+        ],
+        "costumSlug": "rezoSanteReunion",
+        "defaultTypes": [
+          "organizations",
+          "projects"
+        ],
+        "defaultFilters": {
+          "tags": {
+            "$in": [
+              "Activité physique",
+              "sédentarité",
+              "activite-physique",
+              "Activite physique"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "collection",
+          "type",
+          "shortDescription",
+          "description",
+          "tags",
+          "address",
+          "geo",
+          "geoPosition",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "profilImageUrl",
+          "links",
+          "created"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "description",
+          "tags"
+        ],
+        "indexStepList": 24
+      }
+    },
+    "/theme/sommeil/searchProStatic": {
+      "baseParams": {
+        "sourceKey": [
+          "rezoSanteReunion"
+        ],
+        "costumSlug": "rezoSanteReunion",
+        "defaultTypes": [
+          "organizations",
+          "projects"
+        ],
+        "defaultFilters": {
+          "tags": {
+            "$in": [
+              "Sommeil",
+              "sommeil"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "collection",
+          "type",
+          "shortDescription",
+          "description",
+          "tags",
+          "address",
+          "geo",
+          "geoPosition",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "profilImageUrl",
+          "links",
+          "created"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "description",
+          "tags"
+        ],
+        "indexStepList": 24
+      }
+    },
+    "/theme/addictions/searchProStatic": {
+      "baseParams": {
+        "sourceKey": [
+          "rezoSanteReunion"
+        ],
+        "costumSlug": "rezoSanteReunion",
+        "defaultTypes": [
+          "organizations",
+          "projects"
+        ],
+        "defaultFilters": {
+          "tags": {
+            "$in": [
+              "Addiction",
+              "Addictions",
+              "addiction",
+              "addictions"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "collection",
+          "type",
+          "shortDescription",
+          "description",
+          "tags",
+          "address",
+          "geo",
+          "geoPosition",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "profilImageUrl",
+          "links",
+          "created"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "description",
+          "tags"
+        ],
+        "indexStepList": 24
+      }
+    },
+    "/theme/bien-etre-mental/searchProStatic": {
+      "baseParams": {
+        "sourceKey": [
+          "rezoSanteReunion"
+        ],
+        "costumSlug": "rezoSanteReunion",
+        "defaultTypes": [
+          "organizations",
+          "projects"
+        ],
+        "defaultFilters": {
+          "tags": {
+            "$in": [
+              "Competences psycho social",
+              "Santé mentale",
+              "Bien-être mental",
+              "bien-etre-mental"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "collection",
+          "type",
+          "shortDescription",
+          "description",
+          "tags",
+          "address",
+          "geo",
+          "geoPosition",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "profilImageUrl",
+          "links",
+          "created"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "description",
+          "tags"
+        ],
+        "indexStepList": 24
+      }
+    },
+    "/annuaire/searchProStatic": {
+      "baseParams": {
+        "sourceKey": [
+          "rezoSanteReunion"
+        ],
+        "costumSlug": "rezoSanteReunion",
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultFields": [
+          "name",
+          "slug",
+          "collection",
+          "type",
+          "source",
+          "category",
+          "description",
+          "shortDescription",
+          "profilImageUrl",
+          "profilMediumImageUrl",
+          "medias",
+          "urls",
+          "address",
+          "tags",
+          "links",
+          "geo",
+          "geoPosition"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "description",
+          "tags"
+        ],
+        "indexStepList": 24,
+        "indexStepMap": 500
+      }
+    },
+    "/projets/searchProStatic": {
+      "baseParams": {
+        "sourceKey": [
+          "rezoSanteReunion"
+        ],
+        "costumSlug": "rezoSanteReunion",
+        "defaultTypes": [
+          "projects"
+        ],
+        "defaultFields": [
+          "name",
+          "slug",
+          "collection",
+          "type",
+          "source",
+          "category",
+          "description",
+          "shortDescription",
+          "profilImageUrl",
+          "profilMediumImageUrl",
+          "medias",
+          "urls",
+          "address",
+          "tags",
+          "links"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "description",
+          "tags"
+        ],
+        "indexStepList": 12
+      }
+    },
+    "/ressources/searchProStatic": {
+      "baseParams": {
+        "sourceKey": [
+          "rezoSanteReunion"
+        ],
+        "costumSlug": "rezoSanteReunion",
+        "defaultTypes": [
+          "poi",
+          "projects"
+        ],
+        "defaultFields": [
+          "name",
+          "slug",
+          "type",
+          "category",
+          "description",
+          "shortDescription",
+          "profilMediumImageUrl",
+          "profilImageUrl",
+          "medias",
+          "urls",
+          "address",
+          "tags",
+          "created",
+          "source"
+        ],
+        "searchBy": [
+          "name",
+          "description",
+          "shortDescription",
+          "tags"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        },
+        "indexStepList": 24
+      }
+    },
+    "/agenda/agenda": {
+      "baseParams": {
+        "sourceKey": [
+          "rezoSanteReunion"
+        ],
+        "costumSlug": "rezoSanteReunion",
+        "indexStepList": 12,
+        "fediverse": false,
+        "filters": {
+          "preferences.toBeValidated.rezoSanteReunion": {
+            "$exists": false
+          },
+          "source.toBeValidated.rezoSanteReunion": {
+            "$exists": false
+          }
+        }
+      }
+    }
+  },
+  "referencement": {
+    "organizations": {
+      "sousTypes": [],
+      "annotation": null
+    },
+    "projects": {
+      "sousTypes": [],
+      "annotation": null
+    },
+    "events": {
+      "sousTypes": [],
+      "annotation": null
+    },
+    "poi": {
+      "sousTypes": [],
+      "annotation": null
+    }
+  },
+  "membership": {
+    "citoyens/membership": {
+      "types": [
+        "organizations",
+        "projects",
+        "pois",
+        "events"
+      ],
+      "scope": "network"
+    }
+  },
+  "profileRelated": {}
+}

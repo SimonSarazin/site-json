@@ -3,6 +3,7 @@ import { getBaseUrl } from "@/lib/constant/common";
 import { initApi } from "@/lib/apiClient";
 import { SEARCH_QUERY_KEYS, type SearchQueryKeyParams } from "../constants/queryKeys";
 import { buildSearchPayload, type SearchBaseParamsInput } from "../lib/buildSearchPayload";
+import { expandCostumSubType, type CostumFormSubTypeLike } from "../lib/costumSubType";
 
 // Re-export du type pour backward compatibility
 export type SearchPrefetchParams = SearchQueryKeyParams;
@@ -26,18 +27,30 @@ export type SearchPrefetchParams = SearchQueryKeyParams;
  */
 export async function prefetchSearchResults(
   queryClient: QueryClient,
-  params: SearchPrefetchParams
+  params: SearchPrefetchParams,
+  opts?: { costumForms?: Record<string, CostumFormSubTypeLike> },
 ) {
+  // `costumSubType` doit être expansé ICI aussi ($or identity/annotation) — le client le fait dans
+  // `useSearchQuery` et calcule sa queryKey sur les baseParams EXPANSÉS : sans le miroir SSR, la clé
+  // préchargée ne matcherait pas (refetch à l'hydratation) et surtout la page servie mélangerait les
+  // sous-types (costumSubType est inconnu de buildSearchPayload → aucun filtre). L'expansion exige le
+  // slug du porteur → initApi est hissé AVANT le calcul de la clé (en SSR chaque requête a son
+  // queryClient : queryFn s'exécutait de toute façon, le hissage est neutre).
+  const { entity, api } = await initApi({ baseURL: getBaseUrl() });
+  const baseParamsExpanses = expandCostumSubType(
+    params.baseParams as { costumSubType?: string; defaultFilters?: Record<string, unknown> } | undefined,
+    opts?.costumForms,
+    (entity as { slug?: string } | null)?.slug,
+  ) ?? {};
+  const paramsEffectifs = { ...params, baseParams: baseParamsExpanses };
+
   // Utilise la query key centralisée
-  const queryKey = SEARCH_QUERY_KEYS.RESULTS(params);
+  const queryKey = SEARCH_QUERY_KEYS.RESULTS(paramsEffectifs);
 
   try {
     return await queryClient.ensureQueryData({
       queryKey,
       queryFn: async () => {
-        const { entity, api } = await initApi({
-          baseURL: getBaseUrl()
-        });
 
         const searchContext = entity || api;
 
@@ -65,7 +78,7 @@ export async function prefetchSearchResults(
         // (`sourceKey`, `costumSlug`, `contextId`, `contextType`, `costumEditMode`)
         // → le SSR fetchait un périmètre différent du client (ex. events scopés
         // par `sourceKey` uniquement côté client) → résultats SSR ≠ hydratés.
-        const apiParam = buildSearchPayload(params.baseParams as SearchBaseParamsInput, {
+        const apiParam = buildSearchPayload(baseParamsExpanses as SearchBaseParamsInput, {
           name: params.searchText,
           tags,
           type: typeFlat,

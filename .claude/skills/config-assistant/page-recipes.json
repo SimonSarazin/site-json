@@ -2,21 +2,17 @@
  "$doc": "Recettes de COMPOSITION de page, extraites du parc réel (140 pages non vides mesurées le 2026-07-28). Chaque recette désigne une PAGE VIVANTE d'une config archétype : `npm run config:example -- --recipe <id>` imprime son JSON complet, prêt à adapter. Le gate tests/preflight/page-recipes.test.ts vérifie que la page existe toujours et que sa séquence de sections n'a pas changé — une recette ne peut donc pas mentir. Motifs dominants mesurés : searchHeader en 1re section (45 pages), title (24), html (18) ; bigramme le plus fréquent searchHeader→searchProStatic (32). Longueur MÉDIANE d'une page : 2 sections — une page n'a pas à être longue.",
  "recipes": [
   {
-   "id": "home-portail-services",
-   "titre": "Home de portail orienté services",
-   "quand": "Le visiteur vient CHERCHER quelque chose de précis (une aide, un contact, un service). Portail institutionnel ou territorial.",
+   "id": "home-a-la-une",
+   "titre": "Home « à la une » 100% data-driven",
+   "quand": "Le réseau produit déjà du contenu (articles, POI tagués) et veut une home qui vit sans maintenance éditoriale : tout est requêté, rien n'est rédigé dans la config.",
    "source": "config.prod.parent62.json",
    "path": "/",
    "sequence": [
-    "hero-quick-access",
-    "action-tiles",
-    "action-tiles",
-    "cta-card-grid",
-    "html",
-    "articleFeed",
-    "cta"
+    "featured-carousel",
+    "map-bubbles",
+    "articleTeaser"
    ],
-   "rythme": "Les accès rapides AVANT le discours : l'usager qui sait ce qu'il veut part en un clic. Puis deux rangées de tuiles d'action (les deux familles de services), les cartes CTA, un bloc éditorial libre, et seulement ensuite l'actualité — qui sert de preuve de vie. CTA final pour ceux qui ont tout lu."
+   "rythme": "Trois blocs, zéro texte statique : le carrousel plein écran met en avant les POI tagués « A la une » (le contenu choisit la vitrine), la carte à bulles donne l'entrée géographique vers les pages territoire, et l'aperçu d'articles ferme la page en preuve de vie avec son CTA « voir tout » vers /blog. L'identité est portée par le header stacked (wordmark plein écran) : la home n'a pas besoin de hero."
   },
   {
    "id": "home-vitrine-dense",
@@ -173,15 +169,14 @@
   {
    "id": "page-thematique",
    "titre": "Page thématique (fil éditorial filtré)",
-   "quand": "Décliner un thème transversal — santé, handicap, petite enfance — avec ses articles et rien d'autre.",
+   "quand": "Décliner un thème transversal — santé, handicap, petite enfance — ou un public, avec ses articles et rien d'autre.",
    "source": "config.prod.parent62.json",
    "path": "/theme/la-sante",
    "sequence": [
-    "title",
     "searchHeader",
     "articleFeed"
    ],
-   "rythme": "La composition la plus répétée du parc : 8 pages identiques sur parent62. Trois sections seulement — un titre qui nomme le thème, un searchHeader qui porte les filtres, un articleFeed qui occupe tout le reste. Dupliquer la page et ne changer que le titre et le filtre du feed."
+   "rythme": "La composition la plus répétée du parc : 15 pages identiques sur parent62 (8 thèmes + 7 publics). Deux sections seulement — un searchHeader qui EST le hero (headline/subhead nomment le thème ; barre, filtres et titre vivent dans le même bandeau, jamais de section title séparée au-dessus), un articleFeed qui occupe tout le reste. Dupliquer la page et ne changer que headline/subhead et le filtre du feed."
   },
   {
    "id": "page-territoire",

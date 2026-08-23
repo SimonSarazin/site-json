@@ -271,9 +271,17 @@ for (const cf of configs) {
       // Références de MODALES : `add-<id>`/`edit-<id>` doit résoudre vers un
       // costumForm du config, un costum TS, ou une modale builtin — sinon le
       // bouton rend `null` en silence (ModalRegistry.tsx:49 : un console.log).
-      for (const key of ["modal", "editModal", "addModal"]) {
+      // `create`/`edit` d'une section admin `resource` visent le MÊME registre, mais ne peuvent
+      // être ajoutés à la liste plate ci-dessous : la clé `edit` est massivement homonyme dans les
+      // configs (`chrome.title.edit`, `mutation.errorKey.edit`, `chrome.submitLabel.edit`… ~90
+      // occurrences), qui dénoteraient toutes en référence morte. D'où le garde sur `type`.
+      const clesModales =
+        rec.type === "resource" ? ["modal", "editModal", "addModal", "create", "edit"] : ["modal", "editModal", "addModal"];
+      for (const key of clesModales) {
         const v = rec[key];
         if (typeof v !== "string" || !v || BUILTIN_MODALS.has(v)) continue;
+        // Sentinelles de résolution, pas des clés de modale (cf. AdminFormRefSchema).
+        if ((key === "create" || key === "edit") && (v === "inherit" || v === "standard")) continue;
         const id = /^(?:add|edit)-(.+)$/.exec(v)?.[1];
         if (id && (costumIds.has(id) || TS_COSTUM_IDS.has(id))) continue;
         findings.push({

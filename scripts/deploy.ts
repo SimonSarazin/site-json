@@ -37,6 +37,7 @@ import {
   createApplication,
   deployApplication,
   resoudrePlacement,
+  getApplication,
   indexByName,
   lastSuccessfulDeployment,
   loadContext,
@@ -1068,7 +1069,23 @@ async function create(ctx: CoolifyContext): Promise<number> {
     name: site.coolifyApp,
     domains: coolifyDomains(site),
   });
-  console.log(`[2/4] application ✓ ${cree.uuid}`);
+  // L'API de CRÉATION de Coolify tronque une URL GitLab hors github.com (mesuré sur
+  // site-json-rezo-sante-reunion, 2026-08-06 : `git_repository` stocké « pixelhumain/site-json.git »
+  // → le déployeur tente un ls-remote SSH sans hôte et échoue). Le PATCH, lui, stocke l'URL
+  // VERBATIM (c'est la correction manuelle qui a débloqué le premier déploiement) — d'où cette
+  // repasse systématique : relire, re-poser le dépôt si Coolify l'a réécrit, re-vérifier.
+  const stockee = await getApplication(ctx, cree.uuid);
+  if (stockee.git_repository !== build.depot) {
+    await patchApplication(ctx, cree.uuid, { git_repository: build.depot });
+    const apres = (await getApplication(ctx, cree.uuid)).git_repository;
+    if (apres !== build.depot) {
+      console.error(`  ✗ dépôt toujours incorrect après correction : ${JSON.stringify(apres)} — à corriger dans Coolify avant de déployer.`);
+      return 1;
+    }
+    console.log(`[2/4] application ✓ ${cree.uuid} (dépôt corrigé : la création l'avait réécrit en ${JSON.stringify(stockee.git_repository)})`);
+  } else {
+    console.log(`[2/4] application ✓ ${cree.uuid}`);
+  }
 
   // 3. Variables, avant tout déploiement.
   for (const v of variables) {

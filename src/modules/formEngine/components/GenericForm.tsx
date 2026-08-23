@@ -109,7 +109,11 @@ export function GenericForm(props: GenericFormProps) {
     if (!check(field.visibleIf, values)) return null; // caché → ni rendu ni validé
     // options `{value,label}` : enum statique (value≠label, label traduit) sinon runtime string[]
     // (serverData.lists → value=label, gardé string[] + filtré comme getListOptions).
-    const raw = listsOptions?.[field.optionsKey ?? name];
+    // `widgetProps.list` avant le nom du champ : un widget qui NOMME sa liste (`tags`, `valueSelect`)
+    // doit recevoir CELLE-LÀ. Sans cette priorité, `fields.tags` déclarant `list:"tagsDocument"` se
+    // verrait servir une liste homonyme `tags` du costum — et, ses options n'étant plus vides, il
+    // n'irait jamais chercher la sienne : la mauvaise liste, en silence.
+    const raw = listsOptions?.[field.optionsKey ?? (field.widgetProps?.list as string | undefined) ?? name];
     const dynamicEnum = field.enumFrom ? getOptions(field.enumFrom)?.() : undefined; // options dynamiques (registre)
     const options = field.enum
       ? field.enum.map((e) => ({ value: e.value, label: t(e.label) }))

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router";
-import { ChevronDown, User, LogOut, ShieldCheck } from "lucide-react";
+import { ChevronDown, ExternalLink, User, LogOut, ShieldCheck, SquareKanban } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,8 +13,10 @@ import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { cn } from "@/lib/utils";
 import type { LocalizedString } from "@/types/site-schema";
+import { getServerUrl } from "@/lib/constant/common";
 import { useCocolight } from "@/hooks/useCocolight";
-import { isAdminEntryVisible } from "@/modules/admin/lib/adminEntry";
+import { isAdminEntryVisible, isKanbanEntryVisible } from "@/modules/admin/lib/adminEntry";
+import { platformKanbanUrl } from "@/modules/admin/lib/platformKanbanUrl";
 import { useAuthActions } from "../hooks/useAuthActions";
 import { CurrentUserAvatar } from "./CurrentUserAvatar";
 import { LoginButton } from "./LoginButton";
@@ -75,10 +77,29 @@ export function AuthMenu({
   const navigate = useNavigate();
   const { config } = useSite();
   const { isConnected, logout, profileUrl, name, avatarUrl, email } = useAuthActions();
-  // Entrée « Administration » — même gate que la page /admin (admin activé + niveau >= access.min).
+  // Entrées « Administration » / « Kanban » — gates nommés dans modules/admin/lib/adminEntry
+  // (contrats épinglés par adminEntry.test.ts). Court-circuit isConnected : un anonyme n'a aucun
+  // droit, et entity.isAdmin() paierait un throw/catch d'ApiError interne pour rien.
   // Rendu sous ClientOnly (les droits ne sont connus qu'hydraté) → pas de flash SSR.
   const { me, entity } = useCocolight();
-  const showAdmin = isAdminEntryVisible(config, me, entity);
+  const showAdmin = isConnected && isAdminEntryVisible(config, me, entity);
+  const costumSlug = entity?.slug;
+  const kanbanUrl =
+    isConnected && costumSlug && isKanbanEntryVisible(config, me, entity, costumSlug)
+      ? platformKanbanUrl(getServerUrl(), costumSlug)
+      : null;
+  // Ancre kanban UNIQUE, habillée en asChild par les deux layouts (stack mobile / dropdown
+  // desktop) : toute évolution (rel, aria, tracking) reste mono-source. Le span sr-only annonce
+  // la sortie vers la plateforme — l'icône est aria-hidden et, dans le dropdown, Radix pose
+  // role="menuitem" sur l'ancre, ce qui masque son rôle de lien aux lecteurs d'écran.
+  const kanbanLink = kanbanUrl ? (
+    <a href={kanbanUrl} target="_blank" rel="noopener noreferrer">
+      <SquareKanban className="mr-2 h-4 w-4" />
+      {t("Kanban")}
+      <span className="sr-only">{t("(nouvel onglet, sur la plateforme)")}</span>
+      <ExternalLink className="ml-auto size-3 opacity-60" aria-hidden="true" />
+    </a>
+  ) : null;
 
   // Précédence : config (bascule tous les headers) > prop (défaut du header) > défaut.
   const menuCfg = config.auth?.menu;
@@ -141,6 +162,11 @@ export function AuthMenu({
                 >
                   <ShieldCheck className="mr-2 h-4 w-4" />
                   {t("Administration")}
+                </Button>
+              )}
+              {kanbanLink && (
+                <Button asChild variant="ghost" className="w-full justify-start" onClick={onAction}>
+                  {kanbanLink}
                 </Button>
               )}
               <Button
@@ -221,6 +247,9 @@ export function AuthMenu({
                   <ShieldCheck className="mr-2 h-4 w-4" />
                   {t("Administration")}
                 </DropdownMenuItem>
+              )}
+              {kanbanLink && (
+                <DropdownMenuItem asChild>{kanbanLink}</DropdownMenuItem>
               )}
               <DropdownMenuItem onClick={logout}>
                 <LogOut className="mr-2 h-4 w-4" />

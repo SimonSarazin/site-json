@@ -8,17 +8,11 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { renderMarkdown } from "@/helpers/renderMarkdown";
 import { ArticleGallery } from "./ArticleGallery";
 import { ArticleDocuments } from "./ArticleDocuments";
-import { formatDateLong } from "@/helpers/formatDate";
 import { estimateReadingTime } from "../lib/readingTime";
 import type { ArticleData } from "../hooks/useArticle";
 import type { ArticleReaderProps } from "../variants/readers";
+import { articleDate } from "../lib/articleDate";
 
-function articleDate(created: unknown): string | null {
-  if (created == null || created === "") return null;
-  const n = typeof created === "number" ? created : Number(created);
-  const d = Number.isFinite(n) ? new Date(n < 2e10 ? n * 1000 : n) : new Date(String(created));
-  return Number.isNaN(d.getTime()) ? null : formatDateLong(d);
-}
 function authorName(article: ArticleData): string | null {
   const p = article.parent && typeof article.parent === "object" ? Object.values(article.parent)[0] : undefined;
   return (p?.name as string) || null;
@@ -36,7 +30,7 @@ export function ArticleReader({ article, backTo = "/blog", hideBack = false, tit
   // `location.key === "default"` = 1re entrée d'historique (chargement direct/deep-link) → pas de retour in-app.
   const goBack = () => (location.key !== "default" ? navigate(-1) : navigate(backTo));
   const image = article.profilImageUrl || article.profilMediumImageUrl;
-  const date = articleDate(article.created);
+  const date = articleDate(article);
   const author = authorName(article);
   const minutes = estimateReadingTime(article.description);
   const chapo = typeof article.shortDescription === "string" ? article.shortDescription.trim() : "";

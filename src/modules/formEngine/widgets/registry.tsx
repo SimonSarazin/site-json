@@ -44,7 +44,9 @@ const lbl = (p: WidgetProps) => (p.field.label ? p.t(p.field.label) : "");
 // composant SelectObject retombait sur un "Search..." codé en dur (non traduit). LocalizedString inline →
 // résolu locale-aware par `p.t`, sans dépendre d'une clé i18n d'un autre module (LEAF).
 const SEARCH_PLACEHOLDER_FALLBACK: I18n = { fr: "Rechercher…", en: "Search…" };
-const searchPh = (p: WidgetProps) => p.t(p.field.placeholderSearch ?? SEARCH_PLACEHOLDER_FALLBACK);
+/** Exporté : tout widget bâti sur `SelectObject` doit passer par ce repli, sinon la zone de recherche
+ *  retombe sur le "Search..." anglais codé en dur du composant. */
+export const searchPh = (p: WidgetProps) => p.t(p.field.placeholderSearch ?? SEARCH_PLACEHOLDER_FALLBACK);
 
 const registry: Partial<Record<string, WidgetComponent>> = {
   hidden: () => null,

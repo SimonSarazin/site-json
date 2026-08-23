@@ -76,6 +76,13 @@ export type RelationType = "organizations" | "projects" | "events" | "poi";
 export interface RelatedEntitiesParams {
   indexStep?: number;
   search?: string;
+  /**
+   * PÉRIMÈTRE costum : borne la liste aux entités rattachées à ces slugs, côté SERVEUR
+   * (`$or[source.keys ∈, reference.costum ∈]`). Absent = réseau entier, comportement historique.
+   * On ne pose jamais `notSourceKey` en regard — sa seule présence désactiverait le périmètre
+   * (garde `empty()` + transport form-urlencoded) ; la lib se charge de l'omettre.
+   */
+  sourceKey?: string[];
 }
 
 /**

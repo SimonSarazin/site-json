@@ -14,5 +14,9 @@
     "readingTime": "{{count}} min de lecture",
     "notFound": "Article introuvable",
     "related": "Articles liés"
+  },
+  "teaser": {
+    "cta": "En savoir plus",
+    "viewAll": "En voir plus"
   }
 }

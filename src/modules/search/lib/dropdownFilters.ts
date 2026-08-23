@@ -127,7 +127,11 @@ export function dropdownFilterToParam(
   filter: DropdownFilterConfig,
   optionIds: string[],
 ): void {
-  if (optionIds.length) params.set(filter.id, optionIds.join(","));
+  // Chaque identifiant est ENCODÉ avant d'être joint : une option issue d'une source dynamique porte la
+  // VALEUR brute (pas un slug), et une valeur contenant une virgule — « Salon professionnel, » existe en
+  // base — couperait la liste en deux à la relecture. Sur les slugs écrits à la main, l'encodage est
+  // l'IDENTITÉ : les URL existantes et les liens déjà partagés restent inchangés au caractère près.
+  if (optionIds.length) params.set(filter.id, optionIds.map(encodeURIComponent).join(","));
   else params.delete(filter.id);
 }
 
@@ -161,9 +165,14 @@ export function dropdownFilterToState(
       for (const id of optionIds) {
         const option = (filter.options ?? []).find((o) => o.id === id);
         if (!option) continue;
+        // `variants` : toutes les graphies regroupées derrière la valeur affichée (source dynamique).
+        // Filtrer sur la seule graphie retenue laisserait de côté les fiches portant « LE PORT » ou
+        // « Le port » quand l'option affiche « Le Port » — trois écritures qui coexistent en base. On
+        // interroge donc le GROUPE entier ; sans variantes, le comportement est inchangé.
+        const variantes = (option as { variants?: string[] }).variants;
         next[keyFor(filter.id, id)] = {
           field: option.field ?? fieldName,
-          value: [option.value ?? option.id],
+          value: variantes?.length ? variantes : [option.value ?? option.id],
         };
       }
       return next;

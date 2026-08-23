@@ -1,0 +1,277 @@
+{
+  "site": "maison-sport-sante-la-tampon",
+  "slug": "associationEkilibre",
+  "addMenus": {
+    "citoyens": {
+      "builtins": {
+        "organization": "add-structure",
+        "project": "add-project",
+        "event": "add-event"
+      }
+    },
+    "organizations": {
+      "builtins": {
+        "project": "add-project",
+        "event": "add-event"
+      }
+    },
+    "projects": {
+      "builtins": {
+        "event": "add-event"
+      }
+    }
+  },
+  "editModals": {
+    "organizations": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-structure",
+          "native": "edit-structure",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    },
+    "poi": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-actualite",
+          "native": "edit-actualite",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    }
+  },
+  "adminResources": {
+    "actualites/poi": {
+      "source": {
+        "sourceKey": [
+          "associationEkilibre"
+        ],
+        "defaultFilters": {
+          "type": "article"
+        },
+        "defaultSortBy": {
+          "publicationDate": -1
+        }
+      },
+      "create": "add-actualite",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "structures/organizations": {
+      "source": {
+        "sourceKey": [
+          "associationEkilibre"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        }
+      },
+      "create": "add-structure",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "moderation/answers": {
+      "source": {
+        "sourceKey": [
+          "associationEkilibre"
+        ],
+        "defaultFilters": {
+          "form": "6a85af345d898a57cb49f029"
+        },
+        "defaultSortBy": {
+          "created": -1
+        },
+        "searchBy": [
+          "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdegc9sgox76p87n27",
+          "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdeggo91owe8t9ovl4p",
+          "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdmxv88txy6f5z6svg"
+        ]
+      },
+      "create": null,
+      "edit": {
+        "enabled": false,
+        "modalName": null
+      }
+    }
+  },
+  "pages": {
+    "/creneaux/searchProStatic": {
+      "baseParams": {
+        "sourceKey": [
+          "associationEkilibre"
+        ],
+        "defaultTypes": [
+          "answers"
+        ],
+        "defaultFilters": {
+          "form": "6a85af345d898a57cb49f029",
+          "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdn1jcq445i0mb9bap7": "Validé"
+        },
+        "searchBy": [
+          "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdegc9sgox76p87n27",
+          "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdeggo91owe8t9ovl4p",
+          "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdmxv88txy6f5z6svg"
+        ]
+      }
+    },
+    "/structure/searchProStatic": {
+      "baseParams": {
+        "sourceKey": [
+          "associationEkilibre"
+        ],
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultFilters": {
+          "statusActor": "Validé",
+          "address.postalCode": {
+            "$in": [
+              "97430",
+              "97418"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "type",
+          "collection",
+          "slug",
+          "source",
+          "reference",
+          "links",
+          "creator",
+          "created",
+          "updated",
+          "shortDescription",
+          "description",
+          "tags",
+          "address",
+          "geo",
+          "geoPosition",
+          "counts",
+          "profilImageUrl",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "siren",
+          "sigle",
+          "affiliate",
+          "affiliateTo",
+          "thematic",
+          "telephone",
+          "email",
+          "url",
+          "socialNetwork",
+          "legalStatus",
+          "statusFile",
+          "responsableCivilePro",
+          "statusPrimaire",
+          "statusSecondaire",
+          "statusCommunale",
+          "autreDescription",
+          "representativeTitle",
+          "otherRepresentativeTitle",
+          "representativeCivility",
+          "representativeName",
+          "representativeFirstName",
+          "representativeEmail",
+          "representativeTelephone",
+          "responsableSameAsRepresent",
+          "personInChargeTitle",
+          "otherPersonInChargeTitle",
+          "personInChargeCivility",
+          "personInChargeName",
+          "personInChargeFirstName",
+          "personInChargeEmail",
+          "personInChargeTelephone",
+          "statusActor",
+          "link",
+          "mobile",
+          "youtube"
+        ],
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "description",
+          "tags"
+        ]
+      }
+    }
+  },
+  "answerFacets": {
+    "/creneaux/ald": {
+      "target": "answers",
+      "searchByField": {
+        "field": "answers.associationEkilibre19082026_1327_0.multiCheckboxPlusassociationEkilibre19082026_1327_0mdmyjntfqs0ascyzqf",
+        "type": "answerPath",
+        "value": [
+          "Valeur"
+        ]
+      },
+      "filters": {
+        "$or": {
+          "$and": [
+            {
+              "$or": [
+                {
+                  "answers.associationEkilibre19082026_1327_0.multiCheckboxPlusassociationEkilibre19082026_1327_0mdmyjntfqs0ascyzqf.Valeur": {
+                    "$exists": true
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "/creneaux/maladies": {
+      "target": "answers",
+      "searchByField": {
+        "field": "answers.associationEkilibre19082026_1327_0.multiCheckboxPlusassociationEkilibre19082026_1327_0mp587j82dmr9ulaffcq",
+        "type": "answerPath",
+        "value": [
+          "Valeur"
+        ]
+      },
+      "filters": {
+        "$or": {
+          "$and": [
+            {
+              "$or": [
+                {
+                  "answers.associationEkilibre19082026_1327_0.multiCheckboxPlusassociationEkilibre19082026_1327_0mp587j82dmr9ulaffcq.Valeur": {
+                    "$exists": true
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "referencement": {
+    "organizations": {
+      "sousTypes": [],
+      "annotation": null
+    }
+  },
+  "membership": {
+    "citoyens/membership": {
+      "types": [
+        "organizations",
+        "projects",
+        "pois",
+        "events"
+      ],
+      "scope": "network"
+    }
+  },
+  "profileRelated": {}
+}

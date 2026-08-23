@@ -51,7 +51,9 @@
         "showLess": "Voir moins",
         "moreSlots": "+{{count}} créneaux",
         "activitySheet": "Fiche d'activité",
-        "structureSheet": "Fiche structure"
+        "structureSheet": "Fiche structure",
+        "edit": "Modifier",
+        "editError": "Impossible de charger cette fiche pour la modifier."
     },
     "CardPoiAmenities": {
         "amenities": "Aménagement",
@@ -153,6 +155,25 @@
             "open": "Voir le tableau de bord de l'installation"
         }
     },
+    "PreviewStructure": {
+        "edit": "Éditer",
+        "validated": "Profil validé",
+        "website": "Site web",
+        "affiliation": "Affiliation fédérale",
+        "affiliated": "Affiliée",
+        "location": "Localisation",
+        "representative": "Représentant légal",
+        "personInCharge": "Personne en charge",
+        "repAndPic": "Représentant légal & personne en charge",
+        "information": "Informations",
+        "identifier": "Identifiant",
+        "category": "Catégorie",
+        "memberOf": "Membre de",
+        "memberOfCount_one": "{{count}} organisation",
+        "memberOfCount_other": "{{count}} organisations",
+        "createdOn": "Créé le",
+        "documents": "Documents"
+    },
     "PreviewReservations": {
         "title": "Réservations",
         "empty": "Aucune réservation enregistrée pour cet équipement.",
@@ -190,6 +211,8 @@
     "Voir les résultats": "Voir les résultats",
     "Effacer": "Effacer",
     "Rechercher par nom...": "Rechercher par nom...",
+    "Rechercher…": "Rechercher…",
+    "+{{count}} autres — précisez la recherche": "+{{count}} autres — précisez la recherche",
     "Carte": "Carte",
     "Voir en liste": "Voir en liste",
     "type.NGO": "ONG",
@@ -224,6 +247,7 @@
     "Chargement des points… {{loaded}} / {{total}}": "Chargement des points… {{loaded}} / {{total}}",
     "Carte limitée aux {{loaded}} premiers résultats": "Carte limitée aux {{loaded}} premiers résultats",
     "Aucun résultat": "Aucun résultat",
+    "Modifier": "Modifier",
     "Voir le profil": "Voir le profil",
     "Adresse inconnue": "Adresse inconnue",
     "Tous": "Tous",

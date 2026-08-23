@@ -2,26 +2,29 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import crypto from "crypto";
+import { imageFolderForSlug } from "../utils/sites.js";
 
 /**
  * Creates an Express router for admin image uploads.
  *
- * Images are saved to `<staticRoot>/images/<slug>/` and the response
- * returns the public path (e.g. `/images/institutBleu/abc123.jpg`).
+ * Images are saved to `<staticRoot>/images/<folder>/` and the response
+ * returns the public path (e.g. `/images/tiersLieux/abc123.jpg`).
  *
- * ⚠ Le dossier est nommé d'après `VITE_SLUG`, alors que les dossiers réels de
- * `public/images/` ne suivent pas le slug pour 8 sites sur 17 (le champ `images`
- * de `sites.json` fait foi — `navigatorDesTierslieux` écrit dans `tiersLieux`).
- * Le `mkdirSync` ci-dessous a lieu au MONTAGE du middleware, pas à l'upload :
- * lancer le serveur de dev avec un slug quelconque crée un dossier vide.
+ * Le dossier est résolu depuis le champ `images` de `sites.json` (via
+ * `imageFolderForSlug`), PAS depuis `VITE_SLUG` brut : les dossiers réels de
+ * `public/images/` ne suivent pas le slug pour 8 sites sur 17
+ * (`navigatorDesTierslieux` écrit dans `tiersLieux`). Ainsi l'upload atterrit
+ * dans le dossier RÉELLEMENT servi, et le `mkdirSync` (fait au montage) ne
+ * fabrique plus de dossier fantôme `public/images/<slug>/`. `sites.json` absent
+ * (image Docker) → fallback slug, comportement historique.
  *
  * @param {{ staticRoot: string }} options
  *   - `staticRoot`: absolute path to the directory served as static files
  *     (e.g. `public/` in dev, `dist/client/` in prod).
  */
 export function createImageUpload({ staticRoot }) {
-  const slug = process.env.VITE_SLUG || "default";
-  const uploadDir = path.join(staticRoot, "images", slug);
+  const folder = imageFolderForSlug(process.env.VITE_SLUG || "default");
+  const uploadDir = path.join(staticRoot, "images", folder);
 
   fs.mkdirSync(uploadDir, { recursive: true });
 
@@ -67,7 +70,7 @@ export function createImageUpload({ staticRoot }) {
         return res.status(400).json({ error: "Aucun fichier reçu" });
       }
 
-      const publicPath = `/images/${slug}/${req.file.filename}`;
+      const publicPath = `/images/${folder}/${req.file.filename}`;
       console.log(`[Admin] Image uploaded: ${publicPath}`);
       res.json({ path: publicPath, filename: req.file.filename });
     });

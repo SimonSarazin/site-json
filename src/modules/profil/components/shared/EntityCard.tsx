@@ -28,6 +28,7 @@ export function EntityCard({
   const hasSlug = Boolean(entity.slug);
   const profileUrl = `/profil/${entity.slug}`;
   const [openDetails, setOpenDetails] = useState(false);
+  const [imageKo, setImageKo] = useState(false);
   const openPreview = () => setOpenDetails(true);
 
   const getTypeLabel = () => {
@@ -59,20 +60,31 @@ export function EntityCard({
     );
 
   return (
+    // `@container` : la carte s'adapte à la largeur de SA COLONNE, pas à celle de l'écran. Elle est
+    // posée aussi bien en pleine largeur (onglet Adhésions) que dans une grille à 3 colonnes
+    // (ProfileRelated : events/projects d'une organisation) — soit ~256 px sur un écran de bureau.
+    // Les points d'arrêt d'écran (`sm:`) ne voyaient pas cette contrainte : le bloc d'action gardait
+    // son libellé long et prenait 119 des 142 px de la ligne, ne laissant au titre qu'une colonne
+    // d'UN caractère — le titre s'affichait alors en vertical, lettre par lettre.
     <div
       ref={lastItemRef}
-      className="bg-card border border-border rounded-lg p-4 hover:shadow-md transition-shadow"
+      className="@container/entity-card bg-card border border-border rounded-lg p-4 hover:shadow-md transition-shadow"
     >
       <div className="flex items-start gap-4">
         {/* Image/Logo */}
         {renderClickable(
           "w-16 h-16 rounded-lg border border-border overflow-hidden bg-muted shrink-0 hover:opacity-80 transition-opacity",
-          entity.serverData?.profilImageUrl ? (
+          entity.serverData?.profilImageUrl && !imageKo ? (
             <OptimizedImage
               src={entity.serverData.profilImageUrl}
               alt={entity.serverData?.name || ""}
               width={64}
               className="w-full h-full object-cover"
+              // Une image ABSENTE côté source (les visuels des vieilles fiches vivent sur le serveur
+              // de production, pas dans une copie de développement) affichait l'icône « image cassée »
+              // du navigateur suivie du texte alternatif, qui débordait de la vignette. On retombe sur
+              // l'icône de type, exactement comme une fiche sans image.
+              onError={() => setImageKo(true)}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
@@ -83,14 +95,19 @@ export function EntityCard({
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between">
+          {/* Étroit : action SOUS le contenu (pleine largeur disponible). Large : action à droite,
+              disposition d'origine. `@sm` = 24rem de CONTENEUR — au-dessus, la ligne tient. */}
+          <div className="flex flex-col gap-2 @sm/entity-card:flex-row @sm/entity-card:items-start @sm/entity-card:justify-between @sm/entity-card:gap-0">
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-2">
+              {/* Le titre prend la place restante et, dans une carte étroite, s'écrit sur DEUX lignes
+                  plutôt que d'être coupé au 4ᵉ caractère : `truncate` seul rendait « Les Ouvertures… »
+                  illisible dès que la pastille de type lui prenait la moitié de la ligne. */}
+              <div className="flex flex-wrap items-center gap-2 mb-2">
                 {renderClickable(
-                  "font-semibold text-foreground truncate hover:text-primary hover:underline transition-colors",
+                  "min-w-0 basis-full @sm/entity-card:basis-auto flex-1 font-semibold text-foreground line-clamp-2 @sm/entity-card:line-clamp-none @sm/entity-card:truncate hover:text-primary hover:underline transition-colors",
                   entity.serverData?.name || t("common.untitled"),
                 )}
-                <Badge variant="secondary" className="text-xs">
+                <Badge variant="secondary" className="shrink-0 text-xs">
                   {getTypeLabel()}
                 </Badge>
               </div>
@@ -158,12 +175,14 @@ export function EntityCard({
             </div>
 
             {/* Actions : lien profil si slug, sinon aperçu (drawer) */}
-            <div className="flex items-center gap-2 ml-4">
+            <div className="flex shrink-0 items-center gap-2 @sm/entity-card:ml-4">
               {hasSlug ? (
                 <Button variant="outline" size="sm" asChild>
                   <Link to={profileUrl}>
                     <ExternalLink className="w-4 h-4" />
-                    <span className="hidden sm:inline ml-1">
+                    {/* Libellé masqué seulement quand la CARTE est trop étroite pour lui —
+                        `sm:` (écran) le laissait passer dans une colonne de 142 px. */}
+                    <span className="hidden @[11rem]/entity-card:inline ml-1">
                       {t("common.viewProfile")}
                     </span>
                   </Link>
@@ -171,7 +190,7 @@ export function EntityCard({
               ) : (
                 <Button variant="outline" size="sm" onClick={openPreview}>
                   <Eye className="w-4 h-4" />
-                  <span className="hidden sm:inline ml-1">
+                  <span className="hidden @[11rem]/entity-card:inline ml-1">
                     {t("common.preview")}
                   </span>
                 </Button>

@@ -158,25 +158,43 @@ Composant interne permettant de sélectionner le type d'une nouvelle section à 
 Structure :
 
 ```ts
+export const SECTION_FAMILIES = [
+  "hero", "contenu", "layout", "cta", "media", "presentation", "data", "utilitaires",
+  "formulaire", "auth", "search", "news", "notification", "profil", "ampli", "coform",
+  "cagnotte", "observatoire", "agenda", "blog",
+] as const;
+export type SectionFamily = (typeof SECTION_FAMILIES)[number];
+
 export interface SectionMeta {
   label: string;
   desc: string;
   image: string; // URL placehold.co 300×180
+  family: SectionFamily; // OBLIGATOIRE
 }
 
 const SECTION_META: Record<string, SectionMeta> = {
-  hero: { label: "Hero", desc: "Bannière principale avec titre, sous-titre et CTA", image: "..." },
-  cards: { label: "Cards", desc: "Grille de cartes avec image, titre et description", image: "..." },
+  hero: { label: "Hero", desc: "Bannière principale avec titre, sous-titre et CTA", image: "...", family: "hero" },
+  cards: { label: "Cards", desc: "Grille de cartes avec image, titre et description", image: "...", family: "layout" },
   // ... tous les types de section
 };
 ```
 
+⚠ `family` est **requis** : une entrée copiée sans lui ne compile pas.
+
 Pour ajouter une nouvelle section au panneau admin :
 1. Ajouter le type dans `SectionSchema` (`src/types/site-schema.ts`)
-2. Ajouter son entrée dans `SECTION_META` (`src/components/admin/section-meta.ts`)
+2. Ajouter son entrée dans `SECTION_META` (`src/components/admin/section-meta.ts`) — avec une
+   `family` prise dans `SECTION_FAMILIES` et une `desc` de **plus de 10 caractères**
 3. La section apparaît automatiquement dans `ADDABLE_SECTIONS`
+4. Lancer `npm run test:preflight` : `tests/preflight/section-meta.test.ts` vérifie la parité
+   **exacte** dans les deux sens entre l'union `Section`, `SECTION_META` et la table `lazy()` de
+   `SectionRenderer.tsx` (ni section sans description, ni entrée morte)
 
-**Sections documentées dans SECTION_META** : hero, cards, gallery, video, cta, faq, testimonials, team, stats, pricing, steps, timeline, accordion, tabs, table, map, newsletter, contactForm, html, markdown, banner, chart, logoCloud, comparison, featureComparison, title, content, blogList, blogPost, loginForm, registerForm, recoverPasswordForm, filters, gridLayout, searchPro, searchProStatic, news, member, socialFeed, eventList, productShowcase, breadcrumb, cookieConsent, hero-search, hero-parallax, features-glass, action-tiles, cta-card-grid, cta-newsletter, searchHeader, hero-tinted-overlay, expandable-actions.
+**Sections documentées dans SECTION_META** : la liste fait foi dans
+`src/components/admin/section-meta.ts` — **source unique**, à consulter plutôt qu'à recopier ici
+(toute énumération figée dans cette page dérive au premier ajout de section). Le **compte** de
+sections est, lui, verrouillé par le préflight ci-dessus dans `CLAUDE.md`,
+`doc/26-assistant-config.md` et la skill `config-assistant`.
 
 ---
 

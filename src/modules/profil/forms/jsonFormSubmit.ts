@@ -25,6 +25,13 @@ function defaultForType(type: string, declared: unknown): unknown {
   if (declared !== undefined) return declared;
   if (type === "array") return [];
   if (type === "boolean") return false;
+  // `object` : PAS de défaut "" — la création émet tout ce qui n'est pas `undefined`
+  // (`valuesToPayload`, omit-empty), donc un champ `hidden` typé object partait en `""` contre un
+  // contrat qui exige un objet, et l'AJV refusait la CRÉATION entière. Mesuré sur SSBE :
+  // `infoGeneral`/`similarLink` (organizations), `organizer`/`trainer` (session) — 4 forms cassés.
+  // `undefined` = clé omise au create ; à l'édition le seed vient de l'entité, et un vide retombe
+  // sur `clearValue` (effacement typé) comme avant.
+  if (type === "object") return undefined;
   return "";
 }
 

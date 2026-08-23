@@ -1,4 +1,4 @@
-import { CheckIcon, Loader2Icon, X as XIcon, Frown } from "lucide-react";
+import { CheckIcon, Loader2Icon, X as XIcon, Frown, Plus as PlusIcon } from "lucide-react";
 import { useId, useState, useEffect, ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,12 @@ interface SelectObjectProps {
   placeholder?: string;
   placeholderSearch?: string;
   multiple?: boolean;
+  /** Désactive le combobox (bouton natif `disabled` : souris ET clavier). */
+  disabled?: boolean;
+  /** Autorise une valeur ABSENTE de la liste : la saisie devient une proposition à ajouter. */
+  creatable?: boolean;
+  /** Libellé de la proposition d'ajout (défaut : `Ajouter « X »`). */
+  createLabel?: (query: string) => string;
   loadingIndicator?: ReactNode;
   emptyIndicator?: ReactNode;
   className?: string;
@@ -73,6 +79,9 @@ export function SelectObject({
   placeholder,
   placeholderSearch = "Search...",
   multiple = false,
+  disabled = false,
+  creatable = false,
+  createLabel = (q: string) => `Ajouter « ${q} »`,
   loadingIndicator = <Loader2Icon className="animate-spin" />,
   emptyIndicator = <Frown
     className="w-6 h-6 text-muted-foreground"
@@ -80,15 +89,24 @@ export function SelectObject({
   />,
   // Style props with defaults
   className = "w-full",
-  buttonClassName = "w-full h-auto py-2 text-left flex flex-wrap items-start gap-1 " +
+  // `min-h-9` : sans lui, un champ SANS sélection ET SANS placeholder n'a aucun contenu, et `h-auto`
+  // le réduit à ses seuls paddings — 18 px mesurés, contre 36-38 px pour les champs voisins. La
+  // hauteur ne doit pas dépendre de la présence d'un libellé d'invite.
+  buttonClassName = "w-full max-w-full min-w-0 overflow-hidden h-auto min-h-9 py-2 text-left flex flex-wrap items-start gap-1 " +
                     "border border-input rounded-md " +
                     "focus:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
   placeholderClassName = "text-muted-foreground truncate",
   pillContainerClassName = "flex flex-wrap items-start gap-1 w-full min-w-0",
-  pillClassName = "bg-primary rounded-md px-2 py-1 flex items-start space-x-1 break-words max-w-full",
+  pillClassName = "bg-primary rounded-md px-2 py-1 flex items-start space-x-1 break-words max-w-full min-w-0",
   pillLabelClassName = "font-medium text-primary-foreground truncate",
   pillTypeClassName = "text-xs text-muted",
-  pillRemoveClassName = "inline-flex items-center justify-center p-1 rounded cursor-pointer text-muted-foreground hover:bg-muted-foreground hover:text-foreground",
+  // Le bouton de retrait se pose SUR la pill (`bg-primary`), donc il se colore en
+  // `primary-foreground` comme son label — un `muted-foreground` (hérité des chips
+  // sur fond NEUTRE de `multiple-selector`) y est illisible. Pleine opacité et pas
+  // une variante atténuée : sur un `primary` sombre le blanc plein plafonne déjà
+  // vers 3:1, le seuil WCAG des éléments d'interface. L'affordance passe donc par
+  // le fond au survol, pas par un contraste dégradé au repos.
+  pillRemoveClassName = "inline-flex items-center justify-center p-1 rounded cursor-pointer transition-colors text-primary-foreground hover:bg-primary-foreground/25",
   listClassName = "max-h-60 overflow-auto w-full bg-popover text-popover-foreground",
   itemClassName = "flex items-center w-full space-x-2 py-2 px-3 hover:bg-muted-foreground hover:text-foreground",
   inputClassName = "w-full px-3 py-2",
@@ -149,6 +167,7 @@ export function SelectObject({
             aria-expanded={open}
             id={id}
             className={buttonClassName}
+            disabled={disabled}
           >
             <div className={pillContainerClassName}>
               {multiple ? (
@@ -159,7 +178,7 @@ export function SelectObject({
                     const type = opt?.type ?? (typeof v === "object" && v !== null && "type" in v ? String((v as Record<string, unknown>).type) : undefined);
                     return (
                       <div key={opt?.id ?? String(label)} className={pillClassName}>
-                        <div className="flex flex-col">
+                        <div className="flex flex-col min-w-0">
                           <span className={pillLabelClassName}>{label}</span>
                           {type && <span className={pillTypeClassName}>{type}</span>}
                         </div>
@@ -186,7 +205,7 @@ export function SelectObject({
                   const type = opt.type;
                   return (
                     <div className={pillClassName}>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col min-w-0">
                         <span className={pillLabelClassName}>{label}</span>
                         {type && <span className={pillTypeClassName}>{type}</span>}
                       </div>
@@ -207,7 +226,19 @@ export function SelectObject({
           </Button>
         </PopoverTrigger>
 
-        <PopoverContent side="bottom" align="start" className="p-0 w-[var(--radix-popover-trigger-width)]">
+        {/* `stopPropagation` sur wheel/touchmove : dans un Dialog, react-remove-scroll écoute
+            ces événements sur `document` (phase bubble) et `preventDefault` tout ce qui ne vient
+            pas de son sous-arbre DOM. Le contenu du Popover étant portalisé dans <body>, il est
+            vu comme « dehors » → molette et scroll tactile morts dans la liste. On coupe la
+            propagation avant `document` (React écoute sur le nœud du portal, donc avant lui) ;
+            le scroll natif de `CommandList` reprend. Hors Dialog, aucun effet. */}
+        <PopoverContent
+          side="bottom"
+          align="start"
+          className="p-0 w-(--radix-popover-trigger-width)"
+          onWheel={(e) => e.stopPropagation()}
+          onTouchMove={(e) => e.stopPropagation()}
+        >
           <Command shouldFilter={(arrayOptions?.length ?? 0) > 0} className="w-full">
             <CommandInput
               placeholder={placeholderSearch}
@@ -216,6 +247,21 @@ export function SelectObject({
               className={inputClassName}
             />
             <CommandList className={listClassName}>
+              {/* Proposition d'AJOUT : `value={search}` pour que cmdk ne la filtre jamais (il apparie sur
+                  `value`, et la recherche se contient elle-même). Masquée dès qu'une option existante
+                  porte déjà exactement ce libellé, pour ne pas proposer un doublon. */}
+              {creatable && search.trim() !== ""
+                && !options.some((o) => String(o.label).toLowerCase() === search.trim().toLowerCase()) && (
+                <CommandItem
+                  key="__creer__"
+                  value={search}
+                  onSelect={() => { toggleVal(search.trim()); setSearch(""); }}
+                  className={itemClassName}
+                >
+                  <PlusIcon className="h-4 w-4 flex-shrink-0" />
+                  <span className={itemLabelClassName}>{createLabel(search.trim())}</span>
+                </CommandItem>
+              )}
               {isLoading ? (
                 <div className="flex justify-center p-2">{loadingIndicator}</div>
               ) : options.length > 0 ? (
@@ -238,7 +284,7 @@ export function SelectObject({
                     </CommandItem>
                   );
                 })
-              ) : (
+              ) : creatable && search.trim() !== "" ? null : (
                 <CommandEmpty className="w-full h-12 flex items-center justify-center">
                   <p className="text-center text-lg leading-10">
                     {emptyIndicator}
