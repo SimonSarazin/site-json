@@ -29,6 +29,7 @@
 | Module auth (connexion/inscription/SSO) | [Module Auth](23-module-auth.md) |
 | Module notification (cloche + section) | [Module Notification](25-module-notification.md) |
 | Composants média (audio/galerie/fichiers) | [Media Components](33-media-components.md) |
+| Restreindre l'accès à une page (`page.auth`) | [Gardes de page](34-gardes-de-page.md) |
 | Module observatoire (dashboard déclaratif) | [Module Observatoire](27-module-observatoire.md) |
 | Module admin (back-office /admin config-driven) | [Module Admin](30-module-admin.md) |
 | Panneau d'administration (live edit) | [Admin Panel](24-admin-panel.md) |
@@ -43,4 +44,11 @@
 | Déploiement | [Docker](16-deploiement-docker.md) |
 | Palette Cmd+K (implémentée) | [Command Palette](17-module-command-palette.md) — module implémenté ; les sections 1-11 du doc restent l'annexe RFC/justification d'architecture |
 | 🚧 RFC : assistant config × costums | [Assistant config costum (RFC)](31-rfc-assistant-config-costum.md) — formulaires costum générés, config admin, cycle de vie sans re-publication |
+
+## Documents annexes (non numérotés)
+
+| Pour... | Lire... |
+|---------|---------|
+| Nommage & inventaire du système de formulaires (avant un refactor) | [Cartographie & formalisme des formulaires](cartographie-forms-formalisme.md) |
+| Doublons, mutualisation, code mort | [Cartographie des fonctions](cartographie-fonctions/RAPPORT.md) — artefact **généré** par `npm run map:functions` (+ `cartographie-fonctions/functions.json`) |
 

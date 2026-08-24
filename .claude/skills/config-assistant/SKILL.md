@@ -147,6 +147,9 @@ site à confirmer avec l'utilisateur — ne PAS l'imposer à une petite vitrine 
    `list.testimonial`/`list.resource` renseignés pour les presenters typés.
    Liste **hétérogène** (plusieurs familles dans la même grille) ⇒ `list.itemRules`
    + `baseParams.defaultFields` couvrant tous les champs testés par les `when`.
+   Disposition : `list.layout: "timeline"` (frise verticale à bulles-dates, carte
+   dédiée événement) remplace la grille — à coupler à `defaultSortBy {"startDate": -1}` ;
+   défaut CÔTÉ CODE = grille.
 5. **Sections raisonnées** : 8-18 types dont des « premium » (`data-observatory`,
    `agenda`, `hero-*`, `features-glass`) — pas 5 sections génériques.
 6. **Visibilité conditionnelle** (`condition`/`visibleIf`/`role`) là où le
@@ -286,6 +289,7 @@ Dispatch : `src/modules/search/components/Preview.tsx` ; conteneur = `card.detai
 | `news` | détail actualité | `preview.showDetailLink` |
 | `testimonial` | détail témoignage (leaf `PreviewTestimonialBubble`) | bloc `list.testimonial` |
 | `resource` | détail ressource (leaf `PreviewResourceCard`) | bloc `list.resource` |
+| `structure` | fiche détail organisation (coordonnées, carte, docs, bouton Éditer) | annuaires de structures |
 
 ⚠ **Une option de `card`/`preview` n'a d'effet que sur CERTAINS types** — posée
 ailleurs, elle est ignorée en silence. `config:schema section:searchPro` imprime
@@ -353,7 +357,7 @@ l'ordre des règles et la présence des contrats. Exemple vivant :
 | `aac` | section `aac` (Appel à Communs — socle : aperçu config résolue), routes `/aac/:formId` | `props.formId` (form parent `type:aap,aapType:aac`) | CoForm/AAP défini côté backend (form + aapConfig) |
 | `cagnotte` | sections `actions`/`finance`/`*-summary` | `idProjet` | projet + Stripe/HelloAsso |
 | `profil` | `/profil/:slug`, section `member` | `config.profiles` (tabs, editModal) | types d'entités |
-| `auth` | `loginForm`/`registerForm`/`recoverPasswordForm`, `<AuthMenu>` | `config.auth`, `header.utilities.auth` | comptes/SSO Communecter |
+| `auth` | `loginForm`/`registerForm`/`recoverPasswordForm`, `<AuthMenu>` (dont entrée « Kanban » plateforme via `auth.menu.kanban`, admins du costum) | `config.auth`, `header.utilities.auth` | comptes/SSO Communecter |
 | `notification` | cloche header, section `notifications` | `header.utilities.notifications` | notifications backend |
 | `commandPalette` | palette ⌘K | `config.commandPalette`, `header.utilities.search` | — |
 | `ampli` | routes ampli | `config.ampli` | campagne ampli |

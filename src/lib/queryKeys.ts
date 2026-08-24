@@ -33,6 +33,41 @@ export { NEWS_QUERY_KEYS } from "@/modules/news/constants/queryKeys";
 export { PROFIL_QUERY_KEYS } from "@/modules/profil/constants/queryKeys";
 export { SEARCH_QUERY_KEYS } from "@/modules/search/constants/queryKeys";
 
+import { AGENDA_QUERY_KEYS } from "@/modules/agenda/constants/queryKeys";
+import { BLOG_QUERY_KEYS } from "@/modules/blog/constants/queryKeys";
+import { SEARCH_QUERY_KEYS as SEARCH_KEYS } from "@/modules/search/constants/queryKeys";
+import type { QueryKey } from "@tanstack/react-query";
+
+/**
+ * Préfixes des surfaces PUBLIQUES qu'une mutation de VISIBILITÉ doit rafraîchir : listes de
+ * recherche (annuaire/carte/compteurs), agenda (calendrier + liste), fil blog.
+ *
+ * POURQUOI ici, et pourquoi une fonction : ces préfixes sont FIXES dans le code
+ * (`SearchProStatic.tsx:352` pose `"searchCostumStatic"` en dur, l'agenda `["agenda", …]`), mais ils
+ * appartiennent à TROIS modules. Chaque chemin de mutation en a redécouvert la nécessité seul :
+ *  - création standard → `SEARCH_LISTS_INVALIDATION` (les 5 préfixes search), 2026 ;
+ *  - formulaires costum → `invalidate:event` / `invalidate:blog` ajoutent agenda et fil, ailleurs ;
+ *  - actions ADMIN (valider, référencer, supprimer) → n'invalidaient QUE `admin-*`, donc une fiche
+ *    validée depuis `/admin` restait périmée sur la page publique jusqu'au rechargement.
+ * Une liste composée à un seul endroit évite la quatrième redécouverte.
+ *
+ * Le fil blog est scopé par slug ; `costumSlug` absent → il est simplement omis.
+ */
+export function publicSurfaceKeys(costumSlug?: string): QueryKey[] {
+  return [
+    SEARCH_KEYS.RESULTS_PREFIX("searchCostumStatic"),
+    SEARCH_KEYS.RESULTS_PREFIX("searchCostumStaticMapAll"),
+    SEARCH_KEYS.RESULTS_PREFIX("searchCostum"),
+    SEARCH_KEYS.RESULTS_PREFIX("searchCostumMapAll"),
+    SEARCH_KEYS.RESULTS_PREFIX("cardCountCT"),
+    AGENDA_QUERY_KEYS.CALENDAR_PREFIX(),
+    AGENDA_QUERY_KEYS.LIST_PREFIX(),
+    // `FEED_PREFIX` renvoie la CHAÎNE `blog:<slug>` — c'est un `queryKeyPrefix` de `useSearchQuery`,
+    // donc il se transforme en clé par la même fonction que les autres.
+    ...(costumSlug ? [SEARCH_KEYS.RESULTS_PREFIX(BLOG_QUERY_KEYS.FEED_PREFIX(costumSlug))] : []),
+  ];
+}
+
 // Re-export des types associés
 export type { AacQueryKeyType } from "@/modules/aac/constants/queryKeys";
 export type { AmpliQueryKeyType } from "@/modules/ampli/constants/queryKeys";

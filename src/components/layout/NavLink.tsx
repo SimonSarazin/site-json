@@ -2,12 +2,14 @@ import { Link } from "react-router";
 import { forwardRef } from "react";
 import type { AriaAttributes, HTMLAttributes, MouseEventHandler, ReactNode, Ref } from "react";
 
+import { classifyHref } from "@/lib/linkKind";
+
 type NavLinkProps = {
   to?: string | null;
   className?: string;
   onClick?: MouseEventHandler<HTMLElement>;
   ariaCurrent?: AriaAttributes["aria-current"];
-  /** Force le rendu en lien externe (sinon déduit de `to.startsWith("http")`). */
+  /** Force le rendu en lien externe (sinon déduit par `classifyHref`). */
   external?: boolean;
   children: ReactNode;
 } & Omit<HTMLAttributes<HTMLElement>, "className" | "onClick" | "children">;
@@ -42,7 +44,13 @@ const NavLink = forwardRef<HTMLAnchorElement, NavLinkProps>(function NavLink(
   { to, className, onClick, ariaCurrent, external, children, ...rest },
   ref,
 ) {
-  if (!to || to === "#") {
+  // Contrat tranché par `classifyHref` (src/lib/linkKind.ts) — partagé avec CTASection et
+  // CardsSection, qui rendaient les mêmes liens de config avec des règles divergentes.
+  const kind = classifyHref(to);
+
+  // `!to` d'abord : la garde de vérité narrow `to` en `string` pour la suite (classifyHref,
+  // fonction, ne le fait pas). Les deux conditions couvrent exactement le même cas.
+  if (!to || kind === "inert") {
     // Ref transmise aussi sur le placeholder : un `DropdownMenuItem asChild`
     // (Radix Slot) exige la ref pour le focus/typeahead même sur un libellé
     // non navigable (enfant de menu sans `path`/`href`).
@@ -54,7 +62,7 @@ const NavLink = forwardRef<HTMLAnchorElement, NavLinkProps>(function NavLink(
   }
 
   // mailto: / tel: / sms: → ancre simple (handler OS), jamais un nouvel onglet.
-  if (/^(mailto:|tel:|sms:)/i.test(to)) {
+  if (kind === "protocol") {
     return (
       <a ref={ref} href={to} className={className} onClick={onClick} {...rest}>
         {children}
@@ -62,7 +70,7 @@ const NavLink = forwardRef<HTMLAnchorElement, NavLinkProps>(function NavLink(
     );
   }
 
-  if (external ?? to.startsWith("http")) {
+  if (external ?? kind === "external") {
     return (
       <a
         ref={ref}

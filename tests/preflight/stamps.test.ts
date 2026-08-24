@@ -27,11 +27,12 @@ interface StampDecl {
   op?: string;
   on?: string;
   channel?: string;
-  _comment?: string;
   [k: string]: unknown;
 }
 
-const CLES = new Set(["field", "value", "op", "on", "channel", "_comment"]);
+// `_comment` n'est PAS toléré : cf. tests/preflight/no-config-comments.test.ts (clé non
+// schématisée, rabotée ou conservée selon l'endroit où elle tombe).
+const CLES = new Set(["field", "value", "op", "on", "channel"]);
 const OPS = new Set(["set", "fillIfEmpty", "append"]);
 const ONS = new Set(["add", "edit", "both"]);
 const CHANNELS = new Set(["payload", "pathValue"]);
@@ -93,6 +94,29 @@ describe("préflight mutation.stamps", () => {
 
   it("les stamps du parc sont bien là où on les attend (sentinelle d'inventaire)", () => {
     const parc = SITES.flatMap(({ site, cfg }) => stampsDe(cfg).map(({ formId, stamps }) => `${site.replace("config.prod.", "").replace(".json", "")}/${formId}:${stamps.length}`));
-    expect(parc).toEqual(["institut-bleu/institut-bleu-acteur:2", "tiers-lieux/tiers-lieux:5"]);
+    expect(parc).toEqual([
+      "institut-bleu/institut-bleu-acteur:2",
+      // MSS structure n'a PLUS de stamp : `statusActor` est déclaré au dynForm du costum
+      // `associationEkilibre` depuis la copie du chantier A (plan mss-la-tampon) — l'inject
+      // payload « En cours » passe la whitelist, le stamp pathValue de contournement a été retiré.
+      // RELIEF dérive de la config tiers-lieux, dont il reprend le form et ses 5 stamps.
+      "relief/tiers-lieux:5",
+      // Référencement régional posé à la création : la fiche appartient au costum COMMUNAL
+      // (`source.key`) et est RÉFÉRENCÉE par `equipementsSportifs974`, qui la voit via la
+      // traduction serveur `sourceKey` → `$or[source.keys, reference.costum]`.
+      "saint-paul-sport/equipements-sportifs:2",
+      // Idem pour les ARTICLES du site communal. Chaque form pose DEUX stamps : le référencement
+      // lui-même (`reference.costum`) et l'ANNOTATION de sous-type
+      // (`reference.costumTypes.<slug régional>`) — le second champ que pose l'action de
+      // référencement de l'admin, et qui classe une fiche référencée (elle n'a aucun discriminant
+      // natif du costum d'accueil). Sans lui, un passage du régional à `costumSubType` exigerait un
+      // backfill de toutes les fiches.
+      "saint-paul-sport/saintpaul-article:2",
+      // Idem pour les ÉVÉNEMENTS. L'annotation y est moins portante (la collection `events` n'est
+      // pas polymorphe, contrairement à `poi` qui porte équipements ET articles) : elle est posée
+      // pour l'uniformité des trois forms du site et pour éviter un backfill ultérieur.
+      "saint-paul-sport/saintpaul-event:2",
+      "tiers-lieux/tiers-lieux:5",
+    ]);
   });
 });

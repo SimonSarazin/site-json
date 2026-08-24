@@ -66,7 +66,7 @@ const LazySections: {
   "action-tiles": lazy(() => import("./ActionTiles")),
   "cta-card-grid": lazy(() => import("./CtaCardGrid")),
   "cta-newsletter": lazy(() => import("./CtaNewsletter")),
-  "searchHeader": lazy(() => import("./TitleWithFiltersRezoLaMer")),
+  searchHeader: lazy(() => import("@/modules/search/sections/SearchHeaderSection")),
   "expandable-actions": lazy(() => import("./ExpandableActions")),
   "hero-tinted-overlay": lazy(() => import("./HeroTintedOverlay")),
   "hero-entity-banner": lazy(() => import("./HeroEntityBanner")),

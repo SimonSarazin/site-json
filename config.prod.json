@@ -1091,8 +1091,6 @@
               "fr": "Envoyer le message",
               "en": "Send message"
             },
-            "action": "/api/contact",
-            "method": "POST",
             "successMessage": {
               "fr": "Votre message a été envoyé avec succès !",
               "en": "Your message has been sent successfully!"
@@ -2249,9 +2247,6 @@
       "auth": {
         "required": true
       },
-      "middleware": [
-        "auth-required"
-      ],
       "sections": [
         {
           "type": "hero",
@@ -2292,14 +2287,8 @@
       "layout": "sidebar-left",
       "auth": {
         "required": true,
-        "roles": [
-          "admin"
-        ]
+        "access": "superAdmin"
       },
-      "middleware": [
-        "auth-required",
-        "admin-only"
-      ],
       "sections": [
         {
           "type": "hero",

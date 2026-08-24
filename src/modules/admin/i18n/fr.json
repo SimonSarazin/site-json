@@ -37,6 +37,8 @@
     "reference": "Référencer",
     "detach": "Détacher",
     "unreference": "Retirer la référence",
+    "feature": "Mettre à la une",
+    "unfeature": "Retirer de la une",
     "delete": "Supprimer",
     "empty": "Aucun élément.",
     "searchFailed": "La recherche a échoué : {{message}}.",
@@ -64,7 +66,12 @@
     "deleteTitle": "Supprimer « {{label}} » ?",
     "selectAll": "Tout sélectionner (lignes chargées)",
     "selectRow": "Sélectionner {{label}}",
-    "rowActions": "Actions pour {{label}}"
+    "rowActions": "Actions pour {{label}}",
+    "setStatus": "Marquer : {{state}}",
+    "statusUnset": "Non renseigné",
+    "statusSuccess": "Statut mis à jour : {{state}}",
+    "statusError": "Échec de la mise à jour du statut",
+    "bulkTransfer": "Migrer la propriété"
   },
   "AdminExportSection": {
     "title": "Export CSV",
@@ -174,6 +181,12 @@
     "classified": "Sous-type enregistré",
     "referencedUnmoderated": "Référencé, mais la modération n'a pas pu être posée"
   },
+  "useSetExclusiveFlag": {
+    "featured": "Mis à la une",
+    "unfeatured": "Retiré de la une",
+    "error": "Action impossible",
+    "partialUnset": "La une est posée, mais {{count}} ancienne(s) mise(s) en avant n'ont pas pu être retirées — vérifier le tableau."
+  },
   "AdminInvitation": {
     "error": "Erreur",
     "noContext": "Aucun élément à administrer.",
@@ -191,5 +204,76 @@
     "relaunch": "Relancer",
     "relaunchSent": "L'invitation a été renvoyée.",
     "relaunchFailed": "Impossible de relancer l'invitation."
+  },
+  "DashboardKpis": {
+    "trendMonthly": "+{{added}} ce mois-ci · {{delta}} vs mois précédent",
+    "membersPending": "en attente de validation",
+    "analyticsPending": "Mesure d'audience à raccorder (outil RGPD à venir)"
+  },
+  "AdminOwnershipMigration": {
+    "title": "Migration d'appropriation",
+    "intro": "Reprendre la propriété des fiches du costum « {{from}} » pour ce site : elles deviennent administrées ici, le cédant les conserve en référencement. L'analyse ne modifie rien ; l'application est journalisée et annulable.",
+    "badConfig": "Configuration de la section invalide (props from/selectors).",
+    "noContext": "Aucun élément à administrer.",
+    "error": "Action impossible",
+    "loading": "Chargement…",
+    "collection": "Collection",
+    "selector": "Périmètre",
+    "analyze": "Analyser",
+    "analyzing": "Analyse…",
+    "reportTitle": "Analyse : {{count}} fiche(s) sélectionnée(s)",
+    "appliedTitle": "Migration appliquée",
+    "apply": "Migrer {{count}} fiche(s)",
+    "applied": "Migration appliquée",
+    "subType": "Sous-type",
+    "schema": "Schéma costum : {{fromFields}} champ(s) déclarés côté cédant, {{toFields}} côté site",
+    "schemaMissing": "champs absents côté site",
+    "control": "Contrôle",
+    "count": "Nb",
+    "concerned": "Fiches concernées",
+    "sample": "Exemple avant / après : {{name}}",
+    "migrated": "Migrées",
+    "referenced": "Référencements posés",
+    "annotated": "Annotées",
+    "verification": "Vérification : {{ownedByTo}} au site · {{stillOwnedByFrom}} encore au cédant",
+    "downloadSnapshot": "Télécharger le snapshot (JSON)",
+    "rollback": "Annuler la migration",
+    "rolledBack": "Migration annulée — fiches restaurées",
+    "rolledBackPartial": "Rollback partiel : {{restored}} restaurée(s), {{skipped}} passée(s)",
+    "historyTitle": "Historique des migrations",
+    "historyEmpty": "Aucune migration pour ce site.",
+    "selected": "fiches",
+    "confirmApplyTitle": "Appliquer la migration ?",
+    "confirmApplyDesc": "{{count}} fiche(s) vont passer sous la propriété de ce site ; « {{from}} » les conservera en référencement. Un snapshot est journalisé avant écriture — l'opération reste annulable.",
+    "confirmApply": "Migrer",
+    "confirmRollbackTitle": "Annuler cette migration ?",
+    "confirmRollbackDesc": "Les fiches encore en état post-migration retrouveront leur propriétaire et leurs références d'origine. Les fiches re-transférées ou supprimées depuis seront passées.",
+    "confirmRollback": "Annuler la migration",
+    "status": {
+      "applying": "incomplète",
+      "applied": "appliquée",
+      "rolledback": "annulée"
+    },
+    "controls": {
+      "sourceKeysNotArray": "Rattachements illisibles (source.keys corrompu)",
+      "sourceKeyMismatch": "Provenance divergente (source.key inattendu)",
+      "referenceNotWritable": "Références inécrivables (forme corrompue)",
+      "multipleSourceKeys": "Rattachements multiples (source.keys > 1)",
+      "subTypeIndeterminable": "Sous-type indéterminable (types hétérogènes)",
+      "schemaMissingFields": "Champs costum absents côté site",
+      "idsMissing": "Fiches introuvables",
+      "selectionTooLarge": "Sélection au-delà du plafond (5000)",
+      "alreadyReferenced": "Références préexistantes (complétées, jamais écrasées)",
+      "pendingModeration": "Fiches en attente de modération",
+      "selfReference": "Auto-référencement parasite (nettoyé à l'application)"
+    },
+    "optionSubType": "Sous-type (annotation)",
+    "optionSubTypeHint": "« auto » = déduit du type si homogène · vide = aucune annotation",
+    "optionKeysPolicy": "Politique source.keys",
+    "keysPolicyStrict": "strict — la fiche n'appartient plus qu'à ce site",
+    "keysPolicyReplace": "replace — préserve les clés secondaires (ex. ESS974)",
+    "optionsChanged": "Options modifiées : relancez l'analyse pour pouvoir appliquer.",
+    "selectionIds": "{{count}} fiche(s) cochée(s)",
+    "subTypeSuggestions": "Types constatés dans la sélection :"
   }
 }

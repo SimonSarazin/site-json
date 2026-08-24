@@ -20,6 +20,9 @@ import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
 import { MultiRadioField } from "./MultiRadioField";
 import { EvaluationField } from "./EvaluationField";
 import { CommonTableField } from "./CommonTableField";
+import { CategorizedCheckboxField } from "./CategorizedCheckboxField";
+import { TimeSlotsField } from "./TimeSlotsField";
+import { DynamicFieldsField } from "./DynamicFieldsField";
 import { MultiEvalChartDialog } from "./MultiEvalChartDialog";
 import { DraftRecoveryBanner } from "./DraftRecoveryBanner";
 import { ErrorSummary } from "./ErrorSummary";
@@ -34,7 +37,7 @@ import { useConditionalFields } from "../hooks/useConditionalFields";
 import { useUnsavedChangesWarning } from "../hooks/useUnsavedChangesWarning";
 import { getStepHasMultiEval, getOriginalFieldKey } from "../utils/formParser";
 import { scrollToFieldByName } from "../utils/helpers";
-import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, MultiRadioValue, EvaluationValue, CommonTableValue, FinderValue, SimpleTableValue, ExistingAnswerMeta, TagsValue } from "../types";
+import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, MultiRadioValue, EvaluationValue, CommonTableValue, CategorizedCheckboxValue, FinderValue, SimpleTableValue, ExistingAnswerMeta, TagsValue } from "../types";
 import type { CoFormSubmitMode, CoFormVariant } from "../schema";
 
 interface MultiStepCoFormProps {
@@ -543,6 +546,62 @@ function MultiStepCoFormContent({
                           onChange={controllerField.onChange}
                           formId={formId}
                           readOnly={isLocked}
+                        />
+                      )}
+                    />
+                  );
+
+                case "categorizedCheckbox":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={form.control}
+                      render={({ field: controllerField }) => (
+                        <CategorizedCheckboxField
+                          field={field}
+                          errors={form.formState.errors}
+                          value={controllerField.value as CategorizedCheckboxValue}
+                          onChange={controllerField.onChange}
+                          readOnly={isLocked}
+                        />
+                      )}
+                    />
+                  );
+
+                case "timeSlots":
+                  // Câblage identique à DynamicCoForm — le trou multi-step rendait « type de champ
+                  // inconnu » sur un form multi-étapes portant ces inputs (cas réel : form 13
+                  // étapes, dynamicFields à l'étape 9). NB : ces 2 composants n'ont pas (encore)
+                  // de prop readOnly — même limite que côté DynamicCoForm.
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={form.control}
+                      render={({ field: controllerField }) => (
+                        <TimeSlotsField
+                          field={field}
+                          errors={form.formState.errors}
+                          value={controllerField.value}
+                          onChange={controllerField.onChange}
+                        />
+                      )}
+                    />
+                  );
+
+                case "dynamicFields":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={form.control}
+                      render={({ field: controllerField }) => (
+                        <DynamicFieldsField
+                          field={field}
+                          errors={form.formState.errors}
+                          value={controllerField.value}
+                          onChange={controllerField.onChange}
                         />
                       )}
                     />

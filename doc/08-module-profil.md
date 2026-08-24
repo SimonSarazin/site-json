@@ -172,10 +172,12 @@ src/modules/profil/
 │       ├── costumFormRegistry.ts   // Table runtime id→EntityModalSpec (+ registerCostumForm zod)
 │       ├── registerCostumForms.ts  // Loader : lit window.__CONFIG__.costumForms
 │       ├── costumFormSchema.zod.ts // Validation du document costum
-│       ├── sharedCodecs.ts         // address/openingHours/social + omitEmpty/eventDate/eventTimeZone + codecs paramétrés
+│       ├── sharedCodecs.ts         // address/openingHours/social/telephone + omitEmpty/eventDate/eventTimeZone + codecs paramétrés
 │       ├── sharedFns.ts            // image:profilUrl, cleanValues, invalidate:standard/blog/event
-│       ├── tiers-lieux/            // schema.ts (LA source) + fns.ts + spec.ts
-│       └── equipements-sportifs/   // schema.ts + fns.ts + spec.ts
+│       ├── __fixtures__/           // configCostum.ts : charge un document costum depuis config.prod.*.json (tests)
+│       ├── tiers-lieux/            // fns.ts (clés de code) + tests — le DOCUMENT vit dans config.costumForms
+│       ├── equipements-sportifs/   // fns.ts (clés de code) + tests
+│       └── structure/              // fns.ts seul (structure:tagsFromThematic)
 ├── hooks/
 │   ├── mutationUtils.ts            // Utilitaires de transformation pour mutations
 │   ├── submitEntityEdit.ts         // Cœur d'ÉDITION (patch + save), réutilisé par useEntityMutation
@@ -1015,9 +1017,9 @@ Le cas `"organizations"` remonte les **organisations partenaires** : les entité
 
 ---
 
-## Formulaires costum (tiers-lieu & équipement sportif)
+## Formulaires costum
 
-> **Refonte config-driven (branche `feat/costum-scope`).** Les deux formulaires costum — création de
+> **Refonte config-driven (branche `feat/costum-scope`).** Les formulaires costum historiques — création de
 > **tiers-lieu** et de **POI équipement sportif** — ne reposent plus sur des composants ni des schémas Zod
 > dédiés (`AddTiersLieuxModal`/`TiersLieuxForm`/`EditTiersLieuxModal`, `tiersLieuxSchema`, `tiersLieuxMapping`,
 > les hooks `useAddTiersLieu`/`useEditTiersLieu`) : tout cela a été **supprimé** de ce module. Chaque costum est
@@ -1030,14 +1032,23 @@ Le cas `"organizations"` remonte les **organisations partenaires** : les entité
 ### Où vit un costum
 
 ```
-src/modules/profil/forms/costum/<id>/
-  schema.ts   # le document CostumFormSchema (champs + widgets + sections + chrome + i18n inline) — LA source
-  fns.ts      # code irréductible registré PAR CLÉ : payloadFn, scope, defaults structurés, slots, options dynamiques
-  spec.ts     # EntityModalSpec = compileCostumSchema(schema), s'auto-enregistre dans la table runtime costumFormRegistry
+config.costumForms.<id>                     # LE document CostumFormSchema (champs + widgets + sections + chrome
+                                            #   + i18n inline) — LA source, en JSON, par déploiement
+src/modules/profil/forms/costum/<id>/fns.ts # OPTIONNEL : code irréductible registré PAR CLÉ (scope, defaults
+                                            #   structurés, slots, options dynamiques, transforms)
 ```
 
-`<id>` ∈ `{ tiers-lieux, equipements-sportifs }`. Ajouter un 3ᵉ costum = copier un dossier — ou poser le document
-directement dans `config.costumForms` **sans aucun fichier TS** — cf. [formEngine § recette d'ajout](28-module-formengine.md).
+Ni `schema.ts` ni `descriptor.ts` ni `spec.ts` : ils ont été **supprimés** parce qu'ils dupliquaient la config.
+Le document n'est compilé qu'au boot par `registerCostumForms.ts` (→ `registerCostumForm`), et en test par la
+fixture `forms/costum/__fixtures__/configCostum.ts`, qui le relit depuis le vrai `config.prod.*.json`.
+
+Le parc porte **23 déclarations `costumForms` (21 ids uniques) sur 9 `config.prod.*.json`** (`tiers-lieux` et
+`equipements-sportifs` sont déclarés par deux sites chacun). Trois seulement ont un dossier TS —
+`equipements-sportifs`, `tiers-lieux`, `structure`, un `fns.ts` chacun, tous importés par
+`forms/registerSpecFns.ts` ; les 18 autres sont **0 code**. (La table `CONFIG_FILE` de
+`__fixtures__/configCostum.ts` n'en résout que 5 par id : c'est le jeu des tests, pas l'inventaire du parc.)
+Ajouter un costum = poser le document dans `config.costumForms` — cf.
+[formEngine § recette d'ajout](28-module-formengine.md).
 
 ### Garde d'authentification des modales d'ajout
 
@@ -1079,15 +1090,30 @@ ne produit plus de cul-de-sac.
 ### Logique métier irréductible (registrée par clé)
 
 Le document ne porte que des **clés string** ; le code correspondant est enregistré dans `fns.ts` (pattern
-`registerPayloadFn`/`registerScopeFn`/`registerOptions`/slots) :
+`registerScopeFn`/`registerDefaultsFn`/`registerOptions`/`registerTransform`/slots) :
 
-- **tiers-lieu** — `tl:payload` : merge des `tags` costum (`config.costum.mainTag`) via `Set`, sans dédoublonner
-  ni écraser les tags existants — un seul `organization.save()`, l'image `profil_avatar` routée dans le même
-  aller-retour. Codec du widget `openingHours` (`openingHours:read/write`, jours `Mo…Su` schema.org).
-  `enumFrom:"tl:years"` : les années d'ouverture sont calculées au runtime (et non figées dans le JSON).
-  `buildTiersLieuxPayload`/`getDefaultTiersLieuxValues` survivent ici (registrés), et non plus comme util séparé.
+- **tiers-lieu** — clés réellement registrées : `tl:video0`/`tl:videoWrite` (transforms), `tl:years`
+  (`enumFrom` : les années d'ouverture sont calculées au runtime, courante+5 → 1900, et non figées dans le
+  JSON), `tl:emptyDefaults`, `tl:scope`. **`tl:payload` a été SUPPRIMÉ** (chantier stamps) : le payload passe
+  par le pipeline générique et le merge des `tags` costum est devenu déclaratif dans la config
+  (`mutation.stamps`, `append` `$costum.mainTag` `on:"both"` + `$costum.compagnon` en add seul — cf.
+  [formEngine § `mutation.stamps`](28-module-formengine.md)). `getDefaultTiersLieuxValues` reste registré ;
+  `buildTiersLieuxPayload` reste exporté mais **n'est plus registré** — il ne sert que d'ORACLE aux tests de
+  parité. Codec du widget `openingHours` (`openingHours:read/write`, jours `Mo…Su` schema.org).
 - **équipement sportif** — `poi:scope` (création scopée `me.costum(slug)`), `poi:emptyDefaults` (défauts
-  structurés), slots `parentInfo`/`poiDoublons`, `image:profilUrl`, nettoyage des URLs vides.
+  structurés), slots `slot:parentInfo`/`slot:poiDoublons`, `image:profilUrl`, nettoyage des URLs vides.
+- **structure** (MSS Le Tampon) — `structure:tagsFromThematic` seul : le champ serveur `tags` porte des libellés
+  COURTS quand `thematic` porte les libellés LONGS saisis. Un transform de CHAMP ne reçoit pas de `params`
+  (seuls les `serializeGroups` en ont) → la table de correspondance ne peut pas vivre dans le JSON. Le write
+  MERGE (courants ∖ domaine) ∪ projection(thematic) : les tags ÉTRANGERS au domaine (ex. le marqueur « mss »)
+  sont préservés — la version précédente, qui remplaçait `tags`, les effaçait à chaque ouvrir-sauver.
+
+**Codec de groupe `telephone` (`sharedCodecs.ts`).** Le form saisit UNE chaîne, le serveur stocke
+`{mobile:[…], fixe:[…]}`. Le codec est un `serializeGroup` (patron `address`) avec deux **membres cachés
+porteurs** : `_telSlot` (la clé d'origine — la réécriture retourne dans le MÊME emplacement) et `_telRest`
+(les autres clés, en JSON) ; les numéros multiples sont joints par `", "` en lecture et re-splittés en écriture.
+C'est ce qui rend l'aller-retour LOSSLESS quand le write ne reçoit pas le `serverData` : la version champ-plat
+précédente (`write: {mobile:[v]}`) migrait un `fixe` vers `mobile` et tronquait les numéros multiples au premier.
 
 **Invalidations partagées (`sharedFns.ts`).** Trois clés d'invalidation registrées, toutes paramétrées par
 `userList`/`searchKeys` : `invalidate:standard` (userList parent/me en création + about-par-slug en édition +
@@ -1109,9 +1135,20 @@ navigateur si non fourni). Le form embarque un champ DocumentUpload **audio** av
 Les anciens hooks par entité (`useAddTiersLieu`, `useEditTiersLieu`, `useAddPoi`, `useUpdatePoi`) sont remplacés
 par le couple **`runEntityMutation` (cœur pur, testable) + `useEntityMutation` (hook React)**
 (`src/modules/profil/hooks/useEntityMutation.tsx`) : il construit le payload via le pipeline READ/WRITE, exécute
-le `payloadFn` registré (ex. `tl:payload`), crée (`scope.X(payload).save()`) ou édite (`submitEntityEdit`),
-invalide React Query puis navigue. La byte-parité des defaults/payloads est figée par
-`tiers-lieux.configDriven.test`, `costum/*/fns.test.ts`, `costum/*/spec.test.ts` et `useEntityMutation.test.ts`.
+le `payloadFn` registré s'il y en a un (plus aucun costum n'en registre — le pipeline générique suffit), crée
+(`scope.X(payload).save()`) ou édite (`submitEntityEdit`), invalide React Query puis navigue. La byte-parité des
+defaults/payloads est figée par `tiers-lieux.configDriven.test`, `costum/*/fns.test.ts`, `costum/*/spec.test.ts`
+et `useEntityMutation.test.ts`.
+
+**`schemaCostumSlug` — le pendant à l'ÉDITION du `costumSlug` de création.** En mode edit, `resolveModalSpec`
+pose `schemaCostumSlug = descriptor.costumSlug` (pris sur le DESCRIPTEUR, pas sur `spec.scope`, qui décrit la
+cible de CRÉATION), et `runEntityMutation` appelle `pinSchemaCostumScope(target, schemaCostumSlug)` —
+`entity.setCostumScope(slug, { pinSchema: true })` — **avant** d'écrire le draft. Sans `pinSchema`, c'est la
+PROVENANCE de l'entité (`source.key`) qui gouverne le schéma d'écriture : éditer une fiche dont la provenance
+diffère du site fait rejeter ses champs costum (`[DraftProxy] Le champ "x" n'est pas autorisé`) alors que la
+création, elle, passait par `me.costum(slug)`. ⚠ Un `costumForm` sans `costumSlug` casse donc l'édition — en
+silence côté config. Gardes : `useEntityMutation.test.ts` (§ « EDIT costum : épingle du schéma ») et le préflight
+`tests/preflight/costum-form-slug.test.ts`.
 
 ---
 
@@ -1160,7 +1197,7 @@ Le système d'actions est **config-driven** : un tableau de configuration décla
 > existante (follow, join, leave, friend…) via la factory `createEntityMutation` (`actions/mutations/`). La
 > **création / édition** d'entités (citoyen, orga, projet, event, POI, costums) passe par un système distinct,
 > `useEntityMutation` (`hooks/useEntityMutation.tsx`) piloté par les descripteurs/specs — cf.
-> [Formulaires costum](#formulaires-costum-tiers-lieu--équipement-sportif) et
+> [Formulaires costum](#formulaires-costum) et
 > [Module formEngine](28-module-formengine.md).
 
 ### Architecture
@@ -1262,8 +1299,8 @@ const editModalRegistry: Record<string, () => Promise<{ default: ComponentType<E
 **Résolution dynamique des costums (`costumEditThunk`)** — les modales costum ne sont **plus hardcodées**. Un nom
 `edit-<id>` (ex. `edit-tiers-lieux`, `edit-equipements-sportifs`) est résolu au vol : le thunk extrait `<id>`,
 importe `EntityFormModal` + le loader `registerCostumForms`, récupère la spec via `getCostumModalSpec(id)`
-(**table runtime `costumFormRegistry`**, alimentée par les `spec.ts` auto-enregistrés *et* par
-`config.costumForms`), puis rend `<EntityFormModal spec=… mode="edit" entity=… />`. Même schéma côté création
+(**table runtime `costumFormRegistry`**, alimentée UNIQUEMENT par les documents de `config.costumForms` lus au
+boot), puis rend `<EntityFormModal spec=… mode="edit" entity=… />`. Même schéma côté création
 dans `components/add/ModalRegistry.tsx` (`costumModalThunk`, noms `add-<id>`). `ensureLazyEditModal` essaie
 d'abord le registry statique, puis `costumEditThunk` en repli. Mécanique détaillée :
 [Module formEngine § le loader](28-module-formengine.md).
@@ -1429,16 +1466,18 @@ réutilisés par les widgets / slots costum.
 > **Costum config-driven.** L'ancien couple `AddPoiEquipementModal` + `PoiEquipementForm` (wizard
 > react-hook-form) et le module `components/add/poiEquipement.ts` (constantes, helpers de coercion,
 > `createEmptyDefaults`, `addPoiSchema`, hooks `useAddPoi`/`useUpdatePoi`) ont été **supprimés**. L'équipement
-> sportif est maintenant un document `CostumFormSchema` sous
-> `src/modules/profil/forms/costum/equipements-sportifs/` (`schema.ts` + `fns.ts` + `spec.ts`), rendu par la
-> modale générique `EntityFormModal` — cf. [Formulaires costum](#formulaires-costum-tiers-lieu--équipement-sportif)
+> sportif est maintenant un document `CostumFormSchema` posé dans
+> `costumForms["equipements-sportifs"]` (`config.prod.equipements-Sportifs.json`) — son seul fichier TS est
+> `forms/costum/equipements-sportifs/fns.ts` —, rendu par la
+> modale générique `EntityFormModal` — cf. [Formulaires costum](#formulaires-costum)
 > et [Module formEngine](28-module-formengine.md). Cette section ne décrit que les parties **spécifiques au
 > domaine équipement** qui ont survécu.
 
 ### Câblage modale
 
 Le wizard 4 étapes (`general` / `legal` / `structure` / `usage`) et tous ses champs (~50 : `equip_*`, `inst_*`,
-`aps_name`, accessibilité PMR / PSHS…) sont déclarés **comme données** dans `equipements-sportifs/schema.ts`. La
+`aps_name`, accessibilité PMR / PSHS…) sont déclarés **comme données** dans le document de config
+`costumForms["equipements-sportifs"]`. La
 modale est résolue par la table runtime via les noms `add-equipements-sportifs` / `edit-equipements-sportifs`
 (`costumModalThunk`/`costumEditThunk`, cf. [EditModalRegistry](#editmodalregistry)) — référencés par les configs
 (`config.prod.equipements-Sportifs.json`, `config.prod.sport-sante-bien-etre.json`).

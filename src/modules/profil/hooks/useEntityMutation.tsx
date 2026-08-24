@@ -59,6 +59,17 @@ export interface EntityMutationSpec {
   buildPayload: (formData: Data) => Data;
   /** create costum : `me.costum(slug).X()` au lieu de `(target??me).X()`. */
   costumSlug?: string;
+  /**
+   * ÉDITION costum : slug du costum qui DÉFINIT le formulaire (`FormDescriptor.costumSlug`) — épinglé
+   * sur l'entité avant l'écriture du draft, pour que ses champs costum soient écrivables.
+   *
+   * Pendant du `costumSlug` de création. La lib ouvre par défaut les champs de la PROVENANCE de
+   * l'élément (`source.key`), pas ceux du site : un costum ANNUAIRE liste des lieux importés
+   * d'ailleurs (`franceTierslieux`), d'un costum hors registre, ou sans `source` du tout — et
+   * chacun de ces cas rejetait l'édition (`[DraftProxy] Le champ "holderOrganization" n'est pas
+   * autorisé.`) alors que la CRÉATION passait, elle, par `me.costum(slug)`.
+   */
+  schemaCostumSlug?: string;
   /** Champ form portant le File image (→ `profil_avatar`). */
   imageField?: string;
   /** Champ form drapeau de suppression d'image (edit). Défaut `_imageDeleted`. */
@@ -86,6 +97,30 @@ export interface EntityMutationSpec {
   /** préfixe de log d'erreur (ex. "useAddOrganization · ADD_ORGANIZATION"). */
   errorContext: string;
   invalidateQueries?: QueryKey[];
+}
+
+/**
+ * Épingle le costum du FORMULAIRE sur l'entité éditée (sens SCHÉMA), pour que ses champs costum
+ * soient écrivables sur le draft — symétrique du `me.costum(slug)` de la création.
+ *
+ * `pinSchema: true` est l'opt-in de la lib : sans lui, `setCostumScope` ne pose que le scope
+ * d'ADMINISTRATION et la provenance (`source.key`) continue de gouverner le schéma — comportement
+ * voulu pour `ensureCostumScope` (import/export/validation), PAS ici.
+ *
+ * Échec NON bloquant : un costum hors registre lève (« fournissez costumId/costumType ») ; on laisse
+ * alors le save échouer avec l'erreur de champ, plus parlante qu'une erreur d'identité costum.
+ */
+function pinSchemaCostumScope(target: unknown, slug: string | undefined): void {
+  if (!slug || !target || typeof target !== "object") return;
+  const holder = target as {
+    setCostumScope?: (slug: string, opts?: { costumId?: string; costumType?: string; pinSchema?: boolean }) => void;
+  };
+  if (typeof holder.setCostumScope !== "function") return;
+  try {
+    holder.setCostumScope(slug, { pinSchema: true });
+  } catch (err) {
+    console.warn(`[costum] scope de schéma « ${slug} » non posé (non bloquant)`, err);
+  }
 }
 
 /**
@@ -206,7 +241,14 @@ export async function runEntityMutation(
           );
           if (!estVide(courant)) continue;
         }
-        if (!e.updateField) continue;
+        if (!e.updateField) {
+          // Une entité SDK sans `updateField` n'existe pas (BaseEntity le porte pour toutes les
+          // sous-classes) : si on arrive ici, c'est un faux SDK de test ou un contrat rompu. Le
+          // `continue` muet d'avant faisait DISPARAÎTRE le stamp sans laisser de trace — c'est ainsi
+          // que les 13 tests de ce cœur ont pu couvrir la création sans jamais exercer ce canal.
+          console.warn(`[stamps] « ${w.field} » ignoré : l'entité créée n'expose pas updateField`);
+          continue;
+        }
         await e.updateField(w.field, w.value);
       } catch (err) {
         console.warn(`[stamps] échec pathValue « ${w.field} » (non bloquant)`, err);
@@ -217,6 +259,7 @@ export async function runEntityMutation(
   // ── ÉDITION ─────────────────────────────────────────────────────────────────
   if (spec.mode === "edit") {
     if (!spec.target) throw new Error("No entity provided");
+    pinSchemaCostumScope(spec.target, spec.schemaCostumSlug);
     try {
       await submitEntityEdit(spec.target as unknown as EditableEntity, payload, { imageFile, imageDeleted });
     } catch (err) {
