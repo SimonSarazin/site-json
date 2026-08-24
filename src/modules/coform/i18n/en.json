@@ -451,6 +451,11 @@
         "notAuthorized": "You are neither admin nor member of this place.",
         "pendingValidation": "Request pending — waiting for admin validation."
       }
+    },
+    "tags": {
+      "placeholder": "Add a keyword…",
+      "remove": "Remove tag {{tag}}",
+      "searching": "Searching…"
     }
   }
 }

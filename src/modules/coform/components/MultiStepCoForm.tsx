@@ -14,7 +14,8 @@ import { CoFormProvider } from "../contexts/CoFormProvider";
 import { useCoForm } from "../hooks/useCoForm";
 import { useCoFormStep } from "../hooks/useCoFormStep";
 import { useCoFormNavigation, useCoFormSubmit } from "../hooks/useCoFormNavigation";
-import { TextField, TextAreaField, RadioField, CheckboxField, SelectField, ProseContent, SectionTitleField, SectionDescriptionField } from "./FormFields";
+import { TextField, TextAreaField, RadioField, CheckboxField, SelectField, ProseContent, SectionTitleField, SectionDescriptionField, TitleSeparatorField } from "./FormFields";
+import { TagsField } from "./TagsField";
 import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
 import { MultiRadioField } from "./MultiRadioField";
 import { EvaluationField } from "./EvaluationField";
@@ -33,7 +34,7 @@ import { useConditionalFields } from "../hooks/useConditionalFields";
 import { useUnsavedChangesWarning } from "../hooks/useUnsavedChangesWarning";
 import { getStepHasMultiEval, getOriginalFieldKey } from "../utils/formParser";
 import { scrollToFieldByName } from "../utils/helpers";
-import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, MultiRadioValue, EvaluationValue, CommonTableValue, FinderValue, SimpleTableValue, ExistingAnswerMeta } from "../types";
+import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, MultiRadioValue, EvaluationValue, CommonTableValue, FinderValue, SimpleTableValue, ExistingAnswerMeta, TagsValue } from "../types";
 import type { CoFormSubmitMode, CoFormVariant } from "../schema";
 
 interface MultiStepCoFormProps {
@@ -603,6 +604,27 @@ function MultiStepCoFormContent({
                     />
                   );
 
+                case "tags":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={form.control}
+                      render={({ field: controllerField }) => (
+                        <TagsField
+                          field={field}
+                          errors={form.formState.errors}
+                          value={controllerField.value as TagsValue}
+                          onChange={controllerField.onChange}
+                          readOnly={isLocked}
+                        />
+                      )}
+                    />
+                  );
+
+                case "titleSeparator":
+                  return <TitleSeparatorField key={field.name} field={field} />;
+
                 case "sectionTitle":
                   return <SectionTitleField key={field.name} field={field} />;
 
@@ -639,7 +661,8 @@ function MultiStepCoFormContent({
                 if (!fieldElement) return null;
                 if (
                   field.componentType === "sectionTitle" ||
-                  field.componentType === "sectionDescription"
+                  field.componentType === "sectionDescription" ||
+                  field.componentType === "titleSeparator"
                 ) {
                   return fieldElement;
                 }

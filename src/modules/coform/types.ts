@@ -536,13 +536,34 @@ export interface CoFormData {
 }
 
 /**
+ * Valeur d'un champ `tags` — liste plate de libellés libres.
+ *
+ * Le legacy écrit `$("#key").val().split(",")`, donc toujours un tableau de
+ * chaînes ; vérifié sur les réponses réelles du formulaire CAE
+ * (`["open source"]`, `["peertube"]`).
+ */
+export type TagsValue = string[];
+
+/**
+ * Config d'un champ `tags`, dérivée de `form.params.<inputKey>`.
+ */
+export interface TagsConfig {
+  /**
+   * Vocabulaire partagé du formulaire (`params.<inputKey>.list`) : les tags
+   * déjà saisis par d'autres répondants, proposés en autocomplétion. Vide
+   * quand le formulaire n'en a pas encore accumulé.
+   */
+  list: string[];
+}
+
+/**
  * Types pour le mapping des champs CoForm vers react-hook-form
  */
 export interface FormFieldMapping {
   name: string; // Nom du champ pour react-hook-form
   label: string;
   type: string; // Type CoForm (text, textarea, tpls.forms.cplx.radioNew, etc.)
-  componentType: "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "multiRadio" | "evaluation" | "commonTable" | "finder" | "simpleTable" | "uploader" | "location" | "milestoneList" | "sectionTitle" | "sectionDescription" | "unknown";
+  componentType: "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "multiRadio" | "evaluation" | "commonTable" | "finder" | "simpleTable" | "uploader" | "location" | "milestoneList" | "sectionTitle" | "sectionDescription" | "titleSeparator" | "tags" | "unknown";
   inputType?: string; // Type HTML pour l'input (url, email, tel, etc.) - utilisé quand componentType est "text"
   placeholder?: string;
   info?: string;
@@ -617,6 +638,19 @@ export interface FormFieldMapping {
   conditionalDisplay?: ConditionalDisplay;
   // Spécifique commonTable
   commonTableConfig?: CommonTableConfig;
+  /**
+   * Spécifique `tags` (`tpls.forms.tags`) — vocabulaire partagé du formulaire.
+   *
+   * Le legacy accumule dans `form.params.<inputKey>.list` chaque tag saisi par
+   * un répondant, et s'en sert comme source d'autocomplétion pour les suivants.
+   * Comme `params` est déjà chargé avec le formulaire, la liste arrive
+   * gratuitement — aucune requête n'est nécessaire pour suggérer.
+   *
+   * Mesuré (2026-08-19) : peuplée sur 40 des 124 inputs `tags` du parc,
+   * médiane 83 entrées, max 166. Vide ailleurs → repli sur l'index global
+   * (`api.searchTags`), qui est la branche non-aap du legacy.
+   */
+  tagsConfig?: TagsConfig;
   /**
    * Si `true`, l'input radio active le mode "évaluation multiple" : la valeur
    * de chaque user est stockée séparément dans `_multiEval.{userId}` au lieu

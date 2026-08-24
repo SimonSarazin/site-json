@@ -7,7 +7,8 @@ import { Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
-import { TextField, TextAreaField, RadioField, CheckboxField, SelectField, ProseContent, SectionTitleField, SectionDescriptionField } from "./FormFields";
+import { TextField, TextAreaField, RadioField, CheckboxField, SelectField, ProseContent, SectionTitleField, SectionDescriptionField, TitleSeparatorField } from "./FormFields";
+import { TagsField } from "./TagsField";
 import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
 import { MultiRadioField } from "./MultiRadioField";
 import { EvaluationField } from "./EvaluationField";
@@ -23,7 +24,7 @@ import { CoFormBanner } from "./CoFormBanner";
 import { DraftRecoveryBanner } from "./DraftRecoveryBanner";
 import { ErrorSummary } from "./ErrorSummary";
 import { AnswerActivityDialog } from "./AnswerActivityDialog";
-import type { CoFormData, SubFormData, AddedOptionsMap, EvaluationValue, CommonTableValue, FinderValue, SimpleTableValue, MultiRadioValue, ExistingAnswerMeta } from "../types";
+import type { CoFormData, SubFormData, AddedOptionsMap, EvaluationValue, CommonTableValue, FinderValue, SimpleTableValue, MultiRadioValue, ExistingAnswerMeta, TagsValue } from "../types";
 import { parseCoFormFields, generateZodSchema, generateDefaultValues, getStepHasMultiEval, getOriginalFieldKey } from "../utils/formParser";
 import { scrollToFieldByName } from "../utils/helpers";
 import { cn } from "@/lib/utils";
@@ -603,6 +604,27 @@ export function DynamicCoForm({
                     />
                   );
 
+                case "tags":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={control}
+                      render={({ field: controllerField }) => (
+                        <TagsField
+                          field={field}
+                          errors={errors}
+                          value={controllerField.value as TagsValue}
+                          onChange={controllerField.onChange}
+                          readOnly={isLocked}
+                        />
+                      )}
+                    />
+                  );
+
+                case "titleSeparator":
+                  return <TitleSeparatorField key={field.name} field={field} />;
+
                 case "sectionTitle":
                   return <SectionTitleField key={field.name} field={field} />;
 
@@ -639,7 +661,8 @@ export function DynamicCoForm({
                 if (!fieldElement) return null;
                 if (
                   field.componentType === "sectionTitle" ||
-                  field.componentType === "sectionDescription"
+                  field.componentType === "sectionDescription" ||
+                  field.componentType === "titleSeparator"
                 ) {
                   return fieldElement;
                 }

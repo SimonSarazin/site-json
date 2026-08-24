@@ -10,11 +10,13 @@ import { useCocolightOptional } from "@/hooks/useCocolight";
 import "../i18n/i18n";
 import { parseCoFormFields, normalizeAnswerData } from "../utils/formParser";
 import { parseStoredToEntries } from "../utils/coformLocality";
-import type { CoFormData, AllStepsData, SubFormFields, FormFieldMapping, FormFieldValue, MultiCheckboxPlusValue, MultiRadioValue, UploaderLegacyValue, SimpleTableValue, EvaluationValue, FinderValue, CommonTableValue } from "../types";
+import type { CoFormData, AllStepsData, SubFormFields, FormFieldMapping, FormFieldValue, MultiCheckboxPlusValue, MultiRadioValue, UploaderLegacyValue, SimpleTableValue, EvaluationValue, FinderValue, CommonTableValue, TagsValue } from "../types";
 import { ReadOnlyUploaderGallery } from "./ReadOnlyUploaderGallery";
 import { SimpleTableField } from "./SimpleTableField";
 import { EvaluationField } from "./EvaluationField";
 import { FinderField } from "./FinderField";
+import { TagsField } from "./TagsField";
+import { TitleSeparatorField } from "./FormFields";
 import { CommonTableField } from "./CommonTableField";
 
 interface CoFormReadOnlyProps {
@@ -302,6 +304,30 @@ function ReadOnlyField({
           {/* `formId` : parité avec le mode édition (DynamicCoForm) — sans lui, les
               badges de contributeurs s'affichent mais ne sont pas cliquables. */}
           <CommonTableField field={field} errors={{}} value={value as unknown as CommonTableValue} readOnly hideLabel formId={formId} />
+        </dd>
+      </div>
+    );
+  }
+
+  // titleSeparator : décoratif, donc AUCUNE valeur — sans ce cas il tombe dans le
+  // rendu générique et s'affiche comme une question vide (« label » + « — »). Le
+  // legacy le rend à l'identique en mode lecture (son template n'a pas de branche
+  // `mode`), on garde donc le séparateur, qui structure la lecture.
+  if (field.componentType === "titleSeparator") {
+    return <TitleSeparatorField field={field} />;
+  }
+
+  // tags : liste de libellés. Le rendu générique « tableau » afficherait déjà des
+  // badges, mais on passe par le composant pour que le vide donne « — » et que
+  // l'apparence soit strictement celle du mode édition.
+  if (field.componentType === "tags") {
+    return (
+      <div className={cn(widthClass, "space-y-1.5")}>
+        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          {field.label}
+        </dt>
+        <dd>
+          <TagsField field={field} errors={{}} value={value as TagsValue} readOnly hideLabel />
         </dd>
       </div>
     );

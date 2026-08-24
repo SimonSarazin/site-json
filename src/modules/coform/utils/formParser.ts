@@ -185,10 +185,14 @@ export function mapCoFormTypeToComponentType(
     "tpls.forms.ocecoform.newDepenseList": "milestoneList",
     sectionTitle: "sectionTitle",
     "tpls.forms.sectionTitle": "sectionTitle",
-    // Alias AAP legacy : `titleSeparator` = séparateur/titre de section.
-    titleSeparator: "sectionTitle",
-    "tpls.forms.titleSeparator": "sectionTitle",
     "tpls.forms.sectionDescription": "sectionDescription",
+    // `titleSeparator` avait jusqu'ici un alias vers `sectionTitle`, faute de
+    // rendu propre. Il a désormais le sien, fidèle au template legacy (bandeau
+    // pleine largeur, bordures pointillées, chevron) — cf. `TitleSeparatorField`.
+    // Les deux écritures du type coexistent en base, comme pour `sectionTitle`.
+    titleSeparator: "titleSeparator",
+    "tpls.forms.titleSeparator": "titleSeparator",
+    "tpls.forms.tags": "tags",
     select: "select",
     // Liste déroulante : les forms stockent le type tantôt en raccourci
     // `select` (builder dynamicFields), tantôt en chemin de template complet
@@ -583,6 +587,22 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         };
       }
 
+      // Config spécifique pour tags — vocabulaire partagé du formulaire.
+      // Le legacy accumule les tags saisis dans `form.params.<key>.list`
+      // (`PushTagsAction`) et suggère depuis cette liste (`SearchTagsAction`).
+      // `params` étant déjà chargé avec le form, la liste est disponible sans
+      // aucune requête. Liste absente/vide → le champ retombe sur l'index
+      // global (`api.searchTags`), qui est la branche non-aap du legacy.
+      let tagsConfig: FormFieldMapping["tagsConfig"] | undefined;
+
+      if (componentType === "tags") {
+        const rawList = (formData.params?.[fieldKey] as { list?: unknown } | undefined)?.list;
+        const list = Array.isArray(rawList)
+          ? rawList.map((t) => (typeof t === "string" ? t.trim() : "")).filter(Boolean)
+          : [];
+        tagsConfig = { list };
+      }
+
       // Config spécifique pour uploader
       if (componentType === "uploader") {
         const paramsData = formData.params?.[fieldKey] || {};
@@ -667,6 +687,7 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         simpleTableConfig,
         uploaderConfig,
         sectionTitleConfig,
+        tagsConfig,
         conditionalDisplay,
         activeMultieval,
         evaluationKey,
@@ -991,6 +1012,27 @@ export function generateZodSchema(
           break;
         }
 
+        case "tags": {
+          // Tableau de libellés libres. Le legacy stocke
+          // `$("#key").val().split(",")` → toujours un array de strings.
+          const tagsSchema = z.array(z.string());
+          schemaShape[field.name] = field.isRequired
+            ? tagsSchema.min(1, t("coform.validation.requiredField", `${field.label} est requis`, { label: field.label }))
+            : tagsSchema.optional();
+          break;
+        }
+
+        // Séparateur décoratif : AUCUNE entrée dans le schéma.
+        //
+        // ⚠️ `isRequired: true` est posé sur 57 des 78 `titleSeparator` du parc
+        // alors que l'input ne produit aucune valeur (le template legacy ne rend
+        // qu'un titre). Le traiter comme un champ requis rendrait ces
+        // formulaires **impossibles à soumettre**. L'absence de clé est donc
+        // délibérée — et pas un oubli : `z.object` strippe la clé au parse,
+        // exactement ce qu'on veut ici.
+        case "titleSeparator":
+          break;
+
         default:
           schemaShape[field.name] = z.string().optional();
       }
@@ -1064,6 +1106,16 @@ export function generateDefaultValues(subFormsFields: SubFormFields[]): Record<s
           defaultValues[field.name] = [];
           break;
 
+        case "tags":
+          defaultValues[field.name] = [];
+          break;
+
+        // Purement décoratif : aucune valeur ne doit entrer dans l'état du
+        // formulaire (le `default` ci-dessous poserait `""`, une clé fantôme
+        // que le submit remonterait).
+        case "titleSeparator":
+          break;
+
         default:
           defaultValues[field.name] = "";
       }
@@ -1094,6 +1146,7 @@ function getFieldShape(componentType: FormFieldMapping["componentType"]): FieldS
     case "checkbox":
     case "multiCheckboxPlus":
     case "simpleTable":
+    case "tags":
       return "array";
     case "multiRadio":
     case "finder":

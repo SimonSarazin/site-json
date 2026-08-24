@@ -451,6 +451,11 @@
         "notAuthorized": "Vous n'êtes ni admin ni membre de ce lieu.",
         "pendingValidation": "Demande en attente — patientez la validation par un admin."
       }
+    },
+    "tags": {
+      "placeholder": "Ajouter un mot-clé…",
+      "remove": "Retirer le tag {{tag}}",
+      "searching": "Recherche…"
     }
   }
 }

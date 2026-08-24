@@ -198,6 +198,23 @@ export const COFORM_QUERY_KEYS = {
     notSourceKey: boolean,
   ) => ["coform", "finderSearch", searchType, query, filters, notSourceKey] as const,
   FINDER_SEARCH_PREFIX: () => ["coform", "finderSearch"] as const,
+
+  /**
+   * Recherche de tags dans l'index GLOBAL de la plateforme (`api.searchTags`).
+   *
+   * N'est interrogée que par les champs `tags` dont le formulaire n'a pas encore
+   * de vocabulaire propre : quand `params.<inputKey>.list` est peuplé, les
+   * suggestions en sortent directement (elle arrive avec le formulaire), sans
+   * aucune requête. Clé éphémère paramétrée par le terme debouncé.
+   *
+   * Donnée publique (`auth: none`) → non scopée `userId`, cache mutualisé
+   * cross-user comme `ELEMENT_SUMMARY` et `FINDER_SEARCH`.
+   *
+   * Producteur : `useTagSuggestions`.
+   * Consommateurs invalidants : aucun (lecture seule, index global).
+   */
+  TAG_SEARCH: (query: string | null) => ["coform", "tagSearch", query] as const,
+  TAG_SEARCH_PREFIX: () => ["coform", "tagSearch"] as const,
 } as const;
 
 export type CoformQueryKeyType = ReturnType<

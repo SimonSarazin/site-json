@@ -169,7 +169,13 @@ export function useCoFormFinalMutation({
       return answer.serverData;
     },
     onSuccess: (data) => {
-      // Invalider les caches : formulaire (pour rafraîchir l'access) + réponses
+      // Invalider les caches : formulaire + réponses.
+      // Le formulaire est invalidé pour rafraîchir l'access, MAIS aussi parce que
+      // le backend l'a peut-être enrichi pendant le save : options ajoutées d'un
+      // `multiCheckboxPlus` (`Coform::addOptionsToMultiCheckboxPlus`) et tags
+      // versés au vocabulaire partagé (`Coform::addTagsToVocabulary`). Sans cette
+      // invalidation, un tag que l'on vient de créer ne serait pas proposé à la
+      // saisie suivante dans le même onglet.
       queryClient.invalidateQueries({ queryKey: COFORM_QUERY_KEYS.FORM(formId) });
       queryClient.invalidateQueries({ queryKey: COFORM_QUERY_KEYS.FORM_ANSWERS(formId) });
       onSuccess?.(data);

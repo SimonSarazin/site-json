@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { UseFormRegister, FieldErrors } from "react-hook-form";
 import MarkdownIt from "markdown-it";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -257,6 +257,44 @@ export function SectionTitleField({ field }: { field: FormFieldMapping }) {
       {cfg.showBar && cfg.barPosition === "below" && (
         <hr className="mt-2 border-border" />
       )}
+    </div>
+  );
+}
+
+/**
+ * Séparateur de titre (`tpls.forms.titleSeparator`).
+ *
+ * Marque une rupture forte dans un formulaire long : le legacy rend un `<h2>`
+ * centré dans un bandeau gris borduré de pointillés haut et bas, suivi d'un
+ * chevron vers le bas (`titleSeparator.php`). On garde cette signature — bandeau
+ * pleine largeur + pointillés + chevron — mais avec les tokens du design system
+ * plutôt que le `#ddd` en dur, pour que le thème sombre suive.
+ *
+ * **N'enregistre aucune valeur** : ni défaut, ni entrée dans le schéma Zod.
+ * ⚠️ `isRequired: true` est pourtant posé sur 57 des 78 occurrences du parc ;
+ * l'honorer rendrait ces formulaires insoumettables (cf. `generateZodSchema`).
+ * On l'ignore donc délibérément, et on ne rend pas d'astérisque.
+ */
+export function TitleSeparatorField({ field }: { field: FormFieldMapping }) {
+  return (
+    <div className={cn("col-span-12 my-6", field.width)}>
+      <div className="border-y border-dashed border-border bg-muted/60 px-4 py-3 text-center">
+        {field.label && (
+          <h2 className="text-lg font-bold tracking-tight text-foreground">
+            {field.label}
+          </h2>
+        )}
+        {field.info && (
+          <ProseContent
+            text={field.info}
+            className="mt-1 text-sm text-muted-foreground prose prose-sm dark:prose-invert max-w-none [&>p]:m-0"
+          />
+        )}
+        <ChevronDown
+          aria-hidden="true"
+          className="mx-auto mt-1 h-4 w-4 text-muted-foreground"
+        />
+      </div>
     </div>
   );
 }

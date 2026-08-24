@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
-import { ProseContent } from "./FormFields";
+import { ProseContent, TitleSeparatorField } from "./FormFields";
+import type { FormFieldMapping } from "../types";
 
 /**
  * Non-régression sécurité (XSS) : `ProseContent` rend du contenu admin via
@@ -54,5 +55,35 @@ describe("ProseContent — sanitisation XSS", () => {
     );
     expect(container.querySelector("script")).toBeNull();
     expect(container.querySelector("strong")?.textContent).toBe("ok");
+  });
+});
+
+describe("TitleSeparatorField", () => {
+  const sep = (over: Partial<FormFieldMapping> = {}) =>
+    ({
+      name: "aapStep1m0dia6b7r0panzlwqvk",
+      label: "Le commun",
+      type: "tpls.forms.titleSeparator",
+      componentType: "titleSeparator",
+      isRequired: false,
+      ...over,
+    }) as FormFieldMapping;
+
+  it("rend le titre du séparateur", () => {
+    const { container } = render(<TitleSeparatorField field={sep()} />);
+    expect(container.querySelector("h2")?.textContent).toBe("Le commun");
+  });
+
+  it("n'affiche AUCUN astérisque même marqué requis", () => {
+    // 57 des 78 séparateurs du parc portent `isRequired: true` alors qu'ils ne
+    // demandent rien : afficher un astérisque promettrait une saisie qui
+    // n'existe pas.
+    const { container } = render(<TitleSeparatorField field={sep({ isRequired: true })} />);
+    expect(container.textContent).not.toContain("*");
+  });
+
+  it("rend l'info quand elle existe", () => {
+    const { container } = render(<TitleSeparatorField field={sep({ info: "Une précision" })} />);
+    expect(container.textContent).toContain("Une précision");
   });
 });

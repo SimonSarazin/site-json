@@ -656,6 +656,124 @@ describe("generateZodSchema", () => {
 // normalizeAnswerData
 // ============================================================================
 
+describe("tags et titleSeparator (port des inputs legacy)", () => {
+  // Fixtures issues du formulaire réel « Les communs des CAEs »
+  // `677e7e389058e31575550ac8` (base `pixelhumain1`, 2026-08-19).
+  const formCae = () =>
+    makeCoFormData({
+      params: {
+        // Vocabulaire partagé réellement présent sur ce formulaire (extrait).
+        tags: { list: ["Commun", "coopération", "peertube", "  ", "opensource"] },
+      },
+      inputs: {
+        aapStep1: {
+          name: "Le commun",
+          id: "aapStep1",
+          formParent: "677e7e389058e31575550ac8",
+          inputs: {
+            tags: {
+              label: "Tags",
+              type: "tpls.forms.tags",
+              placeholder: "Ajoutez les tags qui facilitent l'identification du commun",
+              isRequired: false,
+            },
+            aapStep1m0dia6b7r0panzlwqvk: {
+              label: "Le commun",
+              type: "tpls.forms.titleSeparator",
+              // Tel quel en base sur 57 des 78 séparateurs du parc.
+              isRequired: true,
+            },
+          },
+        },
+      },
+    } as unknown as Partial<CoFormData>);
+
+  it("mappe les deux types legacy vers leurs composants", () => {
+    expect(mapCoFormTypeToComponentType("tpls.forms.tags")).toBe("tags");
+    expect(mapCoFormTypeToComponentType("tpls.forms.titleSeparator")).toBe("titleSeparator");
+  });
+
+  it("extrait le vocabulaire partagé depuis `params.<key>.list`, nettoyé", () => {
+    const [step] = parseCoFormFields(formCae());
+    const tags = step.fields.find((f) => f.name === "tags");
+    expect(tags?.componentType).toBe("tags");
+    // Les entrées vides sont retirées, l'ordre et la casse préservés.
+    expect(tags?.tagsConfig?.list).toEqual(["Commun", "coopération", "peertube", "opensource"]);
+  });
+
+  it("donne un vocabulaire vide (et non `undefined`) quand `params` n'en a pas", () => {
+    // 84 des 124 inputs `tags` du parc sont dans ce cas — ils basculent alors
+    // sur l'index global, ce que le hook décide sur `list.length === 0`.
+    const data = formCae();
+    (data as unknown as { params?: unknown }).params = {};
+    const [step] = parseCoFormFields(data);
+    expect(step.fields.find((f) => f.name === "tags")?.tagsConfig?.list).toEqual([]);
+  });
+
+  it("n'attribue AUCUNE valeur par défaut au séparateur", () => {
+    const defaults = generateDefaultValues([
+      makeSubFormFields([
+        makeField({ name: "sep", componentType: "titleSeparator", isRequired: true }),
+        makeField({ name: "tags", componentType: "tags" }),
+      ]),
+    ]);
+    expect("sep" in defaults).toBe(false);
+    expect(defaults.tags).toEqual([]);
+  });
+
+  it("laisse le séparateur HORS du schéma Zod, même marqué requis", () => {
+    // Le point dur : `isRequired: true` est posé sur un input qui ne produit
+    // aucune valeur. L'honorer rendrait les formulaires concernés
+    // insoumettables — un formulaire vide doit rester valide.
+    const schema = generateZodSchema([
+      makeSubFormFields([
+        makeField({ name: "sep", componentType: "titleSeparator", isRequired: true, label: "Le commun" }),
+      ]),
+    ]);
+    expect(schema.safeParse({}).success).toBe(true);
+    // Et la clé est strippée si elle traîne dans les données.
+    const parsed = schema.safeParse({ sep: "valeur parasite" });
+    expect(parsed.success).toBe(true);
+    expect("sep" in (parsed.data as object)).toBe(false);
+  });
+
+  it("valide les réponses `tags` réellement en base (round-trip safeParse)", () => {
+    const schema = generateZodSchema([
+      makeSubFormFields([makeField({ name: "tags", componentType: "tags", label: "Tags" })]),
+    ]);
+    // Les 2 seules réponses enregistrées sur le formulaire CAE.
+    for (const reelle of [["open source"], ["peertube"]]) {
+      const parsed = schema.safeParse({ tags: reelle });
+      expect(parsed.success).toBe(true);
+      expect((parsed.data as { tags: string[] }).tags).toEqual(reelle);
+    }
+    // Champ non requis laissé vide.
+    expect(schema.safeParse({}).success).toBe(true);
+    expect(schema.safeParse({ tags: [] }).success).toBe(true);
+  });
+
+  it("refuse un `tags` requis laissé vide", () => {
+    const schema = generateZodSchema([
+      makeSubFormFields([
+        makeField({ name: "tags", componentType: "tags", isRequired: true, label: "Tags" }),
+      ]),
+    ]);
+    expect(schema.safeParse({ tags: [] }).success).toBe(false);
+    expect(schema.safeParse({ tags: ["a"] }).success).toBe(true);
+  });
+
+  it("coerce un `{}` serveur en tableau vide pour un champ tags", () => {
+    // `getFieldShape("tags") === "array"` : sans ça la valeur `{}` que PHP
+    // sérialise pour un tableau vide ferait échouer le parse Zod.
+    const fields = [makeSubFormFields([makeField({ name: "tags", componentType: "tags" })])];
+    const normalized = normalizeAnswerData({ step1: { tags: {} } } as never, fields) as Record<
+      string,
+      Record<string, unknown>
+    >;
+    expect(normalized.step1.tags).toEqual([]);
+  });
+});
+
 describe("normalizeAnswerData", () => {
   it("retourne undefined pour null/undefined", () => {
     expect(normalizeAnswerData(null, [])).toBeUndefined();
