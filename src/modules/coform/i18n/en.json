@@ -457,6 +457,9 @@
       "loadError": "Options could not be loaded.",
       "notConfigured": "This field has not been configured yet.",
       "orphans": "Saved answers no longer matching an available option:"
+    },
+    "field": {
+      "required": "required"
     }
   }
 }

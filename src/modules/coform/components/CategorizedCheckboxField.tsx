@@ -4,7 +4,7 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { FieldError, HintText } from "./FormFields";
+import { FieldError, FieldLabel, HintText } from "./FormFields";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useCategorizedCheckboxOptions } from "../hooks/useCategorizedCheckboxOptions";
@@ -176,12 +176,7 @@ export function CategorizedCheckboxField({
   if (readOnly) {
     return (
       <div className={cn("space-y-2", field.width || "col-span-12")}>
-        {!hideLabel && (
-          <div className="block text-sm font-medium">
-            {field.label}
-            {field.isRequired && <span className="text-destructive ml-1">*</span>}
-          </div>
-        )}
+        {!hideLabel && <FieldLabel field={field} />}
         {summary.length === 0 ? (
           <span className="text-muted-foreground/50 italic">—</span>
         ) : (
@@ -209,15 +204,7 @@ export function CategorizedCheckboxField({
   return (
     <div className={cn("space-y-2", field.width || "col-span-12")}>
       {/* Label en `<div>` : le contrôle est une liste de cases, pas un input ciblable. */}
-      {!hideLabel && (
-        <div
-          id={`${field.name}-label`}
-          className={cn("block text-sm font-medium", hasError && "text-destructive")}
-        >
-          {field.label}
-          {field.isRequired && <span className="text-destructive ml-1">*</span>}
-        </div>
-      )}
+      {!hideLabel && <FieldLabel field={field} id={`${field.name}-label`} hasError={hasError} />}
 
       {field.info && <HintText text={field.info} />}
 
