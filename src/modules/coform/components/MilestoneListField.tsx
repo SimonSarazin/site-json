@@ -1,44 +1,74 @@
 /**
- * Champ coform "liste de paliers/dépenses" — `tpls.forms.ocecoform.newDepenseList`.
+ * Champ coform « liste de dépenses / paliers » — `tpls.forms.ocecoform.newDepenseList`.
  *
- * Contrairement aux autres champs complexes (`SimpleTableField`…), ce champ
- * n'est PAS piloté par react-hook-form : chaque action (ajout/édition/clôture/
- * suppression) est persistée immédiatement côté serveur via les mutations
- * paliers de `cagnotte` (mêmes mutations que `CommunFinancingSection` sur la
- * page détail — synchronisation garantie avec l'affichage post-soumission).
- * La valeur RHF `depense` reste donc telle que chargée en `defaultValues` ;
- * elle n'est jamais réécrite depuis ce champ (inoffensif : la resoumission du
- * form renvoie une valeur déjà à jour côté backend).
+ * **Piloté par react-hook-form**, comme tous les autres champs du module : la
+ * valeur `answers.<étape>.depense[]` est la source de vérité, chaque geste
+ * (ajout, modification, clôture, suppression) la modifie localement, et le
+ * submit la persiste avec le reste de la réponse.
  *
- * Volontairement HORS scope de ce champ : le financement (contributions,
- * cofinanceurs) et les actions/objectifs — gérés ailleurs (`CommunFinancingCard`,
- * `CommunActionsSection`). On expose seulement les paliers (CRUD) + un
- * historique des modifications de montant (`depense.historique[]`).
+ * Ce n'était pas le cas avant, et cela coûtait deux défauts :
+ *
+ *  1. le champ refusait toute saisie tant que la réponse n'existait pas
+ *     (`if (!answerId)` → « enregistrez d'abord »), puisque chaque geste partait
+ *     directement au serveur ;
+ *  2. plus grave, la valeur RHF n'était JAMAIS réécrite alors que `depense` est
+ *     bien déclaré au schéma Zod, donc soumis. Le backend remplaçant la clé en
+ *     bloc (`SaveAnswerAction` : `$mergedAnswers[$step][$input] = $inputValue`),
+ *     ajouter une dépense puis soumettre le formulaire **effaçait l'ajout**.
+ *
+ * **Projection vers le projet.** La copie des paliers sur l'entité projet
+ * (`oceco.milestones[]`) n'est pas décorative : `useOrganizationProjectsWithAnswers`
+ * filtre les projets sur `oceco.milestones.0.$exists`. Un commun sans palier côté
+ * projet disparaît de la vue cagnotte. Elle est donc conservée — en queue de
+ * chaque geste, quand un projet est résolu (donc jamais sur une réponse neuve,
+ * où il n'y en a pas encore). C'est une projection **best-effort** : son échec
+ * ne doit pas empêcher la saisie, la source de vérité restant la réponse.
+ *
+ * Volontairement HORS scope : le financement (contributions, cofinanceurs) et
+ * les actions/objectifs — gérés par `CommunFinancingCard` et `CommunActionsSection`.
  */
-import { useEffect, useRef, useState } from "react";
+import { useMemo, useState } from "react";
+import type { FieldErrors } from "react-hook-form";
 import { ChevronDown, Plus, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { useCocolightOptional } from "@/hooks/useCocolight";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { MilestoneManageActions } from "@/modules/cagnotte/components/sections/MilestoneManageActions";
-import { MilestoneEditDialog } from "@/modules/cagnotte/components/sections/parts/MilestoneEditDialog";
-import CreateMilestoneDialog from "@/modules/cagnotte/components/sections/CreateMilestoneDialog";
 import { formatCurrency } from "@/modules/cagnotte/utils/format";
 import { toSafeInt, asRecord, buildItemsFromRawDepenses } from "@/modules/cagnotte/utils/dataTransform";
+import { generateMilestoneId } from "@/modules/cagnotte/utils/idGeneration";
+import { useCagnottePermissions } from "@/modules/cagnotte/hooks/useCagnottePermissions";
+import {
+  appendProjectMilestone,
+  updateProjectMilestoneFields,
+  deleteProjectMilestoneAtIndex,
+} from "@/modules/cagnotte/lib/actionMilestonePathUpdates";
+import type { Project } from "@communecter/cocolight-api-client";
 import type { FundingMilestone as Milestone, CagnotteFundableItem } from "@/modules/cagnotte/types";
-import type { CoFormAnswer } from "@/modules/coform/types";
 import type { AacLog } from "@/modules/aac/types";
 import { useAacFundingResource } from "@/modules/aac/hooks/useAacFundingResource";
-import { useCommunObjectivesController } from "@/modules/aac/hooks/useCommunObjectivesController";
-import { useCommunRawDepenses } from "@/modules/aac/hooks/useCommunRawDepenses";
 import type { MilestoneCardPermissions } from "@/modules/aac/lib/objectiveHelpers";
-import { HintText } from "./FormFields";
+import { FieldError, HintText } from "./FormFields";
+import { DepenseFormDialog, type DepenseFormValues } from "./DepenseFormDialog";
+import {
+  addDepense,
+  normalizeDepenseValue,
+  removeDepense,
+  setDepenseOpen,
+  updateDepense,
+  type DepenseEntry,
+} from "../utils/depense";
 import type { FormFieldMapping } from "../types";
 
 interface MilestoneListFieldProps {
   field: FormFieldMapping;
+  errors: FieldErrors;
+  value?: DepenseEntry[];
+  onChange?: (value: DepenseEntry[]) => void;
+  /** Réponse en cours d'édition. Absente ⇒ réponse neuve : saisie locale seule. */
   answerId?: string;
   readOnly?: boolean;
 }
@@ -60,7 +90,7 @@ function splitMilestoneItemsByStatus(
   return { openItems, closedItems };
 }
 
-function FieldLabel({ field }: { field: FormFieldMapping }) {
+function DepenseFieldLabel({ field }: { field: FormFieldMapping }) {
   return (
     <div className="block text-sm font-medium">
       {field.label}
@@ -73,23 +103,21 @@ function MilestoneRow({
   index,
   item,
   history,
-  openEditMilestoneModal,
-  onMilestoneClose,
-  onMilestoneRestore,
-  onMilestoneDelete,
+  onEdit,
+  onClose,
+  onRestore,
+  onDelete,
   permissions,
-  loadingIds,
   disabled,
 }: {
   index: number;
   item: CagnotteFundableItem;
   history: AacLog[];
-  openEditMilestoneModal: (milestone: Milestone) => void;
-  onMilestoneClose: (itemId: string, milestone: Milestone) => void;
-  onMilestoneRestore: (itemId: string, milestone: Milestone) => void;
-  onMilestoneDelete: (itemId: string, milestone: Milestone) => void;
+  onEdit: (item: CagnotteFundableItem) => void;
+  onClose: (item: CagnotteFundableItem) => void;
+  onRestore: (item: CagnotteFundableItem) => void;
+  onDelete: (item: CagnotteFundableItem) => void;
   permissions: MilestoneCardPermissions;
-  loadingIds: { deletingItemId: string; closingItemId: string; restoringItemId: string };
   disabled: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -110,19 +138,6 @@ function MilestoneRow({
   });
   const canEditThisMilestone = !disabled && permissions.canEditMilestone({ status });
   const hasOpenActions = (item.actions ?? []).some((action) => action.status !== "done");
-
-  const milestoneOf = (): Milestone => ({
-    id: item.milestoneId,
-    title: item.name,
-    description: item.description ?? "",
-    status: status ?? "open",
-    date_start: undefined,
-    date_end: undefined,
-    targetAmount: Number(item.price ?? 0),
-    transactions: [],
-    actions: item.actions ?? [],
-    answerDepenseIndex: typeof item.depenseIndex === "number" ? item.depenseIndex : undefined,
-  });
 
   return (
     <div className="bg-surface border border-border rounded-lg overflow-hidden group">
@@ -185,13 +200,13 @@ function MilestoneRow({
           <div className="overflow-hidden">
             <div className="px-1 pb-3">
               <MilestoneManageActions
-                onEdit={() => openEditMilestoneModal(milestoneOf())}
-                onClose={() => onMilestoneClose(item.itemId, milestoneOf())}
-                onDelete={() => onMilestoneDelete(item.itemId, milestoneOf())}
-                onRestore={() => onMilestoneRestore(item.itemId, milestoneOf())}
-                isDeleting={loadingIds.deletingItemId === item.itemId}
-                isClosing={loadingIds.closingItemId === item.itemId}
-                isRestoring={loadingIds.restoringItemId === item.itemId}
+                onEdit={() => onEdit(item)}
+                onClose={() => onClose(item)}
+                onDelete={() => onDelete(item)}
+                onRestore={() => onRestore(item)}
+                isDeleting={false}
+                isClosing={false}
+                isRestoring={false}
                 closeDisabled={status === "close" || hasOpenActions}
                 canEdit={canEditThisMilestone}
                 canClose={canEditThisMilestone && permissions.canCloseMilestone({ status })}
@@ -206,113 +221,241 @@ function MilestoneRow({
   );
 }
 
-export function MilestoneListField({ field, answerId, readOnly }: MilestoneListFieldProps) {
+export function MilestoneListField({
+  field,
+  errors,
+  value,
+  onChange,
+  answerId,
+  readOnly,
+}: MilestoneListFieldProps) {
   useLoadNamespace("modules/aac");
   const t = useT("modules/aac");
+  const tf = useT("modules/coform");
+
+  // Variante TOLÉRANTE : `CoFormReadOnly` se rend hors `CocolightProvider`.
+  // Sans API, la projection vers le projet est simplement inopérante — la
+  // saisie et l'affichage, eux, ne dépendent que de la valeur RHF.
+  const cocolight = useCocolightOptional();
+  const api = cocolight?.api ?? null;
+  const entity = cocolight?.entity ?? null;
+
   const { targetResource } = useAacFundingResource(answerId);
+  const projectId = targetResource?.projectId ?? "";
 
-  const answerStub = answerId ? ({ id: answerId } as unknown as CoFormAnswer) : null;
-  const ctrl = useCommunObjectivesController({ answerQuery: answerStub, funding: targetResource });
 
-  // Historique des montants (`depense.historique[]`) — lecture directe et
-  // légère de la réponse brute, indépendante du pipeline funding envelope
-  // (hors scope de ce champ, cf. commentaire de fichier).
-  const { data: depenses, refetch: refetchDepenses } = useCommunRawDepenses(answerId);
+  // Une seule passe pour les trois dérivations liées (norme : ne pas empiler des
+  // `useMemo` qui refont la même boucle).
+  const { list, items, openItems, closedItems } = useMemo(() => {
+    const l = normalizeDepenseValue(value);
+    const it = buildItemsFromRawDepenses(l, targetResource?.items ?? []);
+    return { list: l, items: it, ...splitMilestoneItemsByStatus(it) };
+  }, [value, targetResource?.items]);
 
-  // Clôture/restauration/suppression passent par les handlers internes de
-  // `ctrl` (fire-and-forget, pas de promesse exploitable ici) — on détecte
-  // la fin de mutation via le retour à vide de `loadingIds` pour rafraîchir
-  // la dépense brute (source d'affichage de ce champ, cf. plus haut).
-  const prevLoadingIdsRef = useRef(ctrl.loadingIds);
-  useEffect(() => {
-    const prev = prevLoadingIdsRef.current;
-    const justSettled =
-      (prev.closingItemId && !ctrl.loadingIds.closingItemId) ||
-      (prev.deletingItemId && !ctrl.loadingIds.deletingItemId) ||
-      (prev.restoringItemId && !ctrl.loadingIds.restoringItemId);
-    prevLoadingIdsRef.current = ctrl.loadingIds;
-    if (justSettled) refetchDepenses();
-  }, [ctrl.loadingIds, refetchDepenses]);
+  const perms = useCagnottePermissions(entity, {
+    hasActiveItems: openItems.length > 0,
+    resourceId: projectId,
+  });
 
-  const items = buildItemsFromRawDepenses(depenses ?? [], targetResource?.items ?? []);
-  const { openItems, closedItems } = splitMilestoneItemsByStatus(items);
   const [showClosed, setShowClosed] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  /** Index de la ligne en cours d'édition ; `null` = ajout. */
+  const [editIndex, setEditIndex] = useState<number | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<CagnotteFundableItem | null>(null);
 
   const disabled = Boolean(readOnly);
 
-  if (!answerId) {
-    return (
-      <div className={cn("space-y-2", field.width || "col-span-12")}>
-        <FieldLabel field={field} />
-        {field.info && <HintText text={field.info} />}
-        <p className="text-sm text-muted-foreground rounded-md border border-dashed border-border p-4">
-          {String(t("detail.objectives.milestoneField.saveFirst"))}
-        </p>
-      </div>
+  /**
+   * Projection best-effort d'un geste vers l'entité projet.
+   *
+   * Silencieuse par conception : la source de vérité est la réponse, déjà mise à
+   * jour côté RHF quand on arrive ici. Un projet absent (réponse neuve) ou une
+   * écriture en échec ne doit ni bloquer la saisie ni annuler le geste.
+   */
+  const projeterSurProjet = async (
+    appliquer: (project: Project, milestones: Record<string, unknown>[]) => Promise<void>,
+  ) => {
+      if (!api || !projectId) return;
+      try {
+        const project = await api.project({ id: projectId });
+        const brut = asRecord(asRecord(project.serverData).oceco).milestones;
+        const milestones = Array.isArray(brut) ? brut.map(asRecord) : [];
+        await appliquer(project, milestones);
+    } catch {
+      // best-effort : cf. le JSDoc de ce champ.
+    }
+  };
+
+  const indexProjetDe = (milestones: Record<string, unknown>[], milestoneId: string) =>
+    milestones.findIndex((m) => String(m.milestoneId ?? "") === milestoneId);
+
+  const ouvrirAjout = () => {
+    setEditIndex(null);
+    setDialogOpen(true);
+  };
+
+  const ouvrirEdition = (item: CagnotteFundableItem) => {
+    const idx = typeof item.depenseIndex === "number" ? item.depenseIndex : -1;
+    if (idx < 0) return;
+    setEditIndex(idx);
+    setDialogOpen(true);
+  };
+
+  /** Ajout ET modification passent par ici — un seul chemin d'écriture. */
+  const soumettreDialogue = (values: DepenseFormValues) => {
+    if (editIndex === null) {
+      const milestoneId = generateMilestoneId(
+        list.map((d) => String(d.milestone ?? "")).filter(Boolean),
+      );
+      onChange?.(
+        addDepense(list, {
+          poste: values.name,
+          price: values.targetAmount,
+          description: values.description,
+          milestone: milestoneId,
+          user: perms.currentUserId,
+          date: new Date().toISOString(),
+        }),
+      );
+      void projeterSurProjet(async (project) => {
+        await appendProjectMilestone({
+          project,
+          milestone: {
+            milestoneId,
+            name: values.name,
+            description: values.description,
+            status: "open",
+          },
+        });
+      });
+      return;
+    }
+
+    const cible = list[editIndex];
+    onChange?.(
+      updateDepense(list, editIndex, {
+        poste: values.name,
+        price: values.targetAmount,
+        description: values.description,
+      }),
     );
-  }
+    const milestoneId = String(cible?.milestone ?? "");
+    if (!milestoneId) return;
+    void projeterSurProjet(async (project, milestones) => {
+      const idx = indexProjetDe(milestones, milestoneId);
+      if (idx < 0) return;
+      await updateProjectMilestoneFields({
+        project,
+        index: idx,
+        fields: { name: values.name, description: values.description },
+      });
+    });
+  };
+
+  const basculerOuverture = (item: CagnotteFundableItem, ouvert: boolean) => {
+    const idx = typeof item.depenseIndex === "number" ? item.depenseIndex : -1;
+    if (idx < 0) return;
+    onChange?.(setDepenseOpen(list, idx, ouvert));
+    const milestoneId = String(list[idx]?.milestone ?? "");
+    if (!milestoneId) return;
+    void projeterSurProjet(async (project, milestones) => {
+      const i = indexProjetDe(milestones, milestoneId);
+      if (i < 0) return;
+      await updateProjectMilestoneFields({
+        project,
+        index: i,
+        fields: { status: ouvert ? "open" : "close" },
+      });
+    });
+  };
+
+  const confirmerSuppression = () => {
+    const item = pendingDelete;
+    setPendingDelete(null);
+    if (!item) return;
+    const idx = typeof item.depenseIndex === "number" ? item.depenseIndex : -1;
+    if (idx < 0) return;
+    const milestoneId = String(list[idx]?.milestone ?? "");
+    onChange?.(removeDepense(list, idx));
+    if (!milestoneId) return;
+    void projeterSurProjet(async (project, milestones) => {
+      const i = indexProjetDe(milestones, milestoneId);
+      if (i < 0) return;
+      await deleteProjectMilestoneAtIndex({ project, index: i });
+    });
+  };
 
   const historyFor = (item: CagnotteFundableItem): AacLog[] => {
-    const depenseIndex = typeof item.depenseIndex === "number" ? item.depenseIndex : -1;
-    const entry = depenseIndex >= 0 ? depenses?.[depenseIndex] : undefined;
-    const raw = asRecord(entry).historique;
+    const idx = typeof item.depenseIndex === "number" ? item.depenseIndex : -1;
+    const raw = idx >= 0 ? asRecord(list[idx]).historique : undefined;
     return Array.isArray(raw) ? (raw as AacLog[]) : [];
   };
 
-  const pendingDeleteHasActions = (ctrl.pendingDeleteMilestone?.milestone?.actions?.length ?? 0) > 0;
-  const deleteDescription = ctrl.pendingDeleteMilestone
-    ? pendingDeleteHasActions
-      ? String(t("detail.objectives.milestoneField.deleteWithActionsWarning", undefined, {
-          name: ctrl.pendingDeleteMilestone.milestone.title,
-          count: ctrl.pendingDeleteMilestone.milestone.actions.length,
-        }))
-      : String(t("detail.objectives.deleteMilestoneConfirm.description", undefined, { name: ctrl.pendingDeleteMilestone.milestone.title }))
-    : "";
+  const valeursInitiales: DepenseFormValues | undefined =
+    editIndex !== null && list[editIndex]
+      ? {
+          name: String(list[editIndex].poste ?? ""),
+          description: String(list[editIndex].description ?? ""),
+          targetAmount: toSafeInt(list[editIndex].price),
+        }
+      : undefined;
 
   return (
     <div className={cn("space-y-3", field.width || "col-span-12")}>
       <div className="flex items-end justify-between gap-4">
         <div>
-          <FieldLabel field={field} />
+          <DepenseFieldLabel field={field} />
           {field.info && <HintText text={field.info} />}
         </div>
-        {!disabled && ctrl.cagnottePerms.canCreateMilestone ? (
-          <Button type="button" size="sm" className="h-7 text-[11px] gap-1 px-2 bg-primary hover:bg-primary/90" onClick={ctrl.openCreateMilestoneModal}>
+        {!disabled && perms.canCreateMilestone ? (
+          <Button
+            type="button"
+            size="sm"
+            className="h-7 text-[11px] gap-1 px-2 bg-primary hover:bg-primary/90"
+            onClick={ouvrirAjout}
+          >
             <Plus className="h-3 w-3" /> {String(t("detail.objectives.addMilestone"))}
           </Button>
         ) : null}
       </div>
 
-      <ConfirmDialog
-        open={!!ctrl.pendingDeleteMilestone}
-        onOpenChange={(open) => {
-          if (!open) ctrl.cancelDeleteMilestone();
-        }}
-        title={String(t("detail.objectives.deleteMilestoneConfirm.title"))}
-        description={deleteDescription}
-        confirmLabel={String(t("detail.objectives.deleteMilestoneConfirm.confirm"))}
-        cancelLabel={String(t("detail.objectives.deleteMilestoneConfirm.cancel"))}
-        isDestructive
-        isPending={
-          !!ctrl.pendingDeleteMilestone &&
-          ctrl.loadingIds.deletingItemId === ctrl.pendingDeleteMilestone.itemId
-        }
-        onConfirm={ctrl.confirmDeleteMilestone}
-      />
+      {items.length === 0 && (
+        <p className="text-sm text-muted-foreground italic">
+          {tf("coform.depense.empty", "Aucune dépense pour l'instant.")}
+        </p>
+      )}
+
+      {pendingDelete && (
+        <ConfirmDialog
+          open
+          onOpenChange={(open) => {
+            if (!open) setPendingDelete(null);
+          }}
+          title={String(t("detail.objectives.deleteMilestoneConfirm.title"))}
+          description={String(
+            t("detail.objectives.deleteMilestoneConfirm.description", undefined, {
+              name: pendingDelete.name,
+            }),
+          )}
+          confirmLabel={String(t("detail.objectives.deleteMilestoneConfirm.confirm"))}
+          cancelLabel={String(t("detail.objectives.deleteMilestoneConfirm.cancel"))}
+          isDestructive
+          onConfirm={confirmerSuppression}
+        />
+      )}
 
       <div className="grid gap-3">
         {openItems.map((o, i) => (
           <MilestoneRow
-            key={i}
+            key={o.milestoneId || `open-${i}`}
             index={i}
             item={o}
             history={historyFor(o)}
-            openEditMilestoneModal={ctrl.openEditMilestoneModal}
-            onMilestoneClose={ctrl.handleCloseMilestone}
-            onMilestoneRestore={ctrl.handleRestoreMilestone}
-            onMilestoneDelete={ctrl.handleDeleteMilestone}
-            permissions={ctrl.cagnottePerms as unknown as MilestoneCardPermissions}
-            loadingIds={ctrl.loadingIds}
+            onEdit={ouvrirEdition}
+            onClose={(item) => basculerOuverture(item, false)}
+            onRestore={(item) => basculerOuverture(item, true)}
+            onDelete={setPendingDelete}
+            permissions={perms as unknown as MilestoneCardPermissions}
             disabled={disabled}
           />
         ))}
@@ -327,59 +470,36 @@ export function MilestoneListField({ field, answerId, readOnly }: MilestoneListF
             <ChevronDown className={cn("size-3.5 transition-transform", showClosed && "rotate-180")} />
           </button>
         ) : null}
-        {showClosed && closedItems.map((o, i) => (
-          <MilestoneRow
-            key={openItems.length + i}
-            index={openItems.length + i}
-            item={o}
-            history={historyFor(o)}
-            openEditMilestoneModal={ctrl.openEditMilestoneModal}
-            onMilestoneClose={ctrl.handleCloseMilestone}
-            onMilestoneRestore={ctrl.handleRestoreMilestone}
-            onMilestoneDelete={ctrl.handleDeleteMilestone}
-            permissions={ctrl.cagnottePerms as unknown as MilestoneCardPermissions}
-            loadingIds={ctrl.loadingIds}
-            disabled={disabled}
-          />
-        ))}
+        {showClosed &&
+          closedItems.map((o, i) => (
+            <MilestoneRow
+              key={o.milestoneId || `closed-${i}`}
+              index={openItems.length + i}
+              item={o}
+              history={historyFor(o)}
+              onEdit={ouvrirEdition}
+              onClose={(item) => basculerOuverture(item, false)}
+              onRestore={(item) => basculerOuverture(item, true)}
+              onDelete={setPendingDelete}
+              permissions={perms as unknown as MilestoneCardPermissions}
+              disabled={disabled}
+            />
+          ))}
       </div>
 
-      {ctrl.selectedMilestone && ctrl.milestoneEditInitialValues ? (
-        <MilestoneEditDialog
-          open={ctrl.isEditMilestoneOpen}
-          onOpenChange={(open) => {
-            ctrl.setIsEditMilestoneOpen(open);
-            if (!open) ctrl.setSelectedMilestone(null);
-          }}
-          initialValues={ctrl.milestoneEditInitialValues}
-          milestoneId={ctrl.selectedMilestone.id}
-          answerDepenseIndex={ctrl.selectedMilestone.answerDepenseIndex}
-          mutation={ctrl.activeEditMilestoneMutation as unknown as import("@tanstack/react-query").UseMutationResult<void, Error, import("@/modules/cagnotte/actions/mutations/milestone").EditMilestoneParams>}
-          apiErrorFallbackKey="ActionsSection.errors.milestoneEditFailed"
-          onSuccess={async () => {
-            await ctrl.handleMilestoneEditSuccess();
-            await refetchDepenses();
-          }}
-        />
-      ) : null}
+      <FieldError name={field.name} message={errors[field.name]?.message as string | undefined} />
 
-      <CreateMilestoneDialog
-        open={ctrl.isCreateMilestoneOpen}
-        onOpenChange={ctrl.setIsCreateMilestoneOpen}
-        selectedProjectId={ctrl.resolvedProjectId}
-        answerId={ctrl.resolvedAnswerId}
-        currentUserId={ctrl.currentUserId || ""}
-        existingMilestoneIds={ctrl.existingMilestoneIds}
-        isConnected={ctrl.isConnected}
-        inputIdPrefix="aac-milestone-field"
-        onCreated={async () => {
-          await ctrl.refetchFundingEnvelope();
-        }}
-        onRefetch={async () => {
-          await ctrl.refetchFundingEnvelope();
-          await refetchDepenses();
-        }}
-      />
+      {dialogOpen && (
+        <DepenseFormDialog
+          open
+          onOpenChange={setDialogOpen}
+          initial={valeursInitiales}
+          onSubmit={soumettreDialogue}
+          inputIdPrefix={`depense-${field.name}`}
+        />
+      )}
     </div>
   );
 }
+
+export default MilestoneListField;

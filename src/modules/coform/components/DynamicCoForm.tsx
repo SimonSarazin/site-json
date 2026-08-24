@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Spinner } from "@/components/ui/spinner";
 import { TextField, TextAreaField, RadioField, CheckboxField, SelectField, ProseContent, SectionTitleField, SectionDescriptionField, TitleSeparatorField } from "./FormFields";
 import { TagsField } from "./TagsField";
+import type { DepenseEntry } from "../utils/depense";
 import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
 import { MultiRadioField } from "./MultiRadioField";
 import { EvaluationField } from "./EvaluationField";
@@ -688,11 +689,20 @@ export function DynamicCoForm({
 
                 case "milestoneList":
                   return (
-                    <MilestoneListField
+                    <Controller
                       key={field.name}
-                      field={field}
-                      answerId={answerId}
-                      readOnly={isLocked}
+                      name={field.name}
+                      control={control}
+                      render={({ field: controllerField }) => (
+                        <MilestoneListField
+                          field={field}
+                          errors={errors}
+                          value={controllerField.value as DepenseEntry[]}
+                          onChange={controllerField.onChange}
+                          answerId={answerId}
+                          readOnly={isLocked}
+                        />
+                      )}
                     />
                   );
 

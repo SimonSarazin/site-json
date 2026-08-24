@@ -17,6 +17,8 @@ import { SimpleTableField } from "./SimpleTableField";
 import { EvaluationField } from "./EvaluationField";
 import { FinderField } from "./FinderField";
 import { TagsField } from "./TagsField";
+import { MilestoneListField } from "./MilestoneListField";
+import type { DepenseEntry } from "../utils/depense";
 import { TitleSeparatorField } from "./FormFields";
 import { CommonTableField } from "./CommonTableField";
 import { CategorizedCheckboxField } from "./CategorizedCheckboxField";
@@ -330,6 +332,27 @@ function ReadOnlyField({
         </dt>
         <dd>
           <TagsField field={field} errors={{}} value={value as TagsValue} readOnly hideLabel />
+        </dd>
+      </div>
+    );
+  }
+
+  // milestoneList : valeur composite (liste d'objets `depense`). Sans ce cas,
+  // elle tombait dans la branche « tableau » générique et s'affichait en
+  // `[object Object]` par ligne — même famille de bug que commonTable.
+  if (field.componentType === "milestoneList") {
+    return (
+      <div className={cn(widthClass, "space-y-1.5")}>
+        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          {field.label}
+        </dt>
+        <dd>
+          <MilestoneListField
+            field={field}
+            errors={{}}
+            value={value as unknown as DepenseEntry[]}
+            readOnly
+          />
         </dd>
       </div>
     );

@@ -1118,8 +1118,17 @@ export function generateZodSchema(
         }
 
         case "milestoneList":
-          // Persisté immédiatement côté serveur par le composant (mutations
-          // cagnotte), pas via la soumission du form — schéma permissif.
+          // Piloté par react-hook-form et persisté À LA SOUMISSION, comme les
+          // autres champs (ce n'était pas le cas : le composant écrivait
+          // directement au serveur et ne réécrivait jamais la valeur RHF, si
+          // bien qu'une soumission postérieure écrasait les ajouts).
+          //
+          // ⚠️ `z.any()` par ligne est DÉLIBÉRÉ : une dépense réelle porte des
+          // clés hors contrat (`financer[]`, `historique[]`, `milestone`…) que
+          // le champ n'édite pas. Un `z.object` nu les stripperait, et comme le
+          // backend remplace la clé en bloc, soumettre sans toucher aux dépenses
+          // détruirait la donnée en base — le piège déjà rencontré sur
+          // `timeSlots`. Cf. `utils/depense.ts`.
           schemaShape[field.name] = z.array(z.any()).optional();
           break;
 

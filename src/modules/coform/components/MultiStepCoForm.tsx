@@ -16,6 +16,7 @@ import { useCoFormStep } from "../hooks/useCoFormStep";
 import { useCoFormNavigation, useCoFormSubmit } from "../hooks/useCoFormNavigation";
 import { TextField, TextAreaField, RadioField, CheckboxField, SelectField, ProseContent, SectionTitleField, SectionDescriptionField, TitleSeparatorField } from "./FormFields";
 import { TagsField } from "./TagsField";
+import type { DepenseEntry } from "../utils/depense";
 import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
 import { MultiRadioField } from "./MultiRadioField";
 import { EvaluationField } from "./EvaluationField";
@@ -692,11 +693,20 @@ function MultiStepCoFormContent({
 
                 case "milestoneList":
                   return (
-                    <MilestoneListField
+                    <Controller
                       key={field.name}
-                      field={field}
-                      answerId={coform.answerId}
-                      readOnly={isLocked}
+                      name={field.name}
+                      control={form.control}
+                      render={({ field: controllerField }) => (
+                        <MilestoneListField
+                          field={field}
+                          errors={form.formState.errors}
+                          value={controllerField.value as DepenseEntry[]}
+                          onChange={controllerField.onChange}
+                          answerId={coform.answerId}
+                          readOnly={isLocked}
+                        />
+                      )}
                     />
                   );
 

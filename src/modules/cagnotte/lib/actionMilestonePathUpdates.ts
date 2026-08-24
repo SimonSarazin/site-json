@@ -2,6 +2,17 @@ import type { Action, Answer, Project, SetTypeValue } from "@communecter/cocolig
 
 type SetType = SetTypeValue | Array<{ path: string; type: SetTypeValue }>;
 
+/**
+ * Étape par défaut des données d'un commun AAC.
+ *
+ * ⚠️ Le module AAC suppose partout que le commun vit sur `aapStep1` (65 sites au
+ * 2026-08-24). Ces primitives acceptent donc un `step` explicite — le champ
+ * coform, lui, connaît sa vraie étape — tout en gardant ce défaut pour ne pas
+ * casser les appelants historiques. Ce n'est PAS une levée de l'hypothèse
+ * module-wide : cf. le BACKLOG.
+ */
+export const DEFAULT_AAC_STEP = "aapStep1";
+
 export async function appendProjectMilestone(params: {
   project: Project;
   milestone: {
@@ -18,6 +29,8 @@ export async function appendProjectMilestone(params: {
 
 export async function appendAnswerDepense(params: {
   answer: Answer;
+  /** Étape portant le champ dépense. Défaut : `aapStep1` (cf. DEFAULT_AAC_STEP). */
+  step?: string;
   depense: {
     poste: string;
     price: number;
@@ -27,7 +40,8 @@ export async function appendAnswerDepense(params: {
     financer?: unknown[];
   };
 }) {
-  return params.answer.updateField("answers.aapStep1.depense", params.depense, {
+  const step = params.step || DEFAULT_AAC_STEP;
+  return params.answer.updateField(`answers.${step}.depense`, params.depense, {
     arrayForm: true,
     setType: [
       { path: "date", type: "isoDate" },
@@ -64,10 +78,13 @@ export async function updateAnswerDepenseFields(params: {
   index: number;
   fields: Record<string, unknown>;
   setType?: SetType;
+  /** Étape portant le champ dépense. Défaut : `aapStep1` (cf. DEFAULT_AAC_STEP). */
+  step?: string;
 }) {
+  const step = params.step || DEFAULT_AAC_STEP;
   for (const [field, value] of Object.entries(params.fields)) {
     await params.answer.updateField(
-      `answers.aapStep1.depense.${params.index}.${field}`,
+      `answers.${step}.depense.${params.index}.${field}`,
       value,
       params.setType ? { setType: params.setType } : {},
     );
@@ -89,10 +106,13 @@ export async function deleteProjectMilestoneAtIndex(params: {
 export async function deleteAnswerDepenseAtIndex(params: {
   answer: Answer;
   index: number;
+  /** Étape portant le champ dépense. Défaut : `aapStep1` (cf. DEFAULT_AAC_STEP). */
+  step?: string;
 }) {
+  const step = params.step || DEFAULT_AAC_STEP;
   return params.answer.updateField(
-    `answers.aapStep1.depense.${params.index}`,
+    `answers.${step}.depense.${params.index}`,
     null,
-    { pull: "answers.aapStep1.depense" },
+    { pull: `answers.${step}.depense` },
   );
 }

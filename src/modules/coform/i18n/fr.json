@@ -487,6 +487,20 @@
       "loadError": "Impossible de charger les options.",
       "notConfigured": "Ce champ n'est pas encore configuré.",
       "orphans": "Réponses enregistrées ne correspondant plus à une option proposée :"
+    },
+    "depense": {
+      "addTitle": "Ajouter une dépense",
+      "editTitle": "Modifier la dépense",
+      "dialogDescription": "Les dépenses sont enregistrées avec votre réponse.",
+      "name": "Intitulé",
+      "nameRequired": "L'intitulé est requis",
+      "description": "Description",
+      "amount": "Montant cible",
+      "amountInvalid": "Le montant doit être positif",
+      "add": "Ajouter",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "empty": "Aucune dépense pour l'instant."
     }
   }
 }

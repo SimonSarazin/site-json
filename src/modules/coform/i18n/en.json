@@ -487,6 +487,20 @@
       "loadError": "Options could not be loaded.",
       "notConfigured": "This field has not been configured yet.",
       "orphans": "Saved answers no longer matching an available option:"
+    },
+    "depense": {
+      "addTitle": "Add an expense",
+      "editTitle": "Edit expense",
+      "dialogDescription": "Expenses are saved along with your answer.",
+      "name": "Title",
+      "nameRequired": "A title is required",
+      "description": "Description",
+      "amount": "Target amount",
+      "amountInvalid": "The amount must be positive",
+      "add": "Add",
+      "save": "Save",
+      "cancel": "Cancel",
+      "empty": "No expense yet."
     }
   }
 }
