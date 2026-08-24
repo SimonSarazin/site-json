@@ -81,5 +81,9 @@
   "JoinByLink.joining": "Joining…",
   "JoinByLink.joined": "You have joined the community.",
   "JoinByLink.continue": "Continue",
-  "JoinByLink.failed": "This invitation link is invalid or expired."
+  "JoinByLink.failed": "This invitation link is invalid or expired.",
+  "Vérification de votre accès…": "Checking your access…",
+  "Cette page est réservée. Connectez-vous pour y accéder.": "This page is restricted. Sign in to access it.",
+  "Votre compte n'a pas les droits nécessaires pour voir cette page.": "Your account does not have the required permissions to view this page.",
+  "Cette page est réservée.": "This page is restricted."
 }

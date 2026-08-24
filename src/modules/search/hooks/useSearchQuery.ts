@@ -27,6 +27,10 @@ export interface UseSearchQueryParams {
   /** Overrides du cache React Query (ex. dashboards « charger tout » : un
    *  staleTime long évite de re-chaîner toutes les pages au retour). */
   cache?: { staleTime?: number; gcTime?: number };
+  /** Désactive la requête (défaut `true`) — pour les requêtes CONDITIONNELLES à une prop de
+   *  config (ex. l'épinglée d'`articleFeed` en mode `featured:"flag"`). Composé avec le
+   *  `!!entity` interne : `enabled: false` ne fetch JAMAIS, sans violer les règles des hooks. */
+  enabled?: boolean;
   baseParams?: {
     fediverse?: boolean;
     indexStepList?: number;
@@ -69,6 +73,7 @@ export function useSearchQuery({
   mapUsed,
   graphUsed = false,
   variant,
+  enabled,
   baseParams = {},
   cache,
 }: UseSearchQueryParams) {
@@ -174,7 +179,7 @@ export function useSearchQuery({
       }
     },
     options: {
-      enabled: !!entity,
+      enabled: enabled !== false && !!entity,
       staleTime: cache?.staleTime ?? 60 * 1000,
       ...(cache?.gcTime !== undefined && { gcTime: cache.gcTime }),
       initialPageParam: undefined,

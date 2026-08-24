@@ -33,9 +33,14 @@ export function OptimizedImage({
   const isBypass = !src || src.endsWith(".svg") || src.startsWith("data:") || src.startsWith("blob:");
 
   if (isBypass) {
+    // Un chemin RELATIF ("images/…") 404 sur toute route à ≥2 segments (/profil/:slug, /admin/:tab) :
+    // le bypass rendait le src brut là où buildOptimizedUrl absolutise les rasters. On aligne —
+    // seuls les chemins locaux sont touchés (data:/blob:/http(s) passent tels quels).
+    const bypassSrc = src && !src.startsWith("/") && !src.startsWith("data:") && !src.startsWith("blob:") && !/^https?:\/\//.test(src)
+      ? `/${src}` : src;
     return (
       <img
-        src={src}
+        src={bypassSrc}
         alt={alt}
         width={width}
         height={height}

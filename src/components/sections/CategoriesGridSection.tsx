@@ -1,6 +1,7 @@
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { useLocalization } from "@/hooks/useLocalization";
 import { LocalizedString } from "@/types/site-schema";
+import NavLink from "@/components/layout/NavLink";
 
 export interface SportCategoriesCard {
   icon?: string;
@@ -125,14 +126,19 @@ export function SportCategoriesSection({
             );
 
             if (card.link) {
+              // `NavLink` plutôt qu'un `<a href>` brut : ces cartes sont le chemin de conversion
+              // principal de l'accueil, et une ancre native rechargeait TOUTE l'application à
+              // chaque clic (re-téléchargement du HTML + réhydratation), là où la même action
+              // depuis le héros est instantanée. NavLink porte en plus le contrat 4 voies partagé
+              // (interne / externe / mailto-tel-sms / inerte) — cf. src/lib/linkKind.ts.
               return (
-                <a
+                <NavLink
                   key={index}
-                  href={card.link}
+                  to={card.link}
                   className="no-underline hover:no-underline block h-full"
                 >
                   {cardElement}
-                </a>
+                </NavLink>
               );
             }
 

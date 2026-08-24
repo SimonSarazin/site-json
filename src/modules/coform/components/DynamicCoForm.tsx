@@ -12,16 +12,19 @@ import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
 import { MultiRadioField } from "./MultiRadioField";
 import { EvaluationField } from "./EvaluationField";
 import { CommonTableField } from "./CommonTableField";
+import { CategorizedCheckboxField } from "./CategorizedCheckboxField";
 import { MultiEvalChartDialog } from "./MultiEvalChartDialog";
 import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { LocationField } from "./LocationField";
 import { UploaderField } from "./UploaderField";
+import { TimeSlotsField } from "./TimeSlotsField";
+import { DynamicFieldsField } from "./DynamicFieldsField";
 import { CoFormBanner } from "./CoFormBanner";
 import { DraftRecoveryBanner } from "./DraftRecoveryBanner";
 import { ErrorSummary } from "./ErrorSummary";
 import { AnswerActivityDialog } from "./AnswerActivityDialog";
-import type { CoFormData, SubFormData, AddedOptionsMap, EvaluationValue, CommonTableValue, FinderValue, SimpleTableValue, MultiRadioValue, ExistingAnswerMeta } from "../types";
+import type { CoFormData, SubFormData, AddedOptionsMap, EvaluationValue, CommonTableValue, CategorizedCheckboxValue, FinderValue, SimpleTableValue, MultiRadioValue, ExistingAnswerMeta } from "../types";
 import { parseCoFormFields, generateZodSchema, generateDefaultValues, getStepHasMultiEval, getOriginalFieldKey } from "../utils/formParser";
 import { scrollToFieldByName } from "../utils/helpers";
 import { cn } from "@/lib/utils";
@@ -537,6 +540,24 @@ export function DynamicCoForm({
                     />
                   );
 
+                case "categorizedCheckbox":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={control}
+                      render={({ field: controllerField }) => (
+                        <CategorizedCheckboxField
+                          field={field}
+                          errors={errors}
+                          value={controllerField.value as CategorizedCheckboxValue}
+                          onChange={controllerField.onChange}
+                          readOnly={isLocked}
+                        />
+                      )}
+                    />
+                  );
+
                 case "finder":
                   return (
                     <Controller
@@ -588,6 +609,40 @@ export function DynamicCoForm({
                           formId={formData.id}
                           answerId={answerId}
                           subKey={`${subForm.subFormId}.${field.name}`}
+                        />
+                      )}
+                    />
+                  );
+
+                case "timeSlots":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={control}
+                      render={({ field: controllerField }) => (
+                        <TimeSlotsField
+                          field={field}
+                          errors={errors}
+                          value={controllerField.value}
+                          onChange={controllerField.onChange}
+                        />
+                      )}
+                    />
+                  );
+
+                case "dynamicFields":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={control}
+                      render={({ field: controllerField }) => (
+                        <DynamicFieldsField
+                          field={field}
+                          errors={errors}
+                          value={controllerField.value}
+                          onChange={controllerField.onChange}
                         />
                       )}
                     />

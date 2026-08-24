@@ -2,6 +2,8 @@ import { initApi } from "@/lib/apiClient";
 import { getBaseUrl, getSitePublicUrl } from "@/lib/constant/common";
 import { buildSearchPayload } from "@/modules/search/lib/buildSearchPayload";
 import { stripMarkdown } from "../lib/markdown";
+import { articleDateValue, parseArticleDate } from "../lib/articleDate";
+import { articleFields } from "../constants/fields";
 
 /** Échappement XML (5 caractères). */
 function esc(s: unknown): string {
@@ -12,7 +14,8 @@ function esc(s: unknown): string {
 
 interface FeedArticle {
   id?: string; slug?: string; name?: string; shortDescription?: string;
-  description?: string; created?: number; profilImageUrl?: string; profilMediumImageUrl?: string;
+  description?: string; created?: number; publicationDate?: unknown;
+  profilImageUrl?: string; profilMediumImageUrl?: string;
 }
 function norm(r: unknown): FeedArticle {
   const sd = (r as { serverData?: Record<string, unknown> })?.serverData;
@@ -32,14 +35,22 @@ export async function renderBlogFeed(opts: {
   limit?: number;
   title?: string;
   description?: string;
+  /**
+   * `config.blog.publicFilters` — filtres serveur du périmètre PUBLIC (ex. `{publicationStatus:"Publié"}`),
+   * passés par dev-server/prod-server depuis la config chargée. Sans eux, le flux distribue les brouillons
+   * et les archives que les sections `articleFeed` excluent. `type:"article"` reste non surchargeable.
+   */
+  publicFilters?: Record<string, unknown>;
+  /** `config.blog.publicSortBy` — chronologie publique (ex. `{publicationDate:-1}`). */
+  publicSortBy?: Record<string, 1 | -1>;
 }): Promise<string> {
-  const { costumSlug, limit = 30, title = "Articles", description } = opts;
+  const { costumSlug, limit = 30, title = "Articles", description, publicFilters = {}, publicSortBy } = opts;
   const { entity } = await initApi({ baseURL: getBaseUrl() });
   if (!entity) throw new Error("API non initialisée (feed)");
 
   const payload = buildSearchPayload(
     // Le flux public ne distribue pas les articles EN ATTENTE : applyValidationGate le pose (costumSlug présent). §16.
-    { defaultFilters: { type: "article" }, defaultSortBy: { created: -1 }, costumSlug, sourceKey: [costumSlug] } as never,
+    { defaultFilters: { ...publicFilters, type: "article" }, defaultSortBy: publicSortBy ?? { created: -1 }, defaultFields: articleFields(), costumSlug, sourceKey: [costumSlug] } as never,
     { name: "", type: ["poi"], indexStep: limit },
   );
   const page = (await entity.searchCostum(
@@ -55,8 +66,10 @@ export async function renderBlogFeed(opts: {
     const link = a.slug ? `${origin}/blog/${a.slug}` : `${origin}/blog/id/${a.id}`;
     const body = a.shortDescription
       || (typeof a.description === "string" ? stripMarkdown(a.description).slice(0, 500) : "");
-    const pubDate = typeof a.created === "number"
-      ? new Date(a.created < 2e10 ? a.created * 1000 : a.created).toUTCString() : "";
+    // Même date que le site (publicationDate sinon created) : un agrégateur ne doit pas
+    // ordonner le flux autrement que le fil public.
+    const d = parseArticleDate(articleDateValue(a));
+    const pubDate = d ? d.toUTCString() : "";
     const img = a.profilImageUrl || a.profilMediumImageUrl;
     return `<item>`
       + `<title>${esc(a.name)}</title>`

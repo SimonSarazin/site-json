@@ -295,6 +295,56 @@
       }
     ]
   },
+  "answerFacets": {
+    "/lieux/activités": {
+      "target": "linkedElements",
+      "searchByField": {
+        "field": "_id",
+        "value": [
+          "000000000000000000000000"
+        ]
+      },
+      "filters": {
+        "_id": {
+          "$in": [
+            "000000000000000000000000"
+          ]
+        }
+      }
+    },
+    "/lieux/équipement": {
+      "target": "linkedElements",
+      "searchByField": {
+        "field": "_id",
+        "value": [
+          "000000000000000000000000"
+        ]
+      },
+      "filters": {
+        "_id": {
+          "$in": [
+            "000000000000000000000000"
+          ]
+        }
+      }
+    },
+    "/lieux/reseauxThematiques": {
+      "target": "linkedElements",
+      "searchByField": {
+        "field": "_id",
+        "value": [
+          "000000000000000000000000"
+        ]
+      },
+      "filters": {
+        "_id": {
+          "$in": [
+            "000000000000000000000000"
+          ]
+        }
+      }
+    }
+  },
   "referencement": {},
   "membership": {
     "citoyens/membership": {

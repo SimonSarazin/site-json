@@ -200,6 +200,30 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 
 ## 9. Impacts des modifications
 
+### 13/08 — édition d'un lieu : le formulaire du site refusé par la lib
+
+**Constat** (remonté depuis l'usage) : valider la modale « Modifier » d'un lieu échoue sur
+`ApiValidationError: [DraftProxy] Le champ "holderOrganization" n'est pas autorisé.` — rien n'est
+enregistré.
+
+**Cause** — la lib ouvre à l'écriture les champs du costum de **PROVENANCE** de l'élément
+(`source.key`), pas ceux du costum qui rend le **formulaire**. Pour un annuaire, les deux diffèrent :
+sur les 3 lieux de contrôle, un seul a un `source.key` déclarant le champ (`franceTierslieux`), les
+deux autres pointent hors registre (`tierslieuxorg`) ou n'ont aucun `source`. Asymétrie de fond avec
+la **création**, qui passe, elle, explicitement par `me.costum(slug)`.
+
+**Correctif** — `EntityMutationSpec.schemaCostumSlug` : le costum du descripteur est épinglé sur
+l'entité avant l'écriture du draft (`setCostumScope(slug, { pinSchema: true })`). Dépend d'un ajout
+SDK décrit en **§11.2** ; implémenté et vérifié localement, **non commité côté lib**. 3 tests de
+non-régression (`useEntityMutation.test.ts`).
+
+**Revue de conformité de `e12eddf2`** (détail des salles/coworking/hébergement) menée au passage.
+Le lot est **conforme** : les textes libres passent bien par `ProseContent` (markdown/HTML
+auto-détecté **puis sanitisé**), la largeur de modale surcharge proprement le `sm:max-w-lg` de
+`DialogContent` sans toucher au garde-fou mobile `max-w-[calc(100%-2rem)]`, et les lectures de
+tableau distinguent `!== undefined` de la troncature falsy — indispensable, `name` et `area` valant
+les index `0` et `1`. Trois réserves, aucune bloquante, détaillées au **§13**.
+
 ### 10/08bis — détail d'un outil : les lieux listés n'étaient pas les bons
 
 **Constat** (test navigateur, comparaison détail d'outil ⇄ formulaire de réponse du lieu) : la
@@ -406,6 +430,7 @@ dans `commentaire/sdk-tools-catalog.md` (notes locales, hors dépôt).
 | `BaseEntity.saveToolEnrichment()` — édition d'un outil (`COSTUM_SAVE_TOOL_ENRICHMENT`, bearer) | ✅ `1.0.183` | `SaveCriteriaAction.php` durcie (elle écrivait sans aucun contrôle d'accès). ⚠️ Sur `BaseEntity`, pas `Organization` — cf. §12 |
 | `BaseEntity.getCommunList()` — options du select de rattachement (`COSTUM_COMMUN_LIST`, bearer) | ✅ `1.0.183` | `CommunListAction.php` déployée ; remplace un appel legacy qui ramenait ~300 réponses AAP entières |
 | Upload de l'image d'un outil | ✅ présent | `entity.uploadDocument(file, {contentKey: "icons", docType: "image"})` — même `contentKey` que le legacy |
+| `BaseEntity.setCostumScope(slug, {pinSchema})` — **épingle du schéma** pour ÉDITER un lieu de l'annuaire | ⛔ **À DEMANDER** | Bloque l'édition d'un lieu (`[DraftProxy] Le champ "holderOrganization" n'est pas autorisé.`). Mesuré sur 3 lieux réels : 2 échouent. Cf. §11.2 |
 
 La config dépend par ailleurs du variant **`navigator-tl`** : toute évolution de cet endpoint la
 touche en premier.
@@ -459,6 +484,82 @@ inchangé). Le serveur renormalise la valeur reçue avec `normalizeToolName`, la
 (`TOOL_USERS`) — deux outils d'un même besoin partageraient sinon le cache. Le bump `^1.0.184` est
 posé (`c12f2e43`) et `ToolDetailDialog` alimente le hook depuis `tool.normalizedName` du DTO de
 liste : le câblage est complet de bout en bout.
+
+### 11.2 ⛔ À demander — `pinSchema` sur `setCostumScope` : éditer un lieu de l'annuaire
+
+> **Statut** : demande **à porter à la lib**. Implémentation locale faite et vérifiée sur données
+> réelles (`tsc` SDK vert, `lint` vert, 75 tests unitaires verts) ; **rien n'est commité côté SDK**.
+> Sans elle, **l'édition d'un lieu est cassée en production** pour la majorité des lieux.
+
+**Le symptôme.** Ouvrir la modale « Modifier » d'un lieu, valider → `ApiValidationError:
+[DraftProxy] Le champ "holderOrganization" n'est pas autorisé.` Aucune donnée n'est enregistrée.
+
+**La cause.** La liste blanche du draft (`BaseEntity._buildDraftAndProxy`) ouvre à l'écriture les
+champs du costum de **PROVENANCE** de l'élément — son `source.key`, que `_setData` re-dérive à
+chaque hydratation (« un élément appartient à UN costum = son `source.key`, qui fait donc
+AUTORITÉ »). Or `navigatorDesTierslieux` est un costum **ANNUAIRE** : il liste des lieux qui ne
+viennent pas de lui, et leur applique **son** formulaire. Les deux notions divergent, donc les
+champs du formulaire ne sont pas dans la liste blanche.
+
+**Mesure** (backend local, `element/about`, sur les 3 lieux ayant servi à valider `e12eddf2`) :
+
+| Lieu | `source.key` | Résolution du contexte | Écriture `holderOrganization` |
+|---|---|---|---|
+| La Coroutine | `franceTierslieux` | costum bundlé, 14 propriétés | ✅ passe (par chance : ce costum déclare le champ) |
+| La Plume à Loup | `tierslieuxorg` | **hors registre** (le registre porte `tierslieuxorg1`) → ctx nu, 0 propriété | ❌ **rejet** |
+| Coopérative Baraka | *(aucun `source`)* | `null` | ❌ **rejet** |
+
+Deux lieux sur trois échouent — et le seul qui passe le doit à un costum tiers qui déclare
+fortuitement le même champ. Ce n'est pas un cas limite : c'est le cas courant d'un annuaire.
+
+**Pourquoi le contournement n'existe pas côté site.** Trois voies testées, toutes fermées :
+`setCostumScope()` après chargement pose bien `_costumCtx` (13 propriétés) mais le proxy **refuse
+toujours** — `_getAllowedFieldsForCurrentState()` relit un `combinedSchema` figé au chargement ;
+poser le scope **avant** `get()` ne survit pas à `_setData` dès que l'élément a un `source.key`
+étranger ; passer `costumCtx` à la construction est ignoré pour la même raison (`BaseEntity.entity`
+ne le propage qu'aux entités NEUVES, `!_hasAtLeastOne(data, ["id","slug"])`).
+
+**Ce que la lib promet déjà.** `loadCostumScope` est documentée « pose le contexte COMPLET
+(champs/presets/hidden) sur cette entité — **pour l'ÉDITER avec ses champs costum** … comble
+l'édition vide ». Cette promesse n'est pas tenue aujourd'hui : le contexte est posé, la liste
+blanche ne bouge pas. La demande **rend vraie la documentation existante**.
+
+**Trois points d'entrée** (`src/api/BaseEntity.ts`, implémentation locale vérifiée) :
+
+1. **Un drapeau d'épingle** `_costumCtxPinned` posé par `setCostumScope`/`loadCostumScope`, testé
+   dans `_setData` avant la re-dérivation depuis `source.key` — même statut que `_adminScope`, qui
+   survit déjà aux ré-hydratations parce qu'il traduit un choix explicite de l'appelant :
+
+   ```ts
+   if (!this._costumCtxPinned) { /* … re-dérivation depuis source.key, inchangée … */ }
+   ```
+
+2. **Rejouer la liste blanche** quand `_costumCtx` change après le build — sinon poser un scope est
+   un no-op visible pour l'édition. Extraire la construction du `allOf` de `_buildDraftAndProxy`
+   (`_buildCombinedSchema`, rejouable) et mémoriser les `constants` dans `_allowedFieldsMetadata`.
+   ⚠️ **Semer** les champs nouvellement ouverts dans le draft **et dans la baseline** depuis
+   `serverData` : sans ce semis, `_hasFieldChanged` les verrait tous « modifiés » (baseline
+   `undefined`) et le save émettrait des champs intouchés. Vérifié : `hasChanges()` reste `false`
+   juste après la pose, et la baseline est bien semée (`manageModel`, `openingDate`,
+   `siteSurfaceArea`, `buildingSurfaceArea` sur `laPlumeALoup`).
+
+3. **Opt-in, pas défaut** — `setCostumScope(slug, { pinSchema?: boolean })`, défaut `false` :
+
+   ```ts
+   setCostumScope(slug: string, opts?: { costumId?: string; costumType?: string; pinSchema?: boolean }): void
+   ```
+
+   Le défaut `false` est **load-bearing** : `setCostumScope` est déjà appelée par
+   `ensureCostumScope` (import/export/validation) sur le carrier de **7 sites du parc**, où la
+   provenance doit **rester** maîtresse du schéma (contrat des sens A/B, `admin-scope.test.ts`).
+   Épingler par défaut changerait le schéma d'édition de l'hôte de ces sites. `loadCostumScope`,
+   elle, épingle **par défaut** : c'est sa raison d'être documentée.
+
+**Côté site-json** : `EntityMutationSpec.schemaCostumSlug`, alimenté en édition depuis
+`FormDescriptor.costumSlug` (`resolveModalSpec`) et posé juste avant `submitEntityEdit` — pendant
+exact du `me.costum(slug)` de la création, dont l'absence en édition était l'asymétrie de fond.
+Couvert par 3 tests de non-régression (`useEntityMutation.test.ts`) dont un faux `DraftProxy` qui
+rejette hors liste blanche : retirer `schemaCostumSlug` **ou** son `pinSchema` les fait échouer.
 
 ---
 
@@ -515,3 +616,7 @@ liste : le câblage est complet de bout en bout.
 | 8 | Verrouiller le fix `normalizedName` : le rendre **requis** dans `UseToolDetailOptions` (le champ est requis sur `ToolCatalogItem`, donc `tsc` reste vert — vérifié) et ajouter un test de non-régression (passage à `getToolUsers` + présence dans la clé React Query). Sans cela, un futur appelant qui l'oublie rétablit les 61 % d'attributions fausses **sans qu'aucun gate ne bronche** | Thomas |
 | 9 | Review du 11/08 : deux bugs **préexistants** de `CommonTableField` mis au jour (hors périmètre des 5 commits, mais l'un est aggravé par `e3cb6a6a`) — regroupement des scores sur `usageKey` **brut** sans `groupKeyResolver` (une réponse legacy sans `usageKey` n'apparaît jamais sur sa ligne, et affiche désormais « — » = « non répondu », faux) et `handleActivate` indexé sur la clé brute (clic sans effet sur une ligne ré-ancrée). Chantier coform à planifier | Thomas |
 | 10 | La branche `feat/invitations-email` consomme `UserApi.validateInvitation*` (livrés en SDK `1.0.184`) mais son `package.json` est resté en `^1.0.181` : son `tsc` échouera tant que le bump n'est pas posé | Thomas |
+| 11 | **Porter §11.2 à la lib** (`setCostumScope(slug, {pinSchema})`). Tant que ce n'est pas publié, l'édition d'un lieu ne marche qu'avec le SDK **rebuildé en local** : un `npm ci` propre la recasse, sans qu'aucun gate ne bronche (`tsc`/`lint` restent verts, `pinSchema` étant optionnel) | Thomas |
+| 12 | Revue `e12eddf2` — **`roomPath.catering` pointe-t-il bien sur la question « restauration » ?** Son suffixe d'input (`…mieg8j24m89gm99t5mi`) est celui porté par `equipments` dans `coworkingPath` **et** `bedRoomPath`. Ces formulaires étant des copies l'un de l'autre (préfixe de step différent, suffixe conservé), le même suffixe = la même question d'origine : le détail d'une salle afficherait alors la liste d'**équipements** sous l'intitulé « Restauration ». À trancher sur le formulaire en base (`6925869ad76aaf6c5a2b2f8a`) | Thomas |
+| 13 | Revue `e12eddf2` — **code mort dans la branche `array` de l'hébergement.** `area`/`bedPrice`/`roomPrice` y sont lus par `row[section.bedRoomPath.X]`, or ces clés sont des **chemins pointés** et non des index de ligne (contrairement à `roomPath`, en index numériques) → toujours `undefined` → `0`/`""`. Sans effet aujourd'hui (`bedRoomPath.type === "answer"`, la branche n'est jamais prise) mais le jour où un config passe en `array`, le « correctif » ne corrigera rien — exactement le mode de panne silencieux visé par le commit. À supprimer ou à réécrire en `getNestedValue` | Thomas |
+| 14 | Revue `e12eddf2` — **clé de config morte laissée en place** : `coworkingPath.extra` n'est toujours lue par personne ; le lot a ajouté `equipments` **avec le même chemin** au lieu de lire `extra`. Deux clés pour une donnée, dont une inerte (cf. §12, « un mapping non lu ne produit aucune erreur ») | Thomas |
