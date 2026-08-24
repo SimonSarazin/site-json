@@ -79,6 +79,7 @@ const ENTITY_TO_COLLECTION: Record<string, FormCollection> = {
 const WIDGET_DEFAULTS: Partial<Record<WidgetKind, Partial<FieldDescriptor>>> = {
   text: { type: "string", read: "coerce:string", default: "" },
   textarea: { type: "string", read: "coerce:string", default: "" },
+  markdown: { type: "string", read: "coerce:string", default: "" },
   email: { type: "string", read: "coerce:string", default: "" },
   tel: { type: "string", read: "coerce:string", default: "" },
   select: { type: "string", read: "coerce:string", default: "" },

@@ -17,16 +17,38 @@ export const ArticleFeedSectionSchema = z.object({
     costumSlug: z.string(),
     /** Nombre d'articles par page (défaut 12). */
     pageSize: z.number().int().positive().optional(),
+    /**
+     * Tri serveur du fil ET de l'épinglée (défaut `{created:-1}`, historique). Ex. actualités
+     * éditoriales : `{"publicationDate":-1}` — la date de PUBLICATION prime sur la date de
+     * saisie (review MR 44, refonte option B).
+     */
+    sortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
     /** Filtre serveur additionnel (ex. `{ category: "actus" }`). `type:"article"` est toujours injecté. */
     filters: z.record(z.string(), z.unknown()).optional(),
+    /**
+     * Champs projetés EN PLUS du contrat d'article du module (`ARTICLE_FIELDS`,
+     * constants/fields.ts — qui couvre déjà name/slug/description/tags/images/created/
+     * publicationDate/publicationStatus/category/featured). À poser seulement pour un champ
+     * costum propre au site qu'un variant de carte lirait.
+     */
+    defaultFields: z.array(z.string()).optional(),
     /**
      * ⚠️ DÉPRÉCIÉ (items 2+3). Le reader d'article est CANONIQUE et unique : `/blog/:slug` (+ `/blog/id/:id`).
      * Un `articleFeed` peut être posé sur N pages mais pointe TOUJOURS vers ce reader (le retour est dynamique,
      * `navigate(-1)` — cf. ArticleReader). Toute autre valeur est ignorée (la section force `/blog`, warning dev).
      */
     detailBasePath: z.string().optional(),
-    /** Afficher un article « à la une » (le plus récent) en tête. */
-    featured: z.boolean().optional(),
+    /**
+     * Article « à la une » en tête du fil :
+     *  - `true` — le PLUS RÉCENT (comportement historique, automatique) ;
+     *  - `"flag"` — la fiche portant `featured: true` en base (épinglage ÉDITORIAL, posé par
+     *    l'action admin `setFeatured`/`exclusiveField`), repli sur le plus récent si aucune.
+     *    Robuste par construction : une SEULE liste (rien n'est exclu côté serveur, un
+     *    double-flag résiduel ne fait perdre aucun article), l'épinglée est cherchée par une
+     *    micro-requête serveur dédiée (`{featured:true}`, 1 résultat) — pas dans la fenêtre
+     *    chargée — et dédupliquée du fil par id. Décision review MR 44 (option B, 2026-08-21).
+     */
+    featured: z.union([z.boolean(), z.literal("flag")]).optional(),
     /**
      * Variant de carte (registre `CARD_VARIANTS`, lazy) : `default` (éditorial 16/9) · `compact` (ligne).
      * Défaut : `config.blog.defaultCardVariant` sinon `default`. Un variant inconnu retombe sur `default`.

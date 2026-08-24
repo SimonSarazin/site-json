@@ -67,6 +67,7 @@ import net from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn, type ChildProcess } from "node:child_process";
+import { isGatedPage } from "../src/lib/pageAccess";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -444,11 +445,13 @@ function isSsrHidden(section: SectionLike): boolean {
   );
 }
 
-/** Page derrière un garde d'auth : rendue ici en ANONYME, son vide ne prouve rien. */
-function isAuthGuarded(page: PageLike): boolean {
-  if (page.auth?.required || (page.auth?.roles?.length ?? 0) > 0) return true;
-  return (page.middleware ?? []).some((m) => m === "auth-required" || m === "admin-only");
-}
+/**
+ * Page derrière un garde d'accès. Le prédicat vient de `src/lib/pageAccess.ts` — le MÊME que
+ * celui qui décide de ne pas sérialiser les sections (SiteRenderer), de poser `robots: noindex`
+ * (Seo) et d'exclure la page du sitemap. Une copie locale a existé ici : elle est supprimée pour
+ * que le gate et le moteur ne puissent pas diverger.
+ */
+const isAuthGuarded = (page: PageLike): boolean => isGatedPage(page as never);
 
 /** Texte visible d'un fragment (scripts/styles retirés) — mesure « ça affiche quelque chose ». */
 function visibleText(fragment: string): string {
@@ -630,9 +633,17 @@ function analysePage(page: PageLike, status: number, html: string): PageReport {
     notes.push(
       `404 du filtre statique DEV-only (« ${devPrefix}* » dans server/dev-server.js) — le serveur de prod, lui, ne filtre que par extension : la page vit en prod, mais reste morte sous \`npm run dev\``,
     );
-  } else if (verdict === "ko" && !missing.length && !stuck.size && !failed.length && !notImplemented.length && isAuthGuarded(page)) {
+  } else if (verdict === "ko" && !stuck.size && !failed.length && !notImplemented.length && isAuthGuarded(page)) {
     verdict = "auth";
-    notes.push("page derrière un garde d'auth : rendue ici en anonyme, son vide n'est pas concluant");
+    // Les sections d'une page gardée ne sont plus sérialisées au SSR (SiteRenderer + isGatedPage) :
+    // leur absence est le comportement ATTENDU, pas un défaut de la config. La condition portait
+    // auparavant `!missing.length`, écrite à l'époque où une page gardée rendait quand même tout —
+    // depuis, `missing` vaut systématiquement l'intégralité des sections déclarées.
+    notes.push(
+      missing.length
+        ? `page gardée : ses ${missing.length} section(s) sont délibérément retenues au SSR (contenu jamais servi à un anonyme)`
+        : "page derrière un garde d'auth : rendue ici en anonyme, son vide n'est pas concluant",
+    );
   }
 
   return {

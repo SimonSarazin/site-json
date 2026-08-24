@@ -37,6 +37,8 @@
     "reference": "Reference",
     "detach": "Detach",
     "unreference": "Remove reference",
+    "feature": "Feature",
+    "unfeature": "Remove from featured",
     "delete": "Delete",
     "empty": "No items.",
     "searchFailed": "Search failed: {{message}}.",
@@ -65,6 +67,10 @@
     "selectAll": "Select all (loaded rows)",
     "selectRow": "Select {{label}}",
     "rowActions": "Actions for {{label}}",
+    "setStatus": "Mark as: {{state}}",
+    "statusUnset": "Not set",
+    "statusSuccess": "Status updated: {{state}}",
+    "statusError": "Status update failed",
     "bulkTransfer": "Transfer ownership"
   },
   "AdminExportSection": {
@@ -175,6 +181,12 @@
     "classified": "Sub-type saved",
     "referencedUnmoderated": "Referenced, but moderation could not be applied"
   },
+  "useSetExclusiveFlag": {
+    "featured": "Featured",
+    "unfeatured": "Removed from featured",
+    "error": "Action failed",
+    "partialUnset": "Featured set, but {{count}} previous featured item(s) could not be cleared — check the table."
+  },
   "AdminInvitation": {
     "error": "Error",
     "noContext": "No element to administer.",
@@ -192,6 +204,11 @@
     "relaunch": "Resend",
     "relaunchSent": "The invitation has been sent again.",
     "relaunchFailed": "Could not resend the invitation."
+  },
+  "DashboardKpis": {
+    "trendMonthly": "+{{added}} this month · {{delta}} vs last month",
+    "membersPending": "awaiting validation",
+    "analyticsPending": "Audience analytics to be connected (GDPR-compliant tool pending)"
   },
   "AdminOwnershipMigration": {
     "title": "Ownership migration",
