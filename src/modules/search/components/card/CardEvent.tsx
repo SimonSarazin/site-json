@@ -28,10 +28,35 @@ function getEventAvatarIcon(tags: string[]): string {
   return getEntityIconName("events"); // "calendar"
 }
 
+/**
+ * Bloc date — MÊME design avec ou sans photo (jour en gros + mois, ou libellé
+ * de récurrence à la place s'il y en a un) : source unique pour les deux
+ * variantes de la carte, pas de pastille/icône séparée pour l'une des deux.
+ */
+function EventDateBlock({ recurrenceLabel, startDate }: { recurrenceLabel: string | null; startDate: Date | null }) {
+  const locale = getDateFnsLocale();
+  if (recurrenceLabel) {
+    // Texte variable (« Chaque lundi, mardi… et dimanche » peut aller jusqu'à 7 jours) : taille
+    // responsive plutôt que fixe, pour ne pas déborder/écraser la carte sur une colonne étroite
+    // (grilles 2-4 colonnes en desktop) tout en restant agrandi sur les cartes larges.
+    return <div className="text-base sm:text-lg font-bold leading-snug text-primary">{recurrenceLabel}</div>;
+  }
+  if (!startDate) return null;
+  return (
+    <div className="flex items-baseline gap-2 text-primary">
+      <span className="text-4xl font-bold leading-none tabular-nums">
+        {format(startDate, "d", { locale })}
+      </span>
+      <span className="text-sm font-semibold uppercase tracking-wide">
+        {format(startDate, "LLL yyyy", { locale })}
+      </span>
+    </div>
+  );
+}
+
 interface EventCardPlainProps {
   onClick?: () => void;
   name: string | null;
-  eventDate: string | null;
   startDate: Date | null;
   /** « Chaque vendredi » — événement récurrent : préféré à la date d'occurrence, qui change chaque semaine. */
   recurrenceLabel: string | null;
@@ -57,7 +82,6 @@ interface EventCardPlainProps {
 function EventCardPlain({
   onClick,
   name,
-  eventDate,
   startDate,
   recurrenceLabel,
   organizerName,
@@ -65,29 +89,13 @@ function EventCardPlain({
   avatarIcon,
   avatarColorClasses,
 }: EventCardPlainProps) {
-  const locale = getDateFnsLocale();
   return (
     <Card
       onClick={onClick}
       className="h-full w-full cursor-pointer gap-4 py-5 shadow-lg transition-shadow hover:shadow-xl"
     >
       <CardContent className="px-5">
-        {recurrenceLabel ? (
-          <div className="text-sm font-semibold text-primary">{recurrenceLabel}</div>
-        ) : startDate ? (
-          <div className="flex items-baseline gap-2 text-primary">
-            <span className="text-4xl font-bold leading-none tabular-nums">
-              {format(startDate, "d", { locale })}
-            </span>
-            <span className="text-sm font-semibold uppercase tracking-wide">
-              {format(startDate, "LLL yyyy", { locale })}
-            </span>
-          </div>
-        ) : (
-          eventDate && (
-            <div className="text-sm font-semibold text-primary tabular-nums">{eventDate}</div>
-          )
-        )}
+        <EventDateBlock recurrenceLabel={recurrenceLabel} startDate={startDate} />
 
         {name && <h3 className="mt-3 line-clamp-3 text-base font-semibold">{name}</h3>}
       </CardContent>
@@ -123,7 +131,6 @@ export default function CardEvent({
   const {
     name,
     image,
-    eventDate,
     startDate,
     organizerName,
     address,
@@ -157,7 +164,6 @@ export default function CardEvent({
       <EventCardPlain
         onClick={onClick}
         name={name}
-        eventDate={eventDate}
         startDate={startDate}
         recurrenceLabel={recurrenceLabel}
         organizerName={organizerName}
@@ -184,22 +190,19 @@ export default function CardEvent({
         />
       )}
 
-      {/* Date et titre de l'événement en haut */}
+      {/* Date et titre de l'événement en haut — même bloc date que la variante sans image.
+          `bg-background/80` (au lieu de /30) : sur une photo quelconque, un fond trop transparent
+          laisse passer trop de l'image derrière le flou et casse le contraste de `text-primary` —
+          `/80` retrouve quasi le contraste `text-primary` sur `bg-background` déjà garanti ailleurs
+          dans l'app, indépendamment de l'image. */}
       <div className="
-        absolute top-0 w-full px-2 pt-1 pb-2 z-10
+        absolute top-0 w-full px-2 pt-2 pb-2 z-10
         backdrop-blur-xl
-        bg-background/30
+        bg-background/80
         border-b border-border/40
         flex flex-col items-center gap-2
       ">
-        {(recurrenceLabel || eventDate) && (
-          <div className="bg-card w-auto px-3 py-1 rounded-md text-xs font-semibold shadow text-foreground flex items-center gap-1">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            {recurrenceLabel || eventDate}
-          </div>
-        )}
+        <EventDateBlock recurrenceLabel={recurrenceLabel} startDate={startDate} />
         {name && (
           <div className="text-foreground font-semibold text-sm drop-shadow-lg">
             {name}
