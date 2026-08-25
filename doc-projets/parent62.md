@@ -14,7 +14,11 @@
 > [Composants média](../doc/33-media-components.md). Mémoire : `[[project-parent62]]`
 > (`.claude/memory/project-parent62.md`) — slug corrigé le 25/07 (`parents62` avec **s** est abandonné, cf. §1).
 
-Dernière mise à jour : **2026-08-19** (diagnostic + correctifs événements récurrents de l'agenda,
+Dernière mise à jour : **2026-08-25** (thèmes/catégorie de "parole de parent" en saisie libre,
+promotion admin-only vers la liste partagée `costum.lists`, filtres et formulaire réactifs sans
+reload — cf. §9septies ; commit `bcd90e6d` sur `parents62`, **non pushé** ; typecheck/lint propres,
+`config:validate` 45 pages/158 sections, 990 tests unitaires ciblés ✅).
+Précédemment : **2026-08-19** (diagnostic + correctifs événements récurrents de l'agenda,
 testés avec des données de test locales — 3 bugs backend corrigés ; réponse au §2.6/§12 (le filtre de
 modération `toBeValidated` fonctionne) — cf. §9sexies ; `test:unit` ciblé **899/899** ✅, suite
 complète 2 499/2 508, 3 échecs pré-existants sans rapport).
@@ -131,6 +135,12 @@ et le réseau social Communecter, en **conservant le WordPress** pour les conten
   DANS le `searchHeader` (le bandeau EST le hero) — 176→161 sections, recette
   `page-thematique` mise à jour (2 sections, couvre thèmes + publics). Les pages
   territoire gardent leur bandeau coloré (idiome à part, assumé).
+- **25/08 — thèmes/catégorie de "parole de parent" en saisie libre, réservé admin** : les champs
+  "Thèmes" (4 formulaires) et "Catégorie" (`parent62-affiche`) passent en `valueSelect` creatable ;
+  une valeur inédite acceptée par un **admin** grandit aussi `costum.lists.themes`/
+  `categoriesParole` (config-driven, `false` par défaut), un visiteur non-admin ne choisit que
+  parmi l'existant ; filtres et formulaire se mettent à jour sans reload via la réactivité native
+  du SDK (pas de store maison). Détail §9septies. Commit `bcd90e6d` sur `parents62`, **non pushé**.
 
 ---
 
@@ -309,6 +319,7 @@ Embarqué dans le document de l'orga (`organizations.costum`). Au 20/07, `typeOb
 | **Ajustement hauteur header/à la une (13/08)** | `src/components/layout/header/HeaderStacked.tsx` (`min-h` désormais `xl:`-only, échelle logo/titre/sous-titre), `src/modules/search/sections/FeaturedCarouselSection.tsx`+`FeaturedCarouselSlide.tsx` (padding réduit, `object-contain`, ratio `16/10`) (§9quinquies) |
 | **Champ dynamique thème/catégorie** | `src/components/ui/select-objet.tsx` (widget `SelectObject`, générique, utilisé entre autres par les listes dynamiques costum — feature `9e789e38`) |
 | **Dédoublonnage territoire « Familles en sol mineur » (13/08)** | `config.prod.parent62.json` (nav, filtres `enum`, `TagColorsConfSchema`, logo), `src/index-parent62.css` (variable `--territoire-familles-en-sol-mineur`) (§9quinquies) |
+| **Thèmes/catégorie en saisie libre, promotion admin (25/08)** | `config.prod.parent62.json` (`widgetProps.saveNewValue`/`list`, `optionsKey` sur 23 filtres, `afterSubmit` par formulaire) ; nouveaux `src/modules/profil/forms/costum/parent62/fns.ts` (+ `.test.ts`), `src/hooks/useCostumLists.tsx` (+ `.test.tsx`), `src/modules/profil/forms/fields/valueSelectAccess.ts` (+ `.test.ts`) ; modifs `src/modules/profil/forms/fields/ValueSelectField.tsx`, `src/modules/profil/forms/registerWidgets.tsx`, `src/modules/profil/forms/registerSpecFns.ts`, `src/modules/search/hooks/useDynamicFilterOptions.ts`, `src/modules/search/schema.ts` (`optionsKey`), `src/modules/search/lib/dropdownFilters.ts` (`mergeDeduped`, + `.test.ts`), `src/lib/costumLists.ts` (§9septies) |
 | **Tests** | `e2e/parent62.spec.ts`, `src/modules/search/lib/colorBy.test.ts`, `src/modules/profil/forms/costum/__fixtures__/configCostum.ts` |
 | **Déploiement** | `server/prod-server.js`, `server/lib/sitemap.js`, `.env` (`VITE_SLUG`, `VITE_BASE_URL_BACKEND`, `SITE_CONFIG_PATH`, `VITE_SITE_PUBLIC_URL`) — dérivable via `npm run deploy:env` (`scripts/lib/sites.ts`) |
 
@@ -333,6 +344,10 @@ Embarqué dans le document de l'orga (`organizations.costum`). Au 20/07, `typeOb
 | **`/appels-a-projets` et `/offres-emploi` filtrent par `tags`, pas par un champ dédié** (06/08) | même convention que les pages `/theme/*` existantes (mots-clés WordPress libres, cf. §2) ; pas de nouvelle taxonomie pour deux catégories de contenu ponctuelles |
 | **`background`/`accentColor` en couleur FIXE (hex), jamais `text-foreground`** (`featured-carousel`, `articleTeaser`, 06/08) | ces blocs posent un fond marine fixe pour rester de la même famille visuelle sur toute la home ; `text-foreground` s'inverserait en mode clair et deviendrait illisible sur un fond sombre qui, lui, ne s'inverse pas |
 | **Wordmark header en 2 segments (`logoTitle`+`logoTitleAccent`)** (`stacked`, 06/08) | rendre « parent » (contour) + « 62 » (plein) séparément, en couleurs fixes indépendantes du mode, sans dupliquer tout le champ `logoTitle` ni coder le découpage en dur dans le composant |
+| **Liste statique + écriture front, plutôt que recette dynamique backend** (thèmes/catégorie, 25/08) | la conversion en recette dynamique (le mécanisme "propre", déjà éprouvé sur institut-bleu) est hors de portée depuis `site-json` seul |
+| **`saveNewValue` config-driven, `false` par défaut** (25/08) | opt-in explicite par champ, introspection du descripteur du formulaire plutôt qu'une liste de champs codée en dur en TS — un futur champ `valueSelect` n'écrit dans aucune liste partagée sauf déclaration explicite en config |
+| **`saveNewValue` restreint aussi `creatable` aux admins** (25/08) | un visiteur non-admin sur un champ qui promeut vers la liste partagée ne doit pas pouvoir taper une valeur inédite — sinon la saisie serait acceptée sur sa fiche mais jamais partagée, incohérence silencieuse |
+| **Réactivité via les signaux natifs du SDK (`useReactiveProperty`), pas un store maison** (25/08) | réutilise un mécanisme déjà éprouvé (~14 usages dans le repo) plutôt que d'en inventer un parallèle ; `carrier.refresh()` suffit, `_setData` préservant les signaux réactifs sur le même proxy — aucun nouveau `setEntity`/contexte |
 
 ---
 
@@ -773,6 +788,77 @@ corrélation exacte (les 3 qui restent sont les 3 sans `toBeValidated`). Pas un 
 
 ---
 
+## 9septies. Impacts — thèmes/catégorie en saisie libre, promotion admin vers la liste partagée (25/08)
+
+> Périmètre : les champs "Thèmes" (`parent62-affiche`/`-article`/`-recovery-center`/`-event`) et
+> "Catégorie" (`parent62-affiche` seul) passent d'un choix fermé à un choix **+ saisie libre**, avec
+> promotion admin-only de la valeur inédite vers la liste partagée du costum. Commit `bcd90e6d` sur
+> `parents62`, **non pushé** à ce stade.
+
+### 9septies.1 Ce qui a changé
+
+Le mécanisme "propre" pour qu'un thème/catégorie inédit apparaisse aussi dans les **filtres** et les
+**suggestions** du formulaire pour les utilisateurs suivants existe déjà dans le parc
+(`config.prod.institut-bleu.json` : `territoires`/`auteurs`/`financeurs`, recettes **dynamiques**
+`{collection, distinct, where}` résolues par `costum/co/listvalues`) — mais `costum.lists.themes` de
+parent62 est déclarée **statique** côté backend, pas dynamique. Approche retenue : garder la liste
+statique et la faire **grandir depuis le front**, à l'écriture.
+
+**Écriture (`growCostumLists`, nouveau fichier
+`src/modules/profil/forms/costum/parent62/fns.ts`)** — après une soumission réussie
+(`afterSubmit`), pour chaque champ `valueSelect` du formulaire dont `widgetProps.saveNewValue: true`
+(config, **`false` par défaut** — opt-in explicite, aucune liste de champs codée en dur : la fonction
+introspecte le descripteur du formulaire) : les valeurs vraiment nouvelles (dédoublonnage
+casse/accents, `normalizeFilterValue`) sont poussées dans `costum.lists.<listKey>`
+(`carrier.updateField(path, valeur, {arrayForm:true})`, un `$push` Mongo par valeur — pas de `$addToSet`
+exposé par le SDK). **Réservé admin** (`carrier.isAdmin()`) : plusieurs de ces formulaires sont aussi
+accessibles en public sans authentification (`requiresAdmin:false`) — sans la garde, n'importe quel
+visiteur pourrait injecter une valeur dans la taxonomie partagée avant modération. La saisie libre du
+champ lui-même reste ouverte à tous ; seule la **promotion** vers la liste partagée est gardée — et
+`saveNewValue` restreint en plus la saisie libre elle-même aux admins pour ces champs précis (un
+visiteur non-admin y voit un choix fermé, comme un `select`).
+
+**`listKey` distinct du nom de champ** : `category` sur `parent62-affiche` (Compliqué/Difficile/À
+changer) porte le même nom de champ qu'un filtre `resource-category` totalement différent (Vidéo/…,
+sur un autre formulaire) — écrire dans `costum.lists.category` aurait mélangé les deux taxonomies.
+`widgetProps.list: "categoriesParole"` fixe la liste cible.
+
+**Lecture — filtres et formulaire** : nouvelle clé de schéma `optionsKey` (pendant **statique** de
+`optionsFrom`, qui reste réservé aux recettes dynamiques) sur les 23 blocs de filtre `themes`/
+`category` ; `ValueSelectField` (formulaire) fusionne l'`enum` déclaré en config avec
+`costum.lists.<list>` (`mergeDeduped`, dédoublonnage casse/accents partagé avec l'écriture — nouveau
+helper dans `src/modules/search/lib/dropdownFilters.ts`, testé).
+
+**Mise à jour sans reload** : `carrier` (`useCocolight().entity`) est un `useState` rempli une fois
+au boot, jamais rafraîchi après un `updateField`. `carrier.refresh()` (méthode SDK) après l'écriture,
+combiné à un nouveau hook `useCostumListsReactive` (`src/hooks/useCostumLists.tsx`) qui s'abonne —
+via `useReactiveProperty`, déjà utilisé ~14 fois ailleurs dans le repo — aux signaux réactifs
+**natifs du SDK** : `_setData` réassigne `costum`/`lists` sur le **même** proxy réactif, donc les
+filtres et le formulaire se remettent à jour tout seuls, sans store applicatif dédié.
+
+> ⚠️ **Piège à connaître** : `useCostumListsReactive` doit renvoyer une référence STABLE pour le cas
+> "aucune liste costum" (constante partagée `Object.freeze({})`, jamais un littéral `{}`) — sinon la
+> section `filters` générique entre en boucle de rendu infinie sur tout site sans `costum.lists`/
+> `lists` statique déclarée (donc la plupart des sites, pas que parent62). Gaté par 4 tests dans
+> `useCostumLists.test.tsx`.
+
+### 9septies.2 Limite assumée
+
+**Pas de cohérence multi-utilisateur instantanée** : `carrier.refresh()` ne rafraîchit que
+l'instance du **navigateur/session courante** — un autre utilisateur (ou un autre onglet) ne verra
+la valeur ajoutée qu'à son prochain chargement naturel de page, pas en temps réel.
+
+### 9septies.3 Validation (gates)
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` | ✅ 0 erreur |
+| `lint` | ✅ 0 erreur sur les fichiers du lot |
+| `npx tsx scripts/validate-config.ts config.prod.parent62.json` | ✅ 45 pages, 158 sections (inchangé) |
+| `test:unit` ciblé (`search`+`profil/forms`+`lib`+`hooks`) | ✅ **990/990** |
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
@@ -784,7 +870,7 @@ corrélation exacte (les 3 qui restent sont les 3 sans `toBeValidated`). Pas un 
 | 1.3 | Page par territoire : contact + **liste des communes** | ✅ | cards coordo + accordéon 887 communes + fil filtré + CTA ; navigation depuis l'accueil désormais via `map-bubbles` (carte à bulles, §9quater) au lieu des cartes d'accès rapide |
 | 1.4 | Double entrée parents / pro | 🟡 *(était ✅)* | **régression confirmée le 06/08** (config **et** e2e) : `/parents`/`/pro` existent mais ne sont plus liées nulle part (ni accueil, ni nav) depuis la refonte du 06/08 — un dropdown « Publics » (7 pages `/public/*`) semble les remplacer fonctionnellement, mais rien ne le confirme. **À trancher avant fusion dans `main`** (§13) |
 | 1.5 | Moteur de recherche : types d'info, public, âges, dates, territoire coloré, carte, thèmes | 🟡 | `/recherche` : types d'info (**searchTargets 6** depuis le 25/07 — « Ressources » ajoutée —, défaut « Actualités »), public, thèmes, territoire coloré, **carte** (`enableMap:true`), `dateRange` **borne début seule**. **25/07** : chaque famille a désormais sa carte et son action au clic (`list.itemRules`, §9bis) ; tri `created:-1` et projection explicite ajoutés. **Âges : livré sur `/temoignages` + form affiche, mais PAS encore dans le groupe de filtres `/recherche`** (à ajouter — `ages` est projeté, il ne manque que le groupe). Borne de fin des dates = demande backend `$lt/$lte` (§11) |
-| 1.6 | Paroles de parents (3 catégories, audio+écrit, transcription, ajout admin) | 🟡 | brique complète (Thomas) : `/temoignages`, form `parent62-affiche` (3 catégories, audio→`medias`, ages, consentement RGPD), pile audio `media/*`, card/preview `testimonial`. **Ajout admin-only ✅** (modération a priori retirée volontairement, commit `17aea3e`). **25/07** : la cible « Paroles » de `/recherche` renvoyait **0 résultat** (filtre `status:"validated"` sur un champ inexistant) — corrigé, et les paroles y rendent en bulles avec leur dialog (§9bis). **Données observées le 25/07** : `/temoignages` affiche « Toutes les paroles (**3**) » — la mention « 0 POI `affiche` » du 24/07 est caduque. **Manque** : **transcription/sous-titres NON implémentée** (`description` sert d'écrit) |
+| 1.6 | Paroles de parents (3 catégories, audio+écrit, transcription, ajout admin) | 🟡 | brique complète (Thomas) : `/temoignages`, form `parent62-affiche` (3 catégories, audio→`medias`, ages, consentement RGPD), pile audio `media/*`, card/preview `testimonial`. **Ajout admin-only ✅** (modération a priori retirée volontairement, commit `17aea3e`). **25/07** : la cible « Paroles » de `/recherche` renvoyait **0 résultat** (filtre `status:"validated"` sur un champ inexistant) — corrigé, et les paroles y rendent en bulles avec leur dialog (§9bis). **Données observées le 25/07** : `/temoignages` affiche « Toutes les paroles (**3**) » — la mention « 0 POI `affiche` » du 24/07 est caduque. **25/08** : catégorie **et** thèmes passés en saisie libre, valeur inédite promue vers la liste partagée par un admin (§9septies). **Manque** : **transcription/sous-titres NON implémentée** (`description` sert d'écrit) |
 | 1.7 | Navigation territoriale (recherche V2) | ✅ | 9 bulles → `/territoire/<slug>` + filtre territoire coloré dans `/recherche` |
 | 1.8 | Référencement (SEO, JSON-LD, sitemap, robots, RSS) | ✅ | sitemap/robots (MR) + JSON-LD `BlogPosting` et `/blog/feed.xml` (Thomas) |
 | 1.9 | Tests E2E (Playwright) | ✅ *(était 🟡 6/8 le 06/08)* | **13/08 : 8/8 verts** — les 2 désaccords contenu/test relevés le 06/08 (« Professionnels » dans le header, mécanique d'opacité `stacked` vs `transparent-scroll`) sont résolus, cf. §9quinquies. `npx playwright test e2e/parent62.spec.ts` (jamais la suite complète) |
@@ -878,6 +964,9 @@ attendue par le test parole ; périmètre `prepData`/`validategroup`.
 - **Chantier accueil/header/footer du 06/08** (§9quater), committé sur `parents62` mais **pas
   encore recetté visuellement ni fusionné dans `main`** : `/parents`/`/pro` **orphelines** (plus
   aucun lien depuis la config).
+- **Thèmes/catégorie promus par un admin ne sont visibles qu'après le prochain chargement de page
+  des AUTRES utilisateurs/onglets** (25/08, §9septies.2) — `carrier.refresh()` ne rafraîchit que la
+  session courante, pas de push temps réel entre sessions.
 
 ---
 
@@ -906,4 +995,6 @@ les **paroles ne sont plus muettes** dans le moteur (§9bis.1).
 | **[06/08] `/parents`/`/pro` orphelines** — confirmé statiquement (config), et indirectement par e2e (le test dédié échoue avant d'atteindre l'assertion sur ces liens) ; le dropdown « Publics » (7 pages `/public/*`) les remplace-t-il volontairement, ou faut-il relier ces deux pages (nav ou accueil) ? | Peterson / Thomas |
 | **[06/08] « Professionnels » désormais dans le header** (dropdown « Publics ») — contredit la décision du 23/07 (« Parents / Professionnels hors menu ») ; si le nouveau nav est acté, l'assertion e2e correspondante est à réviser | Peterson / Thomas |
 | **[06/08] Assertion e2e d'opacité du header** (« mode sombre… », `bg-background/90`) écrite pour `transparent-scroll` — à réécrire pour la mécanique réelle de `stacked` (scrim interne, opacité jamais posée sur le `<nav>`) | Peterson |
-| **[06/08] `build`** jamais relancé depuis la refonte — à faire avant tout commit (`test:unit` — 2 227/2 229, seuls les 2 pré-existants restent —, `test:integration` et `e2e` ciblé ont été rejoués le 06/08, cf. §9quater.3) | Peterson |
+| **[06/08] `build`** jamais relancé depuis la refonte — à faire avant tout commit (`test:unit` — 2 227/2 229, seuls les 2 pré-existants restent —, `test:integration` et `e2e` ciblé ont été rejoués le 06/08, cf. §9quater.3) |
+| **[25/08] Convertir `costum.lists.themes` et `costum.lists.categoriesParole` en recette dynamique côté backend** — résoudrait la limite multi-utilisateur (§9septies.2) et rapprocherait parent62 du mécanisme déjà utilisé sur institut-bleu ; le champ `themes` est réparti sur 2 collections (`poi`/`events`), une recette `distinct` classique n'en couvre qu'une | Thomas / backend |
+| **[25/08] `build`** jamais relancé depuis ce lot — commit `bcd90e6d` non pushé, à recetter avant fusion dans `main` | Peterson |
