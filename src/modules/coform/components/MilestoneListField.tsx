@@ -99,6 +99,41 @@ function DepenseFieldLabel({ field }: { field: FormFieldMapping }) {
   );
 }
 
+/**
+ * Sous-ensemble de `MilestoneCardPermissions` réellement consommé par une ligne.
+ * Les cinq verbes d'action de l'interface complète n'y sont jamais appelés :
+ * les déléguer ne produirait que du code mort.
+ */
+type SaisiePermissions = Pick<
+  MilestoneCardPermissions,
+  "canEditMilestone" | "canCloseMilestone" | "canDeleteMilestone"
+>;
+
+/**
+ * Permissions de SAISIE d'une ligne — distinctes de celles de la cagnotte.
+ *
+ * Ce champ est un input de formulaire : le droit d'y écrire est celui de la
+ * RÉPONSE (porté par `readOnly` / `lockedFields`, résolus en amont), pas celui
+ * du projet. Le portage initial consommait `useCagnottePermissions`, dont tous
+ * les verbes valent `isAdmin` sur l'entité HÔTE DU SITE (`CocolightProvider`
+ * résout `entity` par le slug du site) : il fallait donc être admin de
+ * l'organisation porteuse pour saisir une dépense dans sa propre réponse, alors
+ * que le legacy (`newDepenseList.php`) rend le bouton d'ajout sans condition.
+ *
+ * Ne subsistent que les invariants d'ÉTAT de la ligne : une ligne clôturée ne
+ * s'édite pas, une ligne déjà financée ne se supprime pas. Ils ne dépendent de
+ * rien d'autre que la ligne elle-même, d'où une constante de module — les
+ * mémoïser serait du bruit, `MilestoneRow` n'étant pas mémoïsé.
+ *
+ * Les gestes qui touchent à l'argent réel (financer, actions) restent, eux,
+ * gouvernés par `useCagnottePermissions` là où ils sont rendus.
+ */
+const PERMISSIONS_SAISIE: SaisiePermissions = {
+  canEditMilestone: ({ status }) => status !== "close",
+  canCloseMilestone: ({ status }) => status === "open",
+  canDeleteMilestone: ({ hasTransactions }) => hasTransactions !== true,
+};
+
 function MilestoneRow({
   index,
   item,
@@ -117,7 +152,7 @@ function MilestoneRow({
   onClose: (item: CagnotteFundableItem) => void;
   onRestore: (item: CagnotteFundableItem) => void;
   onDelete: (item: CagnotteFundableItem) => void;
-  permissions: MilestoneCardPermissions;
+  permissions: SaisiePermissions;
   disabled: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -265,6 +300,7 @@ export function MilestoneListField({
 
   const disabled = Boolean(readOnly);
 
+
   /**
    * Projection best-effort d'un geste vers l'entité projet.
    *
@@ -407,7 +443,7 @@ export function MilestoneListField({
           <DepenseFieldLabel field={field} />
           {field.info && <HintText text={field.info} />}
         </div>
-        {!disabled && perms.canCreateMilestone ? (
+        {!disabled ? (
           <Button
             type="button"
             size="sm"
@@ -455,7 +491,7 @@ export function MilestoneListField({
             onClose={(item) => basculerOuverture(item, false)}
             onRestore={(item) => basculerOuverture(item, true)}
             onDelete={setPendingDelete}
-            permissions={perms as unknown as MilestoneCardPermissions}
+            permissions={PERMISSIONS_SAISIE}
             disabled={disabled}
           />
         ))}
@@ -481,7 +517,7 @@ export function MilestoneListField({
               onClose={(item) => basculerOuverture(item, false)}
               onRestore={(item) => basculerOuverture(item, true)}
               onDelete={setPendingDelete}
-              permissions={perms as unknown as MilestoneCardPermissions}
+              permissions={PERMISSIONS_SAISIE}
               disabled={disabled}
             />
           ))}

@@ -14,6 +14,10 @@ import type { DepenseEntry } from "../utils/depense";
  *     qu'ajouter une dépense puis soumettre effaçait l'ajout.
  *
  * Les deux se prouvent par le même point d'observation : `onChange`.
+ *
+ * S'y ajoute un troisième défaut, de permission : le champ empruntait celles de
+ * la CAGNOTTE (`isAdmin` sur l'entité hôte du site) alors qu'il s'agit d'un
+ * input de formulaire, dont le droit d'écriture est celui de la RÉPONSE.
  */
 
 vi.mock("@/hooks/useT", () => ({
@@ -133,18 +137,39 @@ describe("MilestoneListField", () => {
     expect(screen.queryByRole("button", { name: /addMilestone/i })).toBeNull();
   });
 
-  it("sans droit de création, pas de bouton d'ajout", () => {
+  it("la saisie suit les droits de la RÉPONSE, pas ceux de la cagnotte", async () => {
+    // Le portage initial gardait le bouton derrière `canCreateMilestone`, qui
+    // vaut `isAdmin` sur l'entité HÔTE DU SITE : il fallait être admin de
+    // l'organisation porteuse pour saisir une dépense dans sa propre réponse.
+    // Le legacy (`newDepenseList.php`) n'impose rien. Seul `readOnly` — le droit
+    // d'éditer la réponse — doit fermer le champ (cf. le test précédent).
     permsMock.mockReturnValue({
       canCreateMilestone: false,
       canEditMilestone: () => false,
       canCloseMilestone: () => false,
       canRestoreMilestone: () => false,
       canDeleteMilestone: () => false,
-      isConnected: false,
+      canCreateAction: () => false,
+      canCandidateAction: () => false,
+      canMarkActionDone: () => false,
+      canEditAction: () => false,
+      canDeleteAction: () => false,
+      isConnected: true,
       isAdmin: false,
-      currentUserId: "",
+      currentUserId: "u-simple",
     });
-    poser([]);
-    expect(screen.queryByRole("button", { name: /addMilestone/i })).toBeNull();
+    const onChange = poser([]);
+
+    const ajouter = screen.getByRole("button", { name: /addMilestone|Ajouter/i });
+    fireEvent.change(
+      (fireEvent.click(ajouter), screen.getByLabelText("Intitulé")),
+      { target: { value: "Matériel" } },
+    );
+    fireEvent.change(screen.getByLabelText("Montant cible"), { target: { value: "120" } });
+    fireEvent.click(screen.getByRole("button", { name: "Ajouter" }));
+
+    await waitFor(() => expect(onChange).toHaveBeenCalledTimes(1));
+    const [liste] = onChange.mock.calls[0] as [DepenseEntry[]];
+    expect(liste[0]).toMatchObject({ poste: "Matériel", price: 120 });
   });
 });
