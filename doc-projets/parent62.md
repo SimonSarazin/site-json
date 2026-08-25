@@ -11,10 +11,20 @@
 > Voir aussi : [Module Articles/Blog](../doc/32-module-articles-blog.md) ·
 > [Module Search](../doc/07-module-search.md) · [Module formEngine](../doc/28-module-formengine.md) ·
 > [Système de visibilité](../doc/19-visibility-system.md) · [Module Agenda](../doc/29-module-agenda.md) ·
-> [Composants média](../doc/33-media-components.md). Mémoire : `[[project-parent62]]`
+> [Composants média](../doc/33-media-components.md) · [Module Admin](../doc/30-module-admin.md).
+> Mémoire : `[[project-parent62]]`
 > (`.claude/memory/project-parent62.md`) — slug corrigé le 25/07 (`parents62` avec **s** est abandonné, cf. §1).
 
-Dernière mise à jour : **2026-08-25** (thèmes/catégorie de "parole de parent" en saisie libre,
+Dernière mise à jour : **2026-08-25** (section admin générique « Listes » — édition de
+`costum.lists` en layout maître-détail dans `/admin` : ajouter/renommer/réordonner/supprimer une
+valeur, créer une liste ; activée en **pilote** sur parent62, onglet « Listes », restreinte via
+`props.lists` aux 2 listes **grandies par saisie libre** (`themes`, `categoriesParole` — cf.
+§9septies), chacune avec un **libellé lisible** (`{key,label}`) plutôt que sa clé technique —
+`territoires`/`publics` restent hors de cet écran — cf. §9octies ; modifications locales sur
+`parents62`, **non commitées** ; typecheck/lint propres, `config:validate` 45 pages/158 sections
+(inchangé), 39 tests unitaires ciblés + suite complète 2880/2888 ✅, 2 échecs pré-existants sans
+rapport avec ce lot — cf. §9octies.4).
+Précédemment (même jour) : **2026-08-25** (thèmes/catégorie de "parole de parent" en saisie libre,
 promotion admin-only vers la liste partagée `costum.lists`, filtres et formulaire réactifs sans
 reload — cf. §9septies ; commit `bcd90e6d` sur `parents62`, **non pushé** ; typecheck/lint propres,
 `config:validate` 45 pages/158 sections, 990 tests unitaires ciblés ✅).
@@ -296,6 +306,16 @@ Le deuil 6.
 > tiret demi-cadratin (`Les écrans – Le numérique`). Un filtre écrit avec une apostrophe droite
 > renvoie **0 résultat sans erreur**. Copier-coller depuis `costum.lists`, ne jamais retaper.
 
+Parmi ces 3 listes, seule `themes` est éditable (ajouter/renommer/réordonner/supprimer une valeur)
+depuis `/admin` → onglet « Listes », sans passer par la base — cf. §9octies. `territoires`/`publics`
+sont volontairement **hors de cet écran** (`props.lists` restreint la section à `themes` et
+`categoriesParole` — cette dernière porte le champ `category` de `parent62-affiche`, hors des « 4
+champs transverses » ci-dessus, cf. §9septies) : seules les 2 listes que les admins font **grandir
+par saisie libre** y sont exposées, pas les taxonomies plus stables. `themes` reste statique pour
+l'instant ; sa conversion éventuelle en recette dynamique (§13, dernière ligne) la basculerait
+automatiquement en lecture seule dans cet écran (détection `isDynamicList`), sans action requise
+côté admin.
+
 ### 5.3 Le costum backend
 
 Embarqué dans le document de l'orga (`organizations.costum`). Au 20/07, `typeObj` ne contenait que
@@ -320,6 +340,7 @@ Embarqué dans le document de l'orga (`organizations.costum`). Au 20/07, `typeOb
 | **Champ dynamique thème/catégorie** | `src/components/ui/select-objet.tsx` (widget `SelectObject`, générique, utilisé entre autres par les listes dynamiques costum — feature `9e789e38`) |
 | **Dédoublonnage territoire « Familles en sol mineur » (13/08)** | `config.prod.parent62.json` (nav, filtres `enum`, `TagColorsConfSchema`, logo), `src/index-parent62.css` (variable `--territoire-familles-en-sol-mineur`) (§9quinquies) |
 | **Thèmes/catégorie en saisie libre, promotion admin (25/08)** | `config.prod.parent62.json` (`widgetProps.saveNewValue`/`list`, `optionsKey` sur 23 filtres, `afterSubmit` par formulaire) ; nouveaux `src/modules/profil/forms/costum/parent62/fns.ts` (+ `.test.ts`), `src/hooks/useCostumLists.tsx` (+ `.test.tsx`), `src/modules/profil/forms/fields/valueSelectAccess.ts` (+ `.test.ts`) ; modifs `src/modules/profil/forms/fields/ValueSelectField.tsx`, `src/modules/profil/forms/registerWidgets.tsx`, `src/modules/profil/forms/registerSpecFns.ts`, `src/modules/search/hooks/useDynamicFilterOptions.ts`, `src/modules/search/schema.ts` (`optionsKey`), `src/modules/search/lib/dropdownFilters.ts` (`mergeDeduped`, + `.test.ts`), `src/lib/costumLists.ts` (§9septies) |
+| **Section admin « Listes » — moteur générique, pilote parent62 (25/08)** | `config.prod.parent62.json` (nouvel onglet `admin.tabs` `{id:"listes", sections:[{type:"lists", props:{lists:[{key:"themes",label:{…}},{key:"categoriesParole",label:{…}}]}}]}`) ; nouveaux `src/modules/admin/sections/AdminListsSection.tsx`, `src/modules/admin/hooks/useCostumListsMutations.ts` (+ `.test.tsx`), `src/modules/admin/lib/costumListsEditing.ts` (+ `.test.ts`, dont `toListRef`/`findListLabel`) ; modifs `src/modules/admin/AdminSectionRenderer.tsx` (`registerAdminSection("lists", …)`), `src/modules/admin/i18n/{fr,en}.json` (groupe `AdminLists`) — doc moteur : [doc/30-module-admin.md](../doc/30-module-admin.md) §`lists` (§9octies). `.claude/skills/config-assistant/examples/admin.json` **délibérément non resynchronisé** dans ce commit (cf. §9octies.4) |
 | **Tests** | `e2e/parent62.spec.ts`, `src/modules/search/lib/colorBy.test.ts`, `src/modules/profil/forms/costum/__fixtures__/configCostum.ts` |
 | **Déploiement** | `server/prod-server.js`, `server/lib/sitemap.js`, `.env` (`VITE_SLUG`, `VITE_BASE_URL_BACKEND`, `SITE_CONFIG_PATH`, `VITE_SITE_PUBLIC_URL`) — dérivable via `npm run deploy:env` (`scripts/lib/sites.ts`) |
 
@@ -859,6 +880,82 @@ la valeur ajoutée qu'à son prochain chargement naturel de page, pas en temps r
 
 ---
 
+## 9octies. Impacts — section admin générique « Listes » (édition de `costum.lists`), pilote parent62 (25/08)
+
+> Périmètre : nouvelle section admin **générique du moteur** (pas spécifique à parent62),
+> `{type:"lists"}`, activée en pilote sur parent62 pour tester en conditions réelles contre
+> `communecter-dev` (environnement de test, confirmé). Modifications locales sur `parents62`, **non
+> commitées** à ce stade.
+
+### 9octies.1 Ce qui a changé
+
+Nouvel onglet « Listes » dans `/admin` (`config.admin.tabs`), layout **maître-détail** : un menu à
+gauche énumère les listes déclarées, cliquer une entrée l'ouvre à droite avec les contrôles CRUD.
+Évite le long scroll d'un empilement vertical dès qu'un site déclare plusieurs listes.
+
+Sur parent62, `props.lists` **restreint** la section à 2 listes, chacune avec un **libellé lisible**
+plutôt que sa clé technique (`{key, label}`, cf. [doc/30-module-admin.md](../doc/30-module-admin.md)
+§`lists`) :
+
+```jsonc
+"lists": [
+  { "key": "themes", "label": { "fr": "Thèmes", "en": "Topics" } },
+  { "key": "categoriesParole", "label": { "fr": "Catégories des paroles", "en": "Parole categories" } }
+]
+```
+
+Ce sont les seules listes que les admins font **grandir par saisie libre**
+(`widgetProps.saveNewValue: true`, §9septies) ; `territoires`/`publics` (taxonomies plus stables,
+non ouvertes à la saisie libre) restent hors de cet écran. `categoriesParole` porte le champ
+`category` de `parent62-affiche`, pas l'un des « 4 champs transverses » de §5.2 — décision cohérente
+avec le fait que ce sont précisément les 2 listes susceptibles d'accumuler des doublons/coquilles au
+fil des soumissions, celles qu'un admin a besoin de nettoyer. Sans `label`, l'écran afficherait la
+clé technique brute (`categoriesParole`) — pas lisible pour un admin non développeur.
+
+- **Listes statiques** (`themes` et `categoriesParole` sont toutes deux des tableaux) : ajouter,
+  renommer, réordonner, supprimer une valeur ; créer une nouvelle liste.
+- **Listes dynamiques** (recette `{collection,where,distinct}`) et **maps** valeur→libellé :
+  lecture seule (badge explicite) — hors scope, cf. [doc/30-module-admin.md](../doc/30-module-admin.md)
+  §`lists` pour le détail des raisons.
+- **Écriture** : réutilise le même mécanisme `$push` (`{arrayForm:true}`) que `growCostumLists`
+  (§9septies), déjà éprouvé en prod sur parent62 pour ses formulaires costum — pour ajouter une
+  valeur **et** créer une liste (fusionnées, cf. 9octies.2). Renommer/réordonner/supprimer une
+  valeur utilisent un `$set` de tableau complet, sans `arrayForm` — jamais exercé dans ce dépôt sur
+  `costum.lists` avant cette section (cf. 9octies.3, risque à valider).
+
+### 9octies.2 Point technique découvert en testant (communecter-dev)
+
+`element/updatepathvalue` **ne persiste pas une valeur vide** : un `$set` d'un tableau **vide**
+(`[]`) sur une clé inédite de `costum.lists` est traité comme un no-op silencieux côté backend (rien
+n'est écrit, sans erreur). Conséquence sur la conception :
+
+- **Créer une liste exige désormais une première valeur** — l'opération « créer » a été fusionnée
+  avec « ajouter » (même appel `$push`, qui auto-vivifie le tableau manquant côté Mongo) : une liste
+  ne naît jamais vide.
+- **Supprimer la dernière valeur d'une liste est bloqué côté UI** (rejet explicite, toast dédié) :
+  le `$set` résultant serait aussi `[]`, avec le même risque de no-op silencieux — mieux vaut
+  refuser l'action que laisser croire à une suppression réussie que le serveur n'aurait pas gardée.
+
+### 9octies.3 Risque non encore validé en prod réelle
+
+Seul le mécanisme d'**ajout** (`$push`) est éprouvé (identique à `growCostumLists`, §9septies).
+**Renommer/réordonner/supprimer une valeur** (le `$set` de tableau complet) n'ont été testés que
+contre `communecter-dev` à ce stade — pas contre une vraie liste de parent62 en production. À
+valider avant de considérer ces trois opérations fiables sur les listes réelles du site (cf. §13).
+
+### 9octies.4 Validation (gates)
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` | ✅ 0 erreur |
+| `lint` | ✅ 0 erreur sur les fichiers du lot |
+| `npx tsx scripts/validate-config.ts config.prod.parent62.json` | ✅ 45 pages, 158 sections (inchangé) |
+| `test:unit` ciblé (`costumListsEditing`+`useCostumListsMutations`) | ✅ **39/39** |
+| `test:unit` suite complète | ✅ **2880/2888** — 2 échecs pré-existants sans rapport (drift `command-palette`/territoires de parent62, antérieur à ce lot) |
+| `tests/preflight/archetypes.test.ts` (« snapshot égale le bloc source ») | ❌ **rouge, délibérément** — `npm run config:example -- admin --write` avait resynchronisé `.claude/skills/config-assistant/examples/admin.json` (nouvel onglet « Listes »), mais ce fichier a été **explicitement exclu du commit sur demande** (25/08, après coup) : le snapshot d'archétype `admin` a donc dérivé de `config.prod.parent62.json`. Remède documenté par le test lui-même : relancer `npm run config:example -- admin --write` et committer le résultat, quand ce sera souhaité |
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
@@ -967,6 +1064,17 @@ attendue par le test parole ; périmètre `prepData`/`validategroup`.
 - **Thèmes/catégorie promus par un admin ne sont visibles qu'après le prochain chargement de page
   des AUTRES utilisateurs/onglets** (25/08, §9septies.2) — `carrier.refresh()` ne rafraîchit que la
   session courante, pas de push temps réel entre sessions.
+- **`element/updatepathvalue` ne persiste pas une valeur vide** (25/08, §9octies.2) — un `$set`
+  d'un tableau `[]` (création d'une liste vide, ou suppression de sa dernière valeur) est un no-op
+  silencieux côté backend. À garder en tête pour **toute** future fonctionnalité admin qui écrirait
+  via ce même endpoint, pas seulement la section « Listes ».
+- **Section admin « Listes » — renommer/réordonner/supprimer une valeur non validés en prod
+  réelle** (25/08, §9octies.3) : seul l'ajout (`$push`) est éprouvé ; les trois autres opérations
+  reposent sur un `$set` de tableau complet jamais exercé sur `costum.lists` avant ce lot.
+- **`tests/preflight/archetypes.test.ts` rouge, délibérément** (25/08, §9octies.4) :
+  `.claude/skills/config-assistant/examples/admin.json` n'a pas suivi l'ajout de l'onglet « Listes »
+  sur `config.prod.parent62.json` (exclusion volontaire de ce fichier du commit) — remède :
+  `npm run config:example -- admin --write` puis committer, quand souhaité.
 
 ---
 
@@ -998,3 +1106,6 @@ les **paroles ne sont plus muettes** dans le moteur (§9bis.1).
 | **[06/08] `build`** jamais relancé depuis la refonte — à faire avant tout commit (`test:unit` — 2 227/2 229, seuls les 2 pré-existants restent —, `test:integration` et `e2e` ciblé ont été rejoués le 06/08, cf. §9quater.3) |
 | **[25/08] Convertir `costum.lists.themes` et `costum.lists.categoriesParole` en recette dynamique côté backend** — résoudrait la limite multi-utilisateur (§9septies.2) et rapprocherait parent62 du mécanisme déjà utilisé sur institut-bleu ; le champ `themes` est réparti sur 2 collections (`poi`/`events`), une recette `distinct` classique n'en couvre qu'une | Thomas / backend |
 | **[25/08] `build`** jamais relancé depuis ce lot — commit `bcd90e6d` non pushé, à recetter avant fusion dans `main` | Peterson |
+| **[25/08] Section admin « Listes » — valider empiriquement renommer/réordonner/supprimer une valeur** contre une vraie liste de parent62 (dev, pas la prod) avant de les considérer fiables — seul l'ajout est éprouvé à ce jour (§9octies.3) | Peterson |
+| **[25/08] Section admin « Listes » — `build`** jamais relancé depuis ce lot — commit `918bd991` sur `parents62`, **non pushé**, à recetter avant fusion dans `main` | Peterson |
+| **[25/08] Section admin « Listes » — resynchroniser l'archétype `config-assistant`** : `npm run config:example -- admin --write` puis committer, pour repasser `tests/preflight/archetypes.test.ts` au vert (rouge délibérément depuis ce lot, cf. §9octies.4/§12) | Peterson |

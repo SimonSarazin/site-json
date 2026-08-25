@@ -91,11 +91,11 @@ NB : l'export a un plancher **backend** `superAdmin` non contournable par config
 
 ## Les sections
 
-7 types builtin (résolus par le `switch` d'`AdminSectionRenderer`) + **2 sections génériques
-pré-enregistrées par le module lui-même** — `invitation` et `ownershipMigration` : elles s'activent
-par simple JSON, **sans une ligne de code costum** (`registerAdminSection` appelé en side-effect au
-chargement du module, core/eager — `AdminSectionRenderer.tsx:19` et `:22`) — + sections costum via
-`registerAdminSection` (type libre non-builtin).
+7 types builtin (résolus par le `switch` d'`AdminSectionRenderer`) + **3 sections génériques
+pré-enregistrées par le module lui-même** — `invitation`, `ownershipMigration` et `lists` : elles
+s'activent par simple JSON, **sans une ligne de code costum** (`registerAdminSection` appelé en
+side-effect au chargement du module, core/eager — `AdminSectionRenderer.tsx:20`, `:23` et `:26`) —
++ sections costum via `registerAdminSection` (type libre non-builtin).
 
 ### `dashboard`
 
@@ -408,6 +408,79 @@ rend le message « configuration invalide » au runtime. `subType` et `keysPolic
 contrôles à l'apply (l'UI n'est jamais l'autorité).
 (`sections/AdminOwnershipMigrationSection.tsx`, `hooks/useOwnershipMigration.ts`)
 
+### `lists` (générique, pré-enregistrée par le module)
+
+Édition de `costum.lists` (cf. [`src/lib/costumLists.ts`](../src/lib/costumLists.ts) pour le
+format des deux natures de liste) — layout **maître-détail** : un menu à gauche énumère les listes
+déclarées, cliquer une entrée l'ouvre à droite avec les contrôles CRUD (évite un long scroll dès
+qu'un site déclare plusieurs listes).
+
+```jsonc
+{ "type": "lists",
+  "props": {                              // optionnel
+    "lists": [                            // whitelist — voir plus bas ; chaque entrée : string (clé
+                                           // brute) OU {key, label} (libellé lisible, ci-dessous)
+      { "key": "themes", "label": { "fr": "Thèmes", "en": "Topics" } },
+      { "key": "categoriesParole", "label": { "fr": "Catégories des paroles", "en": "Parole categories" } }
+    ]
+  } }
+```
+
+(extrait réel : `config.prod.parent62.json:17960` — restreint la section aux 2 listes que
+`growCostumLists` fait grandir par saisie libre, cf. `doc-projets/parent62.md` §9octies ;
+`territoires`/`publics`, taxonomies plus stables jamais alimentées en saisie libre, restent hors de
+cet écran)
+
+- **Listes STATIQUES** (`Array.isArray`) — seules éditables : ajouter/renommer/réordonner/
+  supprimer une valeur, dans le menu de gauche + panneau de droite (`SortableList`, réutilisé
+  depuis l'[Admin Panel](24-admin-panel.md)).
+- **Listes DYNAMIQUES** (recette `{collection,where,distinct}`/`{type:"badges"}`, cf.
+  `isDynamicList`) — **lecture seule**, badge « Gérée côté backend » : éditer la recette dépend
+  d'un format backend PHP legacy hors de ce dépôt, et une recette mal formée casserait les filtres/
+  formulaires qui la consomment ailleurs (`optionsFrom`, `ValueSelectField`).
+- **Listes au format MAP** (valeur→libellé, ni tableau ni recette) — **lecture seule** aussi, badge
+  distinct : la primitive d'écriture retenue (`$set` d'un tableau complet) collapserait une map en
+  tableau plat, perdant silencieusement un libellé ≠ valeur.
+- **`props.lists`** (whitelist, optionnel) : **sans elle** (aucun site ne l'omet encore à ce jour),
+  **toutes** les clés réellement présentes dans `costum.lists` s'affichent, et la création libre
+  d'une nouvelle liste reste possible — pratique pour un premier essai, mais expose aussi les clés
+  techniques/hors périmètre. **Avec elle** (parent62, ci-dessus), **seules** les clés déclarées
+  apparaissent ; une clé déclarée mais pas encore créée côté backend s'affiche comme une liste vide,
+  prête à recevoir des valeurs ; la création libre de liste est alors **désactivée** — l'ensemble
+  géré est figé par la config, cohérent avec la philosophie déclarative du moteur. Choisir la
+  whitelist dès qu'un site a une notion claire de « quelles listes un admin doit pouvoir toucher »
+  (cf. le critère retenu pour parent62 ci-dessus) plutôt que de laisser le défaut « tout afficher ».
+- **`label` par entrée** (optionnel, `{fr, en}`) : sans lui, le menu de gauche et le titre du
+  panneau affichent la clé technique BRUTE (`categoriesParole`) — lisible pour un développeur, pas
+  pour l'admin d'un site. Avec lui, l'écran affiche le libellé au lieu de la clé (`findListLabel`,
+  `lib/costumListsEditing.ts`, testé) ; la clé écrite en base reste évidemment inchangée. Comme
+  `ownershipMigration.selectors[].label`, ce `label` est un `Record<string,string>` local à la
+  section (pas la `LocalizedString` partagée de `schema.ts`) — cohérent avec le fait que ces `props`
+  ne sont pas parsées par le schéma central.
+
+**Écriture** (`hooks/useCostumListsMutations.ts`, `lib/costumListsEditing.ts` pour la logique pure
+testée) — deux primitives `entity.updateField`, jamais de boucle :
+- **ajouter une valeur / créer une liste** : `$push` (`{arrayForm:true}`) — le même mécanisme,
+  déjà éprouvé en prod par `growCostumLists` (`modules/profil/forms/costum/parent62/fns.ts`). Une
+  nouvelle liste naît donc **toujours avec sa première valeur**, jamais vide : constaté en pratique
+  (communecter-dev) qu'un `$set` d'un tableau **vide** (`[]`) sur une clé inédite n'est **pas
+  persisté** — `element/updatepathvalue` traite une valeur vide comme un no-op côté backend.
+- **renommer / réordonner / supprimer une valeur** : `$set` d'un tableau complet non vide, sans
+  aucune option (`UpdatePathValueData.edit` : « préférer omettre `arrayForm` pour écraser un
+  array ») — structurellement un `$set` de champ simple, mais jamais exercé dans ce dépôt sur
+  `costum.lists` avant cette section : **à valider empiriquement** contre un dev-server réel avant
+  de considérer l'opération fiable en prod sur une liste sensible.
+- **supprimer la dernière valeur d'une liste est bloqué** (rejet `wouldEmpty`, toast explicite) :
+  même écueil que la création — un `$set` à `[]` risque de ne rien persister, ce qui donnerait
+  l'illusion d'une suppression réussie alors que le serveur garde l'ancien tableau.
+- Dédoublonnage casse/accents (`normalizeFilterValue`, même utilitaire que les filtres) fait
+  **côté client avant l'écriture** — le SDK n'expose ni `$addToSet` ni verrou atomique pour ça
+  (même compromis documenté par `growCostumLists`).
+- `carrier.refresh()` après chaque écriture réussie : `useCostumListsReactive` (donc les filtres
+  `optionsFrom`/`optionsKey` et `ValueSelectField`) se remet à jour sans reload.
+
+(`sections/AdminListsSection.tsx`, `hooks/useCostumListsMutations.ts`, `lib/costumListsEditing.ts`)
+
 ### Sections costum
 
 `registerAdminSection("monType", MonComposant)` puis `{ "type": "monType", "props": { … } }` —
@@ -423,7 +496,7 @@ silencieusement dans la section custom. Champs stricts notables : `import.entity
 
 ## i18n, mobile, dark mode
 
-- **i18n** : namespace `modules/admin` (fr + en, ~240 clés feuilles, parité vérifiée par le préflight).
+- **i18n** : namespace `modules/admin` (fr + en, ~270 clés feuilles, parité vérifiée par le préflight).
   Les libellés de config (`label`, `title`, `columns[].label`) restent des `LocalizedString`.
 - **Mobile** : vérifié à 390/768 px (0 px de débordement mesuré) — barres d'onglets défilantes
   (`ScrollableTabsList`), colonne d'actions de table **sticky à droite**, en-tête sticky,
@@ -448,6 +521,13 @@ silencieusement dans la section custom. Champs stricts notables : `import.entity
 - « Tout sélectionner » ne couvre que les lignes chargées (pas de « sélectionner les N
   correspondants » — exigerait un mécanisme serveur) ; pas d'undo sur Valider/Référencer ;
   `entityAdmin` pas résolu par-ligne ; colonnes d'export non configurables (réutilisent `columns`).
+- `lists` : renommer/réordonner/supprimer une valeur reposent sur un `$set` de tableau complet
+  jamais exercé sur `costum.lists` avant cette section (seul `$push`, pour ajouter/créer, est
+  éprouvé en prod) — à valider contre un dev-server réel avant de dépendre de ces trois opérations
+  sur une liste critique. Édition des listes dynamiques (recette) et des maps valeur→libellé : non
+  supportée (lecture seule, cf. section `lists` ci-dessus) ; suppression d'une liste **entière**
+  (retirer la clé de `costum.lists`) : non implémentée (hors scope v1, jugé trop destructeur sans
+  demande explicite).
 
 ## Voir aussi
 

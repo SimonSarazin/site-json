@@ -275,5 +275,42 @@
     "optionsChanged": "Options changed: run the analysis again before applying.",
     "selectionIds": "{{count}} selected record(s)",
     "subTypeSuggestions": "Types found in the selection:"
+  },
+  "AdminLists": {
+    "noContext": "No element to administer.",
+    "badConfig": "Invalid section configuration (props.lists).",
+    "empty": "This site declares no list.",
+    "dynamicBadge": "Managed server-side",
+    "dynamicHint": "This list is computed automatically by the server (collection: {{collection}}) — not editable here.",
+    "uneditableBadge": "Format not supported here",
+    "uneditableHint": "This list is in a key/label format or references records — editing is not available yet.",
+    "addPlaceholder": "Add a value…",
+    "add": "Add",
+    "rename": "Rename",
+    "confirmEdit": "Confirm",
+    "cancelEdit": "Cancel editing",
+    "confirmRemoveTitle": "Delete this value?",
+    "confirmRemoveDesc": "The value “{{value}}” will be removed from the list.",
+    "remove": "Delete",
+    "cancel": "Cancel",
+    "newList": "Create a new list",
+    "newListPlaceholder": "List name",
+    "newListValuePlaceholder": "First value",
+    "create": "Create",
+    "error": "An error occurred.",
+    "success": {
+      "add": "Value added.",
+      "rename": "Value renamed.",
+      "remove": "Value removed.",
+      "reorder": "Order updated.",
+      "createList": "List created."
+    },
+    "reject": {
+      "empty": "The value cannot be empty.",
+      "duplicate": "This value already exists in the list.",
+      "invalidChars": "The name cannot contain a dot or a $.",
+      "invalidIndex": "Action failed — the list has changed, reload the page.",
+      "wouldEmpty": "Cannot delete the last value of a list here — the server does not save an empty list."
+    }
   }
 }
