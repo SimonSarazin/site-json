@@ -280,7 +280,7 @@
         "children": [
           {
             "label": {
-              "fr": "Tableau de bord",
+              "fr": "Observatoire des données des lieux avec de nombreux filtres",
               "en": "Dashboard"
             },
             "path": "/observatoire",
@@ -292,7 +292,7 @@
               "en": "Regional networks"
             },
             "description": {
-              "fr": "Découvrez l'observatoire des réseaux régionaux",
+              "fr": "Découvrez les lieux filtrés par réseaux régionaux",
               "en": "Explore the regional networks observatory"
             },
             "path": "/reseaux-regionaux"
@@ -303,7 +303,7 @@
               "en": "Thematic networks"
             },
             "description": {
-              "fr": "Découvrez l'observatoire des réseaux thématiques",
+              "fr": "Découvrez les lieux filtrés par réseaux thématiques",
               "en": "Explore the thematic networks observatory"
             },
             "path": "/reseaux-thematiques"
@@ -959,8 +959,8 @@
               "en": "Connect, discuss, propose and disseminate information about third places."
             },
             "description": {
-              "fr": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris et aliquip ex ea commodo consequat.",
-              "en": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+              "fr": "Le forum et le chat Tiers-Lieux permettent aux acteurs des tiers-lieux de poser des questions, échanger et débattre autour de leurs pratiques, besoins et projets. Ce sont aussi des espaces pour proposer, partager et diffuser des informations, ressources et initiatives utiles à la communauté.",
+              "en": "The Tiers-Lieux forum and chat bring people together to connect, exchange ideas and discuss their practices, needs and projects. They also provide spaces to share, propose and disseminate information, resources and initiatives useful to the community."
             },
             "image": "images/tiersLieux/forum.png",
             "imagePosition": "right",
@@ -1001,8 +1001,8 @@
               "en": "Documentation and list of tools to organize and coordinate the life of a third place."
             },
             "description": {
-              "fr": "Accédez à une base de connaissances collaborative et découvrez les meilleurs outils pour gérer votre tiers-lieu. Ressources pratiques, guides méthodologiques et retours d'expérience sont à votre disposition.",
-              "en": "Access a collaborative knowledge base and discover the best tools to manage your third place. Practical resources, methodological guides and feedback are at your disposal."
+              "fr": "Le wiki Movilab vous permettra d'accéder à une base de connaissances collaborative. Ressources pratiques, guides méthodologiques et retours d'expérience sont à votre disposition.. La page logiciels et usages et son catalogue permet de découvrir les meilleurs outils pour gérer et animer votre lieu, mais aussi de décrire les votres, et ainsi faciliter des coopérations et cofinancements d'améliorations.",
+              "en": "The Movilab wiki gives you access to a collaborative knowledge base. Practical resources, methodological guides and feedback from experience are available to you. The Uses page and its catalogue help you discover the best tools to manage and animate your space, while also allowing you to document your own tools and practices—making it easier to develop collaborations"
             },
             "image": "images/tiersLieux/docs.png",
             "imagePosition": "left",
@@ -1082,23 +1082,16 @@
               "en": "Observe the data"
             },
             "description": {
-              "fr": "Découvrez comment nos indicateurs témoignent de notre impact et de notre croissance. Des résultats concrets qui illustrent la transformation des territoires.",
-              "en": "Discover how our metrics demonstrate success and growth. Concrete results that illustrate territorial transformation."
+              "fr": "Découvrez un observatoire des données des tiers-lieux lié aux différentes informations nourries par chaque lieu sur la plateforme et les outils liés.",
+              "en": "Discover a data observatory for third places, connected to the various information contributed by each place across the platform and its related tools."
             },
             "links": [
               {
                 "label": {
-                  "fr": "Les réseaux régionaux",
-                  "en": "Regional networks"
+                  "fr": "L'observatoire des données",
+                  "en": "Data observatory"
                 },
-                "href": "/reseaux-regionaux"
-              },
-              {
-                "label": {
-                  "fr": "Les réseaux thématiques",
-                  "en": "Thematic networks"
-                },
-                "href": "/reseaux-thematiques"
+                "href": "/observatoire"
               }
             ],
             "iconCard": {
@@ -2421,8 +2414,8 @@
           {
             "href": "https://lescommuns.tiers-lieux.org/#les-communs",
             "label": {
-              "fr": "S'entraider",
-              "en": "Help each other"
+              "fr": "L'appel à commnus",
+              "en": "Call for commons"
             }
           },
           {
@@ -2440,10 +2433,10 @@
             }
           },
           {
-            "href": "/lieux",
+            "href": "/licoop",
             "label": {
-              "fr": "Les marques",
-              "en": "Brands"
+              "fr": "Diagnostic Licoop",
+              "en": "Diagnostic Licoop"
             }
           }
         ]
@@ -2480,8 +2473,8 @@
       }
     ],
     "copyright": {
-      "fr": "Copyright 2025",
-      "en": "Copyright 2025"
+      "fr": "<a href=\"https://gitlab.adullact.net/pixelhumain/site-json/-/tree/main\" target=\"_blank\" class=\"text-primary hover:underline\">Logiciel libre Communecter sous licence MIT</a> - Contenu sous Creative Commons CCBYSA 4.0",
+      "en": "Licence MIT - Creative Commons CCBYSA 4.0"
     }
   },
   "features": [
