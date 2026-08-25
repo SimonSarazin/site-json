@@ -1303,3 +1303,54 @@ describe("finder image stripping (normalize + denormalize)", () => {
     ).toBeNull();
   });
 });
+
+/**
+ * Régression : un formulaire VIERGE affichait « Invalid input: expected object,
+ * received string » sous le champ, avant toute saisie.
+ *
+ * Cause : `categorizedCheckbox` n'avait aucun cas dans `generateDefaultValues`
+ * et tombait sur le `default` qui pose `""`, alors que son schéma attend
+ * `{ list, sublist }`. Le `.optional()` ne rattrape pas — `""` n'est pas
+ * `undefined` — et un champ requis n'a même pas d'`optional`.
+ *
+ * Le test exerce la chaîne réellement cassée (norme 11) : défauts → `safeParse`.
+ */
+describe("categorizedCheckbox — défaut compatible avec son schéma", () => {
+  const champ = (isRequired: boolean) =>
+    makeField({
+      name: "besoins",
+      label: "À quels besoins répond le commun ?",
+      type: "tpls.forms.cplx.categorizedCheckbox",
+      componentType: "categorizedCheckbox",
+      isRequired,
+    });
+
+  it("pose `{ list: [], sublist: {} }`, pas une chaîne", () => {
+    const valeurs = generateDefaultValues([makeSubFormFields([champ(false)])]);
+    expect(valeurs.besoins).toEqual({ list: [], sublist: {} });
+  });
+
+  it("le défaut passe le schéma quand le champ est FACULTATIF", () => {
+    const fields = [makeSubFormFields([champ(false)])];
+    const res = generateZodSchema(fields).safeParse(generateDefaultValues(fields));
+    expect(res.success).toBe(true);
+  });
+
+  it("un champ REQUIS échoue sur « requis », pas sur un conflit de type", () => {
+    // Le formulaire vierge doit bien réclamer une réponse — mais avec le message
+    // de champ obligatoire, pas « expected object, received string ».
+    const fields = [makeSubFormFields([champ(true)])];
+    const res = generateZodSchema(fields).safeParse(generateDefaultValues(fields));
+    expect(res.success).toBe(false);
+    const message = res.success ? "" : res.error.issues[0].message;
+    expect(message).not.toMatch(/expected object/i);
+  });
+
+  it("une valeur saisie reste valide, `sublist` comprise", () => {
+    const fields = [makeSubFormFields([champ(true)])];
+    const res = generateZodSchema(fields).safeParse({
+      besoins: { list: ["4_autres-outils"], sublist: { "4_autres-outils": ["0_gestion"] } },
+    });
+    expect(res.success).toBe(true);
+  });
+});

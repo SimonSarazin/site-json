@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { CoFormData, FormFieldMapping, SubFormFields, MultiCheckboxPlusOptionType, EvaluationConfig, FinderConfig, FinderFilter, SimpleTableConfig, SimpleTableColumn, SimpleTableRow, UploaderConfig, ConditionalDisplay, CommonTableConfig, CommonTableValue, CategorizedCheckboxConfig, CategorizedCheckboxSource, TimeSlotsConfig, DynamicFieldsConfig } from "../types";
+import type { CoFormData, FormFieldMapping, SubFormFields, MultiCheckboxPlusOptionType, EvaluationConfig, FinderConfig, FinderFilter, SimpleTableConfig, SimpleTableColumn, SimpleTableRow, UploaderConfig, ConditionalDisplay, CommonTableConfig, CommonTableValue, CategorizedCheckboxConfig, CategorizedCheckboxSource, CategorizedCheckboxValue, TimeSlotsConfig, DynamicFieldsConfig } from "../types";
 import { isSlotComplete, isSlotOrdered } from "./timeSlots";
 
 // ─── Configuration des préfixes de champs ────────────────────────
@@ -1294,6 +1294,16 @@ export function generateDefaultValues(subFormsFields: SubFormFields[]): Record<s
 
         case "finder":
           defaultValues[field.name] = null;
+          break;
+
+        // Valeur composite `{ list, sublist }`. Sans ce cas, le champ tombait
+        // dans le `default` qui pose `""` — et le schéma, lui, attend un objet :
+        // « Invalid input: expected object, received string » s'affichait sous le
+        // champ dès l'ouverture d'un formulaire vierge. Le `.optional()` du
+        // schéma ne rattrape rien, car `""` n'est pas `undefined` ; et pour un
+        // champ requis (le cas courant) il n'y a même pas d'`optional`.
+        case "categorizedCheckbox":
+          defaultValues[field.name] = { list: [], sublist: {} } satisfies CategorizedCheckboxValue;
           break;
 
         case "simpleTable": {
