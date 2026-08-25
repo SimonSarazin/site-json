@@ -212,7 +212,6 @@
                   "Boulonnais": "var(--territoire-boulonnais)",
                   "Calaisis": "var(--territoire-calaisis)",
                   "Entre Mer et Terres": "var(--territoire-entre-mer-et-terres)",
-                  "Familles en sol mineur": "var(--territoire-familles-en-sol-mineur)",
                   "Familles en sol mineur Hénin Carvin": "var(--territoire-fsm-henin-carvin)",
                   "Familles en sol mineur Lens Liévin": "var(--territoire-fsm-lens-lievin)",
                   "Ternois Bruaysis": "var(--territoire-ternois-bruaysis)"

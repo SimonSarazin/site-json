@@ -20,13 +20,14 @@ Dernière mise à jour : **2026-08-25** (section admin générique « Listes » 
 valeur, créer une liste ; activée en **pilote** sur parent62, onglet « Listes », restreinte via
 `props.lists` aux 2 listes **grandies par saisie libre** (`themes`, `categoriesParole` — cf.
 §9septies), chacune avec un **libellé lisible** (`{key,label}`) plutôt que sa clé technique —
-`territoires`/`publics` restent hors de cet écran — cf. §9octies ; modifications locales sur
-`parents62`, **non commitées** ; typecheck/lint propres, `config:validate` 45 pages/158 sections
-(inchangé), 39 tests unitaires ciblés + suite complète 2880/2888 ✅, 2 échecs pré-existants sans
-rapport avec ce lot — cf. §9octies.4).
+`territoires`/`publics` restent hors de cet écran — cf. §9octies ; commit `9c3f243f` sur
+`parents62`, **pushé** ; typecheck/lint propres, `config:validate` 45 pages/158 sections (inchangé).
+Puis (25/08 aussi, correctif indépendant) rattrapage de 2 gates preflight qui avaient dérivé depuis
+le dédoublonnage du territoire « Familles en sol mineur » (§9quinquies, 13/08) — cf. §9novies ;
+suite complète **2882/2882** ✅, plus aucun échec.
 Précédemment (même jour) : **2026-08-25** (thèmes/catégorie de "parole de parent" en saisie libre,
 promotion admin-only vers la liste partagée `costum.lists`, filtres et formulaire réactifs sans
-reload — cf. §9septies ; commit `bcd90e6d` sur `parents62`, **non pushé** ; typecheck/lint propres,
+reload — cf. §9septies ; commit `bcd90e6d` sur `parents62`, **pushé** ; typecheck/lint propres,
 `config:validate` 45 pages/158 sections, 990 tests unitaires ciblés ✅).
 Précédemment : **2026-08-19** (diagnostic + correctifs événements récurrents de l'agenda,
 testés avec des données de test locales — 3 bugs backend corrigés ; réponse au §2.6/§12 (le filtre de
@@ -150,7 +151,7 @@ et le réseau social Communecter, en **conservant le WordPress** pour les conten
   une valeur inédite acceptée par un **admin** grandit aussi `costum.lists.themes`/
   `categoriesParole` (config-driven, `false` par défaut), un visiteur non-admin ne choisit que
   parmi l'existant ; filtres et formulaire se mettent à jour sans reload via la réactivité native
-  du SDK (pas de store maison). Détail §9septies. Commit `bcd90e6d` sur `parents62`, **non pushé**.
+  du SDK (pas de store maison). Détail §9septies. Commit `bcd90e6d` sur `parents62`, **pushé**.
 
 ---
 
@@ -340,7 +341,8 @@ Embarqué dans le document de l'orga (`organizations.costum`). Au 20/07, `typeOb
 | **Champ dynamique thème/catégorie** | `src/components/ui/select-objet.tsx` (widget `SelectObject`, générique, utilisé entre autres par les listes dynamiques costum — feature `9e789e38`) |
 | **Dédoublonnage territoire « Familles en sol mineur » (13/08)** | `config.prod.parent62.json` (nav, filtres `enum`, `TagColorsConfSchema`, logo), `src/index-parent62.css` (variable `--territoire-familles-en-sol-mineur`) (§9quinquies) |
 | **Thèmes/catégorie en saisie libre, promotion admin (25/08)** | `config.prod.parent62.json` (`widgetProps.saveNewValue`/`list`, `optionsKey` sur 23 filtres, `afterSubmit` par formulaire) ; nouveaux `src/modules/profil/forms/costum/parent62/fns.ts` (+ `.test.ts`), `src/hooks/useCostumLists.tsx` (+ `.test.tsx`), `src/modules/profil/forms/fields/valueSelectAccess.ts` (+ `.test.ts`) ; modifs `src/modules/profil/forms/fields/ValueSelectField.tsx`, `src/modules/profil/forms/registerWidgets.tsx`, `src/modules/profil/forms/registerSpecFns.ts`, `src/modules/search/hooks/useDynamicFilterOptions.ts`, `src/modules/search/schema.ts` (`optionsKey`), `src/modules/search/lib/dropdownFilters.ts` (`mergeDeduped`, + `.test.ts`), `src/lib/costumLists.ts` (§9septies) |
-| **Section admin « Listes » — moteur générique, pilote parent62 (25/08)** | `config.prod.parent62.json` (nouvel onglet `admin.tabs` `{id:"listes", sections:[{type:"lists", props:{lists:[{key:"themes",label:{…}},{key:"categoriesParole",label:{…}}]}}]}`) ; nouveaux `src/modules/admin/sections/AdminListsSection.tsx`, `src/modules/admin/hooks/useCostumListsMutations.ts` (+ `.test.tsx`), `src/modules/admin/lib/costumListsEditing.ts` (+ `.test.ts`, dont `toListRef`/`findListLabel`) ; modifs `src/modules/admin/AdminSectionRenderer.tsx` (`registerAdminSection("lists", …)`), `src/modules/admin/i18n/{fr,en}.json` (groupe `AdminLists`) — doc moteur : [doc/30-module-admin.md](../doc/30-module-admin.md) §`lists` (§9octies). `.claude/skills/config-assistant/examples/admin.json` **délibérément non resynchronisé** dans ce commit (cf. §9octies.4) |
+| **Section admin « Listes » — moteur générique, pilote parent62 (25/08)** | `config.prod.parent62.json` (nouvel onglet `admin.tabs` `{id:"listes", sections:[{type:"lists", props:{lists:[{key:"themes",label:{…}},{key:"categoriesParole",label:{…}}]}}]}`) ; nouveaux `src/modules/admin/sections/AdminListsSection.tsx`, `src/modules/admin/hooks/useCostumListsMutations.ts` (+ `.test.tsx`), `src/modules/admin/lib/costumListsEditing.ts` (+ `.test.ts`, dont `toListRef`/`findListLabel`) ; modifs `src/modules/admin/AdminSectionRenderer.tsx` (`registerAdminSection("lists", …)`), `src/modules/admin/i18n/{fr,en}.json` (groupe `AdminLists`) — doc moteur : [doc/30-module-admin.md](../doc/30-module-admin.md) §`lists` (§9octies) |
+| **Rattrapage gates `config-assistant` — drift territoire (25/08)** | `.claude/skills/config-assistant/page-recipes.json` (recette `page-annuaire-grille` : `path`/`sequence`/`rythme` recalés), `.claude/skills/config-assistant/examples/{admin,command-palette,list-item-rules,list-testimonial}.json` (resynchronisés) (§9novies) |
 | **Tests** | `e2e/parent62.spec.ts`, `src/modules/search/lib/colorBy.test.ts`, `src/modules/profil/forms/costum/__fixtures__/configCostum.ts` |
 | **Déploiement** | `server/prod-server.js`, `server/lib/sitemap.js`, `.env` (`VITE_SLUG`, `VITE_BASE_URL_BACKEND`, `SITE_CONFIG_PATH`, `VITE_SITE_PUBLIC_URL`) — dérivable via `npm run deploy:env` (`scripts/lib/sites.ts`) |
 
@@ -814,7 +816,7 @@ corrélation exacte (les 3 qui restent sont les 3 sans `toBeValidated`). Pas un 
 > Périmètre : les champs "Thèmes" (`parent62-affiche`/`-article`/`-recovery-center`/`-event`) et
 > "Catégorie" (`parent62-affiche` seul) passent d'un choix fermé à un choix **+ saisie libre**, avec
 > promotion admin-only de la valeur inédite vers la liste partagée du costum. Commit `bcd90e6d` sur
-> `parents62`, **non pushé** à ce stade.
+> `parents62`, **pushé**.
 
 ### 9septies.1 Ce qui a changé
 
@@ -952,7 +954,45 @@ valider avant de considérer ces trois opérations fiables sur les listes réell
 | `npx tsx scripts/validate-config.ts config.prod.parent62.json` | ✅ 45 pages, 158 sections (inchangé) |
 | `test:unit` ciblé (`costumListsEditing`+`useCostumListsMutations`) | ✅ **39/39** |
 | `test:unit` suite complète | ✅ **2880/2888** — 2 échecs pré-existants sans rapport (drift `command-palette`/territoires de parent62, antérieur à ce lot) |
-| `tests/preflight/archetypes.test.ts` (« snapshot égale le bloc source ») | ❌ **rouge, délibérément** — `npm run config:example -- admin --write` avait resynchronisé `.claude/skills/config-assistant/examples/admin.json` (nouvel onglet « Listes »), mais ce fichier a été **explicitement exclu du commit sur demande** (25/08, après coup) : le snapshot d'archétype `admin` a donc dérivé de `config.prod.parent62.json`. Remède documenté par le test lui-même : relancer `npm run config:example -- admin --write` et committer le résultat, quand ce sera souhaité |
+| `tests/preflight/archetypes.test.ts` (« snapshot égale le bloc source ») | ❌ **rouge** au moment de ce lot — `.claude/skills/config-assistant/examples/admin.json` n'avait pas suivi le nouvel onglet « Listes ». **Corrigé ensuite, cf. §9novies** |
+
+---
+
+## 9novies. Impacts — rattrapage des gates `config-assistant` (drift territoire « Familles en sol mineur », 25/08)
+
+> Périmètre : correctif **indépendant** de la section admin « Listes » (§9octies) — remet à niveau 2
+> gates preflight qui avaient dérivé depuis le dédoublonnage du territoire « Familles en sol
+> mineur » (§9quinquies, 13/08), repérés en vérifiant l'état complet des tests après §9octies.
+
+### 9novies.1 Ce qui a changé
+
+- **`tests/preflight/page-recipes.test.ts`** : la recette `page-annuaire-grille`
+  (`.claude/skills/config-assistant/page-recipes.json`) pointait `/territoire/familles-en-sol-mineur`,
+  une page supprimée depuis le dédoublonnage en 2 territoires (`-henin-carvin`/`-lens-lievin`,
+  §9quinquies). Recalée sur `/territoire/familles-en-sol-mineur-henin-carvin` — mais la vraie
+  découverte est plus large : la séquence de sections annoncée (`title, searchHeader, gridLayout`)
+  ne correspondait plus à **aucune** des 9 pages territoire actuelles, qui partagent toutes
+  désormais `html, cards, searchHeader, articleFeed, accordion, searchProStatic, (html,) cta`
+  (dérive probablement issue de la refonte du 06/08, §9quater, jamais recalée depuis). `sequence`
+  et `rythme` réécrits pour décrire le vrai gabarit (bandeau hero, carte coordonnateur·rice,
+  actualité filtrée par territoire, accordéon des communes, sélection d'actions, CTA — variante
+  enrichie à 8 sections avec un bloc « Ressources du territoire », cf. `/territoire/arrageois`).
+- **`tests/preflight/archetypes.test.ts`** : 4 exemples canoniques du skill `config-assistant`
+  (`admin`, `command-palette`, `list-item-rules`, `list-testimonial`) portaient encore l'entrée
+  générique `"Familles en sol mineur"` dans leur snapshot (`TagColorsConf`/`dropdownFilters.options`),
+  absente de la vraie config depuis le même dédoublonnage. Resynchronisés via
+  `npm run config:example -- <feature> --write` (`agenda`/`list-resource`/`theme` aussi vérifiés,
+  sans dérive).
+
+### 9novies.2 Validation (gates)
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` | ✅ 0 erreur |
+| `lint` | ✅ 0 erreur |
+| `npx tsx scripts/validate-config.ts config.prod.parent62.json` | ✅ 45 pages, 158 sections (inchangé) |
+| `tests/preflight/` (33 fichiers) | ✅ **532/532** (6 skip) — `page-recipes` ET `archetypes` repassent au vert |
+| `test:unit` suite complète | ✅ **2882/2882** (6 skip) — plus aucun échec, y compris les 2 pré-existants |
 
 ---
 
@@ -1071,10 +1111,9 @@ attendue par le test parole ; périmètre `prepData`/`validategroup`.
 - **Section admin « Listes » — renommer/réordonner/supprimer une valeur non validés en prod
   réelle** (25/08, §9octies.3) : seul l'ajout (`$push`) est éprouvé ; les trois autres opérations
   reposent sur un `$set` de tableau complet jamais exercé sur `costum.lists` avant ce lot.
-- **`tests/preflight/archetypes.test.ts` rouge, délibérément** (25/08, §9octies.4) :
-  `.claude/skills/config-assistant/examples/admin.json` n'a pas suivi l'ajout de l'onglet « Listes »
-  sur `config.prod.parent62.json` (exclusion volontaire de ce fichier du commit) — remède :
-  `npm run config:example -- admin --write` puis committer, quand souhaité.
+- ~~**`tests/preflight/archetypes.test.ts` rouge** (25/08, §9octies.4)~~ : **corrigé le 25/08**
+  (§9novies) — resynchronisé, avec 3 autres exemples qui avaient aussi dérivé du dédoublonnage
+  territoire « Familles en sol mineur » (§9quinquies).
 
 ---
 
@@ -1105,7 +1144,6 @@ les **paroles ne sont plus muettes** dans le moteur (§9bis.1).
 | **[06/08] Assertion e2e d'opacité du header** (« mode sombre… », `bg-background/90`) écrite pour `transparent-scroll` — à réécrire pour la mécanique réelle de `stacked` (scrim interne, opacité jamais posée sur le `<nav>`) | Peterson |
 | **[06/08] `build`** jamais relancé depuis la refonte — à faire avant tout commit (`test:unit` — 2 227/2 229, seuls les 2 pré-existants restent —, `test:integration` et `e2e` ciblé ont été rejoués le 06/08, cf. §9quater.3) |
 | **[25/08] Convertir `costum.lists.themes` et `costum.lists.categoriesParole` en recette dynamique côté backend** — résoudrait la limite multi-utilisateur (§9septies.2) et rapprocherait parent62 du mécanisme déjà utilisé sur institut-bleu ; le champ `themes` est réparti sur 2 collections (`poi`/`events`), une recette `distinct` classique n'en couvre qu'une | Thomas / backend |
-| **[25/08] `build`** jamais relancé depuis ce lot — commit `bcd90e6d` non pushé, à recetter avant fusion dans `main` | Peterson |
+| **[25/08] `build`** jamais relancé depuis ce lot — commit `bcd90e6d` pushé, à recetter avant fusion dans `main` | Peterson |
 | **[25/08] Section admin « Listes » — valider empiriquement renommer/réordonner/supprimer une valeur** contre une vraie liste de parent62 (dev, pas la prod) avant de les considérer fiables — seul l'ajout est éprouvé à ce jour (§9octies.3) | Peterson |
-| **[25/08] Section admin « Listes » — `build`** jamais relancé depuis ce lot — commit `918bd991` sur `parents62`, **non pushé**, à recetter avant fusion dans `main` | Peterson |
-| **[25/08] Section admin « Listes » — resynchroniser l'archétype `config-assistant`** : `npm run config:example -- admin --write` puis committer, pour repasser `tests/preflight/archetypes.test.ts` au vert (rouge délibérément depuis ce lot, cf. §9octies.4/§12) | Peterson |
+| **[25/08] Section admin « Listes » — `build`** jamais relancé depuis ce lot — commit `9c3f243f` sur `parents62`, **pushé**, à recetter avant fusion dans `main` | Peterson |
