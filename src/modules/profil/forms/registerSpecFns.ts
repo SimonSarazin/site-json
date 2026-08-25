@@ -9,3 +9,4 @@ import "./costum/sharedRegistrations"; // clés GÉNÉRIQUES garanties (codecs/c
 import "./costum/equipements-sportifs/fns";
 import "./costum/tiers-lieux/fns";
 import "./costum/structure/fns";
+import "./costum/parent62/fns";

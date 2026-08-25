@@ -1978,6 +1978,7 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsKey": "themes",
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -2350,6 +2351,7 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsKey": "themes",
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -2725,6 +2727,7 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsKey": "themes",
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -3083,6 +3086,7 @@
             "dropdownFilters": [
               {
                 "id": "category",
+                "optionsKey": "categoriesParole",
                 "label": {
                   "fr": "Catégorie",
                   "en": "Category"
@@ -3327,6 +3331,7 @@
               },
               {
                 "id": "theme",
+                "optionsKey": "themes",
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -3860,6 +3865,7 @@
               },
               {
                 "id": "theme",
+                "optionsKey": "themes",
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -4419,6 +4425,7 @@
               },
               {
                 "id": "theme",
+                "optionsKey": "themes",
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -6435,6 +6442,7 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsKey": "themes",
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -6743,6 +6751,7 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsKey": "themes",
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -7051,6 +7060,7 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsKey": "themes",
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -7359,6 +7369,7 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsKey": "themes",
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -7667,6 +7678,7 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsKey": "themes",
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -7975,6 +7987,7 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsKey": "themes",
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -8283,6 +8296,7 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsKey": "themes",
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -8622,6 +8636,7 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsKey": "themes",
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -9063,6 +9078,7 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsKey": "themes",
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -9498,6 +9514,7 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsKey": "themes",
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -9939,6 +9956,7 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsKey": "themes",
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -10380,6 +10398,7 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsKey": "themes",
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -10821,6 +10840,7 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsKey": "themes",
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -11260,6 +11280,7 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsKey": "themes",
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -11695,6 +11716,7 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsKey": "themes",
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -12128,6 +12150,7 @@
             "dropdownFilters": [
               {
                 "id": "theme",
+                "optionsKey": "themes",
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -13007,6 +13030,7 @@
                   },
                   {
                     "id": "themes",
+                    "optionsKey": "themes",
                     "label": {
                       "fr": "Thèmes",
                       "en": "Topics"
@@ -15398,6 +15422,7 @@
       "entityType": "poi",
       "collection": "poi",
       "costumSlug": "parent62",
+      "afterSubmit": "parent62-article-grow",
       "layout": {
         "kind": "flat"
       },
@@ -15645,6 +15670,9 @@
         },
         "themes": {
           "widget": "valueSelect",
+          "widgetProps": {
+            "saveNewValue": true
+          },
           "label": {
             "fr": "Thèmes",
             "en": "Topics"
@@ -15883,6 +15911,7 @@
       "entityType": "poi",
       "collection": "poi",
       "costumSlug": "parent62",
+      "afterSubmit": "parent62-affiche-grow",
       "layout": {
         "kind": "flat"
       },
@@ -15965,7 +15994,9 @@
         "category": {
           "widget": "valueSelect",
           "widgetProps": {
-            "multiple": false
+            "multiple": false,
+            "list": "categoriesParole",
+            "saveNewValue": true
           },
           "required": true,
           "label": {
@@ -16227,6 +16258,9 @@
         },
         "themes": {
           "widget": "valueSelect",
+          "widgetProps": {
+            "saveNewValue": true
+          },
           "label": {
             "fr": "Thèmes",
             "en": "Themes"
@@ -16442,6 +16476,7 @@
       "entityType": "poi",
       "collection": "poi",
       "costumSlug": "parent62",
+      "afterSubmit": "parent62-recovery-center-grow",
       "layout": {
         "kind": "flat"
       },
@@ -16686,6 +16721,9 @@
         },
         "themes": {
           "widget": "valueSelect",
+          "widgetProps": {
+            "saveNewValue": true
+          },
           "label": {
             "fr": "Thèmes",
             "en": "Topics"
@@ -17036,6 +17074,7 @@
       "entityType": "events",
       "collection": "events",
       "costumSlug": "parent62",
+      "afterSubmit": "parent62-event-grow",
       "layout": {
         "kind": "tabs"
       },
@@ -17307,6 +17346,9 @@
         },
         "themes": {
           "widget": "valueSelect",
+          "widgetProps": {
+            "saveNewValue": true
+          },
           "label": {
             "fr": "Thèmes",
             "en": "Topics"

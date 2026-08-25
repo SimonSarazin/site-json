@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import type { SearchByFieldValue } from "@/modules/search/contexts/pageFilters";
 import {
   normalizeFilterValue,
+  mergeDeduped,
   resolveDropdownOption,
   dropdownFilterToParam,
   dropdownFilterToState,
@@ -162,5 +163,18 @@ describe("keyFor / splitKey", () => {
     expect(keyFor("f", "a:b")).toBe("f:a:b");
     expect(splitKey("f:a:b")).toEqual({ filterId: "f", optionId: "a:b" });
     expect(splitKey("nokey")).toBeNull();
+  });
+});
+
+describe("mergeDeduped", () => {
+  it("concatène plusieurs groupes en préservant l'ordre", () =>
+    expect(mergeDeduped(["a", "b"], ["c"])).toEqual(["a", "b", "c"]));
+  it("dédoublonne casse/accents près, le PREMIER groupe fixe la graphie", () =>
+    expect(mergeDeduped(["La santé"], ["la SANTE", "Le deuil"])).toEqual(["La santé", "Le deuil"]));
+  it("dédoublonne aussi À L'INTÉRIEUR d'un même groupe", () =>
+    expect(mergeDeduped(["Économie", "économie", "Autre"])).toEqual(["Économie", "Autre"]));
+  it("groupes vides / aucun groupe → []", () => {
+    expect(mergeDeduped([], [])).toEqual([]);
+    expect(mergeDeduped()).toEqual([]);
   });
 });

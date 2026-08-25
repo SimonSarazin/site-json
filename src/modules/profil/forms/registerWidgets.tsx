@@ -49,7 +49,11 @@ registerWidget("tags", (p) => <TagsWidget p={p} />);
 
 // valueSelect : sélection d'une ou plusieurs VALEURS d'une liste du costum, saisie libre facultative.
 // Sans rapport avec les tags — vise `territoires`, `auteurs`, `legalStatus`… `widgetProps` :
-// `list` (défaut : le nom du champ), `costumSlug`, `multiple` (défaut true), `min`, `max`, `creatable`.
+// `list` (défaut : le nom du champ), `costumSlug`, `multiple` (défaut true), `min`, `max`, `creatable`,
+// `saveNewValue` (défaut FALSE — opt-in par champ : une valeur libre acceptée par ce champ est aussi
+// promue dans `costum.lists.<list>`, réservé admin ; cf. `growCostumLists`, `profil/forms/costum/parent62/fns.ts`).
+// À `true`, restreint AUSSI la saisie libre (`creatable`) aux admins — un visiteur non-admin ne choisit
+// alors que parmi l'existant, cf. docstring `ValueSelectField`.
 registerWidget("valueSelect", (p) => <ValueSelectField control={control(p.form)} name={fname(p.field.name)} label={lbl(p)}
   options={p.options?.map((o) => o.value)}
   list={p.field.widgetProps?.list as string | undefined}
@@ -58,6 +62,7 @@ registerWidget("valueSelect", (p) => <ValueSelectField control={control(p.form)}
   min={p.field.widgetProps?.min as number | undefined}
   max={p.field.widgetProps?.max as number | undefined}
   creatable={(p.field.widgetProps?.creatable as boolean) ?? true}
+  saveNewValue={(p.field.widgetProps?.saveNewValue as boolean) ?? false}
   required={p.field.required}
   placeholder={p.field.placeholder ? p.t(p.field.placeholder) : undefined}
   placeholderSearch={searchPh(p)}

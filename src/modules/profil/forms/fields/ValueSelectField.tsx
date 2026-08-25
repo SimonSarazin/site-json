@@ -6,8 +6,11 @@ import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/for
 import { FormMessage } from "@/modules/formEngine/components/FormMessage";
 import { SelectObject } from "@/components/ui/select-objet";
 import { useCocolight } from "@/hooks/useCocolight";
+import { useCostumListsReactive } from "@/hooks/useCostumLists";
 import { useCostumListValues } from "@/hooks/useCostumListValues";
-import { capitaliser, costumSlugOf } from "@/lib/costumLists";
+import { capitaliser, costumSlugOf, staticListValues } from "@/lib/costumLists";
+import { mergeDeduped } from "@/modules/search/lib/dropdownFilters";
+import { resolveCreatable } from "./valueSelectAccess";
 
 interface ValueSelectFieldProps<T extends FieldValues> {
   control: Control<T>;
@@ -27,6 +30,10 @@ interface ValueSelectFieldProps<T extends FieldValues> {
   max?: number;
   /** Autoriser une valeur absente des propositions (défaut : oui). */
   creatable?: boolean;
+  /** La valeur libre acceptée par ce champ est aussi PROMUE dans `costum.lists.<list>` (partagée, cf.
+   *  `growCostumLists`) — réservé admin. Quand `true`, la saisie libre elle-même devient réservée
+   *  admin (cf. docstring plus bas) : `creatable` seul ne suffit plus à l'ouvrir aux visiteurs. */
+  saveNewValue?: boolean;
   required?: boolean;
   errorTranslate?: (key: string) => string;
 }
@@ -43,9 +50,25 @@ interface ValueSelectFieldProps<T extends FieldValues> {
  * même popover, mêmes hauteurs. Un champ ne doit pas trahir par son allure quel composant l'implémente ;
  * l'unique différence fonctionnelle, la saisie libre, passe par `creatable`.
  *
- * DEUX SOURCES. Une liste STATIQUE arrive par `options`, le chemin ordinaire du moteur de formulaire.
- * Le hook n'est sollicité que si ce chemin repart vide, c'est-à-dire pour une liste DYNAMIQUE, dont seul
- * le serveur peut tirer les valeurs — donc celles réellement employées, fraîches.
+ * `saveNewValue` RESTREINT `creatable` AUX ADMINS (pas l'inverse — jamais d'élargissement) : quand ce
+ * champ promeut aussi ses valeurs libres dans `costum.lists.<list>` (taxonomie PARTAGÉE, cf.
+ * `growCostumLists`), un visiteur non-admin ne doit PAS pouvoir taper une valeur inédite — il choisit
+ * SEULEMENT parmi l'existant, comme un `select` fermé. Un admin, qui a le droit de faire grandir la
+ * liste partagée, garde la saisie libre. `creatable: false` explicite reste prioritaire dans tous les cas
+ * (un champ fermé le reste, `saveNewValue` ou pas).
+ *
+ * TROIS SOURCES, dans cet ordre de priorité :
+ *  1. `options` — l'`enum` DÉCLARÉ dans la config (le moteur de formulaire le résout normalement).
+ *  2. `costum.lists.<list>`, forme STATIQUE (tableau/map) — `useCostumListsReactive`
+ *     (`@/hooks/useCostumLists`) + `staticListValues`, FUSIONNÉE avec (1), dédoublonné casse/accents
+ *     (`mergeDeduped`) : c'est la liste qui GRANDIT (`growCostumLists`, cf. `parent62/fns.ts`) au fil
+ *     des saisies libres acceptées. Abonné aux signaux réactifs natifs du SDK : un `carrier.refresh()`
+ *     réussi post-écriture met ce champ à jour automatiquement, sans reload — sans cette fusion NI cet
+ *     abonnement, un thème inédit accepté par un utilisateur resterait invisible pour le suivant, qui
+ *     retaperait la même idée sous une graphie différente.
+ *  3. `useCostumListValues` (recette DYNAMIQUE, résolue serveur) — sollicité SEULEMENT si (1)+(2) sont
+ *     vides : cas d'un champ SANS `enum` ET dont la liste costum est une vraie recette
+ *     `{collection, distinct}` (ex. `auteurs`/`territoires`/`financeurs` sur institut-bleu).
  */
 export function ValueSelectField<T extends FieldValues>({
   control,
@@ -60,13 +83,22 @@ export function ValueSelectField<T extends FieldValues>({
   min,
   max,
   creatable = true,
+  saveNewValue = false,
   required,
   errorTranslate,
 }: ValueSelectFieldProps<T>) {
   const { entity: carrier } = useCocolight();
   const slug = costumSlug ?? costumSlugOf(carrier);
-  const statiques = options ?? [];
-  const { data: resultat } = useCostumListValues(slug, list ?? String(name), {
+  const listName = list ?? String(name);
+  // `saveNewValue` ne peut que RESTREINDRE `creatable`, jamais l'élargir — cf. `valueSelectAccess.ts`.
+  const creatableEffectif = resolveCreatable(creatable, saveNewValue, Boolean(carrier?.isAdmin()));
+  // Abonné aux signaux réactifs natifs du SDK (cf. `@/hooks/useCostumLists`) — un `carrier.refresh()`
+  // réussi (`growCostumLists`) met ce champ à jour automatiquement, sans reload.
+  const listesCostum = useCostumListsReactive(carrier);
+  // (2) : `null` si la clé n'existe pas ou est une recette DYNAMIQUE (cf. (3) pour ce cas).
+  const listeCostum = staticListValues(listesCostum[listName]) ?? [];
+  const statiques = mergeDeduped(options ?? [], listeCostum);
+  const { data: resultat } = useCostumListValues(slug, listName, {
     enabled: statiques.length === 0,
   });
   const dynamiques = resultat?.values ?? [];
@@ -96,7 +128,7 @@ export function ValueSelectField<T extends FieldValues>({
             <FormControl>
               <SelectObject
                 multiple={multiple}
-                creatable={creatable}
+                creatable={creatableEffectif}
                 value={multiple ? liste : (typeof brut === "string" ? brut : "")}
                 onChange={(v) => {
                   if (!multiple) { field.onChange(typeof v === "string" ? v : ""); return; }

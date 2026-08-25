@@ -19,9 +19,11 @@
  */
 
 /** Une entité porteuse telle que le front la manipule (org du site, entité éditée…). */
-type CarrierLike = { serverData?: Record<string, unknown> } | null | undefined;
+export type CarrierLike = { serverData?: Record<string, unknown> } | null | undefined;
 
-const isPlainObj = (v: unknown): v is Record<string, unknown> =>
+/** Exporté : réutilisé par `useCostumListsReactive` (`@/hooks/useCostumLists`), même précédence en
+ *  version réactive (abonnée aux signaux du SDK au lieu d'une lecture figée au rendu). */
+export const isPlainObj = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null && !Array.isArray(v);
 
 /**

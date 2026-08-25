@@ -78,6 +78,11 @@ export const FilterGroupSchema = z.object({
    *  d'une liste `costum.lists` et REMPLACENT les `options` déclarées. Sur un groupe à `field`, chaque
    *  option reçoit `name` = la valeur stockée, donc le filtrage par champ fonctionne tel quel. */
   optionsFrom: z.object({ list: z.string(), costumSlug: z.string().optional() }).optional(),
+  /** Source STATIQUE des options : nom d'une liste `costum.lists.<optionsKey>` déclarée en TABLEAU/MAP
+   *  (pas une recette dynamique — celle-là passe par `optionsFrom`). Résolue en mémoire (le costum est
+   *  déjà chargé), aucune requête réseau. REMPLACE les `options` déclarées quand la liste existe et
+   *  n'est pas vide ; sans quoi les `options` déclarées font foi, comme aujourd'hui. */
+  optionsKey: z.string().optional(),
   config: z.object({
     countryCode: z.array(z.string()).optional(),
     level: z.array(z.string()).optional(),
@@ -1127,6 +1132,9 @@ const TitleWithFiltersDropdownSchema = z.object({
   allLabel: LocalizedString.optional(),
   options: z.array(TitleWithFiltersDropdownOptionSchema).default([]),
   optionsFrom: OptionsFromSchema.optional(),
+  /** Source STATIQUE : cf. `FilterGroupSchema.optionsKey` — même sémantique, même résolveur
+   *  (`useDynamicFilterOptions`). */
+  optionsKey: z.string().optional(),
 });
 
 // Props partagées entre le type canonique `searchHeader` et son alias.

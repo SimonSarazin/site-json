@@ -43,6 +43,29 @@ export function normalizeFilterValue(input: string): string {
     .trim();
 }
 
+/**
+ * Fusionne plusieurs groupes de valeurs (ordre = priorité), dédoublonnés casse/accents près
+ * (`normalizeFilterValue`) — le PREMIER groupe où une valeur apparaît fixe sa graphie affichée.
+ *
+ * Réutilisé hors filtres : `useDynamicFilterOptions` (`optionsKey`) ET `ValueSelectField` (moteur de
+ * formulaire) fusionnent tous deux une liste DÉCLARÉE avec `costum.lists.<nom>` et les valeurs tout
+ * juste ajoutées en session (`growCostumLists`/`noteGrownListValue`, cf. `@/lib/costumLists`) — même
+ * dédoublonnage, une seule implémentation.
+ */
+export function mergeDeduped(...groupes: readonly (readonly string[])[]): string[] {
+  const vues = new Set<string>();
+  const out: string[] = [];
+  for (const groupe of groupes) {
+    for (const v of groupe) {
+      const n = normalizeFilterValue(v);
+      if (vues.has(n)) continue;
+      vues.add(n);
+      out.push(v);
+    }
+  }
+  return out;
+}
+
 function labelText(label: DropdownOptionConfig["label"] | undefined): string {
   if (!label) return "";
   if (typeof label === "string") return label;

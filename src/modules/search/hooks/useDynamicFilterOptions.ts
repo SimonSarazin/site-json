@@ -1,30 +1,43 @@
 import { useMemo, useRef } from "react";
 import { useQueries } from "@tanstack/react-query";
 import { useCocolight } from "@/hooks/useCocolight";
+import { useCostumListsReactive } from "@/hooks/useCostumLists";
 import { costumListValuesQuery } from "@/hooks/useCostumListValues";
-import { capitaliser, costumSlugOf } from "@/lib/costumLists";
+import { capitaliser, costumSlugOf, staticListValues } from "@/lib/costumLists";
 
 /** Forme minimale d'un filtre à options — vaut pour `dropdownFilters` comme pour `filterGroups`. */
 interface FiltreAOptions {
   id: string;
   options?: Array<{ id: string; label: unknown; value?: string; name?: string; variants?: string[] }>;
   optionsFrom?: { list: string; costumSlug?: string };
+  /** Source STATIQUE : nom d'une liste `costum.lists.<optionsKey>` déclarée en tableau/map (pas une
+   *  recette dynamique — cf. `optionsFrom`). Résolue en mémoire, sans requête. */
+  optionsKey?: string;
 }
 
 /**
- * Résout les options des filtres qui déclarent une source DYNAMIQUE (`optionsFrom`).
+ * Résout les options des filtres qui déclarent une source DYNAMIQUE (`optionsFrom`) ou STATIQUE
+ * (`optionsKey`) — les deux voies de lecture de `costum.lists.<nom>`, selon la forme sous laquelle la
+ * liste est déclarée côté backend (recette `{collection, distinct}` vs tableau/map figé).
  *
- * Les valeurs viennent d'une liste du costum (`costum.lists.<nom>`, forme `{collection, distinct}`),
- * c'est-à-dire de la donnée réelle : le filtre suit ce que les fiches contiennent, au lieu d'une liste
- * figée dans la config qui dérive (mesuré sur institutBleu : 12 territoires déclarés contre 64 en base,
- * soit 52 valeurs injoignables).
+ * `optionsFrom` : les valeurs viennent d'une recette dynamique, c'est-à-dire de la donnée réelle : le
+ * filtre suit ce que les fiches contiennent, au lieu d'une liste figée dans la config qui dérive
+ * (mesuré sur institutBleu : 12 territoires déclarés contre 64 en base, soit 52 valeurs injoignables).
+ * Résolu via une requête serveur (`costum/co/listvalues`) — le serveur REFUSE ce chemin pour une liste
+ * statique (déjà livrée avec le costum, cf. `optionsKey`).
  *
- * SUBSTITUTION, PAS FUSION. Une valeur dynamique n'a pas de libellé traduit — elle s'affiche telle
- * qu'elle est stockée, et sert d'identifiant. C'est un choix : traduire supposerait de maintenir une
- * table en config, donc de recréer la dérive qu'on vient de supprimer.
+ * `optionsKey` : les valeurs viennent d'une liste STATIQUE — `useCostumListsReactive`
+ * (`@/hooks/useCostumLists`) + `staticListValues` (`@/lib/costumLists`), aucune requête. Abonné aux
+ * signaux réactifs natifs du SDK : une écriture qui rafraîchit `carrier` (ex. `growCostumLists`) met ce
+ * hook à jour automatiquement, sans reload. C'est le pendant filtres de l'`optionsKey` du moteur de
+ * formulaire (`GenericForm`).
  *
- * Un filtre SANS `optionsFrom` est renvoyé inchangé, et aucune requête n'est émise pour lui : les
- * configs existantes gardent exactement leur comportement.
+ * Dans les deux cas : SUBSTITUTION, PAS FUSION. Une valeur dynamique/statique n'a pas de libellé
+ * traduit — elle s'affiche telle qu'elle est stockée, et sert d'identifiant. C'est un choix : traduire
+ * supposerait de maintenir une table en config, donc de recréer la dérive qu'on vient de supprimer.
+ *
+ * Un filtre SANS `optionsFrom` ni `optionsKey` est renvoyé inchangé, et aucune requête n'est émise pour
+ * lui : les configs existantes gardent exactement leur comportement.
  */
 /**
  * `optionsReady` distingue « pas encore chargé » de « chargé et vide ». Sans ce drapeau, un filtre
@@ -49,6 +62,10 @@ export function useDynamicFilterOptions<T extends FiltreAOptions>(
 ): FiltreResolu<T>[] {
   const { api, entity: carrier } = useCocolight();
   const slugSite = costumSlugOf(carrier);
+
+  // Abonné aux signaux réactifs natifs du SDK (cf. `@/hooks/useCostumLists`) : un `carrier.refresh()`
+  // réussi (`growCostumLists`) redéclenche ce hook tout seul, sans store maison ni reload.
+  const listesStatiques = useCostumListsReactive(carrier);
 
   // Les filtres à source dynamique, dans un ordre STABLE : `useQueries` exige un nombre et un ordre
   // constants d'un rendu à l'autre.
@@ -102,6 +119,18 @@ export function useDynamicFilterOptions<T extends FiltreAOptions>(
       regle: regles[i] ?? false,
     }));
     return filtres.map((f) => {
+      if (f.optionsKey) {
+        // Statique : déjà en mémoire, résolu sans requête. `staticListValues` renvoie `null` si la
+        // clé n'existe pas ou est une recette DYNAMIQUE (cf. `optionsFrom` pour ce cas) — on garde
+        // alors les options déclarées, comme pour une liste dynamique pas encore réglée.
+        const valeurs = staticListValues(listesStatiques[f.optionsKey]) ?? [];
+        if (!valeurs.length) return { ...f, optionsReady: true };
+        return {
+          ...f,
+          optionsReady: true,
+          options: valeurs.map((v) => ({ id: v, label: capitaliser(v), value: v, name: v })),
+        };
+      }
       if (!f.optionsFrom) return { ...f, optionsReady: true };
       const res = parId.get(f.id);
       const valeurs = res?.values;
@@ -134,5 +163,5 @@ export function useDynamicFilterOptions<T extends FiltreAOptions>(
       };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filtres, dynamiques, empreinte, termes]);
+  }, [filtres, dynamiques, empreinte, termes, listesStatiques]);
 }
