@@ -185,7 +185,6 @@ export function CoFormModal({
               elementId={elementId}
               elementType={elementType}
               unknownFieldVariant={unknownFieldVariant}
-              inModal
             />
           </div>
         </DialogContent>

@@ -201,47 +201,89 @@ export function useCoFormDraft({
     keyRef.current = key;
   }, [key]);
 
-  // Flush debounce au démontage
+  /** Dernier payload reçu, en attente d'écriture. `null` = rien en attente. */
+  const pendingRef = useRef<SaveDraftPayload | null>(null);
+  /** Lu au moment de l'écriture (y compris différée) pour ne pas figer une valeur périmée. */
+  const baseUpdatedAtRef = useRef<number | null | undefined>(baseUpdatedAt);
+  useEffect(() => {
+    baseUpdatedAtRef.current = baseUpdatedAt;
+  }, [baseUpdatedAt]);
+
+  /** Écrit immédiatement ce qui est en attente, et annule le minuteur. */
+  const flush = useCallback(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = null;
+    }
+    const payload = pendingRef.current;
+    pendingRef.current = null;
+    const currentKey = keyRef.current;
+    if (!payload || !currentKey || typeof window === "undefined") return;
+    const draft: CoFormDraft = {
+      version: 1,
+      ...payload,
+      timestamp: Date.now(),
+      baseUpdatedAt: baseUpdatedAtRef.current ?? null,
+    };
+    try {
+      window.localStorage.setItem(currentKey, JSON.stringify(draft));
+      notifyDraftsChanged();
+    } catch (err) {
+      console.warn("[useCoFormDraft] saveDraft failed", err);
+    }
+  }, []);
+
+  // Flush AU DÉMONTAGE — et non simple annulation.
+  //
+  // L'écriture est debouncée à 500 ms : sans flush, tout ce qui a été tapé dans
+  // la dernière demi-seconde est perdu au démontage. Sur une page c'est rare
+  // (la navigation est précédée du warning `useUnsavedChangesWarning`) ; dans
+  // une MODALE, la fermeture démonte immédiatement — c'est le cas nominal.
+  // C'est ce qui rendait le brouillon inexploitable en modale, et le motif
+  // apparent de sa désactivation là-bas.
   useEffect(() => {
     return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-        debounceRef.current = null;
-      }
+      flush();
     };
-  }, []);
+  }, [flush]);
+
+  // Même raison au niveau de l'onglet : fermeture, rafraîchissement ou passage
+  // en arrière-plan (le seul événement fiable sur mobile, où `beforeunload` ne
+  // se déclenche pas toujours).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const surSortie = () => flush();
+    const surVisibilite = () => {
+      if (document.visibilityState === "hidden") flush();
+    };
+    window.addEventListener("pagehide", surSortie);
+    document.addEventListener("visibilitychange", surVisibilite);
+    return () => {
+      window.removeEventListener("pagehide", surSortie);
+      document.removeEventListener("visibilitychange", surVisibilite);
+    };
+  }, [flush]);
 
   const saveDraft = useCallback(
     (payload: SaveDraftPayload) => {
+      pendingRef.current = payload;
       if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        const currentKey = keyRef.current;
-        if (!currentKey) return;
-        const draft: CoFormDraft = {
-          version: 1,
-          ...payload,
-          timestamp: Date.now(),
-          baseUpdatedAt: baseUpdatedAt ?? null,
-        };
-        try {
-          window.localStorage.setItem(currentKey, JSON.stringify(draft));
-          notifyDraftsChanged();
-        } catch (err) {
-          console.warn("[useCoFormDraft] saveDraft failed", err);
-        }
-      }, WRITE_DEBOUNCE_MS);
+      debounceRef.current = setTimeout(flush, WRITE_DEBOUNCE_MS);
     },
-    [baseUpdatedAt]
+    [flush]
   );
 
   const discardDraft = useCallback(() => {
     const currentKey = keyRef.current;
     if (currentKey) removeKey(currentKey);
-    // Annule un éventuel save debouncé pour qu'il n'écrive pas APRÈS le discard.
+    // Annule le save debouncé ET jette le payload en attente : sans cela, le
+    // flush au démontage réécrirait juste après le discard ce qu'on vient de
+    // supprimer.
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
       debounceRef.current = null;
     }
+    pendingRef.current = null;
     notifyDraftsChanged();
   }, []);
 
@@ -253,10 +295,13 @@ export function useCoFormDraft({
     if (formId && userId && answerId && answerId !== "new") {
       removeKey(buildKey(formId, userId, undefined));
     }
+    // Comme `discardDraft` : jeter AUSSI le payload en attente, sinon le flush
+    // au démontage réécrirait après la soumission le brouillon qu'on purge.
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
       debounceRef.current = null;
     }
+    pendingRef.current = null;
     setStaleDismissed(false);
     notifyDraftsChanged();
   }, [formId, userId, answerId]);

@@ -71,7 +71,6 @@ interface SmartCoFormProps {
    * Le form est rendu dans une modale ; désactive la persistance du draft
    * (contexte éphémère). Defaut : false.
    */
-  inModal?: boolean;
   /**
    * Métadonnées de la réponse existante (créateur + dernier modifieur).
    * Quand fournies, un lien "Voir l'activité" apparaît sous le form, qui
@@ -190,7 +189,6 @@ export function SmartCoForm({
   submitRef,
   lockedFields,
   baseUpdatedAt,
-  inModal = false,
   existingAnswerMeta,
   elementId,
   elementType,
@@ -377,12 +375,19 @@ export function SmartCoForm({
   const isStandalone = !!standaloneFormData;
   const isInputStandalone = !!inputStandaloneFormData;
 
-  // Persistance du draft : désactivée en lecture seule, standalone (sous-composant
-  // embarqué), modal (contexte éphémère), ou quand on n'a pas d'utilisateur
-  // identifié (clé localStorage user-scopée pour éviter les fuites cross-user).
+  // Persistance du draft : désactivée en lecture seule, en standalone
+  // (sous-composant embarqué), ou sans utilisateur identifié (la clé
+  // localStorage est user-scopée, pour éviter les fuites cross-user).
+  //
+  // ACTIVÉE EN MODALE. Elle en était exclue au motif d'un « contexte
+  // éphémère » — or c'est justement le contexte où un brouillon sert le plus :
+  // fermer une modale par erreur perdait toute la saisie. Le vrai obstacle
+  // était ailleurs : l'écriture est debouncée à 500 ms et le démontage
+  // l'annulait au lieu de la vider, ce qui rendait le brouillon inexploitable
+  // là où le démontage est le cas nominal. Corrigé dans `useCoFormDraft`
+  // (flush au démontage + à la sortie d'onglet).
   const enableDraft =
     !readOnly &&
-    !inModal &&
     !isStandalone &&
     !isInputStandalone &&
     !!formId &&
