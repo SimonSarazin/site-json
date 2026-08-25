@@ -95,13 +95,17 @@
    "titre": "Page thématique ou territoriale (grille)",
    "quand": "Décliner un même annuaire par thème / territoire / catégorie, avec un contexte éditorial propre à chaque déclinaison.",
    "source": "config.prod.parent62.json",
-   "path": "/territoire/familles-en-sol-mineur",
+   "path": "/territoire/familles-en-sol-mineur-henin-carvin",
    "sequence": [
-    "title",
+    "html",
+    "cards",
     "searchHeader",
-    "gridLayout"
+    "articleFeed",
+    "accordion",
+    "searchProStatic",
+    "cta"
    ],
-   "rythme": "`title` porte le contexte éditorial spécifique à la déclinaison (ce que searchHeader ne sait pas faire), searchHeader filtre, gridLayout présente. parent62 décline ce motif sur ses territoires et thématiques — c'est un gabarit, pas une page unique. Certaines déclinaisons s'enrichissent ensuite (cf. /territoire/arrageois, passée à 8 sections) : le gabarit est un POINT DE DÉPART."
+   "rythme": "`html` porte le bandeau hero (couleur propre au territoire) ; `cards` affiche le·s contact·s coordonnateur·rice·s ; `searchHeader` (recherche active, filtres thèmes/publics/dates) et `articleFeed` (filtré sur ce territoire) portent l'actualité ; `accordion` liste les communes du territoire ; `searchProStatic` (recherche désactivée) met en avant une sélection « les actions sur le territoire » ; `cta` referme sur un lien vers `/recherche`. parent62 décline ce motif sur ses 9 territoires — c'est un gabarit, pas une page unique. Certaines déclinaisons s'enrichissent d'un second bloc `html` « Ressources du territoire » avant le `cta` (cf. /territoire/arrageois, 8 sections) : le gabarit à 7 sections est le POINT DE DÉPART."
   },
   {
    "id": "page-agenda",
