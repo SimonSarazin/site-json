@@ -68,10 +68,6 @@ interface SmartCoFormProps {
   /** updatedAt serveur (édition) — pour détecter les drafts obsolètes. */
   baseUpdatedAt?: number | null;
   /**
-   * Le form est rendu dans une modale ; désactive la persistance du draft
-   * (contexte éphémère). Defaut : false.
-   */
-  /**
    * Métadonnées de la réponse existante (créateur + dernier modifieur).
    * Quand fournies, un lien "Voir l'activité" apparaît sous le form, qui
    * ouvre la modale `AnswerActivityDialog` avec l'historique des modifs.

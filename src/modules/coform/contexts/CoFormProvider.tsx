@@ -104,8 +104,22 @@ export function CoFormProvider({
     disabled: !enableDraft,
   });
 
+  // État initial, capturé au montage. Sert de garde « rien n'a encore bougé » :
+  // `setStepState` n'est appelé que sur action (navigation, saisie, restauration,
+  // reset), donc tant que la référence est celle-ci, l'utilisateur n'a rien fait.
+  const initialStepStateRef = useRef(stepState);
+
   // Auto-save du draft à chaque changement de stepState (debounce interne).
+  //
+  // La garde d'identité est l'équivalent du `if (!isDirty) return` du chemin
+  // single-step (`DynamicCoForm`). Sans elle, le simple montage déclenche une
+  // écriture : ouvrir un formulaire puis le refermer sans rien saisir laisserait
+  // un brouillon, et la bannière « Brouillon trouvé » s'afficherait à la session
+  // suivante alors qu'il n'y a rien à restaurer. Inoffensif tant que le brouillon
+  // était réservé aux pages ; en modale, où ouvrir-fermer est le geste courant,
+  // ce serait du bruit à chaque passage.
   useEffect(() => {
+    if (stepState === initialStepStateRef.current) return;
     saveDraft({
       data: stepState.stepsData,
       currentStepIndex: stepState.currentStepIndex,

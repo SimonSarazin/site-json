@@ -516,4 +516,51 @@ describe("CoFormProvider", () => {
       expect(result.current.error).toBeNull();
     });
   });
+  // ─── Persistance du brouillon ────────────────────────────────────────────────
+  // Le brouillon est actif en modale depuis `9f063beb`, où ouvrir puis refermer
+  // sans rien saisir est un geste courant : il ne doit alors RIEN écrire.
+  describe("brouillon", () => {
+    const FORM_ID = "form123";
+    const USER_ID = "user42";
+    const KEY = `coform-draft:v1:${FORM_ID}:${USER_ID}:new`;
+
+    function monter() {
+      const formData = makeCoFormData(["s1", "s2"]);
+      const wrapper = ({ children }: { children: React.ReactNode }) => (
+        <CoFormProvider formData={formData} formId={FORM_ID} userId={USER_ID}>
+          {children}
+        </CoFormProvider>
+      );
+      return renderHook(() => useCtx(), { wrapper });
+    }
+
+    it("n'écrit RIEN quand le formulaire est ouvert puis refermé sans saisie", () => {
+      window.localStorage.removeItem(KEY);
+      const { unmount } = monter();
+      unmount(); // démontage = fermeture de la modale → flush
+      expect(window.localStorage.getItem(KEY)).toBeNull();
+    });
+
+    it("écrit dès qu'une donnée est saisie, et le flush au démontage la conserve", () => {
+      window.localStorage.removeItem(KEY);
+      const { result, unmount } = monter();
+      act(() => result.current.saveStepData("s1", { textField: "saisie" }));
+      unmount();
+      const brut = window.localStorage.getItem(KEY);
+      expect(brut).not.toBeNull();
+      expect(JSON.parse(brut!).data).toEqual({ s1: { textField: "saisie" } });
+      window.localStorage.removeItem(KEY);
+    });
+
+    it("écrit aussi sur une simple navigation — la position du wizard se restaure", () => {
+      window.localStorage.removeItem(KEY);
+      const { result, unmount } = monter();
+      act(() => result.current.goToNextStep());
+      unmount();
+      const brut = window.localStorage.getItem(KEY);
+      expect(brut).not.toBeNull();
+      expect(JSON.parse(brut!).currentStepIndex).toBe(1);
+      window.localStorage.removeItem(KEY);
+    });
+  });
 });
