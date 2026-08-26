@@ -4,22 +4,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
-import { formatDateLong } from "@/helpers/formatDate";
 import { useT } from "@/hooks/useT";
 import { estimateReadingTime } from "../lib/readingTime";
 import type { ArticleData } from "../hooks/useArticle";
 
-// Re-export (rétro-compat des imports existants : ArticleCardCompact, BlogArticleSeo).
-export { stripMarkdown } from "../lib/markdown";
 import { stripMarkdown } from "../lib/markdown";
+import { articleDate } from "../lib/articleDate";
 
 /** Date de l'article (created unix s) → libellé long, tolérant (number s / ms / string / absent). */
-function articleDate(created: unknown): string | null {
-  if (created == null || created === "") return null;
-  const n = typeof created === "number" ? created : Number(created);
-  const d = Number.isFinite(n) ? new Date(n < 2e10 ? n * 1000 : n) : new Date(String(created));
-  return Number.isNaN(d.getTime()) ? null : formatDateLong(d);
-}
 
 /** Props communes à TOUS les variants de carte (registre `CARD_VARIANTS`). */
 export interface ArticleCardProps {
@@ -35,7 +27,7 @@ export function ArticleCard({ article, href, lastRef, featured = false }: Articl
   const image = article.profilMediumImageUrl || article.profilImageUrl;
   const excerpt = article.shortDescription
     || (typeof article.description === "string" ? stripMarkdown(article.description).slice(0, 180) : "");
-  const date = articleDate(article.created);
+  const date = articleDate(article);
   const minutes = estimateReadingTime(article.description);
   const tags = Array.isArray(article.tags) ? article.tags.slice(0, 3) : [];
 

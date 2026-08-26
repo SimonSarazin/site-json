@@ -1,0 +1,376 @@
+{
+  "site": "sport-sante-bien-etre",
+  "slug": "sportSanteBienetre",
+  "addMenus": {
+    "citoyens": {
+      "builtins": {
+        "organization": "add-organization",
+        "project": "add-sport-sante-bienetre-formation",
+        "event": "add-sport-sante-bienetre-session-formation",
+        "poi": "add-poi"
+      }
+    },
+    "organizations": {
+      "builtins": {
+        "project": "add-sport-sante-bienetre-formation",
+        "event": "add-sport-sante-bienetre-session-formation",
+        "poi": "add-poi"
+      }
+    },
+    "projects": {
+      "builtins": {
+        "event": "add-sport-sante-bienetre-session-formation",
+        "poi": "add-poi"
+      }
+    }
+  },
+  "editModals": {
+    "organizations": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-sport-sante-bienetre-mss",
+          "native": "edit-sport-sante-bienetre-mss",
+          "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-sport-sante-bienetre-organizations",
+          "native": "edit-sport-sante-bienetre-organizations",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    },
+    "projects": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-sport-sante-bienetre-formation",
+          "native": "edit-sport-sante-bienetre-formation",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    },
+    "events": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-sport-sante-bienetre-session-formation",
+          "native": "edit-sport-sante-bienetre-session-formation",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    },
+    "poi": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-sport-sante-bienetre-article",
+          "native": "edit-sport-sante-bienetre-article",
+          "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-sport-sante-bienetre-recovery-center",
+          "native": "edit-sport-sante-bienetre-recovery-center",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    }
+  },
+  "adminResources": {
+    "organisations/organizations": {
+      "source": {
+        "defaultSortBy": {
+          "name": 1
+        }
+      },
+      "create": "add-sport-sante-bienetre-organizations",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "organisations/organizations#1": {
+      "source": {
+        "defaultFilters": {
+          "type": "NGO"
+        },
+        "defaultSortBy": {
+          "name": 1
+        }
+      },
+      "create": "add-sport-sante-bienetre-mss",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "lieux/poi": {
+      "source": {
+        "defaultFilters": {
+          "type": "recoveryCenter"
+        },
+        "defaultSortBy": {
+          "name": 1
+        }
+      },
+      "create": "add-sport-sante-bienetre-recovery-center",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "lieux/poi#1": {
+      "source": {
+        "defaultFilters": {
+          "type": "article"
+        },
+        "defaultSortBy": {
+          "name": 1
+        }
+      },
+      "create": "add-sport-sante-bienetre-article",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "formations/projects": {
+      "source": {
+        "defaultFilters": {
+          "category": "formation"
+        },
+        "defaultSortBy": {
+          "name": 1
+        }
+      },
+      "create": "add-sport-sante-bienetre-formation",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "formations/events": {
+      "source": {
+        "defaultFilters": {
+          "category": "sessionFormation"
+        },
+        "defaultSortBy": {
+          "name": 1
+        }
+      },
+      "create": "add-sport-sante-bienetre-session-formation",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    }
+  },
+  "pages": {
+    "/projets/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects"
+        ],
+        "notSourceKey": true,
+        "defaultFilters": {
+          "links.preferences.toBeValidated.sportSanteBienetre": {
+            "$exists": false
+          },
+          "$or": {
+            "links.contributors.682b2ac5e05a1d45844340e7": {
+              "$exists": true
+            },
+            "parent.682b2ac5e05a1d45844340e7": {
+              "$exists": true
+            }
+          },
+          "links.contributors.682b2ac5e05a1d45844340e7": {
+            "$exists": true
+          }
+        }
+      }
+    },
+    "/communaute/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "NGO",
+          "LocalBusiness",
+          "Group",
+          "GovernmentOrganization",
+          "Cooperative"
+        ],
+        "notSourceKey": true,
+        "defaultFilters": {
+          "preferences.toBeValidated.sportSanteBienetre": {
+            "$exists": false
+          },
+          "links.members.682b2ac5e05a1d45844340e7": {
+            "$exists": true
+          }
+        }
+      }
+    },
+    "/structure/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultFilters": {
+          "$or": {
+            "source.key": "sportSanteBienetre",
+            "source.keys": "sportSanteBienetre",
+            "reference.costum": "sportSanteBienetre"
+          }
+        }
+      }
+    },
+    "/mss/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultFilters": {
+          "$or": {
+            "source.key": "sportSanteBienetre",
+            "source.keys": "sportSanteBienetre",
+            "reference.costum": "sportSanteBienetre"
+          },
+          "tags": [
+            "mss"
+          ]
+        }
+      }
+    },
+    "/mapping/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultFilters": {
+          "$or": {
+            "source.keys": "sportSanteBienetre",
+            "reference.costum": "sportSanteBienetre"
+          }
+        },
+        "notSourceKey": true
+      }
+    },
+    "/creneaux/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "answers"
+        ],
+        "notSourceKey": true,
+        "defaultFilters": {
+          "form": "6928096adf5caf0d230e7f26"
+        }
+      }
+    },
+    "/formation/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultFilters": {
+          "$or": {
+            "source.key": "sportSanteBienetre",
+            "source.keys": "sportSanteBienetre",
+            "reference.costum": "sportSanteBienetre"
+          },
+          "tags": [
+            "Labellisé"
+          ]
+        }
+      }
+    },
+    "/listing-formations/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects"
+        ],
+        "defaultFilters": {
+          "$or": {
+            "source.key": "sportSanteBienetre",
+            "source.keys": "sportSanteBienetre",
+            "reference.costum": "sportSanteBienetre"
+          },
+          "tags": [
+            "Formation"
+          ]
+        }
+      }
+    },
+    "/equipements-sportifs/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "equipementsSportifs974"
+        ],
+        "defaultFields": [
+          "name",
+          "equip_type_name",
+          "equip_type_famille",
+          "categorie",
+          "equip_nature",
+          "equip_sol",
+          "equip_surf",
+          "equip_larg",
+          "equip_long",
+          "aps_name",
+          "inst_nom",
+          "equip_prop_nom",
+          "equip_prop_type",
+          "equip_gest_type",
+          "inst_acc_handi_bool",
+          "inst_acc_handi_type",
+          "equip_pmr_acc",
+          "equip_pmr_chem",
+          "equip_pmr_douche",
+          "equip_pmr_sanit",
+          "equip_pmr_trib",
+          "equip_pmr_vest",
+          "equip_pshs_aire",
+          "equip_pshs_chem",
+          "equip_pshs_sanit",
+          "equip_pshs_trib",
+          "equip_pshs_vest",
+          "equip_pshs_sign",
+          "equip_acc_libre",
+          "inst_trans_bool",
+          "inst_trans_type",
+          "equip_eclair",
+          "equip_douche",
+          "inst_part_bool",
+          "inst_part_type",
+          "equip_loc_type",
+          "equip_utilisateur",
+          "inst_date_creation",
+          "inst_enqu_date",
+          "equip_maj_date",
+          "address",
+          "geo",
+          "geoPosition",
+          "parent"
+        ],
+        "defaultFilters": {
+          "type": "recoveryCenter"
+        }
+      }
+    }
+  },
+  "referencement": {},
+  "membership": {
+    "citoyens/membership": {
+      "types": [
+        "organizations",
+        "projects",
+        "pois",
+        "events"
+      ],
+      "scope": "network"
+    }
+  },
+  "profileRelated": {}
+}

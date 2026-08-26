@@ -239,10 +239,14 @@ function MultipleSelector({
     }, [open]);
 
     useEffect(() => {
-      if (value) {
+      // Comparaison de CONTENU, comme l'effet voisin le fait pour `options` : un parent qui dérive
+      // `value` à chaque rendu (`champ.map(v => ({value: v, label: v}))`, le cas d'un champ
+      // react-hook-form) passe une identité neuve à chaque fois, et un setState inconditionnel
+      // relancerait un rendu, donc une identité neuve — boucle.
+      if (value && JSON.stringify(value) !== JSON.stringify(selected)) {
         setSelected(value);
       }
-    }, [value]);
+    }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
       /** If `onSearch` is provided, do not trigger options updated. */

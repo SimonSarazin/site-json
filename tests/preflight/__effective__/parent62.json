@@ -1,0 +1,480 @@
+{
+  "site": "parent62",
+  "slug": "parent62",
+  "addMenus": {
+    "citoyens": {
+      "builtins": {
+        "organization": "add-organization",
+        "project": "add-project",
+        "event": "add-parent62-event",
+        "poi": "add-poi"
+      }
+    },
+    "organizations": {
+      "builtins": {
+        "project": "add-project",
+        "event": "add-parent62-event",
+        "poi": "add-poi"
+      }
+    },
+    "projects": {
+      "builtins": {
+        "event": "add-parent62-event",
+        "poi": "add-poi"
+      }
+    }
+  },
+  "editModals": {
+    "poi": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-parent62-article",
+          "native": "edit-parent62-article",
+          "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-parent62-affiche",
+          "native": "edit-parent62-affiche",
+          "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-parent62-recovery-center",
+          "native": "edit-parent62-recovery-center",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    }
+  },
+  "adminResources": {
+    "actualites/poi": {
+      "source": {
+        "defaultFilters": {
+          "type": "article"
+        },
+        "defaultSortBy": {
+          "created": -1
+        },
+        "costumSlug": "parent62",
+        "sourceKey": [
+          "parent62"
+        ]
+      },
+      "create": "add-parent62-article",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "paroles/poi": {
+      "source": {
+        "defaultFilters": {
+          "type": "affiche"
+        },
+        "defaultSortBy": {
+          "created": -1
+        },
+        "costumSlug": "parent62",
+        "sourceKey": [
+          "parent62"
+        ]
+      },
+      "create": "add-parent62-affiche",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "ressources/poi": {
+      "source": {
+        "defaultFilters": {
+          "type": "recoveryCenter"
+        },
+        "defaultSortBy": {
+          "created": -1
+        },
+        "costumSlug": "parent62",
+        "sourceKey": [
+          "parent62"
+        ]
+      },
+      "create": "add-parent62-recovery-center",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "agenda/events": {
+      "source": {
+        "defaultFilters": {
+          "type": "others"
+        },
+        "defaultSortBy": {
+          "startDate": -1
+        },
+        "costumSlug": "parent62",
+        "sourceKey": [
+          "parent62"
+        ]
+      },
+      "create": "add-parent62-event",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    }
+  },
+  "pages": {
+    "//featured-carousel": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "defaultTags": [
+          "A la une"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFields": [
+          "name",
+          "description",
+          "shortDescription",
+          "medias",
+          "profilMediumImageUrl",
+          "profilImageUrl",
+          "slug",
+          "tags"
+        ],
+        "indexStepList": 8
+      }
+    },
+    "/temoignages/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "type": "affiche"
+        },
+        "defaultFields": [
+          "name",
+          "category",
+          "description",
+          "medias",
+          "territoires",
+          "publics",
+          "ages",
+          "themes",
+          "tags",
+          "created",
+          "type",
+          "source"
+        ],
+        "searchBy": [
+          "name",
+          "description"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        }
+      }
+    },
+    "/ressources/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "type": "recoveryCenter"
+        },
+        "defaultFields": [
+          "name",
+          "category",
+          "description",
+          "urls",
+          "medias",
+          "territoires",
+          "publics",
+          "themes",
+          "tags",
+          "address",
+          "created",
+          "type",
+          "source",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "description"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        }
+      }
+    },
+    "/agenda/agenda": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "indexStepList": 12,
+        "filters": {
+          "type": "others"
+        }
+      }
+    },
+    "/territoire/arrageois/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "territoires": {
+            "$in": [
+              "Arrageois"
+            ]
+          }
+        },
+        "indexStepList": 6
+      }
+    },
+    "/territoire/artois/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "territoires": {
+            "$in": [
+              "Artois"
+            ]
+          }
+        },
+        "indexStepList": 6
+      }
+    },
+    "/territoire/audomarois/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "territoires": {
+            "$in": [
+              "Audomarois"
+            ]
+          }
+        },
+        "indexStepList": 6
+      }
+    },
+    "/territoire/boulonnais/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "territoires": {
+            "$in": [
+              "Boulonnais"
+            ]
+          }
+        },
+        "indexStepList": 6
+      }
+    },
+    "/territoire/calaisis/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "territoires": {
+            "$in": [
+              "Calaisis"
+            ]
+          }
+        },
+        "indexStepList": 6
+      }
+    },
+    "/territoire/entre-mer-et-terres/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "territoires": {
+            "$in": [
+              "Entre Mer et Terres"
+            ]
+          }
+        },
+        "indexStepList": 6
+      }
+    },
+    "/territoire/familles-en-sol-mineur-henin-carvin/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "territoires": {
+            "$in": [
+              "Familles en sol mineur Hénin Carvin"
+            ]
+          }
+        },
+        "indexStepList": 6
+      }
+    },
+    "/territoire/familles-en-sol-mineur-lens-lievin/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "territoires": {
+            "$in": [
+              "Familles en sol mineur Lens Liévin"
+            ]
+          }
+        },
+        "indexStepList": 6
+      }
+    },
+    "/territoire/ternois-bruaysis/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "territoires": {
+            "$in": [
+              "Ternois Bruaysis"
+            ]
+          }
+        },
+        "indexStepList": 6
+      }
+    },
+    "/recherche/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects",
+          "events",
+          "poi",
+          "organizations"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "searchBy": [
+          "name",
+          "address.addressLocality",
+          "address.postalCode",
+          "tags"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "collection",
+          "type",
+          "source",
+          "category",
+          "description",
+          "shortDescription",
+          "profilImageUrl",
+          "profilMediumImageUrl",
+          "profilThumbImageUrl",
+          "medias",
+          "urls",
+          "address",
+          "tags",
+          "territoires",
+          "publics",
+          "ages",
+          "themes",
+          "created",
+          "startDate",
+          "endDate",
+          "organizer",
+          "geo",
+          "geoPosition"
+        ],
+        "indexStepList": 20
+      }
+    },
+    "/communaute/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "citoyens"
+        ],
+        "sourceKey": [
+          "parent62"
+        ]
+      }
+    },
+    "/communaute/searchProStatic#1": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "sourceKey": [
+          "parent62"
+        ]
+      }
+    }
+  },
+  "referencement": {},
+  "membership": {
+    "citoyens/membership": {
+      "types": [
+        "organizations",
+        "projects",
+        "pois",
+        "events"
+      ],
+      "scope": "network"
+    }
+  },
+  "profileRelated": {}
+}

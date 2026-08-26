@@ -79,21 +79,48 @@ const ENTITY_TO_COLLECTION: Record<string, FormCollection> = {
 const WIDGET_DEFAULTS: Partial<Record<WidgetKind, Partial<FieldDescriptor>>> = {
   text: { type: "string", read: "coerce:string", default: "" },
   textarea: { type: "string", read: "coerce:string", default: "" },
+  markdown: { type: "string", read: "coerce:string", default: "" },
   email: { type: "string", read: "coerce:string", default: "" },
   tel: { type: "string", read: "coerce:string", default: "" },
   select: { type: "string", read: "coerce:string", default: "" },
   selectFromLists: { type: "string", read: "coerce:string", default: "" },
+  // PAS de `write` par défaut ici, et c'est délibéré : `WIDGET_DEFAULTS` s'applique au widget, pas au
+  // champ, donc un `write` posé là sérialiserait aussi les champs CŒUR (le `tags` natif, typé TABLEAU
+  // au contrat) et les booléens cœur. La sérialisation vers la forme stockée par le legacy est une
+  // propriété du CHAMP COSTUM, pas du widget : elle se déclare par champ
+  // (`write: "coerce:csv" | "coerce:boolUpper" | "coerce:boolOuiNon" | "coerce:boolString"`).
+  // La garde `tests/preflight/costum-form-contract.test.ts` signale tout champ costum dont le widget
+  // produit une valeur incompatible avec le type déclaré au contrat — c'est elle qui rappelle d'ajouter
+  // le `write`, plutôt qu'un défaut global qui déborderait sur le cœur.
   switch: { type: "boolean", read: "coerce:bool", default: false },
   checkbox: { type: "boolean", read: "coerce:bool", default: false },
+  // Pas de `write` d'omission : une date VIDÉE doit être ENVOYÉE en chaîne vide, car c'est ainsi que
+  // le serveur efface un champ (`prepElementData` accumule les valeurs vides dans `unset`, port du
+  // `prepData` legacy). Omettre la clé rendrait la date ineffaçable à l'édition. C'est le SCHÉMA
+  // qui devait céder : cf. `liveDigest`, où un champ date accepte désormais "" en plus d'une date.
   date: { type: "date", read: "coerce:dateYMDlocale", default: "" },
   number: { type: "number", read: "coerce:number" }, // pas de default (→ undefined)
+  // Idem : `coerce:stringArray` en lecture, mais AUCUN `write` par défaut — `coerce:csv` (son inverse
+  // exact) se déclare par champ, là où le contrat costum dit `string`. Le `tags` NATIF est typé tableau
+  // au contrat : un `write` global le sérialiserait en CSV et casserait tous les forms du parc.
   checkboxGroup: { type: "array", read: "coerce:stringArray", default: [] },
   tags: { type: "array", read: "coerce:stringArray", default: [] },
+  // `valueSelect` est multi PAR DÉFAUT, d'où le même type que `tags` ; en mono
+  // (`widgetProps.multiple:false`) la valeur est une chaîne — cf. le widget, qui convertit.
+  valueSelect: { type: "array", read: "coerce:stringArray", default: [] },
   multiselect: { type: "array", read: "coerce:stringArray", default: [] },
   urlList: { type: "array", read: "coerce:stringArray", default: [] },
   image: { type: "object", renderOnly: true },     // ancre UI composite (image hors element/save)
   file: { type: "object", renderOnly: true },      // documents : uploadés post-save (processGalleryFields), hors element/save
   location: { type: "object", renderOnly: true },  // ancre UI composite (adresse via serializeGroups)
+  // Les DEUX ancres qui manquaient ici, alors que mergeRenderPipeline les nomme dans la même phrase que
+  // `location` et `eventDates` : une ancre rend une UI composite et ne porte AUCUNE donnée propre, elle
+  // ne doit donc jamais être sérialisée. `editSocial` pilote les 9 clés facebook/twitter/… (EditSocialTab),
+  // `editSchedule` pilote `openingHours` (EditScheduleTab) — jamais la clé du champ qui les porte.
+  // Sans `renderOnly`, un formulaire costum utilisant ces widgets émettait la clé de l'ancre, vide. C'est
+  // exactement ce qui rendait muettes les sections « Réseaux sociaux » de 4 formulaires (2026-07-30).
+  editSocial: { type: "object", renderOnly: true },
+  editSchedule: { type: "object", renderOnly: true },
   fieldArray: { type: "array" },                    // liste répétée GÉNÉRIQUE → pas de codec par widget (le sens dépend du champ)
   openingHours: { type: "object", read: "openingHours:read", write: "openingHours:write" }, // codec livré par le widget (cf. sharedCodecs)
   eventDates: { renderOnly: true },                 // ancre UI composite (dates event) : gère startDate/endDate/recurrency/openingHours ; JAMAIS sérialisée elle-même
@@ -107,6 +134,14 @@ const cloneDefault = (v: unknown): unknown => (Array.isArray(v) ? [...v] : v);
 function buildField(name: string, terse: TerseField, presets: CostumFormSchema["fieldPresets"], deriveDefaults: boolean): FieldDescriptor {
   const widget = terse.widget;
   const base = { ...(WIDGET_DEFAULTS[widget] ?? {}) };
+  // `valueSelect` est multi par défaut, mais en MONO (`widgetProps.multiple:false`) il stocke une
+  // CHAÎNE — c'est ce qu'attendent les champs scalaires du legacy (`financementSource`, déclaré
+  // `maximumSelectionLength:1` côté select2). Sans cet ajustement le schéma exigeait un tableau et la
+  // validation refusait au submit une valeur pourtant juste : « expected array, received string ».
+  if (widget === "valueSelect"
+      && (terse.widgetProps as { multiple?: boolean } | undefined)?.multiple === false) {
+    base.type = "string"; base.read = "coerce:string"; base.default = "";
+  }
   const preset = { ...(presets?.[widget] ?? {}) };
   // Membre d'un GROUPE de sérialisation : lu/écrit PAR le groupe (cf. serializeGroups) → aucun read/write/
   // default INDIVIDUEL dérivé (un read/write EXPLICITE du champ reste appliqué via `terse`).

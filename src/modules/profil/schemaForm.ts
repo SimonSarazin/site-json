@@ -53,8 +53,8 @@ export const geoPositionSchema = z.object({
   coordinates: z.array(z.number()).length(2),
 });
 
-// Localisation : 14 champs SIG + geo/geoPosition (posés par EditLocationTab AVEC l'adresse). EXPORTÉ +
-// PARTAGÉ : tout schéma montant le composant adresse le spread → geo/level1..4/codeInsee survivent au
+// Localisation : 16 champs SIG + geo/geoPosition (posés par EditLocationTab AVEC l'adresse). EXPORTÉ +
+// PARTAGÉ : tout schéma montant le composant adresse le spread → geo/level1..5/codeInsee survivent au
 // zodResolver (sinon STRIPÉS → perte). Écriture liée à localityId : cf. forms/geoTransforms.
 export const localityFieldsSchema = z.object({
   addressCountry: z.string().optional(),
@@ -70,6 +70,8 @@ export const localityFieldsSchema = z.object({
   level3Name: z.string().optional(),
   level4: z.string().optional(),
   level4Name: z.string().optional(),
+  level5: z.string().optional(),
+  level5Name: z.string().optional(),
   codeInsee: z.string().optional(),
   geo: geoSchema.optional(),
   geoPosition: geoPositionSchema.optional(),

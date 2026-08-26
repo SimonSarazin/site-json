@@ -68,7 +68,16 @@ export const FilterGroupSchema = z.object({
     /** Cible de recherche (groupes `searchTargets`) — forward-ref car
      *  SearchTargetSchema dépend de SearchTypeSchema, défini plus bas. */
     target: z.lazy(() => SearchTargetSchema).optional(),
+    /** Graphies regroupées derrière la valeur affichée — POSÉ AU RUNTIME par `useDynamicFilterOptions`
+     *  (jamais écrit en config). Le filtre doit interroger tout le groupe : n'envoyer que « Le Port »
+     *  laisserait de côté les fiches portant « LE PORT » ou « Le port ». Déclaré ici pour que les
+     *  consommateurs le lisent sans cast. */
+    variants: z.array(z.string()).optional(),
   })).optional(),
+  /** Source DYNAMIQUE des options (cf. `OptionsFromSchema` du searchHeader) : les valeurs viennent
+   *  d'une liste `costum.lists` et REMPLACENT les `options` déclarées. Sur un groupe à `field`, chaque
+   *  option reçoit `name` = la valeur stockée, donc le filtrage par champ fonctionne tel quel. */
+  optionsFrom: z.object({ list: z.string(), costumSlug: z.string().optional() }).optional(),
   config: z.object({
     countryCode: z.array(z.string()).optional(),
     level: z.array(z.string()).optional(),
@@ -104,6 +113,16 @@ export const FiltersByAnswersSchema = z.record(z.string(), z.object({
   path: z.string().optional(),
   forms: z.string().optional(),
   finderPath: z.string().optional(),
+  /**
+   * Quel document la sélection filtre-t-elle ?
+   *  - `linkedElements` (défaut, comportement historique) : la liste porte les
+   *    éléments LIÉS aux réponses (organisations de `/lieux`) → `_id: {$in: orgaNameArray}` ;
+   *  - `answers` : la liste porte les RÉPONSES elles-mêmes (`defaultTypes: ["answers"]`,
+   *    ex. `/creneaux`) → prédicat sur le chemin de la réponse (cf. `answerFilterClause`).
+   * Sans ce réglage, une facette posée sur une liste d'answers filtre par id
+   * d'organisation et ne rend jamais rien.
+   */
+  filterTarget: z.enum(["answers", "linkedElements"]).optional(),
   /** Widget compact (cf. {@link FilterSelectConfigSchema}). Absent → accordéon. */
   select: FilterSelectConfigSchema.optional(),
   /** Style des lignes en accordéon (cf. {@link FilterOptionStyleSchema}). */
@@ -118,7 +137,8 @@ export const FiltersByAnswersSchema = z.record(z.string(), z.object({
 
 // Filtres par thématique CoForm via `coformFilterByPath` (un appel par entrée).
 // Même structure de sortie que filtersByAnswers (sélection → filters._id.$in =
-// orgaNameArray) mais appel backend différent.
+// orgaNameArray, ou prédicat de chemin si `filterTarget: "answers"`) mais appel
+// backend différent.
 export const FiltersByPathSchema = z.record(z.string(), z.object({
   id: z.string().optional(),
   label: LocalizedString,
@@ -126,6 +146,16 @@ export const FiltersByPathSchema = z.record(z.string(), z.object({
   finderPath: z.string().optional(),
   // notSourceKey: true → cherche dans tout le réseau (cf. coformFilterByPath).
   notSourceKey: z.boolean().optional(),
+  /**
+   * Quel document la sélection filtre-t-elle ?
+   *  - `linkedElements` (défaut, comportement historique) : la liste porte les
+   *    éléments LIÉS aux réponses (organisations de `/lieux`) → `_id: {$in: orgaNameArray}` ;
+   *  - `answers` : la liste porte les RÉPONSES elles-mêmes (`defaultTypes: ["answers"]`,
+   *    ex. `/creneaux`) → prédicat sur le chemin de la réponse (cf. `answerFilterClause`).
+   * Sans ce réglage, une facette posée sur une liste d'answers filtre par id
+   * d'organisation et ne rend jamais rien.
+   */
+  filterTarget: z.enum(["answers", "linkedElements"]).optional(),
   /** Widget compact (cf. {@link FilterSelectConfigSchema}). Absent → accordéon. */
   select: FilterSelectConfigSchema.optional(),
   /** Style des lignes en accordéon (cf. {@link FilterOptionStyleSchema}). */
@@ -254,12 +284,22 @@ export type InstallationDashboardConf = z.infer<typeof InstallationDashboardConf
 export const DEFAULT_INSTALLATION_PARAM = "installation";
 
 export const PreviewConfSchema = z.object({
-  type: z.enum(["default", "poi-amenities", "coform-answer", "event", "facets", "news", "testimonial", "resource"]).default("default"),
+  type: z.enum(["default", "poi-amenities", "coform-answer", "event", "facets", "news", "testimonial", "resource", "structure"]).default("default"),
   // Mapping rôle→suffixe de champ CoForm (pour `coform-answer`). Surcharge la
   // table par défaut du composant — découple les IDs de champs du code.
   fields: z.record(z.string(), z.string()).optional(),
+  // Bouton « Modifier » sur le détail `coform-answer` (admins de l'entité du
+  // site) : ouvre l'édition de l'answer en CoFormModal. Opt-in — sans ce flag,
+  // le preview reste strictement lecture seule (aucun changement des sites existants).
+  editButton: z.boolean().optional(),
   /** Facettes du preview générique (`type: "facets"`) — data-driven, sans code. */
   facets: z.array(PreviewFacetSchema).optional(),
+  /**
+   * Affiche le résumé sous le titre du preview générique (`type: "facets"`). Défaut : affiché — une
+   * fiche réduite à ses facettes perdrait sa présentation. `false` quand les facettes se suffisent.
+   * Lu par `PreviewFacets`.
+   */
+  showDescription: z.boolean().optional(),
   /** Section « réservations » du preview `poi-amenities` (absente = masquée). */
   reservations: ReservationsConfSchema.optional(),
   /** Modal tableau de bord installation (requiert `reservations`). */
@@ -408,6 +448,17 @@ export const CardConfSchema = z.object({
     // déclenche la query useFundingEnvelope. Découple la feature funding du style
     // de carte. Défaut : actif uniquement pour le variant "rezo-la-mer" (rétrocompat).
     showFunding:     z.boolean().optional(),
+    /**
+     * Carte `card-answer` : ce que fait le bouton « Fiche structure ».
+     *  - `profil`  (DÉFAUT côté code) — navigue vers `/profil/:slug`, comportement historique ;
+     *  - `preview` — ouvre la fiche EN MODALE (même `preview.type: "structure"` que les cartes de
+     *    l'annuaire), sans quitter la liste.
+     * Sur une page où l'usager COMPARE des créneaux, la navigation lui fait perdre sa liste, ses
+     * filtres et sa position de défilement pour une information qu'il ne veut que consulter au
+     * passage — d'où l'option. Absent = navigation, pour ne rien changer aux sites existants.
+     * Même forme que `MapConf.itemAction`, à dessein : un seul vocabulaire d'action dans le module.
+     */
+    structureAction: z.object({ kind: z.enum(["profil", "preview"]) }).optional(),
     detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
     detailedMode: z.enum(["default", "service-pricing"]).default("default"),
     // Coin haut-droit des cartes à image (`image-cover`) : par défaut les
@@ -501,6 +552,15 @@ export const ListItemRuleSchema = z.object({
 export type ListItemRule = z.infer<typeof ListItemRuleSchema>;
 
 export const ListConfSchema = z.object({
+  /**
+   * Disposition de la liste. `"grid"` (défaut CÔTÉ CODE — la config n'est jamais parsée par
+   * Zod au runtime, `SearchListView` retombe lui-même sur la grille quand la clé est absente)
+   * ou `"timeline"` : frise verticale — ligne pointillée centrale, bulle-date (jour/mois/année)
+   * posée sur la ligne, cartes alternées gauche/droite en desktop, colonne unique avec ligne à
+   * gauche en mobile. Pensée pour des événements triés par `baseParams.defaultSortBy:
+   * {"startDate": -1}`. Ignorée en vue détaillée (`isDetailedView`) et en mode split (`onFocusItem`).
+   */
+  layout: z.enum(["grid", "timeline"]).optional(),
   columns: z.object({
     lg: z.number().int().min(1).max(6).optional(),
     md: z.number().int().min(1).max(6).optional(),
@@ -654,6 +714,16 @@ export const SearchBaseParamsSchema = z.object({
   defaultSortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
   // Champs sur lesquels le texte de recherche est matché (cf. SearchBySchema).
   searchBy: SearchBySchema.optional(),
+  /**
+   * SOUS-TYPE de costum ciblé (clé `subType` d'un form de `costumForms`). EXPANSÉE par le client
+   * (`buildSearchPayload`) en la disjonction canonique :
+   *   `$or [ { …identity du form, "source.keys": <slug du site> },      // les NATIFS
+   *          { "reference.costumTypes.<slug>": <subType> } ]`           // les RÉFÉRENCÉS classés
+   * Le discriminant (`identity`) vit UNE fois, dans la déclaration du form — pas dupliqué ici, et le
+   * slug vient du scope du site, pas de la config. Écrire le `$or` à la main dans `defaultFilters`
+   * reste possible ; cette clé est le chemin recommandé.
+   */
+  costumSubType: z.string().optional(),
   // Accepte `boolean` (ne pas sourcer par clé) ou `number` (limite custom).
   // Certaines configs historiques utilisent un nombre — schéma assoupli pour compat.
   notSourceKey: z.union([z.boolean(), z.number()]).optional(),
@@ -760,6 +830,15 @@ const AddButtonConfigSchema = z.object({
   label: LocalizedString.optional(),
   modal: z.string().optional(),
   formConfig: z.any().optional(),
+  // Cible CoForm : le bouton ouvre la CRÉATION d'une answer de ce form
+  // (CoFormModal) au lieu d'une modale d'entité — ex. « Ajouter un créneau »
+  // (1 créneau = 1 answer). Prioritaire sur modal/organization/project/poi.
+  coform: z.string().optional(),
+  // `false` → le bouton s'affiche dès que `show: true`, sans exiger le rôle
+  // admin du site (un non-connecté qui clique passe par le login). Cas d'usage :
+  // déclaration publique d'answer CoForm modérée en aval (filtre `state`).
+  // Défaut `true` = comportement historique (bouton réservé aux admins).
+  adminOnly: z.boolean().optional().default(true),
   organization: z.boolean().optional().default(true),
   project: z.boolean().optional().default(true),
   event: z.boolean().optional().default(true),
@@ -1022,6 +1101,24 @@ const TitleWithFiltersDropdownOptionSchema = z.object({
   icon: z.string().optional(),
 });
 
+/**
+ * Source DYNAMIQUE d'options : les valeurs viennent d'une liste déclarée du costum
+ * (`costum.lists.<nom>`, forme `{collection, distinct, where}`), résolue par `costum/co/listvalues`.
+ *
+ * REMPLACE les `options` écrites à la main quand elle est déclarée — pas de fusion. Les valeurs
+ * dynamiques n'ont donc PAS de libellé traduit : elles s'affichent telles qu'elles sont stockées.
+ * C'est le prix assumé pour que le filtre suive la donnée : sur institutBleu, la config gelait
+ * 12 territoires quand la base en compte 64, soit 52 valeurs injoignables au filtre.
+ *
+ * Sans `optionsFrom`, rien ne change : les options déclarées font foi, comme aujourd'hui.
+ */
+const OptionsFromSchema = z.object({
+  /** Nom de la liste dans `costum.lists`. */
+  list: z.string(),
+  /** Costum porteur ; par défaut celui du site. */
+  costumSlug: z.string().optional(),
+});
+
 const TitleWithFiltersDropdownSchema = z.object({
   id: z.string(),
   label: LocalizedString,
@@ -1029,6 +1126,7 @@ const TitleWithFiltersDropdownSchema = z.object({
   multiple: z.boolean().optional(),
   allLabel: LocalizedString.optional(),
   options: z.array(TitleWithFiltersDropdownOptionSchema).default([]),
+  optionsFrom: OptionsFromSchema.optional(),
 });
 
 // Props partagées entre le type canonique `searchHeader` et son alias.
@@ -1075,6 +1173,45 @@ export const SearchHeaderSectionSchema = z.object({
 
 export type SearchHeaderSection = z.infer<typeof SearchHeaderSectionSchema>;
 export type SearchHeaderSectionProps = z.infer<typeof SearchHeaderSectionSchema>["props"];
+
+/**
+ * Carrousel plein écran d'entités (typiquement des POI) filtrées par tag — une diapositive à la
+ * fois : badge, titre, description, CTA et image. Réutilise `SearchBaseParamsSchema` (fetch/filtre,
+ * `defaultTags` porte le tag ex. "A la une"), `ResourceConfSchema` (mapping titre/description/image,
+ * défauts déjà adaptés à un POI) et `ListItemActionSchema` (résolution du lien du CTA) — aucun champ
+ * dupliqué. Générique par construction (`defaultTypes` n'est pas limité à "poi") : pas de `list`/
+ * `columns` (pas une grille) ni de filtres UI (le tag est statique, porté par la config).
+ */
+export const FeaturedCarouselSectionSchema = z.object({
+  type: z.literal("featured-carousel"),
+  id: z.string().optional(),
+  props: z.object({
+    /** Badge affiché au-dessus du titre de chaque diapositive, ex. "À la une :". */
+    badgeLabel: LocalizedString.optional(),
+    /** Libellé du bouton CTA. Repli : traduction "En savoir plus". */
+    ctaLabel: LocalizedString.optional(),
+    /** Fetch/filtre — `defaultTypes`/`defaultTags`/`sourceKey`/`defaultFields` etc. */
+    baseParams: SearchBaseParamsSchema,
+    /** Mapping titre/description/image. Défauts déjà adaptés à un POI (name/description/profilMediumImageUrl). */
+    resource: ResourceConfSchema.optional(),
+    /** Action au clic du CTA. Défaut : `kind:"profil"` → `/profil/:slug`. */
+    itemAction: ListItemActionSchema.optional(),
+    autoplay: z.boolean().default(true),
+    autoplayIntervalMs: z.number().int().min(2000).max(30000).default(6000),
+    /** Fond de la section — couleur CSS libre (hex, oklch, `var(--token)`…). Section volontairement
+     *  à fond FIXE (identique quel que soit le mode clair/sombre du site, comme un footer) : le
+     *  titre/texte reste donc en blanc fixe plutôt qu'en `text-foreground` (qui s'inverserait en
+     *  mode clair et deviendrait illisible sur ce fond). Repli code : encre du thème (`--foreground`). */
+    background: z.string().optional(),
+    /** Couleur du badge et du bouton CTA — CSS libre, même logique que `background`. Repli : `--primary`. */
+    accentColor: z.string().optional(),
+    /** Puces de pagination sous le carrousel, entre les flèches précédent/suivant (celles-ci
+     *  restent toujours affichées). Défaut masquées — à activer explicitement si besoin. */
+    showControls: z.boolean().default(false),
+  }),
+});
+export type FeaturedCarouselSection = z.infer<typeof FeaturedCarouselSectionSchema>;
+export type FeaturedCarouselSectionProps = z.infer<typeof FeaturedCarouselSectionSchema>["props"];
 
 
 export interface SearchListViewProps<T extends SearchListEntity = SearchEntity> {

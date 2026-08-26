@@ -16,7 +16,10 @@
     - [Sections de liste \& événements](#sections-de-liste--événements)
     - [Sections de recherche \& carte (depuis modules)](#sections-de-recherche--carte-depuis-modules)
     - [Sections design spécialisées (ex-variantes de site)](#sections-design-spécialisées-ex-variantes-de-site)
-    - [Section news (depuis module news)](#section-news-depuis-module-news)
+    - [Sections blog (depuis module blog)](#sections-blog-depuis-module-blog)
+    - [Sections agenda \& observatoire (depuis modules)](#sections-agenda--observatoire-depuis-modules)
+    - [Sections news \& notifications (depuis modules)](#sections-news--notifications-depuis-modules)
+    - [Sections cagnotte (depuis module cagnotte)](#sections-cagnotte-depuis-module-cagnotte)
     - [Autres](#autres)
   - [Comment ajouter ou personnaliser une nouvelle section](#comment-ajouter-ou-personnaliser-une-nouvelle-section)
   - [Voir aussi](#voir-aussi)
@@ -37,6 +40,11 @@ Le fichier `src/components/sections/SectionRenderer.tsx` centralise le rendu de 
 4. **Rendu** : injecte les `props` dans le composant avec fallbacks appropriés.
 
 ### Code actuel
+
+> ⚠️ **Extrait PARTIEL, figé.** Le bloc ci-dessous ne montre que **66 des 75 entrées** réellement
+> enregistrées et n'inclut pas l'injection d'`idProjet` faite par `SectionRenderer` pour les sections
+> cagnotte (`SectionRenderer.tsx:125`, `137`). La table qui fait foi est
+> `src/components/sections/SectionRenderer.tsx` — s'y reporter avant d'en tirer une conclusion.
 
 ```tsx
 import { Suspense } from "react";
@@ -67,7 +75,7 @@ const LazySections: {
   "action-tiles": lazy(() => import("./ActionTiles")),
   "cta-card-grid": lazy(() => import("./CtaCardGrid")),
   "cta-newsletter": lazy(() => import("./CtaNewsletter")),
-  "searchHeader": lazy(() => import("./TitleWithFiltersRezoLaMer")),
+  searchHeader: lazy(() => import("@/modules/search/sections/SearchHeaderSection")),
   "expandable-actions": lazy(() => import("./ExpandableActions")),
   "hero-tinted-overlay": lazy(() => import("./HeroTintedOverlay")),
   "hero-entity-banner": lazy(() => import("./HeroEntityBanner")),
@@ -116,7 +124,7 @@ const LazySections: {
   gridLayout: lazy(() => import("./GridLayoutSection")),
   news: lazy(() => import("@/modules/news/components/sections/NewsSection")),
   notifications: lazy(() => import("@/modules/notification/components/sections/NotificationsSection")),
-  member: lazy(() => import("./MemberSection")),
+  member: lazy(() => import("@/modules/profil/components/sections/MemberSection")),
   heroWithIcon: lazy(() => import("./HeroWithIconSection")),
   meeteem: lazy(() => import("@/modules/ampli/components/sections/MeeteemSection")),
   coform: lazy(() => import("@/modules/coform/components/CoFormSection")),
@@ -200,7 +208,13 @@ Ces conventions garantissent que `SectionRenderer` peut traiter **toutes** les s
 
 ## Description rapide des principaux types de section
 
-Le système supporte actuellement **66 types de sections** :
+Le système supporte actuellement **75 types de sections** — c'est la taille de l'union `Section`,
+de la table `lazy()` de `SectionRenderer.tsx` et de `SECTION_META`, dont
+`tests/preflight/section-meta.test.ts` impose la parité exacte.
+
+> ⚠️ Ce préflight contrôle le compteur de `doc/26-assistant-config.md`, celui de la skill
+> `config-assistant` et celui de `CLAUDE.md` — **pas celui-ci**. La dérive de ce compteur et des
+> tableaux ci-dessous est silencieuse : les recompter à la main à chaque ajout de section.
 
 ### Sections de contenu & layout
 
@@ -209,6 +223,8 @@ Le système supporte actuellement **66 types de sections** :
 | **hero**           | `HeroSection`            | Bandeau d'accueil avec titre, sous-titre, image de fond et boutons CTA |
 | **hero-search** | `HeroSearch`       | Hero avec recherche intégrée (autocomplete d’entités), applicateur de filtres headless (`filterGroups`/`filtersByAnswers`) et autocompletion scopée réseau (`searchVariant`/`baseParams`). Le mode sous-site (`/s/`) et ses props (`headlineSubsite`, `subheadSubsite`) ont été supprimés. |
 | **hero-quick-access**      | `HeroQuickAccess`               | Variante hero pour le site Sport-Santé-Bien-Être (SSBE)               |
+| **hero-carousel**  | `HeroCarousel`           | Hero plein écran à diapositives (scroll-snap, puces, auto-avance optionnelle) |
+| **map-bubbles**    | `MapBubbles`             | Illustration de carte avec bulles-marqueurs cliquables positionnées en % |
 | **categories-grid**| `CategoriesGridSection`  | Grille de catégories cliquables avec icônes et liens                   |
 | **cards**          | `CardsSection`           | Grille de cartes (grid/masonry/carousel/list)                          |
 | **content**        | `ContentSection`         | Bloc de contenu riche avec image, texte, tags et liens                 |
@@ -277,6 +293,8 @@ Le système supporte actuellement **66 types de sections** :
 | **thematics**     | `ThematicsSection`         | Affichage dynamique des filières/thématiques            |
 | **map**           | `MapSection`               | Carte interactive (Leaflet/Google/Mapbox)               |
 | **filters**       | `FiltersSection`           | Groupes de filtres dépliables                           |
+| **featured-carousel** | `FeaturedCarouselSection` | Carrousel plein écran d'entités filtrées par tag (une par diapositive) |
+| **toolsCatalog**  | `ToolsCatalogSection`      | Catalogue d'outils synthétisé depuis les réponses coform (recherche, filtres, pagination serveur) |
 
 ### Sections design spécialisées (ex-variantes de site)
 
@@ -287,10 +305,25 @@ Le système supporte actuellement **66 types de sections** :
 | **action-tiles**    | `ActionTiles`               | Boutons d'action RezoLaMer                         |
 | **cta-card-grid**         | `CtaCardGrid`                   | Section communauté RezoLaMer                       |
 | **cta-newsletter**               | `CtaNewsletter`                | Appel à l'action RezoLaMer                         |
-| **searchHeader**| `TitleWithFiltersRezoLaMer`            | Titre avec filtres RezoLaMer                       |
+| **searchHeader**| `SearchHeaderSection` (module search)  | Bandeau titre + rangée de filtres + boutons d'action |
 | **expandable-actions**  | `ExpandableActions`    | Cartes d’action en accordéon exclusif (modales)    |
 | **hero-tinted-overlay**             | `HeroTintedOverlay`             | Hero plein écran à voile teinté + double slogan    |
 | **hero-entity-banner**     | `HeroEntityBanner`       | Hero bannière sourcée depuis l’entité Cocolight    |
+
+### Sections blog (depuis module blog)
+
+| Type              | Composant              | Usage principal                                                        |
+| ----------------- | ---------------------- | ---------------------------------------------------------------------- |
+| **articleFeed**   | `ArticleFeed`          | Fil paginé (scroll infini) des articles d'un costum (`costumSlug` requis), lecture via `/blog/:slug` ou `/blog/id/:id` |
+| **articleReader** | `ArticleReaderSection` | Affiche un article (POI) précis par slug ou id sur n'importe quelle page — île client, sans SEO propre |
+| **articleTeaser** | `ArticleTeaser`        | Aperçu figé des N derniers articles d'un costum (`costumSlug` requis), sans pagination |
+
+### Sections agenda & observatoire (depuis modules)
+
+| Type                  | Composant                | Usage principal                                                        |
+| --------------------- | ------------------------ | ---------------------------------------------------------------------- |
+| **agenda**            | `AgendaSection`          | Events d'un costum : liste (onglets temporels), calendrier (mois/semaine/jour), carte et split — voir [doc/29](29-module-agenda.md) |
+| **data-observatory**  | `DataObservatorySection` | Dashboard déclaratif : dimensions, KPI, graphiques, filtres et table pilotés par la config |
 
 ### Sections news & notifications (depuis modules)
 
@@ -326,36 +359,44 @@ Chaque composant se trouve dans `src/components/sections/<Type>Section.tsx` ou d
 
 Pour créer une section sur mesure :
 
-1. **Définir le schéma Zod** dans `src/types/site-schema.ts`
+> ⚠️ **Ce n'est pas un changement en 3 étapes.** Les étapes 1 à 4 sont rattrapées par le compilateur,
+> les 5 et 6 par `npm run test:preflight` — que **ni hook ni CI ne déclenche** (`.husky/` ne contient
+> que `_`, il n'y a pas de `.github/workflows`) — et les étapes 7 à 10 échouent **en silence**.
+
+1. **Déclarer le schéma Zod** dans `src/types/site-schema.ts`, en `const` **non exporté** englobant
+   `type` + `id` + `props` (précédent : `HeroSectionSchema`). N'exporter que les types inférés.
 
    ```ts
-   // Dans src/types/site-schema.ts
-   export const MySectionProps = z.object({
-     title: LocalizedString,
-     items: z.array(z.string()),
+   const MySectionSchema = z.object({
+     type: z.literal("my-section"),
+     id: z.string().optional(),
+     props: z.object({
+       title: LocalizedString,
+       items: z.array(z.string()),
+     }),
    });
+   export type MySectionProps = z.infer<typeof MySectionSchema>["props"];
    ```
 
-   Ajouter le type dans `SectionPropsMap` :
+2. **L'inscrire dans l'union `Section`** (`export const Section = z.discriminatedUnion("type", [...])`).
 
-   ```ts
-   export const SectionPropsMap = {
-     // ...
-     mySection: MySectionProps,
-   };
-   ```
+   > ⚠️ **Ne jamais éditer `SectionPropsMap`** : c'est un type **dérivé** de l'union
+   > (`{ [K in Section['type']]: … }`), et il ne vit **pas** dans `src/types/site.ts`.
 
-2. **Créer le composant React** avec un `export default`
+3. **Créer le composant React** avec un `export default`, en **posant `id` sur l'élément racine** —
+   c'est le mécanisme d'ancrage de la section — et en passant tout texte localisé par `useT`/`t`,
+   jamais par `props.title.fr` (qui casse le changement de langue en silence).
 
    ```tsx
    // src/components/sections/MySectionSection.tsx
-   import type { z } from "zod";
+   import { useLocalization } from "@/hooks/useLocalization";
    import type { MySectionProps } from "@/types/site-schema";
 
-   function MySectionSection({ props }: { id?: string; props: z.infer<typeof MySectionProps> }) {
+   function MySectionSection({ id, props }: { id?: string; props: MySectionProps }) {
+     const { t } = useLocalization();
      return (
-       <section>
-         <h2>{props.title.fr}</h2>
+       <section id={id}>
+         <h2>{t(props.title)}</h2>
          <ul>
            {props.items.map((item, i) => <li key={i}>{item}</li>)}
          </ul>
@@ -366,31 +407,67 @@ Pour créer une section sur mesure :
    export default MySectionSection;
    ```
 
-3. **Enregistrer dans `SectionRenderer.tsx`**
-
-   Ajouter au mapping `LazySections` :
+4. **Enregistrer dans `SectionRenderer.tsx`**, clé et `lazy(` **sur la même ligne** (un test de
+   préflight lit cette table à la regex) :
 
    ```ts
    const LazySections = {
      // ...
-     mySection: lazy(() => import("./MySectionSection")),
+     "my-section": lazy(() => import("./MySectionSection")),
    };
    ```
 
-   > **Important** : utiliser `lazy()` de vite-preload (pas `lazyNamed`), et le composant doit avoir un `export default`.
+   > **Important** : `lazy()` vient de **vite-preload** (ni `React.lazy`, qui ne trace pas le chunk et
+   > prive la page de son `<link rel="modulepreload">`, ni `lazyNamed`), et le composant doit avoir un
+   > `export default`.
 
-4. **Mettre à jour la configuration JSON**
-   Dans `config.prod.json` (ou fichier `.env` via `SITE_CONFIG_JSON`), ajoutez une section :
+5. **Ajouter l'entrée dans `SECTION_META`** (`src/components/admin/section-meta.ts`) : `label`,
+   `desc` (> 10 caractères), `image`, `family` prise dans `SECTION_FAMILIES`. Un test de préflight
+   impose une **parité exacte** union ⇄ `SECTION_META` ⇄ table `lazy()`, dans les deux sens.
 
-   ```json
-   {
-     "type": "mySection",
-     "props": {
-       "title": { "fr": "Ma section perso", "en": "My custom section" },
-       "items": ["Item 1", "Item 2"]
-     }
-   }
-   ```
+6. **Mettre à jour les compteurs de sections**, gatés par une regex de
+   `tests/preflight/section-meta.test.ts` sur **trois** fichiers :
+   - `doc/26-assistant-config.md` — forme `**N sections**` ;
+   - `.claude/skills/config-assistant/SKILL.md` — forme `**N des M sections**` (c'est le `M` qui
+     est contrôlé) ; ce fichier EST suivi en git (`.gitignore` ré-inclut `!.claude/skills/`) ;
+   - `CLAUDE.md` — forme `**N section types**`, **contrôlé seulement s'il est présent** : il est
+     gitignoré, donc absent d'un clone frais et d'une CI.
+
+7. **Si la section porte une image de fond pleine largeur et peut être PREMIÈRE d'une page** : ajouter
+   son type à `RESPONSIVE_BG_SECTION_TYPES` (`src/lib/extractCriticalResources.ts`), sans quoi elle
+   n'émet **aucun `<link rel="preload">` LCP, en silence**. Rendre l'image via `HeroBackgroundImage`,
+   dont les `srcSet` correspondent exactement au preload (un `<img>` maison provoque un **double
+   téléchargement**).
+
+8. **Écrire une story de props réelles** dans `.design-sync/previews/`, et déclarer le composant dans
+   `.design-sync/config.json` (`componentSrcMap`) **et** `.design-sync/ds-entry.ts`.
+
+9. **Documenter les props** dans `scripts/lib/prop-descriptions.ts` (alimente `config:schema section:<type>`).
+
+10. **Mettre à jour les TABLES de la skill `config-assistant`** (headers, footers, presenters,
+    modules) — rien ne les teste, la dérive y est silencieuse. ⚠ À ne pas confondre avec le
+    COMPTEUR de sections du même fichier, lui gaté depuis l'étape 6.
+
+11. **Utiliser la section dans une config JSON** :
+
+    ```json
+    {
+      "type": "my-section",
+      "id": "ma-section",
+      "props": {
+        "title": { "fr": "Ma section perso", "en": "My custom section" },
+        "items": ["Item 1", "Item 2"]
+      }
+    }
+    ```
+
+    > ⚠️ La config n'est **jamais** parsée par Zod à l'exécution : les `.default()` du schéma ne
+    > s'appliquent pas. Écrire **chaque clé explicitement**, et placer les valeurs de repli dans le
+    > code du composant.
+
+**Portes, dans cet ordre** : `npm run lint` → `npm run typecheck` (toujours `tsc -b`) →
+`npm run test:preflight` → `npm run config:render` (une section qui rend `null` passe toutes les
+autres portes et sert quand même une page vide).
 
 ---
 

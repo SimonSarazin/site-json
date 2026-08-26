@@ -12,10 +12,10 @@ const Label = z.union([LocalizedString, z.string()]);
 
 // Widgets supportés — aligné sur formEngine `WidgetKind` (gardé en phase manuellement).
 const WidgetKind = z.enum([
-  "hidden", "text", "email", "tel", "textarea", "number",
+  "hidden", "text", "email", "tel", "textarea", "markdown", "number",
   "switch", "checkbox", "checkboxGroup",
   "select", "multiselect", "selectFromLists",
-  "tags", "date", "datetime", "time",
+  "tags", "valueSelect", "date", "datetime", "time",
   "urlList", "image", "gallery", "file", "location", "openingHours",
   "finder", "eventDates", "fieldArray", "custom",
   "editSocial", "editSchedule",

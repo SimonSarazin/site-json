@@ -148,7 +148,7 @@ app.get("/blog/feed.xml", async (req, res) => {
     if (!slug) { res.status(400).type("application/xml").send('<?xml version="1.0"?><error>costumSlug manquant (?costum=slug ou config.blog.feedCostumSlug)</error>'); return; }
     const { renderBlogFeed } = await import("../dist/server/entry-server.js");
     const title = cachedConfig?.meta?.title?.fr || cachedConfig?.meta?.title || "Articles";
-    const xml = await renderBlogFeed({ costumSlug: String(slug), title });
+    const xml = await renderBlogFeed({ costumSlug: String(slug), title, publicFilters: cachedConfig?.blog?.publicFilters, publicSortBy: cachedConfig?.blog?.publicSortBy });
     res.type("application/rss+xml").send(xml);
   } catch (e) {
     console.error("[blog-feed]", e);
@@ -183,9 +183,12 @@ app.use(
 
 // 404 pour requêtes de fichiers statiques inexistants
 app.use((req, res, next) => {
-  // Exclure les routes API
+  // Route /api/* INCONNUE (toutes les vraies routes API sont montées AVANT ce middleware) :
+  // 404 franc au lieu de tomber dans le catch-all SSR, qui répondait 200 avec la page HTML —
+  // un client testant `response.ok` (ex. formulaire de contact posté sur un endpoint inexistant)
+  // affichait alors un TOAST DE SUCCÈS pendant que le message partait au néant.
   if (req.url.startsWith("/api/")) {
-    return next();
+    return res.status(404).json({ error: "Unknown API route" });
   }
 
   if (req.url.match(/\.(png|jpg|jpeg|gif|svg|css|js|json|ico|webp|mp4|woff2|woff)$/)) {
@@ -207,14 +210,30 @@ app.use(['/{*all}'], async (req, res) => {
 
     let injectEnvScript = "";
 
-    if (process.env.VITE_BASE_URL_BACKEND || process.env.VITE_SERVER_URL || process.env.VITE_SLUG || process.env.VITE_MAPTILER_API_KEY) {
+    // Passerelle des `VITE_*` vers le CLIENT. En conteneur, `import.meta.env` est
+    // vide pour ces clés (aucun ARG côté Dockerfile, et `.env` est exclu du
+    // contexte de build) : `window.__ENV__` est donc leur SEULE voie, lue en
+    // premier par `readEnv` (src/lib/constant/common.ts). Toute clé de
+    // `RuntimeEnv` destinée au navigateur doit figurer ici, sans quoi elle reste
+    // visible du SSR (`process.env`) mais pas du client — asymétrie silencieuse.
+    // Verrouillé par tests/preflight/runtime-env.test.ts.
+    if (
+      process.env.VITE_BASE_URL_BACKEND ||
+      process.env.VITE_SERVER_URL ||
+      process.env.VITE_SLUG ||
+      process.env.VITE_MAPTILER_API_KEY ||
+      process.env.VITE_COSTUM_FORCE_LIVE ||
+      process.env.VITE_SITE_PUBLIC_URL
+    ) {
       injectEnvScript =
         `<script>
           window.__ENV__ = {
             VITE_BASE_URL_BACKEND: ${JSON.stringify(process.env.VITE_BASE_URL_BACKEND || "")},
             VITE_SERVER_URL: ${JSON.stringify(process.env.VITE_SERVER_URL || "")},
             VITE_SLUG: ${JSON.stringify(process.env.VITE_SLUG || "")},
-            VITE_MAPTILER_API_KEY: ${JSON.stringify(process.env.VITE_MAPTILER_API_KEY || "")}
+            VITE_MAPTILER_API_KEY: ${JSON.stringify(process.env.VITE_MAPTILER_API_KEY || "")},
+            VITE_COSTUM_FORCE_LIVE: ${JSON.stringify(process.env.VITE_COSTUM_FORCE_LIVE || "")},
+            VITE_SITE_PUBLIC_URL: ${JSON.stringify(process.env.VITE_SITE_PUBLIC_URL || "")}
           };
         </script>
       `;

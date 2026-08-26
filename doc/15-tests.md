@@ -65,6 +65,8 @@ SiteForge utilise une stratégie de tests à **trois niveaux**, tous pilotés pa
 | `npm run test:preflight` | Preflight uniquement — `vitest run -c vitest.config.unit.ts tests/preflight/` |
 | `npm run test:coverage` | Tests unitaires avec rapport de couverture V8 (HTML + JSON) |
 | `npm run audit:config` | Audit **non bloquant** de la qualité des configs (trads manquantes, liens internes morts, locales/theme) — rapport + récap. `-- --strict` pour sortir en code 1 |
+| `npm run test:costum-forms` | E2E des forms costum (`tests/integration/costum-forms.e2e.test.ts`) contre un **vrai** backend ; enchaîne les **deux** modes : `bundle` (artefact vendoré) puis `E2E_MODE=live`. Auto-skip sans `TEST_USER_EMAIL`/`TEST_USER_PASSWORD` |
+| `npm run config:answer-labels` | Garde **live** des libellés de facettes « par réponses » (`scripts/answer-facet-labels.mjs`) — exit 2 si un libellé est inexprimable, 1 si le backend est injoignable |
 | `npm run test:watch` | Mode watch avec `vitest.config.ts` par défaut (`src/` + `tests/`, sans `.tsx` ni `server/`) |
 
 Pour les tests E2E avec authentification backend réelle :
@@ -135,20 +137,51 @@ source .env.test && npm run test:e2e
 │       ├── hooks/useSearchQuery.test.tsx      # Hook query de recherche
 │       └── lib/canonicalBaseParams.test.ts   # Paramètres canoniques
 ├── server/__tests__/
-│   └── imageOptimizer.test.ts      # Fonctions pures (allowlist, format, magic bytes, MIME)
+│   ├── imageOptimizer.test.ts      # Fonctions pures (allowlist, format, magic bytes, MIME)
+│   ├── sitemap.test.ts             # buildSitemapXml / buildRobotsTxt + exclusion des pages gardées
+│   └── sites.test.ts               # Découplage slug → dossier d'images (`sites.json` champ `images`)
 ├── tests/
-│   ├── preflight/
+│   ├── preflight/                  # 34 fichiers (`ls tests/preflight/*.test.ts`) — détails § Preflight tests
+│   │   ├── answer-facet-labels.test.ts  # Helpers purs de la garde live des libellés de facettes
+│   │   ├── answer-facets.test.ts   # Cible des facettes « par réponses » (`filterTarget`)
+│   │   ├── archetypes.test.ts      # Archétypes de l'assistant config (gate de fraîcheur)
 │   │   ├── bundle-size.test.ts     # Taille chunks, vendor splits, pas d'icons-vendor (skip si pas de build)
 │   │   ├── config-integrity.test.ts # meta cohérent, LocalizedString non vide, liens externes valides
+│   │   ├── contact-form.test.ts    # Formulaire de contact : clés dépréciées + rôles requis
+│   │   ├── costum-form-contract.test.ts # Forms costum ⇄ contrat de l'artefact
+│   │   ├── costum-form-slug.test.ts # `costumForms.<id>.costumSlug` obligatoire
+│   │   ├── costum-forms.test.ts    # `config.costumForms` des configs de déploiement
+│   │   ├── deploy-cli.test.ts      # `analyserArgv` du CLI de déploiement
+│   │   ├── deploy-lot.test.ts      # `executerParSite` (déploiement par lot)
+│   │   ├── deploy-scope.test.ts    # Fichiers propres à un site vs neutres
+│   │   ├── deploy-targets.test.ts  # Cibles de déploiement de sites.json + variables de build dérivées
+│   │   ├── design-previews.test.ts # Stories de props (`.design-sync/previews`) ⇄ code
+│   │   ├── edit-modal-scope.test.ts # Périmètre costum des modales d'édition
+│   │   ├── effective-config.test.ts # Comportement résolu par site (garde d'impact inter-configs)
 │   │   ├── environment.test.ts     # Vérification Node, deps, fichiers config
+│   │   ├── header-offset.test.ts   # `headerStickyOffsetPx` ⇄ JSX des headers
 │   │   ├── i18n-files.test.ts       # Parité des clés fr↔en par namespace + valeurs non vides
+│   │   ├── lcp-preload.test.ts     # Chaîne de preload LCP
+│   │   ├── list-item-rules.test.ts # `list.itemRules` de toutes les configs
+│   │   ├── module-routes.test.ts   # Préfixes de routes de modules (dérivés du code)
+│   │   ├── no-config-comments.test.ts # Pas de clé de commentaire dans les configs
 │   │   ├── no-import-star-lucide.test.ts  # Anti-régression tree-shaking lucide-react
-│   │   └── sites-configs.test.ts   # Validation de TOUTES les configs de sites.json
+│   │   ├── page-guards.test.ts     # Gardes de page : ce qui est déclaré doit avoir un effet
+│   │   ├── page-recipes.test.ts    # Recettes de page ⇄ pages réelles des archétypes
+│   │   ├── presenter-options.test.ts # Matrice option × presenter (search)
+│   │   ├── prop-descriptions.test.ts # Registre `prop-descriptions` ⇄ schéma
+│   │   ├── runtime-env.test.ts     # `VITE_*` runtime ⇄ injection `window.__ENV__`
+│   │   ├── section-meta.test.ts    # SECTION_META ⇄ union/`lazy()` + compteurs cités dans la doc
+│   │   ├── site-assets.test.ts     # sites.json : dossier d'images déclaré
+│   │   ├── sites-configs.test.ts   # Validation de TOUTES les configs de sites.json
+│   │   ├── skill-integrity.test.ts # Skill config-assistant ⇄ code (anti-dérive)
+│   │   └── stamps.test.ts          # `mutation.stamps` de toutes les configs
 │   ├── helpers/
 │   │   ├── global-setup.ts         # Démarre le serveur SSR sur port 5188
 │   │   └── server-manager.ts       # Expose getBaseUrl() pour les tests intégration
 │   └── integration/
 │       ├── config-driven-ssr.test.ts   # SSR par page config, meta, nav, sections
+│       ├── costum-forms.e2e.test.ts    # ADD+EDIT des forms costum sur un vrai backend (`npm run test:costum-forms`)
 │       ├── ssr-completeness.test.ts    # Complétude HTML (</html>, doctype, root, globals, markers Suspense)
 │       ├── ssr-concurrency.test.ts     # 10-20 requêtes parallèles, cross-route leakage
 │       └── ssr-rendering.test.ts       # SSR home + pages secondaires + 404
@@ -161,6 +194,7 @@ source .env.test && npm run test:e2e
 │   ├── config-nav.spec.ts          # Header nav, footer, logo (config-driven)
 │   ├── hydration.spec.ts           # SSR sans JS, hydratation, window globals
 │   ├── i18n.spec.ts                # Langue par défaut, switch de langue
+│   ├── parent62.spec.ts            # Parcours lecture seule d'un site précis (VITE_SLUG=parent62, config lue en dur)
 │   ├── profile.spec.ts             # Pages profil + validation config.profiles
 │   └── search.spec.ts              # Sections searchPro/searchProStatic/gridLayout
 ├── vitest.config.unit.ts           # Config Vitest pour unit + preflight + server (+ setupFiles UI)
@@ -582,9 +616,117 @@ D'autres tests CoForm couvrent : `formParser.test.ts` (parsing schéma de form),
 
 ### Preflight tests (`tests/preflight/`)
 
+34 fichiers aujourd'hui — l'inventaire fait autorité est `ls tests/preflight/*.test.ts` (repris dans
+l'arborescence plus haut). Les sous-sections ci-dessous détaillent les gardes dont la raison d'être
+n'est pas lisible dans le nom du fichier.
+
+#### Garde d'impact inter-configs (`effective-config.test.ts` + `npm run config:surface`)
+
+Le problème couvert : modifier du code partagé (résolveur, schéma, défaut) change le comportement
+de sites dont on ne touche PAS la config, sans signal (cas mesuré : `costumCreateKey` a rerouté
+les boutons « Créer » de 5 sites). Deux étages :
+
+- **Étage 1 — exposition** : `npm run config:surface -- --key <nom>` = qui consomme cette clé, à
+  quels chemins (index inverse de **toutes** les `config.prod.*.json` du dépôt — 15 aujourd'hui,
+  `config.prod.json` exclu par le motif) ; `--write`/`--check` entretiennent
+  `docs/CONFIG-SURFACE.md` (généré, committé). LE réflexe avant de toucher une surface.
+  ⚠️ Aucun CI ne joue `--check` (le dépôt n'a pas de `.github/workflows`), malgré ce
+  qu'annonce l'en-tête de l'artefact (`docs/CONFIG-SURFACE.md:3`, « CI : `--check` ») : celui-ci
+  annonce encore « 13 configs scannées » et **ignore `maison-sport-sante-la-tampon` et `relief`**
+  — relancer `npm run config:surface -- --write`
+  avant de s'y fier, sinon le réflexe est aveugle sur les sites manquants.
+- **Étage 2 — comportement résolu par site** : `effective-config.test.ts` matérialise pour chaque
+  site une projection calculée par les MÊMES fonctions pures que l'app (menus d'ajout effectifs
+  via `costumCreateKey`, résolution RÉELLE des routes d'édition sur des sondes
+  native/hors-périmètre, baseParams admin ET pages APRÈS expansion `costumSubType`, sous-types de
+  référencement, défauts membership matérialisés, stamps normalisés, **facettes « par réponses » :
+  le filtre Mongo réellement émis au clic pour chaque groupe** — `answerToggleArgs` +
+  `searchByFieldsToQuery` sur une valeur témoin), snapshotée dans
+  `__effective__/<site>.json`. Tout changement de code partagé qui altère le comportement d'UN
+  site = diff de SA fixture ; accepter (`vitest -u`) = l'acte explicite « impact voulu », site par
+  site, visible en revue. Slug d'autorité : `sites.json` (registre de déploiement ;
+  multi-déploiements → slug null + liste matérialisée).
+
+**Charte** : tout nouveau comportement est OFF par défaut, activé par clé de config (patron
+`costumSubType`) ; un défaut qui DOIT bouger embarque l'exposition (étage 1) + les diffs de
+fixtures acceptés (étage 2) ; toute nouvelle sémantique s'ajoute comme PROJECTION du test, pas
+comme garde ad hoc. Limite assumée : la résolution pure, pas le rendu (labels/CSS).
+
+#### Préflight des stamps (`stamps.test.ts`)
+
+Vérifie les `mutation.stamps` de TOUTES les configs (cf. [28-module-formengine](28-module-formengine.md)) :
+`on: edit|both` + `op: set` sur un champ visible du form interdit ; jetons `$now` inconnus ;
+`append` + canal `pathValue` refusé ; grammaire (clés/enums) ; sentinelle d'inventaire du parc.
+
+#### Périmètre des routes d'édition (`edit-modal-scope.test.ts`)
+
+Toute route `editModals` par champ identitaire (`type`…) doit être bornée par une clause `when`
+de périmètre costum (`sourceKeys` OU `reference.costum`) — sans elle, le form costum s'ouvre sur
+les entités homonymes d'autres sites.
+
+#### Facettes « par réponses » (`answer-facets.test.ts`)
+
+Les groupes `filtersByAnswers`/`filtersByPath` ont deux cibles possibles (`filterTarget`) et se
+trompent **en silence** : une facette mal ciblée s'affiche normalement, avec ses options, et vide
+simplement la liste au clic (défaut mesuré sur `/creneaux` — filtrage par `_id` d'organisation sur
+une liste qui porte les réponses elles-mêmes). Deux règles statiques, sur toutes les configs de
+site du dépôt (`config.prod.<site>.json` — `config.prod.json` hors motif) :
+
+1. `filterTarget: "answers"` exige un chemin exploitable (`path`/`thematicPath`, résolu par
+   `answerGroupFieldPath`) — sans lui le groupe retombe sur `_id` : filtre mort, aucune erreur.
+2. Dans un `gridLayout`, si la colonne sœur porte `baseParams.defaultTypes: ["answers"]`, les groupes
+   **doivent** cibler les answers ; réciproquement, hors liste d'`answers`, aucun groupe ne doit les
+   cibler (la cible historique reste le défaut, pas de migration forcée).
+
+La règle 2 est délibérément portée par la garde et non par le runtime : lire la section sœur est
+légitime pour un contrôle qui voit toute la config, mais en ferait un couplage entre colonnes d'un
+conteneur de mise en page côté app. Limite assumée : elle ne couvre que le `gridLayout` (filtres et
+liste dans le même conteneur) — un hero portant des facettes pour une liste sœur de la page n'est pas
+apparié ; aucun cas du parc aujourd'hui.
+
+#### Libellés de facettes — garde live (`npm run config:answer-labels` + `answer-facet-labels.test.ts`)
+
+Ce que la garde statique ne peut pas voir : les **options** d'une facette ne sont pas dans la config,
+elles vivent dans le formulaire, en base (`params["multiCheckboxPlus<section><input>"].global.list`).
+D'où un script réseau plutôt qu'un test — `scripts/answer-facet-labels.mjs` (option `--backend`,
+défaut `VITE_BASE_URL_BACKEND`) cherche les libellés contenant un **point** : sur un
+`multiCheckboxPlus`, le libellé est une clé Mongo et le prédicat un `$exists` sur
+`<chemin>.<libellé>` ; un point de plus y devient un niveau de chemin supplémentaire, qui ne matche
+**jamais**. L'option s'affiche, se coche, et ne filtre rien (mesuré en base : 819 libellés sur
+246 185 sont dans ce cas). Sortie : exit 2 si au moins un libellé est inexprimable, 1 si le backend
+est injoignable. `tests/preflight/answer-facet-labels.test.ts` couvre les **helpers purs** du script
+(parcours de config, lecture du document Form, détection du libellé à point) ; la partie réseau, elle,
+ne peut pas être un test.
+
+#### Formulaire de contact (`contact-form.test.ts`)
+
+Le message part par la lib (`CONTACT_SEND` → `/co2/mailmanagement/createandsend`), qui résout le
+destinataire côté serveur depuis le costum porteur : **`costum.contactMail` d'abord,
+`costum.admin.email` seulement en repli**. Deux façons de casser ça en config, toutes deux
+silencieuses à l'exécution — d'où la garde, sur toutes les configs de site du dépôt :
+
+- aucune `action`/`method` sur une section `contactForm` : clés **dépréciées**, plus lues. L'ancien
+  fil postait du JSON sur `/api/contact`, une route qui n'a **jamais** existé (le formulaire échouait
+  sur les 3 sites du parc) ;
+- chaque formulaire porte les `role` requis pour construire la charge utile — vérifiés par
+  `missingContactRoles()` (`src/lib/contactPayload.ts`). Sans eux, le formulaire refuse d'envoyer sans
+  que rien ne l'annonce à la relecture.
+
+#### `costumForms.costumSlug` (`costum-form-slug.test.ts`)
+
+Tout `costumForms.<id>` du parc déclare un `costumSlug` **string non vide**. La clé porte trois
+mécanismes qu'un retrait casserait en silence : le pin de schéma en **édition** (`resolveModalSpec` →
+`schemaCostumSlug`), la découverte de l'e2e `costum-forms` (qui joue le form via
+`entityBySlug(costumSlug)`) et la cohérence avec `scope` (whitelist d'écriture). Rien d'autre ne
+l'exige : `config.costumForms` est déclaré `z.record(z.string(), z.unknown())` dans
+`site-schema.ts:2179` (le schéma de site ne regarde donc pas le contenu) et `costumSlug` est
+`.optional()` côté form (`costumFormSchema.zod.ts:32`) — les deux forms MSS ont chacun été livrés sans
+elle avant que la convention soit posée.
+
 #### Validation configs multi-sites (`tests/preflight/sites-configs.test.ts`)
 
-Valide automatiquement **toutes** les configs référencées dans `sites.json` (66 tests) :
+Valide automatiquement **toutes** les configs référencées dans `sites.json` (le nombre de tests est
+dérivé du parc — 20 slugs pour 15 configs distinctes aujourd'hui) :
 
 **Intégrité de `sites.json`** :
 - Format valide (array non-vide)
@@ -625,7 +767,7 @@ Les clés sont aplaties récursivement (`a.b.c`) pour comparer des JSON imbriqu�
 
 #### Audit config advisory (`npm run audit:config`)
 
-Script `scripts/audit-config.mjs` (non bloquant) qui complète les invariants stricts par des contrôles « soft » à fort backlog dans les configs démo. Pour chaque config :
+Script `scripts/audit-config.ts` (migré en TS, lancé par `tsx` ; non bloquant) qui complète les invariants stricts par des contrôles « soft » à fort backlog dans les configs démo. Pour chaque config :
 
 - traductions **manquantes** (LocalizedString incomplète vs `meta.languages`),
 - liens **internes morts** (pas de page du config ni de route module connue ; query/anchor ignorés),
@@ -748,6 +890,7 @@ Séparé en deux `describe` indépendants :
 | `VITE_SLUG` | Slug profil pour tests E2E (défaut: `franceTierslieux`) | `.env` / process.env |
 | `SITE_CONFIG_PATH` | Chemin config JSON (défaut: `./config.prod.json`) | `.env` / process.env |
 | `STRICT_SSR_MARKERS` | `=1` pour activer les checks Suspense markers dans `ssr-completeness.test.ts` (serveur prod requis) | process.env |
+| `E2E_MODE` | Mode de `costum-forms.e2e.test.ts` : `bundle` (défaut, artefact vendoré) ou `live` (inférence depuis l'`inputType`). Un mode **par processus** — `npm run test:costum-forms` joue donc les deux à la suite | process.env |
 | `DEBUG_SERVER` | `=1` pour activer les logs d'erreur du serveur d'intégration dans `global-setup.ts` | process.env |
 
 > **Ne jamais committer `.env.test`** qui contient des credentials. Ce fichier est dans `.gitignore`.

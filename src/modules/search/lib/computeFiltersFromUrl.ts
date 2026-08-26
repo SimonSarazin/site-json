@@ -1,4 +1,5 @@
 import type { SearchByFieldValue } from "../contexts/pageFilters";
+import { answerToggleArgs, type AnswerGroupConf } from "./answerFilterClause";
 
 /**
  * Forme minimale d'un groupe de filtres (sous-ensemble de `FiltersSectionProps`).
@@ -80,6 +81,13 @@ export function computeFiltersFromUrl(
   searchParams: URLSearchParams,
   filterGroups: FilterGroupLike[],
   filterAnswerData: FilterAnswerDataLike,
+  /**
+   * Config des groupes « par réponses » (`filtersByAnswers` + `filtersByPath`),
+   * indexée par id de groupe. Nécessaire au seul réglage `filterTarget` : sans elle
+   * un deep-link poserait un filtre par `_id` là où le clic pose un prédicat de
+   * chemin — mêmes filtres des deux côtés, c'est tout l'intérêt de ce module.
+   */
+  answerGroupConfs: Record<string, AnswerGroupConf> | null = null,
 ): {
   applySelected: (prev: Record<string, string[]>) => Record<string, string[]>;
   applySearchFields: (prev: Record<string, SearchByFieldValue>) => Record<string, SearchByFieldValue>;
@@ -116,7 +124,12 @@ export function computeFiltersFromUrl(
   });
 
   searchParams.forEach((rawValue, groupId) => {
-    const values = rawValue.split(",").map((v) => v.trim()).filter(Boolean);
+    // Décodage par segment, pendant de l'encodage à l'écriture : une valeur issue d'une source
+    // dynamique peut contenir une virgule, qui couperait sinon la liste en deux.
+    const values = rawValue
+      .split(",")
+      .map((v) => { const t = v.trim(); try { return decodeURIComponent(t); } catch { return t; } })
+      .filter(Boolean);
     if (values.length === 0) return;
 
     const group = filterGroups.find((g) => g.id === groupId);
@@ -188,7 +201,10 @@ export function computeFiltersFromUrl(
           const opt = (group.options ?? []).find((o) => (o.name || o.id) === v || o.id === v);
           if (!opt) return;
           const key = opt.name || opt.id;
-          nextSearchFields[key] = { field, value: [key] };
+          // Comme pour les dropdowns : une option issue d'une source dynamique porte ses `variants`,
+          // et le filtre doit interroger TOUTES les graphies du groupe, pas seulement celle affichée.
+          const variantes = (opt as { variants?: string[] }).variants;
+          nextSearchFields[key] = { field, value: variantes?.length ? variantes : [key] };
         });
         return;
       }
@@ -206,16 +222,19 @@ export function computeFiltersFromUrl(
 
     const answerGroup = filterAnswerData?.[groupId];
     if (answerGroup) {
+      const conf = answerGroupConfs?.[groupId];
       values.forEach((v) => {
         const optionEntry = Object.entries(answerGroup.values).find(
           ([key, val]) => key === v || val.name === v,
         );
         if (optionEntry) {
           const [optionKey, optionValue] = optionEntry;
-          nextSearchFields[optionKey] = {
-            field: "_id",
-            value: (optionValue.orgaNameArray ?? []) as string[],
-          };
+          // Source unique avec le clic (`FiltersSection`) : `_id`/orgaNameArray par
+          // défaut, prédicat de chemin si le groupe cible les answers.
+          const { field, value, fieldType } = answerToggleArgs(conf, optionKey, optionValue);
+          nextSearchFields[optionKey] = fieldType
+            ? { field, type: fieldType, value }
+            : { field, value };
         }
       });
     }

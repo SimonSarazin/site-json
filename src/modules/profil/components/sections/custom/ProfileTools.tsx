@@ -5,7 +5,7 @@ import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 import { useProfileSetup } from "../../../hooks/useProfileSetup";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
 import type { ProfileToolsSection } from "../../../schema";
-import { TOOLS_MAP } from "./toolsMap";
+import { TOOLS_MAP, type ToolItem } from "./toolsMap";
 import { OurToolsEditDialog } from "./OurToolsEditDialog";
 import SectionTitle from "./SectionTitleTL";
 
@@ -27,7 +27,6 @@ export default function ProfileTools({ section }: ProfileToolsProps) {
     const [editOpen, setEditOpen] = useState(false);
     const toolsRaw = useReactiveProperty(entity.serverData, "ourTools");
 
-    type ToolItem = { name: string; url?: string };
     type ParsedTools = Array<{ key: string; items: ToolItem[] }>;
 
     const parsedTools = useMemo((): ParsedTools => {

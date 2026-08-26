@@ -50,6 +50,27 @@ vi.mock("./SwitchDetailsMode", () => ({
     />
   ),
 }));
+// Stub de la vue timeline (chargée en lazy par le dispatch `list.layout`) : expose un bouton
+// par item qui remonte `onItemClick(item, itemLists[i])` — même contrat que la vraie vue.
+vi.mock("./TimelineListView", () => ({
+  default: ({
+    results: tlResults,
+    itemLists,
+    onItemClick,
+  }: {
+    results: SearchEntity[];
+    itemLists: unknown[];
+    onItemClick: (it: SearchEntity, itemList?: unknown) => void;
+  }) => (
+    <div data-testid="timeline-view">
+      {tlResults.map((it, i) => (
+        <button key={i} onClick={() => onItemClick(it, itemLists[i])}>
+          TL-{String((it.serverData as { name?: string }).name)}
+        </button>
+      ))}
+    </div>
+  ),
+}));
 
 const item = (id: string, name: string) =>
   ({ serverData: { id, name } } as unknown as SearchEntity);
@@ -168,5 +189,46 @@ describe("SearchListView (rendu par item, list.itemRules)", () => {
     fireEvent.click(screen.getByText("Article"));
     expect(navigateMock).not.toHaveBeenCalled();
     expect(screen.getByTestId("details-modal")).toBeInTheDocument();
+  });
+});
+
+/**
+ * Dispatch `list.layout: "timeline"` : la vue timeline remplace la grille (chargement lazy),
+ * la vue détaillée et le mode split gardent la priorité, et le détail s'ouvre depuis la
+ * timeline par le MÊME flux que depuis la grille.
+ */
+describe("SearchListView (list.layout: timeline)", () => {
+  it("layout timeline → la vue timeline remplace la grille", async () => {
+    renderInRouter(<SearchListView results={results} list={{ layout: "timeline" }} />);
+    expect(await screen.findByTestId("timeline-view")).toBeInTheDocument();
+    expect(screen.queryByText("Alpha")).toBeNull(); // la grille (stub SearchCard) n'est pas rendue
+  });
+
+  it("NON-RÉGRESSION : sans `layout`, la grille est rendue", () => {
+    renderInRouter(<SearchListView results={results} list={{}} />);
+    expect(screen.getByText("Alpha")).toBeInTheDocument();
+    expect(screen.queryByTestId("timeline-view")).toBeNull();
+  });
+
+  it("mode split (`onFocusItem`) : la grille garde la priorité sur la timeline", () => {
+    renderInRouter(
+      <SearchListView results={results} list={{ layout: "timeline" }} onFocusItem={vi.fn()} />,
+    );
+    expect(screen.getByText("Alpha")).toBeInTheDocument();
+    expect(screen.queryByTestId("timeline-view")).toBeNull();
+  });
+
+  it("vue détaillée : prioritaire sur la timeline", () => {
+    renderInRouter(
+      <SearchListView results={results} list={{ layout: "timeline" }} isDetailedView />,
+    );
+    expect(screen.getByText("Alpha")).toBeInTheDocument(); // stub SearchCardDetailed
+    expect(screen.queryByTestId("timeline-view")).toBeNull();
+  });
+
+  it("clic dans la timeline → le détail s'ouvre avec la conf de l'item", async () => {
+    renderInRouter(<SearchListView results={results} list={{ layout: "timeline" }} />);
+    fireEvent.click(await screen.findByText("TL-Bravo"));
+    expect(screen.getByTestId("details-modal").getAttribute("data-item")).toBe("Bravo");
   });
 });

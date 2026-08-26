@@ -6,25 +6,11 @@ import { useHydrated } from "@/hooks/useHydrated";
 import { useSite } from "@/hooks/useSite";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { useArticleFeed } from "../hooks/useArticleFeed";
+import { useArticleFeed, usePinnedArticle } from "../hooks/useArticleFeed";
 import { CARD_VARIANTS } from "../variants/cards";
+import { normalizeArticleResult, articleHref } from "../lib/articleLink";
+import { pickFeatured } from "../lib/pickFeatured";
 import type { ArticleFeedSectionProps } from "../schema";
-import type { ArticleData } from "../hooks/useArticle";
-
-function norm(r: unknown): ArticleData {
-  const sd = (r as { serverData?: Record<string, unknown> })?.serverData;
-  const base = (sd && typeof sd === "object" ? sd : (r as Record<string, unknown>)) as ArticleData;
-  // serverData.id n'est PAS toujours peuplé sur un résultat de recherche → repli sur l'id racine
-  // (getter d'instance SDK), comme SearchListView/CardFunding/AdminResourceTable. Sinon href → /blog/id/undefined.
-  if (base.id != null) return base;
-  const rootId = (r as { id?: unknown })?.id;
-  return rootId != null ? { ...base, id: String(rootId) } : base;
-}
-function hrefFor(a: ArticleData, base: string): string {
-  if (a.slug) return `${base}/${a.slug}`;
-  if (a.id) return `${base}/id/${a.id}`;
-  return base; // ni slug ni id (article mal formé) → la liste, jamais `/blog/id/undefined`
-}
 
 function FeedSkeleton() {
   return (
@@ -44,13 +30,23 @@ function Feed({ props, base, cardVariant, feedLayout }: {
 }) {
   const t = useT("modules/blog");
   const { transformedResults, lastItemRef, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, error, refetch } = useArticleFeed({
-    costumSlug: props.costumSlug, pageSize: props.pageSize, filters: props.filters,
+    costumSlug: props.costumSlug, pageSize: props.pageSize, filters: props.filters, sortBy: props.sortBy,
+    defaultFields: props.defaultFields,
   });
-  const items = ((transformedResults as unknown[]) ?? []).map(norm);
+  const items = ((transformedResults as unknown[]) ?? []).map(normalizeArticleResult);
+  // Mode `featured:"flag"` : l'épinglée est cherchée par une MICRO-REQUÊTE serveur dédiée
+  // (`{featured:true}`, 1 résultat) — jamais dans la fenêtre chargée (leçon review MR 44).
+  const flagMode = props.featured === "flag";
+  const pinnedQuery = usePinnedArticle({ costumSlug: props.costumSlug, filters: props.filters, sortBy: props.sortBy, defaultFields: props.defaultFields, enabled: flagMode });
+  const pinned = flagMode
+    ? (((pinnedQuery.transformedResults as unknown[]) ?? []).map(normalizeArticleResult))[0]
+    : undefined;
   // Variant de carte (lazy, registre CARD_VARIANTS) — un variant inconnu retombe sur `default`.
   const Card = CARD_VARIANTS.get(cardVariant);
 
-  if (isLoading) return <FeedSkeleton />;
+  // En mode flag, attendre AUSSI l'épinglée : sinon le repli (plus récent) s'affiche puis se fait
+  // remplacer par l'épinglée au retour de la micro-requête — flash de héros.
+  if (isLoading || (flagMode && pinnedQuery.isLoading)) return <FeedSkeleton />;
   // Erreur AVANT le test "vide" : une panne du search ne doit pas être déguisée en fil vide.
   if (error && !items.length) {
     return (
@@ -62,8 +58,7 @@ function Feed({ props, base, cardVariant, feedLayout }: {
   }
   if (!items.length) return <p className="py-10 text-center text-muted-foreground">{t("feed.empty")}</p>;
 
-  const featured = props.featured ? items[0] : undefined;
-  const rest = props.featured ? items.slice(1) : items;
+  const { hero: featured, rest } = pickFeatured(items, pinned, props.featured);
   const containerCls =
     feedLayout === "list"
       ? "flex flex-col gap-4"
@@ -76,10 +71,10 @@ function Feed({ props, base, cardVariant, feedLayout }: {
           construit au chargement du module et `get()` n'est qu'un `variants[key] ?? default`.
           La même référence est donc renvoyée à chaque rendu — aucun état n'est remis à zéro.
           Le type ne change que si le variant change, ce qui est le comportement voulu. */}
-      {featured && <div className="mb-8"><Card article={featured} href={hrefFor(featured, base)} featured /></div>}
+      {featured && <div className="mb-8"><Card article={featured} href={articleHref(featured, base)} featured /></div>}
       <div className={containerCls}>
         {rest.map((a, i) => (
-          <Card key={a.id ?? i} article={a} href={hrefFor(a, base)} lastRef={i === rest.length - 1 ? (lastItemRef as never) : undefined} />
+          <Card key={a.id ?? i} article={a} href={articleHref(a, base)} lastRef={i === rest.length - 1 ? (lastItemRef as never) : undefined} />
         ))}
       </div>
       {isFetchingNextPage && <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>}

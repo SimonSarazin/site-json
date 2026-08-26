@@ -60,10 +60,11 @@ export function SelectField({ label, value, onChange, options, allLabel }: Filte
   );
 }
 
-/** Multi SANS recherche — wrapper fin sur le `MultiCombobox` partagé (ui/) :
- *  trigger au look SelectTrigger, valeur CSV, libellé du trigger (« Tous » /
- *  valeur / « N sélectionnés »). */
-export function MultiCheckboxField({ label, value, onChange, options, allLabel, selectedCountLabel }: FilterFieldProps & { selectedCountLabel: (n: number) => string }) {
+/** Multi à cases — wrapper fin sur le `MultiCombobox` partagé (ui/) : trigger au
+ *  look SelectTrigger, valeur CSV, libellé du trigger (« Tous » / valeur /
+ *  « N sélectionnés »). La recherche du combobox s'active d'elle-même au-delà de
+ *  son seuil (les libellés de recherche sont passés par l'appelant, i18n). */
+export function MultiCheckboxField({ label, value, onChange, options, allLabel, selectedCountLabel, searchPlaceholder, noResult, moreLabel }: FilterFieldProps & { selectedCountLabel: (n: number) => string; searchPlaceholder?: string; noResult?: string; moreLabel?: (n: number) => string }) {
   const selected = value.split(",").map((v) => v.trim()).filter(Boolean);
   const triggerLabel =
     selected.length === 0
@@ -86,6 +87,9 @@ export function MultiCheckboxField({ label, value, onChange, options, allLabel, 
         onToggle={toggle}
         allLabel={allLabel}
         onClear={() => onChange("")}
+        searchPlaceholder={searchPlaceholder}
+        noResultLabel={noResult}
+        moreLabel={moreLabel}
       >
         {/* Aligné visuellement sur le SelectTrigger (bordure/fond/graisse) ;
             le survol vient du Button outline standard (muted — neutre quel

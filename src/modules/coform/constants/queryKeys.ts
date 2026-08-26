@@ -101,6 +101,29 @@ export const COFORM_QUERY_KEYS = {
       : (["coform", "commonTableCatalog", formId] as const),
 
   /**
+   * Arbre d'options d'un `categorizedCheckbox` alimenté par des questions commonTable DISTANTES.
+   *
+   * Producteur : `useCategorizedCheckboxOptions`
+   * Consommateurs invalidants : aucun à ce jour — les options sont la DÉFINITION des formulaires
+   *   sources (structure + criterias de leurs répondants), qu'aucune mutation de ce module ne
+   *   touche. Une réponse enregistrée ici ne modifie pas l'arbre. `staleTime` 5 min + le
+   *   `*_PREFIX` suffisent ; si un jour l'input permet d'ajouter un usage à la source, c'est cette
+   *   mutation-là qui devra invalider le préfixe.
+   *
+   * PAS de dimension `userId` : la donnée est publique (les deux endpoints sont `auth: none`), la
+   * scoper casserait la mutualisation du cache entre visiteurs sans rien protéger.
+   *
+   * La clé porte les chemins de questions et NON le form courant : l'arbre ne dépend que des
+   * formulaires SOURCES. Deux inputs (voire deux formulaires) branchés sur la même source
+   * partagent donc légitimement le cache. L'ordre des chemins est signifiant — il détermine
+   * l'index des clés persistées — donc il n'est PAS trié ici, contrairement au catalogue.
+   */
+  CATEGORIZED_OPTIONS: (questionPaths: readonly string[]) =>
+    ["coform", "categorizedOptions", [...questionPaths]] as const,
+  /** Invalide tous les arbres d'options categorizedCheckbox. */
+  CATEGORIZED_OPTIONS_PREFIX: () => ["coform", "categorizedOptions"] as const,
+
+  /**
    * Liste des contributeurs (users + leur happiness/note/comment) pour une
    * ligne d'un commonTable — fetch lazy au clic du compteur dans la colonne
    * solution.

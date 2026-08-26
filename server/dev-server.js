@@ -84,6 +84,10 @@ async function createServer() {
   app.get("/api/helloasso/checkout-status/:checkoutIntentId", helloassoCheckoutStatusHandler);
   app.get("/api/helloasso/orgs", helloassoDiagnosticHandler);
 
+  // Route /api/* INCONNUE : 404 franc (même garde que prod-server) — sinon le catch-all SSR
+  // répond 200 avec la page HTML et un client testant `response.ok` croit à un succès.
+  app.use("/api", (_req, res) => res.status(404).json({ error: "Unknown API route" }));
+
   // Flux RSS des articles blog (SEO/distribution). costumSlug : ?costum= > config.blog.feedCostumSlug > env.
   app.get("/blog/feed.xml", async (req, res) => {
     try {
@@ -91,7 +95,7 @@ async function createServer() {
       if (!slug) { res.status(400).type("application/xml").send('<?xml version="1.0"?><error>costumSlug manquant (?costum=slug ou config.blog.feedCostumSlug)</error>'); return; }
       const { renderBlogFeed } = await vite.ssrLoadModule("/src/modules/blog/server/feed.ts");
       const title = cachedConfig?.meta?.title?.fr || cachedConfig?.meta?.title || "Articles";
-      const xml = await renderBlogFeed({ costumSlug: String(slug), title });
+      const xml = await renderBlogFeed({ costumSlug: String(slug), title, publicFilters: cachedConfig?.blog?.publicFilters, publicSortBy: cachedConfig?.blog?.publicSortBy });
       res.type("application/rss+xml").send(xml);
     } catch (e) {
       console.error("[blog-feed]", e);
@@ -166,8 +170,11 @@ async function createServer() {
 
       const cfgScript = `<script>window.__CONFIG__=${serialize(config, { isJSON: true })}</script>`;
 
+      // Même passerelle qu'en prod (prod-server.js) : en dev `import.meta.env`
+      // suffirait, mais laisser les deux serveurs injecter des jeux de clés
+      // différents fait diverger dev et prod sur le même drapeau.
       const envSlug = slug || process.env.VITE_SLUG || "";
-      const envScript = envSlug ? `<script>window.__ENV__={VITE_SLUG:${JSON.stringify(envSlug)},VITE_BASE_URL_BACKEND:${JSON.stringify(process.env.VITE_BASE_URL_BACKEND || "")},VITE_SERVER_URL:${JSON.stringify(process.env.VITE_SERVER_URL || "")}}</script>` : "";
+      const envScript = envSlug ? `<script>window.__ENV__={VITE_SLUG:${JSON.stringify(envSlug)},VITE_BASE_URL_BACKEND:${JSON.stringify(process.env.VITE_BASE_URL_BACKEND || "")},VITE_SERVER_URL:${JSON.stringify(process.env.VITE_SERVER_URL || "")},VITE_MAPTILER_API_KEY:${JSON.stringify(process.env.VITE_MAPTILER_API_KEY || "")},VITE_COSTUM_FORCE_LIVE:${JSON.stringify(process.env.VITE_COSTUM_FORCE_LIVE || "")},VITE_SITE_PUBLIC_URL:${JSON.stringify(process.env.VITE_SITE_PUBLIC_URL || "")}}</script>` : "";
 
       const [headStart, rest] = template.split("<!--app-head-->");
       const [beforeBody, tail] = rest.split("<!--app-html-->");
@@ -237,6 +244,10 @@ async function createServer() {
   }
 
   const port = process.env.PORT || 5173;
+  // URL publique du site en dev : defaut localhost. Consommee par le sitemap
+  // (server/lib/sitemap.js), le flux RSS et `getSitePublicUrl()` cote client
+  // (via l'injection __ENV__ ci-dessus) — zero configuration en local.
+  if (!process.env.VITE_SITE_PUBLIC_URL) process.env.VITE_SITE_PUBLIC_URL = `http://localhost:${port}`;
   app.listen(port, () => {
     console.log(`SSR Dev server running at http://localhost:${port}`);
   });

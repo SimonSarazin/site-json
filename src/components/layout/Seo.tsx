@@ -4,8 +4,9 @@ import { useLocalization } from "@/hooks/useLocalization";
 import { LocalizedString } from "@/types/locale-schema";
 import { useSite } from "@/hooks/useSite";
 import { useCocolight } from "@/hooks/useCocolight";
-import { getServerUrl } from "@/lib/constant/common";
+import { getSitePublicUrl } from "@/lib/constant/common";
 import { buildFaviconUrl } from "@/lib/imageUtils";
+import { isGatedPage } from "@/lib/pageAccess";
 
 interface SeoProps {
   page: {
@@ -22,6 +23,9 @@ interface SeoProps {
       structuredData?: Record<string, unknown>;
     };
     title: LocalizedString;
+    /** Garde d'accès de la page — rend la page noindex d'office (cf. isGatedPage). */
+    auth?: { required?: boolean; roles?: string[] };
+    middleware?: string[];
   }; // <-- Page issue de config
 }
 
@@ -76,13 +80,20 @@ export function Seo({ page }: SeoProps) {
    *  (les crawlers OG ignorent les URLs relatives). */
   const ogImageRaw = seo.ogImage ?? meta.ogImage;
   const ogImage = ogImageRaw?.startsWith("/")
-    ? getServerUrl().replace(/\/$/, "") + ogImageRaw
+    ? getSitePublicUrl().replace(/\/$/, "") + ogImageRaw
     : ogImageRaw;
   const twitterCard = seo.twitterCard ?? (ogImage ? "summary_large_image" : undefined);
 
-  /** 3. Robots : on combine si besoin */
+  /** 3. Robots : on combine si besoin.
+   *  Une page GARDÉE est noindex d'office, sans avoir à le redire en config : son accès est
+   *  conditionné, elle n'a pas à être indexée. Le sitemap applique la même règle
+   *  (server/lib/sitemap.js) — sans quoi on émettait des signaux contradictoires : page listée
+   *  au sitemap, servie en 200 avec tout son contenu, et sans balise robots. */
+  const gated = isGatedPage(page as Parameters<typeof isGatedPage>[0]);
   let robots: string | undefined;
-  if (seo.noIndex || seo.noFollow) {
+  if (gated) {
+    robots = seo.noFollow ? "noindex,nofollow" : "noindex,follow";
+  } else if (seo.noIndex || seo.noFollow) {
     robots = [
       seo.noIndex  ? "noindex" : "index",
       seo.noFollow ? "nofollow" : "follow",

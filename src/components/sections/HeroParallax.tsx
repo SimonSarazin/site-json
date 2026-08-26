@@ -5,6 +5,7 @@ import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { HeroBackgroundImage } from "./HeroBackgroundImage";
+import { ActionButtonGroup } from "@/modules/profil/components/ActionButtonGroup";
 
 /**
  * Icône de badge : SVG inline OU nom d'icône lucide.
@@ -34,7 +35,7 @@ interface HeroParallaxProps {
     props: SchemaHeroParallaxProps;
 }
 
-export function HeroParallax({ props }: HeroParallaxProps) {
+export function HeroParallax({ id, props }: HeroParallaxProps) {
     const { t } = useLocalization();
     const [scrollY, setScrollY] = useState(0);
     const variant = props.variant || "primary";
@@ -92,7 +93,7 @@ export function HeroParallax({ props }: HeroParallaxProps) {
     };
 
     return (
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
+        <section id={id} className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
             {props.backgroundImage && (
                 <div
                     className="absolute inset-0 z-0"
@@ -165,9 +166,10 @@ export function HeroParallax({ props }: HeroParallaxProps) {
                         </div>
                     )}
 
-                    {props.ctaButtons && props.ctaButtons.length > 0 && (
+                    {((props.ctaButtons && props.ctaButtons.length > 0) ||
+                      (props.buttons && props.buttons.length > 0)) && (
                         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
-                            {props.ctaButtons.map((btn, idx) => {
+                            {props.ctaButtons?.map((btn, idx) => {
                                 const { variant, className } = getButtonProps(btn.variant);
                                 return (
                                     <Button key={idx} asChild variant={variant} className={className}>
@@ -175,15 +177,36 @@ export function HeroParallax({ props }: HeroParallaxProps) {
                                     </Button>
                                 );
                             })}
+                            {/* Boutons d'ACTION (modale d'ajout) — même composant que
+                                `searchHeader` (SearchHeaderSection.tsx:373), donc même
+                                garde d'authentification : un visiteur non connecté voit
+                                l'invite `chrome.authPrompt` du formulaire au lieu d'une
+                                impasse. Séparé de `ctaButtons`, qui ne sait que naviguer.
+
+                                `className="contents"` : sans ça le composant apporte son
+                                propre conteneur (`mt-8 flex …`), qui décalait le bouton de
+                                32px sous les `ctaButtons` et le sortait de leur rangée.
+                                `display: contents` efface le conteneur de la mise en page,
+                                les boutons deviennent enfants directs du flex du héro.
+                                Et `HERO_CTA_SIZE` leur donne la taille des `ctaButtons` —
+                                les défauts d'`ActionButtonGroup` sont calibrés pour
+                                `searchHeader` (40px de haut contre 72 ici). */}
+                            {props.buttons && props.buttons.length > 0 && (
+                                <ActionButtonGroup
+                                    buttons={props.buttons}
+                                    className="contents"
+                                    buttonClassName={HERO_CTA_SIZE}
+                                />
+                            )}
                         </div>
                     )}
                 </div>
             </div>
 
             {props.showScrollIndicator && (
-                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 animate-bounce">
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 animate-bounce pointer-events-none">
                     <div className="w-6 h-10 border-2 border-primary/50 rounded-full flex items-start justify-center p-2">
-                        <div className="w-1 h-3 bg-primary rounded-full animate-pulse"></div>
+                        <div className="w-1 h-3 bg-primary rounded-full motion-safe:animate-pulse"></div>
                     </div>
                 </div>
             )}

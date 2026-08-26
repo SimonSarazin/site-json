@@ -447,43 +447,40 @@ describe("mapEntityToTiersLieuxValues", () => {
   });
 });
 
-describe("adresse SIG complète (level1..4/codeInsee)", () => {
+describe("adresse SIG complète (level1..5/codeInsee)", () => {
   // Régression : tiersLieuxSchema ne déclarait que 5 champs d'adresse → le zodResolver STRIPAIT
-  // level1..4/codeInsee posés par EditLocationTab → perte SIG au save. Fix : 14 champs + tl:addressRead.
+  // les niveaux posés par EditLocationTab → perte SIG au save. Fix : 16 champs + tl:addressRead.
+  // Valeurs OPAQUES (test de mapping) mais sémantique RÉELLE des niveaux : level3=région,
+  // level4=département, level5=EPCI ; level2 = niveau d'autres pays (Wallonie/BE, provinces/MG) —
+  // tous présents ici pour prouver le round-trip COMPLET (contrat SDK ≥ 1.0.173).
   const fullAddress = {
     addressCountry: "FR", addressLocality: "Saint-Pierre", localityId: "loc_974",
     postalCode: "97410", streetAddress: "12 Allée des Aubépines",
     codeInsee: "97416",
-    level1: "REU", level1Name: "La Réunion",
-    level2: "974", level2Name: "La Réunion",
-    level3: "9742", level3Name: "Arrondissement",
-    level4: "97416", level4Name: "Saint-Pierre",
+    level1: "REU", level1Name: "France",
+    level2: "z2", level2Name: "Niveau intermédiaire",
+    level3: "9740", level3Name: "La Réunion",
+    level4: "974", level4Name: "LA REUNION",
+    level5: "epci_civis", level5Name: "CA Civis",
   };
 
-  it("READ : seed les 14 champs depuis serverData.address (plus de strip)", () => {
+  it("READ : seed les 16 champs depuis serverData.address (level2/level5 INCLUS)", () => {
     const result = mapEntityToTiersLieuxValues({ serverData: { address: fullAddress } });
     expect(result.codeInsee).toBe("97416");
     expect(result.level1).toBe("REU");
-    expect(result.level1Name).toBe("La Réunion");
-    expect(result.level2).toBe("974");
-    expect(result.level3Name).toBe("Arrondissement");
-    expect(result.level4).toBe("97416");
+    expect(result.level2).toBe("z2");
+    expect(result.level2Name).toBe("Niveau intermédiaire");
+    expect(result.level3Name).toBe("La Réunion");
+    expect(result.level4).toBe("974");
+    expect(result.level5Name).toBe("CA Civis");
   });
 
   it("round-trip : entity → form → payload reconstruit l'address SIG COMPLÈTE", () => {
     const form = mapEntityToTiersLieuxValues({ serverData: { address: fullAddress } });
     const payload = buildTiersLieuxPayload(form) as { address: Record<string, unknown> };
-    // toEqual STRICT (address SIG COMPLÈTE figée) : les 15 clés exactes du builder partagé, level2Name/level3Name inclus.
-    expect(payload.address).toEqual({
-      "@type": "PostalAddress",
-      addressCountry: "FR", addressLocality: "Saint-Pierre", localityId: "loc_974",
-      postalCode: "97410", streetAddress: "12 Allée des Aubépines",
-      codeInsee: "97416",
-      level1: "REU", level1Name: "La Réunion",
-      level2: "974", level2Name: "La Réunion",
-      level3: "9742", level3Name: "Arrondissement",
-      level4: "97416", level4Name: "Saint-Pierre",
-    });
+    // toEqual STRICT (address SIG figée) : les 17 clés exactes du builder partagé, level2/level5
+    // INCLUS (contrat SDK ≥ 1.0.173, parité legacy Element::updateField — plus AUCUNE clé perdue).
+    expect(payload.address).toEqual({ "@type": "PostalAddress", ...fullAddress });
   });
 });
 

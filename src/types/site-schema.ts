@@ -6,7 +6,7 @@
 // Validation : Zod 4.x – le schéma sert à la fois de typings, de runtime‑guard,
 //               et d'autocomplétion dans VS Code.
 // ------------------------------------------------------------
-import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema, FiltersSectionSchema, SearchVariantSchema, SearchBaseParamsSchema, FilterGroupsSchema, FiltersByAnswersSchema, SearchHeaderSectionSchema, MarkerConfSchema } from "@/modules/search/schema";
+import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema, FiltersSectionSchema, SearchVariantSchema, SearchBaseParamsSchema, FilterGroupsSchema, FiltersByAnswersSchema, SearchHeaderSectionSchema, MarkerConfSchema, FeaturedCarouselSectionSchema } from "@/modules/search/schema";
 import { DataObservatorySectionSchema } from "@/modules/observatoire/schema";
 import { NewsSectionSchema } from "@/modules/news/schema";
 import { NotificationsSectionSchema } from "@/modules/notification/schema";
@@ -15,7 +15,7 @@ import { ActionButtonSchema } from "./action-button-schema";
 import { z } from "zod";
 import { LocalizedString, LOCALES } from "./locale-schema";
 import { AgendaSectionSchema } from "@/modules/agenda/schema";
-import { ArticleFeedSectionSchema, ArticleReaderSectionSchema } from "@/modules/blog/schema";
+import { ArticleFeedSectionSchema, ArticleReaderSectionSchema, ArticleTeaserSectionSchema } from "@/modules/blog/schema";
 export { LocalizedString, LOCALES };
 import { ProfilesConfigSchema, MemberSectionSchema } from "../modules/profil/schema";
 import { AdminConfigSchema } from "../modules/admin/schema";
@@ -183,8 +183,12 @@ export const HeroSearchSchema = z.object({
           label: LocalizedString,
           variant: z.enum(["default", "secondary", "accent", "primary", "outline"]).optional(),
           // Filtres posés par ce bouton (multi-params, multi-valeurs).
-          // NB : les valeurs ne doivent pas contenir de virgule (format URL
-          // partagé avec /lieux — `split(",")`).
+          // Les valeurs peuvent contenir une virgule : l'écriture les ENCODE avant de joindre
+          // (`computeUrlFromFilters.encodeValues`) et la lecture décode chaque fragment
+          // (`computeFiltersFromUrl`). ⚠️ Vaut pour les params écrits par la section `filters` ;
+          // `HeroSearch` compare encore les siens SANS décoder (HeroSearch.tsx:64-72) — tant
+          // qu'aucune page ne porte à la fois un `hero-search` et une section `filters`, les deux
+          // espaces de noms ne se croisent pas.
           filters: z
             .array(
               z.object({
@@ -245,6 +249,19 @@ export const HeroParallaxSchema = z.object({
         })
       )
       .optional(),
+    /**
+     * Boutons d'ACTION — ouvrent une modale d'ajout (`modal`/`action`) au lieu
+     * de naviguer. Rendus par `<ActionButtonGroup>`, le même composant que
+     * `searchHeader` (SearchHeaderSection.tsx:373), donc même comportement :
+     * un visiteur non connecté obtient l'invite `chrome.authPrompt` du
+     * formulaire, et le formulaire la remplace dès la connexion.
+     *
+     * `ctaButtons` reste la voie des LIENS (`path`). Les deux cohabitent :
+     * `ActionButtonSchema` se dit d'ailleurs prévu pour « header de recherche,
+     * hero… » (action-button-schema.ts:6) — il n'était simplement branché que
+     * sur le premier.
+     */
+    buttons: z.array(ActionButtonSchema).optional(),
     showScrollIndicator: z.boolean().optional(),
     // Tonalité des décorations : token qui les teinte (primary par défaut).
     variant: z.enum(["primary", "accent"]).optional(),
@@ -330,14 +347,9 @@ export const HeroTintedOverlaySchema = z.object({
         })
       )
       .optional(),
-    badges: z
-      .array(
-        z.object({
-          label: LocalizedString,
-          icon: z.string().optional(),
-        })
-      )
-      .optional(),
+    // `badges` (pluriel) a été RETIRÉ le 2026-07-29 : déclaré ici mais jamais lu par
+    // HeroTintedOverlay, et zéro usage dans le parc. Le composant rend `badge`
+    // (singulier), juste au-dessus. Ne pas le réintroduire sans l'implémenter.
     showScrollIndicator: z.boolean().optional(),
   })
 });
@@ -346,6 +358,60 @@ export type HeroTintedOverlay = z.infer<typeof HeroTintedOverlaySchema>;
 
 export type HeroTintedOverlayProps = z.infer<typeof HeroTintedOverlaySchema>["props"];
 
+//──────────────── Hero à diapositives
+/**
+ * Une diapositive = un mini-héro. `backgroundImage` reste SCALAIRE ici, comme
+ * dans les 7 autres héros (`z.string().optional()`) : c'est la forme que
+ * `extractCriticalResources.ts:129` sait lire (`typeof bg === "string"`).
+ * Un `backgroundImage: z.array(...)` sur un héro existant aurait cassé cet
+ * invariant de famille ET fait échouer le garde du preload EN SILENCE.
+ *
+ * Pas de `backgroundImageMobile` par diapositive en v1, malgré le précédent de
+ * `hero-quick-access` : `generatePreloadTags.ts:24` appelle `buildResponsiveSrcSet`
+ * SANS largeurs et code `imagesizes="100vw"` en dur, et `CriticalImage` n'a aucun
+ * champ pour transporter des largeurs alternatives. L'art-direction mobile
+ * rouvrirait donc le double téléchargement que la chaîne de preload évite — trou
+ * PRÉEXISTANT (hero-quick-access l'a déjà), à traiter séparément.
+ */
+const HeroCarouselSlideSchema = z.object({
+  headline: LocalizedString,
+  subhead: LocalizedString.optional(),
+  backgroundImage: z.string().optional(),
+  backgroundImageAlt: LocalizedString.optional(),
+  /** Lien de la diapositive (rendu comme un CTA sous le sous-titre). */
+  ctaLabel: LocalizedString.optional(),
+  ctaPath: z.string().optional(),
+});
+
+const HeroCarouselSectionSchema = z.object({
+  type: z.literal("hero-carousel"),
+  id: z.string().optional(),
+  props: z.object({
+    slides: z.array(HeroCarouselSlideSchema),
+
+    // ── Chrome de SECTION, pas de diapositive ──
+    // Aucune des instances réelles de `hero-tinted-overlay` du parc ne porte de
+    // badge ni de CTA PAR écran : les mettre par diapositive fabriquerait du
+    // schéma mort. Ne PAS introduire `badges` au pluriel (cf. l'interdit écrit
+    // sur `hero-tinted-overlay` plus haut).
+    badge: LocalizedString.optional(),
+    showScrollIndicator: z.boolean().optional(),
+
+    // ── Spécifiques carrousel ──
+    // ⚠ La config n'est JAMAIS parsée par Zod à l'exécution : `.default()` ne
+    // tournerait pas. Les valeurs de repli vivent dans HeroCarousel.tsx
+    // (autoplay false, intervalle 6000 ms).
+    autoplay: z.boolean().optional(),
+    autoplayIntervalMs: z.number().optional(),
+    /** Nom accessible de la région — indispensable si deux carrousels coexistent. */
+    ariaLabel: LocalizedString.optional(),
+  }),
+});
+
+export type HeroCarouselSlide = z.infer<typeof HeroCarouselSlideSchema>;
+
+export type HeroCarouselProps = z.infer<typeof HeroCarouselSectionSchema>["props"];
+
 //──────────────── Commune Transparente Hero
 export const HeroEntityBannerSchema = z.object({
   type: z.literal("hero-entity-banner"),
@@ -353,7 +419,9 @@ export const HeroEntityBannerSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
-    logoIcon: LucideIconOrSvg.optional(),
+    // `logoIcon` a été RETIRÉ le 2026-07-29 : déclaré ici mais jamais lu par
+    // HeroEntityBanner (qui source son logo depuis l'entité Cocolight, via
+    // `bannerLogoUrl`), et zéro usage dans le parc.
     logoImage: z.string().optional(),
     backgroundImage: z.string().optional(),
     backgroundImageAlt: LocalizedString.optional(),
@@ -779,10 +847,25 @@ const ContactFormSectionSchema = z.object({
       placeholder: LocalizedString.optional(),
       options: z.array(LocalizedString).optional(),
       validation: z.string().optional(), // regex ou mot‑clé (email, tel…)
+      /**
+       * Rôle du champ dans le message envoyé (cf. `lib/contactPayload.ts`). Facultatif : à défaut,
+       * le rôle est déduit du `name` par convention (`name`/`email`/`phone`/`subject`/`message`).
+       * Un champ sans rôle est un consentement d'interface (rgpd, newsletter) : validé localement,
+       * jamais envoyé.
+       */
+      role: z.enum(["senderName", "senderEmail", "phone", "subject", "message", "extra"]).optional(),
     })),
     submitLabel: LocalizedString,
-    action: z.string(),
-    method: z.enum(["GET", "POST"]).default("POST"),
+    /**
+     * @deprecated IGNORÉ. Le message part par la lib (`CONTACT_SEND` →
+     * `/co2/mailmanagement/createandsend`), qui résout le destinataire côté serveur depuis
+     * `costum.contactMail` — `costum.admin.email` n'est qu'un REPLI. Conservé optionnel pour ne pas
+     * invalider une config existante ;
+     * `tests/preflight/contact-form.test.ts` refuse qu'on en déclare une nouvelle.
+     */
+    action: z.string().optional(),
+    /** @deprecated IGNORÉ — cf. `action`. */
+    method: z.enum(["GET", "POST"]).optional(),
     successMessage: LocalizedString.optional(),
     errorMessage: LocalizedString.optional(),
   }),
@@ -1217,6 +1300,43 @@ export type MapSection = z.infer<typeof MapSectionSchema>;
 
 export type MapSectionProps = z.infer<typeof MapSectionSchema>["props"];
 
+//──────────────── Carte à bulles (illustration + marqueurs-bulles cliquables positionnés en %)
+export const MapBubblesSchema = z.object({
+  type: z.literal("map-bubbles"),
+  id: z.string().optional(),
+  props: z.object({
+    // Rendu à la fois comme le <h2> sémantique et le badge-pastille incliné — pas de titre séparé.
+    headline: LocalizedString,
+    subhead: LocalizedString.optional(),
+    backgroundImage: z.string().optional(),
+    backgroundImageAlt: LocalizedString.optional(),
+    bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
+    // Dégradé décoratif optionnel derrière l'illustration. Couleurs CSS arbitraires
+    // (typiquement des var() de thème du site) : le composant ne code aucune couleur en dur.
+    backgroundOverlay: z
+      .object({
+        from: z.string(),
+        to: z.string(),
+        angle: z.number().optional(), // degrés, défaut 90 (gauche → droite)
+      })
+      .optional(),
+    items: z.array(
+      z.object({
+        label: LocalizedString,
+        href: z.string(),
+        image: z.string(),
+        size: z.number().min(0).max(100), // % de la largeur du conteneur
+        x: z.number().min(0).max(100),
+        y: z.number().min(0).max(100),
+      })
+    ),
+  }),
+});
+
+export type MapBubbles = z.infer<typeof MapBubblesSchema>;
+
+export type MapBubblesProps = z.infer<typeof MapBubblesSchema>["props"];
+
 //──────────────── Alert / Banner
 const BannerSectionSchema = z.object({
   type: z.literal("banner"),
@@ -1353,6 +1473,7 @@ import {
   CagnotteLayoutSectionSchema,
 } from "@/modules/cagnotte/schema";
 import { CoFormSectionSchema } from "@/modules/coform/schema";
+import { ToolsCatalogSectionSchema } from "@/modules/toolsCatalog/schema";
 import {
   LoginFormSectionSchema,
   RegisterFormSectionSchema,
@@ -1407,6 +1528,7 @@ export const Section = z.discriminatedUnion("type", [
   HeroParallaxSchema,
   HeroQuickAccessSchema,
   HeroTintedOverlaySchema,
+  HeroCarouselSectionSchema,
   HeroEntityBannerSchema,
   FeaturesGlassSchema,
   ActionTilesSchema,
@@ -1427,6 +1549,7 @@ export const Section = z.discriminatedUnion("type", [
   ChartSectionSchema,
   TimelineSectionSchema,
   MapSectionSchema,
+  MapBubblesSchema,
   BannerSectionSchema,
   NewsletterSectionSchema,
   LoginFormSectionSchema,
@@ -1457,6 +1580,7 @@ export const Section = z.discriminatedUnion("type", [
   MeeteemSectionSchema,
   CardCountCTSectionSchema,
   ThematicsSectionSchema,
+  FeaturedCarouselSectionSchema,
   GridLayoutSectionSchema,
   NewsSectionSchema,
   NotificationsSectionSchema,
@@ -1467,10 +1591,12 @@ export const Section = z.discriminatedUnion("type", [
   FinanceSummarySectionSchema,
   CagnotteLayoutSectionSchema,
   CoFormSectionSchema,
+  ToolsCatalogSectionSchema,
   DataObservatorySectionSchema,
   AgendaSectionSchema,
   ArticleFeedSectionSchema,
   ArticleReaderSectionSchema,
+  ArticleTeaserSectionSchema,
 ]);
 export type Section = z.infer<typeof Section>;
 
@@ -1501,8 +1627,41 @@ export const Page = z.object({
   title: LocalizedString,
   seo: PageMeta.optional(),
   layout: z.enum(["default", "fullwidth", "sidebar-left", "sidebar-right", "landing"]).default("default"),
-  auth: z.object({ required: z.boolean().default(false), roles: z.array(z.string()).optional() }).optional(),
-  middleware: z.array(z.string()).optional(), // Custom middleware functions
+  auth: z
+    .object({
+      required: z.boolean().default(false),
+      /**
+       * Niveau d'ADMINISTRATION requis, même vocabulaire que `admin.access.min`
+       * (`AdminAccessLevelSchema`) : `siteAdmin` = admin du costum porteur, `superAdmin` = admin
+       * plateforme. Résolu par les vraies méthodes du SDK (`isSuperAdmin`/`isAdminPlatform`/
+       * `entity.isAdmin`) — c'est la forme à utiliser.
+       */
+      access: z.enum(["siteAdmin", "superAdmin"]).optional(),
+      /**
+       * ⚠️ DÉPRÉCIÉ — préférer `access`. Teste des clés BRUTES de `me.serverData.roles`, dont le
+       * SDK ne connaît que `superAdmin` et `adminPlatform` : tout autre nom (ex. `"admin"`) ferme
+       * la page à TOUT LE MONDE, superAdmin compris, sans le moindre signal. Une garde préflight
+       * (tests/preflight/page-guards.test.ts) refuse désormais les noms hors de ce jeu.
+       */
+      roles: z.array(z.string()).optional(),
+      /**
+       * Ce qui se passe quand l'accès est refusé. Défaut (codé en dur côté moteur, cf.
+       * `src/lib/pageAccess.ts` — la config n'est pas parsée par Zod au runtime) : `prompt`.
+       *  - `prompt`   : on reste sur la page, la modale de connexion s'ouvre par-dessus ;
+       *  - `redirect` : navigation vers `/login`, destination mémorisée ;
+       *  - `hide`     : rien n'est rendu, un refus est affiché.
+       * Dans les TROIS cas les sections ne sont jamais sérialisées au SSR.
+       */
+      mode: z.enum(["prompt", "redirect", "hide"]).optional(),
+    })
+    .optional(),
+  /**
+   * ⚠️ DÉPRÉCIÉ — préférer `auth`. Noms résolus contre le registre d'`usePageGuards` :
+   * `auth-required` (doublon exact d'`auth.required`), `admin-only`, `redirect-if-authenticated`.
+   * Un nom hors registre est un NO-OP SILENCIEUX (`registry[mw]?.()`) : la page se croit gardée et
+   * ne l'est pas. Une garde préflight refuse les noms inconnus, et le moteur avertit en dev.
+   */
+  middleware: z.array(z.string()).optional(),
   sections: z.array(Section),
   hideHeader: z.boolean().optional(),
   hideFooter: z.boolean().optional(),
@@ -1572,11 +1731,25 @@ export const Header = z.object({
   // Variante de DESIGN (jamais un nom de site) — résolue par `SiteHeader`.
   // standard = horizontal sticky · mega-menu = méga-menu hover · transparent-scroll =
   // fixed transparent→opaque · minimal = compact · underline-nav = nav soulignée ·
-  // transparent-dark = transparent sombre.
-  type: z.enum(["standard", "mega-menu", "transparent-scroll", "minimal", "underline-nav", "transparent-dark", "default"]).default("default"),
+  // transparent-dark = transparent sombre · stacked = 2 lignes (logo+titre/sous-titre
+  // puis nav) sur fond image, qui collapse en barre compacte au scroll.
+  type: z.enum(["standard", "mega-menu", "transparent-scroll", "minimal", "underline-nav", "transparent-dark", "stacked", "default"]).default("default"),
   logo: z.string().optional(),
+  // Image de fond plein-cadre du header `type: "stacked"` (les deux sections
+  // reposent dessus). Ignorée par les autres variantes.
+  backgroundImage: z.string().optional(),
+  // Couleur (hex) du wordmark (fixe, 2 segments, quel que soit le mode) ET du
+  // sous-titre/nav en mode CLAIR uniquement, du header `type: "stacked"` — repli
+  // noir. En mode sombre, sous-titre/nav sont blancs (fixe, non piloté par ce
+  // champ). Ignorée par les autres variantes de header.
+  textColor: z.string().optional(),
   logoAlt: LocalizedString.optional(),
   logoTitle: LocalizedString.optional(),
+  // Segment optionnel accolé à la suite de `logoTitle`, dans un ton distinct
+  // (ex. "parent" en fond plein contour clair + "62" en ton plein uni) —
+  // wordmark bicolore en 2 segments. Ignoré si absent : `logoTitle` seul
+  // garde son rendu habituel.
+  logoTitleAccent: LocalizedString.optional(),
   // Sous-titre optionnel affiché sous le titre du logo (plus petit, muted).
   // Permet un logo "marque sur 2 lignes" (titre + localité/baseline).
   logoSubtitle: LocalizedString.optional(),
@@ -1588,6 +1761,8 @@ export const Header = z.object({
   //   (état non opaque) — typiquement une version claire/monochrome.
   logoDark: z.string().optional(),
   logoOverlay: z.string().optional(),
+  // Classes de l'IMAGE de logo — surcharge la classe par défaut du header (ex. "h-8 w-8 ...").
+  logoClass: z.string().optional(),
   // Ton du `logoIcon` (SVG/Lucide rendu en `currentColor`). Défaut côté header
   // (ex. transparent-scroll = "primary"). "foreground" suit l'ink du thème →
   // marine en clair, clair en sombre, idéal pour une marque monochrome.
@@ -1716,6 +1891,10 @@ export const Footer = z.object({
   logoTitle: LocalizedString.optional(),
   logoAlt: LocalizedString.optional(),
   description: LocalizedString.optional(),
+  // Image de fond plein-cadre (ex. `minimal-centered`). Optionnel, tous types de footer.
+  // Purement décorative (CSS background) : pas d'alternative textuelle — un
+  // `aria-label` sur le <footer> renommerait le landmark contentinfo.
+  backgroundImage: z.string().optional(),
   legalLinks: z.array(z.object({
     href: z.string(),
     label: LocalizedString,

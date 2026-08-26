@@ -9,7 +9,7 @@ import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
 import { CookieConsentSectionProps } from '@/types/site-schema';
 
-export function CookieConsentSection({ props }: { id?: string; props: CookieConsentSectionProps }) {
+export function CookieConsentSection({ id, props }: { id?: string; props: CookieConsentSectionProps }) {
   const { t } = useLocalization();
   const { 
     message, 
@@ -107,7 +107,7 @@ export function CookieConsentSection({ props }: { id?: string; props: CookieCons
   if (!isVisible) return null;
 
   return (
-    <div className={cn(
+    <div id={id} className={cn(
       "fixed z-50",
       getPositionClasses()
     )}>

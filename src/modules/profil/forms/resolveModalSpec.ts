@@ -15,6 +15,7 @@ import { configToDescriptor, formDescriptorToConfig, type FormDescriptor, type E
 import { buildConfigDefaults, buildPipelineDefaults, buildPipelinePayload } from "./jsonFormSubmit";
 import type { EntityModalConfig } from "./EntityFormModal";
 import type { ByMode, EntityModalCtx, EntityModalSpec } from "./entityModalSpec";
+import { resolveEagerStamps } from "./stamps";
 import type { EntityMutationSpec } from "../hooks/useEntityMutation";
 import {
   getDescriptor, getDescriptorVariantFn, getDefaultsFn, getPayloadFn, getScopeFn, getSlotFn,
@@ -151,6 +152,10 @@ export function specToConfig(spec: EntityModalSpec): EntityModalConfig {
       target: isEdit ? (ctx.entity ?? null) : (ctx.parent ?? null),
       buildPayload,
       costumSlug: isEdit ? undefined : resolveCostumSlug(spec.scope, ctx),
+      // Édition : le costum qui DÉFINIT ce formulaire, épinglé sur l'entité pour ouvrir ses champs
+      // à l'écriture. Pris sur le DESCRIPTEUR (et non sur `spec.scope`, qui décrit la cible de
+      // CRÉATION) : c'est le formulaire rendu qui dit de quels champs costum on parle.
+      schemaCostumSlug: isEdit ? resolveDescriptor(ctx).costumSlug : undefined,
       imageField: spec.image?.field,
       inject: isEdit
         ? undefined
@@ -158,9 +163,17 @@ export function specToConfig(spec: EntityModalSpec): EntityModalConfig {
             role: m.inject?.role,
             dropEmptyEmail: m.inject?.dropEmptyEmail,
             extraFields: resolveExtraFields(m.inject, ctx.scope),
-            parent: m.inject?.parent ? (ctx.parent ?? null) : null,
+            parent: m.inject?.parent
+              ? (ctx.parent ?? null)
+              : m.inject?.parentFromCarrier
+                ? (ctx.carrier ?? null)
+                : null,
             organizerFallback: m.inject?.organizerFallback ? (ctx.parent ?? null) : undefined,
           },
+      // Stamps : champ PROPRE (jamais sous inject, strippé ci-dessus) — actifs add ET edit selon
+      // leur `on`. `$scope`/`$costum` sont résolus ICI (eager — ils n'existent plus à la mutation),
+      // $now/$from le seront à la soumission par runEntityMutation.
+      stamps: resolveEagerStamps(m.stamps, { scope: ctx.scope, costum: ctx.costum }),
       navigateOnSuccess: m.navigateOnSuccess,
       successKey: pickMode(m.successKey, ctx.mode),
       errorKey: pickMode(m.errorKey, ctx.mode),

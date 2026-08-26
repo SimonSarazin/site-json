@@ -82,6 +82,7 @@ export { default as FeatureComparisonSection } from "@/components/sections/Featu
 export { default as FeaturesGlass } from "@/components/sections/FeaturesGlass";
 export { default as GallerySection } from "@/components/sections/GallerySection";
 export { default as HTMLSection } from "@/components/sections/HTMLSection";
+export { default as HeroCarousel } from "@/components/sections/HeroCarousel";
 export { default as HeroEntityBanner } from "@/components/sections/HeroEntityBanner";
 export { default as HeroParallax } from "@/components/sections/HeroParallax";
 export { default as HeroQuickAccess } from "@/components/sections/HeroQuickAccess";
@@ -114,8 +115,8 @@ export { ArticleCardPoster } from "@/modules/blog/components/ArticleCardPoster";
 export { ArticleReader } from "@/modules/blog/components/ArticleReader";
 export { ArticleReaderPoster } from "@/modules/blog/components/ArticleReaderPoster";
 export { CagnotteAmountPicker } from "@/modules/cagnotte/components/parts/CagnotteAmountPicker";
-export { CagnotteMilestoneList } from "@/modules/cagnotte/components/parts/CagnotteMilestoneList";
-export { CagnotteProjectProgressCard } from "@/modules/cagnotte/components/parts/CagnotteProjectProgressCard";
+export { CagnotteItemList } from "@/modules/cagnotte/components/parts/CagnotteItemList";
+export { CagnotteResourceProgressCard } from "@/modules/cagnotte/components/parts/CagnotteResourceProgressCard";
 export { CagnotteSuccessScreen } from "@/modules/cagnotte/components/parts/CagnotteSuccessScreen";
 export { CommentInput } from "@/modules/news/components/comment/CommentInput";
 export { CountBadge } from "@/modules/profil/components/shared/CountBadge";
@@ -159,6 +160,7 @@ export { default as HeaderTransparentScroll } from "@/components/layout/header/H
 export { default as HeaderMinimal } from "@/components/layout/header/HeaderMinimal";
 export { default as HeaderUnderlineNav } from "@/components/layout/header/HeaderUnderlineNav";
 export { default as HeaderTransparentDark } from "@/components/layout/header/HeaderTransparentDark";
+export { default as HeaderStacked } from "@/components/layout/header/HeaderStacked";
 export { default as FooterRich } from "@/components/layout/footer/FooterRich";
 export { default as FooterMinimalCentered } from "@/components/layout/footer/FooterMinimalCentered";
 export { default as FooterSidebarColumns } from "@/components/layout/footer/FooterSidebarColumns";

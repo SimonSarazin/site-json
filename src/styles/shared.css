@@ -10,8 +10,16 @@
    les thèmes (souvent partiellement → sections/headers silencieusement sans
    styles sur les sites qui avaient raté la copie).
 
-   Seule vraie classe custom : `scrollbar-hide` (aucun équivalent Tailwind).
+   Seules vraies classes custom : `scrollbar-hide` et `scrollbar-thin` (aucun
+   équivalent Tailwind).
    ──────────────────────────────────────────────────────────────────────────── */
+
+/* Typographie de contenu long (`prose`). Chargé ici plutôt que dans les 14
+   `index-*.css` : tous importent ce fichier, un seul point d'entrée suffit.
+   Sans ce plugin, `prose`/`prose-invert` ne génèrent RIEN — `MarkdownSection`
+   les portait déjà sans effet, son texte sortait sans hiérarchie typographique
+   (h1 rendu en 16px/400). */
+@plugin "@tailwindcss/typography";
 
 @theme {
   /* Échelon de largeur manquant. `max-w-8xl` était employé par
@@ -68,14 +76,74 @@
      thème pose `--header-bar` ; repli : primary. Génère `bg-header-bar`. */
   --color-header-bar: var(--header-bar, var(--primary));
   /* Voile teinté posé sur un hero plein écran (`hero-tinted-overlay`,
-     `hero-entity-banner`) — repli transparent. Génère `bg-hero-tint`. */
-  --color-hero-tint: var(--hero-tint, transparent);
+     `hero-entity-banner`) — chaque thème pose `--hero-tint`. Génère `bg-hero-tint`.
+
+     Repli : un NOIR à 45 % (et NON `transparent`, comme jusqu'au
+     2026-07-29). Ces deux heros écrivent en blanc par-dessus la photo : sans voile,
+     le texte reposait nu sur l'image, illisible sur un cliché clair — défaut
+     silencieux, qu'aucun test ne voit. Même logique de repli que `--color-header-bar`
+     juste au-dessus. Sans effet sur les 3 configs qui consomment ces sections
+     aujourd'hui (nos-commune, commune-transparente, rezoSanteReunion) : toutes
+     définissent déjà `--hero-tint` et l'emportent donc sur ce repli.
+
+     ⚠ Noir INVARIANT, surtout pas `var(--foreground)` : ce token bascule avec le
+     thème, si bien qu'en mode sombre le voile serait devenu un aplat quasi BLANC —
+     sous un titre que `HeroTintedOverlay` force à `text-white` dès qu'il y a une
+     image. Le repli aurait alors été PIRE que `transparent`, et précisément dans
+     le cas qu'il existe pour couvrir. */
+  --color-hero-tint: var(--hero-tint, color-mix(in oklch, oklch(0 0 0) 45%, transparent));
 }
 
 :root {
   /* Fond de bande décoré (`cta-newsletter`, `searchHeader`) — ex-
      `bg-ocean-gradient`. Consommé via `bg-[image:var(--gradient-section)]`. */
   --gradient-section: linear-gradient(135deg, var(--primary), var(--accent));
+}
+
+/* ── Plancher des cartes d'accès rapide (`HeroQuickAccess`) ──────────────────
+   `HeroQuickAccess.tsx:154` émet `access-card access-card-{public|pro}`. C'est
+   un composant de section GÉNÉRIQUE, mais la classe n'était définie que dans
+   DEUX thèmes (`index-parent62`, `index-sport-sante-bien-etre`). Les deux
+   autres sites qui emploient `hero-quick-access` — equipementsSportifs974 et
+   saintpaulSport1, tous deux sur `index-equipements-sportifs` — rendaient donc
+   des cartes SANS bordure, fond, rayon ni ombre : il ne restait que les
+   utilitaires `backdrop-blur-sm p-5` du composant. Panne silencieuse, exactement
+   celle que l'en-tête de ce fichier dit vouloir supprimer.
+
+   Traitement « verre » sobre et entièrement piloté par les tokens (donc juste
+   dans les deux modes et sur n'importe quelle palette) ; `--card`/`--border`
+   sont injectés au runtime depuis `config.theme.colors`.
+
+   ⚠ CASCADE — la couche est le mécanisme, pas un détail de style. Ce plancher
+   est dans `@layer components` pour se laisser battre par les thèmes qui ont un
+   parti pris :
+     • `index-parent62` définissait `.access-card` HORS couche → aurait gagné
+       de toute façon ; son bloc est retiré, ses déclarations étant devenues
+       identiques à ce plancher (une seule source).
+     • `index-sport-sante-bien-etre` la définit dans `@layer components` mais
+       APRÈS l'import de ce fichier (l. 3 contre l. 233) → même couche, règle
+       plus tardive, il garde ses cartes pleines en dégradé. Ne PAS déplacer ce
+       plancher hors couche : il écraserait ce parti pris.
+   ────────────────────────────────────────────────────────────────────────── */
+@layer components {
+  .access-card {
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) + 0.35rem);
+    background: color-mix(in oklab, var(--card) 82%, transparent);
+    box-shadow: var(--shadow-xs);
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  }
+  .access-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+  }
+  /* Le composant alterne les deux variantes par index (pair → public). */
+  .access-card-public:hover {
+    border-color: color-mix(in oklab, var(--primary) 45%, var(--border));
+  }
+  .access-card-pro:hover {
+    border-color: color-mix(in oklab, var(--accent) 60%, var(--border));
+  }
 }
 
 /* Respect de `prefers-reduced-motion` — plancher d'accessibilité, pour TOUS les
@@ -96,9 +164,19 @@
     scroll-behavior: auto;
   }
 
+  /* `animate-bounce` est une classe NATIVE de Tailwind, pas une classe maison : elle
+     échappait donc à ce plancher. Ses seuls emplois dans src/ sont les indicateurs de
+     défilement des héros — HeroParallax, HeroEntityBanner, HeroSection, plus
+     HeroTintedOverlay depuis le 2026-07-29 — purement décoratifs, rien ne se perd à
+     les figer.
+     ⚠ On ne fait PAS de même pour `animate-pulse` : 27 emplois, en majorité des
+     squelettes de chargement, où l'animation PORTE l'information « ça charge ». Là où
+     ce pulse est décoratif (le point des indicateurs), il est gardé sur place en
+     `motion-safe:`. */
   .animate-float,
   .animate-pulse-glow,
-  .animate-marquee {
+  .animate-marquee,
+  .animate-bounce {
     animation: none;
   }
 
@@ -106,6 +184,51 @@
   .animate-fade-in-up {
     animation-duration: 1ms;
     animation-delay: 0ms;
+  }
+
+  /* Lift au survol des cartes d'accès rapide (cf. le plancher plus haut).
+     Volontairement HORS `@layer components`, contrairement au plancher : une
+     règle sans couche bat toute règle en couche, si bien que cette garde
+     s'applique AUSSI au parti pris de `index-sport-sante-bien-etre`
+     (`translateY(-4px)`, en `@layer components`), qui sinon lui échapperait.
+     C'est le seul endroit du fichier où l'absence de couche est le mécanisme. */
+  .access-card,
+  .access-card:hover {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Scrollbar discrète alignée sur `<ScrollArea>` (thumb `--border` arrondi, piste
+   transparente) — les thèmes posent globalement une barre 8px avec piste `--muted`
+   bien visible, trop lourde dans un popover ou une liste courte. À utiliser quand
+   le conteneur doit rester un scroll natif : `<ScrollArea>` casse le
+   scroll-into-view clavier de cmdk (`CommandList` scrolle son propre conteneur). */
+@utility scrollbar-thin {
+  /* `scrollbar-color` scopé à Firefox : dès qu'il est posé, Chromium ≥ 121 ignore
+     TOUT le bloc ::-webkit-scrollbar ci-dessous (piste, rayon, teinte au survol).
+     Même précaution que les thèmes qui stylent la barre du document,
+     cf. `index-parent62.css`. */
+  @supports not selector(::-webkit-scrollbar) {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border: 1px solid transparent;
+    background-clip: padding-box;
+    border-radius: 9999px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in oklch, var(--border) 70%, var(--muted-foreground));
+    background-clip: padding-box;
   }
 }
 
@@ -116,4 +239,57 @@
   &::-webkit-scrollbar {
     display: none;
   }
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   `prose-theme` — branche la typographie de contenu sur les JETONS du thème.
+
+   Pourquoi ne pas se contenter de `prose-gray dark:prose-invert` : les palettes
+   du plugin sont des gris CODÉS EN DUR dans le CSS, alors que les couleurs des
+   sites sont injectées AU RUNTIME par `SiteTheme` depuis `config.theme` (54
+   variables ; `index-institut-bleu.css` ne porte volontairement aucun jeton).
+   Un texte en gris ardoise sur un site dont l'identité est un bleu de marque,
+   c'est le résultat garanti.
+
+   Les deux jeux (`--tw-prose-*` ET `--tw-prose-invert-*`) pointent sur les
+   MÊMES jetons : le dark est alors géré par les jetons eux-mêmes, qui basculent
+   déjà via `.dark`. `prose-invert` devient ainsi inoffensif au lieu d'écraser
+   le mapping — utile puisque `dark:prose-invert` reste écrit dans le code.
+   ──────────────────────────────────────────────────────────────────────────── */
+@utility prose-theme {
+  --tw-prose-body: var(--foreground);
+  --tw-prose-headings: var(--foreground);
+  --tw-prose-lead: var(--muted-foreground);
+  --tw-prose-links: var(--primary);
+  --tw-prose-bold: var(--foreground);
+  --tw-prose-counters: var(--muted-foreground);
+  --tw-prose-bullets: var(--muted-foreground);
+  --tw-prose-hr: var(--border);
+  --tw-prose-quotes: var(--foreground);
+  --tw-prose-quote-borders: var(--border);
+  --tw-prose-captions: var(--muted-foreground);
+  --tw-prose-kbd: var(--foreground);
+  --tw-prose-code: var(--foreground);
+  --tw-prose-pre-code: var(--muted-foreground);
+  --tw-prose-pre-bg: var(--muted);
+  --tw-prose-th-borders: var(--border);
+  --tw-prose-td-borders: var(--border);
+
+  --tw-prose-invert-body: var(--foreground);
+  --tw-prose-invert-headings: var(--foreground);
+  --tw-prose-invert-lead: var(--muted-foreground);
+  --tw-prose-invert-links: var(--primary);
+  --tw-prose-invert-bold: var(--foreground);
+  --tw-prose-invert-counters: var(--muted-foreground);
+  --tw-prose-invert-bullets: var(--muted-foreground);
+  --tw-prose-invert-hr: var(--border);
+  --tw-prose-invert-quotes: var(--foreground);
+  --tw-prose-invert-quote-borders: var(--border);
+  --tw-prose-invert-captions: var(--muted-foreground);
+  --tw-prose-invert-kbd: var(--foreground);
+  --tw-prose-invert-code: var(--foreground);
+  --tw-prose-invert-pre-code: var(--muted-foreground);
+  --tw-prose-invert-pre-bg: var(--muted);
+  --tw-prose-invert-th-borders: var(--border);
+  --tw-prose-invert-td-borders: var(--border);
 }

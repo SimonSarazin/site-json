@@ -10,6 +10,11 @@ export const BLOG_QUERY_KEYS = {
    * En config (searchKeys d'invalidation), utiliser le littéral équivalent `blog:<costumSlug>`.
    */
   FEED_PREFIX: (costumSlug: string): string => `blog:${costumSlug}`,
+  // NB : la micro-requête ÉPINGLÉE (`featured:"flag"`) porte le MÊME préfixe que le fil —
+  // l'invalidation React Query matche la queryKey PAR ÉLÉMENT (partial matching), pas par
+  // startsWith : un préfixe suffixé (`blog:<slug>:pinned`) serait INATTEIGNABLE par
+  // `invalidate:blog` (review finale 2026-08-21). Pas de collision de cache : la clé complète
+  // diffère par les baseParams (featured:true, indexStepList:1).
   /** Détail d'un article chargé par id (branche `byId` de `useArticle` + `prefetchArticleById`). */
   ARTICLE_BY_ID: (id: string) => ["blog:article:id", id] as const,
   /** Préfixe de TOUTES les queries « article par id » (invalidation large). */

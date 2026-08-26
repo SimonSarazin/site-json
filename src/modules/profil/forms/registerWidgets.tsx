@@ -11,8 +11,10 @@ import { Mail, Phone } from "lucide-react";
 import type { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
 import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import { registerWidget, type WidgetProps } from "@/modules/formEngine";
+import { searchPh } from "@/modules/formEngine/widgets/registry";
 import { IconFormField } from "../components/profile-edit/fields/IconFormField";
-import { FormFieldTags } from "../components/profile-edit/fields/FormFieldTags";
+import { ValueSelectField } from "./fields/ValueSelectField";
+import { TagsWidget } from "./fields/TagsWidget";
 import { FormFieldMarkdown } from "../components/profile-edit/fields/FormFieldMarkdown";
 import { TranslatedFormMessage } from "../components/profile-edit/fields/TranslatedFormMessage";
 import GalleryUploadField, { emptyGalleryValue, type GalleryValue } from "../components/profile-edit/fields/GalleryUploadField";
@@ -26,7 +28,7 @@ const EditEventDatesTab = lazy(() => import("../components/profile-edit/EditEven
 const EditSocialTab = lazy(() => import("../components/profile-edit/EditSocialTab").then((m) => ({ default: m.EditSocialTab })));
 const EditScheduleTab = lazy(() => import("../components/profile-edit/EditScheduleTab").then((m) => ({ default: m.EditScheduleTab })));
 
-const WidgetFallback = () => <div className="h-10 animate-pulse rounded-md bg-muted" />;
+import { WidgetFallback } from "@/modules/formEngine/widgets/WidgetFallback";
 type FinderSearchType = NonNullable<GlobalAutocompleteCostumData["searchType"]>[number];
 type FinderValue = Record<string, { type: string; name?: string }>;
 const control = (form: UseFormReturn<FieldValues>) => form.control as Control<FieldValues>;
@@ -38,10 +40,29 @@ registerWidget("email", (p) => <IconFormField control={control(p.form)} name={fn
   placeholder={p.field.placeholder ? p.t(p.field.placeholder) : undefined} />);
 registerWidget("tel", (p) => <IconFormField control={control(p.form)} name={fname(p.field.name)} icon={Phone} type="tel" label={lbl(p)} />);
 
-// tags : recherche de tags SDK (useSearchTags → useCocolight).
-registerWidget("tags", (p) => <FormFieldTags control={control(p.form)} name={fname(p.field.name)} label={lbl(p)}
-  searchable={(p.field.widgetProps?.searchable as boolean) ?? true}
-  extendedTexts={(p.field.widgetProps?.extendedTexts as boolean) ?? false} />);
+// tags : mots-clés. Recherche de tags SDK (useSearchTags, tout le réseau) — comportement d'origine,
+// INCHANGÉ par défaut. `widgetProps.list` y AJOUTE les valeurs d'une liste déclarée du costum : en
+// statique elles arrivent par `options` (chemin ordinaire du moteur), en dynamique le hook les résout
+// (`{collection,distinct}` = les mots-clés réellement employés). Les deux sources coexistent — la
+// recherche réseau reste disponible sauf `searchable:false`.
+registerWidget("tags", (p) => <TagsWidget p={p} />);
+
+// valueSelect : sélection d'une ou plusieurs VALEURS d'une liste du costum, saisie libre facultative.
+// Sans rapport avec les tags — vise `territoires`, `auteurs`, `legalStatus`… `widgetProps` :
+// `list` (défaut : le nom du champ), `costumSlug`, `multiple` (défaut true), `min`, `max`, `creatable`.
+registerWidget("valueSelect", (p) => <ValueSelectField control={control(p.form)} name={fname(p.field.name)} label={lbl(p)}
+  options={p.options?.map((o) => o.value)}
+  list={p.field.widgetProps?.list as string | undefined}
+  costumSlug={p.field.widgetProps?.costumSlug as string | undefined}
+  multiple={(p.field.widgetProps?.multiple as boolean) ?? true}
+  min={p.field.widgetProps?.min as number | undefined}
+  max={p.field.widgetProps?.max as number | undefined}
+  creatable={(p.field.widgetProps?.creatable as boolean) ?? true}
+  required={p.field.required}
+  placeholder={p.field.placeholder ? p.t(p.field.placeholder) : undefined}
+  placeholderSearch={searchPh(p)}
+  errorTranslate={p.t} />);
+
 
 // markdown : éditeur markdown (coform MarkdownEditor, client-only/SSR-safe). Value = string markdown brut.
 registerWidget("markdown", (p) => <FormFieldMarkdown control={control(p.form)} name={fname(p.field.name)} label={lbl(p)}

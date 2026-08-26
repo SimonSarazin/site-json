@@ -1,5 +1,6 @@
 import { z } from "zod";
-import type { CoFormData, FormFieldMapping, SubFormFields, MultiCheckboxPlusOptionType, EvaluationConfig, FinderConfig, FinderFilter, SimpleTableConfig, SimpleTableColumn, SimpleTableRow, UploaderConfig, ConditionalDisplay, CommonTableConfig, CommonTableValue } from "../types";
+import type { CoFormData, FormFieldMapping, SubFormFields, MultiCheckboxPlusOptionType, EvaluationConfig, FinderConfig, FinderFilter, SimpleTableConfig, SimpleTableColumn, SimpleTableRow, UploaderConfig, ConditionalDisplay, CommonTableConfig, CommonTableValue, CategorizedCheckboxConfig, CategorizedCheckboxSource, TimeSlotsConfig, DynamicFieldsConfig } from "../types";
+import { isSlotComplete, isSlotOrdered } from "./timeSlots";
 
 // ─── Configuration des préfixes de champs ────────────────────────
 // Certains types de champs PHP stockent leurs données avec un préfixe
@@ -167,6 +168,7 @@ export function mapCoFormTypeToComponentType(
     "tpls.forms.cplx.multiRadio": "multiRadio",
     "tpls.forms.cplx.checkboxNew": "checkbox",
     "tpls.forms.cplx.multiCheckboxPlus": "multiCheckboxPlus",
+    "tpls.forms.cplx.categorizedCheckbox": "categorizedCheckbox",
     "tpls.forms.cplx.evaluation": "evaluation",
     "tpls.forms.evaluation.evaluation": "evaluation",
     "tpls.forms.evaluation.commonTableV2": "commonTable",
@@ -179,6 +181,14 @@ export function mapCoFormTypeToComponentType(
     "tpls.forms.emailUser": "text",
     "tpls.forms.cplx.simpleTable": "simpleTable",
     "tpls.forms.uploader": "uploader",
+    "tpls.forms.cplx.timeSlots": "timeSlots",
+    "tpls.forms.cplx.dynamicFields": "dynamicFields",
+    // Types HTML natifs date/heure (formulaires SSBE) : même pipeline que
+    // text/email/… — l'<input> natif porte le picker et la valeur ISO
+    // ("1998-09-18"), format vérifié sur les answers réelles.
+    date: "text",
+    time: "text",
+    "datetime-local": "text",
     sectionTitle: "sectionTitle",
     "tpls.forms.sectionTitle": "sectionTitle",
     "tpls.forms.sectionDescription": "sectionDescription",
@@ -187,10 +197,22 @@ export function mapCoFormTypeToComponentType(
     // `select` (builder dynamicFields), tantôt en chemin de template complet
     // `tpls.forms.select` (legacy `select.php`). Les deux → composant select.
     "tpls.forms.select": "select",
+    // Adresse géolocalisée (parité dynForm `formLocality`) → widget composite `location`
+    // qui capture address + geo + geoPosition + niveaux administratifs. Sans ce mapping,
+    // le champ retombait en `text` → saisie libre et PERTE totale de la donnée géo.
+    formLocality: "location",
+    location: "location",
+    address: "location",
+    "tpls.forms.cplx.addressInDynform": "location",
+    "tpls.forms.cplx.address": "location",
   };
 
   const direct = typeMapping[coFormType];
   if (direct) return direct;
+
+  // Fallback adresse : templates costum d'adresse (`tpls.forms.costum.<slug>.address`,
+  // `...formLocality`, etc.) → tout segment final adresse/localité → composant location.
+  if (/(?:^|\.)(addressindynform|formlocality|address|location)$/i.test(coFormType)) return "location";
 
   // Fallback finder : en legacy, chaque costum a parfois son propre template
   // (`tpls.forms.costum.<slug>.finder`, `tpls.forms.adhesion.adherentFinder`,
@@ -410,6 +432,44 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         commonTableConfig = { showColumns, labels, usages };
       }
 
+      // Config spécifique pour categorizedCheckbox (cases à cocher à deux niveaux).
+      // Bloc unique `params.categorizedCheckbox{fieldKey}` (patron multiCheckboxPlus).
+      let categorizedCheckboxConfig: CategorizedCheckboxConfig | undefined;
+      if (componentType === "categorizedCheckbox") {
+        const paramData = (formData.params?.[`categorizedCheckbox${fieldKey}`] ?? {}) as Record<string, unknown>;
+
+        // `formParamsSource` est la sortie d'un finder legacy : une MAP id → {name, type…}.
+        // Seules les clés (les ids de formulaire) nous servent.
+        const sourceRaw = paramData.formParamsSource;
+        const formParamsSource =
+          sourceRaw && typeof sourceRaw === "object" && !Array.isArray(sourceRaw)
+            ? Object.keys(sourceRaw as Record<string, unknown>)
+            : [];
+
+        // Défaut "both" quand la clé est absente — cf. `categorizedCheckbox.php:17`.
+        const rawMode = paramData.dataSourceToUse;
+        const dataSourceToUse: CategorizedCheckboxSource =
+          rawMode === "manual" || rawMode === "distanceOnly" || rawMode === "both" ? rawMode : "both";
+
+        const rawSublist = paramData.sublist;
+        const sublist: Record<string, string[]> = {};
+        if (rawSublist && typeof rawSublist === "object") {
+          for (const [k, v] of Object.entries(rawSublist as Record<string, unknown>)) {
+            if (Array.isArray(v)) sublist[k] = v.map(String);
+          }
+        }
+
+        categorizedCheckboxConfig = {
+          dataSourceToUse,
+          list: Array.isArray(paramData.list) ? (paramData.list as unknown[]).map(String) : [],
+          sublist,
+          formParamsSource,
+          questionsParamsSource: Array.isArray(paramData.questionsParamsSource)
+            ? (paramData.questionsParamsSource as unknown[]).map(String)
+            : [],
+        };
+      }
+
       // Config spécifique pour evaluation
       if (componentType === "evaluation" && formData.params) {
         // Pattern racine : params["categoriesXXX"], params["criteriasXXX"], etc.
@@ -592,13 +652,75 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         };
       }
 
+      // Config spécifique pour timeSlots — params legacy `timeSlots{fieldKey}`
+      // (valeurs numériques stockées en string par le PHP → coercion ici).
+      let timeSlotsConfig: TimeSlotsConfig | undefined;
+
+      if (componentType === "timeSlots") {
+        const paramData = (formData.params as Record<string, unknown> | undefined)?.[`timeSlots${fieldKey}`] as Record<string, unknown> | undefined ?? {};
+        const step = Number(paramData.minuteStep);
+        timeSlotsConfig = {
+          enableMultipleSlots: paramData.enableMultipleSlots !== false && paramData.enableMultipleSlots !== "false",
+          timeFormat: paramData.timeFormat === "12h" ? "12h" : "24h",
+          minuteStep: Number.isFinite(step) && step > 0 ? step : 15,
+          defaultStartTime: typeof paramData.defaultStartTime === "string" ? paramData.defaultStartTime : undefined,
+          defaultEndTime: typeof paramData.defaultEndTime === "string" ? paramData.defaultEndTime : undefined,
+        };
+      }
+
+      // Config spécifique pour dynamicFields — params legacy `dynamicFields{fieldKey}`.
+      let dynamicFieldsConfig: DynamicFieldsConfig | undefined;
+
+      if (componentType === "dynamicFields") {
+        const paramData = (formData.params as Record<string, unknown> | undefined)?.[`dynamicFields${fieldKey}`] as Record<string, unknown> | undefined;
+        const rawFields = paramData?.fieldsConfig;
+        if (paramData && Array.isArray(rawFields) && rawFields.length > 0) {
+          const toInt = (v: unknown, fallback: number): number => {
+            const n = Number(v);
+            return Number.isFinite(n) && n >= 0 ? Math.floor(n) : fallback;
+          };
+          const layout = paramData.layout as Record<string, unknown> | undefined;
+          const ui = paramData.ui as Record<string, unknown> | undefined;
+          dynamicFieldsConfig = {
+            enableMultipleRows: paramData.enableMultipleRows === true || paramData.enableMultipleRows === "true",
+            minRows: toInt(paramData.minRows, 1),
+            maxRows: Math.max(1, toInt(paramData.maxRows, 10)),
+            fieldsConfig: rawFields.map((f: Record<string, unknown>) => ({
+              key: String(f.key ?? ""),
+              label: String(f.label ?? ""),
+              placeholder: typeof f.placeholder === "string" ? f.placeholder : undefined,
+              type: String(f.type ?? "text"),
+              required: f.required === true || f.required === "true",
+              validation: f.validation && typeof f.validation === "object"
+                ? {
+                    minLength: toInt((f.validation as Record<string, unknown>).minLength, 0) || undefined,
+                    maxLength: toInt((f.validation as Record<string, unknown>).maxLength, 0) || undefined,
+                  }
+                : undefined,
+              options: f.options && typeof f.options === "object" && !Array.isArray(f.options)
+                ? Object.fromEntries(Object.entries(f.options as Record<string, unknown>).map(([k, v]) => [k, String(v)]))
+                : undefined,
+            })).filter((f) => f.key),
+            layout: {
+              fieldsPerRow: Math.min(6, Math.max(1, toInt(layout?.fieldsPerRow, 3))),
+              showLabels: layout?.showLabels !== false && layout?.showLabels !== "false",
+              showPlaceholders: layout?.showPlaceholders !== false && layout?.showPlaceholders !== "false",
+            },
+            ui: {
+              addButtonText: typeof ui?.addButtonText === "string" ? ui.addButtonText : undefined,
+              removeButtonText: typeof ui?.removeButtonText === "string" ? ui.removeButtonText : undefined,
+            },
+          };
+        }
+      }
+
       // Déterminer le type HTML pour les inputs texte. On accepte les
       // types courts (`email`, `url`, `tel`, `number`) ET les templates
       // legacy à input typé (`tpls.forms.emailUser` → `email`).
       const inputType: string | undefined = (() => {
         if (componentType !== "text") return undefined;
         if (fieldData.type === "tpls.forms.emailUser") return "email";
-        if (["url", "email", "tel", "number"].includes(fieldData.type)) return fieldData.type;
+        if (["url", "email", "tel", "number", "date", "time", "datetime-local"].includes(fieldData.type)) return fieldData.type;
         return undefined;
       })();
 
@@ -644,9 +766,12 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         multiRadioConfig,
         evaluationConfig,
         commonTableConfig,
+        categorizedCheckboxConfig,
         finderConfig,
         simpleTableConfig,
         uploaderConfig,
+        timeSlotsConfig,
+        dynamicFieldsConfig,
         sectionTitleConfig,
         conditionalDisplay,
         activeMultieval,
@@ -741,6 +866,24 @@ export function generateZodSchema(
             ? z.array(z.string()).min(1, t("coform.validation.requiredField", `${field.label} est requis`, { label: field.label }))
             : z.array(z.string()).optional();
           break;
+
+        case "location": {
+          // Adresse géolocalisée : objet composite { formLocality: FormLocalityEntry[], address, geo, geoPosition }.
+          // « Requis » = au moins une adresse avec un `localityId` réel (gate backend `addressValid`).
+          const hasLocality = (v: unknown) =>
+            !!v &&
+            typeof v === "object" &&
+            Array.isArray((v as { formLocality?: unknown[] }).formLocality) &&
+            (v as { formLocality: Array<{ address?: { localityId?: string } }> }).formLocality.some(
+              (e) => e?.address?.localityId
+            );
+          schemaShape[field.name] = field.isRequired
+            ? z.any().refine(hasLocality, {
+                message: t("coform.validation.requiredField", `${field.label} est requis`, { label: field.label }),
+              })
+            : z.any().optional();
+          break;
+        }
 
         case "multiRadio": {
           // Structure: { value: string, type?: "simple"|"cplx", textsup?: string }
@@ -882,6 +1025,26 @@ export function generateZodSchema(
           break;
         }
 
+        case "categorizedCheckbox": {
+          // Valeur composite `{ list, sublist }` — les DEUX clés doivent figurer ici : `z.object`
+          // strip tout ce qui n'est pas déclaré, et le formulaire mono-étape soumet la sortie
+          // zod-parsée. Une `sublist` non déclarée serait effacée à la soumission, en silence.
+          const categorizedSchema = z.object({
+            list: z.array(z.string()),
+            sublist: z.record(z.string(), z.array(z.string())),
+          });
+
+          if (field.isRequired) {
+            schemaShape[field.name] = categorizedSchema.refine(
+              (v) => v.list.length > 0,
+              { message: t("coform.validation.requiredField", `${field.label} est requis`, { label: field.label }) }
+            );
+          } else {
+            schemaShape[field.name] = categorizedSchema.optional();
+          }
+          break;
+        }
+
         case "finder": {
           // Structure: { [elementId]: { id, name, type, img?, email?, address? } }
           const finderElementSchema = z.object({
@@ -945,6 +1108,79 @@ export function generateZodSchema(
                 t("coform.validation.requiredField", `${field.label} est requis`, { label: field.label })
               )
             : uploaderSchema.optional();
+          break;
+        }
+
+        case "timeSlots": {
+          // Structure: [{ day, startHour, startMinute, endHour, endMinute }]
+          // (clés AmPm tolérées en lecture de données legacy 12h).
+          // ⚠ `looseObject` OBLIGATOIRE : les slots réels portent des clés de PAYLOAD hors form —
+          // `duree` sur 123/124 slots equipementsSportifs974, `prix` — écrites par l'import legacy
+          // (Costumize.php:1061-1066) et que le legacy PRÉSERVE (« identité d'un créneau = jour +
+          // horaires, duree/prix exclus »). Un `z.object` nu les strippait, et le form soumettant
+          // la sortie zod-parsée, SOUMETTRE SANS TOUCHER aux créneaux détruisait la donnée en base
+          // (le backend remplace le tableau en bloc) — même mécanisme que `sublist` (cf.
+          // categorizedCheckbox plus bas).
+          const slotSchema = z.looseObject({
+            day: z.string(),
+            startHour: z.string(),
+            startMinute: z.string(),
+            endHour: z.string(),
+            endMinute: z.string(),
+            startAmPm: z.string().optional(),
+            endAmPm: z.string().optional(),
+          });
+          const slotsSchema = z
+            .array(slotSchema)
+            .refine((slots) => slots.every(isSlotComplete), {
+              message: t("coform.validation.timeSlotIncomplete", "Chaque créneau doit avoir un jour, une heure de début et une heure de fin"),
+            })
+            .refine((slots) => slots.every(isSlotOrdered), {
+              message: t("coform.validation.timeSlotOrder", "L'heure de fin doit être après l'heure de début"),
+            });
+          schemaShape[field.name] = field.isRequired
+            ? slotsSchema.refine((slots) => slots.length > 0, {
+                message: t("coform.validation.requiredField", `${field.label} est requis`, { label: field.label }),
+              })
+            : slotsSchema.optional();
+          break;
+        }
+
+        case "dynamicFields": {
+          // Structure: [{ cléSousChamp: valeur }] — les règles par sous-champ
+          // (required/minLength/maxLength) viennent de la config admin.
+          // ⚠ Une ligne ENTIÈREMENT vide est EXEMPTÉE des règles (et strippée à la soumission,
+          // via .transform) : le composant sème `minRows` lignes vides NON supprimables — sans
+          // l'exemption, un dynamicFields NON requis à sous-champs required rendait le form
+          // INSOUMISSIBLE (cas réel : les 2 blocs du « Formulaire de créneau » SSBE, dont 40 %
+          // des answers existantes n'ont pas le bloc partenaires). Le legacy saute les lignes
+          // vides de la même façon.
+          const subFields = field.dynamicFieldsConfig?.fieldsConfig ?? [];
+          const isEmptyRow = (row: Record<string, string>) =>
+            Object.values(row).every((v) => (v ?? "").trim() === "");
+          const rowsSchema = z
+            .array(z.record(z.string(), z.string()))
+            .refine(
+              (rows) =>
+                rows.every((row) =>
+                  isEmptyRow(row) || subFields.every((sub) => {
+                    const value = (row[sub.key] ?? "").trim();
+                    if (sub.required && value === "") return false;
+                    if (value === "") return true;
+                    if (sub.validation?.minLength && value.length < sub.validation.minLength) return false;
+                    if (sub.validation?.maxLength && value.length > sub.validation.maxLength) return false;
+                    return true;
+                  }),
+                ),
+              { message: t("coform.validation.dynamicFieldsIncomplete", "Chaque ligne doit être complète et valide") },
+            )
+            .transform((rows) => rows.filter((row) => !isEmptyRow(row)));
+          const minRows = field.dynamicFieldsConfig?.minRows ?? 1;
+          schemaShape[field.name] = field.isRequired
+            ? rowsSchema.refine((rows) => rows.length >= Math.max(1, minRows), {
+                message: t("coform.validation.requiredField", `${field.label} est requis`, { label: field.label }),
+              })
+            : rowsSchema.optional();
           break;
         }
 
@@ -1017,6 +1253,8 @@ export function generateDefaultValues(subFormsFields: SubFormFields[]): Record<s
         }
 
         case "uploader":
+        case "timeSlots":
+        case "dynamicFields":
           defaultValues[field.name] = [];
           break;
 
@@ -1050,6 +1288,8 @@ function getFieldShape(componentType: FormFieldMapping["componentType"]): FieldS
     case "checkbox":
     case "multiCheckboxPlus":
     case "simpleTable":
+    case "timeSlots": // tableaux d'objets (créneaux / lignes) : un `[]` vide
+    case "dynamicFields": // encodé `{}` par le PHP doit redevenir array
       return "array";
     case "multiRadio":
     case "finder":

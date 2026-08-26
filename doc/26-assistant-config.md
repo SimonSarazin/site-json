@@ -1,8 +1,11 @@
 # Assistant de génération de config (Claude) — document de réflexion
 
-> **Statut : exploration / design** (branche `feat/config-assistant`). Ce document
-> ancre la réflexion dans l'existant du code ; il deviendra la doc du module quand
-> l'implémentation sera décidée. Rien ici n'est encore implémenté.
+> **Statut : phases 0 et 1 livrées** (cf. « État d'avancement » ci-dessous) —
+> l'outillage (`config:validate`, `config:schema`, `entity:slug`) et la skill
+> `.claude/skills/config-assistant/SKILL.md` existent. Ce document reste la **note
+> de conception et de justification** : il ancre la réflexion dans l'existant du
+> code et documente les architectures écartées ; la doc d'usage, elle, vit dans
+> SKILL.md.
 >
 > **Décisions prises** :
 > - **Cible : les devs, avec Claude Code** → architecture **C** retenue (skill
@@ -51,9 +54,9 @@ L'idée est étonnamment peu coûteuse parce que **les quatre briques dures exis
 
 ### 1. Le schéma Zod est la source de vérité… et il est exportable en JSON Schema
 
-- `src/types/site-schema.ts` (~2 030 lignes) : `SiteConfig` racine, `Header`,
-  `Footer`, `Page`, et **70 sections** discriminées par
-  `z.discriminatedUnion("type", […])` (L1325).
+- `src/types/site-schema.ts` (~2 360 lignes) : `SiteConfig` racine, `Header`,
+  `Footer`, `Page`, et **75 sections** discriminées par
+  `z.discriminatedUnion("type", […])` (`src/types/site-schema.ts:1523`).
 - **zod 4.1.13 fournit `z.toJSONSchema()` natif** (vérifié sur place : il
   fonctionne sur nos schémas). On peut donc produire, à la volée ou au build,
   le JSON Schema de n'importe quel morceau (une section, le header, le theme…)
@@ -65,7 +68,7 @@ L'idée est étonnamment peu coûteuse parce que **les quatre briques dures exis
   le vrai schéma Zod côté serveur** (boucle d'erreurs, cf. plus bas).
 - Les schémas n'ont **aucun `.describe()`** aujourd'hui — mais les commentaires
   français du fichier et `src/components/admin/section-meta.ts` (métadonnées
-  des 60+ sections pour le panel) fournissent la matière sémantique à injecter
+  des **75 sections** pour le panel) fournissent la matière sémantique à injecter
   dans le prompt système.
 
 ### 2. Un AdminPanel existe, avec auto-formulaires Zod et persistance câblée
@@ -98,7 +101,7 @@ L'idée est étonnamment peu coûteuse parce que **les quatre briques dures exis
 |---|---|---|
 | Schéma | `SiteConfig.parse()` (Zod) | oui |
 | Intégrité | `tests/preflight/` (sites-configs, config-integrity) | oui |
-| Qualité | `scripts/audit-config.mjs` (`npm run audit:config`) : traductions manquantes, liens internes morts, thème incomplet | advisory (`--strict` → exit 1) |
+| Qualité | `scripts/audit-config.ts` (`npm run audit:config`) : traductions manquantes, liens internes morts, thème incomplet | advisory (`--strict` → exit 1) |
 
 → La **boucle de correction** de l'assistant est triviale : générer → `parse()`
 → renvoyer les erreurs Zod (messages français inclus) à Claude → régénérer,
@@ -155,7 +158,7 @@ sections réunies est volumineux et le contexte se dilue. Découper en étapes o
 2. **Génération par morceau** : `meta` + `theme` → `header`/`footer` → puis
    **page par page**, chaque page limitée aux schémas des sections retenues par
    le plan (pas l'intégralité du catalogue). La forme exacte de chaque morceau vient de
-   `z.toJSONSchema(<sous-schéma>)` — consultée via `config-schema.mjs` dans
+   `z.toJSONSchema(<sous-schéma>)` — consultée via `config-schema.ts` dans
    l'architecture C (skill), ou fournie comme `input_schema` d'un tool dans
    l'architecture B (API).
 3. **Validation serveur après chaque morceau** : `parse()` Zod du sous-schéma
@@ -168,8 +171,8 @@ sections réunies est volumineux et le contexte se dilue. Découper en étapes o
 
 **Contexte à injecter** (prompt système) :
 - `section-meta.ts` (catalogue descriptif des sections, déjà rédigé pour le panel) ;
-- 2-3 **configs prod réels comme few-shots** (il y en a 17, dont des familles
-  réutilisées — ex. 8 communes sur le même config) ;
+- 2-3 **configs prod réels comme few-shots** (`sites.json` fait autorité : 20 slugs
+  pour 15 configs, dont des familles réutilisées — ex. 6 communes sur le même config) ;
 - les règles maison : `header.type`/`footer.type` = noms de design, jamais de
   site ; `LocalizedString` exige `fr` ; chemins internes existants.
 
@@ -183,9 +186,9 @@ le tool reçoit la config actuelle + l'instruction, et ne retourne qu'un *patch*
 
 | Risque | Garde-fou | Concerne |
 |---|---|---|
-| JSON invalide (refinements non représentables en JSON Schema) | Revalidation Zod systématique (`validate-config.mjs`) + boucle d'erreurs | C + B |
+| JSON invalide (refinements non représentables en JSON Schema) | Revalidation Zod systématique (`validate-config.ts`) + boucle d'erreurs | C + B |
 | Hallucination de chemins/images/liens | `audit-config` (liens morts) ; règle « pas d'URL inventée » dans SKILL.md | C + B |
-| Schéma trop gros pour le contexte | Découpage par morceau + plan préalable ; `config-schema.mjs` cible le morceau | C + B |
+| Schéma trop gros pour le contexte | Découpage par morceau + plan préalable ; `config-schema.ts` cible le morceau | C + B |
 | XSS dans `html`/`markdown` générés | `normalizeSiteConfig` (DOMPurify) déjà sur le chemin | C + B |
 | Clé API côté client | Sans objet en C (session Claude Code) ; en B : route serveur uniquement, jamais de `VITE_ANTHROPIC_*` | B |
 | Coûts API | Sans objet en C (compte du dev) ; en B : cap de tours, quotas | B |
@@ -203,25 +206,25 @@ le tool reçoit la config actuelle + l'instruction, et ne retourne qu'un *patch*
 └── (références)        # pointeurs vers section-meta.ts, configs exemples, doc/
 
 scripts/
-├── validate-config.mjs # Zod parse d'UN fichier config → erreurs lisibles, exit code
-├── config-schema.mjs   # imprime le JSON Schema d'un sous-schéma (z.toJSONSchema)
-└── entity-slug.mjs     # recherche/vérifie un slug d'entité Cocolight (cf. § Slug)
+├── validate-config.ts # Zod parse d'UN fichier config → erreurs lisibles, exit code
+├── config-schema.ts   # imprime le JSON Schema d'un sous-schéma (z.toJSONSchema)
+└── entity-slug.ts     # recherche/vérifie un slug d'entité Cocolight (cf. § Slug)
 ```
 
-Les deux scripts sont **déterministes, sans IA, sans dépendance nouvelle** —
+Ces trois scripts sont **déterministes, sans IA, sans dépendance nouvelle** —
 c'est l'outillage que la skill appelle, et qu'un futur backend B réutiliserait
 tel quel.
 
-- **`validate-config.mjs <fichier>`** — charge `SiteConfig` (le vrai schéma,
+- **`validate-config.ts <fichier>`** — charge `SiteConfig` (le vrai schéma,
   refinements inclus) et `parse()` le fichier ; sortie : erreurs Zod formatées
   par chemin (`pages[2].sections[0].props.title : fr manquant`), exit 1 si
   invalide. C'est **l'outil de la boucle** : la skill l'exécute après chaque
   écriture et corrige jusqu'à vert. (Les preflight Vitest font ça mais sur
   *tous* les configs et via le runner — trop lent pour itérer.)
-- **`config-schema.mjs <sélecteur>`** — ex. `config-schema.mjs section:pricing`
+- **`config-schema.ts <sélecteur>`** — ex. `config-schema.ts section:pricing`
   ou `header` → imprime le JSON Schema (`z.toJSONSchema`, `unrepresentable:
   "any"`, `reused: "ref"`) du morceau demandé. Évite à la skill de relire les
-  2 030 lignes de `site-schema.ts` pour connaître la forme exacte d'une section ;
+  2 360 lignes de `site-schema.ts` pour connaître la forme exacte d'une section ;
   la sortie est compacte et exhaustive (enums, champs requis, défauts).
   ⚠️ **Un schéma partagé sort en `$ref`** : `CardConfSchema`, réutilisé par
   `list.card` ET `list.itemRules[].card`, n'apparaît qu'une fois en `$defs`, et
@@ -242,21 +245,21 @@ tel quel.
    proche parmi les configs existants, `header.type`/`footer.type` (avec leur
    identité visuelle), composition de pages section par section (via le
    catalogue), direction de thème. **L'utilisateur tranche avant de générer.**
-3. **Slug** : vérifier/choisir le slug d'entité Cocolight (`entity-slug.mjs` —
+3. **Slug** : vérifier/choisir le slug d'entité Cocolight (`entity-slug.ts` —
    cf. § Slug) ; c'est un prérequis dur, le site ne boote pas sans entité.
 4. **Setup** : copier `config.dev.json` (ou le config archétype le plus proche)
    comme base ; entrée `sites.json` + CSS (`src/index-<slug>.css` créé ou
    réutilisé) ; dossier d'assets `public/images/<slug>/` (cf. § Assets).
 5. **Génération par morceaux** : `meta`+`theme` → `header`/`footer` → page par
-   page. Avant chaque morceau : `config-schema.mjs` pour la forme exacte ;
-   après : `validate-config.mjs` → corriger les erreurs → re-valider.
+   page. Avant chaque morceau : `config-schema.ts` pour la forme exacte ;
+   après : `validate-config.ts` → corriger les erreurs → re-valider.
 6. **Garde-fous qualité** : `npm run audit:config` (liens morts, i18n, thème) ;
    `npm run test:preflight` en validation finale.
 7. **Préversion live** : `VITE_SLUG=<slug> npm run dev` dans un terminal — le
    watcher (`fs.watchFile`, 500 ms) pousse chaque écriture au navigateur sans
    reload. Le dev garde le site ouvert à côté et voit chaque itération.
 8. **Édition incrémentale** : même mécanique sans l'interview — localiser le
-   morceau visé (page/section), `config-schema.mjs` si besoin, patch minimal,
+   morceau visé (page/section), `config-schema.ts` si besoin, patch minimal,
    valider, l'HMR montre le résultat.
 
 ### Capacités de conception (au-delà de la génération de JSON)
@@ -296,8 +299,9 @@ champ elle finissait recopiée dans le `copyright`, où elle n'a rien à faire.
 Exemple en production : `config.prod.institut-bleu.json` (FIM/DGAMPA, Année de
 la mer, Région Réunion).
 
-**Archétypes** parmi les 17 configs réels : commune institutionnelle
-(`commune-transparente`, partagé par 8 communes, header `transparent-dark`),
+**Archétypes** parmi les configs réelles du parc (`sites.json` fait autorité) :
+commune institutionnelle (`commune-transparente`, partagé par 6 communes,
+header `transparent-dark`),
 réseau/annuaire (`tiers-lieux`, `mega-menu` + recherche), sport/santé
 (`sport-sante-bien-etre`, coform + POI), portfolio (`julie-pot-vin`,
 `minimal`), équipements (`equipements-Sportifs`, `transparent-scroll` +
@@ -313,10 +317,10 @@ couleur en dur dans les sections — les tokens du thème.
 
 Deux catalogues à exposer à la skill :
 
-- **Sections** : `src/components/admin/section-meta.ts` — 60 sections avec
+- **Sections** : `src/components/admin/section-meta.ts` — **75 sections** avec
   `label` + description française orientée intention (« Bannière principale
   avec titre, sous-titre et CTA »). C'est le menu de composition des pages ;
-  `config-schema.mjs section:<type>` donne ensuite la forme exacte des props.
+  `config-schema.ts section:<type>` donne ensuite la forme exacte des props.
 - **Modules** : chaque module a des sections, des clés de config et des
   **prérequis backend**. Recette d'activation par module (à encoder, format
   « pour utiliser X, ajouter Y, prérequis Z ») :
@@ -345,14 +349,14 @@ résoudre config+CSS **et** à charger l'entité Cocolight au boot
 connecté). **Sans entité portant ce slug, le site ne démarre pas.** Le choix
 du slug n'est donc pas cosmétique — c'est une liaison backend.
 
-`scripts/entity-slug.mjs` (l'api-client fonctionne côté Node — le SSR le
+`scripts/entity-slug.ts` (l'api-client fonctionne côté Node — le SSR le
 prouve ; `VITE_BASE_URL_BACKEND` requis) :
 
-- `entity-slug.mjs search <nom>` → candidats via `globalAutocomplete`
+- `entity-slug.ts search <nom>` → candidats via `globalAutocomplete`
   (**sans auth**) : slug, type (Organization/Project), nom.
-- `entity-slug.mjs check <slug>` → l'entité existe ? (`entitySlug(slug)`) —
+- `entity-slug.ts check <slug>` → l'entité existe ? (`entitySlug(slug)`) —
   utilisé aussi pour vérifier la disponibilité avant création.
-- `entity-slug.mjs create …` → **nécessite une authentification**
+- `entity-slug.ts create …` → **nécessite une authentification**
   (`addOrganization`/`addProject` de l'EndpointApi). Deux options : credentials
   en env local (pattern `.env.test` des e2e), ou guider l'utilisateur vers la
   création in-app (le module profil a déjà `AddOrganizationModal` /
@@ -360,7 +364,7 @@ prouve ; `VITE_BASE_URL_BACKEND` requis) :
 
 #### d) Logo, favicon, images
 
-Conventions vérifiées sur les 17 configs + `public/` :
+Conventions vérifiées sur les configs du parc + `public/` :
 
 - **Emplacement** : `public/images/<slug>/` (dossier par site — ex.
   `communeTransparente/logo.png`, `rezoLaMer/hero-ocean.jpg`).
@@ -391,9 +395,9 @@ Conventions vérifiées sur les 17 configs + `public/` :
 - Images : pas d'URL inventée — assets existants du site, ou laisser vide.
 - Sections : choisir dans le catalogue réel (descriptions dans
   `src/components/admin/section-meta.ts`) ; en cas de doute sur les props,
-  `config-schema.mjs section:<type>`.
+  `config-schema.ts section:<type>`.
 - Familles de configs : pour un site « commune », partir de
-  `config.prod.commune-transparente.json` (8 communes le partagent), etc.
+  `config.prod.commune-transparente.json` (6 communes le partagent), etc.
 
 ### Ce que ce choix simplifie (vs A/B)
 
@@ -404,7 +408,7 @@ Conventions vérifiées sur les 17 configs + `public/` :
 | Deps | zéro nouvelle dépendance runtime |
 | Préversion | dev-server existant (watcher + HMR) |
 | Corrections manuelles | l'AdminPanel/ZodAutoForm reste dispo en parallèle |
-| Évolution vers B | `validate-config.mjs`/`config-schema.mjs` deviennent le backend de validation du panel |
+| Évolution vers B | `validate-config.ts`/`config-schema.ts` deviennent le backend de validation du panel |
 
 ### Se maintenir à jour (résistance à la dérive)
 
@@ -419,26 +423,31 @@ l'usage :
 
 | Connaissance | Source vivante (à l'invocation) |
 |---|---|
-| Types de header/footer/card/preview, enums | `config-schema.mjs` → `z.toJSONSchema` du schéma **courant** |
-| Liste + props de toutes les sections | `config-schema.mjs sections` (membres de la discriminatedUnion) + `section-meta.ts` lu en direct |
+| Types de header/footer/card/preview, enums | `config-schema.ts` → `z.toJSONSchema` du schéma **courant** |
+| Liste + props de toutes les sections | `config-schema.ts sections` (membres de la discriminatedUnion) + `section-meta.ts` lu en direct |
 | Modules disponibles + leurs sections | `src/modules/*/` (découverte `import.meta.glob` — listable par script) |
 | Archétypes / configs existants | `sites.json` + `config.prod.*.json` lus en direct |
-| Slugs d'entité | `entity-slug.mjs` (backend interrogé en direct) |
+| Slugs d'entité | `entity-slug.ts` (backend interrogé en direct) |
 
-→ Par construction, ces faits sont **toujours à jour** : la skill ne connaît
-pas « les 68 sections », elle sait **où les lire**.
+→ Par construction, ces faits sont **toujours à jour** : la skill ne connaît pas
+le *nombre* de sections, elle sait **où les lire**. (Corollaire pour ce document
+et pour SKILL.md : le seul compte écrit à la main est celui de la forme
+`**N sections**`, surveillé par `tests/preflight/section-meta.test.ts` ; tout
+nombre écrit hors de cette forme dérive en silence — c'est ce qui est arrivé
+ici, « 60+ », « 60 » et « 68 » ayant coexisté pour 75 sections réelles.)
 
 **2. Vérifier ce qui doit rester écrit (couche semi-stable).** Les tables de
 jugement (identité visuelle des designs, recettes d'activation des modules)
 gagnent à être rédigées — mais elles doivent être **vérifiables** :
 
-- `scripts/skill-doctor.mjs` (ou un test preflight `skill-integrity.test.ts`,
-  même pattern que `config-integrity`) : croise les mentions de SKILL.md avec
+- Un garde-fou *doctor* — script dédié ou test préflight (même pattern que
+  `config-integrity`) : croise les mentions de SKILL.md avec
   le code — chaque `header.type`/`footer.type` cité existe dans l'enum, chaque
   module cité existe dans `src/modules/`, chaque section citée est dans la
   discriminatedUnion. **Échec = la skill a dérivé** → le commit qui change le
   schéma casse le test et force la mise à jour de la skill (même discipline
-  que la parité i18n fr/en déjà en place).
+  que la parité i18n fr/en déjà en place). *Retenu : le test préflight
+  `tests/preflight/skill-integrity.test.ts`.*
 - Dans SKILL.md, une consigne de défiance : *« en cas de contradiction entre
   cette skill et le code, le code a raison — vérifie via les scripts, puis
   propose une mise à jour de la skill »*.
@@ -459,14 +468,17 @@ de chemins recopiés à la main.
 
 ## Phases proposées
 
-- **Phase 0 — outillage** : `scripts/validate-config.mjs` +
-  `scripts/config-schema.mjs` + `scripts/entity-slug.mjs` (search/check d'abord ;
+> Phases 0 et 1 livrées (cf. « État d'avancement » en tête) ; ce qui suit est le
+> plan d'origine.
+
+- **Phase 0 — outillage** : `scripts/validate-config.ts` +
+  `scripts/config-schema.ts` + `scripts/entity-slug.ts` (search/check d'abord ;
   create si la question d'auth est tranchée). Petits, testables unitairement,
   utiles même sans l'assistant — ex. valider un config à la main.
 - **Phase 1 — la skill** : `.claude/skills/config-assistant/SKILL.md` —
   workflow + capacités de conception (tables d'identité design, catalogue
   modules, règles assets/slug) **+ le garde-fou anti-dérive dès le départ**
-  (`skill-doctor.mjs` ou test preflight `skill-integrity` : les mentions de
+  (test préflight `skill-integrity` : les mentions de
   SKILL.md existent dans le code) ; itérer sur des cas réels (1 site
   from-scratch + 3-4 éditions incrémentales sur les configs existants) et
   durcir les règles maison au fil des ratés.
@@ -506,7 +518,7 @@ réparation d'un config existant. Décisions prises :
    quand le sujet s'y prête) ou une *commande* explicite (`/config-assistant`) ?
    Reco : skill avec description précise — l'invocation reste naturelle
    (« ajoute une page contact au site rezo-la-mer »).
-2. **Granularité de `config-schema.mjs`** : sélecteurs à supporter
+2. **Granularité de `config-schema.ts`** : sélecteurs à supporter
    (`section:<type>`, `header`, `footer`, `theme`, `meta`, `page`) — et faut-il
    un mode « liste des types de section + résumé une ligne » pour le plan ?
 3. **`.describe()` dans les schémas** : investissement transversal (profite à
@@ -515,7 +527,7 @@ réparation d'un config existant. Décisions prises :
    `src/index-<site>.css` existant, mais le theming fin (tokens light/dark)
    mérite ses propres règles dans SKILL.md (cf. les pièges teal-light/dark
    corrigés en 06baffb).
-5. **Création d'entité (slug)** : `entity-slug.mjs create` exige une auth —
+5. **Création d'entité (slug)** : `entity-slug.ts create` exige une auth —
    credentials en env local (pattern `.env.test`) ou renvoi vers la création
    in-app (`AddOrganizationModal`) ? Search/check (sans auth) sont eux
    tranchés et suffisent à démarrer.

@@ -23,10 +23,6 @@ interface FormFieldTagsProps<T extends FieldValues> {
    */
   maxTags?: number;
   /**
-   * Utiliser tous les textes de traduction (pour EditBasicInfoTab)
-   */
-  extendedTexts?: boolean;
-  /**
    * Label personnalisé (remplace la traduction par défaut)
    */
   label?: string;
@@ -38,6 +34,11 @@ interface FormFieldTagsProps<T extends FieldValues> {
    * Autocomplétion sur les tags existants. `false` → saisie libre (valeurs hors tags).
    */
   searchable?: boolean;
+  /**
+   * Suggestions LOCALES déjà chargées (ex. valeurs d'une liste de costum) : filtrage en mémoire,
+   * propositions dès le focus. Prend le pas sur la recherche serveur de tags.
+   */
+  suggestions?: string[];
 }
 
 /**
@@ -48,24 +49,24 @@ export function FormFieldTags<T extends FieldValues>({
   control,
   name = "tags" as FieldPath<T>,
   maxTags = 10,
-  extendedTexts = false,
   label,
   placeholder,
   searchable = true,
+  suggestions,
 }: FormFieldTagsProps<T>) {
   const t = useT("modules/profil");
 
-  const texts = extendedTexts
-    ? {
-        placeholder: placeholder ?? t("ProfileEdit.fields.tags.placeholder"),
-        maxReached: t("ProfileEdit.fields.tags.maxReached"),
-        searching: t("ProfileEdit.fields.tags.searching"),
-        noResults: t("ProfileEdit.fields.tags.noResults"),
-        typeToSearch: t("ProfileEdit.fields.tags.typeToSearch"),
-      }
-    : {
-        placeholder: placeholder ?? t("ProfileEdit.fields.tags.placeholder"),
-      };
+  // TOUS les textes sont traduits, toujours. Ils existent en FR et en EN ; l'ancien drapeau
+  // `extendedTexts` n'en livrait que le placeholder par défaut, laissant `maxReached`, `searching`,
+  // `noResults` et `typeToSearch` retomber sur les chaînes FRANÇAISES codées en dur de
+  // `TagsInput.tsx:31` — visible sur tout site bilingue au 6e tag d'un champ plafonné.
+  const texts = {
+    placeholder: placeholder ?? t("ProfileEdit.fields.tags.placeholder"),
+    maxReached: t("ProfileEdit.fields.tags.maxReached"),
+    searching: t("ProfileEdit.fields.tags.searching"),
+    noResults: t("ProfileEdit.fields.tags.noResults"),
+    typeToSearch: t("ProfileEdit.fields.tags.typeToSearch"),
+  };
 
   return (
     <FormField
@@ -80,6 +81,7 @@ export function FormFieldTags<T extends FieldValues>({
               onTagsChange={field.onChange}
               maxTags={maxTags}
               searchable={searchable}
+              suggestions={suggestions}
               texts={texts}
             />
           </FormControl>

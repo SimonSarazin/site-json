@@ -14,18 +14,52 @@ import { useT } from "@/hooks/useT";
 import "@/modules/admin/i18n";
 import SearchTextInput from "@/modules/search/components/SearchTextInput";
 import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
+import { formsDeCollection, cheminAnnotation, type CostumFormSubTypeLike } from "@/modules/search/lib/costumSubType";
+import { useSite } from "@/hooks/useSite";
 
 import { ScrollableTabsList } from "../components/ScrollableTabsList";
 
 import type { SearchType } from "@/modules/search/schema";
 
 import { ADMIN_QUERY_KEYS } from "../constants/queryKeys";
-import { useReferenceElement, type ReferencingCarrier } from "../hooks/useReferenceElement";
+import { useReferenceElement, type AnnotableEntity, type ReferencingCarrier } from "../hooks/useReferenceElement";
 import { ensureCostumScope } from "../lib/ensureCostumScope";
 import type { AdminReferenceSection as AdminReferenceSectionConfig, AdminSection } from "../schema";
 import { formatCell, getPath } from "./resourceHelpers";
 
 const DEFAULT_TYPES = ["organizations", "projects", "events", "poi"];
+
+/**
+ * Filtres de la recherche de CANDIDATES : ciblage config (commun ⊕ par-collection) + politique
+ * open-data + garde-fous du déjà-rattaché — fusion MÊME-CLÉ pour que la config puisse cibler
+ * `source.keys` (« le vivier ssbe ») SANS écraser le `$nin` de garde (et réciproquement) :
+ * un scalaire/tableau config devient `$in`, les objets d'opérateurs sont fusionnés, le `$nin`
+ * de garde s'unionne à un éventuel `$nin` config. Les DEUX moteurs (L searchNew / B buildQuery)
+ * passent les objets d'opérateurs tels quels (le referenceTable legacy envoie déjà des `$nin`).
+ */
+export function buildOpenSearchFilters(
+  search: { openData?: "optIn" | "optOut" | "off"; defaultFilters?: Record<string, unknown>; defaultFiltersByType?: Record<string, Record<string, unknown>> } | undefined,
+  type: string,
+  costumSlug: string,
+): Record<string, unknown> {
+  const cibles: Record<string, unknown> = { ...(search?.defaultFilters ?? {}), ...(search?.defaultFiltersByType?.[type] ?? {}) };
+  const politique = search?.openData ?? "optIn";
+  const filtres: Record<string, unknown> = { ...cibles };
+  if (politique === "optIn") filtres["preferences.isOpenData"] = true;
+  else if (politique === "optOut") filtres["preferences.isOpenData"] = { $nin: [false, "false"] };
+  // Garde-fous non configurables — fusion même-clé avec un éventuel ciblage config.
+  for (const champ of ["reference.costum", "source.keys"]) {
+    const base = filtres[champ];
+    const ops: Record<string, unknown> =
+      base === undefined ? {}
+      : typeof base === "object" && base !== null && !Array.isArray(base) ? { ...(base as Record<string, unknown>) }
+      : { $in: Array.isArray(base) ? base : [base] };
+    const nin = ops.$nin;
+    ops.$nin = [...new Set([...(Array.isArray(nin) ? nin : nin !== undefined ? [nin] : []), costumSlug])];
+    filtres[champ] = ops;
+  }
+  return filtres;
+}
 const DEFAULT_COLUMNS = [
   { path: "name", label: { fr: "Nom", en: "Name" } },
   { path: "address.addressLocality", label: { fr: "Commune", en: "Municipality" } },
@@ -62,19 +96,39 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
 
   const [tab, setTab] = useState<"search" | "referenced">("search");
   const [type, setType] = useState(types[0] ?? "poi");
+
+  // ── SOUS-TYPE de rattachement ─────────────────────────────────────────────────────────────────
+  // Le référencement seul (`reference.costum`) rattache PAR COLLECTION : quand elle porte plusieurs
+  // forms costum (institutBleu : document ET financement sur poi), rien ne classe l'entité — elle
+  // est invisible des onglets et pages filtrés par sous-type, et l'édition ouvre le form générique.
+  // On écrit donc, en plus, l'ANNOTATION `reference.costumTypes.<slug> = <subType>` — jamais le
+  // champ cœur (`type`…), qui porte la sémantique d'un autre site. Candidats = les forms de la
+  // collection déclarant `subType` : 1 → posé d'office, N → sélecteur, 0 → référencement nu.
+  const { config: siteConfig } = useSite();
+  const costumForms = (siteConfig as { costumForms?: Record<string, CostumFormSubTypeLike> } | undefined)?.costumForms;
+  const candidats = useMemo(
+    () => formsDeCollection(costumForms, type, costumSlug).filter((f): f is CostumFormSubTypeLike & { subType: string } => !!f.subType),
+    [costumForms, type, costumSlug],
+  );
+  const [sousTypeChoisi, setSousTypeChoisi] = useState<string | null>(null);
+  // Le choix ne survit pas à un changement de collection : on retombe sur le premier candidat.
+  const sousType = candidats.some((f) => f.subType === sousTypeChoisi)
+    ? (sousTypeChoisi as string)
+    : candidats[0]?.subType;
+  const libelleSousType = (st: string | undefined): string => {
+    const f = candidats.find((c) => c.subType === st);
+    return f?.subTypeLabel ? t(f.subTypeLabel as never) : (st ?? "");
+  };
   const [q, setQ] = useState("");
   const searchText = useDebounce(q, 300);
 
-  // ── Recherche globale « à référencer » (fidèle referenceTable legacy) ──────────────────────────
+  // ── Recherche « à référencer » : ciblage + politique open-data configurables (cfg.search),
+  //    garde-fous du déjà-rattaché non configurables — défaut = fidèle referenceTable legacy.
   const searchParams = useMemo(() => ({
     defaultTypes: [type] as SearchType[],
     notSourceKey: true,
-    defaultFilters: {
-      "preferences.isOpenData": true,
-      "reference.costum": { $nin: [costumSlug] },
-      "source.keys": { $nin: [costumSlug] },
-    },
-  }), [type, costumSlug]);
+    defaultFilters: buildOpenSearchFilters(cfg.search, type, costumSlug),
+  }), [cfg.search, type, costumSlug]);
 
   const global = useSearchQuery({
     queryKeyPrefix: ADMIN_QUERY_KEYS.REFERENCE_SEARCH_PREFIX(type),
@@ -108,10 +162,27 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
     void referenced.refetch();
   });
 
-  const runMutation = (op: "reference" | "unreference", itemType: string, id: string) => {
+  const runMutation = (
+    op: "reference" | "unreference" | "classify",
+    itemType: string,
+    id: string,
+    cible: AnnotableEntity,
+    subTypeCible?: string,
+  ) => {
     // ctx costum requis par addReference/removeReference (les éléments externes n'ont pas de source.key).
     ensureCostumScope(carrier, { contextId, contextType });
-    mutation.mutate({ carrier: carrier as unknown as ReferencingCarrier, op, type: itemType, id });
+    mutation.mutate({
+      carrier: carrier as unknown as ReferencingCarrier,
+      op,
+      type: itemType,
+      id,
+      // L'ENTITÉ de la ligne : les écritures d'annotation passent par SA méthode `updateField`
+      // (voie haut-niveau BaseEntity — validations + normalisation), pas par un endpointApi brut.
+      cible,
+      // Au référencement : le sous-type courant (choisi ou unique) ; au reclassement : la cible.
+      subType: op === "classify" ? subTypeCible : sousType,
+      moderate: cfg.moderateReferenced,
+    });
   };
 
   const renderRows = (
@@ -123,14 +194,36 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
       const data = (item as { serverData?: Record<string, unknown> }).serverData ?? {};
       const id = String((item as { id?: unknown }).id ?? (data as { id?: unknown }).id ?? i);
       const itemType = String((data as { collection?: unknown }).collection ?? type);
+      // L'annotation posée (le mode admin renvoie les documents complets, `reference` inclus).
+      const annote = candidats.length > 0 ? (getPath(data, cheminAnnotation(costumSlug)) as string | undefined) : undefined;
       return (
         <TableRow key={id} ref={i === rows.length - 1 ? (lastItemRef as never) : undefined}>
           {columns.map((col) => (
             <TableCell key={col.path} className="max-w-[14rem] truncate">{formatCell(getPath(data, col.path))}</TableCell>
           ))}
           <TableCell><Badge variant="outline">{itemType}</Badge></TableCell>
+          {candidats.length > 0 && action.op === "unreference" && (
+            <TableCell>
+              {/* Classer / Reclasser : la même annotation, rejouable — c'est le filet quand
+                  l'écriture a raté au référencement, ET l'outil de rattrapage de l'existant. */}
+              <Select
+                value={annote ?? ""}
+                onValueChange={(v) => runMutation("classify", itemType, id, item as AnnotableEntity, v)}
+                disabled={mutation.isPending}
+              >
+                <SelectTrigger size="sm" className="w-40" aria-label={tAdmin("AdminReferenceSection.colSubType")}>
+                  <SelectValue placeholder={tAdmin("AdminReferenceSection.unclassified")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {candidats.map((f) => (
+                    <SelectItem key={f.subType} value={f.subType}>{libelleSousType(f.subType)}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </TableCell>
+          )}
           <TableCell className="text-right">
-            <Button size="sm" variant="outline" disabled={mutation.isPending} onClick={() => runMutation(action.op, itemType, id)}>
+            <Button size="sm" variant="outline" disabled={mutation.isPending} onClick={() => runMutation(action.op, itemType, id, item as AnnotableEntity)}>
               {action.icon}
               {action.label}
             </Button>
@@ -144,6 +237,7 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
     loading: boolean,
     empty: boolean,
     emptyMsg: string,
+    avecSousType = false,
   ) => (
     <div className="max-h-[55vh] overflow-auto">
       <Table>
@@ -155,6 +249,7 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
               </TableHead>
             ))}
             <TableHead>{tAdmin("AdminReferenceSection.colType")}</TableHead>
+            {avecSousType && <TableHead>{tAdmin("AdminReferenceSection.colSubType")}</TableHead>}
             <TableHead className="w-44 text-right">{tAdmin("AdminReferenceSection.colAction")}</TableHead>
           </TableRow>
         </TableHeader>
@@ -191,6 +286,23 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
               ))}
             </SelectContent>
           </Select>
+          {/* Plusieurs forms costum sur cette collection → l'admin dit COMME QUOI il référence.
+              Un seul → posé d'office, pas de question ; aucun → référencement nu. */}
+          {candidats.length > 1 && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">{tAdmin("AdminReferenceSection.attachAs")}</span>
+              <Select value={sousType ?? ""} onValueChange={setSousTypeChoisi}>
+                <SelectTrigger className="w-44" aria-label={tAdmin("AdminReferenceSection.attachAs")}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {candidats.map((f) => (
+                    <SelectItem key={f.subType} value={f.subType}>{libelleSousType(f.subType)}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
@@ -223,6 +335,7 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
               referenced.isLoading,
               (referenced.transformedResults ?? []).length === 0,
               tAdmin("AdminReferenceSection.emptyReferenced"),
+              candidats.length > 0,
             )}
           </TabsContent>
         </Tabs>

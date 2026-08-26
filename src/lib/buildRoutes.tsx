@@ -14,6 +14,9 @@ import {
 import type { FiltersByPathOptions } from "@/modules/search/hooks/useFiltersByPath";
 import { canonicalSearchProStaticBaseParams } from "@/modules/search/lib/canonicalBaseParams";
 import { observatoryPrefetchParams } from "@/modules/observatoire/prefetch";
+// Registre des sections containers — partagé avec les préflights, pour qu'une section imbriquée
+// (`tabs`, `gridLayout`) soit vue à la fois par le prefetch SSR et par les gardes. Cf. le module.
+import { findSectionsOfTypes } from "./sectionContainers";
 
 /**
  * Helper pour parser les paramètres JSON depuis l'URL
@@ -25,41 +28,6 @@ function parseJSON(value: string | null): unknown {
   } catch {
     return null;
   }
-}
-
-/**
- * Registry des extracteurs de sections imbriquées
- * Pour ajouter un nouveau container : ajouter 1 ligne ici
- */
-const SECTION_EXTRACTORS: Record<string, (props: Record<string, unknown>) => unknown[]> = {
-  gridLayout: (p) => [p.leftSection, p.rightSection],
-  tabs: (p) => (Array.isArray(p.tabs) ? p.tabs : []).flatMap((t: { content: unknown }) => Array.isArray(t.content) ? t.content : []),
-};
-
-/**
- * Recherche récursive des sections de recherche (searchPro/searchProStatic)
- * Utilise SECTION_EXTRACTORS pour gérer les containers
- */
-function findSectionsOfTypes(
-  sections: Array<{ type: string; props?: Record<string, unknown> }>,
-  types: ReadonlySet<string>
-): Array<{ type: string; props?: Record<string, unknown> }> {
-  const result: Array<{ type: string; props?: Record<string, unknown> }> = [];
-
-  for (const section of sections) {
-    // Section ciblée directe
-    if (types.has(section.type)) {
-      result.push(section);
-    }
-    // Container avec sections imbriquées
-    else if (SECTION_EXTRACTORS[section.type] && section.props) {
-      const nested = SECTION_EXTRACTORS[section.type](section.props)
-        .filter(Boolean) as Array<{ type: string; props?: Record<string, unknown> }>;
-      result.push(...findSectionsOfTypes(nested, types));
-    }
-  }
-
-  return result;
 }
 
 const SEARCH_SECTION_TYPES = new Set(['searchPro', 'searchProStatic']);
@@ -199,6 +167,9 @@ async function buildRoutesAsync(
             mapUsed: params.map,
             baseParams: ssrBaseParams,
             variant: searchVariant,
+          }, {
+            // Nécessaire à l'expansion de `costumSubType` côté SSR (cf. prefetchSearchResults).
+            costumForms: (cfg as { costumForms?: Record<string, never> }).costumForms,
           });
         })
       );

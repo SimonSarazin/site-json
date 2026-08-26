@@ -10,12 +10,13 @@ import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
 import { Suspense } from "react";
 import { lazy } from "vite-preload";
 import { CocolightProvider } from "@/contexts/CocolightProvider";
-import { getBaseUrl } from "@/lib/constant/common";
+import { getBaseUrl, getCostumForceLive } from "@/lib/constant/common";
 import { GoogleFontsLoader } from "@/components/layout/GoogleFontsLoader";
 import { SiteProvider } from "@/contexts/SiteProvider";
 import { useSite } from "@/hooks/useSite";
 import { CommandPaletteProvider } from "@/modules/commandPalette/contexts/CommandPaletteProvider";
 import { AuthModalProvider } from "@/modules/auth/context/AuthModalProvider";
+import { useLegacyHashRedirect } from "@/hooks/useLegacyHashRedirect";
 
 // Composants optionnels lazy-loadés : rendus seulement si configurés/activés.
 // Évite d'inclure leur code (et leurs dépendances) dans le bundle initial.
@@ -30,6 +31,9 @@ const AdminPanel = import.meta.env.DEV
 
 function SiteShell() {
   const { config } = useSite();
+  // Deep-links en fragment des e-mails legacy (`#page.type.<coll>.id.<id>`) : le fragment n'atteint
+  // jamais le serveur, ces liens tombaient donc sur l'accueil. Rattrapage client (docs/24, AXE 2).
+  useLegacyHashRedirect();
 
   return (
     <LocalizationProvider
@@ -91,7 +95,7 @@ function RootLayout({ config }: Props) {
   return (
     <ErrorBoundary fallback={<p>Une erreur est survenue 😢.</p>}>
       <Suspense fallback={<p>loading</p>}>
-        <CocolightProvider clientOptions={{ baseURL: getBaseUrl() }}>
+        <CocolightProvider clientOptions={{ baseURL: getBaseUrl(), costumForceLive: getCostumForceLive() }}>
           <ThemeProvider attribute="class" defaultTheme={defaultTheme} enableSystem>
             <SiteProvider config={config}>
               <SiteShell />
