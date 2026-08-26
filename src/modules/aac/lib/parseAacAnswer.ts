@@ -130,7 +130,14 @@ export interface AacCommunCard {
   /** Membres du chemin configuré (`fields.users`), sinon `user_count` backend. */
   usersCount: number;
   interestCount: number;
-  /** `null` quand l'étape d'évaluation n'est pas dans la réponse ⇒ pas de badge. */
+  /**
+   * Retenu dans l'annuaire DU CONTEXTE courant.
+   *
+   * `null` ⇒ INDÉCIDABLE, donc pas de badge : aucune question `choose` résolue,
+   * ou aucun contexte identifié — on ne sait pas où regarder. Une réponse sans
+   * étape d'évaluation n'est PAS ce cas-là : l'absence d'entrée vaut « non
+   * sélectionné » (règle du backend), donc `false`.
+   */
   isSelected: boolean | null;
   /** Usage catégorisé — alimente le filtre « Filtrer par besoins ». */
   usage: AacUsageAnswer;
@@ -217,12 +224,24 @@ export function parseAacAnswer(
     ? toArray(readField(a, fields.users)).length
     : toInt(a.user_count);
 
-  // Badge « En attente » : indécidable si l'étape d'évaluation n'a pas été
-  // projetée. `null` ⇒ le composant n'affiche pas de badge, plutôt que d'en
-  // afficher un faux.
+  // Badge « En attente ».
+  //
+  // L'ABSENCE d'entrée vaut « non sélectionné » — c'est la règle du backend
+  // (`Aap.php:1190-1193`), et c'est le cas de l'immense majorité des réponses :
+  // 244 des 297 de l'appel tiers-lieux n'ont aucune clé `choose`. Une réponse
+  // qui n'a même pas d'étape d'évaluation n'est donc pas « indécidable », elle
+  // est simplement en attente.
+  //
+  // `null` reste réservé à ce qu'on ne peut VRAIMENT pas savoir : aucune
+  // question `choose` résolue, ou aucun contexte identifié — sans l'un des deux
+  // on ne sait pas où regarder. Le composant n'affiche alors pas de badge.
+  //
+  // ⚠️ Si une projection (`fields`) est un jour envoyée à `directoryproposal`,
+  // elle DOIT inclure le chemin de `choose` : sans lui, chaque commun
+  // s'afficherait « en attente ». Aucun appelant n'en passe aujourd'hui.
   const chooseRef = fields.choose;
   let isSelected: boolean | null = null;
-  if (chooseRef && contextId && (chooseRef.stepKey === null || chooseRef.stepKey in answers)) {
+  if (chooseRef && contextId) {
     const choose = rec(readField(a, chooseRef));
     isSelected = toStr(rec(choose[contextId]).value) === "selected";
   }

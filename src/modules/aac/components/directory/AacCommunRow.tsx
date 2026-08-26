@@ -6,6 +6,7 @@ import {
   formatAacAmount,
   progressBarWidth,
 } from "../../lib/aacDisplay";
+import { AacHiddenTagsBadge } from "./AacHiddenTagsBadge";
 import type { AacCommunCard as CommunCard } from "../../lib/parseAacAnswer";
 
 interface AacCommunRowProps {
@@ -41,8 +42,10 @@ export function AacCommunRow({ commun, className }: AacCommunRowProps) {
 
   const hiddenTags = commun.tags.slice(AAC_VISIBLE_TAGS);
   const barWidth = progressBarWidth(commun.progressPercent);
-  // `isSelected === null` ⇒ indécidable (étape d'évaluation absente de la
-  // réponse) ⇒ ligne normale, jamais « en attente » par défaut.
+  // `isSelected === null` ⇒ indécidable : aucune question `choose` résolue, ou
+  // aucun contexte identifié ⇒ ligne normale, aucun badge. Une réponse sans
+  // étape d'évaluation n'est PAS ce cas-là : l'absence d'entrée vaut « non
+  // sélectionné », donc `false` (cf. `parseAacAnswer`).
   const isPending = commun.isSelected === false;
 
   return (
@@ -103,14 +106,7 @@ export function AacCommunRow({ commun, className }: AacCommunRowProps) {
             {tag}
           </span>
         ))}
-        {hiddenTags.length > 0 ? (
-          <span
-            className="cursor-default rounded-lg border border-accent bg-accent px-1.5 py-px text-[11px] text-accent-foreground"
-            title={hiddenTags.join(", ")}
-          >
-            …
-          </span>
-        ) : null}
+        <AacHiddenTagsBadge tags={hiddenTags} className="px-1.5 py-px text-[11px]" />
       </div>
 
       {/* Collecte. Largeur FIXE : c'est ce qui aligne les montants en colonne. */}

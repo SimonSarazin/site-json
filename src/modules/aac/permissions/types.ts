@@ -56,6 +56,17 @@ export interface AacPermissions {
   /** 5. Contribuer financièrement (gate MAÎTRE corénumération + connexion). */
   canContributeFunding: boolean;
   canContributeFundingReason?: string;
+  /**
+   * 6. Publier / retirer un commun de l'annuaire de CET appel.
+   *
+   * Booléen et non fonction : le droit ne dépend pas du commun visé — la
+   * sélection s'écrit sous le contexte de l'appel, pas sous la réponse.
+   *
+   * ⚠️ Gate d'AFFICHAGE. Le backend n'exige que d'être connecté sur ce chemin
+   * d'écriture (`UpdatePathValuedAction`) : ne jamais le présenter comme une
+   * sécurité. Durcissement au BACKLOG.
+   */
+  canSelectCommun: boolean;
 
   isConnected: boolean;
   isAdmin: boolean;

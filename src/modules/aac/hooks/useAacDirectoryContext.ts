@@ -19,9 +19,11 @@ import { useAacConfig } from "./useAacConfig";
 import {
   useAacFormMeta,
   useAacContextId,
+  useAacContext,
   useAacFormParams,
   useAacFormEntity,
 } from "./useAacFormMeta";
+import type { AacContext } from "./aacConfigQuery";
 import { useAacPermissions } from "./useAacPermissions";
 import {
   resolveAacCardFields,
@@ -47,6 +49,11 @@ export interface AacDirectoryContext {
   /** La résolution complète, avec sa `source` — pour diagnostiquer une carte vide. */
   resolved: ResolvedAacCardFields | null;
   contextId: string | null;
+  /**
+   * Le même contexte, avec son `type` et son `name` — ce que l'écriture de
+   * `choose` dénormalise pour rester lisible sans jointure.
+   */
+  context: AacContext | null;
   /** `form.params` brut — les libellés exacts de l'arbre d'usage. */
   formParams: unknown;
   /** Qui regarde : entre dans les query keys, la population visible en dépend. */
@@ -65,6 +72,7 @@ export function useAacDirectoryContext(): AacDirectoryContext {
   const { config } = useAacConfig(formId);
   const { meta, isLoading: isFormLoading } = useAacFormMeta(formId);
   const contextId = useAacContextId(formId);
+  const context = useAacContext(formId);
   const formParams = useAacFormParams(formId);
   const form = useAacFormEntity(formId);
 
@@ -96,6 +104,7 @@ export function useAacDirectoryContext(): AacDirectoryContext {
     fields: resolved?.fields ?? EMPTY_AAC_CARD_FIELDS,
     resolved,
     contextId,
+    context,
     formParams,
     visibility,
     baseUrl: getBaseUrl(),

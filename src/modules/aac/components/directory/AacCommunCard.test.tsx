@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import type { ReactElement } from "react";
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import type { AacCommunCard as CommunCard } from "../../lib/parseAacAnswer";
 import { EMPTY_AAC_USAGE } from "../../lib/aacUsage";
@@ -71,13 +71,18 @@ describe("AacCommunCard — rythme vertical figé", () => {
     expect(gutter?.children.length).toBe(0);
   });
 
-  it("replie les tags au-delà du 2e dans une pastille qui les liste", () => {
+  it("replie les tags au-delà du 2e derrière une pastille qui les révèle", async () => {
     renderCard(<AacCommunCard commun={card({ tags: ["Alpha", "Bêta", "Gamma", "Delta"] })} />);
 
     expect(screen.getByText("Alpha")).toBeInTheDocument();
     expect(screen.getByText("Bêta")).toBeInTheDocument();
     expect(screen.queryByText("Gamma")).not.toBeInTheDocument();
-    expect(screen.getByTitle("Gamma, Delta")).toBeInTheDocument();
+
+    // La gouttière garde sa hauteur : les tags cachés vivent dans un popover,
+    // pas dans un dépliage sur place qui décalerait les cartes voisines.
+    fireEvent.click(screen.getByRole("button", { name: /showMoreTags/ }));
+    expect(await screen.findByText("Gamma")).toBeInTheDocument();
+    expect(screen.getByText("Delta")).toBeInTheDocument();
   });
 
   it("réserve la place du montant absent au lieu de replier la carte", () => {
@@ -144,5 +149,38 @@ describe("AacCommunCard — badge « en attente »", () => {
 
     expect(screen.getByText("directory.card.pending")).toBeInTheDocument();
     expect(container.querySelector("article")).toHaveClass("border-accent");
+  });
+});
+
+/**
+ * La moitié basse de la carte était inerte : la flèche ne menait nulle part et
+ * les tags tronqués n'étaient accessibles que par un `title` HTML — invisible
+ * au tactile.
+ */
+describe("AacCommunCard — affordances de la moitié basse", () => {
+  it("la flèche mène à la fiche du commun", () => {
+    renderCard(<AacCommunCard commun={card({ id: "abc123" })} />);
+    const liens = screen.getAllByRole("link");
+    const hrefs = liens.map((l) => l.getAttribute("href"));
+    // Le titre ET la flèche pointent la même fiche : deux liens, pas un.
+    expect(hrefs.filter((h) => h === "/aac/commun/abc123")).toHaveLength(2);
+  });
+
+  it("la flèche porte un libellé accessible (elle n'a aucun texte)", () => {
+    renderCard(<AacCommunCard commun={card({ id: "abc123" })} />);
+    expect(screen.getByRole("link", { name: "directory.card.viewDetail" })).toBeTruthy();
+  });
+
+  it("les tags tronqués sont derrière un BOUTON, pas un simple `title`", () => {
+    const tags = ["Communication", "Animation", "Juridique", "Gouvernance"];
+    renderCard(<AacCommunCard commun={card({ tags })} />);
+    const bouton = screen.getByRole("button");
+    expect(bouton.textContent).toBe("…");
+    expect(bouton.getAttribute("aria-label")).toContain("directory.card.showMoreTags");
+  });
+
+  it("aucun bouton quand rien n'est tronqué", () => {
+    renderCard(<AacCommunCard commun={card({ tags: ["Communication"] })} />);
+    expect(screen.queryByRole("button")).toBeNull();
   });
 });

@@ -76,7 +76,10 @@
       "user": "user",
       "users": "users",
       "interested_one": "interested",
-      "interested_other": "interested"
+      "interested_other": "interested",
+      "viewDetail": "View details for “{{name}}”",
+      "showMoreTags_one": "Show the hidden keyword",
+      "showMoreTags_other": "Show the {{count}} hidden keywords"
     },
     "sort": {
       "alpha": "Alphabetical order",
@@ -173,6 +176,30 @@
     "gallery": {
       "empty": "No images available.",
       "imageAlt": "Image {{index}}"
+    },
+    "selection": {
+      "selectCta": "Select",
+      "deselectCta": "Remove from directory",
+      "selected": "Selected",
+      "pending": "Pending",
+      "cancel": "Cancel",
+      "confirmSelect": {
+        "title": "Publish this commun in the directory?",
+        "description": "It will appear in the “{{name}}” directory, visible to all visitors.",
+        "confirm": "Yes, select"
+      },
+      "confirmDeselect": {
+        "title": "Remove this commun from the directory?",
+        "description": "It will no longer appear in the “{{name}}” directory. The commun and its answers are kept.",
+        "confirm": "Yes, remove"
+      },
+      "descriptionNoName": {
+        "confirmSelect": "It will appear in this call's directory, visible to all visitors.",
+        "confirmDeselect": "It will no longer appear in this call's directory. The commun and its answers are kept."
+      }
+    },
+    "origin": {
+      "deposedOn": "Submitted on “{{name}}”"
     }
   },
   "toasts": {

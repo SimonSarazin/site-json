@@ -16,6 +16,10 @@ import type { CoFormAnswer, CoFormData, AnswerDocumentFile } from "@/modules/cof
 import { CoFormModal } from "@/modules/coform/components/CoFormModal";
 import { useAacConfig } from "../hooks/useAacConfig";
 import { useAacPermissions } from "../hooks/useAacPermissions";
+import { useAacDirectoryContext } from "../hooks/useAacDirectoryContext";
+import { resolveAnswerAuthorId } from "../lib/answerAuthor";
+import { isSelectedIn, type ChooseProposalValue } from "@/modules/coform/utils/chooseProposal";
+import { CommunSelectionControl } from "../components/pageDetail/CommunSelectionControl.tsx";
 
 import { CommunHero } from "../components/pageDetail/CommunHero.tsx";
 import { CommunFinancingCard } from "../components/pageDetail/CommunFinancingCard.tsx";
@@ -119,7 +123,35 @@ export default function AacCommunDetailPage() {
         },
     });
 
-    const formId = answerQuery.data?.form;
+    // L'annuaire DE CE SITE : c'est lui qui dit sous quel contexte la sélection
+    // s'écrit, quelle étape porte l'input `choose`, et surtout quel formulaire
+    // fait autorité. Aucune requête supplémentaire — même entrée de cache que
+    // `useAacConfig` ci-dessous.
+    const directory = useAacDirectoryContext();
+
+    /** Le formulaire sur lequel la réponse a été DÉPOSÉE — pas forcément celui d'ici. */
+    const originFormId = answerQuery.data?.form;
+
+    /**
+     * Le formulaire qui fait autorité : celui de L'APPEL COURANT.
+     *
+     * Un commun déposé sur un autre appel peut être listé ici — il suffit que
+     * l'admin d'ici l'ait sélectionné (mesuré : 8 réponses de l'appel
+     * « tiers lieux » portent le contexte « Fédération des CAE »). Le rendre
+     * avec le formulaire de son appel d'ORIGINE afficherait les questions d'un
+     * autre appel, et son nom en titre de page.
+     *
+     * Parité legacy : `campDetail.php:2138` force `costum.mainFormId` et ne
+     * retombe sur le formulaire de la réponse qu'à défaut — d'où le `??`.
+     *
+     * Les réponses étant indexées par `answers.<étape>.<clé d'input>`, les
+     * champs que les deux appels ont en commun (titre, image, dépense…) se
+     * remplissent d'eux-mêmes : aucune recopie, c'est la structure qui le fait.
+     * Les clés propres à l'appel d'origine ne sont pas rendues ici, mais ne
+     * sont pas perdues pour autant — `SaveAnswerAction` fusionne clé par clé.
+     */
+    const formId = directory.formId ?? originFormId;
+    const isCommunEtranger = Boolean(originFormId && formId && originFormId !== formId);
 
     // Requête Configuration Formulaire
     const formQuery = useQuery({
@@ -130,6 +162,20 @@ export default function AacCommunDetailPage() {
             if (!api || !formId) throw new Error("Missing form id");
             const form = await api.form({ id: formId });
             return form.serverData as unknown as CoFormData;
+        },
+    });
+
+    // Nom de l'appel d'ORIGINE — uniquement quand il diffère, pour que l'admin
+    // sache qu'il édite un commun déposé ailleurs. Une requête de plus, dans un
+    // cas rare, contre une action à l'aveugle sur le document d'autrui.
+    const originFormQuery = useQuery({
+        queryKey: ["aac-commun-origin-form", originFormId],
+        enabled: isReady && isCommunEtranger && !!originFormId,
+        staleTime: 5 * 60 * 1000,
+        queryFn: async (): Promise<string | null> => {
+            if (!api || !originFormId) return null;
+            const form = await api.form({ id: originFormId });
+            return (form.serverData as { name?: string } | undefined)?.name ?? null;
         },
     });
 
@@ -188,13 +234,50 @@ export default function AacCommunDetailPage() {
     const answer = answerQuery.data;
     const formData = formQuery.data;
 
-    // Auteur OU admin peut modifier le commun
-    const authorId = typeof answer.user === "string" ? answer.user : answer.user?._id;
+    // Auteur OU admin peut modifier le commun. Cf. `resolveAnswerAuthorId` pour
+    // le piège : `answer.user` n'est PAS l'auteur sur un commun porté par une
+    // organisation.
+    const authorId = resolveAnswerAuthorId(answer);
     const canEditThisCommun = perms.canEditCommun({ authorId });
 
     const handleEditSubmit = async () => {
         await answerQuery.refetch();
         toast.success(String(t("detail.edit.successToast")));
+    };
+
+    // Statut de publication dans l'annuaire de CE site.
+    //
+    // Même sémantique que les cartes de l'annuaire (`parseAacAnswer`) : l'ABSENCE
+    // d'entrée vaut « non sélectionné », comme côté backend. `null` — donc aucun
+    // badge — est réservé à ce qu'on ne peut pas savoir : pas de question
+    // `choose` résolue, ou pas de contexte identifié.
+    const chooseRef = directory.fields.choose;
+    const chooseStepKey = chooseRef?.stepKey ?? null;
+    const chooseValue = chooseStepKey
+        ? ((answer.answers?.[chooseStepKey] as Record<string, unknown> | undefined)?.choose as
+              | ChooseProposalValue
+              | undefined)
+        : undefined;
+    const isSelected =
+        chooseStepKey && directory.contextId
+            ? isSelectedIn(chooseValue, directory.contextId)
+            : null;
+
+    // L'étape d'ÉVALUATION n'est pas proposée à qui n'administre pas l'appel :
+    // un déposant peut corriger son commun sans se voir offrir les critères qui
+    // servent à le juger, ni la case qui décide de sa publication. Retirée du
+    // parse, donc aussi du schéma Zod — sinon un critère requis empêcherait
+    // l'auteur d'enregistrer, sur une étape qu'il ne voit pas.
+    // Pas de `useMemo` : on est APRÈS les retours anticipés, un hook ici serait
+    // appelé conditionnellement. `SmartCoForm` mémoïse de toute façon sur le
+    // CONTENU de la liste, pas sur sa référence.
+    const hiddenStepsForEdit = !perms.isAdmin && chooseStepKey ? [chooseStepKey] : [];
+
+    // Rafraîchit la fiche affichée. Les caches de l'annuaire, eux, sont
+    // invalidés par la MUTATION elle-même (`extraInvalidate`) : ce callback-ci
+    // n'est pas exécuté si l'utilisateur quitte la page avant la réponse.
+    const handleSelectionDone = async () => {
+        await answerQuery.refetch();
     };
 
     const galleryImages = extractGalleryImages(answer.documents, getBaseUrl());
@@ -209,8 +292,11 @@ export default function AacCommunDetailPage() {
     return (
         <PageShell>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-24">
-                {canEditThisCommun && formId && (
-                    <div className="flex justify-start mb-4">
+                {/* Une condition PAR bouton : « Modifier » est ouvert à l'auteur,
+                    la sélection au seul admin de l'appel. Une garde commune
+                    priverait l'auteur non-admin de son bouton d'édition. */}
+                <div className="mb-4 flex flex-wrap items-center gap-2">
+                    {canEditThisCommun && formId && (
                         <Button
                             variant="outline"
                             size="sm"
@@ -220,8 +306,21 @@ export default function AacCommunDetailPage() {
                             <Pencil className="size-3.5" />
                             {String(t("detail.edit.cta"))}
                         </Button>
-                    </div>
-                )}
+                    )}
+
+                    <CommunSelectionControl
+                        api={api}
+                        isAdmin={perms.canSelectCommun}
+                        isSelected={isSelected}
+                        contextId={directory.contextId}
+                        contextType={directory.context?.type ?? null}
+                        contextName={directory.context?.name ?? null}
+                        subFormId={chooseStepKey}
+                        formId={formId ?? null}
+                        answerId={answerId ?? null}
+                        onDone={handleSelectionDone}
+                    />
+                </div>
 
                 {/* Top Banner */}
                 <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 mb-14">
@@ -229,6 +328,7 @@ export default function AacCommunDetailPage() {
                         formData={formData}
                         answerData={answer.answers ?? {}}
                         aacConfig={config}
+                        depositedOnName={isCommunEtranger ? (originFormQuery.data ?? null) : null}
                     />
 
                     <CommunFinancingCard 
@@ -337,6 +437,7 @@ export default function AacCommunDetailPage() {
                     title={String(t("detail.edit.title"))}
                     answerId={answerId}
                     defaultValues={answer.answers}
+                    hiddenStepKeys={hiddenStepsForEdit}
                     onAfterSubmit={handleEditSubmit}
                 />
             )}

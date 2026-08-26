@@ -76,7 +76,10 @@
       "user": "utilisateur",
       "users": "utilisateurs",
       "interested_one": "intéressé",
-      "interested_other": "intéressés"
+      "interested_other": "intéressés",
+      "viewDetail": "Voir la fiche de « {{name}} »",
+      "showMoreTags_one": "Voir le mot-clé masqué",
+      "showMoreTags_other": "Voir les {{count}} mots-clés masqués"
     },
     "sort": {
       "alpha": "Ordre alphabétique",
@@ -173,6 +176,30 @@
     "gallery": {
       "empty": "Aucune image disponible.",
       "imageAlt": "Image {{index}}"
+    },
+    "selection": {
+      "selectCta": "Sélectionner",
+      "deselectCta": "Retirer de l'annuaire",
+      "selected": "Sélectionné",
+      "pending": "En attente",
+      "cancel": "Annuler",
+      "confirmSelect": {
+        "title": "Publier ce commun dans l'annuaire ?",
+        "description": "Il apparaîtra dans l'annuaire de « {{name}} », visible par tous les visiteurs.",
+        "confirm": "Oui, sélectionner"
+      },
+      "confirmDeselect": {
+        "title": "Retirer ce commun de l'annuaire ?",
+        "description": "Il n'apparaîtra plus dans l'annuaire de « {{name}} ». Le commun et ses réponses sont conservés.",
+        "confirm": "Oui, retirer"
+      },
+      "descriptionNoName": {
+        "confirmSelect": "Il apparaîtra dans l'annuaire de cet appel à communs, visible par tous les visiteurs.",
+        "confirmDeselect": "Il n'apparaîtra plus dans l'annuaire de cet appel à communs. Le commun et ses réponses sont conservés."
+      }
+    },
+    "origin": {
+      "deposedOn": "Déposé sur « {{name}} »"
     }
   },
   "toasts": {

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import type { ReactElement } from "react";
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import type { AacCommunCard as CommunCard } from "../../lib/parseAacAnswer";
 import { EMPTY_AAC_USAGE } from "../../lib/aacUsage";
@@ -90,15 +90,18 @@ describe("AacCommunRow — les faits de l'AAC", () => {
     expect(screen.getByTitle("directory.card.noFunding")).toBeInTheDocument();
   });
 
-  it("replie les tags au-delà du 2e dans une pastille qui les liste", () => {
-    // Même rang de repli que la carte : un commun se lit pareil dans les deux
-    // modes.
+  it("replie les tags au-delà du 2e derrière une pastille qui les révèle", async () => {
+    // Même rang de repli ET même affordance que la carte : un commun se lit
+    // pareil dans les deux modes.
     renderRow(<AacCommunRow commun={commun({ tags: ["Alpha", "Bêta", "Gamma", "Delta"] })} />);
 
     expect(screen.getByText("Alpha")).toBeInTheDocument();
     expect(screen.getByText("Bêta")).toBeInTheDocument();
     expect(screen.queryByText("Gamma")).not.toBeInTheDocument();
-    expect(screen.getByTitle("Gamma, Delta")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /showMoreTags/ }));
+    expect(await screen.findByText("Gamma")).toBeInTheDocument();
+    expect(screen.getByText("Delta")).toBeInTheDocument();
   });
 });
 

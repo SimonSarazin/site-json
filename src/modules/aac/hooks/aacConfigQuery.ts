@@ -32,6 +32,13 @@ import type { AacResolvedConfig } from "../types";
 /** L'entité costum porteuse de l'AAC — celle dont le slug fait le `{source}`. */
 export type AacHostEntity = Organization | Project;
 
+/** L'organisation (ou le projet) qui porte l'appel : sous elle s'écrit `choose`. */
+export interface AacContext {
+  id: string;
+  type: string | null;
+  name: string | null;
+}
+
 /** Ce qui est réellement mis en cache sous `AAC_QUERY_KEYS.CONFIG(formId)`. */
 export interface AacConfigBundle {
   config: AacResolvedConfig;
@@ -42,6 +49,15 @@ export interface AacConfigBundle {
    * `contextId` du costum, qui peut diverger.
    */
   contextId: string | null;
+  /**
+   * Le contexte porteur au complet — `{ id, type, name }`, tel qu'il est
+   * dénormalisé dans `choose.<contextId>` à l'écriture (`buildChooseEntry`).
+   *
+   * Le `type` et le `name` viennent de la MÊME entrée de `form.parent` que
+   * `contextId` : les lire ailleurs (entité du slug, costum) risquerait de
+   * décrire un contexte et d'écrire sous la clé d'un autre.
+   */
+  context: AacContext | null;
   /**
    * `form.params` BRUT.
    *
@@ -64,13 +80,21 @@ export interface AacConfigBundle {
 export const selectAacConfig = (b: AacConfigBundle): AacResolvedConfig => b.config;
 export const selectAacFormMeta = (b: AacConfigBundle): AacFormMeta => b.meta;
 export const selectAacContextId = (b: AacConfigBundle): string | null => b.contextId;
+export const selectAacContext = (b: AacConfigBundle): AacContext | null => b.context;
 export const selectAacFormParams = (b: AacConfigBundle): unknown => b.params;
 export const selectAacFormEntity = (b: AacConfigBundle): Form => b.form;
 
-function firstParentId(formData: unknown): string | null {
+function firstParent(formData: unknown): AacContext | null {
   const parent = (formData as { parent?: unknown } | null)?.parent;
   if (!parent || typeof parent !== "object" || Array.isArray(parent)) return null;
-  return Object.keys(parent as Record<string, unknown>)[0] ?? null;
+  const [id, valeur] = Object.entries(parent as Record<string, unknown>)[0] ?? [];
+  if (!id) return null;
+  const infos = (valeur ?? {}) as { type?: unknown; name?: unknown };
+  return {
+    id,
+    type: typeof infos.type === "string" ? infos.type : null,
+    name: typeof infos.name === "string" ? infos.name : null,
+  };
 }
 
 export function aacConfigQueryOptions(
@@ -102,10 +126,13 @@ export function aacConfigQueryOptions(
         }
       }
 
+      const context = firstParent(formData);
+
       return {
         config: resolveAacConfig(formId, formData, configData),
         meta: buildAacFormMeta(formId, formData),
-        contextId: firstParentId(formData),
+        contextId: context?.id ?? null,
+        context,
         params: (formData as { params?: unknown } | null)?.params,
         form,
       };

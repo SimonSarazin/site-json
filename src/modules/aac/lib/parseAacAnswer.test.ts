@@ -406,9 +406,16 @@ describe("parseAacAnswer — compteurs et badge", () => {
         { contextId: "ctx1" }
       ).isSelected
     ).toBe(false);
-    // Étape absente ⇒ indécidé.
-    expect(parse({ ...base, answers: { etapeA: {} } }, { contextId: "ctx1" }).isSelected).toBeNull();
-    // Sans contextId ⇒ indécidé.
+    // Étape d'évaluation ABSENTE ⇒ en attente, PAS indécidé. Régression réelle :
+    // « My commun cae » (`6a8ebd5e6d5a7c2dd1693fa5`) n'a que `aapStep1`, et
+    // s'affichait donc comme sélectionné faute de badge. L'absence vaut
+    // « non sélectionné » côté backend (`Aap.php:1190-1193`).
+    expect(parse({ ...base, answers: { etapeA: {} } }, { contextId: "ctx1" }).isSelected).toBe(
+      false
+    );
+    // Aucune réponse du tout ⇒ toujours en attente, pour la même raison.
+    expect(parse({ ...base }, { contextId: "ctx1" }).isSelected).toBe(false);
+    // Sans contextId ⇒ indécidé : on ne sait pas sous quelle clé regarder.
     expect(
       parse({ ...base, answers: { etapeB: { choose: {} } } }).isSelected
     ).toBeNull();

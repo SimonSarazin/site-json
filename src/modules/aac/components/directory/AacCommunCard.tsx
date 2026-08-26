@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/useT";
+import { AacHiddenTagsBadge } from "./AacHiddenTagsBadge";
 import type { AacCommunCard as CommunCard } from "../../lib/parseAacAnswer";
 import {
   AAC_VISIBLE_TAGS,
@@ -48,8 +49,10 @@ export function AacCommunCard({ commun, className }: AacCommunCardProps) {
         // scopé, comme le fait `communSlider.php`. La valeur vient donc du rendu
         // de référence, pas de `directory.css`.
         "relative min-h-140 rounded-[10px] border bg-card p-5",
-        // `isSelected === null` ⇒ indécidable (étape d'évaluation absente de la
-        // réponse) ⇒ carte NORMALE, jamais « en attente » par défaut.
+        // `isSelected === null` ⇒ indécidable : aucune question `choose` résolue,
+        // ou aucun contexte identifié ⇒ carte NORMALE, aucun badge. Une réponse
+        // sans étape d'évaluation n'est PAS ce cas-là : l'absence d'entrée vaut
+        // « non sélectionné », donc `false` (cf. `parseAacAnswer`).
         isPending ? "border-accent" : "border-primary",
         className
       )}
@@ -104,14 +107,10 @@ export function AacCommunCard({ commun, className }: AacCommunCardProps) {
               {tag}
             </span>
           ))}
-          {hiddenTags.length > 0 && (
-            <span
-              className="mr-1.25 mb-1.25 inline-block min-w-5 cursor-default rounded-lg border border-accent bg-accent px-0.5 py-px text-center text-xs text-accent-foreground"
-              title={hiddenTags.join(", ")}
-            >
-              …
-            </span>
-          )}
+          <AacHiddenTagsBadge
+            tags={hiddenTags}
+            className="mr-1.25 mb-1.25 inline-block min-w-5 px-0.5 py-px text-xs"
+          />
         </div>
 
         <div className="pb-1.25 text-center">
@@ -171,7 +170,22 @@ export function AacCommunCard({ commun, className }: AacCommunCardProps) {
             </span>
           </div>
 
-          <span className="flex h-9.5 w-9.5 shrink-0 items-center justify-center rounded-full border-4 border-primary text-primary">
+          {/* Le legacy fait de cette flèche le raccourci vers la fiche : c'est la
+              seule affordance de la moitié basse de la carte, le titre étant
+              loin au-dessus. La rendre inerte laissait cliquer dans le vide. */}
+          <Link
+            to={`/aac/commun/${commun.id}`}
+            // Le nom du commun EST le libellé : une grille de 30 cartes
+            // exposerait sinon 30 liens identiques dans la liste de liens d'un
+            // lecteur d'écran, sans contexte programmatique pour les distinguer
+            // (le conteneur est une grille d'`<article>` sans `aria-label`).
+            aria-label={String(
+              t("directory.card.viewDetail", undefined, {
+                name: commun.hasTitle ? commun.title : String(t("directory.card.untitled")),
+              })
+            )}
+            className="flex h-9.5 w-9.5 shrink-0 items-center justify-center rounded-full border-4 border-primary text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
+          >
             {/* Flèche courbe du legacy, reprise telle quelle : aucune icône Lucide
                 ne correspond à ce tracé (viewBox 24, pivoté de 180°). */}
             <svg
@@ -192,7 +206,7 @@ export function AacCommunCard({ commun, className }: AacCommunCardProps) {
                 <path d="M3 10h8c5.523 0 10 4.477 10 10v1" />
               </g>
             </svg>
-          </span>
+          </Link>
         </div>
       </div>
     </article>

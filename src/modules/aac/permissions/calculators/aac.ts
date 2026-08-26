@@ -94,6 +94,10 @@ export function calculateAacPermissions(
       ? "Co-funding disabled (master gate)"
       : "User not connected";
 
+  // 6. Publier / retirer un commun de l'annuaire — administration de l'appel.
+  // Affichage seulement : le chemin d'écriture backend n'exige que la connexion.
+  const canSelectCommun = isAdmin;
+
   return {
     canCreateCommun,
     canCreateCommunReason,
@@ -102,6 +106,7 @@ export function calculateAacPermissions(
     canParticipateActions,
     canContributeFunding,
     canContributeFundingReason,
+    canSelectCommun,
     isConnected,
     isAdmin,
     currentUserId,

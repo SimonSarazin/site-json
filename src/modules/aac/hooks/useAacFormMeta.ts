@@ -14,9 +14,11 @@ import {
   aacConfigQueryOptions,
   selectAacFormMeta,
   selectAacContextId,
+  selectAacContext,
   selectAacFormParams,
   selectAacFormEntity,
 } from "./aacConfigQuery";
+import type { AacContext } from "./aacConfigQuery";
 import type { Form } from "@communecter/cocolight-api-client";
 import type { AacFormMeta } from "../lib/formMeta";
 
@@ -47,6 +49,21 @@ export function useAacContextId(formId: string | null): string | null {
   const { data } = useQuery({
     ...aacConfigQueryOptions(loading ? null : api, entity, formId),
     select: selectAacContextId,
+  });
+
+  return data ?? null;
+}
+
+/**
+ * Le contexte porteur au complet (`{ id, type, name }`) — ce que `choose`
+ * dénormalise à l'écriture. Même entrée de cache, autre `select`.
+ */
+export function useAacContext(formId: string | null): AacContext | null {
+  const { api, entity, loading } = useCocolight();
+
+  const { data } = useQuery({
+    ...aacConfigQueryOptions(loading ? null : api, entity, formId),
+    select: selectAacContext,
   });
 
   return data ?? null;
