@@ -7,7 +7,7 @@ import { DynamicCoForm } from "./DynamicCoForm";
 import { MultiStepCoForm } from "./MultiStepCoForm";
 import { CoFormReadOnly } from "./CoFormReadOnly";
 import { CommonTableCatalogsProvider } from "../contexts/CommonTableCatalogsProvider";
-import { parseCoFormFields, normalizeAnswerData, denormalizeAnswerData, extractFinderLinks, getOriginalFieldKey } from "../utils/formParser";
+import { parseCoFormFields, omitHiddenSteps, normalizeAnswerData, denormalizeAnswerData, extractFinderLinks, getOriginalFieldKey } from "../utils/formParser";
 import type { CoFormData, SubmitMode, AllStepsData, SubFormData, AddedOptionsMap, ExistingAnswerMeta } from "../types";
 import type { FinderLinksMap } from "../utils/formParser";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -65,6 +65,15 @@ interface SmartCoFormProps {
   submitRef?: React.RefObject<(() => void) | null>;
   /** Liste de clés d'inputs verrouillés (lecture seule, non modifiables) */
   lockedFields?: string[];
+  /**
+   * Étapes à retirer du parcours pour CET appel — indépendamment de ce que le
+   * formulaire déclare. Sert aux règles qui dépendent de l'utilisateur et de
+   * l'écran, là où `hideStep` est une propriété du formulaire : sur la fiche
+   * d'un commun, l'étape d'évaluation n'est pas proposée à qui n'administre pas
+   * l'appel. L'étape sort du parcours, du sommaire, du schéma Zod et des
+   * valeurs par défaut.
+   */
+  hiddenStepKeys?: readonly string[];
   /** updatedAt serveur (édition) — pour détecter les drafts obsolètes. */
   baseUpdatedAt?: number | null;
   /**
@@ -184,6 +193,7 @@ export function SmartCoForm({
   onDirtyChange,
   submitRef,
   lockedFields,
+  hiddenStepKeys,
   baseUpdatedAt,
   existingAnswerMeta,
   elementId,
@@ -196,7 +206,8 @@ export function SmartCoForm({
     isLoading,
     error,
     refetch,
-    stepsCount,
+    // `stepsCount` du hook n'est volontairement PAS consommé : il compte les
+    // étapes brutes, donc les étapes masquées. Cf. `actualStepsCount`.
   } = useCoFormQuery({
     formId: formId ?? "",
     enabled: !!formId && !externalFormData,
@@ -222,9 +233,23 @@ export function SmartCoForm({
   // multi-eval (read = SA contribution `_multiEval.{id}` ; write = SON entrée).
   const currentUserId = me?.id ?? null;
 
+  // Étapes masquées par l'appelant : on filtre la DONNÉE, une fois, et tout ce
+  // qui suit — parse, rendu, sommaire, schéma Zod, valeurs par défaut — en
+  // hérite. Filtrer seulement au parse ne suffisait pas : les enfants reparsent
+  // le `formData` qu'on leur passe (cf. `omitHiddenSteps`).
+  //
+  // `hiddenStepKeys` est souvent recréé à chaque rendu par l'appelant : on
+  // dépend de son CONTENU, pas de sa référence.
+  const hiddenStepsKey = hiddenStepKeys ? hiddenStepKeys.join("|") : "";
+  const visibleFormData = useMemo(
+    () => (formData ? omitHiddenSteps(formData, hiddenStepKeys) : formData),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- contenu, pas référence
+    [formData, hiddenStepsKey]
+  );
+
   const allSubFormsFields = useMemo(
-    () => (formData ? parseCoFormFields(formData) : []),
-    [formData]
+    () => (visibleFormData ? parseCoFormFields(visibleFormData) : []),
+    [visibleFormData]
   );
 
   // Auto-résolution du stepKey à partir de l'inputKey si stepKey n'est pas fourni
@@ -238,11 +263,19 @@ export function SmartCoForm({
   }, [stepKey, inputKey, formData]);
 
   // Mode standalone : fabriquer un formData filtré à une seule étape
+  //
+  // `hideStep` est neutralisé sur l'étape recopiée : la config du site a
+  // réclamé CETTE étape nommément, la masquer rendrait une page vide en
+  // silence. Même raisonnement que pour `hideStepStandalone` (cf.
+  // `CoFormSubFormInputs`) — `hideStep` retire une étape du PARCOURS, il ne
+  // désactive pas une page qui ne porte qu'elle.
   const standaloneFormData = useMemo(() => {
     if (!resolvedStepKey || !formData?.inputs?.[resolvedStepKey]) return null;
     return {
       ...formData,
-      inputs: { [resolvedStepKey]: formData.inputs[resolvedStepKey] },
+      inputs: {
+        [resolvedStepKey]: { ...formData.inputs[resolvedStepKey], hideStep: false },
+      },
       // Pas de bannière en standalone
       useBannerImg: false,
     } as CoFormData;
@@ -257,6 +290,8 @@ export function SmartCoForm({
       inputs: {
         [resolvedStepKey]: {
           ...step,
+          // Cf. `standaloneFormData` : le champ est réclamé nommément.
+          hideStep: false,
           inputs: { [inputKey]: step.inputs[inputKey] },
         },
       },
@@ -266,6 +301,9 @@ export function SmartCoForm({
 
   const effectiveStandaloneData = inputStandaloneFormData ?? standaloneFormData;
 
+  // Le mode standalone n'applique PAS `hiddenStepKeys` : l'appelant a réclamé
+  // cette étape-là explicitement par `stepKey`, la demande explicite l'emporte —
+  // même arbitrage que le `hideStep: false` forcé sur l'étape recopiée.
   const subFormsFields = effectiveStandaloneData
     ? parseCoFormFields(effectiveStandaloneData)
     : allSubFormsFields;
@@ -330,9 +368,12 @@ export function SmartCoForm({
     return <EmptyState />;
   }
 
-  const actualStepsCount = externalFormData
-    ? Object.keys(externalFormData.inputs || {}).length
-    : stepsCount;
+  // Compte des étapes RÉELLEMENT rendues. `stepsCount` (comme le décompte brut
+  // de `externalFormData.inputs`) part de `formData.inputs`, donc AVANT le
+  // filtre `hideStep` : un formulaire à deux étapes dont une masquée franchirait
+  // encore `multiStepThreshold` et afficherait tout le chrome du wizard pour une
+  // étape unique. On dérive donc du parse, seule source qui connaît le filtre.
+  const actualStepsCount = allSubFormsFields.length;
 
   // Déterminer le mode à utiliser
   const shouldUseMultiStep = (() => {
@@ -367,7 +408,10 @@ export function SmartCoForm({
   }
 
   // Données effectives (filtrées si standalone)
-  const effectiveFormData = effectiveStandaloneData ?? formData;
+  // `formData` est narrowé non-null par la garde ci-dessus (l.367) ; le memo,
+  // lui, est déclaré avant elle. On retombe donc explicitement sur `formData`
+  // plutôt que de poser une assertion.
+  const effectiveFormData = effectiveStandaloneData ?? visibleFormData ?? formData;
   const isStandalone = !!standaloneFormData;
   const isInputStandalone = !!inputStandaloneFormData;
 
@@ -408,7 +452,7 @@ export function SmartCoForm({
   if (shouldUseMultiStep) {
     return withCatalogs(
       <MultiStepCoForm
-        formData={formData}
+        formData={effectiveFormData}
         submitMode={submitMode}
         onStepSubmit={onStepSubmit}
         onFinalSubmit={

@@ -501,6 +501,58 @@
       "save": "Save",
       "cancel": "Cancel",
       "empty": "No expense yet."
+    },
+    "selection": {
+      "criterion": "Criterion",
+      "candidateValue": "Applicant's answer",
+      "note": "Score",
+      "myMean": "My evaluation",
+      "allMean": "All evaluators",
+      "evaluatorCount_one": "{{count}} evaluator",
+      "evaluatorCount_other": "{{count}} evaluators",
+      "noCriteria": "No evaluation criteria have been configured.",
+      "admissibility": "Eligibility",
+      "admissible": "Eligible",
+      "inadmissible": "Not eligible",
+      "otherStatus": "Current status: {{value}}",
+      "toasts": {
+        "noteSaved": "Score saved",
+        "noteFailed": "The score could not be saved",
+        "admissibilitySaved": "Eligibility opinion saved",
+        "admissibilityFailed": "The opinion could not be saved"
+      }
+    },
+    "pourContre": {
+      "for": "For",
+      "neutral": "Neutral",
+      "against": "Against",
+      "yourVote": "Your vote",
+      "thanks": "Thank you for your vote: {{vote}}",
+      "voters": "Voters",
+      "distribution": "Vote distribution",
+      "minimum": "Expected threshold: {{value}}",
+      "toasts": {
+        "voteSaved": "Vote saved",
+        "voteFailed": "The vote could not be saved"
+      }
+    },
+    "aapEvaluation": {
+      "noCriteria": "No evaluation criteria have been configured.",
+      "toasts": {
+        "noteSaved": "Score saved",
+        "noteFailed": "The score could not be saved"
+      }
+    },
+    "chooseProposal": {
+      "yes": "Yes",
+      "no": "No",
+      "legend": "Directory listing",
+      "context": "Context: {{name}}",
+      "alsoSelected": "Also selected by: {{names}}",
+      "toasts": {
+        "saved": "Choice saved",
+        "failed": "The choice could not be saved"
+      }
     }
   }
 }

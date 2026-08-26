@@ -159,11 +159,54 @@ export interface CoFormInputField {
   placeholder?: string;
   info?: string;
   position?: string;
+  /**
+   * Position d'affichage **par formulaire parent**, `positions[<formId>]`.
+   *
+   * Un même document d'étape sert parfois plusieurs formulaires (766 inputs du
+   * parc portent une position pour au moins deux parents), d'où la map. Elle
+   * fait AUTORITÉ sur `position`, qui n'est alors souvent même pas écrite :
+   * mesuré sur l'étape 2 d'« Appel à commun des tiers lieux », 15 inputs sur 17
+   * n'ont que `positions`. Les lire comme des zéros regroupait les titres de
+   * section en tête au lieu de les intercaler. Cf. `resolveInputOrder`.
+   */
+  positions?: Record<string, string>;
   type: string;
   isRequired?: boolean;
   activeComments?: boolean;
   width?: string;
-  enableMarkdown?: boolean;
+  /**
+   * Éditeur markdown sur un textarea. ACTIF PAR DÉFAUT : seul un `false`
+   * explicite le désactive (cf. `parseCoFormFields`).
+   *
+   * Typé `boolean | string` parce que le parc stocke volontiers ses booléens en
+   * chaînes (`activateLocalCriteria` vaut `"true"` sur des formulaires réels) ;
+   * un `"false"` écrit demain doit désactiver, pas activer.
+   */
+  enableMarkdown?: boolean | string;
+  /**
+   * L'input n'est pas rendu dans le formulaire. Statique (indépendant de
+   * l'utilisateur), contrairement à `isAdminOnly`. Sert à sortir du parcours
+   * de dépôt la partie *instruction* d'un dossier — 42 inputs du parc, dont
+   * les 19 champs de suivi de `fondationTerritorialeDesLumieres` et le
+   * `decide` (multiDecide) des étapes de jury AAP.
+   *
+   * La valeur déjà saisie n'est pas perdue pour autant : le champ absent du
+   * payload, `SaveAnswerAction` fusionne clé par clé et conserve l'existant.
+   */
+  hideInForm?: boolean | string;
+  /**
+   * L'input est **masqué à l'affichage** pour qui n'est pas admin du contexte,
+   * et son écriture est refusée côté serveur (`SaveAnswerAction` strippe la
+   * clé du payload). Ce n'est PAS de la confidentialité : la valeur déjà
+   * enregistrée continue de transiter dans le payload de la réponse, comme
+   * pour les listes place-level et comme dans le legacy.
+   *
+   * Contrairement à `hideInForm`, la décision dépend de l'utilisateur : elle
+   * est prise côté serveur (`Coform::computeAdminOnlyFields`) et arrive au
+   * client fondue dans `access.restrictedFields`. Présent ici pour documenter
+   * le champ tel qu'il est stocké — React ne le lit pas lui-même.
+   */
+  isAdminOnly?: boolean | string;
   conditionalDisplay?: ConditionalDisplay;
   [key: string]: unknown;
 }
@@ -174,6 +217,45 @@ export interface CoFormSubFormInputs {
   id: string;
   formParent: string;
   hasMultiEval?: boolean;
+  /**
+   * Étape masquée — case « Cacher etape » du wizard de config AAP. L'étape
+   * disparaît du parcours ET du sommaire, en réponse comme en lecture, **pour
+   * tout le monde**.
+   *
+   * Écart assumé avec le legacy, qui exempte l'admin de la réponse
+   * (`Formv2::getParamsWizard`) : arbitrage user du 25/08 — une étape cochée
+   * « cachée » l'est pour tous, c'est plus simple à expliquer et à vérifier.
+   * Le legacy ne masque en outre que si une réponse existe déjà ; ici la règle
+   * vaut aussi à la création, sans quoi l'étape apparaîtrait puis
+   * disparaîtrait au premier enregistrement.
+   *
+   * Le drapeau vit dans le doc `aapConfig` (`subForms.<step>.hideStep`) et
+   * n'atteint le client que parce que `Coform::getCompleteFormData` le recopie
+   * — **uniquement dans la branche `aap`/`templatechild`**. Sur un formulaire
+   * non-aap, la projection ne le remonte pas et le drapeau reste inopérant ;
+   * c'est sans conséquence aujourd'hui (0 occurrence hors `aapConfig` en base)
+   * mais ce serait le point à étendre le jour où un form générique en aurait
+   * besoin.
+   *
+   * Typé `boolean | string` par prudence, comme `hideInForm` : le backend
+   * normalise bien en booléen, mais le parse lit via `isTruthyFlag` et rien
+   * n'empêche une écriture directe en base de poser une chaîne.
+   *
+   * Une lecture STRUCTURELLE (où se trouve tel champ, par opposition à quoi
+   * afficher) doit passer `includeHiddenSteps` à `parseCoFormFields` —
+   * cf. `getSharedFinderInfo`.
+   */
+  hideStep?: boolean | string;
+  /**
+   * Case « Cacher etape sur le standalone ». **Volontairement non appliqué** :
+   * le `standAlone` du legacy désigne la page de réponse dédiée
+   * (`survey/views/tpls/forms/standalone/`), qui n'a pas d'équivalent ici. Le
+   * mode « standalone » de site-json est autre chose — une étape que la config
+   * du site demande explicitement par `stepKey` ; y appliquer ce drapeau
+   * viderait une page qu'on vient tout juste de réclamer. Exposé pour que la
+   * donnée soit disponible le jour où un mode équivalent existera.
+   */
+  hideStepStandalone?: boolean | string;
   inputs: Record<string, CoFormInputField>;
 }
 
@@ -557,6 +639,24 @@ export interface CoFormData {
   updated?: number;
   params?: CoFormParams | null;
   inputs?: Record<string, CoFormSubFormInputs> | null;
+  /**
+   * Configuration portée par le formulaire PARENT. `multiDecide` y désigne le
+   * type d'input de décision réellement rendu à la place du placeholder
+   * `tpls.forms.ocecoform.multiDecide` — cf. `resolveMultiDecide`.
+   */
+  inputConfig?: { multiDecide?: string } & Record<string, unknown>;
+  /**
+   * Critères de l'input `tpls.forms.aap.evaluation`, portés par le formulaire
+   * PARENT. Le legacy les fait primer sur ceux du document de configuration
+   * partagé quand `activateLocalCriteria` est vrai — ce qui est le cas de 125
+   * des 126 formulaires configurés. Cf. `utils/aapEvaluation.ts`.
+   */
+  evaluationCriteria?: {
+    type?: unknown;
+    criterions?: unknown;
+    activateLocalCriteria?: unknown;
+    whoCanEvaluate?: unknown;
+  } | null;
   type: string;
   profilBannerUrl?: string;
   profilRealBannerUrl?: string;
@@ -615,7 +715,7 @@ export interface FormFieldMapping {
   name: string; // Nom du champ pour react-hook-form
   label: string;
   type: string; // Type CoForm (text, textarea, tpls.forms.cplx.radioNew, etc.)
-  componentType: "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "multiRadio" | "evaluation" | "commonTable" | "categorizedCheckbox" | "finder" | "simpleTable" | "uploader" | "timeSlots" | "dynamicFields" | "location" | "sectionTitle" | "sectionDescription" | "milestoneList" | "titleSeparator" | "tags" | "unknown";
+  componentType: "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "multiRadio" | "evaluation" | "commonTable" | "categorizedCheckbox" | "finder" | "simpleTable" | "uploader" | "timeSlots" | "dynamicFields" | "location" | "sectionTitle" | "sectionDescription" | "milestoneList" | "titleSeparator" | "tags" | "selection" | "pourContre" | "aapEvaluation" | "chooseProposal" | "unknown";
   inputType?: string; // Type HTML pour l'input (url, email, tel, etc.) - utilisé quand componentType est "text"
   placeholder?: string;
   info?: string;
@@ -925,7 +1025,19 @@ export interface CoFormAnswer {
   answers: AllStepsData;
   /** ID du formulaire parent */
   form?: string;
-  /** ID de l'utilisateur qui a répondu */
+  /**
+   * ID BRUT du déposant, posé par `FindAnsweredByIdAction` avant tout
+   * remaniement. C'est la seule source fiable pour « qui a déposé ce commun » :
+   * cf. l'avertissement sur `user` juste en dessous.
+   */
+  userId?: string;
+  /**
+   * ⚠️ PAS l'id du déposant en général. Le backend ÉCRASE ce champ par l'entité
+   * résolue pour l'affichage, en prenant d'abord `links.organizations`, puis
+   * `links.answered[0]` (`FindAnsweredByIdAction`). Sur une réponse portée par
+   * une organisation, on y trouve donc l'ORGANISATION, pas la personne.
+   * Pour une comparaison d'auteur, lire `userId`.
+   */
   user?: string | { _id?: string; name?: string; profilMediumImageUrl?: string };
   /** Timestamp de création */
   created?: number;

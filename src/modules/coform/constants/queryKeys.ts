@@ -15,9 +15,30 @@ export const COFORM_QUERY_KEYS = {
    * Producteur : `useCoFormQuery` (hook principal de lecture form)
    * Consommateurs invalidants : `useCoFormFinalMutation` (après save answer,
    *   le backend peut enrichir le form ; voir `actions/mutations/file.ts`)
+   *
+   * ⚠️ **Scopée par utilisateur.** La réponse embarque `access`, calculé
+   * serveur-side POUR L'UTILISATEUR COURANT : `restrictedFields`,
+   * `existingAnswer`, `canAnswer`… Sans le `userId` dans la clé, le
+   * préchargement SSR (anonyme) et la session connectée partagent la même
+   * entrée, gardée 5 minutes : un admin se voyait servir l'`access` d'un
+   * visiteur non identifié, et les champs `isAdminOnly` restaient masqués
+   * pour lui — `restrictedFields` pilotant désormais le parse, donc aussi le
+   * schéma Zod et les valeurs par défaut, pas seulement le rendu.
+   *
+   * `"anon"` plutôt que `null` pour l'utilisateur non identifié : une clé
+   * explicite, distincte de celle d'un connecté, jamais confondue avec elle.
    */
-  FORM: (formId: string | null) => ["coform", "form", formId] as const,
-  /** Invalide la définition d'un form donné (ou tous les forms si `formId` omis). */
+  FORM: (formId: string | null, userId: string | null = null) =>
+    ["coform", "form", formId, userId ?? "anon"] as const,
+  /**
+   * Invalide la définition d'un form donné (ou tous les forms si `formId` omis).
+   *
+   * Reste le préfixe de `FORM` **sans** le segment utilisateur : une
+   * invalidation touche donc toutes les variantes par utilisateur d'un même
+   * form, ce qui est le comportement voulu. C'est aussi pourquoi toute
+   * invalidation doit passer par ici et non par `FORM(formId)`, qui ne
+   * viserait que l'entrée « anon ».
+   */
   FORM_PREFIX: (formId: string | null = null) =>
     formId === null
       ? (["coform", "form"] as const)
@@ -41,7 +62,16 @@ export const COFORM_QUERY_KEYS = {
    * Réponse unique (answer.data complet pour un answer donné).
    *
    * Producteur : `useCoFormQuery` (mode answer)
-   * Consommateurs invalidants : `useCoFormFinalMutation` (après save)
+   * Consommateurs invalidants : `useCoFormFinalMutation` (après save), et les
+   * cinq mutations des inputs de DÉCISION, qui écrivent par chemin ciblé hors
+   * soumission (`actions/mutations/selection.ts`) — `useSaveSelectionNote`,
+   * `useSaveAdmissibility`, `useSaveVote`, `useSaveAapEvaluationNote`,
+   * `useSaveChooseProposal`.
+   *
+   * Ces cinq-là DOIVENT invalider : leur valeur est indexée par évaluateur (ou
+   * par contexte), si bien que l'affichage dépend de ce qu'ont écrit les AUTRES
+   * — moyenne « tous les votants », décompte des votes, liste des costums ayant
+   * retenu la candidature. Rafraîchir le seul état local ne suffirait pas.
    *
    * `userId` est inclus pour éviter une fuite de cache cross-user : sans cette
    * dimension, user A submit un answer, puis user B se logger dans la même

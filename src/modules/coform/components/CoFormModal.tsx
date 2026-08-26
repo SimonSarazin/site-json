@@ -49,6 +49,12 @@ export interface CoFormModalProps {
   /** Liste de clés d'inputs verrouillés (non modifiables dans le modal) */
   lockedFields?: string[];
   /**
+   * Étapes à retirer du parcours pour cet appel (cf. `SmartCoForm`). La règle
+   * vient de l'appelant, pas du formulaire — typiquement « l'étape d'évaluation
+   * n'est pas proposée à qui n'administre pas l'appel ».
+   */
+  hiddenStepKeys?: readonly string[];
+  /**
    * ID de l'élément lié au form (lieu, projet, événement…). Active le mode
    * "par élément" backend : `Coform::getFormAccessInfo` calcule alors
    * `access.restrictedFields` à partir de `placeAdminOnlyFields` /
@@ -83,6 +89,7 @@ export function CoFormModal({
   closeOnSubmit = !inputKey,
   className,
   lockedFields,
+  hiddenStepKeys,
   elementId,
   elementType,
   unknownFieldVariant,
@@ -182,6 +189,7 @@ export function CoFormModal({
               onDirtyChange={setIsDirty}
               submitRef={submitRef}
               lockedFields={lockedFields}
+              hiddenStepKeys={hiddenStepKeys}
               elementId={elementId}
               elementType={elementType}
               unknownFieldVariant={unknownFieldVariant}

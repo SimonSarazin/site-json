@@ -1,5 +1,6 @@
 import { z } from "zod";
-import type { CoFormData, FormFieldMapping, SubFormFields, MultiCheckboxPlusOptionType, EvaluationConfig, FinderConfig, FinderFilter, SimpleTableConfig, SimpleTableColumn, SimpleTableRow, UploaderConfig, ConditionalDisplay, CommonTableConfig, CommonTableValue, CategorizedCheckboxConfig, CategorizedCheckboxSource, CategorizedCheckboxValue, TimeSlotsConfig, DynamicFieldsConfig } from "../types";
+import { resolveMultiDecide } from "./multiDecide";
+import type { CoFormData, CoFormInputField, FormFieldMapping, SubFormFields, MultiCheckboxPlusOptionType, EvaluationConfig, FinderConfig, FinderFilter, SimpleTableConfig, SimpleTableColumn, SimpleTableRow, UploaderConfig, ConditionalDisplay, CommonTableConfig, CommonTableValue, CategorizedCheckboxConfig, CategorizedCheckboxSource, CategorizedCheckboxValue, TimeSlotsConfig, DynamicFieldsConfig } from "../types";
 import { isSlotComplete, isSlotOrdered } from "./timeSlots";
 
 // ─── Configuration des préfixes de champs ────────────────────────
@@ -39,6 +40,23 @@ export function isRootLevelField(componentType: FormFieldMapping["componentType"
 }
 
 /**
+ * Lecture d'un drapeau de configuration d'input, calquée sur le
+ * `filter_var($v, FILTER_VALIDATE_BOOLEAN)` du PHP.
+ *
+ * Le parc mélange booléens et chaînes pour un même drapeau. On ne réplique
+ * volontairement PAS le `== true` lâche du legacy, qui fait passer la chaîne
+ * `"false"` pour vraie — masquer un champ parce que quelqu'un a écrit
+ * `hideInForm: "false"` serait absurde.
+ */
+export function isTruthyFlag(value: unknown): boolean {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value === 1;
+  if (typeof value !== "string") return false;
+  const v = value.trim().toLowerCase();
+  return v === "true" || v === "1" || v === "on" || v === "yes";
+}
+
+/**
  * Génère le nom du champ avec son préfixe si nécessaire
  * @param componentType - Type du composant
  * @param originalKey - Clé originale du champ dans le formulaire
@@ -50,6 +68,34 @@ export function getFieldNameWithPrefix(
 ): string {
   const prefix = FIELD_PREFIX_MAP[componentType];
   return prefix ? `${prefix}${originalKey}` : originalKey;
+}
+
+/**
+ * Position d'affichage d'un input, dans la priorité du legacy.
+ *
+ * Un document d'étape peut servir PLUSIEURS formulaires parents : la position
+ * est alors stockée par parent dans `positions[<formId>]`, et la clé plate
+ * `position` n'est souvent même pas écrite. Sur l'étape 2 d'« Appel à commun
+ * des tiers lieux », 15 inputs sur 17 sont dans ce cas — les lire comme des
+ * zéros faisait remonter les 6 titres de section en tête, groupés, au lieu de
+ * les intercaler au-dessus de leurs questions.
+ *
+ * Même bascule que le legacy, qui trie sur `positions[$parentForm['_id']]` pour
+ * un AAP et sur `position` sinon (`survey/views/tpls/forms/step.php:94-113`).
+ * Ici la bascule est portée par la donnée et non par le type de formulaire :
+ * mesuré, quand les deux clés coexistent elles ne divergent jamais.
+ *
+ * @param input - L'input BRUT, tel qu'il est stocké (avant résolution multiDecide)
+ * @param formParentId - `_id` du formulaire parent, porté par `CoFormSubFormInputs.formParent`
+ */
+export function resolveInputOrder(
+  input: Pick<CoFormInputField, "position" | "positions">,
+  formParentId: string | undefined
+): number {
+  const scoped = formParentId ? input.positions?.[formParentId] : undefined;
+  const raw = scoped ?? input.position;
+  const parsed = parseInt(raw ?? "0", 10);
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 /**
@@ -185,6 +231,11 @@ export function mapCoFormTypeToComponentType(
     // en synchronisation serveur immédiate, pas de
     // schéma Zod structurant (le composant ne dépend pas de la valeur RHF).
     "tpls.forms.ocecoform.newDepenseList": "milestoneList",
+    // Cible de l'indirection `multiDecide` — cf. `utils/multiDecide.ts`.
+    "tpls.forms.aap.selection": "selection",
+    "tpls.forms.ocecoform.pourContre": "pourContre",
+    "tpls.forms.aap.evaluation": "aapEvaluation",
+    "tpls.forms.aap.chooseProposal": "chooseProposal",
     "tpls.forms.cplx.timeSlots": "timeSlots",
     "tpls.forms.cplx.dynamicFields": "dynamicFields",
     // Types HTML natifs date/heure (formulaires SSBE) : même pipeline que
@@ -240,17 +291,108 @@ export function mapCoFormTypeToComponentType(
 /**
  * Convertit les inputs CoForm en structure mappée pour react-hook-form
  */
-export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
+export interface ParseCoFormFieldsOptions {
+  /**
+   * Conserver les étapes marquées `hideStep`. Réservé aux lectures
+   * STRUCTURELLES, qui cherchent où se trouve un champ et non ce qu'il faut
+   * afficher — `getSharedFinderInfo` en est le cas type : le finder partagé
+   * détermine le lieu de la réponse, et cette information ne doit pas dépendre
+   * du fait qu'un admin ait coché « cacher l'étape ».
+   */
+  includeHiddenSteps?: boolean;
+}
+
+/**
+ * Retire des étapes du formulaire, sur décision de L'APPELANT.
+ *
+ * Complète `hideStep`, qui est une propriété du FORMULAIRE : ici la règle vient
+ * du contexte d'appel — « l'étape d'évaluation d'un appel à communs n'est pas
+ * proposée à qui n'administre pas cet appel ». Le formulaire ne peut pas la
+ * porter : elle dépend de l'utilisateur ET de l'écran.
+ *
+ * ⚠️ Filtre la DONNÉE, et non le parse. Une option passée à `parseCoFormFields`
+ * se perdrait à la frontière du composant : `CoFormProvider`, `DynamicCoForm` et
+ * `CoFormReadOnly` reparsent le `formData` qu'ils reçoivent, sans options — une
+ * étape « masquée » resterait donc rendue, avec ses champs requis. `hideStep` ne
+ * souffre pas de ça parce qu'il VIT dans la donnée ; on fait pareil.
+ *
+ * Filtrer la donnée fait sortir l'étape du parcours, du sommaire, du schéma Zod
+ * et des valeurs par défaut d'un seul geste — sans quoi un champ requis d'une
+ * étape invisible rendrait le formulaire insoumettable, sur un champ que
+ * personne ne voit.
+ *
+ * Rend l'objet d'origine quand il n'y a rien à retirer : l'identité est
+ * préservée, donc les mémoïsations en aval ne sont pas invalidées pour rien.
+ */
+export function omitHiddenSteps(
+  formData: CoFormData,
+  hiddenStepKeys: readonly string[] | undefined
+): CoFormData {
+  if (!hiddenStepKeys?.length || !formData.inputs) return formData;
+  const restantes = Object.fromEntries(
+    Object.entries(formData.inputs).filter(([stepKey]) => !hiddenStepKeys.includes(stepKey))
+  );
+  if (Object.keys(restantes).length === Object.keys(formData.inputs).length) return formData;
+  return { ...formData, inputs: restantes };
+}
+
+export function parseCoFormFields(
+  formData: CoFormData,
+  options: ParseCoFormFieldsOptions = {}
+): SubFormFields[] {
   if (!formData.inputs) return [];
 
   const subFormsFields: SubFormFields[] = [];
 
-  Object.entries(formData.inputs).forEach(([subFormId, subFormData]) => {
-    const fields: FormFieldMapping[] = [];
+  // Champs que l'utilisateur courant n'a pas le droit de voir. Calculés
+  // serveur-side (`Coform::getFormAccessInfo`) : union des listes place-level
+  // et des inputs `isAdminOnly`. On les écarte ICI et pas seulement au rendu,
+  // pour qu'ils sortent aussi du schéma Zod et des valeurs par défaut — sinon
+  // un champ restreint ET requis rendrait le formulaire insoumettable, sans
+  // que l'utilisateur voie jamais le champ fautif.
+  const restricted = new Set(formData.access?.restrictedFields ?? []);
 
-    Object.entries(subFormData.inputs).forEach(([fieldKey, fieldData]) => {
+  Object.entries(formData.inputs).forEach(([subFormId, subFormData]) => {
+    // Étape masquée (« Cacher etape » du wizard de config AAP) : on la retire
+    // ici, donc du sommaire du wizard comme du contenu — les deux dérivent de
+    // ce même parse. Cf. `CoFormSubFormInputs.hideStep` pour les deux écarts
+    // assumés avec le legacy (pas d'exemption admin, s'applique aussi à la
+    // création).
+    if (!options.includeHiddenSteps && isTruthyFlag(subFormData.hideStep)) return;
+
+    const fields: FormFieldMapping[] = [];
+    // Ordre d'affichage, capturé AU MOMENT DU PUSH depuis l'input brut.
+    //
+    // Le relire après coup par la clé du champ ne marche pas : un `multiDecide`
+    // est réindexé sous le nom du type qu'il désigne (`decide` → `selection`),
+    // et `getOriginalFieldKey` ne défait pas cette réindexation — le lookup
+    // échouait donc en silence et retombait sur 0.
+    const displayOrder = new Map<FormFieldMapping, number>();
+
+    Object.entries(subFormData.inputs).forEach(([rawFieldKey, rawFieldData]) => {
       // Ignorer les anciens inputs de validation d'étape (validateStep*)
-      if (/validatestep/i.test(fieldData.type)) return;
+      if (/validatestep/i.test(rawFieldData.type)) return;
+
+      // `hideInForm` : l'input est sorti du formulaire (legacy `step_v2.php:455`).
+      // Statique — aucune notion d'utilisateur — donc tranché ici et pas côté
+      // serveur : la donnée arrive déjà dans le payload, et d'autres vues la
+      // consomment avec leurs propres règles (l'export PDF de `costum` réaffiche
+      // justement `depense` et `budget` malgré le flag).
+      if (isTruthyFlag(rawFieldData.hideInForm)) return;
+
+      // Restriction serveur (`isAdminOnly`, listes place-level). Testée sur la
+      // clé BRUTE, avant la résolution `multiDecide` qui réindexe : c'est cette
+      // clé-là que le backend énumère. Même ordre que le legacy, qui coupe sur
+      // `isAdminOnly` (l.358) avant de substituer le multiDecide (l.387).
+      if (restricted.has(rawFieldKey)) return;
+
+      // `multiDecide` est un placeholder : il désigne un autre type via
+      // `inputConfig.multiDecide`, et l'input est RÉINDEXÉ sous la clé de ce
+      // type. Sans config, il ne se rend pas du tout. Cf. `resolveMultiDecide`.
+      const resolved = resolveMultiDecide(rawFieldKey, rawFieldData, formData.inputConfig);
+      if (!resolved) return;
+      const fieldKey = resolved.key;
+      const fieldData = resolved.field;
 
       const componentType = mapCoFormTypeToComponentType(fieldData.type);
       
@@ -309,18 +451,10 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
           );
         }
         // Flag legacy `enableSelect2` → liste déroulante recherchable. Côté PHP
-        // il est lu via `filter_var(..., FILTER_VALIDATE_BOOLEAN)` ; on réplique
-        // les valeurs vraies courantes (booléen, "true", "1"/1, "on", "yes").
-        const rawSelect2 = selectParams?.enableSelect2;
-        searchable =
-          rawSelect2 === true ||
-          rawSelect2 === "true" ||
-          rawSelect2 === "1" ||
-          rawSelect2 === 1 ||
-          rawSelect2 === "on" ||
-          rawSelect2 === "yes"
-            ? true
-            : undefined;
+        // il est lu via `filter_var(..., FILTER_VALIDATE_BOOLEAN)`, ce que
+        // `isTruthyFlag` réplique. `undefined` plutôt que `false` quand c'est
+        // faux : la prop reste absente au lieu d'être explicitement désactivée.
+        searchable = isTruthyFlag(selectParams?.enableSelect2) ? true : undefined;
       }
 
       // Config spécifique pour multiRadio
@@ -771,7 +905,7 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
       const evaluationKey =
         componentType === "radio" ? fieldDataWithMultiEval.evaluationKey : undefined;
 
-      fields.push({
+      const mapping: FormFieldMapping = {
         // Appliquer le préfixe selon le type (finder, multiCheckboxPlus, evaluation)
         name: getFieldNameWithPrefix(componentType, fieldKey),
         label: fieldData.label || "",
@@ -782,7 +916,18 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         info: fieldData.info,
         isRequired: fieldData.isRequired || false,
         width: parseBootstrapWidth(fieldData.width),
-        markdown: fieldData.enableMarkdown,
+        // Éditeur markdown ACTIF PAR DÉFAUT sur les textarea : seule une
+        // désactivation explicite le retire.
+        //
+        // Relevé sur le parc : 754 textarea, dont **aucun** ne porte
+        // `enableMarkdown: true` et **un seul** le porte à `false`. L'option
+        // n'avait donc jamais servi, et inverser le défaut fait basculer 753
+        // champs — c'est voulu, pas un effet de bord.
+        //
+        // La chaîne `"false"` est traitée comme `false` : le parc stocke
+        // volontiers ses booléens en chaînes (cf. `activateLocalCriteria`), et
+        // une valeur écrite ainsi demain doit désactiver, pas activer.
+        markdown: fieldData.enableMarkdown !== false && fieldData.enableMarkdown !== "false",
         options,
         optionLabels,
         searchable,
@@ -804,16 +949,15 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         conditionalDisplay,
         activeMultieval,
         evaluationKey,
-      });
+      };
+      fields.push(mapping);
+      displayOrder.set(mapping, resolveInputOrder(rawFieldData, subFormData.formParent));
     });
 
-    fields.sort((a, b) => {
-      const keyA = getOriginalFieldKey(a);
-      const keyB = getOriginalFieldKey(b);
-      const posA = parseInt(formData.inputs?.[subFormId].inputs[keyA]?.position || "0");
-      const posB = parseInt(formData.inputs?.[subFormId].inputs[keyB]?.position || "0");
-      return posA - posB;
-    });
+    // Tri STABLE (garanti depuis ES2019) : à position égale, l'ordre de
+    // déclaration est conservé — c'est ce qui tient les deux inputs à
+    // `positions = "1"` de l'étape 2 des tiers-lieux dans leur ordre d'origine.
+    fields.sort((a, b) => (displayOrder.get(a) ?? 0) - (displayOrder.get(b) ?? 0));
 
     subFormsFields.push({
       subFormId,
@@ -1174,6 +1318,24 @@ export function generateZodSchema(
         // exactement ce qu'on veut ici.
         case "titleSeparator":
           break;
+        // ⚠️ ABSENCE DÉLIBÉRÉE, et c'est une protection de données.
+        //
+        // `answers.<étape>.selection` est un objet indexé par ÉVALUATEUR, et
+        // `SaveAnswerAction` ne deep-merge que les clés suffixées `_multiEval`
+        // (`:214`) : toute autre clé est REMPLACÉE en bloc. Déclarer `selection`
+        // ici la ferait soumettre avec le formulaire, et chaque enregistrement
+        // effacerait les notes de tous les autres évaluateurs — 654 réponses
+        // concernées en base.
+        //
+        // Le champ écrit lui-même, par chemin ciblé, comme le legacy.
+        // Voir `actions/mutations/selection.ts`.
+        // Idem pour `pourContre` : valeur scopée par évaluateur, écrite par
+        // chemin ciblé, donc jamais soumise.
+        case "selection":
+        case "pourContre":
+        case "aapEvaluation":
+        case "chooseProposal":
+          break;
         case "timeSlots": {
           // Structure: [{ day, startHour, startMinute, endHour, endMinute }]
           // (clés AmPm tolérées en lecture de données legacy 12h).
@@ -1336,10 +1498,17 @@ export function generateDefaultValues(subFormsFields: SubFormFields[]): Record<s
           defaultValues[field.name] = [];
           break;
 
-        // Purement décoratif : aucune valeur ne doit entrer dans l'état du
-        // formulaire (le `default` ci-dessous poserait `""`, une clé fantôme
-        // que le submit remonterait).
+        // Aucune valeur ne doit entrer dans l'état du formulaire (le `default`
+        // ci-dessous poserait `""`, une clé fantôme que le submit remonterait) :
+        //  - `titleSeparator` est purement décoratif ;
+        //  - `selection` est un enjeu de DONNÉES — une clé remontée au submit
+        //    remplacerait en bloc les notes de tous les évaluateurs. Cf. le
+        //    switch du schéma, plus haut.
         case "titleSeparator":
+        case "selection":
+        case "pourContre":
+        case "aapEvaluation":
+        case "chooseProposal":
           break;
 
         default:
@@ -1978,7 +2147,13 @@ export function getSharedFinderInfo(formData: CoFormData): SharedFinderInfo | nu
   const fieldName = finderPath.slice(dotIdx + 1);
 
   // Récupère le FinderConfig parsé via la pipeline existante.
-  const subFormsFields = parseCoFormFields(formData);
+  //
+  // `includeHiddenSteps` : lecture STRUCTURELLE, pas d'affichage. Le finder
+  // partagé désigne le lieu auquel la réponse se rattache — il pilote le
+  // pré-remplissage, le verrouillage et les filtres du mode collaboratif. Si
+  // l'étape qui le porte est marquée `hideStep`, on doit quand même le trouver,
+  // sans quoi le mode par lieu se dégraderait en silence.
+  const subFormsFields = parseCoFormFields(formData, { includeHiddenSteps: true });
   const subForm = subFormsFields.find((sf) => sf.subFormId === subFormId);
   if (!subForm) return null;
   const field = subForm.fields.find((f) => f.name === fieldName);

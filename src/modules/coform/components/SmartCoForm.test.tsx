@@ -369,3 +369,60 @@ describe("SmartCoForm", () => {
     });
   });
 });
+
+/**
+ * `hiddenStepKeys` retire une étape sur décision de l'APPELANT — typiquement
+ * « l'étape d'évaluation d'un appel à communs n'est pas proposée à qui ne
+ * l'administre pas ».
+ *
+ * Sa première version ne filtrait que le parse local de `SmartCoForm` : les
+ * enfants recevaient le `formData` BRUT et le reparsaient sans options, si bien
+ * que l'étape restait rendue, avec ses champs requis. Ces tests portent sur ce
+ * que les enfants reçoivent VRAIMENT, pas sur un décompte interne.
+ */
+describe("SmartCoForm — hiddenStepKeys", () => {
+  it("retire l'étape du formData transmis au wizard", () => {
+    const formData = makeFormData(["aapStep1", "aapStep2", "aapStep3"]);
+    render(<SmartCoForm formData={formData} hiddenStepKeys={["aapStep2"]} />, {
+      wrapper: makeWrapper(),
+    });
+    const wizard = screen.getByTestId("multistep-coform");
+    expect(wizard.getAttribute("data-step-count")).toBe("2");
+  });
+
+  it("retire l'étape du formData transmis au formulaire simple", () => {
+    const formData = makeFormData(["aapStep1", "aapStep2"]);
+    render(<SmartCoForm formData={formData} hiddenStepKeys={["aapStep2"]} />, {
+      wrapper: makeWrapper(),
+    });
+    // 1 étape restante ⇒ bascule en mode simple, et ce mode ne doit PAS
+    // aplatir les deux étapes du formData d'origine.
+    const simple = screen.getByTestId("dynamic-coform");
+    expect(simple.getAttribute("data-step-count")).toBe("1");
+    expect(simple.textContent).toBe("aapStep1");
+  });
+
+  it("ne retire rien sans la prop", () => {
+    const formData = makeFormData(["aapStep1", "aapStep2", "aapStep3"]);
+    render(<SmartCoForm formData={formData} />, { wrapper: makeWrapper() });
+    expect(screen.getByTestId("multistep-coform").getAttribute("data-step-count")).toBe("3");
+  });
+
+  it("une clé inconnue ne retire rien", () => {
+    const formData = makeFormData(["aapStep1", "aapStep2"]);
+    render(<SmartCoForm formData={formData} hiddenStepKeys={["etapeInexistante"]} />, {
+      wrapper: makeWrapper(),
+    });
+    expect(screen.getByTestId("multistep-coform").getAttribute("data-step-count")).toBe("2");
+  });
+
+  it("une étape réclamée par `stepKey` l'emporte sur son masquage", () => {
+    // Demande explicite de l'appelant : la masquer rendrait une page vide.
+    const formData = makeFormData(["aapStep1", "aapStep2"]);
+    render(
+      <SmartCoForm formData={formData} stepKey="aapStep2" hiddenStepKeys={["aapStep2"]} />,
+      { wrapper: makeWrapper() }
+    );
+    expect(screen.getByTestId("dynamic-coform").textContent).toBe("aapStep2");
+  });
+});

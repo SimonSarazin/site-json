@@ -1,3 +1,11 @@
+import { ChooseProposalField } from "./ChooseProposalField";
+import type { ChooseProposalValue } from "../utils/chooseProposal";
+import { AapEvaluationField } from "./AapEvaluationField";
+import type { RawAapEvaluationConfig, AapEvaluationValue } from "../utils/aapEvaluation";
+import { PourContreField } from "./PourContreField";
+import type { PourContreValue } from "../utils/pourContre";
+import { SelectionField } from "./SelectionField";
+import { DEPOSIT_STEP_ID, type RawSelectionConfig, type SelectionValue } from "../utils/selection";
 import { Fragment, useCallback, useRef, useEffect, useMemo, useState } from "react";
 import { Controller, type FieldErrors } from "react-hook-form";
 import { toast } from "sonner";
@@ -379,10 +387,16 @@ function MultiStepCoFormContent({
             <div className="grid grid-cols-12 gap-6">
               {fields.fields.map((field) => {
                 if (!isFieldVisible(field.name)) return null;
-                // Skip total : l'user n'a pas le droit selon les listes
-                // place(Admin|Member)OnlyFields. Calculé serveur-side dans
-                // `access.restrictedFields`. Aligné sur le legacy isAdminOnly
-                // qui hide entirely (pas de readonly cosmétique).
+                // Seconde barrière. `parseCoFormFields` filtre DÉJÀ
+                // `formData.access.restrictedFields`, source que `SmartCoForm`
+                // passe aussi à cette prop : sur ce chemin la garde ne matche
+                // donc plus jamais. Elle ne couvre que le cas d'un consommateur
+                // externe qui fournirait une liste par un autre chemin — les
+                // deux composants sont exportés publiquement (`index.ts`).
+                //
+                // Attention si on la retire : elle teste la clé RÉSOLUE
+                // (`getOriginalFieldKey`), là où le parse teste la clé BRUTE.
+                // Sur un input `multiDecide` réindexé les deux diffèrent.
                 if (restrictedSet.has(getOriginalFieldKey(field))) return null;
                 const isLocked = lockedSet.has(field.name);
                 const fieldElement = (() => { switch (field.componentType) {
@@ -684,6 +698,93 @@ function MultiStepCoFormContent({
 
                 case "titleSeparator":
                   return <TitleSeparatorField key={field.name} field={field} />;
+
+                // `selection` ne passe PAS par `Controller` : la valeur est
+                // scopée par évaluateur et s'écrit par chemin ciblé, hors
+                // soumission (cf. `utils/selection.ts`). On l'alimente donc
+                // depuis les réponses BRUTES du contexte, pas depuis l'état RHF
+                // — où la clé est délibérément absente.
+                // Même contrat encore : hors RHF, écriture ciblée. La config vient
+                // de `form.evaluationCriteria`, pas de `params`.
+                case "aapEvaluation": {
+                  const brutEval = (coform.stepState.stepsData[fields.subFormId] ?? {}) as Record<string, unknown>;
+                  return (
+                    <AapEvaluationField
+                      key={field.name}
+                      field={field}
+                      subFormId={fields.subFormId}
+                      formId={coform.formData?._id?.$id ?? null}
+                      config={coform.formData?.evaluationCriteria as RawAapEvaluationConfig | undefined}
+                      value={brutEval.evaluation as AapEvaluationValue | undefined}
+                      answerId={coform.answerId}
+                      readOnly={isLocked}
+                    />
+                  );
+                }
+
+                // Hors RHF également, mais scopé par CONTEXTE et non par évaluateur.
+                case "chooseProposal": {
+                  const brutChoose = (coform.stepState.stepsData[fields.subFormId] ?? {}) as Record<string, unknown>;
+                  return (
+                    <ChooseProposalField
+                      key={field.name}
+                      field={field}
+                      subFormId={fields.subFormId}
+                      formId={coform.formData?._id?.$id ?? null}
+                      value={brutChoose.choose as ChooseProposalValue | undefined}
+                      answerId={coform.answerId}
+                      readOnly={isLocked}
+                    />
+                  );
+                }
+
+                // Même contrat que `selection` : hors RHF, écriture ciblée.
+                case "pourContre": {
+                  const brutVote = (coform.stepState.stepsData[fields.subFormId] ?? {}) as Record<string, unknown>;
+                  return (
+                    <PourContreField
+                      key={field.name}
+                      field={field}
+                      subFormId={fields.subFormId}
+                      formId={coform.formData?._id?.$id ?? null}
+                      value={brutVote.pourContre as PourContreValue | undefined}
+                      inputConfig={undefined}
+                      answerId={coform.answerId}
+                      readOnly={isLocked}
+                    />
+                  );
+                }
+
+                case "selection": {
+                  const brut = (coform.stepState.stepsData[fields.subFormId] ??
+                    {}) as Record<string, unknown>;
+                  const depot = (coform.stepState.stepsData[DEPOSIT_STEP_ID] ??
+                    {}) as Record<string, unknown>;
+                  const labelsDepot: Record<string, string> = {};
+                  const inputsDepot = coform.formData?.inputs?.[DEPOSIT_STEP_ID]?.inputs ?? {};
+                  for (const [cle, def] of Object.entries(inputsDepot)) {
+                    if (def?.label) labelsDepot[cle] = def.label;
+                  }
+                  return (
+                    <SelectionField
+                      key={field.name}
+                      field={field}
+                      subFormId={fields.subFormId}
+                      formId={coform.formData?._id?.$id ?? null}
+                      config={
+                        coform.formData?.params?.configSelectionCriteria as
+                          | RawSelectionConfig
+                          | undefined
+                      }
+                      value={brut.selection as SelectionValue | undefined}
+                      admissibility={brut.admissibility as Record<string, unknown> | undefined}
+                      depositAnswers={depot}
+                      depositLabels={labelsDepot}
+                      answerId={coform.answerId}
+                      readOnly={isLocked}
+                    />
+                  );
+                }
 
                 case "sectionTitle":
                   return <SectionTitleField key={field.name} field={field} />;

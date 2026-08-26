@@ -9,8 +9,12 @@ import {
   hasFieldPrefix,
   isRootLevelField,
   mapCoFormTypeToComponentType,
+  getSharedFinderInfo,
+  isTruthyFlag,
   normalizeAnswerData,
+  omitHiddenSteps,
   parseCoFormFields,
+  resolveInputOrder,
 } from "./formParser";
 import type {
   CoFormData,
@@ -64,6 +68,28 @@ function makeCoFormData(overrides: Partial<CoFormData> = {}): CoFormData {
     type: "form",
     inputs: {},
     ...overrides,
+  };
+}
+
+/**
+ * `access` complet tel que le renvoie `Coform::getFormAccessInfo`. Seul
+ * `restrictedFields` nous intéresse ici, mais le type exige le reste.
+ */
+function makeAccess(restrictedFields: string[]): NonNullable<CoFormData["access"]> {
+  return {
+    canAnswer: true,
+    reason: null,
+    formStatus: "open",
+    existingAnswerId: null,
+    existingAnswer: null,
+    requiresLogin: false,
+    allowTemporary: false,
+    withConfirmation: false,
+    isOnlyMember: false,
+    isOneAnswerPerPers: false,
+    isActive: true,
+    dates: { start: null, end: null, startNoConfirmation: null, endNoConfirmation: null },
+    restrictedFields,
   };
 }
 
@@ -1352,5 +1378,661 @@ describe("categorizedCheckbox — défaut compatible avec son schéma", () => {
       besoins: { list: ["4_autres-outils"], sublist: { "4_autres-outils": ["0_gestion"] } },
     });
     expect(res.success).toBe(true);
+  });
+});
+
+/**
+ * L'indirection `multiDecide` est testée unitairement dans `multiDecide.test.ts`.
+ * Ici on vérifie qu'elle s'applique RÉELLEMENT au parsing — c'est ce chemin-là
+ * qui décide de la clé sous laquelle la réponse est lue et écrite, et un helper
+ * juste mais jamais branché ne servirait à rien.
+ *
+ * Relevé en base : 266 inputs `multiDecide`, et AUCUNE réponse ne porte la clé
+ * d'origine (`decide` : 0). Les clés réelles sont celles d'après substitution.
+ */
+describe("parseCoFormFields — résolution de multiDecide", () => {
+  const formAvec = (multiDecide?: string) =>
+    makeCoFormData({
+      inputConfig: multiDecide ? { multiDecide } : undefined,
+      inputs: {
+        aapStep2: {
+          id: "aapStep2",
+          name: "Évaluation",
+          formParent: "form123",
+          inputs: {
+            // Cas réel : clé `decide`, libellé « Dépenses », type placeholder.
+            decide: { type: "tpls.forms.ocecoform.multiDecide", label: "Dépenses" },
+          },
+        },
+      },
+    });
+
+  it("substitue le type ET RÉINDEXE le champ sous la clé du type cible", () => {
+    const [etape] = parseCoFormFields(formAvec("tpls.forms.aap.selection"));
+    expect(etape.fields).toHaveLength(1);
+    expect(etape.fields[0]).toMatchObject({
+      name: "selection", // ← pas `decide` : c'est là que tout se joue
+      componentType: "selection",
+      type: "tpls.forms.aap.selection",
+      label: "Dépenses",
+    });
+  });
+
+  it("résout aussi vers pourContre", () => {
+    const [etape] = parseCoFormFields(formAvec("tpls.forms.ocecoform.pourContre"));
+    expect(etape.fields[0]).toMatchObject({ name: "pourContre", componentType: "pourContre" });
+  });
+
+  it("SANS config : le champ n'est pas rendu du tout", () => {
+    // Parité legacy : `multiDecide.php` n'affiche qu'un <select> réservé à
+    // l'admin du formulaire. Un répondant ne doit rien voir — surtout pas le
+    // bandeau « template introuvable ». 130 formulaires sont dans ce cas.
+    const [etape] = parseCoFormFields(formAvec(undefined));
+    expect(etape.fields).toHaveLength(0);
+  });
+
+  it("un type custom de costum est résolu comme les autres", () => {
+    // Présent une fois en base.
+    const [etape] = parseCoFormFields(
+      formAvec("custom.fondationTerritorialeDesLumieres.selection")
+    );
+    expect(etape.fields[0].name).toBe("selection");
+  });
+
+  it("n'affecte pas les inputs ordinaires du même formulaire", () => {
+    const data = makeCoFormData({
+      inputConfig: { multiDecide: "tpls.forms.aap.selection" },
+      inputs: {
+        aapStep2: {
+          id: "aapStep2",
+          name: "Évaluation",
+          formParent: "form123",
+          inputs: {
+            decide: { type: "tpls.forms.ocecoform.multiDecide", label: "Dépenses" },
+            commentaire: { type: "tpls.forms.textarea", label: "Commentaire" },
+          },
+        },
+      },
+    });
+    const [etape] = parseCoFormFields(data);
+    expect(etape.fields.map((f) => f.name).sort()).toEqual(["commentaire", "selection"]);
+  });
+});
+
+/**
+ * `selection` et `pourContre` ne doivent JAMAIS transiter par le formulaire :
+ * leur valeur est indexée par évaluateur et le backend remplace la clé en bloc
+ * (`SaveAnswerAction:214` ne deep-merge que les clés `_multiEval`). Une entrée
+ * au schéma ou aux valeurs par défaut suffirait à effacer, à chaque
+ * enregistrement, les notes de tous les autres évaluateurs.
+ */
+describe("selection / pourContre — jamais soumis", () => {
+  const champEval = (componentType: "selection" | "pourContre") =>
+    makeSubFormFields([
+      makeField({
+        name: componentType,
+        label: "Évaluation",
+        type: `tpls.forms.aap.${componentType}`,
+        componentType,
+        isRequired: true, // même requis, aucune entrée ne doit apparaître
+      }),
+    ]);
+
+  for (const ct of ["selection", "pourContre"] as const) {
+    it(`\`${ct}\` n'entre pas dans les valeurs par défaut`, () => {
+      const valeurs = generateDefaultValues([champEval(ct)]);
+      expect(ct in valeurs).toBe(false);
+    });
+
+    it(`\`${ct}\` n'entre pas dans le schéma — une valeur parasite est STRIPPÉE`, () => {
+      const res = generateZodSchema([champEval(ct)]).safeParse({
+        [ct]: { autreEvaluateur: { critere: 5 } },
+      });
+      expect(res.success).toBe(true);
+      // `z.object` strippe ce qui n'est pas déclaré : la clé ne repart pas au
+      // serveur, donc les notes des autres évaluateurs survivent.
+      expect(res.success && ct in (res.data as Record<string, unknown>)).toBe(false);
+    });
+  }
+});
+
+/**
+ * L'éditeur markdown est ACTIF PAR DÉFAUT sur les textarea.
+ *
+ * Relevé sur le parc : 754 textarea, dont AUCUN ne porte `enableMarkdown: true`
+ * et un seul le porte à `false`. Inverser le défaut fait donc basculer 753
+ * champs — d'où des tests sur les trois cas, y compris la désactivation
+ * explicite qui doit survivre.
+ */
+describe("textarea — markdown actif par défaut", () => {
+  const parse = (enableMarkdown?: boolean | string) =>
+    parseCoFormFields(
+      makeCoFormData({
+        inputs: {
+          step1: {
+            id: "step1",
+            name: "Étape",
+            formParent: "form123",
+            inputs: {
+              texte: { type: "tpls.forms.textarea", label: "Texte", enableMarkdown },
+            },
+          },
+        },
+      })
+    )[0].fields[0];
+
+  it("actif quand l'option est absente — le cas de 753 champs sur 754", () => {
+    expect(parse(undefined).markdown).toBe(true);
+  });
+
+  it("actif quand l'option vaut true", () => {
+    expect(parse(true).markdown).toBe(true);
+  });
+
+  it("DÉSACTIVÉ par un false explicite", () => {
+    expect(parse(false).markdown).toBe(false);
+  });
+
+  it("désactivé aussi par la CHAÎNE \"false\"", () => {
+    // Le parc stocke volontiers ses booléens en chaînes : une telle valeur doit
+    // désactiver, pas activer par accident.
+    expect(parse("false").markdown).toBe(false);
+  });
+});
+
+// ============================================================================
+// Visibilité des inputs : `hideInForm` et `access.restrictedFields`
+// ============================================================================
+
+describe("isTruthyFlag", () => {
+  it("accepte les formes vraies du parc, booléen comme chaîne", () => {
+    // Le PHP lit ces drapeaux avec `filter_var(FILTER_VALIDATE_BOOLEAN)`.
+    for (const v of [true, 1, "true", "TRUE", " true ", "1", "on", "yes"]) {
+      expect(isTruthyFlag(v)).toBe(true);
+    }
+  });
+
+  it("refuse la CHAÎNE \"false\" — là où le legacy la prend pour vraie", () => {
+    // `\"false\" == true` vaut true en PHP : le legacy masquerait le champ.
+    expect(isTruthyFlag("false")).toBe(false);
+  });
+
+  it("refuse les valeurs vides, absentes ou inattendues", () => {
+    for (const v of [false, 0, "", "0", "off", null, undefined, {}, []]) {
+      expect(isTruthyFlag(v)).toBe(false);
+    }
+  });
+});
+
+/**
+ * Topologie relevée en base sur l'étape `677e7e389058e31575550aca` du form
+ * « Les communs des CAEs » : deux inputs, `decide` masqué par `hideInForm` et
+ * `choose` réservé aux admins. Le motif est celui de 12 formulaires AAP.
+ */
+function makeEtapeJury(overrides: Partial<CoFormData> = {}): CoFormData {
+  return makeCoFormData({
+    inputs: {
+      aapStep2: {
+        name: "Décision",
+        id: "aapStep2",
+        formParent: "form123",
+        inputs: {
+          decide: { label: "Décision", type: "tpls.forms.ocecoform.multiDecide", hideInForm: true },
+          choose: { label: "Publier dans l'annuaire", type: "tpls.forms.aap.chooseProposal" },
+          // Champ ordinaire masqué : `decide` seul ne prouverait rien, un
+          // multiDecide sans `inputConfig` étant de toute façon écarté par
+          // `resolveMultiDecide`.
+          note: { label: "Note d'instruction", type: "text", hideInForm: true },
+          libre: { label: "Commentaire", type: "textarea" },
+        },
+      },
+    },
+    ...overrides,
+  });
+}
+
+describe("parseCoFormFields — hideInForm", () => {
+  it("écarte l'input marqué, garde les autres", () => {
+    const fields = parseCoFormFields(makeEtapeJury())[0].fields;
+    expect(fields.map((f) => f.name)).toEqual(["choose", "libre"]);
+  });
+
+  it("s'applique AVANT la résolution multiDecide", () => {
+    // `decide` est un placeholder qui se réindexe sous le type visé. Si le
+    // masquage passait après, l'input reparaîtrait sous son nouveau nom.
+    const data = makeEtapeJury({ inputConfig: { multiDecide: "tpls.forms.aap.selection" } });
+    const fields = parseCoFormFields(data)[0].fields;
+    expect(fields.map((f) => f.name)).toEqual(["choose", "libre"]);
+  });
+
+  it("un champ masqué ne peut plus rendre le formulaire insoumettable", () => {
+    // 2 inputs du parc cumulent hideInForm + isRequired. Laissés au schéma, ils
+    // exigeraient une saisie sur un champ que personne ne voit.
+    const data = makeCoFormData({
+      inputs: {
+        step1: {
+          name: "Step 1",
+          id: "step1",
+          formParent: "form123",
+          inputs: {
+            cache: { label: "Caché", type: "text", isRequired: true, hideInForm: true },
+            visible: { label: "Visible", type: "text" },
+          },
+        },
+      },
+    });
+    const parsed = parseCoFormFields(data);
+    expect(generateZodSchema(parsed).safeParse({ step1: { visible: "ok" } }).success).toBe(true);
+    const defauts = generateDefaultValues(parsed);
+    expect(defauts).toHaveProperty("visible");
+    expect(defauts).not.toHaveProperty("cache");
+  });
+
+  it("ne masque pas sur une valeur fausse ou absente", () => {
+    const data = makeCoFormData({
+      inputs: {
+        step1: {
+          name: "Step 1",
+          id: "step1",
+          formParent: "form123",
+          inputs: {
+            a: { label: "A", type: "text", hideInForm: false },
+            b: { label: "B", type: "text", hideInForm: "false" },
+            c: { label: "C", type: "text" },
+          },
+        },
+      },
+    });
+    expect(parseCoFormFields(data)[0].fields.map((f) => f.name)).toEqual(["a", "b", "c"]);
+  });
+});
+
+describe("parseCoFormFields — access.restrictedFields", () => {
+  it("écarte les champs que le serveur a déclarés interdits", () => {
+    // `choose` porte `isAdminOnly` en base ; c'est le backend qui tranche et le
+    // renvoie ici (`Coform::computeAdminOnlyFields`).
+    const data = makeEtapeJury({ access: makeAccess(["choose"]) });
+    expect(parseCoFormFields(data)[0].fields.map((f) => f.name)).toEqual(["libre"]);
+  });
+
+  it("laisse tout passer quand la liste est vide ou absente", () => {
+    expect(
+      parseCoFormFields(makeEtapeJury({ access: makeAccess([]) }))[0]
+        .fields.map((f) => f.name)
+    ).toEqual(["choose", "libre"]);
+    expect(parseCoFormFields(makeEtapeJury())[0].fields.map((f) => f.name)).toEqual([
+      "choose",
+      "libre",
+    ]);
+  });
+
+  it("sort aussi du schéma et des valeurs par défaut, pas seulement du rendu", () => {
+    // Sans ça, un champ restreint ET requis bloquerait la soumission sur une
+    // erreur portant un champ que l'utilisateur ne voit nulle part.
+    const data = makeCoFormData({
+      access: makeAccess(["secret"]),
+      inputs: {
+        step1: {
+          name: "Step 1",
+          id: "step1",
+          formParent: "form123",
+          inputs: {
+            secret: { label: "Secret", type: "text", isRequired: true },
+            visible: { label: "Visible", type: "text" },
+          },
+        },
+      },
+    });
+    const parsed = parseCoFormFields(data);
+    expect(generateZodSchema(parsed).safeParse({ step1: { visible: "ok" } }).success).toBe(true);
+    const defauts = generateDefaultValues(parsed);
+    expect(defauts).toHaveProperty("visible");
+    expect(defauts).not.toHaveProperty("secret");
+  });
+});
+
+/**
+ * Topologie relevée sur `677e7e389058e31575550ac7` (le doc `aapConfig` du form
+ * « Les communs des CAEs ») : aapStep3 « Financement » et aapStep4 « Suivi »
+ * sont cochées « Cacher etape ». 5 forms du parc masquent ainsi 7 étapes.
+ */
+function makeParcoursAap(hidden: Record<string, boolean> = {}): CoFormData {
+  const etape = (id: string, nom: string) => ({
+    name: nom,
+    id,
+    formParent: "form123",
+    hideStep: hidden[id] ?? false,
+    inputs: { [`${id}_champ`]: { label: nom, type: "text" } },
+  });
+  return makeCoFormData({
+    inputs: {
+      aapStep1: etape("aapStep1", "Dépôt"),
+      aapStep2: etape("aapStep2", "Évaluation"),
+      aapStep3: etape("aapStep3", "Financement"),
+      aapStep4: etape("aapStep4", "Suivi"),
+    },
+  });
+}
+
+describe("parseCoFormFields — étapes masquées (hideStep)", () => {
+  it("retire l'étape entière, sommaire du wizard compris", () => {
+    // Le stepper de `MultiStepCoForm` dérive du même parse : retirer ici suffit
+    // à faire disparaître l'étape du sommaire ET de son contenu.
+    const parsed = parseCoFormFields(makeParcoursAap({ aapStep3: true, aapStep4: true }));
+    expect(parsed.map((s) => s.subFormId)).toEqual(["aapStep1", "aapStep2"]);
+  });
+
+  it("emporte les champs de l'étape hors du schéma et des défauts", () => {
+    const parsed = parseCoFormFields(makeParcoursAap({ aapStep3: true }));
+    const defauts = generateDefaultValues(parsed);
+    expect(defauts).not.toHaveProperty("aapStep3_champ");
+    expect(generateZodSchema(parsed).safeParse({}).success).toBe(true);
+  });
+
+  it("ne masque rien quand aucune étape n'est cochée", () => {
+    expect(parseCoFormFields(makeParcoursAap()).map((s) => s.subFormId)).toEqual([
+      "aapStep1",
+      "aapStep2",
+      "aapStep3",
+      "aapStep4",
+    ]);
+  });
+
+  it("masque pour TOUT LE MONDE — aucune exemption admin", () => {
+    // Écart assumé avec le legacy, qui laisse l'étape visible à l'admin de la
+    // réponse. Le parse ne reçoit aucune identité d'utilisateur : l'assertion
+    // porte sur le comportement, pas sur l'arité de la fonction — un paramètre
+    // à valeur par défaut (la forme qu'aurait une exemption) laisserait
+    // `Function.length` inchangé.
+    const parsed = parseCoFormFields(makeParcoursAap({ aapStep1: true }));
+    expect(parsed.map((s) => s.subFormId)).not.toContain("aapStep1");
+  });
+
+  it("n'est PAS déclenché par hideStepStandalone", () => {
+    // Le `standAlone` du legacy désigne la page de réponse dédiée, sans
+    // équivalent ici ; le « standalone » de site-json est une étape réclamée
+    // explicitement par la config du site — la masquer viderait la page.
+    const data = makeParcoursAap();
+    (data.inputs as Record<string, { hideStepStandalone?: boolean }>).aapStep3.hideStepStandalone =
+      true;
+    expect(parseCoFormFields(data).map((s) => s.subFormId)).toContain("aapStep3");
+  });
+});
+
+describe("parseCoFormFields — contrat de clé des champs restreints", () => {
+  /**
+   * Les deux producteurs PHP (`extractKuniksFromPaths`, `computeAdminOnlyFields`)
+   * émettent des **kuniks bruts**. Or un finder d'input `k1` s'appelle
+   * `finderk1` une fois parsé : c'est exactement là que la garde de parse (clé
+   * brute) et l'ancienne garde de rendu (`getOriginalFieldKey`) divergeaient.
+   */
+  const avecPrefixe = (restricted: string[]) =>
+    parseCoFormFields(
+      makeCoFormData({
+        access: makeAccess(restricted),
+        inputs: {
+          step1: {
+            name: "Step 1",
+            id: "step1",
+            formParent: "form123",
+            inputs: {
+              k1: { label: "Lieu", type: "tpls.forms.cplx.finder" },
+              k2: { label: "Libre", type: "text" },
+            },
+          },
+        },
+      })
+    )[0].fields.map((f) => f.name);
+
+  it("le kunik BRUT suffit à écarter un champ dont le nom parsé est préfixé", () => {
+    expect(avecPrefixe([])).toEqual(["finderk1", "k2"]);
+    expect(avecPrefixe(["k1"])).toEqual(["k2"]);
+  });
+
+  it("le nom PARSÉ ne déclenche rien — ce n'est pas le contrat du backend", () => {
+    expect(avecPrefixe(["finderk1"])).toEqual(["finderk1", "k2"]);
+  });
+});
+
+describe("getSharedFinderInfo — lecture structurelle", () => {
+  const dansEtape = (hideStep: boolean) =>
+    getSharedFinderInfo(
+      makeCoFormData({
+        sharedQuestionPath: ["step1.finderk1"],
+        // `finderConfig` n'est monté que si `params.finder<kunik>` existe — et
+        // `getSharedFinderInfo` retourne `null` sans lui.
+        params: { finderk1: { type: "organizations", multiple: false } },
+        inputs: {
+          step1: {
+            name: "Step 1",
+            id: "step1",
+            formParent: "form123",
+            hideStep,
+            inputs: { k1: { label: "Lieu", type: "tpls.forms.cplx.finder" } },
+          },
+        },
+      })
+    );
+
+  it("trouve le finder partagé MÊME dans une étape masquée", () => {
+    // Le finder partagé désigne le lieu auquel la réponse se rattache : il
+    // pilote pré-remplissage, verrouillage et filtres du mode collaboratif.
+    // Le perdre parce qu'un admin a coché « cacher l'étape » dégraderait le
+    // mode par lieu en silence.
+    expect(dansEtape(false)?.fieldName).toBe("finderk1");
+    expect(dansEtape(true)?.fieldName).toBe("finderk1");
+  });
+});
+
+// ============================================================================
+// Ordre d'affichage des champs
+// ============================================================================
+
+const FORM_PARENT = "6438366673d20a0de1533c77";
+
+/**
+ * Étape d'analyse collective d'« Appel à commun des tiers lieux », réduite mais
+ * FIDÈLE aux données réelles :
+ *
+ *  - l'ordre d'insertion Mongo place les titres de section AVANT les questions ;
+ *  - aucun de ces inputs ne porte `position` — seulement `positions[formParent]`.
+ *
+ * C'est la conjonction des deux qui produisait le bug : 15 inputs sur 17
+ * retombaient à 0, et le tri stable rendait alors l'ordre d'insertion — les 6
+ * titres groupés en tête, puis les 9 questions.
+ */
+function makeAnalyseCollective(): CoFormData {
+  const titre = (n: string) => ({ label: n, type: "tpls.forms.sectionTitle" });
+  const question = (n: string) => ({ label: n, type: "tpls.forms.cplx.radioNew" });
+  return makeCoFormData({
+    inputs: {
+      aapStep2: {
+        name: "Analyse collective",
+        id: "aapStep2",
+        formParent: FORM_PARENT,
+        inputs: {
+          titreJuridique: { ...titre("Juridique"), positions: { [FORM_PARENT]: "2" } },
+          titreEco: { ...titre("Economique"), positions: { [FORM_PARENT]: "7" } },
+          titreUsage: { ...titre("Usage"), positions: { [FORM_PARENT]: "23" } },
+          qStructuration: { ...question("Structuration juridique"), positions: { [FORM_PARENT]: "3" } },
+          qLicences: { ...question("Licences"), positions: { [FORM_PARENT]: "5" } },
+          qModele: { ...question("Modèle économique"), positions: { [FORM_PARENT]: "8" } },
+          qUsage: { ...question("Utilisé par"), positions: { [FORM_PARENT]: "24" } },
+        },
+      },
+    },
+  });
+}
+
+describe("resolveInputOrder", () => {
+  it("préfère la position du formulaire parent à la clé plate", () => {
+    expect(resolveInputOrder({ position: "9", positions: { [FORM_PARENT]: "2" } }, FORM_PARENT)).toBe(2);
+  });
+
+  it("retombe sur `position` quand ce parent n'a pas d'entrée", () => {
+    // 766 inputs du parc portent des positions pour PLUSIEURS parents : lire la
+    // map sans la scoper mélangerait l'ordre de deux formulaires distincts.
+    expect(resolveInputOrder({ position: "9", positions: { autreForm: "2" } }, FORM_PARENT)).toBe(9);
+  });
+
+  it("rend 0 quand aucune position n'est connue", () => {
+    expect(resolveInputOrder({}, FORM_PARENT)).toBe(0);
+    expect(resolveInputOrder({ position: "abc" }, FORM_PARENT)).toBe(0);
+  });
+
+  it("rend 0 sans formulaire parent, même si des positions existent", () => {
+    expect(resolveInputOrder({ positions: { [FORM_PARENT]: "5" } }, undefined)).toBe(0);
+  });
+});
+
+describe("parseCoFormFields — ordre des champs", () => {
+  it("intercale les titres de section au lieu de les grouper en tête", () => {
+    const fields = parseCoFormFields(makeAnalyseCollective())[0].fields;
+    expect(fields.map((f) => f.name)).toEqual([
+      "titreJuridique", // 2
+      "qStructuration", // 3
+      "qLicences", // 5
+      "titreEco", // 7
+      "qModele", // 8
+      "titreUsage", // 23
+      "qUsage", // 24
+    ]);
+  });
+
+  it("ignore les positions déclarées pour un AUTRE formulaire parent", () => {
+    const data = makeCoFormData({
+      inputs: {
+        aapStep1: {
+          name: "Dépôt",
+          id: "aapStep1",
+          formParent: FORM_PARENT,
+          inputs: {
+            // Ordre voulu par CET AAP : titre puis description. L'autre parent
+            // les veut dans l'ordre inverse — il ne doit pas s'imposer ici.
+            description: { label: "Description", type: "textarea", positions: { [FORM_PARENT]: "2", autreForm: "1" } },
+            titre: { label: "Titre", type: "text", positions: { [FORM_PARENT]: "1", autreForm: "2" } },
+          },
+        },
+      },
+    });
+    expect(parseCoFormFields(data)[0].fields.map((f) => f.name)).toEqual(["titre", "description"]);
+  });
+
+  it("continue de trier sur `position` quand `positions` est absent", () => {
+    const data = makeCoFormData({
+      inputs: {
+        step1: {
+          name: "Step 1",
+          id: "step1",
+          formParent: "form123",
+          inputs: {
+            second: { label: "Second", type: "text", position: "2" },
+            premier: { label: "Premier", type: "text", position: "1" },
+          },
+        },
+      },
+    });
+    expect(parseCoFormFields(data)[0].fields.map((f) => f.name)).toEqual(["premier", "second"]);
+  });
+
+  it("conserve l'ordre de déclaration à position égale", () => {
+    // Les deux premiers inputs de l'étape 2 réelle partagent `positions = "1"`.
+    const data = makeCoFormData({
+      inputs: {
+        aapStep2: {
+          name: "Décision",
+          id: "aapStep2",
+          formParent: FORM_PARENT,
+          inputs: {
+            premier: { label: "Dépenses", type: "text", positions: { [FORM_PARENT]: "1" } },
+            second: { label: "Sélection", type: "text", positions: { [FORM_PARENT]: "1" } },
+          },
+        },
+      },
+    });
+    expect(parseCoFormFields(data)[0].fields.map((f) => f.name)).toEqual(["premier", "second"]);
+  });
+
+  it("garde sa position à un multiDecide réindexé", () => {
+    // `decide` se rend sous la clé `selection` : relire sa position par la clé
+    // du champ APRÈS coup échouait, et le renvoyait en tête avec un 0.
+    const data = makeCoFormData({
+      inputConfig: { multiDecide: "tpls.forms.aap.selection" },
+      inputs: {
+        aapStep2: {
+          name: "Décision",
+          id: "aapStep2",
+          formParent: FORM_PARENT,
+          inputs: {
+            decide: { label: "Décision", type: "tpls.forms.ocecoform.multiDecide", positions: { [FORM_PARENT]: "5" } },
+            libre: { label: "Commentaire", type: "textarea", positions: { [FORM_PARENT]: "1" } },
+          },
+        },
+      },
+    });
+    expect(parseCoFormFields(data)[0].fields.map((f) => f.name)).toEqual(["libre", "selection"]);
+  });
+});
+
+describe("omitHiddenSteps (masquage décidé par l'appelant)", () => {
+  const deuxEtapes = () =>
+    makeCoFormData({
+      inputs: {
+        aapStep1: {
+          name: "Dépôt",
+          id: "aapStep1",
+          formParent: FORM_PARENT,
+          inputs: { titre: { label: "Titre", type: "text" } },
+        },
+        aapStep2: {
+          name: "Analyse collective",
+          id: "aapStep2",
+          formParent: FORM_PARENT,
+          inputs: {
+            critere: { label: "Critère", type: "text", isRequired: true },
+            libre: { label: "Commentaire", type: "textarea" },
+          },
+        },
+      },
+    });
+
+  it("retire l'étape demandée de la DONNÉE, pas seulement du parse", () => {
+    // C'est tout l'enjeu : `CoFormProvider`, `DynamicCoForm` et `CoFormReadOnly`
+    // reparsent le formData qu'on leur passe. Une option de parse se serait
+    // perdue à la frontière du composant, et l'étape serait restée rendue.
+    const filtre = omitHiddenSteps(deuxEtapes(), ["aapStep2"]);
+    expect(Object.keys(filtre.inputs ?? {})).toEqual(["aapStep1"]);
+    expect(parseCoFormFields(filtre).map((e) => e.subFormId)).toEqual(["aapStep1"]);
+  });
+
+  it("sort l'étape du schéma Zod, pas seulement du rendu", () => {
+    // Sans ça, le `critere` requis de l'étape masquée rendrait le formulaire
+    // insoumettable pour un déposant qui ne voit même pas l'étape.
+    const etapes = parseCoFormFields(omitHiddenSteps(deuxEtapes(), ["aapStep2"]));
+    expect(generateZodSchema(etapes).safeParse({ titre: "Un commun" }).success).toBe(true);
+  });
+
+  it("sort l'étape des valeurs par défaut", () => {
+    const defauts = generateDefaultValues(
+      parseCoFormFields(omitHiddenSteps(deuxEtapes(), ["aapStep2"]))
+    );
+    expect(defauts).toHaveProperty("titre");
+    expect(defauts).not.toHaveProperty("critere");
+    expect(defauts).not.toHaveProperty("libre");
+  });
+
+  it("rend l'objet D'ORIGINE quand il n'y a rien à retirer", () => {
+    // Identité préservée : les mémoïsations en aval ne sont pas invalidées
+    // pour rien à chaque rendu.
+    const data = deuxEtapes();
+    expect(omitHiddenSteps(data, undefined)).toBe(data);
+    expect(omitHiddenSteps(data, [])).toBe(data);
+    expect(omitHiddenSteps(data, ["etapeInexistante"])).toBe(data);
+  });
+
+  it("ne modifie jamais l'objet reçu", () => {
+    const data = deuxEtapes();
+    omitHiddenSteps(data, ["aapStep2"]);
+    expect(Object.keys(data.inputs ?? {})).toEqual(["aapStep1", "aapStep2"]);
   });
 });

@@ -144,6 +144,40 @@ export function useCoFormFinalMutation({
 
       // Affecter les données préparées (nettoyées) + champs annexes sur le draft.
       answer.data.answers = cleanedAnswers as Record<string, Record<string, unknown>>;
+      // Épingler le formulaire SOUS LEQUEL on enregistre : celui qui a été rendu.
+      //
+      // Sur une réponse EXISTANTE, `Answer._resolveFormId` retombe sinon sur
+      // `serverData.form`, c'est-à-dire le formulaire de DÉPÔT. Tant que les
+      // deux coïncident personne ne le voit ; dès qu'un appel à communs édite un
+      // commun déposé sur un autre appel, le rendu et le schéma Zod viennent
+      // d'un formulaire et les règles serveur (`canAdminAnswer`, strip des
+      // champs restreints, vocabulaire de tags) de l'autre.
+      //
+      // ⚠️ `draftData` et NON `data` : `data` est un Proxy qui n'accepte que les
+      // champs du schéma `SAVE_COFORM_ANSWER` (`addedOptions`, `answerId`,
+      // `answers`, `formId`, `links`) et LÈVE sur tout le reste —
+      // `[DraftProxy] Le champ "form" n'est pas autorisé.`. `form` n'y est pas.
+      // `save()` construit son payload depuis `_draftData` brut, non proxifié,
+      // que `_resolveFormId` lit EN PRIORITÉ : l'écriture y passe et produit
+      // l'effet voulu.
+      //
+      // Sans effet partout où le formulaire rendu est déjà celui de la réponse,
+      // et ne réécrit pas `answer.form` en base : `SaveAnswerAction` ne pose
+      // `form` qu'à la création, jamais dans le `$set` d'update.
+      //
+      // ⚠️ LIMITE CONNUE ET ACCEPTÉE (arbitrage du 26/08) : cet épinglage ne vaut
+      // que pour `save()`. `uploadFile` et `deleteFile` appellent
+      // `_resolveFormId({})` avec un payload VIDE et retombent donc toujours sur
+      // le formulaire de DÉPÔT.
+      //
+      // Portée réelle : seulement quand on AJOUTE un fichier (`processUploads`
+      // n'appelle l'endpoint que pour les data: URIs) à un commun déposé sur un
+      // autre appel, et seulement si l'éditeur n'est ni l'auteur ni admin de
+      // l'appel d'origine. Dans ce cas l'upload est refusé et la mutation
+      // s'arrête avant `save()` : la saisie en cours est perdue.
+      //
+      // Pas de modification SDK prévue : on vit avec.
+      answer.draftData.form = formId;
       if (addedOptions && Object.keys(addedOptions).length > 0) {
         answer.data.addedOptions = addedOptions;
       }
@@ -176,8 +210,26 @@ export function useCoFormFinalMutation({
       // versés au vocabulaire partagé (`Coform::addTagsToVocabulary`). Sans cette
       // invalidation, un tag que l'on vient de créer ne serait pas proposé à la
       // saisie suivante dans le même onglet.
-      queryClient.invalidateQueries({ queryKey: COFORM_QUERY_KEYS.FORM(formId) });
+      // `FORM_PREFIX` et non `FORM` : la clé est scopée par utilisateur, il
+      // faut invalider toutes ses variantes, pas la seule entrée « anon ».
+      queryClient.invalidateQueries({ queryKey: COFORM_QUERY_KEYS.FORM_PREFIX(formId) });
       queryClient.invalidateQueries({ queryKey: COFORM_QUERY_KEYS.FORM_ANSWERS(formId) });
+      // La RÉPONSE elle-même, que la JSDoc de `FORM_ANSWER` désignait déjà cette
+      // mutation comme invalidant — sans que ce soit vrai.
+      //
+      // Le trou n'était pas théorique : `CoFormAnswerPage` lit la réponse avec
+      // un `staleTime` de 2 min et la réinjecte en `defaultValues`. Après un
+      // save, « Modifier ma réponse » remontait le formulaire sur le snapshot
+      // PRÉ-SAVE, et une seconde soumission écrasait la première édition — le
+      // save coform écrivant le payload complet.
+      //
+      // `_PREFIX` : la clé porte un segment `userId`, il faut invalider toutes
+      // les variantes et pas la seule entrée « anon ».
+      if (answerId) {
+        queryClient.invalidateQueries({
+          queryKey: COFORM_QUERY_KEYS.FORM_ANSWER_PREFIX(formId, answerId),
+        });
+      }
       onSuccess?.(data);
     },
     onError: (error: Error) => {
