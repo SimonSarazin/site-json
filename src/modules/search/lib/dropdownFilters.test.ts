@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import type { SiteConfig } from "@/types/site-schema";
 import type { SearchByFieldValue } from "@/modules/search/contexts/pageFilters";
 import {
   normalizeFilterValue,
@@ -10,6 +11,9 @@ import {
   toFacetTokens,
   keyFor,
   splitKey,
+  getAllDropdownFilters,
+  getDropdownFilterOwner,
+  findFilterByField,
   type DropdownFilterConfig,
 } from "./dropdownFilters";
 
@@ -17,6 +21,15 @@ const filter = (partial: Partial<DropdownFilterConfig> & { options: DropdownFilt
   ({ id: "f", label: { fr: "F" }, ...partial }) as DropdownFilterConfig;
 const opt = (id: string, value?: string, labelFr?: string, field?: string) =>
   ({ id, value, field, label: { fr: labelFr ?? value ?? id } }) as DropdownFilterConfig["options"][number];
+
+/** Config minimale, une page par entrée `{path, dropdownFilters}` — un seul `searchHeader` par page. */
+const configWithPages = (pages: Array<{ path: string; dropdownFilters: DropdownFilterConfig[] }>) =>
+  ({
+    pages: pages.map((p) => ({
+      path: p.path,
+      sections: [{ type: "searchHeader", props: { dropdownFilters: p.dropdownFilters } }],
+    })),
+  }) as unknown as SiteConfig;
 
 describe("normalizeFilterValue", () => {
   const cases: Array<[string, string, string]> = [
@@ -176,5 +189,45 @@ describe("mergeDeduped", () => {
   it("groupes vides / aucun groupe → []", () => {
     expect(mergeDeduped([], [])).toEqual([]);
     expect(mergeDeduped()).toEqual([]);
+  });
+});
+
+describe("getAllDropdownFilters / getDropdownFilterOwner / findFilterByField", () => {
+  // Plusieurs pages du parc réel déclarent le même id de filtre (ex. "theme") pour leur PROPRE
+  // filtrage local — `dynamicList` (menu de header) et `ClickableFacet` (facettes cliquables des
+  // previews) dépendent tous deux de l'ORDRE des pages pour savoir laquelle "possède" ce filtre
+  // quand ils n'ont pas de page courante à préférer. Zéro test avant ce lot — comportement
+  // désormais engageant (cf. doc-projets/parent62.md §9decies), fixé ici explicitement.
+  const config = configWithPages([
+    { path: "/theme", dropdownFilters: [filter({ id: "theme", field: "themes", options: [opt("a", "A")] })] },
+    { path: "/blog", dropdownFilters: [filter({ id: "theme", field: "themes", options: [opt("a", "A")] })] },
+    { path: "/recherche", dropdownFilters: [filter({ id: "territoire", options: [opt("b", "B")] })] },
+  ]);
+
+  it("getAllDropdownFilters : un couple {pathname, filter} par bloc, tous pages confondues", () => {
+    const all = getAllDropdownFilters(config);
+    expect(all.map((e) => e.pathname)).toEqual(["/theme", "/blog", "/recherche"]);
+  });
+
+  it("getDropdownFilterOwner sans preferPathname : le PREMIER match dans l'ordre des pages gagne", () => {
+    expect(getDropdownFilterOwner(config, "theme")?.pathname).toBe("/theme");
+  });
+
+  it("getDropdownFilterOwner avec preferPathname qui a un match local : préféré au premier match global", () => {
+    expect(getDropdownFilterOwner(config, "theme", "/blog")?.pathname).toBe("/blog");
+  });
+
+  it("getDropdownFilterOwner avec preferPathname SANS match local : retombe sur le premier match global", () => {
+    expect(getDropdownFilterOwner(config, "theme", "/recherche")?.pathname).toBe("/theme");
+  });
+
+  it("getDropdownFilterOwner : id introuvable → null", () => {
+    expect(getDropdownFilterOwner(config, "inconnu")).toBeNull();
+  });
+
+  it("findFilterByField : même précédence que getDropdownFilterOwner, mais par `field`", () => {
+    expect(findFilterByField(config, "themes")?.pathname).toBe("/theme");
+    expect(findFilterByField(config, "themes", "/blog")?.pathname).toBe("/blog");
+    expect(findFilterByField(config, "inconnu")).toBeNull();
   });
 });

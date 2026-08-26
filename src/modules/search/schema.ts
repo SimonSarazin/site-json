@@ -1135,6 +1135,12 @@ const TitleWithFiltersDropdownSchema = z.object({
   /** Source STATIQUE : cf. `FilterGroupSchema.optionsKey` — même sémantique, même résolveur
    *  (`useDynamicFilterOptions`). */
   optionsKey: z.string().optional(),
+  /** Le filtre continue de s'hydrater depuis l'URL et de filtrer le contenu, mais ne rend AUCUN
+   *  contrôle visible (ni dans la barre desktop, ni dans la Sheet mobile, ni comme tag actif) — pour
+   *  une page dont l'identité EST déjà ce filtre (ex. une page `/theme` où le thème vient du query
+   *  param `?theme=…` posé par un menu externe) : afficher un sélecteur redondant avec le contexte
+   *  de la page n'a pas de sens, contrairement à `public`/`territoire` qui restent des affinages. */
+  hidden: z.boolean().optional(),
 });
 
 // Props partagées entre le type canonique `searchHeader` et son alias.

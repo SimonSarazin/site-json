@@ -15,7 +15,25 @@
 > Mémoire : `[[project-parent62]]`
 > (`.claude/memory/project-parent62.md`) — slug corrigé le 25/07 (`parents62` avec **s** est abandonné, cf. §1).
 
-Dernière mise à jour : **2026-08-25** (section admin générique « Listes » — édition de
+Dernière mise à jour : **2026-08-26** (menu de nav « Thèmes » de parent62 basculé sur une capacité
+**générique du moteur** — champ `dynamicList` sur `EnhancedNavItem`, câblé une seule fois dans
+`SiteHeader.tsx`, zéro composant de header modifié : le dropdown se génère depuis
+`costum.lists.themes` [18 valeurs réelles] — plus aucun `children` figé en config, le repli statique
+a été retiré une fois la résolution dynamique confirmée fiable en conditions réelles [conséquence
+assumée : menu vide si `costum.lists.themes` devenait indisponible, cf. §9decies.2]. Chaque clic
+ouvre une page **dédiée `/theme?theme=<valeur>`** [46ᵉ page, calquée sur `/blog`, hero propre
+« Nos thèmes », son filtre `theme` marqué `hidden` puisque la page est déjà scopée]. Les 8 pages
+`/theme/<slug>` restent en ligne mais ne sont plus reliées depuis la nav (remplacement complet,
+décision produit actée avec l'utilisateur). Revue de code passée (`/code-review high`) : 2 bugs
+réels trouvés et corrigés (virgule littérale cassant le round-trip URL ; retour arrière navigateur
+ne vidant pas un filtre appliqué — décision d'hydratation extraite en fonction pure testée,
+`resolveFilterHydration`) ; 3 points identifiés et documentés sans code (impact site entier sur les
+facettes hors nav, highlighting actif mobile, Ctrl+K). Détail complet : §9decies. Document de spec
+séparé (racine du monorepo) : `Document de spécification — Menu dynamique costum.lists dans le
+header.md`. Gates : typecheck/lint propres, `config:validate` **46 pages/160 sections**,
+`audit:config` RAS, `test:unit` **2909/2909** ✅ (+17 tests). `test:e2e` non rejoué (pas de
+`.env.test` dans cet environnement) — à faire avant fusion `main`. Non commité à ce stade.
+Précédemment (même jour) : **2026-08-25** (section admin générique « Listes » — édition de
 `costum.lists` en layout maître-détail dans `/admin` : ajouter/renommer/réordonner/supprimer une
 valeur, créer une liste ; activée en **pilote** sur parent62, onglet « Listes », restreinte via
 `props.lists` aux 2 listes **grandies par saisie libre** (`themes`, `categoriesParole` — cf.
@@ -996,6 +1014,141 @@ valider avant de considérer ces trois opérations fiables sur les listes réell
 
 ---
 
+## 9decies. Impacts — menu de nav « Thèmes » dynamique + page dédiée `/theme` (25-26/08)
+
+> Périmètre : capacité **générique** ajoutée au moteur SiteForge (pas propre à parent62), appliquée
+> à l'entrée « Thèmes » du header de parent62 — seul site du parc à l'utiliser à ce jour. Fait suite
+> au constat (`useDynamicFilterOptions`/`optionsKey` déjà câblés sur 22 blocs de filtres via
+> `costum.lists.themes`, §9septies) que le menu de nav, lui, restait une copie figée à 8 entrées,
+> découplée de la vraie liste (18 valeurs). Document de spec dédié (racine du monorepo) :
+> `Document de spécification — Menu dynamique costum.lists dans le header.md` (historique complet
+> du chantier, y compris les itérations intermédiaires — ce paragraphe ne documente que l'état
+> final retenu).
+
+### 9decies.1 Ce qui a changé côté moteur (générique, tout site)
+
+- **`site-json/src/types/site-schema.ts`** : nouveau champ optionnel `dynamicList: {list,
+  filterId, costumSlug?, limit?}` sur `EnhancedNavItem` — génère les `children` d'un item de nav
+  depuis `costum.lists.<list>` au lieu de les écrire à la main.
+- **`site-json/src/components/layout/header/lib/dynamicNav.ts`** (nouveau, pur, testé —
+  15 cas) : résout les valeurs (statique ou recette dynamique, même logique que
+  `optionsKey`/`optionsFrom` côté filtres) et construit un `children` par valeur, `path` = page
+  propriétaire du filtre + query param (ex. `/theme?theme=La+petite+enfance`), double-encodé pour
+  rester correct même si une valeur contient une virgule littérale.
+- **`site-json/src/components/layout/header/useResolveDynamicNav.ts`** (nouveau) : résout
+  `filterId` → page propriétaire via `getDropdownFilterOwner`, lit `costum.lists[list]` (statique
+  ou recette), avec repli sur les `children` statiques déclarés en config si la résolution
+  échoue/est vide/le `filterId` est introuvable.
+- **`site-json/src/components/layout/SiteHeader.tsx`** : **un seul point d'injection** — la nav est
+  résolue une fois, avant le `switch` qui choisit la variante de header. **Aucun** des 8 composants
+  de header n'a été modifié : un item résolu redevient un `EnhancedNavItemType` ordinaire (un vrai
+  `<NavLink>`, pas un bouton), indiscernable d'un item déclaré à la main.
+- **`site-json/src/modules/search/schema.ts` + `SearchHeaderSection.tsx`** : nouveau champ optionnel
+  `hidden` sur un `dropdownFilters` — le filtre continue de s'hydrater depuis l'URL et de filtrer le
+  contenu, mais ne rend plus aucun contrôle visible (barre desktop, Sheet mobile, tag actif,
+  compteur/`Réinitialiser`). Sert un item de nav dont la page cible EST déjà scopée par ce filtre
+  (cf. `/theme` ci-dessous) : afficher un sélecteur redondant avec le contexte de la page n'a pas de
+  sens, contrairement à un filtre d'affinage (`public`/`territoire`).
+- **`SearchHeaderSection.tsx`, hydratation URL→filtre** : ré-appliquée à chaque fois que la VALEUR
+  vue dans l'URL change pour un filtre donné (pas seulement au montage), et vide la sélection si le
+  paramètre disparaît de l'URL (retour arrière navigateur inclus) — nécessaire dès qu'un menu externe
+  peut faire cibler la MÊME page par plusieurs valeurs successives sans remontage de composant (React
+  Router ne remonte pas sur un changement de query seul). Logique extraite en fonction pure testée,
+  `resolveFilterHydration` (`src/modules/search/lib/hydrateDropdownFilter.ts`, 9 cas).
+
+### 9decies.2 Ce qui a changé côté config parent62 (`config.prod.parent62.json`)
+
+`header.nav`, entrée « Thèmes » — plus de `path` propre (l'item est un pur déclencheur de dropdown,
+pas une page), plus de `children` statiques (les 8 entrées à la main vers `/theme/<slug>`), juste
+`dynamicList` pointant sur le filtre `theme` :
+
+```diff
+-        "path": "/theme/la-petite-enfance",
+-        "children": [ /* … 8 entrées « /theme/<slug> » écrites à la main … */ ]
++        "dynamicList": {
++          "list": "themes",
++          "filterId": "theme"
++        }
+```
+
+Le repli `children` a été retiré après coup (26/08), une fois la résolution dynamique confirmée
+fiable en conditions réelles (§9decies.3) : le garder aurait perpétué exactement la dérive que ce
+lot visait à supprimer (une copie figée à 8 valeurs, à côté des 18 réelles). **Conséquence
+assumée** : si `costum.lists.themes` devenait indisponible (site sans données costum, panne), le
+menu « Thèmes » n'aurait plus aucune entrée à afficher — repli désormais absent. Le risque est jugé
+faible : `costum.lists` voyage avec les données de base du site (chargées pour toute la page, pas
+une requête à part), une indisponibilité casserait donc bien d'autres éléments de la page en même
+temps, pas seulement ce menu.
+
+**Nouvelle page `/theme`** (46ᵉ page, insérée juste avant `/blog` dans `config.pages`) : chaque clic
+du menu ouvre `/theme?theme=<valeur>`. Calquée sur `/blog` — mêmes filtres `theme`/`public`/
+`territoire`, même `articleFeed` (`featured: false`, comme les anciennes pages `/theme/<slug>`) —
+mais avec son propre titre/SEO/hero (« Nos thèmes ») et son filtre `theme` marqué `hidden: true` (la
+page est déjà scopée par la valeur cliquée, un sélecteur « Thèmes » dessus serait redondant).
+`dynamicList.filterId` reste `"theme"` : `getDropdownFilterOwner` résout par « premier match dans
+l'ordre de `config.pages` » (aucun `preferPathname` exposé depuis le header) — `/theme` gagne parce
+qu'elle est désormais la première page à déclarer `id: "theme"` dans le tableau (22 blocs au total
+dans la config partagent cet id pour leur propre filtrage local, cf. §9septies).
+
+**Décision produit tranchée avec l'utilisateur** (remplacement complet, pas l'option hybride
+envisagée) : les 8 pages `/theme/<slug>` — chacune avec un `seo.title`/`seo.description`/`ogImage`
+dédié — restent en ligne et indexables, mais ne sont plus reliées depuis la nav ni depuis le menu.
+Perte du maillage interne vers ces pages, pas de leur contenu.
+
+### 9decies.3 Vérifié en conditions réelles (SSR + Playwright + interception réseau, backend réel)
+
+- Le dropdown « Thèmes » résout **18 valeurs réelles** de `costum.lists.themes` (pas les 8 valeurs
+  statiques) → liens `/theme?theme=<valeur>` corrects, zéro lien `/theme/<slug>` résiduel.
+- Clic (navigateur réel) : navigation → titre « Nos thèmes » affiché → filtre appliqué → ni
+  « Thèmes » ni « Contenus » ne s'allument comme actifs (page distincte des deux, correct).
+- 2ᵉ clic vers un AUTRE thème pendant que `/theme` reste montée : nouvelle requête serveur confirmée
+  repartir avec la nouvelle valeur.
+- Retour arrière du navigateur vers `/theme` sans paramètre : requête serveur suivante sans plus
+  aucun filtre `themes` (sélection bien vidée).
+- Filtre masqué (`hidden`) : 0 bouton « Thèmes »/valeur sélectionnée visible sur `/theme`, `Publics`
+  toujours visible normalement.
+- `costum.lists.themes` est aujourd'hui **statique** côté backend parent62 (cf. §9septies /
+  document de spec `costum.lists.themes statique bloque les filtres dynamiques`) : seule cette
+  branche a été exercée en conditions réelles. La branche RECETTE DYNAMIQUE (`costum/co/listvalues`)
+  reste couverte uniquement par les tests unitaires — à valider en conditions réelles si `themes`
+  devient un jour une recette dynamique côté backend (§13).
+- `test:e2e` **non rejoué** (pas de `.env.test` dans cet environnement) — `e2e/parent62.spec.ts:124`
+  (deep-link `/recherche?territoire=Arrageois`) vaut d'être rejoué avant fusion dans `main`.
+
+### 9decies.4 Points restés ouverts (documentés, non traités dans ce lot)
+
+1. **`/theme` est désormais la page par défaut pour tout clic sur une facette « themes » sans page
+   locale correspondante, site entier** — pas seulement le menu de header : `ClickableFacet` sur les
+   previews de résultats de recherche (`/recherche`, `/agenda`, …) résout par le même mécanisme
+   « premier match ». Avant ce lot ça retombait sur `/blog`, maintenant sur `/theme`. Fonctionnellement
+   équivalent (mêmes filtres) ; seule différence visible, `featured:false` sur `/theme` vs `true` sur
+   `/blog`. Jamais explicitement demandé — à confirmer si `/blog` doit rester la cible par défaut
+   pour ces clics-là spécifiquement.
+2. **Highlighting « actif » de la nav mobile ne peut jamais s'allumer pour un enfant `dynamicList`**
+   (son `path` contient une query string, la vérification d'état actif ne compare que le pathname) —
+   purement cosmétique, une correction propre toucherait une logique partagée par les 8 headers.
+3. **Ctrl+K ne recherche pas les 10 valeurs de `costum.lists.themes` sans page dédiée** — mais
+   listait déjà chaque page de `config.pages` indépendamment de la nav avant ce lot (les 8 titres
+   `/theme/<slug>` y sont donc toujours, pas une régression) ; limitation préexistante de
+   l'architecture de ce composant, pas un défaut introduit ici.
+
+### 9decies.5 Validation (gates)
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` | ✅ 0 erreur |
+| `lint` | ✅ 0 erreur, 0 nouveau warning |
+| `npx tsx scripts/validate-config.ts config.prod.parent62.json` | ✅ **46 pages, 160 sections** |
+| `audit:config` | ✅ RAS (`liens: 0`) |
+| `test:unit` suite complète | ✅ **2909/2909** (6 skip) — +17 tests vs. avant ce lot |
+| `test:e2e` | ⏭️ non rejoué (pas de `.env.test` ici) — à faire avant fusion `main` |
+| Vérification SSR + Playwright + interception réseau (backend réel) | ✅ cf. §9decies.3 |
+
+Non commité à ce stade (comme §9septies/§9octies avant lui) — à recetter visuellement (dont
+`test:e2e` avec backend réel) puis committer sur `parents62` si validé.
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
@@ -1067,6 +1220,11 @@ attendue par le test parole ; périmètre `prepData`/`validategroup`.
   `/blog` (« Actualités »+thèmes du MR vs « Contenus » de Thomas) a été **résolu le 24/07** :
   « Actualités » remplacée par le dropdown « Thèmes » canonique de Thomas (décision Peterson : quand
   deux entrées ouvrent la même page, on garde celle de Thomas ; les thèmes restent navigables).
+- **[25/08] 8 pages `/theme/<slug>` orphelines de la nav** (§9decies) : depuis la bascule du
+  dropdown « Thèmes » en `dynamicList`, ces pages (chacune avec un SEO dédié) ne sont plus liées
+  depuis le menu — remplacées par des liens `/blog?theme=<valeur>` générés depuis
+  `costum.lists.themes`. Choix assumé (remplacement complet, pas de fusion) ; elles restent en
+  ligne et indexables, joignables par URL directe/sitemap.
 - **Vue cartographique** : uniquement sur `/recherche` (`enableMap:true`, cluster + marker colorBy) ;
   `/agenda`, `/ressources`, `/temoignages` ont `enableMap:false`.
 - **Modération a priori des events** (2.6) : le form pose `preferences.toBeValidated:true` ; l'agenda
@@ -1137,6 +1295,8 @@ les **paroles ne sont plus muettes** dans le moteur (§9bis.1).
 | Borne de fin des dates (`$lt`/`$lte`) dans `SearchNew::getQueries` | Thomas / backend |
 | **URL parole** `/temoignages` vs `/paroles` | Thomas / réseau |
 | Harmoniser `/theme/*` avec `/recherche` (2.2 — le volet `/blog` est fait) | Peterson |
+| **[25/08] Devenir des 8 pages `/theme/<slug>`** — restent en ligne mais orphelines de la nav depuis la bascule `dynamicList` (§9decies) : les rediriger vers `/blog?theme=...`, les relier autrement (footer, pages territoire…), ou les laisser telles quelles (SEO dédié conservé) ? | réseau / Peterson |
+| **[25/08] Valider en conditions réelles la branche RECETTE DYNAMIQUE de `useResolveDynamicNav`** (seule la branche statique a été exercée sur parent62, §9decies.3) — pertinent le jour où `costum.lists.themes` (ou une autre liste) devient une recette dynamique côté backend | Thomas / backend |
 | **Carte `CardEvent`** — hauteur figée `h-72`, aucun fond, ignore `card`/`list` : dans une liste hétérogène elle laisse un trou et laisse voir le fond de page. Correctif à recetter sur `/agenda` | Thomas |
 | Valeurs `category` ressources · 10e territoire « Familles en sol mineur » (43) · contenu des 4 pages statiques · couleurs `oklch` · coquilles de communes | réseau |
 | **[06/08] `/parents`/`/pro` orphelines** — confirmé statiquement (config), et indirectement par e2e (le test dédié échoue avant d'atteindre l'assertion sur ces liens) ; le dropdown « Publics » (7 pages `/public/*`) les remplace-t-il volontairement, ou faut-il relier ces deux pages (nav ou accueil) ? | Peterson / Thomas |
