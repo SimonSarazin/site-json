@@ -24,22 +24,33 @@ export type AdminAccessLevel = z.infer<typeof AdminAccessLevelSchema>;
  *  addConfig / profiles.<type>.editModal) · `"add-<key>"`/`"edit-<key>"` (clé forcée, standard ou costum). */
 export const AdminFormRefSchema = z.union([z.literal(false), z.literal("inherit"), z.string()]);
 
-/** Workflow de statut d'une resource (validation pending→validated). `costumFlag` =
- *  `preferences.toBeValidated[slug]` (legacy ValidateGroupAction) ; `statusField` = champ métier.
- *
- *  ⚠ CONTRAT FUTUR — aujourd'hui `status` n'est lu qu'en BOOLÉEN (présence = active le mode admin,
- *  au même titre que rowActions:["validate"]) : les sous-champs ne sont PAS ENCORE câblés.
- *  Décision 2026-07-07 : à l'implémentation (prévue avec SSBE), `mode`/`field`/`states` seront
- *  câblés (filtre Select des states + badge + UPDATE_PATH_VALUE) ; `cascade` et `notifyEmail`
- *  seront RETIRÉS — la cascade legacy est intrinsèque (pas un paramètre de requête, à re-vérifier
- *  dans ValidateGroupAction) et l'email de statut est un hook costum BACKEND (chantier
- *  costum-hooks), pas un levier du front. Ne PAS écrire de valeur non-défaut d'ici là. */
+/** Un état métier du mode `statusField` : `value` = valeur brute écrite/lue en base (VERBATIM,
+ *  orthographes legacy comprises — ex. « Réfusé » du CoForm SSBE) ; `label` = affichage (permet de
+ *  corriger l'orthographe sans toucher la donnée) ; `tone` = ton visuel du badge (mêmes tokens
+ *  `bg-badge-*` que les badges des cartes publiques). Forme courte : la string seule. */
+export const AdminStatusStateSchema = z.union([
+  z.string(),
+  z.object({
+    value: z.string(),
+    label: LocalizedString.optional(),
+    tone: z.enum(["positive", "pending", "progress", "negative"]).optional(),
+  }),
+]);
+export type AdminStatusState = z.infer<typeof AdminStatusStateSchema>;
+
+/** Workflow de statut d'une resource :
+ *  - `costumFlag` (défaut) = `preferences.toBeValidated[slug]` (legacy ValidateGroupAction), lu en
+ *    booléen — présence de `status` = mode admin, au même titre que rowActions:["validate"].
+ *  - `statusField` (câblé le 31/07, décision 2026-07-07) = le statut est un CHAMP MÉTIER de
+ *    `serverData` (`field`, chemin pointé, ex. le select « Administration » d'une answer CoForm) à
+ *    valeurs dans `states` : colonne badge toné, filtre serveur par état, actions « Marquer … »
+ *    par-ligne via `entity.updateField` (UPDATE_PATH_VALUE — un $set ciblé, pas un save complet).
+ *    `cascade`/`notifyEmail` du contrat initial sont RETIRÉS comme acté (cascade legacy
+ *    intrinsèque ; email de statut = hook costum backend, pas un levier du front). */
 export const AdminStatusConfigSchema = z.object({
   field: z.string().default("preferences.toBeValidated"),
   mode: z.enum(["costumFlag", "statusField"]).default("costumFlag"),
-  states: z.array(z.string()).optional(),
-  cascade: z.boolean().default(true),
-  notifyEmail: z.boolean().default(false),
+  states: z.array(AdminStatusStateSchema).optional(),
 });
 
 /** Colonnes de table : chemin pointé brut (`"address.addressLocality"`) OU `{path, label, type}` (libellé localisé). */
@@ -56,11 +67,47 @@ export const AdminColumnsSchema = z.array(z.union([
 /** Accès minimum d'une SECTION (surcharge l'accès page/onglet — cf. AdminConfig.access). */
 const sectionAccess = { access: AdminAccessLevelSchema.optional() };
 
+/** Champs communs des KPIs opt-in du dashboard. `linkTo` = raccourci de la tuile (path site
+ *  ou onglet admin) ; `icon` = nom lucide (DynamicIcon), défaut par type. */
+const kpiBase = {
+  label: LocalizedString,
+  /** Sous-titre descriptif de la tuile (ex. « Créneaux publiés (état Validé) »). */
+  hint: LocalizedString.optional(),
+  linkTo: z.string().optional(),
+  icon: z.string().optional(),
+};
+
+/** KPIs déclarés du dashboard — OPT-IN (sans `kpis`, le dashboard reste 100 % dérivé) :
+ *  - `searchCount` : compteur d'un périmètre de recherche (même contrat `source` que les
+ *    resources / `baseParams` de searchProStatic). `trend: "monthly"` charge le périmètre
+ *    complet (useSearchAllResults) et dérive l'évolution mensuelle des dates `created` —
+ *    les suppressions ne sont pas historisées, cf. computeMonthlyTrend ;
+ *  - `membersPending` : membres du carrier en attente de validation (même source que
+ *    l'onglet members) ;
+ *  - `analyticsVisitors` : visites uniques mensuelles. AUCUNE intégration analytics en
+ *    LECTURE n'existe dans le moteur (IntegrationsLoader ne fait que du tracking) : la
+ *    tuile affiche un état « à raccorder » explicite plutôt qu'un chiffre inventé. */
+export const AdminDashboardKpiSchema = z.discriminatedUnion("type", [
+  z.object({
+    ...kpiBase,
+    type: z.literal("searchCount"),
+    entityType: z.string(), // answers | organizations | poi | …
+    source: SearchBaseParamsSchema.partial().optional(),
+    trend: z.enum(["monthly"]).optional(),
+  }),
+  z.object({ ...kpiBase, type: z.literal("membersPending") }),
+  z.object({ ...kpiBase, type: z.literal("analyticsVisitors") }),
+]);
+export type AdminDashboardKpi = z.infer<typeof AdminDashboardKpiSchema>;
+
 const AdminDashboardSectionSchema = z.object({
   ...sectionAccess,
   type: z.literal("dashboard"),
   title: LocalizedString.optional(),
+  /** Tuiles KPI déclarées, rendues AVANT les tuiles dérivées (resources/modération). */
+  kpis: z.array(AdminDashboardKpiSchema).optional(),
 });
+export type AdminDashboardSection = z.infer<typeof AdminDashboardSectionSchema>;
 
 const AdminMembersSectionSchema = z.object({
   ...sectionAccess,
@@ -91,9 +138,33 @@ const AdminResourceSectionSchema = z.object({
   columns: AdminColumnsSchema.optional(),
   create: AdminFormRefSchema.default("inherit"),
   edit: AdminFormRefSchema.default("inherit"),
-  rowActions: z.array(z.enum(["edit", "delete", "validate", "reference"])).optional(),
-  bulkActions: z.array(z.enum(["export", "validate", "delete"])).optional(),
+  rowActions: z.array(z.enum(["edit", "delete", "validate", "reference", "setFeatured"])).optional(),
+  /**
+   * Gating par APPARTENANCE (opt-in) : sur une ligne NON possédée (`source.keys` ∌ slug du site —
+   * référencée ou étrangère), seules la lecture et l'action `reference` restent ; `edit`/`delete`/
+   * `validate`/statusField sont masqués. Modèle « la propriété porte les fonctionnalités, la
+   * référence ne porte que la visibilité » : le Node durci refuse déjà ces écritures sur une
+   * entité étrangère (401, cf. useReferenceElement) — sans ce gate, l'UX proposait des actions
+   * vouées à l'échec. Gating d'AFFICHAGE ≠ vérité des droits (un superAdmin peut éditer une
+   * étrangère) : v1 par appartenance, opt-in par section pour ne pas changer les sites qui
+   * modèrent du référencé (`moderateReferenced`).
+   */
+  restrictActionsToOwned: z.boolean().optional(),
+  /** `transfer` requiert `transferFrom` (le bouton reste caché sans lui) — ouvre le dialog de
+   *  migration d'appropriation en mode ids[] sur la sélection (mêmes contrôles/gate serveur). */
+  bulkActions: z.array(z.enum(["export", "validate", "delete", "transfer"])).optional(),
+  /** Slug du costum CÉDANT pour la bulkAction `transfer` (les fiches cochées lui appartiennent). */
+  transferFrom: z.string().min(1).optional(),
   status: AdminStatusConfigSchema.optional(),
+  /**
+   * Champ booléen à EXCLUSIVITÉ (un seul document du périmètre `source` à `true` à la fois, ex.
+   * `featured`/« à la une »). OPT-IN strict : n'a d'effet que combiné à `rowActions:["setFeatured"]`
+   * — sans lui, l'action « Mettre à la une » ne s'affiche pas, zéro impact sur les sections
+   * `resource` existantes. Portée de l'exclusivité (depuis la review MR 44) : une RECHERCHE
+   * SERVEUR dédiée sur le périmètre déclaré par `source` (`fetchFlagged` — jamais les lignes
+   * chargées de l'infinite scroll, jamais les filtres UI transitoires), cf. `runExclusiveFlag`.
+   */
+  exclusiveField: z.string().optional(),
 });
 export type AdminResourceSection = z.infer<typeof AdminResourceSectionSchema>;
 
@@ -123,6 +194,25 @@ const AdminReferenceSectionSchema = z.object({
   type: z.literal("reference"),
   title: LocalizedString.optional(),
   entityTypes: z.array(z.string()).optional(),
+  /**
+   * Recherche de CANDIDATES (« Rechercher & référencer ») configurable — décision 2026-08-20 :
+   *  - `openData` : politique de consentement, au niveau SECTION (uniforme) —
+   *      `optIn` (défaut) = fidèle legacy referenceTable (`isOpenData: true` exigé ; commit
+   *      c097823fc 2021, Bouboule) ; `optOut` = tout sauf refus EXPLICITE
+   *      (`$nin [false, "false"]` — 2 241 orgs + 1 741 events du parc l'ont posé, respectés) ;
+   *      `off` = aucun filtre open-data.
+   *  - `defaultFilters` : ciblage du VIVIER commun à toutes les collections de la section
+   *      (grammaire Mongo-ish du parc : `source.keys`, `address.postalCode`…).
+   *  - `defaultFiltersByType` : ciblage PAR collection, fusionné PAR-DESSUS le commun — une
+   *      section multi-collections (sélecteur) ne fait pas fuiter un filtre d'orgs vers les events.
+   * Les garde-fous `$nin` du déjà-rattaché/référencé restent NON configurables (fusionnés
+   * même-clé après la config — parité : add/reference ne déduplique pas).
+   */
+  search: z.object({
+    openData: z.enum(["optIn", "optOut", "off"]).default("optIn"),
+    defaultFilters: z.record(z.string(), z.unknown()).optional(),
+    defaultFiltersByType: z.record(z.string(), z.record(z.string(), z.unknown())).optional(),
+  }).optional(),
   /** Colonnes de DONNÉES des deux tables (défaut name + address.addressLocality). Les colonnes
    *  structurelles Type (badge collection) et Action restent fixes. */
   columns: AdminColumnsSchema.optional(),

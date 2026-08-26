@@ -32,7 +32,10 @@
       "urlInvalid": "{{label}} must be a valid URL",
       "simpleTableRequired": "{{label}} is required (at least one data row)",
       "multiCheckboxPlusCplxRequired": "All complementary fields must be filled",
-      "noteRange": "The rating must be between 0 and 5"
+      "noteRange": "The rating must be between 0 and 5",
+      "timeSlotIncomplete": "Each time slot needs a day, a start time and an end time",
+      "timeSlotOrder": "End time must be after start time",
+      "dynamicFieldsIncomplete": "Each row must be complete and valid"
     },
     "fields": {
       "selectPlaceholder": "Select",
@@ -450,6 +453,34 @@
         "notAuthorized": "You are neither admin nor member of this place.",
         "pendingValidation": "Request pending — waiting for admin validation."
       }
+    },
+    "timeSlots": {
+      "day": "Day",
+      "dayPlaceholder": "Pick a day",
+      "startTime": "Start",
+      "endTime": "End",
+      "addSlot": "Add a time slot",
+      "removeSlot": "Remove this time slot",
+      "days": {
+        "monday": "Monday",
+        "tuesday": "Tuesday",
+        "wednesday": "Wednesday",
+        "thursday": "Thursday",
+        "friday": "Friday",
+        "saturday": "Saturday",
+        "sunday": "Sunday"
+      }
+    },
+    "dynamicFields": {
+      "addRow": "Add a row",
+      "removeRow": "Remove"
+    },
+    "categorizedCheckbox": {
+      "expand": "Expand",
+      "collapse": "Collapse",
+      "loadError": "Options could not be loaded.",
+      "notConfigured": "This field has not been configured yet.",
+      "orphans": "Saved answers no longer matching an available option:"
     }
   }
 }

@@ -199,6 +199,17 @@ describe("mapCoFormTypeToComponentType", () => {
     expect(mapCoFormTypeToComponentType("tpls.forms.select")).toBe("select");
   });
 
+  it("mappe les types date/heure natifs sur text (input HTML typé)", () => {
+    expect(mapCoFormTypeToComponentType("date")).toBe("text");
+    expect(mapCoFormTypeToComponentType("time")).toBe("text");
+    expect(mapCoFormTypeToComponentType("datetime-local")).toBe("text");
+  });
+
+  it("mappe timeSlots et dynamicFields", () => {
+    expect(mapCoFormTypeToComponentType("tpls.forms.cplx.timeSlots")).toBe("timeSlots");
+    expect(mapCoFormTypeToComponentType("tpls.forms.cplx.dynamicFields")).toBe("dynamicFields");
+  });
+
   it("retourne 'unknown' pour un type non mappé", () => {
     expect(mapCoFormTypeToComponentType("unknown.type")).toBe("unknown");
     expect(mapCoFormTypeToComponentType("")).toBe("unknown");
@@ -649,6 +660,56 @@ describe("generateZodSchema", () => {
     );
     expect(calls).toContain("coform.validation.requiredField");
     expect(calls).toContain("coform.validation.noteRange");
+  });
+
+  // ── timeSlots ──
+  // Slot de référence = format réel des answers SSBE.
+  const validSlot = { day: "Monday", startHour: "08", startMinute: "00", endHour: "09", endMinute: "00" };
+
+  it("timeSlots accepte le format réel SSBE et rejette fin <= début", () => {
+    const schema = generateZodSchema([
+      makeSubFormFields([makeField({ name: "ts", componentType: "timeSlots", isRequired: false })]),
+    ]);
+    expect(() => schema.parse({ ts: [validSlot] })).not.toThrow();
+    expect(() => schema.parse({ ts: [{ ...validSlot, endHour: "07" }] })).toThrow();
+  });
+
+  it("timeSlots rejette un slot incomplet et timeSlots required exige >= 1 slot", () => {
+    const schema = generateZodSchema([
+      makeSubFormFields([makeField({ name: "ts", componentType: "timeSlots", isRequired: true })]),
+    ]);
+    expect(() => schema.parse({ ts: [] })).toThrow();
+    expect(() => schema.parse({ ts: [{ ...validSlot, day: "" }] })).toThrow();
+    expect(() => schema.parse({ ts: [validSlot] })).not.toThrow();
+  });
+
+  // ── dynamicFields ──
+  const dynField = makeField({
+    name: "df",
+    componentType: "dynamicFields",
+    dynamicFieldsConfig: {
+      enableMultipleRows: true,
+      minRows: 1,
+      maxRows: 10,
+      fieldsConfig: [
+        { key: "partnerName", label: "Nom", type: "text", required: true, validation: { minLength: 2, maxLength: 10 } },
+        { key: "role", label: "Rôle", type: "text", required: false },
+      ],
+    },
+  });
+
+  it("dynamicFields valide required/minLength/maxLength des sous-champs", () => {
+    const schema = generateZodSchema([makeSubFormFields([{ ...dynField, isRequired: false }])]);
+    expect(() => schema.parse({ df: [{ partnerName: "ADAPTE", role: "" }] })).not.toThrow();
+    expect(() => schema.parse({ df: [{ partnerName: "", role: "x" }] })).toThrow(); // required vide
+    expect(() => schema.parse({ df: [{ partnerName: "A", role: "" }] })).toThrow(); // < minLength
+    expect(() => schema.parse({ df: [{ partnerName: "ABCDEFGHIJK", role: "" }] })).toThrow(); // > maxLength
+  });
+
+  it("dynamicFields required exige minRows lignes", () => {
+    const schema = generateZodSchema([makeSubFormFields([{ ...dynField, isRequired: true }])]);
+    expect(() => schema.parse({ df: [] })).toThrow();
+    expect(() => schema.parse({ df: [{ partnerName: "ADAPTE", role: "" }] })).not.toThrow();
   });
 });
 

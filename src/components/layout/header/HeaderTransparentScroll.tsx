@@ -122,7 +122,10 @@ export default function HeaderTransparentScroll({ header, pageHasHero = false }:
                             header={header}
                             isOverlay={!opaque}
                             iconTone="primary"
-                            imageClassName={`${logoSquareClass(header.logoSize)} shrink-0 object-contain group-hover:scale-110 transition-transform`}
+                            // `logoClass` (classe COMPLÈTE de l'image, cf. site-schema) surcharge la
+                            // dérivation logoSize — câblage perdu au merge 348237e5, recâblé : sans
+                            // lui, la clé de schéma et la valeur config (MSS h-[60px]) étaient mortes.
+                            imageClassName={header.logoClass ?? `${logoSquareClass(header.logoSize)} shrink-0 object-contain group-hover:scale-110 transition-transform`}
                             iconClassName="w-8 h-8 shrink-0 group-hover:scale-110 transition-transform"
                             imageHeight={logoSizePx(header.logoSize)}
                         />

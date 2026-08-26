@@ -45,6 +45,26 @@
         ],
         "indexStepList": 12
       }
+    },
+    "/communaute/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "citoyens"
+        ],
+        "sourceKey": [
+          "eXtremeDefiAdeme"
+        ]
+      }
+    },
+    "/communaute/searchProStatic#1": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "sourceKey": [
+          "eXtremeDefiAdeme"
+        ]
+      }
     }
   },
   "referencement": {},

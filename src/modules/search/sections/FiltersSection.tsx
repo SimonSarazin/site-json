@@ -20,6 +20,7 @@ import { normalizeFilterValue } from "../lib/dropdownFilters";
 import { computeUrlFromFilters } from "../lib/computeUrlFromFilters";
 import { SelectField, MultiCheckboxField, MultiField } from "../components/filterFields";
 import { pickFilterField } from "../lib/pickFilterField";
+import { answerToggleArgs, type AnswerGroupConf } from "../lib/answerFilterClause";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -192,6 +193,14 @@ export function FiltersSection({
 
   const filtersByPathOptions = filtersByPath ?? {};
   const filterByPathResult = useFiltersByPathQuery(`filters-by-path-${id}`, filtersByPathOptions as Parameters<typeof useFiltersByPathQuery>[1]);
+
+  // Config des groupes « par réponses », indexée par id — passée à la lecture d'URL
+  // pour qu'un deep-link pose EXACTEMENT le même filtre qu'un clic (cf. filterTarget).
+  const answerGroupConfs = useMemo<Record<string, AnswerGroupConf>>(
+    () => ({ ...filtersByAnswersOptions, ...filtersByPathOptions }) as Record<string, AnswerGroupConf>,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [JSON.stringify(filtersByAnswersOptions), JSON.stringify(filtersByPathOptions)],
+  );
 
   const filterAnswerData = useMemo(() => {
     if (!filtersByAnswers && !filtersByPath) return null;
@@ -393,6 +402,7 @@ export function FiltersSection({
       searchParams,
       filterGroups,
       filterAnswerData,
+      answerGroupConfs,
     );
     setSelectedFilters(applySelected);
     // À l'hydratation initiale SEULEMENT : sélection par défaut des groupes
@@ -841,6 +851,19 @@ export function FiltersSection({
           const answerConf = isPathGroup ? filtersByPathOptions[group] : filtersByAnswersOptions[group];
           const answerLoading = isPathGroup ? filterByPathResult.isLoading : filterAnswerResult.isLoading;
           const answerOptionNames = groupData ? Object.keys(groupData.values) : [];
+          // Cible du groupe : éléments liés (`_id`/orgaNameArray, défaut historique)
+          // ou réponses elles-mêmes (prédicat de chemin) — cf. answerFilterClause.
+          const toggleAnswerOption = (
+            optionKey: string,
+            option: { name?: string; orgaNameArray?: string[] },
+          ) => {
+            const { field, value, fieldType } = answerToggleArgs(
+              answerConf as AnswerGroupConf | undefined,
+              optionKey,
+              option,
+            );
+            toggleFilter(group, optionKey, field, value, null, fieldType);
+          };
           if (answerOptionNames.length === 0) {
             // pas (encore) d'options : squelette si la query tourne, sinon rien.
             return answerLoading
@@ -873,7 +896,7 @@ export function FiltersSection({
                 ...selectedNames.filter((c) => !next.includes(c)),
               ];
               for (const name of changed) {
-                toggleFilter(group, name, "_id", groupData.values[name].orgaNameArray);
+                toggleAnswerOption(name, groupData.values[name]);
               }
             };
             return (
@@ -890,7 +913,7 @@ export function FiltersSection({
               <Button
                 key={group}
                 variant="ghost"
-                onClick={() => toggleFilter(group, singleKey, "_id", singleValue.orgaNameArray)}
+                onClick={() => toggleAnswerOption(singleKey, singleValue)}
                 className="h-auto w-full justify-between rounded-none border-b border-border py-3 text-sm font-normal hover:bg-muted"
               >
                 {headerLabel}
@@ -911,7 +934,7 @@ export function FiltersSection({
                     label={capitalizeFirst(option.name)}
                     variant={filtersByAnswersOptions[group]?.optionStyle ?? filtersByPathOptions[group]?.optionStyle}
                     selected={isFilterSelected(group, optionKey)}
-                    onToggle={() => toggleFilter(group, optionKey, "_id", option.orgaNameArray)}
+                    onToggle={() => toggleAnswerOption(optionKey, option)}
                   />
                 );
               }),

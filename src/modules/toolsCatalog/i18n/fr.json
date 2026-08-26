@@ -1,0 +1,99 @@
+{
+  "title": "Catalogue d'outils",
+  "answerButton": "Répondez au questionnaire",
+  "answerDialogDescription": "Choisissez un lieu puis répondez au questionnaire d'usage sans quitter le catalogue.",
+  "searchPlaceholder": "Rechercher un outil…",
+  "resultCount_one": "{{count}} outil",
+  "resultCount_other": "{{count}} outils",
+  "filter": {
+    "categoryTitle": "Catégorie d'usage",
+    "subCategoryTitle": "Sous-catégorie d'usage",
+    "all": "Tous",
+    "openSource": "Open source uniquement"
+  },
+  "view": {
+    "grid": "Grille",
+    "list": "Liste"
+  },
+  "empty": "Aucun outil ne correspond à votre recherche.",
+  "error": "Impossible de charger le catalogue d'outils.",
+  "retry": "Réessayer",
+  "loadingMore": "Chargement…",
+  "loadMoreError": "Le chargement de la suite a échoué.",
+  "openSourceBadge": "Open source",
+  "usagesCount_one": "{{count}} usage",
+  "usagesCount_other": "{{count}} usages",
+  "openLink": "Ouvrir le site",
+  "detail": {
+    "title": "Description de {{tool}}",
+    "description": "Les lieux ayant renseigné cet outil, avec leur satisfaction.",
+    "infoTitle": "Informations",
+    "toolLink": "Lien de l'outil",
+    "noLink": "Aucun lien",
+    "openSourceYes": "L'outil est open source",
+    "openSourceNo": "L'outil n'est pas open source",
+    "descriptionLabel": "Description",
+    "noDescription": "Aucune description",
+    "filterTitle": "Filtrer les tiers-lieux par contexte d'usage",
+    "placesShown_one": "{{count}} tiers-lieu affiché",
+    "placesShown_other": "{{count}} tiers-lieux affichés",
+    "placesTitle": "Les tiers-lieux qui l'utilisent",
+    "satisfactionLabel": "Satisfaction fonctionnelle",
+    "seeAnswer": "Voir la réponse",
+    "empty": "Aucun lieu n'a encore renseigné cet outil.",
+    "loading": "Chargement des lieux…",
+    "error": "Impossible de charger les lieux.",
+    "noteLabel": "Besoin d'alternative éthique"
+  },
+  "commun": {
+    "title": "Informations liées au commun",
+    "channel": "Canal de discussion",
+    "website": "Site du commun",
+    "fundingTitle": "Besoins financiers",
+    "fundingUnnamed": "Poste sans intitulé"
+  },
+  "note": {
+    "level": {
+      "0": "Pas de niveau",
+      "1": "Acceptable",
+      "2": "Tolérable",
+      "3": "Modéré",
+      "4": "Urgent",
+      "5": "Critique"
+    }
+  },
+  "happiness": {
+    "love": "Très satisfait",
+    "happySmile": "Satisfait",
+    "neutral": "Neutre",
+    "sad": "Insatisfait",
+    "cry": "Très insatisfait",
+    "none": "Non évalué"
+  },
+  "edit": {
+    "open": "Modifier",
+    "title": "Modifier {{tool}}",
+    "subtitle": "Ces informations sont partagées avec la page legacy du catalogue.",
+    "urlLabel": "Lien de l'outil",
+    "communLabel": "Commun rattaché",
+    "communPlaceholder": "Rechercher un commun…",
+    "communNone": "Aucun commun",
+    "communLoading": "Chargement des communs…",
+    "communError": "Impossible de charger la liste des communs.",
+    "communUnavailable": "Rattachement indisponible : cet outil n'a pas de lien de commun réutilisable et aucun gabarit d'URL n'est configuré pour ce site.",
+    "descriptionLabel": "Description",
+    "descriptionHint": "Markdown accepté (**gras**, listes, liens).",
+    "openSourceLabel": "Outil open source",
+    "imageLabel": "Image de l'outil",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "error": "L'enregistrement a échoué.",
+    "success": "Outil mis à jour.",
+    "confirmClose": {
+      "title": "Modifications non enregistrées",
+      "description": "Si vous fermez maintenant, vos modifications seront perdues.",
+      "stay": "Continuer la modification",
+      "discard": "Fermer sans enregistrer"
+    }
+  }
+}

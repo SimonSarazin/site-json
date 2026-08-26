@@ -12,6 +12,10 @@
         "defaultTypes": [
           "poi"
         ],
+        "costumSlug": "saintpaulSport1",
+        "defaultFilters": {
+          "type": "recoveryCenter"
+        },
         "defaultFields": [
           "name",
           "equip_type_name",
@@ -60,14 +64,10 @@
           "address",
           "geo",
           "geoPosition",
-          "parent"
-        ],
-        "notSourceKey": true,
-        "defaultFilters": {
-          "type": "recoveryCenter",
-          "source.key": "equipementsSportifs974",
-          "address.localityId": "54c0965cf6b95c141800a518"
-        }
+          "parent",
+          "source",
+          "reference"
+        ]
       },
       "dimensions": {
         "name": {
@@ -926,7 +926,7 @@
                 "days": 7
               },
               "sourceKey": [
-                "equipementsSportifs974"
+                "saintpaulSport1"
               ],
               "poiFilters": {
                 "type": "recoveryCenter"

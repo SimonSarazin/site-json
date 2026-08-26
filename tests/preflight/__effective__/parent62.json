@@ -392,6 +392,76 @@
         },
         "indexStepList": 6
       }
+    },
+    "/recherche/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "projects",
+          "events",
+          "poi",
+          "organizations"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "searchBy": [
+          "name",
+          "address.addressLocality",
+          "address.postalCode",
+          "tags"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "collection",
+          "type",
+          "source",
+          "category",
+          "description",
+          "shortDescription",
+          "profilImageUrl",
+          "profilMediumImageUrl",
+          "profilThumbImageUrl",
+          "medias",
+          "urls",
+          "address",
+          "tags",
+          "territoires",
+          "publics",
+          "ages",
+          "themes",
+          "created",
+          "startDate",
+          "endDate",
+          "organizer",
+          "geo",
+          "geoPosition"
+        ],
+        "indexStepList": 20
+      }
+    },
+    "/communaute/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "citoyens"
+        ],
+        "sourceKey": [
+          "parent62"
+        ]
+      }
+    },
+    "/communaute/searchProStatic#1": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "sourceKey": [
+          "parent62"
+        ]
+      }
     }
   },
   "referencement": {},

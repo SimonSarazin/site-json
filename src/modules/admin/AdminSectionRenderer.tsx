@@ -9,6 +9,7 @@ import DashboardSection from "./sections/DashboardSection";
 import MembersSection from "./sections/MembersSection";
 import PlaceholderSection from "./sections/PlaceholderSection";
 import AdminInvitationSection from "./sections/AdminInvitationSection";
+import AdminOwnershipMigrationSection from "./sections/AdminOwnershipMigrationSection";
 import { getAdminSection, registerAdminSection } from "./sections/registry";
 import { useAdminAccess } from "./hooks/useAdminAccess";
 import type { AdminAccessLevel, AdminSection } from "./schema";
@@ -16,6 +17,9 @@ import type { AdminAccessLevel, AdminSection } from "./schema";
 // Section « campagne d'invitation » (générique, activable par tout costum via `{type:"invitation"}`).
 // Enregistrée en side-effect au chargement du module admin (core, eager).
 registerAdminSection("invitation", AdminInvitationSection);
+// Section « migration d'appropriation » (`{type:"ownershipMigration"}`) : reprise de la PROPRIÉTÉ
+// d'un lot de fiches d'un costum cédant vers ce site (endpoints TRANSFER_SOURCE_*, nés en miroir).
+registerAdminSection("ownershipMigration", AdminOwnershipMigrationSection);
 
 /**
  * Mappe `section.type` → composant (jumeau de `ProfileSectionRenderer`).

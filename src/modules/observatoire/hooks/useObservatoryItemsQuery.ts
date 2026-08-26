@@ -38,6 +38,16 @@ export function buildObservatoryBaseParams(
     defaultFilters: baseParamsProp?.defaultFilters,
     defaultSortBy: baseParamsProp?.defaultSortBy,
     indexStepList: baseParamsProp?.indexStepList ?? 500,
+    // `sourceKey` : périmètre costum EXPLICITE. Omis (le cas courant), le SDK auto-scope au
+    // porteur du site — que le serveur traduit en `$or[source.keys ∈, reference.costum ∈]`,
+    // donc la data possédée ET la data référencée. À ne renseigner que pour viser un AUTRE
+    // costum que le site courant (données hébergées par un costum régional, par ex.).
+    ...(baseParamsProp?.sourceKey?.length ? { sourceKey: baseParamsProp.sourceKey } : {}),
+    // `costumSlug` : arme le filtre de VALIDATION côté client (`applyValidationGate`,
+    // buildSearchPayload.ts:100-103) — sans lui, un observatoire COMPTE les fiches en attente
+    // de validation alors que les sections search du même site les masquent, et les deux pages
+    // affichent deux totaux différents sans le moindre signal.
+    ...(baseParamsProp?.costumSlug ? { costumSlug: baseParamsProp.costumSlug } : {}),
   };
   // `notSourceKey` : le backend l'applique dès que le CHAMP est PRÉSENT (true OU
   // false). On ne l'inclut donc QUE pour une recherche réseau-wide explicite

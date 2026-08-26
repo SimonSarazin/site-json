@@ -4053,8 +4053,6 @@
               "fr": "Envoyer le message",
               "en": "Send message"
             },
-            "action": "/api/contact",
-            "method": "POST",
             "successMessage": {
               "fr": "Votre message a été envoyé avec succès !",
               "en": "Your message has been sent successfully!"
@@ -4451,6 +4449,9 @@
     "customCSS": ""
   },
   "auth": {
+    "menu": {
+      "kanban": true
+    },
     "login": {
       "title": {
         "fr": "Se connecter",
@@ -4929,7 +4930,6 @@
       "editModals": [
         {
           "editModal": "edit-sport-sante-bienetre-mss",
-          "_comment": "Périmètre du costum : 180 organisations, 2 projets, 1 event et 64 POI portent source.keys=sportSanteBienetre. Sans cette clause les routes sont des catch-all — le formulaire s'ouvrait sur toutes les entités du type (jusqu'à 29 236 organisations atteignables). Le terme reference.costum couvre les entités RATTACHÉES sans provenance (route legacy générique Admin::addSourceInElement) : aucune aujourd'hui, mécanisme néanmoins actif.",
           "editModalMatch": {
             "type": "NGO"
           },
@@ -5528,6 +5528,11 @@
         "header": "gradient"
       },
       "serializeGroups": {
+        "telephone": {
+          "serverKey": "telephone",
+          "read": "telephone:read",
+          "write": "telephone:write"
+        },
         "address": {
           "serverKey": "address",
           "read": "address:read",
@@ -5700,10 +5705,19 @@
       "fields": {
         "telephone": {
           "widget": "tel",
-          "label": {
+          "group": "telephone",
+                              "label": {
             "fr": "Téléphone",
             "en": "Phone"
           }
+        },
+        "_telSlot": {
+          "widget": "hidden",
+          "group": "telephone"
+        },
+        "_telRest": {
+          "widget": "hidden",
+          "group": "telephone"
         },
         "description": {
           "widget": "textarea",
@@ -5861,6 +5875,7 @@
         },
         "affiliate": {
           "widget": "switch",
+          "write": "coerce:boolOuiNon",
           "label": {
             "fr": "Affiliate",
             "en": "Affiliate"
@@ -6062,6 +6077,7 @@
         },
         "responsableSameAsRepresent": {
           "widget": "switch",
+          "write": "coerce:boolString",
           "label": {
             "fr": "Le responsable est le représentant légal",
             "en": "Person in charge is the legal representative"
@@ -6160,6 +6176,11 @@
         "existingUrlFrom": "image:profilUrl"
       },
       "mutation": {
+        "inject": {
+          "extraFields": {
+            "type": "NGO"
+          }
+        },
         "entityType": "organizations",
         "successKey": {
           "add": "toast.add.organizationSuccess",
@@ -6378,6 +6399,11 @@
         "header": "gradient"
       },
       "serializeGroups": {
+        "telephone": {
+          "serverKey": "telephone",
+          "read": "telephone:read",
+          "write": "telephone:write"
+        },
         "address": {
           "serverKey": "address",
           "read": "address:read",
@@ -6539,10 +6565,19 @@
       "fields": {
         "telephone": {
           "widget": "tel",
-          "label": {
+          "group": "telephone",
+                              "label": {
             "fr": "Téléphone",
             "en": "Phone"
           }
+        },
+        "_telSlot": {
+          "widget": "hidden",
+          "group": "telephone"
+        },
+        "_telRest": {
+          "widget": "hidden",
+          "group": "telephone"
         },
         "description": {
           "widget": "textarea",
@@ -6805,6 +6840,7 @@
         },
         "responsableSameAsRepresent": {
           "widget": "switch",
+          "write": "coerce:boolString",
           "label": {
             "fr": "Identique au représentant légal",
             "en": "Same as legal representative"
@@ -7166,6 +7202,7 @@
         },
         "documentation": {
           "widget": "hidden",
+          "readOnly": true,
           "type": "object",
           "label": {
             "fr": "Documentation",
@@ -7174,6 +7211,7 @@
         },
         "parent": {
           "widget": "hidden",
+          "readOnly": true,
           "type": "object",
           "label": {
             "fr": "Parent",
@@ -7182,6 +7220,7 @@
         },
         "partner": {
           "widget": "hidden",
+          "readOnly": true,
           "type": "object",
           "label": {
             "fr": "Partner",
@@ -7190,6 +7229,7 @@
         },
         "trainer": {
           "widget": "hidden",
+          "readOnly": true,
           "type": "object",
           "label": {
             "fr": "Trainer",
@@ -7254,6 +7294,7 @@
         },
         "certificationTraining": {
           "widget": "switch",
+          "write": "coerce:boolString",
           "label": {
             "fr": "Formation certifiante",
             "en": "Certifying training"
@@ -7297,6 +7338,7 @@
       "mutation": {
         "entityType": "projects",
         "inject": {
+          "parent": true,
           "extraFields": {
             "tags": "Formation",
             "category": "formation"
@@ -7396,7 +7438,7 @@
             {
               "columns": 1,
               "fields": [
-                "openingHours"
+                "eventDates"
               ]
             },
             {
@@ -7433,12 +7475,45 @@
         }
       ],
       "fields": {
-        "openingHours": {
-          "widget": "openingHours",
+        "eventDates": {
+          "widget": "eventDates",
           "label": {
-            "fr": "Horaires",
-            "en": "Opening hours"
+            "fr": "Dates",
+            "en": "Dates"
           }
+        },
+        "startDate": {
+          "widget": "hidden",
+          "type": "string",
+          "requiredIf": {
+            "field": "recurrency",
+            "op": "falsy"
+          },
+          "write": "eventDate:write"
+        },
+        "endDate": {
+          "widget": "hidden",
+          "type": "string",
+          "requiredIf": {
+            "field": "recurrency",
+            "op": "falsy"
+          },
+          "write": "eventDate:write"
+        },
+        "recurrency": {
+          "widget": "hidden",
+          "type": "boolean",
+          "default": false
+        },
+        "timeZone": {
+          "widget": "hidden",
+          "type": "string",
+          "write": "eventTimeZone:write"
+        },
+        "openingHours": {
+          "widget": "hidden",
+          "type": "array",
+          "write": "eventOpeningHours:write"
         },
         "address": {
           "widget": "location",
@@ -7497,6 +7572,7 @@
         },
         "parent": {
           "widget": "tags",
+          "write": "omitEmpty",
           "label": {
             "fr": "Formation parente",
             "en": "Parent training"
@@ -7518,6 +7594,7 @@
         },
         "organizer": {
           "widget": "hidden",
+          "readOnly": true,
           "type": "object",
           "label": {
             "fr": "Organizer",
@@ -7526,6 +7603,7 @@
         },
         "trainer": {
           "widget": "hidden",
+          "readOnly": true,
           "type": "object",
           "label": {
             "fr": "Trainer",
@@ -7547,10 +7625,10 @@
           }
         },
         "public": {
-          "widget": "text",
+          "widget": "switch",
           "label": {
-            "fr": "Public visé",
-            "en": "Target audience"
+            "fr": "Publier la session dans le catalogue public des sessions",
+            "en": "Publish the session in the public catalog"
           }
         },
         "email": {
@@ -7569,6 +7647,7 @@
         },
         "visioDate": {
           "widget": "text",
+          "readOnly": true,
           "label": {
             "fr": "Date de visioconférence",
             "en": "Video call date"
@@ -7864,6 +7943,7 @@
         },
         "category": {
           "widget": "tags",
+          "write": "coerce:csv",
           "label": {
             "fr": "Catégorie",
             "en": "Category"
@@ -8119,6 +8199,7 @@
         },
         "parent": {
           "widget": "tags",
+          "write": "omitEmpty",
           "label": {
             "fr": "Équipement parent",
             "en": "Parent facility"

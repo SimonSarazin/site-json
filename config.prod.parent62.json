@@ -15885,7 +15885,6 @@
       "editModals": [
         {
           "editModal": "edit-parent62-article",
-          "_comment": "Périmètre du costum : 6 434 POI portent source.keys=parent62. Le sous-type ne borne PAS (3 765 POI recoveryCenter en base, en majorité d'autres costums). Le terme reference.costum couvre les entités RATTACHÉES au costum sans en avoir la provenance (route legacy Admin::addSourceInElement) : aucune aujourd'hui, mais le mécanisme est générique.",
           "editModalMatch": {
             "type": "article"
           },

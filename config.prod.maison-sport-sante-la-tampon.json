@@ -1,0 +1,5730 @@
+{
+  "version": "1.0.0",
+  "generated": "2026-07-02T00:00:00.000Z",
+  "meta": {
+    "title": {
+      "fr": "Ekilib.re – Maison Sport Santé du Tampon",
+      "en": "Ekilib.re – Sport Health House of Le Tampon"
+    },
+    "description": {
+      "fr": "Ekilib.re, la Maison Sport Santé du Tampon (La Réunion) : trouvez un créneau d'activité physique adaptée à votre état de santé, prescrit ou recommandé par votre médecin.",
+      "en": "Ekilib.re, the Sport Health House of Le Tampon (Réunion Island): find an adapted physical activity slot suited to your health condition, prescribed or recommended by your doctor."
+    },
+    "defaultLang": "fr",
+    "languages": [
+      "fr",
+      "en"
+    ],
+    "favicon": "/images/maisonSportSanteLaTampon/pictogramme.png",
+    "themeColor": "#2ab3ab",
+    "keywords": [
+      "sport santé",
+      "activité physique adaptée",
+      "APA",
+      "Maison Sport Santé",
+      "Le Tampon",
+      "La Réunion",
+      "créneaux",
+      "prescription",
+      "Ekilib.re"
+    ]
+  },
+  "header": {
+    "type": "transparent-scroll",
+    "path": "/",
+    "logo": "/images/maisonSportSanteLaTampon/logo.svg",
+    "logoClass": "h-[60px] w-auto shrink-0 object-contain group-hover:scale-110 transition-transform",
+    "logoAlt": {
+      "fr": "Ekilib.re – Maison Sport Santé du Tampon",
+      "en": "Ekilib.re – Sport Health House of Le Tampon"
+    },
+    "ctaButton": {
+      "label": {
+        "fr": "Espace Pro",
+        "en": "Pro Area"
+      },
+      "path": "/espace-pro"
+    },
+    "nav": [
+      {
+        "label": {
+          "fr": "Trouver une activité",
+          "en": "Find an activity"
+        },
+        "path": "/creneaux",
+        "icon": "search"
+      },
+      {
+        "label": {
+          "fr": "S'informer",
+          "en": "Learn more"
+        },
+        "path": "/s-informer",
+        "icon": "compass"
+      },
+      {
+        "label": {
+          "fr": "Actualités",
+          "en": "News"
+        },
+        "path": "/blog"
+      },
+      {
+        "label": {
+          "fr": "Structure référentes",
+          "en": "Reference structures"
+        },
+        "path": "/structure",
+        "icon": "building-2"
+      },
+      {
+        "label": {
+          "fr": "Partenaires",
+          "en": "Partners"
+        },
+        "path": "/partenaires",
+        "icon": "handshake"
+      },
+      {
+        "label": {
+          "fr": "Contact",
+          "en": "Contact"
+        },
+        "path": "/contact",
+        "icon": "mail"
+      }
+    ],
+    "sticky": true,
+    "transparent": true,
+    "transparentMode": "auto",
+    "height": "lg",
+    "utilities": {
+      "themeSwitch": true,
+      "langSwitch": true,
+      "search": true,
+      "auth": true,
+      "cart": false,
+      "notifications": false
+    }
+  },
+  "pages": [
+    {
+      "path": "/",
+      "title": {
+        "fr": "Accueil – Ekilib.re, Maison Sport Santé du Tampon",
+        "en": "Home – Ekilib.re, Sport Health House of Le Tampon"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "hero-quick-access",
+          "id": "hero-ekilibre",
+          "props": {
+            "headline": {
+              "fr": "Bougez pour votre santé",
+              "en": "Move for your health"
+            },
+            "subhead": {
+              "fr": "Trouvez une activité physique adaptée à votre âge et à votre état de santé sur la commune du Tampon. Accessible à tous, gratuit sur prescription médicale.",
+              "en": "Find a physical activity adapted to your age and health condition in Le Tampon. Open to everyone, free with a medical prescription."
+            },
+            "backgroundImage": "/images/maisonSportSanteLaTampon/hero.jpg",
+            "backgroundImageAlt": {
+              "fr": "Activité physique adaptée au Tampon – Ekilib.re",
+              "en": "Adapted physical activity in Le Tampon – Ekilib.re"
+            },
+            "badges": [
+              {
+                "label": {
+                  "fr": "Service déployé sur la commune du Tampon · La Réunion",
+                  "en": "Service available in Le Tampon · Réunion Island"
+                },
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0\"/><circle cx=\"12\" cy=\"10\" r=\"3\"/></svg>"
+              }
+            ],
+            "ctaButtons": [
+              {
+                "label": {
+                  "fr": "Trouver une activité",
+                  "en": "Find an activity"
+                },
+                "path": "/creneaux",
+                "variant": "default"
+              },
+              {
+                "label": {
+                  "fr": "Comprendre le sport santé",
+                  "en": "Understand sport health"
+                },
+                "path": "/s-informer",
+                "variant": "accent"
+              }
+            ],
+            "quickAccessTitle": {
+              "fr": "Accès rapide",
+              "en": "Quick access"
+            },
+            "quickAccessCards": [
+              {
+                "label": {
+                  "fr": "Pour tous",
+                  "en": "For all"
+                },
+                "title": {
+                  "fr": "Trouver un créneau",
+                  "en": "Find a slot"
+                },
+                "description": {
+                  "fr": "Les activités adaptées près de chez vous, filtrées selon votre situation de santé.",
+                  "en": "Adapted activities near you, filtered by your health situation."
+                },
+                "path": "/creneaux",
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/></svg>"
+              },
+              {
+                "label": {
+                  "fr": "Espace réservé",
+                  "en": "Reserved area"
+                },
+                "title": {
+                  "fr": "Professionnels de santé",
+                  "en": "Health professionals"
+                },
+                "description": {
+                  "fr": "Ressources, formulaires de prescription APA et messagerie sécurisée.",
+                  "en": "Resources, APA prescription forms and secure messaging."
+                },
+                "path": "/espace-pro",
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M11 2v2\"/><path d=\"M5 2v2\"/><path d=\"M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1\"/><path d=\"M8 15a6 6 0 0 0 12 0v-3\"/><circle cx=\"20\" cy=\"10\" r=\"2\"/></svg>"
+              }
+            ]
+          }
+        },
+        {
+          "type": "categories-grid",
+          "id": "profils-pathologies",
+          "props": {
+            "headline": {
+              "fr": "Je cherche une activité pour…",
+              "en": "I'm looking for an activity for…"
+            },
+            "subhead": {
+              "fr": "Sélectionnez votre situation pour découvrir les créneaux adaptés.",
+              "en": "Select your situation to discover suitable slots."
+            },
+            "variant": "primary",
+            "columns": 4,
+            "cards": [
+              {
+                "icon": "heart-pulse",
+                "title": {
+                  "fr": "Problème cardiaque",
+                  "en": "Heart condition"
+                },
+                "subtitle": {
+                  "fr": "Des activités douces pour le cœur.",
+                  "en": "Gentle activities for the heart."
+                },
+                "link": "/creneaux?ald=Insuffisance%2520cardiaque%2520grave%252C%2520troubles%2520du%2520rythme%2520graves%252C%2520cardiopathies%2520valvulaires%2520graves%252C%2520cardiopathies%2520cong%25C3%25A9nitales%2520graves,Maladie%2520coronaire%2520%253A%2520infarctus%2520du%2520myocarde,Art%25C3%25A9riopathies%2520chroniques%2520,Accident%2520vasculaire%2520c%25C3%25A9r%25C3%25A9bral%2520invalidant"
+              },
+              {
+                "icon": "droplets",
+                "title": {
+                  "fr": "Diabète",
+                  "en": "Diabetes"
+                },
+                "subtitle": {
+                  "fr": "Mieux contrôler sa glycémie.",
+                  "en": "Better blood sugar control."
+                },
+                "link": "/creneaux?ald=Diab%25C3%25A8te%2520de%2520type%25201%2520et%2520diab%25C3%25A8te%2520de%2520type%25202%2520de%2520l%2527adulte%2520ou%2520de%2520l%2527enfant"
+              },
+              {
+                "icon": "weight",
+                "title": {
+                  "fr": "Surpoids / Obésité",
+                  "en": "Overweight / Obesity"
+                },
+                "subtitle": {
+                  "fr": "Un programme progressif et bienveillant.",
+                  "en": "A progressive and supportive program."
+                },
+                "link": "/creneaux?maladies=Ob%25C3%25A9sit%25C3%25A9"
+              },
+              {
+                "icon": "bone",
+                "title": {
+                  "fr": "Douleurs chroniques",
+                  "en": "Chronic pain"
+                },
+                "subtitle": {
+                  "fr": "Bouger sans se faire mal.",
+                  "en": "Move without hurting yourself."
+                },
+                "link": "/creneaux?maladies=Douleurs%2520chroniques"
+              },
+              {
+                "icon": "ribbon",
+                "title": {
+                  "fr": "Cancer",
+                  "en": "Cancer"
+                },
+                "subtitle": {
+                  "fr": "Pendant et après les traitements.",
+                  "en": "During and after treatment."
+                },
+                "link": "/creneaux?ald=Cancer%2520colorectal,Cancer%2520de%2520la%2520prostate,Cancer%2520du%2520sein,Cancer%2520du%2520col%2520de%2520l%25E2%2580%2599ut%25C3%25A9rus"
+              },
+              {
+                "icon": "wind",
+                "title": {
+                  "fr": "Problème respiratoire",
+                  "en": "Respiratory condition"
+                },
+                "subtitle": {
+                  "fr": "Renforcer son souffle et son endurance.",
+                  "en": "Strengthen your breath and endurance."
+                },
+                "link": "/creneaux?ald=Insuffisance%2520respiratoire%2520chronique%2520grave%2520%253A%2520BPCO%252C%2520asthme%2520grave"
+              },
+              {
+                "icon": "brain",
+                "title": {
+                  "fr": "Stress / Santé mentale",
+                  "en": "Stress / Mental health"
+                },
+                "subtitle": {
+                  "fr": "Yoga, relaxation, bien-être.",
+                  "en": "Yoga, relaxation, well-being."
+                },
+                "link": "/creneaux?ald=Affections%2520psychiatriques%2520de%2520longue%2520dur%25C3%25A9e%2520dont%2520d%25C3%25A9pression%2520r%25C3%25A9currente%252C%2520troubles%2520bipolaires&maladies=D%25C3%25A9pression,Trouble%2520du%2520sommeil"
+              },
+              {
+                "icon": "person-standing",
+                "title": {
+                  "fr": "Seniors 60 ans et +",
+                  "en": "Seniors 60+"
+                },
+                "subtitle": {
+                  "fr": "Garder son autonomie et son équilibre.",
+                  "en": "Maintain autonomy and balance."
+                },
+                "link": "/creneaux?beneficiaries=seniors,personnes-agees"
+              }
+            ]
+          }
+        },
+        {
+          "type": "cta-card-grid",
+          "id": "chiffres-ekilibre",
+          "props": {
+            "variant": "accent",
+            "headline": {
+              "fr": "Ekilib.re en chiffres",
+              "en": "Ekilib.re in numbers"
+            },
+            "subhead": {
+              "fr": "Un réseau local qui grandit pour rendre l'activité physique adaptée accessible à tous les Tamponnais.",
+              "en": "A growing local network making adapted physical activity accessible to everyone in Le Tampon."
+            },
+            "stats": [
+              {
+                "value": "24",
+                "label": {
+                  "fr": "Créneaux disponibles",
+                  "en": "Available slots"
+                },
+                "color": "primary"
+              },
+              {
+                "value": "8",
+                "label": {
+                  "fr": "Activités proposées",
+                  "en": "Activities offered"
+                },
+                "color": "primary"
+              },
+              {
+                "value": "340+",
+                "label": {
+                  "fr": "Participants actifs",
+                  "en": "Active participants"
+                },
+                "color": "accent"
+              },
+              {
+                "value": "12",
+                "label": {
+                  "fr": "Partenaires",
+                  "en": "Partners"
+                },
+                "color": "primary"
+              }
+            ]
+          }
+        },
+        {
+          "type": "articleFeed",
+          "props": {
+            "costumSlug": "associationEkilibre",
+            "filters": {
+              "publicationStatus": "Publié"
+            },
+            "sortBy": {
+              "publicationDate": -1
+            },
+            "title": {
+              "fr": "Actualités",
+              "en": "News"
+            },
+            "featured": "flag",
+            "pageSize": 7
+          }
+        },
+        {
+          "type": "cta",
+          "id": "encart-mss",
+          "props": {
+            "headline": {
+              "fr": "Qu'est-ce qu'une Maison Sport Santé ?",
+              "en": "What is a Sport Health House?"
+            },
+            "subhead": {
+              "fr": "Ekilib.re est une Maison Sport Santé (MSS) habilitée par le Ministère des Sports. Les MSS accompagnent les personnes éloignées de la pratique sportive, notamment celles atteintes de maladies chroniques, vers une activité physique adaptée et sécurisée.",
+              "en": "Ekilib.re is a Sport Health House (MSS) accredited by the French Ministry of Sports. MSS support people who are far from physical activity, particularly those with chronic diseases, towards adapted and safe physical activity."
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "En savoir plus sur les MSS",
+                  "en": "Learn more about MSS"
+                },
+                "href": "https://ssbe.re/maison-sport-sante-mss/",
+                "variant": "default"
+              }
+            ],
+            "align": "center"
+          }
+        },
+        {
+          "type": "cta",
+          "id": "rejoindre-home",
+          "props": {
+            "headline": {
+              "fr": "Rejoindre & soutenir Ekilib.re",
+              "en": "Join & support Ekilib.re"
+            },
+            "subhead": {
+              "fr": "Bénévolat, comité des usagers, dons… Contribuez au développement du sport santé au Tampon. Une idée à proposer ? Partagez-la !",
+              "en": "Volunteering, users' committee, donations… Help develop sport health in Le Tampon. Have an idea? Share it!"
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "En savoir plus",
+                  "en": "Learn more"
+                },
+                "href": "/rejoindre-soutenir",
+                "variant": "default"
+              },
+              {
+                "label": {
+                  "fr": "Suggérer une idée",
+                  "en": "Suggest an idea"
+                },
+                "href": "/contact",
+                "variant": "outline"
+              }
+            ],
+            "align": "center"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/creneaux",
+      "title": {
+        "fr": "Trouver une activité – Ekilib.re",
+        "en": "Find an activity – Ekilib.re"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "creneaux-header",
+          "props": {
+            "headline": {
+              "fr": "Trouvez un créneau au Tampon",
+              "en": "Find a slot in Le Tampon"
+            },
+            "subhead": {
+              "fr": "Explorez les créneaux sport santé labellisés de la commune du Tampon et trouvez l'activité adaptée à votre situation.",
+              "en": "Explore the labeled sport health slots in Le Tampon and find the activity that suits your situation."
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Comment s'inscrire ?",
+                  "en": "How to register?"
+                },
+                "href": "/s-informer",
+                "variant": "outline"
+              },
+              {
+                "label": {
+                  "fr": "Structure référentes",
+                  "en": "Reference structures"
+                },
+                "href": "/structure",
+                "variant": "outline"
+              }
+            ]
+          }
+        },
+        {
+          "type": "gridLayout",
+          "id": "creneaux-grid",
+          "props": {
+            "leftColumns": 1,
+            "rightColumns": 3,
+            "gap": 4,
+            "leftSection": {
+              "type": "filters",
+              "id": "creneaux-filtres",
+              "props": {
+                "title": {
+                  "fr": "Affiner votre recherche",
+                  "en": "Refine your search"
+                },
+                "defaultOpenGroups": [
+                  "activityType",
+                  "beneficiaries"
+                ],
+                "filterGroups": [
+                  {
+                    "id": "activityType",
+                    "label": {
+                      "fr": "Type d'activité",
+                      "en": "Activity type"
+                    },
+                    "type": "filters",
+                    "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdegdo93f77wi3y186s",
+                    "optionStyle": "check",
+                    "order": 1,
+                    "options": [
+                      {
+                        "id": "sports-collectif",
+                        "label": {
+                          "fr": "Sports collectifs",
+                          "en": "Team sports"
+                        },
+                        "name": "Sports collectifs"
+                      },
+                      {
+                        "id": "activites-aquatiques",
+                        "label": {
+                          "fr": "Activités aquatiques",
+                          "en": "Aquatic activities"
+                        },
+                        "name": "Activités aquatiques"
+                      },
+                      {
+                        "id": "activites-athletiques",
+                        "label": {
+                          "fr": "Activités athlétiques",
+                          "en": "Athletic activities"
+                        },
+                        "name": "Activités athlétiques"
+                      },
+                      {
+                        "id": "activites-de-pleine-nature",
+                        "label": {
+                          "fr": "Activités de pleine nature",
+                          "en": "Outdoor activities"
+                        },
+                        "name": "Activités de pleine nature"
+                      },
+                      {
+                        "id": "activites-gymniques",
+                        "label": {
+                          "fr": "Activités gymniques, expression, forme et force",
+                          "en": "Gymnastics, expression, fitness and strength"
+                        },
+                        "name": "Activités gymniques/expression/forme et force"
+                      },
+                      {
+                        "id": "sports-de-raquettes",
+                        "label": {
+                          "fr": "Sports de raquettes",
+                          "en": "Racket sports"
+                        },
+                        "name": "Sports de raquettes"
+                      },
+                      {
+                        "id": "sports-urbains",
+                        "label": {
+                          "fr": "Sports urbains",
+                          "en": "Urban sports"
+                        },
+                        "name": "Sports urbains"
+                      },
+                      {
+                        "id": "arts-martiaux-combats",
+                        "label": {
+                          "fr": "Arts martiaux et combats",
+                          "en": "Martial arts and combat"
+                        },
+                        "name": "Arts martiaux et combats"
+                      },
+                      {
+                        "id": "autres-sports",
+                        "label": {
+                          "fr": "Autres sports",
+                          "en": "Other sports"
+                        },
+                        "name": "Autres sports"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "sportHealthType",
+                    "label": {
+                      "fr": "Type de Sport Santé",
+                      "en": "Sport-health type"
+                    },
+                    "type": "filters",
+                    "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdn1cs8on3yru1p80lq",
+                    "optionStyle": "check",
+                    "order": 2,
+                    "options": [
+                      {
+                        "id": "ssso",
+                        "label": {
+                          "fr": "Sport santé sur ordonnance",
+                          "en": "Sport health on prescription"
+                        },
+                        "name": "Sport santé sur ordonnance - SSsO"
+                      },
+                      {
+                        "id": "sspt",
+                        "label": {
+                          "fr": "Sport santé pour tous",
+                          "en": "Sport health for all"
+                        },
+                        "name": "Sport santé pour tous - SSpT"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "publicType",
+                    "label": {
+                      "fr": "Type de publique",
+                      "en": "Audience type"
+                    },
+                    "type": "filters",
+                    "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdmya4gmezjilnyjj5f",
+                    "optionStyle": "check",
+                    "order": 3,
+                    "options": [
+                      {
+                        "id": "mixte",
+                        "label": {
+                          "fr": "Mixte",
+                          "en": "Mixed"
+                        },
+                        "name": "mixte"
+                      },
+                      {
+                        "id": "femmes",
+                        "label": {
+                          "fr": "Femmes",
+                          "en": "Women"
+                        },
+                        "name": "femmes"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "beneficiaries",
+                    "label": {
+                      "fr": "Bénéficiaires",
+                      "en": "Beneficiaries"
+                    },
+                    "type": "filters",
+                    "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdmyf2gky9capf1vcfl",
+                    "optionStyle": "check",
+                    "order": 4,
+                    "options": [
+                      {
+                        "id": "enfants",
+                        "label": {
+                          "fr": "Enfants (2-9 ans)",
+                          "en": "Children (2-9)"
+                        },
+                        "name": "Enfants (2-9 ans)"
+                      },
+                      {
+                        "id": "adolescents",
+                        "label": {
+                          "fr": "Pré-adolescents/Adolescents (10-17 ans)",
+                          "en": "Teens (10-17)"
+                        },
+                        "name": "Pré-adolescents/Adolescents (10-17 ans)"
+                      },
+                      {
+                        "id": "adultes",
+                        "label": {
+                          "fr": "Adultes (18-55 ans)",
+                          "en": "Adults (18-55)"
+                        },
+                        "name": "Adultes (18-55 ans)"
+                      },
+                      {
+                        "id": "seniors",
+                        "label": {
+                          "fr": "Séniors (plus de 55 ans)",
+                          "en": "Seniors (55+)"
+                        },
+                        "name": "Séniors (plus de 55 ans)"
+                      },
+                      {
+                        "id": "personnes-agees",
+                        "label": {
+                          "fr": "Personnes âgées  (plus de 65 ans)",
+                          "en": "Older people (65+)"
+                        },
+                        "name": "Personnes âgées  (plus de 65 ans)"
+                      },
+                      {
+                        "id": "handicap",
+                        "label": {
+                          "fr": "Personnes en situation de handicap",
+                          "en": "People with disabilities"
+                        },
+                        "name": "Personnes en situation de handicap"
+                      },
+                      {
+                        "id": "femmes-enceintes",
+                        "label": {
+                          "fr": "Femmes enceintes",
+                          "en": "Pregnant women"
+                        },
+                        "name": "Femmes enceintes"
+                      }
+                    ]
+                  }
+                ],
+                "filtersByAnswers": {
+                  "ald": {
+                    "label": {
+                      "fr": "Affection longue durée (ALD)",
+                      "en": "Long-term condition (ALD)"
+                    },
+                    "forms": "6a85af345d898a57cb49f029",
+                    "path": "associationEkilibre19082026_1327_0.multiCheckboxPlusassociationEkilibre19082026_1327_0mdmyjntfqs0ascyzqf",
+                    "finderPath": "answers.associationEkilibre19082026_1327_0.finderassociationEkilibre19082026_1327_0mdn1fzoewyjg66n85p",
+                    "optionStyle": "check",
+                    "order": 5,
+                    "filterTarget": "answers"
+                  },
+                  "maladies": {
+                    "label": {
+                      "fr": "Maladie chronique",
+                      "en": "Chronic condition"
+                    },
+                    "forms": "6a85af345d898a57cb49f029",
+                    "path": "associationEkilibre19082026_1327_0.multiCheckboxPlusassociationEkilibre19082026_1327_0mp587j82dmr9ulaffcq",
+                    "finderPath": "answers.associationEkilibre19082026_1327_0.finderassociationEkilibre19082026_1327_0mdn1fzoewyjg66n85p",
+                    "optionStyle": "check",
+                    "order": 6,
+                    "filterTarget": "answers"
+                  }
+                }
+              }
+            },
+            "rightSection": {
+              "type": "searchProStatic",
+              "id": "creneaux-list",
+              "props": {
+                "customHeader": {
+                  "title": {
+                    "fr": "Tous les créneaux",
+                    "en": "All slots"
+                  }
+                },
+                "showMap": true,
+                "enableMap": true,
+                "disableInfiniteScroll": false,
+                "defaultViewMode": "list",
+                "addButton": {
+                  "show": true,
+                  "adminOnly": false,
+                  "coform": "6a85af345d898a57cb49f029",
+                  "label": {
+                    "fr": "Ajouter un créneau",
+                    "en": "Add a slot"
+                  }
+                },
+                "baseParams": {
+                  "sourceKey": [
+                    "associationEkilibre"
+                  ],
+                  "defaultTypes": [
+                    "answers"
+                  ],
+                  "defaultFilters": {
+                    "form": "6a85af345d898a57cb49f029",
+                    "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdn1jcq445i0mb9bap7": "Validé"
+                  },
+                  "searchBy": [
+                    "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdegc9sgox76p87n27",
+                    "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdeggo91owe8t9ovl4p",
+                    "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdmxv88txy6f5z6svg"
+                  ]
+                },
+                "list": {
+                  "columns": {
+                    "sm": 2,
+                    "md": 3,
+                    "lg": 3,
+                    "xl": 3
+                  },
+                  "card": {
+                    "type": "card-answer",
+                    "detailsMode": "dialog",
+                    "structureAction": {
+                      "kind": "preview"
+                    }
+                  },
+                  "preview": {
+                    "type": "coform-answer",
+                    "editButton": true
+                  }
+                },
+                "map": {
+                  "marker": {
+                    "style": "pin",
+                    "color": "primary"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/s-informer",
+      "title": {
+        "fr": "S'informer – Ekilib.re",
+        "en": "Learn more – Ekilib.re"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "hero",
+          "id": "informer-hero",
+          "props": {
+            "headline": {
+              "fr": "Tout comprendre pour bien bouger",
+              "en": "Everything you need to get moving well"
+            },
+            "subhead": {
+              "fr": "Des questions sur l'activité physique adaptée, les labels sport santé ou les programmes ? Cette page vous donne les clés pour comprendre, choisir et vous lancer en toute sécurité.",
+              "en": "Questions about adapted physical activity, sport health labels or programs? This page gives you the keys to understand, choose and get started safely."
+            },
+            "align": "center",
+            "overlay": false
+          }
+        },
+        {
+          "type": "cards",
+          "id": "ap-vs-sport",
+          "props": {
+            "columns": 3,
+            "layout": "grid",
+            "items": [
+              {
+                "icon": "footprints",
+                "title": {
+                  "fr": "Activité physique",
+                  "en": "Physical activity"
+                },
+                "text": {
+                  "fr": "Tout mouvement du corps qui entraîne une dépense d'énergie : marcher, jardiner, prendre les escaliers… Pas besoin de tenue sportive ni de terrain.",
+                  "en": "Any body movement that uses energy: walking, gardening, taking the stairs… No sports outfit or field needed."
+                }
+              },
+              {
+                "icon": "trophy",
+                "title": {
+                  "fr": "Sport",
+                  "en": "Sport"
+                },
+                "text": {
+                  "fr": "Une activité physique codifiée, compétitive ou récréative, souvent pratiquée en club avec des règles établies.",
+                  "en": "A codified physical activity, competitive or recreational, often practiced in a club with established rules."
+                }
+              },
+              {
+                "icon": "heart-pulse",
+                "title": {
+                  "fr": "APA – Activité Physique Adaptée",
+                  "en": "APA – Adapted Physical Activity"
+                },
+                "text": {
+                  "fr": "Une activité conçue pour les personnes atteintes de maladies chroniques ou en situation de handicap, encadrée par des professionnels formés. Elle peut être prescrite par votre médecin.",
+                  "en": "An activity designed for people with chronic diseases or disabilities, supervised by trained professionals. It can be prescribed by your doctor."
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchHeader",
+          "id": "mythes-header",
+          "props": {
+            "headline": {
+              "fr": "Idées reçues à déconstruire",
+              "en": "Myths to debunk"
+            }
+          }
+        },
+        {
+          "type": "faq",
+          "id": "mythes",
+          "props": {
+            "accordion": true,
+            "items": [
+              {
+                "q": {
+                  "fr": "« Je suis trop malade pour faire du sport »",
+                  "en": "\"I'm too sick to exercise\""
+                },
+                "a": {
+                  "fr": "C'est précisément pour les personnes malades que l'APA a été créée. Une activité douce et adaptée est bénéfique pour presque toutes les pathologies chroniques — diabète, maladies cardiaques, cancer, douleurs chroniques… L'immobilité, elle, aggrave la plupart des maladies. Parlez-en à votre médecin : il peut vous orienter vers un programme adapté à votre état.",
+                  "en": "APA was created precisely for people who are ill. Gentle, adapted activity is beneficial for almost all chronic conditions — diabetes, heart disease, cancer, chronic pain… Inactivity, on the other hand, worsens most diseases. Talk to your doctor: they can direct you to a program adapted to your condition."
+                }
+              },
+              {
+                "q": {
+                  "fr": "« Il faut souffrir pour que ça serve à quelque chose »",
+                  "en": "\"No pain, no gain\""
+                },
+                "a": {
+                  "fr": "Faux. Même une activité d'intensité légère à modérée — une marche quotidienne de 30 minutes — réduit significativement les risques cardiovasculaires, améliore l'humeur et aide à contrôler le poids. L'important, c'est la régularité, pas l'intensité.",
+                  "en": "False. Even light to moderate activity — a daily 30-minute walk — significantly reduces cardiovascular risks, improves mood and helps control weight. What matters is regularity, not intensity."
+                }
+              },
+              {
+                "q": {
+                  "fr": "« À mon âge, c'est trop tard pour commencer »",
+                  "en": "\"At my age, it's too late to start\""
+                },
+                "a": {
+                  "fr": "Il n'est jamais trop tard. Des personnes de 80 ans et plus bénéficient de programmes d'activité physique adaptée avec des résultats mesurables sur l'équilibre, la force musculaire et la qualité de vie. Commencer à tout âge, même doucement, c'est toujours bénéfique.",
+                  "en": "It's never too late. People aged 80 and over benefit from adapted physical activity programs with measurable results on balance, muscle strength and quality of life. Starting at any age, even gently, is always beneficial."
+                }
+              },
+              {
+                "q": {
+                  "fr": "« L'APA, c'est réservé aux sportifs »",
+                  "en": "\"APA is only for athletes\""
+                },
+                "a": {
+                  "fr": "C'est exactement l'inverse. L'APA s'adresse aux personnes sédentaires, malades ou en situation de handicap, éloignées du sport traditionnel. Les éducateurs APA sont formés pour adapter chaque séance à votre profil, pas à celui d'un athlète.",
+                  "en": "It's exactly the opposite. APA is for sedentary, ill or disabled people who are far from traditional sport. APA educators are trained to adapt each session to your profile, not an athlete's."
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchHeader",
+          "id": "benefices-header",
+          "props": {
+            "headline": {
+              "fr": "Les bénéfices de l'APA par pathologie",
+              "en": "The benefits of APA by condition"
+            }
+          }
+        },
+        {
+          "type": "categories-grid",
+          "id": "benefices-pathologies",
+          "props": {
+            "variant": "primary",
+            "columns": 4,
+            "cards": [
+              {
+                "icon": "heart-pulse",
+                "title": {
+                  "fr": "Problème cardiaque",
+                  "en": "Heart condition"
+                },
+                "subtitle": {
+                  "fr": "Réduit la pression artérielle, améliore la circulation, diminue le risque de récidive.",
+                  "en": "Reduces blood pressure, improves circulation, lowers the risk of recurrence."
+                }
+              },
+              {
+                "icon": "droplets",
+                "title": {
+                  "fr": "Diabète",
+                  "en": "Diabetes"
+                },
+                "subtitle": {
+                  "fr": "Améliore la sensibilité à l'insuline, aide à contrôler la glycémie et le poids.",
+                  "en": "Improves insulin sensitivity, helps control blood sugar and weight."
+                }
+              },
+              {
+                "icon": "weight",
+                "title": {
+                  "fr": "Surpoids",
+                  "en": "Overweight"
+                },
+                "subtitle": {
+                  "fr": "Aide à une perte de poids durable, améliore l'image de soi et l'énergie au quotidien.",
+                  "en": "Supports lasting weight loss, improves self-image and daily energy."
+                }
+              },
+              {
+                "icon": "bone",
+                "title": {
+                  "fr": "Douleurs chroniques",
+                  "en": "Chronic pain"
+                },
+                "subtitle": {
+                  "fr": "Réduit la douleur perçue, renforce les muscles de soutien, améliore la mobilité.",
+                  "en": "Reduces perceived pain, strengthens supporting muscles, improves mobility."
+                }
+              },
+              {
+                "icon": "ribbon",
+                "title": {
+                  "fr": "Cancer (après traitement)",
+                  "en": "Cancer (after treatment)"
+                },
+                "subtitle": {
+                  "fr": "Réduit la fatigue, améliore la qualité de vie et diminue le risque de récidive.",
+                  "en": "Reduces fatigue, improves quality of life and lowers the risk of recurrence."
+                }
+              },
+              {
+                "icon": "wind",
+                "title": {
+                  "fr": "Problème respiratoire",
+                  "en": "Respiratory condition"
+                },
+                "subtitle": {
+                  "fr": "Renforce la capacité respiratoire, réduit l'essoufflement, améliore l'endurance.",
+                  "en": "Strengthens respiratory capacity, reduces breathlessness, improves endurance."
+                }
+              },
+              {
+                "icon": "brain",
+                "title": {
+                  "fr": "Santé mentale",
+                  "en": "Mental health"
+                },
+                "subtitle": {
+                  "fr": "Réduit l'anxiété et la dépression, améliore le sommeil et la confiance en soi.",
+                  "en": "Reduces anxiety and depression, improves sleep and self-confidence."
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchHeader",
+          "id": "inscription-header",
+          "props": {
+            "headline": {
+              "fr": "Comment s'inscrire à un créneau ?",
+              "en": "How to register for a slot?"
+            }
+          }
+        },
+        {
+          "type": "steps",
+          "id": "inscription-steps",
+          "props": {
+            "steps": [
+              {
+                "icon": "stethoscope",
+                "title": {
+                  "fr": "Parlez-en à votre médecin",
+                  "en": "Talk to your doctor"
+                },
+                "description": {
+                  "fr": "Il évalue si l'activité est adaptée à votre état de santé et peut établir une prescription APA si nécessaire.",
+                  "en": "They assess whether the activity suits your health condition and can issue an APA prescription if needed."
+                }
+              },
+              {
+                "icon": "phone",
+                "title": {
+                  "fr": "Contactez l'opérateur du créneau",
+                  "en": "Contact the slot operator"
+                },
+                "description": {
+                  "fr": "Chaque créneau est géré par son opérateur (association, éducateur, structure sportive) : ses coordonnées figurent sur la fiche du créneau.",
+                  "en": "Each slot is run by its operator (association, educator, sports facility): their contact details are on the slot page."
+                }
+              },
+              {
+                "icon": "euro",
+                "title": {
+                  "fr": "Renseignez-vous sur le tarif",
+                  "en": "Check the price"
+                },
+                "description": {
+                  "fr": "Certains créneaux sont gratuits sur prescription APA, d'autres payants. Le tarif est indiqué sur chaque fiche.",
+                  "en": "Some slots are free with an APA prescription, others are paid. The price is shown on each slot page."
+                }
+              },
+              {
+                "icon": "check-circle",
+                "title": {
+                  "fr": "Présentez-vous au premier cours",
+                  "en": "Show up for the first session"
+                },
+                "description": {
+                  "fr": "Venez avec votre prescription si vous en avez une : l'éducateur vous accueille et adapte la séance à votre situation.",
+                  "en": "Bring your prescription if you have one: the educator welcomes you and adapts the session to your situation."
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "cta",
+          "id": "monbilan",
+          "props": {
+            "headline": {
+              "fr": "Faites votre bilan sport santé",
+              "en": "Take your sport health assessment"
+            },
+            "subhead": {
+              "fr": "MonBilanSportSanté est un questionnaire gratuit et confidentiel (environ 10 minutes) qui évalue votre niveau d'activité physique, vos habitudes de vie et vos besoins. Il est utilisé par les professionnels de santé pour adapter votre programme APA.",
+              "en": "MonBilanSportSanté is a free and confidential questionnaire (about 10 minutes) that assesses your physical activity level, lifestyle and needs. Health professionals use it to adapt your APA program."
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Faire mon bilan",
+                  "en": "Take my assessment"
+                },
+                "href": "https://www.monbilansportsante.fr/index.php?option=com_rsform&view=rsform&formId=32&Itemid=758",
+                "variant": "default"
+              }
+            ],
+            "align": "center"
+          }
+        },
+        {
+          "type": "searchHeader",
+          "id": "faq-header",
+          "props": {
+            "headline": {
+              "fr": "Questions fréquentes",
+              "en": "Frequently asked questions"
+            }
+          }
+        },
+        {
+          "type": "faq",
+          "id": "faq-informer",
+          "props": {
+            "accordion": true,
+            "items": [
+              {
+                "q": {
+                  "fr": "Est-ce que les activités sont gratuites ?",
+                  "en": "Are the activities free?"
+                },
+                "a": {
+                  "fr": "Cela dépend du créneau. Certaines activités sont gratuites, notamment celles sur prescription médicale (APA). D'autres peuvent avoir un tarif réduit ou symbolique. Le coût est toujours indiqué sur la fiche du créneau ; en cas de doute, contactez directement l'opérateur.",
+                  "en": "It depends on the slot. Some activities are free, particularly those on medical prescription (APA). Others may have a reduced or symbolic price. The cost is always shown on the slot page; if in doubt, contact the operator directly."
+                }
+              },
+              {
+                "q": {
+                  "fr": "Ai-je besoin d'une ordonnance pour participer ?",
+                  "en": "Do I need a prescription to participate?"
+                },
+                "a": {
+                  "fr": "Pas toujours. Certains créneaux sont ouverts à tous sans prescription (label Sport Santé pour Tous – SSpT). D'autres, de type Sport Santé sur Ordonnance (SSsO), nécessitent un formulaire de prescription rempli par votre médecin. Chaque fiche indique clairement si une prescription est requise.",
+                  "en": "Not always. Some slots are open to everyone without a prescription (Sport Health for All label – SSpT). Others, of the Sport Health on Prescription type (SSsO), require a prescription form completed by your doctor. Each slot page clearly states whether a prescription is required."
+                }
+              },
+              {
+                "q": {
+                  "fr": "Que garantissent les labels SSBE ?",
+                  "en": "What do the SSBE labels guarantee?"
+                },
+                "a": {
+                  "fr": "Les labels Sport Santé Bien-Être (SSpT et SSsO) garantissent des créneaux encadrés par des professionnels formés, selon les critères régionaux de qualité et de sécurité définis à La Réunion. Plus d'informations sur ssbe.re.",
+                  "en": "The Sport Health Well-Being labels (SSpT and SSsO) guarantee slots supervised by trained professionals, according to the regional quality and safety criteria defined in Réunion. More information on ssbe.re."
+                }
+              },
+              {
+                "q": {
+                  "fr": "Qu'est-ce qu'un éducateur APA ?",
+                  "en": "What is an APA educator?"
+                },
+                "a": {
+                  "fr": "Un éducateur en Activité Physique Adaptée est un professionnel diplômé (licence ou master STAPS mention APA) formé pour concevoir et encadrer des programmes destinés aux personnes malades, en situation de handicap ou de fragilité. Il travaille en lien avec les professionnels de santé.",
+                  "en": "An Adapted Physical Activity educator is a qualified professional (STAPS degree or master's in APA) trained to design and supervise programs for people who are ill, disabled or vulnerable. They work closely with health professionals."
+                }
+              },
+              {
+                "q": {
+                  "fr": "Ekilib.re propose-t-il des activités en dehors du Tampon ?",
+                  "en": "Does Ekilib.re offer activities outside Le Tampon?"
+                },
+                "a": {
+                  "fr": "Ekilib.re déploie son service sur la commune du Tampon uniquement. Mais d'autres communes de La Réunion ont leur propre Maison Sport Santé, avec des créneaux labellisés SSBE près de chez vous : consultez ssbe.re pour trouver la MSS la plus proche. Votre médecin traitant peut également vous orienter.",
+                  "en": "Ekilib.re operates in the municipality of Le Tampon only. But other municipalities in Réunion have their own Sport Health House, with SSBE-labeled slots near you: visit ssbe.re to find the nearest MSS. Your doctor can also guide you."
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "cta",
+          "id": "informer-cta-final",
+          "props": {
+            "headline": {
+              "fr": "Prêt(e) à vous lancer ?",
+              "en": "Ready to get started?"
+            },
+            "subhead": {
+              "fr": "Trouvez l'activité adaptée à votre situation parmi les créneaux disponibles au Tampon.",
+              "en": "Find the activity that suits your situation among the slots available in Le Tampon."
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Trouver une activité",
+                  "en": "Find an activity"
+                },
+                "href": "/creneaux",
+                "variant": "default"
+              }
+            ],
+            "align": "center"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/rejoindre-soutenir",
+      "title": {
+        "fr": "Rejoindre & soutenir – Ekilib.re",
+        "en": "Join & support – Ekilib.re"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "hero",
+          "id": "soutenir-hero",
+          "props": {
+            "headline": {
+              "fr": "Agissez pour le sport santé au Tampon",
+              "en": "Take action for sport health in Le Tampon"
+            },
+            "subhead": {
+              "fr": "Ekilib.re vit grâce à son équipe, ses bénévoles, ses usagers engagés et ses soutiens. À vous de choisir comment vous souhaitez contribuer.",
+              "en": "Ekilib.re thrives thanks to its team, volunteers, committed users and supporters. It's up to you to choose how you want to contribute."
+            },
+            "align": "center",
+            "overlay": false
+          }
+        },
+        {
+          "type": "cards",
+          "id": "engagement-cards",
+          "props": {
+            "columns": 3,
+            "layout": "grid",
+            "items": [
+              {
+                "icon": "hand-heart",
+                "title": {
+                  "fr": "Devenir bénévole",
+                  "en": "Become a volunteer"
+                },
+                "text": {
+                  "fr": "Communication, accueil, organisation d'événements, soutien administratif… Tous profils bienvenus, aucune compétence sportive requise. Découvrez les missions sur JeVeuxAider.gouv.fr.",
+                  "en": "Communication, reception, event organization, administrative support… All profiles welcome, no sports skills required. Discover the missions on JeVeuxAider.gouv.fr."
+                },
+                "href": "https://www.jeveuxaider.gouv.fr/organisations/28116-association-ekilibre",
+                "target": "_blank"
+              },
+              {
+                "icon": "megaphone",
+                "title": {
+                  "fr": "Rejoindre le comité des usagers",
+                  "en": "Join the users' committee"
+                },
+                "text": {
+                  "fr": "Vous participez à un créneau ? Votre vécu est précieux : donnez votre avis, proposez des améliorations et représentez les usagers aux réunions trimestrielles. Écrivez-nous en indiquant votre créneau.",
+                  "en": "Do you attend a slot? Your experience is valuable: share your opinion, suggest improvements and represent users at quarterly meetings. Write to us mentioning your slot."
+                },
+                "href": "mailto:contact@ekilib.re"
+              },
+              {
+                "icon": "heart",
+                "title": {
+                  "fr": "Faire un don",
+                  "en": "Make a donation"
+                },
+                "text": {
+                  "fr": "Votre don finance de nouveaux créneaux, la formation des éducateurs APA et le matériel adapté. Paiement 100 % sécurisé via HelloAsso, aucun frais prélevé, reçu fiscal sur demande.",
+                  "en": "Your donation funds new slots, APA educator training and adapted equipment. 100% secure payment via HelloAsso, no fees deducted, tax receipt on request."
+                },
+                "href": "https://www.helloasso.com/associations/fonds-de-dotation-sport-sante/formulaires/2",
+                "target": "_blank"
+              }
+            ]
+          }
+        },
+        {
+          "type": "cta",
+          "id": "partenariat-cta",
+          "props": {
+            "headline": {
+              "fr": "Un projet de partenariat institutionnel ?",
+              "en": "An institutional partnership project?"
+            },
+            "subhead": {
+              "fr": "Collectivités, structures de santé, associations : contactez la direction de la Maison Sport Santé pour construire ensemble.",
+              "en": "Local authorities, health facilities, associations: contact the Sport Health House management to build together."
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Contacter la direction",
+                  "en": "Contact the management"
+                },
+                "href": "/contact",
+                "variant": "default"
+              }
+            ],
+            "align": "center"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/partenaires",
+      "title": {
+        "fr": "Partenaires & ressources – Ekilib.re",
+        "en": "Partners & resources – Ekilib.re"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "partenaires-header",
+          "props": {
+            "headline": {
+              "fr": "Partenaires & ressources",
+              "en": "Partners & resources"
+            },
+            "subhead": {
+              "fr": "Le réseau sport santé de La Réunion — des acteurs complémentaires au service de votre santé.",
+              "en": "The sport health network of Réunion — complementary actors serving your health."
+            }
+          }
+        },
+        {
+          "type": "searchHeader",
+          "id": "ressources-patients-header",
+          "props": {
+            "headline": {
+              "fr": "Ressources pour les patients",
+              "en": "Resources for patients"
+            },
+            "subhead": {
+              "fr": "Informations, accompagnement et services dédiés aux usagers et aux personnes malades.",
+              "en": "Information, support and services dedicated to users and people who are ill."
+            }
+          }
+        },
+        {
+          "type": "cards",
+          "id": "ressources-patients",
+          "props": {
+            "columns": 4,
+            "layout": "grid",
+            "items": [
+              {
+                "icon": "hospital",
+                "title": {
+                  "fr": "masante.re",
+                  "en": "masante.re"
+                },
+                "text": {
+                  "fr": "Portail de santé régional de La Réunion : informations médicales, professionnels et établissements.",
+                  "en": "Regional health portal of Réunion: medical information, professionals and facilities."
+                },
+                "href": "https://masante.re/",
+                "target": "_blank"
+              },
+              {
+                "icon": "medal",
+                "title": {
+                  "fr": "SSBE.re",
+                  "en": "SSBE.re"
+                },
+                "text": {
+                  "fr": "Sport Santé Bien-Être à La Réunion : labels SSpT et SSsO, annuaire des créneaux sport santé de l'île.",
+                  "en": "Sport Health Well-Being in Réunion: SSpT and SSsO labels, directory of the island's sport health slots."
+                },
+                "href": "https://ssbe.re/",
+                "target": "_blank"
+              },
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Réunir 974",
+                  "en": "Réunir 974"
+                },
+                "text": {
+                  "fr": "Coordination et accompagnement des acteurs de la santé et du social à La Réunion.",
+                  "en": "Coordination and support of health and social actors in Réunion."
+                },
+                "href": "https://reunir974.org/",
+                "target": "_blank"
+              },
+              {
+                "icon": "baby",
+                "title": {
+                  "fr": "Pôle Pédiatrique",
+                  "en": "Pôle Pédiatrique"
+                },
+                "text": {
+                  "fr": "Santé de l'enfant et activité physique adaptée aux jeunes à La Réunion.",
+                  "en": "Children's health and physical activity adapted to young people in Réunion."
+                },
+                "href": "https://www.polepediatrique.re/",
+                "target": "_blank"
+              },
+              {
+                "icon": "graduation-cap",
+                "title": {
+                  "fr": "ETP La Réunion",
+                  "en": "ETP La Réunion"
+                },
+                "text": {
+                  "fr": "Éducation Thérapeutique du Patient : programmes d'accompagnement pour les maladies chroniques.",
+                  "en": "Therapeutic Patient Education: support programs for chronic diseases."
+                },
+                "href": "https://www.etp-lareunion.re/",
+                "target": "_blank"
+              },
+              {
+                "icon": "stethoscope",
+                "title": {
+                  "fr": "Endoréunion",
+                  "en": "Endoréunion"
+                },
+                "text": {
+                  "fr": "Association de patientes atteintes d'endométriose : information, soutien et accompagnement.",
+                  "en": "Association of patients with endometriosis: information, support and guidance."
+                },
+                "href": "https://endoreunion.re/",
+                "target": "_blank"
+              },
+              {
+                "icon": "weight",
+                "title": {
+                  "fr": "Obésité Réunion",
+                  "en": "Obésité Réunion"
+                },
+                "text": {
+                  "fr": "Réseau de soins et de soutien pour les personnes en situation d'obésité à La Réunion.",
+                  "en": "Care and support network for people living with obesity in Réunion."
+                },
+                "href": "https://obesite-reunion.re/",
+                "target": "_blank"
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchHeader",
+          "id": "partenaires-institutionnels-header",
+          "props": {
+            "headline": {
+              "fr": "Partenaires institutionnels",
+              "en": "Institutional partners"
+            },
+            "subhead": {
+              "fr": "Institutions publiques et structures de coordination territoriale qui soutiennent ou travaillent avec Ekilib.re.",
+              "en": "Public institutions and territorial coordination bodies that support or work with Ekilib.re."
+            }
+          }
+        },
+        {
+          "type": "cards",
+          "id": "partenaires-institutionnels",
+          "props": {
+            "columns": 3,
+            "layout": "grid",
+            "items": [
+              {
+                "icon": "landmark",
+                "title": {
+                  "fr": "ARS La Réunion",
+                  "en": "ARS La Réunion"
+                },
+                "text": {
+                  "fr": "Agence Régionale de Santé : politique de santé publique, prévention et offre de soins à La Réunion.",
+                  "en": "Regional Health Agency: public health policy, prevention and care provision in Réunion."
+                },
+                "href": "https://www.lareunion.ars.sante.fr/",
+                "target": "_blank"
+              },
+              {
+                "icon": "network",
+                "title": {
+                  "fr": "FEECOIA",
+                  "en": "FEECOIA"
+                },
+                "text": {
+                  "fr": "Fédération des établissements et des professionnels de santé de La Réunion.",
+                  "en": "Federation of health facilities and professionals of Réunion."
+                },
+                "href": "https://feecoia.com/",
+                "target": "_blank"
+              },
+              {
+                "icon": "stethoscope",
+                "title": {
+                  "fr": "CPTS Australe",
+                  "en": "CPTS Australe"
+                },
+                "text": {
+                  "fr": "Communauté Professionnelle Territoriale de Santé du Sud : coordination des soins de proximité.",
+                  "en": "Southern Territorial Professional Health Community: coordination of local care."
+                },
+                "href": "https://www.cpts-australe.fr/",
+                "target": "_blank"
+              },
+              {
+                "icon": "building-2",
+                "title": {
+                  "fr": "Commune du Tampon",
+                  "en": "Municipality of Le Tampon"
+                },
+                "text": {
+                  "fr": "Collectivité partenaire : soutien institutionnel et mise à disposition des équipements sportifs.",
+                  "en": "Partner local authority: institutional support and provision of sports facilities."
+                },
+                "href": "https://letampon.fr/",
+                "target": "_blank"
+              },
+              {
+                "icon": "flag",
+                "title": {
+                  "fr": "DRAJES La Réunion",
+                  "en": "DRAJES La Réunion"
+                },
+                "text": {
+                  "fr": "Délégation Régionale Académique à la Jeunesse, à l'Engagement et aux Sports : pilotage des politiques sportives régionales.",
+                  "en": "Regional Academic Delegation for Youth, Engagement and Sports: steering of regional sports policies."
+                },
+                "href": "https://www.reunion.drajes.gouv.fr/",
+                "target": "_blank"
+              }
+            ]
+          }
+        },
+        {
+          "type": "cta",
+          "id": "labels-ssbe-cta",
+          "props": {
+            "headline": {
+              "fr": "Labels SSBE – gage de qualité et de sécurité",
+              "en": "SSBE labels – a guarantee of quality and safety"
+            },
+            "subhead": {
+              "fr": "Les créneaux peuvent être labellisés Sport Santé pour Tous (SSpT) ou Sport Santé sur Ordonnance (SSsO) : un encadrement formé et des activités sécurisées, selon les critères régionaux de La Réunion.",
+              "en": "Slots can be labeled Sport Health for All (SSpT) or Sport Health on Prescription (SSsO): trained supervision and safe activities, according to Réunion's regional criteria."
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "En savoir plus sur ssbe.re",
+                  "en": "Learn more on ssbe.re"
+                },
+                "href": "https://ssbe.re/",
+                "variant": "default"
+              }
+            ],
+            "align": "center"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/espace-pro",
+      "title": {
+        "fr": "Espace Professionnel de Santé – Ekilib.re",
+        "en": "Health Professional Area – Ekilib.re"
+      },
+      "auth": {
+        "required": true
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "hero-quick-access",
+          "id": "pro-hero",
+          "props": {
+            "headline": {
+              "fr": "Espace Professionnel de Santé",
+              "en": "Health Professional Area"
+            },
+            "subhead": {
+              "fr": "Médecins, kinésithérapeutes, infirmiers… Retrouvez ici les informations et documents utiles pour orienter vos patients vers un créneau adapté ou prescrire de l'Activité Physique Adaptée (APA).",
+              "en": "Doctors, physiotherapists, nurses… Find here the information and documents you need to direct your patients to a suitable slot or prescribe Adapted Physical Activity (APA)."
+            },
+            "backgroundImage": "/images/maisonSportSanteLaTampon/hero2.jpg",
+            "backgroundImageAlt": {
+              "fr": "Espace professionnels de santé Ekilib.re",
+              "en": "Ekilib.re health professionals area"
+            },
+            "badges": [
+              {
+                "label": {
+                  "fr": "Espace réservé aux professionnels",
+                  "en": "Professionals only"
+                },
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M11 2v2\"/><path d=\"M5 2v2\"/><path d=\"M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1\"/><path d=\"M8 15a6 6 0 0 0 12 0v-3\"/><circle cx=\"20\" cy=\"10\" r=\"2\"/></svg>"
+              }
+            ],
+            "ctaButtons": [
+              {
+                "label": {
+                  "fr": "Se connecter",
+                  "en": "Sign in"
+                },
+                "path": "/login",
+                "variant": "default"
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchHeader",
+          "id": "ressources-pro-header",
+          "props": {
+            "headline": {
+              "fr": "Ressources documentaires",
+              "en": "Document resources"
+            },
+            "subhead": {
+              "fr": "Recommandations, bilans, parcours et formulaires mis à disposition par l'équipe Ekilib.re.",
+              "en": "Recommendations, assessments, pathways and forms provided by the Ekilib.re team."
+            }
+          }
+        },
+        {
+          "type": "features-glass",
+          "id": "ressources-pro",
+          "props": {
+            "features": [
+              {
+                "icon": "book-open",
+                "title": {
+                  "fr": "Recommandations HAS",
+                  "en": "HAS recommendations"
+                },
+                "description": {
+                  "fr": "Guide de la Haute Autorité de Santé sur la prescription d'activité physique et sportive.",
+                  "en": "French National Authority for Health guide on prescribing physical and sports activity."
+                },
+                "color": "primary",
+                "link": "https://www.has-sante.fr/jcms/c_1742319/fr/prescription-d-activite-physique-et-sportive"
+              },
+              {
+                "icon": "globe",
+                "title": {
+                  "fr": "Recommandations OMS",
+                  "en": "WHO recommendations"
+                },
+                "description": {
+                  "fr": "Recommandations mondiales sur l'activité physique et les comportements sédentaires (2020).",
+                  "en": "Global recommendations on physical activity and sedentary behaviour (2020)."
+                },
+                "color": "chart-2",
+                "link": "https://www.who.int/fr/publications/i/item/9789240015128"
+              },
+              {
+                "icon": "clipboard-list",
+                "title": {
+                  "fr": "MonBilanSportSanté",
+                  "en": "MonBilanSportSanté"
+                },
+                "description": {
+                  "fr": "Questionnaire d'évaluation des habitudes et capacités du patient, à compléter avant l'entrée dans un programme.",
+                  "en": "Questionnaire assessing the patient's habits and abilities, to be completed before entering a program."
+                },
+                "color": "accent",
+                "link": "https://www.monbilansportsante.fr/index.php?option=com_rsform&view=rsform&formId=32&Itemid=758"
+              },
+              {
+                "icon": "house",
+                "title": {
+                  "fr": "Référentiel Maisons Sport Santé",
+                  "en": "Sport Health Houses framework"
+                },
+                "description": {
+                  "fr": "Rôle et missions des MSS, document de référence du Ministère des Sports.",
+                  "en": "Role and missions of MSS, reference document from the French Ministry of Sports."
+                },
+                "color": "primary",
+                "link": "https://ssbe.re/maison-sport-sante-mss/"
+              },
+              {
+                "icon": "stethoscope",
+                "title": {
+                  "fr": "Prescrire un créneau",
+                  "en": "Prescribe a slot"
+                },
+                "description": {
+                  "fr": "Vérifiez les compatibilités et contre-indications sur la fiche du créneau, puis remettez le formulaire APA à votre patient.",
+                  "en": "Check compatibilities and contraindications on the slot page, then give the APA form to your patient."
+                },
+                "color": "chart-2",
+                "link": "/creneaux"
+              },
+              {
+                "icon": "award",
+                "title": {
+                  "fr": "Labelliser un créneau SSBE",
+                  "en": "Label an SSBE slot"
+                },
+                "description": {
+                  "fr": "La démarche régionale de labellisation Sport Santé Bien-Être pour les opérateurs.",
+                  "en": "The regional Sport Health Well-Being labeling process for operators."
+                },
+                "color": "accent",
+                "link": "https://ssbe.re/"
+              }
+            ]
+          }
+        },
+        {
+          "type": "cards",
+          "id": "pandalab",
+          "props": {
+            "columns": 1,
+            "layout": "grid",
+            "items": [
+              {
+                "icon": "message-square",
+                "title": {
+                  "fr": "Groupe Ekilib.re sur PandaLab Pro",
+                  "en": "Ekilib.re group on PandaLab Pro"
+                },
+                "text": {
+                  "fr": "Messagerie sécurisée HDS : échangez avec les éducateurs APA référents et l'équipe Ekilib.re sur le suivi de vos patients. Accès réservé aux professionnels connectés.",
+                  "en": "HDS-certified secure messaging: discuss patient follow-up with the referring APA educators and the Ekilib.re team. Access restricted to logged-in professionals."
+                },
+                "href": "https://www.pandalab.fr/",
+                "target": "_blank"
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchHeader",
+          "id": "prescription-header",
+          "props": {
+            "headline": {
+              "fr": "Prescrire un créneau à un patient",
+              "en": "Prescribing a slot to a patient"
+            }
+          }
+        },
+        {
+          "type": "steps",
+          "id": "prescription-steps",
+          "props": {
+            "steps": [
+              {
+                "icon": "list-checks",
+                "title": {
+                  "fr": "Vérifiez la compatibilité",
+                  "en": "Check compatibility"
+                },
+                "description": {
+                  "fr": "Consultez les pathologies compatibles et les contre-indications indiquées sur la fiche du créneau avant de prescrire.",
+                  "en": "Review the compatible conditions and contraindications listed on the slot page before prescribing."
+                }
+              },
+              {
+                "icon": "file-text",
+                "title": {
+                  "fr": "Remplissez le formulaire APA",
+                  "en": "Fill in the APA form"
+                },
+                "description": {
+                  "fr": "Téléchargez et complétez le formulaire de prescription d'Activité Physique Adaptée propre au créneau.",
+                  "en": "Download and complete the Adapted Physical Activity prescription form specific to the slot."
+                }
+              },
+              {
+                "icon": "handshake",
+                "title": {
+                  "fr": "Remettez la prescription au patient",
+                  "en": "Give the prescription to the patient"
+                },
+                "description": {
+                  "fr": "Votre patient se présente au créneau avec ce document ; l'éducateur APA adapte la séance aux informations transmises.",
+                  "en": "Your patient attends the slot with this document; the APA educator adapts the session to the information provided."
+                }
+              },
+              {
+                "icon": "message-square",
+                "title": {
+                  "fr": "Assurez le suivi via PandaLab Pro",
+                  "en": "Follow up via PandaLab Pro"
+                },
+                "description": {
+                  "fr": "Échangez directement avec l'éducateur APA référent via le groupe Ekilib.re sur PandaLab Pro, messagerie sécurisée HDS.",
+                  "en": "Communicate directly with the referring APA educator via the Ekilib.re group on PandaLab Pro, HDS-certified secure messaging."
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "cta",
+          "id": "pro-contact-cta",
+          "props": {
+            "headline": {
+              "fr": "Une question ? L'équipe vous répond",
+              "en": "A question? The team is here to help"
+            },
+            "subhead": {
+              "fr": "Pour toute question sur l'orientation d'un patient, la prescription ou les créneaux disponibles au Tampon.",
+              "en": "For any question about patient referral, prescription or available slots in Le Tampon."
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "06 93 51 42 24",
+                  "en": "+262 693 51 42 24"
+                },
+                "href": "tel:+262693514224",
+                "variant": "outline"
+              },
+              {
+                "label": {
+                  "fr": "Nous écrire",
+                  "en": "Write to us"
+                },
+                "href": "/contact",
+                "variant": "default"
+              }
+            ],
+            "align": "center"
+          }
+        },
+        {
+          "type": "articleFeed",
+          "props": {
+            "costumSlug": "associationEkilibre",
+            "filters": {
+              "publicationStatus": "Publié"
+            },
+            "sortBy": {
+              "publicationDate": -1
+            },
+            "pageSize": 12
+          }
+        }
+      ]
+    },
+    {
+      "path": "/structure",
+      "title": {
+        "fr": "Les structures",
+        "en": "Structures"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "structure-sport-sante",
+          "props": {
+            "headline": {
+              "fr": "Structures",
+              "en": "Structures"
+            },
+            "subhead": {
+              "fr": "Découvrez les structures référentes",
+              "en": "Discover reference structures in Réunion"
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher une structure...",
+              "en": "Search for a structure..."
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Ajouter ma structure",
+                  "en": "Add my structure"
+                },
+                "icon": "plus",
+                "modal": "add-structure",
+                "requiresAdmin": false,
+                "variant": "outline"
+              }
+            ],
+            "dropdownFilters": [
+              {
+                "id": "structure-postalCode",
+                "label": {
+                  "fr": "Code postal",
+                  "en": "Postal code"
+                },
+                "field": "address.postalCode",
+                "multiple": true,
+                "options": [
+                  {
+                    "id": "97430",
+                    "label": {
+                      "fr": "97430 – Le Tampon",
+                      "en": "97430 – Le Tampon"
+                    },
+                    "value": "97430"
+                  },
+                  {
+                    "id": "97418",
+                    "label": {
+                      "fr": "97418 – La Plaine des Cafres (Le Tampon)",
+                      "en": "97418 – La Plaine des Cafres (Le Tampon)"
+                    },
+                    "value": "97418"
+                  }
+                ]
+              },
+              {
+                "id": "domaine-structure",
+                "label": {
+                  "fr": "Domaine d'intervention",
+                  "en": "Intervention domain"
+                },
+                "field": "tags",
+                "multiple": true,
+                "options": [
+                  {
+                    "id": "sport",
+                    "label": {
+                      "fr": "Sport",
+                      "en": "Sport"
+                    },
+                    "value": "Sport"
+                  },
+                  {
+                    "id": "sante-prevention",
+                    "label": {
+                      "fr": "Santé/prévention",
+                      "en": "Health/Prevention"
+                    },
+                    "value": "Santé/prévention"
+                  },
+                  {
+                    "id": "social",
+                    "label": {
+                      "fr": "Social",
+                      "en": "Social"
+                    },
+                    "value": "Social"
+                  },
+                  {
+                    "id": "insertion",
+                    "label": {
+                      "fr": "Insertion",
+                      "en": "Insertion"
+                    },
+                    "value": "Insertion"
+                  },
+                  {
+                    "id": "scolaire-1er-degre",
+                    "label": {
+                      "fr": "Scolaire 1er degré",
+                      "en": "Primary school"
+                    },
+                    "value": "Scolaire 1er degré"
+                  },
+                  {
+                    "id": "scolaire-2nd-degre",
+                    "label": {
+                      "fr": "Scolaire 2nd degré",
+                      "en": "Secondary school"
+                    },
+                    "value": "Scolaire 2nd degré"
+                  },
+                  {
+                    "id": "periscolaire-1er-degre",
+                    "label": {
+                      "fr": "Periscolaire 1er degré",
+                      "en": "After-school (primary)"
+                    },
+                    "value": "Periscolaire 1er degré"
+                  },
+                  {
+                    "id": "periscolaire-2eme-degre",
+                    "label": {
+                      "fr": "Periscolaire 2eme degré",
+                      "en": "After-school (secondary)"
+                    },
+                    "value": "Periscolaire 2eme degré"
+                  },
+                  {
+                    "id": "culture",
+                    "label": {
+                      "fr": "Culture",
+                      "en": "Culture"
+                    },
+                    "value": "Culture"
+                  },
+                  {
+                    "id": "handicap",
+                    "label": {
+                      "fr": "Handicap",
+                      "en": "Disability"
+                    },
+                    "value": "Handicap"
+                  },
+                  {
+                    "id": "tourisme",
+                    "label": {
+                      "fr": "Tourisme",
+                      "en": "Tourism"
+                    },
+                    "value": "Tourisme"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "section-structure-cards",
+          "props": {
+            "useFilter": true,
+            "showMap": true,
+            "enableMap": true,
+            "defaultViewMode": "split",
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "baseParams": {
+              "sourceKey": [
+                "associationEkilibre"
+              ],
+              "defaultTypes": [
+                "organizations"
+              ],
+              "defaultFilters": {
+                "statusActor": "Validé",
+                "address.postalCode": {
+                  "$in": [
+                    "97430",
+                    "97418"
+                  ]
+                }
+              },
+              "defaultFields": [
+                "name",
+                "type",
+                "collection",
+                "slug",
+                "source",
+                "reference",
+                "links",
+                "creator",
+                "created",
+                "updated",
+                "shortDescription",
+                "description",
+                "tags",
+                "address",
+                "geo",
+                "geoPosition",
+                "counts",
+                "profilImageUrl",
+                "profilThumbImageUrl",
+                "profilMediumImageUrl",
+                "siren",
+                "sigle",
+                "affiliate",
+                "affiliateTo",
+                "thematic",
+                "telephone",
+                "email",
+                "url",
+                "socialNetwork",
+                "legalStatus",
+                "statusFile",
+                "responsableCivilePro",
+                "statusPrimaire",
+                "statusSecondaire",
+                "statusCommunale",
+                "autreDescription",
+                "representativeTitle",
+                "otherRepresentativeTitle",
+                "representativeCivility",
+                "representativeName",
+                "representativeFirstName",
+                "representativeEmail",
+                "representativeTelephone",
+                "responsableSameAsRepresent",
+                "personInChargeTitle",
+                "otherPersonInChargeTitle",
+                "personInChargeCivility",
+                "personInChargeName",
+                "personInChargeFirstName",
+                "personInChargeEmail",
+                "personInChargeTelephone",
+                "statusActor",
+                "link",
+                "mobile",
+                "youtube"
+              ],
+              "searchBy": [
+                "name",
+                "shortDescription",
+                "description",
+                "tags"
+              ]
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 1,
+                "lg": 1,
+                "xl": 1
+              },
+              "card": {
+                "type": "contact-card",
+                "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "structure"
+              }
+            },
+            "map": {
+              "marker": {
+                "useItemImage": true,
+                "style": "pin",
+                "color": "primary"
+              },
+              "itemAction": {
+                "kind": "preview"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/contact",
+      "title": {
+        "fr": "Contact – Ekilib.re",
+        "en": "Contact – Ekilib.re"
+      },
+      "layout": "default",
+      "sections": [
+        {
+          "type": "hero",
+          "id": "contact-hero",
+          "props": {
+            "headline": {
+              "fr": "Contactez-nous",
+              "en": "Contact us"
+            },
+            "subhead": {
+              "fr": "Notre équipe vous répond du lundi au vendredi, de 8h30 à 17h30.",
+              "en": "Our team is available Monday to Friday, 8:30am to 5:30pm."
+            },
+            "align": "center",
+            "overlay": false
+          }
+        },
+        {
+          "type": "contactForm",
+          "id": "contact-form",
+          "props": {
+            "fields": [
+              {
+                "name": "name",
+                "label": {
+                  "fr": "Nom complet",
+                  "en": "Full name"
+                },
+                "type": "text",
+                "required": true,
+                "placeholder": {
+                  "fr": "Votre prénom et nom",
+                  "en": "Your first and last name"
+                }
+              },
+              {
+                "name": "email",
+                "label": {
+                  "fr": "Adresse e-mail",
+                  "en": "Email address"
+                },
+                "type": "email",
+                "required": true,
+                "placeholder": {
+                  "fr": "votre@email.re",
+                  "en": "your@email.com"
+                },
+                "validation": "email"
+              },
+              {
+                "name": "phone",
+                "label": {
+                  "fr": "Téléphone",
+                  "en": "Phone"
+                },
+                "type": "tel",
+                "required": false,
+                "placeholder": {
+                  "fr": "06 XX XX XX XX",
+                  "en": "+262 6XX XX XX XX"
+                }
+              },
+              {
+                "name": "subject",
+                "label": {
+                  "fr": "Objet de votre message",
+                  "en": "Subject of your message"
+                },
+                "type": "select",
+                "required": true,
+                "options": [
+                  {
+                    "fr": "Information sur un créneau",
+                    "en": "Information about a slot"
+                  },
+                  {
+                    "fr": "Inscription à une activité",
+                    "en": "Registration for an activity"
+                  },
+                  {
+                    "fr": "Je suis professionnel de santé",
+                    "en": "I am a health professional"
+                  },
+                  {
+                    "fr": "Demande de partenariat",
+                    "en": "Partnership request"
+                  },
+                  {
+                    "fr": "Suggestion d'amélioration",
+                    "en": "Improvement suggestion"
+                  },
+                  {
+                    "fr": "Signaler un problème sur un créneau",
+                    "en": "Report a problem with a slot"
+                  },
+                  {
+                    "fr": "Autre",
+                    "en": "Other"
+                  }
+                ]
+              },
+              {
+                "name": "message",
+                "label": {
+                  "fr": "Votre message",
+                  "en": "Your message"
+                },
+                "type": "textarea",
+                "required": true,
+                "placeholder": {
+                  "fr": "Décrivez votre demande…",
+                  "en": "Describe your request…"
+                }
+              },
+              {
+                "name": "rgpd",
+                "label": {
+                  "fr": "J'accepte que mes données personnelles soient utilisées uniquement pour traiter ma demande (conservation 12 mois), conformément à la politique de confidentialité d'Ekilib.re.",
+                  "en": "I agree that my personal data will be used solely to process my request (kept for 12 months), in accordance with Ekilib.re's privacy policy."
+                },
+                "type": "checkbox",
+                "required": true
+              }
+            ],
+            "submitLabel": {
+              "fr": "Envoyer mon message",
+              "en": "Send my message"
+            },
+            "successMessage": {
+              "fr": "Votre message a bien été envoyé. Nous vous répondrons rapidement !",
+              "en": "Your message has been sent. We will get back to you shortly!"
+            },
+            "errorMessage": {
+              "fr": "Une erreur est survenue lors de l'envoi. Réessayez ou contactez-nous par téléphone.",
+              "en": "An error occurred while sending. Please try again or contact us by phone."
+            }
+          }
+        },
+        {
+          "type": "cards",
+          "id": "contact-info",
+          "props": {
+            "columns": 4,
+            "layout": "grid",
+            "items": [
+              {
+                "icon": "phone",
+                "title": {
+                  "fr": "Téléphone",
+                  "en": "Phone"
+                },
+                "text": {
+                  "fr": "06 93 51 42 24\nLundi – Vendredi : 8h30 – 17h30",
+                  "en": "+262 693 51 42 24\nMonday – Friday: 8:30am – 5:30pm"
+                },
+                "href": "tel:+262693514224"
+              },
+              {
+                "icon": "message-circle",
+                "title": {
+                  "fr": "WhatsApp",
+                  "en": "WhatsApp"
+                },
+                "text": {
+                  "fr": "Une question sur les créneaux ?\nÉcrivez-nous sur WhatsApp.",
+                  "en": "A question about the slots?\nWrite to us on WhatsApp."
+                },
+                "href": "https://wa.me/262693514224",
+                "target": "_blank"
+              },
+              {
+                "icon": "mail",
+                "title": {
+                  "fr": "E-mail",
+                  "en": "Email"
+                },
+                "text": {
+                  "fr": "contact@ekilib.re\nRéponse sous 48h",
+                  "en": "contact@ekilib.re\nResponse within 48h"
+                },
+                "href": "mailto:contact@ekilib.re"
+              },
+              {
+                "icon": "map-pin",
+                "title": {
+                  "fr": "Adresse",
+                  "en": "Address"
+                },
+                "text": {
+                  "fr": "Maison Sport Santé Ekilib.re\nCommune du Tampon, La Réunion 97430",
+                  "en": "Ekilib.re Sport Health House\nLe Tampon, Réunion Island 97430"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/mentions-legales",
+      "title": {
+        "fr": "Mentions légales – Ekilib.re",
+        "en": "Legal notice – Ekilib.re"
+      },
+      "layout": "default",
+      "sections": [
+        {
+          "type": "html",
+          "id": "mentions-legales-content",
+          "props": {
+            "html": "<section class=\"py-16 px-4\"><div class=\"container mx-auto max-w-3xl space-y-8\"><h1 class=\"text-3xl md:text-4xl font-bold text-foreground\">Mentions légales</h1><div class=\"space-y-4 text-muted-foreground leading-relaxed\"><h2 class=\"text-xl font-bold text-foreground\">Éditeur du site</h2><p>Association Ekilib.re – Maison Sport Santé du Tampon<br>Commune du Tampon, La Réunion (97430)<br>Contact : contact@ekilib.re · 06 93 51 42 24</p><h2 class=\"text-xl font-bold text-foreground\">Directeur de la publication</h2><p>Le représentant légal de l'association Ekilib.re.</p><h2 class=\"text-xl font-bold text-foreground\">Hébergement</h2><p>Ce site est hébergé en France par un prestataire respectant le RGPD. Aucun transfert de données hors Union Européenne n'est effectué.</p><h2 class=\"text-xl font-bold text-foreground\">Propriété intellectuelle</h2><p>L'ensemble des contenus de ce site (textes, images, logos) est la propriété de l'association Ekilib.re ou de ses partenaires. Toute reproduction sans autorisation est interdite.</p></div></div></section>"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/confidentialite",
+      "title": {
+        "fr": "Politique de confidentialité – Ekilib.re",
+        "en": "Privacy policy – Ekilib.re"
+      },
+      "layout": "default",
+      "sections": [
+        {
+          "type": "html",
+          "id": "confidentialite-content",
+          "props": {
+            "html": "<section class=\"py-16 px-4\"><div class=\"container mx-auto max-w-3xl space-y-8\"><h1 class=\"text-3xl md:text-4xl font-bold text-foreground\">Politique de confidentialité & RGPD</h1><div class=\"space-y-4 text-muted-foreground leading-relaxed\"><h2 class=\"text-xl font-bold text-foreground\">Responsable du traitement</h2><p>Association Ekilib.re – Maison Sport Santé du Tampon<br>Contact DPO : contact@ekilib.re · 06 93 51 42 24<br>Siège social : Commune du Tampon, La Réunion (974)</p><h2 class=\"text-xl font-bold text-foreground\">Données collectées</h2><p>Les données collectées via le formulaire de contact (nom, prénom, adresse e-mail, téléphone, message) sont utilisées uniquement pour répondre à votre demande. Elles ne sont ni vendues, ni cédées à des tiers.</p><h2 class=\"text-xl font-bold text-foreground\">Finalité et base légale</h2><p>Le traitement est fondé sur votre <strong class=\"text-foreground\">consentement explicite</strong> (art. 6.1.a du RGPD). Pour les signalements relatifs aux créneaux, la base légale est l'<strong class=\"text-foreground\">intérêt légitime</strong> de maintenir des informations exactes (art. 6.1.f).</p><h2 class=\"text-xl font-bold text-foreground\">Durée de conservation</h2><p>Vos données sont conservées <strong class=\"text-foreground\">12 mois</strong> à compter de votre demande, puis supprimées, sauf obligation légale contraire.</p><h2 class=\"text-xl font-bold text-foreground\">Vos droits</h2><p>Conformément au RGPD (règlement UE 2016/679) et à la loi Informatique et Libertés, vous disposez des droits d'accès, de rectification, d'effacement, de limitation, de portabilité et d'opposition. Pour les exercer, contactez-nous à contact@ekilib.re. Vous pouvez également introduire une réclamation auprès de la CNIL (www.cnil.fr).</p><h2 class=\"text-xl font-bold text-foreground\">Hébergement</h2><p>Ce site est hébergé en France. Aucun transfert de données hors Union Européenne n'est effectué.</p><h2 class=\"text-xl font-bold text-foreground\">Cookies</h2><p>Ce site utilise uniquement des cookies techniques strictement nécessaires à son fonctionnement. Aucun cookie publicitaire ou de traçage n'est utilisé.</p></div></div></section>"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/accessibilite",
+      "title": {
+        "fr": "Accessibilité – Ekilib.re",
+        "en": "Accessibility – Ekilib.re"
+      },
+      "layout": "default",
+      "sections": [
+        {
+          "type": "html",
+          "id": "accessibilite-content",
+          "props": {
+            "html": "<section class=\"py-16 px-4\"><div class=\"container mx-auto max-w-3xl space-y-8\"><h1 class=\"text-3xl md:text-4xl font-bold text-foreground\">Accessibilité</h1><div class=\"space-y-4 text-muted-foreground leading-relaxed\"><p>L'association Ekilib.re s'engage à rendre son site accessible au plus grand nombre, conformément aux recommandations <strong class=\"text-foreground\">WCAG 2.1 niveau AA</strong> et au référentiel <strong class=\"text-foreground\">RGAA</strong>.</p><h2 class=\"text-xl font-bold text-foreground\">Mesures mises en œuvre</h2><p>Navigation au clavier sur tous les éléments interactifs, attributs ARIA sur les boutons et liens iconiques, contrastes de couleurs conformes, textes alternatifs sur les images, mode sombre disponible.</p><h2 class=\"text-xl font-bold text-foreground\">Signaler un problème</h2><p>Si vous rencontrez un défaut d'accessibilité, contactez-nous à contact@ekilib.re ou au 06 93 51 42 24 : nous nous efforcerons de le corriger rapidement.</p></div></div></section>"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/blog",
+      "title": {
+        "fr": "Actualités",
+        "en": "News"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Actualités — Ekilib.re, Maison Sport Santé du Tampon",
+          "en": "News — Ekilib.re, Sport Health House of Le Tampon"
+        },
+        "description": {
+          "fr": "Toutes les actualités d'Ekilib.re : nouveaux créneaux sport santé au Tampon, fermetures, évènements et informations santé.",
+          "en": "All Ekilib.re news: new sport-health slots in Le Tampon, closures, events and health information."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image",
+        "ogImage": "/images/maisonSportSanteLaTampon/hero2.jpg"
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "blog-search",
+          "props": {
+            "headline": {
+              "fr": "Les actualités d'Ekilib.re",
+              "en": "Ekilib.re news"
+            },
+            "subhead": {
+              "fr": "Nouveaux créneaux, fermetures, informations santé : cherchez par mot-clé ou filtrez par catégorie.",
+              "en": "New slots, closures, health information: search by keyword or filter by category."
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher une actualité…",
+              "en": "Search the news…"
+            },
+            "showActiveFiltersTags": true,
+            "dropdownFilters": [
+              {
+                "id": "categorie",
+                "label": {
+                  "fr": "Catégorie",
+                  "en": "Category"
+                },
+                "field": "category",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Toutes les catégories",
+                  "en": "All categories"
+                },
+                "options": [
+                  {
+                    "id": "nouveau-creneau",
+                    "value": "Nouveau créneau",
+                    "label": {
+                      "fr": "Nouveau créneau",
+                      "en": "New slot"
+                    }
+                  },
+                  {
+                    "id": "evenement",
+                    "value": "Évènement",
+                    "label": {
+                      "fr": "Évènement",
+                      "en": "Event"
+                    }
+                  },
+                  {
+                    "id": "information-sante",
+                    "value": "Information santé",
+                    "label": {
+                      "fr": "Information santé",
+                      "en": "Health information"
+                    }
+                  },
+                  {
+                    "id": "fermeture-modification",
+                    "value": "Fermeture/modification",
+                    "label": {
+                      "fr": "Fermeture/modification",
+                      "en": "Closure/change"
+                    }
+                  },
+                  {
+                    "id": "autre",
+                    "value": "Autre",
+                    "label": {
+                      "fr": "Autre",
+                      "en": "Other"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "articleFeed",
+          "props": {
+            "costumSlug": "associationEkilibre",
+            "filters": {
+              "publicationStatus": "Publié"
+            },
+            "sortBy": {
+              "publicationDate": -1
+            },
+            "featured": "flag",
+            "pageSize": 12,
+            "fullWidth": true
+          }
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "type": "contact-partners",
+    "contactSection": {
+      "title": {
+        "fr": "Nos coordonnées",
+        "en": "Contact us"
+      },
+      "items": [
+        {
+          "icon": "phone",
+          "value": {
+            "fr": "06 93 51 42 24",
+            "en": "+262 693 51 42 24"
+          },
+          "href": "tel:+262693514224"
+        },
+        {
+          "icon": "map-pin",
+          "lines": [
+            {
+              "fr": "Maison Sport Santé Ekilib.re",
+              "en": "Ekilib.re Sport Health House"
+            },
+            {
+              "fr": "Commune du Tampon – La Réunion, 97430",
+              "en": "Le Tampon – Réunion Island, 97430"
+            }
+          ]
+        },
+        {
+          "icon": "clock",
+          "lines": [
+            {
+              "fr": "Lundi – Vendredi : 8h30 – 17h30",
+              "en": "Monday – Friday: 8:30am – 5:30pm"
+            },
+            {
+              "fr": "Samedi : 8h30 – 12h00",
+              "en": "Saturday: 8:30am – 12:00pm"
+            }
+          ]
+        },
+        {
+          "icon": "mail",
+          "value": {
+            "fr": "contact@ekilib.re",
+            "en": "contact@ekilib.re"
+          },
+          "href": "mailto:contact@ekilib.re"
+        }
+      ]
+    },
+    "partners": {
+      "logos": [
+        {
+          "image": "images/maisonSportSanteLaTampon/logo-mss.jpg",
+          "alt": {
+            "fr": "Maison Sport Santé du Tampon",
+            "en": "Sport Health House of Le Tampon"
+          },
+          "href": "https://ssbe.re/maison-sport-sante-mss/"
+        }
+      ]
+    },
+    "legalLinks": [
+      {
+        "href": "/mentions-legales",
+        "label": {
+          "fr": "Mentions légales",
+          "en": "Legal notice"
+        }
+      },
+      {
+        "href": "/confidentialite",
+        "label": {
+          "fr": "Politique de confidentialité",
+          "en": "Privacy policy"
+        }
+      },
+      {
+        "href": "/accessibilite",
+        "label": {
+          "fr": "Accessibilité",
+          "en": "Accessibility"
+        }
+      }
+    ],
+    "copyright": {
+      "fr": "© 2026 Ekilib.re – Association Maison Sport Santé du Tampon. Tous droits réservés.",
+      "en": "© 2026 Ekilib.re – Sport Health House of Le Tampon. All rights reserved."
+    }
+  },
+  "features": [
+    {
+      "key": "communityFeatures",
+      "enabled": true,
+      "rolloutPercentage": 100
+    },
+    {
+      "key": "lightMode",
+      "enabled": true,
+      "rolloutPercentage": 100
+    },
+    {
+      "key": "multiLanguage",
+      "enabled": true,
+      "rolloutPercentage": 100
+    }
+  ],
+  "theme": {
+    "defaultMode": "light",
+    "typography": {
+      "fontFamily": {
+        "sans": [
+          "DM Sans",
+          "sans-serif"
+        ],
+        "serif": [
+          "Poppins",
+          "sans-serif"
+        ],
+        "mono": [
+          "Roboto Mono",
+          "monospace"
+        ]
+      },
+      "letterSpacing": "0em"
+    },
+    "colors": {
+      "light": {
+        "background": "oklch(0.99 0.008 180)",
+        "foreground": "oklch(0.25 0.03 210)",
+        "card": "oklch(1 0 0)",
+        "cardForeground": "oklch(0.25 0.03 210)",
+        "popover": "oklch(1 0 0)",
+        "popoverForeground": "oklch(0.25 0.03 210)",
+        "primary": "oklch(0.56 0.105 185)",
+        "primaryForeground": "oklch(0.99 0.01 185)",
+        "secondary": "oklch(0.95 0.03 184)",
+        "secondaryForeground": "oklch(0.38 0.07 186)",
+        "muted": "oklch(0.965 0.01 182)",
+        "mutedForeground": "oklch(0.50 0.025 200)",
+        "accent": "oklch(0.62 0.145 55)",
+        "accentForeground": "oklch(0.99 0.012 55)",
+        "destructive": "oklch(0.55 0.20 27)",
+        "destructiveForeground": "oklch(0.99 0.02 27)",
+        "border": "oklch(0.905 0.015 184)",
+        "input": "oklch(0.905 0.015 184)",
+        "ring": "oklch(0.56 0.105 185)",
+        "warning": "oklch(0.80 0.145 79)",
+        "warningForeground": "oklch(0.30 0.06 70)",
+        "success": "oklch(0.545 0.12 160)",
+        "successForeground": "oklch(0.99 0.012 160)",
+        "info": "oklch(0.55 0.12 235)",
+        "infoForeground": "oklch(0.99 0.012 235)",
+        "error": "oklch(0.55 0.20 27)",
+        "errorForeground": "oklch(0.99 0.02 27)",
+        "chart1": "oklch(0.58 0.11 185)",
+        "chart2": "oklch(0.68 0.145 55)",
+        "chart3": "oklch(0.80 0.145 79)",
+        "chart4": "oklch(0.45 0.08 220)",
+        "chart5": "oklch(0.58 0.12 160)",
+        "sidebar": "oklch(0.975 0.012 182)",
+        "sidebarForeground": "oklch(0.29 0.03 205)",
+        "sidebarPrimary": "oklch(0.56 0.105 185)",
+        "sidebarPrimaryForeground": "oklch(0.99 0.01 185)",
+        "sidebarAccent": "oklch(0.95 0.03 184)",
+        "sidebarAccentForeground": "oklch(0.38 0.07 186)",
+        "sidebarBorder": "oklch(0.905 0.015 184)",
+        "sidebarRing": "oklch(0.56 0.105 185)"
+      },
+      "dark": {
+        "background": "oklch(0.16 0.02 210)",
+        "foreground": "oklch(0.95 0.008 180)",
+        "card": "oklch(0.20 0.022 210)",
+        "cardForeground": "oklch(0.95 0.008 180)",
+        "popover": "oklch(0.20 0.022 210)",
+        "popoverForeground": "oklch(0.95 0.008 180)",
+        "primary": "oklch(0.72 0.10 185)",
+        "primaryForeground": "oklch(0.17 0.03 205)",
+        "secondary": "oklch(0.27 0.03 200)",
+        "secondaryForeground": "oklch(0.86 0.05 184)",
+        "muted": "oklch(0.26 0.02 205)",
+        "mutedForeground": "oklch(0.72 0.02 190)",
+        "accent": "oklch(0.72 0.14 58)",
+        "accentForeground": "oklch(0.20 0.05 55)",
+        "destructive": "oklch(0.575 0.19 28)",
+        "destructiveForeground": "oklch(0.99 0.012 28)",
+        "border": "oklch(0.29 0.022 205)",
+        "input": "oklch(0.29 0.022 205)",
+        "ring": "oklch(0.72 0.10 185)",
+        "warning": "oklch(0.82 0.14 80)",
+        "warningForeground": "oklch(0.28 0.06 70)",
+        "success": "oklch(0.68 0.13 160)",
+        "successForeground": "oklch(0.17 0.03 160)",
+        "info": "oklch(0.68 0.11 235)",
+        "infoForeground": "oklch(0.17 0.03 235)",
+        "error": "oklch(0.575 0.19 28)",
+        "errorForeground": "oklch(0.99 0.012 28)",
+        "chart1": "oklch(0.72 0.10 185)",
+        "chart2": "oklch(0.74 0.14 58)",
+        "chart3": "oklch(0.82 0.14 80)",
+        "chart4": "oklch(0.60 0.09 220)",
+        "chart5": "oklch(0.68 0.13 160)",
+        "sidebar": "oklch(0.19 0.022 208)",
+        "sidebarForeground": "oklch(0.92 0.01 185)",
+        "sidebarPrimary": "oklch(0.72 0.10 185)",
+        "sidebarPrimaryForeground": "oklch(0.17 0.03 205)",
+        "sidebarAccent": "oklch(0.27 0.03 200)",
+        "sidebarAccentForeground": "oklch(0.86 0.05 184)",
+        "sidebarBorder": "oklch(0.29 0.022 205)",
+        "sidebarRing": "oklch(0.72 0.10 185)"
+      }
+    },
+    "spacing": {
+      "base": "0.25rem"
+    },
+    "borderRadius": {
+      "base": "0.5rem"
+    },
+    "shadows": {
+      "light": {
+        "shadow2xs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowXs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowSm": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowMd": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 2px 4px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowLg": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 4px 6px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowXl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
+      },
+      "dark": {
+        "shadow2xs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowXs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowSm": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowMd": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 2px 4px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowLg": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 4px 6px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowXl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
+      }
+    },
+    "customCSS": ".ssso-card .header-gradient {\n  background: linear-gradient(135deg, var(--accent), var(--warning))!important;\n}\n\n .sspt-card .header-gradient {\n background: linear-gradient(135deg, var(--primary), var(--muted-foreground))!important;\n} \n\n .ssso-card .border-card-border-left {\n border-color: var(--accent)!important;}"
+  },
+  "auth": {
+    "login": {
+      "title": {
+        "fr": "Se connecter",
+        "en": "Sign in"
+      },
+      "subtitle": {
+        "fr": "Accédez à l'espace professionnel Ekilib.re",
+        "en": "Access the Ekilib.re professional area"
+      }
+    }
+  },
+  "admin": {
+    "enabled": true,
+    "title": {
+      "fr": "Administration Ekilib.re",
+      "en": "Ekilib.re administration"
+    },
+    "access": {
+      "min": "siteAdmin"
+    },
+    "tabs": [
+      {
+        "id": "dashboard",
+        "label": {
+          "fr": "Tableau de bord",
+          "en": "Dashboard"
+        },
+        "icon": "layout-dashboard",
+        "sections": [
+          {
+            "type": "dashboard",
+            "kpis": [
+              {
+                "type": "searchCount",
+                "label": {
+                  "fr": "Créneaux actifs",
+                  "en": "Active slots"
+                },
+                "hint": {
+                  "fr": "Créneaux publiés (état Validé)",
+                  "en": "Published slots (Validated)"
+                },
+                "icon": "calendar-check",
+                "linkTo": "/creneaux",
+                "entityType": "answers",
+                "source": {
+                  "sourceKey": [
+                    "associationEkilibre"
+                  ],
+                  "defaultTypes": [
+                    "answers"
+                  ],
+                  "defaultFilters": {
+                    "form": "6a85af345d898a57cb49f029",
+                    "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdn1jcq445i0mb9bap7": "Validé"
+                  }
+                },
+                "trend": "monthly"
+              },
+              {
+                "type": "analyticsVisitors",
+                "label": {
+                  "fr": "Usagers actifs",
+                  "en": "Active users"
+                },
+                "hint": {
+                  "fr": "Visites uniques mensuelles — mesure d'audience RGPD à raccorder",
+                  "en": "Monthly unique visits — GDPR analytics to be connected"
+                },
+                "icon": "chart-line"
+              },
+              {
+                "type": "membersPending",
+                "label": {
+                  "fr": "Pros inscrits",
+                  "en": "Registered professionals"
+                },
+                "hint": {
+                  "fr": "Professionnels de santé en attente de validation",
+                  "en": "Health professionals awaiting validation"
+                },
+                "icon": "stethoscope",
+                "linkTo": "/admin/membres"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "membres",
+        "label": {
+          "fr": "Membres",
+          "en": "Members"
+        },
+        "icon": "users",
+        "sections": [
+          {
+            "type": "members"
+          }
+        ]
+      },
+      {
+        "id": "actualites",
+        "label": {
+          "fr": "Actualités",
+          "en": "News"
+        },
+        "icon": "newspaper",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "poi",
+            "label": {
+              "fr": "Actualités",
+              "en": "News"
+            },
+            "source": {
+              "sourceKey": [
+                "associationEkilibre"
+              ],
+              "defaultFilters": {
+                "type": "article"
+              },
+              "defaultSortBy": {
+                "publicationDate": -1
+              }
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Titre",
+                  "en": "Title"
+                }
+              },
+              {
+                "path": "category",
+                "label": {
+                  "fr": "Catégorie",
+                  "en": "Category"
+                }
+              },
+              {
+                "path": "publicationDate",
+                "label": {
+                  "fr": "Date de publication",
+                  "en": "Publication date"
+                }
+              },
+              {
+                "path": "featured",
+                "label": {
+                  "fr": "À la une",
+                  "en": "Featured"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "validate",
+              "delete",
+              "setFeatured"
+            ],
+            "exclusiveField": "featured",
+            "create": "add-actualite",
+            "edit": "inherit",
+            "status": {
+              "mode": "statusField",
+              "field": "publicationStatus",
+              "states": [
+                {
+                  "value": "Brouillon",
+                  "tone": "pending"
+                },
+                {
+                  "value": "Publié",
+                  "tone": "positive"
+                },
+                {
+                  "value": "Archivé",
+                  "tone": "negative"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "structures",
+        "label": {
+          "fr": "Structures",
+          "en": "Structures"
+        },
+        "icon": "building-2",
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "organizations",
+            "label": {
+              "fr": "Structures du site",
+              "en": "Site structures"
+            },
+            "restrictActionsToOwned": true,
+            "rowActions": [
+              "edit",
+              "validate",
+              "reference",
+              "delete"
+            ],
+            "source": {
+              "sourceKey": [
+                "associationEkilibre"
+              ],
+              "defaultSortBy": {
+                "name": 1
+              }
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Nom",
+                  "en": "Name"
+                }
+              },
+              {
+                "path": "address.postalCode",
+                "label": {
+                  "fr": "Code postal",
+                  "en": "Postal code"
+                }
+              },
+              {
+                "path": "source.key",
+                "label": {
+                  "fr": "Provenance",
+                  "en": "Source"
+                }
+              }
+            ],
+            "status": {
+              "mode": "statusField",
+              "field": "statusActor",
+              "states": [
+                {
+                  "value": "En attente",
+                  "tone": "pending"
+                },
+                {
+                  "value": "En cours",
+                  "tone": "progress"
+                },
+                {
+                  "value": "Validé",
+                  "tone": "positive"
+                },
+                {
+                  "value": "Refusé",
+                  "tone": "negative"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "referencement",
+        "label": {
+          "fr": "Référencement",
+          "en": "Referencing"
+        },
+        "icon": "link-2",
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "reference",
+            "title": {
+              "fr": "Référencer une structure existante",
+              "en": "Reference an existing organization"
+            },
+            "entityTypes": [
+              "organizations"
+            ],
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Nom",
+                  "en": "Name"
+                }
+              },
+              {
+                "path": "address.postalCode",
+                "label": {
+                  "fr": "Code postal",
+                  "en": "Postal code"
+                }
+              },
+              {
+                "path": "source.key",
+                "label": {
+                  "fr": "Provenance",
+                  "en": "Source"
+                }
+              }
+            ],
+            "search": {
+              "openData": "optOut",
+              "defaultFilters": {
+                "source.keys": "sportSanteBienetre",
+                "address.postalCode": {
+                  "$in": [
+                    "97430",
+                    "97418"
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "moderation",
+        "label": {
+          "fr": "Modération",
+          "en": "Moderation"
+        },
+        "icon": "shield-alert",
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "answers",
+            "label": {
+              "fr": "Créneaux — modération",
+              "en": "Slots — moderation"
+            },
+            "source": {
+              "sourceKey": [
+                "associationEkilibre"
+              ],
+              "defaultFilters": {
+                "form": "6a85af345d898a57cb49f029"
+              },
+              "defaultSortBy": {
+                "created": -1
+              },
+              "searchBy": [
+                "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdegc9sgox76p87n27",
+                "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdeggo91owe8t9ovl4p",
+                "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdmxv88txy6f5z6svg"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Activité",
+                  "en": "Activity"
+                }
+              },
+              {
+                "path": "structure.name",
+                "label": {
+                  "fr": "Structure",
+                  "en": "Organization"
+                }
+              },
+              {
+                "path": "associationEkilibre19082026_1327_0mdn1cs8on3yru1p80lq",
+                "label": {
+                  "fr": "Type",
+                  "en": "Type"
+                }
+              },
+              {
+                "path": "address.postalCode",
+                "label": {
+                  "fr": "Code postal",
+                  "en": "Postal code"
+                }
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Déclaré le",
+                  "en": "Declared on"
+                }
+              }
+            ],
+            "rowActions": [
+              "validate"
+            ],
+            "create": false,
+            "edit": false,
+            "status": {
+              "mode": "statusField",
+              "field": "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdn1jcq445i0mb9bap7",
+              "states": [
+                {
+                  "value": "En attente",
+                  "tone": "pending"
+                },
+                {
+                  "value": "En cours",
+                  "tone": "progress"
+                },
+                {
+                  "value": "Validé",
+                  "tone": "positive"
+                },
+                {
+                  "value": "Réfusé",
+                  "label": {
+                    "fr": "Refusé",
+                    "en": "Refused"
+                  },
+                  "tone": "negative"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "commandPalette": {
+    "enabled": true,
+    "triggerVariant": "compact",
+    "placeholder": {
+      "fr": "Rechercher un créneau, une structure…",
+      "en": "Search for a slot, a facility…"
+    },
+    "entitySearch": {
+      "enabled": true,
+      "searchType": [
+        "organizations",
+        "projects"
+      ],
+      "limit": 8,
+      "params": {
+        "sourceKey": [
+          "sportSanteBienetre",
+          "associationEkilibre"
+        ]
+      }
+    },
+    "articleSearch": {
+      "enabled": true,
+      "costumSlug": "associationEkilibre",
+      "limit": 8
+    }
+  },
+  "costumForms": {
+    "structure": {
+      "id": "structure",
+      "entityType": "organizations",
+      "collection": "organizations",
+      "costumSlug": "associationEkilibre",
+      "icon": "building-2",
+      "layout": {
+        "kind": "wizard",
+        "validatePerStep": true,
+        "stepper": "tabs",
+        "progress": "bar",
+        "header": "gradient"
+      },
+      "validateFn": "validate:addressComplete",
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        },
+        "telephone": {
+          "serverKey": "telephone",
+          "read": "telephone:read",
+          "write": "telephone:write"
+        },
+        "representativeTitle": {
+          "serverKey": "representativeTitle",
+          "read": "enumOrOther:read",
+          "write": "enumOrOther:write",
+          "params": {
+            "valueField": "representativeTitle",
+            "otherField": "otherRepresentativeTitle",
+            "known": [
+              "Président",
+              "Maire.sse",
+              "Chef.fe d'entreprise",
+              "Chef.fe d'établissement",
+              "Autre..."
+            ],
+            "other": "Autre..."
+          }
+        },
+        "personInChargeTitle": {
+          "serverKey": "personInChargeTitle",
+          "read": "enumOrOther:read",
+          "write": "enumOrOther:write",
+          "params": {
+            "valueField": "personInChargeTitle",
+            "otherField": "otherPersonInChargeTitle",
+            "known": [
+              "Président",
+              "Maire.sse",
+              "Chef.fe d'entreprise",
+              "Chef.fe d'établissement",
+              "Autre..."
+            ],
+            "other": "Autre..."
+          }
+        }
+      },
+      "fields": {
+        "siren": {
+          "widget": "text",
+          "label": {
+            "fr": "Siren / Siret",
+            "en": "Siren / Siret"
+          },
+          "placeholder": {
+            "fr": "123 456 789 00012",
+            "en": "123 456 789 00012"
+          },
+          "write": "coerce:orUndef"
+        },
+        "name": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Nom",
+            "en": "Name"
+          },
+          "placeholder": {
+            "fr": "Nom de la structure",
+            "en": "Structure name"
+          },
+          "info": {
+            "fr": "Le nom qui sera affiché publiquement",
+            "en": "The name that will be publicly displayed"
+          },
+          "rules": {
+            "minLength": 3
+          }
+        },
+        "sigle": {
+          "widget": "text",
+          "label": {
+            "fr": "Sigle de l'association",
+            "en": "Association acronym"
+          }
+        },
+        "affiliate": {
+          "widget": "select",
+          "label": {
+            "fr": "Structure affiliée à une union, à une fédération ou à un réseau",
+            "en": "Structure affiliated with a union, federation or network"
+          },
+          "placeholder": {
+            "fr": "Faites votre choix",
+            "en": "Make your choice"
+          },
+          "enum": [
+            {
+              "value": "Oui",
+              "label": {
+                "fr": "Oui",
+                "en": "Yes"
+              }
+            },
+            {
+              "value": "Non",
+              "label": {
+                "fr": "Non",
+                "en": "No"
+              }
+            }
+          ]
+        },
+        "affiliateTo": {
+          "widget": "text",
+          "label": {
+            "fr": "Affiliation",
+            "en": "Affiliation"
+          },
+          "placeholder": {
+            "fr": "Nom de l'union, fédération ou réseau",
+            "en": "Name of the union, federation or network"
+          },
+          "visibleIf": {
+            "field": "affiliate",
+            "op": "eq",
+            "value": "Oui"
+          }
+        },
+        "thematic": {
+          "widget": "checkboxGroup",
+          "type": "array",
+          "label": {
+            "fr": "Domaine d'intervention (plusieurs choix possibles)",
+            "en": "Field of action (multiple choices possible)"
+          },
+          "widgetProps": {
+            "variant": "card"
+          },
+          "enum": [
+            {
+              "value": "Sport",
+              "label": {
+                "fr": "Sport",
+                "en": "Sport"
+              }
+            },
+            {
+              "value": "Santé/prévention",
+              "label": {
+                "fr": "Santé/prévention",
+                "en": "Health / Prevention"
+              }
+            },
+            {
+              "value": "Social",
+              "label": {
+                "fr": "Social",
+                "en": "Social"
+              }
+            },
+            {
+              "value": "Insertion",
+              "label": {
+                "fr": "Insertion",
+                "en": "Integration"
+              }
+            },
+            {
+              "value": "Culture",
+              "label": {
+                "fr": "Culture",
+                "en": "Culture"
+              }
+            },
+            {
+              "value": "Tourisme",
+              "label": {
+                "fr": "Tourisme",
+                "en": "Tourism"
+              }
+            },
+            {
+              "value": "Handicap",
+              "label": {
+                "fr": "Handicap",
+                "en": "Disability"
+              }
+            },
+            {
+              "value": "Scolaire 1er degré - Maternelle et primaire",
+              "label": {
+                "fr": "Scolaire 1er degré - Maternelle et primaire",
+                "en": "Primary school - Nursery and primary"
+              }
+            },
+            {
+              "value": "Scolaire 2nd degré - Collège et Lycée",
+              "label": {
+                "fr": "Scolaire 2nd degré - Collège et Lycée",
+                "en": "Secondary school - Middle and high school"
+              }
+            },
+            {
+              "value": "Périscolaire 1er degré - Maternelle et primaire",
+              "label": {
+                "fr": "Périscolaire 1er degré - Maternelle et primaire",
+                "en": "After-school - Nursery and primary"
+              }
+            },
+            {
+              "value": "Périscolaire 2nd degré - Collège et Lycée",
+              "label": {
+                "fr": "Périscolaire 2nd degré - Collège et Lycée",
+                "en": "After-school - Middle and high school"
+              }
+            }
+          ]
+        },
+        "_imageFile": {
+          "widget": "image",
+          "label": {
+            "fr": "Votre logo",
+            "en": "Your logo"
+          },
+          "info": {
+            "fr": "Format carré recommandé · PNG ou JPG",
+            "en": "Square format recommended · PNG or JPG"
+          },
+          "widgetProps": {
+            "shape": "square",
+            "aspect": 1
+          }
+        },
+        "tags": {
+          "widget": "hidden",
+          "type": "array",
+          "write": "structure:tagsFromThematic"
+        },
+        "telephone": {
+          "widget": "tel",
+          "group": "telephone",
+          "label": {
+            "fr": "Téléphone",
+            "en": "Phone"
+          },
+          "placeholder": {
+            "fr": "0692001122",
+            "en": "0692001122"
+          }
+        },
+        "_telSlot": {
+          "widget": "hidden",
+          "group": "telephone"
+        },
+        "_telRest": {
+          "widget": "hidden",
+          "group": "telephone"
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Adresse du siège",
+            "en": "Head office address"
+          },
+          "widgetProps": {
+            "required": true
+          }
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "required": true,
+          "group": "address",
+          "default": "RE"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "required": true,
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "required": true,
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "required": true,
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
+        },
+        "email": {
+          "widget": "text",
+          "label": {
+            "fr": "Adresse e-mail de contact",
+            "en": "Contact email address"
+          },
+          "placeholder": {
+            "fr": "contact@exemple.re",
+            "en": "contact@example.re"
+          },
+          "widgetProps": {
+            "inputType": "email"
+          },
+          "rules": {
+            "regex": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+          },
+          "write": "coerce:orUndef"
+        },
+        "url": {
+          "widget": "text",
+          "label": {
+            "fr": "Site web",
+            "en": "Website"
+          },
+          "placeholder": {
+            "fr": "https://monsite.re",
+            "en": "https://mysite.re"
+          },
+          "rules": {
+            "url": true
+          },
+          "write": "coerce:orUndef"
+        },
+        "socialLinks": {
+          "widget": "fieldArray",
+          "type": "array",
+          "label": {
+            "fr": "Réseaux sociaux",
+            "en": "Social networks"
+          },
+          "path": "socialNetwork",
+          "read": "social:read",
+          "write": "social:write",
+          "clear": "",
+          "widgetProps": {
+            "addLabel": {
+              "fr": "Ajouter un réseau social",
+              "en": "Add a social network"
+            },
+            "itemFields": [
+              {
+                "name": "platform",
+                "kind": "select",
+                "label": {
+                  "fr": "Plateforme",
+                  "en": "Platform"
+                },
+                "options": [
+                  {
+                    "value": "facebook",
+                    "label": "Facebook"
+                  },
+                  {
+                    "value": "instagram",
+                    "label": "Instagram"
+                  },
+                  {
+                    "value": "youtube",
+                    "label": "YouTube"
+                  },
+                  {
+                    "value": "linkedin",
+                    "label": "LinkedIn"
+                  }
+                ]
+              },
+              {
+                "name": "url",
+                "kind": "text",
+                "placeholder": {
+                  "fr": "https://...",
+                  "en": "https://..."
+                }
+              }
+            ]
+          }
+        },
+        "legalStatus": {
+          "widget": "select",
+          "required": true,
+          "label": {
+            "fr": "Forme juridique",
+            "en": "Legal form"
+          },
+          "info": {
+            "fr": "Choisir la forme juridique",
+            "en": "Choose the legal form"
+          },
+          "placeholder": {
+            "fr": "Faites votre choix",
+            "en": "Make your choice"
+          },
+          "enum": [
+            {
+              "value": "Association loi 1901",
+              "label": {
+                "fr": "Association loi 1901",
+                "en": "Association (1901 law)"
+              }
+            },
+            {
+              "value": "Collectivité",
+              "label": {
+                "fr": "Collectivité",
+                "en": "Local authority"
+              }
+            },
+            {
+              "value": "Groupement d'Intérêt Publique",
+              "label": {
+                "fr": "Groupement d'Intérêt Publique",
+                "en": "Public interest group"
+              }
+            },
+            {
+              "value": "Entreprise, Auto-entrepreneur, Sisa",
+              "label": {
+                "fr": "Entreprise, Auto-entrepreneur, Sisa",
+                "en": "Company, Self-employed, Sisa"
+              }
+            },
+            {
+              "value": "Établissement public",
+              "label": {
+                "fr": "Établissement public",
+                "en": "Public establishment"
+              }
+            },
+            {
+              "value": "Autre",
+              "label": {
+                "fr": "Autre",
+                "en": "Other"
+              }
+            }
+          ]
+        },
+        "statusFile": {
+          "widget": "file",
+          "label": {
+            "fr": "Statuts",
+            "en": "Articles of association"
+          },
+          "info": {
+            "fr": "PDF ou document bureautique · un seul fichier",
+            "en": "PDF or office document · single file"
+          },
+          "widgetProps": {
+            "contentKey": "statusFile",
+            "docType": "file",
+            "maxItems": 1,
+            "accept": ".pdf,.xls,.xlsx,.doc,.docx,.ppt,.pptx,.odt,.ods,.odp,.csv"
+          },
+          "visibleIf": {
+            "field": "legalStatus",
+            "op": "eq",
+            "value": "Entreprise, Auto-entrepreneur, Sisa"
+          }
+        },
+        "responsableCivilePro": {
+          "widget": "file",
+          "label": {
+            "fr": "Responsabilité civile pro année en cours ou attestation d'assurance",
+            "en": "Current-year professional liability or insurance certificate"
+          },
+          "info": {
+            "fr": "PDF ou document bureautique · un seul fichier",
+            "en": "PDF or office document · single file"
+          },
+          "widgetProps": {
+            "contentKey": "responsableCivilePro",
+            "docType": "file",
+            "maxItems": 1,
+            "accept": ".pdf,.xls,.xlsx,.doc,.docx,.ppt,.pptx,.odt,.ods,.odp,.csv"
+          },
+          "visibleIf": {
+            "field": "legalStatus",
+            "op": "in",
+            "value": [
+              "Association loi 1901",
+              "Groupement d'Intérêt Publique",
+              "Entreprise, Auto-entrepreneur, Sisa"
+            ]
+          }
+        },
+        "statusPrimaire": {
+          "widget": "select",
+          "label": {
+            "fr": "Vous êtes ?",
+            "en": "You are?"
+          },
+          "placeholder": {
+            "fr": "Faites votre choix",
+            "en": "Make your choice"
+          },
+          "visibleIf": {
+            "field": "legalStatus",
+            "op": "eq",
+            "value": "Collectivité"
+          },
+          "enum": [
+            {
+              "value": "Région",
+              "label": {
+                "fr": "Région",
+                "en": "Region"
+              }
+            },
+            {
+              "value": "Département",
+              "label": {
+                "fr": "Département",
+                "en": "Department"
+              }
+            },
+            {
+              "value": "Intercommunalité",
+              "label": {
+                "fr": "Intercommunalité",
+                "en": "Inter-municipality"
+              }
+            },
+            {
+              "value": "Commune",
+              "label": {
+                "fr": "Commune",
+                "en": "Municipality"
+              }
+            }
+          ]
+        },
+        "statusSecondaire": {
+          "widget": "select",
+          "label": {
+            "fr": "Vous êtes ?",
+            "en": "You are?"
+          },
+          "placeholder": {
+            "fr": "Faites votre choix",
+            "en": "Make your choice"
+          },
+          "visibleIf": {
+            "and": [
+              {
+                "field": "legalStatus",
+                "op": "eq",
+                "value": "Collectivité"
+              },
+              {
+                "field": "statusPrimaire",
+                "op": "eq",
+                "value": "Intercommunalité"
+              }
+            ]
+          },
+          "enum": [
+            {
+              "value": "TCO",
+              "label": "TCO"
+            },
+            {
+              "value": "CIREST",
+              "label": "CIREST"
+            },
+            {
+              "value": "CINOR",
+              "label": "CINOR"
+            },
+            {
+              "value": "CIVIS",
+              "label": "CIVIS"
+            },
+            {
+              "value": "CASUD",
+              "label": "CASUD"
+            }
+          ]
+        },
+        "statusCommunale": {
+          "widget": "select",
+          "label": {
+            "fr": "Vous êtes ?",
+            "en": "You are?"
+          },
+          "placeholder": {
+            "fr": "Faites votre choix",
+            "en": "Make your choice"
+          },
+          "visibleIf": {
+            "and": [
+              {
+                "field": "legalStatus",
+                "op": "eq",
+                "value": "Collectivité"
+              },
+              {
+                "field": "statusPrimaire",
+                "op": "eq",
+                "value": "Commune"
+              }
+            ]
+          },
+          "enum": [
+            {
+              "value": "97418 - LE TAMPON",
+              "label": "97418 - LE TAMPON"
+            },
+            {
+              "value": "97430 - LE TAMPON",
+              "label": "97430 - LE TAMPON"
+            }
+          ]
+        },
+        "autreDescription": {
+          "widget": "text",
+          "label": {
+            "fr": "À préciser",
+            "en": "Please specify"
+          },
+          "visibleIf": {
+            "field": "legalStatus",
+            "op": "eq",
+            "value": "Autre"
+          }
+        },
+        "representativeTitle": {
+          "widget": "select",
+          "label": {
+            "fr": "Titre (fonction, statut...)",
+            "en": "Title (role, status...)"
+          },
+          "info": {
+            "fr": "Si autre, vous pourrez le préciser juste en dessous",
+            "en": "If other, you can specify it just below"
+          },
+          "placeholder": {
+            "fr": "Faites votre choix",
+            "en": "Make your choice"
+          },
+          "enum": [
+            {
+              "value": "Président",
+              "label": {
+                "fr": "Président",
+                "en": "President"
+              }
+            },
+            {
+              "value": "Maire.sse",
+              "label": {
+                "fr": "Maire.sse",
+                "en": "Mayor"
+              }
+            },
+            {
+              "value": "Chef.fe d'entreprise",
+              "label": {
+                "fr": "Chef.fe d'entreprise",
+                "en": "Company director"
+              }
+            },
+            {
+              "value": "Chef.fe d'établissement",
+              "label": {
+                "fr": "Chef.fe d'établissement",
+                "en": "Head of establishment"
+              }
+            },
+            {
+              "value": "Autre...",
+              "label": {
+                "fr": "Autre...",
+                "en": "Other..."
+              }
+            }
+          ],
+          "group": "representativeTitle"
+        },
+        "otherRepresentativeTitle": {
+          "widget": "text",
+          "label": {
+            "fr": "Précisez le titre",
+            "en": "Specify the title"
+          },
+          "visibleIf": {
+            "field": "representativeTitle",
+            "op": "eq",
+            "value": "Autre..."
+          },
+          "group": "representativeTitle"
+        },
+        "representativeCivility": {
+          "widget": "select",
+          "label": {
+            "fr": "Civilité",
+            "en": "Title"
+          },
+          "placeholder": {
+            "fr": "Faites votre choix",
+            "en": "Make your choice"
+          },
+          "enum": [
+            {
+              "value": "M.",
+              "label": {
+                "fr": "M.",
+                "en": "Mr."
+              }
+            },
+            {
+              "value": "Mme",
+              "label": {
+                "fr": "Mme",
+                "en": "Mrs."
+              }
+            }
+          ]
+        },
+        "representativeName": {
+          "widget": "text",
+          "label": {
+            "fr": "Nom",
+            "en": "Last name"
+          },
+          "placeholder": {
+            "fr": "Nom",
+            "en": "Last name"
+          }
+        },
+        "representativeFirstName": {
+          "widget": "text",
+          "label": {
+            "fr": "Prénom",
+            "en": "First name"
+          },
+          "placeholder": {
+            "fr": "Prénom",
+            "en": "First name"
+          }
+        },
+        "representativeEmail": {
+          "widget": "text",
+          "label": {
+            "fr": "E-mail",
+            "en": "Email"
+          },
+          "placeholder": {
+            "fr": "mail@exemple.com",
+            "en": "mail@example.com"
+          },
+          "widgetProps": {
+            "inputType": "email"
+          },
+          "rules": {
+            "regex": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+          }
+        },
+        "representativeTelephone": {
+          "widget": "text",
+          "label": {
+            "fr": "Téléphone",
+            "en": "Phone"
+          },
+          "placeholder": {
+            "fr": "0692001122",
+            "en": "0692001122"
+          },
+          "widgetProps": {
+            "inputType": "tel"
+          },
+          "write": "coerce:orUndef"
+        },
+        "responsableSameAsRepresent": {
+          "widget": "switch",
+          "label": {
+            "fr": "Le représentant est aussi la personne en charge du dossier",
+            "en": "The representative is also the person in charge of the file"
+          }
+        },
+        "personInChargeTitle": {
+          "widget": "select",
+          "label": {
+            "fr": "Titre (fonction, statut...)",
+            "en": "Title (role, status...)"
+          },
+          "info": {
+            "fr": "Si autre, vous pourrez le préciser juste en dessous",
+            "en": "If other, you can specify it just below"
+          },
+          "placeholder": {
+            "fr": "Faites votre choix",
+            "en": "Make your choice"
+          },
+          "visibleIf": {
+            "field": "responsableSameAsRepresent",
+            "op": "falsy"
+          },
+          "enum": [
+            {
+              "value": "Président",
+              "label": {
+                "fr": "Président",
+                "en": "President"
+              }
+            },
+            {
+              "value": "Maire.sse",
+              "label": {
+                "fr": "Maire.sse",
+                "en": "Mayor"
+              }
+            },
+            {
+              "value": "Chef.fe d'entreprise",
+              "label": {
+                "fr": "Chef.fe d'entreprise",
+                "en": "Company director"
+              }
+            },
+            {
+              "value": "Chef.fe d'établissement",
+              "label": {
+                "fr": "Chef.fe d'établissement",
+                "en": "Head of establishment"
+              }
+            },
+            {
+              "value": "Autre...",
+              "label": {
+                "fr": "Autre...",
+                "en": "Other..."
+              }
+            }
+          ],
+          "group": "personInChargeTitle"
+        },
+        "otherPersonInChargeTitle": {
+          "widget": "text",
+          "label": {
+            "fr": "Précisez le titre",
+            "en": "Specify the title"
+          },
+          "visibleIf": {
+            "and": [
+              {
+                "field": "responsableSameAsRepresent",
+                "op": "falsy"
+              },
+              {
+                "field": "personInChargeTitle",
+                "op": "eq",
+                "value": "Autre..."
+              }
+            ]
+          },
+          "group": "personInChargeTitle"
+        },
+        "personInChargeCivility": {
+          "widget": "select",
+          "label": {
+            "fr": "Civilité",
+            "en": "Title"
+          },
+          "placeholder": {
+            "fr": "Faites votre choix",
+            "en": "Make your choice"
+          },
+          "visibleIf": {
+            "field": "responsableSameAsRepresent",
+            "op": "falsy"
+          },
+          "enum": [
+            {
+              "value": "M.",
+              "label": {
+                "fr": "M.",
+                "en": "Mr."
+              }
+            },
+            {
+              "value": "Mme",
+              "label": {
+                "fr": "Mme",
+                "en": "Mrs."
+              }
+            }
+          ]
+        },
+        "personInChargeName": {
+          "widget": "text",
+          "label": {
+            "fr": "Nom",
+            "en": "Last name"
+          },
+          "placeholder": {
+            "fr": "Nom",
+            "en": "Last name"
+          },
+          "visibleIf": {
+            "field": "responsableSameAsRepresent",
+            "op": "falsy"
+          }
+        },
+        "personInChargeFirstName": {
+          "widget": "text",
+          "label": {
+            "fr": "Prénom",
+            "en": "First name"
+          },
+          "placeholder": {
+            "fr": "Prénom",
+            "en": "First name"
+          },
+          "visibleIf": {
+            "field": "responsableSameAsRepresent",
+            "op": "falsy"
+          }
+        },
+        "personInChargeEmail": {
+          "widget": "text",
+          "label": {
+            "fr": "E-mail",
+            "en": "Email"
+          },
+          "placeholder": {
+            "fr": "mail@exemple.com",
+            "en": "mail@example.com"
+          },
+          "widgetProps": {
+            "inputType": "email"
+          },
+          "rules": {
+            "regex": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+          },
+          "visibleIf": {
+            "field": "responsableSameAsRepresent",
+            "op": "falsy"
+          }
+        },
+        "personInChargeTelephone": {
+          "widget": "text",
+          "label": {
+            "fr": "Téléphone",
+            "en": "Phone"
+          },
+          "placeholder": {
+            "fr": "0692001122",
+            "en": "0692001122"
+          },
+          "widgetProps": {
+            "inputType": "tel"
+          },
+          "write": "coerce:orUndef",
+          "visibleIf": {
+            "field": "responsableSameAsRepresent",
+            "op": "falsy"
+          }
+        }
+      },
+      "sections": [
+        {
+          "id": "structure",
+          "label": {
+            "fr": "Votre structure",
+            "en": "Your structure"
+          },
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "siren",
+                "name",
+                "sigle"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "affiliate",
+                "affiliateTo"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "thematic"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "_imageFile"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "contact",
+          "label": {
+            "fr": "Coordonnées",
+            "en": "Contact details"
+          },
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "address",
+                "addressCountry",
+                "addressLocality",
+                "postalCode",
+                "streetAddress"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "telephone",
+                "email"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "url"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "socialLinks"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "legal",
+          "label": {
+            "fr": "Forme juridique",
+            "en": "Legal form"
+          },
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "legalStatus"
+              ]
+            },
+            {
+              "columns": 1,
+              "label": {
+                "fr": "Pièces justificatives",
+                "en": "Supporting documents"
+              },
+              "fields": [
+                "statusFile",
+                "responsableCivilePro"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "statusPrimaire",
+                "statusSecondaire",
+                "statusCommunale"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "autreDescription"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "representant",
+          "label": {
+            "fr": "Votre représentant",
+            "en": "Your representative"
+          },
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "representativeTitle",
+                "otherRepresentativeTitle"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "representativeCivility",
+                "representativeName",
+                "representativeFirstName"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "representativeEmail",
+                "representativeTelephone"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "responsable",
+          "label": {
+            "fr": "Personne chargée du dossier",
+            "en": "Person in charge of the file"
+          },
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "responsableSameAsRepresent"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "personInChargeTitle",
+                "otherPersonInChargeTitle"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "personInChargeCivility",
+                "personInChargeName",
+                "personInChargeFirstName"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "personInChargeEmail",
+                "personInChargeTelephone"
+              ]
+            }
+          ]
+        }
+      ],
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter une structure",
+            "en": "Add a structure"
+          },
+          "edit": {
+            "fr": "Modifier la structure",
+            "en": "Edit the structure"
+          }
+        },
+        "description": {
+          "add": {
+            "fr": "Référencez votre structure et la personne qui porte le projet.",
+            "en": "Register your structure and the person leading the project."
+          },
+          "edit": {
+            "fr": "Mettre à jour les informations de la structure.",
+            "en": "Update the structure information."
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Créer la structure",
+            "en": "Create the structure"
+          },
+          "edit": {
+            "fr": "Enregistrer les modifications",
+            "en": "Save changes"
+          }
+        },
+        "gradientHeader": true,
+        "dialogClassName": "sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden",
+        "validationFailedKey": {
+          "fr": "Veuillez corriger les champs en erreur (voir les onglets signalés).",
+          "en": "Please fix the highlighted fields (see the flagged tabs)."
+        },
+        "navText": {
+          "next": {
+            "fr": "Suivant →",
+            "en": "Next →"
+          },
+          "previous": {
+            "fr": "← Précédent",
+            "en": "← Previous"
+          },
+          "cancel": {
+            "fr": "Annuler",
+            "en": "Cancel"
+          },
+          "stepTemplate": {
+            "stepKey": {
+              "fr": "Étape",
+              "en": "Step"
+            },
+            "ofKey": {
+              "fr": "sur",
+              "en": "of"
+            }
+          }
+        }
+      },
+      "image": {
+        "field": "_imageFile",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "scope": {
+        "slugFrom": "constant",
+        "constant": "associationEkilibre"
+      },
+      "mutation": {
+        "entityType": "organizations",
+        "payloadEmitEmptyOnEdit": true,
+        "inject": {
+          "dropEmptyEmail": true,
+          "extraFields": {
+            "type": "Cooperative",
+            "role": "admin",
+            "statusActor": "En cours"
+          }
+        },
+        "successKey": {
+          "add": "toast.add.organizationSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.organizationError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_STRUCTURE",
+          "edit": "EntityFormModal · EDIT_STRUCTURE"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard",
+          "params": {
+            "userList": "organizations",
+            "searchKeys": [
+              "searchCostumStatic",
+              "searchCostumStaticMapAll",
+              "admin-organizations"
+            ]
+          }
+        }
+      },
+      "identity": {
+        "type": "Cooperative"
+      }
+    },
+    "actualite": {
+      "id": "actualite",
+      "entityType": "poi",
+      "costumSlug": "associationEkilibre",
+      "collection": "poi",
+      "icon": "newspaper",
+      "layout": {
+        "kind": "flat"
+      },
+      "image": {
+        "field": "_imageFile",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter une actualité",
+            "en": "Add a news item"
+          },
+          "edit": {
+            "fr": "Modifier l'actualité",
+            "en": "Edit the news item"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Créer l'actualité",
+            "en": "Create the news item"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        }
+      },
+      "sections": [
+        {
+          "id": "content",
+          "label": {
+            "fr": "Actualité",
+            "en": "News item"
+          },
+          "icon": "newspaper",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "name",
+                "_imageFile",
+                "category",
+                "publicationDate",
+                "shortDescription",
+                "description",
+                "tags",
+                "link",
+                "publicationStatus"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "name": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Titre",
+            "en": "Title"
+          }
+        },
+        "_imageFile": {
+          "widget": "image",
+          "label": {
+            "fr": "Photo",
+            "en": "Photo"
+          },
+          "info": {
+            "fr": "Illustration affichée dans la liste des actualités.",
+            "en": "Illustration shown in the news list."
+          }
+        },
+        "category": {
+          "widget": "select",
+          "required": true,
+          "label": {
+            "fr": "Catégorie",
+            "en": "Category"
+          },
+          "placeholder": {
+            "fr": "Choisir une catégorie",
+            "en": "Choose a category"
+          },
+          "enum": [
+            {
+              "value": "Nouveau créneau",
+              "label": {
+                "fr": "Nouveau créneau",
+                "en": "New slot"
+              }
+            },
+            {
+              "value": "Évènement",
+              "label": {
+                "fr": "Évènement",
+                "en": "Event"
+              }
+            },
+            {
+              "value": "Information santé",
+              "label": {
+                "fr": "Information santé",
+                "en": "Health information"
+              }
+            },
+            {
+              "value": "Fermeture/modification",
+              "label": {
+                "fr": "Fermeture/modification",
+                "en": "Closure/change"
+              }
+            },
+            {
+              "value": "Autre",
+              "label": {
+                "fr": "Autre",
+                "en": "Other"
+              }
+            }
+          ]
+        },
+        "publicationDate": {
+          "widget": "date",
+          "required": true,
+          "label": {
+            "fr": "Date de publication",
+            "en": "Publication date"
+          }
+        },
+        "shortDescription": {
+          "widget": "textarea",
+          "label": {
+            "fr": "Résumé (chapô)",
+            "en": "Summary (standfirst)"
+          },
+          "info": {
+            "fr": "Affiché sur les cartes du fil et en tête de l'article.",
+            "en": "Shown on feed cards and at the top of the article."
+          }
+        },
+        "description": {
+          "widget": "markdown",
+          "required": true,
+          "label": {
+            "fr": "Contenu",
+            "en": "Content"
+          },
+          "widgetProps": {
+            "height": 320,
+            "preview": "edit"
+          }
+        },
+        "tags": {
+          "widget": "tags",
+          "label": {
+            "fr": "Mots-clés",
+            "en": "Keywords"
+          },
+          "info": {
+            "fr": "Vocabulaire libre — les mots déjà employés vous sont proposés.",
+            "en": "Free vocabulary — existing keywords are suggested."
+          }
+        },
+        "link": {
+          "widget": "text",
+          "label": {
+            "fr": "Lien associé",
+            "en": "Related link"
+          },
+          "placeholder": {
+            "fr": "https://…",
+            "en": "https://…"
+          }
+        },
+        "publicationStatus": {
+          "widget": "select",
+          "label": {
+            "fr": "Statut",
+            "en": "Status"
+          },
+          "enum": [
+            {
+              "value": "Brouillon",
+              "label": {
+                "fr": "Brouillon",
+                "en": "Draft"
+              }
+            },
+            {
+              "value": "Publié",
+              "label": {
+                "fr": "Publié",
+                "en": "Published"
+              }
+            },
+            {
+              "value": "Archivé",
+              "label": {
+                "fr": "Archivé",
+                "en": "Archived"
+              }
+            }
+          ],
+          "required": true,
+          "default": "Brouillon"
+        }
+      },
+      "scope": {
+        "slugFrom": "carrier"
+      },
+      "mutation": {
+        "entityType": "poi",
+        "inject": {
+          "extraFields": {
+            "type": "article"
+          },
+          "parentFromCarrier": true
+        },
+        "successKey": {
+          "add": "toast.add.poiSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.poiError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_ACTUALITE",
+          "edit": "EntityFormModal · EDIT_ACTUALITE"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:blog",
+          "params": {
+            "userList": "pois",
+            "searchKeys": [
+              "blog:associationEkilibre",
+              "admin-poi"
+            ]
+          }
+        },
+        "payloadEmitEmptyOnEdit": true,
+        "navigateOnSuccess": false
+      },
+      "identity": {
+        "type": "article"
+      }
+    }
+  },
+  "profiles": {
+    "default": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete"
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gallery",
+          "label": {
+            "fr": "Galerie",
+            "en": "Gallery"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-gallery"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "map",
+          "label": {
+            "fr": "Localisation",
+            "en": "Location"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-map"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "citoyens": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": true,
+          "addConfig": {
+            "organization": true,
+            "project": true,
+            "event": true,
+            "poi": false
+          }
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "news",
+          "label": {
+            "fr": "Actualités",
+            "en": "News"
+          },
+          "sections": [
+            {
+              "type": "news",
+              "props": {
+                "maxItems": 10,
+                "showAddButton": true,
+                "showComments": true,
+                "showReactions": true
+              }
+            }
+          ],
+          "subRoutes": [
+            {
+              "path": ":newsId",
+              "component": "NewsDetailPage"
+            }
+          ]
+        },
+        {
+          "id": "social",
+          "label": {
+            "fr": "Amis",
+            "en": "Friends"
+          },
+          "condition": {
+            "entityTypes": [
+              "citoyens"
+            ],
+            "userContext": "own"
+          },
+          "component": "SocialTab"
+        },
+        {
+          "id": "membership",
+          "label": {
+            "fr": "Communautés",
+            "en": "Communities"
+          },
+          "condition": {
+            "entityTypes": [
+              "citoyens"
+            ],
+            "userContext": "own"
+          },
+          "component": "MembershipTab"
+        }
+      ]
+    },
+    "organizations": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "editModals": [
+        {
+          "editModal": "edit-structure",
+          "when": {
+            "or": [
+              {
+                "field": "sourceKeys",
+                "op": "contains",
+                "value": "associationEkilibre"
+              },
+              {
+                "field": "reference.costum",
+                "op": "contains",
+                "value": "associationEkilibre"
+              }
+            ]
+          }
+        }
+      ],
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": true,
+          "addConfig": {
+            "organization": false,
+            "project": true,
+            "event": true,
+            "poi": false
+          }
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about-ssbe"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "news",
+          "label": {
+            "fr": "Actualités",
+            "en": "News"
+          },
+          "sections": [
+            {
+              "type": "news",
+              "props": {
+                "maxItems": 10,
+                "showAddButton": true,
+                "showComments": true,
+                "showReactions": true
+              }
+            }
+          ],
+          "subRoutes": [
+            {
+              "path": ":newsId",
+              "component": "NewsDetailPage"
+            }
+          ]
+        },
+        {
+          "id": "members",
+          "label": {
+            "fr": "Membres",
+            "en": "Members"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-members",
+                  "showRole": true,
+                  "showManagement": true
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "projects",
+          "label": {
+            "fr": "Projets",
+            "en": "Projects"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-related",
+                  "relationType": "projects",
+                  "title": {
+                    "fr": "Projets",
+                    "en": "Projects"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "events",
+          "label": {
+            "fr": "Événements",
+            "en": "Events"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-related",
+                  "relationType": "events",
+                  "title": {
+                    "fr": "Événements",
+                    "en": "Events"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "projects": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": true,
+          "addConfig": {
+            "organization": false,
+            "project": false,
+            "event": true,
+            "poi": false
+          }
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-event-dates"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "news",
+          "label": {
+            "fr": "Actualités",
+            "en": "News"
+          },
+          "sections": [
+            {
+              "type": "news",
+              "props": {
+                "maxItems": 10,
+                "showAddButton": true,
+                "showComments": true,
+                "showReactions": true
+              }
+            }
+          ],
+          "subRoutes": [
+            {
+              "path": ":newsId",
+              "component": "NewsDetailPage"
+            }
+          ]
+        },
+        {
+          "id": "contributors",
+          "label": {
+            "fr": "Contributeurs",
+            "en": "Contributors"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-members",
+                  "showRole": true,
+                  "showManagement": true
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "organizations",
+          "label": {
+            "fr": "Organisations",
+            "en": "Organizations"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-related",
+                  "relationType": "projects",
+                  "title": {
+                    "fr": "Structures partenaires",
+                    "en": "Partner Structures"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "events",
+          "label": {
+            "fr": "Événements",
+            "en": "Events"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-related",
+                  "relationType": "events",
+                  "title": {
+                    "fr": "Événements",
+                    "en": "Events"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "events": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": false
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "dates",
+          "label": {
+            "fr": "Dates & Horaires",
+            "en": "Dates & Schedule"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "location",
+          "label": {
+            "fr": "Lieu",
+            "en": "Location"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-map"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "organizer",
+          "label": {
+            "fr": "Organisateur",
+            "en": "Organizer"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-related",
+                  "relationType": "events",
+                  "title": {
+                    "fr": "Autres événements",
+                    "en": "Other events"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showOrganizer": true,
+                  "showEmail": true,
+                  "showPhone": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gallery",
+          "label": {
+            "fr": "Galerie",
+            "en": "Gallery"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-gallery"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "poi": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "editModals": [
+        {
+          "editModal": "edit-actualite",
+          "editModalMatch": {
+            "type": "article"
+          },
+          "when": {
+            "or": [
+              {
+                "field": "sourceKeys",
+                "op": "contains",
+                "value": "associationEkilibre"
+              },
+              {
+                "field": "reference.costum",
+                "op": "contains",
+                "value": "associationEkilibre"
+              }
+            ]
+          }
+        }
+      ],
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": false
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "practicalInfo",
+          "label": {
+            "fr": "Infos pratiques",
+            "en": "Practical Info"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-opening-hours"
+                },
+                {
+                  "type": "profile-about"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showOpeningDate": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "map",
+          "label": {
+            "fr": "Carte",
+            "en": "Map"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-map"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gallery",
+          "label": {
+            "fr": "Galerie",
+            "en": "Gallery"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-gallery"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "blog": {
+    "feedCostumSlug": "associationEkilibre",
+    "readerVariant": "default",
+    "defaultCardVariant": "default",
+    "publicFilters": {
+      "publicationStatus": "Publié"
+    },
+    "publicSortBy": {
+      "publicationDate": -1
+    }
+  }
+}

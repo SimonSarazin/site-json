@@ -93,6 +93,73 @@ export const coerceDateYMDutc = (value: unknown): string =>
 export const coerceBoolString = (value: unknown): string => (coerceBool(value) ? "true" : "false");
 
 /**
+ * Tableau → **CHAÎNE CSV** `"A, B, C"` (write). Pendant écriture EXACT de `coerce:stringArray`, qui
+ * lit `"A, B, C"` → `["A","B","C"]`.
+ *
+ * La moitié lecture existait seule : un `multiselect`/`checkboxGroup`/`tags` posé sur un champ costum
+ * chargeait bien la valeur stockée, puis la RENVOYAIT en tableau — contre un contrat qui dit `string`.
+ * Mesuré sur `equipementsSportifs974` : 3 031 fiches en chaîne contre 30 en tableau, ces 30 issues d'un
+ * import à convention divergente. C'est cet écart qui a fait typer 4 champs `array` par le scanner
+ * d'artefact (échantillon de 150 documents), puis cassé création ET édition quand la régénération du
+ * 30/07 a rétabli `string`.
+ *
+ * Séparateur `","` SANS espace (décision 2026-08-13) : la colonne réelle est mixte — 2 989 fiches
+ * `"A,B"` contre 2 767 `"A, B"` — et la lecture (`split(",")` + trim) absorbe les deux à l'identique :
+ * le choix est purement une forme stockée. On écrit la forme MAJORITAIRE ; l'édition d'une fiche
+ * « avec espaces » la normalise vers `","` au premier save, à valeurs identiques. LIMITE connue : un libellé contenant des virgules
+ * INTERNES (mesuré : `Vtt (Cross Country, Descente, Trial, Rallye, Four Cross)`, porté par 86 fiches)
+ * est éclaté par le split si la fiche est ÉDITÉE — la préservation exigerait un split conscient de
+ * l'enum, non implémenté.
+ */
+export const coerceCsv = (value: unknown): string | string[] => {
+  if (!Array.isArray(value)) return coerceString(value);
+  const vals = value.map((v) => String(v).trim()).filter((v) => v.length > 0);
+  // SÉCURITÉ : la virgule est le SÉPARATEUR — une valeur qui en contient éclaterait en plusieurs à la
+  // relecture (split). Mesuré : le libellé de liste `Vtt (Cross Country, Descente, …)`, porté par
+  // 86 fiches, était éclaté en 5 morceaux par tout round-trip. Plutôt que d'ALTÉRER la valeur
+  // (remplacer la virgule casserait `"1,5 km"` et ferait diverger le libellé de son enum → facettes
+  // muettes), on bascule sur la forme TABLEAU — légitime au contrat (`oneOf[string,array]` des deux
+  // côtés, précisément parce que le legacy stocke les deux) et hors de portée du split : la valeur
+  // reste EXACTE. CSV quand c'est sûr, array quand le CSV serait destructeur.
+  if (vals.some((v) => v.includes(","))) return vals;
+  return vals.join(",");
+};
+
+/**
+ * booléen → **CHAÎNE MAJUSCULE** `"TRUE"` / `"FALSE"` (write).
+ *
+ * La forme d'un « booléen » costum n'est pas universelle : elle est celle que l'import a posée. Sur
+ * `equipementsSportifs974`, `inst_acc_handi_bool` compte 1 408 `"FALSE"` et 1 193 `"TRUE"` — et déjà
+ * 29 `"true"`/`"false"` minuscules, écrits par le même import divergent que les 30 tableaux. Écrire en
+ * minuscule ajouterait une TROISIÈME forme à la colonne ; or c'est exactement ce mélange de conventions
+ * qui a fait dérailler le typage de l'artefact. D'où un transform explicite plutôt qu'une constante
+ * globale : cf. `coerceBoolOuiNon` pour un costum qui a fait un autre choix.
+ */
+export const coerceBoolUpper = (value: unknown): string => (coerceBool(value) ? "TRUE" : "FALSE");
+
+/**
+ * booléen → **CHAÎNE** `"Oui"` / `"Non"` (write) — la forme d'`affiliate` chez sportSanteBienetre
+ * (95 `"Oui"` / 69 `"Non"`, contre 15 `"true"`/`"false"` déjà écrits par ailleurs).
+ */
+export const coerceBoolOuiNon = (value: unknown): string => (coerceBool(value) ? "Oui" : "Non");
+
+/**
+ * nombre → **CHAÎNE** (write) ; vide → `undefined` (clé OMISE, pas `""`).
+ *
+ * Les champs numériques costum sont stockés en chaîne comme les autres (mesuré : `equip_larg` 3 061
+ * chaînes, `equip_surf` 3 063, ZÉRO nombre natif) — le widget `number` renvoyait un nombre JS.
+ *
+ * L'omission du vide est le point délicat, et la raison de ne pas réutiliser `coerce:string` : celui-ci
+ * rend `""` pour `undefined`, et `""` est précisément la manière dont le serveur EFFACE un champ
+ * (`prepElementData` accumule les vides dans `unset`). Un champ numérique facultatif laissé intact
+ * effacerait donc la valeur existante à chaque édition.
+ */
+export const coerceNumString = (value: unknown): string | undefined => {
+  if (value === undefined || value === null || value === "") return undefined;
+  return typeof value === "number" ? String(value) : String(value);
+};
+
+/**
  * Tableau d'entrées structurées → seules les lignes RENSEIGNÉES (write).
  *
  * Un `fieldArray` pré-rempli propose des lignes toutes faites (ex. les 4 réseaux sociaux de l'Institut
@@ -127,4 +194,8 @@ registerTransform("coerce:boolLoose", coerceBoolLoose);
 registerTransform("coerce:dateISO", coerceDateISO);
 registerTransform("coerce:dateYMDutc", coerceDateYMDutc);
 registerTransform("coerce:boolString", coerceBoolString);
+registerTransform("coerce:csv", coerceCsv);
+registerTransform("coerce:boolUpper", coerceBoolUpper);
+registerTransform("coerce:boolOuiNon", coerceBoolOuiNon);
+registerTransform("coerce:numString", coerceNumString);
 registerTransform("coerce:filledEntries", coerceFilledEntries);

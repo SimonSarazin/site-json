@@ -1,4 +1,4 @@
-import { BadgeCheck, BadgeX, ChevronDown, ChevronUp, Link2, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
+import { ArrowLeftRight, BadgeCheck, BadgeX, ChevronDown, ChevronUp, CircleCheck, CircleDashed, CircleDot, CirclePlay, CircleX, Link2, MoreHorizontal, Pencil, Plus, Trash2, Star } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
@@ -18,7 +18,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useCocolight } from "@/hooks/useCocolight";
+import { buildSearchPayload } from "@/modules/search/lib/buildSearchPayload";
+import { expandCostumSubType } from "@/modules/search/lib/costumSubType";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { SEARCH_QUERY_KEYS, SEARCH_STATIC_LIST_PREFIX, SEARCH_STATIC_MAP_PREFIX } from "@/modules/search/constants/queryKeys";
 import { useSite } from "@/hooks/useSite";
 import { useT } from "@/hooks/useT";
 import "@/modules/admin/i18n";
@@ -31,15 +35,17 @@ import { validationStatusFilter } from "@/modules/admin/lib/validationFilter";
 import type { SearchType } from "@/modules/search/schema";
 
 import { ADMIN_QUERY_KEYS } from "../constants/queryKeys";
+import { OwnershipMigrationDialog } from "../components/OwnershipMigrationDialog";
 import { useAdminAccess } from "../hooks/useAdminAccess";
 import { useDeleteEntity, type DeletableEntity } from "../hooks/useDeleteEntity";
-import { useReferenceElement, type ReferencingCarrier } from "../hooks/useReferenceElement";
+import { useReferenceElement, type AnnotableEntity, type ReferencingCarrier } from "../hooks/useReferenceElement";
+import { useSetExclusiveFlag, type ExclusiveFlagEntity } from "../hooks/useSetExclusiveFlag";
 import { useValidateGroup, type ValidatableCarrier } from "../hooks/useValidateGroup";
 import type { AdminResourceSection, AdminSection } from "../schema";
 import { downloadCsv } from "../lib/downloadCsv";
 import { ensureCostumScope } from "../lib/ensureCostumScope";
 import { AudioPlayer } from "@/components/media/AudioPlayer";
-import { formatCell, getPath, resolveCreateModal, resolveEditModal, type CostumFormDocLike } from "./resourceHelpers";
+import { formatCell, getPath, readStatusValue, resolveCreateModal, resolveEditModal, type CostumFormDocLike } from "./resourceHelpers";
 
 /** Cellule audio : lecteur du 1er `medias[].url` de type audio de la ligne (ou d'une URL directe). */
 function AudioCell({ value }: { value: unknown }) {
@@ -63,6 +69,24 @@ import type { EntityTypes } from "@communecter/cocolight-api-client";
  */
 /** Statut de validation costum, par filtre serveur : Tous / À valider / Validés. */
 type StatusFilter = "all" | "pending" | "validated";
+
+/** Tons du badge en mode `statusField` — MÊMES tokens `bg-badge-*` que les badges des cartes
+ *  publiques (`getStatusStyle`, search/lib/coformAnswer) : la modération et l'annuaire racontent
+ *  le même statut avec les mêmes couleurs. */
+const STATUS_TONE_CLASS: Record<string, string> = {
+  positive: "bg-badge-valid text-primary-foreground",
+  pending: "bg-badge-waiting text-primary-foreground",
+  progress: "bg-badge-in-progress text-primary-foreground",
+  negative: "bg-badge-refused text-primary-foreground",
+};
+
+/** Icône d'une action « Marquer <état> » selon le ton (repère visuel, jamais seule : le libellé porte l'état). */
+const STATUS_TONE_ICON: Record<string, typeof CircleDot> = {
+  positive: CircleCheck,
+  pending: CircleDashed,
+  progress: CirclePlay,
+  negative: CircleX,
+};
 
 export default function AdminResourceTable({ section }: { section: AdminSection }) {
   const resource = section as AdminResourceSection;
@@ -104,11 +128,16 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   );
   const rowActions = resource.rowActions ?? ["edit", "delete"];
   const costumSlug = (carrier as { slug?: string } | null)?.slug ?? "";
+  // Mode `statusField` (status.mode) : le statut est un CHAMP MÉTIER de serverData (states config),
+  // PAS le flag costum toBeValidated — la machinerie costumFlag (variant admin, filtre pending)
+  // ne s'applique pas. Les rows restent sur l'endpoint public (les answers n'y sont pas strippées).
+  const statusStates = (resource.status?.states ?? []).map((s) => (typeof s === "string" ? { value: s } : s));
+  const fieldStatus = resource.status?.mode === "statusField" && statusStates.length > 0 ? resource.status : null;
   // Mode ADMIN (variant SDK `admin` → globalautocompleteadmin, SDK ≥ 1.0.161) dès que la table gère la
   // validation : la projection admin renvoie `preferences` (strippé byte-legacy sur l'endpoint public)
   // → badge « En attente / Validé » + filtre statut + action contextuelle. Gate : la page /admin est déjà
   // réservée aux admins de l'hôte — même population que la gate serveur (canEditItem sur l'hôte).
-  const adminMode = rowActions.includes("validate") || !!resource.status;
+  const adminMode = !fieldStatus && (rowActions.includes("validate") || !!resource.status);
 
   // Recherche plein-texte débouncée (300ms comme MembersSection) — searchText est dans la queryKey → refetch auto.
   const [q, setQ] = useState("");
@@ -117,28 +146,39 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   const [sort, setSort] = useState<{ col: string; dir: 1 | -1 } | null>(null);
   // Filtre statut (serveur : preferences.toBeValidated.<slug> $exists) — admin uniquement.
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  // Filtre par état métier (mode statusField) : "all" ou une `value` de states — match serveur exact.
+  const [fieldFilter, setFieldFilter] = useState<string>("all");
 
-  // `events` est le SEUL type que le legacy RÉDUIT quand la requête ne demande aucun champ :
-  // `SearchNew::getResults` (citizenToolKit/models/SearchNew.php:432) repasse alors chaque event par
-  // `Event::getSimpleEventById` (Event.php:211), qui RECONSTRUIT un document blanc-listé — sans `type`,
-  // sans `created`/`updated`, sans `source`/`reference`. D'où, sur /admin/agenda, des colonnes « Type » et
-  // « Ajouté le » vides alors que les fiches portent bien ces champs, un badge de validation toujours
-  // « Validé » (le flag vit dans preferences/source) et un `editModalMatch` aveugle (il lit serverData.type).
-  // Demander une projection EXPLICITE court-circuite la réduction : le legacy ne simplifie QUE sur `fields`
-  // vide. Sans risque pour l'édition — `openEditEntity` recharge de toute façon l'entité COMPLÈTE par id.
-  const champsAdmin = useMemo(() => {
-    if (resource.entityType !== "events") return undefined;
+  // Le legacy RÉDUIT les documents quand la requête ne demande aucun champ. Sur la route ADMIN, seul
+  // `events` est réduit : `SearchNew::getResults` (citizenToolKit/models/SearchNew.php:432) repasse
+  // chaque event par `Event::getSimpleEventById` (Event.php:211) — document blanc-listé sans `type`,
+  // `created`/`updated`, `source`/`reference`. Sur la route PUBLIQUE (celle du mode statusField), la
+  // réduction frappe TOUS les types testés (organizations : 11 clés sans `source`/`reference` ni champs
+  // costum ; poi : sans `publicationDate`/`publicationStatus`/`featured` ; answers : 5 clés SANS le champ
+  // `answers`) — d'où colonnes vides, toggle Référencer aveugle (isAttached/isReferenced faux) et gating
+  // `restrictActionsToOwned` qui bloquait tout. Demander une projection EXPLICITE court-circuite la
+  // réduction : le legacy ne simplifie QUE sur `fields` vide (et ajoute d'office son socle name/address/
+  // geo/links). Sans risque pour l'édition — `openEditEntity` recharge l'entité COMPLÈTE par id.
+  // ⚠️ JAMAIS "preferences" dans cette liste : champ interdit du legacy (SearchNew::checkFields), retiré
+  // par unset() — le trou d'index rend le tableau PHP non-séquentiel et CASSE toute la projection Mongo
+  // (documents réduits à _id) dès que "preferences" n'est pas en DERNIÈRE position du POST. Il est de
+  // toute façon strippé sur la route publique ; le badge toBeValidated ne vit qu'en adminMode (route admin).
+  const champsProjetes = useMemo(() => {
     return [...new Set([
-      "name", "type", "collection", "slug", "source", "reference", "preferences", "links", "creator",
+      "name", "type", "collection", "slug", "source", "reference", "links", "creator",
       "created", "updated", "startDate", "endDate", "recurrency", "openingHours", "timeZone",
       "shortDescription", "description", "tags", "address", "addresses", "geo", "geoPosition",
       "profilImageUrl", "profilThumbImageUrl", "profilMediumImageUrl",
       // Les colonnes déclarées en config peuvent viser un champ hors du socle (racine du chemin pointé :
-      // le legacy projette par champ de premier niveau).
+      // le legacy projette par champ de premier niveau), tout comme le champ d'état (mode statusField),
+      // le champ d'exclusivité (setFeatured) et les defaultFields de la source.
       ...columns.map((c) => c.path.split(".")[0]),
+      ...(resource.status?.field ? [resource.status.field.split(".")[0]] : []),
+      ...(resource.exclusiveField ? [resource.exclusiveField.split(".")[0]] : []),
+      ...((resource.source as { defaultFields?: string[] } | undefined)?.defaultFields ?? []).map((f) => f.split(".")[0]),
     ])];
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- colonnes dérivées de la config (stables)
-  }, [resource.entityType, columns.map((c) => c.path).join(",")]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- colonnes/champs dérivés de la config (stables)
+  }, [columns.map((c) => c.path).join(","), resource.status?.field, resource.exclusiveField]);
 
   const src = (resource.source ?? {}) as { defaultFields?: string[]; defaultFilters?: Record<string, unknown> } & Record<string, unknown>;
   const baseParams = useMemo(() => {
@@ -147,24 +187,37 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
       // Double flag (preferences + source), cf. validationStatusFilter / SearchNew::getQueries:783-818.
       Object.assign(filters, validationStatusFilter(costumSlug, statusFilter));
     }
+    if (fieldStatus && fieldFilter !== "all") {
+      // Match EXACT de la valeur brute (les rows sans le champ ne sortent que sur « Tous »).
+      filters[fieldStatus.field] = fieldFilter;
+    }
     // Projection :
     //  - mode ADMIN : AUCUN `fields` → la route admin renvoie les DOCUMENTS COMPLETS (sémantique
     //    legacy searchAdmin, moins pwd). Indispensable au-delà du badge : la résolution d'édition
     //    (`editModalMatch`, ex. {type:"recoveryCenter"}) lit serverData.type, et le form costum
     //    d'édition doit être PRÉREMPLI (champs equip_*) — une projection partielle ouvrait le form
     //    générique et/ou des champs vides. Coût maîtrisé : pagination par 10.
-    //  - SAUF `events` : cf. CHAMPS_ADMIN_EVENTS.
+    //  - SAUF `events` : réduits même sur la route admin → `champsProjetes`.
+    //  - mode statusField (`fieldStatus`) : route PUBLIQUE, documents RÉDUITS sur `fields` vide
+    //    (cf. champsProjetes) → projection explicite OBLIGATOIRE, sinon colonnes vides et
+    //    rattachement (source/reference) invisible.
     //  - mode public : `source` FORCÉ (M3, absent du jeu legacy par défaut) → le toggle
     //    Référencer/Détacher reflète l'appartenance réelle à source.keys.
     return {
       defaultTypes: [resource.entityType] as SearchType[],
       ...src,
-      ...(adminMode ? { defaultFields: champsAdmin } : { defaultFields: [...new Set(["source", "reference", ...(src.defaultFields ?? [])])] }),
+      ...(adminMode
+        // Route ADMIN : pas de checkFields → "preferences" passe (badge toBeValidated), et le bug
+        // du trou d'index ne s'applique pas.
+        ? { defaultFields: resource.entityType === "events" ? [...champsProjetes, "preferences"] : undefined }
+        : fieldStatus
+          ? { defaultFields: champsProjetes }
+          : { defaultFields: [...new Set(["source", "reference", ...(src.defaultFields ?? [])])] }),
       ...(Object.keys(filters).length > 0 ? { defaultFilters: filters } : {}),
       ...(sort ? { defaultSortBy: { [sort.col]: sort.dir } } : {}),
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- src dérivé de la config (stable par rendu)
-  }, [adminMode, statusFilter, costumSlug, sort, resource.entityType, champsAdmin, JSON.stringify(src)]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- src/fieldStatus dérivés de la config (stables par rendu)
+  }, [adminMode, statusFilter, fieldFilter, costumSlug, sort, resource.entityType, champsProjetes, JSON.stringify(src)]);
 
   const { transformedResults, totalCount, isLoading, lastItemRef, refetch, error: searchError } = useSearchQuery({
     queryKeyPrefix: ADMIN_QUERY_KEYS.RESOURCE_PREFIX(resource.entityType),
@@ -187,7 +240,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   // La sélection est liée à la VUE : recherche/filtre/tri changent → reset (sinon on peut agir
   // sur des éléments sortis de l'écran — audit robustesse). Pattern adjust-during-render (repo).
   const [selected, setSelected] = useState<Map<string, unknown>>(new Map());
-  const selectionScopeKey = `${searchText}|${statusFilter}|${sort ? `${sort.col}:${sort.dir}` : ""}`;
+  const selectionScopeKey = `${searchText}|${statusFilter}|${fieldFilter}|${sort ? `${sort.col}:${sort.dir}` : ""}`;
   const [lastScopeKey, setLastScopeKey] = useState(selectionScopeKey);
   if (selectionScopeKey !== lastScopeKey) {
     setLastScopeKey(selectionScopeKey);
@@ -203,6 +256,12 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   const queryClient = useQueryClient();
   const [bulkBusy, setBulkBusy] = useState(false);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  // bulkAction `transfer` : migration d'appropriation en mode ids[] sur la sélection cochée —
+  // même dialog que la section ownershipMigration (contrôles + gate re-déroulés serveur).
+  // Le cédant vient de la CONFIG (`transferFrom`) : les lignes de searchCostum ne projettent pas
+  // toujours `source`, on ne peut pas le dériver des fiches de façon fiable.
+  const [bulkTransferOpen, setBulkTransferOpen] = useState(false);
+  const canBulkTransfer = bulkActions.includes("transfer") && !!resource.transferFrom;
   const invalidateAdmin = () =>
     queryClient.invalidateQueries({ predicate: (q) => String(q.queryKey[0] ?? "").startsWith("admin-") });
   const toggleSelect = (id: string, item: unknown) =>
@@ -298,6 +357,60 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   });
   const validate = useValidateGroup(() => {});
   const reference = useReferenceElement(() => {});
+  /** Mode statusField : écrit le champ métier via `entity.updateField` (UPDATE_PATH_VALUE — un $set
+   *  ciblé ; PAS le save d'answer complet, qui exigerait un re-fetch pour ne rien effacer). Les rows
+   *  sont des entités revivifiées (`helper.fromEntityJSON`) — garde défensive sinon. Invalidation :
+   *  tables/tuiles admin ET listes publiques (liste + carte lisent le même champ, ex. /creneaux). */
+  const setStatus = useMutationWithToast<void, { item: unknown; value: string; display: string }>({
+    mutationFn: async ({ item, value }) => {
+      if (!fieldStatus) return;
+      const target = grantCostumAdmin(item) as { updateField?: (path: string, v: string) => Promise<unknown> };
+      if (typeof target.updateField !== "function") throw new Error("updateField indisponible sur cette ligne");
+      await target.updateField(fieldStatus.field, value);
+    },
+    successKey: "AdminResourceTable.statusSuccess",
+    errorKey: "AdminResourceTable.statusError",
+    getSuccessParams: (_, v) => ({ state: v.display }),
+    namespace: "modules/admin",
+    onSuccessCallback: () => {
+      void invalidateAdmin();
+      queryClient.invalidateQueries({ queryKey: SEARCH_QUERY_KEYS.RESULTS_PREFIX(SEARCH_STATIC_LIST_PREFIX) });
+      queryClient.invalidateQueries({ queryKey: SEARCH_QUERY_KEYS.RESULTS_PREFIX(SEARCH_STATIC_MAP_PREFIX) });
+    },
+  });
+  const setExclusiveFlag = useSetExclusiveFlag(() => {});
+  // Périmètre SERVEUR de l'exclusivité (review MR 44, resserré par la review finale) : les fiches
+  // `exclusiveField:true` du périmètre déclaré par la CONFIG de la resource — jamais les lignes
+  // chargées (l'ex-« une » peut vivre hors de la fenêtre de l'infinite scroll), et jamais
+  // `baseParams` : il porte les filtres UI TRANSITOIRES (état métier, filtre de validation, tri)
+  // qui rétréciraient le périmètre au filtre courant de l'admin — un « Brouillon » filtré mettrait
+  // à la une sans jamais dé-marquer la « Publié » (double-flag PERSISTANT, mesuré par la review).
+  // Miroir du canal de LECTURE de la table : variant admin quand adminMode (docs complets),
+  // sinon projection EXPLICITE portant la racine du champ exclusif (la route publique sans
+  // `fields` peut la raboter — ex. whitelist events).
+  const fetchFlagged = async (): Promise<ExclusiveFlagEntity[]> => {
+    if (!carrier || !resource.exclusiveField) return [];
+    const champ = resource.exclusiveField;
+    const params = expandCostumSubType(
+      {
+        ...src,
+        indexStepList: 50,
+        defaultSortBy: undefined,
+        defaultFields: adminMode ? champsProjetes : [...new Set([champ.split(".")[0]!, "source", "reference"])],
+        defaultFilters: { ...(src.defaultFilters ?? {}), [champ]: true },
+      },
+      (config as { costumForms?: Record<string, never> } | undefined)?.costumForms,
+      (carrier as { slug?: string } | null)?.slug,
+    ) ?? {};
+    const param = buildSearchPayload(params, {
+      name: "", tags: [], type: [resource.entityType], mapUsed: false,
+      ...(adminMode ? { variant: "admin" as const } : {}),
+    });
+    if (!param.searchType) return [];
+    const sdk = carrier as unknown as { searchCostum: (p: unknown, o?: unknown) => Promise<{ results?: unknown[] }> };
+    const res = adminMode ? await sdk.searchCostum(param, { variant: "admin" }) : await sdk.searchCostum(param);
+    return (res.results ?? []) as ExclusiveFlagEntity[];
+  };
   // Choix costum/standard par CONFIG (`create`/`edit`) — cf. resourceHelpers. En `inherit`, la
   // création prend le form COSTUM du site s'il en existe un pour ce type (config.costumForms,
   // même form que le bouton public), et l'édition suit la résolution publique (editModal/Match).
@@ -348,6 +461,19 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
               </SelectContent>
             </Select>
           )}
+          {fieldStatus && (
+            <Select value={fieldFilter} onValueChange={setFieldFilter}>
+              <SelectTrigger className="w-44">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{tAdmin("AdminResourceTable.statusAll")}</SelectItem>
+                {statusStates.map((s) => (
+                  <SelectItem key={s.value} value={s.value}>{s.label ? t(s.label) : s.value}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
         {bulkActions.length > 0 && selected.size > 0 && (
           <div className="mb-3 flex flex-wrap items-center gap-2 rounded-md border bg-muted/40 px-3 py-2">
@@ -367,6 +493,11 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
             {bulkActions.includes("export") && (
               <Button size="sm" variant="outline" disabled={bulkBusy} onClick={bulkExport}>
                 {tAdmin("AdminResourceTable.bulkExport")}
+              </Button>
+            )}
+            {canBulkTransfer && (
+              <Button size="sm" variant="outline" disabled={bulkBusy} onClick={() => setBulkTransferOpen(true)}>
+                <ArrowLeftRight className="mr-1.5 h-3.5 w-3.5" /> {tAdmin("AdminResourceTable.bulkTransfer")}
               </Button>
             )}
             {bulkActions.includes("delete") && (
@@ -432,7 +563,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                   </Button>
                 </TableHead>
               ))}
-              {adminMode && <TableHead>{tAdmin("AdminResourceTable.statusColumn")}</TableHead>}
+              {(adminMode || fieldStatus) && <TableHead>{tAdmin("AdminResourceTable.statusColumn")}</TableHead>}
               <TableHead className="sticky right-0 z-10 w-12 bg-background" />
             </TableRow>
           </TableHeader>
@@ -464,6 +595,12 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                 (!!prefTbv && typeof prefTbv === "object" && prefTbv[costumSlug] === true) ||
                 (!!srcTbv && typeof srcTbv === "object" && srcTbv[costumSlug] === true)
               );
+              const isFeatured = !!resource.exclusiveField && getPath(data, resource.exclusiveField) === true;
+              // Gating par APPARTENANCE (opt-in `restrictActionsToOwned`, cf. schema.ts) : une ligne
+              // non possédée ne garde que lecture + (dé)référencement — les écritures d'élément
+              // (edit/delete/validate/statusField) seraient de toute façon refusées par le Node
+              // durci sur une entité étrangère.
+              const actionnable = !resource.restrictActionsToOwned || isAttached;
               return (
                 <TableRow key={id} ref={isLast ? lastItemRef : undefined}>
                   {bulkActions.length > 0 && (
@@ -487,6 +624,24 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                         : formatCell(getPath(data, col.path))}
                     </TableCell>
                   ))}
+                  {fieldStatus && (
+                    <TableCell>
+                      {(() => {
+                        const raw = readStatusValue(data, fieldStatus.field);
+                        const current = statusStates.find((s) => s.value === raw);
+                        if (!current) {
+                          // Champ absent (answer jamais statuée) ou valeur hors config : neutre, valeur brute visible.
+                          return <Badge variant="outline">{typeof raw === "string" && raw ? raw : tAdmin("AdminResourceTable.statusUnset")}</Badge>;
+                        }
+                        const tone = current.tone ? STATUS_TONE_CLASS[current.tone] : undefined;
+                        return (
+                          <Badge variant={tone ? undefined : "secondary"} className={tone}>
+                            {current.label ? t(current.label) : current.value}
+                          </Badge>
+                        );
+                      })()}
+                    </TableCell>
+                  )}
                   {adminMode && (
                     <TableCell>
                       {isPending ? (
@@ -504,12 +659,31 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        {rowActions.includes("edit") && editModal.enabled && (
+                        {actionnable && rowActions.includes("edit") && editModal.enabled && (
                           <DropdownMenuItem onClick={() => void openEditEntity(item, hasRealId ? id : undefined)}>
                             <Pencil className="mr-2 h-4 w-4" /> {tAdmin("AdminResourceTable.edit")}
                           </DropdownMenuItem>
                         )}
-                        {rowActions.includes("validate") && carrier && hasRealId && (
+                        {actionnable && fieldStatus && rowActions.includes("validate") && hasRealId && (() => {
+                          // Une action par ÉTAT CIBLE (l'état courant est omis) — le libellé porte
+                          // l'état, l'icône (ton) n'est qu'un repère. Écrit la valeur brute config.
+                          const raw = readStatusValue(data, fieldStatus.field);
+                          return statusStates.filter((s) => s.value !== raw).map((s) => {
+                            const Icon = (s.tone && STATUS_TONE_ICON[s.tone]) || CircleDot;
+                            const display = s.label ? t(s.label) : s.value;
+                            return (
+                              <DropdownMenuItem
+                                key={s.value}
+                                disabled={setStatus.isPending}
+                                onClick={() => setStatus.mutate({ item, value: s.value, display })}
+                              >
+                                <Icon className="mr-2 h-4 w-4" />
+                                {tAdmin("AdminResourceTable.setStatus", undefined, { state: display })}
+                              </DropdownMenuItem>
+                            );
+                          });
+                        })()}
+                        {actionnable && !fieldStatus && rowActions.includes("validate") && carrier && hasRealId && (
                           // Le statut est LISIBLE en mode admin (variant admin → preferences projeté) : on
                           // n'affiche que l'action PERTINENTE (« Valider » un en-attente, « Dévalider » un validé).
                           // ⚠ On appelle sur `item` (l'entité de la ligne) et NON `carrier` : validateGroup/addReference
@@ -533,6 +707,12 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                                 op: isReferenced ? "unreference" : "reference",
                                 type: resource.entityType,
                                 id,
+                                // L'ENTITÉ de la ligne — porte les écritures d'annotation
+                                // (`reference.costumTypes.<slug>`) via SA méthode `updateField`, comme
+                                // AdminReferenceSection. Sans elle, `ecrire()` lève « cible manquante »
+                                // AVANT tout appel réseau : au retrait, l'annotation survit au
+                                // désréférencement et reclasse l'entité si elle est re-référencée plus tard.
+                                cible: item as AnnotableEntity,
                               });
                             }}
                           >
@@ -540,7 +720,27 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                             {tAdmin(isAttached ? "AdminResourceTable.detach" : isReferenced ? "AdminResourceTable.unreference" : "AdminResourceTable.reference")}
                           </DropdownMenuItem>
                         )}
-                        {rowActions.includes("delete") && hasRealId && (
+                        {actionnable && rowActions.includes("setFeatured") && resource.exclusiveField && hasRealId && (
+                          // Exclusivité gérée DEPUIS CE TABLEAU (décision produit) : mettre en avant
+                          // pose d'abord la CIBLE puis dé-marque les fiches flaggées du PÉRIMÈTRE
+                          // SERVEUR (fetchFlagged — jamais les lignes chargées) ; retirer ne touche
+                          // que cette ligne. Cf. runExclusiveFlag.
+                          <DropdownMenuItem
+                            disabled={setExclusiveFlag.isPending}
+                            onClick={() =>
+                              setExclusiveFlag.mutate({
+                                field: resource.exclusiveField!,
+                                value: !isFeatured,
+                                target: grantCostumAdmin(item) as unknown as ExclusiveFlagEntity,
+                                fetchFlagged,
+                              })
+                            }
+                          >
+                            <Star className={isFeatured ? "mr-2 h-4 w-4 fill-current" : "mr-2 h-4 w-4"} />
+                            {tAdmin(isFeatured ? "AdminResourceTable.unfeature" : "AdminResourceTable.feature")}
+                          </DropdownMenuItem>
+                        )}
+                        {actionnable && rowActions.includes("delete") && hasRealId && (
                           <DropdownMenuItem
                             className="text-destructive"
                             onClick={() => setToDelete({ entity: grantCostumAdmin(item) as unknown as DeletableEntity, label })}
@@ -588,7 +788,9 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
         <DynamicEditModal
           open
           onOpenChange={(o) => {
-            if (!o) setEditEntity(null);
+            // Même patron que la modale de création (REVIEW M4) : sans ça, une modification
+            // restait invisible dans le tableau tant qu'on ne rechargeait pas la page.
+            if (!o) { setEditEntity(null); void refetch(); }
           }}
           entity={editEntity}
           {...(editModal.modalName ? { modalName: editModal.modalName } : {})}
@@ -648,6 +850,23 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
         isDestructive
         isPending={del.isPending}
       />
+
+      {/* bulkAction `transfer` : le dialog partagé de migration d'appropriation, en mode ids[] sur
+          la sélection. `open &&` remonte la sélection au moment de l'ouverture (le dialog relance
+          son analyse à chaque ouverture) ; apply/rollback réussi → invalidation + désélection. */}
+      {canBulkTransfer && bulkTransferOpen && (
+        <OwnershipMigrationDialog
+          open={bulkTransferOpen}
+          onOpenChange={setBulkTransferOpen}
+          from={resource.transferFrom!}
+          collection={resource.entityType}
+          selection={{ ids: [...selected.keys()] }}
+          onApplied={() => {
+            setSelected(new Map());
+            void invalidateAdmin();
+          }}
+        />
+      )}
     </Card>
   );
 }

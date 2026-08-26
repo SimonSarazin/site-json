@@ -9,10 +9,11 @@ Système de formulaires en **3 couches**, du plus générique au plus spécifiqu
    conditionnel + computed + layouts lazy). Tout ce qui n'est pas sérialisable est une **clé de registre**.
 2. **La couche config** (`formEngine/config/`) : un `JsonFormConfig` — la même information, mais **100 % JSON
    sérialisable** ; `configToDescriptor`/`formDescriptorToConfig` font l'aller-retour **sans perte**.
-3. **Les costums** (`src/modules/profil/forms/costum/<id>/`) : un **document fusionné** `CostumFormSchema`
-   (form + modale) → `compileCostumSchema` → `{ descriptor, spec }`. Le descripteur nourrit le moteur ; la spec
-   (`EntityModalSpec`) nourrit la modale générique `EntityFormModal`. C'est la finalité : décrire un costum
-   **en données**, posable dans la config globale (`config.costumForms`).
+3. **Les costums** (`config.costumForms.<id>`, JSON — « config fait foi ») : un **document fusionné**
+   `CostumFormSchema` (form + modale) → `compileCostumSchema` → `{ descriptor, spec }`. Le descripteur nourrit
+   le moteur ; la spec (`EntityModalSpec`) nourrit la modale générique `EntityFormModal`. C'est la finalité :
+   décrire un costum **en données** ; le seul fichier TS encore possible est un `fns.ts` sous
+   `src/modules/profil/forms/costum/<id>/` (les clés de code irréductibles).
 
 > **Principe transverse — zéro fonction dans les données.** Descripteur, config et document costum ne contiennent
 > que des **données + des CLÉS string**. Le code irréductible (lecture serveur, validation cross-champ, payload,
@@ -168,6 +169,15 @@ type LayoutSpec =
 // Pres = { stepper?, progress?, header? }
 ```
 
+> **Un GROUPE sans champ affichable n'est PAS rendu.** `renderSection` (`layouts/shared.tsx`) filtre dans
+> chaque groupe : les champs `widget:"hidden"`, ceux masqués par LEUR `visibleIf`, et ceux dont le nom n'a
+> **aucune déclaration** dans `descriptor.fields` — ces derniers sont retirés de la grille **en silence** (un
+> `$slot:<id>` compte toujours comme affichable). Si plus aucun champ ne reste, le groupe entier disparaît,
+> titre et séparateur compris — sinon le titre resterait orphelin (ex. « Pièces justificatives » quand la forme
+> juridique choisie n'en exige pas). Les champs `hidden` restent volontairement PLACÉS dans une section pour
+> que le badge d'erreur d'onglet les voie (`sectionHasError` ne teste que les champs placés). Garde :
+> `formEngine/layouts/renderSection.test.tsx`.
+
 ## Validation — zod généré du descripteur
 
 `buildZodSchema(descriptor)` (`engine/zodGen.ts`) construit le schéma, branché via `zodResolver` (RHF) — il
@@ -274,12 +284,14 @@ wrappers minces `buildPipelineDefaults`/`buildPipelinePayload` (= `configToDescr
 
 ## Le document costum FUSIONNÉ
 
-Un **seul** objet décrit toute l'entité costum (`forms/costum/<id>/schema.ts`). 100 % données + clés, aucune
-closure → posable tel quel en JSON. Type/compilateur : `forms/costum/compileCostumSchema.ts`.
+Un **seul** objet décrit toute l'entité costum, posé dans `config.costumForms.<id>`. 100 % données + clés,
+aucune closure → JSON natif. Type/compilateur : `forms/costum/compileCostumSchema.ts` ; grammaire validée par
+`forms/costum/costumFormSchema.zod.ts`.
 
 ```
 {
   id, entityType, collection?, costumSlug?, icon?, deriveDefaults?,   // identité
+  subType?, subTypeLabel?, identity?,                                 // sous-type costum (cf. § dédié)
   layout, serializeGroups?, validateFn?, fieldPresets?,               // form
   fields: { <name>: { widget, ...overrides } },   // TERSE : seul `widget` requis (type/read/default dérivés)
   sections: [ { id, label, groups:[{columns,label?,fields:[…]}] } ],  // placement (wizard/tabs…)
@@ -291,6 +303,49 @@ closure → posable tel quel en JSON. Type/compilateur : `forms/costum/compileCo
 
 **Règle « names-once »** : chaque nom de champ n'apparaît que **2×** — sa DÉCLARATION (`fields`) et son PLACEMENT
 (`sections`). type/read/default sont DÉRIVÉS du widget.
+
+### `subType` / `subTypeLabel` / `identity` — le sous-type costum
+
+Trois clés d'identité facultatives (`costumFormSchema.zod.ts`). Comme toute clé de config, elles n'existent
+que si elles sont **écrites explicitement** dans le JSON — aucun défaut zod ne les remplit au runtime.
+
+| Clé | Rôle |
+|---|---|
+| `subType` | sous-type CANONIQUE du form DANS son costum (`financement`, `recoveryCenter`…), jamais l'`id` du form (nom local de config, renommable, inconnu du legacy). C'est la valeur écrite dans `reference.costumTypes.<slug>` au référencement (`admin/hooks/useReferenceElement.ts`), et la clé que consomment `baseParams.costumSubType` et les routes `editModals`. |
+| `subTypeLabel` | libellé du sous-type dans le sélecteur de référencement (`admin/sections/AdminReferenceSection.tsx`) — clé i18n ou `LocalizedString` inline. |
+| `identity` | comment un NATIF de ce form se reconnaît EN BASE : égalité plate champ→valeur, `contains` implicite sur tableau, chemins pointés (même grammaire qu'`editModalMatch`). Le discriminant n'est PAS câblé sur `type` : `{"category": …}`, `{"mainTag": …}` ou un champ costum conviennent. **Jamais ÉCRITE** — seulement testée. `identity` absente = form par DÉFAUT de sa collection. |
+
+Deux consommateurs d'`identity`, tous deux hors du module profil :
+
+- **`expandCostumSubType`** (`src/modules/search/lib/costumSubType.ts`) : expanse `baseParams.costumSubType`
+  en `defaultFilters.$or { <champ identity>: <valeur>, "reference.costumTypes.<slug>": <subType> }` — natifs
+  ∪ annotés. ⚠ **Contrainte serveur** : la grammaire `$or` legacy ne porte que des clauses MONO-CHAMP ; une
+  `identity` multi-champs n'est donc pas exprimable, seule la première clause part au serveur (avertissement
+  console). Côté client (routes `editModals`) la grammaire complète reste disponible.
+- **`resolveCreateModal`** (`src/modules/admin/sections/resourceHelpers.ts`) : quand `create: "inherit"` laisse
+  plusieurs forms costum candidats pour un même `entityType` (site polymorphe), l'`identity` est confrontée aux
+  `source.defaultFilters` de la resource pour les départager ; toujours ambigu → modale STANDARD + `console.warn`.
+
+### `mutation.inject` — injections de CRÉATION
+
+Drapeaux DONNÉES (`SpecInject`, `forms/entityModalSpec.ts`) ; les valeurs runtime (parent / carrier / me) sont
+prises du contexte par `resolveModalSpec`. Le bloc entier est **strippé en édition** (`inject: undefined`).
+
+| Clé | Effet |
+|---|---|
+| `role` | `payload.role = values.role` si présent (org/projet/event) |
+| `parent` | `buildParentReference(ctx.parent)` → `payload.parent` |
+| `parentFromCarrier` | `buildParentReference(ctx.carrier)` → `payload.parent` — variante pour une création costum-scopée SANS entité parente « vue » (ex. depuis un tableau admin) : le porteur du site sert de parent. **Mutuellement exclusif avec `parent`, qui prime si les deux sont posés.** |
+| `organizerFallback` | `organizer` vide → `buildOrganizerReference(ctx.parent, ctx.me)` (event) |
+| `dropEmptyEmail` | supprime `payload.email === ""` |
+| `extraFields` | valeurs fixes ajoutées au payload au CREATE (stamp statique) |
+| `extraFieldsFromScope` | `{ champPayload: cléScope }` → `payload[champ] = ctx.scope[cléScope]` |
+
+> ⚠️ **Panne silencieuse sans parent.** Sans `parent` ni `parentFromCarrier`, le parent repose sur le default
+> AJV du schéma de base (`{"@userId":{type:"citoyens"}}`) — qui **ne part jamais réellement sur le réseau**
+> (écart `data`/`dataForValidation` de `ApiClient.callEndpoint`) : le backend reçoit un POI sans parent et le
+> refuse. Le seul usage actuel de `parentFromCarrier` est le form `actualite`
+> (`config.prod.maison-sport-sante-la-tampon.json`), gardé par `forms/actualite.configDriven.test.ts`.
 
 ## `compileCostumSchema` — la dérivation
 
@@ -307,7 +362,11 @@ closure → posable tel quel en JSON. Type/compilateur : `forms/costum/compileCo
 - **`deriveDefaults:false`** : aucun `field.default` (le socle vient de `defaultsBase`, ex. tiers-lieu).
 - `icon` (top-level) → `descriptor.icon` + défaut de l'icône de modale.
 
-`descriptor.ts`/`spec.ts` de chaque costum ne font plus que `compileCostumSchema(SCHEMA).descriptor` / `.spec`.
+Il n'existe **plus** de `schema.ts`/`descriptor.ts`/`spec.ts` par costum : ils ont été supprimés parce qu'ils
+DUPLIQUAIENT la config. Le document vit dans `config.costumForms.<id>` ; il n'est compilé qu'au boot par
+`registerCostumForms.ts`, et en test par la fixture `forms/costum/__fixtures__/configCostum.ts`
+(`costumDoc(id)`/`loadCostumForm(id)`), qui relit le document depuis le vrai `config.prod.*.json` et le passe
+par la voie unique `registerCostumForm`. Seul un `fns.ts` optionnel subsiste par costum (clés de code).
 
 ## Les codecs — « le traducteur appartient au widget/concept »
 
@@ -355,8 +414,30 @@ dispatchent vers les registres (`forms/specRegistries.ts`, peuplés par `forms/r
 **`FnRef = string | { fn, params }`** : un hook peut référencer une fn générique PARAMÉTRÉE (ex.
 `cleanValues:dropEmptyArrayItems` + `{fields}` ; `invalidate:standard` + `{userList, searchKeys}`).
 
-Pour les 2 costums actuels, l'irréductible-TS se réduit à : slots React (`poiDoublons`/`parentInfo`), `tl:payload`
-(merge des tags observatoire), et les `scope` (lecture carrier live).
+**Inventaire de l'irréductible-TS** — trois modules `fns.ts`, tous listés par `forms/registerSpecFns.ts` :
+
+| `fns.ts` | Clés registrées |
+|---|---|
+| `equipements-sportifs` | `poi:scope`, `poi:emptyDefaults`, slots React `slot:parentInfo` / `slot:poiDoublons` |
+| `tiers-lieux` | transforms `tl:video0` / `tl:videoWrite`, options dynamiques `tl:years`, defaults `tl:emptyDefaults`, scope `tl:scope` |
+| `structure` | transform `structure:tagsFromThematic` (table slug→libellé : un transform de CHAMP ne reçoit pas de `params` — seuls les `serializeGroups` en ont — donc la table ne peut pas vivre dans le JSON) |
+
+`tl:payload` **n'existe plus** : aucun `registerPayloadFn(...)` n'est appelé dans le dépôt. Le merge des tags
+observatoire est passé aux `mutation.stamps` (`append` + `$costum`, cf. § dédié) ; `buildTiersLieuxPayload`
+subsiste comme export mais n'est plus registré — il ne sert que d'ORACLE de parité aux tests.
+
+Le parc porte aujourd'hui **23 déclarations `costumForms` (21 ids uniques) réparties sur 9 `config.prod.*.json`** —
+`tiers-lieux` et `equipements-sportifs` sont déclarés par deux sites chacun. Toutes sont compilées au boot par
+`registerCostumForms.ts` et posées à blanc par `tests/preflight/costum-forms.test.ts`, qui énumère tous les
+`config.prod*.json`.
+
+**Trois seulement ont un dossier TS** (`forms/costum/<id>/`), réduit à un `fns.ts` (plus ses tests) :
+`equipements-sportifs`, `tiers-lieux`, `structure` — tous importés par `forms/registerSpecFns.ts`. Les 18 autres
+sont **0 code**.
+
+> ⚠️ Ne pas confondre avec la table `CONFIG_FILE` de `forms/costum/__fixtures__/configCostum.ts`, qui ne résout
+> que 5 ids (`equipements-sportifs`, `tiers-lieux`, `institut-bleu-acteur`, `structure`, `actualite`). C'est la
+> liste que les TESTS savent charger par id, pas l'inventaire du parc.
 
 > **`buildDefaults` seede les champs galerie DANS LES DEUX MODES.** `specToConfig.buildDefaults` appelle
 > `seedGalleryDefaults(defaults, jsonConfig, entity)` : les champs `widget:"gallery"` (et `file`) sont `renderOnly`
@@ -436,9 +517,14 @@ config.costumForms.<id>  (JSON)
   → ModalRegistry / EditModalRegistry : "add-<id>"/"edit-<id>" → getCostumModalSpec(id) → EntityFormModal
 ```
 
-- **`costumFormRegistry.ts`** : table `id → spec`. Les `spec.ts` TS s'auto-enregistrent (`registerCostumModalSpec`) ;
-  `registerCostumForm(schema)` (voie config) valide via `costumFormSchema.zod.ts` puis compile.
-- **`registerCostumForms.ts`** : importe les costums TS connus + lit `config.costumForms` → `registerCostumForm`.
+- **`costumFormRegistry.ts`** : table `id → spec`, peuplée **exclusivement** par `registerCostumForm(document)`
+  (valide via `costumFormSchema.zod.ts` → `compileCostumSchema` → `assertCostumKeysRegistered` → enregistre
+  descripteur + spec). Il n'exporte que `registerCostumForm`, `getCostumModalSpec` et `listCostumFormIds` — il
+  n'y a ni `spec.ts` auto-enregistré ni fonction `registerCostumModalSpec`.
+- **`registerCostumForms.ts`** : importe `../registerSpecFns` (les CLÉS de code, EN PREMIER), puis lit
+  `window.__CONFIG__.costumForms` et appelle `registerCostumForm` sur chaque document. **C'est la SEULE voie de
+  chargement runtime — aucun costum TS n'est chargé** (« CONFIG FAIT FOI »). Un document qui échoue est signalé
+  par un `console.warn` sans faire tomber les autres.
 - **`ModalRegistry`/`EditModalRegistry`** : fallback `costumModalThunk`/`costumEditThunk` pour `add-/edit-<id>`
   non hardcodé → `EntityFormModal spec={getCostumModalSpec(id)}`. Le déclencheur `floatingActionButton.modal` est
   un `z.string()` ouvert → accepte n'importe quel `add-<id>` de costum config.
@@ -448,7 +534,10 @@ config.costumForms.<id>  (JSON)
   au load côté `modules/profil`, pour ne pas inverser le layering types↔modules).
 
 **Exemple** (`config.prod.tiers-lieux.json`) : `costumForms.tiers-lieux` porte le document complet ; la modale
-add/edit du tiers-lieu est alors pilotée par la config (prouvé byte-identique au TS).
+add/edit du tiers-lieu est alors pilotée par la config (la bascule a été prouvée byte-identique à l'ex-source
+TS, désormais supprimée ; la non-régression est aujourd'hui tenue par
+`forms/costum/tiers-lieux/compiled.byteparity.test.ts` — snapshot du descripteur + de la spec compilés depuis
+`config.prod.tiers-lieux.json` — et par `forms/tiers-lieux.configDriven.test.ts`).
 
 ---
 
@@ -479,9 +568,28 @@ La refonte ne doit RIEN changer aux sorties (defaults/payloads/specs). Gardes :
   dérive casse le test.
 - **`<entity>.configDriven.test`** : round-trip `descriptor → JsonFormConfig → descriptor` SANS PERTE +
   `seedEntity`/`buildPayload` byte-égaux.
-- **`costumFormRegistry.test`** : GARDE ANTI-DRIFT du loader — `registerCostumForm(SCHEMA) ≡ spec du module TS`
-  (donc un costum posé en JSON se comporte comme le TS).
-- `<id>/defaults.byteparity` / `<id>/spec.test` / `useEntityMutation.test` / `tiersLieuxMapping`.
+- **`costumFormRegistry.test`** : GARDE du loader — résolution par id depuis le document JSON de config
+  (`loadCostumForm`), recompilation byte-identique, et REFUS explicite (message clair, chemin) d'un document
+  malformé (zod) ou citant une clé de registre non enregistrée.
+- `equipements-sportifs/defaults.byteparity` / `<id>/spec.test` / `useEntityMutation.test`.
+
+**Gardes préflight à l'échelle du PARC** (lancées par `npm run test:preflight` — **aucun hook ni CI ne les
+exécute**) :
+
+| Test | Ce qu'il garde |
+|---|---|
+| `tests/preflight/costum-forms.test.ts` | chaque document de `costumForms` de chaque `config.prod*.json` est POSABLE : zod puis `registerCostumForm` à blanc (compile + garde des clés) — exactement le chemin du boot client, donc un doc qui casse ici casserait la modale au runtime |
+| `tests/preflight/costum-form-contract.test.ts` | aucun `costumForm` n'envoie une valeur que le CONTRAT costum refuse — en mode BUNDLE **et** en mode LIVE (fixtures commitées `__contract__/costum-types.json` et `costum-types.live.json`) |
+| `tests/preflight/costum-form-slug.test.ts` | tout `costumForm` du parc déclare `costumSlug` : son retrait casse EN SILENCE le pin de schéma en édition (`schemaCostumSlug`), la découverte de l'e2e `costum-forms` et la cohérence avec `scope` |
+
+### Outils
+
+| Commande | Rôle |
+|---|---|
+| `npm run config:costum-drift` | garde de DÉRIVE : compare les champs ÉMIS par `compileCostumSchema(doc)` aux champs AUTORISÉS par la lib dans le scope costum — attrape le champ resté déclaré au formulaire après avoir disparu de la config costum en base (cas `recepisseDeclaration`, SSBE) |
+| `npm run contract:snapshot` | régénère `tests/preflight/__contract__/costum-types.json` depuis l'artefact `costum-extensions.json` de la lib. **À lancer après tout upgrade de `@communecter/cocolight-api-client`** : sans ça la garde de contrat est aveugle au changement |
+| `npm run contract:snapshot:live` | idem pour le contrat LIVE (`costum-types.live.json`, schéma AJV réel sous `setCostumForceLive`) — indispensable aux sites en `VITE_COSTUM_FORCE_LIVE`, absents de l'artefact |
+| `npm run test:costum-forms` | joue l'e2e `tests/integration/costum-forms.e2e.test.ts` dans les DEUX modes enchaînés (bundle, puis `E2E_MODE=live`) |
 
 Gate à chaque commit : `tsc` 0, `vitest src/modules/profil src/modules/formEngine` (311+), `npm run build` 0.
 
@@ -493,20 +601,19 @@ Gate à chaque commit : `tsc` 0, `vitest src/modules/profil src/modules/formEngi
 1. **Si elle réutilise les clés existantes** (codecs communs, scope/payload génériques) → poser un document
    `CostumFormSchema` dans `config.costumForms.<id>` (JSON). **0 code.** Déclencher via
    `floatingActionButton.modal: "add-<id>"` (ou le dropdown).
-2. **Si elle a une logique propre** → créer `forms/costum/<id>/{schema.ts, fns.ts}` : `schema.ts` (le document),
-   `fns.ts` (enregistre les clés irréductibles : scope/payload/slots/codecs). `descriptor.ts`/`spec.ts` = 1 ligne
-   (`compileCostumSchema(SCHEMA).descriptor`/`.spec` + auto-enregistrement). Ajouter à `registerSpecFns.ts`.
+2. **Si elle a une logique propre** → le document reste TOUJOURS en config (`config.costumForms.<id>`) ; le
+   seul fichier TS à créer est `forms/costum/<id>/fns.ts`, qui enregistre les clés irréductibles
+   (scope/slots/codecs/options/defaults), puis à référencer dans `forms/registerSpecFns.ts`. Modèle :
+   `forms/costum/structure/fns.ts` — un seul fichier, une seule clé (`structure:tagsFromThematic`).
 
 ## Limites connues / backlog
 
 - **Codecs `pf:*` (profil) vs `tl:*`** : mêmes formats serveur (openingHours/social), widgets DIFFÉRENTS
   (`editSchedule`/`editSocial` vs `openingHours`/`fieldArray`) → codecs distincts, non fusionnés.
-- **Enregistrement UNIFIÉ** : un costum TS s'enregistre désormais par la MÊME voie qu'un costum de config —
-  `spec.ts` fait `registerCostumForm(SCHEMA)` (compile → garde des clés → descripteur + spec), et `fns.ts` ne
-  déclare QUE les clés de code (scope/payload/defaults/slots/options). `descriptor.ts`/`spec.ts` subsistent comme
-  **dérivations pures** (`compileCostumSchema(SCHEMA).descriptor/.spec`) car encore importées par des tests et
-  quelques utils runtime (`addPoi.payload`, `descriptorToTs`) ; les supprimer (repointer ces importeurs) reste un
-  nettoyage possible, à faible valeur.
+- **Enregistrement UNIFIÉ** : il n'y a plus qu'UNE voie, `registerCostumForm(document)` — appelée au boot par
+  `registerCostumForms.ts` (config) et, en test, par la fixture `__fixtures__/configCostum.ts` (qui relit le
+  document depuis `config.prod.*.json`). Les ex-`<costum>/{schema,descriptor,spec}.ts` ont été SUPPRIMÉS : ils
+  dupliquaient la config. `fns.ts` ne déclare QUE les clés de code (scope/defaults/slots/options/transforms).
 - **zod `CostumFormSchema` pragmatique** (structure essentielle + `.passthrough()`) — pas exhaustif champ par champ.
 - **Entités STANDARD** (org/projet/event/poi/edit-profil) : pilotées par des descripteurs TS + `EntityModalSpec`
   (`forms/configs/`), pas encore par le document fusionné — hors périmètre costum.

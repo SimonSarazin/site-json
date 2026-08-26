@@ -97,8 +97,45 @@ function parseOpeningHours(raw: unknown): OpeningHoursModel {
 
 registerTransform("openingHours:read", (v) => parseOpeningHours(v));
 registerTransform("openingHours:write", (v) => {
+  // Pas de modèle 7 jours (champ jamais rendu, défaut absent — un champ `object` sans default est
+  // `undefined` depuis defaultForType) → clé OMISE, comme « aucun jour ouvert ». Sans cette garde,
+  // `hours[day]` crashait sur undefined et emportait la CRÉATION entière de 3 forms SSBE.
+  if (v == null || typeof v !== "object") return undefined;
   const oh = buildOpeningHoursPayload(v as OpeningHoursModel);
   return oh.some((e) => e !== "") ? oh : undefined; // omet openingHours si aucun jour ouvert
+});
+
+// ── Codec de GROUPE `telephone` (structure serveur `{mobile:[…], fixe:[…]}`) — LOSSLESS ──────────────────
+// Le form saisit UNE chaîne ; le serveur stocke un objet à listes (mesuré : 133/133 orgs SSBE et 65/65
+// cyber-reunion). La 1ʳᵉ version (champ simple, write `{mobile:[v]}`) était DESTRUCTRICE, prouvé sur la
+// base : une fiche `{fixe:[…]}` relue puis re-sauvée sans modification migrait vers `mobile`, et les
+// numéros MULTIPLES étaient tronqués au premier. D'où un GROUPE de sérialisation (patron `address`) avec
+// deux membres cachés qui transportent ce que la chaîne seule ne peut pas dire :
+//   `_telSlot` — la clé d'origine (mobile|fixe) : la réécriture retourne dans le MÊME emplacement ;
+//   `_telRest` — les AUTRES clés de l'objet, JSON tel quel : rien n'est perdu au round-trip.
+// Multiples : la chaîne est le join ", " de la liste, le write la re-split — l'aller-retour no-op
+// reproduit l'objet à l'identique (le diff du SDK n'émet alors rien).
+registerTransform("telephone:read", (t) => {
+  const o = (t ?? {}) as Record<string, unknown>;
+  const slot = Array.isArray(o.mobile) && o.mobile.length ? "mobile" : Array.isArray(o.fixe) && o.fixe.length ? "fixe" : "mobile";
+  const liste = Array.isArray(o[slot]) ? (o[slot] as unknown[]).map(String) : [];
+  const reste: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(o)) if (k !== slot) reste[k] = v;
+  return {
+    telephone: liste.join(", "),
+    _telSlot: slot,
+    ...(Object.keys(reste).length ? { _telRest: JSON.stringify(reste) } : {}),
+  };
+});
+registerTransform("telephone:write", (all) => {
+  const v = (all as Record<string, unknown>)?.telephone;
+  const s = typeof v === "string" ? v.trim() : "";
+  const slot = String((all as Record<string, unknown>)?._telSlot ?? "mobile") === "fixe" ? "fixe" : "mobile";
+  let reste: Record<string, unknown> = {};
+  try { reste = JSON.parse(String((all as Record<string, unknown>)?._telRest ?? "{}")) as Record<string, unknown>; } catch { /* reste vide */ }
+  const nums = s ? s.split(",").map((x) => x.trim()).filter(Boolean) : [];
+  if (!nums.length && !Object.keys(reste).length) return undefined; // rien → clé omise (create) / intacte (edit sans emitEmpty)
+  return { ...reste, ...(nums.length ? { [slot]: nums } : {}) };
 });
 
 // ── Codec WRITE générique `omitEmpty` ─────────────────────────────────────────────────────────────
@@ -235,3 +272,4 @@ registerTransform("multiCsv:write", (_v, all, p) => {
   const parts = arr.map((f) => (f === other ? otherText : f)).filter(Boolean);
   return parts.length > 0 ? parts.join(sep) : undefined;
 });
+

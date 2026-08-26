@@ -227,3 +227,15 @@ symétrie avec `/agenda` (inoffensif, et prêt si des articles géolocalisés ap
 | Synchro URL de l'onglet actif (`?tab=`) pour des deep-links complets | à prioriser |
 | Harmoniser la carte de `/agenda` (`card.type:"profile"` → `"event"`, voire timeline) | hors scope noté, décision Peterson |
 | Dossier `public/images/saintpaulSport1` non déclaré (préflight `site-assets`) | Peterson |
+
+## Onglet admin « Migration » (2026-08-15)
+
+L'onglet `migration` (section costum `{type:"ownershipMigration"}`) porte la **reprise du stock** :
+transférer la propriété des fiches `equipementsSportifs974` de la commune (sélecteur
+`address.codeInsee = 97415`, sous-type auto = `type` des fiches) vers `saintpaulSport1`, le
+régional restant référencé — le geste que le script CLI `tools/commune-ownership-migration/`
+(désormais secours offline) faisait en Mongo direct. Dry-run, contrôles bloquants, snapshot +
+rollback serveur, historique. Doc : [ownership-migration.md](ownership-migration.md) ; spec
+serveur : `cocolight-backend/docs/28-OWNERSHIP-MIGRATION.md`. ⚠ Ordre : **migration avant
+déploiement de la config communale** (aucune coupure) ; ré-imports RES via le backend Node
+uniquement tant que BUG-L-236 (legacy) n'est pas déployé.

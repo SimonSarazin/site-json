@@ -1,17 +1,11 @@
 import { Link } from "react-router";
 import { Calendar } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
-import { formatDateLong } from "@/helpers/formatDate";
 import { stripMarkdown } from "../lib/markdown";
 import type { ArticleCardProps } from "./ArticleCard";
+import { articleDate } from "../lib/articleDate";
 
 /** Date de l'article (created unix s) → libellé long, tolérant. */
-function articleDate(created: unknown): string | null {
-  if (created == null || created === "") return null;
-  const n = typeof created === "number" ? created : Number(created);
-  const d = Number.isFinite(n) ? new Date(n < 2e10 ? n * 1000 : n) : new Date(String(created));
-  return Number.isNaN(d.getTime()) ? null : formatDateLong(d);
-}
 
 /**
  * Variant COMPACT (registre `CARD_VARIANTS`, clé `compact`) : ligne horizontale (vignette carrée + titre +
@@ -21,7 +15,7 @@ export function ArticleCardCompact({ article, href, lastRef, featured = false }:
   const image = article.profilMediumImageUrl || article.profilImageUrl;
   const excerpt = article.shortDescription
     || (typeof article.description === "string" ? stripMarkdown(article.description).slice(0, 160) : "");
-  const date = articleDate(article.created);
+  const date = articleDate(article);
 
   return (
     <Link

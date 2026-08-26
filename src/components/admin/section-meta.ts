@@ -128,6 +128,9 @@ const SECTION_META: Record<string, SectionMeta> = {
   // coform
   coform: { label: "CoForm", desc: "Formulaire dynamique chargé depuis le backend Cocolight via son formId, mono ou multi-étapes (variant wizard/default ou auto), avec redirection post-soumission", image: "https://placehold.co/300x180/00cec9/eee?text=CoForm", family: "coform" },
 
+  // toolsCatalog
+  toolsCatalog: { label: "Catalogue d'outils", desc: "Catalogue générique d'outils d'usage synthétisé depuis les réponses coform (formId/step/finderPath), avec recherche, filtres (catégorie/usage/open-source) et pagination CÔTÉ SERVEUR (défilement infini), plus une modale détaillant les lieux utilisateurs et leur satisfaction, le commun porteur, un bouton de réponse au questionnaire et l'édition de l'enrichissement pour les admins du costum", image: "https://placehold.co/300x180/6c5ce7/eee?text=Outils", family: "search" },
+
   // cagnotte
   actions: { label: "Actions cagnotte", desc: "Liste détaillée des actions par milestone d'un projet cagnotte, avec CRUD complet actions et milestones (candidature, complétion, clôture) — typiquement en tab profil project", image: "https://placehold.co/300x180/fdcb6e/333?text=Actions", family: "cagnotte" },
   finance: { label: "Finance", desc: "Liste des milestones de financement du projet : progression, transactions, contribution, gestion (module cagnotte ; utilisateur connecté ; projet ciblé via id de section ou profil visité)", image: "https://placehold.co/300x180/00b894/eee?text=Finance", family: "cagnotte" },

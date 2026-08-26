@@ -18,6 +18,7 @@
   - [LoginButton](#loginbutton)
   - [LoginPrompt](#loginprompt)
   - [AuthGate](#authgate)
+  - [GatedPageNotice](#gatedpagenotice)
   - [CurrentUserAvatar](#currentuseravatar)
   - [AuthPageLayout](#authpagelayout)
 - [Hooks](#hooks)
@@ -38,8 +39,10 @@ inscription, récupération de mot de passe, SSO et modal d'auth. C'est un modul
 `core` (chargé en eager, sans flash) découvert automatiquement comme les autres
 modules (voir [Architecture](03-architecture.md) et la section *Module System*).
 
-Il fournit ses **routes prêtes** (`/login`, `/register`, `/recover-password`) — il
-n'est donc plus nécessaire de redéclarer ces pages dans chaque config JSON. Il
+Il fournit ses **routes prêtes** — pages auth (`/login`, `/register`,
+`/recover-password`) **et** les liens e-mail du backend (activation, invitation,
+adhésion par lien) : voir [Routes fournies par le module](#routes-fournies-par-le-module).
+Il n'est donc plus nécessaire de redéclarer ces pages dans chaque config JSON. Il
 expose un mécanisme de **variants de design** (extensible par site) et permet de
 personnaliser textes, header/footer et SEO via la section `config.auth`.
 
@@ -48,7 +51,7 @@ personnaliser textes, header/footer et SEO via la section `config.auth`.
 ```
 src/modules/auth/
   module.config.ts          { name: "auth", type: "core", enabled: true }
-  routes.tsx                routes: ModuleRouteFactory → /login, /register, /recover-password
+  routes.tsx                routes: ModuleRouteFactory (_queryClient, config) → 12 routes (11 montées + `recover/:user/:code` en mode `node`) (cf. « Routes fournies par le module »)
   index.ts                  barrel (composants, contexte, hooks, sections, schema…)
   i18n.ts                   addResourceBundle("fr"/"en", "modules/auth", …, true, true)
   i18n/{fr,en}.json
@@ -66,6 +69,7 @@ src/modules/auth/
     LoginPrompt.tsx         invite de connexion inline ou card
     AuthGate.tsx            garde client (connecté → children, sinon → LoginPrompt/fallback)
     CurrentUserAvatar.tsx   avatar utilisateur courant (OptimizedImage + repli initiales/icône)
+    GatedPageNotice.tsx     ce qu'une page GARDÉE affiche à la place de ses sections (cf. 34-gardes-de-page.md)
     forms/
       LoginForm.tsx
       RegisterForm.tsx
@@ -77,6 +81,11 @@ src/modules/auth/
     LoginPage.tsx
     RegisterPage.tsx
     RecoverPasswordPage.tsx
+    ResetPasswordPage.tsx        saisie d'un nouveau mot de passe (mode `node` seulement)
+    ActivateAccountPage.tsx      activation de compte (liens Node + legacy Yii)
+    ValidateInvitationPage.tsx   passerelle d'invitation → inscription
+    AcceptInvitationPage.tsx     réponse Accepter/Refuser d'une invitation par e-mail
+    JoinByLinkPage.tsx           lien d'adhésion partageable (connect/ref/:ref)
   sections/
     LoginFormSection.tsx
     RegisterFormSection.tsx
@@ -166,19 +175,29 @@ appelé hors du provider.
 | `NewsItem` | `openLogin()` pour réagir/commenter |
 | `ActionButtonGroup` (profil) | `openLogin()` pour adhérer/suivre |
 | `CardProfile` (search) | `openLogin()` pour suivre/contacter/ajouter |
+| `GatedPageNotice` | `openLogin()` **une seule fois** sur une page gardée en mode `prompt` face à un anonyme |
 
 ## Routes fournies par le module
 
 `routes.tsx` exporte une `ModuleRouteFactory` injectée par la découverte de
-modules (`src/lib/modules.ts` → `src/lib/buildRoutes.tsx`) :
+modules (`src/lib/modules.ts` → `src/lib/buildRoutes.tsx`). La factory reçoit
+`(_queryClient, config)` — elle lit donc la config du site pour monter (ou non)
+une de ses routes. `src/modules/auth/routes.tsx:32-72` déclare :
 
-```tsx
-export const routes: ModuleRouteFactory = (): RouteObject[] => [
-  { path: "login", element: <LoginPage /> },
-  { path: "register", element: <RegisterPage /> },
-  { path: "recover-password", element: <RecoverPasswordPage /> },
-];
-```
+| path | page | rôle |
+|---|---|---|
+| `login` | `LoginPage` | connexion |
+| `register` | `RegisterPage` | inscription |
+| `recover-password` | `RecoverPasswordPage` | demande de récupération |
+| `recover/:user/:code` | `ResetPasswordPage` | saisie d'un nouveau mot de passe — **montée seulement si `config.auth.recover.mode === "node"`** |
+| `validate/:user/:validationKey?` | `ActivateAccountPage` | activation de compte (liens du backend Node) |
+| `co2/person/activate/user/:user/validationKey/:validationKey` (+ forme avec splat `/*`) | `ActivateAccountPage` | mêmes liens, forme LEGACY Yii — le splat absorbe les suffixes `/costum/true`, `/redirect/…` |
+| `co2/person/validateinvitation/user/:user/validationKey/:validationKey` (+ splat `/*`) | `ValidateInvitationPage` | passerelle d'invitation vers l'inscription (compte *pending*) |
+| `co2/link/validateinvitationbymail/userId/:userId/targetType/:targetType/targetId/:targetId/answer/:answer` (+ splat `/*`) | `AcceptInvitationPage` | réponse Accepter/Refuser d'une invitation reçue par e-mail |
+| `co2/link/connect/ref/:ref` | `JoinByLinkPage` | lien d'adhésion partageable (`costum.invitationLink`) |
+
+Les deux formes (moderne et legacy) sont servies pour que les e-mails **déjà
+envoyés** restent valides quand le domaine d'un costum pointe sur site-json.
 
 Ces paths sont montés en enfants de `/`. Les pages auth ne doivent donc **pas**
 être déclarées dans `config.pages` — sinon elles entreraient en collision avec
@@ -203,17 +222,26 @@ Les mêmes formulaires servent dans deux contextes :
 | Contexte | Mécanisme recommandé |
 |---|---|
 | Déclenchement en cours de navigation (header, CTA, action utilisateur) | `openLogin()` → modal global |
-| Redirection forcée depuis un guard (`auth-required`, `usePageGuards`) | route `/login` (deep-link) |
+| Page gardée, mode `prompt` (défaut) | `openLogin()` → modal global, sans quitter la page |
+| Page gardée, mode `redirect` | route `/login` (deep-link), page visée mémorisée |
 | Lien direct (e-mail, QR code) | route `/login` |
 | Intégration dans un CoForm ou une section custom | `openLogin({ onSuccess })` → modal global |
 
-La route `/login` reste disponible et fonctionnelle ; `usePageGuards` avec le
-middleware `auth-required` continue de rediriger vers `/login` (navigation, pas
-modal) pour les pages protégées (voir `src/hooks/usePageGuards.ts:11`).
+La route `/login` reste disponible et fonctionnelle. Depuis l'introduction de
+`page.auth.mode`, une page gardée ouvre par DÉFAUT la modale sans naviguer
+(`prompt`) ; elle ne redirige vers `/login` que si le site pose
+`"mode": "redirect"` — auquel cas la page visée est mémorisée et l'utilisateur y
+revient après connexion. Voir [Gardes de page](34-gardes-de-page.md).
 
-Chaque formulaire redirige vers `/` s'il détecte un utilisateur déjà connecté
+Chaque formulaire redirige s'il détecte un utilisateur déjà connecté
 (`!loading && me?.isConnected` dans un `useEffect`), ce qui remplace l'ancien
-middleware config `redirect-if-authenticated` sur ces pages.
+middleware config `redirect-if-authenticated` sur ces pages. La destination
+diffère selon le formulaire : `LoginForm` (`LoginForm.tsx:47`, `:95`) et
+`RegisterForm` (`RegisterForm.tsx:58`, `:71`) renvoient vers
+`returnTo = returnToOrHome(location.state)`, c'est-à-dire la page mémorisée par
+la garde (`{ from: pathname + search }`), avec repli sur `/` ;
+`RecoverPasswordForm` renvoie encore vers `/` en dur (`RecoverPasswordForm.tsx:61`).
+Voir `src/lib/authRedirect.ts` et [Gardes de page](34-gardes-de-page.md).
 
 ## Variants de design
 
@@ -272,7 +300,8 @@ Bloc top-level optionnel de la config site (validé par `AuthConfigSchema`,
     "login":    { "title": { "fr": "Se connecter", "en": "Sign in" },
                   "subtitle": { "fr": "…", "en": "…" } },
     "register": { "title": { "fr": "…" }, "subtitle": { "fr": "…" } },
-    "recover":  { "title": { "fr": "…" }, "subtitle": { "fr": "…" } }
+    "recover":  { "title": { "fr": "…" }, "subtitle": { "fr": "…" },
+                  "mode": "legacy" }   // "legacy" (défaut de fait) | "node" — cf. ci-dessous
   }
 }
 ```
@@ -289,9 +318,34 @@ restent utilisées comme défaut si le bloc `menu` est absent.
 | `showName` | `boolean` | Afficher le nom de l'utilisateur à côté de l'avatar |
 | `showDropdownHeader` | `boolean` | Afficher un en-tête nom + email dans le dropdown |
 | `loginLabel` | `LocalizedString` | Libellé du bouton « Se connecter » — surchargé par la prop `loginLabel` du header |
+| `kanban` | `boolean` | Opt-in : entrée « Kanban » (nouvel onglet vers la vue actions de la plateforme), réservée aux admins du costum — gate `isKanbanEntryVisible` (modules/admin), détails dans [doc/30-module-admin.md](30-module-admin.md) |
 
 Le `tone` (défaut / onColor) et le `loginVariant` (ghost / solid / outline)
 restent couplés au design du header (props du composant), pas à `config.auth.menu`.
+
+### `config.auth.recover.mode` — quel flux « mot de passe oublié »
+
+`recover` n'est pas un simple bloc de textes (`AuthRecoverConfigSchema =
+AuthPageTextSchema.extend({ mode })`, `src/modules/auth/schema.ts:43-46`) : sa clé
+`mode` commande **un changement de flux complet**.
+
+| valeur | flux | route `/recover/:user/:code` |
+|---|---|---|
+| absente (= `"legacy"`) | le backend legacy régénère un mot de passe aléatoire et l'envoie par e-mail — ni lien, ni page de saisie | **non montée** |
+| `"node"` | le backend Node envoie un lien `/recover/:user/:code` → `ResetPasswordPage` (endpoint `PASSWORD_RESET`) | montée |
+
+La route est gatée sur cette valeur dans `routes.tsx:40-42` : en `legacy`,
+`ResetPasswordPage` n'existe pas — pour ne pas exposer une page morte contre un
+backend qui n'émet jamais ce lien. À n'activer que sur un déploiement servi par le
+backend Node.
+
+> ⚠️ La config n'est **jamais** parsée par Zod au runtime : le `.optional()` du schéma
+> ne pose aucun défaut. Le repli `legacy` vit dans le code (la comparaison
+> `config?.auth?.recover?.mode === "node"` de `routes.tsx`) — pour opter, il faut
+> écrire la clé **explicitement** dans le JSON. Une clé oubliée n'échoue pas : le
+> lien reçu par e-mail tombe sur le catch-all du routeur
+> (`{ path: "*", element: <SiteRenderer /> }`, `src/lib/buildRoutes.tsx:216`), servi
+> en 200 — **sans erreur, donc invisible en recette**.
 
 ### Autres champs
 
@@ -449,6 +503,30 @@ interface AuthGateProps {
 
 Généralise le pattern `CoFormAccessGuard` (cas `not_logged_in`).
 
+### `GatedPageNotice`
+
+Ce qu'une **page gardée** (`page.auth`) affiche à la place de ses sections
+(`src/modules/auth/components/GatedPageNotice.tsx`), rendu par `SiteRenderer`.
+Voir [Gardes de page](34-gardes-de-page.md). Props :
+
+```ts
+interface GatedPageNoticeProps {
+  mode: PageGateMode;   // "prompt" | "redirect" | "hide" (src/lib/pageAccess.ts)
+  reason: GateReason;   // "anonymous" | "role"
+  resolved: boolean;    // l'accès est-il déjà tranché ? Avant hydratation : aucun refus affiché
+}
+```
+
+Trois rendus :
+- `!resolved` ou `mode === "redirect"` → message d'attente neutre
+  (« Vérification de votre accès… ») — au SSR `me` vaut toujours `null`, donc aucun
+  verdict n'est jamais rendu côté serveur ;
+- `resolved` + `reason === "anonymous"` + `mode === "prompt"` → `<LoginPrompt variant="card">`,
+  et `useAuthModal().openLogin()` est appelé **une seule fois** (verrou `useRef`) : la modale
+  s'ouvre par-dessus, l'invitation reste derrière si l'utilisateur la ferme ;
+- `mode === "hide"`, ou `reason === "role"` quel que soit le mode → un refus (icône `Lock`),
+  sans proposer une connexion qui ne changerait rien à un utilisateur déjà connecté.
+
 ### `CurrentUserAvatar`
 
 Avatar de l'utilisateur courant (`src/modules/auth/components/CurrentUserAvatar.tsx`).
@@ -555,13 +633,20 @@ interface LoginFormProps {
 ```
 
 - Après connexion réussie : `onSuccess?.()` est toujours appelé (si fourni), puis
-  `navigate("/")` est déclenché **uniquement si `hideBackButton === false`** (valeur
+  `navigate(returnTo)` est déclenché **uniquement si `hideBackButton === false`** (valeur
   par défaut). C'est `hideBackButton` — et lui seul — qui discrimine le comportement
   de navigation, pas la présence ou l'absence des callbacks.
-- En mode modal (`hideBackButton=true`) : pas de navigation vers `/` après succès.
+- `returnTo` est calculé **une fois** en haut du composant (`LoginForm.tsx:47`) par
+  `returnToOrHome(location.state)` : la page mémorisée par la garde en mode `redirect`
+  (`{ from: pathname + search }`, filtre d'URL compris), repli `/`, refus des URL
+  externes et protocole-relatives (`src/lib/authRedirect.ts`). Les trois points de
+  navigation post-succès l'utilisent (effet centralisé `:95`, `handleLogin` `:159`,
+  `onSuccess` du bouton SSO `:278`).
+- En mode modal (`hideBackButton=true`) : pas de navigation après succès.
 - En mode page (`hideBackButton=false`) : navigue vers `/register` ou
-  `/recover-password` via les boutons de bascule ; navigue vers `/` après connexion
-  réussie.
+  `/recover-password` via les boutons de bascule — en **transmettant le même `state`**
+  (`LoginForm.tsx:292`, `:303`), pour que la destination mémorisée survive à la
+  bascule ; navigue vers `returnTo` après connexion réussie.
 - Erreurs HTTP 401/404 → message "Email ou mot de passe incorrect".
 - Affiche les `SSOLoginButton` si `entity?.serverData.costum.sso` contient des
   providers (voir [SSO](#sso)).
@@ -574,7 +659,7 @@ interface LoginFormProps {
   formulaire (typiquement juste après le clic « Se connecter » dans le header,
   donc encore dans la fenêtre de *user gesture* → pas de blocage popup).
 - Redirection centralisée : un `useEffect` unique observe `me.isConnected` et
-  déclenche `onSuccess?.()` + `navigate("/")` (si `!hideBackButton`), quel que soit
+  déclenche `onSuccess?.()` + `navigate(returnTo)` (si `!hideBackButton`), quel que soit
   le chemin de connexion (email/pwd, SSO classique, auto-trigger). Évite la course
   entre le `postMessage` SSO et la détection `popup.closed`.
 
@@ -773,6 +858,10 @@ Clés notables dans les bundles `i18n/{fr,en}.json` :
 - Recover : `Mot de passe oublié`, `Envoyer le lien de récupération`,
   `E-mail envoyé`, `Renvoyer l'e-mail`, `Retour à la connexion`,
   `Compte introuvable`, `Aucun compte n'est associé à cette adresse e-mail.`
+- Page gardée (`GatedPageNotice`) : `Vérification de votre accès…`,
+  `Cette page est réservée. Connectez-vous pour y accéder.`,
+  `Votre compte n'a pas les droits nécessaires pour voir cette page.`,
+  `Cette page est réservée.`
 
 ## Schéma
 
@@ -797,8 +886,15 @@ const AuthMenuConfigSchema = z.object({
   showName: z.boolean().optional(),
   showDropdownHeader: z.boolean().optional(),
   loginLabel: LocalizedString.optional(),
+  kanban: z.boolean().optional(),          // entrée « Kanban », opt-in (cf. tableau config.auth.menu)
 });
 export type AuthMenuConfig = z.infer<typeof AuthMenuConfigSchema>;
+
+// Textes + MÉCANISME du « mot de passe oublié » (cf. config.auth.recover.mode).
+const AuthRecoverConfigSchema = AuthPageTextSchema.extend({
+  mode: z.enum(["legacy", "node"]).optional(),
+});
+export type AuthRecoverConfig = z.infer<typeof AuthRecoverConfigSchema>;
 
 export const AuthConfigSchema = z.object({
   variant: z.string().optional(),
@@ -807,7 +903,7 @@ export const AuthConfigSchema = z.object({
   hideFooter: z.boolean().optional(),
   login:    AuthPageTextSchema.optional(), // { title?, subtitle? }
   register: AuthPageTextSchema.optional(),
-  recover:  AuthPageTextSchema.optional(),
+  recover:  AuthRecoverConfigSchema.optional(), // { title?, subtitle?, mode? }
 });
 export type AuthConfig = z.infer<typeof AuthConfigSchema>;
 ```

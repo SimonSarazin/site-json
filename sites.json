@@ -40,6 +40,17 @@
     "domain": "ssbe.00.re"
   },
   {
+    "slug": "associationEkilibre",
+    "config": "config.prod.maison-sport-sante-la-tampon.json",
+    "css": "index-sport-sante-bien-etre",
+    "images": "maisonSportSanteLaTampon",
+    "coolifyApp": "site-json-ekilibre",
+    "domain": "ekilibre.00.re",
+    "env": {
+      "VITE_COSTUM_FORCE_LIVE": "true"
+    }
+  },
+  {
     "slug": "institutBleu",
     "config": "config.prod.institut-bleu.json",
     "css": "index-institut-bleu",
@@ -60,6 +71,17 @@
     "aliases": [
       "www.tiers-lieux.org"
     ]
+  },
+  {
+    "slug": "relief",
+    "config": "config.prod.relief.json",
+    "css": "index-relief",
+    "images": "relief",
+    "coolifyApp": "site-json-relief",
+    "domain": "aura.00.re",
+    "env": {
+      "VITE_COSTUM_FORCE_LIVE": "true"
+    }
   },
   {
     "slug": "juliePotVin",
@@ -121,9 +143,12 @@
     "slug": "saintpaulSport1",
     "config": "config.prod.saint-paul-sport.json",
     "css": "index-equipements-sportifs",
-    "images": "equipementsSportifs974",
+    "images": "saintpaulSport1",
     "coolifyApp": "site-json-saint-paul-sport",
-    "domain": "saint-paul-sport.00.re"
+    "domain": "saint-paul-sport.00.re",
+    "env": {
+      "VITE_COSTUM_FORCE_LIVE": "true"
+    }
   },
   {
     "slug": "rezoSanteReunion",

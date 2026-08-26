@@ -1,4 +1,5 @@
 import type { SearchByFieldValue } from "../contexts/pageFilters";
+import { answerToggleArgs, type AnswerGroupConf } from "./answerFilterClause";
 
 /**
  * Forme minimale d'un groupe de filtres (sous-ensemble de `FiltersSectionProps`).
@@ -80,6 +81,13 @@ export function computeFiltersFromUrl(
   searchParams: URLSearchParams,
   filterGroups: FilterGroupLike[],
   filterAnswerData: FilterAnswerDataLike,
+  /**
+   * Config des groupes « par réponses » (`filtersByAnswers` + `filtersByPath`),
+   * indexée par id de groupe. Nécessaire au seul réglage `filterTarget` : sans elle
+   * un deep-link poserait un filtre par `_id` là où le clic pose un prédicat de
+   * chemin — mêmes filtres des deux côtés, c'est tout l'intérêt de ce module.
+   */
+  answerGroupConfs: Record<string, AnswerGroupConf> | null = null,
 ): {
   applySelected: (prev: Record<string, string[]>) => Record<string, string[]>;
   applySearchFields: (prev: Record<string, SearchByFieldValue>) => Record<string, SearchByFieldValue>;
@@ -214,16 +222,19 @@ export function computeFiltersFromUrl(
 
     const answerGroup = filterAnswerData?.[groupId];
     if (answerGroup) {
+      const conf = answerGroupConfs?.[groupId];
       values.forEach((v) => {
         const optionEntry = Object.entries(answerGroup.values).find(
           ([key, val]) => key === v || val.name === v,
         );
         if (optionEntry) {
           const [optionKey, optionValue] = optionEntry;
-          nextSearchFields[optionKey] = {
-            field: "_id",
-            value: (optionValue.orgaNameArray ?? []) as string[],
-          };
+          // Source unique avec le clic (`FiltersSection`) : `_id`/orgaNameArray par
+          // défaut, prédicat de chemin si le groupe cible les answers.
+          const { field, value, fieldType } = answerToggleArgs(conf, optionKey, optionValue);
+          nextSearchFields[optionKey] = fieldType
+            ? { field, type: fieldType, value }
+            : { field, value };
         }
       });
     }

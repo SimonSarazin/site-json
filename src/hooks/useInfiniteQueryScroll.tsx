@@ -28,6 +28,10 @@ interface InfiniteQueryScrollResult<TData, TError> {
   error: TError | null;
   fetchNextPage: () => Promise<unknown>;
   hasNextPage: boolean | undefined;
+  /** L'`error` vient d'un `fetchNextPage` : les pages déjà chargées sont intactes. */
+  isFetchNextPageError: boolean;
+  /** Un fetch est en vol (première page, page suivante OU refetch complet). */
+  isFetching: boolean;
   isFetchingNextPage: boolean;
   isLoading: boolean;
   isPending: boolean;
@@ -50,6 +54,8 @@ export function useInfiniteQueryScroll<TData, TError = Error>({
     error,
     fetchNextPage,
     hasNextPage,
+    isFetchNextPageError,
+    isFetching,
     isFetchingNextPage,
     isLoading,
     isPending,
@@ -81,6 +87,8 @@ export function useInfiniteQueryScroll<TData, TError = Error>({
     error: (error ?? null) as TError | null,
     fetchNextPage,
     hasNextPage,
+    isFetchNextPageError,
+    isFetching,
     isFetchingNextPage,
     isLoading,
     isPending,

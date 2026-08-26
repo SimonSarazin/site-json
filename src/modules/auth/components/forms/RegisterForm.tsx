@@ -15,7 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { isValidEmail } from "@/helpers/isValidEmail";
 import { toast } from "sonner";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
+import { returnToOrHome } from "@/lib/authRedirect";
 
 interface RegisterFormState {
   name: string;
@@ -28,14 +29,22 @@ interface RegisterFormState {
 interface RegisterFormProps {
   // Mode modal : bascule vers le login interne au lieu de naviguer vers /login.
   onSwitchToLogin?: () => void;
+  /**
+   * Valeurs pré-remplies (flux d'invitation) : l'invité arrive avec son `email` (celui de son compte
+   * `pending`) et son `name`. L'`email` est rendu `readOnly` — CONFORT UX (éviter une faute de frappe
+   * qui créerait un compte neuf), PAS une frontière de sécurité : le backend finalise le compte pending
+   * PAR EMAIL seul (`getPendingUserByEmail` → `updateMinimalData`, parité legacy, sans validationKey).
+   * Le durcissement (lier la finalisation à la clé) est une décision de mode clean — cf. BUG-L-228.
+   */
+  prefill?: { email?: string; name?: string };
 }
 
-export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps = {}): React.ReactNode {
+export default function RegisterForm({ onSwitchToLogin, prefill }: RegisterFormProps = {}): React.ReactNode {
   /* ------------------------------------------------------------------- */
   const [formData, setFormData] = useState<RegisterFormState>({
-    name: "",
+    name: prefill?.name ?? "",
     username: "",
-    email: "",
+    email: prefill?.email ?? "",
     pwd: "",
     confirmPassword: "",
   });
@@ -43,6 +52,10 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps = {}
   const [loadingRegister, setLoading] = useState<boolean>(false);
 
   const navigate                     = useNavigate();
+  const location                     = useLocation();
+  // Destination transmise depuis LoginForm quand l'utilisateur bascule « créer un compte »
+  // (elle-même posée par la garde de page). Repli sur l'accueil.
+  const returnTo                     = returnToOrHome(location.state);
   const { userApi, loading, me, entity, contextId, contextType } = useCocolight();
   const { loaded }                   = useLoadNamespace("modules/auth");
   const t                            = useT("modules/auth");
@@ -55,8 +68,8 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps = {}
 
   /* Redirige l’utilisateur déjà connecté ------------------------------- */
   useEffect(() => {
-    if (!loading && me?.isConnected) navigate("/");
-  }, [loading, me, navigate]);
+    if (!loading && me?.isConnected) navigate(returnTo);
+  }, [loading, me, navigate, returnTo]);
 
   /* ------------------------------------------------------------------- */
   const handleInputChange = (
@@ -144,7 +157,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps = {}
           ),
         });
         if (onSwitchToLogin) onSwitchToLogin();
-        else navigate("/login");
+        else navigate("/login", { state: location.state });
       } else {
         toast.error(t("Erreur"), {
           description:
@@ -222,6 +235,8 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps = {}
             handleInputChange("email", e.target.value)
           }
           className="h-12"
+          readOnly={!!prefill?.email}
+          aria-readonly={!!prefill?.email}
         />
 
         <PasswordToggleTextInput
@@ -258,7 +273,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps = {}
           <Button
             type="button"
             variant="ghost"
-            onClick={() => (onSwitchToLogin ? onSwitchToLogin() : navigate("/login"))}
+            onClick={() => (onSwitchToLogin ? onSwitchToLogin() : navigate("/login", { state: location.state }))}
             className="text-sm text-muted-foreground hover:text-foreground"
           >
             {t("Déjà un compte ? Se connecter")}

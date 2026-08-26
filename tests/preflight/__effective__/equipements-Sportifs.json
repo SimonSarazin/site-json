@@ -32,6 +32,16 @@
           "declare": "edit-equipements-sportifs",
           "native": "edit-equipements-sportifs",
           "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-equipements-sportifs",
+          "native": "edit-equipements-sportifs",
+          "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-equipements-sportifs",
+          "native": "edit-equipements-sportifs",
+          "horsPerimetre": "edit-profile"
         }
       ]
     }
@@ -59,6 +69,7 @@
         "defaultTypes": [
           "poi"
         ],
+        "costumSlug": "equipementsSportifs974",
         "defaultFields": [
           "name",
           "equip_type_name",
@@ -124,6 +135,7 @@
         "defaultTypes": [
           "poi"
         ],
+        "costumSlug": "equipementsSportifs974",
         "defaultFields": [
           "name",
           "equip_type_name",
@@ -184,6 +196,7 @@
         "defaultTypes": [
           "poi"
         ],
+        "costumSlug": "equipementsSportifs974",
         "defaultFields": [
           "name",
           "equip_type_name",
@@ -240,7 +253,18 @@
       }
     }
   },
-  "referencement": {},
+  "referencement": {
+    "poi": {
+      "sousTypes": [
+        "recoveryCenter"
+      ],
+      "annotation": "reference.costumTypes.equipementsSportifs974"
+    },
+    "events": {
+      "sousTypes": [],
+      "annotation": null
+    }
+  },
   "membership": {
     "citoyens/membership": {
       "types": [

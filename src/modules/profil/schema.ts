@@ -459,8 +459,6 @@ export const ProfileConfigSchema = z.object({
     editModal: z.string(),
     editModalMatch: z.record(z.string(), z.unknown()).optional(),
     when: PredicateJson.optional(),
-    /** Commentaire libre (JSON n'en a pas) : justifier une condition de périmètre non évidente. */
-    _comment: z.string().optional(),
   })).optional(),
   seo: z.object({
     titleTemplate: z.string().optional(),

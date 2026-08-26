@@ -1395,6 +1395,17 @@
     "accommodationSpace": "Accommodation space",
     "nightly": "Night",
     "bed": "bed",
+    "detail": {
+      "area": "Area",
+      "solidarity": "Solidarity rate available",
+      "equipments": "Equipment",
+      "catering": "Catering",
+      "services": "Services offered",
+      "roomType": "Room type",
+      "moreInfo": "Good to know",
+      "about": "About the place",
+      "tip": "The little extra"
+    },
     "reserve": "Book now",
     "confirmDelete": "Are you sure you want to delete this item?",
     "confirmDeleteTitle": "Delete this item",

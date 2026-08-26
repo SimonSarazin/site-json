@@ -46,6 +46,16 @@ export interface SpecInject {
   role?: boolean;
   /** buildParentReference(ctx.parent) → payload.parent. */
   parent?: boolean;
+  /** buildParentReference(ctx.carrier) → payload.parent — variante de `parent` pour une création
+   *  costum-scopée SANS entité parente "vue" (ex. depuis un tableau admin, pas depuis la page d'une
+   *  entité) : le porteur du site (`ctx.carrier`, déjà résolu pour `scope:{slugFrom:"carrier"}`) sert
+   *  de parent — même mécanisme que la modale POI standard (`configs/addStandard.tsx`), qui pose
+   *  `inject.parent` depuis l'entité déjà résolue par le point d'entrée. Sans ça, `parent` repose sur
+   *  le default AJV du schéma de base (`{"@userId":{type:"citoyens"}}`) — qui ne part jamais
+   *  réellement sur le réseau (écart `data`/`dataForValidation` de `ApiClient.callEndpoint`) : le
+   *  backend reçoit un POI sans parent et le refuse. Mutuellement exclusif avec `parent` (celui-ci
+   *  prime si les deux sont posés). */
+  parentFromCarrier?: boolean;
   /** organizer vide → buildOrganizerReference(ctx.parent, ctx.me) (event). */
   organizerFallback?: boolean;
   /** supprime payload.email === "" (ADD_ORGANIZATION). */

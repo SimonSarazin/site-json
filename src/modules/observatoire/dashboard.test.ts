@@ -244,6 +244,41 @@ describe("buildObservatoryBaseParams / observatoryPrefetchParams", () => {
     expect("notSourceKey" in buildObservatoryBaseParams({ ...baseParamsProp, notSourceKey: false }, DIMS)).toBe(false);
   });
 
+  // NON-RÉGRESSION du parc : `sourceKey`/`costumSlug` sont ADDITIFS. Aucune des 7 sections
+  // data-observatory du parc ne les déclare (vérifié config par config) — l'objet produit pour
+  // une config qui les ignore doit donc rester EXACTEMENT celui d'avant, sinon la queryKey
+  // change et tous les caches SSR/client des observatoires existants ratent leur hit.
+  it("sourceKey/costumSlug absents → objet INCHANGÉ (aucune clé parasite)", () => {
+    const bp = buildObservatoryBaseParams(baseParamsProp, DIMS);
+    expect("sourceKey" in bp).toBe(false);
+    expect("costumSlug" in bp).toBe(false);
+    expect(Object.keys(bp).sort()).toEqual(
+      ["defaultFields", "defaultFilters", "defaultSortBy", "defaultTypes", "indexStepList"],
+    );
+  });
+
+  it("sourceKey vise un AUTRE costum ; costumSlug arme le gate de validation", () => {
+    const bp = buildObservatoryBaseParams(
+      { ...baseParamsProp, sourceKey: ["equipementsSportifs974"], costumSlug: "saintpaulSport1" },
+      DIMS,
+    );
+    expect(bp.sourceKey).toEqual(["equipementsSportifs974"]);
+    expect(bp.costumSlug).toBe("saintpaulSport1");
+  });
+
+  it("sourceKey vide → omis (un tableau vide ne vaut pas un périmètre)", () => {
+    expect("sourceKey" in buildObservatoryBaseParams({ ...baseParamsProp, sourceKey: [] }, DIMS)).toBe(false);
+  });
+
+  it("les deux clés traversent le prefetch SSR — mêmes baseParams que le client (queryKey)", () => {
+    const props = {
+      baseParams: { ...baseParamsProp, costumSlug: "saintpaulSport1" },
+      dimensions: DIMS,
+    };
+    const prefetch = observatoryPrefetchParams(props as never);
+    expect(prefetch?.baseParams).toEqual(buildObservatoryBaseParams(props.baseParams, DIMS));
+  });
+
   it("RÉGRESSION alignement SSR⇄client : le prefetch produit EXACTEMENT les baseParams du hook", () => {
     const params = observatoryPrefetchParams({ baseParams: baseParamsProp, dimensions: DIMS });
     expect(params).not.toBeNull();

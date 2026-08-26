@@ -190,6 +190,26 @@
         }
       }
     },
+    "/communaute/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "NGO",
+          "LocalBusiness",
+          "Group",
+          "GovernmentOrganization",
+          "Cooperative"
+        ],
+        "notSourceKey": true,
+        "defaultFilters": {
+          "preferences.toBeValidated.sportSanteBienetre": {
+            "$exists": false
+          },
+          "links.members.682b2ac5e05a1d45844340e7": {
+            "$exists": true
+          }
+        }
+      }
+    },
     "/structure/searchProStatic": {
       "baseParams": {
         "defaultTypes": [

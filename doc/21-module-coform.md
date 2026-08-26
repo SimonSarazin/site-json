@@ -10,6 +10,7 @@
   - [Routes](#routes)
   - [Pages](#pages)
     - [CoFormPage](#coformpage)
+    - [CoFormPlacePage — vue collaborative « par lieu »](#coformplacepage--vue-collaborative--par-lieu-)
   - [Composants principaux](#composants-principaux)
     - [SmartCoForm](#smartcoform)
     - [DynamicCoForm](#dynamiccoform)
@@ -27,6 +28,12 @@
     - [FinderField](#finderfield)
     - [SimpleTableField](#simpletablefield)
     - [UploaderField](#uploaderfield)
+    - [CategorizedCheckboxField](#categorizedcheckboxfield)
+    - [CommonTableField](#commontablefield)
+    - [TimeSlotsField](#timeslotsfield)
+    - [DynamicFieldsField](#dynamicfieldsfield)
+    - [LocationField](#locationfield)
+  - [Brouillon local, récap d'erreurs et sortie non sauvegardée](#brouillon-local-récap-derreurs-et-sortie-non-sauvegardée)
   - [Hooks](#hooks)
     - [useCoFormQuery](#usecoformquery)
     - [useCoFormAnswerQuery](#usecoformanswerquery)
@@ -61,7 +68,8 @@ Le module **CoForm** (`src/modules/coform/`) affiche et gère des formulaires dy
 - Support consultation/édition de réponses existantes
 - Pipeline d'upload de fichiers délégué à `@communecter/cocolight-api-client` (`Answer.processUploads`)
 - Logique conditionnelle (afficher/masquer des champs selon les valeurs)
-- Champs avancés : evaluation (tableau multi-critères), finder (recherche entités), simpleTable (tableau 2D), multiRadio (radio + texte), multiCheckboxPlus (checkbox + options dynamiques)
+- Champs avancés : evaluation (tableau multi-critères), commonTable (matrice usage × solution + catalogue collaboratif), finder (recherche entités), simpleTable (tableau 2D), multiRadio (radio + texte), multiCheckboxPlus (checkbox + options dynamiques), categorizedCheckbox (cases à cocher 2 niveaux), timeSlots (créneaux horaires), dynamicFields (lignes dynamiques), location (adresse géolocalisée)
+- Brouillon localStorage, récapitulatif d'erreurs et avertissement de sortie non sauvegardée
 
 **Type de module** : `core` — chargé en eager.
 
@@ -76,6 +84,8 @@ src/modules/coform/
 │   ├── file.ts              # useCoFormFinalMutation — délègue à Answer.processUploads + Answer.save
 │   └── index.ts             # Barrel export mutations
 ├── components/
+│   ├── AnswerActivityDialog.tsx # Historique d'audit d'une réponse (useCoFormAnswerHistory)
+│   ├── CategorizedCheckboxField.tsx # Cases à cocher 2 niveaux (options manuelles ou commonTable distant)
 │   ├── CoFormAccessGuard.tsx    # Garde d'accès (6 cas)
 │   ├── CoFormAnswerPicker.tsx   # Sélecteur de réponse parmi plusieurs existantes
 │   ├── CoFormBanner.tsx         # Bannière partagée (image + overlay ou dégradé + titre)
@@ -83,7 +93,12 @@ src/modules/coform/
 │   ├── CoFormReadOnly.tsx       # Affichage lecture seule d'une réponse
 │   ├── CoFormSection.tsx        # Section JSON type "coform" pour SectionRenderer
 │   ├── CoFormThankYou.tsx       # Page de remerciement personnalisable
+│   ├── CommonTableField.tsx     # Matrice usage × solution (commonTableV2) + catalogue collaboratif
+│   ├── CommonTableContributorsDialog.tsx # Contributeurs d'une ligne de commonTable
+│   ├── DraftRecoveryBanner.tsx  # Bannière brouillon : restaurable / périmé
 │   ├── DynamicCoForm.tsx        # Formulaire mono-étape (react-hook-form + Zod)
+│   ├── DynamicFieldsField.tsx   # Répéteur de lignes à sous-champs configurés
+│   ├── ErrorSummary.tsx         # Récap des champs invalides (scroll + halo au clic)
 │   ├── EvaluationField.tsx      # Champ tableau d'évaluation multi-critères
 │   ├── EvaluationVoteCell.tsx   # Cellule de vote (colour/emoji/note/star)
 │   ├── FinderElementCard.tsx    # Carte d'un élément sélectionné par Finder
@@ -91,15 +106,22 @@ src/modules/coform/
 │   ├── FinderSearchModal.tsx    # Modale de recherche du Finder
 │   ├── FormFields.tsx           # TextField, TextAreaField, RadioField, CheckboxField,
 │   │                            #   SectionTitleField, SectionDescriptionField, ProseContent, FieldError
+│   ├── LocationField.tsx        # Adresse géolocalisée (parité dynForm formLocality) via AddressPicker
 │   ├── MarkdownEditor.tsx       # Éditeur Markdown client-only (@uiw/react-md-editor) — thème global,
 │   │                            #   toolbar réduite, preview sanitisée (renderMarkdown), overflow={false}
 │   ├── MultiCheckboxPlusField.tsx # Checkbox + champ texte optionnel par option
+│   ├── MultiEvalChartDialog.tsx # Dialog "Voir les évaluations" (radars agrégés d'une réponse)
+│   ├── MultiEvalRadarChart.tsx  # Rendu d'un radar (recharts, importé dynamiquement)
+│   ├── MultiEvalRadarTabs.tsx   # Un onglet par step pour les radars multi-eval
 │   ├── MultiRadioField.tsx      # Radio à sélection unique avec options simples/complexes
 │   ├── MultiStepCoForm.tsx      # Wizard multi-étapes avec navigation
+│   ├── PlaceFormView.tsx        # Vue collaborative : réponse partagée d'un lieu
+│   ├── PlacesListView.tsx       # Vue collaborative : liste des lieux éligibles du user
 │   ├── ReadOnlyUploaderGallery.tsx # Galerie images en lecture seule
 │   ├── SimpleTableField.tsx     # Champ tableau 2D éditable
 │   ├── SmartCoForm.tsx          # Wrapper intelligent mono/multi-étape
 │   ├── SmartCoForm.test.tsx     # Tests unitaires SmartCoForm
+│   ├── TimeSlotsField.tsx       # Répéteur de créneaux {jour, début, fin}
 │   └── UploaderField.tsx        # Upload fichiers/images avec prévisualisation
 ├── constants/
 │   ├── index.ts             # COFORM_TYPE_MAPPING, BOOTSTRAP_TO_TAILWIND_WIDTH,
@@ -107,26 +129,39 @@ src/modules/coform/
 │   └── queryKeys.ts         # COFORM_QUERY_KEYS (source de vérité), CoformQueryKeyType
 ├── contexts/
 │   ├── CoFormContext.tsx     # Définition CoFormContextType, CoFormStepState
-│   ├── CoFormProvider.tsx   # Provider : état multi-étapes, navigation, stepsDataRef
-│   └── CoFormProvider.test.tsx # Tests unitaires CoFormProvider
+│   ├── CoFormProvider.tsx   # Provider : état multi-étapes, navigation, stepsDataRef, brouillon localStorage
+│   ├── CoFormProvider.test.tsx # Tests unitaires CoFormProvider
+│   ├── CommonTableCatalogsContext.ts   # Contexte des catalogues collaboratifs commonTable
+│   └── CommonTableCatalogsProvider.tsx
 ├── hooks/
+│   ├── useCategorizedCheckboxOptions.ts # Arbre d'options (liste manuelle ∪ questions commonTable distantes)
 │   ├── useCoForm.tsx            # useCoForm() + useOptionalCoForm()
 │   ├── useCoFormAnswerFiles.tsx # Charge fichiers legacy d'une réponse
+│   ├── useCoFormAnswerHistory.tsx # Historique d'audit d'une réponse (≤ 200 entrées, auth serveur)
+│   ├── useCoFormCatalogs.ts     # Catalogues collaboratifs commonTable en UN appel batch (0 si aucun)
+│   ├── useCoFormDraft.ts        # Brouillon localStorage (TTL 30 j, debounce 500 ms, conflit serveur)
 │   ├── useCoFormNavigation.tsx  # useCoFormNavigation() + useCoFormSubmit()
 │   ├── useCoFormPermissions.ts  # Wrapper usePermissions(["coform"])
 │   ├── useCoFormQuery.tsx       # useCoFormQuery, useCoFormAnswerQuery, useCoFormStepMutation
 │   │                            #   (re-exporte useCoFormFinalMutation depuis mutations/file.ts)
 │   ├── useCoFormStep.tsx        # react-hook-form + Zod par étape
+│   ├── useCommonTableCatalog.ts # Catalogue (lecture seule) d'un input commonTable
+│   ├── useCommonTableContributors.tsx # Contributions individuelles d'une ligne de commonTable
 │   ├── useConditionalFields.ts  # Visibilité conditionnelle des champs
 │   ├── useConditionalFields.test.ts
+│   ├── useElementSummary.ts     # Résume un élément (nom + image) via la méthode entity du SDK
+│   ├── useFinderElementImages.ts # Re-résout au runtime l'image des éléments finder (img figé/absent)
 │   ├── useFinderSearchResults.ts  # Recherche d'entités via searchCostum (RQ + debounce)
-│   └── useFinderSearchResults.test.tsx
+│   ├── useFinderSearchResults.test.tsx
+│   ├── useMultiEvalData.tsx     # Datasets agrégés des évaluations multiples (radar)
+│   └── useUnsavedChangesWarning.ts # beforeunload tant que le formulaire est dirty
 ├── i18n/
 │   ├── en.json / fr.json    # Traductions
 │   └── i18n.ts              # Enregistrement namespace "modules/coform"
 ├── pages/
 │   ├── CoFormAnswerPage.tsx # Page réponse : readonly ou édition
-│   └── CoFormPage.tsx       # Page principale : accès, soumission, thank you
+│   ├── CoFormPage.tsx       # Page principale : accès, soumission, thank you
+│   └── CoFormPlacePage.tsx  # Vue collaborative par lieu (liste / détail)
 ├── permissions/
 │   ├── calculators/coform.ts  # Calculateur permissions (avec tests)
 │   ├── calculators/coform.test.ts
@@ -137,6 +172,12 @@ src/modules/coform/
 ├── prefetch/
 │   └── index.ts             # prefetchCoFormQuery, invalidateCoFormQuery, invalidateCoFormAnswersQuery
 ├── utils/
+│   ├── categorizedCheckbox.ts # Helpers purs : arbre d'options + résolution des clés `<index>_<slug>`
+│   ├── coformLocality.ts    # Sérialisation ↔ désérialisation de la valeur d'un champ adresse
+│   ├── commonTableNote.ts   # 5 paliers de couleur de la note (alignés sur commonTableV2.php)
+│   ├── commonTableUsage.ts  # Règle de regroupement par usage (partagée avec categorizedCheckbox)
+│   ├── finderFilters.ts     # buildFinderMongoFilters (inclusions + exclusions) — voir FinderField
+│   ├── formatRelative.ts    # Ancienneté relative (tolère timestamp en s ou en ms)
 │   ├── formParser.ts        # parseCoFormFields, generateZodSchema, generateDefaultValues,
 │   │                        #   normalizeAnswerData, denormalizeAnswerData, extractFinderLinks,
 │   │                        #   mapCoFormTypeToComponentType, getOriginalFieldKey,
@@ -146,6 +187,9 @@ src/modules/coform/
 │   │                        #   formatTimestamp, isStepComplete, mergeStepsData
 │   ├── helpers.test.ts
 │   ├── index.ts             # Re-export formParser + helpers + toFinderSearchResult + toRelativeImageUrl
+│   ├── simpleTable.ts       # Helpers purs de mutation des lignes (mode editInModal)
+│   ├── slugify.ts           # Réplique EXACTE du slugifyString legacy (moitié d'une clé persistée)
+│   ├── timeSlots.ts         # Logique pure des créneaux (format legacy, lecture des données 12 h)
 │   ├── toFinderSearchResult.ts  # SDK SearchEntity → FinderSearchResult
 │   ├── toFinderSearchResult.test.ts
 │   ├── toRelativeImageUrl.ts    # URL absolue → chemin relatif (robustesse migration)
@@ -166,8 +210,10 @@ src/modules/coform/
 |---|---|---|
 | `/coform/:formId` | `CoFormPage` | Formulaire avec contrôle d'accès, soumission, thank you page |
 | `/coform/:formId/answer/:answerId?mode=edit\|readonly` | `CoFormAnswerPage` | Consultation ou édition d'une réponse existante |
+| `/coform/:formId/place` | `CoFormPlacePage` | Vue collaborative : liste des lieux du user (`PlacesListView`) |
+| `/coform/:formId/place/:placeId` | `CoFormPlacePage` | Vue collaborative : réponse partagée d'un lieu (`PlaceFormView`) |
 
-Le loader `coformLoader` extrait et valide `formId` (404 si absent). Le loader `coformAnswerLoader` extrait `formId`, `answerId`, et le paramètre `mode` (défaut: `"readonly"`).
+Le loader `coformLoader` extrait et valide `formId` (404 si absent) — il sert aussi les deux routes `place`. Le loader `coformAnswerLoader` extrait `formId`, `answerId`, et le paramètre `mode` (défaut: `"readonly"`).
 
 ---
 
@@ -203,6 +249,22 @@ Le callback `onSuccess: refetch` permet de recalculer immédiatement les champs 
 5. Après succès : `refetch()` est appelé → `access` est recalculé → `CoFormAccessGuard` laisse passer les enfants
 
 Voir [Module Auth](23-module-auth.md) pour le mécanisme global (`AuthModalProvider`, `useAuthModal`, `AuthModalOptions`).
+
+### CoFormPlacePage — vue collaborative « par lieu »
+
+`pages/CoFormPlacePage.tsx` sert les **deux** routes `place` : sans `:placeId` elle rend `PlacesListView`, avec
+elle rend `PlaceFormView`.
+
+- **`PlacesListView`** liste les lieux (organisations) de l'utilisateur via `useUserEligiblePlaces`
+  (`modules/profil/hooks/useMembershipQuery` → `user.getEligiblePlaces`), appelé avec les filtres Mongo du **finder partagé** du
+  formulaire (`getSharedFinderInfo` → `buildFinderMongoFilters`, cf. [FinderField](#finderfield)) et
+  `notSourceKey`. Le filtrage métier est donc fait **côté serveur**, ce qui garde la pagination correcte. La vue
+  sépare les lieux validés (admin/membre, via `calculateOrganizationPermissions`) des demandes en attente, et
+  propose `FinderSearchModal` pour rejoindre un lieu absent de la liste. Deux props d'intégration :
+  `onOpenPlace` (rester dans une modale au lieu de naviguer) et `hidePageChrome` (montée dans un `Dialog`).
+- **`PlaceFormView`** pré-remplit le finder partagé avec le lieu sélectionné, puis rend `SmartCoForm`.
+- Sur le détail, `useCoFormQuery` reçoit `elementId: placeId` + `elementType: "organizations"` pour que le
+  serveur renvoie l'`access` de la **réponse partagée du lieu**, et non la réponse personnelle de l'utilisateur.
 
 ---
 
@@ -545,6 +607,129 @@ Upload fichiers/images avec prévisualisation. Supporte :
 - Valeur format legacy (base de données) : `UploaderLegacyValue = { updateDate: string[], files: Record<string, string> }`
 
 Les `data:URI` sont collectés lors de la soumission par `Answer.processUploads` (côté lib) avant l'envoi des données finales.
+
+---
+
+### CategorizedCheckboxField
+
+Cases à cocher à **deux niveaux** : des catégories, et sous chacune des sous-options. Les options viennent soit
+d'une liste saisie par l'admin, soit — c'est la raison d'être de cet input — de questions `commonTableV2` d'un
+formulaire **tiers** : chaque question devient une catégorie, chacune de ses criterias une sous-option
+(`hooks/useCategorizedCheckboxOptions.ts`, helpers purs `utils/categorizedCheckbox.ts`).
+`config.dataSourceToUse` vaut `"manual"` | `"distanceOnly"` | `"both"` (défaut **serveur** `"both"` quand la clé
+est absente), complété par `list`/`sublist` (saisis) et `formParamsSource`/`questionsParamsSource` (distants).
+
+Valeur stockée, forme legacy conservée : `{ list: string[], sublist: Record<cléCatégorie, string[]> }`. Les
+identifiants sont des clés `<index>_<slug>` — **l'index fait partie de la clé persistée** (position dans la liste
+avant déduplication), et le slug vient de `utils/slugify.ts`, réplique exacte du `slugifyString` du template
+legacy : toute divergence, même d'un seul caractère, rend une réponse déjà enregistrée irrésoluble. Les clés qui
+ne se résolvent plus (question renommée, liste réordonnée) sont affichées quand même.
+
+Deux comportements repris du legacy : cocher une sous-option coche sa catégorie ; décocher la dernière
+sous-option décoche la catégorie.
+
+---
+
+### CommonTableField
+
+Matrice usage × solution (`tpls.forms.evaluation.commonTableV2`) : pour chaque usage, le répondant déclare la ou
+les solutions qu'il utilise et les qualifie. Colonnes activables une à une par `config.showColumns`
+(`criteria`/`happiness`/`note`/`yesNo`/`comment`), intitulés par `config.labels`, lignes par `config.usages`
+(`usageKey`, `label`, `group` de regroupement optionnel).
+
+Valeur composite côté React : `{ scores: Record<criteriaId, CommonTableSolution>, myCatalog: Record<criteriaId,
+CommonTableMyCatalogEntry> }`. À la dénormalisation elle est **splittée en deux entrées root-level** :
+`yesOrNo{key}` (les scores — d'où le préfixe RHF `yesOrNo`) et `criterias{key}` (les ajouts de l'utilisateur au
+catalogue). Comme `evaluation`, `commonTable` est donc un champ **stocké à la racine** de `answers`.
+
+Le **catalogue collaboratif** (criterias agrégées sur toutes les réponses + `count` par criteriaId) est chargé en
+un seul appel batch par `useCoFormCatalogs` — aucun appel réseau si le formulaire n'a pas de commonTable — et lu
+par input via `useCommonTableCatalog` ; le clic sur le badge d'une ligne ouvre `CommonTableContributorsDialog`
+(`useCommonTableContributors`, contributions individuelles + lieu évalué pour un form collaboratif par lieu). La
+règle de regroupement par usage vit dans `utils/commonTableUsage.ts` — **partagée** avec `categorizedCheckbox`,
+qui construit ses sous-options depuis le même catalogue (deux implémentations divergeraient) — et les paliers de
+couleur de la note dans `utils/commonTableNote.ts` (5 tranches alignées sur les `states` de `commonTableV2.php`).
+
+---
+
+### TimeSlotsField
+
+Répéteur de lignes `{jour, début, fin}` (`config.enableMultipleSlots`, `minuteStep`, `defaultStartTime` /
+`defaultEndTime`). Les `<input type="time">` natifs portent le picker et rendent toujours `"HH:MM"` **24 h**,
+si bien que le `timeFormat` legacy (`"24h"` | `"12h"`) ne pilote que l'AFFICHAGE, jamais le stockage.
+
+Format de sauvegarde = legacy (vérifié sur les answers réelles) : jour en anglais capitalisé (`"Monday"`),
+heures et minutes en chaînes zéro-paddées séparées. `startAmPm`/`endAmPm` n'existent que dans les données legacy
+saisies en 12 h — ils sont **lus** puis résolus en 24 h à l'édition, jamais ré-écrits. Logique pure et testée :
+`utils/timeSlots.ts`.
+
+---
+
+### DynamicFieldsField
+
+Répéteur de lignes dont les sous-champs viennent de la config admin (`config.fieldsConfig[]` : `key`, `label`,
+`type` — types HTML natifs, plus `select`/`textarea` —, `placeholder`, `required`, `validation`, `options`).
+Réglages : `enableMultipleRows`, `minRows`/`maxRows`, `layout.fieldsPerRow` (Tailwind exige des classes
+STATIQUES → table de correspondance 1..6, mobile toujours 1 colonne), `ui.addButtonText`/`removeButtonText`.
+Format sauvé = legacy : `Array<Record<cléSousChamp, string>>`.
+
+---
+
+### LocationField
+
+Adresse géolocalisée — parité dynForm `formLocality`. Édité via `AddressPicker` (`@/lib/location`) sous forme
+d'un tableau d'entrées, dont une principale (`center`). La valeur stockée sous `answers[formId][key]` est
+l'objet composite `{ formLocality, address, geo, geoPosition, addresses }` (miroir `addressInDynform.php`), où
+`address`/`geo`/`geoPosition` recopient l'adresse principale pour la lecture et la carte. Conversion aux
+frontières par `utils/coformLocality.ts` : `parseStoredToEntries` en lecture (tolère l'ancienne chaîne libre et
+l'objet legacy plat), `entriesToStored` en écriture (`undefined` si vidé).
+
+> Sans le mapping `location`, ces champs retombaient en `text` : saisie libre et **perte totale de la donnée
+> géo** — d'où aussi le fallback regex sur tout segment final adresse/localité (cf. [§ mapping](#utils--formparser)).
+
+---
+
+## Brouillon local, récap d'erreurs et sortie non sauvegardée
+
+Trois mécanismes transverses, actifs sur les **deux** formulaires.
+
+### Brouillon localStorage (`useCoFormDraft`)
+
+`hooks/useCoFormDraft.ts` — clé `coform-draft:v1:<formId>:<userId>:<answerId|new>`, TTL **30 jours**, écritures
+**debouncées 500 ms**. Le contrat `CoFormDraft` porte `{version:1, data, currentStepIndex, completedSteps,
+addedOptions, timestamp, baseUpdatedAt}`. Désactivé si utilisateur anonyme, `formId` manquant ou `disabled`.
+
+- **Détection de conflit** : si l'`updatedAt` serveur est postérieur au `baseUpdatedAt` du brouillon, celui-ci
+  est supprimé et signalé comme *périmé* (`staleDraftInfo`) au lieu d'être proposé.
+- **Robustesse** : un brouillon corrompu ou de version inconnue est supprimé et ignoré (pas de crash au
+  restore) ; SSR-safe via `useSyncExternalStore` dont le `getServerSnapshot` est vide, donc pas de divergence
+  d'hydratation ; les brouillons écrits **pendant la session courante** sont filtrés, sinon la bannière
+  réapparaîtrait à chaque save.
+- **Montage** : `DynamicCoForm` appelle le hook directement ; en multi-étapes c'est **`CoFormProvider`** qui le
+  monte (auto-save à chaque changement de `stepState`, restauration de la position exacte du wizard) et l'expose
+  par le contexte (`restorableDraft`, `staleDraftInfo`, `restoreDraft`, `discardDraft`, `acknowledgeStaleDraft`),
+  `MultiStepCoForm` n'en rendant que la bannière. Prop d'entrée : `enableDraft` (défaut `true`).
+- **`DraftRecoveryBanner`** rend les deux modes : `restorable` (Restaurer / Ignorer, avec l'ancienneté relative
+  via `utils/formatRelative.ts`) et `stale` (information seule).
+
+### Récapitulatif d'erreurs (`ErrorSummary`)
+
+`components/ErrorSummary.tsx` — liste les champs en erreur (libellé + message) et l'erreur serveur éventuelle,
+affiché **seulement après une tentative de soumission échouée** (les `errors` ne lui sont passées qu'à partir de
+là). Cette même tentative scrolle d'office au 1ᵉʳ champ fautif et émet un toast. Cliquer une entrée du récap
+appelle `scrollToFieldByName` (`utils/helpers.ts`) : recherche `[data-field-name]`, repli sur `[name]` puis sa
+cellule de grille, `scrollIntoView` centré, focus, puis halo d'attention (Web Animations — court-circuité si
+`prefers-reduced-motion`). Chaque champ est enveloppé d'un wrapper `data-field-name` en `display: contents`
+(ne casse pas la grille).
+
+> ⚠️ Le composant n'est **ni `memo`, ni `useMemo`é sur `errors`** : RHF peut MUTER `_formState.errors` en place
+> en gardant la même référence — toute mémoïsation sur cette référence figerait le récap.
+
+### Avertissement de sortie (`useUnsavedChangesWarning`)
+
+`hooks/useUnsavedChangesWarning.ts` — s'abonne à `beforeunload` tant que `isDirty` : le navigateur affiche son
+propre texte générique (le message personnalisé est ignoré par les navigateurs modernes). Appelé par
+`DynamicCoForm` et `MultiStepCoForm` avec `form.formState.isDirty`.
 
 ---
 
@@ -963,22 +1148,34 @@ interface CoFormProviderProps {
 
 | Type CoForm | `componentType` |
 |---|---|
-| `text`, `url`, `email`, `tel`, `number` | `text` (avec `inputType` correspondant) |
+| `text`, `url`, `email`, `tel`, `number`, `date`, `time`, `datetime-local`, `tpls.forms.emailUser` | `text` (avec `inputType` correspondant ; les types date/heure natifs portent le picker et la valeur ISO) |
 | `textarea` | `textarea` |
 | `tpls.forms.cplx.radioNew` | `radio` |
 | `tpls.forms.cplx.checkboxNew` | `checkbox` |
 | `tpls.forms.cplx.multiCheckboxPlus` | `multiCheckboxPlus` |
 | `tpls.forms.cplx.multiRadio` | `multiRadio` |
+| `tpls.forms.cplx.categorizedCheckbox` | `categorizedCheckbox` |
 | `tpls.forms.cplx.evaluation`, `tpls.forms.evaluation.evaluation` | `evaluation` |
+| `tpls.forms.evaluation.commonTableV2` | `commonTable` |
 | `tpls.forms.cplx.finder`, `tpls.forms.finder.finder` | `finder` |
 | `tpls.forms.cplx.simpleTable` | `simpleTable` |
+| `tpls.forms.cplx.timeSlots` | `timeSlots` |
+| `tpls.forms.cplx.dynamicFields` | `dynamicFields` |
+| `formLocality`, `location`, `address`, `tpls.forms.cplx.addressInDynform`, `tpls.forms.cplx.address` | `location` |
 | `tpls.forms.uploader` | `uploader` |
 | `sectionTitle`, `tpls.forms.sectionTitle` | `sectionTitle` |
 | `tpls.forms.sectionDescription` | `sectionDescription` |
-| `select` | `select` |
+| `select`, `tpls.forms.select` | `select` |
 | Inconnu | `unknown` |
 
-**Préfixes de champs** (FIELD_PREFIX_MAP) : `finder` → `"finder"`, `multiCheckboxPlus` → `"multiCheckboxPlus"`, `multiRadio` → `"multiRadio"`, `evaluation` → `"evaluation"`. Ces préfixes sont ajoutés au nom du champ pour react-hook-form (ex: champ `abc123` de type finder → `name: "finderabc123"`).
+**Deux fallbacks par expression régulière**, après la table (les costums legacy déclinent leurs propres
+templates, `tpls.forms.costum.<slug>.<chose>`) : tout type dont le **segment final** est
+`addressInDynform`/`formLocality`/`address`/`location` (insensible à la casse) → `location`, et tout segment
+final se terminant par `finder` → `finder` (on perd la création custom du costum, on garde la sélection).
+
+**Préfixes de champs** (FIELD_PREFIX_MAP) : `finder` → `"finder"`, `multiCheckboxPlus` → `"multiCheckboxPlus"`, `multiRadio` → `"multiRadio"`, `evaluation` → `"evaluation"`, `commonTable` → `"yesOrNo"` (le legacy stocke les scores sous `yesOrNo{key}`, le catalogue user sous la clé jumelle `criterias{key}`). Ces préfixes sont ajoutés au nom du champ pour react-hook-form (ex: champ `abc123` de type finder → `name: "finderabc123"`).
+
+**Champs stockés à la RACINE de `answers`** (`ROOT_LEVEL_FIELDS`, cf. `isRootLevelField`) : `evaluation` **et** `commonTable` — `normalizeAnswerData`/`denormalizeAnswerData` font l'aller-retour racine ↔ sous-formulaire.
 
 ---
 
@@ -1042,6 +1239,11 @@ Convertit une URL d'image absolue en chemin relatif (`pathname + search`) pour u
 | `FinderSearchResult` | `{ id, name, type, profilThumbImageUrl?, email?, address? }` |
 | `FinderLinksMap` | `Record<type, Record<id, { name, type }>>` — liens à injecter dans `answer.links` |
 | `SimpleTableConfig` | `{ tableName, columns, rows, activeNewLine, singleAnswerByLine, editInModal }` |
+| `CategorizedCheckboxConfig` | `{ dataSourceToUse, list, sublist, formParamsSource, questionsParamsSource }` (+ `CategorizedCheckboxValue` `{list, sublist}`, `CategorizedCheckboxOption`/`Child` pour l'arbre rendu) |
+| `CommonTableConfig` | `{ showColumns, labels, usages[] }` (+ `CommonTableValue` `{scores, myCatalog}`, `CommonTableSolution`, `CommonTableMyCatalogEntry`, `CommonTableCatalog(s)`, `HappinessValue`) |
+| `TimeSlotsConfig` | `{ enableMultipleSlots?, timeFormat?, minuteStep?, defaultStartTime?, defaultEndTime? }` (+ `TimeSlotValue`) |
+| `DynamicFieldsConfig` | `{ enableMultipleRows?, minRows?, maxRows?, fieldsConfig[], layout?, ui? }` (+ `DynamicFieldsSubField`, `DynamicFieldsRow`) |
+| `CoFormDraft` | Brouillon localStorage : `{ version:1, data, currentStepIndex, completedSteps, addedOptions, timestamp, baseUpdatedAt }` |
 | `UploaderConfig` | `{ docType, itemLimit, sizeLimit, formats?, displayMode? }` |
 | `UploaderValue` | `Array<string \| ImageUploadValue \| ExistingUploadFile>` |
 | `MultiRadioValue` | `{ value: string; type?: "simple"\|"cplx"; textsup?: string }` |

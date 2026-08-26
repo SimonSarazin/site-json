@@ -14,6 +14,9 @@ import {
   cheminAnnotation,
   type CostumFormSubTypeLike,
 } from "@/modules/search/lib/costumSubType";
+import { walkSections, type SectionLike } from "@/lib/sectionContainers";
+import { answerToggleArgs, type AnswerGroupConf } from "@/modules/search/lib/answerFilterClause";
+import { searchByFieldsToQuery } from "@/modules/search/lib/searchByFieldsToQuery";
 
 /**
  * GARDE D'IMPACT INTER-CONFIGS — étage 2 : le « comportement résolu par site ».
@@ -197,14 +200,53 @@ function projeter(site: string, cfg: Cfg) {
   // ── Pages PUBLIQUES : tout `props.baseParams` porté par une section de page, APRÈS expansion —
   //    c'est la surface de `/bibliotheque` et `/financements` (useSearchQuery/prefetch), que la
   //    première version ne couvrait pas (défaut trouvé en revue : seul l'admin était projeté).
+  //    Le parcours passe par `walkSections` (registre partagé avec le prefetch SSR) : une section
+  //    imbriquée dans un `tabs`/`gridLayout` interroge le backend comme les autres, et une boucle
+  //    À PLAT la rate en silence — 11 sections du parc étaient hors garde (revue MR !35).
   const pages: Record<string, unknown> = {};
   for (const page of (cfg.pages as Array<Record<string, unknown>> | undefined) ?? []) {
-    for (const section of (page.sections as Array<Record<string, unknown>> | undefined) ?? []) {
+    const sections = (page.sections as SectionLike[] | undefined) ?? [];
+    for (const section of walkSections(sections)) {
       const props = section.props as { baseParams?: Record<string, unknown> } | undefined;
       if (!props?.baseParams) continue;
       pages[cleUnique(pages, `${page.path}/${section.type}`)] = {
         baseParams: expandCostumSubType(structuredClone(props.baseParams) as never, forms, slug),
       };
+    }
+  }
+
+  // ── Facettes « par réponses » : pour chaque groupe `filtersByAnswers`/`filtersByPath`, le
+  //    filtre Mongo RÉELLEMENT émis au clic sur une valeur — calculé par les fonctions pures de
+  //    l'app (`answerToggleArgs` + `searchByFieldsToQuery`), sur une valeur témoin.
+  //    Sans cette projection la garde était AVEUGLE à ce chemin : aucune fixture ne portait de
+  //    `filtersByAnswers`, alors que 3 configs du parc en déclarent 11 groupes — et le bug des
+  //    facettes mortes de `/creneaux` (filtre par `_id` d'organisation sur une liste d'answers)
+  //    serait passé en revue sans laisser la moindre trace.
+  const answerFacets: Record<string, unknown> = {};
+  const VALEUR_TEMOIN = "Valeur";
+  const ORGA_TEMOIN = "000000000000000000000000";
+  for (const page of (cfg.pages as Array<Record<string, unknown>> | undefined) ?? []) {
+    const sections = (page.sections as SectionLike[] | undefined) ?? [];
+    for (const section of walkSections(sections)) {
+      const props = section.props as
+        | {
+            filtersByAnswers?: Record<string, AnswerGroupConf>;
+            filtersByPath?: Record<string, AnswerGroupConf>;
+          }
+        | undefined;
+      const groupes = { ...(props?.filtersByAnswers ?? {}), ...(props?.filtersByPath ?? {}) };
+      for (const [groupId, conf] of Object.entries(groupes)) {
+        const { field, value, fieldType } = answerToggleArgs(conf, VALEUR_TEMOIN, {
+          name: VALEUR_TEMOIN,
+          orgaNameArray: [ORGA_TEMOIN],
+        });
+        const entry = fieldType ? { field, type: fieldType, value } : { field, value };
+        answerFacets[cleUnique(answerFacets, `${page.path}/${groupId}`)] = {
+          target: conf.filterTarget ?? "linkedElements",
+          searchByField: entry,
+          filters: searchByFieldsToQuery({ [VALEUR_TEMOIN]: entry }).filters,
+        };
+      }
     }
   }
 
@@ -270,6 +312,7 @@ function projeter(site: string, cfg: Cfg) {
     adminResources,
     pages,
     ...(Object.keys(stamps).length ? { stamps } : {}),
+    ...(Object.keys(answerFacets).length ? { answerFacets } : {}),
     referencement,
     membership,
     profileRelated,

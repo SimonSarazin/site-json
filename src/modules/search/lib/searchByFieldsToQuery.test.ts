@@ -56,3 +56,101 @@ describe("searchByFieldsToQuery", () => {
     });
   });
 });
+
+/**
+ * Facettes sur une liste d'`answers` (`/creneaux`). La forme émise est celle
+ * MESURÉE conforme sur les deux serveurs (legacy 5080 et Node 5099, réponses
+ * byte-identiques) : `$or: { $and: [ {$or:[…]}, … ] }` = ET de OU.
+ * Cf. `mongoFilters.ts` pour les formes qui font un 500 côté legacy.
+ */
+describe("searchByFieldsToQuery — facettes answerPath", () => {
+  const MAL = "answers.eki_0.multiCheckboxPluseki_0maladies";
+  const ALD = "answers.eki_0.multiCheckboxPluseki_0ald";
+
+  it("une valeur → un OU d'une clause, sous la clé unique $or", () => {
+    const out = searchByFieldsToQuery({
+      "Obésité": entry({ field: MAL, type: "answerPath", value: ["Obésité"] }),
+    });
+    expect(out.filters).toEqual({
+      $or: { $and: [{ $or: [{ [`${MAL}.Obésité`]: { $exists: true } }] }] },
+    });
+  });
+
+  it("deux valeurs du MÊME groupe → OU (une seule clause $and)", () => {
+    const out = searchByFieldsToQuery({
+      "Obésité": entry({ field: MAL, type: "answerPath", value: ["Obésité"] }),
+      "Cancer": entry({ field: MAL, type: "answerPath", value: ["Cancer"] }),
+    });
+    expect(out.filters).toEqual({
+      $or: {
+        $and: [
+          {
+            $or: [
+              { [`${MAL}.Obésité`]: { $exists: true } },
+              { [`${MAL}.Cancer`]: { $exists: true } },
+            ],
+          },
+        ],
+      },
+    });
+  });
+
+  it("deux GROUPES → ET de OU (deux clauses $and)", () => {
+    const out = searchByFieldsToQuery({
+      "Obésité": entry({ field: MAL, type: "answerPath", value: ["Obésité"] }),
+      "Cancer": entry({ field: MAL, type: "answerPath", value: ["Cancer"] }),
+      "Diabète": entry({ field: ALD, type: "answerPath", value: ["Diabète"] }),
+    });
+    const and = (out.filters.$or as unknown as { $and: unknown[] }).$and;
+    expect(and).toHaveLength(2);
+    expect(and[0]).toEqual({
+      $or: [
+        { [`${MAL}.Obésité`]: { $exists: true } },
+        { [`${MAL}.Cancer`]: { $exists: true } },
+      ],
+    });
+    expect(and[1]).toEqual({ $or: [{ [`${ALD}.Diabète`]: { $exists: true } }] });
+  });
+
+  it("valeurs dupliquées : dédupliquées dans le OU", () => {
+    const out = searchByFieldsToQuery({
+      a: entry({ field: MAL, type: "answerPath", value: ["Obésité"] }),
+      b: entry({ field: MAL, type: "answerPath", value: ["Obésité"] }),
+    });
+    const and = (out.filters.$or as unknown as { $and: Array<{ $or: unknown[] }> }).$and;
+    expect(and[0].$or).toHaveLength(1);
+  });
+
+  it("libellé INEXPRIMABLE (point) : aucune clause, donc AUCUN $or — jamais de $or vide", () => {
+    const out = searchByFieldsToQuery({
+      a: entry({ field: MAL, type: "answerPath", value: ["Facilitateur.rice"] }),
+    });
+    expect(out.filters).toEqual({});
+  });
+
+  it("le groupe survit si UNE seule de ses valeurs est inexprimable", () => {
+    const out = searchByFieldsToQuery({
+      a: entry({ field: MAL, type: "answerPath", value: ["Facilitateur.rice"] }),
+      b: entry({ field: MAL, type: "answerPath", value: ["Obésité"] }),
+    });
+    expect(out.filters).toEqual({
+      $or: { $and: [{ $or: [{ [`${MAL}.Obésité`]: { $exists: true } }] }] },
+    });
+  });
+
+  it("cohabite avec un filtre par champ ordinaire (ET implicite : clés distinctes)", () => {
+    const out = searchByFieldsToQuery({
+      s: entry({ field: "services", value: ["s1"] }),
+      o: entry({ field: MAL, type: "answerPath", value: ["Obésité"] }),
+    });
+    expect(out.filters.services).toEqual({ $in: ["s1"] });
+    expect(out.filters.$or).toBeDefined();
+  });
+
+  it("un groupe historique (_id) n'est PAS affecté", () => {
+    const out = searchByFieldsToQuery({
+      garderie: entry({ field: "_id", value: ["orgA", "orgB"] }),
+    });
+    expect(out.filters).toEqual({ _id: { $in: ["orgA", "orgB"] } });
+  });
+});

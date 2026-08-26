@@ -18,6 +18,32 @@ import type { FilterGroupLike, FilterAnswerDataLike } from "./computeFiltersFrom
  * (pagination…) et l'ordre existant → comparaison d'égalité stable côté appelant
  * (pas d'écriture parasite).
  */
+/**
+ * Sérialise une sélection en valeur de query param : chaque valeur est ENCODÉE avant d'être jointe
+ * par une virgule.
+ *
+ * La lecture (`computeFiltersFromUrl`) fait `split(",")` PUIS `decodeURIComponent` sur chaque
+ * fragment : sans l'encodage à l'écriture, une valeur contenant elle-même une virgule était
+ * redécoupée en morceaux qui ne correspondaient à aucune option, et le paramètre était supprimé de
+ * l'URL. En liste mixte la perte était PARTIELLE et silencieuse — les valeurs sans virgule
+ * survivaient, l'autre disparaissait. 4 valeurs du parc étaient dans ce cas (groupe `portage` de
+ * relief et tiers-lieux, ex. « Collectivités (Département, Intercommunalité, Région, etc) »).
+ *
+ * Ce n'est pas une nouvelle convention : `dropdownFilters.ts:134` écrit déjà
+ * `optionIds.map(encodeURIComponent).join(",")`, avec sa lecture symétrique en
+ * `SearchHeaderSection.tsx:287-289`. On aligne simplement ce module sur l'autre.
+ *
+ * ⚠️ NE PAS appliquer au csv `dateRange` (`${start},${end}`) : son lecteur
+ * (`computeFiltersFromUrl.ts:147`) ne décode PAS, et la position de début vide (`,end`) est
+ * significative — l'encoder ferait glisser la borne de fin en borne de début.
+ *
+ * Rétrocompatible : l'encodage est l'IDENTITÉ sur une valeur URL-safe, et la lecture décodait déjà.
+ * Aucune URL déjà partagée ne cesse de fonctionner.
+ */
+function encodeValues(values: string[]): string {
+  return values.map(encodeURIComponent).join(",");
+}
+
 export function computeUrlFromFilters(
   current: URLSearchParams,
   selectedFilters: Record<string, string[]>,
@@ -66,13 +92,13 @@ export function computeUrlFromFilters(
       const active = optionNames.filter((n) =>
         Object.prototype.hasOwnProperty.call(searchByFields, n),
       );
-      if (active.length) params.set(group.id, active.join(","));
+      if (active.length) params.set(group.id, encodeValues(active));
       else params.delete(group.id);
       continue;
     }
     // Groupe « tag » : miroir direct de la sélection catégorie.
     const active = selectedFilters[group.id] ?? [];
-    if (active.length) params.set(group.id, active.join(","));
+    if (active.length) params.set(group.id, encodeValues(active));
     else params.delete(group.id);
   }
 
@@ -85,7 +111,7 @@ export function computeUrlFromFilters(
     const active = optionKeys.filter((k) =>
       Object.prototype.hasOwnProperty.call(searchByFields, k),
     );
-    if (active.length) params.set(groupId, active.join(","));
+    if (active.length) params.set(groupId, encodeValues(active));
     else params.delete(groupId);
   }
 

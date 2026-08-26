@@ -16,7 +16,10 @@
     - [Sections de liste \& événements](#sections-de-liste--événements)
     - [Sections de recherche \& carte (depuis modules)](#sections-de-recherche--carte-depuis-modules)
     - [Sections design spécialisées (ex-variantes de site)](#sections-design-spécialisées-ex-variantes-de-site)
-    - [Section news (depuis module news)](#section-news-depuis-module-news)
+    - [Sections blog (depuis module blog)](#sections-blog-depuis-module-blog)
+    - [Sections agenda \& observatoire (depuis modules)](#sections-agenda--observatoire-depuis-modules)
+    - [Sections news \& notifications (depuis modules)](#sections-news--notifications-depuis-modules)
+    - [Sections cagnotte (depuis module cagnotte)](#sections-cagnotte-depuis-module-cagnotte)
     - [Autres](#autres)
   - [Comment ajouter ou personnaliser une nouvelle section](#comment-ajouter-ou-personnaliser-une-nouvelle-section)
   - [Voir aussi](#voir-aussi)
@@ -37,6 +40,11 @@ Le fichier `src/components/sections/SectionRenderer.tsx` centralise le rendu de 
 4. **Rendu** : injecte les `props` dans le composant avec fallbacks appropriés.
 
 ### Code actuel
+
+> ⚠️ **Extrait PARTIEL, figé.** Le bloc ci-dessous ne montre que **66 des 75 entrées** réellement
+> enregistrées et n'inclut pas l'injection d'`idProjet` faite par `SectionRenderer` pour les sections
+> cagnotte (`SectionRenderer.tsx:125`, `137`). La table qui fait foi est
+> `src/components/sections/SectionRenderer.tsx` — s'y reporter avant d'en tirer une conclusion.
 
 ```tsx
 import { Suspense } from "react";
@@ -67,7 +75,7 @@ const LazySections: {
   "action-tiles": lazy(() => import("./ActionTiles")),
   "cta-card-grid": lazy(() => import("./CtaCardGrid")),
   "cta-newsletter": lazy(() => import("./CtaNewsletter")),
-  "searchHeader": lazy(() => import("./TitleWithFiltersRezoLaMer")),
+  searchHeader: lazy(() => import("@/modules/search/sections/SearchHeaderSection")),
   "expandable-actions": lazy(() => import("./ExpandableActions")),
   "hero-tinted-overlay": lazy(() => import("./HeroTintedOverlay")),
   "hero-entity-banner": lazy(() => import("./HeroEntityBanner")),
@@ -116,7 +124,7 @@ const LazySections: {
   gridLayout: lazy(() => import("./GridLayoutSection")),
   news: lazy(() => import("@/modules/news/components/sections/NewsSection")),
   notifications: lazy(() => import("@/modules/notification/components/sections/NotificationsSection")),
-  member: lazy(() => import("./MemberSection")),
+  member: lazy(() => import("@/modules/profil/components/sections/MemberSection")),
   heroWithIcon: lazy(() => import("./HeroWithIconSection")),
   meeteem: lazy(() => import("@/modules/ampli/components/sections/MeeteemSection")),
   coform: lazy(() => import("@/modules/coform/components/CoFormSection")),
@@ -200,7 +208,13 @@ Ces conventions garantissent que `SectionRenderer` peut traiter **toutes** les s
 
 ## Description rapide des principaux types de section
 
-Le système supporte actuellement **66 types de sections** :
+Le système supporte actuellement **75 types de sections** — c'est la taille de l'union `Section`,
+de la table `lazy()` de `SectionRenderer.tsx` et de `SECTION_META`, dont
+`tests/preflight/section-meta.test.ts` impose la parité exacte.
+
+> ⚠️ Ce préflight contrôle le compteur de `doc/26-assistant-config.md`, celui de la skill
+> `config-assistant` et celui de `CLAUDE.md` — **pas celui-ci**. La dérive de ce compteur et des
+> tableaux ci-dessous est silencieuse : les recompter à la main à chaque ajout de section.
 
 ### Sections de contenu & layout
 
@@ -209,6 +223,8 @@ Le système supporte actuellement **66 types de sections** :
 | **hero**           | `HeroSection`            | Bandeau d'accueil avec titre, sous-titre, image de fond et boutons CTA |
 | **hero-search** | `HeroSearch`       | Hero avec recherche intégrée (autocomplete d’entités), applicateur de filtres headless (`filterGroups`/`filtersByAnswers`) et autocompletion scopée réseau (`searchVariant`/`baseParams`). Le mode sous-site (`/s/`) et ses props (`headlineSubsite`, `subheadSubsite`) ont été supprimés. |
 | **hero-quick-access**      | `HeroQuickAccess`               | Variante hero pour le site Sport-Santé-Bien-Être (SSBE)               |
+| **hero-carousel**  | `HeroCarousel`           | Hero plein écran à diapositives (scroll-snap, puces, auto-avance optionnelle) |
+| **map-bubbles**    | `MapBubbles`             | Illustration de carte avec bulles-marqueurs cliquables positionnées en % |
 | **categories-grid**| `CategoriesGridSection`  | Grille de catégories cliquables avec icônes et liens                   |
 | **cards**          | `CardsSection`           | Grille de cartes (grid/masonry/carousel/list)                          |
 | **content**        | `ContentSection`         | Bloc de contenu riche avec image, texte, tags et liens                 |
@@ -277,6 +293,8 @@ Le système supporte actuellement **66 types de sections** :
 | **thematics**     | `ThematicsSection`         | Affichage dynamique des filières/thématiques            |
 | **map**           | `MapSection`               | Carte interactive (Leaflet/Google/Mapbox)               |
 | **filters**       | `FiltersSection`           | Groupes de filtres dépliables                           |
+| **featured-carousel** | `FeaturedCarouselSection` | Carrousel plein écran d'entités filtrées par tag (une par diapositive) |
+| **toolsCatalog**  | `ToolsCatalogSection`      | Catalogue d'outils synthétisé depuis les réponses coform (recherche, filtres, pagination serveur) |
 
 ### Sections design spécialisées (ex-variantes de site)
 
@@ -287,10 +305,25 @@ Le système supporte actuellement **66 types de sections** :
 | **action-tiles**    | `ActionTiles`               | Boutons d'action RezoLaMer                         |
 | **cta-card-grid**         | `CtaCardGrid`                   | Section communauté RezoLaMer                       |
 | **cta-newsletter**               | `CtaNewsletter`                | Appel à l'action RezoLaMer                         |
-| **searchHeader**| `TitleWithFiltersRezoLaMer`            | Titre avec filtres RezoLaMer                       |
+| **searchHeader**| `SearchHeaderSection` (module search)  | Bandeau titre + rangée de filtres + boutons d'action |
 | **expandable-actions**  | `ExpandableActions`    | Cartes d’action en accordéon exclusif (modales)    |
 | **hero-tinted-overlay**             | `HeroTintedOverlay`             | Hero plein écran à voile teinté + double slogan    |
 | **hero-entity-banner**     | `HeroEntityBanner`       | Hero bannière sourcée depuis l’entité Cocolight    |
+
+### Sections blog (depuis module blog)
+
+| Type              | Composant              | Usage principal                                                        |
+| ----------------- | ---------------------- | ---------------------------------------------------------------------- |
+| **articleFeed**   | `ArticleFeed`          | Fil paginé (scroll infini) des articles d'un costum (`costumSlug` requis), lecture via `/blog/:slug` ou `/blog/id/:id` |
+| **articleReader** | `ArticleReaderSection` | Affiche un article (POI) précis par slug ou id sur n'importe quelle page — île client, sans SEO propre |
+| **articleTeaser** | `ArticleTeaser`        | Aperçu figé des N derniers articles d'un costum (`costumSlug` requis), sans pagination |
+
+### Sections agenda & observatoire (depuis modules)
+
+| Type                  | Composant                | Usage principal                                                        |
+| --------------------- | ------------------------ | ---------------------------------------------------------------------- |
+| **agenda**            | `AgendaSection`          | Events d'un costum : liste (onglets temporels), calendrier (mois/semaine/jour), carte et split — voir [doc/29](29-module-agenda.md) |
+| **data-observatory**  | `DataObservatorySection` | Dashboard déclaratif : dimensions, KPI, graphiques, filtres et table pilotés par la config |
 
 ### Sections news & notifications (depuis modules)
 

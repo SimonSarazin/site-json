@@ -1834,6 +1834,7 @@
               "defaultTypes": [
                 "poi"
               ],
+              "costumSlug": "equipementsSportifs974",
               "defaultFields": [
                 "name",
                 "equip_type_name",
@@ -1975,6 +1976,7 @@
               "defaultTypes": [
                 "poi"
               ],
+              "costumSlug": "equipementsSportifs974",
               "defaultFields": [
                 "name", "equip_type_name", "equip_type_famille", "categorie",
                 "equip_nature", "equip_sol", "equip_surf", "equip_larg", "equip_long",
@@ -2493,6 +2495,7 @@
               "defaultTypes": [
                 "poi"
               ],
+              "costumSlug": "equipementsSportifs974",
               "defaultFields": [
                 "name", "equip_type_name", "equip_type_famille", "categorie",
                 "equip_nature", "equip_sol", "equip_surf", "equip_larg", "equip_long",
@@ -4112,7 +4115,6 @@
       "hideHeader": false,
       "hideFooter": false,
       "editModal": "edit-equipements-sportifs",
-      "_comment": "Périmètre du costum : 3 062 POI portent source.keys=equipementsSportifs974. Le sous-type ne borne PAS : 704 POI recoveryCenter lui sont étrangers, dont 686 d'institutBleu. Le terme reference.costum couvre les entités rattachées sans provenance (mécanisme legacy générique).",
       "editModalMatch": {
         "type": "recoveryCenter"
       },
@@ -4122,6 +4124,18 @@
           { "field": "reference.costum", "op": "contains", "value": "equipementsSportifs974" }
         ]
       },
+      "editModals": [
+        {
+          "editModal": "edit-equipements-sportifs",
+          "editModalMatch": { "type": "recoveryCenter" },
+          "when": { "field": "sourceKeys", "op": "contains", "value": "equipementsSportifs974" }
+        },
+        {
+          "editModal": "edit-equipements-sportifs",
+          "editModalMatch": { "reference.costumTypes.equipementsSportifs974": "recoveryCenter" },
+          "when": { "field": "reference.costum", "op": "contains", "value": "equipementsSportifs974" }
+        }
+      ],
       "sections": [
         {
           "type": "profile-header",
@@ -4263,6 +4277,9 @@
       "id": "equipements-sportifs",
       "entityType": "poi",
       "costumSlug": "equipementsSportifs974",
+      "subType": "recoveryCenter",
+      "subTypeLabel": { "fr": "Équipement sportif", "en": "Sports facility" },
+      "identity": { "type": "recoveryCenter" },
       "layout": {
         "kind": "wizard",
         "validatePerStep": true
@@ -4426,6 +4443,7 @@
         },
         "inst_part_bool": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Partenariat disponible",
             "en": "Partnership available"
@@ -4433,6 +4451,7 @@
         },
         "inst_part_type": {
           "widget": "tags",
+          "write": "coerce:csv",
           "label": {
             "fr": "Type de partenariat",
             "en": "Partnership type"
@@ -4461,6 +4480,7 @@
         },
         "equip_long": {
           "widget": "number",
+          "write": "coerce:numString",
           "label": {
             "fr": "Longueur",
             "en": "Length"
@@ -4468,6 +4488,7 @@
         },
         "equip_larg": {
           "widget": "number",
+          "write": "coerce:numString",
           "label": {
             "fr": "Largeur",
             "en": "Width"
@@ -4475,6 +4496,7 @@
         },
         "equip_surf": {
           "widget": "number",
+          "write": "coerce:numString",
           "label": {
             "fr": "Surface (calculée)",
             "en": "Area (computed)"
@@ -4503,6 +4525,7 @@
         },
         "inst_acc_handi_bool": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Accessible aux personnes en situation de handicap",
             "en": "Accessible to people with disabilities"
@@ -4510,6 +4533,7 @@
         },
         "inst_trans_bool": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Accessible en transport en commun",
             "en": "Accessible by public transport"
@@ -4517,6 +4541,7 @@
         },
         "equip_eclair": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Éclairage de l'aire",
             "en": "Area lighting"
@@ -4524,6 +4549,7 @@
         },
         "equip_douche": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Douche accessible",
             "en": "Accessible shower"
@@ -4531,6 +4557,7 @@
         },
         "equip_pmr_acc": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Accès PMR disponible",
             "en": "PRM access available"
@@ -4538,6 +4565,7 @@
         },
         "equip_pmr_chem": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Cheminement PMR adapté",
             "en": "PRM-adapted pathway"
@@ -4545,6 +4573,7 @@
         },
         "equip_pmr_douche": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Douches accessibles PMR",
             "en": "PRM-accessible showers"
@@ -4552,6 +4581,7 @@
         },
         "equip_pmr_trib": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Tribunes accessibles PMR",
             "en": "PRM-accessible stands"
@@ -4559,6 +4589,7 @@
         },
         "equip_pmr_vest": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Vestiaires accessibles PMR",
             "en": "PRM-accessible changing rooms"
@@ -4566,6 +4597,7 @@
         },
         "equip_pmr_sanit": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Sanitaires accessibles PMR",
             "en": "PRM-accessible toilets"
@@ -4573,6 +4605,7 @@
         },
         "equip_loc_type": {
           "widget": "checkboxGroup",
+          "write": "coerce:csv",
           "label": {
             "fr": "Locaux complémentaires",
             "en": "Additional premises"
@@ -4580,6 +4613,7 @@
         },
         "equip_pshs_aire": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Aire de jeu",
             "en": "Play area"
@@ -4587,6 +4621,7 @@
         },
         "equip_pshs_sanit": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Sanitaires",
             "en": "Toilets"
@@ -4594,6 +4629,7 @@
         },
         "equip_pshs_trib": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Tribunes",
             "en": "Stands"
@@ -4601,6 +4637,7 @@
         },
         "equip_pshs_sign": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Accueil / Signalétique",
             "en": "Reception / Signage"
@@ -4608,6 +4645,7 @@
         },
         "equip_pshs_vest": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Vestiaires",
             "en": "Changing rooms"
@@ -4615,6 +4653,7 @@
         },
         "equip_pshs_chem": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Cheminements",
             "en": "Pathways"
@@ -4639,6 +4678,7 @@
         },
         "equip_utilisateur": {
           "widget": "checkboxGroup",
+          "write": "coerce:csv",
           "label": {
             "fr": "Types d'utilisateurs",
             "en": "User types"
@@ -4646,6 +4686,7 @@
         },
         "equip_acc_libre": {
           "widget": "switch",
+          "write": "coerce:boolUpper",
           "label": {
             "fr": "Accès libre",
             "en": "Free access"
@@ -4653,6 +4694,7 @@
         },
         "aps_name": {
           "widget": "multiselect",
+          "write": "coerce:csv",
           "required": true,
           "label": {
             "fr": "Sports pratiqués",
@@ -5050,8 +5092,7 @@
             "rowActions": [
               "edit",
               "delete",
-              "validate",
-              "reference"
+              "validate"
             ],
             "bulkActions": [
               "validate",
@@ -5086,12 +5127,20 @@
         "id": "reference",
         "label": {
           "fr": "Référencement",
-          "en": "SEO"
+          "en": "Referencing"
         },
         "access": "siteAdmin",
         "sections": [
           {
-            "type": "reference"
+            "type": "reference",
+            "title": { "fr": "Référencer des équipements", "en": "Reference facilities" },
+            "entityTypes": ["poi", "events"],
+            "columns": [
+              { "path": "name", "label": { "fr": "Nom", "en": "Name" } },
+              { "path": "type", "label": { "fr": "Type natif", "en": "Native type" } },
+              { "path": "address.addressLocality", "label": { "fr": "Commune", "en": "Municipality" } },
+              { "path": "source.key", "label": { "fr": "Provenance", "en": "Source" } }
+            ]
           }
         ]
       }

@@ -1395,6 +1395,17 @@
     "accommodationSpace": "Espace d'hébergement",
     "nightly": "Nuitée",
     "bed": "lit",
+    "detail": {
+      "area": "Surface",
+      "solidarity": "Tarif solidaire possible",
+      "equipments": "Équipements",
+      "catering": "Restauration",
+      "services": "Services proposés",
+      "roomType": "Type de chambre",
+      "moreInfo": "Bon à savoir",
+      "about": "À propos du lieu",
+      "tip": "Le petit truc en plus"
+    },
     "reserve": "Réserver",
     "confirmDelete": "Êtes-vous sûr de vouloir supprimer cet élément ?",
     "confirmDeleteTitle": "Supprimer cet élément",

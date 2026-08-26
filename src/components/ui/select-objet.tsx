@@ -39,6 +39,8 @@ interface SelectObjectProps {
   placeholder?: string;
   placeholderSearch?: string;
   multiple?: boolean;
+  /** Désactive le combobox (bouton natif `disabled` : souris ET clavier). */
+  disabled?: boolean;
   /** Autorise une valeur ABSENTE de la liste : la saisie devient une proposition à ajouter. */
   creatable?: boolean;
   /** Libellé de la proposition d'ajout (défaut : `Ajouter « X »`). */
@@ -77,6 +79,7 @@ export function SelectObject({
   placeholder,
   placeholderSearch = "Search...",
   multiple = false,
+  disabled = false,
   creatable = false,
   createLabel = (q: string) => `Ajouter « ${q} »`,
   loadingIndicator = <Loader2Icon className="animate-spin" />,
@@ -97,7 +100,13 @@ export function SelectObject({
   pillClassName = "bg-primary rounded-md px-2 py-1 flex items-start space-x-1 break-words max-w-full min-w-0",
   pillLabelClassName = "font-medium text-primary-foreground truncate",
   pillTypeClassName = "text-xs text-muted",
-  pillRemoveClassName = "inline-flex items-center justify-center p-1 rounded cursor-pointer text-muted-foreground hover:bg-muted-foreground hover:text-foreground",
+  // Le bouton de retrait se pose SUR la pill (`bg-primary`), donc il se colore en
+  // `primary-foreground` comme son label — un `muted-foreground` (hérité des chips
+  // sur fond NEUTRE de `multiple-selector`) y est illisible. Pleine opacité et pas
+  // une variante atténuée : sur un `primary` sombre le blanc plein plafonne déjà
+  // vers 3:1, le seuil WCAG des éléments d'interface. L'affordance passe donc par
+  // le fond au survol, pas par un contraste dégradé au repos.
+  pillRemoveClassName = "inline-flex items-center justify-center p-1 rounded cursor-pointer transition-colors text-primary-foreground hover:bg-primary-foreground/25",
   listClassName = "max-h-60 overflow-auto w-full bg-popover text-popover-foreground",
   itemClassName = "flex items-center w-full space-x-2 py-2 px-3 hover:bg-muted-foreground hover:text-foreground",
   inputClassName = "w-full px-3 py-2",
@@ -158,6 +167,7 @@ export function SelectObject({
             aria-expanded={open}
             id={id}
             className={buttonClassName}
+            disabled={disabled}
           >
             <div className={pillContainerClassName}>
               {multiple ? (
@@ -216,7 +226,19 @@ export function SelectObject({
           </Button>
         </PopoverTrigger>
 
-        <PopoverContent side="bottom" align="start" className="p-0 w-[var(--radix-popover-trigger-width)]">
+        {/* `stopPropagation` sur wheel/touchmove : dans un Dialog, react-remove-scroll écoute
+            ces événements sur `document` (phase bubble) et `preventDefault` tout ce qui ne vient
+            pas de son sous-arbre DOM. Le contenu du Popover étant portalisé dans <body>, il est
+            vu comme « dehors » → molette et scroll tactile morts dans la liste. On coupe la
+            propagation avant `document` (React écoute sur le nœud du portal, donc avant lui) ;
+            le scroll natif de `CommandList` reprend. Hors Dialog, aucun effet. */}
+        <PopoverContent
+          side="bottom"
+          align="start"
+          className="p-0 w-(--radix-popover-trigger-width)"
+          onWheel={(e) => e.stopPropagation()}
+          onTouchMove={(e) => e.stopPropagation()}
+        >
           <Command shouldFilter={(arrayOptions?.length ?? 0) > 0} className="w-full">
             <CommandInput
               placeholder={placeholderSearch}

@@ -28,6 +28,38 @@ import type { AdminReferenceSection as AdminReferenceSectionConfig, AdminSection
 import { formatCell, getPath } from "./resourceHelpers";
 
 const DEFAULT_TYPES = ["organizations", "projects", "events", "poi"];
+
+/**
+ * Filtres de la recherche de CANDIDATES : ciblage config (commun ⊕ par-collection) + politique
+ * open-data + garde-fous du déjà-rattaché — fusion MÊME-CLÉ pour que la config puisse cibler
+ * `source.keys` (« le vivier ssbe ») SANS écraser le `$nin` de garde (et réciproquement) :
+ * un scalaire/tableau config devient `$in`, les objets d'opérateurs sont fusionnés, le `$nin`
+ * de garde s'unionne à un éventuel `$nin` config. Les DEUX moteurs (L searchNew / B buildQuery)
+ * passent les objets d'opérateurs tels quels (le referenceTable legacy envoie déjà des `$nin`).
+ */
+export function buildOpenSearchFilters(
+  search: { openData?: "optIn" | "optOut" | "off"; defaultFilters?: Record<string, unknown>; defaultFiltersByType?: Record<string, Record<string, unknown>> } | undefined,
+  type: string,
+  costumSlug: string,
+): Record<string, unknown> {
+  const cibles: Record<string, unknown> = { ...(search?.defaultFilters ?? {}), ...(search?.defaultFiltersByType?.[type] ?? {}) };
+  const politique = search?.openData ?? "optIn";
+  const filtres: Record<string, unknown> = { ...cibles };
+  if (politique === "optIn") filtres["preferences.isOpenData"] = true;
+  else if (politique === "optOut") filtres["preferences.isOpenData"] = { $nin: [false, "false"] };
+  // Garde-fous non configurables — fusion même-clé avec un éventuel ciblage config.
+  for (const champ of ["reference.costum", "source.keys"]) {
+    const base = filtres[champ];
+    const ops: Record<string, unknown> =
+      base === undefined ? {}
+      : typeof base === "object" && base !== null && !Array.isArray(base) ? { ...(base as Record<string, unknown>) }
+      : { $in: Array.isArray(base) ? base : [base] };
+    const nin = ops.$nin;
+    ops.$nin = [...new Set([...(Array.isArray(nin) ? nin : nin !== undefined ? [nin] : []), costumSlug])];
+    filtres[champ] = ops;
+  }
+  return filtres;
+}
 const DEFAULT_COLUMNS = [
   { path: "name", label: { fr: "Nom", en: "Name" } },
   { path: "address.addressLocality", label: { fr: "Commune", en: "Municipality" } },
@@ -90,16 +122,13 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
   const [q, setQ] = useState("");
   const searchText = useDebounce(q, 300);
 
-  // ── Recherche globale « à référencer » (fidèle referenceTable legacy) ──────────────────────────
+  // ── Recherche « à référencer » : ciblage + politique open-data configurables (cfg.search),
+  //    garde-fous du déjà-rattaché non configurables — défaut = fidèle referenceTable legacy.
   const searchParams = useMemo(() => ({
     defaultTypes: [type] as SearchType[],
     notSourceKey: true,
-    defaultFilters: {
-      "preferences.isOpenData": true,
-      "reference.costum": { $nin: [costumSlug] },
-      "source.keys": { $nin: [costumSlug] },
-    },
-  }), [type, costumSlug]);
+    defaultFilters: buildOpenSearchFilters(cfg.search, type, costumSlug),
+  }), [cfg.search, type, costumSlug]);
 
   const global = useSearchQuery({
     queryKeyPrefix: ADMIN_QUERY_KEYS.REFERENCE_SEARCH_PREFIX(type),
