@@ -182,6 +182,23 @@ interface PendingMilestoneRepair {
 
 const inFlightMilestoneRepairs = new Set<string>();
 
+/**
+ * Identité STABLE de la dépense à réparer — jamais l'identifiant généré.
+ *
+ * Le piège : quand une dépense n'a aucun milestone, `resolveOrGenerateMilestoneId`
+ * en fabrique un via `generateMilestoneId`, qui repose sur `Date.now()` et
+ * `Math.random()`. Une clé de garde contenant cette valeur est neuve à chaque
+ * recalcul du memo : elle ne matche jamais, la réparation repart, écrit
+ * (`updatepathvalue`), invalide l'enveloppe, ce qui relance le memo — boucle
+ * infinie qui, à chaque tour, crée en plus un milestone de rebut sur le projet.
+ *
+ * Ce qu'on répare, c'est « la dépense n° i de la réponse X », pas un identifiant :
+ * c'est cela que la clé doit désigner.
+ */
+export function milestoneRepairKey(repair: { answerId: string; depenseIndex: number }): string {
+  return `${repair.answerId}:${repair.depenseIndex}`;
+}
+
 function resolveOrGenerateMilestoneId(
     milestoneIdStr: string,
     projectMilestoneIds: Set<string>,
@@ -419,7 +436,7 @@ export function useCagnotteAdapter(
         if (!api || pendingMilestoneRepairs.length === 0) return;
 
         pendingMilestoneRepairs.forEach((repair) => {
-            const repairKey = `${repair.answerId}:${repair.depenseIndex}:${repair.milestoneId}`;
+            const repairKey = milestoneRepairKey(repair);
             if (inFlightMilestoneRepairs.has(repairKey)) return;
             inFlightMilestoneRepairs.add(repairKey);
 
