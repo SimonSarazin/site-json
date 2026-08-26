@@ -1,9 +1,6 @@
-import MarkdownIt from "markdown-it";
-import { sanitize } from "@/lib/sanitize";
+import { ProseContent } from "@/components/shared/ProseContent";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-
-const markdownParser = new MarkdownIt({ html: true, linkify: true });
 
 interface CommunProseProps {
     paragraphs?: string[] | null;
@@ -26,20 +23,9 @@ export function CommunProse({ paragraphs, forceMarkdown = false }: CommunProsePr
 
     return (
         <div className="space-y-4 text-muted-foreground leading-relaxed max-w-[68ch]">
-            {paragraphs.map((p, i) => {
-                if (!p) return null;
-
-                const isHtml = !forceMarkdown && /<[a-zA-Z][^>]*>/.test(p);
-                const rawHtml = isHtml ? p : markdownParser.render(p);
-
-                return (
-                    <div
-                        key={i}
-                        dangerouslySetInnerHTML={{ __html: sanitize(rawHtml) }}
-                        suppressHydrationWarning
-                    />
-                );
-            })}
+            {paragraphs.map((p, i) =>
+                p ? <ProseContent key={i} text={p} forceMarkdown={forceMarkdown} /> : null
+            )}
         </div>
     );
 }

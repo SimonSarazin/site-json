@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { UseFormRegister, FieldErrors } from "react-hook-form";
-import MarkdownIt from "markdown-it";
+import { ProseContent } from "@/components/shared/ProseContent";
 import { Check, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,40 +29,15 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
-import { sanitize } from "@/lib/sanitize";
 import { useT } from "@/hooks/useT";
 import type { FormFieldMapping } from "../types";
 import { MarkdownEditor } from "./MarkdownEditor";
 
-/**
- * Parser markdown partagé (singleton module-level → pas recréé à chaque render).
- * `html: true` préserve l'HTML inline (ex: `<br/>`) ; `linkify` auto-lie les URLs.
- * Sa sortie est TOUJOURS passée dans `sanitize()` avant injection (cf. ProseContent).
- */
-const markdownParser = new MarkdownIt({ html: true, linkify: true });
-
-/**
- * Rend un contenu admin (`field.info`/`field.label`, parfois saisi par un admin
- * costum peu fiable) : soit du HTML déjà rendu (Parsedown PHP), soit du markdown.
- * Dans les deux cas on produit du HTML puis on le **sanitise** (DOMPurify via
- * `@/lib/sanitize`) avant de l'injecter — même pattern que `HTMLSection`, cf.
- * `doc/bonnes-pratiques-code.md` §8.
- *
- * ⚠️ Sécurité (XSS) : ne jamais réintroduire `dangerouslySetInnerHTML` sans
- * `sanitize()`, ni `react-markdown` + `rehype-raw` (qui rendaient le HTML brut
- * NON sanitisé → faille).
- */
-export function ProseContent({ text, className, forceMarkdown = false }: { text: string; className?: string; forceMarkdown?: boolean }) {
-  const isHtml = !forceMarkdown && /<[a-zA-Z][^>]*>/.test(text);
-  const rawHtml = isHtml ? text : markdownParser.render(text);
-  return (
-    <div
-      className={className}
-      dangerouslySetInnerHTML={{ __html: sanitize(rawHtml) }}
-      suppressHydrationWarning
-    />
-  );
-}
+// `ProseContent` a été sorti dans `@/components/shared` : les fiches AAC
+// affichent en lecture les mêmes valeurs que les champs saisissent, et une
+// seconde implémentation aurait signifié une seconde garantie de sécurité à
+// maintenir. Ré-exporté ici pour que les call-sites du module ne bougent pas.
+export { ProseContent };
 
 /**
  * Composant pour afficher un indice/info avec support markdown ET HTML brut.
