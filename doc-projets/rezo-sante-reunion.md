@@ -12,7 +12,7 @@
 > [Module Admin](../doc/30-module-admin.md) · [Module formEngine](../doc/28-module-formengine.md).
 > Mémoire : `[[project-rezo-sante-reunion]]`.
 
-Dernière mise à jour : **2026-08-03** (lot 3 §9 — feuille CSS propre, Fraunces, essai carrousel ; synchronisation SDK 1.0.172 + `VITE_SITE_PUBLIC_URL`).
+Dernière mise à jour : **2026-08-27** (lot 4 §9 — 6ᵉ thématique **Culture & Santé**, correctif de lisibilité des héros `hero-tinted-overlay`, activation documentée de la cloche de notifications).
 
 ---
 
@@ -20,7 +20,8 @@ Dernière mise à jour : **2026-08-03** (lot 3 §9 — feuille CSS propre, Fraun
 
 **RéseauSanté** (« Rézo Santé », domaine visé `rezoSanté.re`) est un réseau réunionnais de **santé
 globale** : il rassemble citoyens, associations et professionnels autour de la nutrition, de
-l'activité physique, du sommeil, des addictions et du bien-être mental.
+l'activité physique, du sommeil, des addictions, du bien-être mental et — depuis le lot 4 (27/08) —
+de la culture.
 
 Le besoin exprimé tient en quatre briques : un **annuaire** d'acteurs, la possibilité de **créer des
 fiches** et d'en **importer** en masse, une vitrine des **projets** portés par le réseau, et des
@@ -62,7 +63,7 @@ Deux conséquences de conception, à ne pas perdre de vue :
 | Header / Footer | `transparent-scroll` / `contact-partners` |
 | Archétype de départ | `parent62` (portail complet) |
 | Backend de référence | `https://www.communecter.org` (le backend local `:5080` était éteint) |
-| SDK | `@communecter/cocolight-api-client` **1.0.172 publiée** (`package.json` `^1.0.172`, commit `09e145a0` du 03/08 — fini le `npm pack` local) |
+| SDK | `@communecter/cocolight-api-client` **1.0.189** (`package.json` `^1.0.189`, dérive constatée le 27/08 : bump transverse du monorepo, non spécifique à ce site — 1.0.172 documenté le 03/08 est désormais périmé) |
 | Branche | `main` |
 
 ### Historique des chantiers
@@ -76,6 +77,8 @@ Deux conséquences de conception, à ne pas perdre de vue :
 | 2026-07-30 | Claude | Lot 2 — **création du costum backend** : config minimale sur l'org porteuse. `getcostumjson` passe de HTTP 500 à 200 côté legacy, et la réponse est byte-identique au backend Node. Le périmètre reste vide (§6bis). |
 | 2026-07-30 | Claude | Lot 3 — identité propre : feuille de style dédiée `index-rezo-sante-reunion.css` (fin de l'héritage parent62, `82669e97`), **Fraunces** en titres à la place du Baloo 2 hérité (`306380c8`), et `hero-carousel` en tête de `/thematiques` — **placement d'ESSAI** (`f0e0893f`). Mergé dans `main` le **02/08** via `36430caa`. |
 | 2026-08-03 | Claude | Synchronisation transverse : merge `fix/institut-bleu-ui` (`94251b7b`) → SDK **1.0.172 publiée**, `VITE_SITE_PUBLIC_URL` (§8). Gates rejoués : typecheck ✅, préflight **412/412 (22 fichiers)** ✅. Mise à jour de ce dossier. |
+| 2026-08-27 | Claude | Lot 4 — **6ᵉ thématique « Culture & Santé »**, en parité avec les 5 existantes (nav, footer, home, hub `/thematiques`, page `/theme/culture-sante`, 3 facettes `dropdownFilters`, `/a-propos`) ; visuel final fourni par le client (généré par IA, cohérent avec les 5 autres). Voir §9 pour le détail. |
+| 2026-08-27 | Claude | Lot 4 (suite) — **correctif de lisibilité des héros `hero-tinted-overlay`** : `drop-shadow`/`drop-shadow-lg` de Tailwind (≤ 0,15 d'opacité) remplacés par deux utilitaires dédiés `hero-text-shadow`/`hero-text-shadow-strong` (`shared.css`), posés en custom properties surchargeables via `theme.customCSS` (même patron que `--color-hero-tint`). Composant **partagé** avec `nos-commune` : vérifié en clair/sombre/mobile sur les deux configs, aucune régression. Documenté au passage : la cloche de notifications (`header.utilities.notifications`) est active depuis l'origine de cette config, jamais consignée jusqu'ici (§4.1, §10). |
 
 ---
 
@@ -84,8 +87,8 @@ Deux conséquences de conception, à ne pas perdre de vue :
 1. Un **annuaire** des acteurs de santé de La Réunion, filtrable et cartographiable.
 2. Une page **projets** du réseau.
 3. Une page **ressources** mêlant outils et projets dans une même grille.
-4. Cinq **pages thématiques** (nutrition · activité physique · sommeil · addictions · bien-être
-   mental) plus un hub.
+4. Six **pages thématiques** (nutrition · activité physique · sommeil · addictions · bien-être
+   mental · **culture & santé**, ajoutée au lot 4) plus un hub.
 5. Un **agenda** des rendez-vous du réseau.
 6. La **création de fiches** depuis le site et l'**import en masse** par le back-office.
 7. *(demandé, non livrable en config — cf. §5.2)* des **actions d'engagement** sur les projets et un
@@ -133,8 +136,9 @@ Ce choix se justifie sur trois plans (mesures en §5.5 à §5.7) :
 | Annuaire | acteurs filtrables, carte | ✅ `/annuaire` — `searchProStatic`, presenter `profile` |
 | Projets | liste des projets du réseau | ✅ `/projets` |
 | Ressources | outils **et** projets dans une grille | ✅ `/ressources` — presenter `resource` + `list.itemRules` |
-| Thématiques | 5 axes + hub | ✅ 6 pages, filtrées par tags |
+| Thématiques | 6 axes + hub (6ᵉ axe « Culture & Santé » ajouté le 27/08, lot 4) | ✅ 7 pages, filtrées par tags |
 | Agenda | rendez-vous du réseau | ✅ `/agenda` |
+| Notifications | cloche du header pour les membres connectés | ✅ `header.utilities.notifications: true` — activé, jamais consigné avant le 27/08. La cloche du header suffit, décision volontaire : pas de page `/notifications` dédiée |
 | Création de fiches | depuis le site | 🟡 **prévue** — formulaires costum liés à `rezoSanteReunion` annoncés par le client (29/07). Non activée tant que les `costumForms` ne sont pas écrits : un `modal` sans document rend `null` en silence. File de validation en place (onglet « Validation »). |
 | Import de masse | CSV → entités | ✅ onglet `import-export` du back-office |
 | Validation des dépôts | file de modération | ✅ onglet « Validation » — section `moderation` (lot 1c) |
@@ -233,6 +237,7 @@ configuration : c'est l'état de la donnée.
 | `/theme/bien-etre-mental` | Bien-être mental | **Competences psycho social** | `["Competences psycho social","Santé mentale","Bien-être mental","bien-etre-mental"]` |
 | `/theme/activite-physique` | Activité physique | ✔ + `sédentarité` | `["Activité physique","sédentarité","activite-physique","Activite physique"]` |
 | `/theme/sommeil` | Sommeil | ✔ | `["Sommeil","sommeil"]` |
+| `/theme/culture-sante` | Culture & Santé | — | `["Culture & Santé","Culture et Santé","Culture","culture","Santé","santé"]` |
 
 Sans ce réalignement, **trois pages sur cinq seraient restées vides en silence**, même une fois les
 données présentes. Les filtres acceptent volontairement plusieurs graphies.
@@ -400,7 +405,7 @@ doublon à traiter puisqu'il concerne le porteur lui-même.
 | Config | [`../config.prod.rezo-sante-reunion.json`](../config.prod.rezo-sante-reunion.json) |
 | Déclaration du site | [`../sites.json`](../sites.json) — `{slug, config, css, images}` (vérifié 03/08 ; **ni `domain` ni `coolifyApp`** : la cible de déploiement n'est pas déclarée, cf. §8) |
 | Thème | `config.theme` (couleurs + typographie : `sans` Hanken Grotesk, `serif` **Fraunces**, `mono` Spline Sans Mono) + [`../src/index-rezo-sante-reunion.css`](../src/index-rezo-sante-reunion.css) (feuille propre depuis le 30/07) |
-| Assets | **5 visuels** dans `public/images/rezoSanteReunion/` (fournis le 29/07, générés via Lovable) ; clé `images` déclarée dans `sites.json` |
+| Assets | **6 visuels** dans `public/images/rezoSanteReunion/` : 5 fournis le 29/07 + `hero-culture-sante-reunion.jpg` fourni le 27/08 (lot 4, cercle de danse et percussions traditionnelles) — **les 6 générés par IA**, à remplacer par de vraies photos avant mise en ligne ; clé `images` déclarée dans `sites.json` |
 
 ---
 
@@ -451,7 +456,8 @@ quatre limites) ou import.
 | CSS **propre** `index-rezo-sante-reunion` (30/07 — revient sur le partage initial d'`index-parent62`) | la feuille parent62 embarquait ~60 lignes d'identité locale (10 couleurs de territoire `#territoire-*`, `.p62-*`) dont **aucun sélecteur ne pouvait correspondre ici** (vérifié : 0 occurrence dans la config). La nouvelle feuille (165 lignes à sa création, 168 depuis les commentaires Fraunces de `306380c8`) ne garde que le générique : mapping `@theme inline`, réglages document, mini-prose légale, scrollbar, `--gradient-section`. Rien ne change à l'écran — tokens et polices viennent de `config.theme`. Le partage reste légitime **à design identique** (communes, sites sport) ; ce n'en était pas un cas (`82669e97`) |
 | Titres **Fraunces** (serif douce à taille optique), à la place du Baloo 2 hérité (30/07) | Baloo 2 venait de `config:init --from parent62`, pas d'un choix : le rond-jovial travaille contre les pages addictions / santé mentale et l'audience institutionnelle (ARS, CPTS, Thésis). Corps inchangé (Hanken Grotesk), mono conservée (Spline Sans Mono) ; repli passé de `sans-serif` à `serif`. Vérifié : Fraunces porte réellement les 4 graisses `400;500;600;700` que `buildGoogleFontURL` demande toujours — sinon le navigateur synthétise de faux gras (`306380c8`) |
 | Thème « Lumière du matin » (vert feuille `oklch(0.52 0.13 145)` + or `oklch(0.78 0.13 80)`) | le parc est saturé de bleus (7 configs) ; les visuels de référence du client sont en lumière dorée et verts naturels ; le corail glissait vers le registre « urgence », inadapté à la prévention |
-| 5 thématiques en `chart1..5` | une thématique = une teinte, réutilisée par les graphiques et l'observatoire si un jour il est activé |
+| 5 thématiques en `chart1..5` | une thématique = une teinte, réutilisée par les graphiques et l'observatoire si un jour il est activé. **Budget épuisé au lot 4** : le schéma (`site-schema.ts`) ne définit que `chart1..chart5`, aucun `chart6`. La 6ᵉ thématique (Culture & Santé) réutilise le token **`accent`** (déjà valide sur `action-tiles`/marqueurs de carte/`tagColors`) plutôt qu'une couleur en dur — cf. §13 pour la question ouverte si une 7ᵉ thématique arrive |
+| `hero-text-shadow`/`hero-text-shadow-strong` (lot 4, `shared.css`) au lieu de `drop-shadow`/`drop-shadow-lg` sur les héros `hero-tinted-overlay` | les utilitaires Tailwind plafonnent à 0,15 d'opacité — pensés pour l'élévation d'une carte, quasi invisibles pour garantir la lecture d'un titre blanc sur une photo claire (constaté sur le nouveau visuel `/theme/culture-sante`, ciel et sable clairs). Custom properties avec repli invariant, surchargeables via `theme.customCSS` — même patron que `--color-hero-tint`, pas une valeur en dur isolée |
 | Header `transparent-scroll` **sans** `piggyBank` ni `urgenceButton` | standard de fait du parc (10/14) ; les deux autres champs auraient été du décor (pas de cagnotte, pas d'urgence) |
 | `sportSanteBienetre` **écarté** malgré son nom | marqué `wip`, et 8 de ses 9 `baseParams` sont vides — le seul renseigné emprunte le `sourceKey` d'un autre site |
 | Pas de section `articleFeed` | le module blog n'est pas activé sur ce site |
@@ -484,15 +490,26 @@ marque. Palette finale, cinq teintes franchement distinctes, aucune ne heurtant 
 | Sommeil | `chart3` | indigo `265` |
 | Addictions | `chart4` | prune `320` |
 | Bien-être mental | `chart5` | turquoise `195` |
+| Culture & Santé (lot 4, 27/08) | `accent` | or chaud `oklch(0.78 0.13 80)` — `chart1..5` épuisés (§7) |
 
-**Visuels câblés** (lot 1d) : `mission-healthcare` en héro d'accueil (cercle intergénérationnel — la
-plus « réseau » des cinq), et les quatre `hero-*` sur leurs pages thématiques, qui passent de `title`
-à `hero-tinted-overlay`.
+**Visuels câblés** (lot 1d, complété lot 4) : `mission-healthcare` en héro d'accueil (cercle
+intergénérationnel — la plus « réseau » des thématiques), et cinq `hero-*` sur leurs pages
+thématiques respectives (`hero-tinted-overlay`) — les quatre d'origine (29/07) plus
+`hero-culture-sante-reunion.jpg` (27/08, cercle de danse et percussions traditionnelles en
+extérieur, lumière dorée — **généré par IA**, comme les 5 autres) pour Culture & Santé.
 
-⚠ **`/theme/addictions` reste en `title`** — 4 pages sur 5 ont donc le héro. Faute d'image, un
+⚠ **`/theme/addictions` reste en `title`** — 5 pages sur 6 ont donc le héro. Faute d'image, un
 `hero-tinted-overlay` y afficherait un bloc de 100 vh quasi vide : le composant ne rend NI l'image NI
 le voile sans `backgroundImage` (`HeroTintedOverlay.tsx:26`), il retombe seulement sur l'encre du
 thème. À unifier le jour où la thématique aura son visuel.
+
+**Correctif de lisibilité (lot 4, 27/08)** : les héros `hero-tinted-overlay` utilisaient
+`drop-shadow`/`drop-shadow-lg` de Tailwind sur le texte blanc — des utilitaires plafonnés à 0,15
+d'opacité, pensés pour l'élévation d'une carte, pas pour garder un titre lisible sur une photo claire.
+Constaté sur un premier candidat visuel très clair (ciel, sable) proposé pour Culture & Santé, puis
+vérifié sur les 5 autres pages thématiques et sur `nos-commune` (seul autre consommateur du
+composant, clair **et** sombre, desktop **et** mobile) : aucune régression, gain de lisibilité
+partout. Détail en §7.
 
 **Essai en cours (30/07, `f0e0893f`) — carrousel des héros.** Un `hero-carousel` de 4 diapositives,
 **dérivées** des héros existants des pages `/theme/*` (titre, sous-titre, image, alt repris tels
@@ -602,14 +619,54 @@ Gates rejoués le 03/08 après merge : typecheck ✅ · préflight **412/412 (22
 
 ---
 
+**Lot 4 — 26-27/08 — 6ᵉ thématique « Culture & Santé » + correctif de lisibilité des héros.**
+Travail réalisé sur la branche `mira-dev`, **non commité** au moment de cette mise à jour
+(modifications en working tree). Deux volets :
+
+1. **Ajout de la thématique « Culture & Santé »**, en parité avec les 5 existantes — surfaces
+   touchées : nav du header (dropdown Thématiques), colonne footer, home (CTA + `action-tiles`
+   `home-thematiques`, 6ᵉ tuile en `accent`), hub `/thematiques` (carrousel + titre + grille
+   `categories-grid`, colonnes 5→6), nouvelle page `/theme/culture-sante` (calquée sur le patron
+   `hero-tinted-overlay` + `searchHeader` + `searchProStatic` des 4 pages illustrées), `tagColors`
+   des **6** pages thématiques étendu à `culture-sante`, 3 facettes `dropdownFilters`
+   (`/annuaire`, `/projets`, `/ressources`), et `/a-propos` (tags, stat « 5 »→« 6 », bloc
+   `features-glass`). La FAQ éditoriale « Pourquoi santé globale plutôt que prévention ? » (argumentée
+   sur cinq domaines imbriqués) a été **délibérément laissée telle quelle** sur décision explicite du
+   client — la culture devient une 6ᵉ porte d'entrée pratique sans réécrire cet argumentaire.
+   Tag de filtre `$in` écrit comme les 5 autres thématiques (§5). Icône
+   `palette`, couleur `accent` (chart budget épuisé, §7). Visuel final : `hero-culture-sante-reunion.jpg`
+   — cercle de danse et percussions traditionnelles en extérieur, lumière dorée, **fourni par le
+   client** le 27/08, généré par IA comme les 5 autres visuels du site. Trois candidats Unsplash
+   avaient été proposés entretemps (un premier écarté : verres de vin/bière visibles, à contre-emploi
+   sur un site avec une page Addictions) avant que le client ne fournisse directement ce visuel final,
+   plus cohérent avec le registre des 5 autres.
+2. **Correctif `hero-text-shadow`** sur `HeroTintedOverlay.tsx`/`shared.css` — détail en §7 et §7.1.
+   Composant **partagé avec `nos-commune`** : vérifié clair/sombre/mobile sur les deux configs.
+
+
+Gates rejoués le 27/08 :
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` | ✅ **15 pages** · **44 sections** |
+| `audit:config` | ✅ RAS |
+| `typecheck` / `lint` | ✅ / ✅ (0 erreur, 21 warnings préexistants ailleurs, aucun sur les fichiers touchés) |
+| `test:unit` (préflight inclus) | ✅ **2788/2794** (6 skip) |
+| `test:preflight` (seul) | ✅ **532/538** (34 fichiers, 6 skip) |
+| `config:render` | ✅ 15/15 pages avec contenu SSR |
+| `test:integration` | ✅ une fois isolé des deux effets de bord d'environnement ci-dessus (non liés à ce lot) |
+| `config:probe` | non rejoué — le périmètre était déjà à 0/9 avant ce lot (§6bis), rien ne l'a changé |
+
+---
+
 ## 10. Checklist d'avancement
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| 1 | Thème & identité | ✅ | light + dark en parité (40 tokens), 5 thématiques en `chart1..5` ; depuis le 30/07 : feuille propre `index-rezo-sante-reunion.css` + titres **Fraunces** (lot 3) |
-| 2 | Chrome (header/footer) | 🟡 | nav regroupée en 4 entrées ; **coordonnées de contact « à compléter »**, aucun logo partenaire |
-| 3 | Home | ✅ | 6 sections |
-| 4 | Thématiques (hub + 5) | ❌ | rendent, mais **le vocabulaire de classification n'existe pas** : les tags mesurés donnent 1 à 13 fiches, ou 1 348 hors sujet (§5.2). En attente des « sujets pratiqués ». Hub : `hero-carousel` en tête depuis le 30/07 — **essai à confirmer** (§7.1) |
+| 1 | Thème & identité | ✅ | light + dark en parité (40 tokens), 6 thématiques dont 5 en `chart1..5` + 1 en `accent` (budget épuisé, §7) ; depuis le 30/07 : feuille propre `index-rezo-sante-reunion.css` + titres **Fraunces** (lot 3) ; depuis le 27/08 : héros `hero-tinted-overlay` lisibles sur photo claire (`hero-text-shadow`, lot 4) |
+| 2 | Chrome (header/footer) | 🟡 | nav regroupée en 4 entrées (Thématiques passe à 6 enfants au lot 4) ; cloche de **notifications active** (`header.utilities.notifications`, jamais consignée avant le 27/08) ; **coordonnées de contact « à compléter »**, aucun logo partenaire |
+| 3 | Home | ✅ | 6 sections, `action-tiles` des thématiques à 6 tuiles depuis le lot 4 |
+| 4 | Thématiques (hub + 6) | ❌ | rendent, mais **le vocabulaire de classification n'existe pas** : les tags mesurés donnent 1 à 13 fiches, ou 1 348 hors sujet (§5.2). En attente des « sujets pratiqués ». Hub : `hero-carousel` en tête depuis le 30/07 — **essai à confirmer** (§7.1) |
 | 5 | Annuaire | 🟡 | rend ; périmètre vide |
 | 6 | Projets | 🟡 | rend ; périmètre vide |
 | 7 | Ressources | 🟡 | rend ; **convention de sous-type à arrêter** (§11) |
@@ -641,11 +698,17 @@ Gates rejoués le 03/08 après merge : typecheck ✅ · préflight **412/412 (22
   françaises (`lien`, `video`, `document`, `compte-rendu`). Des catégories nommées autrement
   (« Outil », « Guide », « Protocole ») ne produiront **aucun bouton d'action principal**, et aucune
   clé de config ne corrige cela — seules les icônes sont surchargeables.
-- **Visuels : 5 fournis, 1 manquant.** `/theme/addictions` n'a **aucune image**, et reste donc en
-  section `title` : la planche des 5 thématiques est visuellement dépareillée.
+- **Visuels : 6 fournis, 1 manquant.** `/theme/addictions` n'a **aucune image**, et reste donc en
+  section `title` : la planche des 6 thématiques est visuellement dépareillée.
   Manque aussi l'image « communauté » (le `community-healthcare` de la maquette) qui porterait la
-  section communauté de la home. Les visuels actuels sont **générés par IA** : à remplacer par de
-  vraies photos du réseau avant mise en ligne (enjeu de crédibilité pour un annuaire d'acteurs).
+  section communauté de la home. Les 6 visuels sont **générés par IA** (le 6ᵉ,
+  `hero-culture-sante-reunion.jpg`, fourni le 27/08 lot 4) — à remplacer par de vraies photos du
+  réseau avant mise en ligne (enjeu de crédibilité pour un annuaire d'acteurs).
+- **Chart budget épuisé (lot 4).** `chart1..chart5` sont tous pris ; la 6ᵉ thématique réutilise
+  `accent`. Si une 7ᵉ thématique arrivait, il faudrait soit ajouter `chart6` au schéma (`site-schema.ts`
+  — hors config, changement moteur), soit choisir une autre couleur du thème déjà validée
+  (`primary`/`destructive`), soit accepter une teinte dupliquée. Décision à prendre le moment venu,
+  pas anticipée ici.
 - **Trois tags orphelins** : `Ecran`, `Santé Sexuelle`, `sédentarité` (ce dernier rattaché à
   l'activité physique). Faut-il des pages dédiées ?
 - **Socle légal incomplet, volontairement.** Tous les champs d'identité sont marqués « à compléter » —
@@ -658,8 +721,9 @@ Gates rejoués le 03/08 après merge : typecheck ✅ · préflight **412/412 (22
 
 ## 12. Dépendances SDK ↔ cocolight-api-client
 
-SDK installé : **1.0.172 publiée** (`package.json` `^1.0.172`, commit `09e145a0` du 03/08 — fini le
-`npm pack` local).
+SDK installé : **1.0.189** (`package.json` `^1.0.189` ; 1.0.172 documenté le 03/08, commit `09e145a0`,
+est désormais périmé — dérive constatée le 27/08, bump transverse du monorepo sans lien avec ce
+projet).
 
 | Demande | État | Preuve / substitut |
 |---|---|---|
@@ -692,3 +756,4 @@ SDK installé : **1.0.172 publiée** (`package.json` `^1.0.172`, commit `09e145a
 | Champs d'identité du socle légal | Client |
 | Formulaires costum annoncés : quelles collections (acteur ? projet ? ressource ?), et quels champs — au-delà des « sujets pratiqués » ? | Tibor + PSR |
 | Un seul bouton flottant est possible : quel formulaire y met-on, et comment atteint-on les autres ? | Client + intégrateur |
+| **Chart budget épuisé** (`chart1..5` tous pris, 6ᵉ thématique en `accent`) : si une 7ᵉ arrive, ajouter `chart6` au schéma moteur ou réutiliser une teinte du thème ? | Tibor + dev moteur |
