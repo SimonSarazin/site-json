@@ -200,6 +200,65 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 
 ## 9. Impacts des modifications
 
+### 27/08 — le lien d'un commun peut désigner la fiche site-json
+
+**Constat** : le catalogue d'un site site-json affiche les communs sur **sa propre** page de détail
+(`/aac/commun/<id>`), pas sur la page CMS legacy. Or `ToolsCatalogListAction::extractCommunId`
+n'extrayait la `communId` que de l'ancre historique `#detail-un-commun.communId.<24hex>`. Rattacher
+un commun depuis la modale React écrivait donc un lien que le serveur ne savait pas relire : la
+valeur partait bien en base, mais revenait `communId: ""` — select retombé sur « Aucun commun »,
+bloc « Informations liées au commun » jamais rendu, **et aucune erreur nulle part**.
+
+**Correctif — backend** : `extractCommunId` reconnaît désormais **deux** formes. L'ancre legacy
+d'abord (sur un lien qui porterait les deux, c'est elle qui a été écrite en connaissance du domaine
+cible), puis le **segment** `commun/<24hex>`. Un segment, jamais un préfixe en dur : ce qui le
+précède appartient au routeur du site (`/aac/…` aujourd'hui) et n'a pas à être connu du costum — ce
+qui couvre du même coup la forme absolue `https://<hôte>/aac/commun/<id>`. Un `[0-9a-f]{24}` isolé
+ne serait PAS un critère suffisant : toute URL portant un identifiant Mongo (une image, un profil)
+deviendrait un lien de commun ; c'est le libellé `commun/` qui porte l'intention.
+
+**Correctif — front** : `toolsCatalog/utils/communLink.ts`, **miroir exact** de la fonction PHP
+(`extractCommunId` / `isCommunLink` / `replaceCommunId` / `templateYieldsCommunId`), consommé par
+`ToolEditDialog` — qui repointe désormais un lien existant **sans convertir sa forme** : un outil
+enrichi depuis le legacy garde son ancre, un outil enrichi depuis un site site-json garde sa route.
+
+**Garde-fou** : le `refine` de `communUrlTemplate` ne cherche plus un motif — il substitue une
+communId factice et relit le résultat avec le même code que le serveur. Un gabarit non relisible
+échoue à `config:validate` au lieu de se corrompre en silence dans la base.
+
+**Vérifié en réel** (endpoint `toolscatalog`, catalogue CAE paginé, 83 outils) : 3 outils portaient
+une `communId` avant, **4** après — « Framateam » résout maintenant sur la valeur DÉJÀ en base
+(`/aac/commun/6a33be10fbb6f52b76632076`), sans migration, et les deux ancres legacy continuent de
+résoudre. `communinfo` sur ce commun rend bien la fiche.
+
+**Corollaire — le clic sur le lien d'un outil** : dès lors qu'il peut désigner une page DE CE SITE,
+le rendre en `<a target="_blank">` était faux — un nouvel onglet rejouait tout le démarrage de l'app
+pour une page qu'un `<Link>` affiche instantanément. Les deux ancres en dur du module
+(`ToolDetailDialog`, `ContactRow` de `CommunInfoSection`) passent donc par **`NavLink`**, qui
+consomme le contrat 4 voies déjà partagé du parc (`classifyHref`, `src/lib/linkKind.ts`) : route SPA,
+nouvel onglet, handler OS (`mailto:`/`tel:` — qui laissaient un onglet vide derrière eux), ou
+`<span>` inerte. L'icône « lien externe » ne s'affiche plus que sur ce qui part vraiment ailleurs.
+
+Une normalisation précède la classification : `normalizeToolHref` (`toolsCatalog/utils/toolHref.ts`).
+`classifyHref` a été écrit pour des liens de CONFIG et range tout ce qui n'a ni schéma ni `//` ni `#`
+dans `internal` ; or ces liens-ci sont saisis par un admin et le serveur tolère DÉLIBÉRÉMENT la forme
+sans schéma (`SaveCriteriaAction::safeUrl`, mesurée en base sur Peertube :
+`lescommuns.tiers-lieux.org#detail-un-commun.…`). Sans schéma rendu, ce lien partait en navigation
+SPA et servait la PAGE D'ACCUEIL en 200 — le silence exact que `linkKind` avait été écrit pour
+empêcher. 14 tests, chacun vérifié jusqu'à la VOIE de rendu (`classifyHref`) et pas seulement
+jusqu'à la chaîne produite.
+
+⚠️ **Contrepartie assumée, mesurée et bornée** : un lien de forme site-json n'est pas relisible par
+le JS des vues legacy, qui découpe sur `split("communId.")[1]`. Les **4** sites de parsing ont été
+relus (`listTools` des deux vues, au rendu de la modale et au retour d'enregistrement) : tous sont
+gardés par `typeof … != "undefined"` — **aucun crash**. Les conséquences sont donc : le select du
+commun n'est plus pré-sélectionné, `getInfoAapTool` n'est pas appelé, et le `href` rendu est relatif
+donc mort sur la page CMS. **Aucune perte de donnée** : un enregistrement legacy sans commun choisi
+n'envoie pas `urlTool` (`if($("#idCommun").val() != "")`), donc `applyOptionalFields` ne le touche
+pas et le lien survit. Le gabarit peut être passé en URL absolue
+(`https://<hôte>/aac/commun/{communId}`) sans une ligne de code : le segment reste reconnu des deux
+côtés.
+
 ### 13/08 — édition d'un lieu : le formulaire du site refusé par la lib
 
 **Constat** (remonté depuis l'usage) : valider la modale « Modifier » d'un lieu échoue sur
@@ -427,7 +486,7 @@ dans `commentaire/sdk-tools-catalog.md` (notes locales, hors dépôt).
 | `Form.getToolUsers()` — lieux utilisateurs d'un outil (`COSTUM_TOOL_USERS`) | ✅ `1.0.183` | `ToolUsersAction.php` déployée ; recherche par `criteriaIds`, jamais par regex sur le nom |
 | `Form.getToolUsers()` — **paramètre `normalizedName`** | ✅ `1.0.184` | Livré le 11/08 (lib `d93c7c3`), débloque le fix du §9 10/08bis. Optionnel au contrat (hors `required`) et transmis **conditionnellement** par le SDK : clé-absente ≠ chaîne-vide. Cf. §11.1 |
 | `Form.communInfo()` — fiche du commun rattaché (`COSTUM_COMMUN_INFO`) | ✅ `1.0.183` | Déplacée d'`Answer` vers `Form` en `1.0.183` : `api.answer({id})` fetchait le doc AAP complet (fuite `financer[]` nominatif), `api.form({id})` ne charge que la définition publique. `formId` = verrou anti-IDOR (endpoint `auth: none`) |
-| `BaseEntity.saveToolEnrichment()` — édition d'un outil (`COSTUM_SAVE_TOOL_ENRICHMENT`, bearer) | ✅ `1.0.183` | `SaveCriteriaAction.php` durcie (elle écrivait sans aucun contrôle d'accès). ⚠️ Sur `BaseEntity`, pas `Organization` — cf. §12 |
+| `BaseEntity.saveToolEnrichment()` — édition d'un outil (`COSTUM_SAVE_TOOL_ENRICHMENT`, bearer) | ✅ `1.0.183` — **aucune demande** | `SaveCriteriaAction.php` durcie (elle écrivait sans aucun contrôle d'accès). ⚠️ Sur `BaseEntity`, pas `Organization` — cf. §12. ⚠️ La méthode déballe sa clé métier `data` et perd `results` (`1.0.183` → `1.0.189`) : **contourné côté site-json**, la lib n'est pas à modifier — cf. §11.3 |
 | `BaseEntity.getCommunList()` — options du select de rattachement (`COSTUM_COMMUN_LIST`, bearer) | ✅ `1.0.183` | `CommunListAction.php` déployée ; remplace un appel legacy qui ramenait ~300 réponses AAP entières |
 | Upload de l'image d'un outil | ✅ présent | `entity.uploadDocument(file, {contentKey: "icons", docType: "image"})` — même `contentKey` que le legacy |
 | `BaseEntity.setCostumScope(slug, {pinSchema})` — **épingle du schéma** pour ÉDITER un lieu de l'annuaire | ⛔ **À DEMANDER** | Bloque l'édition d'un lieu (`[DraftProxy] Le champ "holderOrganization" n'est pas autorisé.`). Mesuré sur 3 lieux réels : 2 échouent. Cf. §11.2 |
@@ -560,6 +619,63 @@ blanche ne bouge pas. La demande **rend vraie la documentation existante**.
 exact du `me.costum(slug)` de la création, dont l'absence en édition était l'asymétrie de fond.
 Couvert par 3 tests de non-régression (`useEntityMutation.test.ts`) dont un faux `DraftProxy` qui
 rejette hors liste blanche : retirer `schemaCostumSlug` **ou** son `pinSchema` les fait échouer.
+
+---
+
+### 11.3 ✅ Contourné côté site-json — `saveToolEnrichment()` perd `results`
+
+> **Statut** : **aucune demande adressée à la lib.** Le défaut est réel et présent dans les
+> versions publiées `1.0.183` → `1.0.189` (commit `6f1a932`, qui a introduit les 5 endpoints du
+> catalogue), mais il se neutralise entièrement côté consommateur, sans dépendre d'une republication.
+> C'est le choix retenu : `readEnrichmentVerdict` (`toolsCatalog/utils/enrichmentResult.ts`).
+
+**Symptôme** : enregistrer une modification d'outil affiche « L'enregistrement a échoué. » alors que
+`POST /costum/francetierslieux/savecriteria` répond **200** et que la base **est bien mise à jour**.
+Mesuré sur `navigatorcriteria` : le document « Framateam » porte l'`updated` de la tentative dite
+« en échec ».
+
+**Cause** : l'enveloppe de cet endpoint est `{results, msg, data?, name?}`, `results` **à la racine**
+(contrat `COSTUM_SAVE_TOOL_ENRICHMENT` : `results` et `msg` sont `required`). La méthode applique
+pourtant l'idiome de déballage de ses endpoints voisins — `return (res?.data ?? res)` — alors qu'ici
+`data` n'est pas une enveloppe mais une clé **métier** : le document `navigatorcriteria` écrit, que
+`SaveCriteriaAction` renseigne dans ses **trois** branches de succès. La lib rend donc toujours le
+document, jamais l'enveloppe.
+
+**Pourquoi les voisins ne sont pas touchés** : `getCommunList`, `toolsCatalog` et `getToolUsers`
+emploient le même idiome, mais leurs actions ne renvoient jamais de clé `data`
+(`Rest::json(["results" => …])`) — le `?? res` les sauve par accident. `savecriteria` est le seul de
+la famille dont la réponse porte les deux clés à la fois.
+
+**Pourquoi on peut trancher sans la lib** : `data` et `results` ne sont pas indépendants côté serveur.
+
+| branche serveur                     | `results` | `data`      |
+|-------------------------------------|-----------|-------------|
+| admin refusé (HTTP 401)             | `false`   | absent      |
+| jeton invalide (HTTP 401)           | —         | absent      |
+| `name` vide (HTTP 200)              | `false`   | absent      |
+| insert / update / insert (HTTP 200) | `true`    | **présent** |
+
+`data` n'est renseigné QUE par les branches de succès, et il y est toujours non vide (`created` /
+`updated` au minimum). Les deux 401 ne parviennent jamais au consommateur : axios rejette les 4xx
+(aucun `validateStatus` n'est posé) et la promesse est rompue avant. Il ne reste donc que deux formes
+en retour, et elles se distinguent : un `results` booléen **présent** est l'enveloppe et fait foi ;
+son **absence** signe le déballage d'un `data`, donc un succès.
+
+L'ordre compte : le `results` explicite prime toujours. Le jour où la lib cesserait de déballer, le
+module continuerait de dire vrai sans être touché — et n'aurait alors plus qu'à disparaître.
+
+**Les deux comportements de lib sont couverts, et l'équivalence est testée comme telle** : les trois
+réponses HTTP 200 de `SaveCriteriaAction::run()` sont rejouées à travers les DEUX implémentations
+plausibles — la déballante (`res?.data ?? res`, celle en place) et la fidèle (`res`, une lib corrigée
+ou patchée en local) — et le verdict doit être identique et correct dans les deux cas. Sans quoi le
+module dépendrait de la version installée : une simple réinstallation de `node_modules` ferait
+réapparaître le toast d'échec sur un enregistrement réussi. 16 tests au total ; vérifié discriminant
+en cassant la fonction dans les deux sens (ne gérer que la lib déballante → 4 rouges ; ne gérer que
+la fidèle → 6 rouges).
+
+Corollaire de typage : le hook déclare `unknown` et non `ToolEnrichmentResult` — selon la lib
+installée, la valeur rendue est l'enveloppe OU le document déballé, et la typer en enveloppe serait
+une affirmation fausse. Aucun appelant ne lit `mutation.data` ; seul le verdict compte.
 
 ---
 
