@@ -405,7 +405,7 @@ doublon à traiter puisqu'il concerne le porteur lui-même.
 | Config | [`../config.prod.rezo-sante-reunion.json`](../config.prod.rezo-sante-reunion.json) |
 | Déclaration du site | [`../sites.json`](../sites.json) — `{slug, config, css, images}` (vérifié 03/08 ; **ni `domain` ni `coolifyApp`** : la cible de déploiement n'est pas déclarée, cf. §8) |
 | Thème | `config.theme` (couleurs + typographie : `sans` Hanken Grotesk, `serif` **Fraunces**, `mono` Spline Sans Mono) + [`../src/index-rezo-sante-reunion.css`](../src/index-rezo-sante-reunion.css) (feuille propre depuis le 30/07) |
-| Assets | **6 visuels** dans `public/images/rezoSanteReunion/` : 5 fournis le 29/07 + `hero-culture-sante-reunion.jpg` fourni le 27/08 (lot 4, cercle de danse et percussions traditionnelles) — **les 6 générés par IA**, à remplacer par de vraies photos avant mise en ligne ; clé `images` déclarée dans `sites.json` |
+| Assets | **7 visuels** dans `public/images/rezoSanteReunion/` : 5 fournis le 29/07 (4 thématiques + accueil) + `hero-culture-sante-reunion.jpg` et `hero-addictions-sante-reunion.jpg` fournis le 27/08 (lot 4) — **les 7 générés par IA**, à remplacer par de vraies photos avant mise en ligne ; clé `images` déclarée dans `sites.json` |
 
 ---
 
@@ -493,15 +493,14 @@ marque. Palette finale, cinq teintes franchement distinctes, aucune ne heurtant 
 | Culture & Santé (lot 4, 27/08) | `accent` | or chaud `oklch(0.78 0.13 80)` — `chart1..5` épuisés (§7) |
 
 **Visuels câblés** (lot 1d, complété lot 4) : `mission-healthcare` en héro d'accueil (cercle
-intergénérationnel — la plus « réseau » des thématiques), et cinq `hero-*` sur leurs pages
-thématiques respectives (`hero-tinted-overlay`) — les quatre d'origine (29/07) plus
-`hero-culture-sante-reunion.jpg` (27/08, cercle de danse et percussions traditionnelles en
-extérieur, lumière dorée — **généré par IA**, comme les 5 autres) pour Culture & Santé.
+intergénérationnel — la plus « réseau » des thématiques), et les **6** `hero-*` sur leurs pages
+thématiques respectives (`hero-tinted-overlay`) — les quatre d'origine (29/07), `hero-culture-sante-reunion.jpg`
+(27/08, cercle de danse et percussions traditionnelles) et `hero-addictions-sante-reunion.jpg`
+(27/08, cercle d'écoute et d'entraide en extérieur) fournis par le client. Toutes générées par IA,
+même registre visuel.
 
-⚠ **`/theme/addictions` reste en `title`** — 5 pages sur 6 ont donc le héro. Faute d'image, un
-`hero-tinted-overlay` y afficherait un bloc de 100 vh quasi vide : le composant ne rend NI l'image NI
-le voile sans `backgroundImage` (`HeroTintedOverlay.tsx:26`), il retombe seulement sur l'encre du
-thème. À unifier le jour où la thématique aura son visuel.
+✅ **`/theme/addictions` a désormais son visuel (lot 4, 27/08)** — dernière des 6 pages thématiques à
+passer de `title` à `hero-tinted-overlay`. La planche des 6 thématiques est maintenant homogène.
 
 **Correctif de lisibilité (lot 4, 27/08)** : les héros `hero-tinted-overlay` utilisaient
 `drop-shadow`/`drop-shadow-lg` de Tailwind sur le texte blanc — des utilitaires plafonnés à 0,15
@@ -511,14 +510,15 @@ vérifié sur les 5 autres pages thématiques et sur `nos-commune` (seul autre c
 composant, clair **et** sombre, desktop **et** mobile) : aucune régression, gain de lisibilité
 partout. Détail en §7.
 
-**Essai en cours (30/07, `f0e0893f`) — carrousel des héros.** Un `hero-carousel` de 4 diapositives,
-**dérivées** des héros existants des pages `/theme/*` (titre, sous-titre, image, alt repris tels
-quels + CTA vers la page), a été branché **en tête de `/thematiques`** (`sections[0]`,
-`autoplay: false`). **C'est un placement d'ESSAI, pas une décision actée** — le message de commit le
-dit. Le carrousel en home, comme sur la maquette Lovable, reste à arbitrer : il coûterait 4 sections,
-4 ancres et 4 URL partageables ; `/theme/addictions` sans image donnerait une diapositive trouée ; et
-la photo de home est en 16:9 quand les thématiques sont en 3:2 — le candidat LCP basculerait. Se
-retire en enlevant un bloc. Cf. §13.
+**Essai en cours (30/07, `f0e0893f`) — carrousel des héros.** Un `hero-carousel`, **dérivé** des
+héros existants des pages `/theme/*` (titre, sous-titre, image, alt repris tels quels + CTA vers la
+page), a été branché **en tête de `/thematiques`** (`sections[0]`, `autoplay: false`). **C'est un
+placement d'ESSAI, pas une décision actée** — le message de commit le dit. Passé à 4 diapositives à
+sa création (30/07), complété à 5 (Culture & Santé, lot 4) puis à **6** — les 6 thématiques y ont
+maintenant chacune leur diapositive, dans l'ordre des pages. Le carrousel en home, comme sur la
+maquette Lovable, reste à arbitrer : il coûterait 6 sections, 6 ancres et 6 URL partageables ; et la
+photo de home est en 16:9 quand les thématiques sont en 3:2 — le candidat LCP basculerait. Se retire
+en enlevant un bloc. Cf. §13.
 
 ---
 
@@ -642,6 +642,12 @@ Travail réalisé sur la branche `mira-dev`, **non commité** au moment de cette
    plus cohérent avec le registre des 5 autres.
 2. **Correctif `hero-text-shadow`** sur `HeroTintedOverlay.tsx`/`shared.css` — détail en §7 et §7.1.
    Composant **partagé avec `nos-commune`** : vérifié clair/sombre/mobile sur les deux configs.
+3. **Suite du lot, même jour — visuel Addictions.** Le client a fourni `hero-addictions-sante-reunion.jpg`
+   (cercle d'écoute et d'entraide en extérieur) : dernière des 6 pages thématiques à passer de
+   `title` à `hero-tinted-overlay`, comblant la limitation documentée depuis le lot 1d. La diapositive
+   Addictions a été ajoutée au `hero-carousel` de `/thematiques` (à sa place dans l'ordre des pages,
+   entre Sommeil et Bien-être mental) — le carrousel couvre maintenant les 6 thématiques. Détail en
+   §7.1.
 
 
 Gates rejoués le 27/08 :
@@ -698,12 +704,13 @@ Gates rejoués le 27/08 :
   françaises (`lien`, `video`, `document`, `compte-rendu`). Des catégories nommées autrement
   (« Outil », « Guide », « Protocole ») ne produiront **aucun bouton d'action principal**, et aucune
   clé de config ne corrige cela — seules les icônes sont surchargeables.
-- **Visuels : 6 fournis, 1 manquant.** `/theme/addictions` n'a **aucune image**, et reste donc en
-  section `title` : la planche des 6 thématiques est visuellement dépareillée.
-  Manque aussi l'image « communauté » (le `community-healthcare` de la maquette) qui porterait la
-  section communauté de la home. Les 6 visuels sont **générés par IA** (le 6ᵉ,
-  `hero-culture-sante-reunion.jpg`, fourni le 27/08 lot 4) — à remplacer par de vraies photos du
-  réseau avant mise en ligne (enjeu de crédibilité pour un annuaire d'acteurs).
+- **Visuels : les 6 thématiques ont désormais leur image (lot 4, 27/08).** `/theme/addictions` était
+  la seule sans visuel ; c'est réglé, la planche des 6 thématiques est homogène. Il manque encore
+  l'image « communauté » (le `community-healthcare` de la maquette) qui porterait la section
+  communauté de la home. Les 7 visuels du site sont **générés par IA** (les 6ᵉ et 7ᵉ,
+  `hero-culture-sante-reunion.jpg` et `hero-addictions-sante-reunion.jpg`, fournis le 27/08 lot 4) —
+  à remplacer par de vraies photos du réseau avant mise en ligne (enjeu de crédibilité pour un
+  annuaire d'acteurs).
 - **Chart budget épuisé (lot 4).** `chart1..chart5` sont tous pris ; la 6ᵉ thématique réutilise
   `accent`. Si une 7ᵉ thématique arrivait, il faudrait soit ajouter `chart6` au schéma (`site-schema.ts`
   — hors config, changement moteur), soit choisir une autre couleur du thème déjà validée
@@ -741,7 +748,7 @@ projet).
 | Question | Responsable |
 |---|---|
 | ~~Créer le costum `rezoSanteReunion`~~ **fait le 30/07 (§6bis)** → reste le **peuplement** : qui référence/importe les premières fiches, et quand ? | PSR / admin Communecter |
-| **Essai `hero-carousel`** (30/07) : confirmer ou non son maintien en tête de `/thematiques`, et arbitrer le portage en home voulu par la maquette Lovable (coûts mesurés : diapositive addictions sans image, ratio 16:9 vs 3:2 → bascule du candidat LCP) | Client + Thomas |
+| **Essai `hero-carousel`** (30/07, complété à 6 diapositives le 27/08) : confirmer ou non son maintien en tête de `/thematiques`, et arbitrer le portage en home voulu par la maquette Lovable (coût mesuré : ratio 16:9 vs 3:2 → bascule du candidat LCP) | Client + Thomas |
 | **Vocabulaire des « sujets pratiqués »** : quelle liste, saisie où, renseignée quand ? Sans elle, les 5 pages thématiques n'ont rien à filtrer | Tibor + PSR (@Pierre, @duvardfrancois, @SebastienPSR) |
 | Reprise des **1 088 fiches `#santé`** : qui trie, selon quels critères d'inclusion ? | PSR |
 | **Doublon PSR** (`PromotionSanteLaReunion` / `promotionSanteLaReunion`) : lequel fait foi ? | PSR |
