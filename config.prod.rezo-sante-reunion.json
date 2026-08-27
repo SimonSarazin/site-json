@@ -1078,6 +1078,26 @@
               },
               {
                 "headline": {
+                  "fr": "Addictions",
+                  "en": "Addiction"
+                },
+                "subhead": {
+                  "fr": "Tabac, alcool, cannabis, écrans, jeux : prévenir sans faire peur, accompagner sans juger.",
+                  "en": "Tobacco, alcohol, cannabis, screens, gambling: prevention without fear, support without judgement."
+                },
+                "backgroundImage": "/images/rezoSanteReunion/hero-addictions-sante-reunion.jpg",
+                "backgroundImageAlt": {
+                  "fr": "Cercle d'écoute et d'entraide en extérieur, à l'ombre des arbres",
+                  "en": "Outdoor listening and mutual-support circle, in the shade of the trees"
+                },
+                "ctaLabel": {
+                  "fr": "Voir les acteurs",
+                  "en": "See the actors"
+                },
+                "ctaPath": "/theme/addictions"
+              },
+              {
+                "headline": {
                   "fr": "Bien-être mental",
                   "en": "Mental wellbeing"
                 },
@@ -1895,19 +1915,23 @@
       },
       "sections": [
         {
-          "type": "title",
+          "type": "hero-tinted-overlay",
           "id": "theme-addictions-titre",
           "props": {
-            "title": {
+            "headline": {
               "fr": "Addictions",
               "en": "Addiction"
             },
-            "subtitle": {
+            "subhead": {
               "fr": "Tabac, alcool, cannabis, écrans, jeux : prévenir sans faire peur, accompagner sans juger.",
               "en": "Tobacco, alcohol, cannabis, screens, gambling: prevention without fear, support without judgement."
             },
-            "align": "center",
-            "size": "xl"
+            "backgroundImage": "/images/rezoSanteReunion/hero-addictions-sante-reunion.jpg",
+            "backgroundImageAlt": {
+              "fr": "Cercle d'écoute et d'entraide en extérieur, à l'ombre des arbres",
+              "en": "Outdoor listening and mutual-support circle, in the shade of the trees"
+            },
+            "showScrollIndicator": false
           }
         },
         {
