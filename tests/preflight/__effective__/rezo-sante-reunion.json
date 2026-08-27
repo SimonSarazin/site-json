@@ -351,6 +351,57 @@
         "indexStepList": 24
       }
     },
+    "/theme/culture-sante/searchProStatic": {
+      "baseParams": {
+        "sourceKey": [
+          "rezoSanteReunion"
+        ],
+        "costumSlug": "rezoSanteReunion",
+        "defaultTypes": [
+          "organizations",
+          "projects"
+        ],
+        "defaultFilters": {
+          "tags": {
+            "$in": [
+              "Culture & Santé",
+              "Culture et Santé",
+              "Culture",
+              "culture",
+              "Santé",
+              "santé"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "collection",
+          "type",
+          "shortDescription",
+          "description",
+          "tags",
+          "address",
+          "geo",
+          "geoPosition",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "profilImageUrl",
+          "links",
+          "created"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "description",
+          "tags"
+        ],
+        "indexStepList": 24
+      }
+    },
     "/annuaire/searchProStatic": {
       "baseParams": {
         "sourceKey": [
