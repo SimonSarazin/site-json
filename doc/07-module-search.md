@@ -939,6 +939,22 @@ le projette dehors) : `zones` et `cities` → `getZoneShape` (`co2/zone/getshape
 posé par le résolveur), `zoniris` → `getZoniris` (`co2/zone/getzoniris`). Schéma partagé et commenté :
 [`src/types/geo-shape-schema.ts`](../src/types/geo-shape-schema.ts) ; implémentation : [`src/lib/geoShapes/`](../src/lib/geoShapes/).
 
+**`countryCode` accepte une LISTE** (`zones` et `zoniris`). Le legacy, lui, ne lit qu'un scalaire :
+`countryCode: "FR,RE"` lui renvoie 0 document (mesuré le 2026-08-28). Une liste est donc résolue
+côté client en autant d'appels, mis en parallèle puis fusionnés et dédoublonnés par `_id` — le même
+mécanisme que deux couches partageant un `id`, sans dupliquer toute la déclaration. La clé de cache
+normalise et TRIE les codes : `"FR"`, `["FR"]` et `["RE","FR"]` vs `["FR","RE"]` ne créent pas
+quatre entrées pour la même donnée.
+
+Le cas qui l'impose : `level: "3"` + `FR` ne rend que les **13 régions métropolitaines** ; l'outre-mer
+vit sous son propre code pays (`RE`, `MQ`, `GP`, `GF`, `YT` — un document chacun ; `PM`, `NC`, `PF`,
+`WF`, `BL`, `MF` n'ont aucun contour). Sans liste, une carte « France entière » oublie l'outre-mer.
+⚠️ `countryCode` multiple et `parentId` sont incompatibles (refus à la validation) : un parent
+n'appartient qu'à un seul pays. `cities` reste scalaire — son `parentId` est obligatoire.
+⚠️ Le CADRAGE reste unique : France + outre-mer dans une seule projection Mercator donne une
+métropole minuscule et des DOM perdus au large. Des cartouches par territoire (comme
+`FranceRegionsMap`) restent à faire.
+
 **Volumétrie — c'est ce qui pilote tout le reste** (mesures live, 2026-08) : 24 communes de La Réunion
 = 57 Ko, mais les 7 bassins de vie de Saint-Paul = 395 Ko (98 % de géométrie, 10 779 points à 13
 décimales), et `level: "QPV"` sans parent = 9,4 Mo (dump national, `countryCode` étant ignoré par le

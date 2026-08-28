@@ -6,7 +6,7 @@ import type {
   ZoneShapeItem,
 } from "@communecter/cocolight-api-client";
 
-import type { GeoShapeSource } from "@/types/geo-shape-schema";
+import { countryCodeList, type GeoShapeSource } from "@/types/geo-shape-schema";
 
 import { simplifyGeometry } from "./simplifyGeometry";
 
@@ -40,7 +40,14 @@ export const GEO_SHAPES_GC_TIME = 24 * 60 * 60 * 1000;
  * c'est le cas quand un site réutilise le même périmètre sous deux habillages.
  */
 export function geoShapesQueryKey(source: GeoShapeSource): QueryKey {
-  return ["geo-shapes", source.source, JSON.stringify(source.filters), source.simplify ?? 0] as const;
+  // Les pays sont normalisés et TRIÉS : `"FR"`, `["FR"]` et `["RE","FR"]` vs `["FR","RE"]`
+  // décrivent le même jeu de contours et doivent donc partager un seul appel réseau.
+  const filters = source.filters as { countryCode?: unknown };
+  const canonical =
+    filters?.countryCode === undefined
+      ? source.filters
+      : { ...source.filters, countryCode: countryCodeList(filters.countryCode as never).slice().sort() };
+  return ["geo-shapes", source.source, JSON.stringify(canonical), source.simplify ?? 0] as const;
 }
 
 /**
@@ -48,13 +55,16 @@ export function geoShapesQueryKey(source: GeoShapeSource): QueryKey {
  * `level:"cities"` — le détour est absorbé ici, la config ne le voit pas. `light` est une
  * PRÉSENCE côté PHP (toute valeur non vide, sauf "0") → on émet `"1"`.
  */
-function buildZonePayload(source: Extract<GeoShapeSource, { source: "zones" | "cities" }>): ZoneGetShapeData {
+function buildZonePayload(
+  source: Extract<GeoShapeSource, { source: "zones" | "cities" }>,
+  countryCode: string,
+): ZoneGetShapeData {
   // Le ternaire est porté par `source.source` et non par un `filters` déjà déstructuré :
   // c'est ce qui laisse TypeScript restreindre l'union (seule la branche `zones` a un `level`).
   const payload: ZoneGetShapeData =
     source.source === "cities"
-      ? { countryCode: source.filters.countryCode, level: "cities" }
-      : { countryCode: source.filters.countryCode, level: source.filters.level };
+      ? { countryCode, level: "cities" }
+      : { countryCode, level: source.filters.level };
   const filters = source.filters;
   if (filters.parentId) payload.parentId = filters.parentId;
   if (filters.parentLevel) payload.parentLevel = filters.parentLevel;
@@ -155,12 +165,32 @@ export async function fetchGeoShapes(
   entity: GeoShapeEntity,
   source: GeoShapeSource,
 ): Promise<FeatureCollection> {
+  // Un pays par appel : le legacy ne lit qu'un `countryCode` SCALAIRE — `"FR,RE"` lui renvoie 0
+  // document (mesuré). La liste est donc un ÉVENTAIL de requêtes, mises en parallèle et
+  // concaténées ; `toFeatureCollection` dédoublonne ensuite par `_id`, comme pour deux couches
+  // qui partagent un `id`.
+  const countries = countryCodeList((source.filters as { countryCode?: never }).countryCode);
+
   if (source.source === "zoniris") {
-    const items = await entity.getZoniris(source.filters as ZoneGetZonirisData);
+    const filters = source.filters as ZoneGetZonirisData & { countryCode?: string | string[] };
+    if (countries.length <= 1) {
+      return toFeatureCollection((await entity.getZoniris(filters as ZoneGetZonirisData)) ?? [], source);
+    }
+    const pages = await Promise.all(
+      countries.map((countryCode) => entity.getZoniris({ ...filters, countryCode })),
+    );
+    return toFeatureCollection(pages.flatMap((items) => items ?? []), source);
+  }
+
+  const zoneSource = source as Extract<GeoShapeSource, { source: "zones" | "cities" }>;
+  if (countries.length <= 1) {
+    const items = await entity.getZoneShape(buildZonePayload(zoneSource, countries[0]));
     return toFeatureCollection(items ?? [], source);
   }
-  const items = await entity.getZoneShape(buildZonePayload(source));
-  return toFeatureCollection(items ?? [], source);
+  const pages = await Promise.all(
+    countries.map((countryCode) => entity.getZoneShape(buildZonePayload(zoneSource, countryCode))),
+  );
+  return toFeatureCollection(pages.flatMap((items) => items ?? []), source);
 }
 
 /** Options PARTAGÉES lecture/préchauffage — même clé, même fetcher, même fraîcheur. */

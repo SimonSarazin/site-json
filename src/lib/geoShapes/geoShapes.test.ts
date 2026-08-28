@@ -136,6 +136,19 @@ describe("geoShapesQueryKey", () => {
     expect(geoShapesQueryKey(ZONIRIS)).toEqual(geoShapesQueryKey({ ...ZONIRIS, id: "autre-habillage" }));
     expect(geoShapesQueryKey({ ...ZONIRIS, simplify: 10 })).not.toEqual(geoShapesQueryKey(ZONIRIS));
   });
+
+  it("normalise le pays : scalaire, liste d'un seul, et ordre des codes décrivent UN seul appel", () => {
+    const zones = (countryCode: string | string[]): GeoShapeSource => ({
+      id: "regions",
+      source: "zones",
+      filters: { countryCode, level: "3" },
+    });
+    // Sans normalisation, `"FR"` et `["FR"]` ouvriraient deux entrées de cache pour la même
+    // donnée, et `["FR","RE"]` / `["RE","FR"]` une troisième et une quatrième.
+    expect(geoShapesQueryKey(zones("FR"))).toEqual(geoShapesQueryKey(zones(["FR"])));
+    expect(geoShapesQueryKey(zones(["FR", "RE"]))).toEqual(geoShapesQueryKey(zones(["RE", "FR"])));
+    expect(geoShapesQueryKey(zones(["FR", "RE"]))).not.toEqual(geoShapesQueryKey(zones("FR")));
+  });
 });
 
 describe("fetchGeoShapes", () => {
@@ -173,6 +186,53 @@ describe("fetchGeoShapes", () => {
     const entity = fakeEntity();
     await fetchGeoShapes(entity, { id: "qpv", source: "zones", filters: { countryCode: "FR", level: "QPV", parentId: "x", parentLevel: "5" } });
     expect(entity.getZoneShape).toHaveBeenCalledWith({ countryCode: "FR", level: "QPV", parentId: "x", parentLevel: "5" });
+  });
+
+  it("éclate un countryCode MULTIPLE en un appel par pays, et fusionne les contours", async () => {
+    // Le legacy ne lit qu'un `countryCode` scalaire : `"FR,RE"` lui renvoie 0 document (mesuré
+    // sur l'API réelle). Une liste ne peut donc être qu'un éventail de requêtes.
+    const entity = fakeEntity();
+    entity.getZoneShape.mockImplementation(({ countryCode }: { countryCode: string }) =>
+      Promise.resolve([
+        { id: `${countryCode}-1`, name: countryCode, geoShape: { type: "Polygon", coordinates: [[[0, 0], [1, 0], [1, 1], [0, 0]]] } },
+      ] as ZoneShapeItem[]),
+    );
+
+    const fc = await fetchGeoShapes(entity, {
+      id: "regions",
+      source: "zones",
+      filters: { countryCode: ["FR", "RE", "MQ"], level: "3" },
+    });
+
+    expect(entity.getZoneShape.mock.calls.map(([p]) => p.countryCode)).toEqual(["FR", "RE", "MQ"]);
+    expect(entity.getZoneShape.mock.calls.every(([p]) => p.level === "3")).toBe(true);
+    expect(fc.features.map((f) => f.properties?.name)).toEqual(["FR", "RE", "MQ"]);
+  });
+
+  it("un pays SEUL, en liste ou en scalaire, ne déclenche qu'un appel — pas de régression", async () => {
+    const entity = fakeEntity();
+    await fetchGeoShapes(entity, { id: "z", source: "zones", filters: { countryCode: ["RE"], level: "4" } });
+    expect(entity.getZoneShape).toHaveBeenCalledTimes(1);
+    expect(entity.getZoneShape).toHaveBeenCalledWith({ countryCode: "RE", level: "4" });
+  });
+
+  it("le multi-pays vaut aussi pour zoniris (countryCode y est un filtre identifiant)", async () => {
+    const entity = fakeEntity();
+    await fetchGeoShapes(entity, {
+      id: "iris",
+      source: "zoniris",
+      filters: { countryCode: ["RE", "MQ"], level: "6" },
+    });
+    expect(entity.getZoniris.mock.calls.map(([p]) => p.countryCode)).toEqual(["RE", "MQ"]);
+    expect(entity.getZoniris.mock.calls.every(([p]) => p.level === "6")).toBe(true);
+  });
+
+  it("dédoublonne quand deux pays renvoient le MÊME document", async () => {
+    const entity = fakeEntity();
+    const partage = { id: "commun", name: "Partagé", geoShape: { type: "Polygon", coordinates: [[[0, 0], [1, 0], [1, 1], [0, 0]]] } };
+    entity.getZoneShape.mockResolvedValue([partage] as ZoneShapeItem[]);
+    const fc = await fetchGeoShapes(entity, { id: "z", source: "zones", filters: { countryCode: ["FR", "RE"], level: "3" } });
+    expect(fc.features).toHaveLength(1);
   });
 
   it("encaisse le `null` de getZoneShape (level qui ne résout aucune branche)", async () => {

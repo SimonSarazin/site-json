@@ -77,6 +77,30 @@ const GeoShapeCommon = {
   showNames: z.boolean().optional(),
 };
 
+/**
+ * Code pays ISO, ou LISTE de codes.
+ *
+ * Le legacy ne connaît QUE le scalaire : `countryCode: "FR,RE"` renvoie 0 document (mesuré le
+ * 2026-08-28 sur `/co2/zone/getshape`). Une liste est donc résolue côté client en autant d'appels,
+ * fusionnés et dédoublonnés par `_id` — le même mécanisme que deux couches partageant un `id`,
+ * mais sans dupliquer toute la déclaration.
+ *
+ * Le cas d'usage qui l'impose : les régions françaises. `level:"3"` + `FR` ne rend que les 13
+ * régions MÉTROPOLITAINES ; l'outre-mer vit sous son propre code pays (`RE`, `MQ`, `GP`, `GF`,
+ * `YT` — un document chacun). Sans liste, une carte « France entière » oublie l'outre-mer.
+ */
+export const CountryCodeSchema = z.union([
+  z.string().min(1),
+  z.array(z.string().min(1)).min(1),
+]);
+export type CountryCode = z.infer<typeof CountryCodeSchema>;
+
+/** Normalise le scalaire et la liste en un TABLEAU, seule forme que manipule le résolveur. */
+export function countryCodeList(value: CountryCode | undefined): string[] {
+  if (value === undefined) return [];
+  return typeof value === "string" ? [value] : value;
+}
+
 /** Plafond de libellés par couche — au-delà, les plus vastes gagnent. */
 export const GEO_SHAPE_MAX_LABELS = 60;
 
@@ -98,7 +122,7 @@ const ZonirisShapeSourceSchema = z.object({
     .object({
       cityId: z.string(),
       insee: z.string(),
-      countryCode: z.string(),
+      countryCode: CountryCodeSchema,
       spec: z.string(),
       shapeType: z.string(),
       name: z.string(),
@@ -125,7 +149,7 @@ const ZoneShapeSourceSchema = z.object({
   source: z.literal("zones"),
   filters: z
     .object({
-      countryCode: z.string().min(1),
+      countryCode: CountryCodeSchema,
       level: z.enum(["1", "2", "3", "4", "5", "6", "QPV"]),
       parentId: z.string().optional(),
       parentLevel: z.string().optional(),
@@ -136,6 +160,11 @@ const ZoneShapeSourceSchema = z.object({
     })
     .refine((f) => f.level !== "QPV" || Boolean(f.parentId && f.parentLevel), {
       message: "level 'QPV' exige parentId ET parentLevel : countryCode est ignoré par le serveur, la requête non bornée renvoie 9,4 Mo (dump national).",
+    })
+    // Un `parentId` désigne UNE zone, donc UN pays : le poser en face de plusieurs codes le
+    // rejouerait à l'identique sur chacun et ne ramènerait des contours que pour le sien.
+    .refine((f) => countryCodeList(f.countryCode).length <= 1 || !f.parentId, {
+      message: "countryCode multiple et parentId sont incompatibles : un parent appartient à un seul pays. Déclarer une couche par périmètre borné (elles fusionnent si elles partagent un `id`).",
     }),
 });
 
@@ -151,6 +180,9 @@ const CitiesShapeSourceSchema = z.object({
   ...GeoShapeCommon,
   source: z.literal("cities"),
   filters: z.object({
+    /** SCALAIRE ici, contrairement à `zones` : `parentId` est OBLIGATOIRE sur cette branche et
+     *  désigne une zone d'un seul pays — une liste n'aurait aucun sens. Pour plusieurs pays,
+     *  déclarer une couche par pays en leur donnant le même `id` : elles fusionnent. */
     countryCode: z.string().min(1),
     parentId: z.string().min(1),
     parentLevel: z.string().min(1),
