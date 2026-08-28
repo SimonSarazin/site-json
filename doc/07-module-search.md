@@ -918,6 +918,58 @@ const { data, isLoading, error } = useSearchZoneQuery(
 
 `staleTime: 30 minutes` (données rarement modifiées). **SSR-ready** via `searchZoneQueryKey()` + `fetchSearchZones()`.
 
+### useGeoShapes / useGeoShapesWarmup — contours géographiques (`map.shapes`)
+
+Superpose des CONTOURS (`geoShape`) à la carte : bassins de vie, communes, quartiers. Déclaratif,
+dans le `map` de la section (`searchPro`, `searchProStatic`, `agenda`) :
+
+```json
+"map": {
+  "shapes": [
+    { "id": "bassins-vie", "source": "zoniris", "load": "idle", "simplify": 10,
+      "filters": { "spec": "bassins_vie_saintpaul" },
+      "label": { "fr": "Bassins de vie" },
+      "style": { "fill": "primary", "fillOpacity": 0.12, "stroke": "primary" } }
+  ]
+}
+```
+
+Trois `source` pour deux endpoints legacy PUBLICS, les seuls à renvoyer `geoShape` (`co2/search/getzone`
+le projette dehors) : `zones` et `cities` → `getZoneShape` (`co2/zone/getshape` ; `level: "cities"` est
+posé par le résolveur), `zoniris` → `getZoniris` (`co2/zone/getzoniris`). Schéma partagé et commenté :
+[`src/types/geo-shape-schema.ts`](../src/types/geo-shape-schema.ts) ; implémentation : [`src/lib/geoShapes/`](../src/lib/geoShapes/).
+
+**Volumétrie — c'est ce qui pilote tout le reste** (mesures live, 2026-08) : 24 communes de La Réunion
+= 57 Ko, mais les 7 bassins de vie de Saint-Paul = 395 Ko (98 % de géométrie, 10 779 points à 13
+décimales), et `level: "QPV"` sans parent = 9,4 Mo (dump national, `countryCode` étant ignoré par le
+serveur sur cette branche). D'où :
+
+- **`load`** décide QUAND : `map` (défaut, à l'ouverture de la vue carte — même politique que
+  `useSearchAllResults`), `idle` (à l'entrée de page mais après le premier paint), `page`
+  (immédiatement, à réserver aux couches légères). **Jamais de SSR** : `getzoniris` est un POST
+  (aucun cache HTTP) et déshydrater des polygones coûterait plus que la page.
+- **`simplify`** (tolérance en mètres, Douglas-Peucker) allège le RENDU, pas le téléchargement :
+  389 Ko / 10 779 points → 37 Ko / 1 757 points à 10 m, sans différence visible à l'échelle communale.
+- Les garde-fous volumétriques sont dans le schéma Zod (QPV et `cities` sans parent sont REFUSÉS à la
+  validation), donc `config:validate` et le préflight les attrapent avant la mise en ligne.
+
+Deux hooks, un seul cache : `useGeoShapes(sources)` est appelé par `SearchMap` (montée seulement en vue
+carte, ce qui réalise `load: "map"` à lui seul) ; `useGeoShapesWarmup(sources)` est appelé par la
+SECTION, toujours montée, et préremplit les mêmes clés pour `page`/`idle`. Plusieurs entrées portant le
+même `id` sont fusionnées et dédoublonnées par `_id` : c'est ainsi qu'on exprime un OU, que le legacy
+n'a pas (ses filtres sont ANDés).
+
+Rendu : `MapShapeLayers` (un `<Source>` GeoJSON + fill + line par couche), `MapShapeLegend` (affichée
+seulement pour les couches qui portent un `label`) et `MapShapeNames` (`showNames: true` → le nom de
+chaque contour posé dessus). Les couleurs sont des JETONS de thème, convertis en sRGB par
+`resolveThemeColor` — MapLibre peint en WebGL et refuse l'`oklch` de `config.theme.colors`.
+
+Les noms sont des overlays HTML et non un calque `symbol` : sans clé MapTiler, le style de repli
+n'embarque aucun glyphe, un calque de texte y serait muet. Chaque nom est posé au point INTÉRIEUR le
+plus éloigné du bord (`polygonLabelPoint`, recherche par grille) et non au centroïde, qui sort de la
+forme sur un cirque ou une commune en croissant. Au-delà de 60 contours, seuls les plus vastes sont
+nommés.
+
 ### useCsvExport
 
 Export CSV des résultats courants via [PapaParse](https://www.papaparse.com/).
