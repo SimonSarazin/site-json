@@ -42,6 +42,7 @@ import { useSearchQuery } from "./hooks/useSearchQuery";
 import { useSearchAllResults } from "./hooks/useSearchAllResults";
 import MapProgress from "./components/MapProgress";
 import MapSkeleton from "./components/MapSkeleton";
+import { useGeoShapesWarmup } from "@/lib/geoShapes";
 import { useCsvExport } from "./hooks/useCsvExport";
 import { canonicalSearchProStaticBaseParams } from "./lib/canonicalBaseParams";
 import { useZonesQuery, getZoneId, getZoneName } from "./hooks/useZonesQuery";
@@ -130,6 +131,11 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
       list?.preview?.reservations &&
       searchParams.get(installationConf.param ?? DEFAULT_INSTALLATION_PARAM),
   );
+
+  // Contours géographiques : préchauffage des couches déclarées `load: "page"`/`"idle"`. La CARTE
+  // n'est montée qu'en vue carte (lazy + client-only) ; la section, elle, est toujours là — c'est
+  // donc ici que « à l'entrée de la page » peut se jouer. `load: "map"` (défaut) : no-op.
+  useGeoShapesWarmup(props.map?.shapes);
 
   // État local (pas de sync URL)
   const defaultViewMode = props.defaultViewMode || (showMap ? "map" : "list");

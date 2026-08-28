@@ -1,5 +1,6 @@
 import { LocalizedString } from "@/types/locale-schema";
 import { ActionButtonSchema } from "@/types/action-button-schema";
+import { GeoShapeSourceSchema } from "@/types/geo-shape-schema";
 import { PredicateJson } from "@/modules/formEngine/config";
 import type { SearchEntity, News } from "@communecter/cocolight-api-client";
 import { IconName } from "lucide-react/dynamic";
@@ -643,6 +644,11 @@ export const MapConfSchema = z.object({
   itemAction: z.object({ kind: z.enum(["profil", "preview"]) }).optional(),
   /** Apparence des marqueurs — cf. `MarkerConfSchema` (surcharge le site). */
   marker: MarkerConfSchema.optional(),
+  /** Couches de CONTOURS géographiques superposées aux marqueurs (bassins de vie, communes,
+   *  quartiers…) — cf. `GeoShapeSourceSchema`. Plusieurs couches = autant d'appels (le legacy
+   *  ANDe ses filtres, il n'a pas de OR), fusionnés et dédoublonnés par id de document. Chaque
+   *  couche porte SA politique de chargement (`load`), la volumétrie allant de 57 Ko à 9,4 Mo. */
+  shapes: z.array(GeoShapeSourceSchema).optional(),
 }).partial();
 
 export type MapConf = z.infer<typeof MapConfSchema>;

@@ -35,6 +35,7 @@ import { eventOccurrence } from "./lib/eventDates";
 import { distinctTags, filterByTags } from "./lib/eventTags";
 import { readAgendaUrl, writeAgendaUrl, type AgendaFilterDefaults, type AgendaMode } from "./lib/agendaUrlParams";
 import type { AgendaSectionProps, AgendaTab } from "./schema";
+import { useGeoShapesWarmup } from "@/lib/geoShapes";
 
 // Défaut STABLE (référence constante) : un `tabs = [...]` en défaut de destructuration crée un
 // NOUVEAU tableau à chaque render → `urlDefaults` instable → effet de sync URL en boucle (re-render
@@ -76,6 +77,11 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
     map: mapConf,
     maxWidth,
   } = props;
+
+  // Contours géographiques : préchauffage des couches `load: "page"`/`"idle"` (no-op sinon) — la
+  // vue carte de l'agenda réutilise SearchMapWrapper, donc les couches y sont peintes pareil.
+  useGeoShapesWarmup(mapConf?.shapes);
+
   // `maxWidth` absent → `container` historique (page agenda dédiée). Présent →
   // échelon explicite, pour qu'un teaser s'aligne sur les sections voisines.
   const containerClass = maxWidth

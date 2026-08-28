@@ -13,6 +13,8 @@ import { useSite } from "@/hooks/useSite";
 import { getBaseUrl, getMaptilerApiKey } from "@/lib/constant/common";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 
+import { useGeoShapes } from "@/lib/geoShapes";
+
 import { SearchMapProps, type ListConf } from "../schema";
 import { resolveMapStyles } from "../lib/mapStyles";
 import { resolveListItemConf } from "../lib/resolveListItemConf";
@@ -21,6 +23,9 @@ import { useMapContainerClass } from "../hooks/useMapContainerClass";
 import { SwitchDetailsMode } from "./SwitchDetailsMode";
 import SearchMapPopup from "./SearchMapPopup";
 import { ClusterMarker, PointMarker } from "./SearchMapMarkers";
+import MapShapeLayers from "./MapShapeLayers";
+import MapShapeNames from "./MapShapeNames";
+import MapShapeLegend from "./MapShapeLegend";
 import {
   findEntryById,
   getEntryCoords,
@@ -101,6 +106,11 @@ export default function SearchMap({ results, card, preview, list, map: mapConf, 
   // Action au clic du bouton de popup — déclarée en config (map.itemAction) :
   // détail modal du module search (défaut) ou navigation /profil/:slug.
   const actionKind = mapConf?.itemAction?.kind ?? "preview";
+
+  // Contours géographiques déclarés en config (`map.shapes`). Le hook lit le cache partagé avec
+  // `useGeoShapesWarmup` (appelé par la section) : selon la politique `load` de chaque couche, la
+  // donnée est déjà là au montage de la carte, ou se charge maintenant.
+  const shapeLayers = useGeoShapes(mapConf?.shapes);
 
   // Fond de carte : style.json vectoriel MapTiler (clé env, via @maptiler/sdk)
   // avec styles par site (`integrations.map`), sinon repli raster — cf. lib/mapStyles.ts.
@@ -366,6 +376,9 @@ export default function SearchMap({ results, card, preview, list, map: mapConf, 
           >
             <NavigationControl position="top-left" />
 
+            <MapShapeLayers layers={shapeLayers} />
+            <MapShapeNames layers={shapeLayers} />
+
             {clusters.map((feature) => {
               const [lng, lat] = feature.geometry.coordinates;
               const props = feature.properties;
@@ -425,6 +438,8 @@ export default function SearchMap({ results, card, preview, list, map: mapConf, 
               </Popup>
             )}
           </Map>
+
+          <MapShapeLegend layers={shapeLayers} />
         </div>
       </div>
 
