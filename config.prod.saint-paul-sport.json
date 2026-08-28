@@ -1835,7 +1835,30 @@
               "marker": {
                 "style": "pin",
                 "color": "primary"
-              }
+              },
+              "shapes": [
+                {
+                  "id": "bassins-vie",
+                  "source": "zoniris",
+                  "load": "idle",
+                  "simplify": 10,
+                  "showNames": true,
+                  "filters": {
+                    "spec": "bassins_vie_saintpaul"
+                  },
+                  "label": {
+                    "fr": "Bassins de vie",
+                    "en": "Living areas"
+                  },
+                  "style": {
+                    "fill": "primary",
+                    "fillOpacity": 0.12,
+                    "stroke": "primary",
+                    "strokeWidth": 1.5,
+                    "strokeOpacity": 0.8
+                  }
+                }
+              ]
             }
           }
         }
