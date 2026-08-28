@@ -173,6 +173,49 @@
           }
         },
         {
+          "type": "map-shapes",
+          "id": "bassins-de-vie",
+          "props": {
+            "title": {
+              "fr": "Les bassins de vie de Saint-Paul",
+              "en": "Saint-Paul living areas"
+            },
+            "description": {
+              "fr": "Cliquez un bassin pour explorer ses équipements sportifs.",
+              "en": "Click a living area to browse its sports facilities."
+            },
+            "bg": "muted",
+            "maxHeight": 560,
+            "shapes": [
+              {
+                "id": "bassins-vie",
+                "source": "zoniris",
+                "simplify": 10,
+                "showNames": true,
+                "filters": {
+                  "spec": "bassins_vie_saintpaul"
+                },
+                "label": {
+                  "fr": "Bassins de vie",
+                  "en": "Living areas"
+                },
+                "style": {
+                  "fill": "primary",
+                  "fillOpacity": 0.12,
+                  "stroke": "primary",
+                  "strokeWidth": 1.5,
+                  "strokeOpacity": 0.8
+                }
+              }
+            ],
+            "target": {
+              "path": "/equipements-sportifs",
+              "filterId": "bassin",
+              "valueFrom": "name"
+            }
+          }
+        },
+        {
           "type": "categories-grid",
           "id": "Convention-section",
           "props": {
