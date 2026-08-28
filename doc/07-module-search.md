@@ -970,6 +970,15 @@ plus éloigné du bord (`polygonLabelPoint`, recherche par grille) et non au cen
 forme sur un cirque ou une commune en croissant. Au-delà de 60 contours, seuls les plus vastes sont
 nommés.
 
+**Les mêmes couches, un autre rendu** : la section de page
+[`map-shapes`](05-schemas-sections.md#map-shapes) consomme `useGeoShapes` avec le MÊME
+`GeoShapeSourceSchema`, mais les peint en `<path>` SVG **hors carte** — ni fond de plan, ni
+marqueurs, ni requête de recherche — chaque contour étant un lien vers une page de recherche filtrée
+(contrat `regionsTarget`). Composant : `src/components/sections/MapShapes.tsx` ; projection d3-geo
+commune à toutes les couches : `src/lib/geoShapes/projectShapes.ts` (délibérément absent du barrel
+`lib/geoShapes/index.ts`, pour que `d3-geo` n'entre pas dans le chunk maplibre). `load` y est ignoré :
+les contours sont le contenu, il n'y a pas de vue carte à ouvrir.
+
 ### useCsvExport
 
 Export CSV des résultats courants via [PapaParse](https://www.papaparse.com/).

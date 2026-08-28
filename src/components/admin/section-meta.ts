@@ -90,6 +90,7 @@ const SECTION_META: Record<string, SectionMeta> = {
   table: { label: "Table", desc: "Tableau de données structurées", image: "https://placehold.co/300x180/dfe6e9/333?text=Table", family: "data" },
   map: { label: "Map", desc: "PLACEHOLDER non fonctionnel : encadré gris + liste texte des marqueurs (aucun rendu Leaflet). Pour une vraie carte : searchPro/searchProStatic (defaultViewMode \"map\") ou agenda (enableMap)", image: "https://placehold.co/300x180/00b894/eee?text=Map", family: "data" },
   "map-bubbles": { label: "Carte à bulles", desc: "Illustration de carte avec bulles-marqueurs cliquables positionnées en %, image ronde + libellé en pastille, titre en badge incliné", image: "https://placehold.co/300x180/e17055/eee?text=Map+Bubbles", family: "presentation" },
+  "map-shapes": { label: "Contours cliquables", desc: "Contours géographiques réels (communes, bassins de vie, zones) rendus en SVG sans fond de carte : chaque territoire est un lien vers une page de recherche filtrée", image: "https://placehold.co/300x180/0984e3/eee?text=Map+Shapes", family: "presentation" },
 
   // utilitaires
   breadcrumb: { label: "Breadcrumb", desc: "Fil d'Ariane de navigation", image: "https://placehold.co/300x180/b2bec3/333?text=Breadcrumb", family: "utilitaires" },

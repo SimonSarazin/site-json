@@ -56,6 +56,7 @@ const LazySections: {
   banner: lazy(() => import("./BannerSection")),
   map: lazy(() => import("./MapSection")),
   "map-bubbles": lazy(() => import("./MapBubbles")),
+  "map-shapes": lazy(() => import("./MapShapes")),
   newsletter: lazy(() => import("./NewsletterSection")),
   contactForm: lazy(() => import("./ContactFormSection")),
   comparison: lazy(() => import("./ComparisonSection")),

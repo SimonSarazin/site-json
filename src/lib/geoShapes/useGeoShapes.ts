@@ -23,6 +23,12 @@ export interface GeoShapeLayer {
   showNames?: boolean;
   data: FeatureCollection;
   isLoading: boolean;
+  /**
+   * Au moins une des requêtes de la couche a ÉCHOUÉ. Sans ce drapeau, un échec réseau est
+   * indiscernable d'un périmètre vide (React Query rend `{isLoading:false, data:undefined}` dans
+   * les deux cas) — et une vue affirmerait « aucun contour ici » là où elle n'a rien pu lire.
+   */
+  isError: boolean;
 }
 
 const EMPTY_SOURCES: GeoShapeSource[] = [];
@@ -48,12 +54,14 @@ function combineLayers(
           showNames: source.showNames,
           data: { type: "FeatureCollection", features: [] as Feature[] },
           isLoading: false,
+          isError: false,
         },
         seen: new Set<string>(),
       };
       byId.set(source.id, entry);
     }
     if (result?.isLoading) entry.layer.isLoading = true;
+    if (result?.isError) entry.layer.isError = true;
     for (const feature of result?.data?.features ?? []) {
       const key = feature.id == null ? "" : String(feature.id);
       if (key) {
