@@ -127,7 +127,9 @@ Réglages notables de la section `toolsCatalog` :
 | Questions `commonTable` de l'observatoire | 19 inputs, dont 8 seulement portent des réponses |
 | Saisies d'outils (`answers.yesOrNo<input>.<criteriaId>`) | **261** |
 | Saisies portant `usage` (la sous-catégorie) | **36** — cf. §10 31/08 |
-| Saisies portant `happiness` (la satisfaction) | 158 |
+| Saisies portant `happiness` (la satisfaction fonctionnelle) | 125 |
+| Saisies portant une `note` > 0 (le besoin d'alternative), **sans** `happiness` | 22 |
+| Saisies sans aucune évaluation | 86 |
 | Outils au catalogue après agrégation | 83 |
 
 **Deux faits de modèle à ne pas réapprendre :**
@@ -183,7 +185,7 @@ Réglages notables de la section `toolsCatalog` :
 |---|---|---|---|
 | 1 | Accueil + annuaire des communs | ✅ | 4 sections, `aac-directory` sur 2 pages |
 | 2 | Page `/usages` — catalogue | ✅ | 83 outils, 9 catégories, 37 facettes de besoin |
-| 3 | Fiche d'un outil — lieux utilisateurs | ✅ | filtrée sur le nom normalisé ET les `criteriaId` |
+| 3 | Fiche d'un outil — lieux utilisateurs | ✅ | filtrée sur le nom normalisé ET les `criteriaId` ; n'affiche que les saisies évaluées (cf. §10 31/08) |
 | 4 | Fiche d'un outil — sous-catégorie | ✅ | 31/08 — repli catalogue ajouté au détail |
 | 5 | Enrichissement d'un outil (admin) | ✅ | enregistrement, rattachement d'un commun, deux formes de lien |
 | 6 | Bloc « Informations liées au commun » | 🟡 | rendu, mais `CommunInfoAction` fige des `FIELD_*` propres au formulaire tiers-lieux → réduit au titre et à la description sur un commun de CET appel (cf. §13) |
@@ -201,16 +203,81 @@ qu'aucun slug ne réclame — même cause que le point 7.
 
 ## 10. Impacts des modifications
 
+### 31/08bis — le formulaire de dépôt : « le choix n'a pas pu être enregistré », puis « rien ne bouge »
+
+**Deux bugs enchaînés sur les inputs de décision** du formulaire de l'appel
+(`677e7e389058e31575550ac8`), tous deux visibles sur `choose` (`chooseProposal`) et sur `decide`
+(`multiDecide`, résolu en `tpls.forms.aap.selection` par `inputConfig`).
+
+**(a) L'enregistrement échouait — un mensonge de type.** `MultiStepCoForm` dérivait le `formId` de
+ces champs depuis `formData._id.$id`. Or l'API ne sérialise pas comme ça :
+
+```
+Form.get(677e7e38…)  →  _id = {"_str":"677e7e389058e31575550ac8"}
+```
+
+`_id.$id` valait donc `undefined`, la mutation levait `errors.formIdMissing`, et le message BRUT
+s'affichait tel quel dans le toast — d'où une clé i18n à l'écran. Le type déclarait
+`_id: { $id: string }` et **les trois fixtures de test reproduisaient ce mensonge** : typecheck vert,
+tests verts, production cassée.
+
+Correctif à trois niveaux, parce que le premier seul laisserait le piège : les quatre champs
+utilisent le `formId` local (`coform.formData.id`, celui que consomment déjà `CommonTableField` et
+`UploaderField`) ; le type devient `_id: { _str: string }`, si bien que toute nouvelle lecture de
+`_id.$id` **échoue au typecheck** ; les fixtures cessent d'affirmer le faux. À noter, car l'anomalie
+invite à la « corriger » : les **196 formulaires `aap` n'ont aucun champ `id` en base** — c'est le SDK
+qui y réinjecte l'identifiant demandé, ce qui en fait la source fiable côté client.
+
+**(b) L'affichage ne suivait pas.** Une fois (a) réparé, le choix partait bien mais le bouton restait
+sur l'ancienne valeur. La valeur AFFICHÉE vient de l'instantané du formulaire —
+`stepState.stepsData`, un `useState` initialisé **une seule fois** — que rien ne resynchronise.
+
+⚠️ **Ce n'est PAS corrigé par une invalidation de cache depuis le formulaire**, et c'est le point
+d'attention du lot : une donnée de formulaire qui pilote le rafraîchissement de ce qui vit hors du
+formulaire peut le remonter ou l'effacer en pleine saisie. Vérifié pour lever le doute :
+`isLoading` de React Query 5 est faux pendant un refetch de fond, il n'y a aucun `reset()` sur
+changement de `defaultValues`, et `stepsData` n'est jamais réinitialisé — l'invalidation existante
+est donc inoffensive, mais elle ne rafraîchit rien non plus. (Elle ne tirait d'ailleurs **jamais**
+avant (a) : `formId` valant `""`, la clé ne matchait aucune requête.)
+
+Chaque champ garde donc localement ce qu'il vient d'écrire (`hooks/useEcrituresLocales`), **après**
+confirmation du serveur et jamais de façon optimiste — un échec doit laisser la valeur réelle. Une
+mémoire par clé écrite, parce qu'un jury note plusieurs critères à la suite et que
+`mutation.variables` ne retient que le dernier appel. Les quatre champs de la famille sont traités
+(`chooseProposal`, `selection`, `pourContre`, `aapEvaluation`), pas seulement les deux signalés.
+
+**(c) La fiche du commun restait en retard.** Ces champs enregistrent sans soumettre : fermer la
+modale d'édition ne déclenchait pas `onAfterSubmit`, donc pas le `refetch`. Corrigé **au bord de la
+page** (`onOpenChange`), pas depuis le formulaire — même règle qu'en (b). Le bouton de sélection de
+la fiche, lui, rafraîchissait déjà (`onDone` + `extraInvalidate` sur les clés d'annuaire).
+
+**Gates** : `typecheck` ✅, `eslint` ✅ sur les fichiers touchés, `test:unit` 3337 ✅. Deux tests de
+régression ajoutés sur `ChooseProposalField` — l'un vérifie que le nouveau choix s'affiche après
+succès, l'autre qu'un échec laisse la valeur réelle ; le premier a été vu **rouge** en retirant le
+correctif. ⚠️ Rien n'a été rejoué dans un navigateur.
+
+---
+
 ### 31/08 — un usage non évalué n'est pas un usage, et le besoin a un nom
 
 **Deux constats sur le catalogue d'usages, tranchés ensemble parce qu'ils touchent la même paire
 d'actions backend.**
 
-**(a) Les saisies muettes comptaient.** Une saisie de `commonTable` dont la **satisfaction
-fonctionnelle** (`happiness`) est vide n'est pas un usage constaté : le lieu a coché l'outil sans
-rien en dire. La fiche d'un outil listait ces lieux avec un « Non évalué » sans information, et la
-liste les COMPTAIT parmi les usages — le compteur d'une carte ne correspondait donc pas à ce que sa
-fiche montrait. Ce n'est pas marginal : **103 saisies sur 216 (48 %)** ici, 52 % chez les tiers-lieux.
+**(a) Les saisies muettes comptaient.** Une saisie de `commonTable` sans **aucune** évaluation n'est
+pas un usage constaté : le lieu a coché l'outil sans rien en dire. La fiche d'un outil listait ces
+lieux sans rien à montrer, et la liste les COMPTAIT parmi les usages — le compteur d'une carte ne
+correspondait donc pas à ce que sa fiche montrait. Ce n'est pas marginal : **86 saisies sur 233
+(37 %)** ici, 128 sur 355 (36 %) chez les tiers-lieux.
+
+> ⚠️ **Piège — la première version de la règle n'exigeait que `happiness`, et c'était trop strict.**
+> Le `commonTable` pose DEUX questions : la satisfaction fonctionnelle (`happiness`) et le besoin
+> d'alternative éthique (`note`, sur 5). Un lieu qui n'a répondu qu'à la seconde **n'est pas muet**.
+> N'exiger que `happiness` faisait disparaître **22 saisies ici et 47 aux tiers-lieux** qui portaient
+> une vraie évaluation. Repéré sur « App calendar » : son unique lieu l'a noté **4,5/5**, l'outil
+> comptait pourtant zéro usage alors que le legacy montrait bien ce lieu.
+> La règle retenue est donc `happiness` non vide **OU** `note` numérique **> 0**
+> (`ToolsCatalogListAction::estEvaluee`, répliquée dans `ToolUsersAction`). Le `0` — numérique ou la
+> chaîne `"0"`, 35 saisies ici et 46 aux tiers-lieux — est le curseur jamais touché, pas une réponse.
 
 **(b) La sous-catégorie ne s'affichait presque jamais.** Le libellé du besoin appartient à la ligne
 de catalogue, pas à la saisie (cf. §5) : **36 saisies sur 261** portent `usage`.
@@ -241,16 +308,26 @@ n'a été nécessaire. L'alternative — sortir ces outils — aurait retiré **
 catalogue, dont des outils réellement enrichis à la main (Gitlab, HumHub, Collabora, ZeenDoc, Louty,
 Loot).
 
-**Vérifié en réel** (A/B sur l'endpoint) : 83 → 83 outils, occurrences **216 → 113**, 32 outils à
-`usagesCount: 0`, facettes d'usage 39 → 37 (deux besoins n'existaient que par des saisies muettes —
-autant d'options de filtre qui ne ramenaient rien), catégories 9 → 9. Le paramètre
-`requireSatisfaction` envoyé à `true`, à `false` ou absent donne désormais **la même réponse**. Et
-sur la fiche Framateam, les deux lignes remontent enfin leur besoin (« Débat et décisions en ligne »,
-« Chat de discussion entre membres »).
+**Vérifié en réel**, A/B sur l'endpoint (`indexStep=200` — au-delà, le serveur retombe sur 24 et la
+mesure ne porte que sur la première page) :
+
+| | legacy (aucune règle) | `happiness` seul (écarté) | règle retenue |
+|---|---|---|---|
+| outils | 83 | 83 | **83** — aucun ne sort |
+| occurrences | 216 | 113 | **135** |
+| outils sans pastille d'usage | 0 | 32 | **22** |
+| facettes d'usage | 39 | 37 | **39** |
+| catégories | 9 | 9 | **9** |
+
+Le paramètre `requireSatisfaction` envoyé à `true`, à `false` ou absent donne désormais **la même
+réponse**. Sur la fiche Framateam, les deux lignes remontent enfin leur besoin (« Débat et décisions
+en ligne », « Chat de discussion entre membres »). Sur App calendar, le lieu manquant est de retour :
+`MINE DE TALENTS · Agenda partagé interne · satisfaction non renseignée · note 4,5/5`.
 
 **Portée hors de ce site** : le Navigateur des tiers-lieux et RELIEF sont servis par la même action
-et héritent de la règle — 27 de leurs 69 outils perdent leur pastille d'usage, facettes 51 → 41.
-Assumé, c'est le même défaut de donnée là-bas ; consigné dans [tiers-lieux.md](tiers-lieux.md).
+et héritent de la règle — 17 de leurs 69 outils perdent leur pastille d'usage, occurrences 183 → 111,
+facettes 51 → 43. Assumé, c'est le même défaut de donnée là-bas ; consigné dans
+[tiers-lieux.md](tiers-lieux.md).
 
 **Reste ouvert** : `normalizeToolName` demeure dupliquée entre les deux actions, avec son commentaire
 « réplique exacte ». Refactor orthogonal aux deux correctifs, laissé hors du lot.
