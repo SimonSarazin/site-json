@@ -65,6 +65,31 @@ export function getOriginalFieldKey(field: FormFieldMapping): string {
 }
 
 /**
+ * Les `inputKey` bruts des inputs commonTable d'un formulaire parsé — l'argument
+ * de `Form.getCatalogs()`.
+ *
+ * Extrait de `SmartCoForm` pour être partagé : toute surface qui monte un
+ * commonTable doit charger le MÊME catalogue collaboratif, sinon les lignes de
+ * besoins issues des réponses disparaissent silencieusement (elles sont la seule
+ * source sur les formulaires dont l'admin n'a jamais seedé `params.criterias{key}`
+ * — le cas de l'observatoire des CAEs, où c'est 100 % des besoins).
+ *
+ * ⚠️ `getOriginalFieldKey` et pas `field.name` : un commonTable est stocké sous
+ * `yesOrNo{key}`, et c'est la clé NUE que l'endpoint attend.
+ */
+export function collectCommonTableInputKeys(
+  subFormsFields: Array<{ fields: FormFieldMapping[] }>
+): string[] {
+  const keys: string[] = [];
+  for (const sf of subFormsFields) {
+    for (const f of sf.fields) {
+      if (f.componentType === "commonTable") keys.push(getOriginalFieldKey(f));
+    }
+  }
+  return keys;
+}
+
+/**
  * Vérifie si un type de composant utilise un préfixe
  */
 export function hasFieldPrefix(componentType: FormFieldMapping["componentType"]): boolean {
