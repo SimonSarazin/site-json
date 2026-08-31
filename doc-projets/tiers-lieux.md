@@ -204,28 +204,35 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 
 **Correctif backend, sans une ligne de config ni de code côté site.** L'action `toolscatalog` du
 costum `franceTierslieux` — partagée par ce site, RELIEF et la Fédération des CAE — comptait comme
-usage une saisie de `commonTable` dont la **satisfaction fonctionnelle** (`happiness`) est vide. Or
-une telle saisie n'est pas un usage constaté : le lieu a coché l'outil sans rien en dire. Elle
-gonflait les occurrences, les besoins couverts et les facettes, et la fiche de l'outil listait ces
-lieux avec un « Non évalué » sans information — un compteur de carte qui ne correspondait pas à ce
-que sa fiche montrait.
+usage une saisie de `commonTable` sans **aucune** évaluation. Or une telle saisie n'est pas un usage
+constaté : le lieu a coché l'outil sans rien en dire. Elle gonflait les occurrences, les besoins
+couverts et les facettes, et la fiche de l'outil listait ces lieux sans rien à montrer — un compteur
+de carte qui ne correspondait pas à ce que sa fiche montrait.
 
-La règle est désormais **inconditionnelle** (costum `ce7e367fa`) : une saisie muette ne compte nulle
-part, et le détail ne la liste pas. **L'outil, lui, reste au catalogue** avec ses catégories et ses
-ancres de détail ; sa carte n'affiche simplement pas de pastille d'usage (le rendu garde déjà
+La règle est **inconditionnelle** (costum `ce7e367fa`) : une saisie muette ne compte nulle part, et
+le détail ne la liste pas. **L'outil, lui, reste au catalogue** avec ses catégories et ses ancres de
+détail ; sa carte n'affiche simplement pas de pastille d'usage (le rendu garde déjà
 `usagesCount > 0`, il n'y a donc jamais de « 0 usage » à l'écran).
 
-**Ce que ça change ici**, mesuré en A/B sur l'endpoint réel (form `636cd563e2439b7fc12cd680`) :
+> ⚠️ **Piège — « évaluée » ne veut pas dire « satisfaction renseignée ».** Le `commonTable` pose DEUX
+> questions : la satisfaction fonctionnelle (`happiness`) et le besoin d'alternative éthique (`note`,
+> sur 5). Une première version de la règle n'exigeait que la première et écartait **47 saisies de ce
+> formulaire** qui portaient pourtant une vraie évaluation. La règle retenue est `happiness` non vide
+> **OU** `note` numérique **> 0** ; le `0` (numérique ou la chaîne `"0"`, 46 saisies ici) est le
+> curseur jamais touché, pas une réponse.
+
+**Ce que ça change ici**, mesuré en A/B sur l'endpoint réel (form `636cd563e2439b7fc12cd680`,
+`indexStep=200` — au-delà, le serveur retombe sur 24 et la mesure ne porte que sur la 1ʳᵉ page) :
 
 | | avant | après |
 |---|---|---|
 | outils au catalogue | 69 | **69** — aucun ne sort |
-| occurrences | 183 | 88 |
-| outils sans pastille d'usage | 0 | 27 |
-| facettes d'usage | 51 | 41 |
+| occurrences | 183 | 111 |
+| outils sans pastille d'usage | 0 | 17 |
+| facettes d'usage | 51 | 43 |
 
-C'est le même défaut de donnée qu'ailleurs : **52 %** des saisies de ce formulaire n'ont pas de
-satisfaction renseignée. Les facettes perdues sont des besoins qui n'existaient que par des saisies
+C'est le même défaut de donnée qu'ailleurs : **128 saisies sur 355 (36 %)** de ce formulaire n'ont
+aucune évaluation. Les facettes perdues sont des besoins qui n'existaient que par des saisies
 muettes — autant d'options de filtre qui ne ramenaient rien.
 
 Second correctif du même lot, invisible ici mais qui profite à ce site : la **sous-catégorie** d'une
