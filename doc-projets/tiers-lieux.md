@@ -200,6 +200,43 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 
 ## 9. Impacts des modifications
 
+### 31/08 — un usage non évalué n'était pas compté comme tel
+
+**Correctif backend, sans une ligne de config ni de code côté site.** L'action `toolscatalog` du
+costum `franceTierslieux` — partagée par ce site, RELIEF et la Fédération des CAE — comptait comme
+usage une saisie de `commonTable` dont la **satisfaction fonctionnelle** (`happiness`) est vide. Or
+une telle saisie n'est pas un usage constaté : le lieu a coché l'outil sans rien en dire. Elle
+gonflait les occurrences, les besoins couverts et les facettes, et la fiche de l'outil listait ces
+lieux avec un « Non évalué » sans information — un compteur de carte qui ne correspondait pas à ce
+que sa fiche montrait.
+
+La règle est désormais **inconditionnelle** (costum `ce7e367fa`) : une saisie muette ne compte nulle
+part, et le détail ne la liste pas. **L'outil, lui, reste au catalogue** avec ses catégories et ses
+ancres de détail ; sa carte n'affiche simplement pas de pastille d'usage (le rendu garde déjà
+`usagesCount > 0`, il n'y a donc jamais de « 0 usage » à l'écran).
+
+**Ce que ça change ici**, mesuré en A/B sur l'endpoint réel (form `636cd563e2439b7fc12cd680`) :
+
+| | avant | après |
+|---|---|---|
+| outils au catalogue | 69 | **69** — aucun ne sort |
+| occurrences | 183 | 88 |
+| outils sans pastille d'usage | 0 | 27 |
+| facettes d'usage | 51 | 41 |
+
+C'est le même défaut de donnée qu'ailleurs : **52 %** des saisies de ce formulaire n'ont pas de
+satisfaction renseignée. Les facettes perdues sont des besoins qui n'existaient que par des saisies
+muettes — autant d'options de filtre qui ne ramenaient rien.
+
+Second correctif du même lot, invisible ici mais qui profite à ce site : la **sous-catégorie** d'une
+ligne (le besoin) n'était plus lue que sur la saisie, alors qu'elle appartient à la ligne de
+catalogue. Elle est désormais résolue par un helper partagé `Coform::criteriaUsageCatalog`
+(citizenToolKit `f40121d2`), consommé par la liste **et** par le détail — c'est l'asymétrie entre
+les deux qui laissait une fiche muette là où la liste, elle, nommait le besoin.
+
+⚠️ **Prérequis de déploiement** : les deux modules backend vont ensemble. Sans `citizenToolKit`,
+`costum` appelle un helper qui n'existe pas.
+
 ### 13/08 — édition d'un lieu : le formulaire du site refusé par la lib
 
 **Constat** (remonté depuis l'usage) : valider la modale « Modifier » d'un lieu échoue sur
