@@ -74,6 +74,9 @@ function poser(over: Partial<Parameters<typeof SelectionField>[0]> = {}) {
   );
 }
 
+// Second argument : les options `mutate` — c'est là que ces champs branchent
+// leur écho local (cf. `useEcrituresLocales`). L'assertion porte sur le PAYLOAD ;
+// figer l'arité ferait échouer le test pour une raison qui n'est pas la sienne.
 describe("SelectionField", () => {
   beforeEach(() => {
     noteMutate.mockClear();
@@ -113,12 +116,10 @@ describe("SelectionField", () => {
     const etoiles = screen.getAllByRole("radio");
     fireEvent.click(etoiles[2]);
     expect(noteMutate).toHaveBeenCalledTimes(1);
-    expect(noteMutate).toHaveBeenCalledWith({
-      subFormId: "aapStep2",
-      userId: "moi",
-      fieldKey: "depense",
-      note: 3,
-    });
+    expect(noteMutate).toHaveBeenCalledWith(
+      { subFormId: "aapStep2", userId: "moi", fieldKey: "depense", note: 3 },
+      expect.objectContaining({ onSuccess: expect.any(Function) })
+    );
   });
 
   it("calcule les deux moyennes en pondérant", () => {
@@ -137,11 +138,10 @@ describe("SelectionField", () => {
   it("enregistre un avis d'admissibilité", () => {
     poser();
     fireEvent.click(screen.getByText("Admissible"));
-    expect(admissibilityMutate).toHaveBeenCalledWith({
-      subFormId: "aapStep2",
-      userId: "moi",
-      value: "admissible",
-    });
+    expect(admissibilityMutate).toHaveBeenCalledWith(
+      { subFormId: "aapStep2", userId: "moi", value: "admissible" },
+      expect.objectContaining({ onSuccess: expect.any(Function) })
+    );
   });
 
   it("signale un avis posé par un AUTRE écran au lieu d'afficher « non admissible »", () => {

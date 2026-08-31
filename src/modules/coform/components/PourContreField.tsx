@@ -3,6 +3,7 @@ import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useCocolightOptional } from "@/hooks/useCocolight";
 import { useSaveVote } from "../actions/mutations/selection";
+import { useEcrituresLocales } from "../hooks/useEcrituresLocales";
 import {
   tallyVotes,
   getMyVote,
@@ -54,12 +55,15 @@ export function PourContreField({
     formId: formId ?? "",
     answerId,
   });
+  const echo = useEcrituresLocales<VoteValue | null>();
 
   // Pas de `useMemo` : le décompte parcourt une poignée d'évaluateurs et son
   // résultat n'alimente ni enfant mémoïsé, ni effet, ni queryKey — le mémoïser
   // serait du bruit (norme 14).
   const tally = tallyVotes(value);
-  const monVote = getMyVote(value, currentUserId);
+  // Le formulaire ne resynchronise pas son instantané : sans ça, le vote reste
+  // affiché à sa valeur d'avant. Cf. `useEcrituresLocales`.
+  const monVote = echo.lire("vote", getMyVote(value, currentUserId));
 
   // Même raison que `SelectionField` : l'écriture cible un document existant.
   if (!answerId) return null;
@@ -75,7 +79,11 @@ export function PourContreField({
 
   const voter = (vote: VoteValue) => {
     if (disabled || !currentUserId) return;
-    saveVote.mutate({ subFormId, userId: currentUserId, vote });
+    saveVote.mutate(
+      { subFormId, userId: currentUserId, vote },
+      // Après le serveur, jamais avant : un échec doit laisser le vote réel.
+      { onSuccess: (_d, vars) => echo.noter("vote", vars.vote as VoteValue) }
+    );
   };
 
   return (

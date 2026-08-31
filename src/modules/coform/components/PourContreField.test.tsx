@@ -57,6 +57,9 @@ function poser(over: Partial<Parameters<typeof PourContreField>[0]> = {}) {
   );
 }
 
+// Second argument : les options `mutate` — c'est là que ces champs branchent
+// leur écho local (cf. `useEcrituresLocales`). L'assertion porte sur le PAYLOAD ;
+// figer l'arité ferait échouer le test pour une raison qui n'est pas la sienne.
 describe("PourContreField", () => {
   beforeEach(() => {
     voteMutate.mockClear();
@@ -72,11 +75,10 @@ describe("PourContreField", () => {
     poser({ value: {} });
     // « Contre » apparaît deux fois : le bouton et l'étiquette du décompte.
     fireEvent.click(screen.getByRole("radio", { name: "Contre" }));
-    expect(voteMutate).toHaveBeenCalledWith({
-      subFormId: "aapStep2",
-      userId: "moi",
-      vote: "-1",
-    });
+    expect(voteMutate).toHaveBeenCalledWith(
+      { subFormId: "aapStep2", userId: "moi", vote: "-1" },
+      expect.objectContaining({ onSuccess: expect.any(Function) })
+    );
   });
 
   it("affiche des parts RÉELLES — le legacy afficherait 600 %", () => {

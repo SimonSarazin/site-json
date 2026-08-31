@@ -713,7 +713,7 @@ function MultiStepCoFormContent({
                       key={field.name}
                       field={field}
                       subFormId={fields.subFormId}
-                      formId={coform.formData?._id?.$id ?? null}
+                      formId={formId}
                       config={coform.formData?.evaluationCriteria as RawAapEvaluationConfig | undefined}
                       value={brutEval.evaluation as AapEvaluationValue | undefined}
                       answerId={coform.answerId}
@@ -730,7 +730,7 @@ function MultiStepCoFormContent({
                       key={field.name}
                       field={field}
                       subFormId={fields.subFormId}
-                      formId={coform.formData?._id?.$id ?? null}
+                      formId={formId}
                       value={brutChoose.choose as ChooseProposalValue | undefined}
                       answerId={coform.answerId}
                       readOnly={isLocked}
@@ -746,7 +746,7 @@ function MultiStepCoFormContent({
                       key={field.name}
                       field={field}
                       subFormId={fields.subFormId}
-                      formId={coform.formData?._id?.$id ?? null}
+                      formId={formId}
                       value={brutVote.pourContre as PourContreValue | undefined}
                       inputConfig={undefined}
                       answerId={coform.answerId}
@@ -770,7 +770,7 @@ function MultiStepCoFormContent({
                       key={field.name}
                       field={field}
                       subFormId={fields.subFormId}
-                      formId={coform.formData?._id?.$id ?? null}
+                      formId={formId}
                       config={
                         coform.formData?.params?.configSelectionCriteria as
                           | RawSelectionConfig

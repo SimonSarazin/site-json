@@ -105,7 +105,7 @@ function makeFormData(subFormIds: string[], extraInputs?: Record<string, Record<
     };
   }
   return {
-    _id: { $id: "form123" },
+    _id: { _str: "form123" },
     id: "form123",
     name: "Test Form",
     created: 0,
