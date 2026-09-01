@@ -1020,10 +1020,17 @@ l'action admin et non par écriture Mongo directe.
 
 **Une seule route d'édition d'organisation** est déclarée, bornée par
 `when: or[sourceKeys ∋ associationEkilibre, reference.costum ∋ associationEkilibre]` et **sans**
-`editModalMatch`. L'absence de match sur le type est délibérée : les 14 fiches référencées n'ont pas
-de champ `type`, un filtre `NGO`/`Cooperative` les aurait toutes exclues. *(Ceci referme le constat
-« route d'édition non bornée par costum » ouvert le 10/08 en §12 — avec `associationEkilibre` et non
-`sportSanteBienetre` comme valeur testée.)*
+`editModalMatch`. *(Ceci referme le constat « route d'édition non bornée par costum » ouvert le 10/08
+en §12 — avec `associationEkilibre` et non `sportSanteBienetre` comme valeur testée.)*
+
+> ⚠️ **Correction du 28/08 — la justification écrite ici le 23/08 était fausse.** Elle disait :
+> « l'absence de match sur le type est délibérée, les 14 fiches référencées n'ont pas de champ `type` ».
+> Le constat est exact, la cause ne l'est pas. La vraie raison est que le costumForm `structure` ne
+> déclare **pas de `subType`** : rien n'est donc écrit dans `reference.costumTypes.associationEkilibre`
+> au moment du référencement, et `editModalMatch` n'a effectivement rien à matcher. Ce n'est pas une
+> propriété des fiches, c'est une pièce manquante de la chaîne de rattachement
+> (cf. [doc/35](../doc/35-rattachement-et-referencement.md)) : institut-bleu, qui pose `identity` **et**
+> `subType`, n'a pas ce problème. Le contournement reste défendable en l'état ; sa justification, non.
 
 ---
 
@@ -1308,7 +1315,8 @@ chargement, `GLOBAL_AUTOCOMPLETE_COSTUM` pour la liste).
   repassant la suite complète — pré-existant, sans lien avec le lot actualités du jour.
 - ~~**Route d'édition `structure` non bornée par costum**~~ **RÉSOLU le 20/08** (§9.10) : le `when` est
   posé, sur `associationEkilibre` (et non `sportSanteBienetre` comme le proposait l'extrait ci-dessous),
-  sans `editModalMatch` — délibérément, les 14 fiches référencées n'ayant pas de champ `type`.
+  sans `editModalMatch` — faute de `subType` sur le costumForm, non par choix (justification corrigée
+  le 28/08, cf. §9.10).
   <details><summary>Constat d'origine (10/08)</summary>
   `profiles.organizations.editModal = "edit-structure"` n'a pas de clause `when` — le préflight
   `tests/preflight/edit-modal-scope.test.ts` (nouveau, mergé depuis `main` le 06/08, jamais fait
