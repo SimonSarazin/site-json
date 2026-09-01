@@ -15982,6 +15982,7 @@
         "themes": {
           "widget": "valueSelect",
           "widgetProps": {
+            "list": "themes",
             "saveNewValue": true
           },
           "label": {
@@ -16570,6 +16571,7 @@
         "themes": {
           "widget": "valueSelect",
           "widgetProps": {
+            "list": "themes",
             "saveNewValue": true
           },
           "label": {
@@ -17033,6 +17035,7 @@
         "themes": {
           "widget": "valueSelect",
           "widgetProps": {
+            "list": "themes",
             "saveNewValue": true
           },
           "label": {
@@ -17658,6 +17661,7 @@
         "themes": {
           "widget": "valueSelect",
           "widgetProps": {
+            "list": "themes",
             "saveNewValue": true
           },
           "label": {
