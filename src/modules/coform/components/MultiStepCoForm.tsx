@@ -80,6 +80,8 @@ interface MultiStepCoFormProps {
   restrictedFields?: string[];
   /** ID du formulaire — clé de draft localStorage. */
   formId?: string;
+  /** Périmètre du brouillon quand une seule étape est rendue. Cf. `useCoFormDraft`. */
+  draftScope?: string | null;
   /** ID utilisateur connecté — clé de draft localStorage. */
   userId?: string | null;
   /** updatedAt serveur (édition) — pour détecter les drafts obsolètes. */
@@ -122,6 +124,7 @@ export function MultiStepCoForm({
   lockedFields,
   restrictedFields,
   formId,
+  draftScope,
   userId,
   baseUpdatedAt,
   enableDraft = true,
@@ -138,6 +141,7 @@ export function MultiStepCoForm({
       answerId={answerId}
       initialStepKey={initialStepKey}
       formId={formId}
+      draftScope={draftScope}
       userId={userId}
       baseUpdatedAt={baseUpdatedAt}
       enableDraft={enableDraft}

@@ -203,6 +203,72 @@ qu'aucun slug ne réclame — même cause que le point 7.
 
 ## 10. Impacts des modifications
 
+### 31/08ter — le brouillon du dépôt : absent, puis destructeur
+
+**Le bouton « Déposer un commun » ouvre UNE étape extraite** (`resolveAacDepositStepKey` : l'étape
+qui porte le titre, sinon la première), donc `SmartCoForm` passe en mode *standalone*. Deux défauts
+s'y sont révélés coup sur coup.
+
+**(a) Le brouillon n'existait pas.** `enableDraft` excluait le mode standalone, et pour une raison
+réelle : la clé `coform-draft:v1:<formId>:<userId>:<answerId|new>` **ignorait le périmètre rendu**.
+Un brouillon d'étape restauré dans le parcours complet aurait remplacé `stepsData` par cette seule
+étape, et placé le wizard sur un index calculé pour un formulaire à une étape. Sauf que c'est
+exactement la forme du dépôt — un bouton, une étape, une modale — donc le cas où fermer par erreur
+coûte le plus cher.
+
+La clé porte désormais son périmètre, **et seulement s'il y en a un** : le parcours complet garde
+`…:new`, à l'octet près, sinon on rendait orphelin tout brouillon déjà enregistré chez un
+utilisateur. Le périmètre dérive de `resolvedStepKey` (ce qui est *rendu*), pas du `stepKey` brut —
+les deux ne divergent aujourd'hui que sur la branche `inputKey` seul, s'y appuyer serait un accident.
+
+**(b) Reprendre un brouillon le détruisait.** `handleRestoreDraft` appelait `discardDraft()` en
+comptant sur l'auto-save pour réécrire aussitôt, `reset(…, { keepDirty: true })` étant censé le
+garder actif. Or **`keepDirty` conserve l'état courant, il ne le force pas** : au montage `isDirty`
+vaut `false`, et le seul geste de l'utilisateur est justement d'avoir cliqué « Reprendre ».
+L'auto-save restait donc bloqué sur `if (!isDirty) return` alors que l'entrée venait d'être
+supprimée. Séquence vécue : ouvrir → saisir → fermer → rouvrir → « Reprendre » → fermer sans rien
+toucher → **saisie définitivement perdue**. Et tant que rien n'était modifié, plus rien n'était
+jamais sauvegardé.
+
+Reprendre n'est pas jeter : le hook gagne `acknowledgeRestored()`, symétrique d'`acknowledgeStale`,
+qui masque la bannière **sans rien effacer**. Rien n'est supprimé avant une soumission réussie
+(`purgeDraft`) ou un rejet explicite (`discardDraft`).
+
+**(c) La fiche restait en retard.** `CoFormModal` ne transmettait pas `baseUpdatedAt` : sans lui,
+`computeDraftState` ne peut pas voir qu'un brouillon local est plus vieux que la réponse serveur.
+Transmis depuis la fiche du commun. ⚠️ **4 autres call-sites ne le passent toujours pas** — au
+BACKLOG, avec le piège : l'union discriminée sur `CoFormModalProps` ne marchera pas, les appelants
+passant un `answerId: string | undefined` que TS ne narrowe pas.
+
+**Revue de conformité — ce qu'elle a rattrapé.** Passée par l'agent `module-review` (mode B), elle a
+sorti un BLOQUANT que la relecture manuelle avait manqué : `purgeDraft` reconstruisait la clé
+« new » **sans le périmètre**, donc soumettre depuis une étape extraite effaçait le brouillon de
+création du parcours complet — la collision même que ce lot interdit — tout en laissant traîner le
+sien. Corrigé par la variante minimale (purger le résidu **du périmètre courant**) et non par un
+balayage de préfixe, qui aurait transformé une sur-suppression en une autre.
+
+Elle a aussi révélé un défaut plus large que le lot : **`npx vitest run <chemin>` sans `-c` ne
+collecte aucun `.test.tsx`** (`vitest.config.ts` déclare `include: ["src/**/*.test.ts", …]`).
+Mesuré : 24 fichiers / 459 tests contre **39 / 648** avec `npm run test:unit -- …`. Un lot peut donc
+être déclaré vert sans qu'aucun de ses tests n'ait tourné. La norme #11 de l'agent, qui prescrivait
+la mauvaise commande et un seuil de tests, a été corrigée.
+
+Dernier point rattrapé, introduit par ce lot : la réécriture à la reprise prenait `baseUpdatedAt` du
+hook. Si l'answer n'est pas encore chargée elle vaut `null`, et un brouillon à `null` ne peut **plus
+jamais** être déclaré obsolète — il se restaurerait un jour par-dessus une réponse modifiée
+entre-temps. La reprise transmet maintenant la lignée du brouillon repris.
+
+**Gates** : `typecheck` ✅, `eslint` ✅ sur les fichiers touchés, `test:unit` **3351** ✅ (seul rouge
+le `site-assets` pré-existant). Huit tests ajoutés ; les correctifs ont été annulés un à un pour
+vérifier que les tests correspondants tombent — et eux seuls. ⚠️ Rien n'a été rejoué dans un
+navigateur.
+
+⚠️ **Reste au BACKLOG** : le câblage lui-même (`DynamicCoForm.handleRestoreDraft` appelle bien
+`acknowledgeRestored` et non `discardDraft`) n'est couvert par aucun test — c'est pourtant là que
+vivait le bug. Condition posée pour le prochain lot sur cette zone.
+
+---
+
 ### 31/08bis — le formulaire de dépôt : « le choix n'a pas pu être enregistré », puis « rien ne bouge »
 
 **Deux bugs enchaînés sur les inputs de décision** du formulaire de l'appel

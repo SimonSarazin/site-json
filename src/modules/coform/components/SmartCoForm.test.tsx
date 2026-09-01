@@ -34,9 +34,10 @@ vi.mock("../hooks/useCoFormCatalogs", () => ({
 }));
 
 vi.mock("./DynamicCoForm", () => ({
-  DynamicCoForm: (props: { formData: CoFormData; hideBanner?: boolean; hideStepHeaders?: boolean; hideSubmitButton?: boolean; autoSubmitOnBlur?: boolean }) => (
+  DynamicCoForm: (props: { formData: CoFormData; hideBanner?: boolean; hideStepHeaders?: boolean; hideSubmitButton?: boolean; autoSubmitOnBlur?: boolean; draftScope?: string | null }) => (
     <div
       data-testid="dynamic-coform"
+      data-draft-scope={props.draftScope ?? ""}
       data-step-count={Object.keys(props.formData.inputs ?? {}).length}
       data-hide-banner={String(!!props.hideBanner)}
       data-hide-step-headers={String(!!props.hideStepHeaders)}
@@ -200,6 +201,25 @@ describe("SmartCoForm", () => {
     });
   });
 
+  /**
+   * Le brouillon était purement désactivé en mode standalone, faute de pouvoir
+   * distinguer les deux périmètres. La clé porte désormais ce périmètre, et c'est
+   * `SmartCoForm` qui le décide — la décision à l'origine du bug, jamais assertée.
+   */
+  describe("périmètre du brouillon (draftScope)", () => {
+    it("une étape extraite passe SON périmètre — pas la clé du parcours complet", () => {
+      const formData = makeFormData(["s1", "s2", "s3"]);
+      render(<SmartCoForm formData={formData} stepKey="s2" />, { wrapper: makeWrapper() });
+      expect(screen.getByTestId("dynamic-coform").getAttribute("data-draft-scope")).toBe("s2");
+    });
+
+    it("le parcours complet n'en a pas — sa clé reste EXACTEMENT celle d'avant", () => {
+      const formData = makeFormData(["s1"]);
+      render(<SmartCoForm formData={formData} />, { wrapper: makeWrapper() });
+      expect(screen.getByTestId("dynamic-coform").getAttribute("data-draft-scope")).toBe("");
+    });
+  });
+
   describe("mode standalone (stepKey)", () => {
     it("stepKey défini → DynamicCoForm avec 1 step filtré + hideBanner", () => {
       mockUseCoFormQuery.mockReturnValue(defaultQueryResult(null));
@@ -243,6 +263,10 @@ describe("SmartCoForm", () => {
       const dyn = screen.getByTestId("dynamic-coform");
       expect(dyn.dataset.stepCount).toBe("1");
       expect(dyn.textContent).toBe("s2");
+      // Périmètre du brouillon : RÉSOLU depuis `inputKey`, pas fourni. C'est le
+      // seul cas où `stepKey` brut et `resolvedStepKey` divergent, donc le seul
+      // qui verrouille le choix — avec `stepKey ?? null` on lirait "".
+      expect(dyn.dataset.draftScope).toBe("s2");
       expect(dyn.dataset.hideStepHeaders).toBe("true");
       expect(dyn.dataset.hideSubmitButton).toBe("true");
       expect(dyn.dataset.autoSubmit).toBe("true");

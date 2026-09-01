@@ -415,13 +415,26 @@ export function SmartCoForm({
   // l'annulait au lieu de la vider, ce qui rendait le brouillon inexploitable
   // là où le démontage est le cas nominal. Corrigé dans `useCoFormDraft`
   // (flush au démontage + à la sortie d'onglet).
-  const enableDraft =
-    !readOnly &&
-    !isStandalone &&
-    !isInputStandalone &&
-    !!formId &&
-    !!me?.id;
+  // ACTIVÉE AUSSI SUR UNE ÉTAPE SEULE. Elle en était exclue (`!isStandalone`)
+  // parce que la clé de brouillon ignorait le périmètre : un brouillon écrit sur
+  // une étape extraite, restauré dans le parcours complet, aurait remplacé
+  // `stepsData` par cette seule étape. Or c'est exactement la forme du dépôt d'un
+  // commun — bouton « Déposer », une étape, une modale — donc le cas où fermer
+  // par erreur coûte le plus cher. La clé porte désormais le périmètre
+  // (`draftScope`, cf. `useCoFormDraft`), la restauration croisée est impossible,
+  // et l'exclusion n'a plus lieu d'être.
+  //
+  // `isInputStandalone` reste exclu : ce mode soumet au blur
+  // (`autoSubmitOnBlur`), un brouillon n'y a rien à sauver.
+  const enableDraft = !readOnly && !isInputStandalone && !!formId && !!me?.id;
   const draftUserId = currentUserId;
+  // Vide pour le parcours complet — la clé reste alors celle d'avant, et les
+  // brouillons déjà enregistrés continuent d'être retrouvés.
+  // `resolvedStepKey` et non `stepKey` brut : c'est lui qui construit
+  // `standaloneFormData`, donc lui qui décrit ce qui est réellement rendu. Les deux
+  // ne divergent aujourd'hui que sur la branche `inputKey` seul, où le brouillon
+  // est de toute façon coupé — s'appuyer là-dessus serait un accident.
+  const draftScope = isStandalone ? (resolvedStepKey ?? null) : null;
 
   // Mode lecture seule : utiliser CoFormReadOnly
   if (readOnly) {
@@ -462,6 +475,7 @@ export function SmartCoForm({
         answerId={answerId}
         initialStepKey={initialStepKey}
         formId={formId}
+        draftScope={draftScope}
         userId={draftUserId}
         baseUpdatedAt={baseUpdatedAt}
         enableDraft={enableDraft}
@@ -492,6 +506,7 @@ export function SmartCoForm({
       lockedFields={lockedFields}
       restrictedFields={restrictedFields}
       formId={formId}
+      draftScope={draftScope}
       userId={draftUserId}
       baseUpdatedAt={baseUpdatedAt}
       enableDraft={enableDraft}

@@ -447,6 +447,9 @@ export default function AacCommunDetailPage() {
                     title={String(t("detail.edit.title"))}
                     answerId={answerId}
                     defaultValues={answer.answers}
+                    // Sans lui, un brouillon local plus ancien que la réponse
+                    // serveur se restaure sans avertir. Cf. `useCoFormDraft`.
+                    baseUpdatedAt={answer.updated ?? null}
                     hiddenStepKeys={hiddenStepsForEdit}
                     onAfterSubmit={handleEditSubmit}
                 />

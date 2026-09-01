@@ -23,6 +23,11 @@ interface CoFormProviderProps {
   baseUpdatedAt?: number | null;
   /** ID du formulaire — clé de draft localStorage. */
   formId?: string;
+  /**
+   * Périmètre rendu quand ce n'est pas le formulaire entier (`stepKey`) — entre
+   * dans la clé du brouillon. Cf. `useCoFormDraft`.
+   */
+  draftScope?: string | null;
   /** Active la persistance du draft. Défaut : true. */
   enableDraft?: boolean;
 }
@@ -47,6 +52,7 @@ export function CoFormProvider({
   userId,
   baseUpdatedAt,
   formId,
+  draftScope,
   enableDraft = true,
 }: CoFormProviderProps) {
   const subFormsFields = useMemo(() => parseCoFormFields(formData), [formData]);
@@ -96,10 +102,12 @@ export function CoFormProvider({
     saveDraft,
     discardDraft: discardDraftRaw,
     acknowledgeStale,
+    acknowledgeRestored,
   } = useCoFormDraft({
     formId,
     userId,
     answerId,
+    scope: draftScope,
     baseUpdatedAt,
     disabled: !enableDraft,
   });
@@ -128,6 +136,10 @@ export function CoFormProvider({
     });
   }, [stepState, saveDraft]);
 
+  // Reprendre n'est pas jeter : on masque la bannière, l'auto-save ci-dessus
+  // réécrit aussitôt (le `stepState` vient de changer, la garde d'identité passe).
+  // Supprimer ici laissait une fenêtre où plus rien n'existait — et, sur le
+  // chemin single-step où l'auto-save est gardé par `isDirty`, une perte sèche.
   const restoreDraft = useCallback(() => {
     if (!restorableDraft) return;
     setStepState((prev) => ({
@@ -137,8 +149,8 @@ export function CoFormProvider({
       completedSteps: restorableDraft.completedSteps,
       addedOptions: restorableDraft.addedOptions,
     }));
-    discardDraftRaw();
-  }, [restorableDraft, discardDraftRaw]);
+    acknowledgeRestored();
+  }, [restorableDraft, acknowledgeRestored]);
 
   const discardDraft = useCallback(() => {
     discardDraftRaw();
