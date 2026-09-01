@@ -184,16 +184,17 @@ Réglages notables de la section `toolsCatalog` :
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
 | 1 | Accueil + annuaire des communs | ✅ | 4 sections, `aac-directory` sur 2 pages |
-| 2 | Page `/usages` — catalogue | ✅ | 83 outils, 9 catégories, 37 facettes de besoin |
+| 2 | Page `/usages` — catalogue | ✅ | 83 outils, 9 catégories, 39 facettes de besoin |
 | 3 | Fiche d'un outil — lieux utilisateurs | ✅ | filtrée sur le nom normalisé ET les `criteriaId` ; n'affiche que les saisies évaluées (cf. §10 31/08) |
 | 4 | Fiche d'un outil — sous-catégorie | ✅ | 31/08 — repli catalogue ajouté au détail |
 | 5 | Enrichissement d'un outil (admin) | ✅ | enregistrement, rattachement d'un commun, deux formes de lien |
 | 6 | Bloc « Informations liées au commun » | 🟡 | rendu, mais `CommunInfoAction` fige des `FIELD_*` propres au formulaire tiers-lieux → réduit au titre et à la description sur un commun de CET appel (cf. §13) |
 | 7 | Logo du site | ❌ | `header.logo` pointe `images/federationDesCae/logo.png`, absent de `public/` — seul constat d'audit |
-| 8 | Version mobile du catalogue | 🟡 | lot en cours, non commité |
-| 9 | Vérification navigateur | ❌ | **jamais faite** sur les lots du 27/08 et du 31/08 |
+| 8 | Version mobile du catalogue | ✅ | `ToolFiltersSheet` — commité sur **`jdev`** (`cb26991d`), le module `toolsCatalog` étant partagé |
+| 9 | Brouillon du formulaire de dépôt | ✅ | actif sur une étape extraite, et le reprendre ne l'efface plus (cf. §10 31/08ter) |
+| 10 | Vérification navigateur | ❌ | **jamais faite** sur AUCUN lot du 27/08 au 31/08 |
 
-**Gates au 31/08** : `typecheck` ✅ · `eslint` ✅ · `test:unit` 3343 ✅ ·
+**Gates au 31/08** (dernier lot, `d48dd882`) : `typecheck` ✅ · `eslint` ✅ · `test:unit` 3351 ✅ ·
 `config:validate` ✅ · `audit:config` 1 constat (le logo, ci-dessus) ·
 `config:render` 3/3 pages, 6/6 sections avec contenu SSR · `config:probe` aucun `baseParams` à sonder.
 Le préflight `site-assets` est **rouge** : `public/images/federationDesCae/` est un dossier vide
