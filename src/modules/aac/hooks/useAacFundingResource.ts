@@ -14,6 +14,8 @@ import type { CagnotteResource } from "@/modules/cagnotte/types";
 
 export function useAacFundingResource(answerId?: string): {
   targetResource: CagnotteResource | undefined;
+  /** Slug du projet lié — résolu depuis `fundingData.projects[]`, 0 requête réseau supplémentaire. */
+  projectSlug: string | undefined;
 } {
   const { entity } = useCocolight();
   const { data: fundingData } = useFundingEnvelope(answerId);
@@ -36,5 +38,9 @@ export function useAacFundingResource(answerId?: string): {
     selectedProjectContextId,
   );
 
-  return { targetResource: savedSelectedResource };
+  const projectSlug = fundingData?.projects?.find(
+    (project) => project.id === savedSelectedResource?.projectId
+  )?.slug || undefined;
+
+  return { targetResource: savedSelectedResource, projectSlug };
 }

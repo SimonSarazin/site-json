@@ -17,7 +17,7 @@ import { useUserAdminOrganizations } from "@/modules/cagnotte/hooks/useUserAdmin
 import { isUser } from "@/lib/getTypedEntity";
 import type { User } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
-import { asRecord, getServerData, toArray, toNumber } from "@/modules/cagnotte/utils/dataTransform.ts";
+import { asRecord, getServerData, toArrayOrValues, toNumber } from "@/modules/cagnotte/utils/dataTransform.ts";
 import { generateMilestoneId } from "@/modules/cagnotte/utils/idGeneration";
 import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 import { appendProjectMilestone, updateAnswerDepenseFields } from "@/modules/cagnotte/lib/actionMilestonePathUpdates";
@@ -347,7 +347,7 @@ export function useCagnotteAdapter(
                 const projectData = getServerData(proposition);
                 const projectRecord = getServerData(projectData.project);
                 const hasLinkedProject = Object.keys(projectRecord).length > 0;
-                const projectMilestonesRaw = toArray<{ milestoneId?: string }>(asRecord(projectRecord.oceco).milestones);
+                const projectMilestonesRaw = toArrayOrValues<{ milestoneId?: string }>(asRecord(projectRecord.oceco).milestones);
                 const projectMilestoneIds = new Set(
                     projectMilestonesRaw.map(m => String(m.milestoneId ?? "")).filter(id => id !== "")
                 );

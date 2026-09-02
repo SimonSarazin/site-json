@@ -20,6 +20,7 @@ import { useAacDirectoryContext } from "../hooks/useAacDirectoryContext";
 import { resolveAnswerAuthorId } from "../lib/answerAuthor";
 import { isSelectedIn, type ChooseProposalValue } from "@/modules/coform/utils/chooseProposal";
 import { CommunSelectionControl } from "../components/pageDetail/CommunSelectionControl.tsx";
+import { CommunProjectControl } from "../components/pageDetail/CommunProjectControl.tsx";
 
 import { CommunHero } from "../components/pageDetail/CommunHero.tsx";
 import { CommunFinancingCard } from "../components/pageDetail/CommunFinancingCard.tsx";
@@ -90,10 +91,10 @@ export default function AacCommunDetailPage() {
     useLoadNamespace("modules/aac");
     const t = useT("modules/aac");
     const { answerId } = useParams();
-    const { api, loading, entity } = useCocolight();
+    const { api, loading, entity, me, refreshMe } = useCocolight();
     const perms = useAacPermissions(entity);
 
-    const { targetResource } = useAacFundingResource(answerId);
+    const { targetResource, projectSlug } = useAacFundingResource(answerId);
 
     // Le bloc "Objectifs" n'existe que côté projet — une proposition pas
     // encore promue en projet n'a pas d'actions.
@@ -319,6 +320,21 @@ export default function AacCommunDetailPage() {
                         formId={formId ?? null}
                         answerId={answerId ?? null}
                         onDone={handleSelectionDone}
+                    />
+
+                    <CommunProjectControl
+                        api={api}
+                        isAdmin={perms.isAdmin}
+                        answerId={answerId ?? null}
+                        projectId={targetResource?.projectId}
+                        projectSlug={projectSlug}
+                        parentId={directory.contextId}
+                        parentType={directory.context?.type ?? null}
+                        userId={me?.id ?? null}
+                        contextEntity={entity}
+                        onGenerated={async () => {
+                            await Promise.all([answerQuery.refetch(), refreshMe()]);
+                        }}
                     />
                 </div>
 

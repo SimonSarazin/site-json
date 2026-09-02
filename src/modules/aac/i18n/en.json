@@ -198,6 +198,30 @@
         "confirmDeselect": "It will no longer appear in this call's directory. The commun and its answers are kept."
       }
     },
+    "project": {
+      "openCta": "Open the project",
+      "openFullPage": "View full page",
+      "generateCta": "Generate the project",
+      "associateCta": "Associate an existing project",
+      "proposalPhaseBadge": "Proposal phase",
+      "confirmGenerate": {
+        "title": "Generate a project from this commun?",
+        "description": "A project and a tracking space will be created from this answer. This action is irreversible.",
+        "confirm": "Yes, generate",
+        "cancel": "Cancel"
+      },
+      "associate": {
+        "finderLabel": "Project",
+        "finderButton": "Search and associate",
+        "finderPlaceholder": "Enter the name of the project to associate"
+      },
+      "toasts": {
+        "generateSuccess": "The project was generated successfully.",
+        "generateError": "Unable to generate the project.",
+        "associateSuccess": "The commun was associated with the project.",
+        "associateError": "Unable to associate this project."
+      }
+    },
     "origin": {
       "deposedOn": "Submitted on “{{name}}”"
     }

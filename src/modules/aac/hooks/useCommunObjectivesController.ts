@@ -147,6 +147,11 @@ export function useCommunObjectivesController({
       if (projectEntity !== candidate) {
         setProjectEntity(candidate);
       }
+      try {
+        await candidate.refresh();
+      } catch (error) {
+        console.warn("Unable to refresh cached project entity for AAC modal", error);
+      }
       return candidate;
     }
 

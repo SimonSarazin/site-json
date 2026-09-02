@@ -359,6 +359,7 @@
       "apiClientUnavailable": "Client API indisponible.",
       "projectNotFoundForAction": "Projet introuvable pour la création de l'action.",
       "noMilestoneSelected": "Aucun jalon sélectionné.",
+      "actionFormInvalid": "Le formulaire n'a pas pu être soumis. Vérifie les champs, ou recharge la page si le problème persiste.",
       "actionNameRequired": "Le nom de l'action est obligatoire.",
       "invalidCredits": "Le montant des crédits doit être supérieur ou égal à 0.",
       "invalidDates": "Les dates doivent être au format dd/MM/aaaa et la date de fin doit être supérieure ou égale à la date de début.",

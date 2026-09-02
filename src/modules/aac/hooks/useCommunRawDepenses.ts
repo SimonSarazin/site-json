@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCocolight } from "@/hooks/useCocolight";
-import { asRecord, type UnknownRecord } from "@/modules/cagnotte/utils/dataTransform";
+import { asRecord, toArrayOrValues, type UnknownRecord } from "@/modules/cagnotte/utils/dataTransform";
 
 export const COMMUN_RAW_DEPENSES_QUERY_KEY = "aac-milestone-list-depenses";
 
@@ -19,7 +19,7 @@ export function useCommunRawDepenses(answerId?: string, step: string = "aapStep1
     queryFn: async () => {
       const answer = await api!.answer({ id: answerId! });
       const raw = asRecord(asRecord(asRecord(answer.serverData).answers)[step]).depense;
-      return Array.isArray(raw) ? raw.map(asRecord) : [];
+      return toArrayOrValues<UnknownRecord>(raw).map(asRecord);
     },
   });
 }

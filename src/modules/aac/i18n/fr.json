@@ -198,6 +198,30 @@
         "confirmDeselect": "Il n'apparaîtra plus dans l'annuaire de cet appel à communs. Le commun et ses réponses sont conservés."
       }
     },
+    "project": {
+      "openCta": "Ouvrir le projet",
+      "openFullPage": "Voir la page complète",
+      "generateCta": "Générer le projet",
+      "associateCta": "Associer un projet existant",
+      "proposalPhaseBadge": "Phase proposition",
+      "confirmGenerate": {
+        "title": "Générer un projet à partir de ce commun ?",
+        "description": "Un projet et un espace de suivi seront créés à partir de cette réponse. Cette action est irréversible.",
+        "confirm": "Oui, générer",
+        "cancel": "Annuler"
+      },
+      "associate": {
+        "finderLabel": "Projet",
+        "finderButton": "Rechercher et associer",
+        "finderPlaceholder": "Entrez le nom du projet à associer"
+      },
+      "toasts": {
+        "generateSuccess": "Le projet a été généré avec succès.",
+        "generateError": "Impossible de générer le projet.",
+        "associateSuccess": "Le commun a été associé au projet.",
+        "associateError": "Impossible d'associer ce projet."
+      }
+    },
     "origin": {
       "deposedOn": "Déposé sur « {{name}} »"
     }
