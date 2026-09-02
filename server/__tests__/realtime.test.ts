@@ -38,6 +38,8 @@ const hubEtat = {
 const emetteurEtat = {
   appels: 0,
   autorisationsVues: [] as (string | undefined)[],
+  /** La CASSE exacte reçue sur le fil — c'est elle qui décide côté legacy (BUG-L-252). */
+  cassesVues: [] as string[],
   reponse: 200 as number,
   corps: JSON.stringify({ result: true, ticket: "T-VALIDE", expireLe: "2030-01-01T00:00:00.000Z" }),
 };
@@ -51,6 +53,7 @@ beforeAll(async () => {
   appEmetteur.post("/realtime/ticket", (req, res) => {
     emetteurEtat.appels++;
     emetteurEtat.autorisationsVues.push(req.headers.authorization);
+    emetteurEtat.cassesVues.push(...req.rawHeaders.filter((_, i) => i % 2 === 0).filter((h) => /^authorization$/i.test(h)));
     res.status(emetteurEtat.reponse).type("application/json").send(emetteurEtat.corps);
   });
   emetteur = await ecouter(appEmetteur);
@@ -90,7 +93,7 @@ afterAll(async () => { await relais.fermer(); await hub.fermer(); await emetteur
 
 beforeEach(() => {
   hubEtat.ouvertures = 0; hubEtat.fermetures = 0; hubEtat.ticketsRecus = []; hubEtat.refuser = false;
-  emetteurEtat.appels = 0; emetteurEtat.autorisationsVues = []; emetteurEtat.reponse = 200;
+  emetteurEtat.appels = 0; emetteurEtat.autorisationsVues = []; emetteurEtat.cassesVues = []; emetteurEtat.reponse = 200;
   emetteurEtat.corps = JSON.stringify({ result: true, ticket: "T-VALIDE" });
   process.env.REALTIME_HUB_URL = hub.url;
   process.env.REALTIME_TICKET_URL = `${emetteur.url}/realtime/ticket`;
@@ -140,6 +143,18 @@ describe("l’authentification est DÉLÉGUÉE — le relais ne vérifie aucun j
     const f = await ouvrir({ authorization: "Bearer jeton-precis-123" });
     try {
       expect(emetteurEtat.autorisationsVues).toEqual(["Bearer jeton-precis-123"]);
+    } finally { await f.raccrocher(); }
+  });
+
+  it("envoie `Authorization` avec une MAJUSCULE — le legacy cherche la clé exacte (BUG-L-252)", async () => {
+    // Express normalise les en-têtes ENTRANTS en minuscules ; retransmettre la clé telle quelle
+    // envoyait `authorization` sur le fil, que le legacy ne trouve pas. undici, lui, PRÉSERVE la
+    // casse qu'on lui donne (vérifié sur le fil) — la correction est donc ici, sans dépendre du
+    // correctif legacy.
+    const f = await ouvrir({ authorization: "Bearer x" });
+    try {
+      expect(emetteurEtat.cassesVues).toContain("Authorization");
+      expect(emetteurEtat.cassesVues).not.toContain("authorization");
     } finally { await f.raccrocher(); }
   });
 

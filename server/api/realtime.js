@@ -71,7 +71,12 @@ export async function realtimeFluxHandler(req, res) {
   try {
     const r = await fetch(c.ticket, {
       method: "POST",
-      headers: { authorization: autorisation, "content-type": "application/json" },
+      // `Authorization` avec une MAJUSCULE, délibérément. Express normalise les en-têtes ENTRANTS
+      // en minuscules (`req.headers.authorization`) ; retransmettre cette clé telle quelle envoyait
+      // `authorization` sur le fil, et le legacy — qui cherche la clé exacte `Authorization` — ne
+      // voyait aucun jeton (BUG-L-252). undici, lui, préserve la casse qu'on lui donne : c'est donc
+      // ici que ça se règle, sans dépendre du correctif legacy.
+      headers: { Authorization: autorisation, "content-type": "application/json" },
       body: "{}",
       signal: AbortSignal.timeout(DELAI_OUVERTURE_MS),
     });
@@ -161,7 +166,8 @@ export async function realtimePushHandler(req, res) {
   const url = `${c.hub}`.replace(/\/realtime\/flux$/, "") + `/realtime/push${suffixe}`;
 
   const entetes = { "content-type": "application/json" };
-  if (req.headers.authorization) entetes.authorization = req.headers.authorization;
+  // Majuscule : voir le commentaire dans realtimeFluxHandler (BUG-L-252).
+  if (req.headers.authorization) entetes.Authorization = req.headers.authorization;
   if (req.headers.origin) entetes.origin = req.headers.origin;
 
   try {
