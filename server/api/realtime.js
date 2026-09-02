@@ -37,9 +37,14 @@ const DELAI_OUVERTURE_MS = 10_000;
 function cibles() {
   const hub = process.env.REALTIME_HUB_URL?.replace(/\/+$/, "");
   if (!hub) return null;
+  const ticket = process.env.REALTIME_TICKET_URL || `${hub}/realtime/ticket`;
   return {
     hub: `${hub}/realtime/flux`,
-    ticket: process.env.REALTIME_TICKET_URL || `${hub}/realtime/ticket`,
+    // `none` = le hub établit l'identité LUI-MÊME (mode introspection) : il n'y a pas de ticket à
+    // prendre, donc aucune écriture en base nulle part. C'est le mode d'un hub branché sur une
+    // PRODUCTION avec un utilisateur Mongo en lecture seule. Le relais se contente alors de
+    // transmettre l'`Authorization` du client.
+    ticket: ticket === "none" ? null : ticket,
   };
 }
 
@@ -67,8 +72,9 @@ export async function realtimeFluxHandler(req, res) {
   }
 
   // 1. Prendre un ticket auprès de l'émetteur — c'est LUI qui vérifie l'identité.
-  let ticket;
-  try {
+  //    Sauf en mode direct (`REALTIME_TICKET_URL=none`), où le hub s'en charge par introspection.
+  let ticket = null;
+  if (c.ticket) try {
     const r = await fetch(c.ticket, {
       method: "POST",
       // `Authorization` avec une MAJUSCULE, délibérément. Express normalise les en-têtes ENTRANTS
@@ -95,16 +101,17 @@ export async function realtimeFluxHandler(req, res) {
 
   // 2. Ouvrir le flux amont. L'abandon du client coupe l'amont — la seule protection contre
   //    une fuite de connexion par visite.
+  //    ⚠️ `Authorization` avec une MAJUSCULE : voir le commentaire du mode ticket (BUG-L-252).
+  const entetesAmont = ticket
+    ? { "x-realtime-ticket": ticket, accept: "text/event-stream" }
+    : { Authorization: autorisation, accept: "text/event-stream" };
   const abandon = new AbortController();
   const couper = () => abandon.abort();
   res.on("close", couper);
 
   let amont;
   try {
-    amont = await fetch(c.hub, {
-      headers: { "x-realtime-ticket": ticket, accept: "text/event-stream" },
-      signal: abandon.signal,
-    });
+    amont = await fetch(c.hub, { headers: entetesAmont, signal: abandon.signal });
   } catch {
     res.off("close", couper);
     if (!res.headersSent) res.status(502).json({ realtime: false, msg: "hub injoignable" });
@@ -114,9 +121,10 @@ export async function realtimeFluxHandler(req, res) {
   if (!amont.ok || !amont.body) {
     res.off("close", couper);
     abandon.abort();
-    // Un 401 ici veut dire que le ticket a été refusé — donc que l'émetteur et le hub ne
-    // partagent pas la même base. C'est une erreur de déploiement, pas du client.
-    const code = amont.status === 401 ? 502 : amont.status;
+    // En mode ticket, un 401 ici veut dire que l'émetteur et le hub ne partagent pas la même base :
+    // erreur de DÉPLOIEMENT, pas du client, d'où le 502. En mode direct, le 401 vient du jeton du
+    // client lui-même et doit lui être rendu tel quel — le masquer le ferait boucler.
+    const code = amont.status === 401 ? (ticket ? 502 : 401) : amont.status;
     if (!res.headersSent) res.status(code).json({ realtime: false, msg: "hub a refuse l ouverture" });
     return;
   }

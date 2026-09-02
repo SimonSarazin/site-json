@@ -33,6 +33,8 @@ const hubEtat = {
   ouvertures: 0,
   fermetures: 0,
   ticketsRecus: [] as string[],
+  autorisationsVues: [] as (string | undefined)[],
+  cassesVues: [] as string[],
   refuser: false,
 };
 const emetteurEtat = {
@@ -61,6 +63,8 @@ beforeAll(async () => {
   const appHub = express();
   appHub.get("/realtime/flux", (req, res) => {
     hubEtat.ticketsRecus.push(String(req.headers["x-realtime-ticket"] ?? ""));
+    hubEtat.autorisationsVues.push(req.headers.authorization);
+    hubEtat.cassesVues.push(...req.rawHeaders.filter((_, i) => i % 2 === 0).filter((h) => /^authorization$/i.test(h)));
     if (hubEtat.refuser) { res.status(401).json({ result: false }); return; }
     hubEtat.ouvertures++;
     res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-cache" });
@@ -93,6 +97,7 @@ afterAll(async () => { await relais.fermer(); await hub.fermer(); await emetteur
 
 beforeEach(() => {
   hubEtat.ouvertures = 0; hubEtat.fermetures = 0; hubEtat.ticketsRecus = []; hubEtat.refuser = false;
+  hubEtat.autorisationsVues = []; hubEtat.cassesVues = [];
   emetteurEtat.appels = 0; emetteurEtat.autorisationsVues = []; emetteurEtat.cassesVues = []; emetteurEtat.reponse = 200;
   emetteurEtat.corps = JSON.stringify({ result: true, ticket: "T-VALIDE" });
   process.env.REALTIME_HUB_URL = hub.url;
@@ -241,6 +246,48 @@ describe("le nettoyage — une fuite de connexion par visite, sinon", () => {
     for (const f of flux) await f.raccrocher();
     await attendre(600);
     expect(hubEtat.fermetures - avant).toBe(10);
+  });
+});
+
+describe("le mode DIRECT — un hub qui établit l’identité lui-même", () => {
+  // `REALTIME_TICKET_URL=none` : le hub est en introspection, il n'y a AUCUN ticket à prendre,
+  // donc aucune écriture en base nulle part. C'est le mode d'un hub branché sur une PRODUCTION
+  // avec un utilisateur Mongo en lecture seule.
+  it("ne demande AUCUN ticket et transmet l’`Authorization` au hub", async () => {
+    process.env.REALTIME_TICKET_URL = "none";
+    const f = await ouvrir({ authorization: "Bearer direct-123" });
+    try {
+      await attendre(150);
+      expect(emetteurEtat.appels).toBe(0);            // l'émetteur n'est jamais dérangé
+      expect(hubEtat.autorisationsVues).toContain("Bearer direct-123");
+      expect(hubEtat.ticketsRecus).toEqual([""]);     // aucun ticket sur le fil
+    } finally { await f.raccrocher(); }
+  });
+
+  it("envoie `Authorization` avec une MAJUSCULE (BUG-L-252)", async () => {
+    process.env.REALTIME_TICKET_URL = "none";
+    const f = await ouvrir({ authorization: "Bearer x" });
+    try {
+      await attendre(150);
+      expect(hubEtat.cassesVues).toContain("Authorization");
+      expect(hubEtat.cassesVues).not.toContain("authorization");
+    } finally { await f.raccrocher(); }
+  });
+
+  it("un 401 du hub est RENDU AU CLIENT, pas masqué en 502", async () => {
+    // En mode ticket, un 401 signale une erreur de déploiement. En mode direct, il vient du jeton
+    // du client : le masquer le ferait boucler sans jamais lui dire de se reconnecter.
+    process.env.REALTIME_TICKET_URL = "none";
+    hubEtat.refuser = true;
+    const r = await fetch(`${relais.url}/api/realtime/flux`, { headers: { authorization: "Bearer périmé" } });
+    expect(r.status).toBe(401);
+  });
+
+  it("sans `Authorization`, refuse avant même de joindre le hub", async () => {
+    process.env.REALTIME_TICKET_URL = "none";
+    const r = await fetch(`${relais.url}/api/realtime/flux`);
+    expect(r.status).toBe(401);
+    expect(hubEtat.ouvertures).toBe(0);
   });
 });
 
