@@ -1,9 +1,6 @@
 import { useMemo, useRef } from "react";
-import { useQueries } from "@tanstack/react-query";
-import { useCocolight } from "@/hooks/useCocolight";
-import { useCostumListsReactive } from "@/hooks/useCostumLists";
-import { costumListValuesQuery } from "@/hooks/useCostumListValues";
-import { capitaliser, costumSlugOf, isDynamicList, staticListValues } from "@/lib/costumLists";
+import { useListEntries, type EntreeDeListe } from "@/hooks/useListSources";
+import { capitaliser } from "@/lib/costumLists";
 import { resolveListSources, type SourceDeValeurs } from "@/lib/listSources";
 import { normalizeFilterValue } from "@/modules/search/lib/dropdownFilters";
 
@@ -92,86 +89,39 @@ export function useDynamicFilterOptions<T extends FiltreAOptions>(
   /** Terme cherché par filtre (`{ [id du filtre]: terme }`) — DÉJÀ débouncé par l'appelant. */
   recherches?: Record<string, string>,
 ): FiltreResolu<T>[] {
-  const { api, entity: carrier } = useCocolight();
-  const slugSite = costumSlugOf(carrier);
-
-  // Abonné aux signaux réactifs natifs du SDK (cf. `@/hooks/useCostumLists`) : tout `carrier.refresh()`
-  // réussi redéclenche ce hook tout seul, sans store maison ni reload.
-  const listesStatiques = useCostumListsReactive(carrier);
-
-  // UNE entrée par couple (filtre, liste) — un filtre peut en nommer plusieurs, et `useQueries` exige
-  // un nombre et un ordre constants d'un rendu à l'autre : on aplatit donc une bonne fois.
-  const entrees = useMemo(() => {
-    const out: Array<{ idFiltre: string; nom: string; costumSlug?: string }> = [];
+  // UNE entrée par couple (filtre, liste) — un filtre peut en nommer plusieurs, et `useListEntries`
+  // exige un nombre et un ordre d'entrées constants d'un rendu à l'autre.
+  //
+  // La recherche n'est transmise au SERVEUR que pour une liste qu'il a COUPÉE : tant qu'on tient la
+  // liste entière, filtrer localement est plus rapide et ne consomme rien. Mémorisé par couple
+  // (filtre, liste) : deux listes du même filtre peuvent être coupées indépendamment.
+  const tronquees = useRef<Record<string, boolean>>({});
+  const termes = (filtres ?? [])
+    .map((f) => `${f.id}=${(recherches?.[f.id] ?? "").trim()}`)
+    .join("|");
+  const entrees = useMemo<EntreeDeListe[]>(() => {
+    const out: EntreeDeListe[] = [];
     for (const f of filtres ?? []) {
       for (const nom of nomsDeListes(f)) {
-        out.push({ idFiltre: f.id, nom, costumSlug: f.optionsFrom?.costumSlug });
+        const terme = tronquees.current[`${f.id}/${nom}`] ? (recherches?.[f.id] ?? "").trim() : "";
+        out.push({ cle: f.id, nom, costumSlug: f.optionsFrom?.costumSlug, limit: PLAFOND, ...(terme ? { q: terme } : {}) });
       }
     }
     return out;
-  }, [filtres]);
+    // `termes` (chaîne) plutôt que `recherches` (objet neuf à chaque frappe) : seul son CONTENU compte.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtres, termes]);
 
-  // La recherche n'est transmise au SERVEUR que pour une liste qu'il a coupée : tant qu'on tient la
-  // liste entière, filtrer localement est plus rapide et ne consomme rien. Mémorisé par COUPLE
-  // (filtre, liste) : deux listes du même filtre peuvent être coupées indépendamment.
-  const tronquees = useRef<Record<string, boolean>>({});
-  const resultats = useQueries({
-    queries: entrees.map((e) => {
-      const cle = `${e.idFiltre}/${e.nom}`;
-      const terme = tronquees.current[cle] ? (recherches?.[e.idFiltre] ?? "").trim() : "";
-      // Même règle que `useListSources` et que le menu du header : seule une RECETTE part chez le
-      // serveur (il refuse les statiques, déjà livrées avec le costum). Un costum ÉTRANGER n'a pas ses
-      // déclarations ici : on interroge, lui seul sait.
-      const etranger = !!e.costumSlug && e.costumSlug !== slugSite;
-      return costumListValuesQuery(
-        api as never,
-        e.costumSlug ?? slugSite,
-        e.nom,
-        etranger || isDynamicList(listesStatiques[e.nom]),
-        { limit: PLAFOND, ...(terme ? { q: terme } : {}) },
-      );
-    }),
-  });
+  const parFiltre = useListEntries(entrees);
+
   // Mémorisé APRÈS la réponse : la première requête part sans `q`, découvre la troncature, et les
   // suivantes deviennent des recherches serveur.
-  entrees.forEach((e, i) => {
-    if (resultats[i]?.data?.tronque) tronquees.current[`${e.idFiltre}/${e.nom}`] = true;
-  });
-
-  // RÉGLÉ = la requête a répondu, quel qu'en soit le sort : succès, échec, ou jamais lancée (liste
-  // statique, ou porteur sans slug). À distinguer absolument de « a des valeurs » :
-  // `costumListValuesQuery` renvoie `{values: []}` dans TOUS les cas d'échec, et faire porter
-  // `optionsReady` sur la présence de valeurs laissait le drapeau à `false` POUR TOUJOURS — ce qui
-  // gelait la synchro URL⇄filtres de la PAGE ENTIÈRE (plus de permalien, plus de deep-link, plus de
-  // retour arrière), et pas seulement le groupe concerné.
-  const regles = resultats.map((r) => r.isFetched || r.fetchStatus === "idle");
-
-  // `join` plutôt que la référence : react-query rend un tableau neuf à chaque rendu, et une dépendance
-  // par identité relancerait le mémo en boucle. L'état RÉGLÉ en fait partie, sans quoi le passage
-  // « en cours » → « réglé à vide » ne rejouerait rien.
-  const termes = entrees.map((e) => (recherches?.[e.idFiltre] ?? "").trim()).join("|");
-  const empreinte = resultats
-    .map((r, i) => `${regles[i] ? "1" : "0"}` + (r.data?.values ?? []).join(""))
-    .join("");
+  for (const [id, res] of parFiltre) {
+    for (const nom of res.tronquees) tronquees.current[`${id}/${nom}`] = true;
+  }
 
   return useMemo(() => {
     if (!filtres?.length) return [];
-
-    // Sources et état RÉGLÉ, regroupés par filtre — l'ordre des entrées suit celui des listes déclarées,
-    // donc celui de la fusion.
-    const parFiltre = new Map<string, { sources: SourceDeValeurs[]; regle: boolean }>();
-    entrees.forEach((e, i) => {
-      const acc = parFiltre.get(e.idFiltre) ?? { sources: [], regle: true };
-      const statique = staticListValues(listesStatiques[e.nom]);
-      if (statique) {
-        acc.sources.push({ values: statique });
-      } else {
-        const data = resultats[i]?.data;
-        acc.sources.push({ values: data?.values ?? [], variants: data?.variants });
-        acc.regle = acc.regle && (regles[i] ?? false);
-      }
-      parFiltre.set(e.idFiltre, acc);
-    });
 
     return filtres.map((f) => {
       const res = parFiltre.get(f.id);
@@ -222,6 +172,5 @@ export function useDynamicFilterOptions<T extends FiltreAOptions>(
         }),
       };
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filtres, entrees, empreinte, termes, listesStatiques]);
+  }, [filtres, parFiltre]);
 }

@@ -1,37 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { resolveDynamicNavValues, buildDynamicNavChildren, DEFAULT_DYNAMIC_NAV_LIMIT } from "./dynamicNav";
-
-describe("resolveDynamicNavValues", () => {
-  it("liste statique (tableau) : renvoie les valeurs telles quelles", () => {
-    expect(resolveDynamicNavValues(["La petite enfance", "La santé"], undefined)).toEqual([
-      "La petite enfance",
-      "La santé",
-    ]);
-  });
-
-  it("liste statique (map valeur→libellé) : renvoie les clés", () => {
-    expect(resolveDynamicNavValues({ Pêche: "Pêche" }, undefined)).toEqual(["Pêche"]);
-  });
-
-  it("liste dynamique (recette collection/distinct) : ignore la déclaration, renvoie les valeurs résolues serveur", () => {
-    const declared = { collection: "poi", where: { "source.keys": "parent62" }, distinct: "themes" };
-    expect(resolveDynamicNavValues(declared, ["Sport", "Culture"])).toEqual(["Sport", "Culture"]);
-  });
-
-  it("liste dynamique pas encore résolue (dynamicValues undefined) : liste vide, pas de crash", () => {
-    const declared = { collection: "poi", distinct: "themes" };
-    expect(resolveDynamicNavValues(declared, undefined)).toEqual([]);
-  });
-
-  it("déclaration absente : liste vide", () => {
-    expect(resolveDynamicNavValues(undefined, undefined)).toEqual([]);
-  });
-
-  it("map d'entités (clés ObjectId) : rejetée comme côté serveur, liste vide", () => {
-    const map = { "507f1f77bcf86cd799439011": "Un lieu" };
-    expect(resolveDynamicNavValues(map, undefined)).toEqual([]);
-  });
-});
+import { buildDynamicNavChildren, DEFAULT_DYNAMIC_NAV_LIMIT } from "./dynamicNav";
 
 /** Reproduit exactement la lecture côté `SearchHeaderSection.tsx` (`raw.split(",")` puis
  *  `decodeURIComponent` par segment) — sert à prouver l'aller-retour URL, pas seulement la forme

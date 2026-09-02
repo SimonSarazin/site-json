@@ -1,5 +1,5 @@
 import type { EnhancedNavItemType } from "@/types/site-schema";
-import { capitaliser, isDynamicList, staticListValues } from "@/lib/costumLists";
+import { capitaliser } from "@/lib/costumLists";
 
 /** Plafond par défaut d'entrées affichées dans un menu généré depuis `costum.lists` — un
  *  dropdown de header n'a pas vocation à afficher les 300 valeurs qu'un filtre de page
@@ -12,25 +12,6 @@ export const DEFAULT_DYNAMIC_NAV_LIMIT = 20;
 export interface DynamicNavOwner {
   pathname: string;
   filter: { id: string };
-}
-
-/**
- * Valeurs à afficher pour un item `dynamicList`, selon la forme sous laquelle
- * `costum.lists.<nom>` est déclarée — même distinction que `useDynamicFilterOptions`
- * (`optionsKey` statique / `optionsFrom` dynamique), appliquée à un menu plutôt qu'à un
- * filtre de page.
- *
- * @param declared      la déclaration brute (`costum.lists[list]`), telle que lue par
- *                       `useCostumListsReactive`.
- * @param dynamicValues  résultat déjà résolu par `costum/co/listvalues`, SEULEMENT
- *                       pertinent si `declared` est une recette dynamique.
- */
-export function resolveDynamicNavValues(
-  declared: unknown,
-  dynamicValues: string[] | undefined,
-): string[] {
-  if (isDynamicList(declared)) return dynamicValues ?? [];
-  return staticListValues(declared) ?? [];
 }
 
 /**

@@ -1500,7 +1500,37 @@ Non touchés à dessein : `doc/28-module-formengine.md` et `doc/cartographie-for
 mentionnent l'`optionsKey` **du moteur de formulaire** (`listsOptions[optionsKey ?? name]`, cf.
 `GenericForm`) — un mécanisme homonyme mais DISTINCT de celui des filtres, et inchangé par ce chantier.
 
-### 9quindecies.4 Validation (gates)
+### 9quindecies.4 Architecture — l'orchestration des requêtes factorisée (`useListEntries`)
+
+Premier jet : seule la fusion PURE (`resolveListSources`) était partagée. L'**orchestration** — pour
+chaque nom de liste, décider statique (lecture mémoire) ou recette (requête), puis calculer l'état
+« réglé » — se retrouvait écrite **trois fois** : `useListSources`, `useDynamicFilterOptions`,
+`useResolveDynamicNav`. C'est la 3ᵉ répétition, seuil à partir duquel le dépôt impose un helper
+générique.
+
+Extrait dans **`src/hooks/useListSources.ts`** :
+
+- **`useListEntries(entrees)`** — le socle : N couples `(clé, liste)` résolus en UNE passe `useQueries`
+  et regroupés par clé. C'est la forme qu'il FAUT dès qu'on résout plusieurs entités à la fois (un
+  filtre par groupe, un item par menu) : un hook ne s'appelle pas dans une boucle, et `useQueries`
+  exige un nombre et un ordre de requêtes constants d'un rendu à l'autre. Rend aussi les listes que le
+  serveur a **coupées**, ce qui permet aux filtres de garder leur recherche serveur (`q`) sans que
+  cette logique remonte dans le socle.
+- **`useListSources(lists)`** — le cas simple (une entité), devenu une enveloppe de quelques lignes.
+
+Les deux consommateurs multi-entités passent dessus : `useDynamicFilterOptions` ne garde que ce qui
+lui est propre (plafond, mémoire des troncatures, socle `withDeclared`, reconstruction des options en
+préservant les libellés) et `useResolveDynamicNav` que la construction des liens de menu. Effet de
+bord : `resolveDynamicNavValues` (et ses 6 tests) devient du code mort — la distinction
+statique/recette qu'elle portait ne vit plus qu'à un seul endroit, où elle est testée.
+
+**Direction des dépendances** vérifiée au passage : `src/lib/listSources.ts` (pur) ← `src/hooks/`
+(orchestration) ← modules et composants. `listSources` importe `normalizeFilterValue` du module
+`search` — direction `lib → modules` inhabituelle, mais **conforme à l'usage établi** ici
+(`lib/buildRoutes.tsx`, `lib/queryKeys.ts`, `lib/entityMatch.ts` et `lib/visibility/` font de même) ;
+déplacer ce primitif de normalisation serait un refactor sans rapport avec ce chantier.
+
+### 9quindecies.5 Validation (gates)
 
 | Gate | Résultat |
 |---|---|
@@ -1508,7 +1538,7 @@ mentionnent l'`optionsKey` **du moteur de formulaire** (`listsOptions[optionsKey
 | `lint` (suite complète) | ✅ 0 erreur, 21 warnings — tous préexistants |
 | `validate-config` (parent62 **et** institut-bleu) | ✅ 46/160 et 13/26 |
 | `audit:config` | ✅ `config.prod.parent62.json — RAS` |
-| `test:unit` suite complète | 🟡 **2882/2889** (6 skip) — **−4** (tests de `mergeDeduped`) ; l'unique échec reste `tests/preflight/site-assets.test.ts`, **préexistant et sans rapport** (dossier vide non suivi `public/images/transiter`, qu'un `rmdir` réglerait — décision hors périmètre) |
+| `test:unit` suite complète | 🟡 **2876/2883** (6 skip) — **−10** (tests de `mergeDeduped` et de `resolveDynamicNavValues`, tous deux devenus morts) ; l'unique échec reste `tests/preflight/site-assets.test.ts`, **préexistant et sans rapport** (dossier vide non suivi `public/images/transiter`, qu'un `rmdir` réglerait — décision hors périmètre) |
 | `test:e2e` (`e2e/parent62.spec.ts`) | ✅ **8/8** |
 
 **Bilan du chantier (§9undecies → §9quindecies), 4 fichiers créés / 11 supprimés :** une seule
