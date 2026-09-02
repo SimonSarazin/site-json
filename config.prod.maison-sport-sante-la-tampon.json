@@ -5099,7 +5099,7 @@
           ]
         },
         "description": {
-          "widget": "textarea",
+          "widget": "markdown",
           "label": {
             "fr": "Description",
             "en": "Description"
