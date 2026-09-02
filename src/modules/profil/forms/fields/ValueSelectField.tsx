@@ -5,12 +5,8 @@ import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/for
 // simple <p> et rejetait la prop (les autres champs du moteur importent déjà celui-ci).
 import { FormMessage } from "@/modules/formEngine/components/FormMessage";
 import { SelectObject } from "@/components/ui/select-objet";
-import { useCocolight } from "@/hooks/useCocolight";
-import { useCostumListsReactive } from "@/hooks/useCostumLists";
-import { useCostumListValues } from "@/hooks/useCostumListValues";
-import { capitaliser, costumSlugOf, staticListValues } from "@/lib/costumLists";
-import { mergeDeduped } from "@/modules/search/lib/dropdownFilters";
-import { resolveCreatable } from "./valueSelectAccess";
+import { useListSources } from "@/hooks/useListSources";
+import { capitaliser } from "@/lib/costumLists";
 
 interface ValueSelectFieldProps<T extends FieldValues> {
   control: Control<T>;
@@ -18,10 +14,14 @@ interface ValueSelectFieldProps<T extends FieldValues> {
   label?: string;
   placeholder?: string;
   placeholderSearch?: string;
-  /** Propositions déjà résolues par le moteur de formulaire (liste STATIQUE du costum). */
+  /** SOCLE déclaré en config (`enum` du champ), déjà résolu par le moteur de formulaire — première
+   *  source, prioritaire sur les listes costum (cf. docstring du composant). */
   options?: string[];
-  /** Nom de la liste déclarée dans `costum.lists` (défaut : le nom du champ). */
-  list?: string;
+  /** Nom de la ou des listes déclarées dans `costum.lists` (défaut : le nom du champ). Plusieurs
+   *  listes sont FUSIONNÉES dans l'ordre déclaré — cas d'un même champ alimenté depuis plusieurs
+   *  collections (parent62 : `themes` est écrit sur `poi` ET sur `events`, donc une recette par
+   *  collection). La forme de chacune (statique ou recette) est détectée automatiquement. */
+  list?: string | string[];
   /** Slug du costum ; par défaut celui du porteur du site. */
   costumSlug?: string;
   /** Sélection multiple (défaut) ou valeur unique. En mono, la valeur stockée est une CHAÎNE. */
@@ -30,10 +30,6 @@ interface ValueSelectFieldProps<T extends FieldValues> {
   max?: number;
   /** Autoriser une valeur absente des propositions (défaut : oui). */
   creatable?: boolean;
-  /** La valeur libre acceptée par ce champ est aussi PROMUE dans `costum.lists.<list>` (partagée, cf.
-   *  `growCostumLists`) — réservé admin. Quand `true`, la saisie libre elle-même devient réservée
-   *  admin (cf. docstring plus bas) : `creatable` seul ne suffit plus à l'ouvrir aux visiteurs. */
-  saveNewValue?: boolean;
   required?: boolean;
   errorTranslate?: (key: string) => string;
 }
@@ -50,25 +46,27 @@ interface ValueSelectFieldProps<T extends FieldValues> {
  * même popover, mêmes hauteurs. Un champ ne doit pas trahir par son allure quel composant l'implémente ;
  * l'unique différence fonctionnelle, la saisie libre, passe par `creatable`.
  *
- * `saveNewValue` RESTREINT `creatable` AUX ADMINS (pas l'inverse — jamais d'élargissement) : quand ce
- * champ promeut aussi ses valeurs libres dans `costum.lists.<list>` (taxonomie PARTAGÉE, cf.
- * `growCostumLists`), un visiteur non-admin ne doit PAS pouvoir taper une valeur inédite — il choisit
- * SEULEMENT parmi l'existant, comme un `select` fermé. Un admin, qui a le droit de faire grandir la
- * liste partagée, garde la saisie libre. `creatable: false` explicite reste prioritaire dans tous les cas
- * (un champ fermé le reste, `saveNewValue` ou pas).
+ * SAISIE LIBRE OUVERTE À TOUS (`creatable`, `true` par défaut ; `creatable: false` la ferme). Ce champ
+ * n'ÉCRIT rien : `costum.lists` est en lecture seule depuis site-json. Une valeur saisie vit sur la
+ * fiche, et c'est la recette `distinct` qui la fait remonter aux suivants — une fois la fiche visible
+ * et modérée, gate appliquée par le serveur (`ListValuesAction`, GARDE 3). Une valeur qu'aucune fiche
+ * ne porte encore s'ajoute donc en config (le socle ci-dessous), pas depuis l'application.
  *
- * TROIS SOURCES, dans cet ordre de priorité :
+ * SOURCES — toutes FUSIONNÉES, dans cet ordre de priorité (`useListSources` / `resolveListSources`) :
  *  1. `options` — l'`enum` DÉCLARÉ dans la config (le moteur de formulaire le résout normalement).
- *  2. `costum.lists.<list>`, forme STATIQUE (tableau/map) — `useCostumListsReactive`
- *     (`@/hooks/useCostumLists`) + `staticListValues`, FUSIONNÉE avec (1), dédoublonné casse/accents
- *     (`mergeDeduped`) : c'est la liste qui GRANDIT (`growCostumLists`, cf. `parent62/fns.ts`) au fil
- *     des saisies libres acceptées. Abonné aux signaux réactifs natifs du SDK : un `carrier.refresh()`
- *     réussi post-écriture met ce champ à jour automatiquement, sans reload — sans cette fusion NI cet
- *     abonnement, un thème inédit accepté par un utilisateur resterait invisible pour le suivant, qui
- *     retaperait la même idée sous une graphie différente.
- *  3. `useCostumListValues` (recette DYNAMIQUE, résolue serveur) — sollicité SEULEMENT si (1)+(2) sont
- *     vides : cas d'un champ SANS `enum` ET dont la liste costum est une vraie recette
- *     `{collection, distinct}` (ex. `auteurs`/`territoires`/`financeurs` sur institut-bleu).
+ *     C'est le SOCLE : les valeurs qu'un site veut proposer d'emblée, même si aucune fiche ne les
+ *     porte encore. Le défaut se déclare donc là où vit le champ, pas en base.
+ *  2. chaque liste de `list`, sous la forme où elle est déclarée — statique (lue en mémoire, telle que
+ *     le costum la porte) ou recette résolue par le serveur
+ *     (`costum/co/listvalues` — les valeurs RÉELLEMENT saisies, ex. `auteurs`/`territoires` sur
+ *     institut-bleu). Abonné aux signaux réactifs natifs du SDK : tout rafraîchissement du carrier met
+ *     ce champ à jour sans reload.
+ *
+ * FUSION, PAS SUBSTITUTION — et c'est un changement délibéré. Le serveur n'était auparavant interrogé
+ * QUE si (1) et (2) étaient vides : un champ à `enum` non vide ne voyait donc JAMAIS les valeurs
+ * réellement employées, et un thème inédit accepté chez l'un restait invisible pour le suivant, qui
+ * retapait la même idée sous une autre graphie. Le dédoublonnage casse/accents et l'ordre de priorité
+ * font que le socle garde sa graphie (donc son libellé) quand la base porte la même valeur autrement.
  */
 export function ValueSelectField<T extends FieldValues>({
   control,
@@ -83,26 +81,14 @@ export function ValueSelectField<T extends FieldValues>({
   min,
   max,
   creatable = true,
-  saveNewValue = false,
   required,
   errorTranslate,
 }: ValueSelectFieldProps<T>) {
-  const { entity: carrier } = useCocolight();
-  const slug = costumSlug ?? costumSlugOf(carrier);
-  const listName = list ?? String(name);
-  // `saveNewValue` ne peut que RESTREINDRE `creatable`, jamais l'élargir — cf. `valueSelectAccess.ts`.
-  const creatableEffectif = resolveCreatable(creatable, saveNewValue, Boolean(carrier?.isAdmin()));
-  // Abonné aux signaux réactifs natifs du SDK (cf. `@/hooks/useCostumLists`) — un `carrier.refresh()`
-  // réussi (`growCostumLists`) met ce champ à jour automatiquement, sans reload.
-  const listesCostum = useCostumListsReactive(carrier);
-  // (2) : `null` si la clé n'existe pas ou est une recette DYNAMIQUE (cf. (3) pour ce cas).
-  const listeCostum = staticListValues(listesCostum[listName]) ?? [];
-  const statiques = mergeDeduped(options ?? [], listeCostum);
-  const { data: resultat } = useCostumListValues(slug, listName, {
-    enabled: statiques.length === 0,
-  });
-  const dynamiques = resultat?.values ?? [];
-  const valeurs = statiques.length > 0 ? statiques : dynamiques;
+  const listNames = list ?? String(name);
+  // Socle déclaré + liste(s) costum, fusionnés — la forme de chaque liste (statique/recette) est
+  // détectée par le hook, ce champ n'a pas à la connaître. `variants` n'est pas exploité ici : il sert
+  // à INTERROGER un groupe de graphies (filtres), pas à en saisir une.
+  const { values: valeurs } = useListSources(listNames, { declared: options, costumSlug });
 
   // Identité stable tant que le contenu ne bouge pas : `SelectObject` recopie ses `options` dans un
   // état interne à chaque changement de référence.
@@ -128,7 +114,7 @@ export function ValueSelectField<T extends FieldValues>({
             <FormControl>
               <SelectObject
                 multiple={multiple}
-                creatable={creatableEffectif}
+                creatable={creatable}
                 value={multiple ? liste : (typeof brut === "string" ? brut : "")}
                 onChange={(v) => {
                   if (!multiple) { field.onChange(typeof v === "string" ? v : ""); return; }

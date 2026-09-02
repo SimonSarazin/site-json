@@ -4,6 +4,7 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { useCostumListsReactive } from "@/hooks/useCostumLists";
 import { costumListValuesQuery } from "@/hooks/useCostumListValues";
 import { costumSlugOf, isDynamicList } from "@/lib/costumLists";
+import { resolveListSources } from "@/lib/listSources";
 import { getDropdownFilterOwner } from "@/modules/search/lib/dropdownFilters";
 import type { EnhancedNavItemType, SiteConfig } from "@/types/site-schema";
 import { buildDynamicNavChildren, resolveDynamicNavValues } from "./lib/dynamicNav";
@@ -34,14 +35,26 @@ export function useResolveDynamicNav(
   // ordre constants d'un rendu à l'autre.
   const items = useMemo(() => nav.filter((it) => !!it.dynamicList), [nav]);
 
-  // Une requête serveur n'est émise QUE si `costum.lists[list]` est une recette dynamique
+  // UNE entrée par couple (item, liste) : un item peut en nommer plusieurs (un même champ alimenté
+  // depuis plusieurs collections = une recette par collection), et l'aplatissement garde le nombre de
+  // requêtes constant d'un rendu à l'autre.
+  const entrees = useMemo(() => {
+    const out: Array<{ item: EnhancedNavItemType; nom: string }> = [];
+    for (const it of items) {
+      const spec = it.dynamicList!;
+      const noms = Array.isArray(spec.list) ? spec.list : [spec.list];
+      for (const nom of noms) out.push({ item: it, nom });
+    }
+    return out;
+  }, [items]);
+
+  // Une requête serveur n'est émise QUE si `costum.lists[nom]` est une recette dynamique
   // (`isDynamicList`) — jamais pour une liste statique, déjà livrée avec le costum (le
   // serveur refuse d'ailleurs `costum/co/listvalues` pour ce cas, cf. `costumLists.ts`).
   const resultats = useQueries({
-    queries: items.map((it) => {
-      const spec = it.dynamicList!;
-      const declared = listesStatiques[spec.list];
-      return costumListValuesQuery(api as never, spec.costumSlug ?? slugSite, spec.list, isDynamicList(declared), {
+    queries: entrees.map((e) => {
+      const spec = e.item.dynamicList!;
+      return costumListValuesQuery(api as never, spec.costumSlug ?? slugSite, e.nom, isDynamicList(listesStatiques[e.nom]), {
         limit: spec.limit,
       });
     }),
@@ -53,7 +66,13 @@ export function useResolveDynamicNav(
 
   return useMemo(() => {
     if (!items.length) return nav;
-    const parItem = new Map(items.map((it, i) => [it, resultats[i]?.data?.values] as const));
+    // Les valeurs de chaque liste d'un item, dans l'ordre déclaré — prêtes à être fusionnées.
+    const parItem = new Map<EnhancedNavItemType, Array<{ nom: string; values?: string[]; variants?: Record<string, string[]> }>>();
+    entrees.forEach((e, i) => {
+      const acc = parItem.get(e.item) ?? [];
+      acc.push({ nom: e.nom, values: resultats[i]?.data?.values, variants: resultats[i]?.data?.variants });
+      parItem.set(e.item, acc);
+    });
     return nav.map((item) => {
       if (!item.dynamicList) return item;
       const owner = getDropdownFilterOwner(config, item.dynamicList.filterId);
@@ -65,11 +84,17 @@ export function useResolveDynamicNav(
         }
         return item;
       }
-      const declared = listesStatiques[item.dynamicList.list];
-      const values = resolveDynamicNavValues(declared, parItem.get(item));
+      // Chaque liste est résolue SELON SA FORME (statique en mémoire / recette côté serveur), puis
+      // toutes sont fusionnées — dédoublonnage et union des graphies, cf. `@/lib/listSources`.
+      const { values } = resolveListSources(
+        (parItem.get(item) ?? []).map((r) => ({
+          values: resolveDynamicNavValues(listesStatiques[r.nom], r.values),
+          variants: r.variants,
+        })),
+      );
       if (!values.length) return item;
       return { ...item, children: buildDynamicNavChildren(owner, values, item.dynamicList.limit) };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nav, items, empreinte, listesStatiques, config]);
+  }, [nav, items, entrees, empreinte, listesStatiques, config]);
 }

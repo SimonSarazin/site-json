@@ -49,20 +49,19 @@ registerWidget("tags", (p) => <TagsWidget p={p} />);
 
 // valueSelect : sélection d'une ou plusieurs VALEURS d'une liste du costum, saisie libre facultative.
 // Sans rapport avec les tags — vise `territoires`, `auteurs`, `legalStatus`… `widgetProps` :
-// `list` (défaut : le nom du champ), `costumSlug`, `multiple` (défaut true), `min`, `max`, `creatable`,
-// `saveNewValue` (défaut FALSE — opt-in par champ : une valeur libre acceptée par ce champ est aussi
-// promue dans `costum.lists.<list>`, réservé admin ; cf. `growCostumLists`, `profil/forms/costum/parent62/fns.ts`).
-// À `true`, restreint AUSSI la saisie libre (`creatable`) aux admins — un visiteur non-admin ne choisit
-// alors que parmi l'existant, cf. docstring `ValueSelectField`.
+// `list` (défaut : le nom du champ ; une CHAÎNE ou un TABLEAU de noms, fusionnés — cas d'un champ
+// alimenté depuis plusieurs collections), `costumSlug`, `multiple` (défaut true), `min`, `max`,
+// `creatable` (défaut true). Un champ n'ÉCRIT jamais dans `costum.lists` : une valeur libre vit sur la
+// fiche et remonte aux suivants par la recette `distinct`, une fois la fiche modérée (cf. docstring
+// `ValueSelectField`).
 registerWidget("valueSelect", (p) => <ValueSelectField control={control(p.form)} name={fname(p.field.name)} label={lbl(p)}
   options={p.options?.map((o) => o.value)}
-  list={p.field.widgetProps?.list as string | undefined}
+  list={p.field.widgetProps?.list as string | string[] | undefined}
   costumSlug={p.field.widgetProps?.costumSlug as string | undefined}
   multiple={(p.field.widgetProps?.multiple as boolean) ?? true}
   min={p.field.widgetProps?.min as number | undefined}
   max={p.field.widgetProps?.max as number | undefined}
   creatable={(p.field.widgetProps?.creatable as boolean) ?? true}
-  saveNewValue={(p.field.widgetProps?.saveNewValue as boolean) ?? false}
   required={p.field.required}
   placeholder={p.field.placeholder ? p.t(p.field.placeholder) : undefined}
   placeholderSearch={searchPh(p)}

@@ -275,42 +275,5 @@
     "optionsChanged": "Options modifiées : relancez l'analyse pour pouvoir appliquer.",
     "selectionIds": "{{count}} fiche(s) cochée(s)",
     "subTypeSuggestions": "Types constatés dans la sélection :"
-  },
-  "AdminLists": {
-    "noContext": "Aucun élément à administrer.",
-    "badConfig": "Configuration de la section invalide (props.lists).",
-    "empty": "Ce site ne déclare aucune liste.",
-    "dynamicBadge": "Gérée côté backend",
-    "dynamicHint": "Cette liste est calculée automatiquement par le serveur (collection : {{collection}}) — non modifiable ici.",
-    "uneditableBadge": "Format non pris en charge ici",
-    "uneditableHint": "Cette liste est au format clé/libellé ou référence des fiches — édition non disponible pour l'instant.",
-    "addPlaceholder": "Ajouter une valeur…",
-    "add": "Ajouter",
-    "rename": "Renommer",
-    "confirmEdit": "Valider",
-    "cancelEdit": "Annuler la modification",
-    "confirmRemoveTitle": "Supprimer cette valeur ?",
-    "confirmRemoveDesc": "La valeur « {{value}} » sera retirée de la liste.",
-    "remove": "Supprimer",
-    "cancel": "Annuler",
-    "newList": "Créer une nouvelle liste",
-    "newListPlaceholder": "Nom de la liste",
-    "newListValuePlaceholder": "Première valeur",
-    "create": "Créer",
-    "error": "Une erreur est survenue.",
-    "success": {
-      "add": "Valeur ajoutée.",
-      "rename": "Valeur renommée.",
-      "remove": "Valeur supprimée.",
-      "reorder": "Ordre mis à jour.",
-      "createList": "Liste créée."
-    },
-    "reject": {
-      "empty": "La valeur ne peut pas être vide.",
-      "duplicate": "Cette valeur existe déjà dans la liste.",
-      "invalidChars": "Le nom ne peut pas contenir de point ou de $.",
-      "invalidIndex": "Action impossible — la liste a changé, rechargez la page.",
-      "wouldEmpty": "Impossible de supprimer la dernière valeur d'une liste ici — le serveur n'enregistre pas une liste vide."
-    }
   }
 }

@@ -1695,9 +1695,10 @@ const MegaMenu = z.object({
 // vide, ou `filterId` introuvable en config) — résolu par `useResolveDynamicNav`, câblé dans
 // `SiteHeader` : aucune variante de header n'a besoin de connaître ce champ.
 const DynamicNavList = z.object({
-  // Nom de la liste costum.lists à lire (ex. "themes") — statique ou recette dynamique,
-  // détecté automatiquement (même distinction que optionsKey/optionsFrom côté filtres).
-  list: z.string().min(1),
+  // Nom de la liste costum.lists à lire (ex. "themes") — statique ou recette dynamique, détecté
+  // automatiquement. Plusieurs noms = fusion dans l'ordre déclaré (cf. @/lib/listSources), cas d'un
+  // même champ alimenté depuis plusieurs collections : une recette par collection.
+  list: z.union([z.string().min(1), z.array(z.string().min(1)).min(1)]),
   // id du dropdownFilter/filterGroup cible (résolu via getDropdownFilterOwner) : détermine
   // à la fois la page de destination et le champ filtré par chaque entrée générée.
   filterId: z.string().min(1),

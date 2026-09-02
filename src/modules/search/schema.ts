@@ -74,14 +74,13 @@ export const FilterGroupSchema = z.object({
      *  consommateurs le lisent sans cast. */
     variants: z.array(z.string()).optional(),
   })).optional(),
-  /** Source DYNAMIQUE des options (cf. `OptionsFromSchema` du searchHeader) : les valeurs viennent
-   *  d'une liste `costum.lists` et REMPLACENT les `options` déclarées. Sur un groupe à `field`, chaque
-   *  option reçoit `name` = la valeur stockée, donc le filtrage par champ fonctionne tel quel. */
-  optionsFrom: z.object({ list: z.string(), costumSlug: z.string().optional() }).optional(),
-  /** Source STATIQUE des options : nom d'une liste `costum.lists.<optionsKey>` déclarée en TABLEAU/MAP
-   *  (pas une recette dynamique — celle-là passe par `optionsFrom`). Résolue en mémoire (le costum est
-   *  déjà chargé), aucune requête réseau. REMPLACE les `options` déclarées quand la liste existe et
-   *  n'est pas vide ; sans quoi les `options` déclarées font foi, comme aujourd'hui. */
+  /** Source des options : une ou plusieurs listes `costum.lists` (cf. `OptionsFromSchema` du
+   *  searchHeader). Sur un groupe à `field`, chaque option reçoit `name` = la valeur stockée, donc le
+   *  filtrage par champ fonctionne tel quel. */
+  optionsFrom: z.lazy(() => OptionsFromSchema).optional(), // forward-ref : OptionsFromSchema est défini plus bas
+  /** DÉPRÉCIÉ — alias de `optionsFrom.list`. Distinguait autrefois la source STATIQUE de la source
+   *  dynamique ; la forme est désormais détectée à la lecture (`useDynamicFilterOptions`), le rédacteur
+   *  de config n'a plus à choisir. Conservé pour les configs existantes. */
   optionsKey: z.string().optional(),
   config: z.object({
     countryCode: z.array(z.string()).optional(),
@@ -1107,21 +1106,31 @@ const TitleWithFiltersDropdownOptionSchema = z.object({
 });
 
 /**
- * Source DYNAMIQUE d'options : les valeurs viennent d'une liste déclarée du costum
- * (`costum.lists.<nom>`, forme `{collection, distinct, where}`), résolue par `costum/co/listvalues`.
+ * Source des options d'un filtre : UNE OU PLUSIEURS listes déclarées du costum (`costum.lists.<nom>`),
+ * résolues chacune SELON SA FORME — statique (tableau/map) lue en mémoire, recette
+ * (`{collection, distinct, where}`) résolue par `costum/co/listvalues`. La détection est automatique :
+ * le rédacteur de config n'a pas à savoir sous quelle forme la liste est déclarée en base.
  *
- * REMPLACE les `options` écrites à la main quand elle est déclarée — pas de fusion. Les valeurs
- * dynamiques n'ont donc PAS de libellé traduit : elles s'affichent telles qu'elles sont stockées.
- * C'est le prix assumé pour que le filtre suive la donnée : sur institutBleu, la config gelait
- * 12 territoires quand la base en compte 64, soit 52 valeurs injoignables au filtre.
+ * Plusieurs listes = fusion, dans l'ordre déclaré (cf. `@/lib/listSources`) — cas d'un même champ
+ * alimenté depuis plusieurs collections, qui demande alors une recette par collection.
+ *
+ * Par défaut, les valeurs résolues REMPLACENT les `options` écrites à la main : elles n'ont donc pas de
+ * libellé traduit, elles s'affichent telles qu'elles sont stockées. C'est le prix assumé pour que le
+ * filtre suive la donnée — sur institutBleu, la config gelait 12 territoires quand la base en compte
+ * 64, soit 52 valeurs injoignables au filtre. Avec `withDeclared`, les `options` déclarées deviennent
+ * au contraire un SOCLE fusionné, et gardent leur libellé.
  *
  * Sans `optionsFrom`, rien ne change : les options déclarées font foi, comme aujourd'hui.
  */
 const OptionsFromSchema = z.object({
-  /** Nom de la liste dans `costum.lists`. */
-  list: z.string(),
+  /** Nom de la liste dans `costum.lists`, ou plusieurs à fusionner (ordre = priorité). */
+  list: z.union([z.string(), z.array(z.string()).min(1)]),
   /** Costum porteur ; par défaut celui du site. */
   costumSlug: z.string().optional(),
+  /** Les `options` déclarées deviennent le SOCLE (fusionné en tête, libellés i18n conservés) au lieu
+   *  d'un simple repli de chargement. Opt-in : fusionner partout ferait réapparaître des valeurs de
+   *  config absentes de la base, donc des filtres qui ne rendent rien. */
+  withDeclared: z.boolean().optional(),
 });
 
 const TitleWithFiltersDropdownSchema = z.object({

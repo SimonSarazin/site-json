@@ -313,37 +313,6 @@
             "edit": "inherit"
           }
         ]
-      },
-      {
-        "id": "listes",
-        "label": {
-          "fr": "Listes",
-          "en": "Lists"
-        },
-        "access": "siteAdmin",
-        "sections": [
-          {
-            "type": "lists",
-            "props": {
-              "lists": [
-                {
-                  "key": "themes",
-                  "label": {
-                    "fr": "Thèmes",
-                    "en": "Topics"
-                  }
-                },
-                {
-                  "key": "categoriesParole",
-                  "label": {
-                    "fr": "Catégories des paroles",
-                    "en": "Parole categories"
-                  }
-                }
-              ]
-            }
-          }
-        ]
       }
     ]
   }

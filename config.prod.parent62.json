@@ -243,7 +243,7 @@
           "en": "Topics"
         },
         "dynamicList": {
-          "list": "themes",
+          "list": ["themes", "themesPoi", "themesEvents"],
           "filterId": "theme"
         }
       },
@@ -1915,7 +1915,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
-                "optionsKey": "themes",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "hidden": true,
                 "label": {
                   "fr": "Thèmes",
@@ -2289,7 +2292,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
-                "optionsKey": "themes",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -2662,7 +2668,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
-                "optionsKey": "themes",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -3038,7 +3047,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
-                "optionsKey": "themes",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -3397,7 +3409,10 @@
             "dropdownFilters": [
               {
                 "id": "category",
-                "optionsKey": "categoriesParole",
+                "optionsFrom": {
+                  "list": ["categoriesParole"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Catégorie",
                   "en": "Category"
@@ -3642,7 +3657,10 @@
               },
               {
                 "id": "theme",
-                "optionsKey": "themes",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -4176,7 +4194,10 @@
               },
               {
                 "id": "theme",
-                "optionsKey": "themes",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -4736,7 +4757,10 @@
               },
               {
                 "id": "theme",
-                "optionsKey": "themes",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -6753,7 +6777,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
-                "optionsKey": "themes",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -7062,7 +7089,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
-                "optionsKey": "themes",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -7371,7 +7401,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
-                "optionsKey": "themes",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -7680,7 +7713,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
-                "optionsKey": "themes",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -7989,7 +8025,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
-                "optionsKey": "themes",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -8298,7 +8337,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
-                "optionsKey": "themes",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -8607,7 +8649,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
-                "optionsKey": "themes",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -8947,7 +8992,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
-                "optionsKey": "themes",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -9389,7 +9437,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
-                "optionsKey": "themes",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -9825,7 +9876,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
-                "optionsKey": "themes",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -10267,7 +10321,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
-                "optionsKey": "themes",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -10709,7 +10766,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
-                "optionsKey": "themes",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -11151,7 +11211,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
-                "optionsKey": "themes",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -11591,7 +11654,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
-                "optionsKey": "themes",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -12027,7 +12093,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
-                "optionsKey": "themes",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -12461,7 +12530,10 @@
             "dropdownFilters": [
               {
                 "id": "theme",
-                "optionsKey": "themes",
+                "optionsFrom": {
+                  "list": ["themes", "themesPoi", "themesEvents"],
+                  "withDeclared": true
+                },
                 "label": {
                   "fr": "Thèmes",
                   "en": "Topics"
@@ -13341,7 +13413,10 @@
                   },
                   {
                     "id": "themes",
-                    "optionsKey": "themes",
+                    "optionsFrom": {
+                      "list": ["themes", "themesPoi", "themesEvents"],
+                      "withDeclared": true
+                    },
                     "label": {
                       "fr": "Thèmes",
                       "en": "Topics"
@@ -15733,7 +15808,6 @@
       "entityType": "poi",
       "collection": "poi",
       "costumSlug": "parent62",
-      "afterSubmit": "parent62-article-grow",
       "layout": {
         "kind": "flat"
       },
@@ -15982,8 +16056,7 @@
         "themes": {
           "widget": "valueSelect",
           "widgetProps": {
-            "list": "themes",
-            "saveNewValue": true
+            "list": ["themes", "themesPoi", "themesEvents"]
           },
           "label": {
             "fr": "Thèmes",
@@ -16223,7 +16296,6 @@
       "entityType": "poi",
       "collection": "poi",
       "costumSlug": "parent62",
-      "afterSubmit": "parent62-affiche-grow",
       "layout": {
         "kind": "flat"
       },
@@ -16307,8 +16379,7 @@
           "widget": "valueSelect",
           "widgetProps": {
             "multiple": false,
-            "list": "categoriesParole",
-            "saveNewValue": true
+            "list": ["categoriesParole"]
           },
           "required": true,
           "label": {
@@ -16571,8 +16642,7 @@
         "themes": {
           "widget": "valueSelect",
           "widgetProps": {
-            "list": "themes",
-            "saveNewValue": true
+            "list": ["themes", "themesPoi", "themesEvents"]
           },
           "label": {
             "fr": "Thèmes",
@@ -16789,7 +16859,6 @@
       "entityType": "poi",
       "collection": "poi",
       "costumSlug": "parent62",
-      "afterSubmit": "parent62-recovery-center-grow",
       "layout": {
         "kind": "flat"
       },
@@ -17035,8 +17104,7 @@
         "themes": {
           "widget": "valueSelect",
           "widgetProps": {
-            "list": "themes",
-            "saveNewValue": true
+            "list": ["themes", "themesPoi", "themesEvents"]
           },
           "label": {
             "fr": "Thèmes",
@@ -17388,7 +17456,6 @@
       "entityType": "events",
       "collection": "events",
       "costumSlug": "parent62",
-      "afterSubmit": "parent62-event-grow",
       "layout": {
         "kind": "tabs"
       },
@@ -17661,8 +17728,7 @@
         "themes": {
           "widget": "valueSelect",
           "widgetProps": {
-            "list": "themes",
-            "saveNewValue": true
+            "list": ["themes", "themesPoi", "themesEvents"]
           },
           "label": {
             "fr": "Thèmes",
@@ -18260,25 +18326,6 @@
             ],
             "create": "add-parent62-event",
             "edit": "inherit"
-          }
-        ]
-      },
-      {
-        "id": "listes",
-        "label": {
-          "fr": "Listes",
-          "en": "Lists"
-        },
-        "access": "siteAdmin",
-        "sections": [
-          {
-            "type": "lists",
-            "props": {
-              "lists": [
-                { "key": "themes", "label": { "fr": "Thèmes", "en": "Topics" } },
-                { "key": "categoriesParole", "label": { "fr": "Catégories des paroles", "en": "Parole categories" } }
-              ]
-            }
           }
         ]
       }

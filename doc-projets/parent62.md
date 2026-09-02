@@ -1149,6 +1149,376 @@ Non commité à ce stade (comme §9septies/§9octies avant lui) — à recetter 
 
 ---
 
+## 9undecies. Impacts — mécanique unique de résolution des listes `costum.lists` (socle + N listes), pilote : formulaire d'ajout d'article (02/09)
+
+> Périmètre : capacité **générique** du moteur SiteForge (pas propre à parent62), appliquée d'abord au
+> champ « Thèmes » du formulaire **d'ajout d'article** (`costumForms.parent62-article`). Fait suite au
+> constat — posé au chantier « thèmes en saisie libre » (§9septies), rouvert en spec — que le moteur
+> avait **quatre** façons différentes de répondre à la même question (« quelles valeurs proposer ? »)
+> selon qu'on soit dans un filtre de page (`optionsFrom`/`optionsKey`), un champ de formulaire
+> (`enum` + `widgetProps.list`) ou un menu de header (`dynamicList`, §9decies). L'arbitrage a écarté la
+> voie backend (ajouter `collections`/`defaults` à la recette PHP côté legacy) au profit d'une
+> résolution entièrement site-json : le défaut se déclare là où vit le champ, et il y garde ses
+> libellés i18n.
+
+### 9undecies.1 Ce qui a changé côté moteur (générique, tout site)
+
+- **`site-json/src/lib/listSources.ts`** (nouveau, pur, testé — 11 cas) : `resolveListSources(sources)`
+  fusionne N sources de valeurs dans l'ORDRE de priorité (la première où une valeur apparaît fixe sa
+  graphie, donc son libellé i18n), dédoublonnage casse/accents via `normalizeFilterValue` — la même
+  notion d'égalité que `mergeDeduped` et que `selectNewValues`/`growCostumLists`. Réunit aussi les
+  **`variants`** (graphies regroupées) entre sources : sans cette union, deux recettes (une par
+  collection) produisent deux groupements indépendants et un filtre raterait **silencieusement** les
+  fiches de l'autre collection.
+- **`site-json/src/hooks/useListSources.ts`** (nouveau, testé — 8 cas) : résout `string | string[]` de
+  listes `costum.lists`, **forme détectée automatiquement** par `isDynamicList` (statique → lue en
+  mémoire, aucune requête ; recette → `costum/co/listvalues`), fusionnées avec le socle déclaré. Rend
+  `{values, variants, ready}`. Reprend le patron `useQueries` déjà écrit dans `useDynamicFilterOptions`
+  et `useResolveDynamicNav` — 3ᵉ répétition, donc factorisation justifiée.
+- **`site-json/src/modules/profil/forms/fields/ValueSelectField.tsx`** : passe de la SUBSTITUTION à la
+  FUSION. L'ancienne garde `enabled: statiques.length === 0` empêchait tout appel serveur dès qu'un
+  `enum` était déclaré — les 4 formulaires parent62 (18 thèmes en `enum`) ne voyaient donc **jamais**
+  les valeurs réellement saisies, quelle que soit la forme de la liste en base — le blocage identifié
+  de longue date côté formulaire (cf. §9septies).
+- **`site-json/src/modules/profil/forms/registerWidgets.tsx`** : `widgetProps.list` accepte désormais
+  une **chaîne ou un tableau** de noms de listes.
+- **`site-json/src/modules/profil/forms/costum/parent62/fns.ts`** : `resolveGrowTarget` (nouveau, pur,
+  testé — 7 cas). Lire plusieurs listes, mais n'en ÉCRIRE qu'une : la promotion admin
+  (`growCostumLists`) vise la première liste déclarée qui n'est **pas** une recette. Une clé-recette
+  n'a rien à recevoir (ses valeurs *sont* la donnée) et un `$push` (`arrayForm:true`) y écrirait dans
+  un objet de déclaration — au mieux une erreur, au pire une recette corrompue. Toutes recettes → la
+  promotion est sautée, sans erreur.
+
+### 9undecies.2 Ce qui a changé côté config parent62 (`config.prod.parent62.json`)
+
+Une seule ligne, sur le formulaire visé par ce lot :
+
+```jsonc
+"costumForms.parent62-article.fields.themes.widgetProps": {
+  "list": ["themes", "themesPoi", "themesEvents"],   // était : "themes"
+  "saveNewValue": true                                // inchangé — cible d'écriture : "themes" (socle statique)
+}
+```
+
+**Inerte tant que les deux recettes n'existent pas en base** : une liste non déclarée dans
+`costum.lists` est ignorée par `useListSources` — aucune requête, aucune erreur, aucun changement
+visible. Le jour où elles sont déclarées, le champ propose en plus les thèmes réellement employés sur
+`poi` **et** sur `events`, fusionnés avec les 18 valeurs de l'`enum` et avec le socle statique
+`costum.lists.themes` que l'admin édite. Les 24 filtres `optionsKey` et le menu header `dynamicList`
+n'ont **pas** été touchés par ce lot.
+
+### 9undecies.3 Ce qui reste à faire (hors de ce lot)
+
+1. ~~Déclarer `themesPoi` / `themesEvents` en base~~ — **sans objet : elles existaient déjà**
+   (vérifié le 02/09, cf. §9terdecies.1).
+2. ~~Brancher les deux autres consommateurs~~ — **fait le 02/09** (§9terdecies) : filtres de page et
+   menu header résolus par le même code, libellés i18n récupérés.
+3. ~~Décider du sort de `saveNewValue`~~ — **tranché le 02/09 : supprimé** (cf. §9duodecies).
+
+### 9undecies.4 Validation (gates)
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` | ✅ 0 erreur |
+| `lint` (suite complète) | ✅ 0 erreur, 21 warnings — tous **préexistants** (fichiers touchés : 0 warning) |
+| `npx tsx scripts/validate-config.ts config.prod.parent62.json` | ✅ **46 pages, 160 sections** |
+| `audit:config` | ✅ `config.prod.parent62.json — RAS` |
+| `test:unit` suite complète | 🟡 **2934/2941** (6 skip) — **+26 tests** ajoutés par ce lot ; l'unique échec est `tests/preflight/site-assets.test.ts`, **préexistant et sans rapport** : un dossier VIDE et non suivi par git, `public/images/transiter`, qu'aucun slug de `sites.json` ne déclare (un `rmdir` suffit, décision hors périmètre de ce lot) |
+| `test:e2e` (`e2e/parent62.spec.ts`) | ✅ **8/8** — pages en lecture seule ; le formulaire d'ajout d'article est derrière l'auth admin, non couvert par l'e2e |
+
+Non commité à ce stade (comme §9septies/§9octies/§9decies avant lui).
+
+---
+
+## 9duodecies. Impacts — retrait de la promotion automatique `saveNewValue` / `growCostumLists` (02/09)
+
+> Décision : **une recette `distinct` rend l'écriture dans `costum.lists` inutile** — la valeur saisie
+> librement vit sur la fiche, et c'est le `distinct` qui la fait remonter aux suivants. Recopier la
+> même valeur dans la taxonomie partagée faisait donc double emploi, avec en prime une écriture
+> partagée déclenchée par un formulaire public. Suite directe de §9undecies.
+
+### 9duodecies.1 Ce qui a été supprimé
+
+| Supprimé | Ce que ça faisait |
+|---|---|
+| `src/modules/profil/forms/costum/parent62/fns.ts` **(fichier entier)** + son test | `growCostumLists` (`afterSubmit`), `selectNewValues`, `resolveGrowTarget` — la promotion admin d'une valeur libre vers `costum.lists.<liste>` |
+| `src/modules/profil/forms/fields/valueSelectAccess.ts` **(fichier entier)** + son test | `resolveCreatable` — n'existait que pour la restriction admin induite par `saveNewValue` |
+| `widgetProps.saveNewValue` (prop `ValueSelectField` + passage dans `registerWidgets.tsx`) | l'opt-in par champ |
+| `import "./costum/parent62/fns"` dans `registerSpecFns.ts` | l'enregistrement des 4 clés `afterSubmit` |
+| `config.prod.parent62.json` : **4** `"afterSubmit": "parent62-*-grow"` + **5** `"saveNewValue": true` | le câblage côté config (les deux moitiés devaient partir ensemble : `assertCostumKeysRegistered` lève si une clé `afterSubmit` citée n'est plus enregistrée) |
+
+Commentaires réalignés dans 6 fichiers qui citaient `growCostumLists`/`selectNewValues` comme
+référence vivante (`useCostumLists`, `useDynamicFilterOptions`, `dropdownFilters`,
+`costumListsEditing`, `useCostumListsMutations`, `listSources`) — au passage, `dropdownFilters.ts:52`
+citait `noteGrownListValue`, **déjà supprimé** du dépôt depuis un lot antérieur.
+
+### 9duodecies.2 Deux conséquences à connaître (aucune n'est bloquante, aucune n'est invisible)
+
+1. **La saisie libre s'ouvre à tous les visiteurs** sur les 4 formulaires concernés. `saveNewValue`
+   avait un second effet, non évident : il **restreignait `creatable` aux admins** (un visiteur ne
+   pouvait que choisir dans l'existant), précisément parce que le champ écrivait dans une taxonomie
+   partagée. Cette écriture n'existant plus, la restriction n'a plus d'objet — un thème inédit tapé
+   par un visiteur reste sur SA fiche. Il ne sera proposé aux autres qu'une fois la fiche **visible et
+   modérée**, gate appliquée par le serveur lui-même (`ListValuesAction`, GARDE 3
+   `preferences.toBeValidated`). Si l'on veut malgré tout fermer un champ, le levier est
+   `widgetProps.creatable: false`, par champ.
+2. **Tant que `themesPoi`/`themesEvents` ne sont pas déclarées en base, une valeur inédite n'est
+   proposée nulle part** (les filtres lisent la liste STATIQUE `themes` via `optionsKey`, qui ne
+   grandit plus toute seule). C'est un intervalle, pas un état cible : il se referme à la déclaration
+   des recettes (§9undecies.3). Entre-temps, la section admin « Listes » ajoute une valeur à la main.
+
+### 9duodecies.3 Le cas `categoriesParole` — pas de remplaçant `distinct` évident
+
+Pour `themes`, la recette est directe. Pour `categoriesParole` (champ `category` de
+`parent62-affiche`, valeurs *Compliqué / Difficile / À changer*), **elle ne l'est pas** : le champ
+`category` de la collection `poi` porte, sur ce même costum, **au moins deux taxonomies différentes**
+— celle des paroles, et celle des ressources (*Vidéo / Photo / Compte-rendu / Jeu / Document / Lien*,
+`parent62-recovery-center`). Un `distinct` sur `category` scopé au costum rendrait donc **l'union des
+deux**, ce qui n'a de sens pour aucun des deux formulaires.
+
+Options, à trancher le jour où le besoin se pose (aucune n'est urgente — la liste statique existe
+toujours et reste éditable) :
+- garder `categoriesParole` **statique**, alimentée à la main par la section admin « Listes » — état
+  actuel, et sans doute suffisant pour une taxonomie de 3 valeurs ;
+- déclarer une recette avec un `where` discriminant, **si** les paroles portent un marqueur propre
+  (tag, type, `parent`…) — à vérifier en base avant de promettre quoi que ce soit.
+
+### 9duodecies.4 Validation (gates)
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` | ✅ 0 erreur |
+| `lint` (suite complète) | ✅ 0 erreur, 21 warnings — tous préexistants |
+| `npx tsx scripts/validate-config.ts config.prod.parent62.json` | ✅ **46 pages, 160 sections** |
+| `audit:config` | ✅ `config.prod.parent62.json — RAS` |
+| `test:unit` suite complète | 🟡 **2914/2921** (6 skip) — **−20 tests**, exactement ceux des mécanismes supprimés (9 `selectNewValues` + 7 `resolveGrowTarget` + 4 `resolveCreatable`) ; l'unique échec reste `tests/preflight/site-assets.test.ts`, **préexistant et sans rapport** (dossier vide non suivi `public/images/transiter`) |
+| `test:e2e` (`e2e/parent62.spec.ts`) | ✅ **8/8** |
+
+Les 4 fichiers supprimés sont sauvegardés hors dépôt le temps de la recette
+(`scratchpad/suppr-saveNewValue/`), et restent de toute façon récupérables par `git`.
+Non commité à ce stade.
+
+---
+
+## 9terdecies. Impacts — généralisation de la mécanique unique à TOUS les `themes` + `categoriesParole` (02/09)
+
+> Suite de §9undecies (résolveur commun, câblé alors sur le seul formulaire d'ajout d'article) et de
+> §9duodecies (retrait de `saveNewValue`). Ce lot branche les **deux consommateurs restants** — filtres
+> de page et menu du header — et bascule les **30 déclarations** de `themes`/`categoriesParole` de
+> parent62 sur la forme fusionnée.
+
+### 9terdecies.1 État RÉEL du backend — mesuré, pas supposé
+
+Vérifié le 02/09 par appel direct à `POST /costum/co/listvalues` (`slug=parent62`) sur
+`http://communecter-dev` :
+
+| Liste | Réponse serveur | Ce que ça dit |
+|---|---|---|
+| `themes` | `result:false — "liste non declaree"` | **absente** de `costum.lists`. Les 24 filtres ne montraient donc QUE les 18 options figées de la config, jamais la base. |
+| `themesPoi` | `result:true`, **24 valeurs** | recette `distinct` **déjà déclarée et fonctionnelle** |
+| `themesEvents` | `result:true`, **1 valeur** (`La communication`) | idem |
+| `categoriesParole` | `result:true`, **0 valeur** | **c'est déjà une RECETTE** (une statique aurait été refusée avec « liste statique »), qui ne remonte rien pour l'instant |
+| `categoriesParolePoi` | `result:false — "liste non declaree"` | n'existe pas — nom abandonné (cf. ci-dessous) |
+
+Deux hypothèses de §9undecies sont donc **corrigées par la mesure** :
+1. Les recettes `themesPoi`/`themesEvents` **n'étaient pas « à déclarer »** : elles existent déjà. La
+   config de ce lot est donc **immédiatement fonctionnelle**, pas en attente d'un travail backend.
+2. `categoriesParole` **est déjà un `distinct`** — l'inquiétude de §9duodecies.3 (« pas de remplaçant
+   `distinct` évident, `poi.category` mélange deux taxonomies ») est sans objet côté déclaration : la
+   recette existe et est scopée par le backend. Le nom `categoriesParolePoi` que ce lot avait d'abord
+   introduit a été **retiré** : `list: ["categoriesParole"]` suffit.
+
+### 9terdecies.2 Ce qui a changé côté moteur (générique, tout site)
+
+- **`src/modules/search/hooks/useDynamicFilterOptions.ts`** — réécrit sur `resolveListSources` :
+  `optionsFrom.list` accepte **une chaîne ou un tableau** ; `optionsKey` devient un **alias déprécié**
+  (la forme statique/recette est détectée à la lecture, plus de clé à choisir) ; nouveau
+  `optionsFrom.withDeclared` qui fait des `options` déclarées un **socle fusionné**. Les requêtes sont
+  aplaties par couple (filtre, liste) — `useQueries` exige un nombre constant —, la recherche serveur
+  sur liste tronquée (`q`) est mémorisée **par couple** et non plus par filtre.
+- **Les libellés i18n survivent enfin.** Une option déclarée est RÉUTILISÉE telle quelle pour la valeur
+  qu'elle porte (libellé, couleur, `level`) ; seules les valeurs venues de la base et absentes du socle
+  s'affichent en `capitaliser(valeur)`. Jusqu'ici la branche `optionsKey` reconstruisait toutes les
+  options à partir des valeurs brutes et **jetait les 18 libellés traduits**.
+- **`src/components/layout/header/useResolveDynamicNav.ts` + `src/types/site-schema.ts`** :
+  `dynamicList.list` accepte lui aussi un tableau, résolu et fusionné par le même code.
+- **`src/modules/search/schema.ts`** : `OptionsFromSchema` accepte `list: string | string[]` et
+  `withDeclared`, et est désormais partagé par `filterGroups` et `dropdownFilters` (forward-ref
+  `z.lazy`, convention déjà en place dans ce fichier).
+
+### 9terdecies.3 Un bug trouvé et corrigé en route — `optionsReady`
+
+Première version : un filtre était marqué « prêt » dès qu'il avait **des valeurs à afficher**. Avec un
+socle (`withDeclared`), il en a **dès le premier rendu**, alors que ses recettes sont encore en vol.
+Conséquence observée en e2e sur `/recherche` : l'hydratation URL partait trop tôt, puis l'arrivée des
+valeurs rejouait l'effet de lecture qui — l'URL étant vide et l'hydratation déjà faite — **effaçait la
+cible de recherche par défaut** (« Actualités » n'était plus sélectionnée).
+
+Corrigé : `optionsReady` signifie **« toutes les sources ont répondu »**, jamais « on a de quoi
+afficher ». C'est le sens que la garde de deep-link a toujours supposé. Test de non-régression dédié
+(`useDynamicFilterOptions.test.tsx` — « socle NON VIDE + recette en vol : PAS prêt »).
+
+### 9terdecies.4 Ce qui a changé côté config parent62 (30 déclarations)
+
+| Où | Avant | Après |
+|---|---|---|
+| 24 filtres `themes` | `"optionsKey": "themes"` | `"optionsFrom": {"list": ["themes","themesPoi","themesEvents"], "withDeclared": true}` |
+| 1 filtre `category` (`/temoignages`) | `"optionsKey": "categoriesParole"` | `"optionsFrom": {"list": ["categoriesParole"], "withDeclared": true}` |
+| 4 formulaires, champ `themes` | `"list": "themes"` | `"list": ["themes","themesPoi","themesEvents"]` |
+| 1 formulaire, champ `category` | `"list": "categoriesParole"` | `"list": ["categoriesParole"]` |
+| menu header « Thèmes » | `"list": "themes"` | `"list": ["themes","themesPoi","themesEvents"]` |
+
+`themes` est **conservé** dans les listes bien qu'il ne soit pas déclaré en base : c'est la clé que la
+section admin « Listes » propose déjà (whitelist `admin.tabs`), et le jour où un admin y ajoute une
+valeur, elle est créée en statique et rejoint automatiquement la fusion comme socle éditable.
+
+### 9terdecies.5 Trois conséquences à connaître
+
+1. **Les valeurs de test remontent maintenant dans l'UI.** `themesPoi` contient `ffff` et `koly`,
+   saisies librement pendant les essais : elles apparaissent désormais dans les filtres et les
+   formulaires, pour tout le monde. C'est le comportement attendu d'un `distinct` — mais ça veut dire
+   qu'un ménage en base (ou la modération des fiches porteuses) devient visible côté produit.
+2. ~~`categoriesParole` n'est plus éditable dans la section admin « Listes »~~ — **dépassé le 02/09 :
+   la section elle-même a été retirée** (§9quaterdecies). `costum.lists` est en lecture seule depuis
+   site-json.
+3. **`themes` étant absent de `costum.lists`**, le socle des filtres vient aujourd'hui **uniquement des
+   `options` de la config** (18 valeurs, libellés i18n). C'est justement ce que `withDeclared` rend
+   possible : sans lui, les filtres n'auraient plus affiché QUE les 25 valeurs de la base, en perdant
+   les libellés.
+
+### 9terdecies.6 Validation (gates)
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` | ✅ 0 erreur |
+| `lint` (suite complète) | ✅ 0 erreur, 21 warnings — tous préexistants |
+| `npx tsx scripts/validate-config.ts` (parent62 **et** institut-bleu) | ✅ 46/160 et 13/26 |
+| `audit:config` | ✅ `config.prod.parent62.json — RAS` |
+| `test:unit` suite complète | 🟡 **2925/2932** (6 skip) — **+11 tests** (`useDynamicFilterOptions.test.tsx`, nouveau) ; l'unique échec reste `tests/preflight/site-assets.test.ts`, **préexistant et sans rapport** (dossier vide non suivi `public/images/transiter`) |
+| `test:e2e` (`e2e/parent62.spec.ts`) | ✅ **8/8** — dont le test `/recherche` qui avait détecté la régression `optionsReady` |
+| Vérification backend réelle | ✅ cf. §9terdecies.1 (5 listes interrogées en direct) |
+
+Non commité à ce stade.
+
+---
+
+## 9quaterdecies. Impacts — retrait de la section admin « Listes » : `costum.lists` devient LECTURE SEULE (02/09)
+
+> Décision : depuis que les valeurs remontent d'elles-mêmes des recettes `distinct` (§9terdecies) et
+> que le socle se déclare en config (`optionsFrom.withDeclared` / `enum` du champ), l'édition manuelle
+> de `costum.lists` n'a plus d'objet. Elle était de toute façon devenue largement inopérante sur
+> parent62 : ses deux clés whitelistées étaient `themes` (**absente** de `costum.lists`) et
+> `categoriesParole` (**recette**, donc en lecture seule dans cette section).
+
+### 9quaterdecies.1 Ce qui a été supprimé
+
+| Supprimé | Rôle |
+|---|---|
+| `src/modules/admin/sections/AdminListsSection.tsx` | l'écran maître-détail d'édition |
+| `src/modules/admin/hooks/useCostumListsMutations.ts` + test | les 5 opérations d'écriture (`$push` / `$set` de tableau complet) |
+| `src/modules/admin/lib/costumListsEditing.ts` + test | la logique pure (validation, dédoublonnage, permutation) |
+| `registerAdminSection("lists", …)` + import (`AdminSectionRenderer.tsx`) | l'enregistrement du type de section |
+| bloc i18n `AdminLists` (fr + en, 23 clés chacun) | les libellés de l'écran |
+| onglet admin « Listes » de `config.prod.parent62.json` | le seul usage du parc (vérifié : aucune autre config ne déclare `{type:"lists"}`) |
+
+`SortableList` (`src/components/admin/SortableList.tsx`) est **conservé** : `AdminPanel` s'en sert aussi.
+
+### 9quaterdecies.2 La conséquence, en une phrase
+
+**`costum.lists` est désormais en lecture seule depuis site-json** — plus aucune écriture, ni
+automatique (`saveNewValue`, retiré en §9duodecies) ni manuelle. Ajouter une valeur qu'aucune fiche ne
+porte encore se fait donc :
+- en **config** (socle du champ ou du filtre : `enum` / `options` + `withDeclared`) — déploiement ;
+- ou dans le **costum côté backend** (déclaration `costum.lists`) — hors site-json.
+
+Pour parent62 c'est sans perte : les thèmes viennent des recettes `themesPoi`/`themesEvents`, et le
+socle de 18 valeurs avec ses libellés i18n vit déjà dans la config.
+
+### 9quaterdecies.3 Un gate à resynchroniser (piège connu de ce dépôt)
+
+Retirer l'onglet a fait échouer `tests/preflight/archetypes.test.ts` : l'exemple canonique
+`admin` de l'assistant config est un **snapshot** du bloc `admin` de `config.prod.parent62.json`.
+Resynchronisé par `npm run config:example -- admin --write` (le message d'erreur du gate donne la
+commande). À refaire à chaque modification du bloc `admin` de cette config.
+
+### 9quaterdecies.4 Validation (gates)
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` | ✅ 0 erreur |
+| `lint` (suite complète) | ✅ 0 erreur, 21 warnings — tous préexistants |
+| `npx tsx scripts/validate-config.ts config.prod.parent62.json` | ✅ **46 pages, 160 sections** |
+| `audit:config` | ✅ `config.prod.parent62.json — RAS` |
+| `test:unit` suite complète | 🟡 **2886/2893** (6 skip) — **−39 tests**, ceux des modules supprimés ; l'unique échec reste `tests/preflight/site-assets.test.ts`, **préexistant et sans rapport** (dossier vide non suivi `public/images/transiter`) |
+| `test:e2e` (`e2e/parent62.spec.ts`) | ✅ **8/8** |
+
+Les 5 fichiers supprimés sont sauvegardés hors dépôt le temps de la recette
+(`scratchpad/suppr-adminLists/`), et restent récupérables par `git`. Non commité à ce stade.
+
+---
+
+## 9quindecies. Consolidation du chantier « listes » — code mort, commentaires, doc moteur (03/09)
+
+> Passe de relecture de l'ensemble §9undecies → §9quaterdecies : ce que les suppressions successives
+> ont rendu inutile, et la doc **moteur** (`doc/`) mise au niveau — jusqu'ici seule la doc projet avait
+> suivi.
+
+### 9quindecies.1 Code devenu mort, retiré
+
+- **`mergeDeduped`** (`src/modules/search/lib/dropdownFilters.ts`) et ses 4 tests : plus aucun appelant
+  depuis que `resolveListSources` (`@/lib/listSources`) fait la même fusion — même règle d'égalité
+  (`normalizeFilterValue`), même « première graphie rencontrée gagne » — **et** unit en plus les
+  `variants`. Ses deux consommateurs (`ValueSelectField`, branche `optionsKey` des filtres) sont
+  passés au nouveau résolveur.
+- Rappel des suppressions précédentes du même chantier, pour mémoire : `growCostumLists` +
+  `selectNewValues` + `resolveGrowTarget` + `resolveCreatable` (§9duodecies), `AdminListsSection` +
+  `useCostumListsMutations` + `costumListsEditing` (§9quaterdecies).
+
+### 9quindecies.2 Commentaires réalignés
+
+Une dizaine de docstrings citaient encore, comme référence VIVANTE, du code désormais supprimé
+(`growCostumLists`, `selectNewValues`, la section admin « Listes », `mergeDeduped`) ou décrivaient un
+comportement changé (substitution au lieu de fusion). Toutes corrigées — un commentaire qui contredit
+le code est un bug, au même titre qu'une ligne fausse. Deux ajustements de fond :
+
+- **`ValueSelectField`** : deux paragraphes racontaient la même suppression sous deux angles. Réduits à
+  un seul, qui dit ce qui compte aujourd'hui (le champ n'écrit rien, `costum.lists` est en lecture
+  seule, une valeur inédite s'ajoute en config) plutôt que l'historique — que `git` conserve déjà.
+- **`useListSources`** : l'avertissement DEV « liste absente de `costum.lists` » tournait à **chaque
+  rendu de chaque champ**. Déplacé dans un `useEffect` clé sur les noms de listes : même service, sans
+  le bruit.
+
+### 9quindecies.3 Documentation moteur (`doc/`) mise à jour
+
+| Fichier | Ce qui a changé |
+|---|---|
+| `doc/07-module-search.md` | La section « Options DYNAMIQUES d'un filtre » devient « Options d'un filtre depuis `costum.lists` » : détection automatique de la forme, `list` en tableau, union des `variants`, `withDeclared`, `optionsKey` alias déprécié, et le sens exact d'`optionsReady` (avec le piège du socle non vide). |
+| `doc/05-schemas-sections.md` | La ligne `dropdownFilters` du tableau donne la forme réelle d'`optionsFrom` (`{list: string \| string[], costumSlug?, withDeclared?}`). |
+| `doc/30-module-admin.md` | Section `lists` remplacée par un encart « RETIRÉE » + conséquence lecture seule ; comptage des sections génériques corrigé (3 → 2) ; entrée de backlog obsolète remplacée. |
+
+Non touchés à dessein : `doc/28-module-formengine.md` et `doc/cartographie-forms-formalisme.md`
+mentionnent l'`optionsKey` **du moteur de formulaire** (`listsOptions[optionsKey ?? name]`, cf.
+`GenericForm`) — un mécanisme homonyme mais DISTINCT de celui des filtres, et inchangé par ce chantier.
+
+### 9quindecies.4 Validation (gates)
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` | ✅ 0 erreur |
+| `lint` (suite complète) | ✅ 0 erreur, 21 warnings — tous préexistants |
+| `validate-config` (parent62 **et** institut-bleu) | ✅ 46/160 et 13/26 |
+| `audit:config` | ✅ `config.prod.parent62.json — RAS` |
+| `test:unit` suite complète | 🟡 **2882/2889** (6 skip) — **−4** (tests de `mergeDeduped`) ; l'unique échec reste `tests/preflight/site-assets.test.ts`, **préexistant et sans rapport** (dossier vide non suivi `public/images/transiter`, qu'un `rmdir` réglerait — décision hors périmètre) |
+| `test:e2e` (`e2e/parent62.spec.ts`) | ✅ **8/8** |
+
+**Bilan du chantier (§9undecies → §9quindecies), 4 fichiers créés / 11 supprimés :** une seule
+mécanique de résolution des listes de valeurs (socle déclaré + N listes `costum.lists`, forme détectée
+automatiquement, fusion et union des `variants`), partagée par les filtres de page, les champs de
+formulaire et le menu du header ; `costum.lists` passé en lecture seule ; 30 déclarations parent62
+basculées. Non commité à ce stade.
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
@@ -1303,7 +1673,8 @@ les **paroles ne sont plus muettes** dans le moteur (§9bis.1).
 | **[06/08] « Professionnels » désormais dans le header** (dropdown « Publics ») — contredit la décision du 23/07 (« Parents / Professionnels hors menu ») ; si le nouveau nav est acté, l'assertion e2e correspondante est à réviser | Peterson / Thomas |
 | **[06/08] Assertion e2e d'opacité du header** (« mode sombre… », `bg-background/90`) écrite pour `transparent-scroll` — à réécrire pour la mécanique réelle de `stacked` (scrim interne, opacité jamais posée sur le `<nav>`) | Peterson |
 | **[06/08] `build`** jamais relancé depuis la refonte — à faire avant tout commit (`test:unit` — 2 227/2 229, seuls les 2 pré-existants restent —, `test:integration` et `e2e` ciblé ont été rejoués le 06/08, cf. §9quater.3) |
-| **[25/08] Convertir `costum.lists.themes` et `costum.lists.categoriesParole` en recette dynamique côté backend** — résoudrait la limite multi-utilisateur (§9septies.2) et rapprocherait parent62 du mécanisme déjà utilisé sur institut-bleu ; le champ `themes` est réparti sur 2 collections (`poi`/`events`), une recette `distinct` classique n'en couvre qu'une | Thomas / backend |
+| ~~**[25/08] Déclarer `themesPoi` / `themesEvents`**~~ — **CLOS le 02/09 : elles existaient déjà en base** (§9terdecies.1). Reste, si voulu : créer une liste STATIQUE `themes` via la section admin pour disposer d'un socle éditable sans redéploiement. _(libellé d'origine ci-dessous, conservé pour l'historique)_ | Thomas / backend |
+| **[25/08, révisé 02/09] Déclarer `themesPoi` / `themesEvents` dans `costum.lists`** — deux recettes `distinct` mono-collection (`poi`, `events`) de forme **déjà supportée**, à AJOUTER à côté de `costum.lists.themes` qui reste statique et éditable par l'admin. Remplace la demande initiale de *convertir* `themes` en recette, qui butait sur le multi-collections : le front sait désormais fusionner N listes (§9undecies), donc plus rien à changer côté backend. Ajout additif, retour arrière = supprimer les deux clés. Idem `categoriesParole` si le besoin se confirme (une seule collection, `poi`) | Thomas / backend |
 | **[25/08] `build`** jamais relancé depuis ce lot — commit `bcd90e6d` pushé, à recetter avant fusion dans `main` | Peterson |
-| **[25/08] Section admin « Listes » — valider empiriquement renommer/réordonner/supprimer une valeur** contre une vraie liste de parent62 (dev, pas la prod) avant de les considérer fiables — seul l'ajout est éprouvé à ce jour (§9octies.3) | Peterson |
-| **[25/08] Section admin « Listes » — `build`** jamais relancé depuis ce lot — commit `9c3f243f` sur `parents62`, **pushé**, à recetter avant fusion dans `main` | Peterson |
+| ~~**[25/08] Section admin « Listes » — valider renommer/réordonner/supprimer**~~ — **SANS OBJET depuis le 02/09 : la section a été retirée** (§9quaterdecies), `costum.lists` est en lecture seule depuis site-json | — |
+| ~~**[25/08] Section admin « Listes » — `build`**~~ — **SANS OBJET** : la section a été retirée le 02/09 (§9quaterdecies). Le commit `9c3f243f` reste dans l'historique de `parents62` | — |

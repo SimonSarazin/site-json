@@ -9,7 +9,6 @@ import DashboardSection from "./sections/DashboardSection";
 import MembersSection from "./sections/MembersSection";
 import PlaceholderSection from "./sections/PlaceholderSection";
 import AdminInvitationSection from "./sections/AdminInvitationSection";
-import AdminListsSection from "./sections/AdminListsSection";
 import AdminOwnershipMigrationSection from "./sections/AdminOwnershipMigrationSection";
 import { getAdminSection, registerAdminSection } from "./sections/registry";
 import { useAdminAccess } from "./hooks/useAdminAccess";
@@ -21,9 +20,6 @@ registerAdminSection("invitation", AdminInvitationSection);
 // Section « migration d'appropriation » (`{type:"ownershipMigration"}`) : reprise de la PROPRIÉTÉ
 // d'un lot de fiches d'un costum cédant vers ce site (endpoints TRANSFER_SOURCE_*, nés en miroir).
 registerAdminSection("ownershipMigration", AdminOwnershipMigrationSection);
-// Section « listes » (`{type:"lists"}`) : édition de `costum.lists` (ajout/renommage/réordre/
-// suppression de valeur + création de liste, pour les listes STATIQUES tableau uniquement).
-registerAdminSection("lists", AdminListsSection);
 
 /**
  * Mappe `section.type` → composant (jumeau de `ProfileSectionRenderer`).
