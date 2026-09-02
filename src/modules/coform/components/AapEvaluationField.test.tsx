@@ -53,6 +53,9 @@ function poser(over: Partial<Parameters<typeof AapEvaluationField>[0]> = {}) {
   );
 }
 
+// Second argument : les options `mutate` — c'est là que ces champs branchent
+// leur écho local (cf. `useEcrituresLocales`). L'assertion porte sur le PAYLOAD ;
+// figer l'arité ferait échouer le test pour une raison qui n'est pas la sienne.
 describe("AapEvaluationField", () => {
   beforeEach(() => {
     noteMutate.mockClear();
@@ -77,12 +80,15 @@ describe("AapEvaluationField", () => {
     poser();
     // 5 étoiles par critère, chacune valant 2 points (note sur 10).
     fireEvent.click(screen.getAllByRole("radio")[2]);
-    expect(noteMutate).toHaveBeenCalledWith({
-      subFormId: "aapStep3",
-      userId: "moi",
-      index: "0",
-      value: { label: "Budget", note: 6, coeff: 1 },
-    });
+    expect(noteMutate).toHaveBeenCalledWith(
+      {
+        subFormId: "aapStep3",
+        userId: "moi",
+        index: "0",
+        value: { label: "Budget", note: 6, coeff: 1 },
+      },
+      expect.objectContaining({ onSuccess: expect.any(Function) })
+    );
   });
 
   it("restitue la note déjà saisie par l'évaluateur", () => {
@@ -103,7 +109,8 @@ describe("AapEvaluationField", () => {
     const champs = screen.getAllByRole("spinbutton");
     fireEvent.blur(champs[0], { target: { value: "7.5" } });
     expect(noteMutate).toHaveBeenCalledWith(
-      expect.objectContaining({ index: "0", value: { label: "Budget", note: 7.5, coeff: 1 } })
+      expect.objectContaining({ index: "0", value: { label: "Budget", note: 7.5, coeff: 1 } }),
+      expect.anything()
     );
 
     noteMutate.mockClear();

@@ -15,12 +15,40 @@ export interface CoFormDraft {
   baseUpdatedAt: number | null;
 }
 
-type SaveDraftPayload = Omit<CoFormDraft, "version" | "timestamp" | "baseUpdatedAt">;
+type SaveDraftPayload = Omit<CoFormDraft, "version" | "timestamp" | "baseUpdatedAt"> & {
+  /**
+   * Lignée de péremption à CONSERVER, quand on réécrit un brouillon existant
+   * (reprise) plutôt que d'en produire un depuis la saisie courante.
+   *
+   * Sans elle, une reprise faite avant que `baseUpdatedAt` ne soit chargé —
+   * l'answer arrive en parallèle du formulaire — réécrirait le brouillon avec
+   * `null`. Or `computeDraftState` n'ose déclarer un brouillon obsolète que si
+   * `draft.baseUpdatedAt != null` : ce brouillon-là ne pourrait donc PLUS JAMAIS
+   * être détecté périmé, et se restaurerait un jour par-dessus une réponse
+   * modifiée entre-temps. Omise ⇒ valeur courante du hook, comme avant.
+   */
+  baseUpdatedAt?: number | null;
+};
 
 export interface UseCoFormDraftOptions {
   formId: string | null | undefined;
   userId: string | null | undefined;
   answerId?: string;
+  /**
+   * Périmètre RENDU, quand ce n'est pas le formulaire entier.
+   *
+   * Un même `(formId, userId, answerId)` peut être rendu de deux façons : le
+   * parcours complet, ou UNE étape extraite (`stepKey`) — c'est le cas du bouton
+   * « Déposer un commun », qui ouvre la seule étape de dépôt. Sans distinction,
+   * les deux partageraient la même entrée : un brouillon écrit sur une étape
+   * seule, restauré dans le parcours complet, remplacerait `stepsData` par les
+   * données de cette unique étape et placerait le wizard sur un index calculé
+   * pour un formulaire à une étape — l'utilisateur y lirait une perte de saisie.
+   *
+   * Omis ou vide ⇒ le formulaire entier, et la clé reste EXACTEMENT celle
+   * d'avant : les brouillons déjà en place continuent d'être retrouvés.
+   */
+  scope?: string | null;
   baseUpdatedAt?: number | null;
   disabled?: boolean;
 }
@@ -32,6 +60,14 @@ export interface UseCoFormDraftReturn {
   discardDraft: () => void;
   purgeDraft: () => void;
   acknowledgeStale: () => void;
+  /**
+   * « Ce brouillon vient d'être repris » — masque la bannière SANS rien effacer.
+   *
+   * À utiliser à la restauration, jamais `discardDraft` : reprendre un brouillon
+   * n'est pas le jeter. Le supprimer laissait l'utilisateur sans filet — s'il
+   * refermait juste après avoir repris, sa saisie était définitivement perdue.
+   */
+  acknowledgeRestored: () => void;
 }
 
 interface DraftSnapshot {
@@ -40,8 +76,17 @@ interface DraftSnapshot {
 }
 const EMPTY_SNAPSHOT: DraftSnapshot = { restorable: null, stale: null };
 
-function buildKey(formId: string, userId: string, answerId: string | undefined): string {
-  return `${KEY_PREFIX}:${formId}:${userId}:${answerId ?? "new"}`;
+function buildKey(
+  formId: string,
+  userId: string,
+  answerId: string | undefined,
+  scope?: string | null
+): string {
+  const base = `${KEY_PREFIX}:${formId}:${userId}:${answerId ?? "new"}`;
+  // Segment ajouté SEULEMENT s'il y a un périmètre : sans ça, on changerait la
+  // clé du formulaire entier et on rendrait orphelins les brouillons existants.
+  const p = (scope ?? "").trim();
+  return p === "" ? base : `${base}:${p}`;
 }
 
 function isPlainObject(v: unknown): v is Record<string, unknown> {
@@ -162,11 +207,12 @@ export function useCoFormDraft({
   formId,
   userId,
   answerId,
+  scope,
   baseUpdatedAt,
   disabled,
 }: UseCoFormDraftOptions): UseCoFormDraftReturn {
   const isActive = !disabled && !!formId && !!userId;
-  const key = isActive ? buildKey(formId!, userId!, answerId) : null;
+  const key = isActive ? buildKey(formId!, userId!, answerId, scope) : null;
   const normalizedBaseUpdatedAt = baseUpdatedAt ?? null;
 
   // Timestamp de début de session (= montage du hook). Utilisé pour FILTRER les
@@ -194,6 +240,28 @@ export function useCoFormDraft({
   // On le garde en state local ; combiné au snapshot pour produire la valeur finale.
   const [staleDismissed, setStaleDismissed] = useState(false);
   const staleDraftInfo = staleDismissed ? null : snapshot.stale;
+
+  // Idem pour la bannière « Brouillon trouvé » une fois le brouillon REPRIS :
+  // on la masque, mais l'entrée reste en place tant que la saisie n'a pas été
+  // soumise. Le filtre de session ne suffit pas ici — il ne joue qu'une fois le
+  // brouillon RÉÉCRIT (nouveau timestamp), donc au plus tôt après le debounce.
+  const [restoredDismissed, setRestoredDismissed] = useState(false);
+
+  // Les deux bannières sont masquées POUR UN MONTAGE ET UNE CLÉ donnés. Quand la
+  // clé change sans démontage — `answerId`/`scope` qui arrivent en async, passage
+  // à une autre réponse — le masquage d'avant ne veut plus rien dire et cacherait
+  // une bannière légitime.
+  //
+  // Ajusté PENDANT LE RENDU et non dans un effet : c'est le patron React pour
+  // « remettre un état à zéro quand une prop change ». Un effet provoquerait un
+  // rendu en cascade (la bannière s'afficherait une frame avant d'être masquée)
+  // et `react-hooks/set-state-in-effect` le refuse à juste titre.
+  const [cleObservee, setCleObservee] = useState(key);
+  if (key !== cleObservee) {
+    setCleObservee(key);
+    setStaleDismissed(false);
+    setRestoredDismissed(false);
+  }
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const keyRef = useRef<string | null>(key);
@@ -223,7 +291,10 @@ export function useCoFormDraft({
       version: 1,
       ...payload,
       timestamp: Date.now(),
-      baseUpdatedAt: baseUpdatedAtRef.current ?? null,
+      baseUpdatedAt:
+        payload.baseUpdatedAt !== undefined
+          ? payload.baseUpdatedAt
+          : (baseUpdatedAtRef.current ?? null),
     };
     try {
       window.localStorage.setItem(currentKey, JSON.stringify(draft));
@@ -290,10 +361,16 @@ export function useCoFormDraft({
   const purgeDraft = useCallback(() => {
     const currentKey = keyRef.current;
     if (currentKey) removeKey(currentKey);
-    // Purge aussi la clé "new" pour ce (formId, userId) si on vient de soumettre une
-    // création avec answerId existant : l'éventuel draft "new" laissé en route est obsolète.
+    // Purge aussi la clé "new" si on vient de soumettre une création avec answerId
+    // existant : l'éventuel brouillon "new" laissé en route est obsolète.
+    //
+    // ⚠️ DU MÊME PÉRIMÈTRE, pas tous. Sans `scope`, soumettre depuis une étape
+    // extraite effaçait le brouillon de création du PARCOURS COMPLET — la
+    // collision cross-périmètre que ce segment vient précisément d'interdire — et
+    // laissait au contraire traîner le sien, d'où une bannière « Brouillon trouvé »
+    // pointant sur un commun déjà déposé.
     if (formId && userId && answerId && answerId !== "new") {
-      removeKey(buildKey(formId, userId, undefined));
+      removeKey(buildKey(formId, userId, undefined, scope));
     }
     // Comme `discardDraft` : jeter AUSSI le payload en attente, sinon le flush
     // au démontage réécrirait après la soumission le brouillon qu'on purge.
@@ -303,19 +380,25 @@ export function useCoFormDraft({
     }
     pendingRef.current = null;
     setStaleDismissed(false);
+    setRestoredDismissed(false);
     notifyDraftsChanged();
-  }, [formId, userId, answerId]);
+  }, [formId, userId, answerId, scope]);
 
   const acknowledgeStale = useCallback(() => {
     setStaleDismissed(true);
   }, []);
 
+  const acknowledgeRestored = useCallback(() => {
+    setRestoredDismissed(true);
+  }, []);
+
   return {
-    restorableDraft: snapshot.restorable,
+    restorableDraft: restoredDismissed ? null : snapshot.restorable,
     staleDraftInfo,
     saveDraft,
     discardDraft,
     purgeDraft,
     acknowledgeStale,
+    acknowledgeRestored,
   };
 }

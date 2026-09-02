@@ -449,10 +449,23 @@ export default function AacCommunDetailPage() {
                 <CoFormModal
                     formId={formId}
                     open={isEditOpen}
-                    onOpenChange={setIsEditOpen}
+                    onOpenChange={(ouvert) => {
+                        setIsEditOpen(ouvert);
+                        // Les champs « écriture directe » de l'étape d'évaluation
+                        // (`choose`, `selection`…) enregistrent SANS soumettre le
+                        // formulaire : à la fermeture, la fiche peut être en retard
+                        // alors que rien n'a été soumis et que `onAfterSubmit` n'a
+                        // donc pas tiré. On relit ici, au bord de la page — le
+                        // formulaire n'a pas à piloter le rafraîchissement de ce qui
+                        // vit hors de lui.
+                        if (!ouvert) void answerQuery.refetch();
+                    }}
                     title={String(t("detail.edit.title"))}
                     answerId={answerId}
                     defaultValues={answer.answers}
+                    // Sans lui, un brouillon local plus ancien que la réponse
+                    // serveur se restaure sans avertir. Cf. `useCoFormDraft`.
+                    baseUpdatedAt={answer.updated ?? null}
                     hiddenStepKeys={hiddenStepsForEdit}
                     onAfterSubmit={handleEditSubmit}
                 />

@@ -83,6 +83,11 @@ interface DynamicCoFormProps {
   formId?: string;
   /** ID utilisateur connecté — clé de draft */
   userId?: string | null;
+  /**
+   * Périmètre rendu quand ce n'est pas le formulaire entier (`stepKey`) — entre
+   * dans la clé du brouillon. Cf. `useCoFormDraft`.
+   */
+  draftScope?: string | null;
   /** updatedAt serveur (édition) — pour détecter les drafts obsolètes */
   baseUpdatedAt?: number | null;
   /** Active la persistance du draft. Défaut : true. */
@@ -122,6 +127,7 @@ export function DynamicCoForm({
   restrictedFields,
   formId,
   userId,
+  draftScope,
   baseUpdatedAt,
   enableDraft = true,
   existingAnswerMeta,
@@ -175,11 +181,20 @@ export function DynamicCoForm({
   // `answerId` scope la clé par réponse (sinon "new") : sans lui, l'édition de
   // deux réponses du même formulaire partagerait le même slot de brouillon
   // (restauration croisée) et écraserait le brouillon de création.
-  const { restorableDraft, staleDraftInfo, saveDraft, discardDraft, purgeDraft, acknowledgeStale } =
+  const {
+    restorableDraft,
+    staleDraftInfo,
+    saveDraft,
+    discardDraft,
+    purgeDraft,
+    acknowledgeStale,
+    acknowledgeRestored,
+  } =
     useCoFormDraft({
       formId,
       userId,
       answerId,
+      scope: draftScope,
       baseUpdatedAt,
       disabled: !enableDraft || autoSubmitOnBlur,
     });
@@ -254,21 +269,49 @@ export function DynamicCoForm({
     purgeDraft();
   }, [addedOptionsMap, onSubmit, purgeDraft]);
 
+  /**
+   * Reprendre un brouillon n'est PAS le jeter.
+   *
+   * Cette fonction appelait `discardDraft()` en comptant sur l'auto-save pour
+   * réécrire aussitôt, `reset(…, { keepDirty: true })` étant censé garder ce
+   * dernier actif. Or `keepDirty` CONSERVE l'état courant : au montage il vaut
+   * `false`, et le seul geste de l'utilisateur ici est justement d'avoir cliqué
+   * « Reprendre ». L'auto-save restait donc bloqué sur `if (!isDirty) return`,
+   * et l'entrée venait d'être supprimée : ouvrir, reprendre, refermer sans rien
+   * toucher perdait définitivement la saisie. En modale — où fermer est le geste
+   * courant — le brouillon se détruisait donc au moment précis où il servait.
+   *
+   * On réécrit explicitement le contenu repris (avec un timestamp de cette
+   * session, ce qui suffit ensuite au filtre à masquer la bannière) et on se
+   * contente de masquer celle-ci tout de suite. Rien n'est effacé avant une
+   * soumission réussie (`purgeDraft`) ou un rejet explicite (`discardDraft`).
+   */
   const handleRestoreDraft = useCallback(() => {
     if (!restorableDraft) return;
     const restored = restorableDraft.data[subFormId] as Record<string, unknown> | undefined;
     if (restored) {
-      // `keepDirty: true` : sans ça, un restore effacerait le draft sans le
-      // ré-écrire (l'auto-save est gated par isDirty), et un refresh juste
-      // après perdrait les données restaurées.
+      // `keepDirty` reste utile pour le cas INVERSE : si l'utilisateur avait déjà
+      // saisi avant de reprendre, `reset` remettrait le formulaire à propre et
+      // couperait l'auto-save. On ne s'appuie simplement plus dessus pour la
+      // réécriture, qui est explicite juste en dessous.
       reset({ ...defaultValues, ...restored } as FormValues, { keepDirty: true });
     }
     const restoredOptions = restorableDraft.addedOptions?.[subFormId];
     if (restoredOptions && Object.keys(restoredOptions).length > 0) {
       setAddedOptionsMap(restoredOptions);
     }
-    discardDraft();
-  }, [restorableDraft, subFormId, defaultValues, discardDraft, reset]);
+    saveDraft({
+      data: restorableDraft.data,
+      currentStepIndex: restorableDraft.currentStepIndex,
+      completedSteps: restorableDraft.completedSteps,
+      addedOptions: restorableDraft.addedOptions,
+      // On réécrit un brouillon EXISTANT : il garde sa lignée de péremption.
+      // La prendre du hook la mettrait à `null` si l'answer n'est pas encore
+      // chargée, et ce brouillon ne pourrait plus jamais être vu obsolète.
+      baseUpdatedAt: restorableDraft.baseUpdatedAt,
+    });
+    acknowledgeRestored();
+  }, [restorableDraft, subFormId, defaultValues, saveDraft, acknowledgeRestored, reset]);
 
   const handleInvalid = useCallback((invalidErrors: FieldErrors) => {
     setHasAttemptedSubmit(true);

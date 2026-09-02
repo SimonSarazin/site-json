@@ -38,6 +38,14 @@ export interface CoFormModalProps {
   answerId?: string;
   /** Valeurs par défaut pour pré-remplir (mode édition) */
   defaultValues?: AllStepsData;
+  /**
+   * `updated` de la réponse éditée. À TRANSMETTRE dès qu'on passe `answerId` :
+   * c'est la seule chose qui permet à `useCoFormDraft` de voir qu'un brouillon
+   * local est plus vieux que la version serveur. Sans lui, un brouillon
+   * d'avant-hier se restaure par-dessus une réponse modifiée entre-temps, sans
+   * le moindre avertissement.
+   */
+  baseUpdatedAt?: number | null;
   /** Mode lecture seule */
   readOnly?: boolean;
   /** Callback exécuté après soumission réussie (avant fermeture automatique) */
@@ -84,6 +92,7 @@ export function CoFormModal({
   inputKey,
   answerId,
   defaultValues,
+  baseUpdatedAt,
   readOnly = false,
   onAfterSubmit,
   closeOnSubmit = !inputKey,
@@ -184,6 +193,7 @@ export function CoFormModal({
               inputKey={inputKey}
               answerId={answerId}
               defaultValues={defaultValues}
+              baseUpdatedAt={baseUpdatedAt}
               readOnly={readOnly}
               onAfterSubmit={handleAfterSubmit}
               onDirtyChange={setIsDirty}

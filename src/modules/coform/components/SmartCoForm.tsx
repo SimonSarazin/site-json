@@ -2,12 +2,11 @@ import { useMemo, type ReactNode } from "react";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { useCoFormQuery, useCoFormFinalMutation } from "../hooks/useCoFormQuery";
-import { useCoFormCatalogs } from "../hooks/useCoFormCatalogs";
 import { DynamicCoForm } from "./DynamicCoForm";
 import { MultiStepCoForm } from "./MultiStepCoForm";
 import { CoFormReadOnly } from "./CoFormReadOnly";
-import { CommonTableCatalogsProvider } from "../contexts/CommonTableCatalogsProvider";
-import { parseCoFormFields, omitHiddenSteps, normalizeAnswerData, denormalizeAnswerData, extractFinderLinks, getOriginalFieldKey } from "../utils/formParser";
+import { CommonTableCatalogsLoader } from "../contexts/CommonTableCatalogsLoader";
+import { parseCoFormFields, omitHiddenSteps, normalizeAnswerData, denormalizeAnswerData, extractFinderLinks, collectCommonTableInputKeys } from "../utils/formParser";
 import type { CoFormData, SubmitMode, AllStepsData, SubFormData, AddedOptionsMap, ExistingAnswerMeta } from "../types";
 import type { FinderLinksMap } from "../utils/formParser";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -310,29 +309,19 @@ export function SmartCoForm({
 
   // Identifie les inputs commonTable du form pour fetcher leurs catalogues
   // collaboratifs en un seul appel batch. Si le form n'en contient aucun,
-  // `inputKeys` est vide → le hook ne fait aucun appel réseau (enabled=false).
-  const commonTableInputKeys = useMemo(() => {
-    const keys: string[] = [];
-    for (const sf of subFormsFields) {
-      for (const f of sf.fields) {
-        if (f.componentType === "commonTable") {
-          keys.push(getOriginalFieldKey(f));
-        }
-      }
-    }
-    return keys;
-  }, [subFormsFields]);
+  // `inputKeys` est vide → le loader ne fait aucun appel réseau.
+  const commonTableInputKeys = useMemo(
+    () => collectCommonTableInputKeys(subFormsFields),
+    [subFormsFields]
+  );
 
-  const { catalogs: commonTableCatalogs } = useCoFormCatalogs({
-    formId: formId ?? "",
-    inputKeys: commonTableInputKeys,
-    enabled: !!formId && commonTableInputKeys.length > 0,
-  });
-
-  // Wrapper qui expose les catalogues commonTable aux fields. Le provider
-  // accepte un objet vide → si pas de commonTable, c'est un no-op pur.
+  // Wrapper qui expose les catalogues commonTable aux fields. Le loader rend un
+  // provider vide s'il n'y a pas de commonTable → no-op pur. Il est PARTAGÉ avec
+  // les surfaces qui montent `CoFormReadOnly` sans passer par ici.
   const withCatalogs = (node: ReactNode) => (
-    <CommonTableCatalogsProvider catalogs={commonTableCatalogs}>{node}</CommonTableCatalogsProvider>
+    <CommonTableCatalogsLoader formId={formId} inputKeys={commonTableInputKeys}>
+      {node}
+    </CommonTableCatalogsLoader>
   );
 
   // Normaliser les defaultValues pour les champs stockés à la racine (comme evaluation)
@@ -426,13 +415,26 @@ export function SmartCoForm({
   // l'annulait au lieu de la vider, ce qui rendait le brouillon inexploitable
   // là où le démontage est le cas nominal. Corrigé dans `useCoFormDraft`
   // (flush au démontage + à la sortie d'onglet).
-  const enableDraft =
-    !readOnly &&
-    !isStandalone &&
-    !isInputStandalone &&
-    !!formId &&
-    !!me?.id;
+  // ACTIVÉE AUSSI SUR UNE ÉTAPE SEULE. Elle en était exclue (`!isStandalone`)
+  // parce que la clé de brouillon ignorait le périmètre : un brouillon écrit sur
+  // une étape extraite, restauré dans le parcours complet, aurait remplacé
+  // `stepsData` par cette seule étape. Or c'est exactement la forme du dépôt d'un
+  // commun — bouton « Déposer », une étape, une modale — donc le cas où fermer
+  // par erreur coûte le plus cher. La clé porte désormais le périmètre
+  // (`draftScope`, cf. `useCoFormDraft`), la restauration croisée est impossible,
+  // et l'exclusion n'a plus lieu d'être.
+  //
+  // `isInputStandalone` reste exclu : ce mode soumet au blur
+  // (`autoSubmitOnBlur`), un brouillon n'y a rien à sauver.
+  const enableDraft = !readOnly && !isInputStandalone && !!formId && !!me?.id;
   const draftUserId = currentUserId;
+  // Vide pour le parcours complet — la clé reste alors celle d'avant, et les
+  // brouillons déjà enregistrés continuent d'être retrouvés.
+  // `resolvedStepKey` et non `stepKey` brut : c'est lui qui construit
+  // `standaloneFormData`, donc lui qui décrit ce qui est réellement rendu. Les deux
+  // ne divergent aujourd'hui que sur la branche `inputKey` seul, où le brouillon
+  // est de toute façon coupé — s'appuyer là-dessus serait un accident.
+  const draftScope = isStandalone ? (resolvedStepKey ?? null) : null;
 
   // Mode lecture seule : utiliser CoFormReadOnly
   if (readOnly) {
@@ -473,6 +475,7 @@ export function SmartCoForm({
         answerId={answerId}
         initialStepKey={initialStepKey}
         formId={formId}
+        draftScope={draftScope}
         userId={draftUserId}
         baseUpdatedAt={baseUpdatedAt}
         enableDraft={enableDraft}
@@ -503,6 +506,7 @@ export function SmartCoForm({
       lockedFields={lockedFields}
       restrictedFields={restrictedFields}
       formId={formId}
+      draftScope={draftScope}
       userId={draftUserId}
       baseUpdatedAt={baseUpdatedAt}
       enableDraft={enableDraft}

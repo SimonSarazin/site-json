@@ -62,9 +62,12 @@ function poser(over: Partial<Parameters<typeof ChooseProposalField>[0]> = {}) {
   );
 }
 
+// Second argument : les options `mutate` — c'est là que ces champs branchent
+// leur écho local (cf. `useEcrituresLocales`). L'assertion porte sur le PAYLOAD ;
+// figer l'arité ferait échouer le test pour une raison qui n'est pas la sienne.
 describe("ChooseProposalField", () => {
   beforeEach(() => {
-    saveMutate.mockClear();
+    saveMutate.mockReset();
     ctxMock.mockReturnValue({
       api: {},
       entity: { name: "Costum A" },
@@ -109,18 +112,70 @@ describe("ChooseProposalField", () => {
     });
     poser();
     fireEvent.click(screen.getAllByRole("radio")[0]); // « Oui »
-    expect(saveMutate).toHaveBeenCalledWith({
-      subFormId: "aapStep2",
+    expect(saveMutate).toHaveBeenCalledWith(
+      {
+        subFormId: "aapStep2",
+        contextId: "ctxB",
+        entry: { value: "selected", type: "organizations", name: "Costum B" },
+      },
+      expect.objectContaining({ onSuccess: expect.any(Function) })
+    );
+  });
+
+  /**
+   * Régression : le champ affichait encore l'ANCIEN choix après un
+   * enregistrement réussi.
+   *
+   * Sa valeur vient de l'instantané du formulaire — `stepState.stepsData` du
+   * wizard, initialisé une seule fois — qui n'est jamais resynchronisé. Le clic
+   * partait bien au serveur et le toast annonçait le succès, mais le bouton ne
+   * bougeait pas : « j'ai cliqué, rien ne change ».
+   *
+   * Le test rejoue la vraie séquence — mutation qui réussit, puis lecture de
+   * l'affichage — et laisse délibérément `value` sur son état d'origine : c'est
+   * exactement ce que le formulaire continue de fournir.
+   */
+  it("affiche le nouveau choix une fois l'enregistrement RÉUSSI", () => {
+    ctxMock.mockReturnValue({
+      api: {},
+      entity: { name: "Costum B" },
       contextId: "ctxB",
-      entry: { value: "selected", type: "organizations", name: "Costum B" },
+      contextType: "organizations",
     });
+    // Le serveur répond OK : on déclenche le `onSuccess` que le champ a branché.
+    saveMutate.mockImplementation((vars, opts) => opts?.onSuccess?.(undefined, vars));
+
+    poser();
+    const [oui, non] = screen.getAllByRole("radio");
+    expect(oui.getAttribute("aria-checked")).toBe("false");
+
+    fireEvent.click(oui);
+    expect(oui.getAttribute("aria-checked")).toBe("true");
+    expect(non.getAttribute("aria-checked")).toBe("false");
+  });
+
+  it("un enregistrement en ÉCHEC laisse le choix réel affiché", () => {
+    ctxMock.mockReturnValue({
+      api: {},
+      entity: { name: "Costum B" },
+      contextId: "ctxB",
+      contextType: "organizations",
+    });
+    // Le serveur refuse : `onSuccess` ne tire pas. Le bouton ne doit pas mentir.
+    saveMutate.mockImplementation(() => {});
+
+    poser();
+    const [oui] = screen.getAllByRole("radio");
+    fireEvent.click(oui);
+    expect(oui.getAttribute("aria-checked")).toBe("false");
   });
 
   it("retirer le choix écrit `notselected`, ne supprime pas la clé", () => {
     poser();
     fireEvent.click(screen.getAllByRole("radio")[1]); // « Non »
     expect(saveMutate).toHaveBeenCalledWith(
-      expect.objectContaining({ entry: expect.objectContaining({ value: "notselected" }) })
+      expect.objectContaining({ entry: expect.objectContaining({ value: "notselected" }) }),
+      expect.anything()
     );
   });
 

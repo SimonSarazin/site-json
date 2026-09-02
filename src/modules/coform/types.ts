@@ -629,7 +629,23 @@ export interface CoFormParams {
 }
 
 export interface CoFormData {
-  _id: { $id: string };
+  /**
+   * ⚠️ **Ne pas s'en servir pour identifier le formulaire — utiliser `id`.**
+   *
+   * Le backend sérialise le `MongoId` legacy en `{ "_str": "<24hex>" }`, PAS en
+   * `{ "$id": … }` (mesuré sur `Form.get` pour les formulaires `677e7e38…` et
+   * `6525865c…`). Le type l'a longtemps déclaré `{ $id: string }` et les fixtures
+   * de test reproduisaient ce mensonge : quatre champs de `MultiStepCoForm` lisaient
+   * `_id.$id`, recevaient `undefined`, et échouaient à l'enregistrement sur
+   * « errors.formIdMissing » — vert au typecheck comme aux tests.
+   */
+  _id: { _str: string };
+  /**
+   * Identifiant à utiliser. ⚠️ Il ne vient PAS de la base — les 196 formulaires
+   * `aap` n'ont aucun champ `id` — mais du SDK, qui y réinjecte l'identifiant
+   * demandé. C'est donc la source fiable côté client, et celle que consomment déjà
+   * `CommonTableField` et `UploaderField`.
+   */
   id: string;
   name?: string;
   parent?: CoFormParent | null;

@@ -166,6 +166,12 @@
           "fr": "Les communs"
         },
         "path": "/aac/communs"
+      },
+      {
+        "label": {
+          "fr": "Besoins et solutions"
+        },
+        "path": "/usages"
       }
     ],
     "utilities": {
@@ -294,6 +300,55 @@
             "pageSize": 12,
             "className": "max-w-7xl mx-auto px-6 pb-20",
             "variant": "full"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/usages",
+      "title": {
+        "fr": "Besoins et solutions"
+      },
+      "seo": {
+        "title": {
+          "fr": "Besoins et solutions — Fédération des CAE"
+        },
+        "description": {
+          "fr": "Le catalogue des besoins des coopératives d'activité et d'emploi et des solutions qu'elles utilisent : recherche par outil, filtres par catégorie et par besoin."
+        }
+      },
+      "sections": [
+        {
+          "type": "toolsCatalog",
+          "id": "section-besoins-solutions",
+          "props": {
+            "formId": "6525865cdeaf281bbc7280e9",
+            "step": "communsDeCaes1696958044_0",
+            "finderPath": "answers.communsDeCaes1696958044_0.findercommunsDeCaes1696958044_0lnklp69hi0yszjihhe8",
+            "title": {
+              "fr": "Catalogue des besoins et solutions utilisées par les CAE"
+            },
+            "description": {
+              "fr": "Les outils que les coopératives d'activité et d'emploi utilisent au quotidien, classés par besoin. Chaque solution indique qui l'emploie et, quand elle en est un, le commun auquel elle se rattache."
+            },
+            "searchPlaceholder": {
+              "fr": "Rechercher un outil…"
+            },
+            "showSearch": true,
+            "showResultCount": true,
+            "showCategoryFilter": true,
+            "showUsageFilter": true,
+            "showOpenSourceToggle": true,
+            "defaultView": "grid",
+            "showCommunInfo": true,
+            "communFormId": "677e7e389058e31575550ac8",
+            "showAnswerButton": true,
+            "answerButtonLabel": {
+              "fr": "Répondez au questionnaire"
+            },
+            "enableEnrichmentEditing": true,
+            "communUrlTemplate": "/aac/commun/{communId}",
+            "width": "container"
           }
         }
       ]

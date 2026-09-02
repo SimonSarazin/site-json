@@ -2,12 +2,14 @@ import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useCocolightOptional } from "@/hooks/useCocolight";
+import { useEcrituresLocales } from "../hooks/useEcrituresLocales";
 import { useSaveChooseProposal } from "../actions/mutations/selection";
 import {
   isSelectedIn,
   getOtherSelections,
   getStoredContextName,
   buildChooseEntry,
+  SELECTED,
   type ChooseProposalValue,
 } from "../utils/chooseProposal";
 import type { FormFieldMapping } from "../types";
@@ -48,6 +50,9 @@ export function ChooseProposalField({
     formId: formId ?? "",
     answerId,
   });
+  // Le formulaire ne resynchronise pas son instantané : sans ça, le bouton reste
+  // sur l'ancien choix alors que l'enregistrement a réussi. Cf. `useEcrituresLocales`.
+  const echo = useEcrituresLocales<boolean>();
 
   const contextId = cocolight?.contextId ?? null;
   const entite = cocolight?.entity as { name?: string } | null | undefined;
@@ -59,21 +64,26 @@ export function ChooseProposalField({
   if (!answerId || !contextId) return null;
 
   const disabled = Boolean(readOnly);
-  const selectionne = isSelectedIn(value, contextId);
+  const selectionne = echo.lire(contextId, isSelectedIn(value, contextId));
   const autres = getOtherSelections(value, contextId);
   const nomContexte =
     entite?.name ?? getStoredContextName(value, contextId) ?? null;
 
   const choisir = (selected: boolean) => {
     if (disabled || selected === selectionne) return;
-    save.mutate({
-      subFormId,
-      contextId,
-      entry: buildChooseEntry(
-        { id: contextId, type: cocolight?.contextType ?? null, name: nomContexte },
-        selected
-      ),
-    });
+    save.mutate(
+      {
+        subFormId,
+        contextId,
+        entry: buildChooseEntry(
+          { id: contextId, type: cocolight?.contextType ?? null, name: nomContexte },
+          selected
+        ),
+      },
+      // Après le serveur, jamais avant : un échec doit laisser le bouton sur la
+      // valeur réelle, pas sur celle qu'on espérait.
+      { onSuccess: (_d, vars) => echo.noter(vars.contextId, vars.entry.value === SELECTED) }
+    );
   };
 
   return (

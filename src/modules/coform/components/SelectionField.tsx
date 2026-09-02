@@ -6,6 +6,7 @@ import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useCocolightOptional } from "@/hooks/useCocolight";
 import { useSaveSelectionNote, useSaveAdmissibility } from "../actions/mutations/selection";
+import { useEcrituresLocales } from "../hooks/useEcrituresLocales";
 import {
   parseSelectionConfig,
   computeSelectionMeans,
@@ -125,6 +126,12 @@ export function SelectionField({
     formId: formId ?? "",
     answerId,
   });
+  // Le formulaire ne resynchronise pas son instantané : sans ça, une note posée
+  // ou un avis coché restent affichés à leur valeur d'avant, alors même que le
+  // toast annonce l'enregistrement. Cf. `useEcrituresLocales`.
+  // Une mémoire PAR CRITÈRE : le jury en note plusieurs à la suite.
+  const echoNotes = useEcrituresLocales<unknown>();
+  const echoAvis = useEcrituresLocales<unknown>();
 
   // Une seule passe pour les dérivations liées (config + moyennes).
   const { parsed, means } = useMemo(() => {
@@ -140,12 +147,19 @@ export function SelectionField({
 
   const disabled = Boolean(readOnly) || !currentUserId;
   const mesNotes = (currentUserId && value?.[currentUserId]) || {};
-  const monAvis = currentUserId ? admissibility?.[currentUserId] : undefined;
+  const monAvis = echoAvis.lire(
+    "avis",
+    currentUserId ? admissibility?.[currentUserId] : undefined
+  );
 
   const noter = (critere: SelectionCriterion, note: number) => {
     if (disabled || !currentUserId) return;
     if (note < 0 || note > parsed.noteMax) return;
-    saveNote.mutate({ subFormId, userId: currentUserId, fieldKey: critere.fieldKey, note });
+    saveNote.mutate(
+      { subFormId, userId: currentUserId, fieldKey: critere.fieldKey, note },
+      // Après le serveur, jamais avant : un échec doit laisser la note réelle.
+      { onSuccess: (_d, vars) => echoNotes.noter(vars.fieldKey, vars.note) }
+    );
   };
 
   const formatMean = (m: number | null) =>
@@ -182,7 +196,7 @@ export function SelectionField({
             </thead>
             <tbody>
               {parsed.criteria.map((critere) => {
-                const note = toNote(mesNotes[critere.fieldKey]);
+                const note = toNote(echoNotes.lire(critere.fieldKey, mesNotes[critere.fieldKey]));
                 const valeur = critere.isFree
                   ? ""
                   : formatCriterionValue(critere.fieldKey, depositAnswers?.[critere.fieldKey]);
@@ -280,7 +294,10 @@ export function SelectionField({
                 aria-checked={monAvis === v}
                 onClick={() =>
                   currentUserId &&
-                  saveAdmissibility.mutate({ subFormId, userId: currentUserId, value: v })
+                  saveAdmissibility.mutate(
+                    { subFormId, userId: currentUserId, value: v },
+                    { onSuccess: (_d, vars) => echoAvis.noter("avis", vars.value) }
+                  )
                 }
                 className={cn(
                   "px-4 py-1.5 rounded-md border text-sm font-medium transition-colors cursor-pointer",

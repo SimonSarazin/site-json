@@ -13,6 +13,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { classifyHref } from "@/lib/linkKind";
+import NavLink from "@/components/layout/NavLink";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useT } from "@/hooks/useT";
 import { getNoteAppearance } from "@/modules/coform/utils/commonTableNote";
@@ -21,6 +23,7 @@ import { SectionHeader } from "./SectionHeader";
 import { ToolImage } from "./ToolImage";
 import { CommunInfoSection } from "./CommunInfoSection";
 import { ToolEditDialog } from "./ToolEditDialog";
+import { normalizeToolHref } from "../utils/toolHref";
 
 /** Emoji de satisfaction (map partagée coform, cf. CommonTableContributorsDialog). */
 const HAPPINESS_EMOJI: Record<string, string> = {
@@ -154,6 +157,16 @@ export function ToolDetailDialog({
   // vrai en permanence. On traite alors la liste comme vide au lieu d'un spinner bloqué.
   const hasCriteria = tool.criteriaIds.length > 0;
 
+  // Le lien de l'outil peut désigner la fiche du commun SUR CE SITE
+  // (`/aac/commun/<id>`) : l'ouvrir dans un nouvel onglet rejouerait tout le
+  // démarrage de l'app pour une page qu'un `<Link>` affiche instantanément. D'où
+  // `NavLink`, qui consomme le contrat 4 voies partagé du parc (`classifyHref`).
+  // `normalizeToolHref` rend d'abord son schéma à un lien nu — cf. sa doc.
+  const lienOutil = normalizeToolHref(tool.url);
+  // Normalisé et PAS `tool.url` : une valeur qui ne tient que des espaces afficherait
+  // sinon un libellé « Voir le lien » sur un `<span>` que rien ne rend cliquable.
+  const lienOutilExterne = classifyHref(lienOutil) === "external";
+
   return (
     <>
     <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
@@ -182,16 +195,14 @@ export function ToolDetailDialog({
                 <p className="text-lg font-bold text-foreground">{tool.title}</p>
                 <p className="text-sm text-muted-foreground">
                   {t("detail.toolLink")}:{" "}
-                  {tool.url ? (
-                    <a
-                      href={tool.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                  {lienOutil ? (
+                    <NavLink
+                      to={lienOutil}
                       className="inline-flex items-center gap-0.5 text-primary hover:underline"
                     >
                       {t("openLink")}
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
+                      {lienOutilExterne && <ExternalLink className="h-3 w-3" />}
+                    </NavLink>
                   ) : (
                     <span>{t("detail.noLink")}</span>
                   )}

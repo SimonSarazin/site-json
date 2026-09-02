@@ -6,6 +6,7 @@ import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useCocolightOptional } from "@/hooks/useCocolight";
 import { useSaveAapEvaluationNote } from "../actions/mutations/selection";
+import { useEcrituresLocales } from "../hooks/useEcrituresLocales";
 import {
   parseAapEvaluationConfig,
   buildCriterionValue,
@@ -106,7 +107,16 @@ export function AapEvaluationField({
     answerId,
   });
 
-  const parsed = parseAapEvaluationConfig(config, currentUserId ? value?.[currentUserId] : null);
+  // Le formulaire ne resynchronise pas son instantané : sans ça, une note posée
+  // reste affichée à sa valeur d'avant. Une mémoire PAR CRITÈRE — l'évaluateur en
+  // note plusieurs à la suite. Cf. `useEcrituresLocales`.
+  const echo = useEcrituresLocales<number>();
+
+  const parsedBrut = parseAapEvaluationConfig(config, currentUserId ? value?.[currentUserId] : null);
+  const parsed = {
+    ...parsedBrut,
+    criteria: parsedBrut.criteria.map((c) => ({ ...c, note: echo.lire(c.index, c.note) })),
+  };
 
   // Même raison que ses deux cousins : l'écriture cible un document existant.
   if (!answerId) return null;
@@ -115,12 +125,16 @@ export function AapEvaluationField({
 
   const noter = (critere: AapEvaluationCriterion, note: number) => {
     if (disabled || !currentUserId || !isNoteValid(note)) return;
-    saveNote.mutate({
-      subFormId,
-      userId: currentUserId,
-      index: critere.index,
-      value: buildCriterionValue(critere, note),
-    });
+    saveNote.mutate(
+      {
+        subFormId,
+        userId: currentUserId,
+        index: critere.index,
+        value: buildCriterionValue(critere, note),
+      },
+      // Après le serveur, jamais avant : un échec doit laisser la note réelle.
+      { onSuccess: (_d, vars) => echo.noter(vars.index, vars.value.note) }
+    );
   };
 
   return (

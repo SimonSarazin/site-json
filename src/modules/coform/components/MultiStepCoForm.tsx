@@ -80,6 +80,8 @@ interface MultiStepCoFormProps {
   restrictedFields?: string[];
   /** ID du formulaire — clé de draft localStorage. */
   formId?: string;
+  /** Périmètre du brouillon quand une seule étape est rendue. Cf. `useCoFormDraft`. */
+  draftScope?: string | null;
   /** ID utilisateur connecté — clé de draft localStorage. */
   userId?: string | null;
   /** updatedAt serveur (édition) — pour détecter les drafts obsolètes. */
@@ -122,6 +124,7 @@ export function MultiStepCoForm({
   lockedFields,
   restrictedFields,
   formId,
+  draftScope,
   userId,
   baseUpdatedAt,
   enableDraft = true,
@@ -138,6 +141,7 @@ export function MultiStepCoForm({
       answerId={answerId}
       initialStepKey={initialStepKey}
       formId={formId}
+      draftScope={draftScope}
       userId={userId}
       baseUpdatedAt={baseUpdatedAt}
       enableDraft={enableDraft}
@@ -713,7 +717,7 @@ function MultiStepCoFormContent({
                       key={field.name}
                       field={field}
                       subFormId={fields.subFormId}
-                      formId={coform.formData?._id?.$id ?? null}
+                      formId={formId}
                       config={coform.formData?.evaluationCriteria as RawAapEvaluationConfig | undefined}
                       value={brutEval.evaluation as AapEvaluationValue | undefined}
                       answerId={coform.answerId}
@@ -730,7 +734,7 @@ function MultiStepCoFormContent({
                       key={field.name}
                       field={field}
                       subFormId={fields.subFormId}
-                      formId={coform.formData?._id?.$id ?? null}
+                      formId={formId}
                       value={brutChoose.choose as ChooseProposalValue | undefined}
                       answerId={coform.answerId}
                       readOnly={isLocked}
@@ -746,7 +750,7 @@ function MultiStepCoFormContent({
                       key={field.name}
                       field={field}
                       subFormId={fields.subFormId}
-                      formId={coform.formData?._id?.$id ?? null}
+                      formId={formId}
                       value={brutVote.pourContre as PourContreValue | undefined}
                       inputConfig={undefined}
                       answerId={coform.answerId}
@@ -770,7 +774,7 @@ function MultiStepCoFormContent({
                       key={field.name}
                       field={field}
                       subFormId={fields.subFormId}
-                      formId={coform.formData?._id?.$id ?? null}
+                      formId={formId}
                       config={
                         coform.formData?.params?.configSelectionCriteria as
                           | RawSelectionConfig
