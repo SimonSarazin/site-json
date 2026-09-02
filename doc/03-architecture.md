@@ -952,7 +952,7 @@ ErrorBoundary (fallback générique)
 
 **Composants optionnels** : `FloatingQRCode`, `FloatingActionButton`, `DiscourseGlobalModal` et `AdminPanel` sont tous chargés via `lazy()` de vite-preload. `AdminPanel` est défini à `null` en production (`import.meta.env.DEV ? lazy(...) : null`), donc exclu du bundle prod.
 
-**`AuthModalProvider`** (`src/modules/auth/context/AuthModalProvider.tsx`) — centralise le déclenchement du modal d'authentification. Enveloppé par `CommandPaletteProvider` et enveloppe lui-même l'`<Outlet />` et tous les composants globaux, ce qui permet à n'importe quel composant de l'arbre (y compris les headers) d'ouvrir le modal sans gérer d'état local. Voir [doc/23-module-auth.md](doc/23-module-auth.md) pour les détails.
+**`AuthModalProvider`** (`src/modules/auth/context/AuthModalProvider.tsx`) — centralise le déclenchement du modal d'authentification. Enveloppé par `CommandPaletteProvider` et enveloppe lui-même l'`<Outlet />` et tous les composants globaux, ce qui permet à n'importe quel composant de l'arbre (y compris les headers) d'ouvrir le modal sans gérer d'état local. Voir [doc/23-module-auth.md](23-module-auth.md) pour les détails.
 
 ---
 
@@ -1088,7 +1088,7 @@ Plusieurs primitives présentationnelles factorisent des patterns auparavant rec
 
 L'affichage du bouton de connexion / menu utilisateur connecté dans les headers est délégué au composant `<AuthMenu>` exporté par le module auth (`src/modules/auth`). Il remplace l'ancien pattern `ClientOnly` + `useCocolight` + `AuthModalLazy` que chaque header gérait en local.
 
-`<AuthMenu>` s'appuie sur `AuthModalProvider` (monté dans `SiteShell`) pour ouvrir le modal sans état local. Voir [doc/23-module-auth.md](doc/23-module-auth.md) pour les props disponibles (`layout`, `density`, `showName`, `loginVariant`, `loginLabel`, `onAction`, etc.).
+`<AuthMenu>` s'appuie sur `AuthModalProvider` (monté dans `SiteShell`) pour ouvrir le modal sans état local. Voir [doc/23-module-auth.md](23-module-auth.md) pour les props disponibles (`layout`, `density`, `showName`, `loginVariant`, `loginLabel`, `onAction`, etc.).
 
 ---
 

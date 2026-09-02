@@ -1411,7 +1411,6 @@ const GridLayoutSectionPropsSchema = z.object({
   className: z.string().optional(),
   leftWrapperClass: z.string().optional(),
   rightWrapperClass: z.string().optional(),
-  fixedHeight: z.string().optional(),
 });
 
 const GridLayoutSectionSchema = z.object({
