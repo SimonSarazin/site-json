@@ -71,6 +71,14 @@
       },
       {
         "label": {
+          "fr": "Ressources",
+          "en": "Resources"
+        },
+        "path": "/ressources",
+        "icon": "book-open"
+      },
+      {
+        "label": {
           "fr": "Structure référentes",
           "en": "Reference structures"
         },
@@ -2509,6 +2517,181 @@
           }
         }
       ]
+    },
+    {
+      "path": "/ressources",
+      "title": {
+        "fr": "Ressources",
+        "en": "Resources"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Ressources — Ekilib.re, Maison Sport Santé du Tampon",
+          "en": "Resources — Ekilib.re, Sport Health House of Le Tampon"
+        },
+        "description": {
+          "fr": "Documents ressources des professionnels du sport santé : recommandations, bonnes pratiques, bilans et parcours, formulaires de prescription.",
+          "en": "Resource documents for sport-health professionals: recommendations, best practices, assessments and pathways, prescription forms."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image",
+        "ogImage": "/images/maisonSportSanteLaTampon/hero2.jpg"
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "ressources-header",
+          "props": {
+            "headline": {
+              "fr": "Ressources",
+              "en": "Resources"
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher un document…",
+              "en": "Search a document…"
+            },
+            "showActiveFiltersTags": "desktop",
+            "dropdownFilters": [
+              {
+                "id": "ressource-category",
+                "label": {
+                  "fr": "Catégorie",
+                  "en": "Category"
+                },
+                "field": "category",
+                "multiple": true,
+                "allLabel": {
+                  "fr": "Toutes les catégories",
+                  "en": "All categories"
+                },
+                "options": [
+                  {
+                    "id": "recommandations",
+                    "value": "Recommandations",
+                    "label": {
+                      "fr": "Recommandations",
+                      "en": "Recommendations"
+                    }
+                  },
+                  {
+                    "id": "bonnes-pratiques",
+                    "value": "Bonnes pratiques",
+                    "label": {
+                      "fr": "Bonnes pratiques",
+                      "en": "Best practices"
+                    }
+                  },
+                  {
+                    "id": "bilans-parcours",
+                    "value": "Bilans & parcours",
+                    "label": {
+                      "fr": "Bilans & parcours",
+                      "en": "Assessments & pathways"
+                    }
+                  },
+                  {
+                    "id": "formulaires-prescription",
+                    "value": "Formulaires de prescription",
+                    "label": {
+                      "fr": "Formulaires de prescription",
+                      "en": "Prescription forms"
+                    }
+                  },
+                  {
+                    "id": "autres",
+                    "value": "Autres",
+                    "label": {
+                      "fr": "Autres",
+                      "en": "Other"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "ressources-list",
+          "props": {
+            "customHeader": {
+              "title": {
+                "fr": "Tous les documents",
+                "en": "All documents"
+              }
+            },
+            "useFilter": true,
+            "showMap": false,
+            "baseParams": {
+              "defaultTypes": [
+                "poi"
+              ],
+              "sourceKey": [
+                "associationEkilibre"
+              ],
+              "defaultFilters": {
+                "type": "recoveryCenter",
+                "status": "Visible"
+              },
+              "defaultFields": [
+                "name",
+                "category",
+                "description",
+                "urls",
+                "medias",
+                "status",
+                "created",
+                "type",
+                "source",
+                "profilMediumImageUrl",
+                "profilImageUrl"
+              ],
+              "searchBy": [
+                "name",
+                "description"
+              ],
+              "defaultSortBy": {
+                "created": -1
+              }
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3
+              },
+              "card": {
+                "type": "resource",
+                "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "resource",
+                "width": "2xl"
+              },
+              "resource": {
+                "design": "card",
+                "titleField": "name",
+                "descriptionField": "description",
+                "dateField": "created",
+                "imageField": "profilMediumImageUrl",
+                "urlsField": "urls",
+                "badge": {
+                  "field": "category",
+                  "colors": {
+                    "Recommandations": "var(--chart-1)",
+                    "Bonnes pratiques": "var(--chart-2)",
+                    "Bilans & parcours": "var(--chart-3)",
+                    "Formulaires de prescription": "var(--chart-4)",
+                    "Autres": "var(--chart-5)"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
     }
   ],
   "footer": {
@@ -2937,6 +3120,79 @@
                 {
                   "value": "Archivé",
                   "tone": "negative"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "ressources",
+        "label": {
+          "fr": "Ressources",
+          "en": "Resources"
+        },
+        "icon": "book-open",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "poi",
+            "label": {
+              "fr": "Documents ressources pro",
+              "en": "Professional resource documents"
+            },
+            "source": {
+              "sourceKey": [
+                "associationEkilibre"
+              ],
+              "defaultFilters": {
+                "type": "recoveryCenter"
+              },
+              "defaultSortBy": {
+                "created": -1
+              }
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Nom",
+                  "en": "Name"
+                }
+              },
+              {
+                "path": "category",
+                "label": {
+                  "fr": "Catégorie",
+                  "en": "Category"
+                }
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Date d'ajout",
+                  "en": "Added on"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "validate",
+              "delete"
+            ],
+            "create": "add-ekilibre-ressource",
+            "edit": "inherit",
+            "status": {
+              "mode": "statusField",
+              "field": "status",
+              "states": [
+                {
+                  "value": "Brouillon",
+                  "tone": "pending"
+                },
+                {
+                  "value": "Visible",
+                  "tone": "positive"
                 }
               ]
             }
@@ -4747,6 +5003,237 @@
       "identity": {
         "type": "article"
       }
+    },
+    "ekilibre-ressource": {
+      "id": "ekilibre-ressource",
+      "entityType": "poi",
+      "collection": "poi",
+      "costumSlug": "associationEkilibre",
+      "icon": "book-open",
+      "layout": {
+        "kind": "flat"
+      },
+      "sections": [
+        {
+          "id": "document",
+          "label": {
+            "fr": "Document ressource",
+            "en": "Resource document"
+          },
+          "icon": "book-open",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "name",
+                "category",
+                "description",
+                "documents",
+                "urls",
+                "status"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "name": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Nom",
+            "en": "Name"
+          },
+          "placeholder": {
+            "fr": "Nom du document",
+            "en": "Document name"
+          }
+        },
+        "category": {
+          "widget": "select",
+          "required": true,
+          "label": {
+            "fr": "Catégorie",
+            "en": "Category"
+          },
+          "placeholder": {
+            "fr": "Choisir une catégorie…",
+            "en": "Pick a category…"
+          },
+          "enum": [
+            {
+              "value": "Recommandations",
+              "label": {
+                "fr": "Recommandations",
+                "en": "Recommendations"
+              }
+            },
+            {
+              "value": "Bonnes pratiques",
+              "label": {
+                "fr": "Bonnes pratiques",
+                "en": "Best practices"
+              }
+            },
+            {
+              "value": "Bilans & parcours",
+              "label": {
+                "fr": "Bilans & parcours",
+                "en": "Assessments & pathways"
+              }
+            },
+            {
+              "value": "Formulaires de prescription",
+              "label": {
+                "fr": "Formulaires de prescription",
+                "en": "Prescription forms"
+              }
+            },
+            {
+              "value": "Autres",
+              "label": {
+                "fr": "Autres",
+                "en": "Other"
+              }
+            }
+          ]
+        },
+        "description": {
+          "widget": "textarea",
+          "label": {
+            "fr": "Description",
+            "en": "Description"
+          },
+          "info": {
+            "fr": "Texte court décrivant le document.",
+            "en": "Short text describing the document."
+          }
+        },
+        "documents": {
+          "widget": "file",
+          "label": {
+            "fr": "Fichier PDF",
+            "en": "PDF file"
+          },
+          "info": {
+            "fr": "PDF uploadé (10 Mo max) — ou renseigner un lien web ci-dessous.",
+            "en": "Uploaded PDF (10 MB max) — or provide a web link below."
+          },
+          "widgetProps": {
+            "contentKey": "file",
+            "maxItems": 1,
+            "accept": "application/pdf"
+          },
+          "renderOnly": true
+        },
+        "urls": {
+          "widget": "urlList",
+          "label": {
+            "fr": "Lien web externe",
+            "en": "External web link"
+          },
+          "info": {
+            "fr": "URL HTTPS du document en ligne.",
+            "en": "HTTPS URL of the online document."
+          },
+          "widgetProps": {
+            "addLabel": {
+              "fr": "Ajouter un lien",
+              "en": "Add a link"
+            },
+            "removeLabel": {
+              "fr": "Retirer",
+              "en": "Remove"
+            }
+          }
+        },
+        "status": {
+          "widget": "select",
+          "required": true,
+          "default": "Brouillon",
+          "label": {
+            "fr": "Statut",
+            "en": "Status"
+          },
+          "enum": [
+            {
+              "value": "Visible",
+              "label": {
+                "fr": "Visible",
+                "en": "Visible"
+              }
+            },
+            {
+              "value": "Brouillon",
+              "label": {
+                "fr": "Brouillon",
+                "en": "Draft"
+              }
+            }
+          ]
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter une ressource",
+            "en": "Add a resource"
+          },
+          "edit": {
+            "fr": "Modifier la ressource",
+            "en": "Edit resource"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        }
+      },
+      "scope": {
+        "slugFrom": "carrier"
+      },
+      "mutation": {
+        "entityType": "poi",
+        "inject": {
+          "extraFields": {
+            "type": "recoveryCenter"
+          },
+          "parentFromCarrier": true
+        },
+        "successKey": {
+          "add": "toast.add.poiSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.poiError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_RESSOURCE",
+          "edit": "EntityFormModal · EDIT_RESSOURCE"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard",
+          "params": {
+            "userList": "pois",
+            "searchKeys": [
+              "admin-poi",
+              "searchCostumStatic"
+            ]
+          }
+        },
+        "payloadEmitEmptyOnEdit": true,
+        "navigateOnSuccess": false
+      },
+      "identity": {
+        "type": "recoveryCenter"
+      }
     }
   },
   "profiles": {
@@ -5563,6 +6050,26 @@
           "editModal": "edit-actualite",
           "editModalMatch": {
             "type": "article"
+          },
+          "when": {
+            "or": [
+              {
+                "field": "sourceKeys",
+                "op": "contains",
+                "value": "associationEkilibre"
+              },
+              {
+                "field": "reference.costum",
+                "op": "contains",
+                "value": "associationEkilibre"
+              }
+            ]
+          }
+        },
+        {
+          "editModal": "edit-ekilibre-ressource",
+          "editModalMatch": {
+            "type": "recoveryCenter"
           },
           "when": {
             "or": [
