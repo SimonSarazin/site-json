@@ -3,16 +3,17 @@
  "recipes": [
   {
    "id": "home-a-la-une",
-   "titre": "Home « à la une » 100% data-driven",
-   "quand": "Le réseau produit déjà du contenu (articles, POI tagués) et veut une home qui vit sans maintenance éditoriale : tout est requêté, rien n'est rédigé dans la config.",
+   "titre": "Home « à la une » data-driven + orientation par public",
+   "quand": "Le réseau produit déjà du contenu (articles, POI tagués) et veut une home qui vit presque sans maintenance éditoriale — tout le corps est requêté — mais doit quand même orienter d'emblée deux publics distincts vers leur parcours.",
    "source": "config.prod.parent62.json",
    "path": "/",
    "sequence": [
     "featured-carousel",
+    "action-tiles",
     "map-bubbles",
     "articleTeaser"
    ],
-   "rythme": "Trois blocs, zéro texte statique : le carrousel plein écran met en avant les POI tagués « A la une » (le contenu choisit la vitrine), la carte à bulles donne l'entrée géographique vers les pages territoire, et l'aperçu d'articles ferme la page en preuve de vie avec son CTA « voir tout » vers /blog. L'identité est portée par le header stacked (wordmark plein écran) : la home n'a pas besoin de hero."
+   "rythme": "Quatre blocs, un seul statique : le carrousel plein écran met en avant les POI tagués « A la une » (le contenu choisit la vitrine), puis DEUX tuiles « Vous êtes… » aiguillent parent / professionnel vers leur page d'entrée — seul texte rédigé de la page, et la garantie que ces pages ne dépendent pas de la seule nav. La carte à bulles donne ensuite l'entrée géographique vers les pages territoire, et l'aperçu d'articles ferme la page en preuve de vie avec son CTA « voir tout » vers /blog. L'identité est portée par le header stacked (wordmark plein écran) : la home n'a pas besoin de hero."
   },
   {
    "id": "home-vitrine-dense",

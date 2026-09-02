@@ -100,6 +100,134 @@
         ]
       },
       {
+        "id": "appels-projets",
+        "label": {
+          "fr": "Appels à projets",
+          "en": "Calls for projects"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "poi",
+            "label": {
+              "fr": "Appels à projets",
+              "en": "Calls for projects"
+            },
+            "source": {
+              "defaultFilters": {
+                "type": "article"
+              },
+              "defaultTags": [
+                "Appels à projets"
+              ],
+              "defaultSortBy": {
+                "created": -1
+              },
+              "costumSlug": "parent62",
+              "sourceKey": [
+                "parent62"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Titre",
+                  "en": "Title"
+                }
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Date",
+                  "en": "Date"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ],
+            "create": "add-parent62-article",
+            "createDefaults": {
+              "category": "appel-projet"
+            },
+            "edit": "inherit"
+          }
+        ]
+      },
+      {
+        "id": "offres-emploi",
+        "label": {
+          "fr": "Offres d'emploi",
+          "en": "Job offers"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "poi",
+            "label": {
+              "fr": "Offres d'emploi",
+              "en": "Job offers"
+            },
+            "source": {
+              "defaultFilters": {
+                "type": "article"
+              },
+              "defaultTags": [
+                "Offres d'emploi"
+              ],
+              "defaultSortBy": {
+                "created": -1
+              },
+              "costumSlug": "parent62",
+              "sourceKey": [
+                "parent62"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Titre",
+                  "en": "Title"
+                }
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Date",
+                  "en": "Date"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ],
+            "create": "add-parent62-article",
+            "createDefaults": {
+              "category": "offre-emploi"
+            },
+            "edit": "inherit"
+          }
+        ]
+      },
+      {
         "id": "paroles",
         "label": {
           "fr": "Paroles de parents",

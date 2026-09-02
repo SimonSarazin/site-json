@@ -806,6 +806,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
       {createModal && (
         <DynamicModal
           modalName={createModal}
+          createDefaults={resource.createDefaults}
           open={createOpen}
           onOpenChange={(o) => {
             setCreateOpen(o);

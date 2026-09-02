@@ -149,6 +149,7 @@ ne sont **pas** lancées. `actions` gate le bouton « Inviter ».
   "columns": ["name", { "path": "address.addressLocality", "label": { "fr": "Commune" } },
               { "path": "medias", "label": { "fr": "Audio" }, "type": "audio" }],
   "create": "inherit", "edit": "inherit",       // false | "inherit" | "add-<key>"/"edit-<key>"
+  "createDefaults": { "category": "appel-projet" },  // valeurs semées dans la modale d'AJOUT
   "rowActions": ["edit", "delete", "validate", "reference", "setFeatured"],
   "exclusiveField": "featured",                 // EXIGÉ par `setFeatured` (sans lui : action absente)
   "restrictActionsToOwned": false,              // true = fiche non possédée → lecture + `reference` seuls
@@ -174,6 +175,19 @@ ne sont **pas** lancées. `actions` gate le bouton « Inviter ».
 - `create`/`edit: "inherit"` : la création prend le form **costum** du site s'il en existe un pour
   ce type (`config.costumForms`), l'édition suit la résolution publique (`editModalMatch`,
   par-ligne). Clé forcée `add-<key>`/`edit-<key>` possible ; `false` = lecture seule.
+- **`createDefaults`** (opt-in) : valeurs **semées dans la modale d'AJOUT** ouverte depuis cette
+  section, fusionnées **par-dessus** les défauts dérivés du form (`fields.<nom>.default`) — donc une
+  clé absente garde son défaut normal. **Jamais en édition** (l'entité fait foi : écraser son seed
+  par une valeur d'onglet réécrirait une fiche à l'insu de l'admin).
+  C'est la réponse au patron « un onglet = un sous-ensemble » : une table filtrée par son `source`
+  (ex. `defaultTags: ["Appels à projets"]`) ouvre le form **déjà positionné** sur le sous-type que
+  l'onglet impose, au lieu d'exiger un form costum **cloné par sous-type** pour ne varier qu'un
+  défaut. Consommateur actuel : `config.prod.parent62.json` (onglets `appels-projets` /
+  `offres-emploi`, champ `category`).
+  ⚠ Les clés sont des **noms de champs du form résolu par `create`** : une clé inconnue de ce form
+  est **ignorée** (`applyCreateDefaults` filtre sur le descripteur) — pas d'erreur, mais pas de
+  semis non plus, donc vérifier l'orthographe contre `costumForms.<id>.fields`.
+  (`src/modules/profil/forms/createDefaults.ts`, `EntityFormModal.tsx`)
 - **Édition = entité COMPLÈTE** : la ligne de liste (résultat `searchCostum`) est **allégée** — sans
   les champs `images`/`files` fusionnés par `about`. `openEditEntity` **recharge l'entité full par id**
   via `me.poi/organization/project/event({ id })` (mapping `EDIT_LOAD_METHOD` :

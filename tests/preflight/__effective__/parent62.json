@@ -76,6 +76,56 @@
         "modalName": null
       }
     },
+    "appels-projets/poi": {
+      "source": {
+        "defaultFilters": {
+          "type": "article"
+        },
+        "defaultTags": [
+          "Appels à projets"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        },
+        "costumSlug": "parent62",
+        "sourceKey": [
+          "parent62"
+        ]
+      },
+      "create": "add-parent62-article",
+      "createDefaults": {
+        "category": "appel-projet"
+      },
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "offres-emploi/poi": {
+      "source": {
+        "defaultFilters": {
+          "type": "article"
+        },
+        "defaultTags": [
+          "Offres d'emploi"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        },
+        "costumSlug": "parent62",
+        "sourceKey": [
+          "parent62"
+        ]
+      },
+      "create": "add-parent62-article",
+      "createDefaults": {
+        "category": "offre-emploi"
+      },
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
     "paroles/poi": {
       "source": {
         "defaultFilters": {
@@ -473,6 +523,25 @@
         ]
       }
     }
+  },
+  "stamps": {
+    "parent62-article": [
+      {
+        "field": "tags",
+        "value": {
+          "$mapLabels": {
+            "from": "category",
+            "map": {
+              "appel-projet": "Appels à projets",
+              "offre-emploi": "Offres d'emploi"
+            }
+          }
+        },
+        "op": "append",
+        "on": "both",
+        "channel": "payload"
+      }
+    ]
   },
   "referencement": {},
   "membership": {

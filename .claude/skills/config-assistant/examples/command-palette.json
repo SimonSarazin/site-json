@@ -88,9 +88,16 @@
                   "Vidéo": "var(--chart-1)",
                   "Photo": "var(--chart-2)",
                   "Compte-rendu": "var(--chart-3)",
-                  "Jeu": "var(--chart-4)",
+                  "Les jeux du réseau": "var(--chart-4)",
                   "Document": "var(--chart-5)",
-                  "Lien": "var(--primary)"
+                  "Lien": "var(--primary)",
+                  "Inforéso": "var(--info)",
+                  "Elles et ils ont marqué le réseau": "var(--success)"
+                },
+                "icons": {
+                  "Inforéso": "newspaper",
+                  "Elles et ils ont marqué le réseau": "award",
+                  "Les jeux du réseau": "gamepad-2"
                 }
               },
               "facets": [

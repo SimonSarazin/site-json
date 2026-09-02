@@ -15,7 +15,49 @@
 > Mémoire : `[[project-parent62]]`
 > (`.claude/memory/project-parent62.md`) — slug corrigé le 25/07 (`parents62` avec **s** est abandonné, cf. §1).
 
-Dernière mise à jour : **2026-08-26** (menu de nav « Thèmes » de parent62 basculé sur une capacité
+Dernière mise à jour : **2026-09-03** — trois lots.
+
+**(c) Types de ressources** — l'énumération `category` des fiches ressource passe de **6 à
+8 valeurs** : « Jeu » devient *Les jeux du réseau*, et deux types s'ajoutent, *Inforéso* et *Elles
+et ils ont marqué le réseau*. Couleur et icône déclarées aux **3 endroits** qui rendent une carte
+ressource (`/ressources`, `/recherche`, palette ⌘K), les deux nouvelles couleurs prenant des jetons
+de STATUT (`--info`, `--success`), la rampe `chart-*` étant déjà saturée à 5. Détail : §9octodecies.
+
+**(b) Double entrée parents / pro rétablie sur l'accueil** — la section `action-tiles`
+`home-double-entree` (« Vous êtes… » : *Parent* → `/parents`, *Professionnel·le ou bénévole* →
+`/pro`) est réinsérée en 2ᵉ position, après le carrousel « à la une ». Elle avait disparu à la
+refonte du 06/08 (§9quater) en laissant les deux pages **orphelines de tout lien** — régression 1.4,
+désormais levée. Restaurée **telle quelle** depuis `c620ff5c^`, sans retouche de style : sa
+composition de props est déjà celle de l'idiome `action-tiles` du site
+(`headline` + `columns` + `actions[icon,title,subtitle,href,color]`). Accueil : 3 → **4 sections**
+(SSR 3/4 rendues, la 4ᵉ étant le `featured-carousel` data-driven, déjà non rendu en SSR avant ce
+lot). Recette `home-a-la-une` de la skill `config-assistant` resynchronisée : elle annonçait « trois
+blocs, zéro texte statique », ce qui n'est plus exact (gate `page-recipes`). Gates :
+`config:validate` **46 pages/161 sections**, `audit:config` RAS, `config:render` 46/46,
+`test:preflight` **531 passés**.
+
+**(a) Champ « Type d'actualité » dans le formulaire d'ajout d'article** — `category` sur
+`costumForms.parent62-article`, 3 valeurs : *Article simple* / *Appel à projets* /
+*Offre d'emploi* — plus 2 onglets `/admin` filtrés [`appels-projets`, `offres-emploi`,
+`source.defaultTags`]. Un `mutation.stamps` [`{field:"tags", op:"append", on:"both",
+value:{$mapLabels:{from:"category", …}}}`] dérive du type le mot-clé public « Appels à projets » /
+« Offres d'emploi », reposé à **chaque enregistrement, création ET édition**, en union dédupliquée
+avec les mots-clés saisis et les tags déjà en base ; *Article simple* n'est pas dans la table de
+correspondance et ne pose donc aucun tag. `category` est un **vrai champ du schéma d'écriture POI**
+— déjà écrit par `parent62-affiche` et `parent62-recovery-center` — donc il persiste et revient à
+l'édition. **Un ajout au moteur** accompagne le lot : `createDefaults` sur une section admin
+`resource` sème le sous-type dans la modale d'ajout, si bien que le **+** d'un onglet ouvre le
+formulaire déjà positionné — sans quoi il aurait fallu un formulaire costum cloné par sous-type.
+Les pages publiques `/appels-a-projets` et `/offres-emploi` sont **inchangées**. Snapshots resync :
+`stamps.test.ts`, `__effective__/parent62.json` (projection étendue à `createDefaults`),
+`examples/admin.json`. Gates : `typecheck`/`lint` propres (0 erreur, warnings inchangés),
+`config:validate` **46 pages/161 sections**, `audit:config` RAS, `test:preflight` **531 passés**
+[1 échec pré-existant sans rapport : dossier vide `public/images/transiter`], `test:unit` ciblé
+**1 149/1 149**. Détail : §9sexdecies.
+
+Les deux lots sont **non commités**.
+
+Précédemment : **2026-08-26** (menu de nav « Thèmes » de parent62 basculé sur une capacité
 **générique du moteur** — champ `dynamicList` sur `EnhancedNavItem`, câblé une seule fois dans
 `SiteHeader.tsx`, zéro composant de header modifié : le dropdown se génère depuis
 `costum.lists.themes` [18 valeurs réelles] — plus aucun `children` figé en config, le repli statique
@@ -361,6 +403,9 @@ Embarqué dans le document de l'orga (`organizations.costum`). Au 20/07, `typeOb
 | **Thèmes/catégorie en saisie libre, promotion admin (25/08)** | `config.prod.parent62.json` (`widgetProps.saveNewValue`/`list`, `optionsKey` sur 23 filtres, `afterSubmit` par formulaire) ; nouveaux `src/modules/profil/forms/costum/parent62/fns.ts` (+ `.test.ts`), `src/hooks/useCostumLists.tsx` (+ `.test.tsx`), `src/modules/profil/forms/fields/valueSelectAccess.ts` (+ `.test.ts`) ; modifs `src/modules/profil/forms/fields/ValueSelectField.tsx`, `src/modules/profil/forms/registerWidgets.tsx`, `src/modules/profil/forms/registerSpecFns.ts`, `src/modules/search/hooks/useDynamicFilterOptions.ts`, `src/modules/search/schema.ts` (`optionsKey`), `src/modules/search/lib/dropdownFilters.ts` (`mergeDeduped`, + `.test.ts`), `src/lib/costumLists.ts` (§9septies) |
 | **Section admin « Listes » — moteur générique, pilote parent62 (25/08)** | `config.prod.parent62.json` (nouvel onglet `admin.tabs` `{id:"listes", sections:[{type:"lists", props:{lists:[{key:"themes",label:{…}},{key:"categoriesParole",label:{…}}]}}]}`) ; nouveaux `src/modules/admin/sections/AdminListsSection.tsx`, `src/modules/admin/hooks/useCostumListsMutations.ts` (+ `.test.tsx`), `src/modules/admin/lib/costumListsEditing.ts` (+ `.test.ts`, dont `toListRef`/`findListLabel`) ; modifs `src/modules/admin/AdminSectionRenderer.tsx` (`registerAdminSection("lists", …)`), `src/modules/admin/i18n/{fr,en}.json` (groupe `AdminLists`) — doc moteur : [doc/30-module-admin.md](../doc/30-module-admin.md) §`lists` (§9octies) |
 | **Rattrapage gates `config-assistant` — drift territoire (25/08)** | `.claude/skills/config-assistant/page-recipes.json` (recette `page-annuaire-grille` : `path`/`sequence`/`rythme` recalés), `.claude/skills/config-assistant/examples/{admin,command-palette,list-item-rules,list-testimonial}.json` (resynchronisés) (§9novies) |
+| **Type d'actualité — appels à projets / offres d'emploi (02/09)** | **Config** `config.prod.parent62.json` : champ `category` (`select`, 3 valeurs) + `mutation.stamps` `$mapLabels` sur `tags` dans `costumForms.parent62-article`, 2 onglets `admin.tabs` (`appels-projets`, `offres-emploi` — `source.defaultTags`, `createDefaults`). **Moteur** (générique, tout site) : `src/modules/profil/forms/createDefaults.ts` (+ `.test.ts`, neufs), `src/modules/profil/forms/EntityFormModal.tsx`, `src/modules/profil/components/add/ModalRegistry.tsx`, `src/modules/admin/schema.ts`, `src/modules/admin/sections/AdminResourceTable.tsx`, `scripts/lib/prop-descriptions.ts` ; snapshots `tests/preflight/{stamps.test.ts,effective-config.test.ts,__effective__/parent62.json}`, `.claude/skills/config-assistant/examples/admin.json` — doc moteur : [doc/28](../doc/28-module-formengine.md) §`mutation.stamps` et [doc/30](../doc/30-module-admin.md) §`createDefaults` (§9sexdecies) |
+| **Double entrée parents / pro rétablie sur l'accueil (02/09)** | `config.prod.parent62.json` (section `action-tiles` `home-double-entree` réinsérée sur `pages[/].sections[1]`) ; `.claude/skills/config-assistant/page-recipes.json` (recette `home-a-la-une` resynchronisée : séquence + `titre`/`quand`/`rythme`) — gate `tests/preflight/page-recipes.test.ts` (§9septendecies) |
+| **Types de ressources — 2 ajouts + renommage (03/09)** | `config.prod.parent62.json` : `costumForms.parent62-recovery-center.fields.category.enum` (6 → 8 valeurs) et les 3 blocs `list.resource.badge` (`/ressources`, `/recherche` via `itemRules[2]`, `commandPalette.entitySearch.itemActionBySubType.recoveryCenter`) ; snapshots `.claude/skills/config-assistant/examples/{command-palette,list-item-rules,list-resource}.json` resynchronisés (§9octodecies) |
 | **Tests** | `e2e/parent62.spec.ts`, `src/modules/search/lib/colorBy.test.ts`, `src/modules/profil/forms/costum/__fixtures__/configCostum.ts` |
 | **Déploiement** | `server/prod-server.js`, `server/lib/sitemap.js`, `.env` (`VITE_SLUG`, `VITE_BASE_URL_BACKEND`, `SITE_CONFIG_PATH`, `VITE_SITE_PUBLIC_URL`) — dérivable via `npm run deploy:env` (`scripts/lib/sites.ts`) |
 
@@ -389,6 +434,9 @@ Embarqué dans le document de l'orga (`organizations.costum`). Au 20/07, `typeOb
 | **`saveNewValue` config-driven, `false` par défaut** (25/08) | opt-in explicite par champ, introspection du descripteur du formulaire plutôt qu'une liste de champs codée en dur en TS — un futur champ `valueSelect` n'écrit dans aucune liste partagée sauf déclaration explicite en config |
 | **`saveNewValue` restreint aussi `creatable` aux admins** (25/08) | un visiteur non-admin sur un champ qui promeut vers la liste partagée ne doit pas pouvoir taper une valeur inédite — sinon la saisie serait acceptée sur sa fiche mais jamais partagée, incohérence silencieuse |
 | **Réactivité via les signaux natifs du SDK (`useReactiveProperty`), pas un store maison** (25/08) | réutilise un mécanisme déjà éprouvé (~14 usages dans le repo) plutôt que d'en inventer un parallèle ; `carrier.refresh()` suffit, `_setData` préservant les signaux réactifs sur le même proxy — aucun nouveau `setEntity`/contexte |
+| **Le type d'annonce est porté par `category`, pas par `type` ni par un champ ad hoc** (02/09) | le champ POI `type` est **hors d'atteinte** : le module blog le pose en dur et le déclare non surchargeable ([`useArticleFeed.ts`](../src/modules/blog/hooks/useArticleFeed.ts), [`configSchema.ts`](../src/modules/blog/configSchema.ts), [`server/feed.ts`](../src/modules/blog/server/feed.ts)) — une annonce sortie de `type:"article"` quitterait `/blog`, `/actualites`, les `/theme/*`, le RSS, le reader et la cible « Actualités » de `/recherche`. Un champ inventé, lui, est refusé par le `DraftProxy` du SDK (absent du contrat lib **et** des `properties` du digest costum) et retiré du payload `element/save`. `category` est le vecteur désigné par le moteur ([`blog/schema.ts`](../src/modules/blog/schema.ts) : « filtre serveur additionnel, ex. `{category:"actus"}` ») et déjà écrit par 2 autres forms du site : il persiste, revient à l'édition, et un seul formulaire suffit |
+| **Pré-remplissage par l'onglet via une capacité MOTEUR (`createDefaults`), pas un formulaire cloné par sous-type** (02/09) | `fields.<nom>.default` ne porte qu'UNE valeur pour tout le formulaire, et l'onglet n'avait aucun canal vers la modale de création (`AdminResourceTable` ne passait que `modalName`/`parent`). Plutôt que de re-dupliquer ~490 lignes de config par sous-type, ~20 lignes de moteur ouvrent un semis déclaratif réutilisable par tout site. Semis en **ajout seulement** (en édition l'entité fait foi) et **filtré sur les champs réellement déclarés** par le formulaire, pour qu'une faute de frappe en config soit inerte au lieu d'injecter une valeur fantôme |
+| **Tag d'annonce posé par `mutation.stamps` `op:"append"` / `on:"both"`** (01/09) | seul `op` qui **compose** au lieu d'écraser : union dédupliquée entre le libellé, les mots-clés saisis et les tags déjà en base (`targetServerData`). `on:"both"` le repose à chaque enregistrement — une annonce ne peut pas sortir de sa page publique par une édition. (`op:"set"` est d'ailleurs interdit sur un champ visible en édition, gate `stamps.test.ts`) |
 
 ---
 
@@ -1549,16 +1597,237 @@ basculées. Non commité à ce stade.
 
 ---
 
+## 9sexdecies. Impacts — champ « Type d'actualité » dans le formulaire d'article (02/09)
+
+> Périmètre : **config parent62 uniquement** (`config.prod.parent62.json`), zéro code moteur, zéro
+> impact backend. Complète le lot du 06/08 (§9quater) : les pages publiques `/appels-a-projets` et
+> `/offres-emploi` filtrent des `articleFeed` par **tag WordPress libre** (`Appels à projets` /
+> `Offres d'emploi`) ; le formulaire d'ajout d'article permet désormais de choisir ce type, et le
+> mot-clé est posé automatiquement. Les pages publiques sont **inchangées**.
+
+### 9sexdecies.1 Ce qui a changé (`config.prod.parent62.json`)
+
+- **`costumForms.parent62-article`** — deux ajouts, le reste du formulaire est intact :
+  - un champ **`category`** (`widget: "select"`, libellé « Type d'actualité », **non requis**), placé
+    juste après le titre dans la section « Contenu », à **3 valeurs** :
+
+    | valeur | libellé | effet à l'enregistrement |
+    |---|---|---|
+    | `actualite` | Article simple | aucun mot-clé posé |
+    | `appel-projet` | Appel à projets | mot-clé `Appels à projets` |
+    | `offre-emploi` | Offre d'emploi | mot-clé `Offres d'emploi` |
+
+  - un **`mutation.stamps`** (moteur `src/modules/profil/forms/stamps.ts`, cf.
+    [doc/28 §mutation.stamps](../doc/28-module-formengine.md)) :
+
+    ```jsonc
+    { "field": "tags", "op": "append", "on": "both",
+      "value": { "$mapLabels": { "from": "category",
+        "map": { "appel-projet": "Appels à projets", "offre-emploi": "Offres d'emploi" } } } }
+    ```
+
+    `on:"both"` + `op:"append"` = le mot-clé est reposé à **chaque enregistrement, création ET
+    édition**, en union dédupliquée avec les mots-clés saisis et avec les tags déjà présents sur
+    l'entité (`targetServerData`). `actualite` est **volontairement absent de la table de
+    correspondance** : `$mapLabels` ignore les valeurs non mappées, le stamp est alors inerte et un
+    article simple ne reçoit aucun tag automatique.
+- **2 nouveaux onglets `admin.tabs`** (`appels-projets`, `offres-emploi`) insérés après
+  « Actualités », calqués sur celui-ci : table `resource` `poi` filtrée par
+  `source.defaultTags: ["<label>"]` (canal `searchTags`,
+  [buildSearchPayload.ts](../src/modules/search/lib/buildSearchPayload.ts)) + `defaultFilters.type:"article"` ;
+  `rowActions: [edit, delete, validate]`, `bulkActions: [validate, export, delete]` ;
+  `create: "add-parent62-article"`, `edit: "inherit"` — un seul formulaire sert les 3 types.
+  Chaque onglet porte en plus **`createDefaults: { "category": "<sous-type>" }`** : le **+** de
+  l'onglet ouvre le formulaire déjà positionné sur son type, sans re-demander à l'admin ce que
+  l'onglet dit déjà (capacité moteur ajoutée par ce lot, cf. §9sexdecies.2).
+- Une annonce reste un POI `type:"article"` : elle apparaît **aussi** dans la table « Actualités »
+  générique, et sa page de lecture publique reste le reader `/blog/:slug`.
+- **Pages publiques, `blog`, RSS, `/recherche` : inchangés.** Le filtrage reste sur `tags`, donc les
+  articles déjà tagués à l'import WordPress restent visibles sans backfill.
+
+### 9sexdecies.2 Ce qui a changé côté moteur (générique, tout site)
+
+Une seule capacité, opt-in, ajoutée pour éviter la duplication d'un formulaire costum par sous-type :
+
+- **`src/modules/profil/forms/createDefaults.ts`** (neuf, pur, testé — 8 cas) :
+  `applyCreateDefaults(defaults, seed, knownFields)` fusionne le semis **par-dessus** les défauts
+  dérivés, en **ne retenant que les champs réellement déclarés** par le formulaire (une clé mal
+  orthographiée en config est donc inerte, pas une valeur fantôme dans l'état du form), en écartant
+  `undefined`, et en renvoyant l'objet **par identité** quand rien ne s'applique — la non-régression
+  des formulaires sans `createDefaults` est prouvable par `toBe`.
+- **`src/modules/admin/schema.ts`** : `createDefaults?: Record<string, unknown>` sur une section
+  `resource`. **`scripts/lib/prop-descriptions.ts`** : sa sémantique, pour que
+  `config:schema admin` la documente.
+- **Propagation** : `AdminResourceTable.tsx` → `ModalRegistry.tsx` (`ModalProps`, `DynamicModal`,
+  thunk costum + 4 entrées statiques) → `EntityFormModal.tsx`, qui applique le semis **en mode
+  `add` uniquement** — en édition le seed vient de l'entité, et l'écraser par une valeur d'onglet
+  réécrirait une fiche existante à l'insu de l'admin.
+  Les 4 entrées statiques ne sont pas du zèle : `resolveCreateModal` retombe sur la modale
+  `standard` dès qu'aucun form costum ne correspond au type, sur `create:"standard"` explicite, et
+  en repli quand plusieurs candidats ne sont départagés par aucune `identity` — un site sans form
+  costum bénéficie donc du semis comme les autres.
+- **`tests/preflight/effective-config.test.ts`** : la projection de la garde d'impact inclut
+  désormais `createDefaults` — la clé change ce qui est ÉCRIT sur une fiche neuve, elle mérite la
+  même surveillance que la modale elle-même.
+
+Doc moteur : [doc/30-module-admin.md](../doc/30-module-admin.md) §`resource`.
+
+### 9sexdecies.3 Tests / snapshots mis à jour
+
+| Fichier | Raison |
+|---|---|
+| `tests/preflight/stamps.test.ts` | sentinelle d'inventaire du parc — ajout `"parent62/parent62-article:1"` + commentaire |
+| `tests/preflight/__effective__/parent62.json` | garde d'impact — projection des 2 sources admin, du stamp et des `createDefaults` |
+| `.claude/skills/config-assistant/examples/admin.json` | snapshot de l'exemple admin (source = parent62), resync `config:example -- admin --write` |
+
+### 9sexdecies.4 Régressions à revalider
+
+- **Filtre `defaultTags` d'une table admin en mode admin** (endpoint `globalautocompleteadmin`,
+  activé par `validate` ∈ `rowActions`) : `searchTags` est bien transmis au SDK (`useSearchQuery` →
+  `buildSearchPayload`), mais son honneur côté endpoint admin n'est pas prouvé en preview ici — **à
+  vérifier** sur `/admin/appels-projets` avec le backend réel. Repli : retirer `validate` de ces
+  2 onglets (repasse en recherche publique, où `searchTags` est éprouvé par les `articleFeed` de
+  `/appels-a-projets`).
+- **`category` sur les 6 434 articles existants est vide** (le champ n'était porté que par
+  `parent62-affiche` et `parent62-recovery-center`, cf. §5.2) : à l'édition d'un article importé, le
+  select s'ouvre sur son placeholder. Sans conséquence — le champ n'est pas requis, et un tag déjà
+  présent est préservé par `op:"append"` (fusion `targetServerData`).
+- **Le champ n'est pas exposé aux 2 autres formulaires** (`parent62-affiche`, `parent62-recovery-center`)
+  qui ont chacun leur propre `category` avec une sémantique différente (catégories de paroles /
+  types de ressource) — aucune interférence, les 3 énumérations restent disjointes.
+
+### 9sexdecies.5 Validation (gates)
+
+Mesurés le 03/09, APRÈS le merge du chantier « listes » (§9undecies→§9quindecies) :
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` | ✅ 0 erreur |
+| `lint` (suite complète) | ✅ 0 erreur, 22 warnings — **comptage identique avec et sans ce lot** (vérifié par `git stash`), donc aucun introduit |
+| `npx tsx scripts/validate-config.ts config.prod.parent62.json` | ✅ **46 pages, 161 sections** |
+| `audit:config --file config.prod.parent62.json --json` | ✅ RAS (0 constat) |
+| `test:unit` (suite complète) | ✅ **2 945 passés** / 2 952 — 1 échec **pré-existant sans rapport** (`site-assets` : dossier vide `public/images/transiter`, reproduit sans ce lot), 6 skip |
+
+Non commité à ce stade.
+
+---
+
+## 9septendecies. Impacts — double entrée parents / pro rétablie sur l'accueil (02/09)
+
+> Périmètre : **config parent62 uniquement**, zéro code. Lève la régression **1.4**, ouverte depuis
+> la refonte de l'accueil du 06/08 (§9quater).
+
+### 9septendecies.1 Le constat
+
+`/parents` et `/pro` existaient toujours comme pages, mais **plus aucun lien n'y menait** : chaque
+chemin n'apparaissait qu'**une seule fois** dans la config — sa propre déclaration de page. La
+section qui les exposait (`action-tiles` `home-double-entree`, « Vous êtes… ») avait disparu de
+l'accueil à la refonte du 06/08, sans remplacement. Le dropdown « Publics » (7 pages `/public/*`)
+ajouté au même moment couvre un axe **différent** (public visé : parents, enfance, professionnels…),
+pas l'orientation parent / professionnel — il ne les remplaçait donc pas. Question ouverte du §13
+depuis le 06/08, **tranchée** : les deux coexistent.
+
+### 9septendecies.2 Ce qui a changé
+
+- **`config.prod.parent62.json`, page `/`** : section `action-tiles` `home-double-entree` réinsérée
+  en **2ᵉ position**, entre le carrousel « à la une » et la carte à bulles — sa place d'origine dans
+  le rythme de la page (accroche → orientation → territoires → actus). Accueil : 3 → **4 sections**.
+- **`.claude/skills/config-assistant/page-recipes.json`** : recette `home-a-la-une` resynchronisée
+  (`sequence`, `titre`, `quand`, `rythme`). Elle décrivait « trois blocs, zéro texte statique », ce
+  qui n'est plus exact — l'accueil porte désormais un bloc rédigé. Gate `page-recipes.test.ts`, qui
+  compare la séquence annoncée à la page réelle de l'archétype.
+
+### 9septendecies.3 Validation (gates)
+
+| Gate | Résultat |
+|---|---|
+| `npx tsx scripts/validate-config.ts config.prod.parent62.json` | ✅ **46 pages, 161 sections** |
+| `audit:config --file config.prod.parent62.json --json` | ✅ RAS (0 constat) |
+| `config:render config.prod.parent62.json` | ✅ 46/46 pages · accueil **3/4** sections SSR — la 4ᵉ est le `featured-carousel`, data-driven, déjà non rendu en SSR avant ce lot (mesuré : 2/3 avant, 3/4 après) |
+| `test:preflight` (dont `page-recipes`) | ✅ — 1 échec pré-existant sans rapport (`site-assets`) |
+| `test:e2e` | ⏭️ non rejoué (pas de `.env.test` dans cet environnement) |
+
+Non commité à ce stade.
+
+---
+
+## 9octodecies. Impacts — deux nouveaux types de ressources + renommage « Jeu » (03/09)
+
+> Périmètre : **config parent62 uniquement**, zéro code. Étend la taxonomie du champ `category` des
+> fiches ressource (`parent62-recovery-center`), consommée par la page `/ressources`, la cible
+> « Ressources » de `/recherche` et la palette ⌘K.
+
+### 9octodecies.1 Ce qui a changé (`config.prod.parent62.json`)
+
+- **`costumForms.parent62-recovery-center.fields.category`** — l'énumération passe de **6 à
+  8 valeurs** :
+
+  | valeur | statut |
+  |---|---|
+  | Vidéo · Photo · Compte-rendu · Document · Lien | inchangées |
+  | **Les jeux du réseau** | renommée (ex-« Jeu ») |
+  | **Inforéso** | nouvelle |
+  | **Elles et ils ont marqué le réseau** | nouvelle |
+
+- **Badge (couleur + icône) déclaré aux 3 endroits qui rendent une carte ressource** — les trois
+  blocs `list.resource.badge` doivent rester alignés, sinon un même type change d'aspect selon
+  l'écran :
+
+  | emplacement | chemin |
+  |---|---|
+  | page `/ressources` | `pages[/ressources].sections[1].props.list.resource.badge` |
+  | page `/recherche` | `…rightSection.props.list.itemRules[2].resource.badge` |
+  | palette ⌘K | `commandPalette.entitySearch.itemActionBySubType.recoveryCenter.list.resource.badge` |
+
+- **Couleurs** : les 5 jetons `chart-*` étant déjà pris par les 5 premiers types, les deux nouveaux
+  prennent des jetons de STATUT — `Inforéso` → `var(--info)`, `Elles et ils ont marqué le réseau` →
+  `var(--success)`. Ils suivent le thème (clair/sombre) comme les `chart-*`.
+- **Icônes** : `badge.icons` (nouveau bloc) ne déclare que les **3** types que le moteur ne peut pas
+  deviner — `newspaper`, `award`, `gamepad-2`. Les 5 autres restent servis par le repli de
+  `resolveTypeIcon` (map interne `RESOURCE_TYPE_ICON`, puis `file`), donc aucun type n'est sans
+  icône.
+
+### 9octodecies.2 Les noms d'icônes ne sont couverts par aucun gate
+
+Le contrôle `icone-inconnue` d'`audit:config` teste les **clés** dont le nom finit par `icon`
+(`/icon$/i`, `audit-config.ts:302`). Dans `badge.icons`, les clés sont les **noms de types**
+(`Inforéso`…) et les icônes sont les **valeurs** : le bloc passe donc à travers l'audit. Un nom
+d'icône fautif y serait rendu `null` depuis un `useEffect`, sans erreur ni trace SSR.
+
+Les 3 noms ont donc été vérifiés **à la main** contre le catalogue lucide (le même que l'audit,
+1901 noms, via `lucideIconNames`) : `newspaper`, `award`, `gamepad-2` — les trois existent.
+À refaire à chaque ajout de type, tant que la règle d'audit n'inspecte pas aussi les valeurs.
+
+### 9octodecies.3 Point d'attention
+
+Le renommage « Jeu » → « Les jeux du réseau » porte sur la **valeur stockée**, pas seulement sur le
+libellé : les fiches déjà enregistrées avec `category: "Jeu"` gardent l'ancienne valeur et ne
+tombent plus dans aucune option de l'énumération. À reprendre en base si de telles fiches existent
+(non vérifié ici — pas d'accès aux données de production depuis cet environnement).
+
+### 9octodecies.4 Validation (gates)
+
+| Gate | Résultat |
+|---|---|
+| `npx tsx scripts/validate-config.ts config.prod.parent62.json` | ✅ **46 pages, 161 sections** |
+| `audit:config --file config.prod.parent62.json --json` | ✅ RAS (0 constat) |
+| `test:preflight` | ✅ **535 passés** — 1 échec pré-existant sans rapport (`site-assets`) |
+
+Snapshots de la skill `config-assistant` resynchronisés (`command-palette`, `list-item-rules`,
+`list-resource`), leurs blocs `badge` étant copiés de cette config.
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| 1.1 | Site `reseau.parent62.org`, nav + graphisme proches du WP | 🟡 | config réconciliée (24/07) ; doublon nav `/blog` **résolu** (§9.5) ; **06/08 (committé sur `parents62`)** : accueil, header (`stacked`) et footer (`minimal-centered`) entièrement refondus, nav passée à 5 dropdowns dont un nouveau « Publics » (§9quater) ; reste `/parents`/`/pro` orphelines à trancher (1.4), la recette visuelle et le déploiement → 1.10 |
+| 1.1 | Site `reseau.parent62.org`, nav + graphisme proches du WP | 🟡 | config réconciliée (24/07) ; doublon nav `/blog` **résolu** (§9.5) ; **06/08 (committé sur `parents62`)** : accueil, header (`stacked`) et footer (`minimal-centered`) entièrement refondus, nav passée à 5 dropdowns dont un nouveau « Publics » (§9quater) ; double entrée `/parents`/`/pro` **rétablie le 02/09** (1.4, §9septendecies), la recette visuelle et le déploiement → 1.10 |
 | 1.2 | Pages statiques réseau / charte / équipe / champs d'action | ✅ | `/reseau` `/charte` `/champs-actions` `/equipe` ; arbitrage éditorial réseau ouvert (§13) |
 | 1.3 | Page par territoire : contact + **liste des communes** | ✅ | cards coordo + accordéon 887 communes + fil filtré + CTA ; navigation depuis l'accueil désormais via `map-bubbles` (carte à bulles, §9quater) au lieu des cartes d'accès rapide |
-| 1.4 | Double entrée parents / pro | 🟡 *(était ✅)* | **régression confirmée le 06/08** (config **et** e2e) : `/parents`/`/pro` existent mais ne sont plus liées nulle part (ni accueil, ni nav) depuis la refonte du 06/08 — un dropdown « Publics » (7 pages `/public/*`) semble les remplacer fonctionnellement, mais rien ne le confirme. **À trancher avant fusion dans `main`** (§13) |
+| 1.4 | Double entrée parents / pro | ✅ *(était 🟡, régression du 06/08)* | **Rétablie le 02/09** : la section `action-tiles` `home-double-entree` (« Vous êtes… » → `/parents` / `/pro`) est réinsérée sur l'accueil, en 2ᵉ position — juste après le carrousel « à la une », sa place d'origine dans le rythme de la page. Les deux pages existaient toujours mais **n'étaient liées de nulle part** depuis la refonte du 06/08 (vérifié : une seule occurrence de chaque chemin dans la config, sa propre déclaration de page). Elles coexistent avec le dropdown « Publics » (7 pages `/public/*`), qui ne les remplace donc pas — question §13 tranchée |
 | 1.5 | Moteur de recherche : types d'info, public, âges, dates, territoire coloré, carte, thèmes | 🟡 | `/recherche` : types d'info (**searchTargets 6** depuis le 25/07 — « Ressources » ajoutée —, défaut « Actualités »), public, thèmes, territoire coloré, **carte** (`enableMap:true`), `dateRange` **borne début seule**. **25/07** : chaque famille a désormais sa carte et son action au clic (`list.itemRules`, §9bis) ; tri `created:-1` et projection explicite ajoutés. **Âges : livré sur `/temoignages` + form affiche, mais PAS encore dans le groupe de filtres `/recherche`** (à ajouter — `ages` est projeté, il ne manque que le groupe). Borne de fin des dates = demande backend `$lt/$lte` (§11) |
 | 1.6 | Paroles de parents (3 catégories, audio+écrit, transcription, ajout admin) | 🟡 | brique complète (Thomas) : `/temoignages`, form `parent62-affiche` (3 catégories, audio→`medias`, ages, consentement RGPD), pile audio `media/*`, card/preview `testimonial`. **Ajout admin-only ✅** (modération a priori retirée volontairement, commit `17aea3e`). **25/07** : la cible « Paroles » de `/recherche` renvoyait **0 résultat** (filtre `status:"validated"` sur un champ inexistant) — corrigé, et les paroles y rendent en bulles avec leur dialog (§9bis). **Données observées le 25/07** : `/temoignages` affiche « Toutes les paroles (**3**) » — la mention « 0 POI `affiche` » du 24/07 est caduque. **25/08** : catégorie **et** thèmes passés en saisie libre, valeur inédite promue vers la liste partagée par un admin (§9septies). **Manque** : **transcription/sous-titres NON implémentée** (`description` sert d'écrit) |
 | 1.7 | Navigation territoriale (recherche V2) | ✅ | 9 bulles → `/territoire/<slug>` + filtre territoire coloré dans `/recherche` |
@@ -1570,7 +1839,7 @@ basculées. Non commité à ce stade.
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| 2.1 | Module actualités + interop WordPress | ✅ / 🟡 interop | 6 434 articles, `/blog`, `/actualites`, 9 `/theme/*`, admin, RSS, ⌘K. **Interop WP = import batch one-shot** (`tools/wp-migration/`), pas de sync live/webhook ; « ajout de post » = form `parent62-article` admin (le module `interop/` = Discourse/Mediawiki, pas WP). **06/08** : 2 pages de contenu tagué ajoutées sur le même patron, `/appels-a-projets` et `/offres-emploi` (`articleFeed` filtré par tag WordPress libre, zéro impact backend, §9quater) |
+| 2.1 | Module actualités + interop WordPress | ✅ / 🟡 interop | 6 434 articles, `/blog`, `/actualites`, 9 `/theme/*`, admin, RSS, ⌘K. **Interop WP = import batch one-shot** (`tools/wp-migration/`), pas de sync live/webhook ; « ajout de post » = form `parent62-article` admin (le module `interop/` = Discourse/Mediawiki, pas WP). **06/08** : 2 pages de contenu tagué ajoutées sur le même patron, `/appels-a-projets` et `/offres-emploi` (`articleFeed` filtré par tag WordPress libre, zéro impact backend, §9quater). **02/09** : champ **« Type d'actualité »** (`category` : Article simple / Appel à projets / Offre d'emploi) dans le formulaire d'ajout d'article, avec un `mutation.stamps` `$mapLabels` qui pose le mot-clé public à la création ET à l'édition, + 2 onglets `/admin` filtrés par `defaultTags` (§9sexdecies) |
 | 2.2 | Actualités filtrables dans le moteur de recherche | ✅ *(était ✅ config, 🟡 UX)* | cible `searchTargets` « Actualités » (`type:article`) dans `/recherche` + filtres territoire/public/thème/dates. **25/07 — UX unifiée** : une actualité de `/recherche` rend une carte dédiée et son clic ouvre le **reader canonique** `/blog/:slug` (repli `/blog/id/:id`), plus un drawer générique |
 | 2.3 | Module événementiel (agenda) + affichage territoire | 🟡 *(diagnostiqué le 14-19/08)* | module agenda complet (calendrier + liste, filtre territoire) ; testé avec des **événements de test locaux** (dev, pas de la production — cf. §9sexies), a révélé 3 bugs backend, **tous corrigés** (§9sexies.1) ; **0 donnée `events` en production, toujours à confirmer** ; pas de carte agenda (`enableMap:false`) |
 | 2.4 | Impression de l'agenda | ❌ | **aucun code print** (`@media print`/`window.print`) — à faire (CSS print ou export iCal/PDF) |
@@ -1582,7 +1851,7 @@ basculées. Non commité à ce stade.
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| 3.1 | Module ressources (POI `recoveryCenter`) | 🟡 | `/ressources` + form `parent62-recovery-center` (catégories Vidéo/Photo/Compte-rendu/Jeu/Doc/Lien, galerie/docs). **Données observées le 25/07** : `/ressources` affiche « Toutes les ressources (**4**) » — la mention « 0 donnée » du 24/07 est caduque. Création **admin-only** (pas de bouton public → le « formulaire simple partenaire » du CDC n'est pas exposé) |
+| 3.1 | Module ressources (POI `recoveryCenter`) | 🟡 | `/ressources` + form `parent62-recovery-center` (catégories Vidéo/Photo/Compte-rendu/Doc/Lien, **02/09 : + Inforéso et Elles et ils ont marqué le réseau ; « Jeu » remplacé par « Les jeux du réseau »** — formulaire, filtre « Type » et pastilles de carte ; galerie/docs). **À vérifier en base** : les POI déjà enregistrés en `category: "Jeu"` ne sont pas migrés et sortent du filtre « Type ». **Données observées le 25/07** : `/ressources` affiche « Toutes les ressources (**4**) » — la mention « 0 donnée » du 24/07 est caduque. Création **admin-only** (pas de bouton public → le « formulaire simple partenaire » du CDC n'est pas exposé) |
 | 3.2 | Recherche dans les ressources (territoire/**ville**) | ✅ config *(était ❌)* | `/ressources` filtre `category` + `territoires` + **`commune`** (`address.addressLocality`) + public/thème + `searchBy:[name,description]`. **25/07** : les ressources sont aussi atteignables depuis `/recherche` (cible « Ressources » + règle de rendu dédiée) |
 | 3.3 | Votes « utile » / contributeurs | ❌ | pas de vote sur les ressources (`ADD_VOTE`/`links` à câbler + UI card) ; les votes n'existent que sur le fil news social |
 
@@ -1657,8 +1926,8 @@ attendue par le test parole ; périmètre `prepData`/`validategroup`.
 - **Coquilles de communes** dans les PDF officiels, conservées telles quelles — correction à
   demander au réseau.
 - **Chantier accueil/header/footer du 06/08** (§9quater), committé sur `parents62` mais **pas
-  encore recetté visuellement ni fusionné dans `main`** : `/parents`/`/pro` **orphelines** (plus
-  aucun lien depuis la config).
+  encore recetté visuellement ni fusionné dans `main`**. (Le point `/parents`/`/pro` **orphelines**
+  qui figurait ici est **levé le 02/09** : la double entrée est rétablie sur l'accueil, §9septendecies.)
 - **Thèmes/catégorie promus par un admin ne sont visibles qu'après le prochain chargement de page
   des AUTRES utilisateurs/onglets** (25/08, §9septies.2) — `carrier.refresh()` ne rafraîchit que la
   session courante, pas de push temps réel entre sessions.
@@ -1696,15 +1965,15 @@ les **paroles ne sont plus muettes** dans le moteur (§9bis.1).
 | **URL parole** `/temoignages` vs `/paroles` | Thomas / réseau |
 | Harmoniser `/theme/*` avec `/recherche` (2.2 — le volet `/blog` est fait) | Peterson |
 | **[25/08] Devenir des 8 pages `/theme/<slug>`** — restent en ligne mais orphelines de la nav depuis la bascule `dynamicList` (§9decies) : les rediriger vers `/blog?theme=...`, les relier autrement (footer, pages territoire…), ou les laisser telles quelles (SEO dédié conservé) ? | réseau / Peterson |
+| **[02/09] Tuiles `action-tiles` gris délavé en mode CLAIR, sur tout le site** (`/`, `/parents`, `/pro`) — `primary` clair est un bleu quasi neutre (`oklch(0.35 0.04 250)`, chroma 0.04) dont le `bg-primary/20` du composant ne tire qu'un gris ; le mode sombre, lui, est bon. Relever la chroma de `primary` en clair (impacte tout le site) ou passer ces tuiles sur un token plus saturé ? | Peterson / client |
 | **[25/08] Valider en conditions réelles la branche RECETTE DYNAMIQUE de `useResolveDynamicNav`** (seule la branche statique a été exercée sur parent62, §9decies.3) — pertinent le jour où `costum.lists.themes` (ou une autre liste) devient une recette dynamique côté backend | Thomas / backend |
 | **Carte `CardEvent`** — hauteur figée `h-72`, aucun fond, ignore `card`/`list` : dans une liste hétérogène elle laisse un trou et laisse voir le fond de page. Correctif à recetter sur `/agenda` | Thomas |
 | Valeurs `category` ressources · 10e territoire « Familles en sol mineur » (43) · contenu des 4 pages statiques · couleurs `oklch` · coquilles de communes | réseau |
-| **[06/08] `/parents`/`/pro` orphelines** — confirmé statiquement (config), et indirectement par e2e (le test dédié échoue avant d'atteindre l'assertion sur ces liens) ; le dropdown « Publics » (7 pages `/public/*`) les remplace-t-il volontairement, ou faut-il relier ces deux pages (nav ou accueil) ? | Peterson / Thomas |
 | **[06/08] « Professionnels » désormais dans le header** (dropdown « Publics ») — contredit la décision du 23/07 (« Parents / Professionnels hors menu ») ; si le nouveau nav est acté, l'assertion e2e correspondante est à réviser | Peterson / Thomas |
 | **[06/08] Assertion e2e d'opacité du header** (« mode sombre… », `bg-background/90`) écrite pour `transparent-scroll` — à réécrire pour la mécanique réelle de `stacked` (scrim interne, opacité jamais posée sur le `<nav>`) | Peterson |
 | **[06/08] `build`** jamais relancé depuis la refonte — à faire avant tout commit (`test:unit` — 2 227/2 229, seuls les 2 pré-existants restent —, `test:integration` et `e2e` ciblé ont été rejoués le 06/08, cf. §9quater.3) |
 | ~~**[25/08] Déclarer `themesPoi` / `themesEvents`**~~ — **CLOS le 02/09 : elles existaient déjà en base** (§9terdecies.1). Reste, si voulu : créer une liste STATIQUE `themes` via la section admin pour disposer d'un socle éditable sans redéploiement. _(libellé d'origine ci-dessous, conservé pour l'historique)_ | Thomas / backend |
-| **[25/08, révisé 02/09] Déclarer `themesPoi` / `themesEvents` dans `costum.lists`** — deux recettes `distinct` mono-collection (`poi`, `events`) de forme **déjà supportée**, à AJOUTER à côté de `costum.lists.themes` qui reste statique et éditable par l'admin. Remplace la demande initiale de *convertir* `themes` en recette, qui butait sur le multi-collections : le front sait désormais fusionner N listes (§9undecies), donc plus rien à changer côté backend. Ajout additif, retour arrière = supprimer les deux clés. Idem `categoriesParole` si le besoin se confirme (une seule collection, `poi`) | Thomas / backend |
+| **[25/08, révisé 02/09] Déclarer `themesPoi` / `themesEvents` dans `costum.lists`** — deux recettes `distinct` mono-collection (`poi`, `events`) de forme **déjà supportée**, à AJOUTER à côté de `costum.lists.themes` qui reste statique et éditable par l'admin. Remplace la demande initiale de *convertir* `themes` en recette, qui butait sur le multi-collections : le front sait désormais fusionner N listes (§9sexdecies), donc plus rien à changer côté backend. Ajout additif, retour arrière = supprimer les deux clés. Idem `categoriesParole` si le besoin se confirme (une seule collection, `poi`) | Thomas / backend |
 | **[25/08] `build`** jamais relancé depuis ce lot — commit `bcd90e6d` pushé, à recetter avant fusion dans `main` | Peterson |
 | ~~**[25/08] Section admin « Listes » — valider renommer/réordonner/supprimer**~~ — **SANS OBJET depuis le 02/09 : la section a été retirée** (§9quaterdecies), `costum.lists` est en lecture seule depuis site-json | — |
 | ~~**[25/08] Section admin « Listes » — `build`**~~ — **SANS OBJET** : la section a été retirée le 02/09 (§9quaterdecies). Le commit `9c3f243f` reste dans l'historique de `parents62` | — |

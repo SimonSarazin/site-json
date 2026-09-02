@@ -429,6 +429,47 @@
           }
         },
         {
+          "type": "action-tiles",
+          "id": "home-double-entree",
+          "props": {
+            "headline": {
+              "fr": "Vous êtes…",
+              "en": "You are…"
+            },
+            "columns": {
+              "lg": 2
+            },
+            "actions": [
+              {
+                "icon": "heart-handshake",
+                "title": {
+                  "fr": "Parent",
+                  "en": "A parent"
+                },
+                "subtitle": {
+                  "fr": "Trouver du soutien, des activités et des paroles de parents près de chez vous",
+                  "en": "Find support, activities and parents' voices near you"
+                },
+                "href": "/parents",
+                "color": "primary"
+              },
+              {
+                "icon": "briefcase",
+                "title": {
+                  "fr": "Professionnel·le ou bénévole",
+                  "en": "A professional or volunteer"
+                },
+                "subtitle": {
+                  "fr": "Référencer vos actions, rejoindre le réseau et suivre l'agenda pro",
+                  "en": "List your activities, join the network and follow the professional agenda"
+                },
+                "href": "/pro",
+                "color": "accent"
+              }
+            ]
+          }
+        },
+        {
           "type": "map-bubbles",
           "id": "carte-territoires",
           "props": {
@@ -4009,11 +4050,11 @@
                     }
                   },
                   {
-                    "id": "jeu",
-                    "value": "Jeu",
+                    "id": "les-jeux-du-reseau",
+                    "value": "Les jeux du réseau",
                     "label": {
-                      "fr": "Jeu",
-                      "en": "Jeu"
+                      "fr": "Les jeux du réseau",
+                      "en": "Les jeux du réseau"
                     }
                   },
                   {
@@ -4030,6 +4071,22 @@
                     "label": {
                       "fr": "Lien",
                       "en": "Lien"
+                    }
+                  },
+                  {
+                    "id": "inforeso",
+                    "value": "Inforéso",
+                    "label": {
+                      "fr": "Inforéso",
+                      "en": "Inforéso"
+                    }
+                  },
+                  {
+                    "id": "elles-et-ils-ont-marque-le-reseau",
+                    "value": "Elles et ils ont marqué le réseau",
+                    "label": {
+                      "fr": "Elles et ils ont marqué le réseau",
+                      "en": "Elles et ils ont marqué le réseau"
                     }
                   }
                 ]
@@ -4532,9 +4589,16 @@
                     "Vidéo": "var(--chart-1)",
                     "Photo": "var(--chart-2)",
                     "Compte-rendu": "var(--chart-3)",
-                    "Jeu": "var(--chart-4)",
+                    "Les jeux du réseau": "var(--chart-4)",
                     "Document": "var(--chart-5)",
-                    "Lien": "var(--primary)"
+                    "Lien": "var(--primary)",
+                    "Inforéso": "var(--info)",
+                    "Elles et ils ont marqué le réseau": "var(--success)"
+                  },
+                  "icons": {
+                    "Inforéso": "newspaper",
+                    "Elles et ils ont marqué le réseau": "award",
+                    "Les jeux du réseau": "gamepad-2"
                   }
                 },
                 "facets": [
@@ -13871,9 +13935,16 @@
                             "Vidéo": "var(--chart-1)",
                             "Photo": "var(--chart-2)",
                             "Compte-rendu": "var(--chart-3)",
-                            "Jeu": "var(--chart-4)",
+                            "Les jeux du réseau": "var(--chart-4)",
                             "Document": "var(--chart-5)",
-                            "Lien": "var(--primary)"
+                            "Lien": "var(--primary)",
+                            "Inforéso": "var(--info)",
+                            "Elles et ils ont marqué le réseau": "var(--success)"
+                          },
+                          "icons": {
+                            "Inforéso": "newspaper",
+                            "Elles et ils ont marqué le réseau": "award",
+                            "Les jeux du réseau": "gamepad-2"
                           }
                         },
                         "facets": [
@@ -14646,9 +14717,16 @@
                   "Vidéo": "var(--chart-1)",
                   "Photo": "var(--chart-2)",
                   "Compte-rendu": "var(--chart-3)",
-                  "Jeu": "var(--chart-4)",
+                  "Les jeux du réseau": "var(--chart-4)",
                   "Document": "var(--chart-5)",
-                  "Lien": "var(--primary)"
+                  "Lien": "var(--primary)",
+                  "Inforéso": "var(--info)",
+                  "Elles et ils ont marqué le réseau": "var(--success)"
+                },
+                "icons": {
+                  "Inforéso": "newspaper",
+                  "Elles et ils ont marqué le réseau": "award",
+                  "Les jeux du réseau": "gamepad-2"
                 }
               },
               "facets": [
@@ -15825,6 +15903,7 @@
               "columns": 1,
               "fields": [
                 "name",
+                "category",
                 "shortDescription",
                 "description",
                 "profil_avatar",
@@ -15869,6 +15948,44 @@
             "fr": "Titre",
             "en": "Title"
           }
+        },
+        "category": {
+          "widget": "select",
+          "label": {
+            "fr": "Type d'actualité",
+            "en": "News type"
+          },
+          "placeholder": {
+            "fr": "Choisir un type",
+            "en": "Choose a type"
+          },
+          "info": {
+            "fr": "« Appel à projets » et « Offre d'emploi » ajoutent automatiquement le mot-clé correspondant et font apparaître l'article sur sa page dédiée ; « Article simple » n'en pose aucun.",
+            "en": "“Call for projects” and “Job offer” auto-add the matching tag and list the article on its dedicated page; “Standard article” adds none."
+          },
+          "enum": [
+            {
+              "value": "actualite",
+              "label": {
+                "fr": "Article simple",
+                "en": "Standard article"
+              }
+            },
+            {
+              "value": "appel-projet",
+              "label": {
+                "fr": "Appel à projets",
+                "en": "Call for projects"
+              }
+            },
+            {
+              "value": "offre-emploi",
+              "label": {
+                "fr": "Offre d'emploi",
+                "en": "Job offer"
+              }
+            }
+          ]
         },
         "shortDescription": {
           "widget": "textarea",
@@ -16260,6 +16377,22 @@
         "existingUrlFrom": "image:profilUrl"
       },
       "mutation": {
+        "stamps": [
+          {
+            "field": "tags",
+            "op": "append",
+            "on": "both",
+            "value": {
+              "$mapLabels": {
+                "from": "category",
+                "map": {
+                  "appel-projet": "Appels à projets",
+                  "offre-emploi": "Offres d'emploi"
+                }
+              }
+            }
+          }
+        ],
         "entityType": "poi",
         "navigateOnSuccess": false,
         "inject": {
@@ -17288,8 +17421,8 @@
             "en": "Resource type"
           },
           "placeholder": {
-            "fr": "Vidéo / Photo / Compte-rendu / Jeu…",
-            "en": "Video / Photo / Report / Game…"
+            "fr": "Vidéo / Photo / Compte-rendu / Jeux du réseau…",
+            "en": "Video / Photo / Report / Network games…"
           },
           "enum": [
             {
@@ -17314,10 +17447,10 @@
               }
             },
             {
-              "value": "Jeu",
+              "value": "Les jeux du réseau",
               "label": {
-                "fr": "Jeu",
-                "en": "Jeu"
+                "fr": "Les jeux du réseau",
+                "en": "Les jeux du réseau"
               }
             },
             {
@@ -17332,6 +17465,20 @@
               "label": {
                 "fr": "Lien",
                 "en": "Lien"
+              }
+            },
+            {
+              "value": "Inforéso",
+              "label": {
+                "fr": "Inforéso",
+                "en": "Inforéso"
+              }
+            },
+            {
+              "value": "Elles et ils ont marqué le réseau",
+              "label": {
+                "fr": "Elles et ils ont marqué le réseau",
+                "en": "Elles et ils ont marqué le réseau"
               }
             }
           ]
@@ -18110,6 +18257,134 @@
               "delete"
             ],
             "create": "add-parent62-article",
+            "edit": "inherit"
+          }
+        ]
+      },
+      {
+        "id": "appels-projets",
+        "label": {
+          "fr": "Appels à projets",
+          "en": "Calls for projects"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "poi",
+            "label": {
+              "fr": "Appels à projets",
+              "en": "Calls for projects"
+            },
+            "source": {
+              "defaultFilters": {
+                "type": "article"
+              },
+              "defaultTags": [
+                "Appels à projets"
+              ],
+              "defaultSortBy": {
+                "created": -1
+              },
+              "costumSlug": "parent62",
+              "sourceKey": [
+                "parent62"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Titre",
+                  "en": "Title"
+                }
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Date",
+                  "en": "Date"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ],
+            "create": "add-parent62-article",
+            "createDefaults": {
+              "category": "appel-projet"
+            },
+            "edit": "inherit"
+          }
+        ]
+      },
+      {
+        "id": "offres-emploi",
+        "label": {
+          "fr": "Offres d'emploi",
+          "en": "Job offers"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "poi",
+            "label": {
+              "fr": "Offres d'emploi",
+              "en": "Job offers"
+            },
+            "source": {
+              "defaultFilters": {
+                "type": "article"
+              },
+              "defaultTags": [
+                "Offres d'emploi"
+              ],
+              "defaultSortBy": {
+                "created": -1
+              },
+              "costumSlug": "parent62",
+              "sourceKey": [
+                "parent62"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Titre",
+                  "en": "Title"
+                }
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Date",
+                  "en": "Date"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ],
+            "create": "add-parent62-article",
+            "createDefaults": {
+              "category": "offre-emploi"
+            },
             "edit": "inherit"
           }
         ]
