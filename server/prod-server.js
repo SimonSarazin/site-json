@@ -9,6 +9,7 @@ import { normalizeSiteConfig } from "./utils/normalizeSiteConfig.js";
 import { findSiteBySlug, knownSlugs } from "./utils/sites.js";
 import { registerSeoRoutes } from "./lib/sitemap.js";
 import { helloassoCheckoutIntentHandler, helloassoTokenHandler, helloassoCallbackHandler, helloassoCheckoutStatusHandler } from "./api/helloasso-checkout.js";
+import { realtimeFluxHandler, realtimePushHandler } from "./api/realtime.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -116,6 +117,11 @@ console.log(`Config chargée depuis ${configOrigin} :`, cachedConfig?.meta?.titl
 const app = express();
 
 // Compression gzip avec options optimisées
+// TEMPS REEL — monte AVANT `compression()` DELIBEREMENT : sur un flux SSE le test de seuil
+// du middleware est faux des deux cotes (la longueur n'est affectee qu'au `res.end`, qui
+// n'arrive jamais), il compresserait donc tout dans un tampon jamais vide. Ne pas deplacer.
+app.get("/api/realtime/flux", realtimeFluxHandler);
+
 app.use(compression({
   level: 6,        // Bon compromis vitesse/compression
   threshold: 1024, // Minimum 1KB pour compresser
@@ -133,6 +139,10 @@ app.use("/img", createImageOptimizer({
 
 // Middleware JSON pour les requêtes API
 app.use(express.json());
+// TEMPS REEL (push) — monte APRES `express.json()`, DELIBEREMENT : ces routes ont un CORPS
+// JSON, contrairement au flux. Montees avant, `req.body` serait vide et un abonnement
+// parfaitement valide repartirait en 400.
+app.all("/api/realtime/push/*splat", realtimePushHandler);
 
 // Routes API HelloAsso
 console.log("🔧 Enregistrement des routes API HelloAsso...");
