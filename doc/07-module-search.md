@@ -1500,7 +1500,8 @@ qui joue le rôle de filet.
 **Vues customisables (pattern dispatcher, comme `SearchCard`)** : le **marqueur**
 et la **popup** suivent le modèle dispatcher + composants-variants. Le marqueur :
 `SearchMapMarkers` dispatche sur le `kind` résolu (cf. `markerVisual.ts` ← config
-`map.marker`) vers `mapMarker/MapMarker<X>.tsx` (Pin / Circle / Icon / Avatar) —
+`map.marker`) vers `mapMarker/MapMarker<X>.tsx` (Pin / PinIcon / Circle / CircleIcon /
+Icon / Avatar) —
 **non-lazy** (rendu par point ; un Suspense par marqueur serait coûteux). La
 popup : `SearchMapPopup` dispatche sur `map.popup.type` vers
 `mapPopup/MapPopup<X>.tsx` en **`lazy()`** (un chunk par page, comme
@@ -1559,14 +1560,83 @@ carte depuis la console/les tests navigateur.
 
 **Marqueurs (`MarkerConfSchema`)** — configurables **par site** via
 `integrations.map.marker` (défaut du site) ET **par section** via `map.marker`
-(surcharge champ par champ ; sinon repli sur le défaut intégré). Chaîne de repli
-par **priorité** (cf. `lib/markerVisual.ts`) :
+(surcharge champ par champ ; sinon repli sur le défaut intégré). **Deux étages**
+(cf. `lib/markerVisual.ts`) : `by` **choisit** le marqueur d'après la donnée, la
+chaîne de repli le **rend**.
+
+**Étage A — `by` : un marqueur PAR VALEUR d'attribut.** `path` est un dot-path
+`serverData` (valeur string/nombre/booléen, ou **tableau** → la première valeur
+de l'item présente dans `mapping` gagne, l'ordre de l'item faisant foi) ; chaque
+cas de `mapping` est un marqueur **partiel fusionné** sur le marqueur de base ;
+`default` couvre les valeurs **non listées** (sans lui, le marqueur de base sert
+de défaut).
+
+```jsonc
+"map": {
+  "marker": {
+    "style": "pin", "color": "primary",          // marqueur de BASE (hérité par les cas)
+    "by": {
+      "path": "equip_type_famille",              // ⚠ à projeter dans baseParams.defaultFields
+      "mapping": {
+        "Bassin":                  { "color": "chart-1" },                  // hérite style: pin
+        "Terrain de grands jeux":  { "style": "circle", "color": "chart-2" },
+        "Salle multisports":       { "iconUrl": "/images/x/salle.svg", "iconSize": 28 }
+      },
+      "default": { "color": "chart-5" }          // valeurs non listées
+    }
+  }
+}
+```
+
+Deux pièges, tous deux **silencieux** :
+- `path` **absent de `baseParams.defaultFields`** vaut `undefined` → aucun cas ne
+  matche, tous les marqueurs tombent sur le défaut (même piège que `list.itemRules`) ;
+- un cas qui déclare un **sélecteur de rendu** (`useItemImage`, `colorBy`,
+  `iconUrl`, `style`) remplace **tous** ceux du marqueur de base — sans cette
+  règle, un `iconUrl` de base masquerait le `style: "pin"` d'un cas (l'icône
+  gagne plus haut dans la chaîne). Le cas n'hérite alors que de
+  `color`/`borderColor`/`iconSize`/`iconAnchor`.
+
+**Étage B — chaîne de repli** du marqueur choisi, par **priorité** :
 1. `useItemImage: true` ET l'item a une image → **vignette RONDE** de l'item ;
-2. `iconUrl` → **icône custom** (image/SVG brandée — URL relative préfixée par
+2. `colorBy` ET une valeur de l'item mappée → pin (ou pastille si
+   `style: "circle"`) **coloré par valeur** (code couleur par territoire) —
+   prioritaire sur le jeton `color`, seul le remplissage vient du mapping ;
+3. `iconUrl` → **icône custom** (image/SVG brandée — URL relative préfixée par
    `baseUrl`, ou absolue ; `iconSize` px déf. 34, `iconAnchor` `"bottom"`/`"center"`) ;
-3. `style: "pin"` / `style: "circle"` (+ `color` en **jeton de thème** :
-   `primary`/`secondary`/`accent`/`chart-1..5`) → goutte SVG ou pastille ronde ;
-4. sinon → pin par défaut (primary).
+4. `style: "pin"` / `style: "circle"` / `icon` (+ `color` en **jeton de thème** :
+   `primary`/`secondary`/`accent`/`chart-1..5` ; `borderColor` déf. `background`)
+   → goutte SVG ou pastille ronde, portant le **pictogramme lucide** d'`icon`
+   en son centre quand il est déclaré (`icon` seul implique la goutte) ;
+5. sinon → pin par défaut (primary).
+
+**`icon` vs `iconUrl`** — les deux mettent un pictogramme sur la carte, mais
+`icon` est un nom **lucide** (kebab-case, catalogue de 1901 noms validé par
+l'audit `icone-inconnue`) rendu par `DynamicIcon` DANS la goutte ou la pastille :
+aucun asset à fournir, le marqueur reste aux **jetons de thème** et suit
+light/dark. `iconUrl` est une **image** servie par le backend, qui remplace la
+forme entière et ignore le thème — et dont le chemin relatif est préfixé par
+`getBaseUrl()` (backend), pas par le site : un `/images/<slug>/x.svg` ne
+résoudra pas. `iconUrl` gagne sur `icon` s'ils sont déclarés ensemble.
+
+```jsonc
+"marker": {
+  "style": "pin", "color": "primary",
+  "by": {
+    "path": "equip_type_name",
+    "mapping": {
+      "Bassin sportif de natation": { "color": "chart-1", "icon": "waves" },
+      "Terrain de football":        { "color": "chart-2", "icon": "goal" },
+      "Boucle de randonnée":        { "style": "circle", "color": "chart-4", "icon": "footprints" }
+    },
+    "default": { "color": "secondary", "icon": "circle-dashed" }
+  }
+}
+```
+
+`colorBy` ne change que la COULEUR d'un même marqueur ; `by` change le marqueur
+ENTIER (forme, icône, vignette) — les deux se combinent (un cas de `by` peut
+porter son propre `colorBy`).
 
 ```jsonc
 // par site (config racine) :
