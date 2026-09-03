@@ -6,25 +6,35 @@
       "builtins": {
         "organization": "add-organization",
         "project": "add-project",
-        "event": "add-parent62-event",
+        "event": "add-event",
         "poi": "add-poi"
       }
     },
     "organizations": {
       "builtins": {
         "project": "add-project",
-        "event": "add-parent62-event",
+        "event": "add-event",
         "poi": "add-poi"
       }
     },
     "projects": {
       "builtins": {
-        "event": "add-parent62-event",
+        "event": "add-event",
         "poi": "add-poi"
       }
     }
   },
   "editModals": {
+    "events": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-parent62-event",
+          "native": "edit-parent62-event",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    },
     "poi": {
       "vierge": "edit-profile",
       "routes": [
@@ -61,6 +71,56 @@
         ]
       },
       "create": "add-parent62-article",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "appels-projets/poi": {
+      "source": {
+        "defaultFilters": {
+          "type": "article"
+        },
+        "defaultTags": [
+          "Appels à projets"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        },
+        "costumSlug": "parent62",
+        "sourceKey": [
+          "parent62"
+        ]
+      },
+      "create": "add-parent62-article",
+      "createDefaults": {
+        "category": "appel-projet"
+      },
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "offres-emploi/poi": {
+      "source": {
+        "defaultFilters": {
+          "type": "article"
+        },
+        "defaultTags": [
+          "Offres d'emploi"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        },
+        "costumSlug": "parent62",
+        "sourceKey": [
+          "parent62"
+        ]
+      },
+      "create": "add-parent62-article",
+      "createDefaults": {
+        "category": "offre-emploi"
+      },
       "edit": {
         "enabled": true,
         "modalName": null
@@ -118,6 +178,25 @@
         ]
       },
       "create": "add-parent62-event",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "reunions-comite/events": {
+      "source": {
+        "defaultFilters": {
+          "type": "meeting"
+        },
+        "defaultSortBy": {
+          "startDate": -1
+        },
+        "costumSlug": "parent62",
+        "sourceKey": [
+          "parent62"
+        ]
+      },
+      "create": "add-parent62-reunion",
       "edit": {
         "enabled": true,
         "modalName": null
@@ -231,7 +310,67 @@
         }
       }
     },
+    "/territoire/arrageois/agenda": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "costumSlug": "parent62",
+        "indexStepList": 30,
+        "filters": {
+          "type": "meeting",
+          "territoires": {
+            "$in": [
+              "Arrageois"
+            ]
+          }
+        }
+      }
+    },
     "/territoire/arrageois/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "type": "recoveryCenter",
+          "territoires": {
+            "$in": [
+              "Arrageois"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "category",
+          "description",
+          "urls",
+          "medias",
+          "territoires",
+          "publics",
+          "themes",
+          "tags",
+          "address",
+          "created",
+          "type",
+          "source",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "description"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        },
+        "indexStepList": 3
+      }
+    },
+    "/territoire/arrageois/searchProStatic#1": {
       "baseParams": {
         "defaultTypes": [
           "projects"
@@ -249,7 +388,67 @@
         "indexStepList": 6
       }
     },
+    "/territoire/artois/agenda": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "costumSlug": "parent62",
+        "indexStepList": 30,
+        "filters": {
+          "type": "meeting",
+          "territoires": {
+            "$in": [
+              "Artois"
+            ]
+          }
+        }
+      }
+    },
     "/territoire/artois/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "type": "recoveryCenter",
+          "territoires": {
+            "$in": [
+              "Artois"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "category",
+          "description",
+          "urls",
+          "medias",
+          "territoires",
+          "publics",
+          "themes",
+          "tags",
+          "address",
+          "created",
+          "type",
+          "source",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "description"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        },
+        "indexStepList": 3
+      }
+    },
+    "/territoire/artois/searchProStatic#1": {
       "baseParams": {
         "defaultTypes": [
           "projects"
@@ -267,7 +466,67 @@
         "indexStepList": 6
       }
     },
+    "/territoire/audomarois/agenda": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "costumSlug": "parent62",
+        "indexStepList": 30,
+        "filters": {
+          "type": "meeting",
+          "territoires": {
+            "$in": [
+              "Audomarois"
+            ]
+          }
+        }
+      }
+    },
     "/territoire/audomarois/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "type": "recoveryCenter",
+          "territoires": {
+            "$in": [
+              "Audomarois"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "category",
+          "description",
+          "urls",
+          "medias",
+          "territoires",
+          "publics",
+          "themes",
+          "tags",
+          "address",
+          "created",
+          "type",
+          "source",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "description"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        },
+        "indexStepList": 3
+      }
+    },
+    "/territoire/audomarois/searchProStatic#1": {
       "baseParams": {
         "defaultTypes": [
           "projects"
@@ -285,7 +544,67 @@
         "indexStepList": 6
       }
     },
+    "/territoire/boulonnais/agenda": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "costumSlug": "parent62",
+        "indexStepList": 30,
+        "filters": {
+          "type": "meeting",
+          "territoires": {
+            "$in": [
+              "Boulonnais"
+            ]
+          }
+        }
+      }
+    },
     "/territoire/boulonnais/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "type": "recoveryCenter",
+          "territoires": {
+            "$in": [
+              "Boulonnais"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "category",
+          "description",
+          "urls",
+          "medias",
+          "territoires",
+          "publics",
+          "themes",
+          "tags",
+          "address",
+          "created",
+          "type",
+          "source",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "description"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        },
+        "indexStepList": 3
+      }
+    },
+    "/territoire/boulonnais/searchProStatic#1": {
       "baseParams": {
         "defaultTypes": [
           "projects"
@@ -303,7 +622,67 @@
         "indexStepList": 6
       }
     },
+    "/territoire/calaisis/agenda": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "costumSlug": "parent62",
+        "indexStepList": 30,
+        "filters": {
+          "type": "meeting",
+          "territoires": {
+            "$in": [
+              "Calaisis"
+            ]
+          }
+        }
+      }
+    },
     "/territoire/calaisis/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "type": "recoveryCenter",
+          "territoires": {
+            "$in": [
+              "Calaisis"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "category",
+          "description",
+          "urls",
+          "medias",
+          "territoires",
+          "publics",
+          "themes",
+          "tags",
+          "address",
+          "created",
+          "type",
+          "source",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "description"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        },
+        "indexStepList": 3
+      }
+    },
+    "/territoire/calaisis/searchProStatic#1": {
       "baseParams": {
         "defaultTypes": [
           "projects"
@@ -321,7 +700,67 @@
         "indexStepList": 6
       }
     },
+    "/territoire/entre-mer-et-terres/agenda": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "costumSlug": "parent62",
+        "indexStepList": 30,
+        "filters": {
+          "type": "meeting",
+          "territoires": {
+            "$in": [
+              "Entre Mer et Terres"
+            ]
+          }
+        }
+      }
+    },
     "/territoire/entre-mer-et-terres/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "type": "recoveryCenter",
+          "territoires": {
+            "$in": [
+              "Entre Mer et Terres"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "category",
+          "description",
+          "urls",
+          "medias",
+          "territoires",
+          "publics",
+          "themes",
+          "tags",
+          "address",
+          "created",
+          "type",
+          "source",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "description"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        },
+        "indexStepList": 3
+      }
+    },
+    "/territoire/entre-mer-et-terres/searchProStatic#1": {
       "baseParams": {
         "defaultTypes": [
           "projects"
@@ -339,7 +778,67 @@
         "indexStepList": 6
       }
     },
+    "/territoire/familles-en-sol-mineur-henin-carvin/agenda": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "costumSlug": "parent62",
+        "indexStepList": 30,
+        "filters": {
+          "type": "meeting",
+          "territoires": {
+            "$in": [
+              "Familles en sol mineur Hénin Carvin"
+            ]
+          }
+        }
+      }
+    },
     "/territoire/familles-en-sol-mineur-henin-carvin/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "type": "recoveryCenter",
+          "territoires": {
+            "$in": [
+              "Familles en sol mineur Hénin Carvin"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "category",
+          "description",
+          "urls",
+          "medias",
+          "territoires",
+          "publics",
+          "themes",
+          "tags",
+          "address",
+          "created",
+          "type",
+          "source",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "description"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        },
+        "indexStepList": 3
+      }
+    },
+    "/territoire/familles-en-sol-mineur-henin-carvin/searchProStatic#1": {
       "baseParams": {
         "defaultTypes": [
           "projects"
@@ -357,7 +856,67 @@
         "indexStepList": 6
       }
     },
+    "/territoire/familles-en-sol-mineur-lens-lievin/agenda": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "costumSlug": "parent62",
+        "indexStepList": 30,
+        "filters": {
+          "type": "meeting",
+          "territoires": {
+            "$in": [
+              "Familles en sol mineur Lens Liévin"
+            ]
+          }
+        }
+      }
+    },
     "/territoire/familles-en-sol-mineur-lens-lievin/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "type": "recoveryCenter",
+          "territoires": {
+            "$in": [
+              "Familles en sol mineur Lens Liévin"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "category",
+          "description",
+          "urls",
+          "medias",
+          "territoires",
+          "publics",
+          "themes",
+          "tags",
+          "address",
+          "created",
+          "type",
+          "source",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "description"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        },
+        "indexStepList": 3
+      }
+    },
+    "/territoire/familles-en-sol-mineur-lens-lievin/searchProStatic#1": {
       "baseParams": {
         "defaultTypes": [
           "projects"
@@ -375,7 +934,67 @@
         "indexStepList": 6
       }
     },
+    "/territoire/ternois-bruaysis/agenda": {
+      "baseParams": {
+        "sourceKey": [
+          "parent62"
+        ],
+        "costumSlug": "parent62",
+        "indexStepList": 30,
+        "filters": {
+          "type": "meeting",
+          "territoires": {
+            "$in": [
+              "Ternois Bruaysis"
+            ]
+          }
+        }
+      }
+    },
     "/territoire/ternois-bruaysis/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "defaultFilters": {
+          "type": "recoveryCenter",
+          "territoires": {
+            "$in": [
+              "Ternois Bruaysis"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "category",
+          "description",
+          "urls",
+          "medias",
+          "territoires",
+          "publics",
+          "themes",
+          "tags",
+          "address",
+          "created",
+          "type",
+          "source",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "description"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        },
+        "indexStepList": 3
+      }
+    },
+    "/territoire/ternois-bruaysis/searchProStatic#1": {
       "baseParams": {
         "defaultTypes": [
           "projects"
@@ -463,6 +1082,25 @@
         ]
       }
     }
+  },
+  "stamps": {
+    "parent62-article": [
+      {
+        "field": "tags",
+        "value": {
+          "$mapLabels": {
+            "from": "category",
+            "map": {
+              "appel-projet": "Appels à projets",
+              "offre-emploi": "Offres d'emploi"
+            }
+          }
+        },
+        "op": "append",
+        "on": "both",
+        "channel": "payload"
+      }
+    ]
   },
   "referencement": {},
   "membership": {

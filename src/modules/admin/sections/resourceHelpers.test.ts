@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import type { AdminResourceSection } from "../schema";
-import { resolveCreateModal, resolveEditModal, getPath, formatCell, readStatusValue } from "./resourceHelpers";
+import { resolveCreateModal, resolveEditModal, getPath, getColumnValue, formatCell, formatColumnCell, readStatusValue } from "./resourceHelpers";
 
 /** Section resource minimale — cast : create/edit sont posés par les défauts zod à la validation. */
 function section(over: Record<string, unknown> = {}): AdminResourceSection {
@@ -183,6 +183,54 @@ describe("getPath — lecture d'un chemin pointé", () => {
 
   it("index de tableau accessible comme clé", () => {
     expect(getPath(doc, "tags.1")).toBe("b");
+  });
+});
+
+describe("getColumnValue — colonne startDate : repli vers l'occurrence d'un récurrent", () => {
+  it("colonne autre que startDate → identique à getPath", () => {
+    expect(getColumnValue({ name: "Foo" }, "name")).toBe("Foo");
+  });
+
+  it("ponctuel : startDate déjà présent → inchangé", () => {
+    const d = new Date("2026-08-14T09:00:00Z");
+    expect(getColumnValue({ startDate: d }, "startDate")).toBe(d);
+  });
+
+  it("récurrent : pas de startDate → repli sur startDateSortFormat", () => {
+    const value = getColumnValue(
+      { startDateSort: { date: "2026-08-14 09:00:00.000000" }, startDateSortFormat: "2026-08-14T09:00:00+0200" },
+      "startDate",
+    );
+    expect((value as Date).toISOString()).toBe("2026-08-14T07:00:00.000Z");
+  });
+
+  it("ni l'un ni l'autre (autre type d'entité) → null", () => {
+    expect(getColumnValue({ name: "Foo" }, "startDate")).toBeNull();
+  });
+});
+
+/** `t` factice fr, fidèle aux clés réelles (`modules/search/i18n/fr.json`). */
+const tFr = (key: string, _fallback?: string, params?: Record<string, unknown>) => {
+  const dict: Record<string, string> = { "days.wednesday": "Mercredi", "card.event.recurringAnd": "et" };
+  return key === "card.event.recurring" ? `Chaque ${params?.days ?? ""}` : (dict[key] ?? key);
+};
+
+describe("formatColumnCell — cellule startDate, avec repli récurrent (admin : searchCostum ne calcule pas d'occurrence)", () => {
+  it("colonne autre que startDate → identique à formatCell(getColumnValue(...))", () => {
+    expect(formatColumnCell({ name: "Foo" }, "name", tFr)).toBe("Foo");
+  });
+
+  it("ponctuel : startDate présent → date formatée normalement", () => {
+    expect(formatColumnCell({ startDate: new Date("2026-08-14T09:00:00Z") }, "startDate", tFr)).toContain("2026");
+  });
+
+  it("récurrent : ni startDate ni startDateSort/Format (cas réel admin) → libellé de récurrence", () => {
+    const row = { recurrency: true, openingHours: [{ dayOfWeek: "We", hours: [{ opens: "08:00", closes: "19:00" }] }] };
+    expect(formatColumnCell(row, "startDate", tFr)).toBe("Chaque mercredi");
+  });
+
+  it("ni date ni récurrence exploitable → tiret (comme avant), pas de crash", () => {
+    expect(formatColumnCell({ name: "Foo" }, "startDate", tFr)).toBe("—");
   });
 });
 

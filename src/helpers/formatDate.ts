@@ -49,3 +49,14 @@ export const formatDateLong = (date: Date | string | number) => {
     return String(date);
   }
 };
+
+/**
+ * Date d'occurrence d'un event : `startDate` (ponctuel, normalisé en Date par le SDK) sinon
+ * `startDateSort`/`startDateSortFormat` (occurrence calculée côté serveur pour un event RÉCURRENT —
+ * les récurrents purs n'ont pas de `startDate`). `startDateSort` est un objet PHP brut
+ * (`{date,timezone_type,timezone}`), pas parsable par `toValidDate` (le SDK ne le normalise pas) ;
+ * `startDateSortFormat` est la même occurrence en string ISO, la seule forme fiable. Source unique de
+ * ce repli, dupliqué avant dans `modules/agenda/lib/eventDates.ts` et `modules/search/hooks/useItem.tsx`.
+ */
+export const resolveEventStartDate = (sd: Record<string, unknown>): Date | null =>
+  toValidDate(sd.startDate) ?? toValidDate(sd.startDateSort) ?? toValidDate(sd.startDateSortFormat);

@@ -17,9 +17,10 @@ export interface AgendaListProps {
   card: ListConf["card"];
   preview: ListConf["preview"];
   columns?: ListConf["columns"];
-  hasMorePast?: boolean;
-  onLoadMorePast?: () => void;
-  loadingMorePast?: boolean;
+  /** Flux paginé PARTAGÉ par les 3 onglets (mode LISTE unique côté Agenda) — pas propre à « Passés ». */
+  hasMore?: boolean;
+  onLoadMore?: () => void;
+  loadingMore?: boolean;
   /** false = teaser : un seul bucket (= `tab`), sans barre d'onglets. */
   showTabs?: boolean;
 }
@@ -37,9 +38,9 @@ export default function AgendaList({
   card,
   preview,
   columns,
-  hasMorePast,
-  onLoadMorePast,
-  loadingMorePast,
+  hasMore,
+  onLoadMore,
+  loadingMore,
   showTabs = true,
 }: AgendaListProps) {
   const t = useT("modules/agenda");
@@ -52,10 +53,10 @@ export default function AgendaList({
     ) : buckets[tb].length > 0 ? (
       <>
         <SearchListView results={buckets[tb] as unknown as SearchEntity[]} columns={columns} card={card} preview={preview} />
-        {tb === "past" && hasMorePast && (
+        {hasMore && (
           <div className="mt-6 flex justify-center">
-            <Button variant="outline" onClick={onLoadMorePast} disabled={loadingMorePast}>
-              {loadingMorePast ? t("loadingMore") : t("loadMore")}
+            <Button variant="outline" onClick={onLoadMore} disabled={loadingMore}>
+              {loadingMore ? t("loadingMore") : t("loadMore")}
             </Button>
           </div>
         )}

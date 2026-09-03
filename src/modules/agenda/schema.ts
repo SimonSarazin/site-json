@@ -7,9 +7,14 @@ export const AGENDA_TABS = ["ongoing", "upcoming", "past"] as const;
 
 /**
  * Section `agenda` (config-driven) : expérience event d'un costum sur `searchEventsCostum`.
- * Deux vues complémentaires basculables : LISTE à onglets temporels (En cours / À venir / Passés,
- * mode calendrier now→fenêtre + mode liste paginé pour les passés) et GRILLE calendrier (grille mois
- * maison Tailwind/shadcn, refetch à la navigation). Filtres : type + texte (backend) et tags (client).
+ * Deux vues complémentaires basculables : LISTE à onglets temporels (En cours / À venir / Passés) et
+ * GRILLE calendrier (grille mois maison Tailwind/shadcn, refetch à la navigation).
+ * Filtres : type + texte (backend) et tags (client).
+ *
+ * ⚠ La LISTE n'a qu'UN SEUL flux backend, commun aux 3 onglets : `searchEventsCostum` SANS bornes de
+ * dates, trié `startDate` DÉCROISSANT et paginé par `baseParams.indexStepList` ; le partitionnement
+ * en onglets est CLIENT (`partitionByTime`). Conséquence pour un teaser : la page demandée doit être
+ * assez large pour contenir le bucket visé — cf. `limit` et `baseParams.indexStepList` ci-dessous.
  */
 export const AgendaSectionSchema = z.object({
   type: z.literal("agenda"),
@@ -30,7 +35,15 @@ export const AgendaSectionSchema = z.object({
         linkIcon: z.string().optional(),
       })
       .optional(),
-    /** Limite d'events par bucket (teaser home). Absent = tous (+ « charger plus » pour Passés). */
+    /**
+     * Plafond d'AFFICHAGE par bucket (teaser home). Absent = tous (+ « charger plus » pour Passés).
+     *
+     * ⚠ Ce n'est PAS la taille du fetch : il s'applique APRÈS le partitionnement client d'un flux
+     * trié DESC, tous buckets mêlés. `limit: 3` avec `baseParams.indexStepList: 3` ne ramène donc
+     * pas « les 3 prochains » mais les 3 events les plus LOINTAINS, dont il ne reste que ceux qui
+     * tombent dans le bucket — souvent moins que 3, parfois zéro. Garder `indexStepList`
+     * confortablement au-dessus de `limit` (20, le défaut `AGENDA_DEFAULT_INDEX_STEP`, convient).
+     */
     limit: z.number().int().positive().optional(),
     /** Afficher le toggle Liste/Calendrier (false = teaser : vue figée à `defaultMode`). */
     showViewToggle: z.boolean().default(true),
@@ -47,7 +60,11 @@ export const AgendaSectionSchema = z.object({
     /** Onglets affichés + onglet par défaut. */
     tabs: z.array(z.enum(AGENDA_TABS)).default(["upcoming", "ongoing", "past"]),
     defaultTab: z.enum(AGENDA_TABS).default("upcoming"),
-    /** Fenêtre (mois) du fetch CALENDRIER now→futur pour À venir/En cours. */
+    /**
+     * Borne haute (en mois) du bucket « À venir » : filtre CLIENT appliqué au flux liste — un event
+     * au-delà est chargé puis écarté. (Ce n'était un fetch calendrier borné que jusqu'au passage au
+     * flux liste unique, qui évitait une ligne par OCCURRENCE des récurrents.)
+     */
     upcomingWindowMonths: z.number().int().positive().default(12),
     /**
      * Scope & filtres backend de `searchEventsCostum` — MÊME convention que `searchProStatic.baseParams`
@@ -69,6 +86,10 @@ export const AgendaSectionSchema = z.object({
         // clés ensemble n'ont donc de sens que si l'on veut la porte, et il faut alors renoncer à
         // `notSourceKey`. Cf. `applyValidationGate`.
         costumSlug: z.string().optional(),
+        /**
+         * Taille de page du flux LISTE (`searchEventsCostum`, `startDate` DESC, tous buckets mêlés).
+         * Sur un teaser, c'est elle qui décide de ce que le bucket peut contenir — pas `limit`.
+         */
         indexStepList: z.number().int().positive().optional(),
         fediverse: z.boolean().optional(),
         filters: z.record(z.string(), z.unknown()).optional(),
