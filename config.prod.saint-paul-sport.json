@@ -519,25 +519,6 @@
                 ]
               },
               {
-                "id": "bassin",
-                "label": {
-                  "fr": "Bassin de vie",
-                  "en": "Living area"
-                },
-                "field": "address.zonirisId",
-                "multiple": true,
-                "optionsFrom": {
-                  "shapes": {
-                    "id": "bassins-vie",
-                    "source": "zoniris",
-                    "simplify": 10,
-                    "filters": {
-                      "spec": "bassins_vie_saintpaul"
-                    }
-                  }
-                }
-              },
-              {
                 "id": "type",
                 "label": {
                   "fr": "Catégorie",
@@ -1761,6 +1742,25 @@
                     }
                   }
                 ]
+              },
+              {
+                "id": "bassin",
+                "label": {
+                  "fr": "Bassin de vie",
+                  "en": "Living area"
+                },
+                "field": "address.zonirisId",
+                "multiple": true,
+                "optionsFrom": {
+                  "shapes": {
+                    "id": "bassins-vie",
+                    "source": "zoniris",
+                    "simplify": 10,
+                    "filters": {
+                      "spec": "bassins_vie_saintpaul"
+                    }
+                  }
+                }
               }
             ]
           }
