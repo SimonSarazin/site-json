@@ -8,6 +8,7 @@ import { Grid, List } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
+import { classifyHref } from '@/lib/linkKind';
 
 function CardsHeaderSection({
   props,
@@ -109,11 +110,25 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
 
   const CardWrapper = ({ children, href, target }: { children: React.ReactNode; href?: string; target?: string }) => {
     if (href) {
+      // Contrat 4 voies partagé avec NavLink et CTASection (cf. src/lib/linkKind.ts).
+      const kind = classifyHref(href);
+      // Placeholder de config (`#` ou vide) : jamais cliquable.
+      if (kind === 'inert') return <div className="block">{children}</div>;
       // Lien externe (http/https) → <a> natif (sinon React-Router <Link> le traite
       // comme un chemin relatif et casse la navigation).
-      if (/^https?:\/\//.test(href)) {
+      if (kind === 'external') {
         return (
           <a href={href} target={target || '_blank'} rel="noopener noreferrer" className="block">
+            {children}
+          </a>
+        );
+      }
+      // mailto:/tel:/sms: → ancre simple, le handler OS prend la main. Sans ce cas, le <Link>
+      // ci-dessous routait `tel:` vers le catch-all et rendait la page d'accueil (les cartes
+      // de contact de /contact étaient le seul canal joignable et ne l'étaient pas).
+      if (kind === 'protocol') {
+        return (
+          <a href={href} className="block">
             {children}
           </a>
         );

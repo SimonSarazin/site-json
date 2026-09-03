@@ -2,6 +2,9 @@ import { describe, it, expect } from "vitest";
 import { computeUrlFromFilters } from "./computeUrlFromFilters";
 import { applyDefaultSearchTargets, computeFiltersFromUrl, type FilterGroupLike } from "./computeFiltersFromUrl";
 import type { SearchByFieldValue } from "../contexts/pageFilters";
+import { toggleSearchByField } from "./filterToggles";
+import { answerToggleArgs, type AnswerGroupConf } from "./answerFilterClause";
+import { searchByFieldsToQuery } from "./searchByFieldsToQuery";
 
 const TYPO: FilterGroupLike = {
   id: "typologies",
@@ -433,5 +436,110 @@ describe("applyDefaultSearchTargets (défaut à l'hydratation)", () => {
     expect(
       applyDefaultSearchTargets({}, [territoireDefault], new URLSearchParams("territoire=Entre Mer et Terres")),
     ).toEqual({});
+  });
+});
+
+/**
+ * VERROU D'ALLER-RETOUR — une valeur d'option contenant une VIRGULE.
+ *
+ * La lecture fait `split(",")` puis `decodeURIComponent` par fragment. Tant que l'écriture
+ * joignait sans encoder, une telle valeur était redécoupée en morceaux qui ne correspondaient à
+ * aucune option et le paramètre disparaissait de l'URL — en liste mixte, la perte était PARTIELLE
+ * et silencieuse. 4 valeurs du parc étaient dans ce cas (groupe `portage` de relief et
+ * tiers-lieux). Ces tests interdisent la régression dans les deux sens.
+ */
+describe("aller-retour d'une valeur à virgule", () => {
+  const PORTAGE: FilterGroupLike = {
+    id: "portage",
+    type: "tag",
+    options: [
+      { id: "assoc", name: "Association" },
+      { id: "collectivites", name: "Collectivités (Département, Intercommunalité, Région, etc)" },
+    ],
+  };
+  const AVEC_VIRGULE = "Collectivités (Département, Intercommunalité, Région, etc)";
+
+  it("une valeur à virgule survit à écriture → lecture", () => {
+    const url = computeUrlFromFilters(new URLSearchParams(), { portage: [AVEC_VIRGULE] }, {}, [PORTAGE], "");
+    const { applySelected } = computeFiltersFromUrl(new URLSearchParams(url.toString()), [PORTAGE], null);
+    expect(applySelected({})).toEqual({ portage: [AVEC_VIRGULE] });
+  });
+
+  it("en liste MIXTE, la valeur sans virgule ne masque plus la perte de l'autre", () => {
+    const sel = { portage: ["Association", AVEC_VIRGULE] };
+    const url = computeUrlFromFilters(new URLSearchParams(), sel, {}, [PORTAGE], "");
+    const { applySelected } = computeFiltersFromUrl(new URLSearchParams(url.toString()), [PORTAGE], null);
+    expect(applySelected({}).portage).toHaveLength(2);
+    expect(applySelected({}).portage).toContain(AVEC_VIRGULE);
+  });
+
+  it("l'encodage est l'IDENTITÉ sur une valeur URL-safe (rétrocompatibilité du wire)", () => {
+    const url = computeUrlFromFilters(new URLSearchParams(), { portage: ["Association"] }, {}, [PORTAGE], "");
+    expect(url.get("portage")).toBe("Association");
+  });
+
+  it("une URL héritée, écrite SANS encodage, reste lisible", () => {
+    // La lecture décodait déjà : les liens déjà partagés ne cessent pas de fonctionner.
+    const { applySelected } = computeFiltersFromUrl(new URLSearchParams("portage=Association"), [PORTAGE], null);
+    expect(applySelected({})).toEqual({ portage: ["Association"] });
+  });
+});
+
+/**
+ * Le clic (`FiltersSection` → `toggleSearchByField`) et le deep-link
+ * (`computeFiltersFromUrl`) DOIVENT écrire la même entrée : sinon un lien partagé
+ * et un clic donnent des résultats différents. C'est la seule raison pour laquelle
+ * la lecture d'URL reçoit la config des groupes (`filterTarget`).
+ */
+describe("groupes « par réponses » : clic et deep-link écrivent la MÊME chose", () => {
+  const CONF_ANSWERS: Record<string, AnswerGroupConf> = {
+    maladies: { filterTarget: "answers", path: "eki_0.multiCheckboxPluseki_0mal" },
+  };
+  const DATA = {
+    maladies: { values: { "Obésité": { name: "Obésité", orgaNameArray: ["orgMairie"] } } },
+  };
+
+  const parLeClic = (confs: Record<string, AnswerGroupConf> | null) => {
+    const { field, value, fieldType } = answerToggleArgs(
+      confs?.maladies,
+      "Obésité",
+      DATA.maladies.values["Obésité"],
+    );
+    return toggleSearchByField({}, "Obésité", { field, value, fieldType });
+  };
+
+  it("cible answers : clic == URL, et c'est un prédicat de CHEMIN (pas un _id)", () => {
+    const clic = parLeClic(CONF_ANSWERS);
+    const url = computeUrlFromFilters(new URLSearchParams(), {}, clic, [], "", DATA);
+    expect(url.get("maladies")).toBe("Ob%C3%A9sit%C3%A9");
+    const { applySearchFields } = computeFiltersFromUrl(url, [], DATA, CONF_ANSWERS);
+    expect(applySearchFields({})).toEqual(clic);
+    expect(clic["Obésité"].field).toBe("answers.eki_0.multiCheckboxPluseki_0mal");
+    expect(searchByFieldsToQuery(clic).filters).toEqual({
+      $or: {
+        $and: [
+          { $or: [{ "answers.eki_0.multiCheckboxPluseki_0mal.Obésité": { $exists: true } }] },
+        ],
+      },
+    });
+  });
+
+  it("groupe historique (sans filterTarget) : clic == URL, filtre par _id INCHANGÉ", () => {
+    const clic = parLeClic(null);
+    expect(clic["Obésité"]).toEqual({ field: "_id", value: ["orgMairie"] });
+    const url = computeUrlFromFilters(new URLSearchParams(), {}, clic, [], "", DATA);
+    const { applySearchFields } = computeFiltersFromUrl(url, [], DATA, null);
+    expect(applySearchFields({})).toEqual(clic);
+    expect(searchByFieldsToQuery(clic).filters).toEqual({ _id: { $in: ["orgMairie"] } });
+  });
+
+  it("SANS la config, un deep-link retomberait sur _id là où le clic pose un chemin", () => {
+    // Contre-épreuve de la raison d'être du 4e paramètre : c'est exactement la
+    // divergence que la garde interdit.
+    const clic = parLeClic(CONF_ANSWERS);
+    const url = computeUrlFromFilters(new URLSearchParams(), {}, clic, [], "", DATA);
+    const sansConf = computeFiltersFromUrl(url, [], DATA).applySearchFields({});
+    expect(sansConf).not.toEqual(clic);
+    expect(sansConf["Obésité"].field).toBe("_id");
   });
 });

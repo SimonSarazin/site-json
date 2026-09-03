@@ -24,15 +24,23 @@ const STANDARD_ATTRS: Record<string, string[]> = {
 };
 
 interface CarrierLike {
-  getCostumJson: () => Promise<unknown>;
+  getCostumResolved: () => Promise<unknown>;
   slug?: string;
 }
 
 /**
- * Charge `costum.import.mapping` du carrier (via GET_COSTUM_JSON) pour piloter la traduction
+ * Charge `costum.import.mapping` du carrier (via COSTUM_RESOLVED) pour piloter la traduction
  * en-têtes CSV → attributs à l'import — RUNTIME, zéro config par site (cf. doc IMPORT-COSTUM-MAPPING).
  * Le costum peut ne pas avoir de mapping (ex. equipementsSportifs974) → `entries` vide, on retombe
  * sur les seuls attributs standard + saisie libre.
+ *
+ * `getCostumResolved` et non `getCostumJson` : cette dernière renvoie l'overlay BRUT de l'élément, sans le
+ * document MOTEUR fusionné — un mapping déclaré par un moteur partagé y est donc invisible. Aucun moteur du
+ * parc n'en déclare aujourd'hui, mais le jour où l'un le fait, ses sites en héritent sans que rien ne le
+ * signale. Cf. `docs/27-COSTUM-RESOLUTION.md` (backend).
+ *
+ * ATTENTION à la forme : `costumResolved` répond À PLAT (`{result, import, …}`) là où `getcostumjson`
+ * enveloppait dans `data`.
  */
 export function useCostumImportMapping(carrier: unknown, entityType: string): CostumImportMapping {
   const slug = (carrier as CarrierLike | null)?.slug ?? "";
@@ -42,8 +50,8 @@ export function useCostumImportMapping(carrier: unknown, entityType: string): Co
     staleTime: 5 * 60_000,
     retry: false,
     queryFn: async (): Promise<CostumImportMapEntry[]> => {
-      const res = (await (carrier as CarrierLike).getCostumJson()) as { data?: { import?: { mapping?: unknown } } } | null;
-      const raw = res?.data?.import?.mapping;
+      const res = (await (carrier as CarrierLike).getCostumResolved()) as { import?: { mapping?: unknown } } | null;
+      const raw = res?.import?.mapping;
       if (!Array.isArray(raw)) return [];
       return raw
         .filter((m): m is CostumImportMapEntry => !!m && typeof m === "object" && typeof (m as { attr?: unknown }).attr === "string")

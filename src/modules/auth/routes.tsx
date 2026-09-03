@@ -4,6 +4,8 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import RecoverPasswordPage from "./pages/RecoverPasswordPage";
 import ActivateAccountPage from "./pages/ActivateAccountPage";
+import ValidateInvitationPage from "./pages/ValidateInvitationPage";
+import AcceptInvitationPage from "./pages/AcceptInvitationPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import JoinByLinkPage from "./pages/JoinByLinkPage";
 
@@ -46,6 +48,26 @@ export const routes: ModuleRouteFactory = (_queryClient, config): RouteObject[] 
   {
     path: "co2/person/activate/user/:user/validationKey/:validationKey",
     element: <ActivateAccountPage />,
+  },
+  // Liens d'INVITATION (≠ activation) : `validateinvitation` → passerelle vers l'inscription (l'invité
+  // finalise son compte pending). Splat = suffixes Yii `/invitation/1`, `/costum/true`, `/redirect/…`.
+  {
+    path: "co2/person/validateinvitation/user/:user/validationKey/:validationKey/*",
+    element: <ValidateInvitationPage />,
+  },
+  {
+    path: "co2/person/validateinvitation/user/:user/validationKey/:validationKey",
+    element: <ValidateInvitationPage />,
+  },
+  // Réponse Accepter/Refuser d'une invitation par e-mail (≠ passerelle validateinvitation) :
+  // l'action n'est déclenchée qu'au clic. Splat = suffixes Yii `/redirect/…`, `/costum/true`.
+  {
+    path: "co2/link/validateinvitationbymail/userId/:userId/targetType/:targetType/targetId/:targetId/answer/:answer/*",
+    element: <AcceptInvitationPage />,
+  },
+  {
+    path: "co2/link/validateinvitationbymail/userId/:userId/targetType/:targetType/targetId/:targetId/answer/:answer",
+    element: <AcceptInvitationPage />,
   },
   { path: "co2/link/connect/ref/:ref", element: <JoinByLinkPage /> },
 ];

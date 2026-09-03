@@ -41,3 +41,19 @@ export function isAdminEntryVisible(
   if (!admin || admin.enabled === false) return false;
   return levelSatisfies(resolveAdminAccessLevel(me, entity), admin.access?.min ?? "siteAdmin");
 }
+
+/**
+ * L'entrée « Kanban » du menu avatar (lien externe vers la vue actions de la plateforme) doit-elle
+ * être visible ? Opt-in `config.auth.menu.kanban` — INDÉPENDANT de `admin.enabled`/`access.min`
+ * (le back-office peut rester désactivé) — réservé aux admins du costum (siteAdmin, superAdmin
+ * compris), et jamais sans slug de carrier résolu : pas de lien cassé.
+ */
+export function isKanbanEntryVisible(
+  config: Pick<SiteConfig, "auth"> | null | undefined,
+  me: MeLike | null | undefined,
+  entity: CarrierLike | null | undefined,
+  costumSlug: string | null | undefined,
+): boolean {
+  if (!config?.auth?.menu?.kanban || !costumSlug) return false;
+  return levelSatisfies(resolveAdminAccessLevel(me, entity), "siteAdmin");
+}

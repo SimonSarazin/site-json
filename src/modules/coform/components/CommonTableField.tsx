@@ -23,6 +23,7 @@ import "../i18n/i18n";
 import { useCommonTableCatalog } from "../hooks/useCommonTableCatalog";
 import { getOriginalFieldKey } from "../utils/formParser";
 import { getNoteAppearance } from "../utils/commonTableNote";
+import { buildUsageGroupKeyResolver, normalizeUsage } from "../utils/commonTableUsage";
 import { CommonTableContributorsDialog } from "./CommonTableContributorsDialog";
 import type {
   FormFieldMapping,
@@ -757,7 +758,11 @@ const CommonTableRow = memo(function CommonTableRow({
               labels={i18n.happinessLabels}
             />
           ) : (
-            <span className="text-xs text-muted-foreground italic">{i18n.selectFirst}</span>
+            // En lecture seule, « Ajoutez une solution… » inviterait à une action
+            // impossible : on retombe sur le tiret des valeurs vides.
+            <span className="text-xs text-muted-foreground italic">
+              {readOnly ? "—" : i18n.selectFirst}
+            </span>
           )}
         </td>
       )}
@@ -879,44 +884,22 @@ export function CommonTableField({
   );
   const labels = config?.labels ?? {};
 
-  // Helper : key effective pour grouper les entries en lignes de tableau.
-  // Réplique la logique du legacy commonTableV2.php : plusieurs criterias
-  // partageant le même `usage` (texte) sont fusionnés en UNE ligne, même si
-  // une partie n'a pas de `usageKey` (cas typique des données legacy où
-  // `usageKey` n'a été ajouté que tardivement). La règle :
-  //   1. usageKey explicite → l'utiliser
-  //   2. sinon, usageKey déjà connu pour ce `normalizedUsage` → l'utiliser
-  //   3. sinon, fallback sur `normalizedUsage` lui-même
-  const normalizeUsage = (u: string | undefined | null): string =>
-    String(u ?? "").trim().toLowerCase() || "sans usage";
-
-  // Map normalizedUsage → usageKey, partagée par augmentedUsages et
-  // suggestionsByUsage. Construit à partir des entries qui ont déjà un
-  // usageKey (cf. STEP 1 du legacy commonTableV2.php). Les entries sans
-  // usageKey s'aligneront sur cette map via leur `normalizedUsage`.
-  const groupKeyResolver = useMemo(() => {
-    const usageKeyMap: Record<string, string> = {};
-    for (const entry of Object.values(collabCatalog)) {
-      if (!entry.usageKey) continue;
-      const norm = normalizeUsage(entry.usage);
-      if (!usageKeyMap[norm]) usageKeyMap[norm] = entry.usageKey;
-    }
-    for (const sol of Object.values(displayScores)) {
-      if (!sol.usageKey) continue;
-      const norm = normalizeUsage(sol.usage);
-      if (!usageKeyMap[norm]) usageKeyMap[norm] = sol.usageKey;
-    }
-    for (const entry of Object.values(value.myCatalog)) {
-      if (!entry.usageKey) continue;
-      const norm = normalizeUsage(entry.usage);
-      if (!usageKeyMap[norm]) usageKeyMap[norm] = entry.usageKey;
-    }
-    return (rawUsageKey: string | undefined, rawUsage: string | undefined): string => {
-      if (rawUsageKey) return rawUsageKey;
-      const norm = normalizeUsage(rawUsage);
-      return usageKeyMap[norm] ?? norm;
-    };
-  }, [collabCatalog, displayScores, value.myCatalog]);
+  // Key effective pour grouper les entries en lignes de tableau : plusieurs criterias partageant
+  // le même `usage` (texte) sont fusionnées en UNE ligne, même si une partie n'a pas de `usageKey`
+  // (cas typique des données legacy, où `usageKey` n'a été ajouté que tardivement).
+  //
+  // La règle vit dans `utils/commonTableUsage` : `categorizedCheckbox` construit ses sous-options
+  // depuis le MÊME catalogue et doit regrouper à l'identique — deux implémentations divergeraient.
+  // L'ordre des sources fixe la priorité (première `usageKey` vue pour un usage donné).
+  const groupKeyResolver = useMemo(
+    () =>
+      buildUsageGroupKeyResolver([
+        Object.values(collabCatalog),
+        Object.values(displayScores),
+        Object.values(value.myCatalog),
+      ]),
+    [collabCatalog, displayScores, value.myCatalog],
+  );
 
   // Augmente la liste d'usages : config admin + tous les usages effectifs qui
   // apparaissent dans le catalogue collaboratif, plus ceux de MES scores /

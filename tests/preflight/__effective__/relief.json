@@ -1,0 +1,361 @@
+{
+  "site": "relief",
+  "slug": "relief",
+  "addMenus": {
+    "citoyens": {
+      "builtins": {
+        "organization": "add-tiers-lieux",
+        "project": "add-project",
+        "event": "add-event",
+        "poi": "add-poi"
+      },
+      "customs": [
+        "add-tiers-lieux"
+      ]
+    },
+    "organizations": {
+      "builtins": {
+        "project": "add-project",
+        "event": "add-event",
+        "poi": "add-poi"
+      }
+    },
+    "projects": {
+      "builtins": {
+        "event": "add-event",
+        "poi": "add-poi"
+      }
+    }
+  },
+  "editModals": {
+    "organizations": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-tiers-lieux",
+          "native": "edit-tiers-lieux",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    }
+  },
+  "adminResources": {},
+  "pages": {
+    "//hero-search": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "indexStepList": 5,
+        "defaultFilters": {
+          "$or": {
+            "tags": {
+              "$in": [
+                "TiersLieux"
+              ]
+            }
+          }
+        },
+        "defaultSortBy": {
+          "updated": -1
+        },
+        "searchBy": [
+          "name",
+          "address.addressLocality",
+          "address.level4Name",
+          "address.level3Name",
+          "address.level2Name",
+          "address.level1Name",
+          "address.postalCode"
+        ]
+      }
+    },
+    "//searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "indexStepList": 5,
+        "defaultFilters": {
+          "$or": {
+            "tags": {
+              "$in": [
+                "TiersLieux"
+              ]
+            }
+          }
+        },
+        "defaultSortBy": {
+          "updated": -1
+        },
+        "searchBy": [
+          "name",
+          "address.addressLocality",
+          "address.level4Name",
+          "address.level3Name",
+          "address.level2Name",
+          "address.level1Name",
+          "address.postalCode"
+        ]
+      }
+    },
+    "//agenda": {
+      "baseParams": {
+        "indexStepList": 4,
+        "notSourceKey": true,
+        "filters": {
+          "links.organizer.6146059c9348791eac133dd1": {
+            "$exists": true
+          }
+        }
+      }
+    },
+    "/lieux/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultFilters": {
+          "$or": {
+            "tags": {
+              "$in": [
+                "TiersLieux"
+              ]
+            }
+          }
+        },
+        "defaultSortBy": {
+          "updated": -1
+        },
+        "searchBy": [
+          "name",
+          "address.addressLocality",
+          "address.level4Name",
+          "address.level3Name",
+          "address.level2Name",
+          "address.level1Name",
+          "address.postalCode"
+        ],
+        "indexStepList": 20
+      }
+    },
+    "/observatoire/data-observatory": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultFilters": {
+          "tags": [
+            "TiersLieux"
+          ]
+        },
+        "maxResults": 1000
+      }
+    },
+    "/communaute/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "citoyens",
+          "NGO",
+          "LocalBusiness",
+          "Group",
+          "GovernmentOrganization",
+          "Cooperative"
+        ],
+        "indexStepList": 30,
+        "fediverse": false,
+        "contextId": "6146059c9348791eac133dd1",
+        "contextType": "organizations",
+        "costumSlug": "relief",
+        "costumEditMode": false,
+        "defaultFilters": {
+          "$or": {
+            "links.memberOf.6146059c9348791eac133dd1": {
+              "$exists": true
+            },
+            "links.members.6146059c9348791eac133dd1": {
+              "$exists": true
+            }
+          }
+        },
+        "defaultSortBy": {
+          "updated": -1
+        },
+        "defaultFields": [
+          "name",
+          "profilMediumImageUrl",
+          "profilThumbImageUrl",
+          "slug",
+          "address",
+          "shortDescription",
+          "tags"
+        ]
+      }
+    },
+    "/evenements/agenda": {
+      "baseParams": {
+        "indexStepList": 20,
+        "fediverse": false,
+        "notSourceKey": true,
+        "filters": {
+          "links.organizer.6146059c9348791eac133dd1": {
+            "$exists": true
+          }
+        }
+      }
+    }
+  },
+  "stamps": {
+    "tiers-lieux": [
+      {
+        "field": "tags",
+        "value": {
+          "$costum": "mainTag"
+        },
+        "op": "append",
+        "on": "both",
+        "channel": "payload"
+      },
+      {
+        "field": "tags",
+        "value": {
+          "$costum": "compagnon"
+        },
+        "op": "append",
+        "on": "add",
+        "channel": "payload"
+      },
+      {
+        "field": "tags",
+        "value": {
+          "$mapLabels": {
+            "from": "typePlace",
+            "sep": ",",
+            "map": {
+              "ateliers-artisanaux": "Ateliers artisanaux partagés",
+              "coworking": "Bureaux partagés / Coworking",
+              "foodlab": "Cuisine partagée / Foodlab",
+              "fablab": "Fablab / Makerspace / Hackerspace (Espaces du Faire)",
+              "livinglab": "LivingLab / Laboratoire d'innovation sociale",
+              "nourricier": "Tiers-lieu nourricier",
+              "culturel": "Tiers-lieu culturel / Lieux intermédiaires et indépendants",
+              "autre": "Autre famille de tiers-lieux"
+            }
+          }
+        },
+        "op": "append",
+        "on": "both",
+        "channel": "payload"
+      },
+      {
+        "field": "tags",
+        "value": {
+          "$mapLabels": {
+            "from": "manageModel",
+            "map": {
+              "association": "Association",
+              "collectif-citoyen": "Collectif citoyen",
+              "universites": "Universités / Écoles d'ingénieurs ou de commerce / EPST",
+              "etablissements-scolaires": "Établissements scolaires (Lycée, Collège, Ecole)",
+              "collectivites": "Collectivités (Département, Intercommunalité, Région, etc)",
+              "sarl-sa-sas": "SARL-SA-SAS",
+              "scic": "SCIC",
+              "scop": "SCOP",
+              "autre-gestion": "Autre mode de gestion"
+            }
+          }
+        },
+        "op": "append",
+        "on": "both",
+        "channel": "payload"
+      },
+      {
+        "field": "tags",
+        "value": {
+          "$bucket": {
+            "from": "buildingSurfaceArea",
+            "buckets": [
+              {
+                "lt": 60,
+                "label": "Moins de 60m²"
+              },
+              {
+                "lt": 201,
+                "label": "Entre 60 et 200m²"
+              },
+              {
+                "label": "Plus de 200m²"
+              }
+            ]
+          }
+        },
+        "op": "append",
+        "on": "both",
+        "channel": "payload"
+      }
+    ]
+  },
+  "answerFacets": {
+    "/lieux/activités": {
+      "target": "linkedElements",
+      "searchByField": {
+        "field": "_id",
+        "value": [
+          "000000000000000000000000"
+        ]
+      },
+      "filters": {
+        "_id": {
+          "$in": [
+            "000000000000000000000000"
+          ]
+        }
+      }
+    },
+    "/lieux/équipement": {
+      "target": "linkedElements",
+      "searchByField": {
+        "field": "_id",
+        "value": [
+          "000000000000000000000000"
+        ]
+      },
+      "filters": {
+        "_id": {
+          "$in": [
+            "000000000000000000000000"
+          ]
+        }
+      }
+    },
+    "/lieux/reseauxThematiques": {
+      "target": "linkedElements",
+      "searchByField": {
+        "field": "_id",
+        "value": [
+          "000000000000000000000000"
+        ]
+      },
+      "filters": {
+        "_id": {
+          "$in": [
+            "000000000000000000000000"
+          ]
+        }
+      }
+    }
+  },
+  "referencement": {},
+  "membership": {
+    "citoyens/membership": {
+      "types": [
+        "organizations",
+        "projects",
+        "pois",
+        "events"
+      ],
+      "scope": "network"
+    }
+  },
+  "profileRelated": {}
+}

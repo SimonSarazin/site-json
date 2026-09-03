@@ -166,13 +166,24 @@
           {
             "label": {
               "fr": "Fichier",
-              "en": "Fichier"
+              "en": "File"
             },
             "description": {
               "fr": "Un drive avec outils collaboratifs en ligne (word, excel, ppt, etc)",
               "en": "A cloud storage solution with online collaborative tools (word, excel, ppt, etc)"
             },
             "path": "https://fichier.tiers-lieux.org/"
+          },
+          {
+            "label": {
+              "fr": "Grist - tableur collaboratif",
+              "en": "Grist - collaborative spreadsheet"
+            },
+            "description": {
+              "fr": "Accédez à Grist pour collaborer sur des tableaux partagés",
+              "en": "Access Grist to collaborate on shared spreadsheets"
+            },
+            "path": "https://grist.tiers-lieux.org/"
           },
           {
             "label": {
@@ -214,7 +225,7 @@
               "fr": "Le recensement des communs et outils utilisés dans les tiers-lieux, pour faciliter les pratiques de mutualisation",
               "en": "A catalogue of the uses and tools found in third places, to ease resource-sharing practices"
             },
-            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=list-tools#list-tools"
+            "path": "/usages"
           },
           {
             "label": {
@@ -249,11 +260,15 @@
         "children": [
           {
             "label": {
-              "fr": "Tableau de bord",
-              "en": "Dashboard"
+              "fr": "Observatoire des données",
+              "en": "Data dashboard"
             },
             "path": "/observatoire",
-            "icon": "chart-column"
+            "icon": "chart-column",
+            "description": {
+              "fr": "Les données des lieux avec de nombreux filtres",
+              "en": "Third-place data with extensive filtering"
+            }
           },
           {
             "label": {
@@ -261,7 +276,7 @@
               "en": "Regional networks"
             },
             "description": {
-              "fr": "Découvrez l'observatoire des réseaux régionaux",
+              "fr": "Découvrez les lieux filtrés par réseaux régionaux",
               "en": "Explore the regional networks observatory"
             },
             "path": "/reseaux-regionaux"
@@ -272,7 +287,7 @@
               "en": "Thematic networks"
             },
             "description": {
-              "fr": "Découvrez l'observatoire des réseaux thématiques",
+              "fr": "Découvrez les lieux filtrés par réseaux thématiques",
               "en": "Explore the thematic networks observatory"
             },
             "path": "/reseaux-thematiques"

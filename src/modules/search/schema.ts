@@ -113,6 +113,16 @@ export const FiltersByAnswersSchema = z.record(z.string(), z.object({
   path: z.string().optional(),
   forms: z.string().optional(),
   finderPath: z.string().optional(),
+  /**
+   * Quel document la sélection filtre-t-elle ?
+   *  - `linkedElements` (défaut, comportement historique) : la liste porte les
+   *    éléments LIÉS aux réponses (organisations de `/lieux`) → `_id: {$in: orgaNameArray}` ;
+   *  - `answers` : la liste porte les RÉPONSES elles-mêmes (`defaultTypes: ["answers"]`,
+   *    ex. `/creneaux`) → prédicat sur le chemin de la réponse (cf. `answerFilterClause`).
+   * Sans ce réglage, une facette posée sur une liste d'answers filtre par id
+   * d'organisation et ne rend jamais rien.
+   */
+  filterTarget: z.enum(["answers", "linkedElements"]).optional(),
   /** Widget compact (cf. {@link FilterSelectConfigSchema}). Absent → accordéon. */
   select: FilterSelectConfigSchema.optional(),
   /** Style des lignes en accordéon (cf. {@link FilterOptionStyleSchema}). */
@@ -127,7 +137,8 @@ export const FiltersByAnswersSchema = z.record(z.string(), z.object({
 
 // Filtres par thématique CoForm via `coformFilterByPath` (un appel par entrée).
 // Même structure de sortie que filtersByAnswers (sélection → filters._id.$in =
-// orgaNameArray) mais appel backend différent.
+// orgaNameArray, ou prédicat de chemin si `filterTarget: "answers"`) mais appel
+// backend différent.
 export const FiltersByPathSchema = z.record(z.string(), z.object({
   id: z.string().optional(),
   label: LocalizedString,
@@ -135,6 +146,16 @@ export const FiltersByPathSchema = z.record(z.string(), z.object({
   finderPath: z.string().optional(),
   // notSourceKey: true → cherche dans tout le réseau (cf. coformFilterByPath).
   notSourceKey: z.boolean().optional(),
+  /**
+   * Quel document la sélection filtre-t-elle ?
+   *  - `linkedElements` (défaut, comportement historique) : la liste porte les
+   *    éléments LIÉS aux réponses (organisations de `/lieux`) → `_id: {$in: orgaNameArray}` ;
+   *  - `answers` : la liste porte les RÉPONSES elles-mêmes (`defaultTypes: ["answers"]`,
+   *    ex. `/creneaux`) → prédicat sur le chemin de la réponse (cf. `answerFilterClause`).
+   * Sans ce réglage, une facette posée sur une liste d'answers filtre par id
+   * d'organisation et ne rend jamais rien.
+   */
+  filterTarget: z.enum(["answers", "linkedElements"]).optional(),
   /** Widget compact (cf. {@link FilterSelectConfigSchema}). Absent → accordéon. */
   select: FilterSelectConfigSchema.optional(),
   /** Style des lignes en accordéon (cf. {@link FilterOptionStyleSchema}). */
@@ -263,10 +284,14 @@ export type InstallationDashboardConf = z.infer<typeof InstallationDashboardConf
 export const DEFAULT_INSTALLATION_PARAM = "installation";
 
 export const PreviewConfSchema = z.object({
-  type: z.enum(["default", "poi-amenities", "coform-answer", "event", "facets", "news", "testimonial", "resource"]).default("default"),
+  type: z.enum(["default", "poi-amenities", "coform-answer", "event", "facets", "news", "testimonial", "resource", "structure"]).default("default"),
   // Mapping rôle→suffixe de champ CoForm (pour `coform-answer`). Surcharge la
   // table par défaut du composant — découple les IDs de champs du code.
   fields: z.record(z.string(), z.string()).optional(),
+  // Bouton « Modifier » sur le détail `coform-answer` (admins de l'entité du
+  // site) : ouvre l'édition de l'answer en CoFormModal. Opt-in — sans ce flag,
+  // le preview reste strictement lecture seule (aucun changement des sites existants).
+  editButton: z.boolean().optional(),
   /** Facettes du preview générique (`type: "facets"`) — data-driven, sans code. */
   facets: z.array(PreviewFacetSchema).optional(),
   /**
@@ -423,6 +448,17 @@ export const CardConfSchema = z.object({
     // déclenche la query useFundingEnvelope. Découple la feature funding du style
     // de carte. Défaut : actif uniquement pour le variant "rezo-la-mer" (rétrocompat).
     showFunding:     z.boolean().optional(),
+    /**
+     * Carte `card-answer` : ce que fait le bouton « Fiche structure ».
+     *  - `profil`  (DÉFAUT côté code) — navigue vers `/profil/:slug`, comportement historique ;
+     *  - `preview` — ouvre la fiche EN MODALE (même `preview.type: "structure"` que les cartes de
+     *    l'annuaire), sans quitter la liste.
+     * Sur une page où l'usager COMPARE des créneaux, la navigation lui fait perdre sa liste, ses
+     * filtres et sa position de défilement pour une information qu'il ne veut que consulter au
+     * passage — d'où l'option. Absent = navigation, pour ne rien changer aux sites existants.
+     * Même forme que `MapConf.itemAction`, à dessein : un seul vocabulaire d'action dans le module.
+     */
+    structureAction: z.object({ kind: z.enum(["profil", "preview"]) }).optional(),
     detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
     detailedMode: z.enum(["default", "service-pricing"]).default("default"),
     // Coin haut-droit des cartes à image (`image-cover`) : par défaut les
@@ -516,6 +552,15 @@ export const ListItemRuleSchema = z.object({
 export type ListItemRule = z.infer<typeof ListItemRuleSchema>;
 
 export const ListConfSchema = z.object({
+  /**
+   * Disposition de la liste. `"grid"` (défaut CÔTÉ CODE — la config n'est jamais parsée par
+   * Zod au runtime, `SearchListView` retombe lui-même sur la grille quand la clé est absente)
+   * ou `"timeline"` : frise verticale — ligne pointillée centrale, bulle-date (jour/mois/année)
+   * posée sur la ligne, cartes alternées gauche/droite en desktop, colonne unique avec ligne à
+   * gauche en mobile. Pensée pour des événements triés par `baseParams.defaultSortBy:
+   * {"startDate": -1}`. Ignorée en vue détaillée (`isDetailedView`) et en mode split (`onFocusItem`).
+   */
+  layout: z.enum(["grid", "timeline"]).optional(),
   columns: z.object({
     lg: z.number().int().min(1).max(6).optional(),
     md: z.number().int().min(1).max(6).optional(),
@@ -785,6 +830,15 @@ const AddButtonConfigSchema = z.object({
   label: LocalizedString.optional(),
   modal: z.string().optional(),
   formConfig: z.any().optional(),
+  // Cible CoForm : le bouton ouvre la CRÉATION d'une answer de ce form
+  // (CoFormModal) au lieu d'une modale d'entité — ex. « Ajouter un créneau »
+  // (1 créneau = 1 answer). Prioritaire sur modal/organization/project/poi.
+  coform: z.string().optional(),
+  // `false` → le bouton s'affiche dès que `show: true`, sans exiger le rôle
+  // admin du site (un non-connecté qui clique passe par le login). Cas d'usage :
+  // déclaration publique d'answer CoForm modérée en aval (filtre `state`).
+  // Défaut `true` = comportement historique (bouton réservé aux admins).
+  adminOnly: z.boolean().optional().default(true),
   organization: z.boolean().optional().default(true),
   project: z.boolean().optional().default(true),
   event: z.boolean().optional().default(true),

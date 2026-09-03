@@ -67,7 +67,17 @@ export function renderSection(section: SectionDescriptor, p: LayoutProps, values
     // placés), mais ils ne doivent rien occuper : leur widget rend `null`
     // (registry.tsx:50) et `renderEntry` les envelopperait quand même dans un
     // `<div>` — soit une cellule vide par champ dans une grille `gap-4`.
-    const visibles = g.fields.filter((f) => isSlot(f) || p.descriptor.fields[f]?.widget !== "hidden");
+    // Même logique pour un champ masqué par SON `visibleIf` (renderField rend null) :
+    // on le sort de la grille, et si PLUS AUCUN champ du groupe n'est affichable, le
+    // groupe entier disparaît — sinon son titre resterait orphelin (ex. « Pièces
+    // justificatives » quand la forme juridique choisie n'en exige pas).
+    const visibles = g.fields.filter((f) =>
+      isSlot(f) ||
+      (p.descriptor.fields[f] != null &&
+        p.descriptor.fields[f]!.widget !== "hidden" &&
+        check(p.descriptor.fields[f]!.visibleIf, values)),
+    );
+    if (visibles.length === 0) return null;
     return (
       <div key={gi} className={`space-y-3${g.divider ? " border-t pt-6" : ""}`}>
         {g.label && <div className={g.titleClassName ?? "text-sm font-medium"}>{p.t(g.label)}{g.required && " *"}</div>}

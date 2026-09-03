@@ -41,9 +41,10 @@
       "config": "config.prod.saint-paul-sport.json",
       "titre": "Cartographie / observatoire de données",
       "demontre": [
-        "presenters poi-amenities et news (card + preview)",
+        "presenters poi-amenities (card + preview) ; module blog (articleFeed + reader /blog/:slug) et section agenda dédiés",
         "2 sections data-observatory (pages /observatoire et /data)",
-        "baseParams sur une source externe (sourceKey = equipementsSportifs974)",
+        "modèle RÉSEAU : data centrée sur le slug du site (aucun sourceKey ni notSourceKey écrit — le SDK auto-scope au porteur) + reference.costum vers le costum régional, posé à la création par mutation.stamps",
+        "costumForms + bloc admin (5 onglets) : le site possède, administre et modère sa data",
         "theme complet + customCSS"
       ],
       "knownFindings": []
@@ -99,8 +100,12 @@
         "le seul costumForm à chrome.authPrompt : garde d'authentification des modales d'ajout, textes d'invite configurables",
         "logoCloud ×3 sur une même page pour rendre 3 collèges de membres distincts (3 / 7 / 8 logos)",
         "page de contenu long en title → markdown, sans passer par html",
-        "floatingQRCode + floatingActionButton, admin 6 onglets, commandPalette, header transparent-scroll + footer contact-partners",
-        "theme complet et customCSS VIDE : tout passe par les tokens — le contre-exemple d'equipements-Sportifs"
+        "floatingQRCode + floatingActionButton, admin 8 onglets, commandPalette, header transparent-scroll + footer contact-partners",
+        "theme complet et customCSS VIDE : tout passe par les tokens — le contre-exemple d'equipements-Sportifs",
+        "chaîne de RATTACHEMENT complète — le seul du parc : identity (comment un natif se reconnaît en base) + subType/subTypeLabel (ce qui s'écrit dans reference.costumTypes au référencement) + costumSubType en baseParams (qui couvre les DEUX branches, natifs ET référencés) + editModalMatch (quel form ouvrir). ⚠️ identity SEUL ne suffit pas : sans subType, le référencement n'écrit rien et editModalMatch n'a plus rien à matcher — c'est ce qui a forcé un contournement sur maison-sport-sante-la-tampon",
+        "costumSubType : SEUL usage du parc (4 occurrences) — s'étend en $or[identity, reference.costumTypes.<slug>]",
+        "listes VIVANTES du costum, des deux côtés : optionsKey côté FORMULAIRE (5 champs, options lues sur costum.lists) et optionsFrom côté FILTRES (4 groupes) — les deux seuls usages du parc. Prix assumé : les valeurs dynamiques n'ont pas de libellé traduit, donc à réserver aux listes qui doivent GRANDIR (la config gelait 12 territoires quand la base en compte 64). Les listes closes — civilité, statut, découpage administratif — ont raison de rester figées",
+        "4 costumForms (acteur, document, financement, event)"
       ],
       "knownFindings": []
     },
@@ -114,6 +119,23 @@
         "home entièrement éditoriale, sans hero de section : html ×2 → features-glass → action-tiles → cta-card-grid → cta",
         "4 pages / 12 sections : le plus petit gabarit d'annuaire complet du parc (annuaire + carte + membres)",
         "header standard + footer contact-partners, admin 5 onglets, theme complet sans customCSS"
+      ],
+      "knownFindings": []
+    },
+    {
+      "slug": "associationEkilibre",
+      "config": "config.prod.maison-sport-sante-la-tampon.json",
+      "titre": "Périmètre mono-costum et facettes sur réponses (la référence de l'ADMIN 2026-08)",
+      "demontre": [
+        "périmètre mono-slug : les SIX surfaces de recherche (2 pages publiques, 1 KPI, 3 tables admin) déclarent sourceKey:[\"associationEkilibre\"] et rien d'autre — 0 occurrence de notSourceKey. Le serveur traduit en $or[source.keys, reference.costum] : « possédée OU référencée »",
+        "modèle « la propriété porte les fonctionnalités, le référencement ne porte que la visibilité » : restrictActionsToOwned masque Modifier/Valider/Supprimer sur une fiche seulement référencée ; onglet Référencement avec openData:\"optOut\" (sans ce réglage la vue serait VIDE, le garde-fou legacy exigeant preferences.isOpenData)",
+        "surface admin d'août — SEUL usage du parc : exclusiveField (mise en avant à écrivain unique), restrictActionsToOwned, openData, defaultFiltersByType, tone, states",
+        "filterTarget:\"answers\" — SEUL usage du parc : facettes posées sur une liste qui porte les RÉPONSES. Sans cette clé la facette s'affiche, se coche, et VIDE la liste au clic (le défaut historique filtre par _id d'organisation)",
+        "facettes tirées du CoForm et non recopiées : les 2 groupes pathologie déclarent forms+path, donc leurs libellés ne peuvent pas dériver du formulaire (les 4 groupes statiques voisins, eux, avaient 2 valeurs inexistantes)",
+        "montage gridLayout : searchHeader réduit au titre + 2 CTA, tous les filtres en colonne de gauche (6 groupes)",
+        "card.structureAction — SEUL usage du parc : ouvrir la fiche liée en modale au lieu de quitter la page",
+        "page gardée : /espace-pro en auth.required, mode prompt (défaut moteur) — la modale s'ouvre sur place, la page sort du sitemap et passe en robots:noindex",
+        "blog borné : publicFilters + publicSortBy, qui ferment palette ⌘K, RSS et articles liés aux seuls publiés"
       ],
       "knownFindings": []
     }

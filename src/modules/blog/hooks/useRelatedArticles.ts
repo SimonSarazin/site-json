@@ -1,8 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { useHydrated } from "@/hooks/useHydrated";
 import { useCocolight } from "@/hooks/useCocolight";
+import { useSite } from "@/hooks/useSite";
 import { buildSearchPayload } from "@/modules/search/lib/buildSearchPayload";
 import { BLOG_QUERY_KEYS } from "../constants/queryKeys";
+import { articleFields } from "../constants/fields";
 import type { ArticleData } from "./useArticle";
 
 /** Résultat searchCostum → ArticleData (serverData sinon racine, repli id racine). */
@@ -15,13 +17,18 @@ function normArticle(r: unknown): ArticleData {
 }
 
 /**
- * Articles LIÉS à un article : mêmes tags (`$in` = au moins un tag partagé), scopés au MÊME costum
+ * Articles LIÉS à un article (bornés par `config.blog.publicFilters`) : mêmes tags (`$in` = au moins un tag partagé), scopés au MÊME costum
  * (`source.key`), triés par date, en EXCLUANT l'article courant. Île client (`enabled: hydrated`) → ne
  * bloque pas le SSR du reader ; désactivé si l'article n'a pas de tags (sinon `{$in:[]}` = vide de toute façon).
  */
 export function useRelatedArticles(article: ArticleData | null | undefined, limit = 4) {
   const hydrated = useHydrated();
   const { entity } = useCocolight();
+  // Périmètre PUBLIC partagé avec la palette ⌘K et le flux RSS : sans `config.blog.publicFilters`
+  // (ex. `{publicationStatus:"Publié"}`) ce bloc remonte les brouillons et les archives.
+  const { config } = useSite();
+  const publicFilters = config.blog?.publicFilters ?? {};
+  const publicSortBy = config.blog?.publicSortBy;
   const tags = Array.isArray(article?.tags) ? article!.tags!.filter(Boolean) : [];
   const costumSlug = article?.source?.key ?? "";
   const currentId = article?.id ?? "";
@@ -37,8 +44,9 @@ export function useRelatedArticles(article: ArticleData | null | undefined, limi
       const payload = buildSearchPayload(
         {
           // Masquage des liés EN ATTENTE : posé automatiquement par applyValidationGate (costumSlug présent). Cf §16.
-          defaultFilters: { type: "article", tags: { $in: tags } },
-          defaultSortBy: { created: -1 },
+          defaultFilters: { ...publicFilters, type: "article", tags: { $in: tags } },
+          defaultSortBy: publicSortBy ?? { created: -1 },
+          defaultFields: articleFields(),
           costumSlug,
           sourceKey: [costumSlug],
         } as never,
