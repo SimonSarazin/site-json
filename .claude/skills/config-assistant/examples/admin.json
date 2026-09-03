@@ -441,6 +441,78 @@
             "edit": "inherit"
           }
         ]
+      },
+      {
+        "id": "reunions-comite",
+        "label": {
+          "fr": "Réunions du comité",
+          "en": "Committee meetings"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "events",
+            "label": {
+              "fr": "Réunions du comité",
+              "en": "Committee meetings"
+            },
+            "source": {
+              "defaultFilters": {
+                "type": "meeting"
+              },
+              "defaultSortBy": {
+                "startDate": -1
+              },
+              "costumSlug": "parent62",
+              "sourceKey": [
+                "parent62"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Titre",
+                  "en": "Title"
+                }
+              },
+              {
+                "path": "territoires",
+                "label": {
+                  "fr": "Territoire",
+                  "en": "Territory"
+                }
+              },
+              {
+                "path": "startDate",
+                "label": {
+                  "fr": "Début",
+                  "en": "Start"
+                }
+              },
+              {
+                "path": "address.addressLocality",
+                "label": {
+                  "fr": "Commune",
+                  "en": "City"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ],
+            "create": "add-parent62-reunion",
+            "edit": "inherit"
+          }
+        ]
       }
     ]
   }

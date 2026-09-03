@@ -15,7 +15,21 @@
 > Mémoire : `[[project-parent62]]`
 > (`.claude/memory/project-parent62.md`) — slug corrigé le 25/07 (`parents62` avec **s** est abandonné, cf. §1).
 
-Dernière mise à jour : **2026-09-03** — trois lots.
+Dernière mise à jour : **2026-09-03** — quatre lots.
+
+**(d) Haut des 9 pages territoire refondu + saisie admin des réunions** — chaque page
+`/territoire/*` ouvre désormais, juste après son bandeau, sur les **3 prochaines réunions du comité
+local** (`agenda` filtré `type:"meeting"` + `territoires`), suivies de la grille `cards` à 2 colonnes
+(coordonnateur·rice + carte « **Comptes rendus des réunions** » vers le Drive du territoire) puis de
+**3 ressources du territoire** avec un bouton « Voir toutes les ressources » vers `/ressources`
+pré-filtré. Retirés : la carte « Le comité local » et les 5 blocs de liens externes (leurs 11 URL
+sont archivées en §9novodecies.2). Les 9 pages partagent maintenant le MÊME gabarit à 9 sections ;
+161 → **174 sections**. La saisie des réunions passe par un 5ᵉ formulaire costum
+**`parent62-reunion`** (`type:"meeting"`, sans `toBeValidated`) et un 9ᵉ onglet `/admin`
+« **Réunions du comité** ». Deux apports **génériques** au moteur accompagnent le lot : le helper
+`buildViewAllHref` (lien « voir tous » d'un `customHeader`) et le gate préflight `deeplink-filters`,
+plus le contrat `limit` / `indexStepList` d'un teaser d'agenda, désormais écrit dans le schéma, le
+registre `config:schema` et `doc/29`. Détail : §9novodecies.
 
 **(c) Types de ressources** — l'énumération `category` des fiches ressource passe de **6 à
 8 valeurs** : « Jeu » devient *Les jeux du réseau*, et deux types s'ajoutent, *Inforéso* et *Elles
@@ -395,6 +409,9 @@ Embarqué dans le document de l'orga (`organizations.costum`). Au 20/07, `typeOb
 | **Parole / ressource / event (main canonique)** | `components/card/CardTestimonial.tsx`, `CardResource.tsx`, `preview/PreviewTestimonial.tsx`, `PreviewResource.tsx`, `lib/testimonial.ts`, `hooks/useResource*.ts`, `modules/agenda/*`, `components/media/*` (AudioPlayer/Recorder…) |
 | **Rendu par item / action au clic (25/07)** | `src/lib/entityMatch.ts` (+ `.test`), `src/modules/search/lib/resolveListItemConf.ts` (+ `.test`), `lib/itemAction.ts` (+ `.test`), `tests/preflight/list-item-rules.test.ts` ; modifs `schema.ts` (`CardConfSchema` extrait, `ListItemRuleSchema`, `ListItemActionSchema`), `components/SearchListView.tsx`, `SearchCard.tsx`, `Preview.tsx`, `SearchMap*.tsx` ; outillage `scripts/lib/prop-descriptions.ts`, `scripts/audit-config.ts`, `scripts/lib/config-blocks.ts` |
 | **Territoires** | `src/data/territoires62.ts` (+ `.test`), `scripts/import-communes-territoires62.ts` |
+| **Lien « voir tous » d'un `customHeader` (03/09)** | `src/modules/search/lib/viewAllHref.ts` (+ `.test`, neufs), `src/modules/search/SearchProStatic.tsx` (délégation du `useMemo`) |
+| **Deep-link de filtre — id d'option vs libellé (03/09)** | `tests/preflight/deeplink-filters.test.ts` (neuf) ; les 9 `linkHref` de `config.prod.parent62.json` |
+| **Teaser d'agenda — `limit` vs `indexStepList` (03/09)** | `src/modules/agenda/schema.ts` (contrat + 2 commentaires périmés), `scripts/lib/prop-descriptions.ts`, `doc/29-module-agenda.md`. **Aucune config d'un autre projet n'est touchée** |
 | **Header** | `src/components/layout/header/HeaderTransparentScroll.tsx` (fix lisibilité) |
 | **Refonte accueil/header/footer (06/08)** | `src/components/layout/header/HeaderStacked.tsx` (neuf), `src/components/layout/footer/FooterMinimalCentered.tsx`, `src/components/sections/MapBubbles.tsx` (neuf), `src/modules/search/sections/FeaturedCarouselSection.tsx`+`FeaturedCarouselSlide.tsx` (neufs), `src/modules/search/lib/featuredCarouselFilters.ts` (+`.test`, neufs), `src/modules/blog/sections/ArticleTeaser.tsx` (neuf), `src/modules/blog/lib/articleLink.ts` (+`.test`, neuf, extrait d'`ArticleFeed.tsx`) ; schémas `src/types/site-schema.ts` (`MapBubblesSchema`, `Header.backgroundImage/textColor/logoTitleAccent`, `Footer.backgroundImage`), `src/modules/search/schema.ts` (`FeaturedCarouselSectionSchema`), `src/modules/blog/schema.ts` (`ArticleTeaserSectionSchema`) ; câblage `src/components/layout/SiteHeader.tsx`, `src/components/sections/SectionRenderer.tsx`, `src/components/admin/section-meta.ts` ; `src/index-parent62.css` (breakpoint `xs`, `@layer base`, police) |
 | **Ajustement hauteur header/à la une (13/08)** | `src/components/layout/header/HeaderStacked.tsx` (`min-h` désormais `xl:`-only, échelle logo/titre/sous-titre), `src/modules/search/sections/FeaturedCarouselSection.tsx`+`FeaturedCarouselSlide.tsx` (padding réduit, `object-contain`, ratio `16/10`) (§9quinquies) |
@@ -1818,6 +1835,122 @@ Snapshots de la skill `config-assistant` resynchronisés (`command-palette`, `li
 
 ---
 
+## 9novodecies. Impacts — refonte du haut des 9 pages territoire + saisie admin des réunions (03/09)
+
+> Périmètre : **`config.prod.parent62.json`**, plus deux apports **génériques** au moteur
+> (§9novodecies.4). Les 9 pages `/territoire/*` partagent désormais le MÊME gabarit à **9 sections**
+> (elles en avaient 7 ou 8) ; total config : 161 → **174 sections**. S'y ajoutent un 5ᵉ formulaire
+> costum et un 9ᵉ onglet `/admin`.
+
+### 9novodecies.1 Le gabarit des pages territoire
+
+`html` (bandeau) · **`agenda`** · `cards` · **`searchProStatic`** · `searchHeader` · `articleFeed` ·
+`accordion` (communes) · `searchProStatic` (actions) · `cta`.
+
+| Volet | Configuration | Position |
+|---|---|---|
+| **Dates du comité local** | `agenda` en teaser : `limit:3` (les 3 prochaines réunions), `showTabs:false`, `showViewToggle:false`, `defaultTab:"upcoming"`, colonnes `lg:3` alignées sur la liste voisine. `baseParams` : `filters {type:"meeting", territoires:{$in:[…]}}`, `costumSlug:"parent62"` (porte de modération), `indexStepList:30` | `sections[1]`, juste après le bandeau |
+| **Comptes rendus des réunions** | 2ᵉ carte de la section `cards` (2 colonnes) : `href` = dossier Drive du territoire, `target:"_blank"`, icône `folder-open` | `sections[2]` |
+| **Ressources du territoire** | `searchProStatic` : `indexStepList:3` (3 fiches), `defaultFilters {type:"recoveryCenter", territoires:{$in:[…]}}`, presenter `resource` repris de `/ressources`, bouton d'en-tête « Voir toutes les ressources » → `/ressources?territoire=<id>` | `sections[3]` |
+
+Deux points de forme qui conditionnent le rendu :
+
+- **`indexStepList` d'un teaser d'agenda n'est pas son `limit`.** Le flux LISTE est trié
+  `startDate` DESC, les trois buckets mêlés, et `limit` ne plafonne que l'affichage : la page
+  demandée doit donc être large (30 ici) pour que le bucket « À venir » soit complet. Contrat
+  détaillé dans [`doc/29-module-agenda.md`](../doc/29-module-agenda.md).
+- **Le deep-link du bouton porte l'`id` d'option, pas le libellé** (`?territoire=arrageois`,
+  `…=familles-en-sol-mineur-henin-carvin`) : c'est ce que compare l'hydratation d'un
+  `dropdownFilters`. Les `cta` voisins vers `/recherche` gardent le libellé — cette page filtre par
+  une sidebar `filters`, dont la convention accepte `name || id`.
+
+### 9novodecies.2 Ce qui a été retiré des pages
+
+- **La carte « Le comité local »** : son texte renvoyait à l'agenda et au Drive, désormais portés
+  par deux volets propres, juste à côté. La grille `cards` garde 2 colonnes :
+  coordonnateur·rice + comptes rendus.
+- **Les 5 blocs `html` de liens externes** (arrageois, audomarois, boulonnais, calaisis,
+  entre-mer-et-terres). Leurs 11 URL sont **archivées ci-dessous** pour ressaisie éventuelle en
+  fiches ressource (`parent62-recovery-center`, category *Lien*) — c'est la seule trace qui en reste :
+
+  | Territoire | Liens |
+  |---|---|
+  | Arrageois | `https://rp62-arrageois.gogocarto.fr` · `www.parent62.org/plaquette-ressource-parentalite-et-eloignement-du-reseau-parentalite-de-larrageois/` · `…/guide-ressource-parents-dados-a-destination-des-partenaires-realisation-et-participation-des-parents-du-territoire-de-larrageois/` |
+  | Audomarois | `https://acteur-parentalite-audomarois.gogocarto.fr/` |
+  | Boulonnais | `www.parent62.org/jeux-et-outils-du-reseau-2/` · `…/les-lieux-daccueil-enfants-parents-du-boulonnais/` · `http://soutenirlesaidants.fr` |
+  | Calaisis | `www.parent62.org/jeux-et-outils-du-reseau/` · `…/autour-des-parents-une-nouvelle-application-pour-les-familles-du-calaisis/` |
+  | Entre Mer et Terres | `https://reseau-parentalite-entre-mer-e.gogocarto.fr/map` · `…/decouvrez-biblioboost-site-de-consultation-et-demprunt-des-jeux-et-outils-disponibles-sur-le-montreuillois/` |
+
+- Les **props sans effet** des nouveaux volets : `useFilter`, `showActiveFiltersTypes` et
+  `showActiveFiltersTags` (non lues par `SearchProStatic` — seul `SearchPro` les lit), et celles qui
+  répétaient le défaut du composant (`showMap`, et côté agenda `defaultMode`,
+  `upcomingWindowMonths`, `detailsMode`, `enableMap`, `filters.tags`). Conservés parce qu'ils
+  changent le comportement : `enableMap:false` sur `searchProStatic` (son défaut est `true`),
+  `disableInfiniteScroll:true`, et `defaultTab:"upcoming"` — le bucket rendu par le teaser, écrit
+  plutôt qu'emprunté au composant.
+
+### 9novodecies.3 Saisie des réunions : 5ᵉ formulaire costum + 9ᵉ onglet `/admin`
+
+Le volet ne montre que des events `type:"meeting"`, et le formulaire public `parent62-event` force
+`type:"others"` (`mutation.inject.extraFields`). D'où deux ajouts :
+
+- **`costumForms.parent62-reunion`** — clone de `parent62-event` (mêmes champs, mêmes sections,
+  `territoires` requis), qui n'en diffère que par `id`, `chrome` et sa `mutation` :
+  `inject.extraFields = {type:"meeting"}` et **pas de `preferences.toBeValidated`**. Ce second point
+  est délibéré : le formulaire n'est ouvert que depuis `/admin`, et la porte `costumSlug:"parent62"`
+  du volet masquerait une réunion en attente — l'admin l'enregistrerait sans rien voir apparaître.
+- **Onglet `/admin` « Réunions du comité »** (après « Agenda ») — section `resource`
+  `entityType:"events"`, `source.defaultFilters {type:"meeting"}`, colonnes
+  Titre · Territoire · Début · Commune, `create:"add-parent62-reunion"`, `edit:"inherit"`.
+  L'onglet « Agenda » reste filtré sur `type:"others"` : les deux listes sont disjointes.
+
+Aucun code : `add-<id>` est résolu dynamiquement (`costumModalThunk`, `ModalRegistry.tsx`) et tout
+`config.costumForms.<id>` est enregistré au boot client (`registerCostumForms.ts`). `createDefaults`
+n'était pas une option : il est filtré sur les champs DÉCLARÉS du formulaire (`applyCreateDefaults`),
+et `type` n'en est pas un.
+
+### 9novodecies.4 Apports moteur (génériques, tout site)
+
+| Apport | Fichiers |
+|---|---|
+| **`buildViewAllHref`** — le lien « voir tous » d'un `customHeader` fusionne proprement la query de config (scope de la page cible, ex. `?territoire=…`) avec les filtres actifs de la page de départ, au lieu de les concaténer. En cas de clé commune, la config gagne. **6 tests** | `src/modules/search/lib/viewAllHref.ts` (+ `.test`, neufs) ; `SearchProStatic.tsx` délègue son `useMemo` |
+| **Gate `deeplink-filters`** — tout `customHeader.linkHref` visant une page qui déclare des `dropdownFilters` doit nommer un filtre existant et une valeur qui est un **id d'option** (l'hydratation ignore en silence un id inconnu). **3 tests**, sans exemption : le parc entier passe | `tests/preflight/deeplink-filters.test.ts` (neuf) |
+| **Contrat `limit` / `indexStepList` / `upcomingWindowMonths`** écrit là où un configurateur le lit ; deux commentaires devenus faux (un « fetch calendrier now→fenêtre » remplacé depuis par le flux liste unique) remis à jour | `src/modules/agenda/schema.ts`, `scripts/lib/prop-descriptions.ts`, `doc/29-module-agenda.md` |
+
+### 9novodecies.5 Ce qu'il faut en base pour que les volets se remplissent
+
+Les trois volets sont config-driven : ils n'affichent que ce que le costum `parent62` porte.
+
+| Volet | Condition |
+|---|---|
+| Ressources du territoire | des POI `type:"recoveryCenter"` portant le `territoires` de la page |
+| Dates du comité local | des events `type:"meeting"` portant ce même `territoires`, créés depuis l'onglet `/admin` « Réunions du comité » (§9novodecies.3) |
+
+Corollaire : `/agenda` filtrant `type:"others"`, les réunions n'y apparaîtront pas (§13). Le
+périmètre de chaque section se vérifie à la demande avec `npm run config:probe`, à lire sur le
+backend visé.
+
+### 9novodecies.6 Validation (gates)
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` | ✅ 0 erreur |
+| `lint` | ✅ 0 erreur, 22 warnings — aucun sur les fichiers touchés |
+| `npx tsx scripts/validate-config.ts config.prod.parent62.json` | ✅ **46 pages, 174 sections** |
+| `audit:config --file config.prod.parent62.json` | ✅ RAS (0 constat) |
+| `test:preflight` | ✅ **540 passés** (+3 : le gate `deeplink-filters`) — 1 échec pré-existant sans rapport (`site-assets`, dossier `public/images/transiter`) |
+| `config:render config.prod.parent62.json` | ✅ 46/46 pages · **173/174 sections** avec contenu SSR (la 174ᵉ = `featured-carousel` de l'accueil, déjà non rendu en SSR avant ce lot) · pages territoire **9/9** |
+| `test:unit` — `search` · `agenda` · `profil`+`admin` | ✅ 441/441 · 42/42 · 566/566 |
+| Périmètre | ✅ **parent62 seul** — aucune autre `config.prod.*.json` n'est modifiée |
+| `test:e2e` | non rejoué (pas de `.env.test` ici) ; `e2e/parent62.spec.ts:161` n'assied rien sur le nombre de sections |
+
+Resynchronisés avec la config : recettes `page-annuaire-grille` / `page-territoire` de la skill
+`config-assistant`, exemple `admin`, snapshot `tests/preflight/__effective__/parent62.json`.
+
+Lot **non commité**.
+
+---
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
@@ -1826,7 +1959,7 @@ Snapshots de la skill `config-assistant` resynchronisés (`command-palette`, `li
 |---|---|---|---|
 | 1.1 | Site `reseau.parent62.org`, nav + graphisme proches du WP | 🟡 | config réconciliée (24/07) ; doublon nav `/blog` **résolu** (§9.5) ; **06/08 (committé sur `parents62`)** : accueil, header (`stacked`) et footer (`minimal-centered`) entièrement refondus, nav passée à 5 dropdowns dont un nouveau « Publics » (§9quater) ; double entrée `/parents`/`/pro` **rétablie le 02/09** (1.4, §9septendecies), la recette visuelle et le déploiement → 1.10 |
 | 1.2 | Pages statiques réseau / charte / équipe / champs d'action | ✅ | `/reseau` `/charte` `/champs-actions` `/equipe` ; arbitrage éditorial réseau ouvert (§13) |
-| 1.3 | Page par territoire : contact + **liste des communes** | ✅ | cards coordo + accordéon 887 communes + fil filtré + CTA ; navigation depuis l'accueil désormais via `map-bubbles` (carte à bulles, §9quater) au lieu des cartes d'accès rapide |
+| 1.3 | Page par territoire : contact + **liste des communes** | ✅ | cards coordo + accordéon 887 communes + fil filtré + CTA ; navigation depuis l'accueil désormais via `map-bubbles` (carte à bulles, §9quater) au lieu des cartes d'accès rapide ; **03/09** : haut de page refondu — **3 prochaines réunions du comité local** juste après le bandeau, carte « Comptes rendus des réunions » (Drive) et **3 ressources du territoire** avec bouton « Voir toutes les ressources » ; carte « Le comité local » et blocs de liens externes retirés ; saisie des réunions par l'onglet `/admin` dédié (§9novodecies). Les deux blocs de données sont **câblés** ; leur remplissage dépend de la saisie côté costum (§9novodecies.5) |
 | 1.4 | Double entrée parents / pro | ✅ *(était 🟡, régression du 06/08)* | **Rétablie le 02/09** : la section `action-tiles` `home-double-entree` (« Vous êtes… » → `/parents` / `/pro`) est réinsérée sur l'accueil, en 2ᵉ position — juste après le carrousel « à la une », sa place d'origine dans le rythme de la page. Les deux pages existaient toujours mais **n'étaient liées de nulle part** depuis la refonte du 06/08 (vérifié : une seule occurrence de chaque chemin dans la config, sa propre déclaration de page). Elles coexistent avec le dropdown « Publics » (7 pages `/public/*`), qui ne les remplace donc pas — question §13 tranchée |
 | 1.5 | Moteur de recherche : types d'info, public, âges, dates, territoire coloré, carte, thèmes | 🟡 | `/recherche` : types d'info (**searchTargets 6** depuis le 25/07 — « Ressources » ajoutée —, défaut « Actualités »), public, thèmes, territoire coloré, **carte** (`enableMap:true`), `dateRange` **borne début seule**. **25/07** : chaque famille a désormais sa carte et son action au clic (`list.itemRules`, §9bis) ; tri `created:-1` et projection explicite ajoutés. **Âges : livré sur `/temoignages` + form affiche, mais PAS encore dans le groupe de filtres `/recherche`** (à ajouter — `ages` est projeté, il ne manque que le groupe). Borne de fin des dates = demande backend `$lt/$lte` (§11) |
 | 1.6 | Paroles de parents (3 catégories, audio+écrit, transcription, ajout admin) | 🟡 | brique complète (Thomas) : `/temoignages`, form `parent62-affiche` (3 catégories, audio→`medias`, ages, consentement RGPD), pile audio `media/*`, card/preview `testimonial`. **Ajout admin-only ✅** (modération a priori retirée volontairement, commit `17aea3e`). **25/07** : la cible « Paroles » de `/recherche` renvoyait **0 résultat** (filtre `status:"validated"` sur un champ inexistant) — corrigé, et les paroles y rendent en bulles avec leur dialog (§9bis). **Données observées le 25/07** : `/temoignages` affiche « Toutes les paroles (**3**) » — la mention « 0 POI `affiche` » du 24/07 est caduque. **25/08** : catégorie **et** thèmes passés en saisie libre, valeur inédite promue vers la liste partagée par un admin (§9septies). **Manque** : **transcription/sous-titres NON implémentée** (`description` sert d'écrit) |
@@ -1952,6 +2085,11 @@ les **paroles ne sont plus muettes** dans le moteur (§9bis.1).
 
 | Évolution / question | Pour qui |
 |---|---|
+| **[03/09] Portée des facettes d'une page** — `PageFilters` est page-scopé : les facettes du `searchHeader` s'appliquent à TOUTES les sections de données de la page, y compris celles placées au-dessus de lui. Sur une page territoire, filtrer par thème restreint donc aussi les volets du haut. Faut-il une prop moteur d'isolation (`ignorePageFilters`, générique), renseigner `themes`/`publics` sur les réunions à la saisie, ou garder ce comportement uniforme ? | Peterson / Thomas |
+| **[03/09] Qui saisit les réunions de comité local ?** — le « comment » est réglé (onglet `/admin` « Réunions du comité » + formulaire `parent62-reunion`, §9novodecies.3) ; reste le « qui » : les 9 coordinations ont-elles un accès `siteAdmin` à `/admin`, et qui les forme ? Sans saisie, le volet reste vide | réseau / Peterson |
+| **[03/09] Réunions publiées sans modération** — `parent62-reunion` n'injecte pas `preferences.toBeValidated` (sinon la porte `costumSlug` du volet masquerait la réunion à l'admin qui vient de la créer). Acceptable puisque le formulaire n'est atteignable que depuis `/admin` ; à revoir si un bouton public devait un jour l'ouvrir | Peterson |
+| **[03/09] `/agenda` doit-il montrer les réunions de comité ?** — il filtre `type:"others"` : les `meeting` n'y remonteront pas. Élargir à `{"type":{"$in":["others","meeting"]}}` (1 ligne de config) ou garder l'agenda public strictement « événements » ? | réseau / Peterson |
+| **[03/09] Ressources par territoire** — le volet n'affiche que des fiches `recoveryCenter` portant le `territoires` de la page : saisie/import à planifier territoire par territoire. Les 11 liens WordPress/GoGoCarto retirés des pages (archivés en §9novodecies.2) sont les premiers candidats à une ressaisie en fiches ressource, category *Lien* | réseau |
 | **Impression de l'agenda** (2.4) — non implémentée (CSS print ou export iCal/PDF) | Peterson |
 | **Alias `reseau.parent62.org` dans `sites.json`** (champ `aliases`) pour que `deploy:env` dérive `VITE_SITE_PUBLIC_URL` correctement — aujourd'hui l'entrée `parent62` n'a que `domain: parent62.00.re` (§8.5) | Peterson / Thomas |
 | **Âges dans `/recherche`** (1.5) — la liste `ages` existe (form + `/temoignages`), l'ajouter au groupe de filtres `/recherche` | Peterson |
