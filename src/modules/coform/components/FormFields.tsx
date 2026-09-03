@@ -103,11 +103,11 @@ export function FieldError({ name, message }: { name: string; message: string | 
 /**
  * Libellé d'une question — **point unique** où se règle son apparence.
  *
- * Les 15 champs du module rendaient auparavant ce bloc en copie inline
+ * Les champs du module rendaient auparavant ce bloc en copie inline
  * (`<Label className="text-sm font-medium">{label}{isRequired && "*"}</Label>`),
  * dans 10 fichiers. Toute retouche de hiérarchie visuelle devait donc être
- * répétée 15 fois — et le moindre oubli désalignait un champ. Ici, une seule
- * ligne fait bouger tout le formulaire.
+ * répétée à chaque champ — et le moindre oubli désalignait une question. Ici,
+ * une seule ligne fait bouger tout le formulaire.
  *
  * **Hiérarchie** : la question est en `text-base font-semibold` alors que le
  * contenu (options, aides, valeurs) reste en `text-sm`. Cet écart d'un cran de
@@ -150,9 +150,9 @@ export function FieldLabel({
           {/* L'astérisque est décorative : lue telle quelle, elle s'annonce
               « étoile ». Le caractère obligatoire est donc porté ici par un
               texte réservé aux lecteurs d'écran, DANS le libellé — et non par
-              `aria-required` sur le contrôle, que 6 des 15 champs du module ne
+              `aria-required` sur le contrôle, que plusieurs champs du module ne
               posent pas (les composites dont le contrôle n'est pas un input).
-              Au niveau du libellé, l'information vaut pour les 15. */}
+              Au niveau du libellé, l'information vaut pour tous. */}
           <span className="sr-only">{t("coform.field.required", "obligatoire")}</span>
         </>
       )}

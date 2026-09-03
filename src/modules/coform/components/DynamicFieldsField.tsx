@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/useT";
 import type { FieldErrors } from "react-hook-form";
 import type { DynamicFieldsRow, DynamicFieldsSubField, FormFieldMapping } from "../types";
-import { HintText, FieldError } from "./FormFields";
+import { HintText, FieldError, FieldLabel } from "./FormFields";
 
 interface DynamicFieldsFieldProps {
   field: FormFieldMapping;
@@ -51,21 +50,21 @@ export function DynamicFieldsField({ field, errors, value, onChange }: DynamicFi
   const config = field.dynamicFieldsConfig;
   const rows: DynamicFieldsRow[] = Array.isArray(value) ? (value as DynamicFieldsRow[]) : [];
   const hasError = !!errors[field.name];
+  const labelId = `${field.name}-label`;
+  // `errorId` suit le MESSAGE, pas `hasError` : une erreur zod imbriquée
+  // (donnée legacy au mauvais type dans un sous-champ) met `hasError` à vrai
+  // sans message top-level — `FieldError` ne rend alors rien, et un
+  // `aria-describedby` dérivé de `hasError` pointerait un id inexistant.
+  const errorMessage = errors[field.name]?.message as string | undefined;
+  const errorId = errorMessage ? `${field.name}-error` : undefined;
 
-  const subFields = config?.fieldsConfig ?? [];
   const minRows = Math.max(field.isRequired ? 1 : 0, config?.minRows ?? 0);
 
-  // Parité legacy : les `minRows` lignes existent d'emblée, sans clic sur
-  // « Ajouter ». Stable : on ne peut pas descendre sous minRows (canRemove),
-  // donc l'effet ne se re-déclenche pas en boucle.
-  useEffect(() => {
-    if (subFields.length === 0 || rows.length >= minRows) return;
-    const seed = Array.from({ length: minRows - rows.length }, () =>
-      Object.fromEntries(subFields.map((sub) => [sub.key, ""])),
-    );
-    onChange?.([...rows, ...seed]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- déclenché par le manque de lignes uniquement (rows/onChange changent à chaque render contrôlé)
-  }, [rows.length, minRows, subFields.length]);
+  // Les `minRows` lignes initiales sont produites par `generateDefaultValues`
+  // (utils/formParser.ts), PAS semées ici par un `onChange` au montage : écrire
+  // dans le formulaire au montage le rendait `isDirty` avant toute saisie —
+  // alerte « modifications non enregistrées » et autosave sur un formulaire
+  // jamais touché. `minRows` reste utilisé ci-dessous pour `canRemove`.
 
   // Sans fieldsConfig, le champ est inconfiguré côté admin : rien à saisir.
   if (!config || config.fieldsConfig.length === 0) return null;
@@ -150,13 +149,24 @@ export function DynamicFieldsField({ field, errors, value, onChange }: DynamicFi
   };
 
   return (
-    <div className={cn("space-y-2", field.width)}>
-      {field.label && (
-        <Label className="text-sm font-medium text-foreground">
-          {field.label}
-          {field.isRequired && <span className="text-destructive ml-1">*</span>}
-        </Label>
-      )}
+    /* `role="group"` + `aria-labelledby` : le contrôle n'est pas un input ciblable
+       (répéteur de lignes), donc `FieldLabel` rend une `<div>` — sans rôle sur le
+       conteneur, elle ne nommerait rien. Même montage que `CommonTableField`. */
+    <div
+      /* Pas de `role` sans libellé : un groupe anonyme n'ajoute rien à l'arbre
+         d'accessibilité, il ne fait que l'encombrer. */
+      role={field.label ? "group" : undefined}
+      aria-labelledby={field.label ? labelId : undefined}
+      /* `aria-invalid`/`aria-required` ne sont pas des propriétés supportées de
+         `role="group"` : conservés pour l'alignement avec `CommonTableField`,
+         l'information réelle passant par le `sr-only` de `FieldLabel` et le
+         `role="alert"` de `FieldError`. */
+      aria-invalid={hasError || undefined}
+      aria-describedby={errorId}
+      aria-required={field.isRequired || undefined}
+      className={cn("space-y-2", field.width)}
+    >
+      <FieldLabel field={field} id={labelId} hasError={hasError} />
       {field.info && <HintText text={field.info} />}
 
       <div className="space-y-3">
@@ -190,7 +200,7 @@ export function DynamicFieldsField({ field, errors, value, onChange }: DynamicFi
         </Button>
       )}
 
-      <FieldError name={field.name} message={hasError ? (errors[field.name]?.message as string | undefined) : undefined} />
+      <FieldError name={field.name} message={errorMessage} />
     </div>
   );
 }

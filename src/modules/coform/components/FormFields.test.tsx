@@ -63,7 +63,10 @@ describe("ProseContent — sanitisation XSS", () => {
 });
 
 /**
- * `FieldLabel` est le POINT UNIQUE de rendu du libellé des 15 champs du module.
+ * `FieldLabel` est le POINT UNIQUE de rendu du libellé des champs du module.
+ * Le garde-fou qui vérifie qu'AUCUN champ n'y échappe vit dans
+ * `tests/preflight/coform-field-label.test.ts` (un merge a déjà réintroduit la
+ * copie inline sur deux champs neufs, avec tous les gates au vert).
  * Une régression ici se propage à tout le formulaire, d'où ces tests.
  */
 describe("FieldLabel", () => {
