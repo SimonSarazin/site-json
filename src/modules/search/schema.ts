@@ -38,6 +38,46 @@ export const FilterSelectConfigSchema = z.object({
  *  de groupes. Sans effet si un widget `select` est déclaré. */
 export const FilterOptionStyleSchema = z.enum(["checkbox", "check"]);
 
+/**
+ * Source DYNAMIQUE des options d'un filtre — deux origines, exclusives l'une de l'autre :
+ *
+ *  • `list` — une liste déclarée du costum (`costum.lists.<nom>`, forme `{collection, distinct,
+ *    where}`), résolue par `costum/co/listvalues`. Les valeurs viennent de la DONNÉE : le filtre
+ *    suit ce que les fiches contiennent, au lieu d'une liste figée qui dérive (mesuré sur
+ *    institutBleu : 12 territoires déclarés contre 64 en base, soit 52 valeurs injoignables).
+ *
+ *  • `shapes` — le RÉFÉRENTIEL d'une couche de contours (cf. `GeoShapeSourceSchema`) : une option
+ *    par contour, `id`/`value` = l'`_id` du document, libellé = son `name`. C'est ce qui permet de
+ *    filtrer sur un IDENTIFIANT stable (`address.zonirisId`) plutôt que sur un nom, qu'une
+ *    correction en base peut changer sans préavis.
+ *    ⚠️ La déclaration doit REPRODUIRE celle de la couche que la page dessine — `source`, `filters`
+ *    ET `simplify`, les trois seuls champs dont la clé de cache est faite (cf. `geoShapesQueryKey`).
+ *    À l'identique, filtre et carte partagent UN SEUL appel réseau ; diverger d'un champ télécharge
+ *    le référentiel deux fois (147 Ko gzip pour les 7 bassins de vie de Saint-Paul). Le test
+ *    preflight `options-from-shapes` refuse une déclaration qui ne s'apparie à aucune couche.
+ *    ⚠️ Les options sont les contours DESSINABLES : un document sans `geoShape` est écarté en amont
+ *    par `toFeatureCollection` et n'a donc pas d'option.
+ *
+ * REMPLACE les `options` écrites à la main quand elle est déclarée — pas de fusion. Les valeurs
+ * dynamiques n'ont donc PAS de libellé traduit : elles s'affichent telles qu'elles sont stockées.
+ * C'est un choix : traduire supposerait de maintenir une table en config, donc de recréer la dérive
+ * qu'on vient de supprimer.
+ *
+ * Sans `optionsFrom`, rien ne change : les options déclarées font foi, comme aujourd'hui.
+ */
+export const OptionsFromSchema = z.union([
+  z.object({
+    /** Nom de la liste dans `costum.lists`. */
+    list: z.string(),
+    /** Costum porteur ; par défaut celui du site. */
+    costumSlug: z.string().optional(),
+  }),
+  z.object({
+    /** Couche de contours servant de référentiel — même déclaration que celle de la carte. */
+    shapes: GeoShapeSourceSchema,
+  }),
+]);
+
 export const FilterGroupSchema = z.object({
   id: z.string(),
   label: LocalizedString,
@@ -75,10 +115,11 @@ export const FilterGroupSchema = z.object({
      *  consommateurs le lisent sans cast. */
     variants: z.array(z.string()).optional(),
   })).optional(),
-  /** Source DYNAMIQUE des options (cf. `OptionsFromSchema` du searchHeader) : les valeurs viennent
-   *  d'une liste `costum.lists` et REMPLACENT les `options` déclarées. Sur un groupe à `field`, chaque
-   *  option reçoit `name` = la valeur stockée, donc le filtrage par champ fonctionne tel quel. */
-  optionsFrom: z.object({ list: z.string(), costumSlug: z.string().optional() }).optional(),
+  /** Source DYNAMIQUE des options (cf. {@link OptionsFromSchema}) : les valeurs viennent d'une liste
+   *  `costum.lists` ou d'un référentiel de contours, et REMPLACENT les `options` déclarées. Sur un
+   *  groupe à `field`, chaque option reçoit `name` = la valeur stockée, donc le filtrage par champ
+   *  fonctionne tel quel. */
+  optionsFrom: OptionsFromSchema.optional(),
   config: z.object({
     countryCode: z.array(z.string()).optional(),
     level: z.array(z.string()).optional(),
@@ -1149,24 +1190,6 @@ const TitleWithFiltersDropdownOptionSchema = z.object({
   value: z.string().optional(),
   field: z.string().optional(),
   icon: z.string().optional(),
-});
-
-/**
- * Source DYNAMIQUE d'options : les valeurs viennent d'une liste déclarée du costum
- * (`costum.lists.<nom>`, forme `{collection, distinct, where}`), résolue par `costum/co/listvalues`.
- *
- * REMPLACE les `options` écrites à la main quand elle est déclarée — pas de fusion. Les valeurs
- * dynamiques n'ont donc PAS de libellé traduit : elles s'affichent telles qu'elles sont stockées.
- * C'est le prix assumé pour que le filtre suive la donnée : sur institutBleu, la config gelait
- * 12 territoires quand la base en compte 64, soit 52 valeurs injoignables au filtre.
- *
- * Sans `optionsFrom`, rien ne change : les options déclarées font foi, comme aujourd'hui.
- */
-const OptionsFromSchema = z.object({
-  /** Nom de la liste dans `costum.lists`. */
-  list: z.string(),
-  /** Costum porteur ; par défaut celui du site. */
-  costumSlug: z.string().optional(),
 });
 
 const TitleWithFiltersDropdownSchema = z.object({
