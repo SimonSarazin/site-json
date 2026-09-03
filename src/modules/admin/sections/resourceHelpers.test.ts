@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import type { AdminResourceSection } from "../schema";
-import { resolveCreateModal, resolveEditModal, getPath, formatCell } from "./resourceHelpers";
+import { resolveCreateModal, resolveEditModal, getPath, formatCell, readStatusValue } from "./resourceHelpers";
 
 /** Section resource minimale — cast : create/edit sont posés par les défauts zod à la validation. */
 function section(over: Record<string, unknown> = {}): AdminResourceSection {
@@ -228,5 +228,24 @@ describe("formatCell — champs MULTIVALUÉS", () => {
 
   it("ignore les éléments non rendus plutôt que de laisser des séparateurs vides", () => {
     expect(formatCell(["APMR", null, "IFREMER"])).toBe("APMR, IFREMER");
+  });
+});
+
+describe("readStatusValue — chemin Mongo imbriqué, repli clé feuille à plat", () => {
+  const FIELD = "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdn1jcq445i0mb9bap7";
+
+  it("lit le chemin complet quand le document est imbriqué (shape Mongo brute)", () => {
+    const data = { answers: { sportSanteBienetre2172025_854_0: { sportSanteBienetre2172025_854_0mdn1jcq445i0mb9bap7: "Validé" } } };
+    expect(readStatusValue(data, FIELD)).toBe("Validé");
+  });
+
+  it("replie sur la clé FEUILLE à plat (shape aplatie par le hook costum de recherche)", () => {
+    const data = { sportSanteBienetre2172025_854_0mdn1jcq445i0mb9bap7: "En attente" };
+    expect(readStatusValue(data, FIELD)).toBe("En attente");
+  });
+
+  it("champ absent des deux shapes → undefined (badge « Non renseigné »)", () => {
+    expect(readStatusValue({ name: "x" }, FIELD)).toBeUndefined();
+    expect(readStatusValue(undefined, FIELD)).toBeUndefined();
   });
 });

@@ -183,8 +183,12 @@ export const HeroSearchSchema = z.object({
           label: LocalizedString,
           variant: z.enum(["default", "secondary", "accent", "primary", "outline"]).optional(),
           // Filtres posés par ce bouton (multi-params, multi-valeurs).
-          // NB : les valeurs ne doivent pas contenir de virgule (format URL
-          // partagé avec /lieux — `split(",")`).
+          // Les valeurs peuvent contenir une virgule : l'écriture les ENCODE avant de joindre
+          // (`computeUrlFromFilters.encodeValues`) et la lecture décode chaque fragment
+          // (`computeFiltersFromUrl`). ⚠️ Vaut pour les params écrits par la section `filters` ;
+          // `HeroSearch` compare encore les siens SANS décoder (HeroSearch.tsx:64-72) — tant
+          // qu'aucune page ne porte à la fois un `hero-search` et une section `filters`, les deux
+          // espaces de noms ne se croisent pas.
           filters: z
             .array(
               z.object({
@@ -843,10 +847,25 @@ const ContactFormSectionSchema = z.object({
       placeholder: LocalizedString.optional(),
       options: z.array(LocalizedString).optional(),
       validation: z.string().optional(), // regex ou mot‑clé (email, tel…)
+      /**
+       * Rôle du champ dans le message envoyé (cf. `lib/contactPayload.ts`). Facultatif : à défaut,
+       * le rôle est déduit du `name` par convention (`name`/`email`/`phone`/`subject`/`message`).
+       * Un champ sans rôle est un consentement d'interface (rgpd, newsletter) : validé localement,
+       * jamais envoyé.
+       */
+      role: z.enum(["senderName", "senderEmail", "phone", "subject", "message", "extra"]).optional(),
     })),
     submitLabel: LocalizedString,
-    action: z.string(),
-    method: z.enum(["GET", "POST"]).default("POST"),
+    /**
+     * @deprecated IGNORÉ. Le message part par la lib (`CONTACT_SEND` →
+     * `/co2/mailmanagement/createandsend`), qui résout le destinataire côté serveur depuis
+     * `costum.contactMail` — `costum.admin.email` n'est qu'un REPLI. Conservé optionnel pour ne pas
+     * invalider une config existante ;
+     * `tests/preflight/contact-form.test.ts` refuse qu'on en déclare une nouvelle.
+     */
+    action: z.string().optional(),
+    /** @deprecated IGNORÉ — cf. `action`. */
+    method: z.enum(["GET", "POST"]).optional(),
     successMessage: LocalizedString.optional(),
     errorMessage: LocalizedString.optional(),
   }),
@@ -1392,7 +1411,6 @@ const GridLayoutSectionPropsSchema = z.object({
   className: z.string().optional(),
   leftWrapperClass: z.string().optional(),
   rightWrapperClass: z.string().optional(),
-  fixedHeight: z.string().optional(),
 });
 
 const GridLayoutSectionSchema = z.object({
@@ -1608,8 +1626,41 @@ export const Page = z.object({
   title: LocalizedString,
   seo: PageMeta.optional(),
   layout: z.enum(["default", "fullwidth", "sidebar-left", "sidebar-right", "landing"]).default("default"),
-  auth: z.object({ required: z.boolean().default(false), roles: z.array(z.string()).optional() }).optional(),
-  middleware: z.array(z.string()).optional(), // Custom middleware functions
+  auth: z
+    .object({
+      required: z.boolean().default(false),
+      /**
+       * Niveau d'ADMINISTRATION requis, même vocabulaire que `admin.access.min`
+       * (`AdminAccessLevelSchema`) : `siteAdmin` = admin du costum porteur, `superAdmin` = admin
+       * plateforme. Résolu par les vraies méthodes du SDK (`isSuperAdmin`/`isAdminPlatform`/
+       * `entity.isAdmin`) — c'est la forme à utiliser.
+       */
+      access: z.enum(["siteAdmin", "superAdmin"]).optional(),
+      /**
+       * ⚠️ DÉPRÉCIÉ — préférer `access`. Teste des clés BRUTES de `me.serverData.roles`, dont le
+       * SDK ne connaît que `superAdmin` et `adminPlatform` : tout autre nom (ex. `"admin"`) ferme
+       * la page à TOUT LE MONDE, superAdmin compris, sans le moindre signal. Une garde préflight
+       * (tests/preflight/page-guards.test.ts) refuse désormais les noms hors de ce jeu.
+       */
+      roles: z.array(z.string()).optional(),
+      /**
+       * Ce qui se passe quand l'accès est refusé. Défaut (codé en dur côté moteur, cf.
+       * `src/lib/pageAccess.ts` — la config n'est pas parsée par Zod au runtime) : `prompt`.
+       *  - `prompt`   : on reste sur la page, la modale de connexion s'ouvre par-dessus ;
+       *  - `redirect` : navigation vers `/login`, destination mémorisée ;
+       *  - `hide`     : rien n'est rendu, un refus est affiché.
+       * Dans les TROIS cas les sections ne sont jamais sérialisées au SSR.
+       */
+      mode: z.enum(["prompt", "redirect", "hide"]).optional(),
+    })
+    .optional(),
+  /**
+   * ⚠️ DÉPRÉCIÉ — préférer `auth`. Noms résolus contre le registre d'`usePageGuards` :
+   * `auth-required` (doublon exact d'`auth.required`), `admin-only`, `redirect-if-authenticated`.
+   * Un nom hors registre est un NO-OP SILENCIEUX (`registry[mw]?.()`) : la page se croit gardée et
+   * ne l'est pas. Une garde préflight refuse les noms inconnus, et le moteur avertit en dev.
+   */
+  middleware: z.array(z.string()).optional(),
   sections: z.array(Section),
   hideHeader: z.boolean().optional(),
   hideFooter: z.boolean().optional(),
@@ -1709,6 +1760,8 @@ export const Header = z.object({
   //   (état non opaque) — typiquement une version claire/monochrome.
   logoDark: z.string().optional(),
   logoOverlay: z.string().optional(),
+  // Classes de l'IMAGE de logo — surcharge la classe par défaut du header (ex. "h-8 w-8 ...").
+  logoClass: z.string().optional(),
   // Ton du `logoIcon` (SVG/Lucide rendu en `currentColor`). Défaut côté header
   // (ex. transparent-scroll = "primary"). "foreground" suit l'ink du thème →
   // marine en clair, clair en sombre, idéal pour une marque monochrome.

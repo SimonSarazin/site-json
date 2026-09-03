@@ -37,6 +37,8 @@
     "reference": "Reference",
     "detach": "Detach",
     "unreference": "Remove reference",
+    "feature": "Feature",
+    "unfeature": "Remove from featured",
     "delete": "Delete",
     "empty": "No items.",
     "searchFailed": "Search failed: {{message}}.",
@@ -64,7 +66,12 @@
     "deleteTitle": "Delete “{{label}}”?",
     "selectAll": "Select all (loaded rows)",
     "selectRow": "Select {{label}}",
-    "rowActions": "Actions for {{label}}"
+    "rowActions": "Actions for {{label}}",
+    "setStatus": "Mark as: {{state}}",
+    "statusUnset": "Not set",
+    "statusSuccess": "Status updated: {{state}}",
+    "statusError": "Status update failed",
+    "bulkTransfer": "Transfer ownership"
   },
   "AdminExportSection": {
     "title": "CSV export",
@@ -174,6 +181,12 @@
     "classified": "Sub-type saved",
     "referencedUnmoderated": "Referenced, but moderation could not be applied"
   },
+  "useSetExclusiveFlag": {
+    "featured": "Featured",
+    "unfeatured": "Removed from featured",
+    "error": "Action failed",
+    "partialUnset": "Featured set, but {{count}} previous featured item(s) could not be cleared — check the table."
+  },
   "AdminInvitation": {
     "error": "Error",
     "noContext": "No element to administer.",
@@ -191,6 +204,11 @@
     "relaunch": "Resend",
     "relaunchSent": "The invitation has been sent again.",
     "relaunchFailed": "Could not resend the invitation."
+  },
+  "DashboardKpis": {
+    "trendMonthly": "+{{added}} this month · {{delta}} vs last month",
+    "membersPending": "awaiting validation",
+    "analyticsPending": "Audience analytics to be connected (GDPR-compliant tool pending)"
   },
   "AdminOwnershipMigration": {
     "title": "Ownership migration",
@@ -248,6 +266,14 @@
       "alreadyReferenced": "Pre-existing references (completed, never overwritten)",
       "pendingModeration": "Records pending moderation",
       "selfReference": "Parasitic self-reference (cleaned on apply)"
-    }
+    },
+    "optionSubType": "Sub-type (annotation)",
+    "optionSubTypeHint": "“auto” = derived from type when uniform · empty = no annotation",
+    "optionKeysPolicy": "source.keys policy",
+    "keysPolicyStrict": "strict — the record will belong to this site only",
+    "keysPolicyReplace": "replace — keeps secondary keys (e.g. ESS974)",
+    "optionsChanged": "Options changed: run the analysis again before applying.",
+    "selectionIds": "{{count}} selected record(s)",
+    "subTypeSuggestions": "Types found in the selection:"
   }
 }

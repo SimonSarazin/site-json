@@ -129,6 +129,18 @@ export function getPath(obj: unknown, path: string): unknown {
   }, obj);
 }
 
+/** Lit un champ de statut (mode `statusField`) : chemin complet d'abord, puis la clé FEUILLE à plat.
+ *  Le `field` de config est LE chemin Mongo imbriqué (`answers.<formKey>.<clé>`) — c'est lui que
+ *  consomment le filtre serveur et l'écriture UPDATE_PATH_VALUE — mais les hooks costum de recherche
+ *  APLATISSENT les champs d'answer au top-level de la ligne en supprimant `answers.*`
+ *  (ex. `SportSanteBienetre::…` : `$allAnswers[$key][$k] = $v; unset(…["answers"])`). */
+export function readStatusValue(data: unknown, path: string): unknown {
+  const direct = getPath(data, path);
+  if (direct !== undefined) return direct;
+  const leaf = path.split(".").pop();
+  return leaf && data && typeof data === "object" ? (data as Record<string, unknown>)[leaf] : undefined;
+}
+
 /** Rendu texte d'une valeur de cellule (les colonnes ciblent des champs plats,
  *  plus les deux sérialisations MongoDate du backend — `created`/`updated`). */
 export function formatCell(value: unknown): string {

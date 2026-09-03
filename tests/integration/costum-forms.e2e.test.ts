@@ -32,7 +32,11 @@ import type { CostumFormSchema } from "@/modules/profil/forms/costum/compileCost
  * chaînes, le scanner d'artefact a pris les 30 pour la norme, et les formulaires ont été bâtis dessus.
  * D'où l'assertion centrale : « ce que le formulaire écrit ressemble-t-il à ce que la colonne contient ? »
  *
- * DEUX MODES (`E2E_MODE`) : `bundle` (artefact vendoré) et `live` (inférence depuis l'`inputType`). Un
+ * DEUX MODES (`E2E_MODE`) : `bundle` (artefact vendoré) et `live` (inférence depuis l'`inputType`) —
+ * `npm run test:costum-forms` joue LES DEUX, enchaînés (décision 2026-08-20 : le mode live opt-in
+ * seul a laissé vivre une divergence bundle/live une semaine — cf. fix lib livedigest-scalar-oneof).
+ * L'enchaînement séquentiel est aussi ce qui évite deux suites de MUTATION concurrentes sur la même
+ * base (le mode est un singleton par processus, cf. ci-dessous). Un
  * costum ABSENT de l'artefact retombe sur le live même en mode bundle — le test l'annonce au lieu de
  * faire croire à deux chemins. Un mode par PROCESSUS : `setCostumForceLive` et le cache costum sont des
  * singletons de module, sans invalidation exportée.
