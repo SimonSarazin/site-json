@@ -76,6 +76,20 @@ Câblage standard (comme tout module) :
 
 **Mapping des onglets temporels** — un seul flux `useAgendaList` (`listFetch`), partitionné **côté client** (`partitionByTime`) en `ongoing`/`upcoming`/`past` :
 - **À venir** = bucket `upcoming`, borné à `upcomingWindowMonths` (filtre client sur l'occurrence), **remis en ordre croissant** (le flux brut est trié décroissant, adapté à « Passés »).
+
+#### Teaser : `limit` n'est PAS la taille du fetch
+
+`limit` plafonne l'**affichage** d'un bucket, APRÈS que le flux a été chargé et partitionné côté
+client. Le flux, lui, est trié **décroissant, les trois buckets mêlés**, et coupé par
+`baseParams.indexStepList` côté backend (`array_slice`).
+
+Conséquence contre-intuitive : `limit: 3` + `indexStepList: 3` ne ramène pas « les 3 prochains »,
+mais les **3 events les plus lointains** — dont il ne reste, après partition et fenêtre
+`upcomingWindowMonths`, que ceux qui tombent dans le bucket visé : souvent moins de 3, parfois zéro,
+alors que la donnée existe — le teaser paraît vide ou incomplet sans qu'aucune erreur ne survienne.
+
+**Règle** : garder `indexStepList` largement au-dessus de `limit` (≥ 3× ; en pratique 20, le défaut
+`AGENDA_DEFAULT_INDEX_STEP`, convient à un teaser).
 - **En cours** = bucket `ongoing` — nécessite un `end` résolu (cf. `eventDates.ts` : `endDate` pour un ponctuel multi-jours, sinon l'heure de fermeture du jour dans `openingHours` pour un récurrent).
 - **Passés** = bucket `past`, non borné (pagine via « charger plus », partagé avec les 2 autres onglets — un seul curseur pour toute la vue Liste).
 
@@ -135,11 +149,12 @@ un seul bucket, quelques éléments et un lien vers la page complète.
     "showViewToggle": false,      // pas de bascule Liste/Calendrier
     "showTabs": false,            // un seul bucket, pas d'onglets
     "defaultTab": "upcoming",
-    "limit": 3,                   // plafonne le bucket (pas de « charger plus »)
+    "limit": 3,                   // plafonne l'AFFICHAGE du bucket (pas de « charger plus »)
     "filters": { "type": false, "text": false, "tags": false },
     "maxWidth": "5xl",            // ALIGNEMENT — cf. ci-dessous
     "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 3 },
-    "baseParams": { "sourceKey": ["monCostum"], "indexStepList": 3 }
+    // ⚠ PAS `indexStepList: 3` : la page du flux doit être bien plus large que `limit` — cf. § ci-dessous
+    "baseParams": { "sourceKey": ["monCostum"], "indexStepList": 20 }
   }
 }
 ```
@@ -162,7 +177,7 @@ Même convention que `searchProStatic.baseParams`. Champs **repris** (= ceux que
 | Champ | Rôle |
 |---|---|
 | `sourceKey: string[]` | scope **multi-sources** (filtre `source.keys`). Vide → costum courant (auto SDK). |
-| `indexStepList: number` | taille de page de la vue LISTE |
+| `indexStepList: number` | taille de page de la vue LISTE — sur un **teaser**, c'est elle (et non `limit`) qui décide de ce que le bucket peut contenir : cf. [§ teaser](#teaser--limit-nest-pas-la-taille-du-fetch) |
 | `fediverse: boolean` | inclure les sources fédiverse |
 | `filters`, `locality` | filtres backend bruts / localités |
 
@@ -223,7 +238,7 @@ Le résultat (`effectiveBaseParams`) est appliqué **côté serveur** par `searc
   "showViewToggle": false, "showTabs": false, "defaultTab": "upcoming",
   "limit": 4, "filters": { "text": false, "type": false },
   "columns": { "sm":1,"md":2,"lg":4,"xl":4 },
-  "baseParams": { "sourceKey": ["franceTierslieux","tierslieuxbelgique","navigatorDesTierslieux"], "indexStepList": 4 } } }
+  "baseParams": { "sourceKey": ["franceTierslieux","tierslieuxbelgique","navigatorDesTierslieux"], "indexStepList": 20 } } }
 ```
 
 ---

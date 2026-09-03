@@ -330,7 +330,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
   },
   "section:agenda": {
     "props.customHeader": "En-tête teaser avec lien « voir tous » — même convention que searchProStatic.customHeader (home → /evenements).",
-    "props.limit": "Limite d'events par bucket (teaser home) ; absent = tous + « charger plus » pour Passés.",
+    "props.limit": "Plafond d'AFFICHAGE par bucket (teaser) ; absent = tous + « charger plus ». ⚠ PAS la taille du fetch : appliqué APRÈS le partitionnement d'un flux DESC — garder `baseParams.indexStepList` bien au-dessus.",
     "props.showViewToggle": "Toggle Liste/Calendrier (false = teaser figé sur defaultMode). Défaut code : true.",
     "props.showTabs": "Onglets temporels (false = teaser : un seul bucket = defaultTab). Défaut code : true.",
     "props.defaultMode": "Vue par défaut : list (onglets temporels) ou calendar (grille mois maison).",
@@ -340,7 +340,8 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.maxWidth": "Largeur du conteneur. ABSENT = `container` historique (plafond 1536 px), pour une page agenda dédiée. À RENSEIGNER dès que l'agenda est un teaser parmi d'autres sections, sinon il déborde de ses voisines.",
     "props.tabs": "Onglets affichés parmi ongoing/upcoming/past (défaut code : upcoming, ongoing, past).",
     "props.defaultTab": "Onglet initial (défaut code : upcoming).",
-    "props.upcomingWindowMonths": "Fenêtre (mois) du fetch calendrier now→futur (défaut code 12).",
+    "props.upcomingWindowMonths": "Borne haute (mois) du bucket « À venir » : filtre CLIENT sur le flux liste — au-delà, l'event est chargé puis écarté (défaut code 12).",
+    "props.baseParams.indexStepList": "Taille de page du flux LISTE (searchEventsCostum, startDate DESC, les 3 buckets mêlés). Sur un teaser, c'est ELLE qui décide de ce que le bucket peut contenir — pas `limit`.",
     "props.baseParams": "Scope searchEventsCostum — passthrough : sourceKey multi-sources (vide → costum courant) ; defaultTypes/SortBy tolérés mais IGNORÉS (searchType forcé events).",
     "props.filters": "Filtres activés : type + text (backend), tags (client).",
     "props.detailsMode": "Conteneur du détail au clic : drawer (défaut code) ou dialog.",
