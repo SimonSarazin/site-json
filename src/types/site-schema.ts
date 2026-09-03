@@ -1378,7 +1378,7 @@ export const MapShapesSchema = z.object({
       path: z.string().min(1),
       filterId: z.string().min(1),
       /** Propriété du contour utilisée comme valeur de filtre. Défaut `name`. */
-      valueFrom: z.enum(["name", "insee", "docId", "countryCode", "level"]).optional(),
+      valueFrom: z.enum(["name", "insee", "_id", "countryCode", "level"]).optional(),
       /**
        * Restreint la cliquabilité à ces `id` de couche. Absent = toutes. Sert à garder une couche
        * de DÉCOR (contour régional englobant) inerte sous des communes cliquables.

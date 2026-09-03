@@ -145,7 +145,7 @@ export function toFeatureCollection(items: ZoneShapeItem[], source: GeoShapeSour
       geometry: simplifyGeometry(geometry, tolerance),
       properties: {
         layer: source.id,
-        docId: id,
+        _id: id,
         name: typeof item.name === "string" ? item.name : null,
         // `zones` nomme le pays `countryCode`, `cities` le nomme `country` : on expose les deux
         // tels quels plutôt que d'inventer un champ commun que la donnée ne porte pas.

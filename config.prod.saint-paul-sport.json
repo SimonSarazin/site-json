@@ -211,7 +211,7 @@
             "target": {
               "path": "/equipements-sportifs",
               "filterId": "bassin",
-              "valueFrom": "name"
+              "valueFrom": "_id"
             }
           }
         },

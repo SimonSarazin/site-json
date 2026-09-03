@@ -18,7 +18,7 @@ const CIBLE: ShapeTarget = { path: "/lieux", filterId: "communes" };
 function proprietes(extra: Record<string, unknown> = {}): GeoJsonProperties {
   return {
     layer: "communes",
-    docId: "5e9a1b2c3d4e5f6a7b8c9d0e",
+    _id: "5e9a1b2c3d4e5f6a7b8c9d0e",
     name: "Saint-Paul",
     countryCode: "RE",
     insee: "97415",
@@ -34,7 +34,7 @@ describe("shapeValue", () => {
   it("lit la propriété demandée par valueFrom", () => {
     expect(shapeValue(proprietes(), "name")).toBe("Saint-Paul");
     expect(shapeValue(proprietes(), "insee")).toBe("97415");
-    expect(shapeValue(proprietes(), "docId")).toBe("5e9a1b2c3d4e5f6a7b8c9d0e");
+    expect(shapeValue(proprietes(), "_id")).toBe("5e9a1b2c3d4e5f6a7b8c9d0e");
     expect(shapeValue(proprietes(), "countryCode")).toBe("RE");
   });
 

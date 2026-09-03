@@ -18,8 +18,16 @@ import type { GeoJsonProperties } from "geojson";
  * Propriété de la feature utilisée comme valeur de filtre. Ce sont les seules que
  * `toFeatureCollection` expose (`geoShapeQuery.ts`) : la donnée legacy n'en porte pas d'autres de
  * façon fiable.
+ *
+ * `_id` est l'identifiant MongoDB du contour (un ObjectId, `"6a5f1eeddfc32aeb4f68bccb"`), sous le nom
+ * même que lui donne la base. C'est le seul choix STABLE : un contour peut être renommé, son
+ * identifiant non. À utiliser en face d'un filtre dont les options viennent du même référentiel
+ * (`optionsFrom.shapes`), qui les identifie par ce même `_id`.
+ *
+ * Nommé `_id` et non `docId` : dans ce dépôt, `docId` désigne déjà le FICHIER téléversé
+ * (`{docId, docPath}` du coform, de la galerie, de `FilesList`). Un mot, un sens.
  */
-export type ShapeValueFrom = "name" | "insee" | "docId" | "countryCode" | "level";
+export type ShapeValueFrom = "name" | "insee" | "_id" | "countryCode" | "level";
 
 export interface ShapeTarget {
   path: string;

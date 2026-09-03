@@ -704,7 +704,7 @@ export const MapShapesSchema = z.object({
     target: z.object({
       path: z.string().min(1),
       filterId: z.string().min(1),
-      valueFrom: z.enum(["name", "insee", "docId", "countryCode", "level"]).optional(),
+      valueFrom: z.enum(["name", "insee", "_id", "countryCode", "level"]).optional(),
       layers: z.array(z.string()).optional(),
     }),
   }),
@@ -721,7 +721,7 @@ export const MapShapesSchema = z.object({
 | `target` | `object` | **Obligatoire** — cible de navigation au clic (cf. le piège ci-dessous) |
 | `target.path` | `string` | Chemin de la page de recherche (ex. `/lieux`) |
 | `target.filterId` | `string` | Nom du query param écrit = **`id` d'un groupe de `filterGroups` de la page cible** |
-| `target.valueFrom` | `enum?` | Propriété du contour utilisée comme valeur : `name` (defaut), `insee`, `docId`, `countryCode`, `level` — les seules exposées par `toFeatureCollection` |
+| `target.valueFrom` | `enum?` | Propriété du contour utilisée comme valeur : `name` (defaut), `insee`, `_id` (ObjectId du contour), `countryCode`, `level` — les seules exposées par `toFeatureCollection` |
 | `target.layers` | `string[]?` | Restreint la cliquabilité à ces `id` de couche. Absent = toutes. Sert à garder une couche de DÉCOR inerte sous des communes cliquables |
 
 Un contour dont la propriété `valueFrom` est absente reste du **décor** (un `<path>` inerte) plutôt

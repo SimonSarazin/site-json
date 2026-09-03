@@ -259,10 +259,10 @@ describe("projectShapes — libellés", () => {
 
   it("expose les propriétés du contour telles quelles (elles portent le lien)", () => {
     const { shapes } = projectShapes([
-      couche("communes", [contour("c1", carre(55.2, -21.0), { name: "Saint-Paul", insee: "97415", docId: "c1" })]),
+      couche("communes", [contour("c1", carre(55.2, -21.0), { name: "Saint-Paul", insee: "97415", _id: "c1" })]),
     ]);
     // `shapeHref` les relit : les perdre rendrait tous les contours non cliquables, en silence.
-    expect(shapes[0].properties).toEqual({ name: "Saint-Paul", insee: "97415", docId: "c1" });
+    expect(shapes[0].properties).toEqual({ name: "Saint-Paul", insee: "97415", _id: "c1" });
     expect(shapes[0].layerId).toBe("communes");
   });
 });
