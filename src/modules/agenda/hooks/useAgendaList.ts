@@ -14,8 +14,18 @@ export interface UseAgendaListParams {
 }
 
 /**
- * Flux d'events en mode LISTE de `searchEventsCostum` (sans dates : ponctuels, `startDate` DESC, **paginé**
- * via scroll infini `next()`). Sert l'onglet « Passés » (les ponctuels les plus récents d'abord, charge plus).
+ * Flux d'events en mode LISTE de `searchEventsCostum` (sans bornes de dates, `startDate` DESC,
+ * **paginé** via scroll infini `next()`).
+ *
+ * Sert les TROIS onglets de la vue liste (En cours / À venir / Passés) depuis un seul flux, le
+ * partitionnement étant client (`partitionByTime`) : une ligne par event, récurrents compris — c'est
+ * le mode CALENDRIER qui déplie une ligne par OCCURRENCE, d'où son cantonnement à la grille.
+ *
+ * ⚠ Le tri DESC porte sur TOUT le flux : la première page contient les events les plus LOINTAINS, pas
+ * les prochains. Un onglet « À venir » ne montre donc que ce que les pages déjà chargées contiennent
+ * — garder `baseParams.indexStepList` au-dessus du volume d'events à venir du site (cf. la docstring
+ * de `limit` dans `schema.ts`).
+ *
  * Transform SSR + hydratation gérés par le hook commun. Scope = baseParams.sourceKey sinon costum courant.
  */
 export function useAgendaList({ type, name, baseParams, enabled = true }: UseAgendaListParams) {

@@ -20,6 +20,11 @@ const JS_DAY_TO_CODE: DayOfWeek[] = [DAYS[6], DAYS[0], DAYS[1], DAYS[2], DAYS[3]
  * Heure de fin du jour de `start`, d'après `openingHours` (dernier créneau du jour concerné — un
  * événement récurrent n'a pas d'`endDate`, seulement des créneaux hebdo). `null` si le jour de `start`
  * n'a pas d'entrée exploitable dans `openingHours`.
+ *
+ * CRÉNEAU QUI FRANCHIT MINUIT (`21:00`→`01:00`, ou une fermeture à `00:00`) : l'heure posée sur le
+ * jour de `start` tomberait AVANT lui, et `eventTimeBucket` — qui teste la fin d'abord — rangerait
+ * l'événement dans « Passés » alors qu'il n'a pas encore commencé, le jour même où il a lieu. On
+ * reporte donc la fin au lendemain, seule lecture cohérente d'une fermeture antérieure à l'ouverture.
  */
 function closingTimeOnDay(openingHours: unknown, start: Date): Date | null {
   if (!Array.isArray(openingHours)) return null;
@@ -32,6 +37,8 @@ function closingTimeOnDay(openingHours: unknown, start: Date): Date | null {
   if (!match) return null;
   const end = new Date(start);
   end.setHours(Number(match[1]), Number(match[2]), 0, 0);
+  // Fermeture antérieure (ou égale) au début : le créneau court sur le jour suivant.
+  if (end.getTime() <= start.getTime()) end.setDate(end.getDate() + 1);
   return end;
 }
 

@@ -30,7 +30,7 @@ import AgendaList from "./components/AgendaList";
 import { useAgendaCalendar } from "./hooks/useAgendaCalendar";
 import { useAgendaList } from "./hooks/useAgendaList";
 import { useAgendaClock } from "./hooks/useAgendaClock";
-import { partitionByTime } from "./lib/partitionByTime";
+import { eventTimeBucket, partitionByTime } from "./lib/partitionByTime";
 import { eventOccurrence } from "./lib/eventDates";
 import { distinctTags, filterByTags } from "./lib/eventTags";
 import { readAgendaUrl, writeAgendaUrl, type AgendaFilterDefaults, type AgendaMode } from "./lib/agendaUrlParams";
@@ -198,13 +198,15 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
     });
     return { ongoing: buckets.ongoing, upcoming: withinWindow.reverse() };
   }, [listFetch.events, selectedTags, now, upcomingEnd]);
+  // `eventTimeBucket` plutôt que la règle recopiée (`end ?? start` comparé à `now`) : une SEULE
+  // définition de « passé » pour les trois onglets — c'est elle qui écarte une fin antérieure au
+  // début, sans quoi un événement pas encore commencé atterrissait ici.
   const past = useMemo(
     () =>
       filterByTags(
         listFetch.events.filter((e) => {
           const { start, end } = eventOccurrence(e);
-          const eff = end ?? start;
-          return eff != null && eff.getTime() < now.getTime();
+          return start != null && eventTimeBucket(start, end, now) === "past";
         }),
         selectedTags,
       ),

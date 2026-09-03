@@ -92,3 +92,30 @@ describe("eventOccurrence", () => {
     expect(end?.toISOString()).toBe("2026-08-16T00:00:00.000Z");
   });
 });
+
+describe("eventOccurrence — créneau qui franchit minuit", () => {
+  it("fermeture APRÈS minuit (21:00 → 01:00) : end au lendemain, pas avant le début", () => {
+    const start = new Date("2026-08-14T21:00:00"); // vendredi 21 h
+    const { end } = eventOccurrence(
+      ev({
+        startDateSortFormat: start.toISOString(),
+        openingHours: [{ dayOfWeek: dayCodeOf(start), hours: [{ opens: "21:00", closes: "01:00" }] }],
+      }),
+    );
+    expect(end!.getTime()).toBeGreaterThan(start.getTime());
+    expect(end?.getHours()).toBe(1);
+    expect(end?.getDate()).toBe(start.getDate() + 1);
+  });
+
+  it("fermeture à 00:00 (minuit) : lue comme la fin de la soirée, pas comme son début", () => {
+    const start = new Date("2026-08-14T20:00:00");
+    const { end } = eventOccurrence(
+      ev({
+        startDateSortFormat: start.toISOString(),
+        openingHours: [{ dayOfWeek: dayCodeOf(start), hours: [{ opens: "20:00", closes: "00:00" }] }],
+      }),
+    );
+    expect(end!.getTime()).toBeGreaterThan(start.getTime());
+    expect(end?.getDate()).toBe(start.getDate() + 1);
+  });
+});
