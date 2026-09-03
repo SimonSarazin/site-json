@@ -6,14 +6,15 @@ import { describe, it, expect } from "vitest";
  * Garde des DEEP-LINKS de filtre : un lien « voir tous » qui prétend arriver filtré doit porter une
  * valeur que la page cible sait reconnaître.
  *
- * L'hydratation d'un `dropdownFilters` compare la valeur d'URL aux **ids d'options**
- * (`SearchHeaderSection.tsx` → `resolveFilterHydration`, `optionIds: filter.options.map(o => o.id)`),
- * jamais à leur `value` affichée. Un lien écrit avec le libellé — `?territoire=Familles en sol
- * mineur Hénin Carvin` au lieu de `?territoire=familles-en-sol-mineur-henin-carvin` — ouvre donc la
- * bonne page, sans erreur ni trace, mais SANS filtre : le visiteur reçoit le catalogue entier en
- * croyant voir le sous-ensemble annoncé par le bouton sur lequel il vient de cliquer.
- * (`resolveFilterHydration` écarte silencieusement les ids inconnus — c'est voulu, une option
- * supprimée ne doit pas casser un lien partagé.)
+ * L'hydratation d'un `dropdownFilters` rapproche la valeur d'URL des options par
+ * `resolveOptionInList` (`dropdownFilters.ts`) : id exact, puis `value` normalisée, puis libellé.
+ * Un lien écrit avec le libellé — `?territoire=Familles en sol mineur Hénin Carvin` au lieu de
+ * `?territoire=familles-en-sol-mineur-henin-carvin` — filtre donc bien, mais reste FRAGILE : il
+ * casse le jour où le libellé est retouché, et n'est pas l'URL qu'un clic sur la facette produit
+ * (deux permaliens pour le même état). Ce gate maintient donc la convention « une URL de config
+ * porte l'ID de l'option », la seule qui ne dépende pas d'un texte d'affichage.
+ * (`resolveFilterHydration` écarte silencieusement une valeur qu'aucune option ne porte — c'est
+ * voulu : une option supprimée ne doit pas casser un lien partagé.)
  *
  * Portée : les `customHeader.linkHref` dont la page cible, dans la MÊME config, déclare des
  * `dropdownFilters`. Les pages qui filtrent par une sidebar `filters` suivent une autre convention
@@ -112,8 +113,10 @@ describe("deep-links de filtre — la page cible doit reconnaître la valeur", (
       .map((l) => `${l.repere} : « ${l.valeur} » n'est pas un id de « ${l.cle} »`);
     expect(
       invalides,
-      "l'hydratation compare aux ids d'options : une valeur inconnue est ignorée en silence, " +
-        "et la page cible s'ouvre NON filtrée alors que le bouton promettait un sous-ensemble",
+      "une URL de config porte l'ID de l'option : un libellé est certes reconnu par " +
+        "`resolveOptionInList`, mais il cesse de l'être dès qu'on retouche le texte affiché — et " +
+        "une valeur que plus aucune option ne porte est ignorée en silence, la page cible " +
+        "s'ouvrant NON filtrée alors que le bouton promettait un sous-ensemble",
     ).toEqual([]);
   });
 });

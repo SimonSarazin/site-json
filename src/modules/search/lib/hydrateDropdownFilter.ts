@@ -16,8 +16,21 @@
  *    marque PAS `raw` comme traité dans ce cas, pour retenter au prochain rendu où les options
  *    changent (sans ça, les options déclarées serviraient de repli pendant le chargement, le filtre
  *    paraîtrait prêt, et rejetterait la valeur de l'URL — le deep-link disparaîtrait en silence) ;
- *  - sinon, les ids valides de l'URL sont appliqués (`apply`).
+ *  - sinon, les valeurs reconnues de l'URL sont appliquées (`apply`), sous forme d'ids d'options.
+ *
+ * RAPPROCHEMENT URL ⇄ OPTION : délégué à `resolveOptionInList` (`dropdownFilters.ts`), la chaîne
+ * déjà utilisée par le clic sur une facette (`useDropdownFilterNav`, `ClickableFacet`) — id exact,
+ * puis `value` normalisée, puis libellé normalisé. Comparer aux seuls `id` (version d'origine)
+ * laissait tomber SANS TRACE toute URL portant la valeur affichée plutôt que le slug : c'est le cas
+ * des liens ENGENDRÉS par un menu `dynamicList` du header, qui portent la valeur brute de
+ * `costum.lists` alors que l'option correspondante, venue du socle de config, garde son id de slug
+ * (`withDeclared`) — le visiteur arrivait sur la bonne page, non filtrée. Même tolérance que
+ * `computeFiltersFromUrl` (sidebar `filters`, `name || id`) : une seule convention pour les deux
+ * mécanismes de filtrage.
  */
+import { resolveOptionInList } from "./dropdownFilters";
+import type { DropdownOptionConfig } from "./dropdownFilters";
+
 export interface FilterHydrationInput {
   /** Valeur brute lue dans l'URL pour ce filtre (chaîne vide si le paramètre est absent). */
   raw: string;
@@ -27,8 +40,12 @@ export interface FilterHydrationInput {
   optionsReady: boolean;
   /** Une sélection est-elle actuellement active pour ce filtre ? */
   hasCurrentSelection: boolean;
-  /** ids d'options valides — sert à écarter les identifiants inconnus/périmés de l'URL. */
-  optionIds: readonly string[];
+  /**
+   * Options RÉSOLUES du filtre (socle de config + valeurs `costum.lists`, cf.
+   * `useDynamicFilterOptions`) — sert à reconnaître la valeur de l'URL et à écarter les
+   * identifiants inconnus/périmés.
+   */
+  options: readonly DropdownOptionConfig[];
 }
 
 export type FilterHydrationDecision =
@@ -38,21 +55,24 @@ export type FilterHydrationDecision =
   | { action: "apply"; ids: string[] };
 
 export function resolveFilterHydration(input: FilterHydrationInput): FilterHydrationDecision {
-  const { raw, lastAppliedRaw, optionsReady, hasCurrentSelection, optionIds } = input;
+  const { raw, lastAppliedRaw, optionsReady, hasCurrentSelection, options } = input;
   if (lastAppliedRaw === raw) return { action: "skip" };
   if (!raw) return hasCurrentSelection ? { action: "clear" } : { action: "skip" };
   if (!optionsReady) return { action: "wait" };
-  const ids = raw
-    .split(",")
+  const ids: string[] = [];
+  for (const segment of raw.split(",")) {
     // Pendant de l'encodage à l'écriture : une valeur peut contenir une virgule (cf.
     // `dropdownFilterToParam`/`buildDynamicNavChildren`, qui l'encodent pour cette raison).
-    .map((s) => {
-      try {
-        return decodeURIComponent(s.trim());
-      } catch {
-        return s.trim();
-      }
-    })
-    .filter((id) => optionIds.includes(id));
+    let valeur = segment.trim();
+    try {
+      valeur = decodeURIComponent(valeur);
+    } catch {
+      /* séquence d'échappement invalide : on garde la valeur telle quelle */
+    }
+    const option = resolveOptionInList(options, valeur);
+    // Dédoublonné : deux graphies de la MÊME option dans l'URL (`?theme=la-sante,La santé`) ne
+    // doivent pas produire deux fois la même sélection.
+    if (option && !ids.includes(option.id)) ids.push(option.id);
+  }
   return ids.length ? { action: "apply", ids } : { action: "skip" };
 }
