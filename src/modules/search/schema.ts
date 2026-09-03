@@ -596,13 +596,16 @@ export type ListConf = z.infer<typeof ListConfSchema>;
  *   1. `useItemImage` ET l'item a une image → vignette RONDE de l'item ;
  *   2. `colorBy` ET une valeur mappée       → pin/pastille coloré PAR VALEUR ;
  *   3. `iconUrl`                            → icône custom (image/SVG, ex. pin brandé) ;
- *   4. `style: "pin"` (+ `color` en jeton)  → pin SVG aux couleurs du thème ;
+ *   4. `style: "pin"`/`"circle"` ou `icon`  → pin/pastille aux couleurs du thème,
+ *      avec le pictogramme lucide d'`icon` en son centre s'il est déclaré ;
  *   5. sinon                                → pin par défaut (primary).
  * Schéma PARTAGÉ : configurable PAR SITE (`integrations.map.marker`, cf.
  * site-schema) et surchargeable PAR SECTION (`map.marker`) — les champs de la
  * section l'emportent sur ceux du site, sinon repli sur le défaut.
+ * Ce bloc ne porte QUE l'apparence : le choix du marqueur par valeur de donnée
+ * vit dans `by` (cf. `MarkerByConfSchema`), résolu AVANT cette chaîne.
  */
-export const MarkerConfSchema = z.object({
+export const MarkerVisualConfSchema = z.object({
   /** Vignette ronde = image de l'item (si présente), sinon repli (icône/pin). */
   useItemImage: z.boolean().optional(),
   style: z.enum(["default", "pin", "circle"]).optional(),
@@ -611,6 +614,12 @@ export const MarkerConfSchema = z.object({
   /** Couleur du contour + de la pastille du pin, en JETON de thème (déf.
    *  `background` — contraste lisible sur tout fond). Même palette que `color`. */
   borderColor: z.enum(["background", "primary", "secondary", "accent", "chart-1", "chart-2", "chart-3", "chart-4", "chart-5"]).optional(),
+  /** Pictogramme LUCIDE (kebab-case, ex. `waves`) au centre de la goutte ou de
+   *  la pastille — le marqueur reste aux couleurs du THÈME, aucun asset requis
+   *  (à la différence de `iconUrl`, image brandée servie par le backend).
+   *  Implique le pin quand `style` est absent ; nom hors catalogue → glyphe
+   *  absent, la forme reste (audit `icone-inconnue`). */
+  icon: z.string().optional(),
   /** URL d'une icône custom (relative → préfixée par baseUrl, ou absolue http). */
   iconUrl: z.string().optional(),
   /** Taille de l'icône custom en px (déf. 34). */
@@ -621,6 +630,41 @@ export const MarkerConfSchema = z.object({
    *  parents62) : prioritaire sur le jeton `color` quand une valeur matche le
    *  mapping, et implique le pin (ou la pastille si `style: "circle"`). */
   colorBy: ColorByConfSchema.optional(),
+});
+
+export type MarkerVisualConf = z.infer<typeof MarkerVisualConfSchema>;
+
+/**
+ * Marqueur choisi PAR VALEUR d'un attribut de l'item (famille d'équipement,
+ * type de POI…) : `path` est un dot-path `serverData` (valeur string/nombre/
+ * booléen, ou TABLEAU — la première valeur listée dans `mapping` gagne, l'ordre
+ * de l'item fait foi). Chaque cas de `mapping` est un marqueur PARTIEL fusionné
+ * sur le marqueur de base ; `default` couvre les valeurs NON listées (sans lui,
+ * c'est le marqueur de base qui sert de défaut).
+ *
+ * ⚠ Un cas qui déclare un SÉLECTEUR de rendu (`useItemImage`, `colorBy`, `icon`,
+ * `iconUrl` ou `style`) remplace TOUS les sélecteurs du marqueur de base — sans
+ * cette règle, un `iconUrl` de base masquerait en silence le `style: "pin"` d'un
+ * cas (l'icône gagne plus haut dans la chaîne) ; un cas qui change de forme
+ * redéclare donc son `icon`. Il n'hérite alors que de
+ * `color`/`borderColor`/`iconSize`/`iconAnchor`.
+ *
+ * ⚠ `path` DOIT être projeté par `baseParams.defaultFields` : absent de la
+ * projection il vaut `undefined`, aucun cas ne matche et tous les marqueurs
+ * tombent sur le défaut (même piège silencieux que `list.itemRules`).
+ */
+export const MarkerByConfSchema = z.object({
+  path: z.string(),
+  mapping: z.record(z.string(), MarkerVisualConfSchema),
+  default: MarkerVisualConfSchema.optional(),
+});
+
+export type MarkerByConf = z.infer<typeof MarkerByConfSchema>;
+
+export const MarkerConfSchema = MarkerVisualConfSchema.extend({
+  /** Marqueur PAR VALEUR d'un attribut de la donnée — cf. `MarkerByConfSchema`.
+   *  Résolu AVANT la chaîne de repli : il choisit le marqueur, la chaîne le rend. */
+  by: MarkerByConfSchema.optional(),
 });
 
 export type MarkerConf = z.infer<typeof MarkerConfSchema>;

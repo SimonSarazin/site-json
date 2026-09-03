@@ -68,6 +68,28 @@
   box-shadow: 0 1px 4px rgb(0 0 0 / 0.4);
 }
 
+/* Goutte + pictogramme lucide (map.marker.icon) — le glyphe est centré sur le
+   disque du pin : cx=12, cy=9 dans le viewBox 24 → 50 % / 37,5 % du gabarit. */
+.search-map-pin-icon {
+  position: relative;
+  display: block;
+}
+.search-map-pin-icon .search-map-glyph {
+  position: absolute;
+  left: 50%;
+  top: 37.5%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* Pastille + pictogramme lucide (map.marker.icon avec style: "circle") — même
+   gabarit que `.search-map-circle`, le glyphe est simplement centré dedans. */
+.search-map-circle-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Bulle de cluster (supercluster) — couleurs de thème, suit light/dark. */
 .search-map-cluster {
   display: flex;
