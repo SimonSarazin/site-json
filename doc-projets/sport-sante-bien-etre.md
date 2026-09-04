@@ -421,12 +421,29 @@ et la garde `costum-form-contract` **ignore silencieusement** tout champ absent 
 n'y est donc pas encore audité — il le sera **une fois `declareRessourceType` joué**, ce qui
 imposera de **régénérer cette fixture**, exactement comme `76a47a8d` l'a fait pour Ekilib.re.
 
+**Page publique `/ressources`** (commits `3deeb89f` · `425cfa7e`) — livrée dans la foulée, sur le
+patron de `/creneaux` d'Ekilib.re : `searchHeader` (**recherche par nom**) + `gridLayout` 1/3 dont
+le `leftSection` est une section **`filters`** (filtre **latéral** à cases, thématique, ouvert par
+défaut) et le `rightSection` la liste en presenter `resource`. Seuls les documents **publiés**
+(`status: "Visible"`) y paraissent — les brouillons restent au back-office. Chaque thématique porte
+sa couleur (5 tokens `chart*` + `primary`/`accent`, **aucune couleur en dur**) et son icône lucide.
+**Elle ferme un lien mort** : la tuile « Rapports & Publications » de `/espace-professionnels`
+pointait vers `/ressources` — l'audit passe de **4 à 3** constats (§13, question 1). La page n'est
+PAS dans la nav du header (4 entrées, volontairement courte) : elle s'atteint par cette tuile.
+
+**Un manque du moteur, comblé** (`425cfa7e`, générique) : le presenter `resource` mappait déjà
+valeur→couleur et valeur→icône mais affichait la valeur **stockée** telle quelle — une pastille
+« mss » ou « has » en public. `badge.labels` (map valeur → `LocalizedString`) est la troisième
+carte ; `ResourceData.badge` dissocie désormais `value` (affiché) et `raw` (stocké, qui indexe les
+styles et les filtres). Absente, la map laisse le comportement du parc strictement inchangé.
+C'est ce qui rend tenable le choix de stocker la clé sur un site bilingue.
+
 **Gates (02/09, backend revenu)** : `config:validate` ✅ 19 pages / 61 sections · `audit:config`
 🟡 4 constats préexistants, `strip: 0` · `test:preflight` ✅ **553** · `tsc -b` ✅ · lint ✅
 0 erreur · snapshot régénéré (2 ajouts : la route d'édition et `ressources/poi`) ·
-**`config:render` ✅ 19/19 pages, 61/61 sections** · **`config:probe` 9 périmètres — 7 OK,
-2 vides** (pages 4 et 11, **antérieurs à ce lot** ; la doc en notait 1 au 03/08, un second a dérivé
-depuis). `/creneaux` remonte bien ses **285** réponses, ce qui valide au passage le `notSourceKey`
+**`config:render` ✅ 19/19 pages, 61/61 sections** · **`config:probe` 10 périmètres — 7 OK,
+3 vides** : pages 4 et 11, **antérieurs à ce lot** (la doc en notait 1 au 03/08, un second a dérivé
+depuis), plus `/ressources` — vide tant qu'aucun document n'est saisi, ce qui est l'état attendu. `/creneaux` remonte bien ses **285** réponses, ce qui valide au passage le `notSourceKey`
 du lot précédent.
 
 ---
@@ -453,7 +470,8 @@ du lot précédent.
 | 16 | Créneaux — ajouter / modifier depuis `/creneaux` | ✅ config | `addButton` (`adminOnly: false`) + `preview.editButton` (02/09, §9) — **recette navigateur à faire** (backend indisponible en fin de session) |
 | 17 | Créneaux — « Fiche structure » réservée aux gestionnaires | ✅ | `card.structureAction.audience: "managers"` + gate `isCoformAnswerManager` sous `useHydrated` (02/09, §9) ; 12 tests dont 2 de parité SSR |
 | 18 | Créneaux — modération dans le back-office | ✅ config | Onglet `moderation` en mode `statusField`, 57 en attente à traiter (02/09, §9) — **recette à faire** : passer un « En attente » à « Validé » et vérifier qu'il apparaît sur `/creneaux` |
-| 19 | Ressources — listing et ajout côté admin | ✅ config | Onglet « Ressources » + `costumForms` dédié (02/09, §9) — **bloqué tant que `declareRessourceType` n'est pas joué en base** ; page publique `/ressources` **non faite** (hors demande, cf. §13) |
+| 19 | Ressources — listing et ajout côté admin | ✅ config | Onglet « Ressources » + `costumForms` dédié (02/09, §9) — **bloqué tant que `declareRessourceType` n'est pas joué en base** |
+| 20 | Ressources — page publique `/ressources` | ✅ config | Filtre latéral par thématique + recherche par nom, publiés seulement (02/09, §9) ; ferme le lien mort de la tuile « Rapports & Publications ». Périmètre vide tant qu'aucun document n'est saisi |
 
 ---
 
@@ -492,11 +510,11 @@ pertinent ici : SSBE a un back-office `/admin` à 7 onglets (§4.3).
 
 | # | Question | Responsable |
 |---|---|---|
-| 1 | **Grille « Le réseau Sport Santé »** (`/espace-professionnels`, `features-glass`, 6 tuiles) : 3 tuiles mènent à des pages inexistantes — « Aide à la prescription » (`/prescription`), « Stratégie régionale Sport Santé » (`/strategie`), « Rapports & Publications » (`/ressources`). **Créer les 3 pages, repointer, ou retirer les tuiles ?** Rapprochements possibles mais non équivalents : `/presentation` pour la stratégie, `/blog` pour les publications. **Depuis le 02/09, `/ressources` est à portée** : le module ressources existe côté admin, seule la page publique manque (question 7) | Thomas |
+| 1 | **Grille « Le réseau Sport Santé »** (`/espace-professionnels`, `features-glass`, 6 tuiles) : 3 tuiles mènent à des pages inexistantes — « Aide à la prescription » (`/prescription`), « Stratégie régionale Sport Santé » (`/strategie`), « Rapports & Publications » (`/ressources`). **Créer les 3 pages, repointer, ou retirer les tuiles ?** Rapprochements possibles mais non équivalents : `/presentation` pour la stratégie, `/blog` pour les publications. **Depuis le 02/09, `/ressources` EXISTE** (question 7) : il ne reste que `/prescription` et `/strategie` | Thomas |
 | 2 | **Hero de `/public`** : le CTA « Sport et santé pour tous » pointe vers `/rejoindre` (inexistant), et le second, « Sport et santé sur ordonnance », vers `/` — un lien vers l'accueil depuis une sous-page. Les deux libellés sont des **slogans, pas des actions** : le hero est à repenser plutôt qu'à rafistoler | Thomas |
 | 3 | Les 5 autres formulaires costum (`mss`, `formation`, `session-formation`, `recovery-center`, `article`) doivent-ils être ouverts au public comme l'a été `organizations`, ou rester réservés au back-office ? | Thomas |
 | 4 | Les 6 formulaires déclarent **169 champs dont 115 placés** (re-dérivé le 03/08 ; trois vestiges purgés le 30/07 : `facebook`, `instagram`, `recepisseDeclaration`). Faut-il purger les vestiges restants — dont `youtube`/`linkedin`/`autreDescription` sur `organizations` —, ou certains sont-ils attendus par le backend en écriture ? | Thomas |
 | 5 | `/communaute` → onglet « Organisations » : l'id `682b2ac5e05a1d45844340e7` est-il périmé, ou aucune organisation n'a-t-elle jamais été rattachée ? | Thomas |
 | 6 | Rendu navigateur et mode sombre : à parcourir sur les 19 pages | Thomas |
-| 7 | **Page publique `/ressources`** : le lot du 02/09 (§9) livre le dépôt et le listing **admin** seuls — c'était le périmètre demandé. Or la tuile morte « Rapports & Publications » de la question 1 pointe précisément vers `/ressources` : publier l'annuaire (une page, deux sections — `searchHeader` à filtre thématique + `searchProStatic` en presenter `resource`, filtré `status: "Visible"`) **fermerait cette question du même geste**. À arbitrer avec la question 1 | Thomas |
+| 7 | ~~Page publique `/ressources`~~ — **FAITE le 02/09** (§9) : filtre latéral par thématique + recherche par nom. Elle a fermé le lien mort « Rapports & Publications » de la question 1 (audit 4 → 3). Reste ouvert : faut-il une entrée de nav dans le header, ou la tuile suffit-elle ? | Thomas |
 | 8 | **Thématique affichée en clé** dans le listing admin (`mss`, `has`…) : `formatCell` ne résout aucune énumération, et seul le mode `statusField` sait mapper une valeur vers un libellé. Vit-on avec (compact, sans ambiguïté pour un usage interne), ou ajoute-t-on au schéma des colonnes admin une table de libellés — utile bien au-delà de ce site ? | Thomas |
