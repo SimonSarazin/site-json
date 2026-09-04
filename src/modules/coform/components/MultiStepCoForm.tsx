@@ -1,10 +1,9 @@
-import { Fragment, useCallback, useRef, useEffect, useMemo, useState } from "react";
+import { useCallback, useRef, useEffect, useMemo, useState } from "react";
 import { Controller, type FieldErrors } from "react-hook-form";
 import { toast } from "sonner";
 import { Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/useT";
@@ -30,10 +29,12 @@ import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { UploaderField } from "./UploaderField";
 import { CoFormBanner } from "./CoFormBanner";
+import { StepsNav } from "./StepsNav";
 import { useConditionalFields } from "../hooks/useConditionalFields";
 import { ConditionalField } from "./ConditionalField";
 import { useUnsavedChangesWarning } from "../hooks/useUnsavedChangesWarning";
 import { getStepHasMultiEval, getOriginalFieldKey } from "../utils/formParser";
+import { buildStepItems, invalidSteps, isSubFormValid } from "../utils/stepsNav";
 import { scrollToFieldByName } from "../utils/helpers";
 import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, MultiRadioValue, EvaluationValue, CommonTableValue, CategorizedCheckboxValue, FinderValue, SimpleTableValue, ExistingAnswerMeta } from "../types";
 import type { CoFormSubmitMode, CoFormVariant } from "../schema";
@@ -45,8 +46,18 @@ interface MultiStepCoFormProps {
   onFinalSubmit?: (allData: AllStepsData) => Promise<void>;
   onSuccess?: () => void;
   variant?: CoFormVariant;
+  /**
+   * Affiche l'en-tête d'étapes : pastilles cliquables, compteur et sommaire.
+   * Le mettre à `false` retire donc aussi la navigation directe.
+   */
   showProgress?: boolean;
   showStepNumbers?: boolean;
+  /**
+   * Navigation directe entre étapes depuis l'en-tête. Défaut : **true** —
+   * décision produit du 4 septembre : toutes les étapes sont cliquables, en
+   * création comme en édition ; sauter la 2 la laisse « À faire », c'est la
+   * soumission finale qui contrôle, pas l'en-tête.
+   */
   allowFreeNavigation?: boolean;
   className?: string;
   /** Valeurs par défaut pour pré-remplir le formulaire (mode édition) */
@@ -97,7 +108,7 @@ export function MultiStepCoForm({
   variant = "wizard",
   showProgress = true,
   showStepNumbers = true,
-  allowFreeNavigation = false,
+  allowFreeNavigation = true,
   className,
   defaultValues,
   answerId,
@@ -174,7 +185,7 @@ function MultiStepCoFormContent({
   const { submit: submitAll, isSubmitting: isFinalSubmitting } = useCoFormSubmit({
     onSuccess: () => onSuccess?.(),
   });
-  const { form, fields, stepName, isSubmitting, submitStep } = useCoFormStep();
+  const { form, fields, stepName, subFormId, isSubmitting, submitStep, saveStep } = useCoFormStep();
 
   // Multi-eval radar : on affiche un bouton "Voir les évaluations" dans le
   // header de la step si elle contient au moins un input avec
@@ -211,8 +222,15 @@ function MultiStepCoFormContent({
     containerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [navigation.currentStepIndex]);
 
-  // Propager isDirty vers le parent (CoFormModal)
-  const isDirty = form.formState.isDirty;
+  // Propager isDirty vers le parent (CoFormModal).
+  //
+  // `isDirty` ne vaut que pour l'étape courante, et changer d'étape remonte le
+  // formulaire à zéro (`form.reset` dans `useCoFormStep`) : sans mémoire, taper
+  // dans l'étape 1 puis cliquer l'étape 2 dans l'en-tête rendrait la modale
+  // fermable sans confirmation, et la saisie serait perdue sans un mot — la
+  // modale désactive le brouillon localStorage.
+  const [hasEditedAnyStep, setHasEditedAnyStep] = useState(false);
+  const isDirty = form.formState.isDirty || hasEditedAnyStep;
   useEffect(() => {
     onDirtyChange?.(isDirty);
   }, [isDirty, onDirtyChange]);
@@ -223,6 +241,10 @@ function MultiStepCoFormContent({
   // Affiche le récap d'erreurs (ErrorSummary) uniquement après une tentative
   // de soumission échouée — évite de polluer la lecture initiale.
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+
+  // Action stable du provider : dépendre de `coform` entier ferait re-créer les
+  // callbacks à chaque changement d'état.
+  const { markStepInvalid } = coform;
 
   // Activity dialog (historique de modifications de la réponse).
   const [activityDialogOpen, setActivityDialogOpen] = useState(false);
@@ -243,6 +265,59 @@ function MultiStepCoFormContent({
     return map;
   }, [formInputs]);
 
+  // Étapes telles que l'en-tête les voit. `errorSteps` porte aussi bien un envoi
+  // raté qu'une validation ratée (cf. `markStepInvalid`), les deux se lisent
+  // « à corriger » pour celui qui remplit.
+  const stepItems = useMemo(
+    () =>
+      buildStepItems({
+        steps: coform.subFormsFields,
+        currentIndex: navigation.currentStepIndex,
+        completedIds: navigation.completedSteps,
+        errorIds: coform.stepState.errorSteps,
+        navigable: allowFreeNavigation,
+      }),
+    [
+      coform.subFormsFields,
+      coform.stepState.errorSteps,
+      navigation.currentStepIndex,
+      navigation.completedSteps,
+      allowFreeNavigation,
+    ]
+  );
+
+  // Changer d'étape depuis l'en-tête.
+  const handleStepSelect = (index: number) => {
+    if (index === navigation.currentStepIndex) return;
+    // Une étape réservée à un autre rôle n'est pas atteignable, quel que soit le
+    // chemin emprunté dans l'en-tête (pastille, sommaire, raccourci d'erreur).
+    if (!stepItems[index]?.clickable) return;
+
+    // Le brouillon d'abord : sinon la saisie en cours (non soumise, donc jamais
+    // validée) disparaît au `form.reset` du changement d'étape. Uniquement si
+    // l'user a touché à quelque chose — traverser une étape ne doit pas
+    // matérialiser ses valeurs par défaut dans la réponse.
+    if (form.formState.isDirty) {
+      saveStep();
+      setHasEditedAnyStep(true);
+    }
+
+    // Aucun « Suivant » n'est franchi en navigation libre : c'est ici qu'on
+    // constate si l'étape quittée passerait sa validation. On ne LÈVE jamais
+    // d'erreur au passage (une étape simplement traversée reste « à faire ») —
+    // seule une tentative de soumission peut peindre une étape en rouge.
+    if (fields && subFormId) {
+      const valide = isSubFormValid(fields, form.getValues());
+      coform.setStepCompleted(subFormId, valide);
+      if (valide) coform.markStepInvalid(subFormId, false);
+    }
+
+    // Le récap d'erreurs appartient à l'étape qu'on a tenté de soumettre : sans
+    // ce reset, il ressurgirait sur l'étape suivante au premier champ quitté.
+    setHasAttemptedSubmit(false);
+    navigation.goTo(index);
+  };
+
   // Gérer la soumission de l'étape ou la soumission finale.
   // Note : la validation Zod est interceptée en amont par RHF via le
   // 2e arg de `form.handleSubmit(handleSubmit, handleInvalid)`. Ce bloc
@@ -252,6 +327,33 @@ function MultiStepCoFormContent({
   // un état d'étape incohérent.
   const handleSubmit = async () => {
     setHasAttemptedSubmit(false);
+
+    // Garde de la soumission finale, AVANT toute écriture. En navigation libre on
+    // peut atteindre la dernière étape sans avoir validé les autres : `submitStep`
+    // ne contrôle que l'étape courante et `submitAllData` ne valide rien. Elle
+    // passe avant `submitStep()` parce qu'en mode "step"/"both" celui-ci écrit
+    // déjà au serveur : refuser après avoir persisté serait pire que ne rien faire.
+    //
+    // L'étape COURANTE est exclue : react-hook-form vient de la valider (ce bloc
+    // est la branche valide de `handleSubmit`), et ses valeurs fraîches ne sont pas
+    // encore dans `stepsData`. Les autres étapes, elles, y sont : on les lit par
+    // `getStepsData()`, qui rend la donnée du ref et non celle du rendu courant.
+    if (navigation.isLastStep) {
+      const autres = coform.subFormsFields.filter((sf) => sf.subFormId !== subFormId);
+      const aCorriger = invalidSteps(autres, coform.getStepsData(), restrictedFields);
+      if (aCorriger.length > 0) {
+        aCorriger.forEach((step) => coform.markStepInvalid(step.subFormId, true));
+        const premier = aCorriger[0];
+        toast.error(
+          premier.subFormName
+            ? t("coform.errors.stepIncomplete", undefined, { name: premier.subFormName })
+            : t("coform.errors.summary.toast")
+        );
+        navigation.goTo(coform.subFormsFields.indexOf(premier));
+        return;
+      }
+    }
+
     const ok = await submitStep();
     if (!ok) return;
 
@@ -262,10 +364,11 @@ function MultiStepCoFormContent({
 
   const handleInvalid = useCallback((invalidErrors: FieldErrors) => {
     setHasAttemptedSubmit(true);
+    if (subFormId) markStepInvalid(subFormId, true);
     const firstErrorName = Object.keys(invalidErrors)[0];
     if (firstErrorName) scrollToFieldByName(firstErrorName);
     toast.error(t("coform.errors.summary.toast"));
-  }, [t]);
+  }, [t, subFormId, markStepInvalid]);
 
   const handleErrorFieldClick = useCallback((name: string) => {
     scrollToFieldByName(name);
@@ -282,25 +385,16 @@ function MultiStepCoFormContent({
     <div ref={containerRef} className={cn("space-y-6", className)}>
       <CoFormBanner formData={coform.formData} />
 
-      {/* Barre de progression - Style amélioré */}
-      {showProgress && (
-        <div className="space-y-3 pb-4 border-b">
-          <div className="flex justify-between items-center text-sm">
-            <span className="font-medium text-foreground">
-              {stepName}
-            </span>
-            <span className="text-muted-foreground">
-              {t("coform.steps.step")} {navigation.currentStepIndex + 1} {t("coform.steps.of")} {navigation.totalSteps}
-            </span>
-          </div>
-          <Progress 
-            value={navigation.progressPercent} 
-            className="h-2 bg-muted"
-          />
-          <div className="text-xs text-muted-foreground text-right">
-            {t("coform.progress.percent", undefined, { percent: navigation.progressPercent })}
-          </div>
-        </div>
+      {/* En-tête d'étapes : fenêtre cliquable sur ordinateur, étape courante +
+          sommaire sur téléphone. Il porte aussi le compteur « Étape 3 sur 11 »,
+          d'où le remplacement de l'ancienne barre de progression. */}
+      {(showProgress || variant === "stepper") && navigation.totalSteps > 1 && (
+        <StepsNav
+          steps={stepItems}
+          currentIndex={navigation.currentStepIndex}
+          onStepSelect={handleStepSelect}
+          showStepNumbers={showStepNumbers}
+        />
       )}
 
       {/* Banner de récupération de draft (s'il y en a un en localStorage).
@@ -318,19 +412,6 @@ function MultiStepCoFormContent({
           mode="stale"
           timestamp={coform.staleDraftInfo.timestamp}
           onAcknowledge={coform.acknowledgeStaleDraft}
-        />
-      )}
-
-      {/* Indicateurs d'étapes */}
-      {variant === "stepper" && (
-        <StepIndicator
-          totalSteps={navigation.totalSteps}
-          currentStep={navigation.currentStepIndex}
-          completedSteps={navigation.completedSteps}
-          subFormsFields={coform.subFormsFields}
-          allowFreeNavigation={allowFreeNavigation}
-          showStepNumbers={showStepNumbers}
-          onStepClick={allowFreeNavigation ? navigation.goTo : undefined}
         />
       )}
 
@@ -852,89 +933,6 @@ function MultiStepCoFormContent({
         />
       )}
     </div>
-  );
-};
-
-/**
- * Indicateur visuel des étapes (stepper)
- */
-function StepIndicator({
-  totalSteps,
-  currentStep,
-  completedSteps,
-  subFormsFields,
-  allowFreeNavigation,
-  showStepNumbers,
-  onStepClick,
-}: {
-  totalSteps: number;
-  currentStep: number;
-  completedSteps: string[];
-  subFormsFields: { subFormId: string; subFormName: string }[];
-  allowFreeNavigation: boolean;
-  showStepNumbers: boolean;
-  onStepClick?: (index: number) => void;
-}) {
-  return (
-    <nav aria-label="Étapes du formulaire">
-      <ol className="flex items-center justify-between list-none p-0 m-0">
-        {Array.from({ length: totalSteps }).map((_, index) => {
-          const subForm = subFormsFields[index];
-          const isCompleted = subForm && completedSteps.includes(subForm.subFormId);
-          const isCurrent = index === currentStep;
-          const isPending = !isCompleted && !isCurrent;
-
-          // Contenu du bouton: ✓ si complété, numéro si showStepNumbers, sinon point
-          const buttonContent = isCompleted
-            ? "✓"
-            : showStepNumbers
-              ? index + 1
-              : "•";
-
-          // Label parlant pour SR : "Étape X : Nom du sub-form (complétée|en cours|à venir)"
-          const stateLabel = isCompleted
-            ? "complétée"
-            : isCurrent
-              ? "en cours"
-              : "à venir";
-          const stepLabel = `Étape ${index + 1}${subForm?.subFormName ? ` : ${subForm.subFormName}` : ""} (${stateLabel})`;
-
-          return (
-            <Fragment key={index}>
-              <li className="contents">
-                <button
-                  type="button"
-                  onClick={() => allowFreeNavigation && onStepClick?.(index)}
-                  disabled={!allowFreeNavigation}
-                  aria-current={isCurrent ? "step" : undefined}
-                  aria-label={stepLabel}
-                  className={cn(
-                    "flex items-center justify-center w-10 h-10 rounded-full border-2 font-medium transition-colors",
-                    isCompleted && "bg-primary border-primary text-primary-foreground",
-                    isCurrent && "border-primary text-primary",
-                    isPending && "border-muted text-muted-foreground",
-                    allowFreeNavigation && "cursor-pointer hover:border-primary/80"
-                  )}
-                >
-                  <span aria-hidden="true">{buttonContent}</span>
-                </button>
-              </li>
-
-              {index < totalSteps - 1 && (
-                <li aria-hidden="true" className="contents">
-                  <div
-                    className={cn(
-                      "flex-1 h-1 mx-2",
-                      isCompleted ? "bg-primary" : "bg-muted"
-                    )}
-                  />
-                </li>
-              )}
-            </Fragment>
-          );
-        })}
-      </ol>
-    </nav>
   );
 };
 

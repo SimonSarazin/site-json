@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { CoFormContext, type CoFormContextType, type CoFormStepState } from "./CoFormContext";
 import type { CoFormData, SubFormData, AllStepsData, AddedOptionsMap } from "../types";
 import { parseCoFormFields, denormalizeAnswerData, extractFinderLinks, type FinderLinksMap } from "../utils/formParser";
+import { completedStepIds } from "../utils/stepsNav";
 import { useCoFormDraft } from "../hooks/useCoFormDraft";
 
 interface CoFormProviderProps {
@@ -71,14 +72,19 @@ export function CoFormProvider({
     return idx >= 0 ? idx : 0;
   }, [initialStepKey, subFormsFields]);
 
-  const [stepState, setStepState] = useState<CoFormStepState>({
+  // Amorçage UNIQUE (initialisateur paresseux) : ces deux champs ne suivent pas
+  // `defaultValues` ensuite. En édition, une étape déjà renseignée doit se voir
+  // « complétée » dès l'ouverture, sinon l'en-tête annonce « à faire » sur une
+  // réponse entièrement saisie. Les appelants montent le provider une fois le
+  // formulaire chargé (cf. `CoFormPage`), donc `defaultValues` est là au montage.
+  const [stepState, setStepState] = useState<CoFormStepState>(() => ({
     currentStepIndex: initialStepIndex,
     stepsData: defaultValues ?? {},
-    completedSteps: [],
+    completedSteps: completedStepIds(subFormsFields, defaultValues),
     errorSteps: [],
     submittingStep: null,
     addedOptions: {},
-  });
+  }));
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -176,6 +182,36 @@ export function CoFormProvider({
       ...prev,
       stepsData: newStepsData,
     }));
+  }, []);
+
+  // Étape dont la validation a échoué : le drapeau survit au changement d'étape.
+  const markStepInvalid = useCallback((subFormId: string, invalid: boolean) => {
+    setStepState((prev) => {
+      const flagged = prev.errorSteps.includes(subFormId);
+      if (flagged === invalid) return prev;
+      return {
+        ...prev,
+        errorSteps: invalid
+          ? [...prev.errorSteps, subFormId]
+          : prev.errorSteps.filter((id) => id !== subFormId),
+      };
+    });
+  }, []);
+
+  // Lecture non périmée de `stepsData` (cf. `CoFormContext.getStepsData`).
+  const getStepsData = useCallback(() => stepsDataRef.current, []);
+
+  const setStepCompleted = useCallback((subFormId: string, completed: boolean) => {
+    setStepState((prev) => {
+      const already = prev.completedSteps.includes(subFormId);
+      if (already === completed) return prev;
+      return {
+        ...prev,
+        completedSteps: completed
+          ? [...prev.completedSteps, subFormId]
+          : prev.completedSteps.filter((id) => id !== subFormId),
+      };
+    });
   }, []);
 
   // Sauvegarde des options ajoutées pour un champ
@@ -317,6 +353,9 @@ export function CoFormProvider({
       goToPreviousStep,
       goToStep,
       saveStepData,
+      markStepInvalid,
+      setStepCompleted,
+      getStepsData,
       saveAddedOptions,
       submitStepData,
       submitAllData,
@@ -342,6 +381,9 @@ export function CoFormProvider({
       goToPreviousStep,
       goToStep,
       saveStepData,
+      markStepInvalid,
+      setStepCompleted,
+      getStepsData,
       saveAddedOptions,
       submitStepData,
       submitAllData,

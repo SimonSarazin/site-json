@@ -1387,6 +1387,16 @@ export function generateDefaultValues(subFormsFields: SubFormFields[]): Record<s
           defaultValues[field.name] = [];
           break;
 
+        case "categorizedCheckbox":
+          // Le schéma attend `{ list, sublist }`. Le défaut générique `""` le fait
+          // échouer même quand le champ n'est PAS requis (`z.object(...).optional()`
+          // accepte `undefined`, pas une chaîne) : une étape qui contient ce champ
+          // serait jugée invalide à jamais, et la garde de soumission finale en
+          // ferait un mur. Le composant ne sème rien au montage (à dessein : il ne
+          // doit pas salir le formulaire), donc la valeur vide se construit ICI.
+          defaultValues[field.name] = { list: [], sublist: {} };
+          break;
+
         default:
           defaultValues[field.name] = "";
       }
@@ -1707,6 +1717,19 @@ export function normalizeAnswerData(
       // sert de baseline react-hook-form, donc le formulaire ne naît pas sale.
       if (field.componentType === "dynamicFields" && field.name in subFormData) {
         subFormData[field.name] = seedDynamicRows(field, subFormData[field.name]);
+        continue;
+      }
+
+      // `categorizedCheckbox` : une réponse vide revient en `[]` ou `""` selon
+      // l'ancienneté de la donnée, formes que le schéma rejette. On rend la
+      // valeur conforme dès la lecture — jamais une forme à moitié comprise.
+      if (field.componentType === "categorizedCheckbox" && field.name in subFormData) {
+        const brut = subFormData[field.name];
+        const conforme =
+          isPlainObject(brut) && Array.isArray((brut as { list?: unknown }).list);
+        subFormData[field.name] = conforme
+          ? { sublist: {}, ...(brut as Record<string, unknown>) }
+          : { list: [], sublist: {} };
         continue;
       }
 

@@ -106,6 +106,31 @@ describe("CoFormProvider", () => {
       const { result } = renderHook(() => useCtx(), { wrapper });
       expect(result.current.stepState.stepsData).toEqual(defaults);
     });
+
+    // En édition, l'en-tête d'étapes doit dire la vérité dès l'ouverture : une
+    // réponse déjà saisie ne peut pas s'afficher « à faire » de bout en bout.
+    // Le critère est la validation, pas la simple présence de données.
+    it("marque complétées les étapes déjà valides des defaultValues", () => {
+      const formData = makeCoFormData(["s1", "s2"]);
+      formData.inputs!.s1.inputs.textField.isRequired = true;
+      formData.inputs!.s2.inputs.textField.isRequired = true;
+      const wrapper = ({ children }: { children: React.ReactNode }) => (
+        <CoFormProvider formData={formData} defaultValues={{ s1: { textField: "rempli" }, s2: { textField: "" } }}>
+          {children}
+        </CoFormProvider>
+      );
+      const { result } = renderHook(() => useCtx(), { wrapper });
+      expect(result.current.stepState.completedSteps).toEqual(["s1"]);
+    });
+
+    it("ne marque rien en création (aucune defaultValues)", () => {
+      const formData = makeCoFormData(["s1", "s2"]);
+      const wrapper = ({ children }: { children: React.ReactNode }) => (
+        <CoFormProvider formData={formData}>{children}</CoFormProvider>
+      );
+      const { result } = renderHook(() => useCtx(), { wrapper });
+      expect(result.current.stepState.completedSteps).toEqual([]);
+    });
   });
 
   describe("navigation", () => {
