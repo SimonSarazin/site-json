@@ -13,8 +13,10 @@
 > [Module Articles/Blog](../doc/32-module-articles-blog.md) ·
 > [Module Profil](../doc/08-module-profil.md). Mémoire : `[[project-sport-sante-bien-etre]]`.
 
-Dernière mise à jour : **2026-08-03** (réseaux sociaux au patron `fieldArray` · retrait de
-`recepisseDeclaration` · SDK 1.0.172 publiée · re-sondage des périmètres).
+Dernière mise à jour : **2026-09-02** (branche `judi-ssbe` : les créneaux deviennent
+contributifs et modérables — cf. §9, lot du 02/09). Le lot précédent, du 03/08, portait les
+réseaux sociaux au patron `fieldArray`, le retrait de `recepisseDeclaration` et le re-sondage
+des périmètres.
 **4 décisions de contenu sont en attente** — cf. §13.
 
 ---
@@ -189,6 +191,7 @@ jamais posé — **à trancher** (§13, question 5). L'onglet « Membres » vois
 | Déclaration | [`../sites.json`](../sites.json) → slug `sportSanteBienetre` |
 | Boutons d'action | [`../src/types/action-button-schema.ts`](../src/types/action-button-schema.ts) · [`../src/modules/profil/components/ActionButtonGroup.tsx`](../src/modules/profil/components/ActionButtonGroup.tsx) |
 | Modales d'ajout | [`../src/modules/profil/components/add/ModalRegistry.tsx`](../src/modules/profil/components/add/ModalRegistry.tsx) |
+| **Créneaux — contribution & modération (02/09, `bc99eecc` + `43a93695`)** | config (section `/creneaux` : `addButton`, `preview.editButton`, `card.structureAction.audience` ; onglet admin `moderation`) · [`../src/modules/search/schema.ts`](../src/modules/search/schema.ts) (`structureAction.audience`, `kind` optionnel) · [`../src/modules/search/components/card/CardAnswer.tsx`](../src/modules/search/components/card/CardAnswer.tsx) (+ `CardAnswer.test.tsx`, `CardAnswer.ssr.test.tsx`) · [`../src/modules/search/lib/coformAnswer.ts`](../src/modules/search/lib/coformAnswer.ts) (`isCoformAnswerManager`, ex-`canEditCoformAnswer`) · [`../src/modules/admin/schema.ts`](../src/modules/admin/schema.ts) (`columns[].sortable`, + `schema.test.ts`) · [`../src/modules/admin/sections/AdminResourceTable.tsx`](../src/modules/admin/sections/AdminResourceTable.tsx) · docs [07](../doc/07-module-search.md) et [30](../doc/30-module-admin.md) |
 | Rendu des formulaires | [`../src/modules/formEngine/layouts/shared.tsx`](../src/modules/formEngine/layouts/shared.tsx) · [`../src/modules/formEngine/components/GenericForm.tsx`](../src/modules/formEngine/components/GenericForm.tsx) |
 
 ---
@@ -317,6 +320,65 @@ Aucun commit spécifique SSBE dans le merge ; gates re-passés ce jour :
 | `test:preflight` | ✅ 412 tests / 22 fichiers |
 | `typecheck` | ✅ (`tsc -b`) |
 
+### Lot du 02/09 — les créneaux deviennent contributifs et modérables (branche `judi-ssbe`)
+
+> Commits : `bc99eecc` (carte de créneau) · `43a93695` (modération admin).
+
+**Alignement sur Ekilib.re, sauf là où la donnée dit le contraire.** Le site frère
+[Maison Sport Santé du Tampon](maison-sport-sante-la-tampon.md) portait déjà les boutons de
+contribution et l'onglet de modération — **le gate `audience` (point 2) est neuf, et Ekilib.re
+ne l'a pas encore**. Le reste est transposé sur le form SSBE `6928096adf5caf0d230e7f26` (section
+`sportSanteBienetre2172025_854_0`). Fait vérifié en base : la duplication de formulaire **préserve
+les ids d'inputs**, donc les 5 suffixes utilisés par la config sont identiques sur les deux sites —
+la transposition est mécanique, seul le préfixe de section change.
+
+**1. Ajouter et modifier un créneau depuis `/creneaux`** — `addButton` (avec `adminOnly: false` :
+la contribution est publique, un visiteur non connecté est envoyé au login) et
+`preview.editButton: true` (bouton « Modifier » dans le détail, réservé aux gestionnaires).
+
+**2. Le bouton « Fiche structure » réservé aux gestionnaires** — nouvelle clé
+`card.structureAction.audience` (`"all"` par défaut, donc **parc inchangé** ; `"managers"` sur SSBE).
+Il était jusqu'ici visible par **tout le monde**, alors que la fiche structure est un outil de
+gestion (affiliation, représentant légal, documents) sans intérêt pour qui compare des créneaux.
+Le gate réutilise le prédicat du bouton « Modifier », **renommé** `canEditCoformAnswer` →
+`isCoformAnswerManager` : il gouverne désormais une écriture **et** un affichage, et sous l'ancien
+nom un futur resserrement du droit d'édition aurait resserré la fiche en silence.
+⚠️ **Pertinence d'affichage, pas une frontière de sécurité** : `/profil/:slug` et `/structure`
+restent des routes publiques, et l'e-mail de la structure est de toute façon affiché sur la carte.
+
+**Le piège traité : l'hydratation.** `/creneaux` est prérendue côté serveur, où `me` vaut toujours
+`null`, alors que le 1er render client d'un gestionnaire a déjà son `me`. Sans garde, HTML serveur ≠
+1er render client → mismatch. Le gate passe donc par `useHydrated` : bouton absent des deux, puis
+affiché après hydratation chez les seuls ayants droit. Épinglé par `CardAnswer.ssr.test.tsx`, qui
+rend en SSR avec le **vrai** hook (le test de câblage, lui, le mocke — il ne prouverait rien ici).
+
+**3. Onglet admin « Modération »** (`siteAdmin`, en dernier, sans icône : conforme aux 7 onglets
+existants) — table `resource` en mode `statusField` sur les answers du form. États **verbatim de la
+base** : `En attente` · `En cours` · `Validé` · `Réfusé` (la faute est la valeur stockée, lue par le
+filtre serveur et écrite par `updatepathvalue` ; seul l'affichage la corrige en « Refusé »).
+Volumétrie mesurée le 02/09 : **57 en attente**, 225 validés, 3 sans statut — l'onglet a un vrai
+backlog. Effet de bord souhaitable : le tableau de bord admin dérive automatiquement une tuile de
+comptage par section `resource` visible.
+
+**Deux écarts assumés vs Ekilib.re, tranchés sur la donnée mesurée :**
+
+| Écart | Pourquoi |
+|---|---|
+| `notSourceKey: true` au lieu de `sourceKey: ["sportSanteBienetre"]` | Sur les 285 réponses du form, **une** porte `source.keys: associationEkilibre` (import mal étiqueté). Avec `sourceKey` elle resterait **publiée sur `/creneaux` sans être modérable** : le périmètre modéré doit égaler le périmètre publié. Le champ reste borné par `defaultFilters.form`, donc rien d'indésirable n'entre |
+| `columns[].sortable` (nouveau, défaut `true`) posé à `false` sur 4 colonnes | Chaque en-tête est un tri **serveur** qui écrase `defaultSortBy`. Or `name`, `structure.name`, le Type à plat et `address.postalCode` n'existent dans **aucun** document : ils sont fabriqués par le hook costum PHP **après** la requête Mongo. Trier dessus ordonnait au hasard — à l'identique en asc et desc — tout en perdant l'ordre par défaut, et déstabilisait le skip/limit du scroll infini. Seul « Déclaré le » (vrai champ Mongo) reste triable. **Ekilib.re porte le même défaut en production** : un `sortable: false` l'y corrigerait aussi |
+
+**Gates du lot (02/09)** : `config:validate` ✅ 19 pages / 61 sections · `audit:config` 🟡 **4
+constats, les 4 mêmes qu'au 03/08** (liens morts §13, inchangés) et `strip: 0` · `test:preflight`
+✅ 532 · unitaires admin ✅ 128 · `tsc -b` ✅ · lint ✅ 0 erreur · snapshot
+`tests/preflight/__effective__/sport-sante-bien-etre.json` régénéré (diff limité à la seule entrée
+`moderation/answers`).
+
+⚠️ **Deux gates n'ont PAS pu tourner** : `config:render` et `config:probe` — le backend local
+`communecter74-dev` a cessé de répondre en fin de session (HTTP 000, `timeout of 30000ms exceeded`
+à la résolution du slug). Cause probable : une sonde `globalautocomplete` en `fieldShow=allFields`
+sur les 285 réponses, qui a vraisemblablement saturé PHP-FPM. **À rejouer** une fois le backend
+relancé, avec la recette navigateur (§10, ligne 16).
+
 ---
 
 ## 10. Checklist d'avancement
@@ -331,13 +393,16 @@ Aucun commit spécifique SSBE dans le merge ; gates re-passés ce jour :
 | 6 | Formulaires costum | 🟡 | 6 déclarés et exposés dans `/admin` ; **1 seul** ouvert côté public depuis le 28/07 |
 | 7 | Inscription d'une structure | ✅ | Modale branchée sur `/communaute`, gardée par l'authentification |
 | 8 | Connexion | ✅ | Widget `utilities.auth` ; le CTA cassé du header est retiré |
-| 9 | Back-office | ✅ | 7 onglets — **essai UI connecté à faire** |
+| 9 | Back-office | ✅ | **8 onglets** depuis le 02/09 (ajout de « Modération », cf. ligne 18) — **essai UI connecté à faire** |
 | 10 | Blog | ✅ | `articleFeed` + RSS + SEO + palette (travaux du 25/07) |
 | 11 | Palette ⌘K | ✅ | `entitySearch` + `articleSearch` |
 | 12 | Grille « professionnels » | ❌ | 3 tuiles sur 6 mènent à des pages inexistantes (§13) |
 | 13 | Hero `/public` | ❌ | 1 CTA mort, 1 CTA qui renvoie à l'accueil depuis une sous-page (§13) |
 | 14 | Rendu navigateur | ❌ | **Jamais vérifié** — aucune capture de ce site à ce jour |
 | 15 | Mode sombre | ❌ | Jamais vérifié |
+| 16 | Créneaux — ajouter / modifier depuis `/creneaux` | ✅ config | `addButton` (`adminOnly: false`) + `preview.editButton` (02/09, §9) — **recette navigateur à faire** (backend indisponible en fin de session) |
+| 17 | Créneaux — « Fiche structure » réservée aux gestionnaires | ✅ | `card.structureAction.audience: "managers"` + gate `isCoformAnswerManager` sous `useHydrated` (02/09, §9) ; 12 tests dont 2 de parité SSR |
+| 18 | Créneaux — modération dans le back-office | ✅ config | Onglet `moderation` en mode `statusField`, 57 en attente à traiter (02/09, §9) — **recette à faire** : passer un « En attente » à « Validé » et vérifier qu'il apparaît sur `/creneaux` |
 
 ---
 
