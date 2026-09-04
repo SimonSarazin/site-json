@@ -1055,7 +1055,7 @@ Toutes les variantes sont lazy-loadées. Une page **mono-type** ne télécharge 
 - Bouton « Contacter » : **plus de `disabled={!isConnected}`** — toujours cliquable ; si non connecté → `openLogin()`.
 - Bouton « Suivre » : **`disabled={isLoadingFollow}` uniquement** (plus de `disabled={!isConnected || isLoadingFollow}`) — toujours cliquable si le follow n'est pas en cours ; si non connecté → `openLogin()`.
 
-Voir [doc/23-module-auth.md](doc/23-module-auth.md) pour l'API `useAuthModal`.
+Voir [doc/23-module-auth.md](23-module-auth.md) pour l'API `useAuthModal`.
 
 ### Mode détails — conteneur (`detailsMode`) vs contenu (`preview.type`)
 
