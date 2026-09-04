@@ -4122,6 +4122,258 @@
       ]
     },
     {
+      "path": "/ressources",
+      "title": {
+        "fr": "Ressources",
+        "en": "Resources"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Ressources — Sport Santé Bien-être La Réunion",
+          "en": "Resources — Sport Health Wellness Réunion"
+        },
+        "description": {
+          "fr": "Documents ressources du sport santé à La Réunion : recommandations HAS, guides et référentiels, rapports et enquêtes, outils pratiques, financements.",
+          "en": "Sport-health resource documents in Réunion: HAS recommendations, guides and frameworks, reports and surveys, practical tools, funding."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image"
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "ressources-header",
+          "props": {
+            "headline": {
+              "fr": "Ressources",
+              "en": "Resources"
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher un document par son nom\u2026",
+              "en": "Search a document by name\u2026"
+            },
+            "showActiveFiltersTags": "desktop"
+          }
+        },
+        {
+          "type": "gridLayout",
+          "id": "ressources-grid",
+          "props": {
+            "leftColumns": 1,
+            "rightColumns": 3,
+            "gap": 4,
+            "leftSection": {
+              "type": "filters",
+              "id": "ressources-filtres",
+              "props": {
+                "title": {
+                  "fr": "Affiner votre recherche",
+                  "en": "Refine your search"
+                },
+                "defaultOpenGroups": [
+                  "thematique"
+                ],
+                "filterGroups": [
+                  {
+                    "id": "thematique",
+                    "label": {
+                      "fr": "Thématique",
+                      "en": "Topic"
+                    },
+                    "type": "filters",
+                    "field": "thematique",
+                    "optionStyle": "check",
+                    "order": 1,
+                    "options": [
+              {
+                "id": "mss",
+                "label": {
+                  "fr": "Maisons Sport Santé",
+                  "en": "Sport Health Houses"
+                },
+                "name": "mss"
+              },
+              {
+                "id": "rapports",
+                "label": {
+                  "fr": "Rapports & enquêtes",
+                  "en": "Reports & surveys"
+                },
+                "name": "rapports"
+              },
+              {
+                "id": "has",
+                "label": {
+                  "fr": "Recommandations HAS par pathologie",
+                  "en": "HAS recommendations by condition"
+                },
+                "name": "has"
+              },
+              {
+                "id": "guides",
+                "label": {
+                  "fr": "Guides & référentiels",
+                  "en": "Guides & frameworks"
+                },
+                "name": "guides"
+              },
+              {
+                "id": "outils",
+                "label": {
+                  "fr": "Outils pratiques",
+                  "en": "Practical tools"
+                },
+                "name": "outils"
+              },
+              {
+                "id": "communication",
+                "label": {
+                  "fr": "Communication",
+                  "en": "Communication"
+                },
+                "name": "communication"
+              },
+              {
+                "id": "financements",
+                "label": {
+                  "fr": "Financements & aides",
+                  "en": "Funding & support"
+                },
+                "name": "financements"
+              }
+                    ]
+                  }
+                ]
+              }
+            },
+            "rightSection": {
+              "type": "searchProStatic",
+              "id": "ressources-list",
+              "props": {
+                "customHeader": {
+                  "title": {
+                    "fr": "Tous les documents",
+                    "en": "All documents"
+                  }
+                },
+                "useFilter": true,
+                "showMap": false,
+                "disableInfiniteScroll": false,
+                "defaultViewMode": "list",
+                "baseParams": {
+                  "defaultTypes": [
+                    "poi"
+                  ],
+                  "sourceKey": [
+                    "sportSanteBienetre"
+                  ],
+                  "defaultFilters": {
+                    "type": "ressource",
+                    "status": "Visible"
+                  },
+                  "defaultFields": [
+                    "name",
+                    "thematique",
+                    "description",
+                    "urls",
+                    "medias",
+                    "status",
+                    "created",
+                    "type",
+                    "source",
+                    "profilMediumImageUrl",
+                    "profilImageUrl"
+                  ],
+                  "searchBy": [
+                    "name"
+                  ],
+                  "defaultSortBy": {
+                    "created": -1
+                  }
+                },
+                "list": {
+                  "columns": {
+                    "sm": 1,
+                    "md": 2,
+                    "lg": 2
+                  },
+                  "card": {
+                    "type": "resource",
+                    "detailsMode": "dialog"
+                  },
+                  "preview": {
+                    "type": "resource",
+                    "width": "2xl"
+                  },
+                  "resource": {
+                    "design": "card",
+                    "titleField": "name",
+                    "descriptionField": "description",
+                    "dateField": "created",
+                    "imageField": "profilMediumImageUrl",
+                    "urlsField": "urls",
+                    "badge": {
+                      "field": "thematique",
+                      "colors": {
+                  "mss": "var(--chart1)",
+                  "rapports": "var(--chart2)",
+                  "has": "var(--chart3)",
+                  "guides": "var(--chart4)",
+                  "outils": "var(--chart5)",
+                  "communication": "var(--primary)",
+                  "financements": "var(--accent)"
+                      },
+                      "icons": {
+                  "mss": "house",
+                  "rapports": "file-bar-chart",
+                  "has": "stethoscope",
+                  "guides": "book-open",
+                  "outils": "wrench",
+                  "communication": "megaphone",
+                  "financements": "coins"
+                      },
+                      "labels": {
+                  "mss": {
+                    "fr": "Maisons Sport Santé",
+                    "en": "Sport Health Houses"
+                  },
+                  "rapports": {
+                    "fr": "Rapports & enquêtes",
+                    "en": "Reports & surveys"
+                  },
+                  "has": {
+                    "fr": "Recommandations HAS par pathologie",
+                    "en": "HAS recommendations by condition"
+                  },
+                  "guides": {
+                    "fr": "Guides & référentiels",
+                    "en": "Guides & frameworks"
+                  },
+                  "outils": {
+                    "fr": "Outils pratiques",
+                    "en": "Practical tools"
+                  },
+                  "communication": {
+                    "fr": "Communication",
+                    "en": "Communication"
+                  },
+                  "financements": {
+                    "fr": "Financements & aides",
+                    "en": "Funding & support"
+                  }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
       "path": "/mentions-legales",
       "title": {
         "fr": "Mentions légales",

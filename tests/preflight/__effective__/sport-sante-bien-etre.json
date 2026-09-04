@@ -406,6 +406,39 @@
           "type": "recoveryCenter"
         }
       }
+    },
+    "/ressources/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "sportSanteBienetre"
+        ],
+        "defaultFilters": {
+          "type": "ressource",
+          "status": "Visible"
+        },
+        "defaultFields": [
+          "name",
+          "thematique",
+          "description",
+          "urls",
+          "medias",
+          "status",
+          "created",
+          "type",
+          "source",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        }
+      }
     }
   },
   "referencement": {},
