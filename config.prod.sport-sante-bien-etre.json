@@ -2470,6 +2470,15 @@
             "disableInfiniteScroll": false,
             "customHeader": {},
             "defaultViewMode": "list",
+            "addButton": {
+              "show": true,
+              "adminOnly": false,
+              "coform": "6928096adf5caf0d230e7f26",
+              "label": {
+                "fr": "Ajouter un créneau",
+                "en": "Add a slot"
+              }
+            },
             "baseParams": {
               "defaultTypes": [
                 "answers"
@@ -2488,10 +2497,14 @@
               },
               "card": {
                 "type": "card-answer",
-                "detailsMode": "dialog"
+                "detailsMode": "dialog",
+                "structureAction": {
+                  "audience": "managers"
+                }
               },
               "preview": {
-                "type": "coform-answer"
+                "type": "coform-answer",
+                "editButton": true
               }
             },
             "map": {
