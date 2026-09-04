@@ -833,6 +833,19 @@ cette fonctionnalité, sur le backend de **dev local** (`communecter-dev`). Ce n
 données de production réelles du réseau parentalité — le volume réel d'événements en production
 reste **à confirmer**, comme les autres lignes « 0 donnée » de ce document (§12).
 
+> **Mise à jour 2026-09-04 — répartition LISTE / CALENDRIER refaite, prérequis backend.** L'analyse
+> contradictoire de la MR 49 a établi que le flux LISTE unique retourné côté client (`reverse()`,
+> fenêtre 12 mois, page 12 → 60) contournait un trou SERVEUR : le mode LISTE de `/co2/search/agenda`
+> était trié DESC en dur, non borné (page 1 = les events les plus lointains) et sans fin d'occurrence
+> — « À venir » n'était juste que si le nombre d'événements futurs restait sous `indexStepList`.
+> Correctif écrit **legacy-first** (`AgendaAction.php`, paramètres optionnels `from`/`to`/`order`,
+> `endDateSortFormat`, `recurrency` booléen, `count` = servi, minuit → lendemain), porté en miroir
+> dans le backend Node (byte-parité prouvée) et déclaré au contrat lib. Le module agenda utilise
+> désormais deux flux bornés serveur (prochains ASC depuis maintenant / passés DESC), la grille reste
+> en CALENDRIER — cf. `doc/29-module-agenda.md`. **Prérequis de déploiement** : legacy ≥ `14c2caa1`
+> + `0db3d136` + le patch du 2026-09-04 (ou Node équivalent), sinon les paramètres sont ignorés et les
+> récurrents disparaissent de la liste.
+
 ### 9sexies.1 Bugs backend trouvés (`AgendaAction.php`, hors monorepo — pas d'accès direct, documentés en handoff)
 
 1. **Matching récurrent par jour de semaine (mode CALENDRIER)** : `searchEventsCostum` (avec

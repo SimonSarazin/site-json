@@ -119,3 +119,31 @@ describe("eventOccurrence — créneau qui franchit minuit", () => {
     expect(end?.getDate()).toBe(start.getDate() + 1);
   });
 });
+
+/**
+ * `endDateSortFormat` (fin d'occurrence calculée SERVEUR, fuseau de l'event, offset PHP sans deux-points)
+ * prime sur tout repli client : c'est elle qui rend « En cours » juste quel que soit le fuseau du visiteur.
+ */
+describe("eventOccurrence — endDateSortFormat (serveur) prioritaire", () => {
+  it("récurrent borné : end = endDateSortFormat, pas l'heure de fermeture recalculée côté client", () => {
+    const { start, end } = eventOccurrence(
+      ev({
+        startDateSortFormat: "2026-09-10T20:00:00+0200",
+        endDateSortFormat: "2026-09-11T00:00:00+0200", // créneau 20:00 → 00:00 : fin le LENDEMAIN (serveur)
+        openingHours: [{ dayOfWeek: "Th", hours: [{ opens: "20:00", closes: "00:00" }] }],
+      }),
+    );
+    expect(start?.toISOString()).toBe("2026-09-10T18:00:00.000Z");
+    expect(end?.toISOString()).toBe("2026-09-10T22:00:00.000Z");
+  });
+
+  it("ponctuel borné : endDateSortFormat (UTC +0000) prime sur endDate", () => {
+    const { end } = eventOccurrence(ev({ startDate: new Date("2026-09-04T16:30:00Z"), endDate: new Date("2026-09-04T18:30:00Z"), endDateSortFormat: "2026-09-04T18:30:00+0000" }));
+    expect(end?.toISOString()).toBe("2026-09-04T18:30:00.000Z");
+  });
+
+  it("endDateSortFormat null (ponctuel sans fin connue) → repli endDate puis openingHours, sinon null", () => {
+    const { end } = eventOccurrence(ev({ startDate: new Date("2026-09-04T16:30:00Z"), endDateSortFormat: null }));
+    expect(end).toBeNull();
+  });
+});

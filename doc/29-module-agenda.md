@@ -15,7 +15,7 @@ Expérience **événementielle** d'un costum, config-driven, alignée sur les pa
   - **Carte** — marqueurs Leaflet (réutilise `SearchMap` de search).
   - **Liste + carte (split)** — liste + carte synchronisées (variante desktop de la carte).
 - **Filtres** : type (backend) + texte débouncé (backend) + tags (client), **sync URL** ; UI shadcn alignée sur search (`Select`, `MultiCombobox`, `ActiveFiltersBar`).
-- **`baseParams`** : même convention que `searchProStatic` — `sourceKey` multi-sources, `indexStepList`, `fediverse`, `filters`, `locality`.
+- **`baseParams`** : même convention que `searchProStatic` — `sourceKey` multi-sources, `indexStepList`, `recurrency`, `fediverse`, `filters`, `locality`.
 - **Détail + actions** : clic event → `PreviewEvent` (search) + `EntityActionButtons` (Participer / Suivre / Éditer).
 - **Île client** : pas de prefetch SSR des données (l'agenda est `now`-relatif) — le serveur rend un squelette, le client charge après hydratation.
 
@@ -40,7 +40,7 @@ src/modules/agenda/
 │       └── TimeGridView.tsx    # grille horaire semaine/jour (packing chevauchements + ligne « maintenant »)
 ├── hooks/
 │   ├── useAgendaCalendar.ts    # mode CALENDRIER (plage de dates → 1 page, récurrents dépliés) — grille SEULEMENT
-│   ├── useAgendaList.ts        # mode LISTE (sans dates → paginé, scroll infini) — sert les 3 onglets Liste
+│   ├── useAgendaList.ts        # mode LISTE borné/trié SERVEUR (from/to/order → paginé) — 2 flux : prochains (En cours+À venir) / passés
 │   └── useAgendaClock.ts       # horloge STABLE (now + bornes) — anti-boucle de refetch
 ├── constants/
 │   ├── queryKeys.ts            # AGENDA_QUERY_KEYS (CLOCK/CALENDAR/LIST)
@@ -50,8 +50,8 @@ src/modules/agenda/
     ├── agendaClock.ts          # computeAgendaClock (pur) — now + bornes À venir
     ├── calendarLayout.ts       # toDayEvents / eventsOnDay / layoutDay (packing horaire)
     ├── eventDates.ts           # eventOccurrence — start via resolveEventStartDate (@/helpers/formatDate,
-    │                           #   partagé avec search/admin/profil) ; end = endDate, sinon (récurrent)
-    │                           #   heure de fermeture du jour dans openingHours
+    │                           #   partagé avec search/admin/profil) ; end = endDateSortFormat (SERVEUR, flux
+    │                           #   LISTE borné), sinon endDate, sinon repli openingHours (grille/searchCostum)
     ├── eventTags.ts (+test)    # distinctTags / filterByTags (OR)
     ├── partitionByTime.ts (+test) # eventTimeBucket / partitionByTime (ongoing/upcoming/past)
     └── agendaUrlParams.ts (+test) # read/write filtres ↔ URL (vue/tab/q/type/tags) ; writeAgendaUrl(sp,s,d,manageText=true) — manageText=false saute l'écriture de `q` (délégué au searchHeader) ; Agenda.tsx passe `showText`
@@ -72,30 +72,35 @@ Câblage standard (comme tout module) :
 | Mode | Déclencheur | Contenu | Tri | Pagination | Hook |
 |---|---|---|---|---|---|
 | **CALENDRIER** | `startDateUTC`/`endDateUTC` | ponctuels **+ récurrents DÉPLIÉS** par occurrence | par occurrence | **non** (1 page) | `useAgendaCalendar` — grille uniquement |
-| **LISTE** | **sans** dates | ponctuels **+ récurrents** (une ligne chacun, leur **prochaine occurrence**) | `startDate`/occurrence DESC | **oui** (`next()`) | `useAgendaList` — les 3 onglets Liste |
+| **LISTE** | **sans** dates (+ `from`/`to`/`order` optionnels) | ponctuels **+ récurrents** (une ligne chacun, leur **prochaine occurrence** + sa **fin** `endDateSortFormat` dès que le flux est borné) | occurrence, sens = `order` (défaut DESC non borné) | **oui** (`next()`, rejoue les mêmes bornes) | `useAgendaList` — 2 flux : « prochains » (En cours + À venir) et « passés » |
 
-**Mapping des onglets temporels** — un seul flux `useAgendaList` (`listFetch`), partitionné **côté client** (`partitionByTime`) en `ongoing`/`upcoming`/`past` :
-- **À venir** = bucket `upcoming`, borné à `upcomingWindowMonths` (filtre client sur l'occurrence), **remis en ordre croissant** (le flux brut est trié décroissant, adapté à « Passés »).
+**Mapping des onglets temporels** — DEUX flux `useAgendaList`, bornés et triés **côté serveur**
+(paramètres optionnels `from`/`to`/`order` de `/co2/search/agenda`, écrits dans le legacy le 2026-09-04
+et portés dans le backend Node ; sans eux le serveur répond comme avant, DESC non borné) :
+- **`upcomingFetch`** = `{ from: now, to: now + upcomingWindowMonths, order: "asc" }` — les PROCHAINS
+  d'abord, événements en cours en tête (un créneau ou un multi-jours commencé mais pas terminé reste
+  servi). Partitionné client (`partitionByTime`) en **En cours** / **À venir** ; la fin d'occurrence
+  vient du serveur (`endDateSortFormat`, fuseau de l'event). Plus de `reverse()` ni de fenêtre client.
+- **`pastFetch`** = `{ to: now, order: "desc", recurrency: false }` — les PASSÉS, du plus récent, sans
+  récurrent (une série n'a pas de passé). Chargé seulement quand l'onglet « Passés » est actif (ou en
+  vue carte, qui agrège les deux flux). Un multi-jours en cours, servi par les deux flux, est rangé
+  dans En cours (la partition l'écarte de Passés).
+- **Pagination PAR ONGLET** : En cours et À venir partagent le curseur du flux « prochains », Passés a
+  le sien ; « charger plus » s'affiche dès que le flux a une page suivante, bucket vide compris.
+- `now` = l'horloge figée (`useAgendaClock`) : c'est l'**ancre** `from`/`to` rejouée par `next()` —
+  la clé de tri des récurrents ne bouge pas entre deux pages.
 
-#### Teaser : `limit` n'est PAS la taille du fetch
+#### Teaser : `limit` ≤ `indexStepList` suffit
 
-`limit` plafonne l'**affichage** d'un bucket, APRÈS que le flux a été chargé et partitionné côté
-client. Le flux, lui, est trié **décroissant, les trois buckets mêlés**, et coupé par
-`baseParams.indexStepList` côté backend (`array_slice`).
-
-Conséquence contre-intuitive : `limit: 3` + `indexStepList: 3` ne ramène pas « les 3 prochains »,
-mais les **3 events les plus lointains** — dont il ne reste, après partition et fenêtre
-`upcomingWindowMonths`, que ceux qui tombent dans le bucket visé : souvent moins de 3, parfois zéro,
-alors que la donnée existe — le teaser paraît vide ou incomplet sans qu'aucune erreur ne survienne.
-
-**Règle** : garder `indexStepList` largement au-dessus de `limit` (≥ 3× ; en pratique 20, le défaut
-`AGENDA_DEFAULT_INDEX_STEP`, convient à un teaser).
-- **En cours** = bucket `ongoing` — nécessite un `end` résolu (cf. `eventDates.ts` : `endDate` pour un ponctuel multi-jours, sinon l'heure de fermeture du jour dans `openingHours` pour un récurrent).
-- **Passés** = bucket `past`, non borné (pagine via « charger plus », partagé avec les 2 autres onglets — un seul curseur pour toute la vue Liste).
+Le flux « prochains » arrivant déjà trié et borné côté serveur, `limit: 3` ramène bien les 3 prochains.
+En teaser « À venir » (`showTabs: false`, `defaultTab: "upcoming"`), les événements **en cours** comptent
+parmi les prochains, en tête — « les 3 prochaines réunions » inclut celle qui a lieu maintenant (mesuré
+sur hva : une page entière d'événements en cours laissait sinon le teaser vide). L'ancienne règle
+« `indexStepList` très au-dessus de `limit` » (flux DESC non borné) n'a plus lieu d'être : `≥ limit` suffit.
 
 La grille **Calendrier** (`gridFetch`, `useAgendaCalendar`) reste **inchangée** — mode CALENDRIER sur le mois/la semaine affiché(e), toujours nécessaire pour une case par occurrence.
 
-Pièges lib : ne **jamais** envoyer `recurrency:true` (interdit AJV) ; `type` est **scalaire** (mono-select) ; mode calendrier = single page. En mode LISTE, la présence de `costumSlug` (toujours injecté par le SDK en usage réel) filtre les événements en attente de modération (`preferences.toBeValidated`) — confirmé le 19/08, ce n'est pas un bug.
+Pièges lib : `recurrency` est un vrai booléen depuis le 2026-09-04 (`false` = sans récurrent, en liste comme en calendrier ; l'ancienne garde `const:false` est levée) ; `from`/`to` partent en ISO **avec offset** (`toISOString`) — une date nue serait lue en Europe/Paris par le legacy et en UTC par Node ; `type` est **scalaire** (mono-select) ; mode calendrier = single page. En mode LISTE, la présence de `costumSlug` (toujours injecté par le SDK en usage réel) filtre les événements en attente de modération (`preferences.toBeValidated`) — confirmé le 19/08, ce n'est pas un bug.
 
 ### `buildAgendaParams` — source unique des arguments
 
@@ -178,6 +183,7 @@ Même convention que `searchProStatic.baseParams`. Champs **repris** (= ceux que
 |---|---|
 | `sourceKey: string[]` | scope **multi-sources** (filtre `source.keys`). Vide → costum courant (auto SDK). |
 | `indexStepList: number` | taille de page de la vue LISTE — sur un **teaser**, c'est elle (et non `limit`) qui décide de ce que le bucket peut contenir : cf. [§ teaser](#teaser--limit-nest-pas-la-taille-du-fetch) |
+| `recurrency: boolean` | inclure les événements RÉCURRENTS (créneaux `openingHours` au lieu d'une date). **Absent = inclus** (défaut serveur). `false` pour un agenda qui ne parle que de dates uniques : une série occupe sinon une ligne permanente (« Chaque mardi ») qui ne descend jamais dans la liste. Émis dans les **deux** modes — liste (requête des récurrents sautée) et calendrier (clauses `openingHours.dayOfWeek` non posées). ⚠ Sans effet sur « Passés », qui les exclut toujours : une série ne renvoie que sa PROCHAINE occurrence, jamais ses occurrences révolues. |
 | `fediverse: boolean` | inclure les sources fédiverse |
 | `filters`, `locality` | filtres backend bruts / localités |
 
@@ -206,7 +212,7 @@ Le résultat (`effectiveBaseParams`) est appliqué **côté serveur** par `searc
 | `defaultMode` | `"list" \| "calendar"` | `"list"` | vue initiale |
 | `tabs` | `("upcoming"\|"ongoing"\|"past")[]` | `["upcoming","ongoing","past"]` | onglets affichés |
 | `defaultTab` | idem | `"upcoming"` | onglet initial |
-| `upcomingWindowMonths` | number | `12` | borne haute (filtre client, now→futur) du bucket « À venir » — plus un fetch CALENDRIER dédié, le flux LISTE partagé est simplement filtré à cette fenêtre |
+| `upcomingWindowMonths` | number | `12` | borne haute du flux « prochains » — passée au SERVEUR (`to = now + fenêtre`), plus de filtre client |
 | `showViewToggle` | boolean | `true` | afficher le toggle Liste/Calendrier(/Carte) |
 | `showTabs` | boolean | `true` | afficher les onglets (false = teaser : bucket unique) |
 | `limit` | number | — | plafond d'events/bucket (teaser) |
@@ -266,9 +272,10 @@ Namespace **`modules/agenda`** (`i18n/{fr,en}.json`), chargé en side-effect par
 - <a id="type-core"></a>**module `type: "core"`** : un module `optional` SANS `routes.tsx` (cas de l'agenda) suffit à rendre `hasOptional` vrai → bascule TOUTE la construction de routes client en async → header/sections dupliqués + navigation cassée. L'agenda est section-only → **`core`**.
 - **Île client / pas de prefetch SSR** : la query datée « À venir » (`startDateUTC=now…`) n'est pas déterministe serveur↔client → mismatch d'hydratation. L'agenda gate fetch+contenu après hydratation (`useHydrated`) → serveur = 1ᵉʳ render client = même squelette.
 - **`startDateSort` (récurrents) n'est PAS parsable directement** : c'est un objet PHP brut (`{date,timezone_type,timezone}`), jamais normalisé en `Date` par le SDK — seul `startDateSortFormat` (string ISO) l'est. `eventOccurrence`/`resolveEventStartDate` (`@/helpers/formatDate`, partagé avec `search`/`admin`/`profil`) tentent `startDate` → `startDateSort` (au cas où) → `startDateSortFormat`.
+- **Fin d'occurrence : serveur d'abord** (`endDateSortFormat`, présente sur chaque ligne d'un flux LISTE borné ; offset PHP sans deux-points, normalisé par `toValidDate`) — le repli `closingTimeOnDay` (heure de fermeture d'`openingHours` dans le fuseau du NAVIGATEUR, dernier créneau) ne sert plus qu'à la grille CALENDRIER et aux endpoints sans occurrence ; il est approximatif dès que le visiteur n'est pas dans le fuseau de l'événement.
 - **Mode LISTE côté admin (`/admin/agenda`, `AdminResourceTable`)** : utilise `searchCostum` (générique), **pas** `searchEventsCostum` — `searchCostum` ne calcule **jamais** `startDateSort`/`startDateSortFormat`, quels que soient les champs demandés (c'est une enrichissement propre à l'endpoint agenda). La colonne « Début » d'un récurrent n'a donc **aucune date exploitable** ; repli sur le libellé de récurrence (`formatColumnCell` dans `modules/admin/sections/resourceHelpers.ts`).
 - **i18n cross-module** : le libellé de récurrence (`formatRecurrenceLabel`) utilise les clés `days.*`/`card.event.recurring*` du namespace `modules/search`, enregistrées en side-effect par `import "@/modules/search/i18n"`. Un composant hors de l'arbre `search` qui l'utilise (page profil, table admin) doit importer ce fichier explicitement, sinon les clés s'affichent brutes (non traduites).
-- **Bugs backend connus (`AgendaAction.php`, hors monorepo)** : voir `Document de spécification — Agenda événements récurrents invisibles (AgendaAction.php).md` (matching par jour de semaine en mode CALENDRIER, corrigé) et `Document de spécification — Pagination des événements récurrents dans l'agenda (AgendaAction.php).md` (mode LISTE incluant les récurrents, implémenté ; « occurrence du jour en cours », corrigé le 19/08) à la racine du monorepo.
+- **Backend requis (`AgendaAction.php`, dépôt legacy `citizenToolKit` + backend Node `cocolight-backend`)** : le mode LISTE incluant les récurrents (commit legacy `14c2caa1`, 19/08/2026, + `0db3d136`, 24/08) est un **prérequis de déploiement** : sans lui, la LISTE exclut tout document à `openingHours` et les trois onglets perdent les récurrents (et la lib convertit silencieusement l'ancien objet keyé). Les bornes `from`/`to`/`order` + `endDateSortFormat` (2026-09-04) le sont aussi : sans elles les paramètres sont **ignorés** (flux DESC non borné, pas de fin). Référence faisant foi : `cocolight-backend/docs/response-schemas/cible-co2-search-agenda.md` (§ « Mode LISTE : bornes et tri OPTIONNELS ») et le registre BUG-L-258/259/260/261. Sonde de recette : `POST /co2/search/agenda` LISTE scopé avec `from`+`order=asc` → `results` tableau, `startDateSortFormat` ET `endDateSortFormat` sur chaque ligne, une ligne sans `startDate` sur un scope à récurrents.
 
 ---
 
