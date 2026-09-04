@@ -124,7 +124,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   const tAdmin = useT("modules/admin");
   // Colonnes : `"path"` brut OU `{path, label}` (libellé localisé) — cf. AdminColumnSchema.
   const columns = (resource.columns ?? ["name"]).map((c) =>
-    typeof c === "string" ? { path: c, label: undefined, type: undefined } : c,
+    typeof c === "string" ? { path: c, label: undefined, type: undefined, sortable: undefined } : c,
   );
   const rowActions = resource.rowActions ?? ["edit", "delete"];
   const costumSlug = (carrier as { slug?: string } | null)?.slug ?? "";
@@ -551,7 +551,14 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                   key={col.path}
                   aria-sort={sort?.col === col.path ? (sort.dir === 1 ? "ascending" : "descending") : "none"}
                 >
-                  {/* Vrai <button> (pattern shadcn data-table) : tri accessible au CLAVIER + aria-sort. */}
+                  {/* `sortable: false` → libellé simple : proposer un tri qui ne trie pas (colonne
+                      FABRIQUÉE après la requête, absente en base) coûterait le tri par défaut. */}
+                  {col.sortable === false ? (
+                    <span className={col.label ? "px-3 text-sm font-medium" : "px-3 text-sm font-medium capitalize"}>
+                      {col.label ? t(col.label) : col.path}
+                    </span>
+                  ) : (
+                  /* Vrai <button> (pattern shadcn data-table) : tri accessible au CLAVIER + aria-sort. */
                   <Button
                     variant="ghost"
                     size="sm"
@@ -561,6 +568,7 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                     {col.label ? t(col.label) : col.path}
                     {sort?.col === col.path && (sort.dir === 1 ? <ChevronUp className="ml-1 h-3 w-3 text-primary" /> : <ChevronDown className="ml-1 h-3 w-3 text-primary" />)}
                   </Button>
+                  )}
                 </TableHead>
               ))}
               {(adminMode || fieldStatus) && <TableHead>{tAdmin("AdminResourceTable.statusColumn")}</TableHead>}

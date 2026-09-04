@@ -163,6 +163,27 @@
         "enabled": true,
         "modalName": null
       }
+    },
+    "moderation/answers": {
+      "source": {
+        "notSourceKey": true,
+        "defaultFilters": {
+          "form": "6928096adf5caf0d230e7f26"
+        },
+        "defaultSortBy": {
+          "created": -1
+        },
+        "searchBy": [
+          "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdegc9sgox76p87n27",
+          "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdeggo91owe8t9ovl4p",
+          "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdmxv88txy6f5z6svg"
+        ]
+      },
+      "create": null,
+      "edit": {
+        "enabled": false,
+        "modalName": null
+      }
     }
   },
   "pages": {
