@@ -92,3 +92,58 @@ describe("eventOccurrence", () => {
     expect(end?.toISOString()).toBe("2026-08-16T00:00:00.000Z");
   });
 });
+
+describe("eventOccurrence — créneau qui franchit minuit", () => {
+  it("fermeture APRÈS minuit (21:00 → 01:00) : end au lendemain, pas avant le début", () => {
+    const start = new Date("2026-08-14T21:00:00"); // vendredi 21 h
+    const { end } = eventOccurrence(
+      ev({
+        startDateSortFormat: start.toISOString(),
+        openingHours: [{ dayOfWeek: dayCodeOf(start), hours: [{ opens: "21:00", closes: "01:00" }] }],
+      }),
+    );
+    expect(end!.getTime()).toBeGreaterThan(start.getTime());
+    expect(end?.getHours()).toBe(1);
+    expect(end?.getDate()).toBe(start.getDate() + 1);
+  });
+
+  it("fermeture à 00:00 (minuit) : lue comme la fin de la soirée, pas comme son début", () => {
+    const start = new Date("2026-08-14T20:00:00");
+    const { end } = eventOccurrence(
+      ev({
+        startDateSortFormat: start.toISOString(),
+        openingHours: [{ dayOfWeek: dayCodeOf(start), hours: [{ opens: "20:00", closes: "00:00" }] }],
+      }),
+    );
+    expect(end!.getTime()).toBeGreaterThan(start.getTime());
+    expect(end?.getDate()).toBe(start.getDate() + 1);
+  });
+});
+
+/**
+ * `endDateSortFormat` (fin d'occurrence calculée SERVEUR, fuseau de l'event, offset PHP sans deux-points)
+ * prime sur tout repli client : c'est elle qui rend « En cours » juste quel que soit le fuseau du visiteur.
+ */
+describe("eventOccurrence — endDateSortFormat (serveur) prioritaire", () => {
+  it("récurrent borné : end = endDateSortFormat, pas l'heure de fermeture recalculée côté client", () => {
+    const { start, end } = eventOccurrence(
+      ev({
+        startDateSortFormat: "2026-09-10T20:00:00+0200",
+        endDateSortFormat: "2026-09-11T00:00:00+0200", // créneau 20:00 → 00:00 : fin le LENDEMAIN (serveur)
+        openingHours: [{ dayOfWeek: "Th", hours: [{ opens: "20:00", closes: "00:00" }] }],
+      }),
+    );
+    expect(start?.toISOString()).toBe("2026-09-10T18:00:00.000Z");
+    expect(end?.toISOString()).toBe("2026-09-10T22:00:00.000Z");
+  });
+
+  it("ponctuel borné : endDateSortFormat (UTC +0000) prime sur endDate", () => {
+    const { end } = eventOccurrence(ev({ startDate: new Date("2026-09-04T16:30:00Z"), endDate: new Date("2026-09-04T18:30:00Z"), endDateSortFormat: "2026-09-04T18:30:00+0000" }));
+    expect(end?.toISOString()).toBe("2026-09-04T18:30:00.000Z");
+  });
+
+  it("endDateSortFormat null (ponctuel sans fin connue) → repli endDate puis openingHours, sinon null", () => {
+    const { end } = eventOccurrence(ev({ startDate: new Date("2026-09-04T16:30:00Z"), endDateSortFormat: null }));
+    expect(end).toBeNull();
+  });
+});

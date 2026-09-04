@@ -288,7 +288,11 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
                 lastAppliedRaw: hydratedRawRef.current[filter.id],
                 optionsReady: filter.optionsReady,
                 hasCurrentSelection: getDropdownSelectedValues(filter).length > 0,
-                optionIds: filter.options.map((o) => o.id),
+                // Options RÉSOLUES (socle de config + valeurs `costum.lists`) : la valeur de l'URL
+                // est rapprochée de leur id, de leur `value` ou de leur libellé — cf.
+                // `resolveFilterHydration`. Comparer aux seuls ids laissait tomber en silence les
+                // liens engendrés par un menu `dynamicList` du header.
+                options: filter.options,
             });
             if (decision.action === "wait") return;
             hydratedRawRef.current[filter.id] = raw;

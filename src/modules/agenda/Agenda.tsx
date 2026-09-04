@@ -25,13 +25,12 @@ import { searchByFieldsToQuery } from "@/modules/search/lib/searchByFieldsToQuer
 import { mergeMongoFilters } from "@/modules/search/lib/mongoFilters";
 import type { ListConf, SearchProStaticSectionProps } from "@/modules/search/schema";
 import { getEntryCoords } from "@/modules/search/lib/searchMapSelection";
-import type { AgendaBaseParams } from "./lib/buildAgendaParams";
+import type { AgendaBaseParams, AgendaListBounds } from "./lib/buildAgendaParams";
 import AgendaList from "./components/AgendaList";
 import { useAgendaCalendar } from "./hooks/useAgendaCalendar";
 import { useAgendaList } from "./hooks/useAgendaList";
 import { useAgendaClock } from "./hooks/useAgendaClock";
 import { partitionByTime } from "./lib/partitionByTime";
-import { eventOccurrence } from "./lib/eventDates";
 import { distinctTags, filterByTags } from "./lib/eventTags";
 import { readAgendaUrl, writeAgendaUrl, type AgendaFilterDefaults, type AgendaMode } from "./lib/agendaUrlParams";
 import type { AgendaSectionProps, AgendaTab } from "./schema";
@@ -157,12 +156,22 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
   const { now, upcomingEnd } = useAgendaClock(upcomingWindowMonths);
 
   // ── Fetch (gaté par hydratation + mode) — backend searchEventsCostum ────────
-  // Liste (les 3 onglets) : UN SEUL flux, mode LISTE paginé — ponctuels ET récurrents (le backend ne
-  // renvoie qu'une ligne par récurrent, sa prochaine occurrence), triés par date DÉCROISSANTE. Plus
-  // de fetch CALENDRIER dédié à « À venir »/« En cours » (l'ancien `upcomingFetch` sur une fenêtre de
-  // 12 mois ramenait une ligne par OCCURRENCE) : le mode LISTE fait le travail côté backend.
-  const needsEventList = mode === "list" || mode === "map"; // la carte agrège upcoming + past
-  const listFetch = useAgendaList({ type: typeParam, name: nameParam, baseParams: effectiveBaseParams, enabled: hydrated && needsEventList });
+  // Liste : DEUX flux en mode LISTE paginé, bornés et triés CÔTÉ SERVEUR (`from`/`to`/`order`, legacy
+  // 2026-09-04 + miroir Node) — une ligne par event, récurrents compris, le backend portant leur
+  // prochaine occurrence ET sa fin (`endDateSortFormat`) :
+  //  · `upcomingFetch` : from = now (ancre figée, rejouée à chaque page) → to = now + fenêtre, ASC :
+  //    les PROCHAINS d'abord, événements en cours en tête ; partitionné client En cours / À venir ;
+  //  · `pastFetch` : to = now, DESC, sans récurrent (une série n'a pas de passé) : les PASSÉS du plus
+  //    récent — chargé seulement quand l'onglet « Passés » est actif (ou pour la carte).
+  // Chaque onglet a sa propre pagination. Plus de flux DESC non borné retourné côté client : « À venir »
+  // ne dépend plus de la taille de page. (Ni fetch CALENDRIER : il déplie une ligne par OCCURRENCE.)
+  const needsEventList = mode === "list" || mode === "map"; // la carte agrège prochains + passés
+  const wantsUpcoming = mode === "map" || tab !== "past";
+  const wantsPast = mode === "map" || tab === "past";
+  const upcomingBounds = useMemo<AgendaListBounds>(() => ({ from: now, to: upcomingEnd, order: "asc" }), [now, upcomingEnd]);
+  const pastBounds = useMemo<AgendaListBounds>(() => ({ to: now, order: "desc", recurrency: false }), [now]);
+  const upcomingFetch = useAgendaList({ type: typeParam, name: nameParam, baseParams: effectiveBaseParams, bounds: upcomingBounds, enabled: hydrated && needsEventList && wantsUpcoming });
+  const pastFetch = useAgendaList({ type: typeParam, name: nameParam, baseParams: effectiveBaseParams, bounds: pastBounds, enabled: hydrated && needsEventList && wantsPast });
   // Calendrier : plage = mois visible (refetch à la navigation via onRangeChange). Toujours en mode
   // CALENDRIER (inchangé) — la grille a besoin d'une case par occurrence dans le mois affiché.
   const [calRange, setCalRange] = useState(() => ({ start: startOfMonth(now), end: endOfMonth(now) }));
@@ -181,53 +190,50 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
   // fait que grandir au fil des chargements. On y inclut TOUJOURS `selectedTags` → un tag actif
   // reste proposable dans toutes les vues. Set + re-tri = liste dédupliquée/triée.
   const availableTags = useMemo(() => {
-    const set = new Set<string>([...distinctTags([...listFetch.events, ...gridFetch.events]), ...selectedTags]);
+    const set = new Set<string>([...distinctTags([...upcomingFetch.events, ...pastFetch.events, ...gridFetch.events]), ...selectedTags]);
     return [...set].sort((a, b) => a.localeCompare(b));
-  }, [listFetch.events, gridFetch.events, selectedTags]);
+  }, [upcomingFetch.events, pastFetch.events, gridFetch.events, selectedTags]);
 
-  // Vue LISTE : une entrée par event — le backend ne renvoie qu'une occurrence par récurrent en mode
-  // LISTE (une ligne par event, pas de déduplication côté client nécessaire).
+  // Vue LISTE : partition client de chaque flux — une SEULE définition de « en cours »/« passé »
+  // (`eventTimeBucket` via partitionByTime), la fin d'occurrence venant du serveur (endDateSortFormat).
+  // Le flux « prochains » arrive déjà croissant (serveur) : plus de reverse() ni de fenêtre client
+  // (`upcomingWindowMonths` est passé au serveur en borne haute `to`).
   const { ongoing, upcoming } = useMemo(() => {
-    const buckets = partitionByTime(filterByTags(listFetch.events, selectedTags), now);
-    // `upcomingWindowMonths` (contrat de la prop, inchangé) : borne haute de « À venir ». Le flux
-    // brut est trié décroissant côté backend (adapté à « Passés ») → remis croissant (le plus
-    // proche d'abord) pour l'affichage.
-    const withinWindow = buckets.upcoming.filter((e) => {
-      const { start } = eventOccurrence(e);
-      return start != null && start.getTime() <= upcomingEnd.getTime();
-    });
-    return { ongoing: buckets.ongoing, upcoming: withinWindow.reverse() };
-  }, [listFetch.events, selectedTags, now, upcomingEnd]);
-  const past = useMemo(
-    () =>
-      filterByTags(
-        listFetch.events.filter((e) => {
-          const { start, end } = eventOccurrence(e);
-          const eff = end ?? start;
-          return eff != null && eff.getTime() < now.getTime();
-        }),
-        selectedTags,
-      ),
-    [listFetch.events, selectedTags, now],
-  );
+    const b = partitionByTime(filterByTags(upcomingFetch.events, selectedTags), now);
+    return { ongoing: b.ongoing, upcoming: b.upcoming };
+  }, [upcomingFetch.events, selectedTags, now]);
+  // Un ponctuel multi-jours EN COURS (commencé avant now, pas terminé) est servi par les DEUX flux
+  // (« commencé avant now » ET « pas encore terminé ») : il appartient à En cours, pas à Passés.
+  const past = useMemo(() => partitionByTime(filterByTags(pastFetch.events, selectedTags), now).past, [pastFetch.events, selectedTags, now]);
   const calendarEvents = useMemo(() => filterByTags(gridFetch.events, selectedTags), [gridFetch.events, selectedTags]);
-  // Carte + liste du split : GÉOLOCALISÉS uniquement (mêmes que les marqueurs), filtrée tags — même
-  // flux liste que ongoing/upcoming/past (passés non bornés, comme avant ; futurs bornés à
-  // `upcomingWindowMonths`, même contrat que le bucket « upcoming »). Le filtre géo utilise
-  // `getEntryCoords` — exactement le critère de rendu d'un marqueur.
+  // Carte + liste du split : GÉOLOCALISÉS uniquement (mêmes que les marqueurs), filtrée tags — union des
+  // deux flux (prochains bornés à la fenêtre, passés non bornés), dédoublonnée (multi-jours en cours
+  // présent dans les deux). Le filtre géo utilise `getEntryCoords` — exactement le critère d'un marqueur.
   const mapEvents = useMemo(() => {
-    const geolocated = listFetch.events.filter((ev) => {
-      if (!getEntryCoords(ev as unknown as SearchEntity)) return false; // sans géoloc → ni marqueur ni ligne
-      const { start } = eventOccurrence(ev);
-      return start == null || start.getTime() < now.getTime() || start.getTime() <= upcomingEnd.getTime();
+    const seen = new Set<string>();
+    const geolocated = [...upcomingFetch.events, ...pastFetch.events].filter((ev) => {
+      const id = (ev as { id?: string | null }).id ?? "";
+      if (id) {
+        if (seen.has(id)) return false;
+        seen.add(id);
+      }
+      return !!getEntryCoords(ev as unknown as SearchEntity); // sans géoloc → ni marqueur ni ligne
     });
     return filterByTags(geolocated, selectedTags);
-  }, [listFetch.events, selectedTags, now, upcomingEnd]);
+  }, [upcomingFetch.events, pastFetch.events, selectedTags]);
 
-  // `limit` (teaser home) : plafonne chaque bucket ; sinon tous (+ « charger plus », flux partagé).
+  // `limit` (teaser home) : plafonne chaque bucket ; sinon tous (+ « charger plus » par onglet).
   const cap = (arr: typeof past) => (limit ? arr.slice(0, limit) : arr);
-  const buckets: Record<AgendaTab, typeof past> = { ongoing: cap(ongoing), upcoming: cap(upcoming), past: cap(past) };
-  const listLoading = listFetch.isLoading;
+  // Teaser « À venir » (sans onglets) : les PROCHAINS au sens du flux serveur — en cours COMPRIS, en
+  // tête (« les 3 prochaines réunions » doit montrer celle qui a lieu maintenant ; sinon, sur un scope
+  // chargé, une page entière d'événements en cours laisse le teaser vide alors que la donnée existe).
+  const teaserUpcoming = !showTabs && tab === "upcoming";
+  const buckets: Record<AgendaTab, typeof past> = {
+    ongoing: cap(ongoing),
+    upcoming: cap(teaserUpcoming ? [...ongoing, ...upcoming] : upcoming),
+    past: cap(past),
+  };
+  const listLoading = tab === "past" ? pastFetch.isLoading : upcomingFetch.isLoading;
 
   // ── Détail au clic (partagé liste/calendrier) ──────────────────────────────
   const [openDetails, setOpenDetails] = useState(false);
@@ -549,11 +555,14 @@ export function Agenda({ props }: { props: AgendaSectionProps }) {
           preview={preview}
           columns={columns}
           showTabs={showTabs}
-          // Teaser (limit) : pas de « charger plus » — on plafonne déjà les buckets. Flux partagé
-          // par les 3 onglets (mode LISTE unique) → disponible quel que soit l'onglet actif.
-          hasMore={!limit && listFetch.hasNextPage}
-          onLoadMore={() => listFetch.fetchNextPage()}
-          loadingMore={listFetch.isFetchingNextPage}
+          // Teaser (limit) : pas de « charger plus » — on plafonne déjà les buckets. Sinon, pagination
+          // PAR ONGLET : En cours/À venir sur le flux « prochains », Passés sur le sien.
+          hasMore={limit ? undefined : { ongoing: upcomingFetch.hasNextPage, upcoming: upcomingFetch.hasNextPage, past: pastFetch.hasNextPage }}
+          onLoadMore={(tb) => {
+            if (tb === "past") void pastFetch.fetchNextPage();
+            else void upcomingFetch.fetchNextPage();
+          }}
+          loadingMore={{ ongoing: upcomingFetch.isFetchingNextPage, upcoming: upcomingFetch.isFetchingNextPage, past: pastFetch.isFetchingNextPage }}
         />
       )}
 

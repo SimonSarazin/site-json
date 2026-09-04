@@ -16,6 +16,7 @@ import { useToolsCatalog } from "../hooks/useToolsCatalog";
 import { ToolCard } from "./ToolCard";
 import { ToolListRow } from "./ToolListRow";
 import { ToolFilters } from "./ToolFilters";
+import { ToolFiltersSheet } from "./ToolFiltersSheet";
 import { ToolDetailDialog } from "./ToolDetailDialog";
 import { ToolsCatalogSkeleton, ToolFiltersSkeleton } from "./ToolsCatalogSkeleton";
 
@@ -160,9 +161,12 @@ export function ToolsCatalog({ props }: { props: ToolsCatalogSectionProps }) {
             : ""
         }
       >
-        {/* Barre latérale de filtres (catégorie / sous-catégorie) */}
+        {/* Barre latérale de filtres (catégorie / sous-catégorie).
+            Desktop uniquement : sous `lg` elle s'empilait au-dessus de la
+            colonne principale et repoussait recherche et résultats hors écran.
+            Sur petit écran, mêmes filtres via `ToolFiltersSheet`. */}
         {showSidebar && (
-          <aside className="mb-6 rounded-xl border border-border bg-muted/30 p-4 lg:mb-0 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:self-start lg:overflow-y-auto">
+          <aside className="hidden rounded-xl border border-border bg-muted/30 p-4 lg:sticky lg:top-4 lg:mb-0 lg:block lg:max-h-[calc(100vh-2rem)] lg:self-start lg:overflow-y-auto">
             {hasFacets ? (
               <ToolFilters
                 facets={facets}
@@ -188,18 +192,35 @@ export function ToolsCatalog({ props }: { props: ToolsCatalogSectionProps }) {
               au bouton de réponse. */}
           <div className="mb-4 flex flex-col gap-3">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              {props.showSearch !== false && (
-                <div className="relative w-full sm:max-w-md">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    type="search"
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    placeholder={placeholder}
-                    className="pl-9"
+              {/* Recherche + accès aux filtres sur une seule ligne en mobile :
+                  le champ prend la place restante, le bouton garde la sienne. */}
+              <div className="flex w-full items-center gap-2 sm:max-w-md">
+                {props.showSearch !== false && (
+                  <div className="relative flex-1">
+                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      type="search"
+                      value={searchInput}
+                      onChange={(e) => setSearchInput(e.target.value)}
+                      placeholder={placeholder}
+                      className="pl-9"
+                    />
+                  </div>
+                )}
+                {showSidebar && (
+                  <ToolFiltersSheet
+                    className="lg:hidden"
+                    facets={facets}
+                    category={category}
+                    usage={usage}
+                    showCategory={showCategory}
+                    showUsage={showUsage}
+                    hasFacets={hasFacets}
+                    onCategoryChange={handleCategoryChange}
+                    onUsageChange={setUsage}
                   />
-                </div>
-              )}
+                )}
+              </div>
               <div className="flex shrink-0 items-center gap-2">
                 {props.showOpenSourceToggle && (
                   <button

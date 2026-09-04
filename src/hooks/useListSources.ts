@@ -132,9 +132,25 @@ export function useListEntries(
   // `join` plutôt que la référence : react-query rend un tableau neuf à chaque rendu, une dépendance
   // par identité relancerait le mémo en boucle. L'état RÉGLÉ et la troncature en font partie, sans
   // quoi le passage « en cours » vers « réglé » ne rejouerait rien.
+  //
+  // Joint sur `SEP` et non sur la chaîne vide : concaténer sans séparateur rend deux listes
+  // DIFFÉRENTES indiscernables (`["ab","c"]` et `["a","bc"]` donnent la même empreinte), et le mémo
+  // garderait alors les anciennes sources. Les `variants` en font partie pour la même raison : une
+  // graphie NOUVELLE apparue en base derrière une valeur déjà connue ne change pas `values`, mais
+  // change ce que le filtre doit interroger — sans elle dans l'empreinte, cette graphie resterait
+  // hors du filtre jusqu'au prochain montage.
   const empreinte = resultats
-    .map((r, i) => (regles[i] ? "1" : "0") + (r.data?.tronque ? "T" : "") + (r.data?.values ?? AUCUNE_VALEUR).join(""))
-    .join("");
+    .map(
+      (r, i) =>
+        (regles[i] ? "1" : "0") +
+        (r.data?.tronque ? "T" : "") +
+        (r.data?.values ?? AUCUNE_VALEUR).join(SEP) +
+        SEP +
+        Object.entries(r.data?.variants ?? {})
+          .map(([v, g]) => v + "=" + (g ?? []).join(SEP))
+          .join(SEP),
+    )
+    .join(SEP);
 
   return useMemo(() => {
     const parCle = new Map<string, ResolutionParCle>();

@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { buildDynamicNavChildren, DEFAULT_DYNAMIC_NAV_LIMIT } from "./dynamicNav";
+import { resolveFilterHydration } from "@/modules/search/lib/hydrateDropdownFilter";
+import { resolveListSources } from "@/lib/listSources";
+import type { DropdownOptionConfig } from "@/modules/search/lib/dropdownFilters";
 
 /** Reproduit exactement la lecture côté `SearchHeaderSection.tsx` (`raw.split(",")` puis
  *  `decodeURIComponent` par segment) — sert à prouver l'aller-retour URL, pas seulement la forme
@@ -51,5 +54,65 @@ describe("buildDynamicNavChildren", () => {
 
   it("liste vide : aucun enfant", () => {
     expect(buildDynamicNavChildren(owner, [])).toEqual([]);
+  });
+});
+
+/**
+ * L'aller-retour qui compte VRAIMENT : le lien engendré doit non seulement se relire (ci-dessus),
+ * mais être RECONNU par l'hydratation de la page cible. Les deux étaient dissociés, et le lien
+ * passait la première épreuve en échouant la seconde : le menu porte la valeur BRUTE de
+ * `costum.lists` (« La santé »), alors que l'option de la page cible vient du socle de config et
+ * garde son id de SLUG (`optionsFrom.withDeclared`). L'hydratation ne comparait qu'aux ids →
+ * `skip` : bonne page, AUCUN filtre, aucune erreur, aucune trace.
+ */
+describe("menu dynamicList → hydratation du filtre de la page cible", () => {
+  const owner = { pathname: "/theme", filter: { id: "theme" } };
+  /** Options telles que `useDynamicFilterOptions` les rend avec `withDeclared` : le socle déclaré
+   *  garde son id de slug, sa `value` étant la graphie stockée en base. */
+  const optionsDeLaPage: DropdownOptionConfig[] = [
+    { id: "la-sante", value: "La santé", label: { fr: "La santé", en: "Health" } },
+    { id: "les-jeux", value: "Les jeux", label: { fr: "Les jeux", en: "Games" } },
+    // Valeur présente en base SEULEMENT (hors socle) : son id EST la valeur.
+    { id: "Alimentation", value: "Alimentation", label: "Alimentation" },
+  ] as unknown as DropdownOptionConfig[];
+
+  /** Ce que fait `SearchHeaderSection` : lire le param, puis décider. */
+  const hydrater = (path: string) =>
+    resolveFilterHydration({
+      raw: new URLSearchParams(path.split("?")[1]).get("theme") ?? "",
+      lastAppliedRaw: undefined,
+      optionsReady: true,
+      hasCurrentSelection: false,
+      options: optionsDeLaPage,
+    });
+
+  it("valeur du socle : le filtre est appliqué, sous l'id de l'option", () => {
+    const { values } = resolveListSources([{ values: ["La santé"] }]);
+    const [child] = buildDynamicNavChildren(owner, values);
+    expect(hydrater(child.path!)).toEqual({ action: "apply", ids: ["la-sante"] });
+  });
+
+  it("valeur présente en base seulement : appliquée telle quelle", () => {
+    const [child] = buildDynamicNavChildren(owner, ["Alimentation"]);
+    expect(hydrater(child.path!)).toEqual({ action: "apply", ids: ["Alimentation"] });
+  });
+
+  it("valeur à virgule littérale : le double encodage survit jusqu'à l'option", () => {
+    const options = [{ id: "salon", value: "Salon professionnel," , label: "Salon professionnel," }] as unknown as DropdownOptionConfig[];
+    const [child] = buildDynamicNavChildren(owner, ["Salon professionnel,"]);
+    expect(
+      resolveFilterHydration({
+        raw: new URLSearchParams(child.path!.split("?")[1]).get("theme") ?? "",
+        lastAppliedRaw: undefined,
+        optionsReady: true,
+        hasCurrentSelection: false,
+        options,
+      }),
+    ).toEqual({ action: "apply", ids: ["salon"] });
+  });
+
+  it("valeur qu'aucune option ne porte : skip (une liste retirée ne casse pas la page)", () => {
+    const [child] = buildDynamicNavChildren(owner, ["Thème disparu"]);
+    expect(hydrater(child.path!)).toEqual({ action: "skip" });
   });
 });

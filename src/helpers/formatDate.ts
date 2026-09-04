@@ -4,6 +4,14 @@ const toDate = (date: Date | string | number): Date =>
   date instanceof Date ? date : new Date(date);
 
 /**
+ * ISO 8601 « PHP » (`DateTime::ISO8601`) : offset SANS deux-points (`2026-08-14T09:00:00+0200`) — c'est
+ * la forme de `startDateSortFormat`/`endDateSortFormat` de `/co2/search/agenda`. V8 l'accepte, tous les
+ * moteurs non (WebKit rend `Invalid Date`) → normalisé en `+02:00` avant parse.
+ */
+const PHP_ISO_OFFSET = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?)([+-]\d{2})(\d{2})$/;
+export const normalizeIsoOffset = (s: string): string => s.replace(PHP_ISO_OFFSET, "$1$2:$3");
+
+/**
  * Parse TOLÉRANT → Date VALIDE ou `null` (Date | string ISO | number ; ignore vide/invalide).
  * Source unique du `toDate`-validant dupliqué dans les cards/previews de recherche (cf.
  * cartographie « toDate ×N »). NB : diffère du `toDate` local (non-validant, usage interne format*).
@@ -11,7 +19,7 @@ const toDate = (date: Date | string | number): Date =>
 export const toValidDate = (value: unknown): Date | null => {
   if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
   if (typeof value === "string" && value.trim()) {
-    const d = new Date(value.trim());
+    const d = new Date(normalizeIsoOffset(value.trim()));
     return Number.isNaN(d.getTime()) ? null : d;
   }
   if (typeof value === "number") {

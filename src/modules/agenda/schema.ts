@@ -11,10 +11,12 @@ export const AGENDA_TABS = ["ongoing", "upcoming", "past"] as const;
  * GRILLE calendrier (grille mois maison Tailwind/shadcn, refetch à la navigation).
  * Filtres : type + texte (backend) et tags (client).
  *
- * ⚠ La LISTE n'a qu'UN SEUL flux backend, commun aux 3 onglets : `searchEventsCostum` SANS bornes de
- * dates, trié `startDate` DÉCROISSANT et paginé par `baseParams.indexStepList` ; le partitionnement
- * en onglets est CLIENT (`partitionByTime`). Conséquence pour un teaser : la page demandée doit être
- * assez large pour contenir le bucket visé — cf. `limit` et `baseParams.indexStepList` ci-dessous.
+ * La LISTE repose sur DEUX flux `searchEventsCostum` en mode LISTE, bornés et triés CÔTÉ SERVEUR
+ * (`from`/`to`/`order`, legacy 2026-09-04 + miroir Node) : « prochains » (from = maintenant, ASC,
+ * en cours en tête → onglets En cours / À venir) et « passés » (to = maintenant, DESC, sans récurrent
+ * → onglet Passés), chacun paginé par `baseParams.indexStepList`. Une ligne par event, récurrents
+ * compris (prochaine occurrence + fin calculées serveur). Un teaser `limit: 3` reçoit donc bien les
+ * 3 prochains, quelle que soit la taille de page.
  */
 export const AgendaSectionSchema = z.object({
   type: z.literal("agenda"),
@@ -36,13 +38,11 @@ export const AgendaSectionSchema = z.object({
       })
       .optional(),
     /**
-     * Plafond d'AFFICHAGE par bucket (teaser home). Absent = tous (+ « charger plus » pour Passés).
+     * Plafond d'AFFICHAGE par bucket (teaser home). Absent = tous (+ « charger plus » par onglet).
      *
-     * ⚠ Ce n'est PAS la taille du fetch : il s'applique APRÈS le partitionnement client d'un flux
-     * trié DESC, tous buckets mêlés. `limit: 3` avec `baseParams.indexStepList: 3` ne ramène donc
-     * pas « les 3 prochains » mais les 3 events les plus LOINTAINS, dont il ne reste que ceux qui
-     * tombent dans le bucket — souvent moins que 3, parfois zéro. Garder `indexStepList`
-     * confortablement au-dessus de `limit` (20, le défaut `AGENDA_DEFAULT_INDEX_STEP`, convient).
+     * Le flux étant trié et borné côté serveur (les prochains d'abord), `limit: 3` ramène bien les
+     * 3 prochains. En teaser « À venir » (`showTabs: false`), les événements EN COURS sont comptés
+     * parmi les prochains (en tête) — « les 3 prochaines réunions » inclut celle qui a lieu maintenant.
      */
     limit: z.number().int().positive().optional(),
     /** Afficher le toggle Liste/Calendrier (false = teaser : vue figée à `defaultMode`). */
@@ -87,10 +87,28 @@ export const AgendaSectionSchema = z.object({
         // `notSourceKey`. Cf. `applyValidationGate`.
         costumSlug: z.string().optional(),
         /**
-         * Taille de page du flux LISTE (`searchEventsCostum`, `startDate` DESC, tous buckets mêlés).
-         * Sur un teaser, c'est elle qui décide de ce que le bucket peut contenir — pas `limit`.
+         * Taille de page de CHAQUE flux LISTE (`searchEventsCostum` borné/trié serveur : prochains ASC,
+         * passés DESC). Défaut 20 (`AGENDA_DEFAULT_INDEX_STEP`). Sur un teaser : ≥ `limit` suffit.
          */
         indexStepList: z.number().int().positive().optional(),
+        /**
+         * Inclure les événements RÉCURRENTS (ceux qui portent des créneaux `openingHours` au lieu
+         * d'une date). ABSENT = inclus — le défaut du serveur, et le comportement historique.
+         *
+         * `false` pour un site dont l'agenda ne parle que de dates uniques : une série hebdomadaire
+         * y occupe une ligne permanente (« Chaque mardi ») qui ne descend jamais dans la liste, et
+         * noie les rendez-vous ponctuels. S'applique aux DEUX modes — flux liste (la requête des
+         * récurrents est sautée) et grille calendrier (les clauses `openingHours.dayOfWeek` ne sont
+         * pas posées).
+         *
+         * ⚠ Sans effet sur l'onglet « Passés », qui exclut les récurrents en toutes circonstances :
+         * une série ne renvoie que sa PROCHAINE occurrence, jamais ses occurrences révolues — l'y
+         * laisser afficherait un événement à venir dans l'onglet du passé (cf. `pastBounds`).
+         *
+         * ⚠ La config n'est jamais parsée par Zod au runtime : ne pas compter sur un `.default()`
+         * ici, le repli « absent = inclus » vit dans `fromBaseParams` (clé simplement non émise).
+         */
+        recurrency: z.boolean().optional(),
         fediverse: z.boolean().optional(),
         filters: z.record(z.string(), z.unknown()).optional(),
         locality: z.record(z.string(), z.unknown()).optional(),
