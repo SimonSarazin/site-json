@@ -57,7 +57,14 @@ export function ProseContent({ text, className, forceMarkdown = false }: { text:
   const rawHtml = isHtml ? text : markdownParser.render(text);
   return (
     <div
-      className={className}
+      // `wrap-anywhere` (overflow-wrap: anywhere) : ces textes sont saisis par des
+      // admins et contiennent des URL entières. Un mot insécable plus large que sa
+      // colonne pousse toute la chaîne — mesuré à 352 px dans une colonne de 308 —
+      // et la modale, qui a `overflow-y-auto` (donc `overflow-x: auto` imposé par
+      // CSS), se met alors à défiler latéralement. `anywhere` plutôt que
+      // `break-words` : lui seul réduit aussi la largeur min-content, ce qui compte
+      // ici puisque ces blocs sont des items de grille.
+      className={cn("wrap-anywhere", className)}
       dangerouslySetInnerHTML={{ __html: sanitize(rawHtml) }}
       suppressHydrationWarning
     />
