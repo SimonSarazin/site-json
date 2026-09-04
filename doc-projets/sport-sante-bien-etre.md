@@ -428,8 +428,10 @@ défaut) et le `rightSection` la liste en presenter `resource`. Seuls les docume
 (`status: "Visible"`) y paraissent — les brouillons restent au back-office. Chaque thématique porte
 sa couleur (5 tokens `chart*` + `primary`/`accent`, **aucune couleur en dur**) et son icône lucide.
 **Elle ferme un lien mort** : la tuile « Rapports & Publications » de `/espace-professionnels`
-pointait vers `/ressources` — l'audit passe de **4 à 3** constats (§13, question 1). La page n'est
-PAS dans la nav du header (4 entrées, volontairement courte) : elle s'atteint par cette tuile.
+pointait vers `/ressources` — l'audit passe de **4 à 3** constats (§13, question 1). Elle est aussi
+dans la nav (`a6584b0e`) : entrée **« Ressources »** du dropdown **Professionnels**, en 2ᵉ position —
+après le hub, avant les entrées d'action (Labelliser, Formation), parce que c'est une bibliothèque
+et non une démarche. Icône `book-open`, la même que le formulaire et l'onglet d'administration.
 
 **Un manque du moteur, comblé** (`425cfa7e`, générique) : le presenter `resource` mappait déjà
 valeur→couleur et valeur→icône mais affichait la valeur **stockée** telle quelle — une pastille
@@ -516,5 +518,5 @@ pertinent ici : SSBE a un back-office `/admin` à 7 onglets (§4.3).
 | 4 | Les 6 formulaires déclarent **169 champs dont 115 placés** (re-dérivé le 03/08 ; trois vestiges purgés le 30/07 : `facebook`, `instagram`, `recepisseDeclaration`). Faut-il purger les vestiges restants — dont `youtube`/`linkedin`/`autreDescription` sur `organizations` —, ou certains sont-ils attendus par le backend en écriture ? | Thomas |
 | 5 | `/communaute` → onglet « Organisations » : l'id `682b2ac5e05a1d45844340e7` est-il périmé, ou aucune organisation n'a-t-elle jamais été rattachée ? | Thomas |
 | 6 | Rendu navigateur et mode sombre : à parcourir sur les 19 pages | Thomas |
-| 7 | ~~Page publique `/ressources`~~ — **FAITE le 02/09** (§9) : filtre latéral par thématique + recherche par nom. Elle a fermé le lien mort « Rapports & Publications » de la question 1 (audit 4 → 3). Reste ouvert : faut-il une entrée de nav dans le header, ou la tuile suffit-elle ? | Thomas |
+| 7 | ~~Page publique `/ressources`~~ — **FAITE le 02/09** (§9) : filtre latéral par thématique + recherche par nom. Elle a fermé le lien mort « Rapports & Publications » de la question 1 (audit 4 → 3). Entrée de nav ajoutée le 02/09 dans le dropdown Professionnels. **Reste un point de rédaction** : le hub « Espace professionnels » se décrit comme « Ressources et outils pour les pros », juste au-dessus d'une entrée « Ressources » — redondance légère, à retoucher si elle gêne | Thomas |
 | 8 | **Thématique affichée en clé** dans le listing admin (`mss`, `has`…) : `formatCell` ne résout aucune énumération, et seul le mode `statusField` sait mapper une valeur vers un libellé. Vit-on avec (compact, sans ambiguïté pour un usage interne), ou ajoute-t-on au schéma des colonnes admin une table de libellés — utile bien au-delà de ce site ? | Thomas |
