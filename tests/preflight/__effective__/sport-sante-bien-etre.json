@@ -72,6 +72,11 @@
           "declare": "edit-sport-sante-bienetre-recovery-center",
           "native": "edit-sport-sante-bienetre-recovery-center",
           "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-sport-sante-bienetre-ressource",
+          "native": "edit-sport-sante-bienetre-ressource",
+          "horsPerimetre": "edit-profile"
         }
       ]
     }
@@ -159,6 +164,28 @@
         }
       },
       "create": "add-sport-sante-bienetre-session-formation",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "ressources/poi": {
+      "source": {
+        "sourceKey": [
+          "sportSanteBienetre"
+        ],
+        "defaultFilters": {
+          "type": "ressource"
+        },
+        "defaultSortBy": {
+          "created": -1
+        },
+        "searchBy": [
+          "name",
+          "description"
+        ]
+      },
+      "create": "add-sport-sante-bienetre-ressource",
       "edit": {
         "enabled": true,
         "modalName": null
