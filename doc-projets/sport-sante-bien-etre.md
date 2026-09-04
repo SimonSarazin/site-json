@@ -381,7 +381,9 @@ relancé, avec la recette navigateur (§10, ligne 16).
 
 ### Lot du 02/09 (2) — documents ressources dans le back-office
 
-> Commits : `a469da78` (site) · dépôt costum `bf66a550f` (déclaration en base).
+> Commits : `a469da78` (site) · `21c961a0` (description en markdown) · dépôt costum
+> `bf66a550f` (déclaration en base). Lot posé APRÈS le merge de `main` dans `judi-ssbe`
+> (`1cc73861`), qui apporte le module ressources d'Ekilib.re **et son correctif** `76a47a8d`.
 
 Transposition du module ressources d'[Ekilib.re](maison-sport-sante-la-tampon.md), **0 code
 front** : `formEngine` (widgets `file`/`urlList`/`select`) et la table admin en mode
@@ -410,6 +412,14 @@ Le nom de champ évite `thematic`, déjà une taxonomie du costum SSBE (Sport, S
 sinon le SDK écarte `thematique`/`status` **en silence** à la création et les rejette à l'édition
 (`[DraftProxy] Le champ … n'est pas autorisé`). Action URL dédiée :
 `http://<host>/costum/ssbeMigration/declareRessourceType` (dry run) puis `/apply/1`.
+
+**Deux enseignements repris du correctif `76a47a8d` du site frère**, arrivé par le merge :
+`description` est en **`markdown`** et non `textarea` (le presenter `resource` rend ce champ en
+markdown — sinon l'auteur saisit du texte brut pendant que le lecteur voit du markdown interprété) ;
+et la garde `costum-form-contract` **ignore silencieusement** tout champ absent du contrat live
+(`tests/preflight/__contract__/costum-types.live.json`, ligne 113 : « champ CŒUR »). `thematique`
+n'y est donc pas encore audité — il le sera **une fois `declareRessourceType` joué**, ce qui
+imposera de **régénérer cette fixture**, exactement comme `76a47a8d` l'a fait pour Ekilib.re.
 
 **Gates (02/09, backend revenu)** : `config:validate` ✅ 19 pages / 61 sections · `audit:config`
 🟡 4 constats préexistants, `strip: 0` · `test:preflight` ✅ **553** · `tsc -b` ✅ · lint ✅
