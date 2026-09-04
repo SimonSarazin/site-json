@@ -14,7 +14,7 @@
 > [Module Profil](../doc/08-module-profil.md). Mémoire : `[[project-sport-sante-bien-etre]]`.
 
 Dernière mise à jour : **2026-09-02** (branche `judi-ssbe` : les créneaux deviennent
-contributifs et modérables — cf. §9, lot du 02/09). Le lot précédent, du 03/08, portait les
+contributifs et modérables, et le back-office gagne les documents ressources — cf. §9). Le lot précédent, du 03/08, portait les
 réseaux sociaux au patron `fieldArray`, le retrait de `recepisseDeclaration` et le re-sondage
 des périmètres.
 **4 décisions de contenu sont en attente** — cf. §13.
@@ -379,6 +379,46 @@ constats, les 4 mêmes qu'au 03/08** (liens morts §13, inchangés) et `strip: 0
 sur les 285 réponses, qui a vraisemblablement saturé PHP-FPM. **À rejouer** une fois le backend
 relancé, avec la recette navigateur (§10, ligne 16).
 
+### Lot du 02/09 (2) — documents ressources dans le back-office
+
+> Commits : `a469da78` (site) · dépôt costum `bf66a550f` (déclaration en base).
+
+Transposition du module ressources d'[Ekilib.re](maison-sport-sante-la-tampon.md), **0 code
+front** : `formEngine` (widgets `file`/`urlList`/`select`) et la table admin en mode
+`statusField` sont réutilisés tels quels. Une ressource = un **POI** scopé
+`source.keys: sportSanteBienetre`, avec `thematique` et `status` (Visible / **Brouillon** par
+défaut — pas de publication accidentelle). Trois morceaux de config :
+`costumForms["sport-sante-bienetre-ressource"]` · onglet admin **« Ressources »** (`siteAdmin` :
+listing, création, édition, suppression) · route `edit-sport-sante-bienetre-ressource` dans
+`profiles.poi.editModals`, **bornée au costum** (`sourceKeys contains sportSanteBienetre` —
+le snapshot effectif le prouve : un POI étranger retombe sur `edit-profile`).
+
+**Le sous-type est DÉDIÉ, et c'est le point qui distingue SSBE d'Ekilib.re.** Ekilib.re porte ses
+ressources sur `recoveryCenter` ; ici ce sous-type est **déjà pris** par « Équipements Sportifs »
+(déclaré dans `costum.typeObj`, avec son onglet admin « lieux » et son propre formulaire d'ajout).
+Les y mêler aurait pollué les deux listings. D'où un sous-type **`ressource`**, déclaré à part.
+
+**Thématiques** (7 valeurs fournies par le porteur) : `mss` · `rapports` · `has` · `guides` ·
+`outils` · `communication` · `financements`. Le champ stocke la **clé**, pas le libellé : le site
+est bilingue fr/en, un libellé français en base rendrait la version anglaise fausse et imposerait
+une migration de données à chaque retouche de formulation. ⚠️ **Conséquence assumée** : la colonne
+« Thématique » du listing admin affiche la clé brute (`formatCell` ne résout aucune énumération) ;
+si l'affichage du libellé est souhaité, c'est une évolution du schéma des colonnes admin (§13).
+Le nom de champ évite `thematic`, déjà une taxonomie du costum SSBE (Sport, Santé/prévention…).
+
+⚠️ **Prérequis dur, à rejouer en PROD** : `costum.typeObj.ressource` doit être déclaré en base,
+sinon le SDK écarte `thematique`/`status` **en silence** à la création et les rejette à l'édition
+(`[DraftProxy] Le champ … n'est pas autorisé`). Action URL dédiée :
+`http://<host>/costum/ssbeMigration/declareRessourceType` (dry run) puis `/apply/1`.
+
+**Gates (02/09, backend revenu)** : `config:validate` ✅ 19 pages / 61 sections · `audit:config`
+🟡 4 constats préexistants, `strip: 0` · `test:preflight` ✅ **553** · `tsc -b` ✅ · lint ✅
+0 erreur · snapshot régénéré (2 ajouts : la route d'édition et `ressources/poi`) ·
+**`config:render` ✅ 19/19 pages, 61/61 sections** · **`config:probe` 9 périmètres — 7 OK,
+2 vides** (pages 4 et 11, **antérieurs à ce lot** ; la doc en notait 1 au 03/08, un second a dérivé
+depuis). `/creneaux` remonte bien ses **285** réponses, ce qui valide au passage le `notSourceKey`
+du lot précédent.
+
 ---
 
 ## 10. Checklist d'avancement
@@ -403,6 +443,7 @@ relancé, avec la recette navigateur (§10, ligne 16).
 | 16 | Créneaux — ajouter / modifier depuis `/creneaux` | ✅ config | `addButton` (`adminOnly: false`) + `preview.editButton` (02/09, §9) — **recette navigateur à faire** (backend indisponible en fin de session) |
 | 17 | Créneaux — « Fiche structure » réservée aux gestionnaires | ✅ | `card.structureAction.audience: "managers"` + gate `isCoformAnswerManager` sous `useHydrated` (02/09, §9) ; 12 tests dont 2 de parité SSR |
 | 18 | Créneaux — modération dans le back-office | ✅ config | Onglet `moderation` en mode `statusField`, 57 en attente à traiter (02/09, §9) — **recette à faire** : passer un « En attente » à « Validé » et vérifier qu'il apparaît sur `/creneaux` |
+| 19 | Ressources — listing et ajout côté admin | ✅ config | Onglet « Ressources » + `costumForms` dédié (02/09, §9) — **bloqué tant que `declareRessourceType` n'est pas joué en base** ; page publique `/ressources` **non faite** (hors demande, cf. §13) |
 
 ---
 
@@ -441,9 +482,11 @@ pertinent ici : SSBE a un back-office `/admin` à 7 onglets (§4.3).
 
 | # | Question | Responsable |
 |---|---|---|
-| 1 | **Grille « Le réseau Sport Santé »** (`/espace-professionnels`, `features-glass`, 6 tuiles) : 3 tuiles mènent à des pages inexistantes — « Aide à la prescription » (`/prescription`), « Stratégie régionale Sport Santé » (`/strategie`), « Rapports & Publications » (`/ressources`). **Créer les 3 pages, repointer, ou retirer les tuiles ?** Rapprochements possibles mais non équivalents : `/presentation` pour la stratégie, `/blog` pour les publications | Thomas |
+| 1 | **Grille « Le réseau Sport Santé »** (`/espace-professionnels`, `features-glass`, 6 tuiles) : 3 tuiles mènent à des pages inexistantes — « Aide à la prescription » (`/prescription`), « Stratégie régionale Sport Santé » (`/strategie`), « Rapports & Publications » (`/ressources`). **Créer les 3 pages, repointer, ou retirer les tuiles ?** Rapprochements possibles mais non équivalents : `/presentation` pour la stratégie, `/blog` pour les publications. **Depuis le 02/09, `/ressources` est à portée** : le module ressources existe côté admin, seule la page publique manque (question 7) | Thomas |
 | 2 | **Hero de `/public`** : le CTA « Sport et santé pour tous » pointe vers `/rejoindre` (inexistant), et le second, « Sport et santé sur ordonnance », vers `/` — un lien vers l'accueil depuis une sous-page. Les deux libellés sont des **slogans, pas des actions** : le hero est à repenser plutôt qu'à rafistoler | Thomas |
 | 3 | Les 5 autres formulaires costum (`mss`, `formation`, `session-formation`, `recovery-center`, `article`) doivent-ils être ouverts au public comme l'a été `organizations`, ou rester réservés au back-office ? | Thomas |
 | 4 | Les 6 formulaires déclarent **169 champs dont 115 placés** (re-dérivé le 03/08 ; trois vestiges purgés le 30/07 : `facebook`, `instagram`, `recepisseDeclaration`). Faut-il purger les vestiges restants — dont `youtube`/`linkedin`/`autreDescription` sur `organizations` —, ou certains sont-ils attendus par le backend en écriture ? | Thomas |
 | 5 | `/communaute` → onglet « Organisations » : l'id `682b2ac5e05a1d45844340e7` est-il périmé, ou aucune organisation n'a-t-elle jamais été rattachée ? | Thomas |
 | 6 | Rendu navigateur et mode sombre : à parcourir sur les 19 pages | Thomas |
+| 7 | **Page publique `/ressources`** : le lot du 02/09 (§9) livre le dépôt et le listing **admin** seuls — c'était le périmètre demandé. Or la tuile morte « Rapports & Publications » de la question 1 pointe précisément vers `/ressources` : publier l'annuaire (une page, deux sections — `searchHeader` à filtre thématique + `searchProStatic` en presenter `resource`, filtré `status: "Visible"`) **fermerait cette question du même geste**. À arbitrer avec la question 1 | Thomas |
+| 8 | **Thématique affichée en clé** dans le listing admin (`mss`, `has`…) : `formatCell` ne résout aucune énumération, et seul le mode `statusField` sait mapper une valeur vers un libellé. Vit-on avec (compact, sans ambiguïté pour un usage interne), ou ajoute-t-on au schéma des colonnes admin une table de libellés — utile bien au-delà de ce site ? | Thomas |
