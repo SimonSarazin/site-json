@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { ImageViewer } from "@/components/ui/image-viewer";
-import { FieldError, HintText } from "./FormFields";
+import { FieldError, FieldLabel, HintText } from "./FormFields";
 import {
   Table,
   TableHeader,
@@ -672,18 +672,7 @@ export function SimpleTableField({
   return (
     <div className={cn("space-y-2", field.width || "col-span-12")}>
       {/* Label — `<div>` car le control n'est pas un input ciblable. */}
-      {!hideLabel && (
-        <div
-          id={`${field.name}-label`}
-          className={cn(
-            "block text-sm font-medium",
-            hasError && "text-destructive"
-          )}
-        >
-          {field.label}
-          {field.isRequired && <span className="text-destructive ml-1">*</span>}
-        </div>
-      )}
+      {!hideLabel && <FieldLabel field={field} id={`${field.name}-label`} hasError={hasError} />}
 
       {field.info && <HintText text={field.info} />}
 

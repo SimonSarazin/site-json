@@ -75,7 +75,7 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
 
   if (!loaded || !entity || (isLoading && renderable.length === 0)) {
     return (
-      <section id={id} style={sectionStyle} className={cn("py-16 md:py-24", sectionClassName)}>
+      <section id={id} style={sectionStyle} className={cn("py-6 md:py-10", sectionClassName)}>
         <div className="container mx-auto animate-pulse px-4">
           <div className="grid items-center gap-8 md:grid-cols-2">
             <div className="space-y-4">
@@ -98,7 +98,7 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
     <section
       id={id}
       style={sectionStyle}
-      className={cn("relative overflow-hidden py-16 md:py-24", sectionClassName)}
+      className={cn("relative overflow-hidden py-6 md:py-10", sectionClassName)}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
@@ -112,11 +112,11 @@ export function FeaturedCarouselSection({ id, props }: FeaturedCarouselSectionWr
           verticalement, remontait dessous) : en flux, sa place est réservée par
           construction quelle que soit la hauteur du contenu. */}
       {badgeLabel && (
-        <div className="container mx-auto px-4 sm:px-8 md:px-24 mb-6 md:mb-10">
+        <div className="container mx-auto px-4 sm:px-8 md:px-24 mb-3 md:mb-6">
           <Badge
             variant={accentColor ? undefined : "secondary"}
             style={accentStyle}
-            className="-rotate-4 rounded-none border-none px-3 py-1 sm:px-4 sm:py-1.5 text-2xl sm:text-2xl md:text-5xl font-serif"
+            className="-rotate-4 rounded-none border-none px-3 py-1 sm:px-4 sm:py-1.5 text-xl sm:text-2xl md:text-3xl font-serif"
           >
             {t(badgeLabel)}
           </Badge>

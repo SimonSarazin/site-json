@@ -96,6 +96,12 @@ describe("préflight mutation.stamps", () => {
     const parc = SITES.flatMap(({ site, cfg }) => stampsDe(cfg).map(({ formId, stamps }) => `${site.replace("config.prod.", "").replace(".json", "")}/${formId}:${stamps.length}`));
     expect(parc).toEqual([
       "institut-bleu/institut-bleu-acteur:2",
+      // parent62 : le champ `category` du form d'article (Appel à projets / Offre d'emploi) dérive
+      // le mot-clé public via 1 stamp `tags` `append` `on:"both"` + `$mapLabels`. `category` est un
+      // vrai champ du schéma d'écriture POI (déjà écrit par `parent62-affiche` et
+      // `parent62-recovery-center`) : il persiste et revient à l'édition, donc le stamp repose le
+      // tag aux deux temps. Les pages /appels-a-projets et /offres-emploi filtrent ce tag.
+      "parent62/parent62-article:1",
       // MSS structure n'a PLUS de stamp : `statusActor` est déclaré au dynForm du costum
       // `associationEkilibre` depuis la copie du chantier A (plan mss-la-tampon) — l'inject
       // payload « En cours » passe la whitelist, le stamp pathValue de contournement a été retiré.

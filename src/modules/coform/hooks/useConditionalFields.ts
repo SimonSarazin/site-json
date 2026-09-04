@@ -176,5 +176,17 @@ export function useConditionalFields(
     return true;
   }
 
-  return { isFieldVisible };
+  /**
+   * Le champ est-il piloté par au moins une règle d'affichage conditionnel ?
+   *
+   * Distinct de `isFieldVisible`, qui répond « oui » pour l'immense majorité
+   * des champs — ceux qui n'ont aucune règle. Sert à n'appliquer l'enveloppe
+   * animée (`ConditionalField`) qu'aux champs dont la visibilité peut
+   * réellement basculer, les autres gardant exactement leur rendu d'origine.
+   */
+  function hasConditionalRule(fieldName: string): boolean {
+    return (ruleGroupsByRawKey[fieldName]?.length ?? 0) > 0;
+  }
+
+  return { isFieldVisible, hasConditionalRule };
 }

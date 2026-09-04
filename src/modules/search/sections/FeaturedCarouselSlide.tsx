@@ -33,19 +33,15 @@ export default function FeaturedCarouselSlide({ item, ctaLabel, resource, itemAc
   const ctaText = t(ctaLabel ?? "En savoir plus");
 
   return (
-    <div className="grid items-center gap-8 sm:gap-12 md:gap-20 md:grid-cols-2">
-      <div className="flex flex-col items-start gap-3 sm:gap-5">
+    <div className="grid items-center gap-4 sm:gap-6 md:gap-10 md:grid-cols-2">
+      <div className="flex flex-col items-start gap-2 sm:gap-3">
         {/* `line-clamp-3` : un titre long ne doit pas étirer la diapositive (la
             hauteur du carrousel suit la slide la plus haute) ni repousser le CTA —
             le texte complet reste lisible au survol (`title`) et via le CTA. */}
-        <h2 className="line-clamp-3 text-2xl font-bold md:text-4xl ml-4" title={data.title}>{data.title}</h2>
-        {data.description && <p className="line-clamp-3 text-base opacity-90 md:text-lg ml-4 sm:text-sm">{data.description}</p>}
+        <h2 className="line-clamp-3 text-xl font-bold md:text-2xl ml-4" title={data.title}>{data.title}</h2>
+        {data.description && <p className="line-clamp-2 text-sm opacity-90 md:text-base ml-4">{data.description}</p>}
         {click.kind !== "details" && (
-          // Échelle simple lg → 2xl → 3xl. L'ancien `xs:text-xs` ne s'appliquait que sur les
-          // sites dont le CSS définit `--breakpoint-xs` (parent62, tiers-lieux…) et seulement
-          // dans la fenêtre 475-640px (texte minuscule entre deux tailles larges — incohérent,
-          // vérifié au rendu) : retiré, le mobile <475px garde le `text-lg` qu'il avait déjà.
-          <Button asChild size="lg" style={accentStyle} className="rounded-full px-6 py-3 sm:px-8 sm:py-4 font-bold w-full text-lg sm:text-2xl md:text-3xl">
+          <Button asChild size="lg" style={accentStyle} className="rounded-full px-5 py-2 sm:px-6 sm:py-2.5 font-bold w-full text-base sm:text-lg md:text-xl">
             {newTab ? (
               <a href={click.href} target="_blank" rel="noopener noreferrer">
                 {ctaText}
@@ -57,13 +53,16 @@ export default function FeaturedCarouselSlide({ item, ctaLabel, resource, itemAc
         )}
       </div>
       {data.image && (
-        // `w-11/12 mx-auto sm:w-full` : image légèrement réduite en xs uniquement (demande directe).
+        // `object-contain` (plutôt que `cover`) : l'image entière reste visible, jamais
+        // rognée — le fond de la section (déjà derrière) comble l'espace résiduel.
+        // `aspect-[16/10]` (plutôt que `4/3`) : boîte moins haute à largeur égale, pour que
+        // header + « à la une » tiennent ensemble au premier écran sans scroll.
         <OptimizedImage
           src={data.image}
           alt={data.title}
           width={640}
           priority={priority}
-          className="aspect-[4/3] w-11/12 mx-auto sm:w-full rounded-[0px_100px_0_100px] object-cover"
+          className="aspect-[16/10] w-4/5 sm:w-5/6 md:w-4/5 mx-auto rounded-[0px_100px_0_100px] object-contain"
         />
       )}
     </div>

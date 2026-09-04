@@ -34,6 +34,96 @@ const ROOT_LEVEL_FIELDS: FormFieldMapping["componentType"][] = [
 /**
  * Vérifie si un type de champ est stocké à la racine de answers
  */
+/**
+ * Une ligne `dynamicFields` dont TOUTES les cellules sont vides.
+ *
+ * Règle partagée par les deux usages, volontairement au même endroit : la
+ * validation Zod (qui EXEMPTE ces lignes des règles par sous-champ) et le
+ * pruning au save (qui ne les persiste jamais). Deux copies divergentes
+ * rendraient un formulaire soumissible mais persisté avec des lignes vides,
+ * ou l'inverse.
+ */
+function isEmptyDynamicRow(row: unknown): boolean {
+  // ⚠️ Typage défensif VOULU. Ce prédicat a deux appelants aux garanties très
+  // différentes : dans le schéma Zod, il ne voit que des lignes déjà parsées
+  // (`z.record(z.string(), z.string())` — un type invalide fait échouer le parse
+  // AVANT les refinements) ; au save, il voit la donnée BRUTE rapatriée du
+  // serveur, où `coerceServerAnswerShape` ne redresse que la forme du champ,
+  // jamais le type des cellules. Une réponse legacy portant un nombre
+  // (`postalCode: 97430`) ou une ligne `null` ferait alors échouer
+  // `denormalizeAnswerData` en entier, rendant l'enregistrement IMPOSSIBLE sur
+  // une réponse qui s'enregistrait auparavant.
+  if (row === null || typeof row !== "object") return true;
+  return Object.values(row as Record<string, unknown>).every(
+    (v) => v == null || String(v).trim() === "",
+  );
+}
+
+/**
+ * Rend une valeur `dynamicFields` venue du serveur conforme au schéma Zod.
+ *
+ * Frère de `enrichCommonTableMyCatalog` : un enrichissement de relecture doit
+ * produire un shape ENTIÈREMENT conforme, pas seulement complet. Un optionnel
+ * mal typé bloque la validation autant qu'un requis absent — et ici il bloque
+ * une étape entière, avec une issue Zod imbriquée
+ * (`path: ["champ", 0, "postalCode"]`) qu'`ErrorSummary` ne sait pas afficher :
+ * l'utilisateur voit « format invalide » sans savoir quoi corriger.
+ *
+ * Deux redressements, tous deux constatés en données legacy :
+ * - une ligne qui n'est pas un objet (`null`) est retirée — ni rendable
+ *   (`row[sub.key]` lèverait), ni parsable ;
+ * - une cellule non-string (`postalCode: 97430`) est ramenée en texte, comme
+ *   l'attend `z.record(z.string(), z.string())` et comme le rend l'input.
+ *
+ * On jette au READ ce qui n'est ni rendable ni parsable ; on ne jette jamais au
+ * WRITE ce qu'on n'a pas compris (cf. `isEmptyDynamicRow`, non destructif).
+ */
+function enrichDynamicRows(existantes: unknown): Record<string, string>[] {
+  if (!Array.isArray(existantes)) return [];
+  return existantes
+    .filter(
+      (row): row is Record<string, unknown> =>
+        row !== null && typeof row === "object" && !Array.isArray(row),
+    )
+    .map((row) =>
+      Object.fromEntries(
+        Object.entries(row)
+          // Une cellule objet/tableau n'a pas de représentation textuelle utile
+          // (`String({})` donnerait « [object Object] » à l'écran).
+          .filter(([, v]) => v == null || typeof v !== "object")
+          .map(([k, v]) => [k, v == null ? "" : String(v)]),
+      ),
+    );
+}
+
+/**
+ * Complète un `dynamicFields` à ses `minRows` lignes, en préservant l'existant.
+ *
+ * Point UNIQUE du semis, appelé des deux côtés du cycle de vie : à la création
+ * (`generateDefaultValues`) et à la relecture d'une réponse
+ * (`normalizeAnswerData`). Deux copies de la formule divergeraient au premier
+ * changement de règle.
+ *
+ * Le semis vit ici, et surtout PAS dans un `onChange` au montage du composant :
+ * écrire dans le formulaire au montage le rendrait `isDirty` avant toute
+ * saisie — alerte « modifications non enregistrées » et autosave sur un
+ * formulaire jamais touché. En passant par la valeur par défaut ET par la
+ * valeur relue, les lignes sont dans la baseline react-hook-form, donc
+ * invisibles pour `isDirty`.
+ */
+function seedDynamicRows(field: FormFieldMapping, existantes: unknown): unknown[] {
+  const rows = enrichDynamicRows(existantes);
+  const cfg = field.dynamicFieldsConfig;
+  if (!cfg) return rows;
+  // Formule unique : `isRequired` impose au moins une ligne même si l'admin a
+  // laissé `minRows` à 0.
+  const cible = Math.max(field.isRequired ? 1 : 0, cfg.minRows ?? 0);
+  while (rows.length < cible) {
+    rows.push(Object.fromEntries(cfg.fieldsConfig.map((sub) => [sub.key, ""])));
+  }
+  return rows;
+}
+
 export function isRootLevelField(componentType: FormFieldMapping["componentType"]): boolean {
   return ROOT_LEVEL_FIELDS.includes(componentType);
 }
@@ -63,6 +153,31 @@ export function getOriginalFieldKey(field: FormFieldMapping): string {
     return field.name.slice(prefix.length);
   }
   return field.name;
+}
+
+/**
+ * Les `inputKey` bruts des inputs commonTable d'un formulaire parsé — l'argument
+ * de `Form.getCatalogs()`.
+ *
+ * Extrait de `SmartCoForm` pour être partagé : toute surface qui monte un
+ * commonTable doit charger le MÊME catalogue collaboratif, sinon les lignes de
+ * besoins issues des réponses disparaissent silencieusement (elles sont la seule
+ * source sur les formulaires dont l'admin n'a jamais seedé `params.criterias{key}`
+ * — le cas de l'observatoire des CAEs, où c'est 100 % des besoins).
+ *
+ * ⚠️ `getOriginalFieldKey` et pas `field.name` : un commonTable est stocké sous
+ * `yesOrNo{key}`, et c'est la clé NUE que l'endpoint attend.
+ */
+export function collectCommonTableInputKeys(
+  subFormsFields: Array<{ fields: FormFieldMapping[] }>
+): string[] {
+  const keys: string[] = [];
+  for (const sf of subFormsFields) {
+    for (const f of sf.fields) {
+      if (f.componentType === "commonTable") keys.push(getOriginalFieldKey(f));
+    }
+  }
+  return keys;
 }
 
 /**
@@ -1149,15 +1264,18 @@ export function generateZodSchema(
         case "dynamicFields": {
           // Structure: [{ cléSousChamp: valeur }] — les règles par sous-champ
           // (required/minLength/maxLength) viennent de la config admin.
-          // ⚠ Une ligne ENTIÈREMENT vide est EXEMPTÉE des règles (et strippée à la soumission,
-          // via .transform) : le composant sème `minRows` lignes vides NON supprimables — sans
+          // ⚠ Une ligne ENTIÈREMENT vide est EXEMPTÉE des règles ; elle est strippée AU SAVE
+          // par `denormalizeAnswerData`, point traversé par les trois chemins d'écriture
+          // INTERNES (bouton, autosave, multi-étapes) — un `.transform` ici ne serait vu que
+          // du bouton mono-étape. (La prop publique `onStepSubmit`, non utilisée dans le
+          // repo, reçoit elle la donnée brute.) Le champ affiche `minRows` lignes vides
+          // non supprimables — sans
           // l'exemption, un dynamicFields NON requis à sous-champs required rendait le form
           // INSOUMISSIBLE (cas réel : les 2 blocs du « Formulaire de créneau » SSBE, dont 40 %
           // des answers existantes n'ont pas le bloc partenaires). Le legacy saute les lignes
           // vides de la même façon.
           const subFields = field.dynamicFieldsConfig?.fieldsConfig ?? [];
-          const isEmptyRow = (row: Record<string, string>) =>
-            Object.values(row).every((v) => (v ?? "").trim() === "");
+          const isEmptyRow = isEmptyDynamicRow;
           const rowsSchema = z
             .array(z.record(z.string(), z.string()))
             .refine(
@@ -1173,11 +1291,17 @@ export function generateZodSchema(
                   }),
                 ),
               { message: t("coform.validation.dynamicFieldsIncomplete", "Chaque ligne doit être complète et valide") },
-            )
-            .transform((rows) => rows.filter((row) => !isEmptyRow(row)));
-          const minRows = field.dynamicFieldsConfig?.minRows ?? 1;
+            );
+          // Même repli que `seedDynamicRows` : deux valeurs par défaut
+          // différentes pour la même règle divergeraient à la première
+          // évolution (le `Math.max(1, …)` ci-dessous rendait le `?? 1`
+          // redondant, et masquait l'écart).
+          const minRows = field.dynamicFieldsConfig?.minRows ?? 0;
           schemaShape[field.name] = field.isRequired
-            ? rowsSchema.refine((rows) => rows.length >= Math.max(1, minRows), {
+            // Compte les lignes RENSEIGNÉES : le schéma ne filtre plus rien (le
+            // strip vit au save), donc les lignes vides semées par les valeurs
+            // par défaut ne doivent pas satisfaire à elles seules le « requis ».
+            ? rowsSchema.refine((rows) => rows.filter((row) => !isEmptyRow(row)).length >= Math.max(1, minRows), {
                 message: t("coform.validation.requiredField", `${field.label} est requis`, { label: field.label }),
               })
             : rowsSchema.optional();
@@ -1252,9 +1376,14 @@ export function generateDefaultValues(subFormsFields: SubFormFields[]): Record<s
           break;
         }
 
+        case "dynamicFields":
+          // Comme `simpleTable` ci-dessus : la structure initiale non vide se
+          // construit ICI, pas dans le composant (cf. `seedDynamicRows`).
+          defaultValues[field.name] = seedDynamicRows(field, []);
+          break;
+
         case "uploader":
         case "timeSlots":
-        case "dynamicFields":
           defaultValues[field.name] = [];
           break;
 
@@ -1569,6 +1698,18 @@ export function normalizeAnswerData(
 
     // Pour chaque champ root-level de ce subform
     for (const field of fields) {
+      // dynamicFields : une réponse enregistrée sans aucune ligne remplie est
+      // persistée `[]` (les lignes vides ne sont jamais écrites, cf.
+      // `denormalizeAnswerData`). Sans ce recomplètement, sa réouverture
+      // afficherait 0 ligne alors que la config en demande `minRows` — et pour
+      // un champ requis, l'utilisateur verrait « X est requis » sans avoir de
+      // ligne à remplir. Ici plutôt que dans le composant : la valeur relue
+      // sert de baseline react-hook-form, donc le formulaire ne naît pas sale.
+      if (field.componentType === "dynamicFields" && field.name in subFormData) {
+        subFormData[field.name] = seedDynamicRows(field, subFormData[field.name]);
+        continue;
+      }
+
       if (isRootLevelField(field.componentType)) {
         rootLevelFieldNames.push(field.name);
 
@@ -1757,6 +1898,19 @@ export function denormalizeAnswerData(
       // avant l'envoi serveur. Le champ reste nested (pas root-level).
       if (field.componentType === "finder" && field.name in subFormData) {
         subFormData[field.name] = stripFinderElementImages(subFormData[field.name]);
+        continue;
+      }
+
+      // dynamicFields : les `minRows` lignes vides viennent des valeurs par
+      // défaut (`generateDefaultValues`) et ne sont pas supprimables à la main.
+      // On ne les persiste jamais — parité legacy. Ici, et PAS dans le schéma
+      // Zod : deux des trois chemins d'écriture (multi-étapes, autosave)
+      // soumettent `getValues()` brut et ne voient jamais la sortie zod-parsée.
+      // Le champ reste nested (pas root-level).
+      if (field.componentType === "dynamicFields" && Array.isArray(subFormData[field.name])) {
+        subFormData[field.name] = (subFormData[field.name] as Record<string, string>[]).filter(
+          (row) => !isEmptyDynamicRow(row),
+        );
         continue;
       }
 
