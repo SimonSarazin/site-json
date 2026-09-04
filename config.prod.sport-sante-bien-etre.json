@@ -148,6 +148,18 @@
           },
           {
             "label": {
+              "fr": "Ressources",
+              "en": "Resources"
+            },
+            "path": "/ressources",
+            "icon": "book-open",
+            "description": {
+              "fr": "Guides, recommandations et outils à télécharger.",
+              "en": "Guides, recommendations and tools to download."
+            }
+          },
+          {
+            "label": {
               "fr": "Labelliser",
               "en": "Get Labeled"
             },
