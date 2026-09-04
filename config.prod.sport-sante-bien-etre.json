@@ -4272,6 +4272,7 @@
                 },
                 "useFilter": true,
                 "showMap": false,
+                "enableMap": false,
                 "disableInfiniteScroll": false,
                 "defaultViewMode": "list",
                 "baseParams": {
