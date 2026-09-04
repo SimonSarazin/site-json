@@ -388,6 +388,14 @@ export const ResourceConfSchema = z.object({
     field: z.string(),
     colors: z.record(z.string(), z.string()).optional(),
     icons: z.record(z.string(), z.string()).optional(),
+    /**
+     * Map valeur STOCKÉE → libellé AFFICHÉ (localisé). Troisième carte, à côté de `colors` et
+     * `icons`, pour le cas où le champ stocke une CLÉ (`mss`, `has`…) et non un libellé : sans
+     * elle la pastille afficherait la clé brute. Indispensable sur un site multilingue, où
+     * stocker le libellé français rendrait la version anglaise fausse. Valeur absente de la map
+     * (ou map absente) → la valeur stockée est affichée telle quelle, comportement historique.
+     */
+    labels: z.record(z.string(), LocalizedString).optional(),
   }).optional(),
   /** Champ de la ville affichée. Repli code : "address.addressLocality". */
   cityField: z.string().optional(),
