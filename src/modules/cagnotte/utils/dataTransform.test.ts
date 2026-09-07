@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   asRecord,
+  buildResourceFromAnswer,
   getEntityId,
   getNonEmptyRecord,
   getServerData,
@@ -258,5 +259,76 @@ describe("toSafeInt", () => {
     expect(toSafeInt(undefined)).toBe(0);
     expect(toSafeInt("")).toBe(0);
     expect(toSafeInt("not a number")).toBe(0);
+  });
+});
+
+describe("buildResourceFromAnswer", () => {
+  const answer = {
+    id: "answer-1",
+    project: { id: "proj-1", name: "Projet du commun" },
+    answers: {
+      aapStep1: {
+        titre: "Mon commun",
+        depense: [
+          { poste: "Palier 1", priceInt: 1000, milestone: "m1", financer: [{ id: "u1", name: "Alice", amount: 250 }] },
+          { poste: "Palier 2", priceInt: 500, milestone: "m2" },
+        ],
+      },
+    },
+  };
+
+  it("dérive projet, titre, paliers et totaux depuis la réponse", () => {
+    const resource = buildResourceFromAnswer(answer);
+    expect(resource).not.toBeNull();
+    expect(resource!.id).toBe("answer-1");
+    expect(resource!.answerId).toBe("answer-1");
+    expect(resource!.projectId).toBe("proj-1");
+    expect(resource!.name).toBe("Mon commun");
+    expect(resource!.items).toHaveLength(2);
+    expect(resource!.resourceTotalAmount).toBe(1500);
+    expect(resource!.resourceFinancedAmount).toBe(250);
+  });
+
+  it("accepte un depense[] sérialisé en objet (pollution Mongo)", () => {
+    const pollue = {
+      ...answer,
+      answers: { aapStep1: { ...answer.answers.aapStep1, depense: { 0: { poste: "Palier 1", priceInt: 1000 } } } },
+    };
+    expect(buildResourceFromAnswer(pollue)!.items).toHaveLength(1);
+  });
+
+  it("exclut les paliers clôturés des totaux, sans les retirer de la liste", () => {
+    const avecClos = {
+      ...answer,
+      answers: {
+        aapStep1: {
+          depense: [
+            { poste: "Ouvert", priceInt: 100 },
+            { poste: "Clos", priceInt: 900, include: false },
+          ],
+        },
+      },
+    };
+    const resource = buildResourceFromAnswer(avecClos)!;
+    expect(resource.items).toHaveLength(2);
+    expect(resource.resourceTotalAmount).toBe(100);
+  });
+
+  it("reste exploitable sans projet ni dépense — c'est ce qui distingue la phase proposition", () => {
+    const resource = buildResourceFromAnswer({ id: "answer-2", answers: {} })!;
+    expect(resource.projectId).toBeUndefined();
+    expect(resource.items).toEqual([]);
+    expect(resource.resourceTotalAmount).toBe(0);
+  });
+
+  it("retourne null sans identifiant de réponse — rien à financer", () => {
+    expect(buildResourceFromAnswer({ answers: {} })).toBeNull();
+    expect(buildResourceFromAnswer(null)).toBeNull();
+  });
+
+  it("lit l'étape demandée quand le commun n'utilise pas aapStep1", () => {
+    const autreEtape = { id: "answer-3", answers: { etapeX: { titre: "Ailleurs", depense: [{ poste: "P", priceInt: 7 }] } } };
+    expect(buildResourceFromAnswer(autreEtape, "etapeX")!.resourceTotalAmount).toBe(7);
+    expect(buildResourceFromAnswer(autreEtape)!.items).toEqual([]);
   });
 });

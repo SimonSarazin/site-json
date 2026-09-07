@@ -17,6 +17,8 @@ import {
     type CommunReactionType,
 } from "@/modules/aac/hooks/useCommunReactions";
 import { useCommunRawDepenses } from "@/modules/aac/hooks/useCommunRawDepenses";
+import { useCommunFundingContext } from "@/modules/aac/hooks/useCommunFundingContext";
+import { useCommunFundingHost } from "@/modules/aac/hooks/useCommunFundingHost";
 import { useReactorNames } from "@/modules/aac/hooks/useReactorNames";
 import { canManageObjectiveActions } from "@/modules/aac/lib/objectiveHelpers";
 
@@ -326,6 +328,9 @@ export function CommunFinancingCard({
     const namesLoadingLabel = String(t("detail.namesLoading"));
     const namesUnavailableLabel = String(t("detail.namesUnavailable"));
 
+    const { context: fundingContext } = useCommunFundingContext(answerQuery);
+    const { hostEntity: fundingHost } = useCommunFundingHost(fundingContext);
+
     const { data: depenses } = useCommunRawDepenses(answerId);
     const items = buildItemsFromRawDepenses(depenses ?? [], funding?.items ?? []);
     const openItems = items.filter((item) => item?.status !== "close");
@@ -494,7 +499,12 @@ export function CommunFinancingCard({
                         totalAmount={resourceFinancedAmount}
                         defaultResourceId={answerId}
                         onRefresh={onFunded}
-                        openContext={{ resourceId: answerId, hideResourceSelect: true }}
+                        openContext={{
+                            resourceId: answerId,
+                            hideResourceSelect: true,
+                            hostEntity: fundingHost,
+                            resource: funding,
+                        }}
                     >
                         <button
                             type="button"

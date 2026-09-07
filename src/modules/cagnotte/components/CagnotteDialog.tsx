@@ -47,7 +47,7 @@ import {useOrganizationProjectsWithAnswers} from "@/modules/cagnotte/hooks/useOr
 import {useUserAdminOrganizations} from "@/modules/cagnotte/hooks/useUserAdminOrganizations.ts";
 // Chargement à la demande du modal de paiement des promesses.
 const PromessesDialog = lazy(() => import("./PromessesDialog"));
-import type { User } from "@communecter/cocolight-api-client";
+import type { EntityTypes, User } from "@communecter/cocolight-api-client";
 import { isUser } from "@/lib/getTypedEntity";
 import PaymentReceivedScreen from "@/modules/cagnotte/components/PaymentReceivedScreen.tsx";
 import PledgeConfirmedScreen from "@/modules/cagnotte/components/PledgeConfirmedScreen.tsx";
@@ -72,6 +72,18 @@ interface CagnotteDialogProps {
         itemId?: string;
         hideResourceSelect?: boolean;
         hideOtherItems?: boolean;
+        /**
+         * Entité sur laquelle lire l'enveloppe. Par défaut celle du site — ce qui ne
+         * convient qu'aux ressources de CE contexte. Une fiche qui affiche une
+         * ressource vivant sous un autre contexte doit passer son hôte, sinon la
+         * ressource forcée reste introuvable ici.
+         */
+        hostEntity?: EntityTypes | null;
+        /**
+         * Ressource injectée par l'appelant, en repli de l'enveloppe : elle rejoint la liste et peut être
+         * sélectionnée comme les autres.
+         */
+        resource?: CagnotteResource;
     };
     cagnotteType?: CagnotteType;
 }
@@ -196,7 +208,10 @@ const CagnotteDialogContent = ({
     // Un seul useFundingEnvelope() : il retourne `projects[]` complet ET
     // `selectedProject` ciblé (filtré par projectId côté normalize). Pas besoin
     // d'un 2e hook global — voir doc/refactor-useOrganizationProjectsWithAnswers-lazy.md §9.
-    const {data: fundingEnvelope} = useFundingEnvelope(selectedResourceId || undefined);
+    const {data: fundingEnvelope, isLoading: isEnvelopeLoading} = useFundingEnvelope(
+        selectedResourceId || undefined,
+        {hostEntity: openContext?.hostEntity},
+    );
     const siteConfig = useSite();
 
     const {config: cagnotteConfig} = useCagnotteType({
@@ -209,9 +224,27 @@ const CagnotteDialogContent = ({
 
     // Unifier les données venant de projet ou proposition/ depenses ou milestone
     const {
-        resources,
-        savedSelectedResource
+        resources: envelopeResources,
+        savedSelectedResource: envelopeSelectedResource
     } = useCagnotteAdapter(fundingEnvelope, allProjects, cagnotteConfig, selectedResourceId);
+
+    // La ressource injectée par l'appelant complète l'enveloppe sans la remplacer
+    const injectedResource = openContext?.resource;
+    const resources = useMemo(() => {
+        if (!injectedResource) return envelopeResources;
+        const injectedId = getEntityId(injectedResource.id);
+        return envelopeResources.some((resource) => getEntityId(resource.id) === injectedId)
+            ? envelopeResources
+            : [injectedResource, ...envelopeResources];
+    }, [envelopeResources, injectedResource]);
+
+    const savedSelectedResource = useMemo(() => {
+        if (envelopeSelectedResource) return envelopeSelectedResource;
+        if (!injectedResource) return undefined;
+        return getEntityId(injectedResource.id) === getEntityId(selectedResourceId)
+            ? injectedResource
+            : undefined;
+    }, [envelopeSelectedResource, injectedResource, selectedResourceId]);
     const fundingByResourceId = useMemo(() => {
         const nextMap = new Map<string, { totalFunding: number; totalCost: number }>();
         resources.forEach((resource) => {
@@ -279,6 +312,8 @@ const CagnotteDialogContent = ({
     // Cf. https://react.dev/reference/react/useState#storing-information-from-previous-renders
     if (resources.length > 0) {
         const targetId = isValidResourceId(forcedResourceId) ? getEntityId(forcedResourceId)
+                       // Une ressource forcée mais absente ne retombe sur AUCUNE autre.
+                       : forcedResourceId ? ""
                        : isValidResourceId(selectedResourceId) ? getEntityId(selectedResourceId)
                        : isValidResourceId(defaultResourceId) ? getEntityId(defaultResourceId)
                        : (allResourcesIds[0] || "");
@@ -287,6 +322,9 @@ const CagnotteDialogContent = ({
             setSelectedResourceId(targetId);
         }
     }
+
+    const forcedResourceMissing =
+        !!forcedResourceId && !isEnvelopeLoading && !allProjectsLoading && !isValidResourceId(forcedResourceId);
 
     const selectedResource: CagnotteResource | undefined = useMemo(() => {
         const cleanedSelected = getEntityId(selectedResourceId);
@@ -670,6 +708,12 @@ const CagnotteDialogContent = ({
                         cagnotteConfig={cagnotteConfig}
                     />
                 </Suspense>
+            ) : forcedResourceMissing ? (
+                <div className="py-8 text-center text-sm text-muted-foreground">
+                    {t("CagnotteDialog.labels.resourceOutOfScope", undefined, {
+                        context: cagnotteConfig.selectorType + context,
+                    })}
+                </div>
             ) : (
                 <div className="space-y-6">
                     {/* Bouton pour ouvrir le modal de paiement des promesses */}

@@ -275,6 +275,13 @@ export function MilestoneListField({
   const api = cocolight?.api ?? null;
   const entity = cocolight?.entity ?? null;
 
+  // Sans `hostEntity` : ce champ se rend dans le formulaire, où l'on n'a que
+  // l'`answerId` — pas le document réponse dont se déduit le contexte du commun (cf.
+  // `useCommunFundingContext`), et pas nécessairement un `CocolightProvider` complet.
+  // Conséquence assumée : sur un commun déposé sur un AUTRE appel, l'enveloppe du
+  // site ne le porte pas, `projectId` reste vide et la projection vers le projet
+  // ci-dessous ne fait rien — elle est best-effort par conception, la réponse restant
+  // la source de vérité. La fiche, elle, résout bien ce contexte.
   const { targetResource } = useAacFundingResource(answerId);
   const projectId = targetResource?.projectId ?? "";
 

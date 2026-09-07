@@ -27,17 +27,16 @@ import type { Api, Form, Organization, Project } from "@communecter/cocolight-ap
 import { AAC_QUERY_KEYS } from "../constants/queryKeys";
 import { resolveAacConfig } from "../lib/resolveAacConfig";
 import { buildAacFormMeta, type AacFormMeta } from "../lib/formMeta";
+import { firstParent, type AacContext } from "../lib/formParent";
 import type { AacResolvedConfig } from "../types";
 
 /** L'entité costum porteuse de l'AAC — celle dont le slug fait le `{source}`. */
 export type AacHostEntity = Organization | Project;
 
-/** L'organisation (ou le projet) qui porte l'appel : sous elle s'écrit `choose`. */
-export interface AacContext {
-  id: string;
-  type: string | null;
-  name: string | null;
-}
+// `AacContext` et sa résolution vivent dans `lib/formParent` : la fiche d'un commun
+// déposé sur un AUTRE appel en a besoin sans passer par ce bundle. Ré-export pour
+// les call-sites historiques.
+export type { AacContext } from "../lib/formParent";
 
 /** Ce qui est réellement mis en cache sous `AAC_QUERY_KEYS.CONFIG(formId)`. */
 export interface AacConfigBundle {
@@ -83,19 +82,6 @@ export const selectAacContextId = (b: AacConfigBundle): string | null => b.conte
 export const selectAacContext = (b: AacConfigBundle): AacContext | null => b.context;
 export const selectAacFormParams = (b: AacConfigBundle): unknown => b.params;
 export const selectAacFormEntity = (b: AacConfigBundle): Form => b.form;
-
-function firstParent(formData: unknown): AacContext | null {
-  const parent = (formData as { parent?: unknown } | null)?.parent;
-  if (!parent || typeof parent !== "object" || Array.isArray(parent)) return null;
-  const [id, valeur] = Object.entries(parent as Record<string, unknown>)[0] ?? [];
-  if (!id) return null;
-  const infos = (valeur ?? {}) as { type?: unknown; name?: unknown };
-  return {
-    id,
-    type: typeof infos.type === "string" ? infos.type : null,
-    name: typeof infos.name === "string" ? infos.name : null,
-  };
-}
 
 export function aacConfigQueryOptions(
   api: Api | null,

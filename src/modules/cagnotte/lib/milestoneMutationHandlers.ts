@@ -12,6 +12,7 @@ import {
   getEntityIdFromUnknown,
   getEnvelopeProjects,
   resolveMilestoneSyncContext,
+  type MilestoneSyncDocs,
 } from '@/modules/cagnotte/lib/milestoneSyncContext';
 import type { FundingMilestoneStatus } from "@/modules/cagnotte/types";
 
@@ -23,6 +24,12 @@ type UpdateSource = Api | null;
 type MilestoneMutationBaseParams = {
   source: UpdateSource;
   rawEnvelope: unknown;
+  /**
+   * Documents bruts de la ressource (`project.oceco.milestones`, `depense`), servant
+   * de REPLI quand l'enveloppe interrogée ne la porte pas — cas d'un commun déposé
+   * sous un autre contexte. À passer SANS coercion (cf. `MilestoneSyncDocs`).
+   */
+  docs?: MilestoneSyncDocs | null;
   projectId: string;
   answerId: string;
   milestoneId: string;
@@ -68,6 +75,7 @@ function requireSource(source: UpdateSource): Api {
 function resolveSyncContextOrThrow(params: MilestoneMutationBaseParams) {
   const syncContext = resolveMilestoneSyncContext({
     rawEnvelope: params.rawEnvelope,
+    docs: params.docs,
     projectId: params.projectId,
     answerId: params.answerId,
     milestoneId: params.milestoneId,
@@ -142,6 +150,34 @@ function getMilestoneConstraints(
     });
 
     return { actionIds, hasFunding, allActionsDone , canClose };
+  }
+
+  // Repli sans enveloppe : on calcule ce que les documents en main permettent de
+  // savoir. `hasFunding` reste EXACT (les financeurs sont sur la dépense) ; côté
+  // actions, on ne voit RIEN — elles ne sont ni dans `oceco.milestones[]` ni dans
+  // `depense[]`, et le SDK n'expose aucun listage des actions d'un projet hors
+  // enveloppe. Cf. `resolveMilestoneSyncContextFromDocs`.
+  //
+  // Deux conséquences, traitées différemment :
+  //  - CLÔTURE : `canClose` vrai. Compromis assumé — la garde
+  //    `cannotCloseWithOpenActions` est levée ici, faute de pouvoir l'évaluer, plutôt
+  //    que de bloquer la clôture d'un palier légitime (cf. doc/18 §Pièges n°2bis).
+  //  - SUPPRESSION : `actionIds` vide ne veut PAS dire « aucune action ». Supprimer
+  //    sur cette base laisserait des actions orphelines pointant un `milestoneId`
+  //    disparu, en contournant la garde `actionIdMissing` du chemin enveloppe. D'où
+  //    le refus explicite dans `deleteMilestoneWithSync` (`syncContext.fromDocs`).
+  if (params.docs) {
+    const depenses = Array.isArray(params.docs.depenses) ? (params.docs.depenses as unknown[]) : [];
+    const depensesForMilestone = params.milestoneId
+      ? depenses.filter((rawDepense) => String(asRecord(rawDepense).milestone ?? '').trim() === params.milestoneId)
+      : (answerDepenseIndex !== null && depenses[answerDepenseIndex] ? [depenses[answerDepenseIndex]] : []);
+
+    const hasFunding = depensesForMilestone.some((rawDepense) => {
+      const financerList = Array.isArray(asRecord(rawDepense).financer) ? (asRecord(rawDepense).financer as unknown[]) : [];
+      return financerList.some((rawFinancer) => Number(asRecord(rawFinancer).amount ?? 0) > 0);
+    });
+
+    return { actionIds: [], hasFunding, allActionsDone: false, canClose: true };
   }
 
   return { actionIds: [], hasFunding: false, allActionsDone: false, canClose : false };
@@ -310,6 +346,12 @@ export async function deleteMilestoneWithSync(params: MilestoneMutationBaseParam
   }
 
   const hasProject = Boolean(params.projectId);
+
+  // Sans enveloppe, les actions du palier sont invisibles (cf. `getMilestoneConstraints`).
+  // Supprimer quand même les laisserait orphelines : on refuse, et on le dit.
+  if (hasProject && syncContext.fromDocs) {
+    throw new Error(t("milestone.errors.cannotDeleteWithoutEnvelope"));
+  }
 
   if (hasProject && typeof syncContext.projectMilestoneIndex !== 'number') {
     throw new Error(t("milestone.errors.incompleteForDelete.missingProjectSide"));

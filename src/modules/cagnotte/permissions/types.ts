@@ -8,7 +8,7 @@
  *  - `me` connecté ou non
  *  - rôle de `me` sur le `Project` (admin ou contributeur via `entity.isAdmin?.()` / `entity.isContributor?.()`)
  *  - état d'un milestone (`open`, `done`, `close`)
- *  - état d'une action (`todo`, `done`) et présence d'un userId dans `action.contributors[]`
+ *  - état d'une action (`todo`, `done`), son auteur, et présence d'un userId dans `action.contributors[]`
  *  - présence/absence de financement sur un milestone (pour la suppression)
  */
 
@@ -27,6 +27,7 @@ export interface CagnotteActionLike {
   status?: CagnotteActionStatus;
   /** Liste des IDs de contributeurs assignés à l'action */
   contributorIds?: string[];
+  authorId?: string;
 }
 
 export interface CagnottePermissions {
@@ -50,9 +51,9 @@ export interface CagnottePermissions {
   // Actions
   /** Créer une action dans un milestone (admin + milestone non clôturé) */
   canCreateAction: (milestone: CagnotteMilestoneLike | null | undefined) => boolean;
-  /** Éditer une action (admin OU contributeur de l'action) */
+  /** Éditer une action (admin OU auteur OU contributeur de l'action) — `done` : admin seul */
   canEditAction: (action: CagnotteActionLike | null | undefined) => boolean;
-  /** Marquer une action terminée (admin OU contributeur de l'action) + action en `todo` */
+  /** Marquer une action terminée (admin OU auteur OU contributeur de l'action) + action en `todo` */
   canMarkActionDone: (action: CagnotteActionLike | null | undefined) => boolean;
   /** Supprimer une action (admin uniquement) */
   canDeleteAction: (action: CagnotteActionLike | null | undefined) => boolean;
@@ -74,4 +75,17 @@ export interface CagnottePermissionData {
   hasActiveItems?: boolean;
   /** ID du projet sélectionné (sert au canContribute) */
   resourceId?: string;
+  /**
+   * Utilisateurs qui font AUTORITÉ sur cette ressource-ci, en plus des admins de
+   * l'entité passée au calculateur — ils obtiennent `isAdmin`, donc les mêmes
+   * droits sur paliers et actions.
+   *
+   * Le calculateur ne sait pas ce qu'est une « ressource » côté métier : c'est à
+   * l'appelant de dire qui la porte. Le module AAC y met le DÉPOSANT du commun et
+   * l'admin de l'appel qui l'a publié — deux personnes qui ne sont ni l'une ni
+   * l'autre nécessairement admin de l'entité du site ou du projet lié.
+   *
+   * Vide par défaut : les call-sites qui ne le renseignent pas sont inchangés.
+   */
+  ownerIds?: string[];
 }

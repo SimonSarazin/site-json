@@ -8,7 +8,8 @@ import type {
   FundingMilestone as Milestone,
   FundingAction as ProjectAction,
 } from "@/modules/cagnotte/types";
-import { getEntityId } from "@/modules/cagnotte/utils/dataTransform";
+import { getEntityId, normalizeTags, resolveActionAuthorId } from "@/modules/cagnotte/utils/dataTransform";
+import { resolveAnswerAuthorId } from "./answerAuthor";
 
 export function resolveAacActionEntityId(actionLike: { id?: string; _id?: string; entityId?: string } | null | undefined): string {
   return String(actionLike?.id ?? actionLike?._id ?? actionLike?.entityId ?? "").trim();
@@ -61,7 +62,8 @@ export function normalizeActionForEdit(actionLike: Record<string, unknown>): Pro
     name: String(actionLike.name ?? ""),
     credits: Number(actionLike.credits ?? 0),
     status: (String(actionLike.status ?? "todo") as ProjectAction["status"]),
-    tags: Array.isArray(actionLike.tags) ? actionLike.tags.filter((tag): tag is string => typeof tag === "string") : [],
+    tags: normalizeTags(actionLike.tags),
+    authorId: resolveActionAuthorId(actionLike),
     contributors: mergedContributors,
     date_start: typeof actionLike.date_start === "number" ? actionLike.date_start : undefined,
     date_end: typeof actionLike.date_end === "number" ? actionLike.date_end : undefined,
@@ -72,6 +74,32 @@ export function normalizeActionForEdit(actionLike: Record<string, unknown>): Pro
  *  cote answer-only (proposition non promue), les actions n'existent pas. */
 export function canManageObjectiveActions(projectId: string | null | undefined): boolean {
   return String(projectId ?? "").trim().length > 0;
+}
+
+/**
+ * Qui fait autorité sur les PALIERS et ACTIONS d'un commun : son DÉPOSANT, et lui seul.
+ *
+ * Cet id part dans `CagnottePermissionData.ownerIds`, aux côtés de l'entité du projet
+ * lié : le droit final est « admin du projet lié OU déposant du commun ».
+ *
+ * **L'admin de l'appel n'y est PAS**, et c'est délibéré. Porter l'appel donne le droit
+ * de sélectionner, valider et promouvoir un commun — pas d'écrire dans son plan de
+ * financement à la place de celui qui l'a déposé. Il l'obtient quand il administre le
+ * projet lié (souvent le cas quand il l'a généré), par l'entité passée au calculateur,
+ * jamais par sa qualité d'admin de l'appel.
+ *
+ * Le déposant, lui, passe par cette liste parce qu'il n'est admin de rien : ni du site,
+ * ni forcément du projet lié — la génération peut avoir été faite par quelqu'un d'autre,
+ * et `checkHierarchy` n'est pas appliqué (cf. doc/18 §Pièges n°5).
+ *
+ * @param answer - la réponse ; l'auteur est lu par `resolveAnswerAuthorId` (qui gère
+ *   le piège du commun porté par une organisation).
+ */
+export function resolveCommunOwnerIds(
+  answer: Parameters<typeof resolveAnswerAuthorId>[0],
+): string[] {
+  const authorId = resolveAnswerAuthorId(answer);
+  return authorId ? [authorId] : [];
 }
 
 export function getModalProjectEntityCandidate(
@@ -97,13 +125,25 @@ export function getModalProjectEntityCandidate(
   return null;
 }
 
+/**
+ * Ce que la carte sait dire d'une action au calculateur de permissions.
+ *
+ * `authorId` est optionnel : les cartes qui ne le renseignent pas gardent le
+ * comportement d'avant (admin ou contributeur assigné).
+ */
+export interface ActionPermissionInput {
+  status: ProjectAction["status"];
+  contributorIds: string[];
+  authorId?: string;
+}
+
 export interface MilestoneCardPermissions {
   canCreateAction: (input: { status: Milestone["status"] }) => boolean;
   canEditMilestone: (input: { status: Milestone["status"] }) => boolean;
   canCloseMilestone: (input: { status: Milestone["status"] }) => boolean;
   canDeleteMilestone: (input: { status: Milestone["status"]; hasTransactions: boolean }) => boolean;
-  canCandidateAction: (input: { status: ProjectAction["status"]; contributorIds: string[] }) => boolean;
-  canMarkActionDone: (input: { status: ProjectAction["status"]; contributorIds: string[] }) => boolean;
-  canEditAction: (input: { status: ProjectAction["status"]; contributorIds: string[] }) => boolean;
-  canDeleteAction: (input: { status: ProjectAction["status"]; contributorIds: string[] }) => boolean;
+  canCandidateAction: (input: ActionPermissionInput) => boolean;
+  canMarkActionDone: (input: ActionPermissionInput) => boolean;
+  canEditAction: (input: ActionPermissionInput) => boolean;
+  canDeleteAction: (input: ActionPermissionInput) => boolean;
 }

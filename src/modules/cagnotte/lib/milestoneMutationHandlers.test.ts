@@ -342,3 +342,80 @@ describe("deleteMilestoneWithSync", () => {
     expect(mockDeleteAnswerDepenseAtIndex).toHaveBeenCalledWith({ answer: answerEntity, index: 0 });
   });
 });
+
+/**
+ * Le repli `docs` (commun déposé sous un autre contexte) voit les deux documents du
+ * palier, mais PAS ses actions — elles ne vivent ni dans `oceco.milestones[]` ni dans
+ * `depense[]`, et le SDK n'expose aucun listage hors enveloppe.
+ *
+ * Édition et clôture s'en accommodent ; la suppression non : elle DOIT supprimer les
+ * actions liées, et une liste vide qu'on ne sait pas distinguer de « aucune action »
+ * les laisserait orphelines.
+ */
+describe("deleteMilestoneWithSync — repli sur les documents", () => {
+  const DOCS = {
+    projectMilestones: [{ milestoneId: "m1", name: "Palier test", description: "desc", status: "open" }],
+    depenses: [{ milestone: "m1", priceInt: 100, financer: [] }],
+  };
+
+  it("refuse de supprimer sans enveloppe : les actions liées y seraient invisibles", async () => {
+    const { api } = buildApiMock();
+
+    await expect(
+      deleteMilestoneWithSync({
+        source: api,
+        rawEnvelope: { projects: [] },
+        docs: DOCS,
+        projectId: "project1",
+        answerId: "answer1",
+        milestoneId: "m1",
+      }),
+      // Le motif compte : ce refus-ci, pas celui d'un palier financé.
+    ).rejects.toThrow("milestone.errors.cannotDeleteWithoutEnvelope");
+
+    expect(mockDeleteActionById).not.toHaveBeenCalled();
+    expect(mockDeleteProjectMilestoneAtIndex).not.toHaveBeenCalled();
+    expect(mockDeleteAnswerDepenseAtIndex).not.toHaveBeenCalled();
+  });
+
+  it("garde `hasFunding` exact : un palier financé est refusé pour SA raison", async () => {
+    const { api } = buildApiMock();
+
+    await expect(
+      deleteMilestoneWithSync({
+        source: api,
+        rawEnvelope: { projects: [] },
+        docs: { ...DOCS, depenses: [{ milestone: "m1", priceInt: 100, financer: [{ amount: 50 }] }] },
+        projectId: "project1",
+        answerId: "answer1",
+        milestoneId: "m1",
+      }),
+    ).rejects.toThrow("milestone.errors.cannotDeleteIfFunded");
+
+    expect(mockDeleteProjectMilestoneAtIndex).not.toHaveBeenCalled();
+  });
+
+  it("clôture TOUJOURS permise en repli — compromis assumé, faute de voir les actions", async () => {
+    const { api, answerEntity, projectEntity } = buildApiMock();
+
+    await closeMilestoneWithSync({
+      source: api,
+      rawEnvelope: { projects: [] },
+      docs: DOCS,
+      projectId: "project1",
+      answerId: "answer1",
+      milestoneId: "m1",
+    });
+
+    expect(mockUpdateProjectMilestoneFields).toHaveBeenCalledWith({
+      project: projectEntity,
+      index: 0,
+      fields: { status: "close" },
+    });
+    expect(mockUpdateAnswerDepenseFields).toHaveBeenCalledWith({
+      answer: answerEntity,
+      index: 0,
+      fields: { include: false },
+    });
+  });
+});

@@ -496,12 +496,18 @@ Le module enregistre un namespace `cagnotte` via `register.ts` (side-effect). 11
 | `canRestoreMilestone(m)` | admin + milestone en statut `close` exactement |
 | `canDeleteMilestone(m)` | admin + `m.hasTransactions !== true` |
 | `canCreateAction(m)` | admin + milestone non `close` |
-| `canEditAction(a)` | si `a.status === "done"` : admin uniquement ; sinon : admin OU contributeur (`a.contributorIds.includes(currentUserId)`) |
-| `canMarkActionDone(a)` | (admin OU contributeur) + `a.status === "todo"` |
+| `canEditAction(a)` | si `a.status === "done"` : admin uniquement ; sinon : admin OU **auteur** (`a.authorId`) OU contributeur (`a.contributorIds.includes(currentUserId)`) |
+| `canMarkActionDone(a)` | (admin OU **auteur** OU contributeur) + `a.status === "todo"` |
 | `canDeleteAction(a)` | admin uniquement (signature `(action) => isAdmin` — le paramètre `action` est ignoré) |
 | `canCandidateAction(a)` | `currentUserId` non vide + `a.status === "todo"` + pas déjà contributeur |
 
 Métadonnées exposées : `isConnected`, `isAdmin`, `isContributor`, `currentUserId`.
+
+**« admin » = admin de l'entité passée OU porteur déclaré de la ressource.**
+`data.ownerIds` (optionnel, vide par défaut) liste les ids qui font autorité sur CETTE
+ressource : `isAdmin = entity.isAdmin() || ownerIds.includes(currentUserId)`. Les 11 permissions
+en dérivent, gardes d'état comprises (un palier `close` reste figé, un palier financé reste
+indestructible). Voir [Pièges connus](#pièges-connus) §4 pour le pourquoi.
 
 **Note sur `canContribute`** : `canContribute` requiert que `me` soit connecté (`isConnected`). Si l'utilisateur n'est pas connecté ou si `entity` est absent, le calculateur fait un early-return vers `DEFAULT_CAGNOTTE_PERMISSIONS` (`canContribute: false`). La condition complète est : connecté + `projectId` non vide + `hasActiveMilestones === true`.
 
@@ -609,7 +615,7 @@ Sections dans `i18n/fr.json` et `i18n/en.json` :
 
 - `validation.*` — erreurs Zod (milestone/action/amount/date/id/contribution)
 - `toasts.*` — succès/erreurs des mutations contribution (`contributionSaved`, `contributionPartial`, `errors.*`)
-- `milestone.errors.*` — messages levés depuis les handlers `lib/` (apiClientUnavailable, projectIdMissing, answerIdMissing, syncContextMissing, cannotCloseWithOpenActions, cannotDeleteIfFunded, noIndexForDelete, actionIdMissing, deleteActionUnavailable, projectMissing)
+- `milestone.errors.*` — messages levés depuis les handlers `lib/` (apiClientUnavailable, projectIdMissing, answerIdMissing, syncContextMissing, cannotCloseWithOpenActions, cannotDeleteIfFunded, cannotDeleteWithoutEnvelope, noIndexForDelete, actionIdMissing, deleteActionUnavailable, projectMissing)
 - `CreateMilestoneDialog.*` — labels + toasts de création milestone
 - `MilestoneCreateTrigger.*` — toast connexion requise (trigger)
 - `MilestoneManageActions.*` — labels boutons admin
@@ -641,6 +647,47 @@ Symptôme du bug initial : impossible d'éditer un jalon avec message « ce jalo
 
 Fix : utiliser `getServerData(entity)` (`utils/dataTransform.ts`) qui résout l'indirection.
 
+### 2bis. L'enveloppe est scopée à l'entité APPELANTE — pas au corps de la requête
+
+`entity.fundingEnvelope({...})` passe par `BaseEntity._withCostumContext`, qui **écrase**
+`contextId`/`contextType` par ceux de l'entité sur laquelle la méthode est appelée. Un `contextId`
+placé dans le payload est donc du code mort : l'enveloppe décrit toujours le contexte de l'entité
+appelante.
+
+Conséquence : lue depuis l'entité du site, elle ne contient que les ressources de CE contexte. Une
+réponse déposée sous un autre contexte (un commun AAC déposé sur l'appel d'une autre organisation,
+seulement *sélectionné* ici) n'y figure pas — `savedSelectedResource` sort `undefined`, sans erreur.
+
+Fix : `useFundingEnvelope(id, { hostEntity })` prend l'entité à interroger ; côté AAC,
+`useCommunFundingHost` la résout depuis le contexte du commun. Deux replis existent pour ne pas
+dépendre de cette lecture de masse :
+
+- `buildResourceFromAnswer` (`utils/dataTransform.ts`) reconstruit la ressource depuis le document
+  réponse (projet lié + `depense[]`) ;
+- `MilestoneMutationContext.docs` alimente `resolveMilestoneSyncContextFromDocs`, sans quoi
+  éditer / clôturer un palier échoue sur `milestone.errors.syncContextMissing`.
+
+**Deux limites du repli, à connaître avant de s'en servir :**
+
+1. **Les index sont des chemins Mongo.** `resolveMilestoneSyncContextFromDocs` rend des positions
+   qui deviennent `oceco.milestones.<i>.<champ>` et `answers.<step>.depense.<i>.<champ>`. Un champ
+   tableau sérialisé en objet (pollution `{}` ↔ `[]`, cf. `doc/34` §Pièges) n'est donc **pas**
+   indexable : `Object.values` le redenserait et l'écriture toucherait la mauvaise entrée. Les deux
+   chemins refusent tout ce qui n'est pas un vrai tableau et retombent sur `syncContextMissing` —
+   d'où le type `MilestoneSyncDocs`, volontairement `unknown` et non `unknown[]` : **ne pas coercer
+   avant de le remplir**.
+2. **Les actions sont invisibles.** Elles ne vivent ni dans `oceco.milestones[]` ni dans
+   `depense[]`, et le SDK n'expose aucun listage des actions d'un projet hors enveloppe. Deux
+   conséquences, tranchées différemment :
+   - **Suppression refusée** (`milestone.errors.cannotDeleteWithoutEnvelope`) : supprimer un palier
+     doit supprimer ses actions, et une liste vide qu'on ne sait pas distinguer de « aucune action »
+     les laisserait orphelines. `MilestoneSyncContext.fromDocs` porte cette provenance.
+   - **Clôture permise** : la garde `cannotCloseWithOpenActions` est levée ici, faute de pouvoir
+     l'évaluer — compromis assumé plutôt que bloquer la clôture d'un palier légitime.
+
+   BACKLOG : une lecture des actions du projet lèverait la restriction de suppression **et** rendrait
+   la garde de clôture exacte.
+
 ### 2. `useFundingEnvelope` fait deux appels backend
 
 `getEnvelopeData` toujours appelé. `getFormData` appelé en plus si `formId` extractible **et** `me?.id` non null. Le merge (`mergeEnvelopePayloads`) écrase certains champs : `projects`, `links`, `contextData`, `nopropProject`. Implication : côté SSR (sans auth), seul `getEnvelopeData` est consommé ; le client ré-appelle si l'utilisateur est connecté.
@@ -663,6 +710,38 @@ const perms = useCagnottePermissions(permissionEntity, { ... });
 ```
 
 `CagnotteDialog` (header) reste sur l'entité site car son action (préférence `projectModalId`) cible l'org.
+
+**Troisième cas : ni le site, ni le profil — la RESSOURCE.** Une cagnotte adossée à une réponse
+(AAC) est portée par quelqu'un qui n'est admin d'aucune des deux entités : le **déposant** du
+commun (il n'est pas non plus admin du projet lié quand un autre l'a généré, cf. piège n°5). D'où
+`CagnottePermissionData.ownerIds` : une liste d'ids qui valent `isAdmin` sur cette ressource-ci. Le
+calculateur ne sait pas ce qu'est une ressource côté métier — c'est à l'appelant de dire qui la
+porte (`resolveCommunOwnerIds`, module AAC). Vide par défaut : les call-sites qui ne le renseignent
+pas sont inchangés.
+
+```ts
+const perms = useCagnottePermissions(projectEntity, {
+  hasActiveItems,
+  resourceId,
+  ownerIds: resolveCommunOwnerIds(answer),
+});
+```
+
+⚠️ **Deux points sur lesquels il est facile de se tromper :**
+
+1. **Pas d'entité de repli.** On passe `projectEntity` SEUL, jamais `projectEntity ?? entity`.
+   L'org du site répondrait `isAdmin() === true` à tous ses administrateurs, qui obtiendraient
+   paliers et actions sur le commun de n'importe qui — exactement ce que le piège n°4 interdit.
+   `projectEntity` vaut légitimement `null` (projet non résolu, ou proposition pas encore promue).
+2. **`ownerIds` ne dépend d'aucune entité.** `isResourceOwner` est donc évalué AVANT le garde
+   d'entrée, qui ne rejette plus que `!entity && !isResourceOwner`. Sans ça, il fallait fournir une
+   entité juste pour franchir le garde — d'où le repli du point 1.
+
+**L'admin de l'appel n'est PAS dans `ownerIds`** : porter l'appel donne
+le droit de sélectionner, valider et **promouvoir** un commun en projet
+(`CommunProjectControl.canManageProject`), pas d'écrire dans son plan de financement à la place du
+déposant. Il obtient paliers et actions quand il administre le projet lié — par l'entité, pas par
+sa qualité d'admin de l'appel.
 
 ### 5. `checkHierarchy` non utilisé pour project
 

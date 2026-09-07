@@ -18,8 +18,12 @@ import { useAssociateExistingAacProject } from "../../hooks/useAssociateExisting
  */
 export interface CommunProjectControlProps {
   api: Api | null;
-  /** Admin de l'AAC courant — seul à voir "Générer"/"Associer". */
-  isAdmin: boolean;
+  /**
+   * Qui peut rattacher un projet à ce commun — seuls eux voient "Générer"/"Associer".
+   * Le déposant du commun et l'admin de l'AAC courant (cf. `AacCommunDetailPage`) :
+   * ouvrir le suivi de SON commun fait partie de ce qu'on gère soi-même.
+   */
+  canManageProject: boolean;
   answerId: string | null;
   /** `targetResource?.projectId` — présence = projet déjà lié (généré ou associé). */
   projectId?: string | null;
@@ -63,7 +67,7 @@ const PROJECT_FINDER_CONFIG_BASE: Omit<
 
 export function CommunProjectControl({
   api,
-  isAdmin,
+  canManageProject,
   answerId,
   projectId,
   projectSlug,
@@ -140,7 +144,7 @@ export function CommunProjectControl({
     );
   }
 
-  if (!isAdmin) {
+  if (!canManageProject) {
     return <CommunProjectBadge className={className} />;
   }
 

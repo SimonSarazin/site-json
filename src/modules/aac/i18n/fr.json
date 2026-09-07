@@ -136,6 +136,11 @@
       "pledged": "Promesse",
       "done": "Terminée",
       "inProgress": "En cours",
+      "actionsButtons": {
+        "candidate": "Candidater à cette action",
+        "edit": "Modifier l'action",
+        "delete": "Supprimer l'action"
+      },
       "addMilestone": "Ajouter un palier",
       "deleteMilestoneConfirm": {
         "title": "Supprimer ce palier ?",
@@ -166,6 +171,19 @@
       "partner": "Partenaire",
       "type": "Type",
       "contribution": "Contribution"
+    },
+    "contributorsSection": {
+      "empty": "Personne n'a encore rejoint le projet de ce commun.",
+      "error": "Les contributeur·rices n'ont pas pu être chargé·es.",
+      "admin": "Admin du projet",
+      "author": "Déposant·e",
+      "contributor": "Contributeur·rice",
+      "organization": "Organisation",
+      "more": "+{{count}} autre·s non affiché·es.",
+      "addCta": "Ajouter des contributeur·rices",
+      "pendingTitle": "Invitations en attente",
+      "pendingInvitation": "Invitation envoyée",
+      "seeProject": "Voir le projet"
     },
     "prose": {
       "empty": "Aucun renseignement disponible."

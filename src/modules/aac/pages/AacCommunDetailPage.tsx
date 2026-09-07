@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router";
-import { AlertCircle, Home, Sparkles, ListChecks, Handshake, Layers, UsersRound, Scale, HandHeart, FileText, Users, UserCheck, Pencil, Image as ImageIcon } from "lucide-react";
+import { AlertCircle, Home, Sparkles, ListChecks, Handshake, Layers, UsersRound, Scale, HandHeart, FileText, Users, UserCheck, HeartHandshake, Pencil, Image as ImageIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -27,10 +27,13 @@ import { CommunFinancingCard } from "../components/pageDetail/CommunFinancingCar
 import { CommunTocNav, type TocSection } from "../components/pageDetail/CommunTocNav.tsx";
 import { CommunFinancingSection } from "../components/pageDetail/CommunFinancingSection.tsx";
 import { CommunActionsSection } from "../components/pageDetail/CommunActionsSection.tsx";
+import { CommunContributorsSection } from "../components/pageDetail/CommunContributorsSection.tsx";
 import { CommunCofinancersTable } from "../components/pageDetail/CommunCofinancersTable.tsx";
 import { CommunProse } from "../components/pageDetail/CommunProse.tsx";
 import { GallerySection, type GalleryImage } from "../components/pageDetail/CommunContentSections.tsx";
 import { useAacFundingResource } from "../hooks/useAacFundingResource";
+import { useCommunFundingHost } from "../hooks/useCommunFundingHost";
+import { useCommunFundingContext } from "../hooks/useCommunFundingContext";
 import { canManageObjectiveActions } from "@/modules/aac/lib/objectiveHelpers";
 
 export interface Task {
@@ -94,18 +97,6 @@ export default function AacCommunDetailPage() {
     const { api, loading, entity, me, refreshMe } = useCocolight();
     const perms = useAacPermissions(entity);
 
-    const { targetResource, projectSlug } = useAacFundingResource(answerId);
-
-    // Le bloc "Objectifs" n'existe que côté projet — une proposition pas
-    // encore promue en projet n'a pas d'actions.
-    const canManageActions = canManageObjectiveActions(targetResource?.projectId);
-
-    const SECTIONS: TocSection[] = useMemo(() => [
-        { id: "besoins-financiers", label: "Besoins financiers", icon: Sparkles },
-        ...(canManageActions ? [{ id: "objectifs", label: "Objectifs", icon: ListChecks }] : []),
-        ...STATIC_SECTIONS,
-    ], [canManageActions]);
-
     // État de la section active
     const [activeSection, setActiveSection] = useState("besoins-financiers");
     // Édition de la réponse CoForm à l'intérieur de la page (pas de navigation).
@@ -152,7 +143,11 @@ export default function AacCommunDetailPage() {
      * sont pas perdues pour autant — `SaveAnswerAction` fusionne clé par clé.
      */
     const formId = directory.formId ?? originFormId;
-    const isCommunEtranger = Boolean(originFormId && formId && originFormId !== formId);
+
+    // L'appel où il a été déposé, et le contexte qui le porte.
+    // Le nom de cet appel alimente le bandeau « Déposé sur … » ; son contexte
+    // désigne l'entité qui détient l'enveloppe de financement du commun.
+    const { context: fundingContext, originFormName } = useCommunFundingContext(answerQuery.data);
 
     // Requête Configuration Formulaire
     const formQuery = useQuery({
@@ -166,22 +161,41 @@ export default function AacCommunDetailPage() {
         },
     });
 
-    // Nom de l'appel d'ORIGINE — uniquement quand il diffère, pour que l'admin
-    // sache qu'il édite un commun déposé ailleurs. Une requête de plus, dans un
-    // cas rare, contre une action à l'aveugle sur le document d'autrui.
-    const originFormQuery = useQuery({
-        queryKey: ["aac-commun-origin-form", originFormId],
-        enabled: isReady && isCommunEtranger && !!originFormId,
-        staleTime: 5 * 60 * 1000,
-        queryFn: async (): Promise<string | null> => {
-            if (!api || !originFormId) return null;
-            const form = await api.form({ id: originFormId });
-            return (form.serverData as { name?: string } | undefined)?.name ?? null;
-        },
-    });
-
     // Requête Configuration Aac
     const { config, error: configError } = useAacConfig(formId ?? null);
+
+    /**
+     * L'entité SUR LAQUELLE lire le financement de ce commun.
+     *
+     * L'enveloppe n'est pas interrogeable « pour une réponse » : le SDK la scope à
+     * l'entité appelante. Lue depuis l'entité du site, elle ne contient que les
+     * communs de l'appel d'ici — un commun étranger n'y figure pas, et tout ce qui
+     * en découle (montants, projet lié, ciblage de la modale) s'effondre en
+     * silence. On interroge donc l'hôte de SON contexte.
+     */
+    const { hostEntity: fundingHost, isLoading: isFundingHostLoading } =
+        useCommunFundingHost(fundingContext);
+
+    const { targetResource, projectSlug } = useAacFundingResource(answerId, {
+        hostEntity: fundingHost,
+        isHostLoading: isFundingHostLoading,
+        // Repli : le document réponse porte déjà son projet et ses dépenses.
+        answer: answerQuery.data,
+        step: config?.roles.depenseStepKey ?? undefined,
+    });
+
+    const isProjectPhase = canManageObjectiveActions(targetResource?.projectId);
+
+    const SECTIONS: TocSection[] = useMemo(() => [
+        { id: "besoins-financiers", label: "Besoins financiers", icon: Sparkles },
+        ...(isProjectPhase
+            ? [
+                  { id: "objectifs", label: "Suivi des actions", icon: ListChecks },
+                  { id: "contributeurs", label: "Contributeurs", icon: HeartHandshake },
+              ]
+            : []),
+        ...STATIC_SECTIONS,
+    ], [isProjectPhase]);
 
     useEffect(() => {
         if (configError) {
@@ -240,6 +254,10 @@ export default function AacCommunDetailPage() {
     // organisation.
     const authorId = resolveAnswerAuthorId(answer);
     const canEditThisCommun = perms.canEditCommun({ authorId });
+
+    const isCommunAuthor = !!authorId && authorId === perms.currentUserId;
+
+    const canManageProject = perms.isAdmin || isCommunAuthor;
 
     const handleEditSubmit = async () => {
         await answerQuery.refetch();
@@ -324,7 +342,7 @@ export default function AacCommunDetailPage() {
 
                     <CommunProjectControl
                         api={api}
-                        isAdmin={perms.isAdmin}
+                        canManageProject={canManageProject}
                         answerId={answerId ?? null}
                         projectId={targetResource?.projectId}
                         projectSlug={projectSlug}
@@ -344,7 +362,7 @@ export default function AacCommunDetailPage() {
                         formData={formData}
                         answerData={answer.answers ?? {}}
                         aacConfig={config}
-                        depositedOnName={isCommunEtranger ? (originFormQuery.data ?? null) : null}
+                        depositedOnName={originFormName}
                     />
 
                     <CommunFinancingCard 
@@ -369,13 +387,24 @@ export default function AacCommunDetailPage() {
                             />
                         </Section>
 
-                        {canManageActions && (
-                            <Section id="objectifs" title="Objectifs" kicker="Actions">
+                        {isProjectPhase && (
+                            <Section id="objectifs" title="Suivi des actions" kicker="Avancement">
                                 <CommunActionsSection
                                     formData={formData}
                                     answerQuery={answer ?? {}}
                                     aacConfig={config}
                                     funding={targetResource}
+                                />
+                            </Section>
+                        )}
+
+                        {isProjectPhase && (
+                            <Section id="contributeurs" title="Contributeurs">
+                                <CommunContributorsSection
+                                    projectId={targetResource?.projectId}
+                                    projectSlug={projectSlug}
+                                    isCommunAuthor={isCommunAuthor}
+                                    authorId={authorId}
                                 />
                             </Section>
                         )}

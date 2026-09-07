@@ -18,6 +18,7 @@ import type { Api } from "@communecter/cocolight-api-client";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 import type { FundingMilestoneStatus } from "@/modules/cagnotte/types";
+import type { MilestoneSyncDocs } from "@/modules/cagnotte/lib/milestoneSyncContext";
 import {
   appendAnswerDepense,
   appendProjectMilestone,
@@ -36,6 +37,13 @@ import {
 export interface MilestoneMutationContext {
   api: Api | null;
   rawEnvelope: unknown;
+  /**
+   * Documents bruts de la ressource (`project.oceco.milestones[]` + `depense[]`),
+   * en REPLI de l'enveloppe quand celle-ci ne porte pas la ressource — cas d'un
+   * commun déposé sous un autre contexte. Sans lui, éditer / clôturer / supprimer
+   * un palier échoue sur `milestone.errors.syncContextMissing`.
+   */
+  docs?: MilestoneSyncDocs | null;
   projectId: string;
   answerId: string;
 }
@@ -68,6 +76,7 @@ export interface MilestoneMutationConfig<TParams> {
 export interface ResolvedMilestoneContext {
   api: Api;
   rawEnvelope: unknown;
+  docs?: MilestoneSyncDocs | null;
   projectId: string;
   answerId: string;
 }
@@ -93,6 +102,7 @@ function resolveContextOrThrow(ctx: MilestoneMutationContext): ResolvedMilestone
   return {
     api: ctx.api,
     rawEnvelope: ctx.rawEnvelope,
+    docs: ctx.docs,
     projectId: ctx.projectId,
     answerId: ctx.answerId,
   };
@@ -157,6 +167,7 @@ export const useEditMilestone = createMilestoneMutation<EditMilestoneParams>({
     await editMilestoneWithSync({
       source: ctx.api,
       rawEnvelope: ctx.rawEnvelope,
+      docs: ctx.docs,
       projectId: ctx.projectId,
       answerId: ctx.answerId,
       milestoneId: params.milestoneId,
@@ -193,6 +204,7 @@ export const useCloseMilestone = createMilestoneMutation<SimpleMilestoneParams>(
     await closeMilestoneWithSync({
       source: ctx.api,
       rawEnvelope: ctx.rawEnvelope,
+      docs: ctx.docs,
       projectId: ctx.projectId,
       answerId: ctx.answerId,
       milestoneId: params.milestoneId,
@@ -214,6 +226,7 @@ export const useRestoreMilestone = createMilestoneMutation<SimpleMilestoneParams
     await restoreMilestoneWithSync({
       source: ctx.api,
       rawEnvelope: ctx.rawEnvelope,
+      docs: ctx.docs,
       projectId: ctx.projectId,
       answerId: ctx.answerId,
       milestoneId: params.milestoneId,
@@ -235,6 +248,7 @@ export const useDeleteMilestone = createMilestoneMutation<SimpleMilestoneParams>
     await deleteMilestoneWithSync({
       source: ctx.api,
       rawEnvelope: ctx.rawEnvelope,
+      docs: ctx.docs,
       projectId: ctx.projectId,
       answerId: ctx.answerId,
       milestoneId: params.milestoneId,

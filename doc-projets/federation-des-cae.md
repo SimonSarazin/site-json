@@ -16,8 +16,7 @@
 > vit sur la branche `aac-dev` et n'a rien à voir avec le site des tiers-lieux, qui vit sur `jdev`
 > et `main` : leurs dossiers devaient être séparés. Cf. §10 31/08.
 
-Dernière mise à jour : **2026-08-31** (extraction du dossier ; règle de satisfaction et
-sous-catégorie du catalogue d'usages — cf. §10).
+Dernière mise à jour : **2026-09-03** (la cagnotte d'un commun déposé sur un autre appel — cf. §10).
 
 ---
 
@@ -192,7 +191,8 @@ Réglages notables de la section `toolsCatalog` :
 | 7 | Logo du site | ❌ | `header.logo` pointe `images/federationDesCae/logo.png`, absent de `public/` — seul constat d'audit |
 | 8 | Version mobile du catalogue | ✅ | `ToolFiltersSheet` — commité sur **`jdev`** (`cb26991d`), le module `toolsCatalog` étant partagé |
 | 9 | Brouillon du formulaire de dépôt | ✅ | actif sur une étape extraite, et le reprendre ne l'efface plus (cf. §10 31/08ter) |
-| 10 | Vérification navigateur | ❌ | **jamais faite** sur AUCUN lot du 27/08 au 31/08 |
+| 10 | Vérification navigateur | ❌ | **jamais faite** sur AUCUN lot du 27/08 au 31/08, ni sur celui du 03/09 |
+| 11 | Cagnotte d'un commun déposé sur un autre appel | 🟡 | modale ciblée, paliers/actions gérables par le déposant et l'admin (cf. §10 03/09) — reste à confirmer sur données réelles que l'enveloppe du contexte d'origine répond |
 
 **Gates au 31/08** (dernier lot, `d48dd882`) : `typecheck` ✅ · `eslint` ✅ · `test:unit` 3351 ✅ ·
 `config:validate` ✅ · `audit:config` 1 constat (le logo, ci-dessus) ·
@@ -203,6 +203,54 @@ qu'aucun slug ne réclame — même cause que le point 7.
 ---
 
 ## 10. Impacts des modifications
+
+### 03/09 — la cagnotte d'un commun déposé ailleurs
+
+**Le constat.** Sur la fiche d'un commun **étranger** — déposé sur l'appel France Tiers-Lieux, et
+présent ici parce qu'un admin CAE l'a *sélectionné* — la modale « Financer » affichait **un autre
+commun**, et la section « Objectifs / Actions » n'apparaissait jamais.
+
+**La cause, unique.** `entity.fundingEnvelope()` est scopée à l'entité **appelante** : le SDK
+(`BaseEntity._withCostumContext`) écrase le `contextId` du payload. Lue depuis l'entité du site,
+l'enveloppe ne contient que les communs de l'appel d'ici. Un commun étranger n'y étant pas :
+
+1. `savedSelectedResource` sortait `undefined` ;
+2. `CagnotteDialog` retombait alors sur `allResourcesIds[0]` — **la première ressource de la
+   liste** — avec `hideResourceSelect: true`, donc sans recours visible. Une contribution s'y
+   serait écrite dans le `depense[].financer[]` du mauvais commun ;
+3. sans `projectId`, `canManageObjectiveActions` restait faux : pas de section « Objectifs », pas
+   de bouton « Ajouter un palier », `CreateMilestoneDialog` sans projet ;
+4. et même débloqué, éditer / clôturer / supprimer un palier aurait échoué sur
+   `milestone.errors.syncContextMissing`, l'enveloppe servant aussi à retrouver les index du jalon.
+
+À quoi s'ajoutait un cinquième point, indépendant du contexte : les droits se calculaient sur
+l'**org du site**, donc seul un admin CAE gérait paliers et actions — jamais le **déposant**.
+
+**Le correctif.** Le financement d'un commun suit LE COMMUN :
+
+| Ce qui change | Où |
+|---|---|
+| L'enveloppe s'interroge sur une entité donnée (`hostEntity`), défaut inchangé | `useFundingEnvelope` |
+| Le contexte du commun = `form.parent` de l'appel où il a été **déposé** (0 requête de plus : la fiche fetchait déjà ce form pour son nom) | `useCommunFundingContext`, `lib/formParent.ts` |
+| L'entité de ce contexte, résolue par `resolveHostEntity` (aucun fetch si c'est celle du site) | `useCommunFundingHost` |
+| La ressource se reconstruit depuis le document réponse quand l'enveloppe ne la porte pas | `buildResourceFromAnswer` |
+| La synchro d'un palier accepte les documents bruts en repli | `resolveMilestoneSyncContextFromDocs`, `MilestoneMutationContext.docs` |
+| **Une ressource forcée introuvable ne retombe plus sur une autre** : message explicite, contribution impossible | `CagnotteDialog` |
+| Droits = entité du **projet lié** + `ownerIds` (déposant + admin de l'appel) | `useCommunObjectivesController`, `CagnottePermissionData.ownerIds` |
+| « Générer / Associer un projet » ouvert au déposant | `CommunProjectControl.canManageProject` |
+
+**Arbitrage produit** : le déposant gère les paliers, les actions **et** le rattachement du projet
+de son commun ; l'admin de l'appel aussi. Un simple visiteur, non.
+
+**Reste ouvert** :
+
+- 🚧 **à confirmer sur données réelles** — l'enveloppe du contexte d'origine renvoie-t-elle bien la
+  proposition à un utilisateur CAE ? Si non, la fiche fonctionne quand même (ressource reconstruite
+  depuis la réponse), mais sans les financeurs consolidés côté FTL ;
+- l'input `newDepenseList` du **formulaire** (`MilestoneListField`) n'a que l'`answerId`, donc pas
+  de contexte à résoudre : sur un commun étranger, sa projection des paliers vers le projet reste
+  inopérante (best-effort par conception, la réponse fait foi). Commentée sur place ;
+- la vérification navigateur (point 10 de la checklist) reste à faire.
 
 ### 31/08ter — le brouillon du dépôt : absent, puis destructeur
 

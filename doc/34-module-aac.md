@@ -230,7 +230,14 @@ src/modules/aac/
   schema.ts                 # AacConfigSchema (bloc site) + AacSectionSchema (section)
   types.ts                  # CONTRAT : Commun/Depense/Financer + Campagne/Panier/Log RÉSERVÉS
   lib/resolveAacConfig.ts   # résolveur PUR (+ .test.ts)
+  lib/formParent.ts         # firstParent(form) → le CONTEXTE porteur d'un appel (+ .test.ts)
+  lib/objectiveHelpers.ts   # dont resolveCommunOwnerIds : qui gère les paliers d'un commun
   hooks/useAacConfig.ts     # résolveur câblé (api.form ×2, 0 nouvel endpoint)
+  hooks/useCommunFundingContext.ts # où vit un commun : l'appel où il a été DÉPOSÉ
+  hooks/useCommunFundingHost.ts    # l'entité de ce contexte — celle qui détient l'enveloppe
+  hooks/useCommunProjectEntity.ts  # le Project lié : droits + oceco.milestones
+  hooks/useCommunRawDepenses.ts    # depense[] : ...RawDepenses pour l'affichage,
+                                   #   ...RawDepensesDocument (brut) pour l'écriture
   hooks/useAacPermissions.ts
   permissions/              # types, defaults, calculators/aac.ts, register, index
   constants/queryKeys.ts    # AAC_QUERY_KEYS
@@ -269,6 +276,27 @@ financière.
   `userId`)** → tout calcul ancré sur `userId` doit tolérer son absence.
 - **Manquant, à ajouter au moment du financement** : la **garde d'immuabilité `paid`**
   (aucun garde en lecture seule n'existe aujourd'hui sur un financement payé).
+
+**Paliers et actions d'un commun** — droits calculés par le namespace `cagnotte`, pas `aac` :
+`useCommunObjectivesController` passe l'entité **du projet lié SEULE** (jamais de repli sur l'org du
+site, cf. `doc/18` §Pièges n°4) et `ownerIds: resolveCommunOwnerIds(answer)` = **le déposant**. Le
+déposant n'est admin d'aucune entité : sans cette liste, il ne pouvait ni créer un palier ni
+ajouter une action sur SON commun.
+
+Droit final : **admin du projet lié OU déposant du commun**. L'admin de l'appel n'y est pas — voir
+ci-dessous.
+
+⚠️ **Deux règles voisines mais DISTINCTES**, à ne pas réunifier :
+
+| Action | Qui | Où |
+|---|---|---|
+| Sélectionner / valider un commun | admin de l'appel | `aac` (`canSelectCommun`) |
+| **Générer / Associer un projet** | admin de l'appel **ou** déposant | `CommunProjectControl.canManageProject` |
+| **Ajouter / éditer palier et action** | admin du **projet lié** **ou** déposant | `cagnotte` + `ownerIds` |
+
+Porter l'appel autorise à instruire et à **promouvoir** un commun, pas à écrire dans le plan de
+financement d'autrui. L'admin de l'appel retrouve les paliers dès qu'il administre le projet lié —
+ce qui est le cas courant quand c'est lui qui l'a généré.
 
 ## 7. Query keys
 
@@ -321,6 +349,21 @@ convention du repo, **plus une spécificité AAC** :
    nom de champ. Et **jamais de clé littérale** `aapStep1lurze…` (les inputKeys sont générés).
 8. **Dérive de version SDK** : le repo `cocolight-api-client` peut être **en retard** sur le paquet
    installé. **Coder contre `node_modules`**, pas contre les sources du repo.
+9. **Un commun listé ici n'y a pas forcément été DÉPOSÉ.** Il suffit qu'un admin d'ici l'ait
+   sélectionné (`answers.aapStep2.choose.<contextId>`). Sa **fiche** est rendue avec le formulaire
+   de l'appel COURANT (`directory.formId ?? answer.form`), mais son **financement** appartient à
+   son appel d'origine : l'enveloppe est scopée à l'entité appelante (cf. `doc/18` §Pièges n°2bis),
+   donc la lire depuis l'entité du site ne le trouve pas. Résoudre l'hôte avec
+   `useCommunFundingContext` + `useCommunFundingHost` — et ne JAMAIS laisser une ressource
+   introuvable retomber sur une autre : la modale de financement écrirait dans le
+   `depense[].financer[]` du mauvais commun.
+
+   Deux corollaires côté écriture : suspendre l'enveloppe tant que l'hôte se résout
+   (`useCommunFundingHost().isLoading` → `useFundingEnvelope(..., { enabled })`), sinon on part
+   sur l'entité du site le temps d'un aller-retour ; et passer l'étape RÉSOLUE
+   (`config.roles.depenseStepKey`) aux replis document, `buildResourceFromAnswer` comme
+   `useCommunRawDepenses`, plutôt que de laisser jouer leur défaut `DEFAULT_AAC_STEP`.
+   Sur les limites du repli lui-même (index Mongo, suppression refusée) : `doc/18` §Pièges n°2bis.
 
 ---
 

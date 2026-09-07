@@ -8,9 +8,23 @@
  *
  * Toutes les fonctions sont pures (aucun side-effect) — adaptées à `utils/` plutôt qu'à `lib/`.
  */
-import type { CagnotteFundableItem } from "../types";
+import type { CagnotteFundableItem, CagnotteResource } from "../types";
 
 export type UnknownRecord = Record<string, unknown>;
+
+/**
+ * Étape par défaut des données d'un commun AAC.
+ *
+ * ⚠️ Le module AAC suppose partout que le commun vit sur `aapStep1`. Ce n'est PAS une
+ * levée de l'hypothèse module-wide : c'est le repli des appelants qui ne résolvent pas
+ * leur étape. Qui la connaît (la fiche, via `config.roles.depenseStepKey`) DOIT la
+ * passer explicitement — cf. `doc/34` §4, « jamais de `aapStepN` en dur ».
+ *
+ * Déclarée ici, dans la couche la plus basse, pour que `utils/` n'ait pas à dépendre
+ * de `lib/` ; `lib/actionMilestonePathUpdates` la ré-exporte pour ses appelants
+ * historiques.
+ */
+export const DEFAULT_AAC_STEP = "aapStep1";
 
 /**
  * Coerce une valeur en `Record<string, unknown>`. Retourne `{}` pour `null`, `undefined`,
@@ -48,6 +62,13 @@ export function toArray<T>(value: unknown): T[] {
   if (Array.isArray(value)) return value as T[];
   if (value == null) return [];
   return [value as T];
+}
+
+export function normalizeTags(value: unknown): string[] {
+  const tags = toArray<unknown>(value).filter(
+    (tag): tag is string => typeof tag === "string" && tag.length > 0,
+  );
+  return Array.from(new Set(tags));
 }
 
 /**
@@ -131,6 +152,18 @@ export function getEntityId(value: unknown): string {
 }
 
 /**
+ * Auteur d'une action, c'est-à-dire qui l'a créée.
+ *
+ * Le backend écrit les deux champs à la création (`ActionAction.php` : `'creator' => $user`
+ * ET `'idUserAuthor' => $user`), mais des documents anciens n'en portent qu'un — on lit
+ * donc les deux, `creator` d'abord. Retourne `""` quand l'action ne dit pas qui l'a créée.
+ */
+export function resolveActionAuthorId(actionLike: unknown): string {
+  const record = asRecord(actionLike);
+  return getEntityId(record.creator) || getEntityId(record.idUserAuthor);
+}
+
+/**
  * Retourne le sous-arbre `serverData` d'une Entity Cocolight (ou le record direct si
  * la valeur n'est pas une Entity). Les méthodes du SDK qui retournent des entités linkées
  * (cf. `BaseEntity.fundingEnvelope` → `_linkEntity`) rangent les données du document Mongo
@@ -209,6 +242,58 @@ function buildFallbackFundingFromRawFinancers(rawFinancer: unknown): {
   }));
   const currentFunding = financers.reduce((sum, f) => sum + toNumber(f.amount), 0);
   return { currentFunding, allFunding };
+}
+
+/**
+ * Construit la ressource finançable D'UNE RÉPONSE, sans passer par l'enveloppe.
+ *
+ * L'enveloppe (`useFundingEnvelope`) est une lecture de MASSE, scopée au contexte de
+ * l'entité interrogée : une réponse déposée sous un autre contexte n'y figure pas, et
+ * la ressource sort alors `undefined` — plus de montants, plus de `projectId`, donc
+ * plus de section actions ni de création de palier.
+ *
+ * Or la réponse porte déjà tout l'essentiel : son projet (`project.id`, écrit par
+ * `generateProject` / `associateExistingProject`) et ses dépenses. C'est le pendant, au
+ * niveau RESSOURCE, de ce que `buildItemsFromRawDepenses` fait au niveau ITEM : la
+ * réponse est la source primaire, l'enveloppe n'est qu'un enrichissement.
+ *
+ * @param answerLike - `answer.serverData` (ou l'entité : `getServerData` est appliqué).
+ * @param step - étape portant `depense[]`. Défaut `DEFAULT_AAC_STEP` ; les appelants
+ *   qui résolvent leur étape doivent la passer.
+ * @returns la ressource, ou `null` si la réponse n'a pas d'identifiant exploitable.
+ */
+export function buildResourceFromAnswer(
+  answerLike: unknown,
+  step: string = DEFAULT_AAC_STEP,
+): CagnotteResource | null {
+  const answer = getServerData(answerLike);
+  const answerId = getEntityId(answer);
+  if (!answerId) return null;
+
+  const stepAnswers = asRecord(asRecord(answer.answers)[step]);
+
+  // `depense[]` arrive parfois sérialisé en objet (pollution Mongo `{}` ↔ `[]`) :
+  // `toArrayOrValues` couvre les deux formes, `toArray` viderait la liste en silence.
+  const rawDepenses = toArrayOrValues<unknown>(stepAnswers.depense).map(asRecord);
+
+  const items = buildItemsFromRawDepenses(rawDepenses, []);
+  const openItems = items.filter((item) => item.status !== "close");
+
+  const project = asRecord(answer.project);
+  const projectId = getEntityId(project);
+
+  return {
+    fromType: "proposition",
+    id: answerId,
+    answerId,
+    projectId: projectId || undefined,
+    // Même champ que la ressource issue de l'enveloppe (`proposition.titre`), lu à
+    // la source — sinon la modale afficherait « sans titre » sur ce chemin.
+    name: toString(stepAnswers.titre) || toString(project.name),
+    resourceTotalAmount: openItems.reduce((sum, item) => sum + toSafeInt(item.price), 0),
+    resourceFinancedAmount: openItems.reduce((sum, item) => sum + toSafeInt(item.currentFunding), 0),
+    items,
+  };
 }
 
 export function buildItemsFromRawDepenses(

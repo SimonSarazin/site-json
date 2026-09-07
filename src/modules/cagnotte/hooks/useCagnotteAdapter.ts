@@ -17,7 +17,7 @@ import { useUserAdminOrganizations } from "@/modules/cagnotte/hooks/useUserAdmin
 import { isUser } from "@/lib/getTypedEntity";
 import type { User } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
-import { asRecord, getServerData, toArrayOrValues, toNumber } from "@/modules/cagnotte/utils/dataTransform.ts";
+import { asRecord, getServerData, normalizeTags, toArrayOrValues, toNumber } from "@/modules/cagnotte/utils/dataTransform.ts";
 import { generateMilestoneId } from "@/modules/cagnotte/utils/idGeneration";
 import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 import { appendProjectMilestone, updateAnswerDepenseFields } from "@/modules/cagnotte/lib/actionMilestonePathUpdates";
@@ -86,7 +86,7 @@ export const calculateFundingStatus = (
     }, { currentFunding: 0, unpaidFunding: 0, userPledge: 0});
 }
 
-function enrichActionContributors(action: any, globalLinks: any) {
+function normalizeRawAction(action: any, globalLinks: any) {
     const contributorsLinks = action.links?.contributors || {};
 
     const contributorsRecord = Object.fromEntries(
@@ -107,6 +107,7 @@ function enrichActionContributors(action: any, globalLinks: any) {
 
     return {
         ...action,
+        tags: normalizeTags(action.tags),
         links: {
             ...action.links,
             contributors: contributorsRecord
@@ -158,7 +159,7 @@ function buildDepenseFundingData(
     }));
 
     const rawActions = depense?.actions ?? [];
-    const enrichedActions = rawActions.map((action: any) => enrichActionContributors(action, globalLinks));
+    const enrichedActions = rawActions.map((action: any) => normalizeRawAction(action, globalLinks));
 
     const { currentFunding, unpaidFunding, userPledge } = calculateFundingStatus(
         enrichedFinancers,
@@ -372,7 +373,7 @@ export function useCagnotteAdapter(
                         ? (proposition.actions || []).filter(action => action?.milestone?.milestoneId === d.milestone )
                         : [];
 
-                    const enrichedActions = filteredActions.map((action: any) => enrichActionContributors(action, globalLinks));
+                    const enrichedActions = filteredActions.map((action: any) => normalizeRawAction(action, globalLinks));
 
                     let resolvedMilestoneId = d.milestone ?? "";
                     if (proposition.projectId && hasLinkedProject) {

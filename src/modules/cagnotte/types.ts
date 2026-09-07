@@ -60,12 +60,7 @@ export type FundingAction = {
   date_end?: number;
   tags: string[];
   contributors: FundingContributor[];
-  /**
-   * Instance SDK `Action` linkée par `BaseEntity.fundingEnvelope` (SDK 1.0.130+).
-   * Permet aux call-sites d'appeler des méthodes typées (`delete()`, `get()`,
-   * `isAdmin()`, …) ou d'accéder à `serverData` complet sans relire l'enveloppe.
-   * Optionnel pour rétro-compat : peut être absent si l'entité n'a pas été linkée.
-   */
+  authorId?: string;
   entity?: Action;
 };
 

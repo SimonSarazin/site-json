@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { ChevronDown, Plus, Pencil, Trash2, UserPlus, Loader2 } from "lucide-react";
 import type { CoFormData, CoFormAnswer } from "@/modules/coform/types";
 import type { AacResolvedConfig } from "../../types";
@@ -30,6 +30,42 @@ interface CommunActionsSectionProps {
     answerQuery: CoFormAnswer | null;
     aacConfig: AacResolvedConfig | null;
     funding?: any;
+}
+
+function ActionRowButton({
+    label,
+    icon,
+    onClick,
+    isPending = false,
+    disabled = false,
+    tone = "primary",
+}: {
+    label: string;
+    icon: ReactNode;
+    onClick: () => void;
+    isPending?: boolean;
+    disabled?: boolean;
+    /** Couleur prise au survol : l'action destructrice se signale avant le clic. */
+    tone?: "primary" | "destructive";
+}) {
+    return (
+        <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label={label}
+            title={label}
+            onClick={onClick}
+            disabled={disabled || isPending}
+            className={`size-7 rounded-md text-muted-foreground ${
+                tone === "destructive"
+                    ? "hover:bg-destructive/10 hover:text-destructive"
+                    : "hover:bg-primary/10 hover:text-primary"
+            }`}
+        >
+            {isPending ? <Loader2 className="size-3.5 animate-spin" /> : icon}
+        </Button>
+    );
 }
 
 function ActionsMilestoneCard({
@@ -122,6 +158,7 @@ function ActionsMilestoneCard({
                                     const actionLike = {
                                         status: action.status,
                                         contributorIds: action.contributors.map((contributor) => contributor.id),
+                                        authorId: action.authorId,
                                     };
                                     const showCandidate = permissions.canCandidateAction(actionLike);
                                     const showMarkDone = permissions.canMarkActionDone(actionLike);
@@ -171,35 +208,33 @@ function ActionsMilestoneCard({
                                             <span className={isDone ? "w-[15%] text-success flex justify-center" : "w-[15%] flex justify-center"}>
                                                 {isDone ? String(c("detail.objectives.done")) : String(c("detail.objectives.inProgress"))}
                                             </span>
-                                            <span className="w-[15%] justify-end flex gap-1">
+                                            <span className="w-[15%] flex items-center justify-end gap-0.5">
                                                 {showCandidate ? (
-                                                    <Button
-                                                        size="sm"
-                                                        className="h-7 text-[11px] gap-1 px-2 bg-transparent hover:bg-primary/10"
+                                                    <ActionRowButton
+                                                        label={String(c("detail.objectives.actionsButtons.candidate"))}
+                                                        icon={<UserPlus className="size-3.5" />}
                                                         onClick={() => onActionCandidate(item.milestoneId, action)}
-                                                        disabled={loadingIds.candidateActionId === action.id}
-                                                    >
-                                                        {loadingIds.candidateActionId === action.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <UserPlus className="h-3 w-3" />}
-                                                    </Button>
+                                                        isPending={loadingIds.candidateActionId === action.id}
+                                                    />
                                                 ) : null}
                                                 {showEdit ? (
-                                                    <Button
-                                                        size="sm"
-                                                        className="h-7 text-[11px] gap-1 px-2 bg-transparent hover:bg-primary/10"
+                                                    <ActionRowButton
+                                                        label={String(c("detail.objectives.actionsButtons.edit"))}
+                                                        icon={<Pencil className="size-3.5" />}
                                                         onClick={() => onActionEdit(item.milestoneId, item.name, action)}
-                                                    >
-                                                        <Pencil className="h-3 w-3" />
-                                                    </Button>
+                                                        // Ouvrir la modale d'édition d'une ligne en cours de suppression
+                                                        // n'a pas de sens : la cible peut disparaître pendant la saisie.
+                                                        disabled={loadingIds.deletingActionId === action.id}
+                                                    />
                                                 ) : null}
                                                 {showDelete ? (
-                                                    <Button
-                                                        size="sm"
-                                                        className="h-7 text-[11px] gap-1 px-2 bg-transparent hover:bg-destructive/10"
+                                                    <ActionRowButton
+                                                        label={String(c("detail.objectives.actionsButtons.delete"))}
+                                                        icon={<Trash2 className="size-3.5" />}
                                                         onClick={() => onActionDelete(item.milestoneId, action)}
-                                                        disabled={loadingIds.deletingActionId === action.id}
-                                                    >
-                                                        {loadingIds.deletingActionId === action.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
-                                                    </Button>
+                                                        isPending={loadingIds.deletingActionId === action.id}
+                                                        tone="destructive"
+                                                    />
                                                 ) : null}
                                             </span>
                                         </li>

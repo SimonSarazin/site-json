@@ -136,6 +136,11 @@
       "pledged": "Pledged",
       "done": "Done",
       "inProgress": "In progress",
+      "actionsButtons": {
+        "candidate": "Volunteer for this action",
+        "edit": "Edit action",
+        "delete": "Delete action"
+      },
       "addMilestone": "Add a milestone",
       "deleteMilestoneConfirm": {
         "title": "Delete this milestone?",
@@ -166,6 +171,19 @@
       "partner": "Partner",
       "type": "Type",
       "contribution": "Contribution"
+    },
+    "contributorsSection": {
+      "empty": "Nobody has joined this commun's project yet.",
+      "error": "Contributors could not be loaded.",
+      "admin": "Project admin",
+      "author": "Submitter",
+      "contributor": "Contributor",
+      "organization": "Organization",
+      "more": "+{{count}} not shown.",
+      "addCta": "Add contributors",
+      "pendingTitle": "Pending invitations",
+      "pendingInvitation": "Invitation sent",
+      "seeProject": "See the project"
     },
     "prose": {
       "empty": "No information available."

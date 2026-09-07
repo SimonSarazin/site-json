@@ -1,4 +1,5 @@
 import type { Action, Answer, Project, SetTypeValue } from "@communecter/cocolight-api-client";
+import { DEFAULT_AAC_STEP } from "@/modules/cagnotte/utils/dataTransform";
 
 type SetType = SetTypeValue | Array<{ path: string; type: SetTypeValue }>;
 
@@ -10,8 +11,11 @@ type SetType = SetTypeValue | Array<{ path: string; type: SetTypeValue }>;
  * coform, lui, connaît sa vraie étape — tout en gardant ce défaut pour ne pas
  * casser les appelants historiques. Ce n'est PAS une levée de l'hypothèse
  * module-wide : cf. le BACKLOG.
+ *
+ * Définie dans `utils/dataTransform` (couche la plus basse, sans dépendance au SDK),
+ * ré-exportée ici pour les appelants historiques. Une seule source de vérité.
  */
-export const DEFAULT_AAC_STEP = "aapStep1";
+export { DEFAULT_AAC_STEP };
 
 export async function appendProjectMilestone(params: {
   project: Project;

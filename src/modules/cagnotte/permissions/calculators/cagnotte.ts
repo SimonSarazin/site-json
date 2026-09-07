@@ -4,6 +4,8 @@
  * Sémantique :
  *  - "admin du projet" : `entity.isAdmin?.()` retourne `true` (ou `me` est propriétaire de l'entité courante)
  *  - "contributeur d'une action" : `me.id` figure dans `action.contributorIds`
+ *  - "auteur d'une action" : `me.id` == `action.authorId` (celui qui l'a créée, même
+ *    s'il ne s'y est pas assigné comme contributeur)
  *  - une action `done` ne peut plus être modifiée (sauf delete par admin)
  *  - un milestone `close` est figé (sauf restauration par admin)
  *  - un milestone avec financement encaissé ne peut être supprimé
@@ -50,7 +52,10 @@ export function calculateCagnottePermissions(
   const isConnected = Boolean(me?.isConnected);
   const currentUserId = me?.id?.trim() || "";
 
-  if (!isConnected || !entity) {
+  const isResourceOwner =
+    !!currentUserId && (data?.ownerIds ?? []).includes(currentUserId);
+
+  if (!isConnected || (!entity && !isResourceOwner)) {
     return {
       ...DEFAULT_CAGNOTTE_PERMISSIONS,
       isConnected,
@@ -59,7 +64,7 @@ export function calculateCagnottePermissions(
     };
   }
 
-  const isAdmin = safeIsAdmin(entity);
+  const isAdmin = safeIsAdmin(entity) || isResourceOwner;
   const isContributor = safeIsContributor(entity);
   const hasActiveItems = data?.hasActiveItems ?? false;
   const resourceId = data?.resourceId ?? "";
@@ -70,6 +75,11 @@ export function calculateCagnottePermissions(
   const isUserContributorOf = (action: CagnotteActionLike | null | undefined): boolean => {
     if (!action || !currentUserId) return false;
     return (action.contributorIds ?? []).includes(currentUserId);
+  };
+
+  const isUserAuthorOf = (action: CagnotteActionLike | null | undefined): boolean => {
+    if (!action || !currentUserId) return false;
+    return String(action.authorId ?? "").trim() === currentUserId;
   };
 
   return {
@@ -94,11 +104,14 @@ export function calculateCagnottePermissions(
       if (!action) return false;
       // Une action "done" reste éditable par admin pour corrections, mais pas par un simple contributeur
       if (action.status === "done") return isAdmin;
-      return isAdmin || isUserContributorOf(action);
+      // Tant qu'elle n'est pas terminée, ceux qui la portent peuvent la corriger
+      return isAdmin || isUserAuthorOf(action) || isUserContributorOf(action);
     },
     canMarkActionDone: (action) => {
       if (!action || action.status !== "todo") return false;
-      return isAdmin || isUserContributorOf(action);
+      // Symétrique de `canEditAction` : qui peut corriger une action non terminée peut
+      // la clore.
+      return isAdmin || isUserAuthorOf(action) || isUserContributorOf(action);
     },
     canDeleteAction: () => isAdmin,
     canCandidateAction: (action) => {

@@ -24,7 +24,13 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { isProject } from "@/lib/getTypedEntity";
 import { useOptionalProfileEntity } from "@/modules/profil/hooks/useProfileEntity";
 import type { MilestoneEditFormData } from "@/modules/cagnotte/schemaForm";
-import { canManageObjectiveActions, getModalProjectEntityCandidate } from "@/modules/aac/lib/objectiveHelpers";
+import { canManageObjectiveActions, getModalProjectEntityCandidate, resolveCommunOwnerIds } from "@/modules/aac/lib/objectiveHelpers";
+import { useCommunFundingContext } from "@/modules/aac/hooks/useCommunFundingContext";
+import { useCommunFundingHost } from "@/modules/aac/hooks/useCommunFundingHost";
+import { useCommunProjectEntity } from "@/modules/aac/hooks/useCommunProjectEntity";
+import { useCommunRawDepensesDocument } from "@/modules/aac/hooks/useCommunRawDepenses";
+import type { MilestoneSyncDocs } from "@/modules/cagnotte/lib/milestoneSyncContext";
+import { asRecord } from "@/modules/cagnotte/utils/dataTransform";
 
 export function useCommunObjectivesController({
   answerQuery,
@@ -33,13 +39,12 @@ export function useCommunObjectivesController({
   answerQuery: CoFormAnswer | null;
   funding?: any;
 }) {
-  const { api, apiClient, entity, me } = useCocolight();
+  const { api, apiClient, me } = useCocolight();
   const profileEntity = useOptionalProfileEntity();
   const profileProjectEntity = useMemo(
     () => (profileEntity?.entity && isProject(profileEntity.entity) ? profileEntity.entity : null),
     [profileEntity],
   );
-  const [projectEntity, setProjectEntity] = useState<Project | null>(null);
   const [isCreateActionOpen, setIsCreateActionOpen] = useState(false);
   const [isEditActionOpen, setIsEditActionOpen] = useState(false);
   const [isEditMilestoneOpen, setIsEditMilestoneOpen] = useState(false);
@@ -60,14 +65,32 @@ export function useCommunObjectivesController({
   });
 
   const answerEntityId = answerQuery ? getEntityId(answerQuery) : "";
-  const { data: fundingEnvelopeData, refetch: refetchFundingEnvelope } = useFundingEnvelope(answerEntityId);
-  const cagnottePerms = useCagnottePermissions(entity, {
-    hasActiveItems: (funding?.items || []).some((m: any) => m.status !== "close"),
-    resourceId: answerEntityId,
-  });
+
+  const { context: fundingContext } = useCommunFundingContext(answerQuery);
+  const { hostEntity: fundingHost, isLoading: isFundingHostLoading } =
+    useCommunFundingHost(fundingContext);
+  const { data: fundingEnvelopeData, refetch: refetchFundingEnvelope } = useFundingEnvelope(
+    answerEntityId,
+    { hostEntity: fundingHost, enabled: !isFundingHostLoading },
+  );
 
   const resolvedProjectId = funding?.projectId || "";
   const resolvedAnswerId = funding?.answerId || answerEntityId || "";
+
+  const fetchedProjectEntity = useCommunProjectEntity(resolvedProjectId);
+  const projectEntity = useMemo(
+    () => getModalProjectEntityCandidate(profileProjectEntity, fetchedProjectEntity, resolvedProjectId),
+    [profileProjectEntity, fetchedProjectEntity, resolvedProjectId],
+  );
+
+  const ownerIds = useMemo(() => resolveCommunOwnerIds(answerQuery), [answerQuery]);
+
+  const cagnottePerms = useCagnottePermissions(projectEntity, {
+    hasActiveItems: (funding?.items || []).some((m: any) => m.status !== "close"),
+    resourceId: answerEntityId,
+    ownerIds,
+  });
+
   const canManageActions = canManageObjectiveActions(resolvedProjectId);
   const isConnected = cagnottePerms.isConnected;
   const currentUserId = me?.serverData?.id ?? cagnottePerms.currentUserId;
@@ -78,8 +101,17 @@ export function useCommunObjectivesController({
     answerId: resolvedAnswerId,
   });
 
+  const { data: rawDepensesDocument } = useCommunRawDepensesDocument(resolvedAnswerId);
+  const milestoneDocs = useMemo<MilestoneSyncDocs>(
+    () => ({
+      projectMilestones: asRecord(asRecord(projectEntity?.serverData).oceco).milestones,
+      depenses: rawDepensesDocument,
+    }),
+    [projectEntity, rawDepensesDocument],
+  );
+
   const actionCtx = useMemo(() => ({ api, projectId: resolvedProjectId, project: projectEntity }), [api, resolvedProjectId, projectEntity]);
-  const milestoneCtx = useMemo(() => ({ api, rawEnvelope: fundingEnvelopeData?.rawEnvelope ?? null, projectId: resolvedProjectId, answerId: resolvedAnswerId }), [api, fundingEnvelopeData?.rawEnvelope, resolvedProjectId, resolvedAnswerId]);
+  const milestoneCtx = useMemo(() => ({ api, rawEnvelope: fundingEnvelopeData?.rawEnvelope ?? null, docs: milestoneDocs, projectId: resolvedProjectId, answerId: resolvedAnswerId }), [api, fundingEnvelopeData?.rawEnvelope, milestoneDocs, resolvedProjectId, resolvedAnswerId]);
 
   const candidateActionMutation = useCandidateAction(actionCtx);
   const markActionDoneMutation = useMarkActionDone(actionCtx);
@@ -144,9 +176,6 @@ export function useCommunObjectivesController({
 
     const candidate = getModalProjectEntityCandidate(profileProjectEntity, projectEntity, effectiveProjectId);
     if (candidate) {
-      if (projectEntity !== candidate) {
-        setProjectEntity(candidate);
-      }
       try {
         await candidate.refresh();
       } catch (error) {
@@ -160,11 +189,9 @@ export function useCommunObjectivesController({
     }
 
     try {
-      const fetchedProjectEntity = (me
+      return (me
         ? await me.project({ id: effectiveProjectId })
         : await api!.project({ id: effectiveProjectId })) as Project;
-      setProjectEntity(fetchedProjectEntity);
-      return fetchedProjectEntity;
     } catch (error) {
       console.warn("Unable to resolve project entity for AAC modal", error);
       return null;

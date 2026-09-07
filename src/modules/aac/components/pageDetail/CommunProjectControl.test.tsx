@@ -85,7 +85,7 @@ function renderControl(over: Partial<Props> = {}) {
   return render(
     <CommunProjectControl
       api={makeApi()}
-      isAdmin
+      canManageProject
       answerId="answer-1"
       projectId={null}
       projectSlug={null}
@@ -106,13 +106,13 @@ beforeEach(() => {
 
 describe("CommunProjectControl — pas de projet", () => {
   it("n'affiche que le badge à un non-admin", () => {
-    renderControl({ isAdmin: false, projectId: null });
+    renderControl({ canManageProject: false, projectId: null });
     expect(screen.getByText("detail.project.proposalPhaseBadge")).toBeTruthy();
     expect(screen.queryByRole("button")).toBeNull();
   });
 
   it("affiche le bouton Générer à un admin, SANS le badge (il peut déjà agir)", () => {
-    renderControl({ isAdmin: true, projectId: null });
+    renderControl({ canManageProject: true, projectId: null });
     expect(screen.queryByText("detail.project.proposalPhaseBadge")).toBeNull();
     expect(screen.getByRole("button", { name: /detail\.project\.generateCta/ })).toBeTruthy();
   });
@@ -120,13 +120,13 @@ describe("CommunProjectControl — pas de projet", () => {
 
 describe("CommunProjectControl — génération", () => {
   it("demande confirmation avant d'appeler la mutation", () => {
-    renderControl({ isAdmin: true, projectId: null });
+    renderControl({ canManageProject: true, projectId: null });
     fireEvent.click(screen.getByRole("button", { name: /detail\.project\.generateCta/ }));
     expect(generateMutate).not.toHaveBeenCalled();
   });
 
   it("appelle la mutation une seule fois après confirmation", () => {
-    renderControl({ isAdmin: true, projectId: null });
+    renderControl({ canManageProject: true, projectId: null });
     fireEvent.click(screen.getByRole("button", { name: /detail\.project\.generateCta/ }));
     fireEvent.click(screen.getByRole("button", { name: /detail\.project\.confirmGenerate\.confirm/ }));
     expect(generateMutate).toHaveBeenCalledTimes(1);
@@ -134,7 +134,7 @@ describe("CommunProjectControl — génération", () => {
 
   it("déclenche onGenerated quand la mutation réussit", () => {
     const onGenerated = vi.fn();
-    renderControl({ isAdmin: true, projectId: null, onGenerated });
+    renderControl({ canManageProject: true, projectId: null, onGenerated });
     fireEvent.click(screen.getByRole("button", { name: /detail\.project\.generateCta/ }));
     fireEvent.click(screen.getByRole("button", { name: /detail\.project\.confirmGenerate\.confirm/ }));
 
@@ -144,7 +144,7 @@ describe("CommunProjectControl — génération", () => {
   });
 
   it("n'appelle rien si l'utilisateur annule", () => {
-    renderControl({ isAdmin: true, projectId: null });
+    renderControl({ canManageProject: true, projectId: null });
     fireEvent.click(screen.getByRole("button", { name: /detail\.project\.generateCta/ }));
     fireEvent.click(screen.getByRole("button", { name: /detail\.project\.confirmGenerate\.cancel/ }));
     expect(generateMutate).not.toHaveBeenCalled();
@@ -152,7 +152,7 @@ describe("CommunProjectControl — génération", () => {
 
   it("désactive le bouton pendant l'enregistrement", () => {
     isPending = true;
-    renderControl({ isAdmin: true, projectId: null });
+    renderControl({ canManageProject: true, projectId: null });
     const bouton = screen.getByRole("button", { name: /detail\.project\.generateCta/ });
     expect(bouton.hasAttribute("disabled")).toBe(true);
   });
@@ -160,24 +160,24 @@ describe("CommunProjectControl — génération", () => {
 
 describe("CommunProjectControl — association à un projet existant", () => {
   it("affiche le bouton Associer à côté de Générer, pour un admin sans projet", () => {
-    renderControl({ isAdmin: true, projectId: null });
+    renderControl({ canManageProject: true, projectId: null });
     expect(screen.getByRole("button", { name: /detail\.project\.associateCta/ })).toBeTruthy();
   });
 
   it("n'affiche pas le bouton Associer à un non-admin", () => {
-    renderControl({ isAdmin: false, projectId: null });
+    renderControl({ canManageProject: false, projectId: null });
     expect(screen.queryByRole("button", { name: /detail\.project\.associateCta/ })).toBeNull();
   });
 
   it("ouvre le finder au clic, fermé par défaut", () => {
-    renderControl({ isAdmin: true, projectId: null });
+    renderControl({ canManageProject: true, projectId: null });
     expect(screen.queryByTestId("finder-search-modal")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: /detail\.project\.associateCta/ }));
     expect(screen.getByTestId("finder-search-modal")).toBeTruthy();
   });
 
   it("appelle la mutation d'association avec l'id du projet choisi", () => {
-    renderControl({ isAdmin: true, projectId: null });
+    renderControl({ canManageProject: true, projectId: null });
     fireEvent.click(screen.getByRole("button", { name: /detail\.project\.associateCta/ }));
     fireEvent.click(screen.getByText("pick-existing-project"));
 
@@ -187,7 +187,7 @@ describe("CommunProjectControl — association à un projet existant", () => {
 
   it("déclenche onGenerated et referme le finder quand l'association réussit", () => {
     const onGenerated = vi.fn();
-    renderControl({ isAdmin: true, projectId: null, onGenerated });
+    renderControl({ canManageProject: true, projectId: null, onGenerated });
     fireEvent.click(screen.getByRole("button", { name: /detail\.project\.associateCta/ }));
     fireEvent.click(screen.getByText("pick-existing-project"));
 
@@ -202,13 +202,13 @@ describe("CommunProjectControl — association à un projet existant", () => {
 
   it("désactive le bouton Associer pendant l'écriture", () => {
     isAssociatePending = true;
-    renderControl({ isAdmin: true, projectId: null });
+    renderControl({ canManageProject: true, projectId: null });
     const bouton = screen.getByRole("button", { name: /detail\.project\.associateCta/ });
     expect(bouton.hasAttribute("disabled")).toBe(true);
   });
 
   it("restreint le finder aux projets dont l'utilisateur courant est admin", () => {
-    renderControl({ isAdmin: true, projectId: null, userId: "user-42" });
+    renderControl({ canManageProject: true, projectId: null, userId: "user-42" });
     fireEvent.click(screen.getByRole("button", { name: /detail\.project\.associateCta/ }));
 
     const filters = JSON.parse(
@@ -221,7 +221,7 @@ describe("CommunProjectControl — association à un projet existant", () => {
   });
 
   it("désactive le bouton Associer si l'utilisateur courant est inconnu (pas de filtre sûr)", () => {
-    renderControl({ isAdmin: true, projectId: null, userId: null });
+    renderControl({ canManageProject: true, projectId: null, userId: null });
     const bouton = screen.getByRole("button", { name: /detail\.project\.associateCta/ });
     expect(bouton.hasAttribute("disabled")).toBe(true);
   });
@@ -230,7 +230,7 @@ describe("CommunProjectControl — association à un projet existant", () => {
 describe("CommunProjectControl — projet existant", () => {
   it("ouvre le drawer d'aperçu (pas de navigation) au clic, y compris pour un non-admin", async () => {
     const api = makeApi({ id: "proj-1" });
-    renderControl({ isAdmin: false, api, projectId: "proj-1", projectSlug: "mon-projet" });
+    renderControl({ canManageProject: false, api, projectId: "proj-1", projectSlug: "mon-projet" });
 
     expect(screen.queryByRole("link")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: /detail\.project\.openCta/ }));
