@@ -148,6 +148,18 @@
           },
           {
             "label": {
+              "fr": "Ressources",
+              "en": "Resources"
+            },
+            "path": "/ressources",
+            "icon": "book-open",
+            "description": {
+              "fr": "Guides, recommandations et outils à télécharger.",
+              "en": "Guides, recommendations and tools to download."
+            }
+          },
+          {
+            "label": {
               "fr": "Labelliser",
               "en": "Get Labeled"
             },
@@ -2470,6 +2482,15 @@
             "disableInfiniteScroll": false,
             "customHeader": {},
             "defaultViewMode": "list",
+            "addButton": {
+              "show": true,
+              "adminOnly": false,
+              "coform": "6928096adf5caf0d230e7f26",
+              "label": {
+                "fr": "Ajouter un créneau",
+                "en": "Add a slot"
+              }
+            },
             "baseParams": {
               "defaultTypes": [
                 "answers"
@@ -2488,10 +2509,14 @@
               },
               "card": {
                 "type": "card-answer",
-                "detailsMode": "dialog"
+                "detailsMode": "dialog",
+                "structureAction": {
+                  "audience": "managers"
+                }
               },
               "preview": {
-                "type": "coform-answer"
+                "type": "coform-answer",
+                "editButton": true
               }
             },
             "map": {
@@ -4109,6 +4134,259 @@
       ]
     },
     {
+      "path": "/ressources",
+      "title": {
+        "fr": "Ressources",
+        "en": "Resources"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "Ressources — Sport Santé Bien-être La Réunion",
+          "en": "Resources — Sport Health Wellness Réunion"
+        },
+        "description": {
+          "fr": "Documents ressources du sport santé à La Réunion : recommandations HAS, guides et référentiels, rapports et enquêtes, outils pratiques, financements.",
+          "en": "Sport-health resource documents in Réunion: HAS recommendations, guides and frameworks, reports and surveys, practical tools, funding."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image"
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "ressources-header",
+          "props": {
+            "headline": {
+              "fr": "Ressources",
+              "en": "Resources"
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher un document par son nom\u2026",
+              "en": "Search a document by name\u2026"
+            },
+            "showActiveFiltersTags": "desktop"
+          }
+        },
+        {
+          "type": "gridLayout",
+          "id": "ressources-grid",
+          "props": {
+            "leftColumns": 1,
+            "rightColumns": 3,
+            "gap": 4,
+            "leftSection": {
+              "type": "filters",
+              "id": "ressources-filtres",
+              "props": {
+                "title": {
+                  "fr": "Affiner votre recherche",
+                  "en": "Refine your search"
+                },
+                "defaultOpenGroups": [
+                  "thematique"
+                ],
+                "filterGroups": [
+                  {
+                    "id": "thematique",
+                    "label": {
+                      "fr": "Thématique",
+                      "en": "Topic"
+                    },
+                    "type": "filters",
+                    "field": "thematique",
+                    "optionStyle": "check",
+                    "order": 1,
+                    "options": [
+              {
+                "id": "mss",
+                "label": {
+                  "fr": "Maisons Sport Santé",
+                  "en": "Sport Health Houses"
+                },
+                "name": "mss"
+              },
+              {
+                "id": "rapports",
+                "label": {
+                  "fr": "Rapports & enquêtes",
+                  "en": "Reports & surveys"
+                },
+                "name": "rapports"
+              },
+              {
+                "id": "has",
+                "label": {
+                  "fr": "Recommandations HAS par pathologie",
+                  "en": "HAS recommendations by condition"
+                },
+                "name": "has"
+              },
+              {
+                "id": "guides",
+                "label": {
+                  "fr": "Guides & référentiels",
+                  "en": "Guides & frameworks"
+                },
+                "name": "guides"
+              },
+              {
+                "id": "outils",
+                "label": {
+                  "fr": "Outils pratiques",
+                  "en": "Practical tools"
+                },
+                "name": "outils"
+              },
+              {
+                "id": "communication",
+                "label": {
+                  "fr": "Communication",
+                  "en": "Communication"
+                },
+                "name": "communication"
+              },
+              {
+                "id": "financements",
+                "label": {
+                  "fr": "Financements & aides",
+                  "en": "Funding & support"
+                },
+                "name": "financements"
+              }
+                    ]
+                  }
+                ]
+              }
+            },
+            "rightSection": {
+              "type": "searchProStatic",
+              "id": "ressources-list",
+              "props": {
+                "customHeader": {
+                  "title": {
+                    "fr": "Tous les documents",
+                    "en": "All documents"
+                  }
+                },
+                "useFilter": true,
+                "showMap": false,
+                "enableMap": false,
+                "disableInfiniteScroll": false,
+                "defaultViewMode": "list",
+                "baseParams": {
+                  "defaultTypes": [
+                    "poi"
+                  ],
+                  "sourceKey": [
+                    "sportSanteBienetre"
+                  ],
+                  "defaultFilters": {
+                    "type": "ressource",
+                    "status": "Visible"
+                  },
+                  "defaultFields": [
+                    "name",
+                    "thematique",
+                    "description",
+                    "urls",
+                    "medias",
+                    "status",
+                    "created",
+                    "type",
+                    "source",
+                    "profilMediumImageUrl",
+                    "profilImageUrl"
+                  ],
+                  "searchBy": [
+                    "name"
+                  ],
+                  "defaultSortBy": {
+                    "created": -1
+                  }
+                },
+                "list": {
+                  "columns": {
+                    "sm": 1,
+                    "md": 2,
+                    "lg": 2
+                  },
+                  "card": {
+                    "type": "resource",
+                    "detailsMode": "dialog"
+                  },
+                  "preview": {
+                    "type": "resource",
+                    "width": "2xl"
+                  },
+                  "resource": {
+                    "design": "card",
+                    "titleField": "name",
+                    "descriptionField": "description",
+                    "dateField": "created",
+                    "imageField": "profilMediumImageUrl",
+                    "urlsField": "urls",
+                    "badge": {
+                      "field": "thematique",
+                      "colors": {
+                  "mss": "var(--chart1)",
+                  "rapports": "var(--chart2)",
+                  "has": "var(--chart3)",
+                  "guides": "var(--chart4)",
+                  "outils": "var(--chart5)",
+                  "communication": "var(--primary)",
+                  "financements": "var(--accent)"
+                      },
+                      "icons": {
+                  "mss": "house",
+                  "rapports": "file-bar-chart",
+                  "has": "stethoscope",
+                  "guides": "book-open",
+                  "outils": "wrench",
+                  "communication": "megaphone",
+                  "financements": "coins"
+                      },
+                      "labels": {
+                  "mss": {
+                    "fr": "Maisons Sport Santé",
+                    "en": "Sport Health Houses"
+                  },
+                  "rapports": {
+                    "fr": "Rapports & enquêtes",
+                    "en": "Reports & surveys"
+                  },
+                  "has": {
+                    "fr": "Recommandations HAS par pathologie",
+                    "en": "HAS recommendations by condition"
+                  },
+                  "guides": {
+                    "fr": "Guides & référentiels",
+                    "en": "Guides & frameworks"
+                  },
+                  "outils": {
+                    "fr": "Outils pratiques",
+                    "en": "Practical tools"
+                  },
+                  "communication": {
+                    "fr": "Communication",
+                    "en": "Communication"
+                  },
+                  "financements": {
+                    "fr": "Financements & aides",
+                    "en": "Funding & support"
+                  }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
       "path": "/mentions-legales",
       "title": {
         "fr": "Mentions légales",
@@ -5500,6 +5778,18 @@
               { "field": "reference.costum", "op": "contains", "value": "sportSanteBienetre" }
             ]
           }
+        },
+        {
+          "editModal": "edit-sport-sante-bienetre-ressource",
+          "editModalMatch": {
+            "type": "ressource"
+          },
+          "when": {
+            "or": [
+              { "field": "sourceKeys", "op": "contains", "value": "sportSanteBienetre" },
+              { "field": "reference.costum", "op": "contains", "value": "sportSanteBienetre" }
+            ]
+          }
         }
       ]
     }
@@ -5515,6 +5805,197 @@
     "fgColor": "#000000"
   },
   "costumForms": {
+    "sport-sante-bienetre-ressource": {
+      "id": "sport-sante-bienetre-ressource",
+      "entityType": "poi",
+      "collection": "poi",
+      "costumSlug": "sportSanteBienetre",
+      "icon": "book-open",
+      "layout": {
+        "kind": "flat"
+      },
+      "sections": [
+        {
+          "id": "document",
+          "label": {
+            "fr": "Document ressource",
+            "en": "Resource document"
+          },
+          "icon": "book-open",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "name",
+                "thematique",
+                "description",
+                "documents",
+                "urls",
+                "status"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "name": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Nom",
+            "en": "Name"
+          },
+          "placeholder": {
+            "fr": "Nom du document",
+            "en": "Document name"
+          }
+        },
+        "thematique": {
+          "widget": "select",
+          "required": true,
+          "label": {
+            "fr": "Thématique",
+            "en": "Topic"
+          },
+          "placeholder": {
+            "fr": "Choisir une thématique\u2026",
+            "en": "Pick a topic\u2026"
+          },
+          "enum": [
+            { "value": "mss", "label": { "fr": "Maisons Sport Santé", "en": "Sport Health Houses" } },
+            { "value": "rapports", "label": { "fr": "Rapports & enquêtes", "en": "Reports & surveys" } },
+            { "value": "has", "label": { "fr": "Recommandations HAS par pathologie", "en": "HAS recommendations by condition" } },
+            { "value": "guides", "label": { "fr": "Guides & référentiels", "en": "Guides & frameworks" } },
+            { "value": "outils", "label": { "fr": "Outils pratiques", "en": "Practical tools" } },
+            { "value": "communication", "label": { "fr": "Communication", "en": "Communication" } },
+            { "value": "financements", "label": { "fr": "Financements & aides", "en": "Funding & support" } }
+          ]
+        },
+        "description": {
+          "widget": "markdown",
+          "label": {
+            "fr": "Description",
+            "en": "Description"
+          },
+          "info": {
+            "fr": "Texte court décrivant le document.",
+            "en": "Short text describing the document."
+          }
+        },
+        "documents": {
+          "widget": "file",
+          "label": {
+            "fr": "Fichier PDF",
+            "en": "PDF file"
+          },
+          "info": {
+            "fr": "PDF uploadé (10 Mo max) — ou renseigner un lien web ci-dessous.",
+            "en": "Uploaded PDF (10 MB max) — or provide a web link below."
+          },
+          "widgetProps": {
+            "contentKey": "file",
+            "maxItems": 1,
+            "accept": "application/pdf"
+          },
+          "renderOnly": true
+        },
+        "urls": {
+          "widget": "urlList",
+          "label": {
+            "fr": "Lien web externe",
+            "en": "External web link"
+          },
+          "info": {
+            "fr": "URL HTTPS du document en ligne.",
+            "en": "HTTPS URL of the online document."
+          },
+          "widgetProps": {
+            "addLabel": {
+              "fr": "Ajouter un lien",
+              "en": "Add a link"
+            },
+            "removeLabel": {
+              "fr": "Retirer",
+              "en": "Remove"
+            }
+          }
+        },
+        "status": {
+          "widget": "select",
+          "required": true,
+          "default": "Brouillon",
+          "label": {
+            "fr": "Statut",
+            "en": "Status"
+          },
+          "enum": [
+            { "value": "Visible", "label": { "fr": "Visible", "en": "Visible" } },
+            { "value": "Brouillon", "label": { "fr": "Brouillon", "en": "Draft" } }
+          ]
+        }
+      },
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Ajouter une ressource",
+            "en": "Add a resource"
+          },
+          "edit": {
+            "fr": "Modifier la ressource",
+            "en": "Edit resource"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          },
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        }
+      },
+      "scope": {
+        "slugFrom": "carrier"
+      },
+      "mutation": {
+        "entityType": "poi",
+        "inject": {
+          "extraFields": {
+            "type": "ressource"
+          },
+          "parentFromCarrier": true
+        },
+        "successKey": {
+          "add": "toast.add.poiSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.add.poiError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_RESSOURCE_SSBE",
+          "edit": "EntityFormModal · EDIT_RESSOURCE_SSBE"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard",
+          "params": {
+            "userList": "pois",
+            "searchKeys": [
+              "admin-poi",
+              "searchCostumStatic"
+            ]
+          }
+        },
+        "payloadEmitEmptyOnEdit": true,
+        "navigateOnSuccess": false
+      },
+      "identity": {
+        "type": "ressource"
+      }
+    },
     "sport-sante-bienetre-organizations": {
       "id": "sport-sante-bienetre-organizations",
       "entityType": "organizations",
@@ -8741,6 +9222,180 @@
         "sections": [
           {
             "type": "reference"
+          }
+        ]
+      },
+      {
+        "id": "ressources",
+        "label": {
+          "fr": "Ressources",
+          "en": "Resources"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "poi",
+            "label": {
+              "fr": "Documents ressources",
+              "en": "Resource documents"
+            },
+            "source": {
+              "sourceKey": [
+                "sportSanteBienetre"
+              ],
+              "defaultFilters": {
+                "type": "ressource"
+              },
+              "defaultSortBy": {
+                "created": -1
+              },
+              "searchBy": [
+                "name",
+                "description"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Nom",
+                  "en": "Name"
+                }
+              },
+              {
+                "path": "thematique",
+                "label": {
+                  "fr": "Thématique",
+                  "en": "Topic"
+                }
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Ajouté le",
+                  "en": "Added on"
+                }
+              }
+            ],
+            "rowActions": [
+              "edit",
+              "delete"
+            ],
+            "create": "add-sport-sante-bienetre-ressource",
+            "edit": "inherit",
+            "status": {
+              "mode": "statusField",
+              "field": "status",
+              "states": [
+                { "value": "Brouillon", "tone": "pending" },
+                { "value": "Visible", "tone": "positive" }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "moderation",
+        "label": {
+          "fr": "Modération",
+          "en": "Moderation"
+        },
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "answers",
+            "label": {
+              "fr": "Créneaux — modération",
+              "en": "Slots — moderation"
+            },
+            "source": {
+              "notSourceKey": true,
+              "defaultFilters": {
+                "form": "6928096adf5caf0d230e7f26"
+              },
+              "defaultSortBy": {
+                "created": -1
+              },
+              "searchBy": [
+                "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdegc9sgox76p87n27",
+                "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdeggo91owe8t9ovl4p",
+                "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdmxv88txy6f5z6svg"
+              ]
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Activité",
+                  "en": "Activity"
+                },
+                "sortable": false
+              },
+              {
+                "path": "structure.name",
+                "label": {
+                  "fr": "Structure",
+                  "en": "Organization"
+                },
+                "sortable": false
+              },
+              {
+                "path": "sportSanteBienetre2172025_854_0mdn1cs8on3yru1p80lq",
+                "label": {
+                  "fr": "Type",
+                  "en": "Type"
+                },
+                "sortable": false
+              },
+              {
+                "path": "address.postalCode",
+                "label": {
+                  "fr": "Code postal",
+                  "en": "Postal code"
+                },
+                "sortable": false
+              },
+              {
+                "path": "created",
+                "label": {
+                  "fr": "Déclaré le",
+                  "en": "Declared on"
+                }
+              }
+            ],
+            "rowActions": [
+              "validate"
+            ],
+            "create": false,
+            "edit": false,
+            "status": {
+              "mode": "statusField",
+              "field": "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdn1jcq445i0mb9bap7",
+              "states": [
+                {
+                  "value": "En attente",
+                  "tone": "pending"
+                },
+                {
+                  "value": "En cours",
+                  "tone": "progress"
+                },
+                {
+                  "value": "Validé",
+                  "tone": "positive"
+                },
+                {
+                  "value": "Réfusé",
+                  "label": {
+                    "fr": "Refusé",
+                    "en": "Refused"
+                  },
+                  "tone": "negative"
+                }
+              ]
+            }
           }
         ]
       }

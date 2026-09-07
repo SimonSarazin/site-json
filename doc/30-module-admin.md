@@ -147,7 +147,8 @@ ne sont **pas** lancées. `actions` gate le bouton « Inviter ».
   "label": { "fr": "Équipements" },
   "source": { "defaultFilters": { "type": "recoveryCenter" }, "defaultSortBy": { "name": 1 } },
   "columns": ["name", { "path": "address.addressLocality", "label": { "fr": "Commune" } },
-              { "path": "medias", "label": { "fr": "Audio" }, "type": "audio" }],
+              { "path": "medias", "label": { "fr": "Audio" }, "type": "audio" },
+              { "path": "structure.name", "sortable": false }],  // sortable:false = colonne non triable (cf. answers)
   "create": "inherit", "edit": "inherit",       // false | "inherit" | "add-<key>"/"edit-<key>"
   "createDefaults": { "category": "appel-projet" },  // valeurs semées dans la modale d'AJOUT
   "rowActions": ["edit", "delete", "validate", "reference", "setFeatured"],
@@ -301,6 +302,13 @@ ne sont **pas** lancées. `actions` gate le bouton « Inviter ».
     par `readStatusValue` (resourceHelpers) : chemin complet d'abord, **repli sur la clé feuille à
     plat**. Les `columns` d'une resource answers doivent viser la **shape aplatie** (`name`,
     `structure.name`, `<formKey+clé>` à plat…), pas les chemins imbriqués.
+  - ⚠ **Corollaire — `"sortable": false` sur ces colonnes-là.** Chaque en-tête est un bouton de tri
+    **serveur** : il écrase `defaultSortBy` par `{[path]: dir}`. Or une colonne aplatie par le hook
+    est FABRIQUÉE après la requête Mongo — donc après le tri et après la pagination : trier dessus
+    ordonne sur une clé absente (ordre arbitraire, identique en asc et desc) tout en perdant l'ordre
+    par défaut, et déstabilise le skip/limit du scroll infini. Poser `sortable: false` rend un
+    libellé simple ; seuls les **vrais champs Mongo** (`created`, `updated`…) restent triables.
+    Posé en config réelle : `config.prod.sport-sante-bien-etre.json` → onglet `moderation`.
 
 ### `import`
 

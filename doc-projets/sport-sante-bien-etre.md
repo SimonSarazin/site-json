@@ -13,8 +13,10 @@
 > [Module Articles/Blog](../doc/32-module-articles-blog.md) ·
 > [Module Profil](../doc/08-module-profil.md). Mémoire : `[[project-sport-sante-bien-etre]]`.
 
-Dernière mise à jour : **2026-08-03** (réseaux sociaux au patron `fieldArray` · retrait de
-`recepisseDeclaration` · SDK 1.0.172 publiée · re-sondage des périmètres).
+Dernière mise à jour : **2026-09-02** (branche `judi-ssbe` : les créneaux deviennent
+contributifs et modérables, et le back-office gagne les documents ressources — cf. §9). Le lot précédent, du 03/08, portait les
+réseaux sociaux au patron `fieldArray`, le retrait de `recepisseDeclaration` et le re-sondage
+des périmètres.
 **4 décisions de contenu sont en attente** — cf. §13.
 
 ---
@@ -189,6 +191,7 @@ jamais posé — **à trancher** (§13, question 5). L'onglet « Membres » vois
 | Déclaration | [`../sites.json`](../sites.json) → slug `sportSanteBienetre` |
 | Boutons d'action | [`../src/types/action-button-schema.ts`](../src/types/action-button-schema.ts) · [`../src/modules/profil/components/ActionButtonGroup.tsx`](../src/modules/profil/components/ActionButtonGroup.tsx) |
 | Modales d'ajout | [`../src/modules/profil/components/add/ModalRegistry.tsx`](../src/modules/profil/components/add/ModalRegistry.tsx) |
+| **Créneaux — contribution & modération (02/09, `bc99eecc` + `43a93695`)** | config (section `/creneaux` : `addButton`, `preview.editButton`, `card.structureAction.audience` ; onglet admin `moderation`) · [`../src/modules/search/schema.ts`](../src/modules/search/schema.ts) (`structureAction.audience`, `kind` optionnel) · [`../src/modules/search/components/card/CardAnswer.tsx`](../src/modules/search/components/card/CardAnswer.tsx) (+ `CardAnswer.test.tsx`, `CardAnswer.ssr.test.tsx`) · [`../src/modules/search/lib/coformAnswer.ts`](../src/modules/search/lib/coformAnswer.ts) (`isCoformAnswerManager`, ex-`canEditCoformAnswer`) · [`../src/modules/admin/schema.ts`](../src/modules/admin/schema.ts) (`columns[].sortable`, + `schema.test.ts`) · [`../src/modules/admin/sections/AdminResourceTable.tsx`](../src/modules/admin/sections/AdminResourceTable.tsx) · docs [07](../doc/07-module-search.md) et [30](../doc/30-module-admin.md) |
 | Rendu des formulaires | [`../src/modules/formEngine/layouts/shared.tsx`](../src/modules/formEngine/layouts/shared.tsx) · [`../src/modules/formEngine/components/GenericForm.tsx`](../src/modules/formEngine/components/GenericForm.tsx) |
 
 ---
@@ -317,6 +320,134 @@ Aucun commit spécifique SSBE dans le merge ; gates re-passés ce jour :
 | `test:preflight` | ✅ 412 tests / 22 fichiers |
 | `typecheck` | ✅ (`tsc -b`) |
 
+### Lot du 02/09 — les créneaux deviennent contributifs et modérables (branche `judi-ssbe`)
+
+> Commits : `bc99eecc` (carte de créneau) · `43a93695` (modération admin).
+
+**Alignement sur Ekilib.re, sauf là où la donnée dit le contraire.** Le site frère
+[Maison Sport Santé du Tampon](maison-sport-sante-la-tampon.md) portait déjà les boutons de
+contribution et l'onglet de modération — **le gate `audience` (point 2) est neuf, et Ekilib.re
+ne l'a pas encore**. Le reste est transposé sur le form SSBE `6928096adf5caf0d230e7f26` (section
+`sportSanteBienetre2172025_854_0`). Fait vérifié en base : la duplication de formulaire **préserve
+les ids d'inputs**, donc les 5 suffixes utilisés par la config sont identiques sur les deux sites —
+la transposition est mécanique, seul le préfixe de section change.
+
+**1. Ajouter et modifier un créneau depuis `/creneaux`** — `addButton` (avec `adminOnly: false` :
+la contribution est publique, un visiteur non connecté est envoyé au login) et
+`preview.editButton: true` (bouton « Modifier » dans le détail, réservé aux gestionnaires).
+
+**2. Le bouton « Fiche structure » réservé aux gestionnaires** — nouvelle clé
+`card.structureAction.audience` (`"all"` par défaut, donc **parc inchangé** ; `"managers"` sur SSBE).
+Il était jusqu'ici visible par **tout le monde**, alors que la fiche structure est un outil de
+gestion (affiliation, représentant légal, documents) sans intérêt pour qui compare des créneaux.
+Le gate réutilise le prédicat du bouton « Modifier », **renommé** `canEditCoformAnswer` →
+`isCoformAnswerManager` : il gouverne désormais une écriture **et** un affichage, et sous l'ancien
+nom un futur resserrement du droit d'édition aurait resserré la fiche en silence.
+⚠️ **Pertinence d'affichage, pas une frontière de sécurité** : `/profil/:slug` et `/structure`
+restent des routes publiques, et l'e-mail de la structure est de toute façon affiché sur la carte.
+
+**Le piège traité : l'hydratation.** `/creneaux` est prérendue côté serveur, où `me` vaut toujours
+`null`, alors que le 1er render client d'un gestionnaire a déjà son `me`. Sans garde, HTML serveur ≠
+1er render client → mismatch. Le gate passe donc par `useHydrated` : bouton absent des deux, puis
+affiché après hydratation chez les seuls ayants droit. Épinglé par `CardAnswer.ssr.test.tsx`, qui
+rend en SSR avec le **vrai** hook (le test de câblage, lui, le mocke — il ne prouverait rien ici).
+
+**3. Onglet admin « Modération »** (`siteAdmin`, en dernier, sans icône : conforme aux 7 onglets
+existants) — table `resource` en mode `statusField` sur les answers du form. États **verbatim de la
+base** : `En attente` · `En cours` · `Validé` · `Réfusé` (la faute est la valeur stockée, lue par le
+filtre serveur et écrite par `updatepathvalue` ; seul l'affichage la corrige en « Refusé »).
+Volumétrie mesurée le 02/09 : **57 en attente**, 225 validés, 3 sans statut — l'onglet a un vrai
+backlog. Effet de bord souhaitable : le tableau de bord admin dérive automatiquement une tuile de
+comptage par section `resource` visible.
+
+**Deux écarts assumés vs Ekilib.re, tranchés sur la donnée mesurée :**
+
+| Écart | Pourquoi |
+|---|---|
+| `notSourceKey: true` au lieu de `sourceKey: ["sportSanteBienetre"]` | Sur les 285 réponses du form, **une** porte `source.keys: associationEkilibre` (import mal étiqueté). Avec `sourceKey` elle resterait **publiée sur `/creneaux` sans être modérable** : le périmètre modéré doit égaler le périmètre publié. Le champ reste borné par `defaultFilters.form`, donc rien d'indésirable n'entre |
+| `columns[].sortable` (nouveau, défaut `true`) posé à `false` sur 4 colonnes | Chaque en-tête est un tri **serveur** qui écrase `defaultSortBy`. Or `name`, `structure.name`, le Type à plat et `address.postalCode` n'existent dans **aucun** document : ils sont fabriqués par le hook costum PHP **après** la requête Mongo. Trier dessus ordonnait au hasard — à l'identique en asc et desc — tout en perdant l'ordre par défaut, et déstabilisait le skip/limit du scroll infini. Seul « Déclaré le » (vrai champ Mongo) reste triable. **Ekilib.re porte le même défaut en production** : un `sortable: false` l'y corrigerait aussi |
+
+**Gates du lot (02/09)** : `config:validate` ✅ 19 pages / 61 sections · `audit:config` 🟡 **4
+constats, les 4 mêmes qu'au 03/08** (liens morts §13, inchangés) et `strip: 0` · `test:preflight`
+✅ 532 · unitaires admin ✅ 128 · `tsc -b` ✅ · lint ✅ 0 erreur · snapshot
+`tests/preflight/__effective__/sport-sante-bien-etre.json` régénéré (diff limité à la seule entrée
+`moderation/answers`).
+
+⚠️ **Deux gates n'ont PAS pu tourner** : `config:render` et `config:probe` — le backend local
+`communecter74-dev` a cessé de répondre en fin de session (HTTP 000, `timeout of 30000ms exceeded`
+à la résolution du slug). Cause probable : une sonde `globalautocomplete` en `fieldShow=allFields`
+sur les 285 réponses, qui a vraisemblablement saturé PHP-FPM. **À rejouer** une fois le backend
+relancé, avec la recette navigateur (§10, ligne 16).
+
+### Lot du 02/09 (2) — documents ressources dans le back-office
+
+> Commits : `a469da78` (site) · `21c961a0` (description en markdown) · dépôt costum
+> `bf66a550f` (déclaration en base). Lot posé APRÈS le merge de `main` dans `judi-ssbe`
+> (`1cc73861`), qui apporte le module ressources d'Ekilib.re **et son correctif** `76a47a8d`.
+
+Transposition du module ressources d'[Ekilib.re](maison-sport-sante-la-tampon.md), **0 code
+front** : `formEngine` (widgets `file`/`urlList`/`select`) et la table admin en mode
+`statusField` sont réutilisés tels quels. Une ressource = un **POI** scopé
+`source.keys: sportSanteBienetre`, avec `thematique` et `status` (Visible / **Brouillon** par
+défaut — pas de publication accidentelle). Trois morceaux de config :
+`costumForms["sport-sante-bienetre-ressource"]` · onglet admin **« Ressources »** (`siteAdmin` :
+listing, création, édition, suppression) · route `edit-sport-sante-bienetre-ressource` dans
+`profiles.poi.editModals`, **bornée au costum** (`sourceKeys contains sportSanteBienetre` —
+le snapshot effectif le prouve : un POI étranger retombe sur `edit-profile`).
+
+**Le sous-type est DÉDIÉ, et c'est le point qui distingue SSBE d'Ekilib.re.** Ekilib.re porte ses
+ressources sur `recoveryCenter` ; ici ce sous-type est **déjà pris** par « Équipements Sportifs »
+(déclaré dans `costum.typeObj`, avec son onglet admin « lieux » et son propre formulaire d'ajout).
+Les y mêler aurait pollué les deux listings. D'où un sous-type **`ressource`**, déclaré à part.
+
+**Thématiques** (7 valeurs fournies par le porteur) : `mss` · `rapports` · `has` · `guides` ·
+`outils` · `communication` · `financements`. Le champ stocke la **clé**, pas le libellé : le site
+est bilingue fr/en, un libellé français en base rendrait la version anglaise fausse et imposerait
+une migration de données à chaque retouche de formulation. ⚠️ **Conséquence assumée** : la colonne
+« Thématique » du listing admin affiche la clé brute (`formatCell` ne résout aucune énumération) ;
+si l'affichage du libellé est souhaité, c'est une évolution du schéma des colonnes admin (§13).
+Le nom de champ évite `thematic`, déjà une taxonomie du costum SSBE (Sport, Santé/prévention…).
+
+⚠️ **Prérequis dur, à rejouer en PROD** : `costum.typeObj.ressource` doit être déclaré en base,
+sinon le SDK écarte `thematique`/`status` **en silence** à la création et les rejette à l'édition
+(`[DraftProxy] Le champ … n'est pas autorisé`). Action URL dédiée :
+`http://<host>/costum/ssbeMigration/declareRessourceType` (dry run) puis `/apply/1`.
+
+**Deux enseignements repris du correctif `76a47a8d` du site frère**, arrivé par le merge :
+`description` est en **`markdown`** et non `textarea` (le presenter `resource` rend ce champ en
+markdown — sinon l'auteur saisit du texte brut pendant que le lecteur voit du markdown interprété) ;
+et la garde `costum-form-contract` **ignore silencieusement** tout champ absent du contrat live
+(`tests/preflight/__contract__/costum-types.live.json`, ligne 113 : « champ CŒUR »). `thematique`
+n'y est donc pas encore audité — il le sera **une fois `declareRessourceType` joué**, ce qui
+imposera de **régénérer cette fixture**, exactement comme `76a47a8d` l'a fait pour Ekilib.re.
+
+**Page publique `/ressources`** (commits `3deeb89f` · `425cfa7e`) — livrée dans la foulée, sur le
+patron de `/creneaux` d'Ekilib.re : `searchHeader` (**recherche par nom**) + `gridLayout` 1/3 dont
+le `leftSection` est une section **`filters`** (filtre **latéral** à cases, thématique, ouvert par
+défaut) et le `rightSection` la liste en presenter `resource`. Seuls les documents **publiés**
+(`status: "Visible"`) y paraissent — les brouillons restent au back-office. Chaque thématique porte
+sa couleur (5 tokens `chart*` + `primary`/`accent`, **aucune couleur en dur**) et son icône lucide.
+**Elle ferme un lien mort** : la tuile « Rapports & Publications » de `/espace-professionnels`
+pointait vers `/ressources` — l'audit passe de **4 à 3** constats (§13, question 1). Elle est aussi
+dans la nav (`a6584b0e`) : entrée **« Ressources »** du dropdown **Professionnels**, en 2ᵉ position —
+après le hub, avant les entrées d'action (Labelliser, Formation), parce que c'est une bibliothèque
+et non une démarche. Icône `book-open`, la même que le formulaire et l'onglet d'administration.
+
+**Un manque du moteur, comblé** (`425cfa7e`, générique) : le presenter `resource` mappait déjà
+valeur→couleur et valeur→icône mais affichait la valeur **stockée** telle quelle — une pastille
+« mss » ou « has » en public. `badge.labels` (map valeur → `LocalizedString`) est la troisième
+carte ; `ResourceData.badge` dissocie désormais `value` (affiché) et `raw` (stocké, qui indexe les
+styles et les filtres). Absente, la map laisse le comportement du parc strictement inchangé.
+C'est ce qui rend tenable le choix de stocker la clé sur un site bilingue.
+
+**Gates (02/09, backend revenu)** : `config:validate` ✅ 19 pages / 61 sections · `audit:config`
+🟡 4 constats préexistants, `strip: 0` · `test:preflight` ✅ **553** · `tsc -b` ✅ · lint ✅
+0 erreur · snapshot régénéré (2 ajouts : la route d'édition et `ressources/poi`) ·
+**`config:render` ✅ 19/19 pages, 61/61 sections** · **`config:probe` 10 périmètres — 7 OK,
+3 vides** : pages 4 et 11, **antérieurs à ce lot** (la doc en notait 1 au 03/08, un second a dérivé
+depuis), plus `/ressources` — vide tant qu'aucun document n'est saisi, ce qui est l'état attendu. `/creneaux` remonte bien ses **285** réponses, ce qui valide au passage le `notSourceKey`
+du lot précédent.
+
 ---
 
 ## 10. Checklist d'avancement
@@ -331,13 +462,18 @@ Aucun commit spécifique SSBE dans le merge ; gates re-passés ce jour :
 | 6 | Formulaires costum | 🟡 | 6 déclarés et exposés dans `/admin` ; **1 seul** ouvert côté public depuis le 28/07 |
 | 7 | Inscription d'une structure | ✅ | Modale branchée sur `/communaute`, gardée par l'authentification |
 | 8 | Connexion | ✅ | Widget `utilities.auth` ; le CTA cassé du header est retiré |
-| 9 | Back-office | ✅ | 7 onglets — **essai UI connecté à faire** |
+| 9 | Back-office | ✅ | **8 onglets** depuis le 02/09 (ajout de « Modération », cf. ligne 18) — **essai UI connecté à faire** |
 | 10 | Blog | ✅ | `articleFeed` + RSS + SEO + palette (travaux du 25/07) |
 | 11 | Palette ⌘K | ✅ | `entitySearch` + `articleSearch` |
 | 12 | Grille « professionnels » | ❌ | 3 tuiles sur 6 mènent à des pages inexistantes (§13) |
 | 13 | Hero `/public` | ❌ | 1 CTA mort, 1 CTA qui renvoie à l'accueil depuis une sous-page (§13) |
 | 14 | Rendu navigateur | ❌ | **Jamais vérifié** — aucune capture de ce site à ce jour |
 | 15 | Mode sombre | ❌ | Jamais vérifié |
+| 16 | Créneaux — ajouter / modifier depuis `/creneaux` | ✅ config | `addButton` (`adminOnly: false`) + `preview.editButton` (02/09, §9) — **recette navigateur à faire** (backend indisponible en fin de session) |
+| 17 | Créneaux — « Fiche structure » réservée aux gestionnaires | ✅ | `card.structureAction.audience: "managers"` + gate `isCoformAnswerManager` sous `useHydrated` (02/09, §9) ; 12 tests dont 2 de parité SSR |
+| 18 | Créneaux — modération dans le back-office | ✅ config | Onglet `moderation` en mode `statusField`, 57 en attente à traiter (02/09, §9) — **recette à faire** : passer un « En attente » à « Validé » et vérifier qu'il apparaît sur `/creneaux` |
+| 19 | Ressources — listing et ajout côté admin | ✅ config | Onglet « Ressources » + `costumForms` dédié (02/09, §9) — **bloqué tant que `declareRessourceType` n'est pas joué en base** |
+| 20 | Ressources — page publique `/ressources` | ✅ config | Filtre latéral par thématique + recherche par nom, publiés seulement (02/09, §9) ; ferme le lien mort de la tuile « Rapports & Publications ». Périmètre vide tant qu'aucun document n'est saisi |
 
 ---
 
@@ -376,9 +512,11 @@ pertinent ici : SSBE a un back-office `/admin` à 7 onglets (§4.3).
 
 | # | Question | Responsable |
 |---|---|---|
-| 1 | **Grille « Le réseau Sport Santé »** (`/espace-professionnels`, `features-glass`, 6 tuiles) : 3 tuiles mènent à des pages inexistantes — « Aide à la prescription » (`/prescription`), « Stratégie régionale Sport Santé » (`/strategie`), « Rapports & Publications » (`/ressources`). **Créer les 3 pages, repointer, ou retirer les tuiles ?** Rapprochements possibles mais non équivalents : `/presentation` pour la stratégie, `/blog` pour les publications | Thomas |
+| 1 | **Grille « Le réseau Sport Santé »** (`/espace-professionnels`, `features-glass`, 6 tuiles) : 3 tuiles mènent à des pages inexistantes — « Aide à la prescription » (`/prescription`), « Stratégie régionale Sport Santé » (`/strategie`), « Rapports & Publications » (`/ressources`). **Créer les 3 pages, repointer, ou retirer les tuiles ?** Rapprochements possibles mais non équivalents : `/presentation` pour la stratégie, `/blog` pour les publications. **Depuis le 02/09, `/ressources` EXISTE** (question 7) : il ne reste que `/prescription` et `/strategie` | Thomas |
 | 2 | **Hero de `/public`** : le CTA « Sport et santé pour tous » pointe vers `/rejoindre` (inexistant), et le second, « Sport et santé sur ordonnance », vers `/` — un lien vers l'accueil depuis une sous-page. Les deux libellés sont des **slogans, pas des actions** : le hero est à repenser plutôt qu'à rafistoler | Thomas |
 | 3 | Les 5 autres formulaires costum (`mss`, `formation`, `session-formation`, `recovery-center`, `article`) doivent-ils être ouverts au public comme l'a été `organizations`, ou rester réservés au back-office ? | Thomas |
 | 4 | Les 6 formulaires déclarent **169 champs dont 115 placés** (re-dérivé le 03/08 ; trois vestiges purgés le 30/07 : `facebook`, `instagram`, `recepisseDeclaration`). Faut-il purger les vestiges restants — dont `youtube`/`linkedin`/`autreDescription` sur `organizations` —, ou certains sont-ils attendus par le backend en écriture ? | Thomas |
 | 5 | `/communaute` → onglet « Organisations » : l'id `682b2ac5e05a1d45844340e7` est-il périmé, ou aucune organisation n'a-t-elle jamais été rattachée ? | Thomas |
 | 6 | Rendu navigateur et mode sombre : à parcourir sur les 19 pages | Thomas |
+| 7 | ~~Page publique `/ressources`~~ — **FAITE le 02/09** (§9) : filtre latéral par thématique + recherche par nom. Elle a fermé le lien mort « Rapports & Publications » de la question 1 (audit 4 → 3). Entrée de nav ajoutée le 02/09 dans le dropdown Professionnels. **Reste un point de rédaction** : le hub « Espace professionnels » se décrit comme « Ressources et outils pour les pros », juste au-dessus d'une entrée « Ressources » — redondance légère, à retoucher si elle gêne | Thomas |
+| 8 | **Thématique affichée en clé** dans le listing admin (`mss`, `has`…) : `formatCell` ne résout aucune énumération, et seul le mode `statusField` sait mapper une valeur vers un libellé. Vit-on avec (compact, sans ambiguïté pour un usage interne), ou ajoute-t-on au schéma des colonnes admin une table de libellés — utile bien au-delà de ce site ? | Thomas |
