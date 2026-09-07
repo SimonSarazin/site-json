@@ -663,8 +663,14 @@ export const MarkerVisualConfSchema = z.object({
   icon: z.string().optional(),
   /** URL d'une icône custom (relative → préfixée par baseUrl, ou absolue http). */
   iconUrl: z.string().optional(),
-  /** Taille de l'icône custom en px (déf. 34). */
-  iconSize: z.number().int().min(8).max(128).optional(),
+  /** Taille du marqueur en px — s'applique à TOUTES les formes : vignette
+   *  (`useItemImage`, déf. 36), pastille (`style: "circle"`, déf. 30), goutte
+   *  (`style: "pin"`, `icon` ou défaut, déf. 34) et icône custom (`iconUrl`,
+   *  déf. 34). Les pictogrammes lucide sont mis à l'échelle avec la forme.
+   *  `z.coerce` : les configs écrivent souvent `"45"` — sans coercition la
+   *  valeur était rejetée à la validation et, en cas d'oubli, atterrissait telle
+   *  quelle dans un style inline (`width: 45` sans unité = marqueur invisible). */
+  iconSize: z.coerce.number().int().min(8).max(128).optional(),
   /** Ancrage de l'icône custom : "bottom" (pointe sur le point, déf.) ou "center". */
   iconAnchor: z.enum(["bottom", "center"]).optional(),
   /** Marqueur coloré PAR VALEUR de l'item (code couleur par territoire, CDC
@@ -1365,6 +1371,10 @@ export interface SearchMapWrapperProps<T extends SearchListEntity = SearchEntity
   focusedItemId?: string | null;
   /** Synchro split : clic marqueur → remonte l'id (highlight liste). */
   onMarkerFocus?: (id: string) => void;
+  /** Surcharge de l'action du bouton de popup, pour un appelant qui monte cette
+   *  carte sur SES propres entités (cf. Meeteem/ampli) : renvoyer `true`
+   *  consomme le clic et court-circuite la cascade déclarative `itemAction`. */
+  onItemAction?: (item: SearchEntity) => boolean | void;
   /** Override du conteneur (mode split : la carte remplit sa colonne au lieu de min-h-screen). */
   containerClass?: string;
 }
@@ -1380,6 +1390,10 @@ export interface SearchMapProps<T extends SearchListEntity = SearchEntity> {
   focusedItemId?: string | null;
   /** Synchro split : clic marqueur → remonte l'id (highlight liste). */
   onMarkerFocus?: (id: string) => void;
+  /** Surcharge de l'action du bouton de popup, pour un appelant qui monte cette
+   *  carte sur SES propres entités (cf. Meeteem/ampli) : renvoyer `true`
+   *  consomme le clic et court-circuite la cascade déclarative `itemAction`. */
+  onItemAction?: (item: SearchEntity) => boolean | void;
   /** Override du conteneur (mode split : la carte remplit sa colonne au lieu de min-h-screen). */
   containerClass?: string;
 }

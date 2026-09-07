@@ -35,31 +35,45 @@ import MapMarkerPinIcon from "./mapMarker/MapMarkerPinIcon";
 function MarkerVisualView({ visual }: { visual: MarkerVisual }) {
   switch (visual.kind) {
     case "image":
-      return <MapMarkerAvatar src={visual.src} />;
+      return <MapMarkerAvatar src={visual.src} size={visual.size} />;
     case "icon":
       return <MapMarkerIcon src={visual.src} size={visual.size} />;
     case "circle":
-      return <MapMarkerCircle cssColor={visual.cssColor} borderCssColor={visual.borderCssColor} />;
+      return (
+        <MapMarkerCircle
+          cssColor={visual.cssColor}
+          borderCssColor={visual.borderCssColor}
+          size={visual.size}
+        />
+      );
     case "circle-icon":
       return (
         <MapMarkerCircleIcon
           icon={visual.icon}
           cssColor={visual.cssColor}
           borderCssColor={visual.borderCssColor}
+          size={visual.size}
         />
       );
     case "pin":
-      return <MapMarkerPin cssColor={visual.cssColor} borderCssColor={visual.borderCssColor} />;
+      return (
+        <MapMarkerPin
+          cssColor={visual.cssColor}
+          borderCssColor={visual.borderCssColor}
+          size={visual.size}
+        />
+      );
     case "pin-icon":
       return (
         <MapMarkerPinIcon
           icon={visual.icon}
           cssColor={visual.cssColor}
           borderCssColor={visual.borderCssColor}
+          size={visual.size}
         />
       );
     default:
-      return <MapMarkerPin cssColor="var(--primary)" />;
+      return <MapMarkerPin cssColor="var(--primary)" size={visual.size} />;
   }
 }
 

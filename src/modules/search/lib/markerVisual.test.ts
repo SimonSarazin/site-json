@@ -10,25 +10,25 @@ describe("resolveMarkerVisual (chaîne de repli des marqueurs)", () => {
       { useItemImage: true },
       BASE,
     );
-    expect(v).toEqual({ kind: "image", src: "https://backend.example/upload/x.jpg" });
+    expect(v).toEqual({ kind: "image", src: "https://backend.example/upload/x.jpg", size: 36 });
     // URL absolue conservée telle quelle ; medium en repli de thumb
     expect(
       resolveMarkerVisual({ profilMediumImageUrl: "https://cdn/x.jpg" }, { useItemImage: true }, BASE),
-    ).toEqual({ kind: "image", src: "https://cdn/x.jpg" });
+    ).toEqual({ kind: "image", src: "https://cdn/x.jpg", size: 36 });
   });
 
   it("useItemImage SANS image → retombe sur le pin stylisé si déclaré", () => {
     const v = resolveMarkerVisual({}, { useItemImage: true, style: "pin", color: "chart-2" }, BASE);
-    expect(v).toEqual({ kind: "pin", cssColor: "var(--chart-2)", borderCssColor: "var(--background)" });
+    expect(v).toEqual({ kind: "pin", cssColor: "var(--chart-2)", borderCssColor: "var(--background)", size: 34 });
     // …et sur le pin par défaut sinon
-    expect(resolveMarkerVisual({}, { useItemImage: true }, BASE)).toEqual({ kind: "default" });
+    expect(resolveMarkerVisual({}, { useItemImage: true }, BASE)).toEqual({ kind: "default", size: 34 });
   });
 
   it("style pin : couleur en JETON de thème (déf. primary), bordure background par défaut", () => {
     expect(resolveMarkerVisual({}, { style: "pin" }, BASE)).toEqual({
       kind: "pin",
       cssColor: "var(--primary)",
-      borderCssColor: "var(--background)",
+      borderCssColor: "var(--background)", size: 34
     });
   });
 
@@ -36,12 +36,12 @@ describe("resolveMarkerVisual (chaîne de repli des marqueurs)", () => {
     expect(resolveMarkerVisual({}, { style: "pin", color: "primary", borderColor: "accent" }, BASE)).toEqual({
       kind: "pin",
       cssColor: "var(--primary)",
-      borderCssColor: "var(--accent)",
+      borderCssColor: "var(--accent)", size: 34
     });
     expect(resolveMarkerVisual({}, { style: "circle", color: "primary", borderColor: "accent" }, BASE)).toEqual({
       kind: "circle",
       cssColor: "var(--primary)",
-      borderCssColor: "var(--accent)",
+      borderCssColor: "var(--accent)", size: 30
     });
   });
 
@@ -49,7 +49,7 @@ describe("resolveMarkerVisual (chaîne de repli des marqueurs)", () => {
     expect(resolveMarkerVisual({}, { style: "circle", color: "secondary" }, BASE)).toEqual({
       kind: "circle",
       cssColor: "var(--secondary)",
-      borderCssColor: "var(--background)",
+      borderCssColor: "var(--background)", size: 30
     });
   });
 
@@ -70,14 +70,14 @@ describe("resolveMarkerVisual (chaîne de repli des marqueurs)", () => {
     // useItemImage + image l'emporte sur iconUrl
     expect(
       resolveMarkerVisual({ profilThumbImageUrl: "/i.jpg" }, { useItemImage: true, iconUrl: "/p.svg" }, BASE),
-    ).toEqual({ kind: "image", src: "https://backend.example/i.jpg" });
+    ).toEqual({ kind: "image", src: "https://backend.example/i.jpg", size: 36 });
     // iconUrl l'emporte sur style:pin
     expect(resolveMarkerVisual({}, { iconUrl: "/p.svg", style: "pin" }, BASE).kind).toBe("icon");
   });
 
   it("sans config → pin par défaut", () => {
     expect(resolveMarkerVisual({ profilThumbImageUrl: "/x.jpg" }, undefined, BASE)).toEqual({
-      kind: "default",
+      kind: "default", size: 34
     });
   });
 
@@ -92,7 +92,7 @@ describe("resolveMarkerVisual (chaîne de repli des marqueurs)", () => {
     ).toEqual({
       kind: "pin",
       cssColor: "var(--territoire-arrageois)",
-      borderCssColor: "var(--background)",
+      borderCssColor: "var(--background)", size: 34
     });
     // colorBy seul (sans style pin déclaré) : implique le pin
     expect(
@@ -100,7 +100,7 @@ describe("resolveMarkerVisual (chaîne de repli des marqueurs)", () => {
     ).toEqual({
       kind: "pin",
       cssColor: "var(--territoire-arrageois)",
-      borderCssColor: "var(--background)",
+      borderCssColor: "var(--background)", size: 34
     });
   });
 
@@ -115,7 +115,7 @@ describe("resolveMarkerVisual (chaîne de repli des marqueurs)", () => {
     ).toEqual({
       kind: "circle",
       cssColor: "var(--territoire-arrageois)",
-      borderCssColor: "var(--accent)",
+      borderCssColor: "var(--accent)", size: 30
     });
   });
 
@@ -126,10 +126,10 @@ describe("resolveMarkerVisual (chaîne de repli des marqueurs)", () => {
     ).toEqual({
       kind: "pin",
       cssColor: "var(--chart-2)",
-      borderCssColor: "var(--background)",
+      borderCssColor: "var(--background)", size: 34
     });
     expect(resolveMarkerVisual({ tags: ["santé"] }, { colorBy }, BASE)).toEqual({
-      kind: "default",
+      kind: "default", size: 34
     });
   });
 
@@ -142,7 +142,7 @@ describe("resolveMarkerVisual (chaîne de repli des marqueurs)", () => {
         { useItemImage: true, colorBy },
         BASE,
       ),
-    ).toEqual({ kind: "image", src: "https://backend.example/i.jpg" });
+    ).toEqual({ kind: "image", src: "https://backend.example/i.jpg", size: 36 });
     // colorBy l'emporte sur une icône brandée (le code couleur porte l'info)
     expect(
       resolveMarkerVisual(
@@ -171,12 +171,12 @@ describe("resolveMarkerVisual — `by` : marqueur PAR VALEUR d'un attribut", () 
     expect(resolveMarkerVisual({ equip_type_famille: "Bassin" }, CONF, BASE)).toEqual({
       kind: "pin",
       cssColor: "var(--chart-1)",
-      borderCssColor: "var(--background)",
+      borderCssColor: "var(--background)", size: 34
     });
     // un cas peut changer la forme…
     expect(
       resolveMarkerVisual({ equip_type_famille: "Terrain de grands jeux" }, CONF, BASE),
-    ).toEqual({ kind: "circle", cssColor: "var(--chart-2)", borderCssColor: "var(--background)" });
+    ).toEqual({ kind: "circle", cssColor: "var(--chart-2)", borderCssColor: "var(--background)", size: 30 });
     // …ou passer à l'icône custom
     expect(resolveMarkerVisual({ equip_type_famille: "Salle multisports" }, CONF, BASE)).toEqual({
       kind: "icon",
@@ -190,14 +190,14 @@ describe("resolveMarkerVisual — `by` : marqueur PAR VALEUR d'un attribut", () 
     expect(resolveMarkerVisual({ equip_type_famille: "Skatepark" }, CONF, BASE)).toEqual({
       kind: "pin",
       cssColor: "var(--chart-5)",
-      borderCssColor: "var(--background)",
+      borderCssColor: "var(--background)", size: 34
     });
     // sans `default` déclaré, c'est le marqueur de base qui sert de défaut
     const sansDefault = { ...CONF, by: { path: BY.path, mapping: BY.mapping } };
     expect(resolveMarkerVisual({ equip_type_famille: "Skatepark" }, sansDefault, BASE)).toEqual({
       kind: "pin",
       cssColor: "var(--primary)",
-      borderCssColor: "var(--background)",
+      borderCssColor: "var(--background)", size: 34
     });
   });
 
@@ -238,7 +238,7 @@ describe("resolveMarkerVisual — `by` : marqueur PAR VALEUR d'un attribut", () 
       kind: "pin",
       cssColor: "var(--chart-2)",
       // les champs NON sélecteurs (couleur de bordure, tailles) restent hérités
-      borderCssColor: "var(--accent)",
+      borderCssColor: "var(--accent)", size: 34
     });
     // valeur non listée : le marqueur de base est intact
     expect(resolveMarkerVisual({ type: "piscine" }, conf, BASE).kind).toBe("icon");
@@ -251,9 +251,9 @@ describe("resolveMarkerVisual — `by` : marqueur PAR VALEUR d'un attribut", () 
     };
     expect(
       resolveMarkerVisual({ type: "personne", profilThumbImageUrl: "/i.jpg" }, conf, BASE),
-    ).toEqual({ kind: "image", src: "https://backend.example/i.jpg" });
+    ).toEqual({ kind: "image", src: "https://backend.example/i.jpg", size: 36 });
     // cas `useItemImage` SANS image : le style du base a été écarté (sélecteur) → défaut
-    expect(resolveMarkerVisual({ type: "personne" }, conf, BASE)).toEqual({ kind: "default" });
+    expect(resolveMarkerVisual({ type: "personne" }, conf, BASE)).toEqual({ kind: "default", size: 34 });
     expect(resolveMarkerVisual({ type: "lieu" }, conf, BASE)).toMatchObject({ cssColor: "var(--chart-4)" });
   });
 });
@@ -264,7 +264,7 @@ describe("resolveMarkerVisual — `icon` : pictogramme lucide dans la forme", ()
       kind: "pin-icon",
       icon: "waves",
       cssColor: "var(--primary)",
-      borderCssColor: "var(--background)",
+      borderCssColor: "var(--background)", size: 34
     });
   });
 
@@ -275,7 +275,7 @@ describe("resolveMarkerVisual — `icon` : pictogramme lucide dans la forme", ()
       kind: "circle-icon",
       icon: "goal",
       cssColor: "var(--chart-2)",
-      borderCssColor: "var(--accent)",
+      borderCssColor: "var(--accent)", size: 30
     });
   });
 
@@ -287,7 +287,7 @@ describe("resolveMarkerVisual — `icon` : pictogramme lucide dans la forme", ()
       kind: "pin-icon",
       icon: "trees",
       cssColor: "var(--territoire-artois)",
-      borderCssColor: "var(--background)",
+      borderCssColor: "var(--background)", size: 34
     });
   });
 
@@ -320,17 +320,84 @@ describe("resolveMarkerVisual — `icon` : pictogramme lucide dans la forme", ()
       kind: "pin-icon",
       icon: "map-pin",
       cssColor: "var(--chart-1)",
-      borderCssColor: "var(--background)",
+      borderCssColor: "var(--background)", size: 34
     });
     // cas AVEC sélecteur (style) : les sélecteurs du base sautent, d'où l'icon redéclaré
     expect(resolveMarkerVisual({ equip_type_famille: "Randonnée" }, conf, BASE)).toMatchObject({
       kind: "circle-icon",
-      icon: "footprints",
+      icon: "footprints", size: 30
     });
     // le default aussi : `icon` seul suffit à produire la goutte
     expect(resolveMarkerVisual({ equip_type_famille: "Skatepark" }, conf, BASE)).toMatchObject({
       kind: "pin-icon",
-      icon: "circle-dashed",
+      icon: "circle-dashed", size: 34
+    });
+  });
+
+  describe("iconSize — taille de TOUTES les formes", () => {
+    // Régression : `iconSize` n'était lu que pour `iconUrl`. Un site déclarant
+    // `{ style: "pin", iconSize: 45 }` (cas réel de config.prod.saint-paul-sport)
+    // n'obtenait aucun effet, sans le moindre avertissement.
+    it("dimensionne la goutte (style pin)", () => {
+      expect(resolveMarkerVisual({}, { style: "pin", iconSize: 45 }, BASE)).toMatchObject({
+        kind: "pin",
+        size: 45,
+      });
+    });
+
+    it("dimensionne la pastille (style circle)", () => {
+      expect(resolveMarkerVisual({}, { style: "circle", iconSize: 50 }, BASE)).toMatchObject({
+        kind: "circle",
+        size: 50,
+      });
+    });
+
+    it("dimensionne la goutte ET la pastille porteuses d'un pictogramme", () => {
+      expect(resolveMarkerVisual({}, { icon: "goal", iconSize: 60 }, BASE)).toMatchObject({
+        kind: "pin-icon",
+        size: 60,
+      });
+      expect(
+        resolveMarkerVisual({}, { style: "circle", icon: "goal", iconSize: 60 }, BASE),
+      ).toMatchObject({ kind: "circle-icon", size: 60 });
+    });
+
+    it("dimensionne la vignette de l'item", () => {
+      expect(
+        resolveMarkerVisual({ profilThumbImageUrl: "/i.jpg" }, { useItemImage: true, iconSize: 64 }, BASE),
+      ).toMatchObject({ kind: "image", size: 64 });
+    });
+
+    it("dimensionne le marqueur par défaut (aucune forme déclarée)", () => {
+      expect(resolveMarkerVisual({}, { iconSize: 20 }, BASE)).toEqual({ kind: "default", size: 20 });
+    });
+
+    it("sans iconSize, chaque forme garde sa taille historique", () => {
+      // Garantie de non-régression visuelle sur les sites déjà en production.
+      expect(resolveMarkerVisual({}, undefined, BASE)).toEqual({ kind: "default", size: 34 });
+      expect(resolveMarkerVisual({}, { style: "pin" }, BASE)).toMatchObject({ size: 34 });
+      expect(resolveMarkerVisual({}, { style: "circle" }, BASE)).toMatchObject({ size: 30 });
+      expect(resolveMarkerVisual({}, { iconUrl: "/p.svg" }, BASE)).toMatchObject({ size: 34 });
+      expect(
+        resolveMarkerVisual({ profilThumbImageUrl: "/i.jpg" }, { useItemImage: true }, BASE),
+      ).toMatchObject({ size: 36 });
+    });
+
+    it("un cas de `by` peut redimensionner un marqueur au cas par cas", () => {
+      const conf = {
+        style: "pin" as const,
+        iconSize: 34,
+        by: {
+          path: "type",
+          mapping: { stade: { iconSize: 56 } },
+        },
+      };
+      // `iconSize` n'est pas un sélecteur de rendu : il se fusionne sur le base.
+      expect(resolveMarkerVisual({ type: "stade" }, conf, BASE)).toMatchObject({
+        kind: "pin",
+        size: 56,
+      });
+      expect(resolveMarkerVisual({ type: "autre" }, conf, BASE)).toMatchObject({ size: 34 });
     });
   });
 });

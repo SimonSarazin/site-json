@@ -1,10 +1,9 @@
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 
-/** Même gabarit que `MapMarkerPin` : les deux variantes cohabitent sur la même
- *  carte (`by`), elles doivent peser pareil. */
-const SIZE = 34;
-/** Le disque fait 12/24 × 34 ≈ 17 px : un glyphe de 13 px y tient avec du bord. */
-const GLYPH = 13;
+/** Part du gabarit occupée par le glyphe : 13 px sur les 34 px historiques du
+ *  pin. Ratio conservé à toutes les tailles pour que `iconSize` agrandisse la
+ *  goutte ET son pictogramme. */
+const GLYPH_RATIO = 13 / 34;
 
 /**
  * Variant marqueur « goutte + pictogramme lucide » (`map.marker.icon`) — la
@@ -15,23 +14,28 @@ const GLYPH = 13;
  * thème), tout est ici en jetons CSS : le marqueur suit light/dark au paint et
  * n'exige aucun asset. Nom hors catalogue lucide → `DynamicIcon` rend `null` :
  * la goutte reste, sans glyphe (l'audit `icone-inconnue` attrape le cas avant).
+ *
+ * Même gabarit que `MapMarkerPin` : les deux variantes cohabitent sur la même
+ * carte (`by`), elles doivent peser pareil — d'où le `size` commun.
  */
 export default function MapMarkerPinIcon({
   icon,
   cssColor,
   borderCssColor = "var(--background)",
+  size,
 }: {
   icon: string;
   cssColor: string;
   borderCssColor?: string;
+  size: number;
 }) {
   return (
-    <span className="search-map-pin-icon" style={{ width: SIZE, height: SIZE }}>
+    <span className="search-map-pin-icon" style={{ width: size, height: size }}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
-        width={SIZE}
-        height={SIZE}
+        width={size}
+        height={size}
         className="search-map-pin"
         aria-hidden
       >
@@ -45,7 +49,7 @@ export default function MapMarkerPinIcon({
       </svg>
       <DynamicIcon
         name={icon as IconName}
-        size={GLYPH}
+        size={Math.round(size * GLYPH_RATIO)}
         color={cssColor}
         strokeWidth={2.5}
         className="search-map-glyph"

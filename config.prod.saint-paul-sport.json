@@ -1897,6 +1897,7 @@
               "marker": {
                 "style": "pin",
                 "color": "primary",
+                "iconSize": 45,
                 "by": {
                   "path": "equip_type_name",
                   "mapping": {

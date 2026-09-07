@@ -73,7 +73,7 @@ type PointProps = { entry: SearchEntity };
  * ouvre la popup de l'item ; `onMarkerFocus` (carte→liste) remonte l'id au clic
  * d'un marqueur ; `containerClass` laisse le parent dimensionner la colonne.
  */
-export default function SearchMap({ results, card, preview, list, map: mapConf, focusedItemId, onMarkerFocus, containerClass }: SearchMapProps) {
+export default function SearchMap({ results, card, preview, list, map: mapConf, focusedItemId, onMarkerFocus, onItemAction, containerClass }: SearchMapProps) {
   const mapRef = useRef<MapRef | null>(null);
   /** Init carte jouée une seule fois (load OU idle, le 1ᵉʳ qui arrive). */
   const readyRef = useRef(false);
@@ -88,6 +88,12 @@ export default function SearchMap({ results, card, preview, list, map: mapConf, 
   useEffect(() => {
     onMarkerFocusRef.current = onMarkerFocus;
   }, [onMarkerFocus]);
+  /** Idem pour l'action de popup surchargée : gardée en ref pour qu'un appelant
+   *  qui recrée son handler à chaque rendu ne réinstancie pas handlePopupAction. */
+  const onItemActionRef = useRef(onItemAction);
+  useEffect(() => {
+    onItemActionRef.current = onItemAction;
+  }, [onItemAction]);
   const [mapLoaded, setMapLoaded] = useState(false);
   // bbox + zoom courants → entrées du clustering. Recalculés au load et au moveEnd.
   const [viewport, setViewport] = useState<{ zoom: number; bbox: [number, number, number, number] } | null>(null);
@@ -207,6 +213,12 @@ export default function SearchMap({ results, card, preview, list, map: mapConf, 
   // Action du bouton de la popup (handler React direct — plus de DOM event).
   const handlePopupAction = useCallback(
     (entry: SearchEntity) => {
+      // Point d'extension pour un appelant EXTERNE (Meeteem/ampli monte cette
+      // carte sur ses propres entités et ouvre sa propre modale) : renvoyer
+      // `true` consomme le clic. Sans handler, la cascade déclarative
+      // link/profil/détail ci-dessous est inchangée.
+      if (onItemActionRef.current?.(entry)) return;
+
       const { itemList, decision } = resolveAction(entry);
       if (decision.kind === "link") {
         if (decision.newTab) window.open(decision.href, "_blank", "noopener");

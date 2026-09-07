@@ -30,14 +30,30 @@ import { resolveColorBy } from "./colorBy";
 
 import type { MarkerByConf, MarkerConf, MarkerVisualConf } from "../schema";
 
+/** Taille du marqueur en px — `size` est porté par TOUTES les formes (pas
+ *  seulement l'icône custom), cf. `iconSize` dans la config. */
 export type MarkerVisual =
-  | { kind: "image"; src: string }
+  | { kind: "image"; src: string; size: number }
   | { kind: "icon"; src: string; size: number; anchor: "bottom" | "center" }
-  | { kind: "pin"; cssColor: string; borderCssColor: string }
-  | { kind: "pin-icon"; icon: string; cssColor: string; borderCssColor: string }
-  | { kind: "circle"; cssColor: string; borderCssColor: string }
-  | { kind: "circle-icon"; icon: string; cssColor: string; borderCssColor: string }
-  | { kind: "default" };
+  | { kind: "pin"; cssColor: string; borderCssColor: string; size: number }
+  | { kind: "pin-icon"; icon: string; cssColor: string; borderCssColor: string; size: number }
+  | { kind: "circle"; cssColor: string; borderCssColor: string; size: number }
+  | { kind: "circle-icon"; icon: string; cssColor: string; borderCssColor: string; size: number }
+  | { kind: "default"; size: number };
+
+/**
+ * Tailles par défaut PAR FORME — reprises des dimensions historiques (CSS pour
+ * la vignette et la pastille, SVG pour la goutte). Sans `iconSize` déclaré, un
+ * marqueur rend donc exactement comme avant ; le déclarer pilote désormais
+ * TOUTES les formes, plus seulement `iconUrl`.
+ */
+const DEFAULT_SIZE = { image: 36, circle: 30, pin: 34, icon: 34 } as const;
+
+/** Taille déclarée, sinon le défaut de la forme. */
+function sizeOf(conf: MarkerVisualConf | undefined, fallback: number): number {
+  const declared = conf?.iconSize;
+  return typeof declared === "number" && Number.isFinite(declared) ? declared : fallback;
+}
 
 /** Jeton de thème → variable CSS (le pin suit le thème au paint). */
 const PIN_COLOR_VARS: Record<string, string> = {
@@ -104,10 +120,11 @@ function shapeVisual(
   borderCssColor: string,
 ): MarkerVisual {
   const circle = conf.style === "circle";
+  const size = sizeOf(conf, circle ? DEFAULT_SIZE.circle : DEFAULT_SIZE.pin);
   if (conf.icon) {
-    return { kind: circle ? "circle-icon" : "pin-icon", icon: conf.icon, cssColor, borderCssColor };
+    return { kind: circle ? "circle-icon" : "pin-icon", icon: conf.icon, cssColor, borderCssColor, size };
   }
-  return { kind: circle ? "circle" : "pin", cssColor, borderCssColor };
+  return { kind: circle ? "circle" : "pin", cssColor, borderCssColor, size };
 }
 
 export function resolveMarkerVisual(
@@ -126,7 +143,11 @@ export function resolveMarkerVisual(
     const img =
       (typeof thumb === "string" && thumb) || (typeof medium === "string" && medium) || "";
     if (img) {
-      return { kind: "image", src: img.startsWith("http") ? img : `${baseUrl}${img}` };
+      return {
+        kind: "image",
+        src: img.startsWith("http") ? img : `${baseUrl}${img}`,
+        size: sizeOf(conf, DEFAULT_SIZE.image),
+      };
     }
     // pas d'image : on retombe sur l'icône custom / le pin (ci-dessous)
   }
@@ -144,7 +165,12 @@ export function resolveMarkerVisual(
   }
   if (conf?.iconUrl) {
     const src = conf.iconUrl.startsWith("http") ? conf.iconUrl : `${baseUrl}${conf.iconUrl}`;
-    return { kind: "icon", src, size: conf.iconSize ?? 34, anchor: conf.iconAnchor ?? "bottom" };
+    return {
+      kind: "icon",
+      src,
+      size: sizeOf(conf, DEFAULT_SIZE.icon),
+      anchor: conf.iconAnchor ?? "bottom",
+    };
   }
   // `icon` seul suffit : sans lui, un marqueur déclarant un pictogramme mais
   // aucun `style` tomberait sur le pin nu et perdrait son glyphe en silence.
@@ -155,5 +181,7 @@ export function resolveMarkerVisual(
     const borderCssColor = PIN_BORDER_VARS[conf.borderColor ?? "background"] ?? "var(--background)";
     return shapeVisual(conf, cssColor, borderCssColor);
   }
-  return { kind: "default" };
+  // Le défaut rend une goutte : `iconSize` doit donc le dimensionner aussi,
+  // sinon un site qui ne déclare QUE la taille n'obtiendrait aucun effet.
+  return { kind: "default", size: sizeOf(conf, DEFAULT_SIZE.pin) };
 }
