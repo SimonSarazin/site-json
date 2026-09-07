@@ -50,12 +50,26 @@ interface RawProposition {
     actions?: RawAction[];
 }
 
-export const findMetadataById = (id?: string, links?: any) => {
+/**
+ * Bloc `links` de l'enveloppe brute : type de collection (`citoyens`,
+ * `organizations`, …) → id de l'entité → métadonnées. Le backend n'en garantit pas
+ * la forme, d'où `unknown` — les lectures narrowent au cas par cas.
+ */
+type GlobalLinks = Record<string, Record<string, unknown> | undefined>;
+
+/** Les seuls champs de métadonnées que cet adaptateur lit réellement. */
+interface EntityMetadata {
+    profilThumbImageUrl?: string;
+    name?: string;
+}
+
+export const findMetadataById = (id?: string, links?: GlobalLinks): EntityMetadata | null => {
     if (!links || !id) return null;
 
     for (const typeKey in links) {
-        if (links[typeKey] && links[typeKey][id]) {
-            return links[typeKey][id];
+        const parType = links[typeKey];
+        if (parType && parType[id]) {
+            return parType[id] as EntityMetadata;
         }
     }
     return null;
@@ -86,20 +100,42 @@ export const calculateFundingStatus = (
     }, { currentFunding: 0, unpaidFunding: 0, userPledge: 0});
 }
 
-function normalizeRawAction(action: any, globalLinks: any) {
+/** Bloc `links` d'une action, seule partie que la normalisation réécrit. */
+interface ActionLinks {
+    contributors?: Record<string, unknown>;
+}
+
+/**
+ * Ce que `normalizeRawAction` lit vraiment d'une action — volontairement plus étroit
+ * que `RawAction` ou `FundingAction`, pour que la fonction serve les deux chemins
+ * (dépense côté projet, action côté proposition) sans les confondre.
+ */
+interface ActionNormalizable {
+    tags?: unknown;
+    links?: ActionLinks;
+}
+
+/**
+ * Générique, et non `(action: any)` : le type d'entrée doit RESSORTIR intact. Le
+ * `...action` conserve les champs du domaine (`name`, `credits`, `status`,
+ * `contributors`) qu'un paramètre élargi aurait effacés — c'est ce que masquait
+ * l'`any` d'origine.
+ */
+function normalizeRawAction<T extends ActionNormalizable>(action: T, globalLinks: GlobalLinks) {
     const contributorsLinks = action.links?.contributors || {};
 
     const contributorsRecord = Object.fromEntries(
-        Object.entries(contributorsLinks).map(([contribId, contribData]: [string, any]) => {
-            const collectionType = contribData.type;
-            const metadata = globalLinks?.[collectionType]?.[contribId] ?? null;
+        Object.entries(contributorsLinks).map(([contribId, contribData]) => {
+            const contrib = contribData as { type?: string };
+            const collectionType = contrib.type ?? "";
+            const metadata = (globalLinks?.[collectionType]?.[contribId] ?? null) as EntityMetadata | null;
 
             return [
                 contribId,
                 {
                     profilThumbImageUrl: metadata?.profilThumbImageUrl || "",
                     name: metadata?.name || "",
-                    ...contribData
+                    ...contrib
                 }
             ];
         })
@@ -147,7 +183,7 @@ export const getUserFunding = (
 
 function buildDepenseFundingData(
     depense: RawDepense | undefined,
-    globalLinks: any,
+    globalLinks: GlobalLinks,
     fallbackCurrentFunding: number,
     orgsIds: string[],
     userId?: string
@@ -159,7 +195,7 @@ function buildDepenseFundingData(
     }));
 
     const rawActions = depense?.actions ?? [];
-    const enrichedActions = rawActions.map((action: any) => normalizeRawAction(action, globalLinks));
+    const enrichedActions = rawActions.map((action) => normalizeRawAction(action, globalLinks));
 
     const { currentFunding, unpaidFunding, userPledge } = calculateFundingStatus(
         enrichedFinancers,
@@ -225,7 +261,7 @@ export function useCagnotteAdapter(
     const queryClient = useQueryClient();
 
     const {resources, savedSelectedResource, pendingMilestoneRepairs} = useMemo(() => {
-        const rawEnvelopeTypeAssertion = fundingEnvelope?.rawEnvelope as { projects?: RawProposition[], links?: any } | undefined;
+        const rawEnvelopeTypeAssertion = fundingEnvelope?.rawEnvelope as { projects?: RawProposition[], links?: GlobalLinks } | undefined;
         const rawProjects = rawEnvelopeTypeAssertion?.projects || [];
         const globalLinks = rawEnvelopeTypeAssertion?.links || {};
 
@@ -373,7 +409,13 @@ export function useCagnotteAdapter(
                         ? (proposition.actions || []).filter(action => action?.milestone?.milestoneId === d.milestone )
                         : [];
 
-                    const enrichedActions = filteredActions.map((action: any) => normalizeRawAction(action, globalLinks));
+                    // Frontière brut → domaine. Le backend renvoie bien `name`,
+                    // `credits`, `status` et `contributors` sur une action, mais
+                    // `RawAction` ne décrit que ce que l'adaptateur lit. L'assertion
+                    // est posée ICI, une fois et commentée, plutôt que par un `any`
+                    // qui l'aurait tue sur toute la chaîne.
+                    const enrichedActions = filteredActions.map(
+                        (action) => normalizeRawAction(action, globalLinks) as unknown as FundingAction);
 
                     let resolvedMilestoneId = d.milestone ?? "";
                     if (proposition.projectId && hasLinkedProject) {

@@ -9,6 +9,8 @@ import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import type {
   FundingMilestone as Milestone,
   FundingAction as ProjectAction,
+  CagnotteResource,
+  CagnotteFundableItem,
 } from "@/modules/cagnotte/types";
 import { formatCurrency } from "@/modules/cagnotte/utils/format";
 import { ContributorsAvatars } from "@/modules/cagnotte/components/sections/parts/badges";
@@ -22,6 +24,7 @@ import { useCommunObjectivesController } from "@/modules/aac/hooks/useCommunObje
 import {
   normalizeActionForEdit,
   resolveAacActionEntityId,
+  toMilestoneStatus,
   type MilestoneCardPermissions,
 } from "@/modules/aac/lib/objectiveHelpers";
 
@@ -29,7 +32,7 @@ interface CommunActionsSectionProps {
     formData: CoFormData;
     answerQuery: CoFormAnswer | null;
     aacConfig: AacResolvedConfig | null;
-    funding?: any;
+    funding?: CagnotteResource | null;
 }
 
 function ActionRowButton({
@@ -84,7 +87,7 @@ function ActionsMilestoneCard({
     loadingIds,
 }: {
     index: number;
-    item: any;
+    item: CagnotteFundableItem;
     openEditMilestoneModal: (milestone: Milestone) => void;
     onActionCreate: (milestoneId: string, milestoneTitle: string) => void;
     onActionEdit: (milestoneId: string, milestoneTitle: string, action: ProjectAction) => void;
@@ -111,11 +114,11 @@ function ActionsMilestoneCard({
     const c = useT("modules/aac");
 
     const canDeleteThisMilestone = permissions.canDeleteMilestone({
-        status: item.status,
+        status: toMilestoneStatus(item.status),
         hasTransactions: toSafeInt(item.currentFunding) > 0,
     });
 
-    const tasksDone = (item?.actions ?? []).filter((action: any) => action.status === "done").length;
+    const tasksDone = (item?.actions ?? []).filter((action: ProjectAction) => action.status === "done").length;
 
     return (
         <div className="bg-surface border border-border rounded-lg overflow-hidden group">
@@ -152,7 +155,7 @@ function ActionsMilestoneCard({
                                     {String(c("detail.objectives.noTasksYet"))}
                                 </li>
                             ) : (
-                                item.actions.map((rawAction: any, i: number) => {
+                                item.actions.map((rawAction: ProjectAction, i: number) => {
                                     const action = normalizeActionForEdit(rawAction);
                                     const isDone = action.status === "done";
                                     const actionLike = {
@@ -246,7 +249,7 @@ function ActionsMilestoneCard({
                 </div>
             )}
 
-            {permissions.canEditMilestone({ status: item.status }) || canDeleteThisMilestone ? (
+            {permissions.canEditMilestone({ status: toMilestoneStatus(item.status) }) || canDeleteThisMilestone ? (
                 <div className="grid grid-rows-[0fr] opacity-0 group-hover:grid-rows-[1fr] group-hover:opacity-100 focus-within:grid-rows-[1fr] focus-within:opacity-100 transition-all duration-300 ease-in-out">
                     <div className="overflow-hidden">
                         <div className="mb-3">
@@ -255,7 +258,7 @@ function ActionsMilestoneCard({
                                     id: item.milestoneId,
                                     title: item.name,
                                     description: item.description ?? "",
-                                    status: item.status ?? "open",
+                                    status: toMilestoneStatus(item.status) ?? "open",
                                     date_start: undefined,
                                     date_end: undefined,
                                     targetAmount: Number(item.price ?? 0),
@@ -279,10 +282,10 @@ function ActionsMilestoneCard({
                                 isClosing={loadingIds.closingItemId === item.itemId}
                                 closeDisabled={
                                     item.status === "close" ||
-                                    !(item.actions ?? []).every((action: any) => action.status === "done")
+                                    !(item.actions ?? []).every((action: ProjectAction) => action.status === "done")
                                 }
-                                canEdit={permissions.canEditMilestone({ status: item.status })}
-                                canClose={permissions.canEditMilestone({ status: item.status }) && permissions.canCloseMilestone({ status: item.status })}
+                                canEdit={permissions.canEditMilestone({ status: toMilestoneStatus(item.status) })}
+                                canClose={permissions.canEditMilestone({ status: toMilestoneStatus(item.status) }) && permissions.canCloseMilestone({ status: toMilestoneStatus(item.status) })}
                                 canDelete={canDeleteThisMilestone}
                                 isClosed={item.status === "close"}
                                 onRestore={() => onMilestoneRestore(item.itemId, {
@@ -292,7 +295,7 @@ function ActionsMilestoneCard({
                                 } as Milestone)}
                                 isRestoring={loadingIds.restoringItemId === item.itemId}
                             />
-                            {permissions.canCreateAction({ status: item.status }) ? (
+                            {permissions.canCreateAction({ status: toMilestoneStatus(item.status) }) ? (
                                 <Button
                                     size="sm"
                                     className="h-7 text-[11px] gap-1 px-2 bg-primary hover:bg-primary/90 mb-2"
@@ -400,7 +403,7 @@ export function CommunActionsSection({ answerQuery, funding }: CommunActionsSect
                     await ctrl.refetchFundingEnvelope();
                 }}
             />
-            {funding?.items?.map((o: any, i: number) => (
+            {funding?.items?.map((o: CagnotteFundableItem, i: number) => (
                 <ActionsMilestoneCard
                     key={i}
                     index={i}
@@ -414,7 +417,7 @@ export function CommunActionsSection({ answerQuery, funding }: CommunActionsSect
                     onActionDelete={ctrl.handleActionDelete}
                     onActionCandidate={ctrl.handleActionCandidate}
                     onActionDone={ctrl.handleActionDone}
-                    permissions={ctrl.cagnottePerms as unknown as MilestoneCardPermissions}
+                    permissions={ctrl.cagnottePerms}
                     loadingIds={ctrl.loadingIds}
                 />
             ))}

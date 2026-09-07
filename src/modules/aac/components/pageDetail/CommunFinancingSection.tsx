@@ -7,7 +7,12 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
-import type { FundingMilestone as Milestone } from "@/modules/cagnotte/types";
+import type {
+  FundingMilestone as Milestone,
+  FundingAction as ProjectAction,
+  CagnotteResource,
+  CagnotteFundableItem,
+} from "@/modules/cagnotte/types";
 import { formatCurrency } from "@/modules/cagnotte/utils/format";
 import { MilestoneManageActions } from "@/modules/cagnotte/components/sections/MilestoneManageActions";
 import { MilestoneEditDialog } from "@/modules/cagnotte/components/sections/parts/MilestoneEditDialog";
@@ -15,13 +20,13 @@ import CreateMilestoneDialog from "@/modules/cagnotte/components/sections/Create
 import { toSafeInt, buildItemsFromRawDepenses } from "@/modules/cagnotte/utils/dataTransform";
 import { useCommunObjectivesController } from "@/modules/aac/hooks/useCommunObjectivesController";
 import { useCommunRawDepenses } from "@/modules/aac/hooks/useCommunRawDepenses";
-import type { MilestoneCardPermissions } from "@/modules/aac/lib/objectiveHelpers";
+import { toMilestoneStatus, type MilestoneCardPermissions } from "@/modules/aac/lib/objectiveHelpers";
 
 interface CommunFinancingSectionProps {
     formData: CoFormData;
     answerQuery: CoFormAnswer | null;
     aacConfig: AacResolvedConfig | null;
-    funding?: any;
+    funding?: CagnotteResource | null;
 }
 
 function FinancingMilestoneCard({
@@ -35,7 +40,7 @@ function FinancingMilestoneCard({
     loadingIds,
 }: {
     index: number;
-    item: any;
+    item: CagnotteFundableItem;
     openEditMilestoneModal: (milestone: Milestone) => void;
     onMilestoneClose: (itemId: string, milestone: Milestone) => void;
     onMilestoneRestore: (itemId: string, milestone: Milestone) => void;
@@ -50,7 +55,7 @@ function FinancingMilestoneCard({
     const c = useT("modules/aac");
 
     const canDeleteThisMilestone = permissions.canDeleteMilestone({
-        status: item.status,
+        status: toMilestoneStatus(item.status),
         hasTransactions: toSafeInt(item.currentFunding) > 0,
     });
 
@@ -125,7 +130,7 @@ function FinancingMilestoneCard({
                                 {String(c("detail.objectives.noFundingYet"))}
                             </li>
                         )}
-                        {(item?.allFunding || []).map((fund: any, i: number) => (
+                        {(item?.allFunding || []).map((fund: CagnotteFundableItem["allFunding"][number], i: number) => (
                             <li key={i} className="flex p-3 rounded-md border text-sm">
                                 <span className="w-[35%]">{fund.financerName}</span>
                                 <span className="w-[25%]">{formatCurrency(toSafeInt(fund.amount))}</span>
@@ -139,7 +144,7 @@ function FinancingMilestoneCard({
                 </div>
             )}
 
-            {permissions.canEditMilestone({ status: item.status }) || canDeleteThisMilestone ? (
+            {permissions.canEditMilestone({ status: toMilestoneStatus(item.status) }) || canDeleteThisMilestone ? (
                 <div className="grid grid-rows-[0fr] opacity-0 group-hover:grid-rows-[1fr] group-hover:opacity-100 focus-within:grid-rows-[1fr] focus-within:opacity-100 transition-all duration-300 ease-in-out">
                     <div className="overflow-hidden">
                         <div className="mb-3">
@@ -148,7 +153,7 @@ function FinancingMilestoneCard({
                                     id: item.milestoneId,
                                     title: item.name,
                                     description: item.description ?? "",
-                                    status: item.status ?? "open",
+                                    status: toMilestoneStatus(item.status) ?? "open",
                                     date_start: undefined,
                                     date_end: undefined,
                                     targetAmount: Number(item.price ?? 0),
@@ -170,10 +175,10 @@ function FinancingMilestoneCard({
                                 isClosing={loadingIds.closingItemId === item.itemId}
                                 closeDisabled={
                                     item.status === "close" ||
-                                    !(item.actions ?? []).every((action: any) => action.status === "done")
+                                    !(item.actions ?? []).every((action: ProjectAction) => action.status === "done")
                                 }
-                                canEdit={permissions.canEditMilestone({ status: item.status })}
-                                canClose={permissions.canEditMilestone({ status: item.status }) && permissions.canCloseMilestone({ status: item.status })}
+                                canEdit={permissions.canEditMilestone({ status: toMilestoneStatus(item.status) })}
+                                canClose={permissions.canEditMilestone({ status: toMilestoneStatus(item.status) }) && permissions.canCloseMilestone({ status: toMilestoneStatus(item.status) })}
                                 canDelete={canDeleteThisMilestone}
                                 isClosed={item.status === "close"}
                                 onRestore={() => onMilestoneRestore(item.itemId, {
@@ -240,7 +245,7 @@ export function CommunFinancingSection({ answerQuery, funding }: CommunFinancing
                     </Button>
                 </div>
             ) : null}
-            {items.map((o: any, i: number) => (
+            {items.map((o: CagnotteFundableItem, i: number) => (
                 <FinancingMilestoneCard
                     key={i}
                     index={i}
@@ -249,7 +254,7 @@ export function CommunFinancingSection({ answerQuery, funding }: CommunFinancing
                     onMilestoneClose={ctrl.handleCloseMilestone}
                     onMilestoneRestore={ctrl.handleRestoreMilestone}
                     onMilestoneDelete={ctrl.handleDeleteMilestone}
-                    permissions={ctrl.cagnottePerms as unknown as MilestoneCardPermissions}
+                    permissions={ctrl.cagnottePerms}
                     loadingIds={ctrl.loadingIds}
                 />
             ))}

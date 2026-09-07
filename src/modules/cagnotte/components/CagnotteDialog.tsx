@@ -292,14 +292,14 @@ const CagnotteDialogContent = ({
                     getEntityId(p.id),
                     getEntityId(p.projectId),
                     getEntityId(p.answerId),
-                    getEntityId((p as any)._id)
+                    getEntityId((p as { _id?: unknown })._id)
                 ])
                 .filter(Boolean),
         [resources]
     );
 
     const isValidResourceId = useCallback(
-        (id: any) => {
+        (id: unknown) => {
             const cleaned = getEntityId(id);
             return !!cleaned && allResourcesIds.includes(cleaned);
         },

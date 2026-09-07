@@ -11,6 +11,18 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import CagnotteDialog from "@/modules/cagnotte/components/CagnotteDialog";
 import { toSafeInt, buildItemsFromRawDepenses, getEntityId } from "@/modules/cagnotte/utils/dataTransform";
 import { formatCurrency } from "@/modules/cagnotte/utils/format";
+import type { CagnotteResource, CagnotteFundableItem } from "@/modules/cagnotte/types";
+import type { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
+
+/**
+ * Organisation telle qu'elle sort de `searchCostum` (`res.serverData`). Seuls ces
+ * trois champs sont lus ici ; le backend en renvoie beaucoup d'autres.
+ */
+interface OrganisationCofinanceuse {
+    _id?: { $id?: string };
+    id?: string;
+    name?: string;
+}
 import {
     useCommunReactions,
     getCommunReactionState,
@@ -120,7 +132,7 @@ interface CommunFinancingCardProps {
     formData: CoFormData;
     answerQuery: CoFormAnswer | null;
     aacConfig: AacResolvedConfig | null;
-    funding?: any;
+    funding?: CagnotteResource | null;
     onFunded?: () => void;
 }
 
@@ -146,7 +158,7 @@ export function CommunFinancingCard({
     });
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [orgs, setOrgs] = useState<any[]>([]);
+    const [orgs, setOrgs] = useState<OrganisationCofinanceuse[]>([]);
     const [isLoadingOrgs, setIsLoadingOrgs] = useState(false);
     // Ids des organisations marquées "intéressées" (links.tls) — affiché dans la
     // liste du modal. State (et non simple useMemo) pour pouvoir être mis à jour
@@ -173,7 +185,7 @@ export function CommunFinancingCard({
         setIsLoadingOrgs(true);
         try {
             const typeCoFinancer = _aacConfig?.typeCoFinancer ?? "tiersLieux";
-            let orgParam = {};
+            let orgParam: Partial<GlobalAutocompleteCostumData> = {};
             
             if (typeCoFinancer === "tiersLieux") {
                 orgParam = {
@@ -197,7 +209,7 @@ export function CommunFinancingCard({
                 };
             }
             
-            const result = await entity.searchCostum(orgParam as any);
+            const result = await entity.searchCostum(orgParam);
             setOrgs(result && result?.results ? Object.values(result?.results).map(res => res?.serverData || {}) : []);
         } catch (error) {
             console.error("Erreur lors du chargement des organisations:", error);
@@ -274,8 +286,8 @@ export function CommunFinancingCard({
         executeToggle(type);
     };
 
-    const handleOrgClick = (org: any) => {
-        const orgId = org._id?.$id || org.id;
+    const handleOrgClick = (org: OrganisationCofinanceuse) => {
+        const orgId = org._id?.$id || org.id || "";
         const isAlreadyInterested = interestedOrgIds.has(orgId);
         executeToggle("interesse", { id: orgId, name: org?.name || "" }, !isAlreadyInterested);
     };
@@ -341,7 +353,7 @@ export function CommunFinancingCard({
     const resourceAmountPerc = resourceTotalAmount > 0 ? Math.min(toSafeInt((resourceFinancedAmount / resourceTotalAmount) * 100), 100) : 0;
 
     const cofinancers = openItems.flatMap((item) => item?.allFunding ?? []);
-    const cofinancerCount = new Set(cofinancers.map((cont: any) => cont?.financerId)).size;
+    const cofinancerCount = new Set(cofinancers.map((cont: CagnotteFundableItem["allFunding"][number]) => cont?.financerId)).size;
 
     // Stats d'actions — seulement pertinent une fois la proposition promue en
     // projet (cf. `canManageObjectiveActions`, même règle que CommunActionsSection).
@@ -503,7 +515,7 @@ export function CommunFinancingCard({
                             resourceId: answerId,
                             hideResourceSelect: true,
                             hostEntity: fundingHost,
-                            resource: funding,
+                            resource: funding ?? undefined,
                         }}
                     >
                         <button
@@ -537,8 +549,8 @@ export function CommunFinancingCard({
                         ) : (
                             <div className="max-h-60 overflow-y-auto space-y-2 pr-2">
                                 {orgs.length > 0 ? (
-                                    orgs.map((org: any) => {
-                                        const orgId = org._id?.$id || org.id;
+                                    orgs.map((org: OrganisationCofinanceuse) => {
+                                        const orgId = org._id?.$id || org.id || "";
                                         const isAlreadyInterested = interestedOrgIds.has(orgId);
                                         return (
                                             <button

@@ -5,8 +5,20 @@
  */
 import type { Project } from "@communecter/cocolight-api-client";
 import type { FundingAction as ProjectAction } from "@/modules/cagnotte/types";
+import type { CagnotteMilestoneStatus } from "@/modules/cagnotte/permissions/types";
 import { getEntityId, normalizeTags, resolveActionAuthorId } from "@/modules/cagnotte/utils/dataTransform";
 import { resolveAnswerAuthorId } from "./answerAuthor";
+
+/**
+ * `CagnotteFundableItem.status` est un `string` : l'adaptateur le recopie du backend
+ * sans le contraindre. Les gardes de permission, elles, raisonnent sur les trois
+ * valeurs du domaine. Tout statut inconnu est donc traité comme `open` — un palier
+ * qu'on ne sait pas lire reste ouvert, jamais figé par erreur. C'est déjà
+ * l'hypothèse du reste du module, qui teste partout `status !== "close"`.
+ */
+export function toMilestoneStatus(status: string | undefined): CagnotteMilestoneStatus {
+  return status === "close" || status === "done" ? status : "open";
+}
 
 export function resolveAacActionEntityId(actionLike: { id?: string; _id?: string; entityId?: string } | null | undefined): string {
   return String(actionLike?.id ?? actionLike?._id ?? actionLike?.entityId ?? "").trim();

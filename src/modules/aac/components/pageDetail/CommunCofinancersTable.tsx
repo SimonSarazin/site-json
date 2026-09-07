@@ -5,12 +5,23 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { toSafeInt, buildItemsFromRawDepenses, getEntityId } from "@/modules/cagnotte/utils/dataTransform";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useCommunRawDepenses } from "@/modules/aac/hooks/useCommunRawDepenses";
+import type { CagnotteResource, FundingTransaction } from "@/modules/cagnotte/types";
+
+/**
+ * Une ligne de `allFunding`. Le repli `name`/`type` sur `financerName`/`financerType`
+ * couvre les documents anciens, écrits avant que l'enrichissement ne renomme ces
+ * champs (cf. `getUserFunding` dans `useCagnotteAdapter`).
+ */
+type LigneCofinancement = FundingTransaction & {
+    name?: string;
+    type?: string;
+};
 
 interface CommunCofinancersTableProps {
     formData: CoFormData;
     answerQuery: CoFormAnswer| null;
     aacConfig: AacResolvedConfig | null;
-    funding?: any;
+    funding?: CagnotteResource | null;
 }
 
 export function CommunCofinancersTable({formData: _formData, answerQuery, aacConfig: _aacConfig, funding}: CommunCofinancersTableProps) {
@@ -23,11 +34,11 @@ export function CommunCofinancersTable({formData: _formData, answerQuery, aacCon
     const { data: depenses } = useCommunRawDepenses(answerId);
     const items = buildItemsFromRawDepenses(depenses ?? [], funding?.items ?? []);
 
-    const cofinancers: any[] = items
+    const cofinancers: LigneCofinancement[] = items
         .filter((item) => item?.status !== "close")
         .flatMap((item) => item?.allFunding ?? []);
 
-    const amountsPerCofinancer = cofinancers.reduce((acc: Record<string, { name: string, type: string, totalAmount: number }>, current: any) => {
+    const amountsPerCofinancer = cofinancers.reduce((acc: Record<string, { name: string, type: string, totalAmount: number }>, current: LigneCofinancement) => {
         const financerId = current?.financerId;
         
         const name = current?.financerName || current?.name || String(t("detail.cofinancers.unknownContributor"));

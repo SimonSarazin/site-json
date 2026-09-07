@@ -15,6 +15,8 @@ import { useActionGuards } from "@/modules/cagnotte/hooks/useActionGuards";
 import type {
   FundingMilestone as Milestone,
   FundingAction as ProjectAction,
+  CagnotteResource,
+  CagnotteFundableItem,
 } from "@/modules/cagnotte/types";
 import { useCandidateAction, useDeleteAction, useMarkActionDone } from "@/modules/cagnotte/actions/mutations";
 import { useDeleteMilestone, useEditMilestone, useCloseMilestone, useRestoreMilestone } from "@/modules/cagnotte/actions/mutations";
@@ -37,7 +39,8 @@ export function useCommunObjectivesController({
   funding,
 }: {
   answerQuery: CoFormAnswer | null;
-  funding?: any;
+  /** L'enveloppe résolue par `useAacFundingResource` — un projet ou une proposition. */
+  funding?: CagnotteResource | null;
 }) {
   const { api, apiClient, me } = useCocolight();
   const profileEntity = useOptionalProfileEntity();
@@ -86,7 +89,7 @@ export function useCommunObjectivesController({
   const ownerIds = useMemo(() => resolveCommunOwnerIds(answerQuery), [answerQuery]);
 
   const cagnottePerms = useCagnottePermissions(projectEntity, {
-    hasActiveItems: (funding?.items || []).some((m: any) => m.status !== "close"),
+    hasActiveItems: (funding?.items || []).some((m: CagnotteFundableItem) => m.status !== "close"),
     resourceId: answerEntityId,
     ownerIds,
   });
@@ -303,7 +306,10 @@ export function useCommunObjectivesController({
     };
   }, [selectedMilestone]);
 
-  const existingMilestoneIds = useMemo(() => (funding?.items ?? []).map((item: any) => String(item.milestoneId ?? item.itemId ?? "")), [funding?.items]);
+  const existingMilestoneIds = useMemo(
+    () => (funding?.items ?? []).map((item: CagnotteFundableItem) => String(item.milestoneId ?? item.itemId ?? "")),
+    [funding?.items],
+  );
 
   return {
     // Permissions / contexte

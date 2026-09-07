@@ -58,6 +58,12 @@ export type FundingAction = {
   sourceIndex?: number;
   date_start?: number;
   date_end?: number;
+  /**
+   * Date de création telle que le backend l'envoie — timestamp ou chaîne selon
+   * l'ancienneté du document. Lue par la colonne « date » de la liste d'actions
+   * AAC ; elle n'était pas déclarée, et seul un `any` la laissait passer.
+   */
+  created?: string | number;
   tags: string[];
   contributors: FundingContributor[];
   authorId?: string;

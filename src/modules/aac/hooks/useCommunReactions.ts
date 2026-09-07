@@ -20,10 +20,14 @@ interface Reactor {
 }
 
 function getAtPath(source: unknown, path: string): Record<string, unknown> | undefined {
-  return path.split(".").reduce<any>(
-    (acc, key) => (acc && typeof acc === "object" ? acc[key] : undefined),
+  const trouve = path.split(".").reduce<unknown>(
+    (acc, key) =>
+      acc && typeof acc === "object" ? (acc as Record<string, unknown>)[key] : undefined,
     source
   );
+  // Le type de retour n'était jusqu'ici qu'une déclaration : `reduce<any>` laissait
+  // passer un scalaire trouvé au bout du chemin. On le vérifie maintenant.
+  return trouve && typeof trouve === "object" ? (trouve as Record<string, unknown>) : undefined;
 }
 
 function buildReactionEntry(type: CommunReactionType, reactor: Reactor, useIsoDateSentinel: boolean): Record<string, unknown> {
