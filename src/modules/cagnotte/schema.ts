@@ -47,7 +47,6 @@ export const FinanceSectionSchema = z.object({
     showProgress: z.boolean().optional().default(true),
     showFundingGoal: z.boolean().optional().default(true),
     showContributors: z.boolean().optional().default(true),
-    showTimeline: z.boolean().optional().default(false),
     layout: z.enum(["cards", "list", "compact"]).optional().default("cards"),
   }),
 });

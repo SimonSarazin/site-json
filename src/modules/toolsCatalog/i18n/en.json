@@ -9,7 +9,10 @@
     "categoryTitle": "Usage category",
     "subCategoryTitle": "Usage sub-category",
     "all": "All",
-    "openSource": "Open source only"
+    "openSource": "Open source only",
+    "title": "Filters",
+    "reset": "Reset",
+    "showResults": "Show results"
   },
   "view": {
     "grid": "Grid",

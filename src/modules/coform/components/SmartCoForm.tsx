@@ -2,12 +2,11 @@ import { useMemo, type ReactNode } from "react";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { useCoFormQuery, useCoFormFinalMutation } from "../hooks/useCoFormQuery";
-import { useCoFormCatalogs } from "../hooks/useCoFormCatalogs";
 import { DynamicCoForm } from "./DynamicCoForm";
 import { MultiStepCoForm } from "./MultiStepCoForm";
 import { CoFormReadOnly } from "./CoFormReadOnly";
-import { CommonTableCatalogsProvider } from "../contexts/CommonTableCatalogsProvider";
-import { parseCoFormFields, normalizeAnswerData, denormalizeAnswerData, extractFinderLinks, getOriginalFieldKey } from "../utils/formParser";
+import { CommonTableCatalogsLoader } from "../contexts/CommonTableCatalogsLoader";
+import { parseCoFormFields, normalizeAnswerData, denormalizeAnswerData, extractFinderLinks, collectCommonTableInputKeys } from "../utils/formParser";
 import type { CoFormData, SubmitMode, AllStepsData, SubFormData, AddedOptionsMap, ExistingAnswerMeta } from "../types";
 import type { FinderLinksMap } from "../utils/formParser";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -271,29 +270,19 @@ export function SmartCoForm({
 
   // Identifie les inputs commonTable du form pour fetcher leurs catalogues
   // collaboratifs en un seul appel batch. Si le form n'en contient aucun,
-  // `inputKeys` est vide → le hook ne fait aucun appel réseau (enabled=false).
-  const commonTableInputKeys = useMemo(() => {
-    const keys: string[] = [];
-    for (const sf of subFormsFields) {
-      for (const f of sf.fields) {
-        if (f.componentType === "commonTable") {
-          keys.push(getOriginalFieldKey(f));
-        }
-      }
-    }
-    return keys;
-  }, [subFormsFields]);
+  // `inputKeys` est vide → le loader ne fait aucun appel réseau.
+  const commonTableInputKeys = useMemo(
+    () => collectCommonTableInputKeys(subFormsFields),
+    [subFormsFields]
+  );
 
-  const { catalogs: commonTableCatalogs } = useCoFormCatalogs({
-    formId: formId ?? "",
-    inputKeys: commonTableInputKeys,
-    enabled: !!formId && commonTableInputKeys.length > 0,
-  });
-
-  // Wrapper qui expose les catalogues commonTable aux fields. Le provider
-  // accepte un objet vide → si pas de commonTable, c'est un no-op pur.
+  // Wrapper qui expose les catalogues commonTable aux fields. Le loader rend un
+  // provider vide s'il n'y a pas de commonTable → no-op pur. Il est PARTAGÉ avec
+  // les surfaces qui montent `CoFormReadOnly` sans passer par ici.
   const withCatalogs = (node: ReactNode) => (
-    <CommonTableCatalogsProvider catalogs={commonTableCatalogs}>{node}</CommonTableCatalogsProvider>
+    <CommonTableCatalogsLoader formId={formId} inputKeys={commonTableInputKeys}>
+      {node}
+    </CommonTableCatalogsLoader>
   );
 
   // Normaliser les defaultValues pour les champs stockés à la racine (comme evaluation)

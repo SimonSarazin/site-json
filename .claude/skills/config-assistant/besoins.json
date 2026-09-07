@@ -1,0 +1,69 @@
+{
+  "$doc": "FICHES DE BESOIN — indexées par la question qu'on se pose au moment de décider, jamais par la clé de config. Un catalogue de capacités ne trouve pas son lecteur : personne ne se demande « quelles clés le moteur expose-t-il ». On se demande « est-ce que l'usager pourra ajouter une valeur qui n'existe pas ». Chaque fiche porte le PRIX de chaque réponse — sans quoi elle vend une solution au lieu d'aider à choisir. Le champ `detecteur` dit comment repérer qu'un choix est en train d'être fait ; il ne dit JAMAIS que le choix est mauvais (cf. scripts/config-besoins.mjs). L'adoption ne figure pas ici : elle se dérive avec `npm run config:changelog key <nom>`.",
+  "besoins": [
+    {
+      "id": "liste-ouverte",
+      "besoin": "Quand quelqu'un remplit ce champ, doit-il pouvoir proposer une valeur qui n'existe pas encore ?",
+      "pourquoi": "C'est une question sur l'EXPÉRIENCE DE SAISIE, à laquelle on répond en deux secondes au moment où on conçoit le formulaire — sans aucune donnée. Aucune mesure ne pourra jamais la trancher à votre place : savoir si « type de document » est un vocabulaire clos relève du métier du site.",
+      "reponses": [
+        {
+          "nom": "Liste figée",
+          "comment": "`enum` posé dans la config du champ",
+          "quand": "le vocabulaire est CLOS : civilité, statut de publication, forme juridique, découpage administratif, codes postaux du territoire",
+          "prix": "aucun — c'est le bon choix par défaut. Sur maison-sport-sante-la-tampon, 9 des 12 listes sont dans ce cas."
+        },
+        {
+          "nom": "« Autre… » + texte libre",
+          "comment": "une option `Autre...` en fin d'`enum`, avec le champ libre derrière (codec `enumOrOther` côté groupes de sérialisation)",
+          "quand": "l'usager doit pouvoir sortir de la liste, mais sa valeur ne concerne QUE sa fiche — un titre de fonction exotique, par exemple",
+          "prix": "la valeur n'enrichit pas la liste et n'est PAS filtrable : elle n'apparaîtra jamais dans une facette de recherche"
+        },
+        {
+          "nom": "Liste vivante du costum",
+          "comment": "`costum.lists.<nom>` en base + `optionsKey` côté FORMULAIRE + `optionsFrom: {list}` côté FILTRES de recherche — les trois pièces, sinon la liste grandit d'un côté et pas de l'autre",
+          "quand": "la liste elle-même doit grandir ET les nouvelles valeurs doivent devenir cherchables par tout le monde",
+          "prix": "les valeurs dynamiques n'ont PAS de libellé traduit — elles s'affichent telles qu'elles sont stockées. Rédhibitoire pour une liste comme FR/EN, sans importance pour des thématiques."
+        }
+      ],
+      "discriminant": "Entre « Autre… » et la liste vivante, la question n'est pas technique : la valeur ajoutée doit-elle devenir cherchable par TOUS, ou est-ce une échappatoire pour un cas particulier ?",
+      "detecteur": "un champ de costumForm dont le `widget` est `select`/`multiselect`/`checkboxGroup` ET qui porte un `enum` en dur",
+      "voir": {
+        "institut-bleu": "les trois pièces posées sur 4 champs (tags, territoires, auteurs, tagsDocument) ; motivation mesurée : la config gelait 12 territoires quand la base en compte 64",
+        "maison-sport-sante-la-tampon": "les deux autres réponses : 9 listes figées à raison, et « Autre… » sur les titres de fonction et la catégorie d'actualité"
+      },
+      "docs": ["doc/28-module-formengine.md", "doc/07-module-search.md"]
+    },
+    {
+      "id": "rattachement-fiche",
+      "besoin": "Cette fiche appartient-elle au site, ou est-elle seulement référencée par lui — et dans les deux cas, quel formulaire doit l'éditer ?",
+      "pourquoi": "Deux axes qu'on prend pour un seul : l'APPARTENANCE (qui possède, qui voit) et le FORMULAIRE (qui décrit, qui édite). Une fiche peut être visible sans être éditable, et éditable par un formulaire dont elle n'est pas native.",
+      "reponses": [
+        {
+          "nom": "Natifs seulement",
+          "comment": "`identity` sur le costumForm — comment un natif se reconnaît en base",
+          "quand": "le site ne montre que des fiches qu'il a lui-même créées",
+          "prix": "le référencement n'écrira RIEN : `reference.costumTypes` reste vide, donc `editModalMatch` n'aura rien à matcher le jour où vous référencerez"
+        },
+        {
+          "nom": "Natifs et référencés",
+          "comment": "`identity` + `subType` (+ `subTypeLabel`) sur le costumForm, `costumSubType` en `baseParams`, et une route `editModals` conditionnée",
+          "quand": "le site montre aussi des fiches d'un autre costum, curées une à une",
+          "prix": "la chaîne doit être COMPLÈTE — poser `identity` sans `subType` produit un site où le référencement fonctionne mais où l'édition ne sait plus router"
+        },
+        {
+          "nom": "Borne disjonctive",
+          "comment": "`when` (PredicateJson) sur la route d'édition : `or[sourceKeys ∋ slug, reference.costum ∋ slug]`",
+          "quand": "repli quand le sous-type n'est pas écrit, ou pour borner un formulaire à son périmètre",
+          "prix": "ne distingue pas les sous-types entre eux : un seul formulaire pour toute la collection du périmètre"
+        }
+      ],
+      "discriminant": "Allez-vous référencer des fiches d'un autre costum ? Si oui, `identity` seul est un piège — il faut `subType` dès le départ, sinon le référencement est muet.",
+      "detecteur": "un costumForm portant `identity` SANS `subType`, dans une config dont l'admin déclare une action ou une section de référencement",
+      "voir": {
+        "institut-bleu": "la chaîne entière, seul du parc : identity + subType + subTypeLabel + costumSubType + editModalMatch",
+        "maison-sport-sante-la-tampon": "le piège vécu — identity sans subType, d'où un repli sur `when` et une justification erronée restée plusieurs jours dans la doc projet"
+      },
+      "docs": ["doc/35-rattachement-et-referencement.md", "doc/08-module-profil.md"]
+    }
+  ]
+}

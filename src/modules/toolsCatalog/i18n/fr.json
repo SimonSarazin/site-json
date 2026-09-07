@@ -9,7 +9,10 @@
     "categoryTitle": "Catégorie d'usage",
     "subCategoryTitle": "Sous-catégorie d'usage",
     "all": "Tous",
-    "openSource": "Open source uniquement"
+    "openSource": "Open source uniquement",
+    "title": "Filtres",
+    "reset": "Réinitialiser",
+    "showResults": "Voir les résultats"
   },
   "view": {
     "grid": "Grille",

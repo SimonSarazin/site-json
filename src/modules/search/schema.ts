@@ -58,19 +58,28 @@ export const FilterOptionStyleSchema = z.enum(["checkbox", "check"]);
  *    ⚠️ Les options sont les contours DESSINABLES : un document sans `geoShape` est écarté en amont
  *    par `toFeatureCollection` et n'a donc pas d'option.
  *
- * REMPLACE les `options` écrites à la main quand elle est déclarée — pas de fusion. Les valeurs
- * dynamiques n'ont donc PAS de libellé traduit : elles s'affichent telles qu'elles sont stockées.
- * C'est un choix : traduire supposerait de maintenir une table en config, donc de recréer la dérive
- * qu'on vient de supprimer.
+ * REMPLACE par défaut les `options` écrites à la main — pas de fusion. Les valeurs dynamiques n'ont
+ * donc PAS de libellé traduit : elles s'affichent telles qu'elles sont stockées. C'est un choix :
+ * traduire supposerait de maintenir une table en config, donc de recréer la dérive qu'on vient de
+ * supprimer. Avec `withDeclared`, les `options` déclarées deviennent au contraire un SOCLE fusionné en
+ * tête, et gardent leur libellé.
  *
  * Sans `optionsFrom`, rien ne change : les options déclarées font foi, comme aujourd'hui.
  */
 export const OptionsFromSchema = z.union([
   z.object({
-    /** Nom de la liste dans `costum.lists`. */
-    list: z.string(),
+    /** Nom de la liste dans `costum.lists`, ou PLUSIEURS à fusionner (ordre = priorité) — cas d'un
+     *  même champ alimenté depuis plusieurs collections, qui demande une recette par collection.
+     *  Chacune est résolue SELON SA FORME : statique (tableau/map) lue en mémoire, recette
+     *  (`{collection, distinct, where}`) envoyée à `costum/co/listvalues`. La détection est
+     *  automatique — le rédacteur de config n'a pas à savoir sous quelle forme la liste est déclarée. */
+    list: z.union([z.string(), z.array(z.string()).min(1)]),
     /** Costum porteur ; par défaut celui du site. */
     costumSlug: z.string().optional(),
+    /** Les `options` déclarées deviennent le SOCLE (fusionné en tête, libellés i18n conservés) au lieu
+     *  d'un simple repli de chargement. Opt-in : fusionner partout ferait réapparaître des valeurs de
+     *  config absentes de la base, donc des filtres qui ne rendent rien. */
+    withDeclared: z.boolean().optional(),
   }),
   z.object({
     /** Couche de contours servant de référentiel — même déclaration que celle de la carte. */
@@ -115,11 +124,14 @@ export const FilterGroupSchema = z.object({
      *  consommateurs le lisent sans cast. */
     variants: z.array(z.string()).optional(),
   })).optional(),
-  /** Source DYNAMIQUE des options (cf. {@link OptionsFromSchema}) : les valeurs viennent d'une liste
-   *  `costum.lists` ou d'un référentiel de contours, et REMPLACENT les `options` déclarées. Sur un
-   *  groupe à `field`, chaque option reçoit `name` = la valeur stockée, donc le filtrage par champ
-   *  fonctionne tel quel. */
+  /** Source des options : une ou plusieurs listes `costum.lists` (cf. `OptionsFromSchema` du
+   *  searchHeader). Sur un groupe à `field`, chaque option reçoit `name` = la valeur stockée, donc le
+   *  filtrage par champ fonctionne tel quel. */
   optionsFrom: OptionsFromSchema.optional(),
+  /** DÉPRÉCIÉ — alias de `optionsFrom.list`. Distinguait autrefois la source STATIQUE de la source
+   *  dynamique ; la forme est désormais détectée à la lecture (`useDynamicFilterOptions`), le rédacteur
+   *  de config n'a plus à choisir. Conservé pour les configs existantes. */
+  optionsKey: z.string().optional(),
   config: z.object({
     countryCode: z.array(z.string()).optional(),
     level: z.array(z.string()).optional(),
@@ -1206,6 +1218,15 @@ const TitleWithFiltersDropdownSchema = z.object({
   allLabel: LocalizedString.optional(),
   options: z.array(TitleWithFiltersDropdownOptionSchema).default([]),
   optionsFrom: OptionsFromSchema.optional(),
+  /** Source STATIQUE : cf. `FilterGroupSchema.optionsKey` — même sémantique, même résolveur
+   *  (`useDynamicFilterOptions`). */
+  optionsKey: z.string().optional(),
+  /** Le filtre continue de s'hydrater depuis l'URL et de filtrer le contenu, mais ne rend AUCUN
+   *  contrôle visible (ni dans la barre desktop, ni dans la Sheet mobile, ni comme tag actif) — pour
+   *  une page dont l'identité EST déjà ce filtre (ex. une page `/theme` où le thème vient du query
+   *  param `?theme=…` posé par un menu externe) : afficher un sélecteur redondant avec le contexte
+   *  de la page n'a pas de sens, contrairement à `public`/`territoire` qui restent des affinages. */
+  hidden: z.boolean().optional(),
 });
 
 // Props partagées entre le type canonique `searchHeader` et son alias.

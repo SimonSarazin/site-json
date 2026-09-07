@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { Link, useLoaderData, useNavigate, useParams, useSearchParams } from "react-router";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -7,6 +7,8 @@ import { AlertCircle, Eye, Home, Info, Loader2, Lock, Pencil } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { SmartCoForm } from "../components/SmartCoForm";
 import { CoFormReadOnly } from "../components/CoFormReadOnly";
+import { CommonTableCatalogsLoader } from "../contexts/CommonTableCatalogsLoader";
+import { collectCommonTableInputKeys, parseCoFormFields } from "../utils/formParser";
 import { CoFormThankYou } from "../components/CoFormThankYou";
 import {
   useCoFormQuery,
@@ -98,6 +100,14 @@ export default function CoFormAnswerPage() {
       showErrorToast(error, "coform.status.error", t);
     },
   });
+
+  // Inputs commonTable du formulaire, pour charger leur catalogue collaboratif.
+  // AVANT les retours anticipés : c'est un hook, il ne peut pas vivre sous une
+  // condition (`react-hooks/rules-of-hooks`).
+  const commonTableInputKeys = useMemo(
+    () => (formData ? collectCommonTableInputKeys(parseCoFormFields(formData)) : []),
+    [formData]
+  );
 
   // ── Cas d'erreur / chargement ──────────────────────────────────
 
@@ -253,16 +263,26 @@ export default function CoFormAnswerPage() {
         </div>
       </div>
 
-      {/* Mode lecture seule */}
+      {/* Mode lecture seule.
+
+          `CommonTableCatalogsLoader` : cette page monte `CoFormReadOnly` en DIRECT,
+          sans passer par `SmartCoForm` — elle n'héritait donc d'aucun catalogue
+          collaboratif, et les tableaux commonTable s'affichaient SANS aucune ligne
+          de besoin. Le legacy, lui, fusionne `criteriasFromForms` (les besoins
+          seedés par l'admin) et `criteriasFromAnswers` (ceux nés des réponses) —
+          `commonTableV2.php:50`. Sur l'observatoire des CAEs, la première source
+          est vide : 100 % des besoins viennent des réponses. */}
       {effectiveMode === "readonly" && (
-        <CoFormReadOnly
-          formData={formData}
-          answerData={answerData}
-          authorName={authorName}
-          submittedAt={answer?.created}
-          updatedAt={answer?.updated}
-          answerId={answerId}
-        />
+        <CommonTableCatalogsLoader formId={formId} inputKeys={commonTableInputKeys}>
+          <CoFormReadOnly
+            formData={formData}
+            answerData={answerData}
+            authorName={authorName}
+            submittedAt={answer?.created}
+            updatedAt={answer?.updated}
+            answerId={answerId}
+          />
+        </CommonTableCatalogsLoader>
       )}
 
       {/* Mode édition */}
@@ -274,7 +294,19 @@ export default function CoFormAnswerPage() {
             <p>{t("coform.access.editMode.description")}</p>
           </div>
 
+          {/* `formId` : sans lui `SmartCoForm` n'active NI le fetch des catalogues
+              commonTable (tableaux de besoins vides), NI l'enregistrement du
+              brouillon (`enableDraft` l'exige) — et les champs perdent la référence
+              qui rend cliquables les badges de contributeurs.
+
+              `baseUpdatedAt` VA AVEC : activer le brouillon sans lui rouvrirait un
+              trou, car `computeDraftState` ne déclare un brouillon obsolète que si
+              `draft.baseUpdatedAt != null`. Sans repère, un brouillon local
+              écraserait donc en silence une réponse modifiée entre-temps côté
+              serveur — jamais détecté comme périmé. */}
           <SmartCoForm
+            formId={formId}
+            baseUpdatedAt={answer?.updated}
             formData={formData}
             submitMode="final"
             onFinalSubmit={handleFinalSubmit}

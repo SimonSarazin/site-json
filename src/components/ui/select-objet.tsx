@@ -199,10 +199,14 @@ export function SelectObject({
                 )
               ) : (
                 (() => {
-                  const opt = options.find((o: SelectOption) => isSameValue(o.value ?? o, Array.isArray(value) ? value[0] : value));
-                  if (!opt) return <span className={placeholderClassName}>{placeholder}</span>;
-                  const label = opt.label;
-                  const type = opt.type;
+                  const raw = Array.isArray(value) ? value[0] : value;
+                  if (raw == null || raw === "") return <span className={placeholderClassName}>{placeholder}</span>;
+                  const opt = options.find((o: SelectOption) => isSameValue(o.value ?? o, raw));
+                  // Valeur CRÉÉE (creatable), absente de `options` : repli sur la valeur brute — sinon une
+                  // catégorie/valeur tout juste ajoutée en mono s'affichait comme le placeholder, alors
+                  // qu'elle était bien enregistrée dans le formulaire (le mode multiple a déjà ce repli).
+                  const label = String(opt?.label ?? (typeof raw === "object" && raw !== null && "name" in raw ? (raw as Record<string, unknown>).name : raw));
+                  const type = opt?.type;
                   return (
                     <div className={pillClassName}>
                       <div className="flex flex-col min-w-0">

@@ -29,6 +29,7 @@
 | Module notification (cloche + section) | [Module Notification](25-module-notification.md) |
 | Composants média (audio/galerie/fichiers) | [Media Components](33-media-components.md) |
 | Restreindre l'accès à une page (`page.auth`) | [Gardes de page](34-gardes-de-page.md) |
+| Rattacher une fiche à un costum / à un formulaire (référencement, sous-types, routage d'édition) | [Rattachement et référencement](35-rattachement-et-referencement.md) |
 | Module observatoire (dashboard déclaratif) | [Module Observatoire](27-module-observatoire.md) |
 | Module admin (back-office /admin config-driven) | [Module Admin](30-module-admin.md) |
 | Panneau d'administration (live edit) | [Admin Panel](24-admin-panel.md) |

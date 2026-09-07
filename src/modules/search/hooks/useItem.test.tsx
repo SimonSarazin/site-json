@@ -48,3 +48,29 @@ describe("useItem — résolution de l'image", () => {
     expect(img({ profilImageUrl: "" })).toBe("");
   });
 });
+
+/**
+ * `startDate` (ponctuel) sinon `startDateSort`/`startDateSortFormat` (occurrence calculée d'un event
+ * récurrent — cf. `modules/agenda/lib/eventDates.ts`, même défaut). Sans ce repli, une carte d'event
+ * récurrent (aucun `startDate`) affichait une date vide.
+ */
+const startDate = (sd: Record<string, unknown>) => renderHook(() => useItem(ent(sd))).result.current.startDate;
+
+describe("useItem — date d'événement", () => {
+  it("ponctuel : startDate résolu", () => {
+    expect(startDate({ startDate: "2026-08-14T09:00:00Z" })?.toISOString()).toBe("2026-08-14T09:00:00.000Z");
+  });
+
+  it("récurrent : startDateSort en objet PHP brut (forme réelle backend) → ignoré, repli sur startDateSortFormat", () => {
+    expect(
+      startDate({
+        startDateSort: { date: "2026-08-14 09:00:00.000000", timezone_type: 3, timezone: "Europe/Paris" },
+        startDateSortFormat: "2026-08-14T09:00:00+0200",
+      })?.toISOString(),
+    ).toBe("2026-08-14T07:00:00.000Z");
+  });
+
+  it("aucune date exploitable : null", () => {
+    expect(startDate({ name: "Sans date" })).toBeNull();
+  });
+});

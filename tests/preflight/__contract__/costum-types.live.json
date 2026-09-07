@@ -1,17 +1,524 @@
 {
-  "_source": "contrat costum LIVE (describeCostumForms sous force-live) — backend http://127.0.0.1:5080. Rafraîchir : npm run contract:snapshot:live. Un diff ici = l'inférence live a bougé sous les formulaires.",
-  "_backend": "http://127.0.0.1:5080",
+  "_source": "contrat costum LIVE (describeCostumForms sous force-live) — backend http://localhost:5080. Rafraîchir : npm run contract:snapshot:live. Un diff ici = l'inférence live a bougé sous les formulaires.",
+  "_backend": "http://localhost:5080",
   "costums": {
+    "associationEkilibre": {
+      "organizations": {
+        "siren": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "infoGeneral": {
+          "type": "object"
+        },
+        "sextionInfo": {
+          "type": "object"
+        },
+        "name": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "similarLink": {
+          "type": "object"
+        },
+        "sigle": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "affiliate": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "affiliateTo": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "thematic": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "image": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "mobile": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "formLocality": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "location": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "email": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "link": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "facebook": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "instagram": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "youtube": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "linkedin": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "legalStatus": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "statusFile": {
+          "type": "object"
+        },
+        "responsableCivilePro": {
+          "type": "object"
+        },
+        "statusPrimaire": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "statusSecondaire": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "statusCommunale": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "autreDescription": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "sextionInfoRepresentant": {
+          "type": "object"
+        },
+        "representativeTitle": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "representativeCivility": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "representativeName": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "representativeFirstName": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "representativeEmail": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "representativeTelephone": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "sextionInfoResponsable": {
+          "type": "object"
+        },
+        "responsableSameAsRepresent": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "personInChargeTitle": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "personInChargeCivility": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "personInChargeName": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "personInChargeFirstName": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "personInChargeEmail": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "personInChargeTelephone": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "otherRepresentativeTitle": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "otherPersonInChargeTitle": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "statusActor": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "poi": {
+        "name": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "category": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "publicationDate": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "description": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "publicationStatus": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "featured": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "link": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "status": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        }
+      }
+    },
     "cyberReunion": {
       "organizations": {
         "name": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "image": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "siren": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "typologie": {
           "oneOf": [
@@ -53,137 +560,438 @@
           ]
         },
         "offer": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "contact": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "partners": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "formLocality": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         }
       }
     },
     "equipementsSportifs974": {
       "poi": {
         "equip_type_name": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "inst_nom": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "inst_acc_handi_bool": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "inst_trans_bool": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_type_famille": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "inst_date_creation": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "inst_enqu_date": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_maj_date": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_nature": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_sol": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_surf": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_eclair": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "categorie": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "aps_name": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_acc_libre": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "inst_acc_handi_type": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "inst_trans_type": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "inst_part_bool": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "inst_part_type": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_prop_nom": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_prop_type": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_gest_type": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_pmr_acc": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_pmr_chem": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_pmr_douche": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_pmr_sanit": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_pmr_trib": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_pmr_vest": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_pshs_aire": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_pshs_chem": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_pshs_sanit": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_pshs_trib": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_pshs_vest": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_pshs_sign": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_larg": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_long": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_douche": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_loc_type": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_utilisateur": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         }
       }
     },
@@ -206,19 +1014,47 @@
           "type": "object"
         },
         "name": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "similarLink": {
           "type": "object"
         },
         "acronym": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "codeNaf": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "siret": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "categoryThematic": {
           "oneOf": [
@@ -260,28 +1096,84 @@
           ]
         },
         "image": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "description": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "formLocality": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "location": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "operatingLocation": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "mobile": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "email": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "link": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "otherSociaNetworks": {
           "oneOf": [
@@ -299,13 +1191,34 @@
       },
       "poi": {
         "name": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "shortDescription": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "description": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "financementType": {
           "oneOf": [
@@ -334,7 +1247,14 @@
           ]
         },
         "financementSource": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "date": {
           "anyOf": [
@@ -443,7 +1363,14 @@
           ]
         },
         "coteDocument": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "territoires": {
           "oneOf": [
@@ -461,7 +1388,14 @@
       },
       "events": {
         "name": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "type": {
           "oneOf": [
@@ -477,23 +1411,58 @@
           ]
         },
         "shortDescription": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "description": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "url": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         }
       }
     },
     "navigatorDesTierslieux": {
       "organizations": {
         "name": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "similarLink": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "openingDate": {
           "anyOf": [
@@ -511,10 +1480,24 @@
           ]
         },
         "shortDescription": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "holderOrganization": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "manageModel": {
           "oneOf": [
@@ -530,7 +1513,14 @@
           ]
         },
         "extraManageModel": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "typePlace": {
           "oneOf": [
@@ -546,7 +1536,14 @@
           ]
         },
         "extraTypePlace": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "buildingSurfaceArea": {
           "oneOf": [
@@ -569,13 +1566,34 @@
           ]
         },
         "formLocality": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "location": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "image": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "photo": {
           "type": "object"
@@ -594,16 +1612,37 @@
           ]
         },
         "url": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "openingHours": {
           "type": "object"
         },
         "email": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "telephone": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "video": {
           "oneOf": [
@@ -619,17 +1658,38 @@
           ]
         },
         "description": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         }
       }
     },
     "parent62": {
       "poi": {
         "name": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "description": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "territoires": {
           "oneOf": [
@@ -709,10 +1769,24 @@
       },
       "events": {
         "name": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "description": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "territoires": {
           "oneOf": [
@@ -755,154 +1829,736 @@
         }
       }
     },
+    "relief": {
+      "organizations": {
+        "name": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "similarLink": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "openingDate": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^\\d{1,2}/\\d{1,2}/\\d{4}$"
+            },
+            {
+              "type": "string",
+              "format": "date"
+            },
+            {
+              "const": ""
+            }
+          ]
+        },
+        "shortDescription": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "holderOrganization": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "manageModel": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "extraManageModel": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "typePlace": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "extraTypePlace": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "compagnon": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "buildingSurfaceArea": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "siteSurfaceArea": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "formLocality": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "location": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "image": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "photo": {
+          "type": "object"
+        },
+        "socialNetwork": {
+          "oneOf": [
+            {
+              "type": "array"
+            },
+            {
+              "type": "object"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "openingHours": {
+          "type": "object"
+        },
+        "email": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "telephone": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "video": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "description": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "extraTags": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
     "saintpaulSport1": {
       "poi": {
         "equip_type_name": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "inst_nom": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "inst_acc_handi_bool": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "inst_trans_bool": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_type_famille": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "inst_date_creation": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "inst_enqu_date": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_maj_date": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_nature": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_sol": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_surf": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_eclair": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "categorie": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "aps_name": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_acc_libre": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "inst_acc_handi_type": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "inst_trans_type": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "inst_part_bool": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "inst_part_type": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_prop_nom": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_prop_type": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_gest_type": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_pmr_acc": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_pmr_chem": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_pmr_douche": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_pmr_sanit": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_pmr_trib": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_pmr_vest": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_pshs_aire": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_pshs_chem": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_pshs_sanit": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_pshs_trib": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_pshs_vest": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_pshs_sign": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_larg": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_long": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_douche": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_loc_type": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "equip_utilisateur": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "name": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "description": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         }
       },
       "events": {
         "name": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "type": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "shortDescription": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "description": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "url": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         }
       }
     },
     "sportSanteBienetre": {
       "organizations": {
         "siren": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "infoGeneral": {
           "type": "object"
@@ -911,13 +2567,27 @@
           "type": "object"
         },
         "name": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "similarLink": {
           "type": "object"
         },
         "sigle": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "affiliate": {
           "oneOf": [
@@ -930,7 +2600,14 @@
           ]
         },
         "affiliateTo": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "thematic": {
           "oneOf": [
@@ -946,37 +2623,114 @@
           ]
         },
         "image": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "mobile": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "formLocality": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "location": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "email": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "link": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "facebook": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "instagram": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "youtube": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "linkedin": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "legalStatus": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "statusFile": {
           "type": "object"
@@ -985,16 +2739,44 @@
           "type": "object"
         },
         "statusPrimaire": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "statusSecondaire": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "statusCommunale": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "autreDescription": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "sextionInfoRepresentant": {
           "type": "object"
@@ -1013,19 +2795,54 @@
           ]
         },
         "representativeCivility": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "representativeName": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "representativeFirstName": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "representativeEmail": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "representativeTelephone": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "sextionInfoResponsable": {
           "type": "object"
@@ -1054,30 +2871,86 @@
           ]
         },
         "personInChargeCivility": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "personInChargeName": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "personInChargeFirstName": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "personInChargeEmail": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "personInChargeTelephone": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "shortDescription": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         }
       },
       "poi": {
         "name": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "description": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "category": {
           "oneOf": [
@@ -1093,10 +2966,24 @@
           ]
         },
         "installation": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "entrepriseFonciere": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "familleEquipement": {
           "oneOf": [
@@ -1138,7 +3025,14 @@
           ]
         },
         "surface": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "hebergement": {
           "oneOf": [
@@ -1211,13 +3105,34 @@
           ]
         },
         "typeAccessiblHandicap": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "typeTransportCommun": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "sportPratiquer": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "partenariat": {
           "oneOf": [
@@ -1230,10 +3145,24 @@
           ]
         },
         "typePartenariat": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "subCategory": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "dateCreation": {
           "anyOf": [
@@ -1253,13 +3182,34 @@
       },
       "projects": {
         "name": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "shortDescription": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "description": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "urlsDoc": {
           "oneOf": [
@@ -1284,7 +3234,14 @@
           "type": "object"
         },
         "rate": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "competence": {
           "oneOf": [
@@ -1300,10 +3257,24 @@
           ]
         },
         "image": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "email": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "publicCible": {
           "oneOf": [
@@ -1332,7 +3303,14 @@
           ]
         },
         "evaluation": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "thematic": {
           "oneOf": [
@@ -1358,18 +3336,46 @@
           ]
         },
         "certificationsAwards": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         }
       },
       "events": {
         "name": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "shortDescription": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "description": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "module": {
           "oneOf": [
@@ -1398,19 +3404,54 @@
           "type": "object"
         },
         "url": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "image": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "email": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "gatheringDates": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "visioDate": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
         }
       }
     }

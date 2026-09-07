@@ -18,6 +18,27 @@ export interface AgendaParamsInput {
   name?: string;
 }
 
+/**
+ * Bornes et tri du mode LISTE — paramètres OPTIONNELS de `/co2/search/agenda` (legacy 2026-09-04,
+ * miroir Node ; cf. lib `searchEventsCostum`). Sans eux le serveur répond comme avant : DESC non
+ * borné, la 1re page = les events les plus LOINTAINS. Dès qu'un des trois est présent, chaque ligne
+ * porte `endDateSortFormat` (fin d'occurrence calculée serveur, fuseau de l'event).
+ */
+export interface AgendaListBounds {
+  /**
+   * Borne basse « pas encore terminé à from » (un multi-jours ou un créneau en cours reste servi) ET
+   * ANCRE de la pagination : `next()` rejoue la même valeur, la clé de tri des récurrents ne bouge
+   * pas entre deux pages. Passer un instant FIGÉ (`useAgendaClock`), jamais `new Date()` au render.
+   */
+  from?: Date;
+  /** Borne haute STRICTE sur la clé d'occurrence. */
+  to?: Date;
+  /** Sens du tri sur la clé d'occurrence (défaut serveur : desc). */
+  order?: "asc" | "desc";
+  /** `false` = sans récurrent (mode « passés » : une série n'a pas de passé). */
+  recurrency?: boolean;
+}
+
 /** Sous-ensemble de `baseParams` (config section, même convention que search) supporté par searchEventsCostum. */
 export interface AgendaBaseParams {
   /** Scope multi-sources (filtre `source.keys`). Vide → costum courant (auto SDK). */
@@ -45,8 +66,14 @@ export interface AgendaBaseParams {
    * `preferences.toBeValidated` s'affiche publiquement dès sa création (défaut mesuré, commit e3f1a060).
    */
   costumSlug?: string;
-  /** Pas de pagination de la vue LISTE (aligne `indexStepList` de search). */
+  /** Taille de page de chaque flux LISTE (aligne `indexStepList` de search). */
   indexStepList?: number;
+  /**
+   * Inclure les événements RÉCURRENTS. Absent = inclus (défaut serveur). Émis dans les DEUX modes,
+   * liste comme calendrier — sans quoi on les exclurait de la liste pour les voir revenir dans la
+   * grille. Cf. la docstring de la clé de config dans `schema.ts`.
+   */
+  recurrency?: boolean;
   /** Inclure les sources fédiverse. */
   fediverse?: boolean;
   /** Filtres backend bruts (mongo). */
@@ -66,6 +93,9 @@ function fromBaseParams(bp?: AgendaBaseParams): Record<string, unknown> {
   return {
     ...(bp.sourceKey && bp.sourceKey.length ? { sourceKey: bp.sourceKey } : {}),
     ...(bp.notSourceKey ? { notSourceKey: true } : {}),
+    // Non émis quand la config l'omet : l'absence de clé VAUT « inclus » côté serveur, et émettre
+    // `true` par défaut ferait basculer la réponse dans le régime borné pour rien.
+    ...(bp.recurrency !== undefined ? { recurrency: bp.recurrency } : {}),
     ...(bp.fediverse !== undefined ? { fediverse: bp.fediverse } : {}),
     ...(filters && Object.keys(filters).length > 0 ? { filters } : {}),
     ...(bp.locality ? { locality: bp.locality } : {}),
@@ -93,18 +123,38 @@ export function buildAgendaCalendarParams(
   };
 }
 
-/** Mode LISTE : pas de dates (ponctuels, DESC, paginé) + scope/filtres. */
+/**
+ * Mode LISTE : sans `startDateUTC`/`endDateUTC` (une ligne par event, récurrents compris, paginé) +
+ * scope/filtres + bornes/tri serveur (`from`/`to`/`order`/`recurrency`, cf. `AgendaListBounds`).
+ * Les dates partent en ISO AVEC offset (`toISOString`) : une date nue serait lue en Europe/Paris par
+ * le legacy et en UTC par le backend Node.
+ *
+ * PRÉCÉDENCE de `recurrency` : les bornes sont étalées APRÈS `baseParams`, donc le `false` du flux
+ * « Passés » l'emporte sur une config qui les inclurait. C'est voulu — cette exclusion-là n'est pas
+ * une préférence de site mais une contrainte de sens (une série n'a pas de passé).
+ */
 export function buildAgendaListParams(
   indexStep: number,
   input: AgendaParamsInput = {},
   baseParams?: AgendaBaseParams,
+  bounds?: AgendaListBounds,
 ): Record<string, unknown> {
   return {
     indexStep,
     ...fromBaseParams(baseParams),
     ...(input.type ? { type: input.type } : {}),
     ...(input.name ? { name: input.name } : {}),
+    ...(bounds?.from ? { from: bounds.from.toISOString() } : {}),
+    ...(bounds?.to ? { to: bounds.to.toISOString() } : {}),
+    ...(bounds?.order ? { order: bounds.order } : {}),
+    ...(bounds?.recurrency !== undefined ? { recurrency: bounds.recurrency } : {}),
   };
+}
+
+/** Signature stable des bornes pour la queryKey (deux flux, deux ancres → deux caches). */
+export function agendaBoundsSig(b?: AgendaListBounds): string {
+  if (!b) return "";
+  return JSON.stringify({ f: b.from?.toISOString() ?? null, t: b.to?.toISOString() ?? null, o: b.order ?? null, r: b.recurrency ?? null });
 }
 
 /** Tri récursif des clés d'objet → JSON.stringify CANONIQUE : deux `filters` logiquement identiques mais
@@ -130,5 +180,7 @@ export function agendaBaseSig(bp?: AgendaBaseParams): string {
   //    toucher à `bp.filters` ; sans lui, deux périmètres distincts partagent un cache.
   //  · `n`  — `notSourceKey` est émis tel quel ET désarme la porte : deux agendas ne différant que
   //    par lui interrogent des ensembles disjoints (périmètre costum vs réseau entier).
-  return JSON.stringify(sortKeys({ s: bp.sourceKey ?? null, n: bp.notSourceKey ?? null, cs: bp.costumSlug ?? null, f: bp.fediverse ?? null, fl: bp.filters ?? null, l: bp.locality ?? null }));
+  //  · `r`  — `recurrency` est émis tel quel dans les deux modes : deux agendas ne différant que par
+  //    lui interrogent des ensembles distincts (avec ou sans les séries).
+  return JSON.stringify(sortKeys({ s: bp.sourceKey ?? null, n: bp.notSourceKey ?? null, cs: bp.costumSlug ?? null, r: bp.recurrency ?? null, f: bp.fediverse ?? null, fl: bp.filters ?? null, l: bp.locality ?? null }));
 }

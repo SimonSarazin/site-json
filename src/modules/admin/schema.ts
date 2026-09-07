@@ -137,6 +137,20 @@ const AdminResourceSectionSchema = z.object({
   source: SearchBaseParamsSchema.partial().optional(),
   columns: AdminColumnsSchema.optional(),
   create: AdminFormRefSchema.default("inherit"),
+  /**
+   * Valeurs SEMÉES dans la modale de CRÉATION ouverte depuis cette section (jamais en édition —
+   * l'entité fait alors foi). Fusionnées PAR-DESSUS les défauts dérivés du formulaire
+   * (`fields.<nom>.default`), donc une clé absente d'ici garde son défaut normal.
+   *
+   * Sert le cas « un onglet = un sous-ensemble » : une table filtrée par `source` (ex.
+   * `defaultTags:["Appels à projets"]`) ouvre le formulaire DÉJÀ positionné sur le sous-type
+   * correspondant, sans faire re-choisir à l'admin ce que l'onglet dit déjà. Sans ce canal, il
+   * faudrait un formulaire costum cloné par sous-type pour ne varier qu'un défaut.
+   *
+   * Les clés sont des noms de champs du formulaire résolu par `create` ; une clé qu'il ne déclare
+   * pas est écartée par `applyCreateDefaults` (semis inerte, jamais de valeur fantôme).
+   */
+  createDefaults: z.record(z.string(), z.unknown()).optional(),
   edit: AdminFormRefSchema.default("inherit"),
   rowActions: z.array(z.enum(["edit", "delete", "validate", "reference", "setFeatured"])).optional(),
   /**
